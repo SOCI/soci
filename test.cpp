@@ -622,6 +622,50 @@ void test12()
     std::cout << "test 12 passed" << std::endl;
 }
 
+// test multiple use types of the same underlying type
+void test13()
+{
+    Session sql(serviceName, userName, password);
+    try { sql<<"drop table test13";}catch(SOCIError& e){}//ignore
+
+    sql << "create table test13 ("
+        "id number(10) not null,"
+        "idtest number(10) not null,"
+        "name varchar2(100),"
+        "nametest varchar2(100))";
+        
+    int id_in = 1;
+    int idtest_in = 2;
+
+    std::string name_in("my name");
+    std::string nametest_in("my name test");
+
+    Statement st1 = (sql.prepare
+                     <<"insert into test13(id,idtest,name,nametest)"
+                     << " values (:id,:idtest,:name,:nametest)",
+                     use(id_in,"id"),
+                     use(idtest_in,"idtest"),
+                     use(name_in,"name"),
+                     use(nametest_in,"nametest"));
+    st1.execute(1);
+
+    int id_out;
+    int idtest_out;
+    std::string name_out;
+    std::string nametest_out;
+
+    sql << "select * from test13", 
+        into(id_out),
+        into(idtest_out),
+        into(name_out),
+        into(nametest_out);
+    assert(id_in == id_out);
+    assert(idtest_in == idtest_out);
+    assert(name_in == name_out);
+    assert(nametest_in == nametest_out);
+    std::cout << "test 13 passed" << std::endl;
+}
+
 int main(int argc, char** argv)
 {
     if (argc == 4)
@@ -650,6 +694,7 @@ int main(int argc, char** argv)
         test10();
         test11();
         test12();
+        test13();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }
