@@ -5,9 +5,9 @@
 
 using namespace SOCI;
 
-const char *serviceName = "SERVICENAME";
-const char *userName = "username";
-const char *password = "password";
+char serviceName[25]; 
+char userName[25]; 
+char password[25];
 
 // fundamental tests
 void test1()
@@ -465,8 +465,20 @@ void test9()
     std::cout << "test 9 passed" << std::endl;
 }
 
-int main()
+int main(int argc, char** argv)
 {
+    if (argc == 4)
+    {
+        strcpy(userName, argv[1]);
+        strcpy(password, argv[2]);
+        strcpy(serviceName, argv[3]);
+    }
+    else 
+    {
+        std::cout<<"usage: "<<argv[0]<<" [user] [password] [serviceName]\n";
+        exit(1);
+    }
+    
     try
     {
         test1();
