@@ -1,0 +1,1974 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+  <title>C++/Tk</title>
+</head>
+<body>
+<h1>C++/Tk library</h1>
+<br>
+Copyright (C) 2004, Maciej Sobczak<br>
+<a href="http://www.msobczak.com/prog/cpptk/">http://www.msobczak.com/prog/cpptk/</a><br>
+<br>
+<a href="#intro">Introduction</a><br>
+<a href="#commands">Commands</a><br>
+<a href="#wcmds">Widget commands</a><br>
+<a href="#options">Options</a><br>
+<a href="#constants">Constants</a><br>
+<a href="#looseends">Loose bits and pieces</a><br>
+Compiling<br>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="intro"></a>Introduction</h2>
+The C++/Tk library does not need any extensive documentation, since it
+is meant to provide interface to the existing GUI toolkit.<br>
+If you already know Tk from elsewhere (for example, from Tcl), you will
+find C++/Tk very intuitive.<br>
+If not, you may find tons of Tk-related tutorials on the web and you
+may also buy good books about this toolkit. Those that I know and can
+recommend are:<br>
+<ul>
+  <li><b>'Tcl and the Tk Toolkit'</b> by John K. Ousterhout,</li>
+  <li>'<b>Practical Programming in Tcl and Tk</b>' by Brent B. Welch,</li>
+  <li>'<b>Effective Tcl/Tk Programming</b>' by Mark Harrison and
+Michael McLennan.</li>
+</ul>
+Of course, it was necessary to change the original syntax in order to
+make it parseable by the C++ compiler. The rest of this document
+presents the examples for each Tk element, listed alphabetically.<br>
+<br>
+In the following examples, names ".b1", ".b2", etc. denote existing
+buttons, ".f1", ".f2", etc. denote existing frames, etc.<br>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="commands"></a>Commands</h2>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; width: 25%;"><span
+ style="font-weight: bold;">Tk command</span><br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">C++/Tk
+example</span><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">bell<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">bell</span>();<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">bind<br>
+      </td>
+      <td style="vertical-align: top;">void fun1();<br>
+void fun2(int x, int y);<br>
+void fun3(string const &amp;win, int x, int y);<br>
+      <br>
+// and later:<br>
+      <span style="font-weight: bold;">bind</span>(".f1",
+"&lt;Button-1&gt;", fun1);<br>
+      <span style="font-weight: bold;">bind</span>(".f2",
+"&lt;Button-1&gt;", fun2, event_x, event_y);<br>
+      <span style="font-weight: bold;">bind</span>(".f3",
+"&lt;Button-1&gt;", fun3, event_W, event_x, event_y);<br>
+      <br>
+Note: You can specify arguments (up to 10) to the callback functions
+(like % substitutions in Tcl/Tk) with the help of event_ specifiers,
+but the number of function parameters and their types should match the
+given specifiers, otherwise the code will not compile.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">bindtags<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">bindtags</span>(".b1");<br>
+      <span style="font-weight: bold;">bindtags</span>(".b1", "all .
+Button .b1");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">button<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">button</span>(".b1")
+-text("Press me") -command(fun);<br>
+string bname(<span style="font-weight: bold;">button</span>(".b2") -
+text("Press me too") -fg("blue") -command(fun));<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">canvas<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">canvas</span>(".c");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">checkbutton<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">checkbutton</span>(".cb")
+-text("select me");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">clipboard<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">clipboard</span>(clear);<br>
+      <span style="font-weight: bold;">clipboard</span>(clear)
+-displayof(".top");<br>
+      <span style="font-weight: bold;">clipboard</span>(append,
+"hello");<br>
+string s(<span style="font-weight: bold;">clipboard</span>(get));<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">console<br>
+      </td>
+      <td style="vertical-align: top;">- (not implemented)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">destroy<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">destroy</span>(".b");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">entry<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">entry</span>(".e");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">event<br>
+      </td>
+      <td style="vertical-align: top;">- (not implemented)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">focus<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">focus</span>()
+-displayof(".");<br>
+      <span style="font-weight: bold;">focus</span>(".e");<br>
+      <span style="font-weight: bold;">focus</span>() -force(".e");<br>
+      <span style="font-weight: bold;">focus</span>() -lastfor(".");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">font<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">fonts</span>(create,
+"myfont");<br>
+      <span style="font-weight: bold;">fonts</span>(configure,
+"myfont") -size(20) -underline(true);<br>
+      <span style="font-weight: bold;">fonts</span>(deletefont,
+"myfont");<br>
+      <span style="font-weight: bold;">fonts</span>(families);<br>
+      <br>
+The actual, measure and metric options are not implemented.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">frame<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">frame</span>(".f");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">grab<br>
+      </td>
+      <td style="vertical-align: top;">string cur(<span
+ style="font-weight: bold;">grab</span>(current));<br>
+string cur(<span style="font-weight: bold;">grab</span>(current, ".f"));<br>
+      <span style="font-weight: bold;">grab</span>(release, ".f");<br>
+      <span style="font-weight: bold;">grab</span>(set, ".f");<br>
+      <span style="font-weight: bold;">grab</span>(setglobal, ".f");<br>
+string stat(<span style="font-weight: bold;">grab</span>(status, ".f"));<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"> grid<br>
+      </td>
+      <td style="vertical-align: top;">Box b(<span
+ style="font-weight: bold;">grid</span>(bbox, ".", 2, 3));<br>
+      <span style="font-weight: bold;">grid</span>(columnconfigure,
+".", 3) -minsize(5) -weight(2) -uniform("abc") -pad(5);<br>
+      <span style="font-weight: bold;">grid</span>(configure, ".b")
+-column(3) -columnspan(2) -in(".") -row(2) -rowspan(2) -sticky("nw");<br>
+      <span style="font-weight: bold;">grid</span>(forget, ".e");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">image<br>
+      </td>
+      <td style="vertical-align: top;">string img(<span
+ style="font-weight: bold;">images</span>(create, bitmap));<br>
+      <span style="font-weight: bold;">images</span>(create, photo,
+"myimg") -file("myimg.jpg");<br>
+      <span style="font-weight: bold;">images</span>(deleteimg,
+"myimg");<br>
+int h(<span style="font-weight: bold;">images</span>(height, "myimg"));<br>
+      <br>
+Note: bitmap options -data and -maskdata are not implemented (use -file
+and -maskfile instead).<br>
+Note: photo options -data and -format are not implemented.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">label<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">label</span>(".lab");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">labelframe<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">labelframe</span>(".lf");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">listbox<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">listbox</span>(".lb");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">lower<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">lower</span>(".e");<br>
+      <span style="font-weight: bold;">lower</span>(".e", ".f");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">menu<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">menu</span>(".m");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">menubutton<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">menubutton</span>(".mb");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">message<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">message</span>(".msg");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">option<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">option</span>(add,
+"abc", "def");<br>
+      <span style="font-weight: bold;">option</span>(add, "abc", "def",
+interactive);<br>
+      <span style="font-weight: bold;">option</span>(clear);<br>
+      <span style="font-weight: bold;">option</span>(get, ".w", "abc",
+"def");<br>
+      <span style="font-weight: bold;">option</span>(readfile, "file");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">pack<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">pack</span>(".b")
+-side(left) -expand(true) -fill(x);<br>
+      <span style="font-weight: bold;">pack</span>(configure, ".b")
+-padx(5);<br>
+      <span style="font-weight: bold;">pack</span>(".b1", ".b2", ".b3");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">panedwindow<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">panedwindow</span>(".pw");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">place<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">place</span>(".b")
+-relx(5) -rely(10);<br>
+      <span style="font-weight: bold;">place</span>(configure, ".b")
+-relx(5);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">radiobutton<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">radiobutton</span>(".rb");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">raise<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">raise</span>(".b");<br>
+      <span style="font-weight: bold;">raise</span>(".b", ".f");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">scale<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">scale</span>(".s");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">scrollbar<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">scrollbar</span>(".sb");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">selection<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">selection</span>(clear)
+-displayof(".w") -sel("PRIMARY");<br>
+      <span style="font-weight: bold;">selection</span>(get)
+-cliptype("STRING");<br>
+      <br>
+Note; selection handle and selection own commands are not implemented.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">send<br>
+      </td>
+      <td style="vertical-align: top;">- (not implemented)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">spinbox<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">spinbox</span>(".sp");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">text<br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">textw</span>(".t");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="wcmds"></a>Widget commands</h2>
+<br>
+<table style="text-align: left; width: 100%;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; width: 25%;"><span
+ style="font-weight: bold;">Tk widget command</span><br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">C++/Tk
+example</span><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">activate<br>
+      </td>
+      <td style="vertical-align: top;">".lb" &lt;&lt; <span
+ style="font-weight: bold;">activate</span>(5);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">add<br>
+      </td>
+      <td style="vertical-align: top;">".m" &lt;&lt; <span
+ style="font-weight: bold;">add</span>(command) -label("choose me")
+-command(fun);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">addtag<br>
+      </td>
+      <td style="vertical-align: top;">string myrectangle(".c" &lt;&lt;
+create(rectangle, 10, 20, 30, 40));<br>
+".c" &lt;&lt; <span style="font-weight: bold;">addtag</span>("mytag",
+myrectangle);<br>
+      <br>
+".c" &lt;&lt; <span style="font-weight: bold;">addtag</span>("mytag2",
+enclosed, 0, 0, 100, 100);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">bbox<br>
+      </td>
+      <td style="vertical-align: top;">Box b1(".c" &lt;&lt; <span
+ style="font-weight: bold;">bbox</span>("mytag"));<br>
+      <br>
+vector&lt;string&gt; items;<br>
+// ...<br>
+Box b2(".c" &lt;&lt; <span style="font-weight: bold;">bbox</span>(items.begin(),
+items.end())); // any InputIterator allowed<br>
+      <br>
+".e" &lt;&lt; <span style="font-weight: bold;">bbox</span>(5);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">bind<br>
+      </td>
+      <td style="vertical-align: top;">".c" &lt;&lt; <span
+ style="font-weight: bold;">bind</span>(...); // see also the command
+bind above<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">blank<br>
+      </td>
+      <td style="vertical-align: top;">"myphoto" &lt;&lt; <span
+ style="font-weight: bold;">blank</span>();<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">canvasx<br>
+canvasy<br>
+      </td>
+      <td style="vertical-align: top;">int x1 = (".c" &lt;&lt; <span
+ style="font-weight: bold;">canvasx</span>(57));<br>
+int x2 = (".c" &lt;&lt; <span style="font-weight: bold;">canvasx</span>(57,
+10));<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">cget<br>
+      </td>
+      <td style="vertical-align: top;">string color(".b1" &lt;&lt; <span
+ style="font-weight: bold;">cget</span>(foreground));<br>
+int w = (".b1" &lt;&lt; <span style="font-weight: bold;">cget</span>(width));<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">compare<br>
+      </td>
+      <td style="vertical-align: top;">".t" &lt;&lt; <span
+ style="font-weight: bold;">compare</span>(txt(5,6), "&lt;", txt(6,5));<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">configure<br>
+      </td>
+      <td style="vertical-align: top;">".b1" &lt;&lt; <span
+ style="font-weight: bold;">configure</span>() -foreground("blue");<br>
+".b2" &lt;&lt; <span style="font-weight: bold;">configure</span>()
+-state(disabled);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">coords<br>
+      </td>
+      <td style="vertical-align: top;">Box b(".c" &lt;&lt; <span
+ style="font-weight: bold;">coords</span>(myrectangle));<br>
+".c" &lt;&lt; <span style="font-weight: bold;">coords</span>(mytext,
+100, 50);<br>
+".c" &lt;&lt; <span style="font-weight: bold;">coords</span>(Point(100,
+50));<br>
+".c" &lt;&lt; <span style="font-weight: bold;">coords</span>(myrectangle,
+10, 20, 30, 40);<br>
+".c" &lt;&lt; <span style="font-weight: bold;">coords</span>(myrectangle,
+Point(10, 20), Point(30, 40));<br>
+".c" &lt;&lt; <span style="font-weight: bold;">coords</span>(myrectangle,
+Box(10, 20, 30, 40));<br>
+      <br>
+int crds[] = {10, 20, 30, 40, 50, 60, 70, 80};<br>
+".c" &lt;&lt; <span style="font-weight: bold;">coords</span>(mypolygon,
+&amp;crds[0], &amp;crds[0] + 8); // any InputIterator allowed<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">create<br>
+      </td>
+      <td style="vertical-align: top;">".c" &lt;&lt; <span
+ style="font-weight: bold;">create</span>(text, 100, 50)
+-text("Hello");<br>
+".c" &lt;&lt; <span style="font-weight: bold;">create</span>(text,
+Point(100, 50));<br>
+".c" &lt;&lt; <span style="font-weight: bold;">create</span>(rectangle,
+10, 20, 30, 40);<br>
+".c" &lt;&lt; <span style="font-weight: bold;">create</span>(rectangle,
+Point(10, 20), Point(30, 40));<br>
+".c" &lt;&lt; <span style="font-weight: bold;">create</span>(rectangle,
+Box(10, 20, 30, 40));<br>
+      <br>
+int crds[] = {10, 20, 30, 40, 50, 60, 70, 80};<br>
+".c" &lt;&lt; <span style="font-weight: bold;">create</span>(line,
+&amp;crds[0], &amp;crds[0] + 8); // any InputIterator allowed</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">curselection<br>
+      </td>
+      <td style="vertical-align: top;">string cur(".lb" &lt;&lt; <span
+ style="font-weight: bold;">curselection</span>());<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">dchars<br>
+      </td>
+      <td style="vertical-align: top;">".c" &lt;&lt; <span
+ style="font-weight: bold;">dchars</span>(mytext, 4, 7);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">debug<br>
+      </td>
+      <td style="vertical-align: top;">".t" &lt;&lt; <span
+ style="font-weight: bold;">debug</span>();<br>
+".t" &lt;&lt; <span style="font-weight: bold;">debug</span>(true);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">delete<br>
+      </td>
+      <td style="vertical-align: top;">".m" &lt;&lt; <span
+ style="font-weight: bold;">deleteentry</span>(5);<br>
+".m" &lt;&lt; <span style="font-weight: bold;">deleteentry</span>(5,
+8);<br>
+      <br>
+".c" &lt;&lt; <span style="font-weight: bold;">deleteitem</span>(myrectangle);<br>
+      <br>
+vector&lt;string&gt; items;<br>
+// ...<br>
+".c" &lt;&lt; <span style="font-weight: bold;">deleteitem</span>(items.begin(),
+items.end()); // any InputIterator allowed<br>
+      <br>
+".e" &lt;&lt; <span style="font-weight: bold;">deletetext</span>(5);<br>
+".e" &lt;&lt; <span style="font-weight: bold;">deletetext</span>(5,
+end);<br>
+      <br>
+Note1: deleteentry, deleteitem and deletetext with one argument are
+equivalent.<br>
+Note2: deleteentry and deletetext with two arguments are equivalent.
+Only deleteitem with two arguments accepts iterators.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">delta<br>
+      </td>
+      <td style="vertical-align: top;">".sb" &lt;&lt; <span
+ style="font-weight: bold;">delta</span>(50, 60);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">deselect<br>
+      </td>
+      <td style="vertical-align: top;">".cb" &lt;&lt; <span
+ style="font-weight: bold;">deselect</span>();<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">dlineinfo<br>
+      </td>
+      <td style="vertical-align: top;">".t" &lt;&lt; <span
+ style="font-weight: bold;">dlineinfo</span>(txt(5,6));<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">dtag<br>
+      </td>
+      <td style="vertical-align: top;">".c" &lt;&lt; <span
+ style="font-weight: bold;">dtag</span>(mytag);<br>
+".c" &lt;&lt; <span style="font-weight: bold;">dtag</span>(mytag1,
+mytag2);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">entrycget<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">find<br>
+      </td>
+      <td style="vertical-align: top;">string items(".c" &lt;&lt; <span
+ style="font-weight: bold;">find</span>(enclosed, 0, 0, 100, 100)); //
+args like with addtag<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">flash<br>
+      </td>
+      <td style="vertical-align: top;">".b1" &lt;&lt; <span
+ style="font-weight: bold;">flash</span>();<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">focus<br>
+      </td>
+      <td style="vertical-align: top;">string focused(".c" &lt;&lt; <span
+ style="font-weight: bold;">focus</span>());<br>
+".c" &lt;&lt; <span style="font-weight: bold;">focus</span>(mytext);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">forget<br>
+      </td>
+      <td style="vertical-align: top;">".pw" &lt;&lt; <span
+ style="font-weight: bold;">forget</span>(".b");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">fraction<br>
+      </td>
+      <td style="vertical-align: top;">".sb" &lt;&lt; <span
+ style="font-weight: bold;">fraction</span>(50, 60);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">get<br>
+      </td>
+      <td style="vertical-align: top;">".e" &lt;&lt; <span
+ style="font-weight: bold;">get</span>();<br>
+".lb" &lt;&lt; <span style="font-weight: bold;">get</span>(5);<br>
+".lb" &lt;&lt; <span style="font-weight: bold;">get</span>(5, 8);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">gettags<br>
+      </td>
+      <td style="vertical-align: top;">string tags(".c" &lt;&lt; <span
+ style="font-weight: bold;">gettags</span>(myrectangle));<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">icursor<br>
+      </td>
+      <td style="vertical-align: top;">".c" &lt;&lt; <span
+ style="font-weight: bold;">icursor</span>(mytext, 5);<br>
+".c" &lt;&lt; <span style="font-weight: bold;">icursor</span>(mytext,
+end);<br>
+".e" &lt;&lt; <span style="font-weight: bold;">icursor</span>(5);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">identify<br>
+      </td>
+      <td style="vertical-align: top;">".pw" &lt;&lt; <span
+ style="font-weight: bold;">identify</span>(50, 60);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">index<br>
+      </td>
+      <td style="vertical-align: top;">".c" &lt;&lt; <span
+ style="font-weight: bold;">index</span>(mytext, end);<br>
+".e" &lt;&lt; <span style="font-weight: bold;">index</span>(at(25));<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">insert<br>
+      </td>
+      <td style="vertical-align: top;">".c" &lt;&lt; <span
+ style="font-weight: bold;">insert</span>(mytext, end, "hello");<br>
+".e" &lt;&lt; <span style="font-weight: bold;">insert</span>(5,
+"hello");<br>
+".m" &lt;&lt; <span style="font-weight: bold;">insert</span>(5,
+checkbutton);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">invoke<br>
+      </td>
+      <td style="vertical-align: top;">".b" &lt;&lt; <span
+ style="font-weight: bold;">invoke</span>();<br>
+".m" &lt;&lt; <span style="font-weight: bold;">invoke</span>(5);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;" rowspan="1" colspan="1">itemcget<br>
+itemconfigure<br>
+      </td>
+      <td style="vertical-align: top;" rowspan="1" colspan="1">".c"
+&lt;&lt; <span style="font-weight: bold;">itemcget</span>(myrectangle,
+outline);<br>
+".lb" &lt;&lt; <span style="font-weight: bold;">itemcget</span>(5,
+background);<br>
+".c" &lt;&lt; <span style="font-weight: bold;">itemconfigure</span>(myrectangle)
+-outline("blue");<br>
+".lb" &lt;&lt; <span style="font-weight: bold;">itemconfigure</span>(5)
+-background("blue");<br>
+      </td>
+    </tr>
+    <tr>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">lower<br>
+      </td>
+      <td style="vertical-align: top;">".c" &lt;&lt; <span
+ style="font-weight: bold;">lower</span>(myrectangle);<br>
+".c" &lt;&lt; <span style="font-weight: bold;">lower</span>(myrectangle,
+myoval);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">move<br>
+      </td>
+      <td style="vertical-align: top;">".c" &lt;&lt; <span
+ style="font-weight: bold;">move</span>(myrectangle, 10, 20);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">moveto<br>
+      </td>
+      <td style="vertical-align: top;">".sb" &lt;&lt; <span
+ style="font-weight: bold;">moveto</span>(0.2);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">panecget<br>
+paneconfigure<br>
+      </td>
+      <td style="vertical-align: top;">".pw" &lt;&lt; <span
+ style="font-weight: bold;">panecget</span>(".b", height);<br>
+".pw" &lt;&lt; <span style="font-weight: bold;">paneconfigure</span>(".b")
+-height(20);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">panes<br>
+      </td>
+      <td style="vertical-align: top;">".pw" &lt;&lt; <span
+ style="font-weight: bold;">panes</span>();<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;" rowspan="1" colspan="1">post<br>
+postcascade<br>
+      </td>
+      <td style="vertical-align: top;" rowspan="1" colspan="1">".m"
+&lt;&lt; <span style="font-weight: bold;">post</span>(100, 150);<br>
+".m" &lt;&lt; <span style="font-weight: bold;">postcascade</span>(5);<br>
+      </td>
+    </tr>
+    <tr>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">postscript<br>
+      </td>
+      <td style="vertical-align: top;">".c" &lt;&lt; <span
+ style="font-weight: bold;">postscript</span>() -colormode(color)
+-file("file.eps");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">proxy<br>
+      </td>
+      <td style="vertical-align: top;">".pw" &lt;&lt; <span
+ style="font-weight: bold;">proxy</span>(place, 50, 60);<br>
+".pw" &lt;&lt; <span style="font-weight: bold;">proxy</span>(forget);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">put<br>
+      </td>
+      <td style="vertical-align: top;">"photo1" &lt;&lt; <span
+ style="font-weight: bold;">put</span>("red") -to(10, 20);<br>
+      <br>
+Note: only single colors are supported.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">raise<br>
+      </td>
+      <td style="vertical-align: top;">".c" &lt;&lt; <span
+ style="font-weight: bold;">raise</span>(myrectangle);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">read<br>
+      </td>
+      <td style="vertical-align: top;">"photo1" &lt;&lt; <span
+ style="font-weight: bold;">read</span>("photo.gif") -to(10, 20);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">redither<br>
+      </td>
+      <td style="vertical-align: top;">"photo1" &lt;&lt; <span
+ style="font-weight: bold;">redither</span>();<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">sash<br>
+      </td>
+      <td style="vertical-align: top;">".pw" &lt;&lt; <span
+ style="font-weight: bold;">sash</span>(place, 2, 50, 60);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">scale<br>
+      </td>
+      <td style="vertical-align: top;">".c" &lt;&lt; <span
+ style="font-weight: bold;">scale</span>("item", 10, 20, 1.5, 1.6);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">scan<br>
+      </td>
+      <td style="vertical-align: top;">".c" &lt;&lt; <span
+ style="font-weight: bold;">scan</span>(mark, 10, 20);<br>
+".e" &lt;&lt; <span style="font-weight: bold;">scan</span>(mark, 10);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">scroll<br>
+      </td>
+      <td style="vertical-align: top;">".sb" &lt;&lt; <span
+ style="font-weight: bold;">scroll</span>(5, units);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">select<br>
+      </td>
+      <td style="vertical-align: top;">".c" &lt;&lt; <span
+ style="font-weight: bold;">select</span>(clear);<br>
+".cb" &lt;&lt; <span style="font-weight: bold;">select</span>();<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">selection<br>
+      </td>
+      <td style="vertical-align: top;">".e" &lt;&lt; <span
+ style="font-weight: bold;">selection</span>(from, 5);<br>
+".lb" &lt;&lt; <span style="font-weight: bold;">selection</span>(set,
+5, 8);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">set<br>
+      </td>
+      <td style="vertical-align: top;">".s" &lt;&lt; <span
+ style="font-weight: bold;">set</span>(150);<br>
+".sb" &lt;&lt; <span style="font-weight: bold;">set</span>(0.2, 0.4);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">size<br>
+      </td>
+      <td style="vertical-align: top;">int size(".lb" &lt;&lt; <span
+ style="font-weight: bold;">getsize</span>());<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">toggle<br>
+      </td>
+      <td style="vertical-align: top;">".cb" &lt;&lt; <span
+ style="font-weight: bold;">toggle</span>();<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">transparency<br>
+      </td>
+      <td style="vertical-align: top;">"photo1" &lt;&lt; <span
+ style="font-weight: bold;">transparency</span>(get, 10, 20);<br>
+"photo1" &lt;&lt; <span style="font-weight: bold;">transparency</span>(set,
+10, 20, true);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">type<br>
+      </td>
+      <td style="vertical-align: top;">string mytype(".c" &lt;&lt; <span
+ style="font-weight: bold;">type</span>(myitem));<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">validate<br>
+      </td>
+      <td style="vertical-align: top;">".e" &lt;&lt; <span
+ style="font-weight: bold;">validate</span>();<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">write<br>
+      </td>
+      <td style="vertical-align: top;">"photo1" &lt;&lt; <span
+ style="font-weight: bold;">write</span>("photo.gif") -from(10, 20, 30,
+40) -grayscale();</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">xview<br>
+yview<br>
+      </td>
+      <td style="vertical-align: top;">".c" &lt;&lt; <span
+ style="font-weight: bold;">xview</span>(moveto, 0.5);<br>
+".c" &lt;&lt; <span style="font-weight: bold;">yview</span>(scroll, 5,
+units);<br>
+".e" &lt;&lt; <span style="font-weight: bold;">xview</span>(5);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">yposition<br>
+      </td>
+      <td style="vertical-align: top;">int y = (".m" &lt;&lt; <span
+ style="font-weight: bold;">yposition</span>(5));<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="options"></a>Options</h2>
+<br>
+<table style="text-align: left; width: 100%;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; width: 25%;"><span
+ style="font-weight: bold;">Tk option</span><br>
+      </td>
+      <td style="vertical-align: top;"><span style="font-weight: bold;">C++/Tk
+example</span><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">accelerator<br>
+      </td>
+      <td style="vertical-align: top;">".m" &lt;&lt; entryconfigure(5) -<span
+ style="font-weight: bold;">accelerator</span>("Ctrl-x");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;" rowspan="1" colspan="1">activebackground<br>
+activeborderwidth<br>
+activeforeground<br>
+activerelief<br>
+      </td>
+      <td style="vertical-align: top;" rowspan="1" colspan="1">button(".b")
+-<span style="font-weight: bold;">activebackground</span>("blue");<br>
+menu(".m") -<span style="font-weight: bold;">activeborderwidth</span>(3);<br>
+button(".b") -<span style="font-weight: bold;">activeforeground</span>("blue");<br>
+scrollbar(".sb") -<span style="font-weight: bold;">activerelief</span>(sunken);<br>
+      </td>
+    </tr>
+    <tr>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">after<br>
+      </td>
+      <td style="vertical-align: top;">pack(configure, ".b1") -<span
+ style="font-weight: bold;">after</span>(".b2");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">anchor<br>
+      </td>
+      <td style="vertical-align: top;">pack(".b") -<span
+ style="font-weight: bold;">anchor</span>(w);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">aspect<br>
+      </td>
+      <td style="vertical-align: top;">message(".msg") -text("hello
+world") -<span style="font-weight: bold;">aspect</span>(100);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">autoseparators<br>
+      </td>
+      <td style="vertical-align: top;">textw(".t") -undo(true) -<span
+ style="font-weight: bold;">autoseparators</span>(true);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">background<br>
+bg<br>
+      </td>
+      <td style="vertical-align: top;">button(".b") -<span
+ style="font-weight: bold;">background</span>("white");<br>
+button(".b") -<span style="font-weight: bold;">bg</span>("white");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">before<br>
+      </td>
+      <td style="vertical-align: top;">pack(configure, ".b1") -<span
+ style="font-weight: bold;">before</span>(".b2");</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">bgstipple<br>
+      </td>
+      <td style="vertical-align: top;">".t" &lt;&lt; tag(configure,
+"mytag") -<span style="font-weight: bold;">bgstipple</span>("mybitmap");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">bigincrement<br>
+      </td>
+      <td style="vertical-align: top;">scale(".s") -<span
+ style="font-weight: bold;">bigincrement</span>(10);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">bitmap<br>
+      </td>
+      <td style="vertical-align: top;">button(".b") -<span
+ style="font-weight: bold;">bitmap</span>(warning);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">bordermode<br>
+      </td>
+      <td style="vertical-align: top;">place(".b") -<span
+ style="font-weight: bold;">bordermode</span>(inside);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">borderwidth<br>
+bd<br>
+      </td>
+      <td style="vertical-align: top;">frame(".f") -<span
+ style="font-weight: bold;">borderwidth</span>(3);<br>
+frame(".f") -<span style="font-weight: bold;">bd</span>(3);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">buttonbackground<br>
+buttoncursor<br>
+buttondownrelief<br>
+buttonuprelief<br>
+      </td>
+      <td style="vertical-align: top;">spinbox(".sp") -<span
+ style="font-weight: bold;">buttonbackground</span>("blue") -<span
+ style="font-weight: bold;">buttoncursor</span>("mycursor") -<span
+ style="font-weight: bold;">buttondownrelief</span>(sunen) -<span
+ style="font-weight: bold;">buttonuprelief</span>(raised);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">class<br>
+      </td>
+      <td style="vertical-align: top;">frame(".f") -<span
+ style="font-weight: bold;">wndclass</span>("myclass");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">closeenough<br>
+      </td>
+      <td style="vertical-align: top;">canvas(".c") -<span
+ style="font-weight: bold;">closeenough</span>(3.0);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">colormap<br>
+      </td>
+      <td style="vertical-align: top;">labelframe(".lf") -<span
+ style="font-weight: bold;">colormap</span>("new");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">columnbreak<br>
+      </td>
+      <td style="vertical-align: top;">".m" &lt;&lt; add(radiobutton) -<span
+ style="font-weight: bold;">columnbreak</span>(true);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">command<br>
+      </td>
+      <td style="vertical-align: top;">button(".b") -<span
+ style="font-weight: bold;">command</span>(fun); // fun is any function
+or function object with no parameters<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">compound<br>
+      </td>
+      <td style="vertical-align: top;">button(".b") -<span
+ style="font-weight: bold;">compound</span>(left);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">confine<br>
+      </td>
+      <td style="vertical-align: top;">canvas(".c") -<span
+ style="font-weight: bold;">confine</span>(true);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">container<br>
+      </td>
+      <td style="vertical-align: top;">labelframe(".lf") -<span
+ style="font-weight: bold;">container</span>(true);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">cursor<br>
+      </td>
+      <td style="vertical-align: top;">frame(".f") -<span
+ style="font-weight: bold;">cursor</span>(mycursor);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">default<br>
+      </td>
+      <td style="vertical-align: top;">button(".b") -<span
+ style="font-weight: bold;">defaultstate</span>(active);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">digits<br>
+      </td>
+      <td style="vertical-align: top;">scale(".s") -<span
+ style="font-weight: bold;">digits</span>(3);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">direction<br>
+      </td>
+      <td style="vertical-align: top;">menubutton(".mb") -<span
+ style="font-weight: bold;">direction</span>(above);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">disabledbackground<br>
+disabledforeground<br>
+      </td>
+      <td style="vertical-align: top;">entry(".e") -<span
+ style="font-weight: bold;">disabledbackground</span>("gray");<br>
+button(".b") -<span style="font-weight: bold;">disabledforeground</span>("gray");
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">elementborderwidth<br>
+      </td>
+      <td style="vertical-align: top;">scrollbar(".sb") -<span
+ style="font-weight: bold;">elementborderwidth</span>(2);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">elide<br>
+      </td>
+      <td style="vertical-align: top;">".t" &lt;&lt; tag(configure,
+"mytag") -<span style="font-weight: bold;">elide</span>(true);</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">expand<br>
+      </td>
+      <td style="vertical-align: top;">pack(".b") -<span
+ style="font-weight: bold;">expand</span>(true);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">exportselection<br>
+      </td>
+      <td style="vertical-align: top;">".e" &lt;&lt; configure() -<span
+ style="font-weight: bold;">exportselection</span>(true);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">fill<br>
+      </td>
+      <td style="vertical-align: top;">pack(".b") -expand(true) -<span
+ style="font-weight: bold;">fill</span>(x);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">font<br>
+      </td>
+      <td style="vertical-align: top;">label(".l") -text("hello") -<span
+ style="font-weight: bold;">font</span>("courier");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">foreground<br>
+fg<br>
+      </td>
+      <td style="vertical-align: top;">button(".b") -<span
+ style="font-weight: bold;">foreground</span>("blue");<br>
+button(".b") -<span style="font-weight: bold;">fg</span>("blue");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">fgstipple<br>
+      </td>
+      <td style="vertical-align: top;">".t" &lt;&lt; tag(configure,
+"mytag") -<span style="font-weight: bold;">fgstipple</span>("mybitmap");</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">format<br>
+      </td>
+      <td style="vertical-align: top;">spinbox(".sp") -<span
+ style="font-weight: bold;">format</span>("%0.2f");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">from<br>
+      </td>
+      <td style="vertical-align: top;">"photo1" &lt;&lt; copy("photo2")
+-<span style="font-weight: bold;">from</span>(10, 20, 30, 40);<br>
+scale(".s") -<span style="font-weight: bold;">from</span>(1000);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">gamma</td>
+      <td style="vertical-align: top;">images(create, photo) -<span
+ style="font-weight: bold;">gamma</span>(1.5);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">grayscale<br>
+      </td>
+      <td style="vertical-align: top;">"photo1" &lt;&lt;
+write("photo.gif")
+-<span style="font-weight: bold;">grayscale</span>();</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">handlepad<br>
+handlesize<br>
+      </td>
+      <td style="vertical-align: top;">panedwindow(".pw") -<span
+ style="font-weight: bold;">handlepad</span>(50) -<span
+ style="font-weight: bold;">handlesize</span>(10);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">height<br>
+      </td>
+      <td style="vertical-align: top;">frame(".f") -<span
+ style="font-weight: bold;">height</span>(100);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;" rowspan="1" colspan="1">highlightbackground<br>
+highlightcolor<br>
+highlightthickness<br>
+      </td>
+      <td style="vertical-align: top;" rowspan="1" colspan="1">button(".b")
+-<span style="font-weight: bold;">highlightbackground</span>("blue") -<span
+ style="font-weight: bold;">highlightcolor</span>("blue") -<span
+ style="font-weight: bold;">highlightthickness</span>(5); </td>
+    </tr>
+    <tr>
+    </tr>
+    <tr>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">image<br>
+      </td>
+      <td style="vertical-align: top;">button(".b") -<span
+ style="font-weight: bold;">image</span>(myimage);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">in<br>
+      </td>
+      <td style="vertical-align: top;">pack(".b") -<span
+ style="font-weight: bold;">in</span>(".f");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">increment<br>
+      </td>
+      <td style="vertical-align: top;">spinbox(".sp") -from(0) -to(10) -<span
+ style="font-weight: bold;">increment</span>(0.1);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">indicatoron<br>
+      </td>
+      <td style="vertical-align: top;">checkbutton(".cb") -<span
+ style="font-weight: bold;">indicatoron</span>(false);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;" rowspan="1" colspan="1">insertbackground<br>
+insertborderwidth<br>
+      </td>
+      <td style="vertical-align: top;" rowspan="1" colspan="1">canvas(".c")
+-<span style="font-weight: bold;">insertbackground</span>("blue") -<span
+ style="font-weight: bold;">insertborderwidth</span>(3);<br>
+      </td>
+    </tr>
+    <tr>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">insertofftime<br>
+insertontime<br>
+insertwidth<br>
+      </td>
+      <td style="vertical-align: top;">canvas(".c") -<span
+ style="font-weight: bold;">insertofftime</span>(100) -<span
+ style="font-weight: bold;">insertontime</span>(150) -<span
+ style="font-weight: bold;">insertwidth</span>(2);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">invalidcommand<br>
+      </td>
+      <td style="vertical-align: top;">entry(".e") -<span
+ style="font-weight: bold;">invalidcommand</span>("bell"); // also
+acepts functions and function objects without parameters<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">ipadx<br>
+ipady<br>
+      </td>
+      <td style="vertical-align: top;">pack(".b") -<span
+ style="font-weight: bold;">ipadx</span>(5) -<span
+ style="font-weight: bold;">ipady</span>("2c");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">jump<br>
+      </td>
+      <td style="vertical-align: top;">scrollbar(".sb") -<span
+ style="font-weight: bold;">jump</span>(true);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">justify<br>
+      </td>
+      <td style="vertical-align: top;">label(".l") -<span
+ style="font-weight: bold;">justify</span>(center);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">label<br>
+      </td>
+      <td style="vertical-align: top;">".m" &lt;&lt; add(command) -<span
+ style="font-weight: bold;">menulabel</span>("select me");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">labelanchor<br>
+      </td>
+      <td style="vertical-align: top;">labelframe(".lf") -text("hello")
+-<span style="font-weight: bold;">labelanchor</span>(nw);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">labelwidget<br>
+      </td>
+      <td style="vertical-align: top;">labelframe(".lf") -<span
+ style="font-weight: bold;">labelwidget</span>(".lf.w");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">length<br>
+      </td>
+      <td style="vertical-align: top;">scale(".s") -<span
+ style="font-weight: bold;">length</span>(100);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">listvariable<br>
+      </td>
+      <td style="vertical-align: top;">- (not implemented)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">lmargin1<br>
+lmargin2<br>
+      </td>
+      <td style="vertical-align: top;">".t" &lt;&lt; tag(configure,
+"mytag") -<span style="font-weight: bold;">lmargin1</span>(20) -<span
+ style="font-weight: bold;">lmargin2</span>(5);</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">maxundo<br>
+      </td>
+      <td style="vertical-align: top;">textw(".t") -undo(true) -<span
+ style="font-weight: bold;">maxundo</span>(100);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">menu<br>
+      </td>
+      <td style="vertical-align: top;">".m" &lt;&lt; add(cascade) -<span
+ style="font-weight: bold;">submenu</span>(".m.m");<br>
+menubutton(".mb") -<span style="font-weight: bold;">submenu</span>(".mb.m");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">offrelief<br>
+      </td>
+      <td style="vertical-align: top;">checkbutton(".cb") -<span
+ style="font-weight: bold;">offrelief</span>(raised);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">offset<br>
+      </td>
+      <td style="vertical-align: top;">".t" &lt;&lt; tag(configure,
+"mytag") -<span style="font-weight: bold;">offset</span>(2);</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">offvalue<br>
+onvalue<br>
+      </td>
+      <td style="vertical-align: top;">checkbutton(".cb") -<span
+ style="font-weight: bold;">offvalue</span>(-1) -<span
+ style="font-weight: bold;">onvalue</span>(1);</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">opaqueresize<br>
+      </td>
+      <td style="vertical-align: top;">panedwindow(".pw") -<span
+ style="font-weight: bold;">opaqueresize</span>(true);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">orient<br>
+      </td>
+      <td style="vertical-align: top;">panedwindow(".pw") -<span
+ style="font-weight: bold;">orient</span>(horizontal);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">overrelief<br>
+      </td>
+      <td style="vertical-align: top;">button(".b") -<span
+ style="font-weight: bold;">overrelief</span>(raised);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">overstrike<br>
+      </td>
+      <td style="vertical-align: top;">".t" &lt;&lt; tag(configure,
+"mytag") -<span style="font-weight: bold;">overstrike</span>(true);</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">padx<br>
+pady<br>
+      </td>
+      <td style="vertical-align: top;">pack(".b") -<span
+ style="font-weight: bold;">padx</span>(5) -<span
+ style="font-weight: bold;">pady</span>(5);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">palette<br>
+      </td>
+      <td style="vertical-align: top;">images(create, photo)
+-gamma(1.5) -<span style="font-weight: bold;">palette</span>(10);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">postcommand<br>
+      </td>
+      <td style="vertical-align: top;">menu(".m") -<span
+ style="font-weight: bold;">postcommand</span>(fun); // fun is any
+function
+or function object with no parameters</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">readonlybackground<br>
+      </td>
+      <td style="vertical-align: top;">".e" &lt;&lt; configure() -<span
+ style="font-weight: bold;">readonlybackground</span>("gray");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">relheight<br>
+relwidth<br>
+      </td>
+      <td style="vertical-align: top;">place(".b") -<span
+ style="font-weight: bold;">relheight</span>(0.5) -<span
+ style="font-weight: bold;">relwidth</span>(0.5);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">relief<br>
+      </td>
+      <td style="vertical-align: top;">frame(".f") -<span
+ style="font-weight: bold;">relief</span>(raised);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">relx<br>
+rely<br>
+      </td>
+      <td style="vertical-align: top;">place(".b") -<span
+ style="font-weight: bold;">relx</span>(10) -<span
+ style="font-weight: bold;">rely</span>(20);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;" rowspan="1" colspan="1">repeatdelay<br>
+repeatinterval<br>
+      </td>
+      <td style="vertical-align: top;" rowspan="1" colspan="1">button(".b")
+-<span style="font-weight: bold;">repeatdelay</span>(100);<br>
+button(".b") -<span style="font-weight: bold;">repeatinterval</span>(100);
+      </td>
+    </tr>
+    <tr>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">resolution<br>
+      </td>
+      <td style="vertical-align: top;">scale(".s") -<span
+ style="font-weight: bold;">resolution</span>(10);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">rmargin<br>
+      </td>
+      <td style="vertical-align: top;">".t" &lt;&lt; tag(configure,
+"mytag") -<span style="font-weight: bold;">rmargin</span>(20);</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">sashcursor<br>
+sashpad<br>
+sashrelief<br>
+sashwidth<br>
+      </td>
+      <td style="vertical-align: top;">panedwindow(".pw") -<span
+ style="font-weight: bold;">sashcursor</span>("mycursor") -<span
+ style="font-weight: bold;">sashpad</span>(5) -<span
+ style="font-weight: bold;">sashrelief</span>(raised) -<span
+ style="font-weight: bold;">sashwidth</span>(10);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">scrollregion<br>
+      </td>
+      <td style="vertical-align: top;">canvas(".c") -<span
+ style="font-weight: bold;">scrollregion</span>(10, 20, 30, 40);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">selectbackground<br>
+selectborderwidth<br>
+selectforeground<br>
+      </td>
+      <td style="vertical-align: top;">canvas(".c") -<span
+ style="font-weight: bold;">selectbackground</span>("blue") -<span
+ style="font-weight: bold;">selectborderwidth</span>(3) -<span
+ style="font-weight: bold;">selectforeground</span>("red");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">selectcolor<br>
+selectimage<br>
+      </td>
+      <td style="vertical-align: top;">checkbutton(".cb") -<span
+ style="font-weight: bold;">selectcolor</span>("blue");<br>
+checkbutton(".cb") -<span style="font-weight: bold;">selectimage</span>(myimage);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">setgrid<br>
+      </td>
+      <td style="vertical-align: top;">listbox(".lb") -<span
+ style="font-weight: bold;">setgrid</span>(true);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">show<br>
+      </td>
+      <td style="vertical-align: top;">".e" &lt;&lt; configure() -<span
+ style="font-weight: bold;">show</span>("*");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">showhandle<br>
+      </td>
+      <td style="vertical-align: top;">panedwindow(".pw") -<span
+ style="font-weight: bold;">showhandle</span>(true);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">showvalue<br>
+      </td>
+      <td style="vertical-align: top;">scale(".s") -<span
+ style="font-weight: bold;">showvalue</span>(true);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">shrink<br>
+      </td>
+      <td style="vertical-align: top;">"photo1" &lt;&lt; copy("photo2")
+-<span style="font-weight: bold;">shrink</span>();<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">sliderlength<br>
+sliderrelief<br>
+      </td>
+      <td style="vertical-align: top;">scale(".s") -<span
+ style="font-weight: bold;">sliderlength</span>(100) -<span
+ style="font-weight: bold;">sliderrelief</span>(raised);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">spacing1<br>
+spacing2<br>
+spacing3<br>
+      </td>
+      <td style="vertical-align: top;">textw(".t") -<span
+ style="font-weight: bold;">spacing1</span>(5) -<span
+ style="font-weight: bold;">spacing2</span>(6) -<span
+ style="font-weight: bold;">spacing3</span>(7);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">state<br>
+      </td>
+      <td style="vertical-align: top;">button(".b") -<span
+ style="font-weight: bold;">state</span>(disabled);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">subsample<br>
+      </td>
+      <td style="vertical-align: top;">"photo1" &lt;&lt; copy("photo2")
+-<span style="font-weight: bold;">subsample</span>(3, 4);</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">tabs<br>
+      </td>
+      <td style="vertical-align: top;">textw(".t") -<span
+ style="font-weight: bold;">tabs</span>("2c left 4c 6c center");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">takefocus<br>
+      </td>
+      <td style="vertical-align: top;">entry(".e") -<span
+ style="font-weight: bold;">takefocus</span>(true);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">tearoff<br>
+tearoffcommand<br>
+      </td>
+      <td style="vertical-align: top;">menu(".m") -<span
+ style="font-weight: bold;">tearoff</span>(true) -<span
+ style="font-weight: bold;">tearoffcommand</span>(fun);<br>
+// fun is any function
+or function object with appropriate parameter types<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">text<br>
+      </td>
+      <td style="vertical-align: top;">button(".b") -<span
+ style="font-weight: bold;">text</span>("press me");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">textvariable<br>
+      </td>
+      <td style="vertical-align: top;">string s;<br>
+entry(".e") -<span style="font-weight: bold;">textvariable</span>(s);
+// also works with int and double<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">title<br>
+      </td>
+      <td style="vertical-align: top;">menu(".m") -tearoff(true) -<span
+ style="font-weight: bold;">title</span>("My menu");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">to<br>
+      </td>
+      <td style="vertical-align: top;">"photo1" &lt;&lt; copy("photo2")
+-<span style="font-weight: bold;">to</span>(10, 20, 30, 40);<br>
+scale(".s") -from(10) -<span style="font-weight: bold;">to</span>(100);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">troughcolor<br>
+      </td>
+      <td style="vertical-align: top;">scale(".s") -<span
+ style="font-weight: bold;">troughcolor</span>("blue");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">underline<br>
+      </td>
+      <td style="vertical-align: top;">button(".b") -text("hello") -<span
+ style="font-weight: bold;">underline</span>(1);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">validate<br>
+validatecommand<br>
+      </td>
+      <td style="vertical-align: top;">bool mycheck(string const
+&amp;s) { /* ... */ }<br>
+      <br>
+entry(".e") -<span style="font-weight: bold;">validate</span>(key) -<span
+ style="font-weight: bold;">validatecommand</span>(mycheck, valid_P);<br>
+      <br>
+// validatecommand accepts any function or function object returning
+something convertible to bool, long, double or string and with the set
+of parameters compatible with the list of validation specifiers<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">value<br>
+values<br>
+      </td>
+      <td style="vertical-align: top;">radiobutton(".r") -<span
+ style="font-weight: bold;">value</span>("second");<br>
+spinbox(".sp") -<span style="font-weight: bold;">values</span>("a b c");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">variable<br>
+      </td>
+      <td style="vertical-align: top;">int i;<br>
+checkbutton(".cb") -<span style="font-weight: bold;">variable</span>(i);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">visual<br>
+      </td>
+      <td style="vertical-align: top;">- (not implemented)<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">width<br>
+      </td>
+      <td style="vertical-align: top;">button(".b") -<span
+ style="font-weight: bold;">width</span>(40);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">wrap<br>
+      </td>
+      <td style="vertical-align: top;">spinbox(".sp") -from(0) -to(10) -<span
+ style="font-weight: bold;">wrap</span>(true);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">wraplength<br>
+      </td>
+      <td style="vertical-align: top;">label(".l") -<span
+ style="font-weight: bold;">wraplength</span>(20);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">x<br>
+y<br>
+      </td>
+      <td style="vertical-align: top;">place(".b") -<span
+ style="font-weight: bold;">x</span>(10) -<span
+ style="font-weight: bold;">y</span>(20);</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">xscrollcommand<br>
+yscrollcommand<br>
+      </td>
+      <td style="vertical-align: top;">canvas(".c") -<span
+ style="font-weight: bold;">xscrollcommand</span>("xcmd") -<span
+ style="font-weight: bold;">yscrollcommand</span>("ycmd");<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">xscrollincrement<br>
+yscrollincrement<br>
+      </td>
+      <td style="vertical-align: top;">canvas(".c") -<span
+ style="font-weight: bold;">xscrollincrement</span>(10) -<span
+ style="font-weight: bold;">yscrollincrement</span>(20);<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">zoom<br>
+      </td>
+      <td style="vertical-align: top;">"photo1" &lt;&lt; copy("photo2")
+-<span style="font-weight: bold;">zoom</span>(3, 4); </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="constants"></a>Constants</h2>
+<br>
+<h2><a name="looseends"></a>Loose bits and pieces</h2>
+<ol>
+  <li>To help creating indexes (entry, canvas, text, etc.), the
+function <code>at(x, y)</code> creates string <code>"@x,y"</code> and
+the function <code>at(x)</code> creates string <code>"@x"</code>.</li>
+  <li>To specify substitutions in the bind command, the following
+specifiers can be used (equivalent to % substitutions in Tcl/Tk):<br>
+    <code>event_A<br>
+event_b<br>
+event_D<br>
+event_f<br>
+event_h<br>
+event_k<br>
+event_K<br>
+event_m<br>
+event_N<br>
+event_s<br>
+event_T<br>
+event_w<br>
+event_W<br>
+event_x<br>
+event_X<br>
+event_y<br>
+event_Y</code><br>
+    <br>
+Note: the number and types of parameters in the function or function
+object used for callback must be compatible with the specifiers.<br>
+    <br>
+  </li>
+  <li>To specify sibstitutions in the <code>validatecommand</code>
+option of the entry widget, the following specifiers can be used
+(equivalent to % substitutions in Tcl/Tk):<br>
+    <code>valid_d<br>
+valid_i<br>
+valid_P<br>
+valid_s<br>
+valid_S<br>
+valid_v<br>
+valid_V<br>
+valid_W</code><br>
+    <br>
+Note 1: the callback function or function object has to return
+something that is convertible to bool, int, double or std::string.<br>
+Note 2: the number and types of parameters in the function or function
+object used for callback must be compatible with the specifiers.</li>
+</ol>
+</body>
+</html>
