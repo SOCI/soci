@@ -148,7 +148,19 @@ void test2()
 
         sql << "select t from (select :t as t from dual)",
             into(t1), use(t2);
+       
         assert(memcmp(&t1, &t2, sizeof(std::tm)) == 0);
+        
+        // make sure the date is stored properly in Oracle
+        char buf[25];
+        strftime(buf, 25, "%m-%d-%C%y %H:%M:%S", &t2);
+
+        std::string t_out;
+        std::string format("MM-DD-YYYY HH24:MI:SS");
+        sql << "select to_char(t, :format) from (select :t as t from dual)",
+            into(t_out), use(format), use(t2);
+
+        assert(t_out == std::string(buf));
     }
     {
         std::time_t now = std::time(NULL);
@@ -508,8 +520,10 @@ void test11()
             sql << "drop table test11";
         }
         catch(const SOCIError& e){}//ignore error if table doesn't exist
-        sql << "create table test11(id numeric(7,2) NOT NULL,"
-            << " name varchar2(20), when date)";
+
+        sql << "create table test11(num_float numeric(7,2) NOT NULL,"
+            << " name varchar2(20), when date, large numeric(10,0), "
+            << " chr1 char(1), small numeric(4,0), vc varchar(10), fl float)";
 
         Row r;
         sql << "select * from test11", into(r);
@@ -526,37 +540,67 @@ void test11()
             when.tm_year = 104;
             when.tm_mon = 11;
             when.tm_mday = i;
+            mktime(&when);
 
-            sql << "insert into test11 values(:id, :name, :when)",
-                use(i,"id"), 
+            double d = i + .25;
+            unsigned long l = i + 100000;
+            char c[] = "X";
+            char v[] = "varchar";
+            double f = i + .33;
+
+            sql << "insert into test11 values(:num_float, :name, :when, "
+                << ":large, :chr1, :small, :vc, :fl)",
+                use(d,"num_float"), 
                 use(name, "name"),
-                use(when, "when");
+                use(when, "when"),
+                use(l, "large"),
+                use(c, "chr1"),
+                use(i, "small"),
+                use(v, "vc"),
+                use(f, "fl");
+
+            sql.commit();
         }
 
         // select into a Row
         {
             Row r;
-            Statement st = (sql.prepare << "select * from test11 order by id", into(r));
+            Statement st = (sql.prepare << "select * from test11 order by num_float", into(r));
             st.execute(1);
-            assert(r.size() == 3);
+            assert(r.size() == 8);
         
-            assert(r.getProperties(0)->getDataType() == eNumeric);
-            assert(r.getProperties(1)->getDataType() == eString);
-            assert(r.getProperties(2)->getDataType() == eDate);
+            assert(r.getProperties(0).getDataType() == eDouble);
+            assert(r.getProperties(1).getDataType() == eString);
+            assert(r.getProperties(2).getDataType() == eDate);
+            assert(r.getProperties(3).getDataType() == eUnsignedLong);
+            assert(r.getProperties(4).getDataType() == eString);
+            assert(r.getProperties(5).getDataType() == eInteger);
+            assert(r.getProperties("VC").getDataType() == eString);
 
-            assert(r.getProperties(0)->getName() == "ID");
-            assert(r.getProperties(1)->getName() == "NAME");
-            assert(r.getProperties(2)->getName() == "WHEN");
+            assert(r.getProperties(0).getName() == "NUM_FLOAT");
+            assert(r.getProperties(1).getName() == "NAME");
+            assert(r.getProperties(2).getName() == "WHEN");
+            assert(r.getProperties(3).getName() == "LARGE");
+            assert(r.getProperties(4).getName() == "CHR1");
+            assert(r.getProperties(5).getName() == "SMALL");
 
-            assert(r.getProperties(0)->getSize() == 22);
-            assert(r.getProperties(0)->getScale() == 2);
-            assert(r.getProperties(0)->getPrecision() == 7);
-            assert(r.getProperties(0)->getNullOK() == false);
-            assert(r.getProperties(1)->getNullOK() == true);
+            assert(r.getProperties(0).getSize() == 22);
+            assert(r.getProperties(0).getScale() == 2);
+            assert(r.getProperties(0).getPrecision() == 7);
+            assert(r.getProperties(0).getNullOK() == false);
+            assert(r.getProperties(1).getNullOK() == true);
 
             st.fetch();
-            assert(r.get<double>(0) == 2);
+            assert(r.get<double>(0) == 2.25);
             assert(r.get<std::string>(1) == "name2");
+            assert(r.get<unsigned long>(3) == 100002);
+            assert(r.get<std::string>(4) == "X");
+            assert(r.get<int>(5) == 2);
+            assert(r.get<std::string>(6) == "varchar");
+
+            assert(r.get<double>("NUM_FLOAT") == 2.25);
+            assert(r.get<int>("SMALL") == 2);
+            assert(r.get<double>("FL") == 2.33);
 
             std::tm t = r.get<std::tm>(2);
             assert(t.tm_year == 104);
@@ -666,6 +710,25 @@ void test13()
     std::cout << "test 13 passed" << std::endl;
 }
 
+// test dbtype CHAR
+void test14()
+{
+   Session sql(serviceName, userName, password);
+   try{sql << "drop table test14";} catch(const SOCIError& e){}//ignore error 
+
+   sql << "create table test14(chr1 char(1))";
+
+   char c_in = 'Z';
+   sql << "insert into test14(chr1) values(:C)", use(c_in);
+   sql.commit();
+
+   char c_out = ' ';
+   sql << "select chr1 from test14", into(c_out);
+   assert(c_out == 'Z');
+   
+   std::cout << "test 14 passed" <<std::endl; 
+}
+
 int main(int argc, char** argv)
 {
     if (argc == 4)
@@ -681,7 +744,7 @@ int main(int argc, char** argv)
     }
     
     try
-    {
+    {  
         test1();
         test2();
         test3();
@@ -694,7 +757,8 @@ int main(int argc, char** argv)
         test10();
         test11();
         test12();
-        test13();
+        test13(); 
+        test14();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }
