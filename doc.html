@@ -1,0 +1,255 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+  <title>SOCI</title>
+</head>
+<body>
+<font size="+3"><span
+ style="font-family: helvetica,arial,sans-serif; font-weight: bold; color: rgb(0, 0, 255);">SOCI</span></font><br>
+<span
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">Simple
+Oracle Call Interface</span><span
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);">
+(and more)<br>
+<br>
+</span><span style="font-weight: bold;">Documentation and tutorial</span><br>
+<br>
+<span style="font-weight: bold;">Note:</span><br>
+The following documentation and tutorial apply to the original SOCI
+library, which supports only Oracle databases. Once the library will be
+ported to support other databases, this page will be redesigned.<br>
+<br>
+<a href="file:///usr/home/maciej/www/sourceforge/soci/doc.html#files">Files</a><br>
+<a href="file:///usr/home/maciej/www/sourceforge/soci/doc.html#errors">Errors</a><br>
+<a
+ href="file:///usr/home/maciej/www/sourceforge/soci/doc.html#connecting">Connecting
+to the database</a><br>
+<a
+ href="file:///usr/home/maciej/www/sourceforge/soci/doc.html#onetimestmts">One-time
+statements</a><br>
+<a
+ href="file:///usr/home/maciej/www/sourceforge/soci/doc.html#bindinglocal">Binding
+local data</a><br>
+<a
+ href="file:///usr/home/maciej/www/sourceforge/soci/doc.html#indicators">Indicators</a><br>
+<a
+ href="file:///usr/home/maciej/www/sourceforge/soci/doc.html#preparation">Statement
+preparation and repeated execution</a><br>
+<a
+ href="file:///usr/home/maciej/www/sourceforge/soci/doc.html#transactions">Transactions</a><br>
+<a href="file:///usr/home/maciej/www/sourceforge/soci/doc.html#advanced">Advanced
+stuff</a><br>
+<hr style="width: 100%; height: 2px;">
+<h4><a name="files"></a>Files</h4>
+<p>The whole SOCI library consists of only two files: <code>soci.h</code>
+and <code>soci.cpp</code>. The first needs to be <code>#include</code>d
+in your own code and the second should be just added to the whole
+project for compilation and linking. There was no reason to make a
+precompiled library out of this single file. </p>
+<p>Everything in SOCI is declared in the namespace <code>SOCI</code>.
+All the following examples assume that your code begins with something
+like: </p>
+<pre>#include "soci.h"<br>// other includes<br><br>using namespace SOCI;<br><br>// ...<br></pre>
+<h4><a name="errors"></a>Errors</h4>
+<p>All DB-related errors manifest themselves as exceptions of type <code>SOCIError</code>,
+which is derived from <code>std::runtime_error</code>. This allows to
+handle Oracle errors within the standard exception framework: </p>
+<pre>int main()<br>{<br>    try<br>    {<br>        // regular code<br>    }<br>    catch (exception const &amp;e)<br>    {<br>        cerr &lt;&lt; "Bang! " &lt;&lt; e.what() &lt;&lt; endl;<br>    }<br>}<br></pre>
+<p>In addition, the <code>SOCIError</code> class has a public <code>errNum_</code>
+member, which contains the Oracle error code. Of course, in order to
+access this code you have to <code>catch</code> the exception as <code>SOCIError</code>:
+</p>
+<pre>int main()<br>{<br>    try<br>    {<br>        // regular code<br>    }<br>    catch (SOCIError const &amp;e)<br>    {<br>        cerr &lt;&lt; "Oracle error: " &lt;&lt; e.errNum_<br>             &lt;&lt; " " &lt;&lt; e.what() &lt;&lt; endl;<br>    }<br>    catch (exception const &amp;e)<br>    {<br>        cerr &lt;&lt; "Some other error: " &lt;&lt; e.what() &lt;&lt; endl;<br>    }<br>}<br></pre>
+<h4><a name="connecting"></a>Connecting to the database</h4>
+<p>The class <code>Session</code> encapsulates the database connection
+and other OCI-related details, which are common to all the statements
+that will be later executed. Its constructor expects three string
+parameters, which are service name, user name and password: </p>
+<pre>Session sql("service", "user", "password");<br></pre>
+<p>The constructor either connects successfully, or throws the
+exception.
+It is possible to have many active <code>Session</code>s at the same
+time. </p>
+<h4><a name="onetimestmts"></a>One-time statements</h4>
+<p>In many cases, the SQL query is intended to be executed only once,
+which means that statement parsing and execution can go together.
+The <code>Session</code> class provides a special <code>once</code>
+member, which triggers parsing and execution of such one-time
+statements: </p>
+<pre>sql.once &lt;&lt; "drop table person";<br></pre>
+<p>For shorter syntax, the following form is also allowed: </p>
+<pre>sql &lt;&lt; "drop table person";<br></pre>
+<p>The IOStream-like interface is exactly what it looks like, so that
+the
+statement text can be composed of many parts, involving anything that
+is <i>streamable</i> (including custom classes, if they have
+appropriate <code>operator&lt;&lt;</code>): </p>
+<pre>string tableName = "person";<br>sql &lt;&lt; "drop table " &lt;&lt; tableName;<br></pre>
+<h4><a name="bindinglocal"></a>Binding local data</h4>
+<p><b>Note:</b><br>
+The Oracle documentation uses two terms: <i>defining</i> (for
+instructing the library where the <i>output</i> data should go) and <i>binding</i>
+(for the <i>input</i> data and <i>input/output</i> PL/SQL
+parameters). For the sake of simplicity, SOCI uses the term <i>binding</i>
+for both of these. </p>
+<p><b>Binding output data:</b> </p>
+<p>The <code>into</code> expression is used to add binding info to the
+statement: </p>
+<pre>int count;<br>sql &lt;&lt; "select count(*) from person", into(count);<br><br>string name;<br>sql &lt;&lt; "select name from person where id = 7", into(name);<br></pre>
+<p><b>Binding input data:</b> </p>
+<p>The <code>use</code> expression is used (no pun intended) to
+associate the SQL placeholder (written with colon) with the local data:
+</p>
+<pre>int val = 7;<br>sql &lt;&lt; "insert into numbers(val) values(:val)", use(val);<br></pre>
+<p>In the above statement, the first "val" is a column name (assuming
+that
+there is appropriate table), the second "val" (with colon) is a
+placeholder and its name is ignored here, and the third "val" is a name
+of local variable.<br>
+To better understand the meaning of each "val" above, consider also: </p>
+<pre>int number = 7;<br>sql &lt;&lt; "insert into numbers(val) values(:blabla)", use(number);<br></pre>
+<p><b>Binding by position</b> </p>
+<p>If there is more output or input "holes" in the single statement, it
+is possible to use many <code>into</code> and <code>use</code>
+expressions, separated by commas, where each expression will be
+responsible for the consecutive "hole" in the statement: </p>
+<pre>string firstName = "John", lastName = "Smith";<br>int personId = 7;<br><br>sql &lt;&lt; "insert into person(id, firstname, lastname) values(:id, :fn, :ln)",<br>       use(personId), use(firstName), use(lastName);<br><br>sql &lt;&lt; "select firstname, lastname from person where id = :id",<br>       into(firstName), into(lastName), use(personId);<br></pre>
+<p>In the code above, the order of "holes" in the SQL statement and the
+order of <code>into</code> and <code>use</code> expression should
+match. </p>
+<p><b>Binding by name</b> </p>
+<p>The SQL placeholders that have their names (with colon) can be bound
+by name.<br>
+This allows to use different order: </p>
+<pre>string firstName = "John", lastName = "Smith";<br>int personId = 7;<br>sql &lt;&lt; "insert into person(id, firstname, lastname) values(:id, :fn, :ln)",<br>       use(firstName, "fn"), use(lastName, "ln"), use(personId, "id");<br></pre>
+<p>or bind the same local data to many "holes" at the same time: </p>
+<pre>string addr = "...";<br>sql &lt;&lt; "update person"<br>       " set mainaddress = :addr, contactaddress = :addr"<br>       " where id = 7",<br>       use(addr, "addr);<br></pre>
+<p><b>Types:</b> </p>
+<p>The following types are currently supported for use with <code>into</code>
+and <code>use</code> expressions: </p>
+<ul>
+  <li><code>char</code>, <code>short</code>, <code>int</code>, <code>unsigned
+long</code>, <code>double</code> (for numeric values)</li>
+  <li><code>char*</code>, <code>char[]</code>, <code>std::string</code>
+(for string values)</li>
+  <li><code>std::tm</code>, <code>std::time_t</code> (for datetime
+values)</li>
+  <li><code>SOCI::Statement</code> (for nested statements and PL/SQL
+cursors)</li>
+  <li><code>SOCI::BLOB</code> (for Binary Large OBjects)</li>
+  <li><code>SOCI::RowID</code> (for row identifiers)</li>
+</ul>
+<p>See the test code that accompanies the library to see how each of
+these types is used. </p>
+<p>The library can be extended to support other types (including
+user-defined classes). The extension points are the <code>IntoType&lt;T&gt;</code>
+and <code>UseType&lt;T&gt;</code>
+class templates, which specializations can be user-provided. These
+specializations need to implement the interface defined by,
+respectively, the <code>IntoTypeBase</code> and <code>UseTypeBase</code>
+classes.<br>
+Note that when specializing these template classes for handling your
+own types, you are free to choose the expected parameters for the
+classes' constructors. The template functions <code>into</code> and <code>use</code>
+support up to 5 parameters, which are just forwarded to the constructor
+of appropriate class. The only convention is that when the indicator
+variable is used (see below), it should appear in the second position.
+Please refer to the library source code to see how this is done for the
+standard types. </p>
+<h4><a name="indicators"></a>Indicators</h4>
+<p>In order to support null values and other conditions which are not
+real errors, the concept of <i>indicator</i> is provided.<br>
+For example, when the following SQL query is executed: </p>
+<pre>select name from person where id = 7<br></pre>
+<p>there are three possible outcomes: </p>
+<ol>
+  <li>there is a person with id = 7 and his name is returned</li>
+  <li>there is a person with id = 7, but he has no name (his name is
+null)</li>
+  <li>there is no such person</li>
+</ol>
+<p>Whereas the first alternative is easy, the other two are more
+complex. Moreover, they are not necessarily errors from the
+application's point of view and what's more interesting, they are <i>different</i>
+and the application may wish to detect which is the case.<br>
+The following example does this: </p>
+<pre>string name;<br>eIndicator ind;<br><br>sql &lt;&lt; "select name from person where id = 7", into(name, ind);<br><br>switch (ind)<br>{<br>case eOK:<br>    // the data was returned without problems<br>    break;<br>case eNoData:<br>    // no such person<br>    break;<br>case eNull:<br>    // there is a person, but he has no name (his name is null)<br>    break;<br>case eTruncated:<br>    // the name was returned only in part,<br>    // because the provided buffer was too short<br>    // (not possible with std::string, but possible with char* and char[])<br>    break;<br>}<br></pre>
+<p>The use of indicator variable is optional, but if it is not used and
+the result would be either <code>eNoData</code> or <code>eNull</code>,
+then the exception is thrown. This means that you should use indicator
+variables everywhere where the application logic (and database schema)
+allow "no such object" or "attribute not set" conditions. </p>
+<p>Indicator variables can be also used when binding input data, to
+control whether the data is to be used as provided, or explicitly
+overrided to be null: </p>
+<pre>int id = 7;<br>string name;<br>eIndicator ind = eNull;<br>sql &lt;&lt; "insert into person(id, name) values(:id, :name)",<br>       use(id), use(name, ind);<br></pre>
+<p>In the above example, the row is inserted with <code>name</code>
+attribute set to null. </p>
+<h4><a name="preparation"></a>Statement preparation and repeated
+execution</h4>
+<p>Consider the following examples: </p>
+<pre>// Example 1.<br>for (int i = 0; i != 100; ++i)<br>{<br>    sql &lt;&lt; "insert into numbers(value) values(" &lt;&lt; i &lt;&lt; ")";<br>}<br><br>// Example 2.<br>for (int i = 0; i != 100; ++i)<br>{<br>    sql &lt;&lt; "insert into numbers(value) values(:val)", use(i);<br>}<br></pre>
+<p>Both examples will populate the table <code>numbers</code> with the
+values from <code>0</code> to <code>99</code>.<br>
+The
+problem is that in both examples, not only the statement execution is
+repeated 100 times, but also the statement parsing and preparation.
+This means unnecessary overhead.<br>
+The following example uses the class <code>Statement</code>
+explicitly, by preparing the statement only once and repeating its
+execution with changing data (note the use of <code>prepare</code>
+member of <code>Session</code> class): </p>
+<pre>int i;<br>Statement st = (sql.prepare &lt;&lt;<br>                "insert into numbers(value) values(:val)",<br>                use(i));<br>for (i = 0; i != 100; ++i)<br>{<br>    st.execute(1);<br>}<br></pre>
+<p>The <code>1</code> parameter given to the <code>execute</code>
+method indicates the number of times the statement has to be executed.
+Here, it is executed <i>once</i> in each body of the loop. </p>
+<p>It is also possible to read all the numbers written in the above
+example: </p>
+<pre>int i;<br>Statement st = (sql.prepare &lt;&lt;<br>                "select value from numbers order by value",<br>                into(i));<br>st.execute();<br>while (st.fetch())<br>{<br>    cout &lt;&lt; i &lt;&lt; '\n';<br>}<br></pre>
+<p>In the above example, the <code>execute</code> method is called
+with the default parameter <code>0</code>. The following <code>fetch</code>
+calls perform the actual data retrieval and cursor traversal. The
+end-of-cursor condition is indicated by the <code>fetch</code>
+function returning <code>false</code>. </p>
+<h4><a name="transactions"></a>Transactions</h4>
+<p>The <code>Session</code> class provides two methods for transaction
+processing: <code>commit</code> and <code>rollback</code>.
+The transaction is implicitly started with the first statement that
+modifies data in the database. </p>
+<h4><a name="advanced"></a>Advanced stuff</h4>
+<p>If there is any need to use more advanced features of the underlying
+OCI library (special connection steps, attribute manipulation,
+call-back functions, etc.), it can be done by accessing the low-level
+OCI handles available as public (see rationale below) members of the <code>Session</code>
+and <code>Statement</code> classes. Please refer to the <code>soci.h</code>
+file to see exactly what handles are available. </p>
+<p> </p>
+<h4><b><a name="rationale"></a></b>Rationale for some design decisions</h4>
+<p>Since public data members are considered harmful amongst C++
+programmers, some explanation is in order to defend SOCI against
+anticipated criticism.
+The intent is to allow reading, writing and object modifications
+through the low-level OCI handles, to enable experienced programmers to
+reuse SOCI in most demanding situations. The usual approach would be to
+provide the public getter/setter method pairs for private handles.
+However, OCI handles are opaque pointers and are strong abstractions by
+themselves - this is what makes them different from data members of
+standard types (like <code>int</code> or <code>string</code>). The
+getter/setter pairs (or even single accessors returning non-const
+references) <i>were</i>
+considered in the library design, but abandoned due to the lack of any
+real benefits. The only argument for providing getter/setter
+abstractions would be to allow future replacements of low-level OCI
+handles with "something else", but the reality is that OCI handles
+exist in a specific family and that "something else" (like handles for
+database other than Oracle) would not map into those abstrations.
+Porting the SOCI library to support other databases would require to
+change not only low-level handles, but also the getter/setter pairs,
+which would then prove to be not really abstract. Uff...<br>
+Having said that, it has to be reiterated that public data members are
+generally bad. </p>
+<br>
+</body>
+</html>
