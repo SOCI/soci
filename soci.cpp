@@ -8,6 +8,8 @@
 //
 
 #include "soci.h"
+#include <limits>
+#include <cmath>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -230,19 +232,6 @@ void Session::cleanUp()
     if (envhp_) OCIHandleFree(envhp_, OCI_HTYPE_ENV);
 }
 
-// stock type specializations of TypeHolder<T>::value()
-template<> 
-double SOCI::TypeHolder<double>::value()
-{return *d_;}
-
-template<> 
-std::string SOCI::TypeHolder<std::string>::value()
-{return *s_;}
-
-template<> 
-std::tm SOCI::TypeHolder<std::tm>::value()
-{return *t_;}
-
 Statement::Statement(Session &s)
     : stmtp_(0), session_(s), row_(0)
 {
@@ -431,8 +420,9 @@ void Statement::define()
         intos_[i]->define(*this, definePosition);
 }
 
-//Map eDataTypes to stock types
-//TODO change stock types to Date, Numeric, etc.
+//Map eDataTypes to stock types for dynamic result set support
+namespace SOCI
+{
 template<> 
 void Statement::bindInto<eString>()
 {
@@ -440,9 +430,21 @@ void Statement::bindInto<eString>()
 }
 
 template<> 
-void Statement::bindInto<eNumeric>()
+void Statement::bindInto<eDouble>()
 {
     intoRow<double>();
+}
+
+template<>
+void Statement::bindInto<eInteger>()
+{
+  intoRow<int>();
+}
+
+template<>
+void Statement::bindInto<eUnsignedLong>()
+{
+    intoRow<unsigned long>();
 }
 
 template<> 
@@ -450,6 +452,7 @@ void Statement::bindInto<eDate>()
 {
     intoRow<std::tm>();
 }
+} //namespace SOCI
 
 void Statement::describe()
 {
@@ -534,7 +537,7 @@ void Statement::describe()
                          static_cast<ub4>(OCI_ATTR_SCALE), 
                          reinterpret_cast<OCIError*>(session_.errhp_));
         if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
-            
+
         // get the null allowed flag
         res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd), 
                          static_cast<ub4>(OCI_DTYPE_PARAM),
@@ -563,13 +566,35 @@ void Statement::describe()
                 props.setDataType(eString);
                 break;
             case SQLT_NUM:
-                bindInto<eNumeric>();
-                props.setDataType(eNumeric);
+                if (props.getScale() > 0)
+                {
+                    bindInto<eDouble>();
+                    props.setDataType(eDouble);
+                }
+                else if (pow(10, props.getPrecision()) < std::numeric_limits<int>::max())
+                {
+                    bindInto<eInteger>();
+                    props.setDataType(eInteger);
+                }
+                else
+                {
+                    bindInto<eUnsignedLong>();
+                    props.setDataType(eUnsignedLong);
+                }
                 break;
             case SQLT_DAT:
                 bindInto<eDate>();
                 props.setDataType(eDate);
                 break;
+            case SQLT_AFC:
+                bindInto<eString>();
+                props.setDataType(eString);
+                break;
+            default:
+                std::ostringstream msg;
+                msg << "db column type " << dtype 
+                    <<" not supported for dynamic selects"<<std::endl;
+                throw SOCIError(msg.str());
         }
         row_->addProperties(props);
     }
@@ -788,6 +813,51 @@ void StandardUseType::cleanUp()
     }
 }
 
+// into and use types for char
+
+void IntoType<char>::define(Statement &st, int &position)
+{
+    st_ = &st;
+
+    sword res = OCIDefineByPos(st.stmtp_, &defnp_, st.session_.errhp_,
+        position++, &c_, sizeof(char), SQLT_AFC,
+        &indOCIHolder_, 0, &rcode_, OCI_DEFAULT);
+    if (res != OCI_SUCCESS)
+    {
+        throwSOCIError(res, st.session_.errhp_);
+    }
+}
+
+void UseType<char>::bind(Statement &st, int &position)
+{
+    st_ = &st;
+
+    sword res;
+
+    if (name_.empty())
+    {
+        // no name provided, bind by position
+        res = OCIBindByPos(st.stmtp_, &bindp_, st.session_.errhp_,
+            position++, &c_, sizeof(char), SQLT_AFC,
+            &indOCIHolder_, 0, &rcode_, 0, 0, OCI_DEFAULT);
+    }
+    else
+    {
+        // bind by name
+        res = OCIBindByName(st.stmtp_, &bindp_, st.session_.errhp_,
+            reinterpret_cast<text*>(const_cast<char*>(name_.c_str())),
+            static_cast<sb4>(name_.size()),
+            &c_, sizeof(char), SQLT_AFC,
+            &indOCIHolder_, 0, &rcode_, 0, 0, OCI_DEFAULT);
+    }
+
+    if (res != OCI_SUCCESS)
+    {
+        throwSOCIError(res, st.session_.errhp_);
+    }
+}
+
+
 // into and use types for unsigned long
 
 void IntoType<unsigned long>::define(Statement &st, int &position)
@@ -933,7 +1003,7 @@ void IntoType<std::string>::define(Statement &st, int &position)
 
     sword res = OCIDefineByPos(st.stmtp_, &defnp_, st.session_.errhp_,
         position++, buf_, bufSize, SQLT_STR,
-        &indOCIHolder_, 0, &rcode_, OCI_DEFAULT);
+                               &indOCIHolder_, 0, &rcode_, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
         throwSOCIError(res, st.session_.errhp_);
@@ -967,7 +1037,7 @@ void UseType<std::string>::bind(Statement &st, int &position)
     {
         // no name provided, bind by position
         res = OCIBindByPos(st.stmtp_, &bindp_, st.session_.errhp_,
-            position++, buf_, bufSize, SQLT_STR,
+                           position++, buf_, bufSize, SQLT_STR,
             &indOCIHolder_, 0, &rcode_, 0, 0, OCI_DEFAULT);
     }
     else
@@ -1026,11 +1096,12 @@ void IntoType<std::tm>::define(Statement &st, int &position)
 
 void IntoType<std::tm>::postFetch(bool gotData, bool calledFromFetch)
 {
-    if (gotData)
+  if (gotData)
     {
         tm_.tm_isdst = -1;
-        tm_.tm_year = (buf_[0] - 100) * 100 + buf_[1] - 100;
-        tm_.tm_mon = buf_[2];
+
+        tm_.tm_year = (buf_[0] - 100) * 100 + buf_[1] - 2000;
+        tm_.tm_mon = buf_[2] - 1;
         tm_.tm_mday = buf_[3];
         tm_.tm_hour = buf_[4] - 1;
         tm_.tm_min = buf_[5] - 1;
@@ -1074,9 +1145,9 @@ void UseType<std::tm>::preUse()
 {
     StandardUseType::preUse();
 
-    buf_[0] = static_cast<ub1>(100 + tm_.tm_year / 100);
+    buf_[0] = static_cast<ub1>(100 + (1900 + tm_.tm_year) / 100);
     buf_[1] = static_cast<ub1>(100 + tm_.tm_year % 100);
-    buf_[2] = static_cast<ub1>(tm_.tm_mon);
+    buf_[2] = static_cast<ub1>(tm_.tm_mon + 1);
     buf_[3] = static_cast<ub1>(tm_.tm_mday);
     buf_[4] = static_cast<ub1>(tm_.tm_hour + 1);
     buf_[5] = static_cast<ub1>(tm_.tm_min + 1);
@@ -1086,8 +1157,8 @@ void UseType<std::tm>::preUse()
 void UseType<std::tm>::postUse()
 {
     tm_.tm_isdst = -1;
-    tm_.tm_year = (buf_[0] - 100) * 100 + buf_[1] - 100;
-    tm_.tm_mon = buf_[2];
+    tm_.tm_year = (buf_[0] - 100) * 100 + buf_[1] - 2000;
+    tm_.tm_mon = buf_[2] - 1;
     tm_.tm_mday = buf_[3];
     tm_.tm_hour = buf_[4] - 1;
     tm_.tm_min = buf_[5] - 1;
