@@ -411,6 +411,28 @@ bool Statement::fetch()
     return gotData;
 }
 
+//Statement::Statement(PrepareTempType const &prep)
+//    : stmtp_(0), session_(*prep.getPrepareInfo()->session_)
+
+Procedure::Procedure(PrepareTempType const &prep)
+    : Statement(*prep.getPrepareInfo()->session_)
+{
+    stmtp_ = 0;
+    RefCountedPrepareInfo *prepInfo = prep.getPrepareInfo();
+
+    // take all bind/define info
+    intos_.swap(prepInfo->intos_);
+    uses_.swap(prepInfo->uses_);
+
+    // allocate handle
+    alloc();
+
+    // prepare the statement
+    prepare("begin " + prepInfo->getQuery() + "; end;");
+
+    defineAndBind();
+}
+
 RefCountedStatement::~RefCountedStatement()
 {
     try

@@ -465,6 +465,39 @@ void test9()
     std::cout << "test 9 passed" << std::endl;
 }
 
+//Stored Procedures
+void test10()
+{
+    {
+        Session sql(serviceName, userName, password);
+        sql.once <<
+            "create or replace procedure echo(output out varchar2,"
+            "input in varchar2) as "
+            "begin output := input; end;";
+
+        std::string in("my message");
+        std::string out;
+        Statement st = (sql.prepare <<"begin echo(:output, :input); end;", 
+                                       use(out, "output"), 
+                                       use(in, "input"));
+        st.execute(1);
+        assert(out == in);
+
+        // explicit procedure syntax
+        {
+            std::string in("my message2");
+            std::string out;
+            Procedure proc = (sql.prepare << "echo(:output, :input)", 
+                                            use(out, "output"),
+                                            use(in, "input"));
+            proc.execute(1);
+            assert(out == in);
+        }
+    }
+    std::cout << "test 10 passed" << std::endl;
+    
+}
+
 int main(int argc, char** argv)
 {
     if (argc == 4)
@@ -490,6 +523,7 @@ int main(int argc, char** argv)
         test7();
         test8();
         test9();
+        test10();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }

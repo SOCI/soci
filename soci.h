@@ -265,9 +265,18 @@ public:
 
     Session &session_;
 
-private:
+ protected:
     std::vector<IntoTypeBase*> intos_;
     std::vector<UseTypeBase*> uses_;
+};
+
+class Procedure : public Statement
+{
+public:
+    Procedure(Session &s)
+        : Statement(s){}
+    Procedure(details::PrepareTempType const &prep);
+
 };
 
 namespace details {
@@ -321,6 +330,7 @@ public:
 
 private:
     friend class Statement;
+    friend class Procedure;
 
     Session *session_;
 
