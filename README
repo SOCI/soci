@@ -6,20 +6,19 @@ Copyright (C) 2004, 2005 Maciej Sobczak, Steve Hutton
 
 You should see the following files here:
 
-- README         - This file.
-- LICENSE        - Explanation of the license terms.
-- CHANGES        - The description of changes.
+- README    - This file.
+- LICENSE   - Explanation of the license terms.
+- CHANGES   - The description of changes.
 
-- soci.h         - This is the actual SOCI library,
-  soci.cpp         for use in your own projects.
+- soci.h    - This is the actual SOCI library,
+  soci.cpp    for use in your own projects.
 
-- compiling.txt  - Short description of the steps needed to compile programs
-                   that use the SOCI library.
+- doc.html  - Short documentation for the library.
 
-- test.cpp       - The test program - use it for regression testing if you
-                   modify the library.
-- Makefile       - Example makefile for compiling the test program
-                   (taken from one of ours machines).
+- test.cpp  - The test program - use it for regression testing if you
+              modify the library.
+- Makefile  - Example makefile for compiling the test program
+              (taken from one of our machines).
 
 
 Anyway - have fun! :-)
