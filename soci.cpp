@@ -439,7 +439,7 @@ void Statement::bindInto<eDouble>()
 template<>
 void Statement::bindInto<eInteger>()
 {
-  intoRow<int>();
+    intoRow<int>();
 }
 
 template<>
