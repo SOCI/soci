@@ -313,14 +313,14 @@ public:
     int getSize() const { return size_; }
     int getScale() const { return scale_; }
     int getPrecision() const { return precision_; }
-    int getNullOK() const { return nullok_; }
+    bool getNullOK() const { return nullok_; }
     
     void setName(const std::string& name) { name_ = name; }
     void setDataType(eDataType dataType) { dataType_ = dataType; }
     void setSize(int size) { size_ = size; }
     void setScale(int scale) { scale_ = scale; }
     void setPrecision(int precision) { precision_ = precision; }
-    void setNullOK(int nullok) { nullok_ = nullok; }
+    void setNullOK(bool nullok) { nullok_ = nullok; }
 
 private:
     std::string name_;
@@ -328,7 +328,7 @@ private:
     int size_;
     int scale_;
     int precision_;
-    int nullok_;
+    bool nullok_;
 };
 
 class Row
@@ -340,7 +340,7 @@ public:
         columns_.push_back(cp);
         index_[cp.getName()] = columns_.size() - 1;
     }
-    int size() const { return holders_.size(); }
+    size_t size() const { return holders_.size(); }
     const eIndicator indicator(int pos) const { return *indicators_.at(pos); }
 
     template<typename T> 
@@ -350,11 +350,11 @@ public:
         indicators_.push_back(ind);
     }
 
-    const ColumnProperties& getProperties (int pos) const
+    const ColumnProperties& getProperties (size_t pos) const
     { return columns_.at(pos); }
     const ColumnProperties& getProperties (const std::string& name) const
     {
-        std::map<std::string, int>::const_iterator it = index_.find(name);
+        std::map<std::string, size_t>::const_iterator it = index_.find(name);
         if (it == index_.end())
         {
             std::ostringstream msg;
@@ -365,7 +365,7 @@ public:
     }
 
     template<typename T> 
-    T get (int pos) const
+    T get (size_t pos) const
     {
         typedef typename TypeConversion<T>::base_type BASE_TYPE;
         BASE_TYPE baseVal = holders_.at(pos)->get<BASE_TYPE>();
@@ -375,7 +375,7 @@ public:
     template<typename T>
     T get (const std::string& name) const
     {
-        std::map<std::string, int>::const_iterator it = index_.find(name);
+        std::map<std::string, size_t>::const_iterator it = index_.find(name);
         if (it == index_.end())
         {
             std::ostringstream msg;
@@ -402,7 +402,7 @@ private:
     std::vector<ColumnProperties> columns_;
     std::vector<Holder*> holders_;
     std::vector<eIndicator*> indicators_;
-    std::map<std::string, int> index_;
+    std::map<std::string, size_t> index_;
 };
 
 class Statement

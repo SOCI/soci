@@ -559,7 +559,7 @@ void Statement::describe()
         props.setSize(dbsize);
         props.setPrecision(prec);
         props.setScale(scale);
-        props.setNullOK(nullok);
+        props.setNullOK(nullok != 0);
 
         switch(dtype)
         {
@@ -1436,7 +1436,7 @@ void UseType<RowID>::bind(Statement &st, int &position)
 
 // Support dynamic selecting into a Row object
 
-void IntoType<Row>::define(Statement &st, int &position)
+void IntoType<Row>::define(Statement &st, int &)
 {
     st.setRow(&row_);
     st.describe();

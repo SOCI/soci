@@ -520,7 +520,7 @@ void test11()
         {
             sql << "drop table test11";
         }
-        catch(const SOCIError& e) {} //ignore error if table doesn't exist
+        catch(const SOCIError&) {} //ignore error if table doesn't exist
 
         sql << "create table test11(num_float numeric(7,2) NOT NULL,"
             << " name varchar2(20), when date, large numeric(10,0), "
@@ -613,7 +613,7 @@ void test11()
 
             // verify exception thrown on invalid get<>
             bool cought = false;
-            try{ r.get<std::string>(0); }catch(std::bad_cast& e)
+            try{ r.get<std::string>(0); }catch(std::bad_cast&)
             {
               cought = true;
             }
@@ -654,7 +654,7 @@ void test12()
         {
             sql << "drop table test12";
         }
-        catch(const SOCIError& e) {} // ignore error if table doesn't exist
+        catch(const SOCIError&) {} // ignore error if table doesn't exist
         sql << "create table test12(name varchar2(20))";
 
         StringHolder in("my string");
@@ -677,7 +677,7 @@ void test12()
 void test13()
 {
     Session sql(serviceName, userName, password);
-    try { sql << "drop table test13"; } catch(SOCIError& e) {} // ignore 
+    try { sql << "drop table test13"; } catch(SOCIError&) {} // ignore 
 
     sql << "create table test13 ("
         "id number(10) not null,"
@@ -722,7 +722,7 @@ void test14()
 {
     Session sql(serviceName, userName, password);
     try { sql << "drop table test14"; }
-    catch(const SOCIError& e) {} // ignore error
+    catch(const SOCIError&) {} // ignore error
 
     sql << "create table test14(chr1 char(1))";
 
