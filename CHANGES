@@ -1,0 +1,13 @@
+This file contains the history of changes in the SOCI library.
+
+---
+The version 1.1.0 differs from 1.0.1 in the following ways
+(in the order of increasing importance):
+
+- CHANGES, LICENSE and README files were added.
+
+- Explicit support for calling stored procedures was added.
+
+- Dynamic row recognition (type discovery) was added.
+
+- Support for user-defined data types was added.
