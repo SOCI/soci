@@ -39,6 +39,7 @@ ported to support other databases, this page will be redesigned.<br>
 <a href="doc.html#transactions">Transactions</a><br>
 <a href="doc.html#advanced">Advanced stuff</a><br>
 <a href="doc.html#rationale">Rationale for some design decisions</a><br>
+<a href="doc.html#compiling">Compiling</a><br>
 <hr style="width: 100%; height: 2px;">
 <h2><a name="files"></a>Files</h2>
 <p>The whole SOCI library consists of only two files: <code>soci.h</code>
@@ -410,7 +411,7 @@ and <code>Statement</code> classes. Please refer to the <code>soci.h</code>
 file to see exactly what handles are available. </p>
 <p> </p>
 
-<h2><b><a name="rationale"></a></b>Rationale for some design decisions</h2>
+<h2><a name="rationale"></a>Rationale for some design decisions</h2>
 <p>Since public data members are considered harmful in the C++ community, some explanation is in order to defend SOCI against
 anticipated criticism.
 The intent is to allow reading, writing and object modifications
@@ -433,6 +434,39 @@ change not only low-level handles, but also the getter/setter pairs,
 which would then prove to be not really abstract. Uff...<br>
 Having said that, it has to be reiterated that public data members are
 generally bad. </p>
-<br>
+
+<h2><a name="compiling"></a>Compiling</h2>
+
+<p>This section explains how to compile your own programs with the SOCI library.</p>
+<h3>On MS Windows, in MSVC++7</h3>
+<p>In Project Properties:</p>
+<ol>
+      <li>In C/C++ - General:<br>
+        Add the Additional Include Directory where the <code>oci.h</code> file is located
+        (it can be something like <code>C:\Oracle\Ora81\oci\include</code>).</li>
+      <li>In Linker - General:<br>
+        Add the Additional Library Directory where the <code>oci.lib</code> file is located
+        (it can be something like <code>C:\Oracle\Ora81\oci\lib\msvc</code>).</li>
+      <li>In Linker - Input:<br>
+        Add the Additional Dependency: <code>oci.lib</code>.</li>
+</ol>
+<p>When executing programs, the <code>oci.dll</code> file should be located in the path
+where it can be found. Be careful when using many different Oracle tools,
+because they may overwrite each other's <code>oci.dll</code> versions.
+The "correct" <code>oci.dll</code> for running the program compiled as above is located
+somewhere near the <code>oci.lib</code>, for example in <code>C:\Oracle\Ora81\BIN</code>.
+</p>
+
+<h3>On Unix-like systems</h3>
+<p>The OCI library is usually inside the <code>libclntsh.so</code> or <code>libclntsh.sl</code> library
+(depending on the actual system), so you have to add the <code>-lclntsh</code> option
+for linking and <code>-L</code> option to provide the path to the linker.
+Of course, the <code>-I</code> compiler option will be needed to provide the location
+of the <code>oci.h</code> header file.
+Look inside the <code>$ORACLE_HOME</code> directory to find where these files are located
+- it may depend both on the Unix flavour and the Oracle version installed,
+but likely locations are <code>$ORACLE_HOME/rdbms/demo</code> for <code>oci.h</code> and <code>$ORACLE_HOME/lib</code> for <code>libclntsh.so</code>.
+</p>
+
 </body>
 </html>
