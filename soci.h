@@ -1,15 +1,14 @@
 //
 // Copyright (C) 2004, Maciej Sobczak
-//
 // Permission to copy, use, modify, sell and distribute this software
 // is granted provided this copyright notice appears in all copies.
 // This software is provided "as is" without express or implied
 // warranty, and with no claim as to its suitability for any purpose.
 //
-
 #ifndef SOCI_H_INCLUDED
 #define SOCI_H_INCLUDED
 
+#include <map>
 #include <string>
 #include <vector>
 #include <sstream>
@@ -215,7 +214,7 @@ details::UseTypePtr use(T &t, eIndicator &ind, T1 p1, T2 p2)
 template <typename T, typename T1, typename T2, typename T3, typename T4>
 details::UseTypePtr use(T &t, T1 p1, T2 p2, T3 p3, T4 p4)
 {
-    return details::UseTypePtr(new UseType<T>(t, p1, p2, p3, p4));
+  return details::UseTypePtr(new UseType<T>(t, p1, p2, p3, p4));
 }
 
 template <typename T, typename T1, typename T2, typename T3>
@@ -243,7 +242,8 @@ class PrepareTempType;
 
 }
 
-// default TypeConversion, acts as pass through
+// default TypeConversion, acts as pass through for Row::get()
+// when no actual conversion is needed.
 template<typename T>
 class TypeConversion
 {
@@ -262,10 +262,11 @@ public:
     static std::time_t from(std::tm& t){return mktime(&t);}
     static std::tm to(std::time_t& t){return *localtime(&t);}
 };
-//TODO provide more conversions from stock types
 
-//Each stock type needs a TypeHolder specialization
+// Base class Holder + derived class TypeHolder for storing type data
+// instances in a container of Holder objects
 template <typename T> class TypeHolder;
+
 class Holder
 {
  public:
@@ -283,41 +284,20 @@ class Holder
     template<typename T> T value();
 };
 
-template<> 
-class TypeHolder<double> : public Holder
+template <typename T>
+class TypeHolder : public Holder
 {
  public:
-   TypeHolder(double* d) : d_(d) {}
-   ~TypeHolder(){delete d_;}
-
-   template<typename T> T value();
- private:
-   double* d_;
-};
-
-class TypeHolder<std::string> : public Holder
-{
-public:
-   TypeHolder(std::string* s) : s_(s) {}
-   ~TypeHolder(){delete s_;}
-
-   template<typename T> T value();
-private:
-   std::string* s_;
-};
-
-class TypeHolder<std::tm> : public Holder
-{
-public:
-   TypeHolder(std::tm* t) : t_(t) {}
+   TypeHolder(T* t) : t_(t) {}
    ~TypeHolder(){delete t_;}
 
-   template<typename T> T value();
-private:
-   std::tm* t_;
+   template<typename TVAL> TVAL value(){return *t_;}
+ private:
+   T* t_;
 };
 
-enum eDataType{eString, eNumeric, eDate}; //TODO BLOB, Cursor, etc.
+enum eDataType{eString, eDate, eDouble, eInteger, 
+               eUnsignedLong};
 
 class ColumnProperties
 {
@@ -352,7 +332,11 @@ class Row
 {
  public:
 
-    void addProperties(ColumnProperties cp){columns_.push_back(cp);}
+    void addProperties(const ColumnProperties& cp)
+    {
+      columns_.push_back(cp);
+      index_[cp.getName()] = columns_.size() - 1;
+    }
     int size() const { return holders_.size(); }
     const eIndicator indicator(int pos) const {return *indicators_.at(pos);}
 
@@ -363,14 +347,38 @@ class Row
         indicators_.push_back(ind);
     }
 
-    const ColumnProperties* getProperties (int pos) const{return &columns_.at(pos);}
-    
+    const ColumnProperties& getProperties (int pos) const{return columns_.at(pos);}
+    const ColumnProperties& getProperties (const std::string& name) const
+    {
+        std::map<std::string, int>::const_iterator it = index_.find(name);
+        if (it == index_.end())
+        {
+            std::ostringstream msg;
+            msg << "Column not found: "<<name;
+            throw SOCIError(msg.str());
+        }
+        return getProperties(it->second);
+    }
+
     template<typename T> 
-    inline T get (int pos) const
+    T get (int pos) const
     {
         typedef typename TypeConversion<T>::base_type BASE_TYPE;
         BASE_TYPE baseVal = holders_.at(pos)->get<BASE_TYPE>();
         return TypeConversion<T>::from(baseVal);
+    }
+
+    template<typename T>
+    T get (const std::string& name) const
+    {
+        std::map<std::string, int>::const_iterator it = index_.find(name);
+        if (it == index_.end())
+        {
+            std::ostringstream msg;
+            msg << "Column not found: "<<name;
+            throw SOCIError(msg.str());
+        }
+        return get<T>(it->second);
     }
     
     Row(){}
@@ -388,6 +396,7 @@ class Row
     std::vector<ColumnProperties> columns_;
     std::vector<Holder*> holders_;
     std::vector<eIndicator*> indicators_;
+    std::map<std::string, int> index_;
 };
 
 class Statement
@@ -694,7 +703,7 @@ public:
 
         res = OCIDefineByPos(st.stmtp_, &defnp_, st.session_.errhp_,
             position++, &t_, static_cast<sb4>(sizeof(T)), SQLT_INT,
-            &indOCIHolder_, 0, &rcode_, OCI_DEFAULT);
+                             &indOCIHolder_, 0, &rcode_, OCI_DEFAULT);
         if (res != OCI_SUCCESS)
         {
             throwSOCIError(res, st.session_.errhp_);
@@ -720,7 +729,7 @@ public:
         st_ = &st;
 
         sword res;
-
+        
         if (name_.empty())
         {
             // no name provided, bind by position
@@ -748,26 +757,6 @@ private:
     T &t_;
 };
 
-// into and use types for char
-
-template <>
-class IntoType<char> : public IntegerIntoType<char>
-{
-public:
-    IntoType(char &c) : IntegerIntoType<char>(c) {}
-    IntoType(char &c, eIndicator &ind) : IntegerIntoType<char>(c, ind) {}
-};
-
-template <>
-class UseType<char> : public IntegerUseType<char>
-{
-public:
-    UseType(char &c, std::string const &name = std::string())
-        : IntegerUseType<char>(c, name) {}
-    UseType(char &c, eIndicator &ind,
-        std::string const &name = std::string())
-        : IntegerUseType<char>(c, ind, name) {}
-};
 
 // into and use types for short
 
@@ -810,6 +799,39 @@ public:
         std::string const &name = std::string())
         : IntegerUseType<int>(i, ind, name) {}
 };
+
+// into and use types for char
+
+template <>
+class IntoType<char> : public StandardIntoType
+{
+public:
+    IntoType(char &c) : c_(c) {}
+    IntoType(char &c, eIndicator &ind) 
+      : StandardIntoType(ind), c_(c){}
+
+    virtual void define(Statement &st, int &position);
+
+ private:
+    char& c_;
+};
+
+template <>
+class UseType<char> : public StandardUseType
+{
+public:
+    UseType(char &c, std::string const &name = std::string())
+      : StandardUseType(name), c_(c) {}
+    UseType(char &c, eIndicator &ind,
+        std::string const &name = std::string())
+        : StandardUseType(ind, name), c_(c){}
+
+    virtual void bind(Statement &st, int &position);
+
+ private:
+    char& c_;
+};
+
 
 // into and use types for unsigned long
 
@@ -936,7 +958,7 @@ template <>
 class IntoType<std::string> : public StandardIntoType
 {
 public:
-    IntoType(std::string &s) : s_(s), buf_(NULL) {}
+  IntoType(std::string &s) : s_(s), buf_(NULL) {}
     IntoType(std::string &s, eIndicator &ind)
         : StandardIntoType(ind), s_(s), buf_(NULL) {}
 
@@ -1192,6 +1214,7 @@ public:
 private:
     RowID &rid_;
 };
+
 
 
 } // namespace SOCI
