@@ -21,38 +21,36 @@ The following documentation and tutorial apply to the original SOCI
 library, which supports only Oracle databases. Once the library will be
 ported to support other databases, this page will be redesigned.<br>
 <br>
-<a href="file:///usr/home/maciej/www/sourceforge/soci/doc.html#files">Files</a><br>
-<a href="file:///usr/home/maciej/www/sourceforge/soci/doc.html#errors">Errors</a><br>
-<a
- href="file:///usr/home/maciej/www/sourceforge/soci/doc.html#connecting">Connecting
-to the database</a><br>
-<a
- href="file:///usr/home/maciej/www/sourceforge/soci/doc.html#onetimestmts">One-time
-statements</a><br>
-<a
- href="file:///usr/home/maciej/www/sourceforge/soci/doc.html#bindinglocal">Binding
-local data</a><br>
-<a
- href="file:///usr/home/maciej/www/sourceforge/soci/doc.html#indicators">Indicators</a><br>
-<a
- href="file:///usr/home/maciej/www/sourceforge/soci/doc.html#preparation">Statement
-preparation and repeated execution</a><br>
-<a
- href="file:///usr/home/maciej/www/sourceforge/soci/doc.html#transactions">Transactions</a><br>
-<a href="file:///usr/home/maciej/www/sourceforge/soci/doc.html#advanced">Advanced
-stuff</a><br>
+<a href="doc.html#files">Files</a><br>
+<a href="doc.html#errors">Errors</a><br>
+<a href="doc.html#connecting">Connecting to the database</a><br>
+<a href="doc.html#onetimestmts">One-time statements</a><br>
+<a href="doc.html#bindinglocal">Binding local data</a><br>
+&nbsp;&nbsp;&nbsp;<a href="doc.html#bindout">Binding output data</a><br>
+&nbsp;&nbsp;&nbsp;<a href="doc.html#bindin">Binding input data</a><br>
+&nbsp;&nbsp;&nbsp;<a href="doc.html#bindpos">Binding by position</a><br>
+&nbsp;&nbsp;&nbsp;<a href="doc.html#bindname">Binding by name</a><br>
+&nbsp;&nbsp;&nbsp;<a href="doc.html#types">Types</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="doc.html#static">Static type binding</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="doc.html#dynamic">Dynamic resultset binding</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="doc.html#extending">Extending with user-provided datatypes</a><br>
+<a href="doc.html#indicators">Indicators</a><br>
+<a href="doc.html#preparation">Statement preparation and repeated execution</a><br>
+<a href="doc.html#transactions">Transactions</a><br>
+<a href="doc.html#advanced">Advanced stuff</a><br>
+<a href="doc.html#rationale">Rationale for some design decisions</a><br>
 <hr style="width: 100%; height: 2px;">
-<h4><a name="files"></a>Files</h4>
+<h2><a name="files"></a>Files</h2>
 <p>The whole SOCI library consists of only two files: <code>soci.h</code>
 and <code>soci.cpp</code>. The first needs to be <code>#include</code>d
 in your own code and the second should be just added to the whole
 project for compilation and linking. There was no reason to make a
 precompiled library out of this single file. </p>
 <p>Everything in SOCI is declared in the namespace <code>SOCI</code>.
-All the following examples assume that your code begins with something
+All code examples presented in this documentation assume that your code begins with something
 like: </p>
 <pre>#include "soci.h"<br>// other includes<br><br>using namespace SOCI;<br><br>// ...<br></pre>
-<h4><a name="errors"></a>Errors</h4>
+<h2><a name="errors"></a>Errors</h2>
 <p>All DB-related errors manifest themselves as exceptions of type <code>SOCIError</code>,
 which is derived from <code>std::runtime_error</code>. This allows to
 handle Oracle errors within the standard exception framework: </p>
@@ -62,7 +60,7 @@ member, which contains the Oracle error code. Of course, in order to
 access this code you have to <code>catch</code> the exception as <code>SOCIError</code>:
 </p>
 <pre>int main()<br>{<br>    try<br>    {<br>        // regular code<br>    }<br>    catch (SOCIError const &amp;e)<br>    {<br>        cerr &lt;&lt; "Oracle error: " &lt;&lt; e.errNum_<br>             &lt;&lt; " " &lt;&lt; e.what() &lt;&lt; endl;<br>    }<br>    catch (exception const &amp;e)<br>    {<br>        cerr &lt;&lt; "Some other error: " &lt;&lt; e.what() &lt;&lt; endl;<br>    }<br>}<br></pre>
-<h4><a name="connecting"></a>Connecting to the database</h4>
+<h2><a name="connecting"></a>Connecting to the database</h2>
 <p>The class <code>Session</code> encapsulates the database connection
 and other OCI-related details, which are common to all the statements
 that will be later executed. Its constructor expects three string
@@ -72,7 +70,7 @@ parameters, which are service name, user name and password: </p>
 exception.
 It is possible to have many active <code>Session</code>s at the same
 time. </p>
-<h4><a name="onetimestmts"></a>One-time statements</h4>
+<h2><a name="onetimestmts"></a>One-time statements</h2>
 <p>In many cases, the SQL query is intended to be executed only once,
 which means that statement parsing and execution can go together.
 The <code>Session</code> class provides a special <code>once</code>
@@ -87,18 +85,18 @@ statement text can be composed of many parts, involving anything that
 is <i>streamable</i> (including custom classes, if they have
 appropriate <code>operator&lt;&lt;</code>): </p>
 <pre>string tableName = "person";<br>sql &lt;&lt; "drop table " &lt;&lt; tableName;<br></pre>
-<h4><a name="bindinglocal"></a>Binding local data</h4>
+<h2><a name="bindinglocal"></a>Binding local data</h2>
 <p><b>Note:</b><br>
 The Oracle documentation uses two terms: <i>defining</i> (for
 instructing the library where the <i>output</i> data should go) and <i>binding</i>
 (for the <i>input</i> data and <i>input/output</i> PL/SQL
 parameters). For the sake of simplicity, SOCI uses the term <i>binding</i>
 for both of these. </p>
-<p><b>Binding output data:</b> </p>
+<h3><a name="bindout"></a>Binding output data:</h3>
 <p>The <code>into</code> expression is used to add binding info to the
 statement: </p>
 <pre>int count;<br>sql &lt;&lt; "select count(*) from person", into(count);<br><br>string name;<br>sql &lt;&lt; "select name from person where id = 7", into(name);<br></pre>
-<p><b>Binding input data:</b> </p>
+<h3><a name="bindin"</a>Binding input data:</h3>
 <p>The <code>use</code> expression is used (no pun intended) to
 associate the SQL placeholder (written with colon) with the local data:
 </p>
@@ -110,7 +108,7 @@ placeholder and its name is ignored here, and the third "val" is a name
 of local variable.<br>
 To better understand the meaning of each "val" above, consider also: </p>
 <pre>int number = 7;<br>sql &lt;&lt; "insert into numbers(val) values(:blabla)", use(number);<br></pre>
-<p><b>Binding by position</b> </p>
+<h3><a name="bindpos"></a>Binding by position</h3>
 <p>If there is more output or input "holes" in the single statement, it
 is possible to use many <code>into</code> and <code>use</code>
 expressions, separated by commas, where each expression will be
@@ -119,14 +117,16 @@ responsible for the consecutive "hole" in the statement: </p>
 <p>In the code above, the order of "holes" in the SQL statement and the
 order of <code>into</code> and <code>use</code> expression should
 match. </p>
-<p><b>Binding by name</b> </p>
+<h3><a name="bindname"></a>Binding by name</h3>
 <p>The SQL placeholders that have their names (with colon) can be bound
 by name.<br>
 This allows to use different order: </p>
 <pre>string firstName = "John", lastName = "Smith";<br>int personId = 7;<br>sql &lt;&lt; "insert into person(id, firstname, lastname) values(:id, :fn, :ln)",<br>       use(firstName, "fn"), use(lastName, "ln"), use(personId, "id");<br></pre>
 <p>or bind the same local data to many "holes" at the same time: </p>
 <pre>string addr = "...";<br>sql &lt;&lt; "update person"<br>       " set mainaddress = :addr, contactaddress = :addr"<br>       " where id = 7",<br>       use(addr, "addr);<br></pre>
-<p><b>Types:</b> </p>
+<h3><a name="types"></a>Types:</h3>
+<h4><a name="static"></a>Static type binding</h4>
+<p>The static binding for types is most useful when the types used in the database are known at compile time - this was already presented with the help of <code>into</code> and <code>use</code> functions.</p>
 <p>The following types are currently supported for use with <code>into</code>
 and <code>use</code> expressions: </p>
 <ul>
@@ -141,10 +141,189 @@ cursors)</li>
   <li><code>SOCI::BLOB</code> (for Binary Large OBjects)</li>
   <li><code>SOCI::RowID</code> (for row identifiers)</li>
 </ul>
+
 <p>See the test code that accompanies the library to see how each of
 these types is used. </p>
-<p>The library can be extended to support other types (including
-user-defined classes). The extension points are the <code>IntoType&lt;T&gt;</code>
+
+<h4><a name="dynamic"></a>Dynamic resultset binding</h4>
+<p>For certain applications it is desirable to be able to select data from arbitrarily
+structured tables (e.g. via "<code>select * </code>") and format the resulting data based upon its type.
+SOCI supports this through the <code>SOCI::Row</code> and <code>SOCI::ColumnProperties</code> classes.</p>
+<p>
+Data is selected into a <code>Row</code> object, which holds <code>ColumnProperties</code> objects describing
+the type of data contained in each column.  Once the data type for each column is known,
+the data can be formatted appropriately.
+</p>
+<p>
+For example, the code below creates an xml document from a selected row of data from an arbitrary table:
+</p>
+<pre>
+Session sql("db1", "scott", "tiger");
+  
+sql &lt;&lt; "create table ex2(num NUMBER, str VARCHAR2(20), dt DATE)";
+
+int num_in = 123;
+std::string str_in("my name");
+std::time_t dt_in = time(0);
+
+sql &lt;&lt; "insert into ex2 values(:num1, :str1, :dt1)",
+    use(num_in), use(str_in), use(dt_in);
+    
+Row r;
+sql &lt;&lt; "select * from ex2", into(r);
+  
+std::ostringstream doc;
+doc &lt;&lt; "&lt;row&gt;" &lt;&lt; std::endl;
+for(int i=0; i&lt;r.size(); ++i)
+{
+    const ColumnProperties&amp; props = r.getProperties(i);
+    doc &lt;&lt; '&lt;' &lt;&lt; props.getName() &lt;&lt; '&gt;';
+    switch(props.getDataType())
+    {
+    case eString:
+        doc &lt;&lt; r.get&lt;std::string&gt;(i);
+        break;
+    case eDouble:
+        doc &lt;&lt; r.get&lt;double&gt;(i);
+        break;
+    case eInteger:
+        doc &lt;&lt; r.get&lt;int&gt;(i);
+        break;
+    case eUnsignedLong:
+        doc &lt;&lt; r.get&lt;unsigned long&gt;(i);
+        break;
+    case eDate:
+        std::tm when = r.get&lt;std::tm&gt;(i);
+        doc &lt;&lt; asctime(&amp;when);
+        break;
+    }
+    doc &lt;&lt; "&lt;/" &lt;&lt; props.getName() &lt;&lt; '&gt;' &lt;&lt; std::endl;  
+}
+doc &lt;&lt; "&lt;/row&gt;";
+</pre>
+
+<p>
+The following table shows the type <code>T</code> parameter that should be passed to
+<code>Row::get&lt;T&gt;()</code> for each possible SOCI Data Type that can be returned from
+<code>ColumnProperties::getDataType()</code>. <code>Row::get&lt;T&gt;()</code> throws an exception of type
+<code>std::bad_cast</code> if an incorrect type <code>T</code> is used.
+</p>
+<table border=1>
+  <tr><th>Oracle Data Type</th><th>SOCI Data Type</th><th><code>Row::get&lt;T&gt;</code> specializations</th></tr>
+  <tr><td>NUMBER</td><td><code>eDouble</code></td><td>double</tr>
+  <tr><td>NUMBER</td><td><code>eInteger</code></td><td>int</tr>
+  <tr><td>NUMBER</td><td><code>eUnsignedLong</code></td><td>unsigned long</tr>
+  <tr><td>CHAR, VARCHAR, VARCHAR2</td><td><code>eString</code></td><td>std::string</td></tr>
+  <tr><td>DATE</td><td><code>eDate</code></td><td><code>std::tm</code>, <code>std::time_t</code></td></tr>
+
+</table>
+
+<h4><a name="extending"></a>Extending SOCI to support custom (user-defined) C++ types</h4>
+
+<p>SOCI can be easily extended through user code so that custom types can
+be used transparently to insert into, update, and select from the database.</p>
+
+<p>To do so, provide an appropriate implementation of the <code>TypeConversion</code> class
+that converts to and from one of the SOCI Base Types listed below:</p>
+
+<table border=1>
+  <tr><th>Oracle Data Type</th><th>SOCI Base Type</th></tr>
+  <tr><td>NUMBER</td><td><code>double</code></tr>
+  <tr><td>NUMBER</td><td><code>int</code></tr>
+  <tr><td>NUMBER</td><td><code>unsigned long</code></tr>
+  <tr><td>VARCHAR, VARCHAR2</td><td><code>std::string</code></td></tr>
+  <tr><td>CHAR</td><td><code>char</code></td></tr>
+  <tr><td>DATE</td><td><code>std::tm</code></td></tr>
+</table>
+
+<p>
+For example, SOCI's built in support for <code>std::time_t</code> is implemented entirely
+as follows, utilizing <code>std::tm</code> as the Base Type:</p>
+
+<pre>
+namespace SOCI
+{
+  template&lt;&gt;
+  class TypeConversion&lt;std::time_t&gt; 
+  {
+  public:
+      typedef std::tm base_type;
+      static std::time_t from(std::tm&amp; t){return mktime(&amp;t);}
+      static std::tm to(std::time_t&amp; t){return *localtime(&amp;t);}
+  };
+}
+</pre>
+
+<p>
+There are three required class members for a valid <code>TypeConversion</code> specialization:</p>
+<ul>
+  <li>the <code>base_type</code> trait, defining the base type</li>
+  <li>the <code>from()</code> static member function, converting from the base type</li>
+  <li>the <code>to()</code> static member function, converting to the base type</li>
+</ul>
+<p>(Note that no database-specific code is required.)</p>
+<p>
+The following example shows how application code could extend SOCI to transparently support <code>boost::gregorian::date</code>:</p>
+
+<pre>
+#include "boost/date_time/gregorian/gregorian.hpp"
+namespace SOCI
+{
+template&lt;&gt;
+class TypeConversion&lt;boost::gregorian::date&gt;
+{
+public:
+    typedef std::tm base_type;
+    static boost::gregorian::date from(std::tm&amp; t)
+    {
+        boost::gregorian::months_of_year month = 
+            static_cast&lt;boost::gregorian::months_of_year&gt;(t.tm_mon + 1);
+        
+        boost::gregorian::date d(t.tm_year + 1900, month, t.tm_mday);
+        return d;
+    }
+    static std::tm to(boost::gregorian::date&amp; d)
+    {
+        std::tm t;
+        t.tm_year = d.year() - 1900;
+        t.tm_mon = d.month() - 1;
+        t.tm_mday = d.day();
+        t.tm_hour = 0;
+        t.tm_min = 0;
+        t.tm_sec = 0;
+        std::mktime(&amp;t); //normalize and compute remaining fields
+          
+        return t;
+    }
+};
+} // namespace SOCI
+</pre>
+
+With the above <code>TypeConversion</code> specialization in place, it is possible to
+use <code>boost::gregorian::date</code> directly with SOCI, binding input or output, either 
+statically or via a dynamic resultset:
+
+<pre>
+using boost::gregorian::date;
+    
+Session sql("db1", "scott", "tiger");
+
+sql &lt;&lt; "create table test_boost(when DATE)";
+date d_in(1999, boost::gregorian::Feb, 10);
+
+sql &lt;&lt; "insert into test_boost values(:when)", use(d_in);
+    
+date d_out(boost::gregorian::not_a_date_time);
+  
+sql &lt;&lt; "select when from test_boost", into(d_out);
+assert(d_in == d_out);
+
+Row r;
+sql &lt;&lt; "select * from test_boost", into(r);
+assert(r.get&lt;date&gt;(0) == d_in);
+</pre>
+
+<p>The other possibility to extend SOCI with custom data types is to use the <code>IntoType&lt;T&gt;</code>
 and <code>UseType&lt;T&gt;</code>
 class templates, which specializations can be user-provided. These
 specializations need to implement the interface defined by,
@@ -158,7 +337,8 @@ of appropriate class. The only convention is that when the indicator
 variable is used (see below), it should appear in the second position.
 Please refer to the library source code to see how this is done for the
 standard types. </p>
-<h4><a name="indicators"></a>Indicators</h4>
+
+<h2><a name="indicators"></a>Indicators</h2>
 <p>In order to support null values and other conditions which are not
 real errors, the concept of <i>indicator</i> is provided.<br>
 For example, when the following SQL query is executed: </p>
@@ -187,8 +367,9 @@ overrided to be null: </p>
 <pre>int id = 7;<br>string name;<br>eIndicator ind = eNull;<br>sql &lt;&lt; "insert into person(id, name) values(:id, :name)",<br>       use(id), use(name, ind);<br></pre>
 <p>In the above example, the row is inserted with <code>name</code>
 attribute set to null. </p>
-<h4><a name="preparation"></a>Statement preparation and repeated
-execution</h4>
+
+<h2><a name="preparation"></a>Statement preparation and repeated
+execution</h2>
 <p>Consider the following examples: </p>
 <pre>// Example 1.<br>for (int i = 0; i != 100; ++i)<br>{<br>    sql &lt;&lt; "insert into numbers(value) values(" &lt;&lt; i &lt;&lt; ")";<br>}<br><br>// Example 2.<br>for (int i = 0; i != 100; ++i)<br>{<br>    sql &lt;&lt; "insert into numbers(value) values(:val)", use(i);<br>}<br></pre>
 <p>Both examples will populate the table <code>numbers</code> with the
@@ -213,12 +394,14 @@ with the default parameter <code>0</code>. The following <code>fetch</code>
 calls perform the actual data retrieval and cursor traversal. The
 end-of-cursor condition is indicated by the <code>fetch</code>
 function returning <code>false</code>. </p>
-<h4><a name="transactions"></a>Transactions</h4>
+
+<h2><a name="transactions"></a>Transactions</h2>
 <p>The <code>Session</code> class provides two methods for transaction
 processing: <code>commit</code> and <code>rollback</code>.
 The transaction is implicitly started with the first statement that
 modifies data in the database. </p>
-<h4><a name="advanced"></a>Advanced stuff</h4>
+
+<h2><a name="advanced"></a>Advanced stuff</h2>
 <p>If there is any need to use more advanced features of the underlying
 OCI library (special connection steps, attribute manipulation,
 call-back functions, etc.), it can be done by accessing the low-level
@@ -226,9 +409,9 @@ OCI handles available as public (see rationale below) members of the <code>Sessi
 and <code>Statement</code> classes. Please refer to the <code>soci.h</code>
 file to see exactly what handles are available. </p>
 <p> </p>
-<h4><b><a name="rationale"></a></b>Rationale for some design decisions</h4>
-<p>Since public data members are considered harmful amongst C++
-programmers, some explanation is in order to defend SOCI against
+
+<h2><b><a name="rationale"></a></b>Rationale for some design decisions</h2>
+<p>Since public data members are considered harmful in the C++ community, some explanation is in order to defend SOCI against
 anticipated criticism.
 The intent is to allow reading, writing and object modifications
 through the low-level OCI handles, to enable experienced programmers to
@@ -244,7 +427,7 @@ real benefits. The only argument for providing getter/setter
 abstractions would be to allow future replacements of low-level OCI
 handles with "something else", but the reality is that OCI handles
 exist in a specific family and that "something else" (like handles for
-database other than Oracle) would not map into those abstrations.
+database other than Oracle) would not map into those abstractions.
 Porting the SOCI library to support other databases would require to
 change not only low-level handles, but also the getter/setter pairs,
 which would then prove to be not really abstract. Uff...<br>
