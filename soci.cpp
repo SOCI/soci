@@ -1,6 +1,6 @@
 //
-// Copyright (C) 2004, Maciej Sobczak
-//
+// Copyright (C) 2004, 2005 Maciej Sobczak, Steve Hutton
+// 
 // Permission to copy, use, modify, sell and distribute this software
 // is granted provided this copyright notice appears in all copies.
 // This software is provided "as is" without express or implied
@@ -420,9 +420,10 @@ void Statement::define()
         intos_[i]->define(*this, definePosition);
 }
 
-//Map eDataTypes to stock types for dynamic result set support
+// Map eDataTypes to stock types for dynamic result set support
 namespace SOCI
 {
+
 template<> 
 void Statement::bindInto<eString>()
 {
@@ -452,6 +453,7 @@ void Statement::bindInto<eDate>()
 {
     intoRow<std::tm>();
 }
+
 } //namespace SOCI
 
 void Statement::describe()
@@ -571,7 +573,8 @@ void Statement::describe()
                     bindInto<eDouble>();
                     props.setDataType(eDouble);
                 }
-                else if (pow(10, props.getPrecision()) < std::numeric_limits<int>::max())
+                else if (pow(10, props.getPrecision())
+                    < std::numeric_limits<int>::max())
                 {
                     bindInto<eInteger>();
                     props.setDataType(eInteger);
@@ -1310,8 +1313,8 @@ size_t BLOB::write(size_t offset, const char *buf, size_t toWrite)
 size_t BLOB::append(const char *buf, size_t toWrite)
 {
     ub4 amt = static_cast<ub4>(toWrite);
-    sword res = OCILobWriteAppend(session_.svchp_, session_.errhp_, lobp_, &amt,
-        reinterpret_cast<dvoid*>(const_cast<char*>(buf)),
+    sword res = OCILobWriteAppend(session_.svchp_, session_.errhp_, lobp_,
+        &amt, reinterpret_cast<dvoid*>(const_cast<char*>(buf)),
         amt, OCI_ONE_PIECE, 0, 0, 0, 0);
     if (res != OCI_SUCCESS)
     {

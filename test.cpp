@@ -403,7 +403,8 @@ void test7()
     std::cout << "test 7 passed" << std::endl;
 }
 
-// nested statement test (the same syntax is used for output cursors in PL/SQL)
+// nested statement test
+// (the same syntax is used for output cursors in PL/SQL)
 void test8()
 {
     Session sql(serviceName, userName, password);
@@ -477,7 +478,7 @@ void test9()
     std::cout << "test 9 passed" << std::endl;
 }
 
-//Stored Procedures
+// Stored Procedures
 void test10()
 {
     {
@@ -506,8 +507,8 @@ void test10()
             assert(out == in);
         }
     }
+
     std::cout << "test 10 passed" << std::endl;
-    
 }
 
 // Dynamic binding to Row objects
@@ -519,7 +520,7 @@ void test11()
         {
             sql << "drop table test11";
         }
-        catch(const SOCIError& e){}//ignore error if table doesn't exist
+        catch(const SOCIError& e) {} //ignore error if table doesn't exist
 
         sql << "create table test11(num_float numeric(7,2) NOT NULL,"
             << " name varchar2(20), when date, large numeric(10,0), "
@@ -532,7 +533,7 @@ void test11()
         for (int i=1; i<4; ++i)
         {
             std::ostringstream namestr;
-            namestr << "name"<<i;
+            namestr << "name" << i;
             std::string name = namestr.str();
 
             std::time_t now = std::time(0);
@@ -565,7 +566,8 @@ void test11()
         // select into a Row
         {
             Row r;
-            Statement st = (sql.prepare << "select * from test11 order by num_float", into(r));
+            Statement st = (sql.prepare <<
+                "select * from test11 order by num_float", into(r));
             st.execute(1);
             assert(r.size() == 8);
         
@@ -618,37 +620,41 @@ void test11()
             assert(cought);
         }
     }
+
     std::cout << "test 11 passed" << std::endl;
 }
 
 // bind into user-defined objects
 struct StringHolder
 {
-    StringHolder(){}
-    StringHolder(const char* s):s_(s){}
-    StringHolder(std::string s):s_(s){}
-    std::string get(){return s_;}
+    StringHolder() {}
+    StringHolder(const char* s) : s_(s) {}
+    StringHolder(std::string s) : s_(s) {}
+    std::string get() { return s_; }
 private:
     std::string s_;
 };
+
 namespace SOCI
 {
     template<> class TypeConversion<StringHolder>
     {
     public:
         typedef std::string base_type;
-        static StringHolder from(std::string& s){return StringHolder(s);}
-        static std::string to(StringHolder& sh){return sh.get();}
+        static StringHolder from(std::string& s) { return StringHolder(s); }
+        static std::string to(StringHolder& sh) { return sh.get(); }
     };
 }
+
 void test12()
 {
     {
         Session sql(serviceName, userName, password);
         try
-        { sql << "drop table test12";
+        {
+            sql << "drop table test12";
         }
-        catch(const SOCIError& e){}//ignore error if table doesn't exist
+        catch(const SOCIError& e) {} // ignore error if table doesn't exist
         sql << "create table test12(name varchar2(20))";
 
         StringHolder in("my string");
@@ -663,6 +669,7 @@ void test12()
         StringHolder dynamicOut = r.get<StringHolder>(0);
         assert(dynamicOut.get() == "my string");
     }
+
     std::cout << "test 12 passed" << std::endl;
 }
 
@@ -670,7 +677,7 @@ void test12()
 void test13()
 {
     Session sql(serviceName, userName, password);
-    try { sql<<"drop table test13";}catch(SOCIError& e){}//ignore
+    try { sql << "drop table test13"; } catch(SOCIError& e) {} // ignore 
 
     sql << "create table test13 ("
         "id number(10) not null,"
@@ -713,20 +720,21 @@ void test13()
 // test dbtype CHAR
 void test14()
 {
-   Session sql(serviceName, userName, password);
-   try{sql << "drop table test14";} catch(const SOCIError& e){}//ignore error 
+    Session sql(serviceName, userName, password);
+    try { sql << "drop table test14"; }
+    catch(const SOCIError& e) {} // ignore error
 
-   sql << "create table test14(chr1 char(1))";
+    sql << "create table test14(chr1 char(1))";
 
-   char c_in = 'Z';
-   sql << "insert into test14(chr1) values(:C)", use(c_in);
-   sql.commit();
+    char c_in = 'Z';
+    sql << "insert into test14(chr1) values(:C)", use(c_in);
+    sql.commit();
 
-   char c_out = ' ';
-   sql << "select chr1 from test14", into(c_out);
-   assert(c_out == 'Z');
+    char c_out = ' ';
+    sql << "select chr1 from test14", into(c_out);
+    assert(c_out == 'Z');
    
-   std::cout << "test 14 passed" <<std::endl; 
+    std::cout << "test 14 passed" <<std::endl; 
 }
 
 int main(int argc, char** argv)
