@@ -1,0 +1,224 @@
+<html>
+<head>
+<title>SOCI Data Types</title>
+</head>
+<body>
+
+<h2>Data Types Overview</h2>
+
+SOCI supports seemless access to database input and output values using C++ 
+data types, by mapping them internally to database types. 
+<p>
+C++ native and standard library types are supported wherever possible, and SOCI 
+specific types are provided in cases where there is no natural mapping from
+the database type (e.g. BLOB, RowID).
+
+<h2>Static Type Binding</h2>
+
+The simplest and most common way to use SOCI is to utilize static type binding -
+in this case, the database types of the columns being operated upon are known
+at compile time.
+
+This can be done very concisely, e.g. for the case of inserting/selecting
+a std::string into/from a VARCHAR2 column:
+
+<pre>
+  Session sql("db1", "scott", "tiger");
+  sql << "create table ex1(greeting varchar2(20))";
+  
+  std::string greet_in("hello");
+  sql << "insert into ex1 values(:greeting)", use(greet_in);
+  
+  std::string greet_out;
+  sql << "select greeting from ex1", into(greet_out);
+  
+  assert(greet_out == "hello");
+</pre>
+<p>
+The built-in mappings from database type to C++ type for static binding are listed below:
+<p>
+<table border=1>
+  <tr><th>Oracle Data Type</th><th>C++ Static Binding Type</th></tr>
+  <tr><td>NUMBER</td><td>double, int, short, unsigned long</td></tr>
+  <tr><td>CHAR, VARCHAR, VARCHAR2</td><td>char, char[], char*, std::string</td></tr>
+  <tr><td>DATE</td><td>std::tm, std::time_t</td></tr>
+  <tr><td>BLOB</td><td>SOCI::BLOB</td></tr>
+  <tr><td>ROWID</td><td>SOCI::RowID</td></tr>
+  <tr><td>REF CURSOR</td><td>SOCI::Statement</td></tr>
+</table>
+<p>
+
+<h2>Dynamic Resultset Binding</h2>
+
+For certain applications it is desirable to be able to select data from arbitrarily
+structured tables (e.g. via "select * ") and format the resulting data based upon its type.  SOCI supports this through the SOCI::Row and SOCI::ColumnProperties classes.
+<p>
+Data is selected into a Row object, which holds ColumnProperties objects describing
+the type of data contained in each column.  Once the data type for each column is known,
+the data can be formatted appropriately.
+<p>
+For example, the code below creates an xml document from a selected row of data from an arbitrary table:
+<pre>
+  Session sql("db1", "scott", "tiger");
+  
+  sql &lt;&lt; "create table ex2(num NUMBER, str VARCHAR2(20), dt DATE)";
+
+  int num_in = 123;
+  std::string str_in("my name");
+  std::time_t dt_in = time(0);
+
+  sql &lt;&lt; "insert into ex2 values(:num1, :str1, :dt1)",
+    use(num_in), use(str_in), use(dt_in);
+    
+  Row r;
+  sql &lt;&lt; "select * from ex2", into(r);
+  
+  std::ostringstream doc;
+  doc &lt;&lt; "&lt;row&gt;" &lt;&lt; std::endl;
+  for(int i=0; i&lt;r.size(); ++i)
+  {
+      const ColumnProperties&amp; props = r.getProperties(i);
+      doc &lt;&lt; '&lt;' &lt;&lt; props.getName() &lt;&lt; '&gt;';
+      switch(props.getDataType())
+      {
+      case eString:
+          doc &lt;&lt; r.get&lt;std::string&gt;(i);
+          break;
+      case eDouble:
+          doc &lt;&lt; r.get&lt;double&gt;(i);
+          break;
+      case eInteger:
+          doc &lt;&lt; r.get&lt;int&gt;(i);
+          break;
+      case eUnsignedLong:
+          doc &lt;&lt; r.get&lt;unsigned long&gt;(i);
+          break;
+      case eDate:
+          std::tm when = r.get&lt;std::tm&gt;(i);
+          doc &lt;&lt; asctime(&amp;when);
+          break;
+      }
+      doc &lt;&lt; "&lt;/" &lt;&lt; props.getName() &lt;&lt; '&gt;' &lt;&lt; std::endl;  
+  }
+  doc &lt;&lt; "&lt;/row&gt;";
+</pre>
+
+The following table shows the type T parameter that should be passed to
+Row::get<T>() for each possible SOCI Data Type that can be returned from
+ColumnProperties::getDataType().  Row::get<T>() throws an exception of type
+std::bad_cast if an incorrect type T is used.
+<p>
+<table border=1>
+  <tr><th>Oracle Data Type</th><th>SOCI Data Type</th><th>T Row::get&lt;T&gt; specializations</th></tr>
+  <tr><td>NUMBER</td><td>eDouble</td><td>double</tr>
+  <tr><td>NUMBER</td><td>eInteger</td><td>int</tr>
+  <tr><td>NUMBER</td><td>eUnsignedLong</td><td>unsigned long</tr>
+  <tr><td>CHAR, VARCHAR, VARCHAR2</td><td>eString</td><td>std::string</td></tr>
+  <tr><td>DATE</td><td>eDate</td><td>std::tm, std::time_t</td></tr>
+</table>
+
+<h2>Extending SOCI to support 3rd party C++ types</h2>
+
+SOCI can be easily extended through user code so that 3rd party types can
+be used transparently to insert into, update, and select from the database.
+
+To do so, provide an appropriate implementation of the TypeConversion class
+that converts to and from one of the SOCI Base Types listed below:
+<p>
+<table border=1>
+  <tr><th>Oracle Data Type</th><th>SOCI Base Type</th></tr>
+  <tr><td>NUMBER</td><td>double</tr>
+  <tr><td>NUMBER</td><td>int</tr>
+  <tr><td>NUMBER</td><td>unsigned long</tr>
+  <tr><td>VARCHAR, VARCHAR2</td><td>std::string</td></tr>
+  <tr><td>CHAR</td><td>char</td></tr>
+  <tr><td>DATE</td><td>std::tm</td></tr>
+</table>
+<p>
+For example, SOCI's built in support for std::time_t is implemented entirely
+as follows, utilizing std::tm as the Base Type:
+
+<pre>
+namespace SOCI
+{
+  template&lt;&gt;
+  class TypeConversion&lt;std::time_t&gt; 
+  {
+  public:
+      typedef std::tm base_type;
+      static std::time_t from(std::tm&amp; t){return mktime(&amp;t);}
+      static std::tm to(std::time_t&amp; t){return *localtime(&amp;t);}
+  };
+}
+</pre>
+
+There are three required class members for a valid TypeConversion specialization:
+<ul>
+  <li>the base_type trait, defining the base type</li>
+  <li>the from() static member fuction, converting from the base type</li>
+  <li>the to() static member function, converting to the base type</li>
+</ul>
+(Note that no database-specific code is required.)
+<p>
+The following example shows how application code could extend SOCI to transparently support boost::gregorian::date:
+
+<pre>
+#include "boost/date_time/gregorian/gregorian.hpp"
+namespace SOCI
+{
+template&lt;&gt;
+class TypeConversion&lt;boost::gregorian::date&gt;
+{
+  public:
+      typedef std::tm base_type;
+      static boost::gregorian::date from(std::tm&amp; t)
+      {
+          boost::gregorian::months_of_year month = 
+            static_cast&lt;boost::gregorian::months_of_year&gt;(t.tm_mon + 1);
+        
+          boost::gregorian::date d(t.tm_year + 1900, month, t.tm_mday);
+          return d;
+      }
+      static std::tm to(boost::gregorian::date&amp; d)
+      {
+          std::tm t;
+          t.tm_year = d.year() - 1900;
+          t.tm_mon = d.month() - 1;
+          t.tm_mday = d.day();
+          t.tm_hour = 0;
+          t.tm_min = 0;
+          t.tm_sec = 0;
+          std::mktime(&amp;t); //normalize and compute remaining fields
+          
+          return t;
+      }
+};
+}
+</pre>
+
+With the above TypeConversion specialization in place, it becames possible to
+use boost::gregorian::date directly with SOCI, binding input or output, either 
+statically or via a dynamic resultset:
+
+<pre>
+    using boost::gregorian::date;
+    
+    Session sql("db1", "scott", "tiger");
+
+    sql &lt;&lt; "create table test_boost(when DATE)";
+    date d_in(1999, boost::gregorian::Feb, 10);
+
+    sql &lt;&lt; "insert into test_boost values(:when)", use(d_in);
+    
+    date d_out(boost::gregorian::not_a_date_time);
+  
+    sql &lt;&lt; "select when from test_boost", into(d_out);
+    assert(d_in == d_out);
+
+    Row r;
+    sql &lt;&lt; "select * from test_boost", into(r);
+    assert(r.get&lt;date&gt;(0) == d_in);
+</pre>
+</body>
+</html>
+
