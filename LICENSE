@@ -1,0 +1,37 @@
+The source files contain the following notice:
+
+//
+// Copyright (C) 2004, 2005 Maciej Sobczak, Steve Hutton
+//
+// Permission to copy, use, modify, sell and distribute this software
+// is granted provided this copyright notice appears in all copies.
+// This software is provided "as is" without express or implied
+// warranty, and with no claim as to its suitability for any purpose.
+//
+
+
+Just to explain the above terms:
+
+1. The library is free (like in "freedom").
+
+2. You can use it for any purpose you wish. You can even sell it.
+
+3. You can modify the source files. If you do this, please feel free to add
+   your own copyright notices wherever you want, if you want.
+   You may also add more restrictive license terms.
+   You only have to keep the above notice unchanged in all source files.
+
+4. You can combine this library or its modified version with other software.
+   The license claims nothing that would affect the resulting work.
+   See point 3. if you need to make any modifications.
+
+5. You can compile this library or its modified version to the binary form.
+   The license does not affect the compiled result in any way.
+   In particular, you do not need to (but you still can) display the above
+   copyright notice to the final user, and you do not need to (but you still
+   can) inform the final user that your product was prepared with the help
+   of this library.
+
+6. Do not sue us for our (and your) mistakes and errors.
+
+As you see, this license is very permissive.
