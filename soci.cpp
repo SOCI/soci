@@ -230,14 +230,26 @@ void Session::cleanUp()
     if (envhp_) OCIHandleFree(envhp_, OCI_HTYPE_ENV);
 }
 
+// stock type specializations of TypeHolder<T>::value()
+template<> 
+double SOCI::TypeHolder<double>::value()
+{return *d_;}
+
+template<> 
+std::string SOCI::TypeHolder<std::string>::value()
+{return *s_;}
+
+template<> 
+std::tm SOCI::TypeHolder<std::tm>::value()
+{return *t_;}
 
 Statement::Statement(Session &s)
-    : stmtp_(0), session_(s)
+    : stmtp_(0), session_(s), row_(0)
 {
 }
 
 Statement::Statement(PrepareTempType const &prep)
-    : stmtp_(0), session_(*prep.getPrepareInfo()->session_)
+    : stmtp_(0), session_(*prep.getPrepareInfo()->session_), row_(0)
 {
     RefCountedPrepareInfo *prepInfo = prep.getPrepareInfo();
 
@@ -322,13 +334,14 @@ void Statement::prepare(std::string const &query)
 
 void Statement::defineAndBind()
 {
-    int definePosition = 1;
-    for (size_t i = 0; i != intos_.size(); ++i)
-        intos_[i]->define(*this, definePosition);
+    define();
 
     int bindPosition = 1;
     for (size_t i = 0; i != uses_.size(); ++i)
         uses_[i]->bind(*this, bindPosition);
+
+    if (row_)
+        define();
 }
 
 void Statement::unDefAndBind()
@@ -411,8 +424,158 @@ bool Statement::fetch()
     return gotData;
 }
 
-//Statement::Statement(PrepareTempType const &prep)
-//    : stmtp_(0), session_(*prep.getPrepareInfo()->session_)
+void Statement::define()
+{
+    int definePosition = 1;
+    for (size_t i = 0; i != intos_.size(); ++i)
+        intos_[i]->define(*this, definePosition);
+}
+
+//Map eDataTypes to stock types
+//TODO change stock types to Date, Numeric, etc.
+template<> 
+void Statement::bindInto<eString>()
+{
+    intoRow<std::string>();
+}
+
+template<> 
+void Statement::bindInto<eNumeric>()
+{
+    intoRow<double>();
+}
+
+template<> 
+void Statement::bindInto<eDate>()
+{
+    intoRow<std::tm>();
+}
+
+void Statement::describe()
+{
+    delete intos_[0];
+    intos_.clear();
+
+    sword res = OCIStmtExecute(session_.svchp_, stmtp_, session_.errhp_,
+                               1, 0, 0, 0, OCI_DESCRIBE_ONLY);
+    if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
+
+    int numcols;
+    res = OCIAttrGet(reinterpret_cast<dvoid*>(stmtp_), 
+                     static_cast<ub4>(OCI_HTYPE_STMT), 
+                     reinterpret_cast<dvoid*>(&numcols), 
+                     0, 
+                     static_cast<ub4>(OCI_ATTR_PARAM_COUNT), 
+                     reinterpret_cast<OCIError*>(session_.errhp_));
+
+    if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
+
+    OCIParam* colhd;
+    for (int i = 1; i <= numcols; i++)
+    {
+        ub2 dtype;
+        text* name;
+        ub4 name_length;
+
+        ub2 dbsize;
+        sb2 prec;
+        ub1 scale; //sb2 in some versions of Oracle?
+        ub1 nullok;
+
+        // Get the column handle
+        res = OCIParamGet(reinterpret_cast<dvoid*>(stmtp_), 
+                          static_cast<ub4>(OCI_HTYPE_STMT), 
+                          reinterpret_cast<OCIError*>(session_.errhp_), 
+                          reinterpret_cast<dvoid**>(&colhd), 
+                          static_cast<ub4>(i));
+        if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
+
+        // Get the column name
+        res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd), 
+                         static_cast<ub4>(OCI_DTYPE_PARAM),
+                         reinterpret_cast<dvoid**>(&name),
+                         reinterpret_cast<ub4*>(&name_length), 
+                         static_cast<ub4>(OCI_ATTR_NAME), 
+                         reinterpret_cast<OCIError*>(session_.errhp_));
+        if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
+
+        // Get the column type
+        res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd), 
+                         static_cast<ub4>(OCI_DTYPE_PARAM),
+                         reinterpret_cast<dvoid*>(&dtype),
+                         0, 
+                         static_cast<ub4>(OCI_ATTR_DATA_TYPE), 
+                         reinterpret_cast<OCIError*>(session_.errhp_));
+        if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
+
+        // get the data size
+        res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd), 
+                         static_cast<ub4>(OCI_DTYPE_PARAM),
+                         reinterpret_cast<dvoid*>(&dbsize),
+                         0, 
+                         static_cast<ub4>(OCI_ATTR_DATA_SIZE), 
+                         reinterpret_cast<OCIError*>(session_.errhp_));
+        if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
+
+        // get the precision
+        res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd), 
+                         static_cast<ub4>(OCI_DTYPE_PARAM),
+                         reinterpret_cast<dvoid*>(&prec),
+                         0, 
+                         static_cast<ub4>(OCI_ATTR_PRECISION), 
+                         reinterpret_cast<OCIError*>(session_.errhp_));
+        if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
+            
+        // get the scale
+        res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd), 
+                         static_cast<ub4>(OCI_DTYPE_PARAM),
+                         reinterpret_cast<dvoid*>(&scale),
+                         0, 
+                         static_cast<ub4>(OCI_ATTR_SCALE), 
+                         reinterpret_cast<OCIError*>(session_.errhp_));
+        if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
+            
+        // get the null allowed flag
+        res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd), 
+                         static_cast<ub4>(OCI_DTYPE_PARAM),
+                         reinterpret_cast<dvoid*>(&nullok),
+                         0, 
+                         static_cast<ub4>(OCI_ATTR_IS_NULL), 
+                         reinterpret_cast<OCIError*>(session_.errhp_));
+        if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
+            
+        const int max_column_length = 50;
+        char col_name[max_column_length + 1];
+        strncpy(col_name, (char*)name, name_length);
+        col_name[name_length] = '\0';
+
+        ColumnProperties props;
+        props.setName(col_name);
+        props.setSize(dbsize);
+        props.setPrecision(prec);
+        props.setScale(scale);
+        props.setNullOK(nullok);
+
+        switch(dtype)
+        {
+            case SQLT_CHR:
+                bindInto<eString>();
+                props.setDataType(eString);
+                break;
+            case SQLT_NUM:
+                bindInto<eNumeric>();
+                props.setDataType(eNumeric);
+                break;
+            case SQLT_DAT:
+                bindInto<eDate>();
+                props.setDataType(eDate);
+                break;
+        }
+        row_->addProperties(props);
+    }
+}
+
+
 
 Procedure::Procedure(PrepareTempType const &prep)
     : Statement(*prep.getPrepareInfo()->session_)
@@ -559,6 +722,11 @@ PrepareTempType & PrepareTempType::operator,(UseTypePtr const &u)
 
 void StandardIntoType::postFetch(bool gotData, bool calledFromFetch)
 {
+    if(gotData)
+    {
+        convertFrom();
+    }
+
     if (calledFromFetch == true && gotData == false)
     {
         // this is a normal end-of-rowset condition,
@@ -603,6 +771,8 @@ void StandardIntoType::cleanUp()
 
 void StandardUseType::preUse()
 {
+    convertTo();
+
     if (ind_ != NULL && *ind_ == eNull)
         indOCIHolder_ = -1; // null
     else
@@ -856,8 +1026,6 @@ void IntoType<std::tm>::define(Statement &st, int &position)
 
 void IntoType<std::tm>::postFetch(bool gotData, bool calledFromFetch)
 {
-    StandardIntoType::postFetch(gotData, calledFromFetch);
-
     if (gotData)
     {
         tm_.tm_isdst = -1;
@@ -871,6 +1039,7 @@ void IntoType<std::tm>::postFetch(bool gotData, bool calledFromFetch)
         // normalize and compute the remaining fields
         std::mktime(&tm_);
     }
+    StandardIntoType::postFetch(gotData, calledFromFetch);
 }
 
 void UseType<std::tm>::bind(Statement &st, int &position)
@@ -928,32 +1097,6 @@ void UseType<std::tm>::postUse()
     std::mktime(&tm_);
 
     StandardUseType::postUse();
-}
-
-// into and use types for time_t
-
-void IntoType<std::time_t>::postFetch(bool gotData, bool calledFromFetch)
-{
-    IntoType<std::tm>::postFetch(gotData, calledFromFetch);
-
-    if (gotData)
-    {
-        t_ = mktime(&tm_);
-    }
-}
-
-void UseType<std::time_t>::preUse()
-{
-    tm_ = *localtime(&t_);
-
-    UseType<std::tm>::preUse();
-}
-
-void UseType<std::time_t>::postUse()
-{
-    StandardUseType::postUse();
-
-    t_ = mktime(&tm_);
 }
 
 // into and use types for Statement (for nested statements and cursors)
@@ -1215,4 +1358,12 @@ void UseType<RowID>::bind(Statement &st, int &position)
     {
         throwSOCIError(res, st.session_.errhp_);
     }
+}
+
+// Support dynamic selecting into a Row object
+
+void IntoType<Row>::define(Statement &st, int &position)
+{
+    st.setRow(&row_);
+    st.describe();
 }

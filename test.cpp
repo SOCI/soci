@@ -470,7 +470,7 @@ void test10()
 {
     {
         Session sql(serviceName, userName, password);
-        sql.once <<
+        sql <<
             "create or replace procedure echo(output out varchar2,"
             "input in varchar2) as "
             "begin output := input; end;";
@@ -496,6 +496,130 @@ void test10()
     }
     std::cout << "test 10 passed" << std::endl;
     
+}
+
+// Dynamic binding to Row objects
+void test11()
+{
+    {
+        Session sql(serviceName, userName, password);
+        try
+        {
+            sql << "drop table test11";
+        }
+        catch(const SOCIError& e){}//ignore error if table doesn't exist
+        sql << "create table test11(id numeric(7,2) NOT NULL,"
+            << " name varchar2(20), when date)";
+
+        Row r;
+        sql << "select * from test11", into(r);
+        assert(r.indicator(0) ==  eNoData);
+
+        for (int i=1; i<4; ++i)
+        {
+            std::ostringstream namestr;
+            namestr << "name"<<i;
+            std::string name = namestr.str();
+
+            std::time_t now = std::time(0);
+            std::tm when = *gmtime(&now);
+            when.tm_year = 104;
+            when.tm_mon = 11;
+            when.tm_mday = i;
+
+            sql << "insert into test11 values(:id, :name, :when)",
+                use(i,"id"), 
+                use(name, "name"),
+                use(when, "when");
+        }
+
+        // select into a Row
+        {
+            Row r;
+            Statement st = (sql.prepare << "select * from test11 order by id", into(r));
+            st.execute(1);
+            assert(r.size() == 3);
+        
+            assert(r.getProperties(0)->getDataType() == eNumeric);
+            assert(r.getProperties(1)->getDataType() == eString);
+            assert(r.getProperties(2)->getDataType() == eDate);
+
+            assert(r.getProperties(0)->getName() == "ID");
+            assert(r.getProperties(1)->getName() == "NAME");
+            assert(r.getProperties(2)->getName() == "WHEN");
+
+            assert(r.getProperties(0)->getSize() == 22);
+            assert(r.getProperties(0)->getScale() == 2);
+            assert(r.getProperties(0)->getPrecision() == 7);
+            assert(r.getProperties(0)->getNullOK() == false);
+            assert(r.getProperties(1)->getNullOK() == true);
+
+            st.fetch();
+            assert(r.get<double>(0) == 2);
+            assert(r.get<std::string>(1) == "name2");
+
+            std::tm t = r.get<std::tm>(2);
+            assert(t.tm_year == 104);
+            assert(t.tm_mon == 11);
+            assert(t.tm_mday == 2);
+            
+            assert(r.indicator(0) == eOK);
+
+            // verify exception thrown on invalid get<>
+            bool cought = false;
+            try{ r.get<std::string>(0); }catch(std::bad_cast& e)
+            {
+              cought = true;
+            }
+            assert(cought);
+        }
+    }
+    std::cout << "test 11 passed" << std::endl;
+}
+
+// bind into user-defined objects
+struct StringHolder
+{
+    StringHolder(){}
+    StringHolder(const char* s):s_(s){}
+    StringHolder(std::string s):s_(s){}
+    std::string get(){return s_;}
+private:
+    std::string s_;
+};
+namespace SOCI
+{
+    template<> class TypeConversion<StringHolder>
+    {
+    public:
+        typedef std::string base_type;
+        static StringHolder from(std::string& s){return StringHolder(s);}
+        static std::string to(StringHolder& sh){return sh.get();}
+    };
+}
+void test12()
+{
+    {
+        Session sql(serviceName, userName, password);
+        try
+        { sql << "drop table test12";
+        }
+        catch(const SOCIError& e){}//ignore error if table doesn't exist
+        sql << "create table test12(name varchar2(20))";
+
+        StringHolder in("my string");
+        sql << "insert into test12(name) values(:name)", use(in);
+
+        StringHolder out;
+        sql << "select name from test12", into(out);
+        assert(out.get() == "my string");
+
+        Row r;
+        sql << "select * from test12", into(r);
+        StringHolder dynamicOut = r.get<StringHolder>(0);
+        assert(dynamicOut.get() == "my string");
+    }
+    std::cout << "test 12 passed" << std::endl;
 }
 
 int main(int argc, char** argv)
@@ -524,6 +648,8 @@ int main(int argc, char** argv)
         test8();
         test9();
         test10();
+        test11();
+        test12();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }

@@ -243,6 +243,153 @@ class PrepareTempType;
 
 }
 
+// default TypeConversion, acts as pass through
+template<typename T>
+class TypeConversion
+{
+public:
+    typedef T base_type;
+    static T from(T& t){return t;}
+};
+
+// TypeConversion specializations must use a stock type as the base_type.
+// Each such specialization automatically creates a UseType and an IntoType.
+template<> 
+class TypeConversion<std::time_t> 
+{
+public:
+    typedef std::tm base_type;
+    static std::time_t from(std::tm& t){return mktime(&t);}
+    static std::tm to(std::time_t& t){return *localtime(&t);}
+};
+//TODO provide more conversions from stock types
+
+//Each stock type needs a TypeHolder specialization
+template <typename T> class TypeHolder;
+class Holder
+{
+ public:
+    Holder(){}
+    virtual ~Holder(){};
+    template<typename T> T get()
+    {
+      TypeHolder<T>* p = dynamic_cast<TypeHolder<T> *>(this);
+      if (p) 
+        return p->value<T>();
+      else 
+        throw std::bad_cast();
+    }
+ private:
+    template<typename T> T value();
+};
+
+template<> 
+class TypeHolder<double> : public Holder
+{
+ public:
+   TypeHolder(double* d) : d_(d) {}
+   ~TypeHolder(){delete d_;}
+
+   template<typename T> T value();
+ private:
+   double* d_;
+};
+
+class TypeHolder<std::string> : public Holder
+{
+public:
+   TypeHolder(std::string* s) : s_(s) {}
+   ~TypeHolder(){delete s_;}
+
+   template<typename T> T value();
+private:
+   std::string* s_;
+};
+
+class TypeHolder<std::tm> : public Holder
+{
+public:
+   TypeHolder(std::tm* t) : t_(t) {}
+   ~TypeHolder(){delete t_;}
+
+   template<typename T> T value();
+private:
+   std::tm* t_;
+};
+
+enum eDataType{eString, eNumeric, eDate}; //TODO BLOB, Cursor, etc.
+
+class ColumnProperties
+{
+    // use getters/setters in case we want to make some
+    // of the getters lazy in the future
+ public:
+
+    std::string getName() const {return name_;}
+    eDataType getDataType() const {return dataType_;}
+    int getSize() const {return size_;}
+    int getScale() const {return scale_;}
+    int getPrecision() const {return precision_;}
+    int getNullOK() const {return nullok_;}
+    
+    void setName(const std::string& name){name_ = name;}
+    void setDataType(eDataType dataType){dataType_ = dataType;}
+    void setSize(int size){size_ = size;}
+    void setScale(int scale){scale_ = scale;}
+    void setPrecision(int precision){precision_ = precision;}
+    void setNullOK(int nullok){nullok_ = nullok;}
+
+ private:
+    std::string name_;
+    eDataType dataType_;
+    int size_;
+    int scale_;
+    int precision_;
+    int nullok_;
+};
+
+class Row
+{
+ public:
+
+    void addProperties(ColumnProperties cp){columns_.push_back(cp);}
+    int size() const { return holders_.size(); }
+    const eIndicator indicator(int pos) const {return *indicators_.at(pos);}
+
+    template<typename T> 
+    inline void addHolder(T* t, eIndicator* ind)
+    {
+        holders_.push_back(new TypeHolder<T>(t));
+        indicators_.push_back(ind);
+    }
+
+    const ColumnProperties* getProperties (int pos) const{return &columns_.at(pos);}
+    
+    template<typename T> 
+    inline T get (int pos) const
+    {
+        typedef typename TypeConversion<T>::base_type BASE_TYPE;
+        BASE_TYPE baseVal = holders_.at(pos)->get<BASE_TYPE>();
+        return TypeConversion<T>::from(baseVal);
+    }
+    
+    Row(){}
+    ~Row()
+    {
+        for(int i=0; i<holders_.size(); ++i)
+        {
+            delete holders_[i];
+            delete indicators_[i];
+        }
+    }
+ private:
+    Row(Row&);
+    Row operator=(Row&);
+    std::vector<ColumnProperties> columns_;
+    std::vector<Holder*> holders_;
+    std::vector<eIndicator*> indicators_;
+};
+
 class Statement
 {
 public:
@@ -260,14 +407,30 @@ public:
     void unDefAndBind();
     bool execute(int num = 0);
     bool fetch();
-
+    void define();
+    void describe();
+    void setRow(Row* r){row_ = r;}
+    
     OCIStmt *stmtp_;
-
     Session &session_;
 
  protected:
     std::vector<IntoTypeBase*> intos_;
     std::vector<UseTypeBase*> uses_;
+ 
+ private:
+    Row* row_;
+    
+    template<typename T>
+    void intoRow()
+    {
+        T* t = new T();
+        eIndicator* ind = new eIndicator(eOK);
+        row_->addHolder(t, ind);
+        exchange(into(*t, *ind));
+    }
+
+    template<eDataType> void bindInto();
 };
 
 class Procedure : public Statement
@@ -485,6 +648,8 @@ protected:
     eIndicator *ind_;
     sb2 indOCIHolder_;
     ub2 rcode_;
+private:
+    virtual void convertFrom(){}
 };
 
 class StandardUseType : public UseTypeBase
@@ -497,7 +662,7 @@ public:
         : st_(NULL), bindp_(NULL), ind_(&ind), name_(name) {}
 
     virtual void preUse();
-    virtual void postUse() {}
+    virtual void postUse() {convertTo();}
     virtual void cleanUp();
 
 protected:
@@ -507,6 +672,9 @@ protected:
     sb2 indOCIHolder_;
     ub2 rcode_;
     std::string name_;
+
+private:
+    virtual void convertTo(){} 
 };
 
 // into and use types for integral types: char, short and int
@@ -841,41 +1009,6 @@ private:
     ub1 buf_[7];
 };
 
-// into and use types for time_t
-
-template <>
-class IntoType<std::time_t> : public IntoType<std::tm>
-{
-public:
-    IntoType(std::time_t &t) : IntoType<std::tm>(tm_), t_(t) {}
-    IntoType(std::time_t &t, eIndicator &ind)
-        : IntoType<std::tm>(tm_, ind), t_(t) {}
-
-    virtual void postFetch(bool gotData, bool calledFromFetch);
-
-private:
-    std::time_t &t_;
-    std::tm tm_;
-};
-
-template <>
-class UseType<std::time_t> : public UseType<std::tm>
-{
-public:
-    UseType(std::time_t &t, std::string const &name = std::string())
-        : UseType<std::tm>(tm_, name), t_(t) {}
-    UseType(std::time_t &t, eIndicator &ind,
-        std::string const &name = std::string())
-        : UseType<std::tm>(tm_, ind, name), t_(t) {}
-
-    virtual void preUse();
-    virtual void postUse();
-
-private:
-    std::time_t &t_;
-    std::tm tm_;
-};
-
 // into and use types for Statement (for nested statements and cursors)
 
 template <>
@@ -910,6 +1043,60 @@ public:
 
 private:
     Statement &s_;
+};
+
+// Support selecting into a Row for dynamic queries
+template <>
+class IntoType<Row> : public StandardIntoType
+{
+public:
+    IntoType(Row &r) : row_(r) {}
+    IntoType(Row &r, eIndicator &ind)
+        :StandardIntoType(ind), row_(r) {}
+
+    void define(Statement &st, int &position);
+
+private:
+    Row &row_;
+};
+
+
+
+// Automatically create an IntoType from a TypeConversion
+template <typename T>
+class IntoType : public IntoType<typename TypeConversion<T>::base_type>
+{
+public:
+    typedef typename TypeConversion<T>::base_type BASE_TYPE;
+
+    IntoType(T &value) : IntoType<BASE_TYPE>(base_value_), value_(value) {}
+    IntoType(T &value, eIndicator &ind)
+        : IntoType<BASE_TYPE>(base_value_, ind), value_(value) {}
+
+private:
+    void convertFrom(){value_ = TypeConversion<T>::from(base_value_);}
+    
+    T &value_;
+    BASE_TYPE base_value_;
+};
+
+//Automatically create a UseType from a TypeConversion
+template <typename T>
+class UseType : public UseType<typename TypeConversion<T>::base_type>
+{
+public:
+    typedef typename TypeConversion<T>::base_type BASE_TYPE;
+
+    UseType(T &value) : UseType<BASE_TYPE>(base_value_), value_(value) {}
+    UseType(T &value, eIndicator &ind)
+        : UseType<BASE_TYPE>(base_value_, ind), value_(value) {}
+
+private:
+    void convertFrom(){value_ = TypeConversion<T>::from(base_value_);}
+    void convertTo(){base_value_ = TypeConversion<T>::to(value_);}
+
+    T &value_;
+    BASE_TYPE base_value_;
 };
 
 // basic BLOB operations
