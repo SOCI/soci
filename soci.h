@@ -388,7 +388,7 @@ public:
     Row() {}
     ~Row()
     {
-        for(int i=0; i<holders_.size(); ++i)
+        for(size_t i=0; i<holders_.size(); ++i)
         {
             delete holders_[i];
             delete indicators_[i];

@@ -153,7 +153,7 @@ void test2()
         
         // make sure the date is stored properly in Oracle
         char buf[25];
-        strftime(buf, 25, "%m-%d-%C%y %H:%M:%S", &t2);
+        strftime(buf, 25, "%m-%d-%Y %H:%M:%S", &t2);
 
         std::string t_out;
         std::string format("MM-DD-YYYY HH24:MI:SS");
