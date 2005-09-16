@@ -53,6 +53,9 @@ public:
     virtual void preFetch() = 0;
     virtual void postFetch(bool gotData, bool calledFromFetch) = 0;
     virtual void cleanUp() = 0;
+
+    virtual int size(){return 1;}
+    virtual void resize(int sz){}
 };
 
 // this is intended to be a base class for all classes that deal with
@@ -66,6 +69,8 @@ public:
     virtual void preUse() = 0;
     virtual void postUse() = 0;
     virtual void cleanUp() = 0;
+
+    virtual int size(){return 1;};
 };
 
 namespace details {
@@ -75,7 +80,7 @@ class TypePtr
 {
 public:
     TypePtr(T *p) : p_(p) {}
-    ~TypePtr() { delete p_; }
+    ~TypePtr() { delete p_; }   
 
     T * get() const { return p_; }
     void release() const { p_ = NULL; }
@@ -106,6 +111,12 @@ template <typename T, typename T1>
 details::IntoTypePtr into(T &t, T1 p1)
 {
     return details::IntoTypePtr(new IntoType<T>(t, p1));
+}
+
+template <typename T>
+details::IntoTypePtr into(T &t, std::vector<eIndicator> &indicator)
+{
+    return details::IntoTypePtr(new IntoType<T>(t, indicator));
 }
 
 template <typename T>
@@ -184,6 +195,12 @@ details::UseTypePtr use(T &t, T1 p1)
 }
 
 template <typename T>
+details::UseTypePtr use(T &t, const std::vector<eIndicator> &indicator)
+{
+    return details::UseTypePtr(new UseType<T>(t, indicator));
+}
+
+template <typename T>
 details::UseTypePtr use(T &t, eIndicator &indicator)
 {
     return details::UseTypePtr(new UseType<T>(t, indicator));
@@ -197,6 +214,12 @@ details::UseTypePtr use(T &t, T1 p1, T2 p2)
 
 template <typename T, typename T1>
 details::UseTypePtr use(T &t, eIndicator &ind, T1 p1)
+{
+    return details::UseTypePtr(new UseType<T>(t, ind, p1));
+}
+
+template <typename T, typename T1>
+details::UseTypePtr use(T &t, const std::vector<eIndicator> &ind, T1 p1)
 {
     return details::UseTypePtr(new UseType<T>(t, ind, p1));
 }
@@ -245,7 +268,7 @@ class PrepareTempType;
 } // namespace details
 
 
-// default TypeConversion, acts as pass through for Row::get()
+// default traits class TypeConversion, acts as pass through for Row::get()
 // when no actual conversion is needed.
 template<typename T>
 class TypeConversion
@@ -405,6 +428,37 @@ private:
     std::map<std::string, size_t> index_;
 };
 
+namespace details
+{
+class RefCountedPrepareInfo;
+
+// this needs to be lightweight and copyable
+class PrepareTempType
+{
+public:
+    PrepareTempType(Session &);
+    PrepareTempType(PrepareTempType const &);
+    PrepareTempType & operator=(PrepareTempType const &);
+
+    ~PrepareTempType();
+
+    template <typename T>
+    PrepareTempType & operator<<(T const &t)
+    {
+        rcpi_->accumulate(t);
+        return *this;
+    }
+
+    PrepareTempType & operator,(IntoTypePtr const &i);
+    PrepareTempType & operator,(UseTypePtr const &u);
+
+    RefCountedPrepareInfo * getPrepareInfo() const { return rcpi_; }
+
+private:
+    RefCountedPrepareInfo *rcpi_;
+};
+} // namespace details
+
 class Statement
 {
 public:
@@ -428,14 +482,16 @@ public:
     
     OCIStmt *stmtp_;
     Session &session_;
-
+ 
 protected:
     std::vector<IntoTypeBase*> intos_;
     std::vector<UseTypeBase*> uses_;
- 
+
 private:
+
     Row* row_;
-    
+    int  fetchSize_;
+
     template<typename T>
     void intoRow()
     {
@@ -446,6 +502,14 @@ private:
     }
 
     template<eDataType> void bindInto();
+
+    int intosSize();
+    int usesSize();
+    void preFetch();
+    void preUse();
+    void postFetch(bool gotData, bool calledFromFetch);
+    void postUse();
+    bool resizeIntos();
 };
 
 class Procedure : public Statement
@@ -560,31 +624,7 @@ private:
     Session *session_;
 };
 
-// this needs to be lightweight and copyable
-class PrepareTempType
-{
-public:
-    PrepareTempType(Session &);
-    PrepareTempType(PrepareTempType const &);
-    PrepareTempType & operator=(PrepareTempType const &);
 
-    ~PrepareTempType();
-
-    template <typename T>
-    PrepareTempType & operator<<(T const &t)
-    {
-        rcpi_->accumulate(t);
-        return *this;
-    }
-
-    PrepareTempType & operator,(IntoTypePtr const &i);
-    PrepareTempType & operator,(UseTypePtr const &u);
-
-    RefCountedPrepareInfo * getPrepareInfo() const { return rcpi_; }
-
-private:
-    RefCountedPrepareInfo *rcpi_;
-};
 
 // this needs to be lightweight and copyable
 class PrepareType
@@ -605,6 +645,8 @@ private:
 };
 
 } // namespace details
+
+
 
 
 class Session
@@ -641,6 +683,66 @@ public:
 
 // template specializations for bind and define operations
 
+// into and use type base classes for vectors
+
+class VectorIntoType : public IntoTypeBase
+{
+public:
+    VectorIntoType()
+        : st_(NULL), defnp_(NULL), ind_(NULL), indOCIHolder_(NULL) {}
+    VectorIntoType(std::vector<eIndicator>& ind)
+        : st_(NULL), defnp_(NULL), ind_(&ind.at(0)), indOCIHolderVec_(ind.size()) 
+        { 
+            indOCIHolder_ = &indOCIHolderVec_.front(); 
+        }
+
+    virtual void preFetch() {}
+    virtual void postFetch(bool gotData, bool calledFromFetch);
+    virtual void cleanUp();
+
+protected:
+    Statement *st_;
+    OCIDefine *defnp_;
+    eIndicator* ind_;
+    sb2* indOCIHolder_;
+
+private:
+    virtual void convertFrom() {}
+    std::vector<sb2> indOCIHolderVec_;
+};
+
+class VectorUseType : public UseTypeBase
+{
+public:
+    VectorUseType(std::string const &name = std::string())
+        : st_(NULL), bindp_(NULL), ind_(NULL), name_(name), indOCIHolder_(NULL) {}
+    
+    VectorUseType(const std::vector<eIndicator> &ind, std::string const &name = std::string())
+        : st_(NULL), bindp_(NULL), ind_(&ind.at(0)), indOCIHolderVec_(ind.size()), name_(name) 
+    {
+        indOCIHolder_ = &indOCIHolderVec_.front();
+    }
+
+    virtual void preUse();
+    virtual void postUse() {convertTo();}
+    virtual void cleanUp();
+
+protected:
+    Statement *st_;
+    OCIBind *bindp_;
+
+private:
+    const eIndicator *ind_;
+    std::vector<sb2> indOCIHolderVec_;
+
+protected:
+    std::string name_;
+    sb2 *indOCIHolder_;
+
+private:
+    virtual void convertTo() {} 
+};
+
 
 // standard types
 
@@ -649,8 +751,11 @@ class StandardIntoType : public IntoTypeBase
 public:
     StandardIntoType()
         : st_(NULL), defnp_(NULL), ind_(NULL) {}
-    StandardIntoType(eIndicator &ind)
-        : st_(NULL), defnp_(NULL), ind_(&ind) {}
+    StandardIntoType(eIndicator& ind)
+        : st_(NULL), defnp_(NULL), ind_(&ind)  
+    {}
+    StandardIntoType(std::vector<eIndicator>& ind)
+        : st_(NULL), defnp_(NULL), ind_(&ind.at(0)){}
 
     virtual void preFetch() {}
     virtual void postFetch(bool gotData, bool calledFromFetch);
@@ -762,6 +867,83 @@ private:
     T &t_;
 };
 
+// into and use types for std::vector<T> where T is an integer
+
+template <typename T>
+class IntegerVectorIntoType : public VectorIntoType
+{
+public:
+    IntegerVectorIntoType(std::vector<T> &v) : v_(v) {}
+    IntegerVectorIntoType(std::vector<T> &v, std::vector<eIndicator> &vInd) 
+    : VectorIntoType(vInd), v_(v) {}
+
+    virtual int size(){return v_.size();}
+    virtual void resize(int sz){v_.resize(sz);}
+
+      virtual void define(Statement &st, int &position)
+     {
+        st_ = &st;
+
+        sword res;
+
+        res = OCIDefineByPos(st.stmtp_, &defnp_, st.session_.errhp_,
+            position++, &v_.at(0), static_cast<sb4>(sizeof(T)), SQLT_INT,
+            indOCIHolder_, 0, 0, OCI_DEFAULT);
+        if (res != OCI_SUCCESS)
+        {
+            throwSOCIError(res, st.session_.errhp_);
+        }
+     }
+
+private:
+    std::vector<T>& v_;
+};
+
+template <typename T>
+class IntegerVectorUseType : public VectorUseType
+{
+public:
+     IntegerVectorUseType(std::vector<T> &v, std::string const &name = std::string())
+        : VectorUseType(name), v_(v) {}
+     IntegerVectorUseType(std::vector<T> &v, const std::vector<eIndicator> &ind,
+        std::string const &name = std::string())
+        : VectorUseType(ind, name), v_(v) {}
+
+     virtual int size(){return v_.size();}
+
+    virtual void bind(Statement &st, int &position)
+    {
+        st_ = &st;
+
+        sword res;
+
+        if (name_.empty())
+        {
+            // no name provided, bind by position
+            res = OCIBindByPos(st.stmtp_, &bindp_, st.session_.errhp_,
+                position++, &v_.at(0), static_cast<sb4>(sizeof(T)), SQLT_INT,
+                indOCIHolder_, 0, 0, 0, 0, OCI_DEFAULT);
+        }
+        else
+        {
+            // bind by name
+            res = OCIBindByName(st.stmtp_, &bindp_, st.session_.errhp_,
+                reinterpret_cast<text*>(const_cast<char*>(name_.c_str())),
+                static_cast<sb4>(name_.size()),
+                &v_.at(0), static_cast<sb4>(sizeof(T)), SQLT_INT,
+                indOCIHolder_, 0, 0, 0, 0, OCI_DEFAULT);
+        }
+
+        if (res != OCI_SUCCESS)
+        {
+            throwSOCIError(res, st.session_.errhp_);
+        }
+    }
+
+private:
+    std::vector<T>& v_;
+};
+
 
 // into and use types for short
 
@@ -805,6 +987,51 @@ public:
         : IntegerUseType<int>(i, ind, name) {}
 };
 
+// into and use types for std::vector<int>
+
+template <>
+class IntoType<std::vector<int> > : public IntegerVectorIntoType<int>
+{
+public:
+    IntoType(std::vector<int> &v) : IntegerVectorIntoType<int>(v) {}
+    IntoType(std::vector<int> &v, std::vector<eIndicator> &ind) 
+        : IntegerVectorIntoType<int>(v, ind) {}
+};
+
+template <>
+class UseType<std::vector<int> > : public IntegerVectorUseType<int>
+{
+public:
+    UseType(std::vector<int> &i, std::string const &name = std::string())
+        : IntegerVectorUseType<int>(i, name) {}
+    UseType(std::vector<int> &i, const std::vector<eIndicator> &ind,
+        std::string const &name = std::string())
+        : IntegerVectorUseType<int>(i, ind, name) {}
+};
+
+// into and use types for std::vector<short>
+
+template <>
+class IntoType<std::vector<short> > : public IntegerVectorIntoType<short>
+{
+public:
+    IntoType(std::vector<short> &v) : IntegerVectorIntoType<short>(v) {}
+    IntoType(std::vector<short> &v, std::vector<eIndicator> &ind) 
+        : IntegerVectorIntoType<short>(v, ind) {}
+};
+
+template <>
+class UseType<std::vector<short> > : public IntegerVectorUseType<short>
+{
+public:
+    UseType(std::vector<short> &v, std::string const &name = std::string())
+        : IntegerVectorUseType<short>(v, name) {}
+    UseType(std::vector<short> &v, const std::vector<eIndicator> &ind,
+        std::string const &name = std::string())
+        : IntegerVectorUseType<short>(v, ind, name) {}
+};
+
+
 // into and use types for char
 
 template <>
@@ -837,6 +1064,39 @@ public:
     char& c_;
 };
 
+// into and use types for std::vector<char>
+
+template <>
+class IntoType<std::vector<char> >: public VectorIntoType
+{
+public:
+    IntoType(std::vector<char> &v) : v_(v) {}
+    IntoType(std::vector<char> &v, std::vector<eIndicator> &vind) 
+      : VectorIntoType(vind), v_(v){}
+
+    void define(Statement &st, int &position);
+    int size(){return v_.size();}
+    void resize(int sz){v_.resize(sz);}
+
+ private:
+    std::vector<char> &v_;
+};
+
+template <>
+class UseType<std::vector<char> >: public VectorUseType
+{
+public:
+    UseType(std::vector<char> &v, std::string const &name = std::string())
+      : VectorUseType(name), v_(v) {}
+    UseType(std::vector<char> &v, const std::vector<eIndicator> &vind,
+        std::string const &name = std::string())
+        : VectorUseType(vind, name), v_(v){}
+
+    void bind(Statement &st, int &position);
+    int size(){return v_.size();}
+ private:
+    std::vector<char> &v_;
+};
 
 // into and use types for unsigned long
 
@@ -870,6 +1130,37 @@ private:
     unsigned long &ul_;
 };
 
+template <>
+class IntoType<std::vector<unsigned long> > : public VectorIntoType
+{
+public:
+    IntoType(std::vector<unsigned long> &v) : v_(v) {}
+    IntoType(std::vector<unsigned long> &v, std::vector<eIndicator> &vind) 
+        : VectorIntoType(vind), v_(v) {}
+    
+    void define(Statement &st, int &position);
+    int size(){return v_.size();}
+    void resize(int sz){v_.resize(sz);}
+private:
+    std::vector<unsigned long> &v_;    
+};
+
+template <>
+class UseType<std::vector<unsigned long> > : public VectorUseType
+{
+public:
+    UseType(std::vector<unsigned long> &v, std::string const &name = std::string())
+        : VectorUseType(name), v_(v) {}
+    UseType(std::vector<unsigned long> &v, const std::vector<eIndicator> &ind, 
+            std::string const &name = std::string())
+        : VectorUseType(ind, name), v_(v) {}
+
+    void bind(Statement &st, int &position);
+    int size(){return v_.size();}
+private:
+    std::vector<unsigned long> &v_;
+};
+
 // into and use types for double
 
 template <>
@@ -885,7 +1176,6 @@ private:
     double &d_;
 };
 
-template <>
 class UseType<double> : public StandardUseType
 {
 public:
@@ -899,6 +1189,38 @@ public:
 
 private:
     double &d_;
+};
+
+// into and use types for std::vector<double>
+
+template <>
+class IntoType<std::vector<double> > : public VectorIntoType
+{
+public:
+    IntoType(std::vector<double> &v) : v_(v) {}
+    IntoType(std::vector<double> &v, std::vector<eIndicator> &vind) 
+        : VectorIntoType(vind), v_(v) {}
+    
+    void define(Statement &st, int &position);
+    virtual int size(){return v_.size();}
+    virtual void resize(int sz){v_.resize(sz);}
+private:
+    std::vector<double> &v_;    
+};
+
+template <>
+class UseType<std::vector<double> > : public VectorUseType
+{
+public:
+    UseType(std::vector<double> &v, std::string const &name = std::string())
+        : VectorUseType(name), v_(v) {}
+    UseType(std::vector<double> &v, const std::vector<eIndicator> &ind, std::string const &name = std::string())
+        : VectorUseType(ind, name), v_(v) {}
+
+    void bind(Statement &st, int &position);
+    int size(){return v_.size();}
+private:
+    std::vector<double> &v_;
 };
 
 // into and use types for char*
@@ -935,6 +1257,58 @@ private:
     char *str_;
     size_t bufSize_;
 };
+
+// into and use types for std::vector<std::string>
+
+template <>
+class IntoType<std::vector<std::string> > : public VectorIntoType
+{
+public:
+    IntoType(std::vector<std::string>& v) 
+        : VectorIntoType(), v_(v), buf_(NULL), strLen_(0), sizes_(v_.size()) {}
+    IntoType(std::vector<std::string>& v, std::vector<eIndicator> &vind)
+        : VectorIntoType(vind), v_(v), buf_(NULL), strLen_(0), sizes_(v_.size()) {}
+
+    ~IntoType(){delete [] buf_;}
+    int size(){return v_.size();}
+    void resize(int sz){v_.resize(sz);}
+
+    void cleanUp();
+    void define(Statement &st, int &position);
+    void postFetch(bool gotData, bool calledFromFetch);
+  
+private:
+    std::vector<std::string>& v_;
+    char* buf_;
+    size_t strLen_;
+    sb4 maxSize_;
+    std::vector<ub2> sizes_;
+};
+
+template <>
+class UseType<std::vector<std::string> > : public VectorUseType
+{
+public:
+    UseType(std::vector<std::string>& v, std::string const &name = std::string()) 
+        : VectorUseType(name), v_(v) {}
+    UseType(std::vector<std::string>& v, const std::vector<eIndicator> &ind, 
+            std::string const &name = std::string())
+        : VectorUseType(ind, name), v_(v) {}
+
+    ~UseType(){delete [] buf_;}
+    int size(){return v_.size();}
+
+    void cleanUp();
+    void bind(Statement &st, int &position);
+
+private:
+    
+    std::vector<ub2> sizes_;
+    std::vector<std::string>& v_;
+    char* buf_;
+    sb4 maxSize_;
+};
+
 
 // into and use types for char arrays (with size known at compile-time)
 
@@ -1022,7 +1396,7 @@ class UseType<std::tm> : public StandardUseType
 {
 public:
     UseType(std::tm &t, std::string const &name = std::string())
-        : StandardUseType(name), tm_(t) {}
+        : StandardUseType(name), tm_(t) {}  
     UseType(std::tm &t, eIndicator &ind,
         std::string const &name = std::string())
         : StandardUseType(ind, name), tm_(t) {}
@@ -1035,6 +1409,55 @@ private:
     std::tm &tm_;
     ub1 buf_[7];
 };
+
+// into and use types for std::vector<std::tm>
+
+template <>
+class IntoType<std::vector<std::tm> > : public VectorIntoType
+{
+public:
+    IntoType(std::vector<std::tm>& v) 
+        : vec_(v), buf_(NULL) {}
+    IntoType(std::vector<std::tm>& v, std::vector<eIndicator> &vind)
+        : VectorIntoType(vind), vec_(v), buf_(NULL) {}
+
+    ~IntoType(){delete []buf_;}
+    void cleanUp();
+    void define(Statement &st, int &position);
+    void postFetch(bool gotData, bool calledFromFetch);
+
+    virtual int size(){return vec_.size();}
+    virtual void resize(int sz){vec_.resize(sz);}
+
+private:
+    std::vector<std::tm>& vec_;
+    char* buf_;
+};
+
+
+template <>
+class UseType<std::vector<std::tm> > : public VectorUseType
+{
+public:
+    UseType(std::vector<std::tm>& v, std::string const &name = std::string()) 
+        : VectorUseType(name), v_(v), buf_(NULL) {}
+    UseType(std::vector<std::tm>& v, const std::vector<eIndicator> &vind, 
+            std::string const &name = std::string())
+        : VectorUseType(vind, name), v_(v), buf_(NULL) {}
+
+    ~UseType(){delete [] buf_;}
+    int size(){return v_.size();}
+    
+    void bind(Statement &st, int &position);
+    void cleanUp();
+    void preUse();
+    void postUse();
+
+private:
+    std::vector<std::tm>& v_;
+    ub1* buf_;
+};
+
 
 // into and use types for Statement (for nested statements and cursors)
 
@@ -1124,6 +1547,83 @@ private:
     void convertTo() { base_value_ = TypeConversion<T>::to(value_); }
 
     T &value_;
+    BASE_TYPE base_value_;
+};
+
+// Automatically create a std::vector based IntoType from a TypeConversion
+template <typename T>
+class IntoType<std::vector<T> >: public IntoType<std::vector<typename TypeConversion<T>::base_type> >
+{
+public:
+    typedef typename std::vector<typename TypeConversion<T>::base_type> BASE_TYPE;
+
+    IntoType(std::vector<T> &value) 
+        : IntoType<BASE_TYPE>(base_value_), value_(value) 
+        {
+            base_value_.resize(value_.size());
+        }
+
+    IntoType(std::vector<T> &value, std::vector<eIndicator> &ind)
+        : IntoType<BASE_TYPE>(base_value_, ind), value_(value)
+        {
+            base_value_.resize(value_.size());
+        } 
+
+    int size(){return base_value_.size();}
+    void resize(int sz){value_.resize(sz); base_value_.resize(sz);}
+
+private:
+    void convertFrom() 
+    { 
+        size_t sz = base_value_.size();
+
+        for(size_t i=0; i<sz; ++i)
+        {
+            value_[i] = TypeConversion<T>::from(base_value_[i]);
+        }
+    }
+    
+    std::vector<T> &value_;
+    BASE_TYPE base_value_;
+};
+
+// Automatically create a std::vector based UseType from a TypeConversion
+template <typename T>
+class UseType<std::vector<T> > : public UseType<std::vector<typename TypeConversion<T>::base_type> >
+{
+public:
+    typedef typename std::vector<typename TypeConversion<T>::base_type> BASE_TYPE;
+
+    UseType(std::vector<T> &value) : UseType<BASE_TYPE>(base_value_), value_(value) 
+        {
+            base_value_.resize(value_.size());
+        }
+    UseType(std::vector<T> &value, const std::vector<eIndicator> &ind, 
+        const std::string &name=std::string())
+        : UseType<BASE_TYPE>(base_value_, ind, name), value_(value) 
+        {
+            base_value_.resize(value_.size());
+        }
+
+private:
+    void convertFrom() 
+    {
+        size_t sz = base_value_.size();
+        for(size_t i=0; i<sz; ++i)
+        {
+            value_[i] = TypeConversion<T>::from(base_value_[i]);
+        }
+    }
+    void convertTo() 
+    { 
+        size_t sz = value_.size();
+        for(size_t i=0; i<sz; ++i)
+        {
+            base_value_[i] = TypeConversion<T>::to(value_[i]);
+        }
+    }
+
+    std::vector<T> &value_;
     BASE_TYPE base_value_;
 };
 

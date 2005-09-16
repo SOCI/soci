@@ -53,12 +53,13 @@ void test1()
         sql.once <<
             "select a from (select :b as a from dual)",
             into(a), use(b);
-        assert(a == 5);
 
+        assert(a == 5);
         eIndicator aind = eOK;
         eIndicator bind = eNull;
         sql.once << "select a from (select :b as a from dual)",
             into(a, aind), use(b, bind);
+
         assert(aind == eNull);
 
         int c = 10;
@@ -153,7 +154,7 @@ void test2()
         
         // make sure the date is stored properly in Oracle
         char buf[25];
-        strftime(buf, 25, "%m-%d-%Y %H:%M:%S", &t2);
+        strftime(buf, sizeof(buf), "%m-%d-%Y %H:%M:%S", &t2);
 
         std::string t_out;
         std::string format("MM-DD-YYYY HH24:MI:SS");
@@ -728,13 +729,698 @@ void test14()
 
     char c_in = 'Z';
     sql << "insert into test14(chr1) values(:C)", use(c_in);
-    sql.commit();
 
     char c_out = ' ';
     sql << "select chr1 from test14", into(c_out);
     assert(c_out == 'Z');
    
     std::cout << "test 14 passed" <<std::endl; 
+}
+
+// test bulk insert features
+void test15()
+{
+    Session sql(serviceName, userName, password);
+    try { sql << "drop table test15"; } catch(SOCIError&) {} // ignore 
+
+    sql << "create table test15 (id number(5), code number(2))";
+
+    // verify exception if thrown if vectors of unequal size are passed in
+    {
+        std::vector<int> ids;
+        ids.push_back(1);
+        ids.push_back(2);
+        std::vector<int> codes;
+        codes.push_back(1);
+        std::string error;
+
+        try
+        {
+            sql << "insert into test15(id,code) values(:id,:code)", use(ids), use(codes);
+        }
+        catch(SOCIError& e)
+        {
+            error = e.what();
+        }
+        assert(error.find("Bind variable size mismatch") != std::string::npos);
+
+        try 
+        {
+            sql << "select from test15", into(ids), into(codes);
+        }
+        catch(std::exception& e)
+        {
+            error = e.what();
+        }
+        assert(error.find("Bind variable size mismatch") != std::string::npos);
+    }
+  
+    // verify partial insert occurs when one of the records is bad
+    {
+        std::vector<int> ids;
+        ids.push_back(100);
+        ids.push_back(1000000); // too big for column
+
+        std::string error;
+        try
+        {
+            sql << "insert into test15 (id) values(:id)", use(ids, "id");
+        }
+        catch(SOCIError& e)
+        {
+            error = e.what();  //TODO e could be made to tell which row(s) failed
+        }
+        sql.commit();
+        assert(error.find("ORA-01438") != std::string::npos);
+        int count(0);
+        sql << "select count(*) from test15", into(count);
+        assert(count == 1);
+        sql << "delete from test15";
+    }
+
+    // test insert
+    {
+        std::vector<int> ids;
+        for (int i=0; i < 3; ++i)
+        {
+            ids.push_back(i+10);
+        }
+    
+        Statement st = (sql.prepare << "insert into test15(id) values(:id)", 
+                            use(ids)); 
+        st.execute(1);    
+        int count;
+        sql << "select count(*) from test15", into(count);
+        assert(count == 3);
+    }
+
+    //verify an exception is thrown if use vector is zero length
+    {
+        std::vector<int> ids;
+        bool caught(false);
+        try
+        {
+            sql << "select id from test15", into(ids);
+        }
+        catch (std::out_of_range& e)
+        {
+            caught = true;
+        }
+        assert(caught);
+
+    }
+
+    // verify an exception is thrown if into vector is zero length
+    {
+        std::vector<int> ids;
+        bool caught(false);
+        try
+        {
+            sql << "insert into test15(id) values(:id)", use(ids);
+        }
+        catch(std::out_of_range& e)
+        {
+            caught = true;
+        }
+        assert(caught);
+    }
+
+    // test eNoData indicator
+    {
+        std::vector<eIndicator> inds(3);
+        std::vector<int> ids_out(3);
+        Statement st = (sql.prepare << "select id from test15 where 1=0", 
+                        into(ids_out, inds));
+
+        assert(!st.execute(1));
+        assert(ids_out.size() == 0);
+        assert(inds.size() == 3 && inds[0] == eNoData && inds[1] == eNoData && inds[2] == eNoData);
+    }
+
+    // test NULL indicators
+    {
+        std::vector<int> ids(3);
+        sql << "select id from test15", into(ids);
+
+        std::vector<eIndicator> inds_in;
+        inds_in.push_back(eOK);
+        inds_in.push_back(eNull);
+        inds_in.push_back(eOK);
+
+        std::vector<int> new_codes;
+        new_codes.push_back(10);
+        new_codes.push_back(11);
+        new_codes.push_back(10);
+    
+        sql << "update test15 set code = :code where id = :id", 
+                use(new_codes, inds_in), use(ids);
+
+        std::vector<eIndicator> inds_out(3);
+        std::vector<int> codes(3);
+
+        sql << "select code from test15", into(codes, inds_out);
+        assert(codes.size() == 3 && inds_out.size() == 3);
+        assert(codes[0] == 10 && codes[2] == 10);
+        assert(inds_out[0] == eOK && inds_out[1] == eNull && inds_out[2] == eOK);
+    }    
+
+    // test basic select
+    {
+        const size_t sz = 3;
+        std::vector<eIndicator> inds(sz);
+        std::vector<int> ids_out(sz);
+        Statement st = (sql.prepare << "select id from test15", into(ids_out, inds));
+        assert(st.execute(1));
+        assert(ids_out.size() == sz);
+        assert(ids_out[0] == 10);
+        assert(ids_out[2] == 12);
+        assert(inds.size() == 3 && inds[0] == eOK && inds[1] == eOK && inds[2] == eOK);
+    }
+
+    // verify execute(0)
+    {
+        std::vector<int> ids_out(2);
+        Statement st = (sql.prepare << "select id from test15", into(ids_out));
+
+        st.execute(0);
+        assert(ids_out.size() == 2);
+        assert(st.fetch());
+        assert(ids_out.size() == 2 && ids_out[0] == 10 && ids_out[1] == 11);
+        assert(st.fetch());
+        assert(ids_out.size() == 1 && ids_out[0] == 12);
+        assert(!st.fetch());
+    }
+
+    // verify resizing happens if vector is larger then number of rows returned
+    {
+        std::vector<int> ids_out(4); // one too many 
+        Statement st2 = (sql.prepare << "select id from test15", into(ids_out));
+        assert(st2.execute(1));
+        assert(ids_out.size() == 3);
+        assert(ids_out[0] == 10);
+        assert(ids_out[2] == 12);
+    }
+
+    // verify resizing happens properly during fetch()
+    {
+        std::vector<int> more;
+        more.push_back(13);
+        more.push_back(14);
+        sql << "insert into test15(id) values(:id)", use(more);
+
+        std::vector<int> ids(2);
+        Statement st3 = (sql.prepare << "select id from test15", into(ids));
+        assert(st3.execute(1));
+        assert(ids[0] == 10);
+        assert(ids[1] == 11);
+
+        assert(st3.fetch());
+        assert(ids[0] == 12);
+        assert(ids[1] == 13);
+        
+        assert(st3.fetch());
+        assert(ids.size() == 1);
+        assert(ids[0] == 14);
+
+        assert(!st3.fetch());
+    }
+
+    std::cout << "test 15 passed"<< std::endl;
+}
+
+//test bulk operations for std::string
+void test16()
+{
+    Session sql(serviceName, userName, password);
+    try { sql << "drop table test16"; } catch(SOCIError&) {} // ignore 
+
+    sql << "create table test16(name varchar2(10), code varchar2(3))";
+ 
+    // verify an exception is thrown and nothing succeeds if string size exceeds column size
+    {
+        std::vector<std::string> codes;
+        codes.push_back("abc");
+        codes.push_back("defg"); // too big for column
+
+        std::string error;
+        try
+        {
+            sql << "insert into test16(code) values(:code)", use(codes);
+        }
+        catch(SOCIError& e)
+        {
+            error = e.what();
+        }
+        assert(error.find("ORA-12899") != std::string::npos);
+        int count(0);
+        sql << "select count(*) from test16", into(count);
+        assert(count == 1);
+        sql << "delete from test16";
+    }
+   
+    std::vector<std::string> names;
+    std::vector<std::string> codes;
+    for (int i=0; i < 3; ++i)
+    {
+        std::ostringstream nStr;
+        nStr << "name" << i;
+        if (i==1)
+            nStr << "extra";
+        names.push_back(nStr.str());
+            
+        std::ostringstream cStr;
+        cStr << i*100;
+        codes.push_back(cStr.str());
+    }
+    
+    Statement st = (sql.prepare << "insert into test16(name,code) values(:name, :code)", 
+                            use(names), use(codes)); 
+    st.execute(1);    
+
+    // test select, multiple string columns
+    {
+        std::vector<std::string> names_out(2);
+        std::vector<std::string> codes_out(2);
+        Statement st = (sql.prepare << "select name, code from test16", into(names_out), into(codes_out));
+        st.execute(1);
+        assert(names_out.size() == 2);
+        assert(names_out[0] == "name0");
+        assert(names_out[1] == "name1extra");   
+        assert(codes_out[0] == "0");
+        assert(codes_out[1] == "100");
+        st.fetch();
+        assert(names_out.size()==1 && names_out[0] == "name2");
+        assert(codes_out.size()==1 && codes_out[0] == "200");            
+    }
+  
+    // test simple syntax
+    {
+        std::vector<std::string> simple;
+        simple.push_back("simple1");
+        simple.push_back("simple2");
+        sql << "insert into test16(name) values(:names)", use(simple, "names");
+    
+        std::vector<std::string> simple_out(2);
+        sql << "select name from test16 where name like 'simple%'", into(simple_out);
+        assert(simple_out.size()==2 && simple_out[0] == "simple1" && simple_out[1] == "simple2");
+    }
+
+    // test indicators
+    {
+        std::vector<eIndicator> inds_in;
+        inds_in.push_back(eOK);
+        inds_in.push_back(eNull);
+        inds_in.push_back(eOK);
+
+        std::vector<std::string> names_in;
+        names_in.push_back("indtest1");
+        names_in.push_back("indtest2");
+        names_in.push_back("indtest3");
+
+        std::vector<std::string> codes;
+        codes.push_back("99");
+        codes.push_back("99");
+        codes.push_back("99");
+        sql<<"insert into test16(name,code) values (:name, :code)", use(names_in, inds_in), use(codes);
+        sql.commit();
+
+        std::vector<eIndicator> inds_out(3);
+        inds_out[0] = eNoData;
+        inds_out[1] = eNoData;
+        inds_out[2] = eNoData;
+        std::vector<std::string> names_out(3);
+
+        sql<<"select name from test16 where code = :code", use(codes[0]), into(names_out, inds_out);
+
+        assert(names_out[0] == "indtest1" && names_out[2] == "indtest3");
+        assert(inds_out[0] == eOK && inds_out[1] == eNull && inds_out[2] == eOK);
+        assert(names_out[0] == "indtest1" && names_out[2] == "indtest3"); 
+    }
+
+    //verify bad sql statement causes exception
+    {
+        std::vector<std::string> names;
+        std::string msg;
+        try
+        {
+            sql << "select bogus from test16\n", into(names);
+        }
+        catch(SOCIError& e)
+        {
+            msg = e.what();
+        }
+        assert(msg.find("invalid identifier") != std::string::npos);
+    }
+    std::cout << "test 16 passed"<< std::endl;
+}
+
+// test bulk operations for unsigned long and double
+void test17()
+{
+    Session sql(serviceName, userName, password);
+    try { sql << "drop table test17"; } catch(SOCIError&) {} // ignore 
+
+    sql << "create table test17 (nums number(10), amts number(8,2))";
+
+    std::vector<unsigned long> nums;
+    nums.push_back(100 * 1000);
+    nums.push_back(200 * 1000);
+    nums.push_back(300 * 1000);    
+
+    std::vector<double> amts;
+    amts.push_back(1.11);
+    amts.push_back(1.12);
+    amts.push_back(1.13);
+
+    sql << "insert into test17(nums, amts) values(:nums, :amts)", use(nums, "nums"), use(amts, "amts");
+    int count(0);
+
+    sql << "select count(*) from test17", into(count);
+    assert(count == 3);
+
+    std::vector<unsigned long> nums_out(2);
+    std::vector<double> amts_out(2);
+
+    sql << "select nums, amts from test17", into(nums_out), into(amts_out);
+    assert(nums_out.size()==2 && nums_out[0] == 100*1000 && nums_out[1] == 200*1000);
+    assert(amts_out.size()==2 && amts_out[0] == 1.11 && amts_out[1] == 1.12);
+
+    // test indicators
+    {
+        std::vector<eIndicator> indsd_in;
+        indsd_in.push_back(eOK);
+        indsd_in.push_back(eNull);
+        
+        std::vector<double> vd;
+        vd.push_back(99.99);
+        vd.push_back(100.1);
+
+        std::vector<eIndicator> indsl_in;
+        indsl_in.push_back(eNull);
+        indsl_in.push_back(eOK);
+
+        std::vector<unsigned long> vl;
+        vl.push_back(9990);
+        vl.push_back(1001);
+       
+        sql << "insert into test17(nums, amts) values(:num, :amt)", use(vl, indsl_in), use(vd, indsd_in);
+        
+        std::vector<double> d_out(2);
+        std::vector<unsigned long> l_out(2);
+        std::vector<eIndicator> indd_out(2);
+        std::vector<eIndicator> indl_out(2);
+
+        sql << "select nums, amts from test17 where nums is null or amts is null", 
+            into(l_out, indl_out), into(d_out, indd_out);
+
+        assert(l_out.size() == 2);     
+
+        assert(l_out[1] == vl[1] && indl_out[1] == eOK);
+        assert(indl_out[0] == eNull);
+
+        assert(indd_out[1] == eNull);
+        assert(d_out[0] < 100 && d_out[0] > 99.98);
+        assert(indd_out[0] == eOK);
+    }
+
+    std::cout << "test 17 passed"<<std::endl;
+}
+
+// test bulk operations for std::tm
+void test18()
+{
+    Session sql(serviceName, userName, password);
+    try { sql << "drop table test18"; } catch(SOCIError&) {} // ignore 
+
+    sql << "create table test18 (d1 date, d2 date)";
+
+    std::vector<std::tm> times;
+    for (int i=0; i<4; ++i)
+    {
+        std::time_t now = std::time(0);
+        std::tm when = *gmtime(&now);
+        when.tm_year = 104;
+        when.tm_mon = 11;
+        when.tm_mday = i+10;
+        mktime(&when);
+        times.push_back(when);
+    }
+
+    sql << "insert into test18(d1) values(:times)", use(times);
+
+    int count(0);
+    sql << "select count(*) from test18", into(count);
+    assert(count == 4);
+
+    std::vector<std::tm> times_out(3);
+    sql << "select d1 from test18", into(times_out);
+
+    assert(times_out.size() == 3);
+    for (size_t i=0; i<times_out.size(); ++i)
+    {
+        assert(mktime(&times_out[i]) == mktime(&times[i]));
+        std::tm t = times_out[i];
+        assert(t.tm_year == 104);
+        assert(t.tm_mon == 11);
+        assert(t.tm_mday == static_cast<int>(i+10));
+    }    
+
+    std::vector<std::tm> times_in;
+    // test indicators
+    {
+        for (int i=0; i<2; ++i)
+        {
+            std::time_t now = std::time(0);
+            std::tm when = *gmtime(&now);
+            when.tm_year = 125;
+            when.tm_mon = 2;
+            when.tm_mday = i + 1;
+            mktime(&when);
+            times_in.push_back(when);
+        }
+        std::vector<eIndicator> inds_in;
+        inds_in.push_back(eOK);
+        inds_in.push_back(eNull);
+        sql << "insert into test18 (d1) values (:d1)", use(times_in, inds_in, "d1");
+        sql.commit();
+        std::vector<std::tm> times_out(2);
+        std::vector<eIndicator> inds_out(2);
+
+        sql << "select d1 from test18 where d1 > sysdate or d1 is null", into(times_out, inds_out);
+        assert(times_out.size() == 2);
+        assert(memcmp(&times_out[0], &times_in[0], sizeof(std::tm)) == 0);
+        assert(inds_out[0] == eOK);
+        assert(inds_out[1] == eNull);
+    }
+
+    // test resizing
+    {
+        std::vector<std::tm> out(2);
+        Statement st = (sql.prepare << "select d1 from test18 where d1 is not null", into(out) );
+
+        assert(st.execute(1));
+        assert(out.size() == 2);
+
+        assert(mktime(&out[0]) == mktime(&times[0]));
+        assert(mktime(&out[1]) == mktime(&times[1]));
+
+        assert(st.fetch());
+        assert(out.size() == 2);
+        assert(mktime(&out[0]) == mktime(&times[2]));
+        assert(mktime(&out[1]) == mktime(&times[3]));
+
+        assert(st.fetch());
+        assert(out.size() == 1);
+        assert(mktime(&out[0]) == mktime(&times_in[0]));
+
+        assert(!st.fetch());
+    }
+
+    std::cout << "test 18 passed"<< std::endl;
+}
+
+// test bulk operations for std::time_t
+void test19()
+{
+    Session sql(serviceName, userName, password);
+    try { sql << "drop table test19"; } catch(SOCIError&) {} // ignore 
+
+    sql << "create table test19 (d1 date)";
+
+    time_t t1 = std::time(0) + 60*60*24;
+    time_t t2 = t1 + 60*60*24*2;
+    time_t t3 = t1 + 60*60*24*4;
+    std::vector<time_t> times_in1;
+    {
+        times_in1.push_back(t1);
+        times_in1.push_back(t2);
+        times_in1.push_back(t3);
+        
+        sql << "insert into test19(d1) values(:d1)", use(times_in1);
+        
+        int count(0);
+        sql << "select count(*) from test19", into(count);
+        assert(count == 3);
+    }
+
+    // test resizing from exec
+    {
+        std::vector<time_t> times_out(3); // one too many
+        sql << "select d1 from test19", into(times_out);
+        assert(times_out.size() == 3);
+        assert(times_out[1] == t2);
+    }
+
+    //test indicators
+    std::vector<std::time_t> times_in2;
+    {
+        time_t today = time(0);
+        time_t yesterday = today - 60*60*24;
+        time_t dayBefore = yesterday - 60*60*24;
+        times_in2.push_back(yesterday);
+        times_in2.push_back(dayBefore);
+
+        std::vector<eIndicator> inds_in;
+        inds_in.push_back(eOK);
+        inds_in.push_back(eNull);
+        sql << "insert into test19 (d1) values(:d1)", use(times_in2, inds_in, "d1");
+        assert(times_in2.size() == 2);
+        assert(times_in2[0] == yesterday);
+        assert(times_in2[1] == dayBefore);
+
+        std::vector<std::time_t> times_out(2);
+        std::vector<eIndicator> inds_out(2);
+        sql << "select d1 from test19 where d1 < sysdate or d1 is null",
+            into(times_out, inds_out);
+
+        assert(times_out.size() == 2);
+        assert(times_out[0] == times_in2[0]);
+        assert(inds_out[0] == eOK);
+        assert(inds_out[1] == eNull);
+    }
+
+    //test resizing
+    {
+        std::vector<std::time_t> times_in3;
+        time_t now = time(0);
+        times_in3.push_back(now);
+
+        sql << "insert into test19 (d1) values(:d1)", use(times_in3);
+        sql.commit();
+
+        std::vector<std::time_t> times_out(2);
+        Statement st = (sql.prepare <<"select d1 from test19 where d1 is not null", into(times_out));
+        assert(st.execute(1));
+        assert(times_out.size() == 2 && times_out[0] == times_in1[0] && times_out[1] == times_in1[1]);
+
+        assert(st.fetch());
+        assert(times_out.size() == 2); 
+        assert(times_out[0] == times_in1[2]);
+        assert(times_out[1] == times_in2[0]);
+
+        assert(st.fetch());
+        assert(times_out.size() == 1 && times_out[0] == times_in3[0]);
+        assert(!st.fetch());
+    }
+
+    std::cout << "test 19 passed" << std::endl;
+}
+
+// test bulk operations for char
+void test20()
+{
+    Session sql(serviceName, userName, password);
+    try { sql << "drop table test20"; } catch(SOCIError&) {} // ignore 
+
+    sql << "create table test20(code char(1))";
+    
+    std::vector<char> in;
+    in.push_back('A');
+    in.push_back('B');
+
+    sql << "insert into test20 (code) values(:code)", use(in);
+
+    int count(0);
+    sql << "select count(*) from test20", into(count);
+    assert(count == 2);
+
+    std::vector<char> out(2);
+    sql << "select code from test20", into(out);
+    assert(out.size() == 2 && out[0] == 'A' && out[1] == 'B');
+
+    // test indicators
+    {
+        std::vector<char> in2;
+        in2.push_back('C');
+        in2.push_back('D');
+    
+        std::vector<eIndicator> inds_in;
+        inds_in.push_back(eOK);
+        inds_in.push_back(eNull);
+
+        sql << "insert into test20 (code) values (:code)", use(in2, inds_in, "code");
+        
+        std::vector<char> out2(4);
+        std::vector<eIndicator> inds_out(4);
+
+        sql << "select code from test20", into(out2, inds_out);
+        assert(out2[2] == 'C' && inds_out[2] == eOK);
+        assert(inds_out[3] == eNull);
+    
+    }
+    std::cout << "test 20 passed" << std::endl;
+}
+
+// test bulk operations for short
+void test21()
+{
+    Session sql(serviceName, userName, password);
+    try { sql << "drop table test21"; } catch(SOCIError&) {} // ignore 
+
+    sql << "create table test21(id number(2))";
+    
+    std::vector<short> in;
+    in.push_back(1);
+    in.push_back(2);
+
+    sql << "insert into test21 (id) values(:id)", use(in);
+ 
+    int count(0);
+    sql << "select count(*) from test21", into(count);
+    assert(count == 2);
+
+    std::vector<short> out(2);
+    sql << "select id from test21", into(out);
+    assert(out.size() == 2 && out[0] == 1 && out[1] == 2);
+
+    // test indicators
+    {
+        std::vector<short> in2;
+        in2.push_back(3);
+        in2.push_back(4);
+   
+        assert(in2[0] == 3);
+        assert(in2[1] == 4);
+ 
+        std::vector<eIndicator> inds_in;
+        inds_in.push_back(eOK);
+        inds_in.push_back(eNull);
+
+        sql << "insert into test21 (id) values (:id)", use(in2, inds_in, "id");
+        
+        std::vector<short> out2(4);
+        std::vector<eIndicator> inds_out(4);
+
+        sql << "select id from test21", into(out2, inds_out);
+    
+        assert(in2[0] == 3);
+
+        assert(out2[2] == 3);
+        assert(inds_out[2] == eOK);
+        assert(inds_out[3] == eNull);
+    }
+
+    std::cout << "test 21 passed" << std::endl;
 }
 
 int main(int argc, char** argv)
@@ -759,7 +1445,7 @@ int main(int argc, char** argv)
         test4();
         test5();
         test6();
-        test7();
+        test7(); 
         test8();
         test9();
         test10();
@@ -767,7 +1453,14 @@ int main(int argc, char** argv)
         test12();
         test13(); 
         test14();
-
+        test15();  
+        test16();
+        test17(); 
+        test18(); 
+        test19(); 
+        test20();
+        test21();
+    
         std::cout << "\nOK, all tests passed.\n\n";
     }
     catch (std::exception const & e)
