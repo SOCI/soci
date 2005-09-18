@@ -488,7 +488,6 @@ protected:
     std::vector<UseTypeBase*> uses_;
 
 private:
-
     Row* row_;
     int  fetchSize_;
 
@@ -678,6 +677,11 @@ public:
     OCIError *errhp_;
     OCISvcCtx *svchp_;
     OCISession *usrhp_;
+
+private:
+    Session(const Session&);
+    Session& operator=(const Session&);
+
 };
 
 
