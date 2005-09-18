@@ -1495,7 +1495,7 @@ void UseType<std::vector<std::string> >::bind(Statement &st, int &position)
     char* pos = buf_;
     for (size_t i=0; i<v_.size(); ++i)
     {
-        strcpy(pos, v_[i].c_str());
+        strncpy(pos, v_[i].c_str(), v_[i].length());
         pos += maxSize;
     }
 
