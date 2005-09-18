@@ -233,12 +233,12 @@ void Session::cleanUp()
 }
 
 Statement::Statement(Session &s)
-    : stmtp_(0), session_(s), row_(0)
+    : stmtp_(0), session_(s), row_(0), fetchSize_(1)
 {
 }
 
 Statement::Statement(PrepareTempType const &prep)
-    : stmtp_(0), session_(*prep.getPrepareInfo()->session_), row_(0)
+    : stmtp_(0), session_(*prep.getPrepareInfo()->session_), row_(0), fetchSize_(1)
 {
     RefCountedPrepareInfo *prepInfo = prep.getPrepareInfo();
 
@@ -522,7 +522,8 @@ void Statement::postUse()
 void Statement::define()
 {
     int definePosition = 1;
-    for (size_t i = 0; i != intos_.size(); ++i)
+    const size_t sz = intos_.size();
+    for (size_t i = 0; i < sz; ++i)
         intos_[i]->define(*this, definePosition);
 }
 
