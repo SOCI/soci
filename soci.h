@@ -692,13 +692,18 @@ private:
 class VectorIntoType : public IntoTypeBase
 {
 public:
-    VectorIntoType()
-        : st_(NULL), defnp_(NULL), ind_(NULL), indOCIHolder_(NULL) {}
-    VectorIntoType(std::vector<eIndicator>& ind)
-        : st_(NULL), defnp_(NULL), ind_(&ind.at(0)), indOCIHolderVec_(ind.size()) 
-        { 
-            indOCIHolder_ = &indOCIHolderVec_.front(); 
-        }
+    VectorIntoType(std::size_t sz)
+        : st_(NULL), defnp_(NULL), ind_(NULL), indOCIHolder_(NULL), sz_(sz) {}
+
+    VectorIntoType(std::vector<eIndicator> &ind)
+        : st_(NULL), defnp_(NULL), ind_(&ind.at(0)), sz_(ind.size()) {} 
+       
+    virtual void define(Statement &st, int &position) 
+    {
+        //TODO can we add a preDefine() function to the interface, and do this there?
+        indOCIHolderVec_.resize(sz_);
+        indOCIHolder_ = &indOCIHolderVec_.front(); 
+    }
 
     virtual void preFetch() {}
     virtual void postFetch(bool gotData, bool calledFromFetch);
@@ -713,6 +718,7 @@ protected:
 private:
     virtual void convertFrom() {}
     std::vector<sb2> indOCIHolderVec_;
+    const std::size_t sz_;
 };
 
 class VectorUseType : public UseTypeBase
@@ -754,12 +760,9 @@ class StandardIntoType : public IntoTypeBase
 {
 public:
     StandardIntoType()
-        : st_(NULL), defnp_(NULL), ind_(NULL) {}
+        : st_(NULL), defnp_(NULL), ind_(NULL), indOCIHolder_(0) {}
     StandardIntoType(eIndicator& ind)
-        : st_(NULL), defnp_(NULL), ind_(&ind)  
-    {}
-    StandardIntoType(std::vector<eIndicator>& ind)
-        : st_(NULL), defnp_(NULL), ind_(&ind.at(0)){}
+        : st_(NULL), defnp_(NULL), ind_(&ind), indOCIHolder_(0) {}
 
     virtual void preFetch() {}
     virtual void postFetch(bool gotData, bool calledFromFetch);
@@ -877,15 +880,18 @@ template <typename T>
 class IntegerVectorIntoType : public VectorIntoType
 {
 public:
-    IntegerVectorIntoType(std::vector<T> &v) : v_(v) {}
+    IntegerVectorIntoType(std::vector<T> &v, std::size_t sz)  
+    : VectorIntoType(sz), v_(v) {}
     IntegerVectorIntoType(std::vector<T> &v, std::vector<eIndicator> &vInd) 
     : VectorIntoType(vInd), v_(v) {}
 
     virtual int size(){return v_.size();}
     virtual void resize(int sz){v_.resize(sz);}
 
-      virtual void define(Statement &st, int &position)
-     {
+    virtual void define(Statement &st, int &position)
+    {
+        VectorIntoType::define(st, position);
+        
         st_ = &st;
 
         sword res;
@@ -897,7 +903,7 @@ public:
         {
             throwSOCIError(res, st.session_.errhp_);
         }
-     }
+    }
 
 private:
     std::vector<T>& v_;
@@ -997,7 +1003,8 @@ template <>
 class IntoType<std::vector<int> > : public IntegerVectorIntoType<int>
 {
 public:
-    IntoType(std::vector<int> &v) : IntegerVectorIntoType<int>(v) {}
+    IntoType(std::vector<int> &v) 
+        : IntegerVectorIntoType<int>(v, v.size()) {}
     IntoType(std::vector<int> &v, std::vector<eIndicator> &ind) 
         : IntegerVectorIntoType<int>(v, ind) {}
 };
@@ -1019,7 +1026,8 @@ template <>
 class IntoType<std::vector<short> > : public IntegerVectorIntoType<short>
 {
 public:
-    IntoType(std::vector<short> &v) : IntegerVectorIntoType<short>(v) {}
+    IntoType(std::vector<short> &v) 
+        : IntegerVectorIntoType<short>(v, v.size()) {}
     IntoType(std::vector<short> &v, std::vector<eIndicator> &ind) 
         : IntegerVectorIntoType<short>(v, ind) {}
 };
@@ -1074,7 +1082,8 @@ template <>
 class IntoType<std::vector<char> >: public VectorIntoType
 {
 public:
-    IntoType(std::vector<char> &v) : v_(v) {}
+    IntoType(std::vector<char> &v) 
+      : VectorIntoType(v.size()), v_(v) {}
     IntoType(std::vector<char> &v, std::vector<eIndicator> &vind) 
       : VectorIntoType(vind), v_(v){}
 
@@ -1138,7 +1147,8 @@ template <>
 class IntoType<std::vector<unsigned long> > : public VectorIntoType
 {
 public:
-    IntoType(std::vector<unsigned long> &v) : v_(v) {}
+    IntoType(std::vector<unsigned long> &v) 
+        : VectorIntoType(v.size()), v_(v) {}
     IntoType(std::vector<unsigned long> &v, std::vector<eIndicator> &vind) 
         : VectorIntoType(vind), v_(v) {}
     
@@ -1201,7 +1211,8 @@ template <>
 class IntoType<std::vector<double> > : public VectorIntoType
 {
 public:
-    IntoType(std::vector<double> &v) : v_(v) {}
+    IntoType(std::vector<double> &v) 
+        : VectorIntoType(v.size()), v_(v) {}
     IntoType(std::vector<double> &v, std::vector<eIndicator> &vind) 
         : VectorIntoType(vind), v_(v) {}
     
@@ -1269,7 +1280,7 @@ class IntoType<std::vector<std::string> > : public VectorIntoType
 {
 public:
     IntoType(std::vector<std::string>& v) 
-        : VectorIntoType(), v_(v), buf_(NULL), strLen_(0), sizes_(v_.size()) {}
+        : VectorIntoType(v.size()), v_(v), buf_(NULL), strLen_(0), sizes_(v_.size()) {}
     IntoType(std::vector<std::string>& v, std::vector<eIndicator> &vind)
         : VectorIntoType(vind), v_(v), buf_(NULL), strLen_(0), sizes_(v_.size()) {}
 
@@ -1421,7 +1432,7 @@ class IntoType<std::vector<std::tm> > : public VectorIntoType
 {
 public:
     IntoType(std::vector<std::tm>& v) 
-        : vec_(v), buf_(NULL) {}
+        : VectorIntoType(v.size()), vec_(v), buf_(NULL) {}
     IntoType(std::vector<std::tm>& v, std::vector<eIndicator> &vind)
         : VectorIntoType(vind), vec_(v), buf_(NULL) {}
 
@@ -1562,16 +1573,10 @@ public:
     typedef typename std::vector<typename TypeConversion<T>::base_type> BASE_TYPE;
 
     IntoType(std::vector<T> &value) 
-        : IntoType<BASE_TYPE>(base_value_), value_(value) 
-        {
-            base_value_.resize(value_.size());
-        }
+        : IntoType<BASE_TYPE>(base_value_), value_(value), base_value_(value.size()) {}
 
     IntoType(std::vector<T> &value, std::vector<eIndicator> &ind)
-        : IntoType<BASE_TYPE>(base_value_, ind), value_(value)
-        {
-            base_value_.resize(value_.size());
-        } 
+        : IntoType<BASE_TYPE>(base_value_, ind), value_(value), base_value_(value.size()) {}
 
     int size(){return base_value_.size();}
     void resize(int sz){value_.resize(sz); base_value_.resize(sz);}
@@ -1598,17 +1603,13 @@ class UseType<std::vector<T> > : public UseType<std::vector<typename TypeConvers
 public:
     typedef typename std::vector<typename TypeConversion<T>::base_type> BASE_TYPE;
 
-    UseType(std::vector<T> &value) : UseType<BASE_TYPE>(base_value_), value_(value) 
-        {
-            base_value_.resize(value_.size());
-        }
+    UseType(std::vector<T> &value) 
+        : UseType<BASE_TYPE>(base_value_), value_(value), base_value_(value_.size()) {}
+
     UseType(std::vector<T> &value, const std::vector<eIndicator> &ind, 
         const std::string &name=std::string())
-        : UseType<BASE_TYPE>(base_value_, ind, name), value_(value) 
-        {
-            base_value_.resize(value_.size());
-        }
-
+        : UseType<BASE_TYPE>(base_value_, ind, name), value_(value), base_value_(value_.size()) {}
+ 
 private:
     void convertFrom() 
     {

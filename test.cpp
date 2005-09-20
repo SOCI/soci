@@ -19,6 +19,19 @@ void test1()
 
         try
         {
+            session.once << "select null from dual", into(x);
+
+            // exception expected (null value and no indicator)
+            assert(false);
+        }
+        catch(std::exception const &e)
+        {
+            std::string msg(e.what());
+            assert(msg == "Null value fetched and no indicator defined.");
+        }
+
+        try
+        {
             session.once << "select 7 from dual where 0 = 1", into(x);
 
             // exception expected (no data and no indicator)
@@ -884,6 +897,21 @@ void test15()
         assert(inds_out[0] == eOK && inds_out[1] == eNull && inds_out[2] == eOK);
     }    
 
+    // verify an exception is thrown if null is selected and no indicator was provided
+    {
+        std::string msg;
+        std::vector<int> intos(3);
+        try
+        {
+            sql << "select code from test15", into(intos);
+        }
+        catch(SOCIError& e)
+        {
+            msg = e.what();
+        }
+        assert(msg == "Null value fetched and no indicator defined." );
+    }
+
     // test basic select
     {
         const size_t sz = 3;
@@ -1267,6 +1295,7 @@ void test19()
     {
         std::vector<time_t> times_out(3); // one too many
         sql << "select d1 from test19", into(times_out);
+
         assert(times_out.size() == 3);
         assert(times_out[1] == t2);
     }
@@ -1306,7 +1335,6 @@ void test19()
         times_in3.push_back(now);
 
         sql << "insert into test19 (d1) values(:d1)", use(times_in3);
-        sql.commit();
 
         std::vector<std::time_t> times_out(2);
         Statement st = (sql.prepare <<"select d1 from test19 where d1 is not null", into(times_out));

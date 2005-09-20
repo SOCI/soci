@@ -886,6 +886,12 @@ void StandardIntoType::postFetch(bool gotData, bool calledFromFetch)
     }
     else
     {
+        if (indOCIHolder_ == -1)
+        {
+            // fetched null and no indicator - programming error!
+            throw SOCIError("Null value fetched and no indicator defined.");
+        }
+
         if (gotData == false)
         {
             // no data fetched and no indicator - programming error!
@@ -959,6 +965,15 @@ void VectorIntoType::postFetch(bool gotData, bool calledFromFetch)
     }
     else
     {
+        for(size_t i=0; i<indOCIHolderVec_.size(); ++i)
+        {
+            if (indOCIHolderVec_[i] == -1)
+            {
+                // fetched null and no indicator - programming error!
+                throw SOCIError("Null value fetched and no indicator defined.");
+            }
+        }
+
         if (gotData == false)
         {
             // no data fetched and no indicator - programming error!
@@ -1048,6 +1063,8 @@ void UseType<char>::bind(Statement &st, int &position)
 // into and use types for std::vector<char>
 void IntoType<std::vector<char> >::define(Statement &st, int &position)
 {
+    VectorIntoType::define(st, position);
+
     st_ = &st;
 
     sword res = OCIDefineByPos(st.stmtp_, &defnp_, st.session_.errhp_,
@@ -1137,6 +1154,8 @@ void UseType<unsigned long>::bind(Statement &st, int &position)
 
 void IntoType<std::vector<unsigned long> >::define(Statement &st, int &position)
 {
+    VectorIntoType::define(st, position);
+
     st_ = &st;
 
     sword res = OCIDefineByPos(st.stmtp_, &defnp_, st.session_.errhp_,
@@ -1224,6 +1243,8 @@ void UseType<double>::bind(Statement &st, int &position)
 
 void IntoType<std::vector<double> >::define(Statement &st, int &position)
 {
+    VectorIntoType::define(st, position);
+
     st_ = &st;
 
     sword res = OCIDefineByPos(st.stmtp_, &defnp_, st.session_.errhp_,
@@ -1438,6 +1459,8 @@ size_t columnSize(Statement &st, int position)
 
 void IntoType<std::vector<std::string> >::define(Statement &st, int &position)
 {
+    VectorIntoType::define(st, position);
+
     st_ = &st;
 
     strLen_ = columnSize(st, position) + 1;
@@ -1625,6 +1648,8 @@ void UseType<std::tm>::postUse()
 // into and use types for std::vector<std::tm>
 void IntoType<std::vector<std::tm> >::define(Statement &st, int &position)
 {
+    VectorIntoType::define(st, position);
+
     st_ = &st;
 
     const sb4 dlen = 7;
