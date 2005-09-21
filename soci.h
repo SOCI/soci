@@ -49,13 +49,13 @@ class IntoTypeBase
 public:
     virtual ~IntoTypeBase() {}
 
+    virtual void preDefine() = 0;
     virtual void define(Statement &st, int &position) = 0;
     virtual void preFetch() = 0;
     virtual void postFetch(bool gotData, bool calledFromFetch) = 0;
     virtual void cleanUp() = 0;
-
-    virtual int size(){return 1;}
-    virtual void resize(int sz){}
+    virtual int size() = 0;
+    virtual void resize(int sz) = 0;
 };
 
 // this is intended to be a base class for all classes that deal with
@@ -70,7 +70,7 @@ public:
     virtual void postUse() = 0;
     virtual void cleanUp() = 0;
 
-    virtual int size(){return 1;};
+    virtual int size() = 0;
 };
 
 namespace details {
@@ -472,6 +472,7 @@ public:
     void cleanUp();
 
     void prepare(std::string const &query);
+    void preDefine();
     void defineAndBind();
     void unDefAndBind();
     bool execute(int num = 0);
@@ -698,9 +699,8 @@ public:
     VectorIntoType(std::vector<eIndicator> &ind)
         : st_(NULL), defnp_(NULL), ind_(&ind.at(0)), sz_(ind.size()) {} 
        
-    virtual void define(Statement &st, int &position) 
+    virtual void preDefine() 
     {
-        //TODO can we add a preDefine() function to the interface, and do this there?
         indOCIHolderVec_.resize(sz_);
         indOCIHolder_ = &indOCIHolderVec_.front(); 
     }
@@ -764,9 +764,13 @@ public:
     StandardIntoType(eIndicator& ind)
         : st_(NULL), defnp_(NULL), ind_(&ind), indOCIHolder_(0) {}
 
-    virtual void preFetch() {}
     virtual void postFetch(bool gotData, bool calledFromFetch);
     virtual void cleanUp();
+
+    virtual void preFetch() {}
+    virtual void preDefine() {}
+    virtual int size() {return 1;}
+    virtual void resize(int sz) {}
 
 protected:
     Statement *st_;
@@ -790,6 +794,7 @@ public:
     virtual void preUse();
     virtual void postUse() {convertTo();}
     virtual void cleanUp();
+    virtual int size(){return 1;}
 
 protected:
     Statement *st_;
@@ -890,8 +895,6 @@ public:
 
     virtual void define(Statement &st, int &position)
     {
-        VectorIntoType::define(st, position);
-        
         st_ = &st;
 
         sword res;

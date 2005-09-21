@@ -323,6 +323,7 @@ void Statement::prepare(std::string const &query)
 
 void Statement::defineAndBind()
 {
+    preDefine();
     define();
 
     int bindPosition = 1;
@@ -518,6 +519,11 @@ void Statement::postUse()
         uses_[i]->postUse();
 }
 
+void Statement::preDefine()
+{
+    for (size_t i = 0; i != intos_.size(); ++i)
+        intos_[i]->preDefine();
+}
 
 void Statement::define()
 {
@@ -709,8 +715,6 @@ void Statement::describe()
         row_->addProperties(props);
     }
 }
-
-
 
 Procedure::Procedure(PrepareTempType const &prep)
     : Statement(*prep.getPrepareInfo()->session_)
@@ -1063,8 +1067,6 @@ void UseType<char>::bind(Statement &st, int &position)
 // into and use types for std::vector<char>
 void IntoType<std::vector<char> >::define(Statement &st, int &position)
 {
-    VectorIntoType::define(st, position);
-
     st_ = &st;
 
     sword res = OCIDefineByPos(st.stmtp_, &defnp_, st.session_.errhp_,
@@ -1154,8 +1156,6 @@ void UseType<unsigned long>::bind(Statement &st, int &position)
 
 void IntoType<std::vector<unsigned long> >::define(Statement &st, int &position)
 {
-    VectorIntoType::define(st, position);
-
     st_ = &st;
 
     sword res = OCIDefineByPos(st.stmtp_, &defnp_, st.session_.errhp_,
@@ -1243,8 +1243,6 @@ void UseType<double>::bind(Statement &st, int &position)
 
 void IntoType<std::vector<double> >::define(Statement &st, int &position)
 {
-    VectorIntoType::define(st, position);
-
     st_ = &st;
 
     sword res = OCIDefineByPos(st.stmtp_, &defnp_, st.session_.errhp_,
@@ -1459,8 +1457,6 @@ size_t columnSize(Statement &st, int position)
 
 void IntoType<std::vector<std::string> >::define(Statement &st, int &position)
 {
-    VectorIntoType::define(st, position);
-
     st_ = &st;
 
     strLen_ = columnSize(st, position) + 1;
@@ -1648,8 +1644,6 @@ void UseType<std::tm>::postUse()
 // into and use types for std::vector<std::tm>
 void IntoType<std::vector<std::tm> >::define(Statement &st, int &position)
 {
-    VectorIntoType::define(st, position);
-
     st_ = &st;
 
     const sb4 dlen = 7;
