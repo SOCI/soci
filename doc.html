@@ -32,10 +32,12 @@ ported to support other databases, this page will be redesigned.<br>
 &nbsp;&nbsp;&nbsp;<a href="doc.html#bindname">Binding by name</a><br>
 &nbsp;&nbsp;&nbsp;<a href="doc.html#types">Types</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="doc.html#static">Static type binding</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="doc.html#staticBulk">Static type binding for bulk operations</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="doc.html#dynamic">Dynamic resultset binding</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="doc.html#extending">Extending with user-provided datatypes</a><br>
 <a href="doc.html#indicators">Indicators</a><br>
 <a href="doc.html#preparation">Statement preparation and repeated execution</a><br>
+<a href="doc.html#procedures">Stored procedures</a><br
 <a href="doc.html#transactions">Transactions</a><br>
 <a href="doc.html#advanced">Advanced stuff</a><br>
 <a href="doc.html#rationale">Rationale for some design decisions</a><br>
@@ -131,7 +133,8 @@ This allows to use different order: </p>
 <p>The following types are currently supported for use with <code>into</code>
 and <code>use</code> expressions: </p>
 <ul>
-  <li><code>char</code>, <code>short</code>, <code>int</code>, <code>unsigned
+  <li><code>char</code> (for character values)</li>
+  <li><code>short</code>, <code>int</code>, <code>unsigned
 long</code>, <code>double</code> (for numeric values)</li>
   <li><code>char*</code>, <code>char[]</code>, <code>std::string</code>
 (for string values)</li>
@@ -145,6 +148,22 @@ cursors)</li>
 
 <p>See the test code that accompanies the library to see how each of
 these types is used. </p>
+
+<h4><a name="staticBulk"></a>Static type binding for bulk operations</h4>
+
+Bulk inserts, updates, and selects are supported through the following std::vector based into and use types:
+<ul>
+  <li><code>std::vector&ltchar&gt</code></li>
+  <li><code>std::vector&ltshort&gt</code></li>
+  <li><code>std::vector&ltint&gt</code></li>
+  <li><code>std::vector&ltunsigned long&gt</code></li>
+  <li><code>std::vector&ltdouble&gt</code></li>
+  <li><code>std::vector&ltstd::string&gt</code></li>
+  <li><code>std::vector&ltstd::tm&gt</code></li>
+  <li><code>std::vector&ltstd::time_t&gt</code></li>
+</ul>
+
+Use of the vector based types mirrors that of the standard types, with the size of the vector used to specify the number of records to process at a time.  See below for examples.
 
 <h4><a name="dynamic"></a>Dynamic resultset binding</h4>
 <p>For certain applications it is desirable to be able to select data from arbitrarily
@@ -286,6 +305,8 @@ public:
     static std::tm to(boost::gregorian::date&amp; d)
     {
         std::tm t;
+        
+        t.tm_isdst = -1;
         t.tm_year = d.year() - 1900;
         t.tm_mon = d.month() - 1;
         t.tm_mday = d.day();
@@ -310,18 +331,28 @@ using boost::gregorian::date;
 Session sql("db1", "scott", "tiger");
 
 sql &lt;&lt; "create table test_boost(when DATE)";
-date d_in(1999, boost::gregorian::Feb, 10);
-
-sql &lt;&lt; "insert into test_boost values(:when)", use(d_in);
+date dIn(1999, boost::gregorian::Feb, 1);
+sql &lt;&lt; "insert into test_boost values(:when)", use(dIn);
     
-date d_out(boost::gregorian::not_a_date_time);
-  
-sql &lt;&lt; "select when from test_boost", into(d_out);
-assert(d_in == d_out);
+date dOut(boost::gregorian::not_a_date_time);
+sql &lt;&lt; "select when from test_boost", into(dOut);
+assert(dIn == dOut);
 
 Row r;
 sql &lt;&lt; "select * from test_boost", into(r);
-assert(r.get&lt;date&gt;(0) == d_in);
+assert(r.get&lt;date&gt;(0) == dIn);
+
+std::vector&lt;date&gt; datesIn;
+for(int i=2; i&lt;12; ++i)
+{
+    date d(1999, boost::gregorian::Feb, i);
+    datesIn.push_back(d);
+}
+sql << "insert into test_boost values(:when)", use(datesIn);
+
+std::vector&lt;date&gt; datesOut(10);
+sql << "select when from test_boost where when > :d", use(dIn), into(datesOut);
+assert(datesIn == datesOut);
 </pre>
 
 <p>The other possibility to extend SOCI with custom data types is to use the <code>IntoType&lt;T&gt;</code>
@@ -368,6 +399,29 @@ overrided to be null: </p>
 <pre>int id = 7;<br>string name;<br>eIndicator ind = eNull;<br>sql &lt;&lt; "insert into person(id, name) values(:id, :name)",<br>       use(id), use(name, ind);<br></pre>
 <p>In the above example, the row is inserted with <code>name</code>
 attribute set to null. </p>
+<p>
+Indicator variables can also be used in conjunction with vector based insert, update, and select statements:</p>
+<pre>
+std::vector<string> names;
+std::vector<eIndicator> inds;
+sql << "select name from person where id = 7", into(names, inds);
+</pre>
+
+The following example inserts null for each value of name:
+<pre>
+std::vector<int> ids;
+std::vector<string> names;
+std::vector<eIndicator> nameIndicators;
+
+for(int i=0; i<10; ++i)
+{
+    ids.push_back(i);
+    nameIndicators.push_back(eNull);
+}
+
+sql << "insert into person(id, name) values(:id, :name)",
+       use(ids), use(name, nameIndicators);
+</pre>
 
 <h2><a name="preparation"></a>Statement preparation and repeated
 execution</h2>
@@ -387,14 +441,79 @@ member of <code>Session</code> class): </p>
 <p>The <code>1</code> parameter given to the <code>execute</code>
 method indicates the number of times the statement has to be executed.
 Here, it is executed <i>once</i> in each body of the loop. </p>
+<p>
+Further performance improvements may be possible by having the underlying database API group operations together to reduce network roundtrips.  SOCI makes such bulk operations possible by supporting std::vector based types:
+</p> 
+<pre>
+// Example 3.
+const int BATCH_SIZE = 25;
+std::vector&lt;int&gt; valsIn;
+for (int i=0; i&lt;BATCH_SIZE; ++i)
+    ids.push_back(i);
+
+Statement st = (sql.prepare &lt;&lt; 
+                "insert into numbers(value) values(:val)", 
+                use(valsIn);)
+for(int i=0; i&lt;4; ++i)
+{
+    st.execute(1);
+}
+</pre>
+<p>
+(Of course, the size of the vector that will achieve optimum performance will vary, depending on many environmental factors, such as network speed.)
+</p>
+
 <p>It is also possible to read all the numbers written in the above
-example: </p>
+examples: </p>
 <pre>int i;<br>Statement st = (sql.prepare &lt;&lt;<br>                "select value from numbers order by value",<br>                into(i));<br>st.execute();<br>while (st.fetch())<br>{<br>    cout &lt;&lt; i &lt;&lt; '\n';<br>}<br></pre>
 <p>In the above example, the <code>execute</code> method is called
 with the default parameter <code>0</code>. The following <code>fetch</code>
 calls perform the actual data retrieval and cursor traversal. The
 end-of-cursor condition is indicated by the <code>fetch</code>
 function returning <code>false</code>. </p>
+<p>
+It is further possible to select records in batches into std::vector based types, with the size of the vector specifying the number of records to retrieve in each round trip:
+</p>
+
+<pre>
+std::vector<int> valsOut(100);
+sql << "select val from numbers", into(valsOut);
+</pre>
+<p>
+The Statement::execute() and Statement::fetch() functions can also be used to repeatedly select all rows returned by a query into a vector based type:
+</p>
+<pre>
+std::vector&lt;int&gt; valsOut(30);
+Statement st = (sql.prepare &lt;&lt; 
+                "select value from numbers", 
+                into(valsOut);)
+st.execute();
+while(st.fetch())
+{
+    std::vector&lt;int&gt;::iterator pos;
+    for(; pos != valsOut.end(); ++pos)
+        cout &lt;&lt; *pos &lt;&lt; '\n'; 
+}
+</pre>
+<p>
+Assuming there are 100 rows returned by the query, the above code will retrieve and print all of them.  Since the output vector was created with size 30, it will take (at least) 4 calls to fetch() to retrieve all 100 values.  Each call to fetch() can potentially resize the vector to a size less than its initial size - how often this happens depends on the underlying database implementation.
+
+</p>
+<h2><a name="procedures"></a>Stored procedures</h2>
+<p>The <code>Procedure</code> class provides a convenient mechanism for calling stored procedures:
+<pre>
+sql << "create or replace procedure echo(output out varchar2,"
+       "input in varchar2) as "
+       "begin output := input; end;";
+
+std::string in("my message");
+std::string out;
+Procedure proc = (sql.prepare << "echo(:output, :input)", 
+                                  use(out, "output"),
+                                  use(in, "input"));
+proc.execute(1);
+assert(out == "my message");
+</pre>
 
 <h2><a name="transactions"></a>Transactions</h2>
 <p>The <code>Session</code> class provides two methods for transaction
