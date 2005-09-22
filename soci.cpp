@@ -1566,7 +1566,7 @@ void IntoType<std::tm>::define(Statement &st, int &position)
 
 void IntoType<std::tm>::postFetch(bool gotData, bool calledFromFetch)
 {
-  if (gotData)
+    if (gotData)
     {
         tm_.tm_isdst = -1;
 
@@ -1647,7 +1647,7 @@ void IntoType<std::vector<std::tm> >::define(Statement &st, int &position)
     st_ = &st;
 
     const sb4 dlen = 7;
-    buf_ = new char[vec_.size() * dlen];
+    buf_ = new ub1[vec_.size() * dlen];
 
     sword res = OCIDefineByPos(st.stmtp_, &defnp_, st.session_.errhp_,
         position++, buf_, dlen, SQLT_DAT,
@@ -1670,7 +1670,7 @@ void IntoType<std::vector<std::tm> >::postFetch(bool gotData, bool calledFromFet
 {
     if (gotData)
     { 
-        char* pos = buf_;
+        ub1* pos = buf_;
         for (size_t i=0; i < vec_.size(); ++i)
         {
             std::tm t;

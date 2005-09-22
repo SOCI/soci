@@ -1449,7 +1449,7 @@ public:
 
 private:
     std::vector<std::tm>& vec_;
-    char* buf_;
+    ub1* buf_;
 };
 
 
