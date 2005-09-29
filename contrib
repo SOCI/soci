@@ -1,0 +1,8 @@
+We would like to thank you for your contributions -
+they allowed us to improve the quality of the SOCI library:
+
+---
+Roger Orr
+
+Roger has provided the patch for a memory leak that was present in the code
+reading into the Row objects.
