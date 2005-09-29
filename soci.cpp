@@ -39,10 +39,10 @@ void getErrorDetails(sword res, OCIError *errhp,
         break;
     case OCI_ERROR:
         OCIErrorGet(errhp, 1, 0, &errcode,
-            errbuf, sizeof(errbuf), OCI_HTYPE_ERROR);
-         msg = reinterpret_cast<char*>(errbuf);
-         errNum = static_cast<int>(errcode);
-         break;
+             errbuf, sizeof(errbuf), OCI_HTYPE_ERROR);
+        msg = reinterpret_cast<char*>(errbuf);
+        errNum = static_cast<int>(errcode);
+        break;
     case OCI_INVALID_HANDLE:
         msg = "SOCI error: Invalid handle";
         break;
@@ -238,7 +238,8 @@ Statement::Statement(Session &s)
 }
 
 Statement::Statement(PrepareTempType const &prep)
-    : stmtp_(0), session_(*prep.getPrepareInfo()->session_), row_(0), fetchSize_(1)
+    : stmtp_(0), session_(*prep.getPrepareInfo()->session_),
+      row_(0), fetchSize_(1)
 {
     RefCountedPrepareInfo *prepInfo = prep.getPrepareInfo();
 
@@ -331,7 +332,9 @@ void Statement::defineAndBind()
         uses_[i]->bind(*this, bindPosition);
 
     if (row_)
+    {
         define();
+    }
 }
 
 void Statement::unDefAndBind()
@@ -360,11 +363,14 @@ bool Statement::execute(int num)
 
     if (bindSize > 1 && fetchSize_ > 1)
     {
-        throw SOCIError("Bulk insert/update and bulk select not allowed in same query");
+        throw SOCIError(
+             "Bulk insert/update and bulk select not allowed in same query");
     }
 
     if (num > 0)
+    {
         num = std::max(num, std::max(fetchSize_, bindSize));
+    }
 
     bool gotData;
     sword res = OCIStmtExecute(session_.svchp_, stmtp_, session_.errhp_,
@@ -402,7 +408,9 @@ bool Statement::execute(int num)
 bool Statement::fetch()
 {
     if (!fetchSize_)
+    {
         return false;
+    }
 
     bool gotData = false;
     int num = fetchSize_;
@@ -450,7 +458,8 @@ int Statement::intosSize()
         {
             std::ostringstream msg;
             msg << "Bind variable size mismatch (into["<<i<<"] has size "
-                << intos_[i]->size() << ", intos_[0] has size "<< intosSize <<std::endl;
+                << intos_[i]->size() << ", intos_[0] has size "
+                << intosSize << std::endl;
             throw SOCIError(msg.str());            
         } 
     }
@@ -470,7 +479,8 @@ int Statement::usesSize()
         {
             std::ostringstream msg;
             msg << "Bind variable size mismatch (use["<<i<<"] has size "
-                << uses_[i]->size() << ", use[0] has size "<< usesSize <<std::endl;
+                << uses_[i]->size() << ", use[0] has size "
+                << usesSize << std::endl;
             throw SOCIError(msg.str());
         }
     }
@@ -484,8 +494,8 @@ bool Statement::resizeIntos()
     // Get The Actual Number Of Rows Fetched
     ub4 sizep = sizeof(ub4);
     OCIAttrGet(static_cast<dvoid*>(stmtp_), static_cast<ub4>(OCI_HTYPE_STMT),
-    static_cast<dvoid*>(&rows), static_cast<ub4*>(&sizep), 
-    static_cast<ub4>(OCI_ATTR_ROWS_FETCHED), session_.errhp_);
+         static_cast<dvoid*>(&rows), static_cast<ub4*>(&sizep), 
+         static_cast<ub4>(OCI_ATTR_ROWS_FETCHED), session_.errhp_);
 
     for (size_t i = 0; i != intos_.size(); ++i)
     {
@@ -498,39 +508,51 @@ bool Statement::resizeIntos()
 void Statement::preFetch()
 {
     for (size_t i = 0; i != intos_.size(); ++i) // todo for each?
+    {
         intos_[i]->preFetch();
+    }
 }
 
 void Statement::preUse()
 {
     for (size_t i = 0; i != uses_.size(); ++i)
+    {
         uses_[i]->preUse();
+    }
 }
 
 void Statement::postFetch(bool gotData, bool calledFromFetch)
 {
     for (size_t i = 0; i != intos_.size(); ++i)
+    {
         intos_[i]->postFetch(gotData, calledFromFetch);
+    }
 }
 
 void Statement::postUse()
 {
     for (size_t i = 0; i != uses_.size(); ++i)
+    {
         uses_[i]->postUse();
+    }
 }
 
 void Statement::preDefine()
 {
     for (size_t i = 0; i != intos_.size(); ++i)
+    {
         intos_[i]->preDefine();
+    }
 }
 
 void Statement::define()
 {
     int definePosition = 1;
     const size_t sz = intos_.size();
-    for (size_t i = 0; i < sz; ++i)
+    for (size_t i = 0; i != sz; ++i)
+    {
         intos_[i]->define(*this, definePosition);
+    }
 }
 
 // Map eDataTypes to stock types for dynamic result set support
@@ -950,7 +972,7 @@ void VectorIntoType::postFetch(bool gotData, bool calledFromFetch)
     }
     if (ind_ != NULL)
     {
-        for(size_t i=0; i<indOCIHolderVec_.size(); ++i, ++ind_)
+        for (size_t i = 0; i != indOCIHolderVec_.size(); ++i, ++ind_)
         {
             if (gotData == false)
             {
@@ -959,22 +981,29 @@ void VectorIntoType::postFetch(bool gotData, bool calledFromFetch)
             else
             {
                 if (indOCIHolderVec_[i] == 0)
+                {
                     *ind_ = eOK;
+                }
                 else if (indOCIHolderVec_[i] == -1)
+                {
                     *ind_ = eNull;
+                }
                 else
+                {
                     *ind_ = eTruncated;
+                }
             }
         }
     }
     else
     {
-        for(size_t i=0; i<indOCIHolderVec_.size(); ++i)
+        for (size_t i = 0; i != indOCIHolderVec_.size(); ++i)
         {
             if (indOCIHolderVec_[i] == -1)
             {
                 // fetched null and no indicator - programming error!
-                throw SOCIError("Null value fetched and no indicator defined.");
+                throw SOCIError(
+                     "Null value fetched and no indicator defined.");
             }
         }
 
@@ -1001,12 +1030,16 @@ void VectorUseType::preUse()
 
     if (ind_ != NULL)
     {
-        for (size_t i=0; i<indOCIHolderVec_.size(); ++i, ++ind_)
+        for (size_t i = 0; i != indOCIHolderVec_.size(); ++i, ++ind_)
         { 
             if (*ind_ == eNull)
+            {
                 indOCIHolderVec_[i] = -1; // null
+            }
             else
+            {
                 indOCIHolderVec_[i] = 0;  // value is OK
+            }
         }
     }
 }
@@ -1154,7 +1187,8 @@ void UseType<unsigned long>::bind(Statement &st, int &position)
 }
 // into and use types for std::vector<unsigned long>
 
-void IntoType<std::vector<unsigned long> >::define(Statement &st, int &position)
+void IntoType<std::vector<unsigned long> >::define(
+     Statement &st, int &position)
 {
     st_ = &st;
 
@@ -1271,9 +1305,9 @@ void UseType<std::vector<double> >::bind(Statement &st, int &position)
     {
         // bind by name
         res = OCIBindByName(st.stmtp_, &bindp_, st.session_.errhp_,
-            reinterpret_cast<text*>(const_cast<char*>(name_.c_str())),
-            static_cast<sb4>(name_.size()), &v_.at(0), sizeof(double), SQLT_FLT,
-            indOCIHolder_, 0, 0, 0, 0, OCI_DEFAULT);
+             reinterpret_cast<text*>(const_cast<char*>(name_.c_str())),
+             static_cast<sb4>(name_.size()), &v_.at(0), sizeof(double),
+             SQLT_FLT, indOCIHolder_, 0, 0, 0, 0, OCI_DEFAULT);
     }
 
     if (res != OCI_SUCCESS)
@@ -1423,32 +1457,34 @@ void UseType<std::string>::cleanUp()
 size_t columnSize(Statement &st, int position)
 {
     // TODO move this to the Statement class?
-    //Do A Describe To Get The Size For This Column
-    //Note: we may want to optimize so that the OCI_DESCRIBE_ONLY call happens only once per statement
-    //Possibly use existing statement::describe() / make column prop access lazy at same time
+    // Do A Describe To Get The Size For This Column
+    // Note: we may want to optimize so that the OCI_DESCRIBE_ONLY call
+    // happens only once per statement.
+    // Possibly use existing statement::describe() / make column prop
+    // access lazy at same time
 
     size_t colSize(0);
 
-    sword res = OCIStmtExecute(st.session_.svchp_, st.stmtp_, st.session_.errhp_,
-                               1, 0, 0, 0, OCI_DESCRIBE_ONLY);
+    sword res = OCIStmtExecute(st.session_.svchp_, st.stmtp_,
+         st.session_.errhp_, 1, 0, 0, 0, OCI_DESCRIBE_ONLY);
     if (res != OCI_SUCCESS) throwSOCIError(res, st.session_.errhp_);
  
     // Get The Column Handle
     OCIParam* colhd;
-    res = OCIParamGet( reinterpret_cast<dvoid*>(st.stmtp_), 
-                       static_cast<ub4>(OCI_HTYPE_STMT), 
-                       reinterpret_cast<OCIError*>(st.session_.errhp_), 
-                       reinterpret_cast<dvoid**>(&colhd), 
-                       static_cast<ub4>(position));
+    res = OCIParamGet(reinterpret_cast<dvoid*>(st.stmtp_), 
+         static_cast<ub4>(OCI_HTYPE_STMT), 
+         reinterpret_cast<OCIError*>(st.session_.errhp_), 
+         reinterpret_cast<dvoid**>(&colhd), 
+         static_cast<ub4>(position));
     if (res != OCI_SUCCESS) throwSOCIError(res, st.session_.errhp_);
 
      // Get The Data Size
-    res = OCIAttrGet( reinterpret_cast<dvoid*>(colhd), 
-                      static_cast<ub4>(OCI_DTYPE_PARAM),
-                      reinterpret_cast<dvoid*>(&colSize),
-                      0, 
-                      static_cast<ub4>(OCI_ATTR_DATA_SIZE), 
-                      reinterpret_cast<OCIError*>(st.session_.errhp_));
+    res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd), 
+         static_cast<ub4>(OCI_DTYPE_PARAM),
+         reinterpret_cast<dvoid*>(&colSize),
+         0, 
+         static_cast<ub4>(OCI_ATTR_DATA_SIZE), 
+         reinterpret_cast<OCIError*>(st.session_.errhp_));
     if (res != OCI_SUCCESS) throwSOCIError(res, st.session_.errhp_);
 
     return colSize;
@@ -1474,12 +1510,13 @@ void IntoType<std::vector<std::string> >::define(Statement &st, int &position)
     }
 }
 
-void IntoType<std::vector<std::string> >::postFetch(bool gotData, bool calledFromFetch)
+void IntoType<std::vector<std::string> >::postFetch(
+     bool gotData, bool calledFromFetch)
 {
     char* pos = buf_;
     if (gotData)
     {
-        for (size_t i=0; i<v_.size(); ++i)
+        for (size_t i = 0; i != v_.size(); ++i)
         {
             v_[i] = std::string(pos, sizes_[i]);
             pos += strLen_;
@@ -1502,7 +1539,7 @@ void UseType<std::vector<std::string> >::bind(Statement &st, int &position)
     sword res;
     
     size_t maxSize = 0;
-    for (size_t i=0; i<v_.size(); ++i)
+    for (size_t i = 0; i != v_.size(); ++i)
     {
         size_t sz = v_[i].length();
         sizes_.push_back(sz); 
@@ -1512,7 +1549,7 @@ void UseType<std::vector<std::string> >::bind(Statement &st, int &position)
 
     buf_ = new char[maxSize * v_.size()]; 
     char* pos = buf_;
-    for (size_t i=0; i<v_.size(); ++i)
+    for (size_t i = 0; i != v_.size(); ++i)
     {
         strncpy(pos, v_[i].c_str(), v_[i].length());
         pos += maxSize;
@@ -1522,16 +1559,19 @@ void UseType<std::vector<std::string> >::bind(Statement &st, int &position)
     {
         // No Name Provided, Bind By Position
         res = OCIBindByPos(st.stmtp_, &bindp_, st.session_.errhp_,
-            position++, (dvoid*)buf_, (sb4)maxSize, SQLT_CHR,
-            indOCIHolder_, (ub2*)&sizes_.at(0), 0, 0, 0, OCI_DEFAULT);//todo static cast?
+             position++, static_cast<dvoid*>(buf_),
+             static_cast<sb4>(maxSize), SQLT_CHR, indOCIHolder_,
+             static_cast<ub2*>(&sizes_.at(0)), 0, 0, 0, OCI_DEFAULT);
     }
     else
     {
         // Bind By Name
         res = OCIBindByName(st.stmtp_, &bindp_, st.session_.errhp_,
-            reinterpret_cast<text*>(const_cast<char*>(name_.c_str())),
-            static_cast<sb4>(name_.size()), buf_, (sb4)maxSize, SQLT_CHR,//todo static cast?
-            indOCIHolder_, (ub2*)&sizes_.at(0), 0, 0, 0, OCI_DEFAULT);
+             reinterpret_cast<text*>(const_cast<char*>(name_.c_str())),
+             static_cast<sb4>(name_.size()), buf_,
+             static_cast<sb4>(maxSize), SQLT_CHR,
+             indOCIHolder_, static_cast<ub2*>(&sizes_.at(0)),
+             0, 0, 0, OCI_DEFAULT);
     }
 
     if (res != OCI_SUCCESS)
@@ -1661,17 +1701,18 @@ void IntoType<std::vector<std::tm> >::define(Statement &st, int &position)
 
 void IntoType<std::vector<std::tm> >::cleanUp()
 {
-    delete []buf_; 
+    delete [] buf_; 
     buf_ = NULL;
     VectorIntoType::cleanUp();
 }
 
-void IntoType<std::vector<std::tm> >::postFetch(bool gotData, bool calledFromFetch)
+void IntoType<std::vector<std::tm> >::postFetch(
+    bool gotData, bool calledFromFetch)
 {
     if (gotData)
     { 
         ub1* pos = buf_;
-        for (size_t i=0; i < vec_.size(); ++i)
+        for (size_t i = 0; i != vec_.size(); ++i)
         {
             std::tm t;
             t.tm_isdst = -1;
@@ -1725,7 +1766,7 @@ void UseType<std::vector<std::tm> >::bind(Statement &st, int &position)
 
 void UseType<std::vector<std::tm> >::cleanUp()
 {
-    delete []buf_;
+    delete [] buf_;
     buf_ = NULL;
     VectorUseType::cleanUp();
 }
@@ -1735,7 +1776,7 @@ void UseType<std::vector<std::tm> >::preUse()
     VectorUseType::preUse();
 
     ub1* pos = buf_;
-    for (size_t i=0; i < v_.size(); ++i)
+    for (size_t i = 0; i != v_.size(); ++i)
     {
         *pos++ = static_cast<ub1>(100 + (1900 + v_[i].tm_year) / 100);
         *pos++ = static_cast<ub1>(100 + v_[i].tm_year % 100);
@@ -1750,7 +1791,7 @@ void UseType<std::vector<std::tm> >::preUse()
 void UseType<std::vector<std::tm> >::postUse()
 {
     ub1* pos = buf_;
-    for (size_t i=0; i<v_.size(); ++i)
+    for (size_t i = 0; i != v_.size(); ++i)
     {
         v_[i].tm_isdst = -1;
         v_[i].tm_year = (*pos++ - 100) * 100;
