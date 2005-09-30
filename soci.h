@@ -54,7 +54,7 @@ public:
     virtual void preFetch() = 0;
     virtual void postFetch(bool gotData, bool calledFromFetch) = 0;
     virtual void cleanUp() = 0;
-    virtual int size() = 0;
+    virtual int size() const = 0;
     virtual void resize(int sz) = 0;
 };
 
@@ -70,7 +70,7 @@ public:
     virtual void postUse() = 0;
     virtual void cleanUp() = 0;
 
-    virtual int size() = 0;
+    virtual int size() const = 0;
 };
 
 namespace details {
