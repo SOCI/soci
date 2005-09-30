@@ -1,6 +1,6 @@
 //
 // Copyright (C) 2004, 2005 Maciej Sobczak, Steve Hutton
-// 
+//
 // Permission to copy, use, modify, sell and distribute this software
 // is granted provided this copyright notice appears in all copies.
 // This software is provided "as is" without express or implied
@@ -428,7 +428,7 @@ bool Statement::fetch()
             if (fetchSize_ > 1)
             {
                 resizeIntos();
-                gotData = true; 
+                gotData = true;
                 fetchSize_ = 0;
             }
             else
@@ -460,8 +460,8 @@ int Statement::intosSize()
             msg << "Bind variable size mismatch (into["<<i<<"] has size "
                 << intos_[i]->size() << ", intos_[0] has size "
                 << intosSize << std::endl;
-            throw SOCIError(msg.str());            
-        } 
+            throw SOCIError(msg.str());
+        }
     }
     return intosSize;
 }
@@ -494,7 +494,7 @@ bool Statement::resizeIntos()
     // Get The Actual Number Of Rows Fetched
     ub4 sizep = sizeof(ub4);
     OCIAttrGet(static_cast<dvoid*>(stmtp_), static_cast<ub4>(OCI_HTYPE_STMT),
-         static_cast<dvoid*>(&rows), static_cast<ub4*>(&sizep), 
+         static_cast<dvoid*>(&rows), static_cast<ub4*>(&sizep),
          static_cast<ub4>(OCI_ATTR_ROWS_FETCHED), session_.errhp_);
 
     for (size_t i = 0; i != intos_.size(); ++i)
@@ -559,13 +559,13 @@ void Statement::define()
 namespace SOCI
 {
 
-template<> 
+template<>
 void Statement::bindInto<eString>()
 {
     intoRow<std::string>();
 }
 
-template<> 
+template<>
 void Statement::bindInto<eDouble>()
 {
     intoRow<double>();
@@ -583,7 +583,7 @@ void Statement::bindInto<eUnsignedLong>()
     intoRow<unsigned long>();
 }
 
-template<> 
+template<>
 void Statement::bindInto<eDate>()
 {
     intoRow<std::tm>();
@@ -601,11 +601,11 @@ void Statement::describe()
     if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
 
     int numcols;
-    res = OCIAttrGet(reinterpret_cast<dvoid*>(stmtp_), 
-                     static_cast<ub4>(OCI_HTYPE_STMT), 
-                     reinterpret_cast<dvoid*>(&numcols), 
-                     0, 
-                     static_cast<ub4>(OCI_ATTR_PARAM_COUNT), 
+    res = OCIAttrGet(reinterpret_cast<dvoid*>(stmtp_),
+                     static_cast<ub4>(OCI_HTYPE_STMT),
+                     reinterpret_cast<dvoid*>(&numcols),
+                     0,
+                     static_cast<ub4>(OCI_ATTR_PARAM_COUNT),
                      reinterpret_cast<OCIError*>(session_.errhp_));
 
     if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
@@ -623,67 +623,67 @@ void Statement::describe()
         ub1 nullok;
 
         // Get the column handle
-        res = OCIParamGet(reinterpret_cast<dvoid*>(stmtp_), 
-                          static_cast<ub4>(OCI_HTYPE_STMT), 
-                          reinterpret_cast<OCIError*>(session_.errhp_), 
-                          reinterpret_cast<dvoid**>(&colhd), 
+        res = OCIParamGet(reinterpret_cast<dvoid*>(stmtp_),
+                          static_cast<ub4>(OCI_HTYPE_STMT),
+                          reinterpret_cast<OCIError*>(session_.errhp_),
+                          reinterpret_cast<dvoid**>(&colhd),
                           static_cast<ub4>(i));
         if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
 
         // Get the column name
-        res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd), 
+        res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd),
                          static_cast<ub4>(OCI_DTYPE_PARAM),
                          reinterpret_cast<dvoid**>(&name),
-                         reinterpret_cast<ub4*>(&name_length), 
-                         static_cast<ub4>(OCI_ATTR_NAME), 
+                         reinterpret_cast<ub4*>(&name_length),
+                         static_cast<ub4>(OCI_ATTR_NAME),
                          reinterpret_cast<OCIError*>(session_.errhp_));
         if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
 
         // Get the column type
-        res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd), 
+        res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd),
                          static_cast<ub4>(OCI_DTYPE_PARAM),
                          reinterpret_cast<dvoid*>(&dtype),
-                         0, 
-                         static_cast<ub4>(OCI_ATTR_DATA_TYPE), 
+                         0,
+                         static_cast<ub4>(OCI_ATTR_DATA_TYPE),
                          reinterpret_cast<OCIError*>(session_.errhp_));
         if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
 
         // get the data size
-        res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd), 
+        res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd),
                          static_cast<ub4>(OCI_DTYPE_PARAM),
                          reinterpret_cast<dvoid*>(&dbsize),
-                         0, 
-                         static_cast<ub4>(OCI_ATTR_DATA_SIZE), 
+                         0,
+                         static_cast<ub4>(OCI_ATTR_DATA_SIZE),
                          reinterpret_cast<OCIError*>(session_.errhp_));
         if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
 
         // get the precision
-        res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd), 
+        res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd),
                          static_cast<ub4>(OCI_DTYPE_PARAM),
                          reinterpret_cast<dvoid*>(&prec),
-                         0, 
-                         static_cast<ub4>(OCI_ATTR_PRECISION), 
+                         0,
+                         static_cast<ub4>(OCI_ATTR_PRECISION),
                          reinterpret_cast<OCIError*>(session_.errhp_));
         if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
-            
+
         // get the scale
-        res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd), 
+        res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd),
                          static_cast<ub4>(OCI_DTYPE_PARAM),
                          reinterpret_cast<dvoid*>(&scale),
-                         0, 
-                         static_cast<ub4>(OCI_ATTR_SCALE), 
+                         0,
+                         static_cast<ub4>(OCI_ATTR_SCALE),
                          reinterpret_cast<OCIError*>(session_.errhp_));
         if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
 
         // get the null allowed flag
-        res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd), 
+        res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd),
                          static_cast<ub4>(OCI_DTYPE_PARAM),
                          reinterpret_cast<dvoid*>(&nullok),
-                         0, 
-                         static_cast<ub4>(OCI_ATTR_IS_NULL), 
+                         0,
+                         static_cast<ub4>(OCI_ATTR_IS_NULL),
                          reinterpret_cast<OCIError*>(session_.errhp_));
         if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
-            
+
         const int max_column_length = 50;
         char col_name[max_column_length + 1];
         strncpy(col_name, (char*)name, name_length);
@@ -730,7 +730,7 @@ void Statement::describe()
                 break;
             default:
                 std::ostringstream msg;
-                msg << "db column type " << dtype 
+                msg << "db column type " << dtype
                     <<" not supported for dynamic selects"<<std::endl;
                 throw SOCIError(msg.str());
         }
@@ -1031,7 +1031,7 @@ void VectorUseType::preUse()
     if (ind_ != NULL)
     {
         for (size_t i = 0; i != indOCIHolderVec_.size(); ++i, ++ind_)
-        { 
+        {
             if (*ind_ == eNull)
             {
                 indOCIHolderVec_[i] = -1; // null
@@ -1206,7 +1206,7 @@ void UseType<std::vector<unsigned long> >::bind(Statement &st, int &position)
     st_ = &st;
 
     sword res;
-    
+
     if (name_.empty())
     {
         // no name provided, bind by position
@@ -1468,22 +1468,22 @@ size_t columnSize(Statement &st, int position)
     sword res = OCIStmtExecute(st.session_.svchp_, st.stmtp_,
          st.session_.errhp_, 1, 0, 0, 0, OCI_DESCRIBE_ONLY);
     if (res != OCI_SUCCESS) throwSOCIError(res, st.session_.errhp_);
- 
+
     // Get The Column Handle
     OCIParam* colhd;
-    res = OCIParamGet(reinterpret_cast<dvoid*>(st.stmtp_), 
-         static_cast<ub4>(OCI_HTYPE_STMT), 
-         reinterpret_cast<OCIError*>(st.session_.errhp_), 
-         reinterpret_cast<dvoid**>(&colhd), 
+    res = OCIParamGet(reinterpret_cast<dvoid*>(st.stmtp_),
+         static_cast<ub4>(OCI_HTYPE_STMT),
+         reinterpret_cast<OCIError*>(st.session_.errhp_),
+         reinterpret_cast<dvoid**>(&colhd),
          static_cast<ub4>(position));
     if (res != OCI_SUCCESS) throwSOCIError(res, st.session_.errhp_);
 
      // Get The Data Size
-    res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd), 
+    res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd),
          static_cast<ub4>(OCI_DTYPE_PARAM),
          reinterpret_cast<dvoid*>(&colSize),
-         0, 
-         static_cast<ub4>(OCI_ATTR_DATA_SIZE), 
+         0,
+         static_cast<ub4>(OCI_ATTR_DATA_SIZE),
          reinterpret_cast<OCIError*>(st.session_.errhp_));
     if (res != OCI_SUCCESS) throwSOCIError(res, st.session_.errhp_);
 
@@ -1499,7 +1499,7 @@ void IntoType<std::vector<std::string> >::define(Statement &st, int &position)
 
     const size_t bufSize = strLen_ * v_.size();
     buf_ = new char[bufSize];
-    
+
     sword res = OCIDefineByPos(st.stmtp_, &defnp_, st.session_.errhp_,
                          position++, buf_, strLen_, SQLT_CHR,
                          indOCIHolder_, &sizes_[0], 0, OCI_DEFAULT);
@@ -1537,17 +1537,17 @@ void UseType<std::vector<std::string> >::bind(Statement &st, int &position)
 {
     st_ = &st;
     sword res;
-    
+
     size_t maxSize = 0;
     for (size_t i = 0; i != v_.size(); ++i)
     {
         size_t sz = v_[i].length();
-        sizes_.push_back(sz); 
+        sizes_.push_back(sz);
         maxSize = sz > maxSize ? sz : maxSize;
     }
 
 
-    buf_ = new char[maxSize * v_.size()]; 
+    buf_ = new char[maxSize * v_.size()];
     char* pos = buf_;
     for (size_t i = 0; i != v_.size(); ++i)
     {
@@ -1701,7 +1701,7 @@ void IntoType<std::vector<std::tm> >::define(Statement &st, int &position)
 
 void IntoType<std::vector<std::tm> >::cleanUp()
 {
-    delete [] buf_; 
+    delete [] buf_;
     buf_ = NULL;
     VectorIntoType::cleanUp();
 }
@@ -1710,7 +1710,7 @@ void IntoType<std::vector<std::tm> >::postFetch(
     bool gotData, bool calledFromFetch)
 {
     if (gotData)
-    { 
+    {
         ub1* pos = buf_;
         for (size_t i = 0; i != vec_.size(); ++i)
         {
@@ -1761,7 +1761,7 @@ void UseType<std::vector<std::tm> >::bind(Statement &st, int &position)
     {
         throwSOCIError(res, st.session_.errhp_);
     }
-    
+
 }
 
 void UseType<std::vector<std::tm> >::cleanUp()
