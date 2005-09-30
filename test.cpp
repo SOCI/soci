@@ -24,7 +24,7 @@ void test1()
             // exception expected (null value and no indicator)
             assert(false);
         }
-        catch(std::exception const &e)
+        catch (std::exception const &e)
         {
             std::string msg(e.what());
             assert(msg == "Null value fetched and no indicator defined.");
@@ -504,9 +504,10 @@ void test10()
 
         std::string in("my message");
         std::string out;
-        Statement st = (sql.prepare <<"begin echo(:output, :input); end;", 
-                                       use(out, "output"), 
-                                       use(in, "input"));
+        Statement st = (sql.prepare <<
+            "begin echo(:output, :input); end;",
+            use(out, "output"),
+            use(in, "input"));
         st.execute(1);
         assert(out == in);
 
@@ -514,9 +515,9 @@ void test10()
         {
             std::string in("my message2");
             std::string out;
-            Procedure proc = (sql.prepare << "echo(:output, :input)", 
-                                            use(out, "output"),
-                                            use(in, "input"));
+            Procedure proc = (sql.prepare <<
+                "echo(:output, :input)",
+                use(out, "output"), use(in, "input"));
             proc.execute(1);
             assert(out == in);
         }
@@ -530,11 +531,8 @@ void test11()
 {
     {
         Session sql(serviceName, userName, password);
-        try
-        {
-            sql << "drop table test11";
-        }
-        catch(const SOCIError&) {} //ignore error if table doesn't exist
+        try { sql << "drop table test11"; }
+        catch (SOCIError const &) {} //ignore error if table doesn't exist
 
         sql << "create table test11(num_float numeric(7,2) NOT NULL,"
             << " name varchar2(20), when date, large numeric(10,0), "
@@ -544,7 +542,7 @@ void test11()
         sql << "select * from test11", into(r);
         assert(r.indicator(0) ==  eNoData);
 
-        for (int i=1; i<4; ++i)
+        for (int i = 1; i != 4; ++i)
         {
             std::ostringstream namestr;
             namestr << "name" << i;
@@ -627,9 +625,13 @@ void test11()
 
             // verify exception thrown on invalid get<>
             bool cought = false;
-            try{ r.get<std::string>(0); }catch(std::bad_cast&)
+            try
             {
-              cought = true;
+                r.get<std::string>(0);
+            }
+            catch (std::bad_cast const &)
+            {
+                cought = true;
             }
             assert(cought);
         }
@@ -668,7 +670,7 @@ void test12()
         {
             sql << "drop table test12";
         }
-        catch(const SOCIError&) {} // ignore error if table doesn't exist
+        catch (SOCIError const &) {} // ignore error if table doesn't exist
         sql << "create table test12(name varchar2(20))";
 
         StringHolder in("my string");
@@ -691,7 +693,7 @@ void test12()
 void test13()
 {
     Session sql(serviceName, userName, password);
-    try { sql << "drop table test13"; } catch(SOCIError&) {} // ignore 
+    try { sql << "drop table test13"; } catch (SOCIError const &) {} // ignore
 
     sql << "create table test13 ("
         "id number(10) not null,"
@@ -706,7 +708,7 @@ void test13()
     std::string nametest_in("my name test");
 
     Statement st1 = (sql.prepare
-                     <<"insert into test13(id,idtest,name,nametest)"
+                     << "insert into test13(id,idtest,name,nametest)"
                      << " values (:id,:idtest,:name,:nametest)",
                      use(id_in,"id"),
                      use(idtest_in,"idtest"),
@@ -735,8 +737,7 @@ void test13()
 void test14()
 {
     Session sql(serviceName, userName, password);
-    try { sql << "drop table test14"; }
-    catch(const SOCIError&) {} // ignore error
+    try { sql << "drop table test14"; } catch (SOCIError const &) {} // ignore
 
     sql << "create table test14(chr1 char(1))";
 
@@ -747,14 +748,14 @@ void test14()
     sql << "select chr1 from test14", into(c_out);
     assert(c_out == 'Z');
    
-    std::cout << "test 14 passed" <<std::endl; 
+    std::cout << "test 14 passed" << std::endl; 
 }
 
 // test bulk insert features
 void test15()
 {
     Session sql(serviceName, userName, password);
-    try { sql << "drop table test15"; } catch(SOCIError&) {} // ignore 
+    try { sql << "drop table test15"; } catch (SOCIError const &) {} // ignore
 
     sql << "create table test15 (id number(5), code number(2))";
 
@@ -769,23 +770,26 @@ void test15()
 
         try
         {
-            sql << "insert into test15(id,code) values(:id,:code)", use(ids), use(codes);
+            sql << "insert into test15(id,code) values(:id,:code)",
+                use(ids), use(codes);
         }
-        catch(SOCIError& e)
+        catch (SOCIError const &e)
         {
             error = e.what();
         }
-        assert(error.find("Bind variable size mismatch") != std::string::npos);
+        assert(error.find("Bind variable size mismatch")
+            != std::string::npos);
 
         try 
         {
             sql << "select from test15", into(ids), into(codes);
         }
-        catch(std::exception& e)
+        catch (std::exception const &e)
         {
             error = e.what();
         }
-        assert(error.find("Bind variable size mismatch") != std::string::npos);
+        assert(error.find("Bind variable size mismatch")
+            != std::string::npos);
     }
   
     // verify partial insert occurs when one of the records is bad
@@ -799,9 +803,10 @@ void test15()
         {
             sql << "insert into test15 (id) values(:id)", use(ids, "id");
         }
-        catch(SOCIError& e)
+        catch (SOCIError const &e)
         {
-            error = e.what();  //TODO e could be made to tell which row(s) failed
+            error = e.what();
+            //TODO e could be made to tell which row(s) failed
         }
         sql.commit();
         assert(error.find("ORA-01438") != std::string::npos);
@@ -814,7 +819,7 @@ void test15()
     // test insert
     {
         std::vector<int> ids;
-        for (int i=0; i < 3; ++i)
+        for (int i = 0; i != 3; ++i)
         {
             ids.push_back(i+10);
         }
@@ -835,12 +840,11 @@ void test15()
         {
             sql << "select id from test15", into(ids);
         }
-        catch (std::out_of_range& e)
+        catch (std::out_of_range const &e)
         {
             caught = true;
         }
         assert(caught);
-
     }
 
     // verify an exception is thrown if into vector is zero length
@@ -851,7 +855,7 @@ void test15()
         {
             sql << "insert into test15(id) values(:id)", use(ids);
         }
-        catch(std::out_of_range& e)
+        catch (std::out_of_range const &e)
         {
             caught = true;
         }
@@ -867,7 +871,8 @@ void test15()
 
         assert(!st.execute(1));
         assert(ids_out.size() == 0);
-        assert(inds.size() == 3 && inds[0] == eNoData && inds[1] == eNoData && inds[2] == eNoData);
+        assert(inds.size() == 3 && inds[0] == eNoData
+            && inds[1] == eNoData && inds[2] == eNoData);
     }
 
     // test NULL indicators
@@ -894,10 +899,12 @@ void test15()
         sql << "select code from test15", into(codes, inds_out);
         assert(codes.size() == 3 && inds_out.size() == 3);
         assert(codes[0] == 10 && codes[2] == 10);
-        assert(inds_out[0] == eOK && inds_out[1] == eNull && inds_out[2] == eOK);
+        assert(inds_out[0] == eOK && inds_out[1] == eNull
+            && inds_out[2] == eOK);
     }    
 
-    // verify an exception is thrown if null is selected and no indicator was provided
+    // verify an exception is thrown if null is selected
+    //  and no indicator was provided
     {
         std::string msg;
         std::vector<int> intos(3);
@@ -905,7 +912,7 @@ void test15()
         {
             sql << "select code from test15", into(intos);
         }
-        catch(SOCIError& e)
+        catch (SOCIError const &e)
         {
             msg = e.what();
         }
@@ -917,18 +924,21 @@ void test15()
         const size_t sz = 3;
         std::vector<eIndicator> inds(sz);
         std::vector<int> ids_out(sz);
-        Statement st = (sql.prepare << "select id from test15", into(ids_out, inds));
+        Statement st = (sql.prepare << "select id from test15",
+            into(ids_out, inds));
         assert(st.execute(1));
         assert(ids_out.size() == sz);
         assert(ids_out[0] == 10);
         assert(ids_out[2] == 12);
-        assert(inds.size() == 3 && inds[0] == eOK && inds[1] == eOK && inds[2] == eOK);
+        assert(inds.size() == 3 && inds[0] == eOK
+            && inds[1] == eOK && inds[2] == eOK);
     }
 
     // verify execute(0)
     {
         std::vector<int> ids_out(2);
-        Statement st = (sql.prepare << "select id from test15", into(ids_out));
+        Statement st = (sql.prepare << "select id from test15",
+            into(ids_out));
 
         st.execute(0);
         assert(ids_out.size() == 2);
@@ -939,10 +949,12 @@ void test15()
         assert(!st.fetch());
     }
 
-    // verify resizing happens if vector is larger then number of rows returned
+    // verify resizing happens if vector is larger
+    // than number of rows returned
     {
         std::vector<int> ids_out(4); // one too many 
-        Statement st2 = (sql.prepare << "select id from test15", into(ids_out));
+        Statement st2 = (sql.prepare << "select id from test15",
+            into(ids_out));
         assert(st2.execute(1));
         assert(ids_out.size() == 3);
         assert(ids_out[0] == 10);
@@ -973,18 +985,19 @@ void test15()
         assert(!st3.fetch());
     }
 
-    std::cout << "test 15 passed"<< std::endl;
+    std::cout << "test 15 passed" << std::endl;
 }
 
 //test bulk operations for std::string
 void test16()
 {
     Session sql(serviceName, userName, password);
-    try { sql << "drop table test16"; } catch(SOCIError&) {} // ignore 
+    try { sql << "drop table test16"; } catch (SOCIError const &) {} // ignore
 
     sql << "create table test16(name varchar2(10), code varchar2(3))";
  
-    // verify an exception is thrown and nothing succeeds if string size exceeds column size
+    // verify an exception is thrown and nothing succeeds
+    // if string size exceeds column size
     {
         std::vector<std::string> codes;
         codes.push_back("abc");
@@ -995,7 +1008,7 @@ void test16()
         {
             sql << "insert into test16(code) values(:code)", use(codes);
         }
-        catch(SOCIError& e)
+        catch (SOCIError const &e)
         {
             error = e.what();
         }
@@ -1008,7 +1021,7 @@ void test16()
    
     std::vector<std::string> names;
     std::vector<std::string> codes;
-    for (int i=0; i < 3; ++i)
+    for (int i = 0; i != 3; ++i)
     {
         std::ostringstream nStr;
         nStr << "name" << i;
@@ -1021,15 +1034,17 @@ void test16()
         codes.push_back(cStr.str());
     }
     
-    Statement st = (sql.prepare << "insert into test16(name,code) values(:name, :code)", 
-                            use(names), use(codes)); 
+    Statement st = (sql.prepare
+        << "insert into test16(name,code) values(:name, :code)",
+        use(names), use(codes)); 
     st.execute(1);    
 
     // test select, multiple string columns
     {
         std::vector<std::string> names_out(2);
         std::vector<std::string> codes_out(2);
-        Statement st = (sql.prepare << "select name, code from test16", into(names_out), into(codes_out));
+        Statement st = (sql.prepare << "select name, code from test16",
+            into(names_out), into(codes_out));
         st.execute(1);
         assert(names_out.size() == 2);
         assert(names_out[0] == "name0");
@@ -1046,11 +1061,14 @@ void test16()
         std::vector<std::string> simple;
         simple.push_back("simple1");
         simple.push_back("simple2");
-        sql << "insert into test16(name) values(:names)", use(simple, "names");
+        sql << "insert into test16(name) values(:names)",
+            use(simple, "names");
     
         std::vector<std::string> simple_out(2);
-        sql << "select name from test16 where name like 'simple%'", into(simple_out);
-        assert(simple_out.size()==2 && simple_out[0] == "simple1" && simple_out[1] == "simple2");
+        sql << "select name from test16 where name like 'simple%'",
+            into(simple_out);
+        assert(simple_out.size()==2 && simple_out[0] == "simple1"
+            && simple_out[1] == "simple2");
     }
 
     // test indicators
@@ -1069,7 +1087,8 @@ void test16()
         codes.push_back("99");
         codes.push_back("99");
         codes.push_back("99");
-        sql<<"insert into test16(name,code) values (:name, :code)", use(names_in, inds_in), use(codes);
+        sql << "insert into test16(name,code) values (:name, :code)",
+            use(names_in, inds_in), use(codes);
         sql.commit();
 
         std::vector<eIndicator> inds_out(3);
@@ -1078,10 +1097,12 @@ void test16()
         inds_out[2] = eNoData;
         std::vector<std::string> names_out(3);
 
-        sql<<"select name from test16 where code = :code", use(codes[0]), into(names_out, inds_out);
+        sql << "select name from test16 where code = :code",
+            use(codes[0]), into(names_out, inds_out);
 
         assert(names_out[0] == "indtest1" && names_out[2] == "indtest3");
-        assert(inds_out[0] == eOK && inds_out[1] == eNull && inds_out[2] == eOK);
+        assert(inds_out[0] == eOK && inds_out[1] == eNull
+            && inds_out[2] == eOK);
         assert(names_out[0] == "indtest1" && names_out[2] == "indtest3"); 
     }
 
@@ -1093,20 +1114,20 @@ void test16()
         {
             sql << "select bogus from test16\n", into(names);
         }
-        catch(SOCIError& e)
+        catch (SOCIError const &e)
         {
             msg = e.what();
         }
         assert(msg.find("invalid identifier") != std::string::npos);
     }
-    std::cout << "test 16 passed"<< std::endl;
+    std::cout << "test 16 passed" << std::endl;
 }
 
 // test bulk operations for unsigned long and double
 void test17()
 {
     Session sql(serviceName, userName, password);
-    try { sql << "drop table test17"; } catch(SOCIError&) {} // ignore 
+    try { sql << "drop table test17"; } catch (SOCIError const &) {} // ignore
 
     sql << "create table test17 (nums number(10), amts number(8,2))";
 
@@ -1120,7 +1141,8 @@ void test17()
     amts.push_back(1.12);
     amts.push_back(1.13);
 
-    sql << "insert into test17(nums, amts) values(:nums, :amts)", use(nums, "nums"), use(amts, "amts");
+    sql << "insert into test17(nums, amts) values(:nums, :amts)",
+        use(nums, "nums"), use(amts, "amts");
     int count(0);
 
     sql << "select count(*) from test17", into(count);
@@ -1130,7 +1152,8 @@ void test17()
     std::vector<double> amts_out(2);
 
     sql << "select nums, amts from test17", into(nums_out), into(amts_out);
-    assert(nums_out.size()==2 && nums_out[0] == 100*1000 && nums_out[1] == 200*1000);
+    assert(nums_out.size()==2 && nums_out[0] == 100*1000
+        && nums_out[1] == 200*1000);
     assert(amts_out.size()==2 && amts_out[0] == 1.11 && amts_out[1] == 1.12);
 
     // test indicators
@@ -1151,14 +1174,16 @@ void test17()
         vl.push_back(9990);
         vl.push_back(1001);
        
-        sql << "insert into test17(nums, amts) values(:num, :amt)", use(vl, indsl_in), use(vd, indsd_in);
+        sql << "insert into test17(nums, amts) values(:num, :amt)",
+            use(vl, indsl_in), use(vd, indsd_in);
         
         std::vector<double> d_out(2);
         std::vector<unsigned long> l_out(2);
         std::vector<eIndicator> indd_out(2);
         std::vector<eIndicator> indl_out(2);
 
-        sql << "select nums, amts from test17 where nums is null or amts is null", 
+        sql << "select nums, amts from test17 "
+            "where nums is null or amts is null",
             into(l_out, indl_out), into(d_out, indd_out);
 
         assert(l_out.size() == 2);     
@@ -1171,19 +1196,19 @@ void test17()
         assert(indd_out[0] == eOK);
     }
 
-    std::cout << "test 17 passed"<<std::endl;
+    std::cout << "test 17 passed" << std::endl;
 }
 
 // test bulk operations for std::tm
 void test18()
 {
     Session sql(serviceName, userName, password);
-    try { sql << "drop table test18"; } catch(SOCIError&) {} // ignore 
+    try { sql << "drop table test18"; } catch (SOCIError const &) {} // ignore
 
     sql << "create table test18 (d1 date, d2 date)";
 
     std::vector<std::tm> times;
-    for (int i=0; i<4; ++i)
+    for (int i = 0; i != 4; ++i)
     {
         std::time_t now = std::time(0);
         std::tm when = *gmtime(&now);
@@ -1204,7 +1229,7 @@ void test18()
     sql << "select d1 from test18", into(times_out);
 
     assert(times_out.size() == 3);
-    for (size_t i=0; i<times_out.size(); ++i)
+    for (size_t i = 0; i != times_out.size(); ++i)
     {
         assert(mktime(&times_out[i]) == mktime(&times[i]));
         std::tm t = times_out[i];
@@ -1216,7 +1241,7 @@ void test18()
     std::vector<std::tm> times_in;
     // test indicators
     {
-        for (int i=0; i<2; ++i)
+        for (int i = 0; i != 2; ++i)
         {
             std::time_t now = std::time(0);
             std::tm when = *gmtime(&now);
@@ -1229,12 +1254,14 @@ void test18()
         std::vector<eIndicator> inds_in;
         inds_in.push_back(eOK);
         inds_in.push_back(eNull);
-        sql << "insert into test18 (d1) values (:d1)", use(times_in, inds_in, "d1");
+        sql << "insert into test18 (d1) values (:d1)",
+            use(times_in, inds_in, "d1");
         sql.commit();
         std::vector<std::tm> times_out(2);
         std::vector<eIndicator> inds_out(2);
 
-        sql << "select d1 from test18 where d1 > sysdate or d1 is null", into(times_out, inds_out);
+        sql << "select d1 from test18 where d1 > sysdate or d1 is null",
+            into(times_out, inds_out);
         assert(times_out.size() == 2);
         assert(memcmp(&times_out[0], &times_in[0], sizeof(std::tm)) == 0);
         assert(inds_out[0] == eOK);
@@ -1244,7 +1271,8 @@ void test18()
     // test resizing
     {
         std::vector<std::tm> out(2);
-        Statement st = (sql.prepare << "select d1 from test18 where d1 is not null", into(out) );
+        Statement st = (sql.prepare
+            << "select d1 from test18 where d1 is not null", into(out));
 
         assert(st.execute(1));
         assert(out.size() == 2);
@@ -1264,14 +1292,14 @@ void test18()
         assert(!st.fetch());
     }
 
-    std::cout << "test 18 passed"<< std::endl;
+    std::cout << "test 18 passed" << std::endl;
 }
 
 // test bulk operations for std::time_t
 void test19()
 {
     Session sql(serviceName, userName, password);
-    try { sql << "drop table test19"; } catch(SOCIError&) {} // ignore 
+    try { sql << "drop table test19"; } catch (SOCIError const &) {} // ignore
 
     sql << "create table test19 (d1 date)";
 
@@ -1312,7 +1340,8 @@ void test19()
         std::vector<eIndicator> inds_in;
         inds_in.push_back(eOK);
         inds_in.push_back(eNull);
-        sql << "insert into test19 (d1) values(:d1)", use(times_in2, inds_in, "d1");
+        sql << "insert into test19 (d1) values(:d1)",
+            use(times_in2, inds_in, "d1");
         assert(times_in2.size() == 2);
         assert(times_in2[0] == yesterday);
         assert(times_in2[1] == dayBefore);
@@ -1337,9 +1366,12 @@ void test19()
         sql << "insert into test19 (d1) values(:d1)", use(times_in3);
 
         std::vector<std::time_t> times_out(2);
-        Statement st = (sql.prepare <<"select d1 from test19 where d1 is not null", into(times_out));
+        Statement st = (sql.prepare
+            << "select d1 from test19 where d1 is not null",
+            into(times_out));
         assert(st.execute(1));
-        assert(times_out.size() == 2 && times_out[0] == times_in1[0] && times_out[1] == times_in1[1]);
+        assert(times_out.size() == 2 && times_out[0] == times_in1[0]
+            && times_out[1] == times_in1[1]);
 
         assert(st.fetch());
         assert(times_out.size() == 2); 
@@ -1358,7 +1390,7 @@ void test19()
 void test20()
 {
     Session sql(serviceName, userName, password);
-    try { sql << "drop table test20"; } catch(SOCIError&) {} // ignore 
+    try { sql << "drop table test20"; } catch (SOCIError const &) {} // ignore
 
     sql << "create table test20(code char(1))";
     
@@ -1386,7 +1418,8 @@ void test20()
         inds_in.push_back(eOK);
         inds_in.push_back(eNull);
 
-        sql << "insert into test20 (code) values (:code)", use(in2, inds_in, "code");
+        sql << "insert into test20 (code) values (:code)",
+            use(in2, inds_in, "code");
         
         std::vector<char> out2(4);
         std::vector<eIndicator> inds_out(4);
@@ -1403,7 +1436,7 @@ void test20()
 void test21()
 {
     Session sql(serviceName, userName, password);
-    try { sql << "drop table test21"; } catch(SOCIError&) {} // ignore 
+    try { sql << "drop table test21"; } catch (SOCIError const &) {} // ignore
 
     sql << "create table test21(id number(2))";
     
@@ -1434,7 +1467,8 @@ void test21()
         inds_in.push_back(eOK);
         inds_in.push_back(eNull);
 
-        sql << "insert into test21 (id) values (:id)", use(in2, inds_in, "id");
+        sql << "insert into test21 (id) values (:id)",
+            use(in2, inds_in, "id");
         
         std::vector<short> out2(4);
         std::vector<eIndicator> inds_out(4);
@@ -1461,7 +1495,8 @@ int main(int argc, char** argv)
     }
     else 
     {
-        std::cout<<"usage: "<<argv[0]<<" [user] [password] [serviceName]\n";
+        std::cout << "usage: " << argv[0]
+            << " [user] [password] [serviceName]\n";
         exit(1);
     }
     

@@ -239,7 +239,7 @@ details::UseTypePtr use(T &t, eIndicator &ind, T1 p1, T2 p2)
 template <typename T, typename T1, typename T2, typename T3, typename T4>
 details::UseTypePtr use(T &t, T1 p1, T2 p2, T3 p3, T4 p4)
 {
-  return details::UseTypePtr(new UseType<T>(t, p1, p2, p3, p4));
+    return details::UseTypePtr(new UseType<T>(t, p1, p2, p3, p4));
 }
 
 template <typename T, typename T1, typename T2, typename T3>
@@ -301,10 +301,14 @@ public:
     template<typename T> T get()
     {
         TypeHolder<T>* p = dynamic_cast<TypeHolder<T> *>(this);
-        if (p) 
+        if (p)
+        {
             return p->value<T>();
-        else 
+        }
+        else
+        {
             throw std::bad_cast();
+        }
     }
 private:
     template<typename T> T value();
@@ -317,7 +321,7 @@ public:
     TypeHolder(T* t) : t_(t) {}
     ~TypeHolder() { delete t_; }
 
-    template<typename TVAL> TVAL value() { return *t_; }
+    template<typename TVAL> TVAL value() const { return *t_; }
 private:
     T* t_;
 };
@@ -772,7 +776,7 @@ public:
 
     virtual void preFetch() {}
     virtual void preDefine() {}
-    virtual int size() {return 1;}
+    virtual int size() const { return 1; }
     virtual void resize(int sz) {}
 
 protected:
@@ -797,7 +801,7 @@ public:
     virtual void preUse();
     virtual void postUse() {convertTo();}
     virtual void cleanUp();
-    virtual int size(){return 1;}
+    virtual int size() const { return 1; }
 
 protected:
     Statement *st_;
@@ -893,7 +897,7 @@ public:
     IntegerVectorIntoType(std::vector<T> &v, std::vector<eIndicator> &vInd) 
         : VectorIntoType(vInd), v_(v) {}
 
-    virtual int size() { return v_.size(); }
+    virtual int size() const { return v_.size(); }
     virtual void resize(int sz) { v_.resize(sz); }
 
     virtual void define(Statement &st, int &position)
@@ -927,7 +931,7 @@ public:
         std::string const &name = std::string())
         : VectorUseType(ind, name), v_(v) {}
 
-    virtual int size() { return v_.size(); }
+    virtual int size() const { return v_.size(); }
 
     virtual void bind(Statement &st, int &position)
     {
@@ -1096,8 +1100,8 @@ public:
         : VectorIntoType(vind), v_(v) {}
 
     void define(Statement &st, int &position);
-    int size() { return v_.size(); }
-    void resize(int sz) { v_.resize(sz); }
+    virtual int size() const { return v_.size(); }
+    virtual void resize(int sz) { v_.resize(sz); }
 
 private:
     std::vector<char> &v_;
@@ -1114,7 +1118,7 @@ public:
         : VectorUseType(vind, name), v_(v) {}
 
     void bind(Statement &st, int &position);
-    int size() { return v_.size(); }
+    virtual int size() const { return v_.size(); }
 
 private:
     std::vector<char> &v_;
@@ -1162,8 +1166,8 @@ public:
         : VectorIntoType(vind), v_(v) {}
     
     void define(Statement &st, int &position);
-    int size() { return v_.size(); }
-    void resize(int sz) { v_.resize(sz); }
+    virtual int size() const { return v_.size(); }
+    virtual void resize(int sz) { v_.resize(sz); }
 
 private:
     std::vector<unsigned long> &v_;    
@@ -1182,7 +1186,7 @@ public:
         : VectorUseType(ind, name), v_(v) {}
 
     void bind(Statement &st, int &position);
-    int size() { return v_.size(); }
+    virtual int size() const { return v_.size(); }
 
 private:
     std::vector<unsigned long> &v_;
@@ -1230,7 +1234,7 @@ public:
         : VectorIntoType(vind), v_(v) {}
     
     void define(Statement &st, int &position);
-    virtual int size() { return v_.size(); }
+    virtual int size() const { return v_.size(); }
     virtual void resize(int sz) { v_.resize(sz); }
 
 private:
@@ -1248,7 +1252,7 @@ public:
         : VectorUseType(ind, name), v_(v) {}
 
     void bind(Statement &st, int &position);
-    int size() { return v_.size(); }
+    virtual int size() const { return v_.size(); }
 
 private:
     std::vector<double> &v_;
@@ -1303,12 +1307,12 @@ public:
         strLen_(0), sizes_(v_.size()) {}
 
     ~IntoType() { delete [] buf_; }
-    int size() { return v_.size(); }
-    void resize(int sz) { v_.resize(sz); }
+    virtual int size() const { return v_.size(); }
+    virtual void resize(int sz) { v_.resize(sz); }
 
-    void cleanUp();
-    void define(Statement &st, int &position);
-    void postFetch(bool gotData, bool calledFromFetch);
+    virtual void cleanUp();
+    virtual void define(Statement &st, int &position);
+    virtual void postFetch(bool gotData, bool calledFromFetch);
   
 private:
     std::vector<std::string>& v_;
@@ -1330,10 +1334,10 @@ public:
         : VectorUseType(ind, name), v_(v) {}
 
     ~UseType() { delete [] buf_; }
-    int size() { return v_.size(); }
+    virtual int size() const { return v_.size(); }
 
-    void cleanUp();
-    void bind(Statement &st, int &position);
+    virtual void cleanUp();
+    virtual void bind(Statement &st, int &position);
 
 private:
     std::vector<ub2> sizes_;
@@ -1459,7 +1463,7 @@ public:
     void define(Statement &st, int &position);
     void postFetch(bool gotData, bool calledFromFetch);
 
-    virtual int size() { return vec_.size(); }
+    virtual int size() const { return vec_.size(); }
     virtual void resize(int sz) { vec_.resize(sz); }
 
 private:
@@ -1479,12 +1483,12 @@ public:
         : VectorUseType(vind, name), v_(v), buf_(NULL) {}
 
     ~UseType() { delete [] buf_; }
-    int size() { return v_.size(); }
+    int size() const { return v_.size(); }
     
-    void bind(Statement &st, int &position);
-    void cleanUp();
-    void preUse();
-    void postUse();
+    virtual void bind(Statement &st, int &position);
+    virtual void cleanUp();
+    virtual void preUse();
+    virtual void postUse();
 
 private:
     std::vector<std::tm>& v_;
@@ -1538,7 +1542,7 @@ public:
     IntoType(Row &r, eIndicator &ind)
         : StandardIntoType(ind), row_(r) {}
 
-    void define(Statement &st, int &position);
+    virtual void define(Statement &st, int &position);
 
 private:
     Row &row_;
@@ -1600,8 +1604,8 @@ public:
         : IntoType<BASE_TYPE>(base_value_, ind), value_(value),
         base_value_(value.size()) {}
 
-    int size(){return base_value_.size();}
-    void resize(int sz){value_.resize(sz); base_value_.resize(sz);}
+    virtual int size() const { return base_value_.size(); }
+    virtual void resize(int sz) { value_.resize(sz); base_value_.resize(sz); }
 
 private:
     void convertFrom() 
