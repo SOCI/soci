@@ -996,8 +996,7 @@ void test16()
 
     sql << "create table test16(name varchar2(10), code varchar2(3))";
 
-    // verify an exception is thrown and nothing succeeds
-    // if string size exceeds column size
+    // verify an exception is thrown if string size exceeds column size
     {
         std::vector<std::string> codes;
         codes.push_back("abc");
