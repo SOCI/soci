@@ -9,6 +9,7 @@ You should see the following files here:
 - README    - This file.
 - LICENSE   - Explanation of the license terms.
 - CHANGES   - The description of changes.
+- contrib   - Acknowledgements for contributions.
 
 - soci.h    - This is the actual SOCI library,
   soci.cpp    for use in your own projects.
@@ -18,7 +19,7 @@ You should see the following files here:
 - test.cpp  - The test program - use it for regression testing if you
               modify the library.
 - Makefile  - Example makefile for compiling the test program
-              (taken from one of ours machines).
+              (taken from one of our machines).
 
 
 Anyway - have fun! :-)

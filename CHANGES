@@ -1,6 +1,15 @@
 This file contains the history of changes in the SOCI library.
 
 ---
+The version 1.2.0 differs from 1.1.0 in the following ways:
+
+- A memory leak when reading into Row objects was fixed.
+
+- Bulk (array) operations were introduced for high-performance
+  applications, where the number of network round-trips can be
+  significantly reduced by operating on whole arrays (vectors).
+
+---
 The version 1.1.0 differs from 1.0.1 in the following ways:
 
 - Explicit support for calling stored procedures was added.
