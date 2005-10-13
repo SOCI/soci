@@ -777,7 +777,7 @@ public:
     virtual void preFetch() {}
     virtual void preDefine() {}
     virtual int size() const { return 1; }
-    virtual void resize(int sz) {}
+    virtual void resize(int) {}
 
 protected:
     Statement *st_;
@@ -897,7 +897,7 @@ public:
     IntegerVectorIntoType(std::vector<T> &v, std::vector<eIndicator> &vInd)
         : VectorIntoType(vInd), v_(v) {}
 
-    virtual int size() const { return v_.size(); }
+    virtual int size() const { return static_cast<int>(v_.size()); }
     virtual void resize(int sz) { v_.resize(sz); }
 
     virtual void define(Statement &st, int &position)
@@ -931,7 +931,7 @@ public:
         std::string const &name = std::string())
         : VectorUseType(ind, name), v_(v) {}
 
-    virtual int size() const { return v_.size(); }
+    virtual int size() const { return static_cast<int>(v_.size()); }
 
     virtual void bind(Statement &st, int &position)
     {
@@ -1100,7 +1100,7 @@ public:
         : VectorIntoType(vind), v_(v) {}
 
     void define(Statement &st, int &position);
-    virtual int size() const { return v_.size(); }
+    virtual int size() const { return static_cast<int>(v_.size()); }
     virtual void resize(int sz) { v_.resize(sz); }
 
 private:
@@ -1118,7 +1118,7 @@ public:
         : VectorUseType(vind, name), v_(v) {}
 
     void bind(Statement &st, int &position);
-    virtual int size() const { return v_.size(); }
+    virtual int size() const { return static_cast<int>(v_.size()); }
 
 private:
     std::vector<char> &v_;
@@ -1166,7 +1166,7 @@ public:
         : VectorIntoType(vind), v_(v) {}
 
     void define(Statement &st, int &position);
-    virtual int size() const { return v_.size(); }
+    virtual int size() const { return static_cast<int>(v_.size()); }
     virtual void resize(int sz) { v_.resize(sz); }
 
 private:
@@ -1186,7 +1186,7 @@ public:
         : VectorUseType(ind, name), v_(v) {}
 
     void bind(Statement &st, int &position);
-    virtual int size() const { return v_.size(); }
+    virtual int size() const { return static_cast<int>(v_.size()); }
 
 private:
     std::vector<unsigned long> &v_;
@@ -1207,6 +1207,7 @@ private:
     double &d_;
 };
 
+template <>
 class UseType<double> : public StandardUseType
 {
 public:
@@ -1234,7 +1235,7 @@ public:
         : VectorIntoType(vind), v_(v) {}
 
     void define(Statement &st, int &position);
-    virtual int size() const { return v_.size(); }
+    virtual int size() const { return static_cast<int>(v_.size()); }
     virtual void resize(int sz) { v_.resize(sz); }
 
 private:
@@ -1252,7 +1253,7 @@ public:
         : VectorUseType(ind, name), v_(v) {}
 
     void bind(Statement &st, int &position);
-    virtual int size() const { return v_.size(); }
+    virtual int size() const { return static_cast<int>(v_.size()); }
 
 private:
     std::vector<double> &v_;
@@ -1307,7 +1308,7 @@ public:
         strLen_(0), sizes_(v_.size()) {}
 
     ~IntoType() { delete [] buf_; }
-    virtual int size() const { return v_.size(); }
+    virtual int size() const { return static_cast<int>(v_.size()); }
     virtual void resize(int sz) { v_.resize(sz); }
 
     virtual void cleanUp();
@@ -1334,7 +1335,7 @@ public:
         : VectorUseType(ind, name), v_(v) {}
 
     ~UseType() { delete [] buf_; }
-    virtual int size() const { return v_.size(); }
+    virtual int size() const { return static_cast<int>(v_.size()); }
 
     virtual void cleanUp();
     virtual void bind(Statement &st, int &position);
@@ -1463,7 +1464,7 @@ public:
     void define(Statement &st, int &position);
     void postFetch(bool gotData, bool calledFromFetch);
 
-    virtual int size() const { return vec_.size(); }
+    virtual int size() const { return static_cast<int>(vec_.size()); }
     virtual void resize(int sz) { vec_.resize(sz); }
 
 private:
@@ -1483,7 +1484,7 @@ public:
         : VectorUseType(vind, name), v_(v), buf_(NULL) {}
 
     ~UseType() { delete [] buf_; }
-    int size() const { return v_.size(); }
+    int size() const { return static_cast<int>(v_.size()); }
 
     virtual void bind(Statement &st, int &position);
     virtual void cleanUp();
@@ -1604,8 +1605,12 @@ public:
         : IntoType<BASE_TYPE>(base_value_, ind), value_(value),
         base_value_(value.size()) {}
 
-    virtual int size() const { return base_value_.size(); }
-    virtual void resize(int sz) { value_.resize(sz); base_value_.resize(sz); }
+    virtual int size() const { return static_cast<int>(base_value_.size()); }
+    virtual void resize(int sz)
+    {
+        value_.resize(sz);
+        base_value_.resize(sz);
+    }
 
 private:
     void convertFrom()

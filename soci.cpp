@@ -372,7 +372,8 @@ bool Statement::execute(int num)
         num = std::max(num, std::max(fetchSize_, bindSize));
     }
 
-    bool gotData;
+    bool gotData = false; // dummy initialization to please the compiler
+
     sword res = OCIStmtExecute(session_.svchp_, stmtp_, session_.errhp_,
                                static_cast<ub4>(num), 0, 0, 0, OCI_DEFAULT);
 
@@ -457,9 +458,10 @@ int Statement::intosSize()
         else if (intosSize != intos_[i]->size())
         {
             std::ostringstream msg;
-            msg << "Bind variable size mismatch (into["<<i<<"] has size "
-                << intos_[i]->size() << ", intos_[0] has size "
-                << intosSize << std::endl;
+            msg << "Bind variable size mismatch (into["
+                << static_cast<unsigned long>(i) << "] has size "
+                << static_cast<unsigned long>(intos_[i]->size())
+                << ", intos_[0] has size " << intosSize;
             throw SOCIError(msg.str());
         }
     }
@@ -478,9 +480,10 @@ int Statement::usesSize()
         else if (usesSize != uses_[i]->size())
         {
             std::ostringstream msg;
-            msg << "Bind variable size mismatch (use["<<i<<"] has size "
-                << uses_[i]->size() << ", use[0] has size "
-                << usesSize << std::endl;
+            msg << "Bind variable size mismatch (use["
+                << static_cast<unsigned long>(i) << "] has size "
+                << static_cast<unsigned long>(uses_[i]->size())
+                << ", use[0] has size " << usesSize;
             throw SOCIError(msg.str());
         }
     }
@@ -1501,8 +1504,8 @@ void IntoType<std::vector<std::string> >::define(Statement &st, int &position)
     buf_ = new char[bufSize];
 
     sword res = OCIDefineByPos(st.stmtp_, &defnp_, st.session_.errhp_,
-                         position++, buf_, strLen_, SQLT_CHR,
-                         indOCIHolder_, &sizes_[0], 0, OCI_DEFAULT);
+        position++, buf_, static_cast<sb4>(strLen_),
+        SQLT_CHR, indOCIHolder_, &sizes_[0], 0, OCI_DEFAULT);
 
     if (res != OCI_SUCCESS)
     {
@@ -1542,7 +1545,7 @@ void UseType<std::vector<std::string> >::bind(Statement &st, int &position)
     for (size_t i = 0; i != v_.size(); ++i)
     {
         size_t sz = v_[i].length();
-        sizes_.push_back(sz);
+        sizes_.push_back(static_cast<ub2>(sz));
         maxSize = sz > maxSize ? sz : maxSize;
     }
 
