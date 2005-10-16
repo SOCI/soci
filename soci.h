@@ -413,7 +413,7 @@ public:
     }
 
     Row() {}
-    ~Row()
+    virtual ~Row()
     {
         for(size_t i=0; i<holders_.size(); ++i)
         {
@@ -1307,7 +1307,7 @@ public:
         : VectorIntoType(vind), v_(v), buf_(NULL),
         strLen_(0), sizes_(v_.size()) {}
 
-    ~IntoType() { delete [] buf_; }
+    virtual ~IntoType() { delete [] buf_; }
     virtual int size() const { return static_cast<int>(v_.size()); }
     virtual void resize(int sz) { v_.resize(sz); }
 
@@ -1334,7 +1334,7 @@ public:
             std::string const &name = std::string())
         : VectorUseType(ind, name), v_(v) {}
 
-    ~UseType() { delete [] buf_; }
+    virtual ~UseType() { delete [] buf_; }
     virtual int size() const { return static_cast<int>(v_.size()); }
 
     virtual void cleanUp();
@@ -1379,7 +1379,7 @@ public:
     IntoType(std::string &s, eIndicator &ind)
         : StandardIntoType(ind), s_(s), buf_(NULL) {}
 
-    ~IntoType() { delete [] buf_; }
+    virtual ~IntoType() { delete [] buf_; }
 
     virtual void define(Statement &st, int &position);
     virtual void postFetch(bool gotData, bool calledFromFetch);
@@ -1400,7 +1400,7 @@ public:
         std::string const &name = std::string())
         : StandardUseType(ind, name), s_(s), buf_(NULL) {}
 
-    ~UseType() { delete [] buf_; }
+    virtual ~UseType() { delete [] buf_; }
 
     virtual void bind(Statement &st, int &position);
     virtual void preUse();
@@ -1459,7 +1459,7 @@ public:
     IntoType(std::vector<std::tm>& v, std::vector<eIndicator> &vind)
         : VectorIntoType(vind), vec_(v), buf_(NULL) {}
 
-    ~IntoType() { delete []buf_; }
+    virtual ~IntoType() { delete []buf_; }
     void cleanUp();
     void define(Statement &st, int &position);
     void postFetch(bool gotData, bool calledFromFetch);
@@ -1483,7 +1483,7 @@ public:
         std::string const &name = std::string())
         : VectorUseType(vind, name), v_(v), buf_(NULL) {}
 
-    ~UseType() { delete [] buf_; }
+    virtual ~UseType() { delete [] buf_; }
     int size() const { return static_cast<int>(v_.size()); }
 
     virtual void bind(Statement &st, int &position);
