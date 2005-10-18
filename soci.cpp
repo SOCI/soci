@@ -330,11 +330,6 @@ void Statement::defineAndBind()
     int bindPosition = 1;
     for (size_t i = 0; i != uses_.size(); ++i)
         uses_[i]->bind(*this, bindPosition);
-
-    if (row_)
-    {
-        define();
-    }
 }
 
 void Statement::unDefAndBind()
@@ -526,9 +521,11 @@ void Statement::preUse()
 
 void Statement::postFetch(bool gotData, bool calledFromFetch)
 {
-    for (size_t i = 0; i != intos_.size(); ++i)
+    // iterate in reverse order here in case the first item
+    // is an IntoType<Row> (since it depends on the other IntoTypes)
+    for (size_t i = intos_.size(); i != 0; --i)
     {
-        intos_[i]->postFetch(gotData, calledFromFetch);
+        intos_[i-1]->postFetch(gotData, calledFromFetch);
     }
 }
 
@@ -551,8 +548,9 @@ void Statement::preDefine()
 void Statement::define()
 {
     int definePosition = 1;
-    const size_t sz = intos_.size();
-    for (size_t i = 0; i != sz; ++i)
+
+    // check intos_.size() on each iteration because IntoType<Row> can resize it
+    for (size_t i = 0; i != intos_.size(); ++i)
     {
         intos_[i]->define(*this, definePosition);
     }
@@ -596,9 +594,6 @@ void Statement::bindInto<eDate>()
 
 void Statement::describe()
 {
-    delete intos_[0];
-    intos_.clear();
-
     sword res = OCIStmtExecute(session_.svchp_, stmtp_, session_.errhp_,
                                1, 0, 0, 0, OCI_DESCRIBE_ONLY);
     if (res != OCI_SUCCESS) throwSOCIError(res, session_.errhp_);
@@ -2079,4 +2074,9 @@ void IntoType<Row>::define(Statement &st, int &)
 {
     st.setRow(&row_);
     st.describe();
+}
+
+void IntoType<Row>::postFetch(bool gotData, bool calledFromFetch)
+{
+    convertFrom();
 }

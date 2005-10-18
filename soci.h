@@ -785,7 +785,6 @@ protected:
     eIndicator *ind_;
     sb2 indOCIHolder_;
     ub2 rcode_;
-private:
     virtual void convertFrom() {}
 };
 
@@ -1544,7 +1543,7 @@ public:
         : StandardIntoType(ind), row_(r) {}
 
     virtual void define(Statement &st, int &position);
-
+    virtual void postFetch(bool gotData, bool calledFromFetch);
 private:
     Row &row_;
 };
