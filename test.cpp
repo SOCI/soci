@@ -1484,6 +1484,54 @@ void test21()
     std::cout << "test 21 passed" << std::endl;
 }
 
+struct Person
+{
+int id;
+std::string firstName;
+std::string lastName;
+};
+
+namespace SOCI
+{
+    template<> class TypeConversion<Person>
+    {
+    public:
+        typedef Row base_type;
+        static Person from(Row& r)
+        {
+            Person p;
+            p.id = r.get<int>("ID");
+            p.lastName = r.get<std::string>("LAST_NAME");
+            p.firstName = r.get<std::string>("FIRST_NAME");
+            return p;
+        }
+    };
+}
+
+void test22()
+{
+    Session sql(serviceName, userName, password);
+    try { sql << "drop table person"; }
+        catch (SOCIError const &) {} //ignore error if table doesn't exist
+
+    sql << "create table person(id numeric(5,0) NOT NULL,"
+        << " last_name varchar2(20), first_name varchar2(20))";
+
+    int id=1;
+    std::string last="Simpson";
+    std::string first="Bart";
+    sql << "insert into person values(:id, :last_name, :first_name)",
+           use(id), use(last), use(first);
+
+    Person p;
+    sql << "select * from person", into(p);
+    assert(p.id == 1);
+    assert(p.firstName + p.lastName == "BartSimpson");
+
+    std::cout << "test 22 passed" << std::endl;
+}
+
+
 int main(int argc, char** argv)
 {
     if (argc == 4)
@@ -1522,6 +1570,7 @@ int main(int argc, char** argv)
         test19();
         test20();
         test21();
+        test22();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }
