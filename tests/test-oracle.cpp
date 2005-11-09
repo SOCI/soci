@@ -1,19 +1,20 @@
 #include "soci.h"
+#include "soci-oracle.h"
 #include <iostream>
+#include <string>
 #include <cassert>
 #include <ctime>
 
 using namespace SOCI;
 
-char serviceName[25];
-char userName[25];
-char password[25];
+std::string connectString;
+std::string backEndName = "oracle";
 
 // fundamental tests
 void test1()
 {
     {
-        Session session(serviceName, userName, password);
+        Session session(backEndName, connectString);
 
         int x = -5;
 
@@ -59,7 +60,7 @@ void test1()
     }
 
     {
-        Session sql(serviceName, userName, password);
+        Session sql(backEndName, connectString);
 
         int a = 0;
         int b = 5;
@@ -88,7 +89,7 @@ void test1()
 // type test
 void test2()
 {
-    Session sql(serviceName, userName, password);
+    Session sql(backEndName, connectString);
 
     {
         double d1 = 0.0, d2 = 3.14;
@@ -191,7 +192,7 @@ void test2()
 // indicator test
 void test3()
 {
-    Session sql(serviceName, userName, password);
+    Session sql(backEndName, connectString);
 
     {
         // test for eOK
@@ -246,7 +247,7 @@ void test3()
 // explicit calls test
 void test4()
 {
-    Session sql(serviceName, userName, password);
+    Session sql(backEndName, connectString);
 
     Statement st(sql);
     st.alloc();
@@ -263,7 +264,7 @@ void test4()
 // DDL + insert and retrieval tests
 void test5()
 {
-    Session sql(serviceName, userName, password);
+    Session sql(backEndName, connectString);
 
     sql <<
         "create table some_table ("
@@ -315,7 +316,7 @@ void test5()
 // DDL + BLOB test
 void test6()
 {
-    Session sql(serviceName, userName, password);
+    Session sql(backEndName, connectString);
 
     sql <<
         "create table some_table ("
@@ -330,7 +331,13 @@ void test6()
     {
         BLOB b(sql);
 
-        OCILobDisableBuffering(sql.svchp_, sql.errhp_, b.lobp_);
+        OracleSessionBackEnd *sessionBackEnd
+            = static_cast<OracleSessionBackEnd *>(sql.getBackEnd());
+
+        OracleBLOBBackEnd *blobBackEnd
+            = static_cast<OracleBLOBBackEnd *>(b.getBackEnd());
+
+        OCILobDisableBuffering(sessionBackEnd->svchp_, sessionBackEnd->errhp_, blobBackEnd->lobp_);
 
         sql << "select img from some_table where id = 7", into(b);
         assert(b.getLen() == 0);
@@ -365,7 +372,7 @@ void test6()
 // rollback test
 void test7()
 {
-    Session sql(serviceName, userName, password);
+    Session sql(backEndName, connectString);
 
     sql <<
         "create table some_table ("
@@ -421,7 +428,7 @@ void test7()
 // (the same syntax is used for output cursors in PL/SQL)
 void test8()
 {
-    Session sql(serviceName, userName, password);
+    Session sql(backEndName, connectString);
 
     sql <<
         "create table some_table ("
@@ -466,7 +473,7 @@ void test8()
 // ROWID test
 void test9()
 {
-    Session sql(serviceName, userName, password);
+    Session sql(backEndName, connectString);
 
     sql <<
         "create table some_table ("
@@ -496,7 +503,7 @@ void test9()
 void test10()
 {
     {
-        Session sql(serviceName, userName, password);
+        Session sql(backEndName, connectString);
         sql <<
             "create or replace procedure echo(output out varchar2,"
             "input in varchar2) as "
@@ -530,7 +537,8 @@ void test10()
 void test11()
 {
     {
-        Session sql(serviceName, userName, password);
+        Session sql(backEndName, connectString);
+
         try { sql << "drop table test11"; }
         catch (SOCIError const &) {} //ignore error if table doesn't exist
 
@@ -665,7 +673,8 @@ namespace SOCI
 void test12()
 {
     {
-        Session sql(serviceName, userName, password);
+        Session sql(backEndName, connectString);
+
         try
         {
             sql << "drop table test12";
@@ -692,7 +701,8 @@ void test12()
 // test multiple use types of the same underlying type
 void test13()
 {
-    Session sql(serviceName, userName, password);
+    Session sql(backEndName, connectString);
+
     try { sql << "drop table test13"; } catch (SOCIError const &) {} // ignore
 
     sql << "create table test13 ("
@@ -736,7 +746,8 @@ void test13()
 // test dbtype CHAR
 void test14()
 {
-    Session sql(serviceName, userName, password);
+    Session sql(backEndName, connectString);
+
     try { sql << "drop table test14"; } catch (SOCIError const &) {} // ignore
 
     sql << "create table test14(chr1 char(1))";
@@ -754,7 +765,8 @@ void test14()
 // test bulk insert features
 void test15()
 {
-    Session sql(serviceName, userName, password);
+    Session sql(backEndName, connectString);
+
     try { sql << "drop table test15"; } catch (SOCIError const &) {} // ignore
 
     sql << "create table test15 (id number(5), code number(2))";
@@ -810,7 +822,7 @@ void test15()
         }
         sql.commit();
         assert(error.find("ORA-01438") != std::string::npos);
-        int count(0);
+        int count(7);
         sql << "select count(*) from test15", into(count);
         assert(count == 1);
         sql << "delete from test15";
@@ -832,7 +844,7 @@ void test15()
         assert(count == 3);
     }
 
-    //verify an exception is thrown if use vector is zero length
+    //verify an exception is thrown if into vector is zero length
     {
         std::vector<int> ids;
         bool caught(false);
@@ -847,7 +859,7 @@ void test15()
         assert(caught);
     }
 
-    // verify an exception is thrown if into vector is zero length
+    // verify an exception is thrown if use vector is zero length
     {
         std::vector<int> ids;
         bool caught(false);
@@ -991,7 +1003,8 @@ void test15()
 //test bulk operations for std::string
 void test16()
 {
-    Session sql(serviceName, userName, password);
+    Session sql(backEndName, connectString);
+
     try { sql << "drop table test16"; } catch (SOCIError const &) {} // ignore
 
     sql << "create table test16(name varchar2(10), code varchar2(3))";
@@ -1006,6 +1019,7 @@ void test16()
         try
         {
             sql << "insert into test16(code) values(:code)", use(codes);
+            assert(false);
         }
         catch (SOCIError const &e)
         {
@@ -1125,7 +1139,8 @@ void test16()
 // test bulk operations for unsigned long and double
 void test17()
 {
-    Session sql(serviceName, userName, password);
+    Session sql(backEndName, connectString);
+
     try { sql << "drop table test17"; } catch (SOCIError const &) {} // ignore
 
     sql << "create table test17 (nums number(10), amts number(8,2))";
@@ -1201,7 +1216,8 @@ void test17()
 // test bulk operations for std::tm
 void test18()
 {
-    Session sql(serviceName, userName, password);
+    Session sql(backEndName, connectString);
+
     try { sql << "drop table test18"; } catch (SOCIError const &) {} // ignore
 
     sql << "create table test18 (d1 date, d2 date)";
@@ -1297,7 +1313,8 @@ void test18()
 // test bulk operations for std::time_t
 void test19()
 {
-    Session sql(serviceName, userName, password);
+    Session sql(backEndName, connectString);
+
     try { sql << "drop table test19"; } catch (SOCIError const &) {} // ignore
 
     sql << "create table test19 (d1 date)";
@@ -1388,7 +1405,8 @@ void test19()
 // test bulk operations for char
 void test20()
 {
-    Session sql(serviceName, userName, password);
+    Session sql(backEndName, connectString);
+
     try { sql << "drop table test20"; } catch (SOCIError const &) {} // ignore
 
     sql << "create table test20(code char(1))";
@@ -1434,7 +1452,8 @@ void test20()
 // test bulk operations for short
 void test21()
 {
-    Session sql(serviceName, userName, password);
+    Session sql(backEndName, connectString);
+
     try { sql << "drop table test21"; } catch (SOCIError const &) {} // ignore
 
     sql << "create table test21(id number(2))";
@@ -1484,66 +1503,154 @@ void test21()
     std::cout << "test 21 passed" << std::endl;
 }
 
-struct Person
-{
-int id;
-std::string firstName;
-std::string lastName;
-};
-
-namespace SOCI
-{
-    template<> class TypeConversion<Person>
-    {
-    public:
-        typedef Row base_type;
-        static Person from(Row& r)
-        {
-            Person p;
-            p.id = r.get<int>("ID");
-            p.lastName = r.get<std::string>("LAST_NAME");
-            p.firstName = r.get<std::string>("FIRST_NAME");
-            return p;
-        }
-    };
-}
-
+// more tests for bulk fetch
 void test22()
 {
-    Session sql(serviceName, userName, password);
-    try { sql << "drop table person"; }
-        catch (SOCIError const &) {} //ignore error if table doesn't exist
+    Session sql(backEndName, connectString);
 
-    sql << "create table person(id numeric(5,0) NOT NULL,"
-        << " last_name varchar2(20), first_name varchar2(20))";
+    try { sql << "drop table test22"; } catch (SOCIError const &) {} // ignore
 
-    int id=1;
-    std::string last="Simpson";
-    std::string first="Bart";
-    sql << "insert into person values(:id, :last_name, :first_name)",
-           use(id), use(last), use(first);
+    sql << "create table test22 (id number(2))";
 
-    Person p;
-    sql << "select * from person", into(p);
-    assert(p.id == 1);
-    assert(p.firstName + p.lastName == "BartSimpson");
+    std::vector<int> in;
+    for (int i = 1; i <= 10; ++i)
+    {
+        in.push_back(i);
+    }
+
+    sql << "insert into test22 (id) values(:id)", use(in);
+
+    int count(0);
+    sql << "select count(*) from test22", into(count);
+    assert(count == 10);
+
+    // verify that the exception is thrown when trying to resize
+    // the output vector to the size that is bigger than that
+    // at the time of binding
+    {
+        std::vector<int> out(4);
+        Statement st = (sql.prepare <<
+            "select id from test22", into(out));
+
+        st.execute();
+
+        st.fetch();
+        assert(out.size() == 4);
+        assert(out[0] == 1);
+        assert(out[1] == 2);
+        assert(out[2] == 3);
+        assert(out[3] == 4);
+        out.resize(5); // this should be detected as error
+        try
+        {
+            st.fetch();
+            assert(false); // should never reach here
+        }
+        catch (SOCIError const &e)
+        {
+            assert(std::string(e.what()) ==
+                "Increasing the size of the output vector is not supported.");
+        }
+    }
+
+    // on the other hand, downsizing is OK
+    {
+        std::vector<int> out(4);
+        Statement st = (sql.prepare <<
+            "select id from test22", into(out));
+
+        st.execute();
+
+        st.fetch();
+        assert(out.size() == 4);
+        assert(out[0] == 1);
+        assert(out[1] == 2);
+        assert(out[2] == 3);
+        assert(out[3] == 4);
+        out.resize(3); // ok
+        st.fetch();
+        assert(out.size() == 3);
+        assert(out[0] == 5);
+        assert(out[1] == 6);
+        assert(out[2] == 7);
+        out.resize(4); // ok, not bigger than initially
+        st.fetch();
+        assert(out.size() == 3); // downsized because of end of data
+        assert(out[0] == 8);
+        assert(out[1] == 9);
+        assert(out[2] == 10);
+        assert(st.fetch() == false); // end of data
+    }
 
     std::cout << "test 22 passed" << std::endl;
 }
 
+// test23: experimental, not yet supported:
+// 
+// struct Person
+// {
+//     int id;
+//     std::string firstName;
+//     std::string lastName;
+// };
+
+// namespace SOCI
+// {
+//     template<> class TypeConversion<Person>
+//     {
+//     public:
+//         typedef Row base_type;
+//         static Person from(Row& r)
+//         {
+//             Person p;
+//             p.id = r.get<int>("ID");
+//             p.lastName = r.get<std::string>("LAST_NAME");
+//             p.firstName = r.get<std::string>("FIRST_NAME");
+//             return p;
+//         }
+//     };
+// }
+
+// void test23()
+// {
+//     Session sql(backEndName, connectString);
+
+//     try { sql << "drop table person"; }
+//         catch (SOCIError const &) {} //ignore error if table doesn't exist
+
+//     sql << "create table person(id numeric(5,0) NOT NULL,"
+//         << " last_name varchar2(20), first_name varchar2(20))";
+
+//     int id=1;
+//     std::string last="Simpson";
+//     std::string first="Bart";
+//     sql << "insert into person values(:id, :last_name, :first_name)",
+//            use(id), use(last), use(first);
+
+//     Person p;
+//     sql << "select * from person", into(p);
+//     assert(p.id == 1);
+//     assert(p.firstName + p.lastName == "BartSimpson");
+
+//     std::cout << "test 23 passed" << std::endl;
+// }
+
+// TODO:
+// - test for procedure call where in/out parameter is modified
+//   verify also that user-provided type conversions work there
+// - test for bulk fetch with indicators and with statement preparation
 
 int main(int argc, char** argv)
 {
-    if (argc == 4)
+    if (argc == 2)
     {
-        strcpy(userName, argv[1]);
-        strcpy(password, argv[2]);
-        strcpy(serviceName, argv[3]);
+        connectString = argv[1];
     }
     else
     {
         std::cout << "usage: " << argv[0]
-            << " [user] [password] [serviceName]\n";
+            << " connectstring\n"
+            << "example: " << argv[0] << " \'service=orcl user=scott password=tiger\'\n";
         exit(1);
     }
 
