@@ -407,33 +407,7 @@ private:
 namespace details
 {
 
-class RefCountedPrepareInfo;
-
-// this needs to be lightweight and copyable
-class PrepareTempType
-{
-public:
-    PrepareTempType(Session &);
-    PrepareTempType(PrepareTempType const &);
-    PrepareTempType & operator=(PrepareTempType const &);
-
-    ~PrepareTempType();
-
-    template <typename T>
-    PrepareTempType & operator<<(T const &t)
-    {
-        rcpi_->accumulate(t);
-        return *this;
-    }
-
-    PrepareTempType & operator,(IntoTypePtr const &i);
-    PrepareTempType & operator,(UseTypePtr const &u);
-
-    RefCountedPrepareInfo * getPrepareInfo() const { return rcpi_; }
-
-private:
-    RefCountedPrepareInfo *rcpi_;
-};
+class PrepareTempType;
 
 } // namespace details
 
@@ -565,6 +539,32 @@ private:
     std::vector<UseTypeBase*> uses_;
 
     std::string getQuery() const { return query_.str(); }
+};
+
+// this needs to be lightweight and copyable
+class PrepareTempType
+{
+public:
+    PrepareTempType(Session &);
+    PrepareTempType(PrepareTempType const &);
+    PrepareTempType & operator=(PrepareTempType const &);
+
+    ~PrepareTempType();
+
+    template <typename T>
+    PrepareTempType & operator<<(T const &t)
+    {
+        rcpi_->accumulate(t);
+        return *this;
+    }
+
+    PrepareTempType & operator,(IntoTypePtr const &i);
+    PrepareTempType & operator,(UseTypePtr const &u);
+
+    RefCountedPrepareInfo * getPrepareInfo() const { return rcpi_; }
+
+private:
+    RefCountedPrepareInfo *rcpi_;
 };
 
 // this needs to be lightweight and copyable
