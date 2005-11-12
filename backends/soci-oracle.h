@@ -74,7 +74,6 @@ struct OracleVectorIntoTypeBackEnd : details::VectorIntoTypeBackEnd
     void *data_;
     char *buf_;              // generic buffer
     details::eExchangeType type_;
-    std::size_t const sz_;   // size of the resulting vector
     std::size_t colSize_;    // size of the string column (used for strings)
     std::vector<ub2> sizes_; // sizes of data fetched (used for strings)
 
