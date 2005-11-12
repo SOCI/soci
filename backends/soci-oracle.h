@@ -77,7 +77,7 @@ struct OracleVectorIntoTypeBackEnd : details::VectorIntoTypeBackEnd
     std::size_t colSize_;    // size of the string column (used for strings)
     std::vector<ub2> sizes_; // sizes of data fetched (used for strings)
 
-    ub2 rCode_;
+    std::vector<ub2> rCodes_;
 };
 
 struct OracleStandardUseTypeBackEnd : details::StandardUseTypeBackEnd
