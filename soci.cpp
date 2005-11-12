@@ -90,7 +90,6 @@ Statement::Statement(PrepareTempType const &prep)
 Statement::~Statement()
 {
     cleanUp();
-    delete backEnd_;
 }
 
 void Statement::alloc()
@@ -127,7 +126,12 @@ void Statement::cleanUp()
         uses_.resize(i - 1);
     }
 
-    backEnd_->cleanUp();
+    if (backEnd_ != NULL)
+    {
+        backEnd_->cleanUp();
+        delete backEnd_;
+        backEnd_ = NULL;
+    }
 }
 
 void Statement::prepare(std::string const &query)
@@ -169,12 +173,6 @@ void Statement::unDefAndBind()
 
 bool Statement::execute(int num)
 {
-    if (num > 0)
-    {
-        preFetch();
-        preUse();
-    }
-
     initialFetchSize_ = intosSize();
     fetchSize_ = initialFetchSize_;
 
@@ -188,6 +186,9 @@ bool Statement::execute(int num)
 
     if (num > 0)
     {
+        preFetch();
+        preUse();
+
         num = (fetchSize_ > static_cast<std::size_t>(num)) ? fetchSize_ : num;
         num = (bindSize > static_cast<std::size_t>(num)) ? bindSize : num;
     }
@@ -282,7 +283,7 @@ std::size_t Statement::intosSize()
             msg << "Bind variable size mismatch (into["
                 << static_cast<unsigned long>(i) << "] has size "
                 << static_cast<unsigned long>(intos_[i]->size())
-                << ", intos_[0] has size " << intosSize;
+                << ", into[0] has size " << intosSize;
             throw SOCIError(msg.str());
         }
     }
