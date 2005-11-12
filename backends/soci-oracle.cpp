@@ -573,12 +573,14 @@ OracleStandardUseTypeBackEnd * OracleStatementBackEnd::makeUseTypeBackEnd()
     return new OracleStandardUseTypeBackEnd(*this);
 }
 
-OracleVectorIntoTypeBackEnd * OracleStatementBackEnd::makeVectorIntoTypeBackEnd()
+OracleVectorIntoTypeBackEnd *
+OracleStatementBackEnd::makeVectorIntoTypeBackEnd()
 {
     return new OracleVectorIntoTypeBackEnd(*this);
 }
 
-OracleVectorUseTypeBackEnd * OracleStatementBackEnd::makeVectorUseTypeBackEnd()
+OracleVectorUseTypeBackEnd *
+OracleStatementBackEnd::makeVectorUseTypeBackEnd()
 {
     return new OracleVectorUseTypeBackEnd(*this);
 }
@@ -803,6 +805,7 @@ void OracleVectorIntoTypeBackEnd::prepareIndicators(std::size_t size)
     indOCIHolderVec_.resize(size);
     indOCIHolders_ = &indOCIHolderVec_.at(0);
     sizes_.resize(size);
+    rCodes_.resize(size);
 }
 
 void OracleVectorIntoTypeBackEnd::defineByPos(
@@ -908,7 +911,7 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
     sword res = OCIDefineByPos(statement_.stmtp_, &defnp_,
         statement_.session_.errhp_,
         position++, data, size, oracleType,
-        indOCIHolders_, &sizes_[0], &rCode_, OCI_DEFAULT);
+        indOCIHolders_, &sizes_[0], &rCodes_[0], OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
         throwSOCIError(res, statement_.session_.errhp_);
@@ -1305,7 +1308,8 @@ void OracleStandardUseTypeBackEnd::preUse(eIndicator const *ind)
 
         std::size_t const bufSize = 4000;
         std::size_t const sSize = s->size();
-        std::size_t const toCopy = sSize < bufSize -1 ? sSize + 1 : bufSize - 1;
+        std::size_t const toCopy =
+            sSize < bufSize -1 ? sSize + 1 : bufSize - 1;
         strncpy(buf_, s->c_str(), toCopy);
         buf_[toCopy] = '\0';
     }
