@@ -14,7 +14,6 @@
 #include <string>
 #include <vector>
 #include <sstream>
-#include <iostream>
 #include <ctime>
 
 #include "soci-common.h"
@@ -380,7 +379,8 @@ public:
     template<typename T>
     T get (std::string const &name) const
     {
-        std::map<std::string, std::size_t>::const_iterator it = index_.find(name);
+        std::map<std::string, std::size_t>::const_iterator it
+            = index_.find(name);
         if (it == index_.end())
         {
             std::ostringstream msg;
@@ -1201,10 +1201,22 @@ private:
     }
 
     virtual void preFetch() {}
-    virtual void postFetch(bool gotData, bool calledFromFetch) {}
+    virtual void postFetch(bool gotData, bool calledFromFetch)
+    {
+        if (gotData)
+        {
+            // this is used only to re-dispatch to derived class, if any
+            // (the derived class might be generated automatically by
+            // user conversions)
+            convertFrom();
+        }
+    }
+
     virtual void cleanUp() {}
 
     virtual std::size_t size() const { return 1; }
+
+    virtual void convertFrom() {}
 
     Row &r_;
 };

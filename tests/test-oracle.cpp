@@ -337,7 +337,8 @@ void test6()
         OracleBLOBBackEnd *blobBackEnd
             = static_cast<OracleBLOBBackEnd *>(b.getBackEnd());
 
-        OCILobDisableBuffering(sessionBackEnd->svchp_, sessionBackEnd->errhp_, blobBackEnd->lobp_);
+        OCILobDisableBuffering(sessionBackEnd->svchp_,
+            sessionBackEnd->errhp_, blobBackEnd->lobp_);
 
         sql << "select img from some_table where id = 7", into(b);
         assert(b.getLen() == 0);
@@ -1585,60 +1586,96 @@ void test22()
     std::cout << "test 22 passed" << std::endl;
 }
 
-// test23: experimental, not yet supported:
-// 
-// struct Person
-// {
-//     int id;
-//     std::string firstName;
-//     std::string lastName;
-// };
 
-// namespace SOCI
-// {
-//     template<> class TypeConversion<Person>
-//     {
-//     public:
-//         typedef Row base_type;
-//         static Person from(Row& r)
-//         {
-//             Person p;
-//             p.id = r.get<int>("ID");
-//             p.lastName = r.get<std::string>("LAST_NAME");
-//             p.firstName = r.get<std::string>("FIRST_NAME");
-//             return p;
-//         }
-//     };
-// }
+struct Person
+{
+    int id;
+    std::string firstName;
+    std::string lastName;
+};
 
-// void test23()
-// {
-//     Session sql(backEndName, connectString);
+namespace SOCI
+{
+    template<> class TypeConversion<Person>
+    {
+    public:
+        typedef Row base_type;
+        static Person from(Row& r)
+        {
+            Person p;
+            p.id = r.get<int>("ID");
+            p.lastName = r.get<std::string>("LAST_NAME");
+            p.firstName = r.get<std::string>("FIRST_NAME");
+            return p;
+        }
+    };
+}
 
-//     try { sql << "drop table person"; }
-//         catch (SOCIError const &) {} //ignore error if table doesn't exist
+void test23()
+{
+    Session sql(backEndName, connectString);
 
-//     sql << "create table person(id numeric(5,0) NOT NULL,"
-//         << " last_name varchar2(20), first_name varchar2(20))";
+    try { sql << "drop table person"; }
+        catch (SOCIError const &) {} //ignore error if table doesn't exist
 
-//     int id=1;
-//     std::string last="Simpson";
-//     std::string first="Bart";
-//     sql << "insert into person values(:id, :last_name, :first_name)",
-//            use(id), use(last), use(first);
+    sql << "create table person(id numeric(5,0) NOT NULL,"
+        << " last_name varchar2(20), first_name varchar2(20))";
 
-//     Person p;
-//     sql << "select * from person", into(p);
-//     assert(p.id == 1);
-//     assert(p.firstName + p.lastName == "BartSimpson");
+    int id = 1;
+    std::string last = "Simpson";
+    std::string first = "Bart";
+    sql << "insert into person values(:id, :last_name, :first_name)",
+           use(id), use(last), use(first);
 
-//     std::cout << "test 23 passed" << std::endl;
-// }
+    Person p;
+
+    sql << "select * from person", into(p);
+
+    assert(p.id == 1);
+    assert(p.firstName + p.lastName == "BartSimpson");
+
+    std::cout << "test 23 passed" << std::endl;
+}
+
+// additional test for statement preparation with indicators (non-bulk)
+void test24()
+{
+    Session sql(backEndName, connectString);
+
+    try{ sql << "drop table test24"; }
+    catch (SOCIError const &) {} // ignore error if table doesn't exist
+
+    sql << "create table test24(id numeric(2))";
+
+    sql << "insert into test24(id) values(1)";
+    sql << "insert into test24(id) values(NULL)";
+    sql << "insert into test24(id) values(NULL)";
+    sql << "insert into test24(id) values(2)";
+
+    int id(7);
+    eIndicator ind(eNoData);
+
+    Statement st = (sql.prepare << "select id from test24", into(id, ind));
+
+    st.execute();
+    assert(st.fetch());
+    assert(ind == eOK);
+    assert(id  == 1);
+    assert(st.fetch());
+    assert(ind == eNull);
+    assert(st.fetch());
+    assert(ind == eNull);
+    assert(st.fetch());
+    assert(ind == eOK);
+    assert(id  == 2);
+    assert(st.fetch() == false); // end of rowset expected
+
+    std::cout << "test 24 passed" << std::endl;
+}
 
 // TODO:
 // - test for procedure call where in/out parameter is modified
 //   verify also that user-provided type conversions work there
-// - test for bulk fetch with indicators and with statement preparation
 
 int main(int argc, char** argv)
 {
@@ -1650,7 +1687,8 @@ int main(int argc, char** argv)
     {
         std::cout << "usage: " << argv[0]
             << " connectstring\n"
-            << "example: " << argv[0] << " \'service=orcl user=scott password=tiger\'\n";
+            << "example: " << argv[0]
+            << " \'service=orcl user=scott password=tiger\'\n";
         exit(1);
     }
 
@@ -1678,6 +1716,8 @@ int main(int argc, char** argv)
         test20();
         test21();
         test22();
+        test23();
+        test24();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }
