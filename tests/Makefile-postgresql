@@ -1,0 +1,22 @@
+COMPILER = g++
+CXXFLAGS = -Wall -pedantic -Wno-long-long -g
+INCLUDEDIRS = -I.. -I../backends -I/usr/local/include
+LIBDIRS = -L/usr/local/lib
+LIBS = -lpq
+
+
+test-postgresql : test-postgresql.o ../soci.o ../backends/soci-postgresql.o
+	${COMPILER} -o $@ test-postgresql.o ../soci.o ../backends/soci-postgresql.o ${LIBDIRS} ${LIBS}
+
+test-postgresql.o : test-postgresql.cpp ../soci.h ../backends/soci-postgresql.h
+	${COMPILER} -c test-postgresql.cpp ${CXXFLAGS} ${INCLUDEDIRS}
+
+../soci.o : ../soci.cpp ../soci.h
+	${COMPILER} -c -o $@ ../soci.cpp ${CXXFLAGS} ${INCLUDEDIRS}
+
+../backends/soci-postgresql.o : ../backends/soci-postgresql.cpp ../backends/soci-postgresql.h ../soci.h
+	${COMPILER} -c -o $@ ../backends/soci-postgresql.cpp ${CXXFLAGS} ${INCLUDEDIRS}
+
+
+clean :
+	rm -f test-postgresql test-postgresql.o
