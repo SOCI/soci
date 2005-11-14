@@ -19,7 +19,7 @@ using namespace SOCI::details;
 
 
 EmptySessionBackEnd::EmptySessionBackEnd(
-    std::string const & connectString)
+    std::string const & /* connectString */)
 {
     // ...
 }
@@ -74,18 +74,20 @@ void EmptyStatementBackEnd::cleanUp()
     // ...
 }
 
-void EmptyStatementBackEnd::prepare(std::string const &query)
+void EmptyStatementBackEnd::prepare(std::string const & /* query */)
 {
     // ...
 }
 
-StatementBackEnd::execFetchResult EmptyStatementBackEnd::execute(int number)
+StatementBackEnd::execFetchResult
+EmptyStatementBackEnd::execute(int /* number */)
 {
     // ...
     return eSuccess;
 }
 
-StatementBackEnd::execFetchResult EmptyStatementBackEnd::fetch(int number)
+StatementBackEnd::execFetchResult
+EmptyStatementBackEnd::fetch(int /* number */)
 {
     // ...
     return eSuccess;
@@ -103,9 +105,10 @@ int EmptyStatementBackEnd::prepareForDescribe()
     return 0;
 }
 
-void EmptyStatementBackEnd::describeColumn(int colNum, eDataType &type,
-    std::string &columnName, int &size, int &precision, int &scale,
-    bool &nullOk)
+void EmptyStatementBackEnd::describeColumn(int /* colNum */,
+    eDataType & /* type */, std::string & /* columnName */,
+	int & /* size */, int & /* precision */, int & /* scale */,
+    bool & /* nullOk */)
 {
     // ...
 }
@@ -131,7 +134,7 @@ EmptyVectorUseTypeBackEnd * EmptyStatementBackEnd::makeVectorUseTypeBackEnd()
 }
 
 void EmptyStandardIntoTypeBackEnd::defineByPos(
-    int &position, void *data, eExchangeType type)
+    int & /* position */, void * /* data */, eExchangeType /* type */)
 {
     // ...
 }
@@ -142,7 +145,7 @@ void EmptyStandardIntoTypeBackEnd::preFetch()
 }
 
 void EmptyStandardIntoTypeBackEnd::postFetch(
-    bool gotData, bool calledFromFetch, eIndicator *ind)
+    bool /* gotData */, bool /* calledFromFetch */, eIndicator * /* ind */)
 {
     // ...
 }
@@ -153,7 +156,7 @@ void EmptyStandardIntoTypeBackEnd::cleanUp()
 }
 
 void EmptyVectorIntoTypeBackEnd::defineByPos(
-    int &position, void *data, eExchangeType type)
+    int & /* position */, void * /* data */, eExchangeType /* type */)
 {
     // ...
 }
@@ -163,12 +166,13 @@ void EmptyVectorIntoTypeBackEnd::preFetch()
     // ...
 }
 
-void EmptyVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
+void EmptyVectorIntoTypeBackEnd::postFetch(
+    bool /* gotData */, eIndicator * /* ind */)
 {
     // ...
 }
 
-void EmptyVectorIntoTypeBackEnd::resize(std::size_t sz)
+void EmptyVectorIntoTypeBackEnd::resize(std::size_t /* sz */)
 {
     // ...
 }
@@ -185,23 +189,25 @@ void EmptyVectorIntoTypeBackEnd::cleanUp()
 }
 
 void EmptyStandardUseTypeBackEnd::bindByPos(
-    int &position, void *data, eExchangeType type)
+    int & /* position */, void * /* data */, eExchangeType /* type */)
 {
     // ...
 }
 
 void EmptyStandardUseTypeBackEnd::bindByName(
-    std::string const &name, void *data, eExchangeType type)
+    std::string const & /* name */, void * /* data */,
+    eExchangeType /* type */)
 {
     // ...
 }
 
-void EmptyStandardUseTypeBackEnd::preUse(eIndicator const *ind)
+void EmptyStandardUseTypeBackEnd::preUse(eIndicator const * /* ind */)
 {
     // ...
 }
 
-void EmptyStandardUseTypeBackEnd::postUse(bool gotData, eIndicator *ind)
+void EmptyStandardUseTypeBackEnd::postUse(
+    bool /* gotData */, eIndicator * /* ind */)
 {
     // ...
 }
@@ -211,19 +217,19 @@ void EmptyStandardUseTypeBackEnd::cleanUp()
     // ...
 }
 
-void EmptyVectorUseTypeBackEnd::bindByPos(int &position,
-        void *data, eExchangeType type)
+void EmptyVectorUseTypeBackEnd::bindByPos(int & /* position */,
+        void * /* data */, eExchangeType /* type */)
 {
     // ...
 }
 
 void EmptyVectorUseTypeBackEnd::bindByName(
-    std::string const &name, void *data, eExchangeType type)
+    std::string const & /* name */, void * /* data */, eExchangeType /* type */)
 {
     // ...
 }
 
-void EmptyVectorUseTypeBackEnd::preUse(eIndicator const *ind)
+void EmptyVectorUseTypeBackEnd::preUse(eIndicator const * /* ind */)
 {
     // ...
 }
@@ -239,7 +245,7 @@ void EmptyVectorUseTypeBackEnd::cleanUp()
     // ...
 }
 
-EmptyRowIDBackEnd::EmptyRowIDBackEnd(EmptySessionBackEnd &session)
+EmptyRowIDBackEnd::EmptyRowIDBackEnd(EmptySessionBackEnd & /* session */)
 {
     // ...
 }
@@ -267,26 +273,28 @@ std::size_t EmptyBLOBBackEnd::getLen()
 }
 
 std::size_t EmptyBLOBBackEnd::read(
-    std::size_t offset, char *buf, std::size_t toRead)
+    std::size_t /* offset */, char * /* buf */, std::size_t /* toRead */)
 {
     // ...
     return 0;
 }
 
 std::size_t EmptyBLOBBackEnd::write(
-    std::size_t offset, char const *buf, std::size_t toWrite)
+    std::size_t /* offset */, char const * /* buf */,
+    std::size_t /* toWrite */)
 {
     // ...
     return 0;
 }
 
-std::size_t EmptyBLOBBackEnd::append(char const *buf, std::size_t toWrite)
+std::size_t EmptyBLOBBackEnd::append(
+    char const * /* buf */, std::size_t /* toWrite */)
 {
     // ...
     return 0;
 }
 
-void EmptyBLOBBackEnd::trim(std::size_t newLen)
+void EmptyBLOBBackEnd::trim(std::size_t /* newLen */)
 {
     // ...
 }

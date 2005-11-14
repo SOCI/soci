@@ -14,6 +14,10 @@
 #include "soci-common.h"
 #include <vector>
 
+#ifdef _MSC_VER
+#pragma warning(disable:4512 4511)
+#endif
+
 
 namespace SOCI
 {

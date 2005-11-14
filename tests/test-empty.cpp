@@ -38,7 +38,7 @@ namespace SOCI
     {
     public:
         typedef Row base_type;
-        static Person from(Row& r)
+        static Person from(Row& /* r */)
         {
             Person p;
             return p;

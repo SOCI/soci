@@ -19,7 +19,7 @@
 #include "soci-common.h"
 
 #ifdef _MSC_VER
-#pragma warning(disable:4512)
+#pragma warning(disable:4512 4511)
 #endif
 
 namespace SOCI
@@ -66,7 +66,7 @@ public:
     virtual void cleanUp() = 0;
 
     virtual std::size_t size() const = 0;  // returns the number of elements
-    virtual void resize(std::size_t sz) {} // used for vectors only
+    virtual void resize(std::size_t /* sz */) {} // used for vectors only
 };
 
 // this is intended to be a base class for all classes that deal with
@@ -1194,14 +1194,14 @@ public:
 
 private:
     // special handling for Row
-    virtual void define(Statement &st, int &position)
+    virtual void define(Statement &st, int & /* position */)
     {
         st.setRow(&r_);
         st.describe();
     }
 
     virtual void preFetch() {}
-    virtual void postFetch(bool gotData, bool calledFromFetch)
+    virtual void postFetch(bool gotData, bool /* calledFromFetch */)
     {
         if (gotData)
         {

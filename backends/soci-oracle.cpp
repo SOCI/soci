@@ -11,6 +11,7 @@
 #include "soci-oracle.h"
 #include "soci.h"
 #include <sstream>
+#include <limits>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -492,7 +493,7 @@ void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
     size = static_cast<int>(dbsize);
     precision = static_cast<int>(dbprec);
     scale = static_cast<int>(dbscale);
-    nullOk = static_cast<bool>(dbnullok);
+    nullOk = (dbnullok != 0);
 
     switch (dbtype)
     {
@@ -591,8 +592,8 @@ void OracleStandardIntoTypeBackEnd::defineByPos(
     data_ = data; // for future reference
     type_ = type; // for future reference
 
-    ub2 oracleType;
-    sb4 size;
+    ub2 oracleType = 0; // dummy initialization to please the compiler
+    sb4 size = 0;       // also dummy
 
     switch (type)
     {
@@ -625,7 +626,7 @@ void OracleStandardIntoTypeBackEnd::defineByPos(
                 = static_cast<CStringDescriptor *>(data);
             oracleType = SQLT_STR;
             data = desc->str_;
-            size = desc->bufSize_;
+            size = static_cast<sb4>(desc->bufSize_);
         }
         break;
     case eXStdString:
@@ -814,8 +815,8 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
     data_ = data; // for future reference
     type_ = type; // for future reference
 
-    ub2 oracleType;
-    sb4 size;
+    ub2 oracleType = 0; // dummy initialization to please the compiler
+    sb4 size = 0;       // also dummy
 
     switch (type)
     {
@@ -880,7 +881,7 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
 
             prepareIndicators(v->size());
 
-            size = colSize_;
+            size = static_cast<sb4>(colSize_);
             data = buf_;
         }
         break;
@@ -1087,7 +1088,7 @@ void OracleVectorIntoTypeBackEnd::resize(std::size_t sz)
 
 std::size_t OracleVectorIntoTypeBackEnd::size()
 {
-    std::size_t sz;
+    std::size_t sz = 0; // dummy initialization to please the compiler
     switch (type_)
     {
     // simple cases
@@ -1196,7 +1197,7 @@ void OracleStandardUseTypeBackEnd::prepareForBind(
                 = static_cast<CStringDescriptor *>(data);
             oracleType = SQLT_STR;
             data = desc->str_;
-            size = desc->bufSize_;
+            size = static_cast<sb4>(desc->bufSize_);
         }
         break;
     case eXStdString:
@@ -1519,7 +1520,7 @@ void OracleVectorUseTypeBackEnd::prepareForBind(
 
             oracleType = SQLT_CHR;
             data = buf_;
-            size = maxSize;
+            size = static_cast<sb4>(maxSize);
         }
         break;
     case eXStdTm:
@@ -1659,7 +1660,7 @@ void OracleVectorUseTypeBackEnd::preUse(eIndicator const *ind)
 
 std::size_t OracleVectorUseTypeBackEnd::size()
 {
-    std::size_t sz;
+    std::size_t sz = 0; // dummy initialization to please the compiler
     switch (type_)
     {
     // simple cases

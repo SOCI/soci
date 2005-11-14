@@ -189,8 +189,14 @@ bool Statement::execute(int num)
         preFetch();
         preUse();
 
-        num = (fetchSize_ > static_cast<std::size_t>(num)) ? fetchSize_ : num;
-        num = (bindSize > static_cast<std::size_t>(num)) ? bindSize : num;
+        if (static_cast<int>(fetchSize_) > num)
+        {
+            num = static_cast<int>(fetchSize_);
+        }
+        if (static_cast<int>(bindSize) > num)
+        {
+            num = static_cast<int>(bindSize);
+        }
     }
 
     StatementBackEnd::execFetchResult res = backEnd_->execute(num);
@@ -244,7 +250,8 @@ bool Statement::fetch()
         fetchSize_ = newFetchSize;
     }
 
-    StatementBackEnd::execFetchResult res = backEnd_->fetch(fetchSize_);
+    StatementBackEnd::execFetchResult res =
+        backEnd_->fetch(static_cast<int>(fetchSize_));
     if (res == StatementBackEnd::eSuccess)
     {
         gotData = true;
@@ -283,7 +290,8 @@ std::size_t Statement::intosSize()
             msg << "Bind variable size mismatch (into["
                 << static_cast<unsigned long>(i) << "] has size "
                 << static_cast<unsigned long>(intos_[i]->size())
-                << ", into[0] has size " << intosSize;
+                << ", into[0] has size "
+                << static_cast<unsigned long>(intosSize);
             throw SOCIError(msg.str());
         }
     }
@@ -306,7 +314,8 @@ std::size_t Statement::usesSize()
             msg << "Bind variable size mismatch (use["
                 << static_cast<unsigned long>(i) << "] has size "
                 << static_cast<unsigned long>(uses_[i]->size())
-                << ", use[0] has size " << usesSize;
+                << ", use[0] has size "
+                << static_cast<unsigned long>(usesSize);
             throw SOCIError(msg.str());
         }
     }
@@ -746,7 +755,7 @@ void VectorIntoType::preFetch()
     backEnd_->preFetch();
 }
 
-void VectorIntoType::postFetch(bool gotData, bool calledFromFetch)
+void VectorIntoType::postFetch(bool gotData, bool /* calledFromFetch */)
 {
     backEnd_->postFetch(gotData, ind_);
 
