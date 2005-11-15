@@ -33,6 +33,10 @@ struct PostgreSQLStandardIntoTypeBackEnd : details::StandardIntoTypeBackEnd
     virtual void cleanUp();
 
     PostgreSQLStatementBackEnd &statement_;
+
+    void *data_;
+    details::eExchangeType type_;
+    int position_;
 };
 
 struct PostgreSQLVectorIntoTypeBackEnd : details::VectorIntoTypeBackEnd
@@ -119,6 +123,7 @@ struct PostgreSQLStatementBackEnd : details::StatementBackEnd
 
     PGresult *result_;
     std::string query_;
+    int rowNumber_;     // "current" row number
 };
 
 struct PostgreSQLRowIDBackEnd : details::RowIDBackEnd

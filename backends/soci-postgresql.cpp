@@ -9,7 +9,9 @@
 
 #include "soci.h"
 #include "soci-postgresql.h"
-
+#include <cstring>
+#include <ctime>
+#include <iostream>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -17,6 +19,44 @@
 
 using namespace SOCI;
 using namespace SOCI::details;
+
+
+// namespace // anonymous
+// {
+
+// // definitions of basic data types (OIDs from pg_type system table)
+// // (currently not used, because all results are in text format anyway)
+// int const pg_type_Int4 = 23;
+
+// bool hostIsLittleEndian;
+
+// // helper function for copying binary data with big-endian/little-endian
+// // converion (as stated by the above flag)
+// void copyBinary(void *dst, void *src, std::size_t size)
+// {
+//     char *s = static_cast<char*>(src);
+//     char *d = static_cast<char*>(dst);
+
+//     if (hostIsLittleEndian)
+//     {
+//         // convert data (swap bytes)
+//         s += size - 1;
+//         for (; size != 0; --size)
+//         {
+//             *d++ = *s--;
+//         }
+//     }
+//     else
+//     {
+//         // no coversion
+//         for (; size != 0; --size)
+//         {
+//             *d++ = *s++;
+//         }
+//     }
+// }
+
+// } // namespace anonymous
 
 
 PostgreSQLSessionBackEnd::PostgreSQLSessionBackEnd(
@@ -110,7 +150,15 @@ PostgreSQLStatementBackEnd::execute(int number)
     ExecStatusType status = PQresultStatus(result_);
     if (status == PGRES_TUPLES_OK)
     {
-        return eSuccess;
+        if (getNumberOfRows() == 0)
+        {
+            return eNoData;
+        }
+        else
+        {
+            rowNumber_ = 0;
+            return eSuccess;
+        }
     }
     else if (status == PGRES_COMMAND_OK)
     {
@@ -174,23 +222,193 @@ PostgreSQLStatementBackEnd::makeVectorUseTypeBackEnd()
 void PostgreSQLStandardIntoTypeBackEnd::defineByPos(
     int &position, void *data, eExchangeType type)
 {
-    // TODO:
+    data_ = data;
+    type_ = type;
+    position_ = position;
 }
 
 void PostgreSQLStandardIntoTypeBackEnd::preFetch()
 {
-    // TODO:
+    // nothing to do here
 }
+
+
+namespace // anonymous
+{
+
+// helper function for parsing decimal data (for std::tm)
+long parse10(char *&p1, char *&p2, char *msg)
+{
+    long v = strtol(p1, &p2, 10);
+    if (p2 != p1)
+    {
+        p1 = p2 + 1;
+        return v;
+    }
+    else
+    {
+        throw SOCIError(msg);
+    }
+}
+
+} // namespace anonymous
 
 void PostgreSQLStandardIntoTypeBackEnd::postFetch(
     bool gotData, bool calledFromFetch, eIndicator *ind)
 {
-    // TODO:
+    if (calledFromFetch == true && gotData == false)
+    {
+        // this is a normal end-of-rowset condition,
+        // no need to do anything (fetch() will return false)
+        return;
+    }
+
+    if (gotData)
+    {
+        // PostgreSQL positions start at 0
+        int pos = position_ - 1;
+
+        // first, deal with indicators
+        if (PQgetisnull(statement_.result_, statement_.rowNumber_, pos) != 0)
+        {
+            if (ind == NULL)
+            {
+                throw SOCIError(
+                    "Null value fetched and no indicator defined.");
+            }
+
+            *ind = eNull;
+        }
+        else
+        {
+            if (ind != NULL)
+            {
+                *ind = eOK;
+            }
+        }
+
+// Note: for the moment, only text format is used for output data
+//         // format: 0-text, 1-binary
+//         int format = PQfformat(statement_.result_, pos);
+// 
+//         // server data type
+//         int srvDataType = PQftype(statement_.result_, pos);
+
+        // raw data, in whatever format it is
+        char *buf = PQgetvalue(statement_.result_,
+            statement_.rowNumber_, pos);
+
+        switch (type_)
+        {
+        case eXChar:
+            {
+                char *dest = static_cast<char*>(data_);
+                *dest = *buf;
+            }
+            break;
+        case eXCString:
+            {
+                CStringDescriptor *strDescr
+                    = static_cast<CStringDescriptor *>(data_);
+
+                std::strncpy(strDescr->str_, buf, strDescr->bufSize_ - 1);
+                strDescr->str_[strDescr->bufSize_ - 1] = '\0';
+
+                if (std::strlen(buf) >= strDescr->bufSize_ && ind != NULL)
+                {
+                    *ind = eTruncated;
+                }
+            }
+            break;
+        case eXStdString:
+            {
+                std::string *dest = static_cast<std::string *>(data_);
+                dest->assign(buf);
+            }
+            break;
+        case eXShort:
+            {
+                short *dest = static_cast<short*>(data_);
+                long val = strtol(buf, NULL, 10);
+                *dest = static_cast<short>(val);
+            }
+            break;
+        case eXInteger:
+            {
+                int *dest = static_cast<int*>(data_);
+                long val = strtol(buf, NULL, 10);
+                *dest = static_cast<int>(val);
+            }
+            break;
+        case eXUnsignedLong:
+            {
+                unsigned long *dest = static_cast<unsigned long *>(data_);
+                long long val = strtoll(buf, NULL, 10);
+                *dest = static_cast<unsigned long>(val);
+            }
+            break;
+        case eXDouble:
+            {
+                double *dest = static_cast<double*>(data_);
+                double val = strtod(buf, NULL);
+                *dest = static_cast<double>(val);
+            }
+            break;
+        case eXStdTm:
+            {
+                // attempt to parse the string and convert to std::tm
+                char *p1 = buf;
+                char *p2;
+                long year, month, day;
+                long hour = 0, minute = 0, second = 0;
+
+                char *errMsg = "Cannot convert data to std::tm.";
+
+                year  = parse10(p1, p2, errMsg);
+                month = parse10(p1, p2, errMsg);
+                day   = parse10(p1, p2, errMsg);
+
+                if (*p2 != '\0')
+                {
+                    // there is also the time of day available
+                    hour   = parse10(p1, p2, errMsg);
+                    minute = parse10(p1, p2, errMsg);
+                    second = parse10(p1, p2, errMsg);
+                }
+
+                std::tm *dest = static_cast<std::tm *>(data_);
+                dest->tm_isdst = -1;
+                dest->tm_year = year - 1900;
+                dest->tm_mon  = month - 1;
+                dest->tm_mday = day;
+                dest->tm_hour = hour;
+                dest->tm_min  = minute;
+                dest->tm_sec  = second;
+
+                std::mktime(dest);
+            }
+            break;
+
+        default:
+            throw SOCIError("Into element used with non-supported type.");
+        }
+    }
+    else // no data retrieved
+    {
+        if (ind != NULL)
+        {
+            *ind = eNoData;
+        }
+        else
+        {
+            throw SOCIError("No data fetched and no indicator defined.");
+        }
+    }
 }
 
 void PostgreSQLStandardIntoTypeBackEnd::cleanUp()
 {
-    // TODO:
+    // nothing to do here
 }
 
 void PostgreSQLVectorIntoTypeBackEnd::defineByPos(
@@ -356,6 +574,13 @@ struct PostgreSQLAutoRegister
     PostgreSQLAutoRegister()
     {
         theBEFRegistry().registerMe("postgresql", &postgresqlBEF);
+
+//         // in addition, determine the local byte order
+//         // this is a simple check, we do not expect exotic platforms
+
+//         int dummy = 1;
+//         char *p = reinterpret_cast<char*>(&dummy);
+//         hostIsLittleEndian = (*p != 0);
     }
 } postgresqlAutoRegister;
 
