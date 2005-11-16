@@ -136,6 +136,16 @@ void PostgreSQLStatementBackEnd::prepare(std::string const &query)
 StatementBackEnd::execFetchResult
 PostgreSQLStatementBackEnd::execute(int number)
 {
+    if (number == 0)
+    {
+        // In the Oracle world, this means that the statement needs to be
+        // executed, but no data should be fetched.
+        // This is different in PostgreSQL: we *have to* execute the statement
+        // and get data from the server, but the actual "fetch" will be
+        // performed later.
+        number = 1;
+    }
+
     if (number != 1)
     {
         throw SOCIError("Only unit excutions are supported.");
@@ -150,13 +160,14 @@ PostgreSQLStatementBackEnd::execute(int number)
     ExecStatusType status = PQresultStatus(result_);
     if (status == PGRES_TUPLES_OK)
     {
-        if (getNumberOfRows() == 0)
+        numberOfRows_ = PQntuples(result_);
+        if (numberOfRows_ == 0)
         {
             return eNoData;
         }
         else
         {
-            rowNumber_ = 0;
+            currentRow_ = 0;
             return eSuccess;
         }
     }
@@ -173,13 +184,33 @@ PostgreSQLStatementBackEnd::execute(int number)
 StatementBackEnd::execFetchResult
 PostgreSQLStatementBackEnd::fetch(int number)
 {
-    // TODO:
-    return eSuccess;
+    if (currentRow_ >= numberOfRows_)
+    {
+        // all rows were already consumed
+        return eNoData;
+    }
+    else
+    {
+        if (currentRow_ + number > numberOfRows_)
+        {
+            rowsToConsume_ = numberOfRows_ - currentRow_;
+
+            // this simulates the behaviour of Oracle
+            // - when EOF is hit, we return eNoData even when there are
+            // actually some rows fetched
+            return eNoData;
+        }
+        else
+        {
+            rowsToConsume_ = number;
+            return eSuccess;
+        }
+    }
 }
 
 int PostgreSQLStatementBackEnd::getNumberOfRows()
 {
-    return PQntuples(result_);
+    return numberOfRows_ - currentRow_;
 }
 
 int PostgreSQLStatementBackEnd::prepareForDescribe()
@@ -237,7 +268,7 @@ namespace // anonymous
 {
 
 // helper function for parsing decimal data (for std::tm)
-long parse10(char *&p1, char *&p2, char *msg)
+long parse10(char const *&p1, char *&p2, char *msg)
 {
     long v = strtol(p1, &p2, 10);
     if (p2 != p1)
@@ -249,6 +280,38 @@ long parse10(char *&p1, char *&p2, char *msg)
     {
         throw SOCIError(msg);
     }
+}
+
+void parseStdTm(char const *buf, std::tm &t)
+{
+    char const *p1 = buf;
+    char *p2;
+    long year, month, day;
+    long hour = 0, minute = 0, second = 0;
+
+    char *errMsg = "Cannot convert data to std::tm.";
+
+    year  = parse10(p1, p2, errMsg);
+    month = parse10(p1, p2, errMsg);
+    day   = parse10(p1, p2, errMsg);
+
+    if (*p2 != '\0')
+    {
+        // there is also the time of day available
+        hour   = parse10(p1, p2, errMsg);
+        minute = parse10(p1, p2, errMsg);
+        second = parse10(p1, p2, errMsg);
+    }
+
+    t.tm_isdst = -1;
+    t.tm_year = year - 1900;
+    t.tm_mon  = month - 1;
+    t.tm_mday = day;
+    t.tm_hour = hour;
+    t.tm_min  = minute;
+    t.tm_sec  = second;
+
+    std::mktime(&t);
 }
 
 } // namespace anonymous
@@ -269,7 +332,7 @@ void PostgreSQLStandardIntoTypeBackEnd::postFetch(
         int pos = position_ - 1;
 
         // first, deal with indicators
-        if (PQgetisnull(statement_.result_, statement_.rowNumber_, pos) != 0)
+        if (PQgetisnull(statement_.result_, statement_.currentRow_, pos) != 0)
         {
             if (ind == NULL)
             {
@@ -296,7 +359,7 @@ void PostgreSQLStandardIntoTypeBackEnd::postFetch(
 
         // raw data, in whatever format it is
         char *buf = PQgetvalue(statement_.result_,
-            statement_.rowNumber_, pos);
+            statement_.currentRow_, pos);
 
         switch (type_)
         {
@@ -357,41 +420,16 @@ void PostgreSQLStandardIntoTypeBackEnd::postFetch(
         case eXStdTm:
             {
                 // attempt to parse the string and convert to std::tm
-                char *p1 = buf;
-                char *p2;
-                long year, month, day;
-                long hour = 0, minute = 0, second = 0;
-
-                char *errMsg = "Cannot convert data to std::tm.";
-
-                year  = parse10(p1, p2, errMsg);
-                month = parse10(p1, p2, errMsg);
-                day   = parse10(p1, p2, errMsg);
-
-                if (*p2 != '\0')
-                {
-                    // there is also the time of day available
-                    hour   = parse10(p1, p2, errMsg);
-                    minute = parse10(p1, p2, errMsg);
-                    second = parse10(p1, p2, errMsg);
-                }
-
                 std::tm *dest = static_cast<std::tm *>(data_);
-                dest->tm_isdst = -1;
-                dest->tm_year = year - 1900;
-                dest->tm_mon  = month - 1;
-                dest->tm_mday = day;
-                dest->tm_hour = hour;
-                dest->tm_min  = minute;
-                dest->tm_sec  = second;
-
-                std::mktime(dest);
+                parseStdTm(buf, *dest);
             }
             break;
 
         default:
             throw SOCIError("Into element used with non-supported type.");
         }
+
+        ++statement_.currentRow_;
     }
     else // no data retrieved
     {
@@ -414,33 +452,260 @@ void PostgreSQLStandardIntoTypeBackEnd::cleanUp()
 void PostgreSQLVectorIntoTypeBackEnd::defineByPos(
     int &position, void *data, eExchangeType type)
 {
-    // TODO:
+    data_ = data;
+    type_ = type;
+    position_ = position;
 }
 
 void PostgreSQLVectorIntoTypeBackEnd::preFetch()
 {
-    // TODO:
+    // nothing to do here
 }
 
 void PostgreSQLVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
 {
-    // TODO:
+    if (gotData)
+    {
+        // Here, rowsToConsume_ in the Statement object designates
+        // the number of rows that need to be put in the user's buffers.
+
+        // PostgreSQL column positions start at 0
+        int pos = position_ - 1;
+
+        int const endRow = statement_.currentRow_ + statement_.rowsToConsume_;
+
+        for (int curRow = statement_.currentRow_, i = 0;
+             curRow != endRow; ++curRow, ++i)
+        {
+            // first, deal with indicators
+            if (PQgetisnull(statement_.result_, curRow, pos) != 0)
+            {
+                if (ind == NULL)
+                {
+                    throw SOCIError(
+                        "Null value fetched and no indicator defined.");
+                }
+
+                ind[i] = eNull;
+            }
+            else
+            {
+                if (ind != NULL)
+                {
+                    ind[i] = eOK;
+                }
+            }
+
+            // buffer with data retrieved from server, in text format
+            char *buf = PQgetvalue(statement_.result_, curRow, pos);
+
+            switch (type_)
+            {
+            case eXChar:
+                {
+                    std::vector<char> *dest =
+                        static_cast<std::vector<char> *>(data_);
+
+                    std::vector<char> &v = *dest;
+                    v[i] = *buf;
+                }
+                break;
+            case eXStdString:
+                {
+                    std::vector<std::string> *dest =
+                        static_cast<std::vector<std::string> *>(data_);
+
+                    std::vector<std::string> &v = *dest;
+                    v[i] = buf;
+                }
+                break;
+            case eXShort:
+                {
+                    std::vector<short> *dest =
+                        static_cast<std::vector<short> *>(data_);
+
+                    std::vector<short> &v = *dest;
+                    long val = strtol(buf, NULL, 10);
+                    v[i] = static_cast<short>(val);
+                }
+                break;
+            case eXInteger:
+                {
+                    std::vector<int> *dest =
+                        static_cast<std::vector<int> *>(data_);
+
+                    std::vector<int> &v = *dest;
+                    long val = strtol(buf, NULL, 10);
+                    v[i] = static_cast<int>(val);
+                }
+                break;
+            case eXUnsignedLong:
+                {
+                    std::vector<unsigned long> *dest =
+                        static_cast<std::vector<unsigned long> *>(data_);
+
+                    std::vector<unsigned long> &v = *dest;
+                    long long val = strtoll(buf, NULL, 10);
+                    v[i] = static_cast<unsigned long>(val);
+                }
+                break;
+            case eXDouble:
+                {
+                    std::vector<double> *dest =
+                        static_cast<std::vector<double> *>(data_);
+
+                    std::vector<double> &v = *dest;
+                    double val = strtod(buf, NULL);
+                    v[i] = static_cast<double>(val);
+                }
+                break;
+            case eXStdTm:
+                {
+                    // attempt to parse the string and convert to std::tm
+                    std::tm t;
+                    parseStdTm(buf, t);
+
+                    std::vector<std::tm> *dest =
+                        static_cast<std::vector<std::tm> *>(data_);
+
+                    std::vector<std::tm> &v = *dest;
+                    v[i] = t;
+                }
+                break;
+
+            default:
+                throw SOCIError("Into element used with non-supported type.");
+            }
+        }
+
+        statement_.currentRow_ += statement_.rowsToConsume_;
+    }
+    else // no data retrieved
+    {
+        // nothing to do, into vectors are already truncated
+    }
 }
 
 void PostgreSQLVectorIntoTypeBackEnd::resize(std::size_t sz)
 {
-    // TODO:
+    switch (type_)
+    {
+    // simple cases
+    case eXChar:
+        {
+            std::vector<char> *v = static_cast<std::vector<char> *>(data_);
+            v->resize(sz);
+        }
+        break;
+    case eXShort:
+        {
+            std::vector<short> *v = static_cast<std::vector<short> *>(data_);
+            v->resize(sz);
+        }
+        break;
+    case eXInteger:
+        {
+            std::vector<int> *v = static_cast<std::vector<int> *>(data_);
+            v->resize(sz);
+        }
+        break;
+    case eXUnsignedLong:
+        {
+            std::vector<unsigned long> *v
+                = static_cast<std::vector<unsigned long> *>(data_);
+            v->resize(sz);
+        }
+        break;
+    case eXDouble:
+        {
+            std::vector<double> *v
+                = static_cast<std::vector<double> *>(data_);
+            v->resize(sz);
+        }
+        break;
+    case eXStdString:
+        {
+            std::vector<std::string> *v
+                = static_cast<std::vector<std::string> *>(data_);
+            v->resize(sz);
+        }
+        break;
+    case eXStdTm:
+        {
+            std::vector<std::tm> *v
+                = static_cast<std::vector<std::tm> *>(data_);
+            v->resize(sz);
+        }
+        break;
+
+    default:
+        throw SOCIError("Into element used with non-supported type.");
+    }
 }
 
 std::size_t PostgreSQLVectorIntoTypeBackEnd::size()
 {
-    // TODO:
-    return 0;
+    std::size_t sz = 0; // dummy initialization to please the compiler
+    switch (type_)
+    {
+    // simple cases
+    case eXChar:
+        {
+            std::vector<char> *v = static_cast<std::vector<char> *>(data_);
+            sz = v->size();
+        }
+        break;
+    case eXShort:
+        {
+            std::vector<short> *v = static_cast<std::vector<short> *>(data_);
+            sz = v->size();
+        }
+        break;
+    case eXInteger:
+        {
+            std::vector<int> *v = static_cast<std::vector<int> *>(data_);
+            sz = v->size();
+        }
+        break;
+    case eXUnsignedLong:
+        {
+            std::vector<unsigned long> *v
+                = static_cast<std::vector<unsigned long> *>(data_);
+            sz = v->size();
+        }
+        break;
+    case eXDouble:
+        {
+            std::vector<double> *v
+                = static_cast<std::vector<double> *>(data_);
+            sz = v->size();
+        }
+        break;
+    case eXStdString:
+        {
+            std::vector<std::string> *v
+                = static_cast<std::vector<std::string> *>(data_);
+            sz = v->size();
+        }
+        break;
+    case eXStdTm:
+        {
+            std::vector<std::tm> *v
+                = static_cast<std::vector<std::tm> *>(data_);
+            sz = v->size();
+        }
+        break;
+
+    default:
+        throw SOCIError("Into element used with non-supported type.");
+    }
+
+    return sz;
 }
 
 void PostgreSQLVectorIntoTypeBackEnd::cleanUp()
 {
-    // TODO:
+    // nothing to do here
 }
 
 void PostgreSQLStandardUseTypeBackEnd::bindByPos(

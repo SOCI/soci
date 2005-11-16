@@ -56,6 +56,10 @@ struct PostgreSQLVectorIntoTypeBackEnd : details::VectorIntoTypeBackEnd
     virtual void cleanUp();
 
     PostgreSQLStatementBackEnd &statement_;
+
+    void *data_;
+    details::eExchangeType type_;
+    int position_;
 };
 
 struct PostgreSQLStandardUseTypeBackEnd : details::StandardUseTypeBackEnd
@@ -123,7 +127,9 @@ struct PostgreSQLStatementBackEnd : details::StatementBackEnd
 
     PGresult *result_;
     std::string query_;
-    int rowNumber_;     // "current" row number
+    int numberOfRows_;  // number of rows retrieved from the server
+    int currentRow_;    // "current" row number to consume in postFetch
+    int rowsToConsume_; // number of rows to be consumed in postFetch
 };
 
 struct PostgreSQLRowIDBackEnd : details::RowIDBackEnd
