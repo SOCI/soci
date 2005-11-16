@@ -506,7 +506,7 @@ void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
         {
             type = eDouble;
         }
-        else if (pow(10, precision) < std::numeric_limits<int>::max())
+        else if (precision < std::numeric_limits<int>::digits10)
         {
             type = eInteger;
         }
@@ -983,25 +983,25 @@ void OracleVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
     if (ind != NULL)
     {
         std::size_t const indSize = indOCIHolderVec_.size();
-        for (std::size_t i = 0; i != indSize; ++i, ++ind)
+        for (std::size_t i = 0; i != indSize; ++i)
         {
             if (gotData == false)
             {
-                *ind = eNoData;
+                ind[i] = eNoData;
             }
             else
             {
                 if (indOCIHolderVec_[i] == 0)
                 {
-                    *ind = eOK;
+                    ind[i] = eOK;
                 }
                 else if (indOCIHolderVec_[i] == -1)
                 {
-                    *ind = eNull;
+                    ind[i] = eNull;
                 }
                 else
                 {
-                    *ind = eTruncated;
+                    ind[i] = eTruncated;
                 }
             }
         }
