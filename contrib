@@ -6,3 +6,6 @@ Roger Orr
 
 Roger has provided the patch for a memory leak that was present in the code
 reading into the Row objects.
+
+In addition, Roger provided us with some patches and fixes that allowed the
+very early version of the 2.0.0 release to compile on g++ 4.0.1.
