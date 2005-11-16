@@ -260,8 +260,7 @@ bool Statement::fetch()
     {
         if (fetchSize_ > 1)
         {
-            resizeIntos();
-            gotData = true;
+            gotData = resizeIntos();
             fetchSize_ = 0;
         }
         else
