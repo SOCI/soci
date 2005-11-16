@@ -530,8 +530,8 @@ public:
     void exchange(UseTypePtr const &u);
 
 private:
-    friend class Statement;
-    friend class Procedure;
+    friend class SOCI::Statement;
+    friend class SOCI::Procedure;
 
     Session *session_;
 
