@@ -782,7 +782,7 @@ void VectorIntoType::preFetch()
 
 void VectorIntoType::postFetch(bool gotData, bool /* calledFromFetch */)
 {
-    if (indVec_ != NULL)
+    if (indVec_ != NULL && indVec_->empty() == false)
     {
         backEnd_->postFetch(gotData, &indVec_->at(0));
     }

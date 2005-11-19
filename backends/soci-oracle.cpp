@@ -926,9 +926,10 @@ void OracleVectorIntoTypeBackEnd::preFetch()
 
 void OracleVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
 {
-    // first, deal with data
     if (gotData)
     {
+        // first, deal with data
+        
         // only std::string, std::tm and Statement need special handling
         if (type_ == eXStdString)
         {
@@ -977,19 +978,12 @@ void OracleVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
             Statement *st = static_cast<Statement *>(data_);
             st->defineAndBind();
         }
-    }
 
-    // then - deal with indicators
-    if (ind != NULL)
-    {
-        std::size_t const indSize = indOCIHolderVec_.size();
-        for (std::size_t i = 0; i != indSize; ++i)
+        // then - deal with indicators
+        if (ind != NULL)
         {
-            if (gotData == false)
-            {
-                ind[i] = eNoData;
-            }
-            else
+            std::size_t const indSize = indOCIHolderVec_.size();
+            for (std::size_t i = 0; i != indSize; ++i)
             {
                 if (indOCIHolderVec_[i] == 0)
                 {
@@ -1005,25 +999,23 @@ void OracleVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
                 }
             }
         }
-    }
-    else
-    {
-        std::size_t const indSize = indOCIHolderVec_.size();
-        for (std::size_t i = 0; i != indSize; ++i)
+        else
         {
-            if (indOCIHolderVec_[i] == -1)
+            std::size_t const indSize = indOCIHolderVec_.size();
+            for (std::size_t i = 0; i != indSize; ++i)
             {
-                // fetched null and no indicator - programming error!
-                throw SOCIError(
-                     "Null value fetched and no indicator defined.");
+                if (indOCIHolderVec_[i] == -1)
+                {
+                    // fetched null and no indicator - programming error!
+                    throw SOCIError(
+                        "Null value fetched and no indicator defined.");
+                }
             }
         }
-
-        if (gotData == false)
-        {
-            // no data fetched and no indicator - programming error!
-            throw SOCIError("No data fetched and no indicator defined.");
-        }
+    }
+    else // gotData == false
+    {
+        // nothing to do here, vectors are truncated anyway
     }
 }
 

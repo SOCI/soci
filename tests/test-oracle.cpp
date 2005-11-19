@@ -875,17 +875,41 @@ void test15()
         assert(caught);
     }
 
-    // test eNoData indicator
+// Note: This test was removed, because eNoData is probably meaningless
+// when used in vectors. The repeated fetch() idiom with while loop
+// works based on the assumption that the false return value from
+// fetch means "no more data". In such a scheme, the only possible
+// indicators in the vector are eOK and eNull and the user need not
+// check the vector for any other possibilities.
+// (eTruncated is ruled out, because we do not support vector<char*>.)
+// For consistency, the execute(1) should provide the same semantics.
+// Please see the test case just below for the valid part.
+// 
+//     // test eNoData indicator
+//     {
+//         std::vector<eIndicator> inds(3);
+//         std::vector<int> ids_out(3);
+//         Statement st = (sql.prepare << "select id from test15 where 1=0",
+//                         into(ids_out, inds));
+
+//         assert(!st.execute(1));
+//         assert(ids_out.size() == 0);
+//         assert(inds.size() == 3 && inds[0] == eNoData
+//             && inds[1] == eNoData && inds[2] == eNoData);
+//     }
+
+    // test "no data" condition
     {
         std::vector<eIndicator> inds(3);
         std::vector<int> ids_out(3);
         Statement st = (sql.prepare << "select id from test15 where 1=0",
                         into(ids_out, inds));
 
+        // false return value means "no data"
         assert(!st.execute(1));
-        assert(ids_out.size() == 0);
-        assert(inds.size() == 3 && inds[0] == eNoData
-            && inds[1] == eNoData && inds[2] == eNoData);
+
+        // that's it - nothing else is guaranteed
+        // and nothing else is to be tested here
     }
 
     // test NULL indicators
