@@ -8,7 +8,7 @@ LIBS = -lpq
 test-postgresql : test-postgresql.o ../soci.o ../backends/soci-postgresql.o
 	${COMPILER} -o $@ test-postgresql.o ../soci.o ../backends/soci-postgresql.o ${LIBDIRS} ${LIBS}
 
-test-postgresql.o : test-postgresql.cpp ../soci.h ../backends/soci-postgresql.h
+test-postgresql.o : test-postgresql.cpp ../soci.h
 	${COMPILER} -c test-postgresql.cpp ${CXXFLAGS} ${INCLUDEDIRS}
 
 ../soci.o : ../soci.cpp ../soci.h

@@ -8,7 +8,7 @@
 //
 
 #include "soci.h"
-#include <limits>
+
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -201,14 +201,27 @@ bool Statement::execute(int num)
 
     StatementBackEnd::execFetchResult res = backEnd_->execute(num);
 
-    bool gotData = false; // dummy initialization to please the compiler
+    bool gotData = false;
 
     if (res == StatementBackEnd::eSuccess)
     {
-        gotData = num > 0 ? true : false;
+        // the "success" means that the statement executed correctly
+        // and for select statement this also means that some rows were read
+
+        if (num > 0)
+        {
+            gotData = true;
+
+            // ensure into vectors have correct size
+            resizeIntos(static_cast<std::size_t>(num));
+        }
     }
     else // res == eNoData
     {
+        // the "no data" means that the end-of-rowset condition was hit
+        // but still some rows might have been read (the last bunch of rows)
+        // it can also mean that the statement did not produce any results
+
         gotData = fetchSize_ > 1 ? resizeIntos() : false;
     }
 
@@ -254,12 +267,21 @@ bool Statement::fetch()
         backEnd_->fetch(static_cast<int>(fetchSize_));
     if (res == StatementBackEnd::eSuccess)
     {
+        // the "success" means that some number of rows was read
+        // and that it is not yet the end-of-rowset (there are more rows)
+
         gotData = true;
+
+        // ensure into vectors have correct size
+        resizeIntos(fetchSize_);
     }
     else // res == eNoData
     {
+        // end-of-rowset condition
+
         if (fetchSize_ > 1)
         {
+            // but still the last bunch of rows might have been read
             gotData = resizeIntos();
             fetchSize_ = 0;
         }
@@ -321,9 +343,13 @@ std::size_t Statement::usesSize()
     return usesSize;
 }
 
-bool Statement::resizeIntos()
+bool Statement::resizeIntos(std::size_t upperBound)
 {
     std::size_t rows = backEnd_->getNumberOfRows();
+    if (upperBound != 0 && upperBound < rows)
+    {
+        rows = upperBound;
+    }
 
     std::size_t const isize = intos_.size();
     for (std::size_t i = 0; i != isize; ++i)
@@ -756,7 +782,14 @@ void VectorIntoType::preFetch()
 
 void VectorIntoType::postFetch(bool gotData, bool /* calledFromFetch */)
 {
-    backEnd_->postFetch(gotData, ind_);
+    if (indVec_ != NULL)
+    {
+        backEnd_->postFetch(gotData, &indVec_->at(0));
+    }
+    else
+    {
+        backEnd_->postFetch(gotData, NULL);
+    }
 
     if(gotData)
     {
@@ -766,6 +799,11 @@ void VectorIntoType::postFetch(bool gotData, bool /* calledFromFetch */)
 
 void VectorIntoType::resize(std::size_t sz)
 {
+    if (indVec_ != NULL)
+    {
+        indVec_->resize(sz);
+    }
+
     backEnd_->resize(sz);
 }
 

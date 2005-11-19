@@ -51,7 +51,8 @@ public:
 };
 
 
-namespace details {
+namespace details
+{
 
 // this is intended to be a base class for all classes that deal with
 // defining output data
@@ -274,7 +275,8 @@ details::UseTypePtr use(T &t, eIndicator &ind, T1 p1, T2 p2, T3 p3, T4 p4)
         new details::UseType<T>(t, ind, p1, p2, p3, p4));
 }
 
-namespace details {
+namespace details
+{
 
 class PrepareTempType;
 
@@ -468,7 +470,7 @@ private:
     void preUse();
     void postFetch(bool gotData, bool calledFromFetch);
     void postUse(bool gotData);
-    bool resizeIntos();
+    bool resizeIntos(std::size_t upperBound = 0);
 
     details::StatementBackEnd *backEnd_;
 };
@@ -480,7 +482,8 @@ public:
     Procedure(details::PrepareTempType const &prep);
 };
 
-namespace details {
+namespace details
+{
 
 // this class is a base for both "once" and "prepare" statements
 class RefCountedStBase
@@ -739,11 +742,11 @@ class VectorIntoType : public IntoTypeBase
 {
 public:
     VectorIntoType(void *data, eExchangeType type)
-        : data_(data), type_(type), ind_(NULL), backEnd_(NULL) {}
+        : data_(data), type_(type), indVec_(NULL), backEnd_(NULL) {}
 
     VectorIntoType(void *data, eExchangeType type,
         std::vector<eIndicator> &ind)
-        : data_(data), type_(type), ind_(&ind.at(0)), backEnd_(NULL) {}
+        : data_(data), type_(type), indVec_(&ind), backEnd_(NULL) {}
 
     ~VectorIntoType();
 
@@ -757,7 +760,7 @@ private:
 
     void *data_;
     eExchangeType type_;
-    eIndicator* ind_;
+    std::vector<eIndicator> *indVec_;
 
     details::VectorIntoTypeBackEnd *backEnd_;
 

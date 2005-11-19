@@ -65,7 +65,7 @@ struct PostgreSQLVectorIntoTypeBackEnd : details::VectorIntoTypeBackEnd
 struct PostgreSQLStandardUseTypeBackEnd : details::StandardUseTypeBackEnd
 {
     PostgreSQLStandardUseTypeBackEnd(PostgreSQLStatementBackEnd &st)
-        : statement_(st) {}
+        : statement_(st), buf_(NULL) {}
 
     virtual void bindByPos(int &position,
         void *data, details::eExchangeType type);
@@ -78,6 +78,11 @@ struct PostgreSQLStandardUseTypeBackEnd : details::StandardUseTypeBackEnd
     virtual void cleanUp();
 
     PostgreSQLStatementBackEnd &statement_;
+
+    void *data_;
+    details::eExchangeType type_;
+    int position_;
+    char *buf_;
 };
 
 struct PostgreSQLVectorUseTypeBackEnd : details::VectorUseTypeBackEnd
@@ -130,6 +135,9 @@ struct PostgreSQLStatementBackEnd : details::StatementBackEnd
     int numberOfRows_;  // number of rows retrieved from the server
     int currentRow_;    // "current" row number to consume in postFetch
     int rowsToConsume_; // number of rows to be consumed in postFetch
+
+    typedef std::map<int, char *> UseBuffersMap;
+    UseBuffersMap useBuffers_; // for data provided by client
 };
 
 struct PostgreSQLRowIDBackEnd : details::RowIDBackEnd

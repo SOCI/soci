@@ -96,7 +96,7 @@ EmptyStatementBackEnd::fetch(int /* number */)
 int EmptyStatementBackEnd::getNumberOfRows()
 {
     // ...
-    return 0;
+    return 1;
 }
 
 int EmptyStatementBackEnd::prepareForDescribe()
@@ -180,7 +180,7 @@ void EmptyVectorIntoTypeBackEnd::resize(std::size_t /* sz */)
 std::size_t EmptyVectorIntoTypeBackEnd::size()
 {
     // ...
-    return 0;
+    return 1;
 }
 
 void EmptyVectorIntoTypeBackEnd::cleanUp()

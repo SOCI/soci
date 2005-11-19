@@ -10,8 +10,9 @@
 #include "soci.h"
 #include "soci-postgresql.h"
 #include <cstring>
+#include <cstdio>
 #include <ctime>
-#include <iostream>
+
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -19,44 +20,6 @@
 
 using namespace SOCI;
 using namespace SOCI::details;
-
-
-// namespace // anonymous
-// {
-
-// // definitions of basic data types (OIDs from pg_type system table)
-// // (currently not used, because all results are in text format anyway)
-// int const pg_type_Int4 = 23;
-
-// bool hostIsLittleEndian;
-
-// // helper function for copying binary data with big-endian/little-endian
-// // converion (as stated by the above flag)
-// void copyBinary(void *dst, void *src, std::size_t size)
-// {
-//     char *s = static_cast<char*>(src);
-//     char *d = static_cast<char*>(dst);
-
-//     if (hostIsLittleEndian)
-//     {
-//         // convert data (swap bytes)
-//         s += size - 1;
-//         for (; size != 0; --size)
-//         {
-//             *d++ = *s--;
-//         }
-//     }
-//     else
-//     {
-//         // no coversion
-//         for (; size != 0; --size)
-//         {
-//             *d++ = *s++;
-//         }
-//     }
-// }
-
-// } // namespace anonymous
 
 
 PostgreSQLSessionBackEnd::PostgreSQLSessionBackEnd(
@@ -116,7 +79,7 @@ PostgreSQLStatementBackEnd::PostgreSQLStatementBackEnd(
 
 void PostgreSQLStatementBackEnd::alloc()
 {
-    // TODO:
+    // nothing to do here
 }
 
 void PostgreSQLStatementBackEnd::cleanUp()
@@ -151,7 +114,27 @@ PostgreSQLStatementBackEnd::execute(int number)
         throw SOCIError("Only unit excutions are supported.");
     }
 
-    result_ = PQexec(session_.conn_, query_.c_str());
+    if (!useBuffers_.empty())
+    {
+        std::vector<char *> paramValues;
+        for (UseBuffersMap::iterator it = useBuffers_.begin(),
+                 end = useBuffers_.end();
+             it != end; ++it)
+        {
+            paramValues.push_back(it->second);
+        }
+
+        result_ = PQexecParams(session_.conn_, query_.c_str(),
+            static_cast<int>(paramValues.size()),
+            NULL, &paramValues[0], NULL, NULL, 0);
+    }
+    else
+    {
+        // there are no use elements
+        // - execute the query without parameter information
+        result_ = PQexec(session_.conn_, query_.c_str());
+    }
+
     if (result_ == NULL)
     {
         throw SOCIError("Cannot execute query.");
@@ -350,14 +333,7 @@ void PostgreSQLStandardIntoTypeBackEnd::postFetch(
             }
         }
 
-// Note: for the moment, only text format is used for output data
-//         // format: 0-text, 1-binary
-//         int format = PQfformat(statement_.result_, pos);
-// 
-//         // server data type
-//         int srvDataType = PQftype(statement_.result_, pos);
-
-        // raw data, in whatever format it is
+        // raw data, in text format
         char *buf = PQgetvalue(statement_.result_,
             statement_.currentRow_, pos);
 
@@ -462,6 +438,21 @@ void PostgreSQLVectorIntoTypeBackEnd::preFetch()
     // nothing to do here
 }
 
+namespace // anonymous
+{
+
+template <typename T, typename U>
+void setInVector(void *p, int indx, U const &val)
+{
+    std::vector<T> *dest =
+        static_cast<std::vector<T> *>(p);
+
+    std::vector<T> &v = *dest;
+    v[indx] = val;
+}
+
+} // namespace anonymous
+
 void PostgreSQLVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
 {
     if (gotData)
@@ -502,61 +493,34 @@ void PostgreSQLVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
             switch (type_)
             {
             case eXChar:
-                {
-                    std::vector<char> *dest =
-                        static_cast<std::vector<char> *>(data_);
-
-                    std::vector<char> &v = *dest;
-                    v[i] = *buf;
-                }
+                setInVector<char>(data_, i, *buf);
                 break;
             case eXStdString:
-                {
-                    std::vector<std::string> *dest =
-                        static_cast<std::vector<std::string> *>(data_);
-
-                    std::vector<std::string> &v = *dest;
-                    v[i] = buf;
-                }
+                setInVector<std::string>(data_, i, buf);
                 break;
             case eXShort:
                 {
-                    std::vector<short> *dest =
-                        static_cast<std::vector<short> *>(data_);
-
-                    std::vector<short> &v = *dest;
                     long val = strtol(buf, NULL, 10);
-                    v[i] = static_cast<short>(val);
+                    setInVector<short>(data_, i, static_cast<short>(val));
                 }
                 break;
             case eXInteger:
                 {
-                    std::vector<int> *dest =
-                        static_cast<std::vector<int> *>(data_);
-
-                    std::vector<int> &v = *dest;
                     long val = strtol(buf, NULL, 10);
-                    v[i] = static_cast<int>(val);
+                    setInVector<int>(data_, i, static_cast<int>(val));
                 }
                 break;
             case eXUnsignedLong:
                 {
-                    std::vector<unsigned long> *dest =
-                        static_cast<std::vector<unsigned long> *>(data_);
-
-                    std::vector<unsigned long> &v = *dest;
                     long long val = strtoll(buf, NULL, 10);
-                    v[i] = static_cast<unsigned long>(val);
+                    setInVector<unsigned long>(data_, i,
+                        static_cast<unsigned long>(val));
                 }
                 break;
             case eXDouble:
                 {
-                    std::vector<double> *dest =
-                        static_cast<std::vector<double> *>(data_);
-
-                    std::vector<double> &v = *dest;
                     double val = strtod(buf, NULL);
-                    v[i] = static_cast<double>(val);
+                    setInVector<double>(data_, i, val);
                 }
                 break;
             case eXStdTm:
@@ -565,11 +529,7 @@ void PostgreSQLVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
                     std::tm t;
                     parseStdTm(buf, t);
 
-                    std::vector<std::tm> *dest =
-                        static_cast<std::vector<std::tm> *>(data_);
-
-                    std::vector<std::tm> &v = *dest;
-                    v[i] = t;
+                    setInVector<std::tm>(data_, i, t);
                 }
                 break;
 
@@ -586,57 +546,37 @@ void PostgreSQLVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
     }
 }
 
+namespace // anonymous
+{
+
+template <typename T>
+void resizeVector(void *p, std::size_t sz)
+{
+    std::vector<T> *v = static_cast<std::vector<T> *>(p);
+    v->resize(sz);
+}
+
+template <typename T>
+std::size_t getVectorSize(void *p)
+{
+    std::vector<T> *v = static_cast<std::vector<T> *>(p);
+    return v->size();
+}
+
+} // namespace anonymous
+
 void PostgreSQLVectorIntoTypeBackEnd::resize(std::size_t sz)
 {
     switch (type_)
     {
     // simple cases
-    case eXChar:
-        {
-            std::vector<char> *v = static_cast<std::vector<char> *>(data_);
-            v->resize(sz);
-        }
-        break;
-    case eXShort:
-        {
-            std::vector<short> *v = static_cast<std::vector<short> *>(data_);
-            v->resize(sz);
-        }
-        break;
-    case eXInteger:
-        {
-            std::vector<int> *v = static_cast<std::vector<int> *>(data_);
-            v->resize(sz);
-        }
-        break;
-    case eXUnsignedLong:
-        {
-            std::vector<unsigned long> *v
-                = static_cast<std::vector<unsigned long> *>(data_);
-            v->resize(sz);
-        }
-        break;
-    case eXDouble:
-        {
-            std::vector<double> *v
-                = static_cast<std::vector<double> *>(data_);
-            v->resize(sz);
-        }
-        break;
-    case eXStdString:
-        {
-            std::vector<std::string> *v
-                = static_cast<std::vector<std::string> *>(data_);
-            v->resize(sz);
-        }
-        break;
-    case eXStdTm:
-        {
-            std::vector<std::tm> *v
-                = static_cast<std::vector<std::tm> *>(data_);
-            v->resize(sz);
-        }
-        break;
+    case eXChar:         resizeVector<char>         (data_, sz); break;
+    case eXShort:        resizeVector<short>        (data_, sz); break;
+    case eXInteger:      resizeVector<int>          (data_, sz); break;
+    case eXUnsignedLong: resizeVector<unsigned long>(data_, sz); break;
+    case eXDouble:       resizeVector<double>       (data_, sz); break;
+    case eXStdString:    resizeVector<std::string>  (data_, sz); break;
+    case eXStdTm:        resizeVector<std::tm>      (data_, sz); break;
 
     default:
         throw SOCIError("Into element used with non-supported type.");
@@ -649,52 +589,13 @@ std::size_t PostgreSQLVectorIntoTypeBackEnd::size()
     switch (type_)
     {
     // simple cases
-    case eXChar:
-        {
-            std::vector<char> *v = static_cast<std::vector<char> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case eXShort:
-        {
-            std::vector<short> *v = static_cast<std::vector<short> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case eXInteger:
-        {
-            std::vector<int> *v = static_cast<std::vector<int> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case eXUnsignedLong:
-        {
-            std::vector<unsigned long> *v
-                = static_cast<std::vector<unsigned long> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case eXDouble:
-        {
-            std::vector<double> *v
-                = static_cast<std::vector<double> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case eXStdString:
-        {
-            std::vector<std::string> *v
-                = static_cast<std::vector<std::string> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case eXStdTm:
-        {
-            std::vector<std::tm> *v
-                = static_cast<std::vector<std::tm> *>(data_);
-            sz = v->size();
-        }
-        break;
+    case eXChar:         sz = getVectorSize<char>         (data_); break;
+    case eXShort:        sz = getVectorSize<short>        (data_); break;
+    case eXInteger:      sz = getVectorSize<int>          (data_); break;
+    case eXUnsignedLong: sz = getVectorSize<unsigned long>(data_); break;
+    case eXDouble:       sz = getVectorSize<double>       (data_); break;
+    case eXStdString:    sz = getVectorSize<std::string>  (data_); break;
+    case eXStdTm:        sz = getVectorSize<std::tm>      (data_); break;
 
     default:
         throw SOCIError("Into element used with non-supported type.");
@@ -711,7 +612,9 @@ void PostgreSQLVectorIntoTypeBackEnd::cleanUp()
 void PostgreSQLStandardUseTypeBackEnd::bindByPos(
     int &position, void *data, eExchangeType type)
 {
-    // TODO:
+    data_ = data;
+    type_ = type;
+    position_ = position;
 }
 
 void PostgreSQLStandardUseTypeBackEnd::bindByName(
@@ -722,17 +625,113 @@ void PostgreSQLStandardUseTypeBackEnd::bindByName(
 
 void PostgreSQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
 {
-    // TODO:
+    if (ind != NULL && *ind == eNull)
+    {
+        // leave the working buffer as NULL
+        return;
+    }
+
+    // allocate and fill the buffer with text-formatted client data
+    switch (type_)
+    {
+    case eXChar:
+        {
+            buf_ = new char[2];
+            buf_[0] = *static_cast<char*>(data_);
+            buf_[1] = '\0';
+        }
+        break;
+    case eXCString:
+        {
+            CStringDescriptor *strDescr
+                = static_cast<CStringDescriptor *>(data_);
+
+            std::size_t len = std::strlen(strDescr->str_);
+            buf_ = new char[len + 1];
+            std::strcpy(buf_, strDescr->str_);
+        }
+        break;
+    case eXStdString:
+        {
+            std::string *s = static_cast<std::string *>(data_);
+            buf_ = new char[s->size() + 1];
+            std::strcpy(buf_, s->c_str());
+        }
+        break;
+    case eXShort:
+        {
+            std::size_t const bufSize
+                = std::numeric_limits<short>::digits10 + 3;
+            buf_ = new char[bufSize];
+            std::snprintf(buf_, bufSize, "%d",
+                static_cast<int>(*static_cast<short*>(data_)));
+        }
+        break;
+    case eXInteger:
+        {
+            std::size_t const bufSize
+                = std::numeric_limits<int>::digits10 + 3;
+            buf_ = new char[bufSize];
+            std::snprintf(buf_, bufSize, "%d",
+               *static_cast<int*>(data_));
+        }
+        break;
+    case eXUnsignedLong:
+        {
+            std::size_t const bufSize
+                = std::numeric_limits<unsigned long>::digits10 + 2;
+            buf_ = new char[bufSize];
+            std::snprintf(buf_, bufSize, "%lu",
+                *static_cast<unsigned long*>(data_));
+        }
+        break;
+    case eXDouble:
+        {
+            // no need to overengineer it (KISS)...
+
+            std::size_t const bufSize = 100;
+            buf_ = new char[bufSize];
+
+            std::snprintf(buf_, bufSize, "%.20g",
+                *static_cast<double*>(data_));
+        }
+        break;
+    case eXStdTm:
+        {
+            std::size_t const bufSize = 20;
+            buf_ = new char[bufSize];
+
+            std::tm *t = static_cast<std::tm *>(data_);
+            std::snprintf(buf_, bufSize, "%d-%02d-%02d %02d:%02d:%02d",
+                t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+                t->tm_hour, t->tm_min, t->tm_sec);
+        }
+        break;
+
+    default:
+        throw SOCIError("Use element used with non-supported type.");
+    }
+
+    statement_.useBuffers_[position_] = buf_;
 }
 
 void PostgreSQLStandardUseTypeBackEnd::postUse(bool gotData, eIndicator *ind)
 {
-    // TODO:
+    // TODO: if PostgreSQL allows to *get* data via this channel,
+    // write it back to client buffers (variable)
+
+    // clean up the working buffer, it might be allocated anew in
+    // the next run of preUse
+    cleanUp();
 }
 
 void PostgreSQLStandardUseTypeBackEnd::cleanUp()
 {
-    // TODO:
+    if (buf_ != NULL)
+    {
+        delete [] buf_;
+        buf_ = NULL;
+    }
 }
 
 void PostgreSQLVectorUseTypeBackEnd::bindByPos(int &position,
@@ -839,13 +838,6 @@ struct PostgreSQLAutoRegister
     PostgreSQLAutoRegister()
     {
         theBEFRegistry().registerMe("postgresql", &postgresqlBEF);
-
-//         // in addition, determine the local byte order
-//         // this is a simple check, we do not expect exotic platforms
-
-//         int dummy = 1;
-//         char *p = reinterpret_cast<char*>(&dummy);
-//         hostIsLittleEndian = (*p != 0);
     }
 } postgresqlAutoRegister;
 
