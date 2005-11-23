@@ -826,11 +826,104 @@ void test6()
             sql << "drop table test6";
         }
 
+        // test for repeated use
+        {
+            sql << "create table test6 (id integer)";
 
+            int i;
+            Statement st = (sql.prepare
+                << "insert into test6(id) values($1)", use(i));
+
+            i = 5;
+            st.execute(1);
+            i = 6;
+            st.execute(1);
+            i = 7;
+            st.execute(1);
+
+            std::vector<int> v(5);
+            sql << "select id from test6 order by id", into(v);
+
+            assert(v.size() == 3);
+            assert(v[0] == 5);
+            assert(v[1] == 6);
+            assert(v[2] == 7);
+
+            sql << "drop table test6";
+        }
+
+        // test for multiple use (and into) elements
+        {
+            sql << "create table test6 (i1 integer, i2 integer, i3 integer)";
+
+            int i1 = 5;
+            int i2 = 6;
+            int i3 = 7;
+
+            sql << "insert into test6(i1, i2, i3) values($1, $2, $3)",
+                use(i1), use(i2), use(i3);
+
+            i1 = 0;
+            i2 = 0;
+            i3 = 0;
+            sql << "select i1, i2, i3 from test6",
+                into(i1), into(i2), into(i3);
+
+            assert(i1 == 5);
+            assert(i2 == 6);
+            assert(i3 == 7);
+
+            // same for vectors
+            sql << "delete from test6";
+
+            i1 = 0;
+            i2 = 0;
+            i3 = 0;
+
+            Statement st = (sql.prepare
+                << "insert into test6(i1, i2, i3) values($1, $2, $3)",
+                use(i1), use(i2), use(i3));
+
+            i1 = 1;
+            i2 = 2;
+            i3 = 3;
+            st.execute(1);
+            i1 = 4;
+            i2 = 5;
+            i3 = 6;
+            st.execute(1);
+            i1 = 7;
+            i2 = 8;
+            i3 = 9;
+            st.execute(1);
+            
+            std::vector<int> v1(5);
+            std::vector<int> v2(5);
+            std::vector<int> v3(5);
+
+            sql << "select i1, i2, i3 from test6 order by i1",
+                into(v1), into(v2), into(v3);
+
+            assert(v1.size() == 3);
+            assert(v2.size() == 3);
+            assert(v3.size() == 3);
+            assert(v1[0] == 1);
+            assert(v1[1] == 4);
+            assert(v1[2] == 7);
+            assert(v2[0] == 2);
+            assert(v2[1] == 5);
+            assert(v2[2] == 8);
+            assert(v3[0] == 3);
+            assert(v3[1] == 6);
+            assert(v3[2] == 9);
+
+            sql << "drop table test6";
+        }
     }
 
     std::cout << "test 6 passed" << std::endl;
 }
+
 
 int main(int argc, char** argv)
 {

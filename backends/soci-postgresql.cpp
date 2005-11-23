@@ -99,16 +99,6 @@ void PostgreSQLStatementBackEnd::prepare(std::string const &query)
 StatementBackEnd::execFetchResult
 PostgreSQLStatementBackEnd::execute(int number)
 {
-    if (number == 0)
-    {
-        // In the Oracle world, this means that the statement needs to be
-        // executed, but no data should be fetched.
-        // This is different in PostgreSQL: we *have to* execute the statement
-        // and get data from the server, but the actual "fetch" will be
-        // performed later.
-        number = 1;
-    }
-
     if (!useBuffers_.empty())
     {
         std::vector<char *> paramValues;
@@ -138,6 +128,9 @@ PostgreSQLStatementBackEnd::execute(int number)
     ExecStatusType status = PQresultStatus(result_);
     if (status == PGRES_TUPLES_OK)
     {
+        currentRow_ = 0;
+        rowsToConsume_ = 0;
+
         numberOfRows_ = PQntuples(result_);
         if (numberOfRows_ == 0)
         {
@@ -145,8 +138,16 @@ PostgreSQLStatementBackEnd::execute(int number)
         }
         else
         {
-            currentRow_ = 0;
-            return fetch(number); // TODO: continue...
+            if (number > 0)
+            {
+                // prepare for the subsequent data consumption
+                return fetch(number);
+            }
+            else
+            {
+                // execute(0) was meant to only perform the query
+                return eSuccess;
+            }
         }
     }
     else if (status == PGRES_COMMAND_OK)
@@ -162,6 +163,15 @@ PostgreSQLStatementBackEnd::execute(int number)
 StatementBackEnd::execFetchResult
 PostgreSQLStatementBackEnd::fetch(int number)
 {
+    // Note: This function does not actually fetch anything from anywhere
+    // - the data was already retrieved from the server in the execute()
+    // function, and the actual consumption of this data will take place
+    // in the postFetch functions, called for each into element.
+    // Here, we only prepare for this to happen (to emulate "the Oracle way").
+
+    // forward the "cursor" from the last fetch
+    currentRow_ += rowsToConsume_;
+
     if (currentRow_ >= numberOfRows_)
     {
         // all rows were already consumed
@@ -233,7 +243,7 @@ void PostgreSQLStandardIntoTypeBackEnd::defineByPos(
 {
     data_ = data;
     type_ = type;
-    position_ = position;
+    position_ = position++;
 }
 
 void PostgreSQLStandardIntoTypeBackEnd::preFetch()
@@ -399,8 +409,6 @@ void PostgreSQLStandardIntoTypeBackEnd::postFetch(
         default:
             throw SOCIError("Into element used with non-supported type.");
         }
-
-        ++statement_.currentRow_;
     }
     else // no data retrieved
     {
@@ -425,7 +433,7 @@ void PostgreSQLVectorIntoTypeBackEnd::defineByPos(
 {
     data_ = data;
     type_ = type;
-    position_ = position;
+    position_ = position++;
 }
 
 void PostgreSQLVectorIntoTypeBackEnd::preFetch()
@@ -532,8 +540,6 @@ void PostgreSQLVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
                 throw SOCIError("Into element used with non-supported type.");
             }
         }
-
-        statement_.currentRow_ += statement_.rowsToConsume_;
     }
     else // no data retrieved
     {
@@ -609,7 +615,7 @@ void PostgreSQLStandardUseTypeBackEnd::bindByPos(
 {
     data_ = data;
     type_ = type;
-    position_ = position;
+    position_ = position++;
 }
 
 void PostgreSQLStandardUseTypeBackEnd::bindByName(
@@ -732,29 +738,29 @@ void PostgreSQLStandardUseTypeBackEnd::cleanUp()
 void PostgreSQLVectorUseTypeBackEnd::bindByPos(int &position,
         void *data, eExchangeType type)
 {
-    // TODO:
+    throw SOCIError("Into vector elements not supported.");
 }
 
 void PostgreSQLVectorUseTypeBackEnd::bindByName(
     std::string const &name, void *data, eExchangeType type)
 {
-    // TODO:
+    throw SOCIError("Into vector elements not supported.");
 }
 
 void PostgreSQLVectorUseTypeBackEnd::preUse(eIndicator const *ind)
 {
-    // TODO:
+    throw SOCIError("Into vector elements not supported.");
 }
 
 std::size_t PostgreSQLVectorUseTypeBackEnd::size()
 {
-    // TODO:
-    return 0;
+    throw SOCIError("Into vector elements not supported.");
+    return 0; // non-reachable
 }
 
 void PostgreSQLVectorUseTypeBackEnd::cleanUp()
 {
-    // TODO:
+    throw SOCIError("Into vector elements not supported.");
 }
 
 PostgreSQLRowIDBackEnd::PostgreSQLRowIDBackEnd(
