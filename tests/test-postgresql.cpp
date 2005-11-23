@@ -622,6 +622,17 @@ void test4()
             assert(!st.fetch());
         }
 
+        // additional test for "no data" condition
+        {
+            std::vector<int> vals(3);
+            std::vector<eIndicator> inds(3);
+
+            Statement st = (sql.prepare <<
+                "select val from test4 where 0 = 1", into(vals, inds));
+
+            assert(!st.execute(1));
+        }
+
         sql << "drop table test4";
     }
 

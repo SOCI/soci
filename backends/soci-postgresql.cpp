@@ -109,11 +109,6 @@ PostgreSQLStatementBackEnd::execute(int number)
         number = 1;
     }
 
-    if (number != 1)
-    {
-        throw SOCIError("Only unit excutions are supported.");
-    }
-
     if (!useBuffers_.empty())
     {
         std::vector<char *> paramValues;
@@ -151,7 +146,7 @@ PostgreSQLStatementBackEnd::execute(int number)
         else
         {
             currentRow_ = 0;
-            return eSuccess;
+            return fetch(number); // TODO: continue...
         }
     }
     else if (status == PGRES_COMMAND_OK)
