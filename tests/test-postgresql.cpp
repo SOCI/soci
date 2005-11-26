@@ -852,21 +852,34 @@ void test6()
             sql << "drop table test6";
         }
 
-        // test for multiple use (and into) elements
+    }
+
+    std::cout << "test 6 passed" << std::endl;
+}
+
+// test for multiple use (and into) elements
+void test7()
+{
+    {
+        Session sql(backEndName, connectString);
+
+        try { sql << "drop table test7"; }
+        catch (SOCIError const &) {} // ignore if error
+
         {
-            sql << "create table test6 (i1 integer, i2 integer, i3 integer)";
+            sql << "create table test7 (i1 integer, i2 integer, i3 integer)";
 
             int i1 = 5;
             int i2 = 6;
             int i3 = 7;
 
-            sql << "insert into test6(i1, i2, i3) values($1, $2, $3)",
+            sql << "insert into test7(i1, i2, i3) values($1, $2, $3)",
                 use(i1), use(i2), use(i3);
 
             i1 = 0;
             i2 = 0;
             i3 = 0;
-            sql << "select i1, i2, i3 from test6",
+            sql << "select i1, i2, i3 from test7",
                 into(i1), into(i2), into(i3);
 
             assert(i1 == 5);
@@ -874,14 +887,14 @@ void test6()
             assert(i3 == 7);
 
             // same for vectors
-            sql << "delete from test6";
+            sql << "delete from test7";
 
             i1 = 0;
             i2 = 0;
             i3 = 0;
 
             Statement st = (sql.prepare
-                << "insert into test6(i1, i2, i3) values($1, $2, $3)",
+                << "insert into test7(i1, i2, i3) values($1, $2, $3)",
                 use(i1), use(i2), use(i3));
 
             i1 = 1;
@@ -901,7 +914,7 @@ void test6()
             std::vector<int> v2(5);
             std::vector<int> v3(5);
 
-            sql << "select i1, i2, i3 from test6 order by i1",
+            sql << "select i1, i2, i3 from test7 order by i1",
                 into(v1), into(v2), into(v3);
 
             assert(v1.size() == 3);
@@ -917,13 +930,216 @@ void test6()
             assert(v3[1] == 6);
             assert(v3[2] == 9);
 
-            sql << "drop table test6";
+            sql << "drop table test7";
         }
     }
 
-    std::cout << "test 6 passed" << std::endl;
+    std::cout << "test 7 passed" << std::endl;
 }
 
+// use vector elements
+void test8()
+{
+    {
+        Session sql(backEndName, connectString);
+
+        try { sql << "drop table test8"; }
+        catch (SOCIError const &) {} // ignore if error
+
+        // test for char
+        {
+            sql << "create table test8 (c char)";
+
+            std::vector<char> v;
+            v.push_back('a');
+            v.push_back('b');
+            v.push_back('c');
+            v.push_back('d');
+
+            sql << "insert into test8(c) values($1)", use(v);
+
+            std::vector<char> v2(4);
+
+            sql << "select c from test8 order by c", into(v2);
+            assert(v2.size() == 4);
+            assert(v2[0] == 'a');
+            assert(v2[1] == 'b');
+            assert(v2[2] == 'c');
+            assert(v2[3] == 'd');
+
+            sql << "drop table test8";
+        }
+
+        // test for std::string
+        {
+            sql << "create table test8 (str varchar(10))";
+
+            std::vector<std::string> v;
+            v.push_back("ala");
+            v.push_back("ma");
+            v.push_back("kota");
+
+            sql << "insert into test8(str) values($1)", use(v);
+
+            std::vector<std::string> v2(4);
+
+            sql << "select str from test8 order by str", into(v2);
+            assert(v2.size() == 3);
+            assert(v2[0] == "ala");
+            assert(v2[1] == "kota");
+            assert(v2[2] == "ma");
+
+            sql << "drop table test8";
+        }
+
+        // test for short
+        {
+            sql << "create table test8 (sh int2)";
+
+            std::vector<short> v;
+            v.push_back(-5);
+            v.push_back(6);
+            v.push_back(7);
+            v.push_back(123);
+
+            sql << "insert into test8(sh) values($1)", use(v);
+
+            std::vector<short> v2(4);
+
+            sql << "select sh from test8 order by sh", into(v2);
+            assert(v2.size() == 4);
+            assert(v2[0] == -5);
+            assert(v2[1] == 6);
+            assert(v2[2] == 7);
+            assert(v2[3] == 123);
+
+            sql << "drop table test8";
+        }
+
+        // test for int
+        {
+            sql << "create table test8 (i int4)";
+
+            std::vector<int> v;
+            v.push_back(-2000000000);
+            v.push_back(0);
+            v.push_back(1);
+            v.push_back(2000000000);
+
+            sql << "insert into test8(i) values($1)", use(v);
+
+            std::vector<int> v2(4);
+
+            sql << "select i from test8 order by i", into(v2);
+            assert(v2.size() == 4);
+            assert(v2[0] == -2000000000);
+            assert(v2[1] == 0);
+            assert(v2[2] == 1);
+            assert(v2[3] == 2000000000);
+
+            sql << "drop table test8";
+        }
+
+        // test for unsigned long
+        {
+            sql << "create table test8 (ul int4)";
+
+            std::vector<unsigned long> v;
+            v.push_back(0);
+            v.push_back(1);
+            v.push_back(123);
+            v.push_back(1000);
+
+            sql << "insert into test8(ul) values($1)", use(v);
+
+            std::vector<unsigned long> v2(4);
+
+            sql << "select ul from test8 order by ul", into(v2);
+            assert(v2.size() == 4);
+            assert(v2[0] == 0);
+            assert(v2[1] == 1);
+            assert(v2[2] == 123);
+            assert(v2[3] == 1000);
+
+            sql << "drop table test8";
+        }
+
+        // test for char
+        {
+            sql << "create table test8 (d float8)";
+
+            std::vector<double> v;
+            v.push_back(0);
+            v.push_back(-0.0001);
+            v.push_back(0.0001);
+            v.push_back(3.1415926);
+
+            sql << "insert into test8(d) values($1)", use(v);
+
+            std::vector<double> v2(4);
+
+            sql << "select d from test8 order by d", into(v2);
+            assert(v2.size() == 4);
+            assert(std::abs(v2[0] + 0.0001) < 0.00001);
+            assert(std::abs(v2[1]) < 0.0001);
+            assert(std::abs(v2[2] - 0.0001) < 0.00001);
+            assert(std::abs(v2[3] - 3.1415926 < 0.0001));
+
+            sql << "drop table test8";
+        }
+
+        // test for std::tm
+        {
+            sql << "create table test8 (tm timestamp)";
+
+            std::vector<std::tm> v;
+            std::tm t;
+            t.tm_year = 105;
+            t.tm_mon  = 10;
+            t.tm_mday = 26;
+            t.tm_hour = 22;
+            t.tm_min  = 45;
+            t.tm_sec  = 17;
+
+            v.push_back(t);
+
+            t.tm_sec = 37;
+            v.push_back(t);
+
+            t.tm_mday = 25;
+            v.push_back(t);
+
+            sql << "insert into test8(tm) values($1)", use(v);
+
+            std::vector<std::tm> v2(4);
+
+            sql << "select tm from test8 order by tm", into(v2);
+            assert(v2.size() == 3);
+            assert(v2[0].tm_year == 105);
+            assert(v2[0].tm_mon  == 10);
+            assert(v2[0].tm_mday == 25);
+            assert(v2[0].tm_hour == 22);
+            assert(v2[0].tm_min  == 45);
+            assert(v2[0].tm_sec  == 37);
+            assert(v2[1].tm_year == 105);
+            assert(v2[1].tm_mon  == 10);
+            assert(v2[1].tm_mday == 26);
+            assert(v2[1].tm_hour == 22);
+            assert(v2[1].tm_min  == 45);
+            assert(v2[1].tm_sec  == 17);
+            assert(v2[2].tm_year == 105);
+            assert(v2[2].tm_mon  == 10);
+            assert(v2[2].tm_mday == 26);
+            assert(v2[2].tm_hour == 22);
+            assert(v2[2].tm_min  == 45);
+            assert(v2[2].tm_sec  == 37);
+
+            sql << "drop table test8";
+        }
+    }
+
+    std::cout << "test 8 passed" << std::endl;
+}
 
 int main(int argc, char** argv)
 {
@@ -948,6 +1164,8 @@ int main(int argc, char** argv)
         test4();
         test5();
         test6();
+        test7();
+        test8();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }

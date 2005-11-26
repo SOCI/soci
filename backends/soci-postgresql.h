@@ -102,6 +102,11 @@ struct PostgreSQLVectorUseTypeBackEnd : details::VectorUseTypeBackEnd
     virtual void cleanUp();
 
     PostgreSQLStatementBackEnd &statement_;
+
+    void *data_;
+    details::eExchangeType type_;
+    int position_;
+    std::vector<char *> buffers_;
 };
 
 struct PostgreSQLSessionBackEnd;
@@ -136,7 +141,7 @@ struct PostgreSQLStatementBackEnd : details::StatementBackEnd
     int currentRow_;    // "current" row number to consume in postFetch
     int rowsToConsume_; // number of rows to be consumed in postFetch
 
-    typedef std::map<int, char *> UseBuffersMap;
+    typedef std::map<int, char **> UseBuffersMap;
     UseBuffersMap useBuffers_; // for data provided by client
 };
 
