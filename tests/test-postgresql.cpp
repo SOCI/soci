@@ -1141,6 +1141,87 @@ void test8()
     std::cout << "test 8 passed" << std::endl;
 }
 
+
+// test for named binding
+void test9()
+{
+    {
+        Session sql(backEndName, connectString);
+
+        try { sql << "drop table test9"; }
+        catch (SOCIError const &) {} // ignore if error
+
+        {
+            sql << "create table test9 (i1 integer, i2 integer)";
+
+            int i1 = 7;
+            int i2 = 8;
+
+            // verify the exception is thrown if both by position
+            // and by name use elements are specified
+            try
+            {
+                sql << "insert into test9(i1, i2) values(:i1, :i2)",
+                    use(i1, "i1"), use(i2);
+
+                assert(false);
+            }
+            catch (SOCIError const &e)
+            {
+                assert(std::string(e.what()) ==
+                    "Binding for use elements must be either by position "
+                    "or by name.");
+            }
+
+            // normal test
+            sql << "insert into test9(i1, i2) values(:i1, :i2)",
+                use(i1, "i1"), use(i2, "i2");
+
+            i1 = 0;
+            i2 = 0;
+            sql << "select i1, i2 from test9", into(i1), into(i2);
+            assert(i1 == 7);
+            assert(i2 == 8);
+
+            i2 = 0;
+            sql << "select i2 from test9 where i1 = :i1", into(i2), use(i1);
+            assert(i2 == 8);
+
+            sql << "delete from test9";
+
+            // test vectors
+
+            std::vector<int> v1;
+            v1.push_back(1);
+            v1.push_back(2);
+            v1.push_back(3);
+
+            std::vector<int> v2;
+            v2.push_back(4);
+            v2.push_back(5);
+            v2.push_back(6);
+
+            sql << "insert into test9(i1, i2) values(:i1, :i2)",
+                use(v1, "i1"), use(v2, "i2");
+
+            sql << "select i2, i1 from test9 order by i1 desc",
+                into(v1), into(v2);
+            assert(v1.size() == 3);
+            assert(v2.size() == 3);
+            assert(v1[0] == 6);
+            assert(v1[1] == 5);
+            assert(v1[2] == 4);
+            assert(v2[0] == 3);
+            assert(v2[1] == 2);
+            assert(v2[2] == 1);
+
+            sql << "drop table test9";
+        }
+    }
+
+    std::cout << "test 9 passed" << std::endl;
+}
+
 int main(int argc, char** argv)
 {
     if (argc == 2)
@@ -1166,6 +1247,7 @@ int main(int argc, char** argv)
         test6();
         test7();
         test8();
+        test9();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }

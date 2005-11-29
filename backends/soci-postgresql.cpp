@@ -10,8 +10,10 @@
 #include "soci.h"
 #include "soci-postgresql.h"
 #include <cstring>
+#include <sstream>
 #include <cstdio>
 #include <ctime>
+#include <cctype>
 
 
 #ifdef _MSC_VER
@@ -93,13 +95,82 @@ void PostgreSQLStatementBackEnd::cleanUp()
 
 void PostgreSQLStatementBackEnd::prepare(std::string const &query)
 {
+#ifdef SOCI_PGSQL_NOBINDBYNAME
     query_ = query;
+#else
+    // rewrite the query by transforming all named parameters into
+    // the PostgreSQL numbers ones (:abc -> $1, etc.)
+
+    enum { eNormal, eInQuotes, eInName } state = eNormal;
+
+    std::string name;
+    int position = 1;
+
+    for (std::string::const_iterator it = query.begin(), end = query.end();
+         it != end; ++it)
+    {
+        switch (state)
+        {
+        case eNormal:
+            if (*it == '\'')
+            {
+                query_ += *it;
+                state = eInQuotes;
+            }
+            else if (*it == ':')
+            {
+                state = eInName;
+            }
+            else // regular character, stay in the same state
+            {
+                query_ += *it;
+            }
+            break;
+        case eInQuotes:
+            if (*it == '\'')
+            {
+                query_ += *it;
+                state = eNormal;
+            }
+            else // regular quoted character
+            {
+                query_ += *it;
+            }
+            break;
+        case eInName:
+            if (std::isalnum(*it) || *it == '_')
+            {
+                name += *it;
+            }
+            else // end of name
+            {
+                names_.push_back(name);
+                name.clear();
+                std::ostringstream ss;
+                ss << '$' << position++;
+                query_ += ss.str();
+                query_ += *it;
+                state = eNormal;
+            }
+            break;
+        }
+    }
+
+    if (state == eInName)
+    {
+        names_.push_back(name);
+        std::ostringstream ss;
+        ss << '$' << position++;
+        query_ += ss.str();
+    }
+
+#endif // SOCI_PGSQL_NONAMES
 }
 
 StatementBackEnd::execFetchResult
 PostgreSQLStatementBackEnd::execute(int number)
 {
-    if (!useBuffers_.empty())
+    if (!useByPosBuffers_.empty() || !useByNameBuffers_.empty())
     {
         // Here we have to explicitly loop to achieve the
         // effect of inserting or updating with vector use elements.
@@ -110,32 +181,99 @@ PostgreSQLStatementBackEnd::execute(int number)
         // If use elements were specified for vectors,
         // it is the size of those vectors.
 
+        // We know also that even if there are both use and into elements
+        // specified together, they are not for bulk queries (number == 1).
+
+        if (!useByPosBuffers_.empty() && !useByNameBuffers_.empty())
+        {
+            throw SOCIError(
+                "Binding for use elements must be either by position "
+                "or by name.");
+        }
+
         for (int i = 0; i != number; ++i)
         {
             std::vector<char *> paramValues;
-            for (UseBuffersMap::iterator it = useBuffers_.begin(),
-                     end = useBuffers_.end();
-                 it != end; ++it)
+
+            if (!useByPosBuffers_.empty())
             {
-                char **buffers = it->second;
-                paramValues.push_back(buffers[i]);
+                // use elements bind by position
+                // the map of use buffers can be traversed
+                // in its natural order
+
+                for (UseByPosBuffersMap::iterator
+                         it = useByPosBuffers_.begin(),
+                         end = useByPosBuffers_.end();
+                     it != end; ++it)
+                {
+                    char **buffers = it->second;
+                    paramValues.push_back(buffers[i]);
+                }
+            }
+            else
+            {
+                // use elements bind by name
+
+                for (std::vector<std::string>::iterator
+                         it = names_.begin(), end = names_.end();
+                     it != end; ++it)
+                {
+                    UseByNameBuffersMap::iterator b
+                        = useByNameBuffers_.find(*it);
+                    if (b == useByNameBuffers_.end())
+                    {
+                        std::string msg(
+                            "Missing use element for bind by name (");
+                        msg += *it;
+                        msg += ").";
+                        throw SOCIError(msg);
+                    }
+                    char **buffers = b->second;
+                    paramValues.push_back(buffers[i]);
+                }
             }
 
             result_ = PQexecParams(session_.conn_, query_.c_str(),
                 static_cast<int>(paramValues.size()),
                 NULL, &paramValues[0], NULL, NULL, 0);
+
+            if (number > 1)
+            {
+                // there are only use elements (no intos)
+                // and it is a bulk operation
+                if (result_ == NULL)
+                {
+                    throw SOCIError("Cannot execute query.");
+                }
+
+                ExecStatusType status = PQresultStatus(result_);
+                if (status != PGRES_COMMAND_OK)
+                {
+                    throw SOCIError(PQresultErrorMessage(result_));
+                }
+                PQclear(result_);
+            }
         }
+
+        if (number > 1)
+        {
+            // it was a bulk operation
+            result_ = NULL;
+            return eNoData;
+        }
+
+        // otherwise (no bulk), follow the code below
     }
     else
     {
         // there are no use elements
         // - execute the query without parameter information
         result_ = PQexec(session_.conn_, query_.c_str());
-    }
 
-    if (result_ == NULL)
-    {
-        throw SOCIError("Cannot execute query.");
+        if (result_ == NULL)
+        {
+            throw SOCIError("Cannot execute query.");
+        }
     }
     
     ExecStatusType status = PQresultStatus(result_);
@@ -634,7 +772,9 @@ void PostgreSQLStandardUseTypeBackEnd::bindByPos(
 void PostgreSQLStandardUseTypeBackEnd::bindByName(
     std::string const &name, void *data, eExchangeType type)
 {
-    // TODO:
+    data_ = data;
+    type_ = type;
+    name_ = name;
 }
 
 void PostgreSQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
@@ -726,7 +866,16 @@ void PostgreSQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
         throw SOCIError("Use element used with non-supported type.");
     }
 
-    statement_.useBuffers_[position_] = &buf_;
+    if (position_ > 0)
+    {
+        // binding by position
+        statement_.useByPosBuffers_[position_] = &buf_;
+    }
+    else
+    {
+        // binding by name
+        statement_.useByNameBuffers_[name_] = &buf_;
+    }
 }
 
 void PostgreSQLStandardUseTypeBackEnd::postUse(bool gotData, eIndicator *ind)
@@ -759,7 +908,9 @@ void PostgreSQLVectorUseTypeBackEnd::bindByPos(int &position,
 void PostgreSQLVectorUseTypeBackEnd::bindByName(
     std::string const &name, void *data, eExchangeType type)
 {
-    // TODO:
+    data_ = data;
+    type_ = type;
+    name_ = name;
 }
 
 void PostgreSQLVectorUseTypeBackEnd::preUse(eIndicator const *ind)
@@ -873,7 +1024,16 @@ void PostgreSQLVectorUseTypeBackEnd::preUse(eIndicator const *ind)
         buffers_.push_back(buf);
     }
 
-    statement_.useBuffers_[position_] = &buffers_.at(0);
+    if (position_ > 0)
+    {
+        // binding by position
+        statement_.useByPosBuffers_[position_] = &buffers_.at(0);
+    }
+    else
+    {
+        // binding by name
+        statement_.useByNameBuffers_[name_] = &buffers_.at(0);
+    }
 }
 
 std::size_t PostgreSQLVectorUseTypeBackEnd::size()
