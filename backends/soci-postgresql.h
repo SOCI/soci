@@ -186,6 +186,7 @@ struct PostgreSQLSessionBackEnd : details::SessionBackEnd
 
     ~PostgreSQLSessionBackEnd();
 
+    virtual void begin();
     virtual void commit();
     virtual void rollback();
 

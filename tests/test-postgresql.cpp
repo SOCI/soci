@@ -1222,6 +1222,75 @@ void test9()
     std::cout << "test 9 passed" << std::endl;
 }
 
+// transaction test
+void test10()
+{
+    {
+        Session sql(backEndName, connectString);
+
+        try { sql << "drop table test10"; }
+        catch (SOCIError const &) {} // ignore if error
+
+        sql <<
+            "create table test10 ("
+            "    id integer,"
+            "    name varchar(100)"
+            ")";
+
+        int count;
+        sql << "select count(*) from test10", into(count);
+        assert(count == 0);
+
+        {
+            sql.begin();
+
+            int id;
+            std::string name;
+            Statement st1 = (sql.prepare <<
+                "insert into test10 (id, name) values (:id, :name)",
+                use(id), use(name));
+
+            id = 1; name = "John"; st1.execute(1);
+            id = 2; name = "Anna"; st1.execute(1);
+            id = 3; name = "Mike"; st1.execute(1);
+
+            sql.commit();
+            sql.begin();
+
+            sql << "select count(*) from test10", into(count);
+            assert(count == 3);
+
+            id = 4; name = "Stan"; st1.execute(1);
+
+            sql << "select count(*) from test10", into(count);
+            assert(count == 4);
+
+            sql.rollback();
+
+            sql << "select count(*) from test10", into(count);
+            assert(count == 3);
+        }
+        {
+            sql.begin();
+
+            sql << "delete from test10";
+
+            sql << "select count(*) from test10", into(count);
+            assert(count == 0);
+
+            sql.rollback();
+
+            sql << "select count(*) from test10", into(count);
+            assert(count == 3);
+        }
+
+        sql << "drop table test10";
+    }
+
+    std::cout << "test 10 passed" << std::endl;
+}
+
+
 int main(int argc, char** argv)
 {
     if (argc == 2)
@@ -1248,6 +1317,7 @@ int main(int argc, char** argv)
         test7();
         test8();
         test9();
+        test10();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }
