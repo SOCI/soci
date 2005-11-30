@@ -585,6 +585,19 @@ void PostgreSQLStandardIntoTypeBackEnd::postFetch(
                 parseStdTm(buf, *dest);
             }
             break;
+        case eXRowID:
+            {
+                // RowID is internally identical to unsigned long
+
+                RowID *rid = static_cast<RowID *>(data_);
+                PostgreSQLRowIDBackEnd *rbe
+                    = static_cast<PostgreSQLRowIDBackEnd *>(
+                        rid->getBackEnd());
+
+                long long val = strtoll(buf, NULL, 10);
+                rbe->value_ = static_cast<unsigned long>(val);
+            }
+            break;
 
         default:
             throw SOCIError("Into element used with non-supported type.");
@@ -888,6 +901,22 @@ void PostgreSQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
             std::snprintf(buf_, bufSize, "%d-%02d-%02d %02d:%02d:%02d",
                 t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
                 t->tm_hour, t->tm_min, t->tm_sec);
+        }
+        break;
+    case eXRowID:
+        {
+            // RowID is internally identical to unsigned long
+
+            RowID *rid = static_cast<RowID *>(data_);
+            PostgreSQLRowIDBackEnd *rbe
+                = static_cast<PostgreSQLRowIDBackEnd *>(
+                    rid->getBackEnd());
+
+            std::size_t const bufSize
+                = std::numeric_limits<unsigned long>::digits10 + 2;
+            buf_ = new char[bufSize];
+
+            std::snprintf(buf_, bufSize, "%lu", rbe->value_);
         }
         break;
 

@@ -1290,6 +1290,43 @@ void test10()
     std::cout << "test 10 passed" << std::endl;
 }
 
+// ROWID test
+// Note: in PostgreSQL, there is no ROWID, there is OID.
+// It is still provided as a separate type for "portability",
+// whatever that means.
+void test11()
+{
+    {
+        Session sql(backEndName, connectString);
+
+        try { sql << "drop table test11"; }
+        catch (SOCIError const &) {} // ignore if error
+
+        sql <<
+            "create table test11 ("
+            "    id integer,"
+            "    name varchar(100)"
+            ")";
+
+        sql << "insert into test11(id, name) values(7, \'John\')";
+
+        RowID rid(sql);
+        sql << "select oid from test11 where id = 7", into(rid);
+
+        int id;
+        std::string name;
+        sql << "select id, name from test11 where oid = :rid",
+            into(id), into(name), use(rid);
+
+        assert(id == 7);
+        assert(name == "John");
+
+        sql << "drop table test11";
+    }
+
+    std::cout << "test 11 passed" << std::endl;
+}
+
 
 int main(int argc, char** argv)
 {
@@ -1318,6 +1355,7 @@ int main(int argc, char** argv)
         test8();
         test9();
         test10();
+        test11();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }

@@ -161,6 +161,8 @@ struct PostgreSQLRowIDBackEnd : details::RowIDBackEnd
     PostgreSQLRowIDBackEnd(PostgreSQLSessionBackEnd &session);
 
     ~PostgreSQLRowIDBackEnd();
+
+    unsigned long value_;
 };
 
 struct PostgreSQLBLOBBackEnd : details::BLOBBackEnd
