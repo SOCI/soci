@@ -643,6 +643,7 @@ public:
 
     ~Session();
 
+    void begin();
     void commit();
     void rollback();
 

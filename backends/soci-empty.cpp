@@ -29,6 +29,11 @@ EmptySessionBackEnd::~EmptySessionBackEnd()
     cleanUp();
 }
 
+void EmptySessionBackEnd::begin()
+{
+    // ...
+}
+
 void EmptySessionBackEnd::commit()
 {
     // ...

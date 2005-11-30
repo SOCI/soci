@@ -35,6 +35,11 @@ Session::~Session()
     delete backEnd_;
 }
 
+void Session::begin()
+{
+    backEnd_->begin();
+}
+
 void Session::commit()
 {
     backEnd_->commit();

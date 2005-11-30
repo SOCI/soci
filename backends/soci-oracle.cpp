@@ -225,6 +225,15 @@ OracleSessionBackEnd::~OracleSessionBackEnd()
     cleanUp();
 }
 
+void OracleSessionBackEnd::begin()
+{
+    sword res = OCITransStart(svchp_, errhp_, 0, OCI_TRANS_NEW);
+    if (res != OCI_SUCCESS)
+    {
+        throwSOCIError(res, errhp_);
+    }
+}
+
 void OracleSessionBackEnd::commit()
 {
     sword res = OCITransCommit(svchp_, errhp_, OCI_DEFAULT);

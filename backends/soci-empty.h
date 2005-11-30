@@ -147,6 +147,7 @@ struct EmptySessionBackEnd : details::SessionBackEnd
 
     ~EmptySessionBackEnd();
 
+    virtual void begin();
     virtual void commit();
     virtual void rollback();
 

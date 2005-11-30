@@ -218,6 +218,7 @@ struct OracleSessionBackEnd : details::SessionBackEnd
 
     ~OracleSessionBackEnd();
 
+    virtual void begin();
     virtual void commit();
     virtual void rollback();
 
