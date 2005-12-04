@@ -125,6 +125,8 @@ struct PostgreSQLStatementBackEnd : details::StatementBackEnd
 
     virtual int getNumberOfRows();
 
+    virtual std::string rewriteForProcedureCall(std::string const &query);
+
     virtual int prepareForDescribe();
     virtual void describeColumn(int colNum, eDataType &dtype,
         std::string &columnName, int &size, int &precision, int &scale,

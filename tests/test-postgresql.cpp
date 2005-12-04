@@ -1327,6 +1327,45 @@ void test11()
     std::cout << "test 11 passed" << std::endl;
 }
 
+// procedure call test
+void test12()
+{
+    {
+        Session sql(backEndName, connectString);
+
+        sql <<
+            "create or replace function myecho(msg varchar) "
+            "returns varchar as $$ "
+            "begin "
+            "  return msg; "
+            "end $$ language plpgsql";
+
+        std::string in("my message");
+        std::string out;
+        Statement st = (sql.prepare <<
+            "select myecho(:input)",
+            into(out),
+            use(in, "input"));
+        st.execute(1);
+        assert(out == in);
+
+        // explicit procedure syntax
+        {
+            std::string in("my message2");
+            std::string out;
+            Procedure proc = (sql.prepare <<
+                "myecho(:input)",
+                into(out), use(in, "input"));
+            proc.execute(1);
+            assert(out == in);
+        }
+
+        sql << "drop function myecho(varchar)";
+    }
+
+    std::cout << "test 12 passed" << std::endl;
+}
+
 
 int main(int argc, char** argv)
 {
@@ -1356,6 +1395,7 @@ int main(int argc, char** argv)
         test9();
         test10();
         test11();
+        test12();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }

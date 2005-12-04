@@ -381,6 +381,14 @@ int PostgreSQLStatementBackEnd::getNumberOfRows()
     return numberOfRows_ - currentRow_;
 }
 
+std::string PostgreSQLStatementBackEnd::rewriteForProcedureCall(
+    std::string const &query)
+{
+    std::string newQuery("select ");
+    newQuery += query;
+    return newQuery;
+}
+
 int PostgreSQLStatementBackEnd::prepareForDescribe()
 {
     // TODO:
