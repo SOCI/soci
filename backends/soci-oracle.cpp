@@ -379,6 +379,15 @@ int OracleStatementBackEnd::getNumberOfRows()
     return rows;
 }
 
+std::string OracleStatementBackEnd::rewriteForProcedureCall(
+    std::string const &query)
+{
+    std::string newQuery("begin ");
+    newQuery += query;
+    newQuery += "; end;";
+    return newQuery;
+}
+
 int OracleStatementBackEnd::prepareForDescribe()
 {
     sword res = OCIStmtExecute(session_.svchp_, stmtp_, session_.errhp_,

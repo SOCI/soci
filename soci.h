@@ -448,6 +448,8 @@ protected:
     std::vector<details::IntoTypeBase*> intos_;
     std::vector<details::UseTypeBase*> uses_;
 
+    std::string rewriteForProcedureCall(std::string const &query);
+
 private:
     Row* row_;
     std::size_t fetchSize_;

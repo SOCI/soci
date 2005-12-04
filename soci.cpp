@@ -509,6 +509,11 @@ void Statement::describe()
     }
 }
 
+std::string Statement::rewriteForProcedureCall(std::string const &query)
+{
+    return backEnd_->rewriteForProcedureCall(query);
+}
+
 Procedure::Procedure(PrepareTempType const &prep)
     : Statement(*prep.getPrepareInfo()->session_)
 {
@@ -522,7 +527,7 @@ Procedure::Procedure(PrepareTempType const &prep)
     alloc();
 
     // prepare the statement
-    prepare("begin " + prepInfo->getQuery() + "; end;");
+    prepare(rewriteForProcedureCall(prepInfo->getQuery()));
 
     defineAndBind();
 }

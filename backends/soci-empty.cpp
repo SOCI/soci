@@ -104,6 +104,12 @@ int EmptyStatementBackEnd::getNumberOfRows()
     return 1;
 }
 
+std::string EmptyStatementBackEnd::rewriteForProcedureCall(
+    std::string const &query)
+{
+    return query;
+}
+
 int EmptyStatementBackEnd::prepareForDescribe()
 {
     // ...

@@ -129,6 +129,8 @@ public:
 
     virtual int getNumberOfRows() = 0;
 
+    virtual std::string rewriteForProcedureCall(std::string const &query) = 0;
+
     virtual int prepareForDescribe() = 0;
     virtual void describeColumn(int colNum, eDataType &dtype,
         std::string &columnName, int &size, int &precision, int &scale,
