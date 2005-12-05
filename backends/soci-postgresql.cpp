@@ -193,7 +193,7 @@ void PostgreSQLStatementBackEnd::prepare(std::string const &query)
         query_ += ss.str();
     }
 
-#endif // SOCI_PGSQL_NONAMES
+#endif // SOCI_PGSQL_NOBINDBYNAME
 }
 
 StatementBackEnd::execFetchResult
@@ -395,15 +395,15 @@ std::string PostgreSQLStatementBackEnd::rewriteForProcedureCall(
 
 int PostgreSQLStatementBackEnd::prepareForDescribe()
 {
-    // TODO:
-    return 0;
+    throw SOCIError("Dynamic row description is not supported.");
+    return 0; // non-reachable
 }
 
 void PostgreSQLStatementBackEnd::describeColumn(int colNum, eDataType &type,
     std::string &columnName, int &size, int &precision, int &scale,
     bool &nullOk)
 {
-    // TODO:
+    throw SOCIError("Dynamic row description is not supported.");
 }
 
 PostgreSQLStandardIntoTypeBackEnd *
@@ -608,6 +608,11 @@ void PostgreSQLStandardIntoTypeBackEnd::postFetch(
 
                 long long val = strtoll(buf, NULL, 10);
                 rbe->value_ = static_cast<unsigned long>(val);
+            }
+            break;
+        case eXBLOB:
+            {
+                // TODO: ... (read oid and lo_open the object)
             }
             break;
 
@@ -1139,56 +1144,95 @@ void PostgreSQLVectorUseTypeBackEnd::cleanUp()
 PostgreSQLRowIDBackEnd::PostgreSQLRowIDBackEnd(
     PostgreSQLSessionBackEnd &session)
 {
-    // TODO:
+    // nothing to do here
 }
 
 PostgreSQLRowIDBackEnd::~PostgreSQLRowIDBackEnd()
 {
-    // TODO:
+    // nothing to do here
 }
 
 PostgreSQLBLOBBackEnd::PostgreSQLBLOBBackEnd(
     PostgreSQLSessionBackEnd &session)
-    : session_(session)
+    : session_(session), fd_(-1)
 {
-    // TODO:
+    // nothing to do here, the descriptor is open in the postFetch
+    // method of the Into element
 }
 
 PostgreSQLBLOBBackEnd::~PostgreSQLBLOBBackEnd()
 {
-    // TODO:
+    lo_close(session_.conn_, fd_);
 }
 
 std::size_t PostgreSQLBLOBBackEnd::getLen()
 {
-    // TODO:
-    return 0;
+    int pos = lo_seek(session_.conn_, fd_, 0, SEEK_END);
+    if (pos == -1)
+    {
+        throw SOCIError("Cannot retrieve the size of BLOB.");
+    }
+
+    return static_cast<std::size_t>(pos);
 }
 
 std::size_t PostgreSQLBLOBBackEnd::read(
     std::size_t offset, char *buf, std::size_t toRead)
 {
-    // TODO:
-    return 0;
+    int pos = lo_seek(session_.conn_, fd_, offset, SEEK_SET);
+    if (pos == -1)
+    {
+        throw SOCIError("Cannot seek in BLOB.");
+    }
+
+    int readn = lo_read(session_.conn_, fd_, buf, toRead);
+    if (readn < 0)
+    {
+        throw SOCIError("Cannot read from BLOB.");
+    }
+
+    return static_cast<std::size_t>(readn);
 }
 
 std::size_t PostgreSQLBLOBBackEnd::write(
     std::size_t offset, char const *buf, std::size_t toWrite)
 {
-    // TODO:
-    return 0;
+    int pos = lo_seek(session_.conn_, fd_, offset, SEEK_SET);
+    if (pos == -1)
+    {
+        throw SOCIError("Cannot seek in BLOB.");
+    }
+
+    int writen = lo_write(session_.conn_, fd_, buf, toWrite);
+    if (readn < 0)
+    {
+        throw SOCIError("Cannot write to BLOB.");
+    }
+
+    return static_cast<std::size_t>(writen);
 }
 
 std::size_t PostgreSQLBLOBBackEnd::append(
     char const *buf, std::size_t toWrite)
 {
-    // TODO:
-    return 0;
+    int pos = lo_seek(session_.conn_, fd_, 0, SEEK_END);
+    if (pos == -1)
+    {
+        throw SOCIError("Cannot seek in BLOB.");
+    }
+
+    int writen = lo_write(session_.conn_, fd_, buf, toWrite);
+    if (readn < 0)
+    {
+        throw SOCIError("Cannot append to BLOB.");
+    }
+
+    return static_cast<std::size_t>(writen);
 }
 
 void PostgreSQLBLOBBackEnd::trim(std::size_t newLen)
 {
-    // TODO:
+    throw SOCIError("Trimming BLOBs is not supported.");
 }
 
 
