@@ -1,4 +1,5 @@
 #include "soci.h"
+#include "soci-postgresql.h"
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -683,6 +684,8 @@ void test5()
 // "use" tests, type conversions, etc.
 void test6()
 {
+// Note: this functionality is not available with older PostgreSQL
+#ifndef SOCI_PGSQL_NOPARAMS
     {
         Session sql(backEndName, connectString);
 
@@ -855,6 +858,9 @@ void test6()
     }
 
     std::cout << "test 6 passed" << std::endl;
+
+#endif // SOCI_PGSQL_NOPARAMS
+
 }
 
 // test for multiple use (and into) elements
@@ -873,8 +879,17 @@ void test7()
             int i2 = 6;
             int i3 = 7;
 
+#ifndef SOCI_PGSQL_NOPARAMS
+
             sql << "insert into test7(i1, i2, i3) values($1, $2, $3)",
                 use(i1), use(i2), use(i3);
+
+#else
+            // Older PostgreSQL does not support use elements.
+
+            sql << "insert into test7(i1, i2, i3) values(5, 6, 7)";
+
+#endif // SOCI_PGSQL_NOPARAMS
 
             i1 = 0;
             i2 = 0;
@@ -893,6 +908,8 @@ void test7()
             i2 = 0;
             i3 = 0;
 
+#ifndef SOCI_PGSQL_NOPARAMS
+
             Statement st = (sql.prepare
                 << "insert into test7(i1, i2, i3) values($1, $2, $3)",
                 use(i1), use(i2), use(i3));
@@ -910,6 +927,15 @@ void test7()
             i3 = 9;
             st.execute(1);
             
+#else
+            // Older PostgreSQL does not support use elements.
+
+            sql << "insert into test7(i1, i2, i3) values(1, 2, 3)";
+            sql << "insert into test7(i1, i2, i3) values(4, 5, 6)";
+            sql << "insert into test7(i1, i2, i3) values(7, 8, 9)";
+
+#endif // SOCI_PGSQL_NOPARAMS
+
             std::vector<int> v1(5);
             std::vector<int> v2(5);
             std::vector<int> v3(5);
@@ -940,6 +966,9 @@ void test7()
 // use vector elements
 void test8()
 {
+// Not supported with older PostgreSQL
+#ifndef SOCI_PGSQL_NOPARAMS
+
     {
         Session sql(backEndName, connectString);
 
@@ -1139,12 +1168,18 @@ void test8()
     }
 
     std::cout << "test 8 passed" << std::endl;
+
+#endif // SOCI_PGSQL_NOPARAMS
+
 }
 
 
 // test for named binding
 void test9()
 {
+// Not supported with older PostgreSQL
+#ifndef SOCI_PGSQL_NOPARAMS
+
     {
         Session sql(backEndName, connectString);
 
@@ -1220,6 +1255,9 @@ void test9()
     }
 
     std::cout << "test 9 passed" << std::endl;
+
+#endif // SOCI_PGSQL_NOPARAMS
+
 }
 
 // transaction test
@@ -1244,8 +1282,11 @@ void test10()
         {
             sql.begin();
 
+#ifndef SOCI_PGSQL_NOPARAMS
+
             int id;
             std::string name;
+
             Statement st1 = (sql.prepare <<
                 "insert into test10 (id, name) values (:id, :name)",
                 use(id), use(name));
@@ -1254,13 +1295,26 @@ void test10()
             id = 2; name = "Anna"; st1.execute(1);
             id = 3; name = "Mike"; st1.execute(1);
 
+#else
+            // Older PostgreSQL does not support use elements
+
+            sql << "insert into test10 (id, name) values(1, 'John')";
+            sql << "insert into test10 (id, name) values(2, 'Anna')";
+            sql << "insert into test10 (id, name) values(3, 'Mike')";
+
+#endif // SOCI_PGSQL_NOPARAMS
+
             sql.commit();
             sql.begin();
 
             sql << "select count(*) from test10", into(count);
             assert(count == 3);
 
+#ifndef SOCI_PGSQL_NOPARAMS
             id = 4; name = "Stan"; st1.execute(1);
+#else
+            sql << "insert into test10 (id, name) values(4, 'Stan')";
+#endif // SOCI_PGSQL_NOPARAMS
 
             sql << "select count(*) from test10", into(count);
             assert(count == 4);
@@ -1315,8 +1369,24 @@ void test11()
 
         int id;
         std::string name;
+
+#ifndef SOCI_PGSQL_NOPARAMS
+
         sql << "select id, name from test11 where oid = :rid",
             into(id), into(name), use(rid);
+
+#else
+        // Older PostgreSQL does not support use elements.
+
+        PostgreSQLRowIDBackEnd *rbe
+            = static_cast<PostgreSQLRowIDBackEnd *>(rid.getBackEnd());
+
+        unsigned long oid = rbe->value_;
+
+        sql << "select id, name from test11 where oid = " << oid,
+            into(id), into(name);
+
+#endif // SOCI_PGSQL_NOPARAMS
 
         assert(id == 7);
         assert(name == "John");
@@ -1333,6 +1403,8 @@ void test12()
     {
         Session sql(backEndName, connectString);
 
+#ifndef SOCI_PGSQL_NOPARAMS
+
         sql <<
             "create or replace function myecho(msg varchar) "
             "returns varchar as $$ "
@@ -1342,10 +1414,30 @@ void test12()
 
         std::string in("my message");
         std::string out;
+
         Statement st = (sql.prepare <<
             "select myecho(:input)",
             into(out),
             use(in, "input"));
+
+#else
+        // Older PostgreSQL does not support use elements.
+
+        sql <<
+            "create or replace function myecho(varchar) "
+            "returns varchar as \' "
+            "begin "
+            "  return $1; "
+            "end \' language plpgsql";
+
+        std::string in("my message");
+        std::string out;
+        Statement st = (sql.prepare <<
+            "select myecho(\'" << in << "\')",
+            into(out));
+
+#endif // SOCI_PGSQL_NOPARAMS
+
         st.execute(1);
         assert(out == in);
 
@@ -1353,9 +1445,21 @@ void test12()
         {
             std::string in("my message2");
             std::string out;
+
+#ifndef SOCI_PGSQL_NOPARAMS
+
             Procedure proc = (sql.prepare <<
                 "myecho(:input)",
                 into(out), use(in, "input"));
+
+#else
+        // Older PostgreSQL does not support use elements.
+
+            Procedure proc = (sql.prepare <<
+                "myecho(\'" << in << "\')", into(out));
+
+#endif // SOCI_PGSQL_NOPARAMS
+
             proc.execute(1);
             assert(out == in);
         }
@@ -1366,6 +1470,9 @@ void test12()
     std::cout << "test 12 passed" << std::endl;
 }
 
+// TODO:
+// - use elements with indicators (also vectors)
+// - BLOBs
 
 int main(int argc, char** argv)
 {

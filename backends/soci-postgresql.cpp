@@ -262,9 +262,13 @@ PostgreSQLStatementBackEnd::execute(int number)
                 }
             }
 
+#ifdef SOCI_PGSQL_NOPARAMS
+            throw SOCIError("Queries with parameters are not supported.");
+#else
             result_ = PQexecParams(session_.conn_, query_.c_str(),
                 static_cast<int>(paramValues.size()),
                 NULL, &paramValues[0], NULL, NULL, 0);
+#endif // SOCI_PGSQL_NOPARAMS
 
             if (number > 1)
             {
