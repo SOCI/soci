@@ -1167,7 +1167,7 @@ PostgreSQLBLOBBackEnd::~PostgreSQLBLOBBackEnd()
 
 std::size_t PostgreSQLBLOBBackEnd::getLen()
 {
-    int pos = lo_seek(session_.conn_, fd_, 0, SEEK_END);
+    int pos = lo_lseek(session_.conn_, fd_, 0, SEEK_END);
     if (pos == -1)
     {
         throw SOCIError("Cannot retrieve the size of BLOB.");
@@ -1179,7 +1179,7 @@ std::size_t PostgreSQLBLOBBackEnd::getLen()
 std::size_t PostgreSQLBLOBBackEnd::read(
     std::size_t offset, char *buf, std::size_t toRead)
 {
-    int pos = lo_seek(session_.conn_, fd_, offset, SEEK_SET);
+    int pos = lo_lseek(session_.conn_, fd_, offset, SEEK_SET);
     if (pos == -1)
     {
         throw SOCIError("Cannot seek in BLOB.");
@@ -1197,14 +1197,15 @@ std::size_t PostgreSQLBLOBBackEnd::read(
 std::size_t PostgreSQLBLOBBackEnd::write(
     std::size_t offset, char const *buf, std::size_t toWrite)
 {
-    int pos = lo_seek(session_.conn_, fd_, offset, SEEK_SET);
+    int pos = lo_lseek(session_.conn_, fd_, offset, SEEK_SET);
     if (pos == -1)
     {
         throw SOCIError("Cannot seek in BLOB.");
     }
 
-    int writen = lo_write(session_.conn_, fd_, buf, toWrite);
-    if (readn < 0)
+    int writen = lo_write(session_.conn_, fd_,
+        const_cast<char *>(buf), toWrite);
+    if (writen < 0)
     {
         throw SOCIError("Cannot write to BLOB.");
     }
@@ -1215,14 +1216,15 @@ std::size_t PostgreSQLBLOBBackEnd::write(
 std::size_t PostgreSQLBLOBBackEnd::append(
     char const *buf, std::size_t toWrite)
 {
-    int pos = lo_seek(session_.conn_, fd_, 0, SEEK_END);
+    int pos = lo_lseek(session_.conn_, fd_, 0, SEEK_END);
     if (pos == -1)
     {
         throw SOCIError("Cannot seek in BLOB.");
     }
 
-    int writen = lo_write(session_.conn_, fd_, buf, toWrite);
-    if (readn < 0)
+    int writen = lo_write(session_.conn_, fd_,
+        const_cast<char *>(buf), toWrite);
+    if (writen < 0)
     {
         throw SOCIError("Cannot append to BLOB.");
     }

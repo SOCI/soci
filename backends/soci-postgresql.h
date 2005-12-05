@@ -182,6 +182,9 @@ struct PostgreSQLBLOBBackEnd : details::BLOBBackEnd
     virtual void trim(std::size_t newLen);
 
     PostgreSQLSessionBackEnd &session_;
+
+    unsigned long oid_; // oid of the large object
+    int fd_;            // descriptor of the large object
 };
 
 struct PostgreSQLSessionBackEnd : details::SessionBackEnd
