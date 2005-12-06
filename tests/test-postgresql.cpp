@@ -1544,9 +1544,9 @@ void test13()
         sql << "drop table test13";
     }
 
-#endif // SOCI_PGSQL_NOPARAMS
-
     std::cout << "test 13 passed" << std::endl;
+
+#endif // SOCI_PGSQL_NOPARAMS
 }
 
 // TODO:
