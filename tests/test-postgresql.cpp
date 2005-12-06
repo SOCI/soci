@@ -1470,9 +1470,88 @@ void test12()
     std::cout << "test 12 passed" << std::endl;
 }
 
+// test of use elements with indicators
+void test13()
+{
+#ifndef SOCI_PGSQL_NOPARAMS
+    {
+        Session sql(backEndName, connectString);
+
+        try { sql << "drop table test13"; }
+        catch (SOCIError const &) {} // ignore if error
+
+        sql << "create table test13 (id integer, val integer)";
+
+        eIndicator ind1 = eOK;
+        eIndicator ind2 = eOK;
+
+        int id = 1;
+        int val = 10;
+
+        sql << "insert into test13(id, val) values(:id, :val)",
+            use(id, ind1), use(val, ind2);
+
+        id = 2;
+        val = 11;
+        ind2 = eNull;
+        sql << "insert into test13(id, val) values(:id, :val)",
+            use(id, ind1), use(val, ind2);
+
+        sql << "select val from test13 where id = 1", into(val, ind2);
+        assert(ind2 == eOK);
+        assert(val == 10);
+        sql << "select val from test13 where id = 2", into(val, ind2);
+        assert(ind2 == eNull);
+
+        std::vector<int> ids;
+        ids.push_back(3);
+        ids.push_back(4);
+        ids.push_back(5);
+        std::vector<int> vals;
+        vals.push_back(12);
+        vals.push_back(13);
+        vals.push_back(14);
+        std::vector<eIndicator> inds;
+        inds.push_back(eOK);
+        inds.push_back(eNull);
+        inds.push_back(eOK);
+
+        sql << "insert into test13(id, val) values(:id, :val)",
+            use(ids), use(vals, inds);
+
+        ids.resize(5);
+        vals.resize(5);
+        sql << "select id, val from test13 order by id desc",
+            into(ids), into(vals, inds);
+
+        assert(ids.size() == 5);
+        assert(ids[0] == 5);
+        assert(ids[1] == 4);
+        assert(ids[2] == 3);
+        assert(ids[3] == 2);
+        assert(ids[4] == 1);
+        assert(inds.size() == 5);
+        assert(inds[0] == eOK);
+        assert(inds[1] == eNull);
+        assert(inds[2] == eOK);
+        assert(inds[3] == eNull);
+        assert(inds[4] == eOK);
+        assert(vals.size() == 5);
+        assert(vals[0] == 14);
+        assert(vals[2] == 12);
+        assert(vals[4] == 10);
+
+        sql << "drop table test13";
+    }
+
+#endif // SOCI_PGSQL_NOPARAMS
+
+    std::cout << "test 13 passed" << std::endl;
+}
+
 // TODO:
-// - use elements with indicators (also vectors)
 // - BLOBs
+// - dynamic row description (explicit calls)
 
 int main(int argc, char** argv)
 {
@@ -1503,6 +1582,7 @@ int main(int argc, char** argv)
         test10();
         test11();
         test12();
+        test13();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }
