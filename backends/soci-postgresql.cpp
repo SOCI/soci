@@ -841,104 +841,105 @@ void PostgreSQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
     if (ind != NULL && *ind == eNull)
     {
         // leave the working buffer as NULL
-        return;
     }
-
-    // allocate and fill the buffer with text-formatted client data
-    switch (type_)
+    else
     {
-    case eXChar:
+        // allocate and fill the buffer with text-formatted client data
+        switch (type_)
         {
-            buf_ = new char[2];
-            buf_[0] = *static_cast<char*>(data_);
-            buf_[1] = '\0';
-        }
-        break;
-    case eXCString:
-        {
-            CStringDescriptor *strDescr
-                = static_cast<CStringDescriptor *>(data_);
+        case eXChar:
+            {
+                buf_ = new char[2];
+                buf_[0] = *static_cast<char*>(data_);
+                buf_[1] = '\0';
+            }
+            break;
+        case eXCString:
+            {
+                CStringDescriptor *strDescr
+                    = static_cast<CStringDescriptor *>(data_);
 
-            std::size_t len = std::strlen(strDescr->str_);
-            buf_ = new char[len + 1];
-            std::strcpy(buf_, strDescr->str_);
-        }
-        break;
-    case eXStdString:
-        {
-            std::string *s = static_cast<std::string *>(data_);
-            buf_ = new char[s->size() + 1];
-            std::strcpy(buf_, s->c_str());
-        }
-        break;
-    case eXShort:
-        {
-            std::size_t const bufSize
-                = std::numeric_limits<short>::digits10 + 3;
-            buf_ = new char[bufSize];
-            std::snprintf(buf_, bufSize, "%d",
-                static_cast<int>(*static_cast<short*>(data_)));
-        }
-        break;
-    case eXInteger:
-        {
-            std::size_t const bufSize
-                = std::numeric_limits<int>::digits10 + 3;
-            buf_ = new char[bufSize];
-            std::snprintf(buf_, bufSize, "%d",
-               *static_cast<int*>(data_));
-        }
-        break;
-    case eXUnsignedLong:
-        {
-            std::size_t const bufSize
-                = std::numeric_limits<unsigned long>::digits10 + 2;
-            buf_ = new char[bufSize];
-            std::snprintf(buf_, bufSize, "%lu",
-                *static_cast<unsigned long*>(data_));
-        }
-        break;
-    case eXDouble:
-        {
-            // no need to overengineer it (KISS)...
+                std::size_t len = std::strlen(strDescr->str_);
+                buf_ = new char[len + 1];
+                std::strcpy(buf_, strDescr->str_);
+            }
+            break;
+        case eXStdString:
+            {
+                std::string *s = static_cast<std::string *>(data_);
+                buf_ = new char[s->size() + 1];
+                std::strcpy(buf_, s->c_str());
+            }
+            break;
+        case eXShort:
+            {
+                std::size_t const bufSize
+                    = std::numeric_limits<short>::digits10 + 3;
+                buf_ = new char[bufSize];
+                std::snprintf(buf_, bufSize, "%d",
+                    static_cast<int>(*static_cast<short*>(data_)));
+            }
+            break;
+        case eXInteger:
+            {
+                std::size_t const bufSize
+                    = std::numeric_limits<int>::digits10 + 3;
+                buf_ = new char[bufSize];
+                std::snprintf(buf_, bufSize, "%d",
+                    *static_cast<int*>(data_));
+            }
+            break;
+        case eXUnsignedLong:
+            {
+                std::size_t const bufSize
+                    = std::numeric_limits<unsigned long>::digits10 + 2;
+                buf_ = new char[bufSize];
+                std::snprintf(buf_, bufSize, "%lu",
+                    *static_cast<unsigned long*>(data_));
+            }
+            break;
+        case eXDouble:
+            {
+                // no need to overengineer it (KISS)...
 
-            std::size_t const bufSize = 100;
-            buf_ = new char[bufSize];
+                std::size_t const bufSize = 100;
+                buf_ = new char[bufSize];
 
-            std::snprintf(buf_, bufSize, "%.20g",
-                *static_cast<double*>(data_));
+                std::snprintf(buf_, bufSize, "%.20g",
+                    *static_cast<double*>(data_));
+            }
+            break;
+        case eXStdTm:
+            {
+                std::size_t const bufSize = 20;
+                buf_ = new char[bufSize];
+
+                std::tm *t = static_cast<std::tm *>(data_);
+                std::snprintf(buf_, bufSize, "%d-%02d-%02d %02d:%02d:%02d",
+                    t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+                    t->tm_hour, t->tm_min, t->tm_sec);
+            }
+            break;
+        case eXRowID:
+            {
+                // RowID is internally identical to unsigned long
+
+                RowID *rid = static_cast<RowID *>(data_);
+                PostgreSQLRowIDBackEnd *rbe
+                    = static_cast<PostgreSQLRowIDBackEnd *>(
+                        rid->getBackEnd());
+
+                std::size_t const bufSize
+                    = std::numeric_limits<unsigned long>::digits10 + 2;
+                buf_ = new char[bufSize];
+
+                std::snprintf(buf_, bufSize, "%lu", rbe->value_);
+            }
+            break;
+
+        default:
+            throw SOCIError("Use element used with non-supported type.");
         }
-        break;
-    case eXStdTm:
-        {
-            std::size_t const bufSize = 20;
-            buf_ = new char[bufSize];
-
-            std::tm *t = static_cast<std::tm *>(data_);
-            std::snprintf(buf_, bufSize, "%d-%02d-%02d %02d:%02d:%02d",
-                t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
-                t->tm_hour, t->tm_min, t->tm_sec);
-        }
-        break;
-    case eXRowID:
-        {
-            // RowID is internally identical to unsigned long
-
-            RowID *rid = static_cast<RowID *>(data_);
-            PostgreSQLRowIDBackEnd *rbe
-                = static_cast<PostgreSQLRowIDBackEnd *>(
-                    rid->getBackEnd());
-
-            std::size_t const bufSize
-                = std::numeric_limits<unsigned long>::digits10 + 2;
-            buf_ = new char[bufSize];
-
-            std::snprintf(buf_, bufSize, "%lu", rbe->value_);
-        }
-        break;
-
-    default:
-        throw SOCIError("Use element used with non-supported type.");
     }
 
     if (position_ > 0)
@@ -1092,7 +1093,8 @@ void PostgreSQLVectorUseTypeBackEnd::preUse(eIndicator const *ind)
                 break;
 
             default:
-                throw SOCIError("Use vector element used with non-supported type.");
+                throw SOCIError(
+                    "Use vector element used with non-supported type.");
             }
         }
 
