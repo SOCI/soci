@@ -14,6 +14,7 @@
 #include <cstdio>
 #include <ctime>
 #include <cctype>
+#include <libpq/libpq-fs.h>
 
 
 #ifdef _MSC_VER
@@ -612,7 +613,26 @@ void PostgreSQLStandardIntoTypeBackEnd::postFetch(
             break;
         case eXBLOB:
             {
-                // TODO: ... (read oid and lo_open the object)
+                long long llval = strtoll(buf, NULL, 10);
+                unsigned long oid = static_cast<unsigned long>(llval);
+
+                int fd = lo_open(statement_.session_.conn_, oid,
+                    INV_READ | INV_WRITE);
+                if (fd == -1)
+                {
+                    throw SOCIError("Cannot open the BLOB object.");
+                }
+
+                BLOB *b = static_cast<BLOB *>(data_);
+                PostgreSQLBLOBBackEnd *bbe
+                     = static_cast<PostgreSQLBLOBBackEnd *>(b->getBackEnd());
+
+                if (bbe->fd_ != -1)
+                {
+                    lo_close(statement_.session_.conn_, bbe->fd_);
+                }
+
+                bbe->fd_ = fd;
             }
             break;
 

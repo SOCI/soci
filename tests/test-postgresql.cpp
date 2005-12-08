@@ -1549,8 +1549,63 @@ void test13()
 #endif // SOCI_PGSQL_NOPARAMS
 }
 
+// BLOB test
+void test14()
+{
+    {
+        Session sql(backEndName, connectString);
+
+        try { sql << "drop table test14"; }
+        catch (SOCIError const &) {} // ignore if error
+
+        sql <<
+            "create table test14 ("
+             "    id integer,"
+             "    img oid"
+             ")";
+
+        char buf[] = "abcdefghijklmnopqrstuvwxyz";
+
+        sql << "insert into test14(id, img) values(7, lo_creat(-1))";
+
+        // in PostgreSQL, BLOB operations must be withing transaction block
+        sql.begin();
+
+        {
+            BLOB b(sql);
+
+            sql << "select img from test14 where id = 7", into(b);
+            assert(b.getLen() == 0);
+
+            b.write(0, buf, sizeof(buf));
+            assert(b.getLen() == sizeof(buf));
+
+            b.append(buf, sizeof(buf));
+            assert(b.getLen() == 2 * sizeof(buf));
+        }
+        {
+            BLOB b(sql);
+            sql << "select img from test14 where id = 7", into(b);
+            assert(b.getLen() == 2 * sizeof(buf));
+            char buf2[100];
+            b.read(0, buf2, 10);
+            assert(strncmp(buf2, "abcdefghij", 10) == 0);
+        }
+
+        unsigned long oid;
+        sql << "select img from test14 where id = 7", into(oid);
+        sql << "select lo_unlink(" << oid << ")";
+
+        sql.commit();
+
+        sql << "drop table test14";
+    }
+
+    std::cout << "test 14 passed" << std::endl;
+}
+
+
 // TODO:
-// - BLOBs
 // - dynamic row description (explicit calls)
 
 int main(int argc, char** argv)
@@ -1583,6 +1638,7 @@ int main(int argc, char** argv)
         test11();
         test12();
         test13();
+        test14();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }
