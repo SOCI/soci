@@ -15,6 +15,7 @@
 #include <vector>
 #include <sstream>
 #include <ctime>
+#include <cassert>
 
 #include "soci-common.h"
 
