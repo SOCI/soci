@@ -665,15 +665,17 @@ std::size_t Row::size() const
 
 eIndicator const Row::indicator(int pos) const
 {
-    return *indicators_.at(pos);
+    assert(indicators_->size() >= pos + 1);
+    return *indicators_[pos];
 }
 
-ColumnProperties const & Row::getProperties (std::size_t pos) const
+ColumnProperties const & Row::getProperties(std::size_t pos) const
 {
-    return columns_.at(pos);
+    assert(columns_.size() >= pos + 1);
+    return columns_[pos];
 }
 
-ColumnProperties const & Row::getProperties (std::string const &name) const
+ColumnProperties const & Row::getProperties(std::string const &name) const
 {
     std::map<std::string, std::size_t>::const_iterator it = index_.find(name);
     if (it == index_.end())
@@ -794,7 +796,8 @@ void VectorIntoType::postFetch(bool gotData, bool /* calledFromFetch */)
 {
     if (indVec_ != NULL && indVec_->empty() == false)
     {
-        backEnd_->postFetch(gotData, &indVec_->at(0));
+        assert(indVec_.empty() == false);
+        backEnd_->postFetch(gotData, &indVec_[0]);
     }
     else
     {

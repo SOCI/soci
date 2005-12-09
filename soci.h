@@ -374,7 +374,9 @@ public:
     T get (std::size_t pos) const
     {
         typedef typename TypeConversion<T>::base_type BASE_TYPE;
-        BASE_TYPE baseVal = holders_.at(pos)->get<BASE_TYPE>();
+
+        assert(holders_.size() >= pos + 1);
+        BASE_TYPE baseVal = holders_[pos]->get<BASE_TYPE>();
         return TypeConversion<T>::from(baseVal);
     }
 

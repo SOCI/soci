@@ -821,8 +821,14 @@ void OracleStandardIntoTypeBackEnd::cleanUp()
 
 void OracleVectorIntoTypeBackEnd::prepareIndicators(std::size_t size)
 {
+    if (size == 0)
+    {
+         throw SOCIError("Vectors of size 0 are not allowed.");
+    }
+
     indOCIHolderVec_.resize(size);
-    indOCIHolders_ = &indOCIHolderVec_.at(0);
+    indOCIHolders_ = &indOCIHolderVec_[0];
+
     sizes_.resize(size);
     rCodes_.resize(size);
 }
@@ -845,7 +851,7 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
             size = sizeof(char);
             std::vector<char> *v = static_cast<std::vector<char> *>(data);
             prepareIndicators(v->size());
-            data = &v->at(0);
+            data = &v[0];
         }
         break;
     case eXShort:
@@ -854,7 +860,7 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
             size = sizeof(short);
             std::vector<short> *v = static_cast<std::vector<short> *>(data);
             prepareIndicators(v->size());
-            data = &v->at(0);
+            data = &v[0];
         }
         break;
     case eXInteger:
@@ -863,7 +869,7 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
             size = sizeof(int);
             std::vector<int> *v = static_cast<std::vector<int> *>(data);
             prepareIndicators(v->size());
-            data = &v->at(0);
+            data = &v[0];
         }
         break;
     case eXUnsignedLong:
@@ -873,7 +879,7 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
             std::vector<unsigned long> *v
                 = static_cast<std::vector<unsigned long> *>(data);
             prepareIndicators(v->size());
-            data = &v->at(0);
+            data = &v[0];
         }
         break;
     case eXDouble:
@@ -882,7 +888,7 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
             size = sizeof(double);
             std::vector<double> *v = static_cast<std::vector<double> *>(data);
             prepareIndicators(v->size());
-            data = &v->at(0);
+            data = &v[0];
         }
         break;
 
@@ -1442,11 +1448,13 @@ void OracleStandardUseTypeBackEnd::cleanUp()
 
 void OracleVectorUseTypeBackEnd::prepareIndicators(std::size_t size)
 {
-    if (size != 0)
+    if (size == 0)
     {
-        indOCIHolderVec_.resize(size);
-        indOCIHolders_ = &indOCIHolderVec_.at(0);
+         throw SOCIError("Vectors of size 0 are not allowed.");
     }
+
+    indOCIHolderVec_.resize(size);
+    indOCIHolders_ = &indOCIHolderVec_[0];
 }
 
 void OracleVectorUseTypeBackEnd::prepareForBind(
@@ -1461,7 +1469,7 @@ void OracleVectorUseTypeBackEnd::prepareForBind(
             size = sizeof(char);
             std::vector<char> *v = static_cast<std::vector<char> *>(data);
             prepareIndicators(v->size());
-            data = &v->at(0);
+            data = &v[0];
         }
         break;
     case eXShort:
@@ -1470,7 +1478,7 @@ void OracleVectorUseTypeBackEnd::prepareForBind(
             size = sizeof(short);
             std::vector<short> *v = static_cast<std::vector<short> *>(data);
             prepareIndicators(v->size());
-            data = &v->at(0);
+            data = &v[0];
         }
         break;
     case eXInteger:
@@ -1479,7 +1487,7 @@ void OracleVectorUseTypeBackEnd::prepareForBind(
             size = sizeof(int);
             std::vector<int> *v = static_cast<std::vector<int> *>(data);
             prepareIndicators(v->size());
-            data = &v->at(0);
+            data = &v[0];
         }
         break;
     case eXUnsignedLong:
@@ -1489,7 +1497,7 @@ void OracleVectorUseTypeBackEnd::prepareForBind(
             std::vector<unsigned long> *v
                 = static_cast<std::vector<unsigned long> *>(data);
             prepareIndicators(v->size());
-            data = &v->at(0);
+            data = &v[0];
         }
         break;
     case eXDouble:
@@ -1498,7 +1506,7 @@ void OracleVectorUseTypeBackEnd::prepareForBind(
             size = sizeof(double);
             std::vector<double> *v = static_cast<std::vector<double> *>(data);
             prepareIndicators(v->size());
-            data = &v->at(0);
+            data = &v[0];
         }
         break;
 
@@ -1570,7 +1578,7 @@ void OracleVectorUseTypeBackEnd::bindByPos(int &position,
     ub2 *sizesP = 0; // used only for std::string
     if (type == eXStdString)
     {
-        sizesP = &sizes_.at(0);
+        sizesP = &sizes_[0];
     }
 
     sword res = OCIBindByPos(statement_.stmtp_, &bindp_,
@@ -1597,7 +1605,7 @@ void OracleVectorUseTypeBackEnd::bindByName(
     ub2 *sizesP = 0; // used only for std::string
     if (type == eXStdString)
     {
-        sizesP = &sizes_.at(0);
+        sizesP = &sizes_[0];
     }
 
     sword res = OCIBindByName(statement_.stmtp_, &bindp_,

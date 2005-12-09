@@ -1124,12 +1124,12 @@ void PostgreSQLVectorUseTypeBackEnd::preUse(eIndicator const *ind)
     if (position_ > 0)
     {
         // binding by position
-        statement_.useByPosBuffers_[position_] = &buffers_.at(0);
+        statement_.useByPosBuffers_[position_] = &buffers_[0];
     }
     else
     {
         // binding by name
-        statement_.useByNameBuffers_[name_] = &buffers_.at(0);
+        statement_.useByNameBuffers_[name_] = &buffers_[0];
     }
 }
 
