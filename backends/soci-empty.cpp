@@ -134,7 +134,8 @@ EmptyStandardUseTypeBackEnd * EmptyStatementBackEnd::makeUseTypeBackEnd()
     return new EmptyStandardUseTypeBackEnd(*this);
 }
 
-EmptyVectorIntoTypeBackEnd * EmptyStatementBackEnd::makeVectorIntoTypeBackEnd()
+EmptyVectorIntoTypeBackEnd *
+EmptyStatementBackEnd::makeVectorIntoTypeBackEnd()
 {
     return new EmptyVectorIntoTypeBackEnd(*this);
 }
@@ -235,7 +236,8 @@ void EmptyVectorUseTypeBackEnd::bindByPos(int & /* position */,
 }
 
 void EmptyVectorUseTypeBackEnd::bindByName(
-    std::string const & /* name */, void * /* data */, eExchangeType /* type */)
+    std::string const & /* name */, void * /* data */,
+    eExchangeType /* type */)
 {
     // ...
 }

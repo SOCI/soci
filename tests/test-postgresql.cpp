@@ -220,7 +220,8 @@ void test3()
                 std::ostringstream ss;
                 ss << "Hello_" << i;
 
-                sql << "insert into test3(str) values(\'" << ss.str() << "\')";
+                sql << "insert into test3(str) values(\'"
+                    << ss.str() << "\')";
             }
 
             int count;
