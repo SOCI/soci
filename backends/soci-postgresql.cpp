@@ -17,6 +17,10 @@
 #include <libpq/libpq-fs.h>
 
 
+#ifdef SOCI_PGSQL_NOPARAMS
+#define SOCI_PGSQL_NOBINDBYNAME
+#endif // SOCI_PGSQL_NOPARAMS
+
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
