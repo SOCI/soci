@@ -52,7 +52,7 @@ void hardExec(PGconn *conn, char const *query, char const *errMsg)
     {
         throw SOCIError(errMsg);
     }
-    
+
     ExecStatusType status = PQresultStatus(result);
     if (status != PGRES_COMMAND_OK)
     {
@@ -309,7 +309,7 @@ PostgreSQLStatementBackEnd::execute(int number)
             throw SOCIError("Cannot execute query.");
         }
     }
-    
+
     ExecStatusType status = PQresultStatus(result_);
     if (status == PGRES_TUPLES_OK)
     {

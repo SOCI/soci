@@ -926,7 +926,7 @@ void test7()
             i2 = 8;
             i3 = 9;
             st.execute(1);
-            
+
 #else
             // Older PostgreSQL does not support use elements.
 

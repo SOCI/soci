@@ -947,7 +947,7 @@ void OracleVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
     if (gotData)
     {
         // first, deal with data
-        
+
         // only std::string, std::tm and Statement need special handling
         if (type_ == eXStdString)
         {
