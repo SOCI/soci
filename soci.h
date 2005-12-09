@@ -358,7 +358,7 @@ public:
 
     void addProperties(ColumnProperties const &cp);
     std::size_t size() const;
-    eIndicator const indicator(int pos) const;
+    eIndicator const indicator(std::size_t pos) const;
 
     template<typename T>
     inline void addHolder(T* t, eIndicator* ind)
