@@ -663,9 +663,9 @@ std::size_t Row::size() const
     return holders_.size();
 }
 
-eIndicator const Row::indicator(int pos) const
+eIndicator const Row::indicator(std::size_t pos) const
 {
-    assert(indicators_->size() >= pos + 1);
+    assert(indicators_.size() >= static_cast<std::size_t>(pos + 1));
     return *indicators_[pos];
 }
 
@@ -796,8 +796,8 @@ void VectorIntoType::postFetch(bool gotData, bool /* calledFromFetch */)
 {
     if (indVec_ != NULL && indVec_->empty() == false)
     {
-        assert(indVec_.empty() == false);
-        backEnd_->postFetch(gotData, &indVec_[0]);
+        assert(indVec_->empty() == false);
+        backEnd_->postFetch(gotData, &(*indVec_)[0]);
     }
     else
     {
