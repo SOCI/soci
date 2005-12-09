@@ -1,6 +1,18 @@
 This file contains the history of changes in the SOCI library.
 
 ---
+Version 2.0.0 differs from 1.2.1 in the following ways:
+
+- The whole library was internally re-architectured to allow operation
+  with many different backends. The top-level part of the library
+  (the syntax layer) provides essentially the same interface as in previous
+  versions of the library, but it can work with independent (and dynamically
+  selected) backends, possibly targeting different database engines.
+  As a prove of concept (and to encourage developments of new backends),
+  the PostgreSQL backend was provided in addition to the Oracle one.
+  During this re-architecturing, some minor bugs were fixed as well.
+
+---
 The version 1.2.1 differs from 1.2.0 in the following ways:
 
 - A bug was fixed that caused compile errors on MS VC++ compiler.
