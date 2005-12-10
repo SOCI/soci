@@ -853,7 +853,7 @@ void test15()
         {
             sql << "select id from test15", into(ids);
         }
-        catch (std::out_of_range const &)
+        catch (SOCIError const &e)
         {
             caught = true;
         }
@@ -868,7 +868,7 @@ void test15()
         {
             sql << "insert into test15(id) values(:id)", use(ids);
         }
-        catch (std::out_of_range const &)
+        catch (SOCIError const &)
         {
             caught = true;
         }
