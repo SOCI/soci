@@ -849,8 +849,9 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
         {
             oracleType = SQLT_AFC;
             size = sizeof(char);
-            std::vector<char> *v = static_cast<std::vector<char> *>(data);
-            prepareIndicators(v->size());
+            std::vector<char> *vp = static_cast<std::vector<char> *>(data);
+            std::vector<char> &v(*vp);
+            prepareIndicators(v.size());
             data = &v[0];
         }
         break;
@@ -858,8 +859,9 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
         {
             oracleType = SQLT_INT;
             size = sizeof(short);
-            std::vector<short> *v = static_cast<std::vector<short> *>(data);
-            prepareIndicators(v->size());
+            std::vector<short> *vp = static_cast<std::vector<short> *>(data);
+            std::vector<short> &v(*vp);
+            prepareIndicators(v.size());
             data = &v[0];
         }
         break;
@@ -867,8 +869,9 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
         {
             oracleType = SQLT_INT;
             size = sizeof(int);
-            std::vector<int> *v = static_cast<std::vector<int> *>(data);
-            prepareIndicators(v->size());
+            std::vector<int> *vp = static_cast<std::vector<int> *>(data);
+            std::vector<int> &v(*vp);
+            prepareIndicators(v.size());
             data = &v[0];
         }
         break;
@@ -876,9 +879,10 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
         {
             oracleType = SQLT_UIN;
             size = sizeof(unsigned long);
-            std::vector<unsigned long> *v
+            std::vector<unsigned long> *vp
                 = static_cast<std::vector<unsigned long> *>(data);
-            prepareIndicators(v->size());
+            std::vector<unsigned long> &v(*vp);
+            prepareIndicators(v.size());
             data = &v[0];
         }
         break;
@@ -886,8 +890,9 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
         {
             oracleType = SQLT_FLT;
             size = sizeof(double);
-            std::vector<double> *v = static_cast<std::vector<double> *>(data);
-            prepareIndicators(v->size());
+            std::vector<double> *vp = static_cast<std::vector<double> *>(data);
+            std::vector<double> &v(*vp);
+            prepareIndicators(v.size());
             data = &v[0];
         }
         break;
@@ -1467,8 +1472,9 @@ void OracleVectorUseTypeBackEnd::prepareForBind(
         {
             oracleType = SQLT_AFC;
             size = sizeof(char);
-            std::vector<char> *v = static_cast<std::vector<char> *>(data);
-            prepareIndicators(v->size());
+            std::vector<char> *vp = static_cast<std::vector<char> *>(data);
+            std::vector<char> &v(*vp);
+            prepareIndicators(v.size());
             data = &v[0];
         }
         break;
@@ -1476,8 +1482,9 @@ void OracleVectorUseTypeBackEnd::prepareForBind(
         {
             oracleType = SQLT_INT;
             size = sizeof(short);
-            std::vector<short> *v = static_cast<std::vector<short> *>(data);
-            prepareIndicators(v->size());
+            std::vector<short> *vp = static_cast<std::vector<short> *>(data);
+            std::vector<short> &v(*vp);
+            prepareIndicators(v.size());
             data = &v[0];
         }
         break;
@@ -1485,8 +1492,9 @@ void OracleVectorUseTypeBackEnd::prepareForBind(
         {
             oracleType = SQLT_INT;
             size = sizeof(int);
-            std::vector<int> *v = static_cast<std::vector<int> *>(data);
-            prepareIndicators(v->size());
+            std::vector<int> *vp = static_cast<std::vector<int> *>(data);
+            std::vector<int> &v(*vp);
+            prepareIndicators(v.size());
             data = &v[0];
         }
         break;
@@ -1494,9 +1502,10 @@ void OracleVectorUseTypeBackEnd::prepareForBind(
         {
             oracleType = SQLT_UIN;
             size = sizeof(unsigned long);
-            std::vector<unsigned long> *v
+            std::vector<unsigned long> *vp
                 = static_cast<std::vector<unsigned long> *>(data);
-            prepareIndicators(v->size());
+            std::vector<unsigned long> &v(*vp);
+            prepareIndicators(v.size());
             data = &v[0];
         }
         break;
@@ -1504,8 +1513,9 @@ void OracleVectorUseTypeBackEnd::prepareForBind(
         {
             oracleType = SQLT_FLT;
             size = sizeof(double);
-            std::vector<double> *v = static_cast<std::vector<double> *>(data);
-            prepareIndicators(v->size());
+            std::vector<double> *vp = static_cast<std::vector<double> *>(data);
+            std::vector<double> &v(*vp);
+            prepareIndicators(v.size());
             data = &v[0];
         }
         break;
