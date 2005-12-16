@@ -96,7 +96,7 @@ exchange). The <code>position</code> parameter is a "column number",
 assigned by
 the library. The backend should increase this parameter, according to
 the number of fields actually taken (usually 1).</li>
-  <li>preFetch - Called before each row is fetched.</li>
+  <li><code>preFetch</code> - Called before each row is fetched.</li>
   <li><code>postFetch</code> - Called after each row is fetched. The <code>gotData</code>
 parameter is <code>true</code> if the fetch operation really retrieved
 some data and <code>false</code> otherwise; <code>calledFromFetch</code>
@@ -212,7 +212,7 @@ pattern).<br>
 The objects of this class are created by the <code>Session</code>
 object.<br>
 <ul>
-  <li><code>alloc</code> - Called once to allocate anything that is
+  <li><code>alloc</code> - Called once to allocate everything that is
 needed for the statement to work correctly.</li>
   <li><code>cleanUp</code> - Supposed to clean up the resources, called
 once.</li>
@@ -222,10 +222,10 @@ place to do it.</li>
   <li><code>execute</code> - Called to execute the query; if number is
 zero, the intent is not to exchange data with the user-provided objects
 (<code>into</code> and <code>use</code> elements); positive values
-mean the number of rows to exchange (more that 1 is used only for bulk
+mean the number of rows to exchange (more than 1 is used only for bulk
 operations).</li>
   <li><code>fetch</code> - Called to fetch next bunch of rows; number
-is positive and determines the requested number of rows (more that 1 is
+is positive and determines the requested number of rows (more than 1 is
 used only for bulk operations).</li>
   <li><code>getNumberOfRows</code> - Called to determine the actual
 number of rows retrieved by the previous call to <code>execute</code>
