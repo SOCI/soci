@@ -1,0 +1,392 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title></title>
+</head>
+<body>
+<font size="+3"><span
+ style="font-family: helvetica,arial,sans-serif; font-weight: bold; color: rgb(0, 0, 255);">SOCI</span></font><br>
+<span
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">Simple
+Oracle Call Interface</span><span
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);">
+(and more)<br>
+</span>
+<br>
+<h3>Backend reference<br>
+</h3>
+Note: This part of the documentation is provided for those who want to
+write (and contribute!) their own backends. It is anyway recommended
+that authors of new backend see the code of some existing backend for
+hints on how things are really done.<br>
+<br>
+The backend interface is a set of base classes that the actual backends
+are supposed to specialize. The main SOCI interface uses only the
+interface and respecting the protocol (for example, the order of
+function calls) described here. Note that both the interface and the
+protocol were designed with the Oracle database in mind, which means
+that whereas it is quite natural with respect to the way Oracle API
+(OCI) works, it might impose some implementation burden on other
+backends, where things are done differently and therefore have to be
+adjusted, cached, converted, etc.<br>
+<br>
+The interface to the common SOCI interface is defined in the <code>soci-common.h</code>
+header file. This file is dissected below.<br>
+All names are defined in either <code>SOCI</code> or <code>SOCI::details</code>
+namespace.<br>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>// data types, as seen by the user<br>enum eDataType { eString, eChar, eDate, eDouble, eInteger,<br>                 eUnsignedLong };<br><br>// the enum type for indicator variables<br>enum eIndicator { eOK, eNoData, eNull, eTruncated };<br><br>// data types, as used to describe exchange format<br>enum eExchangeType { eXChar, eXCString, eXStdString, eXShort, eXInteger,<br>                     eXUnsignedLong, eXDouble, eXStdTm, eXStatement,<br>                     eXRowID, eXBLOB };<br><br>struct CStringDescriptor<br>{<br>    CStringDescriptor(char *str, std::size_t bufSize)<br>        : str_(str), bufSize_(bufSize) {}<br><br>    char *str_;<br>    std::size_t bufSize_;<br>};<br><br>class SOCIError : public std::runtime_error<br>{<br>public:<br>    SOCIError(std::string const &amp; msg, int errNum = 0);<br><br>    int errNum_;<br>};<br></pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The <code>eDataType</code> enumeration type defines all types that
+form the core type support for SOCI. The enum itself can be used by
+clients when dealing with dynamic rowset description.<br>
+The <code>eIndicator</code> enumeration type defines all recognized <span
+ style="font-style: italic;">states</span> of data. The <code>eTruncated</code>
+state is provided for the case where the string is retrieved from the
+database into the char buffer that is not long enough to hold the whole
+value.<br>
+The <code>eExchangeType</code> enumeration type defines all possible
+types that can be used with the <code>into</code> and <code>use</code>
+elements.<br>
+The <code>CStringDescriptor</code> is a helper class that allows to
+store the address of <code>char</code> buffer together with its size.
+The objects of this class are passed to the backend when the <code>eXCString</code>
+type is involved.<br>
+The <code>SOCIError</code> class is an exception type used for
+database-related (and
+also usage-related) errors. The backends should throw exceptions of
+this or derived type only.<br>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>class StandardIntoTypeBackEnd<br>{<br>public:<br>    virtual ~StandardIntoTypeBackEnd() {}<br><br>    virtual void defineByPos(int &amp;position,<br>        void *data, eExchangeType type) = 0;<br><br>    virtual void preFetch() = 0;<br>    virtual void postFetch(bool gotData, bool calledFromFetch,<br>        eIndicator *ind) = 0;<br><br>    virtual void cleanUp() = 0;<br>};<br></pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The <code>StandardIntoTypeBackEnd</code> class implements the dynamic
+interactions with the simple (non-bulk) <code>into</code> elements.
+The objects of this class (or, rather, of the derived class implemented
+by the actual backend) are created by the <code>Statement</code>
+object when the <code>into</code> element is bound - in terms of
+lifetime management, <code>Statement</code> is the master of this
+class.<br>
+<ul>
+  <li><code>defineByPos</code> - Called when the <code>into</code>
+element is bound, once and before the statement is executed. The <code>data</code>
+pointer points to the variable used for <code>into</code> element (or
+to the <code>CStringDescriptor</code> object, which is artificially
+created when the plain <code>char</code> buffer is used for data
+exchange). The <code>position</code> parameter is a "column number",
+assigned by
+the library. The backend should increase this parameter, according to
+the number of fields actually taken (usually 1).</li>
+  <li>preFetch - Called before each row is fetched.</li>
+  <li><code>postFetch</code> - Called after each row is fetched. The <code>gotData</code>
+parameter is <code>true</code> if the fetch operation really retrieved
+some data and <code>false</code> otherwise; <code>calledFromFetch</code>
+is <code>true</code> when the call is from the fetch operation and <code>false</code>
+if it is from the execute operation (this is also the case for simple,
+one-time queries). In particular, <code>(calledFromFetch &amp;&amp;
+!gotData)</code> indicates that there is an end-of-rowset condition. <code>ind</code>
+points to the indicator provided by the user, or is <code>NULL</code>,
+if there is no indicator.</li>
+  <li><code>cleanUp</code> - Called once when the statement is
+destroyed.</li>
+</ul>
+The intended use of <code>preFetch</code> and <code>postFetch</code>
+functions is to manage any internal buffer and/or data conversion for
+each value retrieved from the database. If the given server supports
+binary data transmission and the data format for the given type agrees
+with what is used on the client machine, then these two functions need
+not do anything; otherwise buffer management and data conversions
+should go there.<br>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>class VectorIntoTypeBackEnd<br>{<br>public:<br>    virtual ~VectorIntoTypeBackEnd() {}<br><br>    virtual void defineByPos(int &amp;position,<br>        void *data, eExchangeType type) = 0;<br><br>    virtual void preFetch() = 0;<br>    virtual void postFetch(bool gotData, eIndicator *ind) = 0;<br><br>    virtual void resize(std::size_t sz) = 0;<br>    virtual std::size_t size() = 0;<br><br>    virtual void cleanUp() = 0;<br>};<br></pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The <code>VectorIntoTypeBackEnd</code> has similar structure and
+purpose as the previous one, but is used for vectors (bulk data
+retrieval).<br>
+The <code>data</code> pointer points to the variable of type <code>std::vector&lt;T&gt;</code>
+(<span style="font-style: italic;">not</span> to its internal buffer), <code>resize</code>
+is supposed to really resize the user-provided vector and <code>size</code>
+is supposed to return the current size of this vector.<br>
+The important difference with regard to the previous class is that <code>ind</code>
+points (if not <code>NULL</code>) to the beginning of the <span
+ style="font-style: italic;">array</span> of indicators. The backend
+should fill this array according to the actual state of the retrieved
+data.<br>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>class StandardUseTypeBackEnd<br>{<br>public:<br>    virtual ~StandardUseTypeBackEnd() {}<br><br>    virtual void bindByPos(int &amp;position,<br>        void *data, eExchangeType type) = 0;<br>    virtual void bindByName(std::string const &amp;name,<br>        void *data, eExchangeType type) = 0;<br><br>    virtual void preUse(eIndicator const *ind) = 0;<br>    virtual void postUse(bool gotData, eIndicator *ind) = 0;<br><br>    virtual void cleanUp() = 0;<br>};<br></pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The <code>StandardUseTypeBackEnd</code> implements the interactions
+with the simple (non-bulk) <code>use</code> elements, created and
+destroyed by the <code>Statement</code> object.<br>
+<ul>
+  <li><code>bindByPos</code> - Called for each <code>use</code>
+element, once and before the statement is executed - for those <code>use</code>
+elements that do not provide explicit names for parameter binding. The
+meaning of parameters is same as in previous classes.</li>
+  <li><code>bindByName</code> - Called for those <code>use</code>
+elements that provide the explicit name.</li>
+  <li><code>preUse</code> - Called before the data is transmitted to
+the server (this means before the statement is executed, which can
+happen many times for the prepared statement). <code>ind</code> points
+to the indicator provided by the user (or is <code>NULL</code>).</li>
+  <li><code>postUse</code> - Called after statement execution. <code>gotData</code>
+and <code>ind</code> have the same meaning as in <code>StandardIntoTypeBackEnd::postFetch</code>,
+and this can be used by those backends whose respective servers support
+two-way data exchange (like in/out parameters in stored procedures).</li>
+</ul>
+The intended use fot <code>preUse</code> and <code>postUse</code>
+methods is to manage any internal buffers and/or data conversion. They
+can be called many times with the same statement.<br>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>class VectorUseTypeBackEnd<br>{<br>public:<br>    virtual ~VectorUseTypeBackEnd() {}<br><br>    virtual void bindByPos(int &amp;position,<br>        void *data, eExchangeType type) = 0;<br>    virtual void bindByName(std::string const &amp;name,<br>        void *data, eExchangeType type) = 0;<br><br>    virtual void preUse(eIndicator const *ind) = 0;<br><br>    virtual std::size_t size() = 0;<br><br>    virtual void cleanUp() = 0;<br>};<br></pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+Objects of this type (or rather of type derived from this one) are used
+to implement interactions with user-provided vector (bulk) <code>use</code>
+elements and are managed by the <code>Statement</code> object.<br>
+The <code>data</code> pointer points to the whole vector object
+provided by the user (<span style="font-style: italic;">not</span> to
+its internal buffer); <code>ind</code> points to the beginning of the
+array of indicators (or is <code>NULL</code>). The meaning of this
+interface is analogous to those presented above.<br>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>class StatementBackEnd<br>{<br>public:<br>    virtual ~StatementBackEnd() {}<br><br>    virtual void alloc() = 0;<br>    virtual void cleanUp() = 0;<br>    virtual void prepare(std::string const &amp;query) = 0;<br><br>    enum execFetchResult { eSuccess, eNoData };<br>    virtual execFetchResult execute(int number) = 0;<br>    virtual execFetchResult fetch(int number) = 0;<br><br>    virtual int getNumberOfRows() = 0;<br><br>    virtual std::string rewriteForProcedureCall(std::string const &amp;query) = 0;<br><br>    virtual int prepareForDescribe() = 0;<br>    virtual void describeColumn(int colNum, eDataType &amp;dtype,<br>        std::string &amp;columnName, int &amp;size, int &amp;precision, int &amp;scale,<br>        bool &amp;nullOk) = 0;<br><br>    virtual StandardIntoTypeBackEnd * makeIntoTypeBackEnd() = 0;<br>    virtual StandardUseTypeBackEnd * makeUseTypeBackEnd() = 0;<br>    virtual VectorIntoTypeBackEnd * makeVectorIntoTypeBackEnd() = 0;<br>    virtual VectorUseTypeBackEnd * makeVectorUseTypeBackEnd() = 0;<br>};<br></pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The <code>StatementBackEnd</code> type implements the internals of the
+<code>Statement</code> objects (in fact, it is a basic Strategy design
+pattern).<br>
+The objects of this class are created by the <code>Session</code>
+object.<br>
+<ul>
+  <li><code>alloc</code> - Called once to allocate anything that is
+needed for the statement to work correctly.</li>
+  <li><code>cleanUp</code> - Supposed to clean up the resources, called
+once.</li>
+  <li><code>prepare</code> - Called once with the text of the SQL
+query. For servers that support explicit query preparation, this is the
+place to do it.</li>
+  <li><code>execute</code> - Called to execute the query; if number is
+zero, the intent is not to exchange data with the user-provided objects
+(<code>into</code> and <code>use</code> elements); positive values
+mean the number of rows to exchange (more that 1 is used only for bulk
+operations).</li>
+  <li><code>fetch</code> - Called to fetch next bunch of rows; number
+is positive and determines the requested number of rows (more that 1 is
+used only for bulk operations).</li>
+  <li><code>getNumberOfRows</code> - Called to determine the actual
+number of rows retrieved by the previous call to <code>execute</code>
+or <code>fetch</code>.</li>
+  <li><code>rewriteForProcedureCall</code> - Used when the <code>Procedure</code>
+is used instead of <code>Statement</code>, to call the stored
+procedure. This function should rewrite the SQL query (if necessary) to
+the form that will allow to execute the given procedure.<br>
+  </li>
+  <li><code>prepareForDescribe</code> - Called once when the <code>into</code>
+element is used with the <code>Row</code> type, which means that
+dynamic rowset description should be performed. It is supposed to do
+whatever is needed to later describe the column properties and should
+return the number of columns.</li>
+  <li><code>describeColumn</code> - Called once for each column (column
+numbers - <code>colNum</code> - start from 1), should fill its
+parameters according to the column properties.</li>
+  <li><code>makeIntoTypeBackEnd</code>, <code>makeUseTypeBackEnd</code>,
+    <code>makeVectorIntoTypeBackEnd</code>, <code>makeVectorUseTypeBackEnd</code>
+- Called once for each <code>into</code> or <code>use</code> element,
+to create the objects of appropriate classes (described above).</li>
+</ul>
+Note:<br>
+<ol>
+  <li>Whether the query is executed using the simple one-time syntax or
+is prepared, the <code>alloc</code>, <code>prepare</code> and <code>execute</code>
+functions are always called, in this order.</li>
+  <li>All <code>into</code> and <code>use</code> elements are bound
+(their <code>defineByPos</code> or <code>bindByPos</code>/<code>bindByName</code>
+functions are called) <span style="font-style: italic;">between</span>
+statement preparation and execution.<br>
+  </li>
+</ol>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>class RowIDBackEnd<br>{<br>public:<br>    virtual ~RowIDBackEnd() {}<br>};<br></pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The <code>RowIDBackEnd</code> class is a hook for the backends to
+provide their own state for the row identifier. It has no functions,
+since the only portable interaction with the row identifier object is
+to use it with <code>into</code> and <code>use</code> elements.<br>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>class BLOBBackEnd<br>{<br>public:<br>    virtual ~BLOBBackEnd() {}<br><br>    virtual std::size_t getLen() = 0;<br>    virtual std::size_t read(std::size_t offset, char *buf,<br>        std::size_t toRead) = 0;<br>    virtual std::size_t write(std::size_t offset, char const *buf,<br>        std::size_t toWrite) = 0;<br>    virtual std::size_t append(char const *buf, std::size_t toWrite) = 0;<br>    virtual void trim(std::size_t newLen) = 0;<br>};<br></pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The <code>BLOBBackEnd</code> interface provides the entry points for
+the <code>BLOB</code> methods.<br>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>class SessionBackEnd<br>{<br>public:<br>    virtual ~SessionBackEnd() {}<br><br>    virtual void begin() = 0;<br>    virtual void commit() = 0;<br>    virtual void rollback() = 0;<br><br>    virtual StatementBackEnd * makeStatementBackEnd() = 0;<br>    virtual RowIDBackEnd * makeRowIDBackEnd() = 0;<br>    virtual BLOBBackEnd * makeBLOBBackEnd() = 0;<br>};<br></pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The object of the class derived from SessionBackEnd implements the
+internals of the Session object.<br>
+<ul>
+  <li><code>begin</code>, <code>commit</code>, <code>rollback</code>
+- Forward-called when the same functions of <code>Session</code> are
+called by user.</li>
+  <li><code>makeStatementBackEnd</code>, <code>makeRowIDBackEnd</code>,
+    <code>makeBLOBBackEnd</code> - Called to create respective
+implementations for the <code>Statement</code>, <code>RowID</code>
+and <code>BLOB</code> classes.<br>
+  </li>
+</ul>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>struct BackEndFactory<br>{<br>    virtual SessionBackEnd * makeSession(<br>        std::string const &amp;connectString) const = 0;<br>};<br><br>class BackEndFactoryRegistry<br>{<br>public:<br>    void registerMe(std::string const &amp;beName, BackEndFactory const *f);<br>    BackEndFactory const * find(std::string const &amp;beName) const;<br><br>private:<br>    std::map&lt;std::string, BackEndFactory const *&gt; registry_;<br>};<br><br>// registry singleton<br>BackEndFactoryRegistry &amp; theBEFRegistry();<br></pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The <code>BackEndFactory</code> is a base class for backend-provided
+factory class that is able to create valid sessions. The <code>connectString</code>
+parameter passed to <code>makeSession</code> is provided here by the <code>Session</code>
+constructor.<br>
+The <code>BackEndFactoryRegistry</code> and the <code>theBEFRegistry</code>
+function implement the Singleton registry for all instances of <code>BackEndFactory</code>
+(<code>theBEFRegistry</code> always returns the reference to the same
+registry object). When the <code>Session</code> object is created, the
+backend name (the first parameter to the <code>Session</code>
+constructor) is used to lookup the appropriate factory. If found (<code>find</code>
+always returns a valid pointer or throws an exception), its <code>makeSession</code>
+function is called to actually create the session.<br>
+The backends have to register themselves (by calling the <code>registerMe</code>
+function) in order to be found and used. It is recommended that
+backends register themselves with the help of some dummy global object,
+whose constructor performs the registration.<br>
+The following example is taken from <code>soci-oracle.cpp</code>,
+which is an implementation of the Oracle backend:<br>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>// concrete factory for Oracle concrete strategies<br>struct OracleBackEndFactory : BackEndFactory<br>{<br>    virtual OracleSessionBackEnd * makeSession(<br>        std::string const &amp;connectString) const<br>    {<br>        std::string serviceName, userName, password;<br>        chopConnectString(connectString, serviceName, userName, password);<br><br>        return new OracleSessionBackEnd(serviceName, userName, password);<br>    }<br><br>} oracleBEF;<br><br>// global object for automatic factory registration<br>struct OracleAutoRegister<br>{<br>    OracleAutoRegister()<br>    {<br>        theBEFRegistry().registerMe("oracle", &amp;oracleBEF);<br>    }<br>} oracleAutoRegister;<br></pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The above code ensures that it is enough to just compile and link the <code>soci-oracle.cpp</code>
+file to get the automatic registration of the whole backend. Later,
+when the <code>Session</code> object is created for the <code>"oracle"</code>
+backend, it will be found and used to create the <code>OracleSessionBackEnd</code>
+(which itself derives from <code>SessionBackEnd</code>). This, in
+turn, will be used to create implementations for any other objects that
+are needed, with the help of appropriate <code>makeXYZ</code>
+functions.<br>
+<br>
+Note: There are <code>soci-empty.h</code> and <code>soci-empty.cpp</code>
+files provided as a skeleton for development of new backends (there is
+also <code>test-empty.cpp</code> as a skeleton for tests). It is
+recommended that all backends respect naming conventions by just
+appending their name to the base-class names. The backend name used for
+registration (and later lookup) should clearly identify the given
+database engine, like <code>"oracle"</code>, <code>"postgresql"</code>,
+<code>"mysql"</code>, and so on.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><a href="beyond.html">Previous
+(Beyond SOCI)</a></td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<hr style="width: 100%; height: 2px;">Copyright &copy; 2004-2005 Maciej
+Sobczak, Steve Hutton<br>
+<br>
+</body>
+</html>
