@@ -431,7 +431,7 @@ public:
     void prepare(std::string const &query);
     void defineAndBind();
     void unDefAndBind();
-    bool execute(int num = 0);
+    bool execute(bool withDataExchange = false);
     bool fetch();
     void describe();
     void setRow(Row* r) { row_ = r; }

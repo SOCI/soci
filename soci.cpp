@@ -176,7 +176,7 @@ void Statement::unDefAndBind()
     }
 }
 
-bool Statement::execute(int num)
+bool Statement::execute(bool withDataExchange)
 {
     initialFetchSize_ = intosSize();
     fetchSize_ = initialFetchSize_;
@@ -189,7 +189,8 @@ bool Statement::execute(int num)
              "Bulk insert/update and bulk select not allowed in same query");
     }
 
-    if (num > 0)
+    int num = 0;
+    if (withDataExchange)
     {
         preFetch();
         preUse();
