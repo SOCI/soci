@@ -364,22 +364,22 @@ used.
     <tr>
       <td>NUMBER</td>
       <td><code>eDouble</code></td>
-      <td>double</td>
+      <td><code>double</code></td>
     </tr>
     <tr>
       <td>NUMBER</td>
       <td><code>eInteger</code></td>
-      <td>int</td>
+      <td><code>int</code></td>
     </tr>
     <tr>
       <td>NUMBER</td>
       <td><code>eUnsignedLong</code></td>
-      <td>unsigned long</td>
+      <td><code>unsigned long</code></td>
     </tr>
     <tr>
       <td>CHAR, VARCHAR, VARCHAR2</td>
       <td><code>eString</code></td>
-      <td>std::string</td>
+      <td><code>std::string</code></td>
     </tr>
     <tr>
       <td>DATE</td>
@@ -390,8 +390,14 @@ used.
 </table>
 <br>
 <span style="font-weight: bold;">Portability note:</span><br>
-At the moment, the dynamic rowset features are not provided for the
-PostgreSQL backend.<br>
+At the moment, the dynamic rowset description feature is implemented
+for PostgreSQL in terms of executing the given query with the <code>"
+LIMIT 0"</code> clause appended - this is a <span
+ style="font-style: italic;">very</span> simple approach that will <span
+ style="font-style: italic;">not</span> work with queries that already
+have this clause. Note also that with PostgreSQL backend the size,
+scale, precision and whether NULLs are allowed information for the
+given column are not provided and should not be relied upon.<br>
 <br>
 <span style="font-weight: bold;"><a name="custom_types"></a>Extending
 SOCI to support custom (user-defined) C++ types</span><br>
