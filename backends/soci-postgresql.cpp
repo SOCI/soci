@@ -204,6 +204,10 @@ void PostgreSQLStatementBackEnd::prepare(std::string const &query)
 StatementBackEnd::execFetchResult
 PostgreSQLStatementBackEnd::execute(int number)
 {
+    // This object could have been already filled with data before
+    // - as a result of preparing for dynamic rowset description.
+    cleanUp();
+
     if (!useByPosBuffers_.empty() || !useByNameBuffers_.empty())
     {
         // Here we have to explicitly loop to achieve the
@@ -400,15 +404,78 @@ std::string PostgreSQLStatementBackEnd::rewriteForProcedureCall(
 
 int PostgreSQLStatementBackEnd::prepareForDescribe()
 {
-    throw SOCIError("Dynamic row description is not supported.");
-    return 0; // non-reachable
+    std::string originalQuery = query_;
+    query_ += " LIMIT 0";
+    execute(0);
+    query_ = originalQuery;
+
+    int columns = PQnfields(result_);
+    return columns;
 }
 
 void PostgreSQLStatementBackEnd::describeColumn(int colNum, eDataType &type,
     std::string &columnName, int &size, int &precision, int &scale,
     bool &nullOk)
 {
-    throw SOCIError("Dynamic row description is not supported.");
+    // In PostgreSQL column numbers start from 0
+    int pos = colNum - 1;
+
+    unsigned long typeOid = PQftype(result_, pos);
+    switch (typeOid)
+    {
+    // Note: the following list of OIDs was taken from the pg_type table
+    // we do not claim that this list is exchaustive or even correct.
+
+               // from pg_type:
+
+    case 25:   // text
+    case 1043: // varchar
+    case 2275: // cstring
+    case 18:   // char
+    case 1042: // bpchar
+        type = eString;
+        break;
+
+    case 702:  // abstime
+    case 703:  // reltime
+    case 1082: // date
+    case 1083: // time
+    case 1114: // timestamp
+    case 1184: // timestamptz
+    case 1266: // timetz
+        type = eDate;
+        break;
+
+    case 700:  // float4
+    case 701:  // float8
+    case 1700: // numeric
+        type = eDouble;
+        break;
+
+    case 16:   // bool
+    case 21:   // int2
+    case 23:   // int4
+    case 20:   // int8
+        type = eInteger;
+        break;
+
+    case 26:   // oid
+        type = eUnsignedLong;
+        break;
+
+    default:
+         throw SOCIError("Unknown data type.");
+    }
+
+    columnName = PQfname(result_, pos);
+
+    // no sensible information available with text transfer protocol:
+    size = 0;
+    precision = 0;
+    scale = 0;
+
+    // no sensible information available:
+    nullOk = true;
 }
 
 PostgreSQLStandardIntoTypeBackEnd *

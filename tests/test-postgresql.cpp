@@ -1605,9 +1605,85 @@ void test14()
     std::cout << "test 14 passed" << std::endl;
 }
 
+// Dynamic binding to Row objects
+void test15()
+{
+    {
+        Session sql(backEndName, connectString);
 
-// TODO:
-// - dynamic row description (explicit calls)
+        try { sql << "drop table test15"; }
+        catch (SOCIError const &) {} //ignore error if table doesn't exist
+
+        sql << "create table test15(num_float float8, num_int integer,"
+            << " name varchar(20), sometime timestamptz,"
+            << " chr char)";
+
+        Row r;
+        sql << "select * from test15", into(r);
+        assert(r.indicator(0) ==  eNoData);
+
+        sql << "insert into test15(num_float, num_int, name, sometime, chr)"
+            " values(3.14, 123, \'Johny\',"
+            " timestamptz(\'2005-12-19 22:14:17\'), 'a')";
+
+        // select into a Row
+        {
+            Row r;
+            Statement st = (sql.prepare <<
+                "select * from test15", into(r));
+            st.execute(1);
+            assert(r.size() == 5);
+
+            assert(r.getProperties(0).getDataType() == eDouble);
+            assert(r.getProperties(1).getDataType() == eInteger);
+            assert(r.getProperties(2).getDataType() == eString);
+            assert(r.getProperties(3).getDataType() == eDate);
+
+            // type char is visible as string
+            // - to comply with the implementation for Oracle
+            assert(r.getProperties(4).getDataType() == eString);
+
+            assert(r.getProperties("num_int").getDataType() == eInteger);
+
+            assert(r.getProperties(0).getName() == "num_float");
+            assert(r.getProperties(1).getName() == "num_int");
+            assert(r.getProperties(2).getName() == "name");
+            assert(r.getProperties(3).getName() == "sometime");
+            assert(r.getProperties(4).getName() == "chr");
+
+            assert(std::abs(r.get<double>(0) - 3.14) < 0.001);
+            assert(r.get<int>(1) == 123);
+            assert(r.get<std::string>(2) == "Johny");
+            std::tm t = r.get<std::tm>(3);
+            assert(t.tm_year == 105);
+
+            // again, type char is visible as string
+            assert(r.get<std::string>(4) == "a");
+
+            assert(std::abs(r.get<double>("num_float") - 3.14) < 0.001);
+            assert(r.get<int>("num_int") == 123);
+            assert(r.get<std::string>("name") == "Johny");
+            assert(r.get<std::string>("chr") == "a");
+
+            assert(r.indicator(0) == eOK);
+
+            // verify exception thrown on invalid get<>
+            bool cought = false;
+            try
+            {
+                r.get<std::string>(0);
+            }
+            catch (std::bad_cast const &)
+            {
+                cought = true;
+            }
+            assert(cought);
+        }
+    }
+
+    std::cout << "test 15 passed" << std::endl;
+}
+
 
 int main(int argc, char** argv)
 {
@@ -1640,6 +1716,7 @@ int main(int argc, char** argv)
         test12();
         test13();
         test14();
+        test15();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }
