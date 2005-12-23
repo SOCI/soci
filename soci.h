@@ -42,14 +42,17 @@ public:
 
 // TypeConversion specializations must use a stock type as the base_type.
 // Each such specialization automatically creates a UseType and an IntoType.
-template<>
-class TypeConversion<std::time_t>
-{
-public:
-    typedef std::tm base_type;
-    static std::time_t from(std::tm& t) { return mktime(&t); }
-    static std::tm to(std::time_t& t) { return *localtime(&t); }
-};
+// This code is commented out, since it causes problems in those environments
+// where std::time_t is an alias to int.
+// 
+// template<>
+// class TypeConversion<std::time_t>
+// {
+// public:
+//     typedef std::tm base_type;
+//     static std::time_t from(std::tm& t) { return mktime(&t); }
+//     static std::tm to(std::time_t& t) { return *localtime(&t); }
+// };
 
 
 namespace details
