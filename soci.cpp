@@ -192,6 +192,8 @@ bool Statement::execute(bool withDataExchange)
     int num = 0;
     if (withDataExchange)
     {
+        num = 1;
+
         preFetch();
         preUse();
 
@@ -540,7 +542,7 @@ RefCountedStatement::~RefCountedStatement()
         st_.alloc();
         st_.prepare(query_.str());
         st_.defineAndBind();
-        st_.execute(1);
+        st_.execute(true);
     }
     catch (...)
     {
