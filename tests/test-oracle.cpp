@@ -177,14 +177,14 @@ void test2()
 
         assert(t_out == std::string(buf));
     }
-    {
-        std::time_t now = std::time(NULL);
-        std::time_t t;
-
-        sql << "select t from (select :t as t from dual)",
-            into(t), use(now);
-        assert(t == now);
-    }
+//     {
+//         std::time_t now = std::time(NULL);
+//         std::time_t t;
+// 
+//         sql << "select t from (select :t as t from dual)",
+//             into(t), use(now);
+//         assert(t == now);
+//     }
 
     std::cout << "test 2 passed" << std::endl;
 }
@@ -1344,85 +1344,90 @@ void test19()
 
     sql << "create table test19 (d1 date)";
 
-    time_t t1 = std::time(0) + 60*60*24;
-    time_t t2 = t1 + 60*60*24*2;
-    time_t t3 = t1 + 60*60*24*4;
-    std::vector<time_t> times_in1;
-    {
-        times_in1.push_back(t1);
-        times_in1.push_back(t2);
-        times_in1.push_back(t3);
-
-        sql << "insert into test19(d1) values(:d1)", use(times_in1);
-
-        int count(0);
-        sql << "select count(*) from test19", into(count);
-        assert(count == 3);
-    }
-
-    // test resizing from exec
-    {
-        std::vector<time_t> times_out(3); // one too many
-        sql << "select d1 from test19", into(times_out);
-
-        assert(times_out.size() == 3);
-        assert(times_out[1] == t2);
-    }
-
-    //test indicators
-    std::vector<std::time_t> times_in2;
-    {
-        time_t today = time(0);
-        time_t yesterday = today - 60*60*24;
-        time_t dayBefore = yesterday - 60*60*24;
-        times_in2.push_back(yesterday);
-        times_in2.push_back(dayBefore);
-
-        std::vector<eIndicator> inds_in;
-        inds_in.push_back(eOK);
-        inds_in.push_back(eNull);
-        sql << "insert into test19 (d1) values(:d1)",
-            use(times_in2, inds_in, "d1");
-        assert(times_in2.size() == 2);
-        assert(times_in2[0] == yesterday);
-        assert(times_in2[1] == dayBefore);
-
-        std::vector<std::time_t> times_out(2);
-        std::vector<eIndicator> inds_out(2);
-        sql << "select d1 from test19 where d1 < sysdate or d1 is null",
-            into(times_out, inds_out);
-
-        assert(times_out.size() == 2);
-        assert(times_out[0] == times_in2[0]);
-        assert(inds_out[0] == eOK);
-        assert(inds_out[1] == eNull);
-    }
-
-    //test resizing
-    {
-        std::vector<std::time_t> times_in3;
-        time_t now = time(0);
-        times_in3.push_back(now);
-
-        sql << "insert into test19 (d1) values(:d1)", use(times_in3);
-
-        std::vector<std::time_t> times_out(2);
-        Statement st = (sql.prepare
-            << "select d1 from test19 where d1 is not null",
-            into(times_out));
-        assert(st.execute(1));
-        assert(times_out.size() == 2 && times_out[0] == times_in1[0]
-            && times_out[1] == times_in1[1]);
-
-        assert(st.fetch());
-        assert(times_out.size() == 2);
-        assert(times_out[0] == times_in1[2]);
-        assert(times_out[1] == times_in2[0]);
-
-        assert(st.fetch());
-        assert(times_out.size() == 1 && times_out[0] == times_in3[0]);
-        assert(!st.fetch());
-    }
+// The following tests require the existence of TypeConversion<std::time_t>
+// which cannot be used in all environments (where std::time_t is an alias
+// to int). You can try it out by uncommenting the test and the specialization
+// of TypeConversion in soci.h.
+// 
+//     time_t t1 = std::time(0) + 60*60*24;
+//     time_t t2 = t1 + 60*60*24*2;
+//     time_t t3 = t1 + 60*60*24*4;
+//     std::vector<time_t> times_in1;
+//     {
+//         times_in1.push_back(t1);
+//         times_in1.push_back(t2);
+//         times_in1.push_back(t3);
+// 
+//         sql << "insert into test19(d1) values(:d1)", use(times_in1);
+// 
+//         int count(0);
+//         sql << "select count(*) from test19", into(count);
+//         assert(count == 3);
+//     }
+// 
+//     // test resizing from exec
+//     {
+//         std::vector<time_t> times_out(3); // one too many
+//         sql << "select d1 from test19", into(times_out);
+// 
+//         assert(times_out.size() == 3);
+//         assert(times_out[1] == t2);
+//     }
+// 
+//     //test indicators
+//     std::vector<std::time_t> times_in2;
+//     {
+//         time_t today = time(0);
+//         time_t yesterday = today - 60*60*24;
+//         time_t dayBefore = yesterday - 60*60*24;
+//         times_in2.push_back(yesterday);
+//         times_in2.push_back(dayBefore);
+// 
+//         std::vector<eIndicator> inds_in;
+//         inds_in.push_back(eOK);
+//         inds_in.push_back(eNull);
+//         sql << "insert into test19 (d1) values(:d1)",
+//             use(times_in2, inds_in, "d1");
+//         assert(times_in2.size() == 2);
+//         assert(times_in2[0] == yesterday);
+//         assert(times_in2[1] == dayBefore);
+// 
+//         std::vector<std::time_t> times_out(2);
+//         std::vector<eIndicator> inds_out(2);
+//         sql << "select d1 from test19 where d1 < sysdate or d1 is null",
+//             into(times_out, inds_out);
+// 
+//         assert(times_out.size() == 2);
+//         assert(times_out[0] == times_in2[0]);
+//         assert(inds_out[0] == eOK);
+//         assert(inds_out[1] == eNull);
+//     }
+// 
+//     //test resizing
+//     {
+//         std::vector<std::time_t> times_in3;
+//         time_t now = time(0);
+//         times_in3.push_back(now);
+// 
+//         sql << "insert into test19 (d1) values(:d1)", use(times_in3);
+// 
+//         std::vector<std::time_t> times_out(2);
+//         Statement st = (sql.prepare
+//             << "select d1 from test19 where d1 is not null",
+//             into(times_out));
+//         assert(st.execute(1));
+//         assert(times_out.size() == 2 && times_out[0] == times_in1[0]
+//             && times_out[1] == times_in1[1]);
+// 
+//         assert(st.fetch());
+//         assert(times_out.size() == 2);
+//         assert(times_out[0] == times_in1[2]);
+//         assert(times_out[1] == times_in2[0]);
+// 
+//         assert(st.fetch());
+//         assert(times_out.size() == 1 && times_out[0] == times_in3[0]);
+//         assert(!st.fetch());
+//     }
 
     std::cout << "test 19 passed" << std::endl;
 }
