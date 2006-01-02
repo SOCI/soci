@@ -1668,16 +1668,16 @@ void test15()
             assert(r.indicator(0) == eOK);
 
             // verify exception thrown on invalid get<>
-            bool cought = false;
+            bool caught = false;
             try
             {
                 r.get<std::string>(0);
             }
             catch (std::bad_cast const &)
             {
-                cought = true;
+                caught = true;
             }
-            assert(cought);
+            assert(caught);
         }
     }
 
