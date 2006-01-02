@@ -9,7 +9,6 @@
 
 #include "soci.h"
 
-
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
@@ -87,6 +86,7 @@ Statement::Statement(PrepareTempType const &prep)
     alloc();
 
     // prepare the statement
+    query_ = prepInfo->getQuery();
     prepare(prepInfo->getQuery());
 
     defineAndBind();
@@ -101,6 +101,54 @@ void Statement::alloc()
 {
     backEnd_->alloc();
 }
+
+void Statement::bind(Values& values)
+{
+    size_t cnt = 0;
+
+    try
+    {
+        for(std::vector<details::StandardUseType*>::iterator it = 
+            values.uses_.begin(); it != values.uses_.end(); ++it)
+        {
+            // only bind those variables which are actually
+            // referenced in the statement
+            const std::string name = ":" + (*it)->getName();
+
+            size_t pos = query_.find(name);
+            if (pos != std::string::npos)
+            {
+                const char nextChar = query_[pos + name.size()];
+                if(nextChar == ' ' || nextChar == ',' ||
+                   nextChar == '\0' || nextChar == ')')
+                {
+                    int position = static_cast<int>(uses_.size());
+                    (*it)->bind(*this, position);
+                    uses_.push_back(*it);
+                }
+                else
+                {
+                    delete *it;
+                }
+            }
+            else
+            {
+                delete *it;
+            }
+
+            cnt++;
+        }
+    }
+    catch(...)
+    {
+        for(size_t i = ++cnt; i < values.uses_.size(); ++i)
+        {            
+            delete values.uses_[i];
+        }
+        throw; 
+    }
+}
+
 
 void Statement::exchange(IntoTypePtr const &i)
 {
@@ -141,6 +189,7 @@ void Statement::cleanUp()
 
 void Statement::prepare(std::string const &query)
 {
+    query_ = query;
     backEnd_->prepare(query);
 }
 

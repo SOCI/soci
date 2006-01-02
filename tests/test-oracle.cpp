@@ -545,7 +545,8 @@ void test11()
 
         sql << "create table test11(num_float numeric(7,2) NOT NULL,"
             << " name varchar2(20), when date, large numeric(10,0), "
-            << " chr1 char(1), small numeric(4,0), vc varchar(10), fl float)";
+            << " chr1 char(1), small numeric(4,0), vc varchar(10), "
+            << " fl float, ntest char(1))";
 
         Row r;
         sql << "select * from test11", into(r);
@@ -569,9 +570,11 @@ void test11()
             char c[] = "X";
             char v[] = "varchar";
             double f = i + .33;
+            std::string s;
+            eIndicator nullIndicator = eNull;
 
             sql << "insert into test11 values(:num_float, :name, :when, "
-                << ":large, :chr1, :small, :vc, :fl)",
+                << ":large, :chr1, :small, :vc, :fl, :ntest)",
                 use(d,"num_float"),
                 use(name, "name"),
                 use(when, "when"),
@@ -579,9 +582,8 @@ void test11()
                 use(c, "chr1"),
                 use(i, "small"),
                 use(v, "vc"),
-                use(f, "fl");
-
-            sql.commit();
+                use(f, "fl"),
+                use(s, nullIndicator, "ntest");
         }
 
         // select into a Row
@@ -590,7 +592,7 @@ void test11()
             Statement st = (sql.prepare <<
                 "select * from test11 order by num_float", into(r));
             st.execute(1);
-            assert(r.size() == 8);
+            assert(r.size() == 9);
 
             assert(r.getProperties(0).getDataType() == eDouble);
             assert(r.getProperties(1).getDataType() == eString);
@@ -625,6 +627,18 @@ void test11()
             assert(r.get<int>("SMALL") == 2);
             assert(r.get<double>("FL") == 2.33);
 
+            assert(r.get<std::string>("NTEST", "null") == "null");
+            bool caught = false;
+            try
+            {
+                std::string s = r.get<std::string>("NTEST");
+            }
+            catch(SOCIError&)
+            {
+                caught = true;
+            }
+            assert(caught);
+    
             std::tm t = r.get<std::tm>(2);
             assert(t.tm_year == 104);
             assert(t.tm_mon == 11);
@@ -633,16 +647,16 @@ void test11()
             assert(r.indicator(0) == eOK);
 
             // verify exception thrown on invalid get<>
-            bool cought = false;
+            caught = false;
             try
             {
                 r.get<std::string>(0);
             }
             catch (std::bad_cast const &)
             {
-                cought = true;
+                caught = true;
             }
-            assert(cought);
+            assert(caught);
         }
     }
 
@@ -1621,6 +1635,7 @@ struct Person
     int id;
     std::string firstName;
     std::string lastName;
+    std::string gender;
 };
 
 namespace SOCI
@@ -1628,14 +1643,25 @@ namespace SOCI
     template<> class TypeConversion<Person>
     {
     public:
-        typedef Row base_type;
-        static Person from(Row& r)
+        typedef Values base_type;
+
+        static Person from(Values& v)
         {
             Person p;
-            p.id = r.get<int>("ID");
-            p.lastName = r.get<std::string>("LAST_NAME");
-            p.firstName = r.get<std::string>("FIRST_NAME");
+            p.id = v.get<int>("ID");
+            p.firstName = v.get<std::string>("FIRST_NAME");
+            p.lastName = v.get<std::string>("LAST_NAME");
+            p.gender = v.get<std::string>("GENDER", "unknown");
             return p;
+        }
+
+        static Values to(Person& p)
+        {
+            Values v;
+            v.set("ID", p.id);
+            v.set("FIRST_NAME", p.firstName);
+            v.set("LAST_NAME", p.lastName);
+            return v;
         }
     };
 }
@@ -1648,20 +1674,30 @@ void test23()
         catch (SOCIError const &) {} //ignore error if table doesn't exist
 
     sql << "create table person(id numeric(5,0) NOT NULL,"
-        << " last_name varchar2(20), first_name varchar2(20))";
-
-    int id = 1;
-    std::string last = "Simpson";
-    std::string first = "Bart";
-    sql << "insert into person values(:id, :last_name, :first_name)",
-           use(id), use(last), use(first);
+        << " last_name varchar2(20), first_name varchar2(20), "
+           " gender varchar2(10))";
 
     Person p;
+    p.id = 1;
+    p.lastName = "Smith";
+    p.firstName = "Pat";
+    sql << "insert into person(id, first_name, last_name) "
+        << "values(:ID, :FIRST_NAME, :LAST_NAME)", use(p);
 
-    sql << "select * from person", into(p);
+    Person p1;
+    sql << "select * from person", into(p1);
+    assert(p1.id == 1);
+    assert(p1.firstName + p.lastName == "PatSmith");
+    assert(p1.gender == "unknown");
 
-    assert(p.id == 1);
-    assert(p.firstName + p.lastName == "BartSimpson");
+    p.firstName = "Patricia";
+    sql << "update person set first_name = :FIRST_NAME "
+           "where id = :ID", use(p);
+
+    Person p2;
+    sql << "select * from person", into(p2);
+    assert(p2.id == 1);
+    assert(p2.firstName + p2.lastName == "PatriciaSmith");
 
     std::cout << "test 23 passed" << std::endl;
 }
@@ -1744,7 +1780,7 @@ int main(int argc, char** argv)
         test19();
         test20();
         test21();
-        test22();
+        test22(); 
         test23();
         test24();
 

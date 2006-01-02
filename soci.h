@@ -391,14 +391,35 @@ public:
             = index_.find(name);
         if (it == index_.end())
         {
-            std::ostringstream msg;
-            msg << "Column not found: "<<name;
-            throw SOCIError(msg.str());
+            throw SOCIError("Column '" + name + "' not found");
         }
+        if (eNull == *indicators_[it->second])
+        {
+            throw SOCIError("Column '" + name + "' contains NULL value and"
+                                                " no default was provided");
+        }
+
         return get<T>(it->second);
     }
 
-    Row() {}
+    template<typename T>
+    T get (std::string const &name, T const &defaultIfNull) const
+    {
+        std::map<std::string, std::size_t>::const_iterator it
+            = index_.find(name);
+        if (it == index_.end())
+        {
+            throw SOCIError("Column '" + name + "' not found");
+        }
+        if (eNull == *indicators_[it->second])
+        {
+            return defaultIfNull;
+        }
+
+        return get<T>(it->second);
+    }
+
+    Row() {} // quiet the compiler
     ~Row();
 
 private:
@@ -419,6 +440,8 @@ class PrepareTempType;
 
 } // namespace details
 
+class Values;
+
 class Statement
 {
 public:
@@ -427,6 +450,7 @@ public:
     ~Statement();
 
     void alloc();
+    void bind(Values& values);
     void exchange(details::IntoTypePtr const &i);
     void exchange(details::UseTypePtr const &u);
     void cleanUp();
@@ -460,6 +484,7 @@ private:
     Row* row_;
     std::size_t fetchSize_;
     std::size_t initialFetchSize_;
+    std::string query_;
 
     template<typename T>
     void intoRow()
@@ -725,9 +750,10 @@ public:
         : data_(data), type_(type), ind_(&ind), name_(name), backEnd_(NULL) {}
 
     ~StandardUseType();
+    virtual void bind(Statement &st, int &position);
+    std::string getName() const {return name_;}
 
 private:
-    virtual void bind(Statement &st, int &position);
     virtual void preUse();
     virtual void postUse(bool gotData);
     virtual void cleanUp();
@@ -1234,6 +1260,7 @@ private:
 };
 
 
+
 // this class is used to ensure correct order of construction
 // of IntoType and UseType elements that use TypeConversion (later)
 
@@ -1399,6 +1426,97 @@ private:
 
 } // namespace details
 
+
+class Values
+{
+friend class Statement;
+friend class details::IntoType<Values>;
+
+public:
+
+    Values() : row_(new Row()) {}
+
+    template<typename T>
+    T get(std::string const &name) const
+    {
+        return row_->get<T>(name);
+    }
+    
+    template<typename T>
+    T get(std::string const &name, T const& defaultIfNull)
+    {
+        return row_->get<T>(name, defaultIfNull);
+    } 
+
+    template<typename T>
+    void set(const std::string& name, T& value)
+    {
+        uses_.push_back(new details::UseType<T>(value,name));
+    }
+
+private:
+    Row& getRow() const {return *row_;}
+
+    //TODO these should be reference counted smart pointers
+    Row *row_;
+    std::vector<details::StandardUseType*> uses_;
+};
+
+namespace details
+{
+
+template <>
+class IntoType<Values> : public IntoType<Row>
+{
+public:
+    IntoType(Values &v) : 
+        IntoType<Row>(v.getRow()), v_(v) {}
+
+    void cleanUp()
+    {
+        delete v_.row_;
+        v_.row_ = NULL;
+    }
+
+private:
+    Values &v_;        
+};
+
+template <>
+class UseType<Values> : public UseTypeBase
+{
+public:
+    UseType(Values &v) : v_(v) {}
+
+    virtual void bind(Statement &st, int& /*position*/)
+    {
+        convertTo();
+        st.bind(v_);
+    }
+
+    virtual void postUse(bool /*gotData*/)
+    {
+        convertTo();
+    }
+
+    virtual void preUse()
+    {
+        convertTo();
+    }
+
+    virtual void cleanUp() {}
+    virtual std::size_t size() const {return 1;}
+
+    // this is used only to re-dispatch to derived class
+    // (the derived class might be generated automatically by
+    // user conversions)
+    virtual void convertTo() {}
+
+private:
+    Values& v_;
+};
+
+}; // namespace details
 
 // basic BLOB operations
 
