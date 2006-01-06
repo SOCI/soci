@@ -150,7 +150,11 @@ can potentially resize the vector to a size less than its initial size
 implementation.
 This explains why the <code>resize(BATCH_SIZE)</code> operation is
 needed - it is there to ensure that each time the <code>fetch()</code>
-is called, the vector is ready to accept the next bunch of values.<br>
+is called, the vector is ready to accept the next bunch of values.
+Without this operation, the vector <span style="font-style: italic;">might</span>
+be getting smaller with subsequent iterations of the loop, forcing more
+iterations to be performed (because <span style="font-style: italic;">all</span>
+rows will be read anyway), than really needed.<br>
 </p>
 <p>Notes:<br>
 </p>
@@ -167,6 +171,18 @@ can lose track of it).</li>
 Taking these points under consideration, the above code example should
 be treated as an idiomatic way of reading many rows by bunches of
 requested size.<br>
+<br>
+<span style="font-weight: bold;">Portability note:</span><br>
+Actually, Oracle and PostgreSQL backends guarantee that the requested
+number of rows will be read with each fetch and that the vector will
+never be down-sized (unless the end of rowset condition is met, of
+course). This means that for these two servers, the manual vector
+resizing is not needed - the vector will keep its size until the end of
+rowset. The above idiom, however, is provided with future backends in
+mind, where the constant size of the vector might be too expensive to
+guarantee and where allowing <code>fetch</code> to down-size the
+vector even before reaching the end of rowset might buy some
+performance gains.<br>
 <br>
 <span style="font-weight: bold;"><a name="procedures"></a>Stored
 procedures</span><br>
