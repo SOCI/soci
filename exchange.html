@@ -247,14 +247,16 @@ based insert, update, and select statements:<br>
   <tbody>
     <tr>
       <td style="vertical-align: top;">
-      <pre>vector&lt;string&gt; names;<br>vector&lt;eIndicator&gt; inds;<br>sql &lt;&lt; "select name from person where id = 7", into(names, inds);<br></pre>
+      <pre>vector&lt;string&gt; names(100);<br>vector&lt;eIndicator&gt; inds;<br>sql &lt;&lt; "select name from person where id = 7", into(names, inds);<br></pre>
       </td>
     </tr>
   </tbody>
 </table>
-<p>Note: The above example has a conceptual value, but it will not work
-as a real code. Please see the next chapter to learn how to retrieve
-many rows of data with the help of vectors.<br>
+<p>The above example retrieves first 100 rows of data (or less). The
+initial size of <code>names</code> vector provides the (maximum)
+number of rows that should be read. Both vectors will be
+automatically resized according to the number of rows that were
+actually read.<br>
 </p>
 <p>The following example inserts null for each value of name:<br>
 </p>
