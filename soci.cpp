@@ -361,6 +361,11 @@ std::size_t Statement::intosSize()
         if (i==0)
         {
             intosSize = intos_[i]->size();
+            if (intosSize == 0)
+            {
+                 // this can happen only for vectors
+                 throw SOCIError("Vectors of size 0 are not allowed.");
+            }
         }
         else if (intosSize != intos_[i]->size())
         {
@@ -385,6 +390,11 @@ std::size_t Statement::usesSize()
         if (i==0)
         {
             usesSize = uses_[i]->size();
+            if (usesSize == 0)
+            {
+                 // this can happen only for vectors
+                 throw SOCIError("Vectors of size 0 are not allowed.");
+            }
         }
         else if (usesSize != uses_[i]->size())
         {
