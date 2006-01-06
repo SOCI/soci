@@ -206,6 +206,21 @@ void test3()
                 assert(c2 == 'a' + count);
             }
 
+            {
+                // verify an exception is thrown when empty vector is used
+                std::vector<char> vec;
+                try
+                {
+                    sql << "select c from test3", into(vec);
+                    assert(false);
+                }
+                catch (SOCIError const &e)
+                {
+                     std::string msg = e.what();
+                     assert(msg == "Vectors of size 0 are not allowed.");
+                }
+            }
+
             sql << "drop table test3";
         }
 
