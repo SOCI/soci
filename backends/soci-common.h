@@ -29,9 +29,7 @@ enum eIndicator { eOK, eNoData, eNull, eTruncated };
 class SOCIError : public std::runtime_error
 {
 public:
-    SOCIError(std::string const & msg, int errNum = 0);
-
-    int errNum_;
+    SOCIError(std::string const & msg);
 };
 
 

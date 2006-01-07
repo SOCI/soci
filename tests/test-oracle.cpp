@@ -235,7 +235,7 @@ void test3()
         // exception expected
         assert(false);
     }
-    catch (SOCIError const &e)
+    catch (OracleSOCIError const &e)
     {
         // ORA-01455 happens here (overflow on conversion)
         assert(e.errNum_ == 1455);

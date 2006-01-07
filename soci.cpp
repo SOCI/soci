@@ -16,8 +16,9 @@
 using namespace SOCI;
 using namespace SOCI::details;
 
-SOCIError::SOCIError(std::string const & msg, int errNum)
-    : std::runtime_error(msg), errNum_(errNum)
+
+SOCIError::SOCIError(std::string const & msg)
+    : std::runtime_error(msg)
 {
 }
 

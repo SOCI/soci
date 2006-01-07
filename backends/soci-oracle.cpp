@@ -21,6 +21,11 @@ using namespace SOCI;
 using namespace SOCI::details;
 
 
+OracleSOCIError::OracleSOCIError(std::string const & msg, int errNum)
+    : SOCIError(msg), errNum_(errNum)
+{
+}
+
 // retrieves service name, user name and password from the
 // uniform connect string
 void chopConnectString(std::string const &connectString,
@@ -89,13 +94,13 @@ void getErrorDetails(sword res, OCIError *errhp,
     }
 }
 
-void throwSOCIError(sword res, OCIError *errhp)
+void throwOracleSOCIError(sword res, OCIError *errhp)
 {
     std::string msg;
     int errNum;
 
     getErrorDetails(res, errhp, msg, errNum);
-    throw SOCIError(msg, errNum);
+    throw OracleSOCIError(msg, errNum);
 }
 
 OracleSessionBackEnd::OracleSessionBackEnd(std::string const & serviceName,
@@ -140,7 +145,7 @@ OracleSessionBackEnd::OracleSessionBackEnd(std::string const & serviceName,
         int errNum;
         getErrorDetails(res, errhp_, msg, errNum);
         cleanUp();
-        throw SOCIError(msg, errNum);
+        throw OracleSOCIError(msg, errNum);
     }
 
     // create service context handle
@@ -161,7 +166,7 @@ OracleSessionBackEnd::OracleSessionBackEnd(std::string const & serviceName,
         int errNum;
         getErrorDetails(res, errhp_, msg, errNum);
         cleanUp();
-        throw SOCIError(msg, errNum);
+        throw OracleSOCIError(msg, errNum);
     }
 
     // allocate user session handle
@@ -204,7 +209,7 @@ OracleSessionBackEnd::OracleSessionBackEnd(std::string const & serviceName,
         int errNum;
         getErrorDetails(res, errhp_, msg, errNum);
         cleanUp();
-        throw SOCIError(msg, errNum);
+        throw OracleSOCIError(msg, errNum);
     }
 
     // set the session in the context handle
@@ -216,7 +221,7 @@ OracleSessionBackEnd::OracleSessionBackEnd(std::string const & serviceName,
         int errNum;
         getErrorDetails(res, errhp_, msg, errNum);
         cleanUp();
-        throw SOCIError(msg, errNum);
+        throw OracleSOCIError(msg, errNum);
     }
 }
 
@@ -230,7 +235,7 @@ void OracleSessionBackEnd::begin()
     sword res = OCITransStart(svchp_, errhp_, 0, OCI_TRANS_NEW);
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, errhp_);
+        throwOracleSOCIError(res, errhp_);
     }
 }
 
@@ -239,7 +244,7 @@ void OracleSessionBackEnd::commit()
     sword res = OCITransCommit(svchp_, errhp_, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, errhp_);
+        throwOracleSOCIError(res, errhp_);
     }
 }
 
@@ -248,7 +253,7 @@ void OracleSessionBackEnd::rollback()
     sword res = OCITransRollback(svchp_, errhp_, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, errhp_);
+        throwOracleSOCIError(res, errhp_);
     }
 }
 
@@ -320,7 +325,7 @@ void OracleStatementBackEnd::prepare(std::string const &query)
         stmtLen, OCI_V7_SYNTAX, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
     }
 }
 
@@ -339,7 +344,7 @@ StatementBackEnd::execFetchResult OracleStatementBackEnd::execute(int number)
     }
     else
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
         return eNoData; // unreachable dummy return to please the compiler
     }
 }
@@ -359,7 +364,7 @@ StatementBackEnd::execFetchResult OracleStatementBackEnd::fetch(int number)
     }
     else
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
         return eNoData; // unreachable dummy return to please the compiler
     }
 }
@@ -373,7 +378,7 @@ int OracleStatementBackEnd::getNumberOfRows()
 
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
     }
 
     return rows;
@@ -394,7 +399,7 @@ int OracleStatementBackEnd::prepareForDescribe()
         1, 0, 0, 0, OCI_DESCRIBE_ONLY);
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
     }
 
     int cols;
@@ -404,7 +409,7 @@ int OracleStatementBackEnd::prepareForDescribe()
 
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
     }
 
     return cols;
@@ -432,7 +437,7 @@ void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
         static_cast<ub4>(colNum));
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
     }
 
     // Get the column name
@@ -444,7 +449,7 @@ void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
         reinterpret_cast<OCIError*>(session_.errhp_));
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
     }
 
     // Get the column type
@@ -456,7 +461,7 @@ void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
         reinterpret_cast<OCIError*>(session_.errhp_));
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
     }
 
     // get the data size
@@ -468,7 +473,7 @@ void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
         reinterpret_cast<OCIError*>(session_.errhp_));
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
     }
 
     // get the precision
@@ -480,7 +485,7 @@ void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
         reinterpret_cast<OCIError*>(session_.errhp_));
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
     }
 
     // get the scale
@@ -492,7 +497,7 @@ void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
         reinterpret_cast<OCIError*>(session_.errhp_));
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
     }
 
     // get the null allowed flag
@@ -504,7 +509,7 @@ void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
         reinterpret_cast<OCIError*>(session_.errhp_));
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
     }
 
     columnName.assign(dbname, dbname + nameLength);
@@ -552,7 +557,7 @@ std::size_t OracleStatementBackEnd::columnSize(int position)
          session_.errhp_, 1, 0, 0, 0, OCI_DESCRIBE_ONLY);
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
     }
 
     // Get The Column Handle
@@ -564,7 +569,7 @@ std::size_t OracleStatementBackEnd::columnSize(int position)
          static_cast<ub4>(position));
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
     }
 
      // Get The Data Size
@@ -576,7 +581,7 @@ std::size_t OracleStatementBackEnd::columnSize(int position)
          reinterpret_cast<OCIError*>(session_.errhp_));
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
     }
 
     return static_cast<std::size_t>(colSize);
@@ -709,7 +714,7 @@ void OracleStandardIntoTypeBackEnd::defineByPos(
 
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, statement_.session_.errhp_);
+        throwOracleSOCIError(res, statement_.session_.errhp_);
     }
 }
 
@@ -944,7 +949,7 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
         indOCIHolders_, &sizes_[0], &rCodes_[0], OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, statement_.session_.errhp_);
+        throwOracleSOCIError(res, statement_.session_.errhp_);
     }
 }
 
@@ -1294,7 +1299,7 @@ void OracleStandardUseTypeBackEnd::bindByPos(
         &indOCIHolder_, 0, 0, 0, 0, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, statement_.session_.errhp_);
+        throwOracleSOCIError(res, statement_.session_.errhp_);
     }
 }
 
@@ -1317,7 +1322,7 @@ void OracleStandardUseTypeBackEnd::bindByName(
         &indOCIHolder_, 0, 0, 0, 0, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, statement_.session_.errhp_);
+        throwOracleSOCIError(res, statement_.session_.errhp_);
     }
 }
 
@@ -1597,7 +1602,7 @@ void OracleVectorUseTypeBackEnd::bindByPos(int &position,
         indOCIHolders_, sizesP, 0, 0, 0, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, statement_.session_.errhp_);
+        throwOracleSOCIError(res, statement_.session_.errhp_);
     }
 }
 
@@ -1626,7 +1631,7 @@ void OracleVectorUseTypeBackEnd::bindByName(
         indOCIHolders_, sizesP, 0, 0, 0, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, statement_.session_.errhp_);
+        throwOracleSOCIError(res, statement_.session_.errhp_);
     }
 }
 
@@ -1803,7 +1808,7 @@ std::size_t OracleBLOBBackEnd::getLen()
 
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
     }
 
     return static_cast<std::size_t>(len);
@@ -1819,7 +1824,7 @@ std::size_t OracleBLOBBackEnd::read(
         amt, 0, 0, 0, 0);
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
     }
 
     return static_cast<std::size_t>(amt);
@@ -1836,7 +1841,7 @@ std::size_t OracleBLOBBackEnd::write(
         amt, OCI_ONE_PIECE, 0, 0, 0, 0);
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
     }
 
     return static_cast<std::size_t>(amt);
@@ -1851,7 +1856,7 @@ std::size_t OracleBLOBBackEnd::append(char const *buf, std::size_t toWrite)
         amt, OCI_ONE_PIECE, 0, 0, 0, 0);
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
     }
 
     return static_cast<std::size_t>(amt);
@@ -1863,7 +1868,7 @@ void OracleBLOBBackEnd::trim(std::size_t newLen)
         static_cast<ub4>(newLen));
     if (res != OCI_SUCCESS)
     {
-        throwSOCIError(res, session_.errhp_);
+        throwOracleSOCIError(res, session_.errhp_);
     }
 }
 

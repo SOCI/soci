@@ -22,6 +22,14 @@
 namespace SOCI
 {
 
+class OracleSOCIError : public SOCIError
+{
+public:
+    OracleSOCIError(std::string const & msg, int errNum = 0);
+
+    int errNum_;
+};
+
 struct OracleStatementBackEnd;
 struct OracleStandardIntoTypeBackEnd : details::StandardIntoTypeBackEnd
 {
