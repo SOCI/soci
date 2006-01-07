@@ -1516,7 +1516,7 @@ private:
     Values& v_;
 };
 
-}; // namespace details
+} // namespace details
 
 // basic BLOB operations
 
