@@ -250,7 +250,7 @@ void EmptyVectorUseTypeBackEnd::preUse(eIndicator const * /* ind */)
 std::size_t EmptyVectorUseTypeBackEnd::size()
 {
     // ...
-    return 0;
+    return 1;
 }
 
 void EmptyVectorUseTypeBackEnd::cleanUp()
