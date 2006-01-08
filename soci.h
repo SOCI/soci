@@ -350,7 +350,7 @@ public:
     std::size_t size() const;
     eIndicator const indicator(std::size_t pos) const;
 
-    template<typename T>
+    template <typename T>
     inline void addHolder(T* t, eIndicator* ind)
     {
         holders_.push_back(new details::TypeHolder<T>(t));
@@ -360,17 +360,37 @@ public:
     ColumnProperties const & getProperties (std::size_t pos) const;
     ColumnProperties const & getProperties (std::string const &name) const;
 
-    template<typename T>
+    template <typename T>
     T get (std::size_t pos) const
     {
         typedef typename TypeConversion<T>::base_type BASE_TYPE;
 
         assert(holders_.size() >= pos + 1);
+
+        if (eNull == *indicators_[pos])
+        {
+            throw SOCIError("Column contains NULL value and"
+                " no default was provided");
+        }
+
         BASE_TYPE baseVal = holders_[pos]->get<BASE_TYPE>();
         return TypeConversion<T>::from(baseVal);
     }
 
-    template<typename T>
+    template <typename T>
+    T get(std::size_t pos, T const &nullValue) const
+    {
+        assert(holders_.size() >= pos + 1);
+
+        if (eNull == *indicators_[pos])
+        {
+            return nullValue;
+        }
+
+        return get<T>(pos);
+    }
+
+    template <typename T>
     T get (std::string const &name) const
     {
         std::map<std::string, std::size_t>::const_iterator it
@@ -388,7 +408,7 @@ public:
         return get<T>(it->second);
     }
 
-    template<typename T>
+    template <typename T>
     T get (std::string const &name, T const &nullValue) const
     {
         std::map<std::string, std::size_t>::const_iterator it
@@ -1420,32 +1440,63 @@ friend class details::IntoType<Values>;
 
 public:
 
-    Values() : row_(new Row()) {}
+    Values() : row_(new Row()), currentPos_(0) {}
 
-    template<typename T>
+    template <typename T>
+    T get(std::size_t pos) const
+    {
+        return row_->get<T>(pos);
+    }
+
+    template <typename T>
+    T get(std::size_t pos, T const &nullValue) const
+    {
+        return row_->get<T>(pos, nullValue);
+    }
+
+    template <typename T>
     T get(std::string const &name) const
     {
         return row_->get<T>(name);
     }
     
-    template<typename T>
+    template <typename T>
     T get(std::string const &name, T const &nullValue) const
     {
         return row_->get<T>(name, nullValue);
-    } 
+    }
 
-    template<typename T>
+    template <typename T>
+    Values const & operator>>(T &value) const
+    {
+        value = row_->get<T>(currentPos_);
+        ++currentPos_;
+        return *this;
+    }
+
+    template <typename T>
     void set(std::string const &name, T &value)
     {
-        uses_.push_back(new details::UseType<T>(value,name));
+        uses_.push_back(new details::UseType<T>(value, name));
     }
 
 private:
-    Row& getRow() const {return *row_;}
+    Row& getRow() const { return *row_; }
 
     //TODO these should be reference counted smart pointers
     Row *row_;
     std::vector<details::StandardUseType*> uses_;
+
+    // this is called by deatils::IntoType<Values>::cleanUp()
+    void cleanUp()
+    {
+        delete row_;
+        row_ = NULL;
+
+        // TODO: what about cleaning up uses_ objects?
+    }
+
+    mutable std::size_t currentPos_;
 };
 
 namespace details
@@ -1460,8 +1511,7 @@ public:
 
     void cleanUp()
     {
-        delete v_.row_;
-        v_.row_ = NULL;
+        v_.cleanUp();
     }
 
 private:
@@ -1491,7 +1541,7 @@ public:
     }
 
     virtual void cleanUp() {}
-    virtual std::size_t size() const {return 1;}
+    virtual std::size_t size() const { return 1; }
 
     // this is used only to re-dispatch to derived class
     // (the derived class might be generated automatically by

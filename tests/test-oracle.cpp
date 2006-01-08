@@ -1631,12 +1631,19 @@ struct Person
     std::string gender;
 };
 
+// additional type for position-based test
+struct Person2 : Person {};
+
+// additional type for stream-like test
+struct Person3 : Person {};
+
 // Object-Relational Mapping
 // Note: Use the Values class as shown below in TypeConversions
 // to achieve object relational mapping.  The Values class should
 // not be used directly in any other fashion.
 namespace SOCI
 {
+    // name-based conversion
     template<> struct TypeConversion<Person>
     {
         typedef Values base_type;
@@ -1659,6 +1666,39 @@ namespace SOCI
             v.set("LAST_NAME", p.lastName);
             return v;
         }
+    };
+
+    // position-based conversion
+    template<> struct TypeConversion<Person2>
+    {
+        typedef Values base_type;
+
+        static Person2 from(Values const &v)
+        {
+            Person2 p;
+            p.id = v.get<int>(0);
+            p.firstName = v.get<std::string>(1);
+            p.lastName = v.get<std::string>(2);
+            p.gender = v.get<std::string>(3, "whoknows");
+            return p;
+        }
+
+        // What about the "to" part? Does it make any sense to have it?
+    };
+
+    // stream-like conversion
+    template<> struct TypeConversion<Person3>
+    {
+        typedef Values base_type;
+
+        static Person3 from(Values const &v)
+        {
+            Person3 p;
+            v >> p.id >> p.firstName >> p.lastName >> p.gender;
+            return p;
+        }
+
+        // TODO: The "to" part is certainly needed.
     };
 }
 
@@ -1683,7 +1723,7 @@ void test23()
     Person p1;
     sql << "select * from person", into(p1);
     assert(p1.id == 1);
-    assert(p1.firstName + p.lastName == "PatSmith");
+    assert(p1.firstName + p1.lastName == "PatSmith");
     assert(p1.gender == "unknown");
 
     p.firstName = "Patricia";
@@ -1694,6 +1734,22 @@ void test23()
     sql << "select * from person", into(p2);
     assert(p2.id == 1);
     assert(p2.firstName + p2.lastName == "PatriciaSmith");
+
+    // additional test for position-based conversion
+    Person2 p3;
+    sql << "select id, first_name, last_name, gender from person", into(p3);
+    assert(p3.id == 1);
+    assert(p3.firstName + p3.lastName == "PatriciaSmith");
+    assert(p3.gender == "whoknows");
+
+    sql << "update person set gender = 'M' where id = 1";
+
+    // additional test for stream-like conversion
+    Person3 p4;
+    sql << "select id, first_name, last_name, gender from person", into(p4);
+    assert(p4.id == 1);
+    assert(p4.firstName + p4.lastName == "PatriciaSmith");
+    assert(p4.gender == "M");
 
     std::cout << "test 23 passed" << std::endl;
 }
