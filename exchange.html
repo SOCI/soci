@@ -29,6 +29,7 @@ data</a><br>
 <a href="#dynamic">Static binding for bulk operations</a><br>
 <a href="#static_bulk">Dynamic resultset binding</a><br>
 <a href="#custom_types">Extending with user-provided datatypes</a><br>
+<a href="#object_relational">Object-relational mapping</a><br>
 </div>
 <a href="#blob">Large objects (BLOBs)</a><br>
 <br>
@@ -287,7 +288,7 @@ and <code>use</code> expressions:
 long</code>, <code>double</code> (for numeric values)</li>
   <li><code>char*</code>, <code>char[]</code>, <code>std::string</code>
 (for string values)</li>
-  <li><code>std::tm</code>, <code>std::time_t</code> (for datetime
+  <li><code>std::tm</code><code></code> (for datetime
 values)</li>
   <li><code>SOCI::Statement</code> (for nested statements and PL/SQL
 cursors)</li>
@@ -311,7 +312,6 @@ following <code>std::vector</code> based into and use types:
   <li><code>std::vector&lt;double&gt;</code></li>
   <li><code>std::vector&lt;std::string&gt;</code></li>
   <li><code>std::vector&lt;std::tm&gt;</code></li>
-  <li><code>std::vector&lt;std::time_t&gt;</code></li>
 </ul>
 Use of the vector based types mirrors that of the standard types, with
 the size of the vector used to specify the number of records to process
@@ -360,33 +360,53 @@ used.
   <tbody>
     <tr>
       <th>Oracle Data Type</th>
+      <th>Postgres Data Type</th>
       <th>SOCI Data Type</th>
       <th><code>Row::get&lt;T&gt;</code> specializations</th>
     </tr>
     <tr>
-      <td>NUMBER</td>
+      <td>number<span style="font-style: italic;"> (where scale &gt; 0)</span><br>
+      </td>
+      <td style="vertical-align: top;">float4, float8, numeric<br>
+      </td>
       <td><code>eDouble</code></td>
       <td><code>double</code></td>
     </tr>
     <tr>
-      <td>NUMBER</td>
+      <td>number<span style="font-style: italic;"> <br>
+(where scale = 0 and precision &lt;</span> <span
+ style="font-style: italic;">std::numeric_limits&lt;int&gt;::digits10)</span>
+      </td>
+      <td style="vertical-align: top;">bool, int2, int4, int8<br>
+      </td>
       <td><code>eInteger</code></td>
       <td><code>int</code></td>
     </tr>
     <tr>
-      <td>NUMBER</td>
+      <td>number<br>
+      <span style="font-style: italic;"></span></td>
+      <td style="vertical-align: top;">oid<br>
+      </td>
       <td><code>eUnsignedLong</code></td>
       <td><code>unsigned long</code></td>
     </tr>
     <tr>
-      <td>CHAR, VARCHAR, VARCHAR2</td>
+      <td>char, varchar, varchar2<br>
+      </td>
+      <td style="vertical-align: top;">text, varchar, cstring, char,
+bpchar<br>
+      </td>
       <td><code>eString</code></td>
       <td><code>std::string</code></td>
     </tr>
     <tr>
-      <td>DATE</td>
+      <td>date<br>
+      </td>
+      <td style="vertical-align: top;">abstime, reltime, data, time,
+timestamp, timestamptz, timetz<br>
+      </td>
       <td><code>eDate</code></td>
-      <td><code>std::tm</code>, <code>std::time_t</code></td>
+      <td><code>std::tm</code><code></code></td>
     </tr>
   </tbody>
 </table>
@@ -397,9 +417,7 @@ for PostgreSQL in terms of executing the given query with the <code>"
 LIMIT 0"</code> clause appended - this is a <span
  style="font-style: italic;">very</span> simple approach that will <span
  style="font-style: italic;">not</span> work with queries that already
-have this clause. Note also that with PostgreSQL backend the size,
-scale, precision and whether NULLs are allowed information for the
-given column are not provided and should not be relied upon.<br>
+have this clause. <br>
 <br>
 <span style="font-weight: bold;"><a name="custom_types"></a>Extending
 SOCI to support custom (user-defined) C++ types</span><br>
@@ -407,8 +425,8 @@ SOCI to support custom (user-defined) C++ types</span><br>
 SOCI can be easily extended through user code so that custom types can
 be used transparently to insert into, update, and select from the
 database.
-<p>To do so, provide an appropriate implementation of the <code>TypeConversion</code>
-class
+<p>To do so, provide an appropriate specialization of the <code>TypeConversion</code>
+struct
 that converts to and from one of the SOCI Base Types listed below:</p>
 <table border="1">
   <tbody>
@@ -417,48 +435,38 @@ that converts to and from one of the SOCI Base Types listed below:</p>
       <th>SOCI Base Type</th>
     </tr>
     <tr>
-      <td>NUMBER</td>
+      <td>number<br>
+      </td>
       <td><code>double</code></td>
     </tr>
     <tr>
-      <td>NUMBER</td>
+      <td>number<br>
+      </td>
       <td><code>int</code></td>
     </tr>
     <tr>
-      <td>NUMBER</td>
+      <td>number<br>
+      </td>
       <td><code>unsigned long</code></td>
     </tr>
     <tr>
-      <td>VARCHAR, VARCHAR2</td>
+      <td>varchar, varchar2<br>
+      </td>
       <td><code>std::string</code></td>
     </tr>
     <tr>
-      <td>CHAR</td>
+      <td>char<br>
+      </td>
       <td><code>char</code></td>
     </tr>
     <tr>
-      <td>DATE</td>
+      <td>date<br>
+      </td>
       <td><code>std::tm</code></td>
     </tr>
   </tbody>
 </table>
-<p>
-For example, SOCI's built in support for <code>std::time_t</code> is
-implemented entirely
-as follows, utilizing <code>std::tm</code> as the Base Type:<br>
-</p>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>namespace SOCI<br>{<br>  template&lt;&gt;<br>  class TypeConversion&lt;std::time_t&gt; <br>  {<br>  public:<br>      typedef std::tm base_type;<br>      static std::time_t from(std::tm&amp; t){return mktime(&amp;t);}<br>      static std::tm to(std::time_t&amp; t){return *localtime(&amp;t);}<br>  };<br>}</pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<p><br>
-There are three required class members for a valid <code>TypeConversion</code>
+<p>There are three required class members for a valid <code>TypeConversion</code>
 specialization:
 </p>
 <ul>
@@ -478,7 +486,7 @@ transparently support <code>boost::gregorian::date</code>:<br>
   <tbody>
     <tr>
       <td style="vertical-align: top;">
-      <pre>#include "boost/date_time/gregorian/gregorian.hpp"<br>namespace SOCI<br>{<br>template&lt;&gt;<br>class TypeConversion&lt;boost::gregorian::date&gt;<br>{<br>public:<br>    typedef std::tm base_type;<br>    static boost::gregorian::date from(std::tm&amp; t)<br>    {<br>        boost::gregorian::months_of_year month = <br>            static_cast&lt;boost::gregorian::months_of_year&gt;(t.tm_mon + 1);<br>        <br>        boost::gregorian::date d(t.tm_year + 1900, month, t.tm_mday);<br>        return d;<br>    }<br>    static std::tm to(boost::gregorian::date&amp; d)<br>    {<br>        std::tm t;<br>        <br>        t.tm_isdst = -1;<br>        t.tm_year = d.year() - 1900;<br>        t.tm_mon = d.month() - 1;<br>        t.tm_mday = d.day();<br>        t.tm_hour = 0;<br>        t.tm_min = 0;<br>        t.tm_sec = 0;<br>        std::mktime(&amp;t); //normalize and compute remaining fields<br>          <br>        return t;<br>    }<br>};<br>} // namespace SOCI<br></pre>
+      <pre>#include "boost/date_time/gregorian/gregorian.hpp"<br><br>template&lt;&gt;<br>struct TypeConversion&lt;boost::gregorian::date&gt;<br>{<br>    typedef std::tm base_type;<br>    static boost::gregorian::date from(std::tm&amp; t)<br>    {<br>        boost::gregorian::months_of_year month = <br>            static_cast&lt;boost::gregorian::months_of_year&gt;(t.tm_mon + 1);<br>        <br>        boost::gregorian::date d(t.tm_year + 1900, month, t.tm_mday);<br>        return d;<br>    }<br>    static std::tm to(boost::gregorian::date&amp; d)<br>    {<br>        std::tm t;<br>        <br>        t.tm_isdst = -1;<br>        t.tm_year = d.year() - 1900;<br>        t.tm_mon = d.month() - 1;<br>        t.tm_mday = d.day();<br>        t.tm_hour = 0;<br>        t.tm_min = 0;<br>        t.tm_sec = 0;<br>        std::mktime(&amp;t); //normalize and compute remaining fields<br>          <br>        return t;<br>    }<br>};<br></pre>
       </td>
     </tr>
   </tbody>
@@ -516,6 +524,50 @@ of appropriate class. The only convention is that when the indicator
 variable is used (see below), it should appear in the second position.
 Please refer to the library source code to see how this is done for the
 standard types.<br>
+</p>
+<h4><a name="object_relational"></a>Object-relational mapping</h4>
+SOCI provides a class called <code>Values</code> specifically to
+enable
+object-relational mapping via <code>TypeConversion</code>
+specializations.<br>
+<br>
+For example, the following code maps a <code>Person</code> object to
+and from a
+database table containing columns "ID", "FIRST_NAME", "LAST_NAME", and
+"GENDER".&nbsp; <br>
+<br>
+Note that the mapping is non-invasive - the <code>Person </code>object
+itself doesn't contain any code which is specific to SOCI:<br>
+<br>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>struct Person<br>{<br>    int id;<br>    std::string firstName;<br>    std::string lastName;<br>    std::string gender;<br>};<br><br>template&lt;&gt; struct TypeConversion&lt;Person&gt;<br>{<br>    typedef Values base_type;<br>    static Person from(Values const &amp;v)<br>    {<br>        Person p;<br>        p.id = v.get&lt;int&gt;("ID");<br>        p.firstName = v.get&lt;std::string&gt;("FIRST_NAME");<br>        p.lastName = v.get&lt;std::string&gt;("LAST_NAME");<br>        p.gender = v.get&lt;std::string&gt;("GENDER", "unknown");<br>        return p;<br>    }<br>    static Values to(Person &amp;p)<br>    {<br>        Values v;<br>        v.set("ID", p.id);<br>        v.set("FIRST_NAME", p.firstName);<br>        v.set("LAST_NAME", p.lastName);<br>        return v;<br>    }<br>};<br></pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+With the above <code>TypeConversion</code> specialization in place, it
+is possible to use <code>Person</code> directly with SOCI:<br>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>Session sql("oracle", "service=db1", "user=scott", "password=tiger");<br><br>Person p;<br>p.id = 1;<br>p.lastName = "Smith";<br>p.firstName = "Pat";<br>sql &lt;&lt; "insert into person(id, first_name, last_name) "<br>       "values(:ID, :FIRST_NAME, :LAST_NAME)", use(p);<br><br>Person p1;<br>sql &lt;&lt; "select * from person", into(p1);<br>assert(p1.id == 1);<br>assert(p1.firstName + p.lastName == "PatSmith");<br>assert(p1.gender == "unknown");<br><br>p.firstName = "Patricia";<br>sql &lt;&lt; "update person set first_name = :FIRST_NAME "<br>       "where id = :ID", use(p);<br></pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p><span style="font-weight: bold;">Note:</span> the <code>Values</code>
+class is currently not suited for use outside of <code>TypeConversion</code>
+specializations.&nbsp; It is specially designed to facilitate
+object-relational mapping when used as shown above.<br>
 </p>
 <h4><a name="blob"></a>Large objects (BLOBs)<br>
 </h4>
