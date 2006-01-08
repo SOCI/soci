@@ -32,12 +32,11 @@ class Statement;
 
 // default traits class TypeConversion, acts as pass through for Row::get()
 // when no actual conversion is needed.
-template<typename T>
-class TypeConversion
+template<typename T> 
+struct TypeConversion
 {
-public:
     typedef T base_type;
-    static T from(T& t) { return t; }
+    static T from(T const &t) { return t; }
 };
 
 // TypeConversion specializations must use a stock type as the base_type.
@@ -46,9 +45,8 @@ public:
 // where std::time_t is an alias to int.
 // 
 // template<>
-// class TypeConversion<std::time_t>
-// {
-// public:
+// struct TypeConversion<std::time_t>
+// {:
 //     typedef std::tm base_type;
 //     static std::time_t from(std::tm& t) { return mktime(&t); }
 //     static std::tm to(std::time_t& t) { return *localtime(&t); }
@@ -335,24 +333,15 @@ public:
 
     std::string getName() const   { return name_; }
     eDataType getDataType() const { return dataType_; }
-    std::size_t getSize() const   { return size_; }
-    int getScale() const          { return scale_; }
-    int getPrecision() const      { return precision_; }
     bool getNullOK() const        { return nullok_; }
 
     void setName(std::string const &name) { name_ = name; }
     void setDataType(eDataType dataType)  { dataType_ = dataType; }
-    void setSize(std::size_t size)        { size_ = size; }
-    void setScale(int scale)              { scale_ = scale; }
-    void setPrecision(int precision)      { precision_ = precision; }
     void setNullOK(bool nullok)           { nullok_ = nullok; }
 
 private:
     std::string name_;
     eDataType dataType_;
-    std::size_t size_;
-    int scale_;
-    int precision_;
     bool nullok_;
 };
 
@@ -403,7 +392,7 @@ public:
     }
 
     template<typename T>
-    T get (std::string const &name, T const &defaultIfNull) const
+    T get (std::string const &name, T const &nullValue) const
     {
         std::map<std::string, std::size_t>::const_iterator it
             = index_.find(name);
@@ -413,7 +402,7 @@ public:
         }
         if (eNull == *indicators_[it->second])
         {
-            return defaultIfNull;
+            return nullValue;
         }
 
         return get<T>(it->second);
@@ -1443,13 +1432,13 @@ public:
     }
     
     template<typename T>
-    T get(std::string const &name, T const& defaultIfNull)
+    T get(std::string const &name, T const &nullValue) const
     {
-        return row_->get<T>(name, defaultIfNull);
+        return row_->get<T>(name, nullValue);
     } 
 
     template<typename T>
-    void set(const std::string& name, T& value)
+    void set(std::string const &name, T &value)
     {
         uses_.push_back(new details::UseType<T>(value,name));
     }

@@ -539,9 +539,6 @@ void Statement::describe()
 
         ColumnProperties props;
         props.setName(columnName);
-        props.setSize(dbsize);
-        props.setPrecision(prec);
-        props.setScale(scale);
         props.setNullOK(nullOk);
 
         props.setDataType(dtype);

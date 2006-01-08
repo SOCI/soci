@@ -609,9 +609,6 @@ void test11()
             assert(r.getProperties(4).getName() == "CHR1");
             assert(r.getProperties(5).getName() == "SMALL");
 
-            assert(r.getProperties(0).getSize() == 22);
-            assert(r.getProperties(0).getScale() == 2);
-            assert(r.getProperties(0).getPrecision() == 7);
             assert(r.getProperties(0).getNullOK() == false);
             assert(r.getProperties(1).getNullOK() == true);
 
@@ -676,9 +673,8 @@ private:
 
 namespace SOCI
 {
-    template<> class TypeConversion<StringHolder>
+    template<> struct TypeConversion<StringHolder>
     {
-    public:
         typedef std::string base_type;
         static StringHolder from(std::string& s) { return StringHolder(s); }
         static std::string to(StringHolder& sh) { return sh.get(); }
@@ -1638,14 +1634,17 @@ struct Person
     std::string gender;
 };
 
+// Object-Relational Mapping
+// Note: Use the Values class as shown below in TypeConversions
+// to achieve object relational mapping.  The Values class should
+// not be used directly in any other fashion.
 namespace SOCI
 {
-    template<> class TypeConversion<Person>
+    template<> struct TypeConversion<Person>
     {
-    public:
         typedef Values base_type;
 
-        static Person from(Values& v)
+        static Person from(Values const &v)
         {
             Person p;
             p.id = v.get<int>("ID");
@@ -1655,7 +1654,7 @@ namespace SOCI
             return p;
         }
 
-        static Values to(Person& p)
+        static Values to(Person &p)
         {
             Values v;
             v.set("ID", p.id);
