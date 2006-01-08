@@ -131,8 +131,7 @@ public:
 
     virtual int prepareForDescribe() = 0;
     virtual void describeColumn(int colNum, eDataType &dtype,
-        std::string &columnName, int &size, int &precision, int &scale,
-        bool &nullOk) = 0;
+        std::string &columnName) = 0;
 
     virtual StandardIntoTypeBackEnd * makeIntoTypeBackEnd() = 0;
     virtual StandardUseTypeBackEnd * makeUseTypeBackEnd() = 0;

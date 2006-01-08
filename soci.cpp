@@ -529,17 +529,11 @@ void Statement::describe()
     {
         eDataType dtype;
         std::string columnName;
-        int dbsize;
-        int prec;
-        int scale;
-        bool nullOk;
 
-        backEnd_->describeColumn(i, dtype, columnName,
-            dbsize, prec, scale, nullOk);
+        backEnd_->describeColumn(i, dtype, columnName);
 
         ColumnProperties props;
         props.setName(columnName);
-        props.setNullOK(nullOk);
 
         props.setDataType(dtype);
         switch(dtype)

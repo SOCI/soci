@@ -129,8 +129,7 @@ struct PostgreSQLStatementBackEnd : details::StatementBackEnd
 
     virtual int prepareForDescribe();
     virtual void describeColumn(int colNum, eDataType &dtype,
-        std::string &columnName, int &size, int &precision, int &scale,
-        bool &nullOk);
+        std::string &columnName);
 
     virtual PostgreSQLStandardIntoTypeBackEnd * makeIntoTypeBackEnd();
     virtual PostgreSQLStandardUseTypeBackEnd * makeUseTypeBackEnd();

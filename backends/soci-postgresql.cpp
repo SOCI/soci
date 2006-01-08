@@ -414,8 +414,7 @@ int PostgreSQLStatementBackEnd::prepareForDescribe()
 }
 
 void PostgreSQLStatementBackEnd::describeColumn(int colNum, eDataType &type,
-    std::string &columnName, int &size, int &precision, int &scale,
-    bool &nullOk)
+    std::string &columnName)
 {
     // In PostgreSQL column numbers start from 0
     int pos = colNum - 1;
@@ -468,14 +467,6 @@ void PostgreSQLStatementBackEnd::describeColumn(int colNum, eDataType &type,
     }
 
     columnName = PQfname(result_, pos);
-
-    // no sensible information available with text transfer protocol:
-    size = 0;
-    precision = 0;
-    scale = 0;
-
-    // no sensible information available:
-    nullOk = true;
 }
 
 PostgreSQLStandardIntoTypeBackEnd *

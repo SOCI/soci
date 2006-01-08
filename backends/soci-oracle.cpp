@@ -416,9 +416,12 @@ int OracleStatementBackEnd::prepareForDescribe()
 }
 
 void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
-    std::string &columnName, int &size, int &precision, int &scale,
-    bool &nullOk)
+    std::string &columnName)
 {
+    int size;
+    int precision;
+    int scale;
+
     ub2 dbtype;
     text* dbname;
     ub4 nameLength;
@@ -426,7 +429,6 @@ void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
     ub2 dbsize;
     sb2 dbprec;
     ub1 dbscale; //sb2 in some versions of Oracle?
-    ub1 dbnullok;
 
     // Get the column handle
     OCIParam* colhd;
@@ -500,23 +502,10 @@ void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
         throwOracleSOCIError(res, session_.errhp_);
     }
 
-    // get the null allowed flag
-    res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd),
-        static_cast<ub4>(OCI_DTYPE_PARAM),
-        reinterpret_cast<dvoid*>(&dbnullok),
-        0,
-        static_cast<ub4>(OCI_ATTR_IS_NULL),
-        reinterpret_cast<OCIError*>(session_.errhp_));
-    if (res != OCI_SUCCESS)
-    {
-        throwOracleSOCIError(res, session_.errhp_);
-    }
-
     columnName.assign(dbname, dbname + nameLength);
     size = static_cast<int>(dbsize);
     precision = static_cast<int>(dbprec);
     scale = static_cast<int>(dbscale);
-    nullOk = (dbnullok != 0);
 
     switch (dbtype)
     {

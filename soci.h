@@ -333,16 +333,13 @@ public:
 
     std::string getName() const   { return name_; }
     eDataType getDataType() const { return dataType_; }
-    bool getNullOK() const        { return nullok_; }
 
     void setName(std::string const &name) { name_ = name; }
     void setDataType(eDataType dataType)  { dataType_ = dataType; }
-    void setNullOK(bool nullok)           { nullok_ = nullok; }
 
 private:
     std::string name_;
     eDataType dataType_;
-    bool nullok_;
 };
 
 class Row

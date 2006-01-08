@@ -176,8 +176,7 @@ struct OracleStatementBackEnd : details::StatementBackEnd
 
     virtual int prepareForDescribe();
     virtual void describeColumn(int colNum, eDataType &dtype,
-        std::string &columnName, int &size, int &precision, int &scale,
-        bool &nullOk);
+        std::string &columnName);
 
     // helper for defining into vector<string>
     std::size_t columnSize(int position);
