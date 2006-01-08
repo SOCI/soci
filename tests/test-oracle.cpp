@@ -609,9 +609,6 @@ void test11()
             assert(r.getProperties(4).getName() == "CHR1");
             assert(r.getProperties(5).getName() == "SMALL");
 
-            assert(r.getProperties(0).getNullOK() == false);
-            assert(r.getProperties(1).getNullOK() == true);
-
             st.fetch();
             assert(r.get<double>(0) == 2.25);
             assert(r.get<std::string>(1) == "name2");
