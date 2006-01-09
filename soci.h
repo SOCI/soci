@@ -491,6 +491,7 @@ private:
     std::size_t fetchSize_;
     std::size_t initialFetchSize_;
     std::string query_;
+    std::map<std::string, details::UseTypeBase*> namedUses_;
 
     template<typename T>
     void intoRow()
@@ -523,7 +524,6 @@ public:
 
 namespace details
 {
-
 // this class is a base for both "once" and "prepare" statements
 class RefCountedStBase
 {
@@ -758,7 +758,8 @@ public:
     ~StandardUseType();
     virtual void bind(Statement &st, int &position);
     std::string getName() const {return name_;}
-
+    void* getData() const {return data_;}
+     
 private:
     virtual void preUse();
     virtual void postUse(bool gotData);
@@ -1437,33 +1438,34 @@ class Values
 {
 friend class Statement;
 friend class details::IntoType<Values>;
+friend class details::UseType<Values>;
 
 public:
 
-    Values() : row_(new Row()), currentPos_(0) {}
+    Values() : row_(NULL), currentPos_(0) {}
 
     template <typename T>
     T get(std::size_t pos) const
     {
-        return row_->get<T>(pos);
+        return row_ ? row_->get<T>(pos) : getFromUses<T>(pos);
     }
 
     template <typename T>
     T get(std::size_t pos, T const &nullValue) const
     {
-        return row_->get<T>(pos, nullValue);
+        return row_ ? row_->get<T>(pos, nullValue) : getFromUses<T>(pos);
     }
 
     template <typename T>
     T get(std::string const &name) const
     {
-        return row_->get<T>(name);
+        return row_ ? row_->get<T>(name) : getFromUses<T>(name);
     }
     
     template <typename T>
     T get(std::string const &name, T const &nullValue) const
     {
-        return row_->get<T>(name, nullValue);
+        return row_ ? row_->get<T>(name, nullValue) : getFromUses<T>(name);
     }
 
     template <typename T>
@@ -1477,25 +1479,79 @@ public:
     template <typename T>
     void set(std::string const &name, T &value)
     {
+        index_.insert(std::make_pair(name, uses_.size()));
         uses_.push_back(new details::UseType<T>(value, name));
     }
 
 private:
-    Row& getRow() const { return *row_; }
+    template <typename T>
+    T getFromUses(std::string const &name) const
+    {
+        std::map<std::string, size_t>::const_iterator pos = index_.find(name);
+        if (pos != index_.end())
+        {
+            try
+            {
+                return getFromUses<T>(pos->second);
+            }
+            catch(SOCIError const &e)
+            {
+                throw SOCIError("Value named " + name + " was set using"
+                    " a different type than the one passed to get()");
+            }
+        }
+        throw SOCIError("Value named " + name + " not found.");
+    }
 
-    //TODO these should be reference counted smart pointers
-    Row *row_;
-    std::vector<details::StandardUseType*> uses_;
+    template <typename T>
+    T getFromUses(size_t pos) const
+    {
+        details::StandardUseType* u = uses_[pos];
+        if (dynamic_cast<details::UseType<T>* >(u))
+        {
+            return *static_cast<T*>(u->getData());
+        }
+        else
+        {
+            std::ostringstream msg;
+            msg << "Value at position "<<pos<<" was set using"
+                << " a different type than the one passed to get()";
+            throw SOCIError(msg.str());
+        }
+    }
 
-    // this is called by deatils::IntoType<Values>::cleanUp()
+    Row& getRow() 
+    { 
+        row_ = new Row(); 
+        return *row_; 
+    }
+
+    //TODO To make Values generally usable outside of TypeConversionS, 
+    // these should be reference counted smart pointers
+    Row *row_; 
+    std::vector<details::StandardUseType*> uses_; 
+    std::vector<details::UseTypeBase*> unused_;
+
+    std::map<std::string, size_t> index_;
+    
+    void addUnused(details::UseTypeBase *u){unused_.push_back(u);}
+
+    // this is called by details::IntoType<Values>::cleanUp()
+    // and UseType<Values>::cleanUp()
     void cleanUp()
     {
         delete row_;
         row_ = NULL;
-
-        // TODO: what about cleaning up uses_ objects?
+        
+        // delete any uses which were created  by set() but
+        // were not bound by the Statement
+        // (bound uses are deleted in Statement::cleanUp())
+        for (size_t i=0; i<unused_.size(); ++i)
+        {
+            delete unused_[i];
+            unused_[i] = NULL;
+        }
     }
-
     mutable std::size_t currentPos_;
 };
 
@@ -1532,21 +1588,18 @@ public:
 
     virtual void postUse(bool /*gotData*/)
     {
-        convertTo();
+        convertFrom();
     }
 
-    virtual void preUse()
-    {
-        convertTo();
-    }
-
-    virtual void cleanUp() {}
+    virtual void preUse() {}
+    virtual void cleanUp() {v_.cleanUp();}
     virtual std::size_t size() const { return 1; }
 
-    // this is used only to re-dispatch to derived class
+    // these are used only to re-dispatch to derived class
     // (the derived class might be generated automatically by
     // user conversions)
     virtual void convertTo() {}
+    virtual void convertFrom() {}
 
 private:
     Values& v_;

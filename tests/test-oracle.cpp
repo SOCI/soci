@@ -529,6 +529,7 @@ void test10()
             proc.execute(1);
             assert(out == in);
         }
+        sql << "drop procedure echo";
     }
 
     std::cout << "test 10 passed" << std::endl;
@@ -670,7 +671,8 @@ private:
 
 namespace SOCI
 {
-    template<> struct TypeConversion<StringHolder>
+    template<> 
+    struct TypeConversion<StringHolder>
     {
         typedef std::string base_type;
         static StringHolder from(std::string& s) { return StringHolder(s); }
@@ -680,9 +682,8 @@ namespace SOCI
 
 void test12()
 {
+    Session sql(backEndName, connectString);
     {
-        Session sql(backEndName, connectString);
-
         try
         {
             sql << "drop table test12";
@@ -701,6 +702,22 @@ void test12()
         sql << "select * from test12", into(r);
         StringHolder dynamicOut = r.get<StringHolder>(0);
         assert(dynamicOut.get() == "my string");
+    }
+
+    // test procedure with user-defined type as in-out parameter    
+    {
+        sql << "create or replace procedure doubleString(s in out varchar2)"
+            " as begin s := s || s; end;";
+
+        StringHolder sh("test");
+  
+        Procedure proc = (sql.prepare << "doubleString(:s)", use(sh));
+        proc.execute(1);
+        assert(sh.get() == "testtest");
+
+        //TODO test/support procedures which return null
+        
+        sql << "drop procedure doubleString";
     }
 
     std::cout << "test 12 passed" << std::endl;
@@ -1664,6 +1681,7 @@ namespace SOCI
             v.set("ID", p.id);
             v.set("FIRST_NAME", p.firstName);
             v.set("LAST_NAME", p.lastName);
+            v.set("GENDER", p.gender);
             return v;
         }
     };
@@ -1742,14 +1760,29 @@ void test23()
     assert(p3.firstName + p3.lastName == "PatriciaSmith");
     assert(p3.gender == "whoknows");
 
-    sql << "update person set gender = 'M' where id = 1";
+    sql << "update person set gender = 'F' where id = 1";
 
     // additional test for stream-like conversion
     Person3 p4;
     sql << "select id, first_name, last_name, gender from person", into(p4);
     assert(p4.id == 1);
     assert(p4.firstName + p4.lastName == "PatriciaSmith");
-    assert(p4.gender == "M");
+    assert(p4.gender == "F");
+
+    // test with stored procedures
+    {
+        sql << "create or replace procedure getNewID(id in out number)"
+               " as begin id := id * 100; end;"; 
+        Person p;
+        p.id = 1;
+        Procedure proc = (sql.prepare << "getNewID(:ID)", use(p));
+        proc.execute(1);
+        assert(p.id == 100);
+
+        //TODO add support for procedures which return NULL
+
+        sql << "drop procedure getNewID";
+    }
 
     std::cout << "test 23 passed" << std::endl;
 }
@@ -1790,10 +1823,6 @@ void test24()
     std::cout << "test 24 passed" << std::endl;
 }
 
-// TODO:
-// - test for procedure call where in/out parameter is modified
-//   verify also that user-provided type conversions work there
-
 int main(int argc, char** argv)
 {
     if (argc == 2)
@@ -1820,7 +1849,7 @@ int main(int argc, char** argv)
         test7();
         test8();
         test9();
-        test10();
+        test10(); 
         test11();
         test12();
         test13();

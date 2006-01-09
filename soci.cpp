@@ -16,7 +16,6 @@
 using namespace SOCI;
 using namespace SOCI::details;
 
-
 SOCIError::SOCIError(std::string const & msg)
     : std::runtime_error(msg)
 {
@@ -129,12 +128,12 @@ void Statement::bind(Values& values)
                 }
                 else
                 {
-                    delete *it;
+                    values.addUnused(*it);
                 }
             }
             else
             {
-                delete *it;
+                values.addUnused(*it);
             }
 
             cnt++;
@@ -144,7 +143,7 @@ void Statement::bind(Values& values)
     {
         for(size_t i = ++cnt; i < values.uses_.size(); ++i)
         {            
-            delete values.uses_[i];
+            values.addUnused(uses_[i]);
         }
         throw; 
     }
@@ -457,11 +456,12 @@ void Statement::postFetch(bool gotData, bool calledFromFetch)
 }
 
 void Statement::postUse(bool gotData)
-{
-    std::size_t const usize = uses_.size();
-    for (std::size_t i = 0; i != usize; ++i)
+{ 
+    // iterate in reverse order here in case the first item
+    // is an UseType<Values> (since it depends on the other UseTypes)
+    for (std::size_t i = uses_.size(); i != 0; --i)
     {
-        uses_[i]->postUse(gotData);
+        uses_[i-1]->postUse(gotData);
     }
 }
 
