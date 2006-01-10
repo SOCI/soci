@@ -715,9 +715,21 @@ void test12()
         proc.execute(1);
         assert(sh.get() == "testtest");
 
-        //TODO test/support procedures which return null
-        
         sql << "drop procedure doubleString";
+    }
+
+    // test procedure which returns null
+    {
+         sql << "create or replace procedure returnsNull(s in out varchar2)"
+            " as begin s := NULL; end;";
+
+         StringHolder sh;           
+         eIndicator ind = eOK;
+         Procedure proc = (sql.prepare << "returnsNull(:s)", use(sh, ind));
+         proc.execute(1);
+         assert(ind == eNull);
+
+        sql << "drop procedure returnsNull";
     }
 
     std::cout << "test 12 passed" << std::endl;
@@ -1769,7 +1781,7 @@ void test23()
     assert(p4.firstName + p4.lastName == "PatriciaSmith");
     assert(p4.gender == "F");
 
-    // test with stored procedures
+    // test with stored procedure
     {
         sql << "create or replace procedure getNewID(id in out number)"
                " as begin id := id * 100; end;"; 
@@ -1779,9 +1791,37 @@ void test23()
         proc.execute(1);
         assert(p.id == 100);
 
-        //TODO add support for procedures which return NULL
-
         sql << "drop procedure getNewID";
+    }
+
+    // test with stored procedure which returns null
+    {
+        sql << "create or replace procedure returnsNull(s in out varchar2)"
+               " as begin s := NULL; end;"; 
+        
+        std::string msg;
+        Person p;
+        try
+        {
+            Procedure proc = (sql.prepare << "returnsNull(:FIRST_NAME)", 
+                                use(p));
+            proc.execute(1);
+        }
+        catch (SOCIError& e)
+        {
+            msg = e.what();
+        }
+
+        assert(msg == "Column FIRST_NAME contains NULL value and"
+                      " no default was provided");
+
+        Procedure proc = (sql.prepare << "returnsNull(:GENDER)", 
+                                use(p));
+        proc.execute(1);
+        assert(p.gender == "unknown");        
+
+        sql << "drop procedure returnsNull";
+
     }
 
     std::cout << "test 23 passed" << std::endl;
@@ -1861,7 +1901,7 @@ int main(int argc, char** argv)
         test19();
         test20();
         test21();
-        test22(); 
+        test22();
         test23();
         test24();
 

@@ -483,6 +483,7 @@ public:
 protected:
     std::vector<details::IntoTypeBase*> intos_;
     std::vector<details::UseTypeBase*> uses_;
+    std::vector<eIndicator*> indicators_;
 
     std::string rewriteForProcedureCall(std::string const &query);
 
@@ -1447,13 +1448,39 @@ public:
     template <typename T>
     T get(std::size_t pos) const
     {
-        return row_ ? row_->get<T>(pos) : getFromUses<T>(pos);
+        if (row_)
+        {
+            return row_->get<T>(pos);
+        }
+        else if (*indicators_[pos] != eNull)
+        {
+            return getFromUses<T>(pos);
+        }
+        else
+        {
+            std::ostringstream msg;
+            msg << "Column at position " 
+                << pos << " contains NULL value and"
+                          " no default was provided";
+            throw SOCIError(msg.str());
+        }
     }
 
     template <typename T>
     T get(std::size_t pos, T const &nullValue) const
     {
-        return row_ ? row_->get<T>(pos, nullValue) : getFromUses<T>(pos);
+        if (row_)
+        {
+            return row_->get<T>(pos, nullValue);
+        }
+        else if (*indicators_[pos] == eNull)
+        {
+            return nullValue;
+        }
+        else
+        {
+            return getFromUses<T>(pos);
+        }
     }
 
     template <typename T>
@@ -1465,7 +1492,8 @@ public:
     template <typename T>
     T get(std::string const &name, T const &nullValue) const
     {
-        return row_ ? row_->get<T>(name, nullValue) : getFromUses<T>(name);
+        return row_ ? row_->get<T>(name, nullValue) 
+            : getFromUses<T>(name, nullValue);
     }
 
     template <typename T>
@@ -1480,16 +1508,58 @@ public:
     void set(std::string const &name, T &value)
     {
         index_.insert(std::make_pair(name, uses_.size()));
-        uses_.push_back(new details::UseType<T>(value, name));
+        eIndicator* ind = new eIndicator; 
+
+        uses_.push_back(new details::UseType<T>(value, *ind, name));
+        indicators_.push_back(ind);
     }
 
 private:
+
+    //TODO To make Values generally usable outside of TypeConversionS, 
+    // these should be reference counted smart pointers
+    Row *row_; 
+    std::vector<details::StandardUseType*> uses_; 
+    std::map<details::UseTypeBase*, eIndicator*> unused_;
+    std::vector<eIndicator*> indicators_;
+    std::map<std::string, size_t> index_;
+
+    template <typename T>
+    T getFromUses(std::string const &name, T const &nullValue) const
+    {
+        std::map<std::string, size_t>::const_iterator pos = index_.find(name);
+        if (pos != index_.end())
+        {
+            if (*indicators_[pos->second] == eNull)
+            {
+                return nullValue;
+            }
+
+            try
+            {
+                return getFromUses<T>(pos->second);
+            }
+            catch(SOCIError const &e)
+            {
+                throw SOCIError("Value named " + name + " was set using"
+                    " a different type than the one passed to get()");
+            }
+        }
+        throw SOCIError("Value named " + name + " not found.");
+    }
+
     template <typename T>
     T getFromUses(std::string const &name) const
     {
         std::map<std::string, size_t>::const_iterator pos = index_.find(name);
         if (pos != index_.end())
         {
+            if (*indicators_[pos->second] == eNull)
+            {
+                throw SOCIError("Column " + name + " contains NULL value and"
+                            " no default was provided");
+            }
+
             try
             {
                 return getFromUses<T>(pos->second);
@@ -1525,16 +1595,12 @@ private:
         row_ = new Row(); 
         return *row_; 
     }
-
-    //TODO To make Values generally usable outside of TypeConversionS, 
-    // these should be reference counted smart pointers
-    Row *row_; 
-    std::vector<details::StandardUseType*> uses_; 
-    std::vector<details::UseTypeBase*> unused_;
-
-    std::map<std::string, size_t> index_;
     
-    void addUnused(details::UseTypeBase *u){unused_.push_back(u);}
+    // this is called by Statement::bind(Values)
+    void addUnused(details::UseTypeBase *u, eIndicator *i)
+    {
+        unused_.insert(std::make_pair(u, i));
+    }
 
     // this is called by details::IntoType<Values>::cleanUp()
     // and UseType<Values>::cleanUp()
@@ -1543,13 +1609,14 @@ private:
         delete row_;
         row_ = NULL;
         
-        // delete any uses which were created  by set() but
+        // delete any uses and indicators which were created  by set() but
         // were not bound by the Statement
-        // (bound uses are deleted in Statement::cleanUp())
-        for (size_t i=0; i<unused_.size(); ++i)
+        // (bound uses and indicators are deleted in Statement::cleanUp())
+        for (std::map<details::UseTypeBase*, eIndicator*>::iterator pos =
+            unused_.begin(); pos != unused_.end(); ++pos)            
         {
-            delete unused_[i];
-            unused_[i] = NULL;
+            delete pos->first;
+            delete pos->second;
         }
     }
     mutable std::size_t currentPos_;

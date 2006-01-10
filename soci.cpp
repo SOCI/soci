@@ -125,15 +125,16 @@ void Statement::bind(Values& values)
                     int position = static_cast<int>(uses_.size());
                     (*it)->bind(*this, position);
                     uses_.push_back(*it);
+                    indicators_.push_back(values.indicators_[cnt]);
                 }
                 else
                 {
-                    values.addUnused(*it);
+                    values.addUnused(*it, values.indicators_[cnt]);
                 }
             }
             else
             {
-                values.addUnused(*it);
+                values.addUnused(*it, values.indicators_[cnt]);
             }
 
             cnt++;
@@ -143,7 +144,7 @@ void Statement::bind(Values& values)
     {
         for(size_t i = ++cnt; i < values.uses_.size(); ++i)
         {            
-            values.addUnused(uses_[i]);
+            values.addUnused(uses_[i], values.indicators_[i]);
         }
         throw; 
     }
@@ -177,6 +178,11 @@ void Statement::cleanUp()
         uses_[i - 1]->cleanUp();
         delete uses_[i - 1];
         uses_.resize(i - 1);
+    }
+
+    for (std::size_t i = 0; i < indicators_.size(); ++i)
+    {
+        delete indicators_[i];
     }
 
     if (backEnd_ != NULL)
