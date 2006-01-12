@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>SOCI - rationale</title>
+</head>
+<body>
+<font size="+3"><span
+ style="font-family: helvetica,arial,sans-serif; font-weight: bold; color: rgb(0, 0, 255);">SOCI</span></font><br>
+<span
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">Simple
+Oracle Call Interface</span><span
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);">
+(and more)<br>
+</span>
+<br>
+<h3>Rationale FAQ<br>
+</h3>
+This part of the documentation is supposed to gather in a single place
+the usual questions (and answers) about SOCI with regard to the design
+decisions that shaped it.<br>
+<br>
+<span style="font-weight: bold;">Q: Where the basic SOCI syntax comes
+from?</span><br>
+<br>
+The basic SOCI syntax was inspired by the Embedded SQL, which is part
+of the SQL standard, supported by the major DB technologies and even
+available as part of the language used in some DB-oriented integrated
+development environments. The term "Embedded SQL" is enough for Google
+to spit millions of references and one of the examples is:<br>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>{<br>&nbsp;&nbsp;&nbsp; int a;<br>&nbsp;&nbsp;&nbsp; /* ... */<br>&nbsp;&nbsp;&nbsp; EXEC SQL SELECT salary INTO :a<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FROM Employee<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; WHERE SSN=876543210;<br>&nbsp;&nbsp;&nbsp; /* ... */<br>&nbsp;&nbsp;&nbsp; printf("The salary is %d\n", a);<br>&nbsp;&nbsp;&nbsp; /* ... */<br>}</pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The above is not a regular C (nor C++) code, of course. It's the mix of
+C and SQL and there is a separate, specialized preprocessor needed to
+convert it to something that the actual C (or C++) compiler will be
+able to understand. This means that the compilation of the program
+using embedded SQL is two-phase: preprocess the embedded SQL part and
+compile the result. This two-phase development is quite troublesome,
+especially when it comes to debugging. Yet, the advantage of it is that
+the code expresses the programmer's intents in a very straightforward
+way: read something from the database and put it into the local
+variable. Just like that.<br>
+<br>
+The SOCI library was born as an anwer to the following question: is it
+possible to have the same expressive power without the disadvantages of
+two-phase builds?<br>
+The following was chosen to be the basic SOCI syntax that can mirror
+the above Embedded SQL example:<br>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>int a;<br>sql &lt;&lt; "SELECT salary FROM Employee WHERE SSN=876543210", into(a);</pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+(as you see, SOCI changes the order of elements a little bit, so that
+the SQL query is separate and not mixed with other elements)<br>
+<br>
+Apart from mimicking the Embedded SQL techniques in the regular, fully
+standard C++ code, the above syntax has the following benefit: it is <span
+ style="font-style: italic;">minimal</span> with respect to what has to
+be said. Every single piece above is needed and expresses something
+important, like:<br>
+<ul>
+  <li>which session should be used (the client can be connected to many
+databases at the same time) - here, the <code>sql</code> object
+encapsulates the session,</li>
+  <li>what SQL query should be executed - here, it's the string
+literal, but it could be also a <code>std::string</code> variable,</li>
+  <li>where to put the result - here, the local variable <code>a</code>
+will receive the result.</li>
+</ul>
+It's rather difficult to remove any of these.<br>
+The fact that the basic SOCI syntax is minimal (but without being
+obscure at the same time, see below) means that the programmer does not
+need to bother with unnecessary noise that some other database
+libraries impose. We hope that after having written one line of code
+like above by themselves, most programmers will react with something
+like "how obvious!" instead of "how advanced!".<br>
+<br>
+<span style="font-weight: bold;">Q: Why should I use SQL queries as
+strings in my program? I prefer the query to be generated or composed
+piece-by-piece by separate functions.</span><br>
+<br>
+First, you don't need to use SQL queries as string literals. In bigger
+projects it is a common practice to store SQL queries externally (in a
+file, or in a... database) and load them before use. This means that
+they are not necessarily expected to appear in the program code, as
+they do in our simple code examples.<br>
+What is important, though, is that SOCI does not try to mess with the
+text of the query (apart from very few cases), which means that the
+database server will get exactly the same text of the query as is used
+in the program. The advantage of this is that there is no new SQL-like
+(or even SQL-unlike)
+syntax that you would need to learn, and also that it's much easier to
+convince a typical
+DBA to help with SQL tuning or other specialized activities, if he is
+given the material in the form that is not polluted with any foreign
+abstractions.<br>
+<br>
+<span style="font-weight: bold;">Q: Overloaded comma operator is just
+obfuscation, I don't like it.</span><br>
+<br>
+Well, consider the following:<br>
+<br>
+"Send the query X to the server Y <span style="font-style: italic;">and</span>
+put result into variable Z."<br>
+<br>
+Above, the "and" plays a role of the comma. Even if overloading the
+comma operator is not a very popular practice in C++, some libraries do
+this, achieving terse and intuitive syntax.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><a href="beyond.html">Previous
+(Backends reference)</a></td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<hr style="width: 100%; height: 2px;">Copyright &copy; 2004-2005 Maciej
+Sobczak, Steve Hutton<br>
+<br>
+</body>
+</html>
