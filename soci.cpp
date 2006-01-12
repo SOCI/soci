@@ -183,6 +183,7 @@ void Statement::cleanUp()
     for (std::size_t i = 0; i < indicators_.size(); ++i)
     {
         delete indicators_[i];
+        indicators_[i] = NULL;
     }
 
     if (backEnd_ != NULL)
