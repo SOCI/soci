@@ -117,9 +117,7 @@ int EmptyStatementBackEnd::prepareForDescribe()
 }
 
 void EmptyStatementBackEnd::describeColumn(int /* colNum */,
-    eDataType & /* type */, std::string & /* columnName */,
-	int & /* size */, int & /* precision */, int & /* scale */,
-    bool & /* nullOk */)
+    eDataType & /* type */, std::string & /* columnName */)
 {
     // ...
 }
