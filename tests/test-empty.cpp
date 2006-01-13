@@ -34,9 +34,8 @@ struct Person
 
 namespace SOCI
 {
-    template<> class TypeConversion<Person>
+    template<> struct TypeConversion<Person>
     {
-    public:
         typedef Row base_type;
         static Person from(Row& /* r */)
         {

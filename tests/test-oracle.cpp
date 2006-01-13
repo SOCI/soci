@@ -889,7 +889,7 @@ void test15()
         {
             sql << "select id from test15", into(ids);
         }
-        catch (SOCIError const &e)
+        catch (SOCIError const &)
         {
             caught = true;
         }

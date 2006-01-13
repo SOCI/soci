@@ -1460,8 +1460,8 @@ public:
         {
             std::ostringstream msg;
             msg << "Column at position " 
-                << pos << " contains NULL value and"
-                          " no default was provided";
+                << static_cast<unsigned long>(pos)
+                << " contains NULL value and no default was provided";
             throw SOCIError(msg.str());
         }
     }
@@ -1539,7 +1539,7 @@ private:
             {
                 return getFromUses<T>(pos->second);
             }
-            catch(SOCIError const &e)
+            catch(SOCIError const &)
             {
                 throw SOCIError("Value named " + name + " was set using"
                     " a different type than the one passed to get()");
@@ -1557,14 +1557,14 @@ private:
             if (*indicators_[pos->second] == eNull)
             {
                 throw SOCIError("Column " + name + " contains NULL value and"
-                            " no default was provided");
+                    " no default was provided");
             }
 
             try
             {
                 return getFromUses<T>(pos->second);
             }
-            catch(SOCIError const &e)
+            catch(SOCIError const &)
             {
                 throw SOCIError("Value named " + name + " was set using"
                     " a different type than the one passed to get()");
@@ -1584,8 +1584,10 @@ private:
         else
         {
             std::ostringstream msg;
-            msg << "Value at position "<<pos<<" was set using"
-                << " a different type than the one passed to get()";
+            msg << "Value at position "
+                << static_cast<unsigned long>(pos)
+                << " was set using a different type"
+                   " than the one passed to get()";
             throw SOCIError(msg.str());
         }
     }
