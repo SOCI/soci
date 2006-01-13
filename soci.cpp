@@ -142,7 +142,7 @@ void Statement::bind(Values& values)
     }
     catch(...)
     {
-        for(size_t i = ++cnt; i < values.uses_.size(); ++i)
+        for(size_t i = ++cnt; i != values.uses_.size(); ++i)
         {            
             values.addUnused(uses_[i], values.indicators_[i]);
         }
@@ -166,21 +166,21 @@ void Statement::exchange(UseTypePtr const &u)
 void Statement::cleanUp()
 {
     // deallocate all bind and define objects
-    for (std::size_t i = intos_.size(); i > 0; --i)
+    for (std::size_t i = intos_.size(); i != 0; --i)
     {
         intos_[i - 1]->cleanUp();
         delete intos_[i - 1];
         intos_.resize(i - 1);
     }
 
-    for (std::size_t i = uses_.size(); i > 0; --i)
+    for (std::size_t i = uses_.size(); i != 0; --i)
     {
         uses_[i - 1]->cleanUp();
         delete uses_[i - 1];
         uses_.resize(i - 1);
     }
 
-    for (std::size_t i = 0; i < indicators_.size(); ++i)
+    for (std::size_t i = 0; i != indicators_.size(); ++i)
     {
         delete indicators_[i];
         indicators_[i] = NULL;
@@ -221,12 +221,12 @@ void Statement::defineAndBind()
 
 void Statement::unDefAndBind()
 {
-    for (std::size_t i = intos_.size(); i > 0; --i)
+    for (std::size_t i = intos_.size(); i != 0; --i)
     {
         intos_[i - 1]->cleanUp();
     }
 
-    for (std::size_t i = uses_.size(); i > 0; --i)
+    for (std::size_t i = uses_.size(); i != 0; --i)
     {
         uses_[i - 1]->cleanUp();
     }
