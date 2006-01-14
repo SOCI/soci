@@ -724,10 +724,15 @@ std::size_t Row::size() const
     return holders_.size();
 }
 
-eIndicator const Row::indicator(std::size_t pos) const
+eIndicator Row::indicator(std::size_t pos) const
 {
     assert(indicators_.size() >= static_cast<std::size_t>(pos + 1));
     return *indicators_[pos];
+}
+
+eIndicator Row::indicator(std::string const &name) const
+{
+    return indicator(findColumn(name));
 }
 
 ColumnProperties const & Row::getProperties(std::size_t pos) const
@@ -738,14 +743,20 @@ ColumnProperties const & Row::getProperties(std::size_t pos) const
 
 ColumnProperties const & Row::getProperties(std::string const &name) const
 {
+    return getProperties(findColumn(name));
+}
+
+std::size_t Row::findColumn(std::string const &name) const
+{
     std::map<std::string, std::size_t>::const_iterator it = index_.find(name);
     if (it == index_.end())
     {
         std::ostringstream msg;
-        msg << "Column not found: " << name;
+        msg << "Column '" << name << "' not found";
         throw SOCIError(msg.str());
     }
-    return getProperties(it->second);
+
+    return it->second;
 }
 
 Row::~Row()
@@ -756,6 +767,16 @@ Row::~Row()
         delete holders_[i];
         delete indicators_[i];
     }
+}
+
+eIndicator Values::indicator(std::size_t pos) const
+{
+    return row_->indicator(pos);
+}
+
+eIndicator Values::indicator(std::string const &name) const
+{
+    return row_->indicator(name);
 }
 
 

@@ -348,7 +348,9 @@ public:
 
     void addProperties(ColumnProperties const &cp);
     std::size_t size() const;
-    eIndicator const indicator(std::size_t pos) const;
+
+    eIndicator indicator(std::size_t pos) const;
+    eIndicator indicator(std::string const &name) const;
 
     template <typename T>
     inline void addHolder(T* t, eIndicator* ind)
@@ -393,36 +395,28 @@ public:
     template <typename T>
     T get (std::string const &name) const
     {
-        std::map<std::string, std::size_t>::const_iterator it
-            = index_.find(name);
-        if (it == index_.end())
-        {
-            throw SOCIError("Column '" + name + "' not found");
-        }
-        if (eNull == *indicators_[it->second])
+        std::size_t pos = findColumn(name);
+
+        if (eNull == *indicators_[pos])
         {
             throw SOCIError("Column '" + name + "' contains NULL value and"
                                                 " no default was provided");
         }
 
-        return get<T>(it->second);
+        return get<T>(pos);
     }
 
     template <typename T>
     T get (std::string const &name, T const &nullValue) const
     {
-        std::map<std::string, std::size_t>::const_iterator it
-            = index_.find(name);
-        if (it == index_.end())
-        {
-            throw SOCIError("Column '" + name + "' not found");
-        }
-        if (eNull == *indicators_[it->second])
+        std::size_t pos = findColumn(name);
+
+        if (eNull == *indicators_[pos])
         {
             return nullValue;
         }
 
-        return get<T>(it->second);
+        return get<T>(pos);
     }
 
     Row() {} // quiet the compiler
@@ -432,6 +426,8 @@ private:
     // copy not supported
     Row(Row const &);
     Row operator=(Row const &);
+
+    std::size_t findColumn(std::string const &name) const;
 
     std::vector<ColumnProperties> columns_;
     std::vector<details::Holder*> holders_;
@@ -1444,6 +1440,9 @@ friend class details::UseType<Values>;
 public:
 
     Values() : row_(NULL), currentPos_(0) {}
+
+    eIndicator indicator(std::size_t pos) const;
+    eIndicator indicator(std::string const &name) const;
 
     template <typename T>
     T get(std::size_t pos) const
