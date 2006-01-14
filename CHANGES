@@ -12,6 +12,8 @@ Version 2.0.0 differs from 1.2.1 in the following ways:
   the PostgreSQL backend was provided in addition to the Oracle one.
   During this re-architecturing, some minor bugs were fixed as well.
 
+- The old Boost-style license was changed to the new (v. 1.0) Boost license.
+
 ---
 The version 1.2.1 differs from 1.2.0 in the following ways:
 

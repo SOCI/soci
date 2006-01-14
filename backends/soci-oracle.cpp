@@ -1,12 +1,9 @@
 //
-// Copyright (C) 2004, 2005 Maciej Sobczak, Steve Hutton
+// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 //
-// Permission to copy, use, modify, sell and distribute this software
-// is granted provided this copyright notice appears in all copies.
-// This software is provided "as is" without express or implied
-// warranty, and with no claim as to its suitability for any purpose.
-//
-
 
 #include "soci-oracle.h"
 #include "soci.h"
