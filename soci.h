@@ -363,7 +363,7 @@ public:
     ColumnProperties const & getProperties (std::string const &name) const;
 
     template <typename T>
-    T get (std::size_t pos) const
+    T get(std::size_t pos) const
     {
         typedef typename TypeConversion<T>::base_type BASE_TYPE;
 
@@ -393,7 +393,7 @@ public:
     }
 
     template <typename T>
-    T get (std::string const &name) const
+    T get(std::string const &name) const
     {
         std::size_t pos = findColumn(name);
 
@@ -407,7 +407,7 @@ public:
     }
 
     template <typename T>
-    T get (std::string const &name, T const &nullValue) const
+    T get(std::string const &name, T const &nullValue) const
     {
         std::size_t pos = findColumn(name);
 
@@ -1620,6 +1620,7 @@ private:
             delete pos->second;
         }
     }
+
     mutable std::size_t currentPos_;
 };
 
