@@ -21,14 +21,38 @@ This part of the documentation is supposed to gather in a single place
 the usual questions (and answers) about SOCI with regard to the design
 decisions that shaped it.<br>
 <br>
+<span style="font-weight: bold;">Q: Why "SOCI"?</span><br>
+<br>
+SOCI was initially developed in the environment where Oracle was the
+main database technology in use. As a wrapper for the native OCI API
+(Oracle Call Interface), the name Simple Oracle Call Interface was
+quite obvious - until the 2.0 release, when the internal architecture
+was largely redesigned to allow the use of <span
+ style="font-style: italic;">backends</span> that support other
+database servers. Instead of inventing the new name for the library, we
+decided to keep Oracle as the main supported technology in the sense
+that the library includs only those features that were naturally
+implemented in
+Oracle. This also means that backeds for other servers might need to
+work around some of the imposed idioms and protocols, but the example
+of well-working PostgreSQL backend shows that it's actually not that
+bad and we're looking forward to provide more backends for other
+servers. Of
+course, some of the features that were provided for Oracle might not be
+supported for all other servers, but we think that it's better to have
+one leading technology (where at least one group is fully happy)
+instead of some "common denominator" for all databases (where <span
+ style="font-style: italic;">nobody</span> is happy).<br>
+<br>
 <span style="font-weight: bold;">Q: Where the basic SOCI syntax comes
 from?</span><br>
 <br>
 The basic SOCI syntax was inspired by the Embedded SQL, which is part
 of the SQL standard, supported by the major DB technologies and even
-available as part of the language used in some DB-oriented integrated
+available as built-in part of the languages used in some DB-oriented
+integrated
 development environments. The term "Embedded SQL" is enough for Google
-to spit millions of references and one of the examples is:<br>
+to spit millions of references - one of the typical examples is:<br>
 <br>
 <table style="width: 100%; background-color: silver; text-align: left;"
  border="0" cellpadding="2" cellspacing="2">
@@ -86,7 +110,9 @@ literal, but it could be also a <code>std::string</code> variable,</li>
   <li>where to put the result - here, the local variable <code>a</code>
 will receive the result.</li>
 </ul>
-It's rather difficult to remove any of these.<br>
+Everything else is just a couple of operators that allow to treat the
+whole as a single expression. It's rather difficult to remove anything
+from this example.<br>
 The fact that the basic SOCI syntax is minimal (but without being
 obscure at the same time, see below) means that the programmer does not
 need to bother with unnecessary noise that some other database
@@ -114,6 +140,62 @@ DBA to help with SQL tuning or other specialized activities, if he is
 given the material in the form that is not polluted with any foreign
 abstractions.<br>
 <br>
+<span style="font-weight: bold;">Q: Why not some stream-like interface,
+which is well-known to all C++ programmers?</span><br>
+<br>
+An example of the stream-like interface might be something like this
+(this is imaginary syntax, not supported by SOCI):<br>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>sql.exec("select a, b, c from some_table");<br><br>while (!sql.eof())<br>{<br>    int a, b, c;<br>    sql &gt;&gt; a &gt;&gt; b &gt;&gt; c;<br>    // ...<br>}<br></pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+We think that the data stored in the retational database should be
+treated as a set of relations - which is exactly what it is. This means
+that what is read from the database as a result of some SQL query is a <span
+ style="font-style: italic;">set of rows</span>. This set might be
+ordered, but it is still a set of rows, not a uniform list of values.
+This distinctions might seem to be unnecessarily low-level and that the
+uniform stream-like presentation of data is more preferable, but it's
+actually the other way round - the set of rows is something more
+structured (and that structure was <span style="font-style: italic;">designed</span>
+into the database) than
+the flat stream and
+is therefore less prone to programming errors like miscounting the
+number of values that is expected in each row.<br>
+Consider the following programming error:<br>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>sql.exec("select a, b from some_table"); // only TWO columns<br><br>while (!sql.eof())<br>{<br>    int a, b, c;<br>    sql &gt;&gt; a &gt;&gt; b &gt;&gt; c; // this causes "row-tearing"<br>    // ...<br>}<br></pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<span style="font-style: italic;">"How to detect the end
+of each line in a file"</span> is a common beginner's question that
+relates to the use of IOStreams - and this
+common question clearly shows that for the record-oriented data the
+stream is not an optimal abstraction. Of course, we don't claim that
+IOStreams is bad - but we do insist that the record-oriented data is
+better manipulated in a way that is also record-aware. That's why SOCI
+does not provide the stream-like interface out of the box.<br>
+Having said that, we have experimented a bit with the concept of the
+stream-like interface, but where the stream is always bound to the
+single row, so that the row-tearing effect is not possible. Still,
+whether this feature will become "official" is not yet settled down.<br>
+<br>
 <span style="font-weight: bold;">Q: Overloaded comma operator is just
 obfuscation, I don't like it.</span><br>
 <br>
@@ -124,7 +206,63 @@ put result into variable Z."<br>
 <br>
 Above, the "and" plays a role of the comma. Even if overloading the
 comma operator is not a very popular practice in C++, some libraries do
-this, achieving terse and intuitive syntax.<br>
+this, achieving terse and easy to learn syntax. We are pretty sure that
+in SOCI the comma operator was overloaded with a good effect.<br>
+<br>
+<span style="font-weight: bold;">Q: The </span><code
+ style="font-weight: bold;">operator&lt;&lt;</code><span
+ style="font-weight: bold;"> provides a bad abstraction for the "input"
+statements.</span><br>
+<br>
+Indeed, the <code>operator&lt;&lt;</code> in the basic SOCI syntax
+shows that something (the query) is sent somewhere (to the server).
+Some people don't like this, especially when the "select" statements
+are involved. If the high-level idea is to <span
+ style="font-style: italic;">read</span> data from somewhere, then <code>operator&lt;&lt;</code>
+seems unintuitive to the die-hard IOStreams users. The fact is,
+however, that the code containing an SQL statement already indicates
+that there is a client-server relationship with some other software
+component (very likely remote). In such code it does not make any sense
+to pretend that the communication is one-way only, because it's clear
+that even the "select" statements need to be <span
+ style="font-style: italic;">sent</span> somewhere. This approach is
+also more uniform and allows to cover other statements like "drop
+table" or alike, where no data is expected to be exchanged at all (and
+therefore the IOStreams analogies for data exchange have no sense at
+all). No matter what is the kind of the SQL statement, it is <span
+ style="font-style: italic;">sent</span> to the server and this
+"sending" justifies the choice of <code>operator&lt;&lt;</code>.<br>
+Using different operators (<code>operator&gt;&gt;</code> and <code>operator&lt;&lt;</code>)
+as a way of distinguishing between different high-level ideas <span
+ style="font-style: italic;">(reading</span> and <span
+ style="font-style: italic;">writing</span> from the data store,
+respectively) does make sense on much higher level of abstraction,
+where the SQL statement itself is already hidden - and we do encourage
+programmers to use SOCI for implementing such high-level abstractions.
+For this, the object-relational mapping facilities available in SOCI
+might prove to be a valuable tool as well, as an effective bridge
+between the low-level world of SQL statements and the high-level world
+of user-defined abstract data types.<br>
+<br>
+<span style="font-weight: bold;">Q: Why the Boost license?</span><br>
+<br>
+We decided to use the <a target="_blank"
+ href="http://www.boost.org/LICENSE_1_0.txt">Boost license</a>, because
+it's well recognized in the C++ community, allows us to keep our
+minimum copyrights, and at the same time allows SOCI to be safely used
+in commercial projects, without imposing concerns (or just plain
+uncertainty) typical to other open source licenses, like GPL. We also
+hope that by choosing the Boost license we have made the life easier
+for both us and our users. It saves us from answering law-related
+questions that were already answered on the <a target="_blank"
+ href="http://www.boost.org/more/license_info.html">Boost license info
+page</a> and it should also give more confidence to our users -
+especially to those of them, who already accepted the conditions of the
+Boost license (one license less to analyze).<br>
+Still, if for any reason the conditions of this license are not
+acceptable, we encourage the users to contact us directly (see <a
+ target="_blank" href="http://soci.sourceforge.net/people.html">links</a>
+on the relevant SOCI page) to discuss any remaining concerns.<br>
 <br>
 <table style="width: 100%; text-align: left;" border="0" cellpadding="2"
  cellspacing="2">
@@ -138,8 +276,8 @@ this, achieving terse and intuitive syntax.<br>
   </tbody>
 </table>
 <br>
-<hr style="width: 100%; height: 2px;">Copyright &copy; 2004-2005 Maciej
-Sobczak, Steve Hutton<br>
+<hr style="width: 100%; height: 2px;">Copyright &copy; 2004-2006 Maciej
+Sobczak, Stephen Hutton<br>
 <br>
 </body>
 </html>
