@@ -537,15 +537,14 @@ database table containing columns "ID", "FIRST_NAME", "LAST_NAME", and
 "GENDER".&nbsp; <br>
 <br>
 Note that the mapping is non-invasive - the <code>Person </code>object
-itself doesn't contain any code which is specific to SOCI:<br>
-<br>
+itself doesn't contain any SOCI-specific code:<br>
 <br>
 <table style="width: 100%; background-color: silver; text-align: left;"
  border="0" cellpadding="2" cellspacing="2">
   <tbody>
     <tr>
       <td style="vertical-align: top;">
-      <pre>struct Person<br>{<br>    int id;<br>    std::string firstName;<br>    std::string lastName;<br>    std::string gender;<br>};<br><br>template&lt;&gt; struct TypeConversion&lt;Person&gt;<br>{<br>    typedef Values base_type;<br>    static Person from(Values const &amp;v)<br>    {<br>        Person p;<br>        p.id = v.get&lt;int&gt;("ID");<br>        p.firstName = v.get&lt;std::string&gt;("FIRST_NAME");<br>        p.lastName = v.get&lt;std::string&gt;("LAST_NAME");<br>        p.gender = v.get&lt;std::string&gt;("GENDER", "unknown");<br>        return p;<br>    }<br>    static Values to(Person &amp;p)<br>    {<br>        Values v;<br>        v.set("ID", p.id);<br>        v.set("FIRST_NAME", p.firstName);<br>        v.set("LAST_NAME", p.lastName);<br>        return v;<br>    }<br>};<br></pre>
+      <pre>struct Person<br>{<br>    int id;<br>    std::string firstName;<br>    std::string lastName;<br>    std::string gender;<br>};<br><br>template&lt;&gt; struct TypeConversion&lt;Person&gt;<br>{<br>    typedef Values base_type;<br>    static Person from(Values const &amp;v)<br>    {<br>        Person p;<br>        p.id = v.get&lt;int&gt;("ID");<br>        p.firstName = v.get&lt;std::string&gt;("FIRST_NAME");<br>        p.lastName = v.get&lt;std::string&gt;("LAST_NAME");<br><br>        // p.gender will be set to the default value "unknown"<br>        // when the column is null:<br>        p.gender = v.get&lt;std::string&gt;("GENDER", "unknown");<br><br>        // alternatively, the indicator can be tested directly:<br>        // if (v.indicator("GENDER") == eNull)<br>        // {<br>        //     p.gender = "unknown";<br>        // }<br>        // else<br>        // {<br>        //     p.gender = v.get&lt;std::string&gt;("GENDER");<br>        // }<br><br>        return p;<br>    }<br>    static Values to(Person &amp;p)<br>    {<br>        Values v;<br>        v.set("ID", p.id);<br>        v.set("FIRST_NAME", p.firstName);<br>        v.set("LAST_NAME", p.lastName);<br>        return v;<br>    }<br>};<br></pre>
       </td>
     </tr>
   </tbody>
@@ -625,8 +624,8 @@ the PostgreSQL backend.<br>
   </tbody>
 </table>
 <br>
-<hr style="width: 100%; height: 2px;">Copyright &copy; 2004-2005 Maciej
-Sobczak, Steve Hutton<br>
+<hr style="width: 100%; height: 2px;">Copyright &copy; 2004-2006 Maciej
+Sobczak, Stephen Hutton<br>
 <br>
 </body>
 </html>
