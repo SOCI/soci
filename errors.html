@@ -34,21 +34,22 @@ handle database errors within the standard exception framework:<br>
 <p><span style="font-weight: bold;"><br>
 Portability note:</span><br>
 </p>
-<p>The <code>SOCIError</code> class has a public <code>errNum_</code>
-member, which contains the Oracle error code:<br>
+<p>The Oracle backend can also throw the instances of the <code>OracleSOCIError</code>,
+which is publicly derived from <code>SOCIError</code> and has an
+additional public <code>errNum_</code>
+member containing the Oracle error code:<br>
 </p>
 <table style="width: 100%; background-color: silver; text-align: left;"
  border="0" cellpadding="2" cellspacing="2">
   <tbody>
     <tr>
       <td style="vertical-align: top;">
-      <pre>int main()<br>{<br>    try<br>    {<br>        // regular code<br>    }<br>    catch (SOCIError const &amp;e)<br>    {<br>        cerr &lt;&lt; "Oracle error: " &lt;&lt; e.errNum_<br>             &lt;&lt; " " &lt;&lt; e.what() &lt;&lt; endl;<br>    }<br>    catch (exception const &amp;e)<br>    {<br>        cerr &lt;&lt; "Some other error: " &lt;&lt; e.what() &lt;&lt; endl;<br>    }<br>}</pre>
+      <pre>int main()<br>{<br>    try<br>    {<br>        // regular code<br>    }<br>    catch (OracleSOCIError const &amp;e)<br>    {<br>        cerr &lt;&lt; "Oracle error: " &lt;&lt; e.errNum_<br>             &lt;&lt; " " &lt;&lt; e.what() &lt;&lt; endl;<br>    }<br>    catch (exception const &amp;e)<br>    {<br>        cerr &lt;&lt; "Some other error: " &lt;&lt; e.what() &lt;&lt; endl;<br>    }<br>}</pre>
       </td>
     </tr>
   </tbody>
 </table>
 <br>
-This additional member has no meaning with the PostgreSQL backend.<br>
 <br>
 <table style="width: 100%; text-align: left;" border="0" cellpadding="2"
  cellspacing="2">
