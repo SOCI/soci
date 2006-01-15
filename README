@@ -1,25 +1,30 @@
 SOCI - Simple Oracle Call Interface.
 
-Copyright (C) 2004, 2005 Maciej Sobczak, Steve Hutton
+Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+
+The homepage of the SOCI library is:
+http://soci.sourceforge.net/
 
 ---
 
-You should see the following files here:
+You should see the following files and directories here:
 
-- README    - This file.
-- LICENSE   - Explanation of the license terms.
-- CHANGES   - The description of changes.
-- contrib   - Acknowledgements for contributions.
+- README          - This file.
+- LICENSE_1_0.txt - Full text of the Boost license.
+- CHANGES         - The description of changes.
+- contrib         - Acknowledgements for contributions.
 
-- soci.h    - This is the actual SOCI library,
-  soci.cpp    for use in your own projects.
+- soci.h          - This is the main interface of the SOCI library.
+  soci.cpp
 
-- doc.html  - Short documentation for the library.
+- backends/       - Directory containing implementations of all available
+                    backends of the library.
 
-- test.cpp  - The test program - use it for regression testing if you
-              modify the library.
-- Makefile  - Example makefile for compiling the test program
-              (taken from one of our machines).
+- tests/          - Directory with tests for all the backends.
+                    Example Makefiles (taken from one of our machines)
+                    in this directory may help you find correct options
+                    for your system.
 
+- doc/            - Directory containing SOCI documentation.
 
-Anyway - have fun! :-)
+---

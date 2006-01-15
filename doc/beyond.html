@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>SOCI - beyond</title>
+</head>
+<body>
+<font size="+3"><span
+ style="font-family: helvetica,arial,sans-serif; font-weight: bold; color: rgb(0, 0, 255);">SOCI</span></font><br>
+<span
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">Simple
+Oracle Call Interface</span><span
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);">
+(and more)<br>
+<br>
+</span>
+<h3>Beyond SOCI<br>
+</h3>
+As the name of the library clearly states, SOCI is a <span
+ style="font-style: italic;">simple</span> library, targetting the
+majority of needs in regular C++ application. We do not claim that
+<span style="font-style: italic;">everything</span> can be done with
+SOCI and it was never the intent of the
+library. What is important, thought, is that the simplicity of the
+library does <span style="font-style: italic;">not</span> prevent the
+client applications from reaching into the low-level specifics of each
+database backend in order to achieve special configuration or
+performance goals.<br>
+<br>
+Most of the SOCI classes have the <code>getBackEnd</code> method,
+which
+returns the pointer to the actual backend object that implements the
+given functionality. The knowledge of the actual backend allows the
+client application to get access to all low-level details that are
+involved.<br>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>BLOB b(sql);<br><br>OracleSessionBackEnd *sessionBackEnd = static_cast&lt;OracleSessionBackEnd *&gt;(sql.getBackEnd());<br>OracleBLOBBackEnd *blobBackEnd = static_cast&lt;OracleBLOBBackEnd *&gt;(b.getBackEnd());<br><br>OCILobDisableBuffering(sessionBackEnd-&gt;svchp_, sessionBackEnd-&gt;errhp_, blobBackEnd-&gt;lobp_);</pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The above code creates the <code>BLOB</code> object and uses two calls
+to the <code>getBackEnd</code> function (on both the <code>Session</code>
+and the <code>BLOB</code> objects) to get access to the actual backend
+objects. Assuming that it is the <code>"oracle"</code> backend which
+is in use, the downcasts allow to access all relevant low-level handles
+and use them in the call
+to the <code>OCILobDisableBuffering</code> function. This way, the
+BLOB handle was configured in a way that the SOCI library itself would
+not allow.<br>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>RowID rid(sql);&nbsp; // sql is a Session object<br>sql &lt;&lt; "select oid from mytable where id = 7", into(rid);<br><br>PostgreSQLRowIDBackEnd *rbe = static_cast&lt;PostgreSQLRowIDBackEnd *&gt;(rid.getBackEnd());<br><br>unsigned long oid = rbe-&gt;value_;<br></pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+The above example retrieves the <code>RowID</code> ("something" that
+identifies the
+row in the table) from the table and uses the <code>getBackEnd</code>
+function to
+extract the actual object that implements this functionality. Assuming
+that it is the <code>"postgresql"</code> backend which is in use, the
+downcast is
+performed to use the <code>PostgreSQLRowIDBackEnd</code> interface to
+get the actual
+OID value that is a physical, low-level implementation of row
+identifier on PostgreSQL databases.<br>
+<br>
+Note: In order for any of the above to compile, you have to explicitly <code>#include</code>
+the appropriate backend's header file.<br>
+<br>
+Please see the header file related to the given backend to learn what
+low-level handles and descriptors are available.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><a href="statements.html">Previous
+(Statements, procedures and transactions)</a><br>
+      </td>
+      <td style="vertical-align: top; text-align: right;"><a
+ href="backends.html">Next (Backend reference)</a><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<hr style="width: 100%; height: 2px;">Copyright &copy; 2004-2006 Maciej
+Sobczak, Stephen Hutton<br>
+<br>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>SOCI - structure</title>
+</head>
+<body>
+<font size="+3"><span
+ style="font-family: helvetica,arial,sans-serif; font-weight: bold; color: rgb(0, 0, 255);">SOCI</span></font><br>
+<span
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">Simple
+Oracle Call Interface</span><span
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);">
+(and more)<br>
+<br>
+</span>
+<h3><span style="font-weight: bold;"></span>Library structure, files
+and compilation</h3>
+The SOCI library has the following structure:<br>
+<br>
+<div style="text-align: left;"><img alt="" src="structure.png"
+ style="width: 502px; height: 444px;"><br>
+</div>
+<br>
+The <code>soci.h</code> and <code>soci.cpp</code> are the main files
+of the library - the ones that you have to directly interface with. The
+<code>soci-common.h</code> file (located in the <code>backends/</code>
+directory of the library distribution) is an internal abstract
+interface to the actual backends, which are needed to perform
+operations on the given database server. Normally, the C++ client
+program needs to interface with the <code>soci.h</code> header file
+only, unless it needs to gain direct access to the internal handles of
+the backend.<br>
+The gray boxes above indicate that the SOCI library is extensible and
+that there are two aspects of this extensibility: more backends can be
+added, and more interfaces (possibly for other languages) can be
+defined to reuse the already existing backends.<br>
+<p>Everything in SOCI (and in <code>soci.h</code> in particular) is
+declared in the namespace <code>SOCI</code>.
+All code examples presented in this documentation assume that your code
+begins with something
+like:<br>
+</p>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>#include "soci.h"<br>// other includes<br><br>using namespace SOCI;<br><br>// ...</pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+Compilation of the client program requires that the SOCI header files
+are all visible and accessible to the compiler. Moreover, the backend
+.cpp files (those which are needed) should be compiled and linked into
+the final executable. For this, the native libraries provided by each
+database server should be visible to the compiler and linker - the
+actual steps that need to be taken depend on the compiler being used.<br>
+The following instructions consider the Oracle backend:<br>
+<br>
+<span style="font-weight: bold;">On MS Windows, in MSVC++7</span>
+<p>In Project Properties:</p>
+<ol>
+  <li>In C/C++ - General:<br>
+Add the Additional Include Directory where the <code>oci.h</code> file
+is located (it can be something like <code>C:\Oracle\Ora81\oci\include</code>).</li>
+  <li>In Linker - General:<br>
+Add the Additional Library Directory where the <code>oci.lib</code>
+file is located (it can be something like <code>C:\Oracle\Ora81\oci\lib\msvc</code>).</li>
+  <li>In Linker - Input:<br>
+Add the Additional Dependency: <code>oci.lib</code>.</li>
+</ol>
+<p>When executing programs, the <code>oci.dll</code> file should be
+located in the path
+where it can be found. Be careful when using many different Oracle
+tools,
+because they may overwrite each other's <code>oci.dll</code> versions.
+The "correct" <code>oci.dll</code> for running the program compiled as
+above is located
+somewhere near the <code>oci.lib</code>, for example in <code>C:\Oracle\Ora81\BIN</code>.
+</p>
+<span style="font-weight: bold;">On Unix-like systems</span>
+<p>The OCI library is usually inside the <code>libclntsh.so</code> or <code>libclntsh.sl</code>
+library
+(depending on the actual system), so you have to add the <code>-lclntsh</code>
+option
+for linking and <code>-L</code> option to provide the path to the
+linker.
+Of course, the <code>-I</code> compiler option will be needed to
+provide the location
+of the <code>oci.h</code> header file.
+Look inside the <code>$ORACLE_HOME</code> directory to find where
+these files are located
+- it may depend both on the Unix flavour and the Oracle version
+installed,
+but likely locations are <code>$ORACLE_HOME/rdbms/demo</code> for <code>oci.h</code>
+and <code>$ORACLE_HOME/lib</code> for <code>libclntsh.so</code>.
+</p>
+Note that together with the SOCI library, there is a set of test
+programs provided. Their Makefiles can be a good starting point to find
+out correct compiler and linker options.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;"><a href="index.html">Previous
+(Contents)</a><br>
+      </td>
+      <td style="vertical-align: top; text-align: right;"><a
+ href="errors.html">Next (Errors)</a><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<hr style="width: 100%; height: 2px;">Copyright &copy; 2004-2006 Maciej
+Sobczak, Stephen Hutton<br>
+<br>
+</body>
+</html>
