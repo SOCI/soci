@@ -196,6 +196,32 @@ stream-like interface, but where the stream is always bound to the
 single row, so that the row-tearing effect is not possible. Still,
 whether this feature will become "official" is not yet settled down.<br>
 <br>
+<span style="font-weight: bold;">Q: Why use indicators instead of some
+special value to discover that something is null?</span><br>
+<br>
+Some programmers are used to indicating the null value by using some
+special (which means: "unlikely" to be ever used) value - for example,
+to use the smallest integer value to indicate null integer. Or to use
+empty string to indicate null string. And so on.<br>
+We think that it's completely wrong. Null (in the database sense) is an
+information about the data. It describes the <span
+ style="font-style: italic;">state</span> of the data and if it's null,
+then there's <span style="font-style: italic;">no data at all</span>.
+Nothing. Null. It does not make any sense to talk about some special
+value if there is conceptually <span style="font-style: italic;">no</span>
+value - especially if we take into account that, for example, the
+smallest integer value (or whatever else you choose as the "special"
+value) might not be <span style="font-style: italic;">that</span>
+special in any given application or domain.<br>
+Thus, SOCI uses a separate indicators to describe the state of
+exchanged data. It also has an additional benefit of allowing the
+library to convey more than two states (null and not null). Indeed, the
+SOCI library uses indicators also to report that the data was read, but
+truncated (this applies to strings when reading to fixed-length
+character arrays). Truncation is also an information about the data and
+as such it's better to have it in addition to the data, not as part of
+it.<br>
+<br>
 <span style="font-weight: bold;">Q: Overloaded comma operator is just
 obfuscation, I don't like it.</span><br>
 <br>
