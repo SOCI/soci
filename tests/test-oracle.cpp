@@ -1664,6 +1664,7 @@ struct Person
     int id;
     std::string firstName;
     std::string lastName;
+    std::string middleName;
     std::string gender;
 };
 
@@ -1700,7 +1701,7 @@ namespace SOCI
             v.set("ID", p.id);
             v.set("FIRST_NAME", p.firstName);
             v.set("LAST_NAME", p.lastName);
-            v.set("GENDER", p.gender);
+            v.set("GENDER", p.gender, p.gender.empty() ? eNull : eOK);
             return v;
         }
     };
@@ -1754,8 +1755,8 @@ void test23()
     p.id = 1;
     p.lastName = "Smith";
     p.firstName = "Pat";
-    sql << "insert into person(id, first_name, last_name) "
-        << "values(:ID, :FIRST_NAME, :LAST_NAME)", use(p);
+    sql << "insert into person(id, first_name, last_name, gender) "
+        << "values(:ID, :FIRST_NAME, :LAST_NAME, :GENDER)", use(p);
 
     Person p1;
     sql << "select * from person", into(p1);
@@ -1771,22 +1772,6 @@ void test23()
     sql << "select * from person", into(p2);
     assert(p2.id == 1);
     assert(p2.firstName + p2.lastName == "PatriciaSmith");
-
-    // additional test for position-based conversion
-    Person2 p3;
-    sql << "select id, first_name, last_name, gender from person", into(p3);
-    assert(p3.id == 1);
-    assert(p3.firstName + p3.lastName == "PatriciaSmith");
-    assert(p3.gender == "whoknows");
-
-    sql << "update person set gender = 'F' where id = 1";
-
-    // additional test for stream-like conversion
-    Person3 p4;
-    sql << "select id, first_name, last_name, gender from person", into(p4);
-    assert(p4.id == 1);
-    assert(p4.firstName + p4.lastName == "PatriciaSmith");
-    assert(p4.gender == "F");
 
     // test with stored procedure
     {
@@ -1828,8 +1813,23 @@ void test23()
         assert(p.gender == "unknown");        
 
         sql << "drop procedure returnsNull";
-
     }
+
+    // additional test for position-based conversion
+    Person2 p3;
+    sql << "select id, first_name, last_name, gender from person", into(p3);
+    assert(p3.id == 1);
+    assert(p3.firstName + p3.lastName == "PatriciaSmith");
+    assert(p3.gender == "whoknows");
+
+    sql << "update person set gender = 'F' where id = 1";
+
+    // additional test for stream-like conversion
+    Person3 p4;
+    sql << "select id, first_name, last_name, gender from person", into(p4);
+    assert(p4.id == 1);
+    assert(p4.firstName + p4.lastName == "PatriciaSmith");
+    assert(p4.gender == "F");
 
     std::cout << "test 23 passed" << std::endl;
 }

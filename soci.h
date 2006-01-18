@@ -1502,10 +1502,10 @@ public:
     }
 
     template <typename T>
-    void set(std::string const &name, T &value)
+    void set(std::string const &name, T &value, eIndicator indicator=eOK)
     {
         index_.insert(std::make_pair(name, uses_.size()));
-        eIndicator* ind = new eIndicator; 
+        eIndicator* ind = new eIndicator(indicator);
 
         uses_.push_back(new details::UseType<T>(value, *ind, name));
         indicators_.push_back(ind);
