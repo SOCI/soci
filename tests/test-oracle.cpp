@@ -184,6 +184,31 @@ void test2()
 
         assert(t_out == std::string(buf));
     }
+
+    {
+        // date and time - before year 2000
+        std::time_t then = std::time(NULL) - 17*365*24*60*60;
+        std::tm t1, t2;
+        t2 = *std::localtime(&then);
+
+        sql << "select t from (select :t as t from dual)",
+             into(t1), use(t2);
+
+        assert(memcmp(&t1, &t2, sizeof(std::tm)) == 0);
+        
+        // make sure the date is stored properly in Oracle
+        char buf[25];
+        strftime(buf, sizeof(buf), "%m-%d-%Y %H:%M:%S", &t2);
+
+        std::string t_out;
+        std::string format("MM-DD-YYYY HH24:MI:SS");
+        sql << "select to_char(t, :format) from (select :t as t from dual)",
+            into(t_out), use(format), use(t2);
+
+        assert(t_out == std::string(buf));
+    }
+
+
 //     {
 //         std::time_t now = std::time(NULL);
 //         std::time_t t;

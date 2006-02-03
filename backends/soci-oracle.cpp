@@ -731,14 +731,15 @@ void OracleStandardIntoTypeBackEnd::postFetch(
         {
             std::tm *t = static_cast<std::tm *>(data_);
 
+            ub1 *pos = reinterpret_cast<ub1*>(buf_);
             t->tm_isdst = -1;
-
-            t->tm_year = (buf_[0] - 100) * 100 + buf_[1] - 2000;
-            t->tm_mon = buf_[2] - 1;
-            t->tm_mday = buf_[3];
-            t->tm_hour = buf_[4] - 1;
-            t->tm_min = buf_[5] - 1;
-            t->tm_sec = buf_[6] - 1;
+            t->tm_year = (*pos++ - 100) * 100;
+            t->tm_year += *pos++ - 2000;
+            t->tm_mon = *pos++ - 1;
+            t->tm_mday = *pos++;
+            t->tm_hour = *pos++ - 1;
+            t->tm_min = *pos++ - 1;
+            t->tm_sec = *pos++ - 1;
 
             // normalize and compute the remaining fields
             std::mktime(t);
@@ -1329,14 +1330,15 @@ void OracleStandardUseTypeBackEnd::preUse(eIndicator const *ind)
     else if (type_ == eXStdTm)
     {
         std::tm *t = static_cast<std::tm *>(data_);
+        ub1* pos = reinterpret_cast<ub1*>(buf_);
 
-        buf_[0] = static_cast<ub1>(100 + (1900 + t->tm_year) / 100);
-        buf_[1] = static_cast<ub1>(100 + t->tm_year % 100);
-        buf_[2] = static_cast<ub1>(t->tm_mon + 1);
-        buf_[3] = static_cast<ub1>(t->tm_mday);
-        buf_[4] = static_cast<ub1>(t->tm_hour + 1);
-        buf_[5] = static_cast<ub1>(t->tm_min + 1);
-        buf_[6] = static_cast<ub1>(t->tm_sec + 1);
+        *pos++ = static_cast<ub1>(100 + (1900 + t->tm_year) / 100);
+        *pos++ = static_cast<ub1>(100 + t->tm_year % 100);
+        *pos++ = static_cast<ub1>(t->tm_mon + 1);
+        *pos++ = static_cast<ub1>(t->tm_mday);
+        *pos++ = static_cast<ub1>(t->tm_hour + 1);
+        *pos++ = static_cast<ub1>(t->tm_min + 1);
+        *pos = static_cast<ub1>(t->tm_sec + 1);
     }
     else if (type_ == eXStatement)
     {
@@ -1371,13 +1373,15 @@ void OracleStandardUseTypeBackEnd::postUse(bool gotData, eIndicator *ind)
         {
             std::tm *t = static_cast<std::tm *>(data_);
 
+            ub1 *pos = reinterpret_cast<ub1*>(buf_);
             t->tm_isdst = -1;
-            t->tm_year = (buf_[0] - 100) * 100 + buf_[1] - 2000;
-            t->tm_mon = buf_[2] - 1;
-            t->tm_mday = buf_[3];
-            t->tm_hour = buf_[4] - 1;
-            t->tm_min = buf_[5] - 1;
-            t->tm_sec = buf_[6] - 1;
+            t->tm_year = (*pos++ - 100) * 100;
+            t->tm_year += *pos++ - 2000;
+            t->tm_mon = *pos++ - 1;
+            t->tm_mday = *pos++;
+            t->tm_hour = *pos++ - 1;
+            t->tm_min = *pos++ - 1;
+            t->tm_sec = *pos++ - 1;
 
             // normalize and compute the remaining fields
             std::mktime(t);
