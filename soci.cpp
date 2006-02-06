@@ -838,7 +838,6 @@ void StandardUseType::bind(Statement &st, int &position)
 void StandardUseType::preUse()
 {
     convertTo();
-
     backEnd_->preUse(ind_);
 }
 

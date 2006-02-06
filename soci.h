@@ -720,7 +720,7 @@ public:
     StandardIntoType(void *data, eExchangeType type, eIndicator& ind)
         : data_(data), type_(type), ind_(&ind), backEnd_(NULL) {}
 
-    ~StandardIntoType();
+    virtual ~StandardIntoType();
 
 private:
     virtual void define(Statement &st, int &position);
@@ -750,20 +750,20 @@ public:
         std::string const &name = std::string())
         : data_(data), type_(type), ind_(&ind), name_(name), backEnd_(NULL) {}
 
-    ~StandardUseType();
+    virtual ~StandardUseType();
     virtual void bind(Statement &st, int &position);
     std::string getName() const {return name_;}
-    void* getData() const {return data_;}
+    virtual void* getData() {return data_;}
      
+    // conversion hook (from arbitrary user type to base type)
+    virtual void convertTo() {}
+    virtual void convertFrom() {} 
+
 private:
     virtual void preUse();
     virtual void postUse(bool gotData);
     virtual void cleanUp();
     virtual std::size_t size() const { return 1; }
-
-    // conversion hook (from arbitrary user type to base type)
-    virtual void convertTo() {}
-    virtual void convertFrom() {}
 
     void *data_;
     eExchangeType type_;
@@ -1316,14 +1316,20 @@ class UseType
 public:
     typedef typename TypeConversion<T>::base_type BASE_TYPE;
 
-    UseType(T &value)
-        : UseType<BASE_TYPE>(details::BaseValueHolder<T>::val_),
+    UseType(T &value, std::string const &name = std::string())
+        : UseType<BASE_TYPE>(details::BaseValueHolder<T>::val_, name),
           value_(value) {}
-    UseType(T &value, eIndicator &ind)
-        : UseType<BASE_TYPE>(details::BaseValueHolder<T>::val_, ind),
+    UseType(T &value, eIndicator &ind, std::string const &name 
+            = std::string())
+        : UseType<BASE_TYPE>(details::BaseValueHolder<T>::val_, ind, name),
           value_(value) {}
 
-private:
+    virtual void* getData() 
+    {
+        convertFrom(); 
+        return &value_;
+    }
+
     void convertFrom()
     {
         value_ = TypeConversion<T>::from(details::BaseValueHolder<T>::val_);
@@ -1333,6 +1339,7 @@ private:
         details::BaseValueHolder<T>::val_ = TypeConversion<T>::to(value_);
     }
 
+private:
     T &value_;
 };
 
@@ -1598,6 +1605,7 @@ private:
     // this is called by Statement::bind(Values)
     void addUnused(details::UseTypeBase *u, eIndicator *i)
     {
+        static_cast<details::StandardUseType*>(u)->convertTo();
         unused_.insert(std::make_pair(u, i));
     }
 
@@ -1645,7 +1653,8 @@ template <>
 class UseType<Values> : public UseTypeBase
 {
 public:
-    UseType(Values &v) : v_(v) {}
+    UseType(Values &v, std::string const &name = std::string()) 
+        : v_(v) {}
 
     virtual void bind(Statement &st, int& /*position*/)
     {

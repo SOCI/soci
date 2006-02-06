@@ -1688,16 +1688,9 @@ struct Person
 {
     int id;
     std::string firstName;
-    std::string lastName;
-    std::string middleName;
-    std::string gender;
+    StringHolder lastName; //test mapping of TypeConversion-based types
+    std::string gender; 
 };
-
-// additional type for position-based test
-struct Person2 : Person {};
-
-// additional type for stream-like test
-struct Person3 : Person {};
 
 // Object-Relational Mapping
 // Note: Use the Values class as shown below in TypeConversions
@@ -1715,7 +1708,7 @@ namespace SOCI
             Person p;
             p.id = v.get<int>("ID");
             p.firstName = v.get<std::string>("FIRST_NAME");
-            p.lastName = v.get<std::string>("LAST_NAME");
+            p.lastName = v.get<StringHolder>("LAST_NAME");
             p.gender = v.get<std::string>("GENDER", "unknown");
             return p;
         }
@@ -1729,39 +1722,6 @@ namespace SOCI
             v.set("GENDER", p.gender, p.gender.empty() ? eNull : eOK);
             return v;
         }
-    };
-
-    // position-based conversion
-    template<> struct TypeConversion<Person2>
-    {
-        typedef Values base_type;
-
-        static Person2 from(Values const &v)
-        {
-            Person2 p;
-            p.id = v.get<int>(0);
-            p.firstName = v.get<std::string>(1);
-            p.lastName = v.get<std::string>(2);
-            p.gender = v.get<std::string>(3, "whoknows");
-            return p;
-        }
-
-        // What about the "to" part? Does it make any sense to have it?
-    };
-
-    // stream-like conversion
-    template<> struct TypeConversion<Person3>
-    {
-        typedef Values base_type;
-
-        static Person3 from(Values const &v)
-        {
-            Person3 p;
-            v >> p.id >> p.firstName >> p.lastName >> p.gender;
-            return p;
-        }
-
-        // TODO: The "to" part is certainly needed.
     };
 }
 
@@ -1782,21 +1742,33 @@ void test23()
     p.firstName = "Pat";
     sql << "insert into person(id, first_name, last_name, gender) "
         << "values(:ID, :FIRST_NAME, :LAST_NAME, :GENDER)", use(p);
+    
+    // p should be unchanged
+    assert(p.id == 1);
+    assert(p.firstName == "Pat");
+    assert(p.lastName.get() == "Smith");
 
     Person p1;
     sql << "select * from person", into(p1);
     assert(p1.id == 1);
-    assert(p1.firstName + p1.lastName == "PatSmith");
+    assert(p1.firstName + p1.lastName.get() == "PatSmith");
     assert(p1.gender == "unknown");
 
     p.firstName = "Patricia";
     sql << "update person set first_name = :FIRST_NAME "
            "where id = :ID", use(p);
 
+    // p should be unchanged
+    assert(p.id == 1);
+    assert(p.firstName == "Patricia");
+    assert(p.lastName.get() == "Smith");
+    //TODO p.gender is now "unknown" because of the mapping, not ""
+    //Is this ok? assert(p.gender == ""); 
+
     Person p2;
     sql << "select * from person", into(p2);
     assert(p2.id == 1);
-    assert(p2.firstName + p2.lastName == "PatriciaSmith");
+    assert(p2.firstName + p2.lastName.get() == "PatriciaSmith");
 
     // test with stored procedure
     {
@@ -1804,9 +1776,13 @@ void test23()
                " as begin id := id * 100; end;"; 
         Person p;
         p.id = 1;
+        p.firstName = "Pat";
+        p.lastName = "Smith";
         Procedure proc = (sql.prepare << "getNewID(:ID)", use(p));
         proc.execute(1);
         assert(p.id == 100);
+        assert(p.firstName == "Pat");
+        assert(p.lastName.get() == "Smith");
 
         sql << "drop procedure getNewID";
     }
@@ -1839,8 +1815,78 @@ void test23()
 
         sql << "drop procedure returnsNull";
     }
+    std::cout << "test 23 passed" << std::endl;
+}
 
-    // additional test for position-based conversion
+// Experimental support for position based O/R Mapping
+
+// additional type for position-based test
+struct Person2
+{
+    int id;
+    std::string firstName;
+    std::string lastName;
+    std::string gender;
+};
+
+// additional type for stream-like test
+struct Person3 : Person2 {};
+
+namespace SOCI
+{
+    // position-based conversion
+    template<> struct TypeConversion<Person2>
+    {
+        typedef Values base_type;
+
+        static Person2 from(Values const &v)
+        {
+            Person2 p;
+            p.id = v.get<int>(0);
+            p.firstName = v.get<std::string>(1);
+            p.lastName = v.get<std::string>(2);
+            p.gender = v.get<std::string>(3, "whoknows");
+            return p;
+        }
+
+        // What about the "to" part? Does it make any sense to have it?
+    };
+
+    // stream-like conversion
+    template<> struct TypeConversion<Person3>
+    {
+        typedef Values base_type;
+
+        static Person3 from(Values const &v)
+        {
+            Person3 p;
+            v >> p.id >> p.firstName >> p.lastName >> p.gender;
+            return p;
+        }
+
+        // TODO: The "to" part is certainly needed.
+    };
+};
+
+void test24()
+{
+    Session sql(backEndName, connectString);
+
+    try { sql << "drop table person"; }
+        catch (SOCIError const &) {} //ignore error if table doesn't exist
+
+    sql << "create table person(id numeric(5,0) NOT NULL,"
+        << " last_name varchar2(20), first_name varchar2(20), "
+           " gender varchar2(10))";
+    
+    Person p;
+    p.id = 1;
+    p.lastName = "Smith";
+    p.firstName = "Patricia";
+    sql << "insert into person(id, first_name, last_name, gender) "
+        << "values(:ID, :FIRST_NAME, :LAST_NAME, :GENDER)", use(p);
+
+    //  test position-based conversion
     Person2 p3;
     sql << "select id, first_name, last_name, gender from person", into(p3);
     assert(p3.id == 1);
@@ -1856,28 +1902,28 @@ void test23()
     assert(p4.firstName + p4.lastName == "PatriciaSmith");
     assert(p4.gender == "F");
 
-    std::cout << "test 23 passed" << std::endl;
+    std::cout << "test 24 passed" << std::endl;
 }
 
 // additional test for statement preparation with indicators (non-bulk)
-void test24()
+void test25()
 {
     Session sql(backEndName, connectString);
 
-    try{ sql << "drop table test24"; }
+    try{ sql << "drop table test25"; }
     catch (SOCIError const &) {} // ignore error if table doesn't exist
 
-    sql << "create table test24(id numeric(2))";
+    sql << "create table test25(id numeric(2))";
 
-    sql << "insert into test24(id) values(1)";
-    sql << "insert into test24(id) values(NULL)";
-    sql << "insert into test24(id) values(NULL)";
-    sql << "insert into test24(id) values(2)";
+    sql << "insert into test25(id) values(1)";
+    sql << "insert into test25(id) values(NULL)";
+    sql << "insert into test25(id) values(NULL)";
+    sql << "insert into test25(id) values(2)";
 
     int id(7);
     eIndicator ind(eNoData);
 
-    Statement st = (sql.prepare << "select id from test24", into(id, ind));
+    Statement st = (sql.prepare << "select id from test25", into(id, ind));
 
     st.execute();
     assert(st.fetch());
@@ -1892,7 +1938,7 @@ void test24()
     assert(id  == 2);
     assert(st.fetch() == false); // end of rowset expected
 
-    std::cout << "test 24 passed" << std::endl;
+    std::cout << "test 25 passed" << std::endl;
 }
 
 int main(int argc, char** argv)
@@ -1934,8 +1980,9 @@ int main(int argc, char** argv)
         test20();
         test21();
         test22();
-        test23();
+        test23(); 
         test24();
+        test25();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }
