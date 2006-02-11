@@ -461,7 +461,7 @@ public:
     bool execute(bool withDataExchange = false);
     bool fetch();
     void describe();
-    void setRow(Row* r) { row_ = r; }
+    void setRow(Row* r);
 
     // for diagnostics and advanced users
     // (downcast it to expected back-end statement class)
@@ -488,16 +488,24 @@ private:
     std::string query_;
     std::map<std::string, details::UseTypeBase*> namedUses_;
 
+    std::vector<details::IntoTypeBase*> intosForRow_;
+    int definePositionForRow_;
+
+    void exchangeForRow(details::IntoTypePtr const &i);
+    void defineForRow();
+
     template<typename T>
     void intoRow()
     {
         T* t = new T();
         eIndicator* ind = new eIndicator(eOK);
         row_->addHolder(t, ind);
-        exchange(into(*t, *ind));
+        exchangeForRow(into(*t, *ind));
     }
 
     template<eDataType> void bindInto();
+
+    bool alreadyDescribed_;
 
     std::size_t intosSize();
     std::size_t usesSize();
@@ -1237,7 +1245,10 @@ private:
     virtual void define(Statement &st, int & /* position */)
     {
         st.setRow(&r_);
-        st.describe();
+
+        // actual row description is performed
+        // as part of the statement execute
+//        st.describe();
     }
 
     virtual void preFetch() {}

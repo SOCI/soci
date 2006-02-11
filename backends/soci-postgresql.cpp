@@ -107,7 +107,7 @@ PostgreSQLBLOBBackEnd * PostgreSQLSessionBackEnd::makeBLOBBackEnd()
 
 PostgreSQLStatementBackEnd::PostgreSQLStatementBackEnd(
     PostgreSQLSessionBackEnd &session)
-    : session_(session), result_(NULL)
+    : session_(session), result_(NULL), justDescribed_(false)
 {
 }
 
@@ -202,118 +202,137 @@ void PostgreSQLStatementBackEnd::prepare(std::string const &query)
 StatementBackEnd::execFetchResult
 PostgreSQLStatementBackEnd::execute(int number)
 {
-    // This object could have been already filled with data before
-    // - as a result of preparing for dynamic rowset description.
-    cleanUp();
+    // If the statement was "just described", then we know that
+    // it was actually executed with all the use elements
+    // already bound and pre-used. This means that the result of the
+    // query is already on the client side, so there is no need
+    // to re-execute it.
 
-    if (!useByPosBuffers_.empty() || !useByNameBuffers_.empty())
+    if (justDescribed_ == false)
     {
-        // Here we have to explicitly loop to achieve the
-        // effect of inserting or updating with vector use elements.
-        // The 'number' parameter to this function comes from the
-        // core part of the library and is guaranteed to be the size
-        // of the use elements, if they are present (they have equal sizes).
-        // If use elements were specified with single variables, it is 1.
-        // If use elements were specified for vectors,
-        // it is the size of those vectors.
+        // This object could have been already filled with data before.
+        cleanUp();
 
-        // We know also that even if there are both use and into elements
-        // specified together, they are not for bulk queries (number == 1).
-
-        if (!useByPosBuffers_.empty() && !useByNameBuffers_.empty())
+        if (!useByPosBuffers_.empty() || !useByNameBuffers_.empty())
         {
-            throw SOCIError(
-                "Binding for use elements must be either by position "
-                "or by name.");
-        }
+            // Here we have to explicitly loop to achieve the
+            // effect of inserting or updating with vector use elements.
+            // The 'number' parameter to this function comes from the
+            // core part of the library and is guaranteed to be the size
+            // of the use elements, if they are present
+            // (they have equal sizes).
+            // If use elements were specified with single variables, it is 1.
+            // If use elements were specified for vectors,
+            // it is the size of those vectors.
 
-        for (int i = 0; i != number; ++i)
-        {
-            std::vector<char *> paramValues;
+            // We know also that even if there are both use and into elements
+            // specified together, they are not for bulk queries
+            // (and then number == 1).
 
-            if (!useByPosBuffers_.empty())
+            if (!useByPosBuffers_.empty() && !useByNameBuffers_.empty())
             {
-                // use elements bind by position
-                // the map of use buffers can be traversed
-                // in its natural order
-
-                for (UseByPosBuffersMap::iterator
-                         it = useByPosBuffers_.begin(),
-                         end = useByPosBuffers_.end();
-                     it != end; ++it)
-                {
-                    char **buffers = it->second;
-                    paramValues.push_back(buffers[i]);
-                }
+                throw SOCIError(
+                    "Binding for use elements must be either by position "
+                    "or by name.");
             }
-            else
-            {
-                // use elements bind by name
 
-                for (std::vector<std::string>::iterator
-                         it = names_.begin(), end = names_.end();
-                     it != end; ++it)
+            for (int i = 0; i != number; ++i)
+            {
+                std::vector<char *> paramValues;
+
+                if (!useByPosBuffers_.empty())
                 {
-                    UseByNameBuffersMap::iterator b
-                        = useByNameBuffers_.find(*it);
-                    if (b == useByNameBuffers_.end())
+                    // use elements bind by position
+                    // the map of use buffers can be traversed
+                    // in its natural order
+
+                    for (UseByPosBuffersMap::iterator
+                             it = useByPosBuffers_.begin(),
+                             end = useByPosBuffers_.end();
+                         it != end; ++it)
                     {
-                        std::string msg(
-                            "Missing use element for bind by name (");
-                        msg += *it;
-                        msg += ").";
-                        throw SOCIError(msg);
+                        char **buffers = it->second;
+                        paramValues.push_back(buffers[i]);
                     }
-                    char **buffers = b->second;
-                    paramValues.push_back(buffers[i]);
                 }
-            }
+                else
+                {
+                    // use elements bind by name
+
+                    for (std::vector<std::string>::iterator
+                             it = names_.begin(), end = names_.end();
+                         it != end; ++it)
+                    {
+                        UseByNameBuffersMap::iterator b
+                            = useByNameBuffers_.find(*it);
+                        if (b == useByNameBuffers_.end())
+                        {
+                            std::string msg(
+                                "Missing use element for bind by name (");
+                            msg += *it;
+                            msg += ").";
+                            throw SOCIError(msg);
+                        }
+                        char **buffers = b->second;
+                        paramValues.push_back(buffers[i]);
+                    }
+                }
 
 #ifdef SOCI_PGSQL_NOPARAMS
-            throw SOCIError("Queries with parameters are not supported.");
+                throw SOCIError("Queries with parameters are not supported.");
 #else
-            result_ = PQexecParams(session_.conn_, query_.c_str(),
-                static_cast<int>(paramValues.size()),
-                NULL, &paramValues[0], NULL, NULL, 0);
+                result_ = PQexecParams(session_.conn_, query_.c_str(),
+                    static_cast<int>(paramValues.size()),
+                    NULL, &paramValues[0], NULL, NULL, 0);
 #endif // SOCI_PGSQL_NOPARAMS
+
+                if (number > 1)
+                {
+                    // there are only use elements (no intos)
+                    // and it is a bulk operation
+                    if (result_ == NULL)
+                    {
+                        throw SOCIError("Cannot execute query.");
+                    }
+
+                    ExecStatusType status = PQresultStatus(result_);
+                    if (status != PGRES_COMMAND_OK)
+                    {
+                        throw SOCIError(PQresultErrorMessage(result_));
+                    }
+                    PQclear(result_);
+                }
+            }
 
             if (number > 1)
             {
-                // there are only use elements (no intos)
-                // and it is a bulk operation
-                if (result_ == NULL)
-                {
-                    throw SOCIError("Cannot execute query.");
-                }
+                // it was a bulk operation
+                result_ = NULL;
+                return eNoData;
+            }
 
-                ExecStatusType status = PQresultStatus(result_);
-                if (status != PGRES_COMMAND_OK)
-                {
-                    throw SOCIError(PQresultErrorMessage(result_));
-                }
-                PQclear(result_);
+            // otherwise (no bulk), follow the code below
+        }
+        else
+        {
+            // there are no use elements
+            // - execute the query without parameter information
+            result_ = PQexec(session_.conn_, query_.c_str());
+
+            if (result_ == NULL)
+            {
+                throw SOCIError("Cannot execute query.");
             }
         }
-
-        if (number > 1)
-        {
-            // it was a bulk operation
-            result_ = NULL;
-            return eNoData;
-        }
-
-        // otherwise (no bulk), follow the code below
     }
     else
     {
-        // there are no use elements
-        // - execute the query without parameter information
-        result_ = PQexec(session_.conn_, query_.c_str());
+        // The optimization based on the existing results
+        // from the row description can be performed only once.
+        // If the same statement is re-executed,
+        // it will be *really* re-executed, without reusing existing data.
 
-        if (result_ == NULL)
-        {
-            throw SOCIError("Cannot execute query.");
-        }
+        justDescribed_ = false;
     }
 
     ExecStatusType status = PQresultStatus(result_);
@@ -402,10 +421,8 @@ std::string PostgreSQLStatementBackEnd::rewriteForProcedureCall(
 
 int PostgreSQLStatementBackEnd::prepareForDescribe()
 {
-    std::string originalQuery = query_;
-    query_ += " LIMIT 0";
-    execute(0);
-    query_ = originalQuery;
+    execute(1);
+    justDescribed_ = true;
 
     int columns = PQnfields(result_);
     return columns;

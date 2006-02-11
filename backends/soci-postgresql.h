@@ -144,6 +144,8 @@ struct PostgreSQLStatementBackEnd : details::StatementBackEnd
     int currentRow_;    // "current" row number to consume in postFetch
     int rowsToConsume_; // number of rows to be consumed in postFetch
 
+    bool justDescribed_; // to optimize row description with immediately
+                         // following actual statement execution
 
     // the following maps are used for finding data buffers according to
     // use elements specified by the user
