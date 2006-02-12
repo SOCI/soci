@@ -1248,7 +1248,6 @@ private:
 
         // actual row description is performed
         // as part of the statement execute
-//        st.describe();
     }
 
     virtual void preFetch() {}
