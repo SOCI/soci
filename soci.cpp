@@ -410,7 +410,7 @@ bool Statement::fetch()
 
 std::size_t Statement::intosSize()
 {
-    // this function does not need into account intosForRow_ elements,
+    // this function does not need to take into account intosForRow_ elements,
     // since their sizes are always 1 (which is the same and the primary
     // into(row) element, which has injected them)
 
@@ -472,7 +472,7 @@ std::size_t Statement::usesSize()
 
 bool Statement::resizeIntos(std::size_t upperBound)
 {
-    // this function does not need take into account the intosForRow_
+    // this function does not need to take into account the intosForRow_
     // elements, since they are never used for bulk operations
 
     std::size_t rows = backEnd_->getNumberOfRows();
