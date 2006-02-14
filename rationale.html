@@ -31,7 +31,7 @@ was largely redesigned to allow the use of <span
  style="font-style: italic;">backends</span> that support other
 database servers. Instead of inventing the new name for the library, we
 decided to keep Oracle as the main supported technology in the sense
-that the library includs only those features that were naturally
+that the library includes only those features that were naturally
 implemented in
 Oracle. This also means that backeds for other servers might need to
 work around some of the imposed idioms and protocols, but the example
@@ -157,12 +157,12 @@ An example of the stream-like interface might be something like this
   </tbody>
 </table>
 <br>
-We think that the data stored in the retational database should be
+We think that the data stored in the relational database should be
 treated as a set of relations - which is exactly what it is. This means
 that what is read from the database as a result of some SQL query is a <span
  style="font-style: italic;">set of rows</span>. This set might be
 ordered, but it is still a set of rows, not a uniform list of values.
-This distinctions might seem to be unnecessarily low-level and that the
+This distinction might seem to be unnecessarily low-level and that the
 uniform stream-like presentation of data is more preferable, but it's
 actually the other way round - the set of rows is something more
 structured (and that structure was <span style="font-style: italic;">designed</span>
@@ -246,7 +246,7 @@ Some people don't like this, especially when the "select" statements
 are involved. If the high-level idea is to <span
  style="font-style: italic;">read</span> data from somewhere, then <code>operator&lt;&lt;</code>
 seems unintuitive to the die-hard IOStreams users. The fact is,
-however, that the code containing an SQL statement already indicates
+however, that the code containing SQL statement already indicates
 that there is a client-server relationship with some other software
 component (very likely remote). In such code it does not make any sense
 to pretend that the communication is one-way only, because it's clear
@@ -294,7 +294,7 @@ on the relevant SOCI page) to discuss any remaining concerns.<br>
  cellspacing="2">
   <tbody>
     <tr>
-      <td style="vertical-align: top;"><a href="beyond.html">Previous
+      <td style="vertical-align: top;"><a href="backends.html">Previous
 (Backends reference)</a></td>
       <td style="vertical-align: top;"><br>
       </td>
