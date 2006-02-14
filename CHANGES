@@ -3,11 +3,16 @@ This file contains the history of changes in the SOCI library.
 ---
 Version 2.0.1 differs from 2.0.0 in the following ways:
 
+- Corrected some typos in documentation.
+
+- Corrected handling of dynamic rowset description for those backends
+  which do not have dedicated description functionality.
+
 - A bug fix to correctly handle std::tm in the Oracle backend.
 
 - A bug fix to correctly handle object relational mapping when
-Values::set<T>() and Values::get<T>() are called where T is a 
-TypeConversion-based type.
+  Values::set<T>() and Values::get<T>() are called where T is a 
+  TypeConversion-based type.
 
 ---
 Version 2.0.0 differs from 1.2.1 in the following ways:
