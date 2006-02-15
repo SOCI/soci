@@ -461,7 +461,7 @@ public:
     bool execute(bool withDataExchange = false);
     bool fetch();
     void describe();
-    void setRow(Row* r) { row_ = r; }
+    void setRow(Row* r);
 
     // for diagnostics and advanced users
     // (downcast it to expected back-end statement class)
@@ -488,16 +488,24 @@ private:
     std::string query_;
     std::map<std::string, details::UseTypeBase*> namedUses_;
 
+    std::vector<details::IntoTypeBase*> intosForRow_;
+    int definePositionForRow_;
+
+    void exchangeForRow(details::IntoTypePtr const &i);
+    void defineForRow();
+
     template<typename T>
     void intoRow()
     {
         T* t = new T();
         eIndicator* ind = new eIndicator(eOK);
         row_->addHolder(t, ind);
-        exchange(into(*t, *ind));
+        exchangeForRow(into(*t, *ind));
     }
 
     template<eDataType> void bindInto();
+
+    bool alreadyDescribed_;
 
     std::size_t intosSize();
     std::size_t usesSize();
@@ -720,7 +728,7 @@ public:
     StandardIntoType(void *data, eExchangeType type, eIndicator& ind)
         : data_(data), type_(type), ind_(&ind), backEnd_(NULL) {}
 
-    ~StandardIntoType();
+    virtual ~StandardIntoType();
 
 private:
     virtual void define(Statement &st, int &position);
@@ -750,20 +758,20 @@ public:
         std::string const &name = std::string())
         : data_(data), type_(type), ind_(&ind), name_(name), backEnd_(NULL) {}
 
-    ~StandardUseType();
+    virtual ~StandardUseType();
     virtual void bind(Statement &st, int &position);
     std::string getName() const {return name_;}
-    void* getData() const {return data_;}
+    virtual void* getData() {return data_;}
      
+    // conversion hook (from arbitrary user type to base type)
+    virtual void convertTo() {}
+    virtual void convertFrom() {} 
+
 private:
     virtual void preUse();
     virtual void postUse(bool gotData);
     virtual void cleanUp();
     virtual std::size_t size() const { return 1; }
-
-    // conversion hook (from arbitrary user type to base type)
-    virtual void convertTo() {}
-    virtual void convertFrom() {}
 
     void *data_;
     eExchangeType type_;
@@ -1237,7 +1245,9 @@ private:
     virtual void define(Statement &st, int & /* position */)
     {
         st.setRow(&r_);
-        st.describe();
+
+        // actual row description is performed
+        // as part of the statement execute
     }
 
     virtual void preFetch() {}
@@ -1316,14 +1326,20 @@ class UseType
 public:
     typedef typename TypeConversion<T>::base_type BASE_TYPE;
 
-    UseType(T &value)
-        : UseType<BASE_TYPE>(details::BaseValueHolder<T>::val_),
+    UseType(T &value, std::string const &name = std::string())
+        : UseType<BASE_TYPE>(details::BaseValueHolder<T>::val_, name),
           value_(value) {}
-    UseType(T &value, eIndicator &ind)
-        : UseType<BASE_TYPE>(details::BaseValueHolder<T>::val_, ind),
+    UseType(T &value, eIndicator &ind, std::string const &name 
+            = std::string())
+        : UseType<BASE_TYPE>(details::BaseValueHolder<T>::val_, ind, name),
           value_(value) {}
 
-private:
+    virtual void* getData() 
+    {
+        convertFrom(); 
+        return &value_;
+    }
+
     void convertFrom()
     {
         value_ = TypeConversion<T>::from(details::BaseValueHolder<T>::val_);
@@ -1333,6 +1349,7 @@ private:
         details::BaseValueHolder<T>::val_ = TypeConversion<T>::to(value_);
     }
 
+private:
     T &value_;
 };
 
@@ -1502,10 +1519,10 @@ public:
     }
 
     template <typename T>
-    void set(std::string const &name, T &value)
+    void set(std::string const &name, T &value, eIndicator indicator=eOK)
     {
         index_.insert(std::make_pair(name, uses_.size()));
-        eIndicator* ind = new eIndicator; 
+        eIndicator* ind = new eIndicator(indicator);
 
         uses_.push_back(new details::UseType<T>(value, *ind, name));
         indicators_.push_back(ind);
@@ -1598,6 +1615,7 @@ private:
     // this is called by Statement::bind(Values)
     void addUnused(details::UseTypeBase *u, eIndicator *i)
     {
+        static_cast<details::StandardUseType*>(u)->convertTo();
         unused_.insert(std::make_pair(u, i));
     }
 
@@ -1645,7 +1663,8 @@ template <>
 class UseType<Values> : public UseTypeBase
 {
 public:
-    UseType(Values &v) : v_(v) {}
+    UseType(Values &v, std::string const & /* name */ = std::string())
+        : v_(v) {}
 
     virtual void bind(Statement &st, int& /*position*/)
     {

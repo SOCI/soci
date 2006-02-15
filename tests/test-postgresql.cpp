@@ -1706,6 +1706,67 @@ void test15()
     std::cout << "test 15 passed" << std::endl;
 }
 
+// more dynamic bindings
+void test16()
+{
+    Session sql(backEndName, connectString);
+
+    try { sql << "drop table test16"; }
+    catch (SOCIError const &) {} //ignore error if table doesn't exist
+
+    sql << "create table test16(id integer, val integer)";
+
+    sql << "insert into test16(id, val) values(1, 10)";
+    sql << "insert into test16(id, val) values(2, 20)";
+    sql << "insert into test16(id, val) values(3, 30)";
+
+#ifndef SOCI_PGSQL_NOPARAMS
+    {
+        int id = 2;
+        Row r;
+        sql << "select val from test16 where id = :id", use(id), into(r);
+
+        assert(r.size() == 1);
+        assert(r.getProperties(0).getDataType() == eInteger);
+        assert(r.get<int>(0) == 20);
+    }
+    {
+        int id;
+        Row r;
+        Statement st = (sql.prepare <<
+            "select val from test16 where id = :id", use(id), into(r));
+
+        id = 2;
+        st.execute(true);
+        assert(r.size() == 1);
+        assert(r.getProperties(0).getDataType() == eInteger);
+        assert(r.get<int>(0) == 20);
+        
+        id = 3;
+        st.execute(true);
+        assert(r.size() == 1);
+        assert(r.getProperties(0).getDataType() == eInteger);
+        assert(r.get<int>(0) == 30);
+
+        id = 1;
+        st.execute(true);
+        assert(r.size() == 1);
+        assert(r.getProperties(0).getDataType() == eInteger);
+        assert(r.get<int>(0) == 10);
+    }
+#else
+    {
+        Row r;
+        sql << "select val from test16 where id = 2", into(r);
+
+        assert(r.size() == 1);
+        assert(r.getProperties(0).getDataType() == eInteger);
+        assert(r.get<int>(0) == 20);
+    }
+#endif // SOCI_PGSQL_NOPARAMS
+
+    std::cout << "test 16 passed" << std::endl;
+}
 
 int main(int argc, char** argv)
 {
@@ -1739,6 +1800,7 @@ int main(int argc, char** argv)
         test13();
         test14();
         test15();
+        test16();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }

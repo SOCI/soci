@@ -63,14 +63,15 @@ BLOBBackEnd * Session::makeBLOBBackEnd()
 }
 
 Statement::Statement(Session &s)
-    : session_(s), row_(0), fetchSize_(1), initialFetchSize_(1)
+    : session_(s), row_(0), fetchSize_(1), initialFetchSize_(1),
+      alreadyDescribed_(false)
 {
     backEnd_ = s.makeStatementBackEnd();
 }
 
 Statement::Statement(PrepareTempType const &prep)
     : session_(*prep.getPrepareInfo()->session_),
-      row_(0), fetchSize_(1)
+      row_(0), fetchSize_(1), alreadyDescribed_(false)
 {
     backEnd_ = session_.makeStatementBackEnd();
 
@@ -155,6 +156,12 @@ void Statement::exchange(IntoTypePtr const &i)
     i.release();
 }
 
+void Statement::exchangeForRow(IntoTypePtr const &i)
+{
+    intosForRow_.push_back(i.get());
+    i.release();
+}
+
 void Statement::exchange(UseTypePtr const &u)
 {
     uses_.push_back(u.get());
@@ -164,21 +171,32 @@ void Statement::exchange(UseTypePtr const &u)
 void Statement::cleanUp()
 {
     // deallocate all bind and define objects
-    for (std::size_t i = intos_.size(); i != 0; --i)
+    std::size_t const isize = intos_.size();
+    for (std::size_t i = isize; i != 0; --i)
     {
         intos_[i - 1]->cleanUp();
         delete intos_[i - 1];
         intos_.resize(i - 1);
     }
 
-    for (std::size_t i = uses_.size(); i != 0; --i)
+    std::size_t const ifrsize = intosForRow_.size();
+    for (std::size_t i = ifrsize; i != 0; --i)
+    {
+        intosForRow_[i - 1]->cleanUp();
+        delete intosForRow_[i - 1];
+        intosForRow_.resize(i - 1);
+    }
+
+    std::size_t const usize = uses_.size();
+    for (std::size_t i = usize; i != 0; --i)
     {
         uses_[i - 1]->cleanUp();
         delete uses_[i - 1];
         uses_.resize(i - 1);
     }
 
-    for (std::size_t i = 0; i != indicators_.size(); ++i)
+    std::size_t const indsize = indicators_.size();
+    for (std::size_t i = 0; i != indsize; ++i)
     {
         delete indicators_[i];
         indicators_[i] = NULL;
@@ -201,13 +219,17 @@ void Statement::prepare(std::string const &query)
 void Statement::defineAndBind()
 {
     int definePosition = 1;
-
-    // check intos_.size() on each iteration
-    // because IntoType<Row> can resize it
-    for (std::size_t i = 0; i != intos_.size(); ++i)
+    std::size_t const isize = intos_.size();
+    for (std::size_t i = 0; i != isize; ++i)
     {
         intos_[i]->define(*this, definePosition);
     }
+
+    // if there are some implicite into elements
+    // injected by the row description process,
+    // they should be defined in the later phase,
+    // starting at the position where the above loop finished
+    definePositionForRow_ = definePosition;
 
     int bindPosition = 1;
     std::size_t const usize = uses_.size();
@@ -217,14 +239,31 @@ void Statement::defineAndBind()
     }
 }
 
+void Statement::defineForRow()
+{
+    std::size_t const isize = intosForRow_.size();
+    for (std::size_t i = 0; i != isize; ++i)
+    {
+        intosForRow_[i]->define(*this, definePositionForRow_);
+    }
+}
+
 void Statement::unDefAndBind()
 {
-    for (std::size_t i = intos_.size(); i != 0; --i)
+    std::size_t const isize = intos_.size();
+    for (std::size_t i = isize; i != 0; --i)
     {
         intos_[i - 1]->cleanUp();
     }
 
-    for (std::size_t i = uses_.size(); i != 0; --i)
+    std::size_t const ifrsize = intosForRow_.size();
+    for (std::size_t i = ifrsize; i != 0; --i)
+    {
+        intosForRow_[i - 1]->cleanUp();
+    }
+
+    std::size_t const usize = uses_.size();
+    for (std::size_t i = usize; i != 0; --i)
     {
         uses_[i - 1]->cleanUp();
     }
@@ -248,8 +287,20 @@ bool Statement::execute(bool withDataExchange)
     {
         num = 1;
 
-        preFetch();
         preUse();
+
+        // looks like a hack and it is - row description should happen
+        // *after* the use elements were completely prepared
+        // and *before* the into elements are touched, so that the row
+        // description process can inject more into elements for
+        // implicit data exchange
+        if (row_ != NULL && alreadyDescribed_ == false)
+        {
+            describe();
+            defineForRow();
+        }
+
+        preFetch();
 
         if (static_cast<int>(fetchSize_) > num)
         {
@@ -359,6 +410,10 @@ bool Statement::fetch()
 
 std::size_t Statement::intosSize()
 {
+    // this function does not need to take into account intosForRow_ elements,
+    // since their sizes are always 1 (which is the same and the primary
+    // into(row) element, which has injected them)
+
     std::size_t intosSize = 0;
     std::size_t const isize = intos_.size();
     for (std::size_t i = 0; i != isize; ++i)
@@ -417,6 +472,9 @@ std::size_t Statement::usesSize()
 
 bool Statement::resizeIntos(std::size_t upperBound)
 {
+    // this function does not need to take into account the intosForRow_
+    // elements, since they are never used for bulk operations
+
     std::size_t rows = backEnd_->getNumberOfRows();
     if (upperBound != 0 && upperBound < rows)
     {
@@ -439,6 +497,12 @@ void Statement::preFetch()
     {
         intos_[i]->preFetch();
     }
+
+    std::size_t const ifrsize = intosForRow_.size();
+    for (std::size_t i = 0; i != ifrsize; ++i)
+    {
+        intosForRow_[i]->preFetch();
+    }
 }
 
 void Statement::preUse()
@@ -452,11 +516,20 @@ void Statement::preUse()
 
 void Statement::postFetch(bool gotData, bool calledFromFetch)
 {
-    // iterate in reverse order here in case the first item
-    // is an IntoType<Row> (since it depends on the other IntoTypes)
-    for (std::size_t i = intos_.size(); i != 0; --i)
+    // first iterate over intosForRow_ elements, since the Row element
+    // (which is among the intos_ elements) might depend on the
+    // values of those implicitly injected elements
+
+    std::size_t const ifrsize = intosForRow_.size();
+    for (std::size_t i = 0; i != ifrsize; ++i)
     {
-        intos_[i-1]->postFetch(gotData, calledFromFetch);
+        intosForRow_[i]->postFetch(gotData, calledFromFetch);
+    }
+
+    std::size_t const isize = intos_.size();
+    for (std::size_t i = 0; i != isize; ++i)
+    {
+        intos_[i]->postFetch(gotData, calledFromFetch);
     }
 }
 
@@ -566,6 +639,19 @@ void Statement::describe()
         }
         row_->addProperties(props);
     }
+
+    alreadyDescribed_ = true;
+}
+
+void Statement::setRow(Row *r)
+{
+    if (row_ != NULL)
+    {
+        throw SOCIError(
+            "Only one Row element allowed in a single statement.");
+    }
+
+    row_ = r;
 }
 
 std::string Statement::rewriteForProcedureCall(std::string const &query)
@@ -838,7 +924,6 @@ void StandardUseType::bind(Statement &st, int &position)
 void StandardUseType::preUse()
 {
     convertTo();
-
     backEnd_->preUse(ind_);
 }
 
@@ -851,7 +936,10 @@ void StandardUseType::postUse(bool gotData)
 
 void StandardUseType::cleanUp()
 {
-    backEnd_->cleanUp();
+    if (backEnd_ != NULL)
+    {
+        backEnd_->cleanUp();
+    }
 }
 
 // vector based types
