@@ -1720,6 +1720,7 @@ void test16()
     sql << "insert into test16(id, val) values(2, 20)";
     sql << "insert into test16(id, val) values(3, 30)";
 
+#ifndef SOCI_PGSQL_NOPARAMS
     {
         int id = 2;
         Row r;
@@ -1753,6 +1754,16 @@ void test16()
         assert(r.getProperties(0).getDataType() == eInteger);
         assert(r.get<int>(0) == 10);
     }
+#else
+    {
+        Row r;
+        sql << "select val from test16 where id = 2", into(r);
+
+        assert(r.size() == 1);
+        assert(r.getProperties(0).getDataType() == eInteger);
+        assert(r.get<int>(0) == 20);
+    }
+#endif // SOCI_PGSQL_NOPARAMS
 
     std::cout << "test 16 passed" << std::endl;
 }
