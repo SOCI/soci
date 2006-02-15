@@ -1663,7 +1663,7 @@ template <>
 class UseType<Values> : public UseTypeBase
 {
 public:
-    UseType(Values &v, std::string const &name = std::string()) 
+    UseType(Values &v, std::string const & /* name */ = std::string())
         : v_(v) {}
 
     virtual void bind(Statement &st, int& /*position*/)
