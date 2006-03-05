@@ -1770,6 +1770,31 @@ void test23()
     assert(p2.id == 1);
     assert(p2.firstName + p2.lastName.get() == "PatriciaSmith");
 
+    // test with prepared statements
+    {
+        // insert a second row so we can test fetching
+        Person p;
+        p.id = 2;
+        p.firstName = "Joe";
+        p.lastName = "Smith";
+        sql << "insert into person(id, first_name, last_name, gender) "
+            << "values(:ID, :FIRST_NAME, :LAST_NAME, :GENDER)", use(p);
+
+        Person p2;
+        Statement st = (sql.prepare << "select * from person order by id",
+                    into(p2));
+
+        st.execute();
+        assert(st.fetch());
+        assert(p2.id == 1);
+        assert(p2.firstName == "Patricia");
+
+        assert(st.fetch());
+        assert(p2.id == 2);
+        assert(p2.firstName == "Joe");
+        assert(!st.fetch());
+    }
+
     // test with stored procedure
     {
         sql << "create or replace procedure getNewID(id in out number)"

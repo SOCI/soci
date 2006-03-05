@@ -288,7 +288,7 @@ bool Statement::execute(bool withDataExchange)
         num = 1;
 
         preUse();
-
+    }
         // looks like a hack and it is - row description should happen
         // *after* the use elements were completely prepared
         // and *before* the into elements are touched, so that the row
@@ -301,7 +301,9 @@ bool Statement::execute(bool withDataExchange)
         }
 
         preFetch();
-
+    
+    if (withDataExchange)
+    {
         if (static_cast<int>(fetchSize_) > num)
         {
             num = static_cast<int>(fetchSize_);
