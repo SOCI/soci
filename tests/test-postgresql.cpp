@@ -122,6 +122,10 @@ void test2()
         sql << "select \'Hello\'", into(buf, ind);
         assert(ind == eTruncated);
 
+        // additional test for NULL with std::tm
+        sql << "select NULL", into(t, ind);
+        assert(ind == eNull);
+
         try
         {
             // expect error

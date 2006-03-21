@@ -599,6 +599,7 @@ void PostgreSQLStandardIntoTypeBackEnd::postFetch(
             }
 
             *ind = eNull;
+            return;
         }
         else
         {
