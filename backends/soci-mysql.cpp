@@ -27,104 +27,103 @@ using std::string;
 
 namespace { // anonymous
 
-void skipWhite(string::const_iterator *i, string::const_iterator const & end,
-	       bool endok)
+void skipWhite(string::const_iterator *i,
+    string::const_iterator const & end, bool endok)
 {
     for (;;)
     {
-	if (*i == end)
-	{
-	    if (endok)
-	    {
-		return;
-	    }
-	    else
-	    {
-		throw SOCIError("Unexpected end of connection string.");
-	    }
-	}
-	if (std::isspace(**i))
-	{
-	    ++*i;
-	}
-	else
-	{
-	    return;
-	}
+        if (*i == end)
+        {
+            if (endok)
+            {
+                return;
+            }
+            else
+            {
+                throw SOCIError("Unexpected end of connection string.");
+            }
+        }
+        if (std::isspace(**i))
+        {
+            ++*i;
+        }
+        else
+        {
+            return;
+        }
     }
 }
 
 string paramName(string::const_iterator *i,
-		 string::const_iterator const & end)
+    string::const_iterator const & end)
 {
     string val("");
     for (;;)
     {
-	if (*i == end or (!std::isalpha(**i) and **i != '_'))
-	{
-	    break;
-	}
-	val += **i;
-	++*i;
+        if (*i == end or (!std::isalpha(**i) and **i != '_'))
+        {
+            break;
+        }
+        val += **i;
+        ++*i;
     }
     return val;
 }
-		     
 
 string paramValue(string::const_iterator *i,
-		  string::const_iterator const & end)
+    string::const_iterator const & end)
 {
     string err = "Malformed connection string.";
     bool quot;
     if (**i == '\'')
     {
-	quot = true;
-	++*i;
+        quot = true;
+        ++*i;
     }
     else
     {
-	quot = false;
+        quot = false;
     }
     string val("");
     for (;;)
     {
-	if (*i == end)
-	{
-	    if (quot)
-	    {
-		throw SOCIError(err);
-	    }
-	    else
-	    {
-		break;
-	    }
-	}
-	if (**i == '\'')
-	{
-	    if (quot)
-	    {
-		++*i;
-		break;
-	    }
-	    else
-	    {
-		throw SOCIError(err);
-	    }
-	}
-	if (!quot and std::isspace(**i))
-	{
-	    break;
-	}
-	if (**i == '\\')
-	{
-	    ++*i;
-	    if (*i == end)
-	    {
-		throw SOCIError(err);
-	    }
-	}
-	val += **i;
-	++*i;
+        if (*i == end)
+        {
+            if (quot)
+            {
+                throw SOCIError(err);
+            }
+            else
+            {
+                break;
+            }
+        }
+        if (**i == '\'')
+        {
+            if (quot)
+            {
+                ++*i;
+                break;
+            }
+            else
+            {
+                throw SOCIError(err);
+            }
+        }
+        if (!quot and std::isspace(**i))
+        {
+            break;
+        }
+        if (**i == '\\')
+        {
+            ++*i;
+            if (*i == end)
+            {
+                throw SOCIError(err);
+            }
+        }
+        val += **i;
+        ++*i;
     }
     return val;
 }
@@ -137,22 +136,22 @@ bool validInt(const string & s)
     long l = std::strtol(cstr, &tail, 10);
     if (errno != 0 or l > INT_MAX or l < INT_MIN)
     {
-	return false;
+        return false;
     }
     if (*tail != '\0')
     {
-	return false;
+        return false;
     }
     return true;
 }
 
 void parseConnectString(const string & connectString,
-			string *host, bool *host_p,
-			string *user, bool *user_p,
-			string *password, bool *password_p,
-			string *db, bool *db_p,
-			string *unix_socket, bool *unix_socket_p,
-			int *port, bool *port_p)
+    string *host, bool *host_p,
+    string *user, bool *user_p,
+    string *password, bool *password_p,
+    string *db, bool *db_p,
+    string *unix_socket, bool *unix_socket_p,
+    int *port, bool *port_p)
 {
     *host_p = false;
     *user_p = false;
@@ -162,68 +161,68 @@ void parseConnectString(const string & connectString,
     *port_p = false;
     string err = "Malformed connection string.";
     string::const_iterator i = connectString.begin(),
-	end = connectString.end();
+        end = connectString.end();
     while (i != end)
     {
-	skipWhite(&i, end, true);
-	if (i == end)
-	{
-	    return;
-	}
-	string par = paramName(&i, end);
-	skipWhite(&i, end, false);
-	if (*i == '=')
-	{
-	    ++i;
-	}
-	else
-	{
-	    throw SOCIError(err);
-	}
-	skipWhite(&i, end, false);
-	string val = paramValue(&i, end);
-	if (par == "port" and !*port_p)
-	{
-	    if (!validInt(val))
-	    {
-		throw SOCIError(err);
-	    }
-	    *port = std::atoi(val.c_str());
-	    if (port < 0)
-	    {
-		throw SOCIError(err);
-	    }
-	    *port_p = true;
-	}
-	else if (par == "host" and !*host_p)
-	{
-	    *host = val;
-	    *host_p = true;
-	}
-	else if (par == "user" and !*user_p)
-	{
-	    *user = val;
-	    *user_p = true;
-	}
-	else if ((par == "pass" or par == "password") and !*password_p)
-	{
-	    *password = val;
-	    *password_p = true;
-	}
-	else if ((par == "db" or par == "dbname") and !*db_p)
-	{
-	    *db = val;
-	    *db_p = true;
-	}
-	else if (par == "unix_socket" && !*unix_socket_p)
-	{
-	    *unix_socket = val;
-	    *unix_socket_p = true;
-	}
-	else
-	{
-	    throw SOCIError(err);
-	}
+        skipWhite(&i, end, true);
+        if (i == end)
+        {
+            return;
+        }
+        string par = paramName(&i, end);
+        skipWhite(&i, end, false);
+        if (*i == '=')
+        {
+            ++i;
+        }
+        else
+        {
+            throw SOCIError(err);
+        }
+        skipWhite(&i, end, false);
+        string val = paramValue(&i, end);
+        if (par == "port" and !*port_p)
+        {
+            if (!validInt(val))
+            {
+                throw SOCIError(err);
+            }
+            *port = std::atoi(val.c_str());
+            if (port < 0)
+            {
+                throw SOCIError(err);
+            }
+            *port_p = true;
+        }
+        else if (par == "host" and !*host_p)
+        {
+            *host = val;
+            *host_p = true;
+        }
+        else if (par == "user" and !*user_p)
+        {
+            *user = val;
+            *user_p = true;
+        }
+        else if ((par == "pass" or par == "password") and !*password_p)
+        {
+            *password = val;
+            *password_p = true;
+        }
+        else if ((par == "db" or par == "dbname") and !*db_p)
+        {
+            *db = val;
+            *db_p = true;
+        }
+        else if (par == "unix_socket" && !*unix_socket_p)
+        {
+            *unix_socket = val;
+            *unix_socket_p = true;
+        }
+        else
+        {
+            throw SOCIError(err);
+        }
     }
 }
 
@@ -236,24 +235,24 @@ MySQLSessionBackEnd::MySQLSessionBackEnd(
     int port;
     bool host_p, user_p, password_p, db_p, unix_socket_p, port_p;
     parseConnectString(connectString, &host, &host_p, &user, &user_p,
-		       &password, &password_p, &db, &db_p,
-		       &unix_socket, &unix_socket_p, &port, &port_p);
+        &password, &password_p, &db, &db_p,
+        &unix_socket, &unix_socket_p, &port, &port_p);
     conn_ = mysql_init(NULL);
     if (conn_ == NULL)
     {
-	throw SOCIError("mysql_init() failed.");
+        throw SOCIError("mysql_init() failed.");
     }
     if (!mysql_real_connect(conn_,
-			    host_p ? host.c_str() : NULL,
-			    user_p ? user.c_str() : NULL,
-			    password_p ? password.c_str() : NULL,
-			    db_p ? db.c_str() : NULL,
-			    port_p ? port : 0,
-			    unix_socket_p ? unix_socket.c_str() : NULL,
-			    0)) {
-	string err = mysql_error(conn_);
-	cleanUp();
-	throw SOCIError(err);
+            host_p ? host.c_str() : NULL,
+            user_p ? user.c_str() : NULL,
+            password_p ? password.c_str() : NULL,
+            db_p ? db.c_str() : NULL,
+            port_p ? port : 0,
+            unix_socket_p ? unix_socket.c_str() : NULL,
+            0)) {
+        string err = mysql_error(conn_);
+        cleanUp();
+        throw SOCIError(err);
     }
 }
 
@@ -270,7 +269,7 @@ void hardExec(MYSQL *conn, const string & query)
     //cerr << query << endl;
     if (0 != mysql_real_query(conn, query.c_str(), query.size()))
     {
-	throw SOCIError(mysql_error(conn));
+        throw SOCIError(mysql_error(conn));
     }
 }
 
@@ -329,8 +328,8 @@ void MySQLStatementBackEnd::cleanUp()
 {
     if (result_ != NULL)
     {
-	mysql_free_result(result_);
-	result_ = NULL;
+        mysql_free_result(result_);
+        result_ = NULL;
     }
 }
 
@@ -382,8 +381,8 @@ void MySQLStatementBackEnd::prepare(std::string const & query)
             {
                 names_.push_back(name);
                 name.clear();
-		queryChunks_.push_back("");
-		queryChunks_.back() += *it;
+                queryChunks_.push_back("");
+                queryChunks_.back() += *it;
                 state = eNormal;
             }
             break;
@@ -395,19 +394,19 @@ void MySQLStatementBackEnd::prepare(std::string const & query)
         names_.push_back(name);
     }
 /*
-    cerr << "Chunks: ";
-    for (std::vector<std::string>::iterator i = queryChunks_.begin();
-	 i != queryChunks_.end(); ++i)
-    {
-	cerr << "\"" << *i << "\" ";
-    }
-    cerr << "\nNames: ";
-    for (std::vector<std::string>::iterator i = names_.begin();
-	 i != names_.end(); ++i)
-    {
-	cerr << "\"" << *i << "\" ";
-    }
-    cerr << endl;
+  cerr << "Chunks: ";
+  for (std::vector<std::string>::iterator i = queryChunks_.begin();
+  i != queryChunks_.end(); ++i)
+  {
+  cerr << "\"" << *i << "\" ";
+  }
+  cerr << "\nNames: ";
+  for (std::vector<std::string>::iterator i = names_.begin();
+  i != names_.end(); ++i)
+  {
+  cerr << "\"" << *i << "\" ";
+  }
+  cerr << endl;
 */
 }
 
@@ -416,17 +415,17 @@ MySQLStatementBackEnd::execute(int number)
 {
     if (justDescribed_ == false)
     {
-	cleanUp();
-	std::string query;
-	if (!useByPosBuffers_.empty() || !useByNameBuffers_.empty())
+        cleanUp();
+        std::string query;
+        if (!useByPosBuffers_.empty() || !useByNameBuffers_.empty())
         {
-	    if (!useByPosBuffers_.empty() && !useByNameBuffers_.empty())
+            if (!useByPosBuffers_.empty() && !useByNameBuffers_.empty())
             {
                 throw SOCIError(
                     "Binding for use elements must be either by position "
                     "or by name.");
             }
-	    for (int i = 0; i != number; ++i)
+            for (int i = 0; i != number; ++i)
             {
                 std::vector<char *> paramValues;
 
@@ -442,7 +441,7 @@ MySQLStatementBackEnd::execute(int number)
                          it != end; ++it)
                     {
                         char **buffers = it->second;
-			//cerr<<"i: "<<i<<", buffers[i]: "<<buffers[i]<<endl;
+                        //cerr<<"i: "<<i<<", buffers[i]: "<<buffers[i]<<endl;
                         paramValues.push_back(buffers[i]);
                     }
                 }
@@ -468,78 +467,78 @@ MySQLStatementBackEnd::execute(int number)
                         paramValues.push_back(buffers[i]);
                     }
                 }
-		//cerr << "queryChunks_.size(): "<<queryChunks_.size()<<endl;
-		//cerr << "paramValues.size(): "<<paramValues.size()<<endl;
-		if (queryChunks_.size() != paramValues.size()
-		    and queryChunks_.size() != paramValues.size() + 1)
-		{
-		    throw SOCIError("Wrong number of parameters.");
-		}
+                //cerr << "queryChunks_.size(): "<<queryChunks_.size()<<endl;
+                //cerr << "paramValues.size(): "<<paramValues.size()<<endl;
+                if (queryChunks_.size() != paramValues.size()
+                    and queryChunks_.size() != paramValues.size() + 1)
+                {
+                    throw SOCIError("Wrong number of parameters.");
+                }
 		
-		std::vector<std::string>::const_iterator ci
-		    = queryChunks_.begin();
-		for (std::vector<char*>::const_iterator
-			 pi = paramValues.begin(), end = paramValues.end();
-		     pi != end; ++ci, ++pi) {
-		    query += *ci;
-		    query += *pi;
-		}
-		if (ci != queryChunks_.end())
-		{
-		    query += *ci;
-		}
-		if (number > 1)
-		{
-		    // bulk operation
-		    //cerr << query << endl;
-		    if (0 != mysql_real_query(session_.conn_, query.c_str(),
-					      query.size()))
-		    {
-			throw SOCIError(mysql_error(session_.conn_));
-		    }
-		    if (mysql_field_count(session_.conn_) != 0)
-		    {
-			throw SOCIError("The query shouldn't have returned"
-					"any data but it did.");
-		    }
-		    query.clear();
-		}
-	    }
-	    if (number > 1)
-	    {
-		// bulk
-		return eNoData;
-	    }
-	}
-	else
-	{
-	    query = queryChunks_.front();
-	}
-	
-	//cerr << query << endl;
-	if (0 != mysql_real_query(session_.conn_, query.c_str(),
-				  query.size()))
-	{
-	    throw SOCIError(mysql_error(session_.conn_));
-	}
-	result_ = mysql_store_result(session_.conn_);
-	if (result_ == NULL and mysql_field_count(session_.conn_) != 0)
-	{
-	    throw SOCIError(mysql_error(session_.conn_));
-	}
+                std::vector<std::string>::const_iterator ci
+                    = queryChunks_.begin();
+                for (std::vector<char*>::const_iterator
+                         pi = paramValues.begin(), end = paramValues.end();
+                     pi != end; ++ci, ++pi) {
+                    query += *ci;
+                    query += *pi;
+                }
+                if (ci != queryChunks_.end())
+                {
+                    query += *ci;
+                }
+                if (number > 1)
+                {
+                    // bulk operation
+                    //cerr << query << endl;
+                    if (0 != mysql_real_query(session_.conn_, query.c_str(),
+                            query.size()))
+                    {
+                        throw SOCIError(mysql_error(session_.conn_));
+                    }
+                    if (mysql_field_count(session_.conn_) != 0)
+                    {
+                        throw SOCIError("The query shouldn't have returned"
+                            "any data but it did.");
+                    }
+                    query.clear();
+                }
+            }
+            if (number > 1)
+            {
+                // bulk
+                return eNoData;
+            }
+        }
+        else
+        {
+            query = queryChunks_.front();
+        }
+
+        //cerr << query << endl;
+        if (0 != mysql_real_query(session_.conn_, query.c_str(),
+                query.size()))
+        {
+            throw SOCIError(mysql_error(session_.conn_));
+        }
+        result_ = mysql_store_result(session_.conn_);
+        if (result_ == NULL and mysql_field_count(session_.conn_) != 0)
+        {
+            throw SOCIError(mysql_error(session_.conn_));
+        }
     }
     else
     {
-	justDescribed_ = false;
+        justDescribed_ = false;
     }
-    
+
     if (result_ != NULL)
     {
-	currentRow_ = 0;
-	rowsToConsume_ = 0;
+        currentRow_ = 0;
+        rowsToConsume_ = 0;
 	
-	numberOfRows_ = mysql_num_rows(result_);
-	if (numberOfRows_ == 0)
+        numberOfRows_ = mysql_num_rows(result_);
+        if (numberOfRows_ == 0)
         {
             return eNoData;
         }
@@ -559,8 +558,8 @@ MySQLStatementBackEnd::execute(int number)
     }
     else
     {
-	// it was not a SELECT
-	return eNoData;
+        // it was not a SELECT
+        return eNoData;
     }
 }
 
@@ -628,34 +627,34 @@ void MySQLStatementBackEnd::describeColumn(int colNum,
     int pos = colNum - 1;
     MYSQL_FIELD *field = mysql_fetch_field_direct(result_, pos);
     switch (field->type) {
-    case FIELD_TYPE_CHAR: //MYSQL_TYPE_TINY:
-    case FIELD_TYPE_SHORT: //MYSQL_TYPE_SHORT:
-    case FIELD_TYPE_LONG: //MYSQL_TYPE_LONG:
-    case FIELD_TYPE_LONGLONG: //MYSQL_TYPE_LONGLONG:
-    case FIELD_TYPE_INT24: //MYSQL_TYPE_INT24:
-	type = eInteger;
+    case FIELD_TYPE_CHAR:       //MYSQL_TYPE_TINY:
+    case FIELD_TYPE_SHORT:      //MYSQL_TYPE_SHORT:
+    case FIELD_TYPE_LONG:       //MYSQL_TYPE_LONG:
+    case FIELD_TYPE_LONGLONG:   //MYSQL_TYPE_LONGLONG:
+    case FIELD_TYPE_INT24:      //MYSQL_TYPE_INT24:
+        type = eInteger;
         break;
-    case FIELD_TYPE_FLOAT: //MYSQL_TYPE_FLOAT:
-    case FIELD_TYPE_DOUBLE: //MYSQL_TYPE_DOUBLE:
-    case FIELD_TYPE_DECIMAL: //MYSQL_TYPE_DECIMAL:
-//    case MYSQL_TYPE_NEWDECIMAL:
-	type = eDouble;
-	break;
-    case FIELD_TYPE_TIMESTAMP: //MYSQL_TYPE_TIMESTAMP:
-    case FIELD_TYPE_DATE: //MYSQL_TYPE_DATE:
-    case FIELD_TYPE_TIME: //MYSQL_TYPE_TIME:
-    case FIELD_TYPE_DATETIME: //MYSQL_TYPE_DATETIME:
-    case FIELD_TYPE_YEAR: //MYSQL_TYPE_YEAR:
-    case FIELD_TYPE_NEWDATE: //MYSQL_TYPE_NEWDATE:
-	type = eDate;
-	break;
-//    case MYSQL_TYPE_VARCHAR:
+    case FIELD_TYPE_FLOAT:      //MYSQL_TYPE_FLOAT:
+    case FIELD_TYPE_DOUBLE:     //MYSQL_TYPE_DOUBLE:
+    case FIELD_TYPE_DECIMAL:    //MYSQL_TYPE_DECIMAL:
+//  case MYSQL_TYPE_NEWDECIMAL:
+        type = eDouble;
+        break;
+    case FIELD_TYPE_TIMESTAMP:  //MYSQL_TYPE_TIMESTAMP:
+    case FIELD_TYPE_DATE:       //MYSQL_TYPE_DATE:
+    case FIELD_TYPE_TIME:       //MYSQL_TYPE_TIME:
+    case FIELD_TYPE_DATETIME:   //MYSQL_TYPE_DATETIME:
+    case FIELD_TYPE_YEAR:       //MYSQL_TYPE_YEAR:
+    case FIELD_TYPE_NEWDATE:    //MYSQL_TYPE_NEWDATE:
+        type = eDate;
+        break;
+//  case MYSQL_TYPE_VARCHAR:
     case FIELD_TYPE_VAR_STRING: //MYSQL_TYPE_VAR_STRING:
-    case FIELD_TYPE_STRING: //MYSQL_TYPE_STRING:
-	type = eString;
-	break;
+    case FIELD_TYPE_STRING:     //MYSQL_TYPE_STRING:
+        type = eString;
+        break;
     default:
-	throw SOCIError("Unknown data type.");
+        throw SOCIError("Unknown data type.");
     }
     columnName = field->name;
 }
@@ -712,37 +711,37 @@ long parse10(char const *&p1, char *&p2, char *msg)
     }
 }
 
-void parseStdTm(char const *buf, std::tm &t)
-{
-    char const *p1 = buf;
-    char *p2;
-    long year, month, day;
-    long hour = 0, minute = 0, second = 0;
-
-    char *errMsg = "Cannot convert data to std::tm.";
-
-    year  = parse10(p1, p2, errMsg);
-    month = parse10(p1, p2, errMsg);
-    day   = parse10(p1, p2, errMsg);
-
-    if (*p2 != '\0')
+    void parseStdTm(char const *buf, std::tm &t)
     {
-        // there is also the time of day available
-        hour   = parse10(p1, p2, errMsg);
-        minute = parse10(p1, p2, errMsg);
-        second = parse10(p1, p2, errMsg);
+        char const *p1 = buf;
+        char *p2;
+        long year, month, day;
+        long hour = 0, minute = 0, second = 0;
+
+        char *errMsg = "Cannot convert data to std::tm.";
+
+        year  = parse10(p1, p2, errMsg);
+        month = parse10(p1, p2, errMsg);
+        day   = parse10(p1, p2, errMsg);
+
+        if (*p2 != '\0')
+        {
+            // there is also the time of day available
+            hour   = parse10(p1, p2, errMsg);
+            minute = parse10(p1, p2, errMsg);
+            second = parse10(p1, p2, errMsg);
+        }
+
+        t.tm_isdst = -1;
+        t.tm_year = year - 1900;
+        t.tm_mon  = month - 1;
+        t.tm_mday = day;
+        t.tm_hour = hour;
+        t.tm_min  = minute;
+        t.tm_sec  = second;
+
+        std::mktime(&t);
     }
-
-    t.tm_isdst = -1;
-    t.tm_year = year - 1900;
-    t.tm_mon  = month - 1;
-    t.tm_mday = day;
-    t.tm_hour = hour;
-    t.tm_min  = minute;
-    t.tm_sec  = second;
-
-    std::mktime(&t);
-}
 
 } // namespace anonymous
 
@@ -758,28 +757,28 @@ void MySQLStandardIntoTypeBackEnd::postFetch(
     
     if (gotData)
     {
-	int pos = position_ - 1;
-	mysql_data_seek(statement_.result_, statement_.currentRow_);
-	MYSQL_ROW row = mysql_fetch_row(statement_.result_);
-	if (row[pos] == NULL)
-	{
-	    if (ind == NULL)
+        int pos = position_ - 1;
+        mysql_data_seek(statement_.result_, statement_.currentRow_);
+        MYSQL_ROW row = mysql_fetch_row(statement_.result_);
+        if (row[pos] == NULL)
+        {
+            if (ind == NULL)
             {
                 throw SOCIError(
                     "Null value fetched and no indicator defined.");
             }
-	    *ind = eNull;
-	    return;
-	}
-	else
-	{
-	    if (ind != NULL)
+            *ind = eNull;
+            return;
+        }
+        else
+        {
+            if (ind != NULL)
             {
                 *ind = eOK;
             }
-	}
-	const char *buf = row[pos] != NULL ? row[pos] : "";
-	switch (type_)
+        }
+        const char *buf = row[pos] != NULL ? row[pos] : "";
+        switch (type_)
         {
         case eXChar:
             {
@@ -904,11 +903,11 @@ void MySQLVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
 
         int const endRow = statement_.currentRow_ + statement_.rowsToConsume_;
 	
-	mysql_data_seek(statement_.result_, statement_.currentRow_);
+        mysql_data_seek(statement_.result_, statement_.currentRow_);
         for (int curRow = statement_.currentRow_, i = 0;
              curRow != endRow; ++curRow, ++i)
         {
-	    MYSQL_ROW row = mysql_fetch_row(statement_.result_);
+            MYSQL_ROW row = mysql_fetch_row(statement_.result_);
             // first, deal with indicators
             if (row[pos] == NULL)
             {
@@ -1008,7 +1007,7 @@ void MySQLVectorIntoTypeBackEnd::resize(std::size_t sz)
 {
     switch (type_)
     {
-    // simple cases
+        // simple cases
     case eXChar:         resizeVector<char>         (data_, sz); break;
     case eXShort:        resizeVector<short>        (data_, sz); break;
     case eXInteger:      resizeVector<int>          (data_, sz); break;
@@ -1027,7 +1026,7 @@ std::size_t MySQLVectorIntoTypeBackEnd::size()
     std::size_t sz = 0; // dummy initialization to please the compiler
     switch (type_)
     {
-    // simple cases
+        // simple cases
     case eXChar:         sz = getVectorSize<char>         (data_); break;
     case eXShort:        sz = getVectorSize<short>        (data_); break;
     case eXInteger:      sz = getVectorSize<int>          (data_); break;
@@ -1073,7 +1072,7 @@ char * quote(MYSQL * conn, const char *s, int l)
     int le = mysql_real_escape_string(conn, retv + 1, s, l);
     retv[le + 1] = '\'';
     retv[le + 2] = '\0';
-    
+
     return retv;
 }
 
@@ -1083,8 +1082,8 @@ void MySQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
 {
     if (ind != NULL && *ind == eNull)
     {
-	buf_ = new char[5];
-	strcpy(buf_, "NULL");
+        buf_ = new char[5];
+        strcpy(buf_, "NULL");
     }
     else
     {
@@ -1093,22 +1092,22 @@ void MySQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
         {
         case eXChar:
             {
-		char buf[] = { *static_cast<char*>(data_), '\0' };
-		buf_ = quote(statement_.session_.conn_, buf, 1);
+                char buf[] = { *static_cast<char*>(data_), '\0' };
+                buf_ = quote(statement_.session_.conn_, buf, 1);
             }
             break;
         case eXCString:
             {
                 CStringDescriptor *strDescr
                     = static_cast<CStringDescriptor *>(data_);
-		buf_ = quote(statement_.session_.conn_, strDescr->str_,
+                buf_ = quote(statement_.session_.conn_, strDescr->str_,
 			     std::strlen(strDescr->str_));
             }
             break;
         case eXStdString:
             {
                 std::string *s = static_cast<std::string *>(data_);
-		buf_ = quote(statement_.session_.conn_,
+                buf_ = quote(statement_.session_.conn_,
 			     s->c_str(), s->size());
             }
             break;
@@ -1157,9 +1156,9 @@ void MySQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
 
                 std::tm *t = static_cast<std::tm *>(data_);
                 std::snprintf(buf_, bufSize,
-			      "\'%d-%02d-%02d %02d:%02d:%02d\'",
-			      t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
-			      t->tm_hour, t->tm_min, t->tm_sec);
+                    "\'%d-%02d-%02d %02d:%02d:%02d\'",
+                    t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+                    t->tm_hour, t->tm_min, t->tm_sec);
             }
             break;
         default:
@@ -1194,7 +1193,7 @@ void MySQLStandardUseTypeBackEnd::cleanUp()
 }
 
 void MySQLVectorUseTypeBackEnd::bindByPos(int &position, void *data,
-					  eExchangeType type)
+    eExchangeType type)
 {
     data_ = data;
     type_ = type;
@@ -1220,7 +1219,7 @@ void MySQLVectorUseTypeBackEnd::preUse(eIndicator const *ind)
         if (ind != NULL && ind[i] == eNull)
         {
             buf = new char[5];
-	    strcpy(buf, "NULL");
+            strcpy(buf, "NULL");
         }
         else
         {
@@ -1233,8 +1232,8 @@ void MySQLVectorUseTypeBackEnd::preUse(eIndicator const *ind)
                         = static_cast<std::vector<char> *>(data_);
                     std::vector<char> &v = *pv;
 		    
-		    char tmp[] = { v[i], '\0' };
-		    buf = quote(statement_.session_.conn_, tmp, 1);
+                    char tmp[] = { v[i], '\0' };
+                    buf = quote(statement_.session_.conn_, tmp, 1);
                 }
                 break;
             case eXStdString:
@@ -1243,8 +1242,8 @@ void MySQLVectorUseTypeBackEnd::preUse(eIndicator const *ind)
                         = static_cast<std::vector<std::string> *>(data_);
                     std::vector<std::string> &v = *pv;
 		    
-		    buf = quote(statement_.session_.conn_,
-				v[i].c_str(), v[i].size());
+                    buf = quote(statement_.session_.conn_,
+                        v[i].c_str(), v[i].size());
                 }
                 break;
             case eXShort:
@@ -1307,8 +1306,8 @@ void MySQLVectorUseTypeBackEnd::preUse(eIndicator const *ind)
                     buf = new char[bufSize];
 
                     std::snprintf(
-			buf, bufSize, "\'%d-%02d-%02d %02d:%02d:%02d\'",
-			v[i].tm_year + 1900, v[i].tm_mon + 1, v[i].tm_mday,
+                        buf, bufSize, "\'%d-%02d-%02d %02d:%02d:%02d\'",
+                        v[i].tm_year + 1900, v[i].tm_mon + 1, v[i].tm_mday,
                         v[i].tm_hour, v[i].tm_min, v[i].tm_sec);
                 }
                 break;
@@ -1339,7 +1338,7 @@ std::size_t MySQLVectorUseTypeBackEnd::size()
     std::size_t sz = 0; // dummy initialization to please the compiler
     switch (type_)
     {
-    // simple cases
+        // simple cases
     case eXChar:         sz = getVectorSize<char>         (data_); break;
     case eXShort:        sz = getVectorSize<short>        (data_); break;
     case eXInteger:      sz = getVectorSize<int>          (data_); break;
@@ -1430,12 +1429,12 @@ namespace
 {
 
 // global object for automatic factory registration
-struct MySQLAutoRegister
-{
-    MySQLAutoRegister()
+    struct MySQLAutoRegister
     {
-        theBEFRegistry().registerMe("mysql", &mysqlBEF);
-    }
-} mysqlAutoRegister;
+        MySQLAutoRegister()
+        {
+            theBEFRegistry().registerMe("mysql", &mysqlBEF);
+        }
+    } mysqlAutoRegister;
 
 } // namespace anonymous

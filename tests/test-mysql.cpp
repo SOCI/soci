@@ -34,7 +34,7 @@ void test1()
         {
             std::string msg = e.what();
             assert(msg.find("Unknown table \'test1_nosuchtable\'")
-		   != std::string::npos);
+                != std::string::npos);
         }
 
         sql << "create table test1 (id integer)";
@@ -53,7 +53,7 @@ void test2()
     {
         Session sql(backEndName, connectString);
 	
-	try { sql << "drop table test2"; }
+        try { sql << "drop table test2"; }
         catch (SOCIError const &) {} // ignore if error
 	
         sql << "create table test2 (id integer)";
@@ -120,7 +120,7 @@ void test2()
         sql << "select \'Hello\'", into(buf, ind);
         assert(ind == eTruncated);
 	
-	// additional test for NULL with std::tm
+        // additional test for NULL with std::tm
         sql << "select NULL", into(t, ind);
         assert(ind == eNull);
 	
@@ -153,7 +153,7 @@ void test2()
                 "No data fetched and no indicator defined.");
         }
 	
-	sql << "drop table test2";
+        sql << "drop table test2";
     }
 
     std::cout << "test 2 passed" << std::endl;
@@ -227,8 +227,8 @@ void test3()
                 }
                 catch (SOCIError const &e)
                 {
-                     std::string msg = e.what();
-                     assert(msg == "Vectors of size 0 are not allowed.");
+                    std::string msg = e.what();
+                    assert(msg == "Vectors of size 0 are not allowed.");
                 }
             }
 
@@ -1266,15 +1266,15 @@ void test10()
             "    name varchar(100)"
             ") type=InnoDB";
 	
-	Row r;
-	sql << "show table status like \'test10\'", into(r);
-	if (r.get<std::string>(1) != "InnoDB")
-	{
-	    sql << "drop table test10";
-	    std::cout << "skipping test 10 ";
-	    std::cout << "(MySQL server does not support transactions)\n";
-	    return;
-	}
+        Row r;
+        sql << "show table status like \'test10\'", into(r);
+        if (r.get<std::string>(1) != "InnoDB")
+        {
+            sql << "drop table test10";
+            std::cout << "skipping test 10 ";
+            std::cout << "(MySQL server does not support transactions)\n";
+            return;
+        }
 	
         int count;
         sql << "select count(*) from test10", into(count);
@@ -1335,25 +1335,25 @@ void test12()
     {
         Session sql(backEndName, connectString);
 	
-	MySQLSessionBackEnd *sessionBackEnd
-	    = static_cast<MySQLSessionBackEnd *>(sql.getBackEnd());
-	std::string version = mysql_get_server_info(sessionBackEnd->conn_);
-	int v;
-	std::istringstream iss(version);
-	if ((iss >> v) and v < 5)
-	{
-	    std::cout << "skipping test 12 (MySQL server version ";
-	    std::cout << version << " does not support stored procedures)\n";
-	    return;
-	}
+        MySQLSessionBackEnd *sessionBackEnd
+            = static_cast<MySQLSessionBackEnd *>(sql.getBackEnd());
+        std::string version = mysql_get_server_info(sessionBackEnd->conn_);
+        int v;
+        std::istringstream iss(version);
+        if ((iss >> v) and v < 5)
+        {
+            std::cout << "skipping test 12 (MySQL server version ";
+            std::cout << version << " does not support stored procedures)\n";
+            return;
+        }
 	
-	try { sql << "drop function myecho"; }
-	catch (SOCIError const &) {}
+        try { sql << "drop function myecho"; }
+        catch (SOCIError const &) {}
 	
         sql <<
             "create function myecho(msg text) "
             "returns text "
-	    "  return msg; ";
+            "  return msg; ";
  
         std::string in("my message");
         std::string out;
@@ -1607,20 +1607,20 @@ int main(int argc, char** argv)
     }
     try
     {
-	test1();
-	test2();
-	test3();
-	test4();
-	test5();
-	test6();
-	test7();
-	test8();
-	test9();
-	test10();
-	test12();
-	test13();
-	test15();
-	test16();
+        test1();
+        test2();
+        test3();
+        test4();
+        test5();
+        test6();
+        test7();
+        test8();
+        test9();
+        test10();
+        test12();
+        test13();
+        test15();
+        test16();
     }
     catch (std::exception const & e)
     {
