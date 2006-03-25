@@ -1975,7 +1975,8 @@ void test26()
         try { sql << "drop table test26"; }
         catch (SOCIError const &) {} //ignore error if table doesn't exist
 
-        sql << "create table test26(name varchar(100) not null, phone varchar(15))";
+        sql << "create table test26(name varchar(100) not null, "
+            "phone varchar(15))";
 
         Row r1;
         sql << "select * from test26", into(r1);

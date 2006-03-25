@@ -1781,7 +1781,8 @@ void test17()
         try { sql << "drop table test17"; }
         catch (SOCIError const &) {} //ignore error if table doesn't exist
 
-        sql << "create table test17(name varchar(100) not null, phone varchar(15))";
+        sql << "create table test17(name varchar(100) not null, "
+            "phone varchar(15))";
 
         Row r1;
         sql << "select * from test17", into(r1);
@@ -1844,7 +1845,8 @@ void test18()
         try { sql << "drop table test18"; }
         catch (SOCIError const &) {} //ignore error if table doesn't exist
 
-        sql << "create table test18(name varchar(100) not null, phone varchar(15))";
+        sql << "create table test18(name varchar(100) not null, "
+            "phone varchar(15))";
 
         PhonebookEntry p1;
         sql << "select * from test18", into(p1);
