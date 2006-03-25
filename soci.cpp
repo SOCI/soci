@@ -282,28 +282,26 @@ bool Statement::execute(bool withDataExchange)
              "Bulk insert/update and bulk select not allowed in same query");
     }
 
+    preUse();
+
+    // looks like a hack and it is - row description should happen
+    // *after* the use elements were completely prepared
+    // and *before* the into elements are touched, so that the row
+    // description process can inject more into elements for
+    // implicit data exchange
+    if (row_ != NULL && alreadyDescribed_ == false)
+    {
+        describe();
+        defineForRow();
+    }
+
     int num = 0;
     if (withDataExchange)
     {
         num = 1;
 
-        preUse();
-    }
-        // looks like a hack and it is - row description should happen
-        // *after* the use elements were completely prepared
-        // and *before* the into elements are touched, so that the row
-        // description process can inject more into elements for
-        // implicit data exchange
-        if (row_ != NULL && alreadyDescribed_ == false)
-        {
-            describe();
-            defineForRow();
-        }
-
         preFetch();
-    
-    if (withDataExchange)
-    {
+
         if (static_cast<int>(fetchSize_) > num)
         {
             num = static_cast<int>(fetchSize_);
