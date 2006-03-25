@@ -1966,6 +1966,42 @@ void test25()
     std::cout << "test 25 passed" << std::endl;
 }
 
+// More Dynamic binding to Row objects
+void test26()
+{
+    {
+        Session sql(backEndName, connectString);
+
+        try { sql << "drop table test26"; }
+        catch (SOCIError const &) {} //ignore error if table doesn't exist
+
+        sql << "create table test26(name varchar(100) not null, phone varchar(15))";
+
+        Row r1;
+        sql << "select * from test26", into(r1);
+        assert(r1.indicator(0) ==  eNoData);
+
+        sql << "insert into test26 values('david', '(404)123-4567')";
+        sql << "insert into test26 values('john', '(404)123-4567')";
+        sql << "insert into test26 values('doe', '(404)123-4567')";
+
+        Row r2;
+        Statement st = (sql.prepare << "select * from test26", into(r2));
+        st.execute();
+        
+        assert(r2.size() == 2); 
+        
+        int count = 0;
+        while(st.fetch())
+        {
+            ++count;
+            assert(r2.get<std::string>("phone") == "(404)123-4567");
+        }
+        assert(count == 3);
+    }
+    std::cout << "test 26 passed" << std::endl;
+}
+
 int main(int argc, char** argv)
 {
     if (argc == 2)
@@ -2008,6 +2044,7 @@ int main(int argc, char** argv)
         test23(); 
         test24();
         test25();
+        test26();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }

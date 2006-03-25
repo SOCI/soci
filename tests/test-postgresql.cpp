@@ -1772,6 +1772,104 @@ void test16()
     std::cout << "test 16 passed" << std::endl;
 }
 
+// More Dynamic binding to Row objects
+void test17()
+{
+    {
+        Session sql(backEndName, connectString);
+
+        try { sql << "drop table test17"; }
+        catch (SOCIError const &) {} //ignore error if table doesn't exist
+
+        sql << "create table test17(name varchar(100) not null, phone varchar(15))";
+
+        Row r1;
+        sql << "select * from test17", into(r1);
+        assert(r1.indicator(0) ==  eNoData);
+
+        sql << "insert into test17 values('david', '(404)123-4567')";
+        sql << "insert into test17 values('john', '(404)123-4567')";
+        sql << "insert into test17 values('doe', '(404)123-4567')";
+
+        Row r2;
+        Statement st = (sql.prepare << "select * from test17", into(r2));
+        st.execute();
+        
+        assert(r2.size() == 2); 
+        
+        int count = 0;
+        while(st.fetch())
+        {
+            ++count;
+            assert(r2.get<std::string>("phone") == "(404)123-4567");
+        }
+        assert(count == 3);
+    }
+    std::cout << "test 17 passed" << std::endl;
+}
+
+// test18 is like test17 but with a TypeConversion instead of a row
+
+struct PhonebookEntry
+{
+    std::string name;
+    std::string phone;
+};
+namespace SOCI
+{
+    template<> struct TypeConversion<PhonebookEntry>
+    {
+        typedef Values base_type;
+        static PhonebookEntry from(Values const &v)
+        {
+            PhonebookEntry p;
+            p.name = v.get<std::string>("name", "<NULL>");
+            p.phone = v.get<std::string>("phone", "<NULL>");
+            return p;
+        }
+        static Values to(PhonebookEntry &p)
+        {
+            Values v;
+            v.set("NAME", p.name);
+            v.set("PHONE", p.phone, p.phone.empty() ? eNull : eOK);
+            return v;
+        }
+    };    
+}
+void test18()
+{
+    {
+        Session sql(backEndName, connectString);
+
+        try { sql << "drop table test18"; }
+        catch (SOCIError const &) {} //ignore error if table doesn't exist
+
+        sql << "create table test18(name varchar(100) not null, phone varchar(15))";
+
+        PhonebookEntry p1;
+        sql << "select * from test18", into(p1);
+        assert(p1.name ==  "");
+
+        sql << "insert into test18 values('david', '(404)123-4567')";
+        sql << "insert into test18 values('john', '(404)123-4567')";
+        sql << "insert into test18 values('doe', '(404)123-4567')";
+
+        PhonebookEntry p2;
+        Statement st = (sql.prepare << "select * from test18", into(p2));
+        st.execute();
+        
+        int count = 0;
+        while(st.fetch())
+        {
+            ++count;
+            assert(p2.phone == "(404)123-4567");
+        }
+        assert(count == 3);        
+    }
+    std::cout << "test 18 passed" << std::endl;
+}
+
+
 int main(int argc, char** argv)
 {
     if (argc == 2)
@@ -1805,6 +1903,8 @@ int main(int argc, char** argv)
         test14();
         test15();
         test16();
+        test17();
+        test18();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }
