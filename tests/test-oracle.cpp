@@ -1996,7 +1996,7 @@ void test26()
         while(st.fetch())
         {
             ++count;
-            assert(r2.get<std::string>("phone") == "(404)123-4567");
+            assert(r2.get<std::string>("PHONE") == "(404)123-4567");
         }
         assert(count == 3);
     }
