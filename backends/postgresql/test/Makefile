@@ -1,14 +1,15 @@
 # The following variable is specific to this backend and its correct
 # values might depend on your environment - feel free to set it accordingly.
 
-PGSQLLIBDIR = -I/usr/lib
+PGSQLINCLUDEDIR = -I/usr/include
+PGSQLLIBDIR = -L/usr/lib
 PGSQLLIBS = -lpq
 
 # The rest of the Makefile is indepentent of the target environment.
 
 COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
-INCLUDEDIRS = -I.. -I../../../core
+INCLUDEDIRS = -I.. -I../../../core ${PGSQLINCLUDEDIR}
 LIBDIRS = -L.. -L../../../core ${PGSQLLIBDIR}
 LIBS = -lsoci-core -lsoci-postgresql ${PGSQLLIBS}
 
