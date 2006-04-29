@@ -9,8 +9,6 @@
 #include "soci.h"
 #include "soci-mysql.h"
 
-#include <cerrno>
-
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif

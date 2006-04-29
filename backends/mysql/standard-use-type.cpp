@@ -8,8 +8,7 @@
 
 #include "soci.h"
 #include "soci-mysql.h"
-
-#include <cerrno>
+#include "common.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -17,6 +16,7 @@
 
 using namespace SOCI;
 using namespace SOCI::details;
+using namespace SOCI::details::MySQL;
 
 
 void MySQLStandardUseTypeBackEnd::bindByPos(
@@ -34,21 +34,6 @@ void MySQLStandardUseTypeBackEnd::bindByName(
     type_ = type;
     name_ = name;
 }
-
-namespace { // anonymous
-
-char * quote(MYSQL * conn, const char *s, int l)
-{
-    char *retv = new char[2 * l + 3];
-    retv[0] = '\'';
-    int le = mysql_real_escape_string(conn, retv + 1, s, l);
-    retv[le + 1] = '\'';
-    retv[le + 2] = '\0';
-
-    return retv;
-}
-
-} // namespace anonymous
 
 void MySQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
 {
