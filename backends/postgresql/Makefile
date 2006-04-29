@@ -8,7 +8,7 @@ PGSQLINCLUDEDIR = -I/usr/include
 COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
 CXXFLAGSSO = ${CXXFLAGS} -fPIC
-INCLUDEDIRS = -I../../core ${EMPTYINCLUDEDIR}
+INCLUDEDIRS = -I../../core ${PGSQLINCLUDEDIR}
 
 
 OBJECTS = blob.o factory.o row-id.o session.o standard-into-type.o \
