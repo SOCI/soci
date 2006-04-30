@@ -1388,7 +1388,7 @@ void test11()
             "create table test11 ("
             "    id integer,"
             "    name varchar(100)"
-            ")";
+            ") with oids";
 
         sql << "insert into test11(id, name) values(7, \'John\')";
 
