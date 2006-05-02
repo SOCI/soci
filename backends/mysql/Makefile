@@ -1,10 +1,9 @@
 # The following variables are specific to this backend and their correct
 # values might depend on your environment - feel free to set it accordingly.
 
-MYSQLLIBDIR = -L/usr/local/mysql/lib
+MYSQLLIBDIR = -L/usr/lib/mysql
 MYSQLLIBS = -lmysqlclient -lz
-MYSQLINCLUDEDIR = -I/usr/local/mysql/include
-MACOSX = 1
+MYSQLINCLUDEDIR = -I/usr/include/mysql
 
 # The rest of the Makefile is independent of the target environment.
 
@@ -59,15 +58,9 @@ vector-into-type.o : vector-into-type.cpp
 vector-use-type.o : vector-use-type.cpp
 	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
-ifeq ($(MACOSX),1)
-shared : ${OBJECTS}
-	${COMPILER} -dynamiclib -o libsoci-mysql.dylib ${OBJECTS} \
-	${MYSQLLIBDIR} ${MYSQLLIBS} -L../../core/ -lsoci-core
-else
 shared : ${OBJECTSSO}
 	${COMPILER} -shared -o libsoci-mysql.so ${OBJECTSSO}
 	rm *.o
-endif
 
 blob-s.o : blob.cpp
 	${COMPILER} -c -o $@ $? ${CXXFLAGSSO} ${INCLUDEDIRS}
@@ -101,4 +94,4 @@ vector-use-type-s.o : vector-use-type.cpp
 
 
 clean :
-	rm -f libsoci-mysql.a libsoci-mysql.so libsoci-mysql.dylib
+	rm -f libsoci-mysql.a libsoci-mysql.so
