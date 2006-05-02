@@ -1,9 +1,9 @@
 # The following variables are specific to this backend and their correct
 # values might depend on your environment - feel free to set it accordingly.
 
-MYSQLLIBDIR = -L/usr/local/mysql/lib
+MYSQLLIBDIR = -L/usr/lib/mysql
 MYSQLLIBS = -lmysqlclient -lz
-MYSQLINCLUDEDIR = -I/usr/local/mysql/include
+MYSQLINCLUDEDIR = -I/usr/include/mysql
 
 # The rest of the Makefile is independent of the target environment.
 
