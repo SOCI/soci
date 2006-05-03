@@ -194,7 +194,9 @@ struct CStringDescriptor
 
 struct BackEndFactory
 {
-     virtual details::SessionBackEnd * makeSession(
+    virtual ~BackEndFactory() {}
+
+    virtual details::SessionBackEnd * makeSession(
         std::string const &connectString) const = 0;
 };
 
