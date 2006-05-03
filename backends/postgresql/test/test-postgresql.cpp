@@ -1431,6 +1431,11 @@ void test12()
     {
         Session sql(backEnd, connectString);
 
+        // before a language can be used it must be defined
+        // if it has already been defined then an error will occur
+        try { sql << "create language plpgsql"; }
+        catch (SOCIError const &) {} // ignore if error
+
 #ifndef SOCI_PGSQL_NOPARAMS
 
         sql <<
