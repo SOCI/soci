@@ -23,4 +23,4 @@ Sqlite3SessionBackEnd * Sqlite3BackEndFactory::makeSession(
      return new Sqlite3SessionBackEnd(connectString);
 }
 
-Sqlite3BackEndFactory const SOCI::Sqlite3;
+Sqlite3BackEndFactory const SOCI::sqlite3;

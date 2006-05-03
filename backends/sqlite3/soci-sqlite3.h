@@ -216,7 +216,7 @@ struct Sqlite3BackEndFactory : BackEndFactory
         std::string const &connectString) const;
 };
 
-extern Sqlite3BackEndFactory const Sqlite3;
+extern Sqlite3BackEndFactory const sqlite3;
 
 } // namespace SOCI
 

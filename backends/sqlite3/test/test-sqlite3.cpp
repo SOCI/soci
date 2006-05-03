@@ -17,7 +17,7 @@
 using namespace SOCI;
 
 std::string connectString;
-BackEndFactory const &backEnd = Sqlite3;
+BackEndFactory const &backEnd = sqlite3;
 
 
 // fundamental tests
