@@ -6,7 +6,7 @@ SQLITE3INCLUDEDIR =
 # The rest of the Makefile is indepentent of the target environment.
 
 COMPILER = g++
-CXXFLAGS = -Wall -pedantic -Wno-long-long -DSQLITE_ENABLE_COLUMN_METADATA
+CXXFLAGS = -Wall -pedantic -Wno-long-long #-DSQLITE_ENABLE_COLUMN_METADATA
 CXXFLAGSSO = ${CXXFLAGS} -fPIC
 INCLUDEDIRS = -I../../core ${SQLITE3INCLUDEDIR}
 
