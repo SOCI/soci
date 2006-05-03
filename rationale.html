@@ -9,10 +9,9 @@
 <font size="+3"><span
  style="font-family: helvetica,arial,sans-serif; font-weight: bold; color: rgb(0, 0, 255);">SOCI</span></font><br>
 <span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">Simple
-Oracle Call Interface</span><span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);">
-(and more)<br>
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">The
+C++ Database Access Library</span><span
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);"><br>
 </span>
 <br>
 <h3>Rationale FAQ<br>
@@ -25,19 +24,34 @@ decisions that shaped it.<br>
 <br>
 SOCI was initially developed in the environment where Oracle was the
 main database technology in use. As a wrapper for the native OCI API
-(Oracle Call Interface), the name Simple Oracle Call Interface was
+(Oracle Call Interface), the name "Simple Oracle Call Interface" was
 quite obvious - until the 2.0 release, when the internal architecture
 was largely redesigned to allow the use of <span
  style="font-style: italic;">backends</span> that support other
-database servers. Instead of inventing the new name for the library, we
-decided to keep Oracle as the main supported technology in the sense
+database servers. We have kept the same name to indicate that Oracle is
+the main supported technology in the sense
 that the library includes only those features that were naturally
 implemented in
-Oracle. This also means that backeds for other servers might need to
-work around some of the imposed idioms and protocols, but the example
-of well-working PostgreSQL backend shows that it's actually not that
-bad and we're looking forward to provide more backends for other
-servers. Of
+Oracle. With the 2.1 release of the library, two new backends were
+added (MySQL and SQLite3) and we decided to drop the original full name
+so that new users looking for a library supporting any of these simpler
+libraries are not discouraged by seeing "Oracle" somewhere in the name.
+The other possible interpretation was "Syntax Oriented Call Interface",
+which stresses the fact that SOCI was built to support the most natural
+and easy interface for the user that is similar to the Embedded SQL
+concept (see below). But on the other hand, SOCI also provides other
+features (like object-relational mapping) and as a whole it is not just
+"emulator" of the Embedded SQL. With all these considerations in mind,
+SOCI is just "SOCI - The C++ Database Access Library".<br>
+<br>
+Still, Oracle is considered to be the main driving server technology in
+terms of the set of features that are supported by the library. This
+also means that backeds for other servers might need to
+work around some of the imposed idioms and protocols, but already
+available and well-working PostgreSQL, MySQL and SQLite3 backends show
+that it's actually not that
+bad and the abstractions provided by the library are actually very
+universal. Of
 course, some of the features that were provided for Oracle might not be
 supported for all other servers, but we think that it's better to have
 one leading technology (where at least one group is fully happy)
@@ -128,8 +142,12 @@ First, you don't need to use SQL queries as string literals. In bigger
 projects it is a common practice to store SQL queries externally (in a
 file, or in a... database) and load them before use. This means that
 they are not necessarily expected to appear in the program code, as
-they do in our simple code examples.<br>
-What is important, though, is that SOCI does not try to mess with the
+they do in our simple code examples and the advantage of separating
+them from the source code of the main program is, among others, the
+possibility to optimize and tune the SQL queries without recompilation
+and relinking of the whole program.<br>
+What is the most important, though, is that SOCI does not try to mess
+with the
 text of the query (apart from very few cases), which means that the
 database server will get exactly the same text of the query as is used
 in the program. The advantage of this is that there is no new SQL-like

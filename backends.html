@@ -9,10 +9,9 @@
 <font size="+3"><span
  style="font-family: helvetica,arial,sans-serif; font-weight: bold; color: rgb(0, 0, 255);">SOCI</span></font><br>
 <span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">Simple
-Oracle Call Interface</span><span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);">
-(and more)<br>
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">The
+C++ Database Access Library</span><span
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);"><br>
 </span>
 <br>
 <h3>Backends reference<br>
@@ -26,13 +25,14 @@ The backend interface is a set of base classes that the actual backends
 are supposed to specialize. The main SOCI interface uses only the
 interface and respecting the protocol (for example, the order of
 function calls) described here. Note that both the interface and the
-protocol were designed with the Oracle database in mind, which means
+protocol were initially designed with the Oracle database in mind,
+which means
 that whereas it is quite natural with respect to the way Oracle API
 (OCI) works, it might impose some implementation burden on other
 backends, where things are done differently and therefore have to be
 adjusted, cached, converted, etc.<br>
 <br>
-The interface to the common SOCI interface is defined in the <code>soci-common.h</code>
+The interface to the common SOCI interface is defined in the <code>core/soci-backend.h</code>
 header file. This file is dissected below.<br>
 All names are defined in either <code>SOCI</code> or <code>SOCI::details</code>
 namespace.<br>
@@ -319,7 +319,7 @@ and <code>BLOB</code> classes.<br>
   <tbody>
     <tr>
       <td style="vertical-align: top;">
-      <pre>struct BackEndFactory<br>{<br>    virtual SessionBackEnd * makeSession(<br>        std::string const &amp;connectString) const = 0;<br>};<br><br>class BackEndFactoryRegistry<br>{<br>public:<br>    void registerMe(std::string const &amp;beName, BackEndFactory const *f);<br>    BackEndFactory const * find(std::string const &amp;beName) const;<br><br>private:<br>    std::map&lt;std::string, BackEndFactory const *&gt; registry_;<br>};<br><br>// registry singleton<br>BackEndFactoryRegistry &amp; theBEFRegistry();<br></pre>
+      <pre>struct BackEndFactory<br>{<br>    virtual SessionBackEnd * makeSession(<br>        std::string const &amp;connectString) const = 0;<br>};<br></pre>
       </td>
     </tr>
   </tbody>
@@ -329,49 +329,40 @@ The <code>BackEndFactory</code> is a base class for backend-provided
 factory class that is able to create valid sessions. The <code>connectString</code>
 parameter passed to <code>makeSession</code> is provided here by the <code>Session</code>
 constructor.<br>
-The <code>BackEndFactoryRegistry</code> and the <code>theBEFRegistry</code>
-function implement the Singleton registry for all instances of <code>BackEndFactory</code>
-(<code>theBEFRegistry</code> always returns the reference to the same
-registry object). When the <code>Session</code> object is created, the
-backend name (the first parameter to the <code>Session</code>
-constructor) is used to lookup the appropriate factory. If found (<code>find</code>
-always returns a valid pointer or throws an exception), its <code>makeSession</code>
-function is called to actually create the session.<br>
-The backends have to register themselves (by calling the <code>registerMe</code>
-function) in order to be found and used. It is recommended that
-backends register themselves with the help of some dummy global object,
-whose constructor performs the registration.<br>
-The following example is taken from <code>soci-oracle.cpp</code>,
-which is an implementation of the Oracle backend:<br>
+The actual backend factory object is supposed to be provided by the
+backend implementation and declared in its header file.<br>
+The following example is taken from <code>soci-postgresql.h</code>,
+which declares entities of the PostgreSQL backend:<br>
 <br>
 <table style="width: 100%; background-color: silver; text-align: left;"
  border="0" cellpadding="2" cellspacing="2">
   <tbody>
     <tr>
       <td style="vertical-align: top;">
-      <pre>// concrete factory for Oracle concrete strategies<br>struct OracleBackEndFactory : BackEndFactory<br>{<br>    virtual OracleSessionBackEnd * makeSession(<br>        std::string const &amp;connectString) const<br>    {<br>        std::string serviceName, userName, password;<br>        chopConnectString(connectString, serviceName, userName, password);<br><br>        return new OracleSessionBackEnd(serviceName, userName, password);<br>    }<br><br>} oracleBEF;<br><br>// global object for automatic factory registration<br>struct OracleAutoRegister<br>{<br>    OracleAutoRegister()<br>    {<br>        theBEFRegistry().registerMe("oracle", &amp;oracleBEF);<br>    }<br>} oracleAutoRegister;<br></pre>
+      <pre>// concrete backend factory for PostgreSQL<br>struct PostgreSQLBackEndFactory : BackEndFactory<br>{<br>    virtual PostgreSQLSessionBackEnd * makeSession(<br>        std::string const &amp;connectString) const;<br>};<br><br>// globally visible factory object<br>extern PostgreSQLBackEndFactory const postgresql;<br></pre>
       </td>
     </tr>
   </tbody>
 </table>
 <br>
-The above code ensures that it is enough to just compile and link the <code>soci-oracle.cpp</code>
-file to get the automatic registration of the whole backend. Later,
-when the <code>Session</code> object is created for the <code>"oracle"</code>
-backend, it will be found and used to create the <code>OracleSessionBackEnd</code>
-(which itself derives from <code>SessionBackEnd</code>). This, in
-turn, will be used to create implementations for any other objects that
+With the above declarations, it is enough to pass the <code>postgresql</code>
+factory name to the constructor of the <code>Session</code> object,
+which will use this factory to create concrete implementations for any
+other objects that
 are needed, with the help of appropriate <code>makeXYZ</code>
 functions.<br>
 <br>
-Note: There are <code>soci-empty.h</code> and <code>soci-empty.cpp</code>
-files provided as a skeleton for development of new backends (there is
-also <code>test-empty.cpp</code> as a skeleton for tests). It is
+Note: The backend source code is placed in the <code>backends/<span
+ style="font-style: italic;">name</span></code> directory (for example,
+<code>backends/oracle</code>) and the test driver is in <code>backends/<span
+ style="font-style: italic;">name</span>/test</code>. There is also <code>backends/empty</code>
+directory provided as a skeleton for development of new backends and
+their tests. It is
 recommended that all backends respect naming conventions by just
 appending their name to the base-class names. The backend name used for
-registration (and later lookup) should clearly identify the given
-database engine, like <code>"oracle"</code>, <code>"postgresql"</code>,
-<code>"mysql"</code>, and so on.<br>
+the global factory object should clearly identify the given
+database engine, like <code>oracle</code>, <code>postgresql</code>, <code>mysql</code>,
+and so on.<br>
 <br>
 <table style="width: 100%; text-align: left;" border="0" cellpadding="2"
  cellspacing="2">
