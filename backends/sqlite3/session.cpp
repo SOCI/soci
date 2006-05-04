@@ -17,12 +17,13 @@
 
 using namespace SOCI;
 using namespace SOCI::details;
+using namespace sqlite_api;
 
 namespace // anonymous
 {
 
 // helper function for hardcoded queries
-void hardExec(sqlite3* conn, char const *query, char const *errMsg)
+void hardExec(sqlite_api::sqlite3 *conn, char const *query, char const *errMsg)
 {
     char *zErrMsg = 0;
     int res = sqlite3_exec(conn, query, 0, 0, &zErrMsg);

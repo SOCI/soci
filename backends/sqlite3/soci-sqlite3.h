@@ -9,7 +9,11 @@
 #define SOCI_SQLITE3_H_INCLUDED
 
 #include "soci-backend.h"
+
+namespace sqlite_api
+{
 #include <sqlite3.h>
+}
 
 namespace SOCI
 {
@@ -143,7 +147,7 @@ struct Sqlite3StatementBackEnd : details::StatementBackEnd
     virtual Sqlite3VectorUseTypeBackEnd * makeVectorUseTypeBackEnd();
 
     Sqlite3SessionBackEnd &session_;
-    sqlite3_stmt *stmt_;
+    sqlite_api::sqlite3_stmt *stmt_;
     Sqlite3RecordSet dataCache_;
     Sqlite3RecordSet useData_;
     bool databaseReady_;
@@ -207,7 +211,7 @@ struct Sqlite3SessionBackEnd : details::SessionBackEnd
     virtual Sqlite3RowIDBackEnd * makeRowIDBackEnd();
     virtual Sqlite3BLOBBackEnd * makeBLOBBackEnd();
 
-    sqlite3 *conn_;
+    sqlite_api::sqlite3 *conn_;
 };
 
 struct Sqlite3BackEndFactory : BackEndFactory

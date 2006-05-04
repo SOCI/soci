@@ -18,6 +18,7 @@
 
 using namespace SOCI;
 using namespace SOCI::details;
+using namespace sqlite_api;
 
 Sqlite3BLOBBackEnd::Sqlite3BLOBBackEnd(Sqlite3SessionBackEnd &session)
     : session_(session), tableName_(""), columnName_(""), buf_(0), len_(0)
