@@ -1,12 +1,5 @@
-//
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
-// Distributed under the Boost Software License, Version 1.0.
-// (See accompanying file LICENSE_1_0.txt or copy at
-// http://www.boost.org/LICENSE_1_0.txt)
-//
-
 #include "soci.h"
-#include "soci-postgresql.h"
+#include "soci-mysql.h"
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -17,13 +10,13 @@
 using namespace SOCI;
 
 std::string connectString;
-std::string backEndName = "postgresql";
+BackEndFactory const &backEnd = mysql;
 
 // fundamental tests
 void test1()
 {
     {
-        Session sql(backEndName, connectString);
+        Session sql(backEnd, connectString);
 
         try { sql << "drop table test1"; }
         catch (SOCIError const &) {} // ignore if error
@@ -40,8 +33,8 @@ void test1()
         catch (SOCIError const &e)
         {
             std::string msg = e.what();
-            assert(msg ==
-                "ERROR:  table \"test1_nosuchtable\" does not exist\n");
+            assert(msg.find("Unknown table \'test1_nosuchtable\'")
+                != std::string::npos);
         }
 
         sql << "create table test1 (id integer)";
@@ -58,8 +51,13 @@ void test1()
 void test2()
 {
     {
-        Session sql(backEndName, connectString);
-
+        Session sql(backEnd, connectString);
+	
+        try { sql << "drop table test2"; }
+        catch (SOCIError const &) {} // ignore if error
+	
+        sql << "create table test2 (id integer)";
+	
         char c('a');
         sql << "select \'c\'", into(c);
         assert(c == 'c');
@@ -77,8 +75,8 @@ void test2()
         assert(buf[3] == '\0');
 
         std::string str;
-        sql << "select \'Hello, PostgreSQL!\'", into(str);
-        assert(str == "Hello, PostgreSQL!");
+        sql << "select \'Hello, MySQL!\'", into(str);
+        assert(str == "Hello, MySQL!");
 
         short sh(0);
         sql << "select 3", into(sh);
@@ -97,7 +95,7 @@ void test2()
         assert(std::abs(d - 3.14159265) < 0.001);
 
         std::tm t;
-        sql << "select date(\'2005-11-15\')", into(t);
+        sql << "select \'2005-11-15\'", into(t);
         assert(t.tm_year == 105);
         assert(t.tm_mon  == 10);
         assert(t.tm_mday == 15);
@@ -105,7 +103,7 @@ void test2()
         assert(t.tm_min  == 0);
         assert(t.tm_sec  == 0);
 
-        sql << "select timestamptz(\'2005-11-15 22:14:17\')", into(t);
+        sql << "select \'2005-11-15 22:14:17\'", into(t);
         assert(t.tm_year == 105);
         assert(t.tm_mon  == 10);
         assert(t.tm_mday == 15);
@@ -121,7 +119,11 @@ void test2()
         assert(ind == eNull);
         sql << "select \'Hello\'", into(buf, ind);
         assert(ind == eTruncated);
-
+	
+        // additional test for NULL with std::tm
+        sql << "select NULL", into(t, ind);
+        assert(ind == eNull);
+	
         try
         {
             // expect error
@@ -135,13 +137,13 @@ void test2()
                 "Null value fetched and no indicator defined.");
         }
 
-        sql << "select 5 where 0 = 1", into(i, ind);
+        sql << "select 5 from test2 where 0 = 1", into(i, ind);
         assert(ind == eNoData);
 
         try
         {
             // expect error
-            sql << "select 5 where 0 = 1", into(i);
+            sql << "select 5 from test2 where 0 = 1", into(i);
             assert(false);
         }
         catch (SOCIError const &e)
@@ -150,6 +152,8 @@ void test2()
             assert(error ==
                 "No data fetched and no indicator defined.");
         }
+	
+        sql << "drop table test2";
     }
 
     std::cout << "test 2 passed" << std::endl;
@@ -159,7 +163,7 @@ void test2()
 void test3()
 {
     {
-        Session sql(backEndName, connectString);
+        Session sql(backEnd, connectString);
 
         try { sql << "drop table test3"; }
         catch (SOCIError const &) {} // ignore if error
@@ -223,8 +227,8 @@ void test3()
                 }
                 catch (SOCIError const &e)
                 {
-                     std::string msg = e.what();
-                     assert(msg == "Vectors of size 0 are not allowed.");
+                    std::string msg = e.what();
+                    assert(msg == "Vectors of size 0 are not allowed.");
                 }
             }
 
@@ -511,7 +515,7 @@ void test3()
         // repeated fetch and bulk fetch of std::tm
         {
             // create and populate the test table
-            sql << "create table test3 (id integer, tm timestamp)";
+            sql << "create table test3 (id integer, tm datetime)";
 
             int const rowsToTest = 8;
             for (int i = 0; i != rowsToTest; ++i)
@@ -586,7 +590,7 @@ void test3()
 void test4()
 {
     {
-        Session sql(backEndName, connectString);
+        Session sql(backEnd, connectString);
 
         try { sql << "drop table test4"; }
         catch (SOCIError const &) {} // ignore if error
@@ -668,7 +672,7 @@ void test4()
 void test5()
 {
     {
-        Session sql(backEndName, connectString);
+        Session sql(backEnd, connectString);
 
         try { sql << "drop table test5"; }
         catch (SOCIError const &) {} // ignore if error
@@ -707,10 +711,8 @@ void test5()
 // "use" tests, type conversions, etc.
 void test6()
 {
-// Note: this functionality is not available with older PostgreSQL
-#ifndef SOCI_PGSQL_NOPARAMS
     {
-        Session sql(backEndName, connectString);
+        Session sql(backEnd, connectString);
 
         try { sql << "drop table test6"; }
         catch (SOCIError const &) {} // ignore if error
@@ -720,7 +722,7 @@ void test6()
             sql << "create table test6 (c char)";
 
             char c('a');
-            sql << "insert into test6(c) values($1)", use(c);
+            sql << "insert into test6(c) values(:c)", use(c);
 
             c = 'b';
             sql << "select c from test6", into(c);
@@ -734,7 +736,7 @@ void test6()
             sql << "create table test6 (s varchar(10))";
 
             char s[] = "Hello";
-            sql << "insert into test6(s) values($1)", use(s);
+            sql << "insert into test6(s) values(:aaa)", use(s);
 
             std::string str;
             sql << "select s from test6", into(str);
@@ -749,7 +751,7 @@ void test6()
             sql << "create table test6 (s varchar(20))";
 
             std::string s = "Hello SOCI!";
-            sql << "insert into test6(s) values($1)", use(s);
+            sql << "insert into test6(s) values(:abcd)", use(s);
 
             std::string str;
             sql << "select s from test6", into(str);
@@ -764,7 +766,7 @@ void test6()
             sql << "create table test6 (s integer)";
 
             short s = 123;
-            sql << "insert into test6(s) values($1)", use(s);
+            sql << "insert into test6(s) values(:aaa)", use(s);
 
             short s2 = 0;
             sql << "select s from test6", into(s2);
@@ -779,7 +781,7 @@ void test6()
             sql << "create table test6 (i integer)";
 
             int i = -12345678;
-            sql << "insert into test6(i) values($1)", use(i);
+            sql << "insert into test6(i) values(:aaa)", use(i);
 
             int i2 = 0;
             sql << "select i from test6", into(i2);
@@ -794,7 +796,7 @@ void test6()
             sql << "create table test6 (num numeric(20))";
 
             unsigned long ul = 4000000000ul;
-            sql << "insert into test6(num) values($1)", use(ul);
+            sql << "insert into test6(num) values(:aaa)", use(ul);
 
             std::string s;
             sql << "select num from test6", into(s);
@@ -809,7 +811,7 @@ void test6()
             sql << "create table test6 (d float8)";
 
             double d = 3.14159265;
-            sql << "insert into test6(d) values($1)", use(d);
+            sql << "insert into test6(d) values(:aaa)", use(d);
 
             double d2 = 0;
             sql << "select d from test6", into(d2);
@@ -821,7 +823,7 @@ void test6()
 
         // test for std::tm
         {
-            sql << "create table test6 (tm timestamptz)";
+            sql << "create table test6 (tm datetime)";
 
             std::tm t;
             t.tm_year = 105;
@@ -830,7 +832,7 @@ void test6()
             t.tm_hour = 21;
             t.tm_min = 39;
             t.tm_sec = 57;
-            sql << "insert into test6(tm) values($1)", use(t);
+            sql << "insert into test6(tm) values(:aaa)", use(t);
 
             std::tm t2;
             t2.tm_year = 0;
@@ -858,7 +860,7 @@ void test6()
 
             int i;
             Statement st = (sql.prepare
-                << "insert into test6(id) values($1)", use(i));
+                << "insert into test6(id) values(:aaa)", use(i));
 
             i = 5;
             st.execute(1);
@@ -881,16 +883,14 @@ void test6()
     }
 
     std::cout << "test 6 passed" << std::endl;
-
-#endif // SOCI_PGSQL_NOPARAMS
-
 }
+
 
 // test for multiple use (and into) elements
 void test7()
 {
     {
-        Session sql(backEndName, connectString);
+        Session sql(backEnd, connectString);
 
         try { sql << "drop table test7"; }
         catch (SOCIError const &) {} // ignore if error
@@ -902,17 +902,8 @@ void test7()
             int i2 = 6;
             int i3 = 7;
 
-#ifndef SOCI_PGSQL_NOPARAMS
-
-            sql << "insert into test7(i1, i2, i3) values($1, $2, $3)",
+            sql << "insert into test7(i1, i2, i3) values(:v1, :v2, :v3)",
                 use(i1), use(i2), use(i3);
-
-#else
-            // Older PostgreSQL does not support use elements.
-
-            sql << "insert into test7(i1, i2, i3) values(5, 6, 7)";
-
-#endif // SOCI_PGSQL_NOPARAMS
 
             i1 = 0;
             i2 = 0;
@@ -931,10 +922,8 @@ void test7()
             i2 = 0;
             i3 = 0;
 
-#ifndef SOCI_PGSQL_NOPARAMS
-
             Statement st = (sql.prepare
-                << "insert into test7(i1, i2, i3) values($1, $2, $3)",
+                << "insert into test7(i1, i2, i3) values(:v1, :v2, :v3)",
                 use(i1), use(i2), use(i3));
 
             i1 = 1;
@@ -949,15 +938,6 @@ void test7()
             i2 = 8;
             i3 = 9;
             st.execute(1);
-
-#else
-            // Older PostgreSQL does not support use elements.
-
-            sql << "insert into test7(i1, i2, i3) values(1, 2, 3)";
-            sql << "insert into test7(i1, i2, i3) values(4, 5, 6)";
-            sql << "insert into test7(i1, i2, i3) values(7, 8, 9)";
-
-#endif // SOCI_PGSQL_NOPARAMS
 
             std::vector<int> v1(5);
             std::vector<int> v2(5);
@@ -989,11 +969,8 @@ void test7()
 // use vector elements
 void test8()
 {
-// Not supported with older PostgreSQL
-#ifndef SOCI_PGSQL_NOPARAMS
-
     {
-        Session sql(backEndName, connectString);
+        Session sql(backEnd, connectString);
 
         try { sql << "drop table test8"; }
         catch (SOCIError const &) {} // ignore if error
@@ -1008,7 +985,7 @@ void test8()
             v.push_back('c');
             v.push_back('d');
 
-            sql << "insert into test8(c) values($1)", use(v);
+            sql << "insert into test8(c) values(:v1)", use(v);
 
             std::vector<char> v2(4);
 
@@ -1031,7 +1008,7 @@ void test8()
             v.push_back("ma");
             v.push_back("kota");
 
-            sql << "insert into test8(str) values($1)", use(v);
+            sql << "insert into test8(str) values(:v1)", use(v);
 
             std::vector<std::string> v2(4);
 
@@ -1054,7 +1031,7 @@ void test8()
             v.push_back(7);
             v.push_back(123);
 
-            sql << "insert into test8(sh) values($1)", use(v);
+            sql << "insert into test8(sh) values(:v1)", use(v);
 
             std::vector<short> v2(4);
 
@@ -1078,7 +1055,7 @@ void test8()
             v.push_back(1);
             v.push_back(2000000000);
 
-            sql << "insert into test8(i) values($1)", use(v);
+            sql << "insert into test8(i) values(:v1)", use(v);
 
             std::vector<int> v2(4);
 
@@ -1102,7 +1079,7 @@ void test8()
             v.push_back(123);
             v.push_back(1000);
 
-            sql << "insert into test8(ul) values($1)", use(v);
+            sql << "insert into test8(ul) values(:v1)", use(v);
 
             std::vector<unsigned long> v2(4);
 
@@ -1126,7 +1103,7 @@ void test8()
             v.push_back(0.0001);
             v.push_back(3.1415926);
 
-            sql << "insert into test8(d) values($1)", use(v);
+            sql << "insert into test8(d) values(:v1)", use(v);
 
             std::vector<double> v2(4);
 
@@ -1142,7 +1119,7 @@ void test8()
 
         // test for std::tm
         {
-            sql << "create table test8 (tm timestamp)";
+            sql << "create table test8 (tm datetime)";
 
             std::vector<std::tm> v;
             std::tm t;
@@ -1161,7 +1138,7 @@ void test8()
             t.tm_mday = 25;
             v.push_back(t);
 
-            sql << "insert into test8(tm) values($1)", use(v);
+            sql << "insert into test8(tm) values(:v1)", use(v);
 
             std::vector<std::tm> v2(4);
 
@@ -1191,20 +1168,14 @@ void test8()
     }
 
     std::cout << "test 8 passed" << std::endl;
-
-#endif // SOCI_PGSQL_NOPARAMS
-
 }
 
 
 // test for named binding
 void test9()
 {
-// Not supported with older PostgreSQL
-#ifndef SOCI_PGSQL_NOPARAMS
-
     {
-        Session sql(backEndName, connectString);
+        Session sql(backEnd, connectString);
 
         try { sql << "drop table test9"; }
         catch (SOCIError const &) {} // ignore if error
@@ -1278,16 +1249,13 @@ void test9()
     }
 
     std::cout << "test 9 passed" << std::endl;
-
-#endif // SOCI_PGSQL_NOPARAMS
-
 }
 
 // transaction test
 void test10()
 {
     {
-        Session sql(backEndName, connectString);
+        Session sql(backEnd, connectString);
 
         try { sql << "drop table test10"; }
         catch (SOCIError const &) {} // ignore if error
@@ -1296,17 +1264,24 @@ void test10()
             "create table test10 ("
             "    id integer,"
             "    name varchar(100)"
-            ")";
-
+            ") type=InnoDB";
+	
+        Row r;
+        sql << "show table status like \'test10\'", into(r);
+        if (r.get<std::string>(1) != "InnoDB")
+        {
+            sql << "drop table test10";
+            std::cout << "skipping test 10 ";
+            std::cout << "(MySQL server does not support transactions)\n";
+            return;
+        }
+	
         int count;
         sql << "select count(*) from test10", into(count);
         assert(count == 0);
 
         {
             sql.begin();
-
-#ifndef SOCI_PGSQL_NOPARAMS
-
             int id;
             std::string name;
 
@@ -1318,27 +1293,14 @@ void test10()
             id = 2; name = "Anna"; st1.execute(1);
             id = 3; name = "Mike"; st1.execute(1);
 
-#else
-            // Older PostgreSQL does not support use elements
-
-            sql << "insert into test10 (id, name) values(1, 'John')";
-            sql << "insert into test10 (id, name) values(2, 'Anna')";
-            sql << "insert into test10 (id, name) values(3, 'Mike')";
-
-#endif // SOCI_PGSQL_NOPARAMS
-
             sql.commit();
             sql.begin();
 
             sql << "select count(*) from test10", into(count);
             assert(count == 3);
-
-#ifndef SOCI_PGSQL_NOPARAMS
+	    
             id = 4; name = "Stan"; st1.execute(1);
-#else
-            sql << "insert into test10 (id, name) values(4, 'Stan')";
-#endif // SOCI_PGSQL_NOPARAMS
-
+	    
             sql << "select count(*) from test10", into(count);
             assert(count == 4);
 
@@ -1367,74 +1329,32 @@ void test10()
     std::cout << "test 10 passed" << std::endl;
 }
 
-// ROWID test
-// Note: in PostgreSQL, there is no ROWID, there is OID.
-// It is still provided as a separate type for "portability",
-// whatever that means.
-void test11()
-{
-    {
-        Session sql(backEndName, connectString);
-
-        try { sql << "drop table test11"; }
-        catch (SOCIError const &) {} // ignore if error
-
-        sql <<
-            "create table test11 ("
-            "    id integer,"
-            "    name varchar(100)"
-            ")";
-
-        sql << "insert into test11(id, name) values(7, \'John\')";
-
-        RowID rid(sql);
-        sql << "select oid from test11 where id = 7", into(rid);
-
-        int id;
-        std::string name;
-
-#ifndef SOCI_PGSQL_NOPARAMS
-
-        sql << "select id, name from test11 where oid = :rid",
-            into(id), into(name), use(rid);
-
-#else
-        // Older PostgreSQL does not support use elements.
-
-        PostgreSQLRowIDBackEnd *rbe
-            = static_cast<PostgreSQLRowIDBackEnd *>(rid.getBackEnd());
-
-        unsigned long oid = rbe->value_;
-
-        sql << "select id, name from test11 where oid = " << oid,
-            into(id), into(name);
-
-#endif // SOCI_PGSQL_NOPARAMS
-
-        assert(id == 7);
-        assert(name == "John");
-
-        sql << "drop table test11";
-    }
-
-    std::cout << "test 11 passed" << std::endl;
-}
-
 // procedure call test
 void test12()
 {
     {
-        Session sql(backEndName, connectString);
-
-#ifndef SOCI_PGSQL_NOPARAMS
-
+        Session sql(backEnd, connectString);
+	
+        MySQLSessionBackEnd *sessionBackEnd
+            = static_cast<MySQLSessionBackEnd *>(sql.getBackEnd());
+        std::string version = mysql_get_server_info(sessionBackEnd->conn_);
+        int v;
+        std::istringstream iss(version);
+        if ((iss >> v) and v < 5)
+        {
+            std::cout << "skipping test 12 (MySQL server version ";
+            std::cout << version << " does not support stored procedures)\n";
+            return;
+        }
+	
+        try { sql << "drop function myecho"; }
+        catch (SOCIError const &) {}
+	
         sql <<
-            "create or replace function myecho(msg varchar) "
-            "returns varchar as $$ "
-            "begin "
-            "  return msg; "
-            "end $$ language plpgsql";
-
+            "create function myecho(msg text) "
+            "returns text "
+            "  return msg; ";
+ 
         std::string in("my message");
         std::string out;
 
@@ -1442,24 +1362,6 @@ void test12()
             "select myecho(:input)",
             into(out),
             use(in, "input"));
-
-#else
-        // Older PostgreSQL does not support use elements.
-
-        sql <<
-            "create or replace function myecho(varchar) "
-            "returns varchar as \' "
-            "begin "
-            "  return $1; "
-            "end \' language plpgsql";
-
-        std::string in("my message");
-        std::string out;
-        Statement st = (sql.prepare <<
-            "select myecho(\'" << in << "\')",
-            into(out));
-
-#endif // SOCI_PGSQL_NOPARAMS
 
         st.execute(1);
         assert(out == in);
@@ -1469,25 +1371,15 @@ void test12()
             std::string in("my message2");
             std::string out;
 
-#ifndef SOCI_PGSQL_NOPARAMS
-
             Procedure proc = (sql.prepare <<
                 "myecho(:input)",
                 into(out), use(in, "input"));
-
-#else
-        // Older PostgreSQL does not support use elements.
-
-            Procedure proc = (sql.prepare <<
-                "myecho(\'" << in << "\')", into(out));
-
-#endif // SOCI_PGSQL_NOPARAMS
 
             proc.execute(1);
             assert(out == in);
         }
 
-        sql << "drop function myecho(varchar)";
+        sql << "drop function myecho";
     }
 
     std::cout << "test 12 passed" << std::endl;
@@ -1496,9 +1388,8 @@ void test12()
 // test of use elements with indicators
 void test13()
 {
-#ifndef SOCI_PGSQL_NOPARAMS
     {
-        Session sql(backEndName, connectString);
+        Session sql(backEnd, connectString);
 
         try { sql << "drop table test13"; }
         catch (SOCIError const &) {} // ignore if error
@@ -1568,76 +1459,19 @@ void test13()
     }
 
     std::cout << "test 13 passed" << std::endl;
-
-#endif // SOCI_PGSQL_NOPARAMS
-}
-
-// BLOB test
-void test14()
-{
-    {
-        Session sql(backEndName, connectString);
-
-        try { sql << "drop table test14"; }
-        catch (SOCIError const &) {} // ignore if error
-
-        sql <<
-            "create table test14 ("
-             "    id integer,"
-             "    img oid"
-             ")";
-
-        char buf[] = "abcdefghijklmnopqrstuvwxyz";
-
-        sql << "insert into test14(id, img) values(7, lo_creat(-1))";
-
-        // in PostgreSQL, BLOB operations must be withing transaction block
-        sql.begin();
-
-        {
-            BLOB b(sql);
-
-            sql << "select img from test14 where id = 7", into(b);
-            assert(b.getLen() == 0);
-
-            b.write(0, buf, sizeof(buf));
-            assert(b.getLen() == sizeof(buf));
-
-            b.append(buf, sizeof(buf));
-            assert(b.getLen() == 2 * sizeof(buf));
-        }
-        {
-            BLOB b(sql);
-            sql << "select img from test14 where id = 7", into(b);
-            assert(b.getLen() == 2 * sizeof(buf));
-            char buf2[100];
-            b.read(0, buf2, 10);
-            assert(strncmp(buf2, "abcdefghij", 10) == 0);
-        }
-
-        unsigned long oid;
-        sql << "select img from test14 where id = 7", into(oid);
-        sql << "select lo_unlink(" << oid << ")";
-
-        sql.commit();
-
-        sql << "drop table test14";
-    }
-
-    std::cout << "test 14 passed" << std::endl;
 }
 
 // Dynamic binding to Row objects
 void test15()
 {
     {
-        Session sql(backEndName, connectString);
+        Session sql(backEnd, connectString);
 
         try { sql << "drop table test15"; }
         catch (SOCIError const &) {} //ignore error if table doesn't exist
 
         sql << "create table test15(num_float float8, num_int integer,"
-            << " name varchar(20), sometime timestamptz,"
+            << " name varchar(20), sometime datetime,"
             << " chr char)";
 
         Row r;
@@ -1646,7 +1480,7 @@ void test15()
 
         sql << "insert into test15(num_float, num_int, name, sometime, chr)"
             " values(3.14, 123, \'Johny\',"
-            " timestamptz(\'2005-12-19 22:14:17\'), 'a')";
+            " \'2005-12-19 22:14:17\', 'a')";
 
         // select into a Row
         {
@@ -1709,7 +1543,7 @@ void test15()
 // more dynamic bindings
 void test16()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     try { sql << "drop table test16"; }
     catch (SOCIError const &) {} //ignore error if table doesn't exist
@@ -1720,7 +1554,6 @@ void test16()
     sql << "insert into test16(id, val) values(2, 20)";
     sql << "insert into test16(id, val) values(3, 30)";
 
-#ifndef SOCI_PGSQL_NOPARAMS
     {
         int id = 2;
         Row r;
@@ -1754,18 +1587,107 @@ void test16()
         assert(r.getProperties(0).getDataType() == eInteger);
         assert(r.get<int>(0) == 10);
     }
-#else
-    {
-        Row r;
-        sql << "select val from test16 where id = 2", into(r);
-
-        assert(r.size() == 1);
-        assert(r.getProperties(0).getDataType() == eInteger);
-        assert(r.get<int>(0) == 20);
-    }
-#endif // SOCI_PGSQL_NOPARAMS
 
     std::cout << "test 16 passed" << std::endl;
+}
+
+// More Dynamic binding to Row objects
+void test17()
+{
+    {
+        Session sql(backEnd, connectString);
+
+        try { sql << "drop table test17"; }
+        catch (SOCIError const &) {} //ignore error if table doesn't exist
+
+        sql << "create table test17(name varchar(100) not null, "
+            "phone varchar(15))";
+
+        Row r1;
+        sql << "select * from test17", into(r1);
+        assert(r1.indicator(0) ==  eNoData);
+
+        sql << "insert into test17 values('david', '(404)123-4567')";
+        sql << "insert into test17 values('john', '(404)123-4567')";
+        sql << "insert into test17 values('doe', '(404)123-4567')";
+
+        Row r2;
+        Statement st = (sql.prepare << "select * from test17", into(r2));
+        st.execute();
+        
+        assert(r2.size() == 2); 
+        
+        int count = 0;
+        while(st.fetch())
+        {
+            ++count;
+            assert(r2.get<std::string>("phone") == "(404)123-4567");
+        }
+        assert(count == 3);
+    }
+    std::cout << "test 17 passed" << std::endl;
+}
+
+// test18 is like test17 but with a TypeConversion instead of a row
+
+struct PhonebookEntry
+{
+    std::string name;
+    std::string phone;
+};
+namespace SOCI
+{
+    template<> struct TypeConversion<PhonebookEntry>
+    {
+        typedef Values base_type;
+        static PhonebookEntry from(Values const &v)
+        {
+            PhonebookEntry p;
+            p.name = v.get<std::string>("name", "<NULL>");
+            p.phone = v.get<std::string>("phone", "<NULL>");
+            return p;
+        }
+        static Values to(PhonebookEntry &p)
+        {
+            Values v;
+            v.set("NAME", p.name);
+            v.set("PHONE", p.phone, p.phone.empty() ? eNull : eOK);
+            return v;
+        }
+    };    
+}
+void test18()
+{
+    {
+        Session sql(backEnd, connectString);
+
+        try { sql << "drop table test18"; }
+        catch (SOCIError const &) {} //ignore error if table doesn't exist
+
+        sql << "create table test18(name varchar(100) not null, "
+            "phone varchar(15))";
+
+        PhonebookEntry p1;
+        sql << "select * from test18", into(p1);
+        assert(p1.name ==  "");
+
+        sql << "insert into test18 values('david', '(404)123-4567')";
+        sql << "insert into test18 values('john', '(404)123-4567')";
+        sql << "insert into test18 values('doe', '(404)123-4567')";
+
+        PhonebookEntry p2;
+        Statement st = (sql.prepare << "select * from test18", into(p2));
+        st.execute();
+        
+        int count = 0;
+        while(st.fetch())
+        {
+            ++count;
+            assert(p2.phone == "(404)123-4567");
+        }
+        assert(count == 3);        
+    }
+    std::cout << "test 18 passed" << std::endl;
 }
 
 int main(int argc, char** argv)
@@ -1779,10 +1701,9 @@ int main(int argc, char** argv)
         std::cout << "usage: " << argv[0]
             << " connectstring\n"
             << "example: " << argv[0]
-            << " \'connect_string_for_PostgreSQL\'\n";
+            << " \"dbname=test user=root password=\'Ala ma kota\'\"\n";
         exit(1);
     }
-
     try
     {
         test1();
@@ -1795,14 +1716,12 @@ int main(int argc, char** argv)
         test8();
         test9();
         test10();
-        test11();
         test12();
         test13();
-        test14();
         test15();
         test16();
-
-        std::cout << "\nOK, all tests passed.\n\n";
+        test17();
+        test18();
     }
     catch (std::exception const & e)
     {

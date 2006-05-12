@@ -9,10 +9,9 @@
 <font size="+3"><span
  style="font-family: helvetica,arial,sans-serif; font-weight: bold; color: rgb(0, 0, 255);">SOCI</span></font><br>
 <span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">Simple
-Oracle Call Interface</span><span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);">
-(and more)<br>
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">The
+C++ Database Access Library</span><span
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);"><br>
 <br>
 </span>
 <h3><span style="font-weight: bold;"></span>Library structure, files
@@ -23,20 +22,21 @@ The SOCI library has the following structure:<br>
  style="width: 502px; height: 444px;"><br>
 </div>
 <br>
-The <code>soci.h</code> and <code>soci.cpp</code> are the main files
-of the library - the ones that you have to directly interface with. The
-<code>soci-common.h</code> file (located in the <code>backends/</code>
-directory of the library distribution) is an internal abstract
+The core part of the library and the backend interface definition are
+placed in the <code>core</code> directory of the library distribution.
+The
+<code>soci-backend.h</code> file is an internal abstract
 interface to the actual backends, which are needed to perform
 operations on the given database server. Normally, the C++ client
-program needs to interface with the <code>soci.h</code> header file
-only, unless it needs to gain direct access to the internal handles of
-the backend.<br>
+program needs to interface with the <code>soci.h</code> header and the
+header(s) relevant to the given backend(s) (for example, <code>soci-oracle.h</code>).
+It is possible for the same program to use many backends at the same
+time.<br>
 The gray boxes above indicate that the SOCI library is extensible and
 that there are two aspects of this extensibility: more backends can be
 added, and more interfaces (possibly for other languages) can be
 defined to reuse the already existing backends.<br>
-<p>Everything in SOCI (and in <code>soci.h</code> in particular) is
+<p>Everything in SOCI is
 declared in the namespace <code>SOCI</code>.
 All code examples presented in this documentation assume that your code
 begins with something
@@ -53,54 +53,51 @@ like:<br>
   </tbody>
 </table>
 <br>
-Compilation of the client program requires that the SOCI header files
-are all visible and accessible to the compiler. Moreover, the backend
-.cpp files (those which are needed) should be compiled and linked into
-the final executable. For this, the native libraries provided by each
-database server should be visible to the compiler and linker - the
-actual steps that need to be taken depend on the compiler being used.<br>
-The following instructions consider the Oracle backend:<br>
+<span style="font-weight: bold;">Note:</span> in simple programs, <code>#include</code>
+for the relevant
+backend is needed only in the file where the <code>Session</code>
+object is created, because it is where the name of the backend factory
+is referenced. The example program on the <a href="index.html">previous
+page</a> shows the appropriate <code>#include</code> directive for the
+Oracle backend.<br>
 <br>
-<span style="font-weight: bold;">On MS Windows, in MSVC++7</span>
-<p>In Project Properties:</p>
-<ol>
-  <li>In C/C++ - General:<br>
-Add the Additional Include Directory where the <code>oci.h</code> file
-is located (it can be something like <code>C:\Oracle\Ora81\oci\include</code>).</li>
-  <li>In Linker - General:<br>
-Add the Additional Library Directory where the <code>oci.lib</code>
-file is located (it can be something like <code>C:\Oracle\Ora81\oci\lib\msvc</code>).</li>
-  <li>In Linker - Input:<br>
-Add the Additional Dependency: <code>oci.lib</code>.</li>
-</ol>
-<p>When executing programs, the <code>oci.dll</code> file should be
-located in the path
-where it can be found. Be careful when using many different Oracle
-tools,
-because they may overwrite each other's <code>oci.dll</code> versions.
-The "correct" <code>oci.dll</code> for running the program compiled as
-above is located
-somewhere near the <code>oci.lib</code>, for example in <code>C:\Oracle\Ora81\BIN</code>.
-</p>
-<span style="font-weight: bold;">On Unix-like systems</span>
-<p>The OCI library is usually inside the <code>libclntsh.so</code> or <code>libclntsh.sl</code>
-library
-(depending on the actual system), so you have to add the <code>-lclntsh</code>
-option
-for linking and <code>-L</code> option to provide the path to the
-linker.
-Of course, the <code>-I</code> compiler option will be needed to
-provide the location
-of the <code>oci.h</code> header file.
-Look inside the <code>$ORACLE_HOME</code> directory to find where
-these files are located
-- it may depend both on the Unix flavour and the Oracle version
-installed,
-but likely locations are <code>$ORACLE_HOME/rdbms/demo</code> for <code>oci.h</code>
-and <code>$ORACLE_HOME/lib</code> for <code>libclntsh.so</code>.
-</p>
-Note that together with the SOCI library, there is a set of test
-programs provided. Their Makefiles can be a good starting point to find
+Compilation of the client program requires that the SOCI header files
+are all visible and accessible to the compiler. Moreover, the library
+itself (the core part and the relevant backend part) needs to be
+already compiled and linked into
+the final executable. For this, the native libraries provided by each
+database server should be visible to the compiler and linker as well -
+the
+actual steps that need to be taken depend on the compiler being used.<br>
+<br>
+The <code>core</code> directory of the library distribution contains
+the <code>Makefile</code> that can be used to compile the core part of
+the library. Run <code>make</code> or <code>make shared</code> to get
+the static and shared versions. Similarly, the <code>backends/<span
+ style="font-style: italic;">name</span></code> directory contains the
+backend part for each supported backend with the appropriate <code>Makefile</code>
+and the <code>backends/<span style="font-style: italic;">name</span>/test</code>
+directory contains the test program for the given backend.<br>
+For example, the simplest way to compile the static version of the
+library and the test program for PostgreSQL is:<br>
+<br>
+<table style="width: 100%; background-color: silver; text-align: left;"
+ border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <pre>$ cd core<br>$ make<br>$ cd ../backends/postgresql<br>$ make<br>$ cd test<br>$ make</pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<span style="font-weight: bold;"><br>
+Note:</span> for each backend and its test program, the <code>Makefile</code>s
+contain the variables that can have values specific to the given
+environment. These variables are placed at the beginning of the <code>Makefile</code>s.
+Please review their values in case of any compilation problems.<br>
+<br>
+The Makefiles for test programs can be a good starting point to find
 out correct compiler and linker options.<br>
 <br>
 <table style="width: 100%; text-align: left;" border="0" cellpadding="2"

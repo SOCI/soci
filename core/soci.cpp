@@ -19,12 +19,11 @@ SOCIError::SOCIError(std::string const & msg)
 {
 }
 
-Session::Session(std::string const & backEndName,
+Session::Session(BackEndFactory const &factory,
     std::string const & connectString)
     : once(this), prepare(this)
 {
-    BackEndFactory const *factory = theBEFRegistry().find(backEndName);
-    backEnd_ = factory->makeSession(connectString);
+    backEnd_ = factory.makeSession(connectString);
 }
 
 Session::~Session()
@@ -282,23 +281,23 @@ bool Statement::execute(bool withDataExchange)
              "Bulk insert/update and bulk select not allowed in same query");
     }
 
+    preUse();
+
+    // looks like a hack and it is - row description should happen
+    // *after* the use elements were completely prepared
+    // and *before* the into elements are touched, so that the row
+    // description process can inject more into elements for
+    // implicit data exchange
+    if (row_ != NULL && alreadyDescribed_ == false)
+    {
+        describe();
+        defineForRow();
+    }
+
     int num = 0;
     if (withDataExchange)
     {
         num = 1;
-
-        preUse();
-
-        // looks like a hack and it is - row description should happen
-        // *after* the use elements were completely prepared
-        // and *before* the into elements are touched, so that the row
-        // description process can inject more into elements for
-        // implicit data exchange
-        if (row_ != NULL && alreadyDescribed_ == false)
-        {
-            describe();
-            defineForRow();
-        }
 
         preFetch();
 
@@ -1088,38 +1087,4 @@ RowID::RowID(Session &s)
 RowID::~RowID()
 {
     delete backEnd_;
-}
-
-
-// back-end factory registry implementation
-
-void BackEndFactoryRegistry::registerMe(
-    std::string const &beName, BackEndFactory const *f)
-{
-    registry_[beName] = f;
-}
-
-BackEndFactory const *
-BackEndFactoryRegistry::find(std::string const &beName) const
-{
-    std::map<std::string, BackEndFactory const *>::const_iterator it
-        = registry_.find(beName);
-
-    if (it == registry_.end())
-    {
-        std::string msg("Back-end for ");
-        msg += beName;
-        msg += " not found.";
-        throw SOCIError(msg);
-    }
-    else
-    {
-        return it->second;
-    }
-}
-
-BackEndFactoryRegistry & details::theBEFRegistry()
-{
-    static BackEndFactoryRegistry registry;
-    return registry;
 }

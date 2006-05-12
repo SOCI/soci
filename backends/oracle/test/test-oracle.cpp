@@ -15,13 +15,13 @@
 using namespace SOCI;
 
 std::string connectString;
-std::string backEndName = "oracle";
+BackEndFactory const &backEnd = oracle;
 
 // fundamental tests
 void test1()
 {
     {
-        Session session(backEndName, connectString);
+        Session session(backEnd, connectString);
 
         int x = -5;
 
@@ -67,7 +67,7 @@ void test1()
     }
 
     {
-        Session sql(backEndName, connectString);
+        Session sql(backEnd, connectString);
 
         int a = 0;
         int b = 5;
@@ -96,7 +96,7 @@ void test1()
 // type test
 void test2()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     {
         double d1 = 0.0, d2 = 3.14;
@@ -224,7 +224,7 @@ void test2()
 // indicator test
 void test3()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     {
         // test for eOK
@@ -279,7 +279,7 @@ void test3()
 // explicit calls test
 void test4()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     Statement st(sql);
     st.alloc();
@@ -296,7 +296,7 @@ void test4()
 // DDL + insert and retrieval tests
 void test5()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     sql <<
         "create table some_table ("
@@ -348,7 +348,7 @@ void test5()
 // DDL + BLOB test
 void test6()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     sql <<
         "create table some_table ("
@@ -405,7 +405,7 @@ void test6()
 // rollback test
 void test7()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     sql <<
         "create table some_table ("
@@ -461,7 +461,7 @@ void test7()
 // (the same syntax is used for output cursors in PL/SQL)
 void test8()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     sql <<
         "create table some_table ("
@@ -506,7 +506,7 @@ void test8()
 // ROWID test
 void test9()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     sql <<
         "create table some_table ("
@@ -536,7 +536,7 @@ void test9()
 void test10()
 {
     {
-        Session sql(backEndName, connectString);
+        Session sql(backEnd, connectString);
         sql <<
             "create or replace procedure echo(output out varchar2,"
             "input in varchar2) as "
@@ -571,7 +571,7 @@ void test10()
 void test11()
 {
     {
-        Session sql(backEndName, connectString);
+        Session sql(backEnd, connectString);
 
         try { sql << "drop table test11"; }
         catch (SOCIError const &) {} //ignore error if table doesn't exist
@@ -714,7 +714,7 @@ namespace SOCI
 
 void test12()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
     {
         try
         {
@@ -770,7 +770,7 @@ void test12()
 // test multiple use types of the same underlying type
 void test13()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     try { sql << "drop table test13"; } catch (SOCIError const &) {} // ignore
 
@@ -815,7 +815,7 @@ void test13()
 // test dbtype CHAR
 void test14()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     try { sql << "drop table test14"; } catch (SOCIError const &) {} // ignore
 
@@ -834,7 +834,7 @@ void test14()
 // test bulk insert features
 void test15()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     try { sql << "drop table test15"; } catch (SOCIError const &) {} // ignore
 
@@ -1096,7 +1096,7 @@ void test15()
 //test bulk operations for std::string
 void test16()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     try { sql << "drop table test16"; } catch (SOCIError const &) {} // ignore
 
@@ -1232,7 +1232,7 @@ void test16()
 // test bulk operations for unsigned long and double
 void test17()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     try { sql << "drop table test17"; } catch (SOCIError const &) {} // ignore
 
@@ -1309,7 +1309,7 @@ void test17()
 // test bulk operations for std::tm
 void test18()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     try { sql << "drop table test18"; } catch (SOCIError const &) {} // ignore
 
@@ -1406,7 +1406,7 @@ void test18()
 // test bulk operations for std::time_t
 void test19()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     try { sql << "drop table test19"; } catch (SOCIError const &) {} // ignore
 
@@ -1503,7 +1503,7 @@ void test19()
 // test bulk operations for char
 void test20()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     try { sql << "drop table test20"; } catch (SOCIError const &) {} // ignore
 
@@ -1550,7 +1550,7 @@ void test20()
 // test bulk operations for short
 void test21()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     try { sql << "drop table test21"; } catch (SOCIError const &) {} // ignore
 
@@ -1604,7 +1604,7 @@ void test21()
 // more tests for bulk fetch
 void test22()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     try { sql << "drop table test22"; } catch (SOCIError const &) {} // ignore
 
@@ -1727,7 +1727,7 @@ namespace SOCI
 
 void test23()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     try { sql << "drop table person"; }
         catch (SOCIError const &) {} //ignore error if table doesn't exist
@@ -1769,6 +1769,31 @@ void test23()
     sql << "select * from person", into(p2);
     assert(p2.id == 1);
     assert(p2.firstName + p2.lastName.get() == "PatriciaSmith");
+
+    // test with prepared statements
+    {
+        // insert a second row so we can test fetching
+        Person p;
+        p.id = 2;
+        p.firstName = "Joe";
+        p.lastName = "Smith";
+        sql << "insert into person(id, first_name, last_name, gender) "
+            << "values(:ID, :FIRST_NAME, :LAST_NAME, :GENDER)", use(p);
+
+        Person p2;
+        Statement st = (sql.prepare << "select * from person order by id",
+                    into(p2));
+
+        st.execute();
+        assert(st.fetch());
+        assert(p2.id == 1);
+        assert(p2.firstName == "Patricia");
+
+        assert(st.fetch());
+        assert(p2.id == 2);
+        assert(p2.firstName == "Joe");
+        assert(!st.fetch());
+    }
 
     // test with stored procedure
     {
@@ -1870,7 +1895,7 @@ namespace SOCI
 
 void test24()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     try { sql << "drop table person"; }
         catch (SOCIError const &) {} //ignore error if table doesn't exist
@@ -1908,7 +1933,7 @@ void test24()
 // additional test for statement preparation with indicators (non-bulk)
 void test25()
 {
-    Session sql(backEndName, connectString);
+    Session sql(backEnd, connectString);
 
     try{ sql << "drop table test25"; }
     catch (SOCIError const &) {} // ignore error if table doesn't exist
@@ -1939,6 +1964,43 @@ void test25()
     assert(st.fetch() == false); // end of rowset expected
 
     std::cout << "test 25 passed" << std::endl;
+}
+
+// More Dynamic binding to Row objects
+void test26()
+{
+    {
+        Session sql(backEnd, connectString);
+
+        try { sql << "drop table test26"; }
+        catch (SOCIError const &) {} //ignore error if table doesn't exist
+
+        sql << "create table test26(name varchar(100) not null, "
+            "phone varchar(15))";
+
+        Row r1;
+        sql << "select * from test26", into(r1);
+        assert(r1.indicator(0) ==  eNoData);
+
+        sql << "insert into test26 values('david', '(404)123-4567')";
+        sql << "insert into test26 values('john', '(404)123-4567')";
+        sql << "insert into test26 values('doe', '(404)123-4567')";
+
+        Row r2;
+        Statement st = (sql.prepare << "select * from test26", into(r2));
+        st.execute();
+        
+        assert(r2.size() == 2); 
+        
+        int count = 0;
+        while(st.fetch())
+        {
+            ++count;
+            assert(r2.get<std::string>("PHONE") == "(404)123-4567");
+        }
+        assert(count == 3);
+    }
+    std::cout << "test 26 passed" << std::endl;
 }
 
 int main(int argc, char** argv)
@@ -1983,6 +2045,7 @@ int main(int argc, char** argv)
         test23(); 
         test24();
         test25();
+        test26();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }

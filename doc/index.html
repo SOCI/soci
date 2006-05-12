@@ -9,10 +9,9 @@
 <font size="+3"><span
  style="font-family: helvetica,arial,sans-serif; font-weight: bold; color: rgb(0, 0, 255);">SOCI</span></font><br>
 <span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">Simple
-Oracle Call Interface</span><span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);">
-(and more)<br>
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">The
+C++ Database Access Library</span><span
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);"><br>
 <br>
 </span>
 <h2><span style="font-weight: bold;">Documentation and tutorial</span></h2>
@@ -24,6 +23,7 @@ Oracle Call Interface</span><span
 <a href="exchange.html">Exchanging data</a><br>
 <a href="statements.html">Statements, procedures and transactions</a><br>
 <a href="beyond.html">Beyond SOCI</a><br>
+<a href="reference.html">Client interface reference</a><br>
 <a href="backends.html">Backends reference</a><br>
 <a href="rationale.html">Rationale FAQ</a><br>
 <br>
@@ -36,9 +36,10 @@ explanation. Parts that use the SOCI library are bold.<br>
   <tbody>
     <tr>
       <td style="vertical-align: top;">
-      <pre><span style="font-weight: bold;">#include "soci.h"</span><br>#include &lt;iostream&gt;<br>#include &lt;istream&gt;<br>#include &lt;ostream&gt;<br>#include &lt;string&gt;<br>#include &lt;exception&gt;<br><br><span
+      <pre><span style="font-weight: bold;">#include "soci.h"</span><br><span
+ style="font-weight: bold;">#include "soci-oracle.h"</span><br>#include &lt;iostream&gt;<br>#include &lt;istream&gt;<br>#include &lt;ostream&gt;<br>#include &lt;string&gt;<br>#include &lt;exception&gt;<br><br><span
  style="font-weight: bold;">using namespace SOCI;</span><br>using namespace std;<br><br>bool getName(string &amp;name)<br>{<br>    cout &lt;&lt; "Enter name: ";<br>    return cin &gt;&gt; name;<br>}<br><br>int main()<br>{<br>    try<br>    {<br>        <span
- style="font-weight: bold;">Session sql("oracle", "service=mydb user=john password=secret");</span><br><br>        int count;<br>        <span
+ style="font-weight: bold;">Session sql(oracle, "service=mydb user=john password=secret");</span><br><br>        int count;<br>        <span
  style="font-weight: bold;">sql &lt;&lt; "select count(*) from phonebook", into(count);</span><br>        cout &lt;&lt; "We have " &lt;&lt; count &lt;&lt; " entries in the phonebook.\n";<br><br>        string name;<br>        while (getName(name))<br>        {<br>            string phone;<br>            <span
  style="font-weight: bold;">eIndicator ind;</span><br>            <span
  style="font-weight: bold;">sql &lt;&lt; "select phone from phonebook where name = :name", into(phone, ind), use(name);</span><br>            if (<span

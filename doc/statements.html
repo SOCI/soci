@@ -9,10 +9,9 @@
 <font size="+3"><span
  style="font-family: helvetica,arial,sans-serif; font-weight: bold; color: rgb(0, 0, 255);">SOCI</span></font><br>
 <span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">Simple
-Oracle Call Interface</span><span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);">
-(and more)<br>
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">The
+C++ Database Access Library</span><span
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);"><br>
 <br>
 </span>
 <h3>Statements, procedures and transactions</h3>
@@ -173,10 +172,10 @@ be treated as an idiomatic way of reading many rows by bunches of
 requested size.<br>
 <br>
 <span style="font-weight: bold;">Portability note:</span><br>
-Actually, Oracle and PostgreSQL backends guarantee that the requested
+Actually, all supported backends guarantee that the requested
 number of rows will be read with each fetch and that the vector will
 never be down-sized (unless the end of rowset condition is met, of
-course). This means that for these two servers, the manual vector
+course). This means that the manual vector
 resizing is not needed - the vector will keep its size until the end of
 rowset. The above idiom, however, is provided with future backends in
 mind, where the constant size of the vector might be too expensive to

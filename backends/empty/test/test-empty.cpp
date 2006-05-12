@@ -15,7 +15,7 @@
 using namespace SOCI;
 
 std::string connectString;
-std::string backEndName = "empty";
+BackEndFactory const &backEnd = empty;
 
 
 // NOTE:
@@ -55,7 +55,7 @@ namespace SOCI
 void test1()
 {
     {
-        Session sql(backEndName, connectString);
+        Session sql(backEnd, connectString);
 
         sql << "Do what I want.";
         sql << "Do what I want " << 123 << " times.";

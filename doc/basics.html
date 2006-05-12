@@ -9,10 +9,9 @@
 <font size="+3"><span
  style="font-family: helvetica,arial,sans-serif; font-weight: bold; color: rgb(0, 0, 255);">SOCI</span></font><br>
 <span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">Simple
-Oracle Call Interface</span><span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);">
-(and more)<br>
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">The
+C++ Database Access Library</span><span
+ style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);"><br>
 <br>
 </span>
 <h3>Connections and simple queries</h3>
@@ -22,7 +21,8 @@ The class <code>Session</code> encapsulates the database connection
 and other backend-related details, which are common to all the
 statements
 that will be later executed. Its constructor expects two parameters:
-the requested backend name and the generic connection string, which
+the requested backend factory object and the generic connection string,
+which
 meaning is backend-dependent.<br>
 <br>
 Example:<br>
@@ -31,7 +31,7 @@ Example:<br>
  border="0" cellpadding="2" cellspacing="2">
   <tbody>
     <tr>
-      <td style="vertical-align: top;"><code>Session sql("oracle",
+      <td style="vertical-align: top;"><code>Session sql(oracle,
 "service=orcl user=scott password=tiger");</code><br>
       </td>
     </tr>
@@ -43,7 +43,7 @@ Example:<br>
  border="0" cellpadding="2" cellspacing="2">
   <tbody>
     <tr>
-      <td style="vertical-align: top;"><code>Session sql("postgresql",
+      <td style="vertical-align: top;"><code>Session sql(postgresql,
 "dbname=mydb");</code><br>
       </td>
     </tr>
@@ -59,9 +59,19 @@ time, even using different backends.<br>
 </p>
 <p><br>
 <span style="font-weight: bold;">Portability note:</span><br>
-The <code>"oracle"</code> and <code>"postgresql"</code> are currently
-the only backends available. The name is case-sensitive.<br>
-The set of parameters used in the connection string for Oracle is:<br>
+The following backend factories are currently available:<br>
+</p>
+<ul>
+  <li><code>mysql</code> (requires <code>#include "soci-mysql.h"</code>)<br>
+  </li>
+  <li><code>oracle</code> (requires <code>#include "soci-oracle.h"</code>)<br>
+  </li>
+  <li><code>postgresql</code> (requires <code>#include
+"soci-postgresql.h"</code>)</li>
+  <li><code>sqlite3</code> (requires <code>#include "soci-sqlite3.h"</code>)<br>
+  </li>
+</ul>
+<p>The set of parameters used in the connection string for Oracle is:<br>
 </p>
 <ul>
   <li>service</li>
@@ -74,6 +84,21 @@ The set of parameters used in the connection string for Oracle is:<br>
 recognized by the <code>PQconnectdb</code> function and may depend on
 the server version. See PostgreSQL documentation for details.<br>
 </p>
+<p>The parameters expected by MySQL backend:<br>
+</p>
+<ul>
+  <li>dbname or db (required)<br>
+  </li>
+  <li>user</li>
+  <li>password or pass<br>
+  </li>
+  <li>host</li>
+  <li>port</li>
+  <li>unix_socket<br>
+  </li>
+</ul>
+The only parameter for the SQLite3 backend is the file name.<br>
+<p></p>
 <span style="font-weight: bold;"><br>
 Simple SQL statements</span><br>
 <br>

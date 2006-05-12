@@ -15,7 +15,7 @@
 #include <ctime>
 #include <cassert>
 
-#include "soci-common.h"
+#include "soci-backend.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4512 4511)
@@ -680,8 +680,7 @@ private:
 class Session
 {
 public:
-    Session(std::string const & backEndName,
-        std::string const & connectString);
+    Session(BackEndFactory const &factory, std::string const & connectString);
 
     ~Session();
 
