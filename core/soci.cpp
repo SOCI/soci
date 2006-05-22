@@ -676,7 +676,7 @@ Procedure::Procedure(PrepareTempType const &prep)
     defineAndBind();
 }
 
-RefCountedStatement::~RefCountedStatement()
+void RefCountedStatement::finalAction()
 {
     try
     {
@@ -706,7 +706,7 @@ void RefCountedPrepareInfo::exchange(UseTypePtr const &u)
     u.release();
 }
 
-RefCountedPrepareInfo::~RefCountedPrepareInfo()
+void RefCountedPrepareInfo::finalAction()
 {
     // deallocate all bind and define objects
     for (std::size_t i = intos_.size(); i > 0; --i)

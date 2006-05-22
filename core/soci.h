@@ -534,8 +534,26 @@ public:
     RefCountedStBase() : refCount_(1) {}
     virtual ~RefCountedStBase() {}
 
+    virtual void finalAction() = 0;
+
     void incRef() { ++refCount_; }
-    void decRef() { if (--refCount_ == 0) delete this; }
+    void decRef()
+    {
+        if (--refCount_ == 0)
+        {
+            try
+            {
+                finalAction();
+            }
+            catch (...)
+            {
+                delete this;
+                throw;
+            }
+
+            delete this;
+        }
+    }
 
     template <typename T>
     void accumulate(T const &t) { query_ << t; }
@@ -554,10 +572,11 @@ class RefCountedStatement : public RefCountedStBase
 {
 public:
     RefCountedStatement(Session &s) : st_(s) {}
-    ~RefCountedStatement();
 
     void exchange(IntoTypePtr const &i) { st_.exchange(i); }
     void exchange(UseTypePtr const &u) { st_.exchange(u); }
+
+    virtual void finalAction();
 
 private:
     Statement st_;
@@ -569,10 +588,11 @@ class RefCountedPrepareInfo : public RefCountedStBase
 {
 public:
     RefCountedPrepareInfo(Session &s) : session_(&s) {}
-    ~RefCountedPrepareInfo();
 
     void exchange(IntoTypePtr const &i);
     void exchange(UseTypePtr const &u);
+
+    virtual void finalAction();
 
 private:
     friend class SOCI::Statement;
