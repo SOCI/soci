@@ -4,8 +4,10 @@ they allowed us to improve the quality of the SOCI library:
 ---
 Roger Orr
 
-Roger has provided the patch for a memory leak that was present in the code
-reading into the Row objects.
-
-In addition, Roger provided us with some patches and fixes that allowed the
-very early version of the 2.0.0 release to compile on g++ 4.0.1.
+Roger has contributed to SOCI the following fixes and patches::
+- the patch for a memory leak that was present in the code
+  reading into the Row objects.
+- patches and fixes that allowed the very early version of the 2.0.0 release
+  to compile on g++ 4.0.1.
+- patch that solves incompletely specified behaviour that caused problems with
+  various compilers when exception was thrown from the statement's destructor.
