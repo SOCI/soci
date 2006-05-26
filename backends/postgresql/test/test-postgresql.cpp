@@ -1644,7 +1644,7 @@ void test15()
         Session sql(backEnd, connectString);
 
         try { sql << "drop table test15"; }
-        catch (SOCIError const &) {} //ignore error if table doesn't exist
+        catch (SOCIError const &) {} // ignore error if table doesn't exist
 
         sql << "create table test15(num_float float8, num_int integer,"
             << " name varchar(20), sometime timestamptz,"
@@ -1722,7 +1722,7 @@ void test16()
     Session sql(backEnd, connectString);
 
     try { sql << "drop table test16"; }
-    catch (SOCIError const &) {} //ignore error if table doesn't exist
+    catch (SOCIError const &) {} // ignore error if table doesn't exist
 
     sql << "create table test16(id integer, val integer)";
 
@@ -1785,7 +1785,7 @@ void test17()
         Session sql(backEnd, connectString);
 
         try { sql << "drop table test17"; }
-        catch (SOCIError const &) {} //ignore error if table doesn't exist
+        catch (SOCIError const &) {} // ignore error if table doesn't exist
 
         sql << "create table test17(name varchar(100) not null, "
             "phone varchar(15))";
@@ -1843,13 +1843,14 @@ namespace SOCI
         }
     };    
 }
+
 void test18()
 {
     {
         Session sql(backEnd, connectString);
 
         try { sql << "drop table test18"; }
-        catch (SOCIError const &) {} //ignore error if table doesn't exist
+        catch (SOCIError const &) {} // ignore error if table doesn't exist
 
         sql << "create table test18(name varchar(100) not null, "
             "phone varchar(15))";
@@ -1877,6 +1878,39 @@ void test18()
     std::cout << "test 18 passed" << std::endl;
 }
 
+// test for bulk fetch with single use
+void test19()
+{
+#ifndef SOCI_PGSQL_NOPARAMS
+    {
+        Session sql(backEnd, connectString);
+
+        try { sql << "drop table test19"; }
+        catch (SOCIError const &) {} // ignore error if table doesn't exist
+
+        sql << "create table test19(name varchar(100), code integer)";
+        sql << "insert into test19 values('john', 1)";
+        sql << "insert into test19 values('george', 2)";
+        sql << "insert into test19 values('anthony', 1)";
+        sql << "insert into test19 values('marc', 3)";
+        sql << "insert into test19 values('julian', 1)";
+
+        int code = 1;
+        std::vector<std::string> names(10);
+        sql << "select name from test19 where code = :code order by name",
+             into(names), use(code);
+
+        assert(names.size() == 3);
+        assert(names[0] == "anthony");
+        assert(names[1] == "john");
+        assert(names[2] == "julian");
+
+        sql << "drop table test19";
+    }
+#endif // SOCI_PGSQL_NOPARAMS
+
+    std::cout << "test 19 passed" << std::endl;
+}
 
 int main(int argc, char** argv)
 {
@@ -1913,6 +1947,7 @@ int main(int argc, char** argv)
         test16();
         test17();
         test18();
+        test19();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }

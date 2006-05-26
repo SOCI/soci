@@ -29,7 +29,9 @@ using namespace SOCI::details;
 
 PostgreSQLStatementBackEnd::PostgreSQLStatementBackEnd(
     PostgreSQLSessionBackEnd &session)
-    : session_(session), result_(NULL), justDescribed_(false)
+     : session_(session), result_(NULL), justDescribed_(false),
+       hasIntoElements_(false), hasVectorIntoElements_(false),
+       hasUseElements_(false), hasVectorUseElements_(false)
 {
 }
 
@@ -135,22 +137,29 @@ PostgreSQLStatementBackEnd::execute(int number)
         // This object could have been already filled with data before.
         cleanUp();
 
+        if (number > 1 && hasIntoElements_)
+        {
+             throw SOCIError(
+                  "Bulk use with single into elements is not supported.");
+        }
+
+        // Since the bulk operations are not natively supported by PostgreSQL,
+        // we have to explicitly loop to achieve the bulk operations.
+        // On the other hand, looping is not needed if there are single
+        // use elements, even if there is a bulk fetch.
+        // We know that single use and bulk use elements in the same query are
+        // not supported anyway, so in the effect the 'number' parameter here
+        // specifies the size of vectors (into/use), but 'numberOfExecutions'
+        // specifies the number of loops that need to be performed.
+        
+        int numberOfExecutions;
+        if (number > 0)
+        {
+             numberOfExecutions = hasUseElements_ ? 1 : number;
+        }
+
         if (!useByPosBuffers_.empty() || !useByNameBuffers_.empty())
         {
-            // Here we have to explicitly loop to achieve the
-            // effect of inserting or updating with vector use elements.
-            // The 'number' parameter to this function comes from the
-            // core part of the library and is guaranteed to be the size
-            // of the use elements, if they are present
-            // (they have equal sizes).
-            // If use elements were specified with single variables, it is 1.
-            // If use elements were specified for vectors,
-            // it is the size of those vectors.
-
-            // We know also that even if there are both use and into elements
-            // specified together, they are not for bulk queries
-            // (and then number == 1).
-
             if (!useByPosBuffers_.empty() && !useByNameBuffers_.empty())
             {
                 throw SOCIError(
@@ -158,7 +167,7 @@ PostgreSQLStatementBackEnd::execute(int number)
                     "or by name.");
             }
 
-            for (int i = 0; i != number; ++i)
+            for (int i = 0; i != numberOfExecutions; ++i)
             {
                 std::vector<char *> paramValues;
 
@@ -208,10 +217,9 @@ PostgreSQLStatementBackEnd::execute(int number)
                     NULL, &paramValues[0], NULL, NULL, 0);
 #endif // SOCI_PGSQL_NOPARAMS
 
-                if (number > 1)
+                if (numberOfExecutions > 1)
                 {
-                    // there are only use elements (no intos)
-                    // and it is a bulk operation
+                    // there are only bulk use elements (no intos)
                     if (result_ == NULL)
                     {
                         throw SOCIError("Cannot execute query.");
@@ -226,7 +234,7 @@ PostgreSQLStatementBackEnd::execute(int number)
                 }
             }
 
-            if (number > 1)
+            if (numberOfExecutions > 1)
             {
                 // it was a bulk operation
                 result_ = NULL;
@@ -409,23 +417,27 @@ void PostgreSQLStatementBackEnd::describeColumn(int colNum, eDataType &type,
 PostgreSQLStandardIntoTypeBackEnd *
 PostgreSQLStatementBackEnd::makeIntoTypeBackEnd()
 {
+    hasIntoElements_ = true;
     return new PostgreSQLStandardIntoTypeBackEnd(*this);
 }
 
 PostgreSQLStandardUseTypeBackEnd *
 PostgreSQLStatementBackEnd::makeUseTypeBackEnd()
 {
+    hasUseElements_ = true;
     return new PostgreSQLStandardUseTypeBackEnd(*this);
 }
 
 PostgreSQLVectorIntoTypeBackEnd *
 PostgreSQLStatementBackEnd::makeVectorIntoTypeBackEnd()
 {
+    hasVectorIntoElements_ = true;
     return new PostgreSQLVectorIntoTypeBackEnd(*this);
 }
 
 PostgreSQLVectorUseTypeBackEnd *
 PostgreSQLStatementBackEnd::makeVectorUseTypeBackEnd()
 {
+    hasVectorUseElements_ = true;
     return new PostgreSQLVectorUseTypeBackEnd(*this);
 }
