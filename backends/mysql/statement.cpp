@@ -19,7 +19,9 @@ using std::string;
 
 
 MySQLStatementBackEnd::MySQLStatementBackEnd(MySQLSessionBackEnd &session)
-    : session_(session), result_(NULL), justDescribed_(false)
+    : session_(session), result_(NULL), justDescribed_(false),
+       hasIntoElements_(false), hasVectorIntoElements_(false),
+       hasUseElements_(false), hasVectorUseElements_(false)
 {
 }
 
@@ -120,6 +122,20 @@ MySQLStatementBackEnd::execute(int number)
     if (justDescribed_ == false)
     {
         cleanUp();
+        
+        if (number > 1 && hasIntoElements_)
+        {
+             throw SOCIError(
+                  "Bulk use with single into elements is not supported.");
+        }
+        // number - size of vectors (into/use)
+        // numberOfExecutions - number of loops to perform
+        int numberOfExecutions;
+        if (number > 0)
+        {
+             numberOfExecutions = hasUseElements_ ? 1 : number;
+        }
+        
         std::string query;
         if (!useByPosBuffers_.empty() || !useByNameBuffers_.empty())
         {
@@ -129,7 +145,7 @@ MySQLStatementBackEnd::execute(int number)
                     "Binding for use elements must be either by position "
                     "or by name.");
             }
-            for (int i = 0; i != number; ++i)
+            for (int i = 0; i != numberOfExecutions; ++i)
             {
                 std::vector<char *> paramValues;
 
@@ -191,7 +207,7 @@ MySQLStatementBackEnd::execute(int number)
                 {
                     query += *ci;
                 }
-                if (number > 1)
+                if (numberOfExecutions > 1)
                 {
                     // bulk operation
                     //cerr << query << endl;
@@ -203,12 +219,12 @@ MySQLStatementBackEnd::execute(int number)
                     if (mysql_field_count(session_.conn_) != 0)
                     {
                         throw SOCIError("The query shouldn't have returned"
-                            "any data but it did.");
+                            " any data but it did.");
                     }
                     query.clear();
                 }
             }
-            if (number > 1)
+            if (numberOfExecutions > 1)
             {
                 // bulk
                 return eNoData;
@@ -365,22 +381,26 @@ void MySQLStatementBackEnd::describeColumn(int colNum,
 
 MySQLStandardIntoTypeBackEnd * MySQLStatementBackEnd::makeIntoTypeBackEnd()
 {
+    hasIntoElements_ = true;
     return new MySQLStandardIntoTypeBackEnd(*this);
 }
 
 MySQLStandardUseTypeBackEnd * MySQLStatementBackEnd::makeUseTypeBackEnd()
 {
+    hasUseElements_ = true;
     return new MySQLStandardUseTypeBackEnd(*this);
 }
 
 MySQLVectorIntoTypeBackEnd *
 MySQLStatementBackEnd::makeVectorIntoTypeBackEnd()
 {
+    hasVectorIntoElements_ = true;
     return new MySQLVectorIntoTypeBackEnd(*this);
 }
 
 MySQLVectorUseTypeBackEnd * MySQLStatementBackEnd::makeVectorUseTypeBackEnd()
 {
+    hasVectorUseElements_ = true;
     return new MySQLVectorUseTypeBackEnd(*this);
 }
 
