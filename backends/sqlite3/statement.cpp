@@ -185,8 +185,6 @@ Sqlite3StatementBackEnd::bindAndExecute(int number)
 
     int rows = useData_.size();
 
-    assert(rows == number); // sanity check
-
     for (int row = 0; row < rows; ++row)
     {
         sqlite3_reset(stmt_);
@@ -207,6 +205,12 @@ Sqlite3StatementBackEnd::bindAndExecute(int number)
             if (SQLITE_OK != bindRes)
                 throw SOCIError("Failure to bind on bulk operations");
         }
+        
+        // Handle the case where there are both into and use elements 
+        // in the same query and one of the into binds to a vector object.
+        if (1 == rows && number != rows)
+            return loadRS(number);
+        
         retVal = loadOne(); //execute each bound line
     }
     return retVal;
@@ -225,7 +229,7 @@ Sqlite3StatementBackEnd::execute(int number)
 
     if (!useData_.empty())
     {
-        retVal = bindAndExecute(number);
+           retVal = bindAndExecute(number);
     }
     else
     {

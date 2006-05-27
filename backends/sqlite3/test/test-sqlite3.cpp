@@ -1720,6 +1720,42 @@ void test18()
     std::cout << "test 18 passed" << std::endl;
 }
 
+// This test was put in to fix a problem that occurs when there are both 
+//into and use elements in the same query and one of them (into) binds 
+//to a vector object.
+void test19()
+{
+    {
+        Session sql(backEnd, connectString);
+
+        try { sql << "drop table test19"; }
+        catch (SOCIError const &) {} //ignore error if table doesn't exist
+
+        sql << "Create table test19( id integer, name varchar, subname varchar);";
+
+        sql << "Insert into test19(id,name,subname) values( 1,'john','smith')";
+        sql << "Insert into test19(id,name,subname) values( 2,'george','vals')";
+        sql << "Insert into test19(id,name,subname) values( 3,'ann','smith')";
+        sql << "Insert into test19(id,name,subname) values( 4,'john','grey')";
+        sql << "Insert into test19(id,name,subname) values( 5,'anthony','wall')";
+
+        std::vector<int> v(10);
+
+        Statement s(sql.prepare << "Select id from test19 where name = :name");
+
+        std::string name = "john";
+
+        s.exchange(use(name, "name"));
+        s.exchange(into(v));
+
+        s.defineAndBind();
+        s.execute(true);
+
+        assert(v.size() == 2);
+    }
+    std::cout << "test 19 passed" << std::endl;
+}
+
 int main(int argc, char** argv)
 {
     if (argc == 2)
@@ -1754,6 +1790,7 @@ int main(int argc, char** argv)
         test16();
         test17();
         test18();
+        test19();
         
         std::cout << "\nOK, all tests passed.\n\n";
     }
