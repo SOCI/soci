@@ -1690,6 +1690,38 @@ void test18()
     std::cout << "test 18 passed" << std::endl;
 }
 
+// test for bulk fetch with single use
+void test19()
+{
+    {
+        Session sql(backEnd, connectString);
+
+        try { sql << "drop table test19"; }
+        catch (SOCIError const &) {} // ignore error if table doesn't exist
+
+        sql << "create table test19(name varchar(100), code integer)";
+        sql << "insert into test19 values('john', 1)";
+        sql << "insert into test19 values('george', 2)";
+        sql << "insert into test19 values('anthony', 1)";
+        sql << "insert into test19 values('marc', 3)";
+        sql << "insert into test19 values('julian', 1)";
+
+        int code = 1;
+        std::vector<std::string> names(10);
+        sql << "select name from test19 where code = :code order by name",
+             into(names), use(code);
+
+        assert(names.size() == 3);
+        assert(names[0] == "anthony");
+        assert(names[1] == "john");
+        assert(names[2] == "julian");
+
+        sql << "drop table test19";
+    }
+    
+    std::cout << "test 19 passed" << std::endl;
+}
+
 int main(int argc, char** argv)
 {
     if (argc == 2)
@@ -1722,6 +1754,7 @@ int main(int argc, char** argv)
         test16();
         test17();
         test18();
+        test19();
     }
     catch (std::exception const & e)
     {
