@@ -1,168 +1,119 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
-  <meta content="text/html; charset=ISO-8859-1"
- http-equiv="content-type">
+  <meta content="text/html; charset=ISO-8859-1"  http-equiv="content-type" />
+  <link rel="stylesheet" type="text/css" href="style.css" />
   <title>SOCI - basics</title>
 </head>
+
 <body>
-<font size="+3"><span
- style="font-family: helvetica,arial,sans-serif; font-weight: bold; color: rgb(0, 0, 255);">SOCI</span></font><br>
-<span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">The
-C++ Database Access Library</span><span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);"><br>
-<br>
-</span>
-<h3>Connections and simple queries</h3>
-<span style="font-weight: bold;">Connecting to the database</span><br>
-<br>
-The class <code>Session</code> encapsulates the database connection
+<p class="banner">SOCI - The C++ Database Access Library</p>
+
+<h2>Connections and simple queries</h2>
+
+<h3>Connecting to the database</h3>
+
+<p>The class <code>Session</code> encapsulates the database connection
 and other backend-related details, which are common to all the
 statements
 that will be later executed. Its constructor expects two parameters:
 the requested backend factory object and the generic connection string,
-which
-meaning is backend-dependent.<br>
-<br>
-Example:<br>
-<br>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;"><code>Session sql(oracle,
-"service=orcl user=scott password=tiger");</code><br>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<p>Another example might be:<br>
-</p>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;"><code>Session sql(postgresql,
-"dbname=mydb");</code><br>
-      </td>
-    </tr>
-  </tbody>
-</table>
+which meaning is backend-dependent.</p>
+<p>Example:</p>
+
+<pre class="example">
+Session sql(oracle, "service=orcl user=scott password=tiger");
+</pre>
+
+<p>Another example might be:</p>
+
+<pre class="example">
+Session sql(postgresql, "dbname=mydb");
+</pre>
+
 <p>Above, the <code>sql</code> object is a local (automatic) object
-that encapsulates the connection.<br>
-The <code>Session</code> constructor either connects successfully, or
-throws the
-exception.
-It is possible to have many active <code>Session</code>s at the same
-time, even using different backends.<br>
-</p>
-<p><br>
-<span style="font-weight: bold;">Portability note:</span><br>
-The following backend factories are currently available:<br>
-</p>
+that encapsulates the connection.</p>
+
+<p>The <code>Session</code> constructor either connects successfully, or
+throws the exception.</p>
+
+<p>It is possible to have many active <code>Session</code>s at the same
+time, even using different backends.</p>
+
+<div class="note">
+<p><span class="note">Portability note:</span></p>
+<p>The following backend factories are currently available:</p>
 <ul>
-  <li><code>mysql</code> (requires <code>#include "soci-mysql.h"</code>)<br>
-  </li>
-  <li><code>oracle</code> (requires <code>#include "soci-oracle.h"</code>)<br>
-  </li>
-  <li><code>postgresql</code> (requires <code>#include
-"soci-postgresql.h"</code>)</li>
-  <li><code>sqlite3</code> (requires <code>#include "soci-sqlite3.h"</code>)<br>
-  </li>
+  <li><code>mysql</code> (requires <code>#include "soci-mysql.h"</code>)</li>
+  <li><code>oracle</code> (requires <code>#include "soci-oracle.h"</code>)</li>
+  <li><code>postgresql</code> (requires <code>#include "soci-postgresql.h"</code>)</li>
+  <li><code>sqlite3</code> (requires <code>#include "soci-sqlite3.h"</code>)</li>
 </ul>
-<p>The set of parameters used in the connection string for Oracle is:<br>
-</p>
+<p>The set of parameters used in the connection string for Oracle is:</p>
 <ul>
   <li>service</li>
   <li>user</li>
   <li>password</li>
 </ul>
-<p></p>
 <p>All of these parameters have to be provided.</p>
 <p>The set of parameters available for PostgreSQL is the same as that
 recognized by the <code>PQconnectdb</code> function and may depend on
-the server version. See PostgreSQL documentation for details.<br>
-</p>
-<p>The parameters expected by MySQL backend:<br>
-</p>
+the server version. See PostgreSQL documentation for details.</p>
+<p>The parameters expected by MySQL backend:</p>
 <ul>
-  <li>dbname or db (required)<br>
-  </li>
+  <li>dbname or db (required)</li>
   <li>user</li>
-  <li>password or pass<br>
-  </li>
+  <li>password or pass</li>
   <li>host</li>
   <li>port</li>
-  <li>unix_socket<br>
-  </li>
+  <li>unix_socket</li>
 </ul>
-The only parameter for the SQLite3 backend is the file name.<br>
-<p></p>
-<span style="font-weight: bold;"><br>
-Simple SQL statements</span><br>
-<br>
-In many cases, the SQL query is intended to be executed only once,
+<p>The only parameter for the SQLite3 backend is the file name.</p>
+</div>
+
+<h3>Simple SQL statements</h3>
+
+<p>In many cases, the SQL query is intended to be executed only once,
 which means that statement parsing and execution can go together.
 The <code>Session</code> class provides a special <code>once</code>
 member, which triggers parsing and execution of such one-time
-statements:<br>
-<br>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>sql.once &lt;&lt; "drop table persons";</pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<p>For shorter syntax, the following form is also allowed:<br>
-</p>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>sql &lt;&lt; "drop table persons";</pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
+statements:</p>
+
+<pre class="example">
+sql.once &lt;&lt; "drop table persons";
+</pre>
+
+<p>For shorter syntax, the following form is also allowed:</p>
+
+<pre class="example">
+sql &lt;&lt; "drop table persons";
+</pre>
+
 <p>The IOStream-like interface is exactly what it looks like, so that
 the
 statement text can be composed of many parts, involving anything that
 is <i>streamable</i> (including custom classes, if they have
-appropriate <code>operator&lt;&lt;</code>):<br>
-</p>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>string tableName = "persons";<br>sql &lt;&lt; "drop table " &lt;&lt; tableName;<br><br>int id = 123;<br>sql &lt;&lt; "delete from companies where id = " &lt;&lt; id;<br></pre>
-      </td>
-    </tr>
-  </tbody>
+appropriate <code>operator&lt;&lt;</code>):</p>
+
+<pre class="example">
+string tableName = "persons";
+sql &lt;&lt; "drop table " &lt;&lt; tableName;
+
+int id = 123;
+sql &lt;&lt; "delete from companies where id = " &lt;&lt; id;
+</pre>
+
+<table class="foot-links" border="0" cellpadding="2" cellspacing="2">
+  <tr>
+    <td class="foot-link-left">
+      <a href="errors.html">Previous (Errors)</a>
+    </td>
+    <td class="foot-link-right">
+      <a href="exchange.html">Next (Exchanging data)</a>
+    </td>
+  </tr>
 </table>
-<br>
-<table style="width: 100%; text-align: left;" border="0" cellpadding="2"
- cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;"><a href="errors.html">Previous
-(Errors)</a><br>
-      </td>
-      <td style="vertical-align: top; text-align: right;"><a
- href="exchange.html">Next (Exchanging data)</a><br>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br>
-<hr style="width: 100%; height: 2px;">Copyright &copy; 2004-2006 Maciej
-Sobczak, Stephen Hutton<br>
-<br>
+
+<p class="copyright">Copyright &copy; 2004-2006 Maciej Sobczak, Stephen Hutton</p>
 </body>
 </html>

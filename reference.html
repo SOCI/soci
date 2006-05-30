@@ -1,209 +1,244 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
-  <meta content="text/html; charset=ISO-8859-1"
- http-equiv="content-type">
-  <title>SOCI - backends</title>
+  <meta content="text/html; charset=ISO-8859-1"  http-equiv="content-type" />
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  <title>SOCI - reference</title>
 </head>
+
 <body>
-<font size="+3"><span
- style="font-family: helvetica,arial,sans-serif; font-weight: bold; color: rgb(0, 0, 255);">SOCI</span></font><br>
-<span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">The
-C++ Database Access Library</span><span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);"><br>
-</span>
-<br>
-<h3>Client interface reference<br>
-</h3>
-<a href="#commontypes">commonly used types</a><br>
-<a href="#session">class Session</a><br>
-<a href="#into">function into</a><br>
-<a href="#use">function use</a><br>
-<a href="#statement">class Statement</a><br>
-<a href="#procedure">class
-Procedure</a><br>
-<a href="#typeconversion">class TypeConversion</a><br>
-<a href="#row">class Row</a><br>
-<a href="#columnproperties">class ColumnProperties</a><br>
-<a href="#values">class Values</a><br>
-<a href="#blob">class BLOB</a><br>
-<a href="rowid">class RowID</a><br>
-<a href="#backendfactory">class BackEndFactory</a><br>
-<br>
-The client interface is a set of classes and free functions declared in
+<p class="banner">SOCI - The C++ Database Access Library</p>
+
+<h2>Client interface reference</h2>
+
+<div class="navigation">
+<a href="#commontypes">commonly used types</a><br />
+<a href="#session">class Session</a><br />
+<a href="#into">function into</a><br />
+<a href="#use">function use</a><br />
+<a href="#statement">class Statement</a><br />
+<a href="#procedure">class Procedure</a><br />
+<a href="#typeconversion">class TypeConversion</a><br />
+<a href="#row">class Row</a><br />
+<a href="#columnproperties">class ColumnProperties</a><br />
+<a href="#values">class Values</a><br />
+<a href="#blob">class BLOB</a><br />
+<a href="rowid">class RowID</a><br />
+<a href="#backendfactory">class BackEndFactory</a><br />
+</div>
+
+<p>The client interface is a set of classes and free functions declared in
 the <code>soci.h</code> header file. All names are declared in the <code>SOCI</code>
-namespace.<br>
-There are also additional names declared in the <code>SOCI::details</code>
+namespace.</p>
+
+<p>There are also additional names declared in the <code>SOCI::details</code>
 namespace, but they are not supposed to be directly used by the users
 of the library and are therefore not documented here. When such types
 are used in the declarations that are part of the "public" interface,
 they are replaced by "IT", which means "internal type". Types related
 to the backend interface are named here, but documented on the <a
- href="backends.html">next page</a>.<br>
-<h4><a name="commontypes"></a>commonly used types</h4>
-The following types are commonly used in the rest of the interface:<br>
-<br>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>// data types, as seen by the user<br>enum eDataType { eString, eChar, eDate, eDouble, eInteger,<br>                 eUnsignedLong };<br><br>// the enum type for indicator variables<br>enum eIndicator { eOK, eNoData, eNull, eTruncated };<br><br>// the type used for reporting exceptions<br>class SOCIError : public std::runtime_error { /* ... */ };<br></pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br>
-The <code>eDataType</code> type defines the basic SOCI data types.
+ href="backends.html">next page</a>.</p>
+
+<h3 id="commontypes">commonly used types</h3>
+
+<p>The following types are commonly used in the rest of the interface:</p>
+
+<pre class="example">
+// data types, as seen by the user
+enum eDataType { eString, eChar, eDate, eDouble, eInteger,
+                 eUnsignedLong };
+
+// the enum type for indicator variables
+enum eIndicator { eOK, eNoData, eNull, eTruncated };
+
+// the type used for reporting exceptions
+class SOCIError : public std::runtime_error { /* ... */ };
+</pre>
+
+<p>The <code>eDataType</code> type defines the basic SOCI data types.
 User provided data types need to be associated with one of these basic
-types.<br>
-<br>
-The <code>eIndicator</code> type defines the possible states of data.<br>
-<br>
-The <code>SOCIError</code> type is used for error reporting.<br>
-<h4><a name="session"></a>class Session</h4>
-The <code>Session</code> class encapsulates the connection to the
-database.<br>
-<br>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>class Session<br>{<br>public:<br>    Session(BackEndFactory const &amp;factory, std::string const &amp; connectString);<br><br>    ~Session();<br><br>    void begin();<br>    void commit();<br>    void rollback();<br><br>    <span
- style="font-style: italic;">IT</span> once;<br>    <span
- style="font-style: italic;">IT</span> prepare;<br><br>    template &lt;typename T&gt; <span
- style="font-style: italic;">IT</span> operator&lt;&lt;(T const &amp;t);<br><br>    details::SessionBackEnd * getBackEnd();<br>};<br></pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br>
-This class contains the following members:<br>
+types.</p>
+
+<p>The <code>eIndicator</code> type defines the possible states of data.</p>
+
+<p>The <code>SOCIError</code> type is used for error reporting.</p>
+
+<h3 id="session">class Session</h3>
+
+<p>The <code>Session</code> class encapsulates the connection to the
+database.</p>
+
+<pre class="example">
+class Session
+{
+public:
+    Session(BackEndFactory const &amp;factory, std::string const &amp; connectString);
+    ~Session();
+
+    void begin();
+    void commit();
+    void rollback();
+    <i>IT</i> once;
+    <i>IT</i> prepare;
+
+    template &lt;typename T&gt; <i>IT</i> operator&lt;&lt;(T const &amp;t);
+
+    details::SessionBackEnd * getBackEnd();
+};
+</pre>
+
+<p>This class contains the following members:</p>
 <ul>
   <li>Constructor expecting the backend factory object (which is
 declared in the relevant backend interface) and the generic connection
-string, which is interpreted by the backend implementation. Example:<br>
-    <br>
-    <code>Session sql(postgresql, "dbname=mydb");</code><br>
-    <br>
+string, which is interpreted by the backend implementation. Example:
+<pre class="example">
+Session sql(postgresql, "dbname=mydb");
+</pre>
   </li>
   <li><code>begin</code>, <code>commit</code> and <code>rollback</code>
-functions for transaction control. Example:<br>
-    <br>
-    <code>sql.rollback();</code><br>
-    <br>
+functions for transaction control. Example:
+<pre class="example">
+sql.rollback();
+</pre>
   </li>
   <li><code>once</code> member, which is used for performing "instant"
-queries that do not need to be separately prepared. Example:<br>
-    <br>
-    <code>sql.once &lt;&lt; "drop table persons";</code><br>
-    <br>
+queries that do not need to be separately prepared. Example:
+<pre class="example">
+sql.once &lt;&lt; "drop table persons";
+</pre>
   </li>
   <li><code>prepare</code> member, which is used for statement
 preparation - the result of the statement preparation must be provided
-to the constructor of the <code>Statement</code> class. Example:<br>
-    <br>
-    <code>int i;<br>
-Statement st = (sql.prepare &lt;&lt; "insert into numbers(value)
-values(:val)", use(i));</code><br>
-    <br>
+to the constructor of the <code>Statement</code> class. Example:
+<pre class="example">
+int i;
+Statement st = (sql.prepare &lt;&lt;
+                "insert into numbers(value) values(:val)", use(i));
+</pre>
   </li>
   <li><code>operator&lt;&lt;</code> that is a shortcut forwarder to the
-equivalent operator of the <code>once</code> member. Example:<br>
-    <br>
-    <code>sql &lt;&lt; "drop table persons";</code><br>
-    <br>
+equivalent operator of the <code>once</code> member. Example:
+<pre class="example">
+sql &lt;&lt; "drop table persons";
+</pre>
   </li>
   <li><code>getBackEnd</code> function that returns the internal
 pointer to the concrete backend implementation of the session. This is
 provided for advanced users that need access to the functionality that
 is not otherwise available.</li>
 </ul>
-See <a href="basics.html">Connections and simple queries</a> for more
-examples.<br>
-<h4><a name="into"></a>function into</h4>
-The function <code>into</code> is used for binding local output data
-(in other words, it defines where the results of the query are stored).<br>
-<br>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>template &lt;typename T&gt;<br><span
- style="font-style: italic;">IT</span> into(T &amp;t);<br><br>template &lt;typename T, typename T1&gt;<br><span
- style="font-style: italic;">IT</span> into(T &amp;t, T1 p1);<br><br>template &lt;typename T&gt;<br><span
- style="font-style: italic;">IT</span> into(T &amp;t, eIndicator &amp;indicator);<br><br>template &lt;typename T, typename T1&gt;<br><span
- style="font-style: italic;">IT</span> into(T &amp;t, eIndicator &amp;ind, T1 p1);<br><br>template &lt;typename T&gt;<br><span
- style="font-style: italic;">IT</span> into(T &amp;t, std::vector&lt;eIndicator&gt; &amp;indicator);<span
- style="font-style: italic;"></span></pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br>
-Example:<span style="font-family: monospace;"><br>
-<br>
-</span><code>int count;<br>
-sql &lt;&lt; "select count(*) from person", into(count);<br>
-<br>
-</code>See <a href="exchange.html#bind_local">Binding local data</a>
-for more examples.<code><br>
-</code>
-<h4><a name="use"></a>function use</h4>
-The function <code>use</code> is used for binding local input data (in
-other words, it defines where the parameters of the query come from).<br>
-<br>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>template &lt;typename T&gt;<br><span
- style="font-style: italic;">IT</span> use(T &amp;t);<br><br>template &lt;typename T, typename T1&gt;<br><span
- style="font-style: italic;">IT</span> use(T &amp;t, T1 p1);<br><br>template &lt;typename T&gt;<br><span
- style="font-style: italic;">IT</span> use(T &amp;t, eIndicator &amp;indicator);<br><br>template &lt;typename T, typename T1&gt;<br><span
- style="font-style: italic;">IT</span> use(T &amp;t, eIndicator &amp;ind, T1 p1);<br><br>template &lt;typename T&gt;<br><span
- style="font-style: italic;">IT</span> use(T &amp;t, std::vector&lt;eIndicator&gt; const &amp;indicator);<br><br>template &lt;typename T, typename T1&gt;<br><span
- style="font-style: italic;">IT</span> use(T &amp;t, std::vector&lt;eIndicator&gt; const &amp;ind, T1 p1);</pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br>
-Example:<span style="font-family: monospace;"><br>
-</span><br>
-<code>int val = 7;<br>
-sql &lt;&lt; "insert into numbers(val) values(:val)", use(val);<br>
-<br>
-</code>See <a href="exchange.html#bind_local">Binding local data</a>
-for more examples.<br>
-<h4><a name="statement"></a>class Statement</h4>
-The <code>Statement</code> class encapsulates the prepared statement.<br>
-<br>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>class Statement<br>{<br>public:<br>    Statement(Session &amp;s);<br>    Statement(<span
- style="font-style: italic;">IT</span> const &amp;prep);<br>    ~Statement();<br><br>    void alloc();<br>    void bind(Values&amp; values);<br>    void exchange(<span
- style="font-style: italic;">IT</span> const &amp;i); // for into<br>    void exchange(<span
- style="font-style: italic;">IT</span> const &amp;u); // for use<br>    void cleanUp();<br><br>    void prepare(std::string const &amp;query);<br>   &nbsp;void defineAndBind();<br><br>   &nbsp;bool execute(bool withDataExchange = false);<br>    bool fetch();<br><br>    void describe();<br>    void setRow(Row* r);<br><br>    details::StatementBackEnd * getBackEnd();<br><br>    Session &amp;session_;<br>};<br></pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br>
-This class contains the following members:<br>
+
+<p>See <a href="basics.html">Connections and simple queries</a> for more
+examples.</p>
+
+<h3 id="into">function into</h3>
+
+<p>The function <code>into</code> is used for binding local output data
+(in other words, it defines where the results of the query are stored).</p>
+
+<pre class="example">
+template &lt;typename T&gt;
+<i>IT</i> into(T &amp;t);
+
+template &lt;typename T, typename T1&gt;
+<i>IT</i> into(T &amp;t, T1 p1);
+
+template &lt;typename T&gt;
+<i>IT</i> into(T &amp;t, eIndicator &amp;indicator);
+
+template &lt;typename T, typename T1&gt;
+<i>IT</i> into(T &amp;t, eIndicator &amp;ind, T1 p1);
+
+template &lt;typename T&gt;
+<i>IT</i> into(T &amp;t, std::vector&lt;eIndicator&gt; &amp;indicator);
+</pre>
+
+<p>Example:</p>
+
+<pre class="example">
+int count;
+sql &lt;&lt; "select count(*) from person", into(count);
+</pre>
+
+<p>See <a href="exchange.html#bind_local">Binding local data</a>
+for more examples.</p>
+
+<h3 id="use">function use</h3>
+
+<p>The function <code>use</code> is used for binding local input data (in
+other words, it defines where the parameters of the query come from).</p>
+
+<pre class="example">
+template &lt;typename T&gt;
+<i>IT</i> use(T &amp;t);
+
+template &lt;typename T, typename T1&gt;
+<i>IT</i> use(T &amp;t, T1 p1);
+
+template &lt;typename T&gt;
+<i>IT</i> use(T &amp;t, eIndicator &amp;indicator);
+
+template &lt;typename T, typename T1&gt;
+<i>IT</i> use(T &amp;t, eIndicator &amp;ind, T1 p1);
+
+template &lt;typename T&gt;
+<i>IT</i> use(T &amp;t, std::vector&lt;eIndicator&gt; const &amp;indicator);
+
+template &lt;typename T, typename T1&gt;
+<i>IT</i> use(T &amp;t, std::vector&lt;eIndicator&gt; const &amp;ind, T1 p1);
+</pre>
+
+<p>Example:</p>
+
+<pre class="example">
+int val = 7;
+sql &lt;&lt; "insert into numbers(val) values(:val)", use(val);
+</pre>
+
+<p>See <a href="exchange.html#bind_local">Binding local data</a>
+for more examples.</p>
+
+<h3 id="statement">class Statement</h3>
+
+<p>The <code>Statement</code> class encapsulates the prepared statement.</p>
+
+<pre class="example">
+class Statement
+{
+public:
+    Statement(Session &amp;s);
+    Statement(<i>IT</i> const &amp;prep);
+    ~Statement();
+
+    void alloc();
+    void bind(Values&amp; values);
+    void exchange(<i>IT</i> const &amp;i); // for into
+    void exchange(<i>IT</i> const &amp;u); // for use
+    void cleanUp();
+
+    void prepare(std::string const &amp;query);
+    void defineAndBind();
+
+    bool execute(bool withDataExchange = false);
+    bool fetch();
+
+    void describe();
+    void setRow(Row* r);
+
+    details::StatementBackEnd * getBackEnd();
+
+    Session &amp;session_;
+};
+</pre>
+
+<p>This class contains the following members:</p>
 <ul>
   <li>Constructor accepting the <code>Session</code> object. This can
-be used for later query preparation. Example:<br>
-    <br>
-    <code>Statement stmt(sql);</code><br>
-    <br>
+be used for later query preparation. Example:
+<pre class="example">
+Statement stmt(sql);
+</pre>
   </li>
   <li>Constructor accepting the result of using <code>prepare</code>
 on the <code>Session</code> object, see example provided above for the
@@ -221,7 +256,7 @@ called automatically.</li>
   <li><code>prepare</code> function for preparing the statement for
 repeated execution.</li>
   <li><code>defineAndBind</code> function for actually executing the
-registered bindings, normally called automatically.<br>
+registered bindings, normally called automatically.
   </li>
   <li><code>execute</code> function for executing the statement. If its
 parameter is <code>false</code> then there is no data exchange with
@@ -243,86 +278,108 @@ otherwise available.</li>
   <li><code>session_</code> reference to the "parent" <code>Session</code>
 object that was used to create this object.</li>
 </ul>
-Note: most of the functions from the <code>Statement</code> class
+
+<p>Most of the functions from the <code>Statement</code> class
 interface are called automatically, but can be also used explicitly.
-Example:<br>
-<br>
-<code>Statement stmt(sql);<br>
-stmt.alloc();<br>
-stmt.prepare("select count(*) from persons");<br>
-int count;<br>
-stmt.exchange(into(count)); // repeat for all variables if there are
-more<br>
-stmt.defineAndBind();<br>
-stmt.execute(true);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //
-or execute() followed by fetch()<br>
-stmt.cleanUp();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-// optional, destructor will do this anyway<br>
-</code><br>
-See <a href="statements.html#preparation">Statement preparation and
-repeated execution</a> for example uses.<br>
-<h4><a name="procedure"></a>class Procedure</h4>
-The <code>Procedure</code> class encapsulates the call to the stored
+Example:</p>
+
+<pre class="example">
+Statement stmt(sql);
+stmt.alloc();
+stmt.prepare("select count(*) from persons");
+int count;
+stmt.exchange(into(count)); // repeat for all variables if there are more
+stmt.defineAndBind();
+stmt.execute(true);         // or execute() followed by fetch()
+stmt.cleanUp();             // optional, destructor will do this anyway
+</pre>
+
+<p>See <a href="statements.html#preparation">Statement preparation and
+repeated execution</a> for example uses.</p>
+
+<h3 id="procedure">class Procedure</h3>
+
+<p>The <code>Procedure</code> class encapsulates the call to the stored
 procedure. It provides the same public interface as the <code>Statement</code>
 class, but automatically adds the necessary "decorations" to the SQL
-call (when they are required) for higher portability of the client code.<br>
-<br>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>class Procedure : public Statement<br>{<br>public:<br>    Procedure(Session &amp;s);<br>    Procedure(<span
- style="font-style: italic;">IT</span> const &amp;prep);<br>};<br></pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br>
-The second constructor above expects the result of using <code>prepare</code>
-on the <code>Session</code> object.<br>
-<br>
-See <a href="statements.html#procedures">Stored procedures</a> for
-examples.<br>
-<h4><a name="typeconversion"></a>class TypeConversion</h4>
-The <code>TypeConversion</code> class is a traits class that is
+call (when they are required) for higher portability of the client code.</p>
+
+<pre class="example">
+class Procedure : public Statement
+{
+public:
+    Procedure(Session &amp;s);
+    Procedure(<i>IT</i> const &amp;prep);
+};
+</pre>
+
+<p>The second constructor above expects the result of using <code>prepare</code>
+on the <code>Session</code> object.</p>
+
+<p>See <a href="statements.html#procedures">Stored procedures</a> for
+examples.</p>
+
+<h3 id="typeconversion">class TypeConversion</h3>
+
+<p>The <code>TypeConversion</code> class is a traits class that is
 supposed to be provided (specialized) by the user for defining
-conversions to and from one of the basic SOCI types.<br>
-<br>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>template &lt;class T&gt;<br>struct TypeConversion<br>{<br>    typedef <span
- style="font-style: italic;">SomeBasicType</span> base_type;<br>    static T from(<span
- style="font-style: italic;">SomeBasicType</span> &amp;t);<br>    static <span
- style="font-style: italic;">SomeBasicType</span> to(T &amp;t);<br>};<br></pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br>
-Users are supposed to properly implement the <code>from</code> and <code>to</code>
-functions in their specializations of this template class.<br>
-See <a href="exchange.html#custom_types">Extending
-SOCI to support custom (user-defined) C++ types</a>.<br>
-<h4><a name="row"></a>class Row</h4>
-The <code>Row</code> class encapsulates the data and type information
-retrieved for the single row when the dynamic rowset binding is used.<br>
-<br>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>class Row<br>{<br>public:<br>    Row();<br>    ~Row();<br><br>    void addProperties(ColumnProperties const &amp;cp);<br>    std::size_t size() const;<br><br>    eIndicator indicator(std::size_t pos) const;<br>    eIndicator indicator(std::string const &amp;name) const;<br><br>    template &lt;typename T&gt;<br>    void addHolder(T* t, eIndicator* ind);<br><br>   &nbsp;ColumnProperties const &amp; getProperties (std::size_t pos) const;<br>    ColumnProperties const &amp; getProperties (std::string const &amp;name) const;<br><br>    template &lt;typename T&gt;<br>    T get(std::size_t pos) const;<br><br>    template &lt;typename T&gt;<br>    T get(std::size_t pos, T const &amp;nullValue) const;<br><br>    template &lt;typename T&gt;<br>    T get(std::string const &amp;name) const;<br><br>    template &lt;typename T&gt;<br>    T get(std::string const &amp;name, T const &amp;nullValue) const;<br>};<br></pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br>
-This class contains the following members:<br>
+conversions to and from one of the basic SOCI types.</p>
+
+<pre class="example">
+template &lt;class T&gt;
+struct TypeConversion
+{
+    typedef <i>SomeBasicType</i> base_type;
+    static T from(<i>SomeBasicType</i> &amp;t);
+    static <i>SomeBasicType</i> to(T &amp;t);
+};
+</pre>
+
+<p>Users are supposed to properly implement the <code>from</code> and <code>to</code>
+functions in their specializations of this template class.</p>
+
+<p>See <a href="exchange.html#custom_types">Extending
+SOCI to support custom (user-defined) C++ types</a>.</p>
+
+<h3 id="row">class Row</h3>
+
+<p>The <code>Row</code> class encapsulates the data and type information
+retrieved for the single row when the dynamic rowset binding is used.</p>
+
+<pre class="example">
+class Row
+{
+public:
+    Row();
+    ~Row();
+
+    void addProperties(ColumnProperties const &amp;cp);
+    std::size_t size() const;
+
+    eIndicator indicator(std::size_t pos) const;
+    eIndicator indicator(std::string const &amp;name) const;
+
+    template &lt;typename T&gt;
+    void addHolder(T* t, eIndicator* ind);
+
+    ColumnProperties const &amp; getProperties (std::size_t pos) const;
+    ColumnProperties const &amp; getProperties (std::string const &amp;name) const;
+
+    template &lt;typename T&gt;
+    T get(std::size_t pos) const;
+
+    template &lt;typename T&gt;
+    T get(std::size_t pos, T const &amp;nullValue) const;
+
+    template &lt;typename T&gt;
+    T get(std::string const &amp;name) const;
+
+    template &lt;typename T&gt;
+    T get(std::string const &amp;name, T const &amp;nullValue) const;
+};
+</pre>
+
+<p>This class contains the following members:</p>
 <ul>
   <li>Default constructor that allows to declare a <code>Row</code>
 variable.</li>
@@ -342,46 +399,70 @@ given by position or name. If the column contains null, then these
 functions either return the provided "default" <code>nullValue</code>
 or throw an exception.</li>
 </ul>
-See <a href="exchange.html#dynamic">Dynamic resultset binding</a> for
-examples.<br>
-<h4><a name="columnproperties"></a>class ColumnProperties</h4>
-The <code>ColumnProperties</code> class provides the type and name
-information about the particular column in a rowset.<br>
-<br>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>enum eDataType { eString, eChar, eDate, eDouble, eInteger,<br> eUnsignedLong };<br><br>class ColumnProperties<br>{<br>public:<br> std::string getName() const;<br> eDataType getDataType() const;<br>};<br></pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br>
-This class contains the following members:<br>
+
+<p>See <a href="exchange.html#dynamic">Dynamic resultset binding</a> for
+examples.</p>
+
+<h3 id="columnproperties">class ColumnProperties</h3>
+
+<p>The <code>ColumnProperties</code> class provides the type and name
+information about the particular column in a rowset.</p>
+
+<pre class="example">
+enum eDataType { eString, eChar, eDate, eDouble, eInteger, eUnsignedLong };
+
+class ColumnProperties
+{
+public:
+    std::string getName() const;
+    eDataType getDataType() const;
+};
+</pre>
+
+<p>This class contains the following members:</p>
 <ul>
   <li><code>getName</code> function that returns the name of the column.</li>
   <li><code>getDataType</code> that returns the type of the column.</li>
 </ul>
-See <a href="exchange.html#dynamic">Dynamic resultset binding</a> for
-examples.
-<h4><a name="values"></a>class Values</h4>
-The <code>Values</code> class encapsulates the data and type
-information and is used for object-relational mapping.<br>
-<br>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>class Values<br>{<br>public:<br>    Values();<br><br>    eIndicator indicator(std::size_t pos) const;<br>    eIndicator indicator(std::string const &amp;name) const;<br><br>    template &lt;typename T&gt;<br>    T get(std::size_t pos) const;<br><br>    template &lt;typename T&gt;<br>    T get(std::size_t pos, T const &amp;nullValue) const;<br><br>    template &lt;typename T&gt;<br>    T get(std::string const &amp;name) const;<br>    <br>    template &lt;typename T&gt;<br>    T get(std::string const &amp;name, T const &amp;nullValue) const;<br><br>    template &lt;typename T&gt;<br>    Values const &amp; operator&gt;&gt;(T &amp;value) const;<br><br>    template &lt;typename T&gt;<br>    void set(std::string const &amp;name, T &amp;value, eIndicator indicator=eOK);<br>};<br></pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br>
-This class contains the following members:<br>
+
+<p>See <a href="exchange.html#dynamic">Dynamic resultset binding</a> for
+examples.</p>
+
+<h3 id="values">class Values</h3>
+
+<p>The <code>Values</code> class encapsulates the data and type
+information and is used for object-relational mapping.</p>
+
+<pre class="example">
+class Values
+{
+public:
+    Values();
+
+    eIndicator indicator(std::size_t pos) const;
+    eIndicator indicator(std::string const &amp;name) const;
+
+    template &lt;typename T&gt;
+    T get(std::size_t pos) const;
+
+    template &lt;typename T&gt;
+    T get(std::size_t pos, T const &amp;nullValue) const;
+
+    template &lt;typename T&gt;
+    T get(std::string const &amp;name) const;
+
+    template &lt;typename T&gt;
+    T get(std::string const &amp;name, T const &amp;nullValue) const;
+
+    template &lt;typename T&gt;
+    Values const &amp; operator&gt;&gt;(T &amp;value) const;
+
+    template &lt;typename T&gt;
+    void set(std::string const &amp;name, T &amp;value, eIndicator indicator=eOK);
+};
+</pre>
+
+<p>This class contains the following members:</p>
 <ul>
   <li><code>indicator</code> functions with the same meaning as in the <code>Row</code>
 class.</li>
@@ -393,24 +474,33 @@ to calling <code>get</code> with increasing position parameter,
 starting from the beginning.</li>
   <li><code>set</code> function for storing values in named columns.</li>
 </ul>
-See <a href="exchange.html#object_relational">Object-relational mapping</a>
-for examples.<br>
-<h4><a name="blob"></a>class BLOB</h4>
-The <code>BLOB</code> class encapsulates the "large object"
-functionality.<br>
-<br>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>class BLOB<br>{<br>public:<br>    BLOB(Session &amp;s);<br>    ~BLOB();<br><br>    std::size_t getLen();<br>    std::size_t read(std::size_t offset, char *buf, std::size_t toRead);<br>    std::size_t write(std::size_t offset, char const *buf, std::size_t toWrite);<br>    std::size_t append(char const *buf, std::size_t toWrite);<br>    void trim(std::size_t newLen);<br><br>    details::BLOBBackEnd * getBackEnd();<br>};<br></pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br>
-This class contains the following members:<br>
+
+<p>See <a href="exchange.html#object_relational">Object-relational mapping</a>
+for examples.</p>
+
+<h3 id="blob">class BLOB</h3>
+
+<p>The <code>BLOB</code> class encapsulates the "large object"
+functionality.</p>
+
+<pre class="example">
+class BLOB
+{
+public:
+    BLOB(Session &amp;s);
+    ~BLOB();
+
+    std::size_t getLen();
+    std::size_t read(std::size_t offset, char *buf, std::size_t toRead);
+    std::size_t write(std::size_t offset, char const *buf, std::size_t toWrite);
+    std::size_t append(char const *buf, std::size_t toWrite);
+    void trim(std::size_t newLen);
+
+    details::BLOBBackEnd * getBackEnd();
+};
+</pre>
+
+<p>This class contains the following members:</p>
 <ul>
   <li>Constructor associating the BLOB object with the Session object.</li>
   <li><code>getLen</code> function that returns the size of the BLOB
@@ -430,23 +520,26 @@ provided
 for advanced users that need access to the functionality that is not
 otherwise available.</li>
 </ul>
-See <a href="exchange.html#blob">Large objects (BLOBs)</a> for more
-discussion.<br>
-<h4><a name="rowid"></a>class RowID</h4>
-The <code>RowID</code> class encapsulates the "row identifier" object.<br>
-<br>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>class RowID<br>{<br>public:<br>    RowID(Session &amp;s);<br>    ~RowID();<br><br>    details::RowIDBackEnd * getBackEnd();<br>};<br></pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br>
-This class contains the following members:<br>
+
+<p>See <a href="exchange.html#blob">Large objects (BLOBs)</a> for more
+discussion.</p>
+
+<h3 id="rowid">class RowID</h3>
+
+<p>The <code>RowID</code> class encapsulates the "row identifier" object.</p>
+
+<pre class="example">
+class RowID
+{
+public:
+    RowID(Session &amp;s);
+    ~RowID();
+
+    details::RowIDBackEnd * getBackEnd();
+};
+</pre>
+
+<p>This class contains the following members:</p>
 <ul>
   <li>Constructor associating the <code>RowID</code> object with the <code>Session</code>
 object.</li>
@@ -454,50 +547,47 @@ object.</li>
 pointer to
 the concrete backend implementation of the <code>RowID</code> object.</li>
 </ul>
-<h4><a name="backendfactory"></a>class BackEndFactory</h4>
-The <code>BackEndFactory</code> class provides the abstract interface
-for concrete backend factories.<br>
-<br>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>struct BackEndFactory<br>{<br>    virtual details::SessionBackEnd * makeSession(<br>        std::string const &amp;connectString) const = 0;<br>};<br></pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br>
-The only member of this class is the <code>makeSession</code> function
+
+<h3 id="backendfactory">class BackEndFactory</h3>
+
+<p>The <code>BackEndFactory</code> class provides the abstract interface
+for concrete backend factories.</p>
+
+<pre class="example">
+struct BackEndFactory
+{
+    virtual details::SessionBackEnd * makeSession(
+        std::string const &amp;connectString) const = 0;
+};
+</pre>
+
+<p>The only member of this class is the <code>makeSession</code> function
 that is supposed to create concrete backend implementation of the
-session object.<br>
-Objects of this type are declared by each backend and should be
-provided to the constructor of the <code>Session</code> class.<br>
+session object.</p>
+
+<p>Objects of this type are declared by each backend and should be
+provided to the constructor of the <code>Session</code> class.
 In simple programs users do not need to use this class directly, but
-the example use is:<br>
-<br>
-<code>BackEndFactory &amp;factory = postgresql;<br>
-std::string connectionParameters = "dbname=mydb";<br>
-<br>
-Session sql(factory, parameters);</code><br>
-<br>
-<br>
-<table style="width: 100%; text-align: left;" border="0" cellpadding="2"
- cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;"><a href="beyond.html">Previous
-(Beyond SOCI)</a></td>
-      <td style="vertical-align: top; text-align: right;"><a
- href="backends.html">Next (Backends reference)</a><br>
-      </td>
-    </tr>
-  </tbody>
+the example use is:</p>
+
+<pre class="example">
+BackEndFactory &amp;factory = postgresql;
+std::string connectionParameters = "dbname=mydb";
+
+Session sql(factory, parameters);
+</pre>
+
+<table class="foot-links" border="0" cellpadding="2" cellspacing="2">
+  <tr>
+    <td class="foot-link-left">
+      <a href="beyond.html">Previous (Beyond SOCI)</a>
+    </td>
+    <td class="foot-link-right">
+      <a href="backends.html">Next (Backends reference)</a>
+    </td>
+  </tr>
 </table>
-<br>
-<hr style="width: 100%; height: 2px;">Copyright &copy; 2004-2006 Maciej
-Sobczak, Stephen Hutton<br>
-<br>
+
+<p class="copyright">Copyright &copy; 2004-2006 Maciej Sobczak, Stephen Hutton</p>
 </body>
 </html>

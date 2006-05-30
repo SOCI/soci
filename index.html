@@ -1,69 +1,93 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
-  <meta content="text/html; charset=ISO-8859-1"
- http-equiv="content-type">
+  <meta content="text/html; charset=ISO-8859-1"  http-equiv="content-type" />
+  <link rel="stylesheet" type="text/css" href="style.css" />
   <title>SOCI</title>
 </head>
+
 <body>
-<font size="+3"><span
- style="font-family: helvetica,arial,sans-serif; font-weight: bold; color: rgb(0, 0, 255);">SOCI</span></font><br>
-<span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">The
-C++ Database Access Library</span><span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);"><br>
-<br>
-</span>
-<h2><span style="font-weight: bold;">Documentation and tutorial</span></h2>
-<h2><span style="font-weight: bold;"></span></h2>
-<br>
-<a href="structure.html">Library structure, files and compilation</a><br>
-<a href="errors.html">Errors</a><br>
-<a href="basics.html">Connections and simple queries</a><br>
-<a href="exchange.html">Exchanging data</a><br>
-<a href="statements.html">Statements, procedures and transactions</a><br>
-<a href="beyond.html">Beyond SOCI</a><br>
-<a href="reference.html">Client interface reference</a><br>
-<a href="backends.html">Backends reference</a><br>
-<a href="rationale.html">Rationale FAQ</a><br>
-<br>
-<br>
-The following (complete!) example is purposedly provided without any
-explanation. Parts that use the SOCI library are bold.<br>
-<br>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre><span style="font-weight: bold;">#include "soci.h"</span><br><span
- style="font-weight: bold;">#include "soci-oracle.h"</span><br>#include &lt;iostream&gt;<br>#include &lt;istream&gt;<br>#include &lt;ostream&gt;<br>#include &lt;string&gt;<br>#include &lt;exception&gt;<br><br><span
- style="font-weight: bold;">using namespace SOCI;</span><br>using namespace std;<br><br>bool getName(string &amp;name)<br>{<br>    cout &lt;&lt; "Enter name: ";<br>    return cin &gt;&gt; name;<br>}<br><br>int main()<br>{<br>    try<br>    {<br>        <span
- style="font-weight: bold;">Session sql(oracle, "service=mydb user=john password=secret");</span><br><br>        int count;<br>        <span
- style="font-weight: bold;">sql &lt;&lt; "select count(*) from phonebook", into(count);</span><br>        cout &lt;&lt; "We have " &lt;&lt; count &lt;&lt; " entries in the phonebook.\n";<br><br>        string name;<br>        while (getName(name))<br>        {<br>            string phone;<br>            <span
- style="font-weight: bold;">eIndicator ind;</span><br>            <span
- style="font-weight: bold;">sql &lt;&lt; "select phone from phonebook where name = :name", into(phone, ind), use(name);</span><br>            if (<span
- style="font-weight: bold;">ind == eOK</span>)<br>            {<br>                cout &lt;&lt; "The phone number is " &lt;&lt; phone &lt;&lt; '\n';<br>            }<br>            else<br>            {<br>                cout &lt;&lt; "There is no phone for " &lt;&lt; name &lt;&lt; '\n';<br>            }<br>        }<br>    }<br>    catch (exception const &amp;e)<br>    {<br>        cerr &lt;&lt; "Error: " &lt;&lt; e.what() &lt;&lt; '\n';<br>    }    <br>}<br></pre>
-      </td>
-    </tr>
-  </tbody>
+<p class="banner">SOCI - The C++ Database Access Library</p>
+
+<h1>Documentation and tutorial</h1>
+
+<div class="navigation">
+<a href="structure.html">Library structure, files and compilation</a><br />
+<a href="errors.html">Errors</a><br />
+<a href="basics.html">Connections and simple queries</a><br />
+<a href="exchange.html">Exchanging data</a><br />
+<a href="statements.html">Statements, procedures and transactions</a><br />
+<a href="beyond.html">Beyond SOCI</a><br />
+<a href="reference.html">Client interface reference</a><br />
+<a href="backends.html">Backends reference</a><br />
+<a href="rationale.html">Rationale FAQ</a><br />
+</div>
+
+<p>The following (complete!) example is purposedly provided without any explanation.</p>
+
+<pre class="example">
+#include "soci.h"
+#include "soci-oracle.h"
+#include &lt;iostream&gt;
+#include &lt;istream&gt;
+#include &lt;ostream&gt;
+#include &lt;string&gt;
+#include &lt;exception&gt;
+
+using namespace SOCI;
+using namespace std;
+
+bool getName(string &amp;name)
+{
+    cout &lt;&lt; "Enter name: ";
+    return cin &gt;&gt; name;
+}
+
+int main()
+{
+    try
+    {
+        Session sql(oracle, "service=mydb user=john password=secret");
+
+        int count;
+        sql &lt;&lt; "select count(*) from phonebook", into(count);
+
+        cout &lt;&lt; "We have " &lt;&lt; count &lt;&lt; " entries in the phonebook.\n";
+
+        string name;
+        while (getName(name))
+        {
+            string phone;
+            eIndicator ind;
+            sql &lt;&lt; "select phone from phonebook where name = :name",
+                into(phone, ind), use(name);
+
+            if (ind == eOK)
+            {
+                cout &lt;&lt; "The phone number is " &lt;&lt; phone &lt;&lt; '\n';
+            }
+            else
+            {
+                cout &lt;&lt; "There is no phone for " &lt;&lt; name &lt;&lt; '\n';
+            }
+        }
+    }
+    catch (exception const &amp;e)
+    {
+        cerr &lt;&lt; "Error: " &lt;&lt; e.what() &lt;&lt; '\n';
+    }
+}
+</pre>
+
+<table class="foot-links" border="0" cellpadding="2" cellspacing="2">
+  <tr>
+    <td class="foot-link-left"></td>
+    <td class="foot-link-right">
+      <a href="structure.html">Next (Library structure, files and compilation)</a>
+    </td>
+  </tr>
 </table>
-<br>
-<table style="width: 100%; text-align: left;" border="0" cellpadding="2"
- cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;"><br>
-      </td>
-      <td style="vertical-align: top; text-align: right;"><a
- href="structure.html">Next (Library structure, files and compilation)</a><br>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br>
-<hr style="width: 100%; height: 2px;">Copyright &copy; 2004-2006 Maciej
-Sobczak, Stephen Hutton<br>
-<br>
+
+<p class="copyright">Copyright &copy; 2004-2006 Maciej Sobczak, Stephen Hutton</p>
 </body>
 </html>

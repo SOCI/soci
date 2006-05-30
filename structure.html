@@ -1,121 +1,112 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
-  <meta content="text/html; charset=ISO-8859-1"
- http-equiv="content-type">
+  <meta content="text/html; charset=ISO-8859-1"  http-equiv="content-type" />
+  <link rel="stylesheet" type="text/css" href="style.css" />
   <title>SOCI - structure</title>
 </head>
+
 <body>
-<font size="+3"><span
- style="font-family: helvetica,arial,sans-serif; font-weight: bold; color: rgb(0, 0, 255);">SOCI</span></font><br>
-<span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255); font-weight: bold;">The
-C++ Database Access Library</span><span
- style="font-family: helvetica,arial,sans-serif; color: rgb(0, 0, 255);"><br>
-<br>
-</span>
-<h3><span style="font-weight: bold;"></span>Library structure, files
-and compilation</h3>
-The SOCI library has the following structure:<br>
-<br>
-<div style="text-align: left;"><img alt="" src="structure.png"
- style="width: 502px; height: 444px;"><br>
+<p class="banner">SOCI - The C++ Database Access Library</p>
+
+<h2>Library structure, files and compilation</h2>
+
+<p>The SOCI library has the following structure:</p>
+
+<div class="diagram">
+<img alt="Library structure diagram" src="structure.png" />
 </div>
-<br>
-The core part of the library and the backend interface definition are
+
+<p>The core part of the library and the backend interface definition are
 placed in the <code>core</code> directory of the library distribution.
-The
-<code>soci-backend.h</code> file is an internal abstract
+The <code>soci-backend.h</code> file is an internal abstract
 interface to the actual backends, which are needed to perform
 operations on the given database server. Normally, the C++ client
 program needs to interface with the <code>soci.h</code> header and the
 header(s) relevant to the given backend(s) (for example, <code>soci-oracle.h</code>).
 It is possible for the same program to use many backends at the same
-time.<br>
-The gray boxes above indicate that the SOCI library is extensible and
+time.</p>
+
+<p>The gray boxes above indicate that the SOCI library is extensible and
 that there are two aspects of this extensibility: more backends can be
 added, and more interfaces (possibly for other languages) can be
-defined to reuse the already existing backends.<br>
+defined to reuse the already existing backends.</p>
+
 <p>Everything in SOCI is
 declared in the namespace <code>SOCI</code>.
 All code examples presented in this documentation assume that your code
 begins with something
-like:<br>
-</p>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>#include "soci.h"<br>// other includes<br><br>using namespace SOCI;<br><br>// ...</pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br>
-<span style="font-weight: bold;">Note:</span> in simple programs, <code>#include</code>
-for the relevant
+like:</p>
+<pre class="example">
+#include "soci.h"
+// other includes
+
+using namespace SOCI;
+
+// ...
+</pre>
+
+<div class="note">
+<p><span class="note">Note:</span>
+In simple programs, <code>#include</code> for the relevant
 backend is needed only in the file where the <code>Session</code>
 object is created, because it is where the name of the backend factory
 is referenced. The example program on the <a href="index.html">previous
 page</a> shows the appropriate <code>#include</code> directive for the
-Oracle backend.<br>
-<br>
-Compilation of the client program requires that the SOCI header files
+Oracle backend.</p>
+</div>
+
+<p>Compilation of the client program requires that the SOCI header files
 are all visible and accessible to the compiler. Moreover, the library
 itself (the core part and the relevant backend part) needs to be
 already compiled and linked into
 the final executable. For this, the native libraries provided by each
 database server should be visible to the compiler and linker as well -
 the
-actual steps that need to be taken depend on the compiler being used.<br>
-<br>
-The <code>core</code> directory of the library distribution contains
+actual steps that need to be taken depend on the compiler being used.</p>
+
+<p>The <code>core</code> directory of the library distribution contains
 the <code>Makefile</code> that can be used to compile the core part of
 the library. Run <code>make</code> or <code>make shared</code> to get
-the static and shared versions. Similarly, the <code>backends/<span
- style="font-style: italic;">name</span></code> directory contains the
+the static and shared versions. Similarly, the <code>backends/<i>name</i></code> directory contains the
 backend part for each supported backend with the appropriate <code>Makefile</code>
-and the <code>backends/<span style="font-style: italic;">name</span>/test</code>
-directory contains the test program for the given backend.<br>
-For example, the simplest way to compile the static version of the
-library and the test program for PostgreSQL is:<br>
-<br>
-<table style="width: 100%; background-color: silver; text-align: left;"
- border="0" cellpadding="2" cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>$ cd core<br>$ make<br>$ cd ../backends/postgresql<br>$ make<br>$ cd test<br>$ make</pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<span style="font-weight: bold;"><br>
-Note:</span> for each backend and its test program, the <code>Makefile</code>s
+and the <code>backends/<i>name</i>/test</code>
+directory contains the test program for the given backend.</p>
+
+<p>For example, the simplest way to compile the static version of the
+library and the test program for PostgreSQL is:</p>
+
+<pre class="example">
+$ cd core
+$ make
+$ cd ../backends/postgresql
+$ make
+$ cd test
+$ make
+</pre>
+
+<div class="note">
+<p><span class="note">Note:</span>
+For each backend and its test program, the <code>Makefile</code>s
 contain the variables that can have values specific to the given
 environment. These variables are placed at the beginning of the <code>Makefile</code>s.
-Please review their values in case of any compilation problems.<br>
-<br>
-The Makefiles for test programs can be a good starting point to find
-out correct compiler and linker options.<br>
-<br>
-<table style="width: 100%; text-align: left;" border="0" cellpadding="2"
- cellspacing="2">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;"><a href="index.html">Previous
-(Contents)</a><br>
-      </td>
-      <td style="vertical-align: top; text-align: right;"><a
- href="errors.html">Next (Errors)</a><br>
-      </td>
-    </tr>
-  </tbody>
+Please review their values in case of any compilation problems.</p>
+</div>
+
+<p>The Makefiles for test programs can be a good starting point to find
+out correct compiler and linker options.</p>
+
+<table class="foot-links" border="0" cellpadding="2" cellspacing="2">
+  <tr>
+    <td class="foot-link-left">
+      <a href="index.html">Previous (Contents)</a>
+    </td>
+    <td class="foot-link-right">
+      <a href="errors.html">Next (Errors)</a>
+    </td>
+  </tr>
 </table>
-<br>
-<hr style="width: 100%; height: 2px;">Copyright &copy; 2004-2006 Maciej
-Sobczak, Stephen Hutton<br>
-<br>
+
+<p class="copyright">Copyright &copy; 2004-2006 Maciej Sobczak, Stephen Hutton</p>
 </body>
 </html>
