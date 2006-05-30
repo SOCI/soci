@@ -1,8 +1,10 @@
 body
 {
+  background-color: white;
+  color: black;
   margin-left: 100px;
   margin-right: 100px;
-  font-family: arial;
+  font-family: arial, sans-serif;
 }
 
 p.banner
@@ -47,12 +49,14 @@ span.note
 code
 {
 /*   font-weight: bold; */
+  background-color: white;
   color: #8B0000;
 }
 
 pre.example
 {
   background-color: #F0F0F0;
+  color: black;
   border-width: 1px;
   border-style: dashed;
   border-color: blue;
@@ -80,5 +84,5 @@ p.copyright
   border-top-color: black;
   border-top-style: solid;
   border-top-width: 1px;
-  padding-top: 5px;:
+  padding-top: 5px;
 }
