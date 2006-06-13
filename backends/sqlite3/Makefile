@@ -8,7 +8,7 @@ SQLITE3INCLUDEDIR =
 COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long #-DSQLITE_ENABLE_COLUMN_METADATA
 CXXFLAGSSO = ${CXXFLAGS} -fPIC
-INCLUDEDIRS = -I../../core -I${SQLITE3INCLUDEDIR}
+INCLUDEDIRS = -I../../core ${SQLITE3INCLUDEDIR}
 
 
 OBJECTS = blob.o factory.o row-id.o session.o standard-into-type.o \
