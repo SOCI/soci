@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+    <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type" />
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <title>SOCI</title>
+</head>
+<body>
+<table class="banner" cellpadding="0" cellspacing="0">
+      <tr>
+        <td class="banner_left">
+          SOCI - The C++ Database Access Library
+        </td>
+        <td class="banner_right">
+          <a href="http://sourceforge.net"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=121480&amp;type=1" width="88" height="31" border="0" alt="SourceForge.net Logo" /></a>
+        </td>
+      </tr>
+</table>
+
+<table class="main">
+      <tr>
+        <td class="main_navigator">
+          <p>Home<br />
+          <a href="http://sourceforge.net/project/showfiles.php?group_id=121480" target="_blank">Download</a><br />
+          <a target="_blank" href="doc/index.html">Documentation</a><br />
+          <a href="articles.html">Articles</a><br />
+          <a href="people.html">People</a><br />
+          <a href="events.html">Events</a><br />
+          <a href="links.html">Links</a><br />
+          </p>
+        </td>
+        <td class="main_text">
+<p>SOCI is a database access library
+for C++ that makes the illusion of <i>embedding</i>
+SQL queries in the regular
+C++ code, staying entirely within the Standard C++.</p>
+
+<p>The idea is to provide C++ programmers a way to access SQL
+databases in the most natural and intuitive way. If you find existing
+libraries too difficult for your needs or just distracting, SOCI can be
+a good alternative.</p>
+          
+<p>The simplest motivating code example for the SQL query that is supposed
+to retrieve a single row is:</p>
+<pre>
+int id = ...;
+string name;
+int salary;
+
+<span class="bold">sql &lt;&lt; "</span><span class="literal">select name, salary from persons where id = </span><span class="bold">" &lt;&lt; id,
+       into(name), into(salary);</span>
+</pre>
+
+<p>and the following benefits from extensive support for object-relational
+mapping:</p>
+<pre>
+int id = ...;
+Person p;
+
+<span class="bold">sql &lt;&lt; "</span><span class="literal">select first_name, last_name, date_of_birth "
+       "from persons where id = </span><span class="bold">" &lt;&lt; id,
+       into(p);</span>
+</pre>
+
+<p>Starting from its 2.0.0 release, SOCI uses the plug-in architecture for
+backends - this allows to target various database servers. Currently (2.1.0),
+the following database servers are supported:</p>
+<ul>
+            <li>Oracle</li>
+            <li>PostgreSQL</li>
+            <li>MySQL</li>
+            <li>SQLite</li>
+</ul>
+
+<p>The intent of the library is to cover as many database technologies as
+possible. For this, the project has to rely on volunteer contributions
+from other programmers, who have expertise with the existing database
+interfaces and would like to help writing dedicated backends. Backends
+written in terms of native database interfaces are preferred, but more
+general solutions (like ODBC) are of interest as well.<br />
+If you are interested in participating, please contact the <a
+ href="people.html">project admin</a>.</p>
+
+<p>The SOCI library is distributed under the terms of the <a
+ target="_blank" href="http://www.boost.org/LICENSE_1_0.txt">Boost
+Software License</a>.</p>
+
+<p>The latest and experimental version of the code is always available via
+<a target="_blank" href="http://soci.cvs.sourceforge.net/soci/">CVS</a>.</p>
+
+<p>To meet other users, please consider subscribing to the <a
+ target="_blank" href="https://lists.sourceforge.net/lists/listinfo/soci-users">SOCI
+mailing list</a>.</p>
+      </td>
+    </tr>
+</table>
+</body>
+</html>
