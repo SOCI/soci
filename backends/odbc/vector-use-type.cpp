@@ -125,6 +125,7 @@ void ODBCVectorUseTypeBackEnd::prepareForBind(void *&data, SQLUINTEGER &size, SQ
             for (std::size_t i = 0; i != vecSize; ++i)
             {
                 std::size_t sz = v[i].length() + 1;  // add one for null
+				indHolderVec_[i] = static_cast<long>(sz);
                 maxSize = sz > maxSize ? sz : maxSize;
             }
 
@@ -263,7 +264,11 @@ void ODBCVectorUseTypeBackEnd::preUse(eIndicator const *ind)
             }
             else
             {
-                indHolderVec_[i] = SQL_NTS;  // value is OK
+            // for strings we have already set the values
+            if (type_ != eXStdString)
+                {
+                    indHolderVec_[i] = SQL_NTS;  // value is OK
+                }
             }
         }
     }
@@ -273,7 +278,11 @@ void ODBCVectorUseTypeBackEnd::preUse(eIndicator const *ind)
         std::size_t const vsize = size();
         for (std::size_t i = 0; i != vsize; ++i, ++ind)
         {
-            indHolderVec_[i] = SQL_NTS;  // value is OK
+            // for strings we have already set the values
+            if (type_ != eXStdString)
+            {
+	            indHolderVec_[i] = SQL_NTS;  // value is OK
+            }
         }
     }
 }

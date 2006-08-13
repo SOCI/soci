@@ -186,7 +186,7 @@ void ODBCVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
             std::size_t const vsize = v.size();
             for (std::size_t i = 0; i != vsize; ++i)
             {
-                v[i].assign(pos, indHolders_[i]);
+                v[i].assign(pos, strlen(pos));
                 pos += colSize_;
             }
         }

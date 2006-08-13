@@ -1006,12 +1006,11 @@ void test8()
 
             std::vector<std::string> v2(4);
 
-            //!FIX ME - extra spaces in output
             sql << "select str from test8 order by str", into(v2);
             assert(v2.size() == 3);
-            assert(v2[0] == "ala  ");
-            assert(v2[1] == "kota ");
-            assert(v2[2] == "ma   ");
+            assert(v2[0] == "ala");
+            assert(v2[1] == "kota");
+            assert(v2[2] == "ma");
 
             sql << "drop table test8";
         }
