@@ -72,12 +72,13 @@ void ODBCStandardUseTypeBackEnd::prepareForBind(
     }
     break;
     case eXStdTm:
-        sqlType = SQL_TYPE_TIMESTAMP;
-        cType = SQL_C_TYPE_TIMESTAMP;
-        size = sizeof(TIMESTAMP_STRUCT);
-        buf_ = new char[size];
+        sqlType = SQL_TIMESTAMP;
+        cType = SQL_C_TIMESTAMP;
+        buf_ = new char[sizeof(TIMESTAMP_STRUCT)];
         data = buf_;
-        indHolder_ = size;
+        size = 19; // This number is not the size in bytes, but the number
+                   // of characters in the date if it was written out
+                   // yyyy-mm-dd hh:mm:ss
         break;
 
     case eXBLOB:

@@ -814,39 +814,38 @@ void test6()
             sql << "drop table test6";
         }
 
-        //!FIXME - get date overflow error from mssql
         // test for std::tm
-		//{
-		//	sql << "create table test6 (tm datetime)";
+		{
+			sql << "create table test6 (tm datetime)";
 
-		//	std::tm t;
-		//	t.tm_year = 2006;
-		//	t.tm_mon = 10;
-		//	t.tm_mday = 19;
-		//	t.tm_hour = 21;
-		//	t.tm_min = 39;
-		//	t.tm_sec = 57;
-		//	sql << "insert into test6(tm) values(?)", use(t);
+			std::tm t;
+			t.tm_year = 2006;
+			t.tm_mon = 10;
+			t.tm_mday = 19;
+			t.tm_hour = 21;
+			t.tm_min = 39;
+			t.tm_sec = 57;
+			sql << "insert into test6(tm) values(?)", use(t);
 
-		//	std::tm t2;
-		//	t2.tm_year = 0;
-		//	t2.tm_mon = 0;
-		//	t2.tm_mday = 0;
-		//	t2.tm_hour = 0;
-		//	t2.tm_min = 0;
-		//	t2.tm_sec = 0;
+			std::tm t2;
+			t2.tm_year = 0;
+			t2.tm_mon = 0;
+			t2.tm_mday = 0;
+			t2.tm_hour = 0;
+			t2.tm_min = 0;
+			t2.tm_sec = 0;
 
-		//	sql << "select tm from test6", into(t2);
+			sql << "select tm from test6", into(t2);
 
-		//	assert(t.tm_year == 2006);
-		//	assert(t.tm_mon  == 10);
-		//	assert(t.tm_mday == 19);
-		//	assert(t.tm_hour == 21);
-		//	assert(t.tm_min  == 39);
-		//	assert(t.tm_sec  == 57);
+			assert(t.tm_year == 2006);
+			assert(t.tm_mon  == 10);
+			assert(t.tm_mday == 19);
+			assert(t.tm_hour == 21);
+			assert(t.tm_min  == 39);
+			assert(t.tm_sec  == 57);
 
-		//	sql << "drop table test6";
-		//}
+			sql << "drop table test6";
+		}
 
         // test for repeated use
         {
@@ -1114,51 +1113,51 @@ void test8()
         //!FIXME - get date overflow error from mssql
         // test for std::tm
         {
-//             sql << "create table test8 (tm datetime)";
+             sql << "create table test8 (tm datetime)";
 
-//             std::vector<std::tm> v;
-//             std::tm t;
-//             t.tm_year = 105;
-//             t.tm_mon  = 10;
-//             t.tm_mday = 26;
-//             t.tm_hour = 22;
-//             t.tm_min  = 45;
-//             t.tm_sec  = 17;
+             std::vector<std::tm> v;
+             std::tm t;
+             t.tm_year = 2005;
+             t.tm_mon  = 10;
+             t.tm_mday = 26;
+             t.tm_hour = 22;
+             t.tm_min  = 45;
+             t.tm_sec  = 17;
 
-//             v.push_back(t);
+             v.push_back(t);
 
-//             t.tm_sec = 37;
-//             v.push_back(t);
+             t.tm_sec = 37;
+             v.push_back(t);
 
-//             t.tm_mday = 25;
-//             v.push_back(t);
+             t.tm_mday = 25;
+             v.push_back(t);
 
-//             sql << "insert into test8(tm) values(:v)", use(v);
+             sql << "insert into test8(tm) values(:v)", use(v);
 
-//             std::vector<std::tm> v2(4);
+             std::vector<std::tm> v2(4);
 
-//             sql << "select tm from test8 order by tm", into(v2);
-//             assert(v2.size() == 3);
-//             assert(v2[0].tm_year == 105);
-//             assert(v2[0].tm_mon  == 10);
-//             assert(v2[0].tm_mday == 25);
-//             assert(v2[0].tm_hour == 22);
-//             assert(v2[0].tm_min  == 45);
-//             assert(v2[0].tm_sec  == 37);
-//             assert(v2[1].tm_year == 105);
-//             assert(v2[1].tm_mon  == 10);
-//             assert(v2[1].tm_mday == 26);
-//             assert(v2[1].tm_hour == 22);
-//             assert(v2[1].tm_min  == 45);
-//             assert(v2[1].tm_sec  == 17);
-//             assert(v2[2].tm_year == 105);
-//             assert(v2[2].tm_mon  == 10);
-//             assert(v2[2].tm_mday == 26);
-//             assert(v2[2].tm_hour == 22);
-//             assert(v2[2].tm_min  == 45);
-//             assert(v2[2].tm_sec  == 37);
+             sql << "select tm from test8 order by tm", into(v2);
+             assert(v2.size() == 3);
+             assert(v2[0].tm_year == 2005);
+             assert(v2[0].tm_mon  == 10);
+             assert(v2[0].tm_mday == 25);
+             assert(v2[0].tm_hour == 22);
+             assert(v2[0].tm_min  == 45);
+             assert(v2[0].tm_sec  == 37);
+             assert(v2[1].tm_year == 2005);
+             assert(v2[1].tm_mon  == 10);
+             assert(v2[1].tm_mday == 26);
+             assert(v2[1].tm_hour == 22);
+             assert(v2[1].tm_min  == 45);
+             assert(v2[1].tm_sec  == 17);
+             assert(v2[2].tm_year == 2005);
+             assert(v2[2].tm_mon  == 10);
+             assert(v2[2].tm_mday == 26);
+             assert(v2[2].tm_hour == 22);
+             assert(v2[2].tm_min  == 45);
+             assert(v2[2].tm_sec  == 37);
 
-//             sql << "drop table test8";
+             sql << "drop table test8";
          }
     }
 

@@ -150,12 +150,14 @@ void ODBCVectorUseTypeBackEnd::prepareForBind(void *&data, SQLUINTEGER &size, SQ
 
             prepareIndicators(vp->size());
 
-            size = sizeof(TIMESTAMP_STRUCT);
-            buf_ = new char[size * vp->size()];
+            buf_ = new char[sizeof(TIMESTAMP_STRUCT) * vp->size()];
 
             sqlType = SQL_TYPE_TIMESTAMP;
             cType = SQL_C_TYPE_TIMESTAMP;
             data = buf_;
+            size = 19; // This number is not the size in bytes, but the number
+                      // of characters in the date if it was written out
+                      // yyyy-mm-dd hh:mm:ss
         }
         break;
 
@@ -165,7 +167,7 @@ void ODBCVectorUseTypeBackEnd::prepareForBind(void *&data, SQLUINTEGER &size, SQ
     case eXCString:   break; // not supported
     }
 
-    colSize_ = size;    
+    colSize_ = size;
 }
 
 void ODBCVectorUseTypeBackEnd::bindByPos(int &position,
@@ -230,25 +232,22 @@ void ODBCVectorUseTypeBackEnd::preUse(eIndicator const *ind)
              = static_cast<std::vector<std::tm> *>(data_);
 
         std::vector<std::tm> &v(*vp);
+
         char *pos = buf_;
         std::size_t const vsize = v.size();
         for (std::size_t i = 0; i != vsize; ++i)
         {
-            std::tm t;
-            
+            std::tm t = v[i];
             TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
-            t.tm_isdst = -1;
-            t.tm_year = ts->year;
-            t.tm_mon = ts->month;
-            t.tm_mday = ts->day;
-            t.tm_hour = ts->hour;
-            t.tm_min = ts->minute;
-            t.tm_sec = ts->second;
-            
-            // normalize and compute the remaining fields
-            std::mktime(&t);
-            v[i] = t;
-            pos += colSize_;
+
+            ts->year = t.tm_year;
+            ts->month = t.tm_mon;
+            ts->day = t.tm_mday;
+            ts->hour = t.tm_hour;
+            ts->minute = t.tm_min;
+            ts->second = t.tm_sec;
+            ts->fraction = 0;
+            pos += sizeof(TIMESTAMP_STRUCT);
         }
     }
 
