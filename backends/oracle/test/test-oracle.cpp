@@ -1891,7 +1891,7 @@ namespace SOCI
 
         // TODO: The "to" part is certainly needed.
     };
-};
+}
 
 void test24()
 {
