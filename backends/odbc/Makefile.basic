@@ -1,7 +1,7 @@
 # The following variable is specific to this backend and its correct
 # values might depend on your environment - feel free to set it accordingly.
 
-ODBCINCLUDEDIR = /usr/include
+ODBCINCLUDEDIR = -I/usr/include
 
 # The rest of the Makefile is indepentent of the target environment.
 
