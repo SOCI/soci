@@ -10,7 +10,10 @@
 
 #include "soci-backend.h"
 
+#ifdef _MSC_VER
 #include <windows.h>
+#endif
+
 #include <sqlext.h>
 
 namespace SOCI
