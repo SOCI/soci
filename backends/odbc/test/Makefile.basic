@@ -1,9 +1,9 @@
 # The following variable is specific to this backend and its correct
 # values might depend on your environment - feel free to set it accordingly.
 
-ODBCINCLUDEDIR =
-ODBCLIBDIR =
-ODBCLIBS = -lodbc32
+ODBCINCLUDEDIR = -I/usr/include
+ODBCLIBDIR = -L/usr/lib
+ODBCLIBS = -lodbc -lodbcinst
 
 # The rest of the Makefile is independent of the target environment.
 
