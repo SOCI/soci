@@ -1,9 +1,10 @@
-# $Id: Makefile.am,v 1.1 2006/08/15 14:05:53 mloskot Exp $
+# $Id: Makefile.am,v 1.2 2006/08/28 03:07:57 stephenhutton Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
 INCLUDES = \
 	-I$(top_srcdir)/src/core \
+	-I$(top_srcdir)/src/core/test \
 	-I$(top_srcdir)/src/backends/oracle
 
 AM_CPPFLAGS = @ORACLE_OCI_CFLAGS@
