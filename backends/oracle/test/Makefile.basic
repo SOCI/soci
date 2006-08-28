@@ -9,12 +9,13 @@ ORACLELIBS = -lclntsh
 
 COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
-INCLUDEDIRS = -I.. -I../../../core ${ORACLEINCLUDEDIR}
+INCLUDEDIRS = -I.. -I../../../core -I../../../core/test ${ORACLEINCLUDEDIR}
 LIBDIRS = -L.. -L../../../core ${ORACLELIBDIR}
 LIBS = -lsoci-core -lsoci-oracle ${ORACLELIBS}
 
 
-test-oracle : test-oracle.cpp
+test-oracle : test-oracle.cpp 
+#../../../core/test/common-tests.h
 	${COMPILER} -o $@ $? ${CXXFLAGS} ${INCLUDEDIRS} ${LIBDIRS} ${LIBS}
 
 

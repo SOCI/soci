@@ -187,6 +187,9 @@ struct OracleStatementBackEnd : details::StatementBackEnd
     OracleSessionBackEnd &session_;
 
     OCIStmt *stmtp_;
+
+    bool boundByName_;
+    bool boundByPos_;
 };
 
 struct OracleRowIDBackEnd : details::RowIDBackEnd

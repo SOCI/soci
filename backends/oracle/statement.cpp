@@ -23,7 +23,7 @@ using namespace SOCI::details;
 using namespace SOCI::details::Oracle;
 
 OracleStatementBackEnd::OracleStatementBackEnd(OracleSessionBackEnd &session)
-    : session_(session), stmtp_(NULL)
+    : session_(session), stmtp_(NULL), boundByName_(false), boundByPos_(false)
 {
 }
 
@@ -46,6 +46,9 @@ void OracleStatementBackEnd::cleanUp()
         OCIHandleFree(stmtp_, OCI_HTYPE_STMT);
         stmtp_ = NULL;
     }
+
+    boundByName_ = false;
+    boundByPos_ = false; 
 }
 
 void OracleStatementBackEnd::prepare(std::string const &query)

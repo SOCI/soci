@@ -118,6 +118,12 @@ void OracleStandardUseTypeBackEnd::prepareForBind(
 void OracleStandardUseTypeBackEnd::bindByPos(
     int &position, void *data, eExchangeType type)
 {
+    if (statement_.boundByName_)
+    {
+        throw SOCIError(
+         "Binding for use elements must be either by position or by name.");
+    }
+
     data_ = data; // for future reference
     type_ = type; // for future reference
 
@@ -134,11 +140,19 @@ void OracleStandardUseTypeBackEnd::bindByPos(
     {
         throwOracleSOCIError(res, statement_.session_.errhp_);
     }
+
+    statement_.boundByPos_ = true;
 }
 
 void OracleStandardUseTypeBackEnd::bindByName(
     std::string const &name, void *data, eExchangeType type)
 {
+    if (statement_.boundByPos_)
+    {
+        throw SOCIError(
+         "Binding for use elements must be either by position or by name.");
+    }
+
     data_ = data; // for future reference
     type_ = type; // for future reference
 
@@ -157,6 +171,8 @@ void OracleStandardUseTypeBackEnd::bindByName(
     {
         throwOracleSOCIError(res, statement_.session_.errhp_);
     }
+
+    statement_.boundByName_ = true;
 }
 
 void OracleStandardUseTypeBackEnd::preUse(eIndicator const *ind)

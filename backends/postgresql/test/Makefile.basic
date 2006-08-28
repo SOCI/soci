@@ -9,7 +9,7 @@ PGSQLLIBS = -lpq
 
 COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
-INCLUDEDIRS = -I.. -I../../../core ${PGSQLINCLUDEDIR}
+INCLUDEDIRS = -I.. -I../../../core/test -I../../../core ${PGSQLINCLUDEDIR}
 LIBDIRS = -L.. -L../../../core ${PGSQLLIBDIR}
 LIBS = -lsoci-core -lsoci-postgresql ${PGSQLLIBS}
 
