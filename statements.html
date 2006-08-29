@@ -41,7 +41,9 @@ values from <code>0</code> to <code>99</code>.</p>
 <p>The problem is that in both examples, not only the statement execution is
 repeated 100 times, but also the statement parsing and preparation.
 This means unnecessary overhead, even if some of the database servers
-are likely to optimize the second case.</p>
+are likely to optimize the second case. In fact, more complicated queries are
+likely to suffer in terms of lower performance, because finding the optimal
+execution plan is quite expensive and here it would be needlessly repeated.</p>
 
 <p>The following example uses the class <code>Statement</code>
 explicitly, by preparing the statement only once and repeating its
@@ -64,6 +66,17 @@ for (i = 0; i != 100; ++i)
 method indicates that the actual data exchange is wanted, so that the
 meaning of the whole example is "prepare the statement and exchange the
 data for each value of variable <code>i</code>".</p>
+
+<div class="note">
+<p><span class="note">Portability note:</span></p>
+<p>The above syntax is supported for all backends, even if some database server
+does not actually provide this functionality - in which case the library will internally
+execute the query in a single phase, without really separating
+the statement preparation from execution.</p>
+<p>For PostgreSQL servers older than 8.0 it is necessary to define the
+<code>SOCI_PGSQL_NOPREPARE</code> macro while compiling the library
+to fall back to this one-phase behaviour.</p>
+</div>
 
 <p>Further performance improvements may be possible by having the
 underlying database API group operations together to reduce network
@@ -117,11 +130,8 @@ calls perform the actual data retrieval and cursor traversal. The
 end-of-cursor condition is indicated by the <code>fetch</code>
 function returning <code>false</code>.</p>
 
-<div class="note">
-<p><span class="note">Note:</span>
-The above code example should be treated as an idiomatic way
+<p>The above code example should be treated as an idiomatic way
 of reading many rows of data, <i>one at a time</i>.</p>
-</div>
 
 <p>It is further possible to select records in batches into <code>std::vector</code>
 based types, with the size of the vector specifying the number of
