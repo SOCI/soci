@@ -5,6 +5,8 @@ Version 2.2.0 differs from 2.1.0 in the following ways:
 
 - Added true support for statement preparation with PostgreSQL.
 
+- Added support for the stream-like extraction from Row.
+
 ---
 Version 2.1.0 differs from 2.0.1 in the following ways:
 
