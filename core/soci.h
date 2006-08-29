@@ -417,7 +417,20 @@ public:
         return get<T>(pos);
     }
 
-    Row() {} // quiet the compiler
+    template <typename T>
+    Row const & operator>>(T &value) const
+    {
+        value = get<T>(currentPos_);
+        ++currentPos_;
+        return *this;
+    }
+
+    void resetGetCounter()
+    {
+        currentPos_ = 0;
+    }
+
+    Row() : currentPos_(0) {}
     ~Row();
 
 private:
@@ -431,6 +444,8 @@ private:
     std::vector<details::Holder*> holders_;
     std::vector<eIndicator*> indicators_;
     std::map<std::string, std::size_t> index_;
+
+    mutable std::size_t currentPos_;
 };
 
 namespace details
@@ -1272,6 +1287,8 @@ private:
     virtual void preFetch() {}
     virtual void postFetch(bool gotData, bool /* calledFromFetch */)
     {
+        r_.resetGetCounter();
+
         if (gotData)
         {
             // this is used only to re-dispatch to derived class, if any
