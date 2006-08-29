@@ -121,6 +121,25 @@ void PostgreSQLStatementBackEnd::prepare(std::string const &query)
     }
 
 #endif // SOCI_PGSQL_NOBINDBYNAME
+
+#ifndef SOCI_PGSQL_NOPREPARE
+
+    statementName_ = session_.getNextStatementName();
+
+    PGresult *res = PQprepare(session_.conn_, statementName_.c_str(),
+        query_.c_str(), names_.size(), NULL);
+    if (res == NULL)
+    {
+        throw SOCIError("Cannot prepare statement.");
+    }
+    ExecStatusType status = PQresultStatus(res);
+    if (status != PGRES_COMMAND_OK)
+    {
+        throw SOCIError(PQresultErrorMessage(res));
+    }
+    PQclear(res);
+
+#endif // SOCI_PGSQL_NOPREPARE
 }
 
 StatementBackEnd::execFetchResult
@@ -210,11 +229,26 @@ PostgreSQLStatementBackEnd::execute(int number)
                 }
 
 #ifdef SOCI_PGSQL_NOPARAMS
+
                 throw SOCIError("Queries with parameters are not supported.");
+
 #else
+
+#ifdef SOCI_PGSQL_NOPREPARE
+
                 result_ = PQexecParams(session_.conn_, query_.c_str(),
                     static_cast<int>(paramValues.size()),
                     NULL, &paramValues[0], NULL, NULL, 0);
+
+#else
+
+                result_ = PQexecPrepared(session_.conn_,
+                    statementName_.c_str(),
+                    static_cast<int>(paramValues.size()),
+                    &paramValues[0], NULL, NULL, 0);
+
+#endif // SOCI_PGSQL_NOPREPARE
+
 #endif // SOCI_PGSQL_NOPARAMS
 
                 if (numberOfExecutions > 1)
@@ -247,7 +281,16 @@ PostgreSQLStatementBackEnd::execute(int number)
         {
             // there are no use elements
             // - execute the query without parameter information
+
+#ifdef SOCI_PGSQL_NOPREPARE
+
             result_ = PQexec(session_.conn_, query_.c_str());
+#else
+
+            result_ = PQexecPrepared(session_.conn_, statementName_.c_str(),
+                0, NULL, NULL, NULL, 0);
+
+#endif // SOCI_PGSQL_NOPREPARE
 
             if (result_ == NULL)
             {

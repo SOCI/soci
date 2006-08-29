@@ -139,6 +139,7 @@ struct PostgreSQLStatementBackEnd : details::StatementBackEnd
 
     PGresult *result_;
     std::string query_;
+    std::string statementName_;
     std::vector<std::string> names_; // list of names for named binds
 
     int numberOfRows_;  // number of rows retrieved from the server
@@ -208,6 +209,9 @@ struct PostgreSQLSessionBackEnd : details::SessionBackEnd
     virtual PostgreSQLRowIDBackEnd * makeRowIDBackEnd();
     virtual PostgreSQLBLOBBackEnd * makeBLOBBackEnd();
 
+    std::string getNextStatementName();
+
+    int statementCount_;
     PGconn *conn_;
 };
 

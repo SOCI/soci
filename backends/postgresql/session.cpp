@@ -29,6 +29,7 @@ using namespace SOCI::details;
 
 PostgreSQLSessionBackEnd::PostgreSQLSessionBackEnd(
     std::string const & connectString)
+    : statementCount_(0)
 {
     conn_ = PQconnectdb(connectString.c_str());
     if (conn_ == NULL || PQstatus(conn_) != CONNECTION_OK)
@@ -88,6 +89,13 @@ void PostgreSQLSessionBackEnd::cleanUp()
         PQfinish(conn_);
         conn_ = NULL;
     }
+}
+
+std::string PostgreSQLSessionBackEnd::getNextStatementName()
+{
+    char nameBuf[20]; // arbitrary length
+    sprintf(nameBuf, "st_%d", ++statementCount_);
+    return nameBuf;
 }
 
 PostgreSQLStatementBackEnd * PostgreSQLSessionBackEnd::makeStatementBackEnd()
