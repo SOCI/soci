@@ -153,7 +153,10 @@ naming parameters in the query, which is by numbers like <code>$1</code>,
 the given query to the native form. For portability reasons, it is
 recommended to use named parameters, as shown in the examples above.<br />
 The query rewriting can be switched off by compiling the backend with
-the <code>SOCI_PGSQL_NOBINDBYNAME</code> name defined.</p>
+the <code>SOCI_PGSQL_NOBINDBYNAME</code> name defined. Note that in this case
+it is also necessary to define <code>SOCI_PGSQL_NOPREPARE</code>, because
+statement preparation relies on successful query rewriting.
+In practice, both macros will be needed for PostgreSQL server older than 8.0.</p>
 </div>
 
 <h3 id="indicators">Indicators</h3>
