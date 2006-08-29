@@ -376,6 +376,9 @@ public:
 
     template &lt;typename T&gt;
     T get(std::string const &amp;name, T const &amp;nullValue) const;
+
+    template &lt;typename T&gt;
+    Row const &amp; operator&gt;&gt;(T &amp;value) const;
 };
 </pre>
 
@@ -398,6 +401,10 @@ of the column given by position (starting from 0) or by name.</li>
 given by position or name. If the column contains null, then these
 functions either return the provided "default" <code>nullValue</code>
 or throw an exception.</li>
+  <li><code>operator&gt;&gt;</code> for convenience stream-like
+extraction interface. Subsequent calls to this function are equivalent
+to calling <code>get</code> with increasing position parameter,
+starting from the beginning.</li>
 </ul>
 
 <p>See <a href="exchange.html#dynamic">Dynamic resultset binding</a> for

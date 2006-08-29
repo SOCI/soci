@@ -418,6 +418,25 @@ used.</p>
   </tbody>
 </table>
 
+<p>It is also possible to extract data from the <code>Row</code> object using its stream-like
+interface:</p>
+
+<pre class="example">
+Row r;
+sql &lt;&lt; "select name, address, age from persons where id = 123", into(r);
+
+string name, address;
+int age;
+
+r >> name >> address >> age;
+</pre>
+
+<p>Note, however, that this interface is <i>not</i> compatible with the standard
+<code>std::istream</code> class and that it is only possible to extract a single row at a time
+- for "safety" reasons the row boundary is preserved and it is necessary to perform the
+<code>fetch</code> operation explicitly for each consecutive row
+(see <a href="statements.html">next page</a>).</p>
+
 <h4 id="custom_types">Extending SOCI to support custom (user-defined) C++ types</h4>
 
 <p>SOCI can be easily extended through user code so that custom types can

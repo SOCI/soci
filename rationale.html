@@ -195,13 +195,14 @@ relates to the use of IOStreams - and this
 common question clearly shows that for the record-oriented data the
 stream is not an optimal abstraction. Of course, we don't claim that
 IOStreams is bad - but we do insist that the record-oriented data is
-better manipulated in a way that is also record-aware. That's why SOCI
-does not provide the stream-like interface out of the box.</p>
+better manipulated in a way that is also record-aware.</p>
 
-<p>Having said that, we have experimented a bit with the concept of the
-stream-like interface, but where the stream is always bound to the
-single row, so that the row-tearing effect is not possible. Still,
-whether this feature will become "official" is not yet settled down.</p>
+<p>Having said that, we <i>have</i> provided some form of the stream-like
+interface, but with the important limitation that the stream is always bound to the
+single row, so that the row-tearing effect is not possible. In other words,
+data returned from the database is still structured into rows, but each row can be
+separately traversed like a stream. We hope that it provides a good balance between
+convenience and code safety.</p>
 
 <h3>Q: Why use indicators instead of some special value to discover that something is null?</h3>
 
