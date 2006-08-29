@@ -138,7 +138,7 @@ void test2()
 
 #endif // SOCI_PGSQL_NOPARAMS
 
-        st.execute(1);
+        st.execute(true);
         assert(out == in);
 
         // explicit procedure syntax
@@ -160,7 +160,7 @@ void test2()
 
 #endif // SOCI_PGSQL_NOPARAMS
 
-            proc.execute(1);
+            proc.execute(true);
             assert(out == in);
         }
     }
