@@ -741,7 +741,7 @@ void test4()
             Statement st = (sql.prepare <<
                 "select val from soci_test where 0 = 1", into(vals, inds));
 
-            assert(!st.execute(1));
+            assert(!st.execute(true));
         }
     }
 
@@ -914,11 +914,11 @@ void test6()
                 << "insert into soci_test(id) values(:id)", use(i));
 
             i = 5;
-            st.execute(1);
+            st.execute(true);
             i = 6;
-            st.execute(1);
+            st.execute(true);
             i = 7;
-            st.execute(1);
+            st.execute(true);
 
             std::vector<int> v(5);
             sql << "select id from soci_test order by id", into(v);
@@ -985,15 +985,15 @@ void test7()
             i1 = 1;
             i2 = 2;
             i3 = 3;
-            st.execute(1);
+            st.execute(true);
             i1 = 4;
             i2 = 5;
             i3 = 6;
-            st.execute(1);
+            st.execute(true);
             i1 = 7;
             i2 = 8;
             i3 = 9;
-            st.execute(1);
+            st.execute(true);
 
 #else
             // Older PostgreSQL does not support use elements.
@@ -1326,9 +1326,9 @@ void test10()
                 "insert into soci_test (id, name) values (:id, :name)",
                 use(id), use(name));
 
-            id = 1; name = "John"; st1.execute(1);
-            id = 2; name = "Anna"; st1.execute(1);
-            id = 3; name = "Mike"; st1.execute(1);
+            id = 1; name = "John"; st1.execute(true);
+            id = 2; name = "Anna"; st1.execute(true);
+            id = 3; name = "Mike"; st1.execute(true);
 
 #else
             // Older PostgreSQL does not support use elements
@@ -1346,7 +1346,7 @@ void test10()
             assert(count == 3);
 
 #ifndef SOCI_PGSQL_NOPARAMS
-            id = 4; name = "Stan"; st1.execute(1);
+            id = 4; name = "Stan"; st1.execute(true);
 #else
             sql << "insert into soci_test (id, name) values(4, 'Stan')";
 #endif // SOCI_PGSQL_NOPARAMS
@@ -1471,7 +1471,7 @@ void test12()
             Row r;
             Statement st = (sql.prepare <<
                 "select * from soci_test", into(r));
-            st.execute(1);
+            st.execute(true);
             assert(r.size() == 5);
 
             assert(r.getProperties(0).getDataType() == eDouble);
@@ -1518,6 +1518,29 @@ void test12()
                 caught = true;
             }
             assert(caught);
+
+            // additional test for stream-like extraction
+            {
+                double d;
+                int i;
+                std::string s;
+                std::tm t;
+                std::string c;
+
+                r >> d >> i >> s >> t >> c;
+
+                assert(std::fabs(d - 3.14) < 0.001);
+                assert(i == 123);
+                assert(s == "Johny");
+                assert(t.tm_year == 105);
+                assert(t.tm_mon == 11);
+                assert(t.tm_mday == 19);
+                assert(t.tm_hour == 22);
+                assert(t.tm_min == 14);
+                assert(t.tm_sec == 17);
+                assert(c == "a");
+            }
+
         }
     }
 
