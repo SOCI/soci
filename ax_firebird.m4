@@ -1,3 +1,5 @@
+dnl $Id: ax_firebird.m4,v 1.2 2006/08/30 14:28:55 mloskot Exp $
+dnl
 dnl @synopsis AX_LIB_FIREBIRD([MINIMUM-VERSION])
 dnl 
 dnl Test for the Firebird client library of a particular version (or newer)
@@ -27,10 +29,10 @@ dnl
 dnl @category InstalledPackages
 dnl @category Cxx
 dnl @author Mateusz Loskot <mateusz@loskot.net>
-dnl @version $Date: 2006/08/15 14:31:17 $
+dnl @version $Date: 2006/08/30 14:28:55 $
 dnl @license AllPermissive
 dnl
-dnl $Id: ax_firebird.m4,v 1.1 2006/08/15 14:31:17 mloskot Exp $
+dnl $Id: ax_firebird.m4,v 1.2 2006/08/30 14:28:55 mloskot Exp $
 dnl
 AC_DEFUN([AX_LIB_FIREBIRD],
 [

@@ -1,3 +1,5 @@
+dnl $Id: ax_cxx_toolset.m4,v 1.2 2006/08/30 14:28:55 mloskot Exp $
+dnl
 dnl @synopsis AX_CXX_TOOLSET([])
 dnl
 dnl The AC_CXX_TOOLSET_INFO macro runs simple tests to detect C++ compiler.
