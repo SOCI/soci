@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.1 2006/08/15 14:10:07 mloskot Exp $
+# $Id: Makefile.am,v 1.2 2006/08/30 14:25:04 mloskot Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
@@ -8,12 +8,12 @@ AM_CPPFLAGS = @POSTGRESQL_CFLAGS@
 AM_LDFLAGS = @POSTGRESQL_LDFLAGS@
 
 lib_LTLIBRARIES	= \
-	libsoci_postgresql.la
+	lib@SOCI_POSTGRESQL_LIBRARY_NAME@.la
 
-libsoci_postgresql_la_LDFLAGS = \
+lib@SOCI_POSTGRESQL_LIBRARY_NAME@_la_LDFLAGS = \
 	-release @LIBTOOL_RELEASE@
 
-libsoci_postgresql_la_SOURCES = \
+lib@SOCI_POSTGRESQL_LIBRARY_NAME@_la_SOURCES = \
 	blob.cpp \
 	common.cpp \
 	factory.cpp \

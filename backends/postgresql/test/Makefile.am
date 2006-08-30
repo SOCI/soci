@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.2 2006/08/28 03:07:57 stephenhutton Exp $
+# $Id: Makefile.am,v 1.3 2006/08/30 14:25:04 mloskot Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
@@ -17,8 +17,8 @@ test_postgresql_SOURCES = \
 	test-postgresql.cpp
 
 test_postgresql_LDADD = \
-	$(top_srcdir)/src/core/libsoci_core.la \
-	$(top_srcdir)/src/backends/postgresql/libsoci_postgresql.la
+	$(top_srcdir)/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
+	$(top_srcdir)/src/backends/postgresql/lib@SOCI_POSTGRESQL_LIBRARY_NAME@.la
 
 MAINTAINERCLEANLOCAL = Makefile.in
 

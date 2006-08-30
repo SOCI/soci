@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.1 2006/08/15 14:19:21 mloskot Exp $
+# $Id: Makefile.am,v 1.2 2006/08/30 14:25:04 mloskot Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
@@ -8,12 +8,12 @@ AM_CPPFLAGS = @SQLITE3_CFLAGS@
 AM_LDFLAGS = @SQLITE3_LDFLAGS@
 
 lib_LTLIBRARIES	= \
-	libsoci_sqlite3.la
+	lib@SOCI_SQLITE3_LIBRARY_NAME@.la
 
-libsoci_sqlite3_la_LDFLAGS = \
+lib@SOCI_SQLITE3_LIBRARY_NAME@_la_LDFLAGS = \
 	-release @LIBTOOL_RELEASE@
 
-libsoci_sqlite3_la_SOURCES = \
+lib@SOCI_SQLITE3_LIBRARY_NAME@_la_SOURCES = \
 	blob.cpp \
 	common.cpp \
 	factory.cpp \

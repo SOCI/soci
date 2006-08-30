@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.1 2006/08/15 14:05:53 mloskot Exp $
+# $Id: Makefile.am,v 1.2 2006/08/30 14:25:04 mloskot Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
@@ -8,12 +8,12 @@ AM_CPPFLAGS = @ORACLE_OCI_CFLAGS@
 AM_LDFLAGS = @ORACLE_OCI_LDFLAGS@
 
 lib_LTLIBRARIES	= \
-	libsoci_oracle.la
+	lib@SOCI_ORACLE_LIBRARY_NAME@.la
 
-libsoci_oracle_la_LDFLAGS = \
+lib@SOCI_ORACLE_LIBRARY_NAME@_la_LDFLAGS = \
 	-release @LIBTOOL_RELEASE@
 
-libsoci_oracle_la_SOURCES = \
+lib@SOCI_ORACLE_LIBRARY_NAME@_la_SOURCES = \
 	blob.cpp \
 	error.cpp \
 	factory.cpp \

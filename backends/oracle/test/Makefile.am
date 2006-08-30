@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.2 2006/08/28 03:07:57 stephenhutton Exp $
+# $Id: Makefile.am,v 1.3 2006/08/30 14:25:04 mloskot Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
@@ -17,8 +17,8 @@ test_oracle_SOURCES = \
 	test-oracle.cpp
 
 test_oracle_LDADD = \
-	$(top_srcdir)/src/core/libsoci_core.la \
-	$(top_srcdir)/src/backends/oracle/libsoci_oracle.la
+	$(top_srcdir)/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
+	$(top_srcdir)/src/backends/oracle/lib@SOCI_ORACLE_LIBRARY_NAME@.la
 
 MAINTAINERCLEANLOCAL = Makefile.in
 

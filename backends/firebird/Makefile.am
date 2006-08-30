@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.1 2006/08/15 13:56:24 mloskot Exp $
+# $Id: Makefile.am,v 1.2 2006/08/30 14:25:03 mloskot Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
@@ -8,12 +8,12 @@ AM_CPPFLAGS = @FIREBIRD_CFLAGS@
 AM_LDFLAGS = @FIREBIRD_LDFLAGS@
 
 lib_LTLIBRARIES	= \
-	libsoci_firebird.la
+	lib@SOCI_FIREBIRD_LIBRARY_NAME@.la
 
-libsoci_firebird_la_LDFLAGS = \
+lib@SOCI_FIREBIRD_LIBRARY_NAME@_la_LDFLAGS = \
 	-release @LIBTOOL_RELEASE@
 
-libsoci_firebird_la_SOURCES = \
+lib@SOCI_FIREBIRD_LIBRARY_NAME@_la_SOURCES = \
 	blob.cpp \
 	common.cpp \
 	error.cpp \

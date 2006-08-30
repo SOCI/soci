@@ -1,15 +1,17 @@
-# $Id: Makefile.am,v 1.1 2006/08/15 13:34:25 mloskot Exp $
+# $Id: Makefile.am,v 1.2 2006/08/30 14:25:04 mloskot Exp $
 # 
+# Copyright (C) 2006, Mateusz Loskot
+#
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
 AM_CXXFLAGS = -fPIC
 
-lib_LTLIBRARIES	= libsoci_core.la
+lib_LTLIBRARIES	= lib@SOCI_CORE_LIBRARY_NAME@.la
 
-libsoci_core_la_LDFLAGS = \
+lib@SOCI_CORE_LIBRARY_NAME@_la_LDFLAGS = \
 	-release @LIBTOOL_RELEASE@
 
-libsoci_core_la_SOURCES = \
+lib@SOCI_CORE_LIBRARY_NAME@_la_SOURCES = \
 	soci.cpp
 
 socidir = $(includedir)/soci

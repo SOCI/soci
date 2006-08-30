@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.1 2006/08/15 14:02:18 mloskot Exp $
+# $Id: Makefile.am,v 1.2 2006/08/30 14:25:04 mloskot Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
@@ -8,12 +8,12 @@ AM_CPPFLAGS = @MYSQL_CFLAGS@
 AM_LDFLAGS = @MYSQL_LDFLAGS@
 
 lib_LTLIBRARIES	= \
-	libsoci_mysql.la
+	lib@SOCI_MYSQL_LIBRARY_NAME@.la
 
-libsoci_mysql_la_LDFLAGS = \
+lib@SOCI_MYSQL_LIBRARY_NAME@_la_LDFLAGS = \
 	-release @LIBTOOL_RELEASE@
 
-libsoci_mysql_la_SOURCES = \
+lib@SOCI_MYSQL_LIBRARY_NAME@_la_SOURCES = \
 	blob.cpp \
 	common.cpp \
 	factory.cpp \

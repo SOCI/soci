@@ -1,17 +1,19 @@
-# $Id: Makefile.am,v 1.1 2006/08/15 13:51:00 mloskot Exp $
+# $Id: Makefile.am,v 1.2 2006/08/30 14:25:03 mloskot Exp $
 # 
+# Copyright (C) 2006, Mateusz Loskot
+#
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
 INCLUDES = -I$(top_srcdir)/src/core
 AM_CXXFLAGS = -fPIC
 
 noinst_LTLIBRARIES	= \
-	libsoci_empty.la
+	lib@SOCI_EMPTY_LIBRARY_NAME@.la
 
-libsoci_empty_la_LDFLAGS = \
+lib@SOCI_EMPTY_LIBRARY_NAME@_la_LDFLAGS = \
 	-release @LIBTOOL_RELEASE@
 
-libsoci_empty_la_SOURCES = \
+lib@SOCI_EMPTY_LIBRARY_NAME@_la_SOURCES = \
 	blob.cpp \
 	factory.cpp \
 	row-id.cpp \

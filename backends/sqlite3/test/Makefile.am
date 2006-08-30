@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.1 2006/08/15 14:19:21 mloskot Exp $
+# $Id: Makefile.am,v 1.2 2006/08/30 14:25:04 mloskot Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
@@ -22,8 +22,8 @@ test_sqlite3_SOURCES = \
 	test-sqlite3.cpp
 
 test_sqlite3_LDADD = \
-	$(top_srcdir)/src/core/libsoci_core.la \
-	$(top_srcdir)/src/backends/sqlite3/libsoci_sqlite3.la
+	$(top_srcdir)/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
+	$(top_srcdir)/src/backends/sqlite3/lib@SOCI_SQLITE3_LIBRARY_NAME@.la
 
 check-local:
 	$(SHELL) -x $(TEST_CASE) $(TEST_DB)

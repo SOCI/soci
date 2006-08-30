@@ -1,5 +1,7 @@
-# $Id: Makefile.am,v 1.1 2006/08/15 13:51:00 mloskot Exp $
+# $Id: Makefile.am,v 1.2 2006/08/30 14:25:03 mloskot Exp $
 # 
+# Copyright (C) 2006, Mateusz Loskot
+#
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
 INCLUDES = \
@@ -13,8 +15,8 @@ test_empty_SOURCES = \
 	test-empty.cpp
 
 test_empty_LDADD = \
-	$(top_srcdir)/src/core/libsoci_core.la \
-	$(top_srcdir)/src/backends/empty/libsoci_empty.la
+	$(top_srcdir)/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
+	$(top_srcdir)/src/backends/empty/lib@SOCI_EMPTY_LIBRARY_NAME@.la
 
 MAINTAINERCLEANLOCAL = Makefile.in
 
