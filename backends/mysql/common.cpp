@@ -8,7 +8,7 @@
 #include "common.h"
 #include "soci-backend.h"
 #include <cstdlib>
-
+#include <ciso646>
 
 namespace // anonymous
 {

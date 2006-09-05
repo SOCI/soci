@@ -8,6 +8,7 @@
 
 #include "soci.h"
 #include "soci-mysql.h"
+#include <ciso646>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)

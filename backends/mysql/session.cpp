@@ -8,7 +8,7 @@
 
 #include "soci.h"
 #include "soci-mysql.h"
-
+#include <ciso646>
 #include <cerrno>
 
 #ifdef _MSC_VER
