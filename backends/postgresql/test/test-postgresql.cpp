@@ -79,9 +79,11 @@ void test1()
     std::cout << "test 1 passed" << std::endl;
 }
 
-// procedure call test
-struct FunctionCreator : FunctionCreatorBase 
+// function call test
+class FunctionCreator : FunctionCreatorBase 
 {
+public:
+
     FunctionCreator(Session& session)
     : FunctionCreatorBase(session)
     {
@@ -106,7 +108,14 @@ struct FunctionCreator : FunctionCreatorBase
             "begin "
             "  return $1; "
             "end \' language plpgsql";
-#endif        
+#endif 
+    }
+
+protected:
+
+    std::string dropStatement()
+    {
+        return "drop function soci_test(varchar)";
     }
 };
 
@@ -260,20 +269,43 @@ struct TableCreator3 : public TableCreatorBase
     }
 };
 
-// SQL Abstraction functions required for common tests
-struct SqlTranslator
+//
+// Support for SOCI Common Tests
+//
+
+class TestContext : public TestContextBase
 {
-    static std::string fromDual(std::string const &sql)
+public:
+    TestContext(BackEndFactory const &backEnd, 
+                std::string const &connectString)
+        : TestContextBase(backEnd, connectString) {}
+
+    TableCreatorBase* tableCreator1(Session& s) const
+    {
+        return new TableCreator1(s);
+    }
+
+    TableCreatorBase* tableCreator2(Session& s) const
+    {
+        return new TableCreator2(s);
+    }
+
+    TableCreatorBase* tableCreator3(Session& s) const
+    {
+        return new TableCreator3(s);
+    }
+
+    std::string fromDual (std::string const &sql) const
     {
         return sql;
     }
 
-    static std::string toDate(std::string const &dateString)
+    std::string toDate(std::string const &dateString) const
     {
         return "date(\'" + dateString + "\')";
     }
 
-    static std::string toDateTime(std::string const &dateString)
+    std::string toDateTime(std::string const &dateString) const
     {
         return "timestamptz(\'" + dateString + "\')";
     }
@@ -297,10 +329,8 @@ int main(int argc, char** argv)
 
     try
     {
-        CommonTests<TableCreator1, 
-                    TableCreator2, 
-                    TableCreator3,
-                    SqlTranslator> tests(backEnd, connectString);
+        TestContext tc(backEnd, connectString);
+        CommonTests tests(tc);
         tests.run();
 
         std::cout << "\nSOCI Postgres Tests:\n\n";

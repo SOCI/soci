@@ -928,24 +928,6 @@ void test11()
 // Support for SOCI Common Tests
 //
 
-struct SqlTranslator
-{
-    static std::string fromDual(std::string const &sql)
-    {
-        return sql + " from dual";
-    }
-
-    static std::string toDate(std::string const &dateString)
-    {
-        return "to_date('" + dateString + "', 'YYYY-MM-DD')";
-    }
-
-    static std::string toDateTime(std::string const &dateString)
-    {
-        return "to_date('" + dateString + "', 'YYYY-MM-DD HH24:MI:SS')";
-    }
-};
-
 struct TableCreator1 : public TableCreatorBase
 {
     TableCreator1(Session& session)
@@ -976,6 +958,44 @@ struct TableCreator3 : public TableCreatorBase
             "\"phone\" varchar2(15))";
     }
 };
+
+class TestContext :public TestContextBase
+{
+public:
+    TestContext(BackEndFactory const &backEnd,
+                std::string const &connectString)
+        : TestContextBase(backEnd, connectString) {}
+    
+   TableCreatorBase* tableCreator1(Session& s) const
+    {
+        return new TableCreator1(s);
+    }
+
+    TableCreatorBase* tableCreator2(Session& s) const
+    {
+        return new TableCreator2(s);
+    }
+
+    TableCreatorBase* tableCreator3(Session& s) const
+    {
+        return new TableCreator3(s);
+    }
+
+    std::string fromDual(std::string const &sql) const
+    {
+        return sql + " from dual";
+    }
+
+    std::string toDate(std::string const &dateString) const
+    {
+        return "to_date('" + dateString + "', 'YYYY-MM-DD')";
+    }
+
+    std::string toDateTime(std::string const &dateString) const
+    {
+        return "to_date('" + dateString + "', 'YYYY-MM-DD HH24:MI:SS')";
+    }
+};
     
 int main(int argc, char** argv)
 {
@@ -994,10 +1014,8 @@ int main(int argc, char** argv)
 
     try
     {
-        CommonTests<TableCreator1, 
-                    TableCreator2, 
-                    TableCreator3,
-                    SqlTranslator> tests(backEnd, connectString);
+        TestContext tc(backEnd, connectString);
+        CommonTests tests(tc);
         tests.run();
 
         std::cout << "\nSOCI Oracle tests:\n\n"; 
