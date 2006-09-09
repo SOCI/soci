@@ -208,22 +208,45 @@ struct TableCreator3 : public TableCreatorBase
     }
 };
 
-// SQL Abstraction functions required for common tests
-struct SqlTranslator
+//
+// Support for SOCI Common Tests
+//
+
+class TestContext : public TestContextBase
 {
-    static std::string fromDual(std::string const &sql)
+public:
+    TestContext(BackEndFactory const &backEnd, 
+                std::string const &connectString)
+        : TestContextBase(backEnd, connectString) {}
+
+    TableCreatorBase* tableCreator1(Session& s) const
+    {
+        return new TableCreator1(s);
+    }
+
+    TableCreatorBase* tableCreator2(Session& s) const
+    {
+        return new TableCreator2(s);
+    }
+
+    TableCreatorBase* tableCreator3(Session& s) const
+    {
+        return new TableCreator3(s);
+    }
+
+    std::string fromDual (std::string const &sql) const
     {
         return sql;
     }
 
-    static std::string toDate(std::string const &dateString)
+    std::string toDate(std::string const &dateString) const
     {
         return "date(\'" + dateString + "\')";
     }
 
-    static std::string toDateTime(std::string const &dateString)
+    std::string toDateTime(std::string const &dateString) const
     {
-        return "datetime('" + dateString + "\')";
+        return "datetime(\'" + dateString + "\')";
     }
 };
 
@@ -244,10 +267,8 @@ int main(int argc, char** argv)
 
     try
     {
-        CommonTests<TableCreator1, 
-                    TableCreator2, 
-                    TableCreator3,
-                    SqlTranslator> tests(backEnd, connectString);
+        TestContext tc(backEnd, connectString);
+        CommonTests tests(tc);
         tests.run();
         
         std::cout << "\nSOCI sqlite3 Tests:\n\n";
