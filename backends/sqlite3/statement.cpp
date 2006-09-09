@@ -21,7 +21,7 @@ using namespace SOCI::details;
 Sqlite3StatementBackEnd::Sqlite3StatementBackEnd(
     Sqlite3SessionBackEnd &session)
     : session_(session), stmt_(0), dataCache_(), useData_(0), 
-      databaseReady_(false)
+      databaseReady_(false), boundByName_(false), boundByPos_(false)
 {
 }
 

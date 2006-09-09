@@ -23,15 +23,29 @@ void Sqlite3VectorUseTypeBackEnd::bindByPos(int & position,
                                             void * data, 
                                             eExchangeType type)
 {
+    if (statement_.boundByName_)
+    {
+        throw SOCIError(
+         "Binding for use elements must be either by position or by name.");
+    }
+
     data_ = data;
     type_ = type;
     position_ = position++;
+
+    statement_.boundByPos_ = true;
 }
 
 void Sqlite3VectorUseTypeBackEnd::bindByName(std::string const & name, 
                                              void * data,
                                              eExchangeType type)
 {
+    if (statement_.boundByPos_)
+    {
+        throw SOCIError(
+         "Binding for use elements must be either by position or by name.");
+    }
+
     data_ = data;
     type_ = type;
     name_ = ":" + name;
@@ -45,6 +59,7 @@ void Sqlite3VectorUseTypeBackEnd::bindByName(std::string const & name,
         ss << "Cannot bind (by name) to " << name_;
         throw SOCIError(ss.str());
     }
+    statement_.boundByName_ = true;
 }
 
 void Sqlite3VectorUseTypeBackEnd::preUse(eIndicator const * ind)

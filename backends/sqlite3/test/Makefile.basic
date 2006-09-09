@@ -9,7 +9,7 @@ SQLITE3LIBS = -lsqlite3
 
 COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long #-DSQLITE_ENABLE_COLUMN_METADATA
-INCLUDEDIRS = -I.. -I../../../core ${SQLITE3INCLUDEDIR}
+INCLUDEDIRS = -I.. -I../../../core -I../../../core/test ${SQLITE3INCLUDEDIR}
 LIBDIRS = -L.. -L../../../core ${SQLITE3LIBDIR}
 LIBS = -lsoci-core -lsoci-sqlite3 ${SQLITE3LIBS}
 

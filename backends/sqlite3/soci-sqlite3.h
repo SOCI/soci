@@ -151,6 +151,8 @@ struct Sqlite3StatementBackEnd : details::StatementBackEnd
     Sqlite3RecordSet dataCache_;
     Sqlite3RecordSet useData_;
     bool databaseReady_;
+    bool boundByName_;
+    bool boundByPos_;
 
 private:
     execFetchResult loadRS(int totalRows);
