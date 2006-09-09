@@ -20,7 +20,7 @@ void ODBCVectorIntoTypeBackEnd::prepareIndicators(std::size_t size)
 {
     if (size == 0)
     {
-         throw SOCIError("Into Vectors of size 0 are not allowed.");
+         throw SOCIError("Vectors of size 0 are not allowed.");
     }
 
     indHolderVec_.resize(size);
@@ -204,8 +204,8 @@ void ODBCVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
 
                 TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
                 t.tm_isdst = -1;
-                t.tm_year = ts->year;
-                t.tm_mon = ts->month;
+                t.tm_year = ts->year - 1900;
+                t.tm_mon = ts->month - 1;
                 t.tm_mday = ts->day;
                 t.tm_hour = ts->hour;
                 t.tm_min = ts->minute;

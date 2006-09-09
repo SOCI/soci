@@ -83,6 +83,8 @@ struct ODBCStandardUseTypeBackEnd : details::StandardUseTypeBackEnd
 
     void prepareForBind(void *&data, SQLUINTEGER &size, 
                         SQLSMALLINT &sqlType, SQLSMALLINT &cType);
+    void bindHelper(int &position,
+        void *data, details::eExchangeType type);
 
     virtual void bindByPos(int &position,
         void *data, details::eExchangeType type);
@@ -113,6 +115,8 @@ struct ODBCVectorUseTypeBackEnd : details::VectorUseTypeBackEnd
 
     // common part for bindByPos and bindByName
     void prepareForBind(void *&data, SQLUINTEGER &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType);
+    void bindHelper(int &position,
+        void *data, details::eExchangeType type);
 
     virtual void bindByPos(int &position,
         void *data, details::eExchangeType type);
@@ -169,6 +173,8 @@ struct ODBCStatementBackEnd : details::StatementBackEnd
     SQLHSTMT hstmt_;
 	SQLUINTEGER	numRowsFetched_;
     bool hasVectorUseElements_;
+    bool boundByName_;
+    bool boundByPos_;
 
     std::string query_;
     std::vector<std::string> names_; // list of names for named binds

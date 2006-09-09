@@ -102,8 +102,7 @@ void ODBCStandardUseTypeBackEnd::prepareForBind(
     }
 }
 
-void ODBCStandardUseTypeBackEnd::bindByPos(
-    int &position, void *data, eExchangeType type)
+void ODBCStandardUseTypeBackEnd::bindHelper(int &position, void *data, eExchangeType type)
 {
     data_ = data; // for future reference
     type_ = type; // for future reference
@@ -120,13 +119,33 @@ void ODBCStandardUseTypeBackEnd::bindByPos(
     if (is_odbc_error(rc))
     {
         throw new ODBCSOCIError(SQL_HANDLE_STMT, statement_.hstmt_, 
-                                "Binding by Position");
+                                "Binding");
     }
+}
+
+void ODBCStandardUseTypeBackEnd::bindByPos(
+    int &position, void *data, eExchangeType type)
+{
+    if (statement_.boundByName_)
+    {
+        throw SOCIError(
+         "Binding for use elements must be either by position or by name.");
+    }
+
+    bindHelper(position, data, type);
+
+    statement_.boundByPos_ = true;
 }
 
 void ODBCStandardUseTypeBackEnd::bindByName(
     std::string const &name, void *data, eExchangeType type)
 {
+    if (statement_.boundByPos_)
+    {
+        throw SOCIError(
+         "Binding for use elements must be either by position or by name.");
+    }
+
     int position = -1;
     int count = 1;
     
@@ -142,13 +161,15 @@ void ODBCStandardUseTypeBackEnd::bindByName(
     }
 
     if (position != -1)
-        bindByPos(position, data, type);
+        bindHelper(position, data, type);
     else
     {
         std::ostringstream ss;
         ss << "Unable to find name '" << name << "' to bind to";
         throw SOCIError(ss.str().c_str());
     }
+
+    statement_.boundByName_ = true;
 }
 
 void ODBCStandardUseTypeBackEnd::preUse(eIndicator const *ind)
@@ -176,8 +197,8 @@ void ODBCStandardUseTypeBackEnd::preUse(eIndicator const *ind)
         std::tm *t = static_cast<std::tm *>(data_);
         TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
 
-        ts->year = t->tm_year;
-        ts->month = t->tm_mon;
+        ts->year = t->tm_year + 1900;
+        ts->month = t->tm_mon + 1;
         ts->day = t->tm_mday;
         ts->hour = t->tm_hour;
         ts->minute = t->tm_min;
@@ -213,8 +234,8 @@ void ODBCStandardUseTypeBackEnd::postUse(bool gotData, eIndicator *ind)
             std::tm *t = static_cast<std::tm *>(data_);
             TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
             t->tm_isdst = -1;
-            t->tm_year = ts->year;
-            t->tm_mon = ts->month;
+            t->tm_year = ts->year - 1900;
+            t->tm_mon = ts->month - 1;
             t->tm_mday = ts->day;
             t->tm_hour = ts->hour;
             t->tm_min = ts->minute;

@@ -53,6 +53,8 @@ ODBCSessionBackEnd::ODBCSessionBackEnd(std::string const & connectString)
         throw ODBCSOCIError(SQL_HANDLE_DBC, hdbc_, 
                          "Error Connecting to database");
     }
+
+    reset_transaction();
 }
 
 ODBCSessionBackEnd::~ODBCSessionBackEnd()
@@ -66,7 +68,7 @@ void ODBCSessionBackEnd::begin()
                     (SQLPOINTER)SQL_AUTOCOMMIT_OFF, 0 );
     if (is_odbc_error(rc))
     {
-        throw ODBCSOCIError(SQL_HANDLE_ENV, henv_, 
+        throw ODBCSOCIError(SQL_HANDLE_DBC, hdbc_,
                          "Begin Transaction");
     }    
 }
@@ -76,9 +78,10 @@ void ODBCSessionBackEnd::commit()
     SQLRETURN rc = SQLEndTran(SQL_HANDLE_DBC, hdbc_, SQL_COMMIT);
     if (is_odbc_error(rc))
     {
-        throw ODBCSOCIError(SQL_HANDLE_ENV, henv_, 
+        throw ODBCSOCIError(SQL_HANDLE_DBC, hdbc_,
                          "Commiting");
-    }    
+    }
+    reset_transaction();
 }
 
 void ODBCSessionBackEnd::rollback()
@@ -86,9 +89,10 @@ void ODBCSessionBackEnd::rollback()
     SQLRETURN rc = SQLEndTran(SQL_HANDLE_DBC, hdbc_, SQL_ROLLBACK);
     if (is_odbc_error(rc))
     {
-        throw ODBCSOCIError(SQL_HANDLE_ENV, henv_, 
+        throw ODBCSOCIError(SQL_HANDLE_DBC, hdbc_,
                          "Rolling back");
     }    
+    reset_transaction();
 }
 
 void ODBCSessionBackEnd::reset_transaction()
@@ -97,7 +101,7 @@ void ODBCSessionBackEnd::reset_transaction()
                     (SQLPOINTER)SQL_AUTOCOMMIT_ON, 0 );
     if (is_odbc_error(rc))
     {
-        throw ODBCSOCIError(SQL_HANDLE_ENV, henv_, 
+        throw ODBCSOCIError(SQL_HANDLE_DBC, hdbc_,
                             "Set Auto Commit");
     }    
 }
@@ -105,9 +109,26 @@ void ODBCSessionBackEnd::reset_transaction()
 
 void ODBCSessionBackEnd::cleanUp()
 {
-    SQLDisconnect(hdbc_);
-    SQLFreeHandle(SQL_HANDLE_DBC, hdbc_);
-    SQLFreeHandle(SQL_HANDLE_ENV, henv_);
+    SQLRETURN rc = SQLDisconnect(hdbc_);
+    if (is_odbc_error(rc))
+    {
+        throw ODBCSOCIError(SQL_HANDLE_DBC, hdbc_,
+                            "SQLDisconnect");
+    }
+
+    rc = SQLFreeHandle(SQL_HANDLE_DBC, hdbc_);
+    if (is_odbc_error(rc))
+    {
+        throw ODBCSOCIError(SQL_HANDLE_DBC, hdbc_,
+                            "SQLFreeHandle DBC");
+    }
+
+    rc = SQLFreeHandle(SQL_HANDLE_ENV, henv_);
+    if (is_odbc_error(rc))
+    {
+        throw ODBCSOCIError(SQL_HANDLE_ENV, henv_, 
+                            "SQLFreeHandle ENV");
+    }
 }
 
 ODBCStatementBackEnd * ODBCSessionBackEnd::makeStatementBackEnd()

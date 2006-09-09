@@ -22,7 +22,7 @@ using namespace SOCI::details;
 
 ODBCStatementBackEnd::ODBCStatementBackEnd(ODBCSessionBackEnd &session)
     : session_(session), hstmt_(0), numRowsFetched_(0)
-    , hasVectorUseElements_(false)
+    , hasVectorUseElements_(false), boundByName_(false), boundByPos_(false)
 {
 }
 
@@ -149,6 +149,10 @@ ODBCStatementBackEnd::execute(int number)
         SQLSetStmtAttr(hstmt_, SQL_ATTR_PARAMS_PROCESSED_PTR, &rows_processed, 0);
     }
 
+    // if we are called twice for the same statement we need to close the open
+    // cursor or an "invalid cursor state" error will occur on execute
+    SQLCloseCursor(hstmt_);
+
     SQLRETURN rc = SQLExecute(hstmt_);
     if (is_odbc_error(rc))
     {
@@ -231,6 +235,9 @@ void ODBCStatementBackEnd::describeColumn(int colNum, eDataType & type,
     
     switch (dataType)
     {
+    case SQL_C_TYPE_TIMESTAMP:
+        type = eDate;
+        break;
     case SQL_DECIMAL:
     case SQL_REAL:
     case SQL_FLOAT:
@@ -241,8 +248,7 @@ void ODBCStatementBackEnd::describeColumn(int colNum, eDataType & type,
     case SQL_INTEGER:
     case SQL_BIGINT:
         type = eInteger;
-        break;
-        
+        break;       
     case SQL_CHAR:
     case SQL_VARCHAR:
     default:

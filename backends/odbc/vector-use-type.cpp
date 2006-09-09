@@ -28,7 +28,7 @@ void ODBCVectorUseTypeBackEnd::prepareIndicators(std::size_t size)
 {
     if (size == 0)
     {
-         throw SOCIError("Use Vectors of size 0 are not allowed.");
+         throw SOCIError("Vectors of size 0 are not allowed.");
     }
 
     indHolderVec_.resize(size);
@@ -170,8 +170,7 @@ void ODBCVectorUseTypeBackEnd::prepareForBind(void *&data, SQLUINTEGER &size, SQ
     colSize_ = size;
 }
 
-void ODBCVectorUseTypeBackEnd::bindByPos(int &position,
-        void *data, eExchangeType type)
+void ODBCVectorUseTypeBackEnd::bindHelper(int &position, void *data, eExchangeType type)
 {
     data_ = data; // for future reference
     type_ = type; // for future reference
@@ -192,13 +191,33 @@ void ODBCVectorUseTypeBackEnd::bindByPos(int &position,
     if (is_odbc_error(rc))
     {
         throw new ODBCSOCIError(SQL_HANDLE_STMT, statement_.hstmt_, 
-                                "Binding by Position");
+                                "Binding");
     }
+}
+
+void ODBCVectorUseTypeBackEnd::bindByPos(int &position,
+        void *data, eExchangeType type)
+{
+    if (statement_.boundByName_)
+    {
+        throw SOCIError(
+         "Binding for use elements must be either by position or by name.");
+    }
+
+    bindHelper(position, data, type);
+
+    statement_.boundByPos_ = true;
 }
 
 void ODBCVectorUseTypeBackEnd::bindByName(
     std::string const &name, void *data, eExchangeType type)
 {
+    if (statement_.boundByPos_)
+    {
+        throw SOCIError(
+         "Binding for use elements must be either by position or by name.");
+    }
+
     int position = -1;
     int count = 1;
     
@@ -214,13 +233,15 @@ void ODBCVectorUseTypeBackEnd::bindByName(
     }
 
     if (position != -1)
-        bindByPos(position, data, type);
+        bindHelper(position, data, type);
     else
     {
         std::ostringstream ss;
         ss << "Unable to find name '" << name << "' to bind to";
         throw SOCIError(ss.str().c_str());
     }
+
+    statement_.boundByName_ = true;
 }
 
 void ODBCVectorUseTypeBackEnd::preUse(eIndicator const *ind)
@@ -240,8 +261,8 @@ void ODBCVectorUseTypeBackEnd::preUse(eIndicator const *ind)
             std::tm t = v[i];
             TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
 
-            ts->year = t.tm_year;
-            ts->month = t.tm_mon;
+            ts->year = t.tm_year + 1900;
+            ts->month = t.tm_mon + 1;
             ts->day = t.tm_mday;
             ts->hour = t.tm_hour;
             ts->minute = t.tm_min;

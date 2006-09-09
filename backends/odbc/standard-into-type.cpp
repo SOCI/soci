@@ -147,8 +147,8 @@ void ODBCStandardIntoTypeBackEnd::postFetch(
 
             TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
             t->tm_isdst = -1;
-            t->tm_year = ts->year;
-            t->tm_mon = ts->month;
+            t->tm_year = ts->year - 1900;
+            t->tm_mon = ts->month - 1;
             t->tm_mday = ts->day;
             t->tm_hour = ts->hour;
             t->tm_min = ts->minute;
