@@ -118,13 +118,11 @@ public:
         return connectString_;
     }
 
+    virtual std::string toDateTime(std::string const &dateTime) const = 0;
+
     virtual TableCreatorBase* tableCreator1(Session&) const = 0;
     virtual TableCreatorBase* tableCreator2(Session&) const = 0;
     virtual TableCreatorBase* tableCreator3(Session&) const = 0;
-
-    virtual std::string fromDual(std::string const &sql) const = 0;
-    virtual std::string toDate(std::string const &dateString) const = 0;
-    virtual std::string toDateTime(std::string const &dateString) const = 0;
 
     virtual ~TestContextBase() {} // quiet the compiler
 
@@ -204,99 +202,200 @@ void test2()
     {
         Session sql(backEndFactory_, connectString_);
 
-        char c('a');
-        sql << tc_.fromDual("select \'c\'"), into(c);
-        assert(c == 'c');
+        {
+            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
 
-        char buf[4];
-        sql << tc_.fromDual("select \'ABC\'"), into(buf);
-        assert(buf[0] == 'A');
-        assert(buf[1] == 'B');
-        assert(buf[2] == 'C');
-        assert(buf[3] == '\0');
-        sql << tc_.fromDual("select \'Hello\'"), into(buf);
-        assert(buf[0] == 'H');
-        assert(buf[1] == 'e');
-        assert(buf[2] == 'l');
-        assert(buf[3] == '\0');
+            char c('a');
+            sql << "insert into soci_test(c) values(:c)", use(c);
+            sql << "select c from soci_test", into(c);
+            assert(c == 'a');
+        }
 
-        std::string str;
-        sql << tc_.fromDual("select \'Hello, SOCI!\'"), into(str);
-        assert(str == "Hello, SOCI!");
+        {
+            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
 
-        short sh(0);
-        sql << tc_.fromDual("select 3"), into(sh);
-        assert(sh == 3);
+            std::string abc("ABC");
+            sql << "insert into soci_test(str) values(:s)", use(abc);
 
-        int i(0);
-        sql << tc_.fromDual("select 5"), into(i);
-        assert(i == 5);
+            char buf[4];
+            sql << "select str from soci_test", into(buf);
+            assert(buf[0] == 'A');
+            assert(buf[1] == 'B');
+            assert(buf[2] == 'C');
+            assert(buf[3] == '\0');
+        }
 
-        unsigned long ul(0);
-        sql << tc_.fromDual("select 7"), into(ul);
-        assert(ul == 7);
+        {
+            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
 
-        double d(0.0);
-        sql << tc_.fromDual("select 3.14159265"), into(d);
-        assert(std::fabs(d - 3.14159265) < 0.001);
+            std::string hello("Hello");
+            sql << "insert into soci_test(str) values(:s)", use(hello);
+
+            char buf[4];
+            sql << "select str from soci_test", into(buf);
+            assert(buf[0] == 'H');
+            assert(buf[1] == 'e');
+            assert(buf[2] == 'l');
+            assert(buf[3] == '\0');
+        }
+
+        {
+            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
         
-        std::tm t;
-        sql << tc_.fromDual("select " + tc_.toDate("2005-11-15")), into(t);
-        assert(t.tm_year == 105);
-        assert(t.tm_mon  == 10);
-        assert(t.tm_mday == 15);
-        assert(t.tm_hour == 0);
-        assert(t.tm_min  == 0);
-        assert(t.tm_sec  == 0);
-        sql << tc_.fromDual("select " + 
-                            tc_.toDateTime("2005-11-15 22:14:17")), into(t);
-        assert(t.tm_year == 105);
-        assert(t.tm_mon  == 10);
-        assert(t.tm_mday == 15);
-        assert(t.tm_hour == 22);
-        assert(t.tm_min  == 14);
-        assert(t.tm_sec  == 17);
+            std::string helloSOCI("Hello, SOCI!");
+            sql << "insert into soci_test(str) values(:s)", use(helloSOCI);
+            std::string str;
+            sql << "select str from soci_test", into(str);
+            assert(str == "Hello, SOCI!");
+        }
+
+        {
+            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            
+            short three(3);
+            sql << "insert into soci_test(sh) values(:id)", use(three);
+            short sh(0);
+            sql << "select sh from soci_test", into(sh);
+            assert(sh == 3);
+        }
+
+        {
+            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+         
+            int five(5);
+            sql << "insert into soci_test(id) values(:id)", use(five);
+            int i(0);
+            sql << "select id from soci_test", into(i);
+            assert(i == 5);
+        }
+
+        {
+            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            unsigned long seven(7);
+            sql << "insert into soci_test(ul) values(:ul)", use(seven);
+            unsigned long ul(0);
+            sql << "select ul from soci_test", into(ul);
+            assert(ul == 7);
+        }
+
+        {
+            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+        
+            double pi(3.14159265);
+            sql << "insert into soci_test(d) values(:d)", use(pi);
+            double d(0.0);
+            sql << "select d from soci_test", into(d);
+            assert(std::fabs(d - 3.14159265) < 0.001);
+        }
+        
+        {
+            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+
+            std::tm nov15;
+            nov15.tm_year = 105;
+            nov15.tm_mon = 10;
+            nov15.tm_mday = 15;
+            nov15.tm_hour = 0;
+            nov15.tm_min = 0;
+            nov15.tm_sec = 0;
+        
+            sql << "insert into soci_test(tm) values(:tm)", use(nov15);
+
+            std::tm t;
+            sql << "select tm from soci_test", into(t);
+            assert(t.tm_year == 105);
+            assert(t.tm_mon  == 10);
+            assert(t.tm_mday == 15);
+            assert(t.tm_hour == 0);
+            assert(t.tm_min  == 0);
+            assert(t.tm_sec  == 0);
+        }
+        
+        {
+            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+
+            std::tm nov15;
+            nov15.tm_year = 105;
+            nov15.tm_mon = 10;
+            nov15.tm_mday = 15;
+            nov15.tm_hour = 22;
+            nov15.tm_min = 14;
+            nov15.tm_sec = 17;
+
+            sql << "insert into soci_test(tm) values(:tm)", use(nov15);
+            
+            std::tm t;
+            sql << "select tm from soci_test", into(t);
+            assert(t.tm_year == 105);
+            assert(t.tm_mon  == 10);
+            assert(t.tm_mday == 15);
+            assert(t.tm_hour == 22);
+            assert(t.tm_min  == 14);
+            assert(t.tm_sec  == 17);
+        }
 
         // test indicators
-        eIndicator ind;
-        sql << tc_.fromDual("select 2"), into(i, ind);
-        assert(ind == eOK);
-        sql << tc_.fromDual("select NULL"), into(i, ind);
-        assert(ind == eNull);
-        sql << tc_.fromDual("select \'Hello\'"), into(buf, ind);
-        assert(ind == eTruncated);
-
-        // additional test for NULL with std::tm
-        sql << tc_.fromDual("select NULL"), into(t, ind);
-        assert(ind == eNull);
-
-        try
         {
-            // expect error
-            sql << tc_.fromDual("select NULL"), into(i);
-            assert(false);
-        }
-        catch (SOCIError const &e)
-        {
-            std::string error = e.what();
-            assert(error ==
-                "Null value fetched and no indicator defined.");
+            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+
+            int id(1);
+            std::string str("Hello");
+            sql << "insert into soci_test(id, str) values(:id, :str)",
+                use(id), use(str); 
+
+            int i;
+            eIndicator ind;
+            sql << "select id from soci_test", into(i, ind);
+            assert(ind == eOK);
+
+            char buf[4];
+            sql << "select str from soci_test", into(buf, ind);
+            assert(ind == eTruncated);
         }
 
-        sql << tc_.fromDual("select 5") <<  " where 0 = 1", into(i, ind);
-        assert(ind == eNoData);
+        // more indicator tests, NULL values
+        {
+            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
 
-        try
-        {
-            // expect error
-            sql << tc_.fromDual("select 5") << " where 0 = 1", into(i);
-            assert(false);
-        }
-        catch (SOCIError const &e)
-        {
-            std::string error = e.what();
-            assert(error ==
+            sql << "insert into soci_test(id,tm) values(NULL,NULL)";
+            int i;
+            eIndicator ind;
+            sql << "select id from soci_test", into(i, ind);
+            assert(ind == eNull);
+
+            // additional test for NULL with std::tm
+            std::tm t;
+            sql << "select tm from soci_test", into(t, ind);
+            assert(ind == eNull);
+
+            try
+            {
+                // expect error
+                sql << "select id from soci_test", into(i);
+                assert(false);
+            }
+            catch (SOCIError const &e)
+            {
+                std::string error = e.what();
+                assert(error ==
+                    "Null value fetched and no indicator defined.");
+            }
+
+            sql << "select id from soci_test where id = 1000", into(i, ind);
+            assert(ind == eNoData);
+
+            try
+            {
+                // expect error
+                sql << "select id from soci_test where id = 1000", into(i);
+                assert(false);
+            }
+            catch (SOCIError const &e)
+            {
+                std::string error = e.what();
+                assert(error ==
                 "No data fetched and no indicator defined.");
+            }
         }
     }
 
@@ -1503,8 +1602,9 @@ void test12()
         sql << "select * from soci_test", into(r);
         assert(r.indicator(0) ==  eNoData);
 
-        sql << "insert into soci_test"
-               " values(3.14, 123, \'Johny\',"
+        sql << "insert into soci_test(\"num_float\", \"num_int\", "
+            "\"name\", \"sometime\", \"chr\")"
+            " values(3.14, 123, \'Johny\',"
             << tc_.toDateTime("2005-12-19 22:14:17")
             << ", 'a')";
 

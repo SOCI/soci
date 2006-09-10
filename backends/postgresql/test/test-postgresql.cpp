@@ -295,20 +295,11 @@ public:
         return new TableCreator3(s);
     }
 
-    std::string fromDual (std::string const &sql) const
-    {
-        return sql;
-    }
-
-    std::string toDate(std::string const &dateString) const
-    {
-        return "date(\'" + dateString + "\')";
-    }
-
     std::string toDateTime(std::string const &dateString) const
     {
         return "timestamptz(\'" + dateString + "\')";
     }
+
 };
 
     

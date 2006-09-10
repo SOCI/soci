@@ -981,16 +981,6 @@ public:
         return new TableCreator3(s);
     }
 
-    std::string fromDual(std::string const &sql) const
-    {
-        return sql + " from dual";
-    }
-
-    std::string toDate(std::string const &dateString) const
-    {
-        return "to_date('" + dateString + "', 'YYYY-MM-DD')";
-    }
-
     std::string toDateTime(std::string const &dateString) const
     {
         return "to_date('" + dateString + "', 'YYYY-MM-DD HH24:MI:SS')";
