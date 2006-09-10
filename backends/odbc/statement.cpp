@@ -235,12 +235,16 @@ void ODBCStatementBackEnd::describeColumn(int colNum, eDataType & type,
     
     switch (dataType)
     {
-    case SQL_C_TYPE_TIMESTAMP:
+    case SQL_TYPE_DATE:
+    case SQL_TYPE_TIME:
+    case SQL_TYPE_TIMESTAMP:
         type = eDate;
         break;
+    case SQL_DOUBLE:
     case SQL_DECIMAL:
     case SQL_REAL:
     case SQL_FLOAT:
+    case SQL_NUMERIC:
         type = eDouble;
         break;
     case SQL_TINYINT:
