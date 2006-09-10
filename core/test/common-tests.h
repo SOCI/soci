@@ -1307,7 +1307,7 @@ void test8()
             assert(std::fabs(v2[0] + 0.0001) < 0.00001);
             assert(std::fabs(v2[1]) < 0.0001);
             assert(std::fabs(v2[2] - 0.0001) < 0.00001);
-            assert(std::fabs(v2[3] - 3.1415926 < 0.0001));
+            assert(std::fabs(double(v2[3] - 3.1415926 < 0.0001)));
         }
 
         // test for std::tm
