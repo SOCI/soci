@@ -95,16 +95,16 @@ void test2()
 
         std::tm t;
         sql << "select #2005-12-15#", into(t);
-        assert(t.tm_year == 2005);
-        assert(t.tm_mon  == 12);
+        assert(t.tm_year == 105);
+        assert(t.tm_mon  == 11);
         assert(t.tm_mday == 15);
         assert(t.tm_hour == 0);
         assert(t.tm_min  == 0);
         assert(t.tm_sec  == 0);
 
         sql << "select #2005-11-15 22:14:17#", into(t);
-        assert(t.tm_year == 2005);
-        assert(t.tm_mon  == 11);
+        assert(t.tm_year == 105);
+        assert(t.tm_mon  == 10);
         assert(t.tm_mday == 15);
         assert(t.tm_hour == 22);
         assert(t.tm_min  == 14);
@@ -222,7 +222,7 @@ void test3()
                 catch (SOCIError const &e)
                 {
                     std::string msg = e.what();
-                    assert(msg == "Into Vectors of size 0 are not allowed.");
+                    assert(msg == "Vectors of size 0 are not allowed.");
                 }
             }
 
@@ -536,8 +536,8 @@ void test3()
                 st.execute();
                 while (st.fetch())
                 {
-                    assert(t.tm_year == 2000 + i);
-                    assert(t.tm_mon == 1 + i);
+                    assert(t.tm_year == 100 + i);
+                    assert(t.tm_mon == i);
                     assert(t.tm_mday == 20 - i);
                     assert(t.tm_hour == 15 + i);
                     assert(t.tm_min == 50 - i);
@@ -558,8 +558,8 @@ void test3()
                 {
                     for (std::size_t j = 0; j != vec.size(); ++j)
                     {
-                        assert(vec[j].tm_year == 2000 + i);
-                        assert(vec[j].tm_mon == 1 + i);
+                        assert(vec[j].tm_year == 100 + i);
+                        assert(vec[j].tm_mon == i);
                         assert(vec[j].tm_mday == 20 - i);
                         assert(vec[j].tm_hour == 15 + i);
                         assert(vec[j].tm_min == 50 - i);
@@ -822,7 +822,7 @@ void test6()
             sql << "create table test6 (tm timestamp)";
 
             std::tm t;
-            t.tm_year = 2006;
+            t.tm_year = 106;
             t.tm_mon = 10;
             t.tm_mday = 19;
             t.tm_hour = 21;
@@ -840,7 +840,7 @@ void test6()
 
             sql << "select tm from test6", into(t2);
 
-            assert(t.tm_year == 2006);
+            assert(t.tm_year == 106);
             assert(t.tm_mon  == 10);
             assert(t.tm_mday == 19);
             assert(t.tm_hour == 21);
