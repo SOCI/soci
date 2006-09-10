@@ -4,7 +4,7 @@ ODBCLIBDIR="C:\Program Files\Microsoft Platform SDK\Lib"
 COMPILER = cl
 CXXFLAGS = /nologo /EHsc
 CXXFLAGSSO = $(CXXFLAGS)
-INCLUDEDIRS = /I.. /I..\..\..\core /I$(ODBCINCLUDEDIR)
+INCLUDEDIRS = /I.. /I..\..\..\core /I..\..\..\core\test /I$(ODBCINCLUDEDIR)
 LIBS = ..\..\..\core\soci-core.lib ..\soci-odbc.lib $(ODBCLIBDIR)\uuid.lib $(ODBCLIBDIR)\odbc32.lib
 
 mssql: test-odbc-mssql.cpp
