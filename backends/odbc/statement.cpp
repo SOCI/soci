@@ -45,7 +45,8 @@ void ODBCStatementBackEnd::cleanUp()
 }
 
 
-void ODBCStatementBackEnd::prepare(std::string const & query)
+void ODBCStatementBackEnd::prepare(std::string const & query,
+    eStatementType /* eType */)
 {
     // rewrite the query by transforming all named parameters into
     // the ODBC numbers ones (:abc -> $1, etc.)

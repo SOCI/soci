@@ -85,7 +85,7 @@ Statement::Statement(PrepareTempType const &prep)
 
     // prepare the statement
     query_ = prepInfo->getQuery();
-    prepare(prepInfo->getQuery());
+    prepare(query_);
 
     defineAndBind();
 }
@@ -209,10 +209,10 @@ void Statement::cleanUp()
     }
 }
 
-void Statement::prepare(std::string const &query)
+void Statement::prepare(std::string const &query, details::eStatementType eType)
 {
     query_ = query;
-    backEnd_->prepare(query);
+    backEnd_->prepare(query, eType);
 }
 
 void Statement::defineAndBind()
@@ -681,7 +681,7 @@ void RefCountedStatement::finalAction()
     try
     {
         st_.alloc();
-        st_.prepare(query_.str());
+        st_.prepare(query_.str(), details::eOneTimeQuery);
         st_.defineAndBind();
         st_.execute(true);
     }

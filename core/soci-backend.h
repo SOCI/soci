@@ -39,6 +39,9 @@ enum eExchangeType { eXChar, eXCString, eXStdString, eXShort, eXInteger,
                      eXUnsignedLong, eXDouble, eXStdTm, eXStatement,
                      eXRowID, eXBLOB };
 
+// type of statement (used for optimizing statement preparation)
+enum eStatementType { eOneTimeQuery, eRepeatableQuery };
+
 // polymorphic into type backend
 
 class StandardIntoTypeBackEnd
@@ -117,7 +120,8 @@ public:
 
     virtual void alloc() = 0;
     virtual void cleanUp() = 0;
-    virtual void prepare(std::string const &query) = 0;
+
+    virtual void prepare(std::string const &query, eStatementType eType) = 0;
 
     enum execFetchResult { eSuccess, eNoData };
     virtual execFetchResult execute(int number) = 0;

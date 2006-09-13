@@ -31,7 +31,8 @@ void EmptyStatementBackEnd::cleanUp()
     // ...
 }
 
-void EmptyStatementBackEnd::prepare(std::string const & /* query */)
+void EmptyStatementBackEnd::prepare(std::string const & /* query */,
+    eStatementType /* eType */)
 {
     // ...
 }

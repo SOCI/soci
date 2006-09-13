@@ -117,7 +117,8 @@ struct PostgreSQLStatementBackEnd : details::StatementBackEnd
 
     virtual void alloc();
     virtual void cleanUp();
-    virtual void prepare(std::string const &query);
+    virtual void prepare(std::string const &query,
+        details::eStatementType eType);
 
     virtual execFetchResult execute(int number);
     virtual execFetchResult fetch(int number);
@@ -139,6 +140,7 @@ struct PostgreSQLStatementBackEnd : details::StatementBackEnd
 
     PGresult *result_;
     std::string query_;
+    details::eStatementType eType_;
     std::string statementName_;
     std::vector<std::string> names_; // list of names for named binds
 

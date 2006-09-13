@@ -51,7 +51,8 @@ void OracleStatementBackEnd::cleanUp()
     boundByPos_ = false; 
 }
 
-void OracleStatementBackEnd::prepare(std::string const &query)
+void OracleStatementBackEnd::prepare(std::string const &query,
+    eStatementType /* eType */)
 {
     sb4 stmtLen = static_cast<sb4>(query.size());
     sword res = OCIStmtPrepare(stmtp_,

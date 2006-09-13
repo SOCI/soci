@@ -40,7 +40,8 @@ void Sqlite3StatementBackEnd::cleanUp()
     }
 }
 
-void Sqlite3StatementBackEnd::prepare(std::string const & query)
+void Sqlite3StatementBackEnd::prepare(std::string const & query,
+    eStatementType /* eType */)
 {
     cleanUp();
 

@@ -127,7 +127,8 @@ struct Sqlite3StatementBackEnd : details::StatementBackEnd
 
     virtual void alloc();
     virtual void cleanUp();
-    virtual void prepare(std::string const &query);
+    virtual void prepare(std::string const &query,
+        details::eStatementType eType);
     void resetIfNeeded();
 
     virtual execFetchResult execute(int number);

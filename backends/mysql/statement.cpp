@@ -41,7 +41,8 @@ void MySQLStatementBackEnd::cleanUp()
     }
 }
 
-void MySQLStatementBackEnd::prepare(std::string const & query)
+void MySQLStatementBackEnd::prepare(std::string const & query,
+    eStatementType /* eType */)
 {
     queryChunks_.clear();
     enum { eNormal, eInQuotes, eInName } state = eNormal;

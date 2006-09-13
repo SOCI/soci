@@ -158,7 +158,8 @@ namespace SOCI
 
         virtual void alloc();
         virtual void cleanUp();
-        virtual void prepare(std::string const &query);
+        virtual void prepare(std::string const &query,
+            details::eStatementType eType);
 
         virtual execFetchResult execute(int number);
         virtual execFetchResult fetch(int number);

@@ -470,7 +470,8 @@ public:
     void exchange(details::UseTypePtr const &u);
     void cleanUp();
 
-    void prepare(std::string const &query);
+    void prepare(std::string const &query,
+        details::eStatementType eType = details::eRepeatableQuery);
     void defineAndBind();
     void unDefAndBind();
     bool execute(bool withDataExchange = false);

@@ -280,7 +280,8 @@ void FirebirdStatementBackEnd::rewriteQuery(
     procedure_ = false;
 }
 
-void FirebirdStatementBackEnd::prepare(std::string const & query)
+void FirebirdStatementBackEnd::prepare(std::string const & query,
+    eStatementType /* eType */)
 {
     // clear named parametes
     names_.clear();

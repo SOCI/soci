@@ -49,7 +49,8 @@ void PostgreSQLStatementBackEnd::cleanUp()
     }
 }
 
-void PostgreSQLStatementBackEnd::prepare(std::string const &query)
+void PostgreSQLStatementBackEnd::prepare(std::string const &query,
+    eStatementType eType)
 {
 #ifdef SOCI_PGSQL_NOBINDBYNAME
     query_ = query;
@@ -124,20 +125,25 @@ void PostgreSQLStatementBackEnd::prepare(std::string const &query)
 
 #ifndef SOCI_PGSQL_NOPREPARE
 
-    statementName_ = session_.getNextStatementName();
+    if (eType == eRepeatableQuery)
+    {
+        statementName_ = session_.getNextStatementName();
 
-    PGresult *res = PQprepare(session_.conn_, statementName_.c_str(),
-        query_.c_str(), names_.size(), NULL);
-    if (res == NULL)
-    {
-        throw SOCIError("Cannot prepare statement.");
+        PGresult *res = PQprepare(session_.conn_, statementName_.c_str(),
+            query_.c_str(), names_.size(), NULL);
+        if (res == NULL)
+        {
+            throw SOCIError("Cannot prepare statement.");
+        }
+        ExecStatusType status = PQresultStatus(res);
+        if (status != PGRES_COMMAND_OK)
+        {
+            throw SOCIError(PQresultErrorMessage(res));
+        }
+        PQclear(res);
     }
-    ExecStatusType status = PQresultStatus(res);
-    if (status != PGRES_COMMAND_OK)
-    {
-        throw SOCIError(PQresultErrorMessage(res));
-    }
-    PQclear(res);
+
+    eType_ = eType;
 
 #endif // SOCI_PGSQL_NOPREPARE
 }
@@ -242,10 +248,24 @@ PostgreSQLStatementBackEnd::execute(int number)
 
 #else
 
-                result_ = PQexecPrepared(session_.conn_,
-                    statementName_.c_str(),
-                    static_cast<int>(paramValues.size()),
-                    &paramValues[0], NULL, NULL, 0);
+                if (eType_ == eRepeatableQuery)
+                {
+                    // this query was separately prepared
+
+                    result_ = PQexecPrepared(session_.conn_,
+                        statementName_.c_str(),
+                        static_cast<int>(paramValues.size()),
+                        &paramValues[0], NULL, NULL, 0);
+                }
+                else // eType_ == eOneTimeQuery
+                {
+                    // this query was not separately prepared and should
+                    // be executed as a one-time query
+
+                    result_ = PQexecParams(session_.conn_, query_.c_str(),
+                        static_cast<int>(paramValues.size()),
+                        NULL, &paramValues[0], NULL, NULL, 0);
+                }
 
 #endif // SOCI_PGSQL_NOPREPARE
 
@@ -287,8 +307,17 @@ PostgreSQLStatementBackEnd::execute(int number)
             result_ = PQexec(session_.conn_, query_.c_str());
 #else
 
-            result_ = PQexecPrepared(session_.conn_, statementName_.c_str(),
-                0, NULL, NULL, NULL, 0);
+            if (eType_ == eRepeatableQuery)
+            {
+                // this query was separately prepared
+
+                result_ = PQexecPrepared(session_.conn_,
+                    statementName_.c_str(), 0, NULL, NULL, NULL, 0);
+            }
+            else // eType_ == eOneTimeQuery
+            {
+                result_ = PQexec(session_.conn_, query_.c_str());
+            }
 
 #endif // SOCI_PGSQL_NOPREPARE
 
