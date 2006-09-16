@@ -28,7 +28,7 @@ struct TableCreator1 : public TableCreatorBase
         : TableCreatorBase(session) 
     {
         session << "create table soci_test(id integer, val integer, c char, "
-                 "str varchar(20), sh integer, ul number, d float, "
+                 "str varchar(20), sh int2, ul numeric(20), d float8, "
                  "tm timestamp, i1 integer, i2 integer, i3 integer, " 
                  "name varchar(20))";
     }
@@ -39,8 +39,8 @@ struct TableCreator2 : public TableCreatorBase
     TableCreator2(Session& session)
         : TableCreatorBase(session)
     {
-        session  << "create table soci_test(num_float float, num_int integer,"
-                     " name varchar(20), sometime datetime, chr char)";
+        session  << "create table soci_test(num_float float8, num_int integer,"
+                     " name varchar(20), sometime timestamp, chr char)";
     }
 };
 
@@ -80,20 +80,11 @@ public:
         return new TableCreator3(s);
     }
 
-    std::string fromDual (std::string const &sql) const
-    {
-        return sql;
-    }
-
-    std::string toDate(std::string const &dateString) const
-    {
-        return "#" + dateString + "#";
-    }
-
     std::string toDateTime(std::string const &dateString) const
     {
-        return "#" + dateString + "#";
+        return "timestamptz(\'" + dateString + "\')";
     }
+
 };
 
 int main(int argc, char** argv)
@@ -104,7 +95,7 @@ int main(int argc, char** argv)
     }
     else
     {
-        connectString = "FILEDSN=./test-access.dsn";
+        connectString = "FILEDSN=./test-postgresql.dsn";
     }
     try
     {
