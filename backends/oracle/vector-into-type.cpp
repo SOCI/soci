@@ -174,7 +174,10 @@ void OracleVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
             std::size_t const vsize = v.size();
             for (std::size_t i = 0; i != vsize; ++i)
             {
-                v[i].assign(pos, sizes_[i]);
+                if (indOCIHolderVec_[i] != -1)
+                {
+                    v[i].assign(pos, sizes_[i]);
+                }
                 pos += colSize_;
             }
         }
@@ -189,20 +192,27 @@ void OracleVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
             std::size_t const vsize = v.size();
             for (std::size_t i = 0; i != vsize; ++i)
             {
-                std::tm t;
-                t.tm_isdst = -1;
+                if (indOCIHolderVec_[i] == -1)
+                {
+                     pos += 7; // size of SQLT_DAT
+                }
+                else
+                {
+                    std::tm t;
+                    t.tm_isdst = -1;
 
-                t.tm_year = (*pos++ - 100) * 100;
-                t.tm_year += *pos++ - 2000;
-                t.tm_mon = *pos++ - 1;
-                t.tm_mday = *pos++;
-                t.tm_hour = *pos++ - 1;
-                t.tm_min = *pos++ - 1;
-                t.tm_sec = *pos++ - 1;
+                    t.tm_year = (*pos++ - 100) * 100;
+                    t.tm_year += *pos++ - 2000;
+                    t.tm_mon = *pos++ - 1;
+                    t.tm_mday = *pos++;
+                    t.tm_hour = *pos++ - 1;
+                    t.tm_min = *pos++ - 1;
+                    t.tm_sec = *pos++ - 1;
 
-                // normalize and compute the remaining fields
-                std::mktime(&t);
-                v[i] = t;
+                    // normalize and compute the remaining fields
+                    std::mktime(&t);
+                    v[i] = t;
+                }
             }
         }
         else if (type_ == eXStatement)

@@ -173,25 +173,31 @@ void OracleStandardIntoTypeBackEnd::postFetch(
         // only std::string, std::tm and Statement need special handling
         if (type_ == eXStdString)
         {
-            std::string *s = static_cast<std::string *>(data_);
-            *s = buf_;
+            if (indOCIHolder_ != -1)
+            { 
+                std::string *s = static_cast<std::string *>(data_);
+                *s = buf_;
+            }
         }
         else if (type_ == eXStdTm)
         {
-            std::tm *t = static_cast<std::tm *>(data_);
+            if (indOCIHolder_ != -1)
+            {
+                std::tm *t = static_cast<std::tm *>(data_);
 
-            ub1 *pos = reinterpret_cast<ub1*>(buf_);
-            t->tm_isdst = -1;
-            t->tm_year = (*pos++ - 100) * 100;
-            t->tm_year += *pos++ - 2000;
-            t->tm_mon = *pos++ - 1;
-            t->tm_mday = *pos++;
-            t->tm_hour = *pos++ - 1;
-            t->tm_min = *pos++ - 1;
-            t->tm_sec = *pos++ - 1;
-
-            // normalize and compute the remaining fields
-            std::mktime(t);
+                ub1 *pos = reinterpret_cast<ub1*>(buf_);
+                t->tm_isdst = -1;
+                t->tm_year = (*pos++ - 100) * 100;
+                t->tm_year += *pos++ - 2000;
+                t->tm_mon = *pos++ - 1;
+                t->tm_mday = *pos++;
+                t->tm_hour = *pos++ - 1;
+                t->tm_min = *pos++ - 1;
+                t->tm_sec = *pos++ - 1;
+                
+                // normalize and compute the remaining fields
+                std::mktime(t);
+            }
         }
         else if (type_ == eXStatement)
         {
