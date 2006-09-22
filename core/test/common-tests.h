@@ -140,7 +140,7 @@ public:
       connectString_(tc.getConnectString())
     {}
 
-    void run()
+    void run(bool dbSupportsTransactions = true)
     {
     std::cout<<"\nSOCI Common Tests:\n\n";
 
@@ -153,7 +153,16 @@ public:
     test7();
     test8(); 
     test9();
-    test10();
+
+    if (dbSupportsTransactions)
+    {
+        test10();
+    }
+    else
+    {
+        std::cout<<"skipping test 10 (database doesn't support transactions)\n";
+    }
+
     test11();
     test12();
     test13();
@@ -1602,8 +1611,7 @@ void test12()
         sql << "select * from soci_test", into(r);
         assert(r.indicator(0) ==  eNoData);
 
-        sql << "insert into soci_test(\"num_float\", \"num_int\", "
-            "\"name\", \"sometime\", \"chr\")"
+        sql << "insert into soci_test"
             " values(3.14, 123, \'Johny\',"
             << tc_.toDateTime("2005-12-19 22:14:17")
             << ", 'a')";
