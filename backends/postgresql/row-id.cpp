@@ -28,7 +28,7 @@ using namespace SOCI::details;
 
 
 PostgreSQLRowIDBackEnd::PostgreSQLRowIDBackEnd(
-    PostgreSQLSessionBackEnd &session)
+    PostgreSQLSessionBackEnd & /* session */)
 {
     // nothing to do here
 }

@@ -54,7 +54,8 @@ std::size_t PostgreSQLBLOBBackEnd::getLen()
 std::size_t PostgreSQLBLOBBackEnd::read(
     std::size_t offset, char *buf, std::size_t toRead)
 {
-    int pos = lo_lseek(session_.conn_, fd_, offset, SEEK_SET);
+    int pos = lo_lseek(session_.conn_, fd_,
+        static_cast<int>(offset), SEEK_SET);
     if (pos == -1)
     {
         throw SOCIError("Cannot seek in BLOB.");
@@ -72,7 +73,8 @@ std::size_t PostgreSQLBLOBBackEnd::read(
 std::size_t PostgreSQLBLOBBackEnd::write(
     std::size_t offset, char const *buf, std::size_t toWrite)
 {
-    int pos = lo_lseek(session_.conn_, fd_, offset, SEEK_SET);
+    int pos = lo_lseek(session_.conn_, fd_,
+        static_cast<int>(offset), SEEK_SET);
     if (pos == -1)
     {
         throw SOCIError("Cannot seek in BLOB.");
@@ -107,7 +109,7 @@ std::size_t PostgreSQLBLOBBackEnd::append(
     return static_cast<std::size_t>(writen);
 }
 
-void PostgreSQLBLOBBackEnd::trim(std::size_t newLen)
+void PostgreSQLBLOBBackEnd::trim(std::size_t /* newLen */)
 {
     throw SOCIError("Trimming BLOBs is not supported.");
 }

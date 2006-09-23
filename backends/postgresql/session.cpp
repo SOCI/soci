@@ -20,7 +20,7 @@
 #endif // SOCI_PGSQL_NOPARAMS
 
 #ifdef _MSC_VER
-#pragma warning(disable:4355)
+#pragma warning(disable:4355 4996)
 #endif
 
 using namespace SOCI;

@@ -130,7 +130,7 @@ void PostgreSQLStatementBackEnd::prepare(std::string const &query,
         statementName_ = session_.getNextStatementName();
 
         PGresult *res = PQprepare(session_.conn_, statementName_.c_str(),
-            query_.c_str(), names_.size(), NULL);
+            query_.c_str(), static_cast<int>(names_.size()), NULL);
         if (res == NULL)
         {
             throw SOCIError("Cannot prepare statement.");
@@ -177,7 +177,7 @@ PostgreSQLStatementBackEnd::execute(int number)
         // specifies the size of vectors (into/use), but 'numberOfExecutions'
         // specifies the number of loops that need to be performed.
         
-        int numberOfExecutions;
+        int numberOfExecutions = 0; // initialization to shut up the compiler
         if (number > 0)
         {
              numberOfExecutions = hasUseElements_ ? 1 : number;

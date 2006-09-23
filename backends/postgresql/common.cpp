@@ -8,6 +8,7 @@
 #include "common.h"
 #include "soci-backend.h"
 #include <cstdlib>
+#include <ctime>
 
 
 namespace // anonymous

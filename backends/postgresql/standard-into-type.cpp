@@ -21,7 +21,8 @@
 #endif // SOCI_PGSQL_NOPARAMS
 
 #ifdef _MSC_VER
-#pragma warning(disable:4355)
+#pragma warning(disable:4355 4996)
+#define strtoll(s, p, b) static_cast<long long>(_strtoi64(s, p, b))
 #endif
 
 using namespace SOCI;

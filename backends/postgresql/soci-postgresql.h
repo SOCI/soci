@@ -12,6 +12,10 @@
 #include <vector>
 #include <libpq-fe.h>
 
+#ifdef _MSC_VER
+#pragma warning(disable:4512 4511)
+#endif
+
 
 namespace SOCI
 {
