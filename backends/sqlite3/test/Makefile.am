@@ -1,9 +1,10 @@
-# $Id: Makefile.am,v 1.2 2006/08/30 14:25:04 mloskot Exp $
+# $Id: Makefile.am,v 1.3 2006/09/23 21:35:51 mloskot Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
 INCLUDES = \
 	-I$(top_srcdir)/src/core \
+	-I$(top_srcdir)/src/core/test \
 	-I$(top_srcdir)/src/backends/sqlite3
 
 AM_CPPFLAGS = @SQLITE3_CFLAGS@
