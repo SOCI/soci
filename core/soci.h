@@ -571,6 +571,7 @@ public:
         }
     }
 
+    // TODO - mloskot: Consider to wrap conversion with try-catch
     template <typename T>
     void accumulate(T const &t) { query_ << t; }
 
