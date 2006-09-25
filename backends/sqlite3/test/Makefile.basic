@@ -8,7 +8,7 @@ SQLITE3LIBS = -lsqlite3
 # The rest of the Makefile is independent of the target environment.
 
 COMPILER = g++
-CXXFLAGS = -Wall -pedantic -Wno-long-long #-DSQLITE_ENABLE_COLUMN_METADATA
+CXXFLAGS = -Wall -pedantic -Wno-long-long
 INCLUDEDIRS = -I.. -I../../../core -I../../../core/test ${SQLITE3INCLUDEDIR}
 LIBDIRS = -L.. -L../../../core ${SQLITE3LIBDIR}
 LIBS = -lsoci-core -lsoci-sqlite3 ${SQLITE3LIBS}

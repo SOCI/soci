@@ -62,60 +62,7 @@ void test2()
 {
     {
         Session sql(backEnd, connectString);
-#ifdef SQLITE_ENABLE_COLUMN_METADATA
 
-        try { sql << "drop table test2"; }
-        catch (SOCIError const &) {} // ignore if error
-
-        sql <<
-            "create table test2 ("
-             "    id integer,"
-             "    img blob"
-             ")";
-
-        char buf[] = "abcdefghijklmnopqrstuvwxyz";
-
-        sql << "insert into test2(id, img) values(7, '')";
-
-        {
-            BLOB b(sql);
-
-            sql << "select img from test2 where id = 7", into(b);
-            assert(b.getLen() == 0);
-
-            b.write(0, buf, sizeof(buf));
-            assert(b.getLen() == sizeof(buf));
-
-            b.append(buf, sizeof(buf));
-            assert(b.getLen() == 2 * sizeof(buf));
-        }
-        {
-            BLOB b(sql);
-            sql << "select img from test2 where id = 7", into(b);
-            assert(b.getLen() == 2 * sizeof(buf));
-            char buf2[100];
-            b.read(0, buf2, 10);
-            assert(strncmp(buf2, "abcdefghij", 10) == 0);
-
-            // make sure that we can't read past the end of the data
-            int len = b.read(50, buf2, 10);
-            assert(len == 4);
-            assert(strncmp(buf2, "xyz", 10) == 0);
-        }
-        {
-            BLOB b(sql);
-            sql << "select img from test2 where id = 7", into(b);
-            assert(b.getLen() == 2 * sizeof(buf));
-            b.trim(sizeof(buf));
-
-            BLOB b2(sql);
-            sql << "select img from test2 where id = 7", into(b2);
-            assert(b2.getLen() == sizeof(buf));            
-        }
-
-        sql << "drop table test2";
-
-#else
         try
         {
             // expected error
@@ -126,13 +73,9 @@ void test2()
         {
             std::string msg = e.what();
             assert(msg ==
-                "Blob not currently supported in this Sqlite3 backend. "
-                "Compile both Sqlite3 and SOCI using "
-                "-DSQLITE_ENABLE_COLUMN_METADATA");
-            std::cout << msg << std::endl;
+                "BLOBs are not supported.");
         }
-#endif
-        
+ 
     }
     
     std::cout << "test 2 passed" << std::endl;

@@ -152,29 +152,6 @@ void Sqlite3StandardIntoTypeBackEnd::postFetch(bool gotData,
             rbe->value_ = static_cast<unsigned long>(val);
         }
         break;
-        case eXBLOB:
-        {
-#ifdef SQLITE_ENABLE_COLUMN_METADATA
-
-            BLOB *b = static_cast<BLOB *>(data_);
-            Sqlite3BLOBBackEnd *bbe =
-                static_cast<Sqlite3BLOBBackEnd *>(b->getBackEnd());
-            
-            buf = reinterpret_cast<const char*>(sqlite3_column_blob(
-                                          statement_.stmt_, 
-                                          pos));
-
-            int len = sqlite3_column_bytes(statement_.stmt_, pos);
-            const char *tableName =
-                sqlite3_column_table_name(statement_.stmt_, 
-                                          pos);
-            const char *columnName = sqlite3_column_name(statement_.stmt_, 
-                                          pos);
-            bbe->setData(tableName, columnName, buf, len);
-#endif
-        }
-        break;
-
         default:
             throw SOCIError("Into element used with non-supported type.");
         }
