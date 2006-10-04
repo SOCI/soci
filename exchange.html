@@ -499,7 +499,8 @@ transparently support <code>boost::gregorian::date</code>:</p>
 
 <pre class="example">
 #include "boost/date_time/gregorian/gregorian.hpp"
-
+namespace SOCI
+{
 template&lt;&gt;
 struct TypeConversion&lt;boost::gregorian::date&gt;
 {
@@ -527,6 +528,7 @@ struct TypeConversion&lt;boost::gregorian::date&gt;
 
         return t;
     }
+};
 };
 </pre>
 
