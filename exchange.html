@@ -606,6 +606,8 @@ struct Person
     std::string gender;
 };
 
+namespace SOCI
+{
 template&lt;&gt; struct TypeConversion&lt;Person&gt;
 {
     typedef Values base_type;
@@ -641,6 +643,7 @@ template&lt;&gt; struct TypeConversion&lt;Person&gt;
         v.set("GENDER", p.gender, p.gender.empty() ? eNull : eOK);
         return v;
     }
+};
 };
 </pre>
 
