@@ -1576,6 +1576,9 @@ private:
     std::vector<eIndicator*> indicators_;
     std::map<std::string, size_t> index_;
 
+    // When TypeConversion::to() is called, a Values object is created
+    // without an underlying Row object.  In that case, getFromUses()
+    // returns the underlying field values
     template <typename T>
     T getFromUses(std::string const &name, T const &nullValue) const
     {

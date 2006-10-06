@@ -854,12 +854,33 @@ Row::~Row()
 
 eIndicator Values::indicator(std::size_t pos) const
 {
-    return row_->indicator(pos);
+    if (row_)
+    {
+        return row_->indicator(pos);
+    }
+    else
+    {
+        return *indicators_[pos];
+    }
 }
 
 eIndicator Values::indicator(std::string const &name) const
 {
-    return row_->indicator(name);
+    if (row_)
+    {
+        return row_->indicator(name);
+    }
+    else
+    {
+        std::map<std::string, std::size_t>::const_iterator it = index_.find(name);
+        if (it == index_.end())
+        {
+            std::ostringstream msg;
+            msg << "Column '" << name << "' not found";
+            throw SOCIError(msg.str());
+        }
+        return *indicators_[it->second];
+    }
 }
 
 

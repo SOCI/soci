@@ -21,26 +21,53 @@ struct PhonebookEntry
     std::string phone;
 };
 
+struct PhonebookEntry2 : public PhonebookEntry 
+{
+};
+
 namespace SOCI
 {
-    template<> struct TypeConversion<PhonebookEntry>
+// basic type conversion
+template<> struct TypeConversion<PhonebookEntry>
+{
+    typedef SOCI::Values base_type;
+    static PhonebookEntry from(Values const &v)
     {
-        typedef SOCI::Values base_type;
-        static PhonebookEntry from(Values const &v)
-        {
-            PhonebookEntry p;
-            p.name = v.get<std::string>("name", "<NULL>");
-            p.phone = v.get<std::string>("phone", "<NULL>");
-            return p;
-        }
-        static Values to(PhonebookEntry &p)
-        {
-            Values v;
-            v.set("name", p.name);
-            v.set("phone", p.phone, p.phone.empty() ? eNull : eOK);
-            return v;
-        }
-    };    
+        PhonebookEntry p;
+        p.name = v.get<std::string>("name");
+        p.phone = v.get<std::string>("phone", "<NULL>");
+        return p;
+    }
+    static Values to(PhonebookEntry &p)
+    {
+        Values v;
+        v.set("name", p.name);
+        v.set("phone", p.phone, p.phone.empty() ? eNull : eOK);
+        return v;
+    }
+};    
+
+// type conversion which directly calls Values::indicator()
+template<> struct TypeConversion<PhonebookEntry2>
+{
+    typedef SOCI::Values base_type;
+    static PhonebookEntry2 from(Values const &v)
+    {
+        PhonebookEntry2 p;
+        p.name = v.get<std::string>("name");
+        eIndicator ind = v.indicator("phone"); //another way to test for null
+        p.phone = ind == eNull ? "<NULL>" : v.get<std::string>("phone");
+        return p;
+    }
+    static Values to(PhonebookEntry2 &p)
+    {
+        Values v;
+        v.set("name", p.name);
+        v.set("phone", p.phone, p.phone.empty() ? eNull : eOK);
+        return v;
+    }
+};    
+
 }
 
 namespace SOCI
@@ -1790,17 +1817,20 @@ void test14()
 
 // test15 is like test14 but with a TypeConversion instead of a row
 void test15()
-{
+{   
+    Session sql(backEndFactory_, connectString_);
+    
     {
-        Session sql(backEndFactory_, connectString_);
-
         AutoTableCreator tableCreator(tc_.tableCreator3(sql));
 
         PhonebookEntry p1;
         sql << "select * from soci_test", into(p1);
         assert(p1.name ==  "");
+        assert(p1.phone == "");
 
-        sql << "insert into soci_test values('david', '(404)123-4567')";
+        p1.name = "david";
+
+        sql << "insert into soci_test values(:name, :phone)", use(p1);
         sql << "insert into soci_test values('john', '(404)123-4567')";
         sql << "insert into soci_test values('doe', '(404)123-4567')";
 
@@ -1812,10 +1842,54 @@ void test15()
         while(st.fetch())
         {
             ++count;
-            assert(p2.phone == "(404)123-4567");
+            if (p2.name == "david")
+            {
+                // see TypeConversion<PhonebookEntry>
+                assert(p2.phone =="<NULL>");
+            }
+            else
+            {
+                assert(p2.phone == "(404)123-4567");
+            }
         }
         assert(count == 3);        
     }
+
+    {   // Use the PhonebookEntry2 type conversion, to test
+        // calls to Values::indicator()
+        AutoTableCreator tableCreator(tc_.tableCreator3(sql));
+
+        PhonebookEntry2 p1;
+        sql << "select * from soci_test", into(p1);
+        assert(p1.name ==  "");
+        assert(p1.phone == "");
+        p1.name = "david";
+
+        sql << "insert into soci_test values(:name, :phone)", use(p1);
+        sql << "insert into soci_test values('john', '(404)123-4567')";
+        sql << "insert into soci_test values('doe', '(404)123-4567')";
+
+        PhonebookEntry2 p2;
+        Statement st = (sql.prepare << "select * from soci_test", into(p2));
+        st.execute();
+        
+        int count = 0;
+        while(st.fetch())
+        {
+            ++count;
+            if (p2.name == "david")
+            {
+                // see TypeConversion<PhonebookEntry2>
+                assert(p2.phone =="<NULL>");
+            }
+            else
+            {
+                assert(p2.phone == "(404)123-4567");
+            }
+        }
+        assert(count == 3);        
+    }
+
     std::cout << "test 15 passed" << std::endl;
 }
 
