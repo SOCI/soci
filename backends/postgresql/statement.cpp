@@ -177,7 +177,7 @@ PostgreSQLStatementBackEnd::execute(int number)
         // specifies the size of vectors (into/use), but 'numberOfExecutions'
         // specifies the number of loops that need to be performed.
         
-        int numberOfExecutions = 0; // initialization to shut up the compiler
+        int numberOfExecutions = 1;
         if (number > 0)
         {
              numberOfExecutions = hasUseElements_ ? 1 : number;
