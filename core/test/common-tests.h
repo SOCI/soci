@@ -650,6 +650,24 @@ void test3()
                 assert(i2 == rowsToTest);
             }
             {
+                // additional test with the use element
+
+                int i2 = 0;
+                int cond = 0; // this condition is always true
+
+                Statement st = (sql.prepare <<
+                    "select id from soci_test where id >= :cond order by id",
+                    use(cond), into(i));
+
+                st.execute();
+                while (st.fetch())
+                {
+                    assert(i == i2);
+                    ++i2;
+                }
+                assert(i2 == rowsToTest);
+            }
+            {
                 int i2 = 0;
 
                 std::vector<int> vec(8);
