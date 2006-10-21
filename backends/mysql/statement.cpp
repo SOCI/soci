@@ -133,7 +133,7 @@ MySQLStatementBackEnd::execute(int number)
         }
         // number - size of vectors (into/use)
         // numberOfExecutions - number of loops to perform
-        int numberOfExecutions;
+        int numberOfExecutions = 1;
         if (number > 0)
         {
              numberOfExecutions = hasUseElements_ ? 1 : number;
