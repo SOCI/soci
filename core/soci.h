@@ -11,6 +11,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <ostream>
 #include <sstream>
 #include <ctime>
 #include <cassert>
@@ -733,6 +734,13 @@ public:
     template <typename T>
     details::OnceTempType operator<<(T const &t) { return once << t; }
 
+    // support for basic logging
+    void setLogStream(std::ostream *s);
+    std::ostream * getLogStream() const;
+
+    void logQuery(std::string const &query);
+    std::string getLastQuery() const;
+
     // for diagnostics and advanced users
     // (downcast it to expected back-end session class)
     details::SessionBackEnd * getBackEnd() { return backEnd_; }
@@ -744,6 +752,9 @@ public:
 private:
     Session(Session const &);
     Session& operator=(Session const &);
+
+    std::ostream *logStream_;
+    std::string lastQuery_;
 
     details::SessionBackEnd *backEnd_;
 };

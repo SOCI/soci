@@ -196,6 +196,7 @@ public:
     test14();
     test15();
     test16();
+    test17();
     }
 
 private:
@@ -229,7 +230,7 @@ void test1()
     sql << "select id from soci_test", into(id);
     assert(id == 123);
 
-    std::cout<<"test 1 passed\n";
+    std::cout << "test 1 passed\n";
 }
 
 // "into" tests, type conversions, etc.
@@ -1939,6 +1940,48 @@ void test16()
 #endif // SOCI_PGSQL_NOPARAMS
 
     std::cout << "test 16 passed" << std::endl;
+}
+
+// test for basic logging support
+void test17()
+{
+    Session sql(backEndFactory_, connectString_);
+
+    std::ostringstream log;
+    sql.setLogStream(&log);
+
+    try
+    {
+        sql << "drop table soci_test1";
+    }
+    catch (...) {}
+
+    assert(sql.getLastQuery() == "drop table soci_test1");
+
+    sql.setLogStream(NULL);
+
+    try
+    {
+        sql << "drop table soci_test2";
+    }
+    catch (...) {}
+
+    assert(sql.getLastQuery() == "drop table soci_test2");
+
+    sql.setLogStream(&log);
+
+    try
+    {
+        sql << "drop table soci_test3";
+    }
+    catch (...) {}
+
+    assert(sql.getLastQuery() == "drop table soci_test3");
+    assert(log.str() ==
+        "drop table soci_test1\n"
+        "drop table soci_test3\n");
+
+    std::cout << "test 17 passed\n";
 }
 
 };

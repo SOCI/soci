@@ -21,7 +21,7 @@ SOCIError::SOCIError(std::string const & msg)
 
 Session::Session(BackEndFactory const &factory,
     std::string const & connectString)
-    : once(this), prepare(this)
+    : once(this), prepare(this), logStream_(NULL)
 {
     backEnd_ = factory.makeSession(connectString);
 }
@@ -44,6 +44,31 @@ void Session::commit()
 void Session::rollback()
 {
     backEnd_->rollback();
+}
+
+void Session::setLogStream(std::ostream *s)
+{
+    logStream_ = s;
+}
+
+std::ostream * Session::getLogStream() const
+{
+    return logStream_;
+}
+
+void Session::logQuery(std::string const &query)
+{
+    if (logStream_ != NULL)
+    {
+        *logStream_ << query << '\n';
+    }
+
+    lastQuery_ = query;
+}
+
+std::string Session::getLastQuery() const
+{
+    return lastQuery_;
 }
 
 StatementBackEnd * Session::makeStatementBackEnd()
@@ -209,10 +234,13 @@ void Statement::cleanUp()
     }
 }
 
-void Statement::prepare(std::string const &query, details::eStatementType eType)
+void Statement::prepare(std::string const &query,
+    details::eStatementType eType)
 {
     query_ = query;
     backEnd_->prepare(query, eType);
+
+    session_.logQuery(query);
 }
 
 void Statement::defineAndBind()
