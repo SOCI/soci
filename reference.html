@@ -83,6 +83,11 @@ public:
 
     template &lt;typename T&gt; <i>IT</i> operator&lt;&lt;(T const &amp;t);
 
+    void setLogStream(std::ostream *s);
+    std::ostream * getLogStream() const;
+
+    std::string getLastQuery() const;
+
     details::SessionBackEnd * getBackEnd();
 };
 </pre>
@@ -123,6 +128,8 @@ equivalent operator of the <code>once</code> member. Example:
 sql &lt;&lt; "drop table persons";
 </pre>
   </li>
+  <li><code>setLogStream</code> and <code>getLogStream</code> functions for setting and getting the current stream object used for basic query logging. By default, it is <code>NULL</code>, which means no logging. The string value that is actually logged into the stream is one-line verbatim copy of the query string provided by the user, without including any data from the <code>use</code> elements. The query is logged only once, after successful preparation step.</li>
+  <li><code>getLastQuery</code> function for retrieving the text of the last used query.</li>
   <li><code>getBackEnd</code> function that returns the internal
 pointer to the concrete backend implementation of the session. This is
 provided for advanced users that need access to the functionality that

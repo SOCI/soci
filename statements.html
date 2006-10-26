@@ -15,6 +15,7 @@
 <a href="#preparation">Statement preparation and repeated execution</a><br />
 <a href="#procedures">Stored procedures</a><br />
 <a href="#transactions">Transactions</a><br />
+<a href="#logging">Basic logging support</a><br />
 </div>
 
 <h3 id="preparation">Statement preparation and repeated execution</h3>
@@ -260,6 +261,29 @@ Others will treat each statement as if it was a separate, auto-commited
 transaction. For better compatibility, it is recommended to use the
 above functions for explicit transaction management.</p>
 </div>
+
+<h3 id="logging">Basic logging support</h3>
+
+<p>The following members of the <code>Session</code> class support the basic logging functionality:</p>
+<ul>
+  <li><code>void setLogStream(std::ostream *s);</code></li>
+  <li><code>std::ostream * getLogStream() const;</code></li>
+  <li><code>std::string getLastQuery() const;</code></li>
+</ul>
+
+<p>The first two functions allow to set the user-provided output stream object for logging. The <code>NULL</code> value, which is the default, means that there is no logging. An example use might be:</p>
+
+<pre class="example">
+Session sql(oracle, "...");
+
+ofstream file("my_log.txt");
+sql.setLogStream(&file);
+
+// ...
+</pre>
+
+<p>Each statement after successful preparation step (whether explicit or implicit) logs its query string. Note that each prepared query is logged only once, independent on how many times it is executed.</p>
+<p>The <code>getLastQuery</code> function allows to retrieve the last used query.</p>
 
 <table class="foot-links" border="0" cellpadding="2" cellspacing="2">
   <tr>
