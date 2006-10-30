@@ -282,7 +282,7 @@ sql.setLogStream(&file);
 // ...
 </pre>
 
-<p>Each statement after successful preparation step (whether explicit or implicit) logs its query string. Note that each prepared query is logged only once, independent on how many times it is executed.</p>
+<p>Each statement logs its query string before the preparation step (whether explicit or implicit) and the logging is effective whether the query succeeds or not. Note that each prepared query is logged only once, independent on how many times it is executed.</p>
 <p>The <code>getLastQuery</code> function allows to retrieve the last used query.</p>
 
 <table class="foot-links" border="0" cellpadding="2" cellspacing="2">
