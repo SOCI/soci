@@ -238,9 +238,9 @@ void Statement::prepare(std::string const &query,
     details::eStatementType eType)
 {
     query_ = query;
-    backEnd_->prepare(query, eType);
-
     session_.logQuery(query);
+
+    backEnd_->prepare(query, eType);
 }
 
 void Statement::defineAndBind()
