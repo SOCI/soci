@@ -13,6 +13,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
+#define strtoll(s, p, b) static_cast<long long>(_strtoi64(s, p, b))
 #endif
 
 using namespace SOCI;
