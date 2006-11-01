@@ -50,3 +50,4 @@ void Sqlite3BLOBBackEnd::trim(std::size_t /* newLen */)
 {
     throw SOCIError("BLOBs are not supported.");
 }
+
