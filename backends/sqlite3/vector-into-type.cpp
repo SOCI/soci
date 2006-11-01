@@ -13,6 +13,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
+#define strtoll(s, p, b) static_cast<long long>(_strtoi64(s, p, b))
 #endif
 
 using namespace SOCI;
@@ -52,7 +53,7 @@ void Sqlite3VectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator * ind)
 {
     if (gotData)
     {
-        int endRow = statement_.dataCache_.size();
+        int endRow = static_cast<int>(statement_.dataCache_.size());
         for (int i = 0; i < endRow; ++i)
         {
             const Sqlite3Column& curCol =

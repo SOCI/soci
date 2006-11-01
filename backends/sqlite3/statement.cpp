@@ -10,6 +10,7 @@
 #include "soci-sqlite3.h"
 
 #include <sstream>
+#include <algorithm>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -48,7 +49,7 @@ void Sqlite3StatementBackEnd::prepare(std::string const & query,
     const char *tail; // unused;
     int res = sqlite3_prepare(session_.conn_, 
                               query.c_str(), 
-                              query.size(), 
+                              static_cast<int>(query.size()), 
                               &stmt_, 
                               &tail);    
     if (res != SQLITE_OK)
@@ -184,13 +185,13 @@ Sqlite3StatementBackEnd::bindAndExecute(int number)
 {
     StatementBackEnd::execFetchResult retVal = eNoData;
 
-    int rows = useData_.size();
+    int rows = static_cast<int>(useData_.size());
 
     for (int row = 0; row < rows; ++row)
     {
         sqlite3_reset(stmt_);
 
-        int totalPositions = useData_[0].size();
+        int totalPositions = static_cast<int>(useData_[0].size());
         for (int pos = 1; pos <= totalPositions; ++pos)
         {
             int bindRes = SQLITE_OK;
@@ -200,7 +201,7 @@ Sqlite3StatementBackEnd::bindAndExecute(int number)
             else
                 bindRes = sqlite3_bind_text(stmt_, pos, 
                                             curCol.data_.c_str(), 
-                                            curCol.data_.length(), 
+                                            static_cast<int>(curCol.data_.length()), 
                                             SQLITE_STATIC);
 
             if (SQLITE_OK != bindRes)
@@ -251,7 +252,7 @@ Sqlite3StatementBackEnd::fetch(int number)
 
 int Sqlite3StatementBackEnd::getNumberOfRows()
 {
-    return dataCache_.size();
+    return static_cast<int>(dataCache_.size());
 }
 
 std::string Sqlite3StatementBackEnd::rewriteForProcedureCall(
