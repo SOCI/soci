@@ -8,9 +8,11 @@
 
 #include "soci.h"
 #include "soci-sqlite3.h"
+#include <limits>
 
 #ifdef _MSC_VER
-#pragma warning(disable:4355)
+#pragma warning(disable:4355 4996)
+#define snprintf _snprintf
 #endif
 
 using namespace SOCI;
@@ -105,7 +107,7 @@ void Sqlite3StandardUseTypeBackEnd::preUse(eIndicator const * ind)
             std::size_t const bufSize
             = std::numeric_limits<short>::digits10 + 3;
             buf_ = new char[bufSize];
-            std::snprintf(buf_, bufSize, "%d",
+            snprintf(buf_, bufSize, "%d",
                           static_cast<int>(*static_cast<short*>(data_)));
         }
         break;
@@ -114,7 +116,7 @@ void Sqlite3StandardUseTypeBackEnd::preUse(eIndicator const * ind)
             std::size_t const bufSize
             = std::numeric_limits<int>::digits10 + 3;
             buf_ = new char[bufSize];
-            std::snprintf(buf_, bufSize, "%d",
+            snprintf(buf_, bufSize, "%d",
                           *static_cast<int*>(data_));
         }
         break;
@@ -123,7 +125,7 @@ void Sqlite3StandardUseTypeBackEnd::preUse(eIndicator const * ind)
             std::size_t const bufSize
             = std::numeric_limits<unsigned long>::digits10 + 2;
             buf_ = new char[bufSize];
-            std::snprintf(buf_, bufSize, "%lu",
+            snprintf(buf_, bufSize, "%lu",
                           *static_cast<unsigned long*>(data_));
         }
         break;
@@ -134,7 +136,7 @@ void Sqlite3StandardUseTypeBackEnd::preUse(eIndicator const * ind)
             std::size_t const bufSize = 100;
             buf_ = new char[bufSize];
 
-            std::snprintf(buf_, bufSize, "%.20g",
+            snprintf(buf_, bufSize, "%.20g",
                           *static_cast<double*>(data_));
         }
         break;
@@ -144,7 +146,7 @@ void Sqlite3StandardUseTypeBackEnd::preUse(eIndicator const * ind)
             buf_ = new char[bufSize];
 
             std::tm *t = static_cast<std::tm *>(data_);
-            std::snprintf(buf_, bufSize, "%d-%02d-%02d %02d:%02d:%02d",
+            snprintf(buf_, bufSize, "%d-%02d-%02d %02d:%02d:%02d",
                           t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
                           t->tm_hour, t->tm_min, t->tm_sec);
         }
@@ -162,7 +164,7 @@ void Sqlite3StandardUseTypeBackEnd::preUse(eIndicator const * ind)
             = std::numeric_limits<unsigned long>::digits10 + 2;
             buf_ = new char[bufSize];
 
-            std::snprintf(buf_, bufSize, "%lu", rbe->value_);
+            snprintf(buf_, bufSize, "%lu", rbe->value_);
         }
         break;
 

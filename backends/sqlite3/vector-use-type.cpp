@@ -10,9 +10,11 @@
 #include "soci-sqlite3.h"
 
 #include "common.h"
+#include <limits>
 
 #ifdef _MSC_VER
-#pragma warning(disable:4355)
+#pragma warning(disable:4355 4996)
+#define snprintf _snprintf
 #endif
 
 using namespace SOCI;
@@ -122,7 +124,7 @@ void Sqlite3VectorUseTypeBackEnd::preUse(eIndicator const * ind)
                 std::size_t const bufSize
                 = std::numeric_limits<short>::digits10 + 3;
                 buf = new char[bufSize];
-                std::snprintf(buf, bufSize, "%d", static_cast<int>(v[i]));
+                snprintf(buf, bufSize, "%d", static_cast<int>(v[i]));
             }
             break;
             case eXInteger:
@@ -134,7 +136,7 @@ void Sqlite3VectorUseTypeBackEnd::preUse(eIndicator const * ind)
                 std::size_t const bufSize
                 = std::numeric_limits<int>::digits10 + 3;
                 buf = new char[bufSize];
-                std::snprintf(buf, bufSize, "%d", v[i]);
+                snprintf(buf, bufSize, "%d", v[i]);
             }
             break;
             case eXUnsignedLong:
@@ -146,7 +148,7 @@ void Sqlite3VectorUseTypeBackEnd::preUse(eIndicator const * ind)
                 std::size_t const bufSize
                 = std::numeric_limits<unsigned long>::digits10 + 2;
                 buf = new char[bufSize];
-                std::snprintf(buf, bufSize, "%lu", v[i]);
+                snprintf(buf, bufSize, "%lu", v[i]);
             }
             break;
             case eXDouble:
@@ -160,7 +162,7 @@ void Sqlite3VectorUseTypeBackEnd::preUse(eIndicator const * ind)
                 std::size_t const bufSize = 100;
                 buf = new char[bufSize];
 
-                std::snprintf(buf, bufSize, "%.20g", v[i]);
+                snprintf(buf, bufSize, "%.20g", v[i]);
             }
             break;
             case eXStdTm:
@@ -172,7 +174,7 @@ void Sqlite3VectorUseTypeBackEnd::preUse(eIndicator const * ind)
                 std::size_t const bufSize = 20;
                 buf = new char[bufSize];
 
-                std::snprintf(buf, bufSize, "%d-%02d-%02d %02d:%02d:%02d",
+                snprintf(buf, bufSize, "%d-%02d-%02d %02d:%02d:%02d",
                     v[i].tm_year + 1900, v[i].tm_mon + 1, v[i].tm_mday,
                     v[i].tm_hour, v[i].tm_min, v[i].tm_sec);
             }
