@@ -118,7 +118,7 @@ void ODBCStandardUseTypeBackEnd::bindHelper(int &position, void *data, eExchange
 
     if (is_odbc_error(rc))
     {
-        throw new ODBCSOCIError(SQL_HANDLE_STMT, statement_.hstmt_, 
+        throw ODBCSOCIError(SQL_HANDLE_STMT, statement_.hstmt_, 
                                 "Binding");
     }
 }

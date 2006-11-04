@@ -20,7 +20,7 @@ ODBCSessionBackEnd::ODBCSessionBackEnd(std::string const & connectString)
 	rc = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &henv_);
     if (is_odbc_error(rc))
     {
-        throw new SOCIError("Unable to get environment handle");
+        throw SOCIError("Unable to get environment handle");
     }
 
  	// Set the ODBC version environment attribute

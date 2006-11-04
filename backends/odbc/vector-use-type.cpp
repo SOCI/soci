@@ -190,8 +190,8 @@ void ODBCVectorUseTypeBackEnd::bindHelper(int &position, void *data, eExchangeTy
 
     if (is_odbc_error(rc))
     {
-        throw new ODBCSOCIError(SQL_HANDLE_STMT, statement_.hstmt_, 
-                                "Binding");
+        throw ODBCSOCIError(SQL_HANDLE_STMT, statement_.hstmt_, 
+            "Error while binding value to column");
     }
 }
 

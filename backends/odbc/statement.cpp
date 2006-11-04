@@ -34,8 +34,8 @@ void ODBCStatementBackEnd::alloc()
 	rc = SQLAllocHandle(SQL_HANDLE_STMT, session_.hdbc_, &hstmt_);
     if (is_odbc_error(rc))
     {
-        throw new ODBCSOCIError(SQL_HANDLE_DBC, session_.hdbc_, 
-                         "Allocating statement");
+        throw ODBCSOCIError(SQL_HANDLE_DBC, session_.hdbc_, 
+            "Allocating statement");
     }
 }
 
