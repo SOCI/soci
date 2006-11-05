@@ -55,6 +55,8 @@ struct TypeConversion
 namespace details
 {
 
+class StatementImpl;
+
 // this is intended to be a base class for all classes that deal with
 // defining output data
 class IntoTypeBase
@@ -62,7 +64,7 @@ class IntoTypeBase
 public:
     virtual ~IntoTypeBase() {}
 
-    virtual void define(Statement &st, int &position) = 0;
+    virtual void define(details::StatementImpl &st, int &position) = 0;
     virtual void preFetch() = 0;
     virtual void postFetch(bool gotData, bool calledFromFetch) = 0;
     virtual void cleanUp() = 0;
@@ -78,7 +80,7 @@ class UseTypeBase
 public:
     virtual ~UseTypeBase() {}
 
-    virtual void bind(Statement &st, int &position) = 0;
+    virtual void bind(details::StatementImpl &st, int &position) = 0;
     virtual void preUse() = 0;
     virtual void postUse(bool gotData) = 0;
     virtual void cleanUp() = 0;
@@ -458,12 +460,15 @@ class PrepareTempType;
 
 class Values;
 
-class Statement
+namespace details
+{
+
+class StatementImpl
 {
 public:
-    Statement(Session &s);
-    Statement(details::PrepareTempType const &prep);
-    ~Statement();
+    StatementImpl(Session &s);
+    StatementImpl(details::PrepareTempType const &prep);
+    ~StatementImpl();
 
     void alloc();
     void bind(Values& values);
@@ -489,16 +494,22 @@ public:
     details::VectorIntoTypeBackEnd * makeVectorIntoTypeBackEnd();
     details::VectorUseTypeBackEnd * makeVectorUseTypeBackEnd();
 
+    void incRef();
+    void decRef();
+
     Session &session_;
+
+    std::string rewriteForProcedureCall(std::string const &query);
 
 protected:
     std::vector<details::IntoTypeBase*> intos_;
     std::vector<details::UseTypeBase*> uses_;
     std::vector<eIndicator*> indicators_;
 
-    std::string rewriteForProcedureCall(std::string const &query);
-
 private:
+
+    int refCount_;
+
     Row* row_;
     std::size_t fetchSize_;
     std::size_t initialFetchSize_;
@@ -535,12 +546,150 @@ private:
     details::StatementBackEnd *backEnd_;
 };
 
-class Procedure : public Statement
+} // namespace details
+
+// Statement is a handle class for StatementImpl
+// (this provides copyability to otherwise non-copyable type)
+class Statement
 {
 public:
-    Procedure(Session &s) : Statement(s) {}
-    Procedure(details::PrepareTempType const &prep);
+    Statement(Session &s)
+        : impl_(new details::StatementImpl(s)) {}
+    Statement(details::PrepareTempType const &prep)
+        : impl_(new details::StatementImpl(prep)) {}
+    ~Statement() { impl_->decRef(); }
+
+    // copy is supported for this handle class
+    Statement(Statement const &other)
+        : impl_(other.impl_)
+    {
+        impl_->incRef();
+    }
+
+    void operator=(Statement const &other)
+    {
+        other.impl_->incRef();
+        impl_->decRef();
+        impl_ = other.impl_;
+    }
+
+    void alloc()                                 { impl_->alloc();      }
+    void bind(Values& values)                    { impl_->bind(values); }
+    void exchange(details::IntoTypePtr const &i) { impl_->exchange(i);  }
+    void exchange(details::UseTypePtr const &u)  { impl_->exchange(u);  }
+    void cleanUp()                               { impl_->cleanUp();    }
+
+    void prepare(std::string const &query,
+        details::eStatementType eType = details::eRepeatableQuery)
+    {
+        impl_->prepare(query, eType);
+    }
+
+    void defineAndBind() { impl_->defineAndBind(); }
+    void unDefAndBind()  { impl_->unDefAndBind(); }
+    bool execute(bool withDataExchange = false)
+    {
+        return impl_->execute(withDataExchange);
+    }
+
+    bool fetch()        { return impl_->fetch(); }
+    void describe()     { impl_->describe();     }
+    void setRow(Row* r) { impl_->setRow(r);      }
+
+    // for diagnostics and advanced users
+    // (downcast it to expected back-end statement class)
+    details::StatementBackEnd * getBackEnd()
+    {
+        return impl_->getBackEnd();
+    }
+
+    details::StandardIntoTypeBackEnd * makeIntoTypeBackEnd()
+    {
+        return impl_->makeIntoTypeBackEnd();
+    }
+
+    details::StandardUseTypeBackEnd * makeUseTypeBackEnd()
+    {
+        return impl_->makeUseTypeBackEnd();
+    }
+
+    details::VectorIntoTypeBackEnd * makeVectorIntoTypeBackEnd()
+    {
+        return impl_->makeVectorIntoTypeBackEnd();
+    }
+
+    details::VectorUseTypeBackEnd * makeVectorUseTypeBackEnd()
+    {
+        return impl_->makeVectorUseTypeBackEnd();
+    }
+
+    std::string rewriteForProcedureCall(std::string const &query)
+    {
+        return impl_->rewriteForProcedureCall(query);
+    }
+
+private:
+    details::StatementImpl * impl_;
 };
+
+namespace details
+{
+
+class ProcedureImpl : public StatementImpl
+{
+public:
+    ProcedureImpl(Session &s) : StatementImpl(s), refCount_(1) {}
+    ProcedureImpl(details::PrepareTempType const &prep);
+
+    void incRef() { ++refCount_; }
+    void decDef()
+    {
+        if (--refCount_)
+        {
+            delete this;
+        }
+    }
+
+private:
+    int refCount_;
+};
+
+} // namespace details
+
+class Procedure
+{
+public:
+    Procedure(Session &s)
+        : impl_(new details::ProcedureImpl(s)) {}
+    Procedure(details::PrepareTempType const &prep)
+        : impl_(new details::ProcedureImpl(prep)) {}
+    ~Procedure() { impl_->decRef(); }
+
+    // copy is supported here
+    Procedure(Procedure const &other)
+        : impl_(other.impl_)
+    {
+        impl_->incRef();
+    }
+    void operator=(Procedure const &other)
+    {
+        other.impl_->incRef();
+        impl_->decRef();
+        impl_ = other.impl_;
+    }
+
+    // forwarders to ProcedureImpl
+    // (or rather to its base interface from StatementImpl)
+
+    bool execute(bool withDataExchange = false)
+    {
+        return impl_->execute(withDataExchange);
+    }
+
+private:
+    details::ProcedureImpl * impl_;
+};
+
 
 namespace details
 {
@@ -613,8 +762,8 @@ public:
     virtual void finalAction();
 
 private:
-    friend class SOCI::Statement;
-    friend class SOCI::Procedure;
+    friend class SOCI::details::StatementImpl;
+    friend class SOCI::details::ProcedureImpl;
 
     Session *session_;
 
@@ -778,7 +927,7 @@ public:
     virtual ~StandardIntoType();
 
 private:
-    virtual void define(Statement &st, int &position);
+    virtual void define(StatementImpl &st, int &position);
     virtual void preFetch();
     virtual void postFetch(bool gotData, bool calledFromFetch);
     virtual void cleanUp();
@@ -806,7 +955,7 @@ public:
         : data_(data), type_(type), ind_(&ind), name_(name), backEnd_(NULL) {}
 
     virtual ~StandardUseType();
-    virtual void bind(Statement &st, int &position);
+    virtual void bind(details::StatementImpl &st, int &position);
     std::string getName() const {return name_;}
     virtual void* getData() {return data_;}
      
@@ -843,7 +992,7 @@ public:
     ~VectorIntoType();
 
 private:
-    virtual void define(Statement &st, int &position);
+    virtual void define(details::StatementImpl &st, int &position);
     virtual void preFetch();
     virtual void postFetch(bool gotData, bool calledFromFetch);
     virtual void cleanUp();
@@ -876,7 +1025,7 @@ public:
     ~VectorUseType();
 
 private:
-    virtual void bind(Statement &st, int &position);
+    virtual void bind(details::StatementImpl &st, int &position);
     virtual void preUse();
     virtual void postUse(bool) { /* nothing to do */ }
     virtual void cleanUp();
@@ -1289,7 +1438,7 @@ public:
 
 private:
     // special handling for Row
-    virtual void define(Statement &st, int & /* position */)
+    virtual void define(details::StatementImpl &st, int & /* position */)
     {
         st.setRow(&r_);
 
@@ -1497,9 +1646,9 @@ private:
 
 class Values
 {
-friend class Statement;
-friend class details::IntoType<Values>;
-friend class details::UseType<Values>;
+    friend class details::StatementImpl;
+    friend class details::IntoType<Values>;
+    friend class details::UseType<Values>;
 
 public:
 
@@ -1718,7 +1867,7 @@ public:
     UseType(Values &v, std::string const & /* name */ = std::string())
         : v_(v) {}
 
-    virtual void bind(Statement &st, int& /*position*/)
+    virtual void bind(details::StatementImpl &st, int& /*position*/)
     {
         convertTo();
         st.bind(v_);

@@ -86,16 +86,17 @@ BLOBBackEnd * Session::makeBLOBBackEnd()
     return backEnd_->makeBLOBBackEnd();
 }
 
-Statement::Statement(Session &s)
-    : session_(s), row_(0), fetchSize_(1), initialFetchSize_(1),
+details::StatementImpl::StatementImpl(Session &s)
+    : session_(s), refCount_(1), row_(0),
+      fetchSize_(1), initialFetchSize_(1),
       alreadyDescribed_(false)
 {
     backEnd_ = s.makeStatementBackEnd();
 }
 
-Statement::Statement(PrepareTempType const &prep)
+details::StatementImpl::StatementImpl(PrepareTempType const &prep)
     : session_(*prep.getPrepareInfo()->session_),
-      row_(0), fetchSize_(1), alreadyDescribed_(false)
+      refCount_(1), row_(0), fetchSize_(1), alreadyDescribed_(false)
 {
     backEnd_ = session_.makeStatementBackEnd();
 
@@ -115,17 +116,17 @@ Statement::Statement(PrepareTempType const &prep)
     defineAndBind();
 }
 
-Statement::~Statement()
+details::StatementImpl::~StatementImpl()
 {
     cleanUp();
 }
 
-void Statement::alloc()
+void details::StatementImpl::alloc()
 {
     backEnd_->alloc();
 }
 
-void Statement::bind(Values& values)
+void details::StatementImpl::bind(Values& values)
 {
     size_t cnt = 0;
 
@@ -174,25 +175,25 @@ void Statement::bind(Values& values)
 }
 
 
-void Statement::exchange(IntoTypePtr const &i)
+void details::StatementImpl::exchange(IntoTypePtr const &i)
 {
     intos_.push_back(i.get());
     i.release();
 }
 
-void Statement::exchangeForRow(IntoTypePtr const &i)
+void details::StatementImpl::exchangeForRow(IntoTypePtr const &i)
 {
     intosForRow_.push_back(i.get());
     i.release();
 }
 
-void Statement::exchange(UseTypePtr const &u)
+void details::StatementImpl::exchange(UseTypePtr const &u)
 {
     uses_.push_back(u.get());
     u.release();
 }
 
-void Statement::cleanUp()
+void details::StatementImpl::cleanUp()
 {
     // deallocate all bind and define objects
     std::size_t const isize = intos_.size();
@@ -234,7 +235,7 @@ void Statement::cleanUp()
     }
 }
 
-void Statement::prepare(std::string const &query,
+void details::StatementImpl::prepare(std::string const &query,
     details::eStatementType eType)
 {
     query_ = query;
@@ -243,7 +244,7 @@ void Statement::prepare(std::string const &query,
     backEnd_->prepare(query, eType);
 }
 
-void Statement::defineAndBind()
+void details::StatementImpl::defineAndBind()
 {
     int definePosition = 1;
     std::size_t const isize = intos_.size();
@@ -266,7 +267,7 @@ void Statement::defineAndBind()
     }
 }
 
-void Statement::defineForRow()
+void details::StatementImpl::defineForRow()
 {
     std::size_t const isize = intosForRow_.size();
     for (std::size_t i = 0; i != isize; ++i)
@@ -275,7 +276,7 @@ void Statement::defineForRow()
     }
 }
 
-void Statement::unDefAndBind()
+void details::StatementImpl::unDefAndBind()
 {
     std::size_t const isize = intos_.size();
     for (std::size_t i = isize; i != 0; --i)
@@ -296,7 +297,7 @@ void Statement::unDefAndBind()
     }
 }
 
-bool Statement::execute(bool withDataExchange)
+bool details::StatementImpl::execute(bool withDataExchange)
 {
     initialFetchSize_ = intosSize();
     fetchSize_ = initialFetchSize_;
@@ -374,7 +375,7 @@ bool Statement::execute(bool withDataExchange)
     return gotData;
 }
 
-bool Statement::fetch()
+bool details::StatementImpl::fetch()
 {
     if (fetchSize_ == 0)
     {
@@ -435,7 +436,7 @@ bool Statement::fetch()
     return gotData;
 }
 
-std::size_t Statement::intosSize()
+std::size_t details::StatementImpl::intosSize()
 {
     // this function does not need to take into account intosForRow_ elements,
     // since their sizes are always 1 (which is the same and the primary
@@ -468,7 +469,7 @@ std::size_t Statement::intosSize()
     return intosSize;
 }
 
-std::size_t Statement::usesSize()
+std::size_t details::StatementImpl::usesSize()
 {
     std::size_t usesSize = 0;
     std::size_t const usize = uses_.size();
@@ -497,7 +498,7 @@ std::size_t Statement::usesSize()
     return usesSize;
 }
 
-bool Statement::resizeIntos(std::size_t upperBound)
+bool details::StatementImpl::resizeIntos(std::size_t upperBound)
 {
     // this function does not need to take into account the intosForRow_
     // elements, since they are never used for bulk operations
@@ -517,7 +518,7 @@ bool Statement::resizeIntos(std::size_t upperBound)
     return rows > 0 ? true : false;
 }
 
-void Statement::preFetch()
+void details::StatementImpl::preFetch()
 {
     std::size_t const isize = intos_.size();
     for (std::size_t i = 0; i != isize; ++i)
@@ -532,7 +533,7 @@ void Statement::preFetch()
     }
 }
 
-void Statement::preUse()
+void details::StatementImpl::preUse()
 {
     std::size_t const usize = uses_.size();
     for (std::size_t i = 0; i != usize; ++i)
@@ -541,7 +542,7 @@ void Statement::preUse()
     }
 }
 
-void Statement::postFetch(bool gotData, bool calledFromFetch)
+void details::StatementImpl::postFetch(bool gotData, bool calledFromFetch)
 {
     // first iterate over intosForRow_ elements, since the Row element
     // (which is among the intos_ elements) might depend on the
@@ -560,7 +561,7 @@ void Statement::postFetch(bool gotData, bool calledFromFetch)
     }
 }
 
-void Statement::postUse(bool gotData)
+void details::StatementImpl::postUse(bool gotData)
 { 
     // iterate in reverse order here in case the first item
     // is an UseType<Values> (since it depends on the other UseTypes)
@@ -570,63 +571,84 @@ void Statement::postUse(bool gotData)
     }
 }
 
-details::StandardIntoTypeBackEnd * Statement::makeIntoTypeBackEnd()
+details::StandardIntoTypeBackEnd *
+details::StatementImpl::makeIntoTypeBackEnd()
 {
     return backEnd_->makeIntoTypeBackEnd();
 }
 
-details::StandardUseTypeBackEnd * Statement::makeUseTypeBackEnd()
+details::StandardUseTypeBackEnd *
+details::StatementImpl::makeUseTypeBackEnd()
 {
     return backEnd_->makeUseTypeBackEnd();
 }
 
-details::VectorIntoTypeBackEnd * Statement::makeVectorIntoTypeBackEnd()
+details::VectorIntoTypeBackEnd *
+details::StatementImpl::makeVectorIntoTypeBackEnd()
 {
     return backEnd_->makeVectorIntoTypeBackEnd();
 }
 
-details::VectorUseTypeBackEnd * Statement::makeVectorUseTypeBackEnd()
+details::VectorUseTypeBackEnd *
+details::StatementImpl::makeVectorUseTypeBackEnd()
 {
     return backEnd_->makeVectorUseTypeBackEnd();
+}
+
+void details::StatementImpl::incRef()
+{
+    ++refCount_;
+}
+
+void details::StatementImpl::decRef()
+{
+    if (--refCount_ == 0)
+    {
+        delete this;
+    }
 }
 
 // Map eDataTypes to stock types for dynamic result set support
 namespace SOCI
 {
+namespace details
+{
 
 template<>
-void Statement::bindInto<eString>()
+void StatementImpl::bindInto<eString>()
 {
     intoRow<std::string>();
 }
 
 template<>
-void Statement::bindInto<eDouble>()
+void StatementImpl::bindInto<eDouble>()
 {
     intoRow<double>();
 }
 
 template<>
-void Statement::bindInto<eInteger>()
+void StatementImpl::bindInto<eInteger>()
 {
     intoRow<int>();
 }
 
 template<>
-void Statement::bindInto<eUnsignedLong>()
+void StatementImpl::bindInto<eUnsignedLong>()
 {
     intoRow<unsigned long>();
 }
 
 template<>
-void Statement::bindInto<eDate>()
+void StatementImpl::bindInto<eDate>()
 {
     intoRow<std::tm>();
 }
 
+} // namespace details
+
 } //namespace SOCI
 
-void Statement::describe()
+void details::StatementImpl::describe()
 {
     int numcols = backEnd_->prepareForDescribe();
 
@@ -670,7 +692,7 @@ void Statement::describe()
     alreadyDescribed_ = true;
 }
 
-void Statement::setRow(Row *r)
+void details::StatementImpl::setRow(Row *r)
 {
     if (row_ != NULL)
     {
@@ -681,13 +703,13 @@ void Statement::setRow(Row *r)
     row_ = r;
 }
 
-std::string Statement::rewriteForProcedureCall(std::string const &query)
+std::string details::StatementImpl::rewriteForProcedureCall(std::string const &query)
 {
     return backEnd_->rewriteForProcedureCall(query);
 }
 
-Procedure::Procedure(PrepareTempType const &prep)
-    : Statement(*prep.getPrepareInfo()->session_)
+details::ProcedureImpl::ProcedureImpl(PrepareTempType const &prep)
+    : StatementImpl(*prep.getPrepareInfo()->session_)
 {
     RefCountedPrepareInfo *prepInfo = prep.getPrepareInfo();
 
@@ -921,7 +943,7 @@ StandardIntoType::~StandardIntoType()
     delete backEnd_;
 }
 
-void StandardIntoType::define(Statement &st, int &position)
+void StandardIntoType::define(StatementImpl &st, int &position)
 {
     backEnd_ = st.makeIntoTypeBackEnd();
     backEnd_->defineByPos(position, data_, type_);
@@ -956,7 +978,7 @@ StandardUseType::~StandardUseType()
     delete backEnd_;
 }
 
-void StandardUseType::bind(Statement &st, int &position)
+void StandardUseType::bind(StatementImpl &st, int &position)
 {
     backEnd_ = st.makeUseTypeBackEnd();
     if (name_.empty())
@@ -997,7 +1019,7 @@ VectorIntoType::~VectorIntoType()
     delete backEnd_;
 }
 
-void VectorIntoType::define(Statement &st, int &position)
+void VectorIntoType::define(StatementImpl &st, int &position)
 {
     backEnd_ = st.makeVectorIntoTypeBackEnd();
     backEnd_->defineByPos(position, data_, type_);
@@ -1054,7 +1076,7 @@ VectorUseType::~VectorUseType()
     delete backEnd_;
 }
 
-void VectorUseType::bind(Statement &st, int &position)
+void VectorUseType::bind(StatementImpl &st, int &position)
 {
     backEnd_ = st.makeVectorUseTypeBackEnd();
     if (name_.empty())
