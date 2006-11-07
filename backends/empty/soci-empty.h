@@ -8,14 +8,28 @@
 #ifndef SOCI_EMPTY_H_INCLUDED
 #define SOCI_EMPTY_H_INCLUDED
 
-#include "soci-backend.h"
+#ifdef _WIN32
+# ifdef SOCI_DLL
+#  ifdef SOCI_EMPTY_SOURCE
+#   define SOCI_EMPTY_DECL __declspec(dllexport)
+#  else
+#   define SOCI_EMPTY_DECL __declspec(dllimport)
+#  endif // SOCI_EMPTY_SOURCE
+# endif // SOCI_DLL
+#endif // _WIN32
+//
+// If SOCI_EMPTY_DECL isn't defined yet define it now
+#ifndef SOCI_EMPTY_DECL
+# define SOCI_EMPTY_DECL
+#endif
 
+#include "soci-backend.h"
 
 namespace SOCI
 {
 
 struct EmptyStatementBackEnd;
-struct EmptyStandardIntoTypeBackEnd : details::StandardIntoTypeBackEnd
+struct SOCI_EMPTY_DECL EmptyStandardIntoTypeBackEnd : details::StandardIntoTypeBackEnd
 {
     EmptyStandardIntoTypeBackEnd(EmptyStatementBackEnd &st)
         : statement_(st) {}
@@ -32,7 +46,7 @@ struct EmptyStandardIntoTypeBackEnd : details::StandardIntoTypeBackEnd
     EmptyStatementBackEnd &statement_;
 };
 
-struct EmptyVectorIntoTypeBackEnd : details::VectorIntoTypeBackEnd
+struct SOCI_EMPTY_DECL EmptyVectorIntoTypeBackEnd : details::VectorIntoTypeBackEnd
 {
     EmptyVectorIntoTypeBackEnd(EmptyStatementBackEnd &st)
         : statement_(st) {}
@@ -51,7 +65,7 @@ struct EmptyVectorIntoTypeBackEnd : details::VectorIntoTypeBackEnd
     EmptyStatementBackEnd &statement_;
 };
 
-struct EmptyStandardUseTypeBackEnd : details::StandardUseTypeBackEnd
+struct SOCI_EMPTY_DECL EmptyStandardUseTypeBackEnd : details::StandardUseTypeBackEnd
 {
     EmptyStandardUseTypeBackEnd(EmptyStatementBackEnd &st)
         : statement_(st) {}
@@ -69,7 +83,7 @@ struct EmptyStandardUseTypeBackEnd : details::StandardUseTypeBackEnd
     EmptyStatementBackEnd &statement_;
 };
 
-struct EmptyVectorUseTypeBackEnd : details::VectorUseTypeBackEnd
+struct SOCI_EMPTY_DECL EmptyVectorUseTypeBackEnd : details::VectorUseTypeBackEnd
 {
     EmptyVectorUseTypeBackEnd(EmptyStatementBackEnd &st)
         : statement_(st) {}
@@ -89,7 +103,7 @@ struct EmptyVectorUseTypeBackEnd : details::VectorUseTypeBackEnd
 };
 
 struct EmptySessionBackEnd;
-struct EmptyStatementBackEnd : details::StatementBackEnd
+struct SOCI_EMPTY_DECL EmptyStatementBackEnd : details::StatementBackEnd
 {
     EmptyStatementBackEnd(EmptySessionBackEnd &session);
 
@@ -158,13 +172,13 @@ struct EmptySessionBackEnd : details::SessionBackEnd
     virtual EmptyBLOBBackEnd * makeBLOBBackEnd();
 };
 
-struct EmptyBackEndFactory : BackEndFactory
+struct SOCI_EMPTY_DECL EmptyBackEndFactory : BackEndFactory
 {
     virtual EmptySessionBackEnd * makeSession(
         std::string const &connectString) const;
 };
 
-extern EmptyBackEndFactory const empty;
+SOCI_EMPTY_DECL extern EmptyBackEndFactory const empty;
 
 } // namespace SOCI
 

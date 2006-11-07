@@ -16,10 +16,11 @@
 #include <ctime>
 #include <cassert>
 
+#include "soci-config.h"
 #include "soci-backend.h"
 
 #ifdef _MSC_VER
-#pragma warning(disable:4512 4511)
+#pragma warning(disable:4251 4512 4511)
 #endif
 
 namespace SOCI
@@ -75,7 +76,7 @@ public:
 
 // this is intended to be a base class for all classes that deal with
 // binding input data (and OUT PL/SQL variables)
-class UseTypeBase
+class SOCI_DECL UseTypeBase
 {
 public:
     virtual ~UseTypeBase() {}
@@ -326,7 +327,7 @@ private:
 } // namespace details
 
 
-class ColumnProperties
+class SOCI_DECL ColumnProperties
 {
     // use getters/setters in case we want to make some
     // of the getters lazy in the future
@@ -343,7 +344,7 @@ private:
     eDataType dataType_;
 };
 
-class Row
+class SOCI_DECL Row
 {
 public:
 
@@ -463,7 +464,7 @@ class Values;
 namespace details
 {
 
-class StatementImpl
+class SOCI_DECL StatementImpl
 {
 public:
     StatementImpl(Session &s);
@@ -551,7 +552,7 @@ private:
 
 // Statement is a handle class for StatementImpl
 // (this provides copyability to otherwise non-copyable type)
-class Statement
+class SOCI_DECL Statement
 {
 public:
     Statement(Session &s)
@@ -661,7 +662,7 @@ private:
 
 } // namespace details
 
-class Procedure
+class SOCI_DECL Procedure
 {
 public:
     Procedure(Session &s)
@@ -784,7 +785,7 @@ private:
 };
 
 // this needs to be lightweight and copyable
-class PrepareTempType
+class SOCI_DECL PrepareTempType
 {
 public:
     PrepareTempType(Session &);
@@ -810,7 +811,7 @@ private:
 };
 
 // this needs to be lightweight and copyable
-class OnceTempType
+class SOCI_DECL OnceTempType
 {
 public:
 
@@ -874,7 +875,7 @@ private:
 } // namespace details
 
 
-class Session
+class SOCI_DECL Session
 {
 public:
     Session(BackEndFactory const &factory, std::string const & connectString);
@@ -926,7 +927,7 @@ namespace details
 
 // standard types
 
-class StandardIntoType : public IntoTypeBase
+class SOCI_DECL StandardIntoType : public IntoTypeBase
 {
 public:
     StandardIntoType(void *data, eExchangeType type)
@@ -954,7 +955,7 @@ private:
     details::StandardIntoTypeBackEnd *backEnd_;
 };
 
-class StandardUseType : public UseTypeBase
+class SOCI_DECL StandardUseType : public UseTypeBase
 {
 public:
     StandardUseType(void *data, eExchangeType type,
@@ -989,7 +990,7 @@ private:
 
 // into and use type base classes for vectors
 
-class VectorIntoType : public IntoTypeBase
+class SOCI_DECL VectorIntoType : public IntoTypeBase
 {
 public:
     VectorIntoType(void *data, eExchangeType type)
@@ -1018,7 +1019,7 @@ private:
     virtual void convertFrom() {}
 };
 
-class VectorUseType : public UseTypeBase
+class SOCI_DECL VectorUseType : public UseTypeBase
 {
 public:
     VectorUseType(void *data, eExchangeType type,
@@ -1654,7 +1655,7 @@ private:
 } // namespace details
 
 
-class Values
+class SOCI_DECL Values
 {
     friend class details::StatementImpl;
     friend class details::IntoType<Values>;
@@ -1906,7 +1907,7 @@ private:
 
 // basic BLOB operations
 
-class BLOB
+class SOCI_DECL BLOB
 {
 public:
     BLOB(Session &s);
@@ -1953,7 +1954,7 @@ public:
 
 // ROWID support
 
-class RowID
+class SOCI_DECL RowID
 {
 public:
     RowID(Session &s);

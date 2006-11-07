@@ -8,10 +8,12 @@
 #ifndef SOCI_COMMON_H_INCLUDED
 #define SOCI_COMMON_H_INCLUDED
 
-#include <string>
+#include <cstddef>
 #include <map>
 #include <stdexcept>
-#include <cstddef>
+#include <string>
+
+#include "soci-config.h"
 
 namespace SOCI
 {
@@ -24,7 +26,7 @@ enum eDataType { eString, eChar, eDate, eDouble, eInteger,
 enum eIndicator { eOK, eNoData, eNull, eTruncated };
 
 
-class SOCIError : public std::runtime_error
+class SOCI_DECL SOCIError : public std::runtime_error
 {
 public:
     SOCIError(std::string const & msg);
@@ -196,7 +198,7 @@ struct CStringDescriptor
 
 // simple base class for the session back-end factory
 
-struct BackEndFactory
+struct SOCI_DECL BackEndFactory
 {
     virtual ~BackEndFactory() {}
 

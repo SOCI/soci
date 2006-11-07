@@ -5,6 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#define SOCI_FIREBIRD_SOURCE
+#include "soci-firebird.h"
 #include "error.h"
 
 namespace SOCI

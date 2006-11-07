@@ -6,10 +6,13 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include "soci.h"
+#define SOCI_MYSQL_SOURCE
 #include "soci-mysql.h"
-#include <ciso646>
+#include <soci.h>
+#include <cctype>
 #include <cerrno>
+#include <ciso646>
+
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -262,7 +265,7 @@ namespace { // anonymous
 void hardExec(MYSQL *conn, const string & query)
 {
     //cerr << query << endl;
-    if (0 != mysql_real_query(conn, query.c_str(), query.size()))
+    if (0 != mysql_real_query(conn, query.c_str(), static_cast<unsigned long>(query.size())))
     {
         throw SOCIError(mysql_error(conn));
     }

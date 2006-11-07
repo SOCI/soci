@@ -8,12 +8,38 @@
 #ifndef SOCI_SQLITE3_H_INCLUDED
 #define SOCI_SQLITE3_H_INCLUDED
 
+#ifdef _WIN32
+# ifdef SOCI_DLL
+#  ifdef SOCI_SQLITE3_SOURCE
+#   define SOCI_SQLITE3_DECL __declspec(dllexport)
+#  else
+#   define SOCI_SQLITE3_DECL __declspec(dllimport)
+#  endif // SOCI_SQLITE3_SOURCE
+# endif // SOCI_DLL
+#endif // _WIN32
+//
+// If SOCI_SQLITE3_DECL isn't defined yet define it now
+#ifndef SOCI_SQLITE3_DECL
+# define SOCI_SQLITE3_DECL
+#endif
+
 #include "soci-backend.h"
+
+// Disable flood of nonsense warnings generated for SQLite
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4510 4610)
+#endif
 
 namespace sqlite_api
 {
 #include <sqlite3.h>
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
 
 namespace SOCI
 {
@@ -223,7 +249,7 @@ struct Sqlite3BackEndFactory : BackEndFactory
         std::string const &connectString) const;
 };
 
-extern Sqlite3BackEndFactory const sqlite3;
+SOCI_SQLITE3_DECL extern Sqlite3BackEndFactory const sqlite3;
 
 } // namespace SOCI
 

@@ -5,13 +5,14 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include "soci.h"
+#define SOCI_ODBC_SOURCE
 #include "soci-odbc.h"
-#include <cstring>
-#include <sstream>
-#include <cstdio>
-#include <ctime>
+#include <soci.h>
 #include <cctype>
+#include <cstdio>
+#include <cstring>
+#include <ctime>
+#include <sstream>
 
 using namespace SOCI;
 using namespace SOCI::details;

@@ -6,9 +6,10 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include "soci.h"
+#define SOCI_MYSQL_SOURCE
 #include "soci-mysql.h"
-
+#include <soci.h>
+#include <cctype>
 #include <ciso646>
 
 #ifdef _MSC_VER

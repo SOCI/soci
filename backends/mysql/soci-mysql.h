@@ -9,9 +9,26 @@
 #ifndef SOCI_MYSQL_H_INCLUDED
 #define SOCI_MYSQL_H_INCLUDED
 
+#ifdef _WIN32
+# ifdef SOCI_DLL
+#  ifdef SOCI_MYSQL_SOURCE
+#   define SOCI_MYSQL_DECL __declspec(dllexport)
+#  else
+#   define SOCI_MYSQL_DECL __declspec(dllimport)
+#  endif // SOCI_DLL
+# endif // SOCI_MYSQL_SOURCE
+#endif // _WIN32
+//
+// If SOCI_MYSQL_DECL isn't defined yet define it now
+#ifndef SOCI_MYSQL_DECL
+# define SOCI_MYSQL_DECL
+#endif
+
 #include "soci-backend.h"
+#include <winsock.h> // SOCKET
+#include <mysql.h> // MySQL Client
 #include <vector>
-#include <mysql.h>
+
 
 namespace SOCI
 {
@@ -219,7 +236,7 @@ struct MySQLBackEndFactory : BackEndFactory
         std::string const &connectString) const;
 };
 
-extern MySQLBackEndFactory const mysql;
+SOCI_MYSQL_DECL extern MySQLBackEndFactory const mysql;
 
 } // namespace SOCI
 

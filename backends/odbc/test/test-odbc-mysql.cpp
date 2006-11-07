@@ -94,7 +94,7 @@ int main(int argc, char** argv)
     }
     else
     {
-        connectString = "FILEDSN=./test-postgresql.dsn";
+        connectString = "FILEDSN=./test-mysql.dsn";
     }
     try
     {

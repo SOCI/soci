@@ -5,6 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#define SOCI_EMPTY_SOURCE
 #include "soci.h"
 #include "soci-empty.h"
 

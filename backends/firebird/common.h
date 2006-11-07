@@ -10,6 +10,7 @@
 
 #include "soci-firebird.h"
 #include <limits>
+#include <sstream>
 
 namespace SOCI
 {

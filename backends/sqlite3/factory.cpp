@@ -5,6 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#define SOCI_SQLITE3_SOURCE
 #include "soci.h"
 #include "soci-sqlite3.h"
 
@@ -23,4 +24,4 @@ Sqlite3SessionBackEnd * Sqlite3BackEndFactory::makeSession(
      return new Sqlite3SessionBackEnd(connectString);
 }
 
-Sqlite3BackEndFactory const SOCI::sqlite3;
+SOCI_SQLITE3_DECL Sqlite3BackEndFactory const SOCI::sqlite3;

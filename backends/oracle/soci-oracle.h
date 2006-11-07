@@ -8,8 +8,24 @@
 #ifndef SOCI_ORACLE_H_INCLUDED
 #define SOCI_ORACLE_H_INCLUDED
 
-#include <soci.h>
-#include <oci.h>
+#ifdef _WIN32
+# ifdef SOCI_DLL
+#  ifdef SOCI_ORACLE_SOURCE
+#   define SOCI_ORACLE_DECL __declspec(dllexport)
+#  else
+#   define SOCI_ORACLE_DECL __declspec(dllimport)
+#  endif // SOCI_ORACLE_SOURCE
+# endif // SOCI_DLL
+#endif // _WIN32
+//
+// If SOCI_ORACLE_DECL isn't defined yet define it now
+#ifndef SOCI_ORACLE_DECL
+# define SOCI_ORACLE_DECL
+#endif
+
+// TODO - mloskot: shouldn't soci.h be replaced with soci-backend.h?
+#include <soci.h> 
+#include <oci.h> // OCI
 #include <vector>
 
 #ifdef _MSC_VER
@@ -19,7 +35,8 @@
 
 namespace SOCI
 {
-class OracleSOCIError : public SOCIError
+
+class SOCI_ORACLE_DECL OracleSOCIError : public SOCIError
 {
 public:
     OracleSOCIError(std::string const & msg, int errNum = 0);
@@ -252,7 +269,7 @@ struct OracleBackEndFactory : BackEndFactory
 			            std::string const &connectString) const;
 };
 
-extern OracleBackEndFactory const oracle;
+SOCI_ORACLE_DECL extern OracleBackEndFactory const oracle;
 
 
 } // namespace SOCI

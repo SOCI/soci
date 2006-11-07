@@ -19,11 +19,11 @@ namespace SOCI
         namespace Firebird
         {
 
-            void getISCErrorDetails(ISC_STATUS * status_vector, std::string &msg);
+            void SOCI_FIREBIRD_DECL getISCErrorDetails(ISC_STATUS * status_vector, std::string &msg);
 
-            bool checkISCError(ISC_STATUS const * status_vector, long errNum);
+            bool SOCI_FIREBIRD_DECL checkISCError(ISC_STATUS const * status_vector, long errNum);
 
-            void throwISCError(ISC_STATUS * status_vector);
+            void SOCI_FIREBIRD_DECL throwISCError(ISC_STATUS * status_vector);
 
         } // namespace Firebird
 

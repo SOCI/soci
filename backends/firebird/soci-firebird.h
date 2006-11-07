@@ -9,8 +9,23 @@
 #ifndef SOCI_FIREBIRD_H_INCLUDED
 #define SOCI_FIREBIRD_H_INCLUDED
 
-#include <soci.h>
-#include <ibase.h>
+#ifdef _WIN32
+# ifdef SOCI_DLL
+#  ifdef SOCI_FIREBIRD_SOURCE
+#   define SOCI_FIREBIRD_DECL __declspec(dllexport)
+#  else
+#   define SOCI_FIREBIRD_DECL __declspec(dllimport)
+#  endif // SOCI_FIREBIRD_SOURCE
+# endif // SOCI_DLL
+#endif // _WIN32
+//
+// If SOCI_FIREBIRD_DECL isn't defined yet define it now
+#ifndef SOCI_FIREBIRD_DECL
+# define SOCI_FIREBIRD_DECL
+#endif
+
+#include <soci-backend.h>
+#include <ibase.h> // FireBird
 #include <vector>
 
 namespace SOCI
@@ -22,7 +37,7 @@ namespace SOCI
 // Anyone knows, where it is stated that 512 bytes is enough ?
     std::size_t const SOCI_FIREBIRD_ERRMSG = 512;
 
-    class FirebirdSOCIError : public SOCIError
+    class SOCI_FIREBIRD_DECL FirebirdSOCIError : public SOCIError
     {
         public:
             FirebirdSOCIError(std::string const & msg,
@@ -298,7 +313,7 @@ protected:
             std::string const &connectString) const;
     };
 
-    extern FirebirdBackEndFactory const firebird;
+    SOCI_FIREBIRD_DECL extern FirebirdBackEndFactory const firebird;
 
 } // namespace SOCI
 

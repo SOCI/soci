@@ -5,14 +5,15 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include "soci.h"
+#define SOCI_ORACLE_SOURCE
 #include "soci-oracle.h"
 #include "error.h"
-#include <cstring>
-#include <sstream>
-#include <cstdio>
-#include <ctime>
+#include <soci.h>
 #include <cctype>
+#include <cstdio>
+#include <cstring>
+#include <ctime>
+#include <sstream>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)

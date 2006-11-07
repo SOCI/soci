@@ -9,6 +9,7 @@
 #define COMMON_TESTS_H_INCLUDED
 
 #include "soci.h"
+#include "soci-config.h"
 
 #include <algorithm>
 #include <cmath>

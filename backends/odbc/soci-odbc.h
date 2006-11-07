@@ -8,13 +8,27 @@
 #ifndef SOCI_ODBC_H_INCLUDED
 #define SOCI_ODBC_H_INCLUDED
 
-#include "soci-backend.h"
+#ifdef _WIN32
+# ifdef SOCI_DLL
+#  ifdef SOCI_ODBC_SOURCE
+#   define SOCI_ODBC_DECL __declspec(dllexport)
+#  else
+#   define SOCI_ODBC_DECL __declspec(dllimport)
+#  endif // SOCI_ODBC_SOURCE
+# endif // SOCI_DLL
+#endif // _WIN32
+//
+// If SOCI_ODBC_DECL isn't defined yet define it now
+#ifndef SOCI_ODBC_DECL
+# define SOCI_ODBC_DECL
+#endif
 
+#include <soci-backend.h>
 #ifdef _MSC_VER
 #include <windows.h>
 #endif
-
-#include <sqlext.h>
+#include <sqlext.h> // ODBC
+#include <vector>
 
 namespace SOCI
 {
@@ -234,9 +248,9 @@ struct ODBCBackEndFactory : BackEndFactory
         std::string const &connectString) const;
 };
 
-extern ODBCBackEndFactory const odbc;
+SOCI_ODBC_DECL extern ODBCBackEndFactory const odbc;
 
-class ODBCSOCIError : public SOCIError
+class SOCI_ODBC_DECL ODBCSOCIError : public SOCIError
 {
     SQLCHAR message_[SQL_MAX_MESSAGE_LENGTH + 1];
     SQLCHAR sqlstate_[SQL_SQLSTATE_SIZE + 1];

@@ -4,14 +4,15 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#include "soci.h"
-#include "soci-odbc.h"
-#include <cstring>
-#include <sstream>
-#include <cstdio>
-#include <ctime>
-#include <cctype>
 
+#define SOCI_ODBC_SOURCE
+#include "soci-odbc.h"
+#include <soci.h>
+#include <cctype>
+#include <cstdio>
+#include <cstring>
+#include <ctime>
+#include <sstream>
 
 #ifdef _MSC_VER
 // disables the warning about converting int to void*.  This is a 64 bit compatibility
