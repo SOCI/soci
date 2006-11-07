@@ -187,6 +187,22 @@ void details::StatementImpl::exchangeForRow(IntoTypePtr const &i)
     i.release();
 }
 
+void details::StatementImpl::exchangeForRowset(IntoTypePtr const &i)
+{
+    if (!intos_.empty())
+    {
+        throw SOCIError("Explicit into elements not allowed with rowset.");
+    }
+
+    IntoTypeBase *p = i.get();
+    intos_.push_back(p);
+    i.release();
+
+    int definePosition = 1;
+    p->define(*this, definePosition);
+    definePositionForRow_ = definePosition;
+} 
+
 void details::StatementImpl::exchange(UseTypePtr const &u)
 {
     uses_.push_back(u.get());

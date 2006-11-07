@@ -484,6 +484,7 @@ public:
     bool fetch();
     void describe();
     void setRow(Row* r);
+    void exchangeForRowset(details::IntoTypePtr const &i);
 
     // for diagnostics and advanced users
     // (downcast it to expected back-end statement class)
@@ -595,6 +596,10 @@ public:
     bool fetch()        { return impl_->fetch(); }
     void describe()     { impl_->describe();     }
     void setRow(Row* r) { impl_->setRow(r);      }
+    void exchangeForRowset(details::IntoTypePtr const &i)
+    {
+        impl_->exchangeForRowset(i);
+    }
 
     // for diagnostics and advanced users
     // (downcast it to expected back-end statement class)
@@ -684,6 +689,11 @@ public:
     bool execute(bool withDataExchange = false)
     {
         return impl_->execute(withDataExchange);
+    }
+
+    bool fetch()
+    {
+        return impl_->fetch();
     }
 
 private:
@@ -1980,6 +1990,226 @@ public:
 
 
 } // namespace details
+
+
+//
+// Rowset iterator of input category.
+//
+template <typename T>
+class rowset_iterator
+{
+public:
+
+    // Standard iterator traits
+
+    typedef std::input_iterator_tag iterator_category;
+    typedef T  value_type;
+    typedef T* pointer;
+    typedef T& reference;
+    typedef ptrdiff_t difference_type;
+
+    // Constructors
+ 
+    rowset_iterator()
+        : st_(0), define_(0)
+    {}
+
+    rowset_iterator(Statement& st, T& define)
+        : st_(&st), define_(&define)
+    {
+        assert(0 != st_); 
+        assert(0 != define_);
+        assert(0 != st_->getBackEnd()); 
+
+        // Fetch first row to properly initialize iterator
+        ++(*this);
+    }
+    
+    // Access operators
+    
+    reference operator*() const
+    { 
+        return (*define_);
+    }
+
+    pointer operator->() const
+    {
+        return &(operator*());
+    }
+    
+    // Iteration operators
+
+    rowset_iterator& operator++()
+    {
+        // Fetch next row from dataset
+        
+        if (!st_->fetch())
+        {
+            // Set iterator to non-derefencable state (pass-the-end)
+            st_ = 0; 
+            define_ = 0;
+        }
+
+        return (*this);
+    }
+
+    rowset_iterator operator++(int)
+    {
+        rowset_iterator tmp(*this);
+        ++(*this);
+        return tmp;
+    }
+
+    // Comparison operators
+
+    bool operator==(rowset_iterator const& rhs) const
+    {
+        return (st_== rhs.st_ && define_ == rhs.define_);
+    }
+
+    bool operator!=(rowset_iterator const& rhs) const
+    {
+        return (!(*this == rhs));
+    }
+
+private:
+
+    // TODO - mloskot: think about weak_ptr here, an observer concept
+    Statement* st_;
+    T* define_;
+
+}; // class rowset_iterator
+
+
+namespace details
+{
+
+//
+// Implementation of Rowset
+//
+template <typename T>
+class RowsetImpl
+{
+public:
+
+    typedef rowset_iterator<T> iterator;
+
+    RowsetImpl(details::PrepareTempType const& prep)
+        : refs_(1), st_(new Statement(prep)), define_(new T())
+    {
+        assert(0 != st_.get());
+        assert(0 != define_.get());
+
+        st_->exchangeForRowset(into(*define_));
+        st_->execute();
+    }
+
+    void incRef()
+    {
+        ++refs_;
+    }
+
+    void decRef()
+    {
+        if (--refs_ == 0)
+        {
+            delete this;
+        }
+    }
+
+    iterator begin() const
+    {
+        // No ownership transfer occurs here
+        return iterator(*st_, *define_);
+    }
+
+    iterator end() const
+    {
+        return iterator();
+    }
+
+private:
+
+    unsigned int refs_;
+
+    const std::auto_ptr<Statement> st_;
+    const std::auto_ptr<T> define_;
+
+    // Non-copyable
+    RowsetImpl(RowsetImpl const&);
+    RowsetImpl& operator=(RowsetImpl const&);
+
+}; // class RowsetImpl
+
+} // namespace details
+
+
+//
+// Rowset is a thin wrapper on Statement and provides access to STL-like input iterator.
+// The rowset_iterator can be used to easily loop through Statement results and
+// use STL algorithms accepting input iterators.
+//
+template <typename T = SOCI::Row>
+class Rowset
+{
+public:
+
+    typedef T value_type;
+    typedef rowset_iterator<T> iterator;
+    typedef rowset_iterator<T> const_iterator;
+    
+    Rowset(details::PrepareTempType const& prep)
+        : pimpl_(new details::RowsetImpl<T>(prep))
+    {
+        assert(0 != pimpl_);
+    }
+
+    Rowset(Rowset const& other)
+        : pimpl_(other.pimpl_)
+    {
+        assert(0 != pimpl_);
+
+        pimpl_->incRef();
+    }
+
+    ~Rowset()
+    {
+        assert(0 != pimpl_);
+
+        pimpl_->decRef();
+    } 
+
+    Rowset& operator=(Rowset const& rhs)
+    {
+        assert(0 != pimpl_);
+        assert(0 != rhs.pimpl_);
+
+        rhs.incRef(); 
+        pimpl_->decRef();
+        pimpl_= rhs.pimpl_;
+    }
+
+    const_iterator begin() const
+    {
+        assert(0 != pimpl_);
+
+        return pimpl_->begin();
+    }
+    
+    const_iterator end() const
+    {
+        assert(0 != pimpl_);
+
+        return pimpl_->end();
+    }
+  
+private:
+
+    // Pointer to implementation - the body
+    details::RowsetImpl<T>* pimpl_;
+
+}; // class Rowset
+
 
 } // namespace SOCI
 

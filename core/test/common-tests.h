@@ -10,8 +10,9 @@
 
 #include "soci.h"
 
-#include <iostream>
+#include <algorithm>
 #include <cmath>
+#include <iostream>
 #include <string>
 
 // Objects used later in tests 14,15
@@ -197,6 +198,14 @@ public:
     test15();
     test16();
     test17();
+    test18();
+    test19();
+    test20();
+    test21();
+    test22();
+    test23();
+    test24();
+    test25();
     }
 
 private:
@@ -1984,7 +1993,288 @@ void test17()
     std::cout << "test 17 passed\n";
 }
 
-};
+// test for Rowset creation and copying
+void test18()
+{
+    Session sql(backEndFactory_, connectString_);
+    
+    // create and populate the test table
+    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    {
+        // Open empty rowset
+        Rowset<Row> rs1 = (sql.prepare << "select * from soci_test");
+
+        // Copy by assignment
+        Rowset<Row> rs2 = rs1;
+        Rowset<Row> rs3(rs2);
+
+        // TODO - mloskot:
+        // Fix issue with rs1.begin() == rs2.begin()
+    }
+
+    std::cout << "test 18 passed" << std::endl;
+}
+
+// test for simple iterating using Rowset iterator (without reading data)
+void test19()
+{
+    Session sql(backEndFactory_, connectString_);
+    
+    // create and populate the test table
+    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    {
+        sql << "insert into soci_test(id, val) values(1, 10)";
+        sql << "insert into soci_test(id, val) values(2, 11)";
+        sql << "insert into soci_test(id, val) values(3, NULL)";
+        sql << "insert into soci_test(id, val) values(4, NULL)";
+        sql << "insert into soci_test(id, val) values(5, 12)";
+        {
+            Rowset<Row> rs = (sql.prepare << "select * from soci_test");
+
+            assert(5 == std::distance(rs.begin(), rs.end()));
+        }
+    }
+
+    std::cout << "test 19 passed" << std::endl;
+}
+
+// test for reading Rowset<Row> using iterator
+void test20()
+{
+    Session sql(backEndFactory_, connectString_);
+    
+    // create and populate the test table
+    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    {
+        sql << "insert into soci_test(i1, i2, i3, str) values(1, 2, 3, 'abc')";
+        sql << "insert into soci_test(i1, i2, i3, str) values(2, 3, 4, 'def')";
+        sql << "insert into soci_test(i1, i2, i3, str) values(3, 4, 5, 'ghi')";
+        sql << "insert into soci_test(i1, i2, i3, str) values(4, 5, 6, 'jkl')";
+        sql << "insert into soci_test(i1, i2, i3, str) values(5, 6, 7, 'mno')";
+        {
+            Rowset<Row> rs = (sql.prepare << "select i1, i2, i3, str from soci_test order by id asc");
+
+            int tester1 = 0;
+            std::string tester2;
+            for (Rowset<Row>::const_iterator it = rs.begin(); it != rs.end(); ++it)
+            {
+                // Fetch next 4-columns row
+                Row const& row = *it;
+
+                assert(4 == row.size());
+
+                // Test first column properties
+                ColumnProperties const& column1 = row.getProperties(0);
+                assert("i1" == column1.getName());
+                assert(eInteger == column1.getDataType());
+
+                // Test 2nd column properties
+                ColumnProperties const& column2 = row.getProperties(3);
+                assert("str" == column2.getName());
+                assert(eString == column2.getDataType());
+
+                // Test data
+                ++tester1;
+                assert(tester1 == row.get<int>(0));
+                assert((tester1 + 1) == row.get<int>(1));
+                assert((tester1 + 2) == row.get<int>(2));
+
+                tester2 = row.get<std::string>(3);
+                assert(3 == tester2.size());
+              
+            }
+        }
+    }
+
+    std::cout << "test 20 passed" << std::endl;
+}
+
+// test for reading Rowset<int> using iterator
+void test21()
+{
+    Session sql(backEndFactory_, connectString_);
+    
+    // create and populate the test table
+    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    {
+        sql << "insert into soci_test(id) values(1)";
+        sql << "insert into soci_test(id) values(2)";
+        sql << "insert into soci_test(id) values(3)";
+        sql << "insert into soci_test(id) values(4)";
+        sql << "insert into soci_test(id) values(5)";
+        {
+            Rowset<int> rs = (sql.prepare << "select id from soci_test order by id asc");
+
+            // 1st row
+            Rowset<int>::const_iterator pos = rs.begin();
+            assert(1 == (*pos));
+
+            // 3rd row
+            std::advance(pos, 2);
+            assert(3 == (*pos));
+
+            // 5th row
+            std::advance(pos, 2);
+            assert(5 == (*pos));
+
+            // The End
+            ++pos;
+            assert(pos == rs.end());
+
+            // XXX - advancing with negative value throws segfault
+        }
+    }
+
+    std::cout << "test 21 passed" << std::endl;
+}
+
+// test for handling 'use' and reading Rowset<std::string> using iterator
+void test22()
+{
+    Session sql(backEndFactory_, connectString_);
+    
+    // create and populate the test table
+    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    {
+        sql << "insert into soci_test(str) values('abc')";
+        sql << "insert into soci_test(str) values('def')";
+        sql << "insert into soci_test(str) values('ghi')";
+        sql << "insert into soci_test(str) values('jkl')";
+        {
+            // Expected result in numbers
+            std::string idle("def");
+            Rowset<std::string> rs1 = (sql.prepare
+                    << "select str from soci_test where str = :idle",
+                    use(idle));
+
+            assert(1 == std::distance(rs1.begin(), rs1.end()));
+
+            // Expected result in value
+            idle = "jkl";
+            Rowset<std::string> rs2 = (sql.prepare
+                    << "select str from soci_test where str = :idle",
+                    use(idle));
+
+            assert(idle == *(rs2.begin()));
+        }
+    }
+
+    std::cout << "test 22 passed" << std::endl;
+}
+
+// test for handling troublemaker
+void test23()
+{
+    Session sql(backEndFactory_, connectString_);
+    
+    // create and populate the test table
+    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    {
+        sql << "insert into soci_test(str) values('abc')";
+        {
+            // verify exception thrown
+            bool caught = false;
+            try
+            {
+                std::string troublemaker;
+                Rowset<std::string> rs1 = (sql.prepare << "select str from soci_test",
+                        into(troublemaker));
+            }
+            catch(SOCIError const& e)
+            {
+                caught = true;
+            }
+            assert(caught);
+        }
+        std::cout << "test 23 passed" << std::endl;
+    }
+
+}
+
+// test for handling NULL values with expected exception:
+// "Null value fetched and no indicator defined."
+void test24()
+{
+    Session sql(backEndFactory_, connectString_);
+    
+    // create and populate the test table
+    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    {
+        sql << "insert into soci_test(val) values(1)";
+        sql << "insert into soci_test(val) values(2)";
+        sql << "insert into soci_test(val) values(NULL)";
+        sql << "insert into soci_test(val) values(3)";
+        {
+            // verify exception thrown
+            bool caught = false;
+            try
+            {
+                std::string troublemaker;
+                Rowset<int> rs = (sql.prepare << "select val from soci_test order by val asc");
+
+                int tester = 0;
+                for (Rowset<int>::const_iterator it = rs.begin(); it != rs.end(); ++it)
+                {
+                    tester = *it;
+                }
+
+                // Never should get here
+                assert(false);
+            }
+            catch(SOCIError const& e)
+            {
+                caught = true;
+            }
+            assert(caught);
+        }
+        std::cout << "test 24 passed" << std::endl;
+    }
+
+}
+
+// test25 is like test15 but with Rowset and iterators use
+void test25()
+{   
+    Session sql(backEndFactory_, connectString_);
+    
+    {
+        AutoTableCreator tableCreator(tc_.tableCreator3(sql));
+
+        PhonebookEntry p1;
+        sql << "select * from soci_test", into(p1);
+        assert(p1.name ==  "");
+        assert(p1.phone == "");
+
+        p1.name = "david";
+
+        sql << "insert into soci_test values(:name, :phone)", use(p1);
+        sql << "insert into soci_test values('john', '(404)123-4567')";
+        sql << "insert into soci_test values('doe', '(404)123-4567')";
+
+        Rowset<PhonebookEntry> rs = (sql.prepare << "select * from soci_test");
+        
+        int count = 0;
+        for (Rowset<PhonebookEntry>::const_iterator it = rs.begin(); it != rs.end(); ++it)
+        {
+            ++count;
+            PhonebookEntry const& p2 = (*it);
+            if (p2.name == "david")
+            {
+                // see TypeConversion<PhonebookEntry>
+                assert(p2.phone =="<NULL>");
+            }
+            else
+            {
+                assert(p2.phone == "(404)123-4567");
+            }
+        }
+
+        assert(3 == count);        
+    }
+    std::cout << "test 25 passed" << std::endl;
+}
+
+}; // class CommonTests
 
 } // namespace tests
 } // namespace SOCI
