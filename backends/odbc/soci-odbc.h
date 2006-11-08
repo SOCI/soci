@@ -295,3 +295,4 @@ inline bool is_odbc_error(SQLRETURN rc)
 
 
 #endif // SOCI_EMPTY_H_INCLUDED
+

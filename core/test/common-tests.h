@@ -2280,4 +2280,5 @@ void test25()
 } // namespace tests
 } // namespace SOCI
 
-#endif
+#endif // COMMON_TESTS_H_INCLUDED
+

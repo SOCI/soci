@@ -41,3 +41,4 @@ void resizeVector(void *p, std::size_t sz)
 } // namespace SOCI
 
 #endif // SQLITE3_COMMON_H_INCLUDED
+

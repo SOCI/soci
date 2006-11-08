@@ -275,3 +275,4 @@ SOCI_ORACLE_DECL extern OracleBackEndFactory const oracle;
 } // namespace SOCI
 
 #endif // SOCI_ORACLE_H_INCLUDED
+

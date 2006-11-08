@@ -318,3 +318,4 @@ protected:
 } // namespace SOCI
 
 #endif // SOCI_FIREBIRD_H_INCLUDED
+

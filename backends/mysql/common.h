@@ -37,3 +37,4 @@ std::size_t getVectorSize(void *p)
 } // namespace SOCI
 
 #endif // MYSQL_COMMON_H_INCLUDED
+

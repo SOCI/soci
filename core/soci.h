@@ -2215,3 +2215,4 @@ private:
 } // namespace SOCI
 
 #endif // SOCI_H_INCLUDED
+

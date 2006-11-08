@@ -56,3 +56,4 @@ inline bool is_odbc_error(SQLRETURN rc)
 }
 
 #endif
+

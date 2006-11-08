@@ -34,3 +34,4 @@ std::size_t getVectorSize(void *p)
 } // namespace SOCI
 
 #endif // POSTGRESQL_COMMON_H_INCLUDED
+

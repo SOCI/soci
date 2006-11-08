@@ -28,3 +28,4 @@ void getErrorDetails(sword res, OCIError *errhp,
 } // namespace SOCI
 
 #endif // ORACLE_COMMON_H_INCLUDED
+

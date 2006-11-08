@@ -243,3 +243,4 @@ SOCI_MYSQL_DECL extern MySQLBackEndFactory const mysql;
 } // namespace SOCI
 
 #endif // SOCI_MYSQL_H_INCLUDED
+

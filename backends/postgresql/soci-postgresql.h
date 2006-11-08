@@ -248,3 +248,4 @@ SOCI_POSTGRESQL_DECL extern PostgreSQLBackEndFactory const postgresql;
 } // namespace SOCI
 
 #endif // SOCI_POSTGRESQL_H_INCLUDED
+

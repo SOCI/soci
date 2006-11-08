@@ -209,3 +209,4 @@ struct SOCI_DECL BackEndFactory
 } // namespace SOCI
 
 #endif // SOCI_COMMON_H_INCLUDED
+

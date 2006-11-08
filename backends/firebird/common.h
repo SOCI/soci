@@ -142,3 +142,4 @@ namespace SOCI
 } // namespace SOCI
 
 #endif // FIREBIRD_COMMON_H_INCLUDED
+

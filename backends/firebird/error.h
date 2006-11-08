@@ -32,3 +32,4 @@ namespace SOCI
 } // namespace SOCI
 
 #endif // FIREBIRD_ERROR_H_INCLUDED
+
