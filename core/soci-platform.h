@@ -1,3 +1,9 @@
+//
+// Copyright (C) 2006 Mateusz Loskot
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
+//
 #ifndef SOCI_PLATFORM_H_INCLUDED
 #define SOCI_PLATFORM_H_INCLUDED
 
@@ -17,10 +23,10 @@
 # define HAVE_STRTOLL 1
 # define strtoll(nptr, endptr, base) _strtoi64(nptr, endptr, base)
 #else
+# // XXX - Visual C++ versions prior 1300 don't support strtoi64
 # undef HAVE_STRTOLL
 #endif // _MSC_VER >= 1300
 
 #endif // _MSC_VER
 
 #endif // SOCI_PLATFORM_H_INCLUDED
-

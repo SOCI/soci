@@ -7,6 +7,7 @@
 
 #ifndef SOCI_CONFIG_H_INCLUDED
 #define SOCI_CONFIG_H_INCLUDED
+
 //
 // On Windows platform, define SOCI_DECL depending on
 // static or dynamic (SOCI_DLL) linkage.
@@ -14,6 +15,7 @@
 // For details, see
 // http://www.boost.org/more/separate_compilation.html
 //
+
 #ifdef _WIN32
 # ifdef SOCI_DLL
 #  ifdef SOCI_SOURCE
@@ -23,7 +25,6 @@
 #  endif // SOCI_SOURCE
 # endif // SOCI_DLL
 #endif // _WIN32
-
 //
 // If SOCI_DECL isn't defined yet define it now
 #ifndef SOCI_DECL
@@ -32,7 +33,6 @@
 
 #ifdef _MSC_VER
 #pragma warning(disable:4251 4275)
-#endif
+#endif // _MSC_VER
 
 #endif // SOCI_CONFIG_H_INCLUDED
-
