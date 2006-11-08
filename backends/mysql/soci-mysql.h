@@ -25,7 +25,9 @@
 #endif
 
 #include "soci-backend.h"
+#ifdef _WIN32
 #include <winsock.h> // SOCKET
+#endif // _WIN32
 #include <mysql.h> // MySQL Client
 #include <vector>
 

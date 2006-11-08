@@ -35,3 +35,4 @@
 #endif
 
 #endif // SOCI_CONFIG_H_INCLUDED
+
