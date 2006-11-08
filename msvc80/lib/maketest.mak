@@ -1,4 +1,4 @@
-# $Id: maketest.mak,v 1.1 2006/11/08 18:29:55 mloskot Exp $
+# $Id: maketest.mak,v 1.2 2006/11/08 20:20:30 mloskot Exp $
 #
 # Makefile to run SOCI tests using NMAKE utility on Windows.
 #
@@ -28,7 +28,6 @@ BUILDCONFIG = debug
 RM = -del
 
 all:	firebird oracle postgresql sqlite3
-	#mysql 
 
 default:	all
 
