@@ -2045,49 +2045,86 @@ void test20()
     Session sql(backEndFactory_, connectString_);
     
     // create and populate the test table
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    AutoTableCreator tableCreator(tc_.tableCreator2(sql));
     {
-        sql << "insert into soci_test(i1, i2, i3, str) values(1, 2, 3, 'abc')";
-        sql << "insert into soci_test(i1, i2, i3, str) values(2, 3, 4, 'def')";
-        sql << "insert into soci_test(i1, i2, i3, str) values(3, 4, 5, 'ghi')";
-        sql << "insert into soci_test(i1, i2, i3, str) values(4, 5, 6, 'jkl')";
-        sql << "insert into soci_test(i1, i2, i3, str) values(5, 6, 7, 'mno')";
         {
-            Rowset<Row> rs = (sql.prepare << "select i1, i2, i3, str from soci_test order by i1 asc");
+            // Empty rowset
+            Rowset<Row> rs = (sql.prepare << "select * from soci_test order by num_float asc");
+            assert(0 == std::distance(rs.begin(), rs.end()));
+        }
 
-            int tester1 = 0;
-            std::string tester2;
-            for (Rowset<Row>::const_iterator it = rs.begin(); it != rs.end(); ++it)
-            {
-                // Fetch next 4-columns row
-                Row const& row = *it;
+        {
+            // Non-empty rowset
+            sql << "insert into soci_test values(3.14, 123, \'Johny\',"
+                << tc_.toDateTime("2005-12-19 22:14:17")
+                << ", 'a')";
+            sql << "insert into soci_test values(6.28, 246, \'Robert\',"
+                << tc_.toDateTime("2004-10-01 18:44:10")
+                << ", 'b')";
 
-                assert(4 == row.size());
+            Rowset<Row> rs = (sql.prepare << "select * from soci_test");
 
-                // TODO - mloskot: Fix these tests!
-                /*
-                // Test first column properties
-                ColumnProperties const& column1 = row.getProperties(0);
+            Rowset<Row>::const_iterator it = rs.begin(); 
+            assert(it != rs.end());
+                
+            //
+            // First row
+            // 
+            Row const& r1 = (*it);
 
-                // TODO  - mloskot: On Oracle this assertion fails
-                assert("i1" == column1.getName());
-                assert(eInteger == column1.getDataType());
-                // Test 2nd column properties
-                ColumnProperties const& column2 = row.getProperties(3);
-                assert("str" == column2.getName());
-                assert(eString == column2.getDataType());
-                */
+            // Properties
+            assert(r1.size() == 5);
+            assert(r1.getProperties(0).getDataType() == eDouble);
+            assert(r1.getProperties(1).getDataType() == eInteger);
+            assert(r1.getProperties(2).getDataType() == eString);
+            assert(r1.getProperties(3).getDataType() == eDate);
+            assert(r1.getProperties(4).getDataType() == eString);
+            assert(r1.getProperties("num_int").getDataType() == eInteger);
 
-                // Test data
-                ++tester1;
-                assert(tester1 == row.get<int>(0));
-                assert((tester1 + 1) == row.get<int>(1));
-                assert((tester1 + 2) == row.get<int>(2));
+            // Data
+            assert(std::fabs(r1.get<double>(0) - 3.14) < 0.001);
+            assert(r1.get<int>(1) == 123);
+            assert(r1.get<std::string>(2) == "Johny");
+            std::tm t1 = r1.get<std::tm>(3);
+            assert(t1.tm_year == 105);
+            assert(r1.get<std::string>(4) == "a");
+            assert(std::fabs(r1.get<double>("num_float") - 3.14) < 0.001);
+            assert(r1.get<int>("num_int") == 123);
+            assert(r1.get<std::string>("name") == "Johny");
+            assert(r1.get<std::string>("chr") == "a");
 
-                tester2 = row.get<std::string>(3);
-                assert(3 == tester2.size());
-              
-            }
+            // 
+            // Iterate to second row
+            //
+            ++it;
+            assert(it != rs.end());
+
+            //
+            // Second row
+            //
+            Row const& r2 = (*it);
+
+            // Properties
+            assert(r2.size() == 5);
+            assert(r2.getProperties(0).getDataType() == eDouble);
+            assert(r2.getProperties(1).getDataType() == eInteger);
+            assert(r2.getProperties(2).getDataType() == eString);
+            assert(r2.getProperties(3).getDataType() == eDate);
+            assert(r2.getProperties(4).getDataType() == eString);
+            assert(r2.getProperties("num_int").getDataType() == eInteger);
+
+            // Data
+            assert(std::fabs(r2.get<double>(0) - 6.28) < 0.001);
+            assert(r2.get<int>(1) == 246);
+            assert(r2.get<std::string>(2) == "Robert");
+            std::tm t2 = r2.get<std::tm>(3);
+            assert(t2.tm_year == 104);
+            assert(r2.get<std::string>(4) == "b");
+            assert(std::fabs(r2.get<double>("num_float") - 6.28) < 0.001);
+            assert(r2.get<int>("num_int") == 246);
+            assert(r2.get<std::string>("name") == "Robert");
+            assert(r2.get<std::string>("chr") == "b");
+          
         }
     }
 
