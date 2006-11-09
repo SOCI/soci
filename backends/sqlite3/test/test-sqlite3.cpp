@@ -48,7 +48,7 @@ void test1()
         sql << "select id, name from test1 where oid = :rid",
         into(id), into(name), use(rid);
 
-        assert(id != 7);
+        assert(id == 7);
         assert(name == "John");
 
         sql << "drop table test1";
