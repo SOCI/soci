@@ -6,7 +6,7 @@ PGSQLINCLUDEDIR = -I/usr/include
 # The rest of the Makefile is indepentent of the target environment.
 
 COMPILER = g++
-CXXFLAGS = -Wall -pedantic -Wno-long-long -DSOCI_PGSQL_NOPARAMS
+CXXFLAGS = -Wall -pedantic -Wno-long-long -DSOCI_PGSQL_NOPARAMS -DSOCI_PGSQL_NOPREPARE
 CXXFLAGSSO = ${CXXFLAGS} -fPIC
 INCLUDEDIRS = -I../../core ${EMPTYINCLUDEDIR}
 
