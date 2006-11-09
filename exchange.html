@@ -447,40 +447,16 @@ be used transparently to insert into, update, and select from the
 database.</p>
 
 <p>To do so, provide an appropriate specialization of the <code>TypeConversion</code>
-struct that converts to and from one of the SOCI Base Types listed below:</p>
+struct that converts to and from one of the following SOCI Base Types:</p>
 
-<table border="1" cellpadding="5" cellspacing="0">
-  <tbody>
-    <tr>
-      <th>Oracle Data Type</th>
-      <th>SOCI Base Type</th>
-    </tr>
-    <tr>
-      <td>number</td>
-      <td><code>double</code></td>
-    </tr>
-    <tr>
-      <td>number</td>
-      <td><code>int</code></td>
-    </tr>
-    <tr>
-      <td>number</td>
-      <td><code>unsigned long</code></td>
-    </tr>
-    <tr>
-      <td>varchar, varchar2</td>
-      <td><code>std::string</code></td>
-    </tr>
-    <tr>
-      <td>char</td>
-      <td><code>char</code></td>
-    </tr>
-    <tr>
-      <td>date</td>
-      <td><code>std::tm</code></td>
-    </tr>
-  </tbody>
-</table>
+<ul>
+  <li><code>double</code></li>
+  <li><code>int</code></li>
+  <li><code>unsigned long</code></li>
+  <li><code>std::string</code></li>
+  <li><code>char</code></li>
+  <li><code>std::tm</code></li>
+</ul>
 
 <p>There are three required class members for a valid <code>TypeConversion</code>
 specialization:</p>
