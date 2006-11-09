@@ -16,7 +16,7 @@
 <div class="navigation-indented">
   <a href="#versions">Supported Versions</a><br />
   <a href="#tested">Tested Platforms</a><br />
-  <a href="#required">Required Client Libraries</a></br />
+  <a href="#required">Required Client Libraries</a><br />
 </div>
 <a href="#connecting">Connecting to the Database</a><br />
      
@@ -34,17 +34,18 @@
   <a href="#native">Accessing the Native Database API</a><br />
   <a href="#extensions">Backend-specific Extensions</a><br />
   <a href="#options">Configuration options</a><br />
+</div>
 
 <h3 id="prerequisites">Prerequisites</h3>
 <h4 id="versions">Supported Versions</h4>
 
-The SOCI PostgreSQL backend is supported for use with PostgreSQL >= 7.3, although versions older than 8.0 will suffer from limited feature support. See below for details.<br />
+<p>The SOCI PostgreSQL backend is supported for use with PostgreSQL >= 7.3, although versions older than 8.0 will suffer from limited feature support. See below for details.</p>
 
 <h4 id="tested">Tested Platforms</h4>
 
 <table border="1" cellpadding="5" cellspacing="0">
 <tbody>
-<tr></tr><th>PostgreSQL version</th><th>Operating System</th><th>Compiler</th></tr>
+<tr><th>PostgreSQL version</th><th>Operating System</th><th>Compiler</th></tr>
 <tr><td>8.1</td><td>FreeBSD 6.1</td><td>g++ 3.4.5</td></tr>
 <tr><td>7.3</td><td>Linux i686 2.4.21 (RedHat type)</td><td>g++ 3.2.3</td></tr>
 </tbody>
@@ -52,33 +53,33 @@ The SOCI PostgreSQL backend is supported for use with PostgreSQL >= 7.3, althoug
 
 <h4 id="required">Required Client Libraries</h4>
 
-The SOCI PostgreSQL backend requires PostgreSQL's <code>libpq</code> client library.
+<p>The SOCI PostgreSQL backend requires PostgreSQL's <code>libpq</code> client library.</p>
 
 <h4 id="connecting">Connecting to the Database</h4>
 
-To establish a connection to the PostgreSQL database, create a Session object
-using the <code>postgresql</code> backend factory together with a connection string:
+<p>To establish a connection to the PostgreSQL database, create a Session object
+using the <code>postgresql</code> backend factory together with a connection string:</p>
 
 <pre class="example">
-BackEndFactory const &backEnd = postgresql;
+BackEndFactory const &amp;backEnd = postgresql;
 Session sql(postgresql, "dbname=mydatabase");
 </pre>
 
 <p>The set of parameters used in the connection string for PostgreSQL is the same as accepted by the <code><a href="http://www.postgresql.org/docs/8.1/interactive/libpq.html#LIBPQ-CONNECT">PQconnectdb</a></code> function from the <code>libpq</code> library.</p>
 
-Once you have created a <code>Session</code> object as shown above, you can use it to access the database, for example:
+<p>Once you have created a <code>Session</code> object as shown above, you can use it to access the database, for example:</p>
 <pre class="example">
 int count;
-sql << "select count(*) from invoices", into(count);
+sql &lt;&lt; "select count(*) from invoices", into(count);
 </pre>
 
-(See the <a href="../basics.html">SOCI basics</a> and <a href="../exchange.html">exchanging data</a> documentation for general information on using the <code>Session</code> class.)
+<p>(See the <a href="../basics.html">SOCI basics</a> and <a href="../exchange.html">exchanging data</a> documentation for general information on using the <code>Session</code> class.)</p>
 
 <h4 id="dynamic">Dynamic Binding</h4>
 
-The PostgreSQL backend supports the use of the SOCI <code>Row</code> class, which facilitates retrieval of data whose type is not known at compile time.<br/><br/>
+<p>The PostgreSQL backend supports the use of the SOCI <code>Row</code> class, which facilitates retrieval of data whose type is not known at compile time.</p>
 
-When calling <code>Row::get&lt;T&gt()</code>, the type you should pass as T depends upon the underlying database type.<br/>  For the PostgreSQL backend, this type mapping is:<br /><br />
+<p>When calling <code>Row::get&lt;T&gt;()</code>, the type you should pass as T depends upon the underlying database type.<br/>  For the PostgreSQL backend, this type mapping is:</p>
 
 <table border="1" cellpadding="5" cellspacing="0">
   <tbody>
@@ -114,58 +115,58 @@ When calling <code>Row::get&lt;T&gt()</code>, the type you should pass as T depe
     </tr>
   </tbody>
 </table>
-<br />
-(See the <a href="../exchange.html#dynamic">dynamic resultset binding</a> documentation for general information on using the <code>Row</code> class.)
+
+<p>(See the <a href="../exchange.html#dynamic">dynamic resultset binding</a> documentation for general information on using the <code>Row</code> class.)</p>
 
 <h3 id="support">SOCI Feature Support</h3>
 <h4 id="bindingbyname">Binding by Name</h4>
 
-In addition to <a href="../exchange.html#bind_position">binding by position</a>, the PostgreSQL backend supports <a href="../exchange.html#bind_name">binding by name</a>, via an overload of the <code>use()</code> function:
+<p>In addition to <a href="../exchange.html#bind_position">binding by position</a>, the PostgreSQL backend supports <a href="../exchange.html#bind_name">binding by name</a>, via an overload of the <code>use()</code> function:</p>
 
 <pre class="example">
 int id = 7;
-sql << "select name from person where id = :id", use(id, "id")
+sql &lt;&lt; "select name from person where id = :id", use(id, "id")
 </pre>
 
-Apart from the portable "colon-name" syntax above, which is achieved by rewriting the query string, the backend also supports the PostgreSQL native numbered syntax:
+<p>Apart from the portable "colon-name" syntax above, which is achieved by rewriting the query string, the backend also supports the PostgreSQL native numbered syntax:</p>
 
 <pre class="example">
 int i = 7;
 int j = 8;
-sql << "insert into t(x, y) values($1, $2)", use(i), use(j);
+sql &lt;&lt; "insert into t(x, y) values($1, $2)", use(i), use(j);
 </pre>
 
-The use of native syntax is not recommended, but can be nevertheless imposed by switching off the query rewriting. This can be achieved by defining the macro <code>SOCI_PGSQL_NOBINDBYNAME</code> and it is actually necessary for PostgreSQL 7.3, in which case binding of use elements is not supported at all. See the <a href="#options">Configuration options</a> section for details.
+<p>The use of native syntax is not recommended, but can be nevertheless imposed by switching off the query rewriting. This can be achieved by defining the macro <code>SOCI_PGSQL_NOBINDBYNAME</code> and it is actually necessary for PostgreSQL 7.3, in which case binding of use elements is not supported at all. See the <a href="#options">Configuration options</a> section for details.</p>
 
 <h4 id="bulk">Bulk Operations</h4>
 
-The PostgreSQL backend has full support for SOCI's <a href="../statements.html#bulk">bulk operations</a> interface.
+<p>The PostgreSQL backend has full support for SOCI's <a href="../statements.html#bulk">bulk operations</a> interface.</p>
 
 <h4 id="transactions">Transactions</h4>
 
-<a href="../statements.html#transactions">Transactions</a> are also fully supported by the PostgreSQL backend.<br />
+<p><a href="../statements.html#transactions">Transactions</a> are also fully supported by the PostgreSQL backend.</p>
 
 <h4 id="blob">BLOB Data Type</h4>
 
-The PostgreSQL backend supports working with data stored in columns of type Blob, via SOCI's <a href="../exchange.html#blob"><code>BLOB</code></a> class with the exception that trimming is not supported.
+<p>The PostgreSQL backend supports working with data stored in columns of type Blob, via SOCI's <a href="../exchange.html#blob"><code>BLOB</code></a> class with the exception that trimming is not supported.</p>
 
 <h4 id="rowid">RowID Data Type</h4>
 
-The concept of row identifier (OID in PostgreSQL) is supported via SOCI's <a href="../reference.html#rowid">RowID</a> class.
+<p>The concept of row identifier (OID in PostgreSQL) is supported via SOCI's <a href="../reference.html#rowid">RowID</a> class.</p>
 
 <h4 id="nested">Nested Statements</h4>
 
-Nested statements are not supported by PostgreSQL backend.
+<p>Nested statements are not supported by PostgreSQL backend.</p>
 
 <h4 id="procedures">Stored Procedures</h4>
 
-PostgreSQL stored procedures can be executed by using SOCI's <a href="../statements.html#procedures">Procedure</a> class.
+<p>PostgreSQL stored procedures can be executed by using SOCI's <a href="../statements.html#procedures">Procedure</a> class.</p>
 
 <h3 id="native">Acessing the native database API</h3>
 
-SOCI provides access to underlying datbabase APIs via several getBackEnd() functions, as described in the <a href="../beyond.html">beyond SOCI</a> documentation.<br /><br />
+<p>SOCI provides access to underlying datbabase APIs via several getBackEnd() functions, as described in the <a href="../beyond.html">beyond SOCI</a> documentation.</p>
 
-The PostgreSQL backend provides the following concrete classes for navite API access:<br /><br />
+<p>The PostgreSQL backend provides the following concrete classes for navite API access:</p>
 
 <table border="1" cellpadding="5" cellspacing="0">
   <tbody>
@@ -195,11 +196,11 @@ The PostgreSQL backend provides the following concrete classes for navite API ac
 
 <h3 id="extensions">Backend-specific extensions</h3>
 
-None.
+<p>None.</p>
 
 <h3 id="options">Configuration options</h3>
 
-To support older PostgreSQL versions, the following configuration macros are recognized:
+<p>To support older PostgreSQL versions, the following configuration macros are recognized:</p>
 <ul>
 <li><code>SOCI_PGSQL_NOBINDBYNAME</code> - switches off the query rewriting.</li>
 <li><code>SOCI_PGSQL_NOPARAMS</code> - disables support for parameterized queries (binding of use elements), automatically imposes also the <code>SOCI_PGSQL_NOBINDBYNAME</code> macro. It is necessary for PostgreSQL 7.3.</li>
