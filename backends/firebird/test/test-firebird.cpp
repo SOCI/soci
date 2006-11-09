@@ -1064,6 +1064,16 @@ void test11()
 
 int main(int argc, char** argv)
 {
+
+#ifdef _MSC_VER
+    // Redirect errors, unrecoverable problems, and assert() failures to STDERR,
+    // instead of debug message window.
+    // This hack is required to run asser()-driven tests by Buildbot.
+    // NOTE: Comment this 2 lines for debugging with Visual C++ debugger to catch assertions inside.
+    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
+    _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
+#endif //_MSC_VER
+
     if (argc == 2)
     {
         connectString = argv[1];
