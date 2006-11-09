@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.2 2006/08/30 14:25:03 mloskot Exp $
+# $Id: Makefile.am,v 1.3 2006/11/09 20:03:58 mloskot Exp $
 # 
 # Copyright (C) 2006, Mateusz Loskot
 #
@@ -23,6 +23,11 @@ lib@SOCI_EMPTY_LIBRARY_NAME@_la_SOURCES = \
 	statement.cpp \
 	vector-into-type.cpp \
 	vector-use-type.cpp
+
+soci_emptydir = $(includedir)/soci/empty
+
+soci_empty_HEADERS = \
+	soci-empty.h
 
 MAINTAINERCLEANLOCAL = Makefile.in
 

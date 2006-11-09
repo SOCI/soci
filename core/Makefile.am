@@ -1,10 +1,12 @@
-# $Id: Makefile.am,v 1.2 2006/08/30 14:25:04 mloskot Exp $
+# $Id: Makefile.am,v 1.3 2006/11/09 20:03:58 mloskot Exp $
 # 
 # Copyright (C) 2006, Mateusz Loskot
 #
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
 AM_CXXFLAGS = -fPIC
+
+SUBDIRS = test
 
 lib_LTLIBRARIES	= lib@SOCI_CORE_LIBRARY_NAME@.la
 
@@ -18,7 +20,9 @@ socidir = $(includedir)/soci
 
 soci_HEADERS = \
 	soci.h \
-	soci-backend.h
+	soci-backend.h \
+	soci-config.h \
+	soci-platform.h
 
 MAINTAINERCLEANLOCAL = Makefile.in
 
