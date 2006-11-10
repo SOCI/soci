@@ -2049,7 +2049,7 @@ void test20()
     {
         {
             // Empty rowset
-            Rowset<Row> rs = (sql.prepare << "select * from soci_test order by num_float asc");
+            Rowset<Row> rs = (sql.prepare << "select * from soci_test");
             assert(0 == std::distance(rs.begin(), rs.end()));
         }
 
