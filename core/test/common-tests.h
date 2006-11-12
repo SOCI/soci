@@ -2082,16 +2082,42 @@ void test20()
             assert(r1.getProperties("num_int").getDataType() == eInteger);
 
             // Data
-            assert(std::fabs(r1.get<double>(0) - 3.14) < 0.001);
-            assert(r1.get<int>(1) == 123);
-            assert(r1.get<std::string>(2) == "Johny");
-            std::tm t1 = r1.get<std::tm>(3);
-            assert(t1.tm_year == 105);
-            assert(r1.get<std::string>(4) == "a");
-            assert(std::fabs(r1.get<double>("num_float") - 3.14) < 0.001);
-            assert(r1.get<int>("num_int") == 123);
-            assert(r1.get<std::string>("name") == "Johny");
-            assert(r1.get<std::string>("chr") == "a");
+
+            // Since we didn't specify order by in the above query,
+            // the 2 rows may be returned in either order
+            // (If we specify order by, we can't do it in a cross db
+            // compatible way, because the Oracle table for this has been
+            // created with lower case column names)
+
+            std::string name = r1.get<std::string>(2);
+
+            assert(name == "Johny" || name == "Robert");
+            if (name == "Johny")
+            {
+                assert(std::fabs(r1.get<double>(0) - 3.14) < 0.001);
+                assert(r1.get<int>(1) == 123);
+                assert(r1.get<std::string>(2) == "Johny");
+                std::tm t1 = r1.get<std::tm>(3);
+                assert(t1.tm_year == 105);
+                assert(r1.get<std::string>(4) == "a");
+                assert(std::fabs(r1.get<double>("num_float") - 3.14) < 0.001);
+                assert(r1.get<int>("num_int") == 123);
+                assert(r1.get<std::string>("name") == "Johny");
+                assert(r1.get<std::string>("chr") == "a");
+            }
+            else
+            {
+                assert(std::fabs(r1.get<double>(0) - 6.28) < 0.001);
+                assert(r1.get<int>(1) == 246);
+                assert(r1.get<std::string>(2) == "Robert");
+                std::tm t1 = r1.get<std::tm>(3);
+                assert(t1.tm_year == 104);
+                assert(r1.get<std::string>(4) == "b");
+                assert(std::fabs(r1.get<double>("num_float") - 6.28) < 0.001);
+                assert(r1.get<int>("num_int") == 246);
+                assert(r1.get<std::string>("name") == "Robert");
+                assert(r1.get<std::string>("chr") == "b");
+            }
 
             // 
             // Iterate to second row
@@ -2113,18 +2139,36 @@ void test20()
             assert(r2.getProperties(4).getDataType() == eString);
             assert(r2.getProperties("num_int").getDataType() == eInteger);
 
-            // Data
-            assert(std::fabs(r2.get<double>(0) - 6.28) < 0.001);
-            assert(r2.get<int>(1) == 246);
-            assert(r2.get<std::string>(2) == "Robert");
-            std::tm t2 = r2.get<std::tm>(3);
-            assert(t2.tm_year == 104);
-            assert(r2.get<std::string>(4) == "b");
-            assert(std::fabs(r2.get<double>("num_float") - 6.28) < 0.001);
-            assert(r2.get<int>("num_int") == 246);
-            assert(r2.get<std::string>("name") == "Robert");
-            assert(r2.get<std::string>("chr") == "b");
+            std::string newName = r2.get<std::string>(2);
+            assert(name != newName);
+            assert(newName == "Johny" || newName == "Robert");
           
+            if (newName == "Johny")
+            {
+                assert(std::fabs(r2.get<double>(0) - 3.14) < 0.001);
+                assert(r2.get<int>(1) == 123);
+                assert(r2.get<std::string>(2) == "Johny");
+                std::tm t2 = r2.get<std::tm>(3);
+                assert(t2.tm_year == 105);
+                assert(r2.get<std::string>(4) == "a");
+                assert(std::fabs(r2.get<double>("num_float") - 3.14) < 0.001);
+                assert(r2.get<int>("num_int") == 123);
+                assert(r2.get<std::string>("name") == "Johny");
+                assert(r2.get<std::string>("chr") == "a");
+            }
+            else
+            {
+                assert(std::fabs(r2.get<double>(0) - 6.28) < 0.001);
+                assert(r2.get<int>(1) == 246);
+                assert(r2.get<std::string>(2) == "Robert");
+                std::tm t2 = r2.get<std::tm>(3);
+                assert(t2.tm_year == 104);
+                assert(r2.get<std::string>(4) == "b");
+                assert(std::fabs(r2.get<double>("num_float") - 6.28) < 0.001);
+                assert(r2.get<int>("num_int") == 246);
+                assert(r2.get<std::string>("name") == "Robert");
+                assert(r2.get<std::string>("chr") == "b");
+            }
         }
     }
 
