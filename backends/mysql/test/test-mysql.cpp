@@ -69,7 +69,7 @@ void test1()
         sql << "drop function myecho";
     }
 
-    std::cout << "test 12 passed" << std::endl;
+    std::cout << "test 1 passed" << std::endl;
 }
 
 // DDL Creation objects for common tests
