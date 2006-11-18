@@ -1065,10 +1065,10 @@ void test6()
             unsigned long ul = 4000000000ul;
             sql << "insert into soci_test(ul) values(:num)", use(ul);
 
-            std::string s;
-            sql << "select ul from soci_test", into(s);
+            unsigned long ul2 = 0;
+            sql << "select ul from soci_test", into(ul2);
 
-            assert(s == "4000000000");
+            assert(ul2 == 4000000000ul);
         }
 
         // test for double
