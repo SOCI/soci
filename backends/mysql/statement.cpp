@@ -11,6 +11,7 @@
 #include <soci.h>
 #include <cctype>
 #include <ciso646>
+//#include <iostream>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -361,7 +362,11 @@ void MySQLStatementBackEnd::describeColumn(int colNum,
     case FIELD_TYPE_FLOAT:      //MYSQL_TYPE_FLOAT:
     case FIELD_TYPE_DOUBLE:     //MYSQL_TYPE_DOUBLE:
     case FIELD_TYPE_DECIMAL:    //MYSQL_TYPE_DECIMAL:
-//  case MYSQL_TYPE_NEWDECIMAL:
+    // Prior to MySQL v. 5.x there was no column type corresponding
+    // to MYSQL_TYPE_NEWDECIMAL. However, MySQL server 5.x happily
+    // sends field type number 246, no matter which version of libraries
+    // the client is using.
+    case 246:                   //MYSQL_TYPE_NEWDECIMAL:
         type = eDouble;
         break;
     case FIELD_TYPE_TIMESTAMP:  //MYSQL_TYPE_TIMESTAMP:
@@ -378,6 +383,7 @@ void MySQLStatementBackEnd::describeColumn(int colNum,
         type = eString;
         break;
     default:
+        //std::cerr << "field->type: " << field->type << std::endl;
         throw SOCIError("Unknown data type.");
     }
     columnName = field->name;
