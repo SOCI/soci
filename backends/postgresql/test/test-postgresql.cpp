@@ -14,6 +14,7 @@
 #include <cassert>
 #include <cmath>
 #include <ctime>
+#include <cstdlib>
 
 using namespace SOCI;
 using namespace SOCI::tests;
@@ -325,7 +326,7 @@ int main(int argc, char** argv)
             << " connectstring\n"
             << "example: " << argv[0]
             << " \'connect_string_for_PostgreSQL\'\n";
-        exit(1);
+        return EXIT_FAILURE;
     }
 
     try
@@ -341,9 +342,11 @@ int main(int argc, char** argv)
         test3();
 
         std::cout << "\nOK, all tests passed.\n\n";
+        return EXIT_SUCCESS;
     }
     catch (std::exception const & e)
     {
         std::cout << e.what() << '\n';
+        return EXIT_FAILURE;
     }
 }
