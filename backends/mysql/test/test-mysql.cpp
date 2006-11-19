@@ -39,7 +39,7 @@ void test1()
 	
         sql <<
             "create function myecho(msg text) "
-            "returns text "
+            "returns text deterministic "
             "  return msg; ";
  
         std::string in("my message");
