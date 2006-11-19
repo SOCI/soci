@@ -81,7 +81,7 @@ struct TableCreator1 : public TableCreatorBase
         session << "create table soci_test(id integer, val integer, c char, "
                  "str varchar(20), sh int2, ul numeric(20), d float8, "
                  "tm datetime, i1 integer, i2 integer, i3 integer, " 
-                 "name varchar(20))";
+                 "name varchar(20)) type=InnoDB";
     }
 };
 
@@ -138,6 +138,18 @@ public:
 
 };
 
+bool areTransactionsSupported()
+{
+    Session sql(backEnd, connectString);
+    sql << "drop table if exists soci_test";
+    sql << "create table soci_test (id int) type=InnoDB";
+    Row r;
+    sql << "show table status like \'soci_test\'", into(r);
+    bool retv = (r.get<std::string>(1) == "InnoDB");
+    sql << "drop table soci_test";
+    return retv;
+}
+
 int main(int argc, char** argv)
 {
     if (argc == 2)
@@ -157,7 +169,8 @@ int main(int argc, char** argv)
     {
         TestContext tc(backEnd, connectString);
         CommonTests tests(tc);
-        tests.run();
+        bool checkTransactions = areTransactionsSupported();
+        tests.run(checkTransactions);
 
         std::cout << "\nSOCI MySQL Tests:\n\n";
 
