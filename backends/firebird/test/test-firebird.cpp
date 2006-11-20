@@ -9,12 +9,15 @@
 #include "soci.h"
 #include "soci-firebird.h"
 #include "error.h"            // SOCI::details::Firebird::throwISCError()
+#include "common-tests.h"
 #include <iostream>
 #include <string>
 #include <cassert>
 #include <ctime>
 
 using namespace SOCI;
+using namespace SOCI::tests;
+
 
 std::string connectString;
 BackEndFactory const &backEnd = firebird;
@@ -1062,6 +1065,80 @@ void test11()
     std::cout << "test 11 passed" << std::endl;
 }
 
+//
+// Support for SOCI Common Tests
+//
+
+struct TableCreator1 : public TableCreatorBase
+{
+    TableCreator1(Session& session)
+            : TableCreatorBase(session)
+    {
+        session << "create table soci_test(id integer, val integer, c char, "
+        "str varchar(20), sh smallint, ul decimal(9,0), d double precision, "
+        "tm timestamp, i1 integer, i2 integer, i3 integer, name varchar(20))";
+        session.commit();
+        session.begin();
+    }
+};
+
+struct TableCreator2 : public TableCreatorBase
+{
+    TableCreator2(Session& session)
+            : TableCreatorBase(session)
+    {
+        session  << "create table soci_test(\"num_float\" float, \"num_int\" integer, "
+        "\"name\" varchar(20), \"sometime\" timestamp, \"chr\" char)";
+        session.commit();
+        session.begin();
+    }
+};
+
+struct TableCreator3 : public TableCreatorBase
+{
+    TableCreator3(Session& session)
+            : TableCreatorBase(session)
+    {
+        // CommonTest uses lower-case column names,
+        // so we need to enforce such names here.
+        // That's why column names are enclosed in ""
+        session << "create table soci_test(\"name\" varchar(100) not null, "
+        "\"phone\" varchar(15))";
+        session.commit();
+        session.begin();
+    }
+};
+
+class TestContext :public TestContextBase
+{
+    public:
+        TestContext(BackEndFactory const &backEnd,
+                    std::string const &connectString)
+                : TestContextBase(backEnd, connectString)
+        {}
+
+        TableCreatorBase* tableCreator1(Session& s) const
+        {
+            return new TableCreator1(s);
+        }
+
+        TableCreatorBase* tableCreator2(Session& s) const
+        {
+            return new TableCreator2(s);
+        }
+
+        TableCreatorBase* tableCreator3(Session& s) const
+        {
+            return new TableCreator3(s);
+        }
+
+        std::string toDateTime(std::string const &dateString) const
+        {
+            return "'" + dateString + "'";
+        }
+};
+
+
 int main(int argc, char** argv)
 {
 
@@ -1092,6 +1169,10 @@ int main(int argc, char** argv)
 
     try
     {
+        TestContext tc(backEnd, connectString);
+        CommonTests tests(tc);
+        tests.run();
+
         test1();
         test2();
         test3();

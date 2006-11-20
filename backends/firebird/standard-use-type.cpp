@@ -104,6 +104,13 @@ void FirebirdStandardUseTypeBackEnd::exchangeData()
             {
                 details::CStringDescriptor *tmp
                 = static_cast<CStringDescriptor *>(data_);
+
+                // remove trailing nulls
+                while (tmp->str_[tmp->bufSize_-1] == '\0')
+                {
+                    --tmp->bufSize_;
+                }
+
                 setTextParam(tmp->str_, tmp->bufSize_, buf_, var);
             }
             break;

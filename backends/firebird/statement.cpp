@@ -283,7 +283,7 @@ void FirebirdStatementBackEnd::rewriteQuery(
 }
 
 void FirebirdStatementBackEnd::prepare(std::string const & query,
-    eStatementType /* eType */)
+                                       eStatementType /* eType */)
 {
     // clear named parametes
     names_.clear();
@@ -306,7 +306,7 @@ void FirebirdStatementBackEnd::prepare(std::string const & query,
     if (sqldap_->sqln < sqldap_->sqld)
     {
         // sqlda is too small for all columns. it must be reallocated
-        prepareSQLDA(&sqldap_);
+        prepareSQLDA(&sqldap_,sqldap_->sqld);
 
         if (isc_dsql_describe(stat, &stmtp_, SQL_DIALECT_V6, sqldap_))
         {
@@ -328,7 +328,7 @@ void FirebirdStatementBackEnd::prepare(std::string const & query,
     if (sqlda2p_->sqln < sqlda2p_->sqld)
     {
         // sqlda is too small for all columns. it must be reallocated
-        prepareSQLDA(&sqlda2p_);
+        prepareSQLDA(&sqlda2p_, sqlda2p_->sqld);
 
         if (isc_dsql_describe_bind(stat, &stmtp_, SQL_DIALECT_V6, sqlda2p_))
         {
@@ -608,7 +608,7 @@ void FirebirdStatementBackEnd::describeColumn(int colNum,
             {
                 // 64bit integers are not supported
                 std::ostringstream msg;
-                msg << "Type of column \"" << columnName
+                msg << "Type of column ["<< colNum << "] \"" << columnName
                 << "\" is not supported for dynamic queries";
                 throw SOCIError(msg.str());
             }
@@ -617,7 +617,7 @@ void FirebirdStatementBackEnd::describeColumn(int colNum,
             case SQL_ARRAY:*/
         default:
             std::ostringstream msg;
-            msg << "Type of column \"" << columnName
+            msg << "Type of column ["<< colNum << "] \"" << columnName
             << "\" is not supported for dynamic queries";
             throw SOCIError(msg.str());
             break;

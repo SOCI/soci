@@ -153,6 +153,11 @@ void FirebirdSessionBackEnd::commit()
 
         trhp_ = 0;
     }
+
+#ifndef SOCI_FIREBIRD_NORESTARTTRANSACTION
+    begin();
+#endif
+
 }
 
 void FirebirdSessionBackEnd::rollback()
@@ -168,14 +173,28 @@ void FirebirdSessionBackEnd::rollback()
 
         trhp_ = 0;
     }
+
+#ifndef SOCI_FIREBIRD_NORESTARTTRANSACTION
+    begin();
+#endif
+
 }
 
 void FirebirdSessionBackEnd::cleanUp()
 {
-    // at the end of session our transaction is finally commited.
-    commit();
-
     ISC_STATUS stat[stat_size];
+
+    // at the end of session our transaction is finally commited.
+    if (trhp_ != 0)
+    {
+        if (isc_commit_transaction(stat, &trhp_))
+        {
+            throwISCError(stat);
+        }
+
+        trhp_ = 0;
+    }
+
     if (isc_detach_database(stat, &dbhp_))
     {
         throwISCError(stat);

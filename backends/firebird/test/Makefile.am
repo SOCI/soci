@@ -1,9 +1,10 @@
-# $Id: Makefile.am,v 1.2 2006/08/30 14:25:03 mloskot Exp $
+# $Id: Makefile.am,v 1.3 2006/11/20 11:35:53 rbobro Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
 INCLUDES = \
 	-I$(top_srcdir)/src/core \
+	-I$(top_srcdir)/src/core/test \
 	-I$(top_srcdir)/src/backends/firebird
 
 AM_CPPFLAGS = @FIREBIRD_CFLAGS@
