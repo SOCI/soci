@@ -22,8 +22,8 @@
      
 <a href="#support">SOCI Feature Support</a><br />
 <div class="navigation-indented">
-    <a href="#bindingbyname">Binding by Name</a><br />
     <a href="#dynamic">Dynamic Binding</a><br />
+    <a href="#bindingbyname">Binding by Name</a><br />
     <a href="#bulk">Bulk Operations</a><br />
     <a href="#transactions">Transactions</a><br />
     <a href="#blob">BLOB Data Type</a><br />
@@ -83,6 +83,7 @@ sql &lt;&lt; "select count(*) from user_tables", into(count);
 
 <p>(See the <a href="../basics.html">SOCI basics</a> and <a href="../exchange.html">exchanging data</a> documentation for general information on using the <code>Session</code> class.)</p>
 
+<h3 id="support">SOCI Feature Support</h3>
 <h4 id="dynamic">Dynamic Binding</h4>
 
 <p>The Oracle backend supports the use of the SOCI <code>Row</code> class, which facilitates retrieval of data whose type is not known at compile time.</p>
@@ -126,7 +127,6 @@ sql &lt;&lt; "select count(*) from user_tables", into(count);
 
 <p>(See the <a href="../exchange.html#dynamic">dynamic resultset binding</a> documentation for general information on using the <code>Row</code> class.)</p>
 
-<h3 id="support">SOCI Feature Support</h3>
 <h4 id="bindingbyname">Binding by Name</h4>
 
 <p>In addition to <a href="../exchange.html#bind_position">binding by position</a>, the Oracle backend supports <a href="../exchange.html#bind_name">binding by name</a>, via an overload of the <code>use()</code> function:</p>
