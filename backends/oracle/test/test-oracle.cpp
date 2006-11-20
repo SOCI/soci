@@ -925,6 +925,38 @@ void test11()
 }
 
 //
+// Backwards compatibility - support use of large strings with
+// columns of type LONG
+///
+struct LongTableCreator : public TableCreatorBase
+{
+    LongTableCreator(Session& session)
+        : TableCreatorBase(session) 
+    {
+        session << "create table soci_test(l long)"; 
+    }
+};
+
+void test12()
+{
+    Session sql(backEnd, connectString);
+    LongTableCreator creator(sql);
+
+    const std::string::size_type max = 32768;
+    std::string in(max, 'X');
+
+    sql << "insert into soci_test values(:l)", use(in);
+
+    std::string out;
+    sql << "select l from soci_test", into(out);
+
+    assert(out.size() == max);
+    assert(in == out);     
+
+    std::cout << "test 12 passed" << std::endl;
+}
+
+//
 // Support for SOCI Common Tests
 //
 
@@ -1030,6 +1062,7 @@ int main(int argc, char** argv)
         test9();
         test10(); 
         test11();
+        test12();
  
         std::cout << "\nOK, all tests passed.\n\n";
     }

@@ -90,7 +90,7 @@ void OracleStandardIntoTypeBackEnd::defineByPos(
         break;
     case eXStdString:
         oracleType = SQLT_STR;
-        size = 4000;               // this is also Oracle limit
+        size = 32769;  // support selecting strings from LONG columns
         buf_ = new char[size];
         data = buf_;
         break;
