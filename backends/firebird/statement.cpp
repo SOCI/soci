@@ -17,7 +17,8 @@ using namespace SOCI::details::Firebird;
 
 FirebirdStatementBackEnd::FirebirdStatementBackEnd(FirebirdSessionBackEnd &session)
         : session_(session), stmtp_(0), sqldap_(NULL), sqlda2p_(NULL), rowsFetched_(0),
-        intoType_(eStandard), useType_(eStandard), procedure_(false)
+        intoType_(eStandard), useType_(eStandard), procedure_(false), boundByName_(false),
+		boundByPos_(false)
 {}
 
 void FirebirdStatementBackEnd::prepareSQLDA(XSQLDA ** sqldap, int size)

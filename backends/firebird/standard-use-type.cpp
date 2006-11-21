@@ -17,7 +17,13 @@ using namespace SOCI::details::Firebird;
 void FirebirdStandardUseTypeBackEnd::bindByPos(
     int & position, void * data, eExchangeType type)
 {
-    position_ = position-1;
+    if (statement_.boundByName_)
+    {
+        throw SOCIError(
+         "Binding for use elements must be either by position or by name.");
+    }
+
+	position_ = position-1;
     data_ = data;
     type_ = type;
 
@@ -31,13 +37,21 @@ void FirebirdStandardUseTypeBackEnd::bindByPos(
     buf_ = allocBuffer(var);
     var->sqldata = buf_;
     var->sqlind = &indISCHolder_;
+
+	statement_.boundByPos_ = true;
 }
 
 void FirebirdStandardUseTypeBackEnd::bindByName(
     std::string const & name, void * data,
     eExchangeType type)
 {
-    std::map <std::string, int> :: iterator idx =
+    if (statement_.boundByPos_)
+    {
+        throw SOCIError(
+         "Binding for use elements must be either by position or by name.");
+    }
+
+	std::map <std::string, int> :: iterator idx =
         statement_.names_.find(name);
 
     if (idx == statement_.names_.end())
@@ -57,6 +71,8 @@ void FirebirdStandardUseTypeBackEnd::bindByName(
     buf_ = allocBuffer(var);
     var->sqldata = buf_;
     var->sqlind = &indISCHolder_;
+
+	statement_.boundByName_ = true;
 }
 
 void FirebirdStandardUseTypeBackEnd::preUse(eIndicator const * ind)

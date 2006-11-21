@@ -198,6 +198,9 @@ namespace SOCI
         XSQLDA * sqldap_;
         XSQLDA * sqlda2p_;
 
+        bool boundByName_;
+        bool boundByPos_;
+
         friend struct FirebirdVectorIntoTypeBackEnd;
         friend struct FirebirdStandardIntoTypeBackEnd;
         friend struct FirebirdVectorUseTypeBackEnd;
