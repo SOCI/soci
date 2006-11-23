@@ -1,4 +1,4 @@
-dnl $Id: ax_oracle_oci.m4,v 1.2 2006/08/30 14:28:55 mloskot Exp $
+dnl $Id: ax_oracle_oci.m4,v 1.3 2006/11/23 03:09:28 mloskot Exp $
 dnl
 dnl @synopsis AX_LIB_ORACLE_OCI([MINIMUM-VERSION])
 dnl
@@ -32,10 +32,10 @@ dnl
 dnl @category InstalledPackages
 dnl @category Cxx
 dnl @author Mateusz Loskot <mateusz@loskot.net>
-dnl @version $Date: 2006/08/30 14:28:55 $
+dnl @version $Date: 2006/11/23 03:09:28 $
 dnl @license AllPermissive
 dnl
-dnl $Id: ax_oracle_oci.m4,v 1.2 2006/08/30 14:28:55 mloskot Exp $
+dnl $Id: ax_oracle_oci.m4,v 1.3 2006/11/23 03:09:28 mloskot Exp $
 dnl
 AC_DEFUN([AX_LIB_ORACLE_OCI],
 [
@@ -123,8 +123,13 @@ Please, locate Oracle directories using --with-oracle or \
         AC_COMPILE_IFELSE([
             AC_LANG_PROGRAM([[@%:@include <oci.h>]],
                 [[
-#if defined(OCI_MAJOR_VERSION) && defined(OCI_MINOR_VERSION)
-// Everything is okay
+#if defined(OCI_MAJOR_VERSION)
+#if OCI_MAJOR_VERSION == 10 && OCI_MINOR_VERSION == 2
+// Oracle 10.2 detected
+#endif
+#elif defined(OCI_V7_SYNTAX)
+// OK, older Oracle detected
+// TODO - mloskot: find better macro to check for older versions; 
 #else
 #  error Oracle oci.h header not found
 #endif
