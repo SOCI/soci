@@ -13,6 +13,7 @@
 
 <div class="navigation">
 <a href="#preparation">Statement preparation and repeated execution</a><br />
+<a href="#rowset">Rowset and iterator-based access</a><br />
 <a href="#bulk">Bulk operations</a><br />
 <a href="#procedures">Stored procedures</a><br />
 <a href="#transactions">Transactions</a><br />
@@ -79,6 +80,50 @@ the statement preparation from execution.</p>
 <code>SOCI_PGSQL_NOPREPARE</code> macro while compiling the library
 to fall back to this one-phase behaviour.</p>
 </div>
+
+<h3 id="rowset">Rowset and iterator-based access</h3>
+
+<p><code>Rowset</code> class provides an alternative means of executing query and accessing results using STL-like iterator - <code>rowset_iterator</code>.
+The <code>rowset_iterator</code> is compatible with requirements defined for input iterator category. <code>Rowset</code> can be used only with select queries.</p>
+
+<p>Following example creates instance of <code>Rowset</code> and binds query result into elements of <code>int</code> type - only one column is expected, next we iterate through the query result using <code>rowset_iterator</code>:</p>
+
+<pre class="example">
+Rowset&lt;int&gt; rs = (sql.prepare &lt;&lt; "select values from numbers");
+
+for (Rowset&lt;int&gt;::const_iterator it = rs.begin(); it != rs.end(); ++it)
+{
+     cout &lt;&lt; *it &lt;&lt; '\n';
+}
+</pre>
+
+<p>Next example presents how to query more complex results, with <code>Rowset</code> elements are of type of <code>Row</code>:</p>
+
+<pre class="example">
+// person table consists of 4 columns
+
+Rowset&lt;Row&gt; rs = (sql.prepare &lt;&lt; "select id, firstname, lastname, gender from person");
+
+for (Rowset&lt;Row&gt;::const_iterator it = rs.begin(); it != rs.end(); ++it)
+{
+    Row const&amp; row = (*it);
+
+    cout &lt;&lt; "Id: " &lt;&lt; row.get<int>(0) &lt;&lt; '\n'
+         &lt;&lt; "Name: " &lt;&lt; row.get<string>(1) &lt;&lt; " " &lt;&lt; row.get<string>(2) &lt;&lt; '\n'
+         &lt;&lt; "Gender: " &lt;&lt; row.get<string>(3) &lt;&lt;
+         &lt;&lt; endl;
+}
+</pre>
+
+<p>Last example shows how to use <code>rowset_iterator</code> with standard algorithms:</p>
+
+<pre class="example">
+Rowset&lt;string&gt; rs = (sql.prepare &lt;&lt; "select firstname from person");
+
+std::copy(rs.begin(), rs.end(), std::ostream_iterator&lt;std::string&gt;(std::cout, "\n"));
+</pre>
+
+<p>Above, the query result consists of single column which is bound to <code>Rowset</code> element of type of <code>std::string</code>. Next, records are sent to <code>stdio</code> using <code>std::copy</code> algorithm.</p>
 
 <h3 id="bulk">Bulk operations</h3>
 
