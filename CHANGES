@@ -7,6 +7,13 @@ Version 2.2.0 differs from 2.1.0 in the following ways:
 
 - Added support for the stream-like extraction from Row.
 
+- Added STL-compatible iterator interface for select statements.
+
+- Introduced new backends for MS SQL Server (via ODBC) and Firebird.
+
+- Provided complete build system for both Unix (autotools) and
+  Windows (solution and project files for MSVC++).
+
 ---
 Version 2.1.0 differs from 2.0.1 in the following ways:
 
