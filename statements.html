@@ -83,10 +83,12 @@ to fall back to this one-phase behaviour.</p>
 
 <h3 id="rowset">Rowset and iterator-based access</h3>
 
-<p><code>Rowset</code> class provides an alternative means of executing query and accessing results using STL-like iterator - <code>rowset_iterator</code>.
-The <code>rowset_iterator</code> is compatible with requirements defined for input iterator category. <code>Rowset</code> can be used only with select queries.</p>
+<p>The <code>Rowset</code> class provides an alternative means of executing queries and accessing results using STL-like iterator interface.</p>
 
-<p>Following example creates instance of <code>Rowset</code> and binds query result into elements of <code>int</code> type - only one column is expected, next we iterate through the query result using <code>rowset_iterator</code>:</p>
+<p>The <code>rowset_iterator</code> type is compatible with requirements defined for input iterator category and is available via <code>iterator</code> and <code>const_iterator</code> definitions in the <code>Rowset</code> class.</p>
+<p>The <code>Rowset</code> itself can be used only with select queries.</p>
+
+<p>The following example creates an instance of the <code>Rowset</code> class and binds query results into elements of <code>int</code> type - in this query only one result column is expected. After executing the query the code iterates through the query result using <code>rowset_iterator</code>:</p>
 
 <pre class="example">
 Rowset&lt;int&gt; rs = (sql.prepare &lt;&lt; "select values from numbers");
@@ -97,25 +99,26 @@ for (Rowset&lt;int&gt;::const_iterator it = rs.begin(); it != rs.end(); ++it)
 }
 </pre>
 
-<p>Next example presents how to query more complex results, with <code>Rowset</code> elements are of type of <code>Row</code>:</p>
+<p>Another example presents how to retrieve more complex results, where <code>Rowset</code> elements are of type <code>Row</code> and therefore use <a href="exchange.html#dynamic">dynamic bindings</a>:</p>
 
 <pre class="example">
-// person table consists of 4 columns
+// person table has 4 columns
 
 Rowset&lt;Row&gt; rs = (sql.prepare &lt;&lt; "select id, firstname, lastname, gender from person");
 
+// iteration through the resultset:
 for (Rowset&lt;Row&gt;::const_iterator it = rs.begin(); it != rs.end(); ++it)
 {
     Row const&amp; row = (*it);
 
-    cout &lt;&lt; "Id: " &lt;&lt; row.get<int>(0) &lt;&lt; '\n'
-         &lt;&lt; "Name: " &lt;&lt; row.get<string>(1) &lt;&lt; " " &lt;&lt; row.get<string>(2) &lt;&lt; '\n'
-         &lt;&lt; "Gender: " &lt;&lt; row.get<string>(3) &lt;&lt;
-         &lt;&lt; endl;
+    // dynamic data extraction from each Row:
+    cout &lt;&lt; "Id: " &lt;&lt; row.get&lt;int&gt;(0) &lt;&lt; '\n'
+         &lt;&lt; "Name: " &lt;&lt; row.get&lt;string&gt;(1) &lt;&lt; " " &lt;&lt; row.get&lt;string&gt;(2) &lt;&lt; '\n'
+         &lt;&lt; "Gender: " &lt;&lt; row.get&lt;string&gt;(3) &lt;&lt; endl;
 }
 </pre>
 
-<p>Last example shows how to use <code>rowset_iterator</code> with standard algorithms:</p>
+<p><code>rowset_iterator</code> can be used with standard algorithms as well:</p>
 
 <pre class="example">
 Rowset&lt;string&gt; rs = (sql.prepare &lt;&lt; "select firstname from person");
@@ -123,7 +126,7 @@ Rowset&lt;string&gt; rs = (sql.prepare &lt;&lt; "select firstname from person");
 std::copy(rs.begin(), rs.end(), std::ostream_iterator&lt;std::string&gt;(std::cout, "\n"));
 </pre>
 
-<p>Above, the query result consists of single column which is bound to <code>Rowset</code> element of type of <code>std::string</code>. Next, records are sent to <code>stdio</code> using <code>std::copy</code> algorithm.</p>
+<p>Above, the query result contains a single column which is bound to <code>Rowset</code> element of type of <code>std::string</code>. All records are sent to standard output using the <code>std::copy</code> algorithm.</p>
 
 <h3 id="bulk">Bulk operations</h3>
 
@@ -323,7 +326,7 @@ above functions for explicit transaction management.</p>
 Session sql(oracle, "...");
 
 ofstream file("my_log.txt");
-sql.setLogStream(&file);
+sql.setLogStream(&amp;file);
 
 // ...
 </pre>

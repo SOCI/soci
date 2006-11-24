@@ -11,7 +11,12 @@
 
 <h2>Library structure, files and compilation</h2>
 
-<p>The SOCI library has the following structure:</p>
+<div class="navigation">
+<a href="#structure">Structure</a><br />
+<a href="#compilation">Compilation</a><br />
+</div>
+
+<h3 id="structure">The SOCI library structure</h3>
 
 <div class="diagram">
 <img alt="Library structure diagram" src="structure.png" />
@@ -56,6 +61,14 @@ page</a> shows the appropriate <code>#include</code> directive for the
 Oracle backend.</p>
 </div>
 
+<h3 id="compilation">Compilation</h3>
+
+<h4>With autotools on Unix/Linux</h4>
+
+<p>TODO ...</p>
+
+<h4>With classic Makefiles on Unix/Linux</h4>
+
 <p>Compilation of the client program requires that the SOCI header files
 are all visible and accessible to the compiler. Moreover, the library
 itself (the core part and the relevant backend part) needs to be
@@ -95,6 +108,10 @@ Please review their values in case of any compilation problems.</p>
 
 <p>The Makefiles for test programs can be a good starting point to find
 out correct compiler and linker options.</p>
+
+<h4>With MSVC++ on Windows</h4>
+
+<p>TODO ...</p>
 
 <table class="foot-links" border="0" cellpadding="2" cellspacing="2">
   <tr>
