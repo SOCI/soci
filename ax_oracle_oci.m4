@@ -1,4 +1,4 @@
-dnl $Id: ax_oracle_oci.m4,v 1.3 2006/11/23 03:09:28 mloskot Exp $
+dnl $Id: ax_oracle_oci.m4,v 1.4 2006/11/24 06:55:09 mloskot Exp $
 dnl
 dnl @synopsis AX_LIB_ORACLE_OCI([MINIMUM-VERSION])
 dnl
@@ -32,10 +32,10 @@ dnl
 dnl @category InstalledPackages
 dnl @category Cxx
 dnl @author Mateusz Loskot <mateusz@loskot.net>
-dnl @version $Date: 2006/11/23 03:09:28 $
+dnl @version $Date: 2006/11/24 06:55:09 $
 dnl @license AllPermissive
 dnl
-dnl $Id: ax_oracle_oci.m4,v 1.3 2006/11/23 03:09:28 mloskot Exp $
+dnl $Id: ax_oracle_oci.m4,v 1.4 2006/11/24 06:55:09 mloskot Exp $
 dnl
 AC_DEFUN([AX_LIB_ORACLE_OCI],
 [
@@ -43,7 +43,15 @@ AC_DEFUN([AX_LIB_ORACLE_OCI],
         AC_HELP_STRING([--with-oracle=@<:@DIR@:>@],
             [use Oracle OCI API from given path to Oracle home directory]
         ),
-        [oracle_home_dir="$withval"],
+        [
+        if test "$withval" = "yes"; then
+            if test -n "$ORACLE_HOME"; then
+                oracle_home_dir="$ORACLE_HOME"
+            else
+                oracle_home_dir=""
+            fi 
+        fi
+        ],
         [oracle_home_dir=""]
     )
 
