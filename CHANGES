@@ -9,6 +9,9 @@ Version 2.2.0 differs from 2.1.0 in the following ways:
 
 - Added STL-compatible iterator interface for select statements.
 
+- Refactored the set of common tests to validate core library functionality
+  independently on the target database server.
+
 - Introduced new backends for MS SQL Server (via ODBC) and Firebird.
 
 - Provided complete build system for both Unix (autotools) and
