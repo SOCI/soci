@@ -1,4 +1,4 @@
-dnl $Id: ax_oracle_oci.m4,v 1.4 2006/11/24 06:55:09 mloskot Exp $
+dnl $Id: ax_oracle_oci.m4,v 1.5 2006/11/25 06:36:00 mloskot Exp $
 dnl
 dnl @synopsis AX_LIB_ORACLE_OCI([MINIMUM-VERSION])
 dnl
@@ -32,10 +32,10 @@ dnl
 dnl @category InstalledPackages
 dnl @category Cxx
 dnl @author Mateusz Loskot <mateusz@loskot.net>
-dnl @version $Date: 2006/11/24 06:55:09 $
+dnl @version $Date: 2006/11/25 06:36:00 $
 dnl @license AllPermissive
 dnl
-dnl $Id: ax_oracle_oci.m4,v 1.4 2006/11/24 06:55:09 mloskot Exp $
+dnl $Id: ax_oracle_oci.m4,v 1.5 2006/11/25 06:36:00 mloskot Exp $
 dnl
 AC_DEFUN([AX_LIB_ORACLE_OCI],
 [
@@ -52,7 +52,13 @@ AC_DEFUN([AX_LIB_ORACLE_OCI],
             fi 
         fi
         ],
-        [oracle_home_dir=""]
+        [
+        if test -n "$ORACLE_HOME"; then
+            oracle_home_dir="$ORACLE_HOME"
+        else
+            oracle_home_dir=""
+        fi 
+        ]
     )
 
     AC_ARG_WITH([oracle-include],
