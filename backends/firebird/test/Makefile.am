@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.3 2006/11/20 11:35:53 rbobro Exp $
+# $Id: Makefile.am,v 1.4 2006/11/27 09:59:31 mloskot Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
@@ -19,6 +19,8 @@ test_firebird_SOURCES = \
 test_firebird_LDADD = \
 	$(top_srcdir)/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
 	$(top_srcdir)/src/backends/firebird/lib@SOCI_FIREBIRD_LIBRARY_NAME@.la
+
+EXTRA_DIST = Makefile.basic
 
 MAINTAINERCLEANLOCAL = Makefile.in
 

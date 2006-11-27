@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.1 2006/08/15 13:44:33 mloskot Exp $
+# $Id: Makefile.am,v 1.2 2006/11/27 09:59:31 mloskot Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
@@ -7,6 +7,7 @@ SUBDIRS = \
 	@EMPTY_DIRS@ \
 	@FIREBIRD_DIRS@ \
 	@MYSQL_DIRS@  \
+	@ODBC_DIRS@  \
 	@ORACLE_DIRS@  \
 	@POSTGRESQL_DIRS@  \
 	@SQLITE3_DIRS@

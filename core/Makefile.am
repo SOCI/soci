@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.3 2006/11/09 20:03:58 mloskot Exp $
+# $Id: Makefile.am,v 1.4 2006/11/27 09:59:32 mloskot Exp $
 # 
 # Copyright (C) 2006, Mateusz Loskot
 #
@@ -23,6 +23,8 @@ soci_HEADERS = \
 	soci-backend.h \
 	soci-config.h \
 	soci-platform.h
+
+EXTRA_DIST = Makefile.basic
 
 MAINTAINERCLEANLOCAL = Makefile.in
 

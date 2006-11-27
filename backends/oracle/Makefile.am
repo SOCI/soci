@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.2 2006/08/30 14:25:04 mloskot Exp $
+# $Id: Makefile.am,v 1.3 2006/11/27 09:59:31 mloskot Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
@@ -31,7 +31,7 @@ soci_oracle_HEADERS = \
 	error.h \
 	soci-oracle.h
 
-#SUBDIRS = test
+EXTRA_DIST = Makefile.basic
 
 MAINTAINERCLEANLOCAL = Makefile.in
 
