@@ -79,10 +79,10 @@ the
 actual steps that need to be taken depend on the compiler being used.</p>
 
 <p>The <code>core</code> directory of the library distribution contains
-the <code>Makefile</code> that can be used to compile the core part of
-the library. Run <code>make</code> or <code>make shared</code> to get
+the <code>Makefile.basic</code> that can be used to compile the core part of
+the library. Run <code>make -f Makefile.basic</code> or <code>make -f Makefile.basic shared</code> to get
 the static and shared versions. Similarly, the <code>backends/<i>name</i></code> directory contains the
-backend part for each supported backend with the appropriate <code>Makefile</code>
+backend part for each supported backend with the appropriate <code>Makefile.basic</code>
 and the <code>backends/<i>name</i>/test</code>
 directory contains the test program for the given backend.</p>
 
@@ -91,18 +91,18 @@ library and the test program for PostgreSQL is:</p>
 
 <pre class="example">
 $ cd src/core
-$ make
+$ make -f Makefile.basic
 $ cd ../backends/postgresql
-$ make
+$ make -f Makefile.basic
 $ cd test
-$ make
+$ make -f Makefile.basic
 </pre>
 
 <div class="note">
 <p><span class="note">Note:</span>
-For each backend and its test program, the <code>Makefile</code>s
+For each backend and its test program, the <code>Makefile.basic</code>s
 contain the variables that can have values specific to the given
-environment. These variables are placed at the beginning of the <code>Makefile</code>s.
+environment. These variables are placed at the beginning of the <code>Makefile.basic</code>s.
 Please review their values in case of any compilation problems.</p>
 </div>
 
