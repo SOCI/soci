@@ -63,38 +63,47 @@ Oracle backend.</p>
 
 <h3 id="compilation">Compilation</h3>
 
+<p>Download the SOCI distribution file: soci-X.Y.Z.tar.gz|tar.bz2|zip, where X.Y.Z is the version number. Unpack this file.</p>
+
 <h4>With autotools on Unix/Linux</h4>
 
-<p>Download SOCI distribution: soci-X.Y.Z.tar.gz|tar.bz2|zip, where X.Y.Z is release number.</p>
-
-<p>Unpack sources:
-<pre class="example">
-$ tar -zxf soci-X.Y.Z.tar.gz
-</pre></p>
-
-<p>Configure:
+<p>Configure:</p>
 <pre class="example">
 $ ./configure
-</pre></p>
+</pre>
 
 <p>You may want to pass custom options to <code>./configure</code> script.
 Backends can be enabled using options named as <code>--enable-backend-&lt;name&gt;</code> and
-disabled using <code>--disable-backend-&lt;name&gt;</code>. There are also <code>--with-&lt;package&gt;</code>
-options which can be used to tell the script where required headers and libraries can be found.</p>
+disabled using <code>--disable-backend-&lt;name&gt;</code>.
+For example, to compile with support for MySQL that is already installed in some standard location, do this:</p>
 
-<p>Please, run <code>./configure --help</code> to learn what options are available.</p>
+<pre class="example">
+$ ./configure --enable-backend-mysql=yes
+</pre>
 
-<p>Build:
+<p>There are also <code>--with-&lt;package&gt;</code>
+options which can be used to tell the script where the required headers and libraries can be found.</p>
+<p>For example, to compile the library with the Oracle backend that is itself installed on a separate filesystem the following might be needed (example broken into three lines for clarity):</p>
+
+<pre class="example">
+$ ./configure --enable-backend-oracle=yes \
+     --with-oracle-include=/u01/oracle/product/10.1.0/rdbms/public \
+     --with-oracle-lib=/u01/oracle/product/10.1.0/lib
+</pre>
+
+<p>Run <code>./configure --help</code> to learn what configuration options are available.</p>
+
+<p>Build (after successful configuration):</p>
 <pre class="example">
 $ make
-</pre></p>
+</pre>
 
-<p>Install:
+<p>Installation:</p>
 <pre class="example">
 $ make install
-</pre></p>
+</pre>
 
-<p>After the last step, SOCI components should be placed under default installation prefix <code>/usr/local</code> or custom locatoin, if specified using <code>--prefix</code> option.</p>
+<p>After the last step, SOCI components will be placed under default installation prefix <code>/usr/local</code> or custom locatoin, if specified using <code>--prefix</code> option.</p>
 
 <h4>With classic Makefiles on Unix/Linux</h4>
 
