@@ -1,7 +1,8 @@
 SOCI - The C++ Database Access Library.
 
 Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton,
-                        David Courtney, Pawel Aleksander Fedorynski
+                        David Courtney, Pawel Aleksander Fedorynski,
+                        Rafal Bobrowski, Mateusz Loskot
 
 The homepage of the SOCI library is:
 http://soci.sourceforge.net/
@@ -15,28 +16,24 @@ You should see the following files and directories here:
 - CHANGES         - The description of changes.
 - contrib         - Acknowledgements for contributions.
 
-- core/           - The main part of the SOCI library.
+- configure       - The main auto-configuration script - this is accompanied
+                    by other files in this directory.
 
-- backends/       - Directory containing implementations and tests for
-                    all available backends. Each backed has its own
-                    subdirectory.
+- doc/            - Documentation.
 
-- doc/            - Directory containing SOCI documentation.
+- build/          - Additional build scripts and configuration files
+                    for various compilation systems.
+
+- m4/             - Macros for autotools.
+
+- src/            - The source code of the library.
+
+- src/core/       - The main part of the SOCI library.
+
+- src/backends/   - Directory containing implementations and tests for
+                    all available backends.
 
 
-Compilation instructions (Linux) for impatient users:
-
-$ cd core
-$ make
-$ cd ../backends/oracle
-$ make
-$ cd test
-$ make
-
-Note: The Makefiles for each backend and their tests contain variables
-that need to be set up properly with regard to the local environment.
-Their current values are correct on our development machines, but might
-need to be modified to work elsewhere.
-Please review the first few lines of each Makefile.
+Please see the doc/structure.html file for compilation instructions.
 
 ---
