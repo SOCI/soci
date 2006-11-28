@@ -62,22 +62,30 @@ Person p;
        into(p);</span>
 </pre>
 
+<p>Integration with STL is also supported:</p>
+
+<pre>
+<span class="bold">Rowset&lt;string&gt; rs = (sql.prepare &lt;&lt; "</span><span class="literal">select name from persons</span><span class="bold">");
+copy(rs.begin(), rs.end(), ostream_iterator&lt;string&gt;(cout, "\n"));</span>
+</pre>
+
+
 <p>Starting from its 2.0.0 release, SOCI uses the plug-in architecture for
-backends - this allows to target various database servers. Currently (2.1.0),
+backends - this allows to target various database servers. Currently (2.2.0),
 the following database servers are supported:</p>
 <ul>
             <li>Oracle</li>
             <li>PostgreSQL</li>
+            <li>Firebird</li>
             <li>MySQL</li>
             <li>SQLite</li>
+            <li>MS SQL Server (via ODBC)</li>
 </ul>
 
 <p>The intent of the library is to cover as many database technologies as
 possible. For this, the project has to rely on volunteer contributions
 from other programmers, who have expertise with the existing database
-interfaces and would like to help writing dedicated backends. Backends
-written in terms of native database interfaces are preferred, but more
-general solutions (like ODBC) are of interest as well.<br />
+interfaces and would like to help writing dedicated backends.<br />
 If you are interested in participating, please contact the <a
  href="people.html">project admin</a>.</p>
 
@@ -94,14 +102,5 @@ mailing list</a>.</p>
       </td>
     </tr>
 </table>
-
-<table class="footer" cellpadding="0" cellspacing="0">
-    <tr>
-        <td>
-$Id: index.html,v 1.3 2006/11/07 18:09:52 mloskot Exp $
-        </td>
-    </tr>
-</table>
-
 </body>
 </html>
