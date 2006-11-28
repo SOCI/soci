@@ -65,7 +65,36 @@ Oracle backend.</p>
 
 <h4>With autotools on Unix/Linux</h4>
 
-<p>TODO ...</p>
+<p>Download SOCI distribution: soci-X.Y.Z.tar.gz|tar.bz2|zip, where X.Y.Z is release number.</p>
+
+<p>Unpack sources:
+<pre class="example">
+$ tar -zxf soci-X.Y.Z.tar.gz
+</pre></p>
+
+<p>Configure:
+<pre class="example">
+$ ./configure
+</pre></p>
+
+<p>You may want to pass custom options to <code>./configure</code> script.
+Backends can be enabled using options named as <code>--enable-backend-&lt;name&gt;</code> and
+disabled using <code>--disable-backend-&lt;name&gt;</code>. There are also <code>--with-&lt;package&gt;</code>
+options which can be used to tell the script where required headers and libraries can be found.</p>
+
+<p>Please, run <code>./configure --help</code> to learn what options are available.</p>
+
+<p>Build:
+<pre class="example">
+$ make
+</pre></p>
+
+<p>Install:
+<pre class="example">
+$ make install
+</pre></p>
+
+<p>After the last step, SOCI components should be placed under default installation prefix <code>/usr/local</code> or custom locatoin, if specified using <code>--prefix</code> option.</p>
 
 <h4>With classic Makefiles on Unix/Linux</h4>
 
