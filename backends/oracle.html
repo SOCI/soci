@@ -64,7 +64,7 @@ Older versions of Oracle may work as well, but they have not been tested by the 
 using the oracle backend factory together with a connection string:</p>
 
 <pre class="example">
-BackEndFactory const &lt;backEnd = oracle;
+BackEndFactory const &amp;backEnd = oracle;
 Session sql(oracle, "service=orcl user=scott password=tiger");
 </pre>
 
@@ -153,7 +153,7 @@ sql &lt;&lt; "select name from person where id = :id", use(id, "id")
 
 <h4 id="rowid">RowID Data Type</h4>
 
-<p>Oracle rowid's are accessible via SOCI's <a href="../reference.html#rowid">RowID</a> class.</p>
+<p>Oracle rowid's are accessible via SOCI's <a href="../reference.html#rowid"><code>RowID</code></a> class.</p>
 
 <h4 id="nested">Nested Statements</h4>
 
@@ -175,7 +175,7 @@ while (stInner.fetch())
 
 <h4 id="procedures">Stored Procedures</h4>
 
-<p>Oracle stored procedures can be executed by using SOCI's <a href="../statements.html#procedures">Procedure</a> class.</p>
+<p>Oracle stored procedures can be executed by using SOCI's <a href="../statements.html#procedures"><code>Procedure</code></a> class.</p>
 
 <h3 id="native">Acessing the native database API</h3>
 
