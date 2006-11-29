@@ -44,33 +44,14 @@ time, even using different backends.</p>
 <p><span class="note">Portability note:</span></p>
 <p>The following backend factories are currently available:</p>
 <ul>
-  <li><code>mysql</code> (requires <code>#include "soci-mysql.h"</code>)</li>
-  <li><code>oracle</code> (requires <code>#include "soci-oracle.h"</code>)</li>
-  <li><code>postgresql</code> (requires <code>#include "soci-postgresql.h"</code>)</li>
-  <li><code>sqlite3</code> (requires <code>#include "soci-sqlite3.h"</code>)</li>
+  <li><code><a href="backends/mysql.html">mysql</a></code> (requires <code>#include "soci-mysql.h"</code>)</li>
+  <li><code><a href="backends/oracle.html">oracle</a></code> (requires <code>#include "soci-oracle.h"</code>)</li>
+  <li><code><a href="backends/postgresql.html">postgresql</a></code> (requires <code>#include "soci-postgresql.h"</code>)</li>
+  <li><code><a href="backends/sqlite3.html">sqlite3</a></code> (requires <code>#include "soci-sqlite3.h"</code>)</li>
+  <li><code><a href="backends/odbc.html">odbc</a></code> (requires <code>#include "soci-odbc.h"</code>)</li>
+  <li><code><a href="backends/firebird.html">firebird</a></code> (requires <code>#include "soci-firebird.h"</code>)</li>
 </ul>
-<p>The set of parameters used in the connection string for Oracle is:</p>
-<ul>
-  <li>service</li>
-  <li>user</li>
-  <li>password</li>
-</ul>
-<p>All of these parameters have to be provided.</p>
-<p>The set of parameters available for PostgreSQL is the same as that
-recognized by the <code>PQconnectdb</code> function and may depend on
-the server version. See PostgreSQL documentation for details.</p>
-<p>The parameters expected by MySQL backend:</p>
-<ul>
-  <li>dbname or db (required)</li>
-  <li>user</li>
-  <li>password or pass</li>
-  <li>host</li>
-  <li>port</li>
-  <li>unix_socket</li>
-</ul>
-<p>The only parameter for the SQLite3 backend is the file name.</p>
 </div>
-
 <h3>Simple SQL statements</h3>
 
 <p>In many cases, the SQL query is intended to be executed only once,

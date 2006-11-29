@@ -329,17 +329,17 @@ of data from an arbitrary table:</p>
 <pre class="example">
 Session sql("oracle", "service=db1", "user=scott", "password=tiger");
 
-sql &lt;&lt; "create table ex2(num NUMBER, str VARCHAR2(20), dt DATE)";
+sql &lt;&lt; "create table ex(num NUMBER, str VARCHAR2(20), dt DATE)";
 
-int num_in = 123;
-std::string str_in("my name");
-std::time_t dt_in = time(0);
+int num = 123;
+std::string str("my name");
+std::time_t dt = time(0);
 
-sql &lt;&lt; "insert into ex2 values(:num1, :str1, :dt1)",
-    use(num_in), use(str_in), use(dt_in);
+sql &lt;&lt; "insert into ex values(:num, :str, :dt)",
+    use(num), use(str), use(dt);
 
 Row r;
-sql &lt;&lt; "select * from ex2", into(r);
+sql &lt;&lt; "select * from ex", into(r);
 
 std::ostringstream doc;
 doc &lt;&lt; "&lt;row&gt;" &lt;&lt; std::endl;
@@ -371,11 +371,11 @@ for(int i=0; i&lt;r.size(); ++i)
 doc &lt;&lt; "&lt;/row&gt;";
 </pre>
 
-<p>The following table shows the type <code>T</code> parameter that
-should be passed to
-<code>Row::get&lt;T&gt;()</code> for each possible SOCI Data Type that
-can be returned from
-<code>ColumnProperties::getDataType()</code>. <code>Row::get&lt;T&gt;()</code>
+<p>The type <code>T</code> parameter that should be passed to
+<code>Row::get&lt;T&gt;()</code> depends on the SOCI Data Type that
+is returned from    
+<code>ColumnProperties::getDataType()</code>.</p>
+<p><code>Row::get&lt;T&gt;()</code>
 throws an exception of type
 <code>std::bad_cast</code> if an incorrect type <code>T</code> is
 used.</p>
@@ -383,43 +383,34 @@ used.</p>
 <table border="1" cellpadding="5" cellspacing="0">
   <tbody>
     <tr>
-      <th>Oracle Data Type</th>
-      <th>Postgres Data Type</th>
       <th>SOCI Data Type</th>
-      <th><code>Row::get&lt;T&gt;</code> specializations</th>
+      <th><code>Row::get&lt;T&gt;</code> specialization</th>
     </tr>
     <tr>
-      <td>number <i>(where scale &gt; 0)</i></td>
-      <td>float4, float8, numeric</td>
       <td><code>eDouble</code></td>
       <td><code>double</code></td>
     </tr>
     <tr>
-      <td>number<br /><i>(where scale = 0 and precision &lt; std::numeric_limits&lt;int&gt;::digits10)</i></td>
-      <td>bool, int2, int4, int8</td>
       <td><code>eInteger</code></td>
       <td><code>int</code></td>
     </tr>
     <tr>
-      <td>number</td>
-      <td>oid</td>
       <td><code>eUnsignedLong</code></td>
       <td><code>unsigned long</code></td>
     </tr>
     <tr>
-      <td>char, varchar, varchar2</td>
-      <td>text, varchar, cstring, char, bpchar</td>
       <td><code>eString</code></td>
       <td><code>std::string</code></td>
     </tr>
     <tr>
-      <td>date</td>
-      <td>abstime, reltime, data, time, timestamp, timestamptz, timetz</td>
       <td><code>eDate</code></td>
       <td><code>std::tm</code><code></code></td>
     </tr>
   </tbody>
 </table>
+
+<p>The mapping of underlying database column types to SOCI datatypes is database specific.
+See the <a href="backends/index.html">backend documentation</a> for details.</p>
 
 <p>It is also possible to extract data from the <code>Row</code> object using its stream-like
 interface:</p>
