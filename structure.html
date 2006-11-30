@@ -147,9 +147,76 @@ Please review their values in case of any compilation problems.</p>
 <p>The Makefiles for test programs can be a good starting point to find
 out correct compiler and linker options.</p>
 
-<h4>With MSVC++ on Windows</h4>
+<h4>With Microsoft Visual C++ 2005 on Windows</h4>
 
-<p>TODO ...</p>
+<p>In SOCI distribution, project files for Visual C++ 2005 are included. Inside the <code>build\msvc80</code> directory, there are two solution:</p>
+<p>
+<ul>
+    <li><code>dll\soci_dll.sln</code> - to build SOCI as DLL libraries</li>
+    <li><code>lib\soci_lib.sln</code> - to build SOCI as static libraries</li>
+</ul>
+</p>
+
+<p>Both solutions <a href="http://msdn2.microsoft.com/en-gb/library/tybz7dex(VS.80).aspx" title="MSDN: Property Inheritance">inherit</a> common
+settings and macros from <a href="http://msdn2.microsoft.com/en-gb/library/a4xbdz1e(VS.80).aspx" title="MSDN: Property Sheets">Visual Studio Property Sheet</a> in file <code>build\msvc80\soci.vsprops</code>. The main concept behind the <code>soci.vsprops</code> is to provide common place where paths and
+names of SOCI libraries and external dependencies are defined.</p>
+
+<p><strong>NOTE:</strong> Currently, MySQL backend compilation is not supported due to some problems with linking to MySQL client library. If you know how to use it from Visual C++ 2005 and without rebuilding MySQL libraries on your own, please let us know.</p>
+
+<p>Configure:</p>
+<p>
+<ol>
+    <li>Open <code>soci_dll.sln</code> or <code>soci_lib.sln</code> solution in Visual C++ IDE</li>
+    <li>Open View &gt; <a href="http://msdn2.microsoft.com/en-gb/library/z1f703z5(VS.80).aspx" title="MSDN: How to: Edit Project Property Sheets">Property Manager</a></li>
+    <li>Expand one of projects (it doesn't matter which one), expand selected configuration ie. Debug, go through <code>soci_lib</code> sheet and double-click on <code>soci</code> to open its properties</li>
+    <li>According to your environment, customize paths and list of libraries by editing for following macros (double-click on macro update <code>Value</code> box):
+    <ul>
+        <li><code>FIREBIRD_INCLUDE_DIR</code> - path to FireBird client library headers</li>
+        <li><code>FIREBIRD_LIB_DIR</code> - path to FireBird client library</li>
+        <li><code>FIREBIRD_LIB</code> - FireBird library, you can leave it not changed</li>
+        <li><code>MYSQL_INCLUDE_DIR</code> - <em>NOT USED</em></li>
+        <li><code>MYSQL_LIB_DIR</code> - <em>NOT USED</em></li>
+        <li><code>MYSQL_LIB</code> - <em>NOT USED</em></li>
+        <li><code>ODBC_INCLUDE_DIR</code> - ODBC include path, you can leave it not changed</li>
+        <li><code>ODBC_LIB_DIR</code> - ODBC libraries path, you can leave it not changed</li>
+        <li><code>ODBC_LIB</code> - ODBC library file, you can leave it not changed</li>
+        <li><code>ORACLE_INCLUDE_DIR</code> - path to OCI headers</li>
+        <li><code>ORACLE_LIB_DIR</code> - path to OCI libraries</li>
+        <li><code>ORACLE_LIB</code> - list of OCI libraries</li>
+        <li><code>POSTGRESQL_INCLUDE_DIR</code> - path to <code>libpq</code> headers</li>
+        <li><code>POSTGRESQL_LIB_DIR</code> - path to <code>libpq</code> library</li>
+        <li><code>POSTGRESQL_LIB</code> - <code>libpq</code> library file, you can leave it not changed</li>
+        <li><code>SQLITE3_INCLUDE_DIR</code> - path to SQLite 3 headers</li>
+        <li><code>SQLITE3_LIB_DIR</code> - path to SQLite 3 library</li>
+        <li><code>SQLITE3_LIB</code> - SQLite 3 library, you can leave it not changed</li>
+    </ul>
+    </li>
+    <li><strong>Leave rest of macros untouched</strong></li>
+</ol>
+</p>
+
+<p>After the configuration is ready, you can build SOCI libraries from the Visual C++ 2005 IDE.</p>
+
+<p>Build:</p>
+<pre class="example">
+Build -&gt; Build Solution
+</pre>
+
+<p>After all, if no errors occured, SOCI libraries and test programs can be found in subdirectory <code>debug</code> or <code>release</code>, depending on selected build configuration.</p>
+
+<p>Running tests:</p>
+<p>First, you need to edit <code>maketest.mak</code> file and change connection strings in <code>CONFIGURATION</code> block. according to your environment.</p>
+<p>Run all tests:</p>
+<pre class="example">
+nmake /f maketest.mak
+</pre>
+
+<p>Run test for selected backend:</p>
+<pre class="example">
+nmake /f maketest.mak &lt;backendname&gt;
+</pre>
+
+Certainly, it's also possible to run test programs directly from command prompt, without using <code>maketest.mak</code> controller.
 
 <table class="foot-links" border="0" cellpadding="2" cellspacing="2">
   <tr>
