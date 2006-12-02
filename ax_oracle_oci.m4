@@ -1,4 +1,4 @@
-dnl $Id: ax_oracle_oci.m4,v 1.7 2006/11/27 06:51:46 mloskot Exp $
+dnl $Id: ax_oracle_oci.m4,v 1.8 2006/12/02 08:46:36 mloskot Exp $
 dnl
 dnl @synopsis AX_LIB_ORACLE_OCI([MINIMUM-VERSION])
 dnl
@@ -32,10 +32,10 @@ dnl
 dnl @category InstalledPackages
 dnl @category Cxx
 dnl @author Mateusz Loskot <mateusz@loskot.net>
-dnl @version $Date: 2006/11/27 06:51:46 $
+dnl @version $Date: 2006/12/02 08:46:36 $
 dnl @license AllPermissive
 dnl
-dnl $Id: ax_oracle_oci.m4,v 1.7 2006/11/27 06:51:46 mloskot Exp $
+dnl $Id: ax_oracle_oci.m4,v 1.8 2006/12/02 08:46:36 mloskot Exp $
 dnl
 AC_DEFUN([AX_LIB_ORACLE_OCI],
 [
@@ -89,7 +89,14 @@ AC_DEFUN([AX_LIB_ORACLE_OCI],
 
         if test "$oracle_home_dir" != "no" -a "$oracle_home_dir" != "yes"; then
             dnl ORACLE_HOME path provided
+            
+            dnl Primary path to OCI headers, available in Oracle>=10
             oracle_include_dir="$oracle_home_dir/rdbms/public"
+            
+            dnl Secondary path to OCI headers used by older versions
+            oracle_include_dir2="$oracle_home_dir/rdbms/demo"
+
+            dnl Library path
             oracle_lib_dir="$oracle_home_dir/lib"
         elif test "$oracle_home_dir" = "yes"; then
             want_oracle_but_no_path="yes"
@@ -124,6 +131,11 @@ Please, locate Oracle directories using --with-oracle or \
         saved_CPPFLAGS="$CPPFLAGS"
         CPPFLAGS="$CPPFLAGS -I$oracle_include_dir"
 
+        dnl Additional path for older Oracle installations 
+        if test -n "$oracle_include_dir2"; then
+            CPPFLAGS="$CPPFLAGS -I$oracle_include_dir2"
+        fi
+
         saved_LDFLAGS="$LDFLAGS"
         oci_ldflags="-L$oracle_lib_dir -lclntsh -lnnz10"
         LDFLAGS="$LDFLAGS $oci_ldflags"
@@ -151,6 +163,11 @@ Please, locate Oracle directories using --with-oracle or \
             )],
             [
             ORACLE_OCI_CFLAGS="-I$oracle_include_dir"
+
+            if test -n "$oracle_include_dir2"; then
+                ORACLE_OCI_CFLAGS="$ORACLE_OCI_CFLAGS -I$oracle_include_dir2"
+            fi
+
             oci_header_found="yes"
             AC_MSG_RESULT([yes])
             ],
