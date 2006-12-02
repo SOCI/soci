@@ -1,6 +1,23 @@
 This file contains the history of changes in the SOCI library.
 
 ---
+Version 2.2.0 differs from 2.1.0 in the following ways:
+
+- Added true support for statement preparation with PostgreSQL.
+
+- Added support for the stream-like extraction from Row.
+
+- Added STL-compatible iterator interface for select statements.
+
+- Refactored the set of common tests to validate core library functionality
+  independently on the target database server.
+
+- Introduced new backends for MS SQL Server (via ODBC) and Firebird.
+
+- Provided complete build system for both Unix (autotools) and
+  Windows (solution and project files for MSVC++).
+
+---
 Version 2.1.0 differs from 2.0.1 in the following ways:
 
 - Added two additional backends: MySQL and SQLite3
