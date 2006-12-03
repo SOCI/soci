@@ -69,6 +69,12 @@ BackEndFactory const &amp;backEnd = odbc;
 Session sql(backEnd, "filedsn=c:\\my.dsn");
 </pre>
 
+<p>or simply:</p>
+
+<pre class="example">
+Session sql(odbc, "filedsn=c:\\my.dsn");
+</pre>
+
 <p>The set of parameters used in the connection string for ODBC is the same as accepted by the <code><a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/odbcsql/od_odbc_d_4x4k.asp">SQLDriverConnect</a></code> function from the ODBC library.</p>
 
 <p>Once you have created a <code>Session</code> object as shown above, you can use it to access the database, for example:</p>

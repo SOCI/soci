@@ -65,6 +65,12 @@ using the <code>postgresql</code> backend factory together with a connection str
 
 <pre class="example">
 BackEndFactory const &amp;backEnd = postgresql;
+Session sql(backEnd, "dbname=mydatabase");
+</pre>
+
+<p>or simply:</p>
+
+<pre class="example">
 Session sql(postgresql, "dbname=mydatabase");
 </pre>
 

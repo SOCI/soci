@@ -74,6 +74,12 @@ BackEndFactory const &amp;backEnd = mysql;
 Session sql(backEnd, "db=test user=root password='Ala ma kota'");
 </pre>
 
+<p>or simply:</p>
+
+<pre class="example">
+Session sql(mysql, "db=test user=root password='Ala ma kota'");
+</pre>
+
 <p>The set of parameters used in the connection string for MySQL is:</p>
 <ul>
   <li>dbname or db (required)</li>

@@ -67,6 +67,13 @@ using the firebird backend factory together with a connection string:</p>
 
 <pre class="example">
 BackEndFactory const &amp;backEnd = firebird;
+Session sql(backEnd, 
+        "service=/usr/local/firbird/db/test.fdb user=SYSDBA password=masterkey");
+</pre>
+
+<p>or simply:</p>
+
+<pre class="example">
 Session sql(firebird, 
         "service=/usr/local/firbird/db/test.fdb user=SYSDBA password=masterkey");
 </pre>

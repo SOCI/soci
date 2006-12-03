@@ -69,6 +69,12 @@ BackEndFactory const &amp;backEnd = SQLite3;
 Session sql(backEnd, "database_filename");
 </pre>
 
+<p>or simply:</p>
+
+<pre class="example">
+Session sql(SQLite3, "database_filename");
+</pre>
+
 <p>The only option for the connection string is the name of the file to use as a database.</p>
 
 <p>Once you have created a <code>Session</code> object as shown above, you can use it to access the database, for example:</p>

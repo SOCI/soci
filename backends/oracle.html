@@ -66,6 +66,12 @@ using the oracle backend factory together with a connection string:</p>
 
 <pre class="example">
 BackEndFactory const &amp;backEnd = oracle;
+Session sql(backEnd, "service=orcl user=scott password=tiger");
+</pre>
+
+<p>or simply:</p>
+
+<pre class="example">
 Session sql(oracle, "service=orcl user=scott password=tiger");
 </pre>
 
