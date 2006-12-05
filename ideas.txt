@@ -1,0 +1,20 @@
+This file contains a raw bunch of ideas for future releases.
+Not all of these ideas will necessarily make sense - they are here to get them together.
+
+---
+RAII for transactions.
+
+---
+bjam
+
+---
+Refactoring of core, more fine-grained file structure.
+
+---
+Session constructor overload that accepts map<string,string> for param=value pairs.
+This should rather be provided as a separate function?
+
+---
+Query construction utilities (kind of Ultimate++) - can be easily incorporated into SOCI by just making them streamable.
+
+---
