@@ -29,4 +29,14 @@ Standard names for Session constructor.
 ---
 wstring
 
+---
+Handle locales in Session (so that operator<< is immune to strange global locale in the user program). It might even make sense to expose imbue(), so that users set up whatever locale they want.
+It might even make sense to expose the whole stream object.
+
+---
+sql << "select...", into(x, default(7));
+
+---
+Provide statement-wide flag for eNoData case (because actually it *is* statement-wide, not field-wide). With this, boost.optional would handle the eNull case and the indicators could be dropped.
+
 
