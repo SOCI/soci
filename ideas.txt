@@ -18,3 +18,15 @@ This should rather be provided as a separate function?
 Query construction utilities (kind of Ultimate++) - can be easily incorporated into SOCI by just making them streamable.
 
 ---
+CLOB
+
+---
+Streaming interface for BLOB
+
+---
+Standard names for Session constructor.
+
+---
+wstring
+
+
