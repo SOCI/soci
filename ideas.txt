@@ -32,11 +32,18 @@ wstring
 ---
 Handle locales in Session (so that operator<< is immune to strange global locale in the user program). It might even make sense to expose imbue(), so that users set up whatever locale they want.
 It might even make sense to expose the whole stream object.
+Alternatively, the backend should decide on the locale, because the backend will know best how to format numbers, dates, etc.
 
 ---
 sql << "select...", into(x, default(7));
 
+Note: default is a reserved word.
+
 ---
 Provide statement-wide flag for eNoData case (because actually it *is* statement-wide, not field-wide). With this, boost.optional would handle the eNull case and the indicators could be dropped.
 
+---
+Session sql("mysql://user:password@host/database");
+
+So that Session tries to find backend_mysql.(dll|so) if not yet registered.
 
