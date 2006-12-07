@@ -46,4 +46,47 @@ Provide statement-wide flag for eNoData case (because actually it *is* statement
 Session sql("mysql://user:password@host/database");
 
 So that Session tries to find backend_mysql.(dll|so) if not yet registered.
+---
+
+number of rows affected (insert/update + select?)
+---
+
+query backend for supported featureset at runtime
+---
+
+Rowset<tuple>
+---
+
+boost::optional?
+
+---
+Rowset<T>, including Rowset<tuple> - way to indicate nulls?
+Additional pair based val/indicator interface?
+
+---
+Consolidate iteration methods?
+most radical: do we still need Statement::fetch()? into()?
+(Rowset<Row> can currently be used for any query, supports indicators,
+defaults, and no need to check for eNodata) 
+
+---
+ColumnProperties() more logically belongs to Rowset than to Row
+However Row::ColumnProperties() still needed if we support into(Row)
+
+---
+sql.prepare by default when constructing Rowsets and Statements?
+Rowset<int> rs = (sql << "select n from t";)
+
+---
+row[i].get<string>() instead of row.get<string>(i)
+row["col"].get<string>() instead of row.get<string>("col")
+
+---
+Make more member functions private
+
+---
+Values class should be reference counted
+
+---
+
 
