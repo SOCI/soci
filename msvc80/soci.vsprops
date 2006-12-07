@@ -69,11 +69,11 @@
 	/>
 	<UserMacro
 		Name="POSTGRESQL_INCLUDE_DIR"
-		Value="C:\Program Files\PostgreSQL\8.1\include"
+		Value="C:\Program Files\PostgreSQL\8.2\include"
 	/>
 	<UserMacro
 		Name="POSTGRESQL_LIB_DIR"
-		Value="C:\Program Files\PostgreSQL\8.1\lib\ms"
+		Value="C:\Program Files\PostgreSQL\8.2\lib\ms"
 	/>
 	<UserMacro
 		Name="POSTGRESQL_LIB"
@@ -200,5 +200,4 @@
 		Name="SOCI_CORE_DIR"
 		Value="$(SOCI_SRC_DIR)\core"
 	/>
-
 </VisualStudioPropertySheet>
