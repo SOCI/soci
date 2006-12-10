@@ -1,3 +1,5 @@
+$Id: ideas.txt,v 1.7 2006/12/10 02:44:05 mloskot Exp $
+
 This file contains a raw bunch of ideas for future releases.
 Not all of these ideas will necessarily make sense - they are here to get them together.
 
