@@ -1,4 +1,4 @@
-$Id: ideas.txt,v 1.7 2006/12/10 02:44:05 mloskot Exp $
+$Id: ideas.txt,v 1.8 2006/12/12 07:39:22 msobczak Exp $
 
 This file contains a raw bunch of ideas for future releases.
 Not all of these ideas will necessarily make sense - they are here to get them together.
@@ -129,3 +129,6 @@ rowset<Row> rs = (s.prepare << "firstname='John' AND age > 28") // multi-fields 
 - very simple home-made SQL parser or SQL-like queries support (see OGR utils from http://www.gdal.org)
 
 ---
+Session::reconnect (should connect again with the same params).
+Why not also Session::open/close?
+
