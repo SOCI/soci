@@ -18,6 +18,7 @@
 
 using namespace SOCI;
 using namespace SOCI::details;
+using namespace sqlite_api;
 
 Sqlite3StatementBackEnd::Sqlite3StatementBackEnd(
     Sqlite3SessionBackEnd &session)
