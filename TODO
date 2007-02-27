@@ -1,0 +1,2 @@
+1. [PostgreSQL] statement.cpp:197, re-declare vector of input parameters should
+with const char* elements instead of non-const.
