@@ -27,33 +27,33 @@ struct PhonebookEntry2 : public PhonebookEntry
 {
 };
 
-namespace SOCI
+namespace soci
 {
 // basic type conversion
-template<> struct TypeConversion<PhonebookEntry>
+template<> struct type_conversion<PhonebookEntry>
 {
-    typedef SOCI::Values base_type;
-    static PhonebookEntry from(Values const &v)
+    typedef soci::values base_type;
+    static PhonebookEntry from(values const &v)
     {
         PhonebookEntry p;
         p.name = v.get<std::string>("name");
         p.phone = v.get<std::string>("phone", "<NULL>");
         return p;
     }
-    static Values to(PhonebookEntry &p)
+    static values to(PhonebookEntry &p)
     {
-        Values v;
+        values v;
         v.set("name", p.name);
         v.set("phone", p.phone, p.phone.empty() ? eNull : eOK);
         return v;
     }
 };    
 
-// type conversion which directly calls Values::indicator()
-template<> struct TypeConversion<PhonebookEntry2>
+// type conversion which directly calls values::indicator()
+template<> struct type_conversion<PhonebookEntry2>
 {
-    typedef SOCI::Values base_type;
-    static PhonebookEntry2 from(Values const &v)
+    typedef soci::values base_type;
+    static PhonebookEntry2 from(values const &v)
     {
         PhonebookEntry2 p;
         p.name = v.get<std::string>("name");
@@ -61,9 +61,9 @@ template<> struct TypeConversion<PhonebookEntry2>
         p.phone = ind == eNull ? "<NULL>" : v.get<std::string>("phone");
         return p;
     }
-    static Values to(PhonebookEntry2 &p)
+    static values to(PhonebookEntry2 &p)
     {
-        Values v;
+        values v;
         v.set("name", p.name);
         v.set("phone", p.phone, p.phone.empty() ? eNull : eOK);
         return v;
@@ -72,51 +72,51 @@ template<> struct TypeConversion<PhonebookEntry2>
 
 }
 
-namespace SOCI
+namespace soci
 {
 namespace tests
 {
 
-class TableCreatorBase
+class table_creator_base
 {
 public:
-    TableCreatorBase(Session& session)
-        : mSession(session) { drop(); }
+    table_creator_base(session& sql)
+        : msession(sql) { drop(); }
 
-    virtual ~TableCreatorBase() { drop();}
+    virtual ~table_creator_base() { drop();}
 private:
     void drop()
     {
-        try { mSession << "drop table soci_test"; } catch(SOCIError&) {} 
+        try { msession << "drop table soci_test"; } catch(soci_error&) {} 
     }
-    Session& mSession;
+    session& msession;
 };
 
-class ProcedureCreatorBase
+class procedure_creator_base
 {
 public:
-    ProcedureCreatorBase(Session& session)
-        : mSession(session) { drop(); }
+    procedure_creator_base(session& sql)
+        : msession(sql) { drop(); }
 
-    virtual ~ProcedureCreatorBase() { drop();}
+    virtual ~procedure_creator_base() { drop();}
 private:
     void drop()
     {
-        try { mSession << "drop procedure soci_test"; } catch(SOCIError&) {} 
+        try { msession << "drop procedure soci_test"; } catch(soci_error&) {} 
     }
-    Session& mSession;
+    session& msession;
 };
 
-class FunctionCreatorBase
+class function_creator_base
 {
 public:
-    FunctionCreatorBase(Session& session)
-        : mSession(session) { drop(); }
+    function_creator_base(session& sql)
+        : msession(sql) { drop(); }
 
-    virtual ~FunctionCreatorBase() { drop();}
+    virtual ~function_creator_base() { drop();}
 
 protected:
-    virtual std::string dropStatement()
+    virtual std::string dropstatement()
     { 
         return "drop function soci_test";
     }
@@ -124,49 +124,49 @@ protected:
 private:
     void drop()
     {
-        try { mSession << dropStatement(); } catch(SOCIError&) {} 
+        try { msession << dropstatement(); } catch(soci_error&) {} 
     }
-    Session& mSession;
+    session& msession;
 };
 
-class TestContextBase
+class test_context_base
 {
 public:
-    TestContextBase(BackEndFactory const &backEnd,
+    test_context_base(backend_factory const &backEnd,
                     std::string const &connectString)
         : backEndFactory_(backEnd),
           connectString_(connectString) {}
 
-    const BackEndFactory& getBackEndFactory() const
+    const backend_factory& getbackend_factory() const
     {
         return backEndFactory_;
     }
     
-    std::string getConnectString() const
+    std::string get_connect_string() const
     {
         return connectString_;
     }
 
-    virtual std::string toDateTime(std::string const &dateTime) const = 0;
+    virtual std::string to_date_time(std::string const &dateTime) const = 0;
 
-    virtual TableCreatorBase* tableCreator1(Session&) const = 0;
-    virtual TableCreatorBase* tableCreator2(Session&) const = 0;
-    virtual TableCreatorBase* tableCreator3(Session&) const = 0;
+    virtual table_creator_base* table_creator_1(session&) const = 0;
+    virtual table_creator_base* table_creator_2(session&) const = 0;
+    virtual table_creator_base* table_creator_3(session&) const = 0;
 
-    virtual ~TestContextBase() {} // quiet the compiler
+    virtual ~test_context_base() {} // quiet the compiler
 
 private:
-    BackEndFactory const &backEndFactory_;
+    backend_factory const &backEndFactory_;
     std::string const connectString_;
 };
 
-class CommonTests
+class common_tests
 {
 public:
-    CommonTests(TestContextBase const &tc)
+    common_tests(test_context_base const &tc)
     : tc_(tc), 
-      backEndFactory_(tc.getBackEndFactory()),
-      connectString_(tc.getConnectString())
+      backEndFactory_(tc.getbackend_factory()),
+      connectString_(tc.get_connect_string())
     {}
 
     void run(bool dbSupportsTransactions = true)
@@ -210,17 +210,17 @@ public:
     }
 
 private:
-    TestContextBase const & tc_;
-    BackEndFactory const &backEndFactory_;
+    test_context_base const & tc_;
+    backend_factory const &backEndFactory_;
     std::string const connectString_;
 
-typedef std::auto_ptr<TableCreatorBase> AutoTableCreator;
+typedef std::auto_ptr<table_creator_base> AutoTableCreator;
 
 void test1()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
     std::string msg;
     try
@@ -229,7 +229,7 @@ void test1()
         sql << "drop table soci_test_nosuchtable";
         assert(false);
     }
-    catch (SOCIError const &e)
+    catch (soci_error const &e)
     {
         msg = e.what();
     }
@@ -247,10 +247,10 @@ void test1()
 void test2()
 {
     {
-        Session sql(backEndFactory_, connectString_);
+        session sql(backEndFactory_, connectString_);
 
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             char c('a');
             sql << "insert into soci_test(c) values(:c)", use(c);
@@ -259,7 +259,7 @@ void test2()
         }
 
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             std::string abc("ABC");
             sql << "insert into soci_test(str) values(:s)", use(abc);
@@ -273,7 +273,7 @@ void test2()
         }
 
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             std::string hello("Hello");
             sql << "insert into soci_test(str) values(:s)", use(hello);
@@ -287,7 +287,7 @@ void test2()
         }
 
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
         
             std::string helloSOCI("Hello, SOCI!");
             sql << "insert into soci_test(str) values(:s)", use(helloSOCI);
@@ -297,7 +297,7 @@ void test2()
         }
 
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
             
             short three(3);
             sql << "insert into soci_test(sh) values(:id)", use(three);
@@ -307,7 +307,7 @@ void test2()
         }
 
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
          
             int five(5);
             sql << "insert into soci_test(id) values(:id)", use(five);
@@ -317,7 +317,7 @@ void test2()
         }
 
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
             unsigned long seven(7);
             sql << "insert into soci_test(ul) values(:ul)", use(seven);
             unsigned long ul(0);
@@ -326,7 +326,7 @@ void test2()
         }
 
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
         
             double pi(3.14159265);
             sql << "insert into soci_test(d) values(:d)", use(pi);
@@ -336,7 +336,7 @@ void test2()
         }
         
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             std::tm nov15;
             nov15.tm_year = 105;
@@ -359,7 +359,7 @@ void test2()
         }
         
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             std::tm nov15;
             nov15.tm_year = 105;
@@ -383,7 +383,7 @@ void test2()
 
         // test indicators
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             int id(1);
             std::string str("Hello");
@@ -402,7 +402,7 @@ void test2()
 
         // more indicator tests, NULL values
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             sql << "insert into soci_test(id,tm) values(NULL,NULL)";
             int i;
@@ -421,7 +421,7 @@ void test2()
                 sql << "select id from soci_test", into(i);
                 assert(false);
             }
-            catch (SOCIError const &e)
+            catch (soci_error const &e)
             {
                 std::string error = e.what();
                 assert(error ==
@@ -437,7 +437,7 @@ void test2()
                 sql << "select id from soci_test where id = 1000", into(i);
                 assert(false);
             }
-            catch (SOCIError const &e)
+            catch (soci_error const &e)
             {
                 std::string error = e.what();
                 assert(error ==
@@ -453,12 +453,12 @@ void test2()
 void test3()
 {
     {
-        Session sql(backEndFactory_, connectString_);
+        session sql(backEndFactory_, connectString_);
 
         // repeated fetch and bulk fetch of char
         {
             // create and populate the test table
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             char c;
             for (c = 'a'; c <= 'z'; ++c)
@@ -473,7 +473,7 @@ void test3()
             {
                 char c2 = 'a';
 
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select c from soci_test order by c", into(c));
 
                 st.execute();
@@ -488,7 +488,7 @@ void test3()
                 char c2 = 'a';
 
                 std::vector<char> vec(10);
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select c from soci_test order by c", into(vec));
                 st.execute();
                 while (st.fetch())
@@ -512,7 +512,7 @@ void test3()
                     sql << "select c from soci_test", into(vec);
                     assert(false);
                 }
-                catch (SOCIError const &e)
+                catch (soci_error const &e)
                 {
                      std::string msg = e.what();
                      assert(msg == "Vectors of size 0 are not allowed.");
@@ -524,7 +524,7 @@ void test3()
         // repeated fetch and bulk fetch of std::string
         {
             // create and populate the test table
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
             
             int const rowsToTest = 10;
             for (int i = 0; i != rowsToTest; ++i)
@@ -543,7 +543,7 @@ void test3()
             {
                 int i = 0;
                 std::string s;
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select str from soci_test order by str", into(s));
 
                 st.execute();
@@ -560,7 +560,7 @@ void test3()
                 int i = 0;
 
                 std::vector<std::string> vec(4);
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select str from soci_test order by str", into(vec));
                 st.execute();
                 while (st.fetch())
@@ -582,7 +582,7 @@ void test3()
         // repeated fetch and bulk fetch of short
         {
             // create and populate the test table
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             short const rowsToTest = 100;
             short sh;
@@ -598,7 +598,7 @@ void test3()
             {
                 short sh2 = 0;
 
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select sh from soci_test order by sh", into(sh));
 
                 st.execute();
@@ -613,7 +613,7 @@ void test3()
                 short sh2 = 0;
 
                 std::vector<short> vec(8);
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select sh from soci_test order by sh", into(vec));
                 st.execute();
                 while (st.fetch())
@@ -633,7 +633,7 @@ void test3()
         // repeated fetch and bulk fetch of int
         {
             // create and populate the test table
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             int const rowsToTest = 100;
             int i;
@@ -649,7 +649,7 @@ void test3()
             {
                 int i2 = 0;
 
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select id from soci_test order by id", into(i));
 
                 st.execute();
@@ -666,7 +666,7 @@ void test3()
                 int i2 = 0;
                 int cond = 0; // this condition is always true
 
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select id from soci_test where id >= :cond order by id",
                     use(cond), into(i));
 
@@ -682,7 +682,7 @@ void test3()
                 int i2 = 0;
 
                 std::vector<int> vec(8);
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select id from soci_test order by id", into(vec));
                 st.execute();
                 while (st.fetch())
@@ -702,7 +702,7 @@ void test3()
         // repeated fetch and bulk fetch of unsigned long
         {
             // create and populate the test table
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));   
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));   
 
             unsigned long const rowsToTest = 100;
             unsigned long ul;
@@ -718,7 +718,7 @@ void test3()
             {
                 unsigned long ul2 = 0;
 
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select ul from soci_test order by ul", into(ul));
 
                 st.execute();
@@ -733,7 +733,7 @@ void test3()
                 unsigned long ul2 = 0;
 
                 std::vector<unsigned long> vec(8);
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select ul from soci_test order by ul", into(vec));
                 st.execute();
                 while (st.fetch())
@@ -753,7 +753,7 @@ void test3()
         // repeated fetch and bulk fetch of double
         {
             // create and populate the test table
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             int const rowsToTest = 100;
             double d = 0.0;
@@ -771,7 +771,7 @@ void test3()
                 double d2 = 0.0;
                 int i = 0;
 
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select d from soci_test order by d", into(d));
 
                 st.execute();
@@ -788,7 +788,7 @@ void test3()
                 int i = 0;
 
                 std::vector<double> vec(8);
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select d from soci_test order by d", into(vec));
                 st.execute();
                 while (st.fetch())
@@ -809,7 +809,7 @@ void test3()
         // repeated fetch and bulk fetch of std::tm
         {
             // create and populate the test table
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             int const rowsToTest = 8;
             for (int i = 0; i != rowsToTest; ++i)
@@ -819,7 +819,7 @@ void test3()
                     << 15 + i << ':' << 50 - i << ':' << 40 + i;
 
                 sql << "insert into soci_test(id, tm) values(" << i
-                << ", " << tc_.toDateTime(ss.str()) << ")";
+                << ", " << tc_.to_date_time(ss.str()) << ")";
             }
 
             int count;
@@ -830,7 +830,7 @@ void test3()
                 std::tm t;
                 int i = 0;
 
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select tm from soci_test order by id", into(t));
 
                 st.execute();
@@ -851,7 +851,7 @@ void test3()
                 int i = 0;
 
                 std::vector<std::tm> vec(3);
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select tm from soci_test order by id", into(vec));
                 st.execute();
                 while (st.fetch())
@@ -881,10 +881,10 @@ void test3()
 // test for indicators (repeated fetch and bulk)
 void test4()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
     // create and populate the test table
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    AutoTableCreator tableCreator(tc_.table_creator_1(sql));
     {
         sql << "insert into soci_test(id, val) values(1, 10)";
         sql << "insert into soci_test(id, val) values(2, 11)";
@@ -896,7 +896,7 @@ void test4()
             int val;
             eIndicator ind;
 
-            Statement st = (sql.prepare <<
+            statement st = (sql.prepare <<
                 "select val from soci_test order by id", into(val, ind));
 
             st.execute();
@@ -919,7 +919,7 @@ void test4()
             std::vector<int> vals(3);
             std::vector<eIndicator> inds(3);
 
-            Statement st = (sql.prepare <<
+            statement st = (sql.prepare <<
                 "select val from soci_test order by id", into(vals, inds));
 
             st.execute();
@@ -944,7 +944,7 @@ void test4()
             std::vector<int> vals(3);
             std::vector<eIndicator> inds(3);
 
-            Statement st = (sql.prepare <<
+            statement st = (sql.prepare <<
                 "select val from soci_test where 0 = 1", into(vals, inds));
 
             assert(!st.execute(true));
@@ -958,10 +958,10 @@ void test4()
 // (library should force ind. vector to have same size as data vector)
 void test5()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
     // create and populate the test table
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    AutoTableCreator tableCreator(tc_.table_creator_1(sql));
     {
         sql << "insert into soci_test(id, val) values(1, 10)";
         sql << "insert into soci_test(id, val) values(2, 11)";
@@ -973,7 +973,7 @@ void test5()
             std::vector<int> vals(4);
             std::vector<eIndicator> inds;
 
-            Statement st = (sql.prepare <<
+            statement st = (sql.prepare <<
                 "select val from soci_test order by id", into(vals, inds));
 
             st.execute();
@@ -996,11 +996,11 @@ void test6()
 // Note: this functionality is not available with older PostgreSQL
 #ifndef SOCI_PGSQL_NOPARAMS
     {
-        Session sql(backEndFactory_, connectString_);
+        session sql(backEndFactory_, connectString_);
 
         // test for char
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
             char c('a');
             sql << "insert into soci_test(c) values(:c)", use(c);
 
@@ -1012,7 +1012,7 @@ void test6()
 
         // test for char[]
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             char s[] = "Hello";
             sql << "insert into soci_test(str) values(:s)", use(s);
@@ -1025,7 +1025,7 @@ void test6()
 
         // test for std::string
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
             std::string s = "Hello SOCI!";
             sql << "insert into soci_test(str) values(:s)", use(s);
 
@@ -1037,7 +1037,7 @@ void test6()
 
         // test for short
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
             short s = 123;
             sql << "insert into soci_test(id) values(:id)", use(s);
 
@@ -1049,7 +1049,7 @@ void test6()
 
         // test for int
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
             int i = -12345678;
             sql << "insert into soci_test(id) values(:i)", use(i);
 
@@ -1061,7 +1061,7 @@ void test6()
 
         // test for unsigned long
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
             unsigned long ul = 4000000000ul;
             sql << "insert into soci_test(ul) values(:num)", use(ul);
 
@@ -1073,7 +1073,7 @@ void test6()
 
         // test for double
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
             double d = 3.14159265;
             sql << "insert into soci_test(d) values(:d)", use(d);
 
@@ -1085,7 +1085,7 @@ void test6()
 
         // test for std::tm
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
             std::tm t;
             t.tm_year = 105;
             t.tm_mon = 10;
@@ -1115,9 +1115,9 @@ void test6()
 
         // test for repeated use
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
             int i;
-            Statement st = (sql.prepare
+            statement st = (sql.prepare
                 << "insert into soci_test(id) values(:id)", use(i));
 
             i = 5;
@@ -1146,8 +1146,8 @@ void test6()
 void test7()
 {
     {
-        Session sql(backEndFactory_, connectString_);
-        AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+        session sql(backEndFactory_, connectString_);
+        AutoTableCreator tableCreator(tc_.table_creator_1(sql));
         
         {
             int i1 = 5;
@@ -1185,7 +1185,7 @@ void test7()
 
 #ifndef SOCI_PGSQL_NOPARAMS
 
-            Statement st = (sql.prepare
+            statement st = (sql.prepare
                 << "insert into soci_test(i1, i2, i3) values(:i1, :i2, :i3)",
                 use(i1), use(i2), use(i3));
 
@@ -1243,11 +1243,11 @@ void test8()
 #ifndef SOCI_PGSQL_NOPARAMS
 
     {
-        Session sql(backEndFactory_, connectString_);
+        session sql(backEndFactory_, connectString_);
 
         // test for char
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             std::vector<char> v;
             v.push_back('a');
@@ -1269,7 +1269,7 @@ void test8()
 
         // test for std::string
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             std::vector<std::string> v;
             v.push_back("ala");
@@ -1289,7 +1289,7 @@ void test8()
 
         // test for short
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             std::vector<short> v;
             v.push_back(-5);
@@ -1311,7 +1311,7 @@ void test8()
 
         // test for int
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             std::vector<int> v;
             v.push_back(-2000000000);
@@ -1333,7 +1333,7 @@ void test8()
 
         // test for unsigned long
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             std::vector<unsigned long> v;
             v.push_back(0);
@@ -1355,7 +1355,7 @@ void test8()
 
         // test for char
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             std::vector<double> v;
             v.push_back(0);
@@ -1377,7 +1377,7 @@ void test8()
 
         // test for std::tm
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             std::vector<std::tm> v;
             std::tm t;
@@ -1436,9 +1436,9 @@ void test9()
 #ifndef SOCI_PGSQL_NOPARAMS
 
     {
-        Session sql(backEndFactory_, connectString_);
+        session sql(backEndFactory_, connectString_);
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
             int i1 = 7;
             int i2 = 8;
@@ -1452,7 +1452,7 @@ void test9()
 
                 assert(false);
             }
-            catch (SOCIError const &e)
+            catch (soci_error const &e)
             {
                 assert(std::string(e.what()) ==
                     "Binding for use elements must be either by position "
@@ -1513,9 +1513,9 @@ void test9()
 void test10()
 {
     {
-        Session sql(backEndFactory_, connectString_);
+        session sql(backEndFactory_, connectString_);
 
-        AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+        AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
         int count;
         sql << "select count(*) from soci_test", into(count);
@@ -1529,7 +1529,7 @@ void test10()
             int id;
             std::string name;
 
-            Statement st1 = (sql.prepare <<
+            statement st1 = (sql.prepare <<
                 "insert into soci_test (id, name) values (:id, :name)",
                 use(id), use(name));
 
@@ -1586,9 +1586,9 @@ void test11()
 {
 #ifndef SOCI_PGSQL_NOPARAMS
     {
-        Session sql(backEndFactory_, connectString_);
+        session sql(backEndFactory_, connectString_);
 
-        AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+        AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
         eIndicator ind1 = eOK;
         eIndicator ind2 = eOK;
@@ -1659,23 +1659,23 @@ void test11()
 void test12()
 {
     {
-        Session sql(backEndFactory_, connectString_);
+        session sql(backEndFactory_, connectString_);
 
-        AutoTableCreator tableCreator(tc_.tableCreator2(sql));
+        AutoTableCreator tableCreator(tc_.table_creator_2(sql));
 
-        Row r;
+        row r;
         sql << "select * from soci_test", into(r);
         assert(r.indicator(0) ==  eNoData);
 
         sql << "insert into soci_test"
             " values(3.14, 123, \'Johny\',"
-            << tc_.toDateTime("2005-12-19 22:14:17")
+            << tc_.to_date_time("2005-12-19 22:14:17")
             << ", 'a')";
 
-        // select into a Row
+        // select into a row
         {
-            Row r;
-            Statement st = (sql.prepare <<
+            row r;
+            statement st = (sql.prepare <<
                 "select * from soci_test", into(r));
             st.execute(true);
             assert(r.size() == 5);
@@ -1756,9 +1756,9 @@ void test12()
 // more dynamic bindings
 void test13()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
 
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
     sql << "insert into soci_test(id, val) values(1, 10)";
     sql << "insert into soci_test(id, val) values(2, 20)";
@@ -1767,7 +1767,7 @@ void test13()
 #ifndef SOCI_PGSQL_NOPARAMS
     {
         int id = 2;
-        Row r;
+        row r;
         sql << "select val from soci_test where id = :id", use(id), into(r);
 
         assert(r.size() == 1);
@@ -1776,8 +1776,8 @@ void test13()
     }
     {
         int id;
-        Row r;
-        Statement st = (sql.prepare <<
+        row r;
+        statement st = (sql.prepare <<
             "select val from soci_test where id = :id", use(id), into(r));
 
         id = 2;
@@ -1800,7 +1800,7 @@ void test13()
     }
 #else
     {
-        Row r;
+        row r;
         sql << "select val from soci_test where id = 2", into(r);
 
         assert(r.size() == 1);
@@ -1812,14 +1812,14 @@ void test13()
     std::cout << "test 13 passed" << std::endl;
 }
 
-// More Dynamic binding to Row objects
+// More Dynamic binding to row objects
 void test14()
 {
     {
-        Session sql(backEndFactory_, connectString_);
-        AutoTableCreator tableCreator(tc_.tableCreator3(sql));
+        session sql(backEndFactory_, connectString_);
+        AutoTableCreator tableCreator(tc_.table_creator_3(sql));
 
-        Row r1;
+        row r1;
         sql << "select * from soci_test", into(r1);
         assert(r1.indicator(0) ==  eNoData);
 
@@ -1827,8 +1827,8 @@ void test14()
         sql << "insert into soci_test values('john', '(404)123-4567')";
         sql << "insert into soci_test values('doe', '(404)123-4567')";
 
-        Row r2;
-        Statement st = (sql.prepare << "select * from soci_test", into(r2));
+        row r2;
+        statement st = (sql.prepare << "select * from soci_test", into(r2));
         st.execute();
         
         assert(r2.size() == 2); 
@@ -1844,13 +1844,13 @@ void test14()
     std::cout << "test 14 passed" << std::endl;
 }
 
-// test15 is like test14 but with a TypeConversion instead of a row
+// test15 is like test14 but with a type_conversion instead of a row
 void test15()
 {   
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
     {
-        AutoTableCreator tableCreator(tc_.tableCreator3(sql));
+        AutoTableCreator tableCreator(tc_.table_creator_3(sql));
 
         PhonebookEntry p1;
         sql << "select * from soci_test", into(p1);
@@ -1864,7 +1864,7 @@ void test15()
         sql << "insert into soci_test values('doe', '(404)123-4567')";
 
         PhonebookEntry p2;
-        Statement st = (sql.prepare << "select * from soci_test", into(p2));
+        statement st = (sql.prepare << "select * from soci_test", into(p2));
         st.execute();
         
         int count = 0;
@@ -1873,7 +1873,7 @@ void test15()
             ++count;
             if (p2.name == "david")
             {
-                // see TypeConversion<PhonebookEntry>
+                // see type_conversion<PhonebookEntry>
                 assert(p2.phone =="<NULL>");
             }
             else
@@ -1885,8 +1885,8 @@ void test15()
     }
 
     {   // Use the PhonebookEntry2 type conversion, to test
-        // calls to Values::indicator()
-        AutoTableCreator tableCreator(tc_.tableCreator3(sql));
+        // calls to values::indicator()
+        AutoTableCreator tableCreator(tc_.table_creator_3(sql));
 
         PhonebookEntry2 p1;
         sql << "select * from soci_test", into(p1);
@@ -1899,7 +1899,7 @@ void test15()
         sql << "insert into soci_test values('doe', '(404)123-4567')";
 
         PhonebookEntry2 p2;
-        Statement st = (sql.prepare << "select * from soci_test", into(p2));
+        statement st = (sql.prepare << "select * from soci_test", into(p2));
         st.execute();
         
         int count = 0;
@@ -1908,7 +1908,7 @@ void test15()
             ++count;
             if (p2.name == "david")
             {
-                // see TypeConversion<PhonebookEntry2>
+                // see type_conversion<PhonebookEntry2>
                 assert(p2.phone =="<NULL>");
             }
             else
@@ -1927,9 +1927,9 @@ void test16()
 {
 #ifndef SOCI_PGSQL_NOPARAMS
     {
-        Session sql(backEndFactory_, connectString_);
+        session sql(backEndFactory_, connectString_);
 
-        AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+        AutoTableCreator tableCreator(tc_.table_creator_1(sql));
 
         sql << "insert into soci_test(name, id) values('john', 1)";
         sql << "insert into soci_test(name, id) values('george', 2)";
@@ -1955,10 +1955,10 @@ void test16()
 // test for basic logging support
 void test17()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
 
     std::ostringstream log;
-    sql.setLogStream(&log);
+    sql.set_log_stream(&log);
 
     try
     {
@@ -1966,9 +1966,9 @@ void test17()
     }
     catch (...) {}
 
-    assert(sql.getLastQuery() == "drop table soci_test1");
+    assert(sql.get_last_query() == "drop table soci_test1");
 
-    sql.setLogStream(NULL);
+    sql.set_log_stream(NULL);
 
     try
     {
@@ -1976,9 +1976,9 @@ void test17()
     }
     catch (...) {}
 
-    assert(sql.getLastQuery() == "drop table soci_test2");
+    assert(sql.get_last_query() == "drop table soci_test2");
 
-    sql.setLogStream(&log);
+    sql.set_log_stream(&log);
 
     try
     {
@@ -1986,7 +1986,7 @@ void test17()
     }
     catch (...) {}
 
-    assert(sql.getLastQuery() == "drop table soci_test3");
+    assert(sql.get_last_query() == "drop table soci_test3");
     assert(log.str() ==
         "drop table soci_test1\n"
         "drop table soci_test3\n");
@@ -1994,20 +1994,20 @@ void test17()
     std::cout << "test 17 passed\n";
 }
 
-// test for Rowset creation and copying
+// test for rowset creation and copying
 void test18()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
     // create and populate the test table
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    AutoTableCreator tableCreator(tc_.table_creator_1(sql));
     {
         // Open empty rowset
-        Rowset<Row> rs1 = (sql.prepare << "select * from soci_test");
+        rowset<row> rs1 = (sql.prepare << "select * from soci_test");
 
         // Copy by assignment
-        Rowset<Row> rs2 = rs1;
-        Rowset<Row> rs3(rs2);
+        rowset<row> rs2 = rs1;
+        rowset<row> rs3(rs2);
 
         // TODO - mloskot:
         // Fix issue with rs1.begin() == rs2.begin()
@@ -2016,13 +2016,13 @@ void test18()
     std::cout << "test 18 passed" << std::endl;
 }
 
-// test for simple iterating using Rowset iterator (without reading data)
+// test for simple iterating using rowset iterator (without reading data)
 void test19()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
     // create and populate the test table
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    AutoTableCreator tableCreator(tc_.table_creator_1(sql));
     {
         sql << "insert into soci_test(id, val) values(1, 10)";
         sql << "insert into soci_test(id, val) values(2, 11)";
@@ -2030,7 +2030,7 @@ void test19()
         sql << "insert into soci_test(id, val) values(4, NULL)";
         sql << "insert into soci_test(id, val) values(5, 12)";
         {
-            Rowset<Row> rs = (sql.prepare << "select * from soci_test");
+            rowset<row> rs = (sql.prepare << "select * from soci_test");
 
             assert(5 == std::distance(rs.begin(), rs.end()));
         }
@@ -2039,38 +2039,38 @@ void test19()
     std::cout << "test 19 passed" << std::endl;
 }
 
-// test for reading Rowset<Row> using iterator
+// test for reading rowset<row> using iterator
 void test20()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
     // create and populate the test table
-    AutoTableCreator tableCreator(tc_.tableCreator2(sql));
+    AutoTableCreator tableCreator(tc_.table_creator_2(sql));
     {
         {
             // Empty rowset
-            Rowset<Row> rs = (sql.prepare << "select * from soci_test");
+            rowset<row> rs = (sql.prepare << "select * from soci_test");
             assert(0 == std::distance(rs.begin(), rs.end()));
         }
 
         {
             // Non-empty rowset
             sql << "insert into soci_test values(3.14, 123, \'Johny\',"
-                << tc_.toDateTime("2005-12-19 22:14:17")
+                << tc_.to_date_time("2005-12-19 22:14:17")
                 << ", 'a')";
             sql << "insert into soci_test values(6.28, 246, \'Robert\',"
-                << tc_.toDateTime("2004-10-01 18:44:10")
+                << tc_.to_date_time("2004-10-01 18:44:10")
                 << ", 'b')";
 
-            Rowset<Row> rs = (sql.prepare << "select * from soci_test");
+            rowset<row> rs = (sql.prepare << "select * from soci_test");
 
-            Rowset<Row>::const_iterator it = rs.begin(); 
+            rowset<row>::const_iterator it = rs.begin(); 
             assert(it != rs.end());
                 
             //
             // First row
             // 
-            Row const& r1 = (*it);
+            row const& r1 = (*it);
 
             // Properties
             assert(r1.size() == 5);
@@ -2128,7 +2128,7 @@ void test20()
             //
             // Second row
             //
-            Row const& r2 = (*it);
+            row const& r2 = (*it);
 
             // Properties
             assert(r2.size() == 5);
@@ -2175,13 +2175,13 @@ void test20()
     std::cout << "test 20 passed" << std::endl;
 }
 
-// test for reading Rowset<int> using iterator
+// test for reading rowset<int> using iterator
 void test21()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
     // create and populate the test table
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    AutoTableCreator tableCreator(tc_.table_creator_1(sql));
     {
         sql << "insert into soci_test(id) values(1)";
         sql << "insert into soci_test(id) values(2)";
@@ -2189,10 +2189,10 @@ void test21()
         sql << "insert into soci_test(id) values(4)";
         sql << "insert into soci_test(id) values(5)";
         {
-            Rowset<int> rs = (sql.prepare << "select id from soci_test order by id asc");
+            rowset<int> rs = (sql.prepare << "select id from soci_test order by id asc");
 
             // 1st row
-            Rowset<int>::const_iterator pos = rs.begin();
+            rowset<int>::const_iterator pos = rs.begin();
             assert(1 == (*pos));
 
             // 3rd row
@@ -2214,13 +2214,13 @@ void test21()
     std::cout << "test 21 passed" << std::endl;
 }
 
-// test for handling 'use' and reading Rowset<std::string> using iterator
+// test for handling 'use' and reading rowset<std::string> using iterator
 void test22()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
     // create and populate the test table
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    AutoTableCreator tableCreator(tc_.table_creator_1(sql));
     {
         sql << "insert into soci_test(str) values('abc')";
         sql << "insert into soci_test(str) values('def')";
@@ -2229,7 +2229,7 @@ void test22()
         {
             // Expected result in numbers
             std::string idle("def");
-            Rowset<std::string> rs1 = (sql.prepare
+            rowset<std::string> rs1 = (sql.prepare
                     << "select str from soci_test where str = :idle",
                     use(idle));
 
@@ -2237,7 +2237,7 @@ void test22()
 
             // Expected result in value
             idle = "jkl";
-            Rowset<std::string> rs2 = (sql.prepare
+            rowset<std::string> rs2 = (sql.prepare
                     << "select str from soci_test where str = :idle",
                     use(idle));
 
@@ -2251,10 +2251,10 @@ void test22()
 // test for handling troublemaker
 void test23()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
     // create and populate the test table
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    AutoTableCreator tableCreator(tc_.table_creator_1(sql));
     {
         sql << "insert into soci_test(str) values('abc')";
         {
@@ -2263,10 +2263,10 @@ void test23()
             try
             {
                 std::string troublemaker;
-                Rowset<std::string> rs1 = (sql.prepare << "select str from soci_test",
+                rowset<std::string> rs1 = (sql.prepare << "select str from soci_test",
                         into(troublemaker));
             }
-            catch(SOCIError const& e)
+            catch(soci_error const& e)
             {
                 caught = true;
             }
@@ -2281,10 +2281,10 @@ void test23()
 // "Null value fetched and no indicator defined."
 void test24()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
     // create and populate the test table
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    AutoTableCreator tableCreator(tc_.table_creator_1(sql));
     {
         sql << "insert into soci_test(val) values(1)";
         sql << "insert into soci_test(val) values(2)";
@@ -2296,10 +2296,10 @@ void test24()
             try
             {
                 std::string troublemaker;
-                Rowset<int> rs = (sql.prepare << "select val from soci_test order by val asc");
+                rowset<int> rs = (sql.prepare << "select val from soci_test order by val asc");
 
                 int tester = 0;
-                for (Rowset<int>::const_iterator it = rs.begin(); it != rs.end(); ++it)
+                for (rowset<int>::const_iterator it = rs.begin(); it != rs.end(); ++it)
                 {
                     tester = *it;
                 }
@@ -2307,7 +2307,7 @@ void test24()
                 // Never should get here
                 assert(false);
             }
-            catch(SOCIError const& e)
+            catch(soci_error const& e)
             {
                 caught = true;
             }
@@ -2318,13 +2318,13 @@ void test24()
 
 }
 
-// test25 is like test15 but with Rowset and iterators use
+// test25 is like test15 but with rowset and iterators use
 void test25()
 {   
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
     {
-        AutoTableCreator tableCreator(tc_.tableCreator3(sql));
+        AutoTableCreator tableCreator(tc_.table_creator_3(sql));
 
         PhonebookEntry p1;
         sql << "select * from soci_test", into(p1);
@@ -2337,16 +2337,16 @@ void test25()
         sql << "insert into soci_test values('john', '(404)123-4567')";
         sql << "insert into soci_test values('doe', '(404)123-4567')";
 
-        Rowset<PhonebookEntry> rs = (sql.prepare << "select * from soci_test");
+        rowset<PhonebookEntry> rs = (sql.prepare << "select * from soci_test");
         
         int count = 0;
-        for (Rowset<PhonebookEntry>::const_iterator it = rs.begin(); it != rs.end(); ++it)
+        for (rowset<PhonebookEntry>::const_iterator it = rs.begin(); it != rs.end(); ++it)
         {
             ++count;
             PhonebookEntry const& p2 = (*it);
             if (p2.name == "david")
             {
-                // see TypeConversion<PhonebookEntry>
+                // see type_conversion<PhonebookEntry>
                 assert(p2.phone =="<NULL>");
             }
             else
@@ -2360,10 +2360,10 @@ void test25()
     std::cout << "test 25 passed" << std::endl;
 }
 
-}; // class CommonTests
+}; // class common_tests
 
 } // namespace tests
-} // namespace SOCI
+} // namespace soci
 
 #endif // COMMON_TESTS_H_INCLUDED
 

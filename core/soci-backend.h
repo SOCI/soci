@@ -1,12 +1,12 @@
 //
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2007 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef SOCI_COMMON_H_INCLUDED
-#define SOCI_COMMON_H_INCLUDED
+#ifndef SOCI_BACKEND_H_INCLUDED
+#define SOCI_BACKEND_H_INCLUDED
 
 #include <cstddef>
 #include <map>
@@ -15,7 +15,7 @@
 
 #include "soci-config.h"
 
-namespace SOCI
+namespace soci
 {
 
 // data types, as seen by the user
@@ -26,10 +26,11 @@ enum eDataType { eString, eChar, eDate, eDouble, eInteger,
 enum eIndicator { eOK, eNoData, eNull, eTruncated };
 
 
-class SOCI_DECL SOCIError : public std::runtime_error
+class SOCI_DECL soci_error : public std::runtime_error
 {
 public:
-    SOCIError(std::string const & msg);
+    soci_error(std::string const & msg) 
+     : std::runtime_error(msg) {}
 };
 
 
@@ -46,82 +47,82 @@ enum eStatementType { eOneTimeQuery, eRepeatableQuery };
 
 // polymorphic into type backend
 
-class StandardIntoTypeBackEnd
+class standard_into_type_backend
 {
 public:
-    virtual ~StandardIntoTypeBackEnd() {}
+    virtual ~standard_into_type_backend() {}
 
-    virtual void defineByPos(int &position,
+    virtual void define_by_pos(int &position,
         void *data, eExchangeType type) = 0;
 
-    virtual void preFetch() = 0;
-    virtual void postFetch(bool gotData, bool calledFromFetch,
+    virtual void pre_fetch() = 0;
+    virtual void post_fetch(bool gotData, bool calledFromFetch,
         eIndicator *ind) = 0;
 
-    virtual void cleanUp() = 0;
+    virtual void clean_up() = 0;
 };
 
-class VectorIntoTypeBackEnd
+class vector_into_type_backend
 {
 public:
-    virtual ~VectorIntoTypeBackEnd() {}
+    virtual ~vector_into_type_backend() {}
 
-    virtual void defineByPos(int &position,
+    virtual void define_by_pos(int &position,
         void *data, eExchangeType type) = 0;
 
-    virtual void preFetch() = 0;
-    virtual void postFetch(bool gotData, eIndicator *ind) = 0;
+    virtual void pre_fetch() = 0;
+    virtual void post_fetch(bool gotData, eIndicator *ind) = 0;
 
     virtual void resize(std::size_t sz) = 0;
     virtual std::size_t size() = 0;
 
-    virtual void cleanUp() = 0;
+    virtual void clean_up() = 0;
 };
 
 // polymorphic use type backend
 
-class StandardUseTypeBackEnd
+class standard_use_type_backend
 {
 public:
-    virtual ~StandardUseTypeBackEnd() {}
+    virtual ~standard_use_type_backend() {}
 
-    virtual void bindByPos(int &position,
+    virtual void bind_by_pos(int &position,
         void *data, eExchangeType type) = 0;
-    virtual void bindByName(std::string const &name,
+    virtual void bind_by_name(std::string const &name,
         void *data, eExchangeType type) = 0;
 
-    virtual void preUse(eIndicator const *ind) = 0;
-    virtual void postUse(bool gotData, eIndicator *ind) = 0;
+    virtual void pre_use(eIndicator const *ind) = 0;
+    virtual void post_use(bool gotData, eIndicator *ind) = 0;
 
-    virtual void cleanUp() = 0;
+    virtual void clean_up() = 0;
 };
 
-class VectorUseTypeBackEnd
+class vector_use_type_backend
 {
 public:
-    virtual ~VectorUseTypeBackEnd() {}
+    virtual ~vector_use_type_backend() {}
 
-    virtual void bindByPos(int &position,
+    virtual void bind_by_pos(int &position,
         void *data, eExchangeType type) = 0;
-    virtual void bindByName(std::string const &name,
+    virtual void bind_by_name(std::string const &name,
         void *data, eExchangeType type) = 0;
 
-    virtual void preUse(eIndicator const *ind) = 0;
+    virtual void pre_use(eIndicator const *ind) = 0;
 
     virtual std::size_t size() = 0;
 
-    virtual void cleanUp() = 0;
+    virtual void clean_up() = 0;
 };
 
 // polymorphic statement backend
 
-class StatementBackEnd
+class statement_backend
 {
 public:
-    virtual ~StatementBackEnd() {}
+    virtual ~statement_backend() {}
 
     virtual void alloc() = 0;
-    virtual void cleanUp() = 0;
+    virtual void clean_up() = 0;
 
     virtual void prepare(std::string const &query, eStatementType eType) = 0;
 
@@ -129,36 +130,36 @@ public:
     virtual execFetchResult execute(int number) = 0;
     virtual execFetchResult fetch(int number) = 0;
 
-    virtual int getNumberOfRows() = 0;
+    virtual int get_number_of_rows() = 0;
 
-    virtual std::string rewriteForProcedureCall(std::string const &query) = 0;
+    virtual std::string rewrite_for_procedure_call(std::string const &query) = 0;
 
-    virtual int prepareForDescribe() = 0;
-    virtual void describeColumn(int colNum, eDataType &dtype,
-        std::string &columnName) = 0;
+    virtual int prepare_for_describe() = 0;
+    virtual void describe_column(int colNum, eDataType &dtype,
+        std::string &column_name) = 0;
 
-    virtual StandardIntoTypeBackEnd * makeIntoTypeBackEnd() = 0;
-    virtual StandardUseTypeBackEnd * makeUseTypeBackEnd() = 0;
-    virtual VectorIntoTypeBackEnd * makeVectorIntoTypeBackEnd() = 0;
-    virtual VectorUseTypeBackEnd * makeVectorUseTypeBackEnd() = 0;
+    virtual standard_into_type_backend * make_into_type_backend() = 0;
+    virtual standard_use_type_backend * make_use_type_backend() = 0;
+    virtual vector_into_type_backend * make_vector_into_type_backend() = 0;
+    virtual vector_use_type_backend * make_vector_use_type_backend() = 0;
 };
 
 // polymorphic RowID backend
 
-class RowIDBackEnd
+class rowid_backend
 {
 public:
-    virtual ~RowIDBackEnd() {}
+    virtual ~rowid_backend() {}
 };
 
-// polymorphic RowID backend
+// polymorphic blob backend
 
-class BLOBBackEnd
+class blob_backend
 {
 public:
-    virtual ~BLOBBackEnd() {}
+    virtual ~blob_backend() {}
 
-    virtual std::size_t getLen() = 0;
+    virtual std::size_t get_len() = 0;
     virtual std::size_t read(std::size_t offset, char *buf,
         std::size_t toRead) = 0;
     virtual std::size_t write(std::size_t offset, char const *buf,
@@ -169,25 +170,25 @@ public:
 
 // polymorphic session backend
 
-class SessionBackEnd
+class session_backend
 {
 public:
-    virtual ~SessionBackEnd() {}
+    virtual ~session_backend() {}
 
     virtual void begin() = 0;
     virtual void commit() = 0;
     virtual void rollback() = 0;
 
-    virtual StatementBackEnd * makeStatementBackEnd() = 0;
-    virtual RowIDBackEnd * makeRowIDBackEnd() = 0;
-    virtual BLOBBackEnd * makeBLOBBackEnd() = 0;
+    virtual statement_backend * make_statement_backend() = 0;
+    virtual rowid_backend * make_rowid_backend() = 0;
+    virtual blob_backend * make_blob_backend() = 0;
 };
 
 
 // helper class used to keep pointer and buffer size as a single object
-struct CStringDescriptor
+struct cstring_descriptor
 {
-    CStringDescriptor(char *str, std::size_t bufSize)
+    cstring_descriptor(char *str, std::size_t bufSize)
         : str_(str), bufSize_(bufSize) {}
 
     char *str_;
@@ -198,15 +199,15 @@ struct CStringDescriptor
 
 // simple base class for the session back-end factory
 
-struct SOCI_DECL BackEndFactory
+struct SOCI_DECL backend_factory
 {
-    virtual ~BackEndFactory() {}
+    virtual ~backend_factory() {}
 
-    virtual details::SessionBackEnd * makeSession(
+    virtual details::session_backend * make_session(
         std::string const &connectString) const = 0;
 };
 
-} // namespace SOCI
+} // namespace soci
 
-#endif // SOCI_COMMON_H_INCLUDED
+#endif
 
