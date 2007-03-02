@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2007 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -18,11 +18,11 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 // retrieves service name, user name and password from the
 // uniform connect string
-void chopConnectString(std::string const &connectString,
+void chop_connect_string(std::string const &connectString,
     std::string &serviceName, std::string &userName, std::string &password)
 {
     std::string tmp;
@@ -63,12 +63,12 @@ void chopConnectString(std::string const &connectString,
 }
 
 // concrete factory for Empty concrete strategies
-OracleSessionBackEnd * OracleBackEndFactory::makeSession(
+oracle_session_backend * oracle_backend_factory::make_session(
      std::string const &connectString) const
 {
     std::string serviceName, userName, password;
-    chopConnectString(connectString, serviceName, userName, password);
-    return new OracleSessionBackEnd(serviceName, userName, password);
+    chop_connect_string(connectString, serviceName, userName, password);
+    return new oracle_session_backend(serviceName, userName, password);
 }
 
-OracleBackEndFactory const SOCI::oracle;
+oracle_backend_factory const soci::oracle;

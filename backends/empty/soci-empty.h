@@ -25,126 +25,126 @@
 
 #include "soci-backend.h"
 
-namespace SOCI
+namespace soci
 {
 
-struct EmptyStatementBackEnd;
-struct SOCI_EMPTY_DECL EmptyStandardIntoTypeBackEnd : details::StandardIntoTypeBackEnd
+struct empty_statement_backend;
+struct SOCI_EMPTY_DECL empty_standard_into_type_backend : details::standard_into_type_backend
 {
-    EmptyStandardIntoTypeBackEnd(EmptyStatementBackEnd &st)
+    empty_standard_into_type_backend(empty_statement_backend &st)
         : statement_(st) {}
 
-    virtual void defineByPos(int &position,
+    virtual void define_by_pos(int &position,
         void *data, details::eExchangeType type);
 
-    virtual void preFetch();
-    virtual void postFetch(bool gotData, bool calledFromFetch,
+    virtual void pre_fetch();
+    virtual void post_fetch(bool gotData, bool calledFromFetch,
         eIndicator *ind);
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
-    EmptyStatementBackEnd &statement_;
+    empty_statement_backend &statement_;
 };
 
-struct SOCI_EMPTY_DECL EmptyVectorIntoTypeBackEnd : details::VectorIntoTypeBackEnd
+struct SOCI_EMPTY_DECL empty_vector_into_type_backend : details::vector_into_type_backend
 {
-    EmptyVectorIntoTypeBackEnd(EmptyStatementBackEnd &st)
+    empty_vector_into_type_backend(empty_statement_backend &st)
         : statement_(st) {}
 
-    virtual void defineByPos(int &position,
+    virtual void define_by_pos(int &position,
         void *data, details::eExchangeType type);
 
-    virtual void preFetch();
-    virtual void postFetch(bool gotData, eIndicator *ind);
+    virtual void pre_fetch();
+    virtual void post_fetch(bool gotData, eIndicator *ind);
 
     virtual void resize(std::size_t sz);
     virtual std::size_t size();
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
-    EmptyStatementBackEnd &statement_;
+    empty_statement_backend &statement_;
 };
 
-struct SOCI_EMPTY_DECL EmptyStandardUseTypeBackEnd : details::StandardUseTypeBackEnd
+struct SOCI_EMPTY_DECL empty_standard_use_type_backend : details::standard_use_type_backend
 {
-    EmptyStandardUseTypeBackEnd(EmptyStatementBackEnd &st)
+    empty_standard_use_type_backend(empty_statement_backend &st)
         : statement_(st) {}
 
-    virtual void bindByPos(int &position,
+    virtual void bind_by_pos(int &position,
         void *data, details::eExchangeType type);
-    virtual void bindByName(std::string const &name,
+    virtual void bind_by_name(std::string const &name,
         void *data, details::eExchangeType type);
 
-    virtual void preUse(eIndicator const *ind);
-    virtual void postUse(bool gotData, eIndicator *ind);
+    virtual void pre_use(eIndicator const *ind);
+    virtual void post_use(bool gotData, eIndicator *ind);
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
-    EmptyStatementBackEnd &statement_;
+    empty_statement_backend &statement_;
 };
 
-struct SOCI_EMPTY_DECL EmptyVectorUseTypeBackEnd : details::VectorUseTypeBackEnd
+struct SOCI_EMPTY_DECL empty_vector_use_type_backend : details::vector_use_type_backend
 {
-    EmptyVectorUseTypeBackEnd(EmptyStatementBackEnd &st)
+    empty_vector_use_type_backend(empty_statement_backend &st)
         : statement_(st) {}
 
-    virtual void bindByPos(int &position,
+    virtual void bind_by_pos(int &position,
         void *data, details::eExchangeType type);
-    virtual void bindByName(std::string const &name,
+    virtual void bind_by_name(std::string const &name,
         void *data, details::eExchangeType type);
 
-    virtual void preUse(eIndicator const *ind);
+    virtual void pre_use(eIndicator const *ind);
 
     virtual std::size_t size();
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
-    EmptyStatementBackEnd &statement_;
+    empty_statement_backend &statement_;
 };
 
-struct EmptySessionBackEnd;
-struct SOCI_EMPTY_DECL EmptyStatementBackEnd : details::StatementBackEnd
+struct empty_session_backend;
+struct SOCI_EMPTY_DECL empty_statement_backend : details::statement_backend
 {
-    EmptyStatementBackEnd(EmptySessionBackEnd &session);
+    empty_statement_backend(empty_session_backend &session);
 
     virtual void alloc();
-    virtual void cleanUp();
+    virtual void clean_up();
     virtual void prepare(std::string const &query,
         details::eStatementType eType);
 
     virtual execFetchResult execute(int number);
     virtual execFetchResult fetch(int number);
 
-    virtual int getNumberOfRows();
+    virtual int get_number_of_rows();
 
-    virtual std::string rewriteForProcedureCall(std::string const &query);
+    virtual std::string rewrite_for_procedure_call(std::string const &query);
 
-    virtual int prepareForDescribe();
-    virtual void describeColumn(int colNum, eDataType &dtype,
+    virtual int prepare_for_describe();
+    virtual void describe_column(int colNum, eDataType &dtype,
         std::string &columnName);
 
-    virtual EmptyStandardIntoTypeBackEnd * makeIntoTypeBackEnd();
-    virtual EmptyStandardUseTypeBackEnd * makeUseTypeBackEnd();
-    virtual EmptyVectorIntoTypeBackEnd * makeVectorIntoTypeBackEnd();
-    virtual EmptyVectorUseTypeBackEnd * makeVectorUseTypeBackEnd();
+    virtual empty_standard_into_type_backend * make_into_type_backend();
+    virtual empty_standard_use_type_backend * make_use_type_backend();
+    virtual empty_vector_into_type_backend * make_vector_into_type_backend();
+    virtual empty_vector_use_type_backend * make_vector_use_type_backend();
 
-    EmptySessionBackEnd &session_;
+    empty_session_backend &session_;
 };
 
-struct EmptyRowIDBackEnd : details::RowIDBackEnd
+struct empty_rowid_backend : details::rowid_backend
 {
-    EmptyRowIDBackEnd(EmptySessionBackEnd &session);
+    empty_rowid_backend(empty_session_backend &session);
 
-    ~EmptyRowIDBackEnd();
+    ~empty_rowid_backend();
 };
 
-struct EmptyBLOBBackEnd : details::BLOBBackEnd
+struct empty_blob_backend : details::blob_backend
 {
-    EmptyBLOBBackEnd(EmptySessionBackEnd &session);
+    empty_blob_backend(empty_session_backend &session);
 
-    ~EmptyBLOBBackEnd();
+    ~empty_blob_backend();
 
-    virtual std::size_t getLen();
+    virtual std::size_t get_len();
     virtual std::size_t read(std::size_t offset, char *buf,
         std::size_t toRead);
     virtual std::size_t write(std::size_t offset, char const *buf,
@@ -152,35 +152,35 @@ struct EmptyBLOBBackEnd : details::BLOBBackEnd
     virtual std::size_t append(char const *buf, std::size_t toWrite);
     virtual void trim(std::size_t newLen);
 
-    EmptySessionBackEnd &session_;
+    empty_session_backend &session_;
 };
 
-struct EmptySessionBackEnd : details::SessionBackEnd
+struct empty_session_backend : details::session_backend
 {
-    EmptySessionBackEnd(std::string const &connectString);
+    empty_session_backend(std::string const &connectString);
 
-    ~EmptySessionBackEnd();
+    ~empty_session_backend();
 
     virtual void begin();
     virtual void commit();
     virtual void rollback();
 
-    void cleanUp();
+    void clean_up();
 
-    virtual EmptyStatementBackEnd * makeStatementBackEnd();
-    virtual EmptyRowIDBackEnd * makeRowIDBackEnd();
-    virtual EmptyBLOBBackEnd * makeBLOBBackEnd();
+    virtual empty_statement_backend * make_statement_backend();
+    virtual empty_rowid_backend * make_rowid_backend();
+    virtual empty_blob_backend * make_blob_backend();
 };
 
-struct SOCI_EMPTY_DECL EmptyBackEndFactory : BackEndFactory
+struct SOCI_EMPTY_DECL empty_backend_factory : backend_factory
 {
-    virtual EmptySessionBackEnd * makeSession(
+    virtual empty_session_backend * make_session(
         std::string const &connectString) const;
 };
 
-SOCI_EMPTY_DECL extern EmptyBackEndFactory const empty;
+SOCI_EMPTY_DECL extern empty_backend_factory const empty;
 
-} // namespace SOCI
+} // namespace soci
 
 #endif // SOCI_EMPTY_H_INCLUDED
 

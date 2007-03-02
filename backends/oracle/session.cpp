@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2007 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -19,11 +19,11 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::Oracle;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::oracle;
 
-OracleSessionBackEnd::OracleSessionBackEnd(std::string const & serviceName,
+oracle_session_backend::oracle_session_backend(std::string const & serviceName,
     std::string const & userName, std::string const & password)
     : envhp_(NULL), srvhp_(NULL), errhp_(NULL), svchp_(NULL), usrhp_(NULL)
 {
@@ -33,7 +33,7 @@ OracleSessionBackEnd::OracleSessionBackEnd(std::string const & serviceName,
     res = OCIEnvCreate(&envhp_, OCI_DEFAULT, 0, 0, 0, 0, 0, 0);
     if (res != OCI_SUCCESS)
     {
-        throw SOCIError("Cannot create environment");
+        throw soci_error("Cannot create environment");
     }
 
     // create the server handle
@@ -41,8 +41,8 @@ OracleSessionBackEnd::OracleSessionBackEnd(std::string const & serviceName,
         OCI_HTYPE_SERVER, 0, 0);
     if (res != OCI_SUCCESS)
     {
-        cleanUp();
-        throw SOCIError("Cannot create server handle");
+        clean_up();
+        throw soci_error("Cannot create server handle");
     }
 
     // create the error handle
@@ -50,8 +50,8 @@ OracleSessionBackEnd::OracleSessionBackEnd(std::string const & serviceName,
         OCI_HTYPE_ERROR, 0, 0);
     if (res != OCI_SUCCESS)
     {
-        cleanUp();
-        throw SOCIError("Cannot create error handle");
+        clean_up();
+        throw soci_error("Cannot create error handle");
     }
 
     // create the server context
@@ -63,9 +63,9 @@ OracleSessionBackEnd::OracleSessionBackEnd(std::string const & serviceName,
     {
         std::string msg;
         int errNum;
-        getErrorDetails(res, errhp_, msg, errNum);
-        cleanUp();
-        throw OracleSOCIError(msg, errNum);
+        get_error_details(res, errhp_, msg, errNum);
+        clean_up();
+        throw oracle_soci_error(msg, errNum);
     }
 
     // create service context handle
@@ -73,8 +73,8 @@ OracleSessionBackEnd::OracleSessionBackEnd(std::string const & serviceName,
         OCI_HTYPE_SVCCTX, 0, 0);
     if (res != OCI_SUCCESS)
     {
-        cleanUp();
-        throw SOCIError("Cannot create service context");
+        clean_up();
+        throw soci_error("Cannot create service context");
     }
 
     // set the server attribute in the context handle
@@ -84,9 +84,9 @@ OracleSessionBackEnd::OracleSessionBackEnd(std::string const & serviceName,
     {
         std::string msg;
         int errNum;
-        getErrorDetails(res, errhp_, msg, errNum);
-        cleanUp();
-        throw OracleSOCIError(msg, errNum);
+        get_error_details(res, errhp_, msg, errNum);
+        clean_up();
+        throw oracle_soci_error(msg, errNum);
     }
 
     // allocate user session handle
@@ -94,8 +94,8 @@ OracleSessionBackEnd::OracleSessionBackEnd(std::string const & serviceName,
         OCI_HTYPE_SESSION, 0, 0);
     if (res != OCI_SUCCESS)
     {
-        cleanUp();
-        throw SOCIError("Cannot allocate user session handle");
+        clean_up();
+        throw soci_error("Cannot allocate user session handle");
     }
 
     // set username attribute in the user session handle
@@ -105,8 +105,8 @@ OracleSessionBackEnd::OracleSessionBackEnd(std::string const & serviceName,
         userNameLen, OCI_ATTR_USERNAME, errhp_);
     if (res != OCI_SUCCESS)
     {
-        cleanUp();
-        throw SOCIError("Cannot set username");
+        clean_up();
+        throw soci_error("Cannot set username");
     }
 
     // set password attribute
@@ -116,8 +116,8 @@ OracleSessionBackEnd::OracleSessionBackEnd(std::string const & serviceName,
         passwordLen, OCI_ATTR_PASSWORD, errhp_);
     if (res != OCI_SUCCESS)
     {
-        cleanUp();
-        throw SOCIError("Cannot set password");
+        clean_up();
+        throw soci_error("Cannot set password");
     }
 
     // begin the session
@@ -127,9 +127,9 @@ OracleSessionBackEnd::OracleSessionBackEnd(std::string const & serviceName,
     {
         std::string msg;
         int errNum;
-        getErrorDetails(res, errhp_, msg, errNum);
-        cleanUp();
-        throw OracleSOCIError(msg, errNum);
+        get_error_details(res, errhp_, msg, errNum);
+        clean_up();
+        throw oracle_soci_error(msg, errNum);
     }
 
     // set the session in the context handle
@@ -139,18 +139,18 @@ OracleSessionBackEnd::OracleSessionBackEnd(std::string const & serviceName,
     {
         std::string msg;
         int errNum;
-        getErrorDetails(res, errhp_, msg, errNum);
-        cleanUp();
-        throw OracleSOCIError(msg, errNum);
+        get_error_details(res, errhp_, msg, errNum);
+        clean_up();
+        throw oracle_soci_error(msg, errNum);
     }
 }
 
-OracleSessionBackEnd::~OracleSessionBackEnd()
+oracle_session_backend::~oracle_session_backend()
 {
-    cleanUp();
+    clean_up();
 }
 
-void OracleSessionBackEnd::begin()
+void oracle_session_backend::begin()
 {
 // This code is commented out because it causes one of the transaction
 // tests in CommonTests::test10() to fail with error 'Invalid handle'
@@ -159,29 +159,29 @@ void OracleSessionBackEnd::begin()
 //    sword res = OCITransStart(svchp_, errhp_, 0, OCI_TRANS_NEW);
 //    if (res != OCI_SUCCESS)
 //    {
-//        throwOracleSOCIError(res, errhp_);
+//        throworacle_soci_error(res, errhp_);
 //    }
 }
 
-void OracleSessionBackEnd::commit()
+void oracle_session_backend::commit()
 {
     sword res = OCITransCommit(svchp_, errhp_, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, errhp_);
+        throw_oracle_soci_error(res, errhp_);
     }
 }
 
-void OracleSessionBackEnd::rollback()
+void oracle_session_backend::rollback()
 {
     sword res = OCITransRollback(svchp_, errhp_, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, errhp_);
+        throw_oracle_soci_error(res, errhp_);
     }
 }
 
-void OracleSessionBackEnd::cleanUp()
+void oracle_session_backend::clean_up()
 {
     if (svchp_ != NULL && errhp_ != NULL && usrhp_ != NULL)
     {
@@ -199,17 +199,17 @@ void OracleSessionBackEnd::cleanUp()
     if (envhp_) OCIHandleFree(envhp_, OCI_HTYPE_ENV);
 }
 
-OracleStatementBackEnd * OracleSessionBackEnd::makeStatementBackEnd()
+oracle_statement_backend * oracle_session_backend::make_statement_backend()
 {
-    return new OracleStatementBackEnd(*this);
+    return new oracle_statement_backend(*this);
 }
 
-OracleRowIDBackEnd * OracleSessionBackEnd::makeRowIDBackEnd()
+oracle_rowid_backend * oracle_session_backend::make_rowid_backend()
 {
-    return new OracleRowIDBackEnd(*this);
+    return new oracle_rowid_backend(*this);
 }
 
-OracleBLOBBackEnd * OracleSessionBackEnd::makeBLOBBackEnd()
+oracle_blob_backend * oracle_session_backend::make_blob_backend()
 {
-    return new OracleBLOBBackEnd(*this);
+    return new oracle_blob_backend(*this);
 }

@@ -13,28 +13,28 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
-void EmptyStandardIntoTypeBackEnd::defineByPos(
+void empty_standard_into_type_backend::define_by_pos(
     int & /* position */, void * /* data */, eExchangeType /* type */)
 {
     // ...
 }
 
-void EmptyStandardIntoTypeBackEnd::preFetch()
+void empty_standard_into_type_backend::pre_fetch()
 {
     // ...
 }
 
-void EmptyStandardIntoTypeBackEnd::postFetch(
+void empty_standard_into_type_backend::post_fetch(
     bool /* gotData */, bool /* calledFromFetch */, eIndicator * /* ind */)
 {
     // ...
 }
 
-void EmptyStandardIntoTypeBackEnd::cleanUp()
+void empty_standard_into_type_backend::clean_up()
 {
     // ...
 }

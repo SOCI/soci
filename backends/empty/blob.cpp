@@ -13,35 +13,35 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
-EmptyBLOBBackEnd::EmptyBLOBBackEnd(EmptySessionBackEnd &session)
+empty_blob_backend::empty_blob_backend(empty_session_backend &session)
     : session_(session)
 {
     // ...
 }
 
-EmptyBLOBBackEnd::~EmptyBLOBBackEnd()
+empty_blob_backend::~empty_blob_backend()
 {
     // ...
 }
 
-std::size_t EmptyBLOBBackEnd::getLen()
+std::size_t empty_blob_backend::get_len()
 {
     // ...
     return 0;
 }
 
-std::size_t EmptyBLOBBackEnd::read(
+std::size_t empty_blob_backend::read(
     std::size_t /* offset */, char * /* buf */, std::size_t /* toRead */)
 {
     // ...
     return 0;
 }
 
-std::size_t EmptyBLOBBackEnd::write(
+std::size_t empty_blob_backend::write(
     std::size_t /* offset */, char const * /* buf */,
     std::size_t /* toWrite */)
 {
@@ -49,14 +49,14 @@ std::size_t EmptyBLOBBackEnd::write(
     return 0;
 }
 
-std::size_t EmptyBLOBBackEnd::append(
+std::size_t empty_blob_backend::append(
     char const * /* buf */, std::size_t /* toWrite */)
 {
     // ...
     return 0;
 }
 
-void EmptyBLOBBackEnd::trim(std::size_t /* newLen */)
+void empty_blob_backend::trim(std::size_t /* newLen */)
 {
     // ...
 }

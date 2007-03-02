@@ -13,16 +13,16 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
-EmptyRowIDBackEnd::EmptyRowIDBackEnd(EmptySessionBackEnd & /* session */)
+empty_rowid_backend::empty_rowid_backend(empty_session_backend & /* session */)
 {
     // ...
 }
 
-EmptyRowIDBackEnd::~EmptyRowIDBackEnd()
+empty_rowid_backend::~empty_rowid_backend()
 {
     // ...
 }

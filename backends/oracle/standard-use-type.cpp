@@ -1,11 +1,11 @@
 //
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2007 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_ORACLE_SOURCE
+#define soci_ORACLE_SOURCE
 #include "soci-oracle.h"
 #include "error.h"
 #include <soci.h>
@@ -19,11 +19,11 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::Oracle;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::oracle;
 
-void OracleStandardUseTypeBackEnd::prepareForBind(
+void oracle_standard_use_type_backend::prepare_for_bind(
     void *&data, sb4 &size, ub2 &oracleType)
 {
     switch (type_)
@@ -53,8 +53,8 @@ void OracleStandardUseTypeBackEnd::prepareForBind(
     // cases that require adjustments and buffer management
     case eXCString:
         {
-            details::CStringDescriptor *desc
-                = static_cast<CStringDescriptor *>(data);
+            details::cstring_descriptor *desc
+                = static_cast<cstring_descriptor *>(data);
             oracleType = SQLT_STR;
             data = desc->str_;
             size = static_cast<sb4>(desc->bufSize_);
@@ -79,11 +79,11 @@ void OracleStandardUseTypeBackEnd::prepareForBind(
         {
             oracleType = SQLT_RSET;
 
-            Statement *st = static_cast<Statement *>(data);
+            statement *st = static_cast<statement *>(data);
             st->alloc();
 
-            OracleStatementBackEnd *stbe
-                = static_cast<OracleStatementBackEnd *>(st->getBackEnd());
+            oracle_statement_backend *stbe
+                = static_cast<oracle_statement_backend *>(st->get_backend());
             size = 0;
             data = &stbe->stmtp_;
         }
@@ -92,10 +92,10 @@ void OracleStandardUseTypeBackEnd::prepareForBind(
         {
             oracleType = SQLT_RDD;
 
-            RowID *rid = static_cast<RowID *>(data);
+            rowid *rid = static_cast<rowid *>(data);
 
-            OracleRowIDBackEnd *rbe
-                = static_cast<OracleRowIDBackEnd *>(rid->getBackEnd());
+            oracle_rowid_backend *rbe
+                = static_cast<oracle_rowid_backend *>(rid->get_backend());
 
             size = 0;
             data = &rbe->rowidp_;
@@ -105,10 +105,10 @@ void OracleStandardUseTypeBackEnd::prepareForBind(
         {
             oracleType = SQLT_BLOB;
 
-            BLOB *b = static_cast<BLOB *>(data);
+            blob *b = static_cast<blob *>(data);
 
-            OracleBLOBBackEnd *bbe
-                = static_cast<OracleBLOBBackEnd *>(b->getBackEnd());
+            oracle_blob_backend *bbe
+                = static_cast<oracle_blob_backend *>(b->get_backend());
 
             size = 0;
             data = &bbe->lobp_;
@@ -117,12 +117,12 @@ void OracleStandardUseTypeBackEnd::prepareForBind(
     }
 }
 
-void OracleStandardUseTypeBackEnd::bindByPos(
+void oracle_standard_use_type_backend::bind_by_pos(
     int &position, void *data, eExchangeType type)
 {
     if (statement_.boundByName_)
     {
-        throw SOCIError(
+        throw soci_error(
          "Binding for use elements must be either by position or by name.");
     }
 
@@ -132,7 +132,7 @@ void OracleStandardUseTypeBackEnd::bindByPos(
     ub2 oracleType;
     sb4 size;
 
-    prepareForBind(data, size, oracleType);
+    prepare_for_bind(data, size, oracleType);
 
     sword res = OCIBindByPos(statement_.stmtp_, &bindp_,
         statement_.session_.errhp_,
@@ -140,18 +140,18 @@ void OracleStandardUseTypeBackEnd::bindByPos(
         &indOCIHolder_, 0, 0, 0, 0, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, statement_.session_.errhp_);
+        throw_oracle_soci_error(res, statement_.session_.errhp_);
     }
 
     statement_.boundByPos_ = true;
 }
 
-void OracleStandardUseTypeBackEnd::bindByName(
+void oracle_standard_use_type_backend::bind_by_name(
     std::string const &name, void *data, eExchangeType type)
 {
     if (statement_.boundByPos_)
     {
-        throw SOCIError(
+        throw soci_error(
          "Binding for use elements must be either by position or by name.");
     }
 
@@ -161,7 +161,7 @@ void OracleStandardUseTypeBackEnd::bindByName(
     ub2 oracleType;
     sb4 size;
 
-    prepareForBind(data, size, oracleType);
+    prepare_for_bind(data, size, oracleType);
 
     sword res = OCIBindByName(statement_.stmtp_, &bindp_,
         statement_.session_.errhp_,
@@ -171,13 +171,13 @@ void OracleStandardUseTypeBackEnd::bindByName(
         &indOCIHolder_, 0, 0, 0, 0, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, statement_.session_.errhp_);
+        throw_oracle_soci_error(res, statement_.session_.errhp_);
     }
 
     statement_.boundByName_ = true;
 }
 
-void OracleStandardUseTypeBackEnd::preUse(eIndicator const *ind)
+void oracle_standard_use_type_backend::pre_use(eIndicator const *ind)
 {
     // first deal with data
     if (type_ == eXStdString)
@@ -207,9 +207,9 @@ void OracleStandardUseTypeBackEnd::preUse(eIndicator const *ind)
     }
     else if (type_ == eXStatement)
     {
-        Statement *s = static_cast<Statement *>(data_);
+        statement *s = static_cast<statement *>(data_);
 
-        s->unDefAndBind();
+        s->undefine_and_bind();
     }
 
     // then handle indicators
@@ -223,7 +223,7 @@ void OracleStandardUseTypeBackEnd::preUse(eIndicator const *ind)
     }
 }
 
-void OracleStandardUseTypeBackEnd::postUse(bool gotData, eIndicator *ind)
+void oracle_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
 {
     // first, deal with data
     if (gotData)
@@ -253,8 +253,8 @@ void OracleStandardUseTypeBackEnd::postUse(bool gotData, eIndicator *ind)
         }
         else if (type_ == eXStatement)
         {
-            Statement *s = static_cast<Statement *>(data_);
-            s->defineAndBind();
+            statement *s = static_cast<statement *>(data_);
+            s->define_and_bind();
         }
     }
 
@@ -285,18 +285,18 @@ void OracleStandardUseTypeBackEnd::postUse(bool gotData, eIndicator *ind)
         if (indOCIHolder_ == -1)
         {
             // fetched null and no indicator - programming error!
-            throw SOCIError("Null value fetched and no indicator defined.");
+            throw soci_error("Null value fetched and no indicator defined.");
         }
 
         if (gotData == false)
         {
             // no data fetched and no indicator - programming error!
-            throw SOCIError("No data fetched and no indicator defined.");
+            throw soci_error("No data fetched and no indicator defined.");
         }
     }
 }
 
-void OracleStandardUseTypeBackEnd::cleanUp()
+void oracle_standard_use_type_backend::clean_up()
 {
     if (bindp_ != NULL)
     {

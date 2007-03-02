@@ -5,7 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_EMPTY_SOURCE
+#define soci_EMPTY_SOURCE
 #include "soci.h"
 #include "soci-empty.h"
 
@@ -13,35 +13,35 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
-void EmptyVectorUseTypeBackEnd::bindByPos(int & /* position */,
+void empty_vector_use_type_backend::bind_by_pos(int & /* position */,
         void * /* data */, eExchangeType /* type */)
 {
     // ...
 }
 
-void EmptyVectorUseTypeBackEnd::bindByName(
+void empty_vector_use_type_backend::bind_by_name(
     std::string const & /* name */, void * /* data */,
     eExchangeType /* type */)
 {
     // ...
 }
 
-void EmptyVectorUseTypeBackEnd::preUse(eIndicator const * /* ind */)
+void empty_vector_use_type_backend::pre_use(eIndicator const * /* ind */)
 {
     // ...
 }
 
-std::size_t EmptyVectorUseTypeBackEnd::size()
+std::size_t empty_vector_use_type_backend::size()
 {
     // ...
     return 1;
 }
 
-void EmptyVectorUseTypeBackEnd::cleanUp()
+void empty_vector_use_type_backend::clean_up()
 {
     // ...
 }

@@ -12,10 +12,10 @@
 #include <cassert>
 #include <ctime>
 
-using namespace SOCI;
+using namespace soci;
 
 std::string connectString;
-BackEndFactory const &backEnd = empty;
+backend_factory const &backEnd = empty;
 
 
 // NOTE:
@@ -39,12 +39,12 @@ struct Person
     std::string lastName;
 };
 
-namespace SOCI
+namespace soci
 {
-    template<> struct TypeConversion<Person>
+    template<> struct type_conversion<Person>
     {
-        typedef Row base_type;
-        static Person from(Row& /* r */)
+        typedef row base_type;
+        static Person from(row& /* r */)
         {
             Person p;
             return p;
@@ -55,7 +55,7 @@ namespace SOCI
 void test1()
 {
     {
-        Session sql(backEnd, connectString);
+        session sql(backEnd, connectString);
 
         sql << "Do what I want.";
         sql << "Do what I want " << 123 << " times.";
@@ -80,30 +80,30 @@ void test1()
         sql << "select", into(numbers, inds);
 
         {
-            Statement st = (sql.prepare << "select", into(i));
+            statement st = (sql.prepare << "select", into(i));
             st.execute();
             st.fetch();
         }
         {
-            Statement st = (sql.prepare << "select", into(i, ind));
+            statement st = (sql.prepare << "select", into(i, ind));
         }
         {
-            Statement st = (sql.prepare << "select", into(numbers));
+            statement st = (sql.prepare << "select", into(numbers));
         }
         {
-            Statement st = (sql.prepare << "select", into(numbers, inds));
+            statement st = (sql.prepare << "select", into(numbers, inds));
         }
         {
-            Statement st = (sql.prepare << "insert", use(i));
+            statement st = (sql.prepare << "insert", use(i));
         }
         {
-            Statement st = (sql.prepare << "insert", use(i, ind));
+            statement st = (sql.prepare << "insert", use(i, ind));
         }
         {
-            Statement st = (sql.prepare << "insert", use(numbers));
+            statement st = (sql.prepare << "insert", use(numbers));
         }
         {
-            Statement st = (sql.prepare << "insert", use(numbers, inds));
+            statement st = (sql.prepare << "insert", use(numbers, inds));
         }
         {
             Person p;

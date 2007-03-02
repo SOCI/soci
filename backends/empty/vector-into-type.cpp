@@ -13,39 +13,39 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
-void EmptyVectorIntoTypeBackEnd::defineByPos(
+void empty_vector_into_type_backend::define_by_pos(
     int & /* position */, void * /* data */, eExchangeType /* type */)
 {
     // ...
 }
 
-void EmptyVectorIntoTypeBackEnd::preFetch()
+void empty_vector_into_type_backend::pre_fetch()
 {
     // ...
 }
 
-void EmptyVectorIntoTypeBackEnd::postFetch(
+void empty_vector_into_type_backend::post_fetch(
     bool /* gotData */, eIndicator * /* ind */)
 {
     // ...
 }
 
-void EmptyVectorIntoTypeBackEnd::resize(std::size_t /* sz */)
+void empty_vector_into_type_backend::resize(std::size_t /* sz */)
 {
     // ...
 }
 
-std::size_t EmptyVectorIntoTypeBackEnd::size()
+std::size_t empty_vector_into_type_backend::size()
 {
     // ...
     return 1;
 }
 
-void EmptyVectorIntoTypeBackEnd::cleanUp()
+void empty_vector_into_type_backend::clean_up()
 {
     // ...
 }

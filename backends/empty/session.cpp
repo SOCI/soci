@@ -13,52 +13,52 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
-EmptySessionBackEnd::EmptySessionBackEnd(
+empty_session_backend::empty_session_backend(
     std::string const & /* connectString */)
 {
     // ...
 }
 
-EmptySessionBackEnd::~EmptySessionBackEnd()
+empty_session_backend::~empty_session_backend()
 {
-    cleanUp();
+    clean_up();
 }
 
-void EmptySessionBackEnd::begin()
+void empty_session_backend::begin()
 {
     // ...
 }
 
-void EmptySessionBackEnd::commit()
+void empty_session_backend::commit()
 {
     // ...
 }
 
-void EmptySessionBackEnd::rollback()
+void empty_session_backend::rollback()
 {
     // ...
 }
 
-void EmptySessionBackEnd::cleanUp()
+void empty_session_backend::clean_up()
 {
     // ...
 }
 
-EmptyStatementBackEnd * EmptySessionBackEnd::makeStatementBackEnd()
+empty_statement_backend * empty_session_backend::make_statement_backend()
 {
-    return new EmptyStatementBackEnd(*this);
+    return new empty_statement_backend(*this);
 }
 
-EmptyRowIDBackEnd * EmptySessionBackEnd::makeRowIDBackEnd()
+empty_rowid_backend * empty_session_backend::make_rowid_backend()
 {
-    return new EmptyRowIDBackEnd(*this);
+    return new empty_rowid_backend(*this);
 }
 
-EmptyBLOBBackEnd * EmptySessionBackEnd::makeBLOBBackEnd()
+empty_blob_backend * empty_session_backend::make_blob_backend()
 {
-    return new EmptyBLOBBackEnd(*this);
+    return new empty_blob_backend(*this);
 }

@@ -13,15 +13,15 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
 // concrete factory for Empty concrete strategies
-EmptySessionBackEnd * EmptyBackEndFactory::makeSession(
+empty_session_backend * empty_backend_factory::make_session(
      std::string const &connectString) const
 {
-     return new EmptySessionBackEnd(connectString);
+     return new empty_session_backend(connectString);
 }
 
-EmptyBackEndFactory const SOCI::empty;
+empty_backend_factory const soci::empty;

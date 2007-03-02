@@ -1,31 +1,30 @@
 //
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2007 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef ORACLE_COMMON_H_INCLUDED
-#define ORACLE_COMMON_H_INCLUDED
+#ifndef SOCI_ORACLE_ERROR_H_INCLUDED
+#define SOCI_ORACLE_ERROR_H_INCLUDED
 
 #include "soci-oracle.h"
 
-namespace SOCI {
+namespace soci {
 
 namespace details {
 
-namespace Oracle {
+namespace oracle {
 
-void throwOracleSOCIError(sword res, OCIError *errhp);
+void throw_oracle_soci_error(sword res, OCIError *errhp);
 
-void getErrorDetails(sword res, OCIError *errhp,
+void get_error_details(sword res, OCIError *errhp,
     std::string &msg, int &errNum);
 
-} // namespace Oracle 
+} // namespace oracle 
 
 } // namespace details
 
-} // namespace SOCI
+} // namespace soci
 
-#endif // ORACLE_COMMON_H_INCLUDED
-
+#endif 

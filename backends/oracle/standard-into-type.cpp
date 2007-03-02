@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2007 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -19,33 +19,35 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::Oracle;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::oracle;
 
-OracleStandardIntoTypeBackEnd * OracleStatementBackEnd::makeIntoTypeBackEnd()
+oracle_standard_into_type_backend * 
+oracle_statement_backend::make_into_type_backend()
 {
-    return new OracleStandardIntoTypeBackEnd(*this);
+    return new oracle_standard_into_type_backend(*this);
 }
 
-OracleStandardUseTypeBackEnd * OracleStatementBackEnd::makeUseTypeBackEnd()
+oracle_standard_use_type_backend * 
+oracle_statement_backend::make_use_type_backend()
 {
-    return new OracleStandardUseTypeBackEnd(*this);
+    return new oracle_standard_use_type_backend(*this);
 }
 
-OracleVectorIntoTypeBackEnd *
-OracleStatementBackEnd::makeVectorIntoTypeBackEnd()
+oracle_vector_into_type_backend *
+oracle_statement_backend::make_vector_into_type_backend()
 {
-    return new OracleVectorIntoTypeBackEnd(*this);
+    return new oracle_vector_into_type_backend(*this);
 }
 
-OracleVectorUseTypeBackEnd *
-OracleStatementBackEnd::makeVectorUseTypeBackEnd()
+oracle_vector_use_type_backend *
+oracle_statement_backend::make_vector_use_type_backend()
 {
-    return new OracleVectorUseTypeBackEnd(*this);
+    return new oracle_vector_use_type_backend(*this);
 }
 
-void OracleStandardIntoTypeBackEnd::defineByPos(
+void oracle_standard_into_type_backend::define_by_pos(
     int &position, void *data, eExchangeType type)
 {
     data_ = data; // for future reference
@@ -81,8 +83,8 @@ void OracleStandardIntoTypeBackEnd::defineByPos(
     // cases that require adjustments and buffer management
     case eXCString:
         {
-            details::CStringDescriptor *desc
-                = static_cast<CStringDescriptor *>(data);
+            details::cstring_descriptor *desc
+                = static_cast<cstring_descriptor *>(data);
             oracleType = SQLT_STR;
             data = desc->str_;
             size = static_cast<sb4>(desc->bufSize_);
@@ -106,11 +108,11 @@ void OracleStandardIntoTypeBackEnd::defineByPos(
         {
             oracleType = SQLT_RSET;
 
-            Statement *st = static_cast<Statement *>(data);
+            statement *st = static_cast<statement *>(data);
             st->alloc();
 
-            OracleStatementBackEnd *stbe
-                = static_cast<OracleStatementBackEnd *>(st->getBackEnd());
+            oracle_statement_backend *stbe
+                = static_cast<oracle_statement_backend *>(st->get_backend());
             size = 0;
             data = &stbe->stmtp_;
         }
@@ -119,10 +121,10 @@ void OracleStandardIntoTypeBackEnd::defineByPos(
         {
             oracleType = SQLT_RDD;
 
-            RowID *rid = static_cast<RowID *>(data);
+            rowid *rid = static_cast<rowid *>(data);
 
-            OracleRowIDBackEnd *rbe
-                = static_cast<OracleRowIDBackEnd *>(rid->getBackEnd());
+            oracle_rowid_backend *rbe
+                = static_cast<oracle_rowid_backend *>(rid->get_backend());
 
             size = 0;
             data = &rbe->rowidp_;
@@ -132,10 +134,10 @@ void OracleStandardIntoTypeBackEnd::defineByPos(
         {
             oracleType = SQLT_BLOB;
 
-            BLOB *b = static_cast<BLOB *>(data);
+            blob *b = static_cast<blob *>(data);
 
-            OracleBLOBBackEnd *bbe
-                = static_cast<OracleBLOBBackEnd *>(b->getBackEnd());
+            oracle_blob_backend *bbe
+                = static_cast<oracle_blob_backend *>(b->get_backend());
 
             size = 0;
             data = &bbe->lobp_;
@@ -150,22 +152,22 @@ void OracleStandardIntoTypeBackEnd::defineByPos(
 
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, statement_.session_.errhp_);
+        throw_oracle_soci_error(res, statement_.session_.errhp_);
     }
 }
 
-void OracleStandardIntoTypeBackEnd::preFetch()
+void oracle_standard_into_type_backend::pre_fetch()
 {
     // nothing to do except with Statement into objects
 
     if (type_ == eXStatement)
     {
-        Statement *st = static_cast<Statement *>(data_);
-        st->unDefAndBind();
+        statement *st = static_cast<statement *>(data_);
+        st->undefine_and_bind();
     }
 }
 
-void OracleStandardIntoTypeBackEnd::postFetch(
+void oracle_standard_into_type_backend::post_fetch(
     bool gotData, bool calledFromFetch, eIndicator *ind)
 {
     // first, deal with data
@@ -202,8 +204,8 @@ void OracleStandardIntoTypeBackEnd::postFetch(
         }
         else if (type_ == eXStatement)
         {
-            Statement *st = static_cast<Statement *>(data_);
-            st->defineAndBind();
+            statement *st = static_cast<statement *>(data_);
+            st->define_and_bind();
         }
     }
 
@@ -241,18 +243,18 @@ void OracleStandardIntoTypeBackEnd::postFetch(
         if (indOCIHolder_ == -1)
         {
             // fetched null and no indicator - programming error!
-            throw SOCIError("Null value fetched and no indicator defined.");
+            throw soci_error("Null value fetched and no indicator defined.");
         }
 
         if (gotData == false)
         {
             // no data fetched and no indicator - programming error!
-            throw SOCIError("No data fetched and no indicator defined.");
+            throw soci_error("No data fetched and no indicator defined.");
         }
     }
 }
 
-void OracleStandardIntoTypeBackEnd::cleanUp()
+void oracle_standard_into_type_backend::clean_up()
 {
     if (defnp_ != NULL)
     {

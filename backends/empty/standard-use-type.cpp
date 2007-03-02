@@ -13,35 +13,35 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
-void EmptyStandardUseTypeBackEnd::bindByPos(
+void empty_standard_use_type_backend::bind_by_pos(
     int & /* position */, void * /* data */, eExchangeType /* type */)
 {
     // ...
 }
 
-void EmptyStandardUseTypeBackEnd::bindByName(
+void empty_standard_use_type_backend::bind_by_name(
     std::string const & /* name */, void * /* data */,
     eExchangeType /* type */)
 {
     // ...
 }
 
-void EmptyStandardUseTypeBackEnd::preUse(eIndicator const * /* ind */)
+void empty_standard_use_type_backend::pre_use(eIndicator const * /* ind */)
 {
     // ...
 }
 
-void EmptyStandardUseTypeBackEnd::postUse(
+void empty_standard_use_type_backend::post_use(
     bool /* gotData */, eIndicator * /* ind */)
 {
     // ...
 }
 
-void EmptyStandardUseTypeBackEnd::cleanUp()
+void empty_standard_use_type_backend::clean_up()
 {
     // ...
 }

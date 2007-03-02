@@ -1,11 +1,11 @@
 //
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2007 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_ORACLE_SOURCE
+#define soci_ORACLE_SOURCE
 #include "soci-oracle.h"
 #include "error.h"
 #include <soci.h>
@@ -19,15 +19,15 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::Oracle;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::oracle;
 
-void OracleVectorIntoTypeBackEnd::prepareIndicators(std::size_t size)
+void oracle_vector_into_type_backend::prepare_indicators(std::size_t size)
 {
     if (size == 0)
     {
-         throw SOCIError("Vectors of size 0 are not allowed.");
+         throw soci_error("Vectors of size 0 are not allowed.");
     }
 
     indOCIHolderVec_.resize(size);
@@ -37,7 +37,7 @@ void OracleVectorIntoTypeBackEnd::prepareIndicators(std::size_t size)
     rCodes_.resize(size);
 }
 
-void OracleVectorIntoTypeBackEnd::defineByPos(
+void oracle_vector_into_type_backend::define_by_pos(
     int &position, void *data, eExchangeType type)
 {
     data_ = data; // for future reference
@@ -55,7 +55,7 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
             size = sizeof(char);
             std::vector<char> *vp = static_cast<std::vector<char> *>(data);
             std::vector<char> &v(*vp);
-            prepareIndicators(v.size());
+            prepare_indicators(v.size());
             data = &v[0];
         }
         break;
@@ -65,7 +65,7 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
             size = sizeof(short);
             std::vector<short> *vp = static_cast<std::vector<short> *>(data);
             std::vector<short> &v(*vp);
-            prepareIndicators(v.size());
+            prepare_indicators(v.size());
             data = &v[0];
         }
         break;
@@ -75,7 +75,7 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
             size = sizeof(int);
             std::vector<int> *vp = static_cast<std::vector<int> *>(data);
             std::vector<int> &v(*vp);
-            prepareIndicators(v.size());
+            prepare_indicators(v.size());
             data = &v[0];
         }
         break;
@@ -86,7 +86,7 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
             std::vector<unsigned long> *vp
                 = static_cast<std::vector<unsigned long> *>(data);
             std::vector<unsigned long> &v(*vp);
-            prepareIndicators(v.size());
+            prepare_indicators(v.size());
             data = &v[0];
         }
         break;
@@ -96,7 +96,7 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
             size = sizeof(double);
             std::vector<double> *vp = static_cast<std::vector<double> *>(data);
             std::vector<double> &v(*vp);
-            prepareIndicators(v.size());
+            prepare_indicators(v.size());
             data = &v[0];
         }
         break;
@@ -108,11 +108,11 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
             oracleType = SQLT_CHR;
             std::vector<std::string> *v
                 = static_cast<std::vector<std::string> *>(data);
-            colSize_ = statement_.columnSize(position) + 1;
+            colSize_ = statement_.column_size(position) + 1;
             std::size_t bufSize = colSize_ * v->size();
             buf_ = new char[bufSize];
 
-            prepareIndicators(v->size());
+            prepare_indicators(v->size());
 
             size = static_cast<sb4>(colSize_);
             data = buf_;
@@ -124,7 +124,7 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
             std::vector<std::tm> *v
                 = static_cast<std::vector<std::tm> *>(data);
 
-            prepareIndicators(v->size());
+            prepare_indicators(v->size());
 
             size = 7; // 7 is the size of SQLT_DAT
             std::size_t bufSize = size * v->size();
@@ -148,16 +148,16 @@ void OracleVectorIntoTypeBackEnd::defineByPos(
         indOCIHolders_, &sizes_[0], &rCodes_[0], OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, statement_.session_.errhp_);
+        throw_oracle_soci_error(res, statement_.session_.errhp_);
     }
 }
 
-void OracleVectorIntoTypeBackEnd::preFetch()
+void oracle_vector_into_type_backend::pre_fetch()
 {
     // nothing to do for the supported types
 }
 
-void OracleVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
+void oracle_vector_into_type_backend::post_fetch(bool gotData, eIndicator *ind)
 {
     if (gotData)
     {
@@ -218,8 +218,8 @@ void OracleVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
         }
         else if (type_ == eXStatement)
         {
-            Statement *st = static_cast<Statement *>(data_);
-            st->defineAndBind();
+            statement *st = static_cast<statement *>(data_);
+            st->define_and_bind();
         }
 
         // then - deal with indicators
@@ -250,7 +250,7 @@ void OracleVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
                 if (indOCIHolderVec_[i] == -1)
                 {
                     // fetched null and no indicator - programming error!
-                    throw SOCIError(
+                    throw soci_error(
                         "Null value fetched and no indicator defined.");
                 }
             }
@@ -262,7 +262,7 @@ void OracleVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
     }
 }
 
-void OracleVectorIntoTypeBackEnd::resize(std::size_t sz)
+void oracle_vector_into_type_backend::resize(std::size_t sz)
 {
     switch (type_)
     {
@@ -321,7 +321,7 @@ void OracleVectorIntoTypeBackEnd::resize(std::size_t sz)
     }
 }
 
-std::size_t OracleVectorIntoTypeBackEnd::size()
+std::size_t oracle_vector_into_type_backend::size()
 {
     std::size_t sz = 0; // dummy initialization to please the compiler
     switch (type_)
@@ -383,7 +383,7 @@ std::size_t OracleVectorIntoTypeBackEnd::size()
     return sz;
 }
 
-void OracleVectorIntoTypeBackEnd::cleanUp()
+void oracle_vector_into_type_backend::clean_up()
 {
     if (defnp_ != NULL)
     {

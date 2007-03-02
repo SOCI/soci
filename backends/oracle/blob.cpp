@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2007 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -18,27 +18,27 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::Oracle;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::oracle;
 
-OracleBLOBBackEnd::OracleBLOBBackEnd(OracleSessionBackEnd &session)
+oracle_blob_backend::oracle_blob_backend(oracle_session_backend &session)
     : session_(session)
 {
     sword res = OCIDescriptorAlloc(session.envhp_,
         reinterpret_cast<dvoid**>(&lobp_), OCI_DTYPE_LOB, 0, 0);
     if (res != OCI_SUCCESS)
     {
-        throw SOCIError("Cannot allocate the LOB locator");
+        throw soci_error("Cannot allocate the LOB locator");
     }
 }
 
-OracleBLOBBackEnd::~OracleBLOBBackEnd()
+oracle_blob_backend::~oracle_blob_backend()
 {
     OCIDescriptorFree(lobp_, OCI_DTYPE_LOB);
 }
 
-std::size_t OracleBLOBBackEnd::getLen()
+std::size_t oracle_blob_backend::get_len()
 {
     ub4 len;
 
@@ -47,13 +47,13 @@ std::size_t OracleBLOBBackEnd::getLen()
 
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, session_.errhp_);
+        throw_oracle_soci_error(res, session_.errhp_);
     }
 
     return static_cast<std::size_t>(len);
 }
 
-std::size_t OracleBLOBBackEnd::read(
+std::size_t oracle_blob_backend::read(
     std::size_t offset, char *buf, std::size_t toRead)
 {
     ub4 amt = static_cast<ub4>(toRead);
@@ -63,13 +63,13 @@ std::size_t OracleBLOBBackEnd::read(
         amt, 0, 0, 0, 0);
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, session_.errhp_);
+        throw_oracle_soci_error(res, session_.errhp_);
     }
 
     return static_cast<std::size_t>(amt);
 }
 
-std::size_t OracleBLOBBackEnd::write(
+std::size_t oracle_blob_backend::write(
     std::size_t offset, char const *buf, std::size_t toWrite)
 {
     ub4 amt = static_cast<ub4>(toWrite);
@@ -80,13 +80,13 @@ std::size_t OracleBLOBBackEnd::write(
         amt, OCI_ONE_PIECE, 0, 0, 0, 0);
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, session_.errhp_);
+        throw_oracle_soci_error(res, session_.errhp_);
     }
 
     return static_cast<std::size_t>(amt);
 }
 
-std::size_t OracleBLOBBackEnd::append(char const *buf, std::size_t toWrite)
+std::size_t oracle_blob_backend::append(char const *buf, std::size_t toWrite)
 {
     ub4 amt = static_cast<ub4>(toWrite);
 
@@ -95,19 +95,19 @@ std::size_t OracleBLOBBackEnd::append(char const *buf, std::size_t toWrite)
         amt, OCI_ONE_PIECE, 0, 0, 0, 0);
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, session_.errhp_);
+        throw_oracle_soci_error(res, session_.errhp_);
     }
 
     return static_cast<std::size_t>(amt);
 }
 
-void OracleBLOBBackEnd::trim(std::size_t newLen)
+void oracle_blob_backend::trim(std::size_t newLen)
 {
     sword res = OCILobTrim(session_.svchp_, session_.errhp_, lobp_,
         static_cast<ub4>(newLen));
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, session_.errhp_);
+        throw_oracle_soci_error(res, session_.errhp_);
     }
 }
 
