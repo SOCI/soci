@@ -127,7 +127,7 @@ void postgresql_statement_backend::prepare(std::string const &query,
 
     if (eType == eRepeatableQuery)
     {
-        statementName_ = session_.getNextStatementName();
+        statementName_ = session_.get_next_statement_name();
 
         PGresult *res = PQprepare(session_.conn_, statementName_.c_str(),
             query_.c_str(), static_cast<int>(names_.size()), NULL);
