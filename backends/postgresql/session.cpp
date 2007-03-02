@@ -23,43 +23,43 @@
 #pragma warning(disable:4355 4996)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
-PostgreSQLSessionBackEnd::PostgreSQLSessionBackEnd(
+postgresql_session_backend::postgresql_session_backend(
     std::string const & connectString)
     : statementCount_(0)
 {
     conn_ = PQconnectdb(connectString.c_str());
     if (conn_ == NULL || PQstatus(conn_) != CONNECTION_OK)
     {
-        throw SOCIError("Cannot establish connection to the database.");
+        throw soci_error("Cannot establish connection to the database.");
     }
 }
 
-PostgreSQLSessionBackEnd::~PostgreSQLSessionBackEnd()
+postgresql_session_backend::~postgresql_session_backend()
 {
-    cleanUp();
+    clean_up();
 }
 
 namespace // anonymous
 {
 
 // helper function for hardoded queries
-void hardExec(PGconn *conn, char const *query, char const *errMsg)
+void hard_exec(PGconn *conn, char const *query, char const *errMsg)
 {
     PGresult *result = PQexec(conn, query);
 
     if (result == NULL)
     {
-        throw SOCIError(errMsg);
+        throw soci_error(errMsg);
     }
 
     ExecStatusType status = PQresultStatus(result);
     if (status != PGRES_COMMAND_OK)
     {
-        throw SOCIError(PQresultErrorMessage(result));
+        throw soci_error(PQresultErrorMessage(result));
     }
 
     PQclear(result);
@@ -67,22 +67,22 @@ void hardExec(PGconn *conn, char const *query, char const *errMsg)
 
 } // namespace anonymous
 
-void PostgreSQLSessionBackEnd::begin()
+void postgresql_session_backend::begin()
 {
-    hardExec(conn_, "BEGIN", "Cannot begin transaction.");
+    hard_exec(conn_, "BEGIN", "Cannot begin transaction.");
 }
 
-void PostgreSQLSessionBackEnd::commit()
+void postgresql_session_backend::commit()
 {
-    hardExec(conn_, "COMMIT", "Cannot commit transaction.");
+    hard_exec(conn_, "COMMIT", "Cannot commit transaction.");
 }
 
-void PostgreSQLSessionBackEnd::rollback()
+void postgresql_session_backend::rollback()
 {
-    hardExec(conn_, "ROLLBACK", "Cannot rollback transaction.");
+    hard_exec(conn_, "ROLLBACK", "Cannot rollback transaction.");
 }
 
-void PostgreSQLSessionBackEnd::cleanUp()
+void postgresql_session_backend::clean_up()
 {
     if (conn_ != NULL)
     {
@@ -91,24 +91,24 @@ void PostgreSQLSessionBackEnd::cleanUp()
     }
 }
 
-std::string PostgreSQLSessionBackEnd::getNextStatementName()
+std::string postgresql_session_backend::get_next_statement_name()
 {
     char nameBuf[20]; // arbitrary length
     sprintf(nameBuf, "st_%d", ++statementCount_);
     return nameBuf;
 }
 
-PostgreSQLStatementBackEnd * PostgreSQLSessionBackEnd::makeStatementBackEnd()
+postgresql_statement_backend * postgresql_session_backend::make_statement_backend()
 {
-    return new PostgreSQLStatementBackEnd(*this);
+    return new postgresql_statement_backend(*this);
 }
 
-PostgreSQLRowIDBackEnd * PostgreSQLSessionBackEnd::makeRowIDBackEnd()
+postgresql_rowid_backend * postgresql_session_backend::make_rowid_backend()
 {
-    return new PostgreSQLRowIDBackEnd(*this);
+    return new postgresql_rowid_backend(*this);
 }
 
-PostgreSQLBLOBBackEnd * PostgreSQLSessionBackEnd::makeBLOBBackEnd()
+postgresql_blob_backend * postgresql_session_backend::make_blob_backend()
 {
-    return new PostgreSQLBLOBBackEnd(*this);
+    return new postgresql_blob_backend(*this);
 }

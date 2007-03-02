@@ -27,11 +27,11 @@
 using std::snprintf;
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
-void PostgreSQLStandardUseTypeBackEnd::bindByPos(
+void postgresql_standard_use_type_backend::bind_by_pos(
     int &position, void *data, eExchangeType type)
 {
     data_ = data;
@@ -39,7 +39,7 @@ void PostgreSQLStandardUseTypeBackEnd::bindByPos(
     position_ = position++;
 }
 
-void PostgreSQLStandardUseTypeBackEnd::bindByName(
+void postgresql_standard_use_type_backend::bind_by_name(
     std::string const &name, void *data, eExchangeType type)
 {
     data_ = data;
@@ -47,7 +47,7 @@ void PostgreSQLStandardUseTypeBackEnd::bindByName(
     name_ = name;
 }
 
-void PostgreSQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
+void postgresql_standard_use_type_backend::pre_use(eIndicator const *ind)
 {
     if (ind != NULL && *ind == eNull)
     {
@@ -67,8 +67,8 @@ void PostgreSQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
             break;
         case eXCString:
             {
-                CStringDescriptor *strDescr
-                    = static_cast<CStringDescriptor *>(data_);
+                cstring_descriptor *strDescr
+                    = static_cast<cstring_descriptor *>(data_);
 
                 std::size_t len = std::strlen(strDescr->str_);
                 buf_ = new char[len + 1];
@@ -135,10 +135,10 @@ void PostgreSQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
             {
                 // RowID is internally identical to unsigned long
 
-                RowID *rid = static_cast<RowID *>(data_);
-                PostgreSQLRowIDBackEnd *rbe
-                    = static_cast<PostgreSQLRowIDBackEnd *>(
-                        rid->getBackEnd());
+                rowid *rid = static_cast<rowid *>(data_);
+                postgresql_rowid_backend *rbe
+                    = static_cast<postgresql_rowid_backend *>(
+                        rid->get_backend());
 
                 std::size_t const bufSize
                     = std::numeric_limits<unsigned long>::digits10 + 2;
@@ -149,7 +149,7 @@ void PostgreSQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
             break;
 
         default:
-            throw SOCIError("Use element used with non-supported type.");
+            throw soci_error("Use element used with non-supported type.");
         }
     }
 
@@ -165,18 +165,18 @@ void PostgreSQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
     }
 }
 
-void PostgreSQLStandardUseTypeBackEnd::postUse(
+void postgresql_standard_use_type_backend::post_use(
     bool /* gotData */, eIndicator * /* ind */)
 {
-    // TODO: if PostgreSQL allows to *get* data via this channel,
+    // TODO: if postgresql_ allows to *get* data via this channel,
     // write it back to client buffers (variable)
 
     // clean up the working buffer, it might be allocated anew in
     // the next run of preUse
-    cleanUp();
+    clean_up();
 }
 
-void PostgreSQLStandardUseTypeBackEnd::cleanUp()
+void postgresql_standard_use_type_backend::clean_up()
 {
     if (buf_ != NULL)
     {

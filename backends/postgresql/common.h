@@ -10,28 +10,28 @@
 
 #include "soci-postgresql.h"
 
-namespace SOCI {
+namespace soci {
 
 namespace details {
 
-namespace PostgreSQL {
+namespace postgresql {
 
 // helper function for parsing datetime values
-void parseStdTm(char const *buf, std::tm &t);
+void parse_std_tm(char const *buf, std::tm &t);
 
 // helper for vector operations
 template <typename T>
-std::size_t getVectorSize(void *p)
+std::size_t get_vector_size(void *p)
 {
     std::vector<T> *v = static_cast<std::vector<T> *>(p);
     return v->size();
 }
 
-} // namespace PostgreSQL
+} // namespace postgresql
 
 } // namespace details
 
-} // namespace SOCI
+} // namespace soci
 
 #endif // POSTGRESQL_COMMON_H_INCLUDED
 

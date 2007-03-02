@@ -25,12 +25,12 @@
 #define strtoll(s, p, b) static_cast<long long>(_strtoi64(s, p, b))
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::PostgreSQL;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::postgresql;
 
 
-void PostgreSQLStandardIntoTypeBackEnd::defineByPos(
+void postgresql_standard_into_type_backend::define_by_pos(
     int &position, void *data, eExchangeType type)
 {
     data_ = data;
@@ -38,12 +38,12 @@ void PostgreSQLStandardIntoTypeBackEnd::defineByPos(
     position_ = position++;
 }
 
-void PostgreSQLStandardIntoTypeBackEnd::preFetch()
+void postgresql_standard_into_type_backend::pre_fetch()
 {
     // nothing to do here
 }
 
-void PostgreSQLStandardIntoTypeBackEnd::postFetch(
+void postgresql_standard_into_type_backend::post_fetch(
     bool gotData, bool calledFromFetch, eIndicator *ind)
 {
     if (calledFromFetch == true && gotData == false)
@@ -55,7 +55,7 @@ void PostgreSQLStandardIntoTypeBackEnd::postFetch(
 
     if (gotData)
     {
-        // PostgreSQL positions start at 0
+        // postgresql_ positions start at 0
         int pos = position_ - 1;
 
         // first, deal with indicators
@@ -63,7 +63,7 @@ void PostgreSQLStandardIntoTypeBackEnd::postFetch(
         {
             if (ind == NULL)
             {
-                throw SOCIError(
+                throw soci_error(
                     "Null value fetched and no indicator defined.");
             }
 
@@ -92,8 +92,8 @@ void PostgreSQLStandardIntoTypeBackEnd::postFetch(
             break;
         case eXCString:
             {
-                CStringDescriptor *strDescr
-                    = static_cast<CStringDescriptor *>(data_);
+                cstring_descriptor *strDescr
+                    = static_cast<cstring_descriptor *>(data_);
 
                 std::strncpy(strDescr->str_, buf, strDescr->bufSize_ - 1);
                 strDescr->str_[strDescr->bufSize_ - 1] = '\0';
@@ -142,17 +142,17 @@ void PostgreSQLStandardIntoTypeBackEnd::postFetch(
             {
                 // attempt to parse the string and convert to std::tm
                 std::tm *dest = static_cast<std::tm *>(data_);
-                parseStdTm(buf, *dest);
+                parse_std_tm(buf, *dest);
             }
             break;
         case eXRowID:
             {
                 // RowID is internally identical to unsigned long
 
-                RowID *rid = static_cast<RowID *>(data_);
-                PostgreSQLRowIDBackEnd *rbe
-                    = static_cast<PostgreSQLRowIDBackEnd *>(
-                        rid->getBackEnd());
+                rowid *rid = static_cast<rowid *>(data_);
+                postgresql_rowid_backend *rbe
+                    = static_cast<postgresql_rowid_backend *>(
+                        rid->get_backend());
 
                 long long val = strtoll(buf, NULL, 10);
                 rbe->value_ = static_cast<unsigned long>(val);
@@ -167,12 +167,12 @@ void PostgreSQLStandardIntoTypeBackEnd::postFetch(
                     INV_READ | INV_WRITE);
                 if (fd == -1)
                 {
-                    throw SOCIError("Cannot open the BLOB object.");
+                    throw soci_error("Cannot open the blob object.");
                 }
 
-                BLOB *b = static_cast<BLOB *>(data_);
-                PostgreSQLBLOBBackEnd *bbe
-                     = static_cast<PostgreSQLBLOBBackEnd *>(b->getBackEnd());
+                blob *b = static_cast<blob *>(data_);
+                postgresql_blob_backend *bbe
+                     = static_cast<postgresql_blob_backend *>(b->get_backend());
 
                 if (bbe->fd_ != -1)
                 {
@@ -184,7 +184,7 @@ void PostgreSQLStandardIntoTypeBackEnd::postFetch(
             break;
 
         default:
-            throw SOCIError("Into element used with non-supported type.");
+            throw soci_error("Into element used with non-supported type.");
         }
     }
     else // no data retrieved
@@ -195,12 +195,12 @@ void PostgreSQLStandardIntoTypeBackEnd::postFetch(
         }
         else
         {
-            throw SOCIError("No data fetched and no indicator defined.");
+            throw soci_error("No data fetched and no indicator defined.");
         }
     }
 }
 
-void PostgreSQLStandardIntoTypeBackEnd::cleanUp()
+void postgresql_standard_into_type_backend::clean_up()
 {
     // nothing to do here
 }

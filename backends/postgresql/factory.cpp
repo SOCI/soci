@@ -23,15 +23,15 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
 // concrete factory for Empty concrete strategies
-PostgreSQLSessionBackEnd * PostgreSQLBackEndFactory::makeSession(
+postgresql_session_backend * postgresql_backend_factory::make_session(
      std::string const &connectString) const
 {
-     return new PostgreSQLSessionBackEnd(connectString);
+     return new postgresql_session_backend(connectString);
 }
 
-PostgreSQLBackEndFactory const SOCI::postgresql;
+postgresql_backend_factory const soci::postgresql;

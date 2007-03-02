@@ -23,24 +23,24 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
-PostgreSQLStatementBackEnd::PostgreSQLStatementBackEnd(
-    PostgreSQLSessionBackEnd &session)
+postgresql_statement_backend::postgresql_statement_backend(
+    postgresql_session_backend &session)
      : session_(session), result_(NULL), justDescribed_(false),
        hasIntoElements_(false), hasVectorIntoElements_(false),
        hasUseElements_(false), hasVectorUseElements_(false)
 {
 }
 
-void PostgreSQLStatementBackEnd::alloc()
+void postgresql_statement_backend::alloc()
 {
     // nothing to do here
 }
 
-void PostgreSQLStatementBackEnd::cleanUp()
+void postgresql_statement_backend::clean_up()
 {
     if (result_ != NULL)
     {
@@ -49,14 +49,14 @@ void PostgreSQLStatementBackEnd::cleanUp()
     }
 }
 
-void PostgreSQLStatementBackEnd::prepare(std::string const &query,
+void postgresql_statement_backend::prepare(std::string const &query,
     eStatementType eType)
 {
 #ifdef SOCI_PGSQL_NOBINDBYNAME
     query_ = query;
 #else
     // rewrite the query by transforming all named parameters into
-    // the PostgreSQL numbers ones (:abc -> $1, etc.)
+    // the postgresql_ numbers ones (:abc -> $1, etc.)
 
     enum { eNormal, eInQuotes, eInName } state = eNormal;
 
@@ -133,12 +133,12 @@ void PostgreSQLStatementBackEnd::prepare(std::string const &query,
             query_.c_str(), static_cast<int>(names_.size()), NULL);
         if (res == NULL)
         {
-            throw SOCIError("Cannot prepare statement.");
+            throw soci_error("Cannot prepare statement.");
         }
         ExecStatusType status = PQresultStatus(res);
         if (status != PGRES_COMMAND_OK)
         {
-            throw SOCIError(PQresultErrorMessage(res));
+            throw soci_error(PQresultErrorMessage(res));
         }
         PQclear(res);
     }
@@ -148,8 +148,8 @@ void PostgreSQLStatementBackEnd::prepare(std::string const &query,
 #endif // SOCI_PGSQL_NOPREPARE
 }
 
-StatementBackEnd::execFetchResult
-PostgreSQLStatementBackEnd::execute(int number)
+statement_backend::execFetchResult
+postgresql_statement_backend::execute(int number)
 {
     // If the statement was "just described", then we know that
     // it was actually executed with all the use elements
@@ -160,15 +160,15 @@ PostgreSQLStatementBackEnd::execute(int number)
     if (justDescribed_ == false)
     {
         // This object could have been already filled with data before.
-        cleanUp();
+        clean_up();
 
         if (number > 1 && hasIntoElements_)
         {
-             throw SOCIError(
+             throw soci_error(
                   "Bulk use with single into elements is not supported.");
         }
 
-        // Since the bulk operations are not natively supported by PostgreSQL,
+        // Since the bulk operations are not natively supported by postgresql_,
         // we have to explicitly loop to achieve the bulk operations.
         // On the other hand, looping is not needed if there are single
         // use elements, even if there is a bulk fetch.
@@ -187,7 +187,7 @@ PostgreSQLStatementBackEnd::execute(int number)
         {
             if (!useByPosBuffers_.empty() && !useByNameBuffers_.empty())
             {
-                throw SOCIError(
+                throw soci_error(
                     "Binding for use elements must be either by position "
                     "or by name.");
             }
@@ -227,7 +227,7 @@ PostgreSQLStatementBackEnd::execute(int number)
                                 "Missing use element for bind by name (");
                             msg += *it;
                             msg += ").";
-                            throw SOCIError(msg);
+                            throw soci_error(msg);
                         }
                         char **buffers = b->second;
                         paramValues.push_back(buffers[i]);
@@ -236,7 +236,7 @@ PostgreSQLStatementBackEnd::execute(int number)
 
 #ifdef SOCI_PGSQL_NOPARAMS
 
-                throw SOCIError("Queries with parameters are not supported.");
+                throw soci_error("Queries with parameters are not supported.");
 
 #else
 
@@ -276,13 +276,13 @@ PostgreSQLStatementBackEnd::execute(int number)
                     // there are only bulk use elements (no intos)
                     if (result_ == NULL)
                     {
-                        throw SOCIError("Cannot execute query.");
+                        throw soci_error("Cannot execute query.");
                     }
 
                     ExecStatusType status = PQresultStatus(result_);
                     if (status != PGRES_COMMAND_OK)
                     {
-                        throw SOCIError(PQresultErrorMessage(result_));
+                        throw soci_error(PQresultErrorMessage(result_));
                     }
                     PQclear(result_);
                 }
@@ -323,7 +323,7 @@ PostgreSQLStatementBackEnd::execute(int number)
 
             if (result_ == NULL)
             {
-                throw SOCIError("Cannot execute query.");
+                throw soci_error("Cannot execute query.");
             }
         }
     }
@@ -368,12 +368,12 @@ PostgreSQLStatementBackEnd::execute(int number)
     }
     else
     {
-        throw SOCIError(PQresultErrorMessage(result_));
+        throw soci_error(PQresultErrorMessage(result_));
     }
 }
 
-StatementBackEnd::execFetchResult
-PostgreSQLStatementBackEnd::fetch(int number)
+statement_backend::execFetchResult
+postgresql_statement_backend::fetch(int number)
 {
     // Note: This function does not actually fetch anything from anywhere
     // - the data was already retrieved from the server in the execute()
@@ -408,12 +408,12 @@ PostgreSQLStatementBackEnd::fetch(int number)
     }
 }
 
-int PostgreSQLStatementBackEnd::getNumberOfRows()
+int postgresql_statement_backend::get_number_of_rows()
 {
     return numberOfRows_ - currentRow_;
 }
 
-std::string PostgreSQLStatementBackEnd::rewriteForProcedureCall(
+std::string postgresql_statement_backend::rewrite_for_procedure_call(
     std::string const &query)
 {
     std::string newQuery("select ");
@@ -421,7 +421,7 @@ std::string PostgreSQLStatementBackEnd::rewriteForProcedureCall(
     return newQuery;
 }
 
-int PostgreSQLStatementBackEnd::prepareForDescribe()
+int postgresql_statement_backend::prepare_for_describe()
 {
     execute(1);
     justDescribed_ = true;
@@ -430,10 +430,10 @@ int PostgreSQLStatementBackEnd::prepareForDescribe()
     return columns;
 }
 
-void PostgreSQLStatementBackEnd::describeColumn(int colNum, eDataType &type,
+void postgresql_statement_backend::describe_column(int colNum, eDataType &type,
     std::string &columnName)
 {
-    // In PostgreSQL column numbers start from 0
+    // In postgresql_ column numbers start from 0
     int pos = colNum - 1;
 
     unsigned long typeOid = PQftype(result_, pos);
@@ -480,36 +480,36 @@ void PostgreSQLStatementBackEnd::describeColumn(int colNum, eDataType &type,
         break;
 
     default:
-         throw SOCIError("Unknown data type.");
+         throw soci_error("Unknown data type.");
     }
 
     columnName = PQfname(result_, pos);
 }
 
-PostgreSQLStandardIntoTypeBackEnd *
-PostgreSQLStatementBackEnd::makeIntoTypeBackEnd()
+postgresql_standard_into_type_backend *
+postgresql_statement_backend::make_into_type_backend()
 {
     hasIntoElements_ = true;
-    return new PostgreSQLStandardIntoTypeBackEnd(*this);
+    return new postgresql_standard_into_type_backend(*this);
 }
 
-PostgreSQLStandardUseTypeBackEnd *
-PostgreSQLStatementBackEnd::makeUseTypeBackEnd()
+postgresql_standard_use_type_backend *
+postgresql_statement_backend::make_use_type_backend()
 {
     hasUseElements_ = true;
-    return new PostgreSQLStandardUseTypeBackEnd(*this);
+    return new postgresql_standard_use_type_backend(*this);
 }
 
-PostgreSQLVectorIntoTypeBackEnd *
-PostgreSQLStatementBackEnd::makeVectorIntoTypeBackEnd()
+postgresql_vector_into_type_backend *
+postgresql_statement_backend::make_vector_into_type_backend()
 {
     hasVectorIntoElements_ = true;
-    return new PostgreSQLVectorIntoTypeBackEnd(*this);
+    return new postgresql_vector_into_type_backend(*this);
 }
 
-PostgreSQLVectorUseTypeBackEnd *
-PostgreSQLStatementBackEnd::makeVectorUseTypeBackEnd()
+postgresql_vector_use_type_backend *
+postgresql_statement_backend::make_vector_use_type_backend()
 {
     hasVectorUseElements_ = true;
-    return new PostgreSQLVectorUseTypeBackEnd(*this);
+    return new postgresql_vector_use_type_backend(*this);
 }

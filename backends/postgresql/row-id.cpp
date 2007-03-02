@@ -23,17 +23,17 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
-PostgreSQLRowIDBackEnd::PostgreSQLRowIDBackEnd(
-    PostgreSQLSessionBackEnd & /* session */)
+postgresql_rowid_backend::postgresql_rowid_backend(
+    postgresql_session_backend & /* session */)
 {
     // nothing to do here
 }
 
-PostgreSQLRowIDBackEnd::~PostgreSQLRowIDBackEnd()
+postgresql_rowid_backend::~postgresql_rowid_backend()
 {
     // nothing to do here
 }

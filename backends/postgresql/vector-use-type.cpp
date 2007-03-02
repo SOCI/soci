@@ -28,12 +28,12 @@
 using std::snprintf;
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::PostgreSQL;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::postgresql;
 
 
-void PostgreSQLVectorUseTypeBackEnd::bindByPos(int &position,
+void postgresql_vector_use_type_backend::bind_by_pos(int &position,
         void *data, eExchangeType type)
 {
     data_ = data;
@@ -41,7 +41,7 @@ void PostgreSQLVectorUseTypeBackEnd::bindByPos(int &position,
     position_ = position++;
 }
 
-void PostgreSQLVectorUseTypeBackEnd::bindByName(
+void postgresql_vector_use_type_backend::bind_by_name(
     std::string const &name, void *data, eExchangeType type)
 {
     data_ = data;
@@ -49,7 +49,7 @@ void PostgreSQLVectorUseTypeBackEnd::bindByName(
     name_ = name;
 }
 
-void PostgreSQLVectorUseTypeBackEnd::preUse(eIndicator const *ind)
+void postgresql_vector_use_type_backend::pre_use(eIndicator const *ind)
 {
     std::size_t const vsize = size();
     for (size_t i = 0; i != vsize; ++i)
@@ -153,7 +153,7 @@ void PostgreSQLVectorUseTypeBackEnd::preUse(eIndicator const *ind)
                 break;
 
             default:
-                throw SOCIError(
+                throw soci_error(
                     "Use vector element used with non-supported type.");
             }
         }
@@ -173,28 +173,28 @@ void PostgreSQLVectorUseTypeBackEnd::preUse(eIndicator const *ind)
     }
 }
 
-std::size_t PostgreSQLVectorUseTypeBackEnd::size()
+std::size_t postgresql_vector_use_type_backend::size()
 {
     std::size_t sz = 0; // dummy initialization to please the compiler
     switch (type_)
     {
     // simple cases
-    case eXChar:         sz = getVectorSize<char>         (data_); break;
-    case eXShort:        sz = getVectorSize<short>        (data_); break;
-    case eXInteger:      sz = getVectorSize<int>          (data_); break;
-    case eXUnsignedLong: sz = getVectorSize<unsigned long>(data_); break;
-    case eXDouble:       sz = getVectorSize<double>       (data_); break;
-    case eXStdString:    sz = getVectorSize<std::string>  (data_); break;
-    case eXStdTm:        sz = getVectorSize<std::tm>      (data_); break;
+    case eXChar:         sz = get_vector_size<char>         (data_); break;
+    case eXShort:        sz = get_vector_size<short>        (data_); break;
+    case eXInteger:      sz = get_vector_size<int>          (data_); break;
+    case eXUnsignedLong: sz = get_vector_size<unsigned long>(data_); break;
+    case eXDouble:       sz = get_vector_size<double>       (data_); break;
+    case eXStdString:    sz = get_vector_size<std::string>  (data_); break;
+    case eXStdTm:        sz = get_vector_size<std::tm>      (data_); break;
 
     default:
-        throw SOCIError("Use vector element used with non-supported type.");
+        throw soci_error("Use vector element used with non-supported type.");
     }
 
     return sz;
 }
 
-void PostgreSQLVectorUseTypeBackEnd::cleanUp()
+void postgresql_vector_use_type_backend::clean_up()
 {
     std::size_t const bsize = buffers_.size();
     for (std::size_t i = 0; i != bsize; ++i)

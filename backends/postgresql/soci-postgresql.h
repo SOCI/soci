@@ -32,70 +32,70 @@
 #endif
 
 
-namespace SOCI
+namespace soci
 {
 
-struct PostgreSQLStatementBackEnd;
-struct PostgreSQLStandardIntoTypeBackEnd : details::StandardIntoTypeBackEnd
+struct postgresql_statement_backend;
+struct postgresql_standard_into_type_backend : details::standard_into_type_backend
 {
-    PostgreSQLStandardIntoTypeBackEnd(PostgreSQLStatementBackEnd &st)
+    postgresql_standard_into_type_backend(postgresql_statement_backend &st)
         : statement_(st) {}
 
-    virtual void defineByPos(int &position,
+    virtual void define_by_pos(int &position,
         void *data, details::eExchangeType type);
 
-    virtual void preFetch();
-    virtual void postFetch(bool gotData, bool calledFromFetch,
+    virtual void pre_fetch();
+    virtual void post_fetch(bool gotData, bool calledFromFetch,
         eIndicator *ind);
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
-    PostgreSQLStatementBackEnd &statement_;
+    postgresql_statement_backend &statement_;
 
     void *data_;
     details::eExchangeType type_;
     int position_;
 };
 
-struct PostgreSQLVectorIntoTypeBackEnd : details::VectorIntoTypeBackEnd
+struct postgresql_vector_into_type_backend : details::vector_into_type_backend
 {
-    PostgreSQLVectorIntoTypeBackEnd(PostgreSQLStatementBackEnd &st)
+    postgresql_vector_into_type_backend(postgresql_statement_backend &st)
         : statement_(st) {}
 
-    virtual void defineByPos(int &position,
+    virtual void define_by_pos(int &position,
         void *data, details::eExchangeType type);
 
-    virtual void preFetch();
-    virtual void postFetch(bool gotData, eIndicator *ind);
+    virtual void pre_fetch();
+    virtual void post_fetch(bool gotData, eIndicator *ind);
 
     virtual void resize(std::size_t sz);
     virtual std::size_t size();
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
-    PostgreSQLStatementBackEnd &statement_;
+    postgresql_statement_backend &statement_;
 
     void *data_;
     details::eExchangeType type_;
     int position_;
 };
 
-struct PostgreSQLStandardUseTypeBackEnd : details::StandardUseTypeBackEnd
+struct postgresql_standard_use_type_backend : details::standard_use_type_backend
 {
-    PostgreSQLStandardUseTypeBackEnd(PostgreSQLStatementBackEnd &st)
+    postgresql_standard_use_type_backend(postgresql_statement_backend &st)
         : statement_(st), position_(0), buf_(NULL) {}
 
-    virtual void bindByPos(int &position,
+    virtual void bind_by_pos(int &position,
         void *data, details::eExchangeType type);
-    virtual void bindByName(std::string const &name,
+    virtual void bind_by_name(std::string const &name,
         void *data, details::eExchangeType type);
 
-    virtual void preUse(eIndicator const *ind);
-    virtual void postUse(bool gotData, eIndicator *ind);
+    virtual void pre_use(eIndicator const *ind);
+    virtual void post_use(bool gotData, eIndicator *ind);
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
-    PostgreSQLStatementBackEnd &statement_;
+    postgresql_statement_backend &statement_;
 
     void *data_;
     details::eExchangeType type_;
@@ -104,23 +104,23 @@ struct PostgreSQLStandardUseTypeBackEnd : details::StandardUseTypeBackEnd
     char *buf_;
 };
 
-struct PostgreSQLVectorUseTypeBackEnd : details::VectorUseTypeBackEnd
+struct postgresql_vector_use_type_backend : details::vector_use_type_backend
 {
-    PostgreSQLVectorUseTypeBackEnd(PostgreSQLStatementBackEnd &st)
+    postgresql_vector_use_type_backend(postgresql_statement_backend &st)
         : statement_(st), position_(0) {}
 
-    virtual void bindByPos(int &position,
+    virtual void bind_by_pos(int &position,
         void *data, details::eExchangeType type);
-    virtual void bindByName(std::string const &name,
+    virtual void bind_by_name(std::string const &name,
         void *data, details::eExchangeType type);
 
-    virtual void preUse(eIndicator const *ind);
+    virtual void pre_use(eIndicator const *ind);
 
     virtual std::size_t size();
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
-    PostgreSQLStatementBackEnd &statement_;
+    postgresql_statement_backend &statement_;
 
     void *data_;
     details::eExchangeType type_;
@@ -129,33 +129,33 @@ struct PostgreSQLVectorUseTypeBackEnd : details::VectorUseTypeBackEnd
     std::vector<char *> buffers_;
 };
 
-struct PostgreSQLSessionBackEnd;
-struct PostgreSQLStatementBackEnd : details::StatementBackEnd
+struct postgresql_session_backend;
+struct postgresql_statement_backend : details::statement_backend
 {
-    PostgreSQLStatementBackEnd(PostgreSQLSessionBackEnd &session);
+    postgresql_statement_backend(postgresql_session_backend &session);
 
     virtual void alloc();
-    virtual void cleanUp();
+    virtual void clean_up();
     virtual void prepare(std::string const &query,
         details::eStatementType eType);
 
     virtual execFetchResult execute(int number);
     virtual execFetchResult fetch(int number);
 
-    virtual int getNumberOfRows();
+    virtual int get_number_of_rows();
 
-    virtual std::string rewriteForProcedureCall(std::string const &query);
+    virtual std::string rewrite_for_procedure_call(std::string const &query);
 
-    virtual int prepareForDescribe();
-    virtual void describeColumn(int colNum, eDataType &dtype,
+    virtual int prepare_for_describe();
+    virtual void describe_column(int colNum, eDataType &dtype,
         std::string &columnName);
 
-    virtual PostgreSQLStandardIntoTypeBackEnd * makeIntoTypeBackEnd();
-    virtual PostgreSQLStandardUseTypeBackEnd * makeUseTypeBackEnd();
-    virtual PostgreSQLVectorIntoTypeBackEnd * makeVectorIntoTypeBackEnd();
-    virtual PostgreSQLVectorUseTypeBackEnd * makeVectorUseTypeBackEnd();
+    virtual postgresql_standard_into_type_backend * make_into_type_backend();
+    virtual postgresql_standard_use_type_backend * make_use_type_backend();
+    virtual postgresql_vector_into_type_backend * make_vector_into_type_backend();
+    virtual postgresql_vector_use_type_backend * make_vector_use_type_backend();
 
-    PostgreSQLSessionBackEnd &session_;
+    postgresql_session_backend &session_;
 
     PGresult *result_;
     std::string query_;
@@ -185,22 +185,22 @@ struct PostgreSQLStatementBackEnd : details::StatementBackEnd
     UseByNameBuffersMap useByNameBuffers_;
 };
 
-struct PostgreSQLRowIDBackEnd : details::RowIDBackEnd
+struct postgresql_rowid_backend : details::rowid_backend
 {
-    PostgreSQLRowIDBackEnd(PostgreSQLSessionBackEnd &session);
+    postgresql_rowid_backend(postgresql_session_backend &session);
 
-    ~PostgreSQLRowIDBackEnd();
+    ~postgresql_rowid_backend();
 
     unsigned long value_;
 };
 
-struct PostgreSQLBLOBBackEnd : details::BLOBBackEnd
+struct postgresql_blob_backend : details::blob_backend
 {
-    PostgreSQLBLOBBackEnd(PostgreSQLSessionBackEnd &session);
+    postgresql_blob_backend(postgresql_session_backend &session);
 
-    ~PostgreSQLBLOBBackEnd();
+    ~postgresql_blob_backend();
 
-    virtual std::size_t getLen();
+    virtual std::size_t get_len();
     virtual std::size_t read(std::size_t offset, char *buf,
         std::size_t toRead);
     virtual std::size_t write(std::size_t offset, char const *buf,
@@ -208,44 +208,43 @@ struct PostgreSQLBLOBBackEnd : details::BLOBBackEnd
     virtual std::size_t append(char const *buf, std::size_t toWrite);
     virtual void trim(std::size_t newLen);
 
-    PostgreSQLSessionBackEnd &session_;
+    postgresql_session_backend &session_;
 
     unsigned long oid_; // oid of the large object
     int fd_;            // descriptor of the large object
 };
 
-struct PostgreSQLSessionBackEnd : details::SessionBackEnd
+struct postgresql_session_backend : details::session_backend
 {
-    PostgreSQLSessionBackEnd(std::string const &connectString);
+    postgresql_session_backend(std::string const &connectString);
 
-    ~PostgreSQLSessionBackEnd();
+    ~postgresql_session_backend();
 
     virtual void begin();
     virtual void commit();
     virtual void rollback();
 
-    void cleanUp();
+    void clean_up();
 
-    virtual PostgreSQLStatementBackEnd * makeStatementBackEnd();
-    virtual PostgreSQLRowIDBackEnd * makeRowIDBackEnd();
-    virtual PostgreSQLBLOBBackEnd * makeBLOBBackEnd();
+    virtual postgresql_statement_backend * make_statement_backend();
+    virtual postgresql_rowid_backend * make_rowid_backend();
+    virtual postgresql_blob_backend * make_blob_backend();
 
-    std::string getNextStatementName();
+    std::string get_next_statement_name();
 
     int statementCount_;
     PGconn *conn_;
 };
 
 
-struct PostgreSQLBackEndFactory : BackEndFactory
+struct postgresql_backend_factory : backend_factory
 {
-    virtual PostgreSQLSessionBackEnd * makeSession(
+    virtual postgresql_session_backend * make_session(
         std::string const &connectString) const;
 };
 
-SOCI_POSTGRESQL_DECL extern PostgreSQLBackEndFactory const postgresql;
+SOCI_POSTGRESQL_DECL extern postgresql_backend_factory const postgresql;
 
-} // namespace SOCI
+} // namespace soci
 
 #endif // SOCI_POSTGRESQL_H_INCLUDED
-
