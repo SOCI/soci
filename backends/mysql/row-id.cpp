@@ -15,16 +15,17 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
-MySQLRowIDBackEnd::MySQLRowIDBackEnd(MySQLSessionBackEnd & /* session */)
+mysql_rowid_backend::mysql_rowid_backend(
+    mysql_session_backend & /* session */)
 {
-    throw SOCIError("RowIDs are not supported.");
+    throw soci_error("RowIDs are not supported.");
 }
 
-MySQLRowIDBackEnd::~MySQLRowIDBackEnd()
+mysql_rowid_backend::~mysql_rowid_backend()
 {
-    throw SOCIError("RowIDs are not supported.");
+    throw soci_error("RowIDs are not supported.");
 }

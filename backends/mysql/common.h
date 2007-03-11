@@ -10,31 +10,31 @@
 
 #include "soci-mysql.h"
 
-namespace SOCI {
+namespace soci {
 
 namespace details {
 
-namespace MySQL {
+namespace mysql {
 
 // helper function for parsing datetime values
-void parseStdTm(char const *buf, std::tm &t);
+void parse_std_tm(char const *buf, std::tm &t);
 
 // helper for escaping strings
 char * quote(MYSQL * conn, const char *s, int l);
 
 // helper for vector operations
 template <typename T>
-std::size_t getVectorSize(void *p)
+std::size_t get_vector_size(void *p)
 {
     std::vector<T> *v = static_cast<std::vector<T> *>(p);
     return v->size();
 }
 
-} // namespace MySQL
+} // namespace mysql
 
 } // namespace details
 
-} // namespace SOCI
+} // namespace soci
 
 #endif // MYSQL_COMMON_H_INCLUDED
 

@@ -25,14 +25,14 @@ long parse10(char const *&p1, char *&p2, const char *msg)
     }
     else
     {
-        throw SOCI::SOCIError(msg);
+        throw soci::soci_error(msg);
     }
 }
 
 } // namespace anonymous
 
 
-void SOCI::details::MySQL::parseStdTm(char const *buf, std::tm &t)
+void soci::details::mysql::parse_std_tm(char const *buf, std::tm &t)
 {
     char const *p1 = buf;
     char *p2;
@@ -64,7 +64,7 @@ void SOCI::details::MySQL::parseStdTm(char const *buf, std::tm &t)
     std::mktime(&t);
 }
 
-char * SOCI::details::MySQL::quote(MYSQL * conn, const char *s, int l)
+char * soci::details::mysql::quote(MYSQL * conn, const char *s, int l)
 {
     char *retv = new char[2 * l + 3];
     retv[0] = '\'';

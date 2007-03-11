@@ -32,70 +32,70 @@
 #include <vector>
 
 
-namespace SOCI
+namespace soci
 {
 
-struct MySQLStatementBackEnd;
-struct MySQLStandardIntoTypeBackEnd : details::StandardIntoTypeBackEnd
+struct mysql_statement_backend;
+struct mysql_standard_into_type_backend : details::standard_into_type_backend
 {
-    MySQLStandardIntoTypeBackEnd(MySQLStatementBackEnd &st)
+    mysql_standard_into_type_backend(mysql_statement_backend &st)
         : statement_(st) {}
 
-    virtual void defineByPos(int &position,
+    virtual void define_by_pos(int &position,
         void *data, details::eExchangeType type);
 
-    virtual void preFetch();
-    virtual void postFetch(bool gotData, bool calledFromFetch,
+    virtual void pre_fetch();
+    virtual void post_fetch(bool gotData, bool calledFromFetch,
         eIndicator *ind);
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
-    MySQLStatementBackEnd &statement_;
+    mysql_statement_backend &statement_;
     
     void *data_;
     details::eExchangeType type_;
     int position_;
 };
 
-struct MySQLVectorIntoTypeBackEnd : details::VectorIntoTypeBackEnd
+struct mysql_vector_into_type_backend : details::vector_into_type_backend
 {
-    MySQLVectorIntoTypeBackEnd(MySQLStatementBackEnd &st)
+    mysql_vector_into_type_backend(mysql_statement_backend &st)
         : statement_(st) {}
 
-    virtual void defineByPos(int &position,
+    virtual void define_by_pos(int &position,
         void *data, details::eExchangeType type);
 
-    virtual void preFetch();
-    virtual void postFetch(bool gotData, eIndicator *ind);
+    virtual void pre_fetch();
+    virtual void post_fetch(bool gotData, eIndicator *ind);
 
     virtual void resize(std::size_t sz);
     virtual std::size_t size();
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
-    MySQLStatementBackEnd &statement_;
+    mysql_statement_backend &statement_;
     
     void *data_;
     details::eExchangeType type_;
     int position_;
 };
 
-struct MySQLStandardUseTypeBackEnd : details::StandardUseTypeBackEnd
+struct mysql_standard_use_type_backend : details::standard_use_type_backend
 {
-    MySQLStandardUseTypeBackEnd(MySQLStatementBackEnd &st)
+    mysql_standard_use_type_backend(mysql_statement_backend &st)
         : statement_(st), position_(0), buf_(NULL) {}
 
-    virtual void bindByPos(int &position,
+    virtual void bind_by_pos(int &position,
         void *data, details::eExchangeType type);
-    virtual void bindByName(std::string const &name,
+    virtual void bind_by_name(std::string const &name,
         void *data, details::eExchangeType type);
 
-    virtual void preUse(eIndicator const *ind);
-    virtual void postUse(bool gotData, eIndicator *ind);
+    virtual void pre_use(eIndicator const *ind);
+    virtual void post_use(bool gotData, eIndicator *ind);
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
-    MySQLStatementBackEnd &statement_;
+    mysql_statement_backend &statement_;
     
     void *data_;
     details::eExchangeType type_;
@@ -104,23 +104,23 @@ struct MySQLStandardUseTypeBackEnd : details::StandardUseTypeBackEnd
     char *buf_;
 };
 
-struct MySQLVectorUseTypeBackEnd : details::VectorUseTypeBackEnd
+struct mysql_vector_use_type_backend : details::vector_use_type_backend
 {
-    MySQLVectorUseTypeBackEnd(MySQLStatementBackEnd &st)
+    mysql_vector_use_type_backend(mysql_statement_backend &st)
         : statement_(st), position_(0) {}
 
-    virtual void bindByPos(int &position,
+    virtual void bind_by_pos(int &position,
         void *data, details::eExchangeType type);
-    virtual void bindByName(std::string const &name,
+    virtual void bind_by_name(std::string const &name,
         void *data, details::eExchangeType type);
 
-    virtual void preUse(eIndicator const *ind);
+    virtual void pre_use(eIndicator const *ind);
 
     virtual std::size_t size();
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
-    MySQLStatementBackEnd &statement_;
+    mysql_statement_backend &statement_;
     
     void *data_;
     details::eExchangeType type_;
@@ -129,33 +129,33 @@ struct MySQLVectorUseTypeBackEnd : details::VectorUseTypeBackEnd
     std::vector<char *> buffers_;
 };
 
-struct MySQLSessionBackEnd;
-struct MySQLStatementBackEnd : details::StatementBackEnd
+struct mysql_session_backend;
+struct mysql_statement_backend : details::statement_backend
 {
-    MySQLStatementBackEnd(MySQLSessionBackEnd &session);
+    mysql_statement_backend(mysql_session_backend &session);
 
     virtual void alloc();
-    virtual void cleanUp();
+    virtual void clean_up();
     virtual void prepare(std::string const &query,
         details::eStatementType eType);
 
     virtual execFetchResult execute(int number);
     virtual execFetchResult fetch(int number);
 
-    virtual int getNumberOfRows();
+    virtual int get_number_of_rows();
 
-    virtual std::string rewriteForProcedureCall(std::string const &query);
+    virtual std::string rewrite_for_procedure_call(std::string const &query);
 
-    virtual int prepareForDescribe();
-    virtual void describeColumn(int colNum, eDataType &dtype,
+    virtual int prepare_for_describe();
+    virtual void describe_column(int colNum, eDataType &dtype,
         std::string &columnName);
 
-    virtual MySQLStandardIntoTypeBackEnd * makeIntoTypeBackEnd();
-    virtual MySQLStandardUseTypeBackEnd * makeUseTypeBackEnd();
-    virtual MySQLVectorIntoTypeBackEnd * makeVectorIntoTypeBackEnd();
-    virtual MySQLVectorUseTypeBackEnd * makeVectorUseTypeBackEnd();
+    virtual mysql_standard_into_type_backend * make_into_type_backend();
+    virtual mysql_standard_use_type_backend * make_use_type_backend();
+    virtual mysql_vector_into_type_backend * make_vector_into_type_backend();
+    virtual mysql_vector_use_type_backend * make_vector_use_type_backend();
 
-    MySQLSessionBackEnd &session_;
+    mysql_session_backend &session_;
     
     MYSQL_RES *result_;
     
@@ -188,20 +188,20 @@ struct MySQLStatementBackEnd : details::StatementBackEnd
     UseByNameBuffersMap useByNameBuffers_;
 };
 
-struct MySQLRowIDBackEnd : details::RowIDBackEnd
+struct mysql_rowid_backend : details::rowid_backend
 {
-    MySQLRowIDBackEnd(MySQLSessionBackEnd &session);
+    mysql_rowid_backend(mysql_session_backend &session);
 
-    ~MySQLRowIDBackEnd();
+    ~mysql_rowid_backend();
 };
 
-struct MySQLBLOBBackEnd : details::BLOBBackEnd
+struct mysql_blob_backend : details::blob_backend
 {
-    MySQLBLOBBackEnd(MySQLSessionBackEnd &session);
+    mysql_blob_backend(mysql_session_backend &session);
 
-    ~MySQLBLOBBackEnd();
+    ~mysql_blob_backend();
 
-    virtual std::size_t getLen();
+    virtual std::size_t get_len();
     virtual std::size_t read(std::size_t offset, char *buf,
         std::size_t toRead);
     virtual std::size_t write(std::size_t offset, char const *buf,
@@ -209,36 +209,36 @@ struct MySQLBLOBBackEnd : details::BLOBBackEnd
     virtual std::size_t append(char const *buf, std::size_t toWrite);
     virtual void trim(std::size_t newLen);
 
-    MySQLSessionBackEnd &session_;
+    mysql_session_backend &session_;
 };
 
-struct MySQLSessionBackEnd : details::SessionBackEnd
+struct mysql_session_backend : details::session_backend
 {
-    MySQLSessionBackEnd(std::string const &connectString);
+    mysql_session_backend(std::string const &connectString);
 
-    ~MySQLSessionBackEnd();
+    ~mysql_session_backend();
 
     virtual void begin();
     virtual void commit();
     virtual void rollback();
 
-    void cleanUp();
+    void clean_up();
 
-    virtual MySQLStatementBackEnd * makeStatementBackEnd();
-    virtual MySQLRowIDBackEnd * makeRowIDBackEnd();
-    virtual MySQLBLOBBackEnd * makeBLOBBackEnd();
+    virtual mysql_statement_backend * make_statement_backend();
+    virtual mysql_rowid_backend * make_rowid_backend();
+    virtual mysql_blob_backend * make_blob_backend();
     
     MYSQL *conn_;
 };
 
 
-struct MySQLBackEndFactory : BackEndFactory
+struct mysql_backend_factory : backend_factory
 {
-    virtual MySQLSessionBackEnd * makeSession(
+    virtual mysql_session_backend * make_session(
         std::string const &connectString) const;
 };
 
-SOCI_MYSQL_DECL extern MySQLBackEndFactory const mysql;
+SOCI_MYSQL_DECL extern mysql_backend_factory const mysql;
 
 } // namespace SOCI
 

@@ -18,12 +18,12 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::MySQL;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::mysql;
 
 
-void MySQLStandardUseTypeBackEnd::bindByPos(
+void mysql_standard_use_type_backend::bind_by_pos(
     int &position, void *data, eExchangeType type)
 {
     data_ = data;
@@ -31,7 +31,7 @@ void MySQLStandardUseTypeBackEnd::bindByPos(
     position_ = position++;
 }
 
-void MySQLStandardUseTypeBackEnd::bindByName(
+void mysql_standard_use_type_backend::bind_by_name(
     std::string const &name, void *data, eExchangeType type)
 {
     data_ = data;
@@ -39,7 +39,7 @@ void MySQLStandardUseTypeBackEnd::bindByName(
     name_ = name;
 }
 
-void MySQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
+void mysql_standard_use_type_backend::pre_use(eIndicator const *ind)
 {
     if (ind != NULL && *ind == eNull)
     {
@@ -59,8 +59,8 @@ void MySQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
             break;
         case eXCString:
             {
-                CStringDescriptor *strDescr
-                    = static_cast<CStringDescriptor *>(data_);
+                cstring_descriptor *strDescr
+                    = static_cast<cstring_descriptor *>(data_);
                 buf_ = quote(statement_.session_.conn_, strDescr->str_,
 			     std::strlen(strDescr->str_));
             }
@@ -122,7 +122,7 @@ void MySQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
             }
             break;
         default:
-            throw SOCIError("Use element used with non-supported type.");
+            throw soci_error("Use element used with non-supported type.");
         }
     }
 
@@ -138,12 +138,12 @@ void MySQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
     }
 }
 
-void MySQLStandardUseTypeBackEnd::postUse(bool gotData, eIndicator *ind)
+void mysql_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
 {
-    cleanUp();
+    clean_up();
 }
 
-void MySQLStandardUseTypeBackEnd::cleanUp()
+void mysql_standard_use_type_backend::clean_up()
 {
     if (buf_ != NULL)
     {

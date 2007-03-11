@@ -10,21 +10,21 @@
 #include <ciso646>
 #include <cstdlib>
 
-using namespace SOCI;
-using namespace SOCI::tests;
+using namespace soci;
+using namespace soci::tests;
 
 std::string connectString;
-BackEndFactory const &backEnd = mysql;
+backend_factory const &backEnd = mysql;
 
 
 // procedure call test
 void test1()
 {
     {
-        Session sql(backEnd, connectString);
+        session sql(backEnd, connectString);
 	
-        MySQLSessionBackEnd *sessionBackEnd
-            = static_cast<MySQLSessionBackEnd *>(sql.getBackEnd());
+        mysql_session_backend *sessionBackEnd
+            = static_cast<mysql_session_backend *>(sql.get_backend());
         std::string version = mysql_get_server_info(sessionBackEnd->conn_);
         int v;
         std::istringstream iss(version);
@@ -36,7 +36,7 @@ void test1()
         }
 	
         try { sql << "drop function myecho"; }
-        catch (SOCIError const &) {}
+        catch (soci_error const &) {}
 	
         sql <<
             "create function myecho(msg text) "
@@ -46,7 +46,7 @@ void test1()
         std::string in("my message");
         std::string out;
 
-        Statement st = (sql.prepare <<
+        statement st = (sql.prepare <<
             "select myecho(:input)",
             into(out),
             use(in, "input"));
@@ -59,7 +59,7 @@ void test1()
             std::string in("my message2");
             std::string out;
 
-            Procedure proc = (sql.prepare <<
+            procedure proc = (sql.prepare <<
                 "myecho(:input)",
                 into(out), use(in, "input"));
 
@@ -74,10 +74,10 @@ void test1()
 }
 
 // DDL Creation objects for common tests
-struct TableCreator1 : public TableCreatorBase
+struct table_creator_one : public table_creator_base
 {
-    TableCreator1(Session& session)
-        : TableCreatorBase(session) 
+    table_creator_one(session& session)
+        : table_creator_base(session) 
     {
         session << "create table soci_test(id integer, val integer, c char, "
                  "str varchar(20), sh int2, ul numeric(20), d float8, "
@@ -86,20 +86,20 @@ struct TableCreator1 : public TableCreatorBase
     }
 };
 
-struct TableCreator2 : public TableCreatorBase
+struct table_creator_two : public table_creator_base
 {
-    TableCreator2(Session& session)
-        : TableCreatorBase(session)
+    table_creator_two(session& session)
+        : table_creator_base(session)
     {
         session  << "create table soci_test(num_float float8, num_int integer,"
                      " name varchar(20), sometime datetime, chr char)";
     }
 };
 
-struct TableCreator3 : public TableCreatorBase
+struct table_creator_three : public table_creator_base
 {
-    TableCreator3(Session& session)
-        : TableCreatorBase(session)
+    table_creator_three(session& session)
+        : table_creator_base(session)
     {
         session << "create table soci_test(name varchar(100) not null, "
             "phone varchar(15))";
@@ -110,41 +110,41 @@ struct TableCreator3 : public TableCreatorBase
 // Support for SOCI Common Tests
 //
 
-class TestContext : public TestContextBase
+class test_context : public test_context_base
 {
 public:
-    TestContext(BackEndFactory const &backEnd, 
+    test_context(backend_factory const &backEnd, 
                 std::string const &connectString)
-        : TestContextBase(backEnd, connectString) {}
+        : test_context_base(backEnd, connectString) {}
 
-    TableCreatorBase* tableCreator1(Session& s) const
+    table_creator_base* table_creator_1(session& s) const
     {
-        return new TableCreator1(s);
+        return new table_creator_one(s);
     }
 
-    TableCreatorBase* tableCreator2(Session& s) const
+    table_creator_base* table_creator_2(session& s) const
     {
-        return new TableCreator2(s);
+        return new table_creator_two(s);
     }
 
-    TableCreatorBase* tableCreator3(Session& s) const
+    table_creator_base* table_creator_3(session& s) const
     {
-        return new TableCreator3(s);
+        return new table_creator_three(s);
     }
 
-    std::string toDateTime(std::string const &dateString) const
+    std::string to_date_time(std::string const &dateString) const
     {
         return "\'" + dateString + "\'";
     }
 
 };
 
-bool areTransactionsSupported()
+bool are_transactions_supported()
 {
-    Session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
     sql << "drop table if exists soci_test";
     sql << "create table soci_test (id int) type=InnoDB";
-    Row r;
+    row r;
     sql << "show table status like \'soci_test\'", into(r);
     bool retv = (r.get<std::string>(1) == "InnoDB");
     sql << "drop table soci_test";
@@ -168,9 +168,9 @@ int main(int argc, char** argv)
 
     try
     {
-        TestContext tc(backEnd, connectString);
-        CommonTests tests(tc);
-        bool checkTransactions = areTransactionsSupported();
+        test_context tc(backEnd, connectString);
+        common_tests tests(tc);
+        bool checkTransactions = are_transactions_supported();
         tests.run(checkTransactions);
 
         std::cout << "\nSOCI MySQL Tests:\n\n";

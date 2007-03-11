@@ -18,12 +18,12 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::MySQL;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::mysql;
 
 
-void MySQLStandardIntoTypeBackEnd::defineByPos(
+void mysql_standard_into_type_backend::define_by_pos(
     int &position, void *data, eExchangeType type)
 {
     data_ = data;
@@ -31,12 +31,12 @@ void MySQLStandardIntoTypeBackEnd::defineByPos(
     position_ = position++;
 }
 
-void MySQLStandardIntoTypeBackEnd::preFetch()
+void mysql_standard_into_type_backend::pre_fetch()
 {
     // nothing to do here
 }
 
-void MySQLStandardIntoTypeBackEnd::postFetch(
+void mysql_standard_into_type_backend::post_fetch(
     bool gotData, bool calledFromFetch, eIndicator *ind)
 {
     if (calledFromFetch == true && gotData == false)
@@ -55,7 +55,7 @@ void MySQLStandardIntoTypeBackEnd::postFetch(
         {
             if (ind == NULL)
             {
-                throw SOCIError(
+                throw soci_error(
                     "Null value fetched and no indicator defined.");
             }
             *ind = eNull;
@@ -79,8 +79,8 @@ void MySQLStandardIntoTypeBackEnd::postFetch(
             break;
         case eXCString:
             {
-                CStringDescriptor *strDescr
-                    = static_cast<CStringDescriptor *>(data_);
+                cstring_descriptor *strDescr
+                    = static_cast<cstring_descriptor *>(data_);
 
                 std::strncpy(strDescr->str_, buf, strDescr->bufSize_ - 1);
                 strDescr->str_[strDescr->bufSize_ - 1] = '\0';
@@ -129,11 +129,11 @@ void MySQLStandardIntoTypeBackEnd::postFetch(
             {
                 // attempt to parse the string and convert to std::tm
                 std::tm *dest = static_cast<std::tm *>(data_);
-                parseStdTm(buf, *dest);
+                parse_std_tm(buf, *dest);
             }
             break;
         default:
-            throw SOCIError("Into element used with non-supported type.");
+            throw soci_error("Into element used with non-supported type.");
         }
     }
     else // no data retrieved
@@ -144,12 +144,12 @@ void MySQLStandardIntoTypeBackEnd::postFetch(
         }
         else
         {
-            throw SOCIError("No data fetched and no indicator defined.");
+            throw soci_error("No data fetched and no indicator defined.");
         }
     }
 }
 
-void MySQLStandardIntoTypeBackEnd::cleanUp()
+void mysql_standard_into_type_backend::clean_up()
 {
     // nothing to do here
 }

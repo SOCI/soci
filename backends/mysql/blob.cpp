@@ -15,47 +15,47 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
-MySQLBLOBBackEnd::MySQLBLOBBackEnd(MySQLSessionBackEnd &session)
+mysql_blob_backend::mysql_blob_backend(mysql_session_backend &session)
     : session_(session)
 {
-    throw SOCIError("BLOBs are not supported.");
+    throw soci_error("BLOBs are not supported.");
 }
 
-MySQLBLOBBackEnd::~MySQLBLOBBackEnd()
+mysql_blob_backend::~mysql_blob_backend()
 {
-    throw SOCIError("BLOBs are not supported.");
+    throw soci_error("BLOBs are not supported.");
 }
 
-std::size_t MySQLBLOBBackEnd::getLen()
+std::size_t mysql_blob_backend::get_len()
 {
-    throw SOCIError("BLOBs are not supported.");
+    throw soci_error("BLOBs are not supported.");
 }
 
-std::size_t MySQLBLOBBackEnd::read(
+std::size_t mysql_blob_backend::read(
     std::size_t /* offset */, char * /* buf */, std::size_t /* toRead */)
 {
-    throw SOCIError("BLOBs are not supported.");
+    throw soci_error("BLOBs are not supported.");
 }
 
-std::size_t MySQLBLOBBackEnd::write(
+std::size_t mysql_blob_backend::write(
     std::size_t /* offset */, char const * /* buf */,
     std::size_t /* toWrite */)
 {
-    throw SOCIError("BLOBs are not supported.");
+    throw soci_error("BLOBs are not supported.");
 }
 
-std::size_t MySQLBLOBBackEnd::append(
+std::size_t mysql_blob_backend::append(
     char const * /* buf */, std::size_t /* toWrite */)
 {
-    throw SOCIError("BLOBs are not supported.");
+    throw soci_error("BLOBs are not supported.");
 }
 
-void MySQLBLOBBackEnd::trim(std::size_t /* newLen */)
+void mysql_blob_backend::trim(std::size_t /* newLen */)
 {
-    throw SOCIError("BLOBs are not supported.");
+    throw soci_error("BLOBs are not supported.");
 }
 
