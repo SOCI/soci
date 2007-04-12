@@ -7,6 +7,7 @@
 
 #include "into-type.h"
 #include "statement.h"
+#include <cassert>
 
 using namespace soci;
 using namespace soci::details;
