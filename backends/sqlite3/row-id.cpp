@@ -13,16 +13,16 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
-Sqlite3RowIDBackEnd::Sqlite3RowIDBackEnd(
-    Sqlite3SessionBackEnd & /* session */)
+sqlite3_rowid_backend::sqlite3_rowid_backend(
+    sqlite3_session_backend & /* session */)
 {
     // ...
 }
 
-Sqlite3RowIDBackEnd::~Sqlite3RowIDBackEnd()
+sqlite3_rowid_backend::~sqlite3_rowid_backend()
 {
     // ...
 }

@@ -41,70 +41,70 @@ namespace sqlite_api
 #endif
 
 
-namespace SOCI
+namespace soci
 {
 
-struct Sqlite3StatementBackEnd;
-struct Sqlite3StandardIntoTypeBackEnd : details::StandardIntoTypeBackEnd
+struct sqlite3_statement_backend;
+struct sqlite3_standard_into_type_backend : details::standard_into_type_backend
 {
-    Sqlite3StandardIntoTypeBackEnd(Sqlite3StatementBackEnd &st)
+    sqlite3_standard_into_type_backend(sqlite3_statement_backend &st)
         : statement_(st) {}
 
-    virtual void defineByPos(int &position,
+    virtual void define_by_pos(int &position,
                              void *data, details::eExchangeType type);
 
-    virtual void preFetch();
-    virtual void postFetch(bool gotData, bool calledFromFetch,
+    virtual void pre_fetch();
+    virtual void post_fetch(bool gotData, bool calledFromFetch,
                            eIndicator *ind);
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
-    Sqlite3StatementBackEnd &statement_;
+    sqlite3_statement_backend &statement_;
 
     void *data_;
     details::eExchangeType type_;
     int position_;
 };
 
-struct Sqlite3VectorIntoTypeBackEnd : details::VectorIntoTypeBackEnd
+struct sqlite3_vector_into_type_backend : details::vector_into_type_backend
 {
-    Sqlite3VectorIntoTypeBackEnd(Sqlite3StatementBackEnd &st)
+    sqlite3_vector_into_type_backend(sqlite3_statement_backend &st)
         : statement_(st) {}
 
-    virtual void defineByPos(int &position,
+    virtual void define_by_pos(int &position,
                              void *data, details::eExchangeType type);
 
-    virtual void preFetch();
-    virtual void postFetch(bool gotData, eIndicator *ind);
+    virtual void pre_fetch();
+    virtual void post_fetch(bool gotData, eIndicator *ind);
 
     virtual void resize(std::size_t sz);
     virtual std::size_t size();
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
-    Sqlite3StatementBackEnd &statement_;
+    sqlite3_statement_backend &statement_;
 
     void *data_;
     details::eExchangeType type_;
     int position_;
 };
 
-struct Sqlite3StandardUseTypeBackEnd : details::StandardUseTypeBackEnd
+struct sqlite3_standard_use_type_backend : details::standard_use_type_backend
 {
-    Sqlite3StandardUseTypeBackEnd(Sqlite3StatementBackEnd &st)
+    sqlite3_standard_use_type_backend(sqlite3_statement_backend &st)
         : statement_(st), buf_(0) {}
 
-    virtual void bindByPos(int &position,
+    virtual void bind_by_pos(int &position,
                            void *data, details::eExchangeType type);
-    virtual void bindByName(std::string const &name,
+    virtual void bind_by_name(std::string const &name,
                             void *data, details::eExchangeType type);
 
-    virtual void preUse(eIndicator const *ind);
-    virtual void postUse(bool gotData, eIndicator *ind);
+    virtual void pre_use(eIndicator const *ind);
+    virtual void post_use(bool gotData, eIndicator *ind);
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
-    Sqlite3StatementBackEnd &statement_;
+    sqlite3_statement_backend &statement_;
 
     void *data_;
     details::eExchangeType type_;
@@ -113,23 +113,23 @@ struct Sqlite3StandardUseTypeBackEnd : details::StandardUseTypeBackEnd
     char *buf_;
 };
 
-struct Sqlite3VectorUseTypeBackEnd : details::VectorUseTypeBackEnd
+struct sqlite3_vector_use_type_backend : details::vector_use_type_backend
 {
-    Sqlite3VectorUseTypeBackEnd(Sqlite3StatementBackEnd &st)
+    sqlite3_vector_use_type_backend(sqlite3_statement_backend &st)
         : statement_(st) {}
 
-    virtual void bindByPos(int &position,
+    virtual void bind_by_pos(int &position,
                            void *data, details::eExchangeType type);
-    virtual void bindByName(std::string const &name,
+    virtual void bind_by_name(std::string const &name,
                             void *data, details::eExchangeType type);
 
-    virtual void preUse(eIndicator const *ind);
+    virtual void pre_use(eIndicator const *ind);
 
     virtual std::size_t size();
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
-    Sqlite3StatementBackEnd &statement_;
+    sqlite3_statement_backend &statement_;
 
     void *data_;
     details::eExchangeType type_;
@@ -137,22 +137,22 @@ struct Sqlite3VectorUseTypeBackEnd : details::VectorUseTypeBackEnd
     std::string name_;
 };
 
-struct Sqlite3Column
+struct sqlite3_column
 {
     std::string data_;
     bool isNull_;
 };
 
-typedef std::vector<Sqlite3Column> Sqlite3Row;
-typedef std::vector<Sqlite3Row> Sqlite3RecordSet;
+typedef std::vector<sqlite3_column> sqlite3_row;
+typedef std::vector<sqlite3_row> sqlite3_recordset;
 
-struct Sqlite3SessionBackEnd;
-struct Sqlite3StatementBackEnd : details::StatementBackEnd
+struct sqlite3_session_backend;
+struct sqlite3_statement_backend : details::statement_backend
 {
-    Sqlite3StatementBackEnd(Sqlite3SessionBackEnd &session);
+    sqlite3_statement_backend(sqlite3_session_backend &session);
 
     virtual void alloc();
-    virtual void cleanUp();
+    virtual void clean_up();
     virtual void prepare(std::string const &query,
         details::eStatementType eType);
     void resetIfNeeded();
@@ -160,23 +160,23 @@ struct Sqlite3StatementBackEnd : details::StatementBackEnd
     virtual execFetchResult execute(int number);
     virtual execFetchResult fetch(int number);
 
-    virtual int getNumberOfRows();
+    virtual int get_number_of_rows();
 
-    virtual std::string rewriteForProcedureCall(std::string const &query);
+    virtual std::string rewrite_for_procedure_call(std::string const &query);
 
-    virtual int prepareForDescribe();
-    virtual void describeColumn(int colNum, eDataType &dtype,
+    virtual int prepare_for_describe();
+    virtual void describe_column(int colNum, eDataType &dtype,
                                 std::string &columnName);
 
-    virtual Sqlite3StandardIntoTypeBackEnd * makeIntoTypeBackEnd();
-    virtual Sqlite3StandardUseTypeBackEnd * makeUseTypeBackEnd();
-    virtual Sqlite3VectorIntoTypeBackEnd * makeVectorIntoTypeBackEnd();
-    virtual Sqlite3VectorUseTypeBackEnd * makeVectorUseTypeBackEnd();
+    virtual sqlite3_standard_into_type_backend * make_into_type_backend();
+    virtual sqlite3_standard_use_type_backend * make_use_type_backend();
+    virtual sqlite3_vector_into_type_backend * make_vector_into_type_backend();
+    virtual sqlite3_vector_use_type_backend * make_vector_use_type_backend();
 
-    Sqlite3SessionBackEnd &session_;
+    sqlite3_session_backend &session_;
     sqlite_api::sqlite3_stmt *stmt_;
-    Sqlite3RecordSet dataCache_;
-    Sqlite3RecordSet useData_;
+    sqlite3_recordset dataCache_;
+    sqlite3_recordset useData_;
     bool databaseReady_;
     bool boundByName_;
     bool boundByPos_;
@@ -187,25 +187,25 @@ private:
     execFetchResult bindAndExecute(int number);
 };
 
-struct Sqlite3RowIDBackEnd : details::RowIDBackEnd
+struct sqlite3_rowid_backend : details::rowid_backend
 {
-    Sqlite3RowIDBackEnd(Sqlite3SessionBackEnd &session);
+    sqlite3_rowid_backend(sqlite3_session_backend &session);
 
-    ~Sqlite3RowIDBackEnd();
+    ~sqlite3_rowid_backend();
 
     unsigned long value_;
 };
 
-struct Sqlite3BLOBBackEnd : details::BLOBBackEnd
+struct sqlite3_blob_backend : details::blob_backend
 {
-    Sqlite3BLOBBackEnd(Sqlite3SessionBackEnd &session);
+    sqlite3_blob_backend(sqlite3_session_backend &session);
 
-    ~Sqlite3BLOBBackEnd();
+    ~sqlite3_blob_backend();
 
     void setData(const char *tableName, const char *columnName,
                  const char *buf, size_t len);
 
-    virtual std::size_t getLen();
+    virtual std::size_t get_len();
     virtual std::size_t read(std::size_t offset, char *buf,
                              std::size_t toRead);
     virtual std::size_t write(std::size_t offset, char const *buf,
@@ -213,7 +213,7 @@ struct Sqlite3BLOBBackEnd : details::BLOBBackEnd
     virtual std::size_t append(char const *buf, std::size_t toWrite);
     virtual void trim(std::size_t newLen);
 
-    Sqlite3SessionBackEnd &session_;
+    sqlite3_session_backend &session_;
 private:
 
     void updateBLOB();
@@ -224,11 +224,11 @@ private:
     size_t len_;
 };
 
-struct Sqlite3SessionBackEnd : details::SessionBackEnd
+struct sqlite3_session_backend : details::session_backend
 {
-    Sqlite3SessionBackEnd(std::string const &connectString);
+    sqlite3_session_backend(std::string const &connectString);
 
-    ~Sqlite3SessionBackEnd();
+    ~sqlite3_session_backend();
 
     virtual void begin();
     virtual void commit();
@@ -236,20 +236,20 @@ struct Sqlite3SessionBackEnd : details::SessionBackEnd
 
     void cleanUp();
 
-    virtual Sqlite3StatementBackEnd * makeStatementBackEnd();
-    virtual Sqlite3RowIDBackEnd * makeRowIDBackEnd();
-    virtual Sqlite3BLOBBackEnd * makeBLOBBackEnd();
+    virtual sqlite3_statement_backend * make_statement_backend();
+    virtual sqlite3_rowid_backend * make_rowid_backend();
+    virtual sqlite3_blob_backend * make_blob_backend();
 
     sqlite_api::sqlite3 *conn_;
 };
 
-struct Sqlite3BackEndFactory : BackEndFactory
+struct sqlite3_backend_factory : backend_factory
 {
-    virtual Sqlite3SessionBackEnd * makeSession(
+    virtual sqlite3_session_backend * make_session(
         std::string const &connectString) const;
 };
 
-SOCI_SQLITE3_DECL extern Sqlite3BackEndFactory const sqlite3;
+SOCI_SQLITE3_DECL extern sqlite3_backend_factory const sqlite3;
 
 } // namespace SOCI
 

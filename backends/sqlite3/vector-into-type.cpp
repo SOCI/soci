@@ -16,12 +16,12 @@
 #define strtoll(s, p, b) static_cast<long long>(_strtoi64(s, p, b))
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::Sqlite3;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::sqlite3;
 
 
-void Sqlite3VectorIntoTypeBackEnd::defineByPos(int & position, void * data, 
+void sqlite3_vector_into_type_backend::define_by_pos(int & position, void * data, 
                                                eExchangeType type)
 {
     data_ = data;
@@ -29,7 +29,7 @@ void Sqlite3VectorIntoTypeBackEnd::defineByPos(int & position, void * data,
     position_ = position++;
 }
 
-void Sqlite3VectorIntoTypeBackEnd::preFetch()
+void sqlite3_vector_into_type_backend::pre_fetch()
 {
     // ...
 }
@@ -49,21 +49,21 @@ void setInVector(void *p, int indx, U const &val)
 
 } // namespace anonymous
 
-void Sqlite3VectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator * ind)
+void sqlite3_vector_into_type_backend::post_fetch(bool gotData, eIndicator * ind)
 {
     if (gotData)
     {
         int endRow = static_cast<int>(statement_.dataCache_.size());
         for (int i = 0; i < endRow; ++i)
         {
-            const Sqlite3Column& curCol =
+            const sqlite3_column& curCol =
                 statement_.dataCache_[i][position_-1];
             
             if (curCol.isNull_)
             {
                 if (ind == NULL)
                 {
-                    throw SOCIError(
+                    throw soci_error(
                         "Null value fetched and no indicator defined.");
                 }
 
@@ -130,7 +130,7 @@ void Sqlite3VectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator * ind)
             break;
 
             default:
-                throw SOCIError("Into element used with non-supported type.");
+                throw soci_error("Into element used with non-supported type.");
             }
         }
     }
@@ -140,7 +140,7 @@ void Sqlite3VectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator * ind)
     }
 }
 
-void Sqlite3VectorIntoTypeBackEnd::resize(std::size_t sz)
+void sqlite3_vector_into_type_backend::resize(std::size_t sz)
 {
     switch (type_)
     {
@@ -154,11 +154,11 @@ void Sqlite3VectorIntoTypeBackEnd::resize(std::size_t sz)
     case eXStdTm:        resizeVector<std::tm>      (data_, sz); break;
 
     default:
-        throw SOCIError("Into vector element used with non-supported type.");
+        throw soci_error("Into vector element used with non-supported type.");
     }
 }
 
-std::size_t Sqlite3VectorIntoTypeBackEnd::size()
+std::size_t sqlite3_vector_into_type_backend::size()
 {
     std::size_t sz = 0; // dummy initialization to please the compiler
     switch (type_)
@@ -173,13 +173,13 @@ std::size_t Sqlite3VectorIntoTypeBackEnd::size()
     case eXStdTm:        sz = getVectorSize<std::tm>      (data_); break;
 
     default:
-        throw SOCIError("Into vector element used with non-supported type.");
+        throw soci_error("Into vector element used with non-supported type.");
     }
 
     return sz;
 }
 
-void Sqlite3VectorIntoTypeBackEnd::cleanUp()
+void sqlite3_vector_into_type_backend::clean_up()
 {
     // ...
 }

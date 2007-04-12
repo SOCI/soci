@@ -8,45 +8,45 @@
 #include "soci.h"
 #include "soci-sqlite3.h"
 
-using namespace SOCI;
+using namespace soci;
 
-Sqlite3BLOBBackEnd::Sqlite3BLOBBackEnd(Sqlite3SessionBackEnd &session)
+sqlite3_blob_backend::sqlite3_blob_backend(sqlite3_session_backend &session)
     : session_(session)
 {
-    throw SOCIError("BLOBs are not supported.");
+    throw soci_error("BLOBs are not supported.");
 }
 
-Sqlite3BLOBBackEnd::~Sqlite3BLOBBackEnd()
+sqlite3_blob_backend::~sqlite3_blob_backend()
 {
-    throw SOCIError("BLOBs are not supported.");
+    throw soci_error("BLOBs are not supported.");
 }
 
-std::size_t Sqlite3BLOBBackEnd::getLen()
+std::size_t sqlite3_blob_backend::get_len()
 {
-    throw SOCIError("BLOBs are not supported.");
+    throw soci_error("BLOBs are not supported.");
 }
 
-std::size_t Sqlite3BLOBBackEnd::read(
+std::size_t sqlite3_blob_backend::read(
     std::size_t /* offset */, char * /* buf */, std::size_t /* toRead */)
 {
-    throw SOCIError("BLOBs are not supported.");
+    throw soci_error("BLOBs are not supported.");
 }
 
-std::size_t Sqlite3BLOBBackEnd::write(
+std::size_t sqlite3_blob_backend::write(
     std::size_t /* offset */, char const * /* buf */,
     std::size_t /* toWrite */)
 {
-    throw SOCIError("BLOBs are not supported.");
+    throw soci_error("BLOBs are not supported.");
 }
 
-std::size_t Sqlite3BLOBBackEnd::append(
+std::size_t sqlite3_blob_backend::append(
     char const * /* buf */, std::size_t /* toWrite */)
 {
-    throw SOCIError("BLOBs are not supported.");
+    throw soci_error("BLOBs are not supported.");
 }
 
-void Sqlite3BLOBBackEnd::trim(std::size_t /* newLen */)
+void sqlite3_blob_backend::trim(std::size_t /* newLen */)
 {
-    throw SOCIError("BLOBs are not supported.");
+    throw soci_error("BLOBs are not supported.");
 }
 

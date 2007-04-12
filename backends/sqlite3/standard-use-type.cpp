@@ -15,15 +15,15 @@
 #define snprintf _snprintf
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
-void Sqlite3StandardUseTypeBackEnd::bindByPos(int & position, void * data, 
+void sqlite3_standard_use_type_backend::bind_by_pos(int & position, void * data, 
                                               eExchangeType type)
 {
     if (statement_.boundByName_)
     {
-        throw SOCIError(
+        throw soci_error(
          "Binding for use elements must be either by position or by name.");
     }
 
@@ -34,13 +34,13 @@ void Sqlite3StandardUseTypeBackEnd::bindByPos(int & position, void * data,
     statement_.boundByPos_ = true;
 }
 
-void Sqlite3StandardUseTypeBackEnd::bindByName(std::string const & name, 
+void sqlite3_standard_use_type_backend::bind_by_name(std::string const & name, 
                                                void * data,
                                                eExchangeType type)
 {
     if (statement_.boundByPos_)
     {
-        throw SOCIError(
+        throw soci_error(
          "Binding for use elements must be either by position or by name.");
     }
  
@@ -55,12 +55,12 @@ void Sqlite3StandardUseTypeBackEnd::bindByName(std::string const & name,
     {
         std::ostringstream ss;
         ss << "Cannot bind to (by name) " << name_;
-        throw SOCIError(ss.str());
+        throw soci_error(ss.str());
     }
     statement_.boundByName_ = true;
 }
 
-void Sqlite3StandardUseTypeBackEnd::preUse(eIndicator const * ind)
+void sqlite3_standard_use_type_backend::pre_use(eIndicator const * ind)
 {
     statement_.useData_.resize(1);
     int pos = position_ - 1;
@@ -87,8 +87,7 @@ void Sqlite3StandardUseTypeBackEnd::preUse(eIndicator const * ind)
         break;
         case eXCString:
         {
-            CStringDescriptor *strDescr
-            = static_cast<CStringDescriptor *>(data_);
+            cstring_descriptor *strDescr = static_cast<cstring_descriptor *>(data_);
 
             std::size_t len = std::strlen(strDescr->str_);
             buf_ = new char[len + 1];
@@ -155,10 +154,8 @@ void Sqlite3StandardUseTypeBackEnd::preUse(eIndicator const * ind)
         {
             // RowID is internally identical to unsigned long
 
-            RowID *rid = static_cast<RowID *>(data_);
-            Sqlite3RowIDBackEnd *rbe
-            = static_cast<Sqlite3RowIDBackEnd *>(
-                rid->getBackEnd());
+            rowid *rid = static_cast<rowid *>(data_);
+            sqlite3_rowid_backend *rbe = static_cast<sqlite3_rowid_backend *>(rid->get_backend());
 
             std::size_t const bufSize
             = std::numeric_limits<unsigned long>::digits10 + 2;
@@ -169,7 +166,7 @@ void Sqlite3StandardUseTypeBackEnd::preUse(eIndicator const * ind)
         break;
 
         default:
-            throw SOCIError("Use element used with non-supported type.");
+            throw soci_error("Use element used with non-supported type.");
         }
 
         statement_.useData_[0][pos].isNull_ = false;
@@ -177,7 +174,7 @@ void Sqlite3StandardUseTypeBackEnd::preUse(eIndicator const * ind)
     }
 }
 
-void Sqlite3StandardUseTypeBackEnd::postUse(
+void sqlite3_standard_use_type_backend::post_use(
     bool /* gotData */, eIndicator * /* ind */)
 {
     // TODO: if sqlite3 allows to *get* data via this channel,
@@ -185,10 +182,10 @@ void Sqlite3StandardUseTypeBackEnd::postUse(
 
     // clean up the working buffer, it might be allocated anew in
     // the next run of preUse
-    cleanUp();
+    clean_up();
 }
 
-void Sqlite3StandardUseTypeBackEnd::cleanUp()
+void sqlite3_standard_use_type_backend::clean_up()
 {
     if (buf_ != NULL)
     {

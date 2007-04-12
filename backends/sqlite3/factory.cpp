@@ -13,15 +13,15 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
 // concrete factory for Empty concrete strategies
-Sqlite3SessionBackEnd * Sqlite3BackEndFactory::makeSession(
+sqlite3_session_backend * sqlite3_backend_factory::make_session(
      std::string const &connectString) const
 {
-     return new Sqlite3SessionBackEnd(connectString);
+     return new sqlite3_session_backend(connectString);
 }
 
-SOCI_SQLITE3_DECL Sqlite3BackEndFactory const SOCI::sqlite3;
+SOCI_SQLITE3_DECL sqlite3_backend_factory const soci::sqlite3;

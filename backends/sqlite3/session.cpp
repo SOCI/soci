@@ -15,8 +15,8 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 using namespace sqlite_api;
 
 namespace // anonymous
@@ -35,14 +35,14 @@ void hardExec(sqlite_api::sqlite3 *conn, char const *query, char const *errMsg)
 
         sqlite3_free(zErrMsg);
         
-        throw SOCIError(ss.str());
+        throw soci_error(ss.str());
     }
 }
 
 } // namespace anonymous
 
 
-Sqlite3SessionBackEnd::Sqlite3SessionBackEnd(
+sqlite3_session_backend::sqlite3_session_backend(
     std::string const & connectString)
 {
     int res;
@@ -55,46 +55,46 @@ Sqlite3SessionBackEnd::Sqlite3SessionBackEnd(
         ss << "Cannot establish connection to the database. "
            << zErrMsg;
         
-        throw SOCIError(ss.str());
+        throw soci_error(ss.str());
     }
 }
 
-Sqlite3SessionBackEnd::~Sqlite3SessionBackEnd()
+sqlite3_session_backend::~sqlite3_session_backend()
 {
     cleanUp();
 }
 
-void Sqlite3SessionBackEnd::begin()
+void sqlite3_session_backend::begin()
 {
     hardExec(conn_, "BEGIN", "Cannot begin transaction.");    
 }
 
-void Sqlite3SessionBackEnd::commit()
+void sqlite3_session_backend::commit()
 {
     hardExec(conn_, "COMMIT", "Cannot commit transaction.");
 }
 
-void Sqlite3SessionBackEnd::rollback()
+void sqlite3_session_backend::rollback()
 {
     hardExec(conn_, "ROLLBACK", "Cannot rollback transaction.");
 }
 
-void Sqlite3SessionBackEnd::cleanUp()
+void sqlite3_session_backend::cleanUp()
 {
     sqlite3_close(conn_);
 }
 
-Sqlite3StatementBackEnd * Sqlite3SessionBackEnd::makeStatementBackEnd()
+sqlite3_statement_backend * sqlite3_session_backend::make_statement_backend()
 {
-    return new Sqlite3StatementBackEnd(*this);
+    return new sqlite3_statement_backend(*this);
 }
 
-Sqlite3RowIDBackEnd * Sqlite3SessionBackEnd::makeRowIDBackEnd()
+sqlite3_rowid_backend * sqlite3_session_backend::make_rowid_backend()
 {
-    return new Sqlite3RowIDBackEnd(*this);
+    return new sqlite3_rowid_backend(*this);
 }
 
-Sqlite3BLOBBackEnd * Sqlite3SessionBackEnd::makeBLOBBackEnd()
+sqlite3_blob_backend * sqlite3_session_backend::make_blob_backend()
 {
-    return new Sqlite3BLOBBackEnd(*this);
+    return new sqlite3_blob_backend(*this);
 }

@@ -17,17 +17,17 @@
 #define snprintf _snprintf
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::Sqlite3;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::sqlite3;
 
-void Sqlite3VectorUseTypeBackEnd::bindByPos(int & position,
+void sqlite3_vector_use_type_backend::bind_by_pos(int & position,
                                             void * data, 
                                             eExchangeType type)
 {
     if (statement_.boundByName_)
     {
-        throw SOCIError(
+        throw soci_error(
          "Binding for use elements must be either by position or by name.");
     }
 
@@ -38,13 +38,13 @@ void Sqlite3VectorUseTypeBackEnd::bindByPos(int & position,
     statement_.boundByPos_ = true;
 }
 
-void Sqlite3VectorUseTypeBackEnd::bindByName(std::string const & name, 
+void sqlite3_vector_use_type_backend::bind_by_name(std::string const & name, 
                                              void * data,
                                              eExchangeType type)
 {
     if (statement_.boundByPos_)
     {
-        throw SOCIError(
+        throw soci_error(
          "Binding for use elements must be either by position or by name.");
     }
 
@@ -59,12 +59,12 @@ void Sqlite3VectorUseTypeBackEnd::bindByName(std::string const & name,
     {
         std::ostringstream ss;
         ss << "Cannot bind (by name) to " << name_;
-        throw SOCIError(ss.str());
+        throw soci_error(ss.str());
     }
     statement_.boundByName_ = true;
 }
 
-void Sqlite3VectorUseTypeBackEnd::preUse(eIndicator const * ind)
+void sqlite3_vector_use_type_backend::pre_use(eIndicator const * ind)
 {
     std::size_t const vsize = size();
 
@@ -181,7 +181,7 @@ void Sqlite3VectorUseTypeBackEnd::preUse(eIndicator const * ind)
             break;
 
             default:
-                throw SOCIError(
+                throw soci_error(
                     "Use vector element used with non-supported type.");
             }
 
@@ -193,7 +193,7 @@ void Sqlite3VectorUseTypeBackEnd::preUse(eIndicator const * ind)
     }
 }
 
-std::size_t Sqlite3VectorUseTypeBackEnd::size()
+std::size_t sqlite3_vector_use_type_backend::size()
 {
     std::size_t sz = 0; // dummy initialization to please the compiler
     switch (type_)
@@ -208,13 +208,13 @@ std::size_t Sqlite3VectorUseTypeBackEnd::size()
     case eXStdTm:        sz = getVectorSize<std::tm>      (data_); break;
 
     default:
-        throw SOCIError("Use vector element used with non-supported type.");
+        throw soci_error("Use vector element used with non-supported type.");
     }
 
     return sz;
 }
 
-void Sqlite3VectorUseTypeBackEnd::cleanUp()
+void sqlite3_vector_use_type_backend::clean_up()
 {
     // ...
 }

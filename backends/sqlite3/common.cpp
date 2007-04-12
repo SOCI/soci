@@ -25,14 +25,14 @@ long parse10(char const *&p1, char *&p2, char *msg)
     }
     else
     {
-        throw SOCI::SOCIError(msg);
+        throw soci::soci_error(msg);
     }
 }
 
 } // namespace anonymous
 
 
-void SOCI::details::Sqlite3::parseStdTm(char const *buf, std::tm &t)
+void soci::details::sqlite3::parseStdTm(char const *buf, std::tm &t)
 {
     char const *p1 = buf;
     char *p2;

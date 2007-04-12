@@ -16,11 +16,11 @@
 #define strtoll(s, p, b) static_cast<long long>(_strtoi64(s, p, b))
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::Sqlite3;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::sqlite3;
 
-void Sqlite3StandardIntoTypeBackEnd::defineByPos(int & position, void * data
+void sqlite3_standard_into_type_backend::define_by_pos(int & position, void * data
                                                  , eExchangeType type)
 {
     data_ = data;
@@ -28,12 +28,12 @@ void Sqlite3StandardIntoTypeBackEnd::defineByPos(int & position, void * data
     position_ = position++;    
 }
 
-void Sqlite3StandardIntoTypeBackEnd::preFetch()
+void sqlite3_standard_into_type_backend::pre_fetch()
 {
     // ...
 }
 
-void Sqlite3StandardIntoTypeBackEnd::postFetch(bool gotData, 
+void sqlite3_standard_into_type_backend::post_fetch(bool gotData, 
                                                bool calledFromFetch, 
                                                eIndicator * ind)
 {
@@ -54,7 +54,7 @@ void Sqlite3StandardIntoTypeBackEnd::postFetch(bool gotData,
         {
             if (ind == NULL)
             {
-                throw SOCIError(
+                throw soci_error(
                     "Null value fetched and no indicator defined.");
             }
 
@@ -88,8 +88,7 @@ void Sqlite3StandardIntoTypeBackEnd::postFetch(bool gotData,
         break;
         case eXCString:
         {
-            CStringDescriptor *strDescr
-            = static_cast<CStringDescriptor *>(data_);
+            cstring_descriptor *strDescr = static_cast<cstring_descriptor *>(data_);
 
             std::strncpy(strDescr->str_, buf, strDescr->bufSize_ - 1);
             strDescr->str_[strDescr->bufSize_ - 1] = '\0';
@@ -145,16 +144,14 @@ void Sqlite3StandardIntoTypeBackEnd::postFetch(bool gotData,
         {
             // RowID is internally identical to unsigned long
 
-            RowID *rid = static_cast<RowID *>(data_);
-            Sqlite3RowIDBackEnd *rbe
-            = static_cast<Sqlite3RowIDBackEnd *>(
-                rid->getBackEnd());
+            rowid *rid = static_cast<rowid *>(data_);
+            sqlite3_rowid_backend *rbe = static_cast<sqlite3_rowid_backend *>(rid->get_backend());
             long long val = strtoll(buf, NULL, 10);
             rbe->value_ = static_cast<unsigned long>(val);
         }
         break;
         default:
-            throw SOCIError("Into element used with non-supported type.");
+            throw soci_error("Into element used with non-supported type.");
         }
     }
     else // no data retrieved
@@ -165,12 +162,12 @@ void Sqlite3StandardIntoTypeBackEnd::postFetch(bool gotData,
         }
         else
         {
-            throw SOCIError("No data fetched and no indicator defined.");
+            throw soci_error("No data fetched and no indicator defined.");
         }
     }
 }
 
-void Sqlite3StandardIntoTypeBackEnd::cleanUp()
+void sqlite3_standard_into_type_backend::clean_up()
 {
     // ...
 }
