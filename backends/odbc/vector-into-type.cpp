@@ -14,21 +14,21 @@
 #include <ctime>
 #include <sstream>
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
-void ODBCVectorIntoTypeBackEnd::prepareIndicators(std::size_t size)
+void odbc_vector_into_type_backend::prepare_indicators(std::size_t size)
 {
     if (size == 0)
     {
-         throw SOCIError("Vectors of size 0 are not allowed.");
+         throw soci_error("Vectors of size 0 are not allowed.");
     }
 
     indHolderVec_.resize(size);
     indHolders_ = &indHolderVec_[0];
 }
 
-void ODBCVectorIntoTypeBackEnd::defineByPos(
+void odbc_vector_into_type_backend::define_by_pos(
     int &position, void *data, eExchangeType type)
 {
     data_ = data; // for future reference
@@ -45,7 +45,7 @@ void ODBCVectorIntoTypeBackEnd::defineByPos(
             size = sizeof(short);
             std::vector<short> *vp = static_cast<std::vector<short> *>(data);
             std::vector<short> &v(*vp);
-            prepareIndicators(v.size());
+            prepare_indicators(v.size());
             data = &v[0];
         }
         break;
@@ -55,7 +55,7 @@ void ODBCVectorIntoTypeBackEnd::defineByPos(
             size = sizeof(long);
             std::vector<long> *vp = static_cast<std::vector<long> *>(data);
             std::vector<long> &v(*vp);
-            prepareIndicators(v.size());
+            prepare_indicators(v.size());
             data = &v[0];
         }
         break;
@@ -66,7 +66,7 @@ void ODBCVectorIntoTypeBackEnd::defineByPos(
             std::vector<unsigned long> *vp
                 = static_cast<std::vector<unsigned long> *>(data);
             std::vector<unsigned long> &v(*vp);
-            prepareIndicators(v.size());
+            prepare_indicators(v.size());
             data = &v[0];
         }
         break;
@@ -76,7 +76,7 @@ void ODBCVectorIntoTypeBackEnd::defineByPos(
             size = sizeof(double);
             std::vector<double> *vp = static_cast<std::vector<double> *>(data);
             std::vector<double> &v(*vp);
-            prepareIndicators(v.size());
+            prepare_indicators(v.size());
             data = &v[0];
         }
         break;
@@ -90,7 +90,7 @@ void ODBCVectorIntoTypeBackEnd::defineByPos(
             std::vector<char> *v
                 = static_cast<std::vector<char> *>(data);
 
-            prepareIndicators(v->size());
+            prepare_indicators(v->size());
 
             size = sizeof(char) * 2;
             std::size_t bufSize = size * v->size();
@@ -106,11 +106,11 @@ void ODBCVectorIntoTypeBackEnd::defineByPos(
             odbcType_ = SQL_C_CHAR;
             std::vector<std::string> *v
                 = static_cast<std::vector<std::string> *>(data);
-            colSize_ = statement_.columnSize(position) + 1;
+            colSize_ = statement_.column_size(position) + 1;
             std::size_t bufSize = colSize_ * v->size();
             buf_ = new char[bufSize];
 
-            prepareIndicators(v->size());
+            prepare_indicators(v->size());
 
             size = static_cast<SQLINTEGER>(colSize_);
             data = buf_;
@@ -122,7 +122,7 @@ void ODBCVectorIntoTypeBackEnd::defineByPos(
             std::vector<std::tm> *v
                 = static_cast<std::vector<std::tm> *>(data);
 
-            prepareIndicators(v->size());
+            prepare_indicators(v->size());
 
             size = sizeof(TIMESTAMP_STRUCT);
             colSize_ = size;
@@ -145,17 +145,17 @@ void ODBCVectorIntoTypeBackEnd::defineByPos(
     SQLRETURN rc = SQLBindCol(statement_.hstmt_, position++, odbcType_, data, size, indHolders_);
     if (is_odbc_error(rc))
     {
-        throw ODBCSOCIError(SQL_HANDLE_STMT, statement_.hstmt_, 
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, 
                             "vector into type define by pos");
     }    
 }
 
-void ODBCVectorIntoTypeBackEnd::preFetch()
+void odbc_vector_into_type_backend::pre_fetch()
 {
     // nothing to do for the supported types
 }
 
-void ODBCVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
+void odbc_vector_into_type_backend::post_fetch(bool gotData, eIndicator *ind)
 {
     if (gotData)
     {
@@ -247,7 +247,7 @@ void ODBCVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
                 if (indHolderVec_[i] == SQL_NULL_DATA)
                 {
                     // fetched null and no indicator - programming error!
-                    throw SOCIError(
+                    throw soci_error(
                         "Null value fetched and no indicator defined.");
                 }
             }
@@ -259,7 +259,7 @@ void ODBCVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
     }
 }
 
-void ODBCVectorIntoTypeBackEnd::resize(std::size_t sz)
+void odbc_vector_into_type_backend::resize(std::size_t sz)
 {
     switch (type_)
     {
@@ -318,7 +318,7 @@ void ODBCVectorIntoTypeBackEnd::resize(std::size_t sz)
     }
 }
 
-std::size_t ODBCVectorIntoTypeBackEnd::size()
+std::size_t odbc_vector_into_type_backend::size()
 {
     std::size_t sz = 0; // dummy initialization to please the compiler
     switch (type_)
@@ -380,7 +380,7 @@ std::size_t ODBCVectorIntoTypeBackEnd::size()
     return sz;
 }
 
-void ODBCVectorIntoTypeBackEnd::cleanUp()
+void odbc_vector_into_type_backend::clean_up()
 {
     if (buf_ != NULL)
     {

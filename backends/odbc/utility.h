@@ -42,7 +42,7 @@ inline void throw_odbc_error(SQLSMALLINT htype, SQLHANDLE hndl, char const * msg
         ++i;
     }
 
-    throw SOCIError(ss.str());
+    throw soci_error(ss.str());
 }
 
 inline bool is_odbc_error(SQLRETURN rc)

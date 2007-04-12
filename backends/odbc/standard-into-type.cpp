@@ -8,12 +8,13 @@
 #define SOCI_ODBC_SOURCE
 #include "soci-odbc.h"
 #include <soci.h>
+#include <ctime>
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
-void ODBCStandardIntoTypeBackEnd::defineByPos(
+void odbc_standard_into_type_backend::define_by_pos(
     int & position , void * data, eExchangeType type)
 {
     data_ = data;
@@ -32,7 +33,7 @@ void ODBCStandardIntoTypeBackEnd::defineByPos(
         break;
     case eXCString:
     {
-        details::CStringDescriptor *desc = static_cast<CStringDescriptor *>(data);
+        details::cstring_descriptor *desc = static_cast<cstring_descriptor *>(data);
         odbcType_ = SQL_C_CHAR;
         data = desc->str_;
         size = static_cast<SQLINTEGER>(desc->bufSize_);
@@ -71,7 +72,7 @@ void ODBCStandardIntoTypeBackEnd::defineByPos(
         size = sizeof(unsigned long);
         break;
     default:
-        throw SOCIError("Into element used with non-supported type.");
+        throw soci_error("Into element used with non-supported type.");
     }
 
     valueLen_ = 0;
@@ -79,17 +80,17 @@ void ODBCStandardIntoTypeBackEnd::defineByPos(
     SQLRETURN rc = SQLBindCol(statement_.hstmt_, position_, odbcType_, data, size, &valueLen_);
     if (is_odbc_error(rc))
     {
-        throw ODBCSOCIError(SQL_HANDLE_STMT, statement_.hstmt_, 
-                            "into type prefetch");
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, 
+                            "into type pre_fetch");
     }    
 }
 
-void ODBCStandardIntoTypeBackEnd::preFetch()
+void odbc_standard_into_type_backend::pre_fetch()
 {
     //...
 }
 
-void ODBCStandardIntoTypeBackEnd::postFetch(
+void odbc_standard_into_type_backend::post_fetch(
     bool gotData, bool calledFromFetch, eIndicator * ind)
 {
     if (calledFromFetch == true && gotData == false)
@@ -106,7 +107,7 @@ void ODBCStandardIntoTypeBackEnd::postFetch(
         {
             if (ind == NULL)
             {
-                throw SOCIError(
+                throw soci_error(
                     "Null value fetched and no indicator defined.");
             }
 
@@ -131,7 +132,7 @@ void ODBCStandardIntoTypeBackEnd::postFetch(
         {
             if (ind != NULL)
             {
-                details::CStringDescriptor *desc = static_cast<CStringDescriptor *>(data_);
+                details::cstring_descriptor *desc = static_cast<cstring_descriptor *>(data_);
                 int size = static_cast<SQLINTEGER>(desc->bufSize_);
                 if (size < valueLen_)
                     *ind = eTruncated;
@@ -167,12 +168,12 @@ void ODBCStandardIntoTypeBackEnd::postFetch(
         }
         else
         {
-            throw SOCIError("No data fetched and no indicator defined.");
+            throw soci_error("No data fetched and no indicator defined.");
         }
     }
 }
 
-void ODBCStandardIntoTypeBackEnd::cleanUp()
+void odbc_standard_into_type_backend::clean_up()
 {
     if (!buf_)
     {

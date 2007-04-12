@@ -9,15 +9,15 @@
 #include "soci-odbc.h"
 #include <soci.h>
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
 // concrete factory for ODBC concrete strategies
-ODBCSessionBackEnd * ODBCBackEndFactory::makeSession(
+odbc_session_backend * odbc_backend_factory::make_session(
      std::string const &connectString) const
 {
-     return new ODBCSessionBackEnd(connectString);
+     return new odbc_session_backend(connectString);
 }
 
-ODBCBackEndFactory const SOCI::odbc;
+odbc_backend_factory const soci::odbc;

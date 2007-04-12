@@ -14,18 +14,18 @@
 #include <ctime>
 #include <cmath>
 
-using namespace SOCI;
-using namespace SOCI::tests;
+using namespace soci;
+using namespace soci::tests;
 
 std::string connectString;
-BackEndFactory const &backEnd = odbc;
+backend_factory const &backEnd = odbc;
 
 
 // DDL Creation objects for common tests
-struct TableCreator1 : public TableCreatorBase
+struct TableCreator1 : public table_creator_base
 {
-    TableCreator1(Session& session)
-        : TableCreatorBase(session) 
+    TableCreator1(session& session)
+        : table_creator_base(session) 
     {
         session << "create table soci_test(id integer, val integer, c char, "
                  "str varchar(20), sh smallint, ul numeric(20), d float, "
@@ -34,20 +34,20 @@ struct TableCreator1 : public TableCreatorBase
     }
 };
 
-struct TableCreator2 : public TableCreatorBase
+struct TableCreator2 : public table_creator_base
 {
-    TableCreator2(Session& session)
-        : TableCreatorBase(session)
+    TableCreator2(session& session)
+        : table_creator_base(session)
     {
         session  << "create table soci_test(num_float float, num_int integer,"
                      " name varchar(20), sometime datetime, chr char)";
     }
 };
 
-struct TableCreator3 : public TableCreatorBase
+struct TableCreator3 : public table_creator_base
 {
-    TableCreator3(Session& session)
-        : TableCreatorBase(session)
+    TableCreator3(session& session)
+        : table_creator_base(session)
     {
         session << "create table soci_test(name varchar(100) not null, "
             "phone varchar(15))";
@@ -58,29 +58,29 @@ struct TableCreator3 : public TableCreatorBase
 // Support for SOCI Common Tests
 //
 
-class TestContext : public TestContextBase
+class TestContext : public test_context_base
 {
 public:
-    TestContext(BackEndFactory const &backEnd, 
+    TestContext(backend_factory const &backEnd, 
                 std::string const &connectString)
-        : TestContextBase(backEnd, connectString) {}
+        : test_context_base(backEnd, connectString) {}
 
-    TableCreatorBase* tableCreator1(Session& s) const
+    table_creator_base* table_creator_1(session& s) const
     {
         return new TableCreator1(s);
     }
 
-    TableCreatorBase* tableCreator2(Session& s) const
+    table_creator_base* table_creator_2(session& s) const
     {
         return new TableCreator2(s);
     }
 
-    TableCreatorBase* tableCreator3(Session& s) const
+    table_creator_base* table_creator_3(session& s) const
     {
         return new TableCreator3(s);
     }
 
-    std::string toDateTime(std::string const &dateString) const
+    std::string to_date_time(std::string const &dateString) const
     {
         return "convert(datetime, \'" + dateString + "\', 120)";
     }
@@ -109,15 +109,16 @@ int main(int argc, char** argv)
     try
     {
         TestContext tc(backEnd, connectString);
-        CommonTests tests(tc);
+        common_tests tests(tc);
         tests.run();
+        std::cout << "\nOK, all tests passed.\n";
     }
-    catch (SOCI::ODBCSOCIError const & e)
+    catch (soci::odbc_soci_error const & e)
     {
-        std::cout << "ODBC Error Code: " << e.odbcErrorCode() << std::endl
-                  << "Native Error Code: " << e.nativeErrorCode() << std::endl
+        std::cout << "ODBC Error Code: " << e.odbc_error_code() << std::endl
+                  << "Native Error Code: " << e.native_error_code() << std::endl
                   << "SOCI Message: " << e.what() << std::endl
-                  << "ODBC Message: " << e.odbcErrorMessage() << std::endl;
+                  << "ODBC Message: " << e.odbc_error_message() << std::endl;
     }
     catch (std::exception const & e)
     {

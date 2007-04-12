@@ -9,16 +9,16 @@
 #include "soci-odbc.h"
 #include <soci.h>
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
-ODBCRowIDBackEnd::ODBCRowIDBackEnd(ODBCSessionBackEnd & /* session */)
+odbc_rowid_backend::odbc_rowid_backend(odbc_session_backend & /* session */)
 {
     // ...
 }
 
-ODBCRowIDBackEnd::~ODBCRowIDBackEnd()
+odbc_rowid_backend::~odbc_rowid_backend()
 {
     // ...
 }

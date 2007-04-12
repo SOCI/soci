@@ -12,10 +12,10 @@
 #include <ctime>
 #include <sstream>
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
-void ODBCStandardUseTypeBackEnd::prepareForBind(
+void odbc_standard_use_type_backend::prepare_for_bind(
     void *&data, SQLUINTEGER &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType)
 {
     switch (type_)
@@ -53,7 +53,7 @@ void ODBCStandardUseTypeBackEnd::prepareForBind(
         break;
     case eXCString:
     {
-        details::CStringDescriptor *desc = static_cast<CStringDescriptor *>(data);
+        details::cstring_descriptor *desc = static_cast<cstring_descriptor *>(data);
         sqlType = SQL_VARCHAR;
         cType = SQL_C_CHAR;
         data = desc->str_;
@@ -89,8 +89,8 @@ void ODBCStandardUseTypeBackEnd::prepareForBind(
         
 //         BLOB *b = static_cast<BLOB *>(data);
         
-//         ODBCBLOBBackEnd *bbe
-//         = static_cast<ODBCBLOBBackEnd *>(b->getBackEnd());
+//         odbc_blob_backend *bbe
+//         = static_cast<odbc_blob_backend *>(b->getBackEnd());
         
 //         size = 0;
 //         indHolder_ = size;
@@ -103,7 +103,7 @@ void ODBCStandardUseTypeBackEnd::prepareForBind(
     }
 }
 
-void ODBCStandardUseTypeBackEnd::bindHelper(int &position, void *data, eExchangeType type)
+void odbc_standard_use_type_backend::bind_helper(int &position, void *data, eExchangeType type)
 {
     data_ = data; // for future reference
     type_ = type; // for future reference
@@ -112,38 +112,38 @@ void ODBCStandardUseTypeBackEnd::bindHelper(int &position, void *data, eExchange
     SQLSMALLINT cType;
     SQLUINTEGER size;
 
-    prepareForBind(data, size, sqlType, cType);
+    prepare_for_bind(data, size, sqlType, cType);
 
 	SQLRETURN rc = SQLBindParameter(statement_.hstmt_, position++, SQL_PARAM_INPUT, 
                                     cType, sqlType, size, 0, data, 0, &indHolder_);
 
     if (is_odbc_error(rc))
     {
-        throw ODBCSOCIError(SQL_HANDLE_STMT, statement_.hstmt_, 
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, 
                                 "Binding");
     }
 }
 
-void ODBCStandardUseTypeBackEnd::bindByPos(
+void odbc_standard_use_type_backend::bind_by_pos(
     int &position, void *data, eExchangeType type)
 {
     if (statement_.boundByName_)
     {
-        throw SOCIError(
+        throw soci_error(
          "Binding for use elements must be either by position or by name.");
     }
 
-    bindHelper(position, data, type);
+    bind_helper(position, data, type);
 
     statement_.boundByPos_ = true;
 }
 
-void ODBCStandardUseTypeBackEnd::bindByName(
+void odbc_standard_use_type_backend::bind_by_name(
     std::string const &name, void *data, eExchangeType type)
 {
     if (statement_.boundByPos_)
     {
-        throw SOCIError(
+        throw soci_error(
          "Binding for use elements must be either by position or by name.");
     }
 
@@ -162,18 +162,18 @@ void ODBCStandardUseTypeBackEnd::bindByName(
     }
 
     if (position != -1)
-        bindHelper(position, data, type);
+        bind_helper(position, data, type);
     else
     {
         std::ostringstream ss;
         ss << "Unable to find name '" << name << "' to bind to";
-        throw SOCIError(ss.str().c_str());
+        throw soci_error(ss.str().c_str());
     }
 
     statement_.boundByName_ = true;
 }
 
-void ODBCStandardUseTypeBackEnd::preUse(eIndicator const *ind)
+void odbc_standard_use_type_backend::pre_use(eIndicator const *ind)
 {
     // first deal with data
     if (type_ == eXChar)
@@ -214,7 +214,7 @@ void ODBCStandardUseTypeBackEnd::preUse(eIndicator const *ind)
     }
 }
 
-void ODBCStandardUseTypeBackEnd::postUse(bool gotData, eIndicator *ind)
+void odbc_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
 {
     // first, deal with data
     if (gotData)
@@ -274,18 +274,18 @@ void ODBCStandardUseTypeBackEnd::postUse(bool gotData, eIndicator *ind)
         if (indHolder_ == SQL_NULL_DATA)
         {
             // fetched null and no indicator - programming error!
-            throw SOCIError("Null value fetched and no indicator defined.");
+            throw soci_error("Null value fetched and no indicator defined.");
         }
 
         if (gotData == false)
         {
             // no data fetched and no indicator - programming error!
-            throw SOCIError("No data fetched and no indicator defined.");
+            throw soci_error("No data fetched and no indicator defined.");
         }
     }
 }
 
-void ODBCStandardUseTypeBackEnd::cleanUp()
+void odbc_standard_use_type_backend::clean_up()
 {
     if (buf_ != NULL)
     {

@@ -9,10 +9,10 @@
 #include "soci-odbc.h"
 #include <soci.h>
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
-ODBCSessionBackEnd::ODBCSessionBackEnd(std::string const & connectString)
+odbc_session_backend::odbc_session_backend(std::string const & connectString)
     : henv_(0), hdbc_(0)
 {
     SQLRETURN rc;
@@ -21,14 +21,14 @@ ODBCSessionBackEnd::ODBCSessionBackEnd(std::string const & connectString)
 	rc = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &henv_);
     if (is_odbc_error(rc))
     {
-        throw SOCIError("Unable to get environment handle");
+        throw soci_error("Unable to get environment handle");
     }
 
  	// Set the ODBC version environment attribute
  	rc = SQLSetEnvAttr(henv_, SQL_ATTR_ODBC_VERSION, (void*)SQL_OV_ODBC3, 0);
     if (is_odbc_error(rc))
     {
-        throw ODBCSOCIError(SQL_HANDLE_ENV, henv_, 
+        throw odbc_soci_error(SQL_HANDLE_ENV, henv_, 
                          "Setting ODBC version");
     }
 
@@ -36,7 +36,7 @@ ODBCSessionBackEnd::ODBCSessionBackEnd(std::string const & connectString)
  	rc = SQLAllocHandle(SQL_HANDLE_DBC, henv_, &hdbc_);
     if (is_odbc_error(rc))
     {
-        throw ODBCSOCIError(SQL_HANDLE_DBC, hdbc_, 
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, 
                          "Allocating connection handle");
     }
 
@@ -51,98 +51,98 @@ ODBCSessionBackEnd::ODBCSessionBackEnd(std::string const & connectString)
 
     if (is_odbc_error(rc))
     {
-        throw ODBCSOCIError(SQL_HANDLE_DBC, hdbc_, 
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, 
                          "Error Connecting to database");
     }
 
     reset_transaction();
 }
 
-ODBCSessionBackEnd::~ODBCSessionBackEnd()
+odbc_session_backend::~odbc_session_backend()
 {
-    cleanUp();
+    clean_up();
 }
 
-void ODBCSessionBackEnd::begin()
+void odbc_session_backend::begin()
 {
     SQLRETURN rc = SQLSetConnectAttr( hdbc_, SQL_ATTR_AUTOCOMMIT,
                     (SQLPOINTER)SQL_AUTOCOMMIT_OFF, 0 );
     if (is_odbc_error(rc))
     {
-        throw ODBCSOCIError(SQL_HANDLE_DBC, hdbc_,
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
                          "Begin Transaction");
     }    
 }
 
-void ODBCSessionBackEnd::commit()
+void odbc_session_backend::commit()
 {
     SQLRETURN rc = SQLEndTran(SQL_HANDLE_DBC, hdbc_, SQL_COMMIT);
     if (is_odbc_error(rc))
     {
-        throw ODBCSOCIError(SQL_HANDLE_DBC, hdbc_,
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
                          "Commiting");
     }
     reset_transaction();
 }
 
-void ODBCSessionBackEnd::rollback()
+void odbc_session_backend::rollback()
 {
     SQLRETURN rc = SQLEndTran(SQL_HANDLE_DBC, hdbc_, SQL_ROLLBACK);
     if (is_odbc_error(rc))
     {
-        throw ODBCSOCIError(SQL_HANDLE_DBC, hdbc_,
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
                          "Rolling back");
     }    
     reset_transaction();
 }
 
-void ODBCSessionBackEnd::reset_transaction()
+void odbc_session_backend::reset_transaction()
 {
     SQLRETURN rc = SQLSetConnectAttr( hdbc_, SQL_ATTR_AUTOCOMMIT,
                     (SQLPOINTER)SQL_AUTOCOMMIT_ON, 0 );
     if (is_odbc_error(rc))
     {
-        throw ODBCSOCIError(SQL_HANDLE_DBC, hdbc_,
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
                             "Set Auto Commit");
     }    
 }
 
 
-void ODBCSessionBackEnd::cleanUp()
+void odbc_session_backend::clean_up()
 {
     SQLRETURN rc = SQLDisconnect(hdbc_);
     if (is_odbc_error(rc))
     {
-        throw ODBCSOCIError(SQL_HANDLE_DBC, hdbc_,
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
                             "SQLDisconnect");
     }
 
     rc = SQLFreeHandle(SQL_HANDLE_DBC, hdbc_);
     if (is_odbc_error(rc))
     {
-        throw ODBCSOCIError(SQL_HANDLE_DBC, hdbc_,
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
                             "SQLFreeHandle DBC");
     }
 
     rc = SQLFreeHandle(SQL_HANDLE_ENV, henv_);
     if (is_odbc_error(rc))
     {
-        throw ODBCSOCIError(SQL_HANDLE_ENV, henv_, 
+        throw odbc_soci_error(SQL_HANDLE_ENV, henv_, 
                             "SQLFreeHandle ENV");
     }
 }
 
-ODBCStatementBackEnd * ODBCSessionBackEnd::makeStatementBackEnd()
+odbc_statement_backend * odbc_session_backend::make_statement_backend()
 {
-    return new ODBCStatementBackEnd(*this);
+    return new odbc_statement_backend(*this);
 }
 
-ODBCRowIDBackEnd * ODBCSessionBackEnd::makeRowIDBackEnd()
+odbc_rowid_backend * odbc_session_backend::make_rowid_backend()
 {
-    return new ODBCRowIDBackEnd(*this);
+    return new odbc_rowid_backend(*this);
 }
 
-ODBCBLOBBackEnd * ODBCSessionBackEnd::makeBLOBBackEnd()
+odbc_blob_backend * odbc_session_backend::make_blob_backend()
 {
-    return new ODBCBLOBBackEnd(*this);
+    return new odbc_blob_backend(*this);
 }

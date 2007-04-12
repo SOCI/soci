@@ -22,21 +22,21 @@
 #endif
 
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
-void ODBCVectorUseTypeBackEnd::prepareIndicators(std::size_t size)
+void odbc_vector_use_type_backend::prepare_indicators(std::size_t size)
 {
     if (size == 0)
     {
-         throw SOCIError("Vectors of size 0 are not allowed.");
+         throw soci_error("Vectors of size 0 are not allowed.");
     }
 
     indHolderVec_.resize(size);
     indHolders_ = &indHolderVec_[0];
 }
 
-void ODBCVectorUseTypeBackEnd::prepareForBind(void *&data, SQLUINTEGER &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType)
+void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType)
 {
     switch (type_)
     {    // simple cases
@@ -47,7 +47,7 @@ void ODBCVectorUseTypeBackEnd::prepareForBind(void *&data, SQLUINTEGER &size, SQ
             size = sizeof(short);
             std::vector<short> *vp = static_cast<std::vector<short> *>(data);
             std::vector<short> &v(*vp);
-            prepareIndicators(v.size());
+            prepare_indicators(v.size());
             data = &v[0];
         }
         break;
@@ -58,7 +58,7 @@ void ODBCVectorUseTypeBackEnd::prepareForBind(void *&data, SQLUINTEGER &size, SQ
             size = sizeof(int);
             std::vector<int> *vp = static_cast<std::vector<int> *>(data);
             std::vector<int> &v(*vp);
-            prepareIndicators(v.size());
+            prepare_indicators(v.size());
             data = &v[0];
         }
         break;
@@ -70,7 +70,7 @@ void ODBCVectorUseTypeBackEnd::prepareForBind(void *&data, SQLUINTEGER &size, SQ
             std::vector<unsigned long> *vp
                  = static_cast<std::vector<unsigned long> *>(data);
             std::vector<unsigned long> &v(*vp);
-            prepareIndicators(v.size());
+            prepare_indicators(v.size());
             data = &v[0];
         }
         break;
@@ -81,7 +81,7 @@ void ODBCVectorUseTypeBackEnd::prepareForBind(void *&data, SQLUINTEGER &size, SQ
             size = sizeof(double);
             std::vector<double> *vp = static_cast<std::vector<double> *>(data);
             std::vector<double> &v(*vp);
-            prepareIndicators(v.size());
+            prepare_indicators(v.size());
             data = &v[0];
         }
         break;
@@ -93,7 +93,7 @@ void ODBCVectorUseTypeBackEnd::prepareForBind(void *&data, SQLUINTEGER &size, SQ
                 = static_cast<std::vector<char> *>(data);
             std::size_t const vsize = vp->size();
 
-            prepareIndicators(vsize);
+            prepare_indicators(vsize);
 
             size = sizeof(char) * 2;
             buf_ = new char[size * vsize];
@@ -122,7 +122,7 @@ void ODBCVectorUseTypeBackEnd::prepareForBind(void *&data, SQLUINTEGER &size, SQ
 
             std::size_t maxSize = 0;
             std::size_t const vecSize = v.size();
-            prepareIndicators(vecSize);
+            prepare_indicators(vecSize);
             for (std::size_t i = 0; i != vecSize; ++i)
             {
                 std::size_t sz = v[i].length() + 1;  // add one for null
@@ -149,7 +149,7 @@ void ODBCVectorUseTypeBackEnd::prepareForBind(void *&data, SQLUINTEGER &size, SQ
             std::vector<std::tm> *vp
                 = static_cast<std::vector<std::tm> *>(data);
 
-            prepareIndicators(vp->size());
+            prepare_indicators(vp->size());
 
             buf_ = new char[sizeof(TIMESTAMP_STRUCT) * vp->size()];
 
@@ -171,7 +171,7 @@ void ODBCVectorUseTypeBackEnd::prepareForBind(void *&data, SQLUINTEGER &size, SQ
     colSize_ = size;
 }
 
-void ODBCVectorUseTypeBackEnd::bindHelper(int &position, void *data, eExchangeType type)
+void odbc_vector_use_type_backend::bind_helper(int &position, void *data, eExchangeType type)
 {
     data_ = data; // for future reference
     type_ = type; // for future reference
@@ -180,7 +180,7 @@ void ODBCVectorUseTypeBackEnd::bindHelper(int &position, void *data, eExchangeTy
     SQLSMALLINT cType;
     SQLUINTEGER size;
 
-    prepareForBind(data, size, sqlType, cType);
+    prepare_for_bind(data, size, sqlType, cType);
 
     SQLINTEGER arraySize = (SQLINTEGER)indHolderVec_.size();    
     SQLSetStmtAttr(statement_.hstmt_, SQL_ATTR_PARAMSET_SIZE, (SQLPOINTER)arraySize, 0);
@@ -191,31 +191,31 @@ void ODBCVectorUseTypeBackEnd::bindHelper(int &position, void *data, eExchangeTy
 
     if (is_odbc_error(rc))
     {
-        throw ODBCSOCIError(SQL_HANDLE_STMT, statement_.hstmt_, 
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, 
             "Error while binding value to column");
     }
 }
 
-void ODBCVectorUseTypeBackEnd::bindByPos(int &position,
+void odbc_vector_use_type_backend::bind_by_pos(int &position,
         void *data, eExchangeType type)
 {
     if (statement_.boundByName_)
     {
-        throw SOCIError(
+        throw soci_error(
          "Binding for use elements must be either by position or by name.");
     }
 
-    bindHelper(position, data, type);
+    bind_helper(position, data, type);
 
     statement_.boundByPos_ = true;
 }
 
-void ODBCVectorUseTypeBackEnd::bindByName(
+void odbc_vector_use_type_backend::bind_by_name(
     std::string const &name, void *data, eExchangeType type)
 {
     if (statement_.boundByPos_)
     {
-        throw SOCIError(
+        throw soci_error(
          "Binding for use elements must be either by position or by name.");
     }
 
@@ -234,18 +234,18 @@ void ODBCVectorUseTypeBackEnd::bindByName(
     }
 
     if (position != -1)
-        bindHelper(position, data, type);
+        bind_helper(position, data, type);
     else
     {
         std::ostringstream ss;
         ss << "Unable to find name '" << name << "' to bind to";
-        throw SOCIError(ss.str().c_str());
+        throw soci_error(ss.str().c_str());
     }
 
     statement_.boundByName_ = true;
 }
 
-void ODBCVectorUseTypeBackEnd::preUse(eIndicator const *ind)
+void odbc_vector_use_type_backend::pre_use(eIndicator const *ind)
 {
     // first deal with data
     if (type_ == eXStdTm)
@@ -308,7 +308,7 @@ void ODBCVectorUseTypeBackEnd::preUse(eIndicator const *ind)
     }
 }
 
-std::size_t ODBCVectorUseTypeBackEnd::size()
+std::size_t odbc_vector_use_type_backend::size()
 {
     std::size_t sz = 0; // dummy initialization to please the compiler
     switch (type_)
@@ -370,7 +370,7 @@ std::size_t ODBCVectorUseTypeBackEnd::size()
     return sz;
 }
 
-void ODBCVectorUseTypeBackEnd::cleanUp()
+void odbc_vector_use_type_backend::clean_up()
 {
     if (buf_ != NULL)
     {
