@@ -5,11 +5,15 @@ PGSQLINCLUDEDIR = -I/usr/include
 PGSQLLIBDIR = -L/usr/lib
 PGSQLLIBS = -lpq
 
+# This defines dependency on Boost library.
+
+BOOSTINCLUDEDIR = -I/usr/include/boost_1_33_1
+
 # The rest of the Makefile is indepentent of the target environment.
 
 COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
-INCLUDEDIRS = -I.. -I../../../core/test -I../../../core ${PGSQLINCLUDEDIR}
+INCLUDEDIRS = -I.. -I../../../core/test -I../../../core ${PGSQLINCLUDEDIR} ${BOOSTINCLUDEDIR}
 LIBDIRS = -L.. -L../../../core ${PGSQLLIBDIR}
 LIBS = -lsoci-core -lsoci-postgresql ${PGSQLLIBS}
 

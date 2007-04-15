@@ -1,5 +1,6 @@
 COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
+INCLUDEDIRS = -I/usr/include/boost_1_33_1
 OBJS =  session.o statement.o row.o values.o \
 	into-type.o use-type.o \
 	blob.o rowid.o procedure.o ref-counted-prepare-info.o ref-counted-statement.o \
@@ -11,48 +12,48 @@ libsoci-core.a : ${OBJS}
 	rm *.o
 
 shared : ${OBJS} 
-	${COMPILER} -fPIC -c $? ${CXXFLAGS}
+	${COMPILER} -fPIC -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 	${COMPILER} -shared -o libsoci-core.so ${OBJS} 
 	rm *.o
 
 session.o : session.cpp
-	${COMPILER} -c $? ${CXXFLAGS}
+	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 statement.o : statement.cpp
-	${COMPILER} -c $? ${CXXFLAGS}
+	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 row.o : row.cpp
-	${COMPILER} -c $? ${CXXFLAGS}
+	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 values.o : values.cpp
-	${COMPILER} -c $? ${CXXFLAGS}
+	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 into-type.o : into-type.cpp
-	${COMPILER} -c $? ${CXXFLAGS}
+	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 use-type.o : use-type.cpp
-	${COMPILER} -c $? ${CXXFLAGS}
+	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 	
 blob.o : blob.cpp
-	${COMPILER} -c $? ${CXXFLAGS}
+	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 rowid.o : rowid.cpp
-	${COMPILER} -c $? ${CXXFLAGS}
+	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 procedure.o : procedure.cpp
-	${COMPILER} -c $? ${CXXFLAGS}
+	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 ref-counted-prepare-info.o : ref-counted-prepare-info.cpp
-	${COMPILER} -c $? ${CXXFLAGS}
+	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 ref-counted-statement.o : ref-counted-statement.cpp
-	${COMPILER} -c $? ${CXXFLAGS}
+	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 once-temp-type.o : once-temp-type.cpp
-	${COMPILER} -c $? ${CXXFLAGS}
+	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 prepare-temp-type.o : prepare-temp-type.cpp
-	${COMPILER} -c $? ${CXXFLAGS}
+	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 clean :
 	rm -f libsoci-core.a libsoci-core.so
