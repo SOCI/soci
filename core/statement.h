@@ -8,6 +8,7 @@
 #ifndef SOCI_STATEMENT_H_INCLUDED
 #define SOCI_STATEMENT_H_INCLUDED
 
+#include "into.h"
 #include "into-type.h"
 #include "use-type.h"
 #include "soci-backend.h"
@@ -18,7 +19,7 @@
 namespace soci
 {
 class session;
-class values;
+struct values;
 
 namespace details
 {

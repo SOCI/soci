@@ -14,7 +14,7 @@
 
 namespace soci
 {
-// basic blob  operations
+// basic blob operations
 
 class SOCI_DECL blob
 {
@@ -39,23 +39,29 @@ namespace details
 {
 
 template <>
-class into_type<blob > : public standard_into_type
+class into_type<blob> : public standard_into_type
 {
 public:
-    into_type(blob  &b) : standard_into_type(&b, eXBLOB) {}
-    into_type(blob  &b, eIndicator &ind)
-        : standard_into_type(&b, eXBLOB , ind) {}
+    into_type(blob &b) : standard_into_type(&b, eXBLOB) {}
+    into_type(blob &b, eIndicator &ind)
+        : standard_into_type(&b, eXBLOB, ind) {}
 };
 
 template <>
-class use_type<blob > : public standard_use_type
+class use_type<blob> : public standard_use_type
 {
 public:
-    use_type(blob  &b, std::string const &name = std::string())
-        : standard_use_type(&b, eXBLOB , name) {}
-    use_type(blob  &b, eIndicator &ind,
+    use_type(blob &b, std::string const &name = std::string())
+        : standard_use_type(&b, eXBLOB, name) {}
+    use_type(blob &b, eIndicator &ind,
         std::string const &name = std::string())
-        : standard_use_type(&b, eXBLOB , ind, name) {}
+        : standard_use_type(&b, eXBLOB, ind, name) {}
+};
+
+template <>
+struct exchange_traits<soci::blob>
+{
+    typedef basic_type_tag type_family;
 };
 
 } // namespace details

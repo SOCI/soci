@@ -8,7 +8,6 @@
 #ifndef SOCI_ONCE_TEMP_TYPE_H_INCLUDED
 #define SOCI_ONCE_TEMP_TYPE_H_INCLUDED
 
-#include "prepare-temp-type.h"
 #include "ref-counted-statement.h"
 
 namespace soci

@@ -15,6 +15,7 @@
 #endif
 
 #include "blob.h"
+#include "into.h"
 #include "into-row.h"
 #include "into-type.h"
 #include "once-temp-type.h"
@@ -33,7 +34,7 @@
 #include "type-conversion.h"
 #include "type-holder.h"
 #include "type-ptr.h"
-#include "use-type.h"
+#include "use.h"
 #include "values.h"
 
 #endif // SOCI_H_INCLUDED

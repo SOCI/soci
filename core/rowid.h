@@ -53,6 +53,12 @@ public:
         :standard_into_type(&rid, eXRowID, ind) {}
 };
 
+template <>
+struct exchange_traits<soci::rowid>
+{
+    typedef basic_type_tag type_family;
+};
+
 } // namespace details
 } // namespace soci
 

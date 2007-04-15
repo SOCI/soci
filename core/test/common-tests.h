@@ -15,7 +15,6 @@
 #include <cmath>
 #include <iostream>
 #include <string>
-#include <cassert>
 
 // Objects used later in tests 14,15
 struct PhonebookEntry
@@ -208,6 +207,7 @@ public:
     test23();
     test24();
     test25();
+    test26();
     }
 
 private:
@@ -2316,7 +2316,6 @@ void test24()
         }
         std::cout << "test 24 passed" << std::endl;
     }
-
 }
 
 // test25 is like test15 but with rowset and iterators use
@@ -2359,6 +2358,46 @@ void test25()
         assert(3 == count);        
     }
     std::cout << "test 25 passed" << std::endl;
+}
+
+// test for handling NULL values with boost::optional
+// (both into and use)
+void test26()
+{
+    session sql(backEndFactory_, connectString_);
+    
+    // create and populate the test table
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+    {
+        sql << "insert into soci_test(val) values(7)";
+
+        {
+            // verify non-null value is fetched correctly
+            boost::optional<int> opt;
+            sql << "select val from soci_test", into(opt);
+            assert(opt.is_initialized());
+            assert(opt.get() == 7);
+
+            // verify null value is fetched correctly
+            sql << "select i1 from soci_test", into(opt);
+            assert(opt.is_initialized() == false);
+
+            // verify non-null is inserted correctly
+            opt = 3;
+            sql << "update soci_test set val = :v", use(opt);
+            int j = 0;
+            sql << "select val from soci_test", into(j);
+            assert(j == 3);
+
+            // verify null is inserted correctly
+            opt.reset();
+            sql << "update soci_test set val = :v", use(opt);
+            eIndicator ind;
+            sql << "select val from soci_test", into(j, ind);
+            assert(ind == eNull);
+        }
+        std::cout << "test 26 passed" << std::endl;
+    }
 }
 
 }; // class common_tests

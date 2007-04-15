@@ -10,6 +10,8 @@
 
 #include "soci-backend.h"
 #include "type-ptr.h"
+#include "exchange-traits.h"
+#include <boost/optional.hpp>
 
 #include <string>
 #include <vector>
@@ -54,10 +56,12 @@ public:
 
     virtual ~standard_into_type();
 
+protected:
+    virtual void post_fetch(bool gotData, bool calledFromFetch);
+
 private:
     virtual void define(statement_impl &st, int &position);
     virtual void pre_fetch();
-    virtual void post_fetch(bool gotData, bool calledFromFetch);
     virtual void clean_up();
 
     virtual std::size_t size() const { return 1; }
@@ -102,101 +106,62 @@ private:
     virtual void convert_from() {}
 };
 
-// general case not implemented
+// implementation for the basic types (those which are supported by the library
+// out of the box without user-provided conversions)
+
 template <typename T>
-class into_type;
-
-template <>
-class into_type<short> : public standard_into_type
+class into_type : public standard_into_type
 {
 public:
-    into_type(short &s) : standard_into_type(&s, eXShort) {}
-    into_type(short &s, eIndicator &ind)
-        : standard_into_type(&s, eXShort, ind) {}
+    into_type(T &t)
+        : standard_into_type(&t,
+            static_cast<eExchangeType>(exchange_traits<T>::eXType)) {}
+    into_type(T &t, eIndicator &ind)
+        : standard_into_type(&t,
+            static_cast<eExchangeType>(exchange_traits<T>::eXType), ind) {}
 };
 
-template <>
-class into_type<std::vector<short> > : public vector_into_type
+template <typename T>
+class into_type<std::vector<T> > : public vector_into_type
 {
 public:
-    into_type(std::vector<short> &v) : vector_into_type(&v, eXShort) {}
-    into_type(std::vector<short> &v, std::vector<eIndicator> &ind)
-        : vector_into_type(&v, eXShort, ind) {}
+    into_type(std::vector<T> &v)
+        : vector_into_type(&v,
+            static_cast<eExchangeType>(exchange_traits<T>::eXType)) {}
+    into_type(std::vector<T> &v, std::vector<eIndicator> &ind)
+        : vector_into_type(&v,
+            static_cast<eExchangeType>(exchange_traits<T>::eXType), ind) {}
 };
 
-template <>
-class into_type<int> : public standard_into_type
+template <typename T>
+class into_type<boost::optional<T> > : public standard_into_type
 {
 public:
-    into_type(int &i) : standard_into_type(&i, eXInteger) {}
-    into_type(int &i, eIndicator &ind)
-        : standard_into_type(&i, eXInteger, ind) {}
+    into_type(boost::optional<T> &t)
+        : standard_into_type(&val_,
+            static_cast<eExchangeType>(exchange_traits<T>::eXType),
+            ind_), opt_(t) {}
+
+private:
+    boost::optional<T> &opt_;
+    T val_;
+    eIndicator ind_;
+
+    virtual void post_fetch(bool gotData, bool calledFromFetch)
+    {
+        standard_into_type::post_fetch(gotData, calledFromFetch);
+        if (ind_ == eOK)
+        {
+            opt_ = val_;
+        }
+        else
+        {
+            opt_.reset();
+        }
+    }
 };
 
-template <>
-class into_type<std::vector<int> > : public vector_into_type
-{
-public:
-    into_type(std::vector<int> &v) : vector_into_type(&v, eXInteger) {}
-    into_type(std::vector<int> &v, std::vector<eIndicator> &ind)
-        : vector_into_type(&v, eXInteger, ind) {}
-};
-
-template <>
-class into_type<char> : public standard_into_type
-{
-public:
-    into_type(char &c) : standard_into_type(&c, eXChar) {}
-    into_type(char &c, eIndicator &ind)
-        : standard_into_type(&c, eXChar, ind) {}
-};
-
-template <>
-class into_type<std::vector<char> >: public vector_into_type
-{
-public:
-    into_type(std::vector<char> &v) : vector_into_type(&v, eXChar) {}
-    into_type(std::vector<char> &v, std::vector<eIndicator> &vind)
-        : vector_into_type(&v, eXChar, vind) {}
-};
-
-template <>
-class into_type<unsigned long> : public standard_into_type
-{
-public:
-    into_type(unsigned long &ul) : standard_into_type(&ul, eXUnsignedLong) {}
-    into_type(unsigned long &ul, eIndicator &ind)
-        : standard_into_type(&ul, eXUnsignedLong, ind) {}
-};
-
-template <>
-class into_type<std::vector<unsigned long> > : public vector_into_type
-{
-public:
-    into_type(std::vector<unsigned long> &v)
-        : vector_into_type(&v, eXUnsignedLong) {}
-    into_type(std::vector<unsigned long> &v, std::vector<eIndicator> &vind)
-        : vector_into_type(&v, eXUnsignedLong, vind) {}
-};
-
-template <>
-class into_type<double> : public standard_into_type
-{
-public:
-    into_type(double &d) : standard_into_type(&d, eXDouble) {}
-    into_type(double &d, eIndicator &ind)
-        : standard_into_type(&d, eXDouble, ind) {}
-};
-
-template <>
-class into_type<std::vector<double> > : public vector_into_type
-{
-public:
-    into_type(std::vector<double> &v)
-        : vector_into_type(&v, eXDouble) {}
-    into_type(std::vector<double> &v, std::vector<eIndicator> &vind)
-        : vector_into_type(&v, eXDouble, vind) {}
-};
+// special cases for char* and char[]
 
 template <>
 class into_type<char*> : public standard_into_type
@@ -211,81 +176,36 @@ private:
     cstring_descriptor str_;
 };
 
-
-// into types for char arrays (with size known at compile-time)
-
 template <std::size_t N>
 class into_type<char[N]> : public into_type<char*>
 {
 public:
     into_type(char str[]) : into_type<char*>(str, N) {}
-    into_type(char str[], eIndicator &ind) : into_type<char*>(str, ind, N) {}
+    into_type(char str[], eIndicator &ind)
+        : into_type<char*>(str, ind, N) {}
 };
 
-template <>
-class into_type<std::string> : public standard_into_type
-{
-public:
-    into_type(std::string &s) : standard_into_type(&s, eXStdString) {}
-    into_type(std::string &s, eIndicator &ind)
-        : standard_into_type(&s, eXStdString, ind) {}
-};
+// helper dispatchers for basic types
 
-template <>
-class into_type<std::vector<std::string> > : public vector_into_type
+template <typename T>
+into_type_ptr do_into(T &t, basic_type_tag)
 {
-public:
-    into_type(std::vector<std::string>& v)
-        : vector_into_type(&v, eXStdString) {}
-    into_type(std::vector<std::string>& v, std::vector<eIndicator> &vind)
-        : vector_into_type(&v, eXStdString, vind) {}
-};
+    return into_type_ptr(new into_type<T>(t));
+}
 
-template <>
-class into_type<std::tm> : public standard_into_type
+template <typename T>
+into_type_ptr do_into(T &t, eIndicator &indicator, basic_type_tag)
 {
-public:
-    into_type(std::tm &t) : standard_into_type(&t, eXStdTm) {}
-    into_type(std::tm &t, eIndicator &ind)
-        : standard_into_type(&t, eXStdTm, ind) {}
-};
+    return into_type_ptr(new into_type<T>(t, indicator));
+}
 
-template <>
-class into_type<std::vector<std::tm> > : public vector_into_type
+template <typename T>
+into_type_ptr do_into(T &t, std::vector<eIndicator> &indicator, basic_type_tag)
 {
-public:
-    into_type(std::vector<std::tm>& v) : vector_into_type(&v, eXStdTm) {}
-    into_type(std::vector<std::tm>& v, std::vector<eIndicator> &vind)
-        : vector_into_type(&v, eXStdTm, vind) {}
-};
+    return into_type_ptr(new into_type<T>(t, indicator));
+}
 
 } // namespace details
-
-// the into function is a helper for defining output variables
-
-template <typename T>
-details::into_type_ptr into(T &t)
-{
-    return details::into_type_ptr(new details::into_type<T>(t));
-}
-
-template <typename T, typename T1>
-details::into_type_ptr into(T &t, T1 p1)
-{
-    return details::into_type_ptr(new details::into_type<T>(t, p1));
-}
-
-template <typename T>
-details::into_type_ptr into(T &t, std::vector<eIndicator> &indicator)
-{
-    return details::into_type_ptr(new details::into_type<T>(t, indicator));
-}
-
-template <typename T>
-details::into_type_ptr into(T &t, eIndicator &indicator)
-{
-    return details::into_type_ptr(new details::into_type<T>(t, indicator));
-}
 
 } // namespace SOCI
 

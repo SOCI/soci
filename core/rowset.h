@@ -9,7 +9,6 @@
 #define SOCI_ROWSET_H_INCLUDED
 
 #include "statement.h"
-#include <cassert>
 
 namespace soci
 {

@@ -19,7 +19,8 @@ namespace details
 // Support selecting into a Row for dynamic queries
 //
 template <>
-class into_type<soci::row> : public into_type_base // bypass the standard_into_type
+class into_type<soci::row>
+    : public into_type_base // bypass the standard_into_type
 {
 public:
     into_type(soci::row &r) : r_(r) {}
@@ -55,6 +56,12 @@ private:
     virtual void convert_from() {}
 
     soci::row &r_;
+};
+
+template <>
+struct exchange_traits<soci::row>
+{
+    typedef basic_type_tag type_family;
 };
 
 } // namespace details
