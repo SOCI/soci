@@ -9,6 +9,7 @@
 #define SOCI_ONCE_TEMP_TYPE_H_INCLUDED
 
 #include "ref-counted-statement.h"
+#include "prepare-temp-type.h"
 
 namespace soci
 {
