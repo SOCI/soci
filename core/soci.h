@@ -15,6 +15,7 @@
 #endif
 
 #include "blob.h"
+#include "blob-exchange.h"
 #include "into.h"
 #include "into-row.h"
 #include "into-type.h"
@@ -25,6 +26,7 @@
 #include "ref-counted-statement.h"
 #include "row.h"
 #include "rowid.h"
+#include "rowid-exchange.h"
 #include "rowset.h"
 #include "session.h"
 #include "soci-backend.h"

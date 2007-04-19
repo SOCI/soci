@@ -8,13 +8,13 @@
 #ifndef SOCI_BLOB_H_INCLUDED
 #define SOCI_BLOB_H_INCLUDED
 
-#include "into-type.h"
-#include "use-type.h"
 #include "soci-backend.h"
 
 namespace soci
 {
 // basic blob operations
+
+class session;
 
 class SOCI_DECL blob
 {
@@ -34,37 +34,6 @@ public:
 private:
     details::blob_backend *backEnd_;
 };
-
-namespace details
-{
-
-template <>
-class into_type<blob> : public standard_into_type
-{
-public:
-    into_type(blob &b) : standard_into_type(&b, eXBLOB) {}
-    into_type(blob &b, eIndicator &ind)
-        : standard_into_type(&b, eXBLOB, ind) {}
-};
-
-template <>
-class use_type<blob> : public standard_use_type
-{
-public:
-    use_type(blob &b, std::string const &name = std::string())
-        : standard_use_type(&b, eXBLOB, name) {}
-    use_type(blob &b, eIndicator &ind,
-        std::string const &name = std::string())
-        : standard_use_type(&b, eXBLOB, ind, name) {}
-};
-
-template <>
-struct exchange_traits<soci::blob>
-{
-    typedef basic_type_tag type_family;
-};
-
-} // namespace details
 
 } // namespace soci
 
