@@ -3,16 +3,12 @@
 
 PGSQLINCLUDEDIR = -I/usr/include
 
-# This defines dependency on Boost library.
-
-BOOSTINCLUDEDIR = -I/usr/include/boost_1_33_1
-
 # The rest of the Makefile is indepentent of the target environment.
 
 COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
 CXXFLAGSSO = ${CXXFLAGS} -fPIC
-INCLUDEDIRS = -I../../core ${PGSQLINCLUDEDIR} ${BOOSTINCLUDEDIR}
+INCLUDEDIRS = -I../../core ${PGSQLINCLUDEDIR}
 
 
 OBJECTS = blob.o factory.o row-id.o session.o standard-into-type.o \
