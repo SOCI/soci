@@ -2269,6 +2269,7 @@ void test23()
             }
             catch(soci_error const& e)
             {
+                e;
                 caught = true;
             }
             assert(caught);
@@ -2310,6 +2311,7 @@ void test24()
             }
             catch(soci_error const& e)
             {
+                e;
                 caught = true;
             }
             assert(caught);

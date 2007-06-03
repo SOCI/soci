@@ -19,7 +19,7 @@
 namespace soci
 {
 class session;
-struct values;
+class values;
 
 namespace details
 {

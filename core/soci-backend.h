@@ -25,14 +25,11 @@ enum eDataType { eString, eChar, eDate, eDouble, eInteger,
 // the enum type for indicator variables
 enum eIndicator { eOK, eNoData, eNull, eTruncated };
 
-
 class SOCI_DECL soci_error : public std::runtime_error
 {
 public:
-    soci_error(std::string const & msg) 
-     : std::runtime_error(msg) {}
+    soci_error(std::string const & msg);
 };
-
 
 namespace details
 {

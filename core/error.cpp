@@ -5,18 +5,16 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 #define SOCI_SOURCE
-#include "rowid.h"
-#include "session.h"
+#include "soci-backend.h"
+#include <stdexcept>
+#include <string>
 
-using namespace soci;
-using namespace soci::details;
-
-rowid::rowid(session &s)
+namespace soci
 {
-    backEnd_ = s.make_rowid_backend();
+ 
+soci_error::soci_error(std::string const & msg) 
+     : std::runtime_error(msg)
+{
 }
 
-rowid::~rowid()
-{
-    delete backEnd_;
-}
+} // namespace soci

@@ -15,7 +15,7 @@ namespace soci
 namespace details
 {
 
-class procedure_impl : public statement_impl
+class SOCI_DECL procedure_impl : public statement_impl
 {
 public:
     procedure_impl(session &s) : statement_impl(s), refCount_(1) {}

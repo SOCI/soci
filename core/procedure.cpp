@@ -4,7 +4,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-
+#define SOCI_SOURCE
 #include "procedure.h"
 #include "statement.h"
 #include "prepare-temp-type.h"

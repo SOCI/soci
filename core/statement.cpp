@@ -4,7 +4,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-
+#define SOCI_SOURCE
 #include "statement.h"
 #include "into-type.h"
 #include "session.h"

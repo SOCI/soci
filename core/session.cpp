@@ -4,9 +4,13 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-
+#define SOCI_SOURCE
 #include "session.h"
 #include "soci-backend.h"
+
+#ifdef _MSC_VER
+#pragma warning(disable:C4355)
+#endif
 
 using namespace soci;
 using namespace soci::details;
