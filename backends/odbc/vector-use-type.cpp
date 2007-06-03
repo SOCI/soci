@@ -185,9 +185,9 @@ void odbc_vector_use_type_backend::bind_helper(int &position, void *data, eExcha
     SQLINTEGER arraySize = (SQLINTEGER)indHolderVec_.size();    
     SQLSetStmtAttr(statement_.hstmt_, SQL_ATTR_PARAMSET_SIZE, (SQLPOINTER)arraySize, 0);
 
-	SQLRETURN rc = SQLBindParameter(statement_.hstmt_, position++, SQL_PARAM_INPUT, 
-                                    cType, sqlType, size, 0, (SQLPOINTER)data, 
-                                    size, indHolders_);
+	SQLRETURN rc = SQLBindParameter(statement_.hstmt_, static_cast<SQLUSMALLINT>(position++),
+                                    SQL_PARAM_INPUT, cType, sqlType, size, 0,
+                                    static_cast<SQLPOINTER>(data), size, indHolders_);
 
     if (is_odbc_error(rc))
     {
@@ -262,12 +262,12 @@ void odbc_vector_use_type_backend::pre_use(eIndicator const *ind)
             std::tm t = v[i];
             TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
 
-            ts->year = t.tm_year + 1900;
-            ts->month = t.tm_mon + 1;
-            ts->day = t.tm_mday;
-            ts->hour = t.tm_hour;
-            ts->minute = t.tm_min;
-            ts->second = t.tm_sec;
+            ts->year = static_cast<SQLSMALLINT>(t.tm_year + 1900);
+            ts->month = static_cast<SQLUSMALLINT>(t.tm_mon + 1);
+            ts->day = static_cast<SQLUSMALLINT>(t.tm_mday);
+            ts->hour = static_cast<SQLUSMALLINT>(t.tm_hour);
+            ts->minute = static_cast<SQLUSMALLINT>(t.tm_min);
+            ts->second = static_cast<SQLUSMALLINT>(t.tm_sec);
             ts->fraction = 0;
             pos += sizeof(TIMESTAMP_STRUCT);
         }

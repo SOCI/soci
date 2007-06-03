@@ -222,7 +222,8 @@ void odbc_statement_backend::describe_column(int colNum, eDataType & type,
     SQLSMALLINT decDigits;
     SQLSMALLINT isNullable;
 
-    SQLRETURN rc = SQLDescribeCol(hstmt_, colNum, colNameBuffer, 2048,
+    SQLRETURN rc = SQLDescribeCol(hstmt_, static_cast<SQLUSMALLINT>(colNum),
+                                  colNameBuffer, 2048,
                                   &colNameBufferOverflow, &dataType,
                                   &colSize, &decDigits, &isNullable);
 
@@ -272,7 +273,8 @@ std::size_t odbc_statement_backend::column_size(int colNum)
     SQLSMALLINT decDigits;
     SQLSMALLINT isNullable;
 
-    SQLRETURN rc = SQLDescribeCol(hstmt_, colNum, colNameBuffer, 2048,
+    SQLRETURN rc = SQLDescribeCol(hstmt_, static_cast<SQLUSMALLINT>(colNum),
+                                  colNameBuffer, 2048,
                                   &colNameBufferOverflow, &dataType,
                                   &colSize, &decDigits, &isNullable);
 

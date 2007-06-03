@@ -63,7 +63,9 @@ void odbc_standard_use_type_backend::prepare_for_bind(
     break;
     case eXStdString:
     {
-        std::string *s = static_cast<std::string *>(data);
+        // TODO: No textual value is assigned here!
+
+        std::string* s = static_cast<std::string*>(data);
         sqlType = SQL_VARCHAR;
         cType = SQL_C_CHAR;
         size = 255; // !FIXME this is not sufficent
@@ -114,7 +116,9 @@ void odbc_standard_use_type_backend::bind_helper(int &position, void *data, eExc
 
     prepare_for_bind(data, size, sqlType, cType);
 
-	SQLRETURN rc = SQLBindParameter(statement_.hstmt_, position++, SQL_PARAM_INPUT, 
+	SQLRETURN rc = SQLBindParameter(statement_.hstmt_,
+                                    static_cast<SQLUSMALLINT>(position++),
+                                    SQL_PARAM_INPUT, 
                                     cType, sqlType, size, 0, data, 0, &indHolder_);
 
     if (is_odbc_error(rc))
@@ -198,12 +202,12 @@ void odbc_standard_use_type_backend::pre_use(eIndicator const *ind)
         std::tm *t = static_cast<std::tm *>(data_);
         TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
 
-        ts->year = t->tm_year + 1900;
-        ts->month = t->tm_mon + 1;
-        ts->day = t->tm_mday;
-        ts->hour = t->tm_hour;
-        ts->minute = t->tm_min;
-        ts->second = t->tm_sec;
+        ts->year = static_cast<SQLSMALLINT>(t->tm_year + 1900);
+        ts->month = static_cast<SQLUSMALLINT>(t->tm_mon + 1);
+        ts->day = static_cast<SQLUSMALLINT>(t->tm_mday);
+        ts->hour = static_cast<SQLUSMALLINT>(t->tm_hour);
+        ts->minute = static_cast<SQLUSMALLINT>(t->tm_min);
+        ts->second = static_cast<SQLUSMALLINT>(t->tm_sec);
         ts->fraction = 0;
     }
 
