@@ -8,7 +8,7 @@
 	<Tool
 		Name="VCCLCompilerTool"
 		Optimization="0"
-		AdditionalIncludeDirectories="&quot;$(SOCI_CORE_DIR)&quot;;&quot;$(SOCI_CORE_DIR)\test&quot;"
+		AdditionalIncludeDirectories="&quot;$(SOCI_CORE_DIR)&quot;;&quot;$(SOCI_CORE_DIR)\test&quot;;&quot;$(BOOST_INCLUDE_DIR)&quot;"
 		DisableLanguageExtensions="false"
 		WarningLevel="4"
 		DebugInformationFormat="4"
@@ -21,11 +21,11 @@
 	/>
 	<UserMacro
 		Name="FIREBIRD_INCLUDE_DIR"
-		Value="C:\Program Files\Firebird\Firebird_1_5\include"
+		Value="C:\Program Files\Firebird\Firebird_2_0\include"
 	/>
 	<UserMacro
 		Name="FIREBIRD_LIB_DIR"
-		Value="C:\Program Files\Firebird\Firebird_1_5\lib"
+		Value="C:\Program Files\Firebird\Firebird_2_0\lib"
 	/>
 	<UserMacro
 		Name="FIREBIRD_LIB"
@@ -81,15 +81,19 @@
 	/>
 	<UserMacro
 		Name="SQLITE3_INCLUDE_DIR"
-		Value="C:\lib\sqlite3"
+		Value="C:\usr\sqlite\include"
 	/>
 	<UserMacro
 		Name="SQLITE3_LIB_DIR"
-		Value="C:\lib\sqlite3"
+		Value="C:\usr\sqlite\lib"
 	/>
 	<UserMacro
 		Name="SQLITE3_LIB"
 		Value="sqlite3.lib"
+	/>
+	<UserMacro
+		Name="BOOST_INCLUDE_DIR"
+		Value="C:\usr\boost-1.33.1\include\boost-1_33_1"
 	/>
 	<UserMacro
 		Name="SOCI_VERSION"
