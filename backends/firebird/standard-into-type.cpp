@@ -10,11 +10,11 @@
 #include "common.h"
 #include <soci.h>
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::Firebird;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::firebird;
 
-void FirebirdStandardIntoTypeBackEnd::defineByPos(
+void firebird_standard_into_type_backend::defineByPos(
     int & position, void * data, eExchangeType type)
 {
     position_ = position-1;
@@ -33,12 +33,12 @@ void FirebirdStandardIntoTypeBackEnd::defineByPos(
     var->sqlind = &indISCHolder_;
 }
 
-void FirebirdStandardIntoTypeBackEnd::preFetch()
+void firebird_standard_into_type_backend::preFetch()
 {
     // nothing to do
 }
 
-void FirebirdStandardIntoTypeBackEnd::postFetch(
+void firebird_standard_into_type_backend::postFetch(
     bool gotData, bool calledFromFetch, eIndicator * ind)
 {
     if (calledFromFetch == true && gotData == false)
@@ -52,7 +52,7 @@ void FirebirdStandardIntoTypeBackEnd::postFetch(
     {
         if (statement_.inds_[position_][0] == eNull && ind == NULL)
         {
-            throw SOCIError("Null value fetched and no indicator defined.");
+            throw soci_error("Null value fetched and no indicator defined.");
         }
         else if (ind != NULL)
         {
@@ -63,7 +63,7 @@ void FirebirdStandardIntoTypeBackEnd::postFetch(
     {
         if (ind == NULL)
         {
-            throw SOCIError("No data fetched and no indicator defined.");
+            throw soci_error("No data fetched and no indicator defined.");
         }
 
         *ind = eNoData;
@@ -71,7 +71,7 @@ void FirebirdStandardIntoTypeBackEnd::postFetch(
 }
 
 
-void FirebirdStandardIntoTypeBackEnd::exchangeData()
+void firebird_standard_into_type_backend::exchangeData()
 {
     XSQLVAR *var = statement_.sqldap_->sqlvar+position_;
 
@@ -140,18 +140,18 @@ void FirebirdStandardIntoTypeBackEnd::exchangeData()
 
                 if (blob==0)
                 {
-                    throw SOCIError("Can't get Firebid BLOB BackEnd");
+                    throw soci_error("Can't get Firebid BLOB BackEnd");
                 }
 
                 blob->assign(*reinterpret_cast<ISC_QUAD*>(buf_));
             }
             break;
         default:
-            throw SOCIError("Into element used with non-supported type.");
+            throw soci_error("Into element used with non-supported type.");
     } // switch
 }
 
-void FirebirdStandardIntoTypeBackEnd::cleanUp()
+void firebird_standard_into_type_backend::cleanUp()
 {
     if (buf_ != NULL)
     {

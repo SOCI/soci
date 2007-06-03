@@ -9,11 +9,11 @@
 #include "soci-firebird.h"
 #include "common.h"
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::Firebird;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::firebird;
 
-void FirebirdVectorIntoTypeBackEnd::defineByPos(
+void firebird_vector_into_type_backend::defineByPos(
     int & position, void * data, eExchangeType type)
 {
     position_ = position-1;
@@ -32,79 +32,80 @@ void FirebirdVectorIntoTypeBackEnd::defineByPos(
     var->sqlind = &indISCHolder_;
 }
 
-void FirebirdVectorIntoTypeBackEnd::preFetch()
+void firebird_vector_into_type_backend::preFetch()
 {
     // Nothing to do here.
 }
 
 namespace // anonymous
 {
-    template <typename T>
-    void setIntoVector(void *p, std::size_t indx, T const &val)
-    {
-        std::vector<T> *dest =
-            static_cast<std::vector<T> *>(p);
+template <typename T>
+void setIntoVector(void *p, std::size_t indx, T const &val)
+{
+    std::vector<T> *dest =
+        static_cast<std::vector<T> *>(p);
 
-        std::vector<T> &v = *dest;
-        v[indx] = val;
-    }
+    std::vector<T> &v = *dest;
+    v[indx] = val;
+}
+
 } // namespace anonymous
 
 // this will exchange data with vector user buffers
-void FirebirdVectorIntoTypeBackEnd::exchangeData(std::size_t row)
+void firebird_vector_into_type_backend::exchangeData(std::size_t row)
 {
     XSQLVAR *var = statement_.sqldap_->sqlvar+position_;
 
     switch (type_)
     {
-            // simple cases
-        case eXChar:
-            setIntoVector(data_, row, getTextParam(var)[0]);
-            break;
-        case eXShort:
-            {
-                short tmp = from_isc<short>(var);
-                setIntoVector(data_, row, tmp);
-            }
-            break;
-        case eXInteger:
-            {
-                int tmp = from_isc<int>(var);
-                setIntoVector(data_, row, tmp);
-            }
-            break;
-        case eXUnsignedLong:
-            {
-                unsigned long tmp = from_isc<unsigned long>(var);
-                setIntoVector(data_, row, tmp);
-            }
-            break;
-        case eXDouble:
-            {
-                double tmp = from_isc<double>(var);
-                setIntoVector(data_, row, tmp);
-            }
-            break;
+        // simple cases
+    case eXChar:
+        setIntoVector(data_, row, getTextParam(var)[0]);
+        break;
+    case eXShort:
+        {
+            short tmp = from_isc<short>(var);
+            setIntoVector(data_, row, tmp);
+        }
+        break;
+    case eXInteger:
+        {
+            int tmp = from_isc<int>(var);
+            setIntoVector(data_, row, tmp);
+        }
+        break;
+    case eXUnsignedLong:
+        {
+            unsigned long tmp = from_isc<unsigned long>(var);
+            setIntoVector(data_, row, tmp);
+        }
+        break;
+    case eXDouble:
+        {
+            double tmp = from_isc<double>(var);
+            setIntoVector(data_, row, tmp);
+        }
+        break;
 
-            // cases that require adjustments and buffer management
-        case eXStdString:
-            setIntoVector(data_, row, getTextParam(var));
-            break;
-        case eXStdTm:
-            {
-                std::tm data;
-                tmDecode(var->sqltype, buf_, &data);
-                setIntoVector(data_, row, data);
-            }
-            break;
+        // cases that require adjustments and buffer management
+    case eXStdString:
+        setIntoVector(data_, row, getTextParam(var));
+        break;
+    case eXStdTm:
+        {
+            std::tm data;
+            tmDecode(var->sqltype, buf_, &data);
+            setIntoVector(data_, row, data);
+        }
+        break;
 
-        default:
-            throw SOCIError("Into vector element used with non-supported type.");
+    default:
+        throw soci_error("Into vector element used with non-supported type.");
     } // switch
 
 }
 
-void FirebirdVectorIntoTypeBackEnd::postFetch(
+void firebird_vector_into_type_backend::postFetch(
     bool gotData, eIndicator * ind)
 {
     // Here we have to set indicators only. Data was exchanged with user
@@ -117,7 +118,7 @@ void FirebirdVectorIntoTypeBackEnd::postFetch(
         {
             if (statement_.inds_[position_][i] == eNull && !ind)
             {
-                throw SOCIError("Null value fetched and no indicator defined.");
+                throw soci_error("Null value fetched and no indicator defined.");
             }
             else if (ind != NULL)
             {
@@ -127,73 +128,73 @@ void FirebirdVectorIntoTypeBackEnd::postFetch(
     }
 }
 
-void FirebirdVectorIntoTypeBackEnd::resize(std::size_t sz)
+void firebird_vector_into_type_backend::resize(std::size_t sz)
 {
     switch (type_)
     {
-        case eXChar:
-            resizeVector<char> (data_, sz);
-            break;
-        case eXShort:
-            resizeVector<short> (data_, sz);
-            break;
-        case eXInteger:
-            resizeVector<int> (data_, sz);
-            break;
-        case eXUnsignedLong:
-            resizeVector<unsigned long>(data_, sz);
-            break;
-        case eXDouble:
-            resizeVector<double> (data_, sz);
-            break;
-        case eXStdString:
-            resizeVector<std::string> (data_, sz);
-            break;
-        case eXStdTm:
-            resizeVector<std::tm> (data_, sz);
-            break;
+    case eXChar:
+        resizeVector<char> (data_, sz);
+        break;
+    case eXShort:
+        resizeVector<short> (data_, sz);
+        break;
+    case eXInteger:
+        resizeVector<int> (data_, sz);
+        break;
+    case eXUnsignedLong:
+        resizeVector<unsigned long>(data_, sz);
+        break;
+    case eXDouble:
+        resizeVector<double> (data_, sz);
+        break;
+    case eXStdString:
+        resizeVector<std::string> (data_, sz);
+        break;
+    case eXStdTm:
+        resizeVector<std::tm> (data_, sz);
+        break;
 
-        default:
-            throw SOCIError("Into vector element used with non-supported type.");
+    default:
+        throw soci_error("Into vector element used with non-supported type.");
     }
 }
 
-std::size_t FirebirdVectorIntoTypeBackEnd::size()
+std::size_t firebird_vector_into_type_backend::size()
 {
     std::size_t sz = 0; // dummy initialization to please the compiler
     switch (type_)
     {
-            // simple cases
-        case eXChar:
-            sz = getVectorSize<char> (data_);
-            break;
-        case eXShort:
-            sz = getVectorSize<short> (data_);
-            break;
-        case eXInteger:
-            sz = getVectorSize<int> (data_);
-            break;
-        case eXUnsignedLong:
-            sz = getVectorSize<unsigned long>(data_);
-            break;
-        case eXDouble:
-            sz = getVectorSize<double> (data_);
-            break;
-        case eXStdString:
-            sz = getVectorSize<std::string> (data_);
-            break;
-        case eXStdTm:
-            sz = getVectorSize<std::tm> (data_);
-            break;
+        // simple cases
+    case eXChar:
+        sz = getVectorSize<char> (data_);
+        break;
+    case eXShort:
+        sz = getVectorSize<short> (data_);
+        break;
+    case eXInteger:
+        sz = getVectorSize<int> (data_);
+        break;
+    case eXUnsignedLong:
+        sz = getVectorSize<unsigned long>(data_);
+        break;
+    case eXDouble:
+        sz = getVectorSize<double> (data_);
+        break;
+    case eXStdString:
+        sz = getVectorSize<std::string> (data_);
+        break;
+    case eXStdTm:
+        sz = getVectorSize<std::tm> (data_);
+        break;
 
-        default:
-            throw SOCIError("Into vector element used with non-supported type.");
+    default:
+        throw soci_error("Into vector element used with non-supported type.");
     }
 
     return sz;
 }
 
-void FirebirdVectorIntoTypeBackEnd::cleanUp()
+void firebird_vector_into_type_backend::cleanUp()
 {
     if (buf_ != NULL)
     {

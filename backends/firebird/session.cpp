@@ -12,62 +12,63 @@
 #include <sstream>
 #include <string>
 
-using namespace SOCI;
-using namespace SOCI::details::Firebird;
+using namespace soci;
+using namespace soci::details::firebird;
 
 namespace
 {
+
 // retrieves parameters from the uniform connect string
-    void explodeISCConnectString(std::string const &connectString,
-                                 std::map<std::string, std::string> &parameters)
+void explodeISCConnectString(std::string const &connectString,
+    std::map<std::string, std::string> &parameters)
+{
+    std::string tmp;
+    for (std::string::const_iterator i = connectString.begin(),
+        end = connectString.end(); i != end; ++i)
     {
-        std::string tmp;
-        for (std::string::const_iterator i = connectString.begin(),
-                end = connectString.end(); i != end; ++i)
+        if (*i == '=')
         {
-            if (*i == '=')
-            {
-                tmp += ' ';
-            }
-            else
-            {
-                tmp += *i;
-            }
-        }
-
-        parameters.clear();
-
-        std::istringstream iss(tmp);
-        std::string key, value;
-        while (iss >> key >> value)
-        {
-            parameters.insert(std::pair<std::string, std::string>(key, value));
-        }
-    }
-
-// extracts given parameter from map previusly build with explodeISCConnectString
-    bool getISCConnectParameter(std::map<std::string, std::string> const & m, std::string const & key,
-                                std::string & value)
-    {
-        std::map <std::string, std::string> :: const_iterator i;
-        value.clear();
-
-        i = m.find(key);
-
-        if (i != m.end())
-        {
-            value = i->second;
-            return true;
+            tmp += ' ';
         }
         else
         {
-            return false;
+            tmp += *i;
         }
     }
 
+    parameters.clear();
+
+    std::istringstream iss(tmp);
+    std::string key, value;
+    while (iss >> key >> value)
+    {
+        parameters.insert(std::pair<std::string, std::string>(key, value));
+    }
+}
+
+// extracts given parameter from map previusly build with explodeISCConnectString
+bool getISCConnectParameter(std::map<std::string, std::string> const & m, std::string const & key,
+    std::string & value)
+{
+    std::map <std::string, std::string> :: const_iterator i;
+    value.clear();
+
+    i = m.find(key);
+
+    if (i != m.end())
+    {
+        value = i->second;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 } // namespace anonymous
 
-FirebirdSessionBackEnd::FirebirdSessionBackEnd(
+firebird_session_backend::firebird_session_backend(
     std::string const & connectString) : dbhp_(0), trhp_(0)
 {
     // extract connection parameters
@@ -91,12 +92,12 @@ FirebirdSessionBackEnd::FirebirdSessionBackEnd(
         setDPBOption(isc_dpb_lc_ctype, param);
 
     if (!getISCConnectParameter(params, "service", param))
-        throw SOCIError("Service name not specified.");
+        throw soci_error("Service name not specified.");
 
     // connecting data base
     if (isc_attach_database(stat, static_cast<short>(param.size()),
-                            const_cast<char*>(param.c_str()), &dbhp_,
-                            static_cast<short>(dpb_.size()), const_cast<char*>(dpb_.c_str())))
+        const_cast<char*>(param.c_str()), &dbhp_,
+        static_cast<short>(dpb_.size()), const_cast<char*>(dpb_.c_str())))
     {
         throwISCError(stat);
     }
@@ -106,7 +107,7 @@ FirebirdSessionBackEnd::FirebirdSessionBackEnd(
 }
 
 
-void FirebirdSessionBackEnd::begin()
+void firebird_session_backend::begin()
 {
     // Transaction is always started in ctor, because Firebird can't work
     // without active transaction.
@@ -121,12 +122,12 @@ void FirebirdSessionBackEnd::begin()
     }
 }
 
-FirebirdSessionBackEnd::~FirebirdSessionBackEnd()
+firebird_session_backend::~firebird_session_backend()
 {
     cleanUp();
 }
 
-void FirebirdSessionBackEnd::setDPBOption(int const option, std::string const & value)
+void firebird_session_backend::setDPBOption(int const option, std::string const & value)
 {
 
     if (dpb_.size() == 0)
@@ -140,7 +141,7 @@ void FirebirdSessionBackEnd::setDPBOption(int const option, std::string const & 
     dpb_.append(value);
 }
 
-void FirebirdSessionBackEnd::commit()
+void firebird_session_backend::commit()
 {
     ISC_STATUS stat[stat_size];
 
@@ -160,7 +161,7 @@ void FirebirdSessionBackEnd::commit()
 
 }
 
-void FirebirdSessionBackEnd::rollback()
+void firebird_session_backend::rollback()
 {
     ISC_STATUS stat[stat_size];
 
@@ -180,7 +181,7 @@ void FirebirdSessionBackEnd::rollback()
 
 }
 
-void FirebirdSessionBackEnd::cleanUp()
+void firebird_session_backend::cleanUp()
 {
     ISC_STATUS stat[stat_size];
 
@@ -203,19 +204,17 @@ void FirebirdSessionBackEnd::cleanUp()
     dbhp_ = 0L;
 }
 
-FirebirdStatementBackEnd * FirebirdSessionBackEnd::makeStatementBackEnd()
+firebird_statement_backend * firebird_session_backend::make_statement_backend()
 {
-    return new FirebirdStatementBackEnd(*this);
+    return new firebird_statement_backend(*this);
 }
 
-FirebirdRowIDBackEnd * FirebirdSessionBackEnd::makeRowIDBackEnd()
+firebird_rowid_backend * firebird_session_backend::make_rowid_backend()
 {
-    return new FirebirdRowIDBackEnd(*this);
+    return new firebird_rowid_backend(*this);
 }
 
-FirebirdBLOBBackEnd * FirebirdSessionBackEnd::makeBLOBBackEnd()
+firebird_blob_backend * firebird_session_backend::make_blob_backend()
 {
-    return new FirebirdBLOBBackEnd(*this);
+    return new firebird_blob_backend(*this);
 }
-
-

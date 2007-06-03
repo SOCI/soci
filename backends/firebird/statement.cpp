@@ -11,17 +11,17 @@
 #include <cctype>
 #include <sstream>
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::Firebird;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::firebird;
 
-FirebirdStatementBackEnd::FirebirdStatementBackEnd(FirebirdSessionBackEnd &session)
-        : session_(session), stmtp_(0), sqldap_(NULL), sqlda2p_(NULL), rowsFetched_(0),
-        intoType_(eStandard), useType_(eStandard), procedure_(false), boundByName_(false),
-		boundByPos_(false)
+firebird_statement_backend::firebird_statement_backend(firebird_session_backend &session)
+: session_(session), stmtp_(0), sqldap_(NULL), sqlda2p_(NULL), rowsFetched_(0),
+intoType_(eStandard), useType_(eStandard), procedure_(false), boundByName_(false),
+boundByPos_(false)
 {}
 
-void FirebirdStatementBackEnd::prepareSQLDA(XSQLDA ** sqldap, int size)
+void firebird_statement_backend::prepareSQLDA(XSQLDA ** sqldap, int size)
 {
     if (*sqldap != NULL)
     {
@@ -36,7 +36,7 @@ void FirebirdStatementBackEnd::prepareSQLDA(XSQLDA ** sqldap, int size)
     (*sqldap)->version = 1;
 }
 
-void FirebirdStatementBackEnd::alloc()
+void firebird_statement_backend::alloc()
 {
     ISC_STATUS stat[stat_size];
 
@@ -46,7 +46,7 @@ void FirebirdStatementBackEnd::alloc()
     }
 }
 
-void FirebirdStatementBackEnd::cleanUp()
+void firebird_statement_backend::cleanUp()
 {
     ISC_STATUS stat[stat_size];
 
@@ -72,7 +72,7 @@ void FirebirdStatementBackEnd::cleanUp()
     }
 }
 
-void FirebirdStatementBackEnd::rewriteParameters(
+void firebird_statement_backend::rewriteParameters(
     std::string const & src, std::vector<char> & dst)
 {
     std::vector<char>::iterator dst_it = dst.begin();
@@ -86,50 +86,50 @@ void FirebirdStatementBackEnd::rewriteParameters(
     int position = 0;
 
     for (std::string::const_iterator it = src.begin(), end = src.end();
-            it != end; ++it)
+        it != end; ++it)
     {
         switch (state)
         {
-            case eNormal:
-                if (*it == '\'')
-                {
-                    *dst_it++ = *it;
-                    state = eInQuotes;
-                }
-                else if (*it == ':')
-                {
-                    state = eInName;
-                }
-                else // regular character, stay in the same state
-                {
-                    *dst_it++ = *it;
-                }
-                break;
-            case eInQuotes:
-                if (*it == '\'')
-                {
-                    *dst_it++ = *it;
-                    state = eNormal;
-                }
-                else // regular quoted character
-                {
-                    *dst_it++ = *it;
-                }
-                break;
-            case eInName:
-                if (std::isalnum(*it) || *it == '_')
-                {
-                    name += *it;
-                }
-                else // end of name
-                {
-                    names_.insert(std::pair<std::string, int>(name, position++));
-                    name.clear();
-                    *dst_it++ = '?';
-                    *dst_it++ = *it;
-                    state = eNormal;
-                }
-                break;
+        case eNormal:
+            if (*it == '\'')
+            {
+                *dst_it++ = *it;
+                state = eInQuotes;
+            }
+            else if (*it == ':')
+            {
+                state = eInName;
+            }
+            else // regular character, stay in the same state
+            {
+                *dst_it++ = *it;
+            }
+            break;
+        case eInQuotes:
+            if (*it == '\'')
+            {
+                *dst_it++ = *it;
+                state = eNormal;
+            }
+            else // regular quoted character
+            {
+                *dst_it++ = *it;
+            }
+            break;
+        case eInName:
+            if (std::isalnum(*it) || *it == '_')
+            {
+                name += *it;
+            }
+            else // end of name
+            {
+                names_.insert(std::pair<std::string, int>(name, position++));
+                name.clear();
+                *dst_it++ = '?';
+                *dst_it++ = *it;
+                state = eNormal;
+            }
+            break;
         }
     }
 
@@ -154,7 +154,7 @@ namespace
         ISC_STATUS stat[stat_size];
 
         if (isc_dsql_sql_info(stat, &stmt, sizeof(type_item),
-                              type_item, sizeof(res_buffer), res_buffer))
+            type_item, sizeof(res_buffer), res_buffer))
         {
             throwISCError(stat);
         }
@@ -166,14 +166,14 @@ namespace
         }
         else
         {
-            throw SOCIError("Can't determine statement type.");
+            throw soci_error("Can't determine statement type.");
         }
 
         return statement_type;
     }
 }
 
-void FirebirdStatementBackEnd::rewriteQuery(
+void firebird_statement_backend::rewriteQuery(
     std::string const &query, std::vector<char> &buffer)
 {
     // buffer for temporary query
@@ -224,7 +224,7 @@ void FirebirdStatementBackEnd::rewriteQuery(
 
     // prepare temporary statement
     if (isc_dsql_prepare(stat, &(session_.trhp_), &tmpStmtp, 0,
-                         &tmpQuery[0], SQL_DIALECT_V6, sqldap_))
+        &tmpQuery[0], SQL_DIALECT_V6, sqldap_))
     {
         throwISCError(stat);
     }
@@ -283,8 +283,8 @@ void FirebirdStatementBackEnd::rewriteQuery(
     procedure_ = false;
 }
 
-void FirebirdStatementBackEnd::prepare(std::string const & query,
-                                       eStatementType /* eType */)
+void firebird_statement_backend::prepare(std::string const & query,
+                                         eStatementType /* eType */)
 {
     // clear named parametes
     names_.clear();
@@ -299,7 +299,7 @@ void FirebirdStatementBackEnd::prepare(std::string const & query,
 
     // prepare real statement
     if (isc_dsql_prepare(stat, &(session_.trhp_), &stmtp_, 0,
-                         &queryBuffer[0], SQL_DIALECT_V6, sqldap_))
+        &queryBuffer[0], SQL_DIALECT_V6, sqldap_))
     {
         throwISCError(stat);
     }
@@ -354,20 +354,20 @@ void FirebirdStatementBackEnd::prepare(std::string const & query,
 namespace
 {
     void checkSize(std::size_t actual, std::size_t expected,
-                   std::string const & name)
+        std::string const & name)
     {
         if (actual != expected)
         {
             std::ostringstream msg;
             msg << "Incorrect number of " << name << " variables. "
-            << "Expected " << expected << ", got " << actual;
-            throw SOCIError(msg.str());
+                << "Expected " << expected << ", got " << actual;
+            throw soci_error(msg.str());
         }
     }
 }
 
-StatementBackEnd::execFetchResult
-FirebirdStatementBackEnd::execute(int number)
+statement_backend::execFetchResult
+firebird_statement_backend::execute(int number)
 {
     ISC_STATUS stat[stat_size];
     XSQLDA *t = NULL;
@@ -388,7 +388,7 @@ FirebirdStatementBackEnd::execute(int number)
         {
             for (std::size_t col=0; col<usize; ++col)
             {
-                static_cast<FirebirdStandardUseTypeBackEnd*>(uses_[col])->exchangeData();
+                static_cast<firebird_standard_use_type_backend*>(uses_[col])->exchangeData();
             }
         }
     }
@@ -407,13 +407,13 @@ FirebirdStatementBackEnd::execute(int number)
     {
         // Here we have to explicitly loop to achieve the
         // effect of inserting or updating with vector use elements.
-        std::size_t rows = static_cast<FirebirdVectorUseTypeBackEnd*>(uses_[0])->size();
+        std::size_t rows = static_cast<firebird_vector_use_type_backend*>(uses_[0])->size();
         for (std::size_t row=0; row < rows; ++row)
         {
             // first we have to prepare input parameters
             for (std::size_t col=0; col<usize; ++col)
             {
-                static_cast<FirebirdVectorUseTypeBackEnd*>(uses_[col])->exchangeData(row);
+                static_cast<firebird_vector_use_type_backend*>(uses_[col])->exchangeData(row);
             }
 
             // then execute query
@@ -422,7 +422,7 @@ FirebirdStatementBackEnd::execute(int number)
                 throwISCError(stat);
             }
 
-            // SOCI does not allow bulk insert/update and bulk select operations
+            // soci does not allow bulk insert/update and bulk select operations
             // in same query. So here, we know that into elements are not
             // vectors. So, there is no need to fetch data here.
         }
@@ -457,8 +457,8 @@ FirebirdStatementBackEnd::execute(int number)
     }
 }
 
-StatementBackEnd::execFetchResult
-FirebirdStatementBackEnd::fetch(int number)
+statement_backend::execFetchResult
+firebird_statement_backend::fetch(int number)
 {
     ISC_STATUS stat[stat_size];
 
@@ -497,7 +497,7 @@ FirebirdStatementBackEnd::fetch(int number)
 }
 
 // here we put data fetched from database into user buffers
-void FirebirdStatementBackEnd::exchangeData(bool gotData, int row)
+void firebird_statement_backend::exchangeData(bool gotData, int row)
 {
     // first save indicators
     for (size_t i = 0; i < static_cast<unsigned int>(sqldap_->sqld); ++i)
@@ -523,7 +523,7 @@ void FirebirdStatementBackEnd::exchangeData(bool gotData, int row)
             }
             else
             {
-                throw SOCIError("Unknown state in FirebirdStatementBackEnd::exchangeData()");
+                throw soci_error("Unknown state in firebird_statement_backend::exchangeData()");
             }
         }
     }
@@ -537,12 +537,12 @@ void FirebirdStatementBackEnd::exchangeData(bool gotData, int row)
             {
                 if (intoType_ == eVector)
                 {
-                    static_cast<FirebirdVectorIntoTypeBackEnd*>(
+                    static_cast<firebird_vector_into_type_backend*>(
                         intos_[i])->exchangeData(row);
                 }
                 else
                 {
-                    static_cast<FirebirdStandardIntoTypeBackEnd*>(
+                    static_cast<firebird_vector_into_type_backend*>(
                         intos_[i])->exchangeData();
                 }
             }
@@ -550,25 +550,25 @@ void FirebirdStatementBackEnd::exchangeData(bool gotData, int row)
     }
 }
 
-int FirebirdStatementBackEnd::getNumberOfRows()
+int firebird_statement_backend::getNumberOfRows()
 {
     return rowsFetched_;
 }
 
-std::string FirebirdStatementBackEnd::rewriteForProcedureCall(
+std::string firebird_statement_backend::rewriteForProcedureCall(
     std::string const &query)
 {
     procedure_ = true;
     return query;
 }
 
-int FirebirdStatementBackEnd::prepareForDescribe()
+int firebird_statement_backend::prepareForDescribe()
 {
     return static_cast<int>(sqldap_->sqld);
 }
 
-void FirebirdStatementBackEnd::describeColumn(int colNum,
-        eDataType & type, std::string & columnName)
+void firebird_statement_backend::describeColumn(int colNum,
+                                                eDataType & type, std::string & columnName)
 {
     XSQLVAR * var = sqldap_->sqlvar+(colNum-1);
 
@@ -576,71 +576,71 @@ void FirebirdStatementBackEnd::describeColumn(int colNum,
 
     switch (var->sqltype & ~1)
     {
-        case SQL_TEXT:
-        case SQL_VARYING:
-            type = eString;
-            break;
-        case SQL_TYPE_DATE:
-        case SQL_TYPE_TIME:
-        case SQL_TIMESTAMP:
-            type = eDate;
-            break;
-        case SQL_FLOAT:
-        case SQL_DOUBLE:
+    case SQL_TEXT:
+    case SQL_VARYING:
+        type = eString;
+        break;
+    case SQL_TYPE_DATE:
+    case SQL_TYPE_TIME:
+    case SQL_TIMESTAMP:
+        type = eDate;
+        break;
+    case SQL_FLOAT:
+    case SQL_DOUBLE:
+        type = eDouble;
+        break;
+    case SQL_SHORT:
+    case SQL_LONG:
+        if (var->sqlscale < 0)
+        {
             type = eDouble;
-            break;
-        case SQL_SHORT:
-        case SQL_LONG:
-            if (var->sqlscale < 0)
-            {
-                type = eDouble;
-            }
-            else
-            {
-                type = eInteger;
-            }
-            break;
-        case SQL_INT64:
-            if (var->sqlscale < 0)
-            {
-                type = eDouble;
-            }
-            else
-            {
-                // 64bit integers are not supported
-                std::ostringstream msg;
-                msg << "Type of column ["<< colNum << "] \"" << columnName
-                << "\" is not supported for dynamic queries";
-                throw SOCIError(msg.str());
-            }
-            break;
-            /* case SQL_BLOB:
-            case SQL_ARRAY:*/
-        default:
+        }
+        else
+        {
+            type = eInteger;
+        }
+        break;
+    case SQL_INT64:
+        if (var->sqlscale < 0)
+        {
+            type = eDouble;
+        }
+        else
+        {
+            // 64bit integers are not supported
             std::ostringstream msg;
             msg << "Type of column ["<< colNum << "] \"" << columnName
+                << "\" is not supported for dynamic queries";
+            throw soci_error(msg.str());
+        }
+        break;
+        /* case SQL_BLOB:
+        case SQL_ARRAY:*/
+    default:
+        std::ostringstream msg;
+        msg << "Type of column ["<< colNum << "] \"" << columnName
             << "\" is not supported for dynamic queries";
-            throw SOCIError(msg.str());
-            break;
+        throw soci_error(msg.str());
+        break;
     }
 }
 
-FirebirdStandardIntoTypeBackEnd * FirebirdStatementBackEnd::makeIntoTypeBackEnd()
+firebird_vector_into_type_backend * firebird_statement_backend::makeIntoTypeBackEnd()
 {
-    return new FirebirdStandardIntoTypeBackEnd(*this);
+    return new firebird_vector_into_type_backend(*this);
 }
 
-FirebirdStandardUseTypeBackEnd * FirebirdStatementBackEnd::makeUseTypeBackEnd()
+FirebirdStandardUseTypeBackEnd * firebird_statement_backend::makeUseTypeBackEnd()
 {
     return new FirebirdStandardUseTypeBackEnd(*this);
 }
 
-FirebirdVectorIntoTypeBackEnd * FirebirdStatementBackEnd::makeVectorIntoTypeBackEnd()
+FirebirdVectorIntoTypeBackEnd * firebird_statement_backend::makeVectorIntoTypeBackEnd()
 {
     return new FirebirdVectorIntoTypeBackEnd(*this);
 }
 
-FirebirdVectorUseTypeBackEnd * FirebirdStatementBackEnd::makeVectorUseTypeBackEnd()
+firebird_vector_use_type_backend * firebird_statement_backend::makeVectorUseTypeBackEnd()
 {
-    return new FirebirdVectorUseTypeBackEnd(*this);
+    return new firebird_vector_use_type_backend(*this);
 }

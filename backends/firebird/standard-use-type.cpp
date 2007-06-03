@@ -10,16 +10,16 @@
 #include "common.h"
 #include <soci.h>
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::Firebird;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::firebird;
 
-void FirebirdStandardUseTypeBackEnd::bindByPos(
+void firebird_standard_use_type_backend::bindByPos(
     int & position, void * data, eExchangeType type)
 {
     if (statement_.boundByName_)
     {
-        throw SOCIError(
+        throw soci_error(
          "Binding for use elements must be either by position or by name.");
     }
 
@@ -41,13 +41,13 @@ void FirebirdStandardUseTypeBackEnd::bindByPos(
 	statement_.boundByPos_ = true;
 }
 
-void FirebirdStandardUseTypeBackEnd::bindByName(
+void firebird_standard_use_type_backend::bindByName(
     std::string const & name, void * data,
     eExchangeType type)
 {
     if (statement_.boundByPos_)
     {
-        throw SOCIError(
+        throw soci_error(
          "Binding for use elements must be either by position or by name.");
     }
 
@@ -56,7 +56,7 @@ void FirebirdStandardUseTypeBackEnd::bindByName(
 
     if (idx == statement_.names_.end())
     {
-        throw SOCIError("Missing use element for bind by name (" + name + ")");
+        throw soci_error("Missing use element for bind by name (" + name + ")");
     }
 
     position_ = idx->second;
@@ -75,7 +75,7 @@ void FirebirdStandardUseTypeBackEnd::bindByName(
 	statement_.boundByName_ = true;
 }
 
-void FirebirdStandardUseTypeBackEnd::preUse(eIndicator const * ind)
+void firebird_standard_use_type_backend::preUse(eIndicator const * ind)
 {
     if (ind)
     {
@@ -88,12 +88,12 @@ void FirebirdStandardUseTypeBackEnd::preUse(eIndicator const * ind)
                 indISCHolder_ =  0;
                 break;
             default:
-                throw SOCIError("Unsupported indicator value.");
+                throw soci_error("Unsupported indicator value.");
         }
     }
 }
 
-void FirebirdStandardUseTypeBackEnd::exchangeData()
+void firebird_standard_use_type_backend::exchangeData()
 {
     XSQLVAR *var = statement_.sqlda2p_->sqlvar+position_;
 
@@ -151,7 +151,7 @@ void FirebirdStandardUseTypeBackEnd::exchangeData()
 
                 if (blob==0)
                 {
-                    throw SOCIError("Can't get Firebid BLOB BackEnd");
+                    throw soci_error("Can't get Firebid BLOB BackEnd");
                 }
 
                 blob->save();
@@ -159,17 +159,17 @@ void FirebirdStandardUseTypeBackEnd::exchangeData()
             }
             break;
         default:
-            throw SOCIError("Use element used with non-supported type.");
+            throw soci_error("Use element used with non-supported type.");
     } // switch
 }
 
-void FirebirdStandardUseTypeBackEnd::postUse(
+void firebird_standard_use_type_backend::postUse(
     bool /* gotData */, eIndicator * /* ind */)
 {
     // ...
 }
 
-void FirebirdStandardUseTypeBackEnd::cleanUp()
+void firebird_standard_use_type_backend::cleanUp()
 {
     if (buf_ != NULL)
     {

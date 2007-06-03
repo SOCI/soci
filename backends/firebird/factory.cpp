@@ -10,10 +10,10 @@
 
 using namespace SOCI;
 
-FirebirdSessionBackEnd * FirebirdBackEndFactory::makeSession(
+firebird_session_backend * firebird_backend_factory::make_session(
     std::string const &connectString) const
 {
-    return new FirebirdSessionBackEnd(connectString);
+    return new firebird_session_backend(connectString);
 }
 
-FirebirdBackEndFactory const SOCI::firebird;
+firebird_backend_factory const soci::firebird;

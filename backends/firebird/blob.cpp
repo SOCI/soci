@@ -9,20 +9,20 @@
 #include "soci-firebird.h"
 #include "error.h"
 
-using namespace SOCI;
-using namespace SOCI::details::Firebird;
+using namespace soci;
+using namespace soci::details::firebird;
 
-FirebirdBLOBBackEnd::FirebirdBLOBBackEnd(FirebirdSessionBackEnd &session)
+firebird_blob_backend::firebird_blob_backend(firebird_session_backend &session)
         : session_(session), from_db_(false), bhp_(0), loaded_(false),
         max_seg_size_(0)
 {}
 
-FirebirdBLOBBackEnd::~FirebirdBLOBBackEnd()
+firebird_blob_backend::~firebird_blob_backend()
 {
     cleanUp();
 }
 
-std::size_t FirebirdBLOBBackEnd::getLen()
+std::size_t firebird_blob_backend::getLen()
 {
     if (from_db_ && bhp_ == 0)
     {
@@ -32,7 +32,7 @@ std::size_t FirebirdBLOBBackEnd::getLen()
     return data_.size();
 }
 
-std::size_t FirebirdBLOBBackEnd::read(
+std::size_t firebird_blob_backend::read(
     std::size_t offset, char * buf, std::size_t toRead)
 {
     if (from_db_ && !loaded_)
@@ -45,7 +45,7 @@ std::size_t FirebirdBLOBBackEnd::read(
 
     if (offset > size)
     {
-        throw SOCIError("Can't read past-the-end of BLOB data");
+        throw soci_error("Can't read past-the-end of BLOB data");
     }
 
     char * itr = buf;
@@ -62,7 +62,7 @@ std::size_t FirebirdBLOBBackEnd::read(
     return limit;
 }
 
-std::size_t FirebirdBLOBBackEnd::write(std::size_t offset, char const * buf,
+std::size_t firebird_blob_backend::write(std::size_t offset, char const * buf,
                                        std::size_t toWrite)
 {
     if (from_db_ && !loaded_)
@@ -75,7 +75,7 @@ std::size_t FirebirdBLOBBackEnd::write(std::size_t offset, char const * buf,
 
     if (offset > size)
     {
-        throw SOCIError("Can't write past-the-end of BLOB data");
+        throw soci_error("Can't write past-the-end of BLOB data");
     }
 
     // make sure there is enough space in buffer
@@ -89,7 +89,7 @@ std::size_t FirebirdBLOBBackEnd::write(std::size_t offset, char const * buf,
     return toWrite;
 }
 
-std::size_t FirebirdBLOBBackEnd::append(
+std::size_t firebird_blob_backend::append(
     char const * buf, std::size_t toWrite)
 {
     if (from_db_ && !loaded_)
@@ -106,7 +106,7 @@ std::size_t FirebirdBLOBBackEnd::append(
     return toWrite;
 }
 
-void FirebirdBLOBBackEnd::trim(std::size_t newLen)
+void firebird_blob_backend::trim(std::size_t newLen)
 {
     if (from_db_ && !loaded_)
     {
@@ -117,7 +117,7 @@ void FirebirdBLOBBackEnd::trim(std::size_t newLen)
     data_.resize(newLen);
 }
 
-void FirebirdBLOBBackEnd::writeBuffer(std::size_t offset,
+void firebird_blob_backend::writeBuffer(std::size_t offset,
                                       char const * buf, std::size_t toWrite)
 {
     char const * itr = buf;
@@ -129,7 +129,7 @@ void FirebirdBLOBBackEnd::writeBuffer(std::size_t offset,
     }
 }
 
-void FirebirdBLOBBackEnd::open()
+void firebird_blob_backend::open()
 {
     if (bhp_ != 0)
     {
@@ -152,7 +152,7 @@ void FirebirdBLOBBackEnd::open()
     data_.resize(blob_size);
 }
 
-void FirebirdBLOBBackEnd::cleanUp()
+void firebird_blob_backend::cleanUp()
 {
     from_db_ = false;
     loaded_ = false;
@@ -172,7 +172,7 @@ void FirebirdBLOBBackEnd::cleanUp()
 }
 
 // loads blob data into internal buffer
-void FirebirdBLOBBackEnd::load()
+void firebird_blob_backend::load()
 {
     if (bhp_ == 0)
     {
@@ -224,7 +224,7 @@ void FirebirdBLOBBackEnd::load()
 // this method saves BLOB content to database
 // (a new BLOB will be created at this point)
 // BLOB will be closed after save.
-void FirebirdBLOBBackEnd::save()
+void firebird_blob_backend::save()
 {
     // close old blob if necessary
     ISC_STATUS stat[20];
@@ -260,7 +260,7 @@ void FirebirdBLOBBackEnd::save()
 
 // retrives number of segments and total length of BLOB
 // returns total length of BLOB
-long FirebirdBLOBBackEnd::getBLOBInfo()
+long firebird_blob_backend::getBLOBInfo()
 {
     char blob_items[] = {isc_info_blob_max_segment, isc_info_blob_total_length};
     char res_buffer[20], *p, item;
@@ -289,7 +289,7 @@ long FirebirdBLOBBackEnd::getBLOBInfo()
                 total_length = isc_vax_integer(p, length);
                 break;
             case isc_info_truncated:
-                throw SOCIError("Fatal Error: BLOB info truncated!");
+                throw soci_error("Fatal Error: BLOB info truncated!");
                 break;
             default:
                 break;

@@ -9,76 +9,73 @@
 #include "soci-firebird.h"
 #include "error.h"
 
-namespace SOCI
+#include <cstdlib>
+#include <string>
+
+namespace soci
 {
 
-    FirebirdSOCIError::FirebirdSOCIError(std::string const & msg, ISC_STATUS const * status)
-            : SOCIError(msg)
+firebird_soci_error::firebird_soci_error(std::string const & msg, ISC_STATUS const * status)
+    : soci_error(msg)
+{
+    if (status != 0)
     {
-        if (status != 0)
+        std::size_t i = 0;
+        while (i < stat_size && status[i] != 0)
         {
-            std::size_t i = 0;
-            while (i < stat_size && status[i] != 0)
-            {
-                status_.push_back(status[i++]);
-            }
+            status_.push_back(status[i++]);
         }
     }
+}
 
-    namespace details
+namespace details { namespace firebird {
+
+void getISCErrorDetails(ISC_STATUS * status_vector, std::string &msg)
+{
+    char msg_buffer[SOCI_FIREBIRD_ERRMSG];
+    long *pvector = status_vector;
+
+    try
     {
+        // fetching first error message
+        isc_interprete(msg_buffer, &pvector);
+        msg = msg_buffer;
 
-        namespace Firebird
+        // fetching next errors
+        while (isc_interprete(msg_buffer, &pvector))
         {
+            msg += "\n";
+            msg += msg_buffer;
+        }
+    }
+    catch (...)
+    {
+        throw firebird_soci_error("Exception catched while fetching error information");
+    }
+}
 
-            void getISCErrorDetails(ISC_STATUS * status_vector, std::string &msg)
-            {
-                char msg_buffer[SOCI_FIREBIRD_ERRMSG];
-                long *pvector = status_vector;
+bool checkISCError(ISC_STATUS const * status_vector, long errNum)
+{
+    std::size_t i=0;
+    while (status_vector[i] != 0)
+    {
+        if (status_vector[i] == 1 && status_vector[i+1] == errNum)
+        {
+            return true;
+        }
+        ++i;
+    }
 
-                try
-                {
-                    // fetching first error message
-                    isc_interprete(msg_buffer, &pvector);
-                    msg = msg_buffer;
+    return false;
+}
+void throwISCError(ISC_STATUS * status_vector)
+{
+    std::string msg;
 
-                    // fetching next errors
-                    while (isc_interprete(msg_buffer, &pvector))
-                    {
-                        msg += "\n";
-                        msg += msg_buffer;
-                    }
-                }
-                catch (...)
-                {
-                    throw SOCIError("Exception catched while fetching error information");
-                }
-            }
+    getISCErrorDetails(status_vector, msg);
+    throw firebird_soci_error(msg, status_vector);
+}
 
-            bool checkISCError(ISC_STATUS const * status_vector, long errNum)
-            {
-                std::size_t i=0;
-                while (status_vector[i] != 0)
-                {
-                    if (status_vector[i] == 1 && status_vector[i+1] == errNum)
-                    {
-                        return true;
-                    }
-                    ++i;
-                }
+}} // namespace firebird::details
 
-                return false;
-            }
-            void throwISCError(ISC_STATUS * status_vector)
-            {
-                std::string msg;
-
-                getISCErrorDetails(status_vector, msg);
-                throw FirebirdSOCIError(msg, status_vector);
-            }
-
-        } // namespace Firebird
-
-    } // namespace details
-
-} // namespace SOCI
+} // namespace soci

@@ -9,20 +9,24 @@
 #include "soci-firebird.h"
 #include "common.h"
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::Firebird;
+#include <cstdlib>
+#include <ctime>
+#include <string>
 
-void FirebirdVectorUseTypeBackEnd::bindByPos(int & position,
-        void * data, eExchangeType type)
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::firebird;
+
+void firebird_vector_use_type_backend::bindByPos(int & position,
+                                                 void * data, eExchangeType type)
 {
     if (statement_.boundByName_)
     {
-        throw SOCIError(
-         "Binding for use elements must be either by position or by name.");
+        throw soci_error(
+            "Binding for use elements must be either by position or by name.");
     }
 
-	position_ = position-1;
+    position_ = position-1;
     data_ = data;
     type_ = type;
 
@@ -37,24 +41,24 @@ void FirebirdVectorUseTypeBackEnd::bindByPos(int & position,
     var->sqldata = buf_;
     var->sqlind = &indISCHolder_;
 
-	statement_.boundByPos_ = true;
+    statement_.boundByPos_ = true;
 }
 
-void FirebirdVectorUseTypeBackEnd::bindByName(
+void firebird_vector_use_type_backend::bindByName(
     std::string const & name, void * data, eExchangeType type)
 {
     if (statement_.boundByPos_)
     {
-        throw SOCIError(
-         "Binding for use elements must be either by position or by name.");
+        throw soci_error(
+            "Binding for use elements must be either by position or by name.");
     }
 
-	std::map <std::string, int> :: iterator idx =
+    std::map <std::string, int> :: iterator idx =
         statement_.names_.find(name);
 
     if (idx == statement_.names_.end())
     {
-        throw SOCIError("Missing use element for bind by name (" + name + ")");
+        throw soci_error("Missing use element for bind by name (" + name + ")");
     }
 
     position_ = idx->second;
@@ -70,42 +74,42 @@ void FirebirdVectorUseTypeBackEnd::bindByName(
     var->sqldata = buf_;
     var->sqlind = &indISCHolder_;
 
-	statement_.boundByName_ = true;
+    statement_.boundByName_ = true;
 }
 
-void FirebirdVectorUseTypeBackEnd::preUse(eIndicator const * ind)
+void firebird_vector_use_type_backend::preUse(eIndicator const * ind)
 {
     inds_ = ind;
 }
 
 namespace
 {
-    template <typename T>
-    T* getUseVectorValue(void *v, std::size_t index)
-    {
-        std::vector<T> *src =
-            static_cast<std::vector<T> *>(v);
+template <typename T>
+T* getUseVectorValue(void *v, std::size_t index)
+{
+    std::vector<T> *src =
+        static_cast<std::vector<T> *>(v);
 
-        std::vector<T> &v_ = *src;
-        return &(v_[index]);
-    }
+    std::vector<T> &v_ = *src;
+    return &(v_[index]);
+}
 }
 
-void FirebirdVectorUseTypeBackEnd::exchangeData(std::size_t row)
+void firebird_vector_use_type_backend::exchangeData(std::size_t row)
 {
     // first prepare indicators
     if (inds_ != NULL)
     {
         switch (inds_[row])
         {
-            case eNull:
-                indISCHolder_ = -1;
-                break;
-            case eOK:
-                indISCHolder_ = 0;
-                break;
-            default:
-                throw SOCIError("Use element used with non-supported indicator type.");
+        case eNull:
+            indISCHolder_ = -1;
+            break;
+        case eOK:
+            indISCHolder_ = 0;
+            break;
+        default:
+            throw soci_error("Use element used with non-supported indicator type.");
         }
     }
 
@@ -114,86 +118,86 @@ void FirebirdVectorUseTypeBackEnd::exchangeData(std::size_t row)
     // then set parameters for query execution
     switch (type_)
     {
-            // simple cases
-        case eXChar:
-            setTextParam(getUseVectorValue<char>(data_, row), 1, buf_, var);
-            break;
-        case eXShort:
-            to_isc<short>(
-                static_cast<void*>(getUseVectorValue<short>(data_, row)),
-                var);
-            break;
-        case eXInteger:
-            to_isc<int>(
-                static_cast<void*>(getUseVectorValue<int>(data_, row)),
-                var);
-            break;
-        case eXUnsignedLong:
-            to_isc<unsigned long>(
-                static_cast<void*>(getUseVectorValue<unsigned long>(data_, row)),
-                var);
-            break;
-        case eXDouble:
-            to_isc<double>(
-                static_cast<void*>(getUseVectorValue<double>(data_, row)),
-                var);
-            break;
+        // simple cases
+    case eXChar:
+        setTextParam(getUseVectorValue<char>(data_, row), 1, buf_, var);
+        break;
+    case eXShort:
+        to_isc<short>(
+            static_cast<void*>(getUseVectorValue<short>(data_, row)),
+            var);
+        break;
+    case eXInteger:
+        to_isc<int>(
+            static_cast<void*>(getUseVectorValue<int>(data_, row)),
+            var);
+        break;
+    case eXUnsignedLong:
+        to_isc<unsigned long>(
+            static_cast<void*>(getUseVectorValue<unsigned long>(data_, row)),
+            var);
+        break;
+    case eXDouble:
+        to_isc<double>(
+            static_cast<void*>(getUseVectorValue<double>(data_, row)),
+            var);
+        break;
 
-            // cases that require adjustments and buffer management
-        case eXStdString:
-            {
-                std::string *tmp = getUseVectorValue<std::string>(data_, row);
-                setTextParam(tmp->c_str(), tmp->size(), buf_, var);
-            }
-            break;
-        case eXStdTm:
-            tmEncode(var->sqltype,
-                     getUseVectorValue<std::tm>(data_, row), buf_);
-            break;
-//  Not supported
-//  case eXCString:
-//  case eXBLOB:
-        default:
-            throw SOCIError("Use element used with non-supported type.");
+        // cases that require adjustments and buffer management
+    case eXStdString:
+        {
+            std::string *tmp = getUseVectorValue<std::string>(data_, row);
+            setTextParam(tmp->c_str(), tmp->size(), buf_, var);
+        }
+        break;
+    case eXStdTm:
+        tmEncode(var->sqltype,
+            getUseVectorValue<std::tm>(data_, row), buf_);
+        break;
+        //  Not supported
+        //  case eXCString:
+        //  case eXBLOB:
+    default:
+        throw soci_error("Use element used with non-supported type.");
     } // switch
 }
 
-std::size_t FirebirdVectorUseTypeBackEnd::size()
+std::size_t firebird_vector_use_type_backend::size()
 {
     std::size_t sz = 0; // dummy initialization to please the compiler
     switch (type_)
     {
-            // simple cases
-        case eXChar:
-            sz = getVectorSize<char> (data_);
-            break;
-        case eXShort:
-            sz = getVectorSize<short> (data_);
-            break;
-        case eXInteger:
-            sz = getVectorSize<int> (data_);
-            break;
-        case eXUnsignedLong:
-            sz = getVectorSize<unsigned long>(data_);
-            break;
-        case eXDouble:
-            sz = getVectorSize<double> (data_);
-            break;
-        case eXStdString:
-            sz = getVectorSize<std::string> (data_);
-            break;
-        case eXStdTm:
-            sz = getVectorSize<std::tm> (data_);
-            break;
+        // simple cases
+    case eXChar:
+        sz = getVectorSize<char> (data_);
+        break;
+    case eXShort:
+        sz = getVectorSize<short> (data_);
+        break;
+    case eXInteger:
+        sz = getVectorSize<int> (data_);
+        break;
+    case eXUnsignedLong:
+        sz = getVectorSize<unsigned long>(data_);
+        break;
+    case eXDouble:
+        sz = getVectorSize<double> (data_);
+        break;
+    case eXStdString:
+        sz = getVectorSize<std::string> (data_);
+        break;
+    case eXStdTm:
+        sz = getVectorSize<std::tm> (data_);
+        break;
 
-        default:
-            throw SOCIError("Use vector element used with non-supported type.");
+    default:
+        throw soci_error("Use vector element used with non-supported type.");
     }
 
     return sz;
 }
 
-void FirebirdVectorUseTypeBackEnd::cleanUp()
+void firebird_vector_use_type_backend::cleanUp()
 {
     if (buf_ != NULL)
     {

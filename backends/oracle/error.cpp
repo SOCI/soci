@@ -5,7 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define soci_ORACLE_SOURCE
+#define SOCI_ORACLE_SOURCE
 #include "soci-oracle.h"
 #include "error.h"
 #include <soci.h>
@@ -19,7 +19,6 @@
 using namespace soci;
 using namespace soci::details;
 using namespace soci::details::oracle;
-
 
 oracle_soci_error::oracle_soci_error(std::string const & msg, int errNum)
     : soci_error(msg), errNum_(errNum)
@@ -60,6 +59,3 @@ void soci::details::oracle::throw_oracle_soci_error(sword res, OCIError *errhp)
     get_error_details(res, errhp, msg, errNum);
     throw oracle_soci_error(msg, errNum);
 }
-
-
-

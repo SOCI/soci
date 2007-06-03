@@ -9,27 +9,22 @@
 #define FIREBIRD_ERROR_H_INCLUDED
 
 #include "soci-firebird.h"
+#include <string>
 
-namespace SOCI
+namespace soci
 {
 
-    namespace details
-    {
+namespace details { namespace firebird {
 
-        namespace Firebird
-        {
+void SOCI_FIREBIRD_DECL getISCErrorDetails(ISC_STATUS * status_vector, std::string &msg);
 
-            void SOCI_FIREBIRD_DECL getISCErrorDetails(ISC_STATUS * status_vector, std::string &msg);
+bool SOCI_FIREBIRD_DECL checkISCError(ISC_STATUS const * status_vector, long errNum);
 
-            bool SOCI_FIREBIRD_DECL checkISCError(ISC_STATUS const * status_vector, long errNum);
+void SOCI_FIREBIRD_DECL throwISCError(ISC_STATUS * status_vector);
 
-            void SOCI_FIREBIRD_DECL throwISCError(ISC_STATUS * status_vector);
+}} // namespace firebird::details
 
-        } // namespace Firebird
-
-    } // namespace details
-
-} // namespace SOCI
+} // namespace soci
 
 #endif // FIREBIRD_ERROR_H_INCLUDED
 

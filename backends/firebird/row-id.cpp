@@ -8,16 +8,16 @@
 #define SOCI_FIREBIRD_SOURCE
 #include "soci-firebird.h"
 
-using namespace SOCI;
+using namespace soci;
 
-FirebirdRowIDBackEnd::FirebirdRowIDBackEnd(FirebirdSessionBackEnd & /* session */)
+firebird_rowid_backend::firebird_rowid_backend(firebird_session_backend & /* session */)
 {
     // Unsupported in Firebird backend
-    throw SOCIError("RowIDs are not supported");
+    throw soci_error("RowIDs are not supported");
 }
 
-FirebirdRowIDBackEnd::~FirebirdRowIDBackEnd()
+firebird_rowid_backend::~firebird_rowid_backend()
 {
     // Unsupported in Firebird backend
-    throw SOCIError("RowIDs are not supported");
+    throw soci_error("RowIDs are not supported");
 }

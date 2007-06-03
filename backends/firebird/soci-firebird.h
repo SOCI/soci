@@ -26,299 +26,299 @@
 
 #include <soci-backend.h>
 #include <ibase.h> // FireBird
+#include <cstdlib>
 #include <vector>
+#include <string>
 
-namespace SOCI
+namespace soci
 {
 
-    std::size_t const stat_size = 20;
+std::size_t const stat_size = 20;
 
 // size of buffer for error messages. All examples use this value.
 // Anyone knows, where it is stated that 512 bytes is enough ?
-    std::size_t const SOCI_FIREBIRD_ERRMSG = 512;
+std::size_t const SOCI_FIREBIRD_ERRMSG = 512;
 
-    class SOCI_FIREBIRD_DECL FirebirdSOCIError : public SOCIError
-    {
-        public:
-            FirebirdSOCIError(std::string const & msg,
-                              ISC_STATUS const * status = 0);
+class SOCI_FIREBIRD_DECL firebird_soci_error : public soci_error
+{
+public:
+    firebird_soci_error(std::string const & msg,
+        ISC_STATUS const * status = 0);
 
-            ~FirebirdSOCIError() throw()
-            {};
+    ~firebird_soci_error() throw() {};
 
-            std::vector<ISC_STATUS> status_;
-    };
+    std::vector<ISC_STATUS> status_;
+};
 
+enum BuffersType
+{
+    eStandard, eVector
+};
 
-    enum BuffersType
-    {
-        eStandard, eVector
-    };
+struct firebird_statement_backend;
+struct firebird_standard_into_type_backend : details::standard_into_type_backend
+{
+    firebird_standard_into_type_backend(firebird_statement_backend &st)
+        : statement_(st), buf_(NULL)
+    {}
 
-    struct FirebirdStatementBackEnd;
-    struct FirebirdStandardIntoTypeBackEnd : details::StandardIntoTypeBackEnd
-    {
-        FirebirdStandardIntoTypeBackEnd(FirebirdStatementBackEnd &st)
-                : statement_(st), buf_(NULL)
-        {}
+    virtual void defineByPos(int &position,
+        void *data, details::eExchangeType type);
 
-        virtual void defineByPos(int &position,
-                                 void *data, details::eExchangeType type);
+    virtual void preFetch();
+    virtual void postFetch(bool gotData, bool calledFromFetch,
+        eIndicator *ind);
 
-        virtual void preFetch();
-        virtual void postFetch(bool gotData, bool calledFromFetch,
-                               eIndicator *ind);
+    virtual void cleanUp();
 
-        virtual void cleanUp();
+    firebird_statement_backend &statement_;
+    virtual void exchangeData();
 
-        FirebirdStatementBackEnd &statement_;
-        virtual void exchangeData();
+    void *data_;
+    details::eExchangeType type_;
+    int position_;
 
-        void *data_;
-        details::eExchangeType type_;
-        int position_;
+    char *buf_;
+    short indISCHolder_;
+};
 
-        char *buf_;
-        short indISCHolder_;
-    };
+struct firebird_vector_into_type_backend : details::vector_into_type_backend
+{
+    firebird_vector_into_type_backend(firebird_statement_backend &st)
+        : statement_(st), buf_(NULL)
+    {}
 
-    struct FirebirdVectorIntoTypeBackEnd : details::VectorIntoTypeBackEnd
-    {
-        FirebirdVectorIntoTypeBackEnd(FirebirdStatementBackEnd &st)
-                : statement_(st), buf_(NULL)
-        {}
+    virtual void defineByPos(int &position,
+        void *data, details::eExchangeType type);
 
-        virtual void defineByPos(int &position,
-                                 void *data, details::eExchangeType type);
+    virtual void preFetch();
+    virtual void postFetch(bool gotData, eIndicator *ind);
 
-        virtual void preFetch();
-        virtual void postFetch(bool gotData, eIndicator *ind);
+    virtual void resize(std::size_t sz);
+    virtual std::size_t size();
 
-        virtual void resize(std::size_t sz);
-        virtual std::size_t size();
+    virtual void cleanUp();
 
-        virtual void cleanUp();
+    firebird_statement_backend &statement_;
+    virtual void exchangeData(std::size_t row);
 
-        FirebirdStatementBackEnd &statement_;
-        virtual void exchangeData(std::size_t row);
+    void *data_;
+    details::eExchangeType type_;
+    int position_;
 
-        void *data_;
-        details::eExchangeType type_;
-        int position_;
+    char *buf_;
+    short indISCHolder_;
+};
 
-        char *buf_;
-        short indISCHolder_;
-    };
+struct firebird_standard_use_type_backend : details::standard_use_type_backend
+{
+    firebird_standard_use_type_backend(firebird_statement_backend &st)
+        : statement_(st), buf_(NULL), indISCHolder_(0)
+    {}
 
-    struct FirebirdStandardUseTypeBackEnd : details::StandardUseTypeBackEnd
-    {
-        FirebirdStandardUseTypeBackEnd(FirebirdStatementBackEnd &st)
-                : statement_(st), buf_(NULL), indISCHolder_(0)
-        {}
+    virtual void bindByPos(int &position,
+        void *data, details::eExchangeType type);
+    virtual void bindByName(std::string const &name,
+        void *data, details::eExchangeType type);
 
-        virtual void bindByPos(int &position,
-                               void *data, details::eExchangeType type);
-        virtual void bindByName(std::string const &name,
-                                void *data, details::eExchangeType type);
+    virtual void preUse(eIndicator const *ind);
+    virtual void postUse(bool gotData, eIndicator *ind);
 
-        virtual void preUse(eIndicator const *ind);
-        virtual void postUse(bool gotData, eIndicator *ind);
+    virtual void cleanUp();
 
-        virtual void cleanUp();
+    firebird_statement_backend &statement_;
+    virtual void exchangeData();
 
-        FirebirdStatementBackEnd &statement_;
-        virtual void exchangeData();
+    void *data_;
+    details::eExchangeType type_;
+    int position_;
 
-        void *data_;
-        details::eExchangeType type_;
-        int position_;
+    char *buf_;
+    short indISCHolder_;
+};
 
-        char *buf_;
-        short indISCHolder_;
-    };
+struct firebird_vector_use_type_backend : details::vector_use_type_backend
+{
+    firebird_vector_use_type_backend(firebird_statement_backend &st)
+        : statement_(st), inds_(NULL), buf_(NULL), indISCHolder_(0)
+    {}
 
-    struct FirebirdVectorUseTypeBackEnd : details::VectorUseTypeBackEnd
-    {
-        FirebirdVectorUseTypeBackEnd(FirebirdStatementBackEnd &st)
-                : statement_(st), inds_(NULL), buf_(NULL), indISCHolder_(0)
-        {}
+    virtual void bindByPos(int &position,
+        void *data, details::eExchangeType type);
+    virtual void bindByName(std::string const &name,
+        void *data, details::eExchangeType type);
 
-        virtual void bindByPos(int &position,
-                               void *data, details::eExchangeType type);
-        virtual void bindByName(std::string const &name,
-                                void *data, details::eExchangeType type);
+    virtual void preUse(eIndicator const *ind);
 
-        virtual void preUse(eIndicator const *ind);
+    virtual std::size_t size();
 
-        virtual std::size_t size();
+    virtual void cleanUp();
 
-        virtual void cleanUp();
+    firebird_statement_backend &statement_;
+    virtual void exchangeData(std::size_t row);
 
-        FirebirdStatementBackEnd &statement_;
-        virtual void exchangeData(std::size_t row);
+    void *data_;
+    details::eExchangeType type_;
+    int position_;
+    eIndicator const *inds_;
 
-        void *data_;
-        details::eExchangeType type_;
-        int position_;
-        eIndicator const *inds_;
+    char *buf_;
+    short indISCHolder_;
+};
 
-        char *buf_;
-        short indISCHolder_;
-    };
+struct firebird_session_backend;
+struct firebird_statement_backend : details::statement_backend
+{
+    firebird_statement_backend(firebird_session_backend &session);
 
-    struct FirebirdSessionBackEnd;
-    struct FirebirdStatementBackEnd : details::StatementBackEnd
-    {
-        FirebirdStatementBackEnd(FirebirdSessionBackEnd &session);
+    virtual void alloc();
+    virtual void cleanUp();
+    virtual void prepare(std::string const &query,
+        details::eStatementType eType);
 
-        virtual void alloc();
-        virtual void cleanUp();
-        virtual void prepare(std::string const &query,
-            details::eStatementType eType);
+    virtual execFetchResult execute(int number);
+    virtual execFetchResult fetch(int number);
 
-        virtual execFetchResult execute(int number);
-        virtual execFetchResult fetch(int number);
+    virtual int getNumberOfRows();
 
-        virtual int getNumberOfRows();
+    virtual std::string rewriteForProcedureCall(std::string const &query);
 
-        virtual std::string rewriteForProcedureCall(std::string const &query);
+    virtual int prepareForDescribe();
+    virtual void describeColumn(int colNum, eDataType &dtype,
+        std::string &columnName);
 
-        virtual int prepareForDescribe();
-        virtual void describeColumn(int colNum, eDataType &dtype,
-                                    std::string &columnName);
+    virtual firebird_standard_into_type_backend * makeIntoTypeBackEnd();
+    virtual firebird_standard_use_type_backend * makeUseTypeBackEnd();
+    virtual firebird_vector_into_type_backend * makeVectorIntoTypeBackEnd();
+    virtual firebird_vector_use_type_backend * makeVectorUseTypeBackEnd();
 
-        virtual FirebirdStandardIntoTypeBackEnd * makeIntoTypeBackEnd();
-        virtual FirebirdStandardUseTypeBackEnd * makeUseTypeBackEnd();
-        virtual FirebirdVectorIntoTypeBackEnd * makeVectorIntoTypeBackEnd();
-        virtual FirebirdVectorUseTypeBackEnd * makeVectorUseTypeBackEnd();
+    firebird_session_backend &session_;
 
-        FirebirdSessionBackEnd &session_;
+    isc_stmt_handle stmtp_;
+    XSQLDA * sqldap_;
+    XSQLDA * sqlda2p_;
 
-        isc_stmt_handle stmtp_;
-        XSQLDA * sqldap_;
-        XSQLDA * sqlda2p_;
+    bool boundByName_;
+    bool boundByPos_;
 
-        bool boundByName_;
-        bool boundByPos_;
-
-        friend struct FirebirdVectorIntoTypeBackEnd;
-        friend struct FirebirdStandardIntoTypeBackEnd;
-        friend struct FirebirdVectorUseTypeBackEnd;
-        friend struct FirebirdStandardUseTypeBackEnd;
+    friend struct firebird_vector_into_type_backend;
+    friend struct firebird_standard_into_type_backend;
+    friend struct firebird_vector_use_type_backend;
+    friend struct firebird_standard_use_type_backend;
 
 protected:
-        int rowsFetched_;
+    int rowsFetched_;
 
-        virtual void exchangeData(bool gotData, int row);
-        virtual void prepareSQLDA(XSQLDA ** sqldap, int size = 10);
-        virtual void rewriteQuery(std::string const & query,
-                                  std::vector<char> & buffer);
-        virtual void rewriteParameters(std::string const & src,
-                                       std::vector<char> & dst);
+    virtual void exchangeData(bool gotData, int row);
+    virtual void prepareSQLDA(XSQLDA ** sqldap, int size = 10);
+    virtual void rewriteQuery(std::string const & query,
+        std::vector<char> & buffer);
+    virtual void rewriteParameters(std::string const & src,
+        std::vector<char> & dst);
 
-        BuffersType intoType_;
-        BuffersType useType_;
+    BuffersType intoType_;
+    BuffersType useType_;
 
-        std::vector<std::vector<eIndicator> > inds_;
-        std::vector<void*> intos_;
-        std::vector<void*> uses_;
+    std::vector<std::vector<eIndicator> > inds_;
+    std::vector<void*> intos_;
+    std::vector<void*> uses_;
 
-        // named parameters
-        std::map <std::string, int> names_;
+    // named parameters
+    std::map <std::string, int> names_;
 
-        bool procedure_;
-    };
+    bool procedure_;
+};
 
-    struct FirebirdRowIDBackEnd : details::RowIDBackEnd
+struct firebird_rowid_backend : details::rowid_backend
+{
+    firebird_rowid_backend(firebird_session_backend &session);
+
+    ~firebird_rowid_backend();
+};
+
+struct firebird_blob_backend : details::blob_backend
+{
+    firebird_blob_backend(firebird_session_backend &session);
+
+    ~firebird_blob_backend();
+
+    virtual std::size_t getLen();
+    virtual std::size_t read(std::size_t offset, char *buf,
+        std::size_t toRead);
+    virtual std::size_t write(std::size_t offset, char const *buf,
+        std::size_t toWrite);
+    virtual std::size_t append(char const *buf, std::size_t toWrite);
+    virtual void trim(std::size_t newLen);
+
+    firebird_session_backend &session_;
+
+    virtual void save();
+    virtual void assign(ISC_QUAD const & bid)
     {
-        FirebirdRowIDBackEnd(FirebirdSessionBackEnd &session);
+        cleanUp();
 
-        ~FirebirdRowIDBackEnd();
-    };
+        bid_ = bid;
+        from_db_ = true;
+    }
 
-    struct FirebirdBLOBBackEnd : details::BLOBBackEnd
-    {
-        FirebirdBLOBBackEnd(FirebirdSessionBackEnd &session);
+    // BLOB id from in database
+    ISC_QUAD bid_;
 
-        ~FirebirdBLOBBackEnd();
+    // BLOB id was fetched from database (true)
+    // or this is new BLOB
+    bool from_db_;
 
-        virtual std::size_t getLen();
-        virtual std::size_t read(std::size_t offset, char *buf,
-                                 std::size_t toRead);
-        virtual std::size_t write(std::size_t offset, char const *buf,
-                                  std::size_t toWrite);
-        virtual std::size_t append(char const *buf, std::size_t toWrite);
-        virtual void trim(std::size_t newLen);
-
-        FirebirdSessionBackEnd &session_;
-
-        virtual void save();
-        virtual void assign(ISC_QUAD const & bid)
-        {
-            cleanUp();
-
-            bid_ = bid;
-            from_db_ = true;
-        }
-
-        // BLOB id from in database
-        ISC_QUAD bid_;
-
-        // BLOB id was fetched from database (true)
-        // or this is new BLOB
-        bool from_db_;
-
-        // BLOB handle
-        isc_blob_handle bhp_;
+    // BLOB handle
+    isc_blob_handle bhp_;
 
 protected:
 
-        virtual void open();
-        virtual long getBLOBInfo();
-        virtual void load();
-        virtual void writeBuffer(std::size_t offset, char const * buf,
-                                 std::size_t toWrite);
-        virtual void cleanUp();
+    virtual void open();
+    virtual long getBLOBInfo();
+    virtual void load();
+    virtual void writeBuffer(std::size_t offset, char const * buf,
+        std::size_t toWrite);
+    virtual void cleanUp();
 
-        // buffer for BLOB data
-        std::vector<char> data_;
+    // buffer for BLOB data
+    std::vector<char> data_;
 
-        bool loaded_;
-        long max_seg_size_;
-    };
+    bool loaded_;
+    long max_seg_size_;
+};
 
-    struct FirebirdSessionBackEnd : details::SessionBackEnd
-    {
-        FirebirdSessionBackEnd(std::string const &connectString);
+struct firebird_session_backend : details::session_backend
+{
+    firebird_session_backend(std::string const &connectString);
 
-        ~FirebirdSessionBackEnd();
+    ~firebird_session_backend();
 
-        virtual void begin();
-        virtual void commit();
-        virtual void rollback();
+    virtual void begin();
+    virtual void commit();
+    virtual void rollback();
 
-        void cleanUp();
+    void cleanUp();
 
-        virtual FirebirdStatementBackEnd * makeStatementBackEnd();
-        virtual FirebirdRowIDBackEnd * makeRowIDBackEnd();
-        virtual FirebirdBLOBBackEnd * makeBLOBBackEnd();
+    virtual firebird_statement_backend * make_statement_backend();
+    virtual firebird_rowid_backend * make_rowid_backend();
+    virtual firebird_blob_backend * make_blob_backend();
 
-        virtual void setDPBOption(int const option, std::string const & value);
+    virtual void setDPBOption(int const option, std::string const & value);
 
-        isc_db_handle dbhp_;
-        isc_tr_handle trhp_;
-        std::string dpb_;
-    };
+    isc_db_handle dbhp_;
+    isc_tr_handle trhp_;
+    std::string dpb_;
+};
 
-    struct FirebirdBackEndFactory : BackEndFactory
-    {
-        virtual FirebirdSessionBackEnd * makeSession(
-            std::string const &connectString) const;
-    };
+struct firebird_backend_factory : backend_factory
+{
+    virtual firebird_session_backend * make_session(
+        std::string const &connectString) const;
+};
 
-    SOCI_FIREBIRD_DECL extern FirebirdBackEndFactory const firebird;
+SOCI_FIREBIRD_DECL extern firebird_backend_factory const firebird;
 
-} // namespace SOCI
+} // namespace soci
 
 #endif // SOCI_FIREBIRD_H_INCLUDED
 
