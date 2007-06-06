@@ -266,7 +266,12 @@ public:
         SQLGetDiagRec(htype, hndl, i, sqlstate_, &sqlcode_,
                       message_, SQL_MAX_MESSAGE_LENGTH + 1,
                       &length);
-        
+
+        if(!length)
+        {
+            message_[0] = 0;
+            sqlcode_ = 0;
+        }
     }
         
     SQLCHAR const * odbc_error_code() const
@@ -285,7 +290,7 @@ public:
 
 inline bool is_odbc_error(SQLRETURN rc)
 {
-    if (rc != SQL_SUCCESS && rc != SQL_SUCCESS_WITH_INFO)
+    if (rc != SQL_SUCCESS && rc != SQL_SUCCESS_WITH_INFO && rc != SQL_NO_DATA)
         return true;
     else
         return false;
