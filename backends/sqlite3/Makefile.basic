@@ -8,7 +8,7 @@ SQLITE3INCLUDEDIR =
 COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
 CXXFLAGSSO = ${CXXFLAGS} -fPIC
-INCLUDEDIRS = -I../../core ${SQLITE3INCLUDEDIR}
+INCLUDEDIRS = -I../../core -I/usr/include/boost_1_33_1 ${SQLITE3INCLUDEDIR}
 
 
 OBJECTS = blob.o factory.o row-id.o session.o standard-into-type.o \

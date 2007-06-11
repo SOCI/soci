@@ -9,7 +9,7 @@ SQLITE3LIBS = -lsqlite3
 
 COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
-INCLUDEDIRS = -I.. -I../../../core -I../../../core/test ${SQLITE3INCLUDEDIR}
+INCLUDEDIRS = -I.. -I../../../core -I../../../core/test -I/usr/include/boost_1_33_1 ${SQLITE3INCLUDEDIR}
 LIBDIRS = -L.. -L../../../core ${SQLITE3LIBDIR}
 LIBS = -lsoci-core -lsoci-sqlite3 ${SQLITE3LIBS}
 
