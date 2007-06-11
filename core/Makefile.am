@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.5 2007/03/02 09:45:18 msobczak Exp $
+# $Id: Makefile.am,v 1.6 2007/06/11 06:27:33 msobczak Exp $
 # 
 # Copyright (C) 2006, Mateusz Loskot
 #
@@ -26,7 +26,8 @@ lib@SOCI_CORE_LIBRARY_NAME@_la_SOURCES = \
 	session.cpp \
 	statement.cpp \
 	use-type.cpp \
-	values.cpp
+	values.cpp \
+	error.cpp
 
 socidir = $(includedir)/soci
 
