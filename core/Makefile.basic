@@ -4,7 +4,7 @@ INCLUDEDIRS = -I/usr/include/boost_1_33_1
 OBJS =  session.o statement.o row.o values.o \
 	into-type.o use-type.o \
 	blob.o rowid.o procedure.o ref-counted-prepare-info.o ref-counted-statement.o \
-	once-temp-type.o prepare-temp-type.o
+	once-temp-type.o prepare-temp-type.o error.o
 
 
 libsoci-core.a : ${OBJS} 
@@ -35,6 +35,9 @@ use-type.o : use-type.cpp
 	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 	
 blob.o : blob.cpp
+	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
+
+error.o : error.cpp
 	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 rowid.o : rowid.cpp
