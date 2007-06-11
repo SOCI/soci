@@ -6,7 +6,6 @@
 //
 
 #define SOCI_EMPTY_SOURCE
-#include "soci.h"
 #include "soci-empty.h"
 
 #ifdef _MSC_VER
