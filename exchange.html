@@ -142,7 +142,7 @@ string addr = "...";
 sql &lt;&lt; "update person"
        " set mainaddress = :addr, contactaddress = :addr"
        " where id = 7",
-       use(addr, "addr);
+       use(addr, "addr");
 </pre>
 
 <div class="note">
