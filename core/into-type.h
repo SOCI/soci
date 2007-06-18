@@ -89,10 +89,12 @@ public:
 
     ~vector_into_type();
 
+protected:
+    virtual void post_fetch(bool gotData, bool calledFromFetch);
+
 private:
     virtual void define(statement_impl &st, int &position);
     virtual void pre_fetch();
-    virtual void post_fetch(bool gotData, bool calledFromFetch);
     virtual void clean_up();
     virtual void resize(std::size_t sz);
     virtual std::size_t size() const;
@@ -157,6 +159,40 @@ private:
         else
         {
             opt_.reset();
+        }
+    }
+};
+
+template <typename T>
+class into_type<std::vector<boost::optional<T> > > : public vector_into_type
+{
+public:
+    into_type(std::vector<boost::optional<T> > &v)
+        : vector_into_type(&val_,
+            static_cast<eExchangeType>(exchange_traits<T>::eXType),
+            ind_), vopt_(v), val_(v.size()), ind_(v.size()) {}
+
+private:
+    std::vector<boost::optional<T> > &vopt_;
+    std::vector<T> val_;
+    std::vector<eIndicator> ind_;
+
+    virtual void post_fetch(bool gotData, bool calledFromFetch)
+    {
+        vector_into_type::post_fetch(gotData, calledFromFetch);
+
+        const std::size_t newSize = val_.size();
+        vopt_.resize(newSize);
+        for (std::size_t i = 0; i != newSize; ++i)
+        {
+            if (ind_[i] == eOK)
+            {
+                vopt_[i] = val_[i];
+            }
+            else
+            {
+                vopt_[i].reset();
+            }
         }
     }
 };
