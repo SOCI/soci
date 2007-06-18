@@ -88,13 +88,18 @@ template <typename T>
 struct exchange_traits<std::vector<T> >
 {
     typedef typename exchange_traits<T>::type_family type_family;
+    enum { eXType = exchange_traits<T>::eXType };
 };
 
 template <typename T>
 struct exchange_traits<boost::optional<T> >
 {
     typedef typename exchange_traits<T>::type_family type_family;
+    enum { eXType = exchange_traits<T>::eXType };
 };
+
+// Note: traits for std::vector<boost::optional<T> > not needed,
+// they are composed automatically out of the two above
 
 } // namespace details
 } // namespace soci
