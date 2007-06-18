@@ -10,10 +10,6 @@ namespace soci
 namespace details
 {
 
-// note: specializations for char* and char[] are deliberately missing here,
-// they should be always handled explicitly due to the necessity to pass
-// additional buffer size information
-
 struct basic_type_tag {};
 struct user_type_tag {};
 
