@@ -2396,8 +2396,29 @@ void test26()
             sql << "select val from soci_test", into(j, ind);
             assert(ind == eNull);
         }
-        std::cout << "test 26 passed" << std::endl;
+
+        // vector tests
+
+        {
+            sql << "delete from soci_test";
+            sql << "insert into soci_test(val) values(7)";
+            sql << "insert into soci_test(val) values(8)";
+            sql << "insert into soci_test(val) values(9)";
+
+            std::vector<boost::optional<int> > v(5);
+            sql << "select val from soci_test order by val", into(v);
+
+            assert(v.size() == 3);
+            assert(v[0].is_initialized());
+            assert(v[0].get() == 7);
+            assert(v[1].is_initialized());
+            assert(v[1].get() == 8);
+            assert(v[2].is_initialized());
+            assert(v[2].get() == 9);
+        }
     }
+
+    std::cout << "test 26 passed" << std::endl;
 }
 
 }; // class common_tests
@@ -2406,4 +2427,3 @@ void test26()
 } // namespace soci
 
 #endif // COMMON_TESTS_H_INCLUDED
-
