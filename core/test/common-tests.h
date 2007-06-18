@@ -2267,9 +2267,8 @@ void test23()
                 rowset<std::string> rs1 = (sql.prepare << "select str from soci_test",
                         into(troublemaker));
             }
-            catch(soci_error const& e)
+            catch(soci_error const&)
             {
-                e;
                 caught = true;
             }
             assert(caught);
@@ -2309,9 +2308,8 @@ void test24()
                 // Never should get here
                 assert(false);
             }
-            catch(soci_error const& e)
+            catch(soci_error const&)
             {
-                e;
                 caught = true;
             }
             assert(caught);
