@@ -33,19 +33,20 @@ namespace soci
 template<> struct type_conversion<PhonebookEntry>
 {
     typedef soci::values base_type;
-    static PhonebookEntry from(values const &v)
+
+    static void from_base(values const &v, eIndicator /* ind */, PhonebookEntry &pe)
     {
-        PhonebookEntry p;
-        p.name = v.get<std::string>("name");
-        p.phone = v.get<std::string>("phone", "<NULL>");
-        return p;
+        // here we ignore the possibility the the whole object might be NULL
+
+        pe.name = v.get<std::string>("name");
+        pe.phone = v.get<std::string>("phone", "<NULL>");
     }
-    static values to(PhonebookEntry &p)
+
+    static void to_base(PhonebookEntry &pe, values &v, eIndicator &ind)
     {
-        values v;
-        v.set("name", p.name);
-        v.set("phone", p.phone, p.phone.empty() ? eNull : eOK);
-        return v;
+        v.set("name", pe.name);
+        v.set("phone", pe.phone, pe.phone.empty() ? eNull : eOK);
+        ind = eOK;
     }
 };    
 
@@ -53,20 +54,21 @@ template<> struct type_conversion<PhonebookEntry>
 template<> struct type_conversion<PhonebookEntry2>
 {
     typedef soci::values base_type;
-    static PhonebookEntry2 from(values const &v)
+
+    static void from_base(values const &v, eIndicator /* ind */, PhonebookEntry2 &pe)
     {
-        PhonebookEntry2 p;
-        p.name = v.get<std::string>("name");
+        // here we ignore the possibility the the whole object might be NULL
+
+        pe.name = v.get<std::string>("name");
         eIndicator ind = v.indicator("phone"); //another way to test for null
-        p.phone = ind == eNull ? "<NULL>" : v.get<std::string>("phone");
-        return p;
+        pe.phone = ind == eNull ? "<NULL>" : v.get<std::string>("phone");
     }
-    static values to(PhonebookEntry2 &p)
+
+    static void to_base(PhonebookEntry2 &pe, values &v, eIndicator &ind)
     {
-        values v;
-        v.set("name", p.name);
-        v.set("phone", p.phone, p.phone.empty() ? eNull : eOK);
-        return v;
+        v.set("name", pe.name);
+        v.set("phone", pe.phone, pe.phone.empty() ? eNull : eOK);
+        ind = eOK;
     }
 };    
 
@@ -2401,20 +2403,170 @@ void test26()
 
         {
             sql << "delete from soci_test";
-            sql << "insert into soci_test(val) values(7)";
-            sql << "insert into soci_test(val) values(8)";
-            sql << "insert into soci_test(val) values(9)";
 
-            std::vector<boost::optional<int> > v(5);
+            // simple readout of non-null data
+
+            sql << "insert into soci_test(id, val) values(1, 5)";
+            sql << "insert into soci_test(id, val) values(2, 6)";
+            sql << "insert into soci_test(id, val) values(3, 7)";
+            sql << "insert into soci_test(id, val) values(4, 8)";
+            sql << "insert into soci_test(id, val) values(5, 9)";
+
+            std::vector<boost::optional<int> > v(10);
             sql << "select val from soci_test order by val", into(v);
 
-            assert(v.size() == 3);
+            assert(v.size() == 5);
             assert(v[0].is_initialized());
-            assert(v[0].get() == 7);
+            assert(v[0].get() == 5);
             assert(v[1].is_initialized());
-            assert(v[1].get() == 8);
+            assert(v[1].get() == 6);
             assert(v[2].is_initialized());
-            assert(v[2].get() == 9);
+            assert(v[2].get() == 7);
+            assert(v[3].is_initialized());
+            assert(v[3].get() == 8);
+            assert(v[4].is_initialized());
+            assert(v[4].get() == 9);
+
+            // readout of nulls
+
+            sql << "update soci_test set val = null where id = 2 or id = 4";
+
+            std::vector<int> ids(5);
+            sql << "select id, val from soci_test order by id", into(ids), into(v);
+
+            assert(v.size() == 5);
+            assert(ids.size() == 5);
+            assert(v[0].is_initialized());
+            assert(v[0].get() == 5);
+            assert(v[1].is_initialized() == false);
+            assert(v[2].is_initialized());
+            assert(v[2].get() == 7);
+            assert(v[3].is_initialized() == false);
+            assert(v[4].is_initialized());
+            assert(v[4].get() == 9);
+
+            // readout with statement preparation
+
+            int id = 1;
+
+            ids.resize(3);
+            v.resize(3);
+            statement st = (sql.prepare <<
+                "select id, val from soci_test order by id", into(ids), into(v));
+            st.execute();
+            while (st.fetch())
+            {
+                for (std::size_t i = 0; i != v.size(); ++i)
+                {
+                    assert(id == ids[i]);
+
+                    if (id == 2 || id == 4)
+                    {
+                        assert(v[i].is_initialized() == false);
+                    }
+                    else
+                    {
+                        assert(v[i].is_initialized() && v[i].get() == id + 4);
+                    }
+
+                    ++id;
+                }
+
+                ids.resize(3);
+                v.resize(3);
+            }
+            assert(id == 6);
+
+            // and why not stress iterators and the dynamic binding, too!
+
+            rowset<row> rs = (sql.prepare << "select id, val from soci_test order by id");
+
+            rowset<row>::const_iterator it = rs.begin();
+            assert(it != rs.end());
+            
+            row const& r1 = (*it);
+
+            assert(r1.size() == 2);
+            assert(r1.get_properties(0).get_data_type() == eInteger);
+            assert(r1.get_properties(1).get_data_type() == eInteger);
+            assert(r1.get<int>(0) == 1);
+            assert(r1.get<int>(1) == 5);
+            assert(r1.get<boost::optional<int> >(1).is_initialized());
+            assert(r1.get<boost::optional<int> >(1).get() == 5);
+
+            ++it;
+
+            row const& r2 = (*it);
+
+            assert(r2.size() == 2);
+            assert(r2.get_properties(0).get_data_type() == eInteger);
+            assert(r2.get_properties(1).get_data_type() == eInteger);
+            assert(r2.get<int>(0) == 2);
+            try
+            {
+                // expect exception here, this is NULL value
+                (void)r1.get<int>(1);
+                assert(false);
+            }
+            catch (const soci_error &) {}
+
+            // but we can read it as optional
+            assert(r2.get<boost::optional<int> >(1).is_initialized() == false);
+
+            // stream-like data extraction
+
+            ++it;
+            row const &r3 = (*it);
+
+            boost::optional<int> io, jo;
+
+            r3 >> io >> jo;
+
+            assert(io.is_initialized() && io.get() == 3);
+            assert(jo.is_initialized() && jo.get() == 7);
+
+            ++it;
+            row const &r4 = (*it);
+
+            r4 >> io >> jo;
+
+            assert(io.is_initialized() && io.get() == 4);
+            assert(jo.is_initialized() == false);
+
+
+            // bulk inserts of non-null data
+
+            sql << "delete from soci_test";
+
+            ids.clear();
+            v.clear();
+            ids.push_back(10); v.push_back(20);
+            ids.push_back(11); v.push_back(21);
+            ids.push_back(12); v.push_back(22);
+            ids.push_back(13); v.push_back(23);
+
+            sql << "insert into soci_test(id, val) values(:id, :val)",
+                use(ids, "id"), use(v, "val");
+
+            int sum;
+            sql << "select sum(val) from soci_test", into(sum);
+            assert(sum == 86);
+
+            // bulk inserts of some-null data
+
+            sql << "delete from soci_test";
+
+            v[2].reset();
+            v[3].reset();
+
+            sql << "insert into soci_test(id, val) values(:id, :val)",
+                use(ids, "id"), use(v, "val");
+
+            sql << "select sum(val) from soci_test", into(sum);
+            assert(sum == 41);
+
+            // TODO: verify that boost::optional is composable
+            // with user conversions
         }
     }
 
