@@ -23,8 +23,9 @@ class type_holder;
 class holder
 {
 public:
-    holder(){}
-    virtual ~holder(){};
+    holder() {}
+    virtual ~holder() {}
+
     template<typename T>
     T get()
     {
@@ -38,6 +39,7 @@ public:
             throw std::bad_cast();
         }
     }
+
 private:
     template<typename T> T value();
 };
@@ -50,6 +52,7 @@ public:
     ~type_holder() { delete t_; }
 
     template<typename TVAL> TVAL value() const { return *t_; }
+
 private:
     T* t_;
 };
