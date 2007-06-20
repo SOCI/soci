@@ -33,7 +33,7 @@ void standard_into_type::post_fetch(bool gotData, bool calledFromFetch)
 
     if (gotData)
     {
-        convert_from();
+        convert_from_base();
     }
 }
 
@@ -76,7 +76,7 @@ void vector_into_type::post_fetch(bool gotData, bool /* calledFromFetch */)
 
     if(gotData)
     {
-        convert_from();
+        convert_from_base();
     }
 }
 

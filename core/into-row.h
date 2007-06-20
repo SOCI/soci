@@ -24,6 +24,7 @@ class into_type<soci::row>
 {
 public:
     into_type(soci::row &r) : r_(r) {}
+    into_type(soci::row &r, eIndicator &ind) : r_(r) {}
 
 private:
     // special handling for Row
@@ -45,7 +46,7 @@ private:
             // this is used only to re-dispatch to derived class, if any
             // (the derived class might be generated automatically by
             // user conversions)
-            convert_from();
+            convert_from_base();
         }
     }
 
@@ -53,7 +54,7 @@ private:
 
     virtual std::size_t size() const { return 1; }
 
-    virtual void convert_from() {}
+    virtual void convert_from_base() {}
 
     soci::row &r_;
 };

@@ -31,14 +31,14 @@ void standard_use_type::bind(statement_impl &st, int &position)
 
 void standard_use_type::pre_use()
 {
-    convert_to();
+    convert_to_base();
     backEnd_->pre_use(ind_);
 }
 
 void standard_use_type::post_use(bool gotData)
 {
     backEnd_->post_use(gotData, ind_);
-    convert_from();
+    convert_from_base();
 }
 
 void standard_use_type::clean_up()
@@ -69,9 +69,9 @@ void vector_use_type::bind(statement_impl &st, int &position)
 
 void vector_use_type::pre_use()
 {
-    convert_to();
+    convert_to_base();
 
-    backEnd_->pre_use(ind_);
+    backEnd_->pre_use(ind_ ? &ind_->at(0) : NULL);
 }
 
 std::size_t vector_use_type::size() const

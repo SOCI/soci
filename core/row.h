@@ -66,14 +66,13 @@ public:
 
         assert(holders_.size() >= pos + 1);
 
-        if (eNull == *indicators_[pos])
-        {
-            throw soci_error("Column contains NULL value and"
-                " no default was provided");
-        }
+        const BASE_TYPE &baseVal = holders_[pos]->get<BASE_TYPE>();
 
-        BASE_TYPE baseVal = holders_[pos]->get<BASE_TYPE>();
-        return type_conversion<T>::from(baseVal);
+        T ret;
+
+        type_conversion<T>::from_base(baseVal, *indicators_[pos], ret);
+
+        return ret;
     }
 
     template <typename T>
@@ -93,12 +92,6 @@ public:
     T get(std::string const &name) const
     {
         std::size_t pos = find_column(name);
-
-        if (eNull == *indicators_[pos])
-        {
-            throw soci_error("Column '" + name + "' contains NULL value and"
-                                                " no default was provided");
-        }
 
         return get<T>(pos);
     }

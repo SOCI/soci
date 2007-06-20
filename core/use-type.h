@@ -11,7 +11,6 @@
 #include "soci-backend.h"
 #include "type-ptr.h"
 #include "exchange-traits.h"
-#include <boost/optional.hpp>
 
 #include <string>
 #include <vector>
@@ -54,8 +53,8 @@ public:
     virtual void* get_data() {return data_;}
      
     // conversion hook (from arbitrary user type to base type)
-    virtual void convert_to() {}
-    virtual void convert_from() {} 
+    virtual void convert_to_base() {}
+    virtual void convert_from_base() {} 
 
 protected:
     virtual void pre_use();
@@ -84,7 +83,7 @@ public:
     vector_use_type(void *data, eExchangeType type,
         std::vector<eIndicator> const &ind,
         std::string const &name = std::string())
-        : data_(data), type_(type), ind_(&ind.at(0)),
+        : data_(data), type_(type), ind_(&ind),
           name_(name), backEnd_(NULL) {}
 
     ~vector_use_type();
@@ -98,12 +97,12 @@ private:
 
     void *data_;
     eExchangeType type_;
-    eIndicator const *ind_;
+    std::vector<eIndicator> const *ind_;
     std::string name_;
 
     vector_use_type_backend *backEnd_;
 
-    virtual void convert_to() {}
+    virtual void convert_to_base() {}
 };
 
 // implementation for the basic types (those which are supported by the library
@@ -134,36 +133,8 @@ public:
     use_type(std::vector<T> &v, std::vector<eIndicator> const &ind,
         std::string const &name = std::string())
         : vector_use_type(&v,
-            static_cast<eExchangeType>(exchange_traits<T>::eXType), ind, name) {}
-};
-
-template <typename T>
-class use_type<boost::optional<T> > : public standard_use_type
-{
-public:
-    use_type(boost::optional<T> &t, std::string const &name = std::string())
-        : standard_use_type(&val_,
             static_cast<eExchangeType>(exchange_traits<T>::eXType),
-            ind_, name), opt_(t) {}
-
-private:
-    boost::optional<T> &opt_;
-    T val_;
-    eIndicator ind_;
-
-    virtual void pre_use()
-    {
-        if (opt_.is_initialized())
-        {
-            val_ = opt_.get();
-            ind_ = eOK;
-        }
-        else
-        {
-            ind_ = eNull;
-        }
-        standard_use_type::pre_use();
-    }
+            ind, name) {}
 };
 
 // special cases for char* and char[]

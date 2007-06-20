@@ -190,7 +190,7 @@ private:
     // this is called by Statement::bind(values)
     void add_unused(details::use_type_base *u, eIndicator *i)
     {
-        static_cast<details::standard_use_type*>(u)->convert_to();
+        static_cast<details::standard_use_type*>(u)->convert_to_base();
         unused_.insert(std::make_pair(u, i));
     }
 
@@ -225,15 +225,19 @@ public:
     use_type(values &v, std::string const & /* name */ = std::string())
         : v_(v) {}
 
+    // we ignore the possibility to have the whole values as NULL
+    use_type(values &v, eIndicator /* ind */, std::string const & /* name */ = std::string())
+        : v_(v) {}
+
     virtual void bind(details::statement_impl &st, int& /*position*/)
     {
-        convert_to();
+        convert_to_base();
         st.bind(v_);
     }
 
     virtual void post_use(bool /*gotData*/)
     {
-        convert_from();
+        convert_from_base();
     }
 
     virtual void pre_use() {}
@@ -243,8 +247,8 @@ public:
     // these are used only to re-dispatch to derived class
     // (the derived class might be generated automatically by
     // user conversions)
-    virtual void convert_to() {}
-    virtual void convert_from() {}
+    virtual void convert_to_base() {}
+    virtual void convert_from_base() {}
 
 private:
     values& v_;
@@ -254,8 +258,9 @@ template <>
 class into_type<values> : public into_type<row>
 {
 public:
-    into_type(values &v) : 
-        into_type<row>(v.get_row()), v_(v) {}
+    into_type(values &v) : into_type<row>(v.get_row()), v_(v) {}
+    into_type(values &v, eIndicator &ind)
+        : into_type<row>(v.get_row(), ind), v_(v) {}
 
     void clean_up()
     {
