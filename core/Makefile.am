@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.6 2007/06/11 06:27:33 msobczak Exp $
+# $Id: Makefile.am,v 1.7 2007/06/21 21:34:31 msobczak Exp $
 # 
 # Copyright (C) 2006, Mateusz Loskot
 #
@@ -33,7 +33,9 @@ socidir = $(includedir)/soci
 
 soci_HEADERS = \
 	blob.h \
-	into-row.h \
+	blob-exchange.h \
+	exchange-traits.h \
+	into.h \
 	into-type.h \
 	once-temp-type.h \
 	prepare-temp-type.h \
@@ -41,7 +43,9 @@ soci_HEADERS = \
 	ref-counted-prepare-info.h \
 	ref-counted-statement.h \
 	row.h \
+	row-exchange.h \
 	rowid.h \
+	rowid-exchange.h \
 	rowset.h \
 	session.h \
 	soci-backend.h \
@@ -50,10 +54,13 @@ soci_HEADERS = \
 	soci.h \
 	statement.h \
 	type-conversion.h \
+	type-conversion-traits.h \
 	type-holder.h \
 	type-ptr.h \
+	use.h \
 	use-type.h \
-	values.h
+	values.h \
+	values-exchange.h
 
 EXTRA_DIST = Makefile.basic
 

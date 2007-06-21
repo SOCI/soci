@@ -1,7 +1,15 @@
+//
+// Copyright (C) 2004-2007 Maciej Sobczak, Stephen Hutton
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
+//
+
 #ifndef INTO_H_INCLUDED
 #define INTO_H_INCLUDED
 
 #include "into-type.h"
+#include "exchange-traits.h"
 #include "type-conversion.h"
 
 namespace soci
@@ -14,7 +22,8 @@ namespace soci
 template <typename T>
 details::into_type_ptr into(T &t)
 {
-    return details::do_into(t, typename details::exchange_traits<T>::type_family());
+    return details::do_into(t,
+        typename details::exchange_traits<T>::type_family());
 }
 
 template <typename T>

@@ -8,70 +8,14 @@
 #ifndef SOCI_TYPE_CONVERSION_H_INCLUDED
 #define SOCI_TYPE_CONVERSION_H_INCLUDED
 
+#include "type-conversion-traits.h"
 #include "into-type.h"
 #include "use-type.h"
-#include <boost/optional.hpp>
 
 #include <vector>
 
 namespace soci
 {
-
-// default traits class type_conversion, acts as pass through for Row::get()
-// when no actual conversion is needed.
-template <typename T> 
-struct type_conversion
-{
-    typedef T base_type;
-
-    static void from_base(base_type const &in, eIndicator ind, T &out)
-    {
-        if (ind == eNull)
-        {
-            throw soci_error("Null value not allowed for this type");
-        }
-        out = in;
-    }
-
-    static void to_base(T const &in, base_type &out, eIndicator &ind)
-    {
-        out = in;
-        ind = eOK;
-    }
-};
-
-// simple fall-back for boost::optional
-template <typename T> 
-struct type_conversion<boost::optional<T> >
-{
-    typedef typename type_conversion<T>::base_type base_type;
-
-    static void from_base(T const &in, eIndicator ind, boost::optional<T> &out)
-    {
-        if (ind == eNull)
-        {
-            out.reset();
-        }
-        else
-        {
-            T tmp;
-            type_conversion<T>::from_base(in, ind, tmp);
-            out = tmp;
-        }
-    }
-
-    static void to_base(boost::optional<T> const &in, T &out, eIndicator &ind)
-    {
-        if (in.is_initialized())
-        {
-            type_conversion<T>::to_base(in.get(), out, ind);
-        }
-        else
-        {
-            ind = eNull;
-        }
-    }
-};
 
 namespace details
 {
@@ -295,9 +239,22 @@ into_type_ptr do_into(T &t, user_type_tag)
 }
 
 template <typename T>
+into_type_ptr do_into(T &t, eIndicator &indicator, user_type_tag)
+{
+    return into_type_ptr(new conversion_into_type<T>(t, indicator));
+}
+
+template <typename T>
 use_type_ptr do_use(T &t, std::string const &name, user_type_tag)
 {
     return use_type_ptr(new conversion_use_type<T>(t, name));
+}
+
+template <typename T>
+use_type_ptr do_use(T &t, eIndicator &indicator,
+    std::string const &name, user_type_tag)
+{
+    return use_type_ptr(new conversion_use_type<T>(t, indicator, name));
 }
 
 // type_conversion specializations must use a stock type as the base_type.
@@ -327,6 +284,7 @@ use_type_ptr do_use(T &t, std::string const &name, user_type_tag)
 // };
 
 } // namespace details
+
 } // namespace soci
 
 #endif

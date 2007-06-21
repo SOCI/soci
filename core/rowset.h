@@ -12,6 +12,7 @@
 
 namespace soci
 {
+
 //
 // rowset iterator of input category.
 //

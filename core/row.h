@@ -10,8 +10,6 @@
 
 #include "type-holder.h"
 #include "soci-backend.h"
-#include "into-type.h"
-#include "use-type.h"
 #include "type-conversion.h"
 
 #include <string>

@@ -8,15 +8,18 @@
 #ifndef SOCI_ONCE_TEMP_TYPE_H_INCLUDED
 #define SOCI_ONCE_TEMP_TYPE_H_INCLUDED
 
-#include "ref-counted-statement.h"
 #include "prepare-temp-type.h"
 
 namespace soci
 {
+
 class session;
 
 namespace details
 {
+
+class ref_counted_statement;
+
 // this needs to be lightweight and copyable
 class SOCI_DECL once_temp_type
 {
@@ -80,6 +83,7 @@ private:
 };
 
 } // namespace details
+
 } // namespace soci
 
 #endif

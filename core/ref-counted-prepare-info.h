@@ -8,17 +8,18 @@
 #ifndef SOCI_REF_COUNTED_PREPARE_INFO_INCLUDED
 #define SOCI_REF_COUNTED_PREPARE_INFO_INCLUDED
 
-#include "ref-counted-prepare-info.h"
 #include "ref-counted-statement.h"
 
 #include <vector>
 
 namespace soci
 {
+
 class session;
 
 namespace details
 {
+
 class procedure_impl;
 class statement_impl;
 class into_type_base;
@@ -48,6 +49,7 @@ private:
 };
 
 } // namespace details
+
 } // namespace soci
 
 #endif

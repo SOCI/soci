@@ -16,6 +16,7 @@
 
 namespace soci
 {
+
 namespace details
 {
 
@@ -75,8 +76,8 @@ private:
     statement st_;
 };
 
-
 } // namespace details
+
 } // namespace soci
 
 #endif

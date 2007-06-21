@@ -17,10 +17,12 @@
 
 namespace soci
 {
+
 class session;
 
 namespace details
 {
+
 class prepare_temp_type;
 class standard_into_type_backend;
 class vector_into_type_backend;
@@ -42,6 +44,7 @@ public:
     virtual void resize(std::size_t /* sz */) {} // used for vectors only
 };
 
+typedef type_ptr<into_type_base> into_type_ptr;
 
 // standard types
 

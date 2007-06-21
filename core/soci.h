@@ -16,8 +16,9 @@
 
 #include "blob.h"
 #include "blob-exchange.h"
+#include "boost-optional.h"
+#include "exchange-traits.h"
 #include "into.h"
-#include "into-row.h"
 #include "into-type.h"
 #include "once-temp-type.h"
 #include "prepare-temp-type.h"
@@ -25,6 +26,7 @@
 #include "ref-counted-prepare-info.h"
 #include "ref-counted-statement.h"
 #include "row.h"
+#include "row-exchange.h"
 #include "rowid.h"
 #include "rowid-exchange.h"
 #include "rowset.h"
@@ -34,10 +36,12 @@
 #include "soci-platform.h"
 #include "statement.h"
 #include "type-conversion.h"
+#include "type-conversion-traits.h"
 #include "type-holder.h"
 #include "type-ptr.h"
 #include "use.h"
+#include "use-type.h"
 #include "values.h"
+#include "values-exchange.h"
 
 #endif // SOCI_H_INCLUDED
-

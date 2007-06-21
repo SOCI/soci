@@ -4,17 +4,16 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
+
 #define SOCI_SOURCE
 #include "soci-backend.h"
+
 #include <stdexcept>
 #include <string>
 
-namespace soci
-{
+using namespace soci;
  
 soci_error::soci_error(std::string const & msg) 
      : std::runtime_error(msg)
 {
 }
-
-} // namespace soci

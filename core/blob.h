@@ -8,13 +8,20 @@
 #ifndef SOCI_BLOB_H_INCLUDED
 #define SOCI_BLOB_H_INCLUDED
 
-#include "soci-backend.h"
+#include "soci-config.h"
+
+#include <cstddef>
 
 namespace soci
 {
 // basic blob operations
 
 class session;
+
+namespace details
+{
+class blob_backend;
+} // namespace details
 
 class SOCI_DECL blob
 {

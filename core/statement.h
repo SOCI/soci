@@ -8,8 +8,8 @@
 #ifndef SOCI_STATEMENT_H_INCLUDED
 #define SOCI_STATEMENT_H_INCLUDED
 
-#include "into.h"
 #include "into-type.h"
+#include "into.h"
 #include "use-type.h"
 #include "soci-backend.h"
 #include "row.h"
@@ -18,11 +18,13 @@
 
 namespace soci
 {
+
 class session;
 class values;
 
 namespace details
 {
+
 class into_type_base;
 class use_type_base;
 class prepare_temp_type;

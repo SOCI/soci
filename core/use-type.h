@@ -17,8 +17,10 @@
 
 namespace soci
 {
+
 namespace details
 {
+
 class statement_impl;
 
 // this is intended to be a base class for all classes that deal with
@@ -36,6 +38,7 @@ public:
     virtual std::size_t size() const = 0;  // returns the number of elements
 };
 
+typedef type_ptr<use_type_base> use_type_ptr;
 
 class SOCI_DECL standard_use_type : public use_type_base
 {

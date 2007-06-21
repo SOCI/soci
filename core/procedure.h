@@ -12,6 +12,7 @@
 
 namespace soci
 {
+
 namespace details
 {
 

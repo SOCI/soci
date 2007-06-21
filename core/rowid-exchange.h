@@ -11,6 +11,7 @@
 #include "rowid.h"
 #include "into-type.h"
 #include "use-type.h"
+#include "exchange-traits.h"
 
 namespace soci
 {

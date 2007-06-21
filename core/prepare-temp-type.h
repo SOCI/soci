@@ -14,6 +14,7 @@
 
 namespace soci
 {
+
 namespace details
 {
 
@@ -43,8 +44,8 @@ private:
     ref_counted_prepare_info *rcpi_;
 };
 
-
 } // namespace details
+
 } // namespace soci
 
 #endif

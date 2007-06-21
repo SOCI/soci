@@ -9,22 +9,25 @@
 #define SOCI_INTO_ROW_H_INCLUDED
 
 #include "into-type.h"
+#include "exchange-traits.h"
 #include "row.h"
 #include "statement.h"
 
 namespace soci
 {
+
 namespace details
 {
-// Support selecting into a Row for dynamic queries
-//
+
+// Support selecting into a row for dynamic queries
+
 template <>
-class into_type<soci::row>
+class into_type<row>
     : public into_type_base // bypass the standard_into_type
 {
 public:
-    into_type(soci::row &r) : r_(r) {}
-    into_type(soci::row &r, eIndicator &ind) : r_(r) {}
+    into_type(row &r) : r_(r) {}
+    into_type(row &r, eIndicator &ind) : r_(r) {}
 
 private:
     // special handling for Row
@@ -56,15 +59,17 @@ private:
 
     virtual void convert_from_base() {}
 
-    soci::row &r_;
+    row &r_;
 };
 
 template <>
-struct exchange_traits<soci::row>
+struct exchange_traits<row>
 {
     typedef basic_type_tag type_family;
 };
 
 } // namespace details
+
 } // namespace soci
+
 #endif

@@ -1,8 +1,17 @@
+//
+// Copyright (C) 2004-2007 Maciej Sobczak, Stephen Hutton
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
+//
+
 #ifndef EXCHANGE_TRAITS_H_INCLUDED
 #define EXCHANGE_TRAITS_H_INCLUDED
 
+#include "type-conversion-traits.h"
+#include "soci-backend.h"
+
 #include <vector>
-#include <boost/optional.hpp>
 
 namespace soci
 {
@@ -19,6 +28,9 @@ struct exchange_traits
     // this is used for tag-dispatch between implementations for basic types
     // and user-defined types
     typedef user_type_tag type_family;
+
+    enum { eXType =
+           exchange_traits<typename type_conversion<T>::base_type>::eXType };
 };
 
 template <>
@@ -82,17 +94,6 @@ struct exchange_traits<std::tm>
     enum { eXType = eXStdTm };
 };
 
-// for complete tag dispatch
-
-template <typename T>
-struct exchange_traits<boost::optional<T> >
-{
-    // this forces the conversion engine to kick in
-    typedef user_type_tag type_family;
-
-    enum { eXType = exchange_traits<T>::eXType };
-};
-
 template <typename T>
 struct exchange_traits<std::vector<T> >
 {
@@ -101,6 +102,7 @@ struct exchange_traits<std::vector<T> >
 };
 
 } // namespace details
+
 } // namespace soci
 
 #endif // EXCHANGE_TRAITS_H_INCLUDED

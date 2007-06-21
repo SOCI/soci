@@ -10,10 +10,9 @@
 
 namespace soci
 {
+
 namespace details
 {
-class into_type_base;
-class use_type_base;
 
 template <typename T>
 class type_ptr
@@ -29,10 +28,8 @@ private:
     mutable T *p_;
 };
 
-typedef type_ptr<into_type_base> into_type_ptr;
-typedef type_ptr<use_type_base> use_type_ptr;
-
 } // namespace details
+
 } // namespace soci
 
 #endif

@@ -12,6 +12,7 @@
 
 namespace soci
 {
+
 namespace details
 {
 
@@ -58,6 +59,7 @@ private:
 };
 
 } // namespace details
+
 } // namespace soci
 
 #endif

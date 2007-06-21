@@ -8,11 +8,19 @@
 #ifndef SOCI_ROWID_H_INCLUDED
 #define SOCI_ROWID_H_INCLUDED
 
-#include "soci-backend.h"
+#include "soci-config.h"
 
 namespace soci
 {
+
 class session;
+
+namespace details
+{
+
+class rowid_backend;
+
+} // namespace details
 
 // ROWID support
 

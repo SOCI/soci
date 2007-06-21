@@ -8,12 +8,12 @@
 #ifndef SOCI_BACKEND_H_INCLUDED
 #define SOCI_BACKEND_H_INCLUDED
 
+#include "soci-config.h"
+
 #include <cstddef>
 #include <map>
 #include <stdexcept>
 #include <string>
-
-#include "soci-config.h"
 
 namespace soci
 {
@@ -207,4 +207,3 @@ struct SOCI_DECL backend_factory
 } // namespace soci
 
 #endif
-
