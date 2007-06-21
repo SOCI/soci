@@ -27,9 +27,42 @@ struct PhonebookEntry2 : public PhonebookEntry
 {
 };
 
+// user-defined object for test26
+class MyInt
+{
+public:
+    MyInt() {}
+    MyInt(int i) : i_(i) {}
+    void set(int i) { i_ = i; }
+    int get() const { return i_; }
+private:
+    int i_;
+};
+
 namespace soci
 {
-// basic type conversion
+
+// basic type conversion for user-defined type with single base value
+template<> struct type_conversion<MyInt>
+{
+    typedef int base_type;
+
+    static void from_base(int i, eIndicator ind, MyInt &mi)
+    {
+        if (ind == eOK)
+        {
+            mi.set(i);
+        }
+    }
+
+    static void to_base(MyInt &mi, int &i, eIndicator &ind)
+    {
+        i = mi.get();
+        ind = eOK;
+    }
+};    
+
+// basic type conversion on many values (ORM)
 template<> struct type_conversion<PhonebookEntry>
 {
     typedef soci::values base_type;
@@ -72,7 +105,7 @@ template<> struct type_conversion<PhonebookEntry2>
     }
 };    
 
-}
+} // namespace soci
 
 namespace soci
 {
@@ -1852,6 +1885,27 @@ void test15()
 {   
     session sql(backEndFactory_, connectString_);
     
+    // simple conversion (between single basic type and user type)
+
+    {
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+        MyInt mi;
+        mi.set(123);
+        sql << "insert into soci_test(id) values(:id)", use(mi);
+
+        int i;
+        sql << "select id from soci_test", into(i);
+        assert(i == 123);
+
+        sql << "update soci_test set id = id + 1";
+
+        sql << "select id from soci_test", into(mi);
+        assert(mi.get() == 124);
+    }
+
+    // conversions based on values (many fields involved -> ORM)
+
     {
         auto_table_creator tableCreator(tc_.table_creator_3(sql));
 
@@ -1887,7 +1941,8 @@ void test15()
         assert(count == 3);        
     }
 
-    {   // Use the PhonebookEntry2 type conversion, to test
+    {
+        // Use the PhonebookEntry2 type conversion, to test
         // calls to values::indicator()
         auto_table_creator tableCreator(tc_.table_creator_3(sql));
 
@@ -2380,9 +2435,25 @@ void test26()
             assert(opt.is_initialized());
             assert(opt.get() == 7);
 
+            // indicators can be used with optional
+            // (although that's just a consequence of implementation,
+            // not an intended feature - but let's test it anyway)
+            eIndicator ind;
+            opt.reset();
+            sql << "select val from soci_test", into(opt, ind);
+            assert(opt.is_initialized());
+            assert(opt.get() == 7);
+            assert(ind == eOK);
+
             // verify null value is fetched correctly
             sql << "select i1 from soci_test", into(opt);
             assert(opt.is_initialized() == false);
+
+            // and with indicator
+            opt = 5;
+            sql << "select i1 from soci_test", into(opt, ind);
+            assert(opt.is_initialized() == false);
+            assert(ind == eNull);
 
             // verify non-null is inserted correctly
             opt = 3;
@@ -2394,12 +2465,12 @@ void test26()
             // verify null is inserted correctly
             opt.reset();
             sql << "update soci_test set val = :v", use(opt);
-            eIndicator ind;
+            ind = eOK;
             sql << "select val from soci_test", into(j, ind);
             assert(ind == eNull);
         }
 
-        // vector tests
+        // vector tests (select)
 
         {
             sql << "delete from soci_test";
@@ -2476,9 +2547,11 @@ void test26()
                 v.resize(3);
             }
             assert(id == 6);
+        }
 
-            // and why not stress iterators and the dynamic binding, too!
+        // and why not stress iterators and the dynamic binding, too!
 
+        {
             rowset<row> rs = (sql.prepare << "select id, val from soci_test order by id");
 
             rowset<row>::const_iterator it = rs.begin();
@@ -2532,14 +2605,16 @@ void test26()
 
             assert(io.is_initialized() && io.get() == 4);
             assert(jo.is_initialized() == false);
+        }
 
+        // bulk inserts of non-null data
 
-            // bulk inserts of non-null data
-
+        {
             sql << "delete from soci_test";
 
-            ids.clear();
-            v.clear();
+            std::vector<int> ids;
+            std::vector<boost::optional<int> > v;
+
             ids.push_back(10); v.push_back(20);
             ids.push_back(11); v.push_back(21);
             ids.push_back(12); v.push_back(22);
@@ -2564,9 +2639,26 @@ void test26()
 
             sql << "select sum(val) from soci_test", into(sum);
             assert(sum == 41);
+        }
 
-            // TODO: verify that boost::optional is composable
-            // with user conversions
+        // composability with user conversions
+
+        {
+            sql << "delete from soci_test";
+
+            boost::optional<MyInt> omi1;
+            boost::optional<MyInt> omi2;
+
+            omi1 = MyInt(125);
+            omi2.reset();
+
+            sql << "insert into soci_test(id, val) values(:id, :val)",
+                use(omi1), use(omi2);
+
+            sql << "select id, val from soci_test", into(omi2), into(omi1);
+
+            assert(omi1.is_initialized() == false);
+            assert(omi2.is_initialized() && omi2.get().get() == 125);
         }
     }
 
@@ -2576,6 +2668,7 @@ void test26()
 }; // class common_tests
 
 } // namespace tests
+
 } // namespace soci
 
 #endif // COMMON_TESTS_H_INCLUDED
