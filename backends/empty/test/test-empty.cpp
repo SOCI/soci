@@ -43,11 +43,10 @@ namespace soci
 {
     template<> struct type_conversion<Person>
     {
-        typedef row base_type;
-        static Person from(row& /* r */)
+        typedef values base_type;
+        static void from_base(values & /* r */, eIndicator /* ind */,
+            Person & /* p */)
         {
-            Person p;
-            return p;
         }
     };
 }
