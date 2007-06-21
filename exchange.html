@@ -490,7 +490,7 @@ struct that converts to and from one of the following SOCI Base Types:</p>
 <p>There are three required class members for a valid <code>type_conversion</code>
 specialization:</p>
 <ul>
-  <li>the <code>base_type</code> trait, defining the base type</li>
+  <li>the <code>base_type</code> type definition, aliasing the base type</li>
   <li>the <code>from_base()</code> static member function, converting from
 the base type</li>
   <li>the <code>to_base()</code> static member function, converting to the
@@ -499,12 +499,65 @@ base type</li>
 
 <p>(Note that no database-specific code is required.)</p>
 
-<p>The following example shows how application code could extend SOCI to
+<p>The following example shows how the user can extend SOCI to
+support his own type <code>MyInt</code>, which here is some wrapper
+for the fundamental <code>int</code> type:</p>
+
+<pre class="example">
+class MyInt
+{
+public:
+    MyInt() {}
+    MyInt(int i) : i_(i) {}
+
+    void set(int i) { i_ = i; }
+    int get() const { return i_; }
+
+private:
+    int i_;
+};
+
+namespace soci
+{
+    template &lt;&gt;
+    struct type_conversion&lt;MyInt&gt;
+    {
+        typedef int base_type;
+
+        static void from_base(int i, eIndicator ind, MyInt &amp;mi)
+        {
+            if (ind == eOK)
+            {
+                mi.set(i);
+            }
+        }
+
+        static void to_base(MyInt &amp;mi, int &amp;i, eIndicator &amp;ind)
+        {
+            i = mi.get();
+            ind = eOK;
+        }
+    };
+}
+</pre>
+
+<p>The above specialization for <code>soci::type_conversion&lt;MyInt&gt;</code> is enough
+to enable the following:</p>
+
+<pre class="example">
+MyInt i;
+
+sql << "select count(*) from person", into(i);
+
+cout << "We have " << i.get() << " persons in the database.\n";
+</pre>
+
+<p>Another example shows how application code could extend SOCI to
 transparently support <code>boost::gregorian::date</code>:</p>
 
 <pre class="example">
-#include "boost/date_time/gregorian/gregorian.hpp"
-namespace SOCI
+#include &lt;boost/date_time/gregorian/gregorian.hpp&gt;
+namespace soci
 {
 template&lt;&gt;
 struct type_conversion&lt;boost::gregorian::date&gt;
