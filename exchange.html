@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
   <meta content="text/html; charset=ISO-8859-1"  http-equiv="content-type" />
@@ -19,7 +19,11 @@
   <a href="#bind_position">Binding by position</a><br />
   <a href="#bind_name">Binding by name</a><br />
 </div>
-<a href="exchange.html#indicators">Indicators</a><br />
+<a href="exchange.html#data_states">Handling of nulls and other conditions</a><br />
+<div class="navigation-indented">
+  <a href="#indicators">Indicators</a><br />
+  <a href="#boost_optional">boost::optional&lt;T&gt;</a><br />
+</div>
 <a href="#types">Types</a><br />
 <div class="navigation-indented">
   <a href="#static">Static binding</a><br />
@@ -159,7 +163,9 @@ statement preparation relies on successful query rewriting.
 In practice, both macros will be needed for PostgreSQL server older than 8.0.</p>
 </div>
 
-<h3 id="indicators">Indicators</h3>
+<h3 id="data_states">Handling nulls and other conditions</h3>
+
+<h4 id="indicators">Indicators</h4>
 
 <p>In order to support null values and other conditions which are not
 real errors, the concept of <i>indicator</i> is provided.</p>
@@ -261,6 +267,38 @@ for (int i = 0; i != 10; ++i)
 sql &lt;&lt; "insert into person(id, name) values(:id, :name)",
     use(ids), use(name, nameIndicators);
 </pre>
+
+<h4 id="boost_optional">boost::optional&lt;T&gt;</h4>
+
+<p>An alternative way to handle the null condition is to use the <code>boost::optional&lt;T&gt;</code>
+utility from the <a target="_blank" href="http://www.boost.org/">Boost</a> library.</p>
+<p>The main idea is that the value for which the null condition is a valid one
+should be wrapped in the <code>boost::optional&lt;T&gt;</code> object, which will then
+include the information whether the value itself is valid or null.</p>
+<p>The <code>boost::optional&lt;T&gt;</code> objects can be used everywhere where the regualar user provided
+values are expected.</p>
+<p>Example:</p>
+
+<pre class="example">
+boost::optional&lt;string&gt; name;
+sql &lt;&lt; "select name from person where id = 7", into(name);
+
+if (name.is_initialized())
+{
+    // OK, the name was retrieved and is not-null
+    cout << "The name is " << name.get();
+}
+else
+{
+    // the name is null
+}
+</pre>
+
+<p>The support for <code>boost::optional&lt;T&gt;</code> is implemented in a way that does not
+prevent it from being used together with <a href="#indicators">indicators</a>, although
+it is rather expected that users will stick to one of these two ways of handling nulls.</p>
+<p>Note also that users can hook their own null-aware data types, with the use of
+<a href="#custom_types">user-defined conversions</a>.</p>
 
 <h3 id="types">Types</h3>
 
@@ -437,7 +475,7 @@ r >> name >> address >> age;
 be used transparently to insert into, update, and select from the
 database.</p>
 
-<p>To do so, provide an appropriate specialization of the <code>TypeConversion</code>
+<p>To do so, provide an appropriate specialization of the <code>type_conversion</code>
 struct that converts to and from one of the following SOCI Base Types:</p>
 
 <ul>
@@ -449,13 +487,13 @@ struct that converts to and from one of the following SOCI Base Types:</p>
   <li><code>std::tm</code></li>
 </ul>
 
-<p>There are three required class members for a valid <code>TypeConversion</code>
+<p>There are three required class members for a valid <code>type_conversion</code>
 specialization:</p>
 <ul>
   <li>the <code>base_type</code> trait, defining the base type</li>
-  <li>the <code>from()</code> static member function, converting from
+  <li>the <code>from_base()</code> static member function, converting from
 the base type</li>
-  <li>the <code>to()</code> static member function, converting to the
+  <li>the <code>to_base()</code> static member function, converting to the
 base type</li>
 </ul>
 
@@ -469,21 +507,21 @@ transparently support <code>boost::gregorian::date</code>:</p>
 namespace SOCI
 {
 template&lt;&gt;
-struct TypeConversion&lt;boost::gregorian::date&gt;
+struct type_conversion&lt;boost::gregorian::date&gt;
 {
     typedef std::tm base_type;
-    static boost::gregorian::date from(std::tm&amp; t)
+    static void from_base(std::tm&amp; t, eIndicator ind, boost::gregorian::date &d)
     {
-        boost::gregorian::months_of_year month = 
-            static_cast&lt;boost::gregorian::months_of_year&gt;(t.tm_mon + 1);
+        if (ind == eOK)
+        {
+            boost::gregorian::months_of_year month = 
+                static_cast&lt;boost::gregorian::months_of_year&gt;(t.tm_mon + 1);
 
-        boost::gregorian::date d(t.tm_year + 1900, month, t.tm_mday);
-        return d;
+            d = boost::gregorian::date(t.tm_year + 1900, month, t.tm_mday);
+        }
     }
-    static std::tm to(boost::gregorian::date&amp; d)
+    static void to_base(boost::gregorian::date&amp; d, std::tm &t, eIndicator &ind)
     {
-        std::tm t;
-
         t.tm_isdst = -1;
         t.tm_year = d.year() - 1900;
         t.tm_mon = d.month() - 1;
@@ -493,13 +531,13 @@ struct TypeConversion&lt;boost::gregorian::date&gt;
         t.tm_sec = 0;
         std::mktime(&amp;t); //normalize and compute remaining fields
 
-        return t;
+        ind = eOK;
     }
 };
 }
 </pre>
 
-<p>With the above <code>TypeConversion</code> specialization in place, it
+<p>With the above <code>type_conversion</code> specialization in place, it
 is possible to
 use <code>boost::gregorian::date</code> directly with SOCI, binding
 input or output, either statically or via a dynamic resultset:</p>
@@ -541,11 +579,8 @@ specializations need to implement the interface defined by,
 respectively, the <code>IntoTypeBase</code> and <code>UseTypeBase</code>
 classes.</p>
 
-<p>Note that when specializing these template classes for handling your
-own types, you are free to choose the expected parameters for the
-classes' constructors. The template functions <code>into</code> and <code>use</code>
-support up to 5 parameters, which are just forwarded to the constructor
-of appropriate class. The only convention is that when the indicator
+<p>Note that when specializing these template classes the only convention
+is that when the indicator
 variable is used (see below), it should appear in the second position.
 Please refer to the library source code to see how this is done for the
 standard types.</p>
