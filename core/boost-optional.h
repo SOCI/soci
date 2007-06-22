@@ -51,20 +51,6 @@ struct type_conversion<boost::optional<T> >
     }
 };
 
-namespace details
-{
-
-template <typename T>
-struct exchange_traits<boost::optional<T> >
-{
-    // this forces the conversion engine to kick in
-    typedef user_type_tag type_family;
-
-    enum { eXType = exchange_traits<T>::eXType };
-};
-
-} // namespace details
-
 } // namespace soci
 
 #endif // BOOST_OPTIONAL_H_INCLUDED
