@@ -1,13 +1,13 @@
-# $Id: Makefile.am,v 1.3 2006/11/27 09:59:31 mloskot Exp $
+# $Id: Makefile.am,v 1.4 2007/06/23 01:51:22 mloskot Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
+AM_CPPFLAGS = @BOOST_CPPFLAGS@ @MYSQL_CFLAGS@
+AM_LDFLAGS = @MYSQL_LDFLAGS@
+
 INCLUDES = \
 	-I$(top_srcdir)/src/core \
 	-I$(top_srcdir)/src/backends/mysql
-
-AM_CPPFLAGS = @MYSQL_CFLAGS@
-AM_LDFLAGS = @MYSQL_LDFLAGS@
 
 noinst_PROGRAMS = \
 	test_mysql

@@ -1,14 +1,14 @@
-# $Id: Makefile.am,v 1.4 2006/11/27 09:59:32 mloskot Exp $
+# $Id: Makefile.am,v 1.5 2007/06/23 01:51:22 mloskot Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
+AM_CPPFLAGS = @BOOST_CPPFLAGS@ @POSTGRESQL_CFLAGS@
+AM_LDFLAGS = @POSTGRESQL_LDFLAGS@
+
 INCLUDES = \
 	-I$(top_srcdir)/src/core \
 	-I$(top_srcdir)/src/core/test \
 	-I$(top_srcdir)/src/backends/postgresql
-
-AM_CPPFLAGS = @POSTGRESQL_CFLAGS@
-AM_LDFLAGS = @POSTGRESQL_LDFLAGS@
 
 noinst_PROGRAMS = \
 	test_postgresql

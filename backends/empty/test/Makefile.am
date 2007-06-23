@@ -1,9 +1,11 @@
-# $Id: Makefile.am,v 1.3 2006/11/27 09:59:31 mloskot Exp $
+# $Id: Makefile.am,v 1.4 2007/06/23 01:51:22 mloskot Exp $
 # 
 # Copyright (C) 2006, Mateusz Loskot
 #
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
+AM_CPPFLAGS = $(BOOST_CPPFLAGS)
+
 INCLUDES = \
 	-I$(top_srcdir)/src/core \
 	-I$(top_srcdir)/src/backends/empty

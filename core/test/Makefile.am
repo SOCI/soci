@@ -1,9 +1,10 @@
-# $Id: Makefile.am,v 1.1 2006/11/09 20:02:11 mloskot Exp $
+# $Id: Makefile.am,v 1.2 2007/06/23 01:51:22 mloskot Exp $
 # 
 # Copyright (C) 2006, Mateusz Loskot
 #
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
+AM_CPPFLAGS = $(BOOST_CPPFLAGS)
 
 socidir = $(includedir)/soci
 

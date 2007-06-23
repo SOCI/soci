@@ -1,14 +1,14 @@
-# $Id: Makefile.am,v 1.4 2006/11/27 09:59:32 mloskot Exp $
+# $Id: Makefile.am,v 1.5 2007/06/23 01:51:22 mloskot Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
+AM_CPPFLAGS = @BOOST_CPPFLAGS@ @SQLITE3_CFLAGS@
+AM_LDFLAGS = @SQLITE3_LDFLAGS@
+
 INCLUDES = \
 	-I$(top_srcdir)/src/core \
 	-I$(top_srcdir)/src/core/test \
 	-I$(top_srcdir)/src/backends/sqlite3
-
-AM_CPPFLAGS = @SQLITE3_CFLAGS@
-AM_LDFLAGS = @SQLITE3_LDFLAGS@
 
 TEST_CASE = test_sqlite3
 TEST_DB = test_sqlite3.db
