@@ -1,4 +1,4 @@
-dnl $Id: ax_oracle_oci.m4,v 1.8 2006/12/02 08:46:36 mloskot Exp $
+dnl $Id: ax_oracle_oci.m4,v 1.9 2007/06/23 00:56:49 mloskot Exp $
 dnl
 dnl @synopsis AX_LIB_ORACLE_OCI([MINIMUM-VERSION])
 dnl
@@ -32,10 +32,10 @@ dnl
 dnl @category InstalledPackages
 dnl @category Cxx
 dnl @author Mateusz Loskot <mateusz@loskot.net>
-dnl @version $Date: 2006/12/02 08:46:36 $
+dnl @version $Date: 2007/06/23 00:56:49 $
 dnl @license AllPermissive
 dnl
-dnl $Id: ax_oracle_oci.m4,v 1.8 2006/12/02 08:46:36 mloskot Exp $
+dnl $Id: ax_oracle_oci.m4,v 1.9 2007/06/23 00:56:49 mloskot Exp $
 dnl
 AC_DEFUN([AX_LIB_ORACLE_OCI],
 [
@@ -250,6 +250,7 @@ if (envh) OCIHandleFree(envh, OCI_HTYPE_ENV);
             oracle_version_check=`expr $oracle_version_number \>\= $oracle_version_req_number`
             if test "$oracle_version_check" = "1"; then
                 AC_MSG_RESULT([yes])
+                AC_DEFINE(HAVE_ORACLE,,[Define to 1 if the Oracle OCI library is available])
             else
                 AC_MSG_RESULT([no])
                 AC_MSG_ERROR([Oracle $ORACLE_OCI_VERSION found, but required version is $oracle_version_req])
