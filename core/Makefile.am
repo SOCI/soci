@@ -1,10 +1,10 @@
-# $Id: Makefile.am,v 1.7 2007/06/21 21:34:31 msobczak Exp $
+# $Id: Makefile.am,v 1.8 2007/06/23 00:58:09 mloskot Exp $
 # 
 # Copyright (C) 2006, Mateusz Loskot
 #
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
-AM_CXXFLAGS = -fPIC
+AM_CXXFLAGS = -fPIC $(BOOST_CPPFLAGS)
 
 SUBDIRS = test
 
