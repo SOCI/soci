@@ -12,6 +12,7 @@
 #include "soci-backend.h"
 #include "type-conversion.h"
 
+#include <cassert>
 #include <string>
 #include <vector>
 #include <map>
