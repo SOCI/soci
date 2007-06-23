@@ -1,4 +1,4 @@
-# $Id: ax_boost_base.m4,v 1.1 2007/06/23 00:58:09 mloskot Exp $
+# $Id: ax_boost_base.m4,v 1.2 2007/06/23 01:51:22 mloskot Exp $
 #
 ##### http://autoconf-archive.cryp.to/ax_boost_base.html
 #
@@ -191,7 +191,7 @@ if test "x$want_boost" = "xyes"; then
 	else
 		AC_SUBST(BOOST_CPPFLAGS)
 		AC_SUBST(BOOST_LDFLAGS)
-		AC_DEFINE(HAVE_BOOST,,[define if the Boost library is available])
+		AC_DEFINE(HAVE_BOOST, [1], [define if the Boost library is available])
 	fi
 
         CPPFLAGS="$CPPFLAGS_SAVED"

@@ -1,4 +1,4 @@
-dnl $Id: ax_firebird.m4,v 1.2 2006/08/30 14:28:55 mloskot Exp $
+dnl $Id: ax_firebird.m4,v 1.3 2007/06/23 01:51:22 mloskot Exp $
 dnl
 dnl @synopsis AX_LIB_FIREBIRD([MINIMUM-VERSION])
 dnl 
@@ -29,10 +29,10 @@ dnl
 dnl @category InstalledPackages
 dnl @category Cxx
 dnl @author Mateusz Loskot <mateusz@loskot.net>
-dnl @version $Date: 2006/08/30 14:28:55 $
+dnl @version $Date: 2007/06/23 01:51:22 $
 dnl @license AllPermissive
 dnl
-dnl $Id: ax_firebird.m4,v 1.2 2006/08/30 14:28:55 mloskot Exp $
+dnl $Id: ax_firebird.m4,v 1.3 2007/06/23 01:51:22 mloskot Exp $
 dnl
 AC_DEFUN([AX_LIB_FIREBIRD],
 [
@@ -154,10 +154,10 @@ AC_DEFUN([AX_LIB_FIREBIRD],
                     AC_MSG_WARN([Could not find FB_API_VER macro in $ac_firebird_header to get Firebird version.]) 
                 fi
 
-                AC_SUBST(FIREBIRD_CFLAGS)
-                AC_SUBST(FIREBIRD_LDFLAGS)
-                AC_SUBST(FIREBIRD_VERSION)
-                AC_DEFINE(HAVE_FIREBIRD)
+                AC_SUBST([FIREBIRD_CFLAGS])
+                AC_SUBST([FIREBIRD_LDFLAGS])
+                AC_SUBST([FIREBIRD_VERSION])
+                AC_DEFINE([HAVE_FIREBIRD], [1], [Define to 1 if FireBird libraries are available])
             fi
         fi
     fi

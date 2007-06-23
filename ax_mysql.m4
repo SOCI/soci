@@ -1,4 +1,4 @@
-dnl $Id: ax_mysql.m4,v 1.2 2006/08/30 14:28:55 mloskot Exp $
+dnl $Id: ax_mysql.m4,v 1.3 2007/06/23 01:51:22 mloskot Exp $
 dnl
 dnl @synopsis AX_LIB_MYSQL([MINIMUM-VERSION])
 dnl
@@ -28,10 +28,10 @@ dnl
 dnl @category InstalledPackages
 dnl @category Cxx
 dnl @author Mateusz Loskot <mateusz@loskot.net>
-dnl @version $Date: 2006/08/30 14:28:55 $
+dnl @version $Date: 2007/06/23 01:51:22 $
 dnl @license AllPermissive
 dnl
-dnl $Id: ax_mysql.m4,v 1.2 2006/08/30 14:28:55 mloskot Exp $
+dnl $Id: ax_mysql.m4,v 1.3 2007/06/23 01:51:22 mloskot Exp $
 dnl
 AC_DEFUN([AX_LIB_MYSQL],
 [
@@ -81,8 +81,7 @@ AC_DEFUN([AX_LIB_MYSQL],
 
             MYSQL_VERSION=`$MYSQL_CONFIG --version`
 
-            AC_DEFINE([HAVE_MYSQL], [1],
-                [Define to 1 if MySQL libraries are available])
+            AC_DEFINE([HAVE_MYSQL], [1], [Define to 1 if MySQL libraries are available])
             
             found_mysql="yes"
             AC_MSG_RESULT([yes])

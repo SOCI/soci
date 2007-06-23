@@ -1,4 +1,4 @@
-dnl $Id: ax_sqlite3.m4,v 1.2 2006/08/30 14:28:55 mloskot Exp $
+dnl $Id: ax_sqlite3.m4,v 1.3 2007/06/23 01:51:22 mloskot Exp $
 dnl
 dnl @synopsis AX_LIB_SQLITE3([MINIMUM-VERSION])
 dnl 
@@ -24,10 +24,10 @@ dnl
 dnl @category InstalledPackages
 dnl @category Cxx
 dnl @author Mateusz Loskot <mateusz@loskot.net>
-dnl @version $Date: 2006/08/30 14:28:55 $
+dnl @version $Date: 2007/06/23 01:51:22 $
 dnl @license AllPermissive
 dnl
-dnl $Id: ax_sqlite3.m4,v 1.2 2006/08/30 14:28:55 mloskot Exp $
+dnl $Id: ax_sqlite3.m4,v 1.3 2007/06/23 01:51:22 mloskot Exp $
 dnl
 AC_DEFUN([AX_LIB_SQLITE3],
 [
@@ -138,10 +138,10 @@ AC_DEFUN([AX_LIB_SQLITE3],
                 fi
             fi
 
-            AC_SUBST(SQLITE3_CFLAGS)
-            AC_SUBST(SQLITE3_LDFLAGS)
-            AC_SUBST(SQLITE3_VERSION)
-            AC_DEFINE(HAVE_SQLITE3)
+            AC_SUBST([SQLITE3_CFLAGS])
+            AC_SUBST([SQLITE3_LDFLAGS])
+            AC_SUBST([SQLITE3_VERSION])
+            AC_DEFINE([HAVE_SQLITE3], [1], [Define to 1 if SQLite 3 library is available])
         fi
     fi
 ])
