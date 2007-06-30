@@ -6,7 +6,6 @@
 //
 
 #define SOCI_SQLITE3_SOURCE
-#include "soci.h"
 #include "soci-sqlite3.h"
 
 #ifdef _MSC_VER

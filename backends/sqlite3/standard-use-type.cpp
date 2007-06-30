@@ -6,9 +6,10 @@
 //
 
 
-#include "soci.h"
 #include "soci-sqlite3.h"
+#include "rowid.h"
 #include <limits>
+#include <sstream>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355 4996)

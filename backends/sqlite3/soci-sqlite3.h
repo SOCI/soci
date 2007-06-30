@@ -23,6 +23,7 @@
 # define SOCI_SQLITE3_DECL
 #endif
 
+#include <vector>
 #include "soci-backend.h"
 
 // Disable flood of nonsense warnings generated for SQLite

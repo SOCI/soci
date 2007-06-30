@@ -6,9 +6,8 @@
 //
 
 
-#include "soci.h"
 #include "soci-sqlite3.h"
-
+#include "rowid.h"
 #include "common.h"
 
 #ifdef _MSC_VER
