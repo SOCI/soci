@@ -23,12 +23,12 @@
 # define SOCI_ODBC_DECL
 #endif
 
+#include <vector>
 #include <soci-backend.h>
 #ifdef _MSC_VER
 #include <windows.h>
 #endif
 #include <sqlext.h> // ODBC
-#include <vector>
 
 namespace soci
 {

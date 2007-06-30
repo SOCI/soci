@@ -5,7 +5,6 @@
 
 #define SOCI_ODBC_SOURCE
 #include "soci-odbc.h"
-#include <soci.h>
 #include <cctype>
 #include <cstdio>
 #include <cstring>

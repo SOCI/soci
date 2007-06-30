@@ -7,8 +7,8 @@
 
 #define SOCI_ODBC_SOURCE
 #include "soci-odbc.h"
-#include <soci.h>
 #include <cctype>
+#include <sstream>
 
 #ifdef _MSC_VER
 // disables the warning about converting int to void*.  This is a 64 bit compatibility

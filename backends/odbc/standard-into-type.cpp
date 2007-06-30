@@ -7,7 +7,6 @@
 
 #define SOCI_ODBC_SOURCE
 #include "soci-odbc.h"
-#include <soci.h>
 #include <ctime>
 
 using namespace soci;
