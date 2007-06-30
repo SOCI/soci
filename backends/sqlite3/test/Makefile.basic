@@ -4,12 +4,13 @@
 SQLITE3INCLUDEDIR =
 SQLITE3LIBDIR = -L/usr/lib
 SQLITE3LIBS = -lsqlite3
+BOOSTINCLUDEDIR = -I/usr/include/boost_1_33_1
 
 # The rest of the Makefile is independent of the target environment.
 
 COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
-INCLUDEDIRS = -I.. -I../../../core -I../../../core/test -I/usr/include/boost_1_33_1 ${SQLITE3INCLUDEDIR}
+INCLUDEDIRS = -I.. -I../../../core -I../../../core/test ${SQLITE3INCLUDEDIR} ${BOOSTINCLUDEDIR}
 LIBDIRS = -L.. -L../../../core ${SQLITE3LIBDIR}
 LIBS = -lsoci-core -lsoci-sqlite3 ${SQLITE3LIBS}
 
