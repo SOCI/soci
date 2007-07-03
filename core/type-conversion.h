@@ -112,7 +112,7 @@ template <typename T>
 struct base_vector_holder
 {
     base_vector_holder(std::size_t sz = 0) : vec_(sz) {}
-    std::vector<typename type_conversion<T>::base_type> vec_;
+    mutable std::vector<typename type_conversion<T>::base_type> vec_;
 };
 
 // Automatically create a std::vector based into_type from a type_conversion
@@ -138,7 +138,12 @@ public:
 
     virtual std::size_t size() const
     {
-        return details::base_vector_holder<T>::vec_.size();
+        // the user might have resized his vector in the meantime
+        // -> synchronize the base-value mirror to have the same size
+
+        std::size_t const userSize = value_.size();
+        details::base_vector_holder<T>::vec_.resize(userSize);
+        return userSize;
     }
 
     virtual void resize(std::size_t sz)
