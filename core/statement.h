@@ -144,7 +144,7 @@ public:
     void bind(values& values)                    { impl_->bind(values); }
     void exchange(details::into_type_ptr const &i);
     void exchange(details::use_type_ptr const &u);
-    void clean_up()                               { impl_->clean_up();    }
+    void clean_up()                               { impl_->clean_up(); }
 
     void prepare(std::string const &query,
         details::eStatementType eType = details::eRepeatableQuery)
@@ -205,6 +205,15 @@ private:
 
 namespace details
 {
+// exchange_traits for statement
+
+template <>
+struct exchange_traits<statement>
+{
+    typedef basic_type_tag type_family;    
+    enum { eXType = eXStatement };
+};
+
 // into and use types for Statement (for nested statements and cursors)
 
 template <>
