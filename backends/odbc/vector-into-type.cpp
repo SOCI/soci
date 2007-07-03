@@ -222,7 +222,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, eIndicator *ind)
         // then - deal with indicators
         if (ind != NULL)
         {
-            std::size_t const indSize = indHolderVec_.size();
+            std::size_t const indSize = statement_.get_number_of_rows();
             for (std::size_t i = 0; i != indSize; ++i)
             {
                 if (indHolderVec_[i] > 0)
@@ -241,7 +241,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, eIndicator *ind)
         }
         else
         {
-            std::size_t const indSize = indHolderVec_.size();
+            std::size_t const indSize = statement_.get_number_of_rows();
             for (std::size_t i = 0; i != indSize; ++i)
             {
                 if (indHolderVec_[i] == SQL_NULL_DATA)
@@ -261,6 +261,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, eIndicator *ind)
 
 void odbc_vector_into_type_backend::resize(std::size_t sz)
 {
+    indHolderVec_.resize(sz);
     switch (type_)
     {
     // simple cases
