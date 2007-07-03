@@ -120,6 +120,10 @@ int main(int argc, char** argv)
                   << "SOCI Message: " << e.what() << std::endl
                   << "ODBC Message: " << e.odbc_error_message() << std::endl;
     }
+    catch (soci::soci_error const & e)
+    {
+        std::cout << "SOCIERROR: " << e.what() << '\n';
+    }
     catch (std::exception const & e)
     {
         std::cout << "STD::EXECEPTION " << e.what() << '\n';
