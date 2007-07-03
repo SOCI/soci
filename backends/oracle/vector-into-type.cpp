@@ -225,7 +225,7 @@ void oracle_vector_into_type_backend::post_fetch(bool gotData, eIndicator *ind)
         // then - deal with indicators
         if (ind != NULL)
         {
-            std::size_t const indSize = indOCIHolderVec_.size();
+            std::size_t const indSize = statement_.get_number_of_rows();
             for (std::size_t i = 0; i != indSize; ++i)
             {
                 if (indOCIHolderVec_[i] == 0)

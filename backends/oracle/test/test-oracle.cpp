@@ -206,6 +206,7 @@ void test4()
     std::cout << "test 4 passed" << std::endl;
 }
 
+
 // ROWID test
 void test5()
 {
@@ -288,8 +289,17 @@ namespace soci
     struct type_conversion<string_holder>
     {
         typedef std::string base_type;
-        static string_holder from(std::string& s) { return string_holder(s); }
-        static std::string to(string_holder& sh) { return sh.get(); }
+        static void from_base(const std::string &s, eIndicator /* ind */, 
+            string_holder &sh) 
+        { 
+            sh = string_holder(s); 
+        }
+
+        static void to_base(string_holder &sh, std::string &s, eIndicator &ind) 
+        { 
+            s = sh.get();
+            ind = eOK; 
+        }
     };
 }
 
@@ -693,24 +703,23 @@ namespace soci
     {
         typedef values base_type;
 
-        static person from(values const &v)
+        static void from_base(values const &v, eIndicator /* ind */, person &p)
         {
-            person p;
+            // ignoring possibility that the whole object might be NULL
+
             p.id = v.get<int>("ID");
             p.firstName = v.get<std::string>("FIRST_NAME");
             p.lastName = v.get<string_holder>("LAST_NAME");
             p.gender = v.get<std::string>("GENDER", "unknown");
-            return p;
         }
 
-        static values to(person &p)
+        static void to_base(person &p, values &v, eIndicator &ind)
         {
-            values v;
             v.set("ID", p.id);
             v.set("FIRST_NAME", p.firstName);
             v.set("LAST_NAME", p.lastName);
             v.set("GENDER", p.gender, p.gender.empty() ? eNull : eOK);
-            return v;
+            ind = eOK;
         }
     };
 }
@@ -864,14 +873,12 @@ namespace soci
     {
         typedef values base_type;
 
-        static person2 from(values const &v)
+        static void from_base(values const &v, eIndicator /* ind */, person2 &p)
         {
-            person2 p;
             p.id = v.get<int>(0);
             p.firstName = v.get<std::string>(1);
             p.lastName = v.get<std::string>(2);
             p.gender = v.get<std::string>(3, "whoknows");
-            return p;
         }
 
         // What about the "to" part? Does it make any sense to have it?
@@ -882,11 +889,9 @@ namespace soci
     {
         typedef values base_type;
 
-        static person3 from(values const &v)
+        static void from_base(values const &v, eIndicator /* ind */, person3 &p)
         {
-            person3 p;
             v >> p.id >> p.firstName >> p.lastName >> p.gender;
-            return p;
         }
         // TODO: The "to" part is certainly needed.
     };
@@ -965,7 +970,7 @@ struct table_creator_one : public table_creator_base
     table_creator_one(session& session)
         : table_creator_base(session) 
     {
-        session << "create table soci_test(id number, val number(4,0), c char, "
+        session << "create table soci_test(id number(10,0), val number(4,0), c char, "
                  "str varchar2(20), sh number, ul number, d number, "
                  "tm date, i1 number, i2 number, i3 number, name varchar2(20))";
     }

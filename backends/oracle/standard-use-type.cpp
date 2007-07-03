@@ -7,8 +7,10 @@
 
 #define soci_ORACLE_SOURCE
 #include "soci-oracle.h"
+#include "blob.h"
 #include "error.h"
-#include <soci.h>
+#include "rowid.h"
+#include "statement.h"
 #include <cctype>
 #include <cstdio>
 #include <cstring>
