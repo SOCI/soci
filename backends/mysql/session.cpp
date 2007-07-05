@@ -8,7 +8,6 @@
 
 #define SOCI_MYSQL_SOURCE
 #include "soci-mysql.h"
-#include <soci.h>
 #include <cctype>
 #include <cerrno>
 #include <ciso646>
