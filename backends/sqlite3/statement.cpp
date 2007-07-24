@@ -198,6 +198,11 @@ sqlite3_statement_backend::bindAndExecute(int number)
             const sqlite3_column& curCol = useData_[row][pos-1];
             if (curCol.isNull_)
                 bindRes = sqlite3_bind_null(stmt_, pos);
+            else if(curCol.blobBuf_)
+                bindRes = sqlite3_bind_blob(stmt_, pos, 
+                                            curCol.blobBuf_, 
+                                            curCol.blobSize_, 
+                                            SQLITE_STATIC);
             else
                 bindRes = sqlite3_bind_text(stmt_, pos, 
                                             curCol.data_.c_str(), 

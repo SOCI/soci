@@ -57,30 +57,63 @@ void test1()
     std::cout << "test 1 passed" << std::endl;
 }
 
-// Blob Test
+// BLOB test
+struct blob_table_creator : public table_creator_base
+{
+    blob_table_creator(session& session)
+    : table_creator_base(session)
+    {
+        session <<
+             "create table soci_test ("
+             "    id integer,"
+             "    img blob"
+             ")";
+    }
+};
+
 void test2()
 {
     {
         session sql(backEnd, connectString);
 
-        try
-        {
-            // expected error
-            blob b(sql);
-            assert(false);
-        }
-        catch (soci_error const &e)
-        {
-            std::string msg = e.what();
-            assert(msg ==
-                "BLOBs are not supported.");
-        }
- 
-    }
+        blob_table_creator tableCreator(sql);
+        
+        char buf[] = "abcdefghijklmnopqrstuvwxyz";
+        
+        sql << "insert into soci_test(id, img) values(7, '')";
     
+        {
+            blob b(sql);
+
+            sql << "select img from soci_test where id = 7", into(b);
+            assert(b.get_len() == 0);
+
+            b.write(0, buf, sizeof(buf));
+            assert(b.get_len() == sizeof(buf));
+            sql << "update soci_test set img=? where id = 7", use(b);
+
+            b.append(buf, sizeof(buf));
+            assert(b.get_len() == 2 * sizeof(buf));
+            sql << "insert into soci_test(id, img) values(8, ?)", use(b);
+        }
+        {
+            blob b(sql);
+            sql << "select img from soci_test where id = 8", into(b);
+            assert(b.get_len() == 2 * sizeof(buf));
+            char buf2[100];
+            b.read(0, buf2, 10);
+            assert(strncmp(buf2, "abcdefghij", 10) == 0);
+            
+            blob b2(sql);
+            
+            sql << "select img from soci_test where id = 7", into(b2);
+            assert(b2.get_len() == sizeof(buf));
+            
+        }
+    }
+
     std::cout << "test 2 passed" << std::endl;
 }
-
 
 // This test was put in to fix a problem that occurs when there are both 
 //into and use elements in the same query and one of them (into) binds 
@@ -201,11 +234,8 @@ int main(int argc, char** argv)
     }
     else
     {
-        std::cout << "usage: " << argv[0]
-                  << " database_file_name\n"       
-                  << "example: " << argv[0]
-                  << " foo.data\n";
-        exit(1);
+        // If no file name is specfied then work in-memory
+        connectString = ":memory:";
     }
 
     try

@@ -142,6 +142,8 @@ struct sqlite3_column
 {
     std::string data_;
     bool isNull_;
+    char * blobBuf_;
+    std::size_t blobSize_;
 };
 
 typedef std::vector<sqlite3_column> sqlite3_row;
@@ -203,9 +205,6 @@ struct sqlite3_blob_backend : details::blob_backend
 
     ~sqlite3_blob_backend();
 
-    void setData(const char *tableName, const char *columnName,
-                 const char *buf, size_t len);
-
     virtual std::size_t get_len();
     virtual std::size_t read(std::size_t offset, char *buf,
                              std::size_t toRead);
@@ -219,8 +218,6 @@ private:
 
     void updateBLOB();
 
-    std::string tableName_;
-    std::string columnName_;
     char *buf_;
     size_t len_;
 };

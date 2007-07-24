@@ -8,6 +8,7 @@
 
 #include "soci-sqlite3.h"
 #include "rowid.h"
+#include "blob.h"
 #include <limits>
 #include <sstream>
 
@@ -73,6 +74,8 @@ void sqlite3_standard_use_type_backend::pre_use(eIndicator const * ind)
     {
         statement_.useData_[0][pos].isNull_ = true;
         statement_.useData_[0][pos].data_ = "";
+        statement_.useData_[0][pos].blobBuf_ = 0;
+        statement_.useData_[0][pos].blobSize_ = 0;
     }
     else
     {
@@ -165,13 +168,31 @@ void sqlite3_standard_use_type_backend::pre_use(eIndicator const * ind)
             snprintf(buf_, bufSize, "%lu", rbe->value_);
         }
         break;
+        case eXBLOB:	 
+        {	 
+            blob *b = static_cast<blob *>(data_);	 
+            sqlite3_blob_backend *bbe =	 
+                static_cast<sqlite3_blob_backend *>(b->get_backend());
+            
+            std::size_t len = bbe->get_len();    
+            buf_ = new char[len];
+            bbe->read(0, buf_, len);
+            statement_.useData_[0][pos].blobBuf_ = buf_;
+            statement_.useData_[0][pos].blobSize_ = len;
+        }	 
+        break;
 
         default:
             throw soci_error("Use element used with non-supported type.");
         }
 
         statement_.useData_[0][pos].isNull_ = false;
-        statement_.useData_[0][pos].data_ = buf_;
+        if(type_ != eXBLOB)
+        {
+            statement_.useData_[0][pos].blobBuf_ = 0;
+            statement_.useData_[0][pos].blobSize_ = 0;
+            statement_.useData_[0][pos].data_ = buf_;
+        }
     }
 }
 

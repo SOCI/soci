@@ -9,6 +9,7 @@
 #include "soci-sqlite3.h"
 #include "rowid.h"
 #include "common.h"
+#include "blob.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -148,6 +149,20 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
             long long val = strtoll(buf, NULL, 10);
             rbe->value_ = static_cast<unsigned long>(val);
         }
+        break;
+        case eXBLOB:	 
+        {	 
+            blob *b = static_cast<blob *>(data_);	 
+            sqlite3_blob_backend *bbe =	 
+                static_cast<sqlite3_blob_backend *>(b->get_backend());	 
+
+            buf = reinterpret_cast<const char*>(sqlite3_column_blob(	 
+                                                   statement_.stmt_,	 
+                                                   pos));	 
+
+            int len = sqlite3_column_bytes(statement_.stmt_, pos);	 
+            bbe->write(0, buf, len);	 
+        }	 
         break;
         default:
             throw soci_error("Into element used with non-supported type.");

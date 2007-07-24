@@ -87,6 +87,8 @@ void sqlite3_vector_use_type_backend::pre_use(eIndicator const * ind)
         {
             statement_.useData_[i][pos].isNull_ = true;
             statement_.useData_[i][pos].data_ = "";
+            statement_.useData_[i][pos].blobBuf_ = 0;
+            statement_.useData_[i][pos].blobSize_ = 0;
         }
         else
         {
@@ -186,6 +188,8 @@ void sqlite3_vector_use_type_backend::pre_use(eIndicator const * ind)
 
             statement_.useData_[i][pos].isNull_ = false;
             statement_.useData_[i][pos].data_ = buf;
+            statement_.useData_[i][pos].blobBuf_ = 0;
+            statement_.useData_[i][pos].blobSize_ = 0;
         }
         if (buf)
             delete[] buf;
