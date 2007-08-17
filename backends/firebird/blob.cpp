@@ -22,7 +22,7 @@ firebird_blob_backend::~firebird_blob_backend()
     cleanUp();
 }
 
-std::size_t firebird_blob_backend::getLen()
+std::size_t firebird_blob_backend::get_len()
 {
     if (from_db_ && bhp_ == 0)
     {

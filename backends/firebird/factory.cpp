@@ -8,7 +8,7 @@
 #define SOCI_FIREBIRD_SOURCE
 #include "soci-firebird.h"
 
-using namespace SOCI;
+using namespace soci;
 
 firebird_session_backend * firebird_backend_factory::make_session(
     std::string const &connectString) const

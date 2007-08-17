@@ -17,7 +17,7 @@ using namespace soci;
 using namespace soci::details;
 using namespace soci::details::firebird;
 
-void firebird_vector_use_type_backend::bindByPos(int & position,
+void firebird_vector_use_type_backend::bind_by_pos(int & position,
                                                  void * data, eExchangeType type)
 {
     if (statement_.boundByName_)
@@ -44,7 +44,7 @@ void firebird_vector_use_type_backend::bindByPos(int & position,
     statement_.boundByPos_ = true;
 }
 
-void firebird_vector_use_type_backend::bindByName(
+void firebird_vector_use_type_backend::bind_by_name(
     std::string const & name, void * data, eExchangeType type)
 {
     if (statement_.boundByPos_)
@@ -77,7 +77,7 @@ void firebird_vector_use_type_backend::bindByName(
     statement_.boundByName_ = true;
 }
 
-void firebird_vector_use_type_backend::preUse(eIndicator const * ind)
+void firebird_vector_use_type_backend::pre_use(eIndicator const * ind)
 {
     inds_ = ind;
 }
@@ -197,7 +197,7 @@ std::size_t firebird_vector_use_type_backend::size()
     return sz;
 }
 
-void firebird_vector_use_type_backend::cleanUp()
+void firebird_vector_use_type_backend::clean_up()
 {
     if (buf_ != NULL)
     {

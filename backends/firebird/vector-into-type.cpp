@@ -13,7 +13,7 @@ using namespace soci;
 using namespace soci::details;
 using namespace soci::details::firebird;
 
-void firebird_vector_into_type_backend::defineByPos(
+void firebird_vector_into_type_backend::define_by_pos(
     int & position, void * data, eExchangeType type)
 {
     position_ = position-1;
@@ -32,7 +32,7 @@ void firebird_vector_into_type_backend::defineByPos(
     var->sqlind = &indISCHolder_;
 }
 
-void firebird_vector_into_type_backend::preFetch()
+void firebird_vector_into_type_backend::pre_fetch()
 {
     // Nothing to do here.
 }
@@ -105,7 +105,7 @@ void firebird_vector_into_type_backend::exchangeData(std::size_t row)
 
 }
 
-void firebird_vector_into_type_backend::postFetch(
+void firebird_vector_into_type_backend::post_fetch(
     bool gotData, eIndicator * ind)
 {
     // Here we have to set indicators only. Data was exchanged with user
@@ -194,7 +194,7 @@ std::size_t firebird_vector_into_type_backend::size()
     return sz;
 }
 
-void firebird_vector_into_type_backend::cleanUp()
+void firebird_vector_into_type_backend::clean_up()
 {
     if (buf_ != NULL)
     {

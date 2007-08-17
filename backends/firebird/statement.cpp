@@ -46,7 +46,7 @@ void firebird_statement_backend::alloc()
     }
 }
 
-void firebird_statement_backend::cleanUp()
+void firebird_statement_backend::clean_up()
 {
     ISC_STATUS stat[stat_size];
 
@@ -543,31 +543,31 @@ void firebird_statement_backend::exchangeData(bool gotData, int row)
                 else
                 {
                     static_cast<firebird_vector_into_type_backend*>(
-                        intos_[i])->exchangeData();
+                        intos_[i])->exchangeData(row);
                 }
             }
         }
     }
 }
 
-int firebird_statement_backend::getNumberOfRows()
+int firebird_statement_backend::get_number_of_rows()
 {
     return rowsFetched_;
 }
 
-std::string firebird_statement_backend::rewriteForProcedureCall(
+std::string firebird_statement_backend::rewrite_for_procedure_call(
     std::string const &query)
 {
     procedure_ = true;
     return query;
 }
 
-int firebird_statement_backend::prepareForDescribe()
+int firebird_statement_backend::prepare_for_describe()
 {
     return static_cast<int>(sqldap_->sqld);
 }
 
-void firebird_statement_backend::describeColumn(int colNum,
+void firebird_statement_backend::describe_column(int colNum,
                                                 eDataType & type, std::string & columnName)
 {
     XSQLVAR * var = sqldap_->sqlvar+(colNum-1);
@@ -625,22 +625,22 @@ void firebird_statement_backend::describeColumn(int colNum,
     }
 }
 
-firebird_vector_into_type_backend * firebird_statement_backend::makeIntoTypeBackEnd()
+firebird_standard_into_type_backend * firebird_statement_backend::make_into_type_backend()
+{
+    return new firebird_standard_into_type_backend(*this);
+}
+
+firebird_standard_use_type_backend * firebird_statement_backend::make_use_type_backend()
+{
+    return new firebird_standard_use_type_backend(*this);
+}
+
+firebird_vector_into_type_backend * firebird_statement_backend::make_vector_into_type_backend()
 {
     return new firebird_vector_into_type_backend(*this);
 }
 
-FirebirdStandardUseTypeBackEnd * firebird_statement_backend::makeUseTypeBackEnd()
-{
-    return new FirebirdStandardUseTypeBackEnd(*this);
-}
-
-FirebirdVectorIntoTypeBackEnd * firebird_statement_backend::makeVectorIntoTypeBackEnd()
-{
-    return new FirebirdVectorIntoTypeBackEnd(*this);
-}
-
-firebird_vector_use_type_backend * firebird_statement_backend::makeVectorUseTypeBackEnd()
+firebird_vector_use_type_backend * firebird_statement_backend::make_vector_use_type_backend()
 {
     return new firebird_vector_use_type_backend(*this);
 }

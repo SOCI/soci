@@ -62,14 +62,14 @@ struct firebird_standard_into_type_backend : details::standard_into_type_backend
         : statement_(st), buf_(NULL)
     {}
 
-    virtual void defineByPos(int &position,
+    virtual void define_by_pos(int &position,
         void *data, details::eExchangeType type);
 
-    virtual void preFetch();
-    virtual void postFetch(bool gotData, bool calledFromFetch,
+    virtual void pre_fetch();
+    virtual void post_fetch(bool gotData, bool calledFromFetch,
         eIndicator *ind);
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
     firebird_statement_backend &statement_;
     virtual void exchangeData();
@@ -88,16 +88,16 @@ struct firebird_vector_into_type_backend : details::vector_into_type_backend
         : statement_(st), buf_(NULL)
     {}
 
-    virtual void defineByPos(int &position,
+    virtual void define_by_pos(int &position,
         void *data, details::eExchangeType type);
 
-    virtual void preFetch();
-    virtual void postFetch(bool gotData, eIndicator *ind);
+    virtual void pre_fetch();
+    virtual void post_fetch(bool gotData, eIndicator *ind);
 
     virtual void resize(std::size_t sz);
     virtual std::size_t size();
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
     firebird_statement_backend &statement_;
     virtual void exchangeData(std::size_t row);
@@ -116,15 +116,15 @@ struct firebird_standard_use_type_backend : details::standard_use_type_backend
         : statement_(st), buf_(NULL), indISCHolder_(0)
     {}
 
-    virtual void bindByPos(int &position,
+    virtual void bind_by_pos(int &position,
         void *data, details::eExchangeType type);
-    virtual void bindByName(std::string const &name,
+    virtual void bind_by_name(std::string const &name,
         void *data, details::eExchangeType type);
 
-    virtual void preUse(eIndicator const *ind);
-    virtual void postUse(bool gotData, eIndicator *ind);
+    virtual void pre_use(eIndicator const *ind);
+    virtual void post_use(bool gotData, eIndicator *ind);
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
     firebird_statement_backend &statement_;
     virtual void exchangeData();
@@ -143,16 +143,16 @@ struct firebird_vector_use_type_backend : details::vector_use_type_backend
         : statement_(st), inds_(NULL), buf_(NULL), indISCHolder_(0)
     {}
 
-    virtual void bindByPos(int &position,
+    virtual void bind_by_pos(int &position,
         void *data, details::eExchangeType type);
-    virtual void bindByName(std::string const &name,
+    virtual void bind_by_name(std::string const &name,
         void *data, details::eExchangeType type);
 
-    virtual void preUse(eIndicator const *ind);
+    virtual void pre_use(eIndicator const *ind);
 
     virtual std::size_t size();
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
     firebird_statement_backend &statement_;
     virtual void exchangeData(std::size_t row);
@@ -172,25 +172,25 @@ struct firebird_statement_backend : details::statement_backend
     firebird_statement_backend(firebird_session_backend &session);
 
     virtual void alloc();
-    virtual void cleanUp();
+    virtual void clean_up();
     virtual void prepare(std::string const &query,
         details::eStatementType eType);
 
     virtual execFetchResult execute(int number);
     virtual execFetchResult fetch(int number);
 
-    virtual int getNumberOfRows();
+    virtual int get_number_of_rows();
 
-    virtual std::string rewriteForProcedureCall(std::string const &query);
+    virtual std::string rewrite_for_procedure_call(std::string const &query);
 
-    virtual int prepareForDescribe();
-    virtual void describeColumn(int colNum, eDataType &dtype,
+    virtual int prepare_for_describe();
+    virtual void describe_column(int colNum, eDataType &dtype,
         std::string &columnName);
 
-    virtual firebird_standard_into_type_backend * makeIntoTypeBackEnd();
-    virtual firebird_standard_use_type_backend * makeUseTypeBackEnd();
-    virtual firebird_vector_into_type_backend * makeVectorIntoTypeBackEnd();
-    virtual firebird_vector_use_type_backend * makeVectorUseTypeBackEnd();
+    virtual firebird_standard_into_type_backend * make_into_type_backend();
+    virtual firebird_standard_use_type_backend * make_use_type_backend();
+    virtual firebird_vector_into_type_backend * make_vector_into_type_backend();
+    virtual firebird_vector_use_type_backend * make_vector_use_type_backend();
 
     firebird_session_backend &session_;
 
@@ -242,7 +242,7 @@ struct firebird_blob_backend : details::blob_backend
 
     ~firebird_blob_backend();
 
-    virtual std::size_t getLen();
+    virtual std::size_t get_len();
     virtual std::size_t read(std::size_t offset, char *buf,
         std::size_t toRead);
     virtual std::size_t write(std::size_t offset, char const *buf,

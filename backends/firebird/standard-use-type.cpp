@@ -14,7 +14,7 @@ using namespace soci;
 using namespace soci::details;
 using namespace soci::details::firebird;
 
-void firebird_standard_use_type_backend::bindByPos(
+void firebird_standard_use_type_backend::bind_by_pos(
     int & position, void * data, eExchangeType type)
 {
     if (statement_.boundByName_)
@@ -41,7 +41,7 @@ void firebird_standard_use_type_backend::bindByPos(
 	statement_.boundByPos_ = true;
 }
 
-void firebird_standard_use_type_backend::bindByName(
+void firebird_standard_use_type_backend::bind_by_name(
     std::string const & name, void * data,
     eExchangeType type)
 {
@@ -75,7 +75,7 @@ void firebird_standard_use_type_backend::bindByName(
 	statement_.boundByName_ = true;
 }
 
-void firebird_standard_use_type_backend::preUse(eIndicator const * ind)
+void firebird_standard_use_type_backend::pre_use(eIndicator const * ind)
 {
     if (ind)
     {
@@ -118,8 +118,8 @@ void firebird_standard_use_type_backend::exchangeData()
             // cases that require adjustments and buffer management
         case eXCString:
             {
-                details::CStringDescriptor *tmp
-                = static_cast<CStringDescriptor *>(data_);
+                details::cstring_descriptor *tmp
+                    = static_cast<cstring_descriptor*>(data_);
 
                 // remove trailing nulls
                 while (tmp->str_[tmp->bufSize_-1] == '\0')
@@ -144,12 +144,12 @@ void firebird_standard_use_type_backend::exchangeData()
             // cases that require special handling
         case eXBLOB:
             {
-                BLOB *tmp = static_cast<BLOB*>(data_);
+                blob *tmp = static_cast<blob*>(data_);
 
-                FirebirdBLOBBackEnd *blob =
-                    dynamic_cast<FirebirdBLOBBackEnd *>(tmp->getBackEnd());
+                firebird_blob_backend* blob =
+                    dynamic_cast<firebird_blob_backend*>(tmp->get_backend());
 
-                if (blob==0)
+                if (NULL == blob)
                 {
                     throw soci_error("Can't get Firebid BLOB BackEnd");
                 }
@@ -163,13 +163,13 @@ void firebird_standard_use_type_backend::exchangeData()
     } // switch
 }
 
-void firebird_standard_use_type_backend::postUse(
+void firebird_standard_use_type_backend::post_use(
     bool /* gotData */, eIndicator * /* ind */)
 {
     // ...
 }
 
-void firebird_standard_use_type_backend::cleanUp()
+void firebird_standard_use_type_backend::clean_up()
 {
     if (buf_ != NULL)
     {

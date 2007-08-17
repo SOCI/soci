@@ -8,29 +8,27 @@
 
 #include "soci.h"
 #include "soci-firebird.h"
-#include "error.h"            // SOCI::details::Firebird::throwISCError()
+#include "error.h"            // soci::details::Firebird::throwISCError()
 #include "common-tests.h"
 #include <iostream>
 #include <string>
 #include <cassert>
 #include <ctime>
 
-using namespace SOCI;
-using namespace SOCI::tests;
-
+using namespace soci;
 
 std::string connectString;
-BackEndFactory const &backEnd = firebird;
+soci::backend_factory const &backEnd = firebird;
 
 // fundamental tests - transactions in Firebird
 void test1()
 {
     {
-        Session sql(backEnd, connectString);
+        session sql(backEnd, connectString);
 
         // In Firebird transaction is always required and is started
         // automatically when session is opened. There is no need to
-        // call Session::begin(); it will do nothing if there is active
+        // call session::begin(); it will do nothing if there is active
         // transaction.
 
         // sql.begin();
@@ -39,7 +37,7 @@ void test1()
         {
             sql << "drop table test1";
         }
-        catch (SOCIError const &)
+        catch (soci_error const &)
         {} // ignore if error
 
         sql << "create table test1 (id integer)";
@@ -54,7 +52,7 @@ void test1()
         sql << "insert into test1(id) values(5)";
         sql << "drop table test1";
 
-        // Transaction is automatically commited in Session's destructor
+        // Transaction is automatically commited in session's destructor
     }
 
     std::cout << "test 1 passed" << std::endl;
@@ -63,13 +61,13 @@ void test1()
 // character types
 void test2()
 {
-    Session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
 
     try
     {
         sql << "drop table test2";
     }
-    catch (SOCIError const &)
+    catch (soci_error const &)
     {} // ignore if error
 
     sql << "create table test2 (p1 char(10), p2 varchar(10))";
@@ -172,13 +170,13 @@ void test2()
 // date and time
 void test3()
 {
-    Session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
 
     try
     {
         sql << "drop table test3";
     }
-    catch (SOCIError const &)
+    catch (soci_error const &)
     {} // ignore if error
 
     sql << "create table test3 (p1 timestamp, p2 date, p3 time)";
@@ -226,13 +224,13 @@ void test3()
 // floating points
 void test4()
 {
-    Session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
 
     try
     {
         sql << "drop table test4";
     }
-    catch (SOCIError const &)
+    catch (soci_error const &)
     {} // ignore if error
 
     sql << "create table test4 (p1 numeric(8,2), "
@@ -262,7 +260,7 @@ void test4()
         // expecting error
         assert(false);
     }
-    catch (SOCIError const &e)
+    catch (soci_error const &e)
     {
         std::string error = e.what();
         assert(error ==
@@ -278,7 +276,7 @@ void test4()
         // expecting error
         assert(false);
     }
-    catch (SOCIError const &e)
+    catch (soci_error const &e)
     {
         std::string error = e.what();
         assert(error ==
@@ -292,7 +290,7 @@ void test4()
 // integer types and indicators
 void test5()
 {
-    Session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
 
     {
         short sh(0);
@@ -336,7 +334,7 @@ void test5()
             sql << "select NULL from rdb$database", into(i);
             assert(false);
         }
-        catch (SOCIError const &e)
+        catch (soci_error const &e)
         {
             std::string error = e.what();
             assert(error ==
@@ -349,7 +347,7 @@ void test5()
             sql << "select 5 from rdb$database where 0 = 1", into(i);
             assert(false);
         }
-        catch (SOCIError const &e)
+        catch (soci_error const &e)
         {
             std::string error = e.what();
             assert(error ==
@@ -363,13 +361,13 @@ void test5()
 // repeated fetch and bulk operations for character types
 void test6()
 {
-    Session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
 
     try
     {
         sql << "drop table test6";
     }
-    catch (SOCIError const &)
+    catch (soci_error const &)
     {} // ignore if error
 
     sql << "create table test6 (p1 char(10), p2 varchar(10))";
@@ -385,7 +383,7 @@ void test6()
     {
         char c='a', c1, c2;
 
-        Statement st = (sql.prepare <<
+        statement st = (sql.prepare <<
                         "select p1,p2 from test6 order by p1", into(c1), into(c2));
 
         st.execute();
@@ -402,7 +400,7 @@ void test6()
 
         std::vector<char> c1(10), c2(10);
 
-        Statement st = (sql.prepare <<
+        statement st = (sql.prepare <<
                         "select p1,p2 from test6 order by p1", into(c1), into(c2));
 
         st.execute();
@@ -425,7 +423,7 @@ void test6()
             sql << "select p1 from test6", into(vec);
             assert(false);
         }
-        catch (SOCIError const &e)
+        catch (soci_error const &e)
         {
             std::string msg = e.what();
             assert(msg == "Vectors of size 0 are not allowed.");
@@ -454,7 +452,7 @@ void test6()
     {
         int i = 0;
         std::string s1, s2;
-        Statement st = (sql.prepare <<
+        statement st = (sql.prepare <<
                         "select p1, p2 from test6 order by p1", into(s1), into(s2));
 
         st.execute();
@@ -476,7 +474,7 @@ void test6()
         int i = 0;
 
         std::vector<std::string> s1(4), s2(4);
-        Statement st = (sql.prepare <<
+        statement st = (sql.prepare <<
                         "select p1, p2 from test6 order by p1", into(s1), into(s2));
         st.execute();
         while (st.fetch())
@@ -500,10 +498,10 @@ void test6()
     std::cout << "test 6 passed" << std::endl;
 }
 
-// BLOB test
+// blob test
 void test7()
 {
-    Session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
 
     try
     {
@@ -518,21 +516,21 @@ void test7()
     sql.begin();
     {
         // verify empty blob
-        BLOB b(sql);
+        blob b(sql);
         eIndicator ind;
 
         sql << "insert into test7(id, img) values(1,?)", use(b);
         sql << "select img from test7 where id = 1", into(b, ind);
 
         assert(ind == eOK);
-        assert(b.getLen() == 0);
+        assert(b.get_len() == 0);
 
         sql << "delete from test7";
     }
 
     {
         // create a new blob
-        BLOB b(sql);
+        blob b(sql);
 
         char str1[] = "Hello";
         b.write(0, str1, strlen(str1));
@@ -550,60 +548,60 @@ void test7()
 
     {
         // read & update blob
-        BLOB b(sql);
+        blob b(sql);
 
         sql << "select img from test7 where id = 1", into(b);
 
-        std::vector<char> text(b.getLen());
-        b.read(0, &text[0], b.getLen());
-        assert(strncmp(&text[0], "Hello, Firebird!", b.getLen()) == 0);
+        std::vector<char> text(b.get_len());
+        b.read(0, &text[0], b.get_len());
+        assert(strncmp(&text[0], "Hello, Firebird!", b.get_len()) == 0);
 
         char str1[] = "FIREBIRD";
         b.write(7, str1, strlen(str1));
 
-        // after modification BLOB must be written to database
+        // after modification blob must be written to database
         sql << "update test7 set img=? where id=1", use(b);
     }
 
     {
-        // read BLOB from database, modify and write to another record
-        BLOB b(sql);
+        // read blob from database, modify and write to another record
+        blob b(sql);
 
         sql << "select img from test7 where id = 1", into(b);
 
-        std::vector<char> text(b.getLen());
-        b.read(0, &text[0], b.getLen());
+        std::vector<char> text(b.get_len());
+        b.read(0, &text[0], b.get_len());
 
         char str1[] = "HELLO";
         b.write(0,str1, strlen(str1));
 
-        b.read(0, &text[0], b.getLen());
-        assert(strncmp(&text[0], "HELLO, FIREBIRD!", b.getLen()) == 0);
+        b.read(0, &text[0], b.get_len());
+        assert(strncmp(&text[0], "HELLO, FIREBIRD!", b.get_len()) == 0);
 
         b.trim(5);
         sql << "insert into test7(id, img) values(2,?)", use(b);
     }
 
     {
-        BLOB b(sql);
-        Statement st = (sql.prepare << "select img from test7", into(b));
+        blob b(sql);
+        statement st = (sql.prepare << "select img from test7", into(b));
 
         st.execute();
 
         st.fetch();
-        std::vector<char> text(b.getLen());
-        b.read(0, &text[0], b.getLen());
-        assert(strncmp(&text[0], "Hello, FIREBIRD!", b.getLen()) == 0);
+        std::vector<char> text(b.get_len());
+        b.read(0, &text[0], b.get_len());
+        assert(strncmp(&text[0], "Hello, FIREBIRD!", b.get_len()) == 0);
 
         st.fetch();
-        text.resize(b.getLen());
-        b.read(0, &text[0], b.getLen());
-        assert(strncmp(&text[0], "HELLO", b.getLen()) == 0);
+        text.resize(b.get_len());
+        b.read(0, &text[0], b.get_len());
+        assert(strncmp(&text[0], "HELLO", b.get_len()) == 0);
     }
 
     {
-        // delete BLOB
-        BLOB b(sql);
+        // delete blob
+        blob b(sql);
         eIndicator ind=eNull;
         sql << "update test7 set img=? where id = 1", use(b, ind);
 
@@ -621,7 +619,7 @@ void test7()
 // named parameters
 void test8()
 {
-    Session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
 
     try
     {
@@ -652,7 +650,7 @@ void test8()
     in2[2] = 6;
 
     {
-        Statement st = (sql.prepare <<
+        statement st = (sql.prepare <<
                         "insert into test8(id1, id2) values(:id1, :id2)",
                         use(k, "id2"), use(j, "id1"));
 
@@ -666,7 +664,7 @@ void test8()
     }
 
     {
-        Statement st = (
+        statement st = (
                            sql.prepare << "select id1, id2 from test8", into(i), into(l));
         st.execute();
 
@@ -699,10 +697,10 @@ void test8()
     std::cout << "test 8 passed" << std::endl;
 }
 
-// Dynamic binding to Row objects
+// Dynamic binding to row objects
 void test9()
 {
-    Session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
 
     try
     {
@@ -717,7 +715,7 @@ void test9()
     sql.begin();
 
     {
-        Row r;
+        row r;
         sql << "select * from test9", into(r);
         assert(r.indicator(0) ==  eNoData);
     }
@@ -728,7 +726,7 @@ void test9()
     eIndicator ind(eOK);
 
     {
-        Statement st((sql.prepare << "insert into test9(id, msg, ntest) "
+        statement st((sql.prepare << "insert into test9(id, msg, ntest) "
                       << "values(:id,:msg,:ntest)",
                       use(i,"id"), use(msg,"msg"), use(d,ind,"ntest")));
 
@@ -740,30 +738,30 @@ void test9()
         st.execute(1);
     }
 
-    Row r;
-    Statement st = (sql.prepare <<
+    row r;
+    statement st = (sql.prepare <<
                     "select * from test9", into(r));
     st.execute(1);
 
     assert(r.size() == 3);
 
     // get properties by position
-    assert(r.getProperties(0).getName() == "ID");
-    assert(r.getProperties(1).getName() == "MSG");
-    assert(r.getProperties(2).getName() == "NTEST");
+    assert(r.get_properties(0).get_name() == "ID");
+    assert(r.get_properties(1).get_name() == "MSG");
+    assert(r.get_properties(2).get_name() == "NTEST");
 
-    assert(r.getProperties(0).getDataType() == eInteger);
-    assert(r.getProperties(1).getDataType() == eString);
-    assert(r.getProperties(2).getDataType() == eDouble);
+    assert(r.get_properties(0).get_data_type() == eInteger);
+    assert(r.get_properties(1).get_data_type() == eString);
+    assert(r.get_properties(2).get_data_type() == eDouble);
 
     // get properties by name
-    assert(r.getProperties("ID").getName() == "ID");
-    assert(r.getProperties("MSG").getName() == "MSG");
-    assert(r.getProperties("NTEST").getName() == "NTEST");
+    assert(r.get_properties("ID").get_name() == "ID");
+    assert(r.get_properties("MSG").get_name() == "MSG");
+    assert(r.get_properties("NTEST").get_name() == "NTEST");
 
-    assert(r.getProperties("ID").getDataType() == eInteger);
-    assert(r.getProperties("MSG").getDataType() == eString);
-    assert(r.getProperties("NTEST").getDataType() == eDouble);
+    assert(r.get_properties("ID").get_data_type() == eInteger);
+    assert(r.get_properties("MSG").get_data_type() == eString);
+    assert(r.get_properties("NTEST").get_data_type() == eDouble);
 
     // get values by position
     assert(r.get<int>(0) == 1);
@@ -788,7 +786,7 @@ void test9()
         double d1 = r.get<double>("NTEST");
         std::cout << d1 << std::endl;     // just for compiler
     }
-    catch (SOCIError&)
+    catch (soci_error&)
     {
         caught = true;
     }
@@ -813,7 +811,7 @@ void test9()
 // stored procedures
 void test10()
 {
-    Session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
 
     try
     {
@@ -855,7 +853,7 @@ void test10()
 
     sql.begin();
 
-    Row r;
+    row r;
     int p1 = 3, p2 = 4;
 
     // calling procedures that do not return values requires
@@ -873,15 +871,15 @@ void test10()
     p1 = 5;
     p2 = 6;
     {
-        Procedure proc = (
+        procedure proc = (
                              sql.prepare << "sp_test10a :p1, :p2",
                              use(p2, "p2"), use(p1, "p1"));
         proc.execute(1);
     }
 
     {
-        Row rw;
-        Procedure proc = (sql.prepare << "sp_test10", into(rw));
+        row rw;
+        procedure proc = (sql.prepare << "sp_test10", into(rw));
         proc.execute(1);
 
         assert(rw.get<int>(0) == p1 && rw.get<int>(1) == p2);
@@ -899,15 +897,15 @@ void test10()
     in2[2] = 6;
 
     {
-        Procedure proc = (
+        procedure proc = (
                              sql.prepare << "sp_test10a :p1, :p2",
                              use(in2, "p2"), use(in1, "p1"));
         proc.execute(1);
     }
 
     {
-        Row rw;
-        Procedure proc = (sql.prepare << "sp_test10", into(rw));
+        row rw;
+        procedure proc = (sql.prepare << "sp_test10", into(rw));
 
         proc.execute(1);
         assert(rw.get<int>(0) == in1[0] && rw.get<int>(1) == in2[0]);
@@ -920,7 +918,7 @@ void test10()
 
     {
         std::vector<int> out1(3), out2(3);
-        Procedure proc = (sql.prepare << "sp_test10", into(out1), into(out2));
+        procedure proc = (sql.prepare << "sp_test10", into(out1), into(out2));
         proc.execute(1);
 
         std::size_t s = out1.size();
@@ -943,8 +941,8 @@ void test10()
 }
 
 // direct access to Firebird using handles exposed by
-// SOCI::FirebirdStatmentBackend
-namespace SOCI
+// soci::FirebirdStatmentBackend
+namespace soci
 {
     enum eRowCountType {
         eRowsSelected = isc_info_req_select_count,
@@ -955,7 +953,7 @@ namespace SOCI
 
     // Returns number of rows afected by last statement
     // or -1 if there is no such counter available.
-    long getRowCount(SOCI::Statement & statement, eRowCountType type)
+    long getRowCount(soci::statement & statement, eRowCountType type)
     {
         ISC_STATUS stat[20];
         char cnt_req[2], cnt_info[128];
@@ -963,8 +961,8 @@ namespace SOCI
         cnt_req[0]=isc_info_sql_records;
         cnt_req[1]=isc_info_end;
 
-        FirebirdStatementBackEnd *statementBackEnd
-        = static_cast<FirebirdStatementBackEnd *>(statement.getBackEnd());
+        firebird_statement_backend* statementBackEnd
+            = static_cast<firebird_statement_backend*>(statement.get_backend());
 
         // Note: This is very poorly documented function.
         // It can extract number of rows returned by select statement,
@@ -973,7 +971,7 @@ namespace SOCI
         if (isc_dsql_sql_info(stat, &statementBackEnd->stmtp_, sizeof(cnt_req),
                               cnt_req, sizeof(cnt_info), cnt_info))
         {
-            SOCI::details::Firebird::throwISCError(stat);
+            soci::details::firebird::throwISCError(stat);
         }
 
         long count = -1;
@@ -995,11 +993,11 @@ namespace SOCI
 
         return count;
     }
-} // namespace SOCI
+} // namespace soci
 
 void test11()
 {
-    Session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
 
     try
     {
@@ -1019,7 +1017,7 @@ void test11()
         in[1] = 2;
         in[2] = 1;
 
-        Statement st = (sql.prepare << "insert into test11(id) values(?)",
+        statement st = (sql.prepare << "insert into test11(id) values(?)",
                         use(in));
         st.execute(1);
 
@@ -1032,7 +1030,7 @@ void test11()
 
     {
         int i = 5;
-        Statement st = (sql.prepare << "update test11 set id = ? where id<3",
+        statement st = (sql.prepare << "update test11 set id = ? where id<3",
                         use(i));
         st.execute(1);
         assert(getRowCount(st, eRowsUpdated) == 2);
@@ -1043,20 +1041,20 @@ void test11()
 
     {
         std::vector<int> out(3);
-        Statement st = (sql.prepare << "select id from test11", into(out));
+        statement st = (sql.prepare << "select id from test11", into(out));
         st.execute(1);
 
         assert(getRowCount(st, eRowsSelected) == 3);
     }
 
     {
-        Statement st = (sql.prepare << "delete from test11 where id=10");
+        statement st = (sql.prepare << "delete from test11 where id=10");
         st.execute(1);
         assert(getRowCount(st, eRowsDeleted) == 0);
     }
 
     {
-        Statement st = (sql.prepare << "delete from test11");
+        statement st = (sql.prepare << "delete from test11");
         st.execute(1);
         assert(getRowCount(st, eRowsDeleted) == 3);
     }
@@ -1066,13 +1064,13 @@ void test11()
 }
 
 //
-// Support for SOCI Common Tests
+// Support for soci Common Tests
 //
 
-struct TableCreator1 : public TableCreatorBase
+struct TableCreator1 : public tests::table_creator_base
 {
-    TableCreator1(Session& session)
-            : TableCreatorBase(session)
+    TableCreator1(session& session)
+            : tests::table_creator_base(session)
     {
         session << "create table soci_test(id integer, val integer, c char, "
         "str varchar(20), sh smallint, ul decimal(9,0), d double precision, "
@@ -1082,10 +1080,10 @@ struct TableCreator1 : public TableCreatorBase
     }
 };
 
-struct TableCreator2 : public TableCreatorBase
+struct TableCreator2 : public tests::table_creator_base
 {
-    TableCreator2(Session& session)
-            : TableCreatorBase(session)
+    TableCreator2(session& session)
+            : tests::table_creator_base(session)
     {
         session  << "create table soci_test(\"num_float\" float, \"num_int\" integer, "
         "\"name\" varchar(20), \"sometime\" timestamp, \"chr\" char)";
@@ -1094,10 +1092,10 @@ struct TableCreator2 : public TableCreatorBase
     }
 };
 
-struct TableCreator3 : public TableCreatorBase
+struct TableCreator3 : public tests::table_creator_base
 {
-    TableCreator3(Session& session)
-            : TableCreatorBase(session)
+    TableCreator3(session& session)
+            : tests::table_creator_base(session)
     {
         // CommonTest uses lower-case column names,
         // so we need to enforce such names here.
@@ -1109,30 +1107,30 @@ struct TableCreator3 : public TableCreatorBase
     }
 };
 
-class TestContext :public TestContextBase
+class TestContext : public tests::test_context_base
 {
     public:
-        TestContext(BackEndFactory const &backEnd,
+        TestContext(backend_factory const &backEnd,
                     std::string const &connectString)
-                : TestContextBase(backEnd, connectString)
+                : test_context_base(backEnd, connectString)
         {}
 
-        TableCreatorBase* tableCreator1(Session& s) const
+        tests::table_creator_base* table_creator_1(session& s) const
         {
             return new TableCreator1(s);
         }
 
-        TableCreatorBase* tableCreator2(Session& s) const
+        tests::table_creator_base* table_creator_2(session& s) const
         {
             return new TableCreator2(s);
         }
 
-        TableCreatorBase* tableCreator3(Session& s) const
+        tests::table_creator_base* table_creator_3(session& s) const
         {
             return new TableCreator3(s);
         }
 
-        std::string toDateTime(std::string const &dateString) const
+        std::string to_date_time(std::string const &dateString) const
         {
             return "'" + dateString + "'";
         }
@@ -1170,7 +1168,7 @@ int main(int argc, char** argv)
     try
     {
         TestContext tc(backEnd, connectString);
-        CommonTests tests(tc);
+        tests::common_tests tests(tc);
         tests.run();
 
         test1();

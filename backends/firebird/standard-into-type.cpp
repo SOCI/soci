@@ -14,7 +14,7 @@ using namespace soci;
 using namespace soci::details;
 using namespace soci::details::firebird;
 
-void firebird_standard_into_type_backend::defineByPos(
+void firebird_standard_into_type_backend::define_by_pos(
     int & position, void * data, eExchangeType type)
 {
     position_ = position-1;
@@ -33,15 +33,15 @@ void firebird_standard_into_type_backend::defineByPos(
     var->sqlind = &indISCHolder_;
 }
 
-void firebird_standard_into_type_backend::preFetch()
+void firebird_standard_into_type_backend::pre_fetch()
 {
     // nothing to do
 }
 
-void firebird_standard_into_type_backend::postFetch(
+void firebird_standard_into_type_backend::post_fetch(
     bool gotData, bool calledFromFetch, eIndicator * ind)
 {
-    if (calledFromFetch == true && gotData == false)
+    if (calledFromFetch && !gotData)
     {
         // this is a normal end-of-rowset condition,
         // no need to set anything (fetch() will return false)
@@ -50,11 +50,11 @@ void firebird_standard_into_type_backend::postFetch(
 
     if (gotData)
     {
-        if (statement_.inds_[position_][0] == eNull && ind == NULL)
+        if (eNull == statement_.inds_[position_][0] && NULL == ind)
         {
             throw soci_error("Null value fetched and no indicator defined.");
         }
-        else if (ind != NULL)
+        else if (NULL != ind)
         {
             *ind = statement_.inds_[position_][0];
         }
@@ -109,8 +109,8 @@ void firebird_standard_into_type_backend::exchangeData()
             // cases that require adjustments and buffer management
         case eXCString:
             {
-                details::CStringDescriptor *tmp =
-                    static_cast<details::CStringDescriptor*>(data_);
+                details::cstring_descriptor *tmp =
+                    static_cast<details::cstring_descriptor*>(data_);
 
                 std::string stmp = getTextParam(var);
                 std::strncpy(tmp->str_, stmp.c_str(), tmp->bufSize_ - 1);
@@ -133,12 +133,12 @@ void firebird_standard_into_type_backend::exchangeData()
             // cases that require special handling
         case eXBLOB:
             {
-                BLOB *tmp = reinterpret_cast<BLOB*>(data_);
+                blob *tmp = reinterpret_cast<blob*>(data_);
 
-                FirebirdBLOBBackEnd *blob =
-                    dynamic_cast<FirebirdBLOBBackEnd *>(tmp->getBackEnd());
+                firebird_blob_backend *blob =
+                    dynamic_cast<firebird_blob_backend*>(tmp->get_backend());
 
-                if (blob==0)
+                if (0 == blob)
                 {
                     throw soci_error("Can't get Firebid BLOB BackEnd");
                 }
@@ -151,7 +151,7 @@ void firebird_standard_into_type_backend::exchangeData()
     } // switch
 }
 
-void firebird_standard_into_type_backend::cleanUp()
+void firebird_standard_into_type_backend::clean_up()
 {
     if (buf_ != NULL)
     {
