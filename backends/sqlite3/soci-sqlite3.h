@@ -232,7 +232,7 @@ struct sqlite3_session_backend : details::session_backend
     virtual void commit();
     virtual void rollback();
 
-    void cleanUp();
+    void clean_up();
 
     virtual sqlite3_statement_backend * make_statement_backend();
     virtual sqlite3_rowid_backend * make_rowid_backend();
