@@ -9,6 +9,7 @@
 		Name="VCCLCompilerTool"
 		Optimization="0"
 		AdditionalIncludeDirectories="&quot;$(SOCI_CORE_DIR)&quot;;&quot;$(SOCI_CORE_DIR)\test&quot;;&quot;$(BOOST_INCLUDE_DIR)&quot;"
+		PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS"
 		DisableLanguageExtensions="false"
 		WarningLevel="4"
 		DebugInformationFormat="4"

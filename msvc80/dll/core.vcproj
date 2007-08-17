@@ -248,11 +248,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\core\exchange-traits.h"
+				RelativePath="..\..\..\src\core\boost-optional.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\core\into-row.h"
+				RelativePath="..\..\..\src\core\exchange-traits.h"
 				>
 			</File>
 			<File
@@ -281,6 +281,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\core\ref-counted-statement.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\row-exchange.h"
 				>
 			</File>
 			<File
@@ -324,6 +328,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\core\type-conversion-traits.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\core\type-conversion.h"
 				>
 			</File>
@@ -341,6 +349,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\core\use.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\values-exchange.h"
 				>
 			</File>
 			<File

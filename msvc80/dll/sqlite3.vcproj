@@ -182,7 +182,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="$(SOCI_BACKENDS_DIR)\sqlite3\blob.cpp"
+				RelativePath="..\..\..\src\backends\sqlite3\blob.cpp"
 				>
 			</File>
 			<File
@@ -190,35 +190,35 @@
 				>
 			</File>
 			<File
-				RelativePath="$(SOCI_BACKENDS_DIR)\sqlite3\factory.cpp"
+				RelativePath="..\..\..\src\backends\sqlite3\factory.cpp"
 				>
 			</File>
 			<File
-				RelativePath="$(SOCI_BACKENDS_DIR)\sqlite3\row-id.cpp"
+				RelativePath="..\..\..\src\backends\sqlite3\row-id.cpp"
 				>
 			</File>
 			<File
-				RelativePath="$(SOCI_BACKENDS_DIR)\sqlite3\session.cpp"
+				RelativePath="..\..\..\src\backends\sqlite3\session.cpp"
 				>
 			</File>
 			<File
-				RelativePath="$(SOCI_BACKENDS_DIR)\sqlite3\standard-into-type.cpp"
+				RelativePath="..\..\..\src\backends\sqlite3\standard-into-type.cpp"
 				>
 			</File>
 			<File
-				RelativePath="$(SOCI_BACKENDS_DIR)\sqlite3\standard-use-type.cpp"
+				RelativePath="..\..\..\src\backends\sqlite3\standard-use-type.cpp"
 				>
 			</File>
 			<File
-				RelativePath="$(SOCI_BACKENDS_DIR)\sqlite3\statement.cpp"
+				RelativePath="..\..\..\src\backends\sqlite3\statement.cpp"
 				>
 			</File>
 			<File
-				RelativePath="$(SOCI_BACKENDS_DIR)\sqlite3\vector-into-type.cpp"
+				RelativePath="..\..\..\src\backends\sqlite3\vector-into-type.cpp"
 				>
 			</File>
 			<File
-				RelativePath="$(SOCI_BACKENDS_DIR)\sqlite3\vector-use-type.cpp"
+				RelativePath="..\..\..\src\backends\sqlite3\vector-use-type.cpp"
 				>
 			</File>
 		</Filter>
@@ -232,7 +232,7 @@
 				>
 			</File>
 			<File
-				RelativePath="$(SOCI_BACKENDS_DIR)\sqlite3\soci-sqlite3.h"
+				RelativePath="..\..\..\src\backends\sqlite3\soci-sqlite3.h"
 				>
 			</File>
 		</Filter>
