@@ -94,7 +94,7 @@
 	/>
 	<UserMacro
 		Name="BOOST_INCLUDE_DIR"
-		Value="C:\usr\boost-1.33.1\include\boost-1_33_1"
+		Value="c:\usr\boost-1.33.1\include"
 	/>
 	<UserMacro
 		Name="SOCI_VERSION"
