@@ -542,8 +542,8 @@ void firebird_statement_backend::exchangeData(bool gotData, int row)
                 }
                 else
                 {
-                    static_cast<firebird_vector_into_type_backend*>(
-                        intos_[i])->exchangeData(row);
+                    static_cast<firebird_standard_into_type_backend*>(
+                        intos_[i])->exchangeData();
                 }
             }
         }
