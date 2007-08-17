@@ -111,6 +111,11 @@ private:
     bool resize_intos(std::size_t upperBound = 0);
 
     soci::details::statement_backend *backEnd_;
+
+    // The type is noncopyable.
+    statement_impl(statement_impl const&);
+    statement_impl& operator=(statement_impl const&);
+
 };
 
 } // namespace details

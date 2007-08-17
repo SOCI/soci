@@ -10,7 +10,7 @@
 #include "soci-backend.h"
 
 #ifdef _MSC_VER
-#pragma warning(disable:C4355)
+#pragma warning(disable:4355)
 #endif
 
 using namespace soci;
