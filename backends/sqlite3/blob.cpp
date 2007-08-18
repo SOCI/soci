@@ -100,3 +100,13 @@ void sqlite3_blob_backend::trim(std::size_t newLen)
     delete [] oldBuf;
 }
 
+std::size_t sqlite3_blob_backend::set_data(char const *buf, std::size_t toWrite)
+{
+    if (buf_)
+    {
+        delete [] buf_;
+        buf_ = 0;
+        len_ = 0;
+    }
+    return write(0, buf, toWrite);
+}

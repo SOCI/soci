@@ -104,10 +104,8 @@ void test2()
             b.read(0, buf2, 10);
             assert(strncmp(buf2, "abcdefghij", 10) == 0);
             
-            blob b2(sql);
-            
-            sql << "select img from soci_test where id = 7", into(b2);
-            assert(b2.get_len() == sizeof(buf));
+            sql << "select img from soci_test where id = 7", into(b);
+            assert(b.get_len() == sizeof(buf));
             
         }
     }

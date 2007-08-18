@@ -161,7 +161,7 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
                                                    pos));	 
 
             int len = sqlite3_column_bytes(statement_.stmt_, pos);	 
-            bbe->write(0, buf, len);	 
+            bbe->set_data(buf, len);	 
         }	 
         break;
         default:

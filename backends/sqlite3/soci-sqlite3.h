@@ -214,10 +214,10 @@ struct sqlite3_blob_backend : details::blob_backend
     virtual void trim(std::size_t newLen);
 
     sqlite3_session_backend &session_;
+
+    std::size_t set_data(char const *buf, std::size_t toWrite);
+
 private:
-
-    void updateBLOB();
-
     char *buf_;
     size_t len_;
 };
