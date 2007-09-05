@@ -35,10 +35,6 @@ public:
 
     ~session();
 
-    void begin();
-    void commit();
-    void rollback();
-
     // once and prepare are for syntax sugar only
     details::once_type once;
     details::prepare_type prepare;

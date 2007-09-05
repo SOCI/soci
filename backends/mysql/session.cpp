@@ -258,36 +258,6 @@ mysql_session_backend::~mysql_session_backend()
     clean_up();
 }
 
-namespace { // anonymous
-
-// helper function for hardcoded queries
-void hard_exec(MYSQL *conn, const string & query)
-{
-    //cerr << query << endl;
-    if (0 != mysql_real_query(conn, query.c_str(),
-                              static_cast<unsigned long>(query.size())))
-    {
-        throw soci_error(mysql_error(conn));
-    }
-}
-
-}  // namespace anonymous
-
-void mysql_session_backend::begin()
-{
-    hard_exec(conn_, "BEGIN");
-}
-
-void mysql_session_backend::commit()
-{
-    hard_exec(conn_, "COMMIT");
-}
-
-void mysql_session_backend::rollback()
-{
-    hard_exec(conn_, "ROLLBACK");
-}
-
 void mysql_session_backend::clean_up()
 {
     if (conn_ != NULL)

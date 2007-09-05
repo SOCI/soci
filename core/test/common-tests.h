@@ -1558,59 +1558,58 @@ void test10()
         assert(count == 0);
 
         {
-            sql.begin();
-
-#ifndef SOCI_PGSQL_NOPARAMS
-
-            int id;
-            std::string name;
-
-            statement st1 = (sql.prepare <<
-                "insert into soci_test (id, name) values (:id, :name)",
-                use(id), use(name));
-
-            id = 1; name = "John"; st1.execute(true);
-            id = 2; name = "Anna"; st1.execute(true);
-            id = 3; name = "Mike"; st1.execute(true);
-
-#else
-            // Older PostgreSQL does not support use elements
+            transaction tr(sql);
 
             sql << "insert into soci_test (id, name) values(1, 'John')";
             sql << "insert into soci_test (id, name) values(2, 'Anna')";
             sql << "insert into soci_test (id, name) values(3, 'Mike')";
 
-#endif // SOCI_PGSQL_NOPARAMS
-
-            sql.commit();
-            sql.begin();
+            tr.commit();
+        }
+        {
+            transaction tr(sql);
 
             sql << "select count(*) from soci_test", into(count);
             assert(count == 3);
 
-#ifndef SOCI_PGSQL_NOPARAMS
-            id = 4; name = "Stan"; st1.execute(true);
-#else
             sql << "insert into soci_test (id, name) values(4, 'Stan')";
-#endif // SOCI_PGSQL_NOPARAMS
 
             sql << "select count(*) from soci_test", into(count);
             assert(count == 4);
-            sql.rollback();
+
+            tr.rollback();
 
             sql << "select count(*) from soci_test", into(count);
             assert(count == 3);
         }
         {
-            sql.begin();
+            transaction tr(sql);
 
             sql << "delete from soci_test";
 
             sql << "select count(*) from soci_test", into(count);
             assert(count == 0);
-            sql.rollback();
+
+            tr.rollback();
+
             sql << "select count(*) from soci_test", into(count);
             assert(count == 3);
+        }
+        {
+            // additional test for detection of double commit
+            transaction tr(sql);
+            tr.commit();
+            try
+            {
+                tr.commit();
+                assert(false);
+            }
+            catch (soci_error const &e)
+            {
+                std::string msg = e.what();
+                assert(msg ==
+                    "The transaction object cannot be handled twice.");
+            }
         }
     }
 

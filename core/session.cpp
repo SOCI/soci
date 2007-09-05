@@ -28,21 +28,6 @@ session::~session()
     delete backEnd_;
 }
 
-void session::begin()
-{
-    backEnd_->begin();
-}
-
-void session::commit()
-{
-    backEnd_->commit();
-}
-
-void session::rollback()
-{
-    backEnd_->rollback();
-}
-
 void session::set_log_stream(std::ostream *s)
 {
     logStream_ = s;

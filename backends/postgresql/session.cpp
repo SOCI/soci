@@ -42,45 +42,6 @@ postgresql_session_backend::~postgresql_session_backend()
     clean_up();
 }
 
-namespace // anonymous
-{
-
-// helper function for hardoded queries
-void hard_exec(PGconn *conn, char const *query, char const *errMsg)
-{
-    PGresult *result = PQexec(conn, query);
-
-    if (result == NULL)
-    {
-        throw soci_error(errMsg);
-    }
-
-    ExecStatusType status = PQresultStatus(result);
-    if (status != PGRES_COMMAND_OK)
-    {
-        throw soci_error(PQresultErrorMessage(result));
-    }
-
-    PQclear(result);
-}
-
-} // namespace anonymous
-
-void postgresql_session_backend::begin()
-{
-    hard_exec(conn_, "BEGIN", "Cannot begin transaction.");
-}
-
-void postgresql_session_backend::commit()
-{
-    hard_exec(conn_, "COMMIT", "Cannot commit transaction.");
-}
-
-void postgresql_session_backend::rollback()
-{
-    hard_exec(conn_, "ROLLBACK", "Cannot rollback transaction.");
-}
-
 void postgresql_session_backend::clean_up()
 {
     if (conn_ != NULL)

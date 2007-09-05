@@ -149,37 +149,6 @@ oracle_session_backend::~oracle_session_backend()
     clean_up();
 }
 
-void oracle_session_backend::begin()
-{
-// This code is commented out because it causes one of the transaction
-// tests in CommonTests::test10() to fail with error 'Invalid handle'
-// With the code commented out, all tests pass.
-
-//    sword res = OCITransStart(svchp_, errhp_, 0, OCI_TRANS_NEW);
-//    if (res != OCI_SUCCESS)
-//    {
-//        throworacle_soci_error(res, errhp_);
-//    }
-}
-
-void oracle_session_backend::commit()
-{
-    sword res = OCITransCommit(svchp_, errhp_, OCI_DEFAULT);
-    if (res != OCI_SUCCESS)
-    {
-        throw_oracle_soci_error(res, errhp_);
-    }
-}
-
-void oracle_session_backend::rollback()
-{
-    sword res = OCITransRollback(svchp_, errhp_, OCI_DEFAULT);
-    if (res != OCI_SUCCESS)
-    {
-        throw_oracle_soci_error(res, errhp_);
-    }
-}
-
 void oracle_session_backend::clean_up()
 {
     if (svchp_ != NULL && errhp_ != NULL && usrhp_ != NULL)

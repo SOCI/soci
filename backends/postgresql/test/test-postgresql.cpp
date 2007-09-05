@@ -201,8 +201,8 @@ void test3()
 
         sql << "insert into soci_test(id, img) values(7, lo_creat(-1))";
 
-        // in PostgreSQL, BLOB operations must be withing transaction block
-        sql.begin();
+        // in PostgreSQL, BLOB operations must be within transaction block
+        transaction tr(sql);
 
         {
             blob b(sql);
@@ -228,8 +228,6 @@ void test3()
         unsigned long oid;
         sql << "select img from soci_test where id = 7", into(oid);
         sql << "select lo_unlink(" << oid << ")";
-
-        sql.commit();
     }
 
     std::cout << "test 3 passed" << std::endl;
