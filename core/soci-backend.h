@@ -10,9 +10,9 @@
 
 #include "soci-config.h"
 
+#include "error.h"
 #include <cstddef>
 #include <map>
-#include <stdexcept>
 #include <string>
 
 namespace soci
@@ -24,12 +24,6 @@ enum eDataType { eString, eChar, eDate, eDouble, eInteger,
 
 // the enum type for indicator variables
 enum eIndicator { eOK, eNoData, eNull, eTruncated };
-
-class SOCI_DECL soci_error : public std::runtime_error
-{
-public:
-    soci_error(std::string const & msg);
-};
 
 namespace details
 {
@@ -171,10 +165,6 @@ class session_backend
 {
 public:
     virtual ~session_backend() {}
-
-    virtual void begin() = 0;
-    virtual void commit() = 0;
-    virtual void rollback() = 0;
 
     virtual statement_backend * make_statement_backend() = 0;
     virtual rowid_backend * make_rowid_backend() = 0;
