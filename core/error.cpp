@@ -6,10 +6,8 @@
 //
 
 #define SOCI_SOURCE
-#include "soci-backend.h"
 
-#include <stdexcept>
-#include <string>
+#include "error.h"
 
 using namespace soci;
  
