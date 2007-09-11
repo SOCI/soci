@@ -16,9 +16,29 @@
 using namespace soci;
 using namespace soci::details;
 
+namespace // anonymous
+{
+
+void ensureConnected(session_backend *backEnd)
+{
+    if (backEnd == NULL)
+    {
+        throw soci_error("Session is not connected.");
+    }
+}
+
+} // namespace anonymous
+
+session::session()
+    : once(this), prepare(this), logStream_(NULL),
+      lastFactory_(NULL), backEnd_(NULL)
+{
+}
+
 session::session(backend_factory const &factory,
     std::string const & connectString)
-    : once(this), prepare(this), logStream_(NULL)
+    : once(this), prepare(this), logStream_(NULL),
+      lastFactory_(&factory), lastConnectString_(connectString)
 {
     backEnd_ = factory.make_session(connectString);
 }
@@ -26,6 +46,40 @@ session::session(backend_factory const &factory,
 session::~session()
 {
     delete backEnd_;
+}
+
+void session::open(backend_factory const &factory,
+    std::string const & connectString)
+{
+    if (backEnd_ != NULL)
+    {
+        throw soci_error("Cannot open already connected session.");
+    }
+
+    backEnd_ = factory.make_session(connectString);
+    lastFactory_ = &factory;
+    lastConnectString_ = connectString;
+}
+
+void session::close()
+{
+    delete backEnd_;
+    backEnd_ = NULL;
+}
+
+void session::reconnect()
+{
+    if (lastFactory_ == NULL)
+    {
+        throw soci_error("Cannot reconnect without previous connection.");
+    }
+
+    if (backEnd_ != NULL)
+    {
+        close();
+    }
+
+    backEnd_ = lastFactory_->make_session(lastConnectString_);
 }
 
 void session::set_log_stream(std::ostream *s)
@@ -55,16 +109,21 @@ std::string session::get_last_query() const
 
 statement_backend * session::make_statement_backend()
 {
+    ensureConnected(backEnd_);
+
     return backEnd_->make_statement_backend();
 }
 
 rowid_backend * session::make_rowid_backend()
 {
+    ensureConnected(backEnd_);
+
     return backEnd_->make_rowid_backend();
 }
 
 blob_backend * session::make_blob_backend()
 {
+    ensureConnected(backEnd_);
+
     return backEnd_->make_blob_backend();
 }
-

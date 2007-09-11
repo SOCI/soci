@@ -31,9 +31,14 @@ class blob_backend;
 class SOCI_DECL session
 {
 public:
+    session();
     session(backend_factory const &factory, std::string const & connectString);
 
     ~session();
+
+    void open(backend_factory const &factory, std::string const & connectString);
+    void close();
+    void reconnect();
 
     // once and prepare are for syntax sugar only
     details::once_type once;
@@ -64,6 +69,9 @@ private:
 
     std::ostream *logStream_;
     std::string lastQuery_;
+
+    backend_factory const *lastFactory_;
+    std::string lastConnectString_;
 
     details::session_backend *backEnd_;
 };

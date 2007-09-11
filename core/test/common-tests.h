@@ -243,6 +243,7 @@ public:
     test24();
     test25();
     test26();
+    test27();
     }
 
 private:
@@ -2580,7 +2581,7 @@ void test26()
                 (void)r1.get<int>(1);
                 assert(false);
             }
-            catch (const soci_error &) {}
+            catch (soci_error const &) {}
 
             // but we can read it as optional
             assert(r2.get<boost::optional<int> >(1).is_initialized() == false);
@@ -2662,6 +2663,72 @@ void test26()
     }
 
     std::cout << "test 26 passed" << std::endl;
+}
+
+// connection and reconnection tests
+void test27()
+{
+    {
+        // empty session
+        session sql;
+
+        // idempotent:
+        sql.close();
+
+        try
+        {
+            sql.reconnect();
+            assert(false);
+        }
+        catch (soci_error const &e)
+        {
+            assert(e.what() == std::string(
+                       "Cannot reconnect without previous connection."));
+        }
+
+        // open from empty session
+        sql.open(backEndFactory_, connectString_);
+        sql.close();
+
+        // reconnecting from closed session
+        sql.reconnect();
+
+        // opening already connected session
+        try
+        {
+            sql.open(backEndFactory_, connectString_);
+            assert(false);
+        }
+        catch (soci_error const &e)
+        {
+            assert(e.what() == std::string(
+                       "Cannot open already connected session."));
+        }
+
+        sql.close();
+
+        // open from closed
+        sql.open(backEndFactory_, connectString_);
+
+        // reconnect from already connected session
+        sql.reconnect();
+    }
+
+    {
+        session sql;
+
+        try
+        {
+            sql << "this statement cannot execute";
+            assert(false);
+        }
+        catch (soci_error const &e)
+        {
+            assert(e.what() == std::string("Session is not connected."));
+        }
+    }
+
+    std::cout << "test 27 passed" << std::endl;
 }
 
 }; // class common_tests
