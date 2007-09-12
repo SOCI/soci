@@ -38,7 +38,7 @@ statement_impl::statement_impl(session &s)
 }
 
 statement_impl::statement_impl(prepare_temp_type const &prep)
-    : session_(*prep.get_prepare_info()->session_),
+    : session_(prep.get_prepare_info()->session_),
       refCount_(1), row_(0), fetchSize_(1), alreadyDescribed_(false)
 {
     backEnd_ = session_.make_statement_backend();

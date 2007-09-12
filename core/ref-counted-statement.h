@@ -12,8 +12,6 @@
 #include "into-type.h"
 #include "use-type.h"
 
-#include <sstream>
-
 namespace soci
 {
 
@@ -24,7 +22,7 @@ namespace details
 class ref_counted_statement_base
 {
 public:
-    ref_counted_statement_base() : refCount_(1) {}
+    ref_counted_statement_base(session &s) : refCount_(1), session_(s) {}
     virtual ~ref_counted_statement_base() {}
 
     virtual void final_action() = 0;
@@ -50,14 +48,19 @@ public:
 
     // TODO - mloskot: Consider to wrap conversion with try-catch
     template <typename T>
-    void accumulate(T const &t) { query_ << t; }
+    void accumulate(T const &t) { get_query_stream() << t; }
 
 protected:
     ref_counted_statement_base(ref_counted_statement_base const &);
     ref_counted_statement_base & operator=(ref_counted_statement_base const &);
 
+    // this function allows to break the circular dependenc
+    // between session and this class
+    std::ostringstream & get_query_stream();
+
     int refCount_;
-    std::ostringstream query_;
+
+    session &session_;
 };
 
 // this class is supposed to be a vehicle for the "once" statements
@@ -65,7 +68,8 @@ protected:
 class ref_counted_statement : public ref_counted_statement_base
 {
 public:
-    ref_counted_statement(session &s) : st_(s) {}
+    ref_counted_statement(session &s)
+        : ref_counted_statement_base(s), st_(s) {}
 
     void exchange(into_type_ptr const &i) { st_.exchange(i); }
     void exchange(use_type_ptr const &u) { st_.exchange(u); }

@@ -11,6 +11,7 @@
 #include "once-temp-type.h"
 
 #include <ostream>
+#include <sstream>
 #include <string>
 
 namespace soci
@@ -48,6 +49,8 @@ public:
     template <typename T>
     details::once_temp_type operator<<(T const &t) { return once << t; }
 
+    std::ostringstream & get_query_stream();
+
     // support for basic logging
     void set_log_stream(std::ostream *s);
     std::ostream * get_log_stream() const;
@@ -66,6 +69,8 @@ public:
 private:
     session(session const &);
     session& operator=(session const &);
+
+    std::ostringstream query_stream_;
 
     std::ostream *logStream_;
     std::string lastQuery_;

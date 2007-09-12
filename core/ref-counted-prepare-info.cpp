@@ -7,6 +7,7 @@
 
 #define SOCI_SOURCE
 #include "ref-counted-prepare-info.h"
+#include "session.h"
 
 using namespace soci;
 using namespace soci::details;
@@ -37,4 +38,9 @@ void ref_counted_prepare_info::final_action()
         delete uses_[i - 1];
         uses_.resize(i - 1);
     }
+}
+
+std::string ref_counted_prepare_info::get_query() const
+{
+    return session_.get_query_stream().str();
 }

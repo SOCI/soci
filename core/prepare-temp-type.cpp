@@ -8,6 +8,7 @@
 #define SOCI_SOURCE
 #include "prepare-temp-type.h"
 #include "ref-counted-prepare-info.h"
+#include "session.h"
 
 using namespace soci;
 using namespace soci::details;
@@ -15,6 +16,8 @@ using namespace soci::details;
 prepare_temp_type::prepare_temp_type(session &s)
     : rcpi_(new ref_counted_prepare_info(s))
 {
+    // this is the beginning of new query
+    s.get_query_stream().str("");
 }
 
 prepare_temp_type::prepare_temp_type(prepare_temp_type const &o)

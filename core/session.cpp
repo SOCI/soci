@@ -82,6 +82,11 @@ void session::reconnect()
     backEnd_ = lastFactory_->make_session(lastConnectString_);
 }
 
+std::ostringstream & session::get_query_stream()
+{
+    return query_stream_;
+}
+
 void session::set_log_stream(std::ostream *s)
 {
     logStream_ = s;

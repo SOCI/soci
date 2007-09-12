@@ -8,6 +8,7 @@
 #define SOCI_SOURCE
 #include "once-temp-type.h"
 #include "ref-counted-statement.h"
+#include "session.h"
 
 using namespace soci;
 using namespace soci::details;
@@ -15,6 +16,8 @@ using namespace soci::details;
 once_temp_type::once_temp_type(session &s)
     : rcst_(new ref_counted_statement(s))
 {
+    // this is the beginning of new query
+    s.get_query_stream().str("");
 }
 
 once_temp_type::once_temp_type(once_temp_type const &o)

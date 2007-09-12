@@ -14,7 +14,7 @@ using namespace soci;
 using namespace soci::details;
 
 procedure_impl::procedure_impl(prepare_temp_type const &prep)
-    : statement_impl(*prep.get_prepare_info()->session_)
+    : statement_impl(prep.get_prepare_info()->session_)
 {
     ref_counted_prepare_info *prepInfo = prep.get_prepare_info();
 

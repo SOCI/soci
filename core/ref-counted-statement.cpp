@@ -7,7 +7,7 @@
 
 #define SOCI_SOURCE
 #include "ref-counted-statement.h"
-#include "statement.h"
+#include "session.h"
 
 using namespace soci;
 using namespace soci::details;
@@ -17,7 +17,7 @@ void ref_counted_statement::final_action()
     try
     {
         st_.alloc();
-        st_.prepare(query_.str(), eOneTimeQuery);
+        st_.prepare(session_.get_query_stream().str(), eOneTimeQuery);
         st_.define_and_bind();
         st_.execute(true);
     }
@@ -28,4 +28,9 @@ void ref_counted_statement::final_action()
     }
 
     st_.clean_up();
+}
+
+std::ostringstream & ref_counted_statement_base::get_query_stream()
+{
+    return session_.get_query_stream();
 }
