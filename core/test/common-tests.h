@@ -985,6 +985,10 @@ void test4()
                 "select val from soci_test where 0 = 1", into(vals, inds));
 
             assert(!st.execute(true));
+
+            // for convenience, vectors should be truncated
+            assert(vals.empty());
+            assert(inds.empty());
         }
     }
 
