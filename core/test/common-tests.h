@@ -990,6 +990,19 @@ void test4()
             assert(vals.empty());
             assert(inds.empty());
         }
+
+        // additional test for "no data" without prepared statement
+        {
+            std::vector<int> vals(3);
+            std::vector<eIndicator> inds(3);
+
+            sql << "select val from soci_test where 0 = 1",
+                into(vals, inds);
+
+            // vectors should be truncated
+            assert(vals.empty());
+            assert(inds.empty());
+        }
     }
 
     std::cout << "test 4 passed" << std::endl;
