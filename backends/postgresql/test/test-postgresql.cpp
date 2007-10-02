@@ -109,7 +109,7 @@ public:
             "begin "
             "  return $1; "
             "end \' language plpgsql";
-#endif 
+#endif
     }
 
 protected:
@@ -237,11 +237,11 @@ void test3()
 struct table_creator_one : public table_creator_base
 {
     table_creator_one(session& session)
-        : table_creator_base(session) 
+        : table_creator_base(session)
     {
         session << "create table soci_test(id integer, val integer, c char, "
                  "str varchar(20), sh int2, ul numeric(20), d float8, "
-                 "tm timestamp, i1 integer, i2 integer, i3 integer, " 
+                 "tm timestamp, i1 integer, i2 integer, i3 integer, "
                  "name varchar(20))";
     }
 };
@@ -273,7 +273,7 @@ struct table_creator_three : public table_creator_base
 class test_context : public test_context_base
 {
 public:
-    test_context(backend_factory const &backEnd, 
+    test_context(backend_factory const &backEnd,
                 std::string const &connectString)
         : test_context_base(backEnd, connectString) {}
 
@@ -299,7 +299,7 @@ public:
 
 };
 
-    
+
 int main(int argc, char** argv)
 {
 
