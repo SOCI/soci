@@ -20,13 +20,13 @@ using namespace soci;
 using namespace soci::details;
 
 void statement::exchange(into_type_ptr const &i)
-{ 
-    impl_->exchange(i);  
+{
+    impl_->exchange(i);
 }
 
 void statement::exchange(use_type_ptr const &u)
-{ 
-    impl_->exchange(u);  
+{
+    impl_->exchange(u);
 }
 
 statement_impl::statement_impl(session &s)
@@ -75,7 +75,7 @@ void statement_impl::bind(values& values)
 
     try
     {
-        for(std::vector<details::standard_use_type*>::iterator it = 
+        for (std::vector<details::standard_use_type*>::iterator it =
             values.uses_.begin(); it != values.uses_.end(); ++it)
         {
             // only bind those variables which are actually
@@ -86,7 +86,7 @@ void statement_impl::bind(values& values)
             if (pos != std::string::npos)
             {
                 const char nextChar = query_[pos + name.size()];
-                if(nextChar == ' ' || nextChar == ',' ||
+                if (nextChar == ' ' || nextChar == ',' ||
                    nextChar == '\0' || nextChar == ')')
                 {
                     int position = static_cast<int>(uses_.size());
@@ -107,13 +107,13 @@ void statement_impl::bind(values& values)
             cnt++;
         }
     }
-    catch(...)
+    catch (...)
     {
-        for(size_t i = ++cnt; i != values.uses_.size(); ++i)
-        {            
+        for (size_t i = ++cnt; i != values.uses_.size(); ++i)
+        {
             values.add_unused(uses_[i], values.indicators_[i]);
         }
-        throw; 
+        throw;
     }
 }
 
@@ -143,7 +143,7 @@ void statement_impl::exchange_for_rowset(into_type_ptr const &i)
     int definePosition = 1;
     p->define(*this, definePosition);
     definePositionForRow_ = definePosition;
-} 
+}
 
 void statement_impl::exchange(use_type_ptr const &u)
 {
@@ -520,7 +520,7 @@ void statement_impl::post_fetch(bool gotData, bool calledFromFetch)
 }
 
 void statement_impl::post_use(bool gotData)
-{ 
+{
     // iterate in reverse order here in case the first item
     // is an UseType<Values> (since it depends on the other UseTypes)
     for (std::size_t i = uses_.size(); i != 0; --i)
@@ -581,7 +581,7 @@ void statement_impl::describe()
         props.set_name(columnName);
 
         props.set_data_type(dtype);
-        switch(dtype)
+        switch (dtype)
         {
         case eString:
             bind_into<eString>();

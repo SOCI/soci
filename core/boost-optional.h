@@ -17,7 +17,7 @@ namespace soci
 {
 
 // simple fall-back for boost::optional
-template <typename T> 
+template <typename T>
 struct type_conversion<boost::optional<T> >
 {
     typedef typename type_conversion<T>::base_type base_type;

@@ -62,7 +62,7 @@ std::size_t row::find_column(std::string const &name) const
 row::~row()
 {
     std::size_t const hsize = holders_.size();
-    for(std::size_t i = 0; i != hsize; ++i)
+    for (std::size_t i = 0; i != hsize; ++i)
     {
         delete holders_[i];
         delete indicators_[i];

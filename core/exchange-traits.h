@@ -29,42 +29,45 @@ struct exchange_traits
     // and user-defined types
     typedef user_type_tag type_family;
 
-    enum { eXType =
-           exchange_traits<typename type_conversion<T>::base_type>::eXType };
+    enum // anonymous
+    {
+        eXType =
+        exchange_traits<typename type_conversion<T>::base_type>::eXType
+    };
 };
 
 template <>
 struct exchange_traits<short>
 {
-    typedef basic_type_tag type_family;    
+    typedef basic_type_tag type_family;
     enum { eXType = eXShort };
 };
 
 template <>
 struct exchange_traits<int>
 {
-    typedef basic_type_tag type_family;    
+    typedef basic_type_tag type_family;
     enum { eXType = eXInteger };
 };
 
 template <>
 struct exchange_traits<char>
 {
-    typedef basic_type_tag type_family;    
+    typedef basic_type_tag type_family;
     enum { eXType = eXChar };
 };
 
 template <>
 struct exchange_traits<unsigned long>
 {
-    typedef basic_type_tag type_family;    
+    typedef basic_type_tag type_family;
     enum { eXType = eXUnsignedLong };
 };
 
 template <>
 struct exchange_traits<double>
 {
-    typedef basic_type_tag type_family;    
+    typedef basic_type_tag type_family;
     enum { eXType = eXDouble };
 };
 
@@ -83,14 +86,14 @@ struct exchange_traits<char[N]>
 template <>
 struct exchange_traits<std::string>
 {
-    typedef basic_type_tag type_family;    
+    typedef basic_type_tag type_family;
     enum { eXType = eXStdString };
 };
 
 template <>
 struct exchange_traits<std::tm>
 {
-    typedef basic_type_tag type_family;    
+    typedef basic_type_tag type_family;
     enum { eXType = eXStdTm };
 };
 

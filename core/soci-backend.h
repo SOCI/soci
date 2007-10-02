@@ -19,8 +19,10 @@ namespace soci
 {
 
 // data types, as seen by the user
-enum eDataType { eString, eChar, eDate, eDouble, eInteger,
-                 eUnsignedLong };
+enum eDataType
+{
+    eString, eChar, eDate, eDouble, eInteger, eUnsignedLong
+};
 
 // the enum type for indicator variables
 enum eIndicator { eOK, eNoData, eNull, eTruncated };
@@ -29,9 +31,12 @@ namespace details
 {
 
 // data types, as used to describe exchange format
-enum eExchangeType { eXChar, eXCString, eXStdString, eXShort, eXInteger,
-                     eXUnsignedLong, eXDouble, eXStdTm, eXStatement,
-                     eXRowID, eXBLOB };
+enum eExchangeType
+{
+    eXChar, eXCString, eXStdString, eXShort, eXInteger,
+    eXUnsignedLong, eXDouble, eXStdTm, eXStatement,
+    eXRowID, eXBLOB
+};
 
 // type of statement (used for optimizing statement preparation)
 enum eStatementType { eOneTimeQuery, eRepeatableQuery };

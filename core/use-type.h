@@ -54,10 +54,10 @@ public:
     virtual void bind(statement_impl &st, int &position);
     std::string get_name() const {return name_;}
     virtual void* get_data() {return data_;}
-     
+
     // conversion hook (from arbitrary user type to base type)
     virtual void convert_to_base() {}
-    virtual void convert_from_base() {} 
+    virtual void convert_from_base() {}
 
 protected:
     virtual void pre_use();

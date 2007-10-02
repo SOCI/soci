@@ -78,7 +78,7 @@ public:
     }
 
 private:
-    values &v_;        
+    values &v_;
 };
 
 } // namespace details

@@ -75,7 +75,7 @@ void vector_into_type::post_fetch(bool gotData, bool /* calledFromFetch */)
         backEnd_->post_fetch(gotData, NULL);
     }
 
-    if(gotData)
+    if (gotData)
     {
         convert_from_base();
     }

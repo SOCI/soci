@@ -42,4 +42,3 @@ eIndicator values::indicator(std::string const &name) const
         return *indicators_[it->second];
     }
 }
-

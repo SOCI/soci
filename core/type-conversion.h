@@ -77,7 +77,7 @@ public:
         : use_type<BASE_TYPE>(details::base_value_holder<T>::val_,
             ownInd_, name),
           value_(value), ind_(ownInd_) {}
-    conversion_use_type(T &value, eIndicator &ind, std::string const &name 
+    conversion_use_type(T &value, eIndicator &ind, std::string const &name
             = std::string())
         : use_type<BASE_TYPE>(details::base_value_holder<T>::val_, ind, name),
           value_(value), ind_(ind) {}
@@ -266,12 +266,12 @@ use_type_ptr do_use(T &t, eIndicator &indicator,
 // Each such specialization automatically creates a use_type and an into_type.
 // This code is commented out, since it causes problems in those environments
 // where std::time_t is an alias to int.
-// 
+//
 // template<>
 // struct type_conversion<std::time_t>
 // {
 //     typedef std::tm base_type;
-// 
+//
 //     static void from_base(base_type const &in, eIndicator ind, std::time_t &out)
 //     {
 //         if (ind == eNull)
@@ -280,7 +280,7 @@ use_type_ptr do_use(T &t, eIndicator &indicator,
 //         }
 //         out = mktime(&in);
 //     }
-// 
+//
 //     static void to_base(T const &in, base_type &out, eIndicator &ind)
 //     {
 //         out = *localtime(&in);

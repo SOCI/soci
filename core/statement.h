@@ -215,7 +215,7 @@ namespace details
 template <>
 struct exchange_traits<statement>
 {
-    typedef basic_type_tag type_family;    
+    typedef basic_type_tag type_family;
     enum { eXType = eXStatement };
 };
 

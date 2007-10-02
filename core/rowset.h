@@ -30,7 +30,7 @@ public:
     typedef ptrdiff_t difference_type;
 
     // Constructors
- 
+
     rowset_iterator()
         : st_(0), define_(0)
     {}
@@ -38,9 +38,9 @@ public:
     rowset_iterator(statement& st, T& define)
         : st_(&st), define_(&define)
     {
-        assert(0 != st_); 
+        assert(0 != st_);
         assert(0 != define_);
-        assert(0 != st_->get_backend()); 
+        assert(0 != st_->get_backend());
 
         // Fetch first row to properly initialize iterator
         ++(*this);
@@ -49,7 +49,7 @@ public:
     // Access operators
     
     reference operator*() const
-    { 
+    {
         return (*define_);
     }
 
@@ -67,7 +67,7 @@ public:
         if (!st_->fetch())
         {
             // Set iterator to non-derefencable state (pass-the-end)
-            st_ = 0; 
+            st_ = 0;
             define_ = 0;
         }
 
@@ -197,14 +197,14 @@ public:
         assert(0 != pimpl_);
 
         pimpl_->decRef();
-    } 
+    }
 
     rowset& operator=(rowset const& rhs)
     {
         assert(0 != pimpl_);
         assert(0 != rhs.pimpl_);
 
-        rhs.incRef(); 
+        rhs.incRef();
         pimpl_->decRef();
         pimpl_= rhs.pimpl_;
     }
@@ -222,7 +222,7 @@ public:
 
         return pimpl_->end();
     }
-  
+
 private:
 
     // Pointer to implementation - the body

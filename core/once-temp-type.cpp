@@ -51,4 +51,3 @@ once_temp_type & once_temp_type::operator,(use_type_ptr const &u)
     rcst_->exchange(u);
     return *this;
 }
-

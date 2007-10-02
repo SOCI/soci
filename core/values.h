@@ -44,7 +44,7 @@ public:
         else
         {
             std::ostringstream msg;
-            msg << "Column at position " 
+            msg << "Column at position "
                 << static_cast<unsigned long>(pos)
                 << " contains NULL value and no default was provided";
             throw soci_error(msg.str());
@@ -77,7 +77,7 @@ public:
     template <typename T>
     T get(std::string const &name, T const &nullValue) const
     {
-        return row_ ? row_->get<T>(name, nullValue) 
+        return row_ ? row_->get<T>(name, nullValue)
             : get_from_uses<T>(name, nullValue);
     }
 
@@ -101,10 +101,10 @@ public:
 
 private:
 
-    //TODO To make values generally usable outside of TypeConversionS, 
+    //TODO To make values generally usable outside of TypeConversionS,
     // these should be reference counted smart pointers
-    row *row_; 
-    std::vector<details::standard_use_type*> uses_; 
+    row *row_;
+    std::vector<details::standard_use_type*> uses_;
     std::map<details::use_type_base*, eIndicator*> unused_;
     std::vector<eIndicator*> indicators_;
     std::map<std::string, size_t> index_;
@@ -127,7 +127,7 @@ private:
             {
                 return get_from_uses<T>(pos->second);
             }
-            catch(soci_error const &)
+            catch (soci_error const &)
             {
                 throw soci_error("Value named " + name + " was set using"
                     " a different type than the one passed to get()");
@@ -152,7 +152,7 @@ private:
             {
                 return get_from_uses<T>(pos->second);
             }
-            catch(soci_error const &)
+            catch (soci_error const &)
             {
                 throw soci_error("Value named " + name + " was set using"
                     " a different type than the one passed to get()");
@@ -180,10 +180,10 @@ private:
         }
     }
 
-    row& get_row() 
-    { 
-        row_ = new row(); 
-        return *row_; 
+    row& get_row()
+    {
+        row_ = new row();
+        return *row_;
     }
     
     // this is called by Statement::bind(values)
@@ -204,7 +204,7 @@ private:
         // were not bound by the Statement
         // (bound uses and indicators are deleted in Statement::clean_up())
         for (std::map<details::use_type_base*, eIndicator*>::iterator pos =
-            unused_.begin(); pos != unused_.end(); ++pos)            
+            unused_.begin(); pos != unused_.end(); ++pos)
         {
             delete pos->first;
             delete pos->second;

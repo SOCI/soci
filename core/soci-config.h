@@ -36,4 +36,3 @@
 #endif // _MSC_VER
 
 #endif // SOCI_CONFIG_H_INCLUDED
-

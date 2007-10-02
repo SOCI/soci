@@ -30,4 +30,3 @@ procedure_impl::procedure_impl(prepare_temp_type const &prep)
 
     define_and_bind();
 }
-

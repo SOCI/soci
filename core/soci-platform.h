@@ -31,4 +31,3 @@
 #endif // _MSC_VER
 
 #endif // SOCI_PLATFORM_H_INCLUDED
-
