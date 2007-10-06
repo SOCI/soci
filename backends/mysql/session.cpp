@@ -22,7 +22,8 @@ using namespace soci::details;
 using std::string;
 
 
-namespace { // anonymous
+namespace
+{ // anonymous
 
 void skip_white(string::const_iterator *i,
     string::const_iterator const & end, bool endok)
@@ -130,8 +131,8 @@ bool valid_int(const string & s)
     char *tail;
     const char *cstr = s.c_str();
     errno = 0;
-    long l = std::strtol(cstr, &tail, 10);
-    if (errno != 0 or l > INT_MAX or l < INT_MIN)
+    long n = std::strtol(cstr, &tail, 10);
+    if (errno != 0 or n > INT_MAX or n < INT_MIN)
     {
         return false;
     }
@@ -246,7 +247,8 @@ mysql_session_backend::mysql_session_backend(
             db_p ? db.c_str() : NULL,
             port_p ? port : 0,
             unix_socket_p ? unix_socket.c_str() : NULL,
-            0)) {
+            0))
+    {
         string err = mysql_error(conn_);
         clean_up();
         throw soci_error(err);
@@ -281,4 +283,3 @@ mysql_blob_backend * mysql_session_backend::make_blob_backend()
 {
     return new mysql_blob_backend(*this);
 }
-

@@ -199,12 +199,13 @@ mysql_statement_backend::execute(int number)
                 {
                     throw soci_error("Wrong number of parameters.");
                 }
-		
+
                 std::vector<std::string>::const_iterator ci
                     = queryChunks_.begin();
                 for (std::vector<char*>::const_iterator
                          pi = paramValues.begin(), end = paramValues.end();
-                     pi != end; ++ci, ++pi) {
+                     pi != end; ++ci, ++pi)
+                {
                     query += *ci;
                     query += *pi;
                 }
@@ -261,7 +262,7 @@ mysql_statement_backend::execute(int number)
     {
         currentRow_ = 0;
         rowsToConsume_ = 0;
-	
+
         numberOfRows_ = mysql_num_rows(result_);
         if (numberOfRows_ == 0)
         {
@@ -351,7 +352,8 @@ void mysql_statement_backend::describe_column(int colNum,
 {
     int pos = colNum - 1;
     MYSQL_FIELD *field = mysql_fetch_field_direct(result_, pos);
-    switch (field->type) {
+    switch (field->type)
+    {
     case FIELD_TYPE_CHAR:       //MYSQL_TYPE_TINY:
     case FIELD_TYPE_SHORT:      //MYSQL_TYPE_SHORT:
     case FIELD_TYPE_LONG:       //MYSQL_TYPE_LONG:
@@ -416,4 +418,3 @@ mysql_statement_backend::make_vector_use_type_backend()
     hasVectorUseElements_ = true;
     return new mysql_vector_use_type_backend(*this);
 }
-

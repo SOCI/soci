@@ -57,4 +57,3 @@ void mysql_blob_backend::trim(std::size_t /* newLen */)
 {
     throw soci_error("BLOBs are not supported.");
 }
-

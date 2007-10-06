@@ -61,14 +61,14 @@ void mysql_standard_use_type_backend::pre_use(eIndicator const *ind)
                 cstring_descriptor *strDescr
                     = static_cast<cstring_descriptor *>(data_);
                 buf_ = quote(statement_.session_.conn_, strDescr->str_,
-			     std::strlen(strDescr->str_));
+                             std::strlen(strDescr->str_));
             }
             break;
         case eXStdString:
             {
                 std::string *s = static_cast<std::string *>(data_);
                 buf_ = quote(statement_.session_.conn_,
-			     s->c_str(), s->size());
+                             s->c_str(), s->size());
             }
             break;
         case eXShort:
@@ -150,4 +150,3 @@ void mysql_standard_use_type_backend::clean_up()
         buf_ = NULL;
     }
 }
-

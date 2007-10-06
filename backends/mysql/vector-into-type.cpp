@@ -60,7 +60,7 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, eIndicator *ind)
         int pos = position_ - 1;
 
         int const endRow = statement_.currentRow_ + statement_.rowsToConsume_;
-	
+
         mysql_data_seek(statement_.result_, statement_.currentRow_);
         for (int curRow = statement_.currentRow_, i = 0;
              curRow != endRow; ++curRow, ++i)
@@ -197,4 +197,3 @@ void mysql_vector_into_type_backend::clean_up()
 {
     // nothing to do here
 }
-

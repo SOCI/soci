@@ -61,7 +61,7 @@ void mysql_vector_use_type_backend::pre_use(eIndicator const *ind)
                     std::vector<char> *pv
                         = static_cast<std::vector<char> *>(data_);
                     std::vector<char> &v = *pv;
-		    
+
                     char tmp[] = { v[i], '\0' };
                     buf = quote(statement_.session_.conn_, tmp, 1);
                 }
@@ -71,7 +71,7 @@ void mysql_vector_use_type_backend::pre_use(eIndicator const *ind)
                     std::vector<std::string> *pv
                         = static_cast<std::vector<std::string> *>(data_);
                     std::vector<std::string> &v = *pv;
-		    
+
                     buf = quote(statement_.session_.conn_,
                         v[i].c_str(), v[i].size());
                 }
@@ -191,4 +191,3 @@ void mysql_vector_use_type_backend::clean_up()
         delete [] buffers_[i];
     }
 }
-

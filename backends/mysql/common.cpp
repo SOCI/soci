@@ -64,14 +64,13 @@ void soci::details::mysql::parse_std_tm(char const *buf, std::tm &t)
     std::mktime(&t);
 }
 
-char * soci::details::mysql::quote(MYSQL * conn, const char *s, int l)
+char * soci::details::mysql::quote(MYSQL * conn, const char *s, int len)
 {
-    char *retv = new char[2 * l + 3];
+    char *retv = new char[2 * len + 3];
     retv[0] = '\'';
-    int le = mysql_real_escape_string(conn, retv + 1, s, l);
-    retv[le + 1] = '\'';
-    retv[le + 2] = '\0';
+    int len_esc = mysql_real_escape_string(conn, retv + 1, s, len);
+    retv[len_esc + 1] = '\'';
+    retv[len_esc + 2] = '\0';
 
     return retv;
 }
-
