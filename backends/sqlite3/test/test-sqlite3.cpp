@@ -240,7 +240,7 @@ int main(int argc, char** argv)
     {
         TestContext tc(backEnd, connectString);
         common_tests tests(tc);
-        tests.run();
+        tests.run(false);
         
         std::cout << "\nSOCI sqlite3 Tests:\n\n";
 
