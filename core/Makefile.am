@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.8 2007/06/23 00:58:09 mloskot Exp $
+# $Id: Makefile.am,v 1.9 2007/10/06 19:31:51 msobczak Exp $
 # 
 # Copyright (C) 2006, Mateusz Loskot
 #
@@ -15,6 +15,7 @@ lib@SOCI_CORE_LIBRARY_NAME@_la_LDFLAGS = \
 
 lib@SOCI_CORE_LIBRARY_NAME@_la_SOURCES = \
 	blob.cpp \
+	error.cpp \
 	into-type.cpp \
 	once-temp-type.cpp \
 	prepare-temp-type.cpp \
@@ -25,15 +26,17 @@ lib@SOCI_CORE_LIBRARY_NAME@_la_SOURCES = \
 	rowid.cpp \
 	session.cpp \
 	statement.cpp \
+	transaction.cpp \
 	use-type.cpp \
-	values.cpp \
-	error.cpp
+	values.cpp
 
 socidir = $(includedir)/soci
 
 soci_HEADERS = \
 	blob.h \
 	blob-exchange.h \
+	boost-optional.h \
+	error.h \
 	exchange-traits.h \
 	into.h \
 	into-type.h \
@@ -53,6 +56,7 @@ soci_HEADERS = \
 	soci-platform.h \
 	soci.h \
 	statement.h \
+	transaction.h \
 	type-conversion.h \
 	type-conversion-traits.h \
 	type-holder.h \
