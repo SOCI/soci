@@ -33,7 +33,7 @@ void hardExec(sqlite_api::sqlite3 *conn, char const *query, char const *errMsg)
            << zErrMsg;
 
         sqlite3_free(zErrMsg);
-        
+
         throw soci_error(ss.str());
     }
 }
@@ -53,7 +53,7 @@ sqlite3_session_backend::sqlite3_session_backend(
         std::ostringstream ss;
         ss << "Cannot establish connection to the database. "
            << zErrMsg;
-        
+
         throw soci_error(ss.str());
     }
 }

@@ -20,12 +20,12 @@ using namespace soci;
 using namespace soci::details;
 using namespace soci::details::sqlite3;
 
-void sqlite3_standard_into_type_backend::define_by_pos(int & position, void * data
-                                                 , eExchangeType type)
+void sqlite3_standard_into_type_backend::define_by_pos(int & position, void * data,
+                                                       eExchangeType type)
 {
     data_ = data;
     type_ = type;
-    position_ = position++;    
+    position_ = position++;
 }
 
 void sqlite3_standard_into_type_backend::pre_fetch()
@@ -33,8 +33,8 @@ void sqlite3_standard_into_type_backend::pre_fetch()
     // ...
 }
 
-void sqlite3_standard_into_type_backend::post_fetch(bool gotData, 
-                                               bool calledFromFetch, 
+void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
+                                               bool calledFromFetch,
                                                eIndicator * ind)
 {
     if (calledFromFetch == true && gotData == false)
@@ -69,9 +69,9 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
             }
         }
 
-        const char *buf = 
+        const char *buf =
         reinterpret_cast<const char*>(sqlite3_column_text(
-                                          statement_.stmt_, 
+                                          statement_.stmt_,
                                           pos));
 
         if (!buf)
@@ -150,19 +150,19 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
             rbe->value_ = static_cast<unsigned long>(val);
         }
         break;
-        case eXBLOB:	 
-        {	 
-            blob *b = static_cast<blob *>(data_);	 
-            sqlite3_blob_backend *bbe =	 
-                static_cast<sqlite3_blob_backend *>(b->get_backend());	 
+        case eXBLOB:
+        {
+            blob *b = static_cast<blob *>(data_);
+            sqlite3_blob_backend *bbe =
+                static_cast<sqlite3_blob_backend *>(b->get_backend());
 
-            buf = reinterpret_cast<const char*>(sqlite3_column_blob(	 
-                                                   statement_.stmt_,	 
-                                                   pos));	 
+            buf = reinterpret_cast<const char*>(sqlite3_column_blob(
+                                                   statement_.stmt_,
+                                                   pos));
 
-            int len = sqlite3_column_bytes(statement_.stmt_, pos);	 
-            bbe->set_data(buf, len);	 
-        }	 
+            int len = sqlite3_column_bytes(statement_.stmt_, pos);
+            bbe->set_data(buf, len);
+        }
         break;
         default:
             throw soci_error("Into element used with non-supported type.");

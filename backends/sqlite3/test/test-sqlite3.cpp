@@ -77,11 +77,11 @@ void test2()
         session sql(backEnd, connectString);
 
         blob_table_creator tableCreator(sql);
-        
+
         char buf[] = "abcdefghijklmnopqrstuvwxyz";
-        
+
         sql << "insert into soci_test(id, img) values(7, '')";
-    
+
         {
             blob b(sql);
 
@@ -103,18 +103,18 @@ void test2()
             char buf2[100];
             b.read(0, buf2, 10);
             assert(strncmp(buf2, "abcdefghij", 10) == 0);
-            
+
             sql << "select img from soci_test where id = 7", into(b);
             assert(b.get_len() == sizeof(buf));
-            
+
         }
     }
 
     std::cout << "test 2 passed" << std::endl;
 }
 
-// This test was put in to fix a problem that occurs when there are both 
-//into and use elements in the same query and one of them (into) binds 
+// This test was put in to fix a problem that occurs when there are both
+//into and use elements in the same query and one of them (into) binds
 //to a vector object.
 void test3()
 {
@@ -153,11 +153,11 @@ void test3()
 struct TableCreator1 : public table_creator_base
 {
     TableCreator1(session& session)
-        : table_creator_base(session) 
+        : table_creator_base(session)
     {
         session << "create table soci_test(id integer, val integer, c char, "
                  "str varchar(20), sh smallint, ul numeric(20), d float, "
-                 "tm datetime, i1 integer, i2 integer, i3 integer, " 
+                 "tm datetime, i1 integer, i2 integer, i3 integer, "
                  "name varchar(20))";
     }
 };
@@ -189,7 +189,7 @@ struct TableCreator3 : public table_creator_base
 class TestContext : public test_context_base
 {
 public:
-    TestContext(backend_factory const &backEnd, 
+    TestContext(backend_factory const &backEnd,
                 std::string const &connectString)
         : test_context_base(backEnd, connectString) {}
 
@@ -241,13 +241,13 @@ int main(int argc, char** argv)
         TestContext tc(backEnd, connectString);
         common_tests tests(tc);
         tests.run(false);
-        
+
         std::cout << "\nSOCI sqlite3 Tests:\n\n";
 
         test1();
         test2();
         test3();
-        
+
         std::cout << "\nOK, all tests passed.\n\n";
     }
     catch (soci::soci_error const & e)

@@ -10,11 +10,14 @@
 
 #include <vector>
 
-namespace soci {
+namespace soci
+{
 
-namespace details {
+namespace details
+{
 
-namespace sqlite3 {
+namespace sqlite3
+{
 
 // helper function for parsing datetime values
 void parseStdTm(char const *buf, std::tm &t);
@@ -41,4 +44,3 @@ void resizeVector(void *p, std::size_t sz)
 } // namespace SOCI
 
 #endif // SQLITE3_COMMON_H_INCLUDED
-

@@ -21,7 +21,7 @@ using namespace sqlite_api;
 
 sqlite3_statement_backend::sqlite3_statement_backend(
     sqlite3_session_backend &session)
-    : session_(session), stmt_(0), dataCache_(), useData_(0), 
+    : session_(session), stmt_(0), dataCache_(), useData_(0),
       databaseReady_(false), boundByName_(false), boundByPos_(false)
 {
 }
@@ -47,11 +47,11 @@ void sqlite3_statement_backend::prepare(std::string const & query,
     clean_up();
 
     const char *tail; // unused;
-    int res = sqlite3_prepare(session_.conn_, 
-                              query.c_str(), 
-                              static_cast<int>(query.size()), 
-                              &stmt_, 
-                              &tail);    
+    int res = sqlite3_prepare(session_.conn_,
+                              query.c_str(),
+                              static_cast<int>(query.size()),
+                              &stmt_,
+                              &tail);
     if (res != SQLITE_OK)
     {
         const char *zErrMsg = sqlite3_errmsg(session_.conn_);
@@ -65,7 +65,7 @@ void sqlite3_statement_backend::prepare(std::string const & query,
 }
 
 // sqlite3_reset needs to be called before a prepared statment can
-// be executed a second time.  
+// be executed a second time.
 void sqlite3_statement_backend::resetIfNeeded()
 {
     if (stmt_ && !databaseReady_)
@@ -73,11 +73,11 @@ void sqlite3_statement_backend::resetIfNeeded()
         int res = sqlite3_reset(stmt_);
         if (SQLITE_OK == res)
             databaseReady_ = true;
-    }   
+    }
 }
 
-// This is used by bulk operations 
-statement_backend::execFetchResult 
+// This is used by bulk operations
+statement_backend::execFetchResult
 sqlite3_statement_backend::loadRS(int totalRows)
 {
     statement_backend::execFetchResult retVal = eSuccess;
@@ -85,7 +85,7 @@ sqlite3_statement_backend::loadRS(int totalRows)
 
     // make the vector big enough to hold the data we need
     dataCache_.resize(totalRows);
-    
+
     int i = 0;
     for (i = 0; i < totalRows; ++i)
     {
@@ -113,18 +113,18 @@ sqlite3_statement_backend::loadRS(int totalRows)
             }
             for (int c = 0; c < numCols; ++c)
             {
-                const char *buf = 
+                const char *buf =
                 reinterpret_cast<const char*>(sqlite3_column_text(
-                                                  stmt_, 
+                                                  stmt_,
                                                   c));
                 bool isNull = false;
-                
+
                 if (0 == buf)
                 {
                     isNull = true;
                     buf = "";
                 }
-                
+
                 dataCache_[i][c].data_ = buf;
                 dataCache_[i][c].isNull_ = isNull;
             }
@@ -149,11 +149,11 @@ sqlite3_statement_backend::loadRS(int totalRows)
 }
 
 // This is used for non-bulk operations
-statement_backend::execFetchResult 
+statement_backend::execFetchResult
 sqlite3_statement_backend::loadOne()
 {
     statement_backend::execFetchResult retVal = eSuccess;
-    
+
     int res = sqlite3_step(stmt_);
 
     if (SQLITE_DONE == res)
@@ -180,7 +180,7 @@ sqlite3_statement_backend::loadOne()
 }
 
 // Execute statements once for every row of useData
-statement_backend::execFetchResult 
+statement_backend::execFetchResult
 sqlite3_statement_backend::bindAndExecute(int number)
 {
     statement_backend::execFetchResult retVal = eNoData;
@@ -198,26 +198,26 @@ sqlite3_statement_backend::bindAndExecute(int number)
             const sqlite3_column& curCol = useData_[row][pos-1];
             if (curCol.isNull_)
                 bindRes = sqlite3_bind_null(stmt_, pos);
-            else if(curCol.blobBuf_)
-                bindRes = sqlite3_bind_blob(stmt_, pos, 
-                                            curCol.blobBuf_, 
-                                            curCol.blobSize_, 
+            else if (curCol.blobBuf_)
+                bindRes = sqlite3_bind_blob(stmt_, pos,
+                                            curCol.blobBuf_,
+                                            curCol.blobSize_,
                                             SQLITE_STATIC);
             else
-                bindRes = sqlite3_bind_text(stmt_, pos, 
-                                            curCol.data_.c_str(), 
-                                            static_cast<int>(curCol.data_.length()), 
+                bindRes = sqlite3_bind_text(stmt_, pos,
+                                            curCol.data_.c_str(),
+                                            static_cast<int>(curCol.data_.length()),
                                             SQLITE_STATIC);
 
             if (SQLITE_OK != bindRes)
                 throw soci_error("Failure to bind on bulk operations");
         }
-        
-        // Handle the case where there are both into and use elements 
+
+        // Handle the case where there are both into and use elements
         // in the same query and one of the into binds to a vector object.
         if (1 == rows && number != rows)
             return loadRS(number);
-        
+
         retVal = loadOne(); //execute each bound line
     }
     return retVal;
@@ -271,46 +271,46 @@ int sqlite3_statement_backend::prepare_for_describe()
     return sqlite3_column_count(stmt_);
 }
 
-void sqlite3_statement_backend::describe_column(int colNum, eDataType & type, 
+void sqlite3_statement_backend::describe_column(int colNum, eDataType & type,
                                              std::string & columnName)
 {
 
     columnName = sqlite3_column_name(stmt_, colNum-1);
 
-    // This is a hack, but the sqlite3 type system does not 
+    // This is a hack, but the sqlite3 type system does not
     // have a date or time field.  Also it does not reliably
     // id other data types.  It has a tendency to see everything
     // as text.  sqlite3_column_decltype returns the text that is
     // used in the create table statement
     bool typeFound = false;
-  
+
     const char* declType = sqlite3_column_decltype(stmt_, colNum-1);
     std::string dt = declType;
 
     // do all comparisions in lower case
     std::transform(dt.begin(), dt.end(), dt.begin(), tolower);
 
-    if (dt.find("time",0) != std::string::npos)
+    if (dt.find("time", 0) != std::string::npos)
     {
         type = eDate;
         typeFound = true;
     }
-    if (dt.find("date",0) != std::string::npos)
+    if (dt.find("date", 0) != std::string::npos)
     {
         type = eDate;
         typeFound = true;
     }
-    if (dt.find("int",0) != std::string::npos)
+    if (dt.find("int", 0) != std::string::npos)
     {
         type = eInteger;
         typeFound = true;
     }
-    if (dt.find("float",0) != std::string::npos)
+    if (dt.find("float", 0) != std::string::npos)
     {
         type = eDouble;
         typeFound = true;
     }
-    if (dt.find("char",0) != std::string::npos)
+    if (dt.find("char", 0) != std::string::npos)
     {
         type = eString;
         typeFound = true;
@@ -322,7 +322,7 @@ void sqlite3_statement_backend::describe_column(int colNum, eDataType & type,
     // try to get it from the weak ass type system
 
     // total hack - execute the statment once to get the column types
-    // then clear so it can be executed again    
+    // then clear so it can be executed again
     sqlite3_step(stmt_);
 
     int sqlite3_type = sqlite3_column_type(stmt_, colNum-1);

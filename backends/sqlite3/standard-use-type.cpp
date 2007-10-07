@@ -20,7 +20,7 @@
 using namespace soci;
 using namespace soci::details;
 
-void sqlite3_standard_use_type_backend::bind_by_pos(int & position, void * data, 
+void sqlite3_standard_use_type_backend::bind_by_pos(int & position, void * data,
                                               eExchangeType type)
 {
     if (statement_.boundByName_)
@@ -36,7 +36,7 @@ void sqlite3_standard_use_type_backend::bind_by_pos(int & position, void * data,
     statement_.boundByPos_ = true;
 }
 
-void sqlite3_standard_use_type_backend::bind_by_name(std::string const & name, 
+void sqlite3_standard_use_type_backend::bind_by_name(std::string const & name,
                                                void * data,
                                                eExchangeType type)
 {
@@ -45,7 +45,7 @@ void sqlite3_standard_use_type_backend::bind_by_name(std::string const & name,
         throw soci_error(
          "Binding for use elements must be either by position or by name.");
     }
- 
+
     data_ = data;
     type_ = type;
     name_ = ":" + name;
@@ -168,18 +168,18 @@ void sqlite3_standard_use_type_backend::pre_use(eIndicator const * ind)
             snprintf(buf_, bufSize, "%lu", rbe->value_);
         }
         break;
-        case eXBLOB:	 
-        {	 
-            blob *b = static_cast<blob *>(data_);	 
-            sqlite3_blob_backend *bbe =	 
+        case eXBLOB:
+        {
+            blob *b = static_cast<blob *>(data_);
+            sqlite3_blob_backend *bbe =
                 static_cast<sqlite3_blob_backend *>(b->get_backend());
-            
-            std::size_t len = bbe->get_len();    
+
+            std::size_t len = bbe->get_len();
             buf_ = new char[len];
             bbe->read(0, buf_, len);
             statement_.useData_[0][pos].blobBuf_ = buf_;
             statement_.useData_[0][pos].blobSize_ = len;
-        }	 
+        }
         break;
 
         default:
@@ -187,7 +187,7 @@ void sqlite3_standard_use_type_backend::pre_use(eIndicator const * ind)
         }
 
         statement_.useData_[0][pos].isNull_ = false;
-        if(type_ != eXBLOB)
+        if (type_ != eXBLOB)
         {
             statement_.useData_[0][pos].blobBuf_ = 0;
             statement_.useData_[0][pos].blobSize_ = 0;

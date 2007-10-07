@@ -21,7 +21,7 @@ using namespace soci::details;
 using namespace soci::details::sqlite3;
 
 void sqlite3_vector_use_type_backend::bind_by_pos(int & position,
-                                            void * data, 
+                                            void * data,
                                             eExchangeType type)
 {
     if (statement_.boundByName_)
@@ -37,7 +37,7 @@ void sqlite3_vector_use_type_backend::bind_by_pos(int & position,
     statement_.boundByPos_ = true;
 }
 
-void sqlite3_vector_use_type_backend::bind_by_name(std::string const & name, 
+void sqlite3_vector_use_type_backend::bind_by_name(std::string const & name,
                                              void * data,
                                              eExchangeType type)
 {
@@ -192,7 +192,7 @@ void sqlite3_vector_use_type_backend::pre_use(eIndicator const * ind)
             statement_.useData_[i][pos].blobSize_ = 0;
         }
         if (buf)
-            delete[] buf;
+            delete [] buf;
     }
 }
 

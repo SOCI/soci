@@ -20,7 +20,7 @@ using namespace soci::details;
 using namespace soci::details::sqlite3;
 
 
-void sqlite3_vector_into_type_backend::define_by_pos(int & position, void * data, 
+void sqlite3_vector_into_type_backend::define_by_pos(int & position, void * data,
                                                eExchangeType type)
 {
     data_ = data;
@@ -34,7 +34,7 @@ void sqlite3_vector_into_type_backend::pre_fetch()
 }
 
 namespace // anonymous
-{        
+{
 
 template <typename T, typename U>
 void setInVector(void *p, int indx, U const &val)
@@ -57,7 +57,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, eIndicator * ind
         {
             const sqlite3_column& curCol =
                 statement_.dataCache_[i][position_-1];
-            
+
             if (curCol.isNull_)
             {
                 if (ind == NULL)
@@ -80,7 +80,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, eIndicator * ind
 
 
             // set buf to a null string if a null pointer is returned
-            if (!buf) 
+            if (!buf)
             {
                 buf = "";
             }

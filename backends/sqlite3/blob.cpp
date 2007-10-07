@@ -41,7 +41,7 @@ std::size_t sqlite3_blob_backend::read(
 
     memcpy(buf, buf_ + offset, r);
 
-    return r;   
+    return r;
 }
 
 
@@ -55,16 +55,16 @@ std::size_t sqlite3_blob_backend::write(
 
     buf_ = new char[len_];
 
-    if(oldBuf)
+    if (oldBuf)
     {
         // we need to copy both old and new buffers
-        // it is possible that the new does not 
+        // it is possible that the new does not
         // completely cover the old
         memcpy(buf_, oldBuf, oldLen);
         delete [] oldBuf;
     }
     memcpy(buf_ + offset, buf, len_);
-    
+
     return len_;
 }
 

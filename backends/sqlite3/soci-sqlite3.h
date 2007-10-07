@@ -248,4 +248,3 @@ SOCI_SQLITE3_DECL extern sqlite3_backend_factory const sqlite3;
 } // namespace SOCI
 
 #endif // SOCI_SQLITE3_H_INCLUDED
-
