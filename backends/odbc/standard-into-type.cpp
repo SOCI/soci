@@ -14,14 +14,14 @@ using namespace soci::details;
 
 
 void odbc_standard_into_type_backend::define_by_pos(
-    int & position , void * data, eExchangeType type)
+    int & position, void * data, eExchangeType type)
 {
     data_ = data;
     type_ = type;
     position_ = position++;
 
     SQLINTEGER size = 0;
-    
+
     switch (type_)
     {
     case eXChar:
@@ -75,14 +75,14 @@ void odbc_standard_into_type_backend::define_by_pos(
     }
 
     valueLen_ = 0;
-    
+
     SQLRETURN rc = SQLBindCol(statement_.hstmt_, static_cast<SQLUSMALLINT>(position_),
         static_cast<SQLUSMALLINT>(odbcType_), data, size, &valueLen_);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, 
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_,
                             "into type pre_fetch");
-    }    
+    }
 }
 
 void odbc_standard_into_type_backend::pre_fetch()
@@ -177,7 +177,7 @@ void odbc_standard_into_type_backend::clean_up()
 {
     if (!buf_)
     {
-        delete[] buf_;
+        delete [] buf_;
         buf_ = 0;
     }
 }

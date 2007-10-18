@@ -95,7 +95,7 @@ void odbc_vector_into_type_backend::define_by_pos(
             std::size_t bufSize = size * v->size();
 
             colSize_ = size;
-            
+
             buf_ = new char[bufSize];
             data = buf_;
         }
@@ -125,7 +125,7 @@ void odbc_vector_into_type_backend::define_by_pos(
 
             size = sizeof(TIMESTAMP_STRUCT);
             colSize_ = size;
-            
+
             std::size_t bufSize = size * v->size();
 
             buf_ = new char[bufSize];
@@ -145,9 +145,9 @@ void odbc_vector_into_type_backend::define_by_pos(
                               odbcType_, data, size, indHolders_);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, 
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_,
                             "vector into type define by pos");
-    }    
+    }
 }
 
 void odbc_vector_into_type_backend::pre_fetch()

@@ -15,27 +15,27 @@ odbc_session_backend::odbc_session_backend(std::string const & connectString)
     : henv_(0), hdbc_(0)
 {
     SQLRETURN rc;
-    
-	// Allocate environment handle
-	rc = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &henv_);
+
+    // Allocate environment handle
+    rc = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &henv_);
     if (is_odbc_error(rc))
     {
         throw soci_error("Unable to get environment handle");
     }
 
- 	// Set the ODBC version environment attribute
- 	rc = SQLSetEnvAttr(henv_, SQL_ATTR_ODBC_VERSION, (void*)SQL_OV_ODBC3, 0);
+    // Set the ODBC version environment attribute
+    rc = SQLSetEnvAttr(henv_, SQL_ATTR_ODBC_VERSION, (void*)SQL_OV_ODBC3, 0);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_ENV, henv_, 
+        throw odbc_soci_error(SQL_HANDLE_ENV, henv_,
                          "Setting ODBC version");
     }
 
- 	// Allocate connection handle
- 	rc = SQLAllocHandle(SQL_HANDLE_DBC, henv_, &hdbc_);
+    // Allocate connection handle
+    rc = SQLAllocHandle(SQL_HANDLE_DBC, henv_, &hdbc_);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, 
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
                          "Allocating connection handle");
     }
 
@@ -50,7 +50,7 @@ odbc_session_backend::odbc_session_backend(std::string const & connectString)
 
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, 
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
                          "Error Connecting to database");
     }
 
@@ -70,7 +70,7 @@ void odbc_session_backend::begin()
     {
         throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
                          "Begin Transaction");
-    }    
+    }
 }
 
 void odbc_session_backend::commit()
@@ -91,7 +91,7 @@ void odbc_session_backend::rollback()
     {
         throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
                          "Rolling back");
-    }    
+    }
     reset_transaction();
 }
 
@@ -103,7 +103,7 @@ void odbc_session_backend::reset_transaction()
     {
         throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
                             "Set Auto Commit");
-    }    
+    }
 }
 
 
@@ -126,7 +126,7 @@ void odbc_session_backend::clean_up()
     rc = SQLFreeHandle(SQL_HANDLE_ENV, henv_);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_ENV, henv_, 
+        throw odbc_soci_error(SQL_HANDLE_ENV, henv_,
                             "SQLFreeHandle ENV");
     }
 }

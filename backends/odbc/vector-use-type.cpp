@@ -35,7 +35,8 @@ void odbc_vector_use_type_backend::prepare_indicators(std::size_t size)
     indHolders_ = &indHolderVec_[0];
 }
 
-void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType)
+void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &size,
+    SQLSMALLINT &sqlType, SQLSMALLINT &cType)
 {
     switch (type_)
     {    // simple cases
@@ -98,7 +99,7 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             buf_ = new char[size * vsize];
 
             char *pos = buf_;
-        
+
             for (std::size_t i = 0; i != vsize; ++i)
             {
                 *pos++ = (*vp)[i];
@@ -125,17 +126,17 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             for (std::size_t i = 0; i != vecSize; ++i)
             {
                 std::size_t sz = v[i].length() + 1;  // add one for null
-				indHolderVec_[i] = static_cast<long>(sz);
+                indHolderVec_[i] = static_cast<long>(sz);
                 maxSize = sz > maxSize ? sz : maxSize;
             }
 
             buf_ = new char[maxSize * vecSize];
             memset(buf_, 0, maxSize * vecSize);
-            
+
             char *pos = buf_;
             for (std::size_t i = 0; i != vecSize; ++i)
             {
-                strncpy(pos, v[i].c_str(), v[i].length());                
+                strncpy(pos, v[i].c_str(), v[i].length());
                 pos += maxSize;
             }
 
@@ -181,16 +182,16 @@ void odbc_vector_use_type_backend::bind_helper(int &position, void *data, eExcha
 
     prepare_for_bind(data, size, sqlType, cType);
 
-    SQLINTEGER arraySize = (SQLINTEGER)indHolderVec_.size();    
+    SQLINTEGER arraySize = (SQLINTEGER)indHolderVec_.size();
     SQLSetStmtAttr(statement_.hstmt_, SQL_ATTR_PARAMSET_SIZE, (SQLPOINTER)arraySize, 0);
 
-	SQLRETURN rc = SQLBindParameter(statement_.hstmt_, static_cast<SQLUSMALLINT>(position++),
+    SQLRETURN rc = SQLBindParameter(statement_.hstmt_, static_cast<SQLUSMALLINT>(position++),
                                     SQL_PARAM_INPUT, cType, sqlType, size, 0,
                                     static_cast<SQLPOINTER>(data), size, indHolders_);
 
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, 
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_,
             "Error while binding value to column");
     }
 }
@@ -220,8 +221,8 @@ void odbc_vector_use_type_backend::bind_by_name(
 
     int position = -1;
     int count = 1;
-    
-    for (std::vector<std::string>::iterator it = statement_.names_.begin(); 
+
+    for (std::vector<std::string>::iterator it = statement_.names_.begin();
          it != statement_.names_.end(); ++it)
     {
         if (*it == name)
@@ -301,7 +302,7 @@ void odbc_vector_use_type_backend::pre_use(eIndicator const *ind)
             // for strings we have already set the values
             if (type_ != eXStdString)
             {
-	            indHolderVec_[i] = SQL_NTS;  // value is OK
+                indHolderVec_[i] = SQL_NTS;  // value is OK
             }
         }
     }

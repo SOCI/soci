@@ -87,12 +87,12 @@ void odbc_standard_use_type_backend::prepare_for_bind(
     {
 //         sqlType = SQL_VARBINARY;
 //         cType = SQL_C_BINARY;
-        
+
 //         BLOB *b = static_cast<BLOB *>(data);
-        
+
 //         odbc_blob_backend *bbe
 //         = static_cast<odbc_blob_backend *>(b->getBackEnd());
-        
+
 //         size = 0;
 //         indHolder_ = size;
         //TODO            data = &bbe->lobp_;
@@ -115,14 +115,14 @@ void odbc_standard_use_type_backend::bind_helper(int &position, void *data, eExc
 
     prepare_for_bind(data, size, sqlType, cType);
 
-	SQLRETURN rc = SQLBindParameter(statement_.hstmt_,
+    SQLRETURN rc = SQLBindParameter(statement_.hstmt_,
                                     static_cast<SQLUSMALLINT>(position++),
-                                    SQL_PARAM_INPUT, 
+                                    SQL_PARAM_INPUT,
                                     cType, sqlType, size, 0, data, 0, &indHolder_);
 
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, 
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_,
                                 "Binding");
     }
 }
@@ -152,8 +152,8 @@ void odbc_standard_use_type_backend::bind_by_name(
 
     int position = -1;
     int count = 1;
-    
-    for (std::vector<std::string>::iterator it = statement_.names_.begin(); 
+
+    for (std::vector<std::string>::iterator it = statement_.names_.begin();
          it != statement_.names_.end(); ++it)
     {
         if (*it == name)

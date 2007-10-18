@@ -35,7 +35,7 @@ inline void throw_odbc_error(SQLSMALLINT htype, SQLHANDLE hndl, char const * msg
                          SQL_MAX_MESSAGE_LENGTH + 1,
                          &length) == SQL_SUCCESS)
     {
-        ss << std::endl << "SOCI ODBC Error: " << msg << std::endl 
+        ss << std::endl << "SOCI ODBC Error: " << msg << std::endl
            << "SQLSTATE = " << sqlstate << std::endl
            << "Native Error Code = " << sqlcode << std::endl
            << message << std::endl;
@@ -56,4 +56,3 @@ inline bool is_odbc_error(SQLRETURN rc)
 }
 
 #endif
-

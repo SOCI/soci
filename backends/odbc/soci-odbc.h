@@ -95,7 +95,7 @@ struct odbc_standard_use_type_backend : details::standard_use_type_backend
     odbc_standard_use_type_backend(odbc_statement_backend &st)
         : statement_(st), data_(0), buf_(0), indHolder_(0) {}
 
-    void prepare_for_bind(void *&data, SQLUINTEGER &size, 
+    void prepare_for_bind(void *&data, SQLUINTEGER &size,
                         SQLSMALLINT &sqlType, SQLSMALLINT &cType);
     void bind_helper(int &position,
         void *data, details::eExchangeType type);
@@ -186,7 +186,7 @@ struct odbc_statement_backend : details::statement_backend
 
     odbc_session_backend &session_;
     SQLHSTMT hstmt_;
-	SQLUINTEGER	numRowsFetched_;
+    SQLUINTEGER numRowsFetched_;
     bool hasVectorUseElements_;
     bool boundByName_;
     bool boundByPos_;
@@ -255,11 +255,11 @@ class SOCI_ODBC_DECL odbc_soci_error : public soci_error
     SQLCHAR message_[SQL_MAX_MESSAGE_LENGTH + 1];
     SQLCHAR sqlstate_[SQL_SQLSTATE_SIZE + 1];
     SQLINTEGER sqlcode_;
-    
+
 public:
-    odbc_soci_error(SQLSMALLINT htype, 
-                  SQLHANDLE hndl, 
-                  std::string const & msg) 
+    odbc_soci_error(SQLSMALLINT htype,
+                  SQLHANDLE hndl,
+                  std::string const & msg)
         : soci_error(msg)
     {
         SQLSMALLINT length, i = 1;
@@ -267,13 +267,13 @@ public:
                       message_, SQL_MAX_MESSAGE_LENGTH + 1,
                       &length);
 
-        if(!length)
+        if (!length)
         {
             message_[0] = 0;
             sqlcode_ = 0;
         }
     }
-        
+
     SQLCHAR const * odbc_error_code() const
     {
         return reinterpret_cast<SQLCHAR const *>(sqlstate_);
@@ -300,4 +300,3 @@ inline bool is_odbc_error(SQLRETURN rc)
 
 
 #endif // SOCI_EMPTY_H_INCLUDED
-

@@ -22,20 +22,20 @@ using namespace soci::details;
 
 
 odbc_statement_backend::odbc_statement_backend(odbc_session_backend &session)
-    : session_(session), hstmt_(0), numRowsFetched_(0)
-    , hasVectorUseElements_(false), boundByName_(false), boundByPos_(false)
+    : session_(session), hstmt_(0), numRowsFetched_(0),
+      hasVectorUseElements_(false), boundByName_(false), boundByPos_(false)
 {
 }
 
 void odbc_statement_backend::alloc()
 {
     SQLRETURN rc;
-    
-	// Allocate environment handle
-	rc = SQLAllocHandle(SQL_HANDLE_STMT, session_.hdbc_, &hstmt_);
+
+    // Allocate environment handle
+    rc = SQLAllocHandle(SQL_HANDLE_STMT, session_.hdbc_, &hstmt_);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, session_.hdbc_, 
+        throw odbc_soci_error(SQL_HANDLE_DBC, session_.hdbc_,
             "Allocating statement");
     }
 }
@@ -118,7 +118,7 @@ void odbc_statement_backend::prepare(std::string const & query,
             {
                 query_ += *it;
             }
-            break;            
+            break;
         }
     }
 
@@ -133,7 +133,7 @@ void odbc_statement_backend::prepare(std::string const & query,
     SQLRETURN rc = SQLPrepare(hstmt_, (SQLCHAR*)query_.c_str(), (SQLINTEGER)query_.size());
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, 
+        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
                          query_.c_str());
     }
 }
@@ -141,11 +141,11 @@ void odbc_statement_backend::prepare(std::string const & query,
 statement_backend::execFetchResult
 odbc_statement_backend::execute(int number)
 {
-	// made this static because MSVC debugger was reporting
-	// that there was an attempt to use rows_processed after the stack
-	// was destroyed.  Some ODBC clean_up ?
+    // made this static because MSVC debugger was reporting
+    // that there was an attempt to use rows_processed after the stack
+    // was destroyed.  Some ODBC clean_up ?
     static SQLUSMALLINT rows_processed = 0;
-    
+
     if (hasVectorUseElements_)
     {
         SQLSetStmtAttr(hstmt_, SQL_ATTR_PARAMS_PROCESSED_PTR, &rows_processed, 0);
@@ -158,12 +158,12 @@ odbc_statement_backend::execute(int number)
     SQLRETURN rc = SQLExecute(hstmt_);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, 
+        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
                          "Statement Execute");
     }
 
     SQLSMALLINT colCount;
-    SQLNumResultCols(hstmt_, &colCount);    
+    SQLNumResultCols(hstmt_, &colCount);
 
     if (number > 0 && colCount > 0)
         return fetch(number);
@@ -175,10 +175,10 @@ statement_backend::execFetchResult
 odbc_statement_backend::fetch(int number)
 {
     numRowsFetched_ = 0;
-    
-	SQLSetStmtAttr(hstmt_, SQL_ATTR_ROW_BIND_TYPE, SQL_BIND_BY_COLUMN, 0);
-	SQLSetStmtAttr(hstmt_, SQL_ATTR_ROW_ARRAY_SIZE, (SQLPOINTER)number, 0);
-	SQLSetStmtAttr(hstmt_, SQL_ATTR_ROWS_FETCHED_PTR, &numRowsFetched_, 0);
+
+    SQLSetStmtAttr(hstmt_, SQL_ATTR_ROW_BIND_TYPE, SQL_BIND_BY_COLUMN, 0);
+    SQLSetStmtAttr(hstmt_, SQL_ATTR_ROW_ARRAY_SIZE, (SQLPOINTER)number, 0);
+    SQLSetStmtAttr(hstmt_, SQL_ATTR_ROWS_FETCHED_PTR, &numRowsFetched_, 0);
 
     SQLRETURN rc = SQLFetch(hstmt_);
 
@@ -187,10 +187,10 @@ odbc_statement_backend::fetch(int number)
 
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, 
+        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
                          "Statement Fetch");
     }
-    
+
     return eSuccess;
 }
 
@@ -206,13 +206,13 @@ std::string odbc_statement_backend::rewrite_for_procedure_call(
 }
 
 int odbc_statement_backend::prepare_for_describe()
-{ 
+{
     SQLSMALLINT numCols;
     SQLNumResultCols(hstmt_, &numCols);
     return numCols;
 }
 
-void odbc_statement_backend::describe_column(int colNum, eDataType & type, 
+void odbc_statement_backend::describe_column(int colNum, eDataType & type,
                                           std::string & columnName)
 {
     SQLCHAR colNameBuffer[2048];
@@ -229,13 +229,13 @@ void odbc_statement_backend::describe_column(int colNum, eDataType & type,
 
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, 
+        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
                          "describe Column");
     }
-    
+
     char const *name = reinterpret_cast<char const *>(colNameBuffer);
     columnName.assign(name, std::strlen(name));
-    
+
     switch (dataType)
     {
     case SQL_TYPE_DATE:
@@ -255,7 +255,7 @@ void odbc_statement_backend::describe_column(int colNum, eDataType & type,
     case SQL_INTEGER:
     case SQL_BIGINT:
         type = eInteger;
-        break;       
+        break;
     case SQL_CHAR:
     case SQL_VARCHAR:
     default:
@@ -280,14 +280,12 @@ std::size_t odbc_statement_backend::column_size(int colNum)
 
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, 
+        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
                          "column size");
     }
 
     return colSize;
 }
-
-
 
 odbc_standard_into_type_backend * odbc_statement_backend::make_into_type_backend()
 {

@@ -25,11 +25,11 @@ BackEndFactory const &backEnd = odbc;
 struct TableCreator1 : public TableCreatorBase
 {
     TableCreator1(Session& session)
-        : TableCreatorBase(session) 
+        : TableCreatorBase(session)
     {
         session << "create table soci_test(id integer, val integer, c char, "
                  "str varchar(20), sh int2, ul numeric(20), d float8, "
-                 "tm timestamp, i1 integer, i2 integer, i3 integer, " 
+                 "tm timestamp, i1 integer, i2 integer, i3 integer, "
                  "name varchar(20))";
     }
 };
@@ -61,7 +61,7 @@ struct TableCreator3 : public TableCreatorBase
 class TestContext : public TestContextBase
 {
 public:
-    TestContext(BackEndFactory const &backEnd, 
+    TestContext(BackEndFactory const &backEnd,
                 std::string const &connectString)
         : TestContextBase(backEnd, connectString) {}
 
