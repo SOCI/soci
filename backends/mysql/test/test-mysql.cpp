@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 #include <cassert>
 #include <cmath>
 #include <ctime>
@@ -71,6 +72,56 @@ void test1()
     }
 
     std::cout << "test 1 passed" << std::endl;
+}
+
+// MySQL error reporting test.
+void test2()
+{
+    {
+        try
+        {
+            session sql(backEnd, "host=test.soci.invalid");
+        }
+        catch (mysql_soci_error const &e)
+        {
+            assert(e.errNum_ == CR_UNKNOWN_HOST);
+        }
+    }
+
+    {
+        session sql(backEnd, connectString);
+        sql << "create table soci_test (id integer)";
+        try
+        {
+            int n;
+            sql << "select id from soci_test_nosuchtable", into(n);
+        }
+        catch (mysql_soci_error const &e)
+        {
+            assert(e.errNum_ == ER_NO_SUCH_TABLE);
+        }
+        try
+        {
+            sql << "insert into soci_test (invalid) values (256)";
+        }
+        catch (mysql_soci_error const &e)
+        {
+            assert(e.errNum_ == ER_BAD_FIELD_ERROR);
+        }
+        // A bulk operation.
+        try
+        {
+            std::vector<int> v(3, 5);
+            sql << "insert into soci_test_nosuchtable values (:n)", use(v);
+        }
+        catch (mysql_soci_error const &e)
+        {
+            assert(e.errNum_ == ER_NO_SUCH_TABLE);
+        }
+        sql << "drop table soci_test";
+    }
+
+    std::cout << "test 2 passed" << std::endl;
 }
 
 // DDL Creation objects for common tests
@@ -176,6 +227,7 @@ int main(int argc, char** argv)
         std::cout << "\nSOCI MySQL Tests:\n\n";
 
         test1();
+        test2();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;

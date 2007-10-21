@@ -216,11 +216,12 @@ mysql_statement_backend::execute(int number)
                 if (numberOfExecutions > 1)
                 {
                     // bulk operation
-                    //cerr << query << endl;
+                    //std::cerr << "bulk operation:\n" << query << std::endl;
                     if (0 != mysql_real_query(session_.conn_, query.c_str(),
                             query.size()))
                     {
-                        throw soci_error(mysql_error(session_.conn_));
+                        throw mysql_soci_error(mysql_error(session_.conn_),
+                            mysql_errno(session_.conn_));
                     }
                     if (mysql_field_count(session_.conn_) != 0)
                     {
@@ -241,16 +242,18 @@ mysql_statement_backend::execute(int number)
             query = queryChunks_.front();
         }
 
-        //cerr << query << endl;
+        //std::cerr << query << std::endl;
         if (0 != mysql_real_query(session_.conn_, query.c_str(),
                 query.size()))
         {
-            throw soci_error(mysql_error(session_.conn_));
+            throw mysql_soci_error(mysql_error(session_.conn_),
+                mysql_errno(session_.conn_));
         }
         result_ = mysql_store_result(session_.conn_);
         if (result_ == NULL and mysql_field_count(session_.conn_) != 0)
         {
-            throw soci_error(mysql_error(session_.conn_));
+            throw mysql_soci_error(mysql_error(session_.conn_),
+                mysql_errno(session_.conn_));
         }
     }
     else

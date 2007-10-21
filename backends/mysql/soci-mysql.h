@@ -35,6 +35,15 @@
 namespace soci
 {
 
+class mysql_soci_error : public soci_error
+{
+public:
+    mysql_soci_error(std::string const & msg, int errNum)
+        : soci_error(msg), errNum_(errNum) {}
+
+    unsigned int errNum_;
+};
+
 struct mysql_statement_backend;
 struct mysql_standard_into_type_backend : details::standard_into_type_backend
 {
