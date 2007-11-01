@@ -90,13 +90,13 @@ public:
     }
 
     template <typename T>
-    void set(std::string const &name, T &value, eIndicator indicator=eOK)
+    void set(std::string const &name, T &value, eIndicator indic = eOK)
     {
         index_.insert(std::make_pair(name, uses_.size()));
-        eIndicator* ind = new eIndicator(indicator);
+        eIndicator* pind = new eIndicator(indic);
 
-        uses_.push_back(new details::use_type<T>(value, *ind, name));
-        indicators_.push_back(ind);
+        uses_.push_back(new details::use_type<T>(value, *pind, name));
+        indicators_.push_back(pind);
     }
 
 private:
