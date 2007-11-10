@@ -40,8 +40,8 @@ void odbc_standard_into_type_backend::define_by_pos(
     break;
     case eXStdString:
         odbcType_ = SQL_C_CHAR;
-        size = 4000;
-        buf_ = new char[size]+1;
+        size = 32769;
+        buf_ = new char[size];
         data = buf_;
         break;
     case eXShort:
@@ -175,7 +175,7 @@ void odbc_standard_into_type_backend::post_fetch(
 
 void odbc_standard_into_type_backend::clean_up()
 {
-    if (!buf_)
+    if (buf_)
     {
         delete [] buf_;
         buf_ = 0;
