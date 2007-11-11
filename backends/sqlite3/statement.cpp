@@ -285,6 +285,13 @@ void sqlite3_statement_backend::describe_column(int colNum, eDataType & type,
     bool typeFound = false;
 
     const char* declType = sqlite3_column_decltype(stmt_, colNum-1);
+
+    if ( declType == NULL )
+    {
+        static char* s_char = "char";
+        declType = s_char;
+    }
+
     std::string dt = declType;
 
     // do all comparisions in lower case

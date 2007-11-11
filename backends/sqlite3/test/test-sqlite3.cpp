@@ -149,6 +149,37 @@ void test3()
     std::cout << "test 3 passed" << std::endl;
 }
 
+
+// 
+// Test case from Amnon David 11/1/2007
+// I've noticed that table schemas in SQLite3 can sometimes have typeless 
+// columns. One (and only?) example is the sqlite_sequence that sqlite 
+// creates for autoincrement . Attempting to traverse this table caused 
+// SOCI to crash. I've made the following code change in statement.cpp to 
+// create a workaround:
+void test4()
+{
+    {
+        // we need to have an table that uses autoincrement to test this.
+        session sql(backEnd, connectString);
+        sql << "create table nulltest (col INTEGER PRIMARY KEY AUTOINCREMENT, name char)";
+        sql << "insert into nulltest(name) values('john')";
+        sql << "insert into nulltest(name) values('james')";
+
+        int key;
+        std::string name;
+        sql << "select * from nulltest", into(key), into(name);
+        assert(name == "john");
+
+        rowset<row> rs = (sql.prepare << "select * from sqlite_sequence");
+        rowset<row>::const_iterator it = rs.begin();
+        row const& r1 = (*it);
+        assert(r1.get<std::string>(0) == "nulltest");
+        assert(r1.get<std::string>(1) == "2");
+    }
+    std::cout << "test 4 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct TableCreator1 : public table_creator_base
 {
@@ -238,6 +269,7 @@ int main(int argc, char** argv)
 
     try
     {
+
         TestContext tc(backEnd, connectString);
         common_tests tests(tc);
         tests.run(false);
@@ -247,6 +279,7 @@ int main(int argc, char** argv)
         test1();
         test2();
         test3();
+        test4();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }
