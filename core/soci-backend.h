@@ -171,6 +171,10 @@ class session_backend
 public:
     virtual ~session_backend() {}
 
+    virtual void begin() = 0;
+    virtual void commit() = 0;
+    virtual void rollback() = 0;
+
     virtual statement_backend * make_statement_backend() = 0;
     virtual rowid_backend * make_rowid_backend() = 0;
     virtual blob_backend * make_blob_backend() = 0;

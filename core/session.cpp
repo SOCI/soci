@@ -82,6 +82,21 @@ void session::reconnect()
     backEnd_ = lastFactory_->make_session(lastConnectString_);
 }
 
+void session::begin()
+{
+    backEnd_->begin();
+}
+
+void session::commit()
+{
+    backEnd_->commit();
+}
+
+void session::rollback()
+{
+    backEnd_->rollback();
+}
+
 std::ostringstream & session::get_query_stream()
 {
     return query_stream_;

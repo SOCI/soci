@@ -27,6 +27,21 @@ empty_session_backend::~empty_session_backend()
     clean_up();
 }
 
+void empty_session_backend::begin()
+{
+    // ...
+}
+
+void empty_session_backend::commit()
+{
+    // ...
+}
+
+void empty_session_backend::rollback()
+{
+    // ...
+}
+
 void empty_session_backend::clean_up()
 {
     // ...

@@ -10,10 +10,10 @@
 
 using namespace soci;
 
-transaction::transaction(session &sql, std::string const &startCommand)
+transaction::transaction(session &sql)
     : handled_(false), sql_(sql)
 {
-    sql_ << startCommand;
+    sql_.begin();
 }
 
 transaction::~transaction()
@@ -35,7 +35,7 @@ void transaction::commit()
         throw soci_error("The transaction object cannot be handled twice.");
     }
 
-    sql_ << "commit";
+    sql_.commit();
     handled_ = true;
 }
 
@@ -46,6 +46,6 @@ void transaction::rollback()
         throw soci_error("The transaction object cannot be handled twice.");
     }
 
-    sql_ << "rollback";
+    sql_.rollback();
     handled_ = true;
 }

@@ -161,6 +161,10 @@ struct empty_session_backend : details::session_backend
 
     ~empty_session_backend();
 
+    virtual void begin();
+    virtual void commit();
+    virtual void rollback();
+
     void clean_up();
 
     virtual empty_statement_backend * make_statement_backend();

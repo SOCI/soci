@@ -63,6 +63,21 @@ sqlite3_session_backend::~sqlite3_session_backend()
     clean_up();
 }
 
+void sqlite3_session_backend::begin()
+{
+    hardExec(conn_, "BEGIN", "Cannot begin transaction.");
+}
+
+void sqlite3_session_backend::commit()
+{
+    hardExec(conn_, "COMMIT", "Cannot commit transaction.");
+}
+
+void sqlite3_session_backend::rollback()
+{
+    hardExec(conn_, "ROLLBACK", "Cannot rollback transaction.");
+}
+
 void sqlite3_session_backend::clean_up()
 {
     sqlite3_close(conn_);

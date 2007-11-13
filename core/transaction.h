@@ -19,8 +19,7 @@ namespace soci
 class SOCI_DECL transaction
 {
 public:
-    transaction(session &sql,
-        std::string const & startCommand = "start transaction");
+    transaction(session &sql);
 
     ~transaction();
 
