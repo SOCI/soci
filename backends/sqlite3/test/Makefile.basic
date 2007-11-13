@@ -4,7 +4,7 @@
 SQLITE3INCLUDEDIR =
 SQLITE3LIBDIR = -L/usr/lib
 SQLITE3LIBS = -lsqlite3
-BOOSTINCLUDEDIR = -I/usr/include/boost_1_33_1
+BOOSTINCLUDEDIR = -I/usr/include/boost_1_34_1
 
 # The rest of the Makefile is independent of the target environment.
 

@@ -7,7 +7,7 @@ PGSQLLIBS = -lpq
 
 # This defines dependency on Boost library.
 
-BOOSTINCLUDEDIR = -I/usr/include/boost_1_33_1
+BOOSTINCLUDEDIR = -I/usr/include/boost_1_34_1
 
 # The rest of the Makefile is indepentent of the target environment.
 
