@@ -62,6 +62,9 @@ public:
     void log_query(std::string const &query);
     std::string get_last_query() const;
 
+    void set_got_data(bool gotData) { gotData_ = gotData; }
+    bool got_data() const           { return gotData_;    }
+
     // for diagnostics and advanced users
     // (downcast it to expected back-end session class)
     details::session_backend * get_backend() { return backEnd_; }
@@ -83,6 +86,8 @@ private:
     std::string lastConnectString_;
 
     details::session_backend *backEnd_;
+
+    bool gotData_;
 };
 
 } // namespace SOCI

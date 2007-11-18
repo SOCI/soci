@@ -135,17 +135,6 @@ void mysql_standard_into_type_backend::post_fetch(
             throw soci_error("Into element used with non-supported type.");
         }
     }
-    else // no data retrieved
-    {
-        if (ind != NULL)
-        {
-            *ind = eNoData;
-        }
-        else
-        {
-            throw soci_error("No data fetched and no indicator defined.");
-        }
-    }
 }
 
 void mysql_standard_into_type_backend::clean_up()

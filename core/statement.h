@@ -161,12 +161,20 @@ public:
     void undefine_and_bind()  { impl_->undefine_and_bind(); }
     bool execute(bool withDataExchange = false)
     {
-        return impl_->execute(withDataExchange);
+        gotData_ = impl_->execute(withDataExchange);
+        return gotData_;
     }
 
-    bool fetch()        { return impl_->fetch(); }
-    void describe()     { impl_->describe();     }
-    void set_row(row* r) { impl_->set_row(r);      }
+    bool fetch()
+    {
+        gotData_ = impl_->fetch();
+        return gotData_;
+    }
+
+    bool got_data() const { return gotData_; }
+
+    void describe()      { impl_->describe(); }
+    void set_row(row* r) { impl_->set_row(r); }
     void exchange_for_rowset(details::into_type_ptr const &i)
     {
         impl_->exchange_for_rowset(i);
@@ -206,6 +214,7 @@ public:
 
 private:
     details::statement_impl * impl_;
+    bool gotData_;
 };
 
 namespace details

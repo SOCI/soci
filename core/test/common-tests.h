@@ -466,20 +466,11 @@ void test2()
             }
 
             sql << "select id from soci_test where id = 1000", into(i, ind);
-            assert(ind == eNoData);
+            assert(sql.got_data() == false);
 
-            try
-            {
-                // expect error
-                sql << "select id from soci_test where id = 1000", into(i);
-                assert(false);
-            }
-            catch (soci_error const &e)
-            {
-                std::string error = e.what();
-                assert(error ==
-                "No data fetched and no indicator defined.");
-            }
+            // no data expected
+            sql << "select id from soci_test where id = 1000", into(i);
+            assert(sql.got_data() == false);
         }
     }
 
@@ -1718,7 +1709,7 @@ void test12()
 
         row r;
         sql << "select * from soci_test", into(r);
-        assert(r.indicator(0) ==  eNoData);
+        assert(sql.got_data() == false);
 
         sql << "insert into soci_test"
             " values(3.14, 123, \'Johny\',"
@@ -1874,7 +1865,7 @@ void test14()
 
         row r1;
         sql << "select * from soci_test", into(r1);
-        assert(r1.indicator(0) ==  eNoData);
+        assert(sql.got_data() == false);
 
         sql << "insert into soci_test values('david', '(404)123-4567')";
         sql << "insert into soci_test values('john', '(404)123-4567')";

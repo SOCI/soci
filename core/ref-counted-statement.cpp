@@ -19,7 +19,9 @@ void ref_counted_statement::final_action()
         st_.alloc();
         st_.prepare(session_.get_query_stream().str(), eOneTimeQuery);
         st_.define_and_bind();
-        st_.execute(true);
+
+        const bool gotData = st_.execute(true);
+        session_.set_got_data(gotData);
     }
     catch (...)
     {

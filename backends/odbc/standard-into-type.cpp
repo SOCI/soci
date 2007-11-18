@@ -160,17 +160,6 @@ void odbc_standard_into_type_backend::post_fetch(
             std::mktime(t);
         }
     }
-    else // no data retrieved
-    {
-        if (ind != NULL)
-        {
-            *ind = eNoData;
-        }
-        else
-        {
-            throw soci_error("No data fetched and no indicator defined.");
-        }
-    }
 }
 
 void odbc_standard_into_type_backend::clean_up()

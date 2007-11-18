@@ -25,7 +25,7 @@ enum eDataType
 };
 
 // the enum type for indicator variables
-enum eIndicator { eOK, eNoData, eNull, eTruncated };
+enum eIndicator { eOK, eNull, eTruncated };
 
 namespace details
 {

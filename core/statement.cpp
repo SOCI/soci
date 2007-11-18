@@ -330,6 +330,7 @@ bool statement_impl::execute(bool withDataExchange)
         post_use(gotData);
     }
 
+    session_.set_got_data(gotData);
     return gotData;
 }
 
@@ -337,6 +338,7 @@ bool statement_impl::fetch()
 {
     if (fetchSize_ == 0)
     {
+        session_.set_got_data(false);
         return false;
     }
 
@@ -354,6 +356,7 @@ bool statement_impl::fetch()
     }
     else if (newFetchSize == 0)
     {
+        session_.set_got_data(false);
         return false;
     }
     else
@@ -391,6 +394,7 @@ bool statement_impl::fetch()
     }
 
     post_fetch(gotData, true);
+    session_.set_got_data(gotData);
     return gotData;
 }
 

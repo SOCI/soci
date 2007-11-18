@@ -326,7 +326,7 @@ void test5()
         assert(ind == eTruncated);
 
         sql << "select 5 from rdb$database where 0 = 1", into(i, ind);
-        assert(ind == eNoData);
+        assert(sql.got_data() == false);
 
         try
         {
@@ -717,7 +717,7 @@ void test9()
     {
         row r;
         sql << "select * from test9", into(r);
-        assert(r.indicator(0) ==  eNoData);
+        assert(sql.got_data() == false);
     }
 
     std::string msg("Hello");

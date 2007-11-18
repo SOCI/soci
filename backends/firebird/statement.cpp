@@ -499,15 +499,11 @@ firebird_statement_backend::fetch(int number)
 // here we put data fetched from database into user buffers
 void firebird_statement_backend::exchangeData(bool gotData, int row)
 {
-    // first save indicators
-    for (size_t i = 0; i < static_cast<unsigned int>(sqldap_->sqld); ++i)
+    if (gotData)
     {
-        if (!gotData)
+        for (size_t i = 0; i < static_cast<unsigned int>(sqldap_->sqld); ++i)
         {
-            inds_[i][row] = eIndicator(eNoData);
-        }
-        else
-        {
+            // first save indicators
             if (((sqldap_->sqlvar+i)->sqltype & 1) == 0)
             {
                 // there is no indicator for this column
@@ -525,14 +521,8 @@ void firebird_statement_backend::exchangeData(bool gotData, int row)
             {
                 throw soci_error("Unknown state in firebird_statement_backend::exchangeData()");
             }
-        }
-    }
 
-    // then deal with data
-    if (gotData)
-    {
-        for (size_t i = 0; i<static_cast<unsigned int>(sqldap_->sqld); ++i)
-        {
+            // then deal with data
             if (inds_[i][row] != eNull)
             {
                 if (intoType_ == eVector)

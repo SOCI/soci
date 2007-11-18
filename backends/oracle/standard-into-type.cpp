@@ -220,11 +220,7 @@ void oracle_standard_into_type_backend::post_fetch(
     }
     if (ind != NULL)
     {
-        if (gotData == false)
-        {
-            *ind = eNoData;
-        }
-        else
+        if (gotData)
         {
             if (indOCIHolder_ == 0)
             {

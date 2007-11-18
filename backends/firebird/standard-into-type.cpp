@@ -59,15 +59,6 @@ void firebird_standard_into_type_backend::post_fetch(
             *ind = statement_.inds_[position_][0];
         }
     }
-    else
-    {
-        if (ind == NULL)
-        {
-            throw soci_error("No data fetched and no indicator defined.");
-        }
-
-        *ind = eNoData;
-    }
 }
 
 

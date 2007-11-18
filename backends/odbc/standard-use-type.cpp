@@ -252,11 +252,7 @@ void odbc_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
 
     if (ind != NULL)
     {
-        if (gotData == false)
-        {
-            *ind = eNoData;
-        }
-        else
+        if (gotData)
         {
             if (indHolder_ == 0)
             {
