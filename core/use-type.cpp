@@ -22,11 +22,11 @@ void standard_use_type::bind(statement_impl &st, int &position)
     backEnd_ = st.make_use_type_backend();
     if (name_.empty())
     {
-        backEnd_->bind_by_pos(position, data_, type_);
+        backEnd_->bind_by_pos(position, data_, type_, readOnly_);
     }
     else
     {
-        backEnd_->bind_by_name(name_, data_, type_);
+        backEnd_->bind_by_name(name_, data_, type_, readOnly_);
     }
 }
 

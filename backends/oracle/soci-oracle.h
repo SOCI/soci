@@ -113,9 +113,9 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
           data_(NULL), buf_(NULL) {}
 
     virtual void bind_by_pos(int &position,
-        void *data, details::eExchangeType type);
+        void *data, details::eExchangeType type, bool readOnly);
     virtual void bind_by_name(std::string const &name,
-        void *data, details::eExchangeType type);
+        void *data, details::eExchangeType type, bool readOnly);
 
     // common part for bind_by_pos and bind_by_name
     void prepare_for_bind(void *&data, sb4 &size, ub2 &oracleType);

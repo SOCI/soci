@@ -32,16 +32,22 @@ using namespace soci::details;
 
 
 void postgresql_standard_use_type_backend::bind_by_pos(
-    int &position, void *data, eExchangeType type)
+    int &position, void *data, eExchangeType type, bool /* readOnly */)
 {
+    // readOnly is ignored, because PostgreSQL does not support
+    // any data to be written back to used (bound) objects.
+
     data_ = data;
     type_ = type;
     position_ = position++;
 }
 
 void postgresql_standard_use_type_backend::bind_by_name(
-    std::string const &name, void *data, eExchangeType type)
+    std::string const &name, void *data, eExchangeType type, bool /* readOnly */)
 {
+    // readOnly is ignored, because PostgreSQL does not support
+    // any data to be written back to used (bound) objects.
+
     data_ = data;
     type_ = type;
     name_ = name;
@@ -168,8 +174,10 @@ void postgresql_standard_use_type_backend::pre_use(eIndicator const *ind)
 void postgresql_standard_use_type_backend::post_use(
     bool /* gotData */, eIndicator * /* ind */)
 {
-    // TODO: if postgresql_ allows to *get* data via this channel,
-    // write it back to client buffers (variable)
+    // PostgreSQL does not support any data moving back the same channel,
+    // so there is nothing to do here.
+    // In particular, there is nothing to protect, because both const and non-const
+    // objects will never be modified.
 
     // clean up the working buffer, it might be allocated anew in
     // the next run of preUse

@@ -83,9 +83,9 @@ public:
     virtual ~standard_use_type_backend() {}
 
     virtual void bind_by_pos(int &position,
-        void *data, eExchangeType type) = 0;
+        void *data, eExchangeType type, bool readOnly) = 0;
     virtual void bind_by_name(std::string const &name,
-        void *data, eExchangeType type) = 0;
+        void *data, eExchangeType type, bool readOnly) = 0;
 
     virtual void pre_use(eIndicator const *ind) = 0;
     virtual void post_use(bool gotData, eIndicator *ind) = 0;

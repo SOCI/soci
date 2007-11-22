@@ -244,10 +244,13 @@ class use_type<statement> : public standard_use_type
 {
 public:
     use_type(statement &s, std::string const &name = std::string())
-        : standard_use_type(&s, eXStatement, name) {}
+        : standard_use_type(&s, eXStatement, false, name) {}
     use_type(statement &s, eIndicator &ind,
         std::string const &name = std::string())
-        : standard_use_type(&s, eXStatement, ind, name) {}
+        : standard_use_type(&s, eXStatement, ind, false, name) {}
+
+    // Note: there is no const version of use for statement,
+    // because most likely it would not make much sense anyway. 
 };
 
 } // namespace details

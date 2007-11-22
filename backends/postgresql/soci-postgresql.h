@@ -86,9 +86,9 @@ struct postgresql_standard_use_type_backend : details::standard_use_type_backend
         : statement_(st), position_(0), buf_(NULL) {}
 
     virtual void bind_by_pos(int &position,
-        void *data, details::eExchangeType type);
+        void *data, details::eExchangeType type, bool readOnly);
     virtual void bind_by_name(std::string const &name,
-        void *data, details::eExchangeType type);
+        void *data, details::eExchangeType type, bool readOnly);
 
     virtual void pre_use(eIndicator const *ind);
     virtual void post_use(bool gotData, eIndicator *ind);

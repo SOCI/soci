@@ -17,14 +17,15 @@ using namespace soci::details;
 
 
 void empty_standard_use_type_backend::bind_by_pos(
-    int & /* position */, void * /* data */, eExchangeType /* type */)
+    int & /* position */, void * /* data */,
+    eExchangeType /* type */, bool /* readOnly */)
 {
     // ...
 }
 
 void empty_standard_use_type_backend::bind_by_name(
     std::string const & /* name */, void * /* data */,
-    eExchangeType /* type */)
+    eExchangeType /* type */, bool /* readOnly */)
 {
     // ...
 }

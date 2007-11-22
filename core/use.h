@@ -27,6 +27,13 @@ details::use_type_ptr use(T &t, std::string const &name = std::string())
 }
 
 template <typename T>
+details::use_type_ptr use(const T &t, std::string const &name = std::string())
+{
+    return details::do_use(t, name,
+        typename details::exchange_traits<T>::type_family());
+}
+
+template <typename T>
 details::use_type_ptr use(T &t, eIndicator &indicator,
     std::string const &name = std::string())
 {

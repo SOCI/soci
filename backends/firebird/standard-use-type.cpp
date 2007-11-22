@@ -15,7 +15,7 @@ using namespace soci::details;
 using namespace soci::details::firebird;
 
 void firebird_standard_use_type_backend::bind_by_pos(
-    int & position, void * data, eExchangeType type)
+    int & position, void * data, eExchangeType type, bool /* readOnly */)
 {
     if (statement_.boundByName_)
     {
@@ -43,7 +43,7 @@ void firebird_standard_use_type_backend::bind_by_pos(
 
 void firebird_standard_use_type_backend::bind_by_name(
     std::string const & name, void * data,
-    eExchangeType type)
+    eExchangeType type, bool /* readOnly */)
 {
     if (statement_.boundByPos_)
     {
@@ -166,6 +166,16 @@ void firebird_standard_use_type_backend::exchangeData()
 void firebird_standard_use_type_backend::post_use(
     bool /* gotData */, eIndicator * /* ind */)
 {
+    // TODO: Is it possible to have the bound element being overwritten
+    // by the database?
+    // If not, then nothing to do here, please remove this comment.
+    // If yes, then use the value of the readOnly parameter:
+    // - true:  the given object should not be modified and the backend
+    //          should detect if the modification was performed on the
+    //          isolated buffer and throw an exception if the buffer was modified
+    //          (this indicates logic error, because the user used const object
+    //          and executed a query that attempted to modified it)
+    // - false: the modification should be propagated to the given object.
     // ...
 }
 

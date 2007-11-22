@@ -1181,6 +1181,123 @@ void test6()
             assert(v[2] == 7);
         }
 
+        // tests for use of const objects
+
+        // test for char
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+            const char c('a');
+            sql << "insert into soci_test(c) values(:c)", use(c);
+
+            char c2 = 'b';
+            sql << "select c from soci_test", into(c2);
+            assert(c2 == 'a');
+
+        }
+
+        // test for char[]
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+            const char s[] = "Hello const!";
+            sql << "insert into soci_test(str) values(:s)", use(s);
+
+            std::string str;
+            sql << "select str from soci_test", into(str);
+
+            assert(str == "Hello const!");
+        }
+
+        // test for std::string
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+            const std::string s = "Hello const SOCI!";
+            sql << "insert into soci_test(str) values(:s)", use(s);
+
+            std::string str;
+            sql << "select str from soci_test", into(str);
+
+            assert(str == "Hello const SOCI!");
+        }
+
+        // test for short
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+            const short s = 123;
+            sql << "insert into soci_test(id) values(:id)", use(s);
+
+            short s2 = 0;
+            sql << "select id from soci_test", into(s2);
+
+            assert(s2 == 123);
+        }
+
+        // test for int
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+            const int i = -12345678;
+            sql << "insert into soci_test(id) values(:i)", use(i);
+
+            int i2 = 0;
+            sql << "select id from soci_test", into(i2);
+
+            assert(i2 == -12345678);
+        }
+
+        // test for unsigned long
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+            const unsigned long ul = 4000000000ul;
+            sql << "insert into soci_test(ul) values(:num)", use(ul);
+
+            unsigned long ul2 = 0;
+            sql << "select ul from soci_test", into(ul2);
+
+            assert(ul2 == 4000000000ul);
+        }
+
+        // test for double
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+            const double d = 3.14159265;
+            sql << "insert into soci_test(d) values(:d)", use(d);
+
+            double d2 = 0;
+            sql << "select d from soci_test", into(d2);
+
+            assert(std::fabs(d2 - d) < 0.0001);
+        }
+
+        // test for std::tm
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+            std::tm t;
+            t.tm_year = 105;
+            t.tm_mon = 10;
+            t.tm_mday = 19;
+            t.tm_hour = 21;
+            t.tm_min = 39;
+            t.tm_sec = 57;
+            const std::tm & ct = t;
+            sql << "insert into soci_test(tm) values(:t)", use(ct);
+
+            std::tm t2;
+            t2.tm_year = 0;
+            t2.tm_mon = 0;
+            t2.tm_mday = 0;
+            t2.tm_hour = 0;
+            t2.tm_min = 0;
+            t2.tm_sec = 0;
+
+            sql << "select tm from soci_test", into(t2);
+
+            assert(t.tm_year == 105);
+            assert(t.tm_mon  == 10);
+            assert(t.tm_mday == 19);
+            assert(t.tm_hour == 21);
+            assert(t.tm_min  == 39);
+            assert(t.tm_sec  == 57);
+        }
     }
 
     std::cout << "test 6 passed" << std::endl;

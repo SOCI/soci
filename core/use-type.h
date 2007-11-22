@@ -44,11 +44,13 @@ class SOCI_DECL standard_use_type : public use_type_base
 {
 public:
     standard_use_type(void *data, eExchangeType type,
-        std::string const &name = std::string())
-        : data_(data), type_(type), ind_(NULL), name_(name), backEnd_(NULL) {}
+        bool readOnly, std::string const &name = std::string())
+        : data_(data), type_(type), ind_(NULL),
+        readOnly_(readOnly), name_(name), backEnd_(NULL) {}
     standard_use_type(void *data, eExchangeType type, eIndicator &ind,
-        std::string const &name = std::string())
-        : data_(data), type_(type), ind_(&ind), name_(name), backEnd_(NULL) {}
+        bool readOnly, std::string const &name = std::string())
+        : data_(data), type_(type), ind_(&ind),
+        readOnly_(readOnly), name_(name), backEnd_(NULL) {}
 
     virtual ~standard_use_type();
     virtual void bind(statement_impl &st, int &position);
@@ -70,6 +72,7 @@ private:
     void *data_;
     eExchangeType type_;
     eIndicator *ind_;
+    bool readOnly_;
     std::string name_;
 
     standard_use_type_backend *backEnd_;
@@ -81,13 +84,13 @@ public:
     vector_use_type(void *data, eExchangeType type,
         std::string const &name = std::string())
         : data_(data), type_(type), ind_(NULL),
-          name_(name), backEnd_(NULL) {}
+        name_(name), backEnd_(NULL) {}
 
     vector_use_type(void *data, eExchangeType type,
         std::vector<eIndicator> const &ind,
         std::string const &name = std::string())
         : data_(data), type_(type), ind_(&ind),
-          name_(name), backEnd_(NULL) {}
+        name_(name), backEnd_(NULL) {}
 
     ~vector_use_type();
 
@@ -118,12 +121,21 @@ public:
     use_type(T &t, std::string const &name = std::string())
         : standard_use_type(&t,
             static_cast<eExchangeType>(exchange_traits<T>::eXType),
-            name) {}
+            false, name) {}
+    use_type(const T &t, std::string const &name = std::string())
+        : standard_use_type(const_cast<T *>(&t),
+            static_cast<eExchangeType>(exchange_traits<T>::eXType),
+            true, name) {}
     use_type(T &t, eIndicator &ind,
         std::string const &name = std::string())
         : standard_use_type(&t,
             static_cast<eExchangeType>(exchange_traits<T>::eXType),
-            ind, name) {}
+            ind, false, name) {}
+    use_type(const T &t, eIndicator &ind,
+        std::string const &name = std::string())
+        : standard_use_type(const_cast<T *>(&t),
+            static_cast<eExchangeType>(exchange_traits<T>::eXType),
+            ind, false, name) {}
 };
 
 template <typename T>
@@ -148,10 +160,18 @@ class use_type<char*> : public standard_use_type
 public:
     use_type(char *str, std::size_t bufSize,
         std::string const &name = std::string())
-        : standard_use_type(&str_, eXCString, name), str_(str, bufSize) {}
+        : standard_use_type(&str_, eXCString, false, name), str_(str, bufSize) {}
+    use_type(const char *str, std::size_t bufSize,
+        std::string const &name = std::string())
+        : standard_use_type(&str_, eXCString, true, name),
+        str_(const_cast<char *>(str), bufSize) {}
     use_type(char *str, eIndicator &ind, std::size_t bufSize,
         std::string const &name = std::string())
-        : standard_use_type(&str_, eXCString, ind, name), str_(str, bufSize) {}
+        : standard_use_type(&str_, eXCString, ind, false, name), str_(str, bufSize) {}
+    use_type(const char *str, eIndicator &ind, std::size_t bufSize,
+        std::string const &name = std::string())
+        : standard_use_type(&str_, eXCString, ind, true, name),
+        str_(const_cast<char *>(str), bufSize) {}
 
 private:
     cstring_descriptor str_;
@@ -163,7 +183,12 @@ class use_type<char[N]> : public use_type<char*>
 public:
     use_type(char str[], std::string const &name = std::string())
         : use_type<char*>(str, N, name) {}
+    use_type(const char str[], std::string const &name = std::string())
+        : use_type<char*>(str, N, name) {}
     use_type(char str[], eIndicator &ind,
+        std::string const &name = std::string())
+        : use_type<char*>(str, ind, N, name) {}
+    use_type(const char str[], eIndicator &ind,
         std::string const &name = std::string())
         : use_type<char*>(str, ind, N, name) {}
 };
@@ -177,7 +202,20 @@ use_type_ptr do_use(T &t, std::string const &name, basic_type_tag)
 }
 
 template <typename T>
+use_type_ptr do_use(const T &t, std::string const &name, basic_type_tag)
+{
+    return use_type_ptr(new use_type<T>(t, name));
+}
+
+template <typename T>
 use_type_ptr do_use(T &t, eIndicator &indicator,
+    std::string const &name, basic_type_tag)
+{
+    return use_type_ptr(new use_type<T>(t, indicator, name));
+}
+
+template <typename T>
+use_type_ptr do_use(const T &t, eIndicator &indicator,
     std::string const &name, basic_type_tag)
 {
     return use_type_ptr(new use_type<T>(t, indicator, name));

@@ -32,10 +32,15 @@ class use_type<blob> : public standard_use_type
 {
 public:
     use_type(blob &b, std::string const &name = std::string())
-        : standard_use_type(&b, eXBLOB, name) {}
+        : standard_use_type(&b, eXBLOB, false, name) {}
+    use_type(const blob &b, std::string const &name = std::string())
+        : standard_use_type(const_cast<blob *>(&b), eXBLOB, true, name) {}
     use_type(blob &b, eIndicator &ind,
         std::string const &name = std::string())
-        : standard_use_type(&b, eXBLOB, ind, name) {}
+        : standard_use_type(&b, eXBLOB, ind, false, name) {}
+    use_type(const blob &b, eIndicator &ind,
+        std::string const &name = std::string())
+        : standard_use_type(const_cast<blob *>(&b), eXBLOB, ind, true, name) {}
 };
 
 template <>

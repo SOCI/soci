@@ -128,7 +128,7 @@ void odbc_standard_use_type_backend::bind_helper(int &position, void *data, eExc
 }
 
 void odbc_standard_use_type_backend::bind_by_pos(
-    int &position, void *data, eExchangeType type)
+    int &position, void *data, eExchangeType type, bool /* readOnly */)
 {
     if (statement_.boundByName_)
     {
@@ -142,7 +142,7 @@ void odbc_standard_use_type_backend::bind_by_pos(
 }
 
 void odbc_standard_use_type_backend::bind_by_name(
-    std::string const &name, void *data, eExchangeType type)
+    std::string const &name, void *data, eExchangeType type, bool /* readOnly */)
 {
     if (statement_.boundByPos_)
     {
@@ -219,6 +219,24 @@ void odbc_standard_use_type_backend::pre_use(eIndicator const *ind)
 
 void odbc_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
 {
+    // TODO: Is it possible to have the bound element being overwritten
+    // by the database? (looks like yes)
+    // If not, then nothing to do here, please remove this comment
+    //         and most likely the code below is also unnecessary.
+    // If yes, then use the value of the readOnly parameter:
+    // - true:  the given object should not be modified and the backend
+    //          should detect if the modification was performed on the
+    //          isolated buffer and throw an exception if the buffer was modified
+    //          (this indicates logic error, because the user used const object
+    //          and executed a query that attempted to modified it)
+    // - false: the modification should be propagated to the given object (as below).
+    //
+    // From the code below I conclude that ODBC allows the database to modify the bound object
+    // and the code below correctly deals with readOnly == false.
+    // The point is that with readOnly == true the propagation of modification should not
+    // take place and in addition the attempt of modification should be detected and reported.
+    // ...
+
     // first, deal with data
     if (gotData)
     {

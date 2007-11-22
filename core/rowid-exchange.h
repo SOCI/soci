@@ -24,10 +24,15 @@ class use_type<rowid> : public standard_use_type
 {
 public:
     use_type(rowid &rid, std::string const &name = std::string())
-        : standard_use_type(&rid, eXRowID, name) {}
+        : standard_use_type(&rid, eXRowID, false, name) {}
+    use_type(const rowid &rid, std::string const &name = std::string())
+        : standard_use_type(const_cast<rowid *>(&rid), eXRowID, true, name) {}
     use_type(rowid &rid, eIndicator &ind,
         std::string const &name = std::string())
-        : standard_use_type(&rid, eXRowID, ind, name) {}
+        : standard_use_type(&rid, eXRowID, ind, false, name) {}
+    use_type(const rowid &rid, eIndicator &ind,
+        std::string const &name = std::string())
+        : standard_use_type(const_cast<rowid *>(&rid), eXRowID, ind, true, name) {}
 };
 
 template <>
