@@ -76,16 +76,27 @@ public:
     conversion_use_type(T &value, std::string const &name = std::string())
         : use_type<BASE_TYPE>(details::base_value_holder<T>::val_,
             ownInd_, name),
-          value_(value), ind_(ownInd_) {}
+        value_(value), ind_(ownInd_), readOnly_(false) {}
+    conversion_use_type(const T &value, std::string const &name = std::string())
+        : use_type<BASE_TYPE>(details::base_value_holder<T>::val_,
+            ownInd_, name),
+        value_(const_cast<T &>(value)), ind_(ownInd_), readOnly_(true) {}
     conversion_use_type(T &value, eIndicator &ind, std::string const &name
             = std::string())
         : use_type<BASE_TYPE>(details::base_value_holder<T>::val_, ind, name),
-          value_(value), ind_(ind) {}
+        value_(value), ind_(ind), readOnly_(false) {}
+    conversion_use_type(const T &value, eIndicator &ind, std::string const &name
+            = std::string())
+        : use_type<BASE_TYPE>(details::base_value_holder<T>::val_, ind, name),
+        value_(const_cast<T &>(value)), ind_(ind), readOnly_(true) {}
 
     void convert_from_base()
     {
-        type_conversion<T>::from_base(
-            details::base_value_holder<T>::val_, ind_, value_);
+        if (readOnly_ == false)
+        {
+            type_conversion<T>::from_base(
+                details::base_value_holder<T>::val_, ind_, value_);
+        }
     }
 
     void convert_to_base()
@@ -103,6 +114,8 @@ private:
     // in any case, ind_ refers to some valid indicator
     // and can be used by conversion routines
     eIndicator &ind_;
+
+    bool readOnly_;
 };
 
 // this class is used to ensure correct order of construction
@@ -256,7 +269,20 @@ use_type_ptr do_use(T &t, std::string const &name, user_type_tag)
 }
 
 template <typename T>
+use_type_ptr do_use(const T &t, std::string const &name, user_type_tag)
+{
+    return use_type_ptr(new conversion_use_type<T>(t, name));
+}
+
+template <typename T>
 use_type_ptr do_use(T &t, eIndicator &indicator,
+    std::string const &name, user_type_tag)
+{
+    return use_type_ptr(new conversion_use_type<T>(t, indicator, name));
+}
+
+template <typename T>
+use_type_ptr do_use(const T &t, eIndicator &indicator,
     std::string const &name, user_type_tag)
 {
     return use_type_ptr(new conversion_use_type<T>(t, indicator, name));

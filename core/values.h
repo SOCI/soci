@@ -90,7 +90,7 @@ public:
     }
 
     template <typename T>
-    void set(std::string const &name, T &value, eIndicator indic = eOK)
+    void set(std::string const &name, const T &value, eIndicator indic = eOK)
     {
         index_.insert(std::make_pair(name, uses_.size()));
         eIndicator* pind = new eIndicator(indic);

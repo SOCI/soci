@@ -55,7 +55,7 @@ template<> struct type_conversion<MyInt>
         }
     }
 
-    static void to_base(MyInt &mi, int &i, eIndicator &ind)
+    static void to_base(const MyInt &mi, int &i, eIndicator &ind)
     {
         i = mi.get();
         ind = eOK;
@@ -75,7 +75,7 @@ template<> struct type_conversion<PhonebookEntry>
         pe.phone = v.get<std::string>("phone", "<NULL>");
     }
 
-    static void to_base(PhonebookEntry &pe, values &v, eIndicator &ind)
+    static void to_base(const PhonebookEntry &pe, values &v, eIndicator &ind)
     {
         v.set("name", pe.name);
         v.set("phone", pe.phone, pe.phone.empty() ? eNull : eOK);
@@ -97,7 +97,7 @@ template<> struct type_conversion<PhonebookEntry2>
         pe.phone = ind == eNull ? "<NULL>" : v.get<std::string>("phone");
     }
 
-    static void to_base(PhonebookEntry2 &pe, values &v, eIndicator &ind)
+    static void to_base(const PhonebookEntry2 &pe, values &v, eIndicator &ind)
     {
         v.set("name", pe.name);
         v.set("phone", pe.phone, pe.phone.empty() ? eNull : eOK);
@@ -2029,6 +2029,22 @@ void test15()
         assert(mi.get() == 124);
     }
 
+    // simple conversion with use const
+
+    {
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+        MyInt mi;
+        mi.set(123);
+
+        const MyInt & cmi = mi;
+        sql << "insert into soci_test(id) values(:id)", use(cmi);
+
+        int i;
+        sql << "select id from soci_test", into(i);
+        assert(i == 123);
+    }
+
     // conversions based on values (many fields involved -> ORM)
 
     {
@@ -2064,6 +2080,27 @@ void test15()
             }
         }
         assert(count == 3);
+    }
+
+    // conversions based on values with use const
+
+    {
+        auto_table_creator tableCreator(tc_.table_creator_3(sql));
+
+        PhonebookEntry p1;
+        p1.name = "Joe Coder";
+        p1.phone = "123-456";
+
+        const PhonebookEntry & cp1 = p1;
+
+        sql << "insert into soci_test values(:name, :phone)", use(cp1);
+
+        PhonebookEntry p2;
+        sql << "select * from soci_test", into(p2);
+        assert(sql.got_data());
+
+        assert(p2.name == "Joe Coder");
+        assert(p2.phone == "123-456");
     }
 
     {
@@ -2389,8 +2426,6 @@ void test21()
             // The End
             ++pos;
             assert(pos == rs.end());
-
-            // XXX - advancing with negative value throws segfault
         }
     }
 
@@ -2779,6 +2814,29 @@ void test26()
 
             sql << "insert into soci_test(id, val) values(:id, :val)",
                 use(omi1), use(omi2);
+
+            sql << "select id, val from soci_test", into(omi2), into(omi1);
+
+            assert(omi1.is_initialized() == false);
+            assert(omi2.is_initialized() && omi2.get().get() == 125);
+        }
+
+        // use with const optional and user conversions
+
+        {
+            sql << "delete from soci_test";
+
+            boost::optional<MyInt> omi1;
+            boost::optional<MyInt> omi2;
+
+            omi1 = MyInt(125);
+            omi2.reset();
+
+            const boost::optional<MyInt> & comi1 = omi1;
+            const boost::optional<MyInt> & comi2 = omi2;
+
+            sql << "insert into soci_test(id, val) values(:id, :val)",
+                use(comi1), use(comi2);
 
             sql << "select id, val from soci_test", into(omi2), into(omi1);
 
