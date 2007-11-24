@@ -243,12 +243,6 @@ void oracle_standard_into_type_backend::post_fetch(
             // fetched null and no indicator - programming error!
             throw soci_error("Null value fetched and no indicator defined.");
         }
-
-        if (gotData == false)
-        {
-            // no data fetched and no indicator - programming error!
-            throw soci_error("No data fetched and no indicator defined.");
-        }
     }
 }
 
