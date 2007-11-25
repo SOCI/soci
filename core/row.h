@@ -116,6 +116,11 @@ public:
         return *this;
     }
 
+    void skip(size_t num = 1) const
+    {
+        currentPos_ += num;
+    }
+
     void reset_get_counter()
     {
         currentPos_ = 0;
