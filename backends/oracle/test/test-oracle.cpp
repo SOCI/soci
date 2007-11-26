@@ -961,6 +961,35 @@ void test12()
     std::cout << "test 12 passed" << std::endl;
 }
 
+// test for modifiable and const use elements
+void test13()
+{
+    session sql(backEnd, connectString);
+
+    int i = 7;
+    sql << "begin "
+        "select 2 * :i into :i from dual; "
+        "end;", use(i);
+    assert(i == 14);
+
+    const int j = 7;
+    try
+    {
+        sql << "begin "
+            "select 2 * :i into :i from dual;"
+            " end;", use(j);
+
+        assert(false); // should never get here
+    }
+    catch (soci_error const & e)
+    {
+        const std::string msg = e.what();
+        assert(msg == "Attempted modification of const use element");
+    }
+
+    std::cout << "test 13 passed" << std::endl;
+}
+
 //
 // Support for soci Common Tests
 //
@@ -1065,9 +1094,10 @@ int main(int argc, char** argv)
         test7();
         test8();
         test9();
-        test10(); 
+        test10();
         test11();
         test12();
+        test13();
  
         std::cout << "\nOK, all tests passed.\n\n";
     }

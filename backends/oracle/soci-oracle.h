@@ -118,7 +118,7 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
         void *data, details::eExchangeType type, bool readOnly);
 
     // common part for bind_by_pos and bind_by_name
-    void prepare_for_bind(void *&data, sb4 &size, ub2 &oracleType);
+    void prepare_for_bind(void *&data, sb4 &size, ub2 &oracleType, bool readOnly);
 
     virtual void pre_use(eIndicator const *ind);
     virtual void post_use(bool gotData, eIndicator *ind);
@@ -130,6 +130,7 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
     OCIBind *bindp_;
     sb2 indOCIHolder_;
     void *data_;
+    bool readOnly_;
     char *buf_;        // generic buffer
     details::eExchangeType type_;
 };
