@@ -55,7 +55,7 @@ template<> struct type_conversion<MyInt>
         }
     }
 
-    static void to_base(const MyInt &mi, int &i, eIndicator &ind)
+    static void to_base(MyInt const &mi, int &i, eIndicator &ind)
     {
         i = mi.get();
         ind = eOK;
@@ -75,7 +75,7 @@ template<> struct type_conversion<PhonebookEntry>
         pe.phone = v.get<std::string>("phone", "<NULL>");
     }
 
-    static void to_base(const PhonebookEntry &pe, values &v, eIndicator &ind)
+    static void to_base(PhonebookEntry const &pe, values &v, eIndicator &ind)
     {
         v.set("name", pe.name);
         v.set("phone", pe.phone, pe.phone.empty() ? eNull : eOK);
@@ -97,7 +97,7 @@ template<> struct type_conversion<PhonebookEntry2>
         pe.phone = ind == eNull ? "<NULL>" : v.get<std::string>("phone");
     }
 
-    static void to_base(const PhonebookEntry2 &pe, values &v, eIndicator &ind)
+    static void to_base(PhonebookEntry2 const &pe, values &v, eIndicator &ind)
     {
         v.set("name", pe.name);
         v.set("phone", pe.phone, pe.phone.empty() ? eNull : eOK);
@@ -172,7 +172,7 @@ public:
         : backEndFactory_(backEnd),
           connectString_(connectString) {}
 
-    const backend_factory& getbackend_factory() const
+    backend_factory const & getbackend_factory() const
     {
         return backEndFactory_;
     }
@@ -1186,7 +1186,7 @@ void test6()
         // test for char
         {
             auto_table_creator tableCreator(tc_.table_creator_1(sql));
-            const char c('a');
+            char const c('a');
             sql << "insert into soci_test(c) values(:c)", use(c);
 
             char c2 = 'b';
@@ -1199,7 +1199,7 @@ void test6()
         {
             auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
-            const char s[] = "Hello const!";
+            char const s[] = "Hello const!";
             sql << "insert into soci_test(str) values(:s)", use(s);
 
             std::string str;
@@ -1211,7 +1211,7 @@ void test6()
         // test for std::string
         {
             auto_table_creator tableCreator(tc_.table_creator_1(sql));
-            const std::string s = "Hello const SOCI!";
+            std::string const s = "Hello const SOCI!";
             sql << "insert into soci_test(str) values(:s)", use(s);
 
             std::string str;
@@ -1223,7 +1223,7 @@ void test6()
         // test for short
         {
             auto_table_creator tableCreator(tc_.table_creator_1(sql));
-            const short s = 123;
+            short const s = 123;
             sql << "insert into soci_test(id) values(:id)", use(s);
 
             short s2 = 0;
@@ -1235,7 +1235,7 @@ void test6()
         // test for int
         {
             auto_table_creator tableCreator(tc_.table_creator_1(sql));
-            const int i = -12345678;
+            int const i = -12345678;
             sql << "insert into soci_test(id) values(:i)", use(i);
 
             int i2 = 0;
@@ -1247,7 +1247,7 @@ void test6()
         // test for unsigned long
         {
             auto_table_creator tableCreator(tc_.table_creator_1(sql));
-            const unsigned long ul = 4000000000ul;
+            unsigned long const ul = 4000000000ul;
             sql << "insert into soci_test(ul) values(:num)", use(ul);
 
             unsigned long ul2 = 0;
@@ -1259,7 +1259,7 @@ void test6()
         // test for double
         {
             auto_table_creator tableCreator(tc_.table_creator_1(sql));
-            const double d = 3.14159265;
+            double const d = 3.14159265;
             sql << "insert into soci_test(d) values(:d)", use(d);
 
             double d2 = 0;
@@ -1278,7 +1278,7 @@ void test6()
             t.tm_hour = 21;
             t.tm_min = 39;
             t.tm_sec = 57;
-            const std::tm & ct = t;
+            std::tm const & ct = t;
             sql << "insert into soci_test(tm) values(:t)", use(ct);
 
             std::tm t2;
@@ -1515,7 +1515,7 @@ void test8()
             assert(v2[3] == 1000);
         }
 
-        // test for char
+        // test for double
         {
             auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
@@ -1582,6 +1582,30 @@ void test8()
             assert(v2[2].tm_hour == 22);
             assert(v2[2].tm_min  == 45);
             assert(v2[2].tm_sec  == 37);
+        }
+
+        // additional test for int (use const vector)
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+            std::vector<int> v;
+            v.push_back(-2000000000);
+            v.push_back(0);
+            v.push_back(1);
+            v.push_back(2000000000);
+
+            std::vector<int> const & cv = v;
+
+            sql << "insert into soci_test(id) values(:i)", use(cv);
+
+            std::vector<int> v2(4);
+
+            sql << "select id from soci_test order by id", into(v2);
+            assert(v2.size() == 4);
+            assert(v2[0] == -2000000000);
+            assert(v2[1] == 0);
+            assert(v2[2] == 1);
+            assert(v2[3] == 2000000000);
         }
     }
 
@@ -2037,7 +2061,7 @@ void test15()
         MyInt mi;
         mi.set(123);
 
-        const MyInt & cmi = mi;
+        MyInt const & cmi = mi;
         sql << "insert into soci_test(id) values(:id)", use(cmi);
 
         int i;
@@ -2091,7 +2115,7 @@ void test15()
         p1.name = "Joe Coder";
         p1.phone = "123-456";
 
-        const PhonebookEntry & cp1 = p1;
+        PhonebookEntry const & cp1 = p1;
 
         sql << "insert into soci_test values(:name, :phone)", use(cp1);
 
@@ -2290,7 +2314,7 @@ void test20()
             //
             // First row
             //
-            row const& r1 = (*it);
+            row const & r1 = (*it);
 
             // Properties
             assert(r1.size() == 5);
@@ -2348,7 +2372,7 @@ void test20()
             //
             // Second row
             //
-            row const& r2 = (*it);
+            row const & r2 = (*it);
 
             // Properties
             assert(r2.size() == 5);
@@ -2859,8 +2883,8 @@ void test26()
             omi1 = MyInt(125);
             omi2.reset();
 
-            const boost::optional<MyInt> & comi1 = omi1;
-            const boost::optional<MyInt> & comi2 = omi2;
+            boost::optional<MyInt> const & comi1 = omi1;
+            boost::optional<MyInt> const & comi2 = omi2;
 
             sql << "insert into soci_test(id, val) values(:id, :val)",
                 use(comi1), use(comi2);
