@@ -17,6 +17,25 @@
 namespace soci
 {
 
+namespace details
+{
+
+class copy_base
+{
+public:
+    virtual ~copy_base() {}
+};
+
+template <typename T>
+struct copy_holder : public copy_base
+{
+    copy_holder(T const & v) : value_(v) {}
+
+    T value_;
+};
+
+} // namespace details
+
 class SOCI_DECL values
 {
     friend class details::statement_impl;
@@ -93,10 +112,25 @@ public:
     void set(std::string const &name, const T &value, eIndicator indic = eOK)
     {
         index_.insert(std::make_pair(name, uses_.size()));
+
         eIndicator* pind = new eIndicator(indic);
+        indicators_.push_back(pind);
 
         uses_.push_back(new details::use_type<T>(value, *pind, name));
+    }
+
+    template <typename T>
+    void set_copy(std::string const &name, const T &value, eIndicator indic = eOK)
+    {
+        index_.insert(std::make_pair(name, uses_.size()));
+
+        eIndicator* pind = new eIndicator(indic);
         indicators_.push_back(pind);
+
+        details::copy_holder<T> * pcopy = new details::copy_holder<T>(value);
+        deepCopies_.push_back(pcopy);
+
+        uses_.push_back(new details::use_type<T>(pcopy->value_, *pind, name));
     }
 
 private:
@@ -108,6 +142,7 @@ private:
     std::map<details::use_type_base*, eIndicator*> unused_;
     std::vector<eIndicator*> indicators_;
     std::map<std::string, size_t> index_;
+    std::vector<details::copy_base *> deepCopies_;
 
     // When TypeConversion::to() is called, a values object is created
     // without an underlying row object.  In that case, get_from_uses()

@@ -27,6 +27,20 @@ struct PhonebookEntry2 : public PhonebookEntry
 {
 };
 
+class PhonebookEntry3
+{
+public:
+    void setName(std::string const & n) { name_ = n; }
+    std::string getName() const { return name_; }
+  
+    void setPhone(std::string const & p) { phone_ = p; }
+    std::string getPhone() const { return phone_; }
+
+public:
+    std::string name_;
+    std::string phone_;
+};
+
 // user-defined object for test26
 class MyInt
 {
@@ -101,6 +115,26 @@ template<> struct type_conversion<PhonebookEntry2>
     {
         v.set("name", pe.name);
         v.set("phone", pe.phone, pe.phone.empty() ? eNull : eOK);
+        ind = eOK;
+    }
+};
+
+template<> struct type_conversion<PhonebookEntry3>
+{
+    typedef soci::values base_type;
+
+    static void from_base(values const &v, eIndicator /* ind */, PhonebookEntry3 &pe)
+    {
+        // here we ignore the possibility the the whole object might be NULL
+
+        pe.setName(v.get<std::string>("name"));
+        pe.setPhone(v.get<std::string>("phone", "<NULL>"));
+    }
+
+    static void to_base(PhonebookEntry3 const &pe, values &v, eIndicator &ind)
+    {
+        v.set_copy("name", pe.getName());
+        v.set_copy("phone", pe.getPhone(), pe.getPhone().empty() ? eNull : eOK);
         ind = eOK;
     }
 };
@@ -206,44 +240,44 @@ public:
 
     void run(bool dbSupportsTransactions = true)
     {
-    std::cout<<"\nSOCI Common Tests:\n\n";
+        std::cout<<"\nSOCI Common Tests:\n\n";
 
-    test1();
-    test2();
-    test3();
-    test4();
-    test5();
-    test6();
-    test7();
-    test8();
-    test9();
+        test1();
+        test2();
+        test3();
+        test4();
+        test5();
+        test6();
+        test7();
+        test8();
+        test9();
 
-    if (dbSupportsTransactions)
-    {
-        test10();
-    }
-    else
-    {
-        std::cout<<"skipping test 10 (database doesn't support transactions)\n";
-    }
+        if (dbSupportsTransactions)
+        {
+            test10();
+        }
+        else
+        {
+            std::cout<<"skipping test 10 (database doesn't support transactions)\n";
+        }
 
-    test11();
-    test12();
-    test13();
-    test14();
-    test15();
-    test16();
-    test17();
-    test18();
-    test19();
-    test20();
-    test21();
-    test22();
-    test23();
-    test24();
-    test25();
-    test26();
-    test27();
+        test11();
+        test12();
+        test13();
+        test14();
+        test15();
+        test16();
+        test17();
+        test18();
+        test19();
+        test20();
+        test21();
+        test22();
+        test23();
+        test24();
+        test25();
+        test26();
+        test27();
     }
 
 private:
@@ -2125,6 +2159,25 @@ void test15()
 
         assert(p2.name == "Joe Coder");
         assert(p2.phone == "123-456");
+    }
+
+    // conversions based on accessor functions (as opposed to direct variable bindings)
+
+    {
+        auto_table_creator tableCreator(tc_.table_creator_3(sql));
+
+        PhonebookEntry3 p1;
+        p1.setName("Joe Hacker");
+        p1.setPhone("10010110");
+
+        sql << "insert into soci_test values(:name, :phone)", use(p1);
+
+        PhonebookEntry3 p2;
+        sql << "select * from soci_test", into(p2);
+        assert(sql.got_data());
+
+        assert(p2.getName() == "Joe Hacker");
+        assert(p2.getPhone() == "10010110");
     }
 
     {
