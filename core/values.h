@@ -234,7 +234,7 @@ private:
     {
         delete row_;
         row_ = NULL;
-        
+
         // delete any uses and indicators which were created  by set() but
         // were not bound by the Statement
         // (bound uses and indicators are deleted in Statement::clean_up())
@@ -243,6 +243,11 @@ private:
         {
             delete pos->first;
             delete pos->second;
+        }
+
+        for (std::size_t i = 0; i != deepCopies_.size(); ++i)
+        {
+            delete deepCopies_[i];
         }
     }
 
