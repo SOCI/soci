@@ -116,17 +116,6 @@ public:
         eIndicator* pind = new eIndicator(indic);
         indicators_.push_back(pind);
 
-        uses_.push_back(new details::use_type<T>(value, *pind, name));
-    }
-
-    template <typename T>
-    void set_copy(std::string const &name, const T &value, eIndicator indic = eOK)
-    {
-        index_.insert(std::make_pair(name, uses_.size()));
-
-        eIndicator* pind = new eIndicator(indic);
-        indicators_.push_back(pind);
-
         details::copy_holder<T> * pcopy = new details::copy_holder<T>(value);
         deepCopies_.push_back(pcopy);
 

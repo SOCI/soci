@@ -133,8 +133,8 @@ template<> struct type_conversion<PhonebookEntry3>
 
     static void to_base(PhonebookEntry3 const &pe, values &v, eIndicator &ind)
     {
-        v.set_copy("name", pe.getName());
-        v.set_copy("phone", pe.getPhone(), pe.getPhone().empty() ? eNull : eOK);
+        v.set("name", pe.getName());
+        v.set("phone", pe.getPhone(), pe.getPhone().empty() ? eNull : eOK);
         ind = eOK;
     }
 };
