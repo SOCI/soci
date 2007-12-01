@@ -41,7 +41,7 @@ public:
     std::string phone_;
 };
 
-// user-defined object for test26
+// user-defined object for test26 and test28
 class MyInt
 {
 public:
@@ -278,6 +278,7 @@ public:
         test25();
         test26();
         test27();
+        test28();
     }
 
 private:
@@ -3016,6 +3017,71 @@ void test27()
     }
 
     std::cout << "test 27 passed" << std::endl;
+}
+
+void test28()
+{
+    session sql(backEndFactory_, connectString_);
+    
+    auto_table_creator tableCreator(tc_.table_creator_2(sql));
+    {
+        sql << "insert into soci_test(num_float, num_int, name) values(3.5, 7, 'Joe Hacker')";
+
+        // basic query
+
+        boost::tuple<double, int, std::string> t;
+        sql << "select num_float, num_int, name from soci_test", into(t);
+
+        assert(t.get<0>() == 3.5);
+        assert(t.get<1>() == 7);
+        assert(t.get<2>() == "Joe Hacker");
+    }
+
+    {
+        // composability with boost::optional
+
+        boost::tuple<double, boost::optional<int>, std::string> t;
+        sql << "select num_float, num_int, name from soci_test", into(t);
+
+        assert(t.get<0>() == 3.5);
+        assert(t.get<1>().is_initialized());
+        assert(t.get<1>().get() == 7);
+        assert(t.get<2>() == "Joe Hacker");
+    }
+
+    {
+        // composability with user-provided conversions
+
+        boost::tuple<double, MyInt, std::string> t;
+        sql << "select num_float, num_int, name from soci_test", into(t);
+
+        assert(t.get<0>() == 3.5);
+        assert(t.get<1>().get() == 7);
+        assert(t.get<2>() == "Joe Hacker");
+    }
+
+    {
+        // let's have fun
+
+        boost::tuple<double, boost::optional<MyInt>, std::string> t;
+
+        sql << "select num_float, num_int, name from soci_test", into(t);
+
+        assert(t.get<0>() == 3.5);
+        assert(t.get<1>().is_initialized());
+        assert(t.get<1>().get().get() == 7);
+        assert(t.get<2>() == "Joe Hacker");
+
+        sql << "update soci_test set num_int = NULL";
+
+        sql << "select num_float, num_int, name from soci_test", into(t);
+
+        assert(t.get<0>() == 3.5);
+        assert(t.get<1>().is_initialized() == false);
+        assert(t.get<2>() == "Joe Hacker");
+    }
+
+    std::cout << "test 28 passed" << std::endl;
 }
 
 }; // class common_tests

@@ -9,7 +9,6 @@
 #define BOOST_OPTIONAL_H_INCLUDED
 
 #include "type-conversion-traits.h"
-#include "exchange-traits.h"
 
 #include <boost/optional.hpp>
 

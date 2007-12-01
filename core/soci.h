@@ -17,6 +17,7 @@
 #include "blob.h"
 #include "blob-exchange.h"
 #include "boost-optional.h"
+#include "boost-tuple.h"
 #include "error.h"
 #include "exchange-traits.h"
 #include "into.h"
