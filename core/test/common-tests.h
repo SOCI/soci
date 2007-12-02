@@ -2591,7 +2591,6 @@ void test24()
             bool caught = false;
             try
             {
-                std::string troublemaker;
                 rowset<int> rs = (sql.prepare << "select val from soci_test order by val asc");
 
                 int tester = 0;
@@ -3079,6 +3078,45 @@ void test28()
         assert(t.get<0>() == 3.5);
         assert(t.get<1>().is_initialized() == false);
         assert(t.get<2>() == "Joe Hacker");
+    }
+
+    {
+        // rowset<tuple>
+
+        sql << "insert into soci_test(num_float, num_int, name) values(4.0, 8, 'Tony Coder')";
+        sql << "insert into soci_test(num_float, num_int, name) values(4.5, NULL, 'Cecile Sharp')";
+        sql << "insert into soci_test(num_float, num_int, name) values(5.0, 10, 'Djhava Ravaa')";
+
+        typedef boost::tuple<double, boost::optional<int>, std::string> T;
+
+        rowset<T> rs = (sql.prepare
+            << "select num_float, num_int, name from soci_test order by num_float asc");
+
+        rowset<T>::const_iterator pos = rs.begin();
+
+        assert(pos->get<0>() == 3.5);
+        assert(pos->get<1>().is_initialized() == false);
+        assert(pos->get<2>() == "Joe Hacker");
+
+        ++pos;
+        assert(pos->get<0>() == 4.0);
+        assert(pos->get<1>().is_initialized());
+        assert(pos->get<1>().get() == 8);
+        assert(pos->get<2>() == "Tony Coder");
+
+        ++pos;
+        assert(pos->get<0>() == 4.5);
+        assert(pos->get<1>().is_initialized() == false);
+        assert(pos->get<2>() == "Cecile Sharp");
+
+        ++pos;
+        assert(pos->get<0>() == 5.0);
+        assert(pos->get<1>().is_initialized());
+        assert(pos->get<1>().get() == 10);
+        assert(pos->get<2>() == "Djhava Ravaa");
+
+        ++pos;
+        assert(pos == rs.end());
     }
 
     std::cout << "test 28 passed" << std::endl;

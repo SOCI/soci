@@ -108,6 +108,16 @@ public:
         return *this;
     }
 
+    void skip(size_t num = 1) const
+    {
+        currentPos_ += num;
+    }
+
+    void reset_get_counter() const
+    {
+        currentPos_ = 0;
+    }
+
     template <typename T>
     void set(std::string const &name, const T &value, eIndicator indic = eOK)
     {

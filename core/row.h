@@ -121,7 +121,7 @@ public:
         currentPos_ += num;
     }
 
-    void reset_get_counter()
+    void reset_get_counter() const
     {
         currentPos_ = 0;
     }
