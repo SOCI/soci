@@ -24,7 +24,6 @@ struct type_conversion<boost::tuple<T0> >
     static void from_base(base_type const &in, eIndicator ind,
         boost::tuple<T0> &out)
     {
-        in.reset_get_counter();
         in
             >> boost::tuples::get<0>(out);
     }
@@ -44,7 +43,6 @@ struct type_conversion<boost::tuple<T0, T1> >
     static void from_base(base_type const &in, eIndicator ind,
         boost::tuple<T0, T1> &out)
     {
-        in.reset_get_counter();
         in
             >> boost::tuples::get<0>(out)
             >> boost::tuples::get<1>(out);
@@ -65,7 +63,6 @@ struct type_conversion<boost::tuple<T0, T1, T2> >
     static void from_base(base_type const &in, eIndicator ind,
         boost::tuple<T0, T1, T2> &out)
     {
-        in.reset_get_counter();
         in
             >> boost::tuples::get<0>(out)
             >> boost::tuples::get<1>(out)
@@ -87,7 +84,6 @@ struct type_conversion<boost::tuple<T0, T1, T2, T3> >
     static void from_base(base_type const &in, eIndicator ind,
         boost::tuple<T0, T1, T2, T3> &out)
     {
-        in.reset_get_counter();
         in
             >> boost::tuples::get<0>(out)
             >> boost::tuples::get<1>(out)
@@ -110,7 +106,6 @@ struct type_conversion<boost::tuple<T0, T1, T2, T3, T4> >
     static void from_base(base_type const &in, eIndicator ind,
         boost::tuple<T0, T1, T2, T3, T4> &out)
     {
-        in.reset_get_counter();
         in
             >> boost::tuples::get<0>(out)
             >> boost::tuples::get<1>(out)
@@ -135,7 +130,6 @@ struct type_conversion<boost::tuple<T0, T1, T2, T3, T4, T5> >
     static void from_base(base_type const &in, eIndicator ind,
         boost::tuple<T0, T1, T2, T3, T4, T5> &out)
     {
-        in.reset_get_counter();
         in
             >> boost::tuples::get<0>(out)
             >> boost::tuples::get<1>(out)
@@ -161,7 +155,6 @@ struct type_conversion<boost::tuple<T0, T1, T2, T3, T4, T5, T6> >
     static void from_base(base_type const &in, eIndicator ind,
         boost::tuple<T0, T1, T2, T3, T4, T5, T6> &out)
     {
-        in.reset_get_counter();
         in
             >> boost::tuples::get<0>(out)
             >> boost::tuples::get<1>(out)
@@ -188,7 +181,6 @@ struct type_conversion<boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7> >
     static void from_base(base_type const &in, eIndicator ind,
         boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7> &out)
     {
-        in.reset_get_counter();
         in
             >> boost::tuples::get<0>(out)
             >> boost::tuples::get<1>(out)
@@ -216,7 +208,6 @@ struct type_conversion<boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8> >
     static void from_base(base_type const &in, eIndicator ind,
         boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8> &out)
     {
-        in.reset_get_counter();
         in
             >> boost::tuples::get<0>(out)
             >> boost::tuples::get<1>(out)
@@ -245,7 +236,6 @@ struct type_conversion<boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> >
     static void from_base(base_type const &in, eIndicator ind,
         boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> &out)
     {
-        in.reset_get_counter();
         in
             >> boost::tuples::get<0>(out)
             >> boost::tuples::get<1>(out)

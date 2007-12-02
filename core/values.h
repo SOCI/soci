@@ -44,7 +44,7 @@ class SOCI_DECL values
 
 public:
 
-    values() : row_(NULL), currentPos_(0) {}
+    values() : row_(NULL) {}
 
     eIndicator indicator(std::size_t pos) const;
     eIndicator indicator(std::string const &name) const;
@@ -103,19 +103,8 @@ public:
     template <typename T>
     values const & operator>>(T &value) const
     {
-        value = row_->get<T>(currentPos_);
-        ++currentPos_;
+        *row_ >> value;
         return *this;
-    }
-
-    void skip(size_t num = 1) const
-    {
-        currentPos_ += num;
-    }
-
-    void reset_get_counter() const
-    {
-        currentPos_ = 0;
     }
 
     template <typename T>
@@ -249,8 +238,6 @@ private:
             delete deepCopies_[i];
         }
     }
-
-    mutable std::size_t currentPos_;
 };
 
 } // namespace soci
