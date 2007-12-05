@@ -470,8 +470,11 @@ void postgresql_statement_backend::describe_column(int colNum, eDataType &type,
     case 16:   // bool
     case 21:   // int2
     case 23:   // int4
-    case 20:   // int8
         type = eInteger;
+        break;
+
+    case 20:   // int8
+        type = eLongLong;
         break;
 
     case 26:   // oid

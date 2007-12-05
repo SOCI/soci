@@ -126,6 +126,12 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
             *dest = static_cast<unsigned long>(val);
         }
         break;
+        case eXLongLong:
+        {
+            long long *dest = static_cast<long long *>(data_);
+            *desc = strtoll(buf, NULL, 10);
+        }
+        break;
         case eXDouble:
         {
             double *dest = static_cast<double*>(data_);

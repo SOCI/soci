@@ -36,8 +36,8 @@ void sqlite3_vector_into_type_backend::pre_fetch()
 namespace // anonymous
 {
 
-template <typename T, typename U>
-void setInVector(void *p, int indx, U const &val)
+template <typename T>
+void setInVector(void *p, int indx, T const &val)
 {
     std::vector<T> *dest =
     static_cast<std::vector<T> *>(p);
@@ -88,7 +88,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, eIndicator * ind
             switch (type_)
             {
             case eXChar:
-                setInVector<char>(data_, i, *buf);
+                setInVector(data_, i, *buf);
                 break;
             case eXStdString:
                 setInVector<std::string>(data_, i, buf);
@@ -96,26 +96,31 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, eIndicator * ind
             case eXShort:
             {
                 long val = strtol(buf, NULL, 10);
-                setInVector<short>(data_, i, static_cast<short>(val));
+                setInVector(data_, i, static_cast<short>(val));
             }
             break;
             case eXInteger:
             {
                 long val = strtol(buf, NULL, 10);
-                setInVector<int>(data_, i, static_cast<int>(val));
+                setInVector(data_, i, static_cast<int>(val));
             }
             break;
             case eXUnsignedLong:
             {
                 long long val = strtoll(buf, NULL, 10);
-                setInVector<unsigned long>(data_, i,
-                                           static_cast<unsigned long>(val));
+                setInVector(data_, i, static_cast<unsigned long>(val));
+            }
+            break;
+            case eXLongLong:
+            {
+                long long val = strtoll(buf, NULL, 10);
+                setInVector(data_, i, val);
             }
             break;
             case eXDouble:
             {
                 double val = strtod(buf, NULL);
-                setInVector<double>(data_, i, val);
+                setInVector(data_, i, val);
             }
             break;
             case eXStdTm:
@@ -124,7 +129,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, eIndicator * ind
                 std::tm t;
                 parseStdTm(buf, t);
 
-                setInVector<std::tm>(data_, i, t);
+                setInVector(data_, i, t);
             }
             break;
 
@@ -148,6 +153,7 @@ void sqlite3_vector_into_type_backend::resize(std::size_t sz)
     case eXShort:        resizeVector<short>        (data_, sz); break;
     case eXInteger:      resizeVector<int>          (data_, sz); break;
     case eXUnsignedLong: resizeVector<unsigned long>(data_, sz); break;
+    case eXLongLong:     resizeVector<long long>    (data_, sz); break;
     case eXDouble:       resizeVector<double>       (data_, sz); break;
     case eXStdString:    resizeVector<std::string>  (data_, sz); break;
     case eXStdTm:        resizeVector<std::tm>      (data_, sz); break;
@@ -167,6 +173,7 @@ std::size_t sqlite3_vector_into_type_backend::size()
     case eXShort:        sz = getVectorSize<short>        (data_); break;
     case eXInteger:      sz = getVectorSize<int>          (data_); break;
     case eXUnsignedLong: sz = getVectorSize<unsigned long>(data_); break;
+    case eXLongLong:     sz = getVectorSize<long long>    (data_); break;
     case eXDouble:       sz = getVectorSize<double>       (data_); break;
     case eXStdString:    sz = getVectorSize<std::string>  (data_); break;
     case eXStdTm:        sz = getVectorSize<std::tm>      (data_); break;

@@ -97,6 +97,14 @@ void mysql_standard_use_type_backend::pre_use(eIndicator const *ind)
                     *static_cast<unsigned long*>(data_));
             }
             break;
+        case eXLongLong:
+            {
+                std::size_t const bufSize
+                    = std::numeric_limits<long long>::digits10 + 3;
+                buf_ = new char[bufSize];
+                snprintf(buf_, bufSize, "%lld", *static_cast<long long *>(data_));
+            }
+            break;
         case eXDouble:
             {
                 // no need to overengineer it (KISS)...

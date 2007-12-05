@@ -565,6 +565,12 @@ void statement_impl::bind_into<eUnsignedLong>()
 }
 
 template<>
+void statement_impl::bind_into<eLongLong>()
+{
+    into_row<long long>();
+}
+
+template<>
 void statement_impl::bind_into<eDate>()
 {
     into_row<std::tm>();
@@ -598,6 +604,9 @@ void statement_impl::describe()
             break;
         case eUnsignedLong:
             bind_into<eUnsignedLong>();
+            break;
+        case eLongLong:
+            bind_into<eLongLong>();
             break;
         case eDate:
             bind_into<eDate>();

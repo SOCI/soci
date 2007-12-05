@@ -132,11 +132,16 @@ void postgresql_standard_into_type_backend::post_fetch(
                 *dest = static_cast<unsigned long>(val);
             }
             break;
+        case eXLongLong:
+            {
+                long long *dest = static_cast<long long *>(data_);
+                *dest = strtoll(buf, NULL, 10);
+            }
+            break;
         case eXDouble:
             {
                 double *dest = static_cast<double*>(data_);
-                double val = strtod(buf, NULL);
-                *dest = static_cast<double>(val);
+                *dest = strtod(buf, NULL);
             }
             break;
         case eXStdTm:

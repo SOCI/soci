@@ -65,6 +65,13 @@ struct exchange_traits<unsigned long>
 };
 
 template <>
+struct exchange_traits<long long>
+{
+    typedef basic_type_tag type_family;
+    enum { eXType = eXLongLong };
+};
+
+template <>
 struct exchange_traits<double>
 {
     typedef basic_type_tag type_family;

@@ -152,6 +152,18 @@ void sqlite3_vector_use_type_backend::pre_use(eIndicator const * ind)
                 snprintf(buf, bufSize, "%lu", v[i]);
             }
             break;
+            case eXLongLong:
+            {
+                std::vector<long long> *pv
+                = static_cast<std::vector<long long> *>(data_);
+                std::vector<long long> &v = *pv;
+
+                std::size_t const bufSize
+                = std::numeric_limits<long long>::digits10 + 3;
+                buf = new char[bufSize];
+                snprintf(buf, bufSize, "%lld", v[i]);
+            }
+            break;
             case eXDouble:
             {
                 // no need to overengineer it (KISS)...
@@ -206,6 +218,7 @@ std::size_t sqlite3_vector_use_type_backend::size()
     case eXShort:        sz = getVectorSize<short>        (data_); break;
     case eXInteger:      sz = getVectorSize<int>          (data_); break;
     case eXUnsignedLong: sz = getVectorSize<unsigned long>(data_); break;
+    case eXLongLong:     sz = getVectorSize<long long>    (data_); break;
     case eXDouble:       sz = getVectorSize<double>       (data_); break;
     case eXStdString:    sz = getVectorSize<std::string>  (data_); break;
     case eXStdTm:        sz = getVectorSize<std::tm>      (data_); break;

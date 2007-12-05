@@ -21,7 +21,7 @@ namespace soci
 // data types, as seen by the user
 enum eDataType
 {
-    eString, eChar, eDate, eDouble, eInteger, eUnsignedLong
+    eString, eChar, eDate, eDouble, eInteger, eUnsignedLong, eLongLong
 };
 
 // the enum type for indicator variables
@@ -34,7 +34,7 @@ namespace details
 enum eExchangeType
 {
     eXChar, eXCString, eXStdString, eXShort, eXInteger,
-    eXUnsignedLong, eXDouble, eXStdTm, eXStatement,
+    eXUnsignedLong, eXLongLong, eXDouble, eXStdTm, eXStatement,
     eXRowID, eXBLOB
 };
 

@@ -597,11 +597,7 @@ void firebird_statement_backend::describe_column(int colNum,
         }
         else
         {
-            // 64bit integers are not supported
-            std::ostringstream msg;
-            msg << "Type of column ["<< colNum << "] \"" << columnName
-                << "\" is not supported for dynamic queries";
-            throw soci_error(msg.str());
+            type = eLongLong;
         }
         break;
         /* case SQL_BLOB:

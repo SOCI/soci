@@ -37,8 +37,8 @@ void mysql_vector_into_type_backend::pre_fetch()
 namespace // anonymous
 {
 
-template <typename T, typename U>
-void set_invector_(void *p, int indx, U const &val)
+template <typename T>
+void set_invector_(void *p, int indx, T const &val)
 {
     std::vector<T> *dest =
         static_cast<std::vector<T> *>(p);
@@ -91,7 +91,7 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, eIndicator *ind)
             switch (type_)
             {
             case eXChar:
-                set_invector_<char>(data_, i, *buf);
+                set_invector_(data_, i, *buf);
                 break;
             case eXStdString:
                 set_invector_<std::string>(data_, i, buf);
@@ -99,26 +99,31 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, eIndicator *ind)
             case eXShort:
                 {
                     long val = strtol(buf, NULL, 10);
-                    set_invector_<short>(data_, i, static_cast<short>(val));
+                    set_invector_(data_, i, static_cast<short>(val));
                 }
                 break;
             case eXInteger:
                 {
                     long val = strtol(buf, NULL, 10);
-                    set_invector_<int>(data_, i, static_cast<int>(val));
+                    set_invector_(data_, i, static_cast<int>(val));
                 }
                 break;
             case eXUnsignedLong:
                 {
                     long long val = strtoll(buf, NULL, 10);
-                    set_invector_<unsigned long>(data_, i,
-                        static_cast<unsigned long>(val));
+                    set_invector_(data_, i, static_cast<unsigned long>(val));
+                }
+                break;
+            case eXLongLong:
+                {
+                    long long val = strtoll(buf, NULL, 10);
+                    set_invector_(data_, i, val);
                 }
                 break;
             case eXDouble:
                 {
                     double val = strtod(buf, NULL);
-                    set_invector_<double>(data_, i, val);
+                    set_invector_(data_, i, val);
                 }
                 break;
             case eXStdTm:
@@ -127,7 +132,7 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, eIndicator *ind)
                     std::tm t;
                     parse_std_tm(buf, t);
 
-                    set_invector_<std::tm>(data_, i, t);
+                    set_invector_(data_, i, t);
                 }
                 break;
 
@@ -163,6 +168,7 @@ void mysql_vector_into_type_backend::resize(std::size_t sz)
     case eXShort:        resizevector_<short>        (data_, sz); break;
     case eXInteger:      resizevector_<int>          (data_, sz); break;
     case eXUnsignedLong: resizevector_<unsigned long>(data_, sz); break;
+    case eXLongLong:     resizevector_<long long>    (data_, sz); break;
     case eXDouble:       resizevector_<double>       (data_, sz); break;
     case eXStdString:    resizevector_<std::string>  (data_, sz); break;
     case eXStdTm:        resizevector_<std::tm>      (data_, sz); break;
@@ -182,6 +188,7 @@ std::size_t mysql_vector_into_type_backend::size()
     case eXShort:        sz = get_vector_size<short>        (data_); break;
     case eXInteger:      sz = get_vector_size<int>          (data_); break;
     case eXUnsignedLong: sz = get_vector_size<unsigned long>(data_); break;
+    case eXLongLong:     sz = get_vector_size<long long>    (data_); break;
     case eXDouble:       sz = get_vector_size<double>       (data_); break;
     case eXStdString:    sz = get_vector_size<std::string>  (data_); break;
     case eXStdTm:        sz = get_vector_size<std::tm>      (data_); break;

@@ -360,9 +360,11 @@ void mysql_statement_backend::describe_column(int colNum,
     case FIELD_TYPE_CHAR:       //MYSQL_TYPE_TINY:
     case FIELD_TYPE_SHORT:      //MYSQL_TYPE_SHORT:
     case FIELD_TYPE_LONG:       //MYSQL_TYPE_LONG:
-    case FIELD_TYPE_LONGLONG:   //MYSQL_TYPE_LONGLONG:
     case FIELD_TYPE_INT24:      //MYSQL_TYPE_INT24:
         type = eInteger;
+        break;
+    case FIELD_TYPE_LONGLONG:   //MYSQL_TYPE_LONGLONG:
+        type = eLongLong;
         break;
     case FIELD_TYPE_FLOAT:      //MYSQL_TYPE_FLOAT:
     case FIELD_TYPE_DOUBLE:     //MYSQL_TYPE_DOUBLE:

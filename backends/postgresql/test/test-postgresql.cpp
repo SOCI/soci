@@ -190,6 +190,7 @@ struct blob_table_creator : public table_creator_base
     }
 };
 
+// long long test
 void test3()
 {
     {
@@ -231,6 +232,36 @@ void test3()
     }
 
     std::cout << "test 3 passed" << std::endl;
+}
+
+struct longlong_table_creator : table_creator_base
+{
+    longlong_table_creator(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val int8)";
+    }
+};
+
+void test4()
+{
+    {
+        session sql(backEnd, connectString);
+
+        longlong_table_creator tableCreator(sql);
+
+        long long v1 = 1000000000000LL;
+        assert(v1 / 1000000 == 1000000);
+
+        sql << "insert into soci_test(val) values(:val)", use(v1);
+
+        long long v2 = 0LL;
+        sql << "select val from soci_test", into(v2);
+
+        assert(v2 == v1);
+    }
+
+    std::cout << "test 4 passed" << std::endl;
 }
 
 // DDL Creation objects for common tests
@@ -336,6 +367,7 @@ int main(int argc, char** argv)
         test1();
         test2();
         test3();
+        test4();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;

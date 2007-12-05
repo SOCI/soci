@@ -90,6 +90,12 @@ void firebird_standard_into_type_backend::exchangeData()
                 *reinterpret_cast<unsigned long*>(data_) = t;
             }
             break;
+        case eXInteger:
+            {
+                long long t = from_isc<long long>(var);
+                *reinterpret_cast<long long *>(data_) = t;
+            }
+            break;
         case eXDouble:
             {
                 double t = from_isc<double>(var);
