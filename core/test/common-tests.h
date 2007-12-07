@@ -2306,9 +2306,6 @@ void test18()
         // Copy by assignment
         rowset<row> rs2 = rs1;
         rowset<row> rs3(rs2);
-
-        // TODO - mloskot:
-        // Fix issue with rs1.begin() == rs2.begin()
     }
 
     std::cout << "test 18 passed" << std::endl;
