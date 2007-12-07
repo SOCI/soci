@@ -111,6 +111,10 @@ void postgresql_vector_into_type_backend::post_fetch(bool gotData, eIndicator *i
             case eXInteger:
                 {
                     long val = strtol(buf, NULL, 10);
+                    if (std::tolower(*buf) == 't')
+                    {
+                        val = 1;
+                    }
                     set_invector_(data_, i, static_cast<int>(val));
                 }
                 break;

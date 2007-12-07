@@ -264,6 +264,39 @@ void test4()
     std::cout << "test 4 passed" << std::endl;
 }
 
+struct boolean_table_creator : table_creator_base
+{
+    boolean_table_creator(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val boolean)";
+    }
+};
+
+void test5()
+{
+    {
+        session sql(backEnd, connectString);
+
+        boolean_table_creator tableCreator(sql);
+
+        int i1 = 0;
+
+        sql << "insert into soci_test(val) values(:val)", use(i1);
+
+        int i2 = 7;
+        sql << "select val from soci_test", into(i2);
+
+        assert(i2 == i1);
+
+        sql << "update soci_test set val = true";
+        sql << "select val from soci_test", into(i2);
+        assert(i2 == 1);
+    }
+
+    std::cout << "test 5 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -368,6 +401,7 @@ int main(int argc, char** argv)
         test2();
         test3();
         test4();
+        test5();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;

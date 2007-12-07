@@ -122,6 +122,10 @@ void postgresql_standard_into_type_backend::post_fetch(
             {
                 int *dest = static_cast<int*>(data_);
                 long val = strtol(buf, NULL, 10);
+                if (std::tolower(*buf) == 't')
+                {
+                    val = 1;
+                }
                 *dest = static_cast<int>(val);
             }
             break;
