@@ -129,7 +129,7 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
         case eXLongLong:
         {
             long long *dest = static_cast<long long *>(data_);
-            *desc = strtoll(buf, NULL, 10);
+            *dest = strtoll(buf, NULL, 10);
         }
         break;
         case eXDouble:

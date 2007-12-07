@@ -95,7 +95,6 @@ public:
 
 private:
 
-    // TODO - mloskot: think about weak_ptr here, an observer concept
     statement* st_;
     T* define_;
 
