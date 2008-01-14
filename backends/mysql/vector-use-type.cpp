@@ -112,7 +112,7 @@ void mysql_vector_use_type_backend::pre_use(eIndicator const *ind)
                     snprintf(buf, bufSize, "%lu", v[i]);
                 }
                 break;
-            case eXInteger:
+            case eXLongLong:
                 {
                     std::vector<long long> *pv
                         = static_cast<std::vector<long long> *>(data_);
