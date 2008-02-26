@@ -21,3 +21,5 @@ ID
 tags
 TAGS
 test_*
+Makefile
+Makefile.in
