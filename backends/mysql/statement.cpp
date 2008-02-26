@@ -387,6 +387,7 @@ void mysql_statement_backend::describe_column(int colNum,
 //  case MYSQL_TYPE_VARCHAR:
     case FIELD_TYPE_VAR_STRING: //MYSQL_TYPE_VAR_STRING:
     case FIELD_TYPE_STRING:     //MYSQL_TYPE_STRING:
+    case FIELD_TYPE_BLOB:       // TEXT OR BLOB
         type = eString;
         break;
     default:

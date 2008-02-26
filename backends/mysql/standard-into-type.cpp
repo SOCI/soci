@@ -10,8 +10,8 @@
 #include "soci-mysql.h"
 #include <soci-platform.h>
 #include "common.h"
-
 #include <ciso646>
+#include <cassert>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -93,7 +93,17 @@ void mysql_standard_into_type_backend::post_fetch(
         case eXStdString:
             {
                 std::string *dest = static_cast<std::string *>(data_);
-                dest->assign(buf);
+
+                MYSQL_FIELD* field = mysql_fetch_field_direct(statement_.result_, pos);
+                assert(0 != field);
+                if (MYSQL_TYPE_BLOB == field->type)
+                {
+                    dest->assign(buf, field->max_length);
+                }
+                else
+                {
+                    dest->assign(buf);
+                }
             }
             break;
         case eXShort:

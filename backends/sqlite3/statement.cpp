@@ -317,6 +317,11 @@ void sqlite3_statement_backend::describe_column(int colNum, eDataType & type,
         type = eDouble;
         typeFound = true;
     }
+    if (dt.find("text", 0) != std::string::npos)
+    {
+        type = eString;
+        typeFound = true;
+    }
     if (dt.find("char", 0) != std::string::npos)
     {
         type = eString;

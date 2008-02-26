@@ -23,8 +23,6 @@
 #ifdef _MSC_VER
 #pragma warning(disable:4355 4996)
 #define snprintf _snprintf
-#else
-using std::snprintf;
 #endif
 
 using namespace soci;
