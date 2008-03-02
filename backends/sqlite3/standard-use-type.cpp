@@ -67,7 +67,9 @@ void sqlite3_standard_use_type_backend::pre_use(eIndicator const * ind)
     int pos = position_ - 1;
 
     if (statement_.useData_[0].size() < static_cast<std::size_t>(position_))
+    {
         statement_.useData_[0].resize(position_);
+    }
 
     if (ind != NULL && *ind == eNull)
     {

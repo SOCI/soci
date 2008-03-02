@@ -37,7 +37,9 @@ std::size_t sqlite3_blob_backend::read(
     // make sure that we don't try to read
     // past the end of the data
     if (r > len_ - offset)
+    {
         r = len_ - offset;
+    }
 
     memcpy(buf, buf_ + offset, r);
 
@@ -51,7 +53,7 @@ std::size_t sqlite3_blob_backend::write(
 {
     const char* oldBuf = buf_;
     std::size_t oldLen = len_;
-    len_ = std::max(len_, offset + toWrite);
+    len_ = (std::max)(len_, offset + toWrite);
 
     buf_ = new char[len_];
 

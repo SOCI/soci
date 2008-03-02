@@ -69,7 +69,9 @@ void sqlite3_vector_use_type_backend::pre_use(eIndicator const * ind)
 
     // make sure that useData can hold enough rows
     if (statement_.useData_.size() != vsize)
+    {
         statement_.useData_.resize(vsize);
+    }
 
     int pos = position_ - 1;
 
@@ -80,7 +82,9 @@ void sqlite3_vector_use_type_backend::pre_use(eIndicator const * ind)
         // make sure that each row can accomodate the number of columns
         if (statement_.useData_[i].size() <
             static_cast<std::size_t>(position_))
+        {
             statement_.useData_[i].resize(position_);
+        }
 
         // the data in vector can be either eOK or eNull
         if (ind != NULL && ind[i] == eNull)
@@ -203,8 +207,11 @@ void sqlite3_vector_use_type_backend::pre_use(eIndicator const * ind)
             statement_.useData_[i][pos].blobBuf_ = 0;
             statement_.useData_[i][pos].blobSize_ = 0;
         }
+
         if (buf)
+        {
             delete [] buf;
+        }
     }
 }
 

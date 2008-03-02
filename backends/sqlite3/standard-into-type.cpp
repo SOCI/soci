@@ -74,8 +74,10 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
                                           statement_.stmt_,
                                           pos));
 
-        if (!buf)
+        if (buf == NULL)
+        {
             buf = "";
+        }
 
 
         switch (type_)

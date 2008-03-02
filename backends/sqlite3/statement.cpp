@@ -68,11 +68,13 @@ void sqlite3_statement_backend::prepare(std::string const & query,
 // be executed a second time.
 void sqlite3_statement_backend::resetIfNeeded()
 {
-    if (stmt_ && !databaseReady_)
+    if (stmt_ && databaseReady_ == false)
     {
         int res = sqlite3_reset(stmt_);
         if (SQLITE_OK == res)
+        {
             databaseReady_ = true;
+        }
     }
 }
 
@@ -197,26 +199,36 @@ sqlite3_statement_backend::bindAndExecute(int number)
             int bindRes = SQLITE_OK;
             const sqlite3_column& curCol = useData_[row][pos-1];
             if (curCol.isNull_)
+            {
                 bindRes = sqlite3_bind_null(stmt_, pos);
+            }
             else if (curCol.blobBuf_)
+            {
                 bindRes = sqlite3_bind_blob(stmt_, pos,
                                             curCol.blobBuf_,
                                             curCol.blobSize_,
                                             SQLITE_STATIC);
+            }
             else
+            {
                 bindRes = sqlite3_bind_text(stmt_, pos,
                                             curCol.data_.c_str(),
                                             static_cast<int>(curCol.data_.length()),
                                             SQLITE_STATIC);
+            }
 
             if (SQLITE_OK != bindRes)
+            {
                 throw soci_error("Failure to bind on bulk operations");
+            }
         }
 
         // Handle the case where there are both into and use elements
         // in the same query and one of the into binds to a vector object.
         if (1 == rows && number != rows)
+        {
             return loadRS(number);
+        }
 
         retVal = loadOne(); //execute each bound line
     }
@@ -226,24 +238,30 @@ sqlite3_statement_backend::bindAndExecute(int number)
 statement_backend::execFetchResult
 sqlite3_statement_backend::execute(int number)
 {
-    if (!stmt_)
+    if (stmt_ == NULL)
+    {
         throw soci_error("No sqlite statement created");
+    }
 
     sqlite3_reset(stmt_);
     databaseReady_ = true;
 
     statement_backend::execFetchResult retVal = eNoData;
 
-    if (!useData_.empty())
+    if (useData_.empty() == false)
     {
            retVal = bindAndExecute(number);
     }
     else
     {
         if (1 == number)
+        {
             retVal = loadOne();
+        }
         else
+        {
             retVal = loadRS(number);
+        }
     }
 
     return retVal;
@@ -329,7 +347,9 @@ void sqlite3_statement_backend::describe_column(int colNum, eDataType & type,
     }
 
     if (typeFound)
+    {
         return;
+    }
 
     // try to get it from the weak ass type system
 

@@ -150,12 +150,11 @@ void test3()
 }
 
 
-// 
 // Test case from Amnon David 11/1/2007
-// I've noticed that table schemas in SQLite3 can sometimes have typeless 
-// columns. One (and only?) example is the sqlite_sequence that sqlite 
-// creates for autoincrement . Attempting to traverse this table caused 
-// SOCI to crash. I've made the following code change in statement.cpp to 
+// I've noticed that table schemas in SQLite3 can sometimes have typeless
+// columns. One (and only?) example is the sqlite_sequence that sqlite
+// creates for autoincrement . Attempting to traverse this table caused
+// SOCI to crash. I've made the following code change in statement.cpp to
 // create a workaround:
 void test4()
 {

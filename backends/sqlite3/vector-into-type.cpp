@@ -80,7 +80,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, eIndicator * ind
 
 
             // set buf to a null string if a null pointer is returned
-            if (!buf)
+            if (buf == NULL)
             {
                 buf = "";
             }
