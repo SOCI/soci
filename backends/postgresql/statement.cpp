@@ -182,9 +182,11 @@ postgresql_statement_backend::execute(int number)
              numberOfExecutions = hasUseElements_ ? 1 : number;
         }
 
-        if (!useByPosBuffers_.empty() || !useByNameBuffers_.empty())
+        if ((useByPosBuffers_.empty() == false) ||
+            (useByNameBuffers_.empty() == false))
         {
-            if (!useByPosBuffers_.empty() && !useByNameBuffers_.empty())
+            if ((useByPosBuffers_.empty() == false) &&
+                (useByNameBuffers_.empty() == false))
             {
                 throw soci_error(
                     "Binding for use elements must be either by position "
@@ -195,7 +197,7 @@ postgresql_statement_backend::execute(int number)
             {
                 std::vector<char *> paramValues;
 
-                if (!useByPosBuffers_.empty())
+                if (useByPosBuffers_.empty() == false)
                 {
                     // use elements bind by position
                     // the map of use buffers can be traversed
