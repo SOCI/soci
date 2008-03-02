@@ -131,7 +131,7 @@ void statement_impl::exchange_for_row(into_type_ptr const &i)
 
 void statement_impl::exchange_for_rowset(into_type_ptr const &i)
 {
-    if (!intos_.empty())
+    if (intos_.empty() == false)
     {
         throw soci_error("Explicit into elements not allowed with rowset.");
     }

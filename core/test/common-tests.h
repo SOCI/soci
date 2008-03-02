@@ -32,7 +32,7 @@ class PhonebookEntry3
 public:
     void setName(std::string const & n) { name_ = n; }
     std::string getName() const { return name_; }
-  
+
     void setPhone(std::string const & p) { phone_ = p; }
     std::string getPhone() const { return phone_; }
 
@@ -305,7 +305,7 @@ void test1()
     {
         msg = e.what();
     }
-    assert(!msg.empty());
+    assert(msg.empty() == false);
 
     sql << "insert into soci_test (id) values (" << 123 << ")";
     int id;
@@ -976,7 +976,7 @@ void test4()
             assert(st.fetch());
             assert(ind == eOK);
             assert(val == 12);
-            assert(!st.fetch());
+            assert(st.fetch() == false);
         }
         {
             std::vector<int> vals(3);
@@ -999,7 +999,7 @@ void test4()
             assert(inds[0] == eNull);
             assert(inds[1] == eOK);
             assert(vals[1] == 12);
-            assert(!st.fetch());
+            assert(st.fetch() == false);
         }
 
         // additional test for "no data" condition
@@ -1010,7 +1010,7 @@ void test4()
             statement st = (sql.prepare <<
                 "select val from soci_test where 0 = 1", into(vals, inds));
 
-            assert(!st.execute(true));
+            assert(st.execute(true) == false);
 
             // for convenience, vectors should be truncated
             assert(vals.empty());

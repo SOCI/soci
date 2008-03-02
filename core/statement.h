@@ -250,7 +250,7 @@ public:
         : standard_use_type(&s, eXStatement, ind, false, name) {}
 
     // Note: there is no const version of use for statement,
-    // because most likely it would not make much sense anyway. 
+    // because most likely it would not make much sense anyway.
 };
 
 } // namespace details

@@ -64,7 +64,7 @@ public:
     {
         // Fetch next row from dataset
         
-        if (!st_->fetch())
+        if (st_->fetch() == false)
         {
             // Set iterator to non-derefencable state (pass-the-end)
             st_ = 0;
@@ -90,7 +90,7 @@ public:
 
     bool operator!=(rowset_iterator const& rhs) const
     {
-        return (!(*this == rhs));
+        return ((*this == rhs) == false);
     }
 
 private:
