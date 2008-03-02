@@ -166,7 +166,9 @@ odbc_statement_backend::execute(int number)
     SQLNumResultCols(hstmt_, &colCount);
 
     if (number > 0 && colCount > 0)
+    {
         return fetch(number);
+    }
 
     return eSuccess;
 }
@@ -183,7 +185,9 @@ odbc_statement_backend::fetch(int number)
     SQLRETURN rc = SQLFetch(hstmt_);
 
     if (SQL_NO_DATA == rc)
+    {
         return eNoData;
+    }
 
     if (is_odbc_error(rc))
     {

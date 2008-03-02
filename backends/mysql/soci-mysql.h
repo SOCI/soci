@@ -181,7 +181,7 @@ struct mysql_statement_backend : details::statement_backend
     
     bool justDescribed_; // to optimize row description with immediately
                          // following actual statement execution
- 
+
     bool hasIntoElements_;
     bool hasVectorIntoElements_;
     bool hasUseElements_;

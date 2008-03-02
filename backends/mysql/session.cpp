@@ -58,7 +58,7 @@ string param_name(string::const_iterator *i,
     string val("");
     for (;;)
     {
-        if (*i == end or (!std::isalpha(**i) and **i != '_'))
+        if (*i == end or (not std::isalpha(**i) and **i != '_'))
         {
             break;
         }
@@ -108,7 +108,7 @@ string param_value(string::const_iterator *i,
                 throw soci_error(err);
             }
         }
-        if (!quot and std::isspace(**i))
+        if (not quot and std::isspace(**i))
         {
             break;
         }
@@ -179,9 +179,9 @@ void parse_connect_string(const string & connectString,
         }
         skip_white(&i, end, false);
         string val = param_value(&i, end);
-        if (par == "port" and !*port_p)
+        if (par == "port" and not *port_p)
         {
-            if (!valid_int(val))
+            if (not valid_int(val))
             {
                 throw soci_error(err);
             }
@@ -192,27 +192,27 @@ void parse_connect_string(const string & connectString,
             }
             *port_p = true;
         }
-        else if (par == "host" and !*host_p)
+        else if (par == "host" and not *host_p)
         {
             *host = val;
             *host_p = true;
         }
-        else if (par == "user" and !*user_p)
+        else if (par == "user" and not *user_p)
         {
             *user = val;
             *user_p = true;
         }
-        else if ((par == "pass" or par == "password") and !*password_p)
+        else if ((par == "pass" or par == "password") and not *password_p)
         {
             *password = val;
             *password_p = true;
         }
-        else if ((par == "db" or par == "dbname") and !*db_p)
+        else if ((par == "db" or par == "dbname") and not *db_p)
         {
             *db = val;
             *db_p = true;
         }
-        else if (par == "unix_socket" && !*unix_socket_p)
+        else if (par == "unix_socket" and not *unix_socket_p)
         {
             *unix_socket = val;
             *unix_socket_p = true;
@@ -240,14 +240,14 @@ mysql_session_backend::mysql_session_backend(
     {
         throw soci_error("mysql_init() failed.");
     }
-    if (!mysql_real_connect(conn_,
+    if (mysql_real_connect(conn_,
             host_p ? host.c_str() : NULL,
             user_p ? user.c_str() : NULL,
             password_p ? password.c_str() : NULL,
             db_p ? db.c_str() : NULL,
             port_p ? port : 0,
             unix_socket_p ? unix_socket.c_str() : NULL,
-            0))
+            0) == NULL)
     {
         string errMsg = mysql_error(conn_);
         unsigned int errNum = mysql_errno(conn_);
@@ -261,7 +261,8 @@ mysql_session_backend::~mysql_session_backend()
     clean_up();
 }
 
-namespace { // unnamed
+namespace // unnamed
+{
 
 // helper function for hardcoded queries
 void hard_exec(MYSQL *conn, const string & query)

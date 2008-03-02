@@ -135,7 +135,9 @@ void odbc_standard_into_type_backend::post_fetch(
                 details::cstring_descriptor *desc = static_cast<cstring_descriptor *>(data_);
                 int size = static_cast<SQLINTEGER>(desc->bufSize_);
                 if (size < valueLen_)
+                {
                     *ind = eTruncated;
+                }
             }
         }
         if (type_ == eXStdString)

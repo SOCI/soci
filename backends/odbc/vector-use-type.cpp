@@ -234,7 +234,9 @@ void odbc_vector_use_type_backend::bind_by_name(
     }
 
     if (position != -1)
+    {
         bind_helper(position, data, type);
+    }
     else
     {
         std::ostringstream ss;

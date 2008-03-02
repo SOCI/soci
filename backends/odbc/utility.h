@@ -48,9 +48,13 @@ inline void throw_odbc_error(SQLSMALLINT htype, SQLHANDLE hndl, char const * msg
 inline bool is_odbc_error(SQLRETURN rc)
 {
     if (rc != SQL_SUCCESS && rc != SQL_SUCCESS_WITH_INFO)
+    {
         return true;
+    }
     else
+    {
         return false;
+    }
 }
 
 }

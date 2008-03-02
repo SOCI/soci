@@ -142,9 +142,9 @@ mysql_statement_backend::execute(int number)
         }
         
         std::string query;
-        if (!useByPosBuffers_.empty() || !useByNameBuffers_.empty())
+        if (not useByPosBuffers_.empty() or not useByNameBuffers_.empty())
         {
-            if (!useByPosBuffers_.empty() && !useByNameBuffers_.empty())
+            if (not useByPosBuffers_.empty() and not useByNameBuffers_.empty())
             {
                 throw soci_error(
                     "Binding for use elements must be either by position "
@@ -154,7 +154,7 @@ mysql_statement_backend::execute(int number)
             {
                 std::vector<char *> paramValues;
 
-                if (!useByPosBuffers_.empty())
+                if (not useByPosBuffers_.empty())
                 {
                     // use elements bind by position
                     // the map of use buffers can be traversed
