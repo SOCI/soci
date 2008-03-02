@@ -183,4 +183,3 @@ SOCI_EMPTY_DECL extern empty_backend_factory const empty;
 } // namespace soci
 
 #endif // SOCI_EMPTY_H_INCLUDED
-
