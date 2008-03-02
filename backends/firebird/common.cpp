@@ -16,8 +16,11 @@
 namespace soci
 {
 
-namespace details { namespace firebird {
+namespace details
+{
 
+namespace firebird
+{
 
 char * allocBuffer(XSQLVAR* var)
 {
@@ -98,7 +101,9 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
     {
         memcpy(buf_, s, sz);
         if (sz < var->sqllen)
+        {
             memset(buf_+sz, ' ', var->sqllen - sz);
+        }
     }
     else
     {
@@ -125,6 +130,8 @@ std::string getTextParam(XSQLVAR const *var)
     return std::string(var->sqldata + offset, size);
 }
 
-}} // namespace firebird::details
+} // namespace firebird
+
+} // namespace details
 
 } // namespace soci

@@ -122,7 +122,7 @@ void firebird_vector_into_type_backend::post_fetch(
 
         for (std::size_t i = 0; i<rows; ++i)
         {
-            if (statement_.inds_[position_][i] == eNull && !ind)
+            if (statement_.inds_[position_][i] == eNull && (ind == NULL))
             {
                 throw soci_error("Null value fetched and no indicator defined.");
             }
@@ -210,7 +210,7 @@ void firebird_vector_into_type_backend::clean_up()
 {
     if (buf_ != NULL)
     {
-        delete[] buf_;
+        delete [] buf_;
         buf_ = NULL;
     }
 }

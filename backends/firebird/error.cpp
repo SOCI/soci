@@ -28,7 +28,11 @@ firebird_soci_error::firebird_soci_error(std::string const & msg, ISC_STATUS con
     }
 }
 
-namespace details { namespace firebird {
+namespace details
+{
+
+namespace firebird
+{
 
 void getISCErrorDetails(ISC_STATUS * status_vector, std::string &msg)
 {
@@ -76,6 +80,8 @@ void throwISCError(ISC_STATUS * status_vector)
     throw firebird_soci_error(msg, status_vector);
 }
 
-}} // namespace firebird::details
+} // namespace firebird
+
+} // namespace details
 
 } // namespace soci

@@ -25,7 +25,7 @@ void firebird_statement_backend::prepareSQLDA(XSQLDA ** sqldap, int size)
 {
     if (*sqldap != NULL)
     {
-        *sqldap = reinterpret_cast<XSQLDA*>(realloc(*sqldap,XSQLDA_LENGTH(size)));
+        *sqldap = reinterpret_cast<XSQLDA*>(realloc(*sqldap, XSQLDA_LENGTH(size)));
     }
     else
     {
@@ -307,7 +307,7 @@ void firebird_statement_backend::prepare(std::string const & query,
     if (sqldap_->sqln < sqldap_->sqld)
     {
         // sqlda is too small for all columns. it must be reallocated
-        prepareSQLDA(&sqldap_,sqldap_->sqld);
+        prepareSQLDA(&sqldap_, sqldap_->sqld);
 
         if (isc_dsql_describe(stat, &stmtp_, SQL_DIALECT_V6, sqldap_))
         {
@@ -397,7 +397,7 @@ firebird_statement_backend::execute(int number)
     if (isc_dsql_free_statement(stat, &stmtp_, DSQL_close))
     {
         // ignore attempt to close already closed cursor
-        if (!checkISCError(stat, isc_dsql_cursor_close_err))
+        if (checkISCError(stat, isc_dsql_cursor_close_err) == false)
         {
             throwISCError(stat);
         }

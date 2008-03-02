@@ -41,7 +41,7 @@ void firebird_standard_into_type_backend::pre_fetch()
 void firebird_standard_into_type_backend::post_fetch(
     bool gotData, bool calledFromFetch, eIndicator * ind)
 {
-    if (calledFromFetch && !gotData)
+    if (calledFromFetch && (gotData == false))
     {
         // this is a normal end-of-rowset condition,
         // no need to set anything (fetch() will return false)
@@ -152,7 +152,7 @@ void firebird_standard_into_type_backend::clean_up()
 {
     if (buf_ != NULL)
     {
-        delete[] buf_;
+        delete [] buf_;
         buf_ = NULL;
     }
 }

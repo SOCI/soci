@@ -35,7 +35,7 @@ std::size_t firebird_blob_backend::get_len()
 std::size_t firebird_blob_backend::read(
     std::size_t offset, char * buf, std::size_t toRead)
 {
-    if (from_db_ && !loaded_)
+    if (from_db_ && (loaded_ == false))
     {
         // this is blob fetched from database, but not loaded yet
         load();
@@ -65,7 +65,7 @@ std::size_t firebird_blob_backend::read(
 std::size_t firebird_blob_backend::write(std::size_t offset, char const * buf,
                                        std::size_t toWrite)
 {
-    if (from_db_ && !loaded_)
+    if (from_db_ && (loaded_ == false))
     {
         // this is blob fetched from database, but not loaded yet
         load();
@@ -92,7 +92,7 @@ std::size_t firebird_blob_backend::write(std::size_t offset, char const * buf,
 std::size_t firebird_blob_backend::append(
     char const * buf, std::size_t toWrite)
 {
-    if (from_db_ && !loaded_)
+    if (from_db_ && (loaded_ == false))
     {
         // this is blob fetched from database, but not loaded yet
         load();
@@ -108,7 +108,7 @@ std::size_t firebird_blob_backend::append(
 
 void firebird_blob_backend::trim(std::size_t newLen)
 {
-    if (from_db_ && !loaded_)
+    if (from_db_ && (loaded_ == false))
     {
         // this is blob fetched from database, but not loaded yet
         load();

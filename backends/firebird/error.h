@@ -14,7 +14,11 @@
 namespace soci
 {
 
-namespace details { namespace firebird {
+namespace details
+{
+
+namespace firebird
+{
 
 void SOCI_FIREBIRD_DECL getISCErrorDetails(ISC_STATUS * status_vector, std::string &msg);
 
@@ -22,9 +26,10 @@ bool SOCI_FIREBIRD_DECL checkISCError(ISC_STATUS const * status_vector, long err
 
 void SOCI_FIREBIRD_DECL throwISCError(ISC_STATUS * status_vector);
 
-}} // namespace firebird::details
+} // namespace firebird
+
+} // namespace details
 
 } // namespace soci
 
 #endif // FIREBIRD_ERROR_H_INCLUDED
-

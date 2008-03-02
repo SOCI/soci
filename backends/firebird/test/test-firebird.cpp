@@ -93,8 +93,8 @@ void test2()
 
         strcpy(b1, msg);
 
-        sql << "insert into test2(p1, p2) values (?,?)", use(b1,100), use(b1,100);
-        sql << "select p1, p2 from test2", into(b2,100), into(b3,100);
+        sql << "insert into test2(p1, p2) values (?,?)", use(b1, 100), use(b1, 100);
+        sql << "select p1, p2 from test2", into(b2, 100), into(b3, 100);
 
         assert(
             buf2[0] == 'H' && buf3[0] == 'H' &&
@@ -536,7 +536,7 @@ void test7()
         b.write(0, str1, strlen(str1));
 
         char str2[20];
-        std::size_t i = b.read(3,str2,2);
+        std::size_t i = b.read(3, str2, 2);
         str2[i] = '\0';
         assert(str2[0] == 'l' && str2[1] == 'o' && str2[2] == '\0');
 
@@ -573,7 +573,7 @@ void test7()
         b.read(0, &text[0], b.get_len());
 
         char str1[] = "HELLO";
-        b.write(0,str1, strlen(str1));
+        b.write(0, str1, strlen(str1));
 
         b.read(0, &text[0], b.get_len());
         assert(strncmp(&text[0], "HELLO, FIREBIRD!", b.get_len()) == 0);
@@ -633,11 +633,11 @@ void test8()
 
     sql.begin();
 
-    int j = 13, k = 4, i, l;
+    int j = 13, k = 4, i, m;
     sql << "insert into test8(id1, id2) values(:id1, :id2)",
     use(k, "id2"), use(j, "id1");
-    sql << "select id1, id2 from test8", into(i), into(l);
-    assert(i == j && l == k);
+    sql << "select id1, id2 from test8", into(i), into(m);
+    assert(i == j && m == k);
 
     sql << "delete from test8";
 
@@ -665,13 +665,13 @@ void test8()
 
     {
         statement st = (
-                           sql.prepare << "select id1, id2 from test8", into(i), into(l));
+            sql.prepare << "select id1, id2 from test8", into(i), into(m));
         st.execute();
 
         std::size_t x(0);
         while (st.fetch())
         {
-            assert(i = in1[x] && l == in2[x]);
+            assert(i = in1[x] && m == in2[x]);
             ++x;
         }
     }
@@ -727,8 +727,8 @@ void test9()
 
     {
         statement st((sql.prepare << "insert into test9(id, msg, ntest) "
-                      << "values(:id,:msg,:ntest)",
-                      use(i,"id"), use(msg,"msg"), use(d,ind,"ntest")));
+                << "values(:id,:msg,:ntest)",
+                use(i, "id"), use(msg, "msg"), use(d, ind, "ntest")));
 
         st.execute(1);
 
@@ -944,7 +944,8 @@ void test10()
 // soci::FirebirdStatmentBackend
 namespace soci
 {
-    enum eRowCountType {
+    enum eRowCountType
+    {
         eRowsSelected = isc_info_req_select_count,
         eRowsInserted = isc_info_req_insert_count,
         eRowsUpdated  = isc_info_req_update_count,
@@ -979,20 +980,21 @@ namespace soci
         for (char *ptr = cnt_info + 3; *ptr != isc_info_end;)
         {
             char count_type = *ptr++;
-            int l = isc_vax_integer(ptr, 2);
+            int m = isc_vax_integer(ptr, 2);
             ptr += 2;
-            count = isc_vax_integer(ptr, l);
+            count = isc_vax_integer(ptr, m);
 
             if (count_type == type_)
             {
                 // this is requested number
                 break;
             }
-            ptr += l;
+            ptr += m;
         }
 
         return count;
     }
+
 } // namespace soci
 
 void test11()

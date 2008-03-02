@@ -321,4 +321,3 @@ SOCI_FIREBIRD_DECL extern firebird_backend_factory const firebird;
 } // namespace soci
 
 #endif // SOCI_FIREBIRD_H_INCLUDED
-

@@ -16,9 +16,14 @@
 #include <string>
 #include <vector>
 
-namespace soci {
-    
-namespace details { namespace firebird {
+namespace soci
+{
+
+namespace details
+{
+
+namespace firebird
+{
 
 char * allocBuffer(XSQLVAR* var);
 
@@ -39,7 +44,7 @@ void to_isc(void * val, XSQLVAR * var)
     short type = var->sqltype & ~1;
     ISC_INT64 tens = 1;
 
-    if (!std::numeric_limits<T1>::is_integer && scale >= 0 &&
+    if ((std::numeric_limits<T1>::is_integer == false) && scale >= 0 &&
         (type == SQL_SHORT || type == SQL_LONG || type == SQL_INT64))
     {
         throw soci_error("Can't convert non-integral value to integral column type");
@@ -134,7 +139,9 @@ void resizeVector(void *p, std::size_t sz)
     v->resize(sz);
 }
 
-}} // namespace firebird::details
+} // namespace firebird
+
+} // namespace details
 
 } // namespace soci
 

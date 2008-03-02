@@ -209,7 +209,7 @@ void firebird_vector_use_type_backend::clean_up()
 {
     if (buf_ != NULL)
     {
-        delete[] buf_;
+        delete [] buf_;
         buf_ = NULL;
     }
 }

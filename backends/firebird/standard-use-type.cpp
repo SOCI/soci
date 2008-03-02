@@ -23,7 +23,7 @@ void firebird_standard_use_type_backend::bind_by_pos(
          "Binding for use elements must be either by position or by name.");
     }
 
-	position_ = position-1;
+    position_ = position-1;
     data_ = data;
     type_ = type;
 
@@ -38,7 +38,7 @@ void firebird_standard_use_type_backend::bind_by_pos(
     var->sqldata = buf_;
     var->sqlind = &indISCHolder_;
 
-	statement_.boundByPos_ = true;
+    statement_.boundByPos_ = true;
 }
 
 void firebird_standard_use_type_backend::bind_by_name(
@@ -51,7 +51,7 @@ void firebird_standard_use_type_backend::bind_by_name(
          "Binding for use elements must be either by position or by name.");
     }
 
-	std::map <std::string, int> :: iterator idx =
+    std::map <std::string, int> :: iterator idx =
         statement_.names_.find(name);
 
     if (idx == statement_.names_.end())
@@ -72,7 +72,7 @@ void firebird_standard_use_type_backend::bind_by_name(
     var->sqldata = buf_;
     var->sqlind = &indISCHolder_;
 
-	statement_.boundByName_ = true;
+    statement_.boundByName_ = true;
 }
 
 void firebird_standard_use_type_backend::pre_use(eIndicator const * ind)
@@ -186,7 +186,7 @@ void firebird_standard_use_type_backend::clean_up()
 {
     if (buf_ != NULL)
     {
-        delete[] buf_;
+        delete [] buf_;
         buf_ = NULL;
     }
 }

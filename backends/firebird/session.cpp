@@ -80,19 +80,29 @@ firebird_session_backend::firebird_session_backend(
 
     // preparing connection options
     if (getISCConnectParameter(params, "user", param))
+    {
         setDPBOption(isc_dpb_user_name, param);
+    }
 
     if (getISCConnectParameter(params, "password", param))
+    {
         setDPBOption(isc_dpb_password, param);
+    }
 
     if (getISCConnectParameter(params, "role", param))
+    {
         setDPBOption(isc_dpb_sql_role_name, param);
+    }
 
     if (getISCConnectParameter(params, "charset", param))
+    {
         setDPBOption(isc_dpb_lc_ctype, param);
+    }
 
-    if (!getISCConnectParameter(params, "service", param))
+    if (getISCConnectParameter(params, "service", param) == false)
+    {
         throw soci_error("Service name not specified.");
+    }
 
     // connecting data base
     if (isc_attach_database(stat, static_cast<short>(param.size()),
