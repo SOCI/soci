@@ -186,15 +186,15 @@ void oracle_session_backend::clean_up()
         OCISessionEnd(svchp_, errhp_, usrhp_, OCI_DEFAULT);
     }
 
-    if (usrhp_) OCIHandleFree(usrhp_, OCI_HTYPE_SESSION);
-    if (svchp_) OCIHandleFree(svchp_, OCI_HTYPE_SVCCTX);
+    if (usrhp_) { OCIHandleFree(usrhp_, OCI_HTYPE_SESSION); }
+    if (svchp_) { OCIHandleFree(svchp_, OCI_HTYPE_SVCCTX);  }
     if (srvhp_)
     {
         OCIServerDetach(srvhp_, errhp_, OCI_DEFAULT);
         OCIHandleFree(srvhp_, OCI_HTYPE_SERVER);
     }
-    if (errhp_) OCIHandleFree(errhp_, OCI_HTYPE_ERROR);
-    if (envhp_) OCIHandleFree(envhp_, OCI_HTYPE_ENV);
+    if (errhp_) { OCIHandleFree(errhp_, OCI_HTYPE_ERROR); }
+    if (envhp_) { OCIHandleFree(envhp_, OCI_HTYPE_ENV);   }
 }
 
 oracle_statement_backend * oracle_session_backend::make_statement_backend()

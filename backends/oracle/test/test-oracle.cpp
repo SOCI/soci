@@ -157,10 +157,10 @@ void test3()
 
 struct basic_table_creator : public table_creator_base
 {
-    basic_table_creator(session& session) 
+    basic_table_creator(session& session)
         : table_creator_base(session)
     {
-        session << 
+        session <<
                     "create table soci_test ("
                     "    id number(5) not null,"
                     "    name varchar2(100),"
@@ -232,16 +232,16 @@ void test5()
 // Stored procedures
 struct procedure_creator : procedure_creator_base
 {
-    procedure_creator(session& session) 
+    procedure_creator(session& session)
         : procedure_creator_base(session)
     {
-        session << 
+        session <<
              "create or replace procedure soci_test(output out varchar2,"
              "input in varchar2) as "
              "begin output := input; end;";
     }
 };
-  
+
 void test6()
 {
     {
@@ -285,27 +285,27 @@ private:
 
 namespace soci
 {
-    template<> 
+    template <>
     struct type_conversion<string_holder>
     {
         typedef std::string base_type;
-        static void from_base(const std::string &s, eIndicator /* ind */, 
-            string_holder &sh) 
-        { 
-            sh = string_holder(s); 
+        static void from_base(const std::string &s, eIndicator /* ind */,
+            string_holder &sh)
+        {
+            sh = string_holder(s);
         }
 
-        static void to_base(string_holder &sh, std::string &s, eIndicator &ind) 
-        { 
+        static void to_base(string_holder &sh, std::string &s, eIndicator &ind)
+        {
             s = sh.get();
-            ind = eOK; 
+            ind = eOK;
         }
     };
 }
 
 struct in_out_procedure_creator : public procedure_creator_base
 {
-    in_out_procedure_creator(session& session) 
+    in_out_procedure_creator(session& session)
         : procedure_creator_base(session)
     {
         session << "create or replace procedure soci_test(s in out varchar2)"
@@ -315,11 +315,11 @@ struct in_out_procedure_creator : public procedure_creator_base
 
 struct returns_null_procedure_creator : public procedure_creator_base
 {
-    returns_null_procedure_creator(session& session) 
+    returns_null_procedure_creator(session& session)
         : procedure_creator_base(session)
     {
         session << "create or replace procedure soci_test(s in out varchar2)"
-            " as begin s := NULL; end;"; 
+            " as begin s := NULL; end;";
     }
 };
 
@@ -343,7 +343,7 @@ void test7()
         assert(dynamicOut.get() == "my string");
     }
 
-    // test procedure with user-defined type as in-out parameter    
+    // test procedure with user-defined type as in-out parameter
     {
         in_out_procedure_creator procedureCreator(sql);
 
@@ -357,7 +357,7 @@ void test7()
     {
          returns_null_procedure_creator procedureCreator(sql);
 
-         string_holder sh;           
+         string_holder sh;
          eIndicator ind = eOK;
          procedure proc = (sql.prepare << "soci_test(:s)", use(sh, ind));
          proc.execute(1);
@@ -485,7 +485,7 @@ void test8()
                         into(ids_out, inds));
 
         // false return value means "no data"
-        assert(!st.execute(1));
+        assert(st.execute(1) == false);
 
         // that's it - nothing else is guaranteed
         // and nothing else is to be tested here
@@ -562,7 +562,7 @@ void test8()
         assert(ids_out.size() == 2 && ids_out[0] == 10 && ids_out[1] == 11);
         assert(st.fetch());
         assert(ids_out.size() == 1 && ids_out[0] == 12);
-        assert(!st.fetch());
+        assert(st.fetch() == false);
     }
 
     // verify resizing happens if vector is larger
@@ -598,7 +598,7 @@ void test8()
         assert(ids.size() == 1);
         assert(ids[0] == 14);
 
-        assert(!st3.fetch());
+        assert(st3.fetch() == false);
     }
 
     std::cout << "test 8 passed" << std::endl;
@@ -689,7 +689,7 @@ struct person
     int id;
     std::string firstName;
     string_holder lastName; //test mapping of type_conversion-based types
-    std::string gender; 
+    std::string gender;
 };
 
 // Object-Relational Mapping
@@ -724,10 +724,10 @@ namespace soci
     };
 }
 
-struct person_table_creator : public table_creator_base 
+struct person_table_creator : public table_creator_base
 {
-    person_table_creator(session& session) 
-        : table_creator_base(session) 
+    person_table_creator(session& session)
+        : table_creator_base(session)
     {
         session << "create table soci_test(id numeric(5,0) NOT NULL,"
              << " last_name varchar2(20), first_name varchar2(20), "
@@ -737,11 +737,11 @@ struct person_table_creator : public table_creator_base
 
 struct times100_procedure_creator : public procedure_creator_base
 {
-    times100_procedure_creator(session& session) 
+    times100_procedure_creator(session& session)
         : procedure_creator_base(session)
     {
         session << "create or replace procedure soci_test(id in out number)"
-               " as begin id := id * 100; end;"; 
+               " as begin id := id * 100; end;";
     }
 };
 
@@ -758,7 +758,7 @@ void test10()
         p.firstName = "Pat";
         sql << "insert into soci_test(id, first_name, last_name, gender) "
             << "values(:ID, :FIRST_NAME, :LAST_NAME, :GENDER)", use(p);
-    
+
         // p should be unchanged
         assert(p.id == 1);
         assert(p.firstName == "Pat");
@@ -779,7 +779,7 @@ void test10()
         assert(p.firstName == "Patricia");
         assert(p.lastName.get() == "Smith");
         // Note: gender is now "unknown" because of the mapping, not ""
-        assert(p.gender == "unknown"); 
+        assert(p.gender == "unknown");
 
         person p2;
         sql << "select * from soci_test", into(p2);
@@ -806,7 +806,7 @@ void test10()
         assert(st.fetch());
         assert(p4.id == 2);
         assert(p4.firstName == "Joe");
-        assert(!st.fetch());
+        assert(st.fetch() == false);
     }
 
     // test with stored procedure
@@ -832,7 +832,7 @@ void test10()
         person p;
         try
         {
-            procedure proc = (sql.prepare << "soci_test(:FIRST_NAME)", 
+            procedure proc = (sql.prepare << "soci_test(:FIRST_NAME)",
                                 use(p));
             proc.execute(1);
         }
@@ -843,10 +843,10 @@ void test10()
         assert(msg == "Column FIRST_NAME contains NULL value and"
                       " no default was provided");
 
-        procedure proc = (sql.prepare << "soci_test(:GENDER)", 
+        procedure proc = (sql.prepare << "soci_test(:GENDER)",
                                 use(p));
         proc.execute(1);
-        assert(p.gender == "unknown");        
+        assert(p.gender == "unknown");
 
     }
     std::cout << "test 10 passed" << std::endl;
@@ -936,9 +936,9 @@ void test11()
 struct long_table_creator : public table_creator_base
 {
     long_table_creator(session& session)
-        : table_creator_base(session) 
+        : table_creator_base(session)
     {
-        session << "create table soci_test(l long)"; 
+        session << "create table soci_test(l long)";
     }
 };
 
@@ -956,7 +956,7 @@ void test12()
     sql << "select l from soci_test", into(out);
 
     assert(out.size() == max);
-    assert(in == out);     
+    assert(in == out);
 
     std::cout << "test 12 passed" << std::endl;
 }
@@ -997,7 +997,7 @@ void test13()
 struct table_creator_one : public table_creator_base
 {
     table_creator_one(session& session)
-        : table_creator_base(session) 
+        : table_creator_base(session)
     {
         session << "create table soci_test(id number(10,0), val number(4,0), c char, "
                  "str varchar2(20), sh number, ul number, d number, "
@@ -1031,7 +1031,7 @@ public:
     test_context(backend_factory const &backEnd,
                 std::string const &connectString)
         : test_context_base(backEnd, connectString) {}
-    
+
     table_creator_base* table_creator_1(session& s) const
     {
         return new table_creator_one(s);
@@ -1052,7 +1052,7 @@ public:
         return "to_date('" + dateString + "', 'YYYY-MM-DD HH24:MI:SS')";
     }
 };
-    
+
 int main(int argc, char** argv)
 {
 #ifdef _MSC_VER
@@ -1083,8 +1083,8 @@ int main(int argc, char** argv)
         common_tests tests(tc);
         tests.run();
 
-        std::cout << "\nsoci Oracle tests:\n\n"; 
-     
+        std::cout << "\nsoci Oracle tests:\n\n";
+
         test1();
         test2();
         test3();
@@ -1098,7 +1098,7 @@ int main(int argc, char** argv)
         test11();
         test12();
         test13();
- 
+
         std::cout << "\nOK, all tests passed.\n\n";
     }
     catch (std::exception const & e)

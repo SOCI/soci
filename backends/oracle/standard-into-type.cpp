@@ -25,13 +25,13 @@ using namespace soci;
 using namespace soci::details;
 using namespace soci::details::oracle;
 
-oracle_standard_into_type_backend * 
+oracle_standard_into_type_backend *
 oracle_statement_backend::make_into_type_backend()
 {
     return new oracle_standard_into_type_backend(*this);
 }
 
-oracle_standard_use_type_backend * 
+oracle_standard_use_type_backend *
 oracle_statement_backend::make_use_type_backend()
 {
     return new oracle_standard_use_type_backend(*this);
@@ -179,7 +179,7 @@ void oracle_standard_into_type_backend::post_fetch(
         if (type_ == eXStdString)
         {
             if (indOCIHolder_ != -1)
-            { 
+            {
                 std::string *s = static_cast<std::string *>(data_);
                 *s = buf_;
             }
@@ -260,5 +260,3 @@ void oracle_standard_into_type_backend::clean_up()
         buf_ = NULL;
     }
 }
-
-

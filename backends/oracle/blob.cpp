@@ -110,4 +110,3 @@ void oracle_blob_backend::trim(std::size_t newLen)
         throw_oracle_soci_error(res, session_.errhp_);
     }
 }
-

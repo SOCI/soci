@@ -51,7 +51,7 @@ void oracle_statement_backend::clean_up()
     }
 
     boundByName_ = false;
-    boundByPos_ = false; 
+    boundByPos_ = false;
 }
 
 void oracle_statement_backend::prepare(std::string const &query,

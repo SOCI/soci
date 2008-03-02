@@ -38,4 +38,3 @@ oracle_rowid_backend::~oracle_rowid_backend()
 {
     OCIDescriptorFree(rowidp_, OCI_DTYPE_ROWID);
 }
-

@@ -101,7 +101,7 @@ void oracle_standard_use_type_backend::prepare_for_bind(
     case eXStdString:
         oracleType = SQLT_STR;
         // 4000 is Oracle max VARCHAR2 size; 32768 is max LONG size
-        size = 32769; 
+        size = 32769;
         buf_ = new char[size];
         data = buf_;
         break;
@@ -264,7 +264,7 @@ void oracle_standard_use_type_backend::pre_use(eIndicator const *ind)
         {
             std::string *s = static_cast<std::string *>(data_);
 
-            // 4000 is Oracle max VARCHAR2 size; 32768 is max LONG size 
+            // 4000 is Oracle max VARCHAR2 size; 32768 is max LONG size
             std::size_t const bufSize = 32769;
             std::size_t const sSize = s->size();
             std::size_t const toCopy =

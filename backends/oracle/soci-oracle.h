@@ -23,7 +23,7 @@
 # define SOCI_ORACLE_DECL
 #endif
 
-#include <soci-backend.h> 
+#include <soci-backend.h>
 #include <oci.h> // OCI
 #include <vector>
 
@@ -266,7 +266,7 @@ struct oracle_session_backend : details::session_backend
 struct oracle_backend_factory : backend_factory
 {
     virtual oracle_session_backend * make_session(
-			            std::string const &connectString) const;
+        std::string const &connectString) const;
 };
 
 SOCI_ORACLE_DECL extern oracle_backend_factory const oracle;
@@ -275,4 +275,3 @@ SOCI_ORACLE_DECL extern oracle_backend_factory const oracle;
 } // namespace soci
 
 #endif
-
