@@ -31,7 +31,7 @@ typedef HMODULE soci_handler_t;
 #define MUTEX_DEST(x) DeleteCriticalSection(x)
 #define DLOPEN(x) LoadLibrary(x)
 #define DLCLOSE(x) FreeLibrary(x)
-#define DLSYM(x,y) GetProcAddress(x, y)
+#define DLSYM(x, y) GetProcAddress(x, y)
 #define LIBNAME(x) ("libsoci_" + x + SOCI_LIBRARY_SUFFIX + ".dll")
 
 #else
@@ -48,7 +48,7 @@ typedef void * soci_handler_t;
 #define MUTEX_DEST(x) pthread_mutex_destroy(x)
 #define DLOPEN(x) dlopen(x, RTLD_LAZY)
 #define DLCLOSE(x) dlclose(x)
-#define DLSYM(x,y) dlsym(x,y)
+#define DLSYM(x, y) dlsym(x, y)
 #define LIBNAME(x) ("libsoci_" + x + SOCI_LIBRARY_SUFFIX + ".so")
 
 #endif // _WIN32
@@ -64,12 +64,12 @@ struct mutex_mgr
 {
     mutex_mgr()
     {
-	MUTEX_INIT(&mutex_);	
+        MUTEX_INIT(&mutex_);
     }
 
     ~mutex_mgr()
     {
-	MUTEX_DEST(&mutex_);
+        MUTEX_DEST(&mutex_);
     }
 } mutex_mgr_;
 
@@ -89,10 +89,10 @@ struct info
     info() : handler_(NULL), factory_(NULL) {}
     ~info()
     {
-	if (handler_ != NULL)
-	{
-	    DLCLOSE(handler_);
-	}
+        if (handler_ != NULL)
+        {
+            DLCLOSE(handler_);
+        }
     }
 };
 
@@ -106,14 +106,14 @@ void do_unload(string const & name)
 
     if (i != factories_.end())
     {
-	soci_handler_t h = i->second.handler_;
+        soci_handler_t h = i->second.handler_;
 
-	if (h != NULL)
-	{
-	    DLCLOSE(h);
-	}
+        if (h != NULL)
+        {
+            DLCLOSE(h);
+        }
 
-	factories_.erase(i);
+        factories_.erase(i);
     }
 }
 
@@ -124,9 +124,9 @@ void do_register_backend(
     std::string so = (shared_object.empty() ? LIBNAME(name) : shared_object);
 
     soci_handler_t h = DLOPEN(so.c_str());
-    if(h == NULL)
+    if (h == NULL)
     {
-	throw soci_error("Failed to open: " + so);
+        throw soci_error("Failed to open: " + so);
     }
 
     std::string symbol = "factory_" + name;
@@ -138,8 +138,8 @@ void do_register_backend(
 
     if (entry == NULL)
     {
-	DLCLOSE(h);
-	throw soci_error("Failed to resolve dynamic symbol: " + symbol);
+        DLCLOSE(h);
+        throw soci_error("Failed to resolve dynamic symbol: " + symbol);
     }
 
     // unload the existing handler if it's already loaded
@@ -165,7 +165,7 @@ backend_factory const & dynamic_backends::get(string const & name)
 
     if (i != factories_.end())
     {
-	return *(i->second.factory_);
+        return *(i->second.factory_);
     }
 
     // no backend found with this name, try to register it first
@@ -214,8 +214,8 @@ std::vector<std::string> dynamic_backends::list_all()
     factory_map::iterator i;
     for (i = factories_.begin(); i != factories_.end(); ++i)
     {
-	std::string const & name = i->first;
-	ret.push_back(name);
+        std::string const & name = i->first;
+        ret.push_back(name);
     }
 
     return ret;
@@ -236,12 +236,12 @@ void dynamic_backends::unload_all()
 
     for (i = factories_.begin(); i != factories_.end(); ++i)
     {
-	soci_handler_t h = i->second.handler_;
+        soci_handler_t h = i->second.handler_;
 
-	if (h != NULL)
-	{
-	    DLCLOSE(h);
-	}
+        if (h != NULL)
+        {
+            DLCLOSE(h);
+        }
     }
 
     factories_.clear();

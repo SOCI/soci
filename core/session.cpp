@@ -29,7 +29,7 @@ void parseConnectString(std::string const & connectString,
     std::string::size_type const p = connectString.find(protocolSeparator);
     if (p == std::string::npos)
     {
-	throw soci_error("No backend name found in " + connectString);
+        throw soci_error("No backend name found in " + connectString);
     }
 
     backendName = connectString.substr(0, p);

@@ -302,33 +302,33 @@ void test6()
 {
     try
     {
-	session sql("nosuchbackend://" + connectString);
-	assert(false);
+        session sql("nosuchbackend://" + connectString);
+        assert(false);
     }
     catch (soci_error const & e)
     {
-	assert(e.what() == std::string("Failed to open: libsoci_nosuchbackend.so"));
+        assert(e.what() == std::string("Failed to open: libsoci_nosuchbackend.so"));
     }
 
     {
-	dynamic_backends::register_backend("pgsql", backEnd);
+        dynamic_backends::register_backend("pgsql", backEnd);
 
-	std::vector<std::string> backends = dynamic_backends::list_all();
-	assert(backends.size() == 1);
-	assert(backends[0] == "pgsql");
+        std::vector<std::string> backends = dynamic_backends::list_all();
+        assert(backends.size() == 1);
+        assert(backends[0] == "pgsql");
 
-	{
-	    session sql("pgsql://" + connectString);
-	}
+        {
+            session sql("pgsql://" + connectString);
+        }
 
-	dynamic_backends::unload("pgsql");
+        dynamic_backends::unload("pgsql");
 
-	backends = dynamic_backends::list_all();
-	assert(backends.empty());
+        backends = dynamic_backends::list_all();
+        assert(backends.empty());
     }
 
     {
-	session sql("postgresql://" + connectString);
+        session sql("postgresql://" + connectString);
     }
 }
 
@@ -437,7 +437,7 @@ int main(int argc, char** argv)
         test3();
         test4();
         test5();
-//	test6();
+//         test6();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;
