@@ -19,7 +19,7 @@ namespace details
 {
 
 // this class is a base for both "once" and "prepare" statements
-class ref_counted_statement_base
+class SOCI_DECL ref_counted_statement_base
 {
 public:
     ref_counted_statement_base(session &s) : refCount_(1), session_(s) {}
