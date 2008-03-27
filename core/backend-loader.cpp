@@ -57,6 +57,16 @@ typedef void * soci_handler_t;
 namespace // unnamed
 {
 
+struct info
+{
+    soci_handler_t handler_;
+    backend_factory const * factory_;
+    info() : handler_(NULL), factory_(NULL) {}
+};
+
+typedef map<string, info> factory_map;
+factory_map factories_;
+
 soci_mutex_t mutex_;
 
 // used to automatically initialize the mutex above
@@ -69,6 +79,8 @@ struct mutex_mgr
 
     ~mutex_mgr()
     {
+        unload_all();
+
         MUTEX_DEST(&mutex_);
     }
 } mutex_mgr_;
@@ -82,23 +94,6 @@ private:
     soci_mutex_t * mptr;
 };
 
-struct info
-{
-    soci_handler_t handler_;
-    backend_factory const * factory_;
-    info() : handler_(NULL), factory_(NULL) {}
-    ~info()
-    {
-        if (handler_ != NULL)
-        {
-            DLCLOSE(handler_);
-        }
-    }
-};
-
-typedef map<string, info> factory_map;
-factory_map factories_;
-
 // non-synchronized helper for the other functions
 void do_unload(string const & name)
 {
@@ -107,7 +102,6 @@ void do_unload(string const & name)
     if (i != factories_.end())
     {
         soci_handler_t h = i->second.handler_;
-
         if (h != NULL)
         {
             DLCLOSE(h);
@@ -233,11 +227,9 @@ void dynamic_backends::unload_all()
     scoped_lock lock(&mutex_);
 
     factory_map::iterator i;
-
     for (i = factories_.begin(); i != factories_.end(); ++i)
     {
         soci_handler_t h = i->second.handler_;
-
         if (h != NULL)
         {
             DLCLOSE(h);
