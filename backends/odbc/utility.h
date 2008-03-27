@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef UTILITY_H_INCLUDED
-#define UTILITY_H_INCLUDED
+#ifndef SOCI_UTILITY_H_INCLUDED
+#define SOCI_UTILITY_H_INCLUDED
 
 #include "soci-backend.h"
 #include <sstream>
@@ -59,4 +59,4 @@ inline bool is_odbc_error(SQLRETURN rc)
 
 }
 
-#endif
+#endif // SOCI_UTILITY_H_INCLUDED

@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef VALUES_EXCHANGE_H_INCLUDED
-#define VALUES_EXCHANGE_H_INCLUDED
+#ifndef SOCI_VALUES_EXCHANGE_H_INCLUDED
+#define SOCI_VALUES_EXCHANGE_H_INCLUDED
 
 #include "values.h"
 #include "into-type.h"
@@ -85,4 +85,4 @@ private:
 
 } // namespace soci
 
-#endif // VALUES_EXCHANGE_H_INCLUDED
+#endif // SOCI_VALUES_EXCHANGE_H_INCLUDED

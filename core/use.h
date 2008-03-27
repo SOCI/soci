@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef USE_H_INCLUDED
-#define USE_H_INCLUDED
+#ifndef SOCI_USE_H_INCLUDED
+#define SOCI_USE_H_INCLUDED
 
 #include "use-type.h"
 #include "exchange-traits.h"
@@ -59,4 +59,4 @@ details::use_type_ptr use(T &t, std::size_t bufSize,
 
 } // namespace soci
 
-#endif // USE_H_INCLUDED
+#endif // SOCI_USE_H_INCLUDED

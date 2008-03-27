@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MYSQL_COMMON_H_INCLUDED
-#define MYSQL_COMMON_H_INCLUDED
+#ifndef SOCI_MYSQL_COMMON_H_INCLUDED
+#define SOCI_MYSQL_COMMON_H_INCLUDED
 
 #include "soci-mysql.h"
 
@@ -39,4 +39,4 @@ std::size_t get_vector_size(void *p)
 
 } // namespace soci
 
-#endif // MYSQL_COMMON_H_INCLUDED
+#endif // SOCI_MYSQL_COMMON_H_INCLUDED

@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef FIREBIRD_ERROR_H_INCLUDED
-#define FIREBIRD_ERROR_H_INCLUDED
+#ifndef SOCI_FIREBIRD_ERROR_H_INCLUDED
+#define SOCI_FIREBIRD_ERROR_H_INCLUDED
 
 #include "soci-firebird.h"
 #include <string>
@@ -32,4 +32,4 @@ void SOCI_FIREBIRD_DECL throwISCError(ISC_STATUS * status_vector);
 
 } // namespace soci
 
-#endif // FIREBIRD_ERROR_H_INCLUDED
+#endif // SOCI_FIREBIRD_ERROR_H_INCLUDED

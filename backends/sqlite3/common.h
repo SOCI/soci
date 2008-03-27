@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef SQLITE3_COMMON_H_INCLUDED
-#define SQLITE3_COMMON_H_INCLUDED
+#ifndef SOCI_SQLITE3_COMMON_H_INCLUDED
+#define SOCI_SQLITE3_COMMON_H_INCLUDED
 
 #include <vector>
 
@@ -43,4 +43,4 @@ void resizeVector(void *p, std::size_t sz)
 
 } // namespace SOCI
 
-#endif // SQLITE3_COMMON_H_INCLUDED
+#endif // SOCI_SQLITE3_COMMON_H_INCLUDED

@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef BLOB_EXCHANGE_H_INCLUDED
-#define BLOB_EXCHANGE_H_INCLUDED
+#ifndef SOCI_BLOB_EXCHANGE_H_INCLUDED
+#define SOCI_BLOB_EXCHANGE_H_INCLUDED
 
 #include "blob.h"
 #include "into-type.h"
@@ -53,4 +53,4 @@ struct exchange_traits<soci::blob>
 
 } // namespace soci
 
-#endif // BLOB_EXCHANGE_H_INCLUDED
+#endif // SOCI_BLOB_EXCHANGE_H_INCLUDED

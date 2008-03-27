@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef ERROR_H_INCLUDED
-#define ERROR_H_INCLUDED
+#ifndef SOCI_ERROR_H_INCLUDED
+#define SOCI_ERROR_H_INCLUDED
 
 #include "soci-config.h"
 
@@ -24,4 +24,4 @@ public:
 
 } // namespace soci
 
-#endif // ERROR_H_INCLUDED
+#endif // SOCI_ERROR_H_INCLUDED

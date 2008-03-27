@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef TRANSACTION_H_INCLUDED
-#define TRANSACTION_H_INCLUDED
+#ifndef SOCI_TRANSACTION_H_INCLUDED
+#define SOCI_TRANSACTION_H_INCLUDED
 
 #include "session.h"
 #include "soci-config.h"
@@ -33,4 +33,4 @@ private:
 
 } // namespace soci
 
-#endif // TRANSACTION_H_INCLUDED
+#endif // SOCI_TRANSACTION_H_INCLUDED

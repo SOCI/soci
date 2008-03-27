@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef FIREBIRD_COMMON_H_INCLUDED
-#define FIREBIRD_COMMON_H_INCLUDED
+#ifndef SOCI_FIREBIRD_COMMON_H_INCLUDED
+#define SOCI_FIREBIRD_COMMON_H_INCLUDED
 
 #include "soci-firebird.h"
 #include <cstdlib>
@@ -145,4 +145,4 @@ void resizeVector(void *p, std::size_t sz)
 
 } // namespace soci
 
-#endif // FIREBIRD_COMMON_H_INCLUDED
+#endif // SOCI_FIREBIRD_COMMON_H_INCLUDED

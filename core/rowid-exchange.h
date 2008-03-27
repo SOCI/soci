@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef ROWID_EXCHANGE_H_INCLUDED
-#define ROWID_EXCHANGE_H_INCLUDED
+#ifndef SOCI_ROWID_EXCHANGE_H_INCLUDED
+#define SOCI_ROWID_EXCHANGE_H_INCLUDED
 
 #include "rowid.h"
 #include "into-type.h"
@@ -54,4 +54,4 @@ struct exchange_traits<soci::rowid>
 
 } // namespace soci
 
-#endif // ROWID_EXCHANGE_H_INCLUDED
+#endif // SOCI_ROWID_EXCHANGE_H_INCLUDED

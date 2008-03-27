@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef BOOST_TUPLE_H_INCLUDED
-#define BOOST_TUPLE_H_INCLUDED
+#ifndef SOCI_BOOST_TUPLE_H_INCLUDED
+#define SOCI_BOOST_TUPLE_H_INCLUDED
 
 #include "values.h"
 #include "type-conversion-traits.h"
@@ -258,4 +258,4 @@ struct type_conversion<boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> >
 
 } // namespace soci
 
-#endif // BOOST_OPTIONAL_H_INCLUDED
+#endif // SOCI_BOOST_OPTIONAL_H_INCLUDED

@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef INTO_H_INCLUDED
-#define INTO_H_INCLUDED
+#ifndef SOCI_INTO_H_INCLUDED
+#define SOCI_INTO_H_INCLUDED
 
 #include "into-type.h"
 #include "exchange-traits.h"
@@ -49,4 +49,4 @@ details::into_type_ptr into(T &t, std::size_t bufSize)
 
 } // namespace soci
 
-#endif // INTO_H_INCLUDED
+#endif // SOCI_INTO_H_INCLUDED

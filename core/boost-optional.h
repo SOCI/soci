@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef BOOST_OPTIONAL_H_INCLUDED
-#define BOOST_OPTIONAL_H_INCLUDED
+#ifndef SOCI_BOOST_OPTIONAL_H_INCLUDED
+#define SOCI_BOOST_OPTIONAL_H_INCLUDED
 
 #include "type-conversion-traits.h"
 
@@ -52,4 +52,4 @@ struct type_conversion<boost::optional<T> >
 
 } // namespace soci
 
-#endif // BOOST_OPTIONAL_H_INCLUDED
+#endif // SOCI_BOOST_OPTIONAL_H_INCLUDED

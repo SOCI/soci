@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef COMMON_TESTS_H_INCLUDED
-#define COMMON_TESTS_H_INCLUDED
+#ifndef SOCI_COMMON_TESTS_H_INCLUDED
+#define SOCI_COMMON_TESTS_H_INCLUDED
 
 #include "soci.h"
 #include "soci-config.h"
@@ -3125,4 +3125,4 @@ void test28()
 
 } // namespace soci
 
-#endif // COMMON_TESTS_H_INCLUDED
+#endif // SOCI_COMMON_TESTS_H_INCLUDED

@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef EXCHANGE_TRAITS_H_INCLUDED
-#define EXCHANGE_TRAITS_H_INCLUDED
+#ifndef SOCI_EXCHANGE_TRAITS_H_INCLUDED
+#define SOCI_EXCHANGE_TRAITS_H_INCLUDED
 
 #include "type-conversion-traits.h"
 #include "soci-backend.h"
@@ -115,4 +115,4 @@ struct exchange_traits<std::vector<T> >
 
 } // namespace soci
 
-#endif // EXCHANGE_TRAITS_H_INCLUDED
+#endif // SOCI_EXCHANGE_TRAITS_H_INCLUDED

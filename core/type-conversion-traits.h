@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef TYPE_CONVERSION_TRAITS_H_INCLUDED
-#define TYPE_CONVERSION_TRAITS_H_INCLUDED
+#ifndef SOCI_TYPE_CONVERSION_TRAITS_H_INCLUDED
+#define SOCI_TYPE_CONVERSION_TRAITS_H_INCLUDED
 
 #include "soci-backend.h"
 
@@ -38,4 +38,4 @@ struct type_conversion
 
 } // namespace soci
 
-#endif // TYPE_CONVERSION_TRAITS_H_INCLUDED
+#endif // SOCI_TYPE_CONVERSION_TRAITS_H_INCLUDED

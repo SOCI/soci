@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef POSTGRESQL_COMMON_H_INCLUDED
-#define POSTGRESQL_COMMON_H_INCLUDED
+#ifndef SOCI_POSTGRESQL_COMMON_H_INCLUDED
+#define SOCI_POSTGRESQL_COMMON_H_INCLUDED
 
 #include "soci-postgresql.h"
 
@@ -36,4 +36,4 @@ std::size_t get_vector_size(void *p)
 
 } // namespace soci
 
-#endif // POSTGRESQL_COMMON_H_INCLUDED
+#endif // SOCI_POSTGRESQL_COMMON_H_INCLUDED
