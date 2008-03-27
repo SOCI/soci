@@ -242,14 +242,6 @@ struct odbc_session_backend : details::session_backend
     SQLHDBC hdbc_;
 };
 
-struct odbc_backend_factory : backend_factory
-{
-    virtual odbc_session_backend * make_session(
-        std::string const &connectString) const;
-};
-
-SOCI_ODBC_DECL extern odbc_backend_factory const odbc;
-
 class SOCI_ODBC_DECL odbc_soci_error : public soci_error
 {
     SQLCHAR message_[SQL_MAX_MESSAGE_LENGTH + 1];
@@ -300,7 +292,22 @@ inline bool is_odbc_error(SQLRETURN rc)
     }
 }
 
-} // namespace SOCI
+struct odbc_backend_factory : backend_factory
+{
+    virtual odbc_session_backend * make_session(
+        std::string const &connectString) const;
+};
 
+extern SOCI_ODBC_DECL odbc_backend_factory const odbc;
+
+extern "C"
+{
+
+// for dynamic backend loading
+SOCI_ODBC_DECL backend_factory const * factory_odbc();
+
+} // extern "C"
+
+} // namespace SOCI
 
 #endif // SOCI_EMPTY_H_INCLUDED

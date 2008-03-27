@@ -19,7 +19,7 @@ OBJECTSSO = blob-s.o factory-s.o row-id-s.o session-s.o \
 	vector-into-type-s.o vector-use-type-s.o
 
 
-libsoci-odbc.a : ${OBJECTS}
+libsoci_odbc.a : ${OBJECTS}
 	ar rv $@ $?
 	ranlib $@
 	rm *.o
@@ -54,7 +54,7 @@ vector-use-type.o : vector-use-type.cpp
 
 
 shared : ${OBJECTSSO}
-	${COMPILER} -shared -o libsoci-odbc.so ${OBJECTSSO}
+	${COMPILER} -shared -o libsoci_odbc.so ${OBJECTSSO}
 	rm *.o
 
 blob-s.o : blob.cpp
@@ -86,4 +86,4 @@ vector-use-type-s.o : vector-use-type.cpp
 
 
 clean :
-	rm -f libsoci-odbc.a libsoci-odbc.so
+	rm -f libsoci_odbc.a libsoci_odbc.so

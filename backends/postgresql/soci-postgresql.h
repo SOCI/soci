@@ -243,7 +243,15 @@ struct postgresql_backend_factory : backend_factory
         std::string const &connectString) const;
 };
 
-SOCI_POSTGRESQL_DECL extern postgresql_backend_factory const postgresql;
+extern SOCI_POSTGRESQL_DECL postgresql_backend_factory const postgresql;
+
+extern "C"
+{
+
+// for dynamic backend loading
+SOCI_POSTGRESQL_DECL backend_factory const * factory_postgresql();
+
+} // extern "C"
 
 } // namespace soci
 

@@ -18,7 +18,7 @@ OBJECTSSO = blob-s.o factory-s.o row-id-s.o session-s.o \
 	standard-into-type-s.o standard-use-type-s.o statement-s.o \
 	vector-into-type-s.o vector-use-type-s.o error-s.o common-s.o
 
-libsoci-firebird.a : ${OBJECTS}
+libsoci_firebird.a : ${OBJECTS}
 	ar rv $@ $?
 	rm *.o
 
@@ -59,7 +59,7 @@ vector-use-type.o : vector-use-type.cpp
 	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 shared : ${OBJECTSSO}
-	${COMPILER} -shared -o libsoci-firebird.so ${OBJECTSSO}
+	${COMPILER} -shared -o libsoci_firebird.so ${OBJECTSSO}
 	rm *.o
 
 blob-s.o : blob.cpp
@@ -96,4 +96,4 @@ vector-use-type-s.o : vector-use-type.cpp
 	${COMPILER} -c -o $@ $? ${CXXFLAGSSO} ${INCLUDEDIRS}
 
 clean :
-	rm -f *.o libsoci-firebird.a libsoci-firebird.so
+	rm -f *.o libsoci_firebird.a libsoci_firebird.so

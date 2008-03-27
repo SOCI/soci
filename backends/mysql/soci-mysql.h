@@ -247,7 +247,15 @@ struct mysql_backend_factory : backend_factory
         std::string const &connectString) const;
 };
 
-SOCI_MYSQL_DECL extern mysql_backend_factory const mysql;
+extern SOCI_MYSQL_DECL mysql_backend_factory const mysql;
+
+extern "C"
+{
+
+// for dynamic backend loading
+SOCI_MYSQL_DECL backend_factory const * factory_mysql();
+
+} // extern "C"
 
 } // namespace SOCI
 

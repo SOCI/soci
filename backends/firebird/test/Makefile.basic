@@ -11,7 +11,7 @@ COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
 INCLUDEDIRS = -I.. -I../../../core ${FIREBIRDINCLUDEDIR}
 LIBDIRS = -L.. -L../../../core ${FIREBIRDLIBDIR}
-LIBS = -lsoci-core -lsoci-firebird ${FIREBIRDLIBS}
+LIBS = -lsoci_core -lsoci_firebird ${FIREBIRDLIBS}
 
 
 test-firebird : test-firebird.cpp

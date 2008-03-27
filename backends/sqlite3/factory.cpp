@@ -23,4 +23,15 @@ sqlite3_session_backend * sqlite3_backend_factory::make_session(
      return new sqlite3_session_backend(connectString);
 }
 
-SOCI_SQLITE3_DECL sqlite3_backend_factory const soci::sqlite3;
+sqlite3_backend_factory const soci::sqlite3;
+
+extern "C"
+{
+
+// for dynamic backend loading
+SOCI_SQLITE3_DECL backend_factory const * factory_sqlite3()
+{
+    return &soci::sqlite3;
+}
+
+} // extern "C"

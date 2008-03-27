@@ -34,3 +34,14 @@ postgresql_session_backend * postgresql_backend_factory::make_session(
 }
 
 postgresql_backend_factory const soci::postgresql;
+
+extern "C"
+{
+
+// for dynamic backend loading
+SOCI_POSTGRESQL_DECL backend_factory const * factory_postgresql()
+{
+    return &soci::postgresql;
+}
+
+} // extern "C"

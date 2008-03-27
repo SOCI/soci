@@ -17,3 +17,14 @@ firebird_session_backend * firebird_backend_factory::make_session(
 }
 
 firebird_backend_factory const soci::firebird;
+
+extern "C"
+{
+
+// for dynamic backend loading
+SOCI_EMPTY_DECL backend_factory const * factory_firebird()
+{
+    return &soci::firebird;
+}
+
+} // extern "C"

@@ -8,12 +8,11 @@
 #ifndef SOCI_H_INCLUDED
 #define SOCI_H_INCLUDED
 
-#define SOCI_SOURCE
-
 #ifdef _MSC_VER
 #pragma warning(disable:4251 4512 4511)
 #endif
 
+#include "backend-loader.h"
 #include "blob.h"
 #include "blob-exchange.h"
 #include "boost-optional.h"

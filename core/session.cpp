@@ -8,6 +8,7 @@
 #define SOCI_SOURCE
 #include "session.h"
 #include "soci-backend.h"
+#include "backend-loader.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -18,6 +19,22 @@ using namespace soci::details;
 
 namespace // anonymous
 {
+
+void parseConnectString(std::string const & connectString,
+    std::string & backendName,
+    std::string & connectionParameters)
+{
+    std::string const protocolSeparator = "://";
+
+    std::string::size_type const p = connectString.find(protocolSeparator);
+    if (p == std::string::npos)
+    {
+	throw soci_error("No backend name found in " + connectString);
+    }
+
+    backendName = connectString.substr(0, p);
+    connectionParameters = connectString.substr(p + protocolSeparator.size());
+}
 
 void ensureConnected(session_backend *backEnd)
 {
@@ -35,12 +52,28 @@ session::session()
 {
 }
 
-session::session(backend_factory const &factory,
+session::session(backend_factory const & factory,
     std::string const & connectString)
     : once(this), prepare(this), logStream_(NULL),
       lastFactory_(&factory), lastConnectString_(connectString)
 {
     backEnd_ = factory.make_session(connectString);
+}
+
+session::session(std::string const & connectString)
+    : once(this), prepare(this), logStream_(NULL)
+{
+    std::string backendName;
+    std::string connectionParameters;
+
+    parseConnectString(connectString, backendName, connectionParameters);
+
+    backend_factory const & factory = dynamic_backends::get(backendName);
+
+    lastFactory_ = &factory;
+    lastConnectString_ = connectionParameters;
+
+    backEnd_ = factory.make_session(connectionParameters);
 }
 
 session::~session()
@@ -59,6 +92,25 @@ void session::open(backend_factory const &factory,
     backEnd_ = factory.make_session(connectString);
     lastFactory_ = &factory;
     lastConnectString_ = connectString;
+}
+
+void session::open(std::string const & connectString)
+{
+    if (backEnd_ != NULL)
+    {
+        throw soci_error("Cannot open already connected session.");
+    }
+
+    std::string backendName;
+    std::string connectionParameters;
+
+    parseConnectString(connectString, backendName, connectionParameters);
+
+    backend_factory const & factory = dynamic_backends::get(backendName);
+
+    backEnd_ = factory.make_session(connectionParameters);
+    lastFactory_ = &factory;
+    lastConnectString_ = connectionParameters;
 }
 
 void session::close()

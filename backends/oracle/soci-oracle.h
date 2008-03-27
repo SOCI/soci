@@ -269,8 +269,15 @@ struct oracle_backend_factory : backend_factory
         std::string const &connectString) const;
 };
 
-SOCI_ORACLE_DECL extern oracle_backend_factory const oracle;
+extern SOCI_ORACLE_DECL oracle_backend_factory const oracle;
 
+extern "C"
+{
+
+// for dynamic backend loading
+SOCI_ORACLE_DECL backend_factory const * factory_oracle();
+
+} // extern "C"
 
 } // namespace soci
 

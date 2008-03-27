@@ -71,3 +71,14 @@ oracle_session_backend * oracle_backend_factory::make_session(
 }
 
 oracle_backend_factory const soci::oracle;
+
+extern "C"
+{
+
+// for dynamic backend loading
+SOCI_ORACLE_DECL backend_factory const * factory_oracle()
+{
+    return &soci::oracle;
+}
+
+} // extern "C"

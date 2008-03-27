@@ -20,7 +20,7 @@ OBJECTSSO = blob-s.o factory-s.o row-id-s.o session-s.o \
 	vector-into-type-s.o vector-use-type-s.o common-s.o
 
 
-libsoci-postgresql.a : ${OBJECTS}
+libsoci_postgresql.a : ${OBJECTS}
 	ar rv $@ $?
 	rm *.o
 
@@ -57,7 +57,7 @@ vector-use-type.o : vector-use-type.cpp
 
 
 shared : ${OBJECTSSO}
-	${COMPILER} -shared -o libsoci-postgresql.so ${OBJECTSSO}
+	${COMPILER} -shared -o libsoci_postgresql.so ${OBJECTSSO}
 	rm *.o
 
 blob-s.o : blob.cpp
@@ -92,4 +92,4 @@ vector-use-type-s.o : vector-use-type.cpp
 
 
 clean :
-	rm -f libsoci-postgresql.a libsoci-postgresql.so
+	rm -f libsoci_postgresql.a libsoci_postgresql.so

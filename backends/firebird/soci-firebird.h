@@ -316,7 +316,15 @@ struct firebird_backend_factory : backend_factory
         std::string const &connectString) const;
 };
 
-SOCI_FIREBIRD_DECL extern firebird_backend_factory const firebird;
+extern SOCI_FIREBIRD_DECL firebird_backend_factory const firebird;
+
+extern "C"
+{
+
+// for dynamic backend loading
+SOCI_FIREBIRD_DECL backend_factory const * factory_firebird();
+
+} // extern "C"
 
 } // namespace soci
 

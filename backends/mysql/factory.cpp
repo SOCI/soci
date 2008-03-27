@@ -26,3 +26,14 @@ mysql_session_backend * mysql_backend_factory::make_session(
 }
 
 mysql_backend_factory const soci::mysql;
+
+extern "C"
+{
+
+// for dynamic backend loading
+SOCI_MYSQL_DECL backend_factory const * factory_mysql()
+{
+    return &soci::mysql;
+}
+
+} // extern "C"

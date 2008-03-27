@@ -24,3 +24,14 @@ empty_session_backend * empty_backend_factory::make_session(
 }
 
 empty_backend_factory const soci::empty;
+
+extern "C"
+{
+
+// for dynamic backend loading
+SOCI_EMPTY_DECL backend_factory const * factory_empty()
+{
+    return &soci::empty;
+}
+
+} // extern "C"

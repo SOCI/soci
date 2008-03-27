@@ -23,7 +23,7 @@ OBJECTSSO = blob-s.o factory-s.o row-id-s.o session-s.o \
 	vector-into-type-s.o vector-use-type-s.o common-s.o
 
 
-libsoci-mysql.a : ${OBJECTS}
+libsoci_mysql.a : ${OBJECTS}
 	ar rv $@ $?
 	rm *.o
 
@@ -59,7 +59,7 @@ vector-use-type.o : vector-use-type.cpp
 	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 shared : ${OBJECTSSO}
-	${COMPILER} -shared -o libsoci-mysql.so ${OBJECTSSO}
+	${COMPILER} -shared -o libsoci_mysql.so ${OBJECTSSO}
 	rm *.o
 
 blob-s.o : blob.cpp
@@ -94,4 +94,4 @@ vector-use-type-s.o : vector-use-type.cpp
 
 
 clean :
-	rm -f libsoci-mysql.a libsoci-mysql.so
+	rm -f libsoci_mysql.a libsoci_mysql.so

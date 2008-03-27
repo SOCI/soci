@@ -12,7 +12,7 @@ COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
 INCLUDEDIRS = -I.. -I../../../core -I../../../core/test ${SQLITE3INCLUDEDIR} ${BOOSTINCLUDEDIR}
 LIBDIRS = -L.. -L../../../core ${SQLITE3LIBDIR}
-LIBS = -lsoci-core -lsoci-sqlite3 ${SQLITE3LIBS}
+LIBS = -lsoci_core -lsoci_sqlite3 ${SQLITE3LIBS}
 
 
 test-sqlite3 : test-sqlite3.cpp

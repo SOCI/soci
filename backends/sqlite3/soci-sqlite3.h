@@ -247,7 +247,15 @@ struct sqlite3_backend_factory : backend_factory
         std::string const &connectString) const;
 };
 
-SOCI_SQLITE3_DECL extern sqlite3_backend_factory const sqlite3;
+extern SOCI_SQLITE3_DECL sqlite3_backend_factory const sqlite3;
+
+extern "C"
+{
+
+// for dynamic backend loading
+SOCI_SQLITE3_DECL backend_factory const * factory_sqlite3();
+
+} // extern "C"
 
 } // namespace SOCI
 

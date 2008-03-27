@@ -178,7 +178,15 @@ struct SOCI_EMPTY_DECL empty_backend_factory : backend_factory
         std::string const &connectString) const;
 };
 
-SOCI_EMPTY_DECL extern empty_backend_factory const empty;
+extern SOCI_EMPTY_DECL empty_backend_factory const empty;
+
+extern "C"
+{
+
+// for dynamic backend loading
+SOCI_EMPTY_DECL backend_factory const * factory_empty();
+
+} // extern "C"
 
 } // namespace soci
 

@@ -20,3 +20,14 @@ odbc_session_backend * odbc_backend_factory::make_session(
 }
 
 odbc_backend_factory const soci::odbc;
+
+extern "C"
+{
+
+// for dynamic backend loading
+SOCI_ODBC_DECL backend_factory const * factory_odbc()
+{
+    return &soci::odbc;
+}
+
+} // extern "C"

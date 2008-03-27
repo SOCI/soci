@@ -15,7 +15,7 @@ COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
 INCLUDEDIRS = -I.. -I../../../core/test -I../../../core ${PGSQLINCLUDEDIR} ${BOOSTINCLUDEDIR}
 LIBDIRS = -L.. -L../../../core ${PGSQLLIBDIR}
-LIBS = -lsoci-core -lsoci-postgresql ${PGSQLLIBS}
+LIBS = -lsoci_core -lsoci_postgresql ${PGSQLLIBS}
 
 
 test-postgresql : test-postgresql.cpp
