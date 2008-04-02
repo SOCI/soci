@@ -258,6 +258,14 @@ void statement_impl::undefine_and_bind()
 bool statement_impl::execute(bool withDataExchange)
 {
     initialFetchSize_ = intos_size();
+
+    if (intos_.empty() == false && initialFetchSize_ == 0)
+    {
+        // this can happen only with into-vectors elements
+        // and is not allowed when calling execute
+        throw soci_error("Vectors of size 0 are not allowed.");
+    }
+
     fetchSize_ = initialFetchSize_;
 
     std::size_t bindSize = uses_size();
@@ -411,11 +419,6 @@ std::size_t statement_impl::intos_size()
         if (i==0)
         {
             intos_size = intos_[i]->size();
-            if (intos_size == 0)
-            {
-                 // this can happen only for vectors
-                 throw soci_error("Vectors of size 0 are not allowed.");
-            }
         }
         else if (intos_size != intos_[i]->size())
         {

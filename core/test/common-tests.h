@@ -1015,6 +1015,14 @@ void test4()
             // for convenience, vectors should be truncated
             assert(vals.empty());
             assert(inds.empty());
+
+            // for even more convenience, fetch should not fail
+            // but just report end of rowset
+            
+            const bool fetched = st.fetch();
+            assert(fetched == false);
+            assert(vals.empty());
+            assert(inds.empty());
         }
 
         // additional test for "no data" without prepared statement
