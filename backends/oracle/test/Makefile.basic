@@ -5,17 +5,13 @@ ORACLEINCLUDEDIR = -I/u01/oracle/product/10.1.0/rdbms/public
 ORACLELIBDIR = -L/u01/oracle/product/10.1.0/lib 
 ORACLELIBS = -lclntsh 
 
-# This defines dependency on Boost library.
-
-BOOSTINCLUDEDIR = -I/usr/include/boost
-
 # The rest of the Makefile is indepentent of the target environment.
 
 COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
-INCLUDEDIRS = -I.. -I../../../core -I../../../core/test ${ORACLEINCLUDEDIR} ${BOOSTINCLUDEDIR}
+INCLUDEDIRS = -I.. -I../../../core -I../../../core/test ${ORACLEINCLUDEDIR}
 LIBDIRS = -L.. -L../../../core ${ORACLELIBDIR}
-LIBS = -lsoci_core -lsoci_oracle ${ORACLELIBS}
+LIBS = -lsoci_core -lsoci_oracle -ldl ${ORACLELIBS}
 
 
 test-oracle : test-oracle.cpp 
