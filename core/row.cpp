@@ -25,6 +25,11 @@ void row::add_properties(column_properties const &cp)
         {
             columnName.push_back(std::toupper(originalName[i]));
         }
+
+        // rewrite the column name in the column_properties object
+        // as well to retain consistent views
+
+	columns_[columns_.size() - 1].set_name(columnName);
     }
     else
     {

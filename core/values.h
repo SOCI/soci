@@ -44,7 +44,7 @@ class SOCI_DECL values
 
 public:
 
-    values() : row_(NULL) {}
+    values() : row_(NULL), uppercaseColumnNames_(false) {}
 
     eIndicator indicator(std::size_t pos) const;
     eIndicator indicator(std::string const &name) const;
@@ -121,6 +121,9 @@ public:
         uses_.push_back(new details::use_type<T>(pcopy->value_, *pind, name));
     }
 
+    void uppercase_column_names(bool forceToUpper)
+    { uppercaseColumnNames_ = forceToUpper; }
+
 private:
 
     //TODO To make values generally usable outside of TypeConversionS,
@@ -131,6 +134,8 @@ private:
     std::vector<eIndicator*> indicators_;
     std::map<std::string, size_t> index_;
     std::vector<details::copy_base *> deepCopies_;
+
+    bool uppercaseColumnNames_;
 
     // When TypeConversion::to() is called, a values object is created
     // without an underlying row object.  In that case, get_from_uses()
@@ -206,6 +211,8 @@ private:
     row& get_row()
     {
         row_ = new row();
+        row_->uppercase_column_names(uppercaseColumnNames_);
+
         return *row_;
     }
     

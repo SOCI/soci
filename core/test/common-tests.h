@@ -85,14 +85,14 @@ template<> struct type_conversion<PhonebookEntry>
     {
         // here we ignore the possibility the the whole object might be NULL
 
-        pe.name = v.get<std::string>("name");
-        pe.phone = v.get<std::string>("phone", "<NULL>");
+        pe.name = v.get<std::string>("NAME");
+        pe.phone = v.get<std::string>("PHONE", "<NULL>");
     }
 
     static void to_base(PhonebookEntry const &pe, values &v, eIndicator &ind)
     {
-        v.set("name", pe.name);
-        v.set("phone", pe.phone, pe.phone.empty() ? eNull : eOK);
+        v.set("NAME", pe.name);
+        v.set("PHONE", pe.phone, pe.phone.empty() ? eNull : eOK);
         ind = eOK;
     }
 };
@@ -106,15 +106,15 @@ template<> struct type_conversion<PhonebookEntry2>
     {
         // here we ignore the possibility the the whole object might be NULL
 
-        pe.name = v.get<std::string>("name");
-        eIndicator ind = v.indicator("phone"); //another way to test for null
-        pe.phone = ind == eNull ? "<NULL>" : v.get<std::string>("phone");
+        pe.name = v.get<std::string>("NAME");
+        eIndicator ind = v.indicator("PHONE"); //another way to test for null
+        pe.phone = ind == eNull ? "<NULL>" : v.get<std::string>("PHONE");
     }
 
     static void to_base(PhonebookEntry2 const &pe, values &v, eIndicator &ind)
     {
-        v.set("name", pe.name);
-        v.set("phone", pe.phone, pe.phone.empty() ? eNull : eOK);
+        v.set("NAME", pe.name);
+        v.set("PHONE", pe.phone, pe.phone.empty() ? eNull : eOK);
         ind = eOK;
     }
 };
@@ -127,14 +127,14 @@ template<> struct type_conversion<PhonebookEntry3>
     {
         // here we ignore the possibility the the whole object might be NULL
 
-        pe.setName(v.get<std::string>("name"));
-        pe.setPhone(v.get<std::string>("phone", "<NULL>"));
+        pe.setName(v.get<std::string>("NAME"));
+        pe.setPhone(v.get<std::string>("PHONE", "<NULL>"));
     }
 
     static void to_base(PhonebookEntry3 const &pe, values &v, eIndicator &ind)
     {
-        v.set("name", pe.getName());
-        v.set("phone", pe.getPhone(), pe.getPhone().empty() ? eNull : eOK);
+        v.set("NAME", pe.getName());
+        v.set("PHONE", pe.getPhone(), pe.getPhone().empty() ? eNull : eOK);
         ind = eOK;
     }
 };
@@ -1889,6 +1889,8 @@ void test12()
     {
         session sql(backEndFactory_, connectString_);
 
+        sql.uppercase_column_names(true);
+
         auto_table_creator tableCreator(tc_.table_creator_2(sql));
 
         row r;
@@ -1917,13 +1919,13 @@ void test12()
             // - to comply with the implementation for Oracle
             assert(r.get_properties(4).get_data_type() == eString);
 
-            assert(r.get_properties("num_int").get_data_type() == eInteger);
+            assert(r.get_properties("NUM_INT").get_data_type() == eInteger);
 
-            assert(r.get_properties(0).get_name() == "num_float");
-            assert(r.get_properties(1).get_name() == "num_int");
-            assert(r.get_properties(2).get_name() == "name");
-            assert(r.get_properties(3).get_name() == "sometime");
-            assert(r.get_properties(4).get_name() == "chr");
+            assert(r.get_properties(0).get_name() == "NUM_FLOAT");
+            assert(r.get_properties(1).get_name() == "NUM_INT");
+            assert(r.get_properties(2).get_name() == "NAME");
+            assert(r.get_properties(3).get_name() == "SOMETIME");
+            assert(r.get_properties(4).get_name() == "CHR");
 
             assert(std::fabs(r.get<double>(0) - 3.14) < 0.001);
             assert(r.get<int>(1) == 123);
@@ -1934,10 +1936,10 @@ void test12()
             // again, type char is visible as string
             assert(r.get<std::string>(4) == "a");
 
-            assert(std::fabs(r.get<double>("num_float") - 3.14) < 0.001);
-            assert(r.get<int>("num_int") == 123);
-            assert(r.get<std::string>("name") == "Johny");
-            assert(r.get<std::string>("chr") == "a");
+            assert(std::fabs(r.get<double>("NUM_FLOAT") - 3.14) < 0.001);
+            assert(r.get<int>("NUM_INT") == 123);
+            assert(r.get<std::string>("NAME") == "Johny");
+            assert(r.get<std::string>("CHR") == "a");
 
             assert(r.indicator(0) == eOK);
 
@@ -2045,6 +2047,9 @@ void test14()
 {
     {
         session sql(backEndFactory_, connectString_);
+
+        sql.uppercase_column_names(true);
+
         auto_table_creator tableCreator(tc_.table_creator_3(sql));
 
         row r1;
@@ -2065,7 +2070,7 @@ void test14()
         while (st.fetch())
         {
             ++count;
-            assert(r2.get<std::string>("phone") == "(404)123-4567");
+            assert(r2.get<std::string>("PHONE") == "(404)123-4567");
         }
         assert(count == 3);
     }
@@ -2076,6 +2081,8 @@ void test14()
 void test15()
 {
     session sql(backEndFactory_, connectString_);
+
+    sql.uppercase_column_names(true);
     
     // simple conversion (between single basic type and user type)
 
@@ -2124,7 +2131,13 @@ void test15()
 
         p1.name = "david";
 
-        sql << "insert into soci_test values(:name, :phone)", use(p1);
+        // Note: uppercase column names are used here (and later on)
+        // for consistency with how they can be read from database
+        // (which means forced to uppercase on Oracle) and how they are
+        // set/get in the type conversion routines for PhonebookEntry.
+        // In short, IF the database is Oracle,
+        // then all column names for binding should be uppercase.
+        sql << "insert into soci_test values(:NAME, :PHONE)", use(p1);
         sql << "insert into soci_test values('john', '(404)123-4567')";
         sql << "insert into soci_test values('doe', '(404)123-4567')";
 
@@ -2160,7 +2173,7 @@ void test15()
 
         PhonebookEntry const & cp1 = p1;
 
-        sql << "insert into soci_test values(:name, :phone)", use(cp1);
+        sql << "insert into soci_test values(:NAME, :PHONE)", use(cp1);
 
         PhonebookEntry p2;
         sql << "select * from soci_test", into(p2);
@@ -2179,7 +2192,7 @@ void test15()
         p1.setName("Joe Hacker");
         p1.setPhone("10010110");
 
-        sql << "insert into soci_test values(:name, :phone)", use(p1);
+        sql << "insert into soci_test values(:NAME, :PHONE)", use(p1);
 
         PhonebookEntry3 p2;
         sql << "select * from soci_test", into(p2);
@@ -2200,7 +2213,7 @@ void test15()
         assert(p1.phone == "");
         p1.name = "david";
 
-        sql << "insert into soci_test values(:name, :phone)", use(p1);
+        sql << "insert into soci_test values(:NAME, :PHONE)", use(p1);
         sql << "insert into soci_test values('john', '(404)123-4567')";
         sql << "insert into soci_test values('doe', '(404)123-4567')";
 
@@ -2346,6 +2359,8 @@ void test19()
 void test20()
 {
     session sql(backEndFactory_, connectString_);
+
+    sql.uppercase_column_names(true);
     
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_2(sql));
@@ -2382,7 +2397,7 @@ void test20()
             assert(r1.get_properties(2).get_data_type() == eString);
             assert(r1.get_properties(3).get_data_type() == eDate);
             assert(r1.get_properties(4).get_data_type() == eString);
-            assert(r1.get_properties("num_int").get_data_type() == eInteger);
+            assert(r1.get_properties("NUM_INT").get_data_type() == eInteger);
 
             // Data
 
@@ -2403,10 +2418,10 @@ void test20()
                 std::tm t1 = r1.get<std::tm>(3);
                 assert(t1.tm_year == 105);
                 assert(r1.get<std::string>(4) == "a");
-                assert(std::fabs(r1.get<double>("num_float") - 3.14) < 0.001);
-                assert(r1.get<int>("num_int") == 123);
-                assert(r1.get<std::string>("name") == "Johny");
-                assert(r1.get<std::string>("chr") == "a");
+                assert(std::fabs(r1.get<double>("NUM_FLOAT") - 3.14) < 0.001);
+                assert(r1.get<int>("NUM_INT") == 123);
+                assert(r1.get<std::string>("NAME") == "Johny");
+                assert(r1.get<std::string>("CHR") == "a");
             }
             else
             {
@@ -2416,10 +2431,10 @@ void test20()
                 std::tm t1 = r1.get<std::tm>(3);
                 assert(t1.tm_year == 104);
                 assert(r1.get<std::string>(4) == "b");
-                assert(std::fabs(r1.get<double>("num_float") - 6.28) < 0.001);
-                assert(r1.get<int>("num_int") == 246);
-                assert(r1.get<std::string>("name") == "Robert");
-                assert(r1.get<std::string>("chr") == "b");
+                assert(std::fabs(r1.get<double>("NUM_FLOAT") - 6.28) < 0.001);
+                assert(r1.get<int>("NUM_INT") == 246);
+                assert(r1.get<std::string>("NAME") == "Robert");
+                assert(r1.get<std::string>("CHR") == "b");
             }
 
             //
@@ -2440,7 +2455,7 @@ void test20()
             assert(r2.get_properties(2).get_data_type() == eString);
             assert(r2.get_properties(3).get_data_type() == eDate);
             assert(r2.get_properties(4).get_data_type() == eString);
-            assert(r2.get_properties("num_int").get_data_type() == eInteger);
+            assert(r2.get_properties("NUM_INT").get_data_type() == eInteger);
 
             std::string newName = r2.get<std::string>(2);
             assert(name != newName);
@@ -2454,10 +2469,10 @@ void test20()
                 std::tm t2 = r2.get<std::tm>(3);
                 assert(t2.tm_year == 105);
                 assert(r2.get<std::string>(4) == "a");
-                assert(std::fabs(r2.get<double>("num_float") - 3.14) < 0.001);
-                assert(r2.get<int>("num_int") == 123);
-                assert(r2.get<std::string>("name") == "Johny");
-                assert(r2.get<std::string>("chr") == "a");
+                assert(std::fabs(r2.get<double>("NUM_FLOAT") - 3.14) < 0.001);
+                assert(r2.get<int>("NUM_INT") == 123);
+                assert(r2.get<std::string>("NAME") == "Johny");
+                assert(r2.get<std::string>("CHR") == "a");
             }
             else
             {
@@ -2467,10 +2482,10 @@ void test20()
                 std::tm t2 = r2.get<std::tm>(3);
                 assert(t2.tm_year == 104);
                 assert(r2.get<std::string>(4) == "b");
-                assert(std::fabs(r2.get<double>("num_float") - 6.28) < 0.001);
-                assert(r2.get<int>("num_int") == 246);
-                assert(r2.get<std::string>("name") == "Robert");
-                assert(r2.get<std::string>("chr") == "b");
+                assert(std::fabs(r2.get<double>("NUM_FLOAT") - 6.28) < 0.001);
+                assert(r2.get<int>("NUM_INT") == 246);
+                assert(r2.get<std::string>("NAME") == "Robert");
+                assert(r2.get<std::string>("CHR") == "b");
             }
         }
     }
@@ -2621,6 +2636,8 @@ void test24()
 void test25()
 {
     session sql(backEndFactory_, connectString_);
+
+    sql.uppercase_column_names(true);
     
     {
         auto_table_creator tableCreator(tc_.table_creator_3(sql));
@@ -2632,7 +2649,7 @@ void test25()
 
         p1.name = "david";
 
-        sql << "insert into soci_test values(:name, :phone)", use(p1);
+        sql << "insert into soci_test values(:NAME, :PHONE)", use(p1);
         sql << "insert into soci_test values('john', '(404)123-4567')";
         sql << "insert into soci_test values('doe', '(404)123-4567')";
 
@@ -3026,7 +3043,7 @@ void test27()
 void test28()
 {
     session sql(backEndFactory_, connectString_);
-    
+
     auto_table_creator tableCreator(tc_.table_creator_2(sql));
     {
         sql << "insert into soci_test(num_float, num_int, name) values(3.5, 7, 'Joe Hacker')";

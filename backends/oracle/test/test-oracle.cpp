@@ -1010,8 +1010,8 @@ struct table_creator_two : public table_creator_base
     table_creator_two(session& session)
         : table_creator_base(session)
     {
-        session  << "create table soci_test(\"num_float\" number, \"num_int\" numeric(4,0),"
-                     " \"name\" varchar2(20), \"sometime\" date, \"chr\" char)";
+        session  << "create table soci_test(num_float number, num_int numeric(4,0),"
+                    " name varchar2(20), sometime date, chr char)";
     }
 };
 
@@ -1020,8 +1020,8 @@ struct table_creator_three : public table_creator_base
     table_creator_three(session& session)
         : table_creator_base(session)
     {
-        session << "create table soci_test(\"name\" varchar2(100) not null, "
-            "\"phone\" varchar2(15))";
+        session << "create table soci_test(name varchar2(100) not null, "
+            "phone varchar2(15))";
     }
 };
 

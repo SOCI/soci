@@ -41,6 +41,8 @@ public:
 
     virtual void bind(details::statement_impl &st, int& /*position*/)
     {
+        v_.uppercase_column_names(st.session_.get_uppercase_column_names());
+
         convert_to_base();
         st.bind(v_);
     }
