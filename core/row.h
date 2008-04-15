@@ -40,8 +40,9 @@ private:
 class SOCI_DECL row
 {
 public:
-//TODO! friend class column_properites
-// private
+    void uppercase_column_names(bool forceToUpper)
+    { uppercaseColumnNames_ = forceToUpper; }
+
     void add_properties(column_properties const &cp);
     std::size_t size() const;
 
@@ -125,14 +126,14 @@ public:
     {
         currentPos_ = 0;
     }
-
-    row() : currentPos_(0) {}
+    
+    row() : uppercaseColumnNames_(false), currentPos_(0) {}
     ~row();
 
 private:
     // copy not supported
     row(row const &);
-    row operator=(row const &);
+    void operator=(row const &);
 
     std::size_t find_column(std::string const &name) const;
 
@@ -140,6 +141,8 @@ private:
     std::vector<details::holder*> holders_;
     std::vector<eIndicator*> indicators_;
     std::map<std::string, std::size_t> index_;
+
+    bool uppercaseColumnNames_;
 
     mutable std::size_t currentPos_;
 };

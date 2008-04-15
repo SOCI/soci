@@ -638,6 +638,7 @@ void statement_impl::set_row(row *r)
     }
 
     row_ = r;
+    row_->uppercase_column_names(session_.get_uppercase_column_names());
 }
 
 std::string statement_impl::rewrite_for_procedure_call(std::string const &query)

@@ -48,20 +48,22 @@ void ensureConnected(session_backend *backEnd)
 
 session::session()
     : once(this), prepare(this), logStream_(NULL),
-      lastFactory_(NULL), backEnd_(NULL)
+      lastFactory_(NULL), uppercaseColumnNames_(false), backEnd_(NULL)
 {
 }
 
 session::session(backend_factory const & factory,
     std::string const & connectString)
     : once(this), prepare(this), logStream_(NULL),
-      lastFactory_(&factory), lastConnectString_(connectString)
+      lastFactory_(&factory), lastConnectString_(connectString),
+      uppercaseColumnNames_(false)
 {
     backEnd_ = factory.make_session(connectString);
 }
 
 session::session(std::string const & connectString)
-    : once(this), prepare(this), logStream_(NULL)
+    : once(this), prepare(this), logStream_(NULL),
+      uppercaseColumnNames_(false)
 {
     std::string backendName;
     std::string connectionParameters;

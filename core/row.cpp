@@ -16,7 +16,22 @@ using namespace details;
 void row::add_properties(column_properties const &cp)
 {
     columns_.push_back(cp);
-    index_[cp.get_name()] = columns_.size() - 1;
+
+    std::string columnName;
+    std::string const & originalName = cp.get_name();
+    if (uppercaseColumnNames_)
+    {
+        for (size_t i = 0; i != originalName.size(); ++i)
+        {
+            columnName.push_back(std::toupper(originalName[i]));
+        }
+    }
+    else
+    {
+        columnName = originalName;
+    }
+
+    index_[columnName] = columns_.size() - 1;
 }
 
 std::size_t row::size() const

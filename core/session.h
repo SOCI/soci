@@ -67,6 +67,12 @@ public:
     void set_got_data(bool gotData) { gotData_ = gotData; }
     bool got_data() const           { return gotData_;    }
 
+    void uppercase_column_names(bool forceToUpper)
+    { uppercaseColumnNames_ = forceToUpper; }
+
+    bool get_uppercase_column_names() const
+    { return uppercaseColumnNames_; }
+
     // for diagnostics and advanced users
     // (downcast it to expected back-end session class)
     details::session_backend * get_backend() { return backEnd_; }
@@ -86,6 +92,8 @@ private:
 
     backend_factory const *lastFactory_;
     std::string lastConnectString_;
+
+    bool uppercaseColumnNames_;
 
     details::session_backend *backEnd_;
 
