@@ -23,7 +23,7 @@ using namespace soci::details;
 using namespace soci::details::oracle;
 
 oracle_session_backend::oracle_session_backend(std::string const & serviceName,
-    std::string const & userName, std::string const & password)
+    std::string const & userName, std::string const & password, int mode)
     : envhp_(NULL), srvhp_(NULL), errhp_(NULL), svchp_(NULL), usrhp_(NULL)
 {
     sword res;
@@ -121,7 +121,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
 
     // begin the session
     res = OCISessionBegin(svchp_, errhp_, usrhp_,
-        OCI_CRED_RDBMS, OCI_DEFAULT);
+        OCI_CRED_RDBMS, mode);
     if (res != OCI_SUCCESS)
     {
         std::string msg;

@@ -242,7 +242,8 @@ struct oracle_session_backend : details::session_backend
 {
     oracle_session_backend(std::string const & serviceName,
         std::string const & userName,
-        std::string const & password);
+        std::string const & password,
+        int mode);
 
     ~oracle_session_backend();
 
