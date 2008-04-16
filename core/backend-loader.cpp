@@ -9,6 +9,7 @@
 #include "backend-loader.h"
 #include "error.h"
 #include <map>
+#include <cassert>
 
 using namespace std;
 using namespace soci;
