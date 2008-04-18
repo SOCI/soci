@@ -93,6 +93,24 @@ void oracle_vector_use_type_backend::prepare_for_bind(
 
     // cases that require adjustments and buffer management
 
+    case eXLongLong:
+        {
+            std::vector<long long> *vp
+                = static_cast<std::vector<long long> *>(data);
+            std::vector<long long> &v(*vp);
+
+            std::size_t const vecSize = v.size();
+            std::size_t const entrySize = 100; // arbitrary
+            std::size_t const bufSize = entrySize * vecSize;
+            buf_ = new char[bufSize];
+
+            oracleType = SQLT_STR;
+            data = buf_;
+            size = entrySize;
+
+            prepare_indicators(vecSize);
+        }
+        break;
     case eXStdString:
         {
             std::vector<std::string> *vp
@@ -210,6 +228,21 @@ void oracle_vector_use_type_backend::pre_use(eIndicator const *ind)
         // (and it's probably impossible to separate them, because
         // changes in the string size could not be handled here)
     }
+    else if (type_ == eXLongLong)
+    {
+        std::vector<long long> *vp
+            = static_cast<std::vector<long long> *>(data_);
+        std::vector<long long> &v(*vp);
+
+        char *pos = buf_;
+        std::size_t const entrySize = 100; // arbitrary, but consistent
+        std::size_t const vecSize = v.size();
+        for (std::size_t i = 0; i != vecSize; ++i)
+        {
+            snprintf(pos, entrySize, "%lld", v[i]);
+            pos += entrySize;
+        }
+    }
     else if (type_ == eXStdTm)
     {
         std::vector<std::tm> *vp
@@ -285,6 +318,13 @@ std::size_t oracle_vector_use_type_backend::size()
         {
             std::vector<unsigned long> *vp
                 = static_cast<std::vector<unsigned long> *>(data_);
+            sz = vp->size();
+        }
+        break;
+    case eXLongLong:
+        {
+            std::vector<long long> *vp
+                = static_cast<std::vector<long long> *>(data_);
             sz = vp->size();
         }
         break;

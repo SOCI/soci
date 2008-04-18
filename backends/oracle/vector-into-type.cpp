@@ -103,6 +103,21 @@ void oracle_vector_into_type_backend::define_by_pos(
 
     // cases that require adjustments and buffer management
 
+    case eXLongLong:
+        {
+            oracleType = SQLT_STR;
+            std::vector<long long> *v
+                = static_cast<std::vector<long long> *>(data);
+            colSize_ = 100; // arbitrary buffer size for each entry
+            std::size_t const bufSize = colSize_ * v->size();
+            buf_ = new char[bufSize];
+
+            prepare_indicators(v->size());
+
+            size = static_cast<sb4>(colSize_);
+            data = buf_;
+        }
+        break;
     case eXStdString:
         {
             oracleType = SQLT_CHR;
@@ -163,7 +178,7 @@ void oracle_vector_into_type_backend::post_fetch(bool gotData, eIndicator *ind)
     {
         // first, deal with data
 
-        // only std::string, std::tm and Statement need special handling
+        // only std::string, std::tm, long long and Statement need special handling
         if (type_ == eXStdString)
         {
             std::vector<std::string> *vp
@@ -178,6 +193,24 @@ void oracle_vector_into_type_backend::post_fetch(bool gotData, eIndicator *ind)
                 if (indOCIHolderVec_[i] != -1)
                 {
                     v[i].assign(pos, sizes_[i]);
+                }
+                pos += colSize_;
+            }
+        }
+        else if (type_ == eXLongLong)
+        {
+            std::vector<long long> *vp
+                = static_cast<std::vector<long long> *>(data_);
+
+            std::vector<long long> &v(*vp);
+
+            char *pos = buf_;
+            std::size_t const vsize = v.size();
+            for (std::size_t i = 0; i != vsize; ++i)
+            {
+                if (indOCIHolderVec_[i] != -1)
+                {
+                    v[i] = strtoll(pos, NULL, 10);
                 }
                 pos += colSize_;
             }
@@ -292,6 +325,13 @@ void oracle_vector_into_type_backend::resize(std::size_t sz)
             v->resize(sz);
         }
         break;
+    case eXLongLong:
+        {
+            std::vector<long long> *v
+                = static_cast<std::vector<long long> *>(data_);
+            v->resize(sz);
+        }
+        break;
     case eXDouble:
         {
             std::vector<double> *v
@@ -349,6 +389,13 @@ std::size_t oracle_vector_into_type_backend::size()
         {
             std::vector<unsigned long> *v
                 = static_cast<std::vector<unsigned long> *>(data_);
+            sz = v->size();
+        }
+        break;
+    case eXLongLong:
+        {
+            std::vector<long long> *v
+                = static_cast<std::vector<long long> *>(data_);
             sz = v->size();
         }
         break;

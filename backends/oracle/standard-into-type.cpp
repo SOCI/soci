@@ -83,6 +83,12 @@ void oracle_standard_into_type_backend::define_by_pos(
         break;
 
     // cases that require adjustments and buffer management
+    case eXLongLong:
+        oracleType = SQLT_STR;
+        size = 100; // arbitrary buffer length
+        buf_ = new char[size];
+        data = buf_;
+        break;
     case eXCString:
         {
             details::cstring_descriptor *desc
@@ -182,6 +188,14 @@ void oracle_standard_into_type_backend::post_fetch(
             {
                 std::string *s = static_cast<std::string *>(data_);
                 *s = buf_;
+            }
+        }
+        else if (type_ == eXLongLong)
+        {
+            if (indOCIHolder_ != -1)
+            {
+                long long *v = static_cast<long long *>(data_);
+                *v = strtoll(buf_, NULL, 10);
             }
         }
         else if (type_ == eXStdTm)

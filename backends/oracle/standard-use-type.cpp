@@ -80,6 +80,12 @@ void oracle_standard_use_type_backend::prepare_for_bind(
         break;
 
     // cases that require adjustments and buffer management
+    case eXLongLong:
+        oracleType = SQLT_STR;
+        size = 100; // arbitrary buffer length
+        buf_ = new char[size];
+        data = buf_;
+        break;
     case eXCString:
         {
             details::cstring_descriptor *desc
@@ -245,6 +251,12 @@ void oracle_standard_use_type_backend::pre_use(eIndicator const *ind)
                 = *static_cast<unsigned long *>(data_);
         }
         break;
+    case eXLongLong:
+        {
+            size_t const size = 100; // arbitrary, but consistent with prepare_for_bind
+            snprintf(buf_, size, "%lld", *static_cast<long long *>(data_));
+        }
+        break;
     case eXDouble:
         if (readOnly_)
         {
@@ -318,9 +330,6 @@ void oracle_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
     //
     // With readOnly_ == true the propagation of modification should *not*
     // take place and in addition the attempt of modification should be detected and reported.
-    //
-    // For simple (fundamental) data types there is nothing to do even if modifications
-    // are allowed, because they were performed directly on the data provided by user code.
 
     // first, deal with data
     if (gotData)
@@ -369,6 +378,18 @@ void oracle_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
                 const unsigned long original = *static_cast<unsigned long *>(data_);
                 const unsigned long bound
                     = *static_cast<unsigned long *>(static_cast<void *>(buf_));
+
+                if (original != bound)
+                {
+                    throw soci_error("Attempted modification of const use element");
+                }
+            }
+            break;
+        case eXLongLong:
+            if (readOnly_)
+            {
+                long long const original = *static_cast<long long *>(data_);
+                long long const bound = strtoll(buf_, NULL, 10);
 
                 if (original != bound)
                 {
