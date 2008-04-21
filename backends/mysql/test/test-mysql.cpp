@@ -18,6 +18,8 @@
 #include <ctime>
 #include <ciso646>
 #include <cstdlib>
+#include <mysqld_error.h>
+#include <errmsg.h>
 
 using namespace soci;
 using namespace soci::tests;
