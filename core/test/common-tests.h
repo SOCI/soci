@@ -963,20 +963,26 @@ void test4()
                 "select val from soci_test order by id", into(val, ind));
 
             st.execute();
-            assert(st.fetch());
+            bool gotData = st.fetch();
+            assert(gotData);
             assert(ind == eOK);
             assert(val == 10);
-            assert(st.fetch());
+            gotData = st.fetch();
+            assert(gotData);
             assert(ind == eOK);
             assert(val == 11);
-            assert(st.fetch());
+            gotData = st.fetch();
+            assert(gotData);
             assert(ind == eNull);
-            assert(st.fetch());
+            gotData = st.fetch();
+            assert(gotData);
             assert(ind == eNull);
-            assert(st.fetch());
+            gotData = st.fetch();
+            assert(gotData);
             assert(ind == eOK);
             assert(val == 12);
-            assert(st.fetch() == false);
+            gotData = st.fetch();
+            assert(gotData == false);
         }
         {
             std::vector<int> vals(3);
@@ -986,7 +992,8 @@ void test4()
                 "select val from soci_test order by id", into(vals, inds));
 
             st.execute();
-            assert(st.fetch());
+            bool gotData = st.fetch();
+            assert(gotData);
             assert(vals.size() == 3);
             assert(inds.size() == 3);
             assert(inds[0] == eOK);
@@ -994,12 +1001,14 @@ void test4()
             assert(inds[1] == eOK);
             assert(vals[1] == 11);
             assert(inds[2] == eNull);
-            assert(st.fetch());
+            gotData = st.fetch();
+            assert(gotData);
             assert(vals.size() == 2);
             assert(inds[0] == eNull);
             assert(inds[1] == eOK);
             assert(vals[1] == 12);
-            assert(st.fetch() == false);
+            gotData = st.fetch();
+            assert(gotData == false);
         }
 
         // additional test for "no data" condition
@@ -1010,7 +1019,8 @@ void test4()
             statement st = (sql.prepare <<
                 "select val from soci_test where 0 = 1", into(vals, inds));
 
-            assert(st.execute(true) == false);
+            bool gotData = st.execute(true);
+            assert(gotData == false);
 
             // for convenience, vectors should be truncated
             assert(vals.empty());
@@ -1019,8 +1029,8 @@ void test4()
             // for even more convenience, fetch should not fail
             // but just report end of rowset
             
-            const bool fetched = st.fetch();
-            assert(fetched == false);
+            gotData = st.fetch();
+            assert(gotData == false);
             assert(vals.empty());
             assert(inds.empty());
         }

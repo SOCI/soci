@@ -542,7 +542,8 @@ void test8()
         std::vector<int> ids_out(sz);
         statement st = (sql.prepare << "select id from soci_test",
             into(ids_out, inds));
-        assert(st.execute(1));
+        const bool gotData = st.execute(true);
+        assert(gotData);
         assert(ids_out.size() == sz);
         assert(ids_out[0] == 10);
         assert(ids_out[2] == 12);
@@ -556,13 +557,16 @@ void test8()
         statement st = (sql.prepare << "select id from soci_test",
             into(ids_out));
 
-        st.execute(0);
+        st.execute();
         assert(ids_out.size() == 2);
-        assert(st.fetch());
+        bool gotData = st.fetch();
+        assert(gotData);
         assert(ids_out.size() == 2 && ids_out[0] == 10 && ids_out[1] == 11);
-        assert(st.fetch());
+        gotData = st.fetch();
+        assert(gotData);
         assert(ids_out.size() == 1 && ids_out[0] == 12);
-        assert(st.fetch() == false);
+        gotData = st.fetch();
+        assert(gotData == false);
     }
 
     // verify resizing happens if vector is larger
@@ -571,7 +575,8 @@ void test8()
         std::vector<int> ids_out(4); // one too many
         statement st2 = (sql.prepare << "select id from soci_test",
             into(ids_out));
-        assert(st2.execute(1));
+        bool gotData = st2.execute(true);
+        assert(gotData);
         assert(ids_out.size() == 3);
         assert(ids_out[0] == 10);
         assert(ids_out[2] == 12);
@@ -586,19 +591,23 @@ void test8()
 
         std::vector<int> ids(2);
         statement st3 = (sql.prepare << "select id from soci_test", into(ids));
-        assert(st3.execute(1));
+        bool gotData = st3.execute(true);
+        assert(gotData);
         assert(ids[0] == 10);
         assert(ids[1] == 11);
 
-        assert(st3.fetch());
+        gotData = st3.fetch();
+        assert(gotData);
         assert(ids[0] == 12);
         assert(ids[1] == 13);
 
-        assert(st3.fetch());
+        gotData = st3.fetch();
+        assert(gotData);
         assert(ids.size() == 1);
         assert(ids[0] == 14);
 
-        assert(st3.fetch() == false);
+        gotData = st3.fetch();
+        assert(gotData == false);
     }
 
     std::cout << "test 8 passed" << std::endl;
@@ -678,7 +687,8 @@ void test9()
         assert(out[0] == 8);
         assert(out[1] == 9);
         assert(out[2] == 10);
-        assert(st.fetch() == false); // end of data
+        bool gotData = st.fetch();
+        assert(gotData == false); // end of data
     }
 
     std::cout << "test 9 passed" << std::endl;
@@ -799,14 +809,17 @@ void test10()
                     into(p4));
 
         st.execute();
-        assert(st.fetch());
+        bool gotData = st.fetch();
+        assert(gotData);
         assert(p4.id == 1);
         assert(p4.firstName == "Patricia");
 
-        assert(st.fetch());
+        gotData = st.fetch();
+        assert(gotData);
         assert(p4.id == 2);
         assert(p4.firstName == "Joe");
-        assert(st.fetch() == false);
+        gotData = st.fetch();
+        assert(gotData == false);
     }
 
     // test with stored procedure
