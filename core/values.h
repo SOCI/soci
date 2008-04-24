@@ -233,15 +233,7 @@ private:
                 return nullValue;
             }
 
-            try
-            {
-                return get_from_uses<T>(pos->second);
-            }
-            catch (soci_error const &)
-            {
-                throw soci_error("Value named " + name + " was set using"
-                    " a different type than the one passed to get()");
-            }
+            return get_from_uses<T>(pos->second);
         }
         throw soci_error("Value named " + name + " not found.");
     }
@@ -252,15 +244,7 @@ private:
         std::map<std::string, size_t>::const_iterator pos = index_.find(name);
         if (pos != index_.end())
         {
-            try
-            {
-                return get_from_uses<T>(pos->second);
-            }
-            catch (soci_error const &)
-            {
-                throw soci_error("Value named " + name + " was set using"
-                    " a different type than the one passed to get()");
-            }
+            return get_from_uses<T>(pos->second);
         }
         throw soci_error("Value named " + name + " not found.");
     }

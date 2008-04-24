@@ -278,7 +278,7 @@ struct string_holder
     string_holder() {}
     string_holder(const char* s) : s_(s) {}
     string_holder(std::string s) : s_(s) {}
-    std::string get() { return s_; }
+    std::string get() const { return s_; }
 private:
     std::string s_;
 };
@@ -295,7 +295,7 @@ namespace soci
             sh = string_holder(s);
         }
 
-        static void to_base(string_holder &sh, std::string &s, eIndicator &ind)
+        static void to_base(const string_holder &sh, std::string &s, eIndicator &ind)
         {
             s = sh.get();
             ind = eOK;
@@ -723,7 +723,7 @@ namespace soci
             p.gender = v.get<std::string>("GENDER", "unknown");
         }
 
-        static void to_base(person &p, values &v, eIndicator &ind)
+        static void to_base(person const & p, values & v, eIndicator & ind)
         {
             v.set("ID", p.id);
             v.set("FIRST_NAME", p.firstName);
@@ -853,8 +853,7 @@ void test10()
         {
             msg = e.what();
         }
-        assert(msg == "Column FIRST_NAME contains NULL value and"
-                      " no default was provided");
+        assert(msg == "Null value not allowed for this type");
 
         procedure proc = (sql.prepare << "soci_test(:GENDER)",
                                 use(p));
@@ -1154,7 +1153,6 @@ int main(int argc, char** argv)
         tests.run();
 
         std::cout << "\nsoci Oracle tests:\n\n";
-
         test1();
         test2();
         test3();
