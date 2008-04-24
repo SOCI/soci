@@ -49,6 +49,7 @@ public:
 
     virtual void post_use(bool /*gotData*/)
     {
+        v_.reset_get_counter();
         convert_from_base();
     }
 

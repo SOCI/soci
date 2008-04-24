@@ -84,7 +84,6 @@ template<> struct type_conversion<PhonebookEntry>
     static void from_base(values const &v, eIndicator /* ind */, PhonebookEntry &pe)
     {
         // here we ignore the possibility the the whole object might be NULL
-
         pe.name = v.get<std::string>("NAME");
         pe.phone = v.get<std::string>("PHONE", "<NULL>");
     }
@@ -3056,60 +3055,103 @@ void test28()
 
     auto_table_creator tableCreator(tc_.table_creator_2(sql));
     {
-        sql << "insert into soci_test(num_float, num_int, name) values(3.5, 7, 'Joe Hacker')";
+        boost::tuple<double, int, std::string> t1(3.5, 7, "Joe Hacker");
+        assert(t1.get<0>() == 3.5);
+        assert(t1.get<1>() == 7);
+        assert(t1.get<2>() == "Joe Hacker");
+
+        sql << "insert into soci_test(num_float, num_int, name) values(:d, :i, :s)", use(t1);
 
         // basic query
 
-        boost::tuple<double, int, std::string> t;
-        sql << "select num_float, num_int, name from soci_test", into(t);
+        boost::tuple<double, int, std::string> t2;
+        sql << "select num_float, num_int, name from soci_test", into(t2);
 
-        assert(t.get<0>() == 3.5);
-        assert(t.get<1>() == 7);
-        assert(t.get<2>() == "Joe Hacker");
+        assert(t2.get<0>() == 3.5);
+        assert(t2.get<1>() == 7);
+        assert(t2.get<2>() == "Joe Hacker");
+
+        sql << "delete from soci_test";
     }
 
     {
         // composability with boost::optional
 
-        boost::tuple<double, boost::optional<int>, std::string> t;
-        sql << "select num_float, num_int, name from soci_test", into(t);
+        // use:
+        boost::tuple<double, boost::optional<int>, std::string> t1(
+            3.5, boost::optional<int>(7), "Joe Hacker");
+        assert(t1.get<0>() == 3.5);
+        assert(t1.get<1>().is_initialized());
+        assert(t1.get<1>().get() == 7);
+        assert(t1.get<2>() == "Joe Hacker");
 
-        assert(t.get<0>() == 3.5);
-        assert(t.get<1>().is_initialized());
-        assert(t.get<1>().get() == 7);
-        assert(t.get<2>() == "Joe Hacker");
+        sql << "insert into soci_test(num_float, num_int, name) values(:d, :i, :s)", use(t1);
+
+        // into:
+        boost::tuple<double, boost::optional<int>, std::string> t2;
+        sql << "select num_float, num_int, name from soci_test", into(t2);
+
+        assert(t2.get<0>() == 3.5);
+        assert(t2.get<1>().is_initialized());
+        assert(t2.get<1>().get() == 7);
+        assert(t2.get<2>() == "Joe Hacker");
+
+        sql << "delete from soci_test";
     }
 
     {
         // composability with user-provided conversions
 
-        boost::tuple<double, MyInt, std::string> t;
-        sql << "select num_float, num_int, name from soci_test", into(t);
+        // use:
+        boost::tuple<double, MyInt, std::string> t1(3.5, 7, "Joe Hacker");
+        assert(t1.get<0>() == 3.5);
+        assert(t1.get<1>().get() == 7);
+        assert(t1.get<2>() == "Joe Hacker");
 
-        assert(t.get<0>() == 3.5);
-        assert(t.get<1>().get() == 7);
-        assert(t.get<2>() == "Joe Hacker");
+        sql << "insert into soci_test(num_float, num_int, name) values(:d, :i, :s)", use(t1);
+
+        // into:
+        boost::tuple<double, MyInt, std::string> t2;
+
+        sql << "select num_float, num_int, name from soci_test", into(t2);
+
+        assert(t2.get<0>() == 3.5);
+        assert(t2.get<1>().get() == 7);
+        assert(t2.get<2>() == "Joe Hacker");
+
+        sql << "delete from soci_test";
     }
 
     {
-        // let's have fun
+        // let's have fun - composition of tuple, optional and user-defined type
 
-        boost::tuple<double, boost::optional<MyInt>, std::string> t;
+        // use:
+        boost::tuple<double, boost::optional<MyInt>, std::string> t1(
+            3.5, boost::optional<MyInt>(7), "Joe Hacker");
+        assert(t1.get<0>() == 3.5);
+        assert(t1.get<1>().is_initialized());
+        assert(t1.get<1>().get().get() == 7);
+        assert(t1.get<2>() == "Joe Hacker");
 
-        sql << "select num_float, num_int, name from soci_test", into(t);
+        sql << "insert into soci_test(num_float, num_int, name) values(:d, :i, :s)", use(t1);
 
-        assert(t.get<0>() == 3.5);
-        assert(t.get<1>().is_initialized());
-        assert(t.get<1>().get().get() == 7);
-        assert(t.get<2>() == "Joe Hacker");
+        // into:
+        boost::tuple<double, boost::optional<MyInt>, std::string> t2;
+
+        sql << "select num_float, num_int, name from soci_test", into(t2);
+
+        assert(t2.get<0>() == 3.5);
+        assert(t2.get<1>().is_initialized());
+        assert(t2.get<1>().get().get() == 7);
+        assert(t2.get<2>() == "Joe Hacker");
 
         sql << "update soci_test set num_int = NULL";
 
-        sql << "select num_float, num_int, name from soci_test", into(t);
+        sql << "select num_float, num_int, name from soci_test", into(t2);
 
-        assert(t.get<0>() == 3.5);
-        assert(t.get<1>().is_initialized() == false);
-        assert(t.get<2>() == "Joe Hacker");
+        assert(t2.get<0>() == 3.5);
+        assert(t2.get<1>().is_initialized() == false);
+        assert(t2.get<2>() == "Joe Hacker");
     }
 
     {

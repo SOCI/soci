@@ -78,30 +78,46 @@ void statement_impl::bind(values& values)
         for (std::vector<details::standard_use_type*>::iterator it =
             values.uses_.begin(); it != values.uses_.end(); ++it)
         {
-            // only bind those variables which are actually
-            // referenced in the statement
-            const std::string name = ":" + (*it)->get_name();
+            // only bind those variables which are:
+            // - either named and actually referenced in the statement,
+            // - or positional
 
-            size_t pos = query_.find(name);
-            if (pos != std::string::npos)
+            std::string const & useName = (*it)->get_name();
+            if (useName.empty())
             {
-                const char nextChar = query_[pos + name.size()];
-                if (nextChar == ' ' || nextChar == ',' ||
-                   nextChar == '\0' || nextChar == ')')
+                // positional use element
+
+                int position = static_cast<int>(uses_.size());
+                (*it)->bind(*this, position);
+                uses_.push_back(*it);
+                indicators_.push_back(values.indicators_[cnt]);
+            }
+            else
+            {
+                // named use element - check if it is used
+                const std::string placeholder = ":" + useName;
+
+                size_t pos = query_.find(placeholder);
+                if (pos != std::string::npos)
                 {
-                    int position = static_cast<int>(uses_.size());
-                    (*it)->bind(*this, position);
-                    uses_.push_back(*it);
-                    indicators_.push_back(values.indicators_[cnt]);
+                    const char nextChar = query_[pos + placeholder.size()];
+                    if (nextChar == ' ' || nextChar == ',' ||
+                        nextChar == '\0' || nextChar == ')')
+                    {
+                        int position = static_cast<int>(uses_.size());
+                        (*it)->bind(*this, position);
+                        uses_.push_back(*it);
+                        indicators_.push_back(values.indicators_[cnt]);
+                    }
+                    else
+                    {
+                        values.add_unused(*it, values.indicators_[cnt]);
+                    }
                 }
                 else
                 {
                     values.add_unused(*it, values.indicators_[cnt]);
                 }
-            }
-            else
-            {
-                values.add_unused(*it, values.indicators_[cnt]);
             }
 
             cnt++;
@@ -111,7 +127,7 @@ void statement_impl::bind(values& values)
     {
         for (size_t i = ++cnt; i != values.uses_.size(); ++i)
         {
-            values.add_unused(uses_[i], values.indicators_[i]);
+            values.add_unused(values.uses_[i], values.indicators_[i]);
         }
         throw;
     }

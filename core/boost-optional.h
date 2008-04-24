@@ -21,8 +21,8 @@ struct type_conversion<boost::optional<T> >
 {
     typedef typename type_conversion<T>::base_type base_type;
 
-    static void from_base(base_type const &in, eIndicator ind,
-        boost::optional<T> &out)
+    static void from_base(base_type const & in, eIndicator ind,
+        boost::optional<T> & out)
     {
         if (ind == eNull)
         {
@@ -36,8 +36,8 @@ struct type_conversion<boost::optional<T> >
         }
     }
 
-    static void to_base(boost::optional<T> &in,
-        base_type &out, eIndicator &ind)
+    static void to_base(boost::optional<T> const & in,
+        base_type & out, eIndicator & ind)
     {
         if (in.is_initialized())
         {

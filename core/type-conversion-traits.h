@@ -20,7 +20,7 @@ struct type_conversion
 {
     typedef T base_type;
 
-    static void from_base(base_type const &in, eIndicator ind, T &out)
+    static void from_base(base_type const & in, eIndicator ind, T & out)
     {
         if (ind == eNull)
         {
@@ -29,10 +29,13 @@ struct type_conversion
         out = in;
     }
 
-    static void to_base(T const &in, base_type &out, eIndicator &ind)
+    static void to_base(T const & in, base_type & out, eIndicator & ind)
     {
         out = in;
-        ind = eOK;
+
+        // Note: if the T type does not provide any specific NULL semantics,
+        // then the indicator is left untouched
+        // - this is the case for fundamental types
     }
 };
 

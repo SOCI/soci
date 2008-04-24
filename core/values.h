@@ -44,7 +44,7 @@ class SOCI_DECL values
 
 public:
 
-    values() : row_(NULL), uppercaseColumnNames_(false) {}
+    values() : row_(NULL), currentPos_(0), uppercaseColumnNames_(false) {}
 
     eIndicator indicator(std::size_t pos) const;
     eIndicator indicator(std::string const &name) const;
@@ -52,7 +52,7 @@ public:
     template <typename T>
     T get(std::size_t pos) const
     {
-        if (row_)
+        if (row_ != NULL)
         {
             return row_->get<T>(pos);
         }
@@ -73,7 +73,7 @@ public:
     template <typename T>
     T get(std::size_t pos, T const &nullValue) const
     {
-        if (row_)
+        if (row_ != NULL)
         {
             return row_->get<T>(pos, nullValue);
         }
@@ -90,23 +90,72 @@ public:
     template <typename T>
     T get(std::string const &name) const
     {
-        return row_ ? row_->get<T>(name) : get_from_uses<T>(name);
+        return row_ != NULL ? row_->get<T>(name) : get_from_uses<T>(name);
     }
     
     template <typename T>
     T get(std::string const &name, T const &nullValue) const
     {
-        return row_ ? row_->get<T>(name, nullValue)
+        return row_ != NULL ? row_->get<T>(name, nullValue)
             : get_from_uses<T>(name, nullValue);
     }
 
     template <typename T>
-    values const & operator>>(T &value) const
+    values const & operator>>(T & value) const
     {
-        *row_ >> value;
+        if (row_ != NULL)
+        {
+            // row maintains its own position counter
+            // which is automatically reset when needed
+
+            *row_ >> value;
+        }
+        else if (*indicators_[currentPos_] != eNull)
+        {
+            // if there is no row object, then the data can be
+            // extracted from the locally stored use elements,
+            // but for this the position counter has to be maintained
+            // as well
+
+            value = get_from_uses<T>(currentPos_);
+            ++currentPos_;
+        }
+        else
+        {
+            std::ostringstream msg;
+            msg << "Column at position "
+                << static_cast<unsigned long>(currentPos_)
+                << " contains NULL value and no default was provided";
+            throw soci_error(msg.str());
+        }
+
         return *this;
     }
 
+    void skip(size_t num = 1) const
+    {
+        if (row_ != NULL)
+        {
+            row_->skip(num);
+        }
+        else
+        {
+            currentPos_ += num;
+        }
+    }
+
+    void reset_get_counter() const
+    {
+        if (row_ != NULL)
+        {
+            row_->reset_get_counter();
+        }
+        else
+        {
+            currentPos_ = 0;
+        }
+    }
+    
     template <typename T>
     void set(std::string const &name, const T &value, eIndicator indic = eOK)
     {
@@ -115,10 +164,41 @@ public:
         eIndicator* pind = new eIndicator(indic);
         indicators_.push_back(pind);
 
-        details::copy_holder<T> * pcopy = new details::copy_holder<T>(value);
+        typedef typename type_conversion<T>::base_type base_type;
+        base_type baseValue;
+        type_conversion<T>::to_base(value, baseValue, *pind);
+
+        details::copy_holder<base_type> * pcopy =
+            new details::copy_holder<base_type>(baseValue);
         deepCopies_.push_back(pcopy);
 
-        uses_.push_back(new details::use_type<T>(pcopy->value_, *pind, name));
+        uses_.push_back(new details::use_type<base_type>(
+                pcopy->value_, *pind, name));
+    }
+
+    template <typename T>
+    void set(const T & value, eIndicator indic = eOK)
+    {
+        eIndicator* pind = new eIndicator(indic);
+        indicators_.push_back(pind);
+
+        typedef typename type_conversion<T>::base_type base_type;
+        base_type baseValue;
+        type_conversion<T>::to_base(value, baseValue, *pind);
+
+        details::copy_holder<base_type> * pcopy =
+            new details::copy_holder<base_type>(baseValue);
+        deepCopies_.push_back(pcopy);
+
+        uses_.push_back(new details::use_type<base_type>(
+                pcopy->value_, *pind));
+    }
+
+    template <typename T>
+    values & operator<<(const T & value)
+    {
+        set(value);
+        return *this;
     }
 
     void uppercase_column_names(bool forceToUpper)
@@ -134,6 +214,8 @@ private:
     std::vector<eIndicator*> indicators_;
     std::map<std::string, size_t> index_;
     std::vector<details::copy_base *> deepCopies_;
+
+    mutable size_t currentPos_;
 
     bool uppercaseColumnNames_;
 
@@ -170,12 +252,6 @@ private:
         std::map<std::string, size_t>::const_iterator pos = index_.find(name);
         if (pos != index_.end())
         {
-            if (*indicators_[pos->second] == eNull)
-            {
-                throw soci_error("Column " + name + " contains NULL value and"
-                    " no default was provided");
-            }
-
             try
             {
                 return get_from_uses<T>(pos->second);
@@ -193,9 +269,17 @@ private:
     T get_from_uses(size_t pos) const
     {
         details::standard_use_type* u = uses_[pos];
-        if (dynamic_cast<details::use_type<T>* >(u))
+
+        typedef typename type_conversion<T>::base_type base_type;
+
+        if (dynamic_cast<details::use_type<base_type>* >(u))
         {
-            return *static_cast<T*>(u->get_data());
+            base_type const & baseValue = *static_cast<base_type*>(u->get_data());
+
+            T val;
+            eIndicator ind = *indicators_[pos];
+            type_conversion<T>::from_base(baseValue, ind, val);
+            return val;
         }
         else
         {

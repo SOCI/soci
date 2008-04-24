@@ -31,7 +31,8 @@ struct type_conversion<boost::tuple<T0> >
     static void to_base(boost::tuple<T0> &in,
         base_type &out, eIndicator &ind)
     {
-        throw soci_error("Conversions from boost::tuple are not supported.");
+        out
+            << boost::tuples::get<0>(in);
     }
 };
 
@@ -51,7 +52,9 @@ struct type_conversion<boost::tuple<T0, T1> >
     static void to_base(boost::tuple<T0, T1> &in,
         base_type &out, eIndicator &ind)
     {
-        throw soci_error("Conversions from boost::tuple are not supported.");
+        out
+            << boost::tuples::get<0>(in)
+            << boost::tuples::get<1>(in);
     }
 };
 
@@ -72,7 +75,10 @@ struct type_conversion<boost::tuple<T0, T1, T2> >
     static void to_base(boost::tuple<T0, T1, T2> &in,
         base_type &out, eIndicator &ind)
     {
-        throw soci_error("Conversions from boost::tuple are not supported.");
+        out
+            << boost::tuples::get<0>(in)
+            << boost::tuples::get<1>(in)
+            << boost::tuples::get<2>(in);
     }
 };
 
@@ -94,7 +100,11 @@ struct type_conversion<boost::tuple<T0, T1, T2, T3> >
     static void to_base(boost::tuple<T0, T1, T2, T3> &in,
         base_type &out, eIndicator &ind)
     {
-        throw soci_error("Conversions from boost::tuple are not supported.");
+        out
+            << boost::tuples::get<0>(in)
+            << boost::tuples::get<1>(in)
+            << boost::tuples::get<2>(in)
+            << boost::tuples::get<3>(in);
     }
 };
 
@@ -117,7 +127,12 @@ struct type_conversion<boost::tuple<T0, T1, T2, T3, T4> >
     static void to_base(boost::tuple<T0, T1, T2, T3, T4> &in,
         base_type &out, eIndicator &ind)
     {
-        throw soci_error("Conversions from boost::tuple are not supported.");
+        out
+            << boost::tuples::get<0>(in)
+            << boost::tuples::get<1>(in)
+            << boost::tuples::get<2>(in)
+            << boost::tuples::get<3>(in)
+            << boost::tuples::get<4>(in);
     }
 };
 
@@ -142,7 +157,13 @@ struct type_conversion<boost::tuple<T0, T1, T2, T3, T4, T5> >
     static void to_base(boost::tuple<T0, T1, T2, T3, T4, T5> &in,
         base_type &out, eIndicator &ind)
     {
-        throw soci_error("Conversions from boost::tuple are not supported.");
+        out
+            << boost::tuples::get<0>(in)
+            << boost::tuples::get<1>(in)
+            << boost::tuples::get<2>(in)
+            << boost::tuples::get<3>(in)
+            << boost::tuples::get<4>(in)
+            << boost::tuples::get<5>(in);
     }
 };
 
@@ -168,7 +189,14 @@ struct type_conversion<boost::tuple<T0, T1, T2, T3, T4, T5, T6> >
     static void to_base(boost::tuple<T0, T1, T2, T3, T4, T5, T6> &in,
         base_type &out, eIndicator &ind)
     {
-        throw soci_error("Conversions from boost::tuple are not supported.");
+        out
+            << boost::tuples::get<0>(in)
+            << boost::tuples::get<1>(in)
+            << boost::tuples::get<2>(in)
+            << boost::tuples::get<3>(in)
+            << boost::tuples::get<4>(in)
+            << boost::tuples::get<5>(in)
+            << boost::tuples::get<6>(in);
     }
 };
 
@@ -195,7 +223,15 @@ struct type_conversion<boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7> >
     static void to_base(boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7> &in,
         base_type &out, eIndicator &ind)
     {
-        throw soci_error("Conversions from boost::tuple are not supported.");
+        out
+            << boost::tuples::get<0>(in)
+            << boost::tuples::get<1>(in)
+            << boost::tuples::get<2>(in)
+            << boost::tuples::get<3>(in)
+            << boost::tuples::get<4>(in)
+            << boost::tuples::get<5>(in)
+            << boost::tuples::get<6>(in)
+            << boost::tuples::get<7>(in);
     }
 };
 
@@ -223,7 +259,16 @@ struct type_conversion<boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8> >
     static void to_base(boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8> &in,
         base_type &out, eIndicator &ind)
     {
-        throw soci_error("Conversions from boost::tuple are not supported.");
+        out
+            << boost::tuples::get<0>(in)
+            << boost::tuples::get<1>(in)
+            << boost::tuples::get<2>(in)
+            << boost::tuples::get<3>(in)
+            << boost::tuples::get<4>(in)
+            << boost::tuples::get<5>(in)
+            << boost::tuples::get<6>(in)
+            << boost::tuples::get<7>(in)
+            << boost::tuples::get<8>(in);
     }
 };
 
@@ -252,7 +297,17 @@ struct type_conversion<boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> >
     static void to_base(boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> &in,
         base_type &out, eIndicator &ind)
     {
-        throw soci_error("Conversions from boost::tuple are not supported.");
+        out
+            << boost::tuples::get<0>(in)
+            << boost::tuples::get<1>(in)
+            << boost::tuples::get<2>(in)
+            << boost::tuples::get<3>(in)
+            << boost::tuples::get<4>(in)
+            << boost::tuples::get<5>(in)
+            << boost::tuples::get<6>(in)
+            << boost::tuples::get<7>(in)
+            << boost::tuples::get<8>(in)
+            << boost::tuples::get<9>(in);
     }
 };
 
