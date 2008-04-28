@@ -1,4 +1,4 @@
-dnl $Id: ax_oracle_oci.m4,v 1.10 2007/06/23 01:51:22 mloskot Exp $
+dnl $Id: ax_oracle_oci.m4,v 1.11 2008/04/28 19:58:54 mloskot Exp $
 dnl
 dnl @synopsis AX_LIB_ORACLE_OCI([MINIMUM-VERSION])
 dnl
@@ -32,13 +32,14 @@ dnl
 dnl @category InstalledPackages
 dnl @category Cxx
 dnl @author Mateusz Loskot <mateusz@loskot.net>
-dnl @version $Date: 2007/06/23 01:51:22 $
+dnl @version $Date: 2008/04/28 19:58:54 $
 dnl @license AllPermissive
 dnl
-dnl $Id: ax_oracle_oci.m4,v 1.10 2007/06/23 01:51:22 mloskot Exp $
+dnl $Id: ax_oracle_oci.m4,v 1.11 2008/04/28 19:58:54 mloskot Exp $
 dnl
 AC_DEFUN([AX_LIB_ORACLE_OCI],
 [
+    AC_REQUIRE([AC_CANONICAL_HOST])
     AC_ARG_WITH([oracle],
         AC_HELP_STRING([--with-oracle=@<:@DIR@:>@],
             [use Oracle OCI API from given path to Oracle home directory]
@@ -136,9 +137,25 @@ Please, locate Oracle directories using --with-oracle or \
             CPPFLAGS="$CPPFLAGS -I$oracle_include_dir2"
         fi
 
+        # Figure out if we are building on win32.
+        case $host_os in
+            *mingw32* ) WIN32=yes ;;
+            *cygwin* )  WIN32=yes ;;
+            *) WIN32=no ;;
+        esac
+
+        if test "$WIN32" = "no"
+        then
+            oci_libs="-lclntsh -lnnz10"
+        else
+            oci_libs="-loci"
+        fi
+
         saved_LDFLAGS="$LDFLAGS"
-        oci_ldflags="-L$oracle_lib_dir -lclntsh -lnnz10"
+        saved_LIBS="$LIBS"
+        oci_ldflags="-L$oracle_lib_dir"
         LDFLAGS="$LDFLAGS $oci_ldflags"
+        LIBS="$LIBS $oci_libs"
 
         dnl
         dnl Check OCI headers
@@ -195,7 +212,7 @@ if (envh) OCIHandleFree(envh, OCI_HTYPE_ENV);
                     ]]
                 )],
                 [
-                ORACLE_OCI_LDFLAGS="$oci_ldflags"
+                ORACLE_OCI_LDFLAGS="$oci_ldflags $oci_libs"
                 oci_lib_found="yes"
                 AC_MSG_RESULT([yes])
                 ],
@@ -209,6 +226,7 @@ if (envh) OCIHandleFree(envh, OCI_HTYPE_ENV);
 
         CPPFLAGS="$saved_CPPFLAGS"
         LDFLAGS="$saved_LDFLAGS"
+        LIBS="$saved_LIBS"
     fi
 
     dnl
