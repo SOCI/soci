@@ -14,7 +14,8 @@
 // explicitly pull conversions for Boost's optional, tuple and fusion:
 #include <boost-optional.h>
 #include <boost-tuple.h>
-#include <boost-fusion.h>
+// FIXME - mloskot: Temporarily disabled to allow users to use older versions of Boost.
+//#include <boost-fusion.h>
 
 #include <algorithm>
 #include <cmath>
@@ -3204,6 +3205,9 @@ void test28()
 
 void test29()
 {
+// FIXME - mloskot: Temporarily disabled to allow users to use older versions of Boost.
+    std::cout << "test 29 skipped" << std::endl;
+#if 0
     session sql(backEndFactory_, connectString_);
 
     auto_table_creator tableCreator(tc_.table_creator_2(sql));
@@ -3347,6 +3351,7 @@ void test29()
     }
 
     std::cout << "test 29 passed" << std::endl;
+#endif
 }
 
 }; // class common_tests
