@@ -11,6 +11,11 @@
 #include "soci.h"
 #include "soci-config.h"
 
+// explicitly pull conversions for Boost's optional, tuple and fusion:
+#include <boost-optional.h>
+#include <boost-tuple.h>
+#include <boost-fusion.h>
+
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -278,6 +283,7 @@ public:
         test26();
         test27();
         test28();
+        test29();
     }
 
 private:
@@ -3194,6 +3200,153 @@ void test28()
     }
 
     std::cout << "test 28 passed" << std::endl;
+}
+
+void test29()
+{
+    session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_2(sql));
+    {
+        boost::fusion::vector<double, int, std::string> t1(3.5, 7, "Joe Hacker");
+        assert(boost::fusion::at_c<0>(t1) == 3.5);
+        assert(boost::fusion::at_c<1>(t1) == 7);
+        assert(boost::fusion::at_c<2>(t1) == "Joe Hacker");
+
+        sql << "insert into soci_test(num_float, num_int, name) values(:d, :i, :s)", use(t1);
+
+        // basic query
+
+        boost::fusion::vector<double, int, std::string> t2;
+        sql << "select num_float, num_int, name from soci_test", into(t2);
+
+        assert(boost::fusion::at_c<0>(t2) == 3.5);
+        assert(boost::fusion::at_c<1>(t2) == 7);
+        assert(boost::fusion::at_c<2>(t2) == "Joe Hacker");
+
+        sql << "delete from soci_test";
+    }
+
+    {
+        // composability with boost::optional
+
+        // use:
+        boost::fusion::vector<double, boost::optional<int>, std::string> t1(
+            3.5, boost::optional<int>(7), "Joe Hacker");
+        assert(boost::fusion::at_c<0>(t1) == 3.5);
+        assert(boost::fusion::at_c<1>(t1).is_initialized());
+        assert(boost::fusion::at_c<1>(t1).get() == 7);
+        assert(boost::fusion::at_c<2>(t1) == "Joe Hacker");
+
+        sql << "insert into soci_test(num_float, num_int, name) values(:d, :i, :s)", use(t1);
+
+        // into:
+        boost::fusion::vector<double, boost::optional<int>, std::string> t2;
+        sql << "select num_float, num_int, name from soci_test", into(t2);
+
+        assert(boost::fusion::at_c<0>(t2) == 3.5);
+        assert(boost::fusion::at_c<1>(t2).is_initialized());
+        assert(boost::fusion::at_c<1>(t2) == 7);
+        assert(boost::fusion::at_c<2>(t2) == "Joe Hacker");
+
+        sql << "delete from soci_test";
+    }
+
+    {
+        // composability with user-provided conversions
+
+        // use:
+        boost::fusion::vector<double, MyInt, std::string> t1(3.5, 7, "Joe Hacker");
+        assert(boost::fusion::at_c<0>(t1) == 3.5);
+        assert(boost::fusion::at_c<1>(t1).get() == 7);
+        assert(boost::fusion::at_c<2>(t1) == "Joe Hacker");
+
+        sql << "insert into soci_test(num_float, num_int, name) values(:d, :i, :s)", use(t1);
+
+        // into:
+        boost::fusion::vector<double, MyInt, std::string> t2;
+
+        sql << "select num_float, num_int, name from soci_test", into(t2);
+
+        assert(boost::fusion::at_c<0>(t2) == 3.5);
+        assert(boost::fusion::at_c<1>(t2).get() == 7);
+        assert(boost::fusion::at_c<2>(t2) == "Joe Hacker");
+
+        sql << "delete from soci_test";
+    }
+
+    {
+        // let's have fun - composition of tuple, optional and user-defined type
+
+        // use:
+        boost::fusion::vector<double, boost::optional<MyInt>, std::string> t1(
+            3.5, boost::optional<MyInt>(7), "Joe Hacker");
+        assert(boost::fusion::at_c<0>(t1) == 3.5);
+        assert(boost::fusion::at_c<1>(t1).is_initialized());
+        assert(boost::fusion::at_c<1>(t1).get().get() == 7);
+        assert(boost::fusion::at_c<2>(t1) == "Joe Hacker");
+
+        sql << "insert into soci_test(num_float, num_int, name) values(:d, :i, :s)", use(t1);
+
+        // into:
+        boost::fusion::vector<double, boost::optional<MyInt>, std::string> t2;
+
+        sql << "select num_float, num_int, name from soci_test", into(t2);
+
+        assert(boost::fusion::at_c<0>(t2) == 3.5);
+        assert(boost::fusion::at_c<1>(t2).is_initialized());
+        assert(boost::fusion::at_c<1>(t2).get().get() == 7);
+        assert(boost::fusion::at_c<2>(t2) == "Joe Hacker");
+
+        sql << "update soci_test set num_int = NULL";
+
+        sql << "select num_float, num_int, name from soci_test", into(t2);
+
+        assert(boost::fusion::at_c<0>(t2) == 3.5);
+        assert(boost::fusion::at_c<1>(t2).is_initialized() == false);
+        assert(boost::fusion::at_c<2>(t2) == "Joe Hacker");
+    }
+
+    {
+        // rowset<fusion::vector>
+
+        sql << "insert into soci_test(num_float, num_int, name) values(4.0, 8, 'Tony Coder')";
+        sql << "insert into soci_test(num_float, num_int, name) values(4.5, NULL, 'Cecile Sharp')";
+        sql << "insert into soci_test(num_float, num_int, name) values(5.0, 10, 'Djhava Ravaa')";
+
+        typedef boost::fusion::vector<double, boost::optional<int>, std::string> T;
+
+        rowset<T> rs = (sql.prepare
+            << "select num_float, num_int, name from soci_test order by num_float asc");
+
+        rowset<T>::const_iterator pos = rs.begin();
+
+        assert(boost::fusion::at_c<0>(*pos) == 3.5);
+        assert(boost::fusion::at_c<1>(*pos).is_initialized() == false);
+        assert(boost::fusion::at_c<2>(*pos) == "Joe Hacker");
+
+        ++pos;
+        assert(boost::fusion::at_c<0>(*pos) == 4.0);
+        assert(boost::fusion::at_c<1>(*pos).is_initialized());
+        assert(boost::fusion::at_c<1>(*pos).get() == 8);
+        assert(boost::fusion::at_c<2>(*pos) == "Tony Coder");
+
+        ++pos;
+        assert(boost::fusion::at_c<0>(*pos) == 4.5);
+        assert(boost::fusion::at_c<1>(*pos).is_initialized() == false);
+        assert(boost::fusion::at_c<2>(*pos) == "Cecile Sharp");
+
+        ++pos;
+        assert(boost::fusion::at_c<0>(*pos) == 5.0);
+        assert(boost::fusion::at_c<1>(*pos).is_initialized());
+        assert(boost::fusion::at_c<1>(*pos).get() == 10);
+        assert(boost::fusion::at_c<2>(*pos) == "Djhava Ravaa");
+
+        ++pos;
+        assert(pos == rs.end());
+    }
+
+    std::cout << "test 29 passed" << std::endl;
 }
 
 }; // class common_tests
