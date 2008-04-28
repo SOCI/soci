@@ -15,8 +15,6 @@
 #include "backend-loader.h"
 #include "blob.h"
 #include "blob-exchange.h"
-#include "boost-optional.h"
-#include "boost-tuple.h"
 #include "error.h"
 #include "exchange-traits.h"
 #include "into.h"
@@ -45,5 +43,11 @@
 #include "use-type.h"
 #include "values.h"
 #include "values-exchange.h"
+
+#ifdef SOCI_USE_BOOST
+#include "boost-fusion.h"
+#include "boost-optional.h"
+#include "boost-tuple.h"
+#endif // SOCI_USE_BOOST
 
 #endif // SOCI_H_INCLUDED
