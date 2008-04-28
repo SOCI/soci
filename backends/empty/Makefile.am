@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.4 2006/11/27 09:59:31 mloskot Exp $
+# $Id: Makefile.am,v 1.5 2008/04/28 19:58:54 mloskot Exp $
 # 
 # Copyright (C) 2006, Mateusz Loskot
 #
@@ -11,7 +11,7 @@ noinst_LTLIBRARIES	= \
 	lib@SOCI_EMPTY_LIBRARY_NAME@.la
 
 lib@SOCI_EMPTY_LIBRARY_NAME@_la_LDFLAGS = \
-	-release @LIBTOOL_RELEASE@
+	-release @LIBTOOL_RELEASE@ -no-undefined
 
 lib@SOCI_EMPTY_LIBRARY_NAME@_la_SOURCES = \
 	blob.cpp \

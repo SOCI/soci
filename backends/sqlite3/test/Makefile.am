@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.5 2007/06/23 01:51:22 mloskot Exp $
+# $Id: Makefile.am,v 1.6 2008/04/28 19:58:55 mloskot Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
@@ -23,8 +23,8 @@ test_sqlite3_SOURCES = \
 	test-sqlite3.cpp
 
 test_sqlite3_LDADD = \
-	$(top_srcdir)/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
-	$(top_srcdir)/src/backends/sqlite3/lib@SOCI_SQLITE3_LIBRARY_NAME@.la
+	$(top_builddir)/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
+	$(top_builddir)/src/backends/sqlite3/lib@SOCI_SQLITE3_LIBRARY_NAME@.la
 
 EXTRA_DIST = Makefile.basic
 

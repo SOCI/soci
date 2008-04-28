@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.10 2008/03/27 14:16:36 msobczak Exp $
+# $Id: Makefile.am,v 1.11 2008/04/28 19:58:55 mloskot Exp $
 # 
 # Copyright (C) 2006, Mateusz Loskot
 #
@@ -11,7 +11,7 @@ SUBDIRS = test
 lib_LTLIBRARIES	= lib@SOCI_CORE_LIBRARY_NAME@.la
 
 lib@SOCI_CORE_LIBRARY_NAME@_la_LDFLAGS = \
-	-release @LIBTOOL_RELEASE@
+	-release @LIBTOOL_RELEASE@ -no-undefined @LD_LIB@
 
 lib@SOCI_CORE_LIBRARY_NAME@_la_SOURCES = \
 	backend-loader.cpp \

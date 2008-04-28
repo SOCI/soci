@@ -1,17 +1,19 @@
-# $Id: Makefile.am,v 1.3 2006/11/27 09:59:31 mloskot Exp $
+# $Id: Makefile.am,v 1.4 2008/04/28 19:58:54 mloskot Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
 INCLUDES = -I$(top_srcdir)/src/core
 AM_CXXFLAGS = -fPIC
 AM_CPPFLAGS = @ORACLE_OCI_CFLAGS@
-AM_LDFLAGS = @ORACLE_OCI_LDFLAGS@
 
 lib_LTLIBRARIES	= \
 	lib@SOCI_ORACLE_LIBRARY_NAME@.la
 
 lib@SOCI_ORACLE_LIBRARY_NAME@_la_LDFLAGS = \
-	-release @LIBTOOL_RELEASE@
+	-release @LIBTOOL_RELEASE@ -no-undefined @ORACLE_OCI_LDFLAGS@
+
+lib@SOCI_ORACLE_LIBRARY_NAME@_la_LIBADD = \
+	@top_builddir@/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la
 
 lib@SOCI_ORACLE_LIBRARY_NAME@_la_SOURCES = \
 	blob.cpp \

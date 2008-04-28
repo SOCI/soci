@@ -10,6 +10,7 @@
 #include "error.h"
 #include <map>
 #include <cassert>
+#include <cassert>
 
 using namespace std;
 using namespace soci;

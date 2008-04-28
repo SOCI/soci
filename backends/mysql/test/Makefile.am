@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.4 2007/06/23 01:51:22 mloskot Exp $
+# $Id: Makefile.am,v 1.5 2008/04/28 19:58:54 mloskot Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
@@ -16,8 +16,8 @@ test_mysql_SOURCES = \
 	test-mysql.cpp
 
 test_mysql_LDADD = \
-	$(top_srcdir)/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
-	$(top_srcdir)/src/backends/mysql/lib@SOCI_MYSQL_LIBRARY_NAME@.la
+	$(top_builddir)/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
+	$(top_builddir)/src/backends/mysql/lib@SOCI_MYSQL_LIBRARY_NAME@.la
 
 EXTRA_DIST = Makefile.basic
 
