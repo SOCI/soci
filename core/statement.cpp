@@ -71,7 +71,7 @@ void statement_impl::alloc()
 
 void statement_impl::bind(values& values)
 {
-    size_t cnt = 0;
+    std::size_t cnt = 0;
 
     try
     {
@@ -97,7 +97,7 @@ void statement_impl::bind(values& values)
                 // named use element - check if it is used
                 const std::string placeholder = ":" + useName;
 
-                size_t pos = query_.find(placeholder);
+                std::size_t pos = query_.find(placeholder);
                 if (pos != std::string::npos)
                 {
                     const char nextChar = query_[pos + placeholder.size()];
@@ -125,7 +125,7 @@ void statement_impl::bind(values& values)
     }
     catch (...)
     {
-        for (size_t i = ++cnt; i != values.uses_.size(); ++i)
+        for (std::size_t i = ++cnt; i != values.uses_.size(); ++i)
         {
             values.add_unused(values.uses_[i], values.indicators_[i]);
         }

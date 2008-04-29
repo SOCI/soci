@@ -117,7 +117,7 @@ public:
         return *this;
     }
 
-    void skip(size_t num = 1) const
+    void skip(std::size_t num = 1) const
     {
         currentPos_ += num;
     }

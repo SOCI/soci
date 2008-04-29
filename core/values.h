@@ -132,7 +132,7 @@ public:
         return *this;
     }
 
-    void skip(size_t num = 1) const
+    void skip(std::size_t num = 1) const
     {
         if (row_ != NULL)
         {
@@ -212,10 +212,10 @@ private:
     std::vector<details::standard_use_type*> uses_;
     std::map<details::use_type_base*, eIndicator*> unused_;
     std::vector<eIndicator*> indicators_;
-    std::map<std::string, size_t> index_;
+    std::map<std::string, std::size_t> index_;
     std::vector<details::copy_base *> deepCopies_;
 
-    mutable size_t currentPos_;
+    mutable std::size_t currentPos_;
 
     bool uppercaseColumnNames_;
 
@@ -225,7 +225,7 @@ private:
     template <typename T>
     T get_from_uses(std::string const &name, T const &nullValue) const
     {
-        std::map<std::string, size_t>::const_iterator pos = index_.find(name);
+        std::map<std::string, std::size_t>::const_iterator pos = index_.find(name);
         if (pos != index_.end())
         {
             if (*indicators_[pos->second] == eNull)
@@ -241,7 +241,7 @@ private:
     template <typename T>
     T get_from_uses(std::string const &name) const
     {
-        std::map<std::string, size_t>::const_iterator pos = index_.find(name);
+        std::map<std::string, std::size_t>::const_iterator pos = index_.find(name);
         if (pos != index_.end())
         {
             return get_from_uses<T>(pos->second);
@@ -250,7 +250,7 @@ private:
     }
 
     template <typename T>
-    T get_from_uses(size_t pos) const
+    T get_from_uses(std::size_t pos) const
     {
         details::standard_use_type* u = uses_[pos];
 

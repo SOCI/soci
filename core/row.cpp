@@ -22,7 +22,7 @@ void row::add_properties(column_properties const &cp)
     std::string const & originalName = cp.get_name();
     if (uppercaseColumnNames_)
     {
-        for (size_t i = 0; i != originalName.size(); ++i)
+        for (std::size_t i = 0; i != originalName.size(); ++i)
         {
             columnName.push_back(std::toupper(originalName[i]));
         }
