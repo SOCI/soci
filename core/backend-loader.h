@@ -22,6 +22,7 @@ namespace dynamic_backends
 backend_factory const & get(std::string const & name);
 
 // provided for advanced user-level management
+std::vector<std::string> & search_paths();
 void register_backend(std::string const & name, std::string const & shared_object = std::string());
 void register_backend(std::string const & name, backend_factory const & factory);
 std::vector<std::string> list_all();

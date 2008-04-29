@@ -10,15 +10,10 @@
 #include "error.h"
 #include <map>
 #include <cassert>
-#include <cassert>
+#include <cstdlib>
 
-using namespace std;
 using namespace soci;
 using namespace soci::dynamic_backends;
-
-#ifndef SOCI_LIBRARY_SUFFIX
-#define SOCI_LIBRARY_SUFFIX ""
-#endif
 
 #ifdef _WIN32
 
@@ -27,14 +22,14 @@ using namespace soci::dynamic_backends;
 typedef CRITICAL_SECTION soci_mutex_t;
 typedef HMODULE soci_handler_t;
 
-#define LOCK(x)  EnterCriticalSection(x)
+#define LOCK(x) EnterCriticalSection(x)
 #define UNLOCK(x) LeaveCriticalSection(x)
 #define MUTEX_INIT(x) InitializeCriticalSection(x)
 #define MUTEX_DEST(x) DeleteCriticalSection(x)
 #define DLOPEN(x) LoadLibrary(x)
 #define DLCLOSE(x) FreeLibrary(x)
 #define DLSYM(x, y) GetProcAddress(x, y)
-#define LIBNAME(x) ("libsoci_" + x + SOCI_LIBRARY_SUFFIX + ".dll")
+#define LIBNAME(x) ("libsoci_" + x + ".dll")
 
 #else
 
@@ -44,14 +39,14 @@ typedef HMODULE soci_handler_t;
 typedef pthread_mutex_t soci_mutex_t;
 typedef void * soci_handler_t;
 
-#define LOCK(x)  pthread_mutex_lock(x)
+#define LOCK(x) pthread_mutex_lock(x)
 #define UNLOCK(x) pthread_mutex_unlock(x)
 #define MUTEX_INIT(x) pthread_mutex_init(x, NULL)
 #define MUTEX_DEST(x) pthread_mutex_destroy(x)
 #define DLOPEN(x) dlopen(x, RTLD_LAZY)
 #define DLCLOSE(x) dlclose(x)
 #define DLSYM(x, y) dlsym(x, y)
-#define LIBNAME(x) ("libsoci_" + x + SOCI_LIBRARY_SUFFIX + ".so")
+#define LIBNAME(x) ("libsoci_" + x + ".so")
 
 #endif // _WIN32
 
@@ -66,26 +61,73 @@ struct info
     info() : handler_(NULL), factory_(NULL) {}
 };
 
-typedef map<string, info> factory_map;
+typedef std::map<std::string, info> factory_map;
 factory_map factories_;
+
+std::vector<std::string> search_paths_;
 
 soci_mutex_t mutex_;
 
-// used to automatically initialize the mutex above
-struct mutex_mgr
+std::vector<std::string> get_default_paths()
 {
-    mutex_mgr()
+    std::vector<std::string> paths;
+
+    char const * const penv = std::getenv("SOCI_BACKENDS_PATH");
+    if (penv == NULL)
     {
-        MUTEX_INIT(&mutex_);
+        return paths;
     }
 
-    ~mutex_mgr()
+    std::string const env = penv;
+    if (env.empty())
+    {
+        return paths;
+    }
+
+    std::string::size_type searchFrom = 0;
+    while (searchFrom != env.size())
+    {
+        std::string::size_type const found = env.find(":", searchFrom);
+        if (found == searchFrom)
+        {
+            ++searchFrom;
+        }
+        else if (found != std::string::npos)
+        {
+            std::string const path = env.substr(searchFrom, found - searchFrom);
+            paths.push_back(path);
+
+            searchFrom = found + 1;
+        }
+        else // found == npos
+        {
+            std::string const path = env.substr(searchFrom);
+            paths.push_back(path);
+
+            searchFrom = env.size();
+        }
+    }
+
+    return paths;
+}
+
+// used to automatically initialize the global state
+struct static_state_mgr
+{
+    static_state_mgr()
+    {
+        MUTEX_INIT(&mutex_);
+
+        search_paths_ = get_default_paths();
+    }
+
+    ~static_state_mgr()
     {
         unload_all();
 
         MUTEX_DEST(&mutex_);
     }
-} mutex_mgr_;
+} static_state_mgr_;
 
 class scoped_lock
 {
@@ -97,7 +139,7 @@ private:
 };
 
 // non-synchronized helper for the other functions
-void do_unload(string const & name)
+void do_unload(std::string const & name)
 {
     factory_map::iterator i = factories_.find(name);
 
@@ -115,14 +157,37 @@ void do_unload(string const & name)
 
 // non-synchronized helper
 void do_register_backend(
-    string const & name, string const & shared_object)
+    std::string const & name, std::string const & shared_object)
 {
-    std::string so = (shared_object.empty() ? LIBNAME(name) : shared_object);
+    // The rules for backend search are as follows:
+    // - if the shared_object is given,
+    //   it names the library file and the search paths are not used
+    // - otherwise (shared_object not provided or empty):
+    //   - file named libsoci_NAME.so is searched in the list of search paths
 
-    soci_handler_t h = DLOPEN(so.c_str());
+    soci_handler_t h = NULL;
+    if (shared_object.empty() == false)
+    {
+        h = DLOPEN(shared_object.c_str());
+    }
+    else
+    {
+        // try all search paths
+        for (std::size_t i = 0; i != search_paths_.size(); ++i)
+        {
+            std::string const fullFileName = search_paths_[i] + "/" + LIBNAME(name);
+            h = DLOPEN(fullFileName.c_str());
+            if (h != NULL)
+            {
+                // already found
+                break;
+            }
+        }
+    }
+
     if (h == NULL)
     {
-        throw soci_error("Failed to open: " + so);
+        throw soci_error("Failed to find shared library for backend " + name);
     }
 
     std::string symbol = "factory_" + name;
@@ -153,7 +218,7 @@ void do_register_backend(
 
 } // unnamed namespace
 
-backend_factory const & dynamic_backends::get(string const & name)
+backend_factory const & dynamic_backends::get(std::string const & name)
 {
     scoped_lock lock(&mutex_);
 
@@ -177,8 +242,13 @@ backend_factory const & dynamic_backends::get(string const & name)
     return *(i->second.factory_);
 }
 
+std::vector<std::string> & search_paths()
+{
+    return search_paths_;
+}
+
 void dynamic_backends::register_backend(
-    string const & name, string const & shared_object)
+    std::string const & name, std::string const & shared_object)
 {
     scoped_lock lock(&mutex_);
 
@@ -186,7 +256,7 @@ void dynamic_backends::register_backend(
 }
 
 void dynamic_backends::register_backend(
-    string const & name, backend_factory const & factory)
+    std::string const & name, backend_factory const & factory)
 {
     scoped_lock lock(&mutex_);
 
@@ -217,7 +287,7 @@ std::vector<std::string> dynamic_backends::list_all()
     return ret;
 }
 
-void dynamic_backends::unload(string const & name)
+void dynamic_backends::unload(std::string const & name)
 {
     scoped_lock lock(&mutex_);
 
