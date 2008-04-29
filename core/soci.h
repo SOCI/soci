@@ -45,8 +45,10 @@
 #include "values-exchange.h"
 
 #ifdef SOCI_USE_BOOST
-// FIXME - mloskot: Temporarily disabled to allow users to use older versions of Boost.
-//#include "boost-fusion.h"
+#include <boost/version.hpp>
+#if defined(BOOST_VERSION) && BOOST_VERSION >= 103500
+#include "boost-fusion.h"
+#endif // BOOST_VERSION
 #include "boost-optional.h"
 #include "boost-tuple.h"
 #endif // SOCI_USE_BOOST

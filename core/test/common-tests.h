@@ -12,10 +12,12 @@
 #include "soci-config.h"
 
 // explicitly pull conversions for Boost's optional, tuple and fusion:
+#include <boost/version.hpp>
 #include <boost-optional.h>
 #include <boost-tuple.h>
-// FIXME - mloskot: Temporarily disabled to allow users to use older versions of Boost.
-//#include <boost-fusion.h>
+#if defined(BOOST_VERSION) && BOOST_VERSION >= 103500
+#include <boost-fusion.h>
+#endif // BOOST_VERSION
 
 #include <algorithm>
 #include <cmath>
@@ -3205,9 +3207,8 @@ void test28()
 
 void test29()
 {
-// FIXME - mloskot: Temporarily disabled to allow users to use older versions of Boost.
-    std::cout << "test 29 skipped" << std::endl;
-#if 0
+#if defined(BOOST_VERSION) && BOOST_VERSION >= 103500
+
     session sql(backEndFactory_, connectString_);
 
     auto_table_creator tableCreator(tc_.table_creator_2(sql));
@@ -3351,7 +3352,10 @@ void test29()
     }
 
     std::cout << "test 29 passed" << std::endl;
-#endif
+
+#else
+    std::cout << "test 29 skipped (no boost::fusion)" << std::endl;
+#endif // BOOST_VERSION
 }
 
 }; // class common_tests
