@@ -51,6 +51,7 @@
 #endif // BOOST_VERSION
 #include "boost-optional.h"
 #include "boost-tuple.h"
+#include "boost-gregorian-date.h"
 #endif // SOCI_USE_BOOST
 
 #endif // SOCI_H_INCLUDED

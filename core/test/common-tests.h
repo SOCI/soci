@@ -15,6 +15,7 @@
 #include <boost/version.hpp>
 #include <boost-optional.h>
 #include <boost-tuple.h>
+#include <boost-gregorian-date.h>
 #if defined(BOOST_VERSION) && BOOST_VERSION >= 103500
 #include <boost-fusion.h>
 #endif // BOOST_VERSION
@@ -287,6 +288,7 @@ public:
         test27();
         test28();
         test29();
+        test30();
     }
 
 private:
@@ -3356,6 +3358,61 @@ void test29()
 #else
     std::cout << "test 29 skipped (no boost::fusion)" << std::endl;
 #endif // BOOST_VERSION
+}
+
+// test for boost::gregorian::date
+void test30()
+{
+    session sql(backEndFactory_, connectString_);
+
+    {
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+        std::tm nov15;
+        nov15.tm_year = 105;
+        nov15.tm_mon = 10;
+        nov15.tm_mday = 15;
+        nov15.tm_hour = 0;
+        nov15.tm_min = 0;
+        nov15.tm_sec = 0;
+
+        sql << "insert into soci_test(tm) values(:tm)", use(nov15);
+
+        boost::gregorian::date bgd;
+        sql << "select tm from soci_test", into(bgd);
+
+        assert(bgd.year() == 2005);
+        assert(bgd.month() == 11);
+        assert(bgd.day() == 15);
+
+        sql << "update soci_test set tm = NULL";
+        try
+        {
+            sql << "select tm from soci_test", into(bgd);
+            assert(false);
+        }
+        catch (soci_error const & e)
+        {
+            assert(e.what() == std::string("Null value not allowed for this type"));
+        }
+    }
+
+    {
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+        boost::gregorian::date bgd(2008, boost::gregorian::May, 5);
+
+        sql << "insert into soci_test(tm) values(:tm)", use(bgd);
+
+        std::tm t;
+        sql << "select tm from soci_test", into(t);
+
+        assert(t.tm_year == 108);
+        assert(t.tm_mon == 4);
+        assert(t.tm_mday == 5);
+    }
+
+    std::cout << "test 30 passed" << std::endl;
 }
 
 }; // class common_tests
