@@ -22,8 +22,9 @@ extern "C"
 {
 
 // for dynamic backend loading
-SOCI_EMPTY_DECL backend_factory const * factory_firebird()
+SOCI_FIREBIRD_DECL backend_factory const * factory_firebird()
 {
+
     return &soci::firebird;
 }
 
