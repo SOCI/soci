@@ -12,6 +12,7 @@
 #include <soci-platform.h>
 #include <ciso646>
 #include <limits>
+#include <cstring>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -49,7 +50,7 @@ void mysql_vector_use_type_backend::pre_use(eIndicator const *ind)
         if (ind != NULL && ind[i] == eNull)
         {
             buf = new char[5];
-            strcpy(buf, "NULL");
+            std::strcpy(buf, "NULL");
         }
         else
         {
