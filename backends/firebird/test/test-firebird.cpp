@@ -1164,7 +1164,7 @@ int main(int argc, char** argv)
         << " \"service=/usr/local/firebird/db/test.fdb user=SYSDBA password=masterkey\"\n";
 
         std::cout << msg.str().c_str();
-        exit(1);
+        std::exit(1);
     }
 
     try

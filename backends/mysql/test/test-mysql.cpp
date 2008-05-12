@@ -281,7 +281,7 @@ int main(int argc, char** argv)
             << " connectstring\n"
             << "example: " << argv[0]
             << " \"dbname=test user=root password=\'Ala ma kota\'\"\n";
-        exit(1);
+        std::exit(1);
     }
 
     try

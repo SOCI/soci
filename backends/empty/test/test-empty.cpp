@@ -137,7 +137,7 @@ int main(int argc, char** argv)
             << " connectstring\n"
             << "example: " << argv[0]
             << " \'connect_string_for_empty_backend\'\n";
-        exit(1);
+        std::exit(1);
     }
 
     try

@@ -1143,7 +1143,7 @@ int main(int argc, char** argv)
             << " connectstring\n"
             << "example: " << argv[0]
             << " \'service=orcl user=scott password=tiger\'\n";
-        exit(1);
+        std::exit(1);
     }
 
     try
