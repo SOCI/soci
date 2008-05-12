@@ -98,25 +98,25 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, eIndicator *ind)
                 break;
             case eXShort:
                 {
-                    long val = strtol(buf, NULL, 10);
+                    long val = std::strtol(buf, NULL, 10);
                     set_invector_(data_, i, static_cast<short>(val));
                 }
                 break;
             case eXInteger:
                 {
-                    long val = strtol(buf, NULL, 10);
+                    long val = std::strtol(buf, NULL, 10);
                     set_invector_(data_, i, static_cast<int>(val));
                 }
                 break;
             case eXUnsignedLong:
                 {
-                    long long val = strtoll(buf, NULL, 10);
+                    long long val = std::strtoll(buf, NULL, 10);
                     set_invector_(data_, i, static_cast<unsigned long>(val));
                 }
                 break;
             case eXLongLong:
                 {
-                    long long val = strtoll(buf, NULL, 10);
+                    long long val = std::strtoll(buf, NULL, 10);
                     set_invector_(data_, i, val);
                 }
                 break;

@@ -109,28 +109,28 @@ void mysql_standard_into_type_backend::post_fetch(
         case eXShort:
             {
                 short *dest = static_cast<short*>(data_);
-                long val = strtol(buf, NULL, 10);
+                long val = std::strtol(buf, NULL, 10);
                 *dest = static_cast<short>(val);
             }
             break;
         case eXInteger:
             {
                 int *dest = static_cast<int*>(data_);
-                long val = strtol(buf, NULL, 10);
+                long val = std::strtol(buf, NULL, 10);
                 *dest = static_cast<int>(val);
             }
             break;
         case eXUnsignedLong:
             {
                 unsigned long *dest = static_cast<unsigned long *>(data_);
-                long long val = strtoll(buf, NULL, 10);
+                long long val = std::strtoll(buf, NULL, 10);
                 *dest = static_cast<unsigned long>(val);
             }
             break;
         case eXLongLong:
             {
                 long long *dest = static_cast<long long *>(data_);
-                *dest = strtoll(buf, NULL, 10);
+                *dest = std::strtoll(buf, NULL, 10);
             }
             break;
         case eXDouble:
