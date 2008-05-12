@@ -37,6 +37,9 @@ namespace sqlite_api
 #include <sqlite3.h>
 }
 
+#undef SQLITE_STATIC
+#define SQLITE_STATIC ((sqlite_api::sqlite3_destructor_type)0)
+
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
