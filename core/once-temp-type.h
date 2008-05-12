@@ -26,14 +26,14 @@ class SOCI_DECL once_temp_type
 {
 public:
 
-    once_temp_type(session &s);
-    once_temp_type(once_temp_type const &o);
-    once_temp_type & operator=(once_temp_type const &o);
+    once_temp_type(session & s);
+    once_temp_type(once_temp_type const & o);
+    once_temp_type & operator=(once_temp_type const & o);
 
     ~once_temp_type();
 
     template <typename T>
-    once_temp_type & operator<<(T const &t)
+    once_temp_type & operator<<(T const & t)
     {
         rcst_->accumulate(t);
         return *this;
@@ -43,17 +43,23 @@ public:
     once_temp_type & operator,(use_type_ptr const &);
 
 private:
-    ref_counted_statement *rcst_;
+    ref_counted_statement * rcst_;
 };
 
 // this needs to be lightweight and copyable
 class once_type
 {
 public:
-    once_type(session *s) : session_(s) {}
+    once_type() : session_(NULL) {}
+    once_type(session * s) : session_(s) {}
+
+    void set_session(session * s)
+    {
+        session_ = s;
+    }
 
     template <typename T>
-    once_temp_type operator<<(T const &t)
+    once_temp_type operator<<(T const & t)
     {
         once_temp_type o(*session_);
         o << t;
@@ -61,7 +67,7 @@ public:
     }
 
 private:
-    session *session_;
+    session * session_;
 };
 
 
@@ -69,10 +75,16 @@ private:
 class prepare_type
 {
 public:
-    prepare_type(session *s) : session_(s) {}
+    prepare_type() : session_(NULL) {}
+    prepare_type(session * s) : session_(s) {}
+
+    void set_session(session * s)
+    {
+        session_ = s;
+    }
 
     template <typename T>
-    prepare_temp_type operator<<(T const &t)
+    prepare_temp_type operator<<(T const & t)
     {
         prepare_temp_type p(*session_);
         p << t;
@@ -80,7 +92,7 @@ public:
     }
 
 private:
-    session *session_;
+    session * session_;
 };
 
 } // namespace details

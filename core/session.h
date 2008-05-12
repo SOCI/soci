@@ -29,12 +29,15 @@ class blob_backend;
 
 } // namespace details
 
+class connection_pool;
+
 class SOCI_DECL session
 {
 public:
     session();
     session(backend_factory const &factory, std::string const & connectString);
     session(std::string const & connectString);
+    session(connection_pool & pool);
 
     ~session();
 
@@ -64,14 +67,12 @@ public:
     void log_query(std::string const &query);
     std::string get_last_query() const;
 
-    void set_got_data(bool gotData) { gotData_ = gotData; }
-    bool got_data() const           { return gotData_;    }
+    void set_got_data(bool gotData);
+    bool got_data() const;
 
-    void uppercase_column_names(bool forceToUpper)
-    { uppercaseColumnNames_ = forceToUpper; }
+    void uppercase_column_names(bool forceToUpper);
 
-    bool get_uppercase_column_names() const
-    { return uppercaseColumnNames_; }
+    bool get_uppercase_column_names() const;
 
     // for diagnostics and advanced users
     // (downcast it to expected back-end session class)
@@ -98,6 +99,10 @@ private:
     details::session_backend *backEnd_;
 
     bool gotData_;
+
+    bool isFromPool_;
+    std::size_t poolPosition_;
+    connection_pool * pool_;
 };
 
 } // namespace SOCI

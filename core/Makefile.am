@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.11 2008/04/28 19:58:55 mloskot Exp $
+# $Id: Makefile.am,v 1.12 2008/05/12 21:07:20 msobczak Exp $
 # 
 # Copyright (C) 2006, Mateusz Loskot
 #
@@ -16,6 +16,7 @@ lib@SOCI_CORE_LIBRARY_NAME@_la_LDFLAGS = \
 lib@SOCI_CORE_LIBRARY_NAME@_la_SOURCES = \
 	backend-loader.cpp \
 	blob.cpp \
+	connection_pool.cpp \
 	error.cpp \
 	into-type.cpp \
 	once-temp-type.cpp \
@@ -37,8 +38,11 @@ soci_HEADERS = \
 	backend-loader.h \
 	blob.h \
 	blob-exchange.h \
+	boost-gregorian-date.h \
+	boost-fusion.h \
 	boost-optional.h \
 	boost-tuple.h \
+	connection-pool.h \
 	error.h \
 	exchange-traits.h \
 	into.h \

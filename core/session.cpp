@@ -7,6 +7,7 @@
 
 #define SOCI_SOURCE
 #include "session.h"
+#include "connection-pool.h"
 #include "soci-backend.h"
 #include "backend-loader.h"
 
@@ -36,7 +37,7 @@ void parseConnectString(std::string const & connectString,
     connectionParameters = connectString.substr(p + protocolSeparator.size());
 }
 
-void ensureConnected(session_backend *backEnd)
+void ensureConnected(session_backend * backEnd)
 {
     if (backEnd == NULL)
     {
@@ -48,7 +49,8 @@ void ensureConnected(session_backend *backEnd)
 
 session::session()
     : once(this), prepare(this), logStream_(NULL),
-      lastFactory_(NULL), uppercaseColumnNames_(false), backEnd_(NULL)
+      lastFactory_(NULL), uppercaseColumnNames_(false), backEnd_(NULL),
+      isFromPool_(false), pool_(NULL)
 {
 }
 
@@ -56,14 +58,16 @@ session::session(backend_factory const & factory,
     std::string const & connectString)
     : once(this), prepare(this), logStream_(NULL),
       lastFactory_(&factory), lastConnectString_(connectString),
-      uppercaseColumnNames_(false)
+      uppercaseColumnNames_(false),
+      isFromPool_(false), pool_(NULL)
 {
     backEnd_ = factory.make_session(connectString);
 }
 
 session::session(std::string const & connectString)
     : once(this), prepare(this), logStream_(NULL),
-      uppercaseColumnNames_(false)
+      uppercaseColumnNames_(false),
+      isFromPool_(false), pool_(NULL)
 {
     std::string backendName;
     std::string connectionParameters;
@@ -76,64 +80,110 @@ session::session(std::string const & connectString)
     lastConnectString_ = connectionParameters;
 
     backEnd_ = factory.make_session(connectionParameters);
+}
+
+session::session(connection_pool & pool)
+    : isFromPool_(true), pool_(&pool)
+{
+    poolPosition_ = pool.lease();
+    session & pooledSession = pool.at(poolPosition_);
+
+    once.set_session(&pooledSession);
+    prepare.set_session(&pooledSession);
+    backEnd_ = pooledSession.get_backend();
 }
 
 session::~session()
 {
-    delete backEnd_;
+    if (isFromPool_)
+    {
+        pool_->give_back(poolPosition_);
+    }
+    else
+    {
+        delete backEnd_;
+    }
 }
 
-void session::open(backend_factory const &factory,
+void session::open(backend_factory const & factory,
     std::string const & connectString)
 {
-    if (backEnd_ != NULL)
+    if (isFromPool_)
     {
-        throw soci_error("Cannot open already connected session.");
+        pool_->at(poolPosition_).open(factory, connectString);
     }
+    else
+    {
+        if (backEnd_ != NULL)
+        {
+            throw soci_error("Cannot open already connected session.");
+        }
 
-    backEnd_ = factory.make_session(connectString);
-    lastFactory_ = &factory;
-    lastConnectString_ = connectString;
+        backEnd_ = factory.make_session(connectString);
+        lastFactory_ = &factory;
+        lastConnectString_ = connectString;
+    }
 }
 
 void session::open(std::string const & connectString)
 {
-    if (backEnd_ != NULL)
+    if (isFromPool_)
     {
-        throw soci_error("Cannot open already connected session.");
+        pool_->at(poolPosition_).open(connectString);
     }
+    else
+    {
+        if (backEnd_ != NULL)
+        {
+            throw soci_error("Cannot open already connected session.");
+        }
 
-    std::string backendName;
-    std::string connectionParameters;
+        std::string backendName;
+        std::string connectionParameters;
 
-    parseConnectString(connectString, backendName, connectionParameters);
+        parseConnectString(connectString, backendName, connectionParameters);
 
-    backend_factory const & factory = dynamic_backends::get(backendName);
+        backend_factory const & factory = dynamic_backends::get(backendName);
 
-    backEnd_ = factory.make_session(connectionParameters);
-    lastFactory_ = &factory;
-    lastConnectString_ = connectionParameters;
+        backEnd_ = factory.make_session(connectionParameters);
+        lastFactory_ = &factory;
+        lastConnectString_ = connectionParameters;
+    }
 }
 
 void session::close()
 {
-    delete backEnd_;
-    backEnd_ = NULL;
+    if (isFromPool_)
+    {
+        pool_->at(poolPosition_).close();
+    }
+    else
+    {
+        delete backEnd_;
+        backEnd_ = NULL;
+    }
 }
 
 void session::reconnect()
 {
-    if (lastFactory_ == NULL)
+    if (isFromPool_)
     {
-        throw soci_error("Cannot reconnect without previous connection.");
+        pool_->at(poolPosition_).reconnect();
     }
-
-    if (backEnd_ != NULL)
+    else
     {
-        close();
-    }
+        if (lastFactory_ == NULL)
+        {
+            throw soci_error("Cannot reconnect without previous connection.");
+        }
 
-    backEnd_ = lastFactory_->make_session(lastConnectString_);
+        if (backEnd_ != NULL)
+        {
+            close();
+        }
+
+        backEnd_ = lastFactory_->make_session(lastConnectString_);
+    }
 }
 
 void session::begin()
@@ -153,32 +203,115 @@ void session::rollback()
 
 std::ostringstream & session::get_query_stream()
 {
-    return query_stream_;
+    if (isFromPool_)
+    {
+        return pool_->at(poolPosition_).get_query_stream();
+    }
+    else
+    {
+        return query_stream_;
+    }
 }
 
-void session::set_log_stream(std::ostream *s)
+void session::set_log_stream(std::ostream * s)
 {
-    logStream_ = s;
+    if (isFromPool_)
+    {
+        pool_->at(poolPosition_).set_log_stream(s);
+    }
+    else
+    {
+        logStream_ = s;
+    }
 }
 
 std::ostream * session::get_log_stream() const
 {
-    return logStream_;
+    if (isFromPool_)
+    {
+        return pool_->at(poolPosition_).get_log_stream();
+    }
+    else
+    {
+        return logStream_;
+    }
 }
 
-void session::log_query(std::string const &query)
+void session::log_query(std::string const & query)
 {
-    if (logStream_ != NULL)
+    if (isFromPool_)
     {
-        *logStream_ << query << '\n';
+        pool_->at(poolPosition_).log_query(query);
     }
+    else
+    {
+        if (logStream_ != NULL)
+        {
+            *logStream_ << query << '\n';
+        }
 
-    lastQuery_ = query;
+        lastQuery_ = query;
+    }
 }
 
 std::string session::get_last_query() const
 {
-    return lastQuery_;
+    if (isFromPool_)
+    {
+        return pool_->at(poolPosition_).get_last_query();
+    }
+    else
+    {
+        return lastQuery_;
+    }
+}
+
+void session::set_got_data(bool gotData)
+{
+    if (isFromPool_)
+    {
+        pool_->at(poolPosition_).set_got_data(gotData);
+    }
+    else
+    {
+        gotData_ = gotData;
+    }
+}
+
+bool session::got_data() const
+{
+    if (isFromPool_)
+    {
+        return pool_->at(poolPosition_).got_data();
+    }
+    else
+    {
+        return gotData_;
+    }
+}
+
+void session::uppercase_column_names(bool forceToUpper)
+{
+    if (isFromPool_)
+    {
+        pool_->at(poolPosition_).uppercase_column_names(forceToUpper);
+    }
+    else
+    {
+        uppercaseColumnNames_ = forceToUpper;
+    }
+}
+
+bool session::get_uppercase_column_names() const
+{
+    if (isFromPool_)
+    {
+        return pool_->at(poolPosition_).get_uppercase_column_names();
+    }
+    else
+    {
+        return uppercaseColumnNames_;
+    }
 }
 
 statement_backend * session::make_statement_backend()
