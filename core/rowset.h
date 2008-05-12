@@ -222,6 +222,11 @@ public:
         return pimpl_->end();
     }
 
+    bool empty() const
+    {
+        return (pimpl_->begin() == pimpl_->end());
+    }
+
 private:
 
     // Pointer to implementation - the body
