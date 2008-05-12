@@ -55,7 +55,7 @@ struct odbc_standard_into_type_backend : details::standard_into_type_backend
     details::eExchangeType type_;
     int position_;
     SQLSMALLINT odbcType_;
-    SQLINTEGER valueLen_;
+    SQLLEN valueLen_;
 };
 
 struct odbc_vector_into_type_backend : details::vector_into_type_backend
@@ -82,7 +82,7 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend
     odbc_statement_backend &statement_;
 
     SQLLEN *indHolders_;
-    std::vector<SQLINTEGER> indHolderVec_;
+    std::vector<SQLLEN> indHolderVec_;
     void *data_;
     char *buf_;              // generic buffer
     details::eExchangeType type_;
@@ -95,7 +95,7 @@ struct odbc_standard_use_type_backend : details::standard_use_type_backend
     odbc_standard_use_type_backend(odbc_statement_backend &st)
         : statement_(st), data_(0), buf_(0), indHolder_(0) {}
 
-    void prepare_for_bind(void *&data, SQLUINTEGER &size,
+    void prepare_for_bind(void *&data, SQLLEN &size,
                         SQLSMALLINT &sqlType, SQLSMALLINT &cType);
     void bind_helper(int &position,
         void *data, details::eExchangeType type);
@@ -114,7 +114,7 @@ struct odbc_standard_use_type_backend : details::standard_use_type_backend
     void *data_;
     details::eExchangeType type_;
     char *buf_;
-    SQLINTEGER indHolder_;
+    SQLLEN indHolder_;
 };
 
 struct odbc_vector_use_type_backend : details::vector_use_type_backend

@@ -222,7 +222,7 @@ void odbc_statement_backend::describe_column(int colNum, eDataType & type,
     SQLCHAR colNameBuffer[2048];
     SQLSMALLINT colNameBufferOverflow;
     SQLSMALLINT dataType;
-    SQLUINTEGER colSize;
+    SQLULEN colSize;
     SQLSMALLINT decDigits;
     SQLSMALLINT isNullable;
 
@@ -273,7 +273,7 @@ std::size_t odbc_statement_backend::column_size(int colNum)
     SQLCHAR colNameBuffer[2048];
     SQLSMALLINT colNameBufferOverflow;
     SQLSMALLINT dataType;
-    SQLUINTEGER colSize;
+    SQLULEN colSize;
     SQLSMALLINT decDigits;
     SQLSMALLINT isNullable;
 

@@ -15,7 +15,7 @@ using namespace soci;
 using namespace soci::details;
 
 void odbc_standard_use_type_backend::prepare_for_bind(
-    void *&data, SQLUINTEGER &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType)
+    void *&data, SQLLEN &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType)
 {
     switch (type_)
     {
@@ -111,7 +111,7 @@ void odbc_standard_use_type_backend::bind_helper(int &position, void *data, eExc
 
     SQLSMALLINT sqlType;
     SQLSMALLINT cType;
-    SQLUINTEGER size;
+    SQLLEN size;
 
     prepare_for_bind(data, size, sqlType, cType);
 
