@@ -12,13 +12,13 @@
 using namespace soci;
 using namespace soci::details;
 
-void ref_counted_prepare_info::exchange(into_type_ptr const &i)
+void ref_counted_prepare_info::exchange(into_type_ptr const & i)
 {
     intos_.push_back(i.get());
     i.release();
 }
 
-void ref_counted_prepare_info::exchange(use_type_ptr const &u)
+void ref_counted_prepare_info::exchange(use_type_ptr const & u)
 {
     uses_.push_back(u.get());
     u.release();

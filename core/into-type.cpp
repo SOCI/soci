@@ -17,7 +17,7 @@ standard_into_type::~standard_into_type()
     delete backEnd_;
 }
 
-void standard_into_type::define(statement_impl &st, int &position)
+void standard_into_type::define(statement_impl & st, int & position)
 {
     backEnd_ = st.make_into_type_backend();
     backEnd_->define_by_pos(position, data_, type_);
@@ -52,7 +52,7 @@ vector_into_type::~vector_into_type()
     delete backEnd_;
 }
 
-void vector_into_type::define(statement_impl &st, int &position)
+void vector_into_type::define(statement_impl & st, int & position)
 {
     backEnd_ = st.make_vector_into_type_backend();
     backEnd_->define_by_pos(position, data_, type_);

@@ -17,7 +17,7 @@ standard_use_type::~standard_use_type()
     delete backEnd_;
 }
 
-void standard_use_type::bind(statement_impl &st, int &position)
+void standard_use_type::bind(statement_impl & st, int & position)
 {
     backEnd_ = st.make_use_type_backend();
     if (name_.empty())
@@ -55,7 +55,7 @@ vector_use_type::~vector_use_type()
     delete backEnd_;
 }
 
-void vector_use_type::bind(statement_impl &st, int &position)
+void vector_use_type::bind(statement_impl & st, int & position)
 {
     backEnd_ = st.make_vector_use_type_backend();
     if (name_.empty())

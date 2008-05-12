@@ -24,7 +24,7 @@ eIndicator values::indicator(std::size_t pos) const
     }
 }
 
-eIndicator values::indicator(std::string const &name) const
+eIndicator values::indicator(std::string const & name) const
 {
     if (row_)
     {

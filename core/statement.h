@@ -32,25 +32,25 @@ class prepare_temp_type;
 class SOCI_DECL statement_impl
 {
 public:
-    statement_impl(session &s);
-    statement_impl(prepare_temp_type const &prep);
+    statement_impl(session & s);
+    statement_impl(prepare_temp_type const & prep);
     ~statement_impl();
 
     void alloc();
-    void bind(values& values);
-    void exchange(into_type_ptr const &i);
-    void exchange(use_type_ptr const &u);
+    void bind(values & values);
+    void exchange(into_type_ptr const & i);
+    void exchange(use_type_ptr const & u);
     void clean_up();
 
-    void prepare(std::string const &query,
+    void prepare(std::string const & query,
                     eStatementType eType = eRepeatableQuery);
     void define_and_bind();
     void undefine_and_bind();
     bool execute(bool withDataExchange = false);
     bool fetch();
     void describe();
-    void set_row(row* r);
-    void exchange_for_rowset(into_type_ptr const &i);
+    void set_row(row * r);
+    void exchange_for_rowset(into_type_ptr const & i);
 
     // for diagnostics and advanced users
     // (downcast it to expected back-end statement class)
@@ -64,36 +64,36 @@ public:
     void inc_ref();
     void dec_ref();
 
-    session &session_;
+    session & session_;
 
-    std::string rewrite_for_procedure_call(std::string const &query);
+    std::string rewrite_for_procedure_call(std::string const & query);
 
 protected:
-    std::vector<details::into_type_base*> intos_;
-    std::vector<details::use_type_base*> uses_;
-    std::vector<eIndicator*> indicators_;
+    std::vector<details::into_type_base *> intos_;
+    std::vector<details::use_type_base *> uses_;
+    std::vector<eIndicator *> indicators_;
 
 private:
 
     int refCount_;
 
-    row* row_;
+    row * row_;
     std::size_t fetchSize_;
     std::size_t initialFetchSize_;
     std::string query_;
-    std::map<std::string, use_type_base*> namedUses_;
+    std::map<std::string, use_type_base *> namedUses_;
 
-    std::vector<into_type_base*> intosForRow_;
+    std::vector<into_type_base *> intosForRow_;
     int definePositionForRow_;
 
-    void exchange_for_row(into_type_ptr const &i);
+    void exchange_for_row(into_type_ptr const & i);
     void define_for_row();
 
     template<typename T>
     void into_row()
     {
-        T* t = new T();
-        eIndicator* ind = new eIndicator(eOK);
+        T * t = new T();
+        eIndicator * ind = new eIndicator(eOK);
         row_->add_holder(t, ind);
         exchange_for_row(into(*t, *ind));
     }
@@ -110,11 +110,11 @@ private:
     void post_use(bool gotData);
     bool resize_intos(std::size_t upperBound = 0);
 
-    soci::details::statement_backend *backEnd_;
+    soci::details::statement_backend * backEnd_;
 
     // The type is noncopyable.
-    statement_impl(statement_impl const&);
-    statement_impl& operator=(statement_impl const&);
+    statement_impl(statement_impl const &);
+    statement_impl& operator=(statement_impl const &);
 
 };
 
@@ -125,20 +125,20 @@ private:
 class SOCI_DECL statement
 {
 public:
-    statement(session &s)
+    statement(session & s)
         : impl_(new details::statement_impl(s)) {}
-    statement(details::prepare_temp_type const &prep)
+    statement(details::prepare_temp_type const & prep)
         : impl_(new details::statement_impl(prep)) {}
     ~statement() { impl_->dec_ref(); }
 
     // copy is supported for this handle class
-    statement(statement const &other)
+    statement(statement const & other)
         : impl_(other.impl_)
     {
         impl_->inc_ref();
     }
 
-    void operator=(statement const &other)
+    void operator=(statement const & other)
     {
         other.impl_->inc_ref();
         impl_->dec_ref();
@@ -146,12 +146,12 @@ public:
     }
 
     void alloc()                                 { impl_->alloc();      }
-    void bind(values& values)                    { impl_->bind(values); }
-    void exchange(details::into_type_ptr const &i);
-    void exchange(details::use_type_ptr const &u);
-    void clean_up()                               { impl_->clean_up(); }
+    void bind(values & values)                   { impl_->bind(values); }
+    void exchange(details::into_type_ptr const & i);
+    void exchange(details::use_type_ptr const & u);
+    void clean_up()                              { impl_->clean_up(); }
 
-    void prepare(std::string const &query,
+    void prepare(std::string const & query,
         details::eStatementType eType = details::eRepeatableQuery)
     {
         impl_->prepare(query, eType);
@@ -173,9 +173,9 @@ public:
 
     bool got_data() const { return gotData_; }
 
-    void describe()      { impl_->describe(); }
-    void set_row(row* r) { impl_->set_row(r); }
-    void exchange_for_rowset(details::into_type_ptr const &i)
+    void describe()       { impl_->describe(); }
+    void set_row(row * r) { impl_->set_row(r); }
+    void exchange_for_rowset(details::into_type_ptr const & i)
     {
         impl_->exchange_for_rowset(i);
     }
@@ -207,7 +207,7 @@ public:
         return impl_->make_vector_use_type_backend();
     }
 
-    std::string rewrite_for_procedure_call(std::string const &query)
+    std::string rewrite_for_procedure_call(std::string const & query)
     {
         return impl_->rewrite_for_procedure_call(query);
     }
@@ -234,8 +234,8 @@ template <>
 class into_type<statement> : public standard_into_type
 {
 public:
-    into_type(statement &s) : standard_into_type(&s, eXStatement) {}
-    into_type(statement &s, eIndicator &ind)
+    into_type(statement & s) : standard_into_type(&s, eXStatement) {}
+    into_type(statement & s, eIndicator & ind)
         : standard_into_type(&s, eXStatement, ind) {}
 };
 
@@ -243,10 +243,10 @@ template <>
 class use_type<statement> : public standard_use_type
 {
 public:
-    use_type(statement &s, std::string const &name = std::string())
+    use_type(statement & s, std::string const & name = std::string())
         : standard_use_type(&s, eXStatement, false, name) {}
-    use_type(statement &s, eIndicator &ind,
-        std::string const &name = std::string())
+    use_type(statement & s, eIndicator & ind,
+        std::string const & name = std::string())
         : standard_use_type(&s, eXStatement, ind, false, name) {}
 
     // Note: there is no const version of use for statement,
@@ -257,4 +257,4 @@ public:
 
 } // namespace SOCI
 
-#endif
+#endif // SOCI_STATEMENT_H_INCLUDED

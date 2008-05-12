@@ -19,7 +19,7 @@ namespace soci
 class SOCI_DECL transaction
 {
 public:
-    transaction(session &sql);
+    transaction(session & sql);
 
     ~transaction();
 
@@ -28,7 +28,7 @@ public:
 
 private:
     bool handled_;
-    session &sql_;
+    session & sql_;
 };
 
 } // namespace soci

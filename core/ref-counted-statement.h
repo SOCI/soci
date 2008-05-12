@@ -22,7 +22,7 @@ namespace details
 class SOCI_DECL ref_counted_statement_base
 {
 public:
-    ref_counted_statement_base(session &s) : refCount_(1), session_(s) {}
+    ref_counted_statement_base(session & s) : refCount_(1), session_(s) {}
     virtual ~ref_counted_statement_base() {}
 
     virtual void final_action() = 0;
@@ -47,7 +47,7 @@ public:
     }
 
     template <typename T>
-    void accumulate(T const &t) { get_query_stream() << t; }
+    void accumulate(T const & t) { get_query_stream() << t; }
 
 protected:
     ref_counted_statement_base(ref_counted_statement_base const &);
@@ -59,7 +59,7 @@ protected:
 
     int refCount_;
 
-    session &session_;
+    session & session_;
 };
 
 // this class is supposed to be a vehicle for the "once" statements
@@ -67,11 +67,11 @@ protected:
 class ref_counted_statement : public ref_counted_statement_base
 {
 public:
-    ref_counted_statement(session &s)
+    ref_counted_statement(session & s)
         : ref_counted_statement_base(s), st_(s) {}
 
-    void exchange(into_type_ptr const &i) { st_.exchange(i); }
-    void exchange(use_type_ptr const &u) { st_.exchange(u); }
+    void exchange(into_type_ptr const & i) { st_.exchange(i); }
+    void exchange(use_type_ptr const & u) { st_.exchange(u); }
 
     virtual void final_action();
 

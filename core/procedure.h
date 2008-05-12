@@ -19,8 +19,8 @@ namespace details
 class SOCI_DECL procedure_impl : public statement_impl
 {
 public:
-    procedure_impl(session &s) : statement_impl(s), refCount_(1) {}
-    procedure_impl(prepare_temp_type const &prep);
+    procedure_impl(session & s) : statement_impl(s), refCount_(1) {}
+    procedure_impl(prepare_temp_type const & prep);
 
     void inc_ref() { ++refCount_; }
     void dec_ref()
@@ -40,19 +40,19 @@ private:
 class SOCI_DECL procedure
 {
 public:
-    procedure(session &s)
+    procedure(session & s)
         : impl_(new details::procedure_impl(s)) {}
-    procedure(details::prepare_temp_type const &prep)
+    procedure(details::prepare_temp_type const & prep)
         : impl_(new details::procedure_impl(prep)) {}
     ~procedure() { impl_->dec_ref(); }
 
     // copy is supported here
-    procedure(procedure const &other)
+    procedure(procedure const & other)
         : impl_(other.impl_)
     {
         impl_->inc_ref();
     }
-    void operator=(procedure const &other)
+    void operator=(procedure const & other)
     {
         other.impl_->inc_ref();
         impl_->dec_ref();

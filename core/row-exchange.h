@@ -26,12 +26,12 @@ class into_type<row>
     : public into_type_base // bypass the standard_into_type
 {
 public:
-    into_type(row &r) : r_(r) {}
-    into_type(row &r, eIndicator &ind) : r_(r) {}
+    into_type(row & r) : r_(r) {}
+    into_type(row & r, eIndicator & ind) : r_(r) {}
 
 private:
     // special handling for Row
-    virtual void define(statement_impl &st, int & /* position */)
+    virtual void define(statement_impl & st, int & /* position */)
     {
         st.set_row(&r_);
 
@@ -59,7 +59,7 @@ private:
 
     virtual void convert_from_base() {}
 
-    row &r_;
+    row & r_;
 };
 
 template <>

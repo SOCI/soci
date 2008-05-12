@@ -39,10 +39,10 @@ class conversion_into_type
 public:
     typedef typename type_conversion<T>::base_type BASE_TYPE;
 
-    conversion_into_type(T &value)
+    conversion_into_type(T & value)
         : into_type<BASE_TYPE>(details::base_value_holder<T>::val_, ownInd_),
           value_(value), ind_(ownInd_) {}
-    conversion_into_type(T &value, eIndicator &ind)
+    conversion_into_type(T & value, eIndicator & ind)
         : into_type<BASE_TYPE>(details::base_value_holder<T>::val_, ind),
           value_(value), ind_(ind) {}
 
@@ -53,14 +53,14 @@ private:
             details::base_value_holder<T>::val_, ind_, value_);
     }
 
-    T &value_;
+    T & value_;
 
     eIndicator ownInd_;
 
     // ind_ refers to either ownInd_, or the one provided by the user
     // in any case, ind_ refers to some valid indicator
     // and can be used by conversion routines
-    eIndicator &ind_;
+    eIndicator & ind_;
 };
 
 // Automatically create use_type from a type_conversion
@@ -73,19 +73,19 @@ class conversion_use_type
 public:
     typedef typename type_conversion<T>::base_type BASE_TYPE;
 
-    conversion_use_type(T &value, std::string const &name = std::string())
+    conversion_use_type(T & value, std::string const & name = std::string())
         : use_type<BASE_TYPE>(details::base_value_holder<T>::val_,
             ownInd_, name),
         value_(value), ind_(ownInd_), readOnly_(false) {}
-    conversion_use_type(const T &value, std::string const &name = std::string())
+    conversion_use_type(T const & value, std::string const & name = std::string())
         : use_type<BASE_TYPE>(details::base_value_holder<T>::val_,
             ownInd_, name),
         value_(const_cast<T &>(value)), ind_(ownInd_), readOnly_(true) {}
-    conversion_use_type(T &value, eIndicator &ind, std::string const &name
+    conversion_use_type(T & value, eIndicator & ind, std::string const & name
             = std::string())
         : use_type<BASE_TYPE>(details::base_value_holder<T>::val_, ind, name),
         value_(value), ind_(ind), readOnly_(false) {}
-    conversion_use_type(const T &value, eIndicator &ind, std::string const &name
+    conversion_use_type(T const & value, eIndicator & ind, std::string const & name
             = std::string())
         : use_type<BASE_TYPE>(details::base_value_holder<T>::val_, ind, name),
         value_(const_cast<T &>(value)), ind_(ind), readOnly_(true) {}
@@ -106,14 +106,14 @@ public:
     }
 
 private:
-    T &value_;
+    T & value_;
 
     eIndicator ownInd_;
 
     // ind_ refers to either ownInd_, or the one provided by the user
     // in any case, ind_ refers to some valid indicator
     // and can be used by conversion routines
-    eIndicator &ind_;
+    eIndicator & ind_;
 
     bool readOnly_;
 };
@@ -139,12 +139,12 @@ public:
     typedef typename std::vector<typename type_conversion<T>::base_type>
         BASE_TYPE;
 
-    conversion_into_type(std::vector<T> &value)
+    conversion_into_type(std::vector<T> & value)
         : details::base_vector_holder<T>(value.size()),
           into_type<BASE_TYPE>(details::base_vector_holder<T>::vec_, ownInd_),
           value_(value), ind_(ownInd_) {}
 
-    conversion_into_type(std::vector<T> &value, std::vector<eIndicator> &ind)
+    conversion_into_type(std::vector<T> & value, std::vector<eIndicator> & ind)
         : details::base_vector_holder<T>(value.size()),
           into_type<BASE_TYPE>(details::base_vector_holder<T>::vec_, ind),
           value_(value), ind_(ind) {}
@@ -178,14 +178,14 @@ private:
         }
     }
 
-    std::vector<T> &value_;
+    std::vector<T> & value_;
 
     std::vector<eIndicator> ownInd_;
 
     // ind_ refers to either ownInd_, or the one provided by the user
     // in any case, ind_ refers to some valid vector of indicators
     // and can be used by conversion routines
-    std::vector<eIndicator> &ind_;
+    std::vector<eIndicator> & ind_;
 };
 
 
@@ -200,16 +200,16 @@ public:
     typedef typename std::vector<typename type_conversion<T>::base_type>
         BASE_TYPE;
 
-    conversion_use_type(std::vector<T> &value,
-        std::string const &name=std::string())
+    conversion_use_type(std::vector<T> & value,
+        std::string const & name=std::string())
         : details::base_vector_holder<T>(value.size()),
           use_type<BASE_TYPE>(details::base_vector_holder<T>::vec_,
               ownInd_, name),
           value_(value), ind_(ownInd_) {}
 
-    conversion_use_type(std::vector<T> &value,
-        std::vector<eIndicator> const &ind,
-        std::string const &name=std::string())
+    conversion_use_type(std::vector<T> & value,
+        std::vector<eIndicator> const & ind,
+        std::string const & name=std::string())
         : details::base_vector_holder<T>(value.size()),
           use_type<BASE_TYPE>(details::base_vector_holder<T>::vec_,
               ind, name),
@@ -240,82 +240,56 @@ private:
         }
     }
 
-    std::vector<T> &value_;
+    std::vector<T> & value_;
 
     std::vector<eIndicator> ownInd_;
 
     // ind_ refers to either ownInd_, or the one provided by the user
     // in any case, ind_ refers to some valid vector of indicators
     // and can be used by conversion routines
-    std::vector<eIndicator> &ind_;
+    std::vector<eIndicator> & ind_;
 };
 
 template <typename T>
-into_type_ptr do_into(T &t, user_type_tag)
+into_type_ptr do_into(T & t, user_type_tag)
 {
     return into_type_ptr(new conversion_into_type<T>(t));
 }
 
 template <typename T>
-into_type_ptr do_into(T &t, eIndicator &indicator, user_type_tag)
+into_type_ptr do_into(T & t, eIndicator & indicator, user_type_tag)
 {
     return into_type_ptr(new conversion_into_type<T>(t, indicator));
 }
 
 template <typename T>
-use_type_ptr do_use(T &t, std::string const &name, user_type_tag)
+use_type_ptr do_use(T & t, std::string const & name, user_type_tag)
 {
     return use_type_ptr(new conversion_use_type<T>(t, name));
 }
 
 template <typename T>
-use_type_ptr do_use(const T &t, std::string const &name, user_type_tag)
+use_type_ptr do_use(T const & t, std::string const & name, user_type_tag)
 {
     return use_type_ptr(new conversion_use_type<T>(t, name));
 }
 
 template <typename T>
-use_type_ptr do_use(T &t, eIndicator &indicator,
-    std::string const &name, user_type_tag)
+use_type_ptr do_use(T & t, eIndicator & indicator,
+    std::string const & name, user_type_tag)
 {
     return use_type_ptr(new conversion_use_type<T>(t, indicator, name));
 }
 
 template <typename T>
-use_type_ptr do_use(const T &t, eIndicator &indicator,
-    std::string const &name, user_type_tag)
+use_type_ptr do_use(T const & t, eIndicator & indicator,
+    std::string const & name, user_type_tag)
 {
     return use_type_ptr(new conversion_use_type<T>(t, indicator, name));
 }
-
-// type_conversion specializations must use a stock type as the base_type.
-// Each such specialization automatically creates a use_type and an into_type.
-// This code is commented out, since it causes problems in those environments
-// where std::time_t is an alias to int.
-//
-// template<>
-// struct type_conversion<std::time_t>
-// {
-//     typedef std::tm base_type;
-//
-//     static void from_base(base_type const &in, eIndicator ind, std::time_t &out)
-//     {
-//         if (ind == eNull)
-//         {
-//             throw soci_error("Null value not allowed for this type");
-//         }
-//         out = mktime(&in);
-//     }
-//
-//     static void to_base(T const &in, base_type &out, eIndicator &ind)
-//     {
-//         out = *localtime(&in);
-//         ind = eOK;
-//     }
-// };
 
 } // namespace details
 
 } // namespace soci
 
-#endif
+#endif // SOCI_TYPE_CONVERSION_H_INCLUDED

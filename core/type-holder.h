@@ -30,7 +30,7 @@ public:
     template<typename T>
     T get()
     {
-        type_holder<T>* p = dynamic_cast<type_holder<T> *>(this);
+        type_holder<T> * p = dynamic_cast<type_holder<T> *>(this);
         if (p)
         {
             return p->value<T>();
@@ -49,17 +49,17 @@ template <typename T>
 class type_holder : public holder
 {
 public:
-    type_holder(T* t) : t_(t) {}
+    type_holder(T * t) : t_(t) {}
     ~type_holder() { delete t_; }
 
     template<typename TVAL> TVAL value() const { return *t_; }
 
 private:
-    T* t_;
+    T * t_;
 };
 
 } // namespace details
 
 } // namespace soci
 
-#endif
+#endif // SOCI_TYPE_HOLDER_H_INCLUDED

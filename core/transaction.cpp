@@ -11,7 +11,7 @@
 
 using namespace soci;
 
-transaction::transaction(session &sql)
+transaction::transaction(session & sql)
     : handled_(false), sql_(sql)
 {
     sql_.begin();

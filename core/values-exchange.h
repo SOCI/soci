@@ -32,14 +32,14 @@ template <>
 class use_type<values> : public use_type_base
 {
 public:
-    use_type(values &v, std::string const & /* name */ = std::string())
+    use_type(values & v, std::string const & /* name */ = std::string())
         : v_(v) {}
 
     // we ignore the possibility to have the whole values as NULL
-    use_type(values &v, eIndicator /* ind */, std::string const & /* name */ = std::string())
+    use_type(values & v, eIndicator /* ind */, std::string const & /* name */ = std::string())
         : v_(v) {}
 
-    virtual void bind(details::statement_impl &st, int& /*position*/)
+    virtual void bind(details::statement_impl & st, int & /*position*/)
     {
         v_.uppercase_column_names(st.session_.get_uppercase_column_names());
 
@@ -64,15 +64,15 @@ public:
     virtual void convert_from_base() {}
 
 private:
-    values& v_;
+    values & v_;
 };
 
 template <>
 class into_type<values> : public into_type<row>
 {
 public:
-    into_type(values &v) : into_type<row>(v.get_row()), v_(v) {}
-    into_type(values &v, eIndicator &ind)
+    into_type(values & v) : into_type<row>(v.get_row()), v_(v) {}
+    into_type(values & v, eIndicator & ind)
         : into_type<row>(v.get_row(), ind), v_(v) {}
 
     void clean_up()
@@ -81,7 +81,7 @@ public:
     }
 
 private:
-    values &v_;
+    values & v_;
 };
 
 } // namespace details

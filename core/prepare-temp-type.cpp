@@ -13,20 +13,20 @@
 using namespace soci;
 using namespace soci::details;
 
-prepare_temp_type::prepare_temp_type(session &s)
+prepare_temp_type::prepare_temp_type(session & s)
     : rcpi_(new ref_counted_prepare_info(s))
 {
     // this is the beginning of new query
     s.get_query_stream().str("");
 }
 
-prepare_temp_type::prepare_temp_type(prepare_temp_type const &o)
+prepare_temp_type::prepare_temp_type(prepare_temp_type const & o)
     :rcpi_(o.rcpi_)
 {
     rcpi_->inc_ref();
 }
 
-prepare_temp_type & prepare_temp_type::operator=(prepare_temp_type const &o)
+prepare_temp_type & prepare_temp_type::operator=(prepare_temp_type const & o)
 {
     o.rcpi_->inc_ref();
     rcpi_->dec_ref();
@@ -40,13 +40,13 @@ prepare_temp_type::~prepare_temp_type()
     rcpi_->dec_ref();
 }
 
-prepare_temp_type & prepare_temp_type::operator,(into_type_ptr const &i)
+prepare_temp_type & prepare_temp_type::operator,(into_type_ptr const & i)
 {
     rcpi_->exchange(i);
     return *this;
 }
 
-prepare_temp_type & prepare_temp_type::operator,(use_type_ptr const &u)
+prepare_temp_type & prepare_temp_type::operator,(use_type_ptr const & u)
 {
     rcpi_->exchange(u);
     return *this;

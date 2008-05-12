@@ -47,7 +47,7 @@ public:
     values() : row_(NULL), currentPos_(0), uppercaseColumnNames_(false) {}
 
     eIndicator indicator(std::size_t pos) const;
-    eIndicator indicator(std::string const &name) const;
+    eIndicator indicator(std::string const & name) const;
 
     template <typename T>
     T get(std::size_t pos) const
@@ -71,7 +71,7 @@ public:
     }
 
     template <typename T>
-    T get(std::size_t pos, T const &nullValue) const
+    T get(std::size_t pos, T const & nullValue) const
     {
         if (row_ != NULL)
         {
@@ -88,13 +88,13 @@ public:
     }
 
     template <typename T>
-    T get(std::string const &name) const
+    T get(std::string const & name) const
     {
         return row_ != NULL ? row_->get<T>(name) : get_from_uses<T>(name);
     }
     
     template <typename T>
-    T get(std::string const &name, T const &nullValue) const
+    T get(std::string const & name, T const & nullValue) const
     {
         return row_ != NULL ? row_->get<T>(name, nullValue)
             : get_from_uses<T>(name, nullValue);
@@ -157,11 +157,11 @@ public:
     }
     
     template <typename T>
-    void set(std::string const &name, const T &value, eIndicator indic = eOK)
+    void set(std::string const & name, T const & value, eIndicator indic = eOK)
     {
         index_.insert(std::make_pair(name, uses_.size()));
 
-        eIndicator* pind = new eIndicator(indic);
+        eIndicator * pind = new eIndicator(indic);
         indicators_.push_back(pind);
 
         typedef typename type_conversion<T>::base_type base_type;
@@ -179,7 +179,7 @@ public:
     template <typename T>
     void set(const T & value, eIndicator indic = eOK)
     {
-        eIndicator* pind = new eIndicator(indic);
+        eIndicator * pind = new eIndicator(indic);
         indicators_.push_back(pind);
 
         typedef typename type_conversion<T>::base_type base_type;
@@ -195,7 +195,7 @@ public:
     }
 
     template <typename T>
-    values & operator<<(const T & value)
+    values & operator<<(T const & value)
     {
         set(value);
         return *this;
@@ -208,10 +208,10 @@ private:
 
     //TODO To make values generally usable outside of TypeConversionS,
     // these should be reference counted smart pointers
-    row *row_;
-    std::vector<details::standard_use_type*> uses_;
-    std::map<details::use_type_base*, eIndicator*> unused_;
-    std::vector<eIndicator*> indicators_;
+    row * row_;
+    std::vector<details::standard_use_type *> uses_;
+    std::map<details::use_type_base *, eIndicator *> unused_;
+    std::vector<eIndicator *> indicators_;
     std::map<std::string, std::size_t> index_;
     std::vector<details::copy_base *> deepCopies_;
 
@@ -223,7 +223,7 @@ private:
     // without an underlying row object.  In that case, get_from_uses()
     // returns the underlying field values
     template <typename T>
-    T get_from_uses(std::string const &name, T const &nullValue) const
+    T get_from_uses(std::string const & name, T const & nullValue) const
     {
         std::map<std::string, std::size_t>::const_iterator pos = index_.find(name);
         if (pos != index_.end())
@@ -239,7 +239,7 @@ private:
     }
 
     template <typename T>
-    T get_from_uses(std::string const &name) const
+    T get_from_uses(std::string const & name) const
     {
         std::map<std::string, std::size_t>::const_iterator pos = index_.find(name);
         if (pos != index_.end())
@@ -256,7 +256,7 @@ private:
 
         typedef typename type_conversion<T>::base_type base_type;
 
-        if (dynamic_cast<details::use_type<base_type>* >(u))
+        if (dynamic_cast<details::use_type<base_type> *>(u))
         {
             base_type const & baseValue = *static_cast<base_type*>(u->get_data());
 
@@ -281,13 +281,13 @@ private:
         row_ = new row();
         row_->uppercase_column_names(uppercaseColumnNames_);
 
-        return *row_;
+        return * row_;
     }
     
     // this is called by Statement::bind(values)
-    void add_unused(details::use_type_base *u, eIndicator *i)
+    void add_unused(details::use_type_base * u, eIndicator * i)
     {
-        static_cast<details::standard_use_type*>(u)->convert_to_base();
+        static_cast<details::standard_use_type *>(u)->convert_to_base();
         unused_.insert(std::make_pair(u, i));
     }
 
@@ -301,7 +301,7 @@ private:
         // delete any uses and indicators which were created  by set() but
         // were not bound by the Statement
         // (bound uses and indicators are deleted in Statement::clean_up())
-        for (std::map<details::use_type_base*, eIndicator*>::iterator pos =
+        for (std::map<details::use_type_base *, eIndicator *>::iterator pos =
             unused_.begin(); pos != unused_.end(); ++pos)
         {
             delete pos->first;
@@ -317,4 +317,4 @@ private:
 
 } // namespace soci
 
-#endif
+#endif // SOCI_VALUES_H_INCLUDED

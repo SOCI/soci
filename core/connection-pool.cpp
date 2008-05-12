@@ -88,7 +88,7 @@ std::size_t connection_pool::lease()
     std::size_t pos;
 
     // no timeout
-    bool success = try_lease(pos, -1);
+    bool const success = try_lease(pos, -1);
     assert(success);
 
     return pos;

@@ -12,7 +12,7 @@
 using namespace soci;
 using namespace soci::details;
 
-rowid::rowid(session &s)
+rowid::rowid(session & s)
 {
     backEnd_ = s.make_rowid_backend();
 }

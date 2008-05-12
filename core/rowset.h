@@ -24,9 +24,9 @@ public:
     // Standard iterator traits
 
     typedef std::input_iterator_tag iterator_category;
-    typedef T  value_type;
-    typedef T* pointer;
-    typedef T& reference;
+    typedef T   value_type;
+    typedef T * pointer;
+    typedef T & reference;
     typedef ptrdiff_t difference_type;
 
     // Constructors
@@ -35,7 +35,7 @@ public:
         : st_(0), define_(0)
     {}
 
-    rowset_iterator(statement& st, T& define)
+    rowset_iterator(statement & st, T & define)
         : st_(&st), define_(&define)
     {
         assert(0 != st_);
@@ -60,7 +60,7 @@ public:
     
     // Iteration operators
 
-    rowset_iterator& operator++()
+    rowset_iterator & operator++()
     {
         // Fetch next row from dataset
         
@@ -83,20 +83,20 @@ public:
 
     // Comparison operators
 
-    bool operator==(rowset_iterator const& rhs) const
+    bool operator==(rowset_iterator const & rhs) const
     {
         return (st_== rhs.st_ && define_ == rhs.define_);
     }
 
-    bool operator!=(rowset_iterator const& rhs) const
+    bool operator!=(rowset_iterator const & rhs) const
     {
         return ((*this == rhs) == false);
     }
 
 private:
 
-    statement* st_;
-    T* define_;
+    statement * st_;
+    T * define_;
 
 }; // class rowset_iterator
 
@@ -113,7 +113,7 @@ public:
 
     typedef rowset_iterator<T> iterator;
 
-    rowset_impl(details::prepare_temp_type const& prep)
+    rowset_impl(details::prepare_temp_type const & prep)
         : refs_(1), st_(new statement(prep)), define_(new T())
     {
         assert(0 != st_.get());
@@ -155,8 +155,8 @@ private:
     const std::auto_ptr<T> define_;
 
     // Non-copyable
-    rowset_impl(rowset_impl const&);
-    rowset_impl& operator=(rowset_impl const&);
+    rowset_impl(rowset_impl const &);
+    rowset_impl & operator=(rowset_impl const &);
 
 }; // class rowset_impl
 
@@ -177,13 +177,13 @@ public:
     typedef rowset_iterator<T> iterator;
     typedef rowset_iterator<T> const_iterator;
     
-    rowset(details::prepare_temp_type const& prep)
+    rowset(details::prepare_temp_type const & prep)
         : pimpl_(new details::rowset_impl<T>(prep))
     {
         assert(0 != pimpl_);
     }
 
-    rowset(rowset const& other)
+    rowset(rowset const & other)
         : pimpl_(other.pimpl_)
     {
         assert(0 != pimpl_);
@@ -198,7 +198,7 @@ public:
         pimpl_->decRef();
     }
 
-    rowset& operator=(rowset const& rhs)
+    rowset& operator=(rowset const & rhs)
     {
         assert(0 != pimpl_);
         assert(0 != rhs.pimpl_);
@@ -230,7 +230,7 @@ public:
 private:
 
     // Pointer to implementation - the body
-    details::rowset_impl<T>* pimpl_;
+    details::rowset_impl<T> * pimpl_;
 
 }; // class rowset
 

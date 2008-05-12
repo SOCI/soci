@@ -18,18 +18,18 @@ template <typename T>
 class type_ptr
 {
 public:
-    type_ptr(T *p) : p_(p) {}
+    type_ptr(T * p) : p_(p) {}
     ~type_ptr() { delete p_; }
 
     T * get() const { return p_; }
     void release() const { p_ = NULL; }
 
 private:
-    mutable T *p_;
+    mutable T * p_;
 };
 
 } // namespace details
 
 } // namespace soci
 
-#endif
+#endif // SOCI_TYPE_PTR_H_INCLUDED

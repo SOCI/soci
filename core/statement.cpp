@@ -19,17 +19,17 @@
 using namespace soci;
 using namespace soci::details;
 
-void statement::exchange(into_type_ptr const &i)
+void statement::exchange(into_type_ptr const & i)
 {
     impl_->exchange(i);
 }
 
-void statement::exchange(use_type_ptr const &u)
+void statement::exchange(use_type_ptr const & u)
 {
     impl_->exchange(u);
 }
 
-statement_impl::statement_impl(session &s)
+statement_impl::statement_impl(session & s)
     : session_(s), refCount_(1), row_(0),
       fetchSize_(1), initialFetchSize_(1),
       alreadyDescribed_(false)
@@ -37,13 +37,13 @@ statement_impl::statement_impl(session &s)
     backEnd_ = s.make_statement_backend();
 }
 
-statement_impl::statement_impl(prepare_temp_type const &prep)
+statement_impl::statement_impl(prepare_temp_type const & prep)
     : session_(prep.get_prepare_info()->session_),
       refCount_(1), row_(0), fetchSize_(1), alreadyDescribed_(false)
 {
     backEnd_ = session_.make_statement_backend();
 
-    ref_counted_prepare_info *prepInfo = prep.get_prepare_info();
+    ref_counted_prepare_info * prepInfo = prep.get_prepare_info();
 
     // take all bind/define info
     intos_.swap(prepInfo->intos_);
@@ -69,13 +69,13 @@ void statement_impl::alloc()
     backEnd_->alloc();
 }
 
-void statement_impl::bind(values& values)
+void statement_impl::bind(values & values)
 {
     std::size_t cnt = 0;
 
     try
     {
-        for (std::vector<details::standard_use_type*>::iterator it =
+        for (std::vector<details::standard_use_type *>::iterator it =
             values.uses_.begin(); it != values.uses_.end(); ++it)
         {
             // only bind those variables which are:
@@ -133,26 +133,26 @@ void statement_impl::bind(values& values)
     }
 }
 
-void statement_impl::exchange(into_type_ptr const &i)
+void statement_impl::exchange(into_type_ptr const & i)
 {
     intos_.push_back(i.get());
     i.release();
 }
 
-void statement_impl::exchange_for_row(into_type_ptr const &i)
+void statement_impl::exchange_for_row(into_type_ptr const & i)
 {
     intosForRow_.push_back(i.get());
     i.release();
 }
 
-void statement_impl::exchange_for_rowset(into_type_ptr const &i)
+void statement_impl::exchange_for_rowset(into_type_ptr const & i)
 {
     if (intos_.empty() == false)
     {
         throw soci_error("Explicit into elements not allowed with rowset.");
     }
 
-    into_type_base *p = i.get();
+    into_type_base * p = i.get();
     intos_.push_back(p);
     i.release();
 
@@ -161,7 +161,7 @@ void statement_impl::exchange_for_rowset(into_type_ptr const &i)
     definePositionForRow_ = definePosition;
 }
 
-void statement_impl::exchange(use_type_ptr const &u)
+void statement_impl::exchange(use_type_ptr const & u)
 {
     uses_.push_back(u.get());
     u.release();
@@ -209,7 +209,7 @@ void statement_impl::clean_up()
     }
 }
 
-void statement_impl::prepare(std::string const &query,
+void statement_impl::prepare(std::string const & query,
     eStatementType eType)
 {
     query_ = query;
@@ -645,7 +645,7 @@ void statement_impl::describe()
 } // namespace details
 } // namespace soci
 
-void statement_impl::set_row(row *r)
+void statement_impl::set_row(row * r)
 {
     if (row_ != NULL)
     {
@@ -657,7 +657,7 @@ void statement_impl::set_row(row *r)
     row_->uppercase_column_names(session_.get_uppercase_column_names());
 }
 
-std::string statement_impl::rewrite_for_procedure_call(std::string const &query)
+std::string statement_impl::rewrite_for_procedure_call(std::string const & query)
 {
     return backEnd_->rewrite_for_procedure_call(query);
 }

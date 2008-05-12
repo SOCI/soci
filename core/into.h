@@ -20,21 +20,21 @@ namespace soci
 // the tag-dispatching, as defined in exchange_traits template
 
 template <typename T>
-details::into_type_ptr into(T &t)
+details::into_type_ptr into(T & t)
 {
     return details::do_into(t,
         typename details::exchange_traits<T>::type_family());
 }
 
 template <typename T>
-details::into_type_ptr into(T &t, eIndicator &indicator)
+details::into_type_ptr into(T & t, eIndicator & indicator)
 {
     return details::do_into(t, indicator,
         typename details::exchange_traits<T>::type_family());
 }
 
 template <typename T>
-details::into_type_ptr into(T &t, std::vector<eIndicator> &indicator)
+details::into_type_ptr into(T & t, std::vector<eIndicator> & indicator)
 {
     return details::do_into(t, indicator,
         typename details::exchange_traits<T>::type_family());
@@ -42,7 +42,7 @@ details::into_type_ptr into(T &t, std::vector<eIndicator> &indicator)
 
 // for char buffer with run-time size information
 template <typename T>
-details::into_type_ptr into(T &t, std::size_t bufSize)
+details::into_type_ptr into(T & t, std::size_t bufSize)
 {
     return details::into_type_ptr(new details::into_type<T>(t, bufSize));
 }
