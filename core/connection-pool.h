@@ -19,7 +19,7 @@ class session;
 class SOCI_DECL connection_pool
 {
 public:
-    connection_pool(std::size_t size);
+    explicit connection_pool(std::size_t size);
     ~connection_pool();
 
     session & at(std::size_t pos);
