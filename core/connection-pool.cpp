@@ -44,8 +44,13 @@ struct connection_pool::connection_pool_impl
 };
 
 connection_pool::connection_pool(std::size_t size)
-    : pimpl_(new connection_pool_impl())
 {
+    if (size == 0)
+    {
+        throw soci_error("Invalid pool size");
+    }
+
+    pimpl_ = new connection_pool_impl();
     pimpl_->sessions_.resize(size);
     for (std::size_t i = 0; i != size; ++i)
     {
@@ -80,6 +85,11 @@ connection_pool::~connection_pool()
 
 session & connection_pool::at(std::size_t pos)
 {
+    if (pos >= pimpl_->sessions_.size())
+    {
+        throw soci_error("Invalid pool position");
+    }
+
     return *(pimpl_->sessions_[pos].second);
 }
 
@@ -155,6 +165,12 @@ void connection_pool::give_back(std::size_t pos)
     if (cc != 0)
     {
         throw soci_error("Synchronization error");
+    }
+
+    if (pimpl_->sessions_[pos].first)
+    {
+        pthread_mutex_unlock(&(pimpl_->mtx_));
+        throw soci_error("Cannot release pool entry (already free)");
     }
 
     pimpl_->sessions_[pos].first = true;
