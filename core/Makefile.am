@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.12 2008/05/12 21:07:20 msobczak Exp $
+# $Id: Makefile.am,v 1.13 2008/05/13 10:53:27 mloskot Exp $
 # 
 # Copyright (C) 2006, Mateusz Loskot
 #
@@ -16,7 +16,7 @@ lib@SOCI_CORE_LIBRARY_NAME@_la_LDFLAGS = \
 lib@SOCI_CORE_LIBRARY_NAME@_la_SOURCES = \
 	backend-loader.cpp \
 	blob.cpp \
-	connection_pool.cpp \
+	connection-pool.cpp \
 	error.cpp \
 	into-type.cpp \
 	once-temp-type.cpp \
