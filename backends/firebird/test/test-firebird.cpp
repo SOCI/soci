@@ -8,7 +8,7 @@
 
 #include "soci.h"
 #include "soci-firebird.h"
-#include "error-firebird.h"            // soci::details::Firebird::throwISCError()
+#include "error-firebird.h"            // soci::details::Firebird::throw_iscerror()
 #include "common-tests.h"
 #include <iostream>
 #include <string>
@@ -972,7 +972,7 @@ namespace soci
         if (isc_dsql_sql_info(stat, &statementBackEnd->stmtp_, sizeof(cnt_req),
                               cnt_req, sizeof(cnt_info), cnt_info))
         {
-            soci::details::firebird::throwISCError(stat);
+            soci::details::firebird::throw_iscerror(stat);
         }
 
         long count = -1;

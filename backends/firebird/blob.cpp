@@ -143,7 +143,7 @@ void firebird_blob_backend::open()
                        &bid_, 0, NULL))
     {
         bhp_ = 0L;
-        throwISCError(stat);
+        throw_iscerror(stat);
     }
 
     // get basic blob info
@@ -165,7 +165,7 @@ void firebird_blob_backend::cleanUp()
         ISC_STATUS stat[20];
         if (isc_close_blob(stat, &bhp_))
         {
-            throwISCError(stat);
+            throw_iscerror(stat);
         }
         bhp_ = 0;
     }
@@ -213,7 +213,7 @@ void firebird_blob_backend::load()
         else
         {
             // an error has occured
-            throwISCError(stat);
+            throw_iscerror(stat);
         }
     }
     while (keep_reading);
@@ -232,7 +232,7 @@ void firebird_blob_backend::save()
     {
         if (isc_close_blob(stat, &bhp_))
         {
-            throwISCError(stat);
+            throw_iscerror(stat);
         }
         bhp_ = 0;
     }
@@ -241,7 +241,7 @@ void firebird_blob_backend::save()
     if (isc_create_blob(stat, &session_.dbhp_, &session_.trhp_,
                         &bhp_, &bid_))
     {
-        throwISCError(stat);
+        throw_iscerror(stat);
     }
 
     if (data_.size() > 0)
@@ -250,7 +250,7 @@ void firebird_blob_backend::save()
         if (isc_put_segment(stat, &bhp_,
                             static_cast<unsigned short>(data_.size()), &data_[0]))
         {
-            throwISCError(stat);
+            throw_iscerror(stat);
         }
     }
 
@@ -272,7 +272,7 @@ long firebird_blob_backend::getBLOBInfo()
     if (isc_blob_info(stat, &bhp_, sizeof(blob_items), blob_items,
                       sizeof(res_buffer), res_buffer))
     {
-        throwISCError(stat);
+        throw_iscerror(stat);
     }
 
     for (p = res_buffer; *p != isc_info_end ;)

@@ -34,7 +34,7 @@ namespace details
 namespace firebird
 {
 
-void getISCErrorDetails(ISC_STATUS * status_vector, std::string &msg)
+void get_iscerror_details(ISC_STATUS * status_vector, std::string &msg)
 {
     char msg_buffer[SOCI_FIREBIRD_ERRMSG];
     long *pvector = status_vector;
@@ -58,7 +58,7 @@ void getISCErrorDetails(ISC_STATUS * status_vector, std::string &msg)
     }
 }
 
-bool checkISCError(ISC_STATUS const * status_vector, long errNum)
+bool check_iscerror(ISC_STATUS const * status_vector, long errNum)
 {
     std::size_t i=0;
     while (status_vector[i] != 0)
@@ -72,11 +72,11 @@ bool checkISCError(ISC_STATUS const * status_vector, long errNum)
 
     return false;
 }
-void throwISCError(ISC_STATUS * status_vector)
+void throw_iscerror(ISC_STATUS * status_vector)
 {
     std::string msg;
 
-    getISCErrorDetails(status_vector, msg);
+    get_iscerror_details(status_vector, msg);
     throw firebird_soci_error(msg, status_vector);
 }
 

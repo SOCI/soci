@@ -109,7 +109,7 @@ firebird_session_backend::firebird_session_backend(
         const_cast<char*>(param.c_str()), &dbhp_,
         static_cast<short>(dpb_.size()), const_cast<char*>(dpb_.c_str())))
     {
-        throwISCError(stat);
+        throw_iscerror(stat);
     }
 
     // starting transaction
@@ -127,7 +127,7 @@ void firebird_session_backend::begin()
         ISC_STATUS stat[stat_size];
         if (isc_start_transaction(stat, &trhp_, 1, &dbhp_, 0, NULL))
         {
-            throwISCError(stat);
+            throw_iscerror(stat);
         }
     }
 }
@@ -159,7 +159,7 @@ void firebird_session_backend::commit()
     {
         if (isc_commit_transaction(stat, &trhp_))
         {
-            throwISCError(stat);
+            throw_iscerror(stat);
         }
 
         trhp_ = 0;
@@ -179,7 +179,7 @@ void firebird_session_backend::rollback()
     {
         if (isc_rollback_transaction(stat, &trhp_))
         {
-            throwISCError(stat);
+            throw_iscerror(stat);
         }
 
         trhp_ = 0;
@@ -200,7 +200,7 @@ void firebird_session_backend::cleanUp()
     {
         if (isc_commit_transaction(stat, &trhp_))
         {
-            throwISCError(stat);
+            throw_iscerror(stat);
         }
 
         trhp_ = 0;
@@ -208,7 +208,7 @@ void firebird_session_backend::cleanUp()
 
     if (isc_detach_database(stat, &dbhp_))
     {
-        throwISCError(stat);
+        throw_iscerror(stat);
     }
 
     dbhp_ = 0L;

@@ -42,7 +42,7 @@ void firebird_statement_backend::alloc()
 
     if (isc_dsql_allocate_statement(stat, &session_.dbhp_, &stmtp_))
     {
-        throwISCError(stat);
+        throw_iscerror(stat);
     }
 }
 
@@ -54,7 +54,7 @@ void firebird_statement_backend::clean_up()
     {
         if (isc_dsql_free_statement(stat, &stmtp_, DSQL_drop))
         {
-            throwISCError(stat);
+            throw_iscerror(stat);
         }
         stmtp_ = NULL;
     }
@@ -156,7 +156,7 @@ namespace
         if (isc_dsql_sql_info(stat, &stmt, sizeof(type_item),
             type_item, sizeof(res_buffer), res_buffer))
         {
-            throwISCError(stat);
+            throw_iscerror(stat);
         }
 
         if (res_buffer[0] == isc_info_sql_stmt_type)
@@ -219,14 +219,14 @@ void firebird_statement_backend::rewriteQuery(
     // allocate temporary statement to determine its type
     if (isc_dsql_allocate_statement(stat, &session_.dbhp_, &tmpStmtp))
     {
-        throwISCError(stat);
+        throw_iscerror(stat);
     }
 
     // prepare temporary statement
     if (isc_dsql_prepare(stat, &(session_.trhp_), &tmpStmtp, 0,
         &tmpQuery[0], SQL_DIALECT_V6, sqldap_))
     {
-        throwISCError(stat);
+        throw_iscerror(stat);
     }
 
     // get statement type
@@ -235,7 +235,7 @@ void firebird_statement_backend::rewriteQuery(
     // free temporary prepared statement
     if (isc_dsql_free_statement(stat, &tmpStmtp, DSQL_drop))
     {
-        throwISCError(stat);
+        throw_iscerror(stat);
     }
 
     // take care of special cases
@@ -301,7 +301,7 @@ void firebird_statement_backend::prepare(std::string const & query,
     if (isc_dsql_prepare(stat, &(session_.trhp_), &stmtp_, 0,
         &queryBuffer[0], SQL_DIALECT_V6, sqldap_))
     {
-        throwISCError(stat);
+        throw_iscerror(stat);
     }
 
     if (sqldap_->sqln < sqldap_->sqld)
@@ -311,7 +311,7 @@ void firebird_statement_backend::prepare(std::string const & query,
 
         if (isc_dsql_describe(stat, &stmtp_, SQL_DIALECT_V6, sqldap_))
         {
-            throwISCError(stat);
+            throw_iscerror(stat);
         }
     }
 
@@ -323,7 +323,7 @@ void firebird_statement_backend::prepare(std::string const & query,
 
     if (isc_dsql_describe_bind(stat, &stmtp_, SQL_DIALECT_V6, sqlda2p_))
     {
-        throwISCError(stat);
+        throw_iscerror(stat);
     }
 
     if (sqlda2p_->sqln < sqlda2p_->sqld)
@@ -333,7 +333,7 @@ void firebird_statement_backend::prepare(std::string const & query,
 
         if (isc_dsql_describe_bind(stat, &stmtp_, SQL_DIALECT_V6, sqlda2p_))
         {
-            throwISCError(stat);
+            throw_iscerror(stat);
         }
     }
 
@@ -397,9 +397,9 @@ firebird_statement_backend::execute(int number)
     if (isc_dsql_free_statement(stat, &stmtp_, DSQL_close))
     {
         // ignore attempt to close already closed cursor
-        if (checkISCError(stat, isc_dsql_cursor_close_err) == false)
+        if (check_iscerror(stat, isc_dsql_cursor_close_err) == false)
         {
-            throwISCError(stat);
+            throw_iscerror(stat);
         }
     }
 
@@ -419,7 +419,7 @@ firebird_statement_backend::execute(int number)
             // then execute query
             if (isc_dsql_execute(stat, &session_.trhp_, &stmtp_, SQL_DIALECT_V6, t))
             {
-                throwISCError(stat);
+                throw_iscerror(stat);
             }
 
             // soci does not allow bulk insert/update and bulk select operations
@@ -432,7 +432,7 @@ firebird_statement_backend::execute(int number)
         // use elements aren't vectors
         if (isc_dsql_execute(stat, &session_.trhp_, &stmtp_, SQL_DIALECT_V6, t))
         {
-            throwISCError(stat);
+            throw_iscerror(stat);
         }
     }
 
@@ -488,7 +488,7 @@ firebird_statement_backend::fetch(int number)
         else
         {
             // error
-            throwISCError(stat);
+            throw_iscerror(stat);
             return eNoData; // unreachable, for compiler only
         }
     } // for
