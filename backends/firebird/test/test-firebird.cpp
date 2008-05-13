@@ -8,7 +8,7 @@
 
 #include "soci.h"
 #include "soci-firebird.h"
-#include "error.h"            // soci::details::Firebird::throwISCError()
+#include "error-firebird.h"            // soci::details::Firebird::throwISCError()
 #include "common-tests.h"
 #include <iostream>
 #include <string>

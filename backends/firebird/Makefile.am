@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.4 2008/04/28 19:58:54 mloskot Exp $
+# $Id: Makefile.am,v 1.5 2008/05/13 11:59:34 mloskot Exp $
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
@@ -18,7 +18,7 @@ lib@SOCI_FIREBIRD_LIBRARY_NAME@_la_LIBADD = \
 lib@SOCI_FIREBIRD_LIBRARY_NAME@_la_SOURCES = \
 	blob.cpp \
 	common.cpp \
-	error.cpp \
+	error-firebird.cpp \
 	factory.cpp \
 	row-id.cpp \
 	session.cpp \
@@ -32,7 +32,7 @@ soci_firebirddir = $(includedir)/soci/firebird
 
 soci_firebird_HEADERS = \
 	common.h \
-	error.h \
+	error-firebird.h \
 	soci-firebird.h
 
 EXTRA_DIST = Makefile.basic

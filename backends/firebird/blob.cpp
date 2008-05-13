@@ -7,7 +7,7 @@
 
 #define SOCI_FIREBIRD_SOURCE
 #include "soci-firebird.h"
-#include "error.h"
+#include "error-firebird.h"
 
 using namespace soci;
 using namespace soci::details::firebird;
