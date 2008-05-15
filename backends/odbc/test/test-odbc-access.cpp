@@ -85,14 +85,14 @@ public:
         return sql;
     }
 
-    std::string toDate(std::string const &dateString) const
+    std::string toDate(std::string const &datdt_string) const
     {
-        return "#" + dateString + "#";
+        return "#" + datdt_string + "#";
     }
 
-    std::string toDateTime(std::string const &dateString) const
+    std::string toDateTime(std::string const &datdt_string) const
     {
-        return "#" + dateString + "#";
+        return "#" + datdt_string + "#";
     }
 };
 

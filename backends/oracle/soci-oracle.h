@@ -52,11 +52,11 @@ struct oracle_standard_into_type_backend : details::standard_into_type_backend
           data_(NULL), buf_(NULL) {}
 
     virtual void define_by_pos(int &position,
-        void *data, details::eExchangeType type);
+        void *data, details::exchange_type type);
 
     virtual void pre_fetch();
     virtual void post_fetch(bool gotData, bool calledFromFetch,
-        eIndicator *ind);
+        indicator *ind);
 
     virtual void clean_up();
 
@@ -66,7 +66,7 @@ struct oracle_standard_into_type_backend : details::standard_into_type_backend
     sb2 indOCIHolder_;
     void *data_;
     char *buf_;        // generic buffer
-    details::eExchangeType type_;
+    details::exchange_type type_;
 
     ub2 rCode_;
 };
@@ -78,10 +78,10 @@ struct oracle_vector_into_type_backend : details::vector_into_type_backend
           data_(NULL), buf_(NULL) {}
 
     virtual void define_by_pos(int &position,
-        void *data, details::eExchangeType type);
+        void *data, details::exchange_type type);
 
     virtual void pre_fetch();
-    virtual void post_fetch(bool gotData, eIndicator *ind);
+    virtual void post_fetch(bool gotData, indicator *ind);
 
     virtual void resize(std::size_t sz);
     virtual std::size_t size();
@@ -99,7 +99,7 @@ struct oracle_vector_into_type_backend : details::vector_into_type_backend
     std::vector<sb2> indOCIHolderVec_;
     void *data_;
     char *buf_;              // generic buffer
-    details::eExchangeType type_;
+    details::exchange_type type_;
     std::size_t colSize_;    // size of the string column (used for strings)
     std::vector<ub2> sizes_; // sizes of data fetched (used for strings)
 
@@ -113,15 +113,15 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
           data_(NULL), buf_(NULL) {}
 
     virtual void bind_by_pos(int &position,
-        void *data, details::eExchangeType type, bool readOnly);
+        void *data, details::exchange_type type, bool readOnly);
     virtual void bind_by_name(std::string const &name,
-        void *data, details::eExchangeType type, bool readOnly);
+        void *data, details::exchange_type type, bool readOnly);
 
     // common part for bind_by_pos and bind_by_name
     void prepare_for_bind(void *&data, sb4 &size, ub2 &oracleType, bool readOnly);
 
-    virtual void pre_use(eIndicator const *ind);
-    virtual void post_use(bool gotData, eIndicator *ind);
+    virtual void pre_use(indicator const *ind);
+    virtual void post_use(bool gotData, indicator *ind);
 
     virtual void clean_up();
 
@@ -132,7 +132,7 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
     void *data_;
     bool readOnly_;
     char *buf_;        // generic buffer
-    details::eExchangeType type_;
+    details::exchange_type type_;
 };
 
 struct oracle_vector_use_type_backend : details::vector_use_type_backend
@@ -142,9 +142,9 @@ struct oracle_vector_use_type_backend : details::vector_use_type_backend
           data_(NULL), buf_(NULL) {}
 
     virtual void bind_by_pos(int &position,
-        void *data, details::eExchangeType type);
+        void *data, details::exchange_type type);
     virtual void bind_by_name(std::string const &name,
-        void *data, details::eExchangeType type);
+        void *data, details::exchange_type type);
 
     // common part for bind_by_pos and bind_by_name
     void prepare_for_bind(void *&data, sb4 &size, ub2 &oracleType);
@@ -153,7 +153,7 @@ struct oracle_vector_use_type_backend : details::vector_use_type_backend
     // (as part of the bind_by_pos and bind_by_name)
     void prepare_indicators(std::size_t size);
 
-    virtual void pre_use(eIndicator const *ind);
+    virtual void pre_use(indicator const *ind);
 
     virtual std::size_t size();
 
@@ -166,7 +166,7 @@ struct oracle_vector_use_type_backend : details::vector_use_type_backend
     sb2 *indOCIHolders_;
     void *data_;
     char *buf_;        // generic buffer
-    details::eExchangeType type_;
+    details::exchange_type type_;
 
     // used for strings only
     std::vector<ub2> sizes_;
@@ -181,17 +181,17 @@ struct oracle_statement_backend : details::statement_backend
     virtual void alloc();
     virtual void clean_up();
     virtual void prepare(std::string const &query,
-        details::eStatementType eType);
+        details::statement_type eType);
 
-    virtual execFetchResult execute(int number);
-    virtual execFetchResult fetch(int number);
+    virtual exec_fetch_result execute(int number);
+    virtual exec_fetch_result fetch(int number);
 
     virtual int get_number_of_rows();
 
     virtual std::string rewrite_for_procedure_call(std::string const &query);
 
     virtual int prepare_for_describe();
-    virtual void describe_column(int colNum, eDataType &dtype,
+    virtual void describe_column(int colNum, data_type &dtype,
         std::string &columnName);
 
     // helper for defining into vector<string>

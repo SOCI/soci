@@ -21,7 +21,7 @@ using namespace soci;
 using namespace soci::details;
 
 void sqlite3_standard_use_type_backend::bind_by_pos(int & position, void * data,
-    eExchangeType type, bool readOnly)
+    exchange_type type, bool readOnly)
 {
     if (statement_.boundByName_)
     {
@@ -37,7 +37,7 @@ void sqlite3_standard_use_type_backend::bind_by_pos(int & position, void * data,
 }
 
 void sqlite3_standard_use_type_backend::bind_by_name(std::string const & name,
-    void * data, eExchangeType type, bool readOnly)
+    void * data, exchange_type type, bool readOnly)
 {
     if (statement_.boundByPos_)
     {
@@ -61,7 +61,7 @@ void sqlite3_standard_use_type_backend::bind_by_name(std::string const & name,
     statement_.boundByName_ = true;
 }
 
-void sqlite3_standard_use_type_backend::pre_use(eIndicator const * ind)
+void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
 {
     statement_.useData_.resize(1);
     int pos = position_ - 1;
@@ -71,7 +71,7 @@ void sqlite3_standard_use_type_backend::pre_use(eIndicator const * ind)
         statement_.useData_[0].resize(position_);
     }
 
-    if (ind != NULL && *ind == eNull)
+    if (ind != NULL && *ind == i_null)
     {
         statement_.useData_[0][pos].isNull_ = true;
         statement_.useData_[0][pos].data_ = "";
@@ -83,14 +83,14 @@ void sqlite3_standard_use_type_backend::pre_use(eIndicator const * ind)
         // allocate and fill the buffer with text-formatted client data
         switch (type_)
         {
-        case eXChar:
+        case x_char:
         {
             buf_ = new char[2];
             buf_[0] = *static_cast<char*>(data_);
             buf_[1] = '\0';
         }
         break;
-        case eXCString:
+        case x_cstring:
         {
             cstring_descriptor *strDescr = static_cast<cstring_descriptor *>(data_);
 
@@ -99,14 +99,14 @@ void sqlite3_standard_use_type_backend::pre_use(eIndicator const * ind)
             std::strcpy(buf_, strDescr->str_);
         }
         break;
-        case eXStdString:
+        case x_stdstring:
         {
             std::string *s = static_cast<std::string *>(data_);
             buf_ = new char[s->size() + 1];
             std::strcpy(buf_, s->c_str());
         }
         break;
-        case eXShort:
+        case x_short:
         {
             std::size_t const bufSize
             = std::numeric_limits<short>::digits10 + 3;
@@ -115,7 +115,7 @@ void sqlite3_standard_use_type_backend::pre_use(eIndicator const * ind)
                           static_cast<int>(*static_cast<short*>(data_)));
         }
         break;
-        case eXInteger:
+        case x_integer:
         {
             std::size_t const bufSize
             = std::numeric_limits<int>::digits10 + 3;
@@ -124,7 +124,7 @@ void sqlite3_standard_use_type_backend::pre_use(eIndicator const * ind)
                           *static_cast<int*>(data_));
         }
         break;
-        case eXUnsignedLong:
+        case x_unsigned_long:
         {
             std::size_t const bufSize
             = std::numeric_limits<unsigned long>::digits10 + 2;
@@ -133,7 +133,7 @@ void sqlite3_standard_use_type_backend::pre_use(eIndicator const * ind)
                           *static_cast<unsigned long*>(data_));
         }
         break;
-        case eXLongLong:
+        case x_long_long:
         {
             std::size_t const bufSize
             = std::numeric_limits<long long>::digits10 + 3;
@@ -142,7 +142,7 @@ void sqlite3_standard_use_type_backend::pre_use(eIndicator const * ind)
                           *static_cast<long long *>(data_));
         }
         break;
-        case eXDouble:
+        case x_double:
         {
             // no need to overengineer it (KISS)...
 
@@ -153,7 +153,7 @@ void sqlite3_standard_use_type_backend::pre_use(eIndicator const * ind)
                           *static_cast<double*>(data_));
         }
         break;
-        case eXStdTm:
+        case x_stdtm:
         {
             std::size_t const bufSize = 20;
             buf_ = new char[bufSize];
@@ -164,7 +164,7 @@ void sqlite3_standard_use_type_backend::pre_use(eIndicator const * ind)
                           t->tm_hour, t->tm_min, t->tm_sec);
         }
         break;
-        case eXRowID:
+        case x_rowid:
         {
             // RowID is internally identical to unsigned long
 
@@ -178,7 +178,7 @@ void sqlite3_standard_use_type_backend::pre_use(eIndicator const * ind)
             snprintf(buf_, bufSize, "%lu", rbe->value_);
         }
         break;
-        case eXBLOB:
+        case x_blob:
         {
             blob *b = static_cast<blob *>(data_);
             sqlite3_blob_backend *bbe =
@@ -197,7 +197,7 @@ void sqlite3_standard_use_type_backend::pre_use(eIndicator const * ind)
         }
 
         statement_.useData_[0][pos].isNull_ = false;
-        if (type_ != eXBLOB)
+        if (type_ != x_blob)
         {
             statement_.useData_[0][pos].blobBuf_ = 0;
             statement_.useData_[0][pos].blobSize_ = 0;
@@ -207,7 +207,7 @@ void sqlite3_standard_use_type_backend::pre_use(eIndicator const * ind)
 }
 
 void sqlite3_standard_use_type_backend::post_use(
-    bool /* gotData */, eIndicator * /* ind */)
+    bool /* gotData */, indicator * /* ind */)
 {
     // TODO: Is it possible to have the bound element being overwritten
     // by the database?

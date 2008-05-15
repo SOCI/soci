@@ -14,7 +14,7 @@ using namespace soci::details;
 using namespace soci::details::firebird;
 
 void firebird_vector_into_type_backend::define_by_pos(
-    int & position, void * data, eExchangeType type)
+    int & position, void * data, exchange_type type)
 {
     position_ = position-1;
     data_ = data;
@@ -59,34 +59,34 @@ void firebird_vector_into_type_backend::exchangeData(std::size_t row)
     switch (type_)
     {
         // simple cases
-    case eXChar:
+    case x_char:
         setIntoVector(data_, row, getTextParam(var)[0]);
         break;
-    case eXShort:
+    case x_short:
         {
             short tmp = from_isc<short>(var);
             setIntoVector(data_, row, tmp);
         }
         break;
-    case eXInteger:
+    case x_integer:
         {
             int tmp = from_isc<int>(var);
             setIntoVector(data_, row, tmp);
         }
         break;
-    case eXUnsignedLong:
+    case x_unsigned_long:
         {
             unsigned long tmp = from_isc<unsigned long>(var);
             setIntoVector(data_, row, tmp);
         }
         break;
-    case eXLongLong:
+    case x_long_long:
         {
             long long tmp = from_isc<long long>(var);
             setIntoVector(data_, row, tmp);
         }
         break;
-    case eXDouble:
+    case x_double:
         {
             double tmp = from_isc<double>(var);
             setIntoVector(data_, row, tmp);
@@ -94,10 +94,10 @@ void firebird_vector_into_type_backend::exchangeData(std::size_t row)
         break;
 
         // cases that require adjustments and buffer management
-    case eXStdString:
+    case x_stdstring:
         setIntoVector(data_, row, getTextParam(var));
         break;
-    case eXStdTm:
+    case x_stdtm:
         {
             std::tm data;
             tmDecode(var->sqltype, buf_, &data);
@@ -112,7 +112,7 @@ void firebird_vector_into_type_backend::exchangeData(std::size_t row)
 }
 
 void firebird_vector_into_type_backend::post_fetch(
-    bool gotData, eIndicator * ind)
+    bool gotData, indicator * ind)
 {
     // Here we have to set indicators only. Data was exchanged with user
     // buffers during fetch()
@@ -122,7 +122,7 @@ void firebird_vector_into_type_backend::post_fetch(
 
         for (std::size_t i = 0; i<rows; ++i)
         {
-            if (statement_.inds_[position_][i] == eNull && (ind == NULL))
+            if (statement_.inds_[position_][i] == i_null && (ind == NULL))
             {
                 throw soci_error("Null value fetched and no indicator defined.");
             }
@@ -138,28 +138,28 @@ void firebird_vector_into_type_backend::resize(std::size_t sz)
 {
     switch (type_)
     {
-    case eXChar:
+    case x_char:
         resizeVector<char> (data_, sz);
         break;
-    case eXShort:
+    case x_short:
         resizeVector<short> (data_, sz);
         break;
-    case eXInteger:
+    case x_integer:
         resizeVector<int> (data_, sz);
         break;
-    case eXUnsignedLong:
+    case x_unsigned_long:
         resizeVector<unsigned long>(data_, sz);
         break;
-    case eXLongLong:
+    case x_long_long:
         resizeVector<long long> (data_, sz);
         break;
-    case eXDouble:
+    case x_double:
         resizeVector<double> (data_, sz);
         break;
-    case eXStdString:
+    case x_stdstring:
         resizeVector<std::string> (data_, sz);
         break;
-    case eXStdTm:
+    case x_stdtm:
         resizeVector<std::tm> (data_, sz);
         break;
 
@@ -174,28 +174,28 @@ std::size_t firebird_vector_into_type_backend::size()
     switch (type_)
     {
         // simple cases
-    case eXChar:
+    case x_char:
         sz = getVectorSize<char> (data_);
         break;
-    case eXShort:
+    case x_short:
         sz = getVectorSize<short> (data_);
         break;
-    case eXInteger:
+    case x_integer:
         sz = getVectorSize<int> (data_);
         break;
-    case eXUnsignedLong:
+    case x_unsigned_long:
         sz = getVectorSize<unsigned long>(data_);
         break;
-    case eXLongLong:
+    case x_long_long:
         sz = getVectorSize<long long> (data_);
         break;
-    case eXDouble:
+    case x_double:
         sz = getVectorSize<double> (data_);
         break;
-    case eXStdString:
+    case x_stdstring:
         sz = getVectorSize<std::string> (data_);
         break;
-    case eXStdTm:
+    case x_stdtm:
         sz = getVectorSize<std::tm> (data_);
         break;
 

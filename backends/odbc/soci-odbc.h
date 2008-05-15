@@ -41,18 +41,18 @@ struct odbc_standard_into_type_backend : details::standard_into_type_backend
     {}
 
     virtual void define_by_pos(int &position,
-        void *data, details::eExchangeType type);
+        void *data, details::exchange_type type);
 
     virtual void pre_fetch();
     virtual void post_fetch(bool gotData, bool calledFromFetch,
-        eIndicator *ind);
+        indicator *ind);
 
     virtual void clean_up();
 
     odbc_statement_backend &statement_;
     char *buf_;        // generic buffer
     void *data_;
-    details::eExchangeType type_;
+    details::exchange_type type_;
     int position_;
     SQLSMALLINT odbcType_;
     SQLLEN valueLen_;
@@ -65,10 +65,10 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend
           data_(NULL), buf_(NULL) {}
 
     virtual void define_by_pos(int &position,
-        void *data, details::eExchangeType type);
+        void *data, details::exchange_type type);
 
     virtual void pre_fetch();
-    virtual void post_fetch(bool gotData, eIndicator *ind);
+    virtual void post_fetch(bool gotData, indicator *ind);
 
     virtual void resize(std::size_t sz);
     virtual std::size_t size();
@@ -85,7 +85,7 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend
     std::vector<SQLLEN> indHolderVec_;
     void *data_;
     char *buf_;              // generic buffer
-    details::eExchangeType type_;
+    details::exchange_type type_;
     std::size_t colSize_;    // size of the string column (used for strings)
     SQLSMALLINT odbcType_;
 };
@@ -98,21 +98,21 @@ struct odbc_standard_use_type_backend : details::standard_use_type_backend
     void prepare_for_bind(void *&data, SQLLEN &size,
                         SQLSMALLINT &sqlType, SQLSMALLINT &cType);
     void bind_helper(int &position,
-        void *data, details::eExchangeType type);
+        void *data, details::exchange_type type);
 
     virtual void bind_by_pos(int &position,
-        void *data, details::eExchangeType type, bool readOnly);
+        void *data, details::exchange_type type, bool readOnly);
     virtual void bind_by_name(std::string const &name,
-        void *data, details::eExchangeType type, bool readOnly);
+        void *data, details::exchange_type type, bool readOnly);
 
-    virtual void pre_use(eIndicator const *ind);
-    virtual void post_use(bool gotData, eIndicator *ind);
+    virtual void pre_use(indicator const *ind);
+    virtual void post_use(bool gotData, indicator *ind);
 
     virtual void clean_up();
 
     odbc_statement_backend &statement_;
     void *data_;
-    details::eExchangeType type_;
+    details::exchange_type type_;
     char *buf_;
     SQLLEN indHolder_;
 };
@@ -130,14 +130,14 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend
     // common part for bind_by_pos and bind_by_name
     void prepare_for_bind(void *&data, SQLUINTEGER &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType);
     void bind_helper(int &position,
-        void *data, details::eExchangeType type);
+        void *data, details::exchange_type type);
 
     virtual void bind_by_pos(int &position,
-        void *data, details::eExchangeType type);
+        void *data, details::exchange_type type);
     virtual void bind_by_name(std::string const &name,
-        void *data, details::eExchangeType type);
+        void *data, details::exchange_type type);
 
-    virtual void pre_use(eIndicator const *ind);
+    virtual void pre_use(indicator const *ind);
 
     virtual std::size_t size();
 
@@ -148,7 +148,7 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend
     SQLLEN *indHolders_;
     std::vector<SQLLEN> indHolderVec_;
     void *data_;
-    details::eExchangeType type_;
+    details::exchange_type type_;
     char *buf_;              // generic buffer
     std::size_t colSize_;    // size of the string column (used for strings)
     // used for strings only
@@ -163,17 +163,17 @@ struct odbc_statement_backend : details::statement_backend
     virtual void alloc();
     virtual void clean_up();
     virtual void prepare(std::string const &query,
-        details::eStatementType eType);
+        details::statement_type eType);
 
-    virtual execFetchResult execute(int number);
-    virtual execFetchResult fetch(int number);
+    virtual exec_fetch_result execute(int number);
+    virtual exec_fetch_result fetch(int number);
 
     virtual int get_number_of_rows();
 
     virtual std::string rewrite_for_procedure_call(std::string const &query);
 
     virtual int prepare_for_describe();
-    virtual void describe_column(int colNum, eDataType &dtype,
+    virtual void describe_column(int colNum, data_type &dtype,
         std::string &columnName);
 
     // helper for defining into vector<string>

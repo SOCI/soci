@@ -49,7 +49,7 @@ void postgresql_statement_backend::clean_up()
 }
 
 void postgresql_statement_backend::prepare(std::string const &query,
-    eStatementType eType)
+    statement_type eType)
 {
 #ifdef SOCI_PGSQL_NOBINDBYNAME
     query_ = query;
@@ -147,7 +147,7 @@ void postgresql_statement_backend::prepare(std::string const &query,
 #endif // SOCI_PGSQL_NOPREPARE
 }
 
-statement_backend::execFetchResult
+statement_backend::exec_fetch_result
 postgresql_statement_backend::execute(int number)
 {
     // If the statement was "just described", then we know that
@@ -258,7 +258,7 @@ postgresql_statement_backend::execute(int number)
                         static_cast<int>(paramValues.size()),
                         &paramValues[0], NULL, NULL, 0);
                 }
-                else // eType_ == eOneTimeQuery
+                else // eType_ == st_one_time_query
                 {
                     // this query was not separately prepared and should
                     // be executed as a one-time query
@@ -293,7 +293,7 @@ postgresql_statement_backend::execute(int number)
             {
                 // it was a bulk operation
                 result_ = NULL;
-                return eNoData;
+                return ef_no_data;
             }
 
             // otherwise (no bulk), follow the code below
@@ -315,7 +315,7 @@ postgresql_statement_backend::execute(int number)
                 result_ = PQexecPrepared(session_.conn_,
                     statementName_.c_str(), 0, NULL, NULL, NULL, 0);
             }
-            else // eType_ == eOneTimeQuery
+            else // eType_ == st_one_time_query
             {
                 result_ = PQexec(session_.conn_, query_.c_str());
             }
@@ -347,7 +347,7 @@ postgresql_statement_backend::execute(int number)
         numberOfRows_ = PQntuples(result_);
         if (numberOfRows_ == 0)
         {
-            return eNoData;
+            return ef_no_data;
         }
         else
         {
@@ -359,13 +359,13 @@ postgresql_statement_backend::execute(int number)
             else
             {
                 // execute(0) was meant to only perform the query
-                return eSuccess;
+                return ef_success;
             }
         }
     }
     else if (status == PGRES_COMMAND_OK)
     {
-        return eNoData;
+        return ef_no_data;
     }
     else
     {
@@ -373,7 +373,7 @@ postgresql_statement_backend::execute(int number)
     }
 }
 
-statement_backend::execFetchResult
+statement_backend::exec_fetch_result
 postgresql_statement_backend::fetch(int number)
 {
     // Note: This function does not actually fetch anything from anywhere
@@ -388,7 +388,7 @@ postgresql_statement_backend::fetch(int number)
     if (currentRow_ >= numberOfRows_)
     {
         // all rows were already consumed
-        return eNoData;
+        return ef_no_data;
     }
     else
     {
@@ -397,14 +397,14 @@ postgresql_statement_backend::fetch(int number)
             rowsToConsume_ = numberOfRows_ - currentRow_;
 
             // this simulates the behaviour of Oracle
-            // - when EOF is hit, we return eNoData even when there are
+            // - when EOF is hit, we return ef_no_data even when there are
             // actually some rows fetched
-            return eNoData;
+            return ef_no_data;
         }
         else
         {
             rowsToConsume_ = number;
-            return eSuccess;
+            return ef_success;
         }
     }
 }
@@ -431,7 +431,7 @@ int postgresql_statement_backend::prepare_for_describe()
     return columns;
 }
 
-void postgresql_statement_backend::describe_column(int colNum, eDataType &type,
+void postgresql_statement_backend::describe_column(int colNum, data_type &type,
     std::string &columnName)
 {
     // In postgresql_ column numbers start from 0
@@ -450,7 +450,7 @@ void postgresql_statement_backend::describe_column(int colNum, eDataType &type,
     case 2275: // cstring
     case 18:   // char
     case 1042: // bpchar
-        type = eString;
+        type = dt_string;
         break;
 
     case 702:  // abstime
@@ -460,27 +460,27 @@ void postgresql_statement_backend::describe_column(int colNum, eDataType &type,
     case 1114: // timestamp
     case 1184: // timestamptz
     case 1266: // timetz
-        type = eDate;
+        type = dt_date;
         break;
 
     case 700:  // float4
     case 701:  // float8
     case 1700: // numeric
-        type = eDouble;
+        type = dt_double;
         break;
 
     case 16:   // bool
     case 21:   // int2
     case 23:   // int4
-        type = eInteger;
+        type = dt_integer;
         break;
 
     case 20:   // int8
-        type = eLongLong;
+        type = dt_long_long;
         break;
 
     case 26:   // oid
-        type = eUnsignedLong;
+        type = dt_unsigned_long;
         break;
 
     default:

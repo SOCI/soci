@@ -45,15 +45,15 @@ std::size_t row::size() const
     return holders_.size();
 }
 
-eIndicator row::indicator(std::size_t pos) const
+indicator row::get_indicator(std::size_t pos) const
 {
     assert(indicators_.size() >= static_cast<std::size_t>(pos + 1));
     return *indicators_[pos];
 }
 
-eIndicator row::indicator(std::string const &name) const
+indicator row::get_indicator(std::string const &name) const
 {
-    return indicator(find_column(name));
+    return get_indicator(find_column(name));
 }
 
 column_properties const & row::get_properties(std::size_t pos) const

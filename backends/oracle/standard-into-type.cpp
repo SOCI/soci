@@ -50,7 +50,7 @@ oracle_statement_backend::make_vector_use_type_backend()
 }
 
 void oracle_standard_into_type_backend::define_by_pos(
-    int &position, void *data, eExchangeType type)
+    int &position, void *data, exchange_type type)
 {
     data_ = data; // for future reference
     type_ = type; // for future reference
@@ -61,35 +61,35 @@ void oracle_standard_into_type_backend::define_by_pos(
     switch (type)
     {
     // simple cases
-    case eXChar:
+    case x_char:
         oracleType = SQLT_AFC;
         size = sizeof(char);
         break;
-    case eXShort:
+    case x_short:
         oracleType = SQLT_INT;
         size = sizeof(short);
         break;
-    case eXInteger:
+    case x_integer:
         oracleType = SQLT_INT;
         size = sizeof(int);
         break;
-    case eXUnsignedLong:
+    case x_unsigned_long:
         oracleType = SQLT_UIN;
         size = sizeof(unsigned long);
         break;
-    case eXDouble:
+    case x_double:
         oracleType = SQLT_FLT;
         size = sizeof(double);
         break;
 
     // cases that require adjustments and buffer management
-    case eXLongLong:
+    case x_long_long:
         oracleType = SQLT_STR;
         size = 100; // arbitrary buffer length
         buf_ = new char[size];
         data = buf_;
         break;
-    case eXCString:
+    case x_cstring:
         {
             details::cstring_descriptor *desc
                 = static_cast<cstring_descriptor *>(data);
@@ -98,13 +98,13 @@ void oracle_standard_into_type_backend::define_by_pos(
             size = static_cast<sb4>(desc->bufSize_);
         }
         break;
-    case eXStdString:
+    case x_stdstring:
         oracleType = SQLT_STR;
         size = 32769;  // support selecting strings from LONG columns
         buf_ = new char[size];
         data = buf_;
         break;
-    case eXStdTm:
+    case x_stdtm:
         oracleType = SQLT_DAT;
         size = 7 * sizeof(ub1);
         buf_ = new char[size];
@@ -112,7 +112,7 @@ void oracle_standard_into_type_backend::define_by_pos(
         break;
 
     // cases that require special handling
-    case eXStatement:
+    case x_statement:
         {
             oracleType = SQLT_RSET;
 
@@ -125,7 +125,7 @@ void oracle_standard_into_type_backend::define_by_pos(
             data = &stbe->stmtp_;
         }
         break;
-    case eXRowID:
+    case x_rowid:
         {
             oracleType = SQLT_RDD;
 
@@ -138,7 +138,7 @@ void oracle_standard_into_type_backend::define_by_pos(
             data = &rbe->rowidp_;
         }
         break;
-    case eXBLOB:
+    case x_blob:
         {
             oracleType = SQLT_BLOB;
 
@@ -168,7 +168,7 @@ void oracle_standard_into_type_backend::pre_fetch()
 {
     // nothing to do except with Statement into objects
 
-    if (type_ == eXStatement)
+    if (type_ == x_statement)
     {
         statement *st = static_cast<statement *>(data_);
         st->undefine_and_bind();
@@ -176,13 +176,13 @@ void oracle_standard_into_type_backend::pre_fetch()
 }
 
 void oracle_standard_into_type_backend::post_fetch(
-    bool gotData, bool calledFromFetch, eIndicator *ind)
+    bool gotData, bool calledFromFetch, indicator *ind)
 {
     // first, deal with data
     if (gotData)
     {
         // only std::string, std::tm and Statement need special handling
-        if (type_ == eXStdString)
+        if (type_ == x_stdstring)
         {
             if (indOCIHolder_ != -1)
             {
@@ -190,7 +190,7 @@ void oracle_standard_into_type_backend::post_fetch(
                 *s = buf_;
             }
         }
-        else if (type_ == eXLongLong)
+        else if (type_ == x_long_long)
         {
             if (indOCIHolder_ != -1)
             {
@@ -198,7 +198,7 @@ void oracle_standard_into_type_backend::post_fetch(
                 *v = strtoll(buf_, NULL, 10);
             }
         }
-        else if (type_ == eXStdTm)
+        else if (type_ == x_stdtm)
         {
             if (indOCIHolder_ != -1)
             {
@@ -218,7 +218,7 @@ void oracle_standard_into_type_backend::post_fetch(
                 std::mktime(t);
             }
         }
-        else if (type_ == eXStatement)
+        else if (type_ == x_statement)
         {
             statement *st = static_cast<statement *>(data_);
             st->define_and_bind();
@@ -238,15 +238,16 @@ void oracle_standard_into_type_backend::post_fetch(
         {
             if (indOCIHolder_ == 0)
             {
-                *ind = eOK;
+                *ind = i_ok
+;
             }
             else if (indOCIHolder_ == -1)
             {
-                *ind = eNull;
+                *ind = i_null;
             }
             else
             {
-                *ind = eTruncated;
+                *ind = i_truncated;
             }
         }
     }

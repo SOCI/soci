@@ -43,11 +43,11 @@ typedef type_ptr<use_type_base> use_type_ptr;
 class SOCI_DECL standard_use_type : public use_type_base
 {
 public:
-    standard_use_type(void * data, eExchangeType type,
+    standard_use_type(void * data, exchange_type type,
         bool readOnly, std::string const & name = std::string())
         : data_(data), type_(type), ind_(NULL),
         readOnly_(readOnly), name_(name), backEnd_(NULL) {}
-    standard_use_type(void * data, eExchangeType type, eIndicator & ind,
+    standard_use_type(void * data, exchange_type type, indicator & ind,
         bool readOnly, std::string const & name = std::string())
         : data_(data), type_(type), ind_(&ind),
         readOnly_(readOnly), name_(name), backEnd_(NULL) {}
@@ -70,8 +70,8 @@ private:
     virtual std::size_t size() const { return 1; }
 
     void * data_;
-    eExchangeType type_;
-    eIndicator * ind_;
+    exchange_type type_;
+    indicator * ind_;
     bool readOnly_;
     std::string name_;
 
@@ -81,13 +81,13 @@ private:
 class SOCI_DECL vector_use_type : public use_type_base
 {
 public:
-    vector_use_type(void * data, eExchangeType type,
+    vector_use_type(void * data, exchange_type type,
         std::string const & name = std::string())
         : data_(data), type_(type), ind_(NULL),
         name_(name), backEnd_(NULL) {}
 
-    vector_use_type(void * data, eExchangeType type,
-        std::vector<eIndicator> const & ind,
+    vector_use_type(void * data, exchange_type type,
+        std::vector<indicator> const & ind,
         std::string const & name = std::string())
         : data_(data), type_(type), ind_(&ind),
         name_(name), backEnd_(NULL) {}
@@ -102,8 +102,8 @@ private:
     virtual std::size_t size() const;
 
     void * data_;
-    eExchangeType type_;
-    std::vector<eIndicator> const * ind_;
+    exchange_type type_;
+    std::vector<indicator> const * ind_;
     std::string name_;
 
     vector_use_type_backend * backEnd_;
@@ -120,21 +120,21 @@ class use_type : public standard_use_type
 public:
     use_type(T & t, std::string const & name = std::string())
         : standard_use_type(&t,
-            static_cast<eExchangeType>(exchange_traits<T>::eXType),
+            static_cast<exchange_type>(exchange_traits<T>::x_type),
             false, name) {}
     use_type(T const & t, std::string const & name = std::string())
         : standard_use_type(const_cast<T *>(&t),
-            static_cast<eExchangeType>(exchange_traits<T>::eXType),
+            static_cast<exchange_type>(exchange_traits<T>::x_type),
             true, name) {}
-    use_type(T & t, eIndicator & ind,
+    use_type(T & t, indicator & ind,
         std::string const & name = std::string())
         : standard_use_type(&t,
-            static_cast<eExchangeType>(exchange_traits<T>::eXType),
+            static_cast<exchange_type>(exchange_traits<T>::x_type),
             ind, false, name) {}
-    use_type(T const & t, eIndicator & ind,
+    use_type(T const & t, indicator & ind,
         std::string const & name = std::string())
         : standard_use_type(const_cast<T *>(&t),
-            static_cast<eExchangeType>(exchange_traits<T>::eXType),
+            static_cast<exchange_type>(exchange_traits<T>::x_type),
             ind, false, name) {}
 };
 
@@ -144,19 +144,19 @@ class use_type<std::vector<T> > : public vector_use_type
 public:
     use_type(std::vector<T> & v, std::string const & name = std::string())
         : vector_use_type(&v,
-            static_cast<eExchangeType>(exchange_traits<T>::eXType), name) {}
+            static_cast<exchange_type>(exchange_traits<T>::x_type), name) {}
     use_type(std::vector<T> const & v, std::string const & name = std::string())
         : vector_use_type(const_cast<std::vector<T> *>(&v),
-            static_cast<eExchangeType>(exchange_traits<T>::eXType), name) {}
-    use_type(std::vector<T> & v, std::vector<eIndicator> const & ind,
+            static_cast<exchange_type>(exchange_traits<T>::x_type), name) {}
+    use_type(std::vector<T> & v, std::vector<indicator> const & ind,
         std::string const & name = std::string())
         : vector_use_type(&v,
-            static_cast<eExchangeType>(exchange_traits<T>::eXType),
+            static_cast<exchange_type>(exchange_traits<T>::x_type),
             ind, name) {}
-    use_type(std::vector<T> const & v, std::vector<eIndicator> const & ind,
+    use_type(std::vector<T> const & v, std::vector<indicator> const & ind,
         std::string const & name = std::string())
         : vector_use_type(const_cast<std::vector<T> *>(&v),
-            static_cast<eExchangeType>(exchange_traits<T>::eXType),
+            static_cast<exchange_type>(exchange_traits<T>::x_type),
             ind, name) {}
 };
 
@@ -168,17 +168,17 @@ class use_type<char *> : public standard_use_type
 public:
     use_type(char * str, std::size_t bufSize,
         std::string const & name = std::string())
-        : standard_use_type(&str_, eXCString, false, name), str_(str, bufSize) {}
+        : standard_use_type(&str_, x_cstring, false, name), str_(str, bufSize) {}
     use_type(char const * str, std::size_t bufSize,
         std::string const & name = std::string())
-        : standard_use_type(&str_, eXCString, true, name),
+        : standard_use_type(&str_, x_cstring, true, name),
         str_(const_cast<char *>(str), bufSize) {}
-    use_type(char * str, eIndicator & ind, std::size_t bufSize,
+    use_type(char * str, indicator & ind, std::size_t bufSize,
         std::string const & name = std::string())
-        : standard_use_type(&str_, eXCString, ind, false, name), str_(str, bufSize) {}
-    use_type(char const * str, eIndicator & ind, std::size_t bufSize,
+        : standard_use_type(&str_, x_cstring, ind, false, name), str_(str, bufSize) {}
+    use_type(char const * str, indicator & ind, std::size_t bufSize,
         std::string const & name = std::string())
-        : standard_use_type(&str_, eXCString, ind, true, name),
+        : standard_use_type(&str_, x_cstring, ind, true, name),
         str_(const_cast<char *>(str), bufSize) {}
 
 private:
@@ -193,10 +193,10 @@ public:
         : use_type<char *>(str, N, name) {}
     use_type(char const str[], std::string const & name = std::string())
         : use_type<char *>(str, N, name) {}
-    use_type(char str[], eIndicator & ind,
+    use_type(char str[], indicator & ind,
         std::string const & name = std::string())
         : use_type<char *>(str, ind, N, name) {}
-    use_type(char const str[], eIndicator & ind,
+    use_type(char const str[], indicator & ind,
         std::string const & name = std::string())
         : use_type<char *>(str, ind, N, name) {}
 };
@@ -216,31 +216,31 @@ use_type_ptr do_use(T const & t, std::string const & name, basic_type_tag)
 }
 
 template <typename T>
-use_type_ptr do_use(T & t, eIndicator & indicator,
+use_type_ptr do_use(T & t, indicator & ind,
     std::string const & name, basic_type_tag)
 {
-    return use_type_ptr(new use_type<T>(t, indicator, name));
+    return use_type_ptr(new use_type<T>(t, ind, name));
 }
 
 template <typename T>
-use_type_ptr do_use(T const & t, eIndicator & indicator,
+use_type_ptr do_use(T const & t, indicator & ind,
     std::string const & name, basic_type_tag)
 {
-    return use_type_ptr(new use_type<T>(t, indicator, name));
+    return use_type_ptr(new use_type<T>(t, ind, name));
 }
 
 template <typename T>
-use_type_ptr do_use(T & t, std::vector<eIndicator> & indicator,
+use_type_ptr do_use(T & t, std::vector<indicator> & ind,
     std::string const & name, basic_type_tag)
 {
-    return use_type_ptr(new use_type<T>(t, indicator, name));
+    return use_type_ptr(new use_type<T>(t, ind, name));
 }
 
 template <typename T>
-use_type_ptr do_use(T const & t, std::vector<eIndicator> & indicator,
+use_type_ptr do_use(T const & t, std::vector<indicator> & ind,
     std::string const & name, basic_type_tag)
 {
-    return use_type_ptr(new use_type<T>(t, indicator, name));
+    return use_type_ptr(new use_type<T>(t, ind, name));
 }
 
 } // namespace details

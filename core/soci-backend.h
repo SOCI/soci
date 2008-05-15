@@ -19,27 +19,27 @@ namespace soci
 {
 
 // data types, as seen by the user
-enum eDataType
+enum data_type
 {
-    eString, eChar, eDate, eDouble, eInteger, eUnsignedLong, eLongLong
+    dt_string, dt_date, dt_double, dt_integer, dt_unsigned_long, dt_long_long
 };
 
 // the enum type for indicator variables
-enum eIndicator { eOK, eNull, eTruncated };
+enum indicator { i_ok, i_null, i_truncated };
 
 namespace details
 {
 
 // data types, as used to describe exchange format
-enum eExchangeType
+enum exchange_type
 {
-    eXChar, eXCString, eXStdString, eXShort, eXInteger,
-    eXUnsignedLong, eXLongLong, eXDouble, eXStdTm, eXStatement,
-    eXRowID, eXBLOB
+    x_char, x_cstring, x_stdstring, x_short, x_integer,
+    x_unsigned_long, x_long_long, x_double, x_stdtm, x_statement,
+    x_rowid, x_blob
 };
 
 // type of statement (used for optimizing statement preparation)
-enum eStatementType { eOneTimeQuery, eRepeatableQuery };
+enum statement_type { st_one_time_query, eRepeatableQuery };
 
 // polymorphic into type backend
 
@@ -49,11 +49,11 @@ public:
     virtual ~standard_into_type_backend() {}
 
     virtual void define_by_pos(int & position,
-        void * data, eExchangeType type) = 0;
+        void * data, exchange_type type) = 0;
 
     virtual void pre_fetch() = 0;
     virtual void post_fetch(bool gotData, bool calledFromFetch,
-        eIndicator * ind) = 0;
+        indicator * ind) = 0;
 
     virtual void clean_up() = 0;
 };
@@ -64,10 +64,10 @@ public:
     virtual ~vector_into_type_backend() {}
 
     virtual void define_by_pos(int & position,
-        void * data, eExchangeType type) = 0;
+        void * data, exchange_type type) = 0;
 
     virtual void pre_fetch() = 0;
-    virtual void post_fetch(bool gotData, eIndicator * ind) = 0;
+    virtual void post_fetch(bool gotData, indicator * ind) = 0;
 
     virtual void resize(std::size_t sz) = 0;
     virtual std::size_t size() = 0;
@@ -83,12 +83,12 @@ public:
     virtual ~standard_use_type_backend() {}
 
     virtual void bind_by_pos(int & position,
-        void * data, eExchangeType type, bool readOnly) = 0;
+        void * data, exchange_type type, bool readOnly) = 0;
     virtual void bind_by_name(std::string const & name,
-        void * data, eExchangeType type, bool readOnly) = 0;
+        void * data, exchange_type type, bool readOnly) = 0;
 
-    virtual void pre_use(eIndicator const * ind) = 0;
-    virtual void post_use(bool gotData, eIndicator * ind) = 0;
+    virtual void pre_use(indicator const * ind) = 0;
+    virtual void post_use(bool gotData, indicator * ind) = 0;
 
     virtual void clean_up() = 0;
 };
@@ -99,11 +99,11 @@ public:
     virtual ~vector_use_type_backend() {}
 
     virtual void bind_by_pos(int & position,
-        void * data, eExchangeType type) = 0;
+        void * data, exchange_type type) = 0;
     virtual void bind_by_name(std::string const & name,
-        void * data, eExchangeType type) = 0;
+        void * data, exchange_type type) = 0;
 
-    virtual void pre_use(eIndicator const * ind) = 0;
+    virtual void pre_use(indicator const * ind) = 0;
 
     virtual std::size_t size() = 0;
 
@@ -120,18 +120,18 @@ public:
     virtual void alloc() = 0;
     virtual void clean_up() = 0;
 
-    virtual void prepare(std::string const & query, eStatementType eType) = 0;
+    virtual void prepare(std::string const & query, statement_type eType) = 0;
 
-    enum execFetchResult { eSuccess, eNoData };
-    virtual execFetchResult execute(int number) = 0;
-    virtual execFetchResult fetch(int number) = 0;
+    enum exec_fetch_result { ef_success, ef_no_data };
+    virtual exec_fetch_result execute(int number) = 0;
+    virtual exec_fetch_result fetch(int number) = 0;
 
     virtual int get_number_of_rows() = 0;
 
     virtual std::string rewrite_for_procedure_call(std::string const & query) = 0;
 
     virtual int prepare_for_describe() = 0;
-    virtual void describe_column(int colNum, eDataType & dtype,
+    virtual void describe_column(int colNum, data_type & dtype,
         std::string & column_name) = 0;
 
     virtual standard_into_type_backend * make_into_type_backend() = 0;

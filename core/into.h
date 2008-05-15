@@ -27,16 +27,16 @@ details::into_type_ptr into(T & t)
 }
 
 template <typename T>
-details::into_type_ptr into(T & t, eIndicator & indicator)
+details::into_type_ptr into(T & t, indicator & ind)
 {
-    return details::do_into(t, indicator,
+    return details::do_into(t, ind,
         typename details::exchange_traits<T>::type_family());
 }
 
 template <typename T>
-details::into_type_ptr into(T & t, std::vector<eIndicator> & indicator)
+details::into_type_ptr into(T & t, std::vector<indicator> & ind)
 {
-    return details::do_into(t, indicator,
+    return details::do_into(t, ind,
         typename details::exchange_traits<T>::type_family());
 }
 

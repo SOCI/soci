@@ -33,7 +33,7 @@ void oracle_standard_use_type_backend::prepare_for_bind(
     switch (type_)
     {
     // simple cases
-    case eXChar:
+    case x_char:
         oracleType = SQLT_AFC;
         size = sizeof(char);
         if (readOnly)
@@ -42,7 +42,7 @@ void oracle_standard_use_type_backend::prepare_for_bind(
             data = buf_;
         }
         break;
-    case eXShort:
+    case x_short:
         oracleType = SQLT_INT;
         size = sizeof(short);
         if (readOnly)
@@ -51,7 +51,7 @@ void oracle_standard_use_type_backend::prepare_for_bind(
             data = buf_;
         }
         break;
-    case eXInteger:
+    case x_integer:
         oracleType = SQLT_INT;
         size = sizeof(int);
         if (readOnly)
@@ -60,7 +60,7 @@ void oracle_standard_use_type_backend::prepare_for_bind(
             data = buf_;
         }
         break;
-    case eXUnsignedLong:
+    case x_unsigned_long:
         oracleType = SQLT_UIN;
         size = sizeof(unsigned long);
         if (readOnly)
@@ -69,7 +69,7 @@ void oracle_standard_use_type_backend::prepare_for_bind(
             data = buf_;
         }
         break;
-    case eXDouble:
+    case x_double:
         oracleType = SQLT_FLT;
         size = sizeof(double);
         if (readOnly)
@@ -80,13 +80,13 @@ void oracle_standard_use_type_backend::prepare_for_bind(
         break;
 
     // cases that require adjustments and buffer management
-    case eXLongLong:
+    case x_long_long:
         oracleType = SQLT_STR;
         size = 100; // arbitrary buffer length
         buf_ = new char[size];
         data = buf_;
         break;
-    case eXCString:
+    case x_cstring:
         {
             details::cstring_descriptor *desc
                 = static_cast<cstring_descriptor *>(data);
@@ -104,14 +104,14 @@ void oracle_standard_use_type_backend::prepare_for_bind(
             }
         }
         break;
-    case eXStdString:
+    case x_stdstring:
         oracleType = SQLT_STR;
         // 4000 is Oracle max VARCHAR2 size; 32768 is max LONG size
         size = 32769;
         buf_ = new char[size];
         data = buf_;
         break;
-    case eXStdTm:
+    case x_stdtm:
         oracleType = SQLT_DAT;
         size = 7 * sizeof(ub1);
         buf_ = new char[size];
@@ -119,7 +119,7 @@ void oracle_standard_use_type_backend::prepare_for_bind(
         break;
 
     // cases that require special handling
-    case eXStatement:
+    case x_statement:
         {
             oracleType = SQLT_RSET;
 
@@ -132,7 +132,7 @@ void oracle_standard_use_type_backend::prepare_for_bind(
             data = &stbe->stmtp_;
         }
         break;
-    case eXRowID:
+    case x_rowid:
         {
             oracleType = SQLT_RDD;
 
@@ -145,7 +145,7 @@ void oracle_standard_use_type_backend::prepare_for_bind(
             data = &rbe->rowidp_;
         }
         break;
-    case eXBLOB:
+    case x_blob:
         {
             oracleType = SQLT_BLOB;
 
@@ -162,7 +162,7 @@ void oracle_standard_use_type_backend::prepare_for_bind(
 }
 
 void oracle_standard_use_type_backend::bind_by_pos(
-    int &position, void *data, eExchangeType type, bool readOnly)
+    int &position, void *data, exchange_type type, bool readOnly)
 {
     if (statement_.boundByName_)
     {
@@ -191,7 +191,7 @@ void oracle_standard_use_type_backend::bind_by_pos(
 }
 
 void oracle_standard_use_type_backend::bind_by_name(
-    std::string const &name, void *data, eExchangeType type, bool readOnly)
+    std::string const &name, void *data, exchange_type type, bool readOnly)
 {
     if (statement_.boundByPos_)
     {
@@ -221,49 +221,49 @@ void oracle_standard_use_type_backend::bind_by_name(
     statement_.boundByName_ = true;
 }
 
-void oracle_standard_use_type_backend::pre_use(eIndicator const *ind)
+void oracle_standard_use_type_backend::pre_use(indicator const *ind)
 {
     // first deal with data
     switch (type_)
     {
-    case eXChar:
+    case x_char:
         if (readOnly_)
         {
             buf_[0] = *static_cast<char *>(data_);
         }
         break;
-    case eXShort:
+    case x_short:
         if (readOnly_)
         {
             *static_cast<short *>(static_cast<void *>(buf_)) = *static_cast<short *>(data_);
         }
         break;
-    case eXInteger:
+    case x_integer:
         if (readOnly_)
         {
             *static_cast<int *>(static_cast<void *>(buf_)) = *static_cast<int *>(data_);
         }
         break;
-    case eXUnsignedLong:
+    case x_unsigned_long:
         if (readOnly_)
         {
             *static_cast<unsigned long *>(static_cast<void *>(buf_))
                 = *static_cast<unsigned long *>(data_);
         }
         break;
-    case eXLongLong:
+    case x_long_long:
         {
             size_t const size = 100; // arbitrary, but consistent with prepare_for_bind
             snprintf(buf_, size, "%lld", *static_cast<long long *>(data_));
         }
         break;
-    case eXDouble:
+    case x_double:
         if (readOnly_)
         {
             *static_cast<double *>(static_cast<void *>(buf_)) = *static_cast<double *>(data_);
         }
         break;
-    case eXCString:
+    case x_cstring:
         if (readOnly_)
         {
             details::cstring_descriptor *desc
@@ -272,7 +272,7 @@ void oracle_standard_use_type_backend::pre_use(eIndicator const *ind)
             strcpy(buf_, desc->str_);
         }
         break;
-    case eXStdString:
+    case x_stdstring:
         {
             std::string *s = static_cast<std::string *>(data_);
 
@@ -285,7 +285,7 @@ void oracle_standard_use_type_backend::pre_use(eIndicator const *ind)
             buf_[toCopy] = '\0';
         }
         break;
-    case eXStdTm:
+    case x_stdtm:
         {
             std::tm *t = static_cast<std::tm *>(data_);
             ub1* pos = reinterpret_cast<ub1*>(buf_);
@@ -299,21 +299,21 @@ void oracle_standard_use_type_backend::pre_use(eIndicator const *ind)
             *pos = static_cast<ub1>(t->tm_sec + 1);
         }
         break;
-    case eXStatement:
+    case x_statement:
         {
             statement *s = static_cast<statement *>(data_);
 
             s->undefine_and_bind();
         }
         break;
-    case eXRowID:
-    case eXBLOB:
+    case x_rowid:
+    case x_blob:
         // nothing to do
         break;
     }
 
     // then handle indicators
-    if (ind != NULL && *ind == eNull)
+    if (ind != NULL && *ind == i_null)
     {
         indOCIHolder_ = -1; // null
     }
@@ -323,7 +323,7 @@ void oracle_standard_use_type_backend::pre_use(eIndicator const *ind)
     }
 }
 
-void oracle_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
+void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
 {
     // It is possible to have the bound element being overwritten
     // by the database.
@@ -336,7 +336,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
     {
         switch (type_)
         {
-        case eXChar:
+        case x_char:
             if (readOnly_)
             {
                 const char original = *static_cast<char *>(data_);
@@ -348,7 +348,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
                 }
             }
             break;
-        case eXShort:
+        case x_short:
             if (readOnly_)
             {
                 const short original = *static_cast<short *>(data_);
@@ -360,7 +360,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
                 }
             }
             break;
-        case eXInteger:
+        case x_integer:
             if (readOnly_)
             {
                 const int original = *static_cast<int *>(data_);
@@ -372,7 +372,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
                 }
             }
             break;
-        case eXUnsignedLong:
+        case x_unsigned_long:
             if (readOnly_)
             {
                 const unsigned long original = *static_cast<unsigned long *>(data_);
@@ -385,7 +385,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
                 }
             }
             break;
-        case eXLongLong:
+        case x_long_long:
             if (readOnly_)
             {
                 long long const original = *static_cast<long long *>(data_);
@@ -397,7 +397,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
                 }
             }
             break;
-        case eXDouble:
+        case x_double:
             if (readOnly_)
             {
                 const double original = *static_cast<double *>(data_);
@@ -409,7 +409,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
                 }
             }
             break;
-        case eXCString:
+        case x_cstring:
             if (readOnly_)
             {
                 details::cstring_descriptor *original_descr
@@ -424,7 +424,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
                 }
             }
             break;
-        case eXStdString:
+        case x_stdstring:
             {
                 std::string & original = *static_cast<std::string *>(data_);
                 if (original != buf_)
@@ -440,7 +440,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
                 }
             }
             break;
-        case eXStdTm:
+        case x_stdtm:
             {
                 std::tm & original = *static_cast<std::tm *>(data_);
 
@@ -476,14 +476,14 @@ void oracle_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
                 }
             }
             break;
-        case eXStatement:
+        case x_statement:
             {
                 statement *s = static_cast<statement *>(data_);
                 s->define_and_bind();
             }
             break;
-        case eXRowID:
-        case eXBLOB:
+        case x_rowid:
+        case x_blob:
             // nothing to do here
             break;
         }
@@ -495,15 +495,15 @@ void oracle_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
         {
             if (indOCIHolder_ == 0)
             {
-                *ind = eOK;
+                *ind = i_ok;
             }
             else if (indOCIHolder_ == -1)
             {
-                *ind = eNull;
+                *ind = i_null;
             }
             else
             {
-                *ind = eTruncated;
+                *ind = i_truncated;
             }
         }
     }

@@ -25,7 +25,7 @@ struct exchange_traits<values>
     typedef basic_type_tag type_family;
 
     // dummy value to satisfy the template engine, never used
-    enum { eXType = 0 };
+    enum { x_type = 0 };
 };
 
 template <>
@@ -36,7 +36,7 @@ public:
         : v_(v) {}
 
     // we ignore the possibility to have the whole values as NULL
-    use_type(values & v, eIndicator /* ind */, std::string const & /* name */ = std::string())
+    use_type(values & v, indicator /* ind */, std::string const & /* name */ = std::string())
         : v_(v) {}
 
     virtual void bind(details::statement_impl & st, int & /*position*/)
@@ -72,7 +72,7 @@ class into_type<values> : public into_type<row>
 {
 public:
     into_type(values & v) : into_type<row>(v.get_row()), v_(v) {}
-    into_type(values & v, eIndicator & ind)
+    into_type(values & v, indicator & ind)
         : into_type<row>(v.get_row(), ind), v_(v) {}
 
     void clean_up()

@@ -32,23 +32,23 @@ void empty_statement_backend::clean_up()
 }
 
 void empty_statement_backend::prepare(std::string const & /* query */,
-    eStatementType /* eType */)
+    statement_type /* eType */)
 {
     // ...
 }
 
-statement_backend::execFetchResult
+statement_backend::exec_fetch_result
 empty_statement_backend::execute(int /* number */)
 {
     // ...
-    return eSuccess;
+    return ef_success;
 }
 
-statement_backend::execFetchResult
+statement_backend::exec_fetch_result
 empty_statement_backend::fetch(int /* number */)
 {
     // ...
-    return eSuccess;
+    return ef_success;
 }
 
 int empty_statement_backend::get_number_of_rows()
@@ -70,7 +70,7 @@ int empty_statement_backend::prepare_for_describe()
 }
 
 void empty_statement_backend::describe_column(int /* colNum */,
-    eDataType & /* type */, std::string & /* columnName */)
+    data_type & /* type */, std::string & /* columnName */)
 {
     // ...
 }

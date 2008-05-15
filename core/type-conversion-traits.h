@@ -20,16 +20,16 @@ struct type_conversion
 {
     typedef T base_type;
 
-    static void from_base(base_type const & in, eIndicator ind, T & out)
+    static void from_base(base_type const & in, indicator ind, T & out)
     {
-        if (ind == eNull)
+        if (ind == i_null)
         {
             throw soci_error("Null value not allowed for this type");
         }
         out = in;
     }
 
-    static void to_base(T const & in, base_type & out, eIndicator & ind)
+    static void to_base(T const & in, base_type & out, indicator & ind)
     {
         out = in;
 

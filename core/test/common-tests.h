@@ -70,18 +70,18 @@ template<> struct type_conversion<MyInt>
 {
     typedef int base_type;
 
-    static void from_base(int i, eIndicator ind, MyInt &mi)
+    static void from_base(int i, indicator ind, MyInt &mi)
     {
-        if (ind == eOK)
+        if (ind == i_ok)
         {
             mi.set(i);
         }
     }
 
-    static void to_base(MyInt const &mi, int &i, eIndicator &ind)
+    static void to_base(MyInt const &mi, int &i, indicator &ind)
     {
         i = mi.get();
-        ind = eOK;
+        ind = i_ok;
     }
 };
 
@@ -90,40 +90,40 @@ template<> struct type_conversion<PhonebookEntry>
 {
     typedef soci::values base_type;
 
-    static void from_base(values const &v, eIndicator /* ind */, PhonebookEntry &pe)
+    static void from_base(values const &v, indicator /* ind */, PhonebookEntry &pe)
     {
         // here we ignore the possibility the the whole object might be NULL
         pe.name = v.get<std::string>("NAME");
         pe.phone = v.get<std::string>("PHONE", "<NULL>");
     }
 
-    static void to_base(PhonebookEntry const &pe, values &v, eIndicator &ind)
+    static void to_base(PhonebookEntry const &pe, values &v, indicator &ind)
     {
         v.set("NAME", pe.name);
-        v.set("PHONE", pe.phone, pe.phone.empty() ? eNull : eOK);
-        ind = eOK;
+        v.set("PHONE", pe.phone, pe.phone.empty() ? i_null : i_ok);
+        ind = i_ok;
     }
 };
 
-// type conversion which directly calls values::indicator()
+// type conversion which directly calls values::get_indicator()
 template<> struct type_conversion<PhonebookEntry2>
 {
     typedef soci::values base_type;
 
-    static void from_base(values const &v, eIndicator /* ind */, PhonebookEntry2 &pe)
+    static void from_base(values const &v, indicator /* ind */, PhonebookEntry2 &pe)
     {
         // here we ignore the possibility the the whole object might be NULL
 
         pe.name = v.get<std::string>("NAME");
-        eIndicator ind = v.indicator("PHONE"); //another way to test for null
-        pe.phone = ind == eNull ? "<NULL>" : v.get<std::string>("PHONE");
+        indicator ind = v.get_indicator("PHONE"); //another way to test for null
+        pe.phone = ind == i_null ? "<NULL>" : v.get<std::string>("PHONE");
     }
 
-    static void to_base(PhonebookEntry2 const &pe, values &v, eIndicator &ind)
+    static void to_base(PhonebookEntry2 const &pe, values &v, indicator &ind)
     {
         v.set("NAME", pe.name);
-        v.set("PHONE", pe.phone, pe.phone.empty() ? eNull : eOK);
-        ind = eOK;
+        v.set("PHONE", pe.phone, pe.phone.empty() ? i_null : i_ok);
+        ind = i_ok;
     }
 };
 
@@ -131,7 +131,7 @@ template<> struct type_conversion<PhonebookEntry3>
 {
     typedef soci::values base_type;
 
-    static void from_base(values const &v, eIndicator /* ind */, PhonebookEntry3 &pe)
+    static void from_base(values const &v, indicator /* ind */, PhonebookEntry3 &pe)
     {
         // here we ignore the possibility the the whole object might be NULL
 
@@ -139,11 +139,11 @@ template<> struct type_conversion<PhonebookEntry3>
         pe.setPhone(v.get<std::string>("PHONE", "<NULL>"));
     }
 
-    static void to_base(PhonebookEntry3 const &pe, values &v, eIndicator &ind)
+    static void to_base(PhonebookEntry3 const &pe, values &v, indicator &ind)
     {
         v.set("NAME", pe.getName());
-        v.set("PHONE", pe.getPhone(), pe.getPhone().empty() ? eNull : eOK);
-        ind = eOK;
+        v.set("PHONE", pe.getPhone(), pe.getPhone().empty() ? i_null : i_ok);
+        ind = i_ok;
     }
 };
 
@@ -473,13 +473,13 @@ void test2()
                 use(id), use(str);
 
             int i;
-            eIndicator ind;
+            indicator ind;
             sql << "select id from soci_test", into(i, ind);
-            assert(ind == eOK);
+            assert(ind == i_ok);
 
             char buf[4];
             sql << "select str from soci_test", into(buf, ind);
-            assert(ind == eTruncated);
+            assert(ind == i_truncated);
         }
 
         // more indicator tests, NULL values
@@ -488,14 +488,14 @@ void test2()
 
             sql << "insert into soci_test(id,tm) values(NULL,NULL)";
             int i;
-            eIndicator ind;
+            indicator ind;
             sql << "select id from soci_test", into(i, ind);
-            assert(ind == eNull);
+            assert(ind == i_null);
 
             // additional test for NULL with std::tm
             std::tm t;
             sql << "select tm from soci_test", into(t, ind);
-            assert(ind == eNull);
+            assert(ind == i_null);
 
             try
             {
@@ -967,7 +967,7 @@ void test4()
 
         {
             int val;
-            eIndicator ind;
+            indicator ind;
 
             statement st = (sql.prepare <<
                 "select val from soci_test order by id", into(val, ind));
@@ -975,28 +975,28 @@ void test4()
             st.execute();
             bool gotData = st.fetch();
             assert(gotData);
-            assert(ind == eOK);
+            assert(ind == i_ok);
             assert(val == 10);
             gotData = st.fetch();
             assert(gotData);
-            assert(ind == eOK);
+            assert(ind == i_ok);
             assert(val == 11);
             gotData = st.fetch();
             assert(gotData);
-            assert(ind == eNull);
+            assert(ind == i_null);
             gotData = st.fetch();
             assert(gotData);
-            assert(ind == eNull);
+            assert(ind == i_null);
             gotData = st.fetch();
             assert(gotData);
-            assert(ind == eOK);
+            assert(ind == i_ok);
             assert(val == 12);
             gotData = st.fetch();
             assert(gotData == false);
         }
         {
             std::vector<int> vals(3);
-            std::vector<eIndicator> inds(3);
+            std::vector<indicator> inds(3);
 
             statement st = (sql.prepare <<
                 "select val from soci_test order by id", into(vals, inds));
@@ -1006,16 +1006,16 @@ void test4()
             assert(gotData);
             assert(vals.size() == 3);
             assert(inds.size() == 3);
-            assert(inds[0] == eOK);
+            assert(inds[0] == i_ok);
             assert(vals[0] == 10);
-            assert(inds[1] == eOK);
+            assert(inds[1] == i_ok);
             assert(vals[1] == 11);
-            assert(inds[2] == eNull);
+            assert(inds[2] == i_null);
             gotData = st.fetch();
             assert(gotData);
             assert(vals.size() == 2);
-            assert(inds[0] == eNull);
-            assert(inds[1] == eOK);
+            assert(inds[0] == i_null);
+            assert(inds[1] == i_ok);
             assert(vals[1] == 12);
             gotData = st.fetch();
             assert(gotData == false);
@@ -1024,7 +1024,7 @@ void test4()
         // additional test for "no data" condition
         {
             std::vector<int> vals(3);
-            std::vector<eIndicator> inds(3);
+            std::vector<indicator> inds(3);
 
             statement st = (sql.prepare <<
                 "select val from soci_test where 0 = 1", into(vals, inds));
@@ -1048,7 +1048,7 @@ void test4()
         // additional test for "no data" without prepared statement
         {
             std::vector<int> vals(3);
-            std::vector<eIndicator> inds(3);
+            std::vector<indicator> inds(3);
 
             sql << "select val from soci_test where 0 = 1",
                 into(vals, inds);
@@ -1079,7 +1079,7 @@ void test5()
 
         {
             std::vector<int> vals(4);
-            std::vector<eIndicator> inds;
+            std::vector<indicator> inds;
 
             statement st = (sql.prepare <<
                 "select val from soci_test order by id", into(vals, inds));
@@ -1838,8 +1838,8 @@ void test11()
 
         auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
-        eIndicator ind1 = eOK;
-        eIndicator ind2 = eOK;
+        indicator ind1 = i_ok;
+        indicator ind2 = i_ok;
 
         int id = 1;
         int val = 10;
@@ -1849,15 +1849,15 @@ void test11()
 
         id = 2;
         val = 11;
-        ind2 = eNull;
+        ind2 = i_null;
         sql << "insert into soci_test(id, val) values(:id, :val)",
             use(id, ind1), use(val, ind2);
 
         sql << "select val from soci_test where id = 1", into(val, ind2);
-        assert(ind2 == eOK);
+        assert(ind2 == i_ok);
         assert(val == 10);
         sql << "select val from soci_test where id = 2", into(val, ind2);
-        assert(ind2 == eNull);
+        assert(ind2 == i_null);
 
         std::vector<int> ids;
         ids.push_back(3);
@@ -1867,10 +1867,10 @@ void test11()
         vals.push_back(12);
         vals.push_back(13);
         vals.push_back(14);
-        std::vector<eIndicator> inds;
-        inds.push_back(eOK);
-        inds.push_back(eNull);
-        inds.push_back(eOK);
+        std::vector<indicator> inds;
+        inds.push_back(i_ok);
+        inds.push_back(i_null);
+        inds.push_back(i_ok);
 
         sql << "insert into soci_test(id, val) values(:id, :val)",
             use(ids), use(vals, inds);
@@ -1887,11 +1887,11 @@ void test11()
         assert(ids[3] == 2);
         assert(ids[4] == 1);
         assert(inds.size() == 5);
-        assert(inds[0] == eOK);
-        assert(inds[1] == eNull);
-        assert(inds[2] == eOK);
-        assert(inds[3] == eNull);
-        assert(inds[4] == eOK);
+        assert(inds[0] == i_ok);
+        assert(inds[1] == i_null);
+        assert(inds[2] == i_ok);
+        assert(inds[3] == i_null);
+        assert(inds[4] == i_ok);
         assert(vals.size() == 5);
         assert(vals[0] == 14);
         assert(vals[2] == 12);
@@ -1930,16 +1930,16 @@ void test12()
             st.execute(true);
             assert(r.size() == 5);
 
-            assert(r.get_properties(0).get_data_type() == eDouble);
-            assert(r.get_properties(1).get_data_type() == eInteger);
-            assert(r.get_properties(2).get_data_type() == eString);
-            assert(r.get_properties(3).get_data_type() == eDate);
+            assert(r.get_properties(0).get_data_type() == dt_double);
+            assert(r.get_properties(1).get_data_type() == dt_integer);
+            assert(r.get_properties(2).get_data_type() == dt_string);
+            assert(r.get_properties(3).get_data_type() == dt_date);
 
             // type char is visible as string
             // - to comply with the implementation for Oracle
-            assert(r.get_properties(4).get_data_type() == eString);
+            assert(r.get_properties(4).get_data_type() == dt_string);
 
-            assert(r.get_properties("NUM_INT").get_data_type() == eInteger);
+            assert(r.get_properties("NUM_INT").get_data_type() == dt_integer);
 
             assert(r.get_properties(0).get_name() == "NUM_FLOAT");
             assert(r.get_properties(1).get_name() == "NUM_INT");
@@ -1961,7 +1961,7 @@ void test12()
             assert(r.get<std::string>("NAME") == "Johny");
             assert(r.get<std::string>("CHR") == "a");
 
-            assert(r.indicator(0) == eOK);
+            assert(r.get_indicator(0) == i_ok);
 
             // verify exception thrown on invalid get<>
             bool caught = false;
@@ -2021,7 +2021,7 @@ void test13()
         sql << "select val from soci_test where id = :id", use(id), into(r);
 
         assert(r.size() == 1);
-        assert(r.get_properties(0).get_data_type() == eInteger);
+        assert(r.get_properties(0).get_data_type() == dt_integer);
         assert(r.get<int>(0) == 20);
     }
     {
@@ -2033,19 +2033,19 @@ void test13()
         id = 2;
         st.execute(true);
         assert(r.size() == 1);
-        assert(r.get_properties(0).get_data_type() == eInteger);
+        assert(r.get_properties(0).get_data_type() == dt_integer);
         assert(r.get<int>(0) == 20);
         
         id = 3;
         st.execute(true);
         assert(r.size() == 1);
-        assert(r.get_properties(0).get_data_type() == eInteger);
+        assert(r.get_properties(0).get_data_type() == dt_integer);
         assert(r.get<int>(0) == 30);
 
         id = 1;
         st.execute(true);
         assert(r.size() == 1);
-        assert(r.get_properties(0).get_data_type() == eInteger);
+        assert(r.get_properties(0).get_data_type() == dt_integer);
         assert(r.get<int>(0) == 10);
     }
 #else
@@ -2054,7 +2054,7 @@ void test13()
         sql << "select val from soci_test where id = 2", into(r);
 
         assert(r.size() == 1);
-        assert(r.get_properties(0).get_data_type() == eInteger);
+        assert(r.get_properties(0).get_data_type() == dt_integer);
         assert(r.get<int>(0) == 20);
     }
 #endif // SOCI_PGSQL_NOPARAMS
@@ -2224,7 +2224,7 @@ void test15()
 
     {
         // Use the PhonebookEntry2 type conversion, to test
-        // calls to values::indicator()
+        // calls to values::get_indicator()
         auto_table_creator tableCreator(tc_.table_creator_3(sql));
 
         PhonebookEntry2 p1;
@@ -2417,12 +2417,12 @@ void test20()
 
             // Properties
             assert(r1.size() == 5);
-            assert(r1.get_properties(0).get_data_type() == eDouble);
-            assert(r1.get_properties(1).get_data_type() == eInteger);
-            assert(r1.get_properties(2).get_data_type() == eString);
-            assert(r1.get_properties(3).get_data_type() == eDate);
-            assert(r1.get_properties(4).get_data_type() == eString);
-            assert(r1.get_properties("NUM_INT").get_data_type() == eInteger);
+            assert(r1.get_properties(0).get_data_type() == dt_double);
+            assert(r1.get_properties(1).get_data_type() == dt_integer);
+            assert(r1.get_properties(2).get_data_type() == dt_string);
+            assert(r1.get_properties(3).get_data_type() == dt_date);
+            assert(r1.get_properties(4).get_data_type() == dt_string);
+            assert(r1.get_properties("NUM_INT").get_data_type() == dt_integer);
 
             // Data
 
@@ -2475,12 +2475,12 @@ void test20()
 
             // Properties
             assert(r2.size() == 5);
-            assert(r2.get_properties(0).get_data_type() == eDouble);
-            assert(r2.get_properties(1).get_data_type() == eInteger);
-            assert(r2.get_properties(2).get_data_type() == eString);
-            assert(r2.get_properties(3).get_data_type() == eDate);
-            assert(r2.get_properties(4).get_data_type() == eString);
-            assert(r2.get_properties("NUM_INT").get_data_type() == eInteger);
+            assert(r2.get_properties(0).get_data_type() == dt_double);
+            assert(r2.get_properties(1).get_data_type() == dt_integer);
+            assert(r2.get_properties(2).get_data_type() == dt_string);
+            assert(r2.get_properties(3).get_data_type() == dt_date);
+            assert(r2.get_properties(4).get_data_type() == dt_string);
+            assert(r2.get_properties("NUM_INT").get_data_type() == dt_integer);
 
             std::string newName = r2.get<std::string>(2);
             assert(name != newName);
@@ -2722,12 +2722,12 @@ void test26()
             // indicators can be used with optional
             // (although that's just a consequence of implementation,
             // not an intended feature - but let's test it anyway)
-            eIndicator ind;
+            indicator ind;
             opt.reset();
             sql << "select val from soci_test", into(opt, ind);
             assert(opt.is_initialized());
             assert(opt.get() == 7);
-            assert(ind == eOK);
+            assert(ind == i_ok);
 
             // verify null value is fetched correctly
             sql << "select i1 from soci_test", into(opt);
@@ -2737,7 +2737,7 @@ void test26()
             opt = 5;
             sql << "select i1 from soci_test", into(opt, ind);
             assert(opt.is_initialized() == false);
-            assert(ind == eNull);
+            assert(ind == i_null);
 
             // verify non-null is inserted correctly
             opt = 3;
@@ -2749,9 +2749,9 @@ void test26()
             // verify null is inserted correctly
             opt.reset();
             sql << "update soci_test set val = :v", use(opt);
-            ind = eOK;
+            ind = i_ok;
             sql << "select val from soci_test", into(j, ind);
-            assert(ind == eNull);
+            assert(ind == i_null);
         }
 
         // vector tests (select)
@@ -2862,9 +2862,9 @@ void test26()
             // for the id column - that's why the code below skips this column
             // and tests the remaining column only.
 
-            //assert(r1.get_properties(0).get_data_type() == eInteger);
-            assert(r1.get_properties(1).get_data_type() == eInteger);
-            assert(r1.get_properties(2).get_data_type() == eString);
+            //assert(r1.get_properties(0).get_data_type() == dt_integer);
+            assert(r1.get_properties(1).get_data_type() == dt_integer);
+            assert(r1.get_properties(2).get_data_type() == dt_string);
             //assert(r1.get<int>(0) == 1);
             assert(r1.get<int>(1) == 5);
             assert(r1.get<std::string>(2) == "abc");
@@ -2879,9 +2879,9 @@ void test26()
 
             assert(r2.size() == 3);
 
-            // assert(r2.get_properties(0).get_data_type() == eInteger);
-            assert(r2.get_properties(1).get_data_type() == eInteger);
-            assert(r2.get_properties(2).get_data_type() == eString);
+            // assert(r2.get_properties(0).get_data_type() == dt_integer);
+            assert(r2.get_properties(1).get_data_type() == dt_integer);
+            assert(r2.get_properties(2).get_data_type() == dt_string);
             //assert(r2.get<int>(0) == 2);
             try
             {

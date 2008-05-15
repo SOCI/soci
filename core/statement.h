@@ -43,7 +43,7 @@ public:
     void clean_up();
 
     void prepare(std::string const & query,
-                    eStatementType eType = eRepeatableQuery);
+                    statement_type eType = eRepeatableQuery);
     void define_and_bind();
     void undefine_and_bind();
     bool execute(bool withDataExchange = false);
@@ -71,7 +71,7 @@ public:
 protected:
     std::vector<details::into_type_base *> intos_;
     std::vector<details::use_type_base *> uses_;
-    std::vector<eIndicator *> indicators_;
+    std::vector<indicator *> indicators_;
 
 private:
 
@@ -93,12 +93,12 @@ private:
     void into_row()
     {
         T * t = new T();
-        eIndicator * ind = new eIndicator(eOK);
+        indicator * ind = new indicator(i_ok);
         row_->add_holder(t, ind);
         exchange_for_row(into(*t, *ind));
     }
 
-    template<eDataType> void bind_into();
+    template<data_type> void bind_into();
 
     bool alreadyDescribed_;
 
@@ -152,7 +152,7 @@ public:
     void clean_up()                              { impl_->clean_up(); }
 
     void prepare(std::string const & query,
-        details::eStatementType eType = details::eRepeatableQuery)
+        details::statement_type eType = details::eRepeatableQuery)
     {
         impl_->prepare(query, eType);
     }
@@ -225,7 +225,7 @@ template <>
 struct exchange_traits<statement>
 {
     typedef basic_type_tag type_family;
-    enum { eXType = eXStatement };
+    enum { x_type = x_statement };
 };
 
 // into and use types for Statement (for nested statements and cursors)
@@ -234,9 +234,9 @@ template <>
 class into_type<statement> : public standard_into_type
 {
 public:
-    into_type(statement & s) : standard_into_type(&s, eXStatement) {}
-    into_type(statement & s, eIndicator & ind)
-        : standard_into_type(&s, eXStatement, ind) {}
+    into_type(statement & s) : standard_into_type(&s, x_statement) {}
+    into_type(statement & s, indicator & ind)
+        : standard_into_type(&s, x_statement, ind) {}
 };
 
 template <>
@@ -244,10 +244,10 @@ class use_type<statement> : public standard_use_type
 {
 public:
     use_type(statement & s, std::string const & name = std::string())
-        : standard_use_type(&s, eXStatement, false, name) {}
-    use_type(statement & s, eIndicator & ind,
+        : standard_use_type(&s, x_statement, false, name) {}
+    use_type(statement & s, indicator & ind,
         std::string const & name = std::string())
-        : standard_use_type(&s, eXStatement, ind, false, name) {}
+        : standard_use_type(&s, x_statement, ind, false, name) {}
 
     // Note: there is no const version of use for statement,
     // because most likely it would not make much sense anyway.

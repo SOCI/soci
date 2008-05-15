@@ -55,7 +55,7 @@ void oracle_statement_backend::clean_up()
 }
 
 void oracle_statement_backend::prepare(std::string const &query,
-    eStatementType /* eType */)
+    statement_type /* eType */)
 {
     sb4 stmtLen = static_cast<sb4>(query.size());
     sword res = OCIStmtPrepare(stmtp_,
@@ -68,43 +68,43 @@ void oracle_statement_backend::prepare(std::string const &query,
     }
 }
 
-statement_backend::execFetchResult oracle_statement_backend::execute(int number)
+statement_backend::exec_fetch_result oracle_statement_backend::execute(int number)
 {
     sword res = OCIStmtExecute(session_.svchp_, stmtp_, session_.errhp_,
         static_cast<ub4>(number), 0, 0, 0, OCI_DEFAULT);
 
     if (res == OCI_SUCCESS || res == OCI_SUCCESS_WITH_INFO)
     {
-        return eSuccess;
+        return ef_success;
     }
     else if (res == OCI_NO_DATA)
     {
-        return eNoData;
+        return ef_no_data;
     }
     else
     {
         throw_oracle_soci_error(res, session_.errhp_);
-        return eNoData; // unreachable dummy return to please the compiler
+        return ef_no_data; // unreachable dummy return to please the compiler
     }
 }
 
-statement_backend::execFetchResult oracle_statement_backend::fetch(int number)
+statement_backend::exec_fetch_result oracle_statement_backend::fetch(int number)
 {
     sword res = OCIStmtFetch(stmtp_, session_.errhp_,
         static_cast<ub4>(number), OCI_FETCH_NEXT, OCI_DEFAULT);
 
     if (res == OCI_SUCCESS || res == OCI_SUCCESS_WITH_INFO)
     {
-        return eSuccess;
+        return ef_success;
     }
     else if (res == OCI_NO_DATA)
     {
-        return eNoData;
+        return ef_no_data;
     }
     else
     {
         throw_oracle_soci_error(res, session_.errhp_);
-        return eNoData; // unreachable dummy return to please the compiler
+        return ef_no_data; // unreachable dummy return to please the compiler
     }
 }
 
@@ -154,7 +154,7 @@ int oracle_statement_backend::prepare_for_describe()
     return cols;
 }
 
-void oracle_statement_backend::describe_column(int colNum, eDataType &type,
+void oracle_statement_backend::describe_column(int colNum, data_type &type,
     std::string &columnName)
 {
     int size;
@@ -250,24 +250,24 @@ void oracle_statement_backend::describe_column(int colNum, eDataType &type,
     {
     case SQLT_CHR:
     case SQLT_AFC:
-        type = eString;
+        type = dt_string;
         break;
     case SQLT_NUM:
         if (scale > 0)
         {
-            type = eDouble;
+            type = dt_double;
         }
         else if (precision < std::numeric_limits<int>::digits10)
         {
-            type = eInteger;
+            type = dt_integer;
         }
         else
         {
-            type = eUnsignedLong;
+            type = dt_unsigned_long;
         }
         break;
     case SQLT_DAT:
-        type = eDate;
+        type = dt_date;
         break;
     }
 }

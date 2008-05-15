@@ -27,14 +27,14 @@ class SOCI_DECL column_properties
 public:
 
     std::string get_name() const   { return name_; }
-    eDataType get_data_type() const { return dataType_; }
+    data_type get_data_type() const { return dataType_; }
 
     void set_name(std::string const &name) { name_ = name; }
-    void set_data_type(eDataType dataType)  { dataType_ = dataType; }
+    void set_data_type(data_type dataType)  { dataType_ = dataType; }
 
 private:
     std::string name_;
-    eDataType dataType_;
+    data_type dataType_;
 };
 
 class SOCI_DECL row
@@ -46,11 +46,11 @@ public:
     void add_properties(column_properties const &cp);
     std::size_t size() const;
 
-    eIndicator indicator(std::size_t pos) const;
-    eIndicator indicator(std::string const &name) const;
+    indicator get_indicator(std::size_t pos) const;
+    indicator get_indicator(std::string const &name) const;
 
     template <typename T>
-    inline void add_holder(T* t, eIndicator* ind)
+    inline void add_holder(T* t, indicator* ind)
     {
         holders_.push_back(new details::type_holder<T>(t));
         indicators_.push_back(ind);
@@ -80,7 +80,7 @@ public:
     {
         assert(holders_.size() >= pos + 1);
 
-        if (eNull == *indicators_[pos])
+        if (i_null == *indicators_[pos])
         {
             return nullValue;
         }
@@ -101,7 +101,7 @@ public:
     {
         std::size_t pos = find_column(name);
 
-        if (eNull == *indicators_[pos])
+        if (i_null == *indicators_[pos])
         {
             return nullValue;
         }
@@ -139,7 +139,7 @@ private:
 
     std::vector<column_properties> columns_;
     std::vector<details::holder*> holders_;
-    std::vector<eIndicator*> indicators_;
+    std::vector<indicator*> indicators_;
     std::map<std::string, std::size_t> index_;
 
     bool uppercaseColumnNames_;

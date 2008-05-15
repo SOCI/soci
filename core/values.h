@@ -46,8 +46,8 @@ public:
 
     values() : row_(NULL), currentPos_(0), uppercaseColumnNames_(false) {}
 
-    eIndicator indicator(std::size_t pos) const;
-    eIndicator indicator(std::string const & name) const;
+    indicator get_indicator(std::size_t pos) const;
+    indicator get_indicator(std::string const & name) const;
 
     template <typename T>
     T get(std::size_t pos) const
@@ -56,7 +56,7 @@ public:
         {
             return row_->get<T>(pos);
         }
-        else if (*indicators_[pos] != eNull)
+        else if (*indicators_[pos] != i_null)
         {
             return get_from_uses<T>(pos);
         }
@@ -77,7 +77,7 @@ public:
         {
             return row_->get<T>(pos, nullValue);
         }
-        else if (*indicators_[pos] == eNull)
+        else if (*indicators_[pos] == i_null)
         {
             return nullValue;
         }
@@ -110,7 +110,7 @@ public:
 
             *row_ >> value;
         }
-        else if (*indicators_[currentPos_] != eNull)
+        else if (*indicators_[currentPos_] != i_null)
         {
             // if there is no row object, then the data can be
             // extracted from the locally stored use elements,
@@ -157,11 +157,11 @@ public:
     }
     
     template <typename T>
-    void set(std::string const & name, T const & value, eIndicator indic = eOK)
+    void set(std::string const & name, T const & value, indicator indic = i_ok)
     {
         index_.insert(std::make_pair(name, uses_.size()));
 
-        eIndicator * pind = new eIndicator(indic);
+        indicator * pind = new indicator(indic);
         indicators_.push_back(pind);
 
         typedef typename type_conversion<T>::base_type base_type;
@@ -177,9 +177,9 @@ public:
     }
 
     template <typename T>
-    void set(const T & value, eIndicator indic = eOK)
+    void set(const T & value, indicator indic = i_ok)
     {
-        eIndicator * pind = new eIndicator(indic);
+        indicator * pind = new indicator(indic);
         indicators_.push_back(pind);
 
         typedef typename type_conversion<T>::base_type base_type;
@@ -210,8 +210,8 @@ private:
     // these should be reference counted smart pointers
     row * row_;
     std::vector<details::standard_use_type *> uses_;
-    std::map<details::use_type_base *, eIndicator *> unused_;
-    std::vector<eIndicator *> indicators_;
+    std::map<details::use_type_base *, indicator *> unused_;
+    std::vector<indicator *> indicators_;
     std::map<std::string, std::size_t> index_;
     std::vector<details::copy_base *> deepCopies_;
 
@@ -228,7 +228,7 @@ private:
         std::map<std::string, std::size_t>::const_iterator pos = index_.find(name);
         if (pos != index_.end())
         {
-            if (*indicators_[pos->second] == eNull)
+            if (*indicators_[pos->second] == i_null)
             {
                 return nullValue;
             }
@@ -261,7 +261,7 @@ private:
             base_type const & baseValue = *static_cast<base_type*>(u->get_data());
 
             T val;
-            eIndicator ind = *indicators_[pos];
+            indicator ind = *indicators_[pos];
             type_conversion<T>::from_base(baseValue, ind, val);
             return val;
         }
@@ -285,7 +285,7 @@ private:
     }
     
     // this is called by Statement::bind(values)
-    void add_unused(details::use_type_base * u, eIndicator * i)
+    void add_unused(details::use_type_base * u, indicator * i)
     {
         static_cast<details::standard_use_type *>(u)->convert_to_base();
         unused_.insert(std::make_pair(u, i));
@@ -301,7 +301,7 @@ private:
         // delete any uses and indicators which were created  by set() but
         // were not bound by the Statement
         // (bound uses and indicators are deleted in Statement::clean_up())
-        for (std::map<details::use_type_base *, eIndicator *>::iterator pos =
+        for (std::map<details::use_type_base *, indicator *>::iterator pos =
             unused_.begin(); pos != unused_.end(); ++pos)
         {
             delete pos->first;

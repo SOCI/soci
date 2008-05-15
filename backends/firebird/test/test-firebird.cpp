@@ -312,18 +312,18 @@ void test5()
 
     {
         // test indicators
-        eIndicator ind;
+        indicator ind;
         int i;
 
         sql << "select 2 from rdb$database", into(i, ind);
-        assert(ind == eOK);
+        assert(ind == i_ok);
 
         sql << "select NULL from rdb$database", into(i, ind);
-        assert(ind == eNull);
+        assert(ind == i_null);
 
         char buf[4];
         sql << "select \'Hello\' from rdb$database", into(buf, ind);
-        assert(ind == eTruncated);
+        assert(ind == i_truncated);
 
         sql << "select 5 from rdb$database where 0 = 1", into(i, ind);
         assert(sql.got_data() == false);
@@ -517,12 +517,12 @@ void test7()
     {
         // verify empty blob
         blob b(sql);
-        eIndicator ind;
+        indicator ind;
 
         sql << "insert into test7(id, img) values(1,?)", use(b);
         sql << "select img from test7 where id = 1", into(b, ind);
 
-        assert(ind == eOK);
+        assert(ind == i_ok);
         assert(b.get_len() == 0);
 
         sql << "delete from test7";
@@ -602,14 +602,14 @@ void test7()
     {
         // delete blob
         blob b(sql);
-        eIndicator ind=eNull;
+        indicator ind=i_null;
         sql << "update test7 set img=? where id = 1", use(b, ind);
 
         sql << "select img from test7 where id = 2", into(b, ind);
-        assert(ind==eOK);
+        assert(ind==i_ok);
 
         sql << "select img from test7 where id = 1", into(b, ind);
-        assert(ind==eNull);
+        assert(ind==i_null);
     }
 
     sql << "drop table test7";
@@ -723,7 +723,7 @@ void test9()
     std::string msg("Hello");
     int i(1);
     double d(3.14);
-    eIndicator ind(eOK);
+    indicator ind(i_ok);
 
     {
         statement st((sql.prepare << "insert into test9(id, msg, ntest) "
@@ -734,7 +734,7 @@ void test9()
 
         i = 2;
         msg = "Firebird";
-        ind = eNull;
+        ind = i_null;
         st.execute(1);
     }
 
@@ -750,18 +750,18 @@ void test9()
     assert(r.get_properties(1).get_name() == "MSG");
     assert(r.get_properties(2).get_name() == "NTEST");
 
-    assert(r.get_properties(0).get_data_type() == eInteger);
-    assert(r.get_properties(1).get_data_type() == eString);
-    assert(r.get_properties(2).get_data_type() == eDouble);
+    assert(r.get_properties(0).get_data_type() == dt_integer);
+    assert(r.get_properties(1).get_data_type() == dt_string);
+    assert(r.get_properties(2).get_data_type() == dt_double);
 
     // get properties by name
     assert(r.get_properties("ID").get_name() == "ID");
     assert(r.get_properties("MSG").get_name() == "MSG");
     assert(r.get_properties("NTEST").get_name() == "NTEST");
 
-    assert(r.get_properties("ID").get_data_type() == eInteger);
-    assert(r.get_properties("MSG").get_data_type() == eString);
-    assert(r.get_properties("NTEST").get_data_type() == eDouble);
+    assert(r.get_properties("ID").get_data_type() == dt_integer);
+    assert(r.get_properties("MSG").get_data_type() == dt_string);
+    assert(r.get_properties("NTEST").get_data_type() == dt_double);
 
     // get values by position
     assert(r.get<int>(0) == 1);
@@ -776,7 +776,7 @@ void test9()
     st.fetch();
     assert(r.get<int>(0) == 2);
     assert(r.get<std::string>("MSG") == "Firebird");
-    assert(r.indicator(2) == eNull);
+    assert(r.get_indicator(2) == i_null);
 
     // verify default values
     assert(r.get<double>("NTEST", 2) == 2);
@@ -1132,9 +1132,9 @@ class TestContext : public tests::test_context_base
             return new TableCreator3(s);
         }
 
-        std::string to_date_time(std::string const &dateString) const
+        std::string to_date_time(std::string const &datdt_string) const
         {
-            return "'" + dateString + "'";
+            return "'" + datdt_string + "'";
         }
 };
 

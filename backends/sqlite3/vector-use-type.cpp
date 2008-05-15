@@ -22,7 +22,7 @@ using namespace soci::details::sqlite3;
 
 void sqlite3_vector_use_type_backend::bind_by_pos(int & position,
                                             void * data,
-                                            eExchangeType type)
+                                            exchange_type type)
 {
     if (statement_.boundByName_)
     {
@@ -39,7 +39,7 @@ void sqlite3_vector_use_type_backend::bind_by_pos(int & position,
 
 void sqlite3_vector_use_type_backend::bind_by_name(std::string const & name,
                                              void * data,
-                                             eExchangeType type)
+                                             exchange_type type)
 {
     if (statement_.boundByPos_)
     {
@@ -63,7 +63,7 @@ void sqlite3_vector_use_type_backend::bind_by_name(std::string const & name,
     statement_.boundByName_ = true;
 }
 
-void sqlite3_vector_use_type_backend::pre_use(eIndicator const * ind)
+void sqlite3_vector_use_type_backend::pre_use(indicator const * ind)
 {
     std::size_t const vsize = size();
 
@@ -86,8 +86,8 @@ void sqlite3_vector_use_type_backend::pre_use(eIndicator const * ind)
             statement_.useData_[i].resize(position_);
         }
 
-        // the data in vector can be either eOK or eNull
-        if (ind != NULL && ind[i] == eNull)
+        // the data in vector can be either i_ok or i_null
+        if (ind != NULL && ind[i] == i_null)
         {
             statement_.useData_[i][pos].isNull_ = true;
             statement_.useData_[i][pos].data_ = "";
@@ -99,7 +99,7 @@ void sqlite3_vector_use_type_backend::pre_use(eIndicator const * ind)
             // allocate and fill the buffer with text-formatted client data
             switch (type_)
             {
-            case eXChar:
+            case x_char:
             {
                 std::vector<char> *pv
                 = static_cast<std::vector<char> *>(data_);
@@ -110,7 +110,7 @@ void sqlite3_vector_use_type_backend::pre_use(eIndicator const * ind)
                 buf[1] = '\0';
             }
             break;
-            case eXStdString:
+            case x_stdstring:
             {
                 std::vector<std::string> *pv
                 = static_cast<std::vector<std::string> *>(data_);
@@ -120,7 +120,7 @@ void sqlite3_vector_use_type_backend::pre_use(eIndicator const * ind)
                 std::strcpy(buf, v[i].c_str());
             }
             break;
-            case eXShort:
+            case x_short:
             {
                 std::vector<short> *pv
                 = static_cast<std::vector<short> *>(data_);
@@ -132,7 +132,7 @@ void sqlite3_vector_use_type_backend::pre_use(eIndicator const * ind)
                 snprintf(buf, bufSize, "%d", static_cast<int>(v[i]));
             }
             break;
-            case eXInteger:
+            case x_integer:
             {
                 std::vector<int> *pv
                 = static_cast<std::vector<int> *>(data_);
@@ -144,7 +144,7 @@ void sqlite3_vector_use_type_backend::pre_use(eIndicator const * ind)
                 snprintf(buf, bufSize, "%d", v[i]);
             }
             break;
-            case eXUnsignedLong:
+            case x_unsigned_long:
             {
                 std::vector<unsigned long> *pv
                 = static_cast<std::vector<unsigned long> *>(data_);
@@ -156,7 +156,7 @@ void sqlite3_vector_use_type_backend::pre_use(eIndicator const * ind)
                 snprintf(buf, bufSize, "%lu", v[i]);
             }
             break;
-            case eXLongLong:
+            case x_long_long:
             {
                 std::vector<long long> *pv
                 = static_cast<std::vector<long long> *>(data_);
@@ -168,7 +168,7 @@ void sqlite3_vector_use_type_backend::pre_use(eIndicator const * ind)
                 snprintf(buf, bufSize, "%lld", v[i]);
             }
             break;
-            case eXDouble:
+            case x_double:
             {
                 // no need to overengineer it (KISS)...
 
@@ -182,7 +182,7 @@ void sqlite3_vector_use_type_backend::pre_use(eIndicator const * ind)
                 snprintf(buf, bufSize, "%.20g", v[i]);
             }
             break;
-            case eXStdTm:
+            case x_stdtm:
             {
                 std::vector<std::tm> *pv
                 = static_cast<std::vector<std::tm> *>(data_);
@@ -221,14 +221,14 @@ std::size_t sqlite3_vector_use_type_backend::size()
     switch (type_)
     {
         // simple cases
-    case eXChar:         sz = getVectorSize<char>         (data_); break;
-    case eXShort:        sz = getVectorSize<short>        (data_); break;
-    case eXInteger:      sz = getVectorSize<int>          (data_); break;
-    case eXUnsignedLong: sz = getVectorSize<unsigned long>(data_); break;
-    case eXLongLong:     sz = getVectorSize<long long>    (data_); break;
-    case eXDouble:       sz = getVectorSize<double>       (data_); break;
-    case eXStdString:    sz = getVectorSize<std::string>  (data_); break;
-    case eXStdTm:        sz = getVectorSize<std::tm>      (data_); break;
+    case x_char:         sz = getVectorSize<char>         (data_); break;
+    case x_short:        sz = getVectorSize<short>        (data_); break;
+    case x_integer:      sz = getVectorSize<int>          (data_); break;
+    case x_unsigned_long: sz = getVectorSize<unsigned long>(data_); break;
+    case x_long_long:     sz = getVectorSize<long long>    (data_); break;
+    case x_double:       sz = getVectorSize<double>       (data_); break;
+    case x_stdstring:    sz = getVectorSize<std::string>  (data_); break;
+    case x_stdtm:        sz = getVectorSize<std::tm>      (data_); break;
 
     default:
         throw soci_error("Use vector element used with non-supported type.");

@@ -31,7 +31,7 @@ using namespace soci::details::postgresql;
 
 
 void postgresql_vector_use_type_backend::bind_by_pos(int &position,
-        void *data, eExchangeType type)
+        void *data, exchange_type type)
 {
     data_ = data;
     type_ = type;
@@ -39,22 +39,22 @@ void postgresql_vector_use_type_backend::bind_by_pos(int &position,
 }
 
 void postgresql_vector_use_type_backend::bind_by_name(
-    std::string const &name, void *data, eExchangeType type)
+    std::string const &name, void *data, exchange_type type)
 {
     data_ = data;
     type_ = type;
     name_ = name;
 }
 
-void postgresql_vector_use_type_backend::pre_use(eIndicator const *ind)
+void postgresql_vector_use_type_backend::pre_use(indicator const *ind)
 {
     std::size_t const vsize = size();
     for (size_t i = 0; i != vsize; ++i)
     {
         char *buf;
 
-        // the data in vector can be either eOK or eNull
-        if (ind != NULL && ind[i] == eNull)
+        // the data in vector can be either i_ok or i_null
+        if (ind != NULL && ind[i] == i_null)
         {
             buf = NULL;
         }
@@ -63,7 +63,7 @@ void postgresql_vector_use_type_backend::pre_use(eIndicator const *ind)
             // allocate and fill the buffer with text-formatted client data
             switch (type_)
             {
-            case eXChar:
+            case x_char:
                 {
                     std::vector<char> *pv
                         = static_cast<std::vector<char> *>(data_);
@@ -74,7 +74,7 @@ void postgresql_vector_use_type_backend::pre_use(eIndicator const *ind)
                     buf[1] = '\0';
                 }
                 break;
-            case eXStdString:
+            case x_stdstring:
                 {
                     std::vector<std::string> *pv
                         = static_cast<std::vector<std::string> *>(data_);
@@ -84,7 +84,7 @@ void postgresql_vector_use_type_backend::pre_use(eIndicator const *ind)
                     std::strcpy(buf, v[i].c_str());
                 }
                 break;
-            case eXShort:
+            case x_short:
                 {
                     std::vector<short> *pv
                         = static_cast<std::vector<short> *>(data_);
@@ -96,7 +96,7 @@ void postgresql_vector_use_type_backend::pre_use(eIndicator const *ind)
                     snprintf(buf, bufSize, "%d", static_cast<int>(v[i]));
                 }
                 break;
-            case eXInteger:
+            case x_integer:
                 {
                     std::vector<int> *pv
                         = static_cast<std::vector<int> *>(data_);
@@ -108,7 +108,7 @@ void postgresql_vector_use_type_backend::pre_use(eIndicator const *ind)
                     snprintf(buf, bufSize, "%d", v[i]);
                 }
                 break;
-            case eXUnsignedLong:
+            case x_unsigned_long:
                 {
                     std::vector<unsigned long> *pv
                         = static_cast<std::vector<unsigned long> *>(data_);
@@ -120,7 +120,7 @@ void postgresql_vector_use_type_backend::pre_use(eIndicator const *ind)
                     snprintf(buf, bufSize, "%lu", v[i]);
                 }
                 break;
-            case eXLongLong:
+            case x_long_long:
                 {
                     std::vector<long long> *pv
                         = static_cast<std::vector<long long> *>(data_);
@@ -132,7 +132,7 @@ void postgresql_vector_use_type_backend::pre_use(eIndicator const *ind)
                     snprintf(buf, bufSize, "%lld", v[i]);
                 }
                 break;
-            case eXDouble:
+            case x_double:
                 {
                     // no need to overengineer it (KISS)...
 
@@ -146,7 +146,7 @@ void postgresql_vector_use_type_backend::pre_use(eIndicator const *ind)
                     snprintf(buf, bufSize, "%.20g", v[i]);
                 }
                 break;
-            case eXStdTm:
+            case x_stdtm:
                 {
                     std::vector<std::tm> *pv
                         = static_cast<std::vector<std::tm> *>(data_);
@@ -188,14 +188,14 @@ std::size_t postgresql_vector_use_type_backend::size()
     switch (type_)
     {
     // simple cases
-    case eXChar:         sz = get_vector_size<char>         (data_); break;
-    case eXShort:        sz = get_vector_size<short>        (data_); break;
-    case eXInteger:      sz = get_vector_size<int>          (data_); break;
-    case eXUnsignedLong: sz = get_vector_size<unsigned long>(data_); break;
-    case eXLongLong:     sz = get_vector_size<long long>    (data_); break;
-    case eXDouble:       sz = get_vector_size<double>       (data_); break;
-    case eXStdString:    sz = get_vector_size<std::string>  (data_); break;
-    case eXStdTm:        sz = get_vector_size<std::tm>      (data_); break;
+    case x_char:         sz = get_vector_size<char>         (data_); break;
+    case x_short:        sz = get_vector_size<short>        (data_); break;
+    case x_integer:      sz = get_vector_size<int>          (data_); break;
+    case x_unsigned_long: sz = get_vector_size<unsigned long>(data_); break;
+    case x_long_long:     sz = get_vector_size<long long>    (data_); break;
+    case x_double:       sz = get_vector_size<double>       (data_); break;
+    case x_stdstring:    sz = get_vector_size<std::string>  (data_); break;
+    case x_stdtm:        sz = get_vector_size<std::tm>      (data_); break;
 
     default:
         throw soci_error("Use vector element used with non-supported type.");

@@ -47,7 +47,7 @@ void odbc_statement_backend::clean_up()
 
 
 void odbc_statement_backend::prepare(std::string const & query,
-    eStatementType /* eType */)
+    statement_type /* eType */)
 {
     // rewrite the query by transforming all named parameters into
     // the ODBC numbers ones (:abc -> $1, etc.)
@@ -138,7 +138,7 @@ void odbc_statement_backend::prepare(std::string const & query,
     }
 }
 
-statement_backend::execFetchResult
+statement_backend::exec_fetch_result
 odbc_statement_backend::execute(int number)
 {
     // made this static because MSVC debugger was reporting
@@ -170,10 +170,10 @@ odbc_statement_backend::execute(int number)
         return fetch(number);
     }
 
-    return eSuccess;
+    return ef_success;
 }
 
-statement_backend::execFetchResult
+statement_backend::exec_fetch_result
 odbc_statement_backend::fetch(int number)
 {
     numRowsFetched_ = 0;
@@ -186,7 +186,7 @@ odbc_statement_backend::fetch(int number)
 
     if (SQL_NO_DATA == rc)
     {
-        return eNoData;
+        return ef_no_data;
     }
 
     if (is_odbc_error(rc))
@@ -195,7 +195,7 @@ odbc_statement_backend::fetch(int number)
                          "Statement Fetch");
     }
 
-    return eSuccess;
+    return ef_success;
 }
 
 int odbc_statement_backend::get_number_of_rows()
@@ -216,7 +216,7 @@ int odbc_statement_backend::prepare_for_describe()
     return numCols;
 }
 
-void odbc_statement_backend::describe_column(int colNum, eDataType & type,
+void odbc_statement_backend::describe_column(int colNum, data_type & type,
                                           std::string & columnName)
 {
     SQLCHAR colNameBuffer[2048];
@@ -245,25 +245,25 @@ void odbc_statement_backend::describe_column(int colNum, eDataType & type,
     case SQL_TYPE_DATE:
     case SQL_TYPE_TIME:
     case SQL_TYPE_TIMESTAMP:
-        type = eDate;
+        type = dt_date;
         break;
     case SQL_DOUBLE:
     case SQL_DECIMAL:
     case SQL_REAL:
     case SQL_FLOAT:
     case SQL_NUMERIC:
-        type = eDouble;
+        type = dt_double;
         break;
     case SQL_TINYINT:
     case SQL_SMALLINT:
     case SQL_INTEGER:
     case SQL_BIGINT:
-        type = eInteger;
+        type = dt_integer;
         break;
     case SQL_CHAR:
     case SQL_VARCHAR:
     default:
-        type = eString;
+        type = dt_string;
         break;
     }
 }

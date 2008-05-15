@@ -42,7 +42,7 @@ void sqlite3_statement_backend::clean_up()
 }
 
 void sqlite3_statement_backend::prepare(std::string const & query,
-    eStatementType /* eType */)
+    statement_type /* eType */)
 {
     clean_up();
 
@@ -79,10 +79,10 @@ void sqlite3_statement_backend::resetIfNeeded()
 }
 
 // This is used by bulk operations
-statement_backend::execFetchResult
+statement_backend::exec_fetch_result
 sqlite3_statement_backend::loadRS(int totalRows)
 {
-    statement_backend::execFetchResult retVal = eSuccess;
+    statement_backend::exec_fetch_result retVal = ef_success;
     int numCols = -1;
 
     // make the vector big enough to hold the data we need
@@ -96,7 +96,7 @@ sqlite3_statement_backend::loadRS(int totalRows)
         if (SQLITE_DONE == res)
         {
             databaseReady_ = false;
-            retVal = eNoData;
+            retVal = ef_no_data;
 
             break;
         }
@@ -151,17 +151,17 @@ sqlite3_statement_backend::loadRS(int totalRows)
 }
 
 // This is used for non-bulk operations
-statement_backend::execFetchResult
+statement_backend::exec_fetch_result
 sqlite3_statement_backend::loadOne()
 {
-    statement_backend::execFetchResult retVal = eSuccess;
+    statement_backend::exec_fetch_result retVal = ef_success;
 
     int res = sqlite3_step(stmt_);
 
     if (SQLITE_DONE == res)
     {
         databaseReady_ = false;
-        retVal = eNoData;
+        retVal = ef_no_data;
     }
     else if (SQLITE_ROW == res)
     {
@@ -182,10 +182,10 @@ sqlite3_statement_backend::loadOne()
 }
 
 // Execute statements once for every row of useData
-statement_backend::execFetchResult
+statement_backend::exec_fetch_result
 sqlite3_statement_backend::bindAndExecute(int number)
 {
-    statement_backend::execFetchResult retVal = eNoData;
+    statement_backend::exec_fetch_result retVal = ef_no_data;
 
     int rows = static_cast<int>(useData_.size());
 
@@ -235,7 +235,7 @@ sqlite3_statement_backend::bindAndExecute(int number)
     return retVal;
 }
 
-statement_backend::execFetchResult
+statement_backend::exec_fetch_result
 sqlite3_statement_backend::execute(int number)
 {
     if (stmt_ == NULL)
@@ -246,7 +246,7 @@ sqlite3_statement_backend::execute(int number)
     sqlite3_reset(stmt_);
     databaseReady_ = true;
 
-    statement_backend::execFetchResult retVal = eNoData;
+    statement_backend::exec_fetch_result retVal = ef_no_data;
 
     if (useData_.empty() == false)
     {
@@ -267,7 +267,7 @@ sqlite3_statement_backend::execute(int number)
     return retVal;
 }
 
-statement_backend::execFetchResult
+statement_backend::exec_fetch_result
 sqlite3_statement_backend::fetch(int number)
 {
     return loadRS(number);
@@ -289,7 +289,7 @@ int sqlite3_statement_backend::prepare_for_describe()
     return sqlite3_column_count(stmt_);
 }
 
-void sqlite3_statement_backend::describe_column(int colNum, eDataType & type,
+void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
                                              std::string & columnName)
 {
 
@@ -317,32 +317,32 @@ void sqlite3_statement_backend::describe_column(int colNum, eDataType & type,
 
     if (dt.find("time", 0) != std::string::npos)
     {
-        type = eDate;
+        type = dt_date;
         typeFound = true;
     }
     if (dt.find("date", 0) != std::string::npos)
     {
-        type = eDate;
+        type = dt_date;
         typeFound = true;
     }
     if (dt.find("int", 0) != std::string::npos)
     {
-        type = eInteger;
+        type = dt_integer;
         typeFound = true;
     }
     if (dt.find("float", 0) != std::string::npos)
     {
-        type = eDouble;
+        type = dt_double;
         typeFound = true;
     }
     if (dt.find("text", 0) != std::string::npos)
     {
-        type = eString;
+        type = dt_string;
         typeFound = true;
     }
     if (dt.find("char", 0) != std::string::npos)
     {
-        type = eString;
+        type = dt_string;
         typeFound = true;
     }
 
@@ -360,11 +360,11 @@ void sqlite3_statement_backend::describe_column(int colNum, eDataType & type,
     int sqlite3_type = sqlite3_column_type(stmt_, colNum-1);
     switch (sqlite3_type)
     {
-    case SQLITE_INTEGER: type = eInteger; break;
-    case SQLITE_FLOAT: type = eDouble; break;
+    case SQLITE_INTEGER: type = dt_integer; break;
+    case SQLITE_FLOAT: type = dt_double; break;
     case SQLITE_BLOB:
-    case SQLITE_TEXT: type = eString; break;
-    default: type = eString; break;
+    case SQLITE_TEXT: type = dt_string; break;
+    default: type = dt_string; break;
     }
 
     sqlite3_reset(stmt_);

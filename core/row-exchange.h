@@ -27,7 +27,7 @@ class into_type<row>
 {
 public:
     into_type(row & r) : r_(r) {}
-    into_type(row & r, eIndicator & ind) : r_(r) {}
+    into_type(row & r, indicator & ind) : r_(r) {}
 
 private:
     // special handling for Row

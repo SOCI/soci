@@ -238,9 +238,9 @@ public:
         return new TableCreator3(s);
     }
 
-    std::string to_date_time(std::string const &dateString) const
+    std::string to_date_time(std::string const &datdt_string) const
     {
-        return "datetime(\'" + dateString + "\')";
+        return "datetime(\'" + datdt_string + "\')";
     }
 };
 

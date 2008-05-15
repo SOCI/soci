@@ -419,9 +419,9 @@ public:
         return new table_creator_three(s);
     }
 
-    std::string to_date_time(std::string const &dateString) const
+    std::string to_date_time(std::string const &datdt_string) const
     {
-        return "timestamptz(\'" + dateString + "\')";
+        return "timestamptz(\'" + datdt_string + "\')";
     }
 
 };

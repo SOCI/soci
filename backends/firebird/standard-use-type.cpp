@@ -15,7 +15,7 @@ using namespace soci::details;
 using namespace soci::details::firebird;
 
 void firebird_standard_use_type_backend::bind_by_pos(
-    int & position, void * data, eExchangeType type, bool /* readOnly */)
+    int & position, void * data, exchange_type type, bool /* readOnly */)
 {
     if (statement_.boundByName_)
     {
@@ -43,7 +43,7 @@ void firebird_standard_use_type_backend::bind_by_pos(
 
 void firebird_standard_use_type_backend::bind_by_name(
     std::string const & name, void * data,
-    eExchangeType type, bool /* readOnly */)
+    exchange_type type, bool /* readOnly */)
 {
     if (statement_.boundByPos_)
     {
@@ -75,16 +75,16 @@ void firebird_standard_use_type_backend::bind_by_name(
     statement_.boundByName_ = true;
 }
 
-void firebird_standard_use_type_backend::pre_use(eIndicator const * ind)
+void firebird_standard_use_type_backend::pre_use(indicator const * ind)
 {
     if (ind)
     {
         switch (*ind)
         {
-            case eNull:
+            case i_null:
                 indISCHolder_ = -1;
                 break;
-            case eOK:
+            case i_ok:
                 indISCHolder_ =  0;
                 break;
             default:
@@ -99,27 +99,27 @@ void firebird_standard_use_type_backend::exchangeData()
 
     switch (type_)
     {
-        case eXChar:
+        case x_char:
             setTextParam(static_cast<char*>(data_), 1, buf_, var);
             break;
-        case eXShort:
+        case x_short:
             to_isc<short>(data_, var);
             break;
-        case eXInteger:
+        case x_integer:
             to_isc<int>(data_, var);
             break;
-        case eXUnsignedLong:
+        case x_unsigned_long:
             to_isc<unsigned long>(data_, var);
             break;
-        case eXLongLong:
+        case x_long_long:
             to_isc<long long>(data_, var);
             break;
-        case eXDouble:
+        case x_double:
             to_isc<double>(data_, var);
             break;
 
             // cases that require adjustments and buffer management
-        case eXCString:
+        case x_cstring:
             {
                 details::cstring_descriptor *tmp
                     = static_cast<cstring_descriptor*>(data_);
@@ -133,19 +133,19 @@ void firebird_standard_use_type_backend::exchangeData()
                 setTextParam(tmp->str_, tmp->bufSize_, buf_, var);
             }
             break;
-        case eXStdString:
+        case x_stdstring:
             {
                 std::string *tmp = static_cast<std::string*>(data_);
                 setTextParam(tmp->c_str(), tmp->size(), buf_, var);
             }
             break;
-        case eXStdTm:
+        case x_stdtm:
             tmEncode(var->sqltype,
                      static_cast<std::tm*>(data_), buf_);
             break;
 
             // cases that require special handling
-        case eXBLOB:
+        case x_blob:
             {
                 blob *tmp = static_cast<blob*>(data_);
 
@@ -167,7 +167,7 @@ void firebird_standard_use_type_backend::exchangeData()
 }
 
 void firebird_standard_use_type_backend::post_use(
-    bool /* gotData */, eIndicator * /* ind */)
+    bool /* gotData */, indicator * /* ind */)
 {
     // TODO: Is it possible to have the bound element being overwritten
     // by the database?

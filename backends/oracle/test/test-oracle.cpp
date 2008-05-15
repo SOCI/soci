@@ -289,16 +289,16 @@ namespace soci
     struct type_conversion<string_holder>
     {
         typedef std::string base_type;
-        static void from_base(const std::string &s, eIndicator /* ind */,
+        static void from_base(const std::string &s, indicator /* ind */,
             string_holder &sh)
         {
             sh = string_holder(s);
         }
 
-        static void to_base(const string_holder &sh, std::string &s, eIndicator &ind)
+        static void to_base(const string_holder &sh, std::string &s, indicator &ind)
         {
             s = sh.get();
-            ind = eOK;
+            ind = i_ok;
         }
     };
 }
@@ -358,10 +358,10 @@ void test7()
          returns_null_procedure_creator procedureCreator(sql);
 
          string_holder sh;
-         eIndicator ind = eOK;
+         indicator ind = i_ok;
          procedure proc = (sql.prepare << "soci_test(:s)", use(sh, ind));
          proc.execute(1);
-         assert(ind == eNull);
+         assert(ind == i_null);
     }
 
     std::cout << "test 7 passed" << std::endl;
@@ -479,7 +479,7 @@ void test8()
 
     // test "no data" condition
     {
-        std::vector<eIndicator> inds(3);
+        std::vector<indicator> inds(3);
         std::vector<int> ids_out(3);
         statement st = (sql.prepare << "select id from soci_test where 1=0",
                         into(ids_out, inds));
@@ -496,10 +496,10 @@ void test8()
         std::vector<int> ids(3);
         sql << "select id from soci_test", into(ids);
 
-        std::vector<eIndicator> inds_in;
-        inds_in.push_back(eOK);
-        inds_in.push_back(eNull);
-        inds_in.push_back(eOK);
+        std::vector<indicator> inds_in;
+        inds_in.push_back(i_ok);
+        inds_in.push_back(i_null);
+        inds_in.push_back(i_ok);
 
         std::vector<int> new_codes;
         new_codes.push_back(10);
@@ -509,14 +509,14 @@ void test8()
         sql << "update soci_test set code = :code where id = :id",
                 use(new_codes, inds_in), use(ids);
 
-        std::vector<eIndicator> inds_out(3);
+        std::vector<indicator> inds_out(3);
         std::vector<int> codes(3);
 
         sql << "select code from soci_test", into(codes, inds_out);
         assert(codes.size() == 3 && inds_out.size() == 3);
         assert(codes[0] == 10 && codes[2] == 10);
-        assert(inds_out[0] == eOK && inds_out[1] == eNull
-            && inds_out[2] == eOK);
+        assert(inds_out[0] == i_ok && inds_out[1] == i_null
+            && inds_out[2] == i_ok);
     }
 
     // verify an exception is thrown if null is selected
@@ -538,7 +538,7 @@ void test8()
     // test basic select
     {
         const size_t sz = 3;
-        std::vector<eIndicator> inds(sz);
+        std::vector<indicator> inds(sz);
         std::vector<int> ids_out(sz);
         statement st = (sql.prepare << "select id from soci_test",
             into(ids_out, inds));
@@ -547,8 +547,8 @@ void test8()
         assert(ids_out.size() == sz);
         assert(ids_out[0] == 10);
         assert(ids_out[2] == 12);
-        assert(inds.size() == 3 && inds[0] == eOK
-            && inds[1] == eOK && inds[2] == eOK);
+        assert(inds.size() == 3 && inds[0] == i_ok
+            && inds[1] == i_ok && inds[2] == i_ok);
     }
 
     // verify execute(0)
@@ -713,7 +713,7 @@ namespace soci
     {
         typedef values base_type;
 
-        static void from_base(values const &v, eIndicator /* ind */, person &p)
+        static void from_base(values const &v, indicator /* ind */, person &p)
         {
             // ignoring possibility that the whole object might be NULL
 
@@ -723,13 +723,13 @@ namespace soci
             p.gender = v.get<std::string>("GENDER", "unknown");
         }
 
-        static void to_base(person const & p, values & v, eIndicator & ind)
+        static void to_base(person const & p, values & v, indicator & ind)
         {
             v.set("ID", p.id);
             v.set("FIRST_NAME", p.firstName);
             v.set("LAST_NAME", p.lastName);
-            v.set("GENDER", p.gender, p.gender.empty() ? eNull : eOK);
-            ind = eOK;
+            v.set("GENDER", p.gender, p.gender.empty() ? i_null : i_ok);
+            ind = i_ok;
         }
     };
 }
@@ -885,7 +885,7 @@ namespace soci
     {
         typedef values base_type;
 
-        static void from_base(values const &v, eIndicator /* ind */, person2 &p)
+        static void from_base(values const &v, indicator /* ind */, person2 &p)
         {
             p.id = v.get<int>(0);
             p.firstName = v.get<std::string>(1);
@@ -901,7 +901,7 @@ namespace soci
     {
         typedef values base_type;
 
-        static void from_base(values const &v, eIndicator /* ind */, person3 &p)
+        static void from_base(values const &v, indicator /* ind */, person3 &p)
         {
             v >> p.id >> p.firstName >> p.lastName >> p.gender;
         }
@@ -1116,9 +1116,9 @@ public:
         return new table_creator_three(s);
     }
 
-    std::string to_date_time(std::string const &dateString) const
+    std::string to_date_time(std::string const &datdt_string) const
     {
-        return "to_date('" + dateString + "', 'YYYY-MM-DD HH24:MI:SS')";
+        return "to_date('" + datdt_string + "', 'YYYY-MM-DD HH24:MI:SS')";
     }
 };
 

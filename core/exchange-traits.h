@@ -31,8 +31,8 @@ struct exchange_traits
 
     enum // anonymous
     {
-        eXType =
-        exchange_traits<typename type_conversion<T>::base_type>::eXType
+        x_type =
+        exchange_traits<typename type_conversion<T>::base_type>::x_type
     };
 };
 
@@ -40,42 +40,42 @@ template <>
 struct exchange_traits<short>
 {
     typedef basic_type_tag type_family;
-    enum { eXType = eXShort };
+    enum { x_type = x_short };
 };
 
 template <>
 struct exchange_traits<int>
 {
     typedef basic_type_tag type_family;
-    enum { eXType = eXInteger };
+    enum { x_type = x_integer };
 };
 
 template <>
 struct exchange_traits<char>
 {
     typedef basic_type_tag type_family;
-    enum { eXType = eXChar };
+    enum { x_type = x_char };
 };
 
 template <>
 struct exchange_traits<unsigned long>
 {
     typedef basic_type_tag type_family;
-    enum { eXType = eXUnsignedLong };
+    enum { x_type = x_unsigned_long };
 };
 
 template <>
 struct exchange_traits<long long>
 {
     typedef basic_type_tag type_family;
-    enum { eXType = eXLongLong };
+    enum { x_type = x_long_long };
 };
 
 template <>
 struct exchange_traits<double>
 {
     typedef basic_type_tag type_family;
-    enum { eXType = eXDouble };
+    enum { x_type = x_double };
 };
 
 template <>
@@ -94,21 +94,21 @@ template <>
 struct exchange_traits<std::string>
 {
     typedef basic_type_tag type_family;
-    enum { eXType = eXStdString };
+    enum { x_type = x_stdstring };
 };
 
 template <>
 struct exchange_traits<std::tm>
 {
     typedef basic_type_tag type_family;
-    enum { eXType = eXStdTm };
+    enum { x_type = x_stdtm };
 };
 
 template <typename T>
 struct exchange_traits<std::vector<T> >
 {
     typedef typename exchange_traits<T>::type_family type_family;
-    enum { eXType = exchange_traits<T>::eXType };
+    enum { x_type = exchange_traits<T>::x_type };
 };
 
 } // namespace details

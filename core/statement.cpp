@@ -210,7 +210,7 @@ void statement_impl::clean_up()
 }
 
 void statement_impl::prepare(std::string const & query,
-    eStatementType eType)
+    statement_type eType)
 {
     query_ = query;
     session_.log_query(query);
@@ -322,11 +322,11 @@ bool statement_impl::execute(bool withDataExchange)
         }
     }
 
-    statement_backend::execFetchResult res = backEnd_->execute(num);
+    statement_backend::exec_fetch_result res = backEnd_->execute(num);
 
     bool gotData = false;
 
-    if (res == statement_backend::eSuccess)
+    if (res == statement_backend::ef_success)
     {
         // the "success" means that the statement executed correctly
         // and for select statement this also means that some rows were read
@@ -339,7 +339,7 @@ bool statement_impl::execute(bool withDataExchange)
             resize_intos(static_cast<std::size_t>(num));
         }
     }
-    else // res == eNoData
+    else // res == ef_no_data
     {
         // the "no data" means that the end-of-rowset condition was hit
         // but still some rows might have been read (the last bunch of rows)
@@ -389,9 +389,9 @@ bool statement_impl::fetch()
         fetchSize_ = newFetchSize;
     }
 
-    statement_backend::execFetchResult res =
+    statement_backend::exec_fetch_result res =
         backEnd_->fetch(static_cast<int>(fetchSize_));
-    if (res == statement_backend::eSuccess)
+    if (res == statement_backend::ef_success)
     {
         // the "success" means that some number of rows was read
         // and that it is not yet the end-of-rowset (there are more rows)
@@ -401,7 +401,7 @@ bool statement_impl::fetch()
         // ensure into vectors have correct size
         resize_intos(fetchSize_);
     }
-    else // res == eNoData
+    else // res == ef_no_data
     {
         // end-of-rowset condition
 
@@ -557,40 +557,40 @@ namespace soci
 namespace details
 {
 
-// Map eDataTypes to stock types for dynamic result set support
+// Map data_types to stock types for dynamic result set support
 
 template<>
-void statement_impl::bind_into<eString>()
+void statement_impl::bind_into<dt_string>()
 {
     into_row<std::string>();
 }
 
 template<>
-void statement_impl::bind_into<eDouble>()
+void statement_impl::bind_into<dt_double>()
 {
     into_row<double>();
 }
 
 template<>
-void statement_impl::bind_into<eInteger>()
+void statement_impl::bind_into<dt_integer>()
 {
     into_row<int>();
 }
 
 template<>
-void statement_impl::bind_into<eUnsignedLong>()
+void statement_impl::bind_into<dt_unsigned_long>()
 {
     into_row<unsigned long>();
 }
 
 template<>
-void statement_impl::bind_into<eLongLong>()
+void statement_impl::bind_into<dt_long_long>()
 {
     into_row<long long>();
 }
 
 template<>
-void statement_impl::bind_into<eDate>()
+void statement_impl::bind_into<dt_date>()
 {
     into_row<std::tm>();
 }
@@ -601,7 +601,7 @@ void statement_impl::describe()
 
     for (int i = 1; i <= numcols; ++i)
     {
-        eDataType dtype;
+        data_type dtype;
         std::string columnName;
 
         backEnd_->describe_column(i, dtype, columnName);
@@ -612,23 +612,23 @@ void statement_impl::describe()
         props.set_data_type(dtype);
         switch (dtype)
         {
-        case eString:
-            bind_into<eString>();
+        case dt_string:
+            bind_into<dt_string>();
             break;
-        case eDouble:
-            bind_into<eDouble>();
+        case dt_double:
+            bind_into<dt_double>();
             break;
-        case eInteger:
-            bind_into<eInteger>();
+        case dt_integer:
+            bind_into<dt_integer>();
             break;
-        case eUnsignedLong:
-            bind_into<eUnsignedLong>();
+        case dt_unsigned_long:
+            bind_into<dt_unsigned_long>();
             break;
-        case eLongLong:
-            bind_into<eLongLong>();
+        case dt_long_long:
+            bind_into<dt_long_long>();
             break;
-        case eDate:
-            bind_into<eDate>();
+        case dt_date:
+            bind_into<dt_date>();
             break;
         default:
             std::ostringstream msg;

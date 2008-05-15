@@ -12,11 +12,11 @@
 using namespace soci;
 using namespace soci::details;
 
-eIndicator values::indicator(std::size_t pos) const
+indicator values::get_indicator(std::size_t pos) const
 {
     if (row_)
     {
-        return row_->indicator(pos);
+        return row_->get_indicator(pos);
     }
     else
     {
@@ -24,11 +24,11 @@ eIndicator values::indicator(std::size_t pos) const
     }
 }
 
-eIndicator values::indicator(std::string const & name) const
+indicator values::get_indicator(std::string const & name) const
 {
     if (row_)
     {
-        return row_->indicator(name);
+        return row_->get_indicator(name);
     }
     else
     {

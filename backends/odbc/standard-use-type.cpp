@@ -20,29 +20,29 @@ void odbc_standard_use_type_backend::prepare_for_bind(
     switch (type_)
     {
     // simple cases
-    case eXShort:
+    case x_short:
         sqlType = SQL_SMALLINT;
         cType = SQL_C_SSHORT;
         size = sizeof(short);
         break;
-    case eXInteger:
+    case x_integer:
         sqlType = SQL_INTEGER;
         cType = SQL_C_SLONG;
         size = sizeof(int);
         break;
-    case eXUnsignedLong:
+    case x_unsigned_long:
         sqlType = SQL_BIGINT;
         cType = SQL_C_ULONG;
         size = sizeof(unsigned long);
         break;
-    case eXDouble:
+    case x_double:
         sqlType = SQL_DOUBLE;
         cType = SQL_C_DOUBLE;
         size = sizeof(double);
         break;
 
     // cases that require adjustments and buffer management
-    case eXChar:
+    case x_char:
         sqlType = SQL_CHAR;
         cType = SQL_C_CHAR;
         size = sizeof(char)+1;
@@ -50,7 +50,7 @@ void odbc_standard_use_type_backend::prepare_for_bind(
         data = buf_;
         indHolder_ = SQL_NTS;
         break;
-    case eXCString:
+    case x_cstring:
     {
         details::cstring_descriptor *desc = static_cast<cstring_descriptor *>(data);
         sqlType = SQL_VARCHAR;
@@ -60,7 +60,7 @@ void odbc_standard_use_type_backend::prepare_for_bind(
         indHolder_ = SQL_NTS;
     }
     break;
-    case eXStdString:
+    case x_stdstring:
     {
         // TODO: No textual value is assigned here!
 
@@ -73,7 +73,7 @@ void odbc_standard_use_type_backend::prepare_for_bind(
         indHolder_ = SQL_NTS;
     }
     break;
-    case eXStdTm:
+    case x_stdtm:
         sqlType = SQL_TIMESTAMP;
         cType = SQL_C_TIMESTAMP;
         buf_ = new char[sizeof(TIMESTAMP_STRUCT)];
@@ -83,7 +83,7 @@ void odbc_standard_use_type_backend::prepare_for_bind(
                    // yyyy-mm-dd hh:mm:ss
         break;
 
-    case eXBLOB:
+    case x_blob:
     {
 //         sqlType = SQL_VARBINARY;
 //         cType = SQL_C_BINARY;
@@ -98,13 +98,13 @@ void odbc_standard_use_type_backend::prepare_for_bind(
         //TODO            data = &bbe->lobp_;
     }
     break;
-    case eXStatement:
-    case eXRowID:
+    case x_statement:
+    case x_rowid:
         break;
     }
 }
 
-void odbc_standard_use_type_backend::bind_helper(int &position, void *data, eExchangeType type)
+void odbc_standard_use_type_backend::bind_helper(int &position, void *data, exchange_type type)
 {
     data_ = data; // for future reference
     type_ = type; // for future reference
@@ -128,7 +128,7 @@ void odbc_standard_use_type_backend::bind_helper(int &position, void *data, eExc
 }
 
 void odbc_standard_use_type_backend::bind_by_pos(
-    int &position, void *data, eExchangeType type, bool /* readOnly */)
+    int &position, void *data, exchange_type type, bool /* readOnly */)
 {
     if (statement_.boundByName_)
     {
@@ -142,7 +142,7 @@ void odbc_standard_use_type_backend::bind_by_pos(
 }
 
 void odbc_standard_use_type_backend::bind_by_name(
-    std::string const &name, void *data, eExchangeType type, bool /* readOnly */)
+    std::string const &name, void *data, exchange_type type, bool /* readOnly */)
 {
     if (statement_.boundByPos_)
     {
@@ -178,16 +178,16 @@ void odbc_standard_use_type_backend::bind_by_name(
     statement_.boundByName_ = true;
 }
 
-void odbc_standard_use_type_backend::pre_use(eIndicator const *ind)
+void odbc_standard_use_type_backend::pre_use(indicator const *ind)
 {
     // first deal with data
-    if (type_ == eXChar)
+    if (type_ == x_char)
     {
         char *c = static_cast<char*>(data_);
         buf_[0] = *c;
         buf_[1] = '\0';
     }
-    else if (type_ == eXStdString)
+    else if (type_ == x_stdstring)
     {
         std::string *s = static_cast<std::string *>(data_);
 
@@ -198,7 +198,7 @@ void odbc_standard_use_type_backend::pre_use(eIndicator const *ind)
         strncpy(buf_, s->c_str(), toCopy);
         buf_[toCopy] = '\0';
     }
-    else if (type_ == eXStdTm)
+    else if (type_ == x_stdtm)
     {
         std::tm *t = static_cast<std::tm *>(data_);
         TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
@@ -213,13 +213,13 @@ void odbc_standard_use_type_backend::pre_use(eIndicator const *ind)
     }
 
     // then handle indicators
-    if (ind != NULL && *ind == eNull)
+    if (ind != NULL && *ind == i_null)
     {
         indHolder_ = SQL_NULL_DATA; // null
     }
 }
 
-void odbc_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
+void odbc_standard_use_type_backend::post_use(bool gotData, indicator *ind)
 {
     // TODO: Is it possible to have the bound element being overwritten
     // by the database? (looks like yes)
@@ -242,18 +242,18 @@ void odbc_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
     // first, deal with data
     if (gotData)
     {
-        if (type_ == eXChar)
+        if (type_ == x_char)
         {
             char *c = static_cast<char*>(data_);
             *c = buf_[0];
         }
-        else if (type_ == eXStdString)
+        else if (type_ == x_stdstring)
         {
             std::string *s = static_cast<std::string *>(data_);
 
             *s = buf_;
         }
-        else if (type_ == eXStdTm)
+        else if (type_ == x_stdtm)
         {
             std::tm *t = static_cast<std::tm *>(data_);
             TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
@@ -276,15 +276,15 @@ void odbc_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
         {
             if (indHolder_ == 0)
             {
-                *ind = eOK;
+                *ind = i_ok;
             }
             else if (indHolder_ == SQL_NULL_DATA)
             {
-                *ind = eNull;
+                *ind = i_null;
             }
             else
             {
-                *ind = eTruncated;
+                *ind = i_truncated;
             }
         }
     }

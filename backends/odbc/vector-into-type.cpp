@@ -28,7 +28,7 @@ void odbc_vector_into_type_backend::prepare_indicators(std::size_t size)
 }
 
 void odbc_vector_into_type_backend::define_by_pos(
-    int &position, void *data, eExchangeType type)
+    int &position, void *data, exchange_type type)
 {
     data_ = data; // for future reference
     type_ = type; // for future reference
@@ -38,7 +38,7 @@ void odbc_vector_into_type_backend::define_by_pos(
     switch (type)
     {
     // simple cases
-    case eXShort:
+    case x_short:
         {
             odbcType_ = SQL_C_SSHORT;
             size = sizeof(short);
@@ -48,7 +48,7 @@ void odbc_vector_into_type_backend::define_by_pos(
             data = &v[0];
         }
         break;
-    case eXInteger:
+    case x_integer:
         {
             odbcType_ = SQL_C_SLONG;
             size = sizeof(long);
@@ -58,7 +58,7 @@ void odbc_vector_into_type_backend::define_by_pos(
             data = &v[0];
         }
         break;
-    case eXUnsignedLong:
+    case x_unsigned_long:
         {
             odbcType_ = SQL_C_ULONG;
             size = sizeof(unsigned long);
@@ -69,7 +69,7 @@ void odbc_vector_into_type_backend::define_by_pos(
             data = &v[0];
         }
         break;
-    case eXDouble:
+    case x_double:
         {
             odbcType_ = SQL_C_DOUBLE;
             size = sizeof(double);
@@ -82,7 +82,7 @@ void odbc_vector_into_type_backend::define_by_pos(
 
     // cases that require adjustments and buffer management
 
-    case eXChar:
+    case x_char:
         {
             odbcType_ = SQL_C_CHAR;
 
@@ -100,7 +100,7 @@ void odbc_vector_into_type_backend::define_by_pos(
             data = buf_;
         }
         break;
-    case eXStdString:
+    case x_stdstring:
         {
             odbcType_ = SQL_C_CHAR;
             std::vector<std::string> *v
@@ -115,7 +115,7 @@ void odbc_vector_into_type_backend::define_by_pos(
             data = buf_;
         }
         break;
-    case eXStdTm:
+    case x_stdtm:
         {
             odbcType_ = SQL_C_TYPE_TIMESTAMP;
             std::vector<std::tm> *v
@@ -133,12 +133,12 @@ void odbc_vector_into_type_backend::define_by_pos(
         }
         break;
 
-    case eXCString:   break; // not supported
+    case x_cstring:   break; // not supported
                              // (there is no specialization
                              // of IntoType<vector<char*> >)
-    case eXStatement: break; // not supported
-    case eXRowID:     break; // not supported
-    case eXBLOB:      break; // not supported
+    case x_statement: break; // not supported
+    case x_rowid:     break; // not supported
+    case x_blob:      break; // not supported
     }
 
     SQLRETURN rc = SQLBindCol(statement_.hstmt_, static_cast<SQLUSMALLINT>(position++),
@@ -155,14 +155,14 @@ void odbc_vector_into_type_backend::pre_fetch()
     // nothing to do for the supported types
 }
 
-void odbc_vector_into_type_backend::post_fetch(bool gotData, eIndicator *ind)
+void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
 {
     if (gotData)
     {
         // first, deal with data
 
         // only std::string, std::tm and Statement need special handling
-        if (type_ == eXChar)
+        if (type_ == x_char)
         {
             std::vector<char> *vp
                 = static_cast<std::vector<char> *>(data_);
@@ -176,7 +176,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, eIndicator *ind)
                 pos += colSize_;
             }
         }
-        if (type_ == eXStdString)
+        if (type_ == x_stdstring)
         {
             std::vector<std::string> *vp
                 = static_cast<std::vector<std::string> *>(data_);
@@ -191,7 +191,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, eIndicator *ind)
                 pos += colSize_;
             }
         }
-        else if (type_ == eXStdTm)
+        else if (type_ == x_stdtm)
         {
             std::vector<std::tm> *vp
                 = static_cast<std::vector<std::tm> *>(data_);
@@ -227,15 +227,15 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, eIndicator *ind)
             {
                 if (indHolderVec_[i] > 0)
                 {
-                    ind[i] = eOK;
+                    ind[i] = i_ok;
                 }
                 else if (indHolderVec_[i] == SQL_NULL_DATA)
                 {
-                    ind[i] = eNull;
+                    ind[i] = i_null;
                 }
                 else
                 {
-                    ind[i] = eTruncated;
+                    ind[i] = i_truncated;
                 }
             }
         }
@@ -265,46 +265,46 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
     switch (type_)
     {
     // simple cases
-    case eXChar:
+    case x_char:
         {
             std::vector<char> *v = static_cast<std::vector<char> *>(data_);
             v->resize(sz);
         }
         break;
-    case eXShort:
+    case x_short:
         {
             std::vector<short> *v = static_cast<std::vector<short> *>(data_);
             v->resize(sz);
         }
         break;
-    case eXInteger:
+    case x_integer:
         {
             std::vector<long> *v = static_cast<std::vector<long> *>(data_);
             v->resize(sz);
         }
         break;
-    case eXUnsignedLong:
+    case x_unsigned_long:
         {
             std::vector<unsigned long> *v
                 = static_cast<std::vector<unsigned long> *>(data_);
             v->resize(sz);
         }
         break;
-    case eXDouble:
+    case x_double:
         {
             std::vector<double> *v
                 = static_cast<std::vector<double> *>(data_);
             v->resize(sz);
         }
         break;
-    case eXStdString:
+    case x_stdstring:
         {
             std::vector<std::string> *v
                 = static_cast<std::vector<std::string> *>(data_);
             v->resize(sz);
         }
         break;
-    case eXStdTm:
+    case x_stdtm:
         {
             std::vector<std::tm> *v
                 = static_cast<std::vector<std::tm> *>(data_);
@@ -312,10 +312,10 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
         }
         break;
 
-    case eXCString:   break; // not supported
-    case eXStatement: break; // not supported
-    case eXRowID:     break; // not supported
-    case eXBLOB:      break; // not supported
+    case x_cstring:   break; // not supported
+    case x_statement: break; // not supported
+    case x_rowid:     break; // not supported
+    case x_blob:      break; // not supported
     }
 }
 
@@ -325,46 +325,46 @@ std::size_t odbc_vector_into_type_backend::size()
     switch (type_)
     {
     // simple cases
-    case eXChar:
+    case x_char:
         {
             std::vector<char> *v = static_cast<std::vector<char> *>(data_);
             sz = v->size();
         }
         break;
-    case eXShort:
+    case x_short:
         {
             std::vector<short> *v = static_cast<std::vector<short> *>(data_);
             sz = v->size();
         }
         break;
-    case eXInteger:
+    case x_integer:
         {
             std::vector<long> *v = static_cast<std::vector<long> *>(data_);
             sz = v->size();
         }
         break;
-    case eXUnsignedLong:
+    case x_unsigned_long:
         {
             std::vector<unsigned long> *v
                 = static_cast<std::vector<unsigned long> *>(data_);
             sz = v->size();
         }
         break;
-    case eXDouble:
+    case x_double:
         {
             std::vector<double> *v
                 = static_cast<std::vector<double> *>(data_);
             sz = v->size();
         }
         break;
-    case eXStdString:
+    case x_stdstring:
         {
             std::vector<std::string> *v
                 = static_cast<std::vector<std::string> *>(data_);
             sz = v->size();
         }
         break;
-    case eXStdTm:
+    case x_stdtm:
         {
             std::vector<std::tm> *v
                 = static_cast<std::vector<std::tm> *>(data_);
@@ -372,10 +372,10 @@ std::size_t odbc_vector_into_type_backend::size()
         }
         break;
 
-    case eXCString:   break; // not supported
-    case eXStatement: break; // not supported
-    case eXRowID:     break; // not supported
-    case eXBLOB:      break; // not supported
+    case x_cstring:   break; // not supported
+    case x_statement: break; // not supported
+    case x_rowid:     break; // not supported
+    case x_blob:      break; // not supported
     }
 
     return sz;

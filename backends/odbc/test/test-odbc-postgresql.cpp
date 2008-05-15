@@ -80,9 +80,9 @@ public:
         return new TableCreator3(s);
     }
 
-    std::string toDateTime(std::string const &dateString) const
+    std::string toDateTime(std::string const &datdt_string) const
     {
-        return "timestamptz(\'" + dateString + "\')";
+        return "timestamptz(\'" + datdt_string + "\')";
     }
 
 };

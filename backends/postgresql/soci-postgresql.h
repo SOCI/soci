@@ -42,18 +42,18 @@ struct postgresql_standard_into_type_backend : details::standard_into_type_backe
         : statement_(st) {}
 
     virtual void define_by_pos(int &position,
-        void *data, details::eExchangeType type);
+        void *data, details::exchange_type type);
 
     virtual void pre_fetch();
     virtual void post_fetch(bool gotData, bool calledFromFetch,
-        eIndicator *ind);
+        indicator *ind);
 
     virtual void clean_up();
 
     postgresql_statement_backend &statement_;
 
     void *data_;
-    details::eExchangeType type_;
+    details::exchange_type type_;
     int position_;
 };
 
@@ -63,10 +63,10 @@ struct postgresql_vector_into_type_backend : details::vector_into_type_backend
         : statement_(st) {}
 
     virtual void define_by_pos(int &position,
-        void *data, details::eExchangeType type);
+        void *data, details::exchange_type type);
 
     virtual void pre_fetch();
-    virtual void post_fetch(bool gotData, eIndicator *ind);
+    virtual void post_fetch(bool gotData, indicator *ind);
 
     virtual void resize(std::size_t sz);
     virtual std::size_t size();
@@ -76,7 +76,7 @@ struct postgresql_vector_into_type_backend : details::vector_into_type_backend
     postgresql_statement_backend &statement_;
 
     void *data_;
-    details::eExchangeType type_;
+    details::exchange_type type_;
     int position_;
 };
 
@@ -86,19 +86,19 @@ struct postgresql_standard_use_type_backend : details::standard_use_type_backend
         : statement_(st), position_(0), buf_(NULL) {}
 
     virtual void bind_by_pos(int &position,
-        void *data, details::eExchangeType type, bool readOnly);
+        void *data, details::exchange_type type, bool readOnly);
     virtual void bind_by_name(std::string const &name,
-        void *data, details::eExchangeType type, bool readOnly);
+        void *data, details::exchange_type type, bool readOnly);
 
-    virtual void pre_use(eIndicator const *ind);
-    virtual void post_use(bool gotData, eIndicator *ind);
+    virtual void pre_use(indicator const *ind);
+    virtual void post_use(bool gotData, indicator *ind);
 
     virtual void clean_up();
 
     postgresql_statement_backend &statement_;
 
     void *data_;
-    details::eExchangeType type_;
+    details::exchange_type type_;
     int position_;
     std::string name_;
     char *buf_;
@@ -110,11 +110,11 @@ struct postgresql_vector_use_type_backend : details::vector_use_type_backend
         : statement_(st), position_(0) {}
 
     virtual void bind_by_pos(int &position,
-        void *data, details::eExchangeType type);
+        void *data, details::exchange_type type);
     virtual void bind_by_name(std::string const &name,
-        void *data, details::eExchangeType type);
+        void *data, details::exchange_type type);
 
-    virtual void pre_use(eIndicator const *ind);
+    virtual void pre_use(indicator const *ind);
 
     virtual std::size_t size();
 
@@ -123,7 +123,7 @@ struct postgresql_vector_use_type_backend : details::vector_use_type_backend
     postgresql_statement_backend &statement_;
 
     void *data_;
-    details::eExchangeType type_;
+    details::exchange_type type_;
     int position_;
     std::string name_;
     std::vector<char *> buffers_;
@@ -137,17 +137,17 @@ struct postgresql_statement_backend : details::statement_backend
     virtual void alloc();
     virtual void clean_up();
     virtual void prepare(std::string const &query,
-        details::eStatementType eType);
+        details::statement_type eType);
 
-    virtual execFetchResult execute(int number);
-    virtual execFetchResult fetch(int number);
+    virtual exec_fetch_result execute(int number);
+    virtual exec_fetch_result fetch(int number);
 
     virtual int get_number_of_rows();
 
     virtual std::string rewrite_for_procedure_call(std::string const &query);
 
     virtual int prepare_for_describe();
-    virtual void describe_column(int colNum, eDataType &dtype,
+    virtual void describe_column(int colNum, data_type &dtype,
         std::string &columnName);
 
     virtual postgresql_standard_into_type_backend * make_into_type_backend();
@@ -159,7 +159,7 @@ struct postgresql_statement_backend : details::statement_backend
 
     PGresult *result_;
     std::string query_;
-    details::eStatementType eType_;
+    details::statement_type eType_;
     std::string statementName_;
     std::vector<std::string> names_; // list of names for named binds
 

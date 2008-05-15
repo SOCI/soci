@@ -51,9 +51,9 @@ typedef type_ptr<into_type_base> into_type_ptr;
 class SOCI_DECL standard_into_type : public into_type_base
 {
 public:
-    standard_into_type(void * data, eExchangeType type)
+    standard_into_type(void * data, exchange_type type)
         : data_(data), type_(type), ind_(NULL), backEnd_(NULL) {}
-    standard_into_type(void * data, eExchangeType type, eIndicator & ind)
+    standard_into_type(void * data, exchange_type type, indicator & ind)
         : data_(data), type_(type), ind_(&ind), backEnd_(NULL) {}
 
     virtual ~standard_into_type();
@@ -72,8 +72,8 @@ private:
     virtual void convert_from_base() {}
 
     void * data_;
-    eExchangeType type_;
-    eIndicator * ind_;
+    exchange_type type_;
+    indicator * ind_;
 
     standard_into_type_backend * backEnd_;
 };
@@ -82,11 +82,11 @@ private:
 class SOCI_DECL vector_into_type : public into_type_base
 {
 public:
-    vector_into_type(void * data, eExchangeType type)
+    vector_into_type(void * data, exchange_type type)
         : data_(data), type_(type), indVec_(NULL), backEnd_(NULL) {}
 
-    vector_into_type(void * data, eExchangeType type,
-        std::vector<eIndicator> & ind)
+    vector_into_type(void * data, exchange_type type,
+        std::vector<indicator> & ind)
         : data_(data), type_(type), indVec_(&ind), backEnd_(NULL) {}
 
     ~vector_into_type();
@@ -102,8 +102,8 @@ private:
     virtual std::size_t size() const;
 
     void * data_;
-    eExchangeType type_;
-    std::vector<eIndicator> * indVec_;
+    exchange_type type_;
+    std::vector<indicator> * indVec_;
 
     vector_into_type_backend * backEnd_;
 
@@ -119,10 +119,10 @@ class into_type : public standard_into_type
 public:
     into_type(T & t)
         : standard_into_type(&t,
-            static_cast<eExchangeType>(exchange_traits<T>::eXType)) {}
-    into_type(T & t, eIndicator & ind)
+            static_cast<exchange_type>(exchange_traits<T>::x_type)) {}
+    into_type(T & t, indicator & ind)
         : standard_into_type(&t,
-            static_cast<eExchangeType>(exchange_traits<T>::eXType), ind) {}
+            static_cast<exchange_type>(exchange_traits<T>::x_type), ind) {}
 };
 
 template <typename T>
@@ -131,10 +131,10 @@ class into_type<std::vector<T> > : public vector_into_type
 public:
     into_type(std::vector<T> & v)
         : vector_into_type(&v,
-            static_cast<eExchangeType>(exchange_traits<T>::eXType)) {}
-    into_type(std::vector<T> & v, std::vector<eIndicator> & ind)
+            static_cast<exchange_type>(exchange_traits<T>::x_type)) {}
+    into_type(std::vector<T> & v, std::vector<indicator> & ind)
         : vector_into_type(&v,
-            static_cast<eExchangeType>(exchange_traits<T>::eXType), ind) {}
+            static_cast<exchange_type>(exchange_traits<T>::x_type), ind) {}
 };
 
 // special cases for char* and char[]
@@ -144,9 +144,9 @@ class into_type<char *> : public standard_into_type
 {
 public:
     into_type(char * str, std::size_t bufSize)
-        : standard_into_type(&str_, eXCString), str_(str, bufSize) {}
-    into_type(char * str, eIndicator & ind, std::size_t bufSize)
-        : standard_into_type(&str_, eXCString, ind), str_(str, bufSize) {}
+        : standard_into_type(&str_, x_cstring), str_(str, bufSize) {}
+    into_type(char * str, indicator & ind, std::size_t bufSize)
+        : standard_into_type(&str_, x_cstring, ind), str_(str, bufSize) {}
 
 private:
     cstring_descriptor str_;
@@ -157,7 +157,7 @@ class into_type<char[N]> : public into_type<char *>
 {
 public:
     into_type(char str[]) : into_type<char *>(str, N) {}
-    into_type(char str[], eIndicator & ind)
+    into_type(char str[], indicator & ind)
         : into_type<char *>(str, ind, N) {}
 };
 
@@ -170,19 +170,19 @@ into_type_ptr do_into(T & t, basic_type_tag)
 }
 
 template <typename T>
-into_type_ptr do_into(T & t, eIndicator & indicator, basic_type_tag)
+into_type_ptr do_into(T & t, indicator & ind, basic_type_tag)
 {
-    return into_type_ptr(new into_type<T>(t, indicator));
+    return into_type_ptr(new into_type<T>(t, ind));
 }
 
 template <typename T>
-into_type_ptr do_into(T & t, std::vector<eIndicator> & indicator, basic_type_tag)
+into_type_ptr do_into(T & t, std::vector<indicator> & ind, basic_type_tag)
 {
-    return into_type_ptr(new into_type<T>(t, indicator));
+    return into_type_ptr(new into_type<T>(t, ind));
 }
 
 } // namespace details
 
 } // namespace SOCI
 
-#endif
+#endif // SOCI_INTO_TYPE_H_INCLUDED

@@ -40,7 +40,7 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
 {
     switch (type_)
     {    // simple cases
-    case eXShort:
+    case x_short:
         {
             sqlType = SQL_SMALLINT;
             cType = SQL_C_SSHORT;
@@ -51,7 +51,7 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             data = &v[0];
         }
         break;
-    case eXInteger:
+    case x_integer:
         {
             sqlType = SQL_INTEGER;
             cType = SQL_C_SLONG;
@@ -62,7 +62,7 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             data = &v[0];
         }
         break;
-    case eXUnsignedLong:
+    case x_unsigned_long:
         {
             sqlType = SQL_BIGINT;
             cType = SQL_C_ULONG;
@@ -74,7 +74,7 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             data = &v[0];
         }
         break;
-    case eXDouble:
+    case x_double:
         {
             sqlType = SQL_DOUBLE;
             cType = SQL_C_DOUBLE;
@@ -87,7 +87,7 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
         break;
 
     // cases that require adjustments and buffer management
-    case eXChar:
+    case x_char:
         {
             std::vector<char> *vp
                 = static_cast<std::vector<char> *>(data);
@@ -111,7 +111,7 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             data = buf_;
         }
         break;
-    case eXStdString:
+    case x_stdstring:
         {
             sqlType = SQL_CHAR;
             cType = SQL_C_CHAR;
@@ -144,7 +144,7 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             size = static_cast<SQLINTEGER>(maxSize);
         }
         break;
-    case eXStdTm:
+    case x_stdtm:
         {
             std::vector<std::tm> *vp
                 = static_cast<std::vector<std::tm> *>(data);
@@ -162,16 +162,16 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
         }
         break;
 
-    case eXStatement: break; // not supported
-    case eXRowID:     break; // not supported
-    case eXBLOB:      break; // not supported
-    case eXCString:   break; // not supported
+    case x_statement: break; // not supported
+    case x_rowid:     break; // not supported
+    case x_blob:      break; // not supported
+    case x_cstring:   break; // not supported
     }
 
     colSize_ = size;
 }
 
-void odbc_vector_use_type_backend::bind_helper(int &position, void *data, eExchangeType type)
+void odbc_vector_use_type_backend::bind_helper(int &position, void *data, exchange_type type)
 {
     data_ = data; // for future reference
     type_ = type; // for future reference
@@ -197,7 +197,7 @@ void odbc_vector_use_type_backend::bind_helper(int &position, void *data, eExcha
 }
 
 void odbc_vector_use_type_backend::bind_by_pos(int &position,
-        void *data, eExchangeType type)
+        void *data, exchange_type type)
 {
     if (statement_.boundByName_)
     {
@@ -211,7 +211,7 @@ void odbc_vector_use_type_backend::bind_by_pos(int &position,
 }
 
 void odbc_vector_use_type_backend::bind_by_name(
-    std::string const &name, void *data, eExchangeType type)
+    std::string const &name, void *data, exchange_type type)
 {
     if (statement_.boundByPos_)
     {
@@ -247,10 +247,10 @@ void odbc_vector_use_type_backend::bind_by_name(
     statement_.boundByName_ = true;
 }
 
-void odbc_vector_use_type_backend::pre_use(eIndicator const *ind)
+void odbc_vector_use_type_backend::pre_use(indicator const *ind)
 {
     // first deal with data
-    if (type_ == eXStdTm)
+    if (type_ == x_stdtm)
     {
         std::vector<std::tm> *vp
              = static_cast<std::vector<std::tm> *>(data_);
@@ -281,14 +281,14 @@ void odbc_vector_use_type_backend::pre_use(eIndicator const *ind)
         std::size_t const vsize = size();
         for (std::size_t i = 0; i != vsize; ++i, ++ind)
         {
-            if (*ind == eNull)
+            if (*ind == i_null)
             {
                 indHolderVec_[i] = SQL_NULL_DATA; // null
             }
             else
             {
             // for strings we have already set the values
-            if (type_ != eXStdString)
+            if (type_ != x_stdstring)
                 {
                     indHolderVec_[i] = SQL_NTS;  // value is OK
                 }
@@ -302,7 +302,7 @@ void odbc_vector_use_type_backend::pre_use(eIndicator const *ind)
         for (std::size_t i = 0; i != vsize; ++i, ++ind)
         {
             // for strings we have already set the values
-            if (type_ != eXStdString)
+            if (type_ != x_stdstring)
             {
                 indHolderVec_[i] = SQL_NTS;  // value is OK
             }
@@ -316,46 +316,46 @@ std::size_t odbc_vector_use_type_backend::size()
     switch (type_)
     {
     // simple cases
-    case eXChar:
+    case x_char:
         {
             std::vector<char> *vp = static_cast<std::vector<char> *>(data_);
             sz = vp->size();
         }
         break;
-    case eXShort:
+    case x_short:
         {
             std::vector<short> *vp = static_cast<std::vector<short> *>(data_);
             sz = vp->size();
         }
         break;
-    case eXInteger:
+    case x_integer:
         {
             std::vector<int> *vp = static_cast<std::vector<int> *>(data_);
             sz = vp->size();
         }
         break;
-    case eXUnsignedLong:
+    case x_unsigned_long:
         {
             std::vector<unsigned long> *vp
                 = static_cast<std::vector<unsigned long> *>(data_);
             sz = vp->size();
         }
         break;
-    case eXDouble:
+    case x_double:
         {
             std::vector<double> *vp
                 = static_cast<std::vector<double> *>(data_);
             sz = vp->size();
         }
         break;
-    case eXStdString:
+    case x_stdstring:
         {
             std::vector<std::string> *vp
                 = static_cast<std::vector<std::string> *>(data_);
             sz = vp->size();
         }
         break;
-    case eXStdTm:
+    case x_stdtm:
         {
             std::vector<std::tm> *vp
                 = static_cast<std::vector<std::tm> *>(data_);
@@ -363,10 +363,10 @@ std::size_t odbc_vector_use_type_backend::size()
         }
         break;
 
-    case eXStatement: break; // not supported
-    case eXRowID:     break; // not supported
-    case eXBLOB:      break; // not supported
-    case eXCString:   break; // not supported
+    case x_statement: break; // not supported
+    case x_rowid:     break; // not supported
+    case x_blob:      break; // not supported
+    case x_cstring:   break; // not supported
     }
 
     return sz;

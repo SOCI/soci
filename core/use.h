@@ -34,18 +34,18 @@ details::use_type_ptr use(T const & t, std::string const & name = std::string())
 }
 
 template <typename T>
-details::use_type_ptr use(T & t, eIndicator & indicator,
+details::use_type_ptr use(T & t, indicator & ind,
     std::string const &name = std::string())
 {
-    return details::do_use(t, indicator, name,
+    return details::do_use(t, ind, name,
         typename details::exchange_traits<T>::type_family());
 }
 
 template <typename T>
-details::use_type_ptr use(T & t, std::vector<eIndicator> & indicator,
+details::use_type_ptr use(T & t, std::vector<indicator> & ind,
     std::string const & name = std::string())
 {
-    return details::do_use(t, indicator, name,
+    return details::do_use(t, ind, name,
         typename details::exchange_traits<T>::type_family());
 }
 

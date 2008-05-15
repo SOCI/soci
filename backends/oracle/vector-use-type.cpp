@@ -39,7 +39,7 @@ void oracle_vector_use_type_backend::prepare_for_bind(
     switch (type_)
     {
     // simple cases
-    case eXChar:
+    case x_char:
         {
             oracleType = SQLT_AFC;
             size = sizeof(char);
@@ -49,7 +49,7 @@ void oracle_vector_use_type_backend::prepare_for_bind(
             data = &v[0];
         }
         break;
-    case eXShort:
+    case x_short:
         {
             oracleType = SQLT_INT;
             size = sizeof(short);
@@ -59,7 +59,7 @@ void oracle_vector_use_type_backend::prepare_for_bind(
             data = &v[0];
         }
         break;
-    case eXInteger:
+    case x_integer:
         {
             oracleType = SQLT_INT;
             size = sizeof(int);
@@ -69,7 +69,7 @@ void oracle_vector_use_type_backend::prepare_for_bind(
             data = &v[0];
         }
         break;
-    case eXUnsignedLong:
+    case x_unsigned_long:
         {
             oracleType = SQLT_UIN;
             size = sizeof(unsigned long);
@@ -80,7 +80,7 @@ void oracle_vector_use_type_backend::prepare_for_bind(
             data = &v[0];
         }
         break;
-    case eXDouble:
+    case x_double:
         {
             oracleType = SQLT_FLT;
             size = sizeof(double);
@@ -93,7 +93,7 @@ void oracle_vector_use_type_backend::prepare_for_bind(
 
     // cases that require adjustments and buffer management
 
-    case eXLongLong:
+    case x_long_long:
         {
             std::vector<long long> *vp
                 = static_cast<std::vector<long long> *>(data);
@@ -111,7 +111,7 @@ void oracle_vector_use_type_backend::prepare_for_bind(
             prepare_indicators(vecSize);
         }
         break;
-    case eXStdString:
+    case x_stdstring:
         {
             std::vector<std::string> *vp
                 = static_cast<std::vector<std::string> *>(data);
@@ -140,7 +140,7 @@ void oracle_vector_use_type_backend::prepare_for_bind(
             size = static_cast<sb4>(maxSize);
         }
         break;
-    case eXStdTm:
+    case x_stdtm:
         {
             std::vector<std::tm> *vp
                 = static_cast<std::vector<std::tm> *>(data);
@@ -156,15 +156,15 @@ void oracle_vector_use_type_backend::prepare_for_bind(
         }
         break;
 
-    case eXStatement: break; // not supported
-    case eXRowID:     break; // not supported
-    case eXBLOB:      break; // not supported
-    case eXCString:   break; // not supported
+    case x_statement: break; // not supported
+    case x_rowid:     break; // not supported
+    case x_blob:      break; // not supported
+    case x_cstring:   break; // not supported
     }
 }
 
 void oracle_vector_use_type_backend::bind_by_pos(int &position,
-        void *data, eExchangeType type)
+        void *data, exchange_type type)
 {
     data_ = data; // for future reference
     type_ = type; // for future reference
@@ -175,7 +175,7 @@ void oracle_vector_use_type_backend::bind_by_pos(int &position,
     prepare_for_bind(data, size, oracleType);
 
     ub2 *sizesP = 0; // used only for std::string
-    if (type == eXStdString)
+    if (type == x_stdstring)
     {
         sizesP = &sizes_[0];
     }
@@ -191,7 +191,7 @@ void oracle_vector_use_type_backend::bind_by_pos(int &position,
 }
 
 void oracle_vector_use_type_backend::bind_by_name(
-    std::string const &name, void *data, eExchangeType type)
+    std::string const &name, void *data, exchange_type type)
 {
     data_ = data; // for future reference
     type_ = type; // for future reference
@@ -202,7 +202,7 @@ void oracle_vector_use_type_backend::bind_by_name(
     prepare_for_bind(data, size, oracleType);
 
     ub2 *sizesP = 0; // used only for std::string
-    if (type == eXStdString)
+    if (type == x_stdstring)
     {
         sizesP = &sizes_[0];
     }
@@ -219,16 +219,16 @@ void oracle_vector_use_type_backend::bind_by_name(
     }
 }
 
-void oracle_vector_use_type_backend::pre_use(eIndicator const *ind)
+void oracle_vector_use_type_backend::pre_use(indicator const *ind)
 {
     // first deal with data
-    if (type_ == eXStdString)
+    if (type_ == x_stdstring)
     {
         // nothing to do - it's already done during bind
         // (and it's probably impossible to separate them, because
         // changes in the string size could not be handled here)
     }
-    else if (type_ == eXLongLong)
+    else if (type_ == x_long_long)
     {
         std::vector<long long> *vp
             = static_cast<std::vector<long long> *>(data_);
@@ -243,7 +243,7 @@ void oracle_vector_use_type_backend::pre_use(eIndicator const *ind)
             pos += entrySize;
         }
     }
-    else if (type_ == eXStdTm)
+    else if (type_ == x_stdtm)
     {
         std::vector<std::tm> *vp
             = static_cast<std::vector<std::tm> *>(data_);
@@ -269,7 +269,7 @@ void oracle_vector_use_type_backend::pre_use(eIndicator const *ind)
         std::size_t const vsize = size();
         for (std::size_t i = 0; i != vsize; ++i, ++ind)
         {
-            if (*ind == eNull)
+            if (*ind == i_null)
             {
                 indOCIHolderVec_[i] = -1; // null
             }
@@ -296,53 +296,53 @@ std::size_t oracle_vector_use_type_backend::size()
     switch (type_)
     {
     // simple cases
-    case eXChar:
+    case x_char:
         {
             std::vector<char> *vp = static_cast<std::vector<char> *>(data_);
             sz = vp->size();
         }
         break;
-    case eXShort:
+    case x_short:
         {
             std::vector<short> *vp = static_cast<std::vector<short> *>(data_);
             sz = vp->size();
         }
         break;
-    case eXInteger:
+    case x_integer:
         {
             std::vector<int> *vp = static_cast<std::vector<int> *>(data_);
             sz = vp->size();
         }
         break;
-    case eXUnsignedLong:
+    case x_unsigned_long:
         {
             std::vector<unsigned long> *vp
                 = static_cast<std::vector<unsigned long> *>(data_);
             sz = vp->size();
         }
         break;
-    case eXLongLong:
+    case x_long_long:
         {
             std::vector<long long> *vp
                 = static_cast<std::vector<long long> *>(data_);
             sz = vp->size();
         }
         break;
-    case eXDouble:
+    case x_double:
         {
             std::vector<double> *vp
                 = static_cast<std::vector<double> *>(data_);
             sz = vp->size();
         }
         break;
-    case eXStdString:
+    case x_stdstring:
         {
             std::vector<std::string> *vp
                 = static_cast<std::vector<std::string> *>(data_);
             sz = vp->size();
         }
         break;
-    case eXStdTm:
+    case x_stdtm:
         {
             std::vector<std::tm> *vp
                 = static_cast<std::vector<std::tm> *>(data_);
@@ -350,10 +350,10 @@ std::size_t oracle_vector_use_type_backend::size()
         }
         break;
 
-    case eXStatement: break; // not supported
-    case eXRowID:     break; // not supported
-    case eXBLOB:      break; // not supported
-    case eXCString:   break; // not supported
+    case x_statement: break; // not supported
+    case x_rowid:     break; // not supported
+    case x_blob:      break; // not supported
+    case x_cstring:   break; // not supported
     }
 
     return sz;

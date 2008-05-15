@@ -35,11 +35,11 @@ struct SOCI_EMPTY_DECL empty_standard_into_type_backend : details::standard_into
         : statement_(st) {}
 
     virtual void define_by_pos(int &position,
-        void *data, details::eExchangeType type);
+        void *data, details::exchange_type type);
 
     virtual void pre_fetch();
     virtual void post_fetch(bool gotData, bool calledFromFetch,
-        eIndicator *ind);
+        indicator *ind);
 
     virtual void clean_up();
 
@@ -52,10 +52,10 @@ struct SOCI_EMPTY_DECL empty_vector_into_type_backend : details::vector_into_typ
         : statement_(st) {}
 
     virtual void define_by_pos(int &position,
-        void *data, details::eExchangeType type);
+        void *data, details::exchange_type type);
 
     virtual void pre_fetch();
-    virtual void post_fetch(bool gotData, eIndicator *ind);
+    virtual void post_fetch(bool gotData, indicator *ind);
 
     virtual void resize(std::size_t sz);
     virtual std::size_t size();
@@ -71,12 +71,12 @@ struct SOCI_EMPTY_DECL empty_standard_use_type_backend : details::standard_use_t
         : statement_(st) {}
 
     virtual void bind_by_pos(int &position,
-        void *data, details::eExchangeType type, bool readOnly);
+        void *data, details::exchange_type type, bool readOnly);
     virtual void bind_by_name(std::string const &name,
-        void *data, details::eExchangeType type, bool readOnly);
+        void *data, details::exchange_type type, bool readOnly);
 
-    virtual void pre_use(eIndicator const *ind);
-    virtual void post_use(bool gotData, eIndicator *ind);
+    virtual void pre_use(indicator const *ind);
+    virtual void post_use(bool gotData, indicator *ind);
 
     virtual void clean_up();
 
@@ -89,11 +89,11 @@ struct SOCI_EMPTY_DECL empty_vector_use_type_backend : details::vector_use_type_
         : statement_(st) {}
 
     virtual void bind_by_pos(int &position,
-        void *data, details::eExchangeType type);
+        void *data, details::exchange_type type);
     virtual void bind_by_name(std::string const &name,
-        void *data, details::eExchangeType type);
+        void *data, details::exchange_type type);
 
-    virtual void pre_use(eIndicator const *ind);
+    virtual void pre_use(indicator const *ind);
 
     virtual std::size_t size();
 
@@ -110,17 +110,17 @@ struct SOCI_EMPTY_DECL empty_statement_backend : details::statement_backend
     virtual void alloc();
     virtual void clean_up();
     virtual void prepare(std::string const &query,
-        details::eStatementType eType);
+        details::statement_type eType);
 
-    virtual execFetchResult execute(int number);
-    virtual execFetchResult fetch(int number);
+    virtual exec_fetch_result execute(int number);
+    virtual exec_fetch_result fetch(int number);
 
     virtual int get_number_of_rows();
 
     virtual std::string rewrite_for_procedure_call(std::string const &query);
 
     virtual int prepare_for_describe();
-    virtual void describe_column(int colNum, eDataType &dtype,
+    virtual void describe_column(int colNum, data_type &dtype,
         std::string &columnName);
 
     virtual empty_standard_into_type_backend * make_into_type_backend();

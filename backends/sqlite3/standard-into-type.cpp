@@ -21,7 +21,7 @@ using namespace soci::details;
 using namespace soci::details::sqlite3;
 
 void sqlite3_standard_into_type_backend::define_by_pos(int & position, void * data,
-                                                       eExchangeType type)
+                                                       exchange_type type)
 {
     data_ = data;
     type_ = type;
@@ -35,7 +35,7 @@ void sqlite3_standard_into_type_backend::pre_fetch()
 
 void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
                                                bool calledFromFetch,
-                                               eIndicator * ind)
+                                               indicator * ind)
 {
     if (calledFromFetch == true && gotData == false)
     {
@@ -58,14 +58,14 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
                     "Null value fetched and no indicator defined.");
             }
 
-            *ind = eNull;
+            *ind = i_null;
             return;
         }
         else
         {
             if (ind != NULL)
             {
-                *ind = eOK;
+                *ind = i_ok;
             }
         }
 
@@ -82,13 +82,13 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
 
         switch (type_)
         {
-        case eXChar:
+        case x_char:
         {
             char *dest = static_cast<char*>(data_);
             *dest = *buf;
         }
         break;
-        case eXCString:
+        case x_cstring:
         {
             cstring_descriptor *strDescr = static_cast<cstring_descriptor *>(data_);
 
@@ -97,58 +97,58 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
 
             if (std::strlen(buf) >= strDescr->bufSize_ && ind != NULL)
             {
-                *ind = eTruncated;
+                *ind = i_truncated;
             }
         }
         break;
-        case eXStdString:
+        case x_stdstring:
         {
             std::string *dest = static_cast<std::string *>(data_);
             dest->assign(buf);
         }
         break;
-        case eXShort:
+        case x_short:
         {
             short *dest = static_cast<short*>(data_);
             long val = strtol(buf, NULL, 10);
             *dest = static_cast<short>(val);
         }
         break;
-        case eXInteger:
+        case x_integer:
         {
             int *dest = static_cast<int*>(data_);
             long val = strtol(buf, NULL, 10);
             *dest = static_cast<int>(val);
         }
         break;
-        case eXUnsignedLong:
+        case x_unsigned_long:
         {
             unsigned long *dest = static_cast<unsigned long *>(data_);
             long long val = strtoll(buf, NULL, 10);
             *dest = static_cast<unsigned long>(val);
         }
         break;
-        case eXLongLong:
+        case x_long_long:
         {
             long long *dest = static_cast<long long *>(data_);
             *dest = strtoll(buf, NULL, 10);
         }
         break;
-        case eXDouble:
+        case x_double:
         {
             double *dest = static_cast<double*>(data_);
             double val = strtod(buf, NULL);
             *dest = static_cast<double>(val);
         }
         break;
-        case eXStdTm:
+        case x_stdtm:
         {
             // attempt to parse the string and convert to std::tm
             std::tm *dest = static_cast<std::tm *>(data_);
             parseStdTm(buf, *dest);
         }
         break;
-        case eXRowID:
+        case x_rowid:
         {
             // RowID is internally identical to unsigned long
 
@@ -158,7 +158,7 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
             rbe->value_ = static_cast<unsigned long>(val);
         }
         break;
-        case eXBLOB:
+        case x_blob:
         {
             blob *b = static_cast<blob *>(data_);
             sqlite3_blob_backend *bbe =

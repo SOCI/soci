@@ -15,7 +15,7 @@ using namespace soci::details;
 using namespace soci::details::firebird;
 
 void firebird_standard_into_type_backend::define_by_pos(
-    int & position, void * data, eExchangeType type)
+    int & position, void * data, exchange_type type)
 {
     position_ = position-1;
     data_ = data;
@@ -39,7 +39,7 @@ void firebird_standard_into_type_backend::pre_fetch()
 }
 
 void firebird_standard_into_type_backend::post_fetch(
-    bool gotData, bool calledFromFetch, eIndicator * ind)
+    bool gotData, bool calledFromFetch, indicator * ind)
 {
     if (calledFromFetch && (gotData == false))
     {
@@ -50,7 +50,7 @@ void firebird_standard_into_type_backend::post_fetch(
 
     if (gotData)
     {
-        if (eNull == statement_.inds_[position_][0] && NULL == ind)
+        if (i_null == statement_.inds_[position_][0] && NULL == ind)
         {
             throw soci_error("Null value fetched and no indicator defined.");
         }
@@ -69,28 +69,28 @@ void firebird_standard_into_type_backend::exchangeData()
     switch (type_)
     {
             // simple cases
-        case eXChar:
+        case x_char:
             *reinterpret_cast<char*>(data_) = getTextParam(var)[0];
             break;
-        case eXShort:
+        case x_short:
             {
                 short t = from_isc<short>(var);
                 *reinterpret_cast<short*>(data_) = t;
             }
             break;
-        case eXUnsignedLong:
+        case x_unsigned_long:
             {
                 unsigned long t = from_isc<unsigned long>(var);
                 *reinterpret_cast<unsigned long*>(data_) = t;
             }
             break;
-        case eXInteger:
+        case x_integer:
             {
                 long long t = from_isc<long long>(var);
                 *reinterpret_cast<long long *>(data_) = t;
             }
             break;
-        case eXDouble:
+        case x_double:
             {
                 double t = from_isc<double>(var);
                 *reinterpret_cast<double*>(data_) = t;
@@ -98,7 +98,7 @@ void firebird_standard_into_type_backend::exchangeData()
             break;
 
             // cases that require adjustments and buffer management
-        case eXCString:
+        case x_cstring:
             {
                 details::cstring_descriptor *tmp =
                     static_cast<details::cstring_descriptor*>(data_);
@@ -109,20 +109,20 @@ void firebird_standard_into_type_backend::exchangeData()
 
                 if (stmp.size() >= tmp->bufSize_)
                 {
-                    statement_.inds_[position_][0] = eTruncated;
+                    statement_.inds_[position_][0] = i_truncated;
                 }
             }
             break;
-        case eXStdString:
+        case x_stdstring:
             *(reinterpret_cast<std::string*>(data_)) = getTextParam(var);
             break;
-        case eXStdTm:
+        case x_stdtm:
             tmDecode(var->sqltype,
                      buf_, static_cast<std::tm*>(data_));
             break;
 
             // cases that require special handling
-        case eXBLOB:
+        case x_blob:
             {
                 blob *tmp = reinterpret_cast<blob*>(data_);
 

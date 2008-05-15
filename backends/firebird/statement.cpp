@@ -146,7 +146,7 @@ namespace
 {
     int statementType(isc_stmt_handle stmt)
     {
-        int statement_type;
+        int stype;
         int length;
         char type_item[] = {isc_info_sql_stmt_type};
         char res_buffer[8];
@@ -162,14 +162,14 @@ namespace
         if (res_buffer[0] == isc_info_sql_stmt_type)
         {
             length = isc_vax_integer(res_buffer+1, 2);
-            statement_type = isc_vax_integer(res_buffer+3, length);
+            stype = isc_vax_integer(res_buffer+3, length);
         }
         else
         {
             throw soci_error("Can't determine statement type.");
         }
 
-        return statement_type;
+        return stype;
     }
 }
 
@@ -284,7 +284,7 @@ void firebird_statement_backend::rewriteQuery(
 }
 
 void firebird_statement_backend::prepare(std::string const & query,
-                                         eStatementType /* eType */)
+                                         statement_type /* eType */)
 {
     // clear named parametes
     names_.clear();
@@ -366,7 +366,7 @@ namespace
     }
 }
 
-statement_backend::execFetchResult
+statement_backend::exec_fetch_result
 firebird_statement_backend::execute(int number)
 {
     ISC_STATUS stat[stat_size];
@@ -447,17 +447,17 @@ firebird_statement_backend::execute(int number)
         else
         {
             // execute(0) was meant to only perform the query
-            return eSuccess;
+            return ef_success;
         }
     }
     else
     {
         // query can't return any data
-        return eNoData;
+        return ef_no_data;
     }
 }
 
-statement_backend::execFetchResult
+statement_backend::exec_fetch_result
 firebird_statement_backend::fetch(int number)
 {
     ISC_STATUS stat[stat_size];
@@ -483,17 +483,17 @@ firebird_statement_backend::fetch(int number)
         }
         else if (fetch_stat == 100L)
         {
-            return eNoData;
+            return ef_no_data;
         }
         else
         {
             // error
             throw_iscerror(stat);
-            return eNoData; // unreachable, for compiler only
+            return ef_no_data; // unreachable, for compiler only
         }
     } // for
 
-    return eSuccess;
+    return ef_success;
 }
 
 // here we put data fetched from database into user buffers
@@ -507,15 +507,15 @@ void firebird_statement_backend::exchangeData(bool gotData, int row)
             if (((sqldap_->sqlvar+i)->sqltype & 1) == 0)
             {
                 // there is no indicator for this column
-                inds_[i][row] = eOK;
+                inds_[i][row] = i_ok;
             }
             else if (*((sqldap_->sqlvar+i)->sqlind) == 0)
             {
-                inds_[i][row] = eOK;
+                inds_[i][row] = i_ok;
             }
             else if (*((sqldap_->sqlvar+i)->sqlind) == -1)
             {
-                inds_[i][row] = eNull;
+                inds_[i][row] = i_null;
             }
             else
             {
@@ -523,7 +523,7 @@ void firebird_statement_backend::exchangeData(bool gotData, int row)
             }
 
             // then deal with data
-            if (inds_[i][row] != eNull)
+            if (inds_[i][row] != i_null)
             {
                 if (intoType_ == eVector)
                 {
@@ -558,7 +558,7 @@ int firebird_statement_backend::prepare_for_describe()
 }
 
 void firebird_statement_backend::describe_column(int colNum,
-                                                eDataType & type, std::string & columnName)
+                                                data_type & type, std::string & columnName)
 {
     XSQLVAR * var = sqldap_->sqlvar+(colNum-1);
 
@@ -568,36 +568,36 @@ void firebird_statement_backend::describe_column(int colNum,
     {
     case SQL_TEXT:
     case SQL_VARYING:
-        type = eString;
+        type = dt_string;
         break;
     case SQL_TYPE_DATE:
     case SQL_TYPE_TIME:
     case SQL_TIMESTAMP:
-        type = eDate;
+        type = dt_date;
         break;
     case SQL_FLOAT:
     case SQL_DOUBLE:
-        type = eDouble;
+        type = dt_double;
         break;
     case SQL_SHORT:
     case SQL_LONG:
         if (var->sqlscale < 0)
         {
-            type = eDouble;
+            type = dt_double;
         }
         else
         {
-            type = eInteger;
+            type = dt_integer;
         }
         break;
     case SQL_INT64:
         if (var->sqlscale < 0)
         {
-            type = eDouble;
+            type = dt_double;
         }
         else
         {
-            type = eLongLong;
+            type = dt_long_long;
         }
         break;
         /* case SQL_BLOB:

@@ -18,7 +18,7 @@ using namespace soci::details;
 using namespace soci::details::firebird;
 
 void firebird_vector_use_type_backend::bind_by_pos(int & position,
-                                                 void * data, eExchangeType type)
+                                                 void * data, exchange_type type)
 {
     if (statement_.boundByName_)
     {
@@ -45,7 +45,7 @@ void firebird_vector_use_type_backend::bind_by_pos(int & position,
 }
 
 void firebird_vector_use_type_backend::bind_by_name(
-    std::string const & name, void * data, eExchangeType type)
+    std::string const & name, void * data, exchange_type type)
 {
     if (statement_.boundByPos_)
     {
@@ -77,7 +77,7 @@ void firebird_vector_use_type_backend::bind_by_name(
     statement_.boundByName_ = true;
 }
 
-void firebird_vector_use_type_backend::pre_use(eIndicator const * ind)
+void firebird_vector_use_type_backend::pre_use(indicator const * ind)
 {
     inds_ = ind;
 }
@@ -102,10 +102,10 @@ void firebird_vector_use_type_backend::exchangeData(std::size_t row)
     {
         switch (inds_[row])
         {
-        case eNull:
+        case i_null:
             indISCHolder_ = -1;
             break;
-        case eOK:
+        case i_ok:
             indISCHolder_ = 0;
             break;
         default:
@@ -119,49 +119,49 @@ void firebird_vector_use_type_backend::exchangeData(std::size_t row)
     switch (type_)
     {
         // simple cases
-    case eXChar:
+    case x_char:
         setTextParam(getUseVectorValue<char>(data_, row), 1, buf_, var);
         break;
-    case eXShort:
+    case x_short:
         to_isc<short>(
             static_cast<void*>(getUseVectorValue<short>(data_, row)),
             var);
         break;
-    case eXInteger:
+    case x_integer:
         to_isc<int>(
             static_cast<void*>(getUseVectorValue<int>(data_, row)),
             var);
         break;
-    case eXUnsignedLong:
+    case x_unsigned_long:
         to_isc<unsigned long>(
             static_cast<void*>(getUseVectorValue<unsigned long>(data_, row)),
             var);
         break;
-    case eXLongLong:
+    case x_long_long:
         to_isc<long long>(
             static_cast<void*>(getUseVectorValue<long long>(data_, row)),
             var);
         break;
-    case eXDouble:
+    case x_double:
         to_isc<double>(
             static_cast<void*>(getUseVectorValue<double>(data_, row)),
             var);
         break;
 
         // cases that require adjustments and buffer management
-    case eXStdString:
+    case x_stdstring:
         {
             std::string *tmp = getUseVectorValue<std::string>(data_, row);
             setTextParam(tmp->c_str(), tmp->size(), buf_, var);
         }
         break;
-    case eXStdTm:
+    case x_stdtm:
         tmEncode(var->sqltype,
             getUseVectorValue<std::tm>(data_, row), buf_);
         break;
         //  Not supported
-        //  case eXCString:
-        //  case eXBLOB:
+        //  case x_cstring:
+        //  case x_blob:
     default:
         throw soci_error("Use element used with non-supported type.");
     } // switch
@@ -173,28 +173,28 @@ std::size_t firebird_vector_use_type_backend::size()
     switch (type_)
     {
         // simple cases
-    case eXChar:
+    case x_char:
         sz = getVectorSize<char> (data_);
         break;
-    case eXShort:
+    case x_short:
         sz = getVectorSize<short> (data_);
         break;
-    case eXInteger:
+    case x_integer:
         sz = getVectorSize<int> (data_);
         break;
-    case eXUnsignedLong:
+    case x_unsigned_long:
         sz = getVectorSize<unsigned long>(data_);
         break;
-    case eXLongLong:
+    case x_long_long:
         sz = getVectorSize<long long> (data_);
         break;
-    case eXDouble:
+    case x_double:
         sz = getVectorSize<double> (data_);
         break;
-    case eXStdString:
+    case x_stdstring:
         sz = getVectorSize<std::string> (data_);
         break;
-    case eXStdTm:
+    case x_stdtm:
         sz = getVectorSize<std::tm> (data_);
         break;
 

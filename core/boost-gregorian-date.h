@@ -22,9 +22,9 @@ struct type_conversion<boost::gregorian::date>
     typedef std::tm base_type;
 
     static void from_base(
-        base_type const & in, eIndicator ind, boost::gregorian::date & out)
+        base_type const & in, indicator ind, boost::gregorian::date & out)
     {
-        if (ind == eNull)
+        if (ind == i_null)
         {
             throw soci_error("Null value not allowed for this type");
         }
@@ -33,7 +33,7 @@ struct type_conversion<boost::gregorian::date>
     }
 
     static void to_base(
-        boost::gregorian::date const & in, base_type & out, eIndicator & ind)
+        boost::gregorian::date const & in, base_type & out, indicator & ind)
     {
         out = boost::gregorian::to_tm(in);
     }

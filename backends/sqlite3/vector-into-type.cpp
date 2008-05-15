@@ -21,7 +21,7 @@ using namespace soci::details::sqlite3;
 
 
 void sqlite3_vector_into_type_backend::define_by_pos(int & position, void * data,
-                                               eExchangeType type)
+                                               exchange_type type)
 {
     data_ = data;
     type_ = type;
@@ -48,7 +48,7 @@ void setInVector(void *p, int indx, T const &val)
 
 } // namespace anonymous
 
-void sqlite3_vector_into_type_backend::post_fetch(bool gotData, eIndicator * ind)
+void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
 {
     if (gotData)
     {
@@ -66,13 +66,13 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, eIndicator * ind
                         "Null value fetched and no indicator defined.");
                 }
 
-                ind[i] = eNull;
+                ind[i] = i_null;
             }
             else
             {
                 if (ind != NULL)
                 {
-                    ind[i] = eOK;
+                    ind[i] = i_ok;
                 }
             }
 
@@ -87,43 +87,43 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, eIndicator * ind
 
             switch (type_)
             {
-            case eXChar:
+            case x_char:
                 setInVector(data_, i, *buf);
                 break;
-            case eXStdString:
+            case x_stdstring:
                 setInVector<std::string>(data_, i, buf);
                 break;
-            case eXShort:
+            case x_short:
             {
                 long val = strtol(buf, NULL, 10);
                 setInVector(data_, i, static_cast<short>(val));
             }
             break;
-            case eXInteger:
+            case x_integer:
             {
                 long val = strtol(buf, NULL, 10);
                 setInVector(data_, i, static_cast<int>(val));
             }
             break;
-            case eXUnsignedLong:
+            case x_unsigned_long:
             {
                 long long val = strtoll(buf, NULL, 10);
                 setInVector(data_, i, static_cast<unsigned long>(val));
             }
             break;
-            case eXLongLong:
+            case x_long_long:
             {
                 long long val = strtoll(buf, NULL, 10);
                 setInVector(data_, i, val);
             }
             break;
-            case eXDouble:
+            case x_double:
             {
                 double val = strtod(buf, NULL);
                 setInVector(data_, i, val);
             }
             break;
-            case eXStdTm:
+            case x_stdtm:
             {
                 // attempt to parse the string and convert to std::tm
                 std::tm t;
@@ -149,14 +149,14 @@ void sqlite3_vector_into_type_backend::resize(std::size_t sz)
     switch (type_)
     {
         // simple cases
-    case eXChar:         resizeVector<char>         (data_, sz); break;
-    case eXShort:        resizeVector<short>        (data_, sz); break;
-    case eXInteger:      resizeVector<int>          (data_, sz); break;
-    case eXUnsignedLong: resizeVector<unsigned long>(data_, sz); break;
-    case eXLongLong:     resizeVector<long long>    (data_, sz); break;
-    case eXDouble:       resizeVector<double>       (data_, sz); break;
-    case eXStdString:    resizeVector<std::string>  (data_, sz); break;
-    case eXStdTm:        resizeVector<std::tm>      (data_, sz); break;
+    case x_char:         resizeVector<char>         (data_, sz); break;
+    case x_short:        resizeVector<short>        (data_, sz); break;
+    case x_integer:      resizeVector<int>          (data_, sz); break;
+    case x_unsigned_long: resizeVector<unsigned long>(data_, sz); break;
+    case x_long_long:     resizeVector<long long>    (data_, sz); break;
+    case x_double:       resizeVector<double>       (data_, sz); break;
+    case x_stdstring:    resizeVector<std::string>  (data_, sz); break;
+    case x_stdtm:        resizeVector<std::tm>      (data_, sz); break;
 
     default:
         throw soci_error("Into vector element used with non-supported type.");
@@ -169,14 +169,14 @@ std::size_t sqlite3_vector_into_type_backend::size()
     switch (type_)
     {
         // simple cases
-    case eXChar:         sz = getVectorSize<char>         (data_); break;
-    case eXShort:        sz = getVectorSize<short>        (data_); break;
-    case eXInteger:      sz = getVectorSize<int>          (data_); break;
-    case eXUnsignedLong: sz = getVectorSize<unsigned long>(data_); break;
-    case eXLongLong:     sz = getVectorSize<long long>    (data_); break;
-    case eXDouble:       sz = getVectorSize<double>       (data_); break;
-    case eXStdString:    sz = getVectorSize<std::string>  (data_); break;
-    case eXStdTm:        sz = getVectorSize<std::tm>      (data_); break;
+    case x_char:         sz = getVectorSize<char>         (data_); break;
+    case x_short:        sz = getVectorSize<short>        (data_); break;
+    case x_integer:      sz = getVectorSize<int>          (data_); break;
+    case x_unsigned_long: sz = getVectorSize<unsigned long>(data_); break;
+    case x_long_long:     sz = getVectorSize<long long>    (data_); break;
+    case x_double:       sz = getVectorSize<double>       (data_); break;
+    case x_stdstring:    sz = getVectorSize<std::string>  (data_); break;
+    case x_stdtm:        sz = getVectorSize<std::tm>      (data_); break;
 
     default:
         throw soci_error("Into vector element used with non-supported type.");

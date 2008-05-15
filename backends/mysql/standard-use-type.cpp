@@ -24,7 +24,7 @@ using namespace soci::details::mysql;
 
 
 void mysql_standard_use_type_backend::bind_by_pos(
-    int &position, void *data, eExchangeType type, bool /* readOnly */)
+    int &position, void *data, exchange_type type, bool /* readOnly */)
 {
     data_ = data;
     type_ = type;
@@ -32,16 +32,16 @@ void mysql_standard_use_type_backend::bind_by_pos(
 }
 
 void mysql_standard_use_type_backend::bind_by_name(
-    std::string const &name, void *data, eExchangeType type, bool /* readOnly */)
+    std::string const &name, void *data, exchange_type type, bool /* readOnly */)
 {
     data_ = data;
     type_ = type;
     name_ = name;
 }
 
-void mysql_standard_use_type_backend::pre_use(eIndicator const *ind)
+void mysql_standard_use_type_backend::pre_use(indicator const *ind)
 {
-    if (ind != NULL && *ind == eNull)
+    if (ind != NULL && *ind == i_null)
     {
         buf_ = new char[5];
         std::strcpy(buf_, "NULL");
@@ -51,13 +51,13 @@ void mysql_standard_use_type_backend::pre_use(eIndicator const *ind)
         // allocate and fill the buffer with text-formatted client data
         switch (type_)
         {
-        case eXChar:
+        case x_char:
             {
                 char buf[] = { *static_cast<char*>(data_), '\0' };
                 buf_ = quote(statement_.session_.conn_, buf, 1);
             }
             break;
-        case eXCString:
+        case x_cstring:
             {
                 cstring_descriptor *strDescr
                     = static_cast<cstring_descriptor *>(data_);
@@ -65,14 +65,14 @@ void mysql_standard_use_type_backend::pre_use(eIndicator const *ind)
                              std::strlen(strDescr->str_));
             }
             break;
-        case eXStdString:
+        case x_stdstring:
             {
                 std::string *s = static_cast<std::string *>(data_);
                 buf_ = quote(statement_.session_.conn_,
                              s->c_str(), s->size());
             }
             break;
-        case eXShort:
+        case x_short:
             {
                 std::size_t const bufSize
                     = std::numeric_limits<short>::digits10 + 3;
@@ -81,7 +81,7 @@ void mysql_standard_use_type_backend::pre_use(eIndicator const *ind)
                     static_cast<int>(*static_cast<short*>(data_)));
             }
             break;
-        case eXInteger:
+        case x_integer:
             {
                 std::size_t const bufSize
                     = std::numeric_limits<int>::digits10 + 3;
@@ -89,7 +89,7 @@ void mysql_standard_use_type_backend::pre_use(eIndicator const *ind)
                 snprintf(buf_, bufSize, "%d", *static_cast<int*>(data_));
             }
             break;
-        case eXUnsignedLong:
+        case x_unsigned_long:
             {
                 std::size_t const bufSize
                     = std::numeric_limits<unsigned long>::digits10 + 2;
@@ -98,7 +98,7 @@ void mysql_standard_use_type_backend::pre_use(eIndicator const *ind)
                     *static_cast<unsigned long*>(data_));
             }
             break;
-        case eXLongLong:
+        case x_long_long:
             {
                 std::size_t const bufSize
                     = std::numeric_limits<long long>::digits10 + 3;
@@ -106,7 +106,7 @@ void mysql_standard_use_type_backend::pre_use(eIndicator const *ind)
                 snprintf(buf_, bufSize, "%lld", *static_cast<long long *>(data_));
             }
             break;
-        case eXDouble:
+        case x_double:
             {
                 // no need to overengineer it (KISS)...
 
@@ -117,7 +117,7 @@ void mysql_standard_use_type_backend::pre_use(eIndicator const *ind)
                     *static_cast<double*>(data_));
             }
             break;
-        case eXStdTm:
+        case x_stdtm:
             {
                 std::size_t const bufSize = 22;
                 buf_ = new char[bufSize];
@@ -146,7 +146,7 @@ void mysql_standard_use_type_backend::pre_use(eIndicator const *ind)
     }
 }
 
-void mysql_standard_use_type_backend::post_use(bool gotData, eIndicator *ind)
+void mysql_standard_use_type_backend::post_use(bool gotData, indicator *ind)
 {
     // TODO: Is it possible to have the bound element being overwritten
     // by the database?

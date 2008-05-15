@@ -80,9 +80,9 @@ public:
         return new TableCreator3(s);
     }
 
-    std::string to_date_time(std::string const &dateString) const
+    std::string to_date_time(std::string const &datdt_string) const
     {
-        return "convert(datetime, \'" + dateString + "\', 120)";
+        return "convert(datetime, \'" + datdt_string + "\', 120)";
     }
 };
 

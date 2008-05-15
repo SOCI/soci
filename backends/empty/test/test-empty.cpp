@@ -44,7 +44,7 @@ namespace soci
     template<> struct type_conversion<Person>
     {
         typedef values base_type;
-        static void from_base(values & /* r */, eIndicator /* ind */,
+        static void from_base(values & /* r */, indicator /* ind */,
             Person & /* p */)
         {
         }
@@ -66,7 +66,7 @@ void test1()
         sql << "insert", use(i);
         sql << "select", into(i);
 
-        eIndicator ind = eOK;
+        indicator ind = i_ok;
         sql << "insert", use(i, ind);
         sql << "select", into(i, ind);
 
@@ -74,7 +74,7 @@ void test1()
         sql << "insert", use(numbers);
         sql << "select", into(numbers);
 
-        std::vector<eIndicator> inds(100);
+        std::vector<indicator> inds(100);
         sql << "insert", use(numbers, inds);
         sql << "select", into(numbers, inds);
 

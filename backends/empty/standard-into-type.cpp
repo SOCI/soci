@@ -17,7 +17,7 @@ using namespace soci::details;
 
 
 void empty_standard_into_type_backend::define_by_pos(
-    int & /* position */, void * /* data */, eExchangeType /* type */)
+    int & /* position */, void * /* data */, exchange_type /* type */)
 {
     // ...
 }
@@ -28,7 +28,7 @@ void empty_standard_into_type_backend::pre_fetch()
 }
 
 void empty_standard_into_type_backend::post_fetch(
-    bool /* gotData */, bool /* calledFromFetch */, eIndicator * /* ind */)
+    bool /* gotData */, bool /* calledFromFetch */, indicator * /* ind */)
 {
     // ...
 }

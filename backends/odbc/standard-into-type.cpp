@@ -14,7 +14,7 @@ using namespace soci::details;
 
 
 void odbc_standard_into_type_backend::define_by_pos(
-    int & position, void * data, eExchangeType type)
+    int & position, void * data, exchange_type type)
 {
     data_ = data;
     type_ = type;
@@ -24,13 +24,13 @@ void odbc_standard_into_type_backend::define_by_pos(
 
     switch (type_)
     {
-    case eXChar:
+    case x_char:
         odbcType_ = SQL_C_CHAR;
         size = sizeof(char) + 1;
         buf_ = new char[size];
         data = buf_;
         break;
-    case eXCString:
+    case x_cstring:
     {
         details::cstring_descriptor *desc = static_cast<cstring_descriptor *>(data);
         odbcType_ = SQL_C_CHAR;
@@ -38,35 +38,35 @@ void odbc_standard_into_type_backend::define_by_pos(
         size = static_cast<SQLINTEGER>(desc->bufSize_);
     }
     break;
-    case eXStdString:
+    case x_stdstring:
         odbcType_ = SQL_C_CHAR;
         size = 32769;
         buf_ = new char[size];
         data = buf_;
         break;
-    case eXShort:
+    case x_short:
         odbcType_ = SQL_C_SSHORT;
         size = sizeof(short);
         break;
-    case eXInteger:
+    case x_integer:
         odbcType_ = SQL_C_SLONG;
         size = sizeof(long);
         break;
-    case eXUnsignedLong:
+    case x_unsigned_long:
         odbcType_ = SQL_C_ULONG;
         size = sizeof(unsigned long);
         break;
-    case eXDouble:
+    case x_double:
         odbcType_ = SQL_C_DOUBLE;
         size = sizeof(double);
         break;
-    case eXStdTm:
+    case x_stdtm:
         odbcType_ = SQL_C_TYPE_TIMESTAMP;
         size = sizeof(TIMESTAMP_STRUCT);
         buf_ = new char[size];
         data = buf_;
         break;
-    case eXRowID:
+    case x_rowid:
         odbcType_ = SQL_C_ULONG;
         size = sizeof(unsigned long);
         break;
@@ -91,7 +91,7 @@ void odbc_standard_into_type_backend::pre_fetch()
 }
 
 void odbc_standard_into_type_backend::post_fetch(
-    bool gotData, bool calledFromFetch, eIndicator * ind)
+    bool gotData, bool calledFromFetch, indicator * ind)
 {
     if (calledFromFetch == true && gotData == false)
     {
@@ -111,24 +111,24 @@ void odbc_standard_into_type_backend::post_fetch(
                     "Null value fetched and no indicator defined.");
             }
 
-            *ind = eNull;
+            *ind = i_null;
             return;
         }
         else
         {
             if (ind != NULL)
             {
-                *ind = eOK;
+                *ind = i_ok;
             }
         }
 
         // only std::string and std::tm need special handling
-        if (type_ == eXChar)
+        if (type_ == x_char)
         {
             char *c = static_cast<char*>(data_);
             *c = buf_[0];
         }
-        if (type_ == eXCString)
+        if (type_ == x_cstring)
         {
             if (ind != NULL)
             {
@@ -136,16 +136,16 @@ void odbc_standard_into_type_backend::post_fetch(
                 int size = static_cast<SQLINTEGER>(desc->bufSize_);
                 if (size < valueLen_)
                 {
-                    *ind = eTruncated;
+                    *ind = i_truncated;
                 }
             }
         }
-        if (type_ == eXStdString)
+        if (type_ == x_stdstring)
         {
             std::string *s = static_cast<std::string *>(data_);
             *s = buf_;
         }
-        else if (type_ == eXStdTm)
+        else if (type_ == x_stdtm)
         {
             std::tm *t = static_cast<std::tm *>(data_);
 

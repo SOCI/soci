@@ -44,7 +44,7 @@ void mysql_statement_backend::clean_up()
 }
 
 void mysql_statement_backend::prepare(std::string const & query,
-    eStatementType /* eType */)
+    statement_type /* eType */)
 {
     queryChunks_.clear();
     enum { eNormal, eInQuotes, eInName } state = eNormal;
@@ -121,7 +121,7 @@ void mysql_statement_backend::prepare(std::string const & query,
 */
 }
 
-statement_backend::execFetchResult
+statement_backend::exec_fetch_result
 mysql_statement_backend::execute(int number)
 {
     if (justDescribed_ == false)
@@ -234,7 +234,7 @@ mysql_statement_backend::execute(int number)
             if (numberOfExecutions > 1)
             {
                 // bulk
-                return eNoData;
+                return ef_no_data;
             }
         }
         else
@@ -269,7 +269,7 @@ mysql_statement_backend::execute(int number)
         numberOfRows_ = mysql_num_rows(result_);
         if (numberOfRows_ == 0)
         {
-            return eNoData;
+            return ef_no_data;
         }
         else
         {
@@ -281,18 +281,18 @@ mysql_statement_backend::execute(int number)
             else
             {
                 // execute(0) was meant to only perform the query
-                return eSuccess;
+                return ef_success;
             }
         }
     }
     else
     {
         // it was not a SELECT
-        return eNoData;
+        return ef_no_data;
     }
 }
 
-statement_backend::execFetchResult
+statement_backend::exec_fetch_result
 mysql_statement_backend::fetch(int number)
 {
     // Note: This function does not actually fetch anything from anywhere
@@ -307,7 +307,7 @@ mysql_statement_backend::fetch(int number)
     if (currentRow_ >= numberOfRows_)
     {
         // all rows were already consumed
-        return eNoData;
+        return ef_no_data;
     }
     else
     {
@@ -316,14 +316,14 @@ mysql_statement_backend::fetch(int number)
             rowsToConsume_ = numberOfRows_ - currentRow_;
 
             // this simulates the behaviour of Oracle
-            // - when EOF is hit, we return eNoData even when there are
+            // - when EOF is hit, we return ef_no_data even when there are
             // actually some rows fetched
-            return eNoData;
+            return ef_no_data;
         }
         else
         {
             rowsToConsume_ = number;
-            return eSuccess;
+            return ef_success;
         }
     }
 }
@@ -351,7 +351,7 @@ int mysql_statement_backend::prepare_for_describe()
 }
 
 void mysql_statement_backend::describe_column(int colNum,
-    eDataType & type, std::string & columnName)
+    data_type & type, std::string & columnName)
 {
     int pos = colNum - 1;
     MYSQL_FIELD *field = mysql_fetch_field_direct(result_, pos);
@@ -361,10 +361,10 @@ void mysql_statement_backend::describe_column(int colNum,
     case FIELD_TYPE_SHORT:      //MYSQL_TYPE_SHORT:
     case FIELD_TYPE_LONG:       //MYSQL_TYPE_LONG:
     case FIELD_TYPE_INT24:      //MYSQL_TYPE_INT24:
-        type = eInteger;
+        type = dt_integer;
         break;
     case FIELD_TYPE_LONGLONG:   //MYSQL_TYPE_LONGLONG:
-        type = eLongLong;
+        type = dt_long_long;
         break;
     case FIELD_TYPE_FLOAT:      //MYSQL_TYPE_FLOAT:
     case FIELD_TYPE_DOUBLE:     //MYSQL_TYPE_DOUBLE:
@@ -374,7 +374,7 @@ void mysql_statement_backend::describe_column(int colNum,
     // sends field type number 246, no matter which version of libraries
     // the client is using.
     case 246:                   //MYSQL_TYPE_NEWDECIMAL:
-        type = eDouble;
+        type = dt_double;
         break;
     case FIELD_TYPE_TIMESTAMP:  //MYSQL_TYPE_TIMESTAMP:
     case FIELD_TYPE_DATE:       //MYSQL_TYPE_DATE:
@@ -382,13 +382,13 @@ void mysql_statement_backend::describe_column(int colNum,
     case FIELD_TYPE_DATETIME:   //MYSQL_TYPE_DATETIME:
     case FIELD_TYPE_YEAR:       //MYSQL_TYPE_YEAR:
     case FIELD_TYPE_NEWDATE:    //MYSQL_TYPE_NEWDATE:
-        type = eDate;
+        type = dt_date;
         break;
 //  case MYSQL_TYPE_VARCHAR:
     case FIELD_TYPE_VAR_STRING: //MYSQL_TYPE_VAR_STRING:
     case FIELD_TYPE_STRING:     //MYSQL_TYPE_STRING:
     case FIELD_TYPE_BLOB:       // TEXT OR BLOB
-        type = eString;
+        type = dt_string;
         break;
     default:
         //std::cerr << "field->type: " << field->type << std::endl;
