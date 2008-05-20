@@ -43,7 +43,7 @@ public:
     void clean_up();
 
     void prepare(std::string const & query,
-                    statement_type eType = eRepeatableQuery);
+                    statement_type eType = st_repeatable_query);
     void define_and_bind();
     void undefine_and_bind();
     bool execute(bool withDataExchange = false);
@@ -152,7 +152,7 @@ public:
     void clean_up()                              { impl_->clean_up(); }
 
     void prepare(std::string const & query,
-        details::statement_type eType = details::eRepeatableQuery)
+        details::statement_type eType = details::st_repeatable_query)
     {
         impl_->prepare(query, eType);
     }

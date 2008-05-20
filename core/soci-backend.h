@@ -39,7 +39,7 @@ enum exchange_type
 };
 
 // type of statement (used for optimizing statement preparation)
-enum statement_type { st_one_time_query, eRepeatableQuery };
+enum statement_type { st_one_time_query, st_repeatable_query };
 
 // polymorphic into type backend
 

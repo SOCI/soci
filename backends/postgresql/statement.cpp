@@ -124,7 +124,7 @@ void postgresql_statement_backend::prepare(std::string const &query,
 
 #ifndef SOCI_PGSQL_NOPREPARE
 
-    if (eType == eRepeatableQuery)
+    if (eType == st_repeatable_query)
     {
         statementName_ = session_.get_next_statement_name();
 
@@ -249,7 +249,7 @@ postgresql_statement_backend::execute(int number)
 
 #else
 
-                if (eType_ == eRepeatableQuery)
+                if (eType_ == st_repeatable_query)
                 {
                     // this query was separately prepared
 
@@ -308,7 +308,7 @@ postgresql_statement_backend::execute(int number)
             result_ = PQexec(session_.conn_, query_.c_str());
 #else
 
-            if (eType_ == eRepeatableQuery)
+            if (eType_ == st_repeatable_query)
             {
                 // this query was separately prepared
 
