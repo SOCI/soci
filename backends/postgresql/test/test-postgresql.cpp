@@ -357,7 +357,7 @@ void test6()
         session sql("postgresql://" + connectString);
     }
 
-    std::cout << "test 5 passed" << std::endl;
+    std::cout << "test 6 passed" << std::endl;
 }
 
 // DDL Creation objects for common tests
