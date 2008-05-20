@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.13 2008/05/13 10:53:27 mloskot Exp $
+# $Id: Makefile.am,v 1.14 2008/05/20 21:24:11 msobczak Exp $
 # 
 # Copyright (C) 2006, Mateusz Loskot
 #
@@ -27,6 +27,7 @@ lib@SOCI_CORE_LIBRARY_NAME@_la_SOURCES = \
 	row.cpp \
 	rowid.cpp \
 	session.cpp \
+	soci-simple.cpp \
 	statement.cpp \
 	transaction.cpp \
 	use-type.cpp \
@@ -61,6 +62,7 @@ soci_HEADERS = \
 	soci-backend.h \
 	soci-config.h \
 	soci-platform.h \
+	soci-simple.h \
 	soci.h \
 	statement.h \
 	transaction.h \

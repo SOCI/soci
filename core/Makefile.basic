@@ -5,7 +5,7 @@ OBJS =  session.o statement.o row.o values.o \
 	into-type.o use-type.o \
 	blob.o rowid.o procedure.o ref-counted-prepare-info.o ref-counted-statement.o \
 	once-temp-type.o prepare-temp-type.o error.o transaction.o backend-loader.o \
-        connection-pool.o
+        connection-pool.o soci-simple.o
 
 libsoci_core.a : ${OBJS} 
 	ar rv $@ $?
@@ -65,6 +65,9 @@ backend-loader.o : backend-loader.cpp
 	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 connection-pool.o : connection-pool.cpp
+	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
+
+soci-simple.o : soci-simple.cpp
 	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 
