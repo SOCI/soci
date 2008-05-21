@@ -288,20 +288,6 @@ void odbc_standard_use_type_backend::post_use(bool gotData, indicator *ind)
             }
         }
     }
-    else
-    {
-        if (indHolder_ == SQL_NULL_DATA)
-        {
-            // fetched null and no indicator - programming error!
-            throw soci_error("Null value fetched and no indicator defined.");
-        }
-
-        if (gotData == false)
-        {
-            // no data fetched and no indicator - programming error!
-            throw soci_error("No data fetched and no indicator defined.");
-        }
-    }
 }
 
 void odbc_standard_use_type_backend::clean_up()

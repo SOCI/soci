@@ -507,20 +507,6 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
             }
         }
     }
-    else
-    {
-        if (indOCIHolder_ == -1)
-        {
-            // fetched null and no indicator - programming error!
-            throw soci_error("Null value fetched and no indicator defined.");
-        }
-
-        if (gotData == false)
-        {
-            // no data fetched and no indicator - programming error!
-            throw soci_error("No data fetched and no indicator defined.");
-        }
-    }
 }
 
 void oracle_standard_use_type_backend::clean_up()
