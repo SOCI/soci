@@ -46,16 +46,16 @@ namespace // unnamed
 {
 
 // helper function for hardoded queries
-void hard_exec(PGconn *conn, char const *query, char const *errMsg)
+void hard_exec(PGconn * conn, char const * query, char const * errMsg)
 {
-    PGresult *result = PQexec(conn, query);
+    PGresult * result = PQexec(conn, query);
 
     if (result == NULL)
     {
         throw soci_error(errMsg);
     }
 
-    ExecStatusType status = PQresultStatus(result);
+    ExecStatusType const status = PQresultStatus(result);
     if (status != PGRES_COMMAND_OK)
     {
         throw soci_error(PQresultErrorMessage(result));

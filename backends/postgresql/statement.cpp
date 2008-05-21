@@ -48,8 +48,8 @@ void postgresql_statement_backend::clean_up()
     }
 }
 
-void postgresql_statement_backend::prepare(std::string const &query,
-    statement_type eType)
+void postgresql_statement_backend::prepare(std::string const & query,
+    statement_type stType)
 {
 #ifdef SOCI_PGSQL_NOBINDBYNAME
     query_ = query;
@@ -57,7 +57,7 @@ void postgresql_statement_backend::prepare(std::string const &query,
     // rewrite the query by transforming all named parameters into
     // the postgresql_ numbers ones (:abc -> $1, etc.)
 
-    enum { eNormal, eInQuotes, eInName } state = eNormal;
+    enum { normal, in_quotes, in_name } state = normal;
 
     std::string name;
     int position = 1;
@@ -67,33 +67,33 @@ void postgresql_statement_backend::prepare(std::string const &query,
     {
         switch (state)
         {
-        case eNormal:
+        case normal:
             if (*it == '\'')
             {
                 query_ += *it;
-                state = eInQuotes;
+                state = in_quotes;
             }
             else if (*it == ':')
             {
-                state = eInName;
+                state = in_name;
             }
             else // regular character, stay in the same state
             {
                 query_ += *it;
             }
             break;
-        case eInQuotes:
+        case in_quotes:
             if (*it == '\'')
             {
                 query_ += *it;
-                state = eNormal;
+                state = normal;
             }
             else // regular quoted character
             {
                 query_ += *it;
             }
             break;
-        case eInName:
+        case in_name:
             if (std::isalnum(*it) || *it == '_')
             {
                 name += *it;
@@ -106,13 +106,13 @@ void postgresql_statement_backend::prepare(std::string const &query,
                 ss << '$' << position++;
                 query_ += ss.str();
                 query_ += *it;
-                state = eNormal;
+                state = normal;
             }
             break;
         }
     }
 
-    if (state == eInName)
+    if (state == in_name)
     {
         names_.push_back(name);
         std::ostringstream ss;
@@ -124,11 +124,11 @@ void postgresql_statement_backend::prepare(std::string const &query,
 
 #ifndef SOCI_PGSQL_NOPREPARE
 
-    if (eType == st_repeatable_query)
+    if (stType == st_repeatable_query)
     {
         statementName_ = session_.get_next_statement_name();
 
-        PGresult *res = PQprepare(session_.conn_, statementName_.c_str(),
+        PGresult * res = PQprepare(session_.conn_, statementName_.c_str(),
             query_.c_str(), static_cast<int>(names_.size()), NULL);
         if (res == NULL)
         {
@@ -142,7 +142,7 @@ void postgresql_statement_backend::prepare(std::string const &query,
         PQclear(res);
     }
 
-    eType_ = eType;
+    stType_ = stType;
 
 #endif // SOCI_PGSQL_NOPREPARE
 }
@@ -208,7 +208,7 @@ postgresql_statement_backend::execute(int number)
                              end = useByPosBuffers_.end();
                          it != end; ++it)
                     {
-                        char **buffers = it->second;
+                        char ** buffers = it->second;
                         paramValues.push_back(buffers[i]);
                     }
                 }
@@ -230,7 +230,7 @@ postgresql_statement_backend::execute(int number)
                             msg += ").";
                             throw soci_error(msg);
                         }
-                        char **buffers = b->second;
+                        char ** buffers = b->second;
                         paramValues.push_back(buffers[i]);
                     }
                 }
@@ -249,7 +249,7 @@ postgresql_statement_backend::execute(int number)
 
 #else
 
-                if (eType_ == st_repeatable_query)
+                if (stType_ == st_repeatable_query)
                 {
                     // this query was separately prepared
 
@@ -258,7 +258,7 @@ postgresql_statement_backend::execute(int number)
                         static_cast<int>(paramValues.size()),
                         &paramValues[0], NULL, NULL, 0);
                 }
-                else // eType_ == st_one_time_query
+                else // stType_ == st_one_time_query
                 {
                     // this query was not separately prepared and should
                     // be executed as a one-time query
@@ -308,14 +308,14 @@ postgresql_statement_backend::execute(int number)
             result_ = PQexec(session_.conn_, query_.c_str());
 #else
 
-            if (eType_ == st_repeatable_query)
+            if (stType_ == st_repeatable_query)
             {
                 // this query was separately prepared
 
                 result_ = PQexecPrepared(session_.conn_,
                     statementName_.c_str(), 0, NULL, NULL, NULL, 0);
             }
-            else // eType_ == st_one_time_query
+            else // stType_ == st_one_time_query
             {
                 result_ = PQexec(session_.conn_, query_.c_str());
             }
@@ -415,7 +415,7 @@ int postgresql_statement_backend::get_number_of_rows()
 }
 
 std::string postgresql_statement_backend::rewrite_for_procedure_call(
-    std::string const &query)
+    std::string const & query)
 {
     std::string newQuery("select ");
     newQuery += query;
@@ -431,13 +431,13 @@ int postgresql_statement_backend::prepare_for_describe()
     return columns;
 }
 
-void postgresql_statement_backend::describe_column(int colNum, data_type &type,
-    std::string &columnName)
+void postgresql_statement_backend::describe_column(int colNum, data_type & type,
+    std::string & columnName)
 {
     // In postgresql_ column numbers start from 0
-    int pos = colNum - 1;
+    int const pos = colNum - 1;
 
-    unsigned long typeOid = PQftype(result_, pos);
+    unsigned long const typeOid = PQftype(result_, pos);
     switch (typeOid)
     {
     // Note: the following list of OIDs was taken from the pg_type table

@@ -30,7 +30,7 @@ using namespace soci::details;
 
 
 void postgresql_standard_use_type_backend::bind_by_pos(
-    int &position, void *data, exchange_type type, bool /* readOnly */)
+    int & position, void * data, exchange_type type, bool /* readOnly */)
 {
     // readOnly is ignored, because PostgreSQL does not support
     // any data to be written back to used (bound) objects.
@@ -41,7 +41,7 @@ void postgresql_standard_use_type_backend::bind_by_pos(
 }
 
 void postgresql_standard_use_type_backend::bind_by_name(
-    std::string const &name, void *data, exchange_type type, bool /* readOnly */)
+    std::string const & name, void * data, exchange_type type, bool /* readOnly */)
 {
     // readOnly is ignored, because PostgreSQL does not support
     // any data to be written back to used (bound) objects.
@@ -51,7 +51,7 @@ void postgresql_standard_use_type_backend::bind_by_name(
     name_ = name;
 }
 
-void postgresql_standard_use_type_backend::pre_use(indicator const *ind)
+void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
 {
     if (ind != NULL && *ind == i_null)
     {
@@ -65,13 +65,13 @@ void postgresql_standard_use_type_backend::pre_use(indicator const *ind)
         case x_char:
             {
                 buf_ = new char[2];
-                buf_[0] = *static_cast<char*>(data_);
+                buf_[0] = *static_cast<char *>(data_);
                 buf_[1] = '\0';
             }
             break;
         case x_cstring:
             {
-                cstring_descriptor *strDescr
+                cstring_descriptor * strDescr
                     = static_cast<cstring_descriptor *>(data_);
 
                 std::size_t len = std::strlen(strDescr->str_);
@@ -81,7 +81,7 @@ void postgresql_standard_use_type_backend::pre_use(indicator const *ind)
             break;
         case x_stdstring:
             {
-                std::string *s = static_cast<std::string *>(data_);
+                std::string * s = static_cast<std::string *>(data_);
                 buf_ = new char[s->size() + 1];
                 std::strcpy(buf_, s->c_str());
             }
@@ -92,7 +92,7 @@ void postgresql_standard_use_type_backend::pre_use(indicator const *ind)
                     = std::numeric_limits<short>::digits10 + 3;
                 buf_ = new char[bufSize];
                 snprintf(buf_, bufSize, "%d",
-                    static_cast<int>(*static_cast<short*>(data_)));
+                    static_cast<int>(*static_cast<short *>(data_)));
             }
             break;
         case x_integer:
@@ -101,7 +101,7 @@ void postgresql_standard_use_type_backend::pre_use(indicator const *ind)
                     = std::numeric_limits<int>::digits10 + 3;
                 buf_ = new char[bufSize];
                 snprintf(buf_, bufSize, "%d",
-                    *static_cast<int*>(data_));
+                    *static_cast<int *>(data_));
             }
             break;
         case x_unsigned_long:
@@ -110,7 +110,7 @@ void postgresql_standard_use_type_backend::pre_use(indicator const *ind)
                     = std::numeric_limits<unsigned long>::digits10 + 2;
                 buf_ = new char[bufSize];
                 snprintf(buf_, bufSize, "%lu",
-                    *static_cast<unsigned long*>(data_));
+                    *static_cast<unsigned long *>(data_));
             }
             break;
         case x_long_long:
@@ -130,7 +130,7 @@ void postgresql_standard_use_type_backend::pre_use(indicator const *ind)
                 buf_ = new char[bufSize];
 
                 snprintf(buf_, bufSize, "%.20g",
-                    *static_cast<double*>(data_));
+                    *static_cast<double *>(data_));
             }
             break;
         case x_stdtm:
@@ -138,7 +138,7 @@ void postgresql_standard_use_type_backend::pre_use(indicator const *ind)
                 std::size_t const bufSize = 20;
                 buf_ = new char[bufSize];
 
-                std::tm *t = static_cast<std::tm *>(data_);
+                std::tm * t = static_cast<std::tm *>(data_);
                 snprintf(buf_, bufSize, "%d-%02d-%02d %02d:%02d:%02d",
                     t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
                     t->tm_hour, t->tm_min, t->tm_sec);
@@ -148,8 +148,8 @@ void postgresql_standard_use_type_backend::pre_use(indicator const *ind)
             {
                 // RowID is internally identical to unsigned long
 
-                rowid *rid = static_cast<rowid *>(data_);
-                postgresql_rowid_backend *rbe
+                rowid * rid = static_cast<rowid *>(data_);
+                postgresql_rowid_backend * rbe
                     = static_cast<postgresql_rowid_backend *>(
                         rid->get_backend());
 

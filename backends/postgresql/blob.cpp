@@ -27,7 +27,7 @@ using namespace soci::details;
 
 
 postgresql_blob_backend::postgresql_blob_backend(
-    postgresql_session_backend &session)
+    postgresql_session_backend & session)
     : session_(session), fd_(-1)
 {
     // nothing to do here, the descriptor is open in the postFetch
@@ -41,7 +41,7 @@ postgresql_blob_backend::~postgresql_blob_backend()
 
 std::size_t postgresql_blob_backend::get_len()
 {
-    int pos = lo_lseek(session_.conn_, fd_, 0, SEEK_END);
+    int const pos = lo_lseek(session_.conn_, fd_, 0, SEEK_END);
     if (pos == -1)
     {
         throw soci_error("Cannot retrieve the size of BLOB.");
@@ -51,16 +51,16 @@ std::size_t postgresql_blob_backend::get_len()
 }
 
 std::size_t postgresql_blob_backend::read(
-    std::size_t offset, char *buf, std::size_t toRead)
+    std::size_t offset, char * buf, std::size_t toRead)
 {
-    int pos = lo_lseek(session_.conn_, fd_,
+    int const pos = lo_lseek(session_.conn_, fd_,
         static_cast<int>(offset), SEEK_SET);
     if (pos == -1)
     {
         throw soci_error("Cannot seek in BLOB.");
     }
 
-    int readn = lo_read(session_.conn_, fd_, buf, toRead);
+    int const readn = lo_read(session_.conn_, fd_, buf, toRead);
     if (readn < 0)
     {
         throw soci_error("Cannot read from BLOB.");
@@ -70,16 +70,16 @@ std::size_t postgresql_blob_backend::read(
 }
 
 std::size_t postgresql_blob_backend::write(
-    std::size_t offset, char const *buf, std::size_t toWrite)
+    std::size_t offset, char const * buf, std::size_t toWrite)
 {
-    int pos = lo_lseek(session_.conn_, fd_,
+    int const pos = lo_lseek(session_.conn_, fd_,
         static_cast<int>(offset), SEEK_SET);
     if (pos == -1)
     {
         throw soci_error("Cannot seek in BLOB.");
     }
 
-    int writen = lo_write(session_.conn_, fd_,
+    int const writen = lo_write(session_.conn_, fd_,
         const_cast<char *>(buf), toWrite);
     if (writen < 0)
     {
@@ -90,15 +90,15 @@ std::size_t postgresql_blob_backend::write(
 }
 
 std::size_t postgresql_blob_backend::append(
-    char const *buf, std::size_t toWrite)
+    char const * buf, std::size_t toWrite)
 {
-    int pos = lo_lseek(session_.conn_, fd_, 0, SEEK_END);
+    int const pos = lo_lseek(session_.conn_, fd_, 0, SEEK_END);
     if (pos == -1)
     {
         throw soci_error("Cannot seek in BLOB.");
     }
 
-    int writen = lo_write(session_.conn_, fd_,
+    int const writen = lo_write(session_.conn_, fd_,
         const_cast<char *>(buf), toWrite);
     if (writen < 0)
     {

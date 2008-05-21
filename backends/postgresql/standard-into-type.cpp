@@ -32,7 +32,7 @@ using namespace soci::details::postgresql;
 
 
 void postgresql_standard_into_type_backend::define_by_pos(
-    int &position, void *data, exchange_type type)
+    int & position, void * data, exchange_type type)
 {
     data_ = data;
     type_ = type;
@@ -45,7 +45,7 @@ void postgresql_standard_into_type_backend::pre_fetch()
 }
 
 void postgresql_standard_into_type_backend::post_fetch(
-    bool gotData, bool calledFromFetch, indicator *ind)
+    bool gotData, bool calledFromFetch, indicator * ind)
 {
     if (calledFromFetch == true && gotData == false)
     {
@@ -57,7 +57,7 @@ void postgresql_standard_into_type_backend::post_fetch(
     if (gotData)
     {
         // postgresql_ positions start at 0
-        int pos = position_ - 1;
+        int const pos = position_ - 1;
 
         // first, deal with indicators
         if (PQgetisnull(statement_.result_, statement_.currentRow_, pos) != 0)
@@ -82,20 +82,20 @@ void postgresql_standard_into_type_backend::post_fetch(
         }
 
         // raw data, in text format
-        char *buf = PQgetvalue(statement_.result_,
+        char const * buf = PQgetvalue(statement_.result_,
             statement_.currentRow_, pos);
 
         switch (type_)
         {
         case x_char:
             {
-                char *dest = static_cast<char*>(data_);
+                char * dest = static_cast<char *>(data_);
                 *dest = *buf;
             }
             break;
         case x_cstring:
             {
-                cstring_descriptor *strDescr
+                cstring_descriptor * strDescr
                     = static_cast<cstring_descriptor *>(data_);
 
                 std::strncpy(strDescr->str_, buf, strDescr->bufSize_ - 1);
@@ -109,13 +109,13 @@ void postgresql_standard_into_type_backend::post_fetch(
             break;
         case x_stdstring:
             {
-                std::string *dest = static_cast<std::string *>(data_);
+                std::string * dest = static_cast<std::string *>(data_);
                 dest->assign(buf);
             }
             break;
         case x_short:
             {
-                short *dest = static_cast<short*>(data_);
+                short * dest = static_cast<short *>(data_);
                 char * end;
                 long val = strtol(buf, &end, 10);
                 check_integer_conversion(buf, end, val);
@@ -124,7 +124,7 @@ void postgresql_standard_into_type_backend::post_fetch(
             break;
         case x_integer:
             {
-                int *dest = static_cast<int*>(data_);
+                int * dest = static_cast<int *>(data_);
                 char * end;
                 long val = strtol(buf, &end, 10);
                 check_integer_conversion(buf, end, val);
@@ -133,7 +133,7 @@ void postgresql_standard_into_type_backend::post_fetch(
             break;
         case x_unsigned_long:
             {
-                unsigned long *dest = static_cast<unsigned long *>(data_);
+                unsigned long * dest = static_cast<unsigned long *>(data_);
                 char * end;
                 long long val = strtoll(buf, &end, 10);
                 check_integer_conversion(buf, end, val);
@@ -142,7 +142,7 @@ void postgresql_standard_into_type_backend::post_fetch(
             break;
         case x_long_long:
             {
-                long long *dest = static_cast<long long *>(data_);
+                long long * dest = static_cast<long long *>(data_);
                 char * end;
                 long long val = strtoll(buf, &end, 10);
                 check_integer_conversion(buf, end, val);
@@ -151,7 +151,7 @@ void postgresql_standard_into_type_backend::post_fetch(
             break;
         case x_double:
             {
-                double *dest = static_cast<double*>(data_);
+                double * dest = static_cast<double *>(data_);
                 char * end;
                 double val = strtod(buf, &end);
                 if (end == buf)
@@ -164,7 +164,7 @@ void postgresql_standard_into_type_backend::post_fetch(
         case x_stdtm:
             {
                 // attempt to parse the string and convert to std::tm
-                std::tm *dest = static_cast<std::tm *>(data_);
+                std::tm * dest = static_cast<std::tm *>(data_);
                 parse_std_tm(buf, *dest);
             }
             break;
@@ -172,8 +172,8 @@ void postgresql_standard_into_type_backend::post_fetch(
             {
                 // RowID is internally identical to unsigned long
 
-                rowid *rid = static_cast<rowid *>(data_);
-                postgresql_rowid_backend *rbe
+                rowid * rid = static_cast<rowid *>(data_);
+                postgresql_rowid_backend * rbe
                     = static_cast<postgresql_rowid_backend *>(
                         rid->get_backend());
 
@@ -203,7 +203,7 @@ void postgresql_standard_into_type_backend::post_fetch(
                     throw soci_error("Cannot open the blob object.");
                 }
 
-                blob *b = static_cast<blob *>(data_);
+                blob * b = static_cast<blob *>(data_);
                 postgresql_blob_backend *bbe
                      = static_cast<postgresql_blob_backend *>(b->get_backend());
 

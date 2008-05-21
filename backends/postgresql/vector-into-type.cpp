@@ -30,7 +30,7 @@ using namespace soci::details::postgresql;
 
 
 void postgresql_vector_into_type_backend::define_by_pos(
-    int &position, void *data, exchange_type type)
+    int & position, void * data, exchange_type type)
 {
     data_ = data;
     type_ = type;
@@ -46,18 +46,18 @@ namespace // anonymous
 {
 
 template <typename T>
-void set_invector_(void *p, int indx, T const &val)
+void set_invector_(void * p, int indx, T const & val)
 {
-    std::vector<T> *dest =
+    std::vector<T> * dest =
         static_cast<std::vector<T> *>(p);
 
-    std::vector<T> &v = *dest;
+    std::vector<T> & v = *dest;
     v[indx] = val;
 }
 
 } // namespace anonymous
 
-void postgresql_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
+void postgresql_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
 {
     if (gotData)
     {
@@ -65,7 +65,7 @@ void postgresql_vector_into_type_backend::post_fetch(bool gotData, indicator *in
         // the number of rows that need to be put in the user's buffers.
 
         // postgresql_ column positions start at 0
-        int pos = position_ - 1;
+        int const pos = position_ - 1;
 
         int const endRow = statement_.currentRow_ + statement_.rowsToConsume_;
 
@@ -95,7 +95,7 @@ void postgresql_vector_into_type_backend::post_fetch(bool gotData, indicator *in
             }
 
             // buffer with data retrieved from server, in text format
-            char *buf = PQgetvalue(statement_.result_, curRow, pos);
+            char * buf = PQgetvalue(statement_.result_, curRow, pos);
 
             switch (type_)
             {
@@ -173,9 +173,9 @@ namespace // anonymous
 {
 
 template <typename T>
-void resizevector_(void *p, std::size_t sz)
+void resizevector_(void * p, std::size_t sz)
 {
-    std::vector<T> *v = static_cast<std::vector<T> *>(p);
+    std::vector<T> * v = static_cast<std::vector<T> *>(p);
     v->resize(sz);
 }
 

@@ -21,7 +21,7 @@ namespace postgresql
 
 // helper function for integer conversions
 template <typename T>
-void check_integer_conversion(char * buf, char * end, T & val)
+void check_integer_conversion(char const * buf, char * end, T & val)
 {
     if (end == buf)
     {
@@ -41,13 +41,13 @@ void check_integer_conversion(char * buf, char * end, T & val)
 }
 
 // helper function for parsing datetime values
-void parse_std_tm(char const *buf, std::tm &t);
+void parse_std_tm(char const * buf, std::tm & t);
 
 // helper for vector operations
 template <typename T>
-std::size_t get_vector_size(void *p)
+std::size_t get_vector_size(void * p)
 {
-    std::vector<T> *v = static_cast<std::vector<T> *>(p);
+    std::vector<T> * v = static_cast<std::vector<T> *>(p);
     return v->size();
 }
 
