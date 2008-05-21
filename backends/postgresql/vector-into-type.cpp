@@ -82,6 +82,9 @@ void postgresql_vector_into_type_backend::post_fetch(bool gotData, indicator *in
                 }
 
                 ind[i] = i_null;
+
+                // no need to convert data if it is null, go to next row
+                continue;
             }
             else
             {
@@ -104,35 +107,44 @@ void postgresql_vector_into_type_backend::post_fetch(bool gotData, indicator *in
                 break;
             case x_short:
                 {
-                    long val = strtol(buf, NULL, 10);
+                    char * end;
+                    long val = strtol(buf, &end, 10);
+                    check_integer_conversion(buf, end, val);
                     set_invector_(data_, i, static_cast<short>(val));
                 }
                 break;
             case x_integer:
                 {
-                    long val = strtol(buf, NULL, 10);
-                    if (std::tolower(*buf) == 't')
-                    {
-                        val = 1;
-                    }
+                    char * end;
+                    long val = strtol(buf, &end, 10);
+                    check_integer_conversion(buf, end, val);
                     set_invector_(data_, i, static_cast<int>(val));
                 }
                 break;
             case x_unsigned_long:
                 {
-                    long long val = strtoll(buf, NULL, 10);
+                    char * end;
+                    long long val = strtoll(buf, &end, 10);
+                    check_integer_conversion(buf, end, val);
                     set_invector_(data_, i, static_cast<unsigned long>(val));
                 }
                 break;
             case x_long_long:
                 {
-                    long long val = strtoll(buf, NULL, 10);
+                    char * end;
+                    long long val = strtoll(buf, &end, 10);
+                    check_integer_conversion(buf, end, val);
                     set_invector_(data_, i, val);
                 }
                 break;
             case x_double:
                 {
-                    double val = strtod(buf, NULL);
+                    char * end;
+                    double val = strtod(buf, &end);
+                    if (end == buf)
+                    {
+                        throw soci_error("Cannot convert data.");
+                    }
                     set_invector_(data_, i, val);
                 }
                 break;
@@ -174,14 +186,14 @@ void postgresql_vector_into_type_backend::resize(std::size_t sz)
     switch (type_)
     {
     // simple cases
-    case x_char:         resizevector_<char>         (data_, sz); break;
-    case x_short:        resizevector_<short>        (data_, sz); break;
-    case x_integer:      resizevector_<int>          (data_, sz); break;
+    case x_char:          resizevector_<char>         (data_, sz); break;
+    case x_short:         resizevector_<short>        (data_, sz); break;
+    case x_integer:       resizevector_<int>          (data_, sz); break;
     case x_unsigned_long: resizevector_<unsigned long>(data_, sz); break;
     case x_long_long:     resizevector_<long long>    (data_, sz); break;
-    case x_double:       resizevector_<double>       (data_, sz); break;
-    case x_stdstring:    resizevector_<std::string>  (data_, sz); break;
-    case x_stdtm:        resizevector_<std::tm>      (data_, sz); break;
+    case x_double:        resizevector_<double>       (data_, sz); break;
+    case x_stdstring:     resizevector_<std::string>  (data_, sz); break;
+    case x_stdtm:         resizevector_<std::tm>      (data_, sz); break;
 
     default:
         throw soci_error("Into vector element used with non-supported type.");
@@ -194,14 +206,14 @@ std::size_t postgresql_vector_into_type_backend::size()
     switch (type_)
     {
     // simple cases
-    case x_char:         sz = get_vector_size<char>         (data_); break;
-    case x_short:        sz = get_vector_size<short>        (data_); break;
-    case x_integer:      sz = get_vector_size<int>          (data_); break;
+    case x_char:          sz = get_vector_size<char>         (data_); break;
+    case x_short:         sz = get_vector_size<short>        (data_); break;
+    case x_integer:       sz = get_vector_size<int>          (data_); break;
     case x_unsigned_long: sz = get_vector_size<unsigned long>(data_); break;
     case x_long_long:     sz = get_vector_size<long long>    (data_); break;
-    case x_double:       sz = get_vector_size<double>       (data_); break;
-    case x_stdstring:    sz = get_vector_size<std::string>  (data_); break;
-    case x_stdtm:        sz = get_vector_size<std::tm>      (data_); break;
+    case x_double:        sz = get_vector_size<double>       (data_); break;
+    case x_stdstring:     sz = get_vector_size<std::string>  (data_); break;
+    case x_stdtm:         sz = get_vector_size<std::tm>      (data_); break;
 
     default:
         throw soci_error("Into vector element used with non-supported type.");

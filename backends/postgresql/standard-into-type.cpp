@@ -69,6 +69,8 @@ void postgresql_standard_into_type_backend::post_fetch(
             }
 
             *ind = i_null;
+
+            // no need to convert data if it is null
             return;
         }
         else
@@ -114,38 +116,49 @@ void postgresql_standard_into_type_backend::post_fetch(
         case x_short:
             {
                 short *dest = static_cast<short*>(data_);
-                long val = strtol(buf, NULL, 10);
+                char * end;
+                long val = strtol(buf, &end, 10);
+                check_integer_conversion(buf, end, val);
                 *dest = static_cast<short>(val);
             }
             break;
         case x_integer:
             {
                 int *dest = static_cast<int*>(data_);
-                long val = strtol(buf, NULL, 10);
-                if (std::tolower(*buf) == 't')
-                {
-                    val = 1;
-                }
+                char * end;
+                long val = strtol(buf, &end, 10);
+                check_integer_conversion(buf, end, val);
                 *dest = static_cast<int>(val);
             }
             break;
         case x_unsigned_long:
             {
                 unsigned long *dest = static_cast<unsigned long *>(data_);
-                long long val = strtoll(buf, NULL, 10);
+                char * end;
+                long long val = strtoll(buf, &end, 10);
+                check_integer_conversion(buf, end, val);
                 *dest = static_cast<unsigned long>(val);
             }
             break;
         case x_long_long:
             {
                 long long *dest = static_cast<long long *>(data_);
-                *dest = strtoll(buf, NULL, 10);
+                char * end;
+                long long val = strtoll(buf, &end, 10);
+                check_integer_conversion(buf, end, val);
+                *dest = val;
             }
             break;
         case x_double:
             {
                 double *dest = static_cast<double*>(data_);
-                *dest = strtod(buf, NULL);
+                char * end;
+                double val = strtod(buf, &end);
+                if (end == buf)
+                {
+                    throw soci_error("Cannot convert data.");
+                }
+                *dest = val;
             }
             break;
         case x_stdtm:
@@ -164,13 +177,23 @@ void postgresql_standard_into_type_backend::post_fetch(
                     = static_cast<postgresql_rowid_backend *>(
                         rid->get_backend());
 
-                long long val = strtoll(buf, NULL, 10);
+                char * end;
+                long long val = strtoll(buf, &end, 10);
+                if (end == buf)
+                {
+                    throw soci_error("Cannot convert data.");
+                }
                 rbe->value_ = static_cast<unsigned long>(val);
             }
             break;
         case x_blob:
             {
-                long long llval = strtoll(buf, NULL, 10);
+                char * end;
+                long long llval = strtoll(buf, &end, 10);
+                if (end == buf)
+                {
+                    throw soci_error("Cannot convert data.");
+                }
                 unsigned long oid = static_cast<unsigned long>(llval);
 
                 int fd = lo_open(statement_.session_.conn_, oid,

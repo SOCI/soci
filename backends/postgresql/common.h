@@ -19,6 +19,27 @@ namespace details
 namespace postgresql
 {
 
+// helper function for integer conversions
+template <typename T>
+void check_integer_conversion(char * buf, char * end, T & val)
+{
+    if (end == buf)
+    {
+        if (std::tolower(*buf) == 't')
+        {
+            val = static_cast<T>(1);
+        }
+        else if (std::tolower(*buf) == 'f')
+        {
+            val = static_cast<T>(0);
+        }
+        else
+        {
+            throw soci_error("Cannot convert data.");
+        }
+    }
+}
+
 // helper function for parsing datetime values
 void parse_std_tm(char const *buf, std::tm &t);
 

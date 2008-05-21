@@ -360,6 +360,29 @@ void test6()
     std::cout << "test 6 passed" << std::endl;
 }
 
+void test7()
+{
+    {
+        session sql(backEnd, connectString);
+
+        int i;
+        sql << "select 123", into(i);
+        assert(i == 123);
+
+        try
+        {
+            sql << "select 'ABC'", into (i);
+            assert(false);
+        }
+        catch (soci_error const & e)
+        {
+            assert(e.what() == std::string("Cannot convert data."));
+        }
+    }
+
+    std::cout << "test 7 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -465,7 +488,11 @@ int main(int argc, char** argv)
         test3();
         test4();
         test5();
+
 //         test6();
+        std::cout << "test 6 skipped (dynamic backend)\n";
+
+        test7();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;
