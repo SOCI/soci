@@ -516,6 +516,11 @@ void test2()
             // no data expected
             sql << "select id from soci_test where id = 1000", into(i);
             assert(sql.got_data() == false);
+
+            // no data expected, test correct behaviour with use
+            int id = 1000;
+            sql << "select id from soci_test where id = :id", use(id), into(i);
+            assert(sql.got_data() == false);
         }
     }
 
