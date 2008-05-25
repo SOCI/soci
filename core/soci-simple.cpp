@@ -20,25 +20,34 @@ struct session_wrapper
 {
     session sql;
 
-    bool isOK;
-    std::string errorMessage;
+    bool is_ok;
+    std::string error_message;
 };
 
 } // namespace unnamed
 
 
-SOCI_DECL session_handle soci_create_session(char const * connectionString)
+SOCI_DECL session_handle soci_create_session(char const * connection_string)
 {
-    session_wrapper * wrapper = new session_wrapper();
+    session_wrapper * wrapper;
     try
     {
-        wrapper->sql.open(connectionString);
-        wrapper->isOK = true;
+        wrapper = new session_wrapper();
+    }
+    catch (...)
+    {
+        return NULL;
+    }
+
+    try
+    {
+        wrapper->sql.open(connection_string);
+        wrapper->is_ok = true;
     }
     catch (std::exception const & e)
     {
-        wrapper->isOK = false;
-        wrapper->errorMessage = e.what();
+        wrapper->is_ok = false;
+        wrapper->error_message = e.what();
     }
 
     return wrapper;
@@ -56,12 +65,12 @@ SOCI_DECL void soci_begin(session_handle s)
     try
     {
         wrapper->sql.begin();
-        wrapper->isOK = true;
+        wrapper->is_ok = true;
     }
     catch (std::exception const & e)
     {
-        wrapper->isOK = false;
-        wrapper->errorMessage = e.what();
+        wrapper->is_ok = false;
+        wrapper->error_message = e.what();
     }
 }
 
@@ -71,12 +80,12 @@ SOCI_DECL void soci_commit(session_handle s)
     try
     {
         wrapper->sql.commit();
-        wrapper->isOK = true;
+        wrapper->is_ok = true;
     }
     catch (std::exception const & e)
     {
-        wrapper->isOK = false;
-        wrapper->errorMessage = e.what();
+        wrapper->is_ok = false;
+        wrapper->error_message = e.what();
     }
 }
 
@@ -86,34 +95,35 @@ SOCI_DECL void soci_rollback(session_handle s)
     try
     {
         wrapper->sql.rollback();
-        wrapper->isOK = true;
+        wrapper->is_ok = true;
     }
     catch (std::exception const & e)
     {
-        wrapper->isOK = false;
-        wrapper->errorMessage = e.what();
+        wrapper->is_ok = false;
+        wrapper->error_message = e.what();
     }
 }
 
-SOCI_DECL void soci_uppercase_column_names(session_handle s, bool forceToUpper)
-{
-    session_wrapper * wrapper = static_cast<session_wrapper *>(s);
-    wrapper->sql.uppercase_column_names(forceToUpper);
-    wrapper->isOK = true;
-}
+// this will not be needed until dynamic row is exposed
+// SOCI_DECL void soci_uppercase_column_names(session_handle s, bool forceToUpper)
+// {
+//     session_wrapper * wrapper = static_cast<session_wrapper *>(s);
+//     wrapper->sql.uppercase_column_names(forceToUpper);
+//     wrapper->is_ok = true;
+// }
 
 SOCI_DECL bool soci_session_state(session_handle s)
 {
     session_wrapper * wrapper = static_cast<session_wrapper *>(s);
 
-    return wrapper->isOK;
+    return wrapper->is_ok;
 }
 
 SOCI_DECL char const * soci_session_error_message(session_handle s)
 {
     session_wrapper * wrapper = static_cast<session_wrapper *>(s);
 
-    return wrapper->errorMessage.c_str();
+    return wrapper->error_message.c_str();
 }
 
 
@@ -126,19 +136,30 @@ namespace // unnamed
 struct statement_wrapper
 {
     statement_wrapper(session & sql)
-        : st(sql), nextPosition(0), dataItemsFixed(false) {}
+        : st(sql), statement_state(clean), into_kind(empty), use_kind(empty),
+          next_position(0) {}
 
     statement st;
 
+    enum state { clean, defining, executing } statement_state;
+    enum kind { empty, single, bulk } into_kind, use_kind;
+
     // into elements
-    int nextPosition;
-    std::vector<data_type> into_types;
+    int next_position;
+    std::vector<data_type> into_types; // for both single and bulk
     std::vector<indicator> into_indicators;
     std::map<int, std::string> into_strings;
     std::map<int, int> into_ints;
     std::map<int, long long> into_longlongs;
     std::map<int, double> into_doubles;
     std::map<int, std::tm> into_dates;
+
+    std::vector<std::vector<indicator> > into_indicators_v;
+    std::map<int, std::vector<std::string> > into_strings_v;
+    std::map<int, std::vector<int> > into_ints_v;
+    std::map<int, std::vector<long long> > into_longlongs_v;
+    std::map<int, std::vector<double> > into_doubles_v;
+    std::map<int, std::vector<std::tm> > into_dates_v;
 
     // use elements
     std::map<std::string, indicator> use_indicators;
@@ -151,134 +172,217 @@ struct statement_wrapper
     // format is: "YYYY MM DD hh mm ss"
     char date_formatted[20];
 
-    bool dataItemsFixed;
-
-    bool isOK;
-    std::string errorMessage;
+    bool is_ok;
+    std::string error_message;
 };
 
 // helper for checking if the attempt was made to add more into/use elements
-// after their set was fixed
-bool fixed_check_failed(statement_wrapper & wrapper)
+// after the statement was set for execution
+bool cannot_add_elements(statement_wrapper & wrapper, statement_wrapper::kind k, bool into)
 {
-    if (wrapper.dataItemsFixed)
+    if (wrapper.statement_state == statement_wrapper::executing)
     {
-        wrapper.isOK = false;
-        wrapper.errorMessage = "Cannot add more data items.";
+        wrapper.is_ok = false;
+        wrapper.error_message = "Cannot add more data items.";
         return true;
+    }
+    
+    if (into)
+    {
+        if (k == statement_wrapper::single && wrapper.into_kind == statement_wrapper::bulk)
+        {
+            wrapper.is_ok = false;
+            wrapper.error_message = "Cannot add single into data items.";
+            return true;
+        }
+        if (k == statement_wrapper::bulk && wrapper.into_kind == statement_wrapper::single)
+        {
+            wrapper.is_ok = false;
+            wrapper.error_message = "Cannot add vector into data items.";
+            return true;
+        }
     }
     else
     {
-        wrapper.isOK = true;
-        return false;
-    }
-}
-
-bool position_check_failed(statement_wrapper & wrapper,
-    int position, data_type expectedType, char const * typeName)
-{
-    if (position < 0 || position >= wrapper.nextPosition)
-    {
-        wrapper.isOK = false;
-        wrapper.errorMessage = "Invalid position.";
-        return true;
-    }
-
-    if (wrapper.into_types[position] != expectedType)
-    {
-        wrapper.isOK = false;
-        wrapper.errorMessage = "No into ";
-        wrapper.errorMessage += typeName;
-        wrapper.errorMessage += " element at this position.";
-        return true;
+        // trying to add use elements
+        if (k == statement_wrapper::single && wrapper.use_kind == statement_wrapper::bulk)
+        {
+            wrapper.is_ok = false;
+            wrapper.error_message = "Cannot add single use data items.";
+            return true;
+        }
+        if (k == statement_wrapper::bulk && wrapper.use_kind == statement_wrapper::single)
+        {
+            wrapper.is_ok = false;
+            wrapper.error_message = "Cannot add vector use data items.";
+            return true;
+        }
     }
 
-    if (wrapper.into_indicators[position] == i_null)
-    {
-        wrapper.isOK = false;
-        wrapper.errorMessage = "Element is null.";
-        return true;
-    }
-
-    wrapper.isOK = true;
+    wrapper.is_ok = true;
     return false;
 }
 
+// helper for checking if the expected into element exists on the given position
+bool position_check_failed(statement_wrapper & wrapper, statement_wrapper::kind k,
+    int position, data_type expected_type, char const * type_name)
+{
+    if (position < 0 || position >= wrapper.next_position)
+    {
+        wrapper.is_ok = false;
+        wrapper.error_message = "Invalid position.";
+        return true;
+    }
+
+    if (wrapper.into_types[position] != expected_type)
+    {
+        wrapper.is_ok = false;
+        wrapper.error_message = "No into ";
+        if (k == statement_wrapper::bulk)
+        {
+            wrapper.error_message += "vector ";
+        }
+        wrapper.error_message += type_name;
+        wrapper.error_message += " element at this position.";
+        return true;
+    }
+
+    wrapper.is_ok = true;
+    return false;
+}
+
+// helper for checking if the into element on the given position
+// is not null
+bool not_null_check_failed(statement_wrapper & wrapper, int position)
+{
+    if (wrapper.into_indicators[position] == i_null)
+    {
+        wrapper.is_ok = false;
+        wrapper.error_message = "Element is null.";
+        return true;
+    }
+
+    wrapper.is_ok = true;
+    return false;
+}
+
+// overloaded version for vectors
+bool not_null_check_failed(statement_wrapper & wrapper, int position, int index)
+{
+    if (wrapper.into_indicators_v[position][index] == i_null)
+    {
+        wrapper.is_ok = false;
+        wrapper.error_message = "Element is null.";
+        return true;
+    }
+
+    wrapper.is_ok = true;
+    return false;
+}
+
+// helper for checking the index value
+template <typename T>
+bool index_check_failed(std::vector<T> const & v,
+    statement_wrapper & wrapper, int index)
+{
+    if (index < 0 || index >= static_cast<int>(v.size()))
+    {
+        wrapper.is_ok = false;
+        wrapper.error_message = "Invalid index.";
+        return true;
+    }
+
+    wrapper.is_ok = true;
+    return false;
+}
+
+// helper for checking the uniqueness of the use element's name
 bool name_unique_check_failed(statement_wrapper & wrapper, char const * name)
 {
     typedef std::map<std::string, indicator>::const_iterator iterator;
     iterator const it = wrapper.use_indicators.find(name);
     if (it != wrapper.use_indicators.end())
     {
-        wrapper.isOK = false;
-        wrapper.errorMessage = "Name of use element should be unique.";
+        wrapper.is_ok = false;
+        wrapper.error_message = "Name of use element should be unique.";
         return true;
     }
     else
     {
-        wrapper.isOK = true;
+        wrapper.is_ok = true;
         return false;
     }
 }
 
+// helper for checking if the use element with the given name exists
 bool name_exists_check_failed(statement_wrapper & wrapper,
-    char const * name, data_type expectedType, char const * typeName)
+    char const * name, data_type expected_type, char const * type_name)
 {
-    bool nameExists;
-    switch (expectedType)
+    bool name_exists;
+    switch (expected_type)
     {
     case dt_string:
         {
             typedef std::map<std::string, std::string>::const_iterator iterator;
             iterator const it = wrapper.use_strings.find(name);
-            nameExists = (it != wrapper.use_strings.end());
+            name_exists = (it != wrapper.use_strings.end());
         }
         break;
     case dt_integer:
         {
             typedef std::map<std::string, int>::const_iterator iterator;
             iterator const it = wrapper.use_ints.find(name);
-            nameExists = (it != wrapper.use_ints.end());
+            name_exists = (it != wrapper.use_ints.end());
         }
         break;
     case dt_long_long:
         {
             typedef std::map<std::string, long long>::const_iterator iterator;
             iterator const it = wrapper.use_longlongs.find(name);
-            nameExists = (it != wrapper.use_longlongs.end());
+            name_exists = (it != wrapper.use_longlongs.end());
         }
         break;
     case dt_double:
         {
             typedef std::map<std::string, double>::const_iterator iterator;
             iterator const it = wrapper.use_doubles.find(name);
-            nameExists = (it != wrapper.use_doubles.end());
+            name_exists = (it != wrapper.use_doubles.end());
         }
         break;
     case dt_date:
         {
             typedef std::map<std::string, std::tm>::const_iterator iterator;
             iterator const it = wrapper.use_dates.find(name);
-            nameExists = (it != wrapper.use_dates.end());
+            name_exists = (it != wrapper.use_dates.end());
         }
         break;
     default:
         assert(false);
     }
 
-    if (nameExists)
+    if (name_exists)
     {
-        wrapper.isOK = true;
+        wrapper.is_ok = true;
         return false;
     }
     else
     {
-        wrapper.isOK = false;
-        wrapper.errorMessage = "No use ";
-        wrapper.errorMessage += typeName;
-        wrapper.errorMessage += " element with this name.";
+        wrapper.is_ok = false;
+        wrapper.error_message = "No use ";
+        wrapper.error_message += type_name;
+        wrapper.error_message += " element with this name.";
         return true;
     }
+}
+
+// helper for formatting date values
+char const * format_date(statement_wrapper & wrapper, std::tm const & d)
+{
+    sprintf(wrapper.date_formatted, "%d %d %d %d %d %d",
+        d.tm_year + 1900, d.tm_mon + 1, d.tm_mday,
+        d.tm_hour, d.tm_min, d.tm_sec);
+
+    return wrapper.date_formatted;
 }
 
 } // namespace unnamed
@@ -290,13 +394,13 @@ SOCI_DECL statement_handle soci_create_statement(session_handle s)
     try
     {
         statement_wrapper * statement_w = new statement_wrapper(session_w->sql);
-        statement_w->isOK = true;
+        statement_w->is_ok = true;
         return statement_w;
     }
     catch (std::exception const & e)
     {
-        session_w->isOK = false;
-        session_w->errorMessage = e.what();
+        session_w->is_ok = false;
+        session_w->error_message = e.what();
         return NULL;
     }
 }
@@ -311,89 +415,194 @@ SOCI_DECL int soci_into_string(statement_handle st)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (fixed_check_failed(*wrapper))
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, true))
     {
         return -1;
     }
 
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::single;
+
     wrapper->into_types.push_back(dt_string);
     wrapper->into_indicators.push_back(i_ok);
-    wrapper->into_strings[wrapper->nextPosition]; // create new entry
-    return wrapper->nextPosition++;
+    wrapper->into_strings[wrapper->next_position]; // create new entry
+    return wrapper->next_position++;
 }
 
 SOCI_DECL int soci_into_int(statement_handle st)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (fixed_check_failed(*wrapper))
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, true))
     {
         return -1;
     }
 
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::single;
+
     wrapper->into_types.push_back(dt_integer);
     wrapper->into_indicators.push_back(i_ok);
-    wrapper->into_ints[wrapper->nextPosition]; // create new entry
-    return wrapper->nextPosition++;
+    wrapper->into_ints[wrapper->next_position]; // create new entry
+    return wrapper->next_position++;
 }
 
 SOCI_DECL int soci_into_long_long(statement_handle st)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (fixed_check_failed(*wrapper))
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, true))
     {
         return -1;
     }
 
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::single;
+
     wrapper->into_types.push_back(dt_long_long);
     wrapper->into_indicators.push_back(i_ok);
-    wrapper->into_longlongs[wrapper->nextPosition]; // create new entry
-    return wrapper->nextPosition++;
+    wrapper->into_longlongs[wrapper->next_position]; // create new entry
+    return wrapper->next_position++;
 }
 
 SOCI_DECL int soci_into_double(statement_handle st)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (fixed_check_failed(*wrapper))
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, true))
     {
         return -1;
     }
 
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::single;
+
     wrapper->into_types.push_back(dt_double);
     wrapper->into_indicators.push_back(i_ok);
-    wrapper->into_doubles[wrapper->nextPosition]; // create new entry
-    return wrapper->nextPosition++;
+    wrapper->into_doubles[wrapper->next_position]; // create new entry
+    return wrapper->next_position++;
 }
 
 SOCI_DECL int soci_into_date(statement_handle st)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (fixed_check_failed(*wrapper))
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, true))
     {
         return -1;
     }
 
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::single;
+
     wrapper->into_types.push_back(dt_date);
     wrapper->into_indicators.push_back(i_ok);
-    wrapper->into_dates[wrapper->nextPosition]; // create new entry
-    return wrapper->nextPosition++;
+    wrapper->into_dates[wrapper->next_position]; // create new entry
+    return wrapper->next_position++;
+}
+
+SOCI_DECL int soci_into_string_v(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::bulk;
+
+    wrapper->into_types.push_back(dt_string);
+    wrapper->into_indicators_v.push_back(std::vector<indicator>());
+    wrapper->into_strings_v[wrapper->next_position];
+    return wrapper->next_position++;
+}
+
+SOCI_DECL int soci_into_int_v(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::bulk;
+
+    wrapper->into_types.push_back(dt_integer);
+    wrapper->into_indicators_v.push_back(std::vector<indicator>());
+    wrapper->into_ints_v[wrapper->next_position];
+    return wrapper->next_position++;
+}
+
+SOCI_DECL int soci_into_long_long_v(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::bulk;
+
+    wrapper->into_types.push_back(dt_long_long);
+    wrapper->into_indicators_v.push_back(std::vector<indicator>());
+    wrapper->into_longlongs_v[wrapper->next_position];
+    return wrapper->next_position++;
+}
+
+SOCI_DECL int soci_into_double_v(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::bulk;
+
+    wrapper->into_types.push_back(dt_double);
+    wrapper->into_indicators_v.push_back(std::vector<indicator>());
+    wrapper->into_doubles_v[wrapper->next_position];
+    return wrapper->next_position++;
+}
+
+SOCI_DECL int soci_into_date_v(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::bulk;
+
+    wrapper->into_types.push_back(dt_date);
+    wrapper->into_indicators_v.push_back(std::vector<indicator>());
+    wrapper->into_dates_v[wrapper->next_position];
+    return wrapper->next_position++;
 }
 
 SOCI_DECL bool soci_get_into_state(statement_handle st, int position)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (position < 0 || position >= wrapper->nextPosition)
+    if (position < 0 || position >= wrapper->next_position)
     {
-        wrapper->isOK = false;
-        wrapper->errorMessage = "Invalid position.";
+        wrapper->is_ok = false;
+        wrapper->error_message = "Invalid position.";
         return false;
     }
 
-    wrapper->isOK = true;
+    wrapper->is_ok = true;
     return wrapper->into_indicators[position] == i_ok;
 }
 
@@ -401,7 +610,9 @@ SOCI_DECL char const * soci_get_into_string(statement_handle st, int position)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (position_check_failed(*wrapper, position, dt_string, "string"))
+    if (position_check_failed(*wrapper,
+            statement_wrapper::single, position, dt_string, "string") ||
+        not_null_check_failed(*wrapper, position))
     {
         return "";
     }
@@ -413,7 +624,9 @@ SOCI_DECL int soci_get_into_int(statement_handle st, int position)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (position_check_failed(*wrapper, position, dt_integer, "int"))
+    if (position_check_failed(*wrapper,
+            statement_wrapper::single, position, dt_integer, "int") ||
+        not_null_check_failed(*wrapper, position))
     {
         return 0;
     }
@@ -425,7 +638,9 @@ SOCI_DECL long long soci_get_into_long_long(statement_handle st, int position)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (position_check_failed(*wrapper, position, dt_long_long, "long long"))
+    if (position_check_failed(*wrapper,
+            statement_wrapper::single, position, dt_long_long, "long long") ||
+        not_null_check_failed(*wrapper, position))
     {
         return 0LL;
     }
@@ -437,7 +652,9 @@ SOCI_DECL double soci_get_into_double(statement_handle st, int position)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (position_check_failed(*wrapper, position, dt_double, "double"))
+    if (position_check_failed(*wrapper,
+            statement_wrapper::single, position, dt_double, "double") ||
+        not_null_check_failed(*wrapper, position))
     {
         return 0.0;
     }
@@ -449,25 +666,205 @@ SOCI_DECL char const * soci_get_into_date(statement_handle st, int position)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (position_check_failed(*wrapper, position, dt_date, "date"))
+    if (position_check_failed(*wrapper,
+            statement_wrapper::single, position, dt_date, "date") ||
+        not_null_check_failed(*wrapper, position))
     {
         return "";
     }
 
     // format is: "YYYY MM DD hh mm ss"
     std::tm const & d = wrapper->into_dates[position];
-    sprintf(wrapper->date_formatted, "%d %d %d %d %d %d",
-        d.tm_year + 1900, d.tm_mon + 1, d.tm_mday,
-        d.tm_hour, d.tm_min, d.tm_sec);
+    return format_date(*wrapper, d);
+}
 
-    return wrapper->date_formatted;
+SOCI_DECL int soci_into_get_size_v(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (wrapper->into_kind != statement_wrapper::bulk)
+    {
+        wrapper->is_ok = false;
+        wrapper->error_message = "No vector into elements.";
+        return -1;
+    }
+
+    return static_cast<int>(wrapper->into_indicators_v[0].size());
+}
+
+SOCI_DECL void soci_into_resize_v(statement_handle st, int new_size)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (new_size <= 0)
+    {
+        wrapper->is_ok = false;
+        wrapper->error_message = "Invalid size.";
+        return;
+    }
+
+    if (wrapper->into_kind != statement_wrapper::bulk)
+    {
+        wrapper->is_ok = false;
+        wrapper->error_message = "No vector into elements.";
+        return;
+    }
+
+    for (int i = 0; i != wrapper->next_position; ++i)
+    {
+        wrapper->into_indicators_v[i].resize(new_size);
+
+        switch (wrapper->into_types[i])
+        {
+        case dt_string:
+            wrapper->into_strings_v[i].resize(new_size);
+            break;
+        case dt_integer:
+            wrapper->into_ints_v[i].resize(new_size);
+            break;
+        case dt_long_long:
+            wrapper->into_longlongs_v[i].resize(new_size);
+            break;
+        case dt_double:
+            wrapper->into_doubles_v[i].resize(new_size);
+            break;
+        case dt_date:
+            wrapper->into_dates_v[i].resize(new_size);
+            break;
+        default:
+            assert(false);
+        }
+    }
+
+    wrapper->is_ok = true;
+}
+
+SOCI_DECL bool soci_get_into_state_v(statement_handle st, int position, int index)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (position < 0 || position >= wrapper->next_position)
+    {
+        wrapper->is_ok = false;
+        wrapper->error_message = "Invalid position.";
+        return false;
+    }
+
+    std::vector<indicator> const & v = wrapper->into_indicators_v[position];
+    if (index_check_failed(v, *wrapper, index))
+    {
+        return false;
+    }
+
+    return v[index] == i_ok;
+}
+
+SOCI_DECL char const * soci_get_into_string_v(statement_handle st, int position, int index)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (position_check_failed(*wrapper,
+            statement_wrapper::bulk, position, dt_string, "string"))
+    {
+        return "";
+    }
+
+    std::vector<std::string> const & v = wrapper->into_strings_v[position];
+    if (index_check_failed(v, *wrapper, index) ||
+        not_null_check_failed(*wrapper, position, index))
+    {
+        return "";
+    }
+
+    return v[index].c_str();
+}
+
+SOCI_DECL int soci_get_into_int_v(statement_handle st, int position, int index)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (position_check_failed(*wrapper,
+            statement_wrapper::bulk, position, dt_integer, "int"))
+    {
+        return 0;
+    }
+
+    std::vector<int> const & v = wrapper->into_ints_v[position];
+    if (index_check_failed(v, *wrapper, index) ||
+        not_null_check_failed(*wrapper, position, index))
+    {
+        return 0;
+    }
+
+    return v[index];
+}
+
+SOCI_DECL long long soci_get_into_long_long_v(statement_handle st, int position, int index)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (position_check_failed(*wrapper,
+            statement_wrapper::bulk, position, dt_long_long, "long long"))
+    {
+        return 0;
+    }
+
+    std::vector<long long> const & v = wrapper->into_longlongs_v[position];
+    if (index_check_failed(v, *wrapper, index) ||
+        not_null_check_failed(*wrapper, position, index))
+    {
+        return 0;
+    }
+
+    return v[index];
+}
+
+SOCI_DECL double soci_get_into_double_v(statement_handle st, int position, int index)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (position_check_failed(*wrapper,
+            statement_wrapper::bulk, position, dt_double, "double"))
+    {
+        return 0.0;
+    }
+
+    std::vector<double> const & v = wrapper->into_doubles_v[position];
+    if (index_check_failed(v, *wrapper, index) ||
+        not_null_check_failed(*wrapper, position, index))
+    {
+        return 0.0;
+    }
+
+    return v[index];
+}
+
+SOCI_DECL char const * soci_get_into_date_v(statement_handle st, int position, int index)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (position_check_failed(*wrapper,
+            statement_wrapper::bulk, position, dt_date, "date"))
+    {
+        return "";
+    }
+
+    std::vector<std::tm> const & v = wrapper->into_dates_v[position];
+    if (index_check_failed(v, *wrapper, index) ||
+        not_null_check_failed(*wrapper, position, index))
+    {
+        return "";
+    }
+
+    return format_date(*wrapper, v[index]);
 }
 
 SOCI_DECL void soci_use_string(statement_handle st, char const * name)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (fixed_check_failed(*wrapper) || name_unique_check_failed(*wrapper, name))
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, false) ||
+        name_unique_check_failed(*wrapper, name))
     {
         return;
     }
@@ -480,7 +877,8 @@ SOCI_DECL void soci_use_int(statement_handle st, char const * name)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (fixed_check_failed(*wrapper) || name_unique_check_failed(*wrapper, name))
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, false) ||
+        name_unique_check_failed(*wrapper, name))
     {
         return;
     }
@@ -493,7 +891,8 @@ SOCI_DECL void soci_use_long_long(statement_handle st, char const * name)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (fixed_check_failed(*wrapper) || name_unique_check_failed(*wrapper, name))
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, false) ||
+        name_unique_check_failed(*wrapper, name))
     {
         return;
     }
@@ -506,7 +905,8 @@ SOCI_DECL void soci_use_double(statement_handle st, char const * name)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (fixed_check_failed(*wrapper) || name_unique_check_failed(*wrapper, name))
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, false) ||
+        name_unique_check_failed(*wrapper, name))
     {
         return;
     }
@@ -519,7 +919,8 @@ SOCI_DECL void soci_use_date(statement_handle st, char const * name)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (fixed_check_failed(*wrapper) || name_unique_check_failed(*wrapper, name))
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, false) ||
+        name_unique_check_failed(*wrapper, name))
     {
         return;
     }
@@ -536,13 +937,13 @@ SOCI_DECL void soci_set_use_state(statement_handle st, char const * name, bool s
     iterator const it = wrapper->use_indicators.find(name);
     if (it == wrapper->use_indicators.end())
     {
-        wrapper->isOK = false;
-        wrapper->errorMessage = "Invalid name.";
+        wrapper->is_ok = false;
+        wrapper->error_message = "Invalid name.";
         return;
     }
 
-    wrapper->isOK = true;
-    wrapper->use_indicators[name] = state ? i_ok : i_null;
+    wrapper->is_ok = true;
+    wrapper->use_indicators[name] = (state ? i_ok : i_null);
 }
 
 SOCI_DECL void soci_set_use_string(statement_handle st, char const * name, char const * val)
@@ -554,6 +955,7 @@ SOCI_DECL void soci_set_use_string(statement_handle st, char const * name, char 
         return;
     }
 
+    wrapper->use_indicators[name] = i_ok;
     wrapper->use_strings[name] = val;
 }
 
@@ -566,6 +968,7 @@ SOCI_DECL void soci_set_use_int(statement_handle st, char const * name, int val)
         return;
     }
 
+    wrapper->use_indicators[name] = i_ok;
     wrapper->use_ints[name] = val;
 }
 
@@ -578,6 +981,7 @@ SOCI_DECL void soci_set_use_long_long(statement_handle st, char const * name, lo
         return;
     }
 
+    wrapper->use_indicators[name] = i_ok;
     wrapper->use_longlongs[name] = val;
 }
 
@@ -590,6 +994,7 @@ SOCI_DECL void soci_set_use_double(statement_handle st, char const * name, doubl
         return;
     }
 
+    wrapper->use_indicators[name] = i_ok;
     wrapper->use_doubles[name] = val;
 }
 
@@ -613,12 +1018,12 @@ SOCI_DECL void soci_set_use_date(statement_handle st, char const * name, char co
         &year, &month, &day, &hour, &minute, &second);
     if (converted != 6)
     {
-        wrapper->isOK = false;
-        wrapper->errorMessage = "Cannot convert date.";
+        wrapper->is_ok = false;
+        wrapper->error_message = "Cannot convert date.";
         return;
     }
 
-    wrapper->isOK = true;
+    wrapper->is_ok = true;
 
     std::tm d;
     d.tm_year = year - 1900;
@@ -627,6 +1032,8 @@ SOCI_DECL void soci_set_use_date(statement_handle st, char const * name, char co
     d.tm_hour = hour;
     d.tm_min = minute;
     d.tm_sec = second;
+
+    wrapper->use_indicators[name] = i_ok;
     wrapper->use_dates[name] = d;
 }
 
@@ -638,12 +1045,12 @@ SOCI_DECL bool soci_get_use_state(statement_handle st, char const * name)
     iterator const it = wrapper->use_indicators.find(name);
     if (it == wrapper->use_indicators.end())
     {
-        wrapper->isOK = false;
-        wrapper->errorMessage = "Invalid name.";
+        wrapper->is_ok = false;
+        wrapper->error_message = "Invalid name.";
         return false;
     }
 
-    wrapper->isOK = true;
+    wrapper->is_ok = true;
     return wrapper->use_indicators[name] == i_ok;
 }
 
@@ -719,36 +1126,70 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
 
     try
     {
-        wrapper->dataItemsFixed = true;
+        wrapper->statement_state = statement_wrapper::executing;
 
         // bind all into elements
-        size_t const intoElements = wrapper->into_types.size();
-        for (size_t i = 0; i != intoElements; ++i)
+
+        size_t const into_elements = wrapper->into_types.size();
+        for (size_t i = 0; i != into_elements; ++i)
         {
-            switch (wrapper->into_types[i])
+            if (wrapper->into_kind == statement_wrapper::single)
             {
-            case dt_string:
-                wrapper->st.exchange(
-                    into(wrapper->into_strings[i], wrapper->into_indicators[i]));
-                break;
-            case dt_integer:
-                wrapper->st.exchange(
-                    into(wrapper->into_ints[i], wrapper->into_indicators[i]));
-                break;
-            case dt_long_long:
-                wrapper->st.exchange(
-                    into(wrapper->into_longlongs[i], wrapper->into_indicators[i]));
-                break;
-            case dt_double:
-                wrapper->st.exchange(
-                    into(wrapper->into_doubles[i], wrapper->into_indicators[i]));
-                break;
-            case dt_date:
-                wrapper->st.exchange(
-                    into(wrapper->into_dates[i], wrapper->into_indicators[i]));
-                break;
-            default:
-                assert(false);
+                switch (wrapper->into_types[i])
+                {
+                case dt_string:
+                    wrapper->st.exchange(
+                        into(wrapper->into_strings[i], wrapper->into_indicators[i]));
+                    break;
+                case dt_integer:
+                    wrapper->st.exchange(
+                        into(wrapper->into_ints[i], wrapper->into_indicators[i]));
+                    break;
+                case dt_long_long:
+                    wrapper->st.exchange(
+                        into(wrapper->into_longlongs[i], wrapper->into_indicators[i]));
+                    break;
+                case dt_double:
+                    wrapper->st.exchange(
+                        into(wrapper->into_doubles[i], wrapper->into_indicators[i]));
+                    break;
+                case dt_date:
+                    wrapper->st.exchange(
+                        into(wrapper->into_dates[i], wrapper->into_indicators[i]));
+                    break;
+                default:
+                    assert(false);
+                }
+            }
+            else
+            {
+                // vector elements
+
+                switch (wrapper->into_types[i])
+                {
+                case dt_string:
+                    wrapper->st.exchange(
+                        into(wrapper->into_strings_v[i], wrapper->into_indicators_v[i]));
+                    break;
+                case dt_integer:
+                    wrapper->st.exchange(
+                        into(wrapper->into_ints_v[i], wrapper->into_indicators_v[i]));
+                    break;
+                case dt_long_long:
+                    wrapper->st.exchange(
+                        into(wrapper->into_longlongs_v[i], wrapper->into_indicators_v[i]));
+                    break;
+                case dt_double:
+                    wrapper->st.exchange(
+                        into(wrapper->into_doubles_v[i], wrapper->into_indicators_v[i]));
+                    break;
+                case dt_date:
+                    wrapper->st.exchange(
+                        into(wrapper->into_dates_v[i], wrapper->into_indicators_v[i]));
+                    break;
+                default:
+                    assert(false);
+                }
             }
         }
 
@@ -823,12 +1264,12 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
         wrapper->st.prepare(query);
         wrapper->st.define_and_bind();
 
-        wrapper->isOK = true;
+        wrapper->is_ok = true;
     }
     catch (std::exception const & e)
     {
-        wrapper->isOK = false;
-        wrapper->errorMessage = e.what();
+        wrapper->is_ok = false;
+        wrapper->error_message = e.what();
     }
 }
 
@@ -840,14 +1281,14 @@ SOCI_DECL bool soci_execute(statement_handle st, bool withDataExchange)
     {
         bool const gotData = wrapper->st.execute(withDataExchange);
 
-        wrapper->isOK = true;
+        wrapper->is_ok = true;
 
         return gotData;
     }
     catch (std::exception const & e)
     {
-        wrapper->isOK = false;
-        wrapper->errorMessage = e.what();
+        wrapper->is_ok = false;
+        wrapper->error_message = e.what();
 
         return false;
     }
@@ -861,14 +1302,14 @@ SOCI_DECL bool soci_fetch(statement_handle st)
     {
         bool const gotData = wrapper->st.fetch();
 
-        wrapper->isOK = true;
+        wrapper->is_ok = true;
 
         return gotData;
     }
     catch (std::exception const & e)
     {
-        wrapper->isOK = false;
-        wrapper->errorMessage = e.what();
+        wrapper->is_ok = false;
+        wrapper->error_message = e.what();
 
         return false;
     }
@@ -885,12 +1326,12 @@ SOCI_DECL bool soci_statement_state(statement_handle st)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    return wrapper->isOK;
+    return wrapper->is_ok;
 }
 
 SOCI_DECL char const * soci_statement_error_message(statement_handle st)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    return wrapper->errorMessage.c_str();
+    return wrapper->error_message.c_str();
 }

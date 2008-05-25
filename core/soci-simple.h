@@ -25,8 +25,6 @@ SOCI_DECL void soci_begin(session_handle s);
 SOCI_DECL void soci_commit(session_handle s);
 SOCI_DECL void soci_rollback(session_handle s);
 
-SOCI_DECL void soci_uppercase_column_names(session_handle s, bool forceToUpper);
-
 SOCI_DECL bool soci_session_state(session_handle s);
 SOCI_DECL char const * soci_session_error_message(session_handle s);
 
@@ -43,6 +41,13 @@ SOCI_DECL int soci_into_long_long(statement_handle st);
 SOCI_DECL int soci_into_double   (statement_handle st);
 SOCI_DECL int soci_into_date     (statement_handle st);
 
+// vector versions
+SOCI_DECL int soci_into_string_v   (statement_handle st);
+SOCI_DECL int soci_into_int_v      (statement_handle st);
+SOCI_DECL int soci_into_long_long_v(statement_handle st);
+SOCI_DECL int soci_into_double_v   (statement_handle st);
+SOCI_DECL int soci_into_date_v     (statement_handle st);
+
 // positional read of into elements
 SOCI_DECL bool         soci_get_into_state    (statement_handle st, int position);
 SOCI_DECL char const * soci_get_into_string   (statement_handle st, int position);
@@ -50,6 +55,19 @@ SOCI_DECL int          soci_get_into_int      (statement_handle st, int position
 SOCI_DECL long long    soci_get_into_long_long(statement_handle st, int position);
 SOCI_DECL double       soci_get_into_double   (statement_handle st, int position);
 SOCI_DECL char const * soci_get_into_date     (statement_handle st, int position);
+
+// positional (re)size of vectors
+SOCI_DECL int  soci_into_get_size_v(statement_handle st);
+SOCI_DECL void soci_into_resize_v  (statement_handle st, int new_size);
+
+// positional read of vectors
+SOCI_DECL bool         soci_get_into_state_v    (statement_handle st, int position, int index);
+SOCI_DECL char const * soci_get_into_string_v   (statement_handle st, int position, int index);
+SOCI_DECL int          soci_get_into_int_v      (statement_handle st, int position, int index);
+SOCI_DECL long long    soci_get_into_long_long_v(statement_handle st, int position, int index);
+SOCI_DECL double       soci_get_into_double_v   (statement_handle st, int position, int index);
+SOCI_DECL char const * soci_get_into_date_v     (statement_handle st, int position, int index);
+
 
 // named bind of use elements
 SOCI_DECL void soci_use_string   (statement_handle st, char const * name);
