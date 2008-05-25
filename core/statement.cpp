@@ -351,8 +351,9 @@ bool statement_impl::execute(bool withDataExchange)
     if (num > 0)
     {
         post_fetch(gotData, false);
-        post_use(gotData);
     }
+    
+    post_use(gotData);
 
     session_.set_got_data(gotData);
     return gotData;
