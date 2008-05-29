@@ -109,35 +109,31 @@ void mysql_standard_into_type_backend::post_fetch(
         case x_short:
             {
                 short *dest = static_cast<short*>(data_);
-                long val = std::strtol(buf, NULL, 10);
-                *dest = static_cast<short>(val);
+                parse_num(buf, *dest);
             }
             break;
         case x_integer:
             {
                 int *dest = static_cast<int*>(data_);
-                long val = std::strtol(buf, NULL, 10);
-                *dest = static_cast<int>(val);
+                parse_num(buf, *dest);
             }
             break;
         case x_unsigned_long:
             {
                 unsigned long *dest = static_cast<unsigned long *>(data_);
-                long long val = std::strtoll(buf, NULL, 10);
-                *dest = static_cast<unsigned long>(val);
+                parse_num(buf, *dest);
             }
             break;
         case x_long_long:
             {
                 long long *dest = static_cast<long long *>(data_);
-                *dest = std::strtoll(buf, NULL, 10);
+                parse_num(buf, *dest);
             }
             break;
         case x_double:
             {
                 double *dest = static_cast<double*>(data_);
-                double val = strtod(buf, NULL);
-                *dest = static_cast<double>(val);
+                parse_num(buf, *dest);
             }
             break;
         case x_stdtm:

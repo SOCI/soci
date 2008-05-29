@@ -8,6 +8,7 @@
 #ifndef SOCI_MYSQL_COMMON_H_INCLUDED
 #define SOCI_MYSQL_COMMON_H_INCLUDED
 
+#include <sstream>
 #include "soci-mysql.h"
 
 namespace soci
@@ -21,6 +22,16 @@ namespace mysql
 
 // helper function for parsing datetime values
 void parse_std_tm(char const *buf, std::tm &t);
+
+template <typename T>
+void parse_num(char const *buf, T &x)
+{
+    std::istringstream iss(buf);
+    iss >> x;
+    if (iss.fail() || !iss.eof()) {
+        throw soci_error("Cannot convert data.");
+    }
+}
 
 // helper for escaping strings
 char * quote(MYSQL * conn, const char *s, int len);

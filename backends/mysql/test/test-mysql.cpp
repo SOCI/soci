@@ -191,6 +191,93 @@ void test3()
     std::cout << "test 3 passed" << std::endl;
 }
 
+template <typename T>
+void test_num(const char* s, bool valid, T value)
+{
+    try {
+        session sql(backEnd, connectString);
+        T val;
+        sql << "select \'" << s << "\'", into(val);
+        if (valid) {
+            double v1 = value;
+            double v2 = val;
+            double d = std::fabs(v1 - v2);
+            double epsilon = 0.001;
+            assert(d < epsilon ||
+                   d < epsilon * (std::fabs(v1) + std::fabs(v2)));
+        } else {
+            std::cout << "string \"" << s << "\" parsed as " << val
+                      << " but should have failed.\n";
+            assert(false);
+        }
+    } catch (soci_error const& e) {
+        if (valid) {
+            std::cout << "couldn't parse number: \"" << s << "\"\n";
+            assert(false);
+        } else {
+            assert(std::string(e.what()) == "Cannot convert data.");
+        }
+    }
+}
+
+// Number conversion test.
+void test4()
+{
+    test_num<double>("", false, 0);
+    test_num<double>("foo", false, 0);
+    test_num<double>("1", true, 1);
+    test_num<double>("12", true, 12);
+    test_num<double>("123", true, 123);
+    test_num<double>("12345", true, 12345);
+    test_num<double>("12341234123412341234123412341234123412341234123412341",
+        true, 1.23412e+52);
+    test_num<double>("99999999999999999999999912222222222222222222222222223"
+        "9999999999999999999999991222222222222222222222222222333333333333"
+        "9999999999999999999999991222222222222222222222222222333333333333"
+        "9999999999999999999999991222222222222222222222222222333333333333"
+        "9999999999999999999999991222222222222222222222222222333333333333"
+        "9999999999999999999999991222222222222222222222222222333333333333"
+        "9999999999999999999999991222222222222222222222222222333333333333"
+        "9999999999999999999999991222222222222222222222222222333333333333"
+        "9999999999999999999999991222222222222222222222222222333333333333"
+        "9999999999999999999999991222222222222222222222222222333333333333"
+        "9999999999999999999999991222222222222222222222222222333333333333"
+        "9999999999999999999999991222222222222222222222222222333333333333"
+        "9999999999999999999999991222222222222222222222222222333333333333"
+        "9999999999999999999999991222222222222222222222222222333333333333"
+        "9999999999999999999999991222222222222222222222222222333333333333",
+	false, 0);
+    test_num<double>("1e3", true, 1000);
+    test_num<double>("1.2", true, 1.2);
+    test_num<double>("1.2345e2", true, 123.45);
+    test_num<double>("1 ", false, 0);
+    test_num<double>("     123", true, 123);
+    test_num<double>("1,2", false, 0);
+    test_num<double>("123abc", false, 0);
+    test_num<double>("-0", true, 0);
+
+    test_num<short>("123", true, 123);
+    test_num<short>("100000", false, 0);
+
+    test_num<int>("123", true, 123);
+    test_num<int>("2147483647", true, 2147483647);
+    test_num<int>("2147483647a", false, 0);
+    test_num<int>("2147483648", false, 0);
+    // -2147483648 causes a warning because it is interpreted as
+    // 2147483648 (which doesn't fit in an integer) to which a negation
+    // is applied.
+    test_num<int>("-2147483648", true, -2147483647 - 1);
+    test_num<int>("-2147483649", false, 0);
+    test_num<int>("-0", true, 0);
+    test_num<int>("1.1", false, 0);
+
+    test_num<long long>("123", true, 123);
+    test_num<long long>("9223372036854775807", true, 9223372036854775807LL);
+    test_num<long long>("9223372036854775808", false, 0);
+    
+    std::cout << "test 4 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -296,6 +383,7 @@ int main(int argc, char** argv)
         test1();
         test2();
         test3();
+        test4();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;

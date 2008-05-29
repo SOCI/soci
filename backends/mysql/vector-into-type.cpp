@@ -76,6 +76,9 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                 }
 
                 ind[i] = i_null;
+                
+                // no need to convert data if it is null, go to next row
+                continue;
             }
             else
             {
@@ -98,31 +101,36 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                 break;
             case x_short:
                 {
-                    long val = std::strtol(buf, NULL, 10);
-                    set_invector_(data_, i, static_cast<short>(val));
+                    short val;
+                    parse_num(buf, val);
+                    set_invector_(data_, i, val);
                 }
                 break;
             case x_integer:
                 {
-                    long val = std::strtol(buf, NULL, 10);
-                    set_invector_(data_, i, static_cast<int>(val));
+                    int val;
+                    parse_num(buf, val);
+                    set_invector_(data_, i, val);
                 }
                 break;
             case x_unsigned_long:
                 {
-                    long long val = std::strtoll(buf, NULL, 10);
-                    set_invector_(data_, i, static_cast<unsigned long>(val));
+                    unsigned long val;
+                    parse_num(buf, val);
+                    set_invector_(data_, i, val);
                 }
                 break;
             case x_long_long:
                 {
-                    long long val = std::strtoll(buf, NULL, 10);
+                    long long val;
+                    parse_num(buf, val);
                     set_invector_(data_, i, val);
                 }
                 break;
             case x_double:
                 {
-                    double val = strtod(buf, NULL);
+                    double val;
+                    parse_num(buf, val);
                     set_invector_(data_, i, val);
                 }
                 break;
