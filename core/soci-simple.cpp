@@ -137,7 +137,7 @@ struct statement_wrapper
 {
     statement_wrapper(session & sql)
         : st(sql), statement_state(clean), into_kind(empty), use_kind(empty),
-          next_position(0) {}
+          next_position(0), is_ok(true) {}
 
     statement st;
 
@@ -168,6 +168,13 @@ struct statement_wrapper
     std::map<std::string, long long> use_longlongs;
     std::map<std::string, double> use_doubles;
     std::map<std::string, std::tm> use_dates;
+
+    std::map<std::string, std::vector<indicator> > use_indicators_v;
+    std::map<std::string, std::vector<std::string> > use_strings_v;
+    std::map<std::string, std::vector<int> > use_ints_v;
+    std::map<std::string, std::vector<long long> > use_longlongs_v;
+    std::map<std::string, std::vector<double> > use_doubles_v;
+    std::map<std::string, std::vector<std::tm> > use_dates_v;
 
     // format is: "YYYY MM DD hh mm ss"
     char date_formatted[20];
@@ -297,67 +304,139 @@ bool index_check_failed(std::vector<T> const & v,
 }
 
 // helper for checking the uniqueness of the use element's name
-bool name_unique_check_failed(statement_wrapper & wrapper, char const * name)
+bool name_unique_check_failed(statement_wrapper & wrapper,
+    statement_wrapper::kind k, char const * name)
 {
-    typedef std::map<std::string, indicator>::const_iterator iterator;
-    iterator const it = wrapper.use_indicators.find(name);
-    if (it != wrapper.use_indicators.end())
+    bool is_unique;
+    if (k == statement_wrapper::single)
+    {
+        typedef std::map<std::string, indicator>::const_iterator iterator;
+        iterator const it = wrapper.use_indicators.find(name);
+        is_unique = it == wrapper.use_indicators.end();
+    }
+    else
+    {
+        // vector version
+
+        typedef std::map<std::string, std::vector<indicator> >::const_iterator
+            iterator;
+        iterator const it = wrapper.use_indicators_v.find(name);
+        is_unique = it == wrapper.use_indicators_v.end();
+    }
+
+    if (is_unique)
+    {
+        wrapper.is_ok = true;
+        return false;
+    }
+    else
     {
         wrapper.is_ok = false;
         wrapper.error_message = "Name of use element should be unique.";
         return true;
     }
-    else
-    {
-        wrapper.is_ok = true;
-        return false;
-    }
 }
 
 // helper for checking if the use element with the given name exists
 bool name_exists_check_failed(statement_wrapper & wrapper,
-    char const * name, data_type expected_type, char const * type_name)
+    char const * name, data_type expected_type,
+    statement_wrapper::kind k, char const * type_name)
 {
     bool name_exists;
-    switch (expected_type)
+    if (k == statement_wrapper::single)
     {
-    case dt_string:
+        switch (expected_type)
         {
-            typedef std::map<std::string, std::string>::const_iterator iterator;
-            iterator const it = wrapper.use_strings.find(name);
-            name_exists = (it != wrapper.use_strings.end());
+        case dt_string:
+            {
+                typedef std::map<std::string, std::string>::const_iterator
+                    iterator;
+                iterator const it = wrapper.use_strings.find(name);
+                name_exists = (it != wrapper.use_strings.end());
+            }
+            break;
+        case dt_integer:
+            {
+                typedef std::map<std::string, int>::const_iterator iterator;
+                iterator const it = wrapper.use_ints.find(name);
+                name_exists = (it != wrapper.use_ints.end());
+            }
+            break;
+        case dt_long_long:
+            {
+                typedef std::map<std::string, long long>::const_iterator
+                    iterator;
+                iterator const it = wrapper.use_longlongs.find(name);
+                name_exists = (it != wrapper.use_longlongs.end());
+            }
+            break;
+        case dt_double:
+            {
+                typedef std::map<std::string, double>::const_iterator iterator;
+                iterator const it = wrapper.use_doubles.find(name);
+                name_exists = (it != wrapper.use_doubles.end());
+            }
+            break;
+        case dt_date:
+            {
+                typedef std::map<std::string, std::tm>::const_iterator iterator;
+                iterator const it = wrapper.use_dates.find(name);
+                name_exists = (it != wrapper.use_dates.end());
+            }
+            break;
+        default:
+            assert(false);
         }
-        break;
-    case dt_integer:
+    }
+    else
+    {
+        // vector version
+
+        switch (expected_type)
         {
-            typedef std::map<std::string, int>::const_iterator iterator;
-            iterator const it = wrapper.use_ints.find(name);
-            name_exists = (it != wrapper.use_ints.end());
+        case dt_string:
+            {
+                typedef std::map<std::string,
+                    std::vector<std::string> >::const_iterator iterator;
+                iterator const it = wrapper.use_strings_v.find(name);
+                name_exists = (it != wrapper.use_strings_v.end());
+            }
+            break;
+        case dt_integer:
+            {
+                typedef std::map<std::string,
+                    std::vector<int> >::const_iterator iterator;
+                iterator const it = wrapper.use_ints_v.find(name);
+                name_exists = (it != wrapper.use_ints_v.end());
+            }
+            break;
+        case dt_long_long:
+            {
+                typedef std::map<std::string,
+                    std::vector<long long> >::const_iterator iterator;
+                iterator const it = wrapper.use_longlongs_v.find(name);
+                name_exists = (it != wrapper.use_longlongs_v.end());
+            }
+            break;
+        case dt_double:
+            {
+                typedef std::map<std::string,
+                    std::vector<double> >::const_iterator iterator;
+                iterator const it = wrapper.use_doubles_v.find(name);
+                name_exists = (it != wrapper.use_doubles_v.end());
+            }
+            break;
+        case dt_date:
+            {
+                typedef std::map<std::string,
+                        std::vector<std::tm> >::const_iterator iterator;
+                iterator const it = wrapper.use_dates_v.find(name);
+                name_exists = (it != wrapper.use_dates_v.end());
+            }
+            break;
+        default:
+            assert(false);
         }
-        break;
-    case dt_long_long:
-        {
-            typedef std::map<std::string, long long>::const_iterator iterator;
-            iterator const it = wrapper.use_longlongs.find(name);
-            name_exists = (it != wrapper.use_longlongs.end());
-        }
-        break;
-    case dt_double:
-        {
-            typedef std::map<std::string, double>::const_iterator iterator;
-            iterator const it = wrapper.use_doubles.find(name);
-            name_exists = (it != wrapper.use_doubles.end());
-        }
-        break;
-    case dt_date:
-        {
-            typedef std::map<std::string, std::tm>::const_iterator iterator;
-            iterator const it = wrapper.use_dates.find(name);
-            name_exists = (it != wrapper.use_dates.end());
-        }
-        break;
-    default:
-        assert(false);
     }
 
     if (name_exists)
@@ -375,6 +454,20 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
     }
 }
 
+// helper function for resizing all vectors<T> in the map
+template <typename T>
+void resize_in_map(std::map<std::string, std::vector<T> > & m, int new_size)
+{
+    typedef typename std::map<std::string, std::vector<T> >::iterator iterator;
+    iterator it = m.begin();
+    iterator const end = m.end();
+    for ( ; it != end; ++it)
+    {
+        std::vector<T> & v = it->second;
+        v.resize(new_size);
+    }
+}
+
 // helper for formatting date values
 char const * format_date(statement_wrapper & wrapper, std::tm const & d)
 {
@@ -383,6 +476,37 @@ char const * format_date(statement_wrapper & wrapper, std::tm const & d)
         d.tm_hour, d.tm_min, d.tm_sec);
 
     return wrapper.date_formatted;
+}
+
+bool string_to_date(char const * val, std::tm & /* out */ dt,
+    statement_wrapper & wrapper)
+{
+    // format is: "YYYY MM DD hh mm ss"
+    int year;
+    int month;
+    int day;
+    int hour;
+    int minute;
+    int second;
+    int const converted = sscanf(val, "%d %d %d %d %d %d",
+        &year, &month, &day, &hour, &minute, &second);
+    if (converted != 6)
+    {
+        wrapper.is_ok = false;
+        wrapper.error_message = "Cannot convert date.";
+        return false;
+    }
+
+    wrapper.is_ok = true;
+
+    dt.tm_year = year - 1900;
+    dt.tm_mon = month - 1;
+    dt.tm_mday = day;
+    dt.tm_hour = hour;
+    dt.tm_min = minute;
+    dt.tm_sec = second;
+
+return true;
 }
 
 } // namespace unnamed
@@ -394,7 +518,6 @@ SOCI_DECL statement_handle soci_create_statement(session_handle s)
     try
     {
         statement_wrapper * statement_w = new statement_wrapper(session_w->sql);
-        statement_w->is_ok = true;
         return statement_w;
     }
     catch (std::exception const & e)
@@ -864,10 +987,13 @@ SOCI_DECL void soci_use_string(statement_handle st, char const * name)
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (cannot_add_elements(*wrapper, statement_wrapper::single, false) ||
-        name_unique_check_failed(*wrapper, name))
+        name_unique_check_failed(*wrapper, statement_wrapper::single, name))
     {
         return;
     }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::single;
 
     wrapper->use_indicators[name] = i_ok; // create new entry
     wrapper->use_strings[name]; // create new entry
@@ -878,10 +1004,13 @@ SOCI_DECL void soci_use_int(statement_handle st, char const * name)
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (cannot_add_elements(*wrapper, statement_wrapper::single, false) ||
-        name_unique_check_failed(*wrapper, name))
+        name_unique_check_failed(*wrapper, statement_wrapper::single, name))
     {
         return;
     }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::single;
 
     wrapper->use_indicators[name] = i_ok; // create new entry
     wrapper->use_ints[name]; // create new entry
@@ -892,10 +1021,13 @@ SOCI_DECL void soci_use_long_long(statement_handle st, char const * name)
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (cannot_add_elements(*wrapper, statement_wrapper::single, false) ||
-        name_unique_check_failed(*wrapper, name))
+        name_unique_check_failed(*wrapper, statement_wrapper::single, name))
     {
         return;
     }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::single;
 
     wrapper->use_indicators[name] = i_ok; // create new entry
     wrapper->use_longlongs[name]; // create new entry
@@ -906,10 +1038,13 @@ SOCI_DECL void soci_use_double(statement_handle st, char const * name)
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (cannot_add_elements(*wrapper, statement_wrapper::single, false) ||
-        name_unique_check_failed(*wrapper, name))
+        name_unique_check_failed(*wrapper, statement_wrapper::single, name))
     {
         return;
     }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::single;
 
     wrapper->use_indicators[name] = i_ok; // create new entry
     wrapper->use_doubles[name]; // create new entry
@@ -920,13 +1055,101 @@ SOCI_DECL void soci_use_date(statement_handle st, char const * name)
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (cannot_add_elements(*wrapper, statement_wrapper::single, false) ||
-        name_unique_check_failed(*wrapper, name))
+        name_unique_check_failed(*wrapper, statement_wrapper::single, name))
     {
         return;
     }
 
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::single;
+
     wrapper->use_indicators[name] = i_ok; // create new entry
     wrapper->use_dates[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_string_v(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::bulk, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::bulk;
+
+    wrapper->use_indicators_v[name]; // create new entry
+    wrapper->use_strings_v[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_int_v(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::bulk, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::bulk;
+
+    wrapper->use_indicators_v[name]; // create new entry
+    wrapper->use_ints_v[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_long_long_v(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::bulk, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::bulk;
+
+    wrapper->use_indicators_v[name]; // create new entry
+    wrapper->use_longlongs_v[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_double_v(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::bulk, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::bulk;
+
+    wrapper->use_indicators_v[name]; // create new entry
+    wrapper->use_doubles_v[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_date_v(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::bulk, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::bulk;
+
+    wrapper->use_indicators_v[name]; // create new entry
+    wrapper->use_dates_v[name]; // create new entry
 }
 
 SOCI_DECL void soci_set_use_state(statement_handle st, char const * name, bool state)
@@ -950,7 +1173,8 @@ SOCI_DECL void soci_set_use_string(statement_handle st, char const * name, char 
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (name_exists_check_failed(*wrapper, name, dt_string, "string"))
+    if (name_exists_check_failed(*wrapper,
+            name, dt_string, statement_wrapper::single, "string"))
     {
         return;
     }
@@ -963,7 +1187,8 @@ SOCI_DECL void soci_set_use_int(statement_handle st, char const * name, int val)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (name_exists_check_failed(*wrapper, name, dt_integer, "int"))
+    if (name_exists_check_failed(*wrapper,
+            name, dt_integer, statement_wrapper::single, "int"))
     {
         return;
     }
@@ -976,7 +1201,8 @@ SOCI_DECL void soci_set_use_long_long(statement_handle st, char const * name, lo
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (name_exists_check_failed(*wrapper, name, dt_long_long, "long long"))
+    if (name_exists_check_failed(*wrapper,
+            name, dt_long_long, statement_wrapper::single, "long long"))
     {
         return;
     }
@@ -989,7 +1215,8 @@ SOCI_DECL void soci_set_use_double(statement_handle st, char const * name, doubl
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (name_exists_check_failed(*wrapper, name, dt_double, "double"))
+    if (name_exists_check_failed(*wrapper,
+            name, dt_double, statement_wrapper::single, "double"))
     {
         return;
     }
@@ -1002,39 +1229,203 @@ SOCI_DECL void soci_set_use_date(statement_handle st, char const * name, char co
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (name_exists_check_failed(*wrapper, name, dt_integer, "int"))
+    if (name_exists_check_failed(*wrapper,
+            name, dt_date, statement_wrapper::single, "date"))
     {
         return;
     }
 
-    // format is: "YYYY MM DD hh mm ss"
-    int year;
-    int month;
-    int day;
-    int hour;
-    int minute;
-    int second;
-    int const converted = sscanf(val, "%d %d %d %d %d %d",
-        &year, &month, &day, &hour, &minute, &second);
-    if (converted != 6)
+    std::tm dt;
+    bool const converted = string_to_date(val, dt, *wrapper);
+    if (converted == false)
     {
-        wrapper->is_ok = false;
-        wrapper->error_message = "Cannot convert date.";
         return;
     }
-
-    wrapper->is_ok = true;
-
-    std::tm d;
-    d.tm_year = year - 1900;
-    d.tm_mon = month - 1;
-    d.tm_mday = day;
-    d.tm_hour = hour;
-    d.tm_min = minute;
-    d.tm_sec = second;
 
     wrapper->use_indicators[name] = i_ok;
-    wrapper->use_dates[name] = d;
+    wrapper->use_dates[name] = dt;
+}
+
+SOCI_DECL int soci_use_get_size_v(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (wrapper->use_kind != statement_wrapper::bulk)
+    {
+        wrapper->is_ok = false;
+        wrapper->error_message = "No vector use elements.";
+        return -1;
+    }
+
+    typedef std::map<std::string,
+        std::vector<indicator> >::const_iterator iterator;
+    iterator const any_element = wrapper->use_indicators_v.begin();
+    assert(any_element != wrapper->use_indicators_v.end());
+
+    return static_cast<int>(any_element->second.size());
+}
+
+SOCI_DECL void soci_use_resize_v(statement_handle st, int new_size)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (new_size <= 0)
+    {
+        wrapper->is_ok = false;
+        wrapper->error_message = "Invalid size.";
+        return;
+    }
+
+    if (wrapper->use_kind != statement_wrapper::bulk)
+    {
+        wrapper->is_ok = false;
+        wrapper->error_message = "No vector use elements.";
+        return;
+    }
+
+    resize_in_map(wrapper->use_indicators_v, new_size);
+    resize_in_map(wrapper->use_strings_v, new_size);
+    resize_in_map(wrapper->use_ints_v, new_size);
+    resize_in_map(wrapper->use_longlongs_v, new_size);
+    resize_in_map(wrapper->use_doubles_v, new_size);
+    resize_in_map(wrapper->use_dates_v, new_size);
+
+    wrapper->is_ok = true;
+}
+
+SOCI_DECL void soci_set_use_state_v(statement_handle st,
+    char const * name, int index, bool state)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    typedef std::map<std::string, std::vector<indicator> >::iterator iterator;
+    iterator const it = wrapper->use_indicators_v.find(name);
+    if (it == wrapper->use_indicators_v.end())
+    {
+        wrapper->is_ok = false;
+        wrapper->error_message = "Invalid name.";
+        return;
+    }
+
+    std::vector<indicator> & v = it->second;
+    if (index_check_failed(v, *wrapper, index))
+    {
+        return;
+    }
+
+    v[index] = (state ? i_ok : i_null);
+}
+
+SOCI_DECL void soci_set_use_string_v(statement_handle st,
+    char const * name, int index, char const * val)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, dt_string, statement_wrapper::bulk, "vector string"))
+    {
+        return;
+    }
+
+    std::vector<std::string> & v = wrapper->use_strings_v[name];
+    if (index_check_failed(v, *wrapper, index))
+    {
+        return;
+    }
+
+    wrapper->use_indicators_v[name][index] = i_ok;
+    v[index] = val;
+}
+
+SOCI_DECL void soci_set_use_int_v(statement_handle st,
+    char const * name, int index, int val)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, dt_integer, statement_wrapper::bulk, "vector int"))
+    {
+        return;
+    }
+
+    std::vector<int> & v = wrapper->use_ints_v[name];
+    if (index_check_failed(v, *wrapper, index))
+    {
+        return;
+    }
+
+    wrapper->use_indicators_v[name][index] = i_ok;
+    v[index] = val;
+}
+
+SOCI_DECL void soci_set_use_long_long_v(statement_handle st,
+    char const * name, int index, long long val)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, dt_long_long, statement_wrapper::bulk, "vector long long"))
+    {
+        return;
+    }
+
+    std::vector<long long> & v = wrapper->use_longlongs_v[name];
+    if (index_check_failed(v, *wrapper, index))
+    {
+        return;
+    }
+
+    wrapper->use_indicators_v[name][index] = i_ok;
+    v[index] = val;
+}
+
+SOCI_DECL void soci_set_use_double_v(statement_handle st,
+    char const * name, int index, double val)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, dt_double, statement_wrapper::bulk, "vector double"))
+    {
+        return;
+    }
+
+    std::vector<double> & v = wrapper->use_doubles_v[name];
+    if (index_check_failed(v, *wrapper, index))
+    {
+        return;
+    }
+
+    wrapper->use_indicators_v[name][index] = i_ok;
+    v[index] = val;
+}
+
+SOCI_DECL void soci_set_use_date_v(statement_handle st,
+    char const * name, int index, char const * val)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, dt_date, statement_wrapper::bulk, "vector date"))
+    {
+        return;
+    }
+
+    std::vector<std::tm> & v = wrapper->use_dates_v[name];
+    if (index_check_failed(v, *wrapper, index))
+    {
+        return;
+    }
+
+    std::tm dt;
+    bool const converted = string_to_date(val, dt, *wrapper);
+    if (converted == false)
+    {
+        return;
+    }
+
+    wrapper->use_indicators_v[name][index] = i_ok;
+    v[index] = dt;
 }
 
 SOCI_DECL bool soci_get_use_state(statement_handle st, char const * name)
@@ -1058,7 +1449,8 @@ SOCI_DECL char const * soci_get_use_string(statement_handle st, char const * nam
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (name_exists_check_failed(*wrapper, name, dt_string, "string"))
+    if (name_exists_check_failed(*wrapper,
+            name, dt_string, statement_wrapper::bulk, "string"))
     {
         return "";
     }
@@ -1070,7 +1462,8 @@ SOCI_DECL int soci_get_use_int(statement_handle st, char const * name)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (name_exists_check_failed(*wrapper, name, dt_integer, "int"))
+    if (name_exists_check_failed(*wrapper,
+            name, dt_integer, statement_wrapper::bulk, "int"))
     {
         return 0;
     }
@@ -1082,7 +1475,8 @@ SOCI_DECL long long soci_get_use_long_long(statement_handle st, char const * nam
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (name_exists_check_failed(*wrapper, name, dt_long_long, "long long"))
+    if (name_exists_check_failed(*wrapper,
+            name, dt_long_long, statement_wrapper::bulk, "long long"))
     {
         return 0LL;
     }
@@ -1094,7 +1488,8 @@ SOCI_DECL double soci_get_use_double(statement_handle st, char const * name)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (name_exists_check_failed(*wrapper, name, dt_double, "double"))
+    if (name_exists_check_failed(*wrapper,
+            name, dt_double, statement_wrapper::bulk, "double"))
     {
         return 0.0;
     }
@@ -1106,7 +1501,8 @@ SOCI_DECL char const * soci_get_use_date(statement_handle st, char const * name)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    if (name_exists_check_failed(*wrapper, name, dt_integer, "int"))
+    if (name_exists_check_failed(*wrapper,
+            name, dt_date, statement_wrapper::bulk, "date"))
     {
         return "";
     }
@@ -1131,9 +1527,9 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
         // bind all into elements
 
         size_t const into_elements = wrapper->into_types.size();
-        for (size_t i = 0; i != into_elements; ++i)
+        if (wrapper->into_kind == statement_wrapper::single)
         {
-            if (wrapper->into_kind == statement_wrapper::single)
+            for (size_t i = 0; i != into_elements; ++i)
             {
                 switch (wrapper->into_types[i])
                 {
@@ -1161,10 +1557,13 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
                     assert(false);
                 }
             }
-            else
-            {
-                // vector elements
+        }
+        else
+        {
+            // vector elements
 
+            for (size_t i = 0; i != into_elements; ++i)
+            {
                 switch (wrapper->into_types[i])
                 {
                 case dt_string:
@@ -1201,10 +1600,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             iterator const uend = wrapper->use_strings.end();
             for ( ; uit != uend; ++uit)
             {            
-                std::string const & useName = uit->first;
-                std::string & useString = uit->second;
-                indicator & useInd = wrapper->use_indicators[useName];
-                wrapper->st.exchange(use(useString, useInd, useName));
+                std::string const & use_name = uit->first;
+                std::string & use_string = uit->second;
+                indicator & use_ind = wrapper->use_indicators[use_name];
+                wrapper->st.exchange(use(use_string, use_ind, use_name));
             }
         }
         {
@@ -1214,10 +1613,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             iterator const uend = wrapper->use_ints.end();
             for ( ; uit != uend; ++uit)
             {            
-                std::string const & useName = uit->first;
-                int & useInt = uit->second;
-                indicator & useInd = wrapper->use_indicators[useName];
-                wrapper->st.exchange(use(useInt, useInd, useName));
+                std::string const & use_name = uit->first;
+                int & use_int = uit->second;
+                indicator & use_ind = wrapper->use_indicators[use_name];
+                wrapper->st.exchange(use(use_int, use_ind, use_name));
             }
         }
         {
@@ -1227,10 +1626,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             iterator const uend = wrapper->use_longlongs.end();
             for ( ; uit != uend; ++uit)
             {            
-                std::string const & useName = uit->first;
-                long long & useLongLong = uit->second;
-                indicator & useInd = wrapper->use_indicators[useName];
-                wrapper->st.exchange(use(useLongLong, useInd, useName));
+                std::string const & use_name = uit->first;
+                long long & use_longlong = uit->second;
+                indicator & use_ind = wrapper->use_indicators[use_name];
+                wrapper->st.exchange(use(use_longlong, use_ind, use_name));
             }
         }
         {
@@ -1240,10 +1639,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             iterator const uend = wrapper->use_doubles.end();
             for ( ; uit != uend; ++uit)
             {            
-                std::string const & useName = uit->first;
-                double & useDouble = uit->second;
-                indicator & useInd = wrapper->use_indicators[useName];
-                wrapper->st.exchange(use(useDouble, useInd, useName));
+                std::string const & use_name = uit->first;
+                double & use_double = uit->second;
+                indicator & use_ind = wrapper->use_indicators[use_name];
+                wrapper->st.exchange(use(use_double, use_ind, use_name));
             }
         }
         {
@@ -1253,10 +1652,87 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             iterator const uend = wrapper->use_dates.end();
             for ( ; uit != uend; ++uit)
             {            
-                std::string const & useName = uit->first;
-                std::tm & useDate = uit->second;
-                indicator & useInd = wrapper->use_indicators[useName];
-                wrapper->st.exchange(use(useDate, useInd, useName));
+                std::string const & use_name = uit->first;
+                std::tm & use_date = uit->second;
+                indicator & use_ind = wrapper->use_indicators[use_name];
+                wrapper->st.exchange(use(use_date, use_ind, use_name));
+            }
+        }
+
+        // bind all use vecctor elements
+        {
+            // strings
+            typedef std::map<std::string,
+                std::vector<std::string> >::iterator iterator;
+            iterator uit = wrapper->use_strings_v.begin();
+            iterator const uend = wrapper->use_strings_v.end();
+            for ( ; uit != uend; ++uit)
+            {            
+                std::string const & use_name = uit->first;
+                std::vector<std::string> & use_string = uit->second;
+                std::vector<indicator> & use_ind =
+                    wrapper->use_indicators_v[use_name];
+                wrapper->st.exchange(use(use_string, use_ind, use_name));
+            }
+        }
+        {
+            // ints
+            typedef std::map<std::string,
+                std::vector<int> >::iterator iterator;
+            iterator uit = wrapper->use_ints_v.begin();
+            iterator const uend = wrapper->use_ints_v.end();
+            for ( ; uit != uend; ++uit)
+            {            
+                std::string const & use_name = uit->first;
+                std::vector<int> & use_int = uit->second;
+                std::vector<indicator> & use_ind =
+                    wrapper->use_indicators_v[use_name];
+                wrapper->st.exchange(use(use_int, use_ind, use_name));
+            }
+        }
+        {
+            // longlongs
+            typedef std::map<std::string,
+                std::vector<long long> >::iterator iterator;
+            iterator uit = wrapper->use_longlongs_v.begin();
+            iterator const uend = wrapper->use_longlongs_v.end();
+            for ( ; uit != uend; ++uit)
+            {            
+                std::string const & use_name = uit->first;
+                std::vector<long long> & use_longlong = uit->second;
+                std::vector<indicator> & use_ind =
+                    wrapper->use_indicators_v[use_name];
+                wrapper->st.exchange(use(use_longlong, use_ind, use_name));
+            }
+        }
+        {
+            // doubles
+            typedef std::map<std::string,
+                std::vector<double> >::iterator iterator;
+            iterator uit = wrapper->use_doubles_v.begin();
+            iterator const uend = wrapper->use_doubles_v.end();
+            for ( ; uit != uend; ++uit)
+            {            
+                std::string const & use_name = uit->first;
+                std::vector<double> & use_double = uit->second;
+                std::vector<indicator> & use_ind =
+                    wrapper->use_indicators_v[use_name];
+                wrapper->st.exchange(use(use_double, use_ind, use_name));
+            }
+        }
+        {
+            // dates
+            typedef std::map<std::string,
+                std::vector<std::tm> >::iterator iterator;
+            iterator uit = wrapper->use_dates_v.begin();
+            iterator const uend = wrapper->use_dates_v.end();
+            for ( ; uit != uend; ++uit)
+            {            
+                std::string const & use_name = uit->first;
+                std::vector<std::tm> & use_date = uit->second;
+                std::vector<indicator> & use_ind =
+                    wrapper->use_indicators_v[use_name];
+                wrapper->st.exchange(use(use_date, use_ind, use_name));
             }
         }
 
