@@ -238,8 +238,7 @@ void oracle_standard_into_type_backend::post_fetch(
         {
             if (indOCIHolder_ == 0)
             {
-                *ind = i_ok
-;
+                *ind = i_ok;
             }
             else if (indOCIHolder_ == -1)
             {

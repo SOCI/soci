@@ -97,12 +97,18 @@ SOCI_DECL int  soci_use_get_size_v(statement_handle st);
 SOCI_DECL void soci_use_resize_v  (statement_handle st, int new_size);
 
 // named write of use vectors
-SOCI_DECL void soci_set_use_state_v    (statement_handle st, char const * name, int index, bool state);
-SOCI_DECL void soci_set_use_string_v   (statement_handle st, char const * name, int index, char const * val);
-SOCI_DECL void soci_set_use_int_v      (statement_handle st, char const * name, int index, int val);
-SOCI_DECL void soci_set_use_long_long_v(statement_handle st, char const * name, int index, long long val);
-SOCI_DECL void soci_set_use_double_v   (statement_handle st, char const * name, int index, double val);
-SOCI_DECL void soci_set_use_date_v     (statement_handle st, char const * name, int index, char const * val);
+SOCI_DECL void soci_set_use_state_v(statement_handle st,
+    char const * name, int index, bool state);
+SOCI_DECL void soci_set_use_string_v(statement_handle st,
+    char const * name, int index, char const * val);
+SOCI_DECL void soci_set_use_int_v(statement_handle st,
+    char const * name, int index, int val);
+SOCI_DECL void soci_set_use_long_long_v(statement_handle st,
+    char const * name, int index, long long val);
+SOCI_DECL void soci_set_use_double_v(statement_handle st,
+    char const * name, int index, double val);
+SOCI_DECL void soci_set_use_date_v(statement_handle st,
+    char const * name, int index, char const * val);
 
 
 // named read of use elements (for modifiable use values)

@@ -30,7 +30,7 @@ void row::add_properties(column_properties const &cp)
         // rewrite the column name in the column_properties object
         // as well to retain consistent views
 
-	columns_[columns_.size() - 1].set_name(columnName);
+        columns_[columns_.size() - 1].set_name(columnName);
     }
     else
     {

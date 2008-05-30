@@ -1599,7 +1599,7 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             iterator uit = wrapper->use_strings.begin();
             iterator const uend = wrapper->use_strings.end();
             for ( ; uit != uend; ++uit)
-            {            
+            {
                 std::string const & use_name = uit->first;
                 std::string & use_string = uit->second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
@@ -1612,7 +1612,7 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             iterator uit = wrapper->use_ints.begin();
             iterator const uend = wrapper->use_ints.end();
             for ( ; uit != uend; ++uit)
-            {            
+            {
                 std::string const & use_name = uit->first;
                 int & use_int = uit->second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
@@ -1625,7 +1625,7 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             iterator uit = wrapper->use_longlongs.begin();
             iterator const uend = wrapper->use_longlongs.end();
             for ( ; uit != uend; ++uit)
-            {            
+            {
                 std::string const & use_name = uit->first;
                 long long & use_longlong = uit->second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
@@ -1638,7 +1638,7 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             iterator uit = wrapper->use_doubles.begin();
             iterator const uend = wrapper->use_doubles.end();
             for ( ; uit != uend; ++uit)
-            {            
+            {
                 std::string const & use_name = uit->first;
                 double & use_double = uit->second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
@@ -1651,7 +1651,7 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             iterator uit = wrapper->use_dates.begin();
             iterator const uend = wrapper->use_dates.end();
             for ( ; uit != uend; ++uit)
-            {            
+            {
                 std::string const & use_name = uit->first;
                 std::tm & use_date = uit->second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
@@ -1667,7 +1667,7 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             iterator uit = wrapper->use_strings_v.begin();
             iterator const uend = wrapper->use_strings_v.end();
             for ( ; uit != uend; ++uit)
-            {            
+            {
                 std::string const & use_name = uit->first;
                 std::vector<std::string> & use_string = uit->second;
                 std::vector<indicator> & use_ind =
@@ -1682,7 +1682,7 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             iterator uit = wrapper->use_ints_v.begin();
             iterator const uend = wrapper->use_ints_v.end();
             for ( ; uit != uend; ++uit)
-            {            
+            {
                 std::string const & use_name = uit->first;
                 std::vector<int> & use_int = uit->second;
                 std::vector<indicator> & use_ind =
@@ -1697,7 +1697,7 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             iterator uit = wrapper->use_longlongs_v.begin();
             iterator const uend = wrapper->use_longlongs_v.end();
             for ( ; uit != uend; ++uit)
-            {            
+            {
                 std::string const & use_name = uit->first;
                 std::vector<long long> & use_longlong = uit->second;
                 std::vector<indicator> & use_ind =
@@ -1712,7 +1712,7 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             iterator uit = wrapper->use_doubles_v.begin();
             iterator const uend = wrapper->use_doubles_v.end();
             for ( ; uit != uend; ++uit)
-            {            
+            {
                 std::string const & use_name = uit->first;
                 std::vector<double> & use_double = uit->second;
                 std::vector<indicator> & use_ind =
@@ -1727,7 +1727,7 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             iterator uit = wrapper->use_dates_v.begin();
             iterator const uend = wrapper->use_dates_v.end();
             for ( ; uit != uend; ++uit)
-            {            
+            {
                 std::string const & use_name = uit->first;
                 std::vector<std::tm> & use_date = uit->second;
                 std::vector<indicator> & use_ind =
