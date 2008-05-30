@@ -9,6 +9,7 @@
 #define SOCI_POSTGRESQL_COMMON_H_INCLUDED
 
 #include "soci-postgresql.h"
+#include <limits>
 
 namespace soci
 {
@@ -19,19 +20,41 @@ namespace details
 namespace postgresql
 {
 
-// helper function for integer conversions
+// helper function for parsing integers
 template <typename T>
-void check_integer_conversion(char const * buf, char * end, T & val)
+T string_to_integer(char const * buf)
 {
-    if (end == buf)
+    long long t;
+    int n;
+    int const converted = sscanf(buf, "%lld%n", &t, &n);
+    if (converted == 1 && static_cast<std::size_t>(n) == strlen(buf))
     {
-        if (std::tolower(*buf) == 't')
+        // successfully converted to long long
+        // and no other characters were found in the buffer
+
+        if (t <= std::numeric_limits<T>::max() &&
+            t >= std::numeric_limits<T>::min())
         {
-            val = static_cast<T>(1);
+            return static_cast<T>(t);
         }
-        else if (std::tolower(*buf) == 'f')
+        else
         {
-            val = static_cast<T>(0);
+            // value of out target range
+            throw soci_error("Cannot convert data.");
+        }
+    }
+    else
+    {
+        // try additional conversion from boolean
+        // (PostgreSQL gives 't' or 'f' for boolean results)
+
+        if (buf[0] == 't' && buf[1] == '\0')
+        {
+            return static_cast<T>(1);
+        }
+        else if (buf[0] == 'f' && buf[1] == '\0')
+        {
+            return static_cast<T>(0);
         }
         else
         {
@@ -39,6 +62,9 @@ void check_integer_conversion(char const * buf, char * end, T & val)
         }
     }
 }
+
+// helper function for parsing doubles
+double string_to_double(char const * buf);
 
 // helper function for parsing datetime values
 void parse_std_tm(char const * buf, std::tm & t);

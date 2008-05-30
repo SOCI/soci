@@ -116,49 +116,31 @@ void postgresql_standard_into_type_backend::post_fetch(
         case x_short:
             {
                 short * dest = static_cast<short *>(data_);
-                char * end;
-                long val = strtol(buf, &end, 10);
-                check_integer_conversion(buf, end, val);
-                *dest = static_cast<short>(val);
+                *dest = string_to_integer<short>(buf);
             }
             break;
         case x_integer:
             {
                 int * dest = static_cast<int *>(data_);
-                char * end;
-                long val = strtol(buf, &end, 10);
-                check_integer_conversion(buf, end, val);
-                *dest = static_cast<int>(val);
+                *dest = string_to_integer<int>(buf);
             }
             break;
         case x_unsigned_long:
             {
                 unsigned long * dest = static_cast<unsigned long *>(data_);
-                char * end;
-                long long val = strtoll(buf, &end, 10);
-                check_integer_conversion(buf, end, val);
-                *dest = static_cast<unsigned long>(val);
+                *dest = string_to_integer<unsigned long>(buf);
             }
             break;
         case x_long_long:
             {
                 long long * dest = static_cast<long long *>(data_);
-                char * end;
-                long long val = strtoll(buf, &end, 10);
-                check_integer_conversion(buf, end, val);
-                *dest = val;
+                *dest = string_to_integer<long long>(buf);
             }
             break;
         case x_double:
             {
                 double * dest = static_cast<double *>(data_);
-                char * end;
-                double val = strtod(buf, &end);
-                if (end == buf)
-                {
-                    throw soci_error("Cannot convert data.");
-                }
-                *dest = val;
+                *dest = string_to_double(buf);
             }
             break;
         case x_stdtm:

@@ -107,44 +107,31 @@ void postgresql_vector_into_type_backend::post_fetch(bool gotData, indicator * i
                 break;
             case x_short:
                 {
-                    char * end;
-                    long val = strtol(buf, &end, 10);
-                    check_integer_conversion(buf, end, val);
-                    set_invector_(data_, i, static_cast<short>(val));
+                    short const val = string_to_integer<short>(buf);
+                    set_invector_(data_, i, val);
                 }
                 break;
             case x_integer:
                 {
-                    char * end;
-                    long val = strtol(buf, &end, 10);
-                    check_integer_conversion(buf, end, val);
-                    set_invector_(data_, i, static_cast<int>(val));
+                    int const val = string_to_integer<int>(buf);
+                    set_invector_(data_, i, val);
                 }
                 break;
             case x_unsigned_long:
                 {
-                    char * end;
-                    long long val = strtoll(buf, &end, 10);
-                    check_integer_conversion(buf, end, val);
-                    set_invector_(data_, i, static_cast<unsigned long>(val));
+                    unsigned long const val = string_to_integer<unsigned long>(buf);
+                    set_invector_(data_, i, val);
                 }
                 break;
             case x_long_long:
                 {
-                    char * end;
-                    long long val = strtoll(buf, &end, 10);
-                    check_integer_conversion(buf, end, val);
+                    long long const val = string_to_integer<long long>(buf);
                     set_invector_(data_, i, val);
                 }
                 break;
             case x_double:
                 {
-                    char * end;
-                    double val = strtod(buf, &end);
-                    if (end == buf)
-                    {
-                        throw soci_error("Cannot convert data.");
-                    }
+                    double const val = string_to_double(buf);
                     set_invector_(data_, i, val);
                 }
                 break;
