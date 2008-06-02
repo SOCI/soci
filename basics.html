@@ -37,7 +37,7 @@ session sql(postgresql, "dbname=mydb");
 that encapsulates the connection.</p>
 
 <p>This <code>session</code> constructor either connects successfully, or
-throws the exception.</p>
+throws an exception.</p>
 
 <p>Another constructor allows to name backends at run-time and supports
 the dynamically loadable backends, which have to be compiled as shared libraries.
@@ -52,7 +52,7 @@ session sql("postgresql://dbname=mydb");
 
 <div class="note">
 <p><span class="note">Environment configuration:</span></p>
-<p>The <code>SOCI_BACKENDS_PATH</code> environment variable defines the set of paths where the shared libraries will be searched for. There can be many paths, separated by colons.</p>
+<p>The <code>SOCI_BACKENDS_PATH</code> environment variable defines the set of paths where the shared libraries will be searched for. There can be many paths, separated by colons, and they are used from left to right until the library with the appropriate name is found.</p>
 </div>
 
 <p>An alternative way to set up the session is to create it in the disconnected state and connect later:</p>
