@@ -23,7 +23,7 @@ int main()
     {
         // regular code
     }
-    catch (exception const &amp;e)
+    catch (exception const &amp; e)
     {
         cerr &lt;&lt; "Bang! " &lt;&lt; e.what() &lt;&lt; endl;
     }
@@ -34,7 +34,7 @@ int main()
 <p><span class="note">Portability note:</span></p>
 <p>The Oracle backend can also throw the instances of the <code>oracle_soci_error</code>,
 which is publicly derived from <code>soci_error</code> and has an
-additional public <code>errNum_</code>
+additional public <code>err_num_</code>
 member containing the Oracle error code:</p>
 
 <pre class="example">
@@ -44,12 +44,12 @@ int main()
     {
         // regular code
     }
-    catch (OracleSOCIError const &amp;e)
+    catch (oracle_soci_error const &amp; e)
     {
-        cerr &lt;&lt; "Oracle error: " &lt;&lt; e.errNum_
+        cerr &lt;&lt; "Oracle error: " &lt;&lt; e.err_num_
             &lt;&lt; " " &lt;&lt; e.what() &lt;&lt; endl;
     }
-    catch (exception const &amp;e)
+    catch (exception const &amp; e)
     {
         cerr &lt;&lt; "Some other error: " &lt;&lt; e.what() &lt;&lt; endl;
     }
@@ -61,7 +61,7 @@ int main()
 <p><span class="note">Portability note:</span></p>
 <p>The MySQL backend can throw instances of the <code>mysql_soci_error</code>,
 which is publicly derived from <code>soci_error</code> and has an
-additional public <code>errNum_</code>
+additional public <code>err_num_</code>
 member containing the MySQL error code (as returned by
 <code>mysql_errno()</code>):</p>
 
@@ -72,12 +72,12 @@ int main()
     {
         // regular code
     }
-    catch (mysql_soci_error const &amp;e)
+    catch (mysql_soci_error const &amp; e)
     {
-        cerr &lt;&lt; "MySQL error: " &lt;&lt; e.errNum_
+        cerr &lt;&lt; "MySQL error: " &lt;&lt; e.err_num_
             &lt;&lt; " " &lt;&lt; e.what() &lt;&lt; endl;
     }
-    catch (exception const &amp;e)
+    catch (exception const &amp; e)
     {
         cerr &lt;&lt; "Some other error: " &lt;&lt; e.what() &lt;&lt; endl;
     }
@@ -96,6 +96,6 @@ int main()
   </tr>
 </table>
 
-<p class="copyright">Copyright &copy; 2004-2006 Maciej Sobczak, Stephen Hutton</p>
+<p class="copyright">Copyright &copy; 2004-2008 Maciej Sobczak, Stephen Hutton</p>
 </body>
 </html>

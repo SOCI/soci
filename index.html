@@ -17,6 +17,9 @@
 <a href="basics.html">Connections and simple queries</a><br />
 <a href="exchange.html">Exchanging data</a><br />
 <a href="statements.html">Statements, procedures and transactions</a><br />
+  <a href="multithreading.html">Multithreading and SOCI</a><br />
+  <a href="boost.html">Integration with Boost</a><br />
+  <a href="interfaces.html">Interfaces</a><br />
 <a href="beyond.html">Beyond SOCI</a><br />
 <a href="reference.html">Client interface reference</a><br />
 <a href="backends.html">Backends reference</a><br />
@@ -35,7 +38,7 @@
 #include &lt;string&gt;
 #include &lt;exception&gt;
 
-using namespace SOCI;
+using namespace soci;
 using namespace std;
 
 bool getName(string &amp;name)
@@ -48,7 +51,7 @@ int main()
 {
     try
     {
-        Session sql(oracle, "service=mydb user=john password=secret");
+        session sql(oracle, "service=mydb user=john password=secret");
 
         int count;
         sql &lt;&lt; "select count(*) from phonebook", into(count);
@@ -59,11 +62,11 @@ int main()
         while (getName(name))
         {
             string phone;
-            eIndicator ind;
+            indicator ind;
             sql &lt;&lt; "select phone from phonebook where name = :name",
                 into(phone, ind), use(name);
 
-            if (ind == eOK)
+            if (ind == i_ok)
             {
                 cout &lt;&lt; "The phone number is " &lt;&lt; phone &lt;&lt; '\n';
             }
@@ -89,6 +92,6 @@ int main()
   </tr>
 </table>
 
-<p class="copyright">Copyright &copy; 2004-2006 Maciej Sobczak, Stephen Hutton</p>
+<p class="copyright">Copyright &copy; 2004-2008 Maciej Sobczak, Stephen Hutton</p>
 </body>
 </html>

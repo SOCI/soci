@@ -13,50 +13,89 @@
 
 <h3>Connecting to the database</h3>
 
-<p>The class <code>Session</code> encapsulates the database connection
+<p>The <code>session</code> class encapsulates the database connection
 and other backend-related details, which are common to all the
 statements
-that will be later executed. Its constructor expects two parameters:
+that will be later executed. It has a couple of overloaded constructors.</p>
+
+<p>The most basic one expects two parameters:
 the requested backend factory object and the generic connection string,
 which meaning is backend-dependent.</p>
 <p>Example:</p>
 
 <pre class="example">
-Session sql(oracle, "service=orcl user=scott password=tiger");
+session sql(oracle, "service=orcl user=scott password=tiger");
 </pre>
 
 <p>Another example might be:</p>
 
 <pre class="example">
-Session sql(postgresql, "dbname=mydb");
+session sql(postgresql, "dbname=mydb");
 </pre>
 
 <p>Above, the <code>sql</code> object is a local (automatic) object
 that encapsulates the connection.</p>
 
-<p>The <code>Session</code> constructor either connects successfully, or
+<p>This <code>session</code> constructor either connects successfully, or
 throws the exception.</p>
 
-<p>It is possible to have many active <code>Session</code>s at the same
+<p>Another constructor allows to name backends at run-time and supports
+the dynamically loadable backends, which have to be compiled as shared libraries.
+The backend is named in the URL-like form at the beginning of the connection string.</p>
+<p>Example</p>
+
+<pre class="example">
+session sql("postgresql://dbname=mydb");
+</pre>
+
+<p>This constructor tries to locate the shared library with the name <code>libsoci_ABC.so</code> (or <code>libsoci_ABC.dll</code> on Windows), where ABC is the backend name. In the above example, the expected library name will be <code>libsoci_postgresql.so</code> for Unix-like systems.</p>
+
+<div class="note">
+<p><span class="note">Environment configuration:</span></p>
+<p>The <code>SOCI_BACKENDS_PATH</code> environment variable defines the set of paths where the shared libraries will be searched for. There can be many paths, separated by colons.</p>
+</div>
+
+<p>An alternative way to set up the session is to create it in the disconnected state and connect later:</p>
+
+<pre class="example">
+session sql;
+
+// some time later:
+sql.open(postgresql, "dbname=mydb");
+
+// or:
+sql.open("postgresql://dbname=mydb");
+</pre>
+
+<p>The rules for backend naming are the same as with the constructors described above.</p>
+<p>The session can be also explicitly <code>close</code>d and <code>reconnect</code>ed, which can help with basic session error recovery. The <code>reconnect</code> function has no parameters and attempts to use the same values as those provided with earlier constructor or <code>open</code> calls.</p>
+
+<p>See also the page devoted to <a href="multithreading.html">multithreading</a> for a detailed description of connection pools.</p>
+
+<p>It is possible to have many active <code>session</code>s at the same
 time, even using different backends.</p>
 
 <div class="note">
 <p><span class="note">Portability note:</span></p>
-<p>The following backend factories are currently available:</p>
+<p>The following backend factories are currently (as of 3.0.0 release) available:</p>
 <ul>
   <li><code><a href="backends/mysql.html">mysql</a></code> (requires <code>#include "soci-mysql.h"</code>)</li>
   <li><code><a href="backends/oracle.html">oracle</a></code> (requires <code>#include "soci-oracle.h"</code>)</li>
   <li><code><a href="backends/postgresql.html">postgresql</a></code> (requires <code>#include "soci-postgresql.h"</code>)</li>
+</ul>
+<p>The following backends are also available, with various levels of completeness:</p>
+<ul>
   <li><code><a href="backends/sqlite3.html">sqlite3</a></code> (requires <code>#include "soci-sqlite3.h"</code>)</li>
   <li><code><a href="backends/odbc.html">odbc</a></code> (requires <code>#include "soci-odbc.h"</code>)</li>
   <li><code><a href="backends/firebird.html">firebird</a></code> (requires <code>#include "soci-firebird.h"</code>)</li>
 </ul>
 </div>
+
 <h3>Simple SQL statements</h3>
 
 <p>In many cases, the SQL query is intended to be executed only once,
 which means that statement parsing and execution can go together.
-The <code>Session</code> class provides a special <code>once</code>
+The <code>session</code> class provides a special <code>once</code>
 member, which triggers parsing and execution of such one-time
 statements:</p>
 
@@ -95,6 +134,6 @@ sql &lt;&lt; "delete from companies where id = " &lt;&lt; id;
   </tr>
 </table>
 
-<p class="copyright">Copyright &copy; 2004-2006 Maciej Sobczak, Stephen Hutton</p>
+<p class="copyright">Copyright &copy; 2004-2008 Maciej Sobczak, Stephen Hutton</p>
 </body>
 </html>

@@ -48,15 +48,15 @@ are likely to optimize the second case. In fact, more complicated queries are
 likely to suffer in terms of lower performance, because finding the optimal
 execution plan is quite expensive and here it would be needlessly repeated.</p>
 
-<p>The following example uses the class <code>Statement</code>
+<p>The following example uses the class <code>statement</code>
 explicitly, by preparing the statement only once and repeating its
 execution with changing data (note the use of <code>prepare</code>
-member of <code>Session</code> class):</p>
+member of <code>session</code> class):</p>
 
 
 <pre class="example">
 int i;
-Statement st = (sql.prepare &lt;&lt;
+statement st = (sql.prepare &lt;&lt;
                 "insert into numbers(value) values(:val)",
                 use(i));
 for (i = 0; i != 100; ++i)
@@ -83,35 +83,35 @@ to fall back to this one-phase behaviour.</p>
 
 <h3 id="rowset">Rowset and iterator-based access</h3>
 
-<p>The <code>Rowset</code> class provides an alternative means of executing queries and accessing results using STL-like iterator interface.</p>
+<p>The <code>rowset</code> class provides an alternative means of executing queries and accessing results using STL-like iterator interface.</p>
 
-<p>The <code>rowset_iterator</code> type is compatible with requirements defined for input iterator category and is available via <code>iterator</code> and <code>const_iterator</code> definitions in the <code>Rowset</code> class.</p>
-<p>The <code>Rowset</code> itself can be used only with select queries.</p>
+<p>The <code>rowset_iterator</code> type is compatible with requirements defined for input iterator category and is available via <code>iterator</code> and <code>const_iterator</code> definitions in the <code>rowset</code> class.</p>
+<p>The <code>rowset</code> itself can be used only with select queries.</p>
 
-<p>The following example creates an instance of the <code>Rowset</code> class and binds query results into elements of <code>int</code> type - in this query only one result column is expected. After executing the query the code iterates through the query result using <code>rowset_iterator</code>:</p>
+<p>The following example creates an instance of the <code>rowset</code> class and binds query results into elements of <code>int</code> type - in this query only one result column is expected. After executing the query the code iterates through the query result using <code>rowset_iterator</code>:</p>
 
 <pre class="example">
-Rowset&lt;int&gt; rs = (sql.prepare &lt;&lt; "select values from numbers");
+rowset&lt;int&gt; rs = (sql.prepare &lt;&lt; "select values from numbers");
 
-for (Rowset&lt;int&gt;::const_iterator it = rs.begin(); it != rs.end(); ++it)
+for (rowset&lt;int&gt;::const_iterator it = rs.begin(); it != rs.end(); ++it)
 {
      cout &lt;&lt; *it &lt;&lt; '\n';
 }
 </pre>
 
-<p>Another example presents how to retrieve more complex results, where <code>Rowset</code> elements are of type <code>Row</code> and therefore use <a href="exchange.html#dynamic">dynamic bindings</a>:</p>
+<p>Another example shows how to retrieve more complex results, where <code>rowset</code> elements are of type <code>row</code> and therefore use <a href="exchange.html#dynamic">dynamic bindings</a>:</p>
 
 <pre class="example">
 // person table has 4 columns
 
-Rowset&lt;Row&gt; rs = (sql.prepare &lt;&lt; "select id, firstname, lastname, gender from person");
+rowset&lt;row&gt; rs = (sql.prepare &lt;&lt; "select id, firstname, lastname, gender from person");
 
 // iteration through the resultset:
-for (Rowset&lt;Row&gt;::const_iterator it = rs.begin(); it != rs.end(); ++it)
+for (rowset&lt;row&gt;::const_iterator it = rs.begin(); it != rs.end(); ++it)
 {
-    Row const&amp; row = (*it);
+    row const&amp; row = *it;
 
-    // dynamic data extraction from each Row:
+    // dynamic data extraction from each row:
     cout &lt;&lt; "Id: " &lt;&lt; row.get&lt;int&gt;(0) &lt;&lt; '\n'
          &lt;&lt; "Name: " &lt;&lt; row.get&lt;string&gt;(1) &lt;&lt; " " &lt;&lt; row.get&lt;string&gt;(2) &lt;&lt; '\n'
          &lt;&lt; "Gender: " &lt;&lt; row.get&lt;string&gt;(3) &lt;&lt; endl;
@@ -121,12 +121,12 @@ for (Rowset&lt;Row&gt;::const_iterator it = rs.begin(); it != rs.end(); ++it)
 <p><code>rowset_iterator</code> can be used with standard algorithms as well:</p>
 
 <pre class="example">
-Rowset&lt;string&gt; rs = (sql.prepare &lt;&lt; "select firstname from person");
+rowset&lt;string&gt; rs = (sql.prepare &lt;&lt; "select firstname from person");
 
 std::copy(rs.begin(), rs.end(), std::ostream_iterator&lt;std::string&gt;(std::cout, "\n"));
 </pre>
 
-<p>Above, the query result contains a single column which is bound to <code>Rowset</code> element of type of <code>std::string</code>. All records are sent to standard output using the <code>std::copy</code> algorithm.</p>
+<p>Above, the query result contains a single column which is bound to <code>rowset</code> element of type of <code>std::string</code>. All records are sent to standard output using the <code>std::copy</code> algorithm.</p>
 
 <h3 id="bulk">Bulk operations</h3>
 
@@ -142,7 +142,7 @@ for (int i = 0; i != BATCH_SIZE; ++i)
     ids.push_back(i);
 }
 
-Statement st = (sql.prepare &lt;&lt;
+statement st = (sql.prepare &lt;&lt;
                 "insert into numbers(value) values(:val)",
                 use(valsIn));
 for (int i = 0; i != 4; ++i)
@@ -160,7 +160,7 @@ examples:</p>
 
 <pre class="example">
 int i;
-Statement st = (sql.prepare &lt;&lt;
+statement st = (sql.prepare &lt;&lt;
                 "select value from numbers order by value",
                 into(i));
 st.execute();
@@ -173,11 +173,11 @@ while (st.fetch())
 <p>In the above example, the <code>execute</code> method is called
 with the default parameter <code>false</code>. This means that the
 statement should be executed, but the actual data exchange will be
-executed later.</p>
+performed later.</p>
 
 <p>Further <code>fetch</code>
 calls perform the actual data retrieval and cursor traversal. The
-end-of-cursor condition is indicated by the <code>fetch</code>
+<i>end-of-cursor</i> condition is indicated by the <code>fetch</code>
 function returning <code>false</code>.</p>
 
 <p>The above code example should be treated as an idiomatic way
@@ -194,17 +194,17 @@ sql &lt;&lt; "select val from numbers", into(valsOut);
 
 <p>Above, the value <code>100</code> indicates that no more values
 should be retrieved, even if it would be otherwise possible. If there
-is less rows than asked for, the vector will be appropriately
+are less rows than asked for, the vector will be appropriately
 down-sized.</p>
 
-<p>The <code>Statement::execute()</code> and <code>Statement::fetch()</code>
+<p>The <code>statement::execute()</code> and <code>statement::fetch()</code>
 functions can also be used to repeatedly select all rows returned by a
 query into a vector based type:</p>
 
 <pre class="example">
 const int BATCH_SIZE = 30;
 std::vector&lt;int&gt; valsOut(BATCH_SIZE);
-Statement st = (sql.prepare &lt;&lt;
+statement st = (sql.prepare &lt;&lt;
                 "select value from numbers",
                 into(valsOut));
 st.execute();
@@ -253,9 +253,9 @@ requested size.</p>
 <p><span class="note">Portability note:</span></p>
 <p>Actually, all supported backends guarantee that the requested
 number of rows will be read with each fetch and that the vector will
-never be down-sized (unless the end of rowset condition is met, of
-course). This means that the manual vector
-resizing is not needed - the vector will keep its size until the end of
+never be down-sized, unless for the last fetch, when the end of rowset condition is met.
+This means that the manual vector
+resizing is in practice not needed - the vector will keep its size until the end of
 rowset. The above idiom, however, is provided with future backends in
 mind, where the constant size of the vector might be too expensive to
 guarantee and where allowing <code>fetch</code> to down-size the
@@ -265,7 +265,7 @@ performance gains.</p>
 
 <h3 id="procedures">Stored procedures</h3>
 
-<p>The <code>Procedure</code> class provides a convenient mechanism for
+<p>The <code>procedure</code> class provides a convenient mechanism for
 calling stored procedures:</p>
 
 <pre class="example">
@@ -275,7 +275,7 @@ sql &lt;&lt; "create or replace procedure echo(output out varchar2,"
 
 std::string in("my message");
 std::string out;
-Procedure proc = (sql.prepare &lt;&lt; "echo(:output, :input)",
+procedure proc = (sql.prepare &lt;&lt; "echo(:output, :input)",
                                  use(out, "output"),
                                  use(in, "input"));
 proc.execute(true);
@@ -292,7 +292,7 @@ database server.</p>
 
 <h3 id="transactions">Transactions</h3>
 
-<p>The SOCI library provides the following members of the <code>Session</code>
+<p>The SOCI library provides the following members of the <code>session</code>
 class for transaction management:</p>
 <ul>
   <li><code>void begin();</code></li>
@@ -313,26 +313,26 @@ above functions for explicit transaction management.</p>
 
 <h3 id="logging">Basic logging support</h3>
 
-<p>The following members of the <code>Session</code> class support the basic logging functionality:</p>
+<p>The following members of the <code>session</code> class support the basic logging functionality:</p>
 <ul>
-  <li><code>void setLogStream(std::ostream *s);</code></li>
-  <li><code>std::ostream * getLogStream() const;</code></li>
-  <li><code>std::string getLastQuery() const;</code></li>
+  <li><code>void set_log_stream(std::ostream * s);</code></li>
+  <li><code>std::ostream * get_log_stream() const;</code></li>
+  <li><code>std::string get_last_query() const;</code></li>
 </ul>
 
 <p>The first two functions allow to set the user-provided output stream object for logging. The <code>NULL</code> value, which is the default, means that there is no logging. An example use might be:</p>
 
 <pre class="example">
-Session sql(oracle, "...");
+session sql(oracle, "...");
 
 ofstream file("my_log.txt");
-sql.setLogStream(&amp;file);
+sql.set_log_stream(&amp;file);
 
 // ...
 </pre>
 
-<p>Each statement logs its query string before the preparation step (whether explicit or implicit) and the logging is effective whether the query succeeds or not. Note that each prepared query is logged only once, independent on how many times it is executed.</p>
-<p>The <code>getLastQuery</code> function allows to retrieve the last used query.</p>
+<p>Each statement logs its query string before the preparation step (whether explicit or implicit) and therefore logging is effective whether the query succeeds or not. Note that each prepared query is logged only once, independent on how many times it is executed.</p>
+<p>The <code>get_last_query</code> function allows to retrieve the last used query.</p>
 
 <table class="foot-links" border="0" cellpadding="2" cellspacing="2">
   <tr>
@@ -345,6 +345,6 @@ sql.setLogStream(&amp;file);
   </tr>
 </table>
 
-<p class="copyright">Copyright &copy; 2004-2006 Maciej Sobczak, Stephen Hutton</p>
+<p class="copyright">Copyright &copy; 2004-2008 Maciej Sobczak, Stephen Hutton</p>
 </body>
 </html>
