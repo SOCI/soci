@@ -40,15 +40,19 @@ that encapsulates the connection.</p>
 throws an exception.</p>
 
 <p>Another constructor allows to name backends at run-time and supports
-the dynamically loadable backends, which have to be compiled as shared libraries.
-The backend is named in the URL-like form at the beginning of the connection string.</p>
-<p>Example</p>
+the dynamically loadable backends, which have to be compiled as shared libraries. The usage is similar to the above, but instead of providing the factory object, the backend name is expected:</p>
+
+<pre class="example">
+session sql("postgresql", "dbname=mydb");
+</pre>
+
+<p>For convenience, the URL-like form that combines both the backend name with connection parameters is supported as well:</p>
 
 <pre class="example">
 session sql("postgresql://dbname=mydb");
 </pre>
 
-<p>This constructor tries to locate the shared library with the name <code>libsoci_ABC.so</code> (or <code>libsoci_ABC.dll</code> on Windows), where ABC is the backend name. In the above example, the expected library name will be <code>libsoci_postgresql.so</code> for Unix-like systems.</p>
+<p>The last two constructors described above try to locate the shared library with the name <code>libsoci_ABC.so</code> (or <code>libsoci_ABC.dll</code> on Windows), where ABC is the backend name. In the above examples, the expected library name will be <code>libsoci_postgresql.so</code> for Unix-like systems.</p>
 
 <div class="note">
 <p><span class="note">Environment configuration:</span></p>
