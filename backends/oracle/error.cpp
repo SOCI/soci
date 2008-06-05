@@ -20,7 +20,7 @@ using namespace soci::details;
 using namespace soci::details::oracle;
 
 oracle_soci_error::oracle_soci_error(std::string const & msg, int errNum)
-    : soci_error(msg), errNum_(errNum)
+    : soci_error(msg), err_num_(errNum)
 {
 }
 

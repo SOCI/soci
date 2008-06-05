@@ -13,7 +13,7 @@
 namespace soci
 {
 
-// default traits class type_conversion, acts as pass through for Row::get()
+// default traits class type_conversion, acts as pass through for row::get()
 // when no actual conversion is needed.
 template <typename T>
 struct type_conversion

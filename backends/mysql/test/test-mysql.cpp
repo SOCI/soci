@@ -94,7 +94,7 @@ void test2()
         }
         catch (mysql_soci_error const &e)
         {
-            assert(e.errNum_ == CR_UNKNOWN_HOST);
+            assert(e.err_num_ == CR_UNKNOWN_HOST);
         }
     }
 
@@ -108,7 +108,7 @@ void test2()
         }
         catch (mysql_soci_error const &e)
         {
-            assert(e.errNum_ == ER_NO_SUCH_TABLE);
+            assert(e.err_num_ == ER_NO_SUCH_TABLE);
         }
         try
         {
@@ -116,7 +116,7 @@ void test2()
         }
         catch (mysql_soci_error const &e)
         {
-            assert(e.errNum_ == ER_BAD_FIELD_ERROR);
+            assert(e.err_num_ == ER_BAD_FIELD_ERROR);
         }
         // A bulk operation.
         try
@@ -126,7 +126,7 @@ void test2()
         }
         catch (mysql_soci_error const &e)
         {
-            assert(e.errNum_ == ER_NO_SUCH_TABLE);
+            assert(e.err_num_ == ER_NO_SUCH_TABLE);
         }
         sql << "drop table soci_test";
     }
