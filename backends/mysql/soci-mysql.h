@@ -39,9 +39,9 @@ class mysql_soci_error : public soci_error
 {
 public:
     mysql_soci_error(std::string const & msg, int errNum)
-        : soci_error(msg), errNum_(errNum) {}
+        : soci_error(msg), err_num_(errNum) {}
 
-    unsigned int errNum_;
+    unsigned int err_num_;
 };
 
 struct mysql_statement_backend;
@@ -230,6 +230,8 @@ struct mysql_session_backend : details::session_backend
     virtual void begin();
     virtual void commit();
     virtual void rollback();
+
+    virtual std::string get_backend_name() const { return "mysql"; }
 
     void clean_up();
 

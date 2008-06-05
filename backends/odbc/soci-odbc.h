@@ -230,6 +230,8 @@ struct odbc_session_backend : details::session_backend
     virtual void commit();
     virtual void rollback();
 
+    virtual std::string get_backend_name() const { return "odbc"; }
+
     void reset_transaction();
 
     void clean_up();

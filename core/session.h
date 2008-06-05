@@ -80,6 +80,8 @@ public:
     // (downcast it to expected back-end session class)
     details::session_backend * get_backend() { return backEnd_; }
 
+    std::string get_backend_name() const;
+
     details::statement_backend * make_statement_backend();
     details::rowid_backend * make_rowid_backend();
     details::blob_backend * make_blob_backend();

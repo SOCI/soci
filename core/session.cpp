@@ -350,6 +350,11 @@ bool session::get_uppercase_column_names() const
     }
 }
 
+std::string session::get_backend_name() const
+{
+    return backEnd_->get_backend_name();
+}
+
 statement_backend * session::make_statement_backend()
 {
     ensureConnected(backEnd_);

@@ -40,7 +40,7 @@ class SOCI_ORACLE_DECL oracle_soci_error : public soci_error
 public:
     oracle_soci_error(std::string const & msg, int errNum = 0);
 
-    int errNum_;
+    int err_num_;
 };
 
 
@@ -250,6 +250,8 @@ struct oracle_session_backend : details::session_backend
     virtual void begin();
     virtual void commit();
     virtual void rollback();
+
+    virtual std::string get_backend_name() const { return "oracle"; }
 
     void clean_up();
 

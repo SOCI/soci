@@ -383,6 +383,17 @@ void test7()
     std::cout << "test 7 passed" << std::endl;
 }
 
+void test8()
+{
+    {
+        session sql(backEnd, connectString);
+
+        assert(sql.get_backend_name() == "postgresql");
+    }
+
+    std::cout << "test 8 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -493,6 +504,7 @@ int main(int argc, char** argv)
         std::cout << "test 6 skipped (dynamic backend)\n";
 
         test7();
+        test8();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;
