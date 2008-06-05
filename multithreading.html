@@ -25,7 +25,7 @@ connection_pool pool(poolSize);
 
 for (size_t i = 0; i != poolSize; ++i)
 {
-    session & sql = pool.at(i);
+    session &amp; sql = pool.at(i);
 
     sql.open("postgresql://dbname=mydb");
 }
@@ -35,7 +35,7 @@ for (size_t i = 0; i != poolSize; ++i)
 {
     session sql(pool);
 
-    sql << "select something from somewhere...";
+    sql &lt;&lt; "select something from somewhere...";
 
 } // session is returned to the pool automatically
 </pre>
