@@ -36,12 +36,14 @@ class SOCI_DECL session
 public:
     session();
     session(backend_factory const & factory, std::string const & connectString);
+    session(std::string const & backendName, std::string const & connectString);
     session(std::string const & connectString);
     session(connection_pool & pool);
 
     ~session();
 
     void open(backend_factory const & factory, std::string const & connectString);
+    void open(std::string const & backendName, std::string const & connectString);
     void open(std::string const & connectString);
     void close();
     void reconnect();

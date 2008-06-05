@@ -64,6 +64,20 @@ session::session(backend_factory const & factory,
     backEnd_ = factory.make_session(connectString);
 }
 
+session::session(std::string const & backendName,
+    std::string const & connectString)
+    : once(this), prepare(this), logStream_(NULL),
+      uppercaseColumnNames_(false),
+      isFromPool_(false), pool_(NULL)
+{
+    backend_factory const & factory = dynamic_backends::get(backendName);
+
+    lastFactory_ = &factory;
+    lastConnectString_ = connectString;
+
+    backEnd_ = factory.make_session(connectString);
+}
+
 session::session(std::string const & connectString)
     : once(this), prepare(this), logStream_(NULL),
       uppercaseColumnNames_(false),
@@ -118,6 +132,28 @@ void session::open(backend_factory const & factory,
         {
             throw soci_error("Cannot open already connected session.");
         }
+
+        backEnd_ = factory.make_session(connectString);
+        lastFactory_ = &factory;
+        lastConnectString_ = connectString;
+    }
+}
+
+void session::open(std::string const & backendName,
+    std::string const & connectString)
+{
+    if (isFromPool_)
+    {
+        pool_->at(poolPosition_).open(backendName, connectString);
+    }
+    else
+    {
+        if (backEnd_ != NULL)
+        {
+            throw soci_error("Cannot open already connected session.");
+        }
+
+        backend_factory const & factory = dynamic_backends::get(backendName);
 
         backEnd_ = factory.make_session(connectString);
         lastFactory_ = &factory;
