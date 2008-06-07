@@ -27,7 +27,7 @@ class rowid_backend;
 class SOCI_DECL rowid
 {
 public:
-    rowid(session & s);
+    explicit rowid(session & s);
     ~rowid();
 
     details::rowid_backend * get_backend() { return backEnd_; }

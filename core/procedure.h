@@ -40,10 +40,10 @@ private:
 class SOCI_DECL procedure
 {
 public:
-    procedure(session & s)
-        : impl_(new details::procedure_impl(s)) {}
+    // this is a conversion constructor
     procedure(details::prepare_temp_type const & prep)
         : impl_(new details::procedure_impl(prep)) {}
+
     ~procedure() { impl_->dec_ref(); }
 
     // copy is supported here
@@ -64,16 +64,24 @@ public:
 
     bool execute(bool withDataExchange = false)
     {
-        return impl_->execute(withDataExchange);
+        gotData_ = impl_->execute(withDataExchange);
+        return gotData_;
     }
 
     bool fetch()
     {
-        return impl_->fetch();
+        gotData_ = impl_->fetch();
+        return gotData_;
+    }
+
+    bool got_data() const
+    {
+        return gotData_;
     }
 
 private:
     details::procedure_impl * impl_;
+    bool gotData_;
 };
 
 } // namespace soci

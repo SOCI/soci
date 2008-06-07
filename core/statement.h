@@ -32,12 +32,12 @@ class prepare_temp_type;
 class SOCI_DECL statement_impl
 {
 public:
-    statement_impl(session & s);
-    statement_impl(prepare_temp_type const & prep);
+    explicit statement_impl(session & s);
+    explicit statement_impl(prepare_temp_type const & prep);
     ~statement_impl();
 
     void alloc();
-    void bind(values & values);
+    void bind(values & v);
     void exchange(into_type_ptr const & i);
     void exchange(use_type_ptr const & u);
     void clean_up();
@@ -145,11 +145,11 @@ public:
         impl_ = other.impl_;
     }
 
-    void alloc()                                 { impl_->alloc();      }
-    void bind(values & values)                   { impl_->bind(values); }
+    void alloc()                         { impl_->alloc();    }
+    void bind(values & v)                { impl_->bind(v);    }
     void exchange(details::into_type_ptr const & i);
     void exchange(details::use_type_ptr const & u);
-    void clean_up()                              { impl_->clean_up(); }
+    void clean_up()                      { impl_->clean_up(); }
 
     void prepare(std::string const & query,
         details::statement_type eType = details::st_repeatable_query)

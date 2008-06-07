@@ -177,6 +177,7 @@ public:
     typedef rowset_iterator<T> iterator;
     typedef rowset_iterator<T> const_iterator;
     
+    // this is a conversion constructor
     rowset(details::prepare_temp_type const & prep)
         : pimpl_(new details::rowset_impl<T>(prep))
     {

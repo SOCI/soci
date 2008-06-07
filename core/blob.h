@@ -26,7 +26,7 @@ class blob_backend;
 class SOCI_DECL blob
 {
 public:
-    blob(session & s);
+    explicit blob(session & s);
     ~blob();
 
     std::size_t get_len();

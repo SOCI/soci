@@ -37,8 +37,8 @@ public:
     session();
     session(backend_factory const & factory, std::string const & connectString);
     session(std::string const & backendName, std::string const & connectString);
-    session(std::string const & connectString);
-    session(connection_pool & pool);
+    explicit session(std::string const & connectString);
+    explicit session(connection_pool & pool);
 
     ~session();
 

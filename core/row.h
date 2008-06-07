@@ -149,4 +149,4 @@ private:
 
 } // namespace soci
 
-#endif
+#endif // SOCI_ROW_H_INCLUDED

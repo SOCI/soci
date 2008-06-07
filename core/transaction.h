@@ -19,7 +19,7 @@ namespace soci
 class SOCI_DECL transaction
 {
 public:
-    transaction(session & sql);
+    explicit transaction(session & sql);
 
     ~transaction();
 

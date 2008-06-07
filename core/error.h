@@ -19,7 +19,7 @@ namespace soci
 class SOCI_DECL soci_error : public std::runtime_error
 {
 public:
-    soci_error(std::string const & msg);
+    explicit soci_error(std::string const & msg);
 };
 
 } // namespace soci
