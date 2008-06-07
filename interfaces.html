@@ -15,7 +15,7 @@
 
 <h4>Sugar</h4>
 
-<p>The most exposed and promoted interface supports the syntax sugar that makes SOCI similar in look and feel to embedded SQL. The example of code with this interface is:</p>
+<p>The most exposed and promoted interface supports the syntax sugar that makes SOCI similar in look and feel to embedded SQL. The example of application code using this interface is:</p>
 
 <pre class="example">
 session sql("postgresql://dbname=mydb");
@@ -28,7 +28,7 @@ sql << "select name from persons where id = :id", into(name), use(id);
 
 <h4>Core</h4>
 
-<p>The above example code is equivalent to the following, more explicit sequence of calls:</p>
+<p>The above example is equivalent to the following, more explicit sequence of calls:</p>
 <pre class="example">
 session sql("postgresql://dbname=mydb");
 
@@ -50,7 +50,7 @@ st.execute(true);
 
 <h4>Simple</h4>
 
-<p>The <i>simple</i> interface is provided specifically to allow easy integration of the SOCI library with other languages that have the ability to link with binaries using the "C" calling convention. To facilitate this integration, the <i>simple</i> interface does not use any pointers to data except C-style strings and opaque pointers, but the consequence of this is that user data is managed by SOCI and not by user code. To avoid exceptions passing the module boundaries, all errors are reported as state variables of relevant objects.</p>
+<p>The <i>simple</i> interface is provided specifically to allow easy integration of the SOCI library with other languages that have the ability to link with binaries using the "C" calling convention. To facilitate this integration, the <i>simple</i> interface does not use any pointers to data except C-style strings and opaque handles, but the consequence of this is that user data is managed by SOCI and not by user code. To avoid exceptions passing the module boundaries, all errors are reported as state variables of relevant objects.</p>
 
 <p>The above examples can be rewritten as (without error-handling):</p>
 

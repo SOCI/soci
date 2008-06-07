@@ -29,41 +29,41 @@ client application to get access to all low-level details that are
 involved.</p>
 
 <pre class="example">
-BLOB b(sql);
+blob b(sql);
 
-OracleSessionBackEnd *sessionBackEnd = static_cast&lt;OracleSessionBackEnd *&gt;(sql.getBackEnd());
-OracleBLOBBackEnd *blobBackEnd = static_cast&lt;OracleBLOBBackEnd *&gt;(b.getBackEnd());
+oracle_session_back_end * sessionBackEnd = static_cast&lt;oracle_session_back_end *&gt;(sql.get_back_end());
+oracle_blob_back_end * blobBackEnd = static_cast&lt;oracle_blob_back_end *&gt;(b.get_back_end());
 
 OCILobDisableBuffering(sessionBackEnd-&gt;svchp_, sessionBackEnd-&gt;errhp_, blobBackEnd-&gt;lobp_);
 </pre>
 
-<p>The above code creates the <code>BLOB</code> object and uses two calls
-to the <code>getBackEnd</code> function (on both the <code>Session</code>
-and the <code>BLOB</code> objects) to get access to the actual backend
+<p>The above code creates the <code>blob</code> object and uses two calls
+to the <code>get_back_end</code> function (on both the <code>session</code>
+and the <code>blob</code> objects) to get access to the actual backend
 objects. Assuming that it is the <code>"oracle"</code> backend which
 is in use, the downcasts allow to access all relevant low-level handles
 and use them in the call
 to the <code>OCILobDisableBuffering</code> function. This way, the
-BLOB handle was configured in a way that the SOCI library itself would
+BLOB handle was configured in a way that the SOCI library alone would
 not allow.</p>
 
 <pre class="example">
-RowID rid(sql); // sql is a Session object
+rowid rid(sql); // sql is a session object
 sql &lt;&lt; "select oid from mytable where id = 7", into(rid);
 
-PostgreSQLRowIDBackEnd *rbe = static_cast&lt;PostgreSQLRowIDBackEnd *&gt;(rid.getBackEnd());
+postgresql_rowid_back_end * rbe = static_cast&lt;postgresql_rowid_back_end *&gt;(rid.get_back_end());
 
 unsigned long oid = rbe-&gt;value_;
 </pre>
 
-<p>The above example retrieves the <code>RowID</code> ("something" that
+<p>The above example retrieves the <code>rowid</code> ("something" that
 identifies the
-row in the table) from the table and uses the <code>getBackEnd</code>
+row in the table) from the table and uses the <code>get_back_end</code>
 function to
 extract the actual object that implements this functionality. Assuming
 that it is the <code>"postgresql"</code> backend which is in use, the
 downcast is
-performed to use the <code>PostgreSQLRowIDBackEnd</code> interface to
+performed to use the <code>postgresql_rowid_back_end</code> interface to
 get the actual
 OID value that is a physical, low-level implementation of row
 identifier on PostgreSQL databases.</p>
@@ -77,7 +77,7 @@ low-level handles and descriptors are available.</p>
 <table class="foot-links" border="0" cellpadding="2" cellspacing="2">
   <tr>
     <td class="foot-link-left">
-      <a href="statements.html">Previous (Statements, procedures and transactions)</a>
+      <a href="statements.html">Previous (Interfaces)</a>
     </td>
     <td class="foot-link-right">
       <a href="reference.html">Next (Client reference)</a>
