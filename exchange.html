@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en'>
 <head>
   <meta content="text/html; charset=ISO-8859-1"  http-equiv="content-type" />
   <link rel="stylesheet" type="text/css" href="style.css" />
@@ -190,7 +190,7 @@ data.</p>
 
 string getNameFromSomewhere();
 
-const string & name = getNameFromSomewhere();
+const string &amp; name = getNameFromSomewhere();
 sql &lt;&lt; "insert into person(name) values(:n)",
     use(name);
 </pre>
@@ -571,9 +571,9 @@ to enable the following:</p>
 <pre class="example">
 MyInt i;
 
-sql << "select count(*) from person", into(i);
+sql &lt;&lt; "select count(*) from person", into(i);
 
-cout << "We have " << i.get() << " persons in the database.\n";
+cout &lt;&lt; "We have " &lt;&lt; i.get() &lt;&lt; " persons in the database.\n";
 </pre>
 
 <p>Note that there is a number of types from the Boost library integrated with SOCI out of the box, see <a href="boost.html">Integration with Boost</a> for complete description. Use these as examples of conversions for more complext data types.</p>
@@ -619,7 +619,7 @@ namespace soci
 template&lt;&gt; struct TypeConversion&lt;Person&gt;
 {
     typedef values base_type;
-    static void from_base(values const &amp; v, indicator /* ind */, Person & p)
+    static void from_base(values const &amp; v, indicator /* ind */, Person &amp; p)
     {
         p.id = v.get&lt;int&gt;("ID");
         p.firstName = v.get&lt;std::string&gt;("FIRST_NAME");
@@ -639,7 +639,7 @@ template&lt;&gt; struct TypeConversion&lt;Person&gt;
         //     p.gender = v.get&lt;std::string&gt;("GENDER");
         // }
     }
-    static void to_base(const Person &amp; p, values & v, indicator & ind)
+    static void to_base(const Person &amp; p, values &amp; v, indicator &amp; ind)
     {
         v.set("ID", p.id);
         v.set("FIRST_NAME", p.firstName);

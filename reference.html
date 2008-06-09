@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en'>
 <head>
   <meta content="text/html; charset=ISO-8859-1"  http-equiv="content-type" />
   <link rel="stylesheet" type="text/css" href="style.css" />
@@ -24,12 +24,13 @@
 <a href="#columnproperties">class column_properties</a><br />
 <a href="#values">class values</a><br />
 <a href="#blob">class blob</a><br />
-<a href="rowid">class rowid</a><br />
-<a href="#backendfactory">class backend_factory</a><br />
+<a href="#rowid">class rowid</a><br />
+<a href="#backendfactory">class backend_factory</a><br /><br />
+<a href="#simpleclient">Simple client interface</a><br />
 </div>
 
 <p>The core client interface is a set of classes and free functions declared in
-the <code>soci.h</code> header file. All names are declared in the <code>soci</code>
+the <code>soci.h</code> header file. All names are dbeclared in the <code>soci</code>
 namespace.</p>
 
 <p>There are also additional names declared in the <code>soci::details</code>
@@ -126,7 +127,7 @@ session sql("postgresql", "dbname=mydb");
 session sql("postgresql://dbname=mydb");
 </pre>
   The constructors that take backend name as string load the shared library (if not yet loaded)
-  with name computes as <code>libsoci_ABC.so</code> (or <code>libsoci_ABC.dll</code> on Windows)
+  with name computed as <code>libsoci_ABC.so</code> (or <code>libsoci_ABC.dll</code> on Windows)
   where <code>ABC</code> is the given backend name.
   </li>
   <li><code>open</code>, <code>close</code> and <code>reconnect</code> functions for
@@ -194,7 +195,7 @@ public:
     explicit connection_pool(std::size_t size);
     ~connection_pool();
 
-    session & at(std::size_t pos);
+    session &amp; at(std::size_t pos);
 
     std::size_t lease();
     bool try_lease(std::size_t &amp; pos, int timeout);
@@ -338,7 +339,7 @@ statement stmt(sql);
   <li>Constructor accepting the result of using <code>prepare</code>
 on the <code>session</code> object, see example provided above for the
     <code>session</code> class.</li>
-  <li>Copy operations</li>
+  <li>Copy operations.</li>
   <li><code>alloc</code> function, which allocates necessary internal resources.</li>
   <li><code>bind</code> function, which is used to bind the <code>values</code>
 object - this is used in the object-relational mapping and normally
@@ -414,7 +415,7 @@ supposed to be provided (specialized) by the user for defining
 conversions to and from one of the basic SOCI types.</p>
 
 <pre class="example">
-template <typename T>
+template &lt;typename T&gt;
 struct type_conversion
 {
     typedef T base_type;
@@ -677,6 +678,189 @@ std::string connectionParameters = "dbname=mydb";
 
 session sql(factory, parameters);
 </pre>
+
+<h3 id="simpleclient">Simple client interface</h3>
+
+<p>The simple client interface is provided with other languages in mind,
+to allow easy integration of the SOCI library with script interpreters and those
+languages that have the ability to link directly with object files using
+the "C" calling convention.</p>
+<p>The functionality of this interface is limited and in particular the
+dynamic rowset description and type conversions are not supported in this release.
+On the other hand, the important feature of this interface is that it does not
+require passing pointers to data managed by the user, because all data is handled
+at the SOCI side. This should make it easier to integrate SOCI with languages that
+have constrained ability to understand the C type system.</p>
+
+<pre class="example">
+typedef void * session_handle;
+session_handle soci_create_session(char const * connectionString);
+void soci_destroy_session(session_handle s);
+
+void soci_begin(session_handle s);
+void soci_commit(session_handle s);
+void soci_rollback(session_handle s);
+
+bool soci_session_state(session_handle s);
+char const * soci_session_error_message(session_handle s);
+</pre>
+
+<p>The functions above provide the <i>session</i> abstraction with the help of opaque handle.
+The <code>soci_session_state</code> function returns <code>true</code> if there was no error
+during the most recently executed function and <code>false</code> otherwise, in which
+case the <code>soci_session_error_message</code> can be used to obtain a human-readable
+error description.</p>
+<p>Note that the only function that cannot report all errors this way is <code>soci_create_session</code>,
+which returns <code>NULL</code> if it was not possible to create an internal object
+representing the session. However, if the proxy object was created, but the connection
+could not be established for whatever reason, the error message can be obtained in
+the regular way.</p>
+
+<pre class="example">
+typedef void * statement_handle;
+statement_handle soci_create_statement(session_handle s);
+void soci_destroy_statement(statement_handle st);
+
+bool soci_statement_state(statement_handle s);
+char const * soci_statement_error_message(statement_handle s);
+</pre>
+
+<p>The functions above create and destroy the statement object. If the statement cannot
+be created by the <code>soci_create_statement</code> function, the error condition is set up in the related session object;
+for all other functions the error condition is set in the statement object itself.</p>
+
+<pre class="example">
+int soci_into_string   (statement_handle st);
+int soci_into_int      (statement_handle st);
+int soci_into_long_long(statement_handle st);
+int soci_into_double   (statement_handle st);
+int soci_into_date     (statement_handle st);
+
+int soci_into_string_v   (statement_handle st);
+int soci_into_int_v      (statement_handle st);
+int soci_into_long_long_v(statement_handle st);
+int soci_into_double_v   (statement_handle st);
+int soci_into_date_v     (statement_handle st);
+</pre>
+
+<p>These functions create new data items for storing query results (<i>into elements</i>).
+These elements can be later identified by their position, which is counted from 0. For convenience,
+these function return the position of the currently added element. In case of error,
+<code>-1</code> is returned and the error condition is set in the statement object.</p>
+<p>The <code>_v</code> versions create a <code>vector</code> into elements, which can be used
+to retrieve whole arrays of results.</p>
+
+<pre class="example">
+bool soci_get_into_state(statement_handle st, int position);
+bool soci_get_into_state_v(statement_handle st, int position, int index);
+</pre>
+
+<p>This function returns <code>true</code> if the into element at the given position has non-null value.
+The <code>_v</code> version works with <code>vector</code> elements and expects an array index.</p>
+
+<pre class="example">
+int  soci_into_get_size_v(statement_handle st);
+void soci_into_resize_v  (statement_handle st, int new_size);
+</pre>
+
+<p>The functions above allow to get and set the size of vector into element.</p>
+
+<p>Note: the <code>soci_into_resize_v</code> always sets <i>all</i> into vectors in the given statement
+to the same size, which guarantees that all vector into elements have equal size.</p>
+
+<pre class="example">
+char const * soci_get_into_string   (statement_handle st, int position);
+int          soci_get_into_int      (statement_handle st, int position);
+long long    soci_get_into_long_long(statement_handle st, int position);
+double       soci_get_into_double   (statement_handle st, int position);
+char const * soci_get_into_date     (statement_handle st, int position);
+
+char const * soci_get_into_string_v   (statement_handle st, int position, int index);
+int          soci_get_into_int_v      (statement_handle st, int position, int index);
+long long    soci_get_into_long_long_v(statement_handle st, int position, int index);
+double       soci_get_into_double_v   (statement_handle st, int position, int index);
+char const * soci_get_into_date_v     (statement_handle st, int position, int index);
+</pre>
+
+<p>The functions above allow to retrieve the current value of the given into element.</p>
+
+<p>Note: the <code>date</code> function returns the date value in the "<code>YYYY MM DD HH mm ss</code>" string format.</p>
+
+<pre class="example">
+void soci_use_string   (statement_handle st, char const * name);
+void soci_use_int      (statement_handle st, char const * name);
+void soci_use_long_long(statement_handle st, char const * name);
+void soci_use_double   (statement_handle st, char const * name);
+void soci_use_date     (statement_handle st, char const * name);
+
+void soci_use_string_v   (statement_handle st, char const * name);
+void soci_use_int_v      (statement_handle st, char const * name);
+void soci_use_long_long_v(statement_handle st, char const * name);
+void soci_use_double_v   (statement_handle st, char const * name);
+void soci_use_date_v     (statement_handle st, char const * name);
+</pre>
+
+<p>The functions above allow to create new data elements that will be used to provide
+data to the query (<i>use elements</i>). The new elements can be later identified by given name, which
+must be unique for the given statement.</p>
+
+<pre class="example">
+void soci_set_use_state(statement_handle st, char const * name, bool state);
+</pre>
+
+<p>The <code>soci_set_use_state</code> function allows to set the state of the given use element.
+If the <code>state</code> parameter is set to <code>true</code> the use element is considered non-null
+(which is also the default state after creating the use element).</p>
+
+<pre class="example">
+int  soci_use_get_size_v(statement_handle st);
+void soci_use_resize_v  (statement_handle st, int new_size);
+</pre>
+
+<p>These functions get and set the size of vector use elements (see comments for vector into elements above).</p>
+
+<pre class="example">
+void soci_set_use_string   (statement_handle st, char const * name, char const * val);
+void soci_set_use_int      (statement_handle st, char const * name, int val);
+void soci_set_use_long_long(statement_handle st, char const * name, long long val);
+void soci_set_use_double   (statement_handle st, char const * name, double val);
+void soci_set_use_date     (statement_handle st, char const * name, char const * val);
+
+void soci_set_use_state_v    (statement_handle st, char const * name, int index, bool state);
+void soci_set_use_string_v   (statement_handle st, char const * name, int index, char const * val);
+void soci_set_use_int_v      (statement_handle st, char const * name, int index, int val);
+void soci_set_use_long_long_v(statement_handle st, char const * name, int index, long long val);
+void soci_set_use_double_v   (statement_handle st, char const * name, int index, double val);
+void soci_set_use_date_v     (statement_handle st, char const * name, int index, char const * val);
+</pre>
+
+<p>The functions above set the value of the given use element, for both single and vector elements.</p>
+
+<p>Note: the expected format for the data values is "<code>YYYY MM DD HH mm ss</code>".</p>
+
+<pre class="example">
+bool         soci_get_use_state    (statement_handle st, char const * name);
+char const * soci_get_use_string   (statement_handle st, char const * name);
+int          soci_get_use_int      (statement_handle st, char const * name);
+long long    soci_get_use_long_long(statement_handle st, char const * name);
+double       soci_get_use_double   (statement_handle st, char const * name);
+char const * soci_get_use_date     (statement_handle st, char const * name);
+</pre>
+
+<p>These functions allow to inspect the state and value of named use elements.</p>
+<p>Note: these functions are provide only for single use elements, not for vectors;
+the rationale for this is that modifiable use elements are not supported for bulk operations.</p>
+
+<pre class="example">
+void soci_prepare(statement_handle st, char const * query);
+bool soci_execute(statement_handle st, bool withDataExchange);
+bool soci_fetch(statement_handle st);
+bool soci_got_data(statement_handle st);
+</pre>
+
+<p>The functions above provide the core execution functionality for the statement object
+and their meaning is equivalent to the respective functions in the core C++ interface
+described above.</p>
 
 <table class="foot-links" border="0" cellpadding="2" cellspacing="2">
   <tr>

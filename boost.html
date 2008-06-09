@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en'>
 <head>
   <meta content="text/html; charset=ISO-8859-1"  http-equiv="content-type" />
   <link rel="stylesheet" type="text/css" href="style.css" />
@@ -27,7 +27,7 @@ sql &lt;&lt; "select name from person where id = 7", into(name);
 if (name.is_initialized())
 {
     // OK, the name was retrieved and is not-null
-    cout << "The name is " << name.get();
+    cout &lt;&lt; "The name is " &lt;&lt; name.get();
 }
 else
 {
@@ -59,7 +59,7 @@ boost::tuple&lt;string, boost::optional&lt;string&gt;, int&gt; person;
 sql &lt;&lt; "select name, phone, salary from persons where ...",
     into(person);
 
-if (person.get<1>().is_initialized())
+if (person.get&lt;1&gt;().is_initialized())
 {
     // the given person has a phone number
 }

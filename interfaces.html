@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en'>
 <head>
   <meta content="text/html; charset=ISO-8859-1"  http-equiv="content-type" />
   <link rel="stylesheet" type="text/css" href="style.css" />
@@ -23,7 +23,7 @@ session sql("postgresql://dbname=mydb");
 int id = 123;
 string name;
 
-sql << "select name from persons where id = :id", into(name), use(id);
+sql &lt;&lt; "select name from persons where id = :id", into(name), use(id);
 </pre>
 
 <h4>Core</h4>
@@ -80,6 +80,7 @@ soci_destroy_session(sql);
 </pre>
 
 <p>The <i>simple</i> interface supports single and bulk data exchange for static binding. Dynamic row description is not supported in this release.</p>
+<p>See <a href="reference.html#simpleclient">Simple client interface</a> reference documentation for more details.</p>
 
 <h4>Low-level backend interface</h4>
 
