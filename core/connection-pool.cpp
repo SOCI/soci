@@ -318,7 +318,7 @@ void connection_pool::give_back(std::size_t pos)
 
     LeaveCriticalSection(&(pimpl_->mtx_));
 
-    ReleaseSemaphore(&(pimpl_->sem_, 1, NULL));
+    ReleaseSemaphore(&(pimpl_->sem_), 1, NULL);
 }
 
 #endif // _WIN32
