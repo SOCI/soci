@@ -263,7 +263,7 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
         }
         else
         {
-            type = dt_unsigned_long;
+            type = dt_long_long;
         }
         break;
     case SQLT_DAT:
