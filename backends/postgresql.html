@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en'>
 <head>
   <meta content="text/html; charset=ISO-8859-1"  http-equiv="content-type" />
   <link rel="stylesheet" type="text/css" href="../style.css" />
@@ -61,73 +61,78 @@
 
 <h4 id="connecting">Connecting to the Database</h4>
 
-<p>To establish a connection to the PostgreSQL database, create a Session object
+<p>To establish a connection to the PostgreSQL database, create a <code>session</code> object
 using the <code>postgresql</code> backend factory together with a connection string:</p>
 
 <pre class="example">
-BackEndFactory const &amp;backEnd = postgresql;
-Session sql(backEnd, "dbname=mydatabase");
+session sql(postgresql, "dbname=mydatabase");
+
+// or:
+session sql("postgresql", "dbname=mydatabase");
+
+// or:
+session sql("postgresql://dbname=mydatabase");
 </pre>
 
-<p>or simply:</p>
+<p>The set of parameters used in the connection string for PostgreSQL is the same as accepted by the <code><a href="http://www.postgresql.org/docs/8.3/interactive/libpq.html#LIBPQ-CONNECT">PQconnectdb</a></code> function from the <code>libpq</code> library.</p>
 
-<pre class="example">
-Session sql(postgresql, "dbname=mydatabase");
-</pre>
-
-<p>The set of parameters used in the connection string for PostgreSQL is the same as accepted by the <code><a href="http://www.postgresql.org/docs/8.1/interactive/libpq.html#LIBPQ-CONNECT">PQconnectdb</a></code> function from the <code>libpq</code> library.</p>
-
-<p>Once you have created a <code>Session</code> object as shown above, you can use it to access the database, for example:</p>
+<p>Once you have created a <code>session</code> object as shown above, you can use it to access the database, for example:</p>
 <pre class="example">
 int count;
 sql &lt;&lt; "select count(*) from invoices", into(count);
 </pre>
 
-<p>(See the <a href="../basics.html">SOCI basics</a> and <a href="../exchange.html">exchanging data</a> documentation for general information on using the <code>Session</code> class.)</p>
+<p>(See the <a href="../basics.html">SOCI basics</a> and <a href="../exchange.html">exchanging data</a> documentation for general information on using the <code>session</code> class.)</p>
 
 <h3 id="support">SOCI Feature Support</h3>
+
 <h4 id="dynamic">Dynamic Binding</h4>
 
-<p>The PostgreSQL backend supports the use of the SOCI <code>Row</code> class, which facilitates retrieval of data whose type is not known at compile time.</p>
+<p>The PostgreSQL backend supports the use of the SOCI <code>row</code> class, which facilitates retrieval of data whose type is not known at compile time.</p>
 
-<p>When calling <code>Row::get&lt;T&gt;()</code>, the type you should pass as T depends upon the underlying database type.<br/>  For the PostgreSQL backend, this type mapping is:</p>
+<p>When calling <code>row::get&lt;T&gt;()</code>, the type you should pass as <code>T</code> depends upon the underlying database type.<br/> For the PostgreSQL backend, this type mapping is:</p>
 
 <table border="1" cellpadding="5" cellspacing="0">
   <tbody>
     <tr>
       <th>PostgreSQL Data Type</th>
       <th>SOCI Data Type</th>
-      <th><code>Row::get&lt;T&gt;</code> specializations</th>
+      <th><code>row::get&lt;T&gt;</code> specializations</th>
     </tr>
     <tr>
       <td>numeric, real, double</td>
-      <td><code>eDouble</code></td>
+      <td><code>dt_double</code></td>
       <td><code>double</code></td>
     </tr>
     <tr>
-      <td>boolean, smallint, integer, bigint (provided it's in the range)</td>
-      <td><code>eInteger</code></td>
+      <td>boolean, smallint, integer</td>
+      <td><code>dt_integer</code></td>
       <td><code>int</code></td>
     </tr>
     <tr>
+      <td>int8</td>
+      <td><code>dt_long_long</code></td>
+      <td><code>long long</code></td>
+    </tr>
+    <tr>
       <td>oid</td>
-      <td><code>eUnsignedLong</code></td>
+      <td><code>dt_unsigned_long</code></td>
       <td><code>unsigned long</code></td>
     </tr>
     <tr>
       <td>char, varchar, text, cstring, bpchar</td>
-      <td><code>eString</code></td>
+      <td><code>dt_string</code></td>
       <td><code>std::string</code></td>
     </tr>
     <tr>
       <td>abstime, reltime, date, time, timestamp, timestamptz, timetz</td>
-      <td><code>eDate</code></td>
+      <td><code>dt_date</code></td>
       <td><code>std::tm</code><code></code></td>
     </tr>
   </tbody>
 </table>
 
-<p>(See the <a href="../exchange.html#dynamic">dynamic resultset binding</a> documentation for general information on using the <code>Row</code> class.)</p>
+<p>(See the <a href="../exchange.html#dynamic">dynamic resultset binding</a> documentation for general information on using the <code>row</code> class.)</p>
 
 <h4 id="bindingbyname">Binding by Name</h4>
 
@@ -156,13 +161,13 @@ sql &lt;&lt; "insert into t(x, y) values($1, $2)", use(i), use(j);
 
 <p><a href="../statements.html#transactions">Transactions</a> are also fully supported by the PostgreSQL backend.</p>
 
-<h4 id="blob">BLOB Data Type</h4>
+<h4 id="blob">blob Data Type</h4>
 
-<p>The PostgreSQL backend supports working with data stored in columns of type Blob, via SOCI's <a href="../exchange.html#blob"><code>BLOB</code></a> class with the exception that trimming is not supported.</p>
+<p>The PostgreSQL backend supports working with data stored in columns of type Blob, via SOCI's <a href="../exchange.html#blob"><code>blob</code></a> class with the exception that trimming is not supported.</p>
 
-<h4 id="rowid">RowID Data Type</h4>
+<h4 id="rowid">rowid Data Type</h4>
 
-<p>The concept of row identifier (OID in PostgreSQL) is supported via SOCI's <a href="../reference.html#rowid">RowID</a> class.</p>
+<p>The concept of row identifier (OID in PostgreSQL) is supported via SOCI's <a href="../reference.html#rowid">rowid</a> class.</p>
 
 <h4 id="nested">Nested Statements</h4>
 
@@ -170,11 +175,11 @@ sql &lt;&lt; "insert into t(x, y) values($1, $2)", use(i), use(j);
 
 <h4 id="procedures">Stored Procedures</h4>
 
-<p>PostgreSQL stored procedures can be executed by using SOCI's <a href="../statements.html#procedures">Procedure</a> class.</p>
+<p>PostgreSQL stored procedures can be executed by using SOCI's <a href="../statements.html#procedures">procedure</a> class.</p>
 
 <h3 id="native">Acessing the native database API</h3>
 
-<p>SOCI provides access to underlying datbabase APIs via several getBackEnd() functions, as described in the <a href="../beyond.html">beyond SOCI</a> documentation.</p>
+<p>SOCI provides access to underlying datbabase APIs via several <code>get_backend()</code> functions, as described in the <a href="../beyond.html">beyond SOCI</a> documentation.</p>
 
 <p>The PostgreSQL backend provides the following concrete classes for navite API access:</p>
 
@@ -185,20 +190,20 @@ sql &lt;&lt; "insert into t(x, y) values($1, $2)", use(i), use(j);
       <th>Concrete Class</th>
     </tr>
     <tr>
-      <td><code>SessionBackEnd* Session::getBackEnd()</code></td>
-      <td><code>PostgreSQLSessionBackEnd</code></td>
+      <td><code>session_backend * session::get_backend()</code></td>
+      <td><code>postgresql_session_backend</code></td>
     </tr>
     <tr>
-      <td><code>StatementBackEnd* Statement::getBackEnd()</code></td>
-      <td><code>PostgreSQLStatementBackEnd</code></td>
+      <td><code>statement_backend * statement::get_backend()</code></td>
+      <td><code>postgresql_statement_backend</code></td>
     </tr>
     <tr>
-      <td><code>BLOBBackEnd* BLOB::getBackEnd()</code></td>
-      <td><code>PostgreSQLBLOBBackEnd</code></td>
+      <td><code>blob_backend * blob::get_backend()</code></td>
+      <td><code>postgresql_blob_backend</code></td>
     </tr>
     <tr>
-      <td><code>RowIDBackEnd* RowID::getBackEnd()</code></td>
-      <td><code>PostgreSQLRowIDBackEnd</code></td>
+      <td><code>rowid_backend * rowid::get_backend()</code></td>
+      <td><code>postgresql_rowid_backend</code></td>
     </tr>
   </tbody>
 </table>
@@ -218,6 +223,6 @@ sql &lt;&lt; "insert into t(x, y) values($1, $2)", use(i), use(j);
 </ul>
 
 
-<p class="copyright">Copyright &copy; 2004-2006 Maciej Sobczak, Stephen Hutton</p>
+<p class="copyright">Copyright &copy; 2004-2008 Maciej Sobczak, Stephen Hutton</p>
 </body>
 </html>
