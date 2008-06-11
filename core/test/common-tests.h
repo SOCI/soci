@@ -2001,7 +2001,27 @@ void test12()
                 assert(t.tm_sec == 17);
                 assert(c == "a");
             }
+        }
 
+        // additional test to check if the row object can be
+        // reused between queries
+        {
+            row r;
+            sql << "select * from soci_test", into(r);
+
+            assert(r.size() == 5);
+
+            assert(r.get_properties(0).get_data_type() == dt_double);
+            assert(r.get_properties(1).get_data_type() == dt_integer);
+            assert(r.get_properties(2).get_data_type() == dt_string);
+            assert(r.get_properties(3).get_data_type() == dt_date);
+
+            sql << "select name, num_int from soci_test", into(r);
+
+            assert(r.size() == 2);
+
+            assert(r.get_properties(0).get_data_type() == dt_string);
+            assert(r.get_properties(1).get_data_type() == dt_integer);
         }
     }
 

@@ -45,6 +45,7 @@ public:
 
     void add_properties(column_properties const &cp);
     std::size_t size() const;
+    void clean_up();
 
     indicator get_indicator(std::size_t pos) const;
     indicator get_indicator(std::string const &name) const;

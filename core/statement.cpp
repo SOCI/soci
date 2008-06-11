@@ -598,6 +598,8 @@ void statement_impl::bind_into<dt_date>()
 
 void statement_impl::describe()
 {
+    row_->clean_up();
+
     int numcols = backEnd_->prepare_for_describe();
 
     for (int i = 1; i <= numcols; ++i)

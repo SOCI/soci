@@ -45,6 +45,21 @@ std::size_t row::size() const
     return holders_.size();
 }
 
+void row::clean_up()
+{
+    std::size_t const hsize = holders_.size();
+    for (std::size_t i = 0; i != hsize; ++i)
+    {
+        delete holders_[i];
+        delete indicators_[i];
+    }
+
+    columns_.clear();
+    holders_.clear();
+    indicators_.clear();
+    index_.clear();
+}
+
 indicator row::get_indicator(std::size_t pos) const
 {
     assert(indicators_.size() >= static_cast<std::size_t>(pos + 1));
@@ -82,10 +97,5 @@ std::size_t row::find_column(std::string const &name) const
 
 row::~row()
 {
-    std::size_t const hsize = holders_.size();
-    for (std::size_t i = 0; i != hsize; ++i)
-    {
-        delete holders_[i];
-        delete indicators_[i];
-    }
+    clean_up();
 }
