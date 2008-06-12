@@ -1,7 +1,7 @@
 # The following variable is specific to this backend and its correct
 # values might depend on your environment - feel free to set it accordingly.
 
-ORACLEINCLUDEDIR = -I/u01/oracle/product/10.1.0/rdbms/public 
+ORACLEINCLUDEDIR = -I/usr/lib/oracle/xe/app/oracle/product/10.2.0/server/rdbms/public
 
 # The rest of the Makefile is indepentent of the target environment.
 

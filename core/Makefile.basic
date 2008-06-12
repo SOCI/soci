@@ -1,11 +1,12 @@
 COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
-INCLUDEDIRS = -I/usr/include/boost_1_34_1
+INCLUDEDIRS = 
 OBJS =  session.o statement.o row.o values.o \
 	into-type.o use-type.o \
 	blob.o rowid.o procedure.o ref-counted-prepare-info.o ref-counted-statement.o \
 	once-temp-type.o prepare-temp-type.o error.o transaction.o backend-loader.o \
-        connection-pool.o soci-simple.o
+	connection-pool.o soci-simple.o
+
 
 libsoci_core.a : ${OBJS} 
 	ar rv $@ $?

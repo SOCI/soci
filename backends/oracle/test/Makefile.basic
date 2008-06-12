@@ -1,9 +1,9 @@
 # The following variable is specific to this backend and its correct
 # values might depend on your environment - feel free to set it accordingly.
 
-ORACLEINCLUDEDIR = -I/u01/oracle/product/10.1.0/rdbms/public 
-ORACLELIBDIR = -L/u01/oracle/product/10.1.0/lib 
-ORACLELIBS = -lclntsh 
+ORACLEINCLUDEDIR = -I/usr/lib/oracle/xe/app/oracle/product/10.2.0/server/rdbms/public 
+ORACLELIBDIR = -L/usr/lib/oracle/xe/app/oracle/product/10.2.0/server/lib 
+ORACLELIBS = -lclntsh -lnnz10
 
 # The rest of the Makefile is indepentent of the target environment.
 
@@ -11,7 +11,7 @@ COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
 INCLUDEDIRS = -I.. -I../../../core -I../../../core/test ${ORACLEINCLUDEDIR}
 LIBDIRS = -L.. -L../../../core ${ORACLELIBDIR}
-LIBS = -lsoci_core -lsoci_oracle -ldl ${ORACLELIBS}
+LIBS = -lsoci_core -lsoci_oracle -ldl -lboost_date_time ${ORACLELIBS}
 
 
 test-oracle : test-oracle.cpp 
