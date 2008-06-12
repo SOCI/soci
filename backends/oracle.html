@@ -41,7 +41,7 @@
 <h3 id="prerequisites">Prerequisites</h3>
 <h4 id="versions">Supported Versions</h4>
 
-<p>The SOCI Oracle backend is currently supported for use with Oracle 10 and 11.<br />
+<p>The SOCI Oracle backend is currently supported for use with Oracle 10 or later.<br />
 Older versions of Oracle may work as well, but they have not been tested by the SOCI team.</p>
 
 <h4 id="tested">Tested Platforms</h4>
@@ -49,15 +49,14 @@ Older versions of Oracle may work as well, but they have not been tested by the 
 <table border="1" cellpadding="5" cellspacing="0">
 <tbody>
 <tr><th>Oracle version</th><th>Operating System</th><th>Compiler</th></tr>
-<tr><td>10.1.0</td><td>Linux i686 2.6.10-gentoo-r6</td><td>g++ 3.4.5</td></tr>
-<tr><td>10.1.0</td><td>Linux i686 2.4.21 (RedHat family)</td><td>g++ 3.2.3</td></tr>
-<tr><td>10.2.0</td><td>Windows XP</td><td>Visual C++ 8.0 Professional</td></tr>
+<tr><td>10.2.0 (XE)</td><td>Linux i686 2.6.9 (RedHat family)</td><td>g++ 3.4.6</td></tr>
 </tbody>
 </table>
 
 <h4 id="required">Required Client Libraries</h4>
 
-<p>The SOCI Oracle backend requires Oracle's <code>libclntsh</code> client library.</p>
+<p>The SOCI Oracle backend requires Oracle's <code>libclntsh</code> client library.
+Depending on the particular system, the <code>libnnz10</code> library might be needed as well.</p>
 
 <h4 id="connecting">Connecting to the Database</h4>
 
