@@ -32,10 +32,7 @@ struct type_conversion
     static void to_base(T const & in, base_type & out, indicator & ind)
     {
         out = in;
-
-        // Note: if the T type does not provide any specific NULL semantics,
-        // then the indicator is left untouched
-        // - this is the case for fundamental types
+        ind = i_ok;	
     }
 };
 

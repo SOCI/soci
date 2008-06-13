@@ -166,7 +166,10 @@ public:
 
         typedef typename type_conversion<T>::base_type base_type;
         base_type baseValue;
-        type_conversion<T>::to_base(value, baseValue, *pind);
+        if (indic == i_ok)
+        {
+            type_conversion<T>::to_base(value, baseValue, *pind);
+        }
 
         details::copy_holder<base_type> * pcopy =
             new details::copy_holder<base_type>(baseValue);

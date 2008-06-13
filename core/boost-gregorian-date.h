@@ -36,6 +36,7 @@ struct type_conversion<boost::gregorian::date>
         boost::gregorian::date const & in, base_type & out, indicator & ind)
     {
         out = boost::gregorian::to_tm(in);
+        ind = i_ok;
     }
 };
 
