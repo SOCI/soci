@@ -25,7 +25,7 @@ public:
     void inc_ref() { ++refCount_; }
     void dec_ref()
     {
-        if (--refCount_)
+        if (--refCount_ == 0)
         {
             delete this;
         }
