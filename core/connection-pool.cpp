@@ -227,7 +227,8 @@ connection_pool::connection_pool(std::size_t size)
     InitializeCriticalSection(&(pimpl_->mtx_));
 
     // initially all entries are available
-    HANDLE s = CreateSemaphore(NULL, size, size, NULL);
+    HANDLE s = CreateSemaphore(NULL,
+        static_cast<LONG>(size), static_cast<LONG>(size), NULL);
     if (s == NULL)
     {
         throw soci_error("Synchronization error");
