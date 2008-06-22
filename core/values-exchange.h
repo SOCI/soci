@@ -12,6 +12,7 @@
 #include "into-type.h"
 #include "use-type.h"
 #include "row-exchange.h"
+#include <vector>
 
 namespace soci
 {
@@ -67,6 +68,14 @@ private:
     values & v_;
 };
 
+// this is not supposed to be used - no support for bulk ORM
+template <>
+class use_type<std::vector<values> >
+{
+private:
+    use_type();
+};
+
 template <>
 class into_type<values> : public into_type<row>
 {
@@ -82,6 +91,14 @@ public:
 
 private:
     values & v_;
+};
+
+// this is not supposed to be used - no support for bulk ORM
+template <>
+class into_type<std::vector<values> >
+{
+private:
+    into_type();
 };
 
 } // namespace details
