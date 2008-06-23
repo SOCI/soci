@@ -150,6 +150,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			>
 			<File
+				RelativePath="..\..\..\src\core\backend-loader.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\core\blob-exchange.h"
 				>
 			</File>
@@ -158,7 +162,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\core\boost-optional.h"
+				RelativePath="..\..\..\src\core\connection-pool.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\error.h"
 				>
 			</File>
 			<File
@@ -238,6 +246,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\core\transaction.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\core\type-conversion-traits.h"
 				>
 			</File>
@@ -283,7 +295,15 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			>
 			<File
+				RelativePath="..\..\..\src\core\backend-loader.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\core\blob.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\connection-pool.cpp"
 				>
 			</File>
 			<File
@@ -328,6 +348,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\core\statement.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\transaction.cpp"
 				>
 			</File>
 			<File
