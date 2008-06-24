@@ -112,11 +112,11 @@ SOCI_DECL void soci_rollback(session_handle s)
 //     wrapper->is_ok = true;
 // }
 
-SOCI_DECL bool soci_session_state(session_handle s)
+SOCI_DECL int soci_session_state(session_handle s)
 {
     session_wrapper * wrapper = static_cast<session_wrapper *>(s);
 
-    return wrapper->is_ok;
+    return wrapper->is_ok ? 1 : 0;
 }
 
 SOCI_DECL char const * soci_session_error_message(session_handle s)
@@ -714,7 +714,7 @@ SOCI_DECL int soci_into_date_v(statement_handle st)
     return wrapper->next_position++;
 }
 
-SOCI_DECL bool soci_get_into_state(statement_handle st, int position)
+SOCI_DECL int soci_get_into_state(statement_handle st, int position)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
@@ -722,11 +722,11 @@ SOCI_DECL bool soci_get_into_state(statement_handle st, int position)
     {
         wrapper->is_ok = false;
         wrapper->error_message = "Invalid position.";
-        return false;
+        return 0;
     }
 
     wrapper->is_ok = true;
-    return wrapper->into_indicators[position] == i_ok;
+    return wrapper->into_indicators[position] == i_ok ? 1 : 0;
 }
 
 SOCI_DECL char const * soci_get_into_string(statement_handle st, int position)
@@ -862,7 +862,7 @@ SOCI_DECL void soci_into_resize_v(statement_handle st, int new_size)
     wrapper->is_ok = true;
 }
 
-SOCI_DECL bool soci_get_into_state_v(statement_handle st, int position, int index)
+SOCI_DECL int soci_get_into_state_v(statement_handle st, int position, int index)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
@@ -870,16 +870,16 @@ SOCI_DECL bool soci_get_into_state_v(statement_handle st, int position, int inde
     {
         wrapper->is_ok = false;
         wrapper->error_message = "Invalid position.";
-        return false;
+        return 0;
     }
 
     std::vector<indicator> const & v = wrapper->into_indicators_v[position];
     if (index_check_failed(v, *wrapper, index))
     {
-        return false;
+        return 0;
     }
 
-    return v[index] == i_ok;
+    return v[index] == i_ok ? 1 : 0;
 }
 
 SOCI_DECL char const * soci_get_into_string_v(statement_handle st, int position, int index)
@@ -1152,7 +1152,7 @@ SOCI_DECL void soci_use_date_v(statement_handle st, char const * name)
     wrapper->use_dates_v[name]; // create new entry
 }
 
-SOCI_DECL void soci_set_use_state(statement_handle st, char const * name, bool state)
+SOCI_DECL void soci_set_use_state(statement_handle st, char const * name, int state)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
@@ -1166,7 +1166,7 @@ SOCI_DECL void soci_set_use_state(statement_handle st, char const * name, bool s
     }
 
     wrapper->is_ok = true;
-    wrapper->use_indicators[name] = (state ? i_ok : i_null);
+    wrapper->use_indicators[name] = (state != 0 ? i_ok : i_null);
 }
 
 SOCI_DECL void soci_set_use_string(statement_handle st, char const * name, char const * val)
@@ -1294,7 +1294,7 @@ SOCI_DECL void soci_use_resize_v(statement_handle st, int new_size)
 }
 
 SOCI_DECL void soci_set_use_state_v(statement_handle st,
-    char const * name, int index, bool state)
+    char const * name, int index, int state)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
@@ -1313,7 +1313,7 @@ SOCI_DECL void soci_set_use_state_v(statement_handle st,
         return;
     }
 
-    v[index] = (state ? i_ok : i_null);
+    v[index] = (state != 0 ? i_ok : i_null);
 }
 
 SOCI_DECL void soci_set_use_string_v(statement_handle st,
@@ -1428,7 +1428,7 @@ SOCI_DECL void soci_set_use_date_v(statement_handle st,
     v[index] = dt;
 }
 
-SOCI_DECL bool soci_get_use_state(statement_handle st, char const * name)
+SOCI_DECL int soci_get_use_state(statement_handle st, char const * name)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
@@ -1438,11 +1438,11 @@ SOCI_DECL bool soci_get_use_state(statement_handle st, char const * name)
     {
         wrapper->is_ok = false;
         wrapper->error_message = "Invalid name.";
-        return false;
+        return 0;
     }
 
     wrapper->is_ok = true;
-    return wrapper->use_indicators[name] == i_ok;
+    return wrapper->use_indicators[name] == i_ok ? 1 : 0;
 }
 
 SOCI_DECL char const * soci_get_use_string(statement_handle st, char const * name)
@@ -1749,28 +1749,28 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
     }
 }
 
-SOCI_DECL bool soci_execute(statement_handle st, bool withDataExchange)
+SOCI_DECL int soci_execute(statement_handle st, int withDataExchange)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     try
     {
-        bool const gotData = wrapper->st.execute(withDataExchange);
+        bool const gotData = wrapper->st.execute(withDataExchange != 0);
 
         wrapper->is_ok = true;
 
-        return gotData;
+        return gotData ? 1 : 0;
     }
     catch (std::exception const & e)
     {
         wrapper->is_ok = false;
         wrapper->error_message = e.what();
 
-        return false;
+        return 0;
     }
 }
 
-SOCI_DECL bool soci_fetch(statement_handle st)
+SOCI_DECL int soci_fetch(statement_handle st)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
@@ -1780,29 +1780,29 @@ SOCI_DECL bool soci_fetch(statement_handle st)
 
         wrapper->is_ok = true;
 
-        return gotData;
+        return gotData ? 1 : 0;
     }
     catch (std::exception const & e)
     {
         wrapper->is_ok = false;
         wrapper->error_message = e.what();
 
-        return false;
+        return 0;
     }
 }
 
-SOCI_DECL bool soci_got_data(statement_handle st)
+SOCI_DECL int soci_got_data(statement_handle st)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    return wrapper->st.got_data();
+    return wrapper->st.got_data() ? 1 : 0;
 }
 
-SOCI_DECL bool soci_statement_state(statement_handle st)
+SOCI_DECL int soci_statement_state(statement_handle st)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
-    return wrapper->is_ok;
+    return wrapper->is_ok ? 1 : 0;
 }
 
 SOCI_DECL char const * soci_statement_error_message(statement_handle st)
