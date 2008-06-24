@@ -702,13 +702,13 @@ void soci_begin(session_handle s);
 void soci_commit(session_handle s);
 void soci_rollback(session_handle s);
 
-bool soci_session_state(session_handle s);
+int soci_session_state(session_handle s);
 char const * soci_session_error_message(session_handle s);
 </pre>
 
 <p>The functions above provide the <i>session</i> abstraction with the help of opaque handle.
-The <code>soci_session_state</code> function returns <code>true</code> if there was no error
-during the most recently executed function and <code>false</code> otherwise, in which
+The <code>soci_session_state</code> function returns <code>1</code> if there was no error
+during the most recently executed function and <code>0</code> otherwise, in which
 case the <code>soci_session_error_message</code> can be used to obtain a human-readable
 error description.</p>
 <p>Note that the only function that cannot report all errors this way is <code>soci_create_session</code>,
@@ -722,7 +722,7 @@ typedef void * statement_handle;
 statement_handle soci_create_statement(session_handle s);
 void soci_destroy_statement(statement_handle st);
 
-bool soci_statement_state(statement_handle s);
+int soci_statement_state(statement_handle s);
 char const * soci_statement_error_message(statement_handle s);
 </pre>
 
@@ -752,11 +752,11 @@ these function return the position of the currently added element. In case of er
 to retrieve whole arrays of results.</p>
 
 <pre class="example">
-bool soci_get_into_state(statement_handle st, int position);
-bool soci_get_into_state_v(statement_handle st, int position, int index);
+int soci_get_into_state(statement_handle st, int position);
+int soci_get_into_state_v(statement_handle st, int position, int index);
 </pre>
 
-<p>This function returns <code>true</code> if the into element at the given position has non-null value.
+<p>This function returns <code>1</code> if the into element at the given position has non-null value and <code>0</code> otherwise.
 The <code>_v</code> version works with <code>vector</code> elements and expects an array index.</p>
 
 <pre class="example">
@@ -806,11 +806,11 @@ data to the query (<i>use elements</i>). The new elements can be later identifie
 must be unique for the given statement.</p>
 
 <pre class="example">
-void soci_set_use_state(statement_handle st, char const * name, bool state);
+void soci_set_use_state(statement_handle st, char const * name, int state);
 </pre>
 
 <p>The <code>soci_set_use_state</code> function allows to set the state of the given use element.
-If the <code>state</code> parameter is set to <code>true</code> the use element is considered non-null
+If the <code>state</code> parameter is set to non-zero the use element is considered non-null
 (which is also the default state after creating the use element).</p>
 
 <pre class="example">
@@ -827,7 +827,7 @@ void soci_set_use_long_long(statement_handle st, char const * name, long long va
 void soci_set_use_double   (statement_handle st, char const * name, double val);
 void soci_set_use_date     (statement_handle st, char const * name, char const * val);
 
-void soci_set_use_state_v    (statement_handle st, char const * name, int index, bool state);
+void soci_set_use_state_v    (statement_handle st, char const * name, int index, int state);
 void soci_set_use_string_v   (statement_handle st, char const * name, int index, char const * val);
 void soci_set_use_int_v      (statement_handle st, char const * name, int index, int val);
 void soci_set_use_long_long_v(statement_handle st, char const * name, int index, long long val);
@@ -840,7 +840,7 @@ void soci_set_use_date_v     (statement_handle st, char const * name, int index,
 <p>Note: the expected format for the data values is "<code>YYYY MM DD HH mm ss</code>".</p>
 
 <pre class="example">
-bool         soci_get_use_state    (statement_handle st, char const * name);
+int          soci_get_use_state    (statement_handle st, char const * name);
 char const * soci_get_use_string   (statement_handle st, char const * name);
 int          soci_get_use_int      (statement_handle st, char const * name);
 long long    soci_get_use_long_long(statement_handle st, char const * name);
@@ -854,9 +854,9 @@ the rationale for this is that modifiable use elements are not supported for bul
 
 <pre class="example">
 void soci_prepare(statement_handle st, char const * query);
-bool soci_execute(statement_handle st, bool withDataExchange);
-bool soci_fetch(statement_handle st);
-bool soci_got_data(statement_handle st);
+int  soci_execute(statement_handle st, int withDataExchange);
+int  soci_fetch(statement_handle st);
+int  soci_got_data(statement_handle st);
 </pre>
 
 <p>The functions above provide the core execution functionality for the statement object
