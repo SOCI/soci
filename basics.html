@@ -56,7 +56,7 @@ session sql("postgresql://dbname=mydb");
 
 <div class="note">
 <p><span class="note">Environment configuration:</span></p>
-<p>The <code>SOCI_BACKENDS_PATH</code> environment variable defines the set of paths where the shared libraries will be searched for. There can be many paths, separated by colons, and they are used from left to right until the library with the appropriate name is found.</p>
+<p>The <code>SOCI_BACKENDS_PATH</code> environment variable defines the set of paths where the shared libraries will be searched for. There can be many paths, separated by colons, and they are used from left to right until the library with the appropriate name is found. If this variable is not set or is empty, the current directory is used as a default path for dynamically loaded backends.</p>
 </div>
 
 <p>An alternative way to set up the session is to create it in the disconnected state and connect later:</p>
