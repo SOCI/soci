@@ -3,6 +3,7 @@
 # some common compilation settings if you need to change them:
 
 set CXXFLAGS "-Wall -pedantic -Wno-long-long -O2"
+set CXXTESTFLAGS "-O2"
 
 if {$tcl_platform(os) == "Darwin"} {
     # special case for Mac OS X
@@ -27,10 +28,15 @@ proc printUsageAndExit {} {
     puts "mysql         - the static MySQL backend"
     puts "mysql-so      - the shared MySQL backend"
     puts ""
+    puts "oracle-test     - the test for Oracle"
+    puts "postgresql-test - the test for PostgreSQL"
+    puts "mysql-test      - the test for MySQL"
+    puts "                  Note: build static core and backends first."
+    puts ""
     puts "Example:"
     puts "$ ./build.tcl core mysql"
     puts ""
-    puts "After successful build the results are in include and lib directories."
+    puts "After successful build the results are in include, lib and test directories."
     puts "Move/copy the contents of these directories wherever you want."
     exit
 }
@@ -42,6 +48,44 @@ if {$argc == 0 || $argv == "--help"} {
 proc execute {command} {
     puts $command
     eval exec $command
+}
+
+proc findBoost {} {
+    # candidate directories for local Boost:
+    set includeDirs {
+        "/usr/local/include"
+        "/usr/include"
+    }
+    set libDirs {
+        "/usr/local/lib"
+        "/usr/lib"
+    }
+
+    set includeDir ""
+    foreach I $includeDirs {
+        set header "${I}/boost/version.hpp"
+        if {[file exists $header]} {
+            set includeDir $I
+            break
+        }
+    }
+    if {$includeDir == ""} {
+        return {}
+    }
+
+    set libDir ""
+    foreach L $libDirs {
+        set library "${L}/libboost_date_time.a"
+        if {[file exists $library]} {
+            set libDir $L
+            break
+        }
+    }
+    if {$libDir == ""} {
+        return {}
+    }
+
+    return [list $includeDir $libDir]
 }
 
 proc buildCore {} {
@@ -132,7 +176,7 @@ proc buildPostgreSQL {} {
     set dirs [findPostgreSQL]
     if {$dirs == {}} {
         puts "cannot find PostgreSQL library files, skipping this target"
-        exit
+        return
     }
 
     set includeDir [lindex $dirs 0]
@@ -160,7 +204,7 @@ proc buildPostgreSQLSo {} {
     set dirs [findPostgreSQL]
     if {$dirs == {}} {
         puts "cannot find PostgreSQL library files, skipping this target"
-        exit
+        return
     }
 
     set includeDir [lindex $dirs 0]
@@ -178,6 +222,37 @@ proc buildPostgreSQLSo {} {
     execute "cp ../../src/backends/postgresql/libsoci_postgresql.so lib"
     eval exec mkdir -p "include"
     execute "cp ../../src/backends/postgresql/soci-postgresql.h include"
+}
+
+proc buildPostgreSQLTest {} {
+    global CXXTESTFLAGS
+
+    puts "building PostgreSQL test"
+
+    set dirs [findPostgreSQL]
+    if {$dirs == {}} {
+        puts "cannot find PostgreSQL library files, skipping this target"
+        return
+    }
+
+    set includeDir [lindex $dirs 0]
+    set libDir [lindex $dirs 1]
+
+    set dirs [findBoost]
+    if {$dirs == {}} {
+        puts "cannot find Boost library files, skipping this target"
+        return
+    }
+
+    set boostIncludeDir [lindex $dirs 0]
+    set boostLibDir [lindex $dirs 1]
+
+    set cwd [pwd]
+    cd "../../src/backends/postgresql/test"
+    execute "g++ test-postgresql.cpp -o test-postgresql $CXXTESTFLAGS -I.. -I../../../core -I../../../core/test -I${includeDir} -I${boostIncludeDir} -L../../../../build/unix/lib -L${libDir} -L${boostLibDir} -lsoci_core -lsoci_postgresql -lboost_date_time -ldl -lpq"
+    cd $cwd
+    eval exec mkdir -p "tests"
+    execute "cp ../../src/backends/postgresql/test/test-postgresql tests"
 }
 
 proc findMySQL {} {
@@ -228,7 +303,7 @@ proc buildMySQL {} {
     set dirs [findMySQL]
     if {$dirs == {}} {
         puts "cannot find MySQL library files, skipping this target"
-        exit
+        return
     }
 
     set includeDir [lindex $dirs 0]
@@ -256,7 +331,7 @@ proc buildMySQLSo {} {
     set dirs [findMySQL]
     if {$dirs == {}} {
         puts "cannot find MySQL library files, skipping this target"
-        exit
+        return
     }
 
     set includeDir [lindex $dirs 0]
@@ -276,6 +351,37 @@ proc buildMySQLSo {} {
     execute "cp ../../src/backends/mysql/soci-mysql.h include"
 }
 
+proc buildMySQLTest {} {
+    global CXXTESTFLAGS
+
+    puts "building MySQL test"
+
+    set dirs [findMySQL]
+    if {$dirs == {}} {
+        puts "cannot find MySQL library files, skipping this target"
+        return
+    }
+
+    set includeDir [lindex $dirs 0]
+    set libDir [lindex $dirs 1]
+
+    set dirs [findBoost]
+    if {$dirs == {}} {
+        puts "cannot find Boost library files, skipping this target"
+        return
+    }
+
+    set boostIncludeDir [lindex $dirs 0]
+    set boostLibDir [lindex $dirs 1]
+
+    set cwd [pwd]
+    cd "../../src/backends/mysql/test"
+    execute "g++ test-mysql.cpp -o test-mysql $CXXTESTFLAGS -I.. -I../../../core -I../../../core/test -I${includeDir} -I${boostIncludeDir} -L../../../../build/unix/lib -L${libDir} -L${boostLibDir} -lsoci_core -lsoci_mysql -lboost_date_time -ldl -lmysqlclient -lz"
+    cd $cwd
+    eval exec mkdir -p "tests"
+    execute "cp ../../src/backends/postgresql/test/test-postgresql tests"
+}
+
 foreach target $argv {
     switch -exact $target {
         core buildCore
@@ -284,8 +390,10 @@ foreach target $argv {
         oracle-so buildOracleSo
         postgresql buildPostgreSQL
         postgresql-so buildPostgreSQLSo
+        postgresql-test buildPostgreSQLTest
         mysql buildMySQL
         mysql-so buildMySQLSo
+        mysql-test buildMySQLTest
         default {
             puts "unknown target $target - skipping"
         }
