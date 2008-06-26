@@ -14,6 +14,7 @@ if {$tcl_platform(os) == "Darwin"} {
 
 source "find-boost.tcl"
 source "build-core.tcl"
+source "build-oracle.tcl"
 source "build-postgresql.tcl"
 source "build-mysql.tcl"
 
@@ -60,6 +61,7 @@ foreach target $argv {
         core-so buildCoreSo
         oracle buildOracle
         oracle-so buildOracleSo
+        oracle-test buildOracleTest
         postgresql buildPostgreSQL
         postgresql-so buildPostgreSQLSo
         postgresql-test buildPostgreSQLTest
