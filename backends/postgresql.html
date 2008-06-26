@@ -47,13 +47,18 @@
 <tbody>
 <tr><th>PostgreSQL version</th><th>Operating System</th><th>Compiler</th></tr>
 <tr><td>8.3</td><td>Mac OS X 10.5.3</td><td>g++ 4.0.1</td></tr>
-<tr><td>8.2.7</td><td>Linux i686 2.6.23 (Fedora release&nbsp;7)</td><td>g++ 4.1.2</td></tr>
+<tr><td>8.3</td><td>Linux i686 2.6.9 (RedHat family)</td><td>g++ 3.4.6</td></tr>
+<tr><td>8.2.7</td><td>Linux i686 2.6.23 (Fedora release 7)</td><td>g++ 4.1.2</td></tr>
 </tbody>
 </table>
 
 <h4 id="required">Required Client Libraries</h4>
 
 <p>The SOCI PostgreSQL backend requires PostgreSQL's <code>libpq</code> client library.</p>
+<p>Note that the SOCI library itself depends also on <code>libdl</code>, so the minimum set of libraries needed to compile a basic client program is:</p>
+<pre class="example">
+-lsoci_core -lsoci_postgresql -ldl -lpq
+</pre>
 
 <h4 id="connecting">Connecting to the Database</h4>
 

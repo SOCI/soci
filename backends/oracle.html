@@ -57,6 +57,10 @@ Older versions of Oracle may work as well, but they have not been tested by the 
 
 <p>The SOCI Oracle backend requires Oracle's <code>libclntsh</code> client library.
 Depending on the particular system, the <code>libnnz10</code> library might be needed as well.</p>
+<p>Note that the SOCI library itself depends also on <code>libdl</code>, so the minimum set of libraries needed to compile a basic client program is:</p>
+<pre class="example">
+-lsoci_core -lsoci_oracle -ldl -lclntsh -lnnz10
+</pre>
 
 <h4 id="connecting">Connecting to the Database</h4>
 
