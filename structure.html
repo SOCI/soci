@@ -15,7 +15,8 @@
 <a href="#structure">Structure</a><br />
 <a href="#compilation">Compilation</a><br />
 <div class="navigation-indented">
-  <a href="#autotools">With autotools on Unix/Linux</a><br />
+  <a href="#script">With build script on Unix/Linux</a><br />
+<!--  <a href="#autotools">With autotools on Unix/Linux</a><br /> -->
   <a href="#makefiles">With classic Makefiles on Unix/Linux</a><br />
   <a href="#msvc">With Microsoft Visual C++ 2005 on Windows</a>
 </div>
@@ -80,45 +81,35 @@ as part of the connection string, in which case no backend-specific
 
 <p>Download the SOCI distribution file: soci-X.Y.Z.tar.gz|tar.bz2|zip, where X.Y.Z is the version number. Unpack this file.</p>
 
-<h4 id="autotools">With autotools on Unix/Linux</h4>
+<h4 id="script">With build script on Unix/Linux</h4>
 
-<p>Configure:</p>
+<p>Enter the <code>build/unix</code> directory and build the components that you need:</p>
 <pre class="example">
-$ ./configure
+$ cd build/unix
+$ ./build.tcl core mysql postgresql
 </pre>
 
-<p>You may want to pass custom options to <code>./configure</code> script.
-Backends can be enabled using options named as <code>--enable-backend-&lt;name&gt;</code> and
-disabled using <code>--disable-backend-&lt;name&gt;</code>.
-For example, to compile with support for MySQL that is already installed in some standard location, do this:</p>
+<p>The available targets for the build script are:</p>
+<ul>
+  <li><code>core</code> - the static version of the core library</li>
+  <li><code>core-so</code> - the shared version of the core library</li>
+  <li><code>oracle</code> - the static Oracle backend</li>
+  <li><code>oracle-so</code> - the shared Oracle backend</li>
+  <li><code>oracle-test</code> - the Oracle test</li>
+  <li><code>postgresql</code> - the static PostgreSQL backend</li>
+  <li><code>postgresql-so</code> - the shared PostgreSQL backend</li>
+  <li><code>postgresql-test</code> - the PostgreSQL test</li>
+  <li><code>mysql</code> - the static MySQL backend</li>
+  <li><code>mysql-so</code> - the shared MySQL backend</li>
+  <li><code>mysql-test</code> - the MySQL test</li>
+</ul>
 
-<pre class="example">
-$ ./configure --enable-backend-mysql=yes
-</pre>
+<p>Note: Oracle build requires that the <code>ORACLE_HOME</code> environment variable is set properly.</p>
+<p>Note: Test programs require that core and relevant backend are built first.</p>
 
-<p>There are also <code>--with-&lt;package&gt;</code>
-options which can be used to tell the script where the required headers and libraries can be found.</p>
-<p>For example, to compile the library with the Oracle backend that is itself installed on a separate filesystem the following might be needed (example broken into three lines for clarity):</p>
-
-<pre class="example">
-$ ./configure --enable-backend-oracle=yes \
-     --with-oracle-include=/u01/oracle/product/10.1.0/rdbms/public \
-     --with-oracle-lib=/u01/oracle/product/10.1.0/lib
-</pre>
-
-<p>Run <code>./configure --help</code> to learn what configuration options are available.</p>
-
-<p>Build (after successful configuration):</p>
-<pre class="example">
-$ make
-</pre>
-
-<p>Installation:</p>
-<pre class="example">
-$ make install
-</pre>
-
-<p>After the last step, SOCI components will be placed under default installation prefix <code>/usr/local</code> or custom location, if specified using <code>--prefix</code> option.</p>
+<p>After successful build, the header files, libraries and test programs are copied to the
+<code>include</code>, <code>lib</code> and <code>tests</code> subdirectories, respectively.</p>
+<p>There is no "install" procedure and the users are expected to move/copy these files to the destination of their choice.</p>
 
 <h4 id="makefiles">With classic Makefiles on Unix/Linux</h4>
 
