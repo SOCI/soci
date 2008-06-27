@@ -12,6 +12,7 @@
 
 #include <boost/date_time/gregorian/gregorian_types.hpp>
 #include <boost/date_time/gregorian/conversion.hpp>
+#include <ctime>
 
 namespace soci
 {

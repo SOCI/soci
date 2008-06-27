@@ -10,6 +10,8 @@
 
 #include "soci-postgresql.h"
 #include <limits>
+#include <cstring>
+#include <ctime>
 
 namespace soci
 {

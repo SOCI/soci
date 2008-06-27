@@ -10,6 +10,7 @@
 
 #include "type-conversion-traits.h"
 #include "soci-backend.h"
+#include <ctime>
 
 #include <vector>
 

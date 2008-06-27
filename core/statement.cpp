@@ -11,6 +11,7 @@
 #include "into-type.h"
 #include "use-type.h"
 #include "values.h"
+#include <ctime>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
