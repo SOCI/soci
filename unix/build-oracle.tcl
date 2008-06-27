@@ -16,8 +16,9 @@ proc findOracle {} {
     }
 
     set libDir [file join $ORACLE_HOME "lib"]
-    set library [file join $libDir "libclntsh.so"]
-    if {[file exists $library] == 0} {
+    set libraryA [file join $libDir "libclntsh.a"]
+    set librarySo [file join $libDir "libclntsh.so"]
+    if {([file exists $libraryA] == 0) && ([file exists $librarySo] == 0)} {
         puts "ORACLE_HOME is strange."
         return {}
     }

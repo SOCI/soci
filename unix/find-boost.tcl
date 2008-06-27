@@ -1,10 +1,14 @@
 proc findBoost {} {
+    global privateBoost
+
     # candidate directories for local Boost:
     set includeDirs {
+        $privateBoost
         "/usr/local/include"
         "/usr/include"
     }
     set libDirs {
+        $privateBoost
         "/usr/local/lib"
         "/usr/lib"
     }
@@ -23,8 +27,9 @@ proc findBoost {} {
 
     set libDir ""
     foreach L $libDirs {
-        set library "${L}/libboost_date_time.a"
-        if {[file exists $library]} {
+        set libraryA "${L}/libboost_date_time.a"
+        set librarySo "${L}/libboost_date_time.so"
+        if {[file exists $libraryA] || [file exists $librarySo]} {
             set libDir $L
             break
         }

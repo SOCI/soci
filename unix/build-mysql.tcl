@@ -25,8 +25,9 @@ proc findMySQL {} {
 
     set libDir ""
     foreach L $libDirs {
-        set library "${L}/libmysqlclient.a"
-        if {[file exists $library]} {
+        set libraryA "${L}/libmysqlclient.a"
+        set librarySo "${L}/libmysqlclient.so"
+        if {[file exists $libraryA] || [file exists $librarySo]} {
             set libDir $L
             break
         }
@@ -122,5 +123,5 @@ proc buildMySQLTest {} {
     execute "g++ test-mysql.cpp -o test-mysql $CXXTESTFLAGS -I.. -I../../../core -I../../../core/test -I${includeDir} -I${boostIncludeDir} -L../../../../build/unix/lib -L${libDir} -L${boostLibDir} -lsoci_core -lsoci_mysql -lboost_date_time -ldl -lmysqlclient -lz"
     cd $cwd
     eval exec mkdir -p "tests"
-    execute "cp ../../src/backends/postgresql/test/test-postgresql tests"
+    execute "cp ../../src/backends/mysql/test/test-mysql tests"
 }

@@ -27,8 +27,9 @@ proc findPostgreSQL {} {
 
     set libDir ""
     foreach L $libDirs {
-        set library "${L}/libpq.a"
-        if {[file exists $library]} {
+        set libraryA "${L}/libpq.a"
+        set librarySo "${L}/libpq.so"
+        if {[file exists $libraryA] || [file exists $librarySo]} {
             set libDir $L
             break
         }
