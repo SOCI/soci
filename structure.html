@@ -106,6 +106,14 @@ $ ./build.tcl core mysql postgresql
 
 <p>Note: Oracle build requires that the <code>ORACLE_HOME</code> environment variable is set properly.</p>
 <p>Note: Test programs require that core and relevant backend are built first.</p>
+<p>Note: Test programs depend on Boost. It is possible to provide the path to the local Boost installation
+(if it is not installed in any standard location) with the <code>-boost</code> parameter:</p>
+
+<pre class="example">
+$ ./build.tcl -boost /my/private/boost core mysql mysql-test
+</pre>
+
+<p>Hint: run <code>build.tcl</code> without any parameters to see the help instructions.</p>
 
 <p>After successful build, the header files, libraries and test programs are copied to the
 <code>include</code>, <code>lib</code> and <code>tests</code> subdirectories, respectively.</p>
