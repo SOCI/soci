@@ -5,12 +5,14 @@ proc findPostgreSQL {} {
         "/usr/local/include/pgsql"
         "/usr/include/pgsql"
         "/usr/include"
+        "/opt/local/include"
     }
     set libDirs {
         "/usr/local/pgsql/lib"
         "/usr/local/lib/pgsql"
         "/usr/lib/pgsql"
         "/usr/lib"
+        "/opt/local/lib"
     }
 
     set includeDir ""

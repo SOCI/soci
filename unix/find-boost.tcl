@@ -6,11 +6,13 @@ proc findBoost {} {
         $privateBoost
         "/usr/local/include"
         "/usr/include"
+        "/opt/local/include"
     }
     set libDirs {
         $privateBoost
         "/usr/local/lib"
         "/usr/lib"
+        "/opt/local/lib"
     }
 
     set includeDir ""

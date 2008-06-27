@@ -4,11 +4,13 @@ proc findMySQL {} {
         "/usr/local/include/mysql"
         "/usr/include/mysql"
         "/usr/include"
+        "/opt/local/include"
     }
     set libDirs {
         "/usr/local/lib/mysql"
         "/usr/lib/mysql"
         "/usr/lib"
+        "/opt/local/lib"
     }
 
     set includeDir ""
