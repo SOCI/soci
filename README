@@ -1,6 +1,6 @@
 SOCI - The C++ Database Access Library.
 
-Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton,
+Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton,
                         David Courtney, Pawel Aleksander Fedorynski,
                         Rafal Bobrowski, Mateusz Loskot
 
@@ -17,15 +17,10 @@ You should see the following files and directories here:
 
 - contrib         - Acknowledgements for contributions.
 
-- configure       - The main auto-configuration script - this is accompanied
-                    by other files in this directory.
-
 - doc/            - Documentation.
 
 - build/          - Additional build scripts and configuration files
                     for various compilation systems.
-
-- m4/             - Macros for autotools.
 
 - src/            - The source code of the library.
 
