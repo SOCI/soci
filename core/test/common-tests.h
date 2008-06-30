@@ -1043,7 +1043,11 @@ void test4()
 
             // for even more convenience, fetch should not fail
             // but just report end of rowset
+            // (and vectors should be truncated)
             
+            vals.resize(1);
+            inds.resize(1);
+
             gotData = st.fetch();
             assert(gotData == false);
             assert(vals.empty());

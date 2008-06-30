@@ -109,6 +109,7 @@ private:
     void post_fetch(bool gotData, bool calledFromFetch);
     void post_use(bool gotData);
     bool resize_intos(std::size_t upperBound = 0);
+    void truncate_intos();
 
     soci::details::statement_backend * backEnd_;
 

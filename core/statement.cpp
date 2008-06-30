@@ -364,6 +364,7 @@ bool statement_impl::fetch()
 {
     if (fetchSize_ == 0)
     {
+        truncate_intos();
         session_.set_got_data(false);
         return false;
     }
@@ -415,6 +416,7 @@ bool statement_impl::fetch()
         }
         else
         {
+            truncate_intos();
             gotData = false;
         }
     }
@@ -499,6 +501,15 @@ bool statement_impl::resize_intos(std::size_t upperBound)
     }
 
     return rows > 0 ? true : false;
+}
+
+void statement_impl::truncate_intos()
+{
+    std::size_t const isize = intos_.size();
+    for (std::size_t i = 0; i != isize; ++i)
+    {
+        intos_[i]->resize(0);
+    }
 }
 
 void statement_impl::pre_fetch()
