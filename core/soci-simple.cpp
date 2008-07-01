@@ -342,7 +342,7 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
     char const * name, data_type expected_type,
     statement_wrapper::kind k, char const * type_name)
 {
-    bool name_exists;
+    bool name_exists = false;
     if (k == statement_wrapper::single)
     {
         switch (expected_type)
