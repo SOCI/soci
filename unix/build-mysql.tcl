@@ -3,12 +3,14 @@ proc findMySQL {} {
     set includeDirs {
         "/usr/local/include/mysql"
         "/usr/include/mysql"
+        "/usr/local/include"
         "/usr/include"
         "/opt/local/include"
     }
     set libDirs {
         "/usr/local/lib/mysql"
         "/usr/lib/mysql"
+        "/usr/local/lib"
         "/usr/lib"
         "/opt/local/lib"
     }
@@ -98,7 +100,7 @@ proc buildMySQLSo {} {
 }
 
 proc buildMySQLTest {} {
-    global CXXTESTFLAGS
+    global CXXTESTFLAGS LDL
 
     puts "building MySQL test"
 
@@ -122,7 +124,7 @@ proc buildMySQLTest {} {
 
     set cwd [pwd]
     cd "../../src/backends/mysql/test"
-    execute "g++ test-mysql.cpp -o test-mysql $CXXTESTFLAGS -I.. -I../../../core -I../../../core/test -I${includeDir} -I${boostIncludeDir} -L../../../../build/unix/lib -L${libDir} -L${boostLibDir} -lsoci_core -lsoci_mysql -lboost_date_time -ldl -lmysqlclient -lz"
+    execute "g++ test-mysql.cpp -o test-mysql $CXXTESTFLAGS -I.. -I../../../core -I../../../core/test -I${includeDir} -I${boostIncludeDir} -L../../../../build/unix/lib -L${libDir} -L${boostLibDir} -lsoci_core -lsoci_mysql -lboost_date_time ${LDL} -lmysqlclient -lz"
     cd $cwd
     eval exec mkdir -p "tests"
     execute "cp ../../src/backends/mysql/test/test-mysql tests"

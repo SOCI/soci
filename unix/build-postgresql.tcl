@@ -4,6 +4,7 @@ proc findPostgreSQL {} {
         "/usr/local/pgsql/include"
         "/usr/local/include/pgsql"
         "/usr/include/pgsql"
+        "/usr/local/include"
         "/usr/include"
         "/opt/local/include"
     }
@@ -11,6 +12,7 @@ proc findPostgreSQL {} {
         "/usr/local/pgsql/lib"
         "/usr/local/lib/pgsql"
         "/usr/lib/pgsql"
+        "/usr/local/lib"
         "/usr/lib"
         "/opt/local/lib"
     }
@@ -100,7 +102,7 @@ proc buildPostgreSQLSo {} {
 }
 
 proc buildPostgreSQLTest {} {
-    global CXXTESTFLAGS
+    global CXXTESTFLAGS LDL
 
     puts "building PostgreSQL test"
 
@@ -124,7 +126,7 @@ proc buildPostgreSQLTest {} {
 
     set cwd [pwd]
     cd "../../src/backends/postgresql/test"
-    execute "g++ test-postgresql.cpp -o test-postgresql $CXXTESTFLAGS -I.. -I../../../core -I../../../core/test -I${includeDir} -I${boostIncludeDir} -L../../../../build/unix/lib -L${libDir} -L${boostLibDir} -lsoci_core -lsoci_postgresql -lboost_date_time -ldl -lpq"
+    execute "g++ test-postgresql.cpp -o test-postgresql $CXXTESTFLAGS -I.. -I../../../core -I../../../core/test -I${includeDir} -I${boostIncludeDir} -L../../../../build/unix/lib -L${libDir} -L${boostLibDir} -lsoci_core -lsoci_postgresql -lboost_date_time ${LDL} -lpq"
     cd $cwd
     eval exec mkdir -p "tests"
     execute "cp ../../src/backends/postgresql/test/test-postgresql tests"

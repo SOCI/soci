@@ -12,6 +12,13 @@ if {$tcl_platform(os) == "Darwin"} {
     set SHARED "-shared"
 }
 
+if {$tcl_platform(os) == "FreeBSD"} {
+    # FreeBSD does not have the libdl library, it is part of libc.
+    set LDL ""
+} else {
+    set LDL "-ldl"
+}
+
 source "find-boost.tcl"
 source "build-core.tcl"
 source "build-oracle.tcl"

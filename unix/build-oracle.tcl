@@ -83,7 +83,7 @@ proc buildOracleSo {} {
 }
 
 proc buildOracleTest {} {
-    global CXXTESTFLAGS
+    global CXXTESTFLAGS LDL
 
     puts "building Oracle test"
 
@@ -107,7 +107,7 @@ proc buildOracleTest {} {
 
     set cwd [pwd]
     cd "../../src/backends/oracle/test"
-    execute "g++ test-oracle.cpp -o test-oracle $CXXTESTFLAGS -I.. -I../../../core -I../../../core/test -I${includeDir} -I${boostIncludeDir} -L../../../../build/unix/lib -L${libDir} -L${boostLibDir} -lsoci_core -lsoci_oracle -lboost_date_time -ldl -lclntsh -lnnz10"
+    execute "g++ test-oracle.cpp -o test-oracle $CXXTESTFLAGS -I.. -I../../../core -I../../../core/test -I${includeDir} -I${boostIncludeDir} -L../../../../build/unix/lib -L${libDir} -L${boostLibDir} -lsoci_core -lsoci_oracle -lboost_date_time ${LDL} -lclntsh -lnnz10"
     cd $cwd
     eval exec mkdir -p "tests"
     execute "cp ../../src/backends/oracle/test/test-oracle tests"
