@@ -20,6 +20,8 @@ Version 3.0.0 differs from 2.2.0 in the following ways:
 - Unified column names for dynamic rowset description, to overcome
   differences between database servers.
 
+- Added the "simple" interface for interfacing from other languages.
+
 - Added thread-safe connection pool.
 
 - Added integrated support for Boost data types: gregorian_date,
