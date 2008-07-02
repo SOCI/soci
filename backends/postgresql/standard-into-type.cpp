@@ -22,11 +22,6 @@
 #define SOCI_PGSQL_NOBINDBYNAME
 #endif // SOCI_PGSQL_NOPARAMS
 
-#ifdef _MSC_VER
-#pragma warning(disable:4355 4996)
-#define strtoll(s, p, b) static_cast<long long>(_strtoi64(s, p, b))
-#endif
-
 using namespace soci;
 using namespace soci::details;
 using namespace soci::details::postgresql;
@@ -160,24 +155,12 @@ void postgresql_standard_into_type_backend::post_fetch(
                     = static_cast<postgresql_rowid_backend *>(
                         rid->get_backend());
 
-                char * end;
-                long long val = strtoll(buf, &end, 10);
-                if (end == buf)
-                {
-                    throw soci_error("Cannot convert data.");
-                }
-                rbe->value_ = static_cast<unsigned long>(val);
+                rbe->value_ = string_to_integer<unsigned long>(buf);
             }
             break;
         case x_blob:
             {
-                char * end;
-                long long llval = strtoll(buf, &end, 10);
-                if (end == buf)
-                {
-                    throw soci_error("Cannot convert data.");
-                }
-                unsigned long oid = static_cast<unsigned long>(llval);
+                unsigned long oid = string_to_integer<unsigned long>(buf);
 
                 int fd = lo_open(statement_.session_.conn_, oid,
                     INV_READ | INV_WRITE);
