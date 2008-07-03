@@ -26,7 +26,8 @@ using namespace soci::details;
 using namespace soci::details::oracle;
 
 oracle_statement_backend::oracle_statement_backend(oracle_session_backend &session)
-    : session_(session), stmtp_(NULL), boundByName_(false), boundByPos_(false)
+    : session_(session), stmtp_(NULL), boundByName_(false), boundByPos_(false),
+      noData_(false)
 {
 }
 
@@ -79,6 +80,7 @@ statement_backend::exec_fetch_result oracle_statement_backend::execute(int numbe
     }
     else if (res == OCI_NO_DATA)
     {
+        noData_ = true;
         return ef_no_data;
     }
     else
@@ -90,6 +92,11 @@ statement_backend::exec_fetch_result oracle_statement_backend::execute(int numbe
 
 statement_backend::exec_fetch_result oracle_statement_backend::fetch(int number)
 {
+    if (noData_)
+    {
+        return ef_no_data;
+    }
+
     sword res = OCIStmtFetch(stmtp_, session_.errhp_,
         static_cast<ub4>(number), OCI_FETCH_NEXT, OCI_DEFAULT);
 
@@ -99,6 +106,7 @@ statement_backend::exec_fetch_result oracle_statement_backend::fetch(int number)
     }
     else if (res == OCI_NO_DATA)
     {
+        noData_ = true;
         return ef_no_data;
     }
     else

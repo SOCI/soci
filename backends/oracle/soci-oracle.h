@@ -208,6 +208,7 @@ struct oracle_statement_backend : details::statement_backend
 
     bool boundByName_;
     bool boundByPos_;
+    bool noData_;
 };
 
 struct oracle_rowid_backend : details::rowid_backend
