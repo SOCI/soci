@@ -71,7 +71,11 @@ if {$argc == 0 || $argv == "--help"} {
 
 proc execute {command} {
     puts $command
-    eval exec $command
+    if {[catch {eval exec $command}] != 0} {
+        puts "The last command did not execute properly."
+        puts "Please contact the SOCI team."
+        exit
+    }
 }
 
 if {[lindex $argv 0] == "-boost"} {
