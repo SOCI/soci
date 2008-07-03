@@ -28,7 +28,8 @@ void parse_num(char const *buf, T &x)
 {
     std::istringstream iss(buf);
     iss >> x;
-    if (iss.fail() || !iss.eof()) {
+    if (iss.fail() || (iss.eof() == false))
+    {
         throw soci_error("Cannot convert data.");
     }
 }

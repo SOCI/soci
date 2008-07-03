@@ -32,7 +32,7 @@ struct type_conversion
     static void to_base(T const & in, base_type & out, indicator & ind)
     {
         out = in;
-        ind = i_ok;	
+        ind = i_ok;
     }
 };
 

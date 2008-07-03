@@ -194,27 +194,36 @@ void test3()
 template <typename T>
 void test_num(const char* s, bool valid, T value)
 {
-    try {
+    try
+    {
         session sql(backEnd, connectString);
         T val;
         sql << "select \'" << s << "\'", into(val);
-        if (valid) {
+        if (valid)
+        {
             double v1 = value;
             double v2 = val;
             double d = std::fabs(v1 - v2);
             double epsilon = 0.001;
             assert(d < epsilon ||
                    d < epsilon * (std::fabs(v1) + std::fabs(v2)));
-        } else {
+        }
+        else
+        {
             std::cout << "string \"" << s << "\" parsed as " << val
                       << " but should have failed.\n";
             assert(false);
         }
-    } catch (soci_error const& e) {
-        if (valid) {
+    }
+    catch (soci_error const& e)
+    {
+        if (valid)
+        {
             std::cout << "couldn't parse number: \"" << s << "\"\n";
             assert(false);
-        } else {
+        }
+        else
+        {
             assert(std::string(e.what()) == "Cannot convert data.");
         }
     }
@@ -246,7 +255,7 @@ void test4()
         "9999999999999999999999991222222222222222222222222222333333333333"
         "9999999999999999999999991222222222222222222222222222333333333333"
         "9999999999999999999999991222222222222222222222222222333333333333",
-	false, 0);
+        false, 0);
     test_num<double>("1e3", true, 1000);
     test_num<double>("1.2", true, 1.2);
     test_num<double>("1.2345e2", true, 123.45);
