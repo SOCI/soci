@@ -34,8 +34,10 @@ T string_to_integer(char const * buf)
         // successfully converted to long long
         // and no other characters were found in the buffer
 
-        if (t <= (std::numeric_limits<T>::max)() &&
-            t >= (std::numeric_limits<T>::min)())
+        const T max = (std::numeric_limits<T>::max)();
+        const T min = (std::numeric_limits<T>::min)();
+        if (t <= static_cast<long long>(max) &&
+            t >= static_cast<long long>(min))
         {
             return static_cast<T>(t);
         }
