@@ -16,7 +16,6 @@
 <a href="#compilation">Compilation</a><br />
 <div class="navigation-indented">
   <a href="#script">With build script on Unix/Linux</a><br />
-<!--  <a href="#autotools">With autotools on Unix/Linux</a><br /> -->
   <a href="#makefiles">With classic Makefiles on Unix/Linux</a><br />
   <a href="#msvc">With Microsoft Visual C++ 2005 on Windows</a>
 </div>
@@ -83,45 +82,74 @@ as part of the connection string, in which case no backend-specific
 
 <h4 id="script">With build script on Unix/Linux</h4>
 
-<p>Enter the <code>build/unix</code> directory and build the components that you need:</p>
+<p>Short version:</p>
 <pre class="example">
-$ cd build/unix
-$ ./build.tcl core mysql postgresql
+$ ./configure
+$ make
+$ make install
 </pre>
 
-<p>The available targets for the build script are:</p>
-<ul>
-  <li><code>core</code> - the static version of the core library</li>
-  <li><code>core-so</code> - the shared version of the core library</li>
-  <li><code>oracle</code> - the static Oracle backend</li>
-  <li><code>oracle-so</code> - the shared Oracle backend</li>
-  <li><code>oracle-test</code> - the Oracle test</li>
-  <li><code>postgresql</code> - the static PostgreSQL backend</li>
-  <li><code>postgresql-so</code> - the shared PostgreSQL backend</li>
-  <li><code>postgresql-test</code> - the PostgreSQL test</li>
-  <li><code>mysql</code> - the static MySQL backend</li>
-  <li><code>mysql-so</code> - the shared MySQL backend</li>
-  <li><code>mysql-test</code> - the MySQL test</li>
-</ul>
+<p>Long version:</p>
 
-<p>Note: Oracle build requires that the <code>ORACLE_HOME</code> environment variable is set properly.</p>
-<p>Note: Test programs require that core and relevant backend are built first.</p>
-<p>Note: Test programs depend on Boost. It is possible to provide the path to the local Boost installation
-(if it is not installed in any standard location) with the <code>-boost</code> parameter:</p>
+<p>The <code>configure</code> script verifies that the Tcl interpreter is installed on the system,
+as a dependency for all the build and install scripts, and allows to provide various
+settings if the local environment differs from standard installations.</p>
+<p>When the <code>configure</code> script is run without parameters, the remaining
+part of the process will use <code>/usr/local/include/soci</code> as a default destination for SOCI header files
+and <code>/usr/local/lib</code> as a default destination for library files and the build script
+will try to find all supported database installations in the "usual" set of directories.
+To build the Oracle backend, the <code>ORACLE_HOME</code> environment variable has to be set
+properly as well.</p>
 
+<p>The configuration parameters allow to change the target directory for installing SOCI
+and to name specific directories for chosen database header and library files if they are
+not installed on any of the "usual" paths.
+To learn about all configuration options run:</p>
 <pre class="example">
-$ ./build.tcl -boost /my/private/boost core mysql mysql-test
+$ ./configure --help
 </pre>
 
-<p>Hint: run <code>build.tcl</code> without any parameters to see the help instructions.</p>
+<p>For example, if the MySQL header and library files were installed locally in
+<code>/opt/mysql/include</code> and <code>/opt/mysql/lib</code>, then the following
+command will configure the build step accordingly:</p>
+<pre class="example">
+$ ./configure --mysql-include=/opt/mysql/include --mysql-lib=/opt/mysql/lib
+</pre>
 
-<p>After successful build, the header files, libraries and test programs are copied to the
-<code>include</code>, <code>lib</code> and <code>tests</code> subdirectories, respectively.</p>
-<p>There is no "install" procedure and the users are expected to move/copy these files to the destination of their choice.</p>
+<p>After configuring the build and installation steps you can build the SOCI library by simply running <code>make</code>.
+The core library and backends will be placed in <code>build/unix/include</code> and <code>build/unix/lib</code> directories.</p>
+
+<p>The library can be installed by:</p>
+<pre class="example">
+$ make install
+</pre>
+
+<p>Note: depending on the target directory it might be necessary to acquire root permissions before
+installing the library.</p>
+<p>The "undo" script that removes all files and directories
+that were created during installation is created automatically and can be run by:</p>
+<pre class="example">
+$ make uninstall
+</pre>
+
+<p>In addition to the library itself, the test programs for each backend can be compiled as well:</p>
+<pre class="example">
+$ make tests
+</pre>
+
+<p>The compiled test programs are located in <code>build/unix/tests</code> and require, as their single parameter,
+a connection string understood by the relevant backend. Run them without arguments to see the usage description.</p>
+
+<p>All build artefacts (not counting the installed files) can be removed with the following:</p>
+<pre class="example">
+$ make clean
+</pre>
 
 <h4 id="makefiles">With classic Makefiles on Unix/Linux</h4>
 
-<p>The classic set of Makefiles for Unix/Linux systems is provided just in case if the autotools method fails to recognize the local system configuration. In this sense, the Makefiles are supposed to only provide a minimal starting point for custom experimentation and are not intended to be a complete build/installation solution.<br />
+<p>The classic set of Makefiles for Unix/Linux systems is provided for those users who need complete control over the whole process
+and who can benefit from the basic scaffolding that they can extend on their own.
+In this sense, the basic Makefiles are supposed to provide a minimal starting point for custom experimentation and are not intended to be a complete build/installation solution.<br />
 At the same time, they are complete in the sense that they can compile the library with all test programs and for some users this level of support will be just fine.</p>
 
 <p>The <code>core</code> directory of the library distribution contains
