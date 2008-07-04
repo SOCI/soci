@@ -1,26 +1,32 @@
 proc findOracle {} {
-    global env
+    global env oracleInclude oracleLib
 
-    if {[info exists env(ORACLE_HOME)] == 0} {
-        puts "The ORACLE_HOME variable is not set."
-        return {}
-    }
+    if {[info exists oracleInclude] &&
+        [info exists oracleLib]} {
+        set includeDir $oracleInclude
+        set libDir $oracleLib
+    } else {
+        if {[info exists env(ORACLE_HOME)] == 0} {
+            puts "The ORACLE_HOME variable is not set."
+            return {}
+        }
     
-    set ORACLE_HOME $env(ORACLE_HOME)
+        set ORACLE_HOME $env(ORACLE_HOME)
 
-    set includeDir [file join $ORACLE_HOME "rdbms/public"]
-    set header [file join $includeDir "oci.h"]
-    if {[file exists $header] == 0} {
-        puts "ORACLE_HOME is strange."
-        return {}
-    }
+        set includeDir [file join $ORACLE_HOME "rdbms/public"]
+        set header [file join $includeDir "oci.h"]
+        if {[file exists $header] == 0} {
+            puts "ORACLE_HOME is strange."
+            return {}
+        }
 
-    set libDir [file join $ORACLE_HOME "lib"]
-    set libraryA [file join $libDir "libclntsh.a"]
-    set librarySo [file join $libDir "libclntsh.so"]
-    if {([file exists $libraryA] == 0) && ([file exists $librarySo] == 0)} {
-        puts "ORACLE_HOME is strange."
-        return {}
+        set libDir [file join $ORACLE_HOME "lib"]
+        set libraryA [file join $libDir "libclntsh.a"]
+        set librarySo [file join $libDir "libclntsh.so"]
+        if {([file exists $libraryA] == 0) && ([file exists $librarySo] == 0)} {
+            puts "ORACLE_HOME is strange."
+            return {}
+        }
     }
 
     return [list $includeDir $libDir]

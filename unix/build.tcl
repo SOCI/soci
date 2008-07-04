@@ -19,6 +19,7 @@ if {$tcl_platform(os) == "FreeBSD"} {
     set LDL "-ldl"
 }
 
+source "execute.tcl"
 source "find-boost.tcl"
 source "build-core.tcl"
 source "build-oracle.tcl"
@@ -27,7 +28,7 @@ source "build-mysql.tcl"
 
 proc printUsageAndExit {} {
     puts "Usage:"
-    puts "$ ./build.tcl \[-boost path\] list-of-targets"
+    puts "$ ./build.tcl list-of-targets"
     puts ""
     puts "list of targets can contain any of:"
     puts "core          - the core part of the library (static version)"
@@ -46,19 +47,11 @@ proc printUsageAndExit {} {
     puts "mysql-test      - the test for MySQL"
     puts "                  Note: build static core and backends first."
     puts ""
-    puts "Note: the path to the Boost library is necessary only"
-    puts "      if Boost is not installed in any of the \"standard\" places"
-    puts "      and only for building tests."
-    puts "      It is not necessary for building the SOCI library."
-    puts "      If you provide the path to Boost, it should be the first two params."
-    puts ""
     puts "Examples:"
     puts ""
     puts "$ ./build.tcl core mysql"
     puts ""
     puts "$ ./build.tcl core postgresql postgresql-test"
-    puts ""
-    puts "$ ./build.tcl -boost /my/private/boost core postgresql postgresql-test"
     puts ""
     puts "After successful build the results are in include, lib and test directories."
     puts "Move/copy the contents of these directories wherever you want."
@@ -67,22 +60,6 @@ proc printUsageAndExit {} {
 
 if {$argc == 0 || $argv == "--help"} {
     printUsageAndExit
-}
-
-proc execute {command} {
-    puts $command
-    if {[catch {eval exec $command}] != 0} {
-        puts "The last command did not execute properly."
-        puts "Please contact the SOCI team."
-        exit
-    }
-}
-
-if {[lindex $argv 0] == "-boost"} {
-    set privateBoost [lindex $argv 1]
-    set argv [lrange $argv 2 end]
-} else {
-    set privateBoost ""
 }
 
 foreach target $argv {

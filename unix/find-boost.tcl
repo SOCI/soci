@@ -1,18 +1,21 @@
 proc findBoost {} {
-    global privateBoost
+    global rootBoost
 
     # candidate directories for local Boost:
     set includeDirs {
-        $privateBoost
         "/usr/local/include"
         "/usr/include"
         "/opt/local/include"
     }
     set libDirs {
-        $privateBoost
         "/usr/local/lib"
         "/usr/lib"
         "/opt/local/lib"
+    }
+
+    if [info exists rootBoost] {
+        set includeDirs [list $rootBoost]
+        set libDirs [list
     }
 
     set includeDir ""

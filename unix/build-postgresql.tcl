@@ -1,20 +1,35 @@
 proc findPostgreSQL {} {
+    global postgresqlInclude postgresqlLib
+
     # candidate directories for local PostgreSQL:
     set includeDirs {
         "/usr/local/pgsql/include"
+        "/usr/local/postgresql/include"
         "/usr/local/include/pgsql"
+        "/usr/local/include/postgresql"
         "/usr/include/pgsql"
+        "/usr/include/postgresql"
         "/usr/local/include"
         "/usr/include"
         "/opt/local/include"
     }
     set libDirs {
         "/usr/local/pgsql/lib"
+        "/usr/local/postgresql/lib"
         "/usr/local/lib/pgsql"
+        "/usr/local/lib/postgresql"
         "/usr/lib/pgsql"
+        "/usr/lib/postgresql"
         "/usr/local/lib"
         "/usr/lib"
         "/opt/local/lib"
+    }
+
+    if [info exists postgresqlInclude] {
+        set includeDirs [list $postgresqlInclude]
+    }
+    if [info exists postgresqlLib] {
+        set libDirs [list $postgresqlLib]
     }
 
     set includeDir ""

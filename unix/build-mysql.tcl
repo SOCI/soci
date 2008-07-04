@@ -1,4 +1,8 @@
+source "local/parameters.tcl"
+
 proc findMySQL {} {
+    global mysqlInclude mysqlLib
+
     # candidate directories for local MySQL:
     set includeDirs {
         "/usr/local/include/mysql"
@@ -13,6 +17,13 @@ proc findMySQL {} {
         "/usr/local/lib"
         "/usr/lib"
         "/opt/local/lib"
+    }
+
+    if [info exists mysqlInclude] {
+        set includeDirs [list $mysqlInclude]
+    }
+    if [info exists mysqlLib] {
+        set libDirs [list $mysqlLib]
     }
 
     set includeDir ""
