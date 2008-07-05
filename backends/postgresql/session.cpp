@@ -33,7 +33,13 @@ postgresql_session_backend::postgresql_session_backend(
     conn_ = PQconnectdb(connectString.c_str());
     if (conn_ == NULL || PQstatus(conn_) != CONNECTION_OK)
     {
-        throw soci_error("Cannot establish connection to the database.");
+        std::string msg = "Cannot establish connection to the database.";
+        if (conn_ != NULL)
+        {
+            msg += PQerrorMessage(conn_);
+        }
+
+        throw soci_error(msg);
     }
 }
 
