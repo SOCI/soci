@@ -55,6 +55,9 @@ foreach lib [glob "${buildDir}/lib/*.so"] {
 
 close $uninstallFile
 
+puts "ldconfig ${libInstallPrefix}"
+catch { eval exec "ldconfig ${libInstallPrefix}" }
+
 puts ""
 puts ""
 puts "Hint: the shared libraries were installed in $libInstallPrefix"
