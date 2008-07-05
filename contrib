@@ -7,6 +7,11 @@ Rainer Bauer
 Rainer contributed the project files for Microsoft Visual C++ 8.0.
 
 ---
+Martin Muenstermann
+
+Martin suggested an improvement for error reporting in PostgreSQL backend.
+
+---
 Philip Pemberton
 
 Philip contributed a patch for reading backend names.
