@@ -30,18 +30,21 @@ postgresql_session_backend::postgresql_session_backend(
     std::string const & connectString)
     : statementCount_(0)
 {
-    conn_ = PQconnectdb(connectString.c_str());
-    if (conn_ == NULL || PQstatus(conn_) != CONNECTION_OK)
+    PGconn * conn = PQconnectdb(connectString.c_str());
+    if (conn == NULL || PQstatus(conn) != CONNECTION_OK)
     {
         std::string msg = "Cannot establish connection to the database.";
-        if (conn_ != NULL)
+        if (conn != NULL)
         {
             msg += '\n';
-            msg += PQerrorMessage(conn_);
+            msg += PQerrorMessage(conn);
+            PQfinish(conn);
         }
 
         throw soci_error(msg);
     }
+
+    conn_ = conn;
 }
 
 postgresql_session_backend::~postgresql_session_backend()
