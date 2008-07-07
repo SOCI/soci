@@ -36,6 +36,7 @@ postgresql_session_backend::postgresql_session_backend(
         std::string msg = "Cannot establish connection to the database.";
         if (conn_ != NULL)
         {
+            msg += '\n';
             msg += PQerrorMessage(conn_);
         }
 
