@@ -80,7 +80,7 @@ proc buildOracleSo {} {
         execute "g++ -c $cppFile $CXXFLAGS -fPIC -I../../core -I${includeDir}"
     }
 
-    execute "g++ $SHARED -o libsoci_oracle.so [glob *.o] -L${libDir} -lpq"
+    execute "g++ $SHARED -o libsoci_oracle.so [glob *.o] -L${libDir} -lclntsh -lnnz10"
     cd $cwd
     eval exec mkdir -p "lib"
     execute "cp ../../src/backends/oracle/libsoci_oracle.so lib"
