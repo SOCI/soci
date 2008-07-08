@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -15,7 +15,7 @@ namespace // anonymous
 {
 
 // helper function for parsing decimal data (for std::tm)
-long parse10(char const *&p1, char *&p2, char *msg)
+long parse10(char const * & p1, char * & p2, char const * msg)
 {
     long v = std::strtol(p1, &p2, 10);
     if (p2 != p1)
@@ -25,21 +25,21 @@ long parse10(char const *&p1, char *&p2, char *msg)
     }
     else
     {
-        throw SOCI::SOCIError(msg);
+        throw soci::soci_error(msg);
     }
 }
 
 } // namespace anonymous
 
 
-void SOCI::details::PostgreSQL::parseStdTm(char const *buf, std::tm &t)
+void soci::details::postgresql::parse_std_tm(char const * buf, std::tm & t)
 {
-    char const *p1 = buf;
-    char *p2;
+    char const * p1 = buf;
+    char * p2;
     long year, month, day;
     long hour = 0, minute = 0, second = 0;
 
-    char *errMsg = "Cannot convert data to std::tm.";
+    char const * errMsg = "Cannot convert data to std::tm.";
 
     year  = parse10(p1, p2, errMsg);
     month = parse10(p1, p2, errMsg);
@@ -62,4 +62,22 @@ void SOCI::details::PostgreSQL::parseStdTm(char const *buf, std::tm &t)
     t.tm_sec  = second;
 
     std::mktime(&t);
+}
+
+double soci::details::postgresql::string_to_double(char const * buf)
+{
+    double t;
+    int n;
+    int const converted = sscanf(buf, "%lf%n", &t, &n);
+    if (converted == 1 && static_cast<std::size_t>(n) == strlen(buf))
+    {
+        // successfully converted to double
+        // and no other characters were found in the buffer
+
+        return t;
+    }
+    else
+    {
+        throw soci_error("Cannot convert data.");
+    }
 }

@@ -150,6 +150,82 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			>
 			<File
+				RelativePath="..\..\..\src\core\backend-loader.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\blob-exchange.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\blob.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\connection-pool.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\error.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\exchange-traits.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\into-type.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\into.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\once-temp-type.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\prepare-temp-type.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\procedure.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\ref-counted-prepare-info.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\ref-counted-statement.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\row-exchange.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\row.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\rowid-exchange.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\rowid.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\rowset.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\session.h"
+				>
+			</File>
+			<File
 				RelativePath="$(SOCI_CORE_DIR)\soci-backend.h"
 				>
 			</File>
@@ -163,6 +239,46 @@
 			</File>
 			<File
 				RelativePath="$(SOCI_CORE_DIR)\soci.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\statement.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\transaction.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\type-conversion-traits.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\type-conversion.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\type-holder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\type-ptr.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\use-type.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\use.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\values-exchange.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\values.h"
 				>
 			</File>
 		</Filter>
@@ -179,7 +295,71 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			>
 			<File
-				RelativePath="$(SOCI_CORE_DIR)\soci.cpp"
+				RelativePath="..\..\..\src\core\backend-loader.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\blob.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\connection-pool.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\error.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\into-type.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\once-temp-type.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\prepare-temp-type.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\procedure.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\ref-counted-prepare-info.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\ref-counted-statement.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\row.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\rowid.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\session.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\statement.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\transaction.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\use-type.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\values.cpp"
 				>
 			</File>
 		</Filter>

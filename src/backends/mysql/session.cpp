@@ -8,7 +8,6 @@
 
 #define SOCI_MYSQL_SOURCE
 #include "soci-mysql.h"
-#include <soci.h>
 #include <cctype>
 #include <cerrno>
 #include <ciso646>
@@ -18,14 +17,15 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 using std::string;
 
 
-namespace { // anonymous
+namespace
+{ // anonymous
 
-void skipWhite(string::const_iterator *i,
+void skip_white(string::const_iterator *i,
     string::const_iterator const & end, bool endok)
 {
     for (;;)
@@ -38,7 +38,7 @@ void skipWhite(string::const_iterator *i,
             }
             else
             {
-                throw SOCIError("Unexpected end of connection string.");
+                throw soci_error("Unexpected end of connection string.");
             }
         }
         if (std::isspace(**i))
@@ -52,13 +52,13 @@ void skipWhite(string::const_iterator *i,
     }
 }
 
-string paramName(string::const_iterator *i,
+string param_name(string::const_iterator *i,
     string::const_iterator const & end)
 {
     string val("");
     for (;;)
     {
-        if (*i == end or (!std::isalpha(**i) and **i != '_'))
+        if (*i == end or (not std::isalpha(**i) and **i != '_'))
         {
             break;
         }
@@ -68,7 +68,7 @@ string paramName(string::const_iterator *i,
     return val;
 }
 
-string paramValue(string::const_iterator *i,
+string param_value(string::const_iterator *i,
     string::const_iterator const & end)
 {
     string err = "Malformed connection string.";
@@ -89,7 +89,7 @@ string paramValue(string::const_iterator *i,
         {
             if (quot)
             {
-                throw SOCIError(err);
+                throw soci_error(err);
             }
             else
             {
@@ -105,10 +105,10 @@ string paramValue(string::const_iterator *i,
             }
             else
             {
-                throw SOCIError(err);
+                throw soci_error(err);
             }
         }
-        if (!quot and std::isspace(**i))
+        if (not quot and std::isspace(**i))
         {
             break;
         }
@@ -117,7 +117,7 @@ string paramValue(string::const_iterator *i,
             ++*i;
             if (*i == end)
             {
-                throw SOCIError(err);
+                throw soci_error(err);
             }
         }
         val += **i;
@@ -126,13 +126,13 @@ string paramValue(string::const_iterator *i,
     return val;
 }
 
-bool validInt(const string & s)
+bool valid_int(const string & s)
 {
     char *tail;
     const char *cstr = s.c_str();
     errno = 0;
-    long l = std::strtol(cstr, &tail, 10);
-    if (errno != 0 or l > INT_MAX or l < INT_MIN)
+    long n = std::strtol(cstr, &tail, 10);
+    if (errno != 0 or n > INT_MAX or n < INT_MIN)
     {
         return false;
     }
@@ -143,7 +143,7 @@ bool validInt(const string & s)
     return true;
 }
 
-void parseConnectString(const string & connectString,
+void parse_connect_string(const string & connectString,
     string *host, bool *host_p,
     string *user, bool *user_p,
     string *password, bool *password_p,
@@ -162,133 +162,136 @@ void parseConnectString(const string & connectString,
         end = connectString.end();
     while (i != end)
     {
-        skipWhite(&i, end, true);
+        skip_white(&i, end, true);
         if (i == end)
         {
             return;
         }
-        string par = paramName(&i, end);
-        skipWhite(&i, end, false);
+        string par = param_name(&i, end);
+        skip_white(&i, end, false);
         if (*i == '=')
         {
             ++i;
         }
         else
         {
-            throw SOCIError(err);
+            throw soci_error(err);
         }
-        skipWhite(&i, end, false);
-        string val = paramValue(&i, end);
-        if (par == "port" and !*port_p)
+        skip_white(&i, end, false);
+        string val = param_value(&i, end);
+        if (par == "port" and not *port_p)
         {
-            if (!validInt(val))
+            if (not valid_int(val))
             {
-                throw SOCIError(err);
+                throw soci_error(err);
             }
             *port = std::atoi(val.c_str());
             if (port < 0)
             {
-                throw SOCIError(err);
+                throw soci_error(err);
             }
             *port_p = true;
         }
-        else if (par == "host" and !*host_p)
+        else if (par == "host" and not *host_p)
         {
             *host = val;
             *host_p = true;
         }
-        else if (par == "user" and !*user_p)
+        else if (par == "user" and not *user_p)
         {
             *user = val;
             *user_p = true;
         }
-        else if ((par == "pass" or par == "password") and !*password_p)
+        else if ((par == "pass" or par == "password") and not *password_p)
         {
             *password = val;
             *password_p = true;
         }
-        else if ((par == "db" or par == "dbname") and !*db_p)
+        else if ((par == "db" or par == "dbname") and not *db_p)
         {
             *db = val;
             *db_p = true;
         }
-        else if (par == "unix_socket" && !*unix_socket_p)
+        else if (par == "unix_socket" and not *unix_socket_p)
         {
             *unix_socket = val;
             *unix_socket_p = true;
         }
         else
         {
-            throw SOCIError(err);
+            throw soci_error(err);
         }
     }
 }
 
 } // namespace anonymous
 
-MySQLSessionBackEnd::MySQLSessionBackEnd(
+mysql_session_backend::mysql_session_backend(
     std::string const & connectString)
 {
     string host, user, password, db, unix_socket;
     int port;
     bool host_p, user_p, password_p, db_p, unix_socket_p, port_p;
-    parseConnectString(connectString, &host, &host_p, &user, &user_p,
+    parse_connect_string(connectString, &host, &host_p, &user, &user_p,
         &password, &password_p, &db, &db_p,
         &unix_socket, &unix_socket_p, &port, &port_p);
     conn_ = mysql_init(NULL);
     if (conn_ == NULL)
     {
-        throw SOCIError("mysql_init() failed.");
+        throw soci_error("mysql_init() failed.");
     }
-    if (!mysql_real_connect(conn_,
+    if (mysql_real_connect(conn_,
             host_p ? host.c_str() : NULL,
             user_p ? user.c_str() : NULL,
             password_p ? password.c_str() : NULL,
             db_p ? db.c_str() : NULL,
             port_p ? port : 0,
             unix_socket_p ? unix_socket.c_str() : NULL,
-            0)) {
-        string err = mysql_error(conn_);
-        cleanUp();
-        throw SOCIError(err);
+            0) == NULL)
+    {
+        string errMsg = mysql_error(conn_);
+        unsigned int errNum = mysql_errno(conn_);
+        clean_up();
+        throw mysql_soci_error(errMsg, errNum);
     }
 }
 
-MySQLSessionBackEnd::~MySQLSessionBackEnd()
+mysql_session_backend::~mysql_session_backend()
 {
-    cleanUp();
+    clean_up();
 }
 
-namespace { // anonymous
+namespace // unnamed
+{
 
 // helper function for hardcoded queries
-void hardExec(MYSQL *conn, const string & query)
+void hard_exec(MYSQL *conn, const string & query)
 {
-    //cerr << query << endl;
-    if (0 != mysql_real_query(conn, query.c_str(), static_cast<unsigned long>(query.size())))
+    if (0 != mysql_real_query(conn, query.c_str(),
+            static_cast<unsigned long>(query.size())))
     {
-        throw SOCIError(mysql_error(conn));
+        throw soci_error(mysql_error(conn));
     }
 }
 
-}  // namespace anonymous
+} // namespace unnamed
 
-void MySQLSessionBackEnd::begin()
+void mysql_session_backend::begin()
 {
-    hardExec(conn_, "BEGIN");
+    hard_exec(conn_, "BEGIN");
 }
 
-void MySQLSessionBackEnd::commit()
+void mysql_session_backend::commit()
 {
-    hardExec(conn_, "COMMIT");
+    hard_exec(conn_, "COMMIT");
 }
 
-void MySQLSessionBackEnd::rollback()
+void mysql_session_backend::rollback()
 {
-    hardExec(conn_, "ROLLBACK");
+    hard_exec(conn_, "ROLLBACK");
 }
 
-void MySQLSessionBackEnd::cleanUp()
+void mysql_session_backend::clean_up()
 {
     if (conn_ != NULL)
     {
@@ -297,18 +300,17 @@ void MySQLSessionBackEnd::cleanUp()
     }
 }
 
-MySQLStatementBackEnd * MySQLSessionBackEnd::makeStatementBackEnd()
+mysql_statement_backend * mysql_session_backend::make_statement_backend()
 {
-    return new MySQLStatementBackEnd(*this);
+    return new mysql_statement_backend(*this);
 }
 
-MySQLRowIDBackEnd * MySQLSessionBackEnd::makeRowIDBackEnd()
+mysql_rowid_backend * mysql_session_backend::make_rowid_backend()
 {
-    return new MySQLRowIDBackEnd(*this);
+    return new mysql_rowid_backend(*this);
 }
 
-MySQLBLOBBackEnd * MySQLSessionBackEnd::makeBLOBBackEnd()
+mysql_blob_backend * mysql_session_backend::make_blob_backend()
 {
-    return new MySQLBLOBBackEnd(*this);
+    return new mysql_blob_backend(*this);
 }
-

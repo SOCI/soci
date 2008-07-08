@@ -8,7 +8,8 @@
 	<Tool
 		Name="VCCLCompilerTool"
 		Optimization="0"
-		AdditionalIncludeDirectories="&quot;$(SOCI_CORE_DIR)&quot;;&quot;$(SOCI_CORE_DIR)\test&quot;"
+		AdditionalIncludeDirectories="&quot;$(SOCI_CORE_DIR)&quot;;&quot;$(SOCI_CORE_DIR)\test&quot;;&quot;$(BOOST_INCLUDE_DIR)&quot;"
+		PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS"
 		DisableLanguageExtensions="false"
 		WarningLevel="4"
 		DebugInformationFormat="4"
@@ -21,11 +22,11 @@
 	/>
 	<UserMacro
 		Name="FIREBIRD_INCLUDE_DIR"
-		Value="C:\Program Files\Firebird\Firebird_1_5\include"
+		Value="C:\Program Files\Firebird\Firebird_2_0\include"
 	/>
 	<UserMacro
 		Name="FIREBIRD_LIB_DIR"
-		Value="C:\Program Files\Firebird\Firebird_1_5\lib"
+		Value="C:\Program Files\Firebird\Firebird_2_0\lib"
 	/>
 	<UserMacro
 		Name="FIREBIRD_LIB"
@@ -69,11 +70,11 @@
 	/>
 	<UserMacro
 		Name="POSTGRESQL_INCLUDE_DIR"
-		Value="C:\Program Files\PostgreSQL\8.1\include"
+		Value="C:\Program Files\PostgreSQL\8.2\include"
 	/>
 	<UserMacro
 		Name="POSTGRESQL_LIB_DIR"
-		Value="C:\Program Files\PostgreSQL\8.1\lib\ms"
+		Value="C:\Program Files\PostgreSQL\8.2\lib\ms"
 	/>
 	<UserMacro
 		Name="POSTGRESQL_LIB"
@@ -81,15 +82,19 @@
 	/>
 	<UserMacro
 		Name="SQLITE3_INCLUDE_DIR"
-		Value="C:\lib\sqlite3"
+		Value="C:\usr\sqlite\include"
 	/>
 	<UserMacro
 		Name="SQLITE3_LIB_DIR"
-		Value="C:\lib\sqlite3"
+		Value="C:\usr\sqlite\lib"
 	/>
 	<UserMacro
 		Name="SQLITE3_LIB"
 		Value="sqlite3.lib"
+	/>
+	<UserMacro
+		Name="BOOST_INCLUDE_DIR"
+		Value="c:\usr\boost-1.33.1\include"
 	/>
 	<UserMacro
 		Name="SOCI_VERSION"
@@ -200,5 +205,4 @@
 		Name="SOCI_CORE_DIR"
 		Value="$(SOCI_SRC_DIR)\core"
 	/>
-
 </VisualStudioPropertySheet>

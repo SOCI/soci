@@ -8,7 +8,6 @@
 
 #define SOCI_MYSQL_SOURCE
 #include "soci-mysql.h"
-#include <soci.h>
 #include <cctype>
 #include <ciso646>
 //#include <iostream>
@@ -17,24 +16,25 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 using std::string;
 
 
-MySQLStatementBackEnd::MySQLStatementBackEnd(MySQLSessionBackEnd &session)
+mysql_statement_backend::mysql_statement_backend(
+    mysql_session_backend &session)
     : session_(session), result_(NULL), justDescribed_(false),
        hasIntoElements_(false), hasVectorIntoElements_(false),
        hasUseElements_(false), hasVectorUseElements_(false)
 {
 }
 
-void MySQLStatementBackEnd::alloc()
+void mysql_statement_backend::alloc()
 {
     // nothing to do here.
 }
 
-void MySQLStatementBackEnd::cleanUp()
+void mysql_statement_backend::clean_up()
 {
     if (result_ != NULL)
     {
@@ -43,8 +43,8 @@ void MySQLStatementBackEnd::cleanUp()
     }
 }
 
-void MySQLStatementBackEnd::prepare(std::string const & query,
-    eStatementType /* eType */)
+void mysql_statement_backend::prepare(std::string const & query,
+    statement_type /* eType */)
 {
     queryChunks_.clear();
     enum { eNormal, eInQuotes, eInName } state = eNormal;
@@ -121,16 +121,16 @@ void MySQLStatementBackEnd::prepare(std::string const & query,
 */
 }
 
-StatementBackEnd::execFetchResult
-MySQLStatementBackEnd::execute(int number)
+statement_backend::exec_fetch_result
+mysql_statement_backend::execute(int number)
 {
     if (justDescribed_ == false)
     {
-        cleanUp();
+        clean_up();
         
         if (number > 1 && hasIntoElements_)
         {
-             throw SOCIError(
+             throw soci_error(
                   "Bulk use with single into elements is not supported.");
         }
         // number - size of vectors (into/use)
@@ -142,11 +142,11 @@ MySQLStatementBackEnd::execute(int number)
         }
         
         std::string query;
-        if (!useByPosBuffers_.empty() || !useByNameBuffers_.empty())
+        if (not useByPosBuffers_.empty() or not useByNameBuffers_.empty())
         {
-            if (!useByPosBuffers_.empty() && !useByNameBuffers_.empty())
+            if (not useByPosBuffers_.empty() and not useByNameBuffers_.empty())
             {
-                throw SOCIError(
+                throw soci_error(
                     "Binding for use elements must be either by position "
                     "or by name.");
             }
@@ -154,7 +154,7 @@ MySQLStatementBackEnd::execute(int number)
             {
                 std::vector<char *> paramValues;
 
-                if (!useByPosBuffers_.empty())
+                if (not useByPosBuffers_.empty())
                 {
                     // use elements bind by position
                     // the map of use buffers can be traversed
@@ -186,7 +186,7 @@ MySQLStatementBackEnd::execute(int number)
                                 "Missing use element for bind by name (");
                             msg += *it;
                             msg += ").";
-                            throw SOCIError(msg);
+                            throw soci_error(msg);
                         }
                         char **buffers = b->second;
                         paramValues.push_back(buffers[i]);
@@ -197,14 +197,15 @@ MySQLStatementBackEnd::execute(int number)
                 if (queryChunks_.size() != paramValues.size()
                     and queryChunks_.size() != paramValues.size() + 1)
                 {
-                    throw SOCIError("Wrong number of parameters.");
+                    throw soci_error("Wrong number of parameters.");
                 }
-		
+
                 std::vector<std::string>::const_iterator ci
                     = queryChunks_.begin();
                 for (std::vector<char*>::const_iterator
                          pi = paramValues.begin(), end = paramValues.end();
-                     pi != end; ++ci, ++pi) {
+                     pi != end; ++ci, ++pi)
+                {
                     query += *ci;
                     query += *pi;
                 }
@@ -215,15 +216,16 @@ MySQLStatementBackEnd::execute(int number)
                 if (numberOfExecutions > 1)
                 {
                     // bulk operation
-                    //cerr << query << endl;
+                    //std::cerr << "bulk operation:\n" << query << std::endl;
                     if (0 != mysql_real_query(session_.conn_, query.c_str(),
                             query.size()))
                     {
-                        throw SOCIError(mysql_error(session_.conn_));
+                        throw mysql_soci_error(mysql_error(session_.conn_),
+                            mysql_errno(session_.conn_));
                     }
                     if (mysql_field_count(session_.conn_) != 0)
                     {
-                        throw SOCIError("The query shouldn't have returned"
+                        throw soci_error("The query shouldn't have returned"
                             " any data but it did.");
                     }
                     query.clear();
@@ -232,7 +234,7 @@ MySQLStatementBackEnd::execute(int number)
             if (numberOfExecutions > 1)
             {
                 // bulk
-                return eNoData;
+                return ef_no_data;
             }
         }
         else
@@ -240,16 +242,18 @@ MySQLStatementBackEnd::execute(int number)
             query = queryChunks_.front();
         }
 
-        //cerr << query << endl;
+        //std::cerr << query << std::endl;
         if (0 != mysql_real_query(session_.conn_, query.c_str(),
                 query.size()))
         {
-            throw SOCIError(mysql_error(session_.conn_));
+            throw mysql_soci_error(mysql_error(session_.conn_),
+                mysql_errno(session_.conn_));
         }
         result_ = mysql_store_result(session_.conn_);
         if (result_ == NULL and mysql_field_count(session_.conn_) != 0)
         {
-            throw SOCIError(mysql_error(session_.conn_));
+            throw mysql_soci_error(mysql_error(session_.conn_),
+                mysql_errno(session_.conn_));
         }
     }
     else
@@ -261,11 +265,11 @@ MySQLStatementBackEnd::execute(int number)
     {
         currentRow_ = 0;
         rowsToConsume_ = 0;
-	
+
         numberOfRows_ = mysql_num_rows(result_);
         if (numberOfRows_ == 0)
         {
-            return eNoData;
+            return ef_no_data;
         }
         else
         {
@@ -277,19 +281,19 @@ MySQLStatementBackEnd::execute(int number)
             else
             {
                 // execute(0) was meant to only perform the query
-                return eSuccess;
+                return ef_success;
             }
         }
     }
     else
     {
         // it was not a SELECT
-        return eNoData;
+        return ef_no_data;
     }
 }
 
-StatementBackEnd::execFetchResult
-MySQLStatementBackEnd::fetch(int number)
+statement_backend::exec_fetch_result
+mysql_statement_backend::fetch(int number)
 {
     // Note: This function does not actually fetch anything from anywhere
     // - the data was already retrieved from the server in the execute()
@@ -303,7 +307,7 @@ MySQLStatementBackEnd::fetch(int number)
     if (currentRow_ >= numberOfRows_)
     {
         // all rows were already consumed
-        return eNoData;
+        return ef_no_data;
     }
     else
     {
@@ -312,24 +316,24 @@ MySQLStatementBackEnd::fetch(int number)
             rowsToConsume_ = numberOfRows_ - currentRow_;
 
             // this simulates the behaviour of Oracle
-            // - when EOF is hit, we return eNoData even when there are
+            // - when EOF is hit, we return ef_no_data even when there are
             // actually some rows fetched
-            return eNoData;
+            return ef_no_data;
         }
         else
         {
             rowsToConsume_ = number;
-            return eSuccess;
+            return ef_success;
         }
     }
 }
 
-int MySQLStatementBackEnd::getNumberOfRows()
+int mysql_statement_backend::get_number_of_rows()
 {
     return numberOfRows_ - currentRow_;
 }
 
-std::string MySQLStatementBackEnd::rewriteForProcedureCall(
+std::string mysql_statement_backend::rewrite_for_procedure_call(
     std::string const &query)
 {
     std::string newQuery("select ");
@@ -337,7 +341,7 @@ std::string MySQLStatementBackEnd::rewriteForProcedureCall(
     return newQuery;
 }
 
-int MySQLStatementBackEnd::prepareForDescribe()
+int mysql_statement_backend::prepare_for_describe()
 {
     execute(1);
     justDescribed_ = true;
@@ -346,18 +350,21 @@ int MySQLStatementBackEnd::prepareForDescribe()
     return columns;
 }
 
-void MySQLStatementBackEnd::describeColumn(int colNum,
-    eDataType & type, std::string & columnName)
+void mysql_statement_backend::describe_column(int colNum,
+    data_type & type, std::string & columnName)
 {
     int pos = colNum - 1;
     MYSQL_FIELD *field = mysql_fetch_field_direct(result_, pos);
-    switch (field->type) {
+    switch (field->type)
+    {
     case FIELD_TYPE_CHAR:       //MYSQL_TYPE_TINY:
     case FIELD_TYPE_SHORT:      //MYSQL_TYPE_SHORT:
     case FIELD_TYPE_LONG:       //MYSQL_TYPE_LONG:
-    case FIELD_TYPE_LONGLONG:   //MYSQL_TYPE_LONGLONG:
     case FIELD_TYPE_INT24:      //MYSQL_TYPE_INT24:
-        type = eInteger;
+        type = dt_integer;
+        break;
+    case FIELD_TYPE_LONGLONG:   //MYSQL_TYPE_LONGLONG:
+        type = dt_long_long;
         break;
     case FIELD_TYPE_FLOAT:      //MYSQL_TYPE_FLOAT:
     case FIELD_TYPE_DOUBLE:     //MYSQL_TYPE_DOUBLE:
@@ -367,7 +374,7 @@ void MySQLStatementBackEnd::describeColumn(int colNum,
     // sends field type number 246, no matter which version of libraries
     // the client is using.
     case 246:                   //MYSQL_TYPE_NEWDECIMAL:
-        type = eDouble;
+        type = dt_double;
         break;
     case FIELD_TYPE_TIMESTAMP:  //MYSQL_TYPE_TIMESTAMP:
     case FIELD_TYPE_DATE:       //MYSQL_TYPE_DATE:
@@ -375,42 +382,45 @@ void MySQLStatementBackEnd::describeColumn(int colNum,
     case FIELD_TYPE_DATETIME:   //MYSQL_TYPE_DATETIME:
     case FIELD_TYPE_YEAR:       //MYSQL_TYPE_YEAR:
     case FIELD_TYPE_NEWDATE:    //MYSQL_TYPE_NEWDATE:
-        type = eDate;
+        type = dt_date;
         break;
 //  case MYSQL_TYPE_VARCHAR:
     case FIELD_TYPE_VAR_STRING: //MYSQL_TYPE_VAR_STRING:
     case FIELD_TYPE_STRING:     //MYSQL_TYPE_STRING:
-        type = eString;
+    case FIELD_TYPE_BLOB:       // TEXT OR BLOB
+        type = dt_string;
         break;
     default:
         //std::cerr << "field->type: " << field->type << std::endl;
-        throw SOCIError("Unknown data type.");
+        throw soci_error("Unknown data type.");
     }
     columnName = field->name;
 }
 
-MySQLStandardIntoTypeBackEnd * MySQLStatementBackEnd::makeIntoTypeBackEnd()
+mysql_standard_into_type_backend *
+mysql_statement_backend::make_into_type_backend()
 {
     hasIntoElements_ = true;
-    return new MySQLStandardIntoTypeBackEnd(*this);
+    return new mysql_standard_into_type_backend(*this);
 }
 
-MySQLStandardUseTypeBackEnd * MySQLStatementBackEnd::makeUseTypeBackEnd()
+mysql_standard_use_type_backend *
+mysql_statement_backend::make_use_type_backend()
 {
     hasUseElements_ = true;
-    return new MySQLStandardUseTypeBackEnd(*this);
+    return new mysql_standard_use_type_backend(*this);
 }
 
-MySQLVectorIntoTypeBackEnd *
-MySQLStatementBackEnd::makeVectorIntoTypeBackEnd()
+mysql_vector_into_type_backend *
+mysql_statement_backend::make_vector_into_type_backend()
 {
     hasVectorIntoElements_ = true;
-    return new MySQLVectorIntoTypeBackEnd(*this);
+    return new mysql_vector_into_type_backend(*this);
 }
 
-MySQLVectorUseTypeBackEnd * MySQLStatementBackEnd::makeVectorUseTypeBackEnd()
+mysql_vector_use_type_backend *
+mysql_statement_backend::make_vector_use_type_backend()
 {
     hasVectorUseElements_ = true;
-    return new MySQLVectorUseTypeBackEnd(*this);
+    return new mysql_vector_use_type_backend(*this);
 }
-

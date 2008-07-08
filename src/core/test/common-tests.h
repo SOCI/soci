@@ -1,15 +1,24 @@
 //
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef COMMON_TESTS_H_INCLUDED
-#define COMMON_TESTS_H_INCLUDED
+#ifndef SOCI_COMMON_TESTS_H_INCLUDED
+#define SOCI_COMMON_TESTS_H_INCLUDED
 
 #include "soci.h"
 #include "soci-config.h"
+
+// explicitly pull conversions for Boost's optional, tuple and fusion:
+#include <boost/version.hpp>
+#include <boost-optional.h>
+#include <boost-tuple.h>
+#include <boost-gregorian-date.h>
+#if defined(BOOST_VERSION) && BOOST_VERSION >= 103500
+#include <boost-fusion.h>
+#endif // BOOST_VERSION
 
 #include <algorithm>
 #include <cmath>
@@ -23,204 +32,277 @@ struct PhonebookEntry
     std::string phone;
 };
 
-struct PhonebookEntry2 : public PhonebookEntry 
+struct PhonebookEntry2 : public PhonebookEntry
 {
 };
 
-namespace SOCI
+class PhonebookEntry3
 {
-// basic type conversion
-template<> struct TypeConversion<PhonebookEntry>
+public:
+    void setName(std::string const & n) { name_ = n; }
+    std::string getName() const { return name_; }
+
+    void setPhone(std::string const & p) { phone_ = p; }
+    std::string getPhone() const { return phone_; }
+
+public:
+    std::string name_;
+    std::string phone_;
+};
+
+// user-defined object for test26 and test28
+class MyInt
 {
-    typedef SOCI::Values base_type;
-    static PhonebookEntry from(Values const &v)
-    {
-        PhonebookEntry p;
-        p.name = v.get<std::string>("name");
-        p.phone = v.get<std::string>("phone", "<NULL>");
-        return p;
-    }
-    static Values to(PhonebookEntry &p)
-    {
-        Values v;
-        v.set("name", p.name);
-        v.set("phone", p.phone, p.phone.empty() ? eNull : eOK);
-        return v;
-    }
-};    
+public:
+    MyInt() {}
+    MyInt(int i) : i_(i) {}
+    void set(int i) { i_ = i; }
+    int get() const { return i_; }
+private:
+    int i_;
+};
 
-// type conversion which directly calls Values::indicator()
-template<> struct TypeConversion<PhonebookEntry2>
+namespace soci
 {
-    typedef SOCI::Values base_type;
-    static PhonebookEntry2 from(Values const &v)
-    {
-        PhonebookEntry2 p;
-        p.name = v.get<std::string>("name");
-        eIndicator ind = v.indicator("phone"); //another way to test for null
-        p.phone = ind == eNull ? "<NULL>" : v.get<std::string>("phone");
-        return p;
-    }
-    static Values to(PhonebookEntry2 &p)
-    {
-        Values v;
-        v.set("name", p.name);
-        v.set("phone", p.phone, p.phone.empty() ? eNull : eOK);
-        return v;
-    }
-};    
 
-}
+// basic type conversion for user-defined type with single base value
+template<> struct type_conversion<MyInt>
+{
+    typedef int base_type;
 
-namespace SOCI
+    static void from_base(int i, indicator ind, MyInt &mi)
+    {
+        if (ind == i_ok)
+        {
+            mi.set(i);
+        }
+    }
+
+    static void to_base(MyInt const &mi, int &i, indicator &ind)
+    {
+        i = mi.get();
+        ind = i_ok;
+    }
+};
+
+// basic type conversion on many values (ORM)
+template<> struct type_conversion<PhonebookEntry>
+{
+    typedef soci::values base_type;
+
+    static void from_base(values const &v, indicator /* ind */, PhonebookEntry &pe)
+    {
+        // here we ignore the possibility the the whole object might be NULL
+        pe.name = v.get<std::string>("NAME");
+        pe.phone = v.get<std::string>("PHONE", "<NULL>");
+    }
+
+    static void to_base(PhonebookEntry const &pe, values &v, indicator &ind)
+    {
+        v.set("NAME", pe.name);
+        v.set("PHONE", pe.phone, pe.phone.empty() ? i_null : i_ok);
+        ind = i_ok;
+    }
+};
+
+// type conversion which directly calls values::get_indicator()
+template<> struct type_conversion<PhonebookEntry2>
+{
+    typedef soci::values base_type;
+
+    static void from_base(values const &v, indicator /* ind */, PhonebookEntry2 &pe)
+    {
+        // here we ignore the possibility the the whole object might be NULL
+
+        pe.name = v.get<std::string>("NAME");
+        indicator ind = v.get_indicator("PHONE"); //another way to test for null
+        pe.phone = ind == i_null ? "<NULL>" : v.get<std::string>("PHONE");
+    }
+
+    static void to_base(PhonebookEntry2 const &pe, values &v, indicator &ind)
+    {
+        v.set("NAME", pe.name);
+        v.set("PHONE", pe.phone, pe.phone.empty() ? i_null : i_ok);
+        ind = i_ok;
+    }
+};
+
+template<> struct type_conversion<PhonebookEntry3>
+{
+    typedef soci::values base_type;
+
+    static void from_base(values const &v, indicator /* ind */, PhonebookEntry3 &pe)
+    {
+        // here we ignore the possibility the the whole object might be NULL
+
+        pe.setName(v.get<std::string>("NAME"));
+        pe.setPhone(v.get<std::string>("PHONE", "<NULL>"));
+    }
+
+    static void to_base(PhonebookEntry3 const &pe, values &v, indicator &ind)
+    {
+        v.set("NAME", pe.getName());
+        v.set("PHONE", pe.getPhone(), pe.getPhone().empty() ? i_null : i_ok);
+        ind = i_ok;
+    }
+};
+
+} // namespace soci
+
+namespace soci
 {
 namespace tests
 {
 
-class TableCreatorBase
+class table_creator_base
 {
 public:
-    TableCreatorBase(Session& session)
-        : mSession(session) { drop(); }
+    table_creator_base(session& sql)
+        : msession(sql) { drop(); }
 
-    virtual ~TableCreatorBase() { drop();}
+    virtual ~table_creator_base() { drop();}
 private:
     void drop()
     {
-        try { mSession << "drop table soci_test"; } catch(SOCIError&) {} 
+        try { msession << "drop table soci_test"; } catch (soci_error&) {}
     }
-    Session& mSession;
+    session& msession;
 };
 
-class ProcedureCreatorBase
+class procedure_creator_base
 {
 public:
-    ProcedureCreatorBase(Session& session)
-        : mSession(session) { drop(); }
+    procedure_creator_base(session& sql)
+        : msession(sql) { drop(); }
 
-    virtual ~ProcedureCreatorBase() { drop();}
+    virtual ~procedure_creator_base() { drop();}
 private:
     void drop()
     {
-        try { mSession << "drop procedure soci_test"; } catch(SOCIError&) {} 
+        try { msession << "drop procedure soci_test"; } catch (soci_error&) {}
     }
-    Session& mSession;
+    session& msession;
 };
 
-class FunctionCreatorBase
+class function_creator_base
 {
 public:
-    FunctionCreatorBase(Session& session)
-        : mSession(session) { drop(); }
+    function_creator_base(session& sql)
+        : msession(sql) { drop(); }
 
-    virtual ~FunctionCreatorBase() { drop();}
+    virtual ~function_creator_base() { drop();}
 
 protected:
-    virtual std::string dropStatement()
-    { 
+    virtual std::string dropstatement()
+    {
         return "drop function soci_test";
     }
 
 private:
     void drop()
     {
-        try { mSession << dropStatement(); } catch(SOCIError&) {} 
+        try { msession << dropstatement(); } catch (soci_error&) {}
     }
-    Session& mSession;
+    session& msession;
 };
 
-class TestContextBase
+class test_context_base
 {
 public:
-    TestContextBase(BackEndFactory const &backEnd,
+    test_context_base(backend_factory const &backEnd,
                     std::string const &connectString)
         : backEndFactory_(backEnd),
           connectString_(connectString) {}
 
-    const BackEndFactory& getBackEndFactory() const
+    backend_factory const & getbackend_factory() const
     {
         return backEndFactory_;
     }
     
-    std::string getConnectString() const
+    std::string get_connect_string() const
     {
         return connectString_;
     }
 
-    virtual std::string toDateTime(std::string const &dateTime) const = 0;
+    virtual std::string to_date_time(std::string const &dateTime) const = 0;
 
-    virtual TableCreatorBase* tableCreator1(Session&) const = 0;
-    virtual TableCreatorBase* tableCreator2(Session&) const = 0;
-    virtual TableCreatorBase* tableCreator3(Session&) const = 0;
+    virtual table_creator_base* table_creator_1(session&) const = 0;
+    virtual table_creator_base* table_creator_2(session&) const = 0;
+    virtual table_creator_base* table_creator_3(session&) const = 0;
 
-    virtual ~TestContextBase() {} // quiet the compiler
+    virtual ~test_context_base() {} // quiet the compiler
 
 private:
-    BackEndFactory const &backEndFactory_;
+    backend_factory const &backEndFactory_;
     std::string const connectString_;
 };
 
-class CommonTests
+class common_tests
 {
 public:
-    CommonTests(TestContextBase const &tc)
-    : tc_(tc), 
-      backEndFactory_(tc.getBackEndFactory()),
-      connectString_(tc.getConnectString())
+    common_tests(test_context_base const &tc)
+    : tc_(tc),
+      backEndFactory_(tc.getbackend_factory()),
+      connectString_(tc.get_connect_string())
     {}
 
     void run(bool dbSupportsTransactions = true)
     {
-    std::cout<<"\nSOCI Common Tests:\n\n";
+        std::cout<<"\nSOCI Common Tests:\n\n";
 
-    test1();
-    test2();
-    test3();
-    test4();
-    test5();
-    test6();
-    test7();
-    test8(); 
-    test9();
+        test1();
+        test2();
+        test3();
+        test4();
+        test5();
+        test6();
+        test7();
+        test8();
+        test9();
 
-    if (dbSupportsTransactions)
-    {
-        test10();
-    }
-    else
-    {
-        std::cout<<"skipping test 10 (database doesn't support transactions)\n";
-    }
+        if (dbSupportsTransactions)
+        {
+            test10();
+        }
+        else
+        {
+            std::cout<<"skipping test 10 (database doesn't support transactions)\n";
+        }
 
-    test11();
-    test12();
-    test13();
-    test14();
-    test15();
-    test16();
-    test17();
-    test18();
-    test19();
-    test20();
-    test21();
-    test22();
-    test23();
-    test24();
-    test25();
+        test11();
+        test12();
+        test13();
+        test14();
+        test15();
+        test16();
+        test17();
+        test18();
+        test19();
+        test20();
+        test21();
+        test22();
+        test23();
+        test24();
+        test25();
+        test26();
+        test27();
+        test28();
+        test29();
+        test30();
     }
 
 private:
-    TestContextBase const & tc_;
-    BackEndFactory const &backEndFactory_;
+    test_context_base const & tc_;
+    backend_factory const &backEndFactory_;
     std::string const connectString_;
 
-typedef std::auto_ptr<TableCreatorBase> AutoTableCreator;
+typedef std::auto_ptr<table_creator_base> auto_table_creator;
 
 void test1()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
     std::string msg;
     try
@@ -229,11 +311,11 @@ void test1()
         sql << "drop table soci_test_nosuchtable";
         assert(false);
     }
-    catch (SOCIError const &e)
+    catch (soci_error const &e)
     {
         msg = e.what();
     }
-    assert(!msg.empty()); 
+    assert(msg.empty() == false);
 
     sql << "insert into soci_test (id) values (" << 123 << ")";
     int id;
@@ -247,10 +329,10 @@ void test1()
 void test2()
 {
     {
-        Session sql(backEndFactory_, connectString_);
+        session sql(backEndFactory_, connectString_);
 
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             char c('a');
             sql << "insert into soci_test(c) values(:c)", use(c);
@@ -259,7 +341,7 @@ void test2()
         }
 
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             std::string abc("ABC");
             sql << "insert into soci_test(str) values(:s)", use(abc);
@@ -273,7 +355,7 @@ void test2()
         }
 
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             std::string hello("Hello");
             sql << "insert into soci_test(str) values(:s)", use(hello);
@@ -287,8 +369,8 @@ void test2()
         }
 
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
-        
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
             std::string helloSOCI("Hello, SOCI!");
             sql << "insert into soci_test(str) values(:s)", use(helloSOCI);
             std::string str;
@@ -297,7 +379,7 @@ void test2()
         }
 
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
             
             short three(3);
             sql << "insert into soci_test(sh) values(:id)", use(three);
@@ -307,8 +389,8 @@ void test2()
         }
 
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
-         
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
             int five(5);
             sql << "insert into soci_test(id) values(:id)", use(five);
             int i(0);
@@ -317,7 +399,7 @@ void test2()
         }
 
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
             unsigned long seven(7);
             sql << "insert into soci_test(ul) values(:ul)", use(seven);
             unsigned long ul(0);
@@ -326,8 +408,8 @@ void test2()
         }
 
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
-        
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
             double pi(3.14159265);
             sql << "insert into soci_test(d) values(:d)", use(pi);
             double d(0.0);
@@ -336,7 +418,7 @@ void test2()
         }
         
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             std::tm nov15;
             nov15.tm_year = 105;
@@ -345,7 +427,7 @@ void test2()
             nov15.tm_hour = 0;
             nov15.tm_min = 0;
             nov15.tm_sec = 0;
-        
+
             sql << "insert into soci_test(tm) values(:tm)", use(nov15);
 
             std::tm t;
@@ -359,7 +441,7 @@ void test2()
         }
         
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             std::tm nov15;
             nov15.tm_year = 105;
@@ -383,37 +465,37 @@ void test2()
 
         // test indicators
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             int id(1);
             std::string str("Hello");
             sql << "insert into soci_test(id, str) values(:id, :str)",
-                use(id), use(str); 
+                use(id), use(str);
 
             int i;
-            eIndicator ind;
+            indicator ind;
             sql << "select id from soci_test", into(i, ind);
-            assert(ind == eOK);
+            assert(ind == i_ok);
 
             char buf[4];
             sql << "select str from soci_test", into(buf, ind);
-            assert(ind == eTruncated);
+            assert(ind == i_truncated);
         }
 
         // more indicator tests, NULL values
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             sql << "insert into soci_test(id,tm) values(NULL,NULL)";
             int i;
-            eIndicator ind;
+            indicator ind;
             sql << "select id from soci_test", into(i, ind);
-            assert(ind == eNull);
+            assert(ind == i_null);
 
             // additional test for NULL with std::tm
             std::tm t;
             sql << "select tm from soci_test", into(t, ind);
-            assert(ind == eNull);
+            assert(ind == i_null);
 
             try
             {
@@ -421,7 +503,7 @@ void test2()
                 sql << "select id from soci_test", into(i);
                 assert(false);
             }
-            catch (SOCIError const &e)
+            catch (soci_error const &e)
             {
                 std::string error = e.what();
                 assert(error ==
@@ -429,20 +511,16 @@ void test2()
             }
 
             sql << "select id from soci_test where id = 1000", into(i, ind);
-            assert(ind == eNoData);
+            assert(sql.got_data() == false);
 
-            try
-            {
-                // expect error
-                sql << "select id from soci_test where id = 1000", into(i);
-                assert(false);
-            }
-            catch (SOCIError const &e)
-            {
-                std::string error = e.what();
-                assert(error ==
-                "No data fetched and no indicator defined.");
-            }
+            // no data expected
+            sql << "select id from soci_test where id = 1000", into(i);
+            assert(sql.got_data() == false);
+
+            // no data expected, test correct behaviour with use
+            int id = 1000;
+            sql << "select id from soci_test where id = :id", use(id), into(i);
+            assert(sql.got_data() == false);
         }
     }
 
@@ -453,12 +531,12 @@ void test2()
 void test3()
 {
     {
-        Session sql(backEndFactory_, connectString_);
+        session sql(backEndFactory_, connectString_);
 
         // repeated fetch and bulk fetch of char
         {
             // create and populate the test table
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             char c;
             for (c = 'a'; c <= 'z'; ++c)
@@ -473,7 +551,7 @@ void test3()
             {
                 char c2 = 'a';
 
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select c from soci_test order by c", into(c));
 
                 st.execute();
@@ -488,7 +566,7 @@ void test3()
                 char c2 = 'a';
 
                 std::vector<char> vec(10);
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select c from soci_test order by c", into(vec));
                 st.execute();
                 while (st.fetch())
@@ -512,7 +590,7 @@ void test3()
                     sql << "select c from soci_test", into(vec);
                     assert(false);
                 }
-                catch (SOCIError const &e)
+                catch (soci_error const &e)
                 {
                      std::string msg = e.what();
                      assert(msg == "Vectors of size 0 are not allowed.");
@@ -524,7 +602,7 @@ void test3()
         // repeated fetch and bulk fetch of std::string
         {
             // create and populate the test table
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
             
             int const rowsToTest = 10;
             for (int i = 0; i != rowsToTest; ++i)
@@ -543,7 +621,7 @@ void test3()
             {
                 int i = 0;
                 std::string s;
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select str from soci_test order by str", into(s));
 
                 st.execute();
@@ -560,7 +638,7 @@ void test3()
                 int i = 0;
 
                 std::vector<std::string> vec(4);
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select str from soci_test order by str", into(vec));
                 st.execute();
                 while (st.fetch())
@@ -582,7 +660,7 @@ void test3()
         // repeated fetch and bulk fetch of short
         {
             // create and populate the test table
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             short const rowsToTest = 100;
             short sh;
@@ -598,7 +676,7 @@ void test3()
             {
                 short sh2 = 0;
 
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select sh from soci_test order by sh", into(sh));
 
                 st.execute();
@@ -613,7 +691,7 @@ void test3()
                 short sh2 = 0;
 
                 std::vector<short> vec(8);
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select sh from soci_test order by sh", into(vec));
                 st.execute();
                 while (st.fetch())
@@ -633,7 +711,7 @@ void test3()
         // repeated fetch and bulk fetch of int
         {
             // create and populate the test table
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             int const rowsToTest = 100;
             int i;
@@ -649,7 +727,7 @@ void test3()
             {
                 int i2 = 0;
 
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select id from soci_test order by id", into(i));
 
                 st.execute();
@@ -666,7 +744,7 @@ void test3()
                 int i2 = 0;
                 int cond = 0; // this condition is always true
 
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select id from soci_test where id >= :cond order by id",
                     use(cond), into(i));
 
@@ -682,7 +760,7 @@ void test3()
                 int i2 = 0;
 
                 std::vector<int> vec(8);
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select id from soci_test order by id", into(vec));
                 st.execute();
                 while (st.fetch())
@@ -702,7 +780,7 @@ void test3()
         // repeated fetch and bulk fetch of unsigned long
         {
             // create and populate the test table
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));   
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             unsigned long const rowsToTest = 100;
             unsigned long ul;
@@ -718,7 +796,7 @@ void test3()
             {
                 unsigned long ul2 = 0;
 
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select ul from soci_test order by ul", into(ul));
 
                 st.execute();
@@ -733,7 +811,7 @@ void test3()
                 unsigned long ul2 = 0;
 
                 std::vector<unsigned long> vec(8);
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select ul from soci_test order by ul", into(vec));
                 st.execute();
                 while (st.fetch())
@@ -753,7 +831,7 @@ void test3()
         // repeated fetch and bulk fetch of double
         {
             // create and populate the test table
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             int const rowsToTest = 100;
             double d = 0.0;
@@ -771,7 +849,7 @@ void test3()
                 double d2 = 0.0;
                 int i = 0;
 
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select d from soci_test order by d", into(d));
 
                 st.execute();
@@ -788,7 +866,7 @@ void test3()
                 int i = 0;
 
                 std::vector<double> vec(8);
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select d from soci_test order by d", into(vec));
                 st.execute();
                 while (st.fetch())
@@ -809,7 +887,7 @@ void test3()
         // repeated fetch and bulk fetch of std::tm
         {
             // create and populate the test table
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             int const rowsToTest = 8;
             for (int i = 0; i != rowsToTest; ++i)
@@ -819,7 +897,7 @@ void test3()
                     << 15 + i << ':' << 50 - i << ':' << 40 + i;
 
                 sql << "insert into soci_test(id, tm) values(" << i
-                << ", " << tc_.toDateTime(ss.str()) << ")";
+                << ", " << tc_.to_date_time(ss.str()) << ")";
             }
 
             int count;
@@ -830,7 +908,7 @@ void test3()
                 std::tm t;
                 int i = 0;
 
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select tm from soci_test order by id", into(t));
 
                 st.execute();
@@ -851,7 +929,7 @@ void test3()
                 int i = 0;
 
                 std::vector<std::tm> vec(3);
-                Statement st = (sql.prepare <<
+                statement st = (sql.prepare <<
                     "select tm from soci_test order by id", into(vec));
                 st.execute();
                 while (st.fetch())
@@ -877,14 +955,14 @@ void test3()
 
     std::cout << "test 3 passed" << std::endl;
 }
-    
+
 // test for indicators (repeated fetch and bulk)
 void test4()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
     // create and populate the test table
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
     {
         sql << "insert into soci_test(id, val) values(1, 10)";
         sql << "insert into soci_test(id, val) values(2, 11)";
@@ -894,60 +972,99 @@ void test4()
 
         {
             int val;
-            eIndicator ind;
+            indicator ind;
 
-            Statement st = (sql.prepare <<
+            statement st = (sql.prepare <<
                 "select val from soci_test order by id", into(val, ind));
 
             st.execute();
-            assert(st.fetch());
-            assert(ind == eOK);
+            bool gotData = st.fetch();
+            assert(gotData);
+            assert(ind == i_ok);
             assert(val == 10);
-            assert(st.fetch());
-            assert(ind == eOK);
+            gotData = st.fetch();
+            assert(gotData);
+            assert(ind == i_ok);
             assert(val == 11);
-            assert(st.fetch());
-            assert(ind == eNull);
-            assert(st.fetch());
-            assert(ind == eNull);
-            assert(st.fetch());
-            assert(ind == eOK);
+            gotData = st.fetch();
+            assert(gotData);
+            assert(ind == i_null);
+            gotData = st.fetch();
+            assert(gotData);
+            assert(ind == i_null);
+            gotData = st.fetch();
+            assert(gotData);
+            assert(ind == i_ok);
             assert(val == 12);
-            assert(!st.fetch());
+            gotData = st.fetch();
+            assert(gotData == false);
         }
         {
             std::vector<int> vals(3);
-            std::vector<eIndicator> inds(3);
+            std::vector<indicator> inds(3);
 
-            Statement st = (sql.prepare <<
+            statement st = (sql.prepare <<
                 "select val from soci_test order by id", into(vals, inds));
 
             st.execute();
-            assert(st.fetch());
+            bool gotData = st.fetch();
+            assert(gotData);
             assert(vals.size() == 3);
             assert(inds.size() == 3);
-            assert(inds[0] == eOK);
+            assert(inds[0] == i_ok);
             assert(vals[0] == 10);
-            assert(inds[1] == eOK);
+            assert(inds[1] == i_ok);
             assert(vals[1] == 11);
-            assert(inds[2] == eNull);
-            assert(st.fetch());
+            assert(inds[2] == i_null);
+            gotData = st.fetch();
+            assert(gotData);
             assert(vals.size() == 2);
-            assert(inds[0] == eNull);
-            assert(inds[1] == eOK);
+            assert(inds[0] == i_null);
+            assert(inds[1] == i_ok);
             assert(vals[1] == 12);
-            assert(!st.fetch());
+            gotData = st.fetch();
+            assert(gotData == false);
         }
 
         // additional test for "no data" condition
         {
             std::vector<int> vals(3);
-            std::vector<eIndicator> inds(3);
+            std::vector<indicator> inds(3);
 
-            Statement st = (sql.prepare <<
+            statement st = (sql.prepare <<
                 "select val from soci_test where 0 = 1", into(vals, inds));
 
-            assert(!st.execute(true));
+            bool gotData = st.execute(true);
+            assert(gotData == false);
+
+            // for convenience, vectors should be truncated
+            assert(vals.empty());
+            assert(inds.empty());
+
+            // for even more convenience, fetch should not fail
+            // but just report end of rowset
+            // (and vectors should be truncated)
+            
+            vals.resize(1);
+            inds.resize(1);
+
+            gotData = st.fetch();
+            assert(gotData == false);
+            assert(vals.empty());
+            assert(inds.empty());
+        }
+
+        // additional test for "no data" without prepared statement
+        {
+            std::vector<int> vals(3);
+            std::vector<indicator> inds(3);
+
+            sql << "select val from soci_test where 0 = 1",
+                into(vals, inds);
+
+            // vectors should be truncated
+            assert(vals.empty());
+            assert(inds.empty());
         }
     }
 
@@ -958,10 +1075,10 @@ void test4()
 // (library should force ind. vector to have same size as data vector)
 void test5()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
     // create and populate the test table
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
     {
         sql << "insert into soci_test(id, val) values(1, 10)";
         sql << "insert into soci_test(id, val) values(2, 11)";
@@ -971,9 +1088,9 @@ void test5()
 
         {
             std::vector<int> vals(4);
-            std::vector<eIndicator> inds;
+            std::vector<indicator> inds;
 
-            Statement st = (sql.prepare <<
+            statement st = (sql.prepare <<
                 "select val from soci_test order by id", into(vals, inds));
 
             st.execute();
@@ -996,11 +1113,11 @@ void test6()
 // Note: this functionality is not available with older PostgreSQL
 #ifndef SOCI_PGSQL_NOPARAMS
     {
-        Session sql(backEndFactory_, connectString_);
+        session sql(backEndFactory_, connectString_);
 
         // test for char
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
             char c('a');
             sql << "insert into soci_test(c) values(:c)", use(c);
 
@@ -1012,7 +1129,7 @@ void test6()
 
         // test for char[]
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             char s[] = "Hello";
             sql << "insert into soci_test(str) values(:s)", use(s);
@@ -1025,7 +1142,7 @@ void test6()
 
         // test for std::string
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
             std::string s = "Hello SOCI!";
             sql << "insert into soci_test(str) values(:s)", use(s);
 
@@ -1037,7 +1154,7 @@ void test6()
 
         // test for short
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
             short s = 123;
             sql << "insert into soci_test(id) values(:id)", use(s);
 
@@ -1049,7 +1166,7 @@ void test6()
 
         // test for int
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
             int i = -12345678;
             sql << "insert into soci_test(id) values(:i)", use(i);
 
@@ -1061,7 +1178,7 @@ void test6()
 
         // test for unsigned long
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
             unsigned long ul = 4000000000ul;
             sql << "insert into soci_test(ul) values(:num)", use(ul);
 
@@ -1073,7 +1190,7 @@ void test6()
 
         // test for double
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
             double d = 3.14159265;
             sql << "insert into soci_test(d) values(:d)", use(d);
 
@@ -1085,7 +1202,7 @@ void test6()
 
         // test for std::tm
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
             std::tm t;
             t.tm_year = 105;
             t.tm_mon = 10;
@@ -1115,9 +1232,9 @@ void test6()
 
         // test for repeated use
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
             int i;
-            Statement st = (sql.prepare
+            statement st = (sql.prepare
                 << "insert into soci_test(id) values(:id)", use(i));
 
             i = 5;
@@ -1136,6 +1253,123 @@ void test6()
             assert(v[2] == 7);
         }
 
+        // tests for use of const objects
+
+        // test for char
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+            char const c('a');
+            sql << "insert into soci_test(c) values(:c)", use(c);
+
+            char c2 = 'b';
+            sql << "select c from soci_test", into(c2);
+            assert(c2 == 'a');
+
+        }
+
+        // test for char[]
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+            char const s[] = "Hello const!";
+            sql << "insert into soci_test(str) values(:s)", use(s);
+
+            std::string str;
+            sql << "select str from soci_test", into(str);
+
+            assert(str == "Hello const!");
+        }
+
+        // test for std::string
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+            std::string const s = "Hello const SOCI!";
+            sql << "insert into soci_test(str) values(:s)", use(s);
+
+            std::string str;
+            sql << "select str from soci_test", into(str);
+
+            assert(str == "Hello const SOCI!");
+        }
+
+        // test for short
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+            short const s = 123;
+            sql << "insert into soci_test(id) values(:id)", use(s);
+
+            short s2 = 0;
+            sql << "select id from soci_test", into(s2);
+
+            assert(s2 == 123);
+        }
+
+        // test for int
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+            int const i = -12345678;
+            sql << "insert into soci_test(id) values(:i)", use(i);
+
+            int i2 = 0;
+            sql << "select id from soci_test", into(i2);
+
+            assert(i2 == -12345678);
+        }
+
+        // test for unsigned long
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+            unsigned long const ul = 4000000000ul;
+            sql << "insert into soci_test(ul) values(:num)", use(ul);
+
+            unsigned long ul2 = 0;
+            sql << "select ul from soci_test", into(ul2);
+
+            assert(ul2 == 4000000000ul);
+        }
+
+        // test for double
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+            double const d = 3.14159265;
+            sql << "insert into soci_test(d) values(:d)", use(d);
+
+            double d2 = 0;
+            sql << "select d from soci_test", into(d2);
+
+            assert(std::fabs(d2 - d) < 0.0001);
+        }
+
+        // test for std::tm
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+            std::tm t;
+            t.tm_year = 105;
+            t.tm_mon = 10;
+            t.tm_mday = 19;
+            t.tm_hour = 21;
+            t.tm_min = 39;
+            t.tm_sec = 57;
+            std::tm const & ct = t;
+            sql << "insert into soci_test(tm) values(:t)", use(ct);
+
+            std::tm t2;
+            t2.tm_year = 0;
+            t2.tm_mon = 0;
+            t2.tm_mday = 0;
+            t2.tm_hour = 0;
+            t2.tm_min = 0;
+            t2.tm_sec = 0;
+
+            sql << "select tm from soci_test", into(t2);
+
+            assert(t.tm_year == 105);
+            assert(t.tm_mon  == 10);
+            assert(t.tm_mday == 19);
+            assert(t.tm_hour == 21);
+            assert(t.tm_min  == 39);
+            assert(t.tm_sec  == 57);
+        }
     }
 
     std::cout << "test 6 passed" << std::endl;
@@ -1146,8 +1380,8 @@ void test6()
 void test7()
 {
     {
-        Session sql(backEndFactory_, connectString_);
-        AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+        session sql(backEndFactory_, connectString_);
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
         
         {
             int i1 = 5;
@@ -1185,7 +1419,7 @@ void test7()
 
 #ifndef SOCI_PGSQL_NOPARAMS
 
-            Statement st = (sql.prepare
+            statement st = (sql.prepare
                 << "insert into soci_test(i1, i2, i3) values(:i1, :i2, :i3)",
                 use(i1), use(i2), use(i3));
 
@@ -1243,11 +1477,11 @@ void test8()
 #ifndef SOCI_PGSQL_NOPARAMS
 
     {
-        Session sql(backEndFactory_, connectString_);
+        session sql(backEndFactory_, connectString_);
 
         // test for char
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             std::vector<char> v;
             v.push_back('a');
@@ -1269,7 +1503,7 @@ void test8()
 
         // test for std::string
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             std::vector<std::string> v;
             v.push_back("ala");
@@ -1289,7 +1523,7 @@ void test8()
 
         // test for short
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             std::vector<short> v;
             v.push_back(-5);
@@ -1311,7 +1545,7 @@ void test8()
 
         // test for int
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             std::vector<int> v;
             v.push_back(-2000000000);
@@ -1333,7 +1567,7 @@ void test8()
 
         // test for unsigned long
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             std::vector<unsigned long> v;
             v.push_back(0);
@@ -1353,9 +1587,9 @@ void test8()
             assert(v2[3] == 1000);
         }
 
-        // test for char
+        // test for double
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             std::vector<double> v;
             v.push_back(0);
@@ -1377,7 +1611,7 @@ void test8()
 
         // test for std::tm
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             std::vector<std::tm> v;
             std::tm t;
@@ -1421,6 +1655,30 @@ void test8()
             assert(v2[2].tm_min  == 45);
             assert(v2[2].tm_sec  == 37);
         }
+
+        // additional test for int (use const vector)
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+            std::vector<int> v;
+            v.push_back(-2000000000);
+            v.push_back(0);
+            v.push_back(1);
+            v.push_back(2000000000);
+
+            std::vector<int> const & cv = v;
+
+            sql << "insert into soci_test(id) values(:i)", use(cv);
+
+            std::vector<int> v2(4);
+
+            sql << "select id from soci_test order by id", into(v2);
+            assert(v2.size() == 4);
+            assert(v2[0] == -2000000000);
+            assert(v2[1] == 0);
+            assert(v2[2] == 1);
+            assert(v2[3] == 2000000000);
+        }
     }
 
     std::cout << "test 8 passed" << std::endl;
@@ -1436,9 +1694,9 @@ void test9()
 #ifndef SOCI_PGSQL_NOPARAMS
 
     {
-        Session sql(backEndFactory_, connectString_);
+        session sql(backEndFactory_, connectString_);
         {
-            AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             int i1 = 7;
             int i2 = 8;
@@ -1452,7 +1710,7 @@ void test9()
 
                 assert(false);
             }
-            catch (SOCIError const &e)
+            catch (soci_error const &e)
             {
                 assert(std::string(e.what()) ==
                     "Binding for use elements must be either by position "
@@ -1513,68 +1771,67 @@ void test9()
 void test10()
 {
     {
-        Session sql(backEndFactory_, connectString_);
+        session sql(backEndFactory_, connectString_);
 
-        AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
         int count;
         sql << "select count(*) from soci_test", into(count);
         assert(count == 0);
 
         {
-            sql.begin();
-
-#ifndef SOCI_PGSQL_NOPARAMS
-
-            int id;
-            std::string name;
-
-            Statement st1 = (sql.prepare <<
-                "insert into soci_test (id, name) values (:id, :name)",
-                use(id), use(name));
-
-            id = 1; name = "John"; st1.execute(true);
-            id = 2; name = "Anna"; st1.execute(true);
-            id = 3; name = "Mike"; st1.execute(true);
-
-#else
-            // Older PostgreSQL does not support use elements
+            transaction tr(sql);
 
             sql << "insert into soci_test (id, name) values(1, 'John')";
             sql << "insert into soci_test (id, name) values(2, 'Anna')";
             sql << "insert into soci_test (id, name) values(3, 'Mike')";
 
-#endif // SOCI_PGSQL_NOPARAMS
-
-            sql.commit();
-            sql.begin();
+            tr.commit();
+        }
+        {
+            transaction tr(sql);
 
             sql << "select count(*) from soci_test", into(count);
             assert(count == 3);
 
-#ifndef SOCI_PGSQL_NOPARAMS
-            id = 4; name = "Stan"; st1.execute(true);
-#else
             sql << "insert into soci_test (id, name) values(4, 'Stan')";
-#endif // SOCI_PGSQL_NOPARAMS
 
             sql << "select count(*) from soci_test", into(count);
             assert(count == 4);
-            sql.rollback();
+
+            tr.rollback();
 
             sql << "select count(*) from soci_test", into(count);
             assert(count == 3);
         }
         {
-            sql.begin();
+            transaction tr(sql);
 
             sql << "delete from soci_test";
 
             sql << "select count(*) from soci_test", into(count);
             assert(count == 0);
-            sql.rollback();
+
+            tr.rollback();
+
             sql << "select count(*) from soci_test", into(count);
             assert(count == 3);
+        }
+        {
+            // additional test for detection of double commit
+            transaction tr(sql);
+            tr.commit();
+            try
+            {
+                tr.commit();
+                assert(false);
+            }
+            catch (soci_error const &e)
+            {
+                std::string msg = e.what();
+                assert(msg ==
+                    "The transaction object cannot be handled twice.");
+            }
         }
     }
 
@@ -1586,12 +1843,12 @@ void test11()
 {
 #ifndef SOCI_PGSQL_NOPARAMS
     {
-        Session sql(backEndFactory_, connectString_);
+        session sql(backEndFactory_, connectString_);
 
-        AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
-        eIndicator ind1 = eOK;
-        eIndicator ind2 = eOK;
+        indicator ind1 = i_ok;
+        indicator ind2 = i_ok;
 
         int id = 1;
         int val = 10;
@@ -1601,15 +1858,15 @@ void test11()
 
         id = 2;
         val = 11;
-        ind2 = eNull;
+        ind2 = i_null;
         sql << "insert into soci_test(id, val) values(:id, :val)",
             use(id, ind1), use(val, ind2);
 
         sql << "select val from soci_test where id = 1", into(val, ind2);
-        assert(ind2 == eOK);
+        assert(ind2 == i_ok);
         assert(val == 10);
         sql << "select val from soci_test where id = 2", into(val, ind2);
-        assert(ind2 == eNull);
+        assert(ind2 == i_null);
 
         std::vector<int> ids;
         ids.push_back(3);
@@ -1619,10 +1876,10 @@ void test11()
         vals.push_back(12);
         vals.push_back(13);
         vals.push_back(14);
-        std::vector<eIndicator> inds;
-        inds.push_back(eOK);
-        inds.push_back(eNull);
-        inds.push_back(eOK);
+        std::vector<indicator> inds;
+        inds.push_back(i_ok);
+        inds.push_back(i_null);
+        inds.push_back(i_ok);
 
         sql << "insert into soci_test(id, val) values(:id, :val)",
             use(ids), use(vals, inds);
@@ -1639,11 +1896,11 @@ void test11()
         assert(ids[3] == 2);
         assert(ids[4] == 1);
         assert(inds.size() == 5);
-        assert(inds[0] == eOK);
-        assert(inds[1] == eNull);
-        assert(inds[2] == eOK);
-        assert(inds[3] == eNull);
-        assert(inds[4] == eOK);
+        assert(inds[0] == i_ok);
+        assert(inds[1] == i_null);
+        assert(inds[2] == i_ok);
+        assert(inds[3] == i_null);
+        assert(inds[4] == i_ok);
         assert(vals.size() == 5);
         assert(vals[0] == 14);
         assert(vals[2] == 12);
@@ -1659,43 +1916,45 @@ void test11()
 void test12()
 {
     {
-        Session sql(backEndFactory_, connectString_);
+        session sql(backEndFactory_, connectString_);
 
-        AutoTableCreator tableCreator(tc_.tableCreator2(sql));
+        sql.uppercase_column_names(true);
 
-        Row r;
+        auto_table_creator tableCreator(tc_.table_creator_2(sql));
+
+        row r;
         sql << "select * from soci_test", into(r);
-        assert(r.indicator(0) ==  eNoData);
+        assert(sql.got_data() == false);
 
         sql << "insert into soci_test"
             " values(3.14, 123, \'Johny\',"
-            << tc_.toDateTime("2005-12-19 22:14:17")
+            << tc_.to_date_time("2005-12-19 22:14:17")
             << ", 'a')";
 
-        // select into a Row
+        // select into a row
         {
-            Row r;
-            Statement st = (sql.prepare <<
+            row r;
+            statement st = (sql.prepare <<
                 "select * from soci_test", into(r));
             st.execute(true);
             assert(r.size() == 5);
 
-            assert(r.getProperties(0).getDataType() == eDouble);
-            assert(r.getProperties(1).getDataType() == eInteger);
-            assert(r.getProperties(2).getDataType() == eString);
-            assert(r.getProperties(3).getDataType() == eDate);
+            assert(r.get_properties(0).get_data_type() == dt_double);
+            assert(r.get_properties(1).get_data_type() == dt_integer);
+            assert(r.get_properties(2).get_data_type() == dt_string);
+            assert(r.get_properties(3).get_data_type() == dt_date);
 
             // type char is visible as string
             // - to comply with the implementation for Oracle
-            assert(r.getProperties(4).getDataType() == eString);
+            assert(r.get_properties(4).get_data_type() == dt_string);
 
-            assert(r.getProperties("num_int").getDataType() == eInteger);
+            assert(r.get_properties("NUM_INT").get_data_type() == dt_integer);
 
-            assert(r.getProperties(0).getName() == "num_float");
-            assert(r.getProperties(1).getName() == "num_int");
-            assert(r.getProperties(2).getName() == "name");
-            assert(r.getProperties(3).getName() == "sometime");
-            assert(r.getProperties(4).getName() == "chr");
+            assert(r.get_properties(0).get_name() == "NUM_FLOAT");
+            assert(r.get_properties(1).get_name() == "NUM_INT");
+            assert(r.get_properties(2).get_name() == "NAME");
+            assert(r.get_properties(3).get_name() == "SOMETIME");
+            assert(r.get_properties(4).get_name() == "CHR");
 
             assert(std::fabs(r.get<double>(0) - 3.14) < 0.001);
             assert(r.get<int>(1) == 123);
@@ -1706,12 +1965,12 @@ void test12()
             // again, type char is visible as string
             assert(r.get<std::string>(4) == "a");
 
-            assert(std::fabs(r.get<double>("num_float") - 3.14) < 0.001);
-            assert(r.get<int>("num_int") == 123);
-            assert(r.get<std::string>("name") == "Johny");
-            assert(r.get<std::string>("chr") == "a");
+            assert(std::fabs(r.get<double>("NUM_FLOAT") - 3.14) < 0.001);
+            assert(r.get<int>("NUM_INT") == 123);
+            assert(r.get<std::string>("NAME") == "Johny");
+            assert(r.get<std::string>("CHR") == "a");
 
-            assert(r.indicator(0) == eOK);
+            assert(r.get_indicator(0) == i_ok);
 
             // verify exception thrown on invalid get<>
             bool caught = false;
@@ -1746,7 +2005,27 @@ void test12()
                 assert(t.tm_sec == 17);
                 assert(c == "a");
             }
+        }
 
+        // additional test to check if the row object can be
+        // reused between queries
+        {
+            row r;
+            sql << "select * from soci_test", into(r);
+
+            assert(r.size() == 5);
+
+            assert(r.get_properties(0).get_data_type() == dt_double);
+            assert(r.get_properties(1).get_data_type() == dt_integer);
+            assert(r.get_properties(2).get_data_type() == dt_string);
+            assert(r.get_properties(3).get_data_type() == dt_date);
+
+            sql << "select name, num_int from soci_test", into(r);
+
+            assert(r.size() == 2);
+
+            assert(r.get_properties(0).get_data_type() == dt_string);
+            assert(r.get_properties(1).get_data_type() == dt_integer);
         }
     }
 
@@ -1756,9 +2035,9 @@ void test12()
 // more dynamic bindings
 void test13()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
 
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
     sql << "insert into soci_test(id, val) values(1, 10)";
     sql << "insert into soci_test(id, val) values(2, 20)";
@@ -1767,44 +2046,44 @@ void test13()
 #ifndef SOCI_PGSQL_NOPARAMS
     {
         int id = 2;
-        Row r;
+        row r;
         sql << "select val from soci_test where id = :id", use(id), into(r);
 
         assert(r.size() == 1);
-        assert(r.getProperties(0).getDataType() == eInteger);
+        assert(r.get_properties(0).get_data_type() == dt_integer);
         assert(r.get<int>(0) == 20);
     }
     {
         int id;
-        Row r;
-        Statement st = (sql.prepare <<
+        row r;
+        statement st = (sql.prepare <<
             "select val from soci_test where id = :id", use(id), into(r));
 
         id = 2;
         st.execute(true);
         assert(r.size() == 1);
-        assert(r.getProperties(0).getDataType() == eInteger);
+        assert(r.get_properties(0).get_data_type() == dt_integer);
         assert(r.get<int>(0) == 20);
         
         id = 3;
         st.execute(true);
         assert(r.size() == 1);
-        assert(r.getProperties(0).getDataType() == eInteger);
+        assert(r.get_properties(0).get_data_type() == dt_integer);
         assert(r.get<int>(0) == 30);
 
         id = 1;
         st.execute(true);
         assert(r.size() == 1);
-        assert(r.getProperties(0).getDataType() == eInteger);
+        assert(r.get_properties(0).get_data_type() == dt_integer);
         assert(r.get<int>(0) == 10);
     }
 #else
     {
-        Row r;
+        row r;
         sql << "select val from soci_test where id = 2", into(r);
 
         assert(r.size() == 1);
-        assert(r.getProperties(0).getDataType() == eInteger);
+        assert(r.get_properties(0).get_data_type() == dt_integer);
         assert(r.get<int>(0) == 20);
     }
 #endif // SOCI_PGSQL_NOPARAMS
@@ -1812,45 +2091,87 @@ void test13()
     std::cout << "test 13 passed" << std::endl;
 }
 
-// More Dynamic binding to Row objects
+// More Dynamic binding to row objects
 void test14()
 {
     {
-        Session sql(backEndFactory_, connectString_);
-        AutoTableCreator tableCreator(tc_.tableCreator3(sql));
+        session sql(backEndFactory_, connectString_);
 
-        Row r1;
+        sql.uppercase_column_names(true);
+
+        auto_table_creator tableCreator(tc_.table_creator_3(sql));
+
+        row r1;
         sql << "select * from soci_test", into(r1);
-        assert(r1.indicator(0) ==  eNoData);
+        assert(sql.got_data() == false);
 
         sql << "insert into soci_test values('david', '(404)123-4567')";
         sql << "insert into soci_test values('john', '(404)123-4567')";
         sql << "insert into soci_test values('doe', '(404)123-4567')";
 
-        Row r2;
-        Statement st = (sql.prepare << "select * from soci_test", into(r2));
+        row r2;
+        statement st = (sql.prepare << "select * from soci_test", into(r2));
         st.execute();
         
-        assert(r2.size() == 2); 
+        assert(r2.size() == 2);
         
         int count = 0;
-        while(st.fetch())
+        while (st.fetch())
         {
             ++count;
-            assert(r2.get<std::string>("phone") == "(404)123-4567");
+            assert(r2.get<std::string>("PHONE") == "(404)123-4567");
         }
         assert(count == 3);
     }
     std::cout << "test 14 passed" << std::endl;
 }
 
-// test15 is like test14 but with a TypeConversion instead of a row
+// test15 is like test14 but with a type_conversion instead of a row
 void test15()
-{   
-    Session sql(backEndFactory_, connectString_);
+{
+    session sql(backEndFactory_, connectString_);
+
+    sql.uppercase_column_names(true);
     
+    // simple conversion (between single basic type and user type)
+
     {
-        AutoTableCreator tableCreator(tc_.tableCreator3(sql));
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+        MyInt mi;
+        mi.set(123);
+        sql << "insert into soci_test(id) values(:id)", use(mi);
+
+        int i;
+        sql << "select id from soci_test", into(i);
+        assert(i == 123);
+
+        sql << "update soci_test set id = id + 1";
+
+        sql << "select id from soci_test", into(mi);
+        assert(mi.get() == 124);
+    }
+
+    // simple conversion with use const
+
+    {
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+        MyInt mi;
+        mi.set(123);
+
+        MyInt const & cmi = mi;
+        sql << "insert into soci_test(id) values(:id)", use(cmi);
+
+        int i;
+        sql << "select id from soci_test", into(i);
+        assert(i == 123);
+    }
+
+    // conversions based on values (many fields involved -> ORM)
+
+    {
+        auto_table_creator tableCreator(tc_.table_creator_3(sql));
 
         PhonebookEntry p1;
         sql << "select * from soci_test", into(p1);
@@ -1859,21 +2180,27 @@ void test15()
 
         p1.name = "david";
 
-        sql << "insert into soci_test values(:name, :phone)", use(p1);
+        // Note: uppercase column names are used here (and later on)
+        // for consistency with how they can be read from database
+        // (which means forced to uppercase on Oracle) and how they are
+        // set/get in the type conversion routines for PhonebookEntry.
+        // In short, IF the database is Oracle,
+        // then all column names for binding should be uppercase.
+        sql << "insert into soci_test values(:NAME, :PHONE)", use(p1);
         sql << "insert into soci_test values('john', '(404)123-4567')";
         sql << "insert into soci_test values('doe', '(404)123-4567')";
 
         PhonebookEntry p2;
-        Statement st = (sql.prepare << "select * from soci_test", into(p2));
+        statement st = (sql.prepare << "select * from soci_test", into(p2));
         st.execute();
         
         int count = 0;
-        while(st.fetch())
+        while (st.fetch())
         {
             ++count;
             if (p2.name == "david")
             {
-                // see TypeConversion<PhonebookEntry>
+                // see type_conversion<PhonebookEntry>
                 assert(p2.phone =="<NULL>");
             }
             else
@@ -1881,12 +2208,53 @@ void test15()
                 assert(p2.phone == "(404)123-4567");
             }
         }
-        assert(count == 3);        
+        assert(count == 3);
     }
 
-    {   // Use the PhonebookEntry2 type conversion, to test
-        // calls to Values::indicator()
-        AutoTableCreator tableCreator(tc_.tableCreator3(sql));
+    // conversions based on values with use const
+
+    {
+        auto_table_creator tableCreator(tc_.table_creator_3(sql));
+
+        PhonebookEntry p1;
+        p1.name = "Joe Coder";
+        p1.phone = "123-456";
+
+        PhonebookEntry const & cp1 = p1;
+
+        sql << "insert into soci_test values(:NAME, :PHONE)", use(cp1);
+
+        PhonebookEntry p2;
+        sql << "select * from soci_test", into(p2);
+        assert(sql.got_data());
+
+        assert(p2.name == "Joe Coder");
+        assert(p2.phone == "123-456");
+    }
+
+    // conversions based on accessor functions (as opposed to direct variable bindings)
+
+    {
+        auto_table_creator tableCreator(tc_.table_creator_3(sql));
+
+        PhonebookEntry3 p1;
+        p1.setName("Joe Hacker");
+        p1.setPhone("10010110");
+
+        sql << "insert into soci_test values(:NAME, :PHONE)", use(p1);
+
+        PhonebookEntry3 p2;
+        sql << "select * from soci_test", into(p2);
+        assert(sql.got_data());
+
+        assert(p2.getName() == "Joe Hacker");
+        assert(p2.getPhone() == "10010110");
+    }
+
+    {
+        // Use the PhonebookEntry2 type conversion, to test
+        // calls to values::get_indicator()
+        auto_table_creator tableCreator(tc_.table_creator_3(sql));
 
         PhonebookEntry2 p1;
         sql << "select * from soci_test", into(p1);
@@ -1894,21 +2262,21 @@ void test15()
         assert(p1.phone == "");
         p1.name = "david";
 
-        sql << "insert into soci_test values(:name, :phone)", use(p1);
+        sql << "insert into soci_test values(:NAME, :PHONE)", use(p1);
         sql << "insert into soci_test values('john', '(404)123-4567')";
         sql << "insert into soci_test values('doe', '(404)123-4567')";
 
         PhonebookEntry2 p2;
-        Statement st = (sql.prepare << "select * from soci_test", into(p2));
+        statement st = (sql.prepare << "select * from soci_test", into(p2));
         st.execute();
         
         int count = 0;
-        while(st.fetch())
+        while (st.fetch())
         {
             ++count;
             if (p2.name == "david")
             {
-                // see TypeConversion<PhonebookEntry2>
+                // see type_conversion<PhonebookEntry2>
                 assert(p2.phone =="<NULL>");
             }
             else
@@ -1916,7 +2284,7 @@ void test15()
                 assert(p2.phone == "(404)123-4567");
             }
         }
-        assert(count == 3);        
+        assert(count == 3);
     }
 
     std::cout << "test 15 passed" << std::endl;
@@ -1927,9 +2295,9 @@ void test16()
 {
 #ifndef SOCI_PGSQL_NOPARAMS
     {
-        Session sql(backEndFactory_, connectString_);
+        session sql(backEndFactory_, connectString_);
 
-        AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
         sql << "insert into soci_test(name, id) values('john', 1)";
         sql << "insert into soci_test(name, id) values('george', 2)";
@@ -1955,10 +2323,10 @@ void test16()
 // test for basic logging support
 void test17()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
 
     std::ostringstream log;
-    sql.setLogStream(&log);
+    sql.set_log_stream(&log);
 
     try
     {
@@ -1966,9 +2334,9 @@ void test17()
     }
     catch (...) {}
 
-    assert(sql.getLastQuery() == "drop table soci_test1");
+    assert(sql.get_last_query() == "drop table soci_test1");
 
-    sql.setLogStream(NULL);
+    sql.set_log_stream(NULL);
 
     try
     {
@@ -1976,9 +2344,9 @@ void test17()
     }
     catch (...) {}
 
-    assert(sql.getLastQuery() == "drop table soci_test2");
+    assert(sql.get_last_query() == "drop table soci_test2");
 
-    sql.setLogStream(&log);
+    sql.set_log_stream(&log);
 
     try
     {
@@ -1986,7 +2354,7 @@ void test17()
     }
     catch (...) {}
 
-    assert(sql.getLastQuery() == "drop table soci_test3");
+    assert(sql.get_last_query() == "drop table soci_test3");
     assert(log.str() ==
         "drop table soci_test1\n"
         "drop table soci_test3\n");
@@ -1994,35 +2362,37 @@ void test17()
     std::cout << "test 17 passed\n";
 }
 
-// test for Rowset creation and copying
+// test for rowset creation and copying
 void test18()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
     // create and populate the test table
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
     {
         // Open empty rowset
-        Rowset<Row> rs1 = (sql.prepare << "select * from soci_test");
+        rowset<row> rs1 = (sql.prepare << "select * from soci_test");
+        assert(rs1.empty());
+
+        // Copy construction
+        rowset<row> rs2(rs1);
+        assert(rs2.empty());
 
         // Copy by assignment
-        Rowset<Row> rs2 = rs1;
-        Rowset<Row> rs3(rs2);
-
-        // TODO - mloskot:
-        // Fix issue with rs1.begin() == rs2.begin()
+        rowset<row> rs3 = rs1;
+        assert(rs3.empty());
     }
 
     std::cout << "test 18 passed" << std::endl;
 }
 
-// test for simple iterating using Rowset iterator (without reading data)
+// test for simple iterating using rowset iterator (without reading data)
 void test19()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
     // create and populate the test table
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
     {
         sql << "insert into soci_test(id, val) values(1, 10)";
         sql << "insert into soci_test(id, val) values(2, 11)";
@@ -2030,7 +2400,7 @@ void test19()
         sql << "insert into soci_test(id, val) values(4, NULL)";
         sql << "insert into soci_test(id, val) values(5, 12)";
         {
-            Rowset<Row> rs = (sql.prepare << "select * from soci_test");
+            rowset<row> rs = (sql.prepare << "select * from soci_test");
 
             assert(5 == std::distance(rs.begin(), rs.end()));
         }
@@ -2039,47 +2409,49 @@ void test19()
     std::cout << "test 19 passed" << std::endl;
 }
 
-// test for reading Rowset<Row> using iterator
+// test for reading rowset<row> using iterator
 void test20()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
+
+    sql.uppercase_column_names(true);
     
     // create and populate the test table
-    AutoTableCreator tableCreator(tc_.tableCreator2(sql));
+    auto_table_creator tableCreator(tc_.table_creator_2(sql));
     {
         {
             // Empty rowset
-            Rowset<Row> rs = (sql.prepare << "select * from soci_test");
+            rowset<row> rs = (sql.prepare << "select * from soci_test");
             assert(0 == std::distance(rs.begin(), rs.end()));
         }
 
         {
             // Non-empty rowset
             sql << "insert into soci_test values(3.14, 123, \'Johny\',"
-                << tc_.toDateTime("2005-12-19 22:14:17")
+                << tc_.to_date_time("2005-12-19 22:14:17")
                 << ", 'a')";
             sql << "insert into soci_test values(6.28, 246, \'Robert\',"
-                << tc_.toDateTime("2004-10-01 18:44:10")
+                << tc_.to_date_time("2004-10-01 18:44:10")
                 << ", 'b')";
 
-            Rowset<Row> rs = (sql.prepare << "select * from soci_test");
+            rowset<row> rs = (sql.prepare << "select * from soci_test");
 
-            Rowset<Row>::const_iterator it = rs.begin(); 
+            rowset<row>::const_iterator it = rs.begin();
             assert(it != rs.end());
-                
+
             //
             // First row
-            // 
-            Row const& r1 = (*it);
+            //
+            row const & r1 = (*it);
 
             // Properties
             assert(r1.size() == 5);
-            assert(r1.getProperties(0).getDataType() == eDouble);
-            assert(r1.getProperties(1).getDataType() == eInteger);
-            assert(r1.getProperties(2).getDataType() == eString);
-            assert(r1.getProperties(3).getDataType() == eDate);
-            assert(r1.getProperties(4).getDataType() == eString);
-            assert(r1.getProperties("num_int").getDataType() == eInteger);
+            assert(r1.get_properties(0).get_data_type() == dt_double);
+            assert(r1.get_properties(1).get_data_type() == dt_integer);
+            assert(r1.get_properties(2).get_data_type() == dt_string);
+            assert(r1.get_properties(3).get_data_type() == dt_date);
+            assert(r1.get_properties(4).get_data_type() == dt_string);
+            assert(r1.get_properties("NUM_INT").get_data_type() == dt_integer);
 
             // Data
 
@@ -2100,10 +2472,10 @@ void test20()
                 std::tm t1 = r1.get<std::tm>(3);
                 assert(t1.tm_year == 105);
                 assert(r1.get<std::string>(4) == "a");
-                assert(std::fabs(r1.get<double>("num_float") - 3.14) < 0.001);
-                assert(r1.get<int>("num_int") == 123);
-                assert(r1.get<std::string>("name") == "Johny");
-                assert(r1.get<std::string>("chr") == "a");
+                assert(std::fabs(r1.get<double>("NUM_FLOAT") - 3.14) < 0.001);
+                assert(r1.get<int>("NUM_INT") == 123);
+                assert(r1.get<std::string>("NAME") == "Johny");
+                assert(r1.get<std::string>("CHR") == "a");
             }
             else
             {
@@ -2113,13 +2485,13 @@ void test20()
                 std::tm t1 = r1.get<std::tm>(3);
                 assert(t1.tm_year == 104);
                 assert(r1.get<std::string>(4) == "b");
-                assert(std::fabs(r1.get<double>("num_float") - 6.28) < 0.001);
-                assert(r1.get<int>("num_int") == 246);
-                assert(r1.get<std::string>("name") == "Robert");
-                assert(r1.get<std::string>("chr") == "b");
+                assert(std::fabs(r1.get<double>("NUM_FLOAT") - 6.28) < 0.001);
+                assert(r1.get<int>("NUM_INT") == 246);
+                assert(r1.get<std::string>("NAME") == "Robert");
+                assert(r1.get<std::string>("CHR") == "b");
             }
 
-            // 
+            //
             // Iterate to second row
             //
             ++it;
@@ -2128,21 +2500,21 @@ void test20()
             //
             // Second row
             //
-            Row const& r2 = (*it);
+            row const & r2 = (*it);
 
             // Properties
             assert(r2.size() == 5);
-            assert(r2.getProperties(0).getDataType() == eDouble);
-            assert(r2.getProperties(1).getDataType() == eInteger);
-            assert(r2.getProperties(2).getDataType() == eString);
-            assert(r2.getProperties(3).getDataType() == eDate);
-            assert(r2.getProperties(4).getDataType() == eString);
-            assert(r2.getProperties("num_int").getDataType() == eInteger);
+            assert(r2.get_properties(0).get_data_type() == dt_double);
+            assert(r2.get_properties(1).get_data_type() == dt_integer);
+            assert(r2.get_properties(2).get_data_type() == dt_string);
+            assert(r2.get_properties(3).get_data_type() == dt_date);
+            assert(r2.get_properties(4).get_data_type() == dt_string);
+            assert(r2.get_properties("NUM_INT").get_data_type() == dt_integer);
 
             std::string newName = r2.get<std::string>(2);
             assert(name != newName);
             assert(newName == "Johny" || newName == "Robert");
-          
+
             if (newName == "Johny")
             {
                 assert(std::fabs(r2.get<double>(0) - 3.14) < 0.001);
@@ -2151,10 +2523,10 @@ void test20()
                 std::tm t2 = r2.get<std::tm>(3);
                 assert(t2.tm_year == 105);
                 assert(r2.get<std::string>(4) == "a");
-                assert(std::fabs(r2.get<double>("num_float") - 3.14) < 0.001);
-                assert(r2.get<int>("num_int") == 123);
-                assert(r2.get<std::string>("name") == "Johny");
-                assert(r2.get<std::string>("chr") == "a");
+                assert(std::fabs(r2.get<double>("NUM_FLOAT") - 3.14) < 0.001);
+                assert(r2.get<int>("NUM_INT") == 123);
+                assert(r2.get<std::string>("NAME") == "Johny");
+                assert(r2.get<std::string>("CHR") == "a");
             }
             else
             {
@@ -2164,10 +2536,10 @@ void test20()
                 std::tm t2 = r2.get<std::tm>(3);
                 assert(t2.tm_year == 104);
                 assert(r2.get<std::string>(4) == "b");
-                assert(std::fabs(r2.get<double>("num_float") - 6.28) < 0.001);
-                assert(r2.get<int>("num_int") == 246);
-                assert(r2.get<std::string>("name") == "Robert");
-                assert(r2.get<std::string>("chr") == "b");
+                assert(std::fabs(r2.get<double>("NUM_FLOAT") - 6.28) < 0.001);
+                assert(r2.get<int>("NUM_INT") == 246);
+                assert(r2.get<std::string>("NAME") == "Robert");
+                assert(r2.get<std::string>("CHR") == "b");
             }
         }
     }
@@ -2175,13 +2547,13 @@ void test20()
     std::cout << "test 20 passed" << std::endl;
 }
 
-// test for reading Rowset<int> using iterator
+// test for reading rowset<int> using iterator
 void test21()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
     // create and populate the test table
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
     {
         sql << "insert into soci_test(id) values(1)";
         sql << "insert into soci_test(id) values(2)";
@@ -2189,10 +2561,10 @@ void test21()
         sql << "insert into soci_test(id) values(4)";
         sql << "insert into soci_test(id) values(5)";
         {
-            Rowset<int> rs = (sql.prepare << "select id from soci_test order by id asc");
+            rowset<int> rs = (sql.prepare << "select id from soci_test order by id asc");
 
             // 1st row
-            Rowset<int>::const_iterator pos = rs.begin();
+            rowset<int>::const_iterator pos = rs.begin();
             assert(1 == (*pos));
 
             // 3rd row
@@ -2206,21 +2578,19 @@ void test21()
             // The End
             ++pos;
             assert(pos == rs.end());
-
-            // XXX - advancing with negative value throws segfault
         }
     }
 
     std::cout << "test 21 passed" << std::endl;
 }
 
-// test for handling 'use' and reading Rowset<std::string> using iterator
+// test for handling 'use' and reading rowset<std::string> using iterator
 void test22()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
     // create and populate the test table
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
     {
         sql << "insert into soci_test(str) values('abc')";
         sql << "insert into soci_test(str) values('def')";
@@ -2229,7 +2599,7 @@ void test22()
         {
             // Expected result in numbers
             std::string idle("def");
-            Rowset<std::string> rs1 = (sql.prepare
+            rowset<std::string> rs1 = (sql.prepare
                     << "select str from soci_test where str = :idle",
                     use(idle));
 
@@ -2237,7 +2607,7 @@ void test22()
 
             // Expected result in value
             idle = "jkl";
-            Rowset<std::string> rs2 = (sql.prepare
+            rowset<std::string> rs2 = (sql.prepare
                     << "select str from soci_test where str = :idle",
                     use(idle));
 
@@ -2251,10 +2621,10 @@ void test22()
 // test for handling troublemaker
 void test23()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
     // create and populate the test table
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
     {
         sql << "insert into soci_test(str) values('abc')";
         {
@@ -2263,10 +2633,10 @@ void test23()
             try
             {
                 std::string troublemaker;
-                Rowset<std::string> rs1 = (sql.prepare << "select str from soci_test",
+                rowset<std::string> rs1 = (sql.prepare << "select str from soci_test",
                         into(troublemaker));
             }
-            catch(SOCIError const& e)
+            catch (soci_error const&)
             {
                 caught = true;
             }
@@ -2281,10 +2651,10 @@ void test23()
 // "Null value fetched and no indicator defined."
 void test24()
 {
-    Session sql(backEndFactory_, connectString_);
+    session sql(backEndFactory_, connectString_);
     
     // create and populate the test table
-    AutoTableCreator tableCreator(tc_.tableCreator1(sql));
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
     {
         sql << "insert into soci_test(val) values(1)";
         sql << "insert into soci_test(val) values(2)";
@@ -2295,11 +2665,10 @@ void test24()
             bool caught = false;
             try
             {
-                std::string troublemaker;
-                Rowset<int> rs = (sql.prepare << "select val from soci_test order by val asc");
+                rowset<int> rs = (sql.prepare << "select val from soci_test order by val asc");
 
                 int tester = 0;
-                for (Rowset<int>::const_iterator it = rs.begin(); it != rs.end(); ++it)
+                for (rowset<int>::const_iterator it = rs.begin(); it != rs.end(); ++it)
                 {
                     tester = *it;
                 }
@@ -2307,7 +2676,7 @@ void test24()
                 // Never should get here
                 assert(false);
             }
-            catch(SOCIError const& e)
+            catch (soci_error const&)
             {
                 caught = true;
             }
@@ -2315,16 +2684,17 @@ void test24()
         }
         std::cout << "test 24 passed" << std::endl;
     }
-
 }
 
-// test25 is like test15 but with Rowset and iterators use
+// test25 is like test15 but with rowset and iterators use
 void test25()
-{   
-    Session sql(backEndFactory_, connectString_);
+{
+    session sql(backEndFactory_, connectString_);
+
+    sql.uppercase_column_names(true);
     
     {
-        AutoTableCreator tableCreator(tc_.tableCreator3(sql));
+        auto_table_creator tableCreator(tc_.table_creator_3(sql));
 
         PhonebookEntry p1;
         sql << "select * from soci_test", into(p1);
@@ -2333,20 +2703,20 @@ void test25()
 
         p1.name = "david";
 
-        sql << "insert into soci_test values(:name, :phone)", use(p1);
+        sql << "insert into soci_test values(:NAME, :PHONE)", use(p1);
         sql << "insert into soci_test values('john', '(404)123-4567')";
         sql << "insert into soci_test values('doe', '(404)123-4567')";
 
-        Rowset<PhonebookEntry> rs = (sql.prepare << "select * from soci_test");
+        rowset<PhonebookEntry> rs = (sql.prepare << "select * from soci_test");
         
         int count = 0;
-        for (Rowset<PhonebookEntry>::const_iterator it = rs.begin(); it != rs.end(); ++it)
+        for (rowset<PhonebookEntry>::const_iterator it = rs.begin(); it != rs.end(); ++it)
         {
             ++count;
             PhonebookEntry const& p2 = (*it);
             if (p2.name == "david")
             {
-                // see TypeConversion<PhonebookEntry>
+                // see type_conversion<PhonebookEntry>
                 assert(p2.phone =="<NULL>");
             }
             else
@@ -2355,15 +2725,734 @@ void test25()
             }
         }
 
-        assert(3 == count);        
+        assert(3 == count);
     }
     std::cout << "test 25 passed" << std::endl;
 }
 
-}; // class CommonTests
+// test for handling NULL values with boost::optional
+// (both into and use)
+void test26()
+{
+    session sql(backEndFactory_, connectString_);
+    
+    // create and populate the test table
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+    {
+        sql << "insert into soci_test(val) values(7)";
+
+        {
+            // verify non-null value is fetched correctly
+            boost::optional<int> opt;
+            sql << "select val from soci_test", into(opt);
+            assert(opt.is_initialized());
+            assert(opt.get() == 7);
+
+            // indicators can be used with optional
+            // (although that's just a consequence of implementation,
+            // not an intended feature - but let's test it anyway)
+            indicator ind;
+            opt.reset();
+            sql << "select val from soci_test", into(opt, ind);
+            assert(opt.is_initialized());
+            assert(opt.get() == 7);
+            assert(ind == i_ok);
+
+            // verify null value is fetched correctly
+            sql << "select i1 from soci_test", into(opt);
+            assert(opt.is_initialized() == false);
+
+            // and with indicator
+            opt = 5;
+            sql << "select i1 from soci_test", into(opt, ind);
+            assert(opt.is_initialized() == false);
+            assert(ind == i_null);
+
+            // verify non-null is inserted correctly
+            opt = 3;
+            sql << "update soci_test set val = :v", use(opt);
+            int j = 0;
+            sql << "select val from soci_test", into(j);
+            assert(j == 3);
+
+            // verify null is inserted correctly
+            opt.reset();
+            sql << "update soci_test set val = :v", use(opt);
+            ind = i_ok;
+            sql << "select val from soci_test", into(j, ind);
+            assert(ind == i_null);
+        }
+
+        // vector tests (select)
+
+        {
+            sql << "delete from soci_test";
+
+            // simple readout of non-null data
+
+            sql << "insert into soci_test(id, val, str) values(1, 5, \'abc\')";
+            sql << "insert into soci_test(id, val, str) values(2, 6, \'def\')";
+            sql << "insert into soci_test(id, val, str) values(3, 7, \'ghi\')";
+            sql << "insert into soci_test(id, val, str) values(4, 8, null)";
+            sql << "insert into soci_test(id, val, str) values(5, 9, \'mno\')";
+
+            std::vector<boost::optional<int> > v(10);
+            sql << "select val from soci_test order by val", into(v);
+
+            assert(v.size() == 5);
+            assert(v[0].is_initialized());
+            assert(v[0].get() == 5);
+            assert(v[1].is_initialized());
+            assert(v[1].get() == 6);
+            assert(v[2].is_initialized());
+            assert(v[2].get() == 7);
+            assert(v[3].is_initialized());
+            assert(v[3].get() == 8);
+            assert(v[4].is_initialized());
+            assert(v[4].get() == 9);
+
+            // readout of nulls
+
+            sql << "update soci_test set val = null where id = 2 or id = 4";
+
+            std::vector<int> ids(5);
+            sql << "select id, val from soci_test order by id", into(ids), into(v);
+
+            assert(v.size() == 5);
+            assert(ids.size() == 5);
+            assert(v[0].is_initialized());
+            assert(v[0].get() == 5);
+            assert(v[1].is_initialized() == false);
+            assert(v[2].is_initialized());
+            assert(v[2].get() == 7);
+            assert(v[3].is_initialized() == false);
+            assert(v[4].is_initialized());
+            assert(v[4].get() == 9);
+
+            // readout with statement preparation
+
+            int id = 1;
+
+            ids.resize(3);
+            v.resize(3);
+            statement st = (sql.prepare <<
+                "select id, val from soci_test order by id", into(ids), into(v));
+            st.execute();
+            while (st.fetch())
+            {
+                for (std::size_t i = 0; i != v.size(); ++i)
+                {
+                    assert(id == ids[i]);
+
+                    if (id == 2 || id == 4)
+                    {
+                        assert(v[i].is_initialized() == false);
+                    }
+                    else
+                    {
+                        assert(v[i].is_initialized() && v[i].get() == id + 4);
+                    }
+
+                    ++id;
+                }
+
+                ids.resize(3);
+                v.resize(3);
+            }
+            assert(id == 6);
+        }
+
+        // and why not stress iterators and the dynamic binding, too!
+
+        {
+            rowset<row> rs = (sql.prepare << "select id, val, str from soci_test order by id");
+
+            rowset<row>::const_iterator it = rs.begin();
+            assert(it != rs.end());
+            
+            row const& r1 = (*it);
+
+            assert(r1.size() == 3);
+
+            // Note: for the reason of differences between number(x,y) type and
+            // binary representation of integers, the following commented assertions
+            // do not work for Oracle.
+            // The problem is that for this single table the data type used in Oracle
+            // table creator for the id column is number(10,0),
+            // which allows to insert all int values.
+            // On the other hand, the column description scheme used in the Oracle
+            // backend figures out that the natural type for such a column
+            // is eUnsignedInt - this makes the following assertions fail.
+            // Other database backends (like PostgreSQL) use other types like int
+            // and this not only allows to insert all int values (obviously),
+            // but is also recognized as int (obviously).
+            // There is a similar problem with stream-like extraction,
+            // where internally get<T> is called and the type mismatch is detected
+            // for the id column - that's why the code below skips this column
+            // and tests the remaining column only.
+
+            //assert(r1.get_properties(0).get_data_type() == dt_integer);
+            assert(r1.get_properties(1).get_data_type() == dt_integer);
+            assert(r1.get_properties(2).get_data_type() == dt_string);
+            //assert(r1.get<int>(0) == 1);
+            assert(r1.get<int>(1) == 5);
+            assert(r1.get<std::string>(2) == "abc");
+            assert(r1.get<boost::optional<int> >(1).is_initialized());
+            assert(r1.get<boost::optional<int> >(1).get() == 5);
+            assert(r1.get<boost::optional<std::string> >(2).is_initialized());
+            assert(r1.get<boost::optional<std::string> >(2).get() == "abc");
+
+            ++it;
+
+            row const& r2 = (*it);
+
+            assert(r2.size() == 3);
+
+            // assert(r2.get_properties(0).get_data_type() == dt_integer);
+            assert(r2.get_properties(1).get_data_type() == dt_integer);
+            assert(r2.get_properties(2).get_data_type() == dt_string);
+            //assert(r2.get<int>(0) == 2);
+            try
+            {
+                // expect exception here, this is NULL value
+                (void)r1.get<int>(1);
+                assert(false);
+            }
+            catch (soci_error const &) {}
+
+            // but we can read it as optional
+            assert(r2.get<boost::optional<int> >(1).is_initialized() == false);
+
+            // stream-like data extraction
+
+            ++it;
+            row const &r3 = (*it);
+
+            boost::optional<int> io;
+            boost::optional<std::string> so;
+
+            r3.skip(); // move to val and str columns
+            r3 >> io >> so;
+
+            assert(io.is_initialized() && io.get() == 7);
+            assert(so.is_initialized() && so.get() == "ghi");
+
+            ++it;
+            row const &r4 = (*it);
+
+            r3.skip(); // move to val and str columns
+            r4 >> io >> so;
+
+            assert(io.is_initialized() == false);
+            assert(so.is_initialized() == false);
+        }
+
+        // bulk inserts of non-null data
+
+        {
+            sql << "delete from soci_test";
+
+            std::vector<int> ids;
+            std::vector<boost::optional<int> > v;
+
+            ids.push_back(10); v.push_back(20);
+            ids.push_back(11); v.push_back(21);
+            ids.push_back(12); v.push_back(22);
+            ids.push_back(13); v.push_back(23);
+
+            sql << "insert into soci_test(id, val) values(:id, :val)",
+                use(ids, "id"), use(v, "val");
+
+            int sum;
+            sql << "select sum(val) from soci_test", into(sum);
+            assert(sum == 86);
+
+            // bulk inserts of some-null data
+
+            sql << "delete from soci_test";
+
+            v[2].reset();
+            v[3].reset();
+
+            sql << "insert into soci_test(id, val) values(:id, :val)",
+                use(ids, "id"), use(v, "val");
+
+            sql << "select sum(val) from soci_test", into(sum);
+            assert(sum == 41);
+        }
+
+        // composability with user conversions
+
+        {
+            sql << "delete from soci_test";
+
+            boost::optional<MyInt> omi1;
+            boost::optional<MyInt> omi2;
+
+            omi1 = MyInt(125);
+            omi2.reset();
+
+            sql << "insert into soci_test(id, val) values(:id, :val)",
+                use(omi1), use(omi2);
+
+            sql << "select id, val from soci_test", into(omi2), into(omi1);
+
+            assert(omi1.is_initialized() == false);
+            assert(omi2.is_initialized() && omi2.get().get() == 125);
+        }
+
+        // use with const optional and user conversions
+
+        {
+            sql << "delete from soci_test";
+
+            boost::optional<MyInt> omi1;
+            boost::optional<MyInt> omi2;
+
+            omi1 = MyInt(125);
+            omi2.reset();
+
+            boost::optional<MyInt> const & comi1 = omi1;
+            boost::optional<MyInt> const & comi2 = omi2;
+
+            sql << "insert into soci_test(id, val) values(:id, :val)",
+                use(comi1), use(comi2);
+
+            sql << "select id, val from soci_test", into(omi2), into(omi1);
+
+            assert(omi1.is_initialized() == false);
+            assert(omi2.is_initialized() && omi2.get().get() == 125);
+        }
+    }
+
+    std::cout << "test 26 passed" << std::endl;
+}
+
+// connection and reconnection tests
+void test27()
+{
+    {
+        // empty session
+        session sql;
+
+        // idempotent:
+        sql.close();
+
+        try
+        {
+            sql.reconnect();
+            assert(false);
+        }
+        catch (soci_error const &e)
+        {
+            assert(e.what() == std::string(
+                       "Cannot reconnect without previous connection."));
+        }
+
+        // open from empty session
+        sql.open(backEndFactory_, connectString_);
+        sql.close();
+
+        // reconnecting from closed session
+        sql.reconnect();
+
+        // opening already connected session
+        try
+        {
+            sql.open(backEndFactory_, connectString_);
+            assert(false);
+        }
+        catch (soci_error const &e)
+        {
+            assert(e.what() == std::string(
+                       "Cannot open already connected session."));
+        }
+
+        sql.close();
+
+        // open from closed
+        sql.open(backEndFactory_, connectString_);
+
+        // reconnect from already connected session
+        sql.reconnect();
+    }
+
+    {
+        session sql;
+
+        try
+        {
+            sql << "this statement cannot execute";
+            assert(false);
+        }
+        catch (soci_error const &e)
+        {
+            assert(e.what() == std::string("Session is not connected."));
+        }
+    }
+
+    std::cout << "test 27 passed" << std::endl;
+}
+
+void test28()
+{
+    session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_2(sql));
+    {
+        boost::tuple<double, int, std::string> t1(3.5, 7, "Joe Hacker");
+        assert(t1.get<0>() == 3.5);
+        assert(t1.get<1>() == 7);
+        assert(t1.get<2>() == "Joe Hacker");
+
+        sql << "insert into soci_test(num_float, num_int, name) values(:d, :i, :s)", use(t1);
+
+        // basic query
+
+        boost::tuple<double, int, std::string> t2;
+        sql << "select num_float, num_int, name from soci_test", into(t2);
+
+        assert(t2.get<0>() == 3.5);
+        assert(t2.get<1>() == 7);
+        assert(t2.get<2>() == "Joe Hacker");
+
+        sql << "delete from soci_test";
+    }
+
+    {
+        // composability with boost::optional
+
+        // use:
+        boost::tuple<double, boost::optional<int>, std::string> t1(
+            3.5, boost::optional<int>(7), "Joe Hacker");
+        assert(t1.get<0>() == 3.5);
+        assert(t1.get<1>().is_initialized());
+        assert(t1.get<1>().get() == 7);
+        assert(t1.get<2>() == "Joe Hacker");
+
+        sql << "insert into soci_test(num_float, num_int, name) values(:d, :i, :s)", use(t1);
+
+        // into:
+        boost::tuple<double, boost::optional<int>, std::string> t2;
+        sql << "select num_float, num_int, name from soci_test", into(t2);
+
+        assert(t2.get<0>() == 3.5);
+        assert(t2.get<1>().is_initialized());
+        assert(t2.get<1>().get() == 7);
+        assert(t2.get<2>() == "Joe Hacker");
+
+        sql << "delete from soci_test";
+    }
+
+    {
+        // composability with user-provided conversions
+
+        // use:
+        boost::tuple<double, MyInt, std::string> t1(3.5, 7, "Joe Hacker");
+        assert(t1.get<0>() == 3.5);
+        assert(t1.get<1>().get() == 7);
+        assert(t1.get<2>() == "Joe Hacker");
+
+        sql << "insert into soci_test(num_float, num_int, name) values(:d, :i, :s)", use(t1);
+
+        // into:
+        boost::tuple<double, MyInt, std::string> t2;
+
+        sql << "select num_float, num_int, name from soci_test", into(t2);
+
+        assert(t2.get<0>() == 3.5);
+        assert(t2.get<1>().get() == 7);
+        assert(t2.get<2>() == "Joe Hacker");
+
+        sql << "delete from soci_test";
+    }
+
+    {
+        // let's have fun - composition of tuple, optional and user-defined type
+
+        // use:
+        boost::tuple<double, boost::optional<MyInt>, std::string> t1(
+            3.5, boost::optional<MyInt>(7), "Joe Hacker");
+        assert(t1.get<0>() == 3.5);
+        assert(t1.get<1>().is_initialized());
+        assert(t1.get<1>().get().get() == 7);
+        assert(t1.get<2>() == "Joe Hacker");
+
+        sql << "insert into soci_test(num_float, num_int, name) values(:d, :i, :s)", use(t1);
+
+        // into:
+        boost::tuple<double, boost::optional<MyInt>, std::string> t2;
+
+        sql << "select num_float, num_int, name from soci_test", into(t2);
+
+        assert(t2.get<0>() == 3.5);
+        assert(t2.get<1>().is_initialized());
+        assert(t2.get<1>().get().get() == 7);
+        assert(t2.get<2>() == "Joe Hacker");
+
+        sql << "update soci_test set num_int = NULL";
+
+        sql << "select num_float, num_int, name from soci_test", into(t2);
+
+        assert(t2.get<0>() == 3.5);
+        assert(t2.get<1>().is_initialized() == false);
+        assert(t2.get<2>() == "Joe Hacker");
+    }
+
+    {
+        // rowset<tuple>
+
+        sql << "insert into soci_test(num_float, num_int, name) values(4.0, 8, 'Tony Coder')";
+        sql << "insert into soci_test(num_float, num_int, name) values(4.5, NULL, 'Cecile Sharp')";
+        sql << "insert into soci_test(num_float, num_int, name) values(5.0, 10, 'Djhava Ravaa')";
+
+        typedef boost::tuple<double, boost::optional<int>, std::string> T;
+
+        rowset<T> rs = (sql.prepare
+            << "select num_float, num_int, name from soci_test order by num_float asc");
+
+        rowset<T>::const_iterator pos = rs.begin();
+
+        assert(pos->get<0>() == 3.5);
+        assert(pos->get<1>().is_initialized() == false);
+        assert(pos->get<2>() == "Joe Hacker");
+
+        ++pos;
+        assert(pos->get<0>() == 4.0);
+        assert(pos->get<1>().is_initialized());
+        assert(pos->get<1>().get() == 8);
+        assert(pos->get<2>() == "Tony Coder");
+
+        ++pos;
+        assert(pos->get<0>() == 4.5);
+        assert(pos->get<1>().is_initialized() == false);
+        assert(pos->get<2>() == "Cecile Sharp");
+
+        ++pos;
+        assert(pos->get<0>() == 5.0);
+        assert(pos->get<1>().is_initialized());
+        assert(pos->get<1>().get() == 10);
+        assert(pos->get<2>() == "Djhava Ravaa");
+
+        ++pos;
+        assert(pos == rs.end());
+    }
+
+    std::cout << "test 28 passed" << std::endl;
+}
+
+void test29()
+{
+#if defined(BOOST_VERSION) && BOOST_VERSION >= 103500
+
+    session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_2(sql));
+    {
+        boost::fusion::vector<double, int, std::string> t1(3.5, 7, "Joe Hacker");
+        assert(boost::fusion::at_c<0>(t1) == 3.5);
+        assert(boost::fusion::at_c<1>(t1) == 7);
+        assert(boost::fusion::at_c<2>(t1) == "Joe Hacker");
+
+        sql << "insert into soci_test(num_float, num_int, name) values(:d, :i, :s)", use(t1);
+
+        // basic query
+
+        boost::fusion::vector<double, int, std::string> t2;
+        sql << "select num_float, num_int, name from soci_test", into(t2);
+
+        assert(boost::fusion::at_c<0>(t2) == 3.5);
+        assert(boost::fusion::at_c<1>(t2) == 7);
+        assert(boost::fusion::at_c<2>(t2) == "Joe Hacker");
+
+        sql << "delete from soci_test";
+    }
+
+    {
+        // composability with boost::optional
+
+        // use:
+        boost::fusion::vector<double, boost::optional<int>, std::string> t1(
+            3.5, boost::optional<int>(7), "Joe Hacker");
+        assert(boost::fusion::at_c<0>(t1) == 3.5);
+        assert(boost::fusion::at_c<1>(t1).is_initialized());
+        assert(boost::fusion::at_c<1>(t1).get() == 7);
+        assert(boost::fusion::at_c<2>(t1) == "Joe Hacker");
+
+        sql << "insert into soci_test(num_float, num_int, name) values(:d, :i, :s)", use(t1);
+
+        // into:
+        boost::fusion::vector<double, boost::optional<int>, std::string> t2;
+        sql << "select num_float, num_int, name from soci_test", into(t2);
+
+        assert(boost::fusion::at_c<0>(t2) == 3.5);
+        assert(boost::fusion::at_c<1>(t2).is_initialized());
+        assert(boost::fusion::at_c<1>(t2) == 7);
+        assert(boost::fusion::at_c<2>(t2) == "Joe Hacker");
+
+        sql << "delete from soci_test";
+    }
+
+    {
+        // composability with user-provided conversions
+
+        // use:
+        boost::fusion::vector<double, MyInt, std::string> t1(3.5, 7, "Joe Hacker");
+        assert(boost::fusion::at_c<0>(t1) == 3.5);
+        assert(boost::fusion::at_c<1>(t1).get() == 7);
+        assert(boost::fusion::at_c<2>(t1) == "Joe Hacker");
+
+        sql << "insert into soci_test(num_float, num_int, name) values(:d, :i, :s)", use(t1);
+
+        // into:
+        boost::fusion::vector<double, MyInt, std::string> t2;
+
+        sql << "select num_float, num_int, name from soci_test", into(t2);
+
+        assert(boost::fusion::at_c<0>(t2) == 3.5);
+        assert(boost::fusion::at_c<1>(t2).get() == 7);
+        assert(boost::fusion::at_c<2>(t2) == "Joe Hacker");
+
+        sql << "delete from soci_test";
+    }
+
+    {
+        // let's have fun - composition of tuple, optional and user-defined type
+
+        // use:
+        boost::fusion::vector<double, boost::optional<MyInt>, std::string> t1(
+            3.5, boost::optional<MyInt>(7), "Joe Hacker");
+        assert(boost::fusion::at_c<0>(t1) == 3.5);
+        assert(boost::fusion::at_c<1>(t1).is_initialized());
+        assert(boost::fusion::at_c<1>(t1).get().get() == 7);
+        assert(boost::fusion::at_c<2>(t1) == "Joe Hacker");
+
+        sql << "insert into soci_test(num_float, num_int, name) values(:d, :i, :s)", use(t1);
+
+        // into:
+        boost::fusion::vector<double, boost::optional<MyInt>, std::string> t2;
+
+        sql << "select num_float, num_int, name from soci_test", into(t2);
+
+        assert(boost::fusion::at_c<0>(t2) == 3.5);
+        assert(boost::fusion::at_c<1>(t2).is_initialized());
+        assert(boost::fusion::at_c<1>(t2).get().get() == 7);
+        assert(boost::fusion::at_c<2>(t2) == "Joe Hacker");
+
+        sql << "update soci_test set num_int = NULL";
+
+        sql << "select num_float, num_int, name from soci_test", into(t2);
+
+        assert(boost::fusion::at_c<0>(t2) == 3.5);
+        assert(boost::fusion::at_c<1>(t2).is_initialized() == false);
+        assert(boost::fusion::at_c<2>(t2) == "Joe Hacker");
+    }
+
+    {
+        // rowset<fusion::vector>
+
+        sql << "insert into soci_test(num_float, num_int, name) values(4.0, 8, 'Tony Coder')";
+        sql << "insert into soci_test(num_float, num_int, name) values(4.5, NULL, 'Cecile Sharp')";
+        sql << "insert into soci_test(num_float, num_int, name) values(5.0, 10, 'Djhava Ravaa')";
+
+        typedef boost::fusion::vector<double, boost::optional<int>, std::string> T;
+
+        rowset<T> rs = (sql.prepare
+            << "select num_float, num_int, name from soci_test order by num_float asc");
+
+        rowset<T>::const_iterator pos = rs.begin();
+
+        assert(boost::fusion::at_c<0>(*pos) == 3.5);
+        assert(boost::fusion::at_c<1>(*pos).is_initialized() == false);
+        assert(boost::fusion::at_c<2>(*pos) == "Joe Hacker");
+
+        ++pos;
+        assert(boost::fusion::at_c<0>(*pos) == 4.0);
+        assert(boost::fusion::at_c<1>(*pos).is_initialized());
+        assert(boost::fusion::at_c<1>(*pos).get() == 8);
+        assert(boost::fusion::at_c<2>(*pos) == "Tony Coder");
+
+        ++pos;
+        assert(boost::fusion::at_c<0>(*pos) == 4.5);
+        assert(boost::fusion::at_c<1>(*pos).is_initialized() == false);
+        assert(boost::fusion::at_c<2>(*pos) == "Cecile Sharp");
+
+        ++pos;
+        assert(boost::fusion::at_c<0>(*pos) == 5.0);
+        assert(boost::fusion::at_c<1>(*pos).is_initialized());
+        assert(boost::fusion::at_c<1>(*pos).get() == 10);
+        assert(boost::fusion::at_c<2>(*pos) == "Djhava Ravaa");
+
+        ++pos;
+        assert(pos == rs.end());
+    }
+
+    std::cout << "test 29 passed" << std::endl;
+
+#else
+    std::cout << "test 29 skipped (no boost::fusion)" << std::endl;
+#endif // BOOST_VERSION
+}
+
+// test for boost::gregorian::date
+void test30()
+{
+    session sql(backEndFactory_, connectString_);
+
+    {
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+        std::tm nov15;
+        nov15.tm_year = 105;
+        nov15.tm_mon = 10;
+        nov15.tm_mday = 15;
+        nov15.tm_hour = 0;
+        nov15.tm_min = 0;
+        nov15.tm_sec = 0;
+
+        sql << "insert into soci_test(tm) values(:tm)", use(nov15);
+
+        boost::gregorian::date bgd;
+        sql << "select tm from soci_test", into(bgd);
+
+        assert(bgd.year() == 2005);
+        assert(bgd.month() == 11);
+        assert(bgd.day() == 15);
+
+        sql << "update soci_test set tm = NULL";
+        try
+        {
+            sql << "select tm from soci_test", into(bgd);
+            assert(false);
+        }
+        catch (soci_error const & e)
+        {
+            assert(e.what() == std::string("Null value not allowed for this type"));
+        }
+    }
+
+    {
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+        boost::gregorian::date bgd(2008, boost::gregorian::May, 5);
+
+        sql << "insert into soci_test(tm) values(:tm)", use(bgd);
+
+        std::tm t;
+        sql << "select tm from soci_test", into(t);
+
+        assert(t.tm_year == 108);
+        assert(t.tm_mon == 4);
+        assert(t.tm_mday == 5);
+    }
+
+    std::cout << "test 30 passed" << std::endl;
+}
+
+}; // class common_tests
 
 } // namespace tests
-} // namespace SOCI
 
-#endif // COMMON_TESTS_H_INCLUDED
+} // namespace soci
 
+#endif // SOCI_COMMON_TESTS_H_INCLUDED

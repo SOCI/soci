@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en'>
 <head>
   <meta content="text/html; charset=ISO-8859-1"  http-equiv="content-type" />
   <link rel="stylesheet" type="text/css" href="../style.css" />
@@ -40,7 +40,7 @@
 <h4 id="versions">Supported Versions</h4>
 
 <p>The SOCI MySQL backend should in principle work with every version
-of MySQL 3.x or newer. Some of features (transactions, stored
+of MySQL 3.x or newer. Some of the features (transactions, stored
 functions) are not available when MySQL server doesn't support them.</p>
 
 <h4 id="tested">Tested Platforms</h4>
@@ -48,88 +48,92 @@ functions) are not available when MySQL server doesn't support them.</p>
 <table border="1" cellpadding="5" cellspacing="0">
 <tbody>
 <tr><th>MySQL version</th><th>Operating System</th><th>Compiler</th></tr>
-<tr><td>4.1.20</td><td>Linux i686 2.6.17 (Fedora Core release&nbsp;4)</td><td>g++ 4.0.2</td></tr>
-<tr><td>5.0.22</td><td>Linux i686 2.6.15 (Ubuntu 6.06)</td><td>g++ 4.0.3</td></tr>
-<tr><td>5.0.18</td><td>Mac OS X 10.4</td><td>g++ 4.0.0</td></tr>
-<tr><td>4.0.22</td><td>Linux i686 2.6.10-gentoo-r6</td><td>g++ 3.4.5</td></tr>
+<tr><td>5.0.45</td><td>Linux i686 2.6.23 (Fedora release 7)</td><td>g++ 4.1.2</td></tr>
 </tbody>
 </table>
-
-<p>One other version of MySQL server that has been tested
-is 3.23.57.</p>
 
 <h4 id="required">Required Client Libraries</h4>
 
 <p>The SOCI MySQL backend requires MySQL's <code>libmysqlclient</code>
 client library.</p>
+<p>Note that the SOCI library itself depends also on <code>libdl</code>, so the minimum set of libraries needed to compile a basic client program is:</p>
+<pre class="example">
+-lsoci_core -lsoci_mysql -ldl -lmysqlclient
+</pre>
+
 
 <h4 id="connecting">Connecting to the Database</h4>
 
-<p>To establish a connection to a MySQL server, create a Session object
+<p>To establish a connection to a MySQL server, create a <code>session</code> object
 using the <code>mysql</code> backend factory together with a connection
 string:</p>
 
 <pre class="example">
-BackEndFactory const &amp;backEnd = mysql;
-Session sql(backEnd, "db=test user=root password='Ala ma kota'");
+session sql(mysql, "db=test user=root password='Ala ma kota'");
+
+// or:
+session sql("mysql", "db=test user=root password='Ala ma kota'");
+
+// or:
+session sql("mysql://db=test user=root password='Ala ma kota'");
 </pre>
 
 <p>The set of parameters used in the connection string for MySQL is:</p>
 <ul>
-  <li>dbname or db (required)</li>
-  <li>user</li>
-  <li>password or pass</li>
-  <li>host</li>
-  <li>port</li>
-  <li>unix_socket</li>
+  <li><code>dbname</code> or <code>db</code> (required)</li>
+  <li><code>user</code></li>
+  <li><code>password</code> or <code>pass</code></li>
+  <li><code>host</code></li>
+  <li><code>port</code></li>
+  <li><code>unix_socket</code></li>
 </ul>
 
-<p>Once you have created a <code>Session</code> object as shown above, you
+<p>Once you have created a <code>session</code> object as shown above, you
 can use it to access the database, for example:</p>
 <pre class="example">
 int count;
 sql &lt;&lt; "select count(*) from invoices", into(count);
 </pre>
 
-<p>(See the <a href="../basics.html">SOCI basics</a> and <a href="../exchange.html">exchanging data</a> documentation for general information on using the <code>Session</code> class.)</p>
+<p>(See the <a href="../basics.html">SOCI basics</a> and <a href="../exchange.html">exchanging data</a> documentation for general information on using the <code>session</code> class.)</p>
 
 <h3 id="support">SOCI Feature Support</h3>
 <h4 id="dynamic">Dynamic Binding</h4>
 
-<p>The MySQL backend supports the use of the SOCI <code>Row</code> class,
-which facilitates retrieval of data whose type is not known at compile
+<p>The MySQL backend supports the use of the SOCI <code>row</code> class,
+which facilitates retrieval of data which type is not known at compile
 time.</p>
 
-<p>When calling <code>Row::get&lt;T&gt;()</code>, the type you should pass
-as T depends upon the underlying database type.<br/>
+<p>When calling <code>row::get&lt;T&gt;()</code>, the type you should pass
+as <code>T</code> depends upon the underlying database type.<br/>
 For the MySQL backend, this type mapping is:</p>
 
 <table border="1" cellpadding="5" cellspacing="0">
   <tbody>
     <tr>
-      <th>PostgreSQL Data Type</th>
+      <th>MySQL Data Type</th>
       <th>SOCI Data Type</th>
-      <th><code>Row::get&lt;T&gt;</code> specializations</th>
+      <th><code>row::get&lt;T&gt;</code> specializations</th>
     </tr>
     <tr>
       <td>FLOAT, DOUBLE, DECIMAL and synonyms</td>
-      <td><code>eDouble</code></td>
+      <td><code>dt_double</code></td>
       <td><code>double</code></td>
     </tr>
     <tr>
       <td>TINYINT, SMALLINT, INT, BIGINT (provided it's in the range)</td>
-      <td><code>eInteger</code></td>
+      <td><code>dt_integer</code></td>
       <td><code>int</code></td>
     </tr>
     <tr>
       <td>STRING/BINARY, VARCHAR/VARBINARY</td>
-      <td><code>eString</code></td>
+      <td><code>dt_string</code></td>
       <td><code>std::string</code></td>
     </tr>
     <tr>
       <td>TIMESTAMP (works only with MySQL >=&nbsp;5.0), DATE,
       TIME, DATETIME</td>
-      <td><code>eDate</code></td>
+      <td><code>dt_date</code></td>
       <td><code>std::tm</code><code></code></td>
     </tr>
   </tbody>
@@ -170,11 +174,11 @@ and only with appropriate table types.
 
 <h4 id="blob">BLOB Data Type</h4>
 
-<p>SOCI BLOB interface is not supported by the MySQL backend.</p>
+<p>SOCI <code>blob</code> interface is not supported by the MySQL backend.</p>
 
 <h4 id="rowid">RowID Data Type</h4>
 
-<p>RowID is not supported by the MySQL backend.</p>
+<p>The <code>rowid</code> functionality is not supported by the MySQL backend.</p>
 
 <h4 id="nested">Nested Statements</h4>
 
@@ -187,12 +191,12 @@ stored routines: stored procedures and stored functions
 (for details, please consult the
 <a href="http://dev.mysql.com/doc/refman/5.0/en/stored-procedures.html">MySQL
 documentation</a>). Stored functions can be executed by using
-SOCI's <a href="../statements.html#procedures">Procedure</a> class.
+SOCI's <a href="../statements.html#procedures">procedure</a> class.
 There is currently no support for stored procedures.</p>
 
 <h3 id="native">Acessing the native database API</h3>
 
-<p>SOCI provides access to underlying datbabase APIs via several getBackEnd() functions, as described in the <a href="../beyond.html">beyond SOCI</a> documentation.</p>
+<p>SOCI provides access to underlying datbabase APIs via several <code>get_backend()</code> functions, as described in the <a href="../beyond.html">Beyond SOCI</a> documentation.</p>
 
 <p>The MySQL backend provides the following concrete classes for native API access:</p>
 
@@ -203,12 +207,12 @@ There is currently no support for stored procedures.</p>
       <th>Concrete Class</th>
     </tr>
     <tr>
-      <td><code>SessionBackEnd* Session::getBackEnd()</code></td>
-      <td><code>MySQLSessionBackEnd</code></td>
+      <td><code>session_backend * session::get_backend()</code></td>
+      <td><code>mysql_session_backend</code></td>
     </tr>
     <tr>
-      <td><code>StatementBackEnd* Statement::getBackEnd()</code></td>
-      <td><code>MySQLStatementBackEnd</code></td>
+      <td><code>statement_backend * statement::get_backend()</code></td>
+      <td><code>mysql_statement_backend</code></td>
     </tr>
   </tbody>
 </table>
@@ -222,6 +226,6 @@ There is currently no support for stored procedures.</p>
 
 <p>None.</p>
 
-<p class="copyright">Copyright &copy; 2004-2006 Maciej Sobczak, Stephen Hutton, Pawel Aleksander Fedorynski</p>
+<p class="copyright">Copyright &copy; 2004-2008 Maciej Sobczak, Stephen Hutton, Pawel Aleksander Fedorynski</p>
 </body>
 </html>

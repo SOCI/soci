@@ -1,7 +1,7 @@
 # The following variable is specific to this backend and its correct
 # values might depend on your environment - feel free to set it accordingly.
 
-ORACLEINCLUDEDIR = -I/u01/oracle/product/10.1.0/rdbms/public 
+ORACLEINCLUDEDIR = -I/usr/lib/oracle/xe/app/oracle/product/10.2.0/server/rdbms/public
 
 # The rest of the Makefile is indepentent of the target environment.
 
@@ -18,7 +18,7 @@ OBJECTSSO = blob-s.o factory-s.o row-id-s.o session-s.o \
 	standard-into-type-s.o standard-use-type-s.o statement-s.o \
 	vector-into-type-s.o vector-use-type-s.o error-s.o
 
-libsoci-oracle.a : ${OBJECTS}
+libsoci_oracle.a : ${OBJECTS}
 	ar rv $@ $?
 	rm *.o
 
@@ -57,7 +57,7 @@ vector-use-type.o : vector-use-type.cpp
 
 
 shared : ${OBJECTSSO}
-	${COMPILER} -shared -o libsoci-oracle.so ${OBJECTSSO}
+	${COMPILER} -shared -o libsoci_oracle.so ${OBJECTSSO}
 	rm *.o
 
 blob-s.o : blob.cpp
@@ -92,4 +92,4 @@ vector-use-type-s.o : vector-use-type.cpp
 
 
 clean :
-	rm -f *.o libsoci-oracle.a libsoci-oracle.so
+	rm -f *.o libsoci_oracle.a libsoci_oracle.so

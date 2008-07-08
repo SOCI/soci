@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2006 Mateusz Loskot
+// Copyright (C) 2006-2008 Mateusz Loskot
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -36,4 +36,3 @@
 #endif // _MSC_VER
 
 #endif // SOCI_CONFIG_H_INCLUDED
-

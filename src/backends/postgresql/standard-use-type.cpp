@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 
 #define SOCI_POSTGRESQL_SOURCE
 #include "soci-postgresql.h"
-#include <soci.h>
+#include "rowid.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
 #include <cstdio>
@@ -23,33 +23,37 @@
 #ifdef _MSC_VER
 #pragma warning(disable:4355 4996)
 #define snprintf _snprintf
-#else
-using std::snprintf;
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
-void PostgreSQLStandardUseTypeBackEnd::bindByPos(
-    int &position, void *data, eExchangeType type)
+void postgresql_standard_use_type_backend::bind_by_pos(
+    int & position, void * data, exchange_type type, bool /* readOnly */)
 {
+    // readOnly is ignored, because PostgreSQL does not support
+    // any data to be written back to used (bound) objects.
+
     data_ = data;
     type_ = type;
     position_ = position++;
 }
 
-void PostgreSQLStandardUseTypeBackEnd::bindByName(
-    std::string const &name, void *data, eExchangeType type)
+void postgresql_standard_use_type_backend::bind_by_name(
+    std::string const & name, void * data, exchange_type type, bool /* readOnly */)
 {
+    // readOnly is ignored, because PostgreSQL does not support
+    // any data to be written back to used (bound) objects.
+
     data_ = data;
     type_ = type;
     name_ = name;
 }
 
-void PostgreSQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
+void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
 {
-    if (ind != NULL && *ind == eNull)
+    if (ind != NULL && *ind == i_null)
     {
         // leave the working buffer as NULL
     }
@@ -58,58 +62,67 @@ void PostgreSQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
         // allocate and fill the buffer with text-formatted client data
         switch (type_)
         {
-        case eXChar:
+        case x_char:
             {
                 buf_ = new char[2];
-                buf_[0] = *static_cast<char*>(data_);
+                buf_[0] = *static_cast<char *>(data_);
                 buf_[1] = '\0';
             }
             break;
-        case eXCString:
+        case x_cstring:
             {
-                CStringDescriptor *strDescr
-                    = static_cast<CStringDescriptor *>(data_);
+                cstring_descriptor * strDescr
+                    = static_cast<cstring_descriptor *>(data_);
 
                 std::size_t len = std::strlen(strDescr->str_);
                 buf_ = new char[len + 1];
                 std::strcpy(buf_, strDescr->str_);
             }
             break;
-        case eXStdString:
+        case x_stdstring:
             {
-                std::string *s = static_cast<std::string *>(data_);
+                std::string * s = static_cast<std::string *>(data_);
                 buf_ = new char[s->size() + 1];
                 std::strcpy(buf_, s->c_str());
             }
             break;
-        case eXShort:
+        case x_short:
             {
                 std::size_t const bufSize
                     = std::numeric_limits<short>::digits10 + 3;
                 buf_ = new char[bufSize];
                 snprintf(buf_, bufSize, "%d",
-                    static_cast<int>(*static_cast<short*>(data_)));
+                    static_cast<int>(*static_cast<short *>(data_)));
             }
             break;
-        case eXInteger:
+        case x_integer:
             {
                 std::size_t const bufSize
                     = std::numeric_limits<int>::digits10 + 3;
                 buf_ = new char[bufSize];
                 snprintf(buf_, bufSize, "%d",
-                    *static_cast<int*>(data_));
+                    *static_cast<int *>(data_));
             }
             break;
-        case eXUnsignedLong:
+        case x_unsigned_long:
             {
                 std::size_t const bufSize
                     = std::numeric_limits<unsigned long>::digits10 + 2;
                 buf_ = new char[bufSize];
                 snprintf(buf_, bufSize, "%lu",
-                    *static_cast<unsigned long*>(data_));
+                    *static_cast<unsigned long *>(data_));
             }
             break;
-        case eXDouble:
+        case x_long_long:
+            {
+                std::size_t const bufSize
+                    = std::numeric_limits<long long>::digits10 + 3;
+                buf_ = new char[bufSize];
+                snprintf(buf_, bufSize, "%lld",
+                    *static_cast<long long *>(data_));
+            }
+            break;
+        case x_double:
             {
                 // no need to overengineer it (KISS)...
 
@@ -117,28 +130,28 @@ void PostgreSQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
                 buf_ = new char[bufSize];
 
                 snprintf(buf_, bufSize, "%.20g",
-                    *static_cast<double*>(data_));
+                    *static_cast<double *>(data_));
             }
             break;
-        case eXStdTm:
+        case x_stdtm:
             {
                 std::size_t const bufSize = 20;
                 buf_ = new char[bufSize];
 
-                std::tm *t = static_cast<std::tm *>(data_);
+                std::tm * t = static_cast<std::tm *>(data_);
                 snprintf(buf_, bufSize, "%d-%02d-%02d %02d:%02d:%02d",
                     t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
                     t->tm_hour, t->tm_min, t->tm_sec);
             }
             break;
-        case eXRowID:
+        case x_rowid:
             {
                 // RowID is internally identical to unsigned long
 
-                RowID *rid = static_cast<RowID *>(data_);
-                PostgreSQLRowIDBackEnd *rbe
-                    = static_cast<PostgreSQLRowIDBackEnd *>(
-                        rid->getBackEnd());
+                rowid * rid = static_cast<rowid *>(data_);
+                postgresql_rowid_backend * rbe
+                    = static_cast<postgresql_rowid_backend *>(
+                        rid->get_backend());
 
                 std::size_t const bufSize
                     = std::numeric_limits<unsigned long>::digits10 + 2;
@@ -149,7 +162,7 @@ void PostgreSQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
             break;
 
         default:
-            throw SOCIError("Use element used with non-supported type.");
+            throw soci_error("Use element used with non-supported type.");
         }
     }
 
@@ -165,18 +178,20 @@ void PostgreSQLStandardUseTypeBackEnd::preUse(eIndicator const *ind)
     }
 }
 
-void PostgreSQLStandardUseTypeBackEnd::postUse(
-    bool /* gotData */, eIndicator * /* ind */)
+void postgresql_standard_use_type_backend::post_use(
+    bool /* gotData */, indicator * /* ind */)
 {
-    // TODO: if PostgreSQL allows to *get* data via this channel,
-    // write it back to client buffers (variable)
+    // PostgreSQL does not support any data moving back the same channel,
+    // so there is nothing to do here.
+    // In particular, there is nothing to protect, because both const and non-const
+    // objects will never be modified.
 
     // clean up the working buffer, it might be allocated anew in
     // the next run of preUse
-    cleanUp();
+    clean_up();
 }
 
-void PostgreSQLStandardUseTypeBackEnd::cleanUp()
+void postgresql_standard_use_type_backend::clean_up()
 {
     if (buf_ != NULL)
     {

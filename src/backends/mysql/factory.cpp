@@ -8,22 +8,32 @@
 
 #define SOCI_MYSQL_SOURCE
 #include "soci-mysql.h"
-#include <soci.h>
 #include <ciso646>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
 // concrete factory for MySQL concrete strategies
-MySQLSessionBackEnd * MySQLBackEndFactory::makeSession(
+mysql_session_backend * mysql_backend_factory::make_session(
      std::string const &connectString) const
 {
-     return new MySQLSessionBackEnd(connectString);
+     return new mysql_session_backend(connectString);
 }
 
-MySQLBackEndFactory const SOCI::mysql;
+mysql_backend_factory const soci::mysql;
+
+extern "C"
+{
+
+// for dynamic backend loading
+SOCI_MYSQL_DECL backend_factory const * factory_mysql()
+{
+    return &soci::mysql;
+}
+
+} // extern "C"

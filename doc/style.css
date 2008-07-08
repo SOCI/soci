@@ -5,6 +5,7 @@ body
   margin-left: 100px;
   margin-right: 100px;
   font-family: arial, sans-serif;
+  font-size: small;
 }
 
 p.banner
@@ -51,7 +52,7 @@ code
 /*   font-weight: bold; */
   background-color: white;
   color: #8B0000;
-  font-size: large;
+/*  font-size: large; */
 }
 
 pre.example

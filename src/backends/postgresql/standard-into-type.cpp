@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -8,11 +8,13 @@
 #define SOCI_POSTGRESQL_SOURCE
 #include "soci-postgresql.h"
 #include "common.h"
-#include <soci.h>
+#include "rowid.h"
+#include "blob.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
 #include <cstdio>
 #include <cstring>
+#include <cstdlib>
 #include <ctime>
 #include <sstream>
 
@@ -20,31 +22,26 @@
 #define SOCI_PGSQL_NOBINDBYNAME
 #endif // SOCI_PGSQL_NOPARAMS
 
-#ifdef _MSC_VER
-#pragma warning(disable:4355 4996)
-#define strtoll(s, p, b) static_cast<long long>(_strtoi64(s, p, b))
-#endif
-
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::PostgreSQL;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::postgresql;
 
 
-void PostgreSQLStandardIntoTypeBackEnd::defineByPos(
-    int &position, void *data, eExchangeType type)
+void postgresql_standard_into_type_backend::define_by_pos(
+    int & position, void * data, exchange_type type)
 {
     data_ = data;
     type_ = type;
     position_ = position++;
 }
 
-void PostgreSQLStandardIntoTypeBackEnd::preFetch()
+void postgresql_standard_into_type_backend::pre_fetch()
 {
     // nothing to do here
 }
 
-void PostgreSQLStandardIntoTypeBackEnd::postFetch(
-    bool gotData, bool calledFromFetch, eIndicator *ind)
+void postgresql_standard_into_type_backend::post_fetch(
+    bool gotData, bool calledFromFetch, indicator * ind)
 {
     if (calledFromFetch == true && gotData == false)
     {
@@ -55,124 +52,126 @@ void PostgreSQLStandardIntoTypeBackEnd::postFetch(
 
     if (gotData)
     {
-        // PostgreSQL positions start at 0
-        int pos = position_ - 1;
+        // postgresql_ positions start at 0
+        int const pos = position_ - 1;
 
         // first, deal with indicators
         if (PQgetisnull(statement_.result_, statement_.currentRow_, pos) != 0)
         {
             if (ind == NULL)
             {
-                throw SOCIError(
+                throw soci_error(
                     "Null value fetched and no indicator defined.");
             }
 
-            *ind = eNull;
+            *ind = i_null;
+
+            // no need to convert data if it is null
             return;
         }
         else
         {
             if (ind != NULL)
             {
-                *ind = eOK;
+                *ind = i_ok;
             }
         }
 
         // raw data, in text format
-        char *buf = PQgetvalue(statement_.result_,
+        char const * buf = PQgetvalue(statement_.result_,
             statement_.currentRow_, pos);
 
         switch (type_)
         {
-        case eXChar:
+        case x_char:
             {
-                char *dest = static_cast<char*>(data_);
+                char * dest = static_cast<char *>(data_);
                 *dest = *buf;
             }
             break;
-        case eXCString:
+        case x_cstring:
             {
-                CStringDescriptor *strDescr
-                    = static_cast<CStringDescriptor *>(data_);
+                cstring_descriptor * strDescr
+                    = static_cast<cstring_descriptor *>(data_);
 
                 std::strncpy(strDescr->str_, buf, strDescr->bufSize_ - 1);
                 strDescr->str_[strDescr->bufSize_ - 1] = '\0';
 
                 if (std::strlen(buf) >= strDescr->bufSize_ && ind != NULL)
                 {
-                    *ind = eTruncated;
+                    *ind = i_truncated;
                 }
             }
             break;
-        case eXStdString:
+        case x_stdstring:
             {
-                std::string *dest = static_cast<std::string *>(data_);
+                std::string * dest = static_cast<std::string *>(data_);
                 dest->assign(buf);
             }
             break;
-        case eXShort:
+        case x_short:
             {
-                short *dest = static_cast<short*>(data_);
-                long val = strtol(buf, NULL, 10);
-                *dest = static_cast<short>(val);
+                short * dest = static_cast<short *>(data_);
+                *dest = string_to_integer<short>(buf);
             }
             break;
-        case eXInteger:
+        case x_integer:
             {
-                int *dest = static_cast<int*>(data_);
-                long val = strtol(buf, NULL, 10);
-                *dest = static_cast<int>(val);
+                int * dest = static_cast<int *>(data_);
+                *dest = string_to_integer<int>(buf);
             }
             break;
-        case eXUnsignedLong:
+        case x_unsigned_long:
             {
-                unsigned long *dest = static_cast<unsigned long *>(data_);
-                long long val = strtoll(buf, NULL, 10);
-                *dest = static_cast<unsigned long>(val);
+                unsigned long * dest = static_cast<unsigned long *>(data_);
+                *dest = string_to_integer<unsigned long>(buf);
             }
             break;
-        case eXDouble:
+        case x_long_long:
             {
-                double *dest = static_cast<double*>(data_);
-                double val = strtod(buf, NULL);
-                *dest = static_cast<double>(val);
+                long long * dest = static_cast<long long *>(data_);
+                *dest = string_to_integer<long long>(buf);
             }
             break;
-        case eXStdTm:
+        case x_double:
+            {
+                double * dest = static_cast<double *>(data_);
+                *dest = string_to_double(buf);
+            }
+            break;
+        case x_stdtm:
             {
                 // attempt to parse the string and convert to std::tm
-                std::tm *dest = static_cast<std::tm *>(data_);
-                parseStdTm(buf, *dest);
+                std::tm * dest = static_cast<std::tm *>(data_);
+                parse_std_tm(buf, *dest);
             }
             break;
-        case eXRowID:
+        case x_rowid:
             {
                 // RowID is internally identical to unsigned long
 
-                RowID *rid = static_cast<RowID *>(data_);
-                PostgreSQLRowIDBackEnd *rbe
-                    = static_cast<PostgreSQLRowIDBackEnd *>(
-                        rid->getBackEnd());
+                rowid * rid = static_cast<rowid *>(data_);
+                postgresql_rowid_backend * rbe
+                    = static_cast<postgresql_rowid_backend *>(
+                        rid->get_backend());
 
-                long long val = strtoll(buf, NULL, 10);
-                rbe->value_ = static_cast<unsigned long>(val);
+                rbe->value_ = string_to_integer<unsigned long>(buf);
             }
             break;
-        case eXBLOB:
+        case x_blob:
             {
-                long long llval = strtoll(buf, NULL, 10);
-                unsigned long oid = static_cast<unsigned long>(llval);
+                unsigned long oid = string_to_integer<unsigned long>(buf);
 
                 int fd = lo_open(statement_.session_.conn_, oid,
                     INV_READ | INV_WRITE);
                 if (fd == -1)
                 {
-                    throw SOCIError("Cannot open the BLOB object.");
+                    throw soci_error("Cannot open the blob object.");
                 }
 
-                BLOB *b = static_cast<BLOB *>(data_);
-                PostgreSQLBLOBBackEnd *bbe
-                     = static_cast<PostgreSQLBLOBBackEnd *>(b->getBackEnd());
+                blob * b = static_cast<blob *>(data_);
+                postgresql_blob_backend *bbe
+                     = static_cast<postgresql_blob_backend *>(b->get_backend());
 
                 if (bbe->fd_ != -1)
                 {
@@ -184,23 +183,12 @@ void PostgreSQLStandardIntoTypeBackEnd::postFetch(
             break;
 
         default:
-            throw SOCIError("Into element used with non-supported type.");
-        }
-    }
-    else // no data retrieved
-    {
-        if (ind != NULL)
-        {
-            *ind = eNoData;
-        }
-        else
-        {
-            throw SOCIError("No data fetched and no indicator defined.");
+            throw soci_error("Into element used with non-supported type.");
         }
     }
 }
 
-void PostgreSQLStandardIntoTypeBackEnd::cleanUp()
+void postgresql_standard_into_type_backend::clean_up()
 {
     // nothing to do here
 }

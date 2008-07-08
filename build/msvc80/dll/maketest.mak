@@ -1,4 +1,4 @@
-# $Id: maketest.mak,v 1.2 2006/11/13 15:47:48 mloskot Exp $
+# $Id: maketest.mak,v 1.3 2007/08/17 02:30:40 mloskot Exp $
 #
 # Makefile to run SOCI tests using NMAKE utility on Windows.
 #
@@ -19,7 +19,7 @@
 #
 # Here, define connection settings for your environment
 #
-FIREBIRD_CONN="service=\\.\D:\data\soci\SOCI_TEST.FDB user=sysdba password=buildbot"
+FIREBIRD_CONN="service=\\.\D:\dev\soci\data\SOCI_TEST.FDB user=sysdba password=masterkey"
 MYSQL_CONN=""
 ODBC_ACCESS_CONN="FILEDSN=D:\data\soci\test-access.dsn"
 ODBC_MSSQL_CONN="FILEDSN=D:\data\soci\test-mssql.dsn"

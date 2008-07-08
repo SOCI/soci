@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// // Copyright (C) 2004-2007 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -13,16 +13,16 @@
 #include <cassert>
 #include <ctime>
 
-using namespace SOCI;
-using namespace SOCI::tests;
+using namespace soci;
+using namespace soci::tests;
 
 std::string connectString;
-BackEndFactory const &backEnd = oracle;
+backend_factory const &backEnd = oracle;
 
 // Extra tests for date/time
 void test1()
 {
-    Session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
 
     {
         std::time_t now = std::time(NULL);
@@ -55,7 +55,7 @@ void test1()
              into(t1), use(t2);
 
         assert(memcmp(&t1, &t2, sizeof(std::tm)) == 0);
-        
+
         // make sure the date is stored properly in Oracle
         char buf[25];
         strftime(buf, sizeof(buf), "%m-%d-%Y %H:%M:%S", &t2);
@@ -74,26 +74,26 @@ void test1()
 // explicit calls test
 void test2()
 {
-    Session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
 
-    Statement st(sql);
+    statement st(sql);
     st.alloc();
     int i = 0;
     st.exchange(into(i));
     st.prepare("select 7 from dual");
-    st.defineAndBind();
+    st.define_and_bind();
     st.execute(1);
     assert(i == 7);
 
     std::cout << "test 2 passed" << std::endl;
 }
 
-// DDL + BLOB test
+// DDL + blob test
 
-struct BlobTableCreator : public TableCreatorBase
+struct blob_table_creator : public table_creator_base
 {
-    BlobTableCreator(Session& session)
-    : TableCreatorBase(session)
+    blob_table_creator(session& session)
+    : table_creator_base(session)
     {
         session <<
             "create table soci_test ("
@@ -105,45 +105,45 @@ struct BlobTableCreator : public TableCreatorBase
 
 void test3()
 {
-    Session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
     
-    BlobTableCreator tableCreator(sql);
+    blob_table_creator tableCreator(sql);
 
     char buf[] = "abcdefghijklmnopqrstuvwxyz";
     sql << "insert into soci_test (id, img) values (7, empty_blob())";
 
     {
-        BLOB b(sql);
+        blob b(sql);
 
-        OracleSessionBackEnd *sessionBackEnd
-            = static_cast<OracleSessionBackEnd *>(sql.getBackEnd());
+        oracle_session_backend *sessionBackEnd
+            = static_cast<oracle_session_backend *>(sql.get_backend());
 
-        OracleBLOBBackEnd *blobBackEnd
-            = static_cast<OracleBLOBBackEnd *>(b.getBackEnd());
+        oracle_blob_backend *blobBackEnd
+            = static_cast<oracle_blob_backend *>(b.get_backend());
 
         OCILobDisableBuffering(sessionBackEnd->svchp_,
             sessionBackEnd->errhp_, blobBackEnd->lobp_);
 
         sql << "select img from soci_test where id = 7", into(b);
-        assert(b.getLen() == 0);
+        assert(b.get_len() == 0);
 
-        // note: BLOB offsets start from 1
+        // note: blob offsets start from 1
         b.write(1, buf, sizeof(buf));
-        assert(b.getLen() == sizeof(buf));
+        assert(b.get_len() == sizeof(buf));
         b.trim(10);
-        assert(b.getLen() == 10);
+        assert(b.get_len() == 10);
 
         // append does not work (Oracle bug #886191 ?)
         //b.append(buf, sizeof(buf));
-        //assert(b.getLen() == sizeof(buf) + 10);
+        //assert(b.get_len() == sizeof(buf) + 10);
         sql.commit();
     }
 
     {
-        BLOB b(sql);
+        blob b(sql);
         sql << "select img from soci_test where id = 7", into(b);
-        //assert(b.getLen() == sizeof(buf) + 10);
-        assert(b.getLen() == 10);
+        //assert(b.get_len() == sizeof(buf) + 10);
+        assert(b.get_len() == 10);
         char buf2[100];
         b.read(1, buf2, 10);
         assert(strncmp(buf2, "abcdefghij", 10) == 0);
@@ -155,12 +155,12 @@ void test3()
 // nested statement test
 // (the same syntax is used for output cursors in PL/SQL)
 
-struct BasicTableCreator : public TableCreatorBase
+struct basic_table_creator : public table_creator_base
 {
-    BasicTableCreator(Session& session) 
-        : TableCreatorBase(session)
+    basic_table_creator(session& session)
+        : table_creator_base(session)
     {
-        session << 
+        session <<
                     "create table soci_test ("
                     "    id number(5) not null,"
                     "    name varchar2(100),"
@@ -171,13 +171,13 @@ struct BasicTableCreator : public TableCreatorBase
 
 void test4()
 {
-    Session sql(backEnd, connectString);
-    BasicTableCreator tableCreator(sql);
+    session sql(backEnd, connectString);
+    basic_table_creator tableCreator(sql);
 
     int id;
     std::string name;
     {
-        Statement st1 = (sql.prepare <<
+        statement st1 = (sql.prepare <<
             "insert into soci_test (id, name) values (:id, :name)",
             use(id), use(name));
 
@@ -186,8 +186,8 @@ void test4()
         id = 3; name = "Mike"; st1.execute(1);
     }
 
-    Statement stInner(sql);
-    Statement stOuter = (sql.prepare <<
+    statement stInner(sql);
+    statement stOuter = (sql.prepare <<
         "select cursor(select name from soci_test order by id)"
         " from soci_test where id = 1",
         into(stInner));
@@ -206,15 +206,16 @@ void test4()
     std::cout << "test 4 passed" << std::endl;
 }
 
+
 // ROWID test
 void test5()
 {
-    Session sql(backEnd, connectString);
-    BasicTableCreator tableCreator(sql);
+    session sql(backEnd, connectString);
+    basic_table_creator tableCreator(sql);
 
     sql << "insert into soci_test(id, name) values(7, \'John\')";
 
-    RowID rid(sql);
+    rowid rid(sql);
     sql << "select rowid from soci_test where id = 7", into(rid);
 
     int id;
@@ -228,28 +229,28 @@ void test5()
     std::cout << "test 5 passed" << std::endl;
 }
 
-// Stored Procedures
-struct ProcedureCreator : ProcedureCreatorBase
+// Stored procedures
+struct procedure_creator : procedure_creator_base
 {
-    ProcedureCreator(Session& session) 
-        : ProcedureCreatorBase(session)
+    procedure_creator(session& session)
+        : procedure_creator_base(session)
     {
-        session << 
+        session <<
              "create or replace procedure soci_test(output out varchar2,"
              "input in varchar2) as "
              "begin output := input; end;";
     }
 };
-  
+
 void test6()
 {
     {
-        Session sql(backEnd, connectString);
-        ProcedureCreator procedureCreator(sql);
+        session sql(backEnd, connectString);
+        procedure_creator procedure_creator(sql);
 
         std::string in("my message");
         std::string out;
-        Statement st = (sql.prepare <<
+        statement st = (sql.prepare <<
             "begin soci_test(:output, :input); end;",
             use(out, "output"),
             use(in, "input"));
@@ -260,7 +261,7 @@ void test6()
         {
             std::string in("my message2");
             std::string out;
-            Procedure proc = (sql.prepare <<
+            procedure proc = (sql.prepare <<
                 "soci_test(:output, :input)",
                 use(out, "output"), use(in, "input"));
             proc.execute(1);
@@ -272,86 +273,95 @@ void test6()
 }
 
 // bind into user-defined objects
-struct StringHolder
+struct string_holder
 {
-    StringHolder() {}
-    StringHolder(const char* s) : s_(s) {}
-    StringHolder(std::string s) : s_(s) {}
-    std::string get() { return s_; }
+    string_holder() {}
+    string_holder(const char* s) : s_(s) {}
+    string_holder(std::string s) : s_(s) {}
+    std::string get() const { return s_; }
 private:
     std::string s_;
 };
 
-namespace SOCI
+namespace soci
 {
-    template<> 
-    struct TypeConversion<StringHolder>
+    template <>
+    struct type_conversion<string_holder>
     {
         typedef std::string base_type;
-        static StringHolder from(std::string& s) { return StringHolder(s); }
-        static std::string to(StringHolder& sh) { return sh.get(); }
+        static void from_base(const std::string &s, indicator /* ind */,
+            string_holder &sh)
+        {
+            sh = string_holder(s);
+        }
+
+        static void to_base(const string_holder &sh, std::string &s, indicator &ind)
+        {
+            s = sh.get();
+            ind = i_ok;
+        }
     };
 }
 
-struct InOutProcedureCreator : public ProcedureCreatorBase
+struct in_out_procedure_creator : public procedure_creator_base
 {
-    InOutProcedureCreator(Session& session) 
-        : ProcedureCreatorBase(session)
+    in_out_procedure_creator(session& session)
+        : procedure_creator_base(session)
     {
         session << "create or replace procedure soci_test(s in out varchar2)"
                 " as begin s := s || s; end;";
     }
 };
 
-struct ReturnsNullProcedureCreator : public ProcedureCreatorBase
+struct returns_null_procedure_creator : public procedure_creator_base
 {
-    ReturnsNullProcedureCreator(Session& session) 
-        : ProcedureCreatorBase(session)
+    returns_null_procedure_creator(session& session)
+        : procedure_creator_base(session)
     {
         session << "create or replace procedure soci_test(s in out varchar2)"
-            " as begin s := NULL; end;"; 
+            " as begin s := NULL; end;";
     }
 };
 
 void test7()
 {
-    Session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
     {
-        BasicTableCreator tableCreator(sql);
+        basic_table_creator tableCreator(sql);
 
         int id(1);
-        StringHolder in("my string");
+        string_holder in("my string");
         sql << "insert into soci_test(id, name) values(:id, :name)", use(id), use(in);
 
-        StringHolder out;
+        string_holder out;
         sql << "select name from soci_test", into(out);
         assert(out.get() == "my string");
 
-        Row r;
+        row r;
         sql << "select * from soci_test", into(r);
-        StringHolder dynamicOut = r.get<StringHolder>(1);
+        string_holder dynamicOut = r.get<string_holder>(1);
         assert(dynamicOut.get() == "my string");
     }
 
-    // test procedure with user-defined type as in-out parameter    
+    // test procedure with user-defined type as in-out parameter
     {
-        InOutProcedureCreator procedureCreator(sql);
+        in_out_procedure_creator procedureCreator(sql);
 
-        StringHolder sh("test");
-        Procedure proc = (sql.prepare << "soci_test(:s)", use(sh));
+        string_holder sh("test");
+        procedure proc = (sql.prepare << "soci_test(:s)", use(sh));
         proc.execute(1);
         assert(sh.get() == "testtest");
     }
 
     // test procedure which returns null
     {
-         ReturnsNullProcedureCreator procedureCreator(sql);
+         returns_null_procedure_creator procedureCreator(sql);
 
-         StringHolder sh;           
-         eIndicator ind = eOK;
-         Procedure proc = (sql.prepare << "soci_test(:s)", use(sh, ind));
+         string_holder sh;
+         indicator ind = i_ok;
+         procedure proc = (sql.prepare << "soci_test(:s)", use(sh, ind));
          proc.execute(1);
-         assert(ind == eNull);
+         assert(ind == i_null);
     }
 
     std::cout << "test 7 passed" << std::endl;
@@ -360,11 +370,11 @@ void test7()
 // test bulk insert features
 void test8()
 {
-    Session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
 
-    BasicTableCreator tableCreator(sql);
+    basic_table_creator tableCreator(sql);
 
- // verify exception if thrown if vectors of unequal size are passed in
+    // verify exception is thrown if vectors of unequal size are passed in
     {
         std::vector<int> ids;
         ids.push_back(1);
@@ -378,7 +388,7 @@ void test8()
             sql << "insert into soci_test(id,code) values(:id,:code)",
                 use(ids), use(codes);
         }
-        catch (SOCIError const &e)
+        catch (soci_error const &e)
         {
             error = e.what();
         }
@@ -408,7 +418,7 @@ void test8()
         {
             sql << "insert into soci_test (id) values(:id)", use(ids, "id");
         }
-        catch (SOCIError const &e)
+        catch (soci_error const &e)
         {
             error = e.what();
             //TODO e could be made to tell which row(s) failed
@@ -429,7 +439,7 @@ void test8()
             ids.push_back(i+10);
         }
 
-        Statement st = (sql.prepare << "insert into soci_test(id) values(:id)",
+        statement st = (sql.prepare << "insert into soci_test(id) values(:id)",
                             use(ids));
         st.execute(1);
         int count;
@@ -445,7 +455,7 @@ void test8()
         {
             sql << "select id from soci_test", into(ids);
         }
-        catch (SOCIError const &)
+        catch (soci_error const &)
         {
             caught = true;
         }
@@ -460,7 +470,7 @@ void test8()
         {
             sql << "insert into soci_test(id) values(:id)", use(ids);
         }
-        catch (SOCIError const &)
+        catch (soci_error const &)
         {
             caught = true;
         }
@@ -469,13 +479,13 @@ void test8()
 
     // test "no data" condition
     {
-        std::vector<eIndicator> inds(3);
+        std::vector<indicator> inds(3);
         std::vector<int> ids_out(3);
-        Statement st = (sql.prepare << "select id from soci_test where 1=0",
+        statement st = (sql.prepare << "select id from soci_test where 1=0",
                         into(ids_out, inds));
 
         // false return value means "no data"
-        assert(!st.execute(1));
+        assert(st.execute(1) == false);
 
         // that's it - nothing else is guaranteed
         // and nothing else is to be tested here
@@ -486,10 +496,10 @@ void test8()
         std::vector<int> ids(3);
         sql << "select id from soci_test", into(ids);
 
-        std::vector<eIndicator> inds_in;
-        inds_in.push_back(eOK);
-        inds_in.push_back(eNull);
-        inds_in.push_back(eOK);
+        std::vector<indicator> inds_in;
+        inds_in.push_back(i_ok);
+        inds_in.push_back(i_null);
+        inds_in.push_back(i_ok);
 
         std::vector<int> new_codes;
         new_codes.push_back(10);
@@ -499,14 +509,14 @@ void test8()
         sql << "update soci_test set code = :code where id = :id",
                 use(new_codes, inds_in), use(ids);
 
-        std::vector<eIndicator> inds_out(3);
+        std::vector<indicator> inds_out(3);
         std::vector<int> codes(3);
 
         sql << "select code from soci_test", into(codes, inds_out);
         assert(codes.size() == 3 && inds_out.size() == 3);
         assert(codes[0] == 10 && codes[2] == 10);
-        assert(inds_out[0] == eOK && inds_out[1] == eNull
-            && inds_out[2] == eOK);
+        assert(inds_out[0] == i_ok && inds_out[1] == i_null
+            && inds_out[2] == i_ok);
     }
 
     // verify an exception is thrown if null is selected
@@ -518,7 +528,7 @@ void test8()
         {
             sql << "select code from soci_test", into(intos);
         }
-        catch (SOCIError const &e)
+        catch (soci_error const &e)
         {
             msg = e.what();
         }
@@ -528,40 +538,45 @@ void test8()
     // test basic select
     {
         const size_t sz = 3;
-        std::vector<eIndicator> inds(sz);
+        std::vector<indicator> inds(sz);
         std::vector<int> ids_out(sz);
-        Statement st = (sql.prepare << "select id from soci_test",
+        statement st = (sql.prepare << "select id from soci_test",
             into(ids_out, inds));
-        assert(st.execute(1));
+        const bool gotData = st.execute(true);
+        assert(gotData);
         assert(ids_out.size() == sz);
         assert(ids_out[0] == 10);
         assert(ids_out[2] == 12);
-        assert(inds.size() == 3 && inds[0] == eOK
-            && inds[1] == eOK && inds[2] == eOK);
+        assert(inds.size() == 3 && inds[0] == i_ok
+            && inds[1] == i_ok && inds[2] == i_ok);
     }
 
     // verify execute(0)
     {
         std::vector<int> ids_out(2);
-        Statement st = (sql.prepare << "select id from soci_test",
+        statement st = (sql.prepare << "select id from soci_test",
             into(ids_out));
 
-        st.execute(0);
+        st.execute();
         assert(ids_out.size() == 2);
-        assert(st.fetch());
+        bool gotData = st.fetch();
+        assert(gotData);
         assert(ids_out.size() == 2 && ids_out[0] == 10 && ids_out[1] == 11);
-        assert(st.fetch());
+        gotData = st.fetch();
+        assert(gotData);
         assert(ids_out.size() == 1 && ids_out[0] == 12);
-        assert(!st.fetch());
+        gotData = st.fetch();
+        assert(gotData == false);
     }
 
     // verify resizing happens if vector is larger
     // than number of rows returned
     {
         std::vector<int> ids_out(4); // one too many
-        Statement st2 = (sql.prepare << "select id from soci_test",
+        statement st2 = (sql.prepare << "select id from soci_test",
             into(ids_out));
-        assert(st2.execute(1));
+        bool gotData = st2.execute(true);
+        assert(gotData);
         assert(ids_out.size() == 3);
         assert(ids_out[0] == 10);
         assert(ids_out[2] == 12);
@@ -575,20 +590,24 @@ void test8()
         sql << "insert into soci_test(id) values(:id)", use(more);
 
         std::vector<int> ids(2);
-        Statement st3 = (sql.prepare << "select id from soci_test", into(ids));
-        assert(st3.execute(1));
+        statement st3 = (sql.prepare << "select id from soci_test", into(ids));
+        bool gotData = st3.execute(true);
+        assert(gotData);
         assert(ids[0] == 10);
         assert(ids[1] == 11);
 
-        assert(st3.fetch());
+        gotData = st3.fetch();
+        assert(gotData);
         assert(ids[0] == 12);
         assert(ids[1] == 13);
 
-        assert(st3.fetch());
+        gotData = st3.fetch();
+        assert(gotData);
         assert(ids.size() == 1);
         assert(ids[0] == 14);
 
-        assert(!st3.fetch());
+        gotData = st3.fetch();
+        assert(gotData == false);
     }
 
     std::cout << "test 8 passed" << std::endl;
@@ -597,9 +616,9 @@ void test8()
 // more tests for bulk fetch
 void test9()
 {
-    Session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
 
-    BasicTableCreator tableCreator(sql);
+    basic_table_creator tableCreator(sql);
 
     std::vector<int> in;
     for (int i = 1; i <= 10; ++i)
@@ -618,7 +637,7 @@ void test9()
     // at the time of binding
     {
         std::vector<int> out(4);
-        Statement st = (sql.prepare <<
+        statement st = (sql.prepare <<
             "select id from soci_test", into(out));
 
         st.execute();
@@ -635,7 +654,7 @@ void test9()
             st.fetch();
             assert(false); // should never reach here
         }
-        catch (SOCIError const &e)
+        catch (soci_error const &e)
         {
             assert(std::string(e.what()) ==
                 "Increasing the size of the output vector is not supported.");
@@ -645,7 +664,7 @@ void test9()
     // on the other hand, downsizing is OK
     {
         std::vector<int> out(4);
-        Statement st = (sql.prepare <<
+        statement st = (sql.prepare <<
             "select id from soci_test", into(out));
 
         st.execute();
@@ -668,57 +687,57 @@ void test9()
         assert(out[0] == 8);
         assert(out[1] == 9);
         assert(out[2] == 10);
-        assert(st.fetch() == false); // end of data
+        bool gotData = st.fetch();
+        assert(gotData == false); // end of data
     }
 
     std::cout << "test 9 passed" << std::endl;
 }
 
-struct Person
+struct person
 {
     int id;
     std::string firstName;
-    StringHolder lastName; //test mapping of TypeConversion-based types
-    std::string gender; 
+    string_holder lastName; //test mapping of type_conversion-based types
+    std::string gender;
 };
 
 // Object-Relational Mapping
-// Note: Use the Values class as shown below in TypeConversions
-// to achieve object relational mapping.  The Values class should
+// Note: Use the values class as shown below in type_conversions
+// to achieve object relational mapping.  The values class should
 // not be used directly in any other fashion.
-namespace SOCI
+namespace soci
 {
     // name-based conversion
-    template<> struct TypeConversion<Person>
+    template<> struct type_conversion<person>
     {
-        typedef Values base_type;
+        typedef values base_type;
 
-        static Person from(Values const &v)
+        static void from_base(values const &v, indicator /* ind */, person &p)
         {
-            Person p;
+            // ignoring possibility that the whole object might be NULL
+
             p.id = v.get<int>("ID");
             p.firstName = v.get<std::string>("FIRST_NAME");
-            p.lastName = v.get<StringHolder>("LAST_NAME");
+            p.lastName = v.get<string_holder>("LAST_NAME");
             p.gender = v.get<std::string>("GENDER", "unknown");
-            return p;
         }
 
-        static Values to(Person &p)
+        static void to_base(person const & p, values & v, indicator & ind)
         {
-            Values v;
             v.set("ID", p.id);
             v.set("FIRST_NAME", p.firstName);
             v.set("LAST_NAME", p.lastName);
-            v.set("GENDER", p.gender, p.gender.empty() ? eNull : eOK);
-            return v;
+            v.set("GENDER", p.gender, p.gender.empty() ? i_null : i_ok);
+            ind = i_ok;
         }
     };
 }
 
-struct PersonTableCreator : public TableCreatorBase 
+struct person_table_creator : public table_creator_base
 {
-    PersonTableCreator(Session& session) 
-        : TableCreatorBase(session) 
+    person_table_creator(session& session)
+        : table_creator_base(session)
     {
         session << "create table soci_test(id numeric(5,0) NOT NULL,"
              << " last_name varchar2(20), first_name varchar2(20), "
@@ -726,36 +745,36 @@ struct PersonTableCreator : public TableCreatorBase
     }
 };
 
-struct Times100ProcedureCreator : public ProcedureCreatorBase
+struct times100_procedure_creator : public procedure_creator_base
 {
-    Times100ProcedureCreator(Session& session) 
-        : ProcedureCreatorBase(session)
+    times100_procedure_creator(session& session)
+        : procedure_creator_base(session)
     {
         session << "create or replace procedure soci_test(id in out number)"
-               " as begin id := id * 100; end;"; 
+               " as begin id := id * 100; end;";
     }
 };
 
 void test10()
 {
-    Session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
 
     {
-        PersonTableCreator tableCreator(sql);
+        person_table_creator tableCreator(sql);
 
-        Person p;
+        person p;
         p.id = 1;
         p.lastName = "Smith";
         p.firstName = "Pat";
         sql << "insert into soci_test(id, first_name, last_name, gender) "
             << "values(:ID, :FIRST_NAME, :LAST_NAME, :GENDER)", use(p);
-    
+
         // p should be unchanged
         assert(p.id == 1);
         assert(p.firstName == "Pat");
         assert(p.lastName.get() == "Smith");
 
-        Person p1;
+        person p1;
         sql << "select * from soci_test", into(p1);
         assert(p1.id == 1);
         assert(p1.firstName + p1.lastName.get() == "PatSmith");
@@ -770,45 +789,48 @@ void test10()
         assert(p.firstName == "Patricia");
         assert(p.lastName.get() == "Smith");
         // Note: gender is now "unknown" because of the mapping, not ""
-        assert(p.gender == "unknown"); 
+        assert(p.gender == "unknown");
 
-        Person p2;
+        person p2;
         sql << "select * from soci_test", into(p2);
         assert(p2.id == 1);
         assert(p2.firstName + p2.lastName.get() == "PatriciaSmith");
 
         // insert a second row so we can test fetching
-        Person p3;
+        person p3;
         p3.id = 2;
         p3.firstName = "Joe";
         p3.lastName = "Smith";
         sql << "insert into soci_test(id, first_name, last_name, gender) "
             << "values(:ID, :FIRST_NAME, :LAST_NAME, :GENDER)", use(p3);
 
-        Person p4;
-        Statement st = (sql.prepare << "select * from soci_test order by id",
+        person p4;
+        statement st = (sql.prepare << "select * from soci_test order by id",
                     into(p4));
 
         st.execute();
-        assert(st.fetch());
+        bool gotData = st.fetch();
+        assert(gotData);
         assert(p4.id == 1);
         assert(p4.firstName == "Patricia");
 
-        assert(st.fetch());
+        gotData = st.fetch();
+        assert(gotData);
         assert(p4.id == 2);
         assert(p4.firstName == "Joe");
-        assert(!st.fetch());
+        gotData = st.fetch();
+        assert(gotData == false);
     }
 
     // test with stored procedure
     {
-        Times100ProcedureCreator procedureCreator(sql);
+        times100_procedure_creator procedureCreator(sql);
 
-        Person p;
+        person p;
         p.id = 1;
         p.firstName = "Pat";
         p.lastName = "Smith";
-        Procedure proc = (sql.prepare << "soci_test(:ID)", use(p));
+        procedure proc = (sql.prepare << "soci_test(:ID)", use(p));
         proc.execute(1);
         assert(p.id == 100);
         assert(p.firstName == "Pat");
@@ -817,27 +839,26 @@ void test10()
 
     // test with stored procedure which returns null
     {
-        ReturnsNullProcedureCreator procedureCreator(sql);
+        returns_null_procedure_creator procedureCreator(sql);
 
         std::string msg;
-        Person p;
+        person p;
         try
         {
-            Procedure proc = (sql.prepare << "soci_test(:FIRST_NAME)", 
+            procedure proc = (sql.prepare << "soci_test(:FIRST_NAME)",
                                 use(p));
             proc.execute(1);
         }
-        catch (SOCIError& e)
+        catch (soci_error& e)
         {
             msg = e.what();
         }
-        assert(msg == "Column FIRST_NAME contains NULL value and"
-                      " no default was provided");
+        assert(msg == "Null value not allowed for this type");
 
-        Procedure proc = (sql.prepare << "soci_test(:GENDER)", 
+        procedure proc = (sql.prepare << "soci_test(:GENDER)",
                                 use(p));
         proc.execute(1);
-        assert(p.gender == "unknown");        
+        assert(p.gender == "unknown");
 
     }
     std::cout << "test 10 passed" << std::endl;
@@ -846,7 +867,7 @@ void test10()
 // Experimental support for position based O/R Mapping
 
 // additional type for position-based test
-struct Person2
+struct person2
 {
     int id;
     std::string firstName;
@@ -855,38 +876,34 @@ struct Person2
 };
 
 // additional type for stream-like test
-struct Person3 : Person2 {};
+struct person3 : person2 {};
 
-namespace SOCI
+namespace soci
 {
     // position-based conversion
-    template<> struct TypeConversion<Person2>
+    template<> struct type_conversion<person2>
     {
-        typedef Values base_type;
+        typedef values base_type;
 
-        static Person2 from(Values const &v)
+        static void from_base(values const &v, indicator /* ind */, person2 &p)
         {
-            Person2 p;
             p.id = v.get<int>(0);
             p.firstName = v.get<std::string>(1);
             p.lastName = v.get<std::string>(2);
             p.gender = v.get<std::string>(3, "whoknows");
-            return p;
         }
 
         // What about the "to" part? Does it make any sense to have it?
     };
 
     // stream-like conversion
-    template<> struct TypeConversion<Person3>
+    template<> struct type_conversion<person3>
     {
-        typedef Values base_type;
+        typedef values base_type;
 
-        static Person3 from(Values const &v)
+        static void from_base(values const &v, indicator /* ind */, person3 &p)
         {
-            Person3 p;
             v >> p.id >> p.firstName >> p.lastName >> p.gender;
-            return p;
         }
         // TODO: The "to" part is certainly needed.
     };
@@ -894,11 +911,11 @@ namespace SOCI
 
 void test11()
 {
-    Session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
 
-    PersonTableCreator tableCreator(sql);
+    person_table_creator tableCreator(sql);
 
-    Person p;
+    person p;
     p.id = 1;
     p.lastName = "Smith";
     p.firstName = "Patricia";
@@ -906,7 +923,7 @@ void test11()
         << "values(:ID, :FIRST_NAME, :LAST_NAME, :GENDER)", use(p);
 
     //  test position-based conversion
-    Person2 p3;
+    person2 p3;
     sql << "select id, first_name, last_name, gender from soci_test", into(p3);
     assert(p3.id == 1);
     assert(p3.firstName + p3.lastName == "PatriciaSmith");
@@ -915,7 +932,7 @@ void test11()
     sql << "update soci_test set gender = 'F' where id = 1";
 
     // additional test for stream-like conversion
-    Person3 p4;
+    person3 p4;
     sql << "select id, first_name, last_name, gender from soci_test", into(p4);
     assert(p4.id == 1);
     assert(p4.firstName + p4.lastName == "PatriciaSmith");
@@ -928,19 +945,19 @@ void test11()
 // Backwards compatibility - support use of large strings with
 // columns of type LONG
 ///
-struct LongTableCreator : public TableCreatorBase
+struct long_table_creator : public table_creator_base
 {
-    LongTableCreator(Session& session)
-        : TableCreatorBase(session) 
+    long_table_creator(session& session)
+        : table_creator_base(session)
     {
-        session << "create table soci_test(l long)"; 
+        session << "create table soci_test(l long)";
     }
 };
 
 void test12()
 {
-    Session sql(backEnd, connectString);
-    LongTableCreator creator(sql);
+    session sql(backEnd, connectString);
+    long_table_creator creator(sql);
 
     const std::string::size_type max = 32768;
     std::string in(max, 'X');
@@ -951,74 +968,160 @@ void test12()
     sql << "select l from soci_test", into(out);
 
     assert(out.size() == max);
-    assert(in == out);     
+    assert(in == out);
 
     std::cout << "test 12 passed" << std::endl;
 }
 
+// test for modifiable and const use elements
+void test13()
+{
+    session sql(backEnd, connectString);
+
+    int i = 7;
+    sql << "begin "
+        "select 2 * :i into :i from dual; "
+        "end;", use(i);
+    assert(i == 14);
+
+    const int j = 7;
+    try
+    {
+        sql << "begin "
+            "select 2 * :i into :i from dual;"
+            " end;", use(j);
+
+        assert(false); // should never get here
+    }
+    catch (soci_error const & e)
+    {
+        const std::string msg = e.what();
+        assert(msg == "Attempted modification of const use element");
+    }
+
+    std::cout << "test 13 passed" << std::endl;
+}
+
+struct longlong_table_creator : table_creator_base
+{
+    longlong_table_creator(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val number(20))";
+    }
+};
+
+// long long test
+void test14()
+{
+    {
+        session sql(backEnd, connectString);
+
+        longlong_table_creator tableCreator(sql);
+
+        long long v1 = 1000000000000LL;
+        assert(v1 / 1000000 == 1000000);
+
+        sql << "insert into soci_test(val) values(:val)", use(v1);
+
+        long long v2 = 0LL;
+        sql << "select val from soci_test", into(v2);
+
+        assert(v2 == v1);
+    }
+
+    // vector<long long>
+    {
+        session sql(backEnd, connectString);
+
+        longlong_table_creator tableCreator(sql);
+
+        std::vector<long long> v1;
+        v1.push_back(1000000000000LL);
+        v1.push_back(1000000000001LL);
+        v1.push_back(1000000000002LL);
+        v1.push_back(1000000000003LL);
+        v1.push_back(1000000000004LL);
+
+        sql << "insert into soci_test(val) values(:val)", use(v1);
+
+        std::vector<long long> v2(10);
+        sql << "select val from soci_test order by val desc", into(v2);
+
+        assert(v2.size() == 5);
+        assert(v2[0] == 1000000000004LL);
+        assert(v2[1] == 1000000000003LL);
+        assert(v2[2] == 1000000000002LL);
+        assert(v2[3] == 1000000000001LL);
+        assert(v2[4] == 1000000000000LL);
+    }
+
+    std::cout << "test 14 passed" << std::endl;
+}
+
 //
-// Support for SOCI Common Tests
+// Support for soci Common Tests
 //
 
-struct TableCreator1 : public TableCreatorBase
+struct table_creator_one : public table_creator_base
 {
-    TableCreator1(Session& session)
-        : TableCreatorBase(session) 
+    table_creator_one(session& session)
+        : table_creator_base(session)
     {
-        session << "create table soci_test(id number, val number(4,0), c char, "
+        session << "create table soci_test(id number(10,0), val number(4,0), c char, "
                  "str varchar2(20), sh number, ul number, d number, "
                  "tm date, i1 number, i2 number, i3 number, name varchar2(20))";
     }
 };
 
-struct TableCreator2 : public TableCreatorBase
+struct table_creator_two : public table_creator_base
 {
-    TableCreator2(Session& session)
-        : TableCreatorBase(session)
+    table_creator_two(session& session)
+        : table_creator_base(session)
     {
-        session  << "create table soci_test(\"num_float\" number, \"num_int\" numeric(4,0),"
-                     " \"name\" varchar2(20), \"sometime\" date, \"chr\" char)";
+        session  << "create table soci_test(num_float number, num_int numeric(4,0),"
+                    " name varchar2(20), sometime date, chr char)";
     }
 };
 
-struct TableCreator3 : public TableCreatorBase
+struct table_creator_three : public table_creator_base
 {
-    TableCreator3(Session& session)
-        : TableCreatorBase(session)
+    table_creator_three(session& session)
+        : table_creator_base(session)
     {
-        session << "create table soci_test(\"name\" varchar2(100) not null, "
-            "\"phone\" varchar2(15))";
+        session << "create table soci_test(name varchar2(100) not null, "
+            "phone varchar2(15))";
     }
 };
 
-class TestContext :public TestContextBase
+class test_context :public test_context_base
 {
 public:
-    TestContext(BackEndFactory const &backEnd,
+    test_context(backend_factory const &backEnd,
                 std::string const &connectString)
-        : TestContextBase(backEnd, connectString) {}
-    
-   TableCreatorBase* tableCreator1(Session& s) const
+        : test_context_base(backEnd, connectString) {}
+
+    table_creator_base* table_creator_1(session& s) const
     {
-        return new TableCreator1(s);
+        return new table_creator_one(s);
     }
 
-    TableCreatorBase* tableCreator2(Session& s) const
+    table_creator_base* table_creator_2(session& s) const
     {
-        return new TableCreator2(s);
+        return new table_creator_two(s);
     }
 
-    TableCreatorBase* tableCreator3(Session& s) const
+    table_creator_base* table_creator_3(session& s) const
     {
-        return new TableCreator3(s);
+        return new table_creator_three(s);
     }
 
-    std::string toDateTime(std::string const &dateString) const
+    std::string to_date_time(std::string const &datdt_string) const
     {
-        return "to_date('" + dateString + "', 'YYYY-MM-DD HH24:MI:SS')";
+        return "to_date('" + datdt_string + "', 'YYYY-MM-DD HH24:MI:SS')";
     }
 };
-    
+
 int main(int argc, char** argv)
 {
 #ifdef _MSC_VER
@@ -1040,17 +1143,16 @@ int main(int argc, char** argv)
             << " connectstring\n"
             << "example: " << argv[0]
             << " \'service=orcl user=scott password=tiger\'\n";
-        exit(1);
+        std::exit(1);
     }
 
     try
     {
-        TestContext tc(backEnd, connectString);
-        CommonTests tests(tc);
+        test_context tc(backEnd, connectString);
+        common_tests tests(tc);
         tests.run();
 
-        std::cout << "\nSOCI Oracle tests:\n\n"; 
-     
+        std::cout << "\nsoci Oracle tests:\n\n";
         test1();
         test2();
         test3();
@@ -1060,10 +1162,12 @@ int main(int argc, char** argv)
         test7();
         test8();
         test9();
-        test10(); 
+        test10();
         test11();
         test12();
- 
+        test13();
+        test14();
+
         std::cout << "\nOK, all tests passed.\n\n";
     }
     catch (std::exception const & e)

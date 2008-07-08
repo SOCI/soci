@@ -15,7 +15,7 @@ namespace // anonymous
 {
 
 // helper function for parsing decimal data (for std::tm)
-long parse10(char const *&p1, char *&p2, char *msg)
+long parse10(char const *&p1, char *&p2, const char *msg)
 {
     long v = std::strtol(p1, &p2, 10);
     if (p2 != p1)
@@ -25,21 +25,21 @@ long parse10(char const *&p1, char *&p2, char *msg)
     }
     else
     {
-        throw SOCI::SOCIError(msg);
+        throw soci::soci_error(msg);
     }
 }
 
 } // namespace anonymous
 
 
-void SOCI::details::MySQL::parseStdTm(char const *buf, std::tm &t)
+void soci::details::mysql::parse_std_tm(char const *buf, std::tm &t)
 {
     char const *p1 = buf;
     char *p2;
     long year, month, day;
     long hour = 0, minute = 0, second = 0;
 
-    char *errMsg = "Cannot convert data to std::tm.";
+    const char *errMsg = "Cannot convert data to std::tm.";
 
     year  = parse10(p1, p2, errMsg);
     month = parse10(p1, p2, errMsg);
@@ -64,14 +64,13 @@ void SOCI::details::MySQL::parseStdTm(char const *buf, std::tm &t)
     std::mktime(&t);
 }
 
-char * SOCI::details::MySQL::quote(MYSQL * conn, const char *s, int l)
+char * soci::details::mysql::quote(MYSQL * conn, const char *s, int len)
 {
-    char *retv = new char[2 * l + 3];
+    char *retv = new char[2 * len + 3];
     retv[0] = '\'';
-    int le = mysql_real_escape_string(conn, retv + 1, s, l);
-    retv[le + 1] = '\'';
-    retv[le + 2] = '\0';
+    int len_esc = mysql_real_escape_string(conn, retv + 1, s, len);
+    retv[len_esc + 1] = '\'';
+    retv[len_esc + 2] = '\0';
 
     return retv;
 }
-

@@ -9,75 +9,75 @@
 #define SOCI_MYSQL_SOURCE
 #include "soci-mysql.h"
 #include "common.h"
-#include <soci.h>
 #include <soci-platform.h>
 #include <ciso646>
 #include <limits>
+#include <cstring>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::MySQL;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::mysql;
 
 
-void MySQLVectorUseTypeBackEnd::bindByPos(int &position, void *data,
-    eExchangeType type)
+void mysql_vector_use_type_backend::bind_by_pos(int &position, void *data,
+    exchange_type type)
 {
     data_ = data;
     type_ = type;
     position_ = position++;
 }
 
-void MySQLVectorUseTypeBackEnd::bindByName(
-    std::string const &name, void *data, eExchangeType type)
+void mysql_vector_use_type_backend::bind_by_name(
+    std::string const &name, void *data, exchange_type type)
 {
     data_ = data;
     type_ = type;
     name_ = name;
 }
 
-void MySQLVectorUseTypeBackEnd::preUse(eIndicator const *ind)
+void mysql_vector_use_type_backend::pre_use(indicator const *ind)
 {
     std::size_t const vsize = size();
     for (size_t i = 0; i != vsize; ++i)
     {
         char *buf;
 
-        // the data in vector can be either eOK or eNull
-        if (ind != NULL && ind[i] == eNull)
+        // the data in vector can be either i_ok or i_null
+        if (ind != NULL && ind[i] == i_null)
         {
             buf = new char[5];
-            strcpy(buf, "NULL");
+            std::strcpy(buf, "NULL");
         }
         else
         {
             // allocate and fill the buffer with text-formatted client data
             switch (type_)
             {
-            case eXChar:
+            case x_char:
                 {
                     std::vector<char> *pv
                         = static_cast<std::vector<char> *>(data_);
                     std::vector<char> &v = *pv;
-		    
+
                     char tmp[] = { v[i], '\0' };
                     buf = quote(statement_.session_.conn_, tmp, 1);
                 }
                 break;
-            case eXStdString:
+            case x_stdstring:
                 {
                     std::vector<std::string> *pv
                         = static_cast<std::vector<std::string> *>(data_);
                     std::vector<std::string> &v = *pv;
-		    
+
                     buf = quote(statement_.session_.conn_,
                         v[i].c_str(), v[i].size());
                 }
                 break;
-            case eXShort:
+            case x_short:
                 {
                     std::vector<short> *pv
                         = static_cast<std::vector<short> *>(data_);
@@ -89,7 +89,7 @@ void MySQLVectorUseTypeBackEnd::preUse(eIndicator const *ind)
                     snprintf(buf, bufSize, "%d", static_cast<int>(v[i]));
                 }
                 break;
-            case eXInteger:
+            case x_integer:
                 {
                     std::vector<int> *pv
                         = static_cast<std::vector<int> *>(data_);
@@ -101,7 +101,7 @@ void MySQLVectorUseTypeBackEnd::preUse(eIndicator const *ind)
                     snprintf(buf, bufSize, "%d", v[i]);
                 }
                 break;
-            case eXUnsignedLong:
+            case x_unsigned_long:
                 {
                     std::vector<unsigned long> *pv
                         = static_cast<std::vector<unsigned long> *>(data_);
@@ -113,7 +113,19 @@ void MySQLVectorUseTypeBackEnd::preUse(eIndicator const *ind)
                     snprintf(buf, bufSize, "%lu", v[i]);
                 }
                 break;
-            case eXDouble:
+            case x_long_long:
+                {
+                    std::vector<long long> *pv
+                        = static_cast<std::vector<long long> *>(data_);
+                    std::vector<long long> &v = *pv;
+
+                    std::size_t const bufSize
+                        = std::numeric_limits<long long>::digits10 + 3;
+                    buf = new char[bufSize];
+                    snprintf(buf, bufSize, "%lld", v[i]);
+                }
+                break;
+            case x_double:
                 {
                     // no need to overengineer it (KISS)...
 
@@ -127,7 +139,7 @@ void MySQLVectorUseTypeBackEnd::preUse(eIndicator const *ind)
                     snprintf(buf, bufSize, "%.20g", v[i]);
                 }
                 break;
-            case eXStdTm:
+            case x_stdtm:
                 {
                     std::vector<std::tm> *pv
                         = static_cast<std::vector<std::tm> *>(data_);
@@ -143,7 +155,7 @@ void MySQLVectorUseTypeBackEnd::preUse(eIndicator const *ind)
                 break;
 
             default:
-                throw SOCIError(
+                throw soci_error(
                     "Use vector element used with non-supported type.");
             }
         }
@@ -163,28 +175,29 @@ void MySQLVectorUseTypeBackEnd::preUse(eIndicator const *ind)
     }
 }
 
-std::size_t MySQLVectorUseTypeBackEnd::size()
+std::size_t mysql_vector_use_type_backend::size()
 {
     std::size_t sz = 0; // dummy initialization to please the compiler
     switch (type_)
     {
         // simple cases
-    case eXChar:         sz = getVectorSize<char>         (data_); break;
-    case eXShort:        sz = getVectorSize<short>        (data_); break;
-    case eXInteger:      sz = getVectorSize<int>          (data_); break;
-    case eXUnsignedLong: sz = getVectorSize<unsigned long>(data_); break;
-    case eXDouble:       sz = getVectorSize<double>       (data_); break;
-    case eXStdString:    sz = getVectorSize<std::string>  (data_); break;
-    case eXStdTm:        sz = getVectorSize<std::tm>      (data_); break;
+    case x_char:         sz = get_vector_size<char>         (data_); break;
+    case x_short:        sz = get_vector_size<short>        (data_); break;
+    case x_integer:      sz = get_vector_size<int>          (data_); break;
+    case x_unsigned_long: sz = get_vector_size<unsigned long>(data_); break;
+    case x_long_long:     sz = get_vector_size<long long>    (data_); break;
+    case x_double:       sz = get_vector_size<double>       (data_); break;
+    case x_stdstring:    sz = get_vector_size<std::string>  (data_); break;
+    case x_stdtm:        sz = get_vector_size<std::tm>      (data_); break;
 
     default:
-        throw SOCIError("Use vector element used with non-supported type.");
+        throw soci_error("Use vector element used with non-supported type.");
     }
 
     return sz;
 }
 
-void MySQLVectorUseTypeBackEnd::cleanUp()
+void mysql_vector_use_type_backend::clean_up()
 {
     std::size_t const bsize = buffers_.size();
     for (std::size_t i = 0; i != bsize; ++i)
@@ -192,4 +205,3 @@ void MySQLVectorUseTypeBackEnd::cleanUp()
         delete [] buffers_[i];
     }
 }
-

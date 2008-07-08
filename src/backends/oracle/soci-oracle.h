@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2007 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -23,8 +23,7 @@
 # define SOCI_ORACLE_DECL
 #endif
 
-// TODO - mloskot: shouldn't soci.h be replaced with soci-backend.h?
-#include <soci.h> 
+#include <soci-backend.h>
 #include <oci.h> // OCI
 #include <vector>
 
@@ -33,199 +32,201 @@
 #endif
 
 
-namespace SOCI
+namespace soci
 {
 
-class SOCI_ORACLE_DECL OracleSOCIError : public SOCIError
+class SOCI_ORACLE_DECL oracle_soci_error : public soci_error
 {
 public:
-    OracleSOCIError(std::string const & msg, int errNum = 0);
+    oracle_soci_error(std::string const & msg, int errNum = 0);
 
-    int errNum_;
+    int err_num_;
 };
 
 
-struct OracleStatementBackEnd;
-struct OracleStandardIntoTypeBackEnd : details::StandardIntoTypeBackEnd
+struct oracle_statement_backend;
+struct oracle_standard_into_type_backend : details::standard_into_type_backend
 {
-    OracleStandardIntoTypeBackEnd(OracleStatementBackEnd &st)
+    oracle_standard_into_type_backend(oracle_statement_backend &st)
         : statement_(st), defnp_(NULL), indOCIHolder_(0),
           data_(NULL), buf_(NULL) {}
 
-    virtual void defineByPos(int &position,
-        void *data, details::eExchangeType type);
+    virtual void define_by_pos(int &position,
+        void *data, details::exchange_type type);
 
-    virtual void preFetch();
-    virtual void postFetch(bool gotData, bool calledFromFetch,
-        eIndicator *ind);
+    virtual void pre_fetch();
+    virtual void post_fetch(bool gotData, bool calledFromFetch,
+        indicator *ind);
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
-    OracleStatementBackEnd &statement_;
+    oracle_statement_backend &statement_;
 
     OCIDefine *defnp_;
     sb2 indOCIHolder_;
     void *data_;
     char *buf_;        // generic buffer
-    details::eExchangeType type_;
+    details::exchange_type type_;
 
     ub2 rCode_;
 };
 
-struct OracleVectorIntoTypeBackEnd : details::VectorIntoTypeBackEnd
+struct oracle_vector_into_type_backend : details::vector_into_type_backend
 {
-    OracleVectorIntoTypeBackEnd(OracleStatementBackEnd &st)
+    oracle_vector_into_type_backend(oracle_statement_backend &st)
         : statement_(st), defnp_(NULL), indOCIHolders_(NULL),
           data_(NULL), buf_(NULL) {}
 
-    virtual void defineByPos(int &position,
-        void *data, details::eExchangeType type);
+    virtual void define_by_pos(int &position,
+        void *data, details::exchange_type type);
 
-    virtual void preFetch();
-    virtual void postFetch(bool gotData, eIndicator *ind);
+    virtual void pre_fetch();
+    virtual void post_fetch(bool gotData, indicator *ind);
 
     virtual void resize(std::size_t sz);
     virtual std::size_t size();
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
     // helper function for preparing indicators and sizes_ vectors
-    // (as part of the defineByPos)
-    void prepareIndicators(std::size_t size);
+    // (as part of the define_by_pos)
+    void prepare_indicators(std::size_t size);
 
-    OracleStatementBackEnd &statement_;
+    oracle_statement_backend &statement_;
 
     OCIDefine *defnp_;
     sb2 *indOCIHolders_;
     std::vector<sb2> indOCIHolderVec_;
     void *data_;
     char *buf_;              // generic buffer
-    details::eExchangeType type_;
+    details::exchange_type type_;
     std::size_t colSize_;    // size of the string column (used for strings)
     std::vector<ub2> sizes_; // sizes of data fetched (used for strings)
 
     std::vector<ub2> rCodes_;
 };
 
-struct OracleStandardUseTypeBackEnd : details::StandardUseTypeBackEnd
+struct oracle_standard_use_type_backend : details::standard_use_type_backend
 {
-    OracleStandardUseTypeBackEnd(OracleStatementBackEnd &st)
+    oracle_standard_use_type_backend(oracle_statement_backend &st)
         : statement_(st), bindp_(NULL), indOCIHolder_(0),
           data_(NULL), buf_(NULL) {}
 
-    virtual void bindByPos(int &position,
-        void *data, details::eExchangeType type);
-    virtual void bindByName(std::string const &name,
-        void *data, details::eExchangeType type);
+    virtual void bind_by_pos(int &position,
+        void *data, details::exchange_type type, bool readOnly);
+    virtual void bind_by_name(std::string const &name,
+        void *data, details::exchange_type type, bool readOnly);
 
-    // common part for bindByPos and bindByName
-    void prepareForBind(void *&data, sb4 &size, ub2 &oracleType);
+    // common part for bind_by_pos and bind_by_name
+    void prepare_for_bind(void *&data, sb4 &size, ub2 &oracleType, bool readOnly);
 
-    virtual void preUse(eIndicator const *ind);
-    virtual void postUse(bool gotData, eIndicator *ind);
+    virtual void pre_use(indicator const *ind);
+    virtual void post_use(bool gotData, indicator *ind);
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
-    OracleStatementBackEnd &statement_;
+    oracle_statement_backend &statement_;
 
     OCIBind *bindp_;
     sb2 indOCIHolder_;
     void *data_;
+    bool readOnly_;
     char *buf_;        // generic buffer
-    details::eExchangeType type_;
+    details::exchange_type type_;
 };
 
-struct OracleVectorUseTypeBackEnd : details::VectorUseTypeBackEnd
+struct oracle_vector_use_type_backend : details::vector_use_type_backend
 {
-    OracleVectorUseTypeBackEnd(OracleStatementBackEnd &st)
+    oracle_vector_use_type_backend(oracle_statement_backend &st)
         : statement_(st), bindp_(NULL), indOCIHolders_(NULL),
           data_(NULL), buf_(NULL) {}
 
-    virtual void bindByPos(int &position,
-        void *data, details::eExchangeType type);
-    virtual void bindByName(std::string const &name,
-        void *data, details::eExchangeType type);
+    virtual void bind_by_pos(int &position,
+        void *data, details::exchange_type type);
+    virtual void bind_by_name(std::string const &name,
+        void *data, details::exchange_type type);
 
-    // common part for bindByPos and bindByName
-    void prepareForBind(void *&data, sb4 &size, ub2 &oracleType);
+    // common part for bind_by_pos and bind_by_name
+    void prepare_for_bind(void *&data, sb4 &size, ub2 &oracleType);
 
     // helper function for preparing indicators and sizes_ vectors
-    // (as part of the bindByPos and bindByName)
-    void prepareIndicators(std::size_t size);
+    // (as part of the bind_by_pos and bind_by_name)
+    void prepare_indicators(std::size_t size);
 
-    virtual void preUse(eIndicator const *ind);
+    virtual void pre_use(indicator const *ind);
 
     virtual std::size_t size();
 
-    virtual void cleanUp();
+    virtual void clean_up();
 
-    OracleStatementBackEnd &statement_;
+    oracle_statement_backend &statement_;
 
     OCIBind *bindp_;
     std::vector<sb2> indOCIHolderVec_;
     sb2 *indOCIHolders_;
     void *data_;
     char *buf_;        // generic buffer
-    details::eExchangeType type_;
+    details::exchange_type type_;
 
     // used for strings only
     std::vector<ub2> sizes_;
     std::size_t maxSize_;
 };
 
-struct OracleSessionBackEnd;
-struct OracleStatementBackEnd : details::StatementBackEnd
+struct oracle_session_backend;
+struct oracle_statement_backend : details::statement_backend
 {
-    OracleStatementBackEnd(OracleSessionBackEnd &session);
+    oracle_statement_backend(oracle_session_backend &session);
 
     virtual void alloc();
-    virtual void cleanUp();
+    virtual void clean_up();
     virtual void prepare(std::string const &query,
-        details::eStatementType eType);
+        details::statement_type eType);
 
-    virtual execFetchResult execute(int number);
-    virtual execFetchResult fetch(int number);
+    virtual exec_fetch_result execute(int number);
+    virtual exec_fetch_result fetch(int number);
 
-    virtual int getNumberOfRows();
+    virtual int get_number_of_rows();
 
-    virtual std::string rewriteForProcedureCall(std::string const &query);
+    virtual std::string rewrite_for_procedure_call(std::string const &query);
 
-    virtual int prepareForDescribe();
-    virtual void describeColumn(int colNum, eDataType &dtype,
+    virtual int prepare_for_describe();
+    virtual void describe_column(int colNum, data_type &dtype,
         std::string &columnName);
 
     // helper for defining into vector<string>
-    std::size_t columnSize(int position);
+    std::size_t column_size(int position);
 
-    virtual OracleStandardIntoTypeBackEnd * makeIntoTypeBackEnd();
-    virtual OracleStandardUseTypeBackEnd * makeUseTypeBackEnd();
-    virtual OracleVectorIntoTypeBackEnd * makeVectorIntoTypeBackEnd();
-    virtual OracleVectorUseTypeBackEnd * makeVectorUseTypeBackEnd();
+    virtual oracle_standard_into_type_backend * make_into_type_backend();
+    virtual oracle_standard_use_type_backend * make_use_type_backend();
+    virtual oracle_vector_into_type_backend * make_vector_into_type_backend();
+    virtual oracle_vector_use_type_backend * make_vector_use_type_backend();
 
-    OracleSessionBackEnd &session_;
+    oracle_session_backend &session_;
 
     OCIStmt *stmtp_;
 
     bool boundByName_;
     bool boundByPos_;
+    bool noData_;
 };
 
-struct OracleRowIDBackEnd : details::RowIDBackEnd
+struct oracle_rowid_backend : details::rowid_backend
 {
-    OracleRowIDBackEnd(OracleSessionBackEnd &session);
+    oracle_rowid_backend(oracle_session_backend &session);
 
-    ~OracleRowIDBackEnd();
+    ~oracle_rowid_backend();
 
     OCIRowid *rowidp_;
 };
 
-struct OracleBLOBBackEnd : details::BLOBBackEnd
+struct oracle_blob_backend : details::blob_backend
 {
-    OracleBLOBBackEnd(OracleSessionBackEnd &session);
+    oracle_blob_backend(oracle_session_backend &session);
 
-    ~OracleBLOBBackEnd();
+    ~oracle_blob_backend();
 
-    virtual std::size_t getLen();
+    virtual std::size_t get_len();
     virtual std::size_t read(std::size_t offset, char *buf,
         std::size_t toRead);
     virtual std::size_t write(std::size_t offset, char const *buf,
@@ -233,28 +234,31 @@ struct OracleBLOBBackEnd : details::BLOBBackEnd
     virtual std::size_t append(char const *buf, std::size_t toWrite);
     virtual void trim(std::size_t newLen);
 
-    OracleSessionBackEnd &session_;
+    oracle_session_backend &session_;
 
     OCILobLocator *lobp_;
 };
 
-struct OracleSessionBackEnd : details::SessionBackEnd
+struct oracle_session_backend : details::session_backend
 {
-    OracleSessionBackEnd(std::string const & serviceName,
+    oracle_session_backend(std::string const & serviceName,
         std::string const & userName,
-        std::string const & password);
+        std::string const & password,
+        int mode);
 
-    ~OracleSessionBackEnd();
+    ~oracle_session_backend();
 
     virtual void begin();
     virtual void commit();
     virtual void rollback();
 
-    void cleanUp();
+    virtual std::string get_backend_name() const { return "oracle"; }
 
-    virtual OracleStatementBackEnd * makeStatementBackEnd();
-    virtual OracleRowIDBackEnd * makeRowIDBackEnd();
-    virtual OracleBLOBBackEnd * makeBLOBBackEnd();
+    void clean_up();
+
+    virtual oracle_statement_backend * make_statement_backend();
+    virtual oracle_rowid_backend * make_rowid_backend();
+    virtual oracle_blob_backend * make_blob_backend();
 
     OCIEnv *envhp_;
     OCIServer *srvhp_;
@@ -263,16 +267,22 @@ struct OracleSessionBackEnd : details::SessionBackEnd
     OCISession *usrhp_;
 };
 
-struct OracleBackEndFactory : BackEndFactory
+struct oracle_backend_factory : backend_factory
 {
-    virtual OracleSessionBackEnd * makeSession(
-			            std::string const &connectString) const;
+    virtual oracle_session_backend * make_session(
+        std::string const &connectString) const;
 };
 
-SOCI_ORACLE_DECL extern OracleBackEndFactory const oracle;
+extern SOCI_ORACLE_DECL oracle_backend_factory const oracle;
 
+extern "C"
+{
 
-} // namespace SOCI
+// for dynamic backend loading
+SOCI_ORACLE_DECL backend_factory const * factory_oracle();
 
-#endif // SOCI_ORACLE_H_INCLUDED
+} // extern "C"
 
+} // namespace soci
+
+#endif

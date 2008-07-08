@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,6 @@
 
 #define SOCI_POSTGRESQL_SOURCE
 #include "soci-postgresql.h"
-#include <soci.h>
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
 #include <cstdio>
@@ -23,24 +22,24 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
 
-PostgreSQLStatementBackEnd::PostgreSQLStatementBackEnd(
-    PostgreSQLSessionBackEnd &session)
+postgresql_statement_backend::postgresql_statement_backend(
+    postgresql_session_backend &session)
      : session_(session), result_(NULL), justDescribed_(false),
        hasIntoElements_(false), hasVectorIntoElements_(false),
        hasUseElements_(false), hasVectorUseElements_(false)
 {
 }
 
-void PostgreSQLStatementBackEnd::alloc()
+void postgresql_statement_backend::alloc()
 {
     // nothing to do here
 }
 
-void PostgreSQLStatementBackEnd::cleanUp()
+void postgresql_statement_backend::clean_up()
 {
     if (result_ != NULL)
     {
@@ -49,16 +48,16 @@ void PostgreSQLStatementBackEnd::cleanUp()
     }
 }
 
-void PostgreSQLStatementBackEnd::prepare(std::string const &query,
-    eStatementType eType)
+void postgresql_statement_backend::prepare(std::string const & query,
+    statement_type stType)
 {
 #ifdef SOCI_PGSQL_NOBINDBYNAME
     query_ = query;
 #else
     // rewrite the query by transforming all named parameters into
-    // the PostgreSQL numbers ones (:abc -> $1, etc.)
+    // the postgresql_ numbers ones (:abc -> $1, etc.)
 
-    enum { eNormal, eInQuotes, eInName } state = eNormal;
+    enum { normal, in_quotes, in_name } state = normal;
 
     std::string name;
     int position = 1;
@@ -68,33 +67,33 @@ void PostgreSQLStatementBackEnd::prepare(std::string const &query,
     {
         switch (state)
         {
-        case eNormal:
+        case normal:
             if (*it == '\'')
             {
                 query_ += *it;
-                state = eInQuotes;
+                state = in_quotes;
             }
             else if (*it == ':')
             {
-                state = eInName;
+                state = in_name;
             }
             else // regular character, stay in the same state
             {
                 query_ += *it;
             }
             break;
-        case eInQuotes:
+        case in_quotes:
             if (*it == '\'')
             {
                 query_ += *it;
-                state = eNormal;
+                state = normal;
             }
             else // regular quoted character
             {
                 query_ += *it;
             }
             break;
-        case eInName:
+        case in_name:
             if (std::isalnum(*it) || *it == '_')
             {
                 name += *it;
@@ -107,13 +106,13 @@ void PostgreSQLStatementBackEnd::prepare(std::string const &query,
                 ss << '$' << position++;
                 query_ += ss.str();
                 query_ += *it;
-                state = eNormal;
+                state = normal;
             }
             break;
         }
     }
 
-    if (state == eInName)
+    if (state == in_name)
     {
         names_.push_back(name);
         std::ostringstream ss;
@@ -125,31 +124,31 @@ void PostgreSQLStatementBackEnd::prepare(std::string const &query,
 
 #ifndef SOCI_PGSQL_NOPREPARE
 
-    if (eType == eRepeatableQuery)
+    if (stType == st_repeatable_query)
     {
-        statementName_ = session_.getNextStatementName();
+        statementName_ = session_.get_next_statement_name();
 
-        PGresult *res = PQprepare(session_.conn_, statementName_.c_str(),
+        PGresult * res = PQprepare(session_.conn_, statementName_.c_str(),
             query_.c_str(), static_cast<int>(names_.size()), NULL);
         if (res == NULL)
         {
-            throw SOCIError("Cannot prepare statement.");
+            throw soci_error("Cannot prepare statement.");
         }
         ExecStatusType status = PQresultStatus(res);
         if (status != PGRES_COMMAND_OK)
         {
-            throw SOCIError(PQresultErrorMessage(res));
+            throw soci_error(PQresultErrorMessage(res));
         }
         PQclear(res);
     }
 
-    eType_ = eType;
+    stType_ = stType;
 
 #endif // SOCI_PGSQL_NOPREPARE
 }
 
-StatementBackEnd::execFetchResult
-PostgreSQLStatementBackEnd::execute(int number)
+statement_backend::exec_fetch_result
+postgresql_statement_backend::execute(int number)
 {
     // If the statement was "just described", then we know that
     // it was actually executed with all the use elements
@@ -160,15 +159,15 @@ PostgreSQLStatementBackEnd::execute(int number)
     if (justDescribed_ == false)
     {
         // This object could have been already filled with data before.
-        cleanUp();
+        clean_up();
 
         if (number > 1 && hasIntoElements_)
         {
-             throw SOCIError(
+             throw soci_error(
                   "Bulk use with single into elements is not supported.");
         }
 
-        // Since the bulk operations are not natively supported by PostgreSQL,
+        // Since the bulk operations are not natively supported by postgresql_,
         // we have to explicitly loop to achieve the bulk operations.
         // On the other hand, looping is not needed if there are single
         // use elements, even if there is a bulk fetch.
@@ -183,11 +182,13 @@ PostgreSQLStatementBackEnd::execute(int number)
              numberOfExecutions = hasUseElements_ ? 1 : number;
         }
 
-        if (!useByPosBuffers_.empty() || !useByNameBuffers_.empty())
+        if ((useByPosBuffers_.empty() == false) ||
+            (useByNameBuffers_.empty() == false))
         {
-            if (!useByPosBuffers_.empty() && !useByNameBuffers_.empty())
+            if ((useByPosBuffers_.empty() == false) &&
+                (useByNameBuffers_.empty() == false))
             {
-                throw SOCIError(
+                throw soci_error(
                     "Binding for use elements must be either by position "
                     "or by name.");
             }
@@ -196,7 +197,7 @@ PostgreSQLStatementBackEnd::execute(int number)
             {
                 std::vector<char *> paramValues;
 
-                if (!useByPosBuffers_.empty())
+                if (useByPosBuffers_.empty() == false)
                 {
                     // use elements bind by position
                     // the map of use buffers can be traversed
@@ -207,7 +208,7 @@ PostgreSQLStatementBackEnd::execute(int number)
                              end = useByPosBuffers_.end();
                          it != end; ++it)
                     {
-                        char **buffers = it->second;
+                        char ** buffers = it->second;
                         paramValues.push_back(buffers[i]);
                     }
                 }
@@ -227,16 +228,16 @@ PostgreSQLStatementBackEnd::execute(int number)
                                 "Missing use element for bind by name (");
                             msg += *it;
                             msg += ").";
-                            throw SOCIError(msg);
+                            throw soci_error(msg);
                         }
-                        char **buffers = b->second;
+                        char ** buffers = b->second;
                         paramValues.push_back(buffers[i]);
                     }
                 }
 
 #ifdef SOCI_PGSQL_NOPARAMS
 
-                throw SOCIError("Queries with parameters are not supported.");
+                throw soci_error("Queries with parameters are not supported.");
 
 #else
 
@@ -248,7 +249,7 @@ PostgreSQLStatementBackEnd::execute(int number)
 
 #else
 
-                if (eType_ == eRepeatableQuery)
+                if (stType_ == st_repeatable_query)
                 {
                     // this query was separately prepared
 
@@ -257,7 +258,7 @@ PostgreSQLStatementBackEnd::execute(int number)
                         static_cast<int>(paramValues.size()),
                         &paramValues[0], NULL, NULL, 0);
                 }
-                else // eType_ == eOneTimeQuery
+                else // stType_ == st_one_time_query
                 {
                     // this query was not separately prepared and should
                     // be executed as a one-time query
@@ -276,13 +277,13 @@ PostgreSQLStatementBackEnd::execute(int number)
                     // there are only bulk use elements (no intos)
                     if (result_ == NULL)
                     {
-                        throw SOCIError("Cannot execute query.");
+                        throw soci_error("Cannot execute query.");
                     }
 
                     ExecStatusType status = PQresultStatus(result_);
                     if (status != PGRES_COMMAND_OK)
                     {
-                        throw SOCIError(PQresultErrorMessage(result_));
+                        throw soci_error(PQresultErrorMessage(result_));
                     }
                     PQclear(result_);
                 }
@@ -292,7 +293,7 @@ PostgreSQLStatementBackEnd::execute(int number)
             {
                 // it was a bulk operation
                 result_ = NULL;
-                return eNoData;
+                return ef_no_data;
             }
 
             // otherwise (no bulk), follow the code below
@@ -307,14 +308,14 @@ PostgreSQLStatementBackEnd::execute(int number)
             result_ = PQexec(session_.conn_, query_.c_str());
 #else
 
-            if (eType_ == eRepeatableQuery)
+            if (stType_ == st_repeatable_query)
             {
                 // this query was separately prepared
 
                 result_ = PQexecPrepared(session_.conn_,
                     statementName_.c_str(), 0, NULL, NULL, NULL, 0);
             }
-            else // eType_ == eOneTimeQuery
+            else // stType_ == st_one_time_query
             {
                 result_ = PQexec(session_.conn_, query_.c_str());
             }
@@ -323,7 +324,7 @@ PostgreSQLStatementBackEnd::execute(int number)
 
             if (result_ == NULL)
             {
-                throw SOCIError("Cannot execute query.");
+                throw soci_error("Cannot execute query.");
             }
         }
     }
@@ -346,7 +347,7 @@ PostgreSQLStatementBackEnd::execute(int number)
         numberOfRows_ = PQntuples(result_);
         if (numberOfRows_ == 0)
         {
-            return eNoData;
+            return ef_no_data;
         }
         else
         {
@@ -358,22 +359,22 @@ PostgreSQLStatementBackEnd::execute(int number)
             else
             {
                 // execute(0) was meant to only perform the query
-                return eSuccess;
+                return ef_success;
             }
         }
     }
     else if (status == PGRES_COMMAND_OK)
     {
-        return eNoData;
+        return ef_no_data;
     }
     else
     {
-        throw SOCIError(PQresultErrorMessage(result_));
+        throw soci_error(PQresultErrorMessage(result_));
     }
 }
 
-StatementBackEnd::execFetchResult
-PostgreSQLStatementBackEnd::fetch(int number)
+statement_backend::exec_fetch_result
+postgresql_statement_backend::fetch(int number)
 {
     // Note: This function does not actually fetch anything from anywhere
     // - the data was already retrieved from the server in the execute()
@@ -387,7 +388,7 @@ PostgreSQLStatementBackEnd::fetch(int number)
     if (currentRow_ >= numberOfRows_)
     {
         // all rows were already consumed
-        return eNoData;
+        return ef_no_data;
     }
     else
     {
@@ -396,32 +397,32 @@ PostgreSQLStatementBackEnd::fetch(int number)
             rowsToConsume_ = numberOfRows_ - currentRow_;
 
             // this simulates the behaviour of Oracle
-            // - when EOF is hit, we return eNoData even when there are
+            // - when EOF is hit, we return ef_no_data even when there are
             // actually some rows fetched
-            return eNoData;
+            return ef_no_data;
         }
         else
         {
             rowsToConsume_ = number;
-            return eSuccess;
+            return ef_success;
         }
     }
 }
 
-int PostgreSQLStatementBackEnd::getNumberOfRows()
+int postgresql_statement_backend::get_number_of_rows()
 {
     return numberOfRows_ - currentRow_;
 }
 
-std::string PostgreSQLStatementBackEnd::rewriteForProcedureCall(
-    std::string const &query)
+std::string postgresql_statement_backend::rewrite_for_procedure_call(
+    std::string const & query)
 {
     std::string newQuery("select ");
     newQuery += query;
     return newQuery;
 }
 
-int PostgreSQLStatementBackEnd::prepareForDescribe()
+int postgresql_statement_backend::prepare_for_describe()
 {
     execute(1);
     justDescribed_ = true;
@@ -430,13 +431,13 @@ int PostgreSQLStatementBackEnd::prepareForDescribe()
     return columns;
 }
 
-void PostgreSQLStatementBackEnd::describeColumn(int colNum, eDataType &type,
-    std::string &columnName)
+void postgresql_statement_backend::describe_column(int colNum, data_type & type,
+    std::string & columnName)
 {
-    // In PostgreSQL column numbers start from 0
-    int pos = colNum - 1;
+    // In postgresql_ column numbers start from 0
+    int const pos = colNum - 1;
 
-    unsigned long typeOid = PQftype(result_, pos);
+    unsigned long const typeOid = PQftype(result_, pos);
     switch (typeOid)
     {
     // Note: the following list of OIDs was taken from the pg_type table
@@ -449,7 +450,7 @@ void PostgreSQLStatementBackEnd::describeColumn(int colNum, eDataType &type,
     case 2275: // cstring
     case 18:   // char
     case 1042: // bpchar
-        type = eString;
+        type = dt_string;
         break;
 
     case 702:  // abstime
@@ -459,57 +460,60 @@ void PostgreSQLStatementBackEnd::describeColumn(int colNum, eDataType &type,
     case 1114: // timestamp
     case 1184: // timestamptz
     case 1266: // timetz
-        type = eDate;
+        type = dt_date;
         break;
 
     case 700:  // float4
     case 701:  // float8
     case 1700: // numeric
-        type = eDouble;
+        type = dt_double;
         break;
 
     case 16:   // bool
     case 21:   // int2
     case 23:   // int4
+        type = dt_integer;
+        break;
+
     case 20:   // int8
-        type = eInteger;
+        type = dt_long_long;
         break;
 
     case 26:   // oid
-        type = eUnsignedLong;
+        type = dt_unsigned_long;
         break;
 
     default:
-         throw SOCIError("Unknown data type.");
+         throw soci_error("Unknown data type.");
     }
 
     columnName = PQfname(result_, pos);
 }
 
-PostgreSQLStandardIntoTypeBackEnd *
-PostgreSQLStatementBackEnd::makeIntoTypeBackEnd()
+postgresql_standard_into_type_backend *
+postgresql_statement_backend::make_into_type_backend()
 {
     hasIntoElements_ = true;
-    return new PostgreSQLStandardIntoTypeBackEnd(*this);
+    return new postgresql_standard_into_type_backend(*this);
 }
 
-PostgreSQLStandardUseTypeBackEnd *
-PostgreSQLStatementBackEnd::makeUseTypeBackEnd()
+postgresql_standard_use_type_backend *
+postgresql_statement_backend::make_use_type_backend()
 {
     hasUseElements_ = true;
-    return new PostgreSQLStandardUseTypeBackEnd(*this);
+    return new postgresql_standard_use_type_backend(*this);
 }
 
-PostgreSQLVectorIntoTypeBackEnd *
-PostgreSQLStatementBackEnd::makeVectorIntoTypeBackEnd()
+postgresql_vector_into_type_backend *
+postgresql_statement_backend::make_vector_into_type_backend()
 {
     hasVectorIntoElements_ = true;
-    return new PostgreSQLVectorIntoTypeBackEnd(*this);
+    return new postgresql_vector_into_type_backend(*this);
 }
 
-PostgreSQLVectorUseTypeBackEnd *
-PostgreSQLStatementBackEnd::makeVectorUseTypeBackEnd()
+postgresql_vector_use_type_backend *
+postgresql_statement_backend::make_vector_use_type_backend()
 {
     hasVectorUseElements_ = true;
-    return new PostgreSQLVectorUseTypeBackEnd(*this);
+    return new postgresql_vector_use_type_backend(*this);
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2007 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,6 @@
 
 #define SOCI_ORACLE_SOURCE
 #include "soci-oracle.h"
-#include <soci.h>
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -22,21 +21,20 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
+using namespace soci;
+using namespace soci::details;
 
-OracleRowIDBackEnd::OracleRowIDBackEnd(OracleSessionBackEnd &session)
+oracle_rowid_backend::oracle_rowid_backend(oracle_session_backend &session)
 {
     sword res = OCIDescriptorAlloc(session.envhp_,
         reinterpret_cast<dvoid**>(&rowidp_), OCI_DTYPE_ROWID, 0, 0);
     if (res != OCI_SUCCESS)
     {
-        throw SOCIError("Cannot allocate the ROWID descriptor");
+        throw soci_error("Cannot allocate the ROWID descriptor");
     }
 }
 
-OracleRowIDBackEnd::~OracleRowIDBackEnd()
+oracle_rowid_backend::~oracle_rowid_backend()
 {
     OCIDescriptorFree(rowidp_, OCI_DTYPE_ROWID);
 }
-

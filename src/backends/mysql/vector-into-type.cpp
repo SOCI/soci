@@ -9,7 +9,6 @@
 #define SOCI_MYSQL_SOURCE
 #include "soci-mysql.h"
 #include "common.h"
-#include <soci.h>
 #include <soci-platform.h>
 #include <ciso646>
 
@@ -17,20 +16,20 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::MySQL;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::mysql;
 
 
-void MySQLVectorIntoTypeBackEnd::defineByPos(
-    int &position, void *data, eExchangeType type)
+void mysql_vector_into_type_backend::define_by_pos(
+    int &position, void *data, exchange_type type)
 {
     data_ = data;
     type_ = type;
     position_ = position++;
 }
 
-void MySQLVectorIntoTypeBackEnd::preFetch()
+void mysql_vector_into_type_backend::pre_fetch()
 {
     // nothing to do here
 }
@@ -38,8 +37,8 @@ void MySQLVectorIntoTypeBackEnd::preFetch()
 namespace // anonymous
 {
 
-template <typename T, typename U>
-void setInVector(void *p, int indx, U const &val)
+template <typename T>
+void set_invector_(void *p, int indx, T const &val)
 {
     std::vector<T> *dest =
         static_cast<std::vector<T> *>(p);
@@ -50,7 +49,7 @@ void setInVector(void *p, int indx, U const &val)
 
 } // namespace anonymous
 
-void MySQLVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
+void mysql_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
 {
     if (gotData)
     {
@@ -61,7 +60,7 @@ void MySQLVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
         int pos = position_ - 1;
 
         int const endRow = statement_.currentRow_ + statement_.rowsToConsume_;
-	
+
         mysql_data_seek(statement_.result_, statement_.currentRow_);
         for (int curRow = statement_.currentRow_, i = 0;
              curRow != endRow; ++curRow, ++i)
@@ -72,17 +71,20 @@ void MySQLVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
             {
                 if (ind == NULL)
                 {
-                    throw SOCIError(
+                    throw soci_error(
                         "Null value fetched and no indicator defined.");
                 }
 
-                ind[i] = eNull;
+                ind[i] = i_null;
+                
+                // no need to convert data if it is null, go to next row
+                continue;
             }
             else
             {
                 if (ind != NULL)
                 {
-                    ind[i] = eOK;
+                    ind[i] = i_ok;
                 }
             }
 
@@ -91,49 +93,59 @@ void MySQLVectorIntoTypeBackEnd::postFetch(bool gotData, eIndicator *ind)
 
             switch (type_)
             {
-            case eXChar:
-                setInVector<char>(data_, i, *buf);
+            case x_char:
+                set_invector_(data_, i, *buf);
                 break;
-            case eXStdString:
-                setInVector<std::string>(data_, i, buf);
+            case x_stdstring:
+                set_invector_<std::string>(data_, i, buf);
                 break;
-            case eXShort:
+            case x_short:
                 {
-                    long val = strtol(buf, NULL, 10);
-                    setInVector<short>(data_, i, static_cast<short>(val));
+                    short val;
+                    parse_num(buf, val);
+                    set_invector_(data_, i, val);
                 }
                 break;
-            case eXInteger:
+            case x_integer:
                 {
-                    long val = strtol(buf, NULL, 10);
-                    setInVector<int>(data_, i, static_cast<int>(val));
+                    int val;
+                    parse_num(buf, val);
+                    set_invector_(data_, i, val);
                 }
                 break;
-            case eXUnsignedLong:
+            case x_unsigned_long:
                 {
-                    long long val = strtoll(buf, NULL, 10);
-                    setInVector<unsigned long>(data_, i,
-                        static_cast<unsigned long>(val));
+                    unsigned long val;
+                    parse_num(buf, val);
+                    set_invector_(data_, i, val);
                 }
                 break;
-            case eXDouble:
+            case x_long_long:
                 {
-                    double val = strtod(buf, NULL);
-                    setInVector<double>(data_, i, val);
+                    long long val;
+                    parse_num(buf, val);
+                    set_invector_(data_, i, val);
                 }
                 break;
-            case eXStdTm:
+            case x_double:
+                {
+                    double val;
+                    parse_num(buf, val);
+                    set_invector_(data_, i, val);
+                }
+                break;
+            case x_stdtm:
                 {
                     // attempt to parse the string and convert to std::tm
                     std::tm t;
-                    parseStdTm(buf, t);
+                    parse_std_tm(buf, t);
 
-                    setInVector<std::tm>(data_, i, t);
+                    set_invector_(data_, i, t);
                 }
                 break;
 
             default:
-                throw SOCIError("Into element used with non-supported type.");
+                throw soci_error("Into element used with non-supported type.");
             }
         }
     }
@@ -147,7 +159,7 @@ namespace // anonymous
 {
 
 template <typename T>
-void resizeVector(void *p, std::size_t sz)
+void resizevector_(void *p, std::size_t sz)
 {
     std::vector<T> *v = static_cast<std::vector<T> *>(p);
     v->resize(sz);
@@ -155,47 +167,48 @@ void resizeVector(void *p, std::size_t sz)
 
 } // namespace anonymous
 
-void MySQLVectorIntoTypeBackEnd::resize(std::size_t sz)
+void mysql_vector_into_type_backend::resize(std::size_t sz)
 {
     switch (type_)
     {
         // simple cases
-    case eXChar:         resizeVector<char>         (data_, sz); break;
-    case eXShort:        resizeVector<short>        (data_, sz); break;
-    case eXInteger:      resizeVector<int>          (data_, sz); break;
-    case eXUnsignedLong: resizeVector<unsigned long>(data_, sz); break;
-    case eXDouble:       resizeVector<double>       (data_, sz); break;
-    case eXStdString:    resizeVector<std::string>  (data_, sz); break;
-    case eXStdTm:        resizeVector<std::tm>      (data_, sz); break;
+    case x_char:         resizevector_<char>         (data_, sz); break;
+    case x_short:        resizevector_<short>        (data_, sz); break;
+    case x_integer:      resizevector_<int>          (data_, sz); break;
+    case x_unsigned_long: resizevector_<unsigned long>(data_, sz); break;
+    case x_long_long:     resizevector_<long long>    (data_, sz); break;
+    case x_double:       resizevector_<double>       (data_, sz); break;
+    case x_stdstring:    resizevector_<std::string>  (data_, sz); break;
+    case x_stdtm:        resizevector_<std::tm>      (data_, sz); break;
 
     default:
-        throw SOCIError("Into vector element used with non-supported type.");
+        throw soci_error("Into vector element used with non-supported type.");
     }
 }
 
-std::size_t MySQLVectorIntoTypeBackEnd::size()
+std::size_t mysql_vector_into_type_backend::size()
 {
     std::size_t sz = 0; // dummy initialization to please the compiler
     switch (type_)
     {
         // simple cases
-    case eXChar:         sz = getVectorSize<char>         (data_); break;
-    case eXShort:        sz = getVectorSize<short>        (data_); break;
-    case eXInteger:      sz = getVectorSize<int>          (data_); break;
-    case eXUnsignedLong: sz = getVectorSize<unsigned long>(data_); break;
-    case eXDouble:       sz = getVectorSize<double>       (data_); break;
-    case eXStdString:    sz = getVectorSize<std::string>  (data_); break;
-    case eXStdTm:        sz = getVectorSize<std::tm>      (data_); break;
+    case x_char:         sz = get_vector_size<char>         (data_); break;
+    case x_short:        sz = get_vector_size<short>        (data_); break;
+    case x_integer:      sz = get_vector_size<int>          (data_); break;
+    case x_unsigned_long: sz = get_vector_size<unsigned long>(data_); break;
+    case x_long_long:     sz = get_vector_size<long long>    (data_); break;
+    case x_double:       sz = get_vector_size<double>       (data_); break;
+    case x_stdstring:    sz = get_vector_size<std::string>  (data_); break;
+    case x_stdtm:        sz = get_vector_size<std::tm>      (data_); break;
 
     default:
-        throw SOCIError("Into vector element used with non-supported type.");
+        throw soci_error("Into vector element used with non-supported type.");
     }
 
     return sz;
 }
 
-void MySQLVectorIntoTypeBackEnd::cleanUp()
+void mysql_vector_into_type_backend::clean_up()
 {
     // nothing to do here
 }
-

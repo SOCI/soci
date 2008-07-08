@@ -1,14 +1,15 @@
 //
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2007 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_ORACLE_SOURCE
+#define soci_ORACLE_SOURCE
+
 #include "soci-oracle.h"
 #include "error.h"
-#include <soci.h>
+#include <soci-backend.h>
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -20,27 +21,28 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::Oracle;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::oracle;
 
-OracleStatementBackEnd::OracleStatementBackEnd(OracleSessionBackEnd &session)
-    : session_(session), stmtp_(NULL), boundByName_(false), boundByPos_(false)
+oracle_statement_backend::oracle_statement_backend(oracle_session_backend &session)
+    : session_(session), stmtp_(NULL), boundByName_(false), boundByPos_(false),
+      noData_(false)
 {
 }
 
-void OracleStatementBackEnd::alloc()
+void oracle_statement_backend::alloc()
 {
     sword res = OCIHandleAlloc(session_.envhp_,
         reinterpret_cast<dvoid**>(&stmtp_),
         OCI_HTYPE_STMT, 0, 0);
     if (res != OCI_SUCCESS)
     {
-        throw SOCIError("Cannot allocate statement handle");
+        throw soci_error("Cannot allocate statement handle");
     }
 }
 
-void OracleStatementBackEnd::cleanUp()
+void oracle_statement_backend::clean_up()
 {
     // deallocate statement handle
     if (stmtp_ != NULL)
@@ -50,11 +52,11 @@ void OracleStatementBackEnd::cleanUp()
     }
 
     boundByName_ = false;
-    boundByPos_ = false; 
+    boundByPos_ = false;
 }
 
-void OracleStatementBackEnd::prepare(std::string const &query,
-    eStatementType /* eType */)
+void oracle_statement_backend::prepare(std::string const &query,
+    statement_type /* eType */)
 {
     sb4 stmtLen = static_cast<sb4>(query.size());
     sword res = OCIStmtPrepare(stmtp_,
@@ -63,51 +65,58 @@ void OracleStatementBackEnd::prepare(std::string const &query,
         stmtLen, OCI_V7_SYNTAX, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, session_.errhp_);
+        throw_oracle_soci_error(res, session_.errhp_);
     }
 }
 
-StatementBackEnd::execFetchResult OracleStatementBackEnd::execute(int number)
+statement_backend::exec_fetch_result oracle_statement_backend::execute(int number)
 {
     sword res = OCIStmtExecute(session_.svchp_, stmtp_, session_.errhp_,
         static_cast<ub4>(number), 0, 0, 0, OCI_DEFAULT);
 
     if (res == OCI_SUCCESS || res == OCI_SUCCESS_WITH_INFO)
     {
-        return eSuccess;
+        return ef_success;
     }
     else if (res == OCI_NO_DATA)
     {
-        return eNoData;
+        noData_ = true;
+        return ef_no_data;
     }
     else
     {
-        throwOracleSOCIError(res, session_.errhp_);
-        return eNoData; // unreachable dummy return to please the compiler
+        throw_oracle_soci_error(res, session_.errhp_);
+        return ef_no_data; // unreachable dummy return to please the compiler
     }
 }
 
-StatementBackEnd::execFetchResult OracleStatementBackEnd::fetch(int number)
+statement_backend::exec_fetch_result oracle_statement_backend::fetch(int number)
 {
+    if (noData_)
+    {
+        return ef_no_data;
+    }
+
     sword res = OCIStmtFetch(stmtp_, session_.errhp_,
         static_cast<ub4>(number), OCI_FETCH_NEXT, OCI_DEFAULT);
 
     if (res == OCI_SUCCESS || res == OCI_SUCCESS_WITH_INFO)
     {
-        return eSuccess;
+        return ef_success;
     }
     else if (res == OCI_NO_DATA)
     {
-        return eNoData;
+        noData_ = true;
+        return ef_no_data;
     }
     else
     {
-        throwOracleSOCIError(res, session_.errhp_);
-        return eNoData; // unreachable dummy return to please the compiler
+        throw_oracle_soci_error(res, session_.errhp_);
+        return ef_no_data; // unreachable dummy return to please the compiler
     }
 }
 
-int OracleStatementBackEnd::getNumberOfRows()
+int oracle_statement_backend::get_number_of_rows()
 {
     int rows;
     sword res = OCIAttrGet(static_cast<dvoid*>(stmtp_),
@@ -116,13 +125,13 @@ int OracleStatementBackEnd::getNumberOfRows()
 
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, session_.errhp_);
+        throw_oracle_soci_error(res, session_.errhp_);
     }
 
     return rows;
 }
 
-std::string OracleStatementBackEnd::rewriteForProcedureCall(
+std::string oracle_statement_backend::rewrite_for_procedure_call(
     std::string const &query)
 {
     std::string newQuery("begin ");
@@ -131,13 +140,13 @@ std::string OracleStatementBackEnd::rewriteForProcedureCall(
     return newQuery;
 }
 
-int OracleStatementBackEnd::prepareForDescribe()
+int oracle_statement_backend::prepare_for_describe()
 {
     sword res = OCIStmtExecute(session_.svchp_, stmtp_, session_.errhp_,
         1, 0, 0, 0, OCI_DESCRIBE_ONLY);
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, session_.errhp_);
+        throw_oracle_soci_error(res, session_.errhp_);
     }
 
     int cols;
@@ -147,13 +156,13 @@ int OracleStatementBackEnd::prepareForDescribe()
 
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, session_.errhp_);
+        throw_oracle_soci_error(res, session_.errhp_);
     }
 
     return cols;
 }
 
-void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
+void oracle_statement_backend::describe_column(int colNum, data_type &type,
     std::string &columnName)
 {
     int size;
@@ -177,7 +186,7 @@ void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
         static_cast<ub4>(colNum));
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, session_.errhp_);
+        throw_oracle_soci_error(res, session_.errhp_);
     }
 
     // Get the column name
@@ -189,7 +198,7 @@ void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
         reinterpret_cast<OCIError*>(session_.errhp_));
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, session_.errhp_);
+        throw_oracle_soci_error(res, session_.errhp_);
     }
 
     // Get the column type
@@ -201,7 +210,7 @@ void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
         reinterpret_cast<OCIError*>(session_.errhp_));
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, session_.errhp_);
+        throw_oracle_soci_error(res, session_.errhp_);
     }
 
     // get the data size
@@ -213,7 +222,7 @@ void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
         reinterpret_cast<OCIError*>(session_.errhp_));
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, session_.errhp_);
+        throw_oracle_soci_error(res, session_.errhp_);
     }
 
     // get the precision
@@ -225,7 +234,7 @@ void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
         reinterpret_cast<OCIError*>(session_.errhp_));
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, session_.errhp_);
+        throw_oracle_soci_error(res, session_.errhp_);
     }
 
     // get the scale
@@ -237,7 +246,7 @@ void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
         reinterpret_cast<OCIError*>(session_.errhp_));
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, session_.errhp_);
+        throw_oracle_soci_error(res, session_.errhp_);
     }
 
     columnName.assign(dbname, dbname + nameLength);
@@ -249,29 +258,29 @@ void OracleStatementBackEnd::describeColumn(int colNum, eDataType &type,
     {
     case SQLT_CHR:
     case SQLT_AFC:
-        type = eString;
+        type = dt_string;
         break;
     case SQLT_NUM:
         if (scale > 0)
         {
-            type = eDouble;
+            type = dt_double;
         }
         else if (precision < std::numeric_limits<int>::digits10)
         {
-            type = eInteger;
+            type = dt_integer;
         }
         else
         {
-            type = eUnsignedLong;
+            type = dt_long_long;
         }
         break;
     case SQLT_DAT:
-        type = eDate;
+        type = dt_date;
         break;
     }
 }
 
-std::size_t OracleStatementBackEnd::columnSize(int position)
+std::size_t oracle_statement_backend::column_size(int position)
 {
     // Note: we may want to optimize so that the OCI_DESCRIBE_ONLY call
     // happens only once per statement.
@@ -284,7 +293,7 @@ std::size_t OracleStatementBackEnd::columnSize(int position)
          session_.errhp_, 1, 0, 0, 0, OCI_DESCRIBE_ONLY);
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, session_.errhp_);
+        throw_oracle_soci_error(res, session_.errhp_);
     }
 
     // Get The Column Handle
@@ -296,7 +305,7 @@ std::size_t OracleStatementBackEnd::columnSize(int position)
          static_cast<ub4>(position));
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, session_.errhp_);
+        throw_oracle_soci_error(res, session_.errhp_);
     }
 
      // Get The Data Size
@@ -308,7 +317,7 @@ std::size_t OracleStatementBackEnd::columnSize(int position)
          reinterpret_cast<OCIError*>(session_.errhp_));
     if (res != OCI_SUCCESS)
     {
-        throwOracleSOCIError(res, session_.errhp_);
+        throw_oracle_soci_error(res, session_.errhp_);
     }
 
     return static_cast<std::size_t>(colSize);

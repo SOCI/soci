@@ -1,6 +1,6 @@
 SOCI - The C++ Database Access Library.
 
-Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton,
+Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton,
                         David Courtney, Pawel Aleksander Fedorynski,
                         Rafal Bobrowski, Mateusz Loskot
 
@@ -14,17 +14,13 @@ You should see the following files and directories here:
 - README          - This file.
 - LICENSE_1_0.txt - Full text of the Boost license.
 - CHANGES         - The description of changes.
-- contrib         - Acknowledgements for contributions.
 
-- configure       - The main auto-configuration script - this is accompanied
-                    by other files in this directory.
+- contrib         - Acknowledgements for contributions.
 
 - doc/            - Documentation.
 
 - build/          - Additional build scripts and configuration files
                     for various compilation systems.
-
-- m4/             - Macros for autotools.
 
 - src/            - The source code of the library.
 

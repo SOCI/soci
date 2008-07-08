@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -16,20 +16,20 @@
 #include <ctime>
 #include <cstdlib>
 
-using namespace SOCI;
-using namespace SOCI::tests;
+using namespace soci;
+using namespace soci::tests;
 
 std::string connectString;
-BackEndFactory const &backEnd = postgresql;
+backend_factory const &backEnd = postgresql;
 
 // Postgres-specific tests
 
-struct OidTableCreator : public TableCreatorBase
+struct oid_table_creator : public table_creator_base
 {
-    OidTableCreator(Session& session)
-    : TableCreatorBase(session)
+    oid_table_creator(session& sql)
+    : table_creator_base(sql)
     {
-        session << "create table soci_test ("
+        sql << "create table soci_test ("
                 " id integer,"
                 " name varchar(100)"
                 ") with oids";
@@ -43,13 +43,13 @@ struct OidTableCreator : public TableCreatorBase
 void test1()
 {
     {
-        Session sql(backEnd, connectString);
+        session sql(backEnd, connectString);
 
-        OidTableCreator tableCreator(sql);
+        oid_table_creator tableCreator(sql);
 
         sql << "insert into soci_test(id, name) values(7, \'John\')";
 
-        RowID rid(sql);
+        rowid rid(sql);
         sql << "select oid from soci_test where id = 7", into(rid);
 
         int id;
@@ -63,8 +63,8 @@ void test1()
 #else
         // Older PostgreSQL does not support use elements.
 
-        PostgreSQLRowIDBackEnd *rbe
-            = static_cast<PostgreSQLRowIDBackEnd *>(rid.getBackEnd());
+        postgresql_rowid_backend *rbe
+            = static_cast<postgresql_rowid_backend *>(rid.get_backend());
 
         unsigned long oid = rbe->value_;
 
@@ -81,17 +81,17 @@ void test1()
 }
 
 // function call test
-class FunctionCreator : FunctionCreatorBase 
+class function_creator : function_creator_base
 {
 public:
 
-    FunctionCreator(Session& session)
-    : FunctionCreatorBase(session)
+    function_creator(session& session)
+    : function_creator_base(session)
     {
         // before a language can be used it must be defined
         // if it has already been defined then an error will occur
         try { session << "create language plpgsql"; }
-        catch (SOCIError const &) {} // ignore if error
+        catch (soci_error const &) {} // ignore if error
 
 #ifndef SOCI_PGSQL_NOPARAMS
 
@@ -109,12 +109,12 @@ public:
             "begin "
             "  return $1; "
             "end \' language plpgsql";
-#endif 
+#endif
     }
 
 protected:
 
-    std::string dropStatement()
+    std::string drop_statement()
     {
         return "drop function soci_test(varchar)";
     }
@@ -123,16 +123,16 @@ protected:
 void test2()
 {
     {
-        Session sql(backEnd, connectString);
+        session sql(backEnd, connectString);
 
-        FunctionCreator functionCreator(sql);
+        function_creator functionCreator(sql);
 
         std::string in("my message");
         std::string out;
 
 #ifndef SOCI_PGSQL_NOPARAMS
 
-        Statement st = (sql.prepare <<
+        statement st = (sql.prepare <<
             "select soci_test(:input)",
             into(out),
             use(in, "input"));
@@ -140,9 +140,7 @@ void test2()
 #else
         // Older PostgreSQL does not support use elements.
 
-        std::string in("my message");
-        std::string out;
-        Statement st = (sql.prepare <<
+        statement st = (sql.prepare <<
             "select soci_test(\'" << in << "\')",
             into(out));
 
@@ -158,14 +156,14 @@ void test2()
 
 #ifndef SOCI_PGSQL_NOPARAMS
 
-            Procedure proc = (sql.prepare <<
+            procedure proc = (sql.prepare <<
                 "soci_test(:input)",
                 into(out), use(in, "input"));
 
 #else
         // Older PostgreSQL does not support use elements.
 
-            Procedure proc = (sql.prepare <<
+            procedure proc = (sql.prepare <<
                 "soci_test(\'" << in << "\')", into(out));
 
 #endif // SOCI_PGSQL_NOPARAMS
@@ -179,10 +177,10 @@ void test2()
 }
 
 // BLOB test
-struct BlobTableCreator : public TableCreatorBase
+struct blob_table_creator : public table_creator_base
 {
-    BlobTableCreator(Session& session)
-    : TableCreatorBase(session)
+    blob_table_creator(session& session)
+    : table_creator_base(session)
     {
         session <<
              "create table soci_test ("
@@ -195,33 +193,33 @@ struct BlobTableCreator : public TableCreatorBase
 void test3()
 {
     {
-        Session sql(backEnd, connectString);
+        session sql(backEnd, connectString);
 
-        BlobTableCreator tableCreator(sql);
+        blob_table_creator tableCreator(sql);
         
         char buf[] = "abcdefghijklmnopqrstuvwxyz";
 
         sql << "insert into soci_test(id, img) values(7, lo_creat(-1))";
 
-        // in PostgreSQL, BLOB operations must be withing transaction block
-        sql.begin();
+        // in PostgreSQL, BLOB operations must be within transaction block
+        transaction tr(sql);
 
         {
-            BLOB b(sql);
+            blob b(sql);
 
             sql << "select img from soci_test where id = 7", into(b);
-            assert(b.getLen() == 0);
+            assert(b.get_len() == 0);
 
             b.write(0, buf, sizeof(buf));
-            assert(b.getLen() == sizeof(buf));
+            assert(b.get_len() == sizeof(buf));
 
             b.append(buf, sizeof(buf));
-            assert(b.getLen() == 2 * sizeof(buf));
+            assert(b.get_len() == 2 * sizeof(buf));
         }
         {
-            BLOB b(sql);
+            blob b(sql);
             sql << "select img from soci_test where id = 7", into(b);
-            assert(b.getLen() == 2 * sizeof(buf));
+            assert(b.get_len() == 2 * sizeof(buf));
             char buf2[100];
             b.read(0, buf2, 10);
             assert(strncmp(buf2, "abcdefghij", 10) == 0);
@@ -230,40 +228,199 @@ void test3()
         unsigned long oid;
         sql << "select img from soci_test where id = 7", into(oid);
         sql << "select lo_unlink(" << oid << ")";
-
-        sql.commit();
     }
 
     std::cout << "test 3 passed" << std::endl;
 }
 
-// DDL Creation objects for common tests
-struct TableCreator1 : public TableCreatorBase
+struct longlong_table_creator : table_creator_base
 {
-    TableCreator1(Session& session)
-        : TableCreatorBase(session) 
+    longlong_table_creator(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val int8)";
+    }
+};
+
+// long long test
+void test4()
+{
+    {
+        session sql(backEnd, connectString);
+
+        longlong_table_creator tableCreator(sql);
+
+        long long v1 = 1000000000000LL;
+        assert(v1 / 1000000 == 1000000);
+
+        sql << "insert into soci_test(val) values(:val)", use(v1);
+
+        long long v2 = 0LL;
+        sql << "select val from soci_test", into(v2);
+
+        assert(v2 == v1);
+    }
+
+    // vector<long long>
+    {
+        session sql(backEnd, connectString);
+
+        longlong_table_creator tableCreator(sql);
+
+        std::vector<long long> v1;
+        v1.push_back(1000000000000LL);
+        v1.push_back(1000000000001LL);
+        v1.push_back(1000000000002LL);
+        v1.push_back(1000000000003LL);
+        v1.push_back(1000000000004LL);
+
+        sql << "insert into soci_test(val) values(:val)", use(v1);
+
+        std::vector<long long> v2(10);
+        sql << "select val from soci_test order by val desc", into(v2);
+
+        assert(v2.size() == 5);
+        assert(v2[0] == 1000000000004LL);
+        assert(v2[1] == 1000000000003LL);
+        assert(v2[2] == 1000000000002LL);
+        assert(v2[3] == 1000000000001LL);
+        assert(v2[4] == 1000000000000LL);
+    }
+
+    std::cout << "test 4 passed" << std::endl;
+}
+
+struct boolean_table_creator : table_creator_base
+{
+    boolean_table_creator(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val boolean)";
+    }
+};
+
+void test5()
+{
+    {
+        session sql(backEnd, connectString);
+
+        boolean_table_creator tableCreator(sql);
+
+        int i1 = 0;
+
+        sql << "insert into soci_test(val) values(:val)", use(i1);
+
+        int i2 = 7;
+        sql << "select val from soci_test", into(i2);
+
+        assert(i2 == i1);
+
+        sql << "update soci_test set val = true";
+        sql << "select val from soci_test", into(i2);
+        assert(i2 == 1);
+    }
+
+    std::cout << "test 5 passed" << std::endl;
+}
+
+// dynamic backend test
+void test6()
+{
+    try
+    {
+        session sql("nosuchbackend://" + connectString);
+        assert(false);
+    }
+    catch (soci_error const & e)
+    {
+        assert(e.what() == std::string("Failed to open: libsoci_nosuchbackend.so"));
+    }
+
+    {
+        dynamic_backends::register_backend("pgsql", backEnd);
+
+        std::vector<std::string> backends = dynamic_backends::list_all();
+        assert(backends.size() == 1);
+        assert(backends[0] == "pgsql");
+
+        {
+            session sql("pgsql://" + connectString);
+        }
+
+        dynamic_backends::unload("pgsql");
+
+        backends = dynamic_backends::list_all();
+        assert(backends.empty());
+    }
+
+    {
+        session sql("postgresql://" + connectString);
+    }
+
+    std::cout << "test 6 passed" << std::endl;
+}
+
+void test7()
+{
+    {
+        session sql(backEnd, connectString);
+
+        int i;
+        sql << "select 123", into(i);
+        assert(i == 123);
+
+        try
+        {
+            sql << "select 'ABC'", into (i);
+            assert(false);
+        }
+        catch (soci_error const & e)
+        {
+            assert(e.what() == std::string("Cannot convert data."));
+        }
+    }
+
+    std::cout << "test 7 passed" << std::endl;
+}
+
+void test8()
+{
+    {
+        session sql(backEnd, connectString);
+
+        assert(sql.get_backend_name() == "postgresql");
+    }
+
+    std::cout << "test 8 passed" << std::endl;
+}
+
+// DDL Creation objects for common tests
+struct table_creator_one : public table_creator_base
+{
+    table_creator_one(session& session)
+        : table_creator_base(session)
     {
         session << "create table soci_test(id integer, val integer, c char, "
                  "str varchar(20), sh int2, ul numeric(20), d float8, "
-                 "tm timestamp, i1 integer, i2 integer, i3 integer, " 
+                 "tm timestamp, i1 integer, i2 integer, i3 integer, "
                  "name varchar(20))";
     }
 };
 
-struct TableCreator2 : public TableCreatorBase
+struct table_creator_two : public table_creator_base
 {
-    TableCreator2(Session& session)
-        : TableCreatorBase(session)
+    table_creator_two(session& session)
+        : table_creator_base(session)
     {
         session  << "create table soci_test(num_float float8, num_int integer,"
                      " name varchar(20), sometime timestamp, chr char)";
     }
 };
 
-struct TableCreator3 : public TableCreatorBase
+struct table_creator_three : public table_creator_base
 {
-    TableCreator3(Session& session)
-        : TableCreatorBase(session)
+    table_creator_three(session& session)
+        : table_creator_base(session)
     {
         session << "create table soci_test(name varchar(100) not null, "
             "phone varchar(15))";
@@ -271,39 +428,39 @@ struct TableCreator3 : public TableCreatorBase
 };
 
 //
-// Support for SOCI Common Tests
+// Support for soci Common Tests
 //
 
-class TestContext : public TestContextBase
+class test_context : public test_context_base
 {
 public:
-    TestContext(BackEndFactory const &backEnd, 
+    test_context(backend_factory const &backEnd,
                 std::string const &connectString)
-        : TestContextBase(backEnd, connectString) {}
+        : test_context_base(backEnd, connectString) {}
 
-    TableCreatorBase* tableCreator1(Session& s) const
+    table_creator_base* table_creator_1(session& s) const
     {
-        return new TableCreator1(s);
+        return new table_creator_one(s);
     }
 
-    TableCreatorBase* tableCreator2(Session& s) const
+    table_creator_base* table_creator_2(session& s) const
     {
-        return new TableCreator2(s);
+        return new table_creator_two(s);
     }
 
-    TableCreatorBase* tableCreator3(Session& s) const
+    table_creator_base* table_creator_3(session& s) const
     {
-        return new TableCreator3(s);
+        return new table_creator_three(s);
     }
 
-    std::string toDateTime(std::string const &dateString) const
+    std::string to_date_time(std::string const &datdt_string) const
     {
-        return "timestamptz(\'" + dateString + "\')";
+        return "timestamptz(\'" + datdt_string + "\')";
     }
 
 };
 
-    
+
 int main(int argc, char** argv)
 {
 
@@ -331,8 +488,8 @@ int main(int argc, char** argv)
 
     try
     {
-        TestContext tc(backEnd, connectString);
-        CommonTests tests(tc);
+        test_context tc(backEnd, connectString);
+        common_tests tests(tc);
         tests.run();
 
         std::cout << "\nSOCI Postgres Tests:\n\n";
@@ -340,6 +497,14 @@ int main(int argc, char** argv)
         test1();
         test2();
         test3();
+        test4();
+        test5();
+
+//         test6();
+        std::cout << "test 6 skipped (dynamic backend)\n";
+
+        test7();
+        test8();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;

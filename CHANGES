@@ -1,6 +1,37 @@
 This file contains the history of changes in the SOCI library.
 
 ---
+Version 3.0.0 differs from 2.2.0 in the following ways:
+
+- Exposed the session's locale object.
+
+- Moved the "no data" flag from indicators to statement.
+
+- Allowed const objects as "use" elements.
+
+- Added connection mode for Oracle.
+
+- Added RAII support for transactions.
+
+- Added the open/close/reconnect functionality.
+
+- Added support for long long as a fundamental data type.
+
+- Unified column names for dynamic rowset description, to overcome
+  differences between database servers.
+
+- Added the "simple" interface for interfacing from other languages.
+
+- Added thread-safe connection pool.
+
+- Added integrated support for Boost data types: gregorian_date,
+  fusion and tuple.
+
+- Added dynamic backend loading.
+
+- Changed the naming convention to comply with Boost recommendations.
+
+---
 Version 2.2.0 differs from 2.1.0 in the following ways:
 
 - Added true support for statement preparation with PostgreSQL.

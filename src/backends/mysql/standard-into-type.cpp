@@ -8,36 +8,35 @@
 
 #define SOCI_MYSQL_SOURCE
 #include "soci-mysql.h"
-#include <soci.h>
 #include <soci-platform.h>
 #include "common.h"
-
 #include <ciso646>
+#include <cassert>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::MySQL;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::mysql;
 
 
-void MySQLStandardIntoTypeBackEnd::defineByPos(
-    int &position, void *data, eExchangeType type)
+void mysql_standard_into_type_backend::define_by_pos(
+    int &position, void *data, exchange_type type)
 {
     data_ = data;
     type_ = type;
     position_ = position++;
 }
 
-void MySQLStandardIntoTypeBackEnd::preFetch()
+void mysql_standard_into_type_backend::pre_fetch()
 {
     // nothing to do here
 }
 
-void MySQLStandardIntoTypeBackEnd::postFetch(
-    bool gotData, bool calledFromFetch, eIndicator *ind)
+void mysql_standard_into_type_backend::post_fetch(
+    bool gotData, bool calledFromFetch, indicator *ind)
 {
     if (calledFromFetch == true && gotData == false)
     {
@@ -55,101 +54,102 @@ void MySQLStandardIntoTypeBackEnd::postFetch(
         {
             if (ind == NULL)
             {
-                throw SOCIError(
+                throw soci_error(
                     "Null value fetched and no indicator defined.");
             }
-            *ind = eNull;
+            *ind = i_null;
             return;
         }
         else
         {
             if (ind != NULL)
             {
-                *ind = eOK;
+                *ind = i_ok;
             }
         }
         const char *buf = row[pos] != NULL ? row[pos] : "";
         switch (type_)
         {
-        case eXChar:
+        case x_char:
             {
                 char *dest = static_cast<char*>(data_);
                 *dest = *buf;
             }
             break;
-        case eXCString:
+        case x_cstring:
             {
-                CStringDescriptor *strDescr
-                    = static_cast<CStringDescriptor *>(data_);
+                cstring_descriptor *strDescr
+                    = static_cast<cstring_descriptor *>(data_);
 
                 std::strncpy(strDescr->str_, buf, strDescr->bufSize_ - 1);
                 strDescr->str_[strDescr->bufSize_ - 1] = '\0';
 
                 if (std::strlen(buf) >= strDescr->bufSize_ && ind != NULL)
                 {
-                    *ind = eTruncated;
+                    *ind = i_truncated;
                 }
             }
             break;
-        case eXStdString:
+        case x_stdstring:
             {
                 std::string *dest = static_cast<std::string *>(data_);
-                dest->assign(buf);
+
+                MYSQL_FIELD* field = mysql_fetch_field_direct(statement_.result_, pos);
+                assert(0 != field);
+                if (MYSQL_TYPE_BLOB == field->type)
+                {
+                    dest->assign(buf, field->max_length);
+                }
+                else
+                {
+                    dest->assign(buf);
+                }
             }
             break;
-        case eXShort:
+        case x_short:
             {
                 short *dest = static_cast<short*>(data_);
-                long val = strtol(buf, NULL, 10);
-                *dest = static_cast<short>(val);
+                parse_num(buf, *dest);
             }
             break;
-        case eXInteger:
+        case x_integer:
             {
                 int *dest = static_cast<int*>(data_);
-                long val = strtol(buf, NULL, 10);
-                *dest = static_cast<int>(val);
+                parse_num(buf, *dest);
             }
             break;
-        case eXUnsignedLong:
+        case x_unsigned_long:
             {
                 unsigned long *dest = static_cast<unsigned long *>(data_);
-                long long val = strtoll(buf, NULL, 10);
-                *dest = static_cast<unsigned long>(val);
+                parse_num(buf, *dest);
             }
             break;
-        case eXDouble:
+        case x_long_long:
+            {
+                long long *dest = static_cast<long long *>(data_);
+                parse_num(buf, *dest);
+            }
+            break;
+        case x_double:
             {
                 double *dest = static_cast<double*>(data_);
-                double val = strtod(buf, NULL);
-                *dest = static_cast<double>(val);
+                parse_num(buf, *dest);
             }
             break;
-        case eXStdTm:
+        case x_stdtm:
             {
                 // attempt to parse the string and convert to std::tm
                 std::tm *dest = static_cast<std::tm *>(data_);
-                parseStdTm(buf, *dest);
+                parse_std_tm(buf, *dest);
             }
             break;
         default:
-            throw SOCIError("Into element used with non-supported type.");
-        }
-    }
-    else // no data retrieved
-    {
-        if (ind != NULL)
-        {
-            *ind = eNoData;
-        }
-        else
-        {
-            throw SOCIError("No data fetched and no indicator defined.");
+            throw soci_error("Into element used with non-supported type.");
         }
     }
 }
 
-void MySQLStandardIntoTypeBackEnd::cleanUp()
+void mysql_standard_into_type_backend::clean_up()
 {
     // nothing to do here
 }

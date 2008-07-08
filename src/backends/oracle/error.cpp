@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2007 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -8,7 +8,6 @@
 #define SOCI_ORACLE_SOURCE
 #include "soci-oracle.h"
 #include "error.h"
-#include <soci.h>
 #include <limits>
 #include <sstream>
 
@@ -16,18 +15,16 @@
 #pragma warning(disable:4355)
 #endif
 
-using namespace SOCI;
-using namespace SOCI::details;
-using namespace SOCI::details::Oracle;
+using namespace soci;
+using namespace soci::details;
+using namespace soci::details::oracle;
 
-
-OracleSOCIError::OracleSOCIError(std::string const & msg, int errNum)
-    : SOCIError(msg), errNum_(errNum)
+oracle_soci_error::oracle_soci_error(std::string const & msg, int errNum)
+    : soci_error(msg), err_num_(errNum)
 {
 }
 
-
-void SOCI::details::Oracle::getErrorDetails(sword res, OCIError *errhp,
+void soci::details::oracle::get_error_details(sword res, OCIError *errhp,
     std::string &msg, int &errNum)
 {
     text errbuf[512];
@@ -37,7 +34,7 @@ void SOCI::details::Oracle::getErrorDetails(sword res, OCIError *errhp,
     switch (res)
     {
     case OCI_NO_DATA:
-        msg = "SOCI error: No data";
+        msg = "soci error: No data";
         break;
     case OCI_ERROR:
         OCIErrorGet(errhp, 1, 0, &errcode,
@@ -46,21 +43,18 @@ void SOCI::details::Oracle::getErrorDetails(sword res, OCIError *errhp,
         errNum = static_cast<int>(errcode);
         break;
     case OCI_INVALID_HANDLE:
-        msg = "SOCI error: Invalid handle";
+        msg = "soci error: Invalid handle";
         break;
     default:
-        msg = "SOCI error: Unknown error code";
+        msg = "soci error: Unknown error code";
     }
 }
 
-void SOCI::details::Oracle::throwOracleSOCIError(sword res, OCIError *errhp)
+void soci::details::oracle::throw_oracle_soci_error(sword res, OCIError *errhp)
 {
     std::string msg;
     int errNum;
 
-    getErrorDetails(res, errhp, msg, errNum);
-    throw OracleSOCIError(msg, errNum);
+    get_error_details(res, errhp, msg, errNum);
+    throw oracle_soci_error(msg, errNum);
 }
-
-
-
