@@ -69,18 +69,19 @@ Person p;
 copy(rs.begin(), rs.end(), ostream_iterator&lt;string&gt;(cout, "\n"));</span>
 </pre>
 
+<p>SOCI offers also extensive integration with Boost datatypes (optional, tuple and fusion) and flexible support
+for user-defined datatypes.</p>
 
 <p>Starting from its 2.0.0 release, SOCI uses the plug-in architecture for
-backends - this allows to target various database servers. Currently (2.2.0),
+backends - this allows to target various database servers. Currently (3.0.0),
 the following database servers are supported:</p>
 <ul>
             <li>Oracle</li>
             <li>PostgreSQL</li>
-            <li>Firebird</li>
             <li>MySQL</li>
-            <li>SQLite</li>
-            <li>MS SQL Server (via ODBC)</li>
 </ul>
+
+<p>Other (unsupported) backends exist in the CVS repository: ODBC, SQLite and Firebird.</p>
 
 <p>The intent of the library is to cover as many database technologies as
 possible. For this, the project has to rely on volunteer contributions
