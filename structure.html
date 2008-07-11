@@ -119,10 +119,14 @@ $ ./configure --mysql-include=/opt/mysql/include --mysql-lib=/opt/mysql/lib
 <p>After configuring the build and installation steps you can build the SOCI library by simply running <code>make</code>.
 The core library and backends will be placed in <code>build/unix/include</code> and <code>build/unix/lib</code> directories.</p>
 
+<p>Note that in addition to the options describe above, the <code>CXXFLAGS</code> environment variable is recognized and if defined, its value is taken instead of default set of compilation flags.</p>
+
 <p>The library can be installed by:</p>
 <pre class="example">
 $ make install
 </pre>
+
+<p>The installation script recognizes also the <code>DESTDIR</code> environment variable, which value (if set) is prepended to the default or configured installation paths.</p>
 
 <p>Note: depending on the target directory it might be necessary to acquire root permissions before
 installing the library.</p>
