@@ -2,7 +2,15 @@
 
 # some common compilation settings if you need to change them:
 
-set CXXFLAGS "-Wall -pedantic -Wno-long-long -O2"
+if [info exists env(CXXFLAGS)] {
+    set CXXFLAGS $env(CXXFLAGS)
+} else {
+    set CXXFLAGS "-Wall -pedantic -Wno-long-long -O2"
+}
+
+puts "CXXFLAGS = $CXXFLAGS"
+exit
+
 set CXXTESTFLAGS "-O2"
 
 if {$tcl_platform(os) == "Darwin"} {
