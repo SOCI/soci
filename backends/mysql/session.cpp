@@ -10,6 +10,8 @@
 #include "soci-mysql.h"
 #include <cctype>
 #include <cerrno>
+#include <climits>
+#include <cstdlib>
 #include <ciso646>
 
 

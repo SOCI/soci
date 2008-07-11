@@ -9,6 +9,7 @@
 #define SOCI_MYSQL_COMMON_H_INCLUDED
 
 #include <sstream>
+#include <ctime>
 #include "soci-mysql.h"
 
 namespace soci
