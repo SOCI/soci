@@ -3,6 +3,12 @@ set libInstallPrefix "/usr/local/lib"
 set sociVersion "3.0.0"
 set sociMajor "3"
 
+if [info exists env(DESTDIR)] {
+    set DESTDIR $env(DESTDIR)
+    set headerInstallPrefix [file normalize ${DESTDIR}/${headerInstallPrefix}]
+    set libInstallPrefix [file normalize ${DESTDIR}/${libInstallPrefix}]
+}
+
 source "execute.tcl"
 source "local/parameters.tcl"
 
