@@ -5,7 +5,7 @@ SQLITE3INCLUDEDIR =
 
 # The rest of the Makefile is indepentent of the target environment.
 
-COMPILER = g++
+COMPILER = g++ -g
 CXXFLAGS = -Wall -pedantic -Wno-long-long
 CXXFLAGSSO = ${CXXFLAGS} -fPIC
 INCLUDEDIRS = -I../../core ${SQLITE3INCLUDEDIR}
@@ -22,6 +22,7 @@ OBJECTSSO = blob-s.o factory-s.o row-id-s.o session-s.o \
 
 libsoci_sqlite3.a : ${OBJECTS}
 	ar rv $@ $?
+	ranlib $@
 	rm *.o
 
 

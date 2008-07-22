@@ -84,66 +84,71 @@ sqlite3_statement_backend::loadRS(int totalRows)
 {
     statement_backend::exec_fetch_result retVal = ef_success;
     int numCols = -1;
-
-    // make the vector big enough to hold the data we need
-    dataCache_.resize(totalRows);
-
     int i = 0;
-    for (i = 0; i < totalRows; ++i)
+    
+    if (!databaseReady_)
     {
-        int res = sqlite3_step(stmt_);
-
-        if (SQLITE_DONE == res)
+        retVal = ef_no_data;
+    }
+    else
+    {
+        // make the vector big enough to hold the data we need
+        dataCache_.resize(totalRows);
+    
+        for (i = 0; i < totalRows && databaseReady_; ++i)
         {
-            databaseReady_ = false;
-            retVal = ef_no_data;
-
-            break;
-        }
-        else if (SQLITE_ROW == res)
-        {
-            // only need to set the number of columns once
-            if (-1 == numCols)
+            int res = sqlite3_step(stmt_);
+    
+            if (SQLITE_DONE == res)
             {
-                numCols = sqlite3_column_count(stmt_);
-
-                for (sqlite3_recordset::iterator it = dataCache_.begin();
-                    it != dataCache_.end(); ++it)
+                databaseReady_ = false;
+                retVal = ef_no_data;
+                break;
+            }
+            else if (SQLITE_ROW == res)
+            {
+                // only need to set the number of columns once
+                if (-1 == numCols)
                 {
-                    (*it).resize(numCols);
+                    numCols = sqlite3_column_count(stmt_);
+    
+                    for (sqlite3_recordset::iterator it = dataCache_.begin();
+                        it != dataCache_.end(); ++it)
+                    {
+                        (*it).resize(numCols);
+                    }
+                }
+                for (int c = 0; c < numCols; ++c)
+                {
+                    const char *buf =
+                    reinterpret_cast<const char*>(sqlite3_column_text(
+                                                      stmt_,
+                                                      c));
+                    bool isNull = false;
+    
+                    if (0 == buf)
+                    {
+                        isNull = true;
+                        buf = "";
+                    }
+    
+                    dataCache_[i][c].data_ = buf;
+                    dataCache_[i][c].isNull_ = isNull;
                 }
             }
-            for (int c = 0; c < numCols; ++c)
+            else
             {
-                const char *buf =
-                reinterpret_cast<const char*>(sqlite3_column_text(
-                                                  stmt_,
-                                                  c));
-                bool isNull = false;
-
-                if (0 == buf)
-                {
-                    isNull = true;
-                    buf = "";
-                }
-
-                dataCache_[i][c].data_ = buf;
-                dataCache_[i][c].isNull_ = isNull;
+                clean_up();
+    
+                const char *zErrMsg = sqlite3_errmsg(session_.conn_);
+    
+                std::ostringstream ss;
+                ss << "sqlite3_statement_backend::loadRS: "
+                   << zErrMsg;
+                throw soci_error(ss.str());
             }
-        }
-        else
-        {
-            clean_up();
-
-            const char *zErrMsg = sqlite3_errmsg(session_.conn_);
-
-            std::ostringstream ss;
-            ss << "sqlite3_statement_backend::loadRS: "
-               << zErrMsg;
-            throw soci_error(ss.str());
         }
     }
-
     // if we read less than requested then shrink the vector
     dataCache_.resize(i);
 
