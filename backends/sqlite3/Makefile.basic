@@ -5,7 +5,7 @@ SQLITE3INCLUDEDIR =
 
 # The rest of the Makefile is indepentent of the target environment.
 
-COMPILER = g++ -g
+COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
 CXXFLAGSSO = ${CXXFLAGS} -fPIC
 INCLUDEDIRS = -I../../core ${SQLITE3INCLUDEDIR}

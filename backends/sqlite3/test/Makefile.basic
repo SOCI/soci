@@ -1,15 +1,16 @@
 # The following variable is specific to this backend and its correct
 # values might depend on your environment - feel free to set it accordingly.
 
-SQLITE3INCLUDEDIR = -I/opt/local/include/boost-1_34_1/
+BOOSTINCLUDEDIR =
+SQLITE3INCLUDEDIR = 
 SQLITE3LIBDIR = -L/usr/lib
 SQLITE3LIBS = -lsqlite3
 
 # The rest of the Makefile is independent of the target environment.
 
-COMPILER = g++ -g
+COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
-INCLUDEDIRS = -I.. -I../../../core -I../../../core/test ${SQLITE3INCLUDEDIR}
+INCLUDEDIRS = -I.. -I../../../core -I../../../core/test ${SQLITE3INCLUDEDIR} ${BOOSTINCLUDEDIR}
 LIBDIRS = -L.. -L../../../core ${SQLITE3LIBDIR}
 LIBS = -lsoci_core -lsoci_sqlite3 -ldl ${SQLITE3LIBS}
 
