@@ -4,8 +4,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-
-
 #include "soci-sqlite3.h"
 
 #include <sstream>
@@ -85,7 +83,7 @@ sqlite3_statement_backend::loadRS(int totalRows)
     statement_backend::exec_fetch_result retVal = ef_success;
     int numCols = -1;
     int i = 0;
-    
+
     if (!databaseReady_)
     {
         retVal = ef_no_data;
@@ -94,11 +92,11 @@ sqlite3_statement_backend::loadRS(int totalRows)
     {
         // make the vector big enough to hold the data we need
         dataCache_.resize(totalRows);
-    
+
         for (i = 0; i < totalRows && databaseReady_; ++i)
         {
             int res = sqlite3_step(stmt_);
-    
+
             if (SQLITE_DONE == res)
             {
                 databaseReady_ = false;
@@ -111,7 +109,6 @@ sqlite3_statement_backend::loadRS(int totalRows)
                 if (-1 == numCols)
                 {
                     numCols = sqlite3_column_count(stmt_);
-    
                     for (sqlite3_recordset::iterator it = dataCache_.begin();
                         it != dataCache_.end(); ++it)
                     {
@@ -125,13 +122,11 @@ sqlite3_statement_backend::loadRS(int totalRows)
                                                       stmt_,
                                                       c));
                     bool isNull = false;
-    
                     if (0 == buf)
                     {
                         isNull = true;
                         buf = "";
                     }
-    
                     dataCache_[i][c].data_ = buf;
                     dataCache_[i][c].isNull_ = isNull;
                 }
@@ -139,9 +134,7 @@ sqlite3_statement_backend::loadRS(int totalRows)
             else
             {
                 clean_up();
-    
                 const char *zErrMsg = sqlite3_errmsg(session_.conn_);
-    
                 std::ostringstream ss;
                 ss << "sqlite3_statement_backend::loadRS: "
                    << zErrMsg;
