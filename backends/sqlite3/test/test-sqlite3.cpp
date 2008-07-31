@@ -179,6 +179,63 @@ void test4()
     std::cout << "test 4 passed" << std::endl;
 }
 
+struct longlong_table_creator : table_creator_base
+{
+    longlong_table_creator(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val number(20))";
+    }
+};
+
+// long long test
+void test5()
+{
+    {
+        session sql(backEnd, connectString);
+
+        longlong_table_creator tableCreator(sql);
+
+        long long v1 = 1000000000000LL;
+        assert(v1 / 1000000 == 1000000);
+
+        sql << "insert into soci_test(val) values(:val)", use(v1);
+
+        long long v2 = 0LL;
+        sql << "select val from soci_test", into(v2);
+
+        assert(v2 == v1);
+    }
+
+    // vector<long long>
+    {
+        session sql(backEnd, connectString);
+
+        longlong_table_creator tableCreator(sql);
+
+        std::vector<long long> v1;
+        v1.push_back(1000000000000LL);
+        v1.push_back(1000000000001LL);
+        v1.push_back(1000000000002LL);
+        v1.push_back(1000000000003LL);
+        v1.push_back(1000000000004LL);
+
+        sql << "insert into soci_test(val) values(:val)", use(v1);
+
+        std::vector<long long> v2(10);
+        sql << "select val from soci_test order by val desc", into(v2);
+
+        assert(v2.size() == 5);
+        assert(v2[0] == 1000000000004LL);
+        assert(v2[1] == 1000000000003LL);
+        assert(v2[2] == 1000000000002LL);
+        assert(v2[3] == 1000000000001LL);
+        assert(v2[4] == 1000000000000LL);
+    }
+
+    std::cout << "test 5 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct TableCreator1 : public table_creator_base
 {
@@ -279,6 +336,7 @@ int main(int argc, char** argv)
         test2();
         test3();
         test4();
+        test5();
 
         std::cout << "\nOK, all tests passed.\n\n";
     }
