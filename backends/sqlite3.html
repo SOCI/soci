@@ -157,8 +157,7 @@ sql &lt;&lt; "insert into t(x, y) values(?, ?)", use(i), use(j);
 
 <h4 id="blob">BLOB Data Type</h4>
 
-<p>The SQLite3 does not currently support working with the BLOB type.</p>
-
+<p>The SQLite3 backend supports working with data stored in columns of type Blob, via SOCI's blob class.  Because of SQLite3 general typelessness the column does not have to be declared any particular type.</p>
 <h4 id="rowid">RowID Data Type</h4>
 
 <p>In SQLite3 RowID is an integer.  "Each entry in an SQLite table has a unique integer key called the "rowid". The rowid is always available as an undeclared column named ROWID, OID, or _ROWID_. If the table has a column of type INTEGER PRIMARY KEY then that column is another an alias for the rowid."<a href="http://www.sqlite.org/capi3ref.html#sqlite3_last_insert_rowid">[2]</a></p>
