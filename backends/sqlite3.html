@@ -68,14 +68,7 @@
 using the <code>SQLite3</code> backend factory together with the database file name:</p>
 
 <pre class="example">
-BackEndFactory const &amp;backEnd = SQLite3;
-Session sql(backEnd, "database_filename");
-</pre>
-
-<p>or simply:</p>
-
-<pre class="example">
-Session sql(SQLite3, "database_filename");
+session sql(sqlite3, "database_filename");
 </pre>
 
 <p>The only option for the connection string is the name of the file to use as a database.</p>
