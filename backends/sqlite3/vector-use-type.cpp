@@ -10,6 +10,7 @@
 #include "common.h"
 #include <limits>
 #include <sstream>
+#include <cstring>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355 4996)

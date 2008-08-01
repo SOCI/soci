@@ -9,6 +9,7 @@
 #define SOCI_SQLITE3_COMMON_H_INCLUDED
 
 #include <vector>
+#include <ctime>
 
 namespace soci
 {
