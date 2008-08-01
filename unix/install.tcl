@@ -3,14 +3,14 @@ set libInstallPrefix "/usr/local/lib"
 set sociVersion "3.0.0"
 set sociMajor "3"
 
+source "execute.tcl"
+source "local/parameters.tcl"
+
 if [info exists env(DESTDIR)] {
     set DESTDIR $env(DESTDIR)
     set headerInstallPrefix [file normalize ${DESTDIR}/${headerInstallPrefix}]
     set libInstallPrefix [file normalize ${DESTDIR}/${libInstallPrefix}]
 }
-
-source "execute.tcl"
-source "local/parameters.tcl"
 
 set uninstallFile [open "local/uninstall.sh" "w"]
 
