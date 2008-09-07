@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <cassert>
+#include <cstdlib>
 #include <ctime>
 
 using namespace soci;

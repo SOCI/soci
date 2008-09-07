@@ -9,6 +9,7 @@
 #include "soci-backend.h"
 #include <ciso646>
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
 
 namespace // anonymous
