@@ -287,6 +287,21 @@ void test4()
     std::cout << "test 4 passed" << std::endl;
 }
 
+void test5()
+{
+    session sql(backEnd, connectString);
+    std::tm t;
+    sql << "select maketime(19, 54, 52)", into(t);
+    assert(t.tm_year == 100);
+    assert(t.tm_mon == 0);
+    assert(t.tm_mday == 1);
+    assert(t.tm_hour == 19);
+    assert(t.tm_min == 54);
+    assert(t.tm_sec == 52);
+
+    std::cout << "test 5 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -393,6 +408,7 @@ int main(int argc, char** argv)
         test2();
         test3();
         test4();
+        test5();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;

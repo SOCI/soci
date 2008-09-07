@@ -41,11 +41,21 @@ void soci::details::mysql::parse_std_tm(char const *buf, std::tm &t)
 
     const char *errMsg = "Cannot convert data to std::tm.";
 
-    year  = parse10(p1, p2, errMsg);
-    month = parse10(p1, p2, errMsg);
-    day   = parse10(p1, p2, errMsg);
+    if (strchr(buf, '-') != NULL)
+    {
+      year  = parse10(p1, p2, errMsg);
+      month = parse10(p1, p2, errMsg);
+      day   = parse10(p1, p2, errMsg);
+    }
+    else
+    {
+      year  = 2000;
+      month = 1;
+      day   = 1;
+    }
 
-    if (*p2 != '\0')
+
+    if (strchr(buf, ':') != NULL)
     {
         // there is also the time of day available
         hour   = parse10(p1, p2, errMsg);
