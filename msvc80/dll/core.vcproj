@@ -178,7 +178,15 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\..\src\core\backend-loader.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\core\blob.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\connection-pool.cpp"
 				>
 			</File>
 			<File
@@ -226,6 +234,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\core\transaction.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\core\use-type.cpp"
 				>
 			</File>
@@ -240,6 +252,10 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\..\..\src\core\backend-loader.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\core\blob-exchange.h"
 				>
 			</File>
@@ -248,7 +264,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\core\boost-optional.h"
+				RelativePath="..\..\..\src\core\connection-pool.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\error.h"
 				>
 			</File>
 			<File
@@ -325,6 +345,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\core\statement.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\transaction.h"
 				>
 			</File>
 			<File
