@@ -137,30 +137,6 @@ public:
             static_cast<exchange_type>(exchange_traits<T>::x_type), ind) {}
 };
 
-// special cases for char* and char[]
-
-template <>
-class into_type<char *> : public standard_into_type
-{
-public:
-    into_type(char * str, std::size_t bufSize)
-        : standard_into_type(&str_, x_cstring), str_(str, bufSize) {}
-    into_type(char * str, indicator & ind, std::size_t bufSize)
-        : standard_into_type(&str_, x_cstring, ind), str_(str, bufSize) {}
-
-private:
-    cstring_descriptor str_;
-};
-
-template <std::size_t N>
-class into_type<char[N]> : public into_type<char *>
-{
-public:
-    into_type(char str[]) : into_type<char *>(str, N) {}
-    into_type(char str[], indicator & ind)
-        : into_type<char *>(str, ind, N) {}
-};
-
 // helper dispatchers for basic types
 
 template <typename T>

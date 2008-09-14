@@ -150,9 +150,6 @@ void oracle_vector_into_type_backend::define_by_pos(
         }
         break;
 
-    case x_cstring:   break; // not supported
-                             // (there is no specialization
-                             // of IntoType<vector<char*> >)
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
@@ -355,7 +352,6 @@ void oracle_vector_into_type_backend::resize(std::size_t sz)
         }
         break;
 
-    case x_cstring:   break; // not supported
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
@@ -422,7 +418,6 @@ std::size_t oracle_vector_into_type_backend::size()
         }
         break;
 
-    case x_cstring:   break; // not supported
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported

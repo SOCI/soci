@@ -33,7 +33,7 @@ namespace details
 // data types, as used to describe exchange format
 enum exchange_type
 {
-    x_char, x_cstring, x_stdstring, x_short, x_integer,
+    x_char, x_stdstring, x_short, x_integer,
     x_unsigned_long, x_long_long, x_double, x_stdtm, x_statement,
     x_rowid, x_blob
 };
@@ -180,17 +180,6 @@ public:
     virtual statement_backend * make_statement_backend() = 0;
     virtual rowid_backend * make_rowid_backend() = 0;
     virtual blob_backend * make_blob_backend() = 0;
-};
-
-
-// helper class used to keep pointer and buffer size as a single object
-struct cstring_descriptor
-{
-    cstring_descriptor(char * str, std::size_t bufSize)
-        : str_(str), bufSize_(bufSize) {}
-
-    char * str_;
-    std::size_t bufSize_;
 };
 
 } // namespace details

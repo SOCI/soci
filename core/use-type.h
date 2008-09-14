@@ -160,47 +160,6 @@ public:
             ind, name) {}
 };
 
-// special cases for char* and char[]
-
-template <>
-class use_type<char *> : public standard_use_type
-{
-public:
-    use_type(char * str, std::size_t bufSize,
-        std::string const & name = std::string())
-        : standard_use_type(&str_, x_cstring, false, name), str_(str, bufSize) {}
-    use_type(char const * str, std::size_t bufSize,
-        std::string const & name = std::string())
-        : standard_use_type(&str_, x_cstring, true, name),
-        str_(const_cast<char *>(str), bufSize) {}
-    use_type(char * str, indicator & ind, std::size_t bufSize,
-        std::string const & name = std::string())
-        : standard_use_type(&str_, x_cstring, ind, false, name), str_(str, bufSize) {}
-    use_type(char const * str, indicator & ind, std::size_t bufSize,
-        std::string const & name = std::string())
-        : standard_use_type(&str_, x_cstring, ind, true, name),
-        str_(const_cast<char *>(str), bufSize) {}
-
-private:
-    cstring_descriptor str_;
-};
-
-template <std::size_t N>
-class use_type<char[N]> : public use_type<char *>
-{
-public:
-    use_type(char str[], std::string const & name = std::string())
-        : use_type<char *>(str, N, name) {}
-    use_type(char const str[], std::string const & name = std::string())
-        : use_type<char *>(str, N, name) {}
-    use_type(char str[], indicator & ind,
-        std::string const & name = std::string())
-        : use_type<char *>(str, ind, N, name) {}
-    use_type(char const str[], indicator & ind,
-        std::string const & name = std::string())
-        : use_type<char *>(str, ind, N, name) {}
-};
-
 // helper dispatchers for basic types
 
 template <typename T>

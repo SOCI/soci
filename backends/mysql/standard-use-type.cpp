@@ -57,14 +57,6 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 buf_ = quote(statement_.session_.conn_, buf, 1);
             }
             break;
-        case x_cstring:
-            {
-                cstring_descriptor *strDescr
-                    = static_cast<cstring_descriptor *>(data_);
-                buf_ = quote(statement_.session_.conn_, strDescr->str_,
-                             std::strlen(strDescr->str_));
-            }
-            break;
         case x_stdstring:
             {
                 std::string *s = static_cast<std::string *>(data_);

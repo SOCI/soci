@@ -80,18 +80,6 @@ struct exchange_traits<double>
 };
 
 template <>
-struct exchange_traits<char *>
-{
-    typedef basic_type_tag type_family;
-};
-
-template <std::size_t N>
-struct exchange_traits<char[N]>
-{
-    typedef basic_type_tag type_family;
-};
-
-template <>
 struct exchange_traits<std::string>
 {
     typedef basic_type_tag type_family;

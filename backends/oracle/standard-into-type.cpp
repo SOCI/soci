@@ -90,15 +90,6 @@ void oracle_standard_into_type_backend::define_by_pos(
         buf_ = new char[size];
         data = buf_;
         break;
-    case x_cstring:
-        {
-            details::cstring_descriptor *desc
-                = static_cast<cstring_descriptor *>(data);
-            oracleType = SQLT_STR;
-            data = desc->str_;
-            size = static_cast<sb4>(desc->bufSize_);
-        }
-        break;
     case x_stdstring:
         oracleType = SQLT_STR;
         size = 32769;  // support selecting strings from LONG columns

@@ -87,24 +87,6 @@ void oracle_standard_use_type_backend::prepare_for_bind(
         buf_ = new char[size];
         data = buf_;
         break;
-    case x_cstring:
-        {
-            details::cstring_descriptor *desc
-                = static_cast<cstring_descriptor *>(data);
-            oracleType = SQLT_STR;
-            size = static_cast<sb4>(desc->bufSize_);
-
-            if (readOnly_)
-            {
-                buf_ = new char[size];
-                data = buf_;
-            }
-            else
-            {
-                data = desc->str_;
-            }
-        }
-        break;
     case x_stdstring:
         oracleType = SQLT_STR;
         // 4000 is Oracle max VARCHAR2 size; 32768 is max LONG size
@@ -264,15 +246,6 @@ void oracle_standard_use_type_backend::pre_use(indicator const *ind)
             *static_cast<double *>(static_cast<void *>(buf_)) = *static_cast<double *>(data_);
         }
         break;
-    case x_cstring:
-        if (readOnly_)
-        {
-            details::cstring_descriptor *desc
-                = static_cast<cstring_descriptor *>(data_);
-
-            strcpy(buf_, desc->str_);
-        }
-        break;
     case x_stdstring:
         {
             std::string *s = static_cast<std::string *>(data_);
@@ -405,21 +378,6 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
                 const double bound = *static_cast<double *>(static_cast<void *>(buf_));
 
                 if (original != bound)
-                {
-                    throw soci_error("Attempted modification of const use element");
-                }
-            }
-            break;
-        case x_cstring:
-            if (readOnly_)
-            {
-                details::cstring_descriptor *original_descr
-                    = static_cast<cstring_descriptor *>(data_);
-
-                char * original = original_descr->str_;
-                char * bound = buf_;
-
-                if (strcmp(original, bound) != 0)
                 {
                     throw soci_error("Attempted modification of const use element");
                 }

@@ -343,34 +343,6 @@ void test2()
         {
             auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
-            std::string abc("ABC");
-            sql << "insert into soci_test(str) values(:s)", use(abc);
-
-            char buf[4];
-            sql << "select str from soci_test", into(buf);
-            assert(buf[0] == 'A');
-            assert(buf[1] == 'B');
-            assert(buf[2] == 'C');
-            assert(buf[3] == '\0');
-        }
-
-        {
-            auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
-            std::string hello("Hello");
-            sql << "insert into soci_test(str) values(:s)", use(hello);
-
-            char buf[4];
-            sql << "select str from soci_test", into(buf);
-            assert(buf[0] == 'H');
-            assert(buf[1] == 'e');
-            assert(buf[2] == 'l');
-            assert(buf[3] == '\0');
-        }
-
-        {
-            auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
             std::string helloSOCI("Hello, SOCI!");
             sql << "insert into soci_test(str) values(:s)", use(helloSOCI);
             std::string str;
@@ -476,10 +448,6 @@ void test2()
             indicator ind;
             sql << "select id from soci_test", into(i, ind);
             assert(ind == i_ok);
-
-            char buf[4];
-            sql << "select str from soci_test", into(buf, ind);
-            assert(ind == i_truncated);
         }
 
         // more indicator tests, NULL values
@@ -1127,19 +1095,6 @@ void test6()
 
         }
 
-        // test for char[]
-        {
-            auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
-            char s[] = "Hello";
-            sql << "insert into soci_test(str) values(:s)", use(s);
-
-            std::string str;
-            sql << "select str from soci_test", into(str);
-
-            assert(str == "Hello");
-        }
-
         // test for std::string
         {
             auto_table_creator tableCreator(tc_.table_creator_1(sql));
@@ -1265,19 +1220,6 @@ void test6()
             sql << "select c from soci_test", into(c2);
             assert(c2 == 'a');
 
-        }
-
-        // test for char[]
-        {
-            auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
-            char const s[] = "Hello const!";
-            sql << "insert into soci_test(str) values(:s)", use(s);
-
-            std::string str;
-            sql << "select str from soci_test", into(str);
-
-            assert(str == "Hello const!");
         }
 
         // test for std::string

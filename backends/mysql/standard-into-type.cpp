@@ -77,20 +77,6 @@ void mysql_standard_into_type_backend::post_fetch(
                 *dest = *buf;
             }
             break;
-        case x_cstring:
-            {
-                cstring_descriptor *strDescr
-                    = static_cast<cstring_descriptor *>(data_);
-
-                std::strncpy(strDescr->str_, buf, strDescr->bufSize_ - 1);
-                strDescr->str_[strDescr->bufSize_ - 1] = '\0';
-
-                if (std::strlen(buf) >= strDescr->bufSize_ && ind != NULL)
-                {
-                    *ind = i_truncated;
-                }
-            }
-            break;
         case x_stdstring:
             {
                 std::string *dest = static_cast<std::string *>(data_);
