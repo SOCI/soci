@@ -91,15 +91,6 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
             buf_[1] = '\0';
         }
         break;
-        case x_cstring:
-        {
-            cstring_descriptor *strDescr = static_cast<cstring_descriptor *>(data_);
-
-            std::size_t len = std::strlen(strDescr->str_);
-            buf_ = new char[len + 1];
-            std::strcpy(buf_, strDescr->str_);
-        }
-        break;
         case x_stdstring:
         {
             std::string *s = static_cast<std::string *>(data_);
