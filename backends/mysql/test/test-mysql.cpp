@@ -302,6 +302,120 @@ void test5()
     std::cout << "test 5 passed" << std::endl;
 }
 
+// TEXT and BLOB types support test.
+void test6()
+{
+    session sql(backEnd, connectString);
+    std::string a("asdfg\0hjkl", 10);
+    std::string b("lkjhg\0fd\0\0sa\0", 13);
+    std::string c("\\0aa\\0bb\\0cc\\0", 10);
+    // The maximum length for TEXT and BLOB is 65536.
+    std::string x(60000, 'X');
+    std::string y(60000, 'Y');
+    // The default max_allowed_packet value for a MySQL server is 1M,
+    // so let's limit ourselves to 800k, even though the maximum length
+    // for LONGBLOB is 4G.
+    std::string z(800000, 'Z');
+
+    sql << "create table soci_test (id int, text_value text, "
+        "blob_value blob, longblob_value longblob)";
+    sql << "insert into soci_test values (1, \'foo\', \'bar\', \'baz\')";
+    sql << "insert into soci_test "
+        << "values (2, \'qwerty\\0uiop\', \'zxcv\\0bnm\', "
+        << "\'qwerty\\0uiop\\0zxcvbnm\\0\')";
+    sql << "insert into soci_test values (3, :a, :b, :c)",
+           use(a), use(b), use(c);
+    sql << "insert into soci_test values (4, :x, :y, :z)",
+           use(x), use(y), use(z);
+
+    std::vector<std::string> text_vec(100);
+    std::vector<std::string> blob_vec(100);
+    std::vector<std::string> longblob_vec(100);
+    sql << "select text_value, blob_value, longblob_value "
+        << "from soci_test order by id",
+           into(text_vec), into(blob_vec), into(longblob_vec);
+    assert(text_vec.size() == 4);
+    assert(blob_vec.size() == 4);
+    assert(longblob_vec.size() == 4);
+    assert(text_vec[0] == "foo");
+    assert(blob_vec[0] == "bar");
+    assert(longblob_vec[0] == "baz");
+    assert(text_vec[1] == std::string("qwerty\0uiop", 11));
+    assert(blob_vec[1] == std::string("zxcv\0bnm", 8));
+    assert(longblob_vec[1] == std::string("qwerty\0uiop\0zxcvbnm\0", 20));
+    assert(text_vec[2] == a);
+    assert(blob_vec[2] == b);
+    assert(longblob_vec[2] == c);
+    assert(text_vec[3] == x);
+    assert(blob_vec[3] == y);
+    assert(longblob_vec[3] == z);
+
+    std::string text, blob, longblob;
+    sql << "select text_value, blob_value, longblob_value "
+        << "from soci_test where id = 1",
+           into(text), into(blob), into(longblob);
+    assert(text == "foo");
+    assert(blob == "bar");
+    assert(longblob == "baz");
+    sql << "select text_value, blob_value, longblob_value "
+        << "from soci_test where id = 2",
+           into(text), into(blob), into(longblob);
+    assert(text == std::string("qwerty\0uiop", 11));
+    assert(blob == std::string("zxcv\0bnm", 8));
+    assert(longblob == std::string("qwerty\0uiop\0zxcvbnm\0", 20));
+    sql << "select text_value, blob_value, longblob_value "
+        << "from soci_test where id = 3",
+           into(text), into(blob), into(longblob);
+    assert(text == a);
+    assert(blob == b);
+    assert(longblob == c);
+    sql << "select text_value, blob_value, longblob_value "
+        << "from soci_test where id = 4",
+           into(text), into(blob), into(longblob);
+    assert(text == x);
+    assert(blob == y);
+    assert(longblob == z);
+
+    rowset<row> rs =
+        (sql.prepare << "select text_value, blob_value, longblob_value "
+                        "from soci_test order by id");
+    rowset<row>::const_iterator r = rs.begin();
+    assert(r->get_properties(0).get_data_type() == dt_string);
+    assert(r->get<std::string>(0) == "foo");
+    assert(r->get_properties(1).get_data_type() == dt_string);
+    assert(r->get<std::string>(1) == "bar");
+    assert(r->get_properties(2).get_data_type() == dt_string);
+    assert(r->get<std::string>(2) == "baz");
+    ++r;
+    assert(r->get_properties(0).get_data_type() == dt_string);
+    assert(r->get<std::string>(0) == std::string("qwerty\0uiop", 11));
+    assert(r->get_properties(1).get_data_type() == dt_string);
+    assert(r->get<std::string>(1) == std::string("zxcv\0bnm", 8));
+    assert(r->get_properties(2).get_data_type() == dt_string);
+    assert(r->get<std::string>(2) ==
+           std::string("qwerty\0uiop\0zxcvbnm\0", 20));
+    ++r;
+    assert(r->get_properties(0).get_data_type() == dt_string);
+    assert(r->get<std::string>(0) == a);
+    assert(r->get_properties(1).get_data_type() == dt_string);
+    assert(r->get<std::string>(1) == b);
+    assert(r->get_properties(2).get_data_type() == dt_string);
+    assert(r->get<std::string>(2) == c);
+    ++r;
+    assert(r->get_properties(0).get_data_type() == dt_string);
+    assert(r->get<std::string>(0) == x);
+    assert(r->get_properties(1).get_data_type() == dt_string);
+    assert(r->get<std::string>(1) == y);
+    assert(r->get_properties(2).get_data_type() == dt_string);
+    assert(r->get<std::string>(2) == z);
+    ++r;
+    assert(r == rs.end());
+
+    sql << "drop table soci_test";
+
+    std::cout << "test 6 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -409,6 +523,7 @@ int main(int argc, char** argv)
         test3();
         test4();
         test5();
+        test6();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;

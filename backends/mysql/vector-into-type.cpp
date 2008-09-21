@@ -97,7 +97,17 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                 set_invector_(data_, i, *buf);
                 break;
             case x_stdstring:
-                set_invector_<std::string>(data_, i, buf);
+                {
+                    unsigned long * lengths =
+                        mysql_fetch_lengths(statement_.result_);
+                    // Not sure if it's necessary, but the code below is used
+                    // instead of
+                    // set_invector_(data_, i, std::string(buf, lengths[pos]);
+                    // to avoid copying the (possibly large) temporary string.
+                    std::vector<std::string> *dest =
+                        static_cast<std::vector<std::string> *>(data_);
+                    (*dest)[i].assign(buf, lengths[pos]);
+                }
                 break;
             case x_short:
                 {

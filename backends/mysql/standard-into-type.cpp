@@ -80,17 +80,9 @@ void mysql_standard_into_type_backend::post_fetch(
         case x_stdstring:
             {
                 std::string *dest = static_cast<std::string *>(data_);
-
-                MYSQL_FIELD* field = mysql_fetch_field_direct(statement_.result_, pos);
-                assert(0 != field);
-                if (MYSQL_TYPE_BLOB == field->type)
-                {
-                    dest->assign(buf, field->max_length);
-                }
-                else
-                {
-                    dest->assign(buf);
-                }
+                unsigned long * lengths =
+                    mysql_fetch_lengths(statement_.result_);
+                dest->assign(buf, lengths[pos]);
             }
             break;
         case x_short:
