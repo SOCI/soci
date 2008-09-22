@@ -2314,15 +2314,14 @@ void test18()
     {
         // Open empty rowset
         rowset<row> rs1 = (sql.prepare << "select * from soci_test");
-        assert(rs1.empty());
+        assert(rs1.begin() == rs1.end());
+    }
 
+    {
         // Copy construction
+        rowset<row> rs1 = (sql.prepare << "select * from soci_test");
         rowset<row> rs2(rs1);
-        assert(rs2.empty());
-
-        // Copy by assignment
-        rowset<row> rs3 = rs1;
-        assert(rs3.empty());
+        assert(rs2.begin() == rs2.end());
     }
 
     std::cout << "test 18 passed" << std::endl;
