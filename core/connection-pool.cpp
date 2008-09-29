@@ -245,7 +245,7 @@ connection_pool::~connection_pool()
     }
 
     DeleteCriticalSection(&(pimpl_->mtx_));
-    CloseHandle(&(pimpl_->sem_));
+    CloseHandle(pimpl_->sem_);
 
     delete pimpl_;
 }
@@ -273,7 +273,7 @@ std::size_t connection_pool::lease()
 
 bool connection_pool::try_lease(std::size_t & pos, int timeout)
 {
-    DWORD cc = WaitForSingleObject(&(pimpl_->sem_),
+    DWORD cc = WaitForSingleObject(pimpl_->sem_,
         timeout >= 0 ? static_cast<DWORD>(timeout) : INFINITE);
     if (cc == WAIT_OBJECT_0)
     {
@@ -319,7 +319,7 @@ void connection_pool::give_back(std::size_t pos)
 
     LeaveCriticalSection(&(pimpl_->mtx_));
 
-    ReleaseSemaphore(&(pimpl_->sem_), 1, NULL);
+    ReleaseSemaphore(pimpl_->sem_, 1, NULL);
 }
 
 #endif // _WIN32
