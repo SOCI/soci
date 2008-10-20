@@ -394,6 +394,21 @@ void test8()
     std::cout << "test 8 passed" << std::endl;
 }
 
+// test for double-colon cast in SQL expressions
+void test9()
+{
+    {
+        session sql(backEnd, connectString);
+
+        int a = 123;
+        int b = 0;
+        sql << "select :a::integer", use(a), into(b);
+        assert(b == a);
+    }
+
+    std::cout << "test 9 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -505,6 +520,7 @@ int main(int argc, char** argv)
 
         test7();
         test8();
+        test9();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;

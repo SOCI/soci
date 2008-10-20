@@ -75,7 +75,18 @@ void postgresql_statement_backend::prepare(std::string const & query,
             }
             else if (*it == ':')
             {
-                state = in_name;
+                // Check whether this is a cast operator (e.g. 23::float)
+                // and treat it as a special case, not as a named binding
+                const std::string::const_iterator next_it = it + 1;
+                if ((next_it != end) && (*next_it == ':'))
+                {
+                    query_ += "::";
+                    ++it;
+                }
+                else
+                {
+                    state = in_name;
+                }
             }
             else // regular character, stay in the same state
             {
@@ -107,6 +118,20 @@ void postgresql_statement_backend::prepare(std::string const & query,
                 query_ += ss.str();
                 query_ += *it;
                 state = normal;
+
+                // Check whether the named parameter is immediatelly
+                // followed by a cast operator (e.g. :name::float)
+                // and handle the additional colon immediately to avoid
+                // its misinterpretation later on.
+                if (*it == ':')
+                {
+                    const std::string::const_iterator next_it = it + 1;
+                    if ((next_it != end) && (*next_it == ':'))
+                    {
+                        query_ += ':';
+                        ++it;
+                    }
+                }
             }
             break;
         }
