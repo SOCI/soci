@@ -249,7 +249,7 @@ mysql_session_backend::mysql_session_backend(
             db_p ? db.c_str() : NULL,
             port_p ? port : 0,
             unix_socket_p ? unix_socket.c_str() : NULL,
-            0) == NULL)
+            CLIENT_MULTI_RESULTS) == NULL)
     {
         string errMsg = mysql_error(conn_);
         unsigned int errNum = mysql_errno(conn_);
