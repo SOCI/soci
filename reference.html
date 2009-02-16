@@ -15,6 +15,7 @@
 <a href="#commontypes">commonly used types</a><br />
 <a href="#session">class session</a><br />
 <a href="#pool">class connection_pool</a><br />
+<a href="#transaction">class transaction</a><br />
 <a href="#into">function into</a><br />
 <a href="#use">function use</a><br />
 <a href="#statement">class statement</a><br />
@@ -223,6 +224,32 @@ public:
 </ul>
 <p>Note: calls to <code>lease</code> and <code>give_back</code> are automated by the
 dedicated constructor of the <code>session</code> class, see above.</p>
+
+<h3 id="transaction">class transaction</h3>
+
+<p>The class <code>transaction</code> can be used for associating the transaction
+with some code scope. It is a RAII wrapper for regular transaction operations that
+automatically rolls back in its destructor <i>if</i> the transaction was not explicitly
+committed before.</p>
+<pre class="example">
+class transaction
+{
+public:
+    explicit transaction(session & sql);
+
+    ~transaction();
+
+    void commit();
+    void rollback();
+
+private:
+    // ...
+};
+</pre>
+
+<p>Note that objects of this class are not notified of other transaction related operations
+that might be executed by user code explicitly or hidden inside SQL queries.
+It is not recommended to mix different ways of managing transactions.</p>
 
 <h3 id="into">function into</h3>
 
