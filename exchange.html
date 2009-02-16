@@ -372,6 +372,8 @@ following <code>std::vector</code> based into and use types:
 the size of the vector used to specify the number of records to process
 at a time. See below for examples.</p>
 
+<p>Note that bulk operations are supported only for <code>std::vector</code>s of the types listed above.</p>
+
 <h4 id="dynamic">Dynamic resultset binding</h4>
 
 <p>For certain applications it is desirable to be able to select data from
@@ -577,6 +579,8 @@ cout &lt;&lt; "We have " &lt;&lt; i.get() &lt;&lt; " persons in the database.\n"
 </pre>
 
 <p>Note that there is a number of types from the Boost library integrated with SOCI out of the box, see <a href="boost.html">Integration with Boost</a> for complete description. Use these as examples of conversions for more complext data types.</p>
+
+<p>Note also that user-defined datatypes are not supported with <a href="#static_bulk">bulk data transfer</a>.</p>
 
 <p>Another possibility to extend SOCI with custom data types is to use
 the <code>into_type&lt;T&gt;</code> and <code>use_type&lt;T&gt;</code>
