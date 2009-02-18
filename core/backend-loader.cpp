@@ -197,7 +197,7 @@ void do_register_backend(
     typedef backend_factory const * bfc_ptr;
     typedef bfc_ptr (*get_t)(void);
     get_t entry;
-    entry = reinterpret_cast<get_t>(reinterpret_cast<long>(DLSYM(h, symbol.c_str())));
+    entry = reinterpret_cast<get_t>(reinterpret_cast<uintptr_t>(DLSYM(h, symbol.c_str())));
 
     if (entry == NULL)
     {
