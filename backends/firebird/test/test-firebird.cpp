@@ -1069,50 +1069,50 @@ void test11()
 // Support for soci Common Tests
 //
 
-struct TableCreator1 : public tests::table_creator_base
+struct table_creator_1 : public tests::table_creator_base
 {
-    TableCreator1(session& session)
-            : tests::table_creator_base(session)
+    table_creator_1(session & sql)
+            : tests::table_creator_base(sql)
     {
-        session << "create table soci_test(id integer, val integer, c char, "
+        sql << "create table soci_test(id integer, val integer, c char, "
         "str varchar(20), sh smallint, ul decimal(9,0), d double precision, "
         "tm timestamp, i1 integer, i2 integer, i3 integer, name varchar(20))";
-        session.commit();
-        session.begin();
+        sql.commit();
+        sql.begin();
     }
 };
 
-struct TableCreator2 : public tests::table_creator_base
+struct table_creator_2 : public tests::table_creator_base
 {
-    TableCreator2(session& session)
-            : tests::table_creator_base(session)
+    table_creator_2(session & sql)
+            : tests::table_creator_base(sql)
     {
-        session  << "create table soci_test(\"num_float\" float, \"num_int\" integer, "
+        sql  << "create table soci_test(\"num_float\" float, \"num_int\" integer, "
         "\"name\" varchar(20), \"sometime\" timestamp, \"chr\" char)";
-        session.commit();
-        session.begin();
+        sql.commit();
+        sql.begin();
     }
 };
 
-struct TableCreator3 : public tests::table_creator_base
+struct table_creator_3 : public tests::table_creator_base
 {
-    TableCreator3(session& session)
-            : tests::table_creator_base(session)
+    table_creator_3(session & sql)
+            : tests::table_creator_base(sql)
     {
         // CommonTest uses lower-case column names,
         // so we need to enforce such names here.
         // That's why column names are enclosed in ""
-        session << "create table soci_test(\"name\" varchar(100) not null, "
+        sql << "create table soci_test(\"name\" varchar(100) not null, "
         "\"phone\" varchar(15))";
-        session.commit();
-        session.begin();
+        sql.commit();
+        sql.begin();
     }
 };
 
-class TestContext : public tests::test_context_base
+class test_context : public tests::test_context_base
 {
     public:
-        TestContext(backend_factory const &backEnd,
+        test_context(backend_factory const &backEnd,
                     std::string const &connectString)
                 : test_context_base(backEnd, connectString)
         {}
@@ -1169,7 +1169,7 @@ int main(int argc, char** argv)
 
     try
     {
-        TestContext tc(backEnd, connectString);
+        test_context tc(backEnd, connectString);
         tests::common_tests tests(tc);
         tests.run();
 

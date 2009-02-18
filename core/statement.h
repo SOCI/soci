@@ -256,6 +256,6 @@ public:
 
 } // namespace details
 
-} // namespace SOCI
+} // namespace soci
 
 #endif // SOCI_STATEMENT_H_INCLUDED

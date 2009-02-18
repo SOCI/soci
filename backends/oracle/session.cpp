@@ -152,7 +152,7 @@ oracle_session_backend::~oracle_session_backend()
 void oracle_session_backend::begin()
 {
     // This code is commented out because it causes one of the transaction
-    // tests in CommonTests::test10() to fail with error 'Invalid handle'
+    // tests in common_tests::test10() to fail with error 'Invalid handle'
     // With the code commented out, all tests pass.
     //    sword res = OCITransStart(svchp_, errhp_, 0, OCI_TRANS_NEW);
     //    if (res != OCI_SUCCESS)

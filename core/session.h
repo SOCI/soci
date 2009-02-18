@@ -109,6 +109,6 @@ private:
     connection_pool * pool_;
 };
 
-} // namespace SOCI
+} // namespace soci
 
 #endif // SOCI_SESSION_H_INCLUDED

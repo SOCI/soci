@@ -38,10 +38,10 @@ void resizeVector(void *p, std::size_t sz)
     v->resize(sz);
 }
 
-} // namespace Sqlite3
+} // namespace sqlite3
 
 } // namespace details
 
-} // namespace SOCI
+} // namespace soci
 
 #endif // SOCI_SQLITE3_COMMON_H_INCLUDED

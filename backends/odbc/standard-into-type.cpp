@@ -30,14 +30,6 @@ void odbc_standard_into_type_backend::define_by_pos(
         buf_ = new char[size];
         data = buf_;
         break;
-    case x_cstring:
-    {
-        details::cstring_descriptor *desc = static_cast<cstring_descriptor *>(data);
-        odbcType_ = SQL_C_CHAR;
-        data = desc->str_;
-        size = static_cast<SQLINTEGER>(desc->bufSize_);
-    }
-    break;
     case x_stdstring:
         odbcType_ = SQL_C_CHAR;
         size = 32769;
@@ -127,18 +119,6 @@ void odbc_standard_into_type_backend::post_fetch(
         {
             char *c = static_cast<char*>(data_);
             *c = buf_[0];
-        }
-        if (type_ == x_cstring)
-        {
-            if (ind != NULL)
-            {
-                details::cstring_descriptor *desc = static_cast<cstring_descriptor *>(data_);
-                int size = static_cast<SQLINTEGER>(desc->bufSize_);
-                if (size < valueLen_)
-                {
-                    *ind = i_truncated;
-                }
-            }
         }
         if (type_ == x_stdstring)
         {

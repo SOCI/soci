@@ -165,7 +165,6 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
-    case x_cstring:   break; // not supported
     }
 
     colSize_ = size;
@@ -366,7 +365,6 @@ std::size_t odbc_vector_use_type_backend::size()
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
-    case x_cstring:   break; // not supported
     }
 
     return sz;

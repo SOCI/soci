@@ -11,7 +11,7 @@
 #include "soci-backend.h"
 #include <sstream>
 
-namespace SOCI
+namespace soci
 {
 
 inline void throw_odbc_error(SQLSMALLINT htype, SQLHANDLE hndl, char const * msg)

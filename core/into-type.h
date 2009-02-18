@@ -159,6 +159,6 @@ into_type_ptr do_into(T & t, std::vector<indicator> & ind, basic_type_tag)
 
 } // namespace details
 
-} // namespace SOCI
+} // namespace soci
 
 #endif // SOCI_INTO_TYPE_H_INCLUDED

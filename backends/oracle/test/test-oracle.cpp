@@ -92,10 +92,10 @@ void test2()
 
 struct blob_table_creator : public table_creator_base
 {
-    blob_table_creator(session& session)
-    : table_creator_base(session)
+    blob_table_creator(session & sql)
+    : table_creator_base(sql)
     {
-        session <<
+        sql <<
             "create table soci_test ("
             "    id number(10) not null,"
             "    img blob"
@@ -157,10 +157,10 @@ void test3()
 
 struct basic_table_creator : public table_creator_base
 {
-    basic_table_creator(session& session)
-        : table_creator_base(session)
+    basic_table_creator(session & sql)
+        : table_creator_base(sql)
     {
-        session <<
+        sql <<
                     "create table soci_test ("
                     "    id number(5) not null,"
                     "    name varchar2(100),"
@@ -232,10 +232,10 @@ void test5()
 // Stored procedures
 struct procedure_creator : procedure_creator_base
 {
-    procedure_creator(session& session)
-        : procedure_creator_base(session)
+    procedure_creator(session & sql)
+        : procedure_creator_base(sql)
     {
-        session <<
+        sql <<
              "create or replace procedure soci_test(output out varchar2,"
              "input in varchar2) as "
              "begin output := input; end;";
@@ -305,20 +305,20 @@ namespace soci
 
 struct in_out_procedure_creator : public procedure_creator_base
 {
-    in_out_procedure_creator(session& session)
-        : procedure_creator_base(session)
+    in_out_procedure_creator(session & sql)
+        : procedure_creator_base(sql)
     {
-        session << "create or replace procedure soci_test(s in out varchar2)"
+        sql << "create or replace procedure soci_test(s in out varchar2)"
                 " as begin s := s || s; end;";
     }
 };
 
 struct returns_null_procedure_creator : public procedure_creator_base
 {
-    returns_null_procedure_creator(session& session)
-        : procedure_creator_base(session)
+    returns_null_procedure_creator(session & sql)
+        : procedure_creator_base(sql)
     {
-        session << "create or replace procedure soci_test(s in out varchar2)"
+        sql << "create or replace procedure soci_test(s in out varchar2)"
             " as begin s := NULL; end;";
     }
 };
@@ -736,10 +736,10 @@ namespace soci
 
 struct person_table_creator : public table_creator_base
 {
-    person_table_creator(session& session)
-        : table_creator_base(session)
+    person_table_creator(session & sql)
+        : table_creator_base(sql)
     {
-        session << "create table soci_test(id numeric(5,0) NOT NULL,"
+        sql << "create table soci_test(id numeric(5,0) NOT NULL,"
              << " last_name varchar2(20), first_name varchar2(20), "
                 " gender varchar2(10))";
     }
@@ -747,10 +747,10 @@ struct person_table_creator : public table_creator_base
 
 struct times100_procedure_creator : public procedure_creator_base
 {
-    times100_procedure_creator(session& session)
-        : procedure_creator_base(session)
+    times100_procedure_creator(session & sql)
+        : procedure_creator_base(sql)
     {
-        session << "create or replace procedure soci_test(id in out number)"
+        sql << "create or replace procedure soci_test(id in out number)"
                " as begin id := id * 100; end;";
     }
 };
@@ -947,10 +947,10 @@ void test11()
 ///
 struct long_table_creator : public table_creator_base
 {
-    long_table_creator(session& session)
-        : table_creator_base(session)
+    long_table_creator(session & sql)
+        : table_creator_base(sql)
     {
-        session << "create table soci_test(l long)";
+        sql << "create table soci_test(l long)";
     }
 };
 
@@ -1065,10 +1065,10 @@ void test14()
 
 struct table_creator_one : public table_creator_base
 {
-    table_creator_one(session& session)
-        : table_creator_base(session)
+    table_creator_one(session & sql)
+        : table_creator_base(sql)
     {
-        session << "create table soci_test(id number(10,0), val number(4,0), c char, "
+        sql << "create table soci_test(id number(10,0), val number(4,0), c char, "
                  "str varchar2(20), sh number, ul number, d number, "
                  "tm date, i1 number, i2 number, i3 number, name varchar2(20))";
     }
@@ -1076,20 +1076,20 @@ struct table_creator_one : public table_creator_base
 
 struct table_creator_two : public table_creator_base
 {
-    table_creator_two(session& session)
-        : table_creator_base(session)
+    table_creator_two(session & sql)
+        : table_creator_base(sql)
     {
-        session  << "create table soci_test(num_float number, num_int numeric(4,0),"
+        sql  << "create table soci_test(num_float number, num_int numeric(4,0),"
                     " name varchar2(20), sometime date, chr char)";
     }
 };
 
 struct table_creator_three : public table_creator_base
 {
-    table_creator_three(session& session)
-        : table_creator_base(session)
+    table_creator_three(session & sql)
+        : table_creator_base(sql)
     {
-        session << "create table soci_test(name varchar2(100) not null, "
+        sql << "create table soci_test(name varchar2(100) not null, "
             "phone varchar2(15))";
     }
 };

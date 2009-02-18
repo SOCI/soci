@@ -113,7 +113,7 @@ int main(int argc, char** argv)
         common_tests tests(tc);
         tests.run();
     }
-    catch (SOCI::odbc_soci_error const & e)
+    catch (soci::odbc_soci_error const & e)
     {
         std::cout << "ODBC Error Code: " << e.odbc_error_code() << std::endl
                   << "Native Error Code: " << e.native_error_code() << std::endl

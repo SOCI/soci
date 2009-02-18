@@ -310,6 +310,6 @@ SOCI_ODBC_DECL backend_factory const * factory_odbc();
 
 } // extern "C"
 
-} // namespace SOCI
+} // namespace soci
 
 #endif // SOCI_EMPTY_H_INCLUDED

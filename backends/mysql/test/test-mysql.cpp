@@ -419,10 +419,10 @@ void test6()
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
-    table_creator_one(session& session)
-        : table_creator_base(session)
+    table_creator_one(session & sql)
+        : table_creator_base(sql)
     {
-        session << "create table soci_test(id integer, val integer, c char, "
+        sql << "create table soci_test(id integer, val integer, c char, "
                  "str varchar(20), sh int2, ul numeric(20), d float8, "
                  "tm datetime, i1 integer, i2 integer, i3 integer, "
                  "name varchar(20)) type=InnoDB";
@@ -431,20 +431,20 @@ struct table_creator_one : public table_creator_base
 
 struct table_creator_two : public table_creator_base
 {
-    table_creator_two(session& session)
-        : table_creator_base(session)
+    table_creator_two(session & sql)
+        : table_creator_base(sql)
     {
-        session  << "create table soci_test(num_float float8, num_int integer,"
+        sql  << "create table soci_test(num_float float8, num_int integer,"
                      " name varchar(20), sometime datetime, chr char)";
     }
 };
 
 struct table_creator_three : public table_creator_base
 {
-    table_creator_three(session& session)
-        : table_creator_base(session)
+    table_creator_three(session & sql)
+        : table_creator_base(sql)
     {
-        session << "create table soci_test(name varchar(100) not null, "
+        sql << "create table soci_test(name varchar(100) not null, "
             "phone varchar(15))";
     }
 };

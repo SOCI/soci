@@ -50,16 +50,6 @@ void odbc_standard_use_type_backend::prepare_for_bind(
         data = buf_;
         indHolder_ = SQL_NTS;
         break;
-    case x_cstring:
-    {
-        details::cstring_descriptor *desc = static_cast<cstring_descriptor *>(data);
-        sqlType = SQL_VARCHAR;
-        cType = SQL_C_CHAR;
-        data = desc->str_;
-        size = static_cast<SQLUINTEGER>(desc->bufSize_);
-        indHolder_ = SQL_NTS;
-    }
-    break;
     case x_stdstring:
     {
         // TODO: No textual value is assigned here!

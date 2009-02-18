@@ -85,17 +85,17 @@ class function_creator : function_creator_base
 {
 public:
 
-    function_creator(session& session)
-    : function_creator_base(session)
+    function_creator(session & sql)
+    : function_creator_base(sql)
     {
         // before a language can be used it must be defined
         // if it has already been defined then an error will occur
-        try { session << "create language plpgsql"; }
+        try { sql << "create language plpgsql"; }
         catch (soci_error const &) {} // ignore if error
 
 #ifndef SOCI_PGSQL_NOPARAMS
 
-        session  <<
+        sql  <<
             "create or replace function soci_test(msg varchar) "
             "returns varchar as $$ "
             "begin "
@@ -103,7 +103,7 @@ public:
             "end $$ language plpgsql";
 #else
 
-       session <<
+       sql <<
             "create or replace function soci_test(varchar) "
             "returns varchar as \' "
             "begin "
@@ -179,10 +179,10 @@ void test2()
 // BLOB test
 struct blob_table_creator : public table_creator_base
 {
-    blob_table_creator(session& session)
-    : table_creator_base(session)
+    blob_table_creator(session & sql)
+    : table_creator_base(sql)
     {
-        session <<
+        sql <<
              "create table soci_test ("
              "    id integer,"
              "    img oid"
@@ -412,10 +412,10 @@ void test9()
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
-    table_creator_one(session& session)
-        : table_creator_base(session)
+    table_creator_one(session & sql)
+        : table_creator_base(sql)
     {
-        session << "create table soci_test(id integer, val integer, c char, "
+        sql << "create table soci_test(id integer, val integer, c char, "
                  "str varchar(20), sh int2, ul numeric(20), d float8, "
                  "tm timestamp, i1 integer, i2 integer, i3 integer, "
                  "name varchar(20))";
@@ -424,20 +424,20 @@ struct table_creator_one : public table_creator_base
 
 struct table_creator_two : public table_creator_base
 {
-    table_creator_two(session& session)
-        : table_creator_base(session)
+    table_creator_two(session & sql)
+        : table_creator_base(sql)
     {
-        session  << "create table soci_test(num_float float8, num_int integer,"
+        sql  << "create table soci_test(num_float float8, num_int integer,"
                      " name varchar(20), sometime timestamp, chr char)";
     }
 };
 
 struct table_creator_three : public table_creator_base
 {
-    table_creator_three(session& session)
-        : table_creator_base(session)
+    table_creator_three(session & sql)
+        : table_creator_base(sql)
     {
-        session << "create table soci_test(name varchar(100) not null, "
+        sql << "create table soci_test(name varchar(100) not null, "
             "phone varchar(15))";
     }
 };

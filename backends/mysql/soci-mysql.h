@@ -259,6 +259,6 @@ SOCI_MYSQL_DECL backend_factory const * factory_mysql();
 
 } // extern "C"
 
-} // namespace SOCI
+} // namespace soci
 
 #endif // SOCI_MYSQL_H_INCLUDED

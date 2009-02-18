@@ -231,6 +231,6 @@ private:
 
 }; // class rowset
 
-} // namespace SOCI
+} // namespace soci
 
 #endif
