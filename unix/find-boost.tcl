@@ -15,7 +15,7 @@ proc findBoost {} {
 
     if [info exists rootBoost] {
         set includeDirs [list $rootBoost]
-        set libDirs [list
+        set libDirs [list $rootBoost]
     }
 
     set includeDir ""
