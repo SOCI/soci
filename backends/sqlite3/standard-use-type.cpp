@@ -9,9 +9,12 @@
 #include "soci-sqlite3.h"
 #include "rowid.h"
 #include "blob.h"
+// std
+#include <cstring>
+#include <ctime>
 #include <limits>
 #include <sstream>
-#include <cstring>
+#include <string>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355 4996)

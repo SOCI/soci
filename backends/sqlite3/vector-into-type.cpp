@@ -7,8 +7,14 @@
 
 
 #include "soci-sqlite3.h"
-
 #include "common.h"
+// std
+#include <cstddef>
+#include <cstdlib>
+#include <ctime>
+#include <string>
+#include <vector>
+
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -18,7 +24,6 @@
 using namespace soci;
 using namespace soci::details;
 using namespace soci::details::sqlite3;
-
 
 void sqlite3_vector_into_type_backend::define_by_pos(int & position, void * data,
                                                exchange_type type)
@@ -95,13 +100,13 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                 break;
             case x_short:
             {
-                long val = strtol(buf, NULL, 10);
+                long val = std::strtol(buf, NULL, 10);
                 setInVector(data_, i, static_cast<short>(val));
             }
             break;
             case x_integer:
             {
-                long val = strtol(buf, NULL, 10);
+                long val = std::strtol(buf, NULL, 10);
                 setInVector(data_, i, static_cast<int>(val));
             }
             break;

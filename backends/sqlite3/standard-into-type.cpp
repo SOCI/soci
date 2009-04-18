@@ -5,11 +5,14 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-
 #include "soci-sqlite3.h"
 #include "rowid.h"
 #include "common.h"
 #include "blob.h"
+// std
+#include <cstdlib>
+#include <ctime>
+#include <string>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -97,14 +100,14 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
         case x_short:
         {
             short *dest = static_cast<short*>(data_);
-            long val = strtol(buf, NULL, 10);
+            long val = std::strtol(buf, NULL, 10);
             *dest = static_cast<short>(val);
         }
         break;
         case x_integer:
         {
             int *dest = static_cast<int*>(data_);
-            long val = strtol(buf, NULL, 10);
+            long val = std::strtol(buf, NULL, 10);
             *dest = static_cast<int>(val);
         }
         break;
