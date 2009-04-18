@@ -8,6 +8,7 @@
 #ifndef SOCI_SQLITE3_COMMON_H_INCLUDED
 #define SOCI_SQLITE3_COMMON_H_INCLUDED
 
+#include <cstddef>
 #include <vector>
 #include <ctime>
 
