@@ -8,12 +8,13 @@
 
 #define SOCI_MYSQL_SOURCE
 #include "soci-mysql.h"
+// std
 #include <cctype>
 #include <cerrno>
+#include <ciso646>
 #include <climits>
 #include <cstdlib>
-#include <ciso646>
-
+#include <string>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -27,8 +28,8 @@ using std::string;
 namespace
 { // anonymous
 
-void skip_white(string::const_iterator *i,
-    string::const_iterator const & end, bool endok)
+void skip_white(std::string::const_iterator *i,
+    std::string::const_iterator const & end, bool endok)
 {
     for (;;)
     {
@@ -54,10 +55,10 @@ void skip_white(string::const_iterator *i,
     }
 }
 
-string param_name(string::const_iterator *i,
-    string::const_iterator const & end)
+std::string param_name(std::string::const_iterator *i,
+    std::string::const_iterator const & end)
 {
-    string val("");
+    std::string val("");
     for (;;)
     {
         if (*i == end or (not std::isalpha(**i) and **i != '_'))

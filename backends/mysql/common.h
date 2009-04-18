@@ -8,9 +8,12 @@
 #ifndef SOCI_MYSQL_COMMON_H_INCLUDED
 #define SOCI_MYSQL_COMMON_H_INCLUDED
 
-#include <sstream>
-#include <ctime>
 #include "soci-mysql.h"
+// std
+#include <cstddef>
+#include <ctime>
+#include <sstream>
+#include <vector>
 
 namespace soci
 {
