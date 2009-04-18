@@ -5,9 +5,10 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 #include "soci-sqlite3.h"
-
-#include <sstream>
+// std
 #include <algorithm>
+#include <sstream>
+#include <string>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -44,7 +45,7 @@ void sqlite3_statement_backend::prepare(std::string const & query,
 {
     clean_up();
 
-    const char *tail; // unused;
+    char const* tail = 0; // unused;
     int res = sqlite3_prepare(session_.conn_,
                               query.c_str(),
                               static_cast<int>(query.size()),
@@ -52,7 +53,7 @@ void sqlite3_statement_backend::prepare(std::string const & query,
                               &tail);
     if (res != SQLITE_OK)
     {
-        const char *zErrMsg = sqlite3_errmsg(session_.conn_);
+        char const* zErrMsg = sqlite3_errmsg(session_.conn_);
 
         std::ostringstream ss;
         ss << "sqlite3_statement_backend::prepare: "
@@ -117,10 +118,8 @@ sqlite3_statement_backend::loadRS(int totalRows)
                 }
                 for (int c = 0; c < numCols; ++c)
                 {
-                    const char *buf =
-                    reinterpret_cast<const char*>(sqlite3_column_text(
-                                                      stmt_,
-                                                      c));
+                    char const* buf = reinterpret_cast<char const*>(
+                                        sqlite3_column_text(stmt_, c));
                     bool isNull = false;
                     if (0 == buf)
                     {
@@ -134,7 +133,7 @@ sqlite3_statement_backend::loadRS(int totalRows)
             else
             {
                 clean_up();
-                const char *zErrMsg = sqlite3_errmsg(session_.conn_);
+                char const* zErrMsg = sqlite3_errmsg(session_.conn_);
                 std::ostringstream ss;
                 ss << "sqlite3_statement_backend::loadRS: "
                    << zErrMsg;
@@ -168,7 +167,7 @@ sqlite3_statement_backend::loadOne()
     {
         clean_up();
 
-        const char *zErrMsg = sqlite3_errmsg(session_.conn_);
+        char const* zErrMsg = sqlite3_errmsg(session_.conn_);
 
         std::ostringstream ss;
         ss << "sqlite3_statement_backend::loadOne: "
@@ -300,11 +299,11 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
     // used in the create table statement
     bool typeFound = false;
 
-    const char* declType = sqlite3_column_decltype(stmt_, colNum-1);
+    char const* declType = sqlite3_column_decltype(stmt_, colNum-1);
 
     if ( declType == NULL )
     {
-        static char* s_char = "char";
+        static char const* s_char = "char";
         declType = s_char;
     }
 
