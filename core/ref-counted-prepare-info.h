@@ -9,7 +9,8 @@
 #define SOCI_REF_COUNTED_PREPARE_INFO_INCLUDED
 
 #include "ref-counted-statement.h"
-
+// std
+#include <string>
 #include <vector>
 
 namespace soci

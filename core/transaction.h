@@ -11,8 +11,6 @@
 #include "session.h"
 #include "soci-config.h"
 
-#include <string>
-
 namespace soci
 {
 

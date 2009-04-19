@@ -12,6 +12,7 @@
 #pragma warning(disable:4251 4512 4511)
 #endif
 
+// namespace soci
 #include "backend-loader.h"
 #include "blob.h"
 #include "blob-exchange.h"
@@ -45,6 +46,7 @@
 #include "values.h"
 #include "values-exchange.h"
 
+// namespace boost
 #ifdef SOCI_USE_BOOST
 #include <boost/version.hpp>
 #if defined(BOOST_VERSION) && BOOST_VERSION >= 103500

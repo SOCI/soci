@@ -9,6 +9,7 @@
 #define SOCI_CONNECTION_POOL_H_INCLUDED
 
 #include "soci-config.h"
+// std
 #include <cstddef>
 
 namespace soci

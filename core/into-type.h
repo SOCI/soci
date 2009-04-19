@@ -11,8 +11,8 @@
 #include "soci-backend.h"
 #include "type-ptr.h"
 #include "exchange-traits.h"
-
-#include <string>
+// std
+#include <cstddef>
 #include <vector>
 
 namespace soci

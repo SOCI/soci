@@ -11,11 +11,11 @@
 #include "type-holder.h"
 #include "soci-backend.h"
 #include "type-conversion.h"
-
+// std
 #include <cassert>
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 namespace soci
 {

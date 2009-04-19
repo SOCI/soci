@@ -10,8 +10,9 @@
 
 #include "type-conversion-traits.h"
 #include "soci-backend.h"
+// std
 #include <ctime>
-
+#include <string>
 #include <vector>
 
 namespace soci

@@ -13,8 +13,11 @@
 #include "use-type.h"
 #include "soci-backend.h"
 #include "row.h"
-
+// std
+#include <cstddef>
 #include <string>
+#include <map>
+#include <vector>
 
 namespace soci
 {

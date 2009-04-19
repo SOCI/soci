@@ -12,6 +12,8 @@
 #include "exchange-traits.h"
 #include "row.h"
 #include "statement.h"
+// std
+#include <cstddef>
 
 namespace soci
 {

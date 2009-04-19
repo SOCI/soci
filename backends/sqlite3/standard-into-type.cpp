@@ -5,6 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <soci-platform.h>
 #include "soci-sqlite3.h"
 #include "rowid.h"
 #include "common.h"
@@ -13,11 +14,6 @@
 #include <cstdlib>
 #include <ctime>
 #include <string>
-
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#define strtoll(s, p, b) static_cast<long long>(_strtoi64(s, p, b))
-#endif
 
 using namespace soci;
 using namespace soci::details;

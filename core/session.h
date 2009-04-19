@@ -9,7 +9,8 @@
 #define SOCI_SESSION_H_INCLUDED
 
 #include "once-temp-type.h"
-
+// std
+#include <cstddef>
 #include <ostream>
 #include <sstream>
 #include <string>

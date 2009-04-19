@@ -11,6 +11,8 @@
 #include "blob.h"
 #include "into-type.h"
 #include "use-type.h"
+// std
+#include <string>
 
 namespace soci
 {

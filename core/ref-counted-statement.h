@@ -11,6 +11,8 @@
 #include "statement.h"
 #include "into-type.h"
 #include "use-type.h"
+// std
+#include <sstream>
 
 namespace soci
 {

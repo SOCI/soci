@@ -9,6 +9,8 @@
 #define SOCI_ROWSET_H_INCLUDED
 
 #include "statement.h"
+// std
+#include <iterator>
 #include <memory>
 
 namespace soci

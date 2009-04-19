@@ -11,7 +11,9 @@
 #include "type-conversion-traits.h"
 #include "into-type.h"
 #include "use-type.h"
-
+// std
+#include <cstddef>
+#include <string>
 #include <vector>
 
 namespace soci

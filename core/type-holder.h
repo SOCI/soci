@@ -7,7 +7,7 @@
 
 #ifndef SOCI_TYPE_HOLDER_H_INCLUDED
 #define SOCI_TYPE_HOLDER_H_INCLUDED
-
+// std
 #include <typeinfo>
 
 namespace soci

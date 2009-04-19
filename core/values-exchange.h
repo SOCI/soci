@@ -12,6 +12,9 @@
 #include "into-type.h"
 #include "use-type.h"
 #include "row-exchange.h"
+// std
+#include <cstddef>
+#include <string>
 #include <vector>
 
 namespace soci

@@ -11,8 +11,13 @@
 #include "statement.h"
 #include "into-type.h"
 #include "use-type.h"
-
+// std
+#include <cstddef>
+#include <map>
 #include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace soci
 {

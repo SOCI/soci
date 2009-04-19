@@ -12,6 +12,8 @@
 #include "into-type.h"
 #include "use-type.h"
 #include "exchange-traits.h"
+// std
+#include <string>
 
 namespace soci
 {

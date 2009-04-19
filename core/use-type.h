@@ -11,15 +11,12 @@
 #include "soci-backend.h"
 #include "type-ptr.h"
 #include "exchange-traits.h"
-
+// std
+#include <cstddef>
 #include <string>
 #include <vector>
 
-namespace soci
-{
-
-namespace details
-{
+namespace soci { namespace details {
 
 class statement_impl;
 
