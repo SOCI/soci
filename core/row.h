@@ -13,6 +13,7 @@
 #include "type-conversion.h"
 // std
 #include <cassert>
+#include <cstddef>
 #include <map>
 #include <string>
 #include <vector>
