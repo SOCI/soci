@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="windows-1250"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="soci_dll"
+	OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+	IntermediateDirectory="$(ProjectName)\$(ConfigurationName)"
+	InheritedPropertySheets="..\soci.vsprops"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		PreprocessorDefinitions="SOCI_DLL"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		GenerateDebugInformation="true"
+		ImportLibrary="$(TargetDir)$(TargetName).lib"
+	/>
+</VisualStudioPropertySheet>
