@@ -6,9 +6,9 @@ AM_CPPFLAGS = @BOOST_CPPFLAGS@ @SQLITE3_CFLAGS@
 AM_LDFLAGS = @SQLITE3_LDFLAGS@
 
 INCLUDES = \
-	-I$(top_srcdir)/src/core \
-	-I$(top_srcdir)/src/core/test \
-	-I$(top_srcdir)/src/backends/sqlite3
+	-I$(top_srcdir)/core \
+	-I$(top_srcdir)/core/test \
+	-I$(top_srcdir)/backends/sqlite3
 
 TEST_CASE = test_sqlite3
 TEST_DB = test_sqlite3.db
@@ -23,8 +23,8 @@ test_sqlite3_SOURCES = \
 	test-sqlite3.cpp
 
 test_sqlite3_LDADD = \
-	$(top_builddir)/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
-	$(top_builddir)/src/backends/sqlite3/lib@SOCI_SQLITE3_LIBRARY_NAME@.la
+	$(top_builddir)/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
+	$(top_builddir)/backends/sqlite3/lib@SOCI_SQLITE3_LIBRARY_NAME@.la
 
 EXTRA_DIST = Makefile.basic
 

@@ -4,7 +4,7 @@
 #
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
-INCLUDES = -I$(top_srcdir)/src/core
+INCLUDES = -I$(top_srcdir)/core
 AM_CXXFLAGS = -fPIC
 
 noinst_LTLIBRARIES	= \

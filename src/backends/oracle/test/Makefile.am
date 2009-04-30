@@ -6,9 +6,9 @@ AM_CPPFLAGS = @BOOST_CPPFLAGS@ @ORACLE_OCI_CFLAGS@
 AM_LDFLAGS = @ORACLE_OCI_LDFLAGS@
 
 INCLUDES = \
-	-I$(top_srcdir)/src/core \
-	-I$(top_srcdir)/src/core/test \
-	-I$(top_srcdir)/src/backends/oracle
+	-I$(top_srcdir)/core \
+	-I$(top_srcdir)/core/test \
+	-I$(top_srcdir)/backends/oracle
 
 noinst_PROGRAMS = \
 	test_oracle
@@ -17,8 +17,8 @@ test_oracle_SOURCES = \
 	test-oracle.cpp
 
 test_oracle_LDADD = \
-	$(top_builddir)/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
-	$(top_builddir)/src/backends/oracle/lib@SOCI_ORACLE_LIBRARY_NAME@.la
+	$(top_builddir)/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
+	$(top_builddir)/backends/oracle/lib@SOCI_ORACLE_LIBRARY_NAME@.la
 
 EXTRA_DIST = Makefile.basic
 

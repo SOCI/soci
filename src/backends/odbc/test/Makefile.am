@@ -6,9 +6,9 @@ AM_CPPFLAGS = @BOOST_CPPFLAGS@ @ODBC_CFLAGS@
 AM_LDFLAGS = @ODBC_LDFLAGS@
 
 INCLUDES = \
-	-I$(top_srcdir)/src/core \
-	-I$(top_srcdir)/src/core/test \
-	-I$(top_srcdir)/src/backends/odbc
+	-I$(top_srcdir)/core \
+	-I$(top_srcdir)/core/test \
+	-I$(top_srcdir)/backends/odbc
 
 noinst_PROGRAMS = \
 	test_odbc_access \
@@ -29,20 +29,20 @@ test_odbc_postgresql_SOURCES = \
 	test-odbc-postgresql.cpp
 
 test_odbc_access_LDADD = \
-	$(top_builddir)/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
-	$(top_builddir)/src/backends/odbc/lib@SOCI_ODBC_LIBRARY_NAME@.la
+	$(top_builddir)/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
+	$(top_builddir)/backends/odbc/lib@SOCI_ODBC_LIBRARY_NAME@.la
 
 test_odbc_mssql_LDADD = \
-	$(top_builddir)/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
-	$(top_builddir)/src/backends/odbc/lib@SOCI_ODBC_LIBRARY_NAME@.la
+	$(top_builddir)/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
+	$(top_builddir)/backends/odbc/lib@SOCI_ODBC_LIBRARY_NAME@.la
 
 test_odbc_mysql_LDADD = \
-	$(top_builddir)/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
-	$(top_builddir)/src/backends/odbc/lib@SOCI_ODBC_LIBRARY_NAME@.la
+	$(top_builddir)/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
+	$(top_builddir)/backends/odbc/lib@SOCI_ODBC_LIBRARY_NAME@.la
 
 test_odbc_postgresql_LDADD = \
-	$(top_builddir)/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
-	$(top_builddir)/src/backends/odbc/lib@SOCI_ODBC_LIBRARY_NAME@.la
+	$(top_builddir)/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
+	$(top_builddir)/backends/odbc/lib@SOCI_ODBC_LIBRARY_NAME@.la
 
 EXTRA_DIST = \
 	Makefile.basic \

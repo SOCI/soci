@@ -6,8 +6,8 @@ AM_CPPFLAGS = @BOOST_CPPFLAGS@ @MYSQL_CFLAGS@
 AM_LDFLAGS = @MYSQL_LDFLAGS@
 
 INCLUDES = \
-	-I$(top_srcdir)/src/core \
-	-I$(top_srcdir)/src/backends/mysql
+	-I$(top_srcdir)/core \
+	-I$(top_srcdir)/backends/mysql
 
 noinst_PROGRAMS = \
 	test_mysql
@@ -16,8 +16,8 @@ test_mysql_SOURCES = \
 	test-mysql.cpp
 
 test_mysql_LDADD = \
-	$(top_builddir)/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
-	$(top_builddir)/src/backends/mysql/lib@SOCI_MYSQL_LIBRARY_NAME@.la
+	$(top_builddir)/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
+	$(top_builddir)/backends/mysql/lib@SOCI_MYSQL_LIBRARY_NAME@.la
 
 EXTRA_DIST = Makefile.basic
 

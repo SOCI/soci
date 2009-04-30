@@ -6,9 +6,9 @@ AM_CPPFLAGS = @BOOST_CPPFLAGS@ @POSTGRESQL_CFLAGS@
 AM_LDFLAGS = @POSTGRESQL_LDFLAGS@
 
 INCLUDES = \
-	-I$(top_srcdir)/src/core \
-	-I$(top_srcdir)/src/core/test \
-	-I$(top_srcdir)/src/backends/postgresql
+	-I$(top_srcdir)/core \
+	-I$(top_srcdir)/core/test \
+	-I$(top_srcdir)/backends/postgresql
 
 noinst_PROGRAMS = \
 	test_postgresql
@@ -17,8 +17,8 @@ test_postgresql_SOURCES = \
 	test-postgresql.cpp
 
 test_postgresql_LDADD = \
-	$(top_builddir)/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
-	$(top_builddir)/src/backends/postgresql/lib@SOCI_POSTGRESQL_LIBRARY_NAME@.la
+	$(top_builddir)/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
+	$(top_builddir)/backends/postgresql/lib@SOCI_POSTGRESQL_LIBRARY_NAME@.la
 
 EXTRA_DIST = Makefile.basic
 

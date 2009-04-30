@@ -2,7 +2,7 @@
 # 
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
-INCLUDES = -I$(top_srcdir)/src/core
+INCLUDES = -I$(top_srcdir)/core
 AM_CXXFLAGS = -fPIC
 AM_CPPFLAGS = @ORACLE_OCI_CFLAGS@
 
@@ -13,7 +13,7 @@ lib@SOCI_ORACLE_LIBRARY_NAME@_la_LDFLAGS = \
 	-release @LIBTOOL_RELEASE@ -no-undefined @ORACLE_OCI_LDFLAGS@
 
 lib@SOCI_ORACLE_LIBRARY_NAME@_la_LIBADD = \
-	@top_builddir@/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la
+	@top_builddir@/core/lib@SOCI_CORE_LIBRARY_NAME@.la
 
 lib@SOCI_ORACLE_LIBRARY_NAME@_la_SOURCES = \
 	blob.cpp \

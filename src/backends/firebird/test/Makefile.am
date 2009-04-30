@@ -6,9 +6,9 @@ AM_CPPFLAGS = @BOOST_CPPFLAGS@ @FIREBIRD_CFLAGS@
 AM_LDFLAGS = @FIREBIRD_LDFLAGS@
 
 INCLUDES = \
-	-I$(top_srcdir)/src/core \
-	-I$(top_srcdir)/src/core/test \
-	-I$(top_srcdir)/src/backends/firebird
+	-I$(top_srcdir)/core \
+	-I$(top_srcdir)/core/test \
+	-I$(top_srcdir)/backends/firebird
 
 noinst_PROGRAMS = \
 	test_firebird
@@ -17,8 +17,8 @@ test_firebird_SOURCES = \
 	test-firebird.cpp
 
 test_firebird_LDADD = \
-	$(top_builddir)/src/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
-	$(top_builddir)/src/backends/firebird/lib@SOCI_FIREBIRD_LIBRARY_NAME@.la
+	$(top_builddir)/core/lib@SOCI_CORE_LIBRARY_NAME@.la \
+	$(top_builddir)/backends/firebird/lib@SOCI_FIREBIRD_LIBRARY_NAME@.la
 
 EXTRA_DIST = Makefile.basic
 
