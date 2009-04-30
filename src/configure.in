@@ -1,0 +1,623 @@
+dnl $Id: configure.in,v 1.12 2009/04/18 19:57:33 mloskot Exp $
+dnl
+dnl Copyright (C) 2006, Mateusz Loskot
+dnl
+dnl Author: Mateusz Loskot <mateusz@loskot.net>
+dnl
+dnl -------------------------------------------------------------------
+dnl SOCI version information
+dnl -------------------------------------------------------------------
+dnl 
+dnl How to make a release:
+dnl 1. Increment by 1 these macros:
+dnl    soci_version_micro, cpptk_interface_age, cpptk_binary_age.
+dnl 2. If new functions have been added, set cpptk_interface_age to 0.
+dnl 3. If backwards compatibility has been broken, set cpptk_binary_age
+dnl    and cpptk_interface_age to 0.
+dnl -------------------------------------------------------------------
+m4_define([soci_version_major], [3])
+m4_define([soci_version_minor], [0])
+m4_define([soci_version_micro], [0])
+m4_define([soci_version],
+          [soci_version_major.soci_version_minor.soci_version_micro])
+
+dnl NOTE: Not used, because SOCI does not libtool's versioning system.
+m4_define([cpptk_interface_age], [0])
+m4_define([cpptk_binary_age], [0])
+
+
+dnl -------------------------------------------------------------------
+dnl *** DO NOT MODIFY ANYTHING BELOW THIS LINE ***
+dnl -------------------------------------------------------------------
+
+
+dnl -------------------------------------------------------------------
+dnl Autoconf initialization
+dnl -------------------------------------------------------------------
+AC_INIT([SOCI],
+        [soci_version],
+        [http://sourceforge.net/projects/soci],
+        [soci])
+
+
+dnl -------------------------------------------------------------------
+dnl C++/Tk release version (used by libtool's --release)
+dnl -------------------------------------------------------------------
+RELEASE_MAJOR=soci_version_major
+RELEASE_MINOR=soci_version_minor
+RELEASE_MICRO=soci_version_micro
+RELEASE_VERSION=soci_version
+
+AC_SUBST(RELEASE_MAJOR)
+AC_SUBST(RELEASE_MINOR)
+AC_SUBST(RELEASE_MICRO)
+AC_SUBST(RELEASE_VERSION)
+
+LIBTOOL_RELEASE="soci_version"
+AC_SUBST(LIBTOOL_RELEASE)
+
+dnl SOCI library version string after Boost naming convention
+SOCI_LIBRARY_VERSION="${RELEASE_MAJOR}_${RELEASE_MINOR}"
+
+
+dnl -------------------------------------------------------------------
+dnl Libtool versioning (used by libtool's --version-info)
+dnl
+dnl NOTE - mloskot:
+dnl We don't use libtool's API versioning system,
+dnl and there are no plans to use it in near future.
+dnl -------------------------------------------------------------------
+dnl m4_define([lt_current],
+dnl           [m4_eval(soci_version_micro - cpptk_interface_age)])
+dnl m4_define([lt_revision],
+dnl           [cpptk_interface_age])
+dnl m4_define([lt_age],
+dnl           [m4_eval(cpptk_binary_age - cpptk_interface_age)])
+dnl 
+dnl LIBTOOL_VERSION="lt_current:lt_revision:lt_age"
+dnl AC_SUBST(LIBTOOL_VERSION)
+
+
+dnl -------------------------------------------------------------------
+dnl Automake initialization
+dnl -------------------------------------------------------------------
+AM_INIT_AUTOMAKE
+
+dnl -------------------------------------------------------------------
+dnl Check which system we're building for
+dnl -------------------------------------------------------------------
+AC_CANONICAL_HOST
+
+case $host_os in
+    *mingw32* ) WIN32=yes ;;
+    *cygwin* )  WIN32=yes ;;
+    *) WIN32=no ;;
+esac
+
+if test "$WIN32" = "no"
+then
+    LD_LIB="-ldl"
+else
+    LD_LIB=""
+fi
+AC_SUBST(LD_LIB)
+
+
+dnl -------------------------------------------------------------------
+dnl Check C++ capabilities
+dnl -------------------------------------------------------------------
+
+dnl Hack to get rid of setting -g -02 together, but let's user set
+dnl these flags explicitly.
+if test -z ${CXXFLAGS}; then
+    CXXFLAGS=""
+fi
+
+AC_PROG_CXX
+AC_LANG_CPLUSPLUS
+
+
+dnl Detect compiler and configure toolset to use it in library names
+AX_CXX_TOOLSET
+
+SOCI_LIBRARY_TOOLSET="$CXX_TOOLSET_NAME"
+
+
+dnl -------------------------------------------------------------------
+dnl Check libtool
+dnl -------------------------------------------------------------------
+AM_PROG_LIBTOOL
+
+
+dnl -------------------------------------------------------------------
+dnl Check other tools
+dnl -------------------------------------------------------------------
+AC_PROG_MAKE_SET
+AC_PROG_INSTALL
+
+
+dnl -------------------------------------------------------------------
+dnl Check Boost libraries
+dnl -------------------------------------------------------------------
+AX_BOOST_BASE([1.33.1])
+AX_BOOST_DATE_TIME
+
+if test ! -z "$BOOST_CPPFLAGS"; then
+    HAVE_BOOST="yes"
+else
+    HAVE_BOOST="no"
+fi
+
+if test ! -z "$BOOST_DATE_TIME_LIB"; then
+    HAVE_BOOST_DATE_TIME="yes"
+else
+    HAVE_BOOST_DATE_TIME="no"
+fi
+
+dnl -------------------------------------------------------------------
+dnl Set defaults
+dnl -------------------------------------------------------------------
+AC_PREFIX_DEFAULT([/usr/local])
+
+
+dnl --------------------------------------------------------------------
+dnl Set recommended default flags for compiler and linker
+dnl --------------------------------------------------------------------
+CXXFLAGS="${CXXFLAGS} -Wall -pedantic -Wno-long-long"
+
+
+dnl --------------------------------------------------------------------
+dnl Detect compilation mode: debug or release
+dnl --------------------------------------------------------------------
+AC_ARG_ENABLE([debug],
+    AC_HELP_STRING([--enable-debug=@<:@yes|no@:>@],
+        [enable debug build @<:@default=no@:>@]
+    ),
+	[
+    case "${enableval}" in
+		yes) SOCI_BUILD_DEBUG="yes" ;;
+		no)  SOCI_BUILD_DEBUG="no" ;;
+		*) AC_MSG_ERROR(bad value ${enableval} for --enable-debug);;
+	esac
+    ],
+	[SOCI_BUILD_DEBUG="no"])
+
+dnl SOCI library naming is based on Boost convention, for more details see
+dnl http://www.boost.org/more/getting_started.html
+dnl
+dnl SOCI_LIBRARY_RUNTIME possible values: 
+dnl g - debug runtime
+dnl s - static runtime (optional or not used yet)
+dnl d - debug enabled (optional or not used yet)
+dnl
+if test "$SOCI_BUILD_DEBUG" = "yes"; then
+    SOCI_LIBRARY_RUNTIME="g"
+    CXXFLAGS="-g ${CXXFLAGS}"
+    CPPFLAGS="-D_DEBUG ${CPPFLAGS}"
+else
+    SOCI_LIBRARY_RUNTIME=""
+    CXXFLAGS="-O2 ${CXXFLAGS}"
+    CPPFLAGS="-U_DEBUG ${CPPFLAGS}"
+fi
+
+dnl --------------------------------------------------------------------
+dnl Detect assertions mode: enabled or disabled
+dnl --------------------------------------------------------------------
+AC_ARG_ENABLE([assert],
+    AC_HELP_STRING([--enable-assert=@<:@yes|no@:>@],
+        [enable assert macro @<:@default=yes@:>@]
+    ),
+	[
+    case "${enableval}" in
+		yes) SOCI_ENABLE_ASSERT="yes" ;;
+		no)  SOCI_ENABLE_ASSERT="no" ;;
+		*) AC_MSG_ERROR(bad value ${enableval} for --enable-assert);;
+	esac
+    ],
+	[SOCI_ENABLE_ASSERT="yes"])
+
+if test "$SOCI_ENABLE_ASSERT" = "yes"; then
+    CPPFLAGS="-UNDEBUG ${CPPFLAGS}"
+else
+    CPPFLAGS="-DNDEBUG ${CPPFLAGS}"
+fi
+
+dnl -------------------------------------------------------------------
+dnl SOCI library names
+dnl -------------------------------------------------------------------
+
+dnl Common library prefix
+SOCI_LIBRARY_PREFIX="soci"
+
+dnl Common library suffix
+dnl
+dnl TODO - mloskot: Add support of 's' and 'd' runtime modes.
+dnl 
+if test -z "${SOCI_LIBRARY_RUNTIME}"; then
+    SOCI_LIBRARY_SUFFIX="${SOCI_LIBRARY_TOOLSET}-${SOCI_LIBRARY_VERSION}"
+else
+    SOCI_LIBRARY_SUFFIX="${SOCI_LIBRARY_TOOLSET}-${SOCI_LIBRARY_RUNTIME}-${SOCI_LIBRARY_VERSION}"
+fi
+
+SOCI_CORE_LIBRARY_NAME="${SOCI_LIBRARY_PREFIX}_core-${SOCI_LIBRARY_SUFFIX}"
+SOCI_EMPTY_LIBRARY_NAME="${SOCI_LIBRARY_PREFIX}_empty-${SOCI_LIBRARY_SUFFIX}"
+SOCI_FIREBIRD_LIBRARY_NAME="${SOCI_LIBRARY_PREFIX}_firebird-${SOCI_LIBRARY_SUFFIX}"
+SOCI_MYSQL_LIBRARY_NAME="${SOCI_LIBRARY_PREFIX}_mysql-${SOCI_LIBRARY_SUFFIX}"
+SOCI_ORACLE_LIBRARY_NAME="${SOCI_LIBRARY_PREFIX}_oracle-${SOCI_LIBRARY_SUFFIX}"
+SOCI_ODBC_LIBRARY_NAME="${SOCI_LIBRARY_PREFIX}_odbc-${SOCI_LIBRARY_SUFFIX}"
+SOCI_POSTGRESQL_LIBRARY_NAME="${SOCI_LIBRARY_PREFIX}_postgresql-${SOCI_LIBRARY_SUFFIX}"
+SOCI_SQLITE3_LIBRARY_NAME="${SOCI_LIBRARY_PREFIX}_sqlite3-${SOCI_LIBRARY_SUFFIX}"
+
+AC_SUBST([SOCI_CORE_LIBRARY_NAME])
+AC_SUBST([SOCI_EMPTY_LIBRARY_NAME])
+AC_SUBST([SOCI_FIREBIRD_LIBRARY_NAME])
+AC_SUBST([SOCI_MYSQL_LIBRARY_NAME])
+AC_SUBST([SOCI_ORACLE_LIBRARY_NAME])
+AC_SUBST([SOCI_ODBC_LIBRARY_NAME])
+AC_SUBST([SOCI_POSTGRESQL_LIBRARY_NAME])
+AC_SUBST([SOCI_SQLITE3_LIBRARY_NAME])
+
+
+dnl -------------------------------------------------------------------
+dnl Empty backend
+dnl
+dnl NOTE: Empty backend is always built-in
+dnl -------------------------------------------------------------------
+WANT_BACKEND_EMPTY="yes"
+EMPTY_DIRS="empty empty/test"
+AC_SUBST([EMPTY_DIRS])
+
+
+dnl -------------------------------------------------------------------
+dnl Firebird backend
+dnl -------------------------------------------------------------------
+AC_ARG_ENABLE([backend-firebird],
+    AC_HELP_STRING([--enable-backend-firebird=@<:@yes|no@:>@],
+        [build-in Firebird backend support @<:@default=no@:>@]
+    ),
+    [WANT_BACKEND_FIREBIRD=$enable_backend_firebird],
+    [WANT_BACKEND_FIREBIRD="no"]
+)
+
+FIREBIRD_DIRS=""
+if test "$WANT_BACKEND_FIREBIRD" = "yes"; then
+
+    FIREBIRD_REQ_VERSION="1.5.0"
+    AX_LIB_FIREBIRD($FIREBIRD_REQ_VERSION)
+
+    if test -n "$FIREBIRD_CFLAGS" -a -n "$FIREBIRD_LDFLAGS"; then
+        FIREBIRD_DIRS="firebird firebird/test"
+    fi
+fi
+
+AC_SUBST([FIREBIRD_DIRS])
+
+
+dnl -------------------------------------------------------------------
+dnl MySQL backend
+dnl -------------------------------------------------------------------
+AC_ARG_ENABLE([backend-mysql],
+    AC_HELP_STRING([--enable-backend-mysql=@<:@yes|no@:>@],
+        [build-in MySQL backend support @<:@default=no@:>@]
+    ),
+    [WANT_BACKEND_MYSQL=$enable_backend_mysql],
+    [WANT_BACKEND_MYSQL="no"]
+)
+
+MYSQL_DIRS=""
+if test "$WANT_BACKEND_MYSQL" = "yes"; then
+
+    MYSQL_REQ_VERSION="3.0.0"
+    AX_LIB_MYSQL([$MYSQL_REQ_VERSION])
+
+    if test -n "$MYSQL_CFLAGS" -a -n "$MYSQL_LDFLAGS"; then
+        MYSQL_DIRS="mysql mysql/test"
+    fi
+fi
+
+AC_SUBST([MYSQL_DIRS])
+
+
+dnl -------------------------------------------------------------------
+dnl ODBC backend
+dnl
+dnl NOTE: ODBC is configured for distribution only, nothing is compiled
+dnl       on Unix at the moment.
+dnl -------------------------------------------------------------------
+AC_ARG_ENABLE([backend-odbc],
+    AC_HELP_STRING([--enable-backend-odbc=@<:@yes|no@:>@],
+        [build-in ODBC backend support @<:@default=no@:>@]
+    ),
+    [WANT_BACKEND_ODBC=$enable_backend_odbc],
+    [WANT_BACKEND_ODBC="no"]
+)
+
+ODBC_DIRS=""
+if test "$WANT_BACKEND_ODBC" = "yes"; then
+
+    ODBC_REQ_VERSION="0x0300"
+    AX_LIB_ODBC([$ODBC_REQ_VERSION])
+
+    if test -n "$ODBC_CFLAGS" -a -n "$ODBC_LDFLAGS"; then
+        ODBC_DIRS="odbc odbc/test"
+    fi
+fi
+
+AC_SUBST([ODBC_DIRS])
+
+
+dnl -------------------------------------------------------------------
+dnl ORACLE backend
+dnl -------------------------------------------------------------------
+AC_ARG_ENABLE([backend-oracle],
+    AC_HELP_STRING([--enable-backend-oracle=@<:@yes|no@:>@],
+        [build-in ORACLE backend support @<:@default=no@:>@]
+    ),
+    [WANT_BACKEND_ORACLE=$enable_backend_oracle],
+    [WANT_BACKEND_ORACLE="no"]
+)
+
+ORACLE_DIRS=""
+if test "$WANT_BACKEND_ORACLE" = "yes"; then
+
+    ORACLE_OCI_REQ_VERSION="9.0"
+    AX_LIB_ORACLE_OCI($ORACLE_OCI_REQ_VERSION)
+
+    if test -n "$ORACLE_OCI_CFLAGS" -a -n "$ORACLE_OCI_LDFLAGS"; then
+        ORACLE_DIRS="oracle oracle/test"
+    fi
+fi
+
+AC_SUBST([ORACLE_DIRS])
+
+
+dnl -------------------------------------------------------------------
+dnl PostgreSQL backend
+dnl -------------------------------------------------------------------
+AC_ARG_ENABLE([backend-postgresql],
+    AC_HELP_STRING([--enable-backend-postgresql=@<:@yes|no@:>@],
+        [build-in PostgreSQL backend support @<:@default=no@:>@]
+    ),
+    [WANT_BACKEND_POSTGRESQL=$enable_backend_postgresql],
+    [WANT_BACKEND_POSTGRESQL="no"]
+)
+
+POSTGRESQL_DIRS=""
+if test "$WANT_BACKEND_POSTGRESQL" = "yes"; then
+
+    POSTGRESQL_REQ_VERSION="7.1.4"
+    AX_LIB_POSTGRESQL($POSTGRESQL_REQ_VERSION)
+
+    if test -n "$POSTGRESQL_CFLAGS" -a -n "$POSTGRESQL_LDFLAGS"; then
+        POSTGRESQL_DIRS="postgresql postgresql/test"
+    fi
+fi
+
+AC_SUBST([POSTGRESQL_DIRS])
+
+
+dnl -------------------------------------------------------------------
+dnl SQLite 3 backend
+dnl -------------------------------------------------------------------
+AC_ARG_ENABLE([backend-sqlite3],
+    AC_HELP_STRING([--enable-backend-sqlite3=@<:@yes|no@:>@],
+        [build-in SQLite 3 backend support @<:@default=no@:>@]
+    ),
+    [WANT_BACKEND_SQLITE3=$enable_backend_sqlite3],
+    [WANT_BACKEND_SQLITE3="no"]
+)
+
+SQLITE3_DIRS=""
+if test "$WANT_BACKEND_SQLITE3" = "yes"; then
+    SQLITE3_REQ_VERSION="3.0.0"
+    AX_LIB_SQLITE3($SQLITE3_REQ_VERSION)
+
+    if test -n "$SQLITE3_CFLAGS" -a -n "$SQLITE3_LDFLAGS"; then
+        SQLITE3_DIRS="sqlite3 sqlite3/test"
+    fi
+fi
+
+AC_SUBST([SQLITE3_DIRS])
+
+
+dnl -------------------------------------------------------------------
+dnl Create Makefile files
+dnl -------------------------------------------------------------------
+AC_SUBST(ac_aux_dir)
+
+AC_CONFIG_FILES([
+    Makefile
+    core/Makefile
+    core/test/Makefile
+    backends/Makefile
+    backends/empty/Makefile
+    backends/empty/test/Makefile
+    backends/firebird/Makefile
+    backends/firebird/test/Makefile
+    backends/mysql/Makefile
+    backends/mysql/test/Makefile
+    backends/odbc/Makefile
+    backends/odbc/test/Makefile
+    backends/oracle/Makefile
+    backends/oracle/test/Makefile
+    backends/postgresql/Makefile
+    backends/postgresql/test/Makefile
+    backends/sqlite3/Makefile
+    backends/sqlite3/test/Makefile
+])
+
+AC_OUTPUT
+
+
+dnl -------------------------------------------------------------------
+dnl Print configuration summary
+dnl -------------------------------------------------------------------
+echo "====================================================="
+echo "  $PACKAGE_NAME Configuration Summary:"
+echo "====================================================="
+echo "  RELEASE_VERSION = $RELEASE_VERSION"
+echo "  LIBTOOL_VERSION = $LIBTOOL_VERSION"
+echo
+echo "  HOST                 = $host"
+echo "  PREFIX               = $prefix"
+echo "  CXX                  = $CXX"
+echo "  CXXFLAGS             = $CXXFLAGS"
+echo "  CPPFLAGS             = $CPPFLAGS $BOOST_CPPFLAGS"
+echo "  LDFLAGS              = $LDFLAGS $BOOST_DATE_TIME_LIB"
+echo "  HAVE_BOOST           = $HAVE_BOOST"
+echo "  HAVE_BOOST_DATE_TIME = $HAVE_BOOST_DATE_TIME"
+echo
+echo "  SOCI_BUILD_DEBUG     = $SOCI_BUILD_DEBUG"
+echo "  SOCI_ENABLE_ASSERT   = $SOCI_ENABLE_ASSERT"
+echo
+echo "  SOCI_LIBRARY_VERSION = $SOCI_LIBRARY_VERSION"
+echo "  SOCI_LIBRARY_TOOLSET = $SOCI_LIBRARY_TOOLSET"
+if test -z "$SOCI_LIBRARY_RUNTIME"; then
+echo "  SOCI_LIBRARY_RUNTIME = (release)"
+else
+echo "  SOCI_LIBRARY_RUNTIME = $SOCI_LIBRARY_RUNTIME"
+fi
+echo
+
+if test "$VERBOSE" = "yes"; then
+    echo "  CXX_TOOLSET_VENDOR   = $CXX_TOOLSET_VENDOR"
+    echo "  CXX_TOOLSET_FULLNAME = $CXX_TOOLSET_FULLNAME"
+    echo "  CXX_TOOLSET_NAME     = $CXX_TOOLSET_NAME"
+    echo "  CXX_TOOLSET_COMMAND  = $CXX_TOOLSET_COMMAND"
+    echo
+fi
+
+echo "================================"
+echo "  SOCI Backends Configuration:"
+echo "================================"
+echo
+echo "  Build Empty     = $WANT_BACKEND_EMPTY"
+echo
+echo "  SOCI_EMPTY_LIBRARY_NAME = $SOCI_EMPTY_LIBRARY_NAME"
+echo
+
+BACKENDS_COUNT=1
+
+if test "$WANT_BACKEND_FIREBIRD" = "yes"; then
+    echo "  Firebird (>= $FIREBIRD_REQ_VERSION):"
+    echo "  =============================="
+    if test -n "$FIREBIRD_CFLAGS" -a -n "$FIREBIRD_LDFLAGS"; then
+        echo "  FIREBIRD_VERSION       = $FIREBIRD_VERSION"
+        echo "  FIREBIRD_CFLAGS        = $FIREBIRD_CFLAGS"
+        echo "  FIREBIRD_LDFLAGS       = $FIREBIRD_LDFLAGS"
+        echo
+        echo "  SOCI_FIREBIRD_LIBRARY_NAME = $SOCI_FIREBIRD_LIBRARY_NAME"
+        let "BACKENDS_COUNT += 1"
+    else
+        echo "  WARNING:"
+        echo "  *** Firebird backend requested but 'fbclient' library not found."
+        echo "  *** Use --with-firebird parameter to set library prefix manually."
+        echo "  *** If you run 'make' now, Firebird backend will not be compiled."
+    fi
+    echo
+fi
+
+if test "$WANT_BACKEND_MYSQL" = "yes"; then
+    echo "  MySQL (>= $MYSQL_REQ_VERSION):"
+    echo "  =============================="
+    if test -n "$MYSQL_CFLAGS" -a -n "$MYSQL_LDFLAGS"; then
+        echo "  MYSQL_VERSION       = $MYSQL_VERSION"
+        echo "  MYSQL_CFLAGS        = $MYSQL_CFLAGS"
+        echo "  MYSQL_LDFLAGS       = $MYSQL_LDFLAGS"
+        echo
+        echo "  SOCI_MYSQL_LIBRARY_NAME = $SOCI_MYSQL_LIBRARY_NAME"
+        let "BACKENDS_COUNT += 1"
+    else
+        echo "  WARNING:"
+        echo "  *** MySQL backend requested but 'mysqlclient' library not found."
+        echo "  *** Use --with-mysql parameter to set 'mysql_config' path manually."
+        echo "  *** If you run 'make' now, MySQL backend will not be compiled."
+    fi
+    echo
+fi
+
+if test "$WANT_BACKEND_ODBC" = "yes"; then
+    echo "  ODBC (ODBCVER >= $ODBC_REQ_VERSION):"
+    echo "  =============================="
+    echo "  WARNING:"
+    echo "  *** ODBC backend is experimental and does not compile now."
+    echo "  *** Testing and patches are welcome."
+    echo
+    if test -n "$ODBC_CFLAGS" -a -n "$ODBC_LDFLAGS"; then
+        echo "  ODBC_VERSION       = $ODBC_VERSION"
+        echo "  ODBC_CFLAGS        = $ODBC_CFLAGS"
+        echo "  ODBC_LDFLAGS       = $ODBC_LDFLAGS"
+        echo
+        echo "  SOCI_ODBC_LIBRARY_NAME = $SOCI_ODBC_LIBRARY_NAME"
+        let "BACKENDS_COUNT += 1"
+    else
+        echo "  WARNING:"
+        echo "  *** ODBC backend requested but ODBC implementation not found."
+        echo "  *** Use --with-odbc parameter to set ODBC installation prefix manually."
+        echo "  *** If you run 'make' now, ODBC backend will not be compiled."
+    fi
+    echo
+fi
+
+if test "$WANT_BACKEND_ORACLE" = "yes"; then
+    echo "  Oracle (>= $ORACLE_OCI_REQ_VERSION):"
+    echo "  =============================="
+    if test -n "$ORACLE_OCI_CFLAGS" -a -n "$ORACLE_OCI_LDFLAGS"; then
+        echo "  ORACLE_OCI_VERSION  = $ORACLE_OCI_VERSION"
+        echo "  ORACLE_OCI_CFLAGS   = $ORACLE_OCI_CFLAGS"
+        echo "  ORACLE_OCI_LDFLAGS  = $ORACLE_OCI_LDFLAGS"
+        echo
+        echo "  SOCI_ORACLE_LIBRARY_NAME = $SOCI_ORACLE_LIBRARY_NAME"
+        let "BACKENDS_COUNT += 1"
+    else
+        echo "  WARNING:"
+        echo "  *** Oracle backend requested but 'OCI' library not found."
+        echo "  *** Use --with-oracle options to provide Oracle paths."
+        echo "  *** If you run 'make' now, Oracle backend will not be compiled."
+    fi
+    echo
+fi
+
+if test "$WANT_BACKEND_POSTGRESQL" = "yes"; then
+    echo "  PostgreSQL (>= $POSTGRESQL_REQ_VERSION):"
+    echo "  =============================="
+    if test -n "$POSTGRESQL_CFLAGS" -a -n "$POSTGRESQL_LDFLAGS"; then
+        echo "  POSTGRESQL_VERSION  = $POSTGRESQL_VERSION"
+        echo "  POSTGRESQL_CFLAGS   = $POSTGRESQL_CFLAGS"
+        echo "  POSTGRESQL_LDFLAGS  = $POSTGRESQL_LDFLAGS"
+        echo
+        echo "  SOCI_POSTGRESQL_LIBRARY_NAME = $SOCI_POSTGRESQL_LIBRARY_NAME"
+        let "BACKENDS_COUNT += 1"
+    else
+        echo "  WARNING:"
+        echo "  *** PostgreSQL backend requested but 'libpq' library not found."
+        echo "  *** Use --with-postgresql parameter to set 'pg_config' path manually."
+        echo "  *** If you run 'make' now, PostgreSQL backend will not be compiled."
+    fi
+    echo
+fi
+
+if test "$WANT_BACKEND_SQLITE3" = "yes"; then
+    echo "  SQLite 3 (>= $SQLITE3_REQ_VERSION):"
+    echo "  =============================="
+    if test -n "$SQLITE3_CFLAGS" -a -n "$SQLITE3_LDFLAGS"; then
+        echo "  SQLITE3_VERSION     = $SQLITE3_VERSION"
+        echo "  SQLITE3_CFLAGS      = $SQLITE3_CFLAGS"
+        echo "  SQLITE3_LDFLAGS     = $SQLITE3_LDFLAGS"
+        echo
+        echo "  SOCI_SQLITE3_LIBRARY_NAME = $SOCI_SQLITE3_LIBRARY_NAME"
+        let "BACKENDS_COUNT += 1"
+    else
+        echo "  WARNING: SQLite 3 backend requested but required SQLite $SQLITE3_REQ_VERSION not found."
+        echo "  Use --with-sqlite3 parameter to set SQLite 3 installation prefix."
+    fi
+    echo
+fi
+
+if test $BACKENDS_COUNT = 1; then
+    echo "  WARNING: Only 'empty' backend is configured!"
+    echo "  Type './configure --help' to learn about supported backends."
+    echo
+fi
+
+echo "Now, type 'make' to compile $PACKAGE_NAME."
