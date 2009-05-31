@@ -10,8 +10,14 @@
 #include "soci-simple.h"
 #include "soci.h"
 
-using namespace soci;
+#include <cstddef>
+#include <ctime>
+#include <exception>
+#include <map>
+#include <string>
+#include <vector>
 
+using namespace soci;
 
 namespace // unnamed
 {
@@ -29,7 +35,7 @@ struct session_wrapper
 
 SOCI_DECL session_handle soci_create_session(char const * connection_string)
 {
-    session_wrapper * wrapper;
+    session_wrapper * wrapper = NULL;
     try
     {
         wrapper = new session_wrapper();
@@ -318,8 +324,12 @@ bool name_unique_check_failed(statement_wrapper & wrapper,
     {
         // vector version
 
-        typedef std::map<std::string, std::vector<indicator> >::const_iterator
-            iterator;
+        typedef std::map
+            <
+                std::string,
+                std::vector<indicator>
+            >::const_iterator iterator;
+
         iterator const it = wrapper.use_indicators_v.find(name);
         is_unique = it == wrapper.use_indicators_v.end();
     }
@@ -349,8 +359,11 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
         {
         case dt_string:
             {
-                typedef std::map<std::string, std::string>::const_iterator
-                    iterator;
+                typedef std::map
+                    <
+                        std::string,
+                        std::string
+                    >::const_iterator iterator;
                 iterator const it = wrapper.use_strings.find(name);
                 name_exists = (it != wrapper.use_strings.end());
             }
@@ -396,24 +409,33 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
         {
         case dt_string:
             {
-                typedef std::map<std::string,
-                    std::vector<std::string> >::const_iterator iterator;
+                typedef std::map
+                    <
+                        std::string,
+                        std::vector<std::string>
+                    >::const_iterator iterator;
                 iterator const it = wrapper.use_strings_v.find(name);
                 name_exists = (it != wrapper.use_strings_v.end());
             }
             break;
         case dt_integer:
             {
-                typedef std::map<std::string,
-                    std::vector<int> >::const_iterator iterator;
+                typedef std::map
+                    <
+                        std::string,
+                        std::vector<int>
+                    >::const_iterator iterator;
                 iterator const it = wrapper.use_ints_v.find(name);
                 name_exists = (it != wrapper.use_ints_v.end());
             }
             break;
         case dt_long_long:
             {
-                typedef std::map<std::string,
-                    std::vector<long long> >::const_iterator iterator;
+                typedef std::map
+                    <
+                        std::string,
+                        std::vector<long long>
+                    >::const_iterator iterator;
                 iterator const it = wrapper.use_longlongs_v.find(name);
                 name_exists = (it != wrapper.use_longlongs_v.end());
             }
@@ -1526,10 +1548,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
 
         // bind all into elements
 
-        size_t const into_elements = wrapper->into_types.size();
+        std::size_t const into_elements = wrapper->into_types.size();
         if (wrapper->into_kind == statement_wrapper::single)
         {
-            for (size_t i = 0; i != into_elements; ++i)
+            for (std::size_t i = 0; i != into_elements; ++i)
             {
                 switch (wrapper->into_types[i])
                 {
@@ -1562,7 +1584,7 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
         {
             // vector elements
 
-            for (size_t i = 0; i != into_elements; ++i)
+            for (std::size_t i = 0; i != into_elements; ++i)
             {
                 switch (wrapper->into_types[i])
                 {
