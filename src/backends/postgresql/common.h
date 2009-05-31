@@ -26,8 +26,8 @@ namespace postgresql
 template <typename T>
 T string_to_integer(char const * buf)
 {
-    long long t;
-    int n;
+    long long t(0);
+    int n(0);
     int const converted = sscanf(buf, "%lld%n", &t, &n);
     if (converted == 1 && static_cast<std::size_t>(n) == strlen(buf))
     {
