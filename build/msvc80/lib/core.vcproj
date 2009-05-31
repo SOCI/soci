@@ -162,6 +162,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\core\boost-fusion.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\boost-gregorian-date.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\boost-optional.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\boost-tuple.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\core\connection-pool.h"
 				>
 			</File>
@@ -235,6 +251,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\core\soci-platform.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\soci-simple.h"
 				>
 			</File>
 			<File
@@ -344,6 +364,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\core\session.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\core\soci-simple.cpp"
 				>
 			</File>
 			<File
