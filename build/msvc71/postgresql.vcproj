@@ -35,7 +35,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libpq.lib"
-				OutputFile="$(OutDir)\libsoci_postgresql-vc71-d-2_2.lib"
+				OutputFile="$(OutDir)\libsoci_postgresql-vc71-d-3_0.lib"
 				AdditionalLibraryDirectories=""/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -78,7 +78,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libpq.lib"
-				OutputFile="$(OutDir)\libsoci_postgresql-vc71-2_2.lib"
+				OutputFile="$(OutDir)\libsoci_postgresql-vc71-3_0.lib"
 				AdditionalLibraryDirectories=""/>
 			<Tool
 				Name="VCMIDLTool"/>

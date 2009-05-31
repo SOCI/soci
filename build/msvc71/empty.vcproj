@@ -34,7 +34,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\libsoci_empty-vc71-d-2_2.lib"/>
+				OutputFile="$(OutDir)\libsoci_empty-vc71-d-3_0.lib"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
@@ -75,7 +75,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\libsoci_empty-vc71-2_2.lib"/>
+				OutputFile="$(OutDir)\libsoci_empty-vc71-3_0.lib"/>
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool

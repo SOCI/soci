@@ -98,11 +98,11 @@
 	/>
 	<UserMacro
 		Name="SOCI_VERSION"
-		Value="2.2.0"
+		Value="3.0.0"
 	/>
 	<UserMacro
 		Name="SOCI_VERSION_BIN"
-		Value="2_2"
+		Value="3_0"
 	/>
 	<UserMacro
 		Name="SOCI_PREFIX"

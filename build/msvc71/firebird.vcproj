@@ -35,7 +35,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="fbclient_ms.lib"
-				OutputFile="$(OutDir)\libsoci_firebird-vc71-d-2_2.lib"
+				OutputFile="$(OutDir)\libsoci_firebird-vc71-d-3_0.lib"
 				AdditionalLibraryDirectories=""/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -78,7 +78,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="fbclient_ms.lib"
-				OutputFile="$(OutDir)\libsoci_firebird-vc71-2_2.lib"
+				OutputFile="$(OutDir)\libsoci_firebird-vc71-3_0.lib"
 				AdditionalLibraryDirectories=""/>
 			<Tool
 				Name="VCMIDLTool"/>
