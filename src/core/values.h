@@ -101,7 +101,8 @@ public:
     template <typename T>
     T get(std::string const & name, T const & nullValue) const
     {
-        return row_ != NULL ? row_->get<T>(name, nullValue)
+        return row_ != NULL
+            ? row_->get<T>(name, nullValue)
             : get_from_uses<T>(name, nullValue);
     }
 
@@ -210,7 +211,12 @@ public:
     }
 
     void uppercase_column_names(bool forceToUpper)
-    { uppercaseColumnNames_ = forceToUpper; }
+    {
+        uppercaseColumnNames_ = forceToUpper;
+    }
+
+    column_properties const& get_properties(std::size_t pos) const;
+    column_properties const& get_properties(std::string const &name) const;
 
 private:
 

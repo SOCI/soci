@@ -8,8 +8,10 @@
 #define SOCI_SOURCE
 #include "row.h"
 
+#include <cstddef>
 #include <cctype>
 #include <sstream>
+#include <string>
 
 using namespace soci;
 using namespace details;

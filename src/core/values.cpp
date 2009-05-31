@@ -9,6 +9,11 @@
 #include "values.h"
 #include "row.h"
 
+#include <cstddef>
+#include <map>
+#include <sstream>
+#include <string>
+
 using namespace soci;
 using namespace soci::details;
 
@@ -24,7 +29,7 @@ indicator values::get_indicator(std::size_t pos) const
     }
 }
 
-indicator values::get_indicator(std::string const & name) const
+indicator values::get_indicator(std::string const& name) const
 {
     if (row_)
     {
@@ -41,4 +46,24 @@ indicator values::get_indicator(std::string const & name) const
         }
         return *indicators_[it->second];
     }
+}
+
+column_properties const& values::get_properties(std::size_t pos) const
+{
+    if (row_)
+    {
+        return row_->get_properties(pos);
+    }
+
+    throw soci_error("Rowset is empty");
+}
+
+column_properties const& values::get_properties(std::string const& name) const
+{
+    if (row_)
+    {
+        return row_->get_properties(name);
+    }
+
+    throw soci_error("Rowset is empty");
 }
