@@ -22,9 +22,9 @@ backend_factory const &backEnd = odbc;
 
 
 // DDL Creation objects for common tests
-struct table_creator_1 : public table_creator_base
+struct table_creator_one : public table_creator_base
 {
-    table_creator_1(session & sql)
+    table_creator_one(session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, val integer, c char, "
@@ -34,9 +34,9 @@ struct table_creator_1 : public table_creator_base
     }
 };
 
-struct table_creator_2 : public table_creator_base
+struct table_creator_two : public table_creator_base
 {
-    table_creator_2(session & sql)
+    table_creator_two(session & sql)
         : table_creator_base(sql)
     {
         sql  << "create table soci_test(num_float float, num_int integer,"
@@ -44,9 +44,9 @@ struct table_creator_2 : public table_creator_base
     }
 };
 
-struct table_creator_3 : public table_creator_base
+struct table_creator_three : public table_creator_base
 {
-    table_creator_3(session & sql)
+    table_creator_three(session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(name varchar(100) not null, "
@@ -61,26 +61,26 @@ struct table_creator_3 : public table_creator_base
 class test_context : public test_context_base
 {
 public:
-    test_context(backend_factory const &backEnd,
-                std::string const &connectString)
+    
+test_context(backend_factory const &backEnd, std::string const &connectString)
         : test_context_base(backEnd, connectString) {}
 
     table_creator_base * table_creator_1(session& s) const
-    {
-        return new table_creator_1(s);
+    {   
+        return new table_creator_one(s);
     }
 
     table_creator_base * table_creator_2(session& s) const
     {
-        return new table_creator_2(s);
+        return new table_creator_two(s);
     }
 
     table_creator_base * table_creator_3(session& s) const
     {
-        return new table_creator_3(s);
+        return new table_creator_three(s);
     }
 
-    std::string fromDual (std::string const &sql) const
+    std::string fromDual(std::string const &sql) const
     {
         return sql;
     }
