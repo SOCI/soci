@@ -17,6 +17,7 @@
 	/>
 	<Tool
 		Name="VCLinkerTool"
+		AdditionalLibraryDirectories="$(BOOST_LIB_DIR)"
 		GenerateDebugInformation="true"
 		ImportLibrary="$(TargetDir)$(TargetName).lib"
 	/>
@@ -70,11 +71,11 @@
 	/>
 	<UserMacro
 		Name="POSTGRESQL_INCLUDE_DIR"
-		Value="C:\Program Files\PostgreSQL\8.2\include"
+		Value="C:\Program Files\PostgreSQL\8.3\include"
 	/>
 	<UserMacro
 		Name="POSTGRESQL_LIB_DIR"
-		Value="C:\Program Files\PostgreSQL\8.2\lib\ms"
+		Value="C:\Program Files\PostgreSQL\8.3\lib"
 	/>
 	<UserMacro
 		Name="POSTGRESQL_LIB"
@@ -94,7 +95,11 @@
 	/>
 	<UserMacro
 		Name="BOOST_INCLUDE_DIR"
-		Value="c:\usr\boost-1.33.1\include"
+		Value="C:\Program Files\boost\boost_1_38"
+	/>
+	<UserMacro
+		Name="BOOST_LIB_DIR"
+		Value="C:\Program Files\boost\boost_1_38\lib"
 	/>
 	<UserMacro
 		Name="SOCI_VERSION"
