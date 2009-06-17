@@ -36,21 +36,49 @@ void soci::details::postgresql::parse_std_tm(char const * buf, std::tm & t)
 {
     char const * p1 = buf;
     char * p2;
-    long year, month, day;
+    char separator;
+    long a, b, c;
+    long year = 1900, month = 1, day = 1;
     long hour = 0, minute = 0, second = 0;
 
     char const * errMsg = "Cannot convert data to std::tm.";
 
-    year  = parse10(p1, p2, errMsg);
-    month = parse10(p1, p2, errMsg);
-    day   = parse10(p1, p2, errMsg);
+    a = parse10(p1, p2, errMsg);
+    separator = *p2;
+    b = parse10(p1, p2, errMsg);
+    c = parse10(p1, p2, errMsg);
 
     if (*p2 != '\0')
     {
-        // there is also the time of day available
+        // there are mote elements to parse
+        // - assume that what was already parsed is a date part
+        // and that the remaining elements describe the time of day
+        year = a;
+        month = b;
+        day = c;
         hour   = parse10(p1, p2, errMsg);
         minute = parse10(p1, p2, errMsg);
         second = parse10(p1, p2, errMsg);
+    }
+    else
+    {
+        // only three values have been parsed
+        if (separator == '-')
+        {
+            // assume the date value was read
+            // (leave the time of day as 00:00:00)
+            year = a;
+            month = b;
+            day = c;
+        }
+        else
+        {
+            // assume the time of day was read
+            // (leave the date part as 1900-01-01)
+            hour = a;
+            minute = b;
+            second = c;
+        }
     }
 
     t.tm_isdst = -1;

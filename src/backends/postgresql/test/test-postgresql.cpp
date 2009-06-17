@@ -409,6 +409,46 @@ void test9()
     std::cout << "test 9 passed" << std::endl;
 }
 
+// test for date, time and timestamp parsing
+void test10()
+{
+    {
+        session sql(backEnd, connectString);
+
+        std::string someDate = "2009-06-17 22:51:03";
+        std::tm t1, t2, t3;
+
+        sql << "select :sd::date, :sd::time, :sd::timestamp",
+            use(someDate, "sd"), into(t1), into(t2), into(t3);
+
+        // t1 should contain only the date part
+        assert(t1.tm_year == 2009 - 1900);
+        assert(t1.tm_mon == 6 - 1);
+        assert(t1.tm_mday == 17);
+        assert(t1.tm_hour == 0);
+        assert(t1.tm_min == 0);
+        assert(t1.tm_sec == 0);
+
+        // t2 should contain only the time of day part
+        assert(t2.tm_year == 0);
+        assert(t2.tm_mon == 0);
+        assert(t2.tm_mday == 1);
+        assert(t2.tm_hour == 22);
+        assert(t2.tm_min == 51);
+        assert(t2.tm_sec == 3);
+
+        // t3 should contain all information
+        assert(t3.tm_year == 2009 - 1900);
+        assert(t3.tm_mon == 6 - 1);
+        assert(t3.tm_mday == 17);
+        assert(t3.tm_hour == 22);
+        assert(t3.tm_min == 51);
+        assert(t3.tm_sec == 3);
+    }
+
+    std::cout << "test 10 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -521,6 +561,7 @@ int main(int argc, char** argv)
         test7();
         test8();
         test9();
+        test10();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;
