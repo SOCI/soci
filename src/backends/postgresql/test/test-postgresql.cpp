@@ -415,7 +415,7 @@ void test10()
     {
         session sql(backEnd, connectString);
 
-        std::string someDate = "2009-06-17 22:51:03";
+        std::string someDate = "2009-06-17 22:51:03.123";
         std::tm t1, t2, t3;
 
         sql << "select :sd::date, :sd::time, :sd::timestamp",

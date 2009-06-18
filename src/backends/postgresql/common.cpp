@@ -48,9 +48,9 @@ void soci::details::postgresql::parse_std_tm(char const * buf, std::tm & t)
     b = parse10(p1, p2, errMsg);
     c = parse10(p1, p2, errMsg);
 
-    if (*p2 != '\0')
+    if (*p2 == ' ')
     {
-        // there are mote elements to parse
+        // there are more elements to parse
         // - assume that what was already parsed is a date part
         // and that the remaining elements describe the time of day
         year = a;
