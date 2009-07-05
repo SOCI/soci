@@ -13,6 +13,7 @@
 #include <cerrno>
 #include <ciso646>
 #include <climits>
+#include <cstdio>
 #include <cstdlib>
 #include <string>
 
