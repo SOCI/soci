@@ -11,6 +11,7 @@
 #include "soci.h"
 
 #include <cstddef>
+#include <cstdio>
 #include <ctime>
 #include <exception>
 #include <map>
@@ -493,7 +494,7 @@ void resize_in_map(std::map<std::string, std::vector<T> > & m, int new_size)
 // helper for formatting date values
 char const * format_date(statement_wrapper & wrapper, std::tm const & d)
 {
-    sprintf(wrapper.date_formatted, "%d %d %d %d %d %d",
+    std::sprintf(wrapper.date_formatted, "%d %d %d %d %d %d",
         d.tm_year + 1900, d.tm_mon + 1, d.tm_mday,
         d.tm_hour, d.tm_min, d.tm_sec);
 
@@ -510,7 +511,7 @@ bool string_to_date(char const * val, std::tm & /* out */ dt,
     int hour;
     int minute;
     int second;
-    int const converted = sscanf(val, "%d %d %d %d %d %d",
+    int const converted = std::sscanf(val, "%d %d %d %d %d %d",
         &year, &month, &day, &hour, &minute, &second);
     if (converted != 6)
     {
@@ -1531,7 +1532,7 @@ SOCI_DECL char const * soci_get_use_date(statement_handle st, char const * name)
 
     // format is: "YYYY MM DD hh mm ss"
     std::tm const & d = wrapper->use_dates[name];
-    sprintf(wrapper->date_formatted, "%d %d %d %d %d %d",
+    std::sprintf(wrapper->date_formatted, "%d %d %d %d %d %d",
         d.tm_year + 1900, d.tm_mon + 1, d.tm_mday,
         d.tm_hour, d.tm_min, d.tm_sec);
 
