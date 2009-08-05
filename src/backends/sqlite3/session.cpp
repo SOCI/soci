@@ -9,6 +9,7 @@
 #include "soci-sqlite3.h"
 
 #include <sstream>
+#include <string>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -44,16 +45,40 @@ void hardExec(sqlite_api::sqlite3 *conn, char const *query, char const *errMsg)
 sqlite3_session_backend::sqlite3_session_backend(
     std::string const & connectString)
 {
-    int res;
-    res = sqlite3_open(connectString.c_str(), &conn_);
-    if (res != SQLITE_OK)
+    int timeout = 0;
+    std::string dbname(connectString);
+    std::stringstream ssconn(connectString);
+    while (!ssconn.eof() && ssconn.str().find('=') >= 0)
+    {
+        std::string key, val;
+        std::getline(ssconn, key, '=');
+        std::getline(ssconn, val, ' ');
+        if ("dbname" == key || "db" == key)
+        {
+            dbname = val;
+        }
+        else if ("timeout" == key)
+        {
+            std::istringstream converter(val);
+            converter >> timeout;
+        }
+    }
+
+    int res = sqlite3_open(dbname.c_str(), &conn_);
+    if (SQLITE_OK != res)
     {
         const char *zErrMsg = sqlite3_errmsg(conn_);
-
         std::ostringstream ss;
-        ss << "Cannot establish connection to the database. "
-           << zErrMsg;
+        ss << "Cannot establish connection to the database. " << zErrMsg;
+        throw soci_error(ss.str());
+    }
 
+    res = sqlite3_busy_timeout(conn_, timeout * 1000);
+    if (SQLITE_OK != res)
+    {
+        const char *zErrMsg = sqlite3_errmsg(conn_);
+        std::ostringstream ss;
+        ss << "Failed to set busy timeout for connection. " << zErrMsg;
         throw soci_error(ss.str());
     }
 }
