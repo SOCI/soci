@@ -2964,6 +2964,39 @@ void test26()
             assert(omi1.is_initialized() == false);
             assert(omi2.is_initialized() && omi2.get().get() == 125);
         }
+
+        // use with rowset and table containing null values
+
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+            sql << "insert into soci_test(id, val) values(1, 10)";
+            sql << "insert into soci_test(id, val) values(2, 11)";
+            sql << "insert into soci_test(id, val) values(3, NULL)";
+            sql << "insert into soci_test(id, val) values(4, 13)";
+
+            rowset<boost::optional<int> > rs = (sql.prepare <<
+                "select val from soci_test order by id asc");
+
+            // 1st row
+            rowset<boost::optional<int> >::const_iterator pos = rs.begin();
+            assert((*pos).is_initialized());
+            assert(10 == (*pos).get());
+
+            // 2nd row
+            ++pos;
+            assert((*pos).is_initialized());
+            assert(11 == (*pos).get());
+
+            // 3rd row
+            ++pos;
+            assert((*pos).is_initialized() == false);
+
+            // 4th row
+            ++pos;
+            assert((*pos).is_initialized());
+            assert(13 == (*pos).get());
+        }
     }
 
     std::cout << "test 26 passed" << std::endl;
