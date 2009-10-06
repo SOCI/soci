@@ -4,7 +4,7 @@
 #
 # Author: Mateusz Loskot <mateusz@loskot.net>
 #
-ACLOCAL_AMFLAGS = -I $(top_srcdir)/../build/m4
+ACLOCAL_AMFLAGS = -I m4
 
 AUTOMAKE_OPTIONS = \
 	1.4 \
