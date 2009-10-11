@@ -1,3 +1,9 @@
 *.ncb
 *.suo
 *.vcproj.*.user
+core
+debug
+empty
+empty_test
+postgresql
+postgresql_test
