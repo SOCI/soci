@@ -1549,10 +1549,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
 
         // bind all into elements
 
-        std::size_t const into_elements = wrapper->into_types.size();
+        int const into_elements = static_cast<int>(wrapper->into_types.size());
         if (wrapper->into_kind == statement_wrapper::single)
         {
-            for (std::size_t i = 0; i != into_elements; ++i)
+            for (int i = 0; i != into_elements; ++i)
             {
                 switch (wrapper->into_types[i])
                 {
@@ -1584,8 +1584,7 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
         else
         {
             // vector elements
-
-            for (std::size_t i = 0; i != into_elements; ++i)
+            for (int i = 0; i != into_elements; ++i)
             {
                 switch (wrapper->into_types[i])
                 {
