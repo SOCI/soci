@@ -11,7 +11,9 @@
 #include <map>
 #include <cassert>
 #include <cstdlib>
+#ifndef _MSC_VER
 #include <stdint.h>
+#endif
 
 using namespace soci;
 using namespace soci::dynamic_backends;
