@@ -12,8 +12,10 @@
 #ifdef _MSC_VER
 
 // Define if you have the vsnprintf variants.
-#define HAVE_VSNPRINTF 1
-#define vsnprintf _vsnprintf
+#if _MSC_VER < 1500
+# define HAVE_VSNPRINTF 1
+# define vsnprintf _vsnprintf
+#endif
 
 // Define if you have the snprintf variants.
 #define HAVE_SNPRINTF 1
