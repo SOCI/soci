@@ -342,6 +342,11 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
         type = dt_string;
         typeFound = true;
     }
+    if (dt.find("boolean", 0) != std::string::npos)
+    {
+        type = dt_integer;
+        typeFound = true;
+    }
 
     if (typeFound)
     {
