@@ -19,7 +19,8 @@ file(GLOB SOCI_CORE_CPP *.cpp)
 
 add_library(${SOCI_CORE_LIB_NAME} SHARED ${SOCI_CORE_CPP})
 
-target_link_libraries(${SOCI_CORE_LIB_NAME})
+target_link_libraries(${SOCI_CORE_LIB_NAME}
+  ${Boost_date_time_LIBRARY})
 
 ###############################################################################
 # core installation

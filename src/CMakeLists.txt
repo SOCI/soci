@@ -33,10 +33,28 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 # TODO: build variants and flags
 
 #################################################################################
-# Backends features
+# Other general features depending on thirdparty components
 #################################################################################
 
-# TODO: Check backends specific dependencies
+# Boost C++ Libraries support - optional, default=OFF
+set(SOCI_WITH_BOOST FALSE CACHE BOOL "Choose if Boost C++ Libraries support should be built")
+
+if(SOCI_WITH_BOOST)
+  find_package(Boost 1.33.1 REQUIRED date_time)
+
+  if(Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+    add_definitions(-DHAVE_BOOST)
+  endif()
+
+  if(Boost_date_time_FOUND)
+    add_definitions(-DHAVE_BOOST_DATE_TIME)
+  endif()
+endif()
+
+#################################################################################
+# Backends-specific features
+#################################################################################
 
 #################################################################################
 # Installation
