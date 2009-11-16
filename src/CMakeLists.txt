@@ -37,7 +37,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 #################################################################################
 
 # Boost C++ Libraries support - optional, default=OFF
-set(SOCI_WITH_BOOST FALSE CACHE BOOL "Choose if Boost C++ Libraries support should be built")
+set(SOCI_WITH_BOOST FALSE CACHE BOOL
+    "Choose if Boost C++ Libraries support should be built")
 
 if(SOCI_WITH_BOOST)
   find_package(Boost 1.33.1 REQUIRED date_time)
@@ -55,6 +56,29 @@ endif()
 #################################################################################
 # Backends-specific features
 #################################################################################
+
+set(SOCI_WITH_POSTGRESQL FALSE CACHE BOOL
+    "Determines wheter PostgreSQL backend should be built")
+
+if(SOCI_WITH_POSTGRESQL)
+  find_package(PostgreSQL)
+
+  if(NOT POSTGRESQL_FOUND)
+    message(FATAL ERROR "Please check your PostgreSQL installation")
+  endif()
+endif()
+
+
+set(SOCI_WITH_SQLITE3 FALSE CACHE BOOL
+    "Determines wheter SQLite 3 backend should be built")
+
+if(SOCI_WITH_SQLITE3)
+  find_package(SQLite3)
+
+  if(NOT SQLITE3_FOUND)
+    message(FATAL ERROR "Please check your SQLite 3 installation")
+  endif()
+endif()
 
 #################################################################################
 # Installation
