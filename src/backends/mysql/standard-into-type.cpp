@@ -52,7 +52,9 @@ void mysql_standard_into_type_backend::post_fetch(
     if (gotData)
     {
         int pos = position_ - 1;
-        mysql_data_seek(statement_.result_, statement_.currentRow_);
+        //mysql_data_seek(statement_.result_, statement_.currentRow_);
+        mysql_row_seek(statement_.result_,
+            statement_.resultRowOffsets_[statement_.currentRow_]);
         MYSQL_ROW row = mysql_fetch_row(statement_.result_);
         if (row[pos] == NULL)
         {

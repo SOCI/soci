@@ -255,6 +255,18 @@ mysql_statement_backend::execute(int number)
             throw mysql_soci_error(mysql_error(session_.conn_),
                 mysql_errno(session_.conn_));
         }
+        if (result_ != NULL)
+        {
+            // Cache the rows offsets to have random access to the rows later.
+            // [mysql_data_seek() is O(n) so we don't want to use it].
+            int numrows = mysql_num_rows(result_);
+            resultRowOffsets_.resize(numrows);
+            for (int i = 0; i < numrows; i++)
+            {
+                resultRowOffsets_[i] = mysql_row_tell(result_);
+                mysql_fetch_row(result_);
+            }
+        }
     }
     else
     {

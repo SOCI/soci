@@ -182,6 +182,10 @@ struct mysql_statement_backend : details::statement_backend
     bool justDescribed_; // to optimize row description with immediately
                          // following actual statement execution
 
+    // Prefetch the row offsets in order to use mysql_row_seek() for
+    // random access to rows, since mysql_data_seek() is expensive.
+    std::vector<MYSQL_ROW_OFFSET> resultRowOffsets_;
+
     bool hasIntoElements_;
     bool hasVectorIntoElements_;
     bool hasUseElements_;

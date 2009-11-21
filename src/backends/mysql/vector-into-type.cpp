@@ -56,12 +56,14 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
         // Here, rowsToConsume_ in the Statement object designates
         // the number of rows that need to be put in the user's buffers.
 
-        // PostgreSQL column positions start at 0
+        // MySQL column positions start at 0
         int pos = position_ - 1;
 
         int const endRow = statement_.currentRow_ + statement_.rowsToConsume_;
 
-        mysql_data_seek(statement_.result_, statement_.currentRow_);
+        //mysql_data_seek(statement_.result_, statement_.currentRow_);
+        mysql_row_seek(statement_.result_,
+            statement_.resultRowOffsets_[statement_.currentRow_]);
         for (int curRow = statement_.currentRow_, i = 0;
              curRow != endRow; ++curRow, ++i)
         {
