@@ -110,7 +110,7 @@ void postgresql_standard_into_type_backend::post_fetch(
         case x_unsigned_long:
             {
                 unsigned long * dest = static_cast<unsigned long *>(data_);
-                *dest = string_to_integer<unsigned long>(buf);
+                *dest = string_to_unsigned_integer<unsigned long>(buf);
             }
             break;
         case x_long_long:
@@ -141,12 +141,13 @@ void postgresql_standard_into_type_backend::post_fetch(
                     = static_cast<postgresql_rowid_backend *>(
                         rid->get_backend());
 
-                rbe->value_ = string_to_integer<unsigned long>(buf);
+                rbe->value_ = string_to_unsigned_integer<unsigned long>(buf);
             }
             break;
         case x_blob:
             {
-                unsigned long oid = string_to_integer<unsigned long>(buf);
+                unsigned long oid =
+                    string_to_unsigned_integer<unsigned long>(buf);
 
                 int fd = lo_open(statement_.session_.conn_, oid,
                     INV_READ | INV_WRITE);

@@ -114,7 +114,8 @@ void postgresql_vector_into_type_backend::post_fetch(bool gotData, indicator * i
                 break;
             case x_unsigned_long:
                 {
-                    unsigned long const val = string_to_integer<unsigned long>(buf);
+                    unsigned long const val =
+                        string_to_unsigned_integer<unsigned long>(buf);
                     set_invector_(data_, i, val);
                 }
                 break;
