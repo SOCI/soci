@@ -13,6 +13,7 @@
 #include <string>
 #include <cassert>
 #include <cmath>
+#include <cstring>
 #include <ctime>
 #include <cstdlib>
 
@@ -222,7 +223,7 @@ void test3()
             assert(b.get_len() == 2 * sizeof(buf));
             char buf2[100];
             b.read(0, buf2, 10);
-            assert(strncmp(buf2, "abcdefghij", 10) == 0);
+            assert(std::strncmp(buf2, "abcdefghij", 10) == 0);
         }
 
         unsigned long oid;
