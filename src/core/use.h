@@ -11,8 +11,6 @@
 #include "use-type.h"
 #include "exchange-traits.h"
 #include "type-conversion.h"
-// std
-#include <string>
 
 namespace soci
 {
@@ -44,11 +42,27 @@ details::use_type_ptr use(T & t, indicator & ind,
 }
 
 template <typename T>
+details::use_type_ptr use(T const & t, indicator & ind,
+						  std::string const &name = std::string())
+{
+	return details::do_use(t, ind, name,
+		typename details::exchange_traits<T>::type_family());
+}
+
+template <typename T>
 details::use_type_ptr use(T & t, std::vector<indicator> & ind,
     std::string const & name = std::string())
 {
     return details::do_use(t, ind, name,
         typename details::exchange_traits<T>::type_family());
+}
+
+template <typename T>
+details::use_type_ptr use(T const & t, std::vector<indicator> & ind,
+						  std::string const & name = std::string())
+{
+	return details::do_use(t, ind, name,
+		typename details::exchange_traits<T>::type_family());
 }
 
 // for char buffer with run-time size information
@@ -57,6 +71,14 @@ details::use_type_ptr use(T & t, std::size_t bufSize,
     std::string const & name = std::string())
 {
     return details::use_type_ptr(new details::use_type<T>(t, bufSize));
+}
+
+// for char buffer with run-time size information
+template <typename T>
+details::use_type_ptr use(T const & t, std::size_t bufSize,
+						  std::string const & name = std::string())
+{
+	return details::use_type_ptr(new details::use_type<T>(t, bufSize));
 }
 
 } // namespace soci
