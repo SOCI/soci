@@ -157,7 +157,7 @@ void postgresql_standard_into_type_backend::post_fetch(
                 }
 
                 blob * b = static_cast<blob *>(data_);
-                postgresql_blob_backend *bbe
+                postgresql_blob_backend * bbe
                      = static_cast<postgresql_blob_backend *>(b->get_backend());
 
                 if (bbe->fd_ != -1)
@@ -166,6 +166,7 @@ void postgresql_standard_into_type_backend::post_fetch(
                 }
 
                 bbe->fd_ = fd;
+                bbe->oid_ = oid;
             }
             break;
 
