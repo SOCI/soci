@@ -41,6 +41,7 @@
 #include "type-conversion-traits.h"
 #include "type-holder.h"
 #include "type-ptr.h"
+#include "unsigned-types.h"
 #include "use.h"
 #include "use-type.h"
 #include "values.h"
