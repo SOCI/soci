@@ -13,6 +13,7 @@
 #include <ciso646>
 #include <limits>
 #include <cstring>
+#include <cstdio>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
