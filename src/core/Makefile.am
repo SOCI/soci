@@ -70,6 +70,7 @@ soci_HEADERS = \
 	type-conversion-traits.h \
 	type-holder.h \
 	type-ptr.h \
+	unsigned-types.h \
 	use.h \
 	use-type.h \
 	values.h \
