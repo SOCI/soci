@@ -7,6 +7,7 @@
 
 #define SOCI_POSTGRESQL_SOURCE
 #include "soci-postgresql.h"
+#include "blob.h"
 #include "rowid.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
@@ -148,6 +149,18 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                 buf_ = new char[bufSize];
 
                 snprintf(buf_, bufSize, "%lu", rbe->value_);
+            }
+            break;
+        case x_blob:
+            {
+                blob * b = static_cast<blob *>(data_);
+                postgresql_blob_backend * bbe =
+                    static_cast<postgresql_blob_backend *>(b->get_backend());
+
+                std::size_t const bufSize
+                    = std::numeric_limits<unsigned long>::digits10 + 2;
+                buf_ = new char[bufSize];
+                snprintf(buf_, bufSize, "%lu", bbe->oid_);
             }
             break;
 

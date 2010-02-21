@@ -285,6 +285,11 @@ bool statement_impl::execute(bool withDataExchange)
 
     fetchSize_ = initialFetchSize_;
 
+    // pre-use should be executed before inspecting the sizes of use
+    // elements, as they can be resized in type conversion routines
+
+    pre_use();
+
     std::size_t bindSize = uses_size();
 
     if (bindSize > 1 && fetchSize_ > 1)
@@ -292,8 +297,6 @@ bool statement_impl::execute(bool withDataExchange)
         throw soci_error(
              "Bulk insert/update and bulk select not allowed in same query");
     }
-
-    pre_use();
 
     // looks like a hack and it is - row description should happen
     // *after* the use elements were completely prepared
