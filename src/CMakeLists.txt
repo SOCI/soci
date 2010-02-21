@@ -10,12 +10,16 @@
 #################################################################################
 # General settings
 #################################################################################
+project(SOCI)
 
 cmake_minimum_required(VERSION 2.6.0 FATAL_ERROR)
 
-project(SOCI)
+set(SOCI_VERSION 3.1.0)
 
-set(SOCI_CMAKE_VERSION 3.1.0)
+#################################################################################
+# Define available options
+#################################################################################
+
 
 #################################################################################
 # General features
@@ -56,6 +60,17 @@ endif()
 #################################################################################
 # Backends-specific features
 #################################################################################
+
+set(SOCI_WITH_ORACLE FALSE CACHE BOOL
+    "Determines wheter Oracle backend should be built")
+
+if(SOCI_WITH_ORACLE)
+  find_package(Oracle)
+
+  if(NOT ORACLE_FOUND)
+    message(FATAL ERROR "Please check your Oracle installation")
+  endif()
+endif()
 
 set(SOCI_WITH_POSTGRESQL FALSE CACHE BOOL
     "Determines wheter PostgreSQL backend should be built")
