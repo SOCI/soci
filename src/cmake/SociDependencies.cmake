@@ -40,7 +40,7 @@ option(WITH_VALGRIND "Run tests under valgrind" OFF)
 set(SOCI_DEPENDENCIES Boost PostgreSQL)
 
 #foreach(external "${SOCI_DEPENDENCIES}")
-foreach(external Boost PostgreSQL)
+foreach(external Boost PostgreSQL SQLite3)
 
   message(STATUS "")
   string(TOUPPER "${external}" EXTERNAL)

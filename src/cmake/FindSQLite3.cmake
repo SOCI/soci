@@ -59,7 +59,7 @@ ELSE()
     $ENV{SystemDrive}/SQLite3/*/lib
     ${OSGEO4W_ROOT_DIR}/lib)
  
-  message(STATUS ${SQLITE3_LIBRARY})
+  #message(STATUS ${SQLITE3_LIBRARY})
   # Handle the QUIETLY and REQUIRED arguments and set SQLITE3_FOUND to TRUE
   # if all listed variables are TRUE
   INCLUDE(FindPackageHandleStandardArgs)

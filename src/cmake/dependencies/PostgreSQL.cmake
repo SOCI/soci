@@ -1,10 +1,10 @@
-set(PostgreSQL_FIND_QUIETLY TRUE)
+set(SQLITE3_FIND_QUIETLY TRUE)
 
-find_package(PostgreSQL)
+find_package(SQLite3)
 
-boost_external_report(PostgreSQL INCLUDE_DIR LIBRARIES)
+boost_external_report(SQLite3 INCLUDE_DIR LIBRARIES)
 
-if(POSTGRESQL_FOUND)
-  include_directories(${POSTGRESQL_INCLUDE_DIR})
-  add_definitions(-DHAVE_POSTGRESQL)
+if(SQLITE3_FOUND)
+  include_directories(${SQLITE3_INCLUDE_DIR})
+  add_definitions(-DHAVE_SQLITE3)
 endif()
