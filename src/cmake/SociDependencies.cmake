@@ -4,8 +4,17 @@
 # See accompanying file LICENSE_1_0.txt or copy at 
 #   http://www.boost.org/LICENSE_1_0.txt 
 #
+# List of SOCI dependncies
+set(SOCI_DEPENDENCIES
+  Boost
+  PostgreSQL
+  SQLite3)
+
+#
+# Perform checks
+# 
 message(STATUS "")
-colormsg(_HIBLUE_ "Looking for (optional) dependencies on the system")
+colormsg(_HIBLUE_ "Looking for SOCI dependencies:")
 
 macro(boost_external_report NAME)
 
@@ -37,10 +46,7 @@ option(WITH_VALGRIND "Run tests under valgrind" OFF)
 #
 # Detect available dependencies
 #
-set(SOCI_DEPENDENCIES Boost PostgreSQL)
-
-#foreach(external "${SOCI_DEPENDENCIES}")
-foreach(external Boost PostgreSQL SQLite3)
+foreach(external ${SOCI_DEPENDENCIES})
 
   message(STATUS "")
   string(TOUPPER "${external}" EXTERNAL)
