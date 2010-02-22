@@ -7,6 +7,7 @@
 # List of SOCI dependncies
 set(SOCI_BACKENDS_ALL_DEPENDENCIES
   Boost
+  MySQL
   Oracle
   PostgreSQL
   SQLite3)

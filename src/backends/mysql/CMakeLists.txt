@@ -1,0 +1,13 @@
+set(SOCI_BACKEND_MYSQL_TARGET soci_mysql)
+file(GLOB SOCI_MYSQL_HEADERS *.h)
+file(GLOB SOCI_MYSQL_SOURCES *.cpp)
+
+add_library(${SOCI_BACKEND_MYSQL_TARGET} SHARED ${SOCI_MYSQL_SOURCES})
+
+target_link_libraries(${SOCI_BACKEND_MYSQL_TARGET}
+  ${SOCI_BACKENDS_DEPENDENCIES}
+  ${MYSQL_LIBRARIES})
+
+add_subdirectory(test)
+
+# TODO: install
