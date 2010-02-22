@@ -1,17 +1,12 @@
-set(SOCI_BACKEND_NAME soci_empty)
+set(SOCI_BACKEND_EMPTY_TARGET soci_empty)
 
-file(GLOB HEADERS *.h)
-file(GLOB SOURCES *.cpp)
+file(GLOB SOCI_EMPTY_HEADERS *.h)
+file(GLOB SOCI_EMPTY_SOURCES *.cpp)
 
-###############################################################################
-# core build targets
+add_library(${SOCI_BACKEND_EMPTY_TARGET} SHARED ${SOCI_EMPTY_SOURCES})
 
-add_library(${SOCI_BACKEND_NAME} SHARED ${SOURCES})
+target_link_libraries(${SOCI_BACKEND_EMPTY_TARGET} ${SOCI_BACKENDS_DEPENDENCIES})
 
-target_link_libraries(${SOCI_BACKEND_NAME}
-  ${Boost_date_time_LIBRARY})
+add_subdirectory(test)
 
-###############################################################################
-# core installation
-
-# TODO
+# TODO: install
