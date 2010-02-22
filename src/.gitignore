@@ -1,3 +1,4 @@
+*.swp
 aclocal.m4
 autom4te.cache
 confdefs.h
