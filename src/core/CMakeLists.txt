@@ -9,20 +9,18 @@
 #
 #################################################################################
 
-set(SOCI_CORE_LIB_NAME soci_core)
+set(SOCI_CORE_TARGET soci_core)
 
-file(GLOB SOCI_CORE_HPP *.h)
-file(GLOB SOCI_CORE_CPP *.cpp)
+file(GLOB SOCI_CORE_HEADERS *.h)
+file(GLOB SOCI_CORE_SOURCES *.cpp)
 
-###############################################################################
-# core build targets
+add_library(${SOCI_CORE_TARGET} SHARED ${SOCI_CORE_SOURCES})
 
-add_library(${SOCI_CORE_LIB_NAME} SHARED ${SOCI_CORE_CPP})
+target_link_libraries(${SOCI_CORE_TARGET} ${SOCI_CORE_DEPENDENCIES})
 
-target_link_libraries(${SOCI_CORE_LIB_NAME}
-  ${Boost_date_time_LIBRARY})
+set(SOCI_BACKENDS_DEPENDENCIES
+  ${SOCI_BACKENDS_DEPENDENCIES}
+  ${SOCI_CORE_TARGET}
+  PARENT_SCOPE)
 
-###############################################################################
-# core installation
-
-# TODO
+# TODO: install
