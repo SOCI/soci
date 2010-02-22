@@ -4,6 +4,7 @@
 # On success, the macro sets the following variables:
 # SQLITE3_FOUND = if the library found
 # SQLITE3_LIBRARY = full path to the library
+# SQLITE3_LIBRARIES = full path to the library
 # SSQLITE3_INCLUDE_DIR = where to find the library headers
 #
 # Copyright (c) 2009 Mateusz Loskot <mateusz@loskot.net>
@@ -59,6 +60,8 @@ ELSE()
     $ENV{SystemDrive}/SQLite3/*/lib
     ${OSGEO4W_ROOT_DIR}/lib)
  
+  set(SQLITE3_LIBRARIES ${SQLITE3_LIBRARY})
+
   #message(STATUS ${SQLITE3_LIBRARY})
   # Handle the QUIETLY and REQUIRED arguments and set SQLITE3_FOUND to TRUE
   # if all listed variables are TRUE
