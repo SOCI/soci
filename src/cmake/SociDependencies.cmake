@@ -5,7 +5,7 @@
 #   http://www.boost.org/LICENSE_1_0.txt 
 #
 # List of SOCI dependncies
-set(SOCI_DEPENDENCIES
+set(SOCI_BACKENDS_ALL_DEPENDENCIES
   Boost
   Oracle
   PostgreSQL
@@ -47,7 +47,7 @@ option(WITH_VALGRIND "Run tests under valgrind" OFF)
 #
 # Detect available dependencies
 #
-foreach(external ${SOCI_DEPENDENCIES})
+foreach(external ${SOCI_BACKENDS_ALL_DEPENDENCIES})
 
   message(STATUS "")
   string(TOUPPER "${external}" EXTERNAL)
