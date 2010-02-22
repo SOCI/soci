@@ -30,10 +30,30 @@ set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 include(SociUtilities)
 
 #################################################################################
+# Force CMake options
+#################################################################################
+
+set(CMAKE_VERBOSE_MAKEFILE TRUE
+  CACHE BOOLEAN "Create verbose makefiles if on" FORCE)
+
+#################################################################################
 # Find SOCI dependencies
 #################################################################################
 
+set(SOCI_CORE_DEPENDENCIES)
+set(SOCI_BACKENDS_DEPENDENCIES)
+
 include(SociDependencies)
+
+set(DL_FIND_QUIETLY TRUE)
+find_package(DL)
+if(DL_FOUND)
+  set(SOCI_CORE_DEPENDENCIES  ${SOCI_CORE_DEPENDENCIES} ${DL_LIBRARY})
+  include_directories(${DL_INCLUDE_DIR})
+endif()
+
+
+set(SOCI_CORE_DEPENDENCIES ${SOCI_CORE_DEPENDENCIES} ${Boost_DATE_TIME_LIBRARY})
 
 #################################################################################
 # Installation
