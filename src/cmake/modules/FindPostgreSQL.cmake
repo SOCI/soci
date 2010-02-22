@@ -10,12 +10,10 @@
 # Redistribution and use is allowed according to the terms of the BSD license.
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 
-# Add the postgresql and mysql include paths here
-
 if(POSTGRESQL_INCLUDE_DIR AND POSTGRESQL_LIBRARIES)
-  set(POSTGRESQL_FOUND TRUE)
-
-else(POSTGRESQL_INCLUDE_DIR AND POSTGRESQL_LIBRARIES)
+  # Already in cache, be silent
+  set(POSTGRESQL_FIND_QUIETLY TRUE)
+else()
   
   find_path(POSTGRESQL_INCLUDE_DIR libpq-fe.h
     /usr/include/server
@@ -40,17 +38,18 @@ else(POSTGRESQL_INCLUDE_DIR AND POSTGRESQL_LIBRARIES)
       
   if(POSTGRESQL_INCLUDE_DIR AND POSTGRESQL_LIBRARIES)
     set(POSTGRESQL_FOUND TRUE)
-    if(NOT PostgreSQL_FIND_QUIETLY)
-      message(STATUS "Found PostgreSQL: ${POSTGRESQL_INCLUDE_DIR}, ${POSTGRESQL_LIBRARIES}")
-    endif()
-    include_directories(${POSTGRESQL_INCLUDE_DIR})
-  else(POSTGRESQL_INCLUDE_DIR AND POSTGRESQL_LIBRARIES)
+  else()
     set(POSTGRESQL_FOUND FALSE)
-    if(NOT PostgreSQL_FIND_QUIETLY)
-      message(STATUS "PostgreSQL not found.")
-    endif()
-  endif(POSTGRESQL_INCLUDE_DIR AND POSTGRESQL_LIBRARIES)
+  endif()
 
-  mark_as_advanced(POSTGRESQL_INCLUDE_DIR POSTGRESQL_LIBRARIES)
+  # Handle the QUIETLY and REQUIRED arguments and set POSTGRESQL_FOUND to TRUE
+  # if all listed variables are TRUE
+  INCLUDE(FindPackageHandleStandardArgs)
+  FIND_PACKAGE_HANDLE_STANDARD_ARGS(PostgreSQL DEFAULT_MSG
+    POSTGRESQL_INCLUDE_DIR POSTGRESQL_LIBRARIES)
+
+  # TODO: Do we want to mark these as advanced? --mloskot
+  # http://www.cmake.org/cmake/help/cmake2.6docs.html#command:mark_as_advanced
+  #mark_as_advanced(POSTGRESQL_INCLUDE_DIR POSTGRESQL_LIBRARIES)
 
 endif(POSTGRESQL_INCLUDE_DIR AND POSTGRESQL_LIBRARIES)
