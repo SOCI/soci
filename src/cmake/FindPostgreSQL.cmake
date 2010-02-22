@@ -21,6 +21,7 @@ else(POSTGRESQL_INCLUDE_DIR AND POSTGRESQL_LIBRARIES)
     /usr/include/server
     /usr/include/pgsql/server
     /usr/local/include/pgsql/server
+    /usr/include/postgresql
     /usr/include/postgresql/server
     /usr/include/postgresql/*/server
     $ENV{ProgramFiles}/PostgreSQL/*/include
@@ -39,11 +40,15 @@ else(POSTGRESQL_INCLUDE_DIR AND POSTGRESQL_LIBRARIES)
       
   if(POSTGRESQL_INCLUDE_DIR AND POSTGRESQL_LIBRARIES)
     set(POSTGRESQL_FOUND TRUE)
-    message(STATUS "Found PostgreSQL: ${POSTGRESQL_INCLUDE_DIR}, ${POSTGRESQL_LIBRARIES}")
+    if(NOT PostgreSQL_FIND_QUIETLY)
+      message(STATUS "Found PostgreSQL: ${POSTGRESQL_INCLUDE_DIR}, ${POSTGRESQL_LIBRARIES}")
+    endif()
     include_directories(${POSTGRESQL_INCLUDE_DIR})
   else(POSTGRESQL_INCLUDE_DIR AND POSTGRESQL_LIBRARIES)
     set(POSTGRESQL_FOUND FALSE)
-    message(STATUS "PostgreSQL not found.")
+    if(NOT PostgreSQL_FIND_QUIETLY)
+      message(STATUS "PostgreSQL not found.")
+    endif()
   endif(POSTGRESQL_INCLUDE_DIR AND POSTGRESQL_LIBRARIES)
 
   mark_as_advanced(POSTGRESQL_INCLUDE_DIR POSTGRESQL_LIBRARIES)

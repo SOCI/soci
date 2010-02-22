@@ -37,10 +37,10 @@ option(WITH_VALGRIND "Run tests under valgrind" OFF)
 #
 # Detect available dependencies
 #
-set(SOCI_DEPENDENCIES Boost)
+set(SOCI_DEPENDENCIES Boost PostgreSQL)
 
 #foreach(external "${SOCI_DEPENDENCIES}")
-foreach(external Boost)
+foreach(external Boost PostgreSQL)
 
   message(STATUS "")
   string(TOUPPER "${external}" EXTERNAL)
