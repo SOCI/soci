@@ -25,7 +25,7 @@ set(SOCI_VERSION 3.1.0)
 #################################################################################
 
 # Path to additional CMake modules
-set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
 
 include(SociUtilities)
 
