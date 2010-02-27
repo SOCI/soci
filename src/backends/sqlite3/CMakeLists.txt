@@ -1,13 +1,5 @@
-set(SOCI_BACKEND_SQLITE3_TARGET soci_sqlite3)
-file(GLOB SOCI_SQLITE3_HEADERS *.h)
-file(GLOB SOCI_SQLITE3_SOURCES *.cpp)
-
-add_library(${SOCI_BACKEND_SQLITE3_TARGET} SHARED ${SOCI_SQLITE3_SOURCES})
-
-target_link_libraries(${SOCI_BACKEND_SQLITE3_TARGET}
-  ${SOCI_BACKENDS_DEPENDENCIES}
-  ${SQLITE3_LIBRARIES})
-
-add_subdirectory(test)
-
-# TODO: install
+soci_backend(SQLite3
+  DEPENDS SQLite3
+  DESCRIPTION "SOCI backend for SQLite 3 database engine"
+  AUTHORS "Maciej Sobczak, Stephen Hutton, David Courtney"
+  MAINTAINERS "Maciej Sobczak, Mateusz Loskot")
