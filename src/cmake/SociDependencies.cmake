@@ -1,10 +1,24 @@
-# Copyright (C) Troy Straszheim
+################################################################################
+# SociDependencies.cmake - part of CMake configuration of SOCI library
 #
-# Distributed under the Boost Software License, Version 1.0. 
-# See accompanying file LICENSE_1_0.txt or copy at 
-#   http://www.boost.org/LICENSE_1_0.txt 
+# Based on BoostExternals.cmake from CMake configuration for Boost
+################################################################################
+# Copyright (C) 2010 Mateusz Loskot <mateusz@loskot.net>
+# Copyright (C) 2009 Troy Straszheim
+#
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+################################################################################
+# Macros in this module:
+#   
+#   soci_backend - defines a database backend for SOCI library
+#
+################################################################################
+
 #
 # List of SOCI dependncies
+#
 set(SOCI_BACKENDS_ALL_DEPENDENCIES
   Boost
   MySQL
@@ -26,6 +40,7 @@ macro(boost_external_report NAME)
   set(VARNAMES ${ARGV})
   list(REMOVE_AT VARNAMES 0)
 
+  # Test both, given original name and uppercase version too
   if(NOT SUCCESS) 
     string(TOUPPER ${NAME} VARNAME)
     set(SUCCESS ${${VARNAME}_FOUND})

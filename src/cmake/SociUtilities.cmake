@@ -1,23 +1,29 @@
-##########################################################################
-# Boost Utilities                                                        #
-##########################################################################
-# Copyright (C) 2007 Douglas Gregor <doug.gregor@gmail.com>              #
-# Copyright (C) 2007 Troy Straszheim                                     #
-#                                                                        #
-# Distributed under the Boost Software License, Version 1.0.             #
-# See accompanying file LICENSE_1_0.txt or copy at                       #
-#   http://www.boost.org/LICENSE_1_0.txt                                 #
-##########################################################################
-# Macros in this module:                                                 #
-#                                                                        #
-#   list_contains: Determine whether a string value is in a list.        #
-#                                                                        #
-#   car: Return the first element in a list                              #
-#                                                                        #
-#   cdr: Return all but the first element in a list                      #
-#                                                                        #
-#   parse_arguments: Parse keyword arguments for use in other macros.    #
-##########################################################################
+################################################################################
+# SociUtilities.cmake - part of CMake configuration of SOCI library
+#
+# Based on BoostUtilities.cmake from CMake configuration for Boost
+################################################################################
+# Copyright (C) 2007 Douglas Gregor <doug.gregor@gmail.com>
+# Copyright (C) 2007 Troy Straszheim
+# Copyright (C) 2010 Mateusz Loskot <mateusz@loskot.net> 
+#
+# Distributed under the Boost Software License, Version 1.0.
+# See accompanying file LICENSE_1_0.txt or copy at
+#   http://www.boost.org/LICENSE_1_0.txt
+################################################################################
+# Macros in this module:
+#
+#   list_contains: Determine whether a string value is in a list.
+#
+#   car: Return the first element in a list
+#
+#   cdr: Return all but the first element in a list
+#
+#   parse_arguments: Parse keyword arguments for use in other macros.
+#
+#   soci_check_package_found: Test varname-FOUND for case-insensitive varname
+#
+################################################################################
 
 # This utility macro determines whether a particular string value
 # occurs within a list of strings:

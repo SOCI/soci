@@ -13,7 +13,6 @@
 #
 ################################################################################
 
-
 # Defines a database backend for SOCI library
 #
 # soci_backend(backendname
