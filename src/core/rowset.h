@@ -181,7 +181,7 @@ public:
     typedef rowset_iterator<T> const_iterator;
     
     // this is a conversion constructor
-    rowset(details::prepare_temp_type const & prep)
+    rowset(details::prepare_temp_type const& prep)
         : pimpl_(new details::rowset_impl<T>(prep))
     {
         assert(0 != pimpl_);
@@ -202,14 +202,18 @@ public:
         pimpl_->decRef();
     }
 
-    rowset& operator=(rowset const & rhs)
+    rowset& operator=(rowset const& rhs)
     {
         assert(0 != pimpl_);
         assert(0 != rhs.pimpl_);
 
-        rhs.incRef();
-        pimpl_->decRef();
-        pimpl_= rhs.pimpl_;
+        if (&rhs != this)
+        {
+            rhs.pimpl_->incRef();
+            pimpl_->decRef();
+            pimpl_ = rhs.pimpl_;
+        }
+        return *this;
     }
 
     const_iterator begin() const
@@ -229,10 +233,10 @@ public:
 private:
 
     // Pointer to implementation - the body
-    details::rowset_impl<T> * pimpl_;
+    details::rowset_impl<T>* pimpl_;
 
 }; // class rowset
 
 } // namespace soci
 
-#endif
+#endif // SOCI_ROWSET_H_INCLUDED

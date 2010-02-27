@@ -2321,9 +2321,28 @@ void test18()
         // Copy construction
         rowset<row> rs1 = (sql.prepare << "select * from soci_test");
         rowset<row> rs2(rs1);
-        assert(rs2.begin() == rs2.end());
+        rowset<row> rs3(rs1);
+        rowset<row> rs4(rs3);
+
+        assert(rs1.begin() == rs2.begin());
+        assert(rs1.begin() == rs3.begin());
+        assert(rs1.end() == rs2.end());
+        assert(rs1.end() == rs3.end());
     }
 
+    {
+        // Assignment
+        rowset<row> rs1 = (sql.prepare << "select * from soci_test");
+        rowset<row> rs2 = (sql.prepare << "select * from soci_test");
+        rowset<row> rs3 = (sql.prepare << "select * from soci_test");
+        rs1 = rs2;
+        rs3 = rs2;
+
+        assert(rs1.begin() == rs2.begin());
+        assert(rs1.begin() == rs3.begin());
+        assert(rs1.end() == rs2.end());
+        assert(rs1.end() == rs3.end());
+    }
     std::cout << "test 18 passed" << std::endl;
 }
 
