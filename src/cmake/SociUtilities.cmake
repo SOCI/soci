@@ -327,3 +327,25 @@ macro(dependency_check ARG)
     endif()
   endif()
 endmacro()
+
+#
+# Tests package-FOUND for varname in three cases as given, lowercase and
+# uppercase.
+#
+macro(soci_check_package_found NAME SUCCESS)
+
+  set(${SUCCESS} FALSE)
+  set(VARNAME ${NAME})
+  set(VARNAME_SUCCESS ${${VARNAME}_FOUND})
+
+  # Test both, given original name and uppercase version too
+  if(VARNAME_SUCCESS) 
+    set(${SUCCESS} TRUE)
+  else()
+    string(TOUPPER ${NAME} VARNAME)
+    set(VARNAME_SUCCESS ${${VARNAME}_FOUND})
+    if(VARNAME_SUCCESS)
+      set(${SUCCESS} TRUE)
+    endif()
+  endif()
+endmacro()
