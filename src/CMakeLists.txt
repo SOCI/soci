@@ -42,7 +42,6 @@ set(CMAKE_VERBOSE_MAKEFILE TRUE
 #################################################################################
 
 set(SOCI_CORE_DEPENDENCIES)
-set(SOCI_BACKENDS_DEPENDENCIES)
 
 include(SociDependencies)
 
@@ -55,6 +54,8 @@ endif()
 
 
 set(SOCI_CORE_DEPENDENCIES ${SOCI_CORE_DEPENDENCIES} ${Boost_DATE_TIME_LIBRARY})
+
+#message("${SOCI_CORE_DEPENDENCIES}")
 
 #################################################################################
 # Installation
