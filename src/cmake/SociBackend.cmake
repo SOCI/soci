@@ -28,7 +28,7 @@ macro(soci_backend NAME)
     ""
     ${ARGN})
 
-  message("")
+  message(STATUS "")
   colormsg(HIGREEN "${NAME} - ${THIS_BACKEND_DESCRIPTION}")
 
   # Backend name variants utils
@@ -44,6 +44,7 @@ macro(soci_backend NAME)
   # Determine required dependencies
   set(THIS_BACKEND_DEPENDS_INCLUDE_DIRS)
   set(THIS_BACKEND_DEPENDS_LIBRARIES)
+  set(THIS_BACKEND_DEPENDS_DEFS)
   set(DEPENDS_NOT_FOUND)
 
   foreach(dep IN LISTS THIS_BACKEND_DEPENDS)
@@ -54,7 +55,9 @@ macro(soci_backend NAME)
     else()
       string(TOUPPER "${dep}" DEPU)
       list(APPEND THIS_BACKEND_DEPENDS_INCLUDE_DIRS ${${DEPU}_INCLUDE_DIR})
+      list(APPEND THIS_BACKEND_DEPENDS_INCLUDE_DIRS ${${DEPU}_INCLUDE_DIRS})
       list(APPEND THIS_BACKEND_DEPENDS_LIBRARIES ${${DEPU}_LIBRARIES})
+      list(APPEND THIS_BACKEND_DEPENDS_DEFS HAVE_${DEPU}=1)
     endif()
   endforeach()
 
@@ -71,7 +74,15 @@ macro(soci_backend NAME)
     set(${THIS_BACKEND_OPTION} OFF)
   else()
 
-    include_directories(${THIS_BACKEND_DEPENDS_INCLUDE_DIRS})
+    # Backend-specific include directories
+    #include_directories(${THIS_BACKEND_DEPENDS_INCLUDE_DIRS})
+    list(APPEND THIS_BACKEND_DEPENDS_INCLUDE_DIRS ${SOCI_SOURCE_DIR}/core)
+    set_directory_properties(PROPERTIES
+      INCLUDE_DIRECTORIES "${THIS_BACKEND_DEPENDS_INCLUDE_DIRS}")
+    #message("${THIS_BACKEND_DEPENDS_INCLUDE_DIRS}")
+
+    # Backend-specific preprocessor definitions
+    add_definitions(-D${THIS_BACKEND_DEPENDS_DEFS})
 
     # Backend  installable headers and sources
     if (NOT THIS_BACKEND_HEADERS)
@@ -87,11 +98,19 @@ macro(soci_backend NAME)
     set(${THIS_BACKEND_TARGET_VAR} ${THIS_BACKEND_TARGET})
 
     # TODO: Add static target 
-    #add_library(${THIS_BACKEND_TARGET} STATIC ${THIS_BACKEND_SOURCES})
+    add_library(${THIS_BACKEND_TARGET}-static STATIC ${THIS_BACKEND_SOURCES})
     add_library(${THIS_BACKEND_TARGET} SHARED ${THIS_BACKEND_SOURCES})
 
     target_link_libraries(${THIS_BACKEND_TARGET}
+      ${SOCI_CORE_TARGET}
       ${THIS_BACKEND_DEPENDS_LIBRARIES})
+
+    set_target_properties(${THIS_BACKEND_TARGET}-static
+      PROPERTIES OUTPUT_NAME ${THIS_BACKEND_TARGET})
+    set_target_properties(${THIS_BACKEND_TARGET}
+      PROPERTIES CLEAN_DIRECT_OUTPUT 1)
+    set_target_properties(${THIS_BACKEND_TARGET}-static
+      PROPERTIES CLEAN_DIRECT_OUTPUT 1)
 
     # TODO: install
   endif()
@@ -100,6 +119,16 @@ macro(soci_backend NAME)
   if(${THIS_BACKEND_OPTION})
     boost_report_value(${THIS_BACKEND_TARGET_VAR})
     boost_report_value(${THIS_BACKEND_HEADERS_VAR})
+
+    soci_report_directory_property(COMPILE_DEFINITIONS)
+    
+    #TODO: report actual name of libraries
+    #get_target_property(ARCHIVE_OUTPUT_NAME soci_sqlite3 ARCHIVE_OUTPUT_NAME)
+    #boost_report_value(ARCHIVE_OUTPUT_NAME)
+    #get_target_property(LIBRARY_OUTPUT_NAME ${THIS_BACKEND_TARGET} LIBRARY_OUTPUT_NAME)
+    #boost_report_value(LIBRARY_OUTPUT_NAME)
+    #get_target_property(RUNTIME_OUTPUT_NAME ${THIS_BACKEND_TARGET} RUNTIME_OUTPUT_NAME)
+    #boost_report_value(RUNTIME_OUTPUT_NAME)
   endif()
 
   # LOG
