@@ -355,3 +355,11 @@ macro(soci_check_package_found NAME SUCCESS)
     endif()
   endif()
 endmacro()
+
+#
+# Pretty-print of given property of current directory.
+#
+macro(soci_report_directory_property PROPNAME)
+  get_directory_property(${PROPNAME} ${PROPNAME})
+  boost_report_value(${PROPNAME})
+endmacro()
