@@ -64,6 +64,15 @@ set(SOCI_CORE_DEPENDENCIES ${SOCI_CORE_DEPENDENCIES} ${Boost_DATE_TIME_LIBRARY})
 # TODO: configure installation target 
 
 #################################################################################
+# Enable CTest support
+#################################################################################
+
+include(CTest)
+enable_testing()
+# Define "make check" as alias for "make test"
+add_custom_target(check COMMAND ctest)
+
+#################################################################################
 # Build configured components
 #################################################################################
 
