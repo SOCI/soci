@@ -93,8 +93,8 @@ else()
 
   # Handle the QUIETLY and REQUIRED arguments and set SQLITE3_FOUND to TRUE
   # if all listed variables are TRUE
-  INCLUDE(FindPackageHandleStandardArgs)
-  FIND_PACKAGE_HANDLE_STANDARD_ARGS(MySQL DEFAULT_MSG
+  include(FindPackageHandleStandardArgs)
+  find_package_handle_standard_args(MySQL DEFAULT_MSG
     MYSQL_INCLUDE_DIR MYSQL_LIBRARIES)
 
   # TODO: Do we want to mark these as advanced? --mloskot

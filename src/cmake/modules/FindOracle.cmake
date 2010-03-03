@@ -22,7 +22,7 @@
 #
 ###############################################################################
 
-if(ORACLE_INCLUDE_DIR)
+if(ORACLE_INCLUDE_DIR AND (ORACLE_LIBRARIES OR ORACLE_LIBRARY))
   # Already in cache, be silent
   set(ORACLE_FIND_QUIETLY TRUE)
 endif()
@@ -43,8 +43,7 @@ find_path(ORACLE_INCLUDE_DIR
   ${ORACLE_HOME}/rdbms/public
   ${ORACLE_HOME}/include
   ${ORACLE_HOME}/sdk/include # Oracle SDK
-  ${ORACLE_HOME}/OCI/include # Oracle XE on Windows
-  )
+  ${ORACLE_HOME}/OCI/include # Oracle XE on Windows)
 
 set(ORACLE_OCI_NAMES clntsh libclntsh oci)
 set(ORACLE_NNZ_NAMES nnz10 libnnz10 nnz11 libnnz11 ociw32)
@@ -52,8 +51,7 @@ set(ORACLE_OCCI_NAMES libocci occi oraocci10 oraocci11)
 
 set(ORACLE_LIB_DIR 
   ${ORACLE_HOME}/lib
-  ${ORACLE_HOME}/OCI/lib/MSVC # Oracle XE on Windows
-)
+  ${ORACLE_HOME}/OCI/lib/MSVC # Oracle XE on Windows)
 
 find_library(ORACLE_OCI_LIBRARY  NAMES ${ORACLE_OCI_NAMES} PATHS ${ORACLE_LIB_DIR})
 find_library(ORACLE_OCCI_LIBRARY NAMES ${ORACLE_OCCI_NAMES} PATHS ${ORACLE_LIB_DIR})
@@ -79,5 +77,5 @@ set(ORACLE_LIBRARIES ${ORACLE_LIBRARY})
 
 # Handle the QUIETLY and REQUIRED arguments and set ORACLE_FOUND to TRUE
 # if all listed variables are TRUE
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(ORACLE DEFAULT_MSG ORACLE_LIBRARY ORACLE_INCLUDE_DIR)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(ORACLE DEFAULT_MSG ORACLE_LIBRARY ORACLE_INCLUDE_DIR)
