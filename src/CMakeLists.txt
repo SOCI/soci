@@ -34,8 +34,7 @@ include(SociUtilities)
 # Force CMake options
 #################################################################################
 
-set(CMAKE_VERBOSE_MAKEFILE FALSE
-  CACHE BOOLEAN "Create verbose makefiles if on" FORCE)
+#set(CMAKE_VERBOSE_MAKEFILE TRUE CACHE BOOLEAN "Create verbose makefiles if on" FORCE)
 
 #################################################################################
 # Build output location

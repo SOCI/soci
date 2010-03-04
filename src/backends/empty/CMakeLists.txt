@@ -1,12 +1,7 @@
-set(SOCI_BACKEND_EMPTY_TARGET soci_empty)
-
-file(GLOB SOCI_EMPTY_HEADERS *.h)
-file(GLOB SOCI_EMPTY_SOURCES *.cpp)
-
-add_library(${SOCI_BACKEND_EMPTY_TARGET} SHARED ${SOCI_EMPTY_SOURCES})
-
-target_link_libraries(${SOCI_BACKEND_EMPTY_TARGET} ${SOCI_BACKENDS_DEPENDENCIES})
+soci_backend(Empty
+  HEADERS soci-empty.h
+  DESCRIPTION "SOCI backend skeleton for development of new backends"
+  AUTHORS "Maciej Sobczak, Stephen Hutton"
+  MAINTAINERS "Maciej Sobczak")
 
 add_subdirectory(test)
-
-# TODO: install
