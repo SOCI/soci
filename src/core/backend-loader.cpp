@@ -8,9 +8,11 @@
 #define SOCI_SOURCE
 #include "backend-loader.h"
 #include "error.h"
-#include <map>
 #include <cassert>
 #include <cstdlib>
+#include <map>
+#include <string>
+#include <vector>
 #ifndef _MSC_VER
 #include <stdint.h>
 #endif
@@ -61,7 +63,7 @@ struct info
 {
     soci_handler_t handler_;
     backend_factory const * factory_;
-    info() : handler_(NULL), factory_(NULL) {}
+    info() : handler_(0), factory_(0) {}
 };
 
 typedef std::map<std::string, info> factory_map;
@@ -75,8 +77,9 @@ std::vector<std::string> get_default_paths()
 {
     std::vector<std::string> paths;
 
-    char const * const penv = std::getenv("SOCI_BACKENDS_PATH");
-    if (penv == NULL)
+    // TODO: may be problem with finding getenv in std namespace in Visual C++ --mloskot
+    char const* const penv = std::getenv("SOCI_BACKENDS_PATH");
+    if (0 == penv)
     {
         paths.push_back(".");
         return paths;
@@ -97,9 +100,9 @@ std::vector<std::string> get_default_paths()
         {
             ++searchFrom;
         }
-        else if (found != std::string::npos)
+        else if (std::string::npos != found)
         {
-            std::string const path = env.substr(searchFrom, found - searchFrom);
+            std::string const path(env.substr(searchFrom, found - searchFrom));
             paths.push_back(path);
 
             searchFrom = found + 1;
@@ -180,7 +183,7 @@ void do_register_backend(
         // try all search paths
         for (std::size_t i = 0; i != search_paths_.size(); ++i)
         {
-            std::string const fullFileName = search_paths_[i] + "/" + LIBNAME(name);
+            std::string const fullFileName(search_paths_[i] + "/" + LIBNAME(name));
             h = DLOPEN(fullFileName.c_str());
             if (h != NULL)
             {
@@ -200,9 +203,10 @@ void do_register_backend(
     typedef backend_factory const * bfc_ptr;
     typedef bfc_ptr (*get_t)(void);
     get_t entry;
-    entry = reinterpret_cast<get_t>(reinterpret_cast<uintptr_t>(DLSYM(h, symbol.c_str())));
+    entry = reinterpret_cast<get_t>(
+            reinterpret_cast<uintptr_t>(DLSYM(h, symbol.c_str())));
 
-    if (entry == NULL)
+    if (0 == entry)
     {
         DLCLOSE(h);
         throw soci_error("Failed to resolve dynamic symbol: " + symbol);
@@ -212,7 +216,7 @@ void do_register_backend(
 
     do_unload(name);
     
-    backend_factory const * f = entry();
+    backend_factory const* f = entry();
 
     info new_entry;
     new_entry.factory_ = f;
@@ -223,7 +227,7 @@ void do_register_backend(
 
 } // unnamed namespace
 
-backend_factory const & dynamic_backends::get(std::string const & name)
+backend_factory const& dynamic_backends::get(std::string const& name)
 {
     scoped_lock lock(&mutex_);
 
@@ -247,13 +251,13 @@ backend_factory const & dynamic_backends::get(std::string const & name)
     return *(i->second.factory_);
 }
 
-std::vector<std::string> & search_paths()
+std::vector<std::string>& search_paths()
 {
     return search_paths_;
 }
 
 void dynamic_backends::register_backend(
-    std::string const & name, std::string const & shared_object)
+    std::string const& name, std::string const& shared_object)
 {
     scoped_lock lock(&mutex_);
 
@@ -261,7 +265,7 @@ void dynamic_backends::register_backend(
 }
 
 void dynamic_backends::register_backend(
-    std::string const & name, backend_factory const & factory)
+    std::string const& name, backend_factory const& factory)
 {
     scoped_lock lock(&mutex_);
 
@@ -282,17 +286,16 @@ std::vector<std::string> dynamic_backends::list_all()
     std::vector<std::string> ret;
     ret.reserve(factories_.size());
 
-    factory_map::iterator i;
-    for (i = factories_.begin(); i != factories_.end(); ++i)
+    for (factory_map::iterator i = factories_.begin(); i != factories_.end(); ++i)
     {
-        std::string const & name = i->first;
+        std::string const& name = i->first;
         ret.push_back(name);
     }
 
     return ret;
 }
 
-void dynamic_backends::unload(std::string const & name)
+void dynamic_backends::unload(std::string const& name)
 {
     scoped_lock lock(&mutex_);
 
@@ -303,11 +306,10 @@ void dynamic_backends::unload_all()
 {
     scoped_lock lock(&mutex_);
 
-    factory_map::iterator i;
-    for (i = factories_.begin(); i != factories_.end(); ++i)
+    for (factory_map::iterator i = factories_.begin(); i != factories_.end(); ++i)
     {
         soci_handler_t h = i->second.handler_;
-        if (h != NULL)
+        if (0 != h)
         {
             DLCLOSE(h);
         }
