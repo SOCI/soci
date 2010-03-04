@@ -57,7 +57,7 @@ macro(soci_backend NAME)
       list(APPEND THIS_BACKEND_DEPENDS_INCLUDE_DIRS ${${DEPU}_INCLUDE_DIR})
       list(APPEND THIS_BACKEND_DEPENDS_INCLUDE_DIRS ${${DEPU}_INCLUDE_DIRS})
       list(APPEND THIS_BACKEND_DEPENDS_LIBRARIES ${${DEPU}_LIBRARIES})
-      list(APPEND THIS_BACKEND_DEPENDS_DEFS HAVE_${DEPU}=1)
+      list(APPEND THIS_BACKEND_DEPENDS_DEFS -DHAVE_${DEPU}=1)
     endif()
   endforeach()
 
@@ -75,14 +75,13 @@ macro(soci_backend NAME)
   else()
 
     # Backend-specific include directories
-    #include_directories(${THIS_BACKEND_DEPENDS_INCLUDE_DIRS})
     list(APPEND THIS_BACKEND_DEPENDS_INCLUDE_DIRS ${SOCI_SOURCE_DIR}/core)
     set_directory_properties(PROPERTIES
       INCLUDE_DIRECTORIES "${THIS_BACKEND_DEPENDS_INCLUDE_DIRS}")
     #message("${THIS_BACKEND_DEPENDS_INCLUDE_DIRS}")
 
     # Backend-specific preprocessor definitions
-    add_definitions(-D${THIS_BACKEND_DEPENDS_DEFS})
+    add_definitions(${THIS_BACKEND_DEPENDS_DEFS})
 
     # Backend  installable headers and sources
     if (NOT THIS_BACKEND_HEADERS)
