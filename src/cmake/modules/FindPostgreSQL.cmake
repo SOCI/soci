@@ -14,7 +14,7 @@ if(POSTGRESQL_INCLUDE_DIR AND POSTGRESQL_LIBRARIES)
   # Already in cache, be silent
   set(POSTGRESQL_FIND_QUIETLY TRUE)
 else()
-  
+
   find_path(POSTGRESQL_INCLUDE_DIR libpq-fe.h
     /usr/include/server
     /usr/include/pgsql/server
@@ -35,21 +35,20 @@ else()
     /usr/lib64/postgresql
     $ENV{ProgramFiles}/PostgreSQL/*/lib/ms
     $ENV{SystemDrive}/PostgreSQL/*/lib/ms)
-      
+
   if(POSTGRESQL_INCLUDE_DIR AND POSTGRESQL_LIBRARIES)
     set(POSTGRESQL_FOUND TRUE)
   else()
     set(POSTGRESQL_FOUND FALSE)
   endif()
+endif()
 
-  # Handle the QUIETLY and REQUIRED arguments and set POSTGRESQL_FOUND to TRUE
-  # if all listed variables are TRUE
-  INCLUDE(FindPackageHandleStandardArgs)
-  FIND_PACKAGE_HANDLE_STANDARD_ARGS(PostgreSQL DEFAULT_MSG
-    POSTGRESQL_INCLUDE_DIR POSTGRESQL_LIBRARIES)
+# Handle the QUIETLY and REQUIRED arguments and set POSTGRESQL_FOUND to TRUE
+# if all listed variables are TRUE
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(PostgreSQL DEFAULT_MSG
+  POSTGRESQL_INCLUDE_DIR POSTGRESQL_LIBRARIES)
 
-  # TODO: Do we want to mark these as advanced? --mloskot
-  # http://www.cmake.org/cmake/help/cmake2.6docs.html#command:mark_as_advanced
-  #mark_as_advanced(POSTGRESQL_INCLUDE_DIR POSTGRESQL_LIBRARIES)
-
-endif(POSTGRESQL_INCLUDE_DIR AND POSTGRESQL_LIBRARIES)
+# TODO: Do we want to mark these as advanced? --mloskot
+# http://www.cmake.org/cmake/help/cmake2.6docs.html#command:mark_as_advanced
+#mark_as_advanced(POSTGRESQL_INCLUDE_DIR POSTGRESQL_LIBRARIES)
