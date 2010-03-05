@@ -154,6 +154,8 @@ namespace soci
 namespace tests
 {
 
+// TODO: improve cleanup capabilities by subtypes, soci_test nam emay be omitted --mloskot
+//       i.e. optional ctor param accepting custom table name
 class table_creator_base
 {
 public:
