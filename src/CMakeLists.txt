@@ -62,15 +62,6 @@ set(SOCI_CORE_DEPENDENCIES)
 
 include(SociDependencies)
 
-set(DL_FIND_QUIETLY TRUE)
-find_package(DL)
-if(DL_FOUND)
-  set(SOCI_CORE_DEPENDENCIES  ${SOCI_CORE_DEPENDENCIES} ${DL_LIBRARY})
-  include_directories(${DL_INCLUDE_DIR})
-endif()
-
-
-set(SOCI_CORE_DEPENDENCIES ${SOCI_CORE_DEPENDENCIES} ${Boost_DATE_TIME_LIBRARY})
 
 #message("${SOCI_CORE_DEPENDENCIES}")
 
@@ -84,7 +75,7 @@ set(SOCI_CORE_DEPENDENCIES ${SOCI_CORE_DEPENDENCIES} ${Boost_DATE_TIME_LIBRARY})
 # Enable CTest support
 #################################################################################
 
-include(CTest)
+#include(CTest)
 enable_testing()
 # Define "make check" as alias for "make test"
 add_custom_target(check COMMAND ctest)

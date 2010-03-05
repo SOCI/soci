@@ -13,14 +13,27 @@ colormsg(_HIBLUE_ "Configuring SOCI core library:")
 message(STATUS "")
 
 # Core dependencies
+set(SOCI_CORE_DEPENDENCIES)
+
+# TODO: disable on windows --mloskot
+set(DL_FIND_QUIETLY TRUE)
+find_package(DL)
+if(DL_FOUND)
+  list(APPEND SOCI_CORE_DEPENDENCIES ${DL_LIBRARY})
+  set_directory_properties(PROPERTIES
+    INCLUDE_DIRECTORIES ${DL_INCLUDE_DIR})
+  add_definitions(-DHAVE_DL=1)
+endif()
+
 if(Boost_FOUND)
   set_directory_properties(PROPERTIES
     INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
   add_definitions(-DHAVE_BOOST=1)
-endif()
 
-if(Boost_DATE_TIME_FOUND)
-  add_definitions(-DHAVE_BOOST_DATE_TIME=1)
+  if(Boost_DATE_TIME_FOUND)
+    list(APPEND SOCI_CORE_DEPENDENCIES ${Boost_DATE_TIME_LIBRARY})
+    add_definitions(-DHAVE_BOOST_DATE_TIME=1)
+  endif()
 endif()
 
 # Core source files
@@ -34,7 +47,7 @@ set(SOCI_CORE_TARGET ${PROJECTNAMEL}_core)
 add_library(${SOCI_CORE_TARGET}-static STATIC ${SOCI_CORE_SOURCES})
 add_library(${SOCI_CORE_TARGET} SHARED ${SOCI_CORE_SOURCES})
 
-target_link_libraries(${SOCI_CORE_TARGET} "${SOCI_CORE_DEPENDENCIES}")
+target_link_libraries(${SOCI_CORE_TARGET} ${SOCI_CORE_DEPENDENCIES})
 
 set_target_properties(${SOCI_CORE_TARGET}-static
   PROPERTIES OUTPUT_NAME ${SOCI_CORE_TARGET})
@@ -48,7 +61,9 @@ set_target_properties(${SOCI_CORE_TARGET}-static
 # Summary
 boost_report_value(SOCI_CORE_TARGET)
 boost_report_value(WITH_BOOST)
+boost_report_value(SOCI_CORE_DEPENDENCIES)
 soci_report_directory_property(COMPILE_DEFINITIONS)
 
 # Export core target name to make it visibla by backends
 set(SOCI_CORE_TARGET ${SOCI_CORE_TARGET} PARENT_SCOPE)
+set(SOCI_CORE_STATIC_DEPENDENCIES ${SOCI_CORE_DEPENDENCIES} PARENT_SCOPE)
