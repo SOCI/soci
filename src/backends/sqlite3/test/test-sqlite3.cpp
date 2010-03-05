@@ -61,13 +61,13 @@ void test1()
 struct blob_table_creator : public table_creator_base
 {
     blob_table_creator(session & sql)
-    : table_creator_base(sql)
+        : table_creator_base(sql)
     {
         sql <<
-             "create table soci_test ("
-             "    id integer,"
-             "    img blob"
-             ")";
+            "create table soci_test ("
+            "    id integer,"
+            "    img blob"
+            ")";
     }
 };
 
@@ -114,37 +114,45 @@ void test2()
 }
 
 // This test was put in to fix a problem that occurs when there are both
-//into and use elements in the same query and one of them (into) binds
-//to a vector object.
+// into and use elements in the same query and one of them (into) binds
+// to a vector object.
+
+struct test3_table_creator : table_creator_base
+{
+    test3_table_creator(session & sql) : table_creator_base(sql)
+    {
+        sql << "create table soci_test( id integer, name varchar, subname varchar);";
+    }
+};
+
 void test3()
 {
     {
         session sql(backEnd, connectString);
 
-        try { sql << "drop table test3"; }
-        catch (soci_error const &) {} //ignore error if table doesn't exist
+        test3_table_creator tableCreator(sql);
 
-        sql << "Create table test3( id integer, name varchar, subname varchar);";
+        sql << "insert into soci_test(id,name,subname) values( 1,'john','smith')";
+        sql << "insert into soci_test(id,name,subname) values( 2,'george','vals')";
+        sql << "insert into soci_test(id,name,subname) values( 3,'ann','smith')";
+        sql << "insert into soci_test(id,name,subname) values( 4,'john','grey')";
+        sql << "insert into soci_test(id,name,subname) values( 5,'anthony','wall')";
 
-        sql << "Insert into test3(id,name,subname) values( 1,'john','smith')";
-        sql << "Insert into test3(id,name,subname) values( 2,'george','vals')";
-        sql << "Insert into test3(id,name,subname) values( 3,'ann','smith')";
-        sql << "Insert into test3(id,name,subname) values( 4,'john','grey')";
-        sql << "Insert into test3(id,name,subname) values( 5,'anthony','wall')";
+        {
+            std::vector<int> v(10);
 
-        std::vector<int> v(10);
+            statement s(sql.prepare << "Select id from soci_test where name = :name");
 
-        statement s(sql.prepare << "Select id from test3 where name = :name");
+            std::string name = "john";
 
-        std::string name = "john";
+            s.exchange(use(name, "name"));
+            s.exchange(into(v));
 
-        s.exchange(use(name, "name"));
-        s.exchange(into(v));
+            s.define_and_bind();
+            s.execute(true);
 
-        s.define_and_bind();
-        s.execute(true);
-
-        assert(v.size() == 2);
+            assert(v.size() == 2);
+        }
     }
     std::cout << "test 3 passed" << std::endl;
 }
@@ -156,25 +164,38 @@ void test3()
 // creates for autoincrement . Attempting to traverse this table caused
 // SOCI to crash. I've made the following code change in statement.cpp to
 // create a workaround:
+
+struct test4_table_creator : table_creator_base
+{
+    test4_table_creator(session & sql) : table_creator_base(sql)
+    {
+        sql << "create table soci_test (col INTEGER PRIMARY KEY AUTOINCREMENT, name char)";
+    }
+};
+
 void test4()
 {
     {
         // we need to have an table that uses autoincrement to test this.
         session sql(backEnd, connectString);
-        sql << "create table nulltest (col INTEGER PRIMARY KEY AUTOINCREMENT, name char)";
-        sql << "insert into nulltest(name) values('john')";
-        sql << "insert into nulltest(name) values('james')";
 
-        int key;
-        std::string name;
-        sql << "select * from nulltest", into(key), into(name);
-        assert(name == "john");
+        test4_table_creator tableCreator(sql);
 
-        rowset<row> rs = (sql.prepare << "select * from sqlite_sequence");
-        rowset<row>::const_iterator it = rs.begin();
-        row const& r1 = (*it);
-        assert(r1.get<std::string>(0) == "nulltest");
-        assert(r1.get<std::string>(1) == "2");
+        sql << "insert into soci_test(name) values('john')";
+        sql << "insert into soci_test(name) values('james')";
+
+        {
+            int key;
+            std::string name;
+            sql << "select * from soci_test", into(key), into(name);
+            assert(name == "john");
+
+            rowset<row> rs = (sql.prepare << "select * from sqlite_sequence");
+            rowset<row>::const_iterator it = rs.begin();
+            row const& r1 = (*it);
+            assert(r1.get<std::string>(0) == "soci_test");
+            assert(r1.get<std::string>(1) == "2");
+        }
     }
     std::cout << "test 4 passed" << std::endl;
 }
