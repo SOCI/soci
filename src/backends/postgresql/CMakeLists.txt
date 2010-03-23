@@ -1,15 +1,8 @@
-if (POSTGRESQL_FOUND)
-  set(SOCI_BACKEND_POSTGRESQL_TARGET soci_postgresql)
-  file(GLOB SOCI_POSTGRESQL_HEADERS *.h)
-  file(GLOB SOCI_POSTGRESQL_SOURCES *.cpp)
+soci_backend(PostgreSQL
+  DEPENDS PostgreSQL
+  HEADERS soci-postgresql.h
+  DESCRIPTION "SOCI backend for PostgreSQL database engine"
+  AUTHORS "Maciej Sobczak, Stephen Hutton"
+  MAINTAINERS "Maciej Sobczak")
 
-  add_library(${SOCI_BACKEND_POSTGRESQL_TARGET} SHARED ${SOCI_POSTGRESQL_SOURCES})
-
-  target_link_libraries(${SOCI_BACKEND_POSTGRESQL_TARGET}
-    ${SOCI_BACKENDS_DEPENDENCIES}
-    ${POSTGRESQL_LIBRARIES})
-
-  add_subdirectory(test)
-
-  # TODO: install
-endif()
+add_subdirectory(test)
