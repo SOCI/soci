@@ -22,14 +22,9 @@
 #
 ###############################################################################
 
-if(ORACLE_INCLUDE_DIR)
-  # Already in cache, be silent
-  set(ORACLE_FIND_QUIETLY TRUE)
-endif()
-
-if(NOT ORACLE_FIND_QUIETLY)
-  message(STATUS "Searching for Oracle ${Oracle_FIND_VERSION}+ OCI client library")
-endif()
+#if(NOT ORACLE_FIND_QUIETLY)
+#  message(STATUS "Searching for Oracle ${Oracle_FIND_VERSION}+ OCI client library")
+#endif()
 
 if(NOT DEFINED ENV{ORACLE_HOME})
   message(FATAL_ERROR
@@ -70,7 +65,8 @@ if(APPLE)
   if(ORACLE_OCIEI_LIBRARY)
     set(ORACLE_LIBRARY ${ORACLE_LIBRARY} ${ORACLE_OCIEI_LIBRARY})
   else(ORACLE_OCIEI_LIBRARY)
-    message(STATUS "libociei.dylib is not found. It may cause crash if you are building BUNDLE")
+    message(STATUS
+      "libociei.dylib is not found. It may cause crash if you are building BUNDLE")
   endif()
 endif()
 
@@ -80,3 +76,5 @@ set(ORACLE_LIBRARIES ${ORACLE_LIBRARY})
 # if all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(ORACLE DEFAULT_MSG ORACLE_LIBRARY ORACLE_INCLUDE_DIR)
+
+mark_as_advanced(ORACLE_INCLUDE_DIR ORACLE_LIBRARY)
