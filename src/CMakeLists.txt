@@ -15,7 +15,7 @@ cmake_minimum_required(VERSION 2.6.0 FATAL_ERROR)
 project(SOCI)
 
 #################################################################################
-# SOCI version informatoin
+# SOCI version information
 #################################################################################
 
 set(SOCI_VERSION 3.1.0)
@@ -61,7 +61,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(SOCI_CORE_DEPENDENCIES)
 
 include(SociDependencies)
-
 
 #message("${SOCI_CORE_DEPENDENCIES}")
 
