@@ -12,12 +12,14 @@
 #include <soci-platform.h>
 // std
 #include <ciso646>
-#include <cstring>
 #include <cstddef>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
 #include <limits>
 #include <string>
 #include <vector>
-#include <cstdio>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)

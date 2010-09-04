@@ -10,10 +10,11 @@
 #include "soci-mysql.h"
 #include "common.h"
 #include <soci-platform.h>
+// std
 #include <ciso646>
-#include <limits>
-#include <cstring>
 #include <cstdio>
+#include <cstring>
+#include <limits>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)

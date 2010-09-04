@@ -11,8 +11,9 @@
 #include <soci-platform.h>
 #include "common.h"
 // std
-#include <ciso646>
 #include <cassert>
+#include <ciso646>
+#include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <string>

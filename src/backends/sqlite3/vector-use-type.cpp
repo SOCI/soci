@@ -5,13 +5,14 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-
 #include "soci-sqlite3.h"
 #include "common.h"
+// std
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <limits>
 #include <sstream>
-#include <cstring>
-#include <cstdio>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355 4996)

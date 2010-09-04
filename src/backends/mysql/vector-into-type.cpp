@@ -11,6 +11,7 @@
 #include "common.h"
 #include <soci-platform.h>
 #include <ciso646>
+#include <cstdlib>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
