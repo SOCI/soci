@@ -68,7 +68,10 @@ include(SociDependencies)
 # Installation
 #################################################################################
 
-# TODO: configure installation target 
+set(BINDIR "bin" CACHE PATH "The directory to install binaries into.")
+set(LIBDIR "lib" CACHE PATH "The directory to install libraries into.")
+set(DATADIR "share" CACHE PATH "The directory to install data files into.")
+set(INCLUDEDIR "include" CACHE PATH "The directory to install includes into.")
 
 #################################################################################
 # Enable CTest support
