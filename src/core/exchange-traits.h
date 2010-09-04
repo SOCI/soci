@@ -73,6 +73,15 @@ struct exchange_traits<long long>
     enum { x_type = x_long_long };
 };
 
+#if defined (__LP64__) || ( __WORDSIZE == 64 )
+template <>
+struct exchange_traits<long int>
+{
+    typedef basic_type_tag type_family;
+    enum { x_type = x_long_long };
+};
+#endif // #if defined (__LP64__) || ( __WORDSIZE == 64 )
+
 template <>
 struct exchange_traits<double>
 {
