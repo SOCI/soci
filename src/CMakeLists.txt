@@ -31,24 +31,6 @@ set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
 include(SociUtilities)
 
 #################################################################################
-# Force CMake options
-#################################################################################
-
-#set(CMAKE_VERBOSE_MAKEFILE TRUE CACHE BOOLEAN "Create verbose makefiles if on" FORCE)
-
-#################################################################################
-# Build output location
-#################################################################################
-
-# Put the libaries and binaries that get built into directories at the
-# top of the build tree rather than in hard-to-find leaf directories.
-# This simplifies manual testing and the use of the build tree rather
-# than installed SOCI libraries.
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-#################################################################################
 # Build features and variants
 #################################################################################
 
