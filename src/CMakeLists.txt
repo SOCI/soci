@@ -15,12 +15,6 @@ cmake_minimum_required(VERSION 2.6.0 FATAL_ERROR)
 project(SOCI)
 
 #################################################################################
-# SOCI version information
-#################################################################################
-
-set(SOCI_VERSION 3.1.0)
-
-#################################################################################
 # SOCI CMake modules
 #################################################################################
 
@@ -29,6 +23,16 @@ set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake${CMAKE_MODULE_PATH})
 set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
 
 include(SociUtilities)
+
+message(STATUS "")
+colormsg(_HIBLUE_ "Configuring SOCI library:")
+
+#################################################################################
+# SOCI version information
+#################################################################################
+include(SociVersion)
+
+soci_version(MAJOR 3 MINOR 1 PATCH 0)
 
 #################################################################################
 # Build features and variants
