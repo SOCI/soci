@@ -36,7 +36,7 @@ namespace // anonymous
 {
 
 template <typename T>
-void setInVector(void *p, int indx, T const &val)
+void set_in_vector(void *p, int indx, T const &val)
 {
     std::vector<T> *dest =
     static_cast<std::vector<T> *>(p);
@@ -87,48 +87,48 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
             switch (type_)
             {
             case x_char:
-                setInVector(data_, i, *buf);
+                set_in_vector(data_, i, *buf);
                 break;
             case x_stdstring:
-                setInVector<std::string>(data_, i, buf);
+                set_in_vector<std::string>(data_, i, buf);
                 break;
             case x_short:
             {
                 long val = std::strtol(buf, NULL, 10);
-                setInVector(data_, i, static_cast<short>(val));
+                set_in_vector(data_, i, static_cast<short>(val));
             }
             break;
             case x_integer:
             {
                 long val = std::strtol(buf, NULL, 10);
-                setInVector(data_, i, static_cast<int>(val));
+                set_in_vector(data_, i, static_cast<int>(val));
             }
             break;
             case x_unsigned_long:
             {
                 long long val = strtoll(buf, NULL, 10);
-                setInVector(data_, i, static_cast<unsigned long>(val));
+                set_in_vector(data_, i, static_cast<unsigned long>(val));
             }
             break;
             case x_long_long:
             {
                 long long val = strtoll(buf, NULL, 10);
-                setInVector(data_, i, val);
+                set_in_vector(data_, i, val);
             }
             break;
             case x_double:
             {
                 double val = strtod(buf, NULL);
-                setInVector(data_, i, val);
+                set_in_vector(data_, i, val);
             }
             break;
             case x_stdtm:
             {
                 // attempt to parse the string and convert to std::tm
                 std::tm t;
-                parseStdTm(buf, t);
+                parse_std_tm(buf, t);
 
-                setInVector(data_, i, t);
+                set_in_vector(data_, i, t);
             }
             break;
 
@@ -148,15 +148,30 @@ void sqlite3_vector_into_type_backend::resize(std::size_t sz)
     switch (type_)
     {
         // simple cases
-    case x_char:         resizeVector<char>         (data_, sz); break;
-    case x_short:        resizeVector<short>        (data_, sz); break;
-    case x_integer:      resizeVector<int>          (data_, sz); break;
-    case x_unsigned_long: resizeVector<unsigned long>(data_, sz); break;
-    case x_long_long:     resizeVector<long long>    (data_, sz); break;
-    case x_double:       resizeVector<double>       (data_, sz); break;
-    case x_stdstring:    resizeVector<std::string>  (data_, sz); break;
-    case x_stdtm:        resizeVector<std::tm>      (data_, sz); break;
-
+    case x_char:
+        resize_vector<char>(data_, sz);
+        break;
+    case x_short:
+        resize_vector<short>(data_, sz);
+        break;
+    case x_integer:
+        resize_vector<int>(data_, sz);
+        break;
+    case x_unsigned_long:
+        resize_vector<unsigned long>(data_, sz);
+        break;
+    case x_long_long:
+        resize_vector<long long>(data_, sz);
+        break;
+    case x_double:
+        resize_vector<double>(data_, sz);
+        break;
+    case x_stdstring:
+        resize_vector<std::string>(data_, sz);
+        break;
+    case x_stdtm:
+        resize_vector<std::tm>(data_, sz);
+        break;
     default:
         throw soci_error("Into vector element used with non-supported type.");
     }
@@ -168,15 +183,30 @@ std::size_t sqlite3_vector_into_type_backend::size()
     switch (type_)
     {
         // simple cases
-    case x_char:         sz = getVectorSize<char>         (data_); break;
-    case x_short:        sz = getVectorSize<short>        (data_); break;
-    case x_integer:      sz = getVectorSize<int>          (data_); break;
-    case x_unsigned_long: sz = getVectorSize<unsigned long>(data_); break;
-    case x_long_long:     sz = getVectorSize<long long>    (data_); break;
-    case x_double:       sz = getVectorSize<double>       (data_); break;
-    case x_stdstring:    sz = getVectorSize<std::string>  (data_); break;
-    case x_stdtm:        sz = getVectorSize<std::tm>      (data_); break;
-
+    case x_char:
+        sz = get_vector_size<char>(data_);
+        break;
+    case x_short:
+        sz = get_vector_size<short>(data_);
+        break;
+    case x_integer:
+        sz = get_vector_size<int>(data_);
+        break;
+    case x_unsigned_long:
+        sz = get_vector_size<unsigned long>(data_);
+        break;
+    case x_long_long:
+        sz = get_vector_size<long long>(data_);
+        break;
+    case x_double:
+        sz = get_vector_size<double>(data_);
+        break;
+    case x_stdstring:
+        sz = get_vector_size<std::string>(data_);
+        break;
+    case x_stdtm:
+        sz = get_vector_size<std::tm>(data_);
+        break;
     default:
         throw soci_error("Into vector element used with non-supported type.");
     }

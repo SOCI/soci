@@ -131,7 +131,7 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
         {
             // attempt to parse the string and convert to std::tm
             std::tm *dest = static_cast<std::tm *>(data_);
-            parseStdTm(buf, *dest);
+            parse_std_tm(buf, *dest);
         }
         break;
         case x_rowid:

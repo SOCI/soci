@@ -9,40 +9,29 @@
 #define SOCI_SQLITE3_COMMON_H_INCLUDED
 
 #include <cstddef>
-#include <vector>
 #include <ctime>
+#include <vector>
 
-namespace soci
-{
-
-namespace details
-{
-
-namespace sqlite3
-{
+namespace soci { namespace details { namespace sqlite3 {
 
 // helper function for parsing datetime values
-void parseStdTm(char const *buf, std::tm &t);
+void parse_std_tm(char const *buf, std::tm &t);
 
 // helper for vector operations
 template <typename T>
-std::size_t getVectorSize(void *p)
+std::size_t get_vector_size(void *p)
 {
     std::vector<T> *v = static_cast<std::vector<T> *>(p);
     return v->size();
 }
 
 template <typename T>
-void resizeVector(void *p, std::size_t sz)
+void resize_vector(void *p, std::size_t sz)
 {
     std::vector<T> *v = static_cast<std::vector<T> *>(p);
     v->resize(sz);
 }
 
-} // namespace sqlite3
-
-} // namespace details
-
-} // namespace soci
+}}} // namespace soci::details::sqlite3
 
 #endif // SOCI_SQLITE3_COMMON_H_INCLUDED

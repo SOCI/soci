@@ -33,19 +33,18 @@ long parse10(char const *&p1, char *&p2, char const* const msg)
 } // namespace anonymous
 
 
-void soci::details::sqlite3::parseStdTm(char const *buf, std::tm &t)
+void soci::details::sqlite3::parse_std_tm(char const *buf, std::tm &t)
 {
     char const *p1 = buf;
-    char *p2;
-    long year, month, day;
-    long hour = 0, minute = 0, second = 0;
+    char *p2 = 0;
 
     char const* const errMsg = "Cannot convert data to std::tm.";
 
-    year  = parse10(p1, p2, errMsg);
-    month = parse10(p1, p2, errMsg);
-    day   = parse10(p1, p2, errMsg);
+    long year  = parse10(p1, p2, errMsg);
+    long month = parse10(p1, p2, errMsg);
+    long day   = parse10(p1, p2, errMsg);
 
+    long hour = 0, minute = 0, second = 0;
     if (*p2 != '\0')
     {
         // there is also the time of day available
