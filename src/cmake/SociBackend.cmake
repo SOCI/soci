@@ -17,10 +17,10 @@
 #
 # soci_backend(backendname
 #              HEADERS header1 header2
-#              HDEPENDS dependency1 dependency2
-#              HDESCRIPTION description
-#              HAUTHORS author1 author2
-#              HMAINTAINERS maintainer1 maintainer2)
+#              DEPENDS dependency1 dependency2
+#              DESCRIPTION description
+#              AUTHORS author1 author2
+#              MAINTAINERS maintainer1 maintainer2)
 #
 macro(soci_backend NAME)
   parse_arguments(THIS_BACKEND
