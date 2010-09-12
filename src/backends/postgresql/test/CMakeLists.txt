@@ -1,6 +1,8 @@
 # TODO: to be refactored as a macro similar to soci_backend()
 #       or as actual part of soci_backend()
 
+if (POSTGRESQL_FOUND)
+
 set(SOCI_POSTGRESQL_TEST_CONNSTR ""
   CACHE STRING "Test connection string for PostgreSQL tests run")
 
@@ -31,3 +33,5 @@ add_test(${SOCI_POSTGRESQL_TEST_TARGET}
 add_test(${SOCI_POSTGRESQL_TEST_TARGET}_static
   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOCI_POSTGRESQL_TEST_TARGET}_static
   "${SOCI_POSTGRESQL_TEST_CONNSTR}")
+
+endif()

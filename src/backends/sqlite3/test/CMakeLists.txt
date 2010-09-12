@@ -1,6 +1,8 @@
 # TODO: to be refactored as a macro similar to soci_backend()
 #       or as actual part of soci_backend()
 
+if (SQLITE3_FOUND)
+
 set(SOCI_SQLITE3_TEST_CONNSTR "test_sqlite2.db"
   CACHE STRING "Test connection string for SQLite3 tests run")
 
@@ -31,3 +33,5 @@ add_test(${SOCI_SQLITE3_TEST_TARGET}
 add_test(${SOCI_SQLITE3_TEST_TARGET}_static
   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOCI_SQLITE3_TEST_TARGET}_static
   "${SOCI_SQLITE3_TEST_CONNSTR}")
+
+endif() # SQLITE3_FOUND

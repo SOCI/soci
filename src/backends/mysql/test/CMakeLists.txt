@@ -1,6 +1,8 @@
 # TODO: to be refactored as a macro similar to soci_backend()
 #       or as actual part of soci_backend()
 
+if (MYSQL_FOUND)
+
 set(SOCI_MYSQL_TEST_TARGET test_mysql)
 set(SOCI_MYSQL_TEST_SOURCES test-mysql.cpp)
 
@@ -26,3 +28,5 @@ add_test(${SOCI_MYSQL_TEST_TARGET}
 
 add_test(${SOCI_MYSQL_TEST_TARGET}_static
   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOCI_MYSQL_TEST_TARGET}_static)
+
+endif()
