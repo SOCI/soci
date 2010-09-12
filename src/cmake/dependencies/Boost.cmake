@@ -1,6 +1,10 @@
 set(Boost_FIND_QUIETLY TRUE)
 
-find_package(Boost 1.33.1 REQUIRED date_time)
+find_package(Boost 1.33.1 COMPONENTS date_time QUIET)
+
+if (NOT Boost_date_time_FOUND)
+    find_package(Boost 1.33.1 REQUIRED)
+endif()
 
 set(Boost_RELEASE_VERSION
   "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
