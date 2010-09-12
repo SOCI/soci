@@ -62,7 +62,9 @@ macro(soci_backend NAME)
   endforeach()
 
   list(LENGTH DEPENDS_NOT_FOUND NOT_FOUND_COUNT)
+
   if (NOT_FOUND_COUNT GREATER 0)
+
     colormsg(_RED_ "WARNING:")
     colormsg(RED "Some required dependencies of ${NAME} backend not found:")
     foreach(dep IN LISTS DEPENDS_NOT_FOUND)
@@ -72,7 +74,8 @@ macro(soci_backend NAME)
     colormsg(RED "Skipping")
 
     set(${THIS_BACKEND_OPTION} OFF)
-  else()
+
+  else(NOT_FOUND_COUNT GREATER 0)
 
     # Backend-specific include directories
     list(APPEND THIS_BACKEND_DEPENDS_INCLUDE_DIRS ${SOCI_SOURCE_DIR}/core)
@@ -107,9 +110,10 @@ macro(soci_backend NAME)
     set_target_properties(${THIS_BACKEND_TARGET}-static
       PROPERTIES OUTPUT_NAME ${THIS_BACKEND_TARGET})
     set_target_properties(${THIS_BACKEND_TARGET}
-        PROPERTIES
-        CLEAN_DIRECT_OUTPUT 1
-        SOVERSION ${SOCI_VERSION})
+      PROPERTIES
+      CLEAN_DIRECT_OUTPUT 1
+      VERSION ${SOCI_VERSION}
+      SOVERSION ${SOCI_SOVERSION})
     set_target_properties(${THIS_BACKEND_TARGET}-static
       PROPERTIES CLEAN_DIRECT_OUTPUT 1)
 
@@ -118,8 +122,7 @@ macro(soci_backend NAME)
       LIBRARY DESTINATION ${LIBDIR}
       ARCHIVE DESTINATION ${LIBDIR})
 
-
-  endif()
+  endif(NOT_FOUND_COUNT GREATER 0)
 
   boost_report_value(${THIS_BACKEND_OPTION})
   if(${THIS_BACKEND_OPTION})
