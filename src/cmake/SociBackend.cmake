@@ -47,7 +47,9 @@ macro(soci_backend NAME)
   set(THIS_BACKEND_DEPENDS_DEFS)
   set(DEPENDS_NOT_FOUND)
 
-  foreach(dep IN LISTS THIS_BACKEND_DEPENDS)
+  # CMake 2.8+ syntax only:
+  #foreach(dep IN LISTS THIS_BACKEND_DEPENDS)
+  foreach(dep ${THIS_BACKEND_DEPENDS})
 
     soci_check_package_found(${dep} DEPEND_FOUND)
     if(NOT DEPEND_FOUND)
@@ -67,9 +69,17 @@ macro(soci_backend NAME)
 
     colormsg(_RED_ "WARNING:")
     colormsg(RED "Some required dependencies of ${NAME} backend not found:")
-    foreach(dep IN LISTS DEPENDS_NOT_FOUND)
-      colormsg(RED "   ${dep}")
-    endforeach()
+
+    if (${CMAKE_VERSION} VERSION_LESS "2.8.0")
+      foreach(dep ${DEPENDS_NOT_FOUND})
+        colormsg(RED "   ${dep}")
+      endforeach()
+    else()
+      foreach(dep IN LIST DEPENDS_NOT_FOUND)
+        colormsg(RED "   ${dep}")
+      endforeach()
+    endif()
+
     # TODO: Abord or warn compilation may fail? --mloskot
     colormsg(RED "Skipping")
 
