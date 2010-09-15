@@ -11,6 +11,7 @@ find_package_handle_standard_args(DL DEFAULT_MSG DL_LIBRARY DL_INCLUDE_DIR)
 if(NOT DL_FOUND)
     # if dlopen can be found without linking in dl then,
     # dlopen is part of libc, so don't need to link extra libs.
+    include(CheckFunctionExists)
     check_function_exists(dlopen DL_FOUND)
     set(DL_LIBRARY "")
 endif()
