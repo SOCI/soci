@@ -325,7 +325,7 @@ endfunction()
 #
 macro(dependency_check ARG)
   trace(ARG)
-  if (NOT ("${ARG}" STREQUAL ""))
+  if (NOT "${ARG}" STREQUAL "")
     get_target_property(deptype ${ARG} TYPE)
     if(NOT deptype MATCHES ".*_LIBRARY$")
       set(DEPENDENCY_OKAY FALSE)
