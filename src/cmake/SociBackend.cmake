@@ -87,6 +87,8 @@ macro(soci_backend NAME)
 
   else(NOT_FOUND_COUNT GREATER 0)
 
+    if(${THIS_BACKEND_OPTION})
+
     # Backend-specific include directories
     list(APPEND THIS_BACKEND_DEPENDS_INCLUDE_DIRS ${SOCI_SOURCE_DIR}/core)
     set_directory_properties(PROPERTIES
@@ -132,9 +134,14 @@ macro(soci_backend NAME)
       LIBRARY DESTINATION ${LIBDIR}
       ARCHIVE DESTINATION ${LIBDIR})
 
+  else()
+    colormsg(HIRED "${NAME}" RED "backend disabled, since")
+  endif()
+
   endif(NOT_FOUND_COUNT GREATER 0)
 
   boost_report_value(${THIS_BACKEND_OPTION})
+
   if(${THIS_BACKEND_OPTION})
     boost_report_value(${THIS_BACKEND_TARGET_VAR})
     boost_report_value(${THIS_BACKEND_HEADERS_VAR})
