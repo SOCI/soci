@@ -1,32 +1,35 @@
 # TODO: to be refactored as a macro similar to soci_backend()
 #       or as actual part of soci_backend()
 
-if (MYSQL_FOUND)
+if(SOCI_MYSQL)
 
-set(SOCI_MYSQL_TEST_TARGET test_mysql)
-set(SOCI_MYSQL_TEST_SOURCES test-mysql.cpp)
+  set(SOCI_MYSQL_TEST_CONNSTR ""
+    CACHE STRING "Test connection string for MySQL tests run")
 
-include_directories(${SOCI_SOURCE_DIR}/core/test)
-include_directories(${SOCI_SOURCE_DIR}/backends/mysql)
+  set(SOCI_MYSQL_TEST_TARGET test_mysql)
+  set(SOCI_MYSQL_TEST_SOURCES test-mysql.cpp)
 
-add_executable(${SOCI_MYSQL_TEST_TARGET} ${SOCI_MYSQL_TEST_SOURCES})
-add_executable(${SOCI_MYSQL_TEST_TARGET}_static ${SOCI_MYSQL_TEST_SOURCES})
+  include_directories(${SOCI_SOURCE_DIR}/core/test)
+  include_directories(${SOCI_SOURCE_DIR}/backends/mysql)
 
-target_link_libraries(${SOCI_MYSQL_TEST_TARGET}
-  ${SOCI_CORE_TARGET}
-  ${SOCI_MYSQL_TARGET}
-  ${MYSQL_LIBRARIES})
+  add_executable(${SOCI_MYSQL_TEST_TARGET} ${SOCI_MYSQL_TEST_SOURCES})
+  add_executable(${SOCI_MYSQL_TEST_TARGET}_static ${SOCI_MYSQL_TEST_SOURCES})
 
-target_link_libraries(${SOCI_MYSQL_TEST_TARGET}_static
-  ${SOCI_CORE_TARGET}-static
-  ${SOCI_MYSQL_TARGET}-static
-  ${MYSQL_LIBRARIES}
-  ${SOCI_CORE_STATIC_DEPENDENCIES})
+  target_link_libraries(${SOCI_MYSQL_TEST_TARGET}
+    ${SOCI_CORE_TARGET}
+    ${SOCI_MYSQL_TARGET}
+    ${MYSQL_LIBRARIES})
 
-add_test(${SOCI_MYSQL_TEST_TARGET}
-  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOCI_MYSQL_TEST_TARGET})
+  target_link_libraries(${SOCI_MYSQL_TEST_TARGET}_static
+    ${SOCI_CORE_TARGET}-static
+    ${SOCI_MYSQL_TARGET}-static
+    ${MYSQL_LIBRARIES}
+    ${SOCI_CORE_STATIC_DEPENDENCIES})
 
-add_test(${SOCI_MYSQL_TEST_TARGET}_static
-  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOCI_MYSQL_TEST_TARGET}_static)
+  add_test(${SOCI_MYSQL_TEST_TARGET}
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOCI_MYSQL_TEST_TARGET})
+
+  add_test(${SOCI_MYSQL_TEST_TARGET}_static
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SOCI_MYSQL_TEST_TARGET}_static)
 
 endif()

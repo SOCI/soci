@@ -5,4 +5,4 @@ soci_backend(Oracle
   AUTHORS "Maciej Sobczak, Stephen Hutton"
   MAINTAINERS "Maciej Sobczak")
 
-#add_subdirectory(test)
+add_subdirectory(test)
