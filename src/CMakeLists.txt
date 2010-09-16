@@ -38,7 +38,8 @@ soci_version(MAJOR 3 MINOR 1 PATCH 0)
 # Build features and variants
 #################################################################################
 
-option(SOCI_TESTS "Build SOCI tests and enable testing target" ON)
+option(SOCI_TESTS "Enable build of collection of SOCI tests" ON)
+
 boost_report_value(SOCI_TESTS)
 
 #################################################################################
@@ -63,16 +64,15 @@ set(INCLUDEDIR "include" CACHE PATH "The directory to install includes into.")
 #################################################################################
 # Enable CTest support
 #################################################################################
-
 #include(CTest)
 enable_testing()
+
 # Define "make check" as alias for "make test"
 add_custom_target(check COMMAND ctest)
 
 #################################################################################
 # Build configured components
 #################################################################################
-
 include(SociBackend)
 
 include_directories(${SOCI_SOURCE_DIR}/core)
