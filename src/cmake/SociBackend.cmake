@@ -193,45 +193,58 @@ macro(soci_backend_test NAME)
   option(${THIS_TEST_OPTION}
     "Attempt to build test for ${PROJECT_NAME} ${NAME} backend" ON)
 
-  set(THIS_TEST_CONNSTR SOCI_TEST_${NAMEU}_CONNSTR)
-  set(${THIS_TEST_CONNSTR} ""
-    CACHE STRING "Test connection string for ${NAME} test")
+  # Check global flags and enable/disable backend test
+  if(NOT SOCI_${NAMEU} OR NOT SOCI_TESTS)
+    set(${THIS_TEST_OPTION} OFF)
+  endif()
+
+  boost_report_value(${THIS_TEST_OPTION})
+
+  if(${THIS_TEST_OPTION})
+
+    set(THIS_TEST_CONNSTR SOCI_TEST_${NAMEU}_CONNSTR)
+    set(${THIS_TEST_CONNSTR} ""
+        CACHE STRING "Test connection string for ${NAME} test")
   
-  set(THIS_TEST_TARGET soci_test_${NAMEL})
-  # TODO: glob for all .cpp files in <backend>/test directory
-  set(THIS_TEST_SOURCES test-${NAMEL}.cpp)
+    boost_report_value(${THIS_TEST_CONNSTR})
 
-  include_directories(${SOCI_SOURCE_DIR}/core/test)
-  include_directories(${SOCI_SOURCE_DIR}/backends/${NAMEL})
+    set(THIS_TEST_TARGET soci_test_${NAMEL})
+    # TODO: glob all .cpp files in <backend>/test directory
+    set(THIS_TEST_SOURCES test-${NAMEL}.cpp)
 
-  add_executable(${THIS_TEST_TARGET} ${THIS_TEST_SOURCES})
-  add_executable(${THIS_TEST_TARGET}_static ${THIS_TEST_SOURCES})
+    include_directories(${SOCI_SOURCE_DIR}/core/test)
+    include_directories(${SOCI_SOURCE_DIR}/backends/${NAMEL})
 
-  target_link_libraries(${THIS_TEST_TARGET}
-    ${SOCI_CORE_TARGET}
-    ${SOCI_${NAMEU}_TARGET}
-    ${${NAMEU}_LIBRARIES})
+    add_executable(${THIS_TEST_TARGET} ${THIS_TEST_SOURCES})
+    add_executable(${THIS_TEST_TARGET}_static ${THIS_TEST_SOURCES})
 
-  target_link_libraries(${THIS_TEST_TARGET}_static
-    ${SOCI_CORE_TARGET}-static
-    ${SOCI_${NAMEU}_TARGET}-static
-    ${${NAMEU}_LIBRARIES}
-    ${SOCI_CORE_STATIC_DEPENDENCIES})
+    target_link_libraries(${THIS_TEST_TARGET}
+      ${SOCI_CORE_TARGET}
+      ${SOCI_${NAMEU}_TARGET}
+      ${${NAMEU}_LIBRARIES})
 
-  add_test(${THIS_TEST_TARGET}
-    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}
-    ${${THIS_TEST_CONNSTR}})
+    target_link_libraries(${THIS_TEST_TARGET}_static
+      ${SOCI_CORE_TARGET}-static
+      ${SOCI_${NAMEU}_TARGET}-static
+      ${${NAMEU}_LIBRARIES}
+      ${SOCI_CORE_STATIC_DEPENDENCIES})
 
-  add_test(${THIS_TEST_TARGET}_static
-    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}_static
-    ${${THIS_TEST_CONNSTR}})
+    add_test(${THIS_TEST_TARGET}
+      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}
+      ${${THIS_TEST_CONNSTR}})
+
+    add_test(${THIS_TEST_TARGET}_static
+      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}_static
+      ${${THIS_TEST_CONNSTR}})
+
+  endif()
 
   # LOG
-  message("soci_backend_test:")
-  message("NAME: ${NAME}")
-  message("THIS_TEST_SOURCES: ${THIS_TEST_SOURCES}")
-  message("THIS_TEST_TARGET: ${THIS_TEST_TARGET}")
-  message("THIS_TEST_TARGET_static: ${THIS_TEST_TARGET}_static")
-  message("THIS_TEST_CONNSTR: ${${THIS_TEST_CONNSTR}}")
+  #message("soci_backend_test:")
+  #message("NAME: ${NAME}")
+  #message("THIS_TEST_SOURCES: ${THIS_TEST_SOURCES}")
+  #message("THIS_TEST_TARGET: ${THIS_TEST_TARGET}")
+  #message("THIS_TEST_TARGET_static: ${THIS_TEST_TARGET}_static")
+  #message("THIS_TEST_CONNSTR: ${${THIS_TEST_CONNSTR}}")
 
 endmacro()
