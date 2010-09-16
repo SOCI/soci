@@ -5,7 +5,4 @@ soci_backend(SQLite3
   AUTHORS "Maciej Sobczak, Stephen Hutton, David Courtney"
   MAINTAINERS "Maciej Sobczak, Mateusz Loskot")
 
-# TODO: check the flag inside soci_backend_test macro (to be implemented) --mloskot
-if (SOCI_TESTS)
-  add_subdirectory(test)
-endif()
+add_subdirectory(test)

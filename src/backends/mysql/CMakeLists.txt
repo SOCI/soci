@@ -5,7 +5,4 @@ soci_backend(MySQL
   AUTHORS "Pawel Aleksander Fedorynski"
   MAINTAINERS "Pawel Aleksander Fedorynski")
 
-# TODO: check the flag inside soci_backend_test macro (to be implemented) --mloskot
-if (SOCI_TESTS)
-  add_subdirectory(test)
-endif()
+add_subdirectory(test)
