@@ -68,8 +68,8 @@ INSTALL(TARGETS ${SOCI_CORE_TARGET} ${SOCI_CORE_TARGET}-static
 
 # Summary
 boost_report_value(SOCI_CORE_TARGET)
-boost_report_value(WITH_BOOST)
 boost_report_value(SOCI_CORE_DEPENDENCIES)
+boost_report_value(WITH_BOOST)
 soci_report_directory_property(COMPILE_DEFINITIONS)
 
 # Export core target name to make it visibla by backends
