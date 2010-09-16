@@ -11,6 +11,7 @@
 #include "soci.h"
 #include "soci-config.h"
 
+#ifdef HAVE_BOOST
 // explicitly pull conversions for Boost's optional, tuple and fusion:
 #include <boost/version.hpp>
 #include <boost-optional.h>
@@ -19,6 +20,7 @@
 #if defined(BOOST_VERSION) && BOOST_VERSION >= 103500
 #include <boost-fusion.h>
 #endif // BOOST_VERSION
+#endif // HAVE_BOOST
 
 #include <algorithm>
 #include <cmath>
@@ -2696,8 +2698,10 @@ void test25()
 // (both into and use)
 void test26()
 {
+#ifdef HAVE_BOOST
+
     session sql(backEndFactory_, connectString_);
-    
+
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
     {
@@ -3021,6 +3025,9 @@ void test26()
     }
 
     std::cout << "test 26 passed" << std::endl;
+#else
+    std::cout << "test 26 skipped (no Boost)" << std::endl;
+#endif // HAVE_BOOST
 }
 
 // connection and reconnection tests
@@ -3091,6 +3098,8 @@ void test27()
 
 void test28()
 {
+#ifdef HAVE_BOOST
+
     session sql(backEndFactory_, connectString_);
 
     auto_table_creator tableCreator(tc_.table_creator_2(sql));
@@ -3234,10 +3243,14 @@ void test28()
     }
 
     std::cout << "test 28 passed" << std::endl;
+#else
+    std::cout << "test 28 skipped (no Boost)" << std::endl;
+#endif // HAVE_BOOST
 }
 
 void test29()
 {
+#ifdef HAVE_BOOST
 #if defined(BOOST_VERSION) && BOOST_VERSION >= 103500
 
     session sql(backEndFactory_, connectString_);
@@ -3387,11 +3400,17 @@ void test29()
 #else
     std::cout << "test 29 skipped (no boost::fusion)" << std::endl;
 #endif // BOOST_VERSION
+
+#else
+    std::cout << "test 29 skipped (no Boost)" << std::endl;
+#endif // HAVE_BOOST
 }
 
 // test for boost::gregorian::date
 void test30()
 {
+#ifdef HAVE_BOOST
+
     session sql(backEndFactory_, connectString_);
 
     {
@@ -3442,6 +3461,9 @@ void test30()
     }
 
     std::cout << "test 30 passed" << std::endl;
+#else
+    std::cout << "test 30 skipped (no Boost)" << std::endl;
+#endif // HAVE_BOOST
 }
 
 }; // class common_tests
