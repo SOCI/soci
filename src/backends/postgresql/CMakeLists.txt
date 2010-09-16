@@ -5,4 +5,7 @@ soci_backend(PostgreSQL
   AUTHORS "Maciej Sobczak, Stephen Hutton"
   MAINTAINERS "Maciej Sobczak")
 
-add_subdirectory(test)
+# TODO: check the flag inside soci_backend_test macro (to be implemented) --mloskot
+if (SOCI_TESTS)
+  add_subdirectory(test)
+endif()

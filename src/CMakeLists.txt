@@ -25,7 +25,7 @@ set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
 include(SociUtilities)
 
 message(STATUS "")
-colormsg(_HIBLUE_ "Configuring SOCI library:")
+colormsg(_HIBLUE_ "Configuring SOCI:")
 
 #################################################################################
 # SOCI version information
@@ -38,7 +38,8 @@ soci_version(MAJOR 3 MINOR 1 PATCH 0)
 # Build features and variants
 #################################################################################
 
-# TODO
+option(SOCI_TESTS "Build SOCI tests and enable testing target" ON)
+boost_report_value(SOCI_TESTS)
 
 #################################################################################
 # Find SOCI dependencies
