@@ -1,9 +1,9 @@
 set(Boost_FIND_QUIETLY TRUE)
 
-find_package(Boost 1.33.1 COMPONENTS date_time QUIET)
+find_package(Boost 1.33.1 COMPONENTS date_time)
 
 if (NOT Boost_date_time_FOUND)
-    find_package(Boost 1.33.1 REQUIRED)
+  find_package(Boost 1.33.1)
 endif()
 
 set(Boost_RELEASE_VERSION
