@@ -6,11 +6,11 @@ if(SOCI_ORACLE)
   set(SOCI_ORACLE_TEST_CONNSTR ""
     CACHE STRING "Test connection string for Oracle tests run")
 
-  set(SOCI_ORACLE_TEST_TARGET test_mysql)
-  set(SOCI_ORACLE_TEST_SOURCES test-mysql.cpp)
+  set(SOCI_ORACLE_TEST_TARGET test_oracle)
+  set(SOCI_ORACLE_TEST_SOURCES test-oracle.cpp)
 
   include_directories(${SOCI_SOURCE_DIR}/core/test)
-  include_directories(${SOCI_SOURCE_DIR}/backends/mysql)
+  include_directories(${SOCI_SOURCE_DIR}/backends/oracle)
 
   add_executable(${SOCI_ORACLE_TEST_TARGET} ${SOCI_ORACLE_TEST_SOURCES})
   add_executable(${SOCI_ORACLE_TEST_TARGET}_static ${SOCI_ORACLE_TEST_SOURCES})
