@@ -9,11 +9,12 @@
 ################################################################################
 # Macros in this module:
 #   
-#   soci_backend - defines a database backend for SOCI library
+#   soci_backend - defines project of a database backend for SOCI library
 #
+#   soci_backend_test - defines test project of a database backend for SOCI library
 ################################################################################
 
-# Defines a database backend for SOCI library
+# Defines project of a database backend for SOCI library
 #
 # soci_backend(backendname
 #              HEADERS header1 header2
@@ -39,7 +40,7 @@ macro(soci_backend NAME)
   # Backend option available to user
   set(THIS_BACKEND_OPTION SOCI_${NAMEU})
   option(${THIS_BACKEND_OPTION}
-    "Configure and build ${PROJECT_NAME} backend for ${NAME}" ON)
+    "Attempt to build ${PROJECT_NAME} backend for ${NAME}" ON)
 
   # Determine required dependencies
   set(THIS_BACKEND_DEPENDS_INCLUDE_DIRS)
@@ -169,4 +170,68 @@ macro(soci_backend NAME)
   #message("SOURCES: ${THIS_BACKEND_SOURCES}")
   #message("DEPENDS_LIBRARIES: ${THIS_BACKEND_DEPENDS_LIBRARIES}")
   #message("DEPENDS_INCLUDE_DIRS: ${THIS_BACKEND_DEPENDS_INCLUDE_DIRS}")
+endmacro()
+
+# Defines test project of a database backend for SOCI library
+#
+# soci_backend_test(backendname DEPENDS dependency1 dependency2)
+#
+macro(soci_backend_test NAME)
+  parse_arguments(THIS_TEST
+    "DEPENDS;"
+    ""
+    ${ARGN})
+
+  # Backend name variants utils
+  string(TOLOWER "${PROJECT_NAME}" PROJECTNAMEL)
+  string(TOLOWER "${NAME}" NAMEL)
+  string(TOUPPER "${NAME}" NAMEU)
+  set(THIS_TEST soci_test_${NAMEL})
+
+  # Backend test options available to user
+  set(THIS_TEST_OPTION SOCI_TEST_${NAMEU})
+  option(${THIS_TEST_OPTION}
+    "Attempt to build test for ${PROJECT_NAME} ${NAME} backend" ON)
+
+  set(THIS_TEST_CONNSTR SOCI_TEST_${NAMEU}_CONNSTR)
+  set(${THIS_TEST_CONNSTR} ""
+    CACHE STRING "Test connection string for ${NAME} test")
+  
+  set(THIS_TEST_TARGET soci_test_${NAMEL})
+  # TODO: glob for all .cpp files in <backend>/test directory
+  set(THIS_TEST_SOURCES test-${NAMEL}.cpp)
+
+  include_directories(${SOCI_SOURCE_DIR}/core/test)
+  include_directories(${SOCI_SOURCE_DIR}/backends/${NAMEL})
+
+  add_executable(${THIS_TEST_TARGET} ${THIS_TEST_SOURCES})
+  add_executable(${THIS_TEST_TARGET}_static ${THIS_TEST_SOURCES})
+
+  target_link_libraries(${THIS_TEST_TARGET}
+    ${SOCI_CORE_TARGET}
+    ${SOCI_${NAMEU}_TARGET}
+    ${${NAMEU}_LIBRARIES})
+
+  target_link_libraries(${THIS_TEST_TARGET}_static
+    ${SOCI_CORE_TARGET}-static
+    ${SOCI_${NAMEU}_TARGET}-static
+    ${${NAMEU}_LIBRARIES}
+    ${SOCI_CORE_STATIC_DEPENDENCIES})
+
+  add_test(${THIS_TEST_TARGET}
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}
+    ${${THIS_TEST_CONNSTR}})
+
+  add_test(${THIS_TEST_TARGET}_static
+    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}_static
+    ${${THIS_TEST_CONNSTR}})
+
+  # LOG
+  message("soci_backend_test:")
+  message("NAME: ${NAME}")
+  message("THIS_TEST_SOURCES: ${THIS_TEST_SOURCES}")
+  message("THIS_TEST_TARGET: ${THIS_TEST_TARGET}")
+  message("THIS_TEST_TARGET_static: ${THIS_TEST_TARGET}_static")
+  message("THIS_TEST_CONNSTR: ${${THIS_TEST_CONNSTR}}")
+
 endmacro()
