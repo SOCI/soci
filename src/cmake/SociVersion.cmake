@@ -17,7 +17,7 @@
 #
 # soci_version(MAJOR major_version MINOR minor_version PATCH patch_level)
 #
-#    MAJOR version is used to set SOVERSION
+#    MAJOR.MINOR version is used to set SOVERSION
 #
 macro(soci_version)
   parse_arguments(THIS_VERSION "MAJOR;MINOR;PATCH;"
@@ -33,7 +33,7 @@ macro(soci_version)
   set(${PROJECT_NAME}_VERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}.${${PROJECT_NAME}_VERSION_PATCH}")
 
   # Set SOVERSION based on major
-  set(${PROJECT_NAME}_SOVERSION "${${PROJECT_NAME}_VERSION_MAJOR}")
+  set(${PROJECT_NAME}_SOVERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}")
 
   message(STATUS "")
 
