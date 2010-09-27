@@ -45,7 +45,7 @@ find_path(SQLITE3_INCLUDE_DIR
 
 set(SQLITE3_NAMES ${OSGEO4W_IMPORT_LIBRARY} sqlite3)
 find_library(SQLITE3_LIBRARY
-  NAMES sqlite3
+  NAMES ${SQLITE3_NAMES}
   PATHS
   /usr/lib
   /usr/local/lib
