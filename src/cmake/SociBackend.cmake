@@ -112,10 +112,12 @@ macro(soci_backend NAME)
     set(THIS_BACKEND_TARGET_VAR SOCI_${NAMEU}_TARGET)
     set(${THIS_BACKEND_TARGET_VAR} ${THIS_BACKEND_TARGET})
     
-    set(THIS_BACKEND_TARGET_OUTPUT_NAME_VAR ${THIS_BACKEND_TARGET_VAR}_OUTPUT_NAME)
     soci_target_output_name(${THIS_BACKEND_TARGET} ${THIS_BACKEND_TARGET_VAR}_OUTPUT_NAME)
 
+    set(THIS_BACKEND_TARGET_OUTPUT_NAME ${${THIS_BACKEND_TARGET_VAR}_OUTPUT_NAME})
     set(THIS_BACKEND_TARGET_OUTPUT_NAME_VAR ${THIS_BACKEND_TARGET_VAR}_OUTPUT_NAME)
+
+    # TODO: Extract as macros: soci_shared_lib_target and soci_static_lib_target --mloskot
 
     # Shared library target
     add_library(${THIS_BACKEND_TARGET} SHARED ${THIS_BACKEND_SOURCES})
@@ -127,16 +129,16 @@ macro(soci_backend NAME)
     if(WIN32)
       set_target_properties(${THIS_BACKEND_TARGET}
         PROPERTIES
-        OUTPUT_NAME ${THIS_BACKEND_TARGET_OUTPUT_NAME_VAR}
+        OUTPUT_NAME ${THIS_BACKEND_TARGET_OUTPUT_NAME}
         DEFINE_SYMBOL SOCI_DLL)
     else()
       set_target_properties(${THIS_BACKEND_TARGET}
         PROPERTIES
-        SOVERSION ${PROJECT_NAME}_SOVERSION})
+        SOVERSION ${${PROJECT_NAME}_SOVERSION})
     endif()
       set_target_properties(${THIS_BACKEND_TARGET}
         PROPERTIES
-        VERSION ${PROJECT_NAME}_VERSION}
+        VERSION ${${PROJECT_NAME}_VERSION}
         CLEAN_DIRECT_OUTPUT 1)
 
     # Static library target
@@ -144,7 +146,7 @@ macro(soci_backend NAME)
 
     set_target_properties(${THIS_BACKEND_TARGET}-static
       PROPERTIES
-      OUTPUT_NAME ${THIS_BACKEND_TARGET_OUTPUT_NAME_VAR}
+      OUTPUT_NAME ${THIS_BACKEND_TARGET_OUTPUT_NAME}
       PREFIX "lib"
       CLEAN_DIRECT_OUTPUT 1)
 
@@ -170,11 +172,11 @@ macro(soci_backend NAME)
     soci_report_directory_property(COMPILE_DEFINITIONS)
     
     #TODO: report actual name of libraries
-    #get_target_property(ARCHIVE_OUTPUT_NAME soci_sqlite3 ARCHIVE_OUTPUT_NAME)
-    #boost_report_value(ARCHIVE_OUTPUT_NAME)
-    #get_target_property(LIBRARY_OUTPUT_NAME ${THIS_BACKEND_TARGET} LIBRARY_OUTPUT_NAME)
+    #get_target_property(A ${THIS_BACKEND_TARGET}-static ARCHIVE_OUTPUT_NAME)
+    #message(${A})
+    #get_target_property(LIBRARY_OUTPUT_NAME ${THIS_BACKEND_TARGET}-static LIBRARY_OUTPUT_NAME)
     #boost_report_value(LIBRARY_OUTPUT_NAME)
-    #get_target_property(RUNTIME_OUTPUT_NAME ${THIS_BACKEND_TARGET} RUNTIME_OUTPUT_NAME)
+    #get_target_property(RUNTIME_OUTPUT_NAME ${THIS_BACKEND_TARGET}-static RUNTIME_OUTPUT_NAME)
     #boost_report_value(RUNTIME_OUTPUT_NAME)
   endif()
 
@@ -206,10 +208,10 @@ macro(soci_backend_test NAME)
   string(TOLOWER "${PROJECT_NAME}" PROJECTNAMEL)
   string(TOLOWER "${NAME}" NAMEL)
   string(TOUPPER "${NAME}" NAMEU)
-  set(THIS_TEST soci_test_${NAMEL})
+  set(THIS_TEST soci_${NAMEL}_test)
 
   # Backend test options available to user
-  set(THIS_TEST_OPTION SOCI_TEST_${NAMEU})
+  set(THIS_TEST_OPTION SOCI_${NAMEU}_TEST)
   option(${THIS_TEST_OPTION}
     "Attempt to build test for ${PROJECT_NAME} ${NAME} backend" ON)
 
@@ -222,13 +224,13 @@ macro(soci_backend_test NAME)
 
   if(${THIS_TEST_OPTION})
 
-    set(THIS_TEST_CONNSTR SOCI_TEST_${NAMEU}_CONNSTR)
+    set(THIS_TEST_CONNSTR SOCI_${NAMEU}_TEST_CONNSTR)
     set(${THIS_TEST_CONNSTR} ""
         CACHE STRING "Test connection string for ${NAME} test")
   
     boost_report_value(${THIS_TEST_CONNSTR})
 
-    set(THIS_TEST_TARGET soci_test_${NAMEL})
+    set(THIS_TEST_TARGET ${THIS_TEST})
     # TODO: glob all .cpp files in <backend>/test directory
     set(THIS_TEST_SOURCES test-${NAMEL}.cpp)
 
