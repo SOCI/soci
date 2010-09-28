@@ -48,12 +48,10 @@ class standard_into_type_backend
 public:
     virtual ~standard_into_type_backend() {}
 
-    virtual void define_by_pos(int & position,
-        void * data, exchange_type type) = 0;
+    virtual void define_by_pos(int& position, void* data, exchange_type type) = 0;
 
     virtual void pre_fetch() = 0;
-    virtual void post_fetch(bool gotData, bool calledFromFetch,
-        indicator * ind) = 0;
+    virtual void post_fetch(bool gotData, bool calledFromFetch, indicator* ind) = 0;
 
     virtual void clean_up() = 0;
 };
@@ -63,11 +61,10 @@ class vector_into_type_backend
 public:
     virtual ~vector_into_type_backend() {}
 
-    virtual void define_by_pos(int & position,
-        void * data, exchange_type type) = 0;
+    virtual void define_by_pos(int& position, void* data, exchange_type type) = 0;
 
     virtual void pre_fetch() = 0;
-    virtual void post_fetch(bool gotData, indicator * ind) = 0;
+    virtual void post_fetch(bool gotData, indicator* ind) = 0;
 
     virtual void resize(std::size_t sz) = 0;
     virtual std::size_t size() = 0;
@@ -82,12 +79,12 @@ class standard_use_type_backend
 public:
     virtual ~standard_use_type_backend() {}
 
-    virtual void bind_by_pos(int & position,
-        void * data, exchange_type type, bool readOnly) = 0;
-    virtual void bind_by_name(std::string const & name,
-        void * data, exchange_type type, bool readOnly) = 0;
+    virtual void bind_by_pos(int& position, void* data,
+        exchange_type type, bool readOnly) = 0;
+    virtual void bind_by_name(std::string const& name,
+        void* data, exchange_type type, bool readOnly) = 0;
 
-    virtual void pre_use(indicator const * ind) = 0;
+    virtual void pre_use(indicator const* ind) = 0;
     virtual void post_use(bool gotData, indicator * ind) = 0;
 
     virtual void clean_up() = 0;
@@ -98,12 +95,11 @@ class vector_use_type_backend
 public:
     virtual ~vector_use_type_backend() {}
 
-    virtual void bind_by_pos(int & position,
-        void * data, exchange_type type) = 0;
-    virtual void bind_by_name(std::string const & name,
-        void * data, exchange_type type) = 0;
+    virtual void bind_by_pos(int& position, void* data, exchange_type type) = 0;
+    virtual void bind_by_name(std::string const& name,
+        void* data, exchange_type type) = 0;
 
-    virtual void pre_use(indicator const * ind) = 0;
+    virtual void pre_use(indicator const* ind) = 0;
 
     virtual std::size_t size() = 0;
 
@@ -120,24 +116,29 @@ public:
     virtual void alloc() = 0;
     virtual void clean_up() = 0;
 
-    virtual void prepare(std::string const & query, statement_type eType) = 0;
+    virtual void prepare(std::string const& query, statement_type eType) = 0;
 
-    enum exec_fetch_result { ef_success, ef_no_data };
+    enum exec_fetch_result
+    {
+        ef_success,
+        ef_no_data
+    };
+
     virtual exec_fetch_result execute(int number) = 0;
     virtual exec_fetch_result fetch(int number) = 0;
 
     virtual int get_number_of_rows() = 0;
 
-    virtual std::string rewrite_for_procedure_call(std::string const & query) = 0;
+    virtual std::string rewrite_for_procedure_call(std::string const& query) = 0;
 
     virtual int prepare_for_describe() = 0;
-    virtual void describe_column(int colNum, data_type & dtype,
-        std::string & column_name) = 0;
+    virtual void describe_column(int colNum, data_type& dtype,
+        std::string& column_name) = 0;
 
-    virtual standard_into_type_backend * make_into_type_backend() = 0;
-    virtual standard_use_type_backend * make_use_type_backend() = 0;
-    virtual vector_into_type_backend * make_vector_into_type_backend() = 0;
-    virtual vector_use_type_backend * make_vector_use_type_backend() = 0;
+    virtual standard_into_type_backend* make_into_type_backend() = 0;
+    virtual standard_use_type_backend* make_use_type_backend() = 0;
+    virtual vector_into_type_backend* make_vector_into_type_backend() = 0;
+    virtual vector_use_type_backend* make_vector_use_type_backend() = 0;
 };
 
 // polymorphic RowID backend
@@ -156,11 +157,11 @@ public:
     virtual ~blob_backend() {}
 
     virtual std::size_t get_len() = 0;
-    virtual std::size_t read(std::size_t offset, char * buf,
+    virtual std::size_t read(std::size_t offset, char* buf,
         std::size_t toRead) = 0;
-    virtual std::size_t write(std::size_t offset, char const * buf,
+    virtual std::size_t write(std::size_t offset, char const* buf,
         std::size_t toWrite) = 0;
-    virtual std::size_t append(char const * buf, std::size_t toWrite) = 0;
+    virtual std::size_t append(char const* buf, std::size_t toWrite) = 0;
     virtual void trim(std::size_t newLen) = 0;
 };
 
@@ -177,9 +178,9 @@ public:
 
     virtual std::string get_backend_name() const = 0;
 
-    virtual statement_backend * make_statement_backend() = 0;
-    virtual rowid_backend * make_rowid_backend() = 0;
-    virtual blob_backend * make_blob_backend() = 0;
+    virtual statement_backend* make_statement_backend() = 0;
+    virtual rowid_backend* make_rowid_backend() = 0;
+    virtual blob_backend* make_blob_backend() = 0;
 };
 
 } // namespace details
@@ -190,8 +191,8 @@ struct SOCI_DECL backend_factory
 {
     virtual ~backend_factory() {}
 
-    virtual details::session_backend * make_session(
-        std::string const & connectString) const = 0;
+    virtual details::session_backend* make_session(
+        std::string const& connectString) const = 0;
 };
 
 } // namespace soci
