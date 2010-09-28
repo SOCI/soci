@@ -111,25 +111,44 @@ macro(soci_backend NAME)
     set(THIS_BACKEND_TARGET ${PROJECTNAMEL}_${NAMEL})
     set(THIS_BACKEND_TARGET_VAR SOCI_${NAMEU}_TARGET)
     set(${THIS_BACKEND_TARGET_VAR} ${THIS_BACKEND_TARGET})
+    
+    set(THIS_BACKEND_TARGET_OUTPUT_NAME_VAR ${THIS_BACKEND_TARGET_VAR}_OUTPUT_NAME)
+    soci_target_output_name(${THIS_BACKEND_TARGET} ${THIS_BACKEND_TARGET_VAR}_OUTPUT_NAME)
 
-    # TODO: Add static target 
-    add_library(${THIS_BACKEND_TARGET}-static STATIC ${THIS_BACKEND_SOURCES})
+    set(THIS_BACKEND_TARGET_OUTPUT_NAME_VAR ${THIS_BACKEND_TARGET_VAR}_OUTPUT_NAME)
+
+    # Shared library target
     add_library(${THIS_BACKEND_TARGET} SHARED ${THIS_BACKEND_SOURCES})
 
     target_link_libraries(${THIS_BACKEND_TARGET}
       ${SOCI_CORE_TARGET}
       ${THIS_BACKEND_DEPENDS_LIBRARIES})
 
-    set_target_properties(${THIS_BACKEND_TARGET}-static
-      PROPERTIES OUTPUT_NAME ${THIS_BACKEND_TARGET})
-    set_target_properties(${THIS_BACKEND_TARGET}
-      PROPERTIES
-      CLEAN_DIRECT_OUTPUT 1
-      VERSION ${SOCI_VERSION}
-      SOVERSION ${SOCI_SOVERSION})
-    set_target_properties(${THIS_BACKEND_TARGET}-static
-      PROPERTIES CLEAN_DIRECT_OUTPUT 1)
+    if(WIN32)
+      set_target_properties(${THIS_BACKEND_TARGET}
+        PROPERTIES
+        OUTPUT_NAME ${THIS_BACKEND_TARGET_OUTPUT_NAME_VAR}
+        DEFINE_SYMBOL SOCI_DLL)
+    else()
+      set_target_properties(${THIS_BACKEND_TARGET}
+        PROPERTIES
+        SOVERSION ${PROJECT_NAME}_SOVERSION})
+    endif()
+      set_target_properties(${THIS_BACKEND_TARGET}
+        PROPERTIES
+        VERSION ${PROJECT_NAME}_VERSION}
+        CLEAN_DIRECT_OUTPUT 1)
 
+    # Static library target
+    add_library(${THIS_BACKEND_TARGET}-static STATIC ${THIS_BACKEND_SOURCES})
+
+    set_target_properties(${THIS_BACKEND_TARGET}-static
+      PROPERTIES
+      OUTPUT_NAME ${THIS_BACKEND_TARGET_OUTPUT_NAME_VAR}
+      PREFIX "lib"
+      CLEAN_DIRECT_OUTPUT 1)
+
+    # Backend installation
     INSTALL(FILES ${THIS_BACKEND_HEADERS} DESTINATION ${INCLUDEDIR}/${PROJECTNAMEL}/${NAMEL})
     INSTALL(TARGETS ${THIS_BACKEND_TARGET} ${THIS_BACKEND_TARGET}-static
       LIBRARY DESTINATION ${LIBDIR}
@@ -145,6 +164,7 @@ macro(soci_backend NAME)
 
   if(${THIS_BACKEND_OPTION})
     boost_report_value(${THIS_BACKEND_TARGET_VAR})
+    boost_report_value(${THIS_BACKEND_TARGET_OUTPUT_NAME_VAR})
     boost_report_value(${THIS_BACKEND_HEADERS_VAR})
 
     soci_report_directory_property(COMPILE_DEFINITIONS)
