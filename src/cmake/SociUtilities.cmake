@@ -387,3 +387,25 @@ macro(list_subdirectories retval curdir return_relative)
   set(${retval} ${list_of_dirs})
 endmacro()
 
+#
+# Generates output name for given target depending on platform and version.
+# For instance, on Windows, libraries get ABI version suffix soci_coreXY.{dll|lib}.
+#
+function(soci_target_output_name TARGET_NAME OUTPUT_NAME)
+  if(NOT DEFINED TARGET_NAME)
+    message(SEND_ERROR "Error, the variable TARGET_NAME is not defined!")
+  endif()
+
+  if(NOT DEFINED ${PROJECT_NAME}_VERSION)
+    message(SEND_ERROR "Error, the variable ${${PROJECT_NAME}_VERSION} is not defined!")
+  endif()
+
+  # On Windows, ABI version is specified using binary file name suffix.
+  # On Unix, suffix ix empty and SOVERSION is used instead.
+  if (WIN32)
+    set(SUFFIX "${${PROJECT_NAME}_VERSION_MAJOR}${${PROJECT_NAME}_VERSION_MINOR}")
+  endif()
+
+  set(${OUTPUT_NAME} ${TARGET_NAME}${SUFFIX} PARENT_SCOPE)
+
+endfunction()
