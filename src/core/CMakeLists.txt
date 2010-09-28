@@ -40,15 +40,10 @@ endif()
 file(GLOB SOCI_CORE_HEADERS *.h)
 file(GLOB SOCI_CORE_SOURCES *.cpp)
 
-# Core targets configuration
+# Core targets
 string(TOLOWER "${PROJECT_NAME}" PROJECTNAMEL)
 set(SOCI_CORE_TARGET ${PROJECTNAMEL}_core)
 
-soci_target_output_name(${SOCI_CORE_TARGET} SOCI_CORE_TARGET_OUTPUT_NAME)
-
-#
-# Core shared library
-#
 add_library(${SOCI_CORE_TARGET} SHARED ${SOCI_CORE_SOURCES})
 
 target_link_libraries(${SOCI_CORE_TARGET} ${SOCI_CORE_DEPENDENCIES})
@@ -57,46 +52,37 @@ if(WIN32)
   set_target_properties(${SOCI_CORE_TARGET}
     PROPERTIES
     DEFINE_SYMBOL SOCI_DLL
-    OUTPUT_NAME "${SOCI_CORE_TARGET_OUTPUT_NAME}"
-    VERSION ${SOCI_VERSION}
-    CLEAN_DIRECT_OUTPUT 1)
+    OUTPUT_NAME "${SOCI_CORE_TARGET}.${SOCI_SOVERSION}"
+    VERSION ${SOCI_VERSION})
 else()
   set_target_properties(${SOCI_CORE_TARGET}
     PROPERTIES
+    CLEAN_DIRECT_OUTPUT 1
     VERSION ${SOCI_VERSION}
-    SOVERSION ${SOCI_SOVERSION}
-    CLEAN_DIRECT_OUTPUT 1)
+    SOVERSION ${SOCI_SOVERSION})
 endif()
 
-#
-# Core static library
-#
 add_library(${SOCI_CORE_TARGET}-static STATIC ${SOCI_CORE_SOURCES})
 
 set_target_properties(${SOCI_CORE_TARGET}-static
   PROPERTIES
-  OUTPUT_NAME ${SOCI_CORE_TARGET_OUTPUT_NAME}
+  OUTPUT_NAME ${SOCI_CORE_TARGET}
   PREFIX "lib"
   CLEAN_DIRECT_OUTPUT 1)
 
-#
-# Core installation
-#
+# install
 INSTALL(FILES ${SOCI_CORE_HEADERS} DESTINATION ${INCLUDEDIR}/${PROJECTNAMEL})
 INSTALL(TARGETS ${SOCI_CORE_TARGET} ${SOCI_CORE_TARGET}-static
   LIBRARY DESTINATION ${LIBDIR}
   ARCHIVE DESTINATION ${LIBDIR})
 
 
-#
-# Core configuration summary
-#
+# Summary
 boost_report_value(SOCI_CORE_TARGET)
-boost_report_value(SOCI_CORE_TARGET_OUTPUT_NAME)
 boost_report_value(SOCI_CORE_DEPENDENCIES)
 boost_report_value(WITH_BOOST)
 soci_report_directory_property(COMPILE_DEFINITIONS)
 
-# Export core target name to make it visible by backends
+# Export core target name to make it visibla by backends
 set(SOCI_CORE_TARGET ${SOCI_CORE_TARGET} PARENT_SCOPE)
 set(SOCI_CORE_STATIC_DEPENDENCIES ${SOCI_CORE_DEPENDENCIES} PARENT_SCOPE)
