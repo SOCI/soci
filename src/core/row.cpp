@@ -26,7 +26,7 @@ void row::add_properties(column_properties const &cp)
     {
         for (std::size_t i = 0; i != originalName.size(); ++i)
         {
-            columnName.push_back(std::toupper(originalName[i]));
+            columnName.push_back(static_cast<char>(std::toupper(originalName[i])));
         }
 
         // rewrite the column name in the column_properties object
