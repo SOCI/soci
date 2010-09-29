@@ -37,6 +37,7 @@ soci_version(MAJOR 3 MINOR 1 PATCH 0)
 #################################################################################
 # Build features and variants
 #################################################################################
+include(SociConfig)
 
 option(SOCI_TESTS "Enable build of collection of SOCI tests" ON)
 
