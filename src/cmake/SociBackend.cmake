@@ -81,7 +81,7 @@ macro(soci_backend NAME)
       endforeach()
     endif()
 
-    # TODO: Abord or warn compilation may fail? --mloskot
+    # TODO: Abort or warn compilation may fail? --mloskot
     colormsg(RED "Skipping")
 
     set(${THIS_BACKEND_OPTION} OFF)
@@ -227,7 +227,7 @@ macro(soci_backend_test NAME)
     set(THIS_TEST_CONNSTR SOCI_${NAMEU}_TEST_CONNSTR)
     set(${THIS_TEST_CONNSTR} ""
         CACHE STRING "Test connection string for ${NAME} test")
-  
+
     boost_report_value(${THIS_TEST_CONNSTR})
 
     set(THIS_TEST_TARGET ${THIS_TEST})
