@@ -1,1 +1,1 @@
-soci_backend_test(SQLite3)
+soci_backend_test(SQLite3 CONNSTR "soci_test.db")

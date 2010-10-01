@@ -200,7 +200,7 @@ endmacro()
 #
 macro(soci_backend_test NAME)
   parse_arguments(THIS_TEST
-    "DEPENDS;"
+    "DEPENDS;CONNSTR;"
     ""
     ${ARGN})
 
@@ -224,11 +224,14 @@ macro(soci_backend_test NAME)
 
   if(${THIS_TEST_OPTION})
 
-    set(THIS_TEST_CONNSTR SOCI_${NAMEU}_TEST_CONNSTR)
-    set(${THIS_TEST_CONNSTR} ""
+    set(THIS_TEST_CONNSTR_VAR SOCI_${NAMEU}_TEST_CONNSTR)
+    set(${THIS_TEST_CONNSTR_VAR} ""
         CACHE STRING "Test connection string for ${NAME} test")
-
-    boost_report_value(${THIS_TEST_CONNSTR})
+    
+    if(NOT ${THIS_TEST_CONNSTR_VAR} AND THIS_TEST_CONNSTR)
+      set(${THIS_TEST_CONNSTR_VAR} ${THIS_TEST_CONNSTR})
+    endif()
+    boost_report_value(${THIS_TEST_CONNSTR_VAR})
 
     set(THIS_TEST_TARGET ${THIS_TEST})
     # TODO: glob all .cpp files in <backend>/test directory
@@ -253,11 +256,11 @@ macro(soci_backend_test NAME)
 
     add_test(${THIS_TEST_TARGET}
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}
-      ${${THIS_TEST_CONNSTR}})
+      ${${THIS_TEST_CONNSTR_VAR}})
 
     add_test(${THIS_TEST_TARGET}_static
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}_static
-      ${${THIS_TEST_CONNSTR}})
+      ${${THIS_TEST_CONNSTR_VAR}})
 
   endif()
 
