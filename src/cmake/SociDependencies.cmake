@@ -24,7 +24,8 @@ set(SOCI_BACKENDS_ALL_DEPENDENCIES
   MySQL
   Oracle
   PostgreSQL
-  SQLite3)
+  SQLite3
+  Doxygen)
 
 #
 # Perform checks
