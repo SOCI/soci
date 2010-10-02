@@ -1,1 +1,1 @@
-soci_backend_test(Empty)
+soci_backend_test(Empty CONNSTR "dummy")
