@@ -23,12 +23,12 @@ namespace dynamic_backends
 backend_factory const & get(std::string const & name);
 
 // provided for advanced user-level management
-std::vector<std::string> & search_paths();
-void register_backend(std::string const & name, std::string const & shared_object = std::string());
-void register_backend(std::string const & name, backend_factory const & factory);
-std::vector<std::string> list_all();
-void unload(std::string const & name);
-void unload_all();
+SOCI_DECL std::vector<std::string> & search_paths();
+SOCI_DECL void register_backend(std::string const & name, std::string const & shared_object = std::string());
+SOCI_DECL void register_backend(std::string const & name, backend_factory const & factory);
+SOCI_DECL std::vector<std::string> list_all();
+SOCI_DECL void unload(std::string const & name);
+SOCI_DECL void unload_all();
 
 } // namespace dynamic_backends
 

@@ -265,12 +265,12 @@ backend_factory const& dynamic_backends::get(std::string const& name)
     return *(i->second.factory_);
 }
 
-std::vector<std::string>& search_paths()
+SOCI_DECL std::vector<std::string>& search_paths()
 {
     return search_paths_;
 }
 
-void dynamic_backends::register_backend(
+SOCI_DECL void dynamic_backends::register_backend(
     std::string const& name, std::string const& shared_object)
 {
     scoped_lock lock(&mutex_);
@@ -278,7 +278,7 @@ void dynamic_backends::register_backend(
     do_register_backend(name, shared_object);
 }
 
-void dynamic_backends::register_backend(
+SOCI_DECL void dynamic_backends::register_backend(
     std::string const& name, backend_factory const& factory)
 {
     scoped_lock lock(&mutex_);
@@ -293,7 +293,7 @@ void dynamic_backends::register_backend(
     factories_[name] = new_entry;
 }
 
-std::vector<std::string> dynamic_backends::list_all()
+SOCI_DECL std::vector<std::string> dynamic_backends::list_all()
 {
     scoped_lock lock(&mutex_);
 
@@ -309,14 +309,14 @@ std::vector<std::string> dynamic_backends::list_all()
     return ret;
 }
 
-void dynamic_backends::unload(std::string const& name)
+SOCI_DECL void dynamic_backends::unload(std::string const& name)
 {
     scoped_lock lock(&mutex_);
 
     do_unload(name);
 }
 
-void dynamic_backends::unload_all()
+SOCI_DECL void dynamic_backends::unload_all()
 {
     scoped_lock lock(&mutex_);
 
