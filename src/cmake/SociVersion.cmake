@@ -35,9 +35,22 @@ macro(soci_version)
   # Set SOVERSION based on major
   set(${PROJECT_NAME}_SOVERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}")
 
+  # Set ABI version string used to name binary output and, by SOCI loader, to find binaries.
+  # On Windows, ABI version is specified using binary file name suffix.
+  # On Unix, suffix ix empty and SOVERSION is used instead.
+  if (UNIX)
+    set(${PROJECT_NAME}_ABI_VERSION ${${PROJECT_NAME}_SOVERSION})
+  elseif(WIN32)
+    set(${PROJECT_NAME}_ABI_VERSION "${${PROJECT_NAME}_VERSION_MAJOR}_${${PROJECT_NAME}_VERSION_MINOR}")
+  else()
+    message(FATAL_ERROR "Ambiguous target platform with unknown ABI version scheme. Giving up.")
+  endif()
+
   message(STATUS "")
 
-  boost_report_value(SOCI_VERSION)
-  boost_report_value(SOCI_SOVERSION)
+  boost_report_value(${PROJECT_NAME}_VERSION)
+  boost_report_value(${PROJECT_NAME}_ABI_VERSION)
+
+  add_definitions(-DSOCI_ABI_VERSION=${${PROJECT_NAME}_ABI_VERSION})
 
 endmacro()
