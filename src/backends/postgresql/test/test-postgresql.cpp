@@ -21,7 +21,7 @@ using namespace soci;
 using namespace soci::tests;
 
 std::string connectString;
-backend_factory const &backEnd = postgresql;
+backend_factory const &backEnd = *soci::factory_postgresql();
 
 // Postgres-specific tests
 
