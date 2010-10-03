@@ -201,8 +201,8 @@ void test_num(const char* s, bool valid, T value)
         sql << "select \'" << s << "\'", into(val);
         if (valid)
         {
-            double v1 = value;
-            double v2 = val;
+            double v1 = static_cast<double>(value);
+            double v2 = static_cast<double>(val);
             double d = std::fabs(v1 - v2);
             double epsilon = 0.001;
             assert(d < epsilon ||
