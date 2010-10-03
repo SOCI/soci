@@ -46,6 +46,7 @@ enum statement_type { st_one_time_query, st_repeatable_query };
 class standard_into_type_backend
 {
 public:
+    standard_into_type_backend() {}
     virtual ~standard_into_type_backend() {}
 
     virtual void define_by_pos(int& position, void* data, exchange_type type) = 0;
@@ -54,11 +55,17 @@ public:
     virtual void post_fetch(bool gotData, bool calledFromFetch, indicator* ind) = 0;
 
     virtual void clean_up() = 0;
+
+private:
+    // noncopyable
+    standard_into_type_backend(standard_into_type_backend const&);
+    standard_into_type_backend& operator=(standard_into_type_backend const&);
 };
 
 class vector_into_type_backend
 {
 public:
+
     virtual ~vector_into_type_backend() {}
 
     virtual void define_by_pos(int& position, void* data, exchange_type type) = 0;
