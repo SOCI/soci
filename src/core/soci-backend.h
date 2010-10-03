@@ -136,6 +136,7 @@ private:
 class statement_backend
 {
 public:
+    statement_backend() {}
     virtual ~statement_backend() {}
 
     virtual void alloc() = 0;
@@ -164,6 +165,11 @@ public:
     virtual standard_use_type_backend* make_use_type_backend() = 0;
     virtual vector_into_type_backend* make_vector_into_type_backend() = 0;
     virtual vector_use_type_backend* make_vector_use_type_backend() = 0;
+
+private:
+    // noncopyable
+    statement_backend(statement_backend const&);
+    statement_backend& operator=(statement_backend const&);
 };
 
 // polymorphic RowID backend
@@ -201,6 +207,7 @@ private:
 class session_backend
 {
 public:
+    session_backend() {}
     virtual ~session_backend() {}
 
     virtual void begin() = 0;
@@ -212,6 +219,11 @@ public:
     virtual statement_backend* make_statement_backend() = 0;
     virtual rowid_backend* make_rowid_backend() = 0;
     virtual blob_backend* make_blob_backend() = 0;
+
+private:
+    // noncopyable
+    session_backend(session_backend const&);
+    session_backend& operator=(session_backend const&);
 };
 
 } // namespace details

@@ -29,19 +29,21 @@
 // Disable flood of nonsense warnings generated for SQLite
 #ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable:4510 4610)
+#pragma warning(disable:4510 4512 4610)
 #endif
 
 namespace sqlite_api
 {
+
 #if SQLITE_VERSION_NUMBER < 3003010
 // The sqlite3_destructor_type typedef introduced in 3.3.10
 // http://www.sqlite.org/cvstrac/tktview?tn=2191
 typedef void (*sqlite3_destructor_type)(void*);
 #endif
 
-#include <sqlite3.h>    
-}
+#include <sqlite3.h>
+
+} // namespace sqlite_api
 
 #undef SQLITE_STATIC
 #define SQLITE_STATIC ((sqlite_api::sqlite3_destructor_type)0)
@@ -49,7 +51,6 @@ typedef void (*sqlite3_destructor_type)(void*);
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
-
 
 namespace soci
 {
