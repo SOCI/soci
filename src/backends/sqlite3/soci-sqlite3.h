@@ -81,18 +81,17 @@ struct sqlite3_vector_into_type_backend : details::vector_into_type_backend
     sqlite3_vector_into_type_backend(sqlite3_statement_backend &st)
         : statement_(st) {}
 
-    virtual void define_by_pos(int &position,
-                             void *data, details::exchange_type type);
+    void define_by_pos(int& position, void* data, details::exchange_type type);
 
-    virtual void pre_fetch();
-    virtual void post_fetch(bool gotData, indicator *ind);
+    void pre_fetch();
+    void post_fetch(bool gotData, indicator* ind);
 
-    virtual void resize(std::size_t sz);
-    virtual std::size_t size();
+    void resize(std::size_t sz);
+    std::size_t size();
 
     virtual void clean_up();
 
-    sqlite3_statement_backend &statement_;
+    sqlite3_statement_backend& statement_;
 
     void *data_;
     details::exchange_type type_;

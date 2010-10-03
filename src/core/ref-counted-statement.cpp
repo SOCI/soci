@@ -12,6 +12,12 @@
 using namespace soci;
 using namespace soci::details;
 
+ref_counted_statement_base::ref_counted_statement_base(session& s)
+    : refCount_(1)
+    , session_(s)
+{
+}
+
 void ref_counted_statement::final_action()
 {
     try
@@ -32,7 +38,7 @@ void ref_counted_statement::final_action()
     st_.clean_up();
 }
 
-std::ostringstream & ref_counted_statement_base::get_query_stream()
+std::ostringstream& ref_counted_statement_base::get_query_stream()
 {
     return session_.get_query_stream();
 }
