@@ -263,20 +263,11 @@ macro(soci_backend_test NAME)
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}
       ${${THIS_TEST_CONNSTR_VAR}})
 
-    get_target_property(SOCI_CORE_LOCATION ${SOCI_CORE_TARGET} LOCATION_Debug)
-    get_filename_component(SOCI_CORE_PATH "${SOCI_CORE_LOCATION}" PATH)
-    file(TO_NATIVE_PATH "${SOCI_CORE_PATH}" SOCI_CORE_OUTPUT_DIR)
+    soci_target_output_location(${SOCI_CORE_TARGET} SOCI_CORE_LOCATION)
+    soci_target_output_location(${SOCI_${NAMEU}_TARGET} SOCI_${NAMEU}_LOCATION)
 
     message(STATUS "SOCI_CORE_LOCATION:${SOCI_CORE_LOCATION}")
-    message(STATUS "SOCI_CORE_PATH:${SOCI_CORE_PATH}")    
-    message(STATUS "SOCI_CORE_OUTPUT_DIR:${SOCI_CORE_OUTPUT_DIR}")
-
-    get_target_property(SOCI_${NAMEU}_LOCATION ${SOCI_${NAMEU}_TARGET} LOCATION_Debug)
-    get_filename_component(SOCI_${NAMEU}_PATH "${SOCI_${NAMEU}_LOCATION}" PATH)
-    file(TO_NATIVE_PATH "${SOCI_${NAMEU}_PATH}" SOCI_${NAMEU}_OUTPUT_DIR)
-    message(STATUS "SOCI_${NAMEU}_LOCATION:${SOCI_CORE_LOCATION}")
-    message(STATUS "SOCI_${NAMEU}_PATH:${SOCI_${NAMEU}_PATH}")    
-    message(STATUS "SOCI_${NAMEU}_OUTPUT_DIR:${SOCI_${NAMEU}_OUTPUT_DIR}")
+    message(STATUS "SOCI_${NAMEU}_LOCATION:${SOCI_${NAMEU}_LOCATION}")
 
     #
     # IMPORTANT NOTE: The set_tests_properties(), below, internally
@@ -284,7 +275,7 @@ macro(soci_backend_test NAME)
     # because of this we must protect the semicolons in the path
     #
     set(LD_VARNAME "PATH")
-    set(LD_PATH "${SOCI_CORE_OUTPUT_DIR};${SOCI_${NAMEU}_OUTPUT_DIR};$ENV{PATH}")
+    set(LD_PATH "${SOCI_CORE_LOCATION};${SOCI_${NAMEU}_LOCATION};$ENV{PATH}")
     string(REPLACE ";" "\\;" LD_PATH "${LD_PATH}")
 
     set_tests_properties(${THIS_TEST_TARGET}
@@ -292,13 +283,5 @@ macro(soci_backend_test NAME)
       ENVIRONMENT "${LD_VARNAME}=${LD_PATH}")
 
   endif()
-
-  # LOG
-  #message("soci_backend_test:")
-  #message("NAME: ${NAME}")
-  #message("THIS_TEST_SOURCES: ${THIS_TEST_SOURCES}")
-  #message("THIS_TEST_TARGET: ${THIS_TEST_TARGET}")
-  #message("THIS_TEST_TARGET_static: ${THIS_TEST_TARGET}_static")
-  #message("THIS_TEST_CONNSTR: ${${THIS_TEST_CONNSTR}}")
 
 endmacro()
