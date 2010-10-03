@@ -266,7 +266,11 @@ std::size_t connection_pool::lease()
 
     // no timeout
     bool const success = try_lease(pos, -1);
-    assert(success);
+    assert(success);    
+    if (!success)
+    {
+        // TODO: anything to report? --mloskot
+    }
 
     return pos;
 }
@@ -283,6 +287,10 @@ bool connection_pool::try_lease(std::size_t & pos, int timeout)
 
         bool const success = pimpl_->find_free(pos);
         assert(success);
+        if (!success)
+        {
+            // TODO: anything to report? --mloskot
+        }
 
         pimpl_->sessions_[pos].first = false;
 
