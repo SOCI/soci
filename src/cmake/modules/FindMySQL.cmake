@@ -26,7 +26,8 @@ if(WIN32)
     add_definitions(-DDBUG_OFF)
   endif()
 
-  find_library(MYSQL_LIBRARY NAMES mysqlclient
+  # On Windows, link against dynamic library libmysql, not static mysqlclient
+  find_library(MYSQL_LIBRARY NAMES libmysql
     PATHS
     $ENV{MYSQL_DIR}/lib/${libsuffixDist}
     $ENV{MYSQL_DIR}/libmysql
@@ -35,6 +36,7 @@ if(WIN32)
     $ENV{MYSQL_DIR}/libmysql/${libsuffixBuild}
     $ENV{ProgramFiles}/MySQL/*/lib/${libsuffixDist}
     $ENV{SystemDrive}/MySQL/*/lib/${libsuffixDist})
+
 else()
 
   find_library(MYSQL_LIBRARY NAMES mysqlclient_r
@@ -64,7 +66,11 @@ if(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARY_DIR)
   find_library(MYSQL_YASSL yassl PATHS ${MYSQL_LIBRARY_DIR})
   find_library(MYSQL_TAOCRYPT taocrypt PATHS ${MYSQL_LIBRARY_DIR})
 
-  set(MYSQL_CLIENT_LIBS mysqlclient)
+  if(WIN32)
+    set(MYSQL_CLIENT_LIBS mysqlclient)
+  else()
+    set(MYSQL_CLIENT_LIBS libmysql)
+  endif()
 
   if(MYSQL_ZLIB)
     set(MYSQL_CLIENT_LIBS ${MYSQL_CLIENT_LIBS} zlib)
@@ -92,6 +98,6 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MySQL
   DEFAULT_MSG
   MYSQL_INCLUDE_DIR
- MYSQL_LIBRARIES)
+  MYSQL_LIBRARIES)
 
 mark_as_advanced(MYSQL_INCLUDE_DIR MYSQL_LIBRARIES)
