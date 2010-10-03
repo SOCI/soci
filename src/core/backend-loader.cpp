@@ -4,6 +4,9 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
+#ifndef SOCI_ABI_VERSION
+#error "SOCI_ABI_VERSION define is required to configure backend loader"
+#endif
 
 #define SOCI_SOURCE
 #include "backend-loader.h"
@@ -19,6 +22,9 @@
 
 using namespace soci;
 using namespace soci::dynamic_backends;
+
+#define _STRINGIFY(s) #s
+#define STRINGIFY(s) _STRINGIFY(s)
 
 #ifdef _WIN32
 
@@ -38,7 +44,7 @@ typedef HMODULE soci_handler_t;
 #endif
 #define DLCLOSE(x) FreeLibrary(x)
 #define DLSYM(x, y) GetProcAddress(x, y)
-#define LIBNAME(x) ("libsoci_" + x + ".dll")
+#define LIBNAME(x) ("libsoci_" + x + "_" STRINGIFY(SOCI_ABI_VERSION) ".dll")
 
 #else
 
@@ -55,7 +61,7 @@ typedef void * soci_handler_t;
 #define DLOPEN(x) dlopen(x, RTLD_LAZY)
 #define DLCLOSE(x) dlclose(x)
 #define DLSYM(x, y) dlsym(x, y)
-#define LIBNAME(x) ("libsoci_" + x + ".so")
+#define LIBNAME(x) ("libsoci_" + x + ".so." STRINGIFY(SOCI_ABI_VERSION))
 
 #endif // _WIN32
 
@@ -168,36 +174,40 @@ void do_unload(std::string const & name)
 }
 
 // non-synchronized helper
-void do_register_backend(
-    std::string const & name, std::string const & shared_object)
+void do_register_backend(std::string const & name, std::string const & shared_object)
 {
     // The rules for backend search are as follows:
     // - if the shared_object is given,
     //   it names the library file and the search paths are not used
     // - otherwise (shared_object not provided or empty):
-    //   - file named libsoci_NAME.so is searched in the list of search paths
+    //   - file named libsoci_NAME.so.SOVERSION is searched in the list of search paths
 
-    soci_handler_t h = NULL;
+    soci_handler_t h = 0;
     if (shared_object.empty() == false)
     {
         h = DLOPEN(shared_object.c_str());
     }
     else
     {
-        // try all search paths
-        for (std::size_t i = 0; i != search_paths_.size(); ++i)
+        // try system paths
+        h = DLOPEN(LIBNAME(name).c_str());
+        if (0 == h)
         {
-            std::string const fullFileName(search_paths_[i] + "/" + LIBNAME(name));
-            h = DLOPEN(fullFileName.c_str());
-            if (h != NULL)
+            // try all search paths
+            for (std::size_t i = 0; i != search_paths_.size(); ++i)
             {
-                // already found
-                break;
-            }
-        }
+                std::string const fullFileName(search_paths_[i] + "/" + LIBNAME(name));
+                h = DLOPEN(fullFileName.c_str());
+                if (0 != h)
+                {
+                    // already found
+                    break;
+                }
+             }
+         }
     }
 
-    if (h == NULL)
+    if (0 == h)
     {
         throw soci_error("Failed to find shared library for backend " + name);
     }
@@ -255,12 +265,12 @@ backend_factory const& dynamic_backends::get(std::string const& name)
     return *(i->second.factory_);
 }
 
-std::vector<std::string>& search_paths()
+SOCI_DECL std::vector<std::string>& search_paths()
 {
     return search_paths_;
 }
 
-void dynamic_backends::register_backend(
+SOCI_DECL void dynamic_backends::register_backend(
     std::string const& name, std::string const& shared_object)
 {
     scoped_lock lock(&mutex_);
@@ -268,7 +278,7 @@ void dynamic_backends::register_backend(
     do_register_backend(name, shared_object);
 }
 
-void dynamic_backends::register_backend(
+SOCI_DECL void dynamic_backends::register_backend(
     std::string const& name, backend_factory const& factory)
 {
     scoped_lock lock(&mutex_);
@@ -283,7 +293,7 @@ void dynamic_backends::register_backend(
     factories_[name] = new_entry;
 }
 
-std::vector<std::string> dynamic_backends::list_all()
+SOCI_DECL std::vector<std::string> dynamic_backends::list_all()
 {
     scoped_lock lock(&mutex_);
 
@@ -299,14 +309,14 @@ std::vector<std::string> dynamic_backends::list_all()
     return ret;
 }
 
-void dynamic_backends::unload(std::string const& name)
+SOCI_DECL void dynamic_backends::unload(std::string const& name)
 {
     scoped_lock lock(&mutex_);
 
     do_unload(name);
 }
 
-void dynamic_backends::unload_all()
+SOCI_DECL void dynamic_backends::unload_all()
 {
     scoped_lock lock(&mutex_);
 

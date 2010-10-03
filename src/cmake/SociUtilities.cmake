@@ -404,9 +404,9 @@ function(soci_target_output_name TARGET_NAME OUTPUT_NAME)
   endif()
 
   # On Windows, ABI version is specified using binary file name suffix.
-  # On Unix, suffix ix empty and SOVERSION is used instead.
+  # On Unix, suffix is empty and SOVERSION is used instead.
   if (WIN32)
-    set(SUFFIX "${${PROJECT_NAME}_VERSION_MAJOR}${${PROJECT_NAME}_VERSION_MINOR}")
+    set(SUFFIX "_${${PROJECT_NAME}_ABI_VERSION}")
   endif()
 
   set(${OUTPUT_NAME} ${TARGET_NAME}${SUFFIX} PARENT_SCOPE)

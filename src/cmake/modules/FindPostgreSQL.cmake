@@ -54,6 +54,8 @@ find_library(POSTGRESQL_LIBRARIES NAMES pq libpq
   /usr/lib64
   /usr/local/lib64
   /usr/lib64/postgresql
+  $ENV{ProgramFiles}/PostgreSQL/*/lib
+  $ENV{SystemDrive}/PostgreSQL/*/lib
   $ENV{ProgramFiles}/PostgreSQL/*/lib/ms
   $ENV{SystemDrive}/PostgreSQL/*/lib/ms)
 
