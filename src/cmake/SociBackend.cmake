@@ -266,21 +266,25 @@ macro(soci_backend_test NAME)
     soci_target_output_location(${SOCI_CORE_TARGET} SOCI_CORE_LOCATION)
     soci_target_output_location(${SOCI_${NAMEU}_TARGET} SOCI_${NAMEU}_LOCATION)
 
-    message(STATUS "SOCI_CORE_LOCATION:${SOCI_CORE_LOCATION}")
-    message(STATUS "SOCI_${NAMEU}_LOCATION:${SOCI_${NAMEU}_LOCATION}")
+    if(WIN32)
 
-    #
-    # IMPORTANT NOTE: The set_tests_properties(), below, internally
-    # stores its name/value pairs with a semicolon delimiter.
-    # because of this we must protect the semicolons in the path
-    #
-    set(LD_VARNAME "PATH")
-    set(LD_PATH "${SOCI_CORE_LOCATION};${SOCI_${NAMEU}_LOCATION};$ENV{PATH}")
-    string(REPLACE ";" "\\;" LD_PATH "${LD_PATH}")
+      # IMPORTANT NOTE: The set_tests_properties(), below, internally
+      # stores its name/value pairs with a semicolon delimiter.
+      # because of this we must protect the semicolons in the path
+      set(LD_VARNAME "PATH")
+      set(LD_PATH "${SOCI_CORE_LOCATION};${SOCI_${NAMEU}_LOCATION};$ENV{PATH}")
+      string(REPLACE ";" "\\;" LD_PATH "${LD_PATH}")
 
-    set_tests_properties(${THIS_TEST_TARGET}
-      PROPERTIES
-      ENVIRONMENT "${LD_VARNAME}=${LD_PATH}")
+    elseif(UNIX)
+
+      set (LD_VARNAME "LD_LIBRARY_PATH")
+      set (LD_PATH "${SOCI_CORE_LOCATION}:${SOCI_${NAMEU}_LOCATION}:$ENV{LD_LIBRARY_PATH}")
+
+    else()
+      message(FATAL_ERROR "Unrecognized target platform. Giving up.")
+    endif()
+
+    set_tests_properties(${THIS_TEST_TARGET} PROPERTIES ENVIRONMENT "${LD_VARNAME}=${LD_PATH}")
 
   endif()
 
