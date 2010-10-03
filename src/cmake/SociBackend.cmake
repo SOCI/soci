@@ -255,13 +255,41 @@ macro(soci_backend_test NAME)
       ${${NAMEU}_LIBRARIES}
       ${SOCI_CORE_STATIC_DEPENDENCIES})
 
+    add_test(${THIS_TEST_TARGET}_static
+      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}_static
+      ${${THIS_TEST_CONNSTR_VAR}})
+
     add_test(${THIS_TEST_TARGET}
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}
       ${${THIS_TEST_CONNSTR_VAR}})
 
-    add_test(${THIS_TEST_TARGET}_static
-      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}_static
-      ${${THIS_TEST_CONNSTR_VAR}})
+    get_target_property(SOCI_CORE_LOCATION ${SOCI_CORE_TARGET} LOCATION_Debug)
+    get_filename_component(SOCI_CORE_PATH "${SOCI_CORE_LOCATION}" PATH)
+    file(TO_NATIVE_PATH "${SOCI_CORE_PATH}" SOCI_CORE_OUTPUT_DIR)
+
+    message(STATUS "SOCI_CORE_LOCATION:${SOCI_CORE_LOCATION}")
+    message(STATUS "SOCI_CORE_PATH:${SOCI_CORE_PATH}")    
+    message(STATUS "SOCI_CORE_OUTPUT_DIR:${SOCI_CORE_OUTPUT_DIR}")
+
+    get_target_property(SOCI_${NAMEU}_LOCATION ${SOCI_${NAMEU}_TARGET} LOCATION_Debug)
+    get_filename_component(SOCI_${NAMEU}_PATH "${SOCI_${NAMEU}_LOCATION}" PATH)
+    file(TO_NATIVE_PATH "${SOCI_${NAMEU}_PATH}" SOCI_${NAMEU}_OUTPUT_DIR)
+    message(STATUS "SOCI_${NAMEU}_LOCATION:${SOCI_CORE_LOCATION}")
+    message(STATUS "SOCI_${NAMEU}_PATH:${SOCI_${NAMEU}_PATH}")    
+    message(STATUS "SOCI_${NAMEU}_OUTPUT_DIR:${SOCI_${NAMEU}_OUTPUT_DIR}")
+
+    #
+    # IMPORTANT NOTE: The set_tests_properties(), below, internally
+    # stores its name/value pairs with a semicolon delimiter.
+    # because of this we must protect the semicolons in the path
+    #
+    set(LD_VARNAME "PATH")
+    set(LD_PATH "${SOCI_CORE_OUTPUT_DIR};${SOCI_${NAMEU}_OUTPUT_DIR};$ENV{PATH}")
+    string(REPLACE ";" "\\;" LD_PATH "${LD_PATH}")
+
+    set_tests_properties(${THIS_TEST_TARGET}
+      PROPERTIES
+      ENVIRONMENT "${LD_VARNAME}=${LD_PATH}")
 
   endif()
 
