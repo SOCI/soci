@@ -254,30 +254,35 @@ macro(soci_backend_test NAME)
     add_test(${THIS_TEST_TARGET}
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}
       ${${THIS_TEST_CONNSTR_VAR}})
-
-    soci_target_output_location(${SOCI_CORE_TARGET} SOCI_CORE_LOCATION)
   
     if(WIN32)
 
-      # IMPORTANT NOTE: The set_tests_properties(), below, internally
-      # stores its name/value pairs with a semicolon delimiter.
-      # because of this we must protect the semicolons in the path
+      file(TO_NATIVE_PATH
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR} SOCI_MODULES_PATH)
+
+      # IMPORTANT: The set_tests_properties(), below, internally stores
+      # its name/value pairswith a semicolon delimiter.
+      # Because of this we must protect the semicolons in the path
       set(LD_VARNAME "PATH")
-      set(LD_PATH "${SOCI_CORE_LOCATION};$ENV{PATH}")
+      set(LD_PATH "${SOCI_MODULES_PATH};$ENV{PATH}")
       string(REPLACE ";" "\\;" LD_PATH "${LD_PATH}")
 
     elseif(UNIX)
 
+      file(TO_NATIVE_PATH ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} SOCI_MODULES_PATH)
       set (LD_VARNAME "LD_LIBRARY_PATH")
-      set (LD_PATH "${SOCI_CORE_LOCATION}:$ENV{LD_LIBRARY_PATH}")
+      set (LD_PATH "${SOCI_MODULES_PATH}:$ENV{LD_LIBRARY_PATH}")
 
     else()
       message(FATAL_ERROR "Unrecognized target platform. Giving up.")
     endif()
 
-    #message("${LD_VARNAME}=${LD_PATH}")
-    set_tests_properties(${THIS_TEST_TARGET} PROPERTIES ENVIRONMENT "${LD_VARNAME}=${LD_PATH}")
+    set_tests_properties(${THIS_TEST_TARGET}
+      PROPERTIES ENVIRONMENT "${LD_VARNAME}=${LD_PATH}")
 
-  endif()
+    # LOG
+    message("${LD_VARNAME}=${LD_PATH}")
+
+  endif(${THIS_TEST_OPTION})
 
 endmacro()
