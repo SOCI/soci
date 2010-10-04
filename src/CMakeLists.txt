@@ -37,6 +37,7 @@ soci_version(MAJOR 3 MINOR 1 PATCH 0)
 #################################################################################
 # Build features and variants
 #################################################################################
+include(SociConfig)
 
 option(SOCI_TESTS "Enable build of collection of SOCI tests" ON)
 
@@ -56,8 +57,14 @@ include(SociDependencies)
 # Installation
 #################################################################################
 
+if(UNIX AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+  set(SOCI_LIBDIR "lib64")
+else()
+  set(SOCI_LIBDIR "lib")
+endif()
+
 set(BINDIR "bin" CACHE PATH "The directory to install binaries into.")
-set(LIBDIR "lib" CACHE PATH "The directory to install libraries into.")
+set(LIBDIR ${SOCI_LIBDIR} CACHE PATH "The directory to install libraries into.")
 set(DATADIR "share" CACHE PATH "The directory to install data files into.")
 set(INCLUDEDIR "include" CACHE PATH "The directory to install includes into.")
 

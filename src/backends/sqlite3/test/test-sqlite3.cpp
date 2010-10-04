@@ -20,7 +20,7 @@ using namespace soci;
 using namespace soci::tests;
 
 std::string connectString;
-backend_factory const &backEnd = sqlite3;
+backend_factory const &backEnd = *soci::factory_sqlite3();
 
 // ROWID test
 // In sqlite3 the row id can be called ROWID, _ROWID_ or oid

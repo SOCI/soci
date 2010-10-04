@@ -292,7 +292,10 @@ endfunction()
 #
 function(boost_report_value NAME)
   string(LENGTH "${NAME}" varlen)
-  math(EXPR padding_len 30-${varlen})
+  # LOG
+  #message(STATUS "boost_report_value: NAME=${NAME} (${varlen})")
+  #message(STATUS "boost_report_value: \${NAME}=${${NAME}}")
+  math(EXPR padding_len 35-${varlen})
   string(SUBSTRING "                                      " 
     0 ${padding_len} varpadding)
   colormsg("${NAME}${varpadding} = ${${NAME}}")
@@ -387,3 +390,45 @@ macro(list_subdirectories retval curdir return_relative)
   set(${retval} ${list_of_dirs})
 endmacro()
 
+#
+# Generates output name for given target depending on platform and version.
+# For instance, on Windows, libraries get ABI version suffix soci_coreXY.{dll|lib}.
+#
+function(soci_target_output_name TARGET_NAME OUTPUT_NAME)
+  if(NOT DEFINED TARGET_NAME)
+    message(SEND_ERROR "Error, the variable TARGET_NAME is not defined!")
+  endif()
+
+  if(NOT DEFINED ${PROJECT_NAME}_VERSION)
+    message(SEND_ERROR "Error, the variable ${${PROJECT_NAME}_VERSION} is not defined!")
+  endif()
+
+  # On Windows, ABI version is specified using binary file name suffix.
+  # On Unix, suffix is empty and SOVERSION is used instead.
+  if (WIN32)
+    set(SUFFIX "_${${PROJECT_NAME}_ABI_VERSION}")
+  endif()
+
+  set(${OUTPUT_NAME} ${TARGET_NAME}${SUFFIX} PARENT_SCOPE)
+endfunction()
+
+#
+# Finds native location of output folder for given target.
+#
+function(soci_target_output_location TARGET_NAME OUTPUT_LOCATION)
+
+  if(NOT DEFINED TARGET_NAME)
+    message(SEND_ERROR "Error, the variable TARGET_NAME is not defined!")
+  endif()
+
+  get_target_property(SOCI_TARGET_LOCATION ${TARGET_NAME} LOCATION_Debug)
+
+  string(REGEX REPLACE "\\$\\(.*\\)" "${CMAKE_CFG_INTDIR}"
+    SOCI_TARGET_LOCATION "${SOCI_TARGET_LOCATION}")
+    
+  get_filename_component(SOCI_TARGET_PATH "${SOCI_TARGET_LOCATION}" PATH)
+  file(TO_NATIVE_PATH "${SOCI_TARGET_PATH}" SOCI_TARGET_OUTPUT_LOCATION)
+  
+  set(${OUTPUT_LOCATION} ${SOCI_TARGET_OUTPUT_LOCATION} PARENT_SCOPE)
+ 
+endfunction()

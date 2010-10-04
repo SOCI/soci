@@ -16,7 +16,7 @@
 using namespace soci;
 
 std::string connectString;
-backend_factory const &backEnd = empty;
+backend_factory const &backEnd = *soci::factory_empty();
 
 
 // NOTE:

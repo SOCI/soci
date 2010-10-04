@@ -81,7 +81,7 @@ macro(soci_backend NAME)
       endforeach()
     endif()
 
-    # TODO: Abord or warn compilation may fail? --mloskot
+    # TODO: Abort or warn compilation may fail? --mloskot
     colormsg(RED "Skipping")
 
     set(${THIS_BACKEND_OPTION} OFF)
@@ -111,27 +111,49 @@ macro(soci_backend NAME)
     set(THIS_BACKEND_TARGET ${PROJECTNAMEL}_${NAMEL})
     set(THIS_BACKEND_TARGET_VAR SOCI_${NAMEU}_TARGET)
     set(${THIS_BACKEND_TARGET_VAR} ${THIS_BACKEND_TARGET})
+    
+    soci_target_output_name(${THIS_BACKEND_TARGET} ${THIS_BACKEND_TARGET_VAR}_OUTPUT_NAME)
 
-    # TODO: Add static target 
-    add_library(${THIS_BACKEND_TARGET}-static STATIC ${THIS_BACKEND_SOURCES})
+    set(THIS_BACKEND_TARGET_OUTPUT_NAME ${${THIS_BACKEND_TARGET_VAR}_OUTPUT_NAME})
+    set(THIS_BACKEND_TARGET_OUTPUT_NAME_VAR ${THIS_BACKEND_TARGET_VAR}_OUTPUT_NAME)
+
+    # TODO: Extract as macros: soci_shared_lib_target and soci_static_lib_target --mloskot
+
+    # Shared library target
     add_library(${THIS_BACKEND_TARGET} SHARED ${THIS_BACKEND_SOURCES})
 
     target_link_libraries(${THIS_BACKEND_TARGET}
       ${SOCI_CORE_TARGET}
       ${THIS_BACKEND_DEPENDS_LIBRARIES})
 
-    set_target_properties(${THIS_BACKEND_TARGET}-static
-      PROPERTIES OUTPUT_NAME ${THIS_BACKEND_TARGET})
-    set_target_properties(${THIS_BACKEND_TARGET}
-      PROPERTIES
-      CLEAN_DIRECT_OUTPUT 1
-      VERSION ${SOCI_VERSION}
-      SOVERSION ${SOCI_SOVERSION})
-    set_target_properties(${THIS_BACKEND_TARGET}-static
-      PROPERTIES CLEAN_DIRECT_OUTPUT 1)
+    if(WIN32)
+      set_target_properties(${THIS_BACKEND_TARGET}
+        PROPERTIES
+        OUTPUT_NAME ${THIS_BACKEND_TARGET_OUTPUT_NAME}
+        DEFINE_SYMBOL SOCI_DLL)
+    else()
+      set_target_properties(${THIS_BACKEND_TARGET}
+        PROPERTIES
+        SOVERSION ${${PROJECT_NAME}_SOVERSION})
+    endif()
+      set_target_properties(${THIS_BACKEND_TARGET}
+        PROPERTIES
+        VERSION ${${PROJECT_NAME}_VERSION}
+        CLEAN_DIRECT_OUTPUT 1)
 
-    INSTALL(FILES ${THIS_BACKEND_HEADERS} DESTINATION ${INCLUDEDIR}/${PROJECTNAMEL}/${NAMEL})
-    INSTALL(TARGETS ${THIS_BACKEND_TARGET} ${THIS_BACKEND_TARGET}-static
+    # Static library target
+    add_library(${THIS_BACKEND_TARGET}-static STATIC ${THIS_BACKEND_SOURCES})
+
+    set_target_properties(${THIS_BACKEND_TARGET}-static
+      PROPERTIES
+      OUTPUT_NAME ${THIS_BACKEND_TARGET_OUTPUT_NAME}
+      PREFIX "lib"
+      CLEAN_DIRECT_OUTPUT 1)
+
+    # Backend installation
+    install(FILES ${THIS_BACKEND_HEADERS} DESTINATION ${INCLUDEDIR}/${PROJECTNAMEL}/${NAMEL})
+    install(TARGETS ${THIS_BACKEND_TARGET} ${THIS_BACKEND_TARGET}-static
+      RUNTIME DESTINATION ${BINDIR}
       LIBRARY DESTINATION ${LIBDIR}
       ARCHIVE DESTINATION ${LIBDIR})
 
@@ -145,16 +167,17 @@ macro(soci_backend NAME)
 
   if(${THIS_BACKEND_OPTION})
     boost_report_value(${THIS_BACKEND_TARGET_VAR})
+    boost_report_value(${THIS_BACKEND_TARGET_OUTPUT_NAME_VAR})
     boost_report_value(${THIS_BACKEND_HEADERS_VAR})
 
     soci_report_directory_property(COMPILE_DEFINITIONS)
     
     #TODO: report actual name of libraries
-    #get_target_property(ARCHIVE_OUTPUT_NAME soci_sqlite3 ARCHIVE_OUTPUT_NAME)
-    #boost_report_value(ARCHIVE_OUTPUT_NAME)
-    #get_target_property(LIBRARY_OUTPUT_NAME ${THIS_BACKEND_TARGET} LIBRARY_OUTPUT_NAME)
+    #get_target_property(A ${THIS_BACKEND_TARGET}-static ARCHIVE_OUTPUT_NAME)
+    #message(${A})
+    #get_target_property(LIBRARY_OUTPUT_NAME ${THIS_BACKEND_TARGET}-static LIBRARY_OUTPUT_NAME)
     #boost_report_value(LIBRARY_OUTPUT_NAME)
-    #get_target_property(RUNTIME_OUTPUT_NAME ${THIS_BACKEND_TARGET} RUNTIME_OUTPUT_NAME)
+    #get_target_property(RUNTIME_OUTPUT_NAME ${THIS_BACKEND_TARGET}-static RUNTIME_OUTPUT_NAME)
     #boost_report_value(RUNTIME_OUTPUT_NAME)
   endif()
 
@@ -178,7 +201,7 @@ endmacro()
 #
 macro(soci_backend_test NAME)
   parse_arguments(THIS_TEST
-    "DEPENDS;"
+    "DEPENDS;CONNSTR;"
     ""
     ${ARGN})
 
@@ -186,10 +209,10 @@ macro(soci_backend_test NAME)
   string(TOLOWER "${PROJECT_NAME}" PROJECTNAMEL)
   string(TOLOWER "${NAME}" NAMEL)
   string(TOUPPER "${NAME}" NAMEU)
-  set(THIS_TEST soci_test_${NAMEL})
+  set(THIS_TEST soci_${NAMEL}_test)
 
   # Backend test options available to user
-  set(THIS_TEST_OPTION SOCI_TEST_${NAMEU})
+  set(THIS_TEST_OPTION SOCI_${NAMEU}_TEST)
   option(${THIS_TEST_OPTION}
     "Attempt to build test for ${PROJECT_NAME} ${NAME} backend" ON)
 
@@ -202,13 +225,16 @@ macro(soci_backend_test NAME)
 
   if(${THIS_TEST_OPTION})
 
-    set(THIS_TEST_CONNSTR SOCI_TEST_${NAMEU}_CONNSTR)
-    set(${THIS_TEST_CONNSTR} ""
+    set(THIS_TEST_CONNSTR_VAR SOCI_${NAMEU}_TEST_CONNSTR)
+    set(${THIS_TEST_CONNSTR_VAR} ""
         CACHE STRING "Test connection string for ${NAME} test")
-  
-    boost_report_value(${THIS_TEST_CONNSTR})
+    
+    if(NOT ${THIS_TEST_CONNSTR_VAR} AND THIS_TEST_CONNSTR)
+      set(${THIS_TEST_CONNSTR_VAR} ${THIS_TEST_CONNSTR})
+    endif()
+    boost_report_value(${THIS_TEST_CONNSTR_VAR})
 
-    set(THIS_TEST_TARGET soci_test_${NAMEL})
+    set(THIS_TEST_TARGET ${THIS_TEST})
     # TODO: glob all .cpp files in <backend>/test directory
     set(THIS_TEST_SOURCES test-${NAMEL}.cpp)
 
@@ -229,22 +255,37 @@ macro(soci_backend_test NAME)
       ${${NAMEU}_LIBRARIES}
       ${SOCI_CORE_STATIC_DEPENDENCIES})
 
-    add_test(${THIS_TEST_TARGET}
-      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}
-      ${${THIS_TEST_CONNSTR}})
-
     add_test(${THIS_TEST_TARGET}_static
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}_static
-      ${${THIS_TEST_CONNSTR}})
+      ${${THIS_TEST_CONNSTR_VAR}})
+
+    add_test(${THIS_TEST_TARGET}
+      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}
+      ${${THIS_TEST_CONNSTR_VAR}})
+
+    soci_target_output_location(${SOCI_CORE_TARGET} SOCI_CORE_LOCATION)
+    soci_target_output_location(${SOCI_${NAMEU}_TARGET} SOCI_${NAMEU}_LOCATION)
+
+    if(WIN32)
+
+      # IMPORTANT NOTE: The set_tests_properties(), below, internally
+      # stores its name/value pairs with a semicolon delimiter.
+      # because of this we must protect the semicolons in the path
+      set(LD_VARNAME "PATH")
+      set(LD_PATH "${SOCI_CORE_LOCATION};${SOCI_${NAMEU}_LOCATION};$ENV{PATH}")
+      string(REPLACE ";" "\\;" LD_PATH "${LD_PATH}")
+
+    elseif(UNIX)
+
+      set (LD_VARNAME "LD_LIBRARY_PATH")
+      set (LD_PATH "${SOCI_CORE_LOCATION}:${SOCI_${NAMEU}_LOCATION}:$ENV{LD_LIBRARY_PATH}")
+
+    else()
+      message(FATAL_ERROR "Unrecognized target platform. Giving up.")
+    endif()
+
+    set_tests_properties(${THIS_TEST_TARGET} PROPERTIES ENVIRONMENT "${LD_VARNAME}=${LD_PATH}")
 
   endif()
-
-  # LOG
-  #message("soci_backend_test:")
-  #message("NAME: ${NAME}")
-  #message("THIS_TEST_SOURCES: ${THIS_TEST_SOURCES}")
-  #message("THIS_TEST_TARGET: ${THIS_TEST_TARGET}")
-  #message("THIS_TEST_TARGET_static: ${THIS_TEST_TARGET}_static")
-  #message("THIS_TEST_CONNSTR: ${${THIS_TEST_CONNSTR}}")
 
 endmacro()

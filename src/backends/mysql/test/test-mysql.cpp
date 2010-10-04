@@ -25,7 +25,7 @@ using namespace soci;
 using namespace soci::tests;
 
 std::string connectString;
-backend_factory const &backEnd = mysql;
+backend_factory const &backEnd = *soci::factory_mysql();
 
 
 // procedure call test

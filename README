@@ -1,0 +1,18 @@
+SOCI - The C++ Database Access Library
+--------------------------------------
+
+Project website:
+
+http://soci.sourceforge.net
+
+
+Development, Download, Bug Tracking, Mailing Lists:
+
+http://sourceforge.net/projects/soci/
+
+Git repository of SOCI project
+------------------------------
+/src - project source code tree
+/doc - project documentation
+/www - project website
+/build - legacy build configurations (to be removed)

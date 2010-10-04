@@ -15,7 +15,6 @@
 using namespace soci;
 using namespace soci::details;
 
-
 // concrete factory for Empty concrete strategies
 sqlite3_session_backend * sqlite3_backend_factory::make_session(
      std::string const &connectString) const

@@ -1,9 +1,10 @@
 # - Find PostgreSQL
 # Find the PostgreSQL includes and client library
 # This module defines
-#  POSTGRESQL_INCLUDE_DIR, where to find POSTGRESQL.h
-#  POSTGRESQL_LIBRARIES, the libraries needed to use POSTGRESQL.
-#  POSTGRESQL_FOUND, If false, do not try to use PostgreSQL.
+#  POSTGRESQL_INCLUDE_DIR, where to find libpq-fe.h
+#  POSTGRESQL_LIBRARIES, libraries needed to use PostgreSQL
+#  POSTGRESQL_VERSION, if found, version of PostgreSQL
+#  POSTGRESQL_FOUND, if false, do not try to use PostgreSQL
 #
 # Copyright (c) 2010, Mateusz Loskot, <mateusz@loskot.net>
 # Copyright (c) 2006, Jaroslaw Staniek, <js@iidea.pl>
@@ -11,7 +12,30 @@
 # Redistribution and use is allowed according to the terms of the BSD license.
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 
+find_program(PG_CONFIG NAMES pg_config DOC "Path to pg_config utility")
+
+if(PG_CONFIG)
+    exec_program(${PG_CONFIG}
+      ARGS "--version"
+      OUTPUT_VARIABLE PG_CONFIG_VERSION)
+
+    if(${PG_CONFIG_VERSION} MATCHES "^[A-Za-z]+[ ](.*)$")
+      string(REGEX REPLACE "^[A-Za-z]+[ ](.*)$" "\\1" POSTGRESQL_VERSION "${PG_CONFIG_VERSION}")
+    endif()
+
+    exec_program(${PG_CONFIG}
+      ARGS "--includedir"
+      OUTPUT_VARIABLE PG_CONFIG_INCLUDEDIR)  
+
+    exec_program(${PG_CONFIG}
+      ARGS "--libdir"
+      OUTPUT_VARIABLE PG_CONFIG_LIBDIR)
+else()
+  set(POSTGRESQL_VERSION "unknown")
+endif()
+
 find_path(POSTGRESQL_INCLUDE_DIR libpq-fe.h
+  ${PG_CONFIG_INCLUDEDIR}
   /usr/include/server
   /usr/include/pgsql/server
   /usr/local/include/pgsql/server
@@ -23,12 +47,15 @@ find_path(POSTGRESQL_INCLUDE_DIR libpq-fe.h
 
 find_library(POSTGRESQL_LIBRARIES NAMES pq libpq
   PATHS
+  ${PG_CONFIG_LIBDIR}  
   /usr/lib
   /usr/local/lib
   /usr/lib/postgresql
   /usr/lib64
   /usr/local/lib64
   /usr/lib64/postgresql
+  $ENV{ProgramFiles}/PostgreSQL/*/lib
+  $ENV{SystemDrive}/PostgreSQL/*/lib
   $ENV{ProgramFiles}/PostgreSQL/*/lib/ms
   $ENV{SystemDrive}/PostgreSQL/*/lib/ms)
 
@@ -44,6 +71,7 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(PostgreSQL
   DEFAULT_MSG
   POSTGRESQL_INCLUDE_DIR
-  POSTGRESQL_LIBRARIES)
+  POSTGRESQL_LIBRARIES
+  POSTGRESQL_VERSION)
 
 mark_as_advanced(POSTGRESQL_INCLUDE_DIR POSTGRESQL_LIBRARIES)

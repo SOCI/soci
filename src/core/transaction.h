@@ -17,7 +17,7 @@ namespace soci
 class SOCI_DECL transaction
 {
 public:
-    explicit transaction(session & sql);
+    explicit transaction(session& sql);
 
     ~transaction();
 
@@ -26,7 +26,11 @@ public:
 
 private:
     bool handled_;
-    session & sql_;
+    session& sql_;
+
+    // Disable copying
+    transaction(transaction const& other);
+    transaction& operator=(transaction const& other);
 };
 
 } // namespace soci
