@@ -281,7 +281,7 @@ macro(soci_backend_test NAME)
       PROPERTIES ENVIRONMENT "${LD_VARNAME}=${LD_PATH}")
 
     # LOG
-    message("${LD_VARNAME}=${LD_PATH}")
+    #message("${LD_VARNAME}=${LD_PATH}")
 
   endif(${THIS_TEST_OPTION})
 
