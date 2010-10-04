@@ -39,6 +39,14 @@ soci_version(MAJOR 3 MINOR 1 PATCH 0)
 #################################################################################
 include(SociConfig)
 
+# Put the libaries and binaries that get built into directories at the
+# top of the build tree rather than in hard-to-find leaf
+# directories. This simplifies manual testing and the use of the build
+# tree rather than installed Boost libraries.
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 option(SOCI_TESTS "Enable build of collection of SOCI tests" ON)
 
 boost_report_value(SOCI_TESTS)
