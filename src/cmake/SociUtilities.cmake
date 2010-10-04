@@ -421,7 +421,7 @@ function(soci_target_output_location TARGET_NAME OUTPUT_LOCATION)
     message(SEND_ERROR "Error, the variable TARGET_NAME is not defined!")
   endif()
 
-  if(WI32)
+  if(WIN32)
     get_target_property(SOCI_TARGET_LOCATION ${TARGET_NAME} RUNTIME_OUTPUT_DIRECTORY)
   elseif(UNIX)
     get_target_property(SOCI_TARGET_LOCATION ${TARGET_NAME} LIBRARY_OUTPUT_DIRECTORY)
