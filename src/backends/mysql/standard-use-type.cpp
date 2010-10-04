@@ -140,7 +140,7 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
     }
 }
 
-void mysql_standard_use_type_backend::post_use(bool gotData, indicator *ind)
+void mysql_standard_use_type_backend::post_use(bool /*gotData*/, indicator* /*ind*/)
 {
     // TODO: Is it possible to have the bound element being overwritten
     // by the database?
