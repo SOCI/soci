@@ -94,7 +94,7 @@ void test2()
         }
         catch (mysql_soci_error const &e)
         {
-            assert(e.err_num_ == CR_UNKNOWN_HOST);
+            assert(e.err_num_ == CR_UNKNOWN_HOST || e.err_num_ == CR_CONN_HOST_ERROR);
         }
     }
 
