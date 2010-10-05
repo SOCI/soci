@@ -411,24 +411,3 @@ function(soci_target_output_name TARGET_NAME OUTPUT_NAME)
 
   set(${OUTPUT_NAME} ${TARGET_NAME}${SUFFIX} PARENT_SCOPE)
 endfunction()
-
-#
-# Finds native location of output folder for given target.
-#
-function(soci_target_output_location TARGET_NAME OUTPUT_LOCATION)
-
-  if(NOT DEFINED TARGET_NAME)
-    message(SEND_ERROR "Error, the variable TARGET_NAME is not defined!")
-  endif()
-
-  get_target_property(SOCI_TARGET_LOCATION ${TARGET_NAME} LOCATION_Debug)
-
-  string(REGEX REPLACE "\\$\\(.*\\)" "${CMAKE_CFG_INTDIR}"
-    SOCI_TARGET_LOCATION "${SOCI_TARGET_LOCATION}")
-    
-  get_filename_component(SOCI_TARGET_PATH "${SOCI_TARGET_LOCATION}" PATH)
-  file(TO_NATIVE_PATH "${SOCI_TARGET_PATH}" SOCI_TARGET_OUTPUT_LOCATION)
-  
-  set(${OUTPUT_LOCATION} ${SOCI_TARGET_OUTPUT_LOCATION} PARENT_SCOPE)
- 
-endfunction()

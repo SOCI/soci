@@ -8,15 +8,14 @@
 
 #define SOCI_MYSQL_SOURCE
 #include "soci-mysql.h"
-#include <ciso646>
 
 #ifdef _MSC_VER
-#pragma warning(disable:4355)
+#pragma warning(push)
+#pragma warning(disable:4355 4702)
 #endif
 
 using namespace soci;
 using namespace soci::details;
-
 
 mysql_rowid_backend::mysql_rowid_backend(
     mysql_session_backend & /* session */)
@@ -26,5 +25,8 @@ mysql_rowid_backend::mysql_rowid_backend(
 
 mysql_rowid_backend::~mysql_rowid_backend()
 {
-    throw soci_error("RowIDs are not supported.");
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
