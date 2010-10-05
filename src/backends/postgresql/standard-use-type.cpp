@@ -29,7 +29,6 @@
 using namespace soci;
 using namespace soci::details;
 
-
 void postgresql_standard_use_type_backend::bind_by_pos(
     int & position, void * data, exchange_type type, bool /* readOnly */)
 {
