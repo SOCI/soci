@@ -66,9 +66,9 @@ include(SociDependencies)
 #################################################################################
 
 if(UNIX AND CMAKE_SIZEOF_VOID_P EQUAL 4)
-  set(SOCI_LIBDIR "lib64")
-else()
   set(SOCI_LIBDIR "lib")
+else()
+  set(SOCI_LIBDIR "lib64")
 endif()
 
 set(BINDIR "bin" CACHE PATH "The directory to install binaries into.")
