@@ -11,6 +11,7 @@
 #include "error.h"
 #include "rowid.h"
 #include "statement.h"
+#include <soci-platform.h>
 #include <cctype>
 #include <cstdio>
 #include <cstring>
