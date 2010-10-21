@@ -13,31 +13,24 @@
 // boost
 #include <boost/fusion/container/vector.hpp>
 #include <boost/fusion/sequence/intrinsic/at.hpp>
-#include <boost/fusion/sequence/intrinsic/size.hpp>
 #include <boost/fusion/include/at.hpp>
-#include <boost/fusion/support/is_sequence.hpp>
-#include <boost/utility/enable_if.hpp>
 
 namespace soci
 {
-namespace detail
-{
-template <typename Seq, int size>
-struct type_conversion;
 
-template <typename Seq>
-struct type_conversion<Seq, 1>
+template <typename T0>
+struct type_conversion<boost::fusion::vector<T0> >
 {
     typedef values base_type;
 
     static void from_base(base_type const & in, indicator ind,
-        Seq & out)
+        boost::fusion::vector<T0> & out)
     {
         in
             >> boost::fusion::at_c<0>(out);
     }
 
-    static void to_base(Seq & in,
+    static void to_base(boost::fusion::vector<T0> & in,
         base_type & out, indicator & ind)
     {
         out
@@ -45,20 +38,20 @@ struct type_conversion<Seq, 1>
     }
 };
 
-template <typename Seq>
-struct type_conversion<Seq, 2>
+template <typename T0, typename T1>
+struct type_conversion<boost::fusion::vector<T0, T1> >
 {
     typedef values base_type;
 
     static void from_base(base_type const & in, indicator ind,
-        Seq & out)
+        boost::fusion::vector<T0, T1> & out)
     {
         in
             >> boost::fusion::at_c<0>(out)
             >> boost::fusion::at_c<1>(out);
     }
 
-    static void to_base(Seq & in,
+    static void to_base(boost::fusion::vector<T0, T1> & in,
         base_type & out, indicator & ind)
     {
         out
@@ -67,13 +60,13 @@ struct type_conversion<Seq, 2>
     }
 };
 
-template <typename Seq>
-struct type_conversion<Seq, 3>
+template <typename T0, typename T1, typename T2>
+struct type_conversion<boost::fusion::vector<T0, T1, T2> >
 {
     typedef values base_type;
 
     static void from_base(base_type const & in, indicator ind,
-        Seq & out)
+        boost::fusion::vector<T0, T1, T2> & out)
     {
         in
             >> boost::fusion::at_c<0>(out)
@@ -81,7 +74,7 @@ struct type_conversion<Seq, 3>
             >> boost::fusion::at_c<2>(out);
     }
 
-    static void to_base(Seq & in,
+    static void to_base(boost::fusion::vector<T0, T1, T2> & in,
         base_type & out, indicator & ind)
     {
         out
@@ -91,13 +84,13 @@ struct type_conversion<Seq, 3>
     }
 };
 
-template <typename Seq>
-struct type_conversion<Seq, 4>
+template <typename T0, typename T1, typename T2, typename T3>
+struct type_conversion<boost::fusion::vector<T0, T1, T2, T3> >
 {
     typedef values base_type;
 
     static void from_base(base_type const & in, indicator ind,
-        Seq & out)
+        boost::fusion::vector<T0, T1, T2, T3> & out)
     {
         in
             >> boost::fusion::at_c<0>(out)
@@ -106,7 +99,7 @@ struct type_conversion<Seq, 4>
             >> boost::fusion::at_c<3>(out);
     }
 
-    static void to_base(Seq & in,
+    static void to_base(boost::fusion::vector<T0, T1, T2, T3> & in,
         base_type & out, indicator & ind)
     {
         out
@@ -117,13 +110,13 @@ struct type_conversion<Seq, 4>
     }
 };
 
-template <typename Seq>
-struct type_conversion<Seq, 5>
+template <typename T0, typename T1, typename T2, typename T3, typename T4>
+struct type_conversion<boost::fusion::vector<T0, T1, T2, T3, T4> >
 {
     typedef values base_type;
 
     static void from_base(base_type const & in, indicator ind,
-        Seq & out)
+        boost::fusion::vector<T0, T1, T2, T3, T4> & out)
     {
         in
             >> boost::fusion::at_c<0>(out)
@@ -133,7 +126,7 @@ struct type_conversion<Seq, 5>
             >> boost::fusion::at_c<4>(out);
     }
 
-    static void to_base(Seq & in,
+    static void to_base(boost::fusion::vector<T0, T1, T2, T3, T4> & in,
         base_type & out, indicator & ind)
     {
         out
@@ -145,13 +138,14 @@ struct type_conversion<Seq, 5>
     }
 };
 
-template <typename Seq>
-struct type_conversion<Seq, 6>
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+          typename T5>
+struct type_conversion<boost::fusion::vector<T0, T1, T2, T3, T4, T5> >
 {
     typedef values base_type;
 
     static void from_base(base_type const & in, indicator ind,
-        Seq & out)
+        boost::fusion::vector<T0, T1, T2, T3, T4, T5> & out)
     {
         in
             >> boost::fusion::at_c<0>(out)
@@ -162,7 +156,7 @@ struct type_conversion<Seq, 6>
             >> boost::fusion::at_c<5>(out);
     }
 
-    static void to_base(Seq & in,
+    static void to_base(boost::fusion::vector<T0, T1, T2, T3, T4, T5> & in,
         base_type & out, indicator & ind)
     {
         out
@@ -175,13 +169,14 @@ struct type_conversion<Seq, 6>
     }
 };
 
-template <typename Seq>
-struct type_conversion<Seq, 7>
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+          typename T5, typename T6>
+struct type_conversion<boost::fusion::vector<T0, T1, T2, T3, T4, T5, T6> >
 {
     typedef values base_type;
 
     static void from_base(base_type const & in, indicator ind,
-        Seq & out)
+        boost::fusion::vector<T0, T1, T2, T3, T4, T5, T6> & out)
     {
         in
             >> boost::fusion::at_c<0>(out)
@@ -193,7 +188,7 @@ struct type_conversion<Seq, 7>
             >> boost::fusion::at_c<6>(out);
     }
 
-    static void to_base(Seq & in,
+    static void to_base(boost::fusion::vector<T0, T1, T2, T3, T4, T5, T6> & in,
         base_type & out, indicator & ind)
     {
         out
@@ -207,13 +202,14 @@ struct type_conversion<Seq, 7>
     }
 };
 
-template <typename Seq>
-struct type_conversion<Seq, 8>
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+          typename T5, typename T6, typename T7>
+struct type_conversion<boost::fusion::vector<T0, T1, T2, T3, T4, T5, T6, T7> >
 {
     typedef values base_type;
 
     static void from_base(base_type const & in, indicator ind,
-        Seq & out)
+        boost::fusion::vector<T0, T1, T2, T3, T4, T5, T6, T7> & out)
     {
         in
             >> boost::fusion::at_c<0>(out)
@@ -226,7 +222,8 @@ struct type_conversion<Seq, 8>
             >> boost::fusion::at_c<7>(out);
     }
 
-    static void to_base(Seq & in,
+    static void to_base(
+        boost::fusion::vector<T0, T1, T2, T3, T4, T5, T6, T7> & in,
         base_type & out, indicator & ind)
     {
         out
@@ -241,13 +238,15 @@ struct type_conversion<Seq, 8>
     }
 };
 
-template <typename Seq>
-struct type_conversion<Seq, 9>
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+          typename T5, typename T6, typename T7, typename T8>
+struct type_conversion<
+    boost::fusion::vector<T0, T1, T2, T3, T4, T5, T6, T7, T8> >
 {
     typedef values base_type;
 
     static void from_base(base_type const & in, indicator ind,
-        Seq & out)
+        boost::fusion::vector<T0, T1, T2, T3, T4, T5, T6, T7, T8> & out)
     {
         in
             >> boost::fusion::at_c<0>(out)
@@ -261,7 +260,8 @@ struct type_conversion<Seq, 9>
             >> boost::fusion::at_c<8>(out);
     }
 
-    static void to_base(Seq & in,
+    static void to_base(
+        boost::fusion::vector<T0, T1, T2, T3, T4, T5, T6, T7, T8> & in,
         base_type & out, indicator & ind)
     {
         out
@@ -277,13 +277,15 @@ struct type_conversion<Seq, 9>
     }
 };
 
-template <typename Seq>
-struct type_conversion<Seq, 10>
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+          typename T5, typename T6, typename T7, typename T8, typename T9>
+struct type_conversion<
+    boost::fusion::vector<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> >
 {
     typedef values base_type;
 
     static void from_base(base_type const & in, indicator ind,
-        Seq & out)
+        boost::fusion::vector<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & out)
     {
         in
             >> boost::fusion::at_c<0>(out)
@@ -298,7 +300,8 @@ struct type_conversion<Seq, 10>
             >> boost::fusion::at_c<9>(out);
     }
 
-    static void to_base(Seq & in,
+    static void to_base(
+        boost::fusion::vector<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> & in,
         base_type & out, indicator & ind)
     {
         out
@@ -312,34 +315,6 @@ struct type_conversion<Seq, 10>
             << boost::fusion::at_c<7>(in)
             << boost::fusion::at_c<8>(in)
             << boost::fusion::at_c<9>(in);
-    }
-};
-
-} // namespace detail
-
-template <typename T>
-struct type_conversion<T, 
-    typename boost::enable_if<
-        boost::fusion::traits::is_sequence<T>
-    >::type >
-{
-    typedef values base_type;
-
-private:
-    typedef typename boost::fusion::result_of::size<T>::type size;
-    typedef detail::type_conversion<T, size::value> converter;
-
-public:
-    static void from_base(base_type const & in, indicator ind,
-        T& out)
-    {
-        converter::from_base( in, ind, out );
-    }
-
-    static void to_base(T& in,
-        base_type & out, indicator & ind)
-    {
-        converter::to_base( in, out, ind );
     }
 };
 
