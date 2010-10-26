@@ -296,6 +296,7 @@ inline bool is_odbc_error(SQLRETURN rc)
 
 struct odbc_backend_factory : backend_factory
 {
+	odbc_backend_factory() {}
     virtual odbc_session_backend * make_session(
         std::string const &connectString) const;
 };

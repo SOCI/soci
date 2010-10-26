@@ -249,6 +249,7 @@ struct mysql_session_backend : details::session_backend
 
 struct mysql_backend_factory : backend_factory
 {
+	mysql_backend_factory() {}
     virtual mysql_session_backend * make_session(
         std::string const &connectString) const;
 };
