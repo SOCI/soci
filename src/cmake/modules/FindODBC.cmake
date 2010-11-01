@@ -30,7 +30,7 @@ FIND_PATH(ODBC_INCLUDE_DIRECTORIES sql.h
 )
 
 FIND_LIBRARY( ODBC_LIBRARY 
-  NAMES iodbc odbc odbcinst
+  NAMES iodbc odbc odbcinst odbc32
   PATHS
   /usr/lib
   /usr/lib/odbc
