@@ -16,9 +16,9 @@
 # also defined, but not for general use is
 # ODBC_LIBRARY, where to find the ODBC driver manager library.
 
-SET( ODBC_FOUND 0 )
+set(ODBC_FOUND FALSE)
 
-FIND_PATH(ODBC_INCLUDE_DIRECTORIES sql.h
+find_path(ODBC_INCLUDE_DIRECTORIES sql.h
   /usr/include
   /usr/include/odbc
   /usr/local/include
@@ -29,7 +29,7 @@ FIND_PATH(ODBC_INCLUDE_DIRECTORIES sql.h
   DOC "Specify the directory containing sql.h."
 )
 
-FIND_LIBRARY( ODBC_LIBRARY 
+find_library(ODBC_LIBRARY 
   NAMES iodbc odbc odbcinst odbc32
   PATHS
   /usr/lib
@@ -39,16 +39,17 @@ FIND_LIBRARY( ODBC_LIBRARY
   /usr/local/odbc/lib
   "C:/Program Files/ODBC/lib"
   "C:/ODBC/lib/debug"
+  "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib"
   DOC "Specify the ODBC driver manager library here."
 )
 
-IF (ODBC_LIBRARY)
-  IF (ODBC_INCLUDE_DIRECTORIES)
-    SET( ODBC_FOUND 1 )
-  ENDIF (ODBC_INCLUDE_DIRECTORIES)
-ENDIF (ODBC_LIBRARY)
+if(ODBC_LIBRARY)
+  if(ODBC_INCLUDE_DIRECTORIES)
+    set( ODBC_FOUND 1 )
+  endif()
+endif()
 
-SET( ODBC_LIBRARIES ${ODBC_LIBRARY} )
+set(ODBC_LIBRARIES ${ODBC_LIBRARY})
 
-MARK_AS_ADVANCED( ODBC_FOUND ODBC_LIBRARY ODBC_EXTRA_LIBRARIES ODBC_INCLUDE_DIRECTORIES )
+mark_as_advanced(ODBC_FOUND ODBC_LIBRARY ODBC_EXTRA_LIBRARIES ODBC_INCLUDE_DIRECTORIES)
 
