@@ -265,11 +265,11 @@ macro(soci_backend_test NAME)
   endif(${THIS_TEST_OPTION})
 
   # LOG
-  message("NAME=${NAME}")
-  message("THIS_TEST_NAME=${THIS_TEST_NAME}")
-  message("THIS_TEST_BACKEND=${THIS_TEST_BACKEND}")
-  message("THIS_TEST_CONNSTR=${THIS_TEST_CONNSTR}")
-  message("THIS_TEST_SOURCE=${THIS_TEST_SOURCE}")
-  message("THIS_TEST_OPTION=${THIS_TEST_OPTION}")
+  #message("NAME=${NAME}")
+  #message("THIS_TEST_NAME=${THIS_TEST_NAME}")
+  #message("THIS_TEST_BACKEND=${THIS_TEST_BACKEND}")
+  #message("THIS_TEST_CONNSTR=${THIS_TEST_CONNSTR}")
+  #message("THIS_TEST_SOURCE=${THIS_TEST_SOURCE}")
+  #message("THIS_TEST_OPTION=${THIS_TEST_OPTION}")
 
 endmacro()
