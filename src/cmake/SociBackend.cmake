@@ -189,27 +189,31 @@ endmacro()
 
 # Defines test project of a database backend for SOCI library
 #
-# soci_backend_test(backendname DEPENDS dependency1 dependency2)
+# soci_backend_test(mytest1
+#   SOURCE mytest1.cpp
+#   CONNSTR "my test connection"
+#   BACKEND mybackend
+#   DEPENDS library1 library2)
 #
 macro(soci_backend_test NAME)
   parse_arguments(THIS_TEST
-    "DEPENDS;CONNSTR;"
+    "SOURCE;CONNSTR;BACKEND;DEPENDS;"
     ""
     ${ARGN})
 
-  # Backend name variants utils
-  string(TOLOWER "${PROJECT_NAME}" PROJECTNAMEL)
-  string(TOLOWER "${NAME}" NAMEL)
-  string(TOUPPER "${NAME}" NAMEU)
-  set(THIS_TEST soci_${NAMEL}_test)
-
+  # Test backend name
+  string(TOUPPER "${THIS_TEST_BACKEND}" BACKENDU)
+  string(TOLOWER "${THIS_TEST_BACKEND}" BACKENDL)
+  
   # Backend test options available to user
-  set(THIS_TEST_OPTION SOCI_${NAMEU}_TEST)
+  set(THIS_TEST_OPTION SOCI_${BACKENDU}_TEST)
   option(${THIS_TEST_OPTION}
     "Attempt to build test for ${PROJECT_NAME} ${NAME} backend" ON)
 
   # Check global flags and enable/disable backend test
-  if(NOT SOCI_${NAMEU} OR NOT SOCI_TESTS)
+  if(SOCI_TESTS AND SOCI_${BACKENDU})
+    set(${THIS_TEST_OPTION} ON)
+  else()
     set(${THIS_TEST_OPTION} OFF)
   endif()
 
@@ -217,72 +221,55 @@ macro(soci_backend_test NAME)
 
   if(${THIS_TEST_OPTION})
 
-    set(THIS_TEST_CONNSTR_VAR SOCI_${NAMEU}_TEST_CONNSTR)
+    # Test name
+    string(TOLOWER "${NAME}" NAMEL)
+    string(TOUPPER "${NAME}" NAMEU)
+    set(THIS_TEST_NAME soci_${BACKENDL}_test_${NAMEL})
+
+    set(THIS_TEST_CONNSTR_VAR ${THIS_TEST_OPTION}_CONNSTR)
     set(${THIS_TEST_CONNSTR_VAR} ""
-        CACHE STRING "Test connection string for ${NAME} test")
+        CACHE STRING "Connection string for ${BACKENDU} test ${NAME}")
     
     if(NOT ${THIS_TEST_CONNSTR_VAR} AND THIS_TEST_CONNSTR)
       set(${THIS_TEST_CONNSTR_VAR} ${THIS_TEST_CONNSTR})
     endif()
     boost_report_value(${THIS_TEST_CONNSTR_VAR})
 
-    set(THIS_TEST_TARGET ${THIS_TEST})
-    # TODO: glob all .cpp files in <backend>/test directory
-    set(THIS_TEST_SOURCES test-${NAMEL}.cpp)
-
     include_directories(${SOCI_SOURCE_DIR}/core/test)
-    include_directories(${SOCI_SOURCE_DIR}/backends/${NAMEL})
+    include_directories(${SOCI_SOURCE_DIR}/backends/${BACKENDL})
 
-    add_executable(${THIS_TEST_TARGET} ${THIS_TEST_SOURCES})
-    add_executable(${THIS_TEST_TARGET}_static ${THIS_TEST_SOURCES})
+    set(THIS_TEST_TARGET ${THIS_TEST_NAME})
+
+    add_executable(${THIS_TEST_TARGET} ${THIS_TEST_SOURCE})
+    add_executable(${THIS_TEST_TARGET}_static ${THIS_TEST_SOURCE})
 
     target_link_libraries(${THIS_TEST_TARGET}
       ${SOCI_CORE_TARGET}
-      ${SOCI_${NAMEU}_TARGET}
-      ${${NAMEU}_LIBRARIES})
+      ${SOCI_${BACKENDU}_TARGET}
+      ${${BACKENDU}_LIBRARIES})
 
     target_link_libraries(${THIS_TEST_TARGET}_static
       ${SOCI_CORE_TARGET}-static
-      ${SOCI_${NAMEU}_TARGET}-static
-      ${${NAMEU}_LIBRARIES}
+      ${SOCI_${BACKENDU}_TARGET}-static
+      ${${BACKENDU}_LIBRARIES}
       ${SOCI_CORE_STATIC_DEPENDENCIES})
+
+    add_test(${THIS_TEST_TARGET}
+      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}
+      ${${THIS_TEST_CONNSTR_VAR}})
 
     add_test(${THIS_TEST_TARGET}_static
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}_static
       ${${THIS_TEST_CONNSTR_VAR}})
 
-    add_test(${THIS_TEST_TARGET}
-      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}
-      ${${THIS_TEST_CONNSTR_VAR}})
-  
-    if(WIN32)
-
-      file(TO_NATIVE_PATH
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR} SOCI_MODULES_PATH)
-
-      # IMPORTANT: The set_tests_properties(), below, internally stores
-      # its name/value pairswith a semicolon delimiter.
-      # Because of this we must protect the semicolons in the path
-      set(LD_VARNAME "PATH")
-      set(LD_PATH "${SOCI_MODULES_PATH};$ENV{PATH}")
-      string(REPLACE ";" "\\;" LD_PATH "${LD_PATH}")
-
-    elseif(UNIX)
-
-      file(TO_NATIVE_PATH ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} SOCI_MODULES_PATH)
-      set (LD_VARNAME "LD_LIBRARY_PATH")
-      set (LD_PATH "${SOCI_MODULES_PATH}:$ENV{LD_LIBRARY_PATH}")
-
-    else()
-      message(FATAL_ERROR "Unrecognized target platform. Giving up.")
-    endif()
-
-    set_tests_properties(${THIS_TEST_TARGET}
-      PROPERTIES ENVIRONMENT "${LD_VARNAME}=${LD_PATH}")
-
-    # LOG
-    #message("${LD_VARNAME}=${LD_PATH}")
-
   endif(${THIS_TEST_OPTION})
+
+  # LOG
+  message("NAME=${NAME}")
+  message("THIS_TEST_NAME=${THIS_TEST_NAME}")
+  message("THIS_TEST_BACKEND=${THIS_TEST_BACKEND}")
+  message("THIS_TEST_CONNSTR=${THIS_TEST_CONNSTR}")
+  message("THIS_TEST_SOURCE=${THIS_TEST_SOURCE}")
+  message("THIS_TEST_OPTION=${THIS_TEST_OPTION}")
 
 endmacro()
