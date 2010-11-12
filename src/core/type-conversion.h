@@ -210,8 +210,8 @@ public:
           value_(value), ind_(ownInd_) {}
 
     conversion_use_type(std::vector<T> & value,
-        std::vector<indicator> const & ind,
-        std::string const & name=std::string())
+        std::vector<indicator> & ind,
+        std::string const & name = std::string())
         : details::base_vector_holder<T>(value.size()),
           use_type<BASE_TYPE>(details::base_vector_holder<T>::vec_,
               ind, name),

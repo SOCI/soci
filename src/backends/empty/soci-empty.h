@@ -172,6 +172,7 @@ struct empty_session_backend : details::session_backend
 
 struct SOCI_EMPTY_DECL empty_backend_factory : backend_factory
 {
+	empty_backend_factory() {}
     empty_session_backend* make_session(std::string const& connectString) const;
 };
 

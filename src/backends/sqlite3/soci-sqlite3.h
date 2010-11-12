@@ -254,6 +254,7 @@ struct sqlite3_session_backend : details::session_backend
 
 struct sqlite3_backend_factory : backend_factory
 {
+	sqlite3_backend_factory() {}
     virtual sqlite3_session_backend * make_session(
         std::string const &connectString) const;
 };
