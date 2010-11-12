@@ -204,29 +204,16 @@ macro(soci_backend_test NAME)
   # Test backend name
   string(TOUPPER "${THIS_TEST_BACKEND}" BACKENDU)
   string(TOLOWER "${THIS_TEST_BACKEND}" BACKENDL)
-  
-  # Backend test options available to user
-  set(THIS_TEST_OPTION SOCI_${BACKENDU}_TEST)
-  option(${THIS_TEST_OPTION}
-    "Attempt to build test for ${PROJECT_NAME} ${NAME} backend" ON)
 
-  # Check global flags and enable/disable backend test
   if(SOCI_TESTS AND SOCI_${BACKENDU})
-    set(${THIS_TEST_OPTION} ON)
-  else()
-    set(${THIS_TEST_OPTION} OFF)
-  endif()
-
-  boost_report_value(${THIS_TEST_OPTION})
-
-  if(${THIS_TEST_OPTION})
 
     # Test name
     string(TOLOWER "${NAME}" NAMEL)
     string(TOUPPER "${NAME}" NAMEU)
     set(THIS_TEST_NAME soci_${BACKENDL}_test_${NAMEL})
 
-    set(THIS_TEST_CONNSTR_VAR ${THIS_TEST_OPTION}_CONNSTR)
+	string(TOUPPER "${THIS_TEST_NAME}" THIS_TEST_NAMEU)
+    set(THIS_TEST_CONNSTR_VAR ${THIS_TEST_NAMEU}_CONNSTR)
     set(${THIS_TEST_CONNSTR_VAR} ""
         CACHE STRING "Connection string for ${BACKENDU} test ${NAME}")
     
@@ -237,6 +224,12 @@ macro(soci_backend_test NAME)
 
     include_directories(${SOCI_SOURCE_DIR}/core/test)
     include_directories(${SOCI_SOURCE_DIR}/backends/${BACKENDL})
+
+    # TODO: Find more generic way of adding Boost to core and backend tests only.
+    #       Ideally, from within Boost.cmake.
+    if(Boost_FOUND)
+	    include_directories(${Boost_INCLUDE_DIR})
+    endif()
 
     set(THIS_TEST_TARGET ${THIS_TEST_NAME})
 
@@ -262,7 +255,7 @@ macro(soci_backend_test NAME)
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}_static
       ${${THIS_TEST_CONNSTR_VAR}})
 
-  endif(${THIS_TEST_OPTION})
+  endif()
 
   # LOG
   #message("NAME=${NAME}")
