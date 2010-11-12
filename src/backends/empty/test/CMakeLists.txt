@@ -1,1 +1,4 @@
-soci_backend_test(Empty CONNSTR "dummy")
+soci_backend_test(unit1
+  BACKEND Empty
+  SOURCE test-empty.cpp
+  CONNSTR "dummy")
