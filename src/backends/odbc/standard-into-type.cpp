@@ -35,7 +35,7 @@ void odbc_standard_into_type_backend::define_by_pos(
         // Patch: set to min between column size and 100MB (used ot be 32769)
         // Column size for text data type can be too large for buffer allocation
         size = statement_.column_size(position_);
-        size = size > SOCI_ODBC_MAX_BUFFER_LENGTH ? SOCI_ODBC_MAX_BUFFER_LENGTH : size;
+        size = size > odbc_max_buffer_length ? odbc_max_buffer_length : size;
         size++;
         buf_ = new char[size];
         data = buf_;
@@ -128,7 +128,7 @@ void odbc_standard_into_type_backend::post_fetch(
         {
             std::string *s = static_cast<std::string *>(data_);
             *s = buf_;
-            if (s->size() >= (SOCI_ODBC_MAX_BUFFER_LENGTH - 1))
+            if (s->size() >= (odbc_max_buffer_length - 1))
             {
                 throw soci_error("Buffer size overflow; maybe got too large string");
             }
