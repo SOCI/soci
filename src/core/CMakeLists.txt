@@ -21,8 +21,7 @@ set(DL_FIND_QUIETLY TRUE)
 find_package(DL)
 if(DL_FOUND)
   list(APPEND SOCI_CORE_DEPENDENCIES ${DL_LIBRARY})
-  set_directory_properties(PROPERTIES
-    INCLUDE_DIRECTORIES ${DL_INCLUDE_DIR})
+  set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES ${DL_INCLUDE_DIR})
 
   add_definitions(-DHAVE_DL=1)
 endif()
@@ -35,8 +34,7 @@ if(Boost_FOUND)
     add_definitions(-DHAVE_BOOST_DATE_TIME=1)
   endif()
 
-  set_directory_properties(PROPERTIES
-    INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
+  set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
 
   get_property(SOCI_COMPILE_DEFINITIONS
     DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -48,6 +46,9 @@ if(Boost_FOUND)
   # we need to set HAVE_BOOST globally, as well as INCLUDE above.
   set_property(DIRECTORY ${CMAKE_SOURCE_DIR}
     PROPERTY COMPILE_DEFINITIONS ${SOCI_COMPILE_DEFINITIONS})
+
+  set_property(DIRECTORY ${CMAKE_SOURCE_DIR}
+    PROPERTY INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
 
 endif()
 

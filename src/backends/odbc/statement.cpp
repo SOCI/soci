@@ -263,6 +263,7 @@ void odbc_statement_backend::describe_column(int colNum, data_type & type,
         break;
     case SQL_CHAR:
     case SQL_VARCHAR:
+    case SQL_LONGVARCHAR:
     default:
         type = dt_string;
         break;

@@ -39,14 +39,19 @@ class conversion_into_type
       public into_type<typename type_conversion<T>::base_type>
 {
 public:
-    typedef typename type_conversion<T>::base_type BASE_TYPE;
+    typedef typename type_conversion<T>::base_type base_type;
 
     conversion_into_type(T & value)
-        : into_type<BASE_TYPE>(details::base_value_holder<T>::val_, ownInd_),
-          value_(value), ind_(ownInd_) {}
+        : into_type<base_type>(details::base_value_holder<T>::val_, ownInd_)
+        , value_(value)
+        , ind_(ownInd_)
+    {}
+    
     conversion_into_type(T & value, indicator & ind)
-        : into_type<BASE_TYPE>(details::base_value_holder<T>::val_, ind),
-          value_(value), ind_(ind) {}
+        : into_type<base_type>(details::base_value_holder<T>::val_, ind)
+        , value_(value)
+        , ind_(ind)
+    {}
 
 private:
     void convert_from_base()
@@ -73,24 +78,45 @@ class conversion_use_type
       public use_type<typename type_conversion<T>::base_type>
 {
 public:
-    typedef typename type_conversion<T>::base_type BASE_TYPE;
+    typedef typename type_conversion<T>::base_type base_type;
 
     conversion_use_type(T & value, std::string const & name = std::string())
-        : use_type<BASE_TYPE>(details::base_value_holder<T>::val_,
-            ownInd_, name),
-        value_(value), ind_(ownInd_), readOnly_(false) {}
+        : use_type<base_type>(details::base_value_holder<T>::val_, ownInd_, name)
+        , value_(value)
+        , ind_(ownInd_)
+        , readOnly_(false)
+    {
+        convert_to_base();
+    }
+    
     conversion_use_type(T const & value, std::string const & name = std::string())
-        : use_type<BASE_TYPE>(details::base_value_holder<T>::val_,
-            ownInd_, name),
-        value_(const_cast<T &>(value)), ind_(ownInd_), readOnly_(true) {}
-    conversion_use_type(T & value, indicator & ind, std::string const & name
-            = std::string())
-        : use_type<BASE_TYPE>(details::base_value_holder<T>::val_, ind, name),
-        value_(value), ind_(ind), readOnly_(false) {}
-    conversion_use_type(T const & value, indicator & ind, std::string const & name
-            = std::string())
-        : use_type<BASE_TYPE>(details::base_value_holder<T>::val_, ind, name),
-        value_(const_cast<T &>(value)), ind_(ind), readOnly_(true) {}
+        : use_type<base_type>(details::base_value_holder<T>::val_, ownInd_, name)
+        , value_(const_cast<T &>(value))
+        , ind_(ownInd_)
+        , readOnly_(true)
+    {
+        convert_to_base();
+    }
+    
+    conversion_use_type(T & value, indicator & ind,
+            std::string const & name = std::string())
+        : use_type<base_type>(details::base_value_holder<T>::val_, ind, name)
+        , value_(value)
+        , ind_(ind)
+        , readOnly_(false)
+    {
+        convert_to_base();
+    }
+    
+    conversion_use_type(T const & value, indicator & ind,
+            std::string const & name = std::string())
+        : use_type<base_type>(details::base_value_holder<T>::val_, ind, name)
+        , value_(value)
+        , ind_(ind)
+        , readOnly_(false)
+    {
+        convert_to_base();
+    }
 
     void convert_from_base()
     {
@@ -138,18 +164,24 @@ class conversion_into_type<std::vector<T> >
       public into_type<std::vector<typename type_conversion<T>::base_type> >
 {
 public:
-    typedef typename std::vector<typename type_conversion<T>::base_type>
-        BASE_TYPE;
+    typedef typename std::vector
+        <
+            typename type_conversion<T>::base_type
+        > base_type;
 
     conversion_into_type(std::vector<T> & value)
-        : details::base_vector_holder<T>(value.size()),
-          into_type<BASE_TYPE>(details::base_vector_holder<T>::vec_, ownInd_),
-          value_(value), ind_(ownInd_) {}
+        : details::base_vector_holder<T>(value.size())
+        , into_type<base_type>(details::base_vector_holder<T>::vec_, ownInd_)
+        , value_(value)
+        , ind_(ownInd_)
+    {}
 
     conversion_into_type(std::vector<T> & value, std::vector<indicator> & ind)
-        : details::base_vector_holder<T>(value.size()),
-          into_type<BASE_TYPE>(details::base_vector_holder<T>::vec_, ind),
-          value_(value), ind_(ind) {}
+        : details::base_vector_holder<T>(value.size())
+        , into_type<base_type>(details::base_vector_holder<T>::vec_, ind)
+        , value_(value)
+        , ind_(ind)
+    {}
 
     virtual std::size_t size() const
     {
@@ -199,23 +231,29 @@ class conversion_use_type<std::vector<T> >
        public use_type<std::vector<typename type_conversion<T>::base_type> >
 {
 public:
-    typedef typename std::vector<typename type_conversion<T>::base_type>
-        BASE_TYPE;
+    typedef typename std::vector
+        <
+            typename type_conversion<T>::base_type
+        > base_type;
 
     conversion_use_type(std::vector<T> & value,
-        std::string const & name=std::string())
-        : details::base_vector_holder<T>(value.size()),
-          use_type<BASE_TYPE>(details::base_vector_holder<T>::vec_,
-              ownInd_, name),
-          value_(value), ind_(ownInd_) {}
+            std::string const & name=std::string())
+        : details::base_vector_holder<T>(value.size())
+        , use_type<base_type>(
+            details::base_vector_holder<T>::vec_, ownInd_, name)
+        , value_(value)
+        , ind_(ownInd_)
+    {}
 
     conversion_use_type(std::vector<T> & value,
-        std::vector<indicator> & ind,
-        std::string const & name = std::string())
-        : details::base_vector_holder<T>(value.size()),
-          use_type<BASE_TYPE>(details::base_vector_holder<T>::vec_,
-              ind, name),
-          value_(value), ind_(ind) {}
+            std::vector<indicator> & ind,
+            std::string const & name = std::string())
+        : details::base_vector_holder<T>(value.size())
+        , use_type<base_type>(
+            details::base_vector_holder<T>::vec_, ind, name)
+        , value_(value)
+        , ind_(ind)
+    {}
 
 private:
     void convert_from_base()
