@@ -92,9 +92,8 @@ macro(soci_backend NAME)
 
     # Backend-specific include directories
     list(APPEND THIS_BACKEND_DEPENDS_INCLUDE_DIRS ${SOCI_SOURCE_DIR}/core)
-    set_directory_properties(PROPERTIES
-      INCLUDE_DIRECTORIES "${THIS_BACKEND_DEPENDS_INCLUDE_DIRS}")
-    #message("${THIS_BACKEND_DEPENDS_INCLUDE_DIRS}")
+    set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES
+	  "${THIS_BACKEND_DEPENDS_INCLUDE_DIRS}")
 
     # Backend-specific preprocessor definitions
     add_definitions(${THIS_BACKEND_DEPENDS_DEFS})
@@ -189,15 +188,14 @@ endmacro()
 
 # Defines test project of a database backend for SOCI library
 #
-# soci_backend_test(mytest1
-#   SOURCE mytest1.cpp
-#   CONNSTR "my test connection"
-#   BACKEND mybackend
+# soci_backend_test(BACKEND mybackend SOURCE mytest1.cpp
+#   NAME mytest1
+#	CONNSTR "my test connection"
 #   DEPENDS library1 library2)
 #
-macro(soci_backend_test NAME)
+macro(soci_backend_test)
   parse_arguments(THIS_TEST
-    "SOURCE;CONNSTR;BACKEND;DEPENDS;"
+    "BACKEND;SOURCE;CONNSTR;NAME;DEPENDS;"
     ""
     ${ARGN})
 
@@ -208,19 +206,21 @@ macro(soci_backend_test NAME)
   if(SOCI_TESTS AND SOCI_${BACKENDU})
 
     # Test name
-    string(TOLOWER "${NAME}" NAMEL)
-    string(TOUPPER "${NAME}" NAMEU)
-    set(THIS_TEST_NAME soci_${BACKENDL}_test_${NAMEL})
-
-	string(TOUPPER "${THIS_TEST_NAME}" THIS_TEST_NAMEU)
-    set(THIS_TEST_CONNSTR_VAR ${THIS_TEST_NAMEU}_CONNSTR)
-    set(${THIS_TEST_CONNSTR_VAR} ""
-        CACHE STRING "Connection string for ${BACKENDU} test ${NAME}")
-    
-    if(NOT ${THIS_TEST_CONNSTR_VAR} AND THIS_TEST_CONNSTR)
-      set(${THIS_TEST_CONNSTR_VAR} ${THIS_TEST_CONNSTR})
+    if(THIS_TEST_NAME)
+	  string(TOUPPER "${THIS_TEST_NAME}" NAMEU)
+	  set(TEST_FULL_NAME SOCI_${BACKENDU}_TEST_${NAMEU})
+	else()
+	  set(TEST_FULL_NAME SOCI_${BACKENDU}_TEST)
     endif()
-    boost_report_value(${THIS_TEST_CONNSTR_VAR})
+
+    set(TEST_CONNSTR_VAR ${TEST_FULL_NAME}_CONNSTR)
+    set(${TEST_CONNSTR_VAR} ""
+        CACHE STRING "Connection string for ${BACKENDU} test")
+    
+    if(NOT ${TEST_CONNSTR_VAR} AND TEST_CONNSTR)
+      set(${TEST_CONNSTR_VAR} ${TEST_CONNSTR})
+    endif()
+    boost_report_value(${TEST_CONNSTR_VAR})
 
     include_directories(${SOCI_SOURCE_DIR}/core/test)
     include_directories(${SOCI_SOURCE_DIR}/backends/${BACKENDL})
@@ -231,29 +231,29 @@ macro(soci_backend_test NAME)
 	    include_directories(${Boost_INCLUDE_DIR})
     endif()
 
-    set(THIS_TEST_TARGET ${THIS_TEST_NAME})
+    string(TOLOWER "${TEST_FULL_NAME}" TEST_TARGET)
 
-    add_executable(${THIS_TEST_TARGET} ${THIS_TEST_SOURCE})
-    add_executable(${THIS_TEST_TARGET}_static ${THIS_TEST_SOURCE})
+    add_executable(${TEST_TARGET} ${THIS_TEST_SOURCE})
+    add_executable(${TEST_TARGET}_static ${THIS_TEST_SOURCE})
 
-    target_link_libraries(${THIS_TEST_TARGET}
+    target_link_libraries(${TEST_TARGET}
       ${SOCI_CORE_TARGET}
       ${SOCI_${BACKENDU}_TARGET}
       ${${BACKENDU}_LIBRARIES})
 
-    target_link_libraries(${THIS_TEST_TARGET}_static
+    target_link_libraries(${TEST_TARGET}_static
       ${SOCI_CORE_TARGET}-static
       ${SOCI_${BACKENDU}_TARGET}-static
       ${${BACKENDU}_LIBRARIES}
       ${SOCI_CORE_STATIC_DEPENDENCIES})
 
-    add_test(${THIS_TEST_TARGET}
-      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}
-      ${${THIS_TEST_CONNSTR_VAR}})
+    add_test(${TEST_TARGET}
+      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET}
+      ${${TEST_CONNSTR_VAR}})
 
-    add_test(${THIS_TEST_TARGET}_static
-      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${THIS_TEST_TARGET}_static
-      ${${THIS_TEST_CONNSTR_VAR}})
+    add_test(${TEST_TARGET}_static
+      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET}_static
+      ${${TEST_CONNSTR_VAR}})
 
   endif()
 
