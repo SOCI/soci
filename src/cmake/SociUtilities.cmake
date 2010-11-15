@@ -295,7 +295,7 @@ function(boost_report_value NAME)
   # LOG
   #message(STATUS "boost_report_value: NAME=${NAME} (${varlen})")
   #message(STATUS "boost_report_value: \${NAME}=${${NAME}}")
-  math(EXPR padding_len 35-${varlen})
+  math(EXPR padding_len 40-${varlen})
   string(SUBSTRING "                                      " 
     0 ${padding_len} varpadding)
   colormsg("${NAME}${varpadding} = ${${NAME}}")
