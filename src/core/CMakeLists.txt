@@ -15,15 +15,14 @@ message(STATUS "")
 # Core dependencies
 set(SOCI_CORE_DEPENDENCIES)
 
-# TODO: disable on windows --mloskot
-
-set(DL_FIND_QUIETLY TRUE)
-find_package(DL)
-if(DL_FOUND)
-  list(APPEND SOCI_CORE_DEPENDENCIES ${DL_LIBRARY})
-  set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES ${DL_INCLUDE_DIR})
-
-  add_definitions(-DHAVE_DL=1)
+if(NOT MSVC)
+  set(DL_FIND_QUIETLY TRUE)
+  find_package(DL)
+  if(DL_FOUND)
+    list(APPEND SOCI_CORE_DEPENDENCIES ${DL_LIBRARY})
+    set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES ${DL_INCLUDE_DIR})
+    add_definitions(-DHAVE_DL=1)
+  endif()
 endif()
 
 if(Boost_FOUND)
