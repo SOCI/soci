@@ -90,75 +90,76 @@ macro(soci_backend NAME)
 
     if(${THIS_BACKEND_OPTION})
 
-    # Backend-specific include directories
-    list(APPEND THIS_BACKEND_DEPENDS_INCLUDE_DIRS ${SOCI_SOURCE_DIR}/core)
-    set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES
-	  "${THIS_BACKEND_DEPENDS_INCLUDE_DIRS}")
+      # Backend-specific include directories
+      list(APPEND THIS_BACKEND_DEPENDS_INCLUDE_DIRS ${SOCI_SOURCE_DIR}/core)
+      set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES
+		"${THIS_BACKEND_DEPENDS_INCLUDE_DIRS}")
 
-    # Backend-specific preprocessor definitions
-    add_definitions(${THIS_BACKEND_DEPENDS_DEFS})
+      # Backend-specific preprocessor definitions
+      add_definitions(${THIS_BACKEND_DEPENDS_DEFS})
 
-    # Backend  installable headers and sources
-    if (NOT THIS_BACKEND_HEADERS)
-      file(GLOB THIS_BACKEND_HEADERS *.h)
-    endif()
-    file(GLOB THIS_BACKEND_SOURCES *.cpp)
-    set(THIS_BACKEND_HEADERS_VAR SOCI_${NAMEU}_HEADERS)
-    set(${THIS_BACKEND_HEADERS_VAR} ${THIS_BACKEND_HEADERS}) 
+      # Backend  installable headers and sources
+      if (NOT THIS_BACKEND_HEADERS)
+		file(GLOB THIS_BACKEND_HEADERS *.h)
+      endif()
+      file(GLOB THIS_BACKEND_SOURCES *.cpp)
+      set(THIS_BACKEND_HEADERS_VAR SOCI_${NAMEU}_HEADERS)
+      set(${THIS_BACKEND_HEADERS_VAR} ${THIS_BACKEND_HEADERS}) 
 
-    # Backend target
-    set(THIS_BACKEND_TARGET ${PROJECTNAMEL}_${NAMEL})
-    set(THIS_BACKEND_TARGET_VAR SOCI_${NAMEU}_TARGET)
-    set(${THIS_BACKEND_TARGET_VAR} ${THIS_BACKEND_TARGET})
-    
-    soci_target_output_name(${THIS_BACKEND_TARGET} ${THIS_BACKEND_TARGET_VAR}_OUTPUT_NAME)
+      # Backend target
+      set(THIS_BACKEND_TARGET ${PROJECTNAMEL}_${NAMEL})
+      set(THIS_BACKEND_TARGET_VAR SOCI_${NAMEU}_TARGET)
+      set(${THIS_BACKEND_TARGET_VAR} ${THIS_BACKEND_TARGET})
+      
+      soci_target_output_name(${THIS_BACKEND_TARGET} ${THIS_BACKEND_TARGET_VAR}_OUTPUT_NAME)
 
-    set(THIS_BACKEND_TARGET_OUTPUT_NAME ${${THIS_BACKEND_TARGET_VAR}_OUTPUT_NAME})
-    set(THIS_BACKEND_TARGET_OUTPUT_NAME_VAR ${THIS_BACKEND_TARGET_VAR}_OUTPUT_NAME)
+      set(THIS_BACKEND_TARGET_OUTPUT_NAME ${${THIS_BACKEND_TARGET_VAR}_OUTPUT_NAME})
+      set(THIS_BACKEND_TARGET_OUTPUT_NAME_VAR ${THIS_BACKEND_TARGET_VAR}_OUTPUT_NAME)
 
-    # TODO: Extract as macros: soci_shared_lib_target and soci_static_lib_target --mloskot
+      # TODO: Extract as macros: soci_shared_lib_target and soci_static_lib_target --mloskot
 
-    # Shared library target
-    add_library(${THIS_BACKEND_TARGET} SHARED ${THIS_BACKEND_SOURCES})
+      # Shared library target
+      add_library(${THIS_BACKEND_TARGET} SHARED ${THIS_BACKEND_SOURCES})
 
-    target_link_libraries(${THIS_BACKEND_TARGET}
-      ${SOCI_CORE_TARGET}
-      ${THIS_BACKEND_DEPENDS_LIBRARIES})
+      target_link_libraries(${THIS_BACKEND_TARGET}
+		${SOCI_CORE_TARGET}
+		${THIS_BACKEND_DEPENDS_LIBRARIES})
 
-    if(WIN32)
-      set_target_properties(${THIS_BACKEND_TARGET}
-        PROPERTIES
-        OUTPUT_NAME ${THIS_BACKEND_TARGET_OUTPUT_NAME}
-        DEFINE_SYMBOL SOCI_DLL)
-    else()
-      set_target_properties(${THIS_BACKEND_TARGET}
-        PROPERTIES
-        SOVERSION ${${PROJECT_NAME}_SOVERSION})
-    endif()
+      if(WIN32)
+		set_target_properties(${THIS_BACKEND_TARGET}
+          PROPERTIES
+          OUTPUT_NAME ${THIS_BACKEND_TARGET_OUTPUT_NAME}
+          DEFINE_SYMBOL SOCI_DLL)
+      else()
+		set_target_properties(${THIS_BACKEND_TARGET}
+          PROPERTIES
+          SOVERSION ${${PROJECT_NAME}_SOVERSION})
+      endif()
+
       set_target_properties(${THIS_BACKEND_TARGET}
         PROPERTIES
         VERSION ${${PROJECT_NAME}_VERSION}
         CLEAN_DIRECT_OUTPUT 1)
 
-    # Static library target
-    add_library(${THIS_BACKEND_TARGET}-static STATIC ${THIS_BACKEND_SOURCES})
+      # Static library target
+      add_library(${THIS_BACKEND_TARGET}-static STATIC ${THIS_BACKEND_SOURCES})
 
-    set_target_properties(${THIS_BACKEND_TARGET}-static
-      PROPERTIES
-      OUTPUT_NAME ${THIS_BACKEND_TARGET_OUTPUT_NAME}
-      PREFIX "lib"
-      CLEAN_DIRECT_OUTPUT 1)
+      set_target_properties(${THIS_BACKEND_TARGET}-static
+		PROPERTIES
+		OUTPUT_NAME ${THIS_BACKEND_TARGET_OUTPUT_NAME}
+		PREFIX "lib"
+		CLEAN_DIRECT_OUTPUT 1)
 
-    # Backend installation
-    install(FILES ${THIS_BACKEND_HEADERS} DESTINATION ${INCLUDEDIR}/${PROJECTNAMEL}/${NAMEL})
-    install(TARGETS ${THIS_BACKEND_TARGET} ${THIS_BACKEND_TARGET}-static
-      RUNTIME DESTINATION ${BINDIR}
-      LIBRARY DESTINATION ${LIBDIR}
-      ARCHIVE DESTINATION ${LIBDIR})
+      # Backend installation
+      install(FILES ${THIS_BACKEND_HEADERS} DESTINATION ${INCLUDEDIR}/${PROJECTNAMEL}/${NAMEL})
+      install(TARGETS ${THIS_BACKEND_TARGET} ${THIS_BACKEND_TARGET}-static
+		RUNTIME DESTINATION ${BINDIR}
+		LIBRARY DESTINATION ${LIBDIR}
+		ARCHIVE DESTINATION ${LIBDIR})
 
-  else()
-    colormsg(HIRED "${NAME}" RED "backend disabled, since")
-  endif()
+	else()
+      colormsg(HIRED "${NAME}" RED "backend disabled, since")
+	endif()
 
   endif(NOT_FOUND_COUNT GREATER 0)
 
@@ -215,7 +216,7 @@ macro(soci_backend_test)
 
     set(TEST_CONNSTR_VAR ${TEST_FULL_NAME}_CONNSTR)
     set(${TEST_CONNSTR_VAR} ""
-        CACHE STRING "Connection string for ${BACKENDU} test")
+      CACHE STRING "Connection string for ${BACKENDU} test")
     
     if(NOT ${TEST_CONNSTR_VAR} AND TEST_CONNSTR)
       set(${TEST_CONNSTR_VAR} ${TEST_CONNSTR})
@@ -228,7 +229,7 @@ macro(soci_backend_test)
     # TODO: Find more generic way of adding Boost to core and backend tests only.
     #       Ideally, from within Boost.cmake.
     if(Boost_FOUND)
-	    include_directories(${Boost_INCLUDE_DIR})
+	  include_directories(${Boost_INCLUDE_DIR})
     endif()
 
     string(TOLOWER "${TEST_FULL_NAME}" TEST_TARGET)
