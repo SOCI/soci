@@ -33,6 +33,8 @@
 namespace soci
 {
 
+std::size_t const SOCI_ODBC_MAX_BUFFER_LENGTH = 100 * 1024 * 1024;
+
 struct odbc_statement_backend;
 struct odbc_standard_into_type_backend : details::standard_into_type_backend
 {

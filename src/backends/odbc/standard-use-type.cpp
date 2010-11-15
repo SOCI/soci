@@ -45,7 +45,7 @@ void odbc_standard_use_type_backend::prepare_for_bind(
     case x_char:
         sqlType = SQL_CHAR;
         cType = SQL_C_CHAR;
-        size = sizeof(char)+1;
+        size = sizeof(char) + 1;
         buf_ = new char[size];
         data = buf_;
         indHolder_ = SQL_NTS;
@@ -55,9 +55,15 @@ void odbc_standard_use_type_backend::prepare_for_bind(
         // TODO: No textual value is assigned here!
 
         std::string* s = static_cast<std::string*>(data);
+#ifdef SOCI_ODBC_VERSION_3_IS_TO_BE_CHECKED
         sqlType = SQL_VARCHAR;
+#else
+        // Note: SQL_LONGVARCHAR is an extended type for strings up to 1GB
+        // But it might not work with ODBC version below 3.0
+        sqlType = SQL_LONGVARCHAR;
+#endif
         cType = SQL_C_CHAR;
-        size = 255; // !FIXME this is not sufficent
+        size = s->size() + 1;
         buf_ = new char[size];
         data = buf_;
         indHolder_ = SQL_NTS;
@@ -180,11 +186,13 @@ void odbc_standard_use_type_backend::pre_use(indicator const *ind)
     else if (type_ == x_stdstring)
     {
         std::string *s = static_cast<std::string *>(data_);
+        std::size_t const bufSize = s->size() + 1;
+        // TODO: this is a hack (for buffer re-size? --mloskot)
+        //delete [] buf_;
+        //buf_ = new char[bufSize];
 
-        std::size_t const bufSize = 4000;
         std::size_t const sSize = s->size();
-        std::size_t const toCopy =
-            sSize < bufSize -1 ? sSize + 1 : bufSize - 1;
+        std::size_t const toCopy = sSize < bufSize -1 ? sSize + 1 : bufSize - 1;
         strncpy(buf_, s->c_str(), toCopy);
         buf_[toCopy] = '\0';
     }

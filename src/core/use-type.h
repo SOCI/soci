@@ -40,14 +40,21 @@ typedef type_ptr<use_type_base> use_type_ptr;
 class SOCI_DECL standard_use_type : public use_type_base
 {
 public:
-    standard_use_type(void * data, exchange_type type,
-        bool readOnly, std::string const & name = std::string())
-        : data_(data), type_(type), ind_(NULL),
-        readOnly_(readOnly), name_(name), backEnd_(NULL) {}
+    standard_use_type(void * data, exchange_type type, bool readOnly,
+            std::string const & name = std::string())
+        : data_(data), type_(type), ind_(NULL)
+        , readOnly_(readOnly), name_(name), backEnd_(NULL)
+    {
+        convert_to_base();
+    }
+
     standard_use_type(void * data, exchange_type type, indicator & ind,
-        bool readOnly, std::string const & name = std::string())
-        : data_(data), type_(type), ind_(&ind),
-        readOnly_(readOnly), name_(name), backEnd_(NULL) {}
+            bool readOnly, std::string const & name = std::string())
+        : data_(data), type_(type), ind_(&ind)
+        , readOnly_(readOnly), name_(name), backEnd_(NULL)
+    {
+        convert_to_base();
+    }
 
     virtual ~standard_use_type();
     virtual void bind(statement_impl & st, int & position);
