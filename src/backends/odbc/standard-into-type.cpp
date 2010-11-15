@@ -20,7 +20,7 @@ void odbc_standard_into_type_backend::define_by_pos(
     type_ = type;
     position_ = position++;
 
-    SQLINTEGER size = 0;
+    SQLUINTEGER size = 0;
 
     switch (type_)
     {
@@ -32,7 +32,11 @@ void odbc_standard_into_type_backend::define_by_pos(
         break;
     case x_stdstring:
         odbcType_ = SQL_C_CHAR;
-        size = 32769;
+        // Patch: set to min between column size and 100MB (used ot be 32769)
+        // Column size for text data type can be too large for buffer allocation
+        size = statement_.column_size(position_);
+        size = size > odbc_max_buffer_length ? odbc_max_buffer_length : size;
+        size++;
         buf_ = new char[size];
         data = buf_;
         break;
@@ -124,6 +128,10 @@ void odbc_standard_into_type_backend::post_fetch(
         {
             std::string *s = static_cast<std::string *>(data_);
             *s = buf_;
+            if (s->size() >= (odbc_max_buffer_length - 1))
+            {
+                throw soci_error("Buffer size overflow; maybe got too large string");
+            }
         }
         else if (type_ == x_stdtm)
         {
