@@ -228,9 +228,14 @@ macro(soci_backend_test)
 
     # TODO: Find more generic way of adding Boost to core and backend tests only.
     #       Ideally, from within Boost.cmake.
+	set(SOCI_TEST_DEPENDENCIES)
     if(Boost_FOUND)
-	  include_directories(${Boost_INCLUDE_DIR})
-    endif()
+	  include_directories(${Boost_INCLUDE_DIRS})
+	  if(Boost_DATE_TIME_FOUND)
+		set(SOCI_TEST_DEPENDENCIES ${Boost_DATE_TIME_LIBRARY})
+		add_definitions(-DHAVE_BOOST_DATE_TIME=1)
+	  endif()
+	endif()
 
     string(TOLOWER "${TEST_FULL_NAME}" TEST_TARGET)
 
@@ -240,13 +245,15 @@ macro(soci_backend_test)
     target_link_libraries(${TEST_TARGET}
       ${SOCI_CORE_TARGET}
       ${SOCI_${BACKENDU}_TARGET}
-      ${${BACKENDU}_LIBRARIES})
+      ${${BACKENDU}_LIBRARIES}
+	  ${SOCI_TEST_DEPENDENCIES})
 
     target_link_libraries(${TEST_TARGET}_static
       ${SOCI_CORE_TARGET}-static
       ${SOCI_${BACKENDU}_TARGET}-static
       ${${BACKENDU}_LIBRARIES}
-      ${SOCI_CORE_STATIC_DEPENDENCIES})
+      ${SOCI_CORE_STATIC_DEPENDENCIES}
+	  ${SOCI_TEST_DEPENDENCIES})
 
     add_test(${TEST_TARGET}
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET}
