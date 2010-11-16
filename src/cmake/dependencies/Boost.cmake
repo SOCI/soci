@@ -1,5 +1,7 @@
 set(Boost_FIND_QUIETLY TRUE)
 
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_MULTITHREADED ON)
 find_package(Boost 1.33.1 COMPONENTS date_time)
 
 if (NOT Boost_date_time_FOUND)
