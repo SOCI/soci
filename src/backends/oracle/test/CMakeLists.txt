@@ -1,4 +1,4 @@
-soci_backend_test(unit1
+soci_backend_test(
   BACKEND Oracle
   SOURCE test-oracle.cpp
   CONNSTR "dummy")
