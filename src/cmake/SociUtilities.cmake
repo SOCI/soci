@@ -406,7 +406,10 @@ function(soci_target_output_name TARGET_NAME OUTPUT_NAME)
   # On Windows, ABI version is specified using binary file name suffix.
   # On Unix, suffix is empty and SOVERSION is used instead.
   if (WIN32)
-    set(SUFFIX "_${${PROJECT_NAME}_ABI_VERSION}")
+    string(LENGTH "${${PROJECT_NAME}_ABI_VERSION}" abilen)
+    if(abilen > 0)
+      set(SUFFIX "_${${PROJECT_NAME}_ABI_VERSION}")
+    endif()
   endif()
 
   set(${OUTPUT_NAME} ${TARGET_NAME}${SUFFIX} PARENT_SCOPE)
