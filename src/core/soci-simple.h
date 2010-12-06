@@ -121,10 +121,11 @@ SOCI_DECL char const * soci_get_use_date     (statement_handle st, char const * 
 
 
 // statement preparation and execution
-SOCI_DECL void soci_prepare(statement_handle st, char const * query);
-SOCI_DECL int  soci_execute(statement_handle st, int withDataExchange);
-SOCI_DECL int  soci_fetch(statement_handle st);
-SOCI_DECL int  soci_got_data(statement_handle st);
+SOCI_DECL void      soci_prepare(statement_handle st, char const * query);
+SOCI_DECL int       soci_execute(statement_handle st, int withDataExchange);
+SOCI_DECL long long soci_get_affected_rows(statement_handle st);
+SOCI_DECL int       soci_fetch(statement_handle st);
+SOCI_DECL int       soci_got_data(statement_handle st);
 
 SOCI_DECL int soci_statement_state(statement_handle s);
 SOCI_DECL char const * soci_statement_error_message(statement_handle s);

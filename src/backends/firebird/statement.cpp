@@ -540,6 +540,12 @@ void firebird_statement_backend::exchangeData(bool gotData, int row)
     }
 }
 
+long long firebird_statement_backend::get_affected_rows()
+{
+    // ...
+    return -1;
+}
+
 int firebird_statement_backend::get_number_of_rows()
 {
     return rowsFetched_;

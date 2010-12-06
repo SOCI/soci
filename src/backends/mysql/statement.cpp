@@ -340,6 +340,11 @@ mysql_statement_backend::fetch(int number)
     }
 }
 
+long long mysql_statement_backend::get_affected_rows()
+{
+    return static_cast<long long>(mysql_affected_rows(session_.conn_));
+}
+
 int mysql_statement_backend::get_number_of_rows()
 {
     return numberOfRows_ - currentRow_;

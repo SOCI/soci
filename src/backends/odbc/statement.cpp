@@ -199,6 +199,12 @@ odbc_statement_backend::fetch(int number)
     return ef_success;
 }
 
+long long odbc_statement_backend::get_affected_rows()
+{
+    // ...
+    return -1;
+}
+
 int odbc_statement_backend::get_number_of_rows()
 {
     return numRowsFetched_;

@@ -363,6 +363,11 @@ bool statement_impl::execute(bool withDataExchange)
     return gotData;
 }
 
+long long statement_impl::get_affected_rows()
+{
+    return backEnd_->get_affected_rows();
+}
+
 bool statement_impl::fetch()
 {
     if (fetchSize_ == 0)

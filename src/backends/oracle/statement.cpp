@@ -116,6 +116,12 @@ statement_backend::exec_fetch_result oracle_statement_backend::fetch(int number)
     }
 }
 
+long long oracle_statement_backend::get_affected_rows()
+{
+    // ...
+    return -1;
+}
+
 int oracle_statement_backend::get_number_of_rows()
 {
     int rows;

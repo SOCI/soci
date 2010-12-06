@@ -50,6 +50,7 @@ public:
     void define_and_bind();
     void undefine_and_bind();
     bool execute(bool withDataExchange = false);
+    long long get_affected_rows();
     bool fetch();
     void describe();
     void set_row(row * r);
@@ -167,6 +168,11 @@ public:
     {
         gotData_ = impl_->execute(withDataExchange);
         return gotData_;
+    }
+
+    long long get_affected_rows()
+    {
+        return impl_->get_affected_rows();
     }
 
     bool fetch()

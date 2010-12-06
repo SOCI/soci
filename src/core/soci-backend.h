@@ -127,6 +127,7 @@ public:
     virtual exec_fetch_result execute(int number) = 0;
     virtual exec_fetch_result fetch(int number) = 0;
 
+    virtual long long get_affected_rows() = 0;
     virtual int get_number_of_rows() = 0;
 
     virtual std::string rewrite_for_procedure_call(std::string const& query) = 0;

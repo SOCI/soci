@@ -270,6 +270,12 @@ sqlite3_statement_backend::fetch(int number)
     return loadRS(number);
 }
 
+long long sqlite3_statement_backend::get_affected_rows()
+{
+    // ...
+    return -1;
+}
+
 int sqlite3_statement_backend::get_number_of_rows()
 {
     return static_cast<int>(dataCache_.size());

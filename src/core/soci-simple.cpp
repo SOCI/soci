@@ -1792,6 +1792,13 @@ SOCI_DECL int soci_execute(statement_handle st, int withDataExchange)
     }
 }
 
+SOCI_DECL long long soci_get_affected_rows(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    return wrapper->st.get_affected_rows();
+}
+
 SOCI_DECL int soci_fetch(statement_handle st)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);

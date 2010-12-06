@@ -450,6 +450,45 @@ void test10()
     std::cout << "test 10 passed" << std::endl;
 }
 
+// test for number of affected rows
+
+struct table_creator_for_test11 : table_creator_base
+{
+    table_creator_for_test11(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val integer)";
+    }
+};
+
+void test11()
+{
+    {
+        session sql(backEnd, connectString);
+
+        table_creator_for_test11 tableCreator(sql);
+
+        for (int i = 0; i != 10; i++)
+        {
+            sql << "insert into soci_test(val) values(:val)", use(i);
+        }
+
+        statement st1 = (sql.prepare <<
+            "update soci_test set val = val + 1");
+        st1.execute(false);
+
+        assert(st1.get_affected_rows() == 10);
+
+        statement st2 = (sql.prepare <<
+            "delete from soci_test where val <= 5");
+        st2.execute(false);
+
+        assert(st2.get_affected_rows() == 5);
+    }
+
+    std::cout << "test 11 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -563,6 +602,7 @@ int main(int argc, char** argv)
         test8();
         test9();
         test10();
+        test11();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;

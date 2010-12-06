@@ -10,6 +10,7 @@
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <sstream>
@@ -431,6 +432,21 @@ postgresql_statement_backend::fetch(int number)
             rowsToConsume_ = number;
             return ef_success;
         }
+    }
+}
+
+long long postgresql_statement_backend::get_affected_rows()
+{
+    const char * resultStr = PQcmdTuples(result_);
+    char * end;
+    long long result = strtoll(resultStr, &end, 0);
+    if (end != resultStr)
+    {
+        return result;
+    }
+    else
+    {
+        return -1;
     }
 }
 
