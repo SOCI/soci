@@ -13,6 +13,8 @@
 // boost
 #include <boost/tuple/tuple.hpp>
 
+#if defined(BOOST_VERSION) && BOOST_VERSION < 103500
+
 namespace soci
 {
 
@@ -313,5 +315,10 @@ struct type_conversion<boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> >
 };
 
 } // namespace soci
+
+#else // BOOST_VERSION >= 103500
+#   include "boost-fusion.h"
+#   include <boost/fusion/adapted/boost_tuple.hpp>
+#endif
 
 #endif // SOCI_BOOST_TUPLE_H_INCLUDED

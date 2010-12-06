@@ -1,1 +1,4 @@
-soci_backend_test(PostgreSQL)
+soci_backend_test(
+  BACKEND PostgreSQL
+  SOURCE test-postgresql.cpp
+  CONNSTR "dummy")

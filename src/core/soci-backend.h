@@ -46,6 +46,7 @@ enum statement_type { st_one_time_query, st_repeatable_query };
 class standard_into_type_backend
 {
 public:
+    standard_into_type_backend() {}
     virtual ~standard_into_type_backend() {}
 
     virtual void define_by_pos(int& position, void* data, exchange_type type) = 0;
@@ -54,11 +55,18 @@ public:
     virtual void post_fetch(bool gotData, bool calledFromFetch, indicator* ind) = 0;
 
     virtual void clean_up() = 0;
+
+private:
+    // noncopyable
+    standard_into_type_backend(standard_into_type_backend const&);
+    standard_into_type_backend& operator=(standard_into_type_backend const&);
 };
 
 class vector_into_type_backend
 {
 public:
+
+    vector_into_type_backend() {}
     virtual ~vector_into_type_backend() {}
 
     virtual void define_by_pos(int& position, void* data, exchange_type type) = 0;
@@ -70,6 +78,11 @@ public:
     virtual std::size_t size() = 0;
 
     virtual void clean_up() = 0;
+
+private:
+    // noncopyable
+    vector_into_type_backend(vector_into_type_backend const&);
+    vector_into_type_backend& operator=(vector_into_type_backend const&);
 };
 
 // polymorphic use type backend
@@ -77,6 +90,7 @@ public:
 class standard_use_type_backend
 {
 public:
+    standard_use_type_backend() {}
     virtual ~standard_use_type_backend() {}
 
     virtual void bind_by_pos(int& position, void* data,
@@ -88,11 +102,17 @@ public:
     virtual void post_use(bool gotData, indicator * ind) = 0;
 
     virtual void clean_up() = 0;
+
+private:
+    // noncopyable
+    standard_use_type_backend(standard_use_type_backend const&);
+    standard_use_type_backend& operator=(standard_use_type_backend const&);
 };
 
 class vector_use_type_backend
 {
 public:
+    vector_use_type_backend() {}
     virtual ~vector_use_type_backend() {}
 
     virtual void bind_by_pos(int& position, void* data, exchange_type type) = 0;
@@ -104,6 +124,11 @@ public:
     virtual std::size_t size() = 0;
 
     virtual void clean_up() = 0;
+
+private:
+    // noncopyable
+    vector_use_type_backend(vector_use_type_backend const&);
+    vector_use_type_backend& operator=(vector_use_type_backend const&);
 };
 
 // polymorphic statement backend
@@ -111,6 +136,7 @@ public:
 class statement_backend
 {
 public:
+    statement_backend() {}
     virtual ~statement_backend() {}
 
     virtual void alloc() = 0;
@@ -140,6 +166,11 @@ public:
     virtual standard_use_type_backend* make_use_type_backend() = 0;
     virtual vector_into_type_backend* make_vector_into_type_backend() = 0;
     virtual vector_use_type_backend* make_vector_use_type_backend() = 0;
+
+private:
+    // noncopyable
+    statement_backend(statement_backend const&);
+    statement_backend& operator=(statement_backend const&);
 };
 
 // polymorphic RowID backend
@@ -155,6 +186,7 @@ public:
 class blob_backend
 {
 public:
+    blob_backend() {}
     virtual ~blob_backend() {}
 
     virtual std::size_t get_len() = 0;
@@ -164,6 +196,11 @@ public:
         std::size_t toWrite) = 0;
     virtual std::size_t append(char const* buf, std::size_t toWrite) = 0;
     virtual void trim(std::size_t newLen) = 0;
+
+private:
+    // noncopyable
+    blob_backend(blob_backend const&);
+    blob_backend& operator=(blob_backend const&);
 };
 
 // polymorphic session backend
@@ -171,6 +208,7 @@ public:
 class session_backend
 {
 public:
+    session_backend() {}
     virtual ~session_backend() {}
 
     virtual void begin() = 0;
@@ -182,6 +220,11 @@ public:
     virtual statement_backend* make_statement_backend() = 0;
     virtual rowid_backend* make_rowid_backend() = 0;
     virtual blob_backend* make_blob_backend() = 0;
+
+private:
+    // noncopyable
+    session_backend(session_backend const&);
+    session_backend& operator=(session_backend const&);
 };
 
 } // namespace details
@@ -190,6 +233,7 @@ public:
 
 struct SOCI_DECL backend_factory
 {
+	backend_factory() {}
     virtual ~backend_factory() {}
 
     virtual details::session_backend* make_session(

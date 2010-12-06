@@ -11,12 +11,12 @@
 #include <ciso646>
 
 #ifdef _MSC_VER
-#pragma warning(disable:4355)
+#pragma warning(push)
+#pragma warning(disable:4355 4702)
 #endif
 
 using namespace soci;
 using namespace soci::details;
-
 
 mysql_blob_backend::mysql_blob_backend(mysql_session_backend &session)
     : session_(session)
@@ -26,7 +26,6 @@ mysql_blob_backend::mysql_blob_backend(mysql_session_backend &session)
 
 mysql_blob_backend::~mysql_blob_backend()
 {
-    throw soci_error("BLOBs are not supported.");
 }
 
 std::size_t mysql_blob_backend::get_len()
@@ -57,3 +56,7 @@ void mysql_blob_backend::trim(std::size_t /* newLen */)
 {
     throw soci_error("BLOBs are not supported.");
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif

@@ -9,6 +9,7 @@
 #include "soci-postgresql.h"
 #include "blob.h"
 #include "rowid.h"
+#include <soci-platform.h>
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
 #include <cstdio>
@@ -28,7 +29,6 @@
 
 using namespace soci;
 using namespace soci::details;
-
 
 void postgresql_standard_use_type_backend::bind_by_pos(
     int & position, void * data, exchange_type type, bool /* readOnly */)

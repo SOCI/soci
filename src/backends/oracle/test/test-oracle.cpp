@@ -17,7 +17,7 @@ using namespace soci;
 using namespace soci::tests;
 
 std::string connectString;
-backend_factory const &backEnd = oracle;
+backend_factory const &backEnd = *soci::factory_oracle();
 
 // Extra tests for date/time
 void test1()

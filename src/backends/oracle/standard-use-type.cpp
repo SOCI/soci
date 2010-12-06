@@ -11,6 +11,7 @@
 #include "error.h"
 #include "rowid.h"
 #include "statement.h"
+#include <soci-platform.h>
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -20,6 +21,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
+#define snprintf _snprintf
 #endif
 
 using namespace soci;

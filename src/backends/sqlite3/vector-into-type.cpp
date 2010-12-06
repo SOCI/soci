@@ -19,8 +19,8 @@ using namespace soci;
 using namespace soci::details;
 using namespace soci::details::sqlite3;
 
-void sqlite3_vector_into_type_backend::define_by_pos(int & position, void * data,
-                                               exchange_type type)
+void sqlite3_vector_into_type_backend::define_by_pos(
+    int& position, void* data, exchange_type type)
 {
     data_ = data;
     type_ = type;

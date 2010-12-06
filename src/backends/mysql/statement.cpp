@@ -259,7 +259,7 @@ mysql_statement_backend::execute(int number)
         {
             // Cache the rows offsets to have random access to the rows later.
             // [mysql_data_seek() is O(n) so we don't want to use it].
-            int numrows = mysql_num_rows(result_);
+            int numrows = static_cast<int>(mysql_num_rows(result_));
             resultRowOffsets_.resize(numrows);
             for (int i = 0; i < numrows; i++)
             {
@@ -278,7 +278,7 @@ mysql_statement_backend::execute(int number)
         currentRow_ = 0;
         rowsToConsume_ = 0;
 
-        numberOfRows_ = mysql_num_rows(result_);
+        numberOfRows_ = static_cast<int>(mysql_num_rows(result_));
         if (numberOfRows_ == 0)
         {
             return ef_no_data;

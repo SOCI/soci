@@ -295,7 +295,7 @@ function(boost_report_value NAME)
   # LOG
   #message(STATUS "boost_report_value: NAME=${NAME} (${varlen})")
   #message(STATUS "boost_report_value: \${NAME}=${${NAME}}")
-  math(EXPR padding_len 35-${varlen})
+  math(EXPR padding_len 40-${varlen})
   string(SUBSTRING "                                      " 
     0 ${padding_len} varpadding)
   colormsg("${NAME}${varpadding} = ${${NAME}}")
@@ -404,11 +404,10 @@ function(soci_target_output_name TARGET_NAME OUTPUT_NAME)
   endif()
 
   # On Windows, ABI version is specified using binary file name suffix.
-  # On Unix, suffix ix empty and SOVERSION is used instead.
+  # On Unix, suffix is empty and SOVERSION is used instead.
   if (WIN32)
-    set(SUFFIX "${${PROJECT_NAME}_VERSION_MAJOR}${${PROJECT_NAME}_VERSION_MINOR}")
+    set(SUFFIX "_${${PROJECT_NAME}_ABI_VERSION}")
   endif()
 
   set(${OUTPUT_NAME} ${TARGET_NAME}${SUFFIX} PARENT_SCOPE)
-
 endfunction()

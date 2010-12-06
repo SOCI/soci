@@ -203,7 +203,7 @@ sqlite3_statement_backend::bindAndExecute(int number)
             {
                 bindRes = sqlite3_bind_blob(stmt_, pos,
                                             curCol.blobBuf_,
-                                            curCol.blobSize_,
+                                            static_cast<int>(curCol.blobSize_),
                                             SQLITE_STATIC);
             }
             else

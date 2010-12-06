@@ -315,6 +315,7 @@ struct firebird_session_backend : details::session_backend
 
 struct firebird_backend_factory : backend_factory
 {
+	firebird_backend_factory() {}
     virtual firebird_session_backend * make_session(
         std::string const &connectString) const;
 };

@@ -1656,9 +1656,10 @@ void test9()
 
                 assert(false);
             }
-            catch (soci_error const &e)
+            catch (soci_error const& e)
             {
-                assert(std::string(e.what()) ==
+                std::string what(e.what());
+                assert(what ==
                     "Binding for use elements must be either by position "
                     "or by name.");
             }
@@ -1905,7 +1906,8 @@ void test12()
             assert(std::fabs(r.get<double>(0) - 3.14) < 0.001);
             assert(r.get<int>(1) == 123);
             assert(r.get<std::string>(2) == "Johny");
-            std::tm t = r.get<std::tm>(3);
+            std::tm t = { 0 };
+            t = r.get<std::tm>(3);
             assert(t.tm_year == 105);
 
             // again, type char is visible as string
@@ -2433,7 +2435,8 @@ void test20()
                 assert(std::fabs(r1.get<double>(0) - 3.14) < 0.001);
                 assert(r1.get<int>(1) == 123);
                 assert(r1.get<std::string>(2) == "Johny");
-                std::tm t1 = r1.get<std::tm>(3);
+                std::tm t1 = { 0 };
+                t1 = r1.get<std::tm>(3);
                 assert(t1.tm_year == 105);
                 assert(r1.get<std::string>(4) == "a");
                 assert(std::fabs(r1.get<double>("NUM_FLOAT") - 3.14) < 0.001);

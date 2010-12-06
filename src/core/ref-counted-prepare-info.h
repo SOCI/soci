@@ -30,22 +30,24 @@ class into_type_base;
 class ref_counted_prepare_info : public ref_counted_statement_base
 {
 public:
-    ref_counted_prepare_info(session & s)
-        : ref_counted_statement_base(s), session_(s) {}
+    ref_counted_prepare_info(session& s)
+        : ref_counted_statement_base(s)
+        , session_(s)
+    {}
 
-    void exchange(into_type_ptr const & i);
-    void exchange(use_type_ptr const & u);
+    void exchange(into_type_ptr const& i);
+    void exchange(use_type_ptr const& u);
 
-    virtual void final_action();
+    void final_action();
 
 private:
     friend class statement_impl;
     friend class procedure_impl;
 
-    session & session_;
+    session& session_;
 
-    std::vector<into_type_base *> intos_;
-    std::vector<use_type_base *> uses_;
+    std::vector<into_type_base*> intos_;
+    std::vector<use_type_base*> uses_;
 
     std::string get_query() const;
 };

@@ -25,16 +25,14 @@
 using namespace soci;
 using namespace soci::details;
 
-
-postgresql_session_backend::postgresql_session_backend(
-    std::string const & connectString)
+postgresql_session_backend::postgresql_session_backend(std::string const& connectString)
     : statementCount_(0)
 {
-    PGconn * conn = PQconnectdb(connectString.c_str());
-    if (conn == NULL || PQstatus(conn) != CONNECTION_OK)
+    PGconn* conn = PQconnectdb(connectString.c_str());
+    if (0 == conn || CONNECTION_OK != PQstatus(conn))
     {
         std::string msg = "Cannot establish connection to the database.";
-        if (conn != NULL)
+        if (0 != conn)
         {
             msg += '\n';
             msg += PQerrorMessage(conn);
@@ -58,15 +56,15 @@ namespace // unnamed
 // helper function for hardoded queries
 void hard_exec(PGconn * conn, char const * query, char const * errMsg)
 {
-    PGresult * result = PQexec(conn, query);
+    PGresult* result = PQexec(conn, query);
 
-    if (result == NULL)
+    if (0 == result)
     {
         throw soci_error(errMsg);
     }
 
     ExecStatusType const status = PQresultStatus(result);
-    if (status != PGRES_COMMAND_OK)
+    if (PGRES_COMMAND_OK != status)
     {
         throw soci_error(PQresultErrorMessage(result));
     }
@@ -93,16 +91,16 @@ void postgresql_session_backend::rollback()
 
 void postgresql_session_backend::clean_up()
 {
-    if (conn_ != NULL)
+    if (0 != conn_)
     {
         PQfinish(conn_);
-        conn_ = NULL;
+        conn_ = 0;
     }
 }
 
 std::string postgresql_session_backend::get_next_statement_name()
 {
-    char nameBuf[20]; // arbitrary length
+    char nameBuf[20] = { 0 }; // arbitrary length
     sprintf(nameBuf, "st_%d", ++statementCount_);
     return nameBuf;
 }

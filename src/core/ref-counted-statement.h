@@ -24,7 +24,8 @@ namespace details
 class SOCI_DECL ref_counted_statement_base
 {
 public:
-    ref_counted_statement_base(session & s) : refCount_(1), session_(s) {}
+    ref_counted_statement_base(session& s);
+    
     virtual ~ref_counted_statement_base() {}
 
     virtual void final_action() = 0;
@@ -52,9 +53,6 @@ public:
     void accumulate(T const & t) { get_query_stream() << t; }
 
 protected:
-    ref_counted_statement_base(ref_counted_statement_base const &);
-    ref_counted_statement_base & operator=(ref_counted_statement_base const &);
-
     // this function allows to break the circular dependenc
     // between session and this class
     std::ostringstream & get_query_stream();
@@ -62,6 +60,11 @@ protected:
     int refCount_;
 
     session & session_;
+
+private:
+    // noncopyable
+    ref_counted_statement_base(ref_counted_statement_base const&);
+    ref_counted_statement_base& operator=(ref_counted_statement_base const&);
 };
 
 // this class is supposed to be a vehicle for the "once" statements

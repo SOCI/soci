@@ -8,6 +8,7 @@
 #define soci_ORACLE_SOURCE
 #include "soci-oracle.h"
 #include "error.h"
+#include <soci-platform.h>
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -16,6 +17,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
+#define snprintf _snprintf
 #endif
 
 using namespace soci;

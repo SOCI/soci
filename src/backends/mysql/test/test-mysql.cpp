@@ -25,7 +25,7 @@ using namespace soci;
 using namespace soci::tests;
 
 std::string connectString;
-backend_factory const &backEnd = mysql;
+backend_factory const &backEnd = *soci::factory_mysql();
 
 
 // procedure call test
@@ -94,7 +94,7 @@ void test2()
         }
         catch (mysql_soci_error const &e)
         {
-            assert(e.err_num_ == CR_UNKNOWN_HOST);
+            assert(e.err_num_ == CR_UNKNOWN_HOST || e.err_num_ == CR_CONN_HOST_ERROR);
         }
     }
 
@@ -201,8 +201,8 @@ void test_num(const char* s, bool valid, T value)
         sql << "select \'" << s << "\'", into(val);
         if (valid)
         {
-            double v1 = value;
-            double v2 = val;
+            double v1 = static_cast<double>(value);
+            double v2 = static_cast<double>(val);
             double d = std::fabs(v1 - v2);
             double epsilon = 0.001;
             assert(d < epsilon ||

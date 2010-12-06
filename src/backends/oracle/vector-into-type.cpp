@@ -9,6 +9,7 @@
 #include "soci-oracle.h"
 #include "statement.h"
 #include "error.h"
+#include <soci-platform.h>
 #include <cctype>
 #include <cstdio>
 #include <cstring>
