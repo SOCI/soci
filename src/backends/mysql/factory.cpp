@@ -36,4 +36,9 @@ SOCI_MYSQL_DECL backend_factory const * factory_mysql()
     return &soci::mysql;
 }
 
+SOCI_MYSQL_DECL void register_factory_mysql()
+{
+    soci::dynamic_backends::register_backend("mysql", soci::mysql);
+}
+
 } // extern "C"

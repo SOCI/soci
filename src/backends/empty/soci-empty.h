@@ -184,6 +184,7 @@ extern "C"
 
 // for dynamic backend loading
 SOCI_EMPTY_DECL backend_factory const* factory_empty();
+SOCI_EMPTY_DECL void register_factory_empty();
 
 } // extern "C"
 

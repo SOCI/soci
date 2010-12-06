@@ -282,6 +282,7 @@ extern "C"
 
 // for dynamic backend loading
 SOCI_ORACLE_DECL backend_factory const * factory_oracle();
+SOCI_ORACLE_DECL void register_factory_oracle();
 
 } // extern "C"
 

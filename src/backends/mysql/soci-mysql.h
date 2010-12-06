@@ -262,6 +262,7 @@ extern "C"
 
 // for dynamic backend loading
 SOCI_MYSQL_DECL backend_factory const * factory_mysql();
+SOCI_MYSQL_DECL void register_factory_mysql();
 
 } // extern "C"
 

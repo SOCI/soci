@@ -33,4 +33,9 @@ SOCI_SQLITE3_DECL backend_factory const * factory_sqlite3()
     return &soci::sqlite3;
 }
 
+SOCI_SQLITE3_DECL void register_factory_sqlite3()
+{
+    soci::dynamic_backends::register_backend("sqlite3", soci::sqlite3);
+}
+
 } // extern "C"

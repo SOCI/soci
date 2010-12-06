@@ -315,6 +315,7 @@ extern "C"
 
 // for dynamic backend loading
 SOCI_ODBC_DECL backend_factory const * factory_odbc();
+SOCI_ODBC_DECL void register_factory_odbc();
 
 } // extern "C"
 

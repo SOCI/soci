@@ -24,8 +24,12 @@ extern "C"
 // for dynamic backend loading
 SOCI_FIREBIRD_DECL backend_factory const * factory_firebird()
 {
-
     return &soci::firebird;
+}
+
+SOCI_FIREBIRD_DECL void register_factory_firebird()
+{
+    soci::dynamic_backends::register_backend("firebird", soci::firebird);
 }
 
 } // extern "C"

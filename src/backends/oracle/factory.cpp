@@ -121,4 +121,9 @@ SOCI_ORACLE_DECL backend_factory const * factory_oracle()
     return &soci::oracle;
 }
 
+SOCI_ORACLE_DECL void register_factory_oracle()
+{
+    soci::dynamic_backends::register_backend("oracle", soci::oracle);
+}
+
 } // extern "C"

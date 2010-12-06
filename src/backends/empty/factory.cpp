@@ -33,4 +33,9 @@ SOCI_EMPTY_DECL backend_factory const* factory_empty()
     return &soci::empty;
 }
 
+SOCI_EMPTY_DECL void register_factory_empty()
+{
+    soci::dynamic_backends::register_backend("empty", soci::empty);
+}
+
 } // extern "C"

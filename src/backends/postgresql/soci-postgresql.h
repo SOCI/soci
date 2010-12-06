@@ -253,6 +253,7 @@ extern "C"
 
 // for dynamic backend loading
 SOCI_POSTGRESQL_DECL backend_factory const * factory_postgresql();
+SOCI_POSTGRESQL_DECL void register_factory_postgresql();
 
 } // extern "C"
 

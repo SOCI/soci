@@ -30,4 +30,9 @@ SOCI_ODBC_DECL backend_factory const * factory_odbc()
     return &soci::odbc;
 }
 
+SOCI_ODBC_DECL void register_factory_odbc()
+{
+    soci::dynamic_backends::register_backend("odbc", soci::odbc);
+}
+
 } // extern "C"

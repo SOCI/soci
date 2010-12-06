@@ -7,6 +7,7 @@
 
 #define SOCI_POSTGRESQL_SOURCE
 #include "soci-postgresql.h"
+#include <backend-loader.h>
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
 #include <cstdio>
@@ -41,6 +42,11 @@ extern "C"
 SOCI_POSTGRESQL_DECL backend_factory const * factory_postgresql()
 {
     return &soci::postgresql;
+}
+
+SOCI_POSTGRESQL_DECL void register_factory_postgresql()
+{
+    soci::dynamic_backends::register_backend("postgresql", soci::postgresql);
 }
 
 } // extern "C"
