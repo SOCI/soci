@@ -9,11 +9,6 @@
 #include "soci-postgresql.h"
 #include <backend-loader.h>
 #include <libpq/libpq-fs.h> // libpq
-#include <cctype>
-#include <cstdio>
-#include <cstring>
-#include <ctime>
-#include <sstream>
 
 #ifdef SOCI_PGSQL_NOPARAMS
 #define SOCI_PGSQL_NOBINDBYNAME
