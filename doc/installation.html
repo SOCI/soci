@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en'>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"  http-equiv="content-type" />
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  <title>SOCI - structure</title>
+</head>
+
+<body>
+<p class="banner">SOCI - The C++ Database Access Library</p>
+
+<h2>Library downloading, compilation and installation.</h2>
+
+<div class="navigation">
+<a href="#compilation">Compilation</a><br />
+<div class="navigation-indented">
+  <a href="#unix">On Unix</a><br />
+  <a href="#windows">On Windows</a><br />
+  <a href="#unix-makefiles">Using classic Makefiles on Unix</a><br />
+</div>
+<a href="#compilation">Binaries</a><br />
+</div>
+
+<h3 id="compilation">Compilation</h3>
+
+<p>Download the SOCI distribution file: soci-X.Y.Z.tar.gz|tar.bz2|zip, where X.Y.Z is the version number. Unpack this file.</p>
+
+<p>TODO: CMake intro</p>
+
+<h4 id="unix">On Unix</h4>
+
+<p>Short version:</p>
+<pre class="example">
+$ ./cmake /path/to/soci-X.Y.Z/src
+$ make
+$ make install
+</pre>
+
+<p>Long version:</p>
+
+<p>TODO</p>
+
+<h4 id="windows">On Windows</h4>
+
+<p>TODO</p>
+
+<h4 id="unix-makefiles">Using classic Makefiles on Unix</h4>
+
+<p>The classic set of Makefiles for Unix/Linux systems is provided for those users who need complete control over the whole process
+and who can benefit from the basic scaffolding that they can extend on their own.
+In this sense, the basic Makefiles are supposed to provide a minimal starting point for custom experimentation and are not intended to be a complete build/installation solution.<br />
+At the same time, they are complete in the sense that they can compile the library with all test programs and for some users this level of support will be just fine.</p>
+
+<p>The <code>core</code> directory of the library distribution contains
+the <code>Makefile.basic</code> that can be used to compile the core part of
+the library. Run <code>make -f Makefile.basic</code> or <code>make -f Makefile.basic shared</code> to get the static and shared versions, respectively.
+Similarly, the <code>backends/<i>name</i></code> directory contains the
+backend part for each supported backend with the appropriate <code>Makefile.basic</code>
+and the <code>backends/<i>name</i>/test</code>
+directory contains the test program for the given backend.</p>
+
+<p>For example, the simplest way to compile the static version of the
+library and the test program for PostgreSQL is:</p>
+
+<pre class="example">
+$ cd src/core
+$ make -f Makefile.basic
+$ cd ../backends/postgresql
+$ make -f Makefile.basic
+$ cd test
+$ make -f Makefile.basic
+</pre>
+
+<div class="note">
+<p><span class="note">Note:</span>
+For each backend and its test program, the <code>Makefile.basic</code>s
+contain the variables that can have values specific to the given
+environment - they usually name the include and library paths.
+These variables are placed at the beginning of the <code>Makefile.basic</code>s.
+Please review their values in case of any compilation problems.</p>
+</div>
+
+<p>The Makefiles for test programs can be a good starting point to find
+out correct compiler and linker options.</p>
+
+<p class="copyright">Copyright &copy; 2004-2010 Maciej Sobczak, Stephen Hutton, Mateusz Loskot</p>
+</body>
+</html>
