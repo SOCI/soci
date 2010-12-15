@@ -9,9 +9,10 @@
 <body>
 <p class="banner">SOCI - The C++ Database Access Library</p>
 
-<h2>Library downloading, compilation and installation.</h2>
+<h2>Installation</h2>
 
 <div class="navigation">
+<a href="#compilation">Downloading</a><br />
 <a href="#compilation">Compilation</a><br />
 <div class="navigation-indented">
   <a href="#unix">On Unix</a><br />
@@ -21,17 +22,25 @@
 <a href="#compilation">Binaries</a><br />
 </div>
 
+<h3 id="compilation">Downloading</h3>
+
+<p>Download package with latest release of the SOCI source code: soci-X.Y.Z.tar.gz|tar.bz2|zip, where X.Y.Z is the version number. Unpack this file.</p>
+
+<p>If you intend to hack SOCI, you can clone the Git repository:</p>
+
+<pre>git clone git://soci.git.sourceforge.net/gitroot/soci/soci </pre>
+
 <h3 id="compilation">Compilation</h3>
 
-<p>Download the SOCI distribution file: soci-X.Y.Z.tar.gz|tar.bz2|zip, where X.Y.Z is the version number. Unpack this file.</p>
-
-<p>TODO: CMake intro</p>
+<p>SOCI is configured to build using <a href="http://cmake.org/">CMake</a> system in version 2.6+.</p>
 
 <h4 id="unix">On Unix</h4>
 
 <p>Short version:</p>
 <pre class="example">
-$ ./cmake /path/to/soci-X.Y.Z/src
+$ mkdir build
+$ cd build
+$ ./cmake ../soci-X.Y.Z
 $ make
 $ make install
 </pre>
@@ -82,6 +91,18 @@ Please review their values in case of any compilation problems.</p>
 
 <p>The Makefiles for test programs can be a good starting point to find
 out correct compiler and linker options.</p>
+
+<table class="foot-links" border="0" cellpadding="2" cellspacing="2">
+  <tr>
+    <td class="foot-link-left">
+      <a href="structure.html">Previous (Structure)</a>
+    </td>
+    <td class="foot-link-right">
+      <a href="errors.html">Next (Errors)</a>
+    </td>
+  </tr>
+</table>
+
 
 <p class="copyright">Copyright &copy; 2004-2010 Maciej Sobczak, Stephen Hutton, Mateusz Loskot</p>
 </body>
