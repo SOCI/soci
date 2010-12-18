@@ -8,6 +8,10 @@
 #ifndef SOCI_BOOST_FUSION_H_INCLUDED
 #define SOCI_BOOST_FUSION_H_INCLUDED
 
+#ifndef SOCI_MAX_FUSION_SEQUENCE_LENGTH
+#define SOCI_MAX_FUSION_SEQUENCE_LENGTH 10
+#endif
+
 #include "values.h"
 #include "type-conversion-traits.h"
 // boost
@@ -16,284 +20,53 @@
 #include <boost/fusion/sequence/intrinsic/size.hpp>
 #include <boost/fusion/include/at.hpp>
 #include <boost/fusion/support/is_sequence.hpp>
+#include <boost/preprocessor/repetition/repeat.hpp>
+#include <boost/preprocessor/repetition/repeat_from_to.hpp>
 #include <boost/utility/enable_if.hpp>
 
 namespace soci
 {
 namespace detail
 {
+
 template <typename Seq, int size>
 struct type_conversion;
 
-template <typename Seq>
-struct type_conversion<Seq, 1>
-{
-    typedef values base_type;
+#define SOCI_READ_FROM_BASE(z, k, data) \
+    >> boost::fusion::at_c<k>(out)
+/**/
 
-    static void from_base(base_type const & in, indicator /*ind*/, Seq & out)
-    {
-        in
-            >> boost::fusion::at_c<0>(out);
-    }
+#define SOCI_READ_TO_BASE(z, k, data) \
+    << boost::fusion::at_c<k>(in)
+/**/
 
-    static void to_base(Seq & in, base_type & out, indicator & /*ind*/)
-    {
-        out
-            << boost::fusion::at_c<0>(in);
-    }
-};
+#define SOCI_TYPE_CONVERSION_FUSION(z, k, data) \
+    template <typename Seq> \
+    struct type_conversion<Seq, k> \
+    { \
+        typedef values base_type; \
+     \
+        static void from_base(base_type const & in, indicator /*ind*/, Seq & out) \
+        { \
+            in \
+                BOOST_PP_REPEAT(k, SOCI_READ_FROM_BASE, BOOST_PP_EMPTY) \
+            ; \
+        } \
+     \
+        static void to_base(Seq & in, base_type & out, indicator & /*ind*/) \
+        { \
+            out \
+                BOOST_PP_REPEAT(k, SOCI_READ_TO_BASE, BOOST_PP_EMPTY) \
+            ; \
+        } \
+    };
+/**/
 
-template <typename Seq>
-struct type_conversion<Seq, 2>
-{
-    typedef values base_type;
+BOOST_PP_REPEAT_FROM_TO(1, BOOST_PP_ADD(SOCI_MAX_FUSION_SEQUENCE_LENGTH, 1), SOCI_TYPE_CONVERSION_FUSION, BOOST_PP_EMPTY)
 
-    static void from_base(base_type const & in, indicator /*ind*/, Seq & out)
-    {
-        in
-            >> boost::fusion::at_c<0>(out)
-            >> boost::fusion::at_c<1>(out);
-    }
-
-    static void to_base(Seq & in, base_type & out, indicator & /*ind*/)
-    {
-        out
-            << boost::fusion::at_c<0>(in)
-            << boost::fusion::at_c<1>(in);
-    }
-};
-
-template <typename Seq>
-struct type_conversion<Seq, 3>
-{
-    typedef values base_type;
-
-    static void from_base(base_type const & in, indicator /*ind*/, Seq & out)
-    {
-        in
-            >> boost::fusion::at_c<0>(out)
-            >> boost::fusion::at_c<1>(out)
-            >> boost::fusion::at_c<2>(out);
-    }
-
-    static void to_base(Seq & in, base_type & out, indicator & /*ind*/)
-    {
-        out
-            << boost::fusion::at_c<0>(in)
-            << boost::fusion::at_c<1>(in)
-            << boost::fusion::at_c<2>(in);
-    }
-};
-
-template <typename Seq>
-struct type_conversion<Seq, 4>
-{
-    typedef values base_type;
-
-    static void from_base(base_type const & in, indicator /*ind*/, Seq & out)
-    {
-        in
-            >> boost::fusion::at_c<0>(out)
-            >> boost::fusion::at_c<1>(out)
-            >> boost::fusion::at_c<2>(out)
-            >> boost::fusion::at_c<3>(out);
-    }
-
-    static void to_base(Seq & in, base_type & out, indicator & /*ind*/)
-    {
-        out
-            << boost::fusion::at_c<0>(in)
-            << boost::fusion::at_c<1>(in)
-            << boost::fusion::at_c<2>(in)
-            << boost::fusion::at_c<3>(in);
-    }
-};
-
-template <typename Seq>
-struct type_conversion<Seq, 5>
-{
-    typedef values base_type;
-
-    static void from_base(base_type const & in, indicator /*ind*/, Seq & out)
-    {
-        in
-            >> boost::fusion::at_c<0>(out)
-            >> boost::fusion::at_c<1>(out)
-            >> boost::fusion::at_c<2>(out)
-            >> boost::fusion::at_c<3>(out)
-            >> boost::fusion::at_c<4>(out);
-    }
-
-    static void to_base(Seq & in, base_type & out, indicator & /*ind*/)
-    {
-        out
-            << boost::fusion::at_c<0>(in)
-            << boost::fusion::at_c<1>(in)
-            << boost::fusion::at_c<2>(in)
-            << boost::fusion::at_c<3>(in)
-            << boost::fusion::at_c<4>(in);
-    }
-};
-
-template <typename Seq>
-struct type_conversion<Seq, 6>
-{
-    typedef values base_type;
-
-    static void from_base(base_type const & in, indicator /*ind*/, Seq & out)
-    {
-        in
-            >> boost::fusion::at_c<0>(out)
-            >> boost::fusion::at_c<1>(out)
-            >> boost::fusion::at_c<2>(out)
-            >> boost::fusion::at_c<3>(out)
-            >> boost::fusion::at_c<4>(out)
-            >> boost::fusion::at_c<5>(out);
-    }
-
-    static void to_base(Seq & in, base_type & out, indicator & /*ind*/)
-    {
-        out
-            << boost::fusion::at_c<0>(in)
-            << boost::fusion::at_c<1>(in)
-            << boost::fusion::at_c<2>(in)
-            << boost::fusion::at_c<3>(in)
-            << boost::fusion::at_c<4>(in)
-            << boost::fusion::at_c<5>(in);
-    }
-};
-
-template <typename Seq>
-struct type_conversion<Seq, 7>
-{
-    typedef values base_type;
-
-    static void from_base(base_type const & in, indicator /*ind*/, Seq & out)
-    {
-        in
-            >> boost::fusion::at_c<0>(out)
-            >> boost::fusion::at_c<1>(out)
-            >> boost::fusion::at_c<2>(out)
-            >> boost::fusion::at_c<3>(out)
-            >> boost::fusion::at_c<4>(out)
-            >> boost::fusion::at_c<5>(out)
-            >> boost::fusion::at_c<6>(out);
-    }
-
-    static void to_base(Seq & in, base_type & out, indicator & /*ind*/)
-    {
-        out
-            << boost::fusion::at_c<0>(in)
-            << boost::fusion::at_c<1>(in)
-            << boost::fusion::at_c<2>(in)
-            << boost::fusion::at_c<3>(in)
-            << boost::fusion::at_c<4>(in)
-            << boost::fusion::at_c<5>(in)
-            << boost::fusion::at_c<6>(in);
-    }
-};
-
-template <typename Seq>
-struct type_conversion<Seq, 8>
-{
-    typedef values base_type;
-
-    static void from_base(base_type const & in, indicator /*ind*/, Seq & out)
-    {
-        in
-            >> boost::fusion::at_c<0>(out)
-            >> boost::fusion::at_c<1>(out)
-            >> boost::fusion::at_c<2>(out)
-            >> boost::fusion::at_c<3>(out)
-            >> boost::fusion::at_c<4>(out)
-            >> boost::fusion::at_c<5>(out)
-            >> boost::fusion::at_c<6>(out)
-            >> boost::fusion::at_c<7>(out);
-    }
-
-    static void to_base(Seq & in, base_type & out, indicator & /*ind*/)
-    {
-        out
-            << boost::fusion::at_c<0>(in)
-            << boost::fusion::at_c<1>(in)
-            << boost::fusion::at_c<2>(in)
-            << boost::fusion::at_c<3>(in)
-            << boost::fusion::at_c<4>(in)
-            << boost::fusion::at_c<5>(in)
-            << boost::fusion::at_c<6>(in)
-            << boost::fusion::at_c<7>(in);
-    }
-};
-
-template <typename Seq>
-struct type_conversion<Seq, 9>
-{
-    typedef values base_type;
-
-    static void from_base(base_type const & in, indicator /*ind*/, Seq & out)
-    {
-        in
-            >> boost::fusion::at_c<0>(out)
-            >> boost::fusion::at_c<1>(out)
-            >> boost::fusion::at_c<2>(out)
-            >> boost::fusion::at_c<3>(out)
-            >> boost::fusion::at_c<4>(out)
-            >> boost::fusion::at_c<5>(out)
-            >> boost::fusion::at_c<6>(out)
-            >> boost::fusion::at_c<7>(out)
-            >> boost::fusion::at_c<8>(out);
-    }
-
-    static void to_base(Seq & in, base_type & out, indicator & /*ind*/)
-    {
-        out
-            << boost::fusion::at_c<0>(in)
-            << boost::fusion::at_c<1>(in)
-            << boost::fusion::at_c<2>(in)
-            << boost::fusion::at_c<3>(in)
-            << boost::fusion::at_c<4>(in)
-            << boost::fusion::at_c<5>(in)
-            << boost::fusion::at_c<6>(in)
-            << boost::fusion::at_c<7>(in)
-            << boost::fusion::at_c<8>(in);
-    }
-};
-
-template <typename Seq>
-struct type_conversion<Seq, 10>
-{
-    typedef values base_type;
-
-    static void from_base(base_type const & in, indicator /*ind*/, Seq & out)
-    {
-        in
-            >> boost::fusion::at_c<0>(out)
-            >> boost::fusion::at_c<1>(out)
-            >> boost::fusion::at_c<2>(out)
-            >> boost::fusion::at_c<3>(out)
-            >> boost::fusion::at_c<4>(out)
-            >> boost::fusion::at_c<5>(out)
-            >> boost::fusion::at_c<6>(out)
-            >> boost::fusion::at_c<7>(out)
-            >> boost::fusion::at_c<8>(out)
-            >> boost::fusion::at_c<9>(out);
-    }
-
-    static void to_base(Seq & in, base_type & out, indicator & /*ind*/)
-    {
-        out
-            << boost::fusion::at_c<0>(in)
-            << boost::fusion::at_c<1>(in)
-            << boost::fusion::at_c<2>(in)
-            << boost::fusion::at_c<3>(in)
-            << boost::fusion::at_c<4>(in)
-            << boost::fusion::at_c<5>(in)
-            << boost::fusion::at_c<6>(in)
-            << boost::fusion::at_c<7>(in)
-            << boost::fusion::at_c<8>(in)
-            << boost::fusion::at_c<9>(in);
-    }
-};
+#undef SOCI_TYPE_CONVERSION_FUSION
+#undef SOCI_READ_FROM_BASE
+#undef SOCI_READ_TO_BASE
 
 } // namespace detail
 
