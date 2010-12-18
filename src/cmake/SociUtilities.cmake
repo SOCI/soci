@@ -407,7 +407,7 @@ function(soci_target_output_name TARGET_NAME OUTPUT_NAME)
   # On Unix, suffix is empty and SOVERSION is used instead.
   if (WIN32)
     string(LENGTH "${${PROJECT_NAME}_ABI_VERSION}" abilen)
-    if(abilen > 0)
+    if(abilen GREATER 0)
       set(SUFFIX "_${${PROJECT_NAME}_ABI_VERSION}")
     endif()
   endif()
