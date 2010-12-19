@@ -90,12 +90,6 @@ struct exchange_traits<long int>
     typedef basic_type_tag type_family;
     enum { x_type = x_long_long };
 };
-template <>
-struct exchange_traits<unsigned long int>
-{
-    typedef basic_type_tag type_family;
-    enum { x_type = x_unsigned_long_long };
-};
 #endif // #if defined (__LP64__) || ( __WORDSIZE == 64 )
 
 template <>
