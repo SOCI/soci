@@ -1,3 +1,0 @@
-'m4' directory is dedicated to store private m4 macros.
-This directory is passed in -I option to aclocal
-launched by ./autogen.sh
