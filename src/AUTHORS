@@ -96,3 +96,7 @@ Roger has contributed to SOCI the following fixes and patches::
 ==== Robert Massaioli ====
 
 Robert tested and contributed patches fixing compilation with newer GCC versions.
+
+==== Sergey Nikulov ====
+
+Sergey provided patch with improvements to FindOracle.cmake module.
