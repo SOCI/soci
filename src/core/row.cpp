@@ -16,6 +16,16 @@
 using namespace soci;
 using namespace details;
 
+row::row()
+    : uppercaseColumnNames_(false)
+    , currentPos_(0)
+{}
+
+void row::uppercase_column_names(bool forceToUpper)
+{
+    uppercaseColumnNames_ = forceToUpper;
+}
+
 void row::add_properties(column_properties const &cp)
 {
     columns_.push_back(cp);

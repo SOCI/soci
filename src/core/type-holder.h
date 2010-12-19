@@ -30,7 +30,7 @@ public:
     template<typename T>
     T get()
     {
-        type_holder<T> * p = dynamic_cast<type_holder<T> *>(this);
+        type_holder<T>* p = dynamic_cast<type_holder<T> *>(this);
         if (p)
         {
             return p->value<T>();
@@ -42,7 +42,9 @@ public:
     }
 
 private:
-    template<typename T> T value();
+
+    template<typename T>
+    T value();
 };
 
 template <typename T>
@@ -52,7 +54,8 @@ public:
     type_holder(T * t) : t_(t) {}
     ~type_holder() { delete t_; }
 
-    template<typename TVAL> TVAL value() const { return *t_; }
+    template<typename TypeValue>
+    TypeValue value() const { return *t_; }
 
 private:
     T * t_;
