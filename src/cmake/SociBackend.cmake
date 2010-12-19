@@ -223,8 +223,8 @@ macro(soci_backend_test)
     set(${TEST_CONNSTR_VAR} ""
       CACHE STRING "Connection string for ${BACKENDU} test")
     
-    if(NOT ${TEST_CONNSTR_VAR} AND TEST_CONNSTR)
-      set(${TEST_CONNSTR_VAR} ${TEST_CONNSTR})
+    if(NOT ${TEST_CONNSTR_VAR} AND THIS_TEST_CONNSTR)
+      set(${TEST_CONNSTR_VAR} ${THIS_TEST_CONNSTR})
     endif()
     boost_report_value(${TEST_CONNSTR_VAR})
 
