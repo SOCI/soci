@@ -23,18 +23,15 @@ namespace // anonymous
 {
 
 // helper function for hardcoded queries
-void hardExec(sqlite_api::sqlite3 *conn, char const *query, char const *errMsg)
+void execude_hardcoded(sqlite_api::sqlite3* conn, char const* const query, char const* const errMsg)
 {
     char *zErrMsg = 0;
-    int res = sqlite3_exec(conn, query, 0, 0, &zErrMsg);
+    int const res = sqlite3_exec(conn, query, 0, 0, &zErrMsg);
     if (res != SQLITE_OK)
     {
         std::ostringstream ss;
-        ss << errMsg << " "
-           << zErrMsg;
-
+        ss << errMsg << " " << zErrMsg;
         sqlite3_free(zErrMsg);
-
         throw soci_error(ss.str());
     }
 }
@@ -90,17 +87,17 @@ sqlite3_session_backend::~sqlite3_session_backend()
 
 void sqlite3_session_backend::begin()
 {
-    hardExec(conn_, "BEGIN", "Cannot begin transaction.");
+    execude_hardcoded(conn_, "BEGIN", "Cannot begin transaction.");
 }
 
 void sqlite3_session_backend::commit()
 {
-    hardExec(conn_, "COMMIT", "Cannot commit transaction.");
+    execude_hardcoded(conn_, "COMMIT", "Cannot commit transaction.");
 }
 
 void sqlite3_session_backend::rollback()
 {
-    hardExec(conn_, "ROLLBACK", "Cannot rollback transaction.");
+    execude_hardcoded(conn_, "ROLLBACK", "Cannot rollback transaction.");
 }
 
 void sqlite3_session_backend::clean_up()
