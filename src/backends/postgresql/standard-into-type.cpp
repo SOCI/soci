@@ -119,6 +119,12 @@ void postgresql_standard_into_type_backend::post_fetch(
                 *dest = string_to_integer<long long>(buf);
             }
             break;
+        case x_unsigned_long_long:
+            {
+                unsigned long long * dest = static_cast<unsigned long long *>(data_);
+                *dest = string_to_unsigned_integer<unsigned long long>(buf);
+            }
+            break;
         case x_double:
             {
                 double * dest = static_cast<double *>(data_);

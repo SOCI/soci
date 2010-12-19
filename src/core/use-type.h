@@ -40,26 +40,38 @@ typedef type_ptr<use_type_base> use_type_ptr;
 class SOCI_DECL standard_use_type : public use_type_base
 {
 public:
-    standard_use_type(void * data, exchange_type type, bool readOnly,
-            std::string const & name = std::string())
-        : data_(data), type_(type), ind_(NULL)
-        , readOnly_(readOnly), name_(name), backEnd_(NULL)
+    standard_use_type(void* data, exchange_type type,
+        bool readOnly, std::string const& name = std::string())
+        : data_(data)
+        , type_(type)
+        , ind_(NULL)
+        , readOnly_(readOnly)
+        , name_(name)
+        , backEnd_(NULL)
     {
-        convert_to_base();
+        // FIXME: This was added with Ilia's patch
+        // http://soci.git.sourceforge.net/git/gitweb.cgi?p=soci/soci;a=blobdiff;f=src/core/use-type.h;h=3510ac95fe7530f977bf9e78d74fd502164a4071;hp=b6d9ba9c27aef3640b8edac4b8e44a620b1b5294;hb=c166625a28f7c907318134f625ff5acea7d9a1f8;hpb=ec19564b2f0994b3960acf891643d92fc224b453
+        // but it seems to be a troublemaker, causing duplicated conversions
+        //convert_to_base();
     }
 
-    standard_use_type(void * data, exchange_type type, indicator & ind,
-            bool readOnly, std::string const & name = std::string())
-        : data_(data), type_(type), ind_(&ind)
-        , readOnly_(readOnly), name_(name), backEnd_(NULL)
+    standard_use_type(void* data, exchange_type type, indicator& ind,
+        bool readOnly, std::string const& name = std::string())
+        : data_(data)
+        , type_(type)
+        , ind_(&ind)
+        , readOnly_(readOnly)
+        , name_(name)
+        , backEnd_(NULL)
     {
-        convert_to_base();
+        // FIXME
+        //convert_to_base();
     }
 
     virtual ~standard_use_type();
     virtual void bind(statement_impl & st, int & position);
-    std::string get_name() const {return name_;}
-    virtual void * get_data() {return data_;}
+    std::string get_name() const { return name_; }
+    virtual void * get_data() { return data_; }
 
     // conversion hook (from arbitrary user type to base type)
     virtual void convert_to_base() {}
@@ -73,41 +85,49 @@ private:
     virtual void clean_up();
     virtual std::size_t size() const { return 1; }
 
-    void * data_;
+    void* data_;
     exchange_type type_;
-    indicator * ind_;
+    indicator* ind_;
     bool readOnly_;
     std::string name_;
 
-    standard_use_type_backend * backEnd_;
+    standard_use_type_backend* backEnd_;
 };
 
 class SOCI_DECL vector_use_type : public use_type_base
 {
 public:
-    vector_use_type(void * data, exchange_type type,
-        std::string const & name = std::string())
-        : data_(data), type_(type), ind_(NULL),
-        name_(name), backEnd_(NULL) {}
+    vector_use_type(void* data, exchange_type type,
+        std::string const& name = std::string())
+        : data_(data)
+        , type_(type)
+        , ind_(NULL)
+        , name_(name)
+        , backEnd_(NULL)
+    {}
 
-    vector_use_type(void * data, exchange_type type,
-        std::vector<indicator> const & ind,
-        std::string const & name = std::string())
-        : data_(data), type_(type), ind_(&ind),
-        name_(name), backEnd_(NULL) {}
+    vector_use_type(void* data, exchange_type type,
+        std::vector<indicator> const& ind,
+        std::string const& name = std::string())
+        : data_(data)
+        , type_(type)
+        , ind_(&ind)
+        , name_(name)
+        , backEnd_(NULL)
+    {}
 
     ~vector_use_type();
 
 private:
-    virtual void bind(statement_impl & st, int & position);
+    virtual void bind(statement_impl& st, int & position);
     virtual void pre_use();
     virtual void post_use(bool) { /* nothing to do */ }
     virtual void clean_up();
     virtual std::size_t size() const;
 
-    void * data_;
+    void* data_;
     exchange_type type_;
-    std::vector<indicator> const * ind_;
+    std::vector<indicator> const* ind_;
     std::string name_;
 
     vector_use_type_backend * backEnd_;
@@ -122,46 +142,52 @@ template <typename T>
 class use_type : public standard_use_type
 {
 public:
-    use_type(T & t, std::string const & name = std::string())
+    use_type(T& t, std::string const& name = std::string())
         : standard_use_type(&t,
-            static_cast<exchange_type>(exchange_traits<T>::x_type),
-            false, name) {}
-    use_type(T const & t, std::string const & name = std::string())
-        : standard_use_type(const_cast<T *>(&t),
-            static_cast<exchange_type>(exchange_traits<T>::x_type),
-            true, name) {}
-    use_type(T & t, indicator & ind,
-        std::string const & name = std::string())
+            static_cast<exchange_type>(exchange_traits<T>::x_type), false, name)
+    {}
+    
+    use_type(T const& t, std::string const& name = std::string())
+        : standard_use_type(const_cast<T*>(&t),
+            static_cast<exchange_type>(exchange_traits<T>::x_type), true, name)
+    {}
+    
+    use_type(T& t, indicator& ind, std::string const& name = std::string())
         : standard_use_type(&t,
-            static_cast<exchange_type>(exchange_traits<T>::x_type),
-            ind, false, name) {}
-    use_type(T const & t, indicator & ind,
-        std::string const & name = std::string())
-        : standard_use_type(const_cast<T *>(&t),
-            static_cast<exchange_type>(exchange_traits<T>::x_type),
-            ind, false, name) {}
+            static_cast<exchange_type>(exchange_traits<T>::x_type), ind, false, name)
+    {}
+    
+    use_type(T const& t, indicator& ind, std::string const& name = std::string())
+        : standard_use_type(const_cast<T*>(&t),
+            static_cast<exchange_type>(exchange_traits<T>::x_type), ind, false, name)
+    {}
 };
 
 template <typename T>
 class use_type<std::vector<T> > : public vector_use_type
 {
 public:
-    use_type(std::vector<T> & v, std::string const & name = std::string())
+    use_type(std::vector<T>& v, std::string const& name = std::string())
         : vector_use_type(&v,
-            static_cast<exchange_type>(exchange_traits<T>::x_type), name) {}
-    use_type(std::vector<T> const & v, std::string const & name = std::string())
-        : vector_use_type(const_cast<std::vector<T> *>(&v),
-            static_cast<exchange_type>(exchange_traits<T>::x_type), name) {}
-    use_type(std::vector<T> & v, std::vector<indicator> const & ind,
-        std::string const & name = std::string())
+            static_cast<exchange_type>(exchange_traits<T>::x_type), name)
+    {}
+    
+    use_type(std::vector<T> const& v, std::string const& name = std::string())
+        : vector_use_type(const_cast<std::vector<T>*>(&v),
+            static_cast<exchange_type>(exchange_traits<T>::x_type), name)
+    {}
+    
+    use_type(std::vector<T>& v, std::vector<indicator> const& ind,
+        std::string const& name = std::string())
         : vector_use_type(&v,
-            static_cast<exchange_type>(exchange_traits<T>::x_type),
-            ind, name) {}
-    use_type(std::vector<T> const & v, std::vector<indicator> const & ind,
-        std::string const & name = std::string())
+            static_cast<exchange_type>(exchange_traits<T>::x_type), ind, name)
+    {}
+    
+    use_type(std::vector<T> const& v, std::vector<indicator> const& ind,
+        std::string const& name = std::string())
         : vector_use_type(const_cast<std::vector<T> *>(&v),
-            static_cast<exchange_type>(exchange_traits<T>::x_type),
-            ind, name) {}
+            static_cast<exchange_type>(exchange_traits<T>::x_type), ind, name)
+    {}
 };
 
 // helper dispatchers for basic types

@@ -291,6 +291,26 @@ void test4()
     std::cout << "test 4 passed" << std::endl;
 }
 
+// unsigned long long test
+void test4ul()
+{
+    {
+        session sql(backEnd, connectString);
+
+        longlong_table_creator tableCreator(sql);
+
+        unsigned long long v1 = 1000000000000ULL;
+        assert(v1 / 1000000 == 1000000);
+
+        sql << "insert into soci_test(val) values(:val)", use(v1);
+
+        unsigned long long v2 = 0ULL;
+        sql << "select val from soci_test", into(v2);
+
+        assert(v2 == v1);
+    }
+}
+
 struct boolean_table_creator : table_creator_base
 {
     boolean_table_creator(session & sql)
@@ -587,11 +607,11 @@ int main(int argc, char** argv)
         tests.run();
 
         std::cout << "\nSOCI Postgres Tests:\n\n";
-
         test1();
         test2();
         test3();
         test4();
+        test4ul();
         test5();
 
 //         test6();

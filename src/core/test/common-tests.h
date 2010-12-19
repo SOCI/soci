@@ -168,7 +168,15 @@ public:
 private:
     void drop()
     {
-        try { msession << "drop table soci_test"; } catch (soci_error&) {}
+        try
+        {
+            msession << "drop table soci_test";
+        }
+        catch (soci_error const& e)
+        {
+            //std::cerr << e.what() << std::endl;
+            e.what();
+        }
     }
     session& msession;
 };
