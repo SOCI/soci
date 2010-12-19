@@ -52,6 +52,11 @@ endif()
 file(GLOB SOCI_CORE_HEADERS *.h)
 file(GLOB SOCI_CORE_SOURCES *.cpp)
 
+# Group source files for IDE source explorers (e.g. Visual Studio)
+source_group("Header Files" FILES ${SOCI_CORE_HEADERS})
+source_group("Source Files" FILES ${SOCI_CORE_SOURCES})
+source_group("CMake Files" FILES CMakeLists.txt)
+
 # Core targets configuration
 string(TOLOWER "${PROJECT_NAME}" PROJECTNAMEL)
 set(SOCI_CORE_TARGET ${PROJECTNAMEL}_core)
@@ -61,7 +66,7 @@ soci_target_output_name(${SOCI_CORE_TARGET} SOCI_CORE_TARGET_OUTPUT_NAME)
 #
 # Core shared library
 #
-add_library(${SOCI_CORE_TARGET} SHARED ${SOCI_CORE_SOURCES})
+add_library(${SOCI_CORE_TARGET} SHARED ${SOCI_CORE_HEADERS} ${SOCI_CORE_SOURCES})
 
 target_link_libraries(${SOCI_CORE_TARGET} ${SOCI_CORE_DEPENDENCIES})
 
@@ -83,7 +88,7 @@ endif()
 #
 # Core static library
 #
-add_library(${SOCI_CORE_TARGET}-static STATIC ${SOCI_CORE_SOURCES})
+add_library(${SOCI_CORE_TARGET}-static STATIC ${SOCI_CORE_HEADERS} ${SOCI_CORE_SOURCES})
 
 set_target_properties(${SOCI_CORE_TARGET}-static
   PROPERTIES

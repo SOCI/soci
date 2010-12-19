@@ -98,13 +98,18 @@ macro(soci_backend NAME)
       # Backend-specific preprocessor definitions
       add_definitions(${THIS_BACKEND_DEPENDS_DEFS})
 
-      # Backend  installable headers and sources
+      # Backend installable headers and sources
       if (NOT THIS_BACKEND_HEADERS)
 		file(GLOB THIS_BACKEND_HEADERS *.h)
       endif()
       file(GLOB THIS_BACKEND_SOURCES *.cpp)
       set(THIS_BACKEND_HEADERS_VAR SOCI_${NAMEU}_HEADERS)
       set(${THIS_BACKEND_HEADERS_VAR} ${THIS_BACKEND_HEADERS}) 
+
+	  # Group source files for IDE source explorers (e.g. Visual Studio)
+      source_group("Header Files" FILES ${THIS_BACKEND_HEADERS})
+	  source_group("Source Files" FILES ${THIS_BACKEND_SOURCES})
+      source_group("CMake Files" FILES CMakeLists.txt)
 
       # Backend target
       set(THIS_BACKEND_TARGET ${PROJECTNAMEL}_${NAMEL})
@@ -239,8 +244,10 @@ macro(soci_backend_test)
 
     string(TOLOWER "${TEST_FULL_NAME}" TEST_TARGET)
 
-    add_executable(${TEST_TARGET} ${THIS_TEST_SOURCE})
-    add_executable(${TEST_TARGET}_static ${THIS_TEST_SOURCE})
+	set(TEST_HEADERS ${PROJECT_SOURCE_DIR}/core/test/common-tests.h)
+
+    add_executable(${TEST_TARGET} ${TEST_HEADERS} ${THIS_TEST_SOURCE})
+    add_executable(${TEST_TARGET}_static ${TEST_HEADERS} ${THIS_TEST_SOURCE})
 
     target_link_libraries(${TEST_TARGET}
       ${SOCI_CORE_TARGET}
@@ -262,6 +269,11 @@ macro(soci_backend_test)
     add_test(${TEST_TARGET}_static
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET}_static
       ${${TEST_CONNSTR_VAR}})
+
+    # Group source files for IDE source explorers (e.g. Visual Studio)
+    source_group("Header Files" FILES ${TEST_HEADERS})
+    source_group("Source Files" FILES ${THIS_TEST_SOURCE})
+    source_group("CMake Files" FILES CMakeLists.txt)
 
   endif()
 
