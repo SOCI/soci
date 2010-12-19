@@ -54,7 +54,7 @@ void sqlite3_standard_use_type_backend::bind_by_name(std::string const& name,
     type_ = type;
     name_ = ":" + name;
 
-    statement_.resetIfNeeded();
+    statement_.reset_if_needed();
     position_ = sqlite3_bind_parameter_index(statement_.stmt_, name_.c_str());
 
     if (0 == position_)

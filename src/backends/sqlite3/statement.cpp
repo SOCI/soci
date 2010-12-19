@@ -20,8 +20,13 @@ using namespace sqlite_api;
 
 sqlite3_statement_backend::sqlite3_statement_backend(
     sqlite3_session_backend &session)
-    : session_(session), stmt_(0), dataCache_(), useData_(0),
-      databaseReady_(false), boundByName_(false), boundByPos_(false)
+    : session_(session)
+    , stmt_(0)
+    , dataCache_()
+    , useData_(0)
+    , databaseReady_(false)
+    , boundByName_(false)
+    , boundByPos_(false)
 {
 }
 
@@ -46,7 +51,7 @@ void sqlite3_statement_backend::prepare(std::string const & query,
     clean_up();
 
     char const* tail = 0; // unused;
-    int res = sqlite3_prepare(session_.conn_,
+    int const res = sqlite3_prepare(session_.conn_,
                               query.c_str(),
                               static_cast<int>(query.size()),
                               &stmt_,
@@ -65,11 +70,11 @@ void sqlite3_statement_backend::prepare(std::string const & query,
 
 // sqlite3_reset needs to be called before a prepared statment can
 // be executed a second time.
-void sqlite3_statement_backend::resetIfNeeded()
+void sqlite3_statement_backend::reset_if_needed()
 {
     if (stmt_ && databaseReady_ == false)
     {
-        int res = sqlite3_reset(stmt_);
+        int const res = sqlite3_reset(stmt_);
         if (SQLITE_OK == res)
         {
             databaseReady_ = true;
@@ -79,7 +84,7 @@ void sqlite3_statement_backend::resetIfNeeded()
 
 // This is used by bulk operations
 statement_backend::exec_fetch_result
-sqlite3_statement_backend::loadRS(int totalRows)
+sqlite3_statement_backend::load_rowset(int totalRows)
 {
     statement_backend::exec_fetch_result retVal = ef_success;
     int numCols = -1;
@@ -96,7 +101,7 @@ sqlite3_statement_backend::loadRS(int totalRows)
 
         for (i = 0; i < totalRows && databaseReady_; ++i)
         {
-            int res = sqlite3_step(stmt_);
+            int const res = sqlite3_step(stmt_);
 
             if (SQLITE_DONE == res)
             {
@@ -110,16 +115,16 @@ sqlite3_statement_backend::loadRS(int totalRows)
                 if (-1 == numCols)
                 {
                     numCols = sqlite3_column_count(stmt_);
-                    for (sqlite3_recordset::iterator it = dataCache_.begin();
-                        it != dataCache_.end(); ++it)
+                    for (sqlite3_recordset::iterator it = dataCache_.begin(),
+                         end = dataCache_.end(); it != end; ++it)
                     {
                         (*it).resize(numCols);
                     }
                 }
                 for (int c = 0; c < numCols; ++c)
                 {
-                    char const* buf = reinterpret_cast<char const*>(
-                                        sqlite3_column_text(stmt_, c));
+                    char const* buf =
+                        reinterpret_cast<char const*>(sqlite3_column_text(stmt_, c));
                     bool isNull = false;
                     if (0 == buf)
                     {
@@ -149,11 +154,11 @@ sqlite3_statement_backend::loadRS(int totalRows)
 
 // This is used for non-bulk operations
 statement_backend::exec_fetch_result
-sqlite3_statement_backend::loadOne()
+sqlite3_statement_backend::load_one()
 {
     statement_backend::exec_fetch_result retVal = ef_success;
 
-    int res = sqlite3_step(stmt_);
+    int const res = sqlite3_step(stmt_);
 
     if (SQLITE_DONE == res)
     {
@@ -180,17 +185,16 @@ sqlite3_statement_backend::loadOne()
 
 // Execute statements once for every row of useData
 statement_backend::exec_fetch_result
-sqlite3_statement_backend::bindAndExecute(int number)
+sqlite3_statement_backend::bind_and_execute(int number)
 {
     statement_backend::exec_fetch_result retVal = ef_no_data;
 
-    int rows = static_cast<int>(useData_.size());
-
+    int const rows = static_cast<int>(useData_.size());
     for (int row = 0; row < rows; ++row)
     {
         sqlite3_reset(stmt_);
 
-        int totalPositions = static_cast<int>(useData_[0].size());
+        int const totalPositions = static_cast<int>(useData_[0].size());
         for (int pos = 1; pos <= totalPositions; ++pos)
         {
             int bindRes = SQLITE_OK;
@@ -224,10 +228,10 @@ sqlite3_statement_backend::bindAndExecute(int number)
         // in the same query and one of the into binds to a vector object.
         if (1 == rows && number != rows)
         {
-            return loadRS(number);
+            return load_rowset(number);
         }
 
-        retVal = loadOne(); //execute each bound line
+        retVal = load_one(); //execute each bound line
     }
     return retVal;
 }
@@ -247,17 +251,17 @@ sqlite3_statement_backend::execute(int number)
 
     if (useData_.empty() == false)
     {
-           retVal = bindAndExecute(number);
+           retVal = bind_and_execute(number);
     }
     else
     {
         if (1 == number)
         {
-            retVal = loadOne();
+            retVal = load_one();
         }
         else
         {
-            retVal = loadRS(number);
+            retVal = load_rowset(number);
         }
     }
 
@@ -267,7 +271,7 @@ sqlite3_statement_backend::execute(int number)
 statement_backend::exec_fetch_result
 sqlite3_statement_backend::fetch(int number)
 {
-    return loadRS(number);
+    return load_rowset(number);
 }
 
 long long sqlite3_statement_backend::get_affected_rows()
@@ -293,9 +297,8 @@ int sqlite3_statement_backend::prepare_for_describe()
 }
 
 void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
-                                             std::string & columnName)
+                                                std::string & columnName)
 {
-
     columnName = sqlite3_column_name(stmt_, colNum-1);
 
     // This is a hack, but the sqlite3 type system does not
@@ -315,7 +318,7 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
 
     std::string dt = declType;
 
-    // do all comparisions in lower case
+    // do all comparisons in lower case
     std::transform(dt.begin(), dt.end(), dt.begin(), tolower);
 
     if (dt.find("time", 0) != std::string::npos)
@@ -365,14 +368,22 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
     // then clear so it can be executed again
     sqlite3_step(stmt_);
 
-    int sqlite3_type = sqlite3_column_type(stmt_, colNum-1);
+    int const sqlite3_type = sqlite3_column_type(stmt_, colNum-1);
     switch (sqlite3_type)
     {
-    case SQLITE_INTEGER: type = dt_integer; break;
-    case SQLITE_FLOAT: type = dt_double; break;
+    case SQLITE_INTEGER:
+        type = dt_integer;
+        break;
+    case SQLITE_FLOAT:
+        type = dt_double;
+        break;
     case SQLITE_BLOB:
-    case SQLITE_TEXT: type = dt_string; break;
-    default: type = dt_string; break;
+    case SQLITE_TEXT:
+        type = dt_string;
+        break;
+    default:
+        type = dt_string;
+        break;
     }
 
     sqlite3_reset(stmt_);

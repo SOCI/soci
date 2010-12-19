@@ -167,7 +167,7 @@ struct sqlite3_statement_backend : details::statement_backend
     virtual void clean_up();
     virtual void prepare(std::string const &query,
         details::statement_type eType);
-    void resetIfNeeded();
+    void reset_if_needed();
 
     virtual exec_fetch_result execute(int number);
     virtual exec_fetch_result fetch(int number);
@@ -195,9 +195,9 @@ struct sqlite3_statement_backend : details::statement_backend
     bool boundByPos_;
 
 private:
-    exec_fetch_result loadRS(int totalRows);
-    exec_fetch_result loadOne();
-    exec_fetch_result bindAndExecute(int number);
+    exec_fetch_result load_rowset(int totalRows);
+    exec_fetch_result load_one();
+    exec_fetch_result bind_and_execute(int number);
 };
 
 struct sqlite3_rowid_backend : details::rowid_backend
