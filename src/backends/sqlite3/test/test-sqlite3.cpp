@@ -361,6 +361,8 @@ int main(int argc, char** argv)
         test5();
 
         std::cout << "\nOK, all tests passed.\n\n";
+
+        return EXIT_SUCCESS;
     }
     catch (soci::soci_error const & e)
     {
@@ -370,4 +372,6 @@ int main(int argc, char** argv)
     {
         std::cout << "EXCEPTION: " << e.what() << '\n';
     }
+
+    return EXIT_FAILURE;
 }

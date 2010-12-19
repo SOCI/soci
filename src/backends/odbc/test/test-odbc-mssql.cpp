@@ -112,6 +112,8 @@ int main(int argc, char** argv)
         common_tests tests(tc);
         tests.run();
         std::cout << "\nOK, all tests passed.\n";
+
+        return EXIT_SUCCESS;
     }
     catch (soci::odbc_soci_error const & e)
     {
@@ -128,4 +130,6 @@ int main(int argc, char** argv)
     {
         std::cout << "STD::EXECEPTION " << e.what() << '\n';
     }
+
+    return EXIT_FAILURE;
 }

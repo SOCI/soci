@@ -158,9 +158,13 @@ int main(int argc, char** argv)
         // ...
 
         std::cout << "\nOK, all tests passed.\n\n";
+
+        return EXIT_SUCCESS;
     }
     catch (std::exception const & e)
     {
         std::cout << e.what() << '\n';
     }
+
+    return EXIT_FAILURE;
 }
