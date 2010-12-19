@@ -21,6 +21,11 @@ row::row()
     , currentPos_(0)
 {}
 
+row::~row()
+{
+    clean_up();
+}
+
 void row::uppercase_column_names(bool forceToUpper)
 {
     uppercaseColumnNames_ = forceToUpper;
@@ -105,9 +110,4 @@ std::size_t row::find_column(std::string const &name) const
     }
 
     return it->second;
-}
-
-row::~row()
-{
-    clean_up();
 }
