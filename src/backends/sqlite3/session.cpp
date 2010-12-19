@@ -43,6 +43,7 @@ sqlite3_session_backend::sqlite3_session_backend(
     std::string const & connectString)
 {
     int timeout = 0;
+    std::string synchronous;
     std::string dbname(connectString);
     std::stringstream ssconn(connectString);
     while (!ssconn.eof() && ssconn.str().find('=') >= 0)
@@ -59,6 +60,10 @@ sqlite3_session_backend::sqlite3_session_backend(
             std::istringstream converter(val);
             converter >> timeout;
         }
+        else if ("synchronous" == key)
+        {
+            synchronous = val;
+        }
     }
 
     int res = sqlite3_open(dbname.c_str(), &conn_);
@@ -68,6 +73,13 @@ sqlite3_session_backend::sqlite3_session_backend(
         std::ostringstream ss;
         ss << "Cannot establish connection to the database. " << zErrMsg;
         throw soci_error(ss.str());
+    }
+
+    if (!synchronous.empty())
+    {
+        std::string const query("pragma synchronous=" + synchronous);
+        std::string const errMsg("Query failed: " + query);
+        execude_hardcoded(conn_, query.c_str(), errMsg.c_str());
     }
 
     res = sqlite3_busy_timeout(conn_, timeout * 1000);

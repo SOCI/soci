@@ -31,6 +31,10 @@ Microsoft Access
 
 Denis contributed patches, testing efforts and maintains packages for Linux distributions.
 
+==== Daniel Lidström ====
+
+Daniel contributed patch to support synchronous=on|off property for SQLite3 session.
+
 ==== Matthieu Kermagoret ====
 
 Matthieu provided patch with get_affected_rows functionality.
