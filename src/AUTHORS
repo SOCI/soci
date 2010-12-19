@@ -92,3 +92,7 @@ Roger has contributed to SOCI the following fixes and patches::
   to compile on g++ 4.0.1.
 - patch that solves incompletely specified behaviour that caused problems with
   various compilers when exception was thrown from the statement's destructor.
+
+==== Robert Massaioli ====
+
+Robert tested and contributed patches fixing compilation with newer GCC versions.
