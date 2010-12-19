@@ -34,24 +34,163 @@
 
 <p>SOCI is configured to build using <a href="http://cmake.org/">CMake</a> system in version 2.6+.</p>
 
+<p>The build configuration allows to control various aspects of compilation and installation by setting common CMake variables that change behaviour, describe system or control build (see <a href="http://cmake.org/cmake/help/documentation.html">CMake help</a>) as well as SOCI-specific variables described below. All these variables are available regardless of platform or compilation toolset used.</p>
+
+<p>Running CMake from the command line allows to set variables in the CMake cache with the following syntax: <code>-DVARIABLE:TYPE=VALUE</code>. If you are new to CMake, you may find <a href="http://cmake.org/cmake/help/runningcmake.html">Running CMake</a> helpful.</p>
+
+<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="List of a few essential and common CMake variables">
+<caption class="cmake-variables">List of a few essential and common CMake variables</caption>
+<tr>
+  <td class="variable-name">CMAKE_BUILD_TYPE</td>
+  <td class="variable-type">string</td>
+  <td>Specifies the build type for make based generators (see CMake <a href="http://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_BUILD_TYPE">help</a>).</td>
+</tr>
+<tr>
+  <td class="variable-name">CMAKE_INSTALL_PREFIX</td>
+  <td class="variable-type">path</td>
+  <td>Install directory used by install command (see CMake <a href="http://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_INSTALL_PREFIX">help</a>).</td>
+</tr>
+<tr>
+  <td class="variable-name">CMAKE_VERBOSE_MAKEFILE</td>
+  <td class="variable-type">boolean</td>
+  <td>If ON, create verbose makefile (see CMake <a href="http://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_VERBOSE_MAKEFILE">help</a>).</td>
+</tr>
+
+</table>
+
+<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="List of variables used to control detection of SOCI external dependencies">
+<caption class="cmake-variables">List of variables used to control detection of SOCI external dependencies</caption>
+<tr>
+  <td class="variable-name">WITH_BOOST</td>
+  <td class="variable-type">boolean</td>
+  <td>Should CMake try to detect <a href="http://www.boost.org/">Boost C++ Libraries</a>. If ON, CMake will try to find Boost headers and binaries of <a href="http://www.boost.org/doc/libs/release/doc/html/date_time.html">Boost.Date_Time</a> library.</td>
+</tr>
+<tr>
+  <td class="variable-name">WITH_MYSQL</td>
+  <td class="variable-type">boolean</td>
+  <td>Should CMake try to detect <a href="http://dev.mysql.com/doc/refman/5.0/en/c.html">mysqlclient</a> libraries providing MySQL C API. Note, currently the <a href="http://dev.mysql.com/doc/refman/5.0/en/building-clients.html">mysql_config</a> program is not being used.</td>
+</tr>
+<tr>
+  <td class="variable-name">WITH_ODBC</td>
+  <td class="variable-type">boolean</td>
+  <td>Should CMake try to detect ODBC libraries. On Unix systems, CMake tries to find <a href="http://www.unixodbc.org/">unixODBC</a> or <a href="http://www.iodbc.org/">iODBC</a> implementations.</td>
+</tr>
+<tr>
+  <td class="variable-name">WITH_ORACLE</td>
+  <td class="variable-type">boolean</td>
+  <td>Should CMake try to detect <a href="http://en.wikipedia.org/wiki/Oracle_Call_Interface">Oracle Call Interface (OCI)</a> libraries.</td>
+</tr>
+<tr>
+  <td class="variable-name">WITH_POSTGRESQL</td>
+  <td class="variable-type">boolean</td>
+  <td>Should CMake try to detect PostgreSQL client interface libraries. SOCI relies on <a href="http://www.postgresql.org/docs/9.0/interactive/libpq.html">libpq</a> C library.</td>
+</tr>
+<tr>
+  <td class="variable-name">WITH_SQLITE3</td>
+  <td class="variable-type">boolean</td>
+  <td>Should CMak try to detect <a href="http://www.sqlite.org/cintro.html">SQLite C/C++ library</a>. As bonus, the configuration tries <a href="http://trac.osgeo.org/osgeo4w/">OSGeo4W</a> distribution if <code>OSGEO4W_ROOT</code> environment variable is set.</td>
+</tr>
+</table>
+
+<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="List of variables used to control selection of SOCI backend">
+<caption class="cmake-variables">List of variables used to control selection of SOCI backends. All these variables are automatically switched on if corresponding <code>WITH_</code> variable explained above is set to ON.</caption>
+<tr>
+  <td class="variable-name">SOCI_EMPTY</td>
+  <td class="variable-type">boolean</td>
+  <td>Builds the <a href="backends.html">sample backend</a> called Empty. Always ON by default.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_MYSQL</td>
+  <td class="variable-type">boolean</td>
+  <td>Requests to build <a href="backends/mysql.html">MySQL</a> backend. Automatically switched on, if <code>WITH_MYSQL</code> is set to ON.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_ODBC</td>
+  <td class="variable-type">boolean</td>
+  <td>Requests to build <a href="backends/odbc.html">ODBC</a> backend. Automatically switched on, if <code>WITH_ODBC</code> is set to ON.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_ORACLE</td>
+  <td class="variable-type">boolean</td>
+  <td>Requests to build <a href="backends/oracle.html">Oracle</a> backend. Automatically switched on, if <code>WITH_ORACLE</code> is set to ON.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_POSTGRESQL</td>
+  <td class="variable-type">boolean</td>
+  <td>Requests to build <a href="backends/postgresql.html">PostgreSQL</a> backend. Automatically switched on, if <code>WITH_POSTGRESQL</code> is set to ON.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_SQLITE3</td>
+  <td class="variable-type">boolean</td>
+  <td>Requests to build <a href="backends/sqlite3.html">SQLite3</a> backend. Automatically switched on, if <code>WITH_SQLITE3</code> is set to ON.</td>
+</tr>
+</table>
+
+<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="List of variables used to control detection of SOCI external dependencies">
+<caption class="cmake-variables">List of variables used to control detection of SOCI external dependencies</caption>
+<tr>
+  <td class="variable-name">SOCI_TESTS</td>
+  <td class="variable-type">boolean</td>
+  <td>Should CMake build unit tests for all enabled backends. If OFF, all the connection string variables below are ignored.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_EMPTY_TEST_CONNSTR</td>
+  <td class="variable-type">string</td>
+  <td>Connection string passed to Empty backend test program (e.g. "dummy connection")</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_MYSQL_TEST_CONNSTR</td>
+  <td class="variable-type">string</td>
+  <td>Connection string to MySQL test database. Format of the string is explained <a href="backends/mysql.html">MySQL Backend Refernece</a>.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_ODBC_TEST_ACCESS_CONNSTR<br />SOCI_ODBC_TEST_MSSQL_CONNSTR<br />SOCI_ODBC_TEST_MYSQL_CONNSTR<br />SOCI_ODBC_TEST_POSTGRESQL_CONNSTR<br /></td>
+  <td class="variable-type">string</td>
+  <td>ODBC Data Source Name (DSN) or ODBC File Data Source Name (FILEDSN) to test database: Microsoft Access (.mdb), Microsoft SQL Server, MySQL, PostgreSQL or any other ODBC SQL data source. See <a href="backends/odbc.html">ODBC Backend Refernece</a> for details.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_ORACLE_TEST_CONNSTR</td>
+  <td class="variable-type">string</td>
+  <td>Connection string to Oracle test database. Format of the string is explained <a href="backends/oracle.html">Oracle Backend Refernece</a>.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_POSTGRESQL_TEST_CONNSTR</td>
+  <td class="variable-type">string</td>
+  <td>Connection string to PostgreSQL test database. Format of the string is explained <a href="backends/postgresql.html">PostgreSQL Backend Refernece</a>.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_SQLITE3_TEST_CONNSTR</td>
+  <td class="variable-type">string</td>
+  <td>Connection string is simply a file path where SQLite3 test database will be created (e.g. /home/john/soci_test.db). Check <a href="backends/sqlite3.html">SQLite3 Backend Refernece</a> for details.</td>
+</tr>
+</table>
+
+<p>CMake configures SOCI build performing sequence of steps. Each subsequent step is dependant on result of previous steps corresponding with particular feature. First, CMake checks system platform and compilation toolset. Next, CMake tries to find all external dependencies. Then, depending on the results of the dependency check, CMake determines SOCI backends which are possible to build. The SOCI-specific variables described above provide users with basic control of this behaviour.</p>
+
 <h4 id="unix">On Unix</h4>
 
-<p>Short version:</p>
+<p>Short version using GNU Make makefiles:</p>
 <pre class="example">
 $ mkdir build
 $ cd build
-$ ./cmake ../soci-X.Y.Z
+$ cmake -G "Unix Makefiles" -DWITH_BOOST=OFF -DWITH_ORACLE=OFF (...) ../soci-X.Y.Z
 $ make
+$ make test
 $ make install
 </pre>
 
-<p>Long version:</p>
-
-<p>TODO</p>
-
 <h4 id="windows">On Windows</h4>
 
-<p>TODO</p>
+<p>Short version using Visual Studio</p>
+
+<pre class="example">
+C:\>MKDIR build
+C:\>cd build
+C:\build>cmake -G "Visual Studio 10" -DWITH_BOOST=OFF -DWITH_ORACLE=OFF (...) ..\soci-X.Y.Z
+C:\buikd>devenv.exe SOCI.sln
+</pre>
+
+
 
 <h4 id="unix-makefiles">Using classic Makefiles on Unix</h4>
 
