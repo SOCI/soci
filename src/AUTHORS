@@ -100,3 +100,7 @@ Robert tested and contributed patches fixing compilation with newer GCC versions
 ==== Sergey Nikulov ====
 
 Sergey provided patch with improvements to FindOracle.cmake module.
+
+==== Shridhar Daithankar ====
+
+Shridhar contributed patch with enhancements to BLOB support.
