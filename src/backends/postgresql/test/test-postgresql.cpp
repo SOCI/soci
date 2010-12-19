@@ -529,9 +529,9 @@ struct table_creator_three : public table_creator_base
 class test_context : public test_context_base
 {
 public:
-    test_context(backend_factory const &backEnd,
-                std::string const &connectString)
-        : test_context_base(backEnd, connectString) {}
+    test_context(backend_factory const &backEnd, std::string const &connectString)
+        : test_context_base(backEnd, connectString)
+    {}
 
     table_creator_base* table_creator_1(session& s) const
     {
@@ -552,7 +552,6 @@ public:
     {
         return "timestamptz(\'" + datdt_string + "\')";
     }
-
 };
 
 
