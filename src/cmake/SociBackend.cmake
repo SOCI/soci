@@ -270,6 +270,9 @@ macro(soci_backend_test)
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET}_static
       ${${TEST_CONNSTR_VAR}})
 
+	# Ask make check to try to build tests first before executing them
+	add_dependencies(check ${TEST_TARGET} ${TEST_TARGET}_static)
+
     # Group source files for IDE source explorers (e.g. Visual Studio)
     source_group("Header Files" FILES ${TEST_HEADERS})
     source_group("Source Files" FILES ${THIS_TEST_SOURCE})
