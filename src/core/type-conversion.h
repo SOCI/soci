@@ -86,7 +86,7 @@ public:
         , ind_(ownInd_)
         , readOnly_(false)
     {
-        convert_to_base();
+        //convert_to_base();
     }
     
     conversion_use_type(T const & value, std::string const & name = std::string())
@@ -95,7 +95,7 @@ public:
         , ind_(ownInd_)
         , readOnly_(true)
     {
-        convert_to_base();
+        //convert_to_base();
     }
     
     conversion_use_type(T & value, indicator & ind,
@@ -105,7 +105,7 @@ public:
         , ind_(ind)
         , readOnly_(false)
     {
-        convert_to_base();
+        //convert_to_base();
     }
     
     conversion_use_type(T const & value, indicator & ind,
@@ -115,7 +115,7 @@ public:
         , ind_(ind)
         , readOnly_(false)
     {
-        convert_to_base();
+        //convert_to_base();
     }
 
     void convert_from_base()
