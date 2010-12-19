@@ -1,33 +1,89 @@
-We would like to thank you for your contributions -
-they allowed us to improve the quality of the SOCI library:
+=== SOCI Team ===
 
----
-Rainer Bauer
+Maciej Sobczak
+Mateusz Łoskot
+Paweł Aleksander Fedoryński
+Steve Hutton
+David Courtney
+Rafał Bobrowski
+
+=== Contributors ===
+
+We would like to thank you for your contributions
+- they allowed us to improve the quality of the SOCI library:
+
+==== Julian Taylor ====
+
+Julian sent us a solid number of patches and fixes for various
+bugs in different areas of the library.
+
+=== Henning Basold ====
+
+Henning significantly improved Boost.Fusion and Boost.Tuple support.
+
+==== Ilia Barahovski ====
+
+Ilia fixed number of bugs in the ODBC backend and tested it with
+Microsoft SQL Server Express (through ODBC backend) and
+Microsoft Access
+
+==== Denis Arnaud ====
+
+Denis contributed patches, testing efforts and maintains packages for Linux distributions.
+
+==== Matthieu Kermagoret ====
+
+Matthieu provided patch with get_affected_rows functionality.
+
+==== Artyom Beilis ====
+
+Artyom contributed a few patches fixing SOCI build.s
+
+==== Cory Bennett ====
+
+Cory implementd timeout support for SQLite3 backend.
+
+==== Chris Weed ====
+
+Chris fixed parsing TIME data fields.
+
+==== Michael Davidsaver ====
+
+Michael fixed issues related to STATIC_MACRO in SQLite3 backend. 
+
+==== Jakub Stachowski ====
+
+Jakub contributed patches fixing compilation errors with Visual C++ and GCC 3.4.4
+
+==== Alex Ott ====
+
+Alex contributed patches fixing naming conventions.
+
+==== Rainer Bauer ====
 
 Rainer contributed the project files for Microsoft Visual C++ 8.0.
 
----
-Martin Muenstermann
+==== Martin Muenstermann ====
 
 Martin suggested an improvement for error reporting in PostgreSQL backend.
 
----
-Philip Pemberton
+==== Philip Pemberton ====
 
-Philip contributed a patch for reading backend names.
+Philip contributed a patch for reading backend names and testing with MinGW.
 
----
-Eli Green
+==== Eli Green ====
 
 Eli provided various patches for the ODBC backend.
 
----
-Artyom Tonkikh
+==== Frederic Chateau ====
+
+Numer of patches for various issues.
+
+==== Artyom Tonkikh ====
 
 Artyom contributed the dynamic backend loading engine.
 
----
-Roger Orr
+==== Roger Orr ====
 
 Roger has contributed to SOCI the following fixes and patches::
 - the patch for a memory leak that was present in the code
