@@ -26,8 +26,8 @@
 # define HAVE_STRTOLL 1
 # define strtoll(nptr, endptr, base) _strtoi64(nptr, endptr, base)
 #else
-# // XXX - Visual C++ versions prior 1300 don't support strtoi64
 # undef HAVE_STRTOLL
+# error "Visual C++ versions prior 1300 don't support strtoi64"
 #endif // _MSC_VER >= 1300
 
 #endif // _MSC_VER
