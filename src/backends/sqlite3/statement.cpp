@@ -331,12 +331,24 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
         type = dt_date;
         typeFound = true;
     }
-    if (dt.find("int", 0) != std::string::npos)
+
+    if (dt.find("int8", 0) != std::string::npos || dt.find("bigint", 0) != std::string::npos)
+    {
+        type = dt_long_long;
+        typeFound = true;
+    }
+    else if (dt.find("unsigned big int", 0) != std::string::npos)
+    {
+        type = dt_unsigned_long_long;
+        typeFound = true;
+    }
+    else if (dt.find("int", 0) != std::string::npos)
     {
         type = dt_integer;
         typeFound = true;
     }
-    if (dt.find("float", 0) != std::string::npos)
+
+    if (dt.find("float", 0) != std::string::npos || dt.find("double", 0) != std::string::npos)
     {
         type = dt_double;
         typeFound = true;
