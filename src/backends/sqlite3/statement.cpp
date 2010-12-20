@@ -342,6 +342,11 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
         type = dt_unsigned_long_long;
         typeFound = true;
     }
+    else if (dt.find("unsigned int", 0) != std::string::npos)
+    {
+        type = dt_unsigned_long;
+        typeFound = true;
+    }
     else if (dt.find("int", 0) != std::string::npos)
     {
         type = dt_integer;
