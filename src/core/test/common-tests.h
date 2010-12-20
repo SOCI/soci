@@ -26,6 +26,7 @@
 #include <cmath>
 #include <iostream>
 #include <string>
+#include <typeinfo>
 
 // Objects used later in tests 14,15
 struct PhonebookEntry
