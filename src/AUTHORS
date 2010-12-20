@@ -112,3 +112,9 @@ Shridhar contributed patch with enhancements to BLOB support.
 ==== Sören Meyer-Eppler ====
 
 Sören fixed issues in statement::describe_column in SQLite3 backend.
+
+soci_backend_test_create_vcxproj_user
+
+==== Mario Valesco ====
+
+Mario tested building SOCI using MinGW toolset.

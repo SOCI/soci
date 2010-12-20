@@ -25,7 +25,7 @@
 
 #include <vector>
 #include <soci-backend.h>
-#if defined(_MSC_VER) || defined(__MINGW__)
+#if defined(_MSC_VER) || defined(__MINGW32__)
 #include <windows.h>
 #endif
 #include <sqlext.h> // ODBC
