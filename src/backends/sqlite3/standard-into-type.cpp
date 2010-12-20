@@ -44,7 +44,7 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
     }
 
     // sqlite columns start at 0
-    int pos = position_ - 1;
+    int const pos = position_ - 1;
 
     if (gotData)
     {
@@ -68,96 +68,98 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
             }
         }
 
-        const char *buf =
-        reinterpret_cast<const char*>(sqlite3_column_text(
-                                          statement_.stmt_,
-                                          pos));
+        const char *buf = reinterpret_cast<const char*>(
+            sqlite3_column_text(statement_.stmt_,pos));
 
         if (buf == NULL)
         {
             buf = "";
         }
 
-
         switch (type_)
         {
         case x_char:
-        {
-            char *dest = static_cast<char*>(data_);
-            *dest = *buf;
-        }
-        break;
+            {
+                char *dest = static_cast<char*>(data_);
+                *dest = *buf;
+            }
+            break;
         case x_stdstring:
-        {
-            std::string *dest = static_cast<std::string *>(data_);
-            dest->assign(buf);
-        }
-        break;
+            {
+                std::string *dest = static_cast<std::string *>(data_);
+                dest->assign(buf);
+            }
+            break;
         case x_short:
-        {
-            short *dest = static_cast<short*>(data_);
-            long val = std::strtol(buf, NULL, 10);
-            *dest = static_cast<short>(val);
-        }
-        break;
+            {
+                short *dest = static_cast<short*>(data_);
+                long val = std::strtol(buf, NULL, 10);
+                *dest = static_cast<short>(val);
+            }
+            break;
         case x_integer:
-        {
-            int *dest = static_cast<int*>(data_);
-            long val = std::strtol(buf, NULL, 10);
-            *dest = static_cast<int>(val);
-        }
-        break;
+            {
+                int *dest = static_cast<int*>(data_);
+                long val = std::strtol(buf, NULL, 10);
+                *dest = static_cast<int>(val);
+            }
+            break;
         case x_unsigned_long:
-        {
-            unsigned long *dest = static_cast<unsigned long *>(data_);
-            long long val = strtoll(buf, NULL, 10);
-            *dest = static_cast<unsigned long>(val);
-        }
-        break;
+            {
+                unsigned long* dest = static_cast<unsigned long*>(data_);
+                *dest = string_to_unsigned_integer<unsigned long >(buf);
+            }
+            break;
         case x_long_long:
-        {
-            long long *dest = static_cast<long long *>(data_);
-            *dest = strtoll(buf, NULL, 10);
-        }
-        break;
+            {
+                long long* dest = static_cast<long long*>(data_);
+                *dest = strtoll(buf, NULL, 10);
+            }
+            break;
+        case x_unsigned_long_long:
+            {
+                unsigned long long* dest = static_cast<unsigned long long*>(data_);
+                *dest = string_to_unsigned_integer<unsigned long long>(buf);
+            }
+            break;
         case x_double:
-        {
-            double *dest = static_cast<double*>(data_);
-            double val = strtod(buf, NULL);
-            *dest = static_cast<double>(val);
-        }
-        break;
+            {
+                double *dest = static_cast<double*>(data_);
+                double val = strtod(buf, NULL);
+                *dest = static_cast<double>(val);
+            }
+            break;
         case x_stdtm:
-        {
-            // attempt to parse the string and convert to std::tm
-            std::tm *dest = static_cast<std::tm *>(data_);
-            parse_std_tm(buf, *dest);
-        }
-        break;
+            {
+                // attempt to parse the string and convert to std::tm
+                std::tm *dest = static_cast<std::tm *>(data_);
+                parse_std_tm(buf, *dest);
+            }
+            break;
         case x_rowid:
-        {
-            // RowID is internally identical to unsigned long
+            {
+                // RowID is internally identical to unsigned long
 
-            rowid *rid = static_cast<rowid *>(data_);
-            sqlite3_rowid_backend *rbe = static_cast<sqlite3_rowid_backend *>(rid->get_backend());
-            long long val = strtoll(buf, NULL, 10);
-            rbe->value_ = static_cast<unsigned long>(val);
-        }
-        break;
+                rowid *rid = static_cast<rowid *>(data_);
+                sqlite3_rowid_backend *rbe = static_cast<sqlite3_rowid_backend *>(rid->get_backend());
+                long long val = strtoll(buf, NULL, 10);
+                rbe->value_ = static_cast<unsigned long>(val);
+            }
+            break;
         case x_blob:
-        {
-            blob *b = static_cast<blob *>(data_);
-            sqlite3_blob_backend *bbe =
-                static_cast<sqlite3_blob_backend *>(b->get_backend());
+            {
+                blob *b = static_cast<blob *>(data_);
+                sqlite3_blob_backend *bbe =
+                    static_cast<sqlite3_blob_backend *>(b->get_backend());
 
-            buf = reinterpret_cast<const char*>(sqlite3_column_blob(
-                                                   statement_.stmt_,
-                                                   pos));
+                buf = reinterpret_cast<const char*>(sqlite3_column_blob(
+                    statement_.stmt_,
+                    pos));
 
-            int len = sqlite3_column_bytes(statement_.stmt_, pos);
-            bbe->set_data(buf, len);
-        }
-        break;
+                int len = sqlite3_column_bytes(statement_.stmt_, pos);
+                bbe->set_data(buf, len);
+            }
+            break;
         default:
             throw soci_error("Into element used with non-supported type.");
         }
