@@ -76,14 +76,14 @@ void statement_impl::bind(values & values)
 
     try
     {
-        for (std::vector<details::standard_use_type *>::iterator it =
+        for (std::vector<details::standard_use_type*>::iterator it =
             values.uses_.begin(); it != values.uses_.end(); ++it)
         {
             // only bind those variables which are:
             // - either named and actually referenced in the statement,
             // - or positional
 
-            std::string const & useName = (*it)->get_name();
+            std::string const& useName = (*it)->get_name();
             if (useName.empty())
             {
                 // positional use element
@@ -96,9 +96,9 @@ void statement_impl::bind(values & values)
             else
             {
                 // named use element - check if it is used
-                const std::string placeholder = ":" + useName;
+                std::string const placeholder = ":" + useName;
 
-                std::size_t pos = query_.find(placeholder);
+                std::size_t const pos = query_.find(placeholder);
                 if (pos != std::string::npos)
                 {
                     const char nextChar = query_[pos + placeholder.size()];
@@ -153,7 +153,7 @@ void statement_impl::exchange_for_rowset(into_type_ptr const & i)
         throw soci_error("Explicit into elements not allowed with rowset.");
     }
 
-    into_type_base * p = i.get();
+    into_type_base* p = i.get();
     intos_.push_back(p);
     i.release();
 
@@ -290,7 +290,7 @@ bool statement_impl::execute(bool withDataExchange)
 
     pre_use();
 
-    std::size_t bindSize = uses_size();
+    std::size_t const bindSize = uses_size();
 
     if (bindSize > 1 && fetchSize_ > 1)
     {
@@ -380,7 +380,7 @@ bool statement_impl::fetch()
     bool gotData = false;
 
     // vectors might have been resized between fetches
-    std::size_t newFetchSize = intos_size();
+    std::size_t const newFetchSize = intos_size();
     if (newFetchSize > initialFetchSize_)
     {
         // this is not allowed, because most likely caused reallocation
@@ -400,8 +400,7 @@ bool statement_impl::fetch()
         fetchSize_ = newFetchSize;
     }
 
-    statement_backend::exec_fetch_result res =
-        backEnd_->fetch(static_cast<int>(fetchSize_));
+    statement_backend::exec_fetch_result const res = backEnd_->fetch(static_cast<int>(fetchSize_));
     if (res == statement_backend::ef_success)
     {
         // the "success" means that some number of rows was read
@@ -611,6 +610,12 @@ void statement_impl::bind_into<dt_long_long>()
 }
 
 template<>
+void statement_impl::bind_into<dt_unsigned_long_long>()
+{
+    into_row<unsigned long long>();
+}
+
+template<>
 void statement_impl::bind_into<dt_date>()
 {
     into_row<std::tm>();
@@ -620,8 +625,7 @@ void statement_impl::describe()
 {
     row_->clean_up();
 
-    int numcols = backEnd_->prepare_for_describe();
-
+    int const numcols = backEnd_->prepare_for_describe();
     for (int i = 1; i <= numcols; ++i)
     {
         data_type dtype;
@@ -631,8 +635,8 @@ void statement_impl::describe()
 
         column_properties props;
         props.set_name(columnName);
-
         props.set_data_type(dtype);
+
         switch (dtype)
         {
         case dt_string:
@@ -649,6 +653,9 @@ void statement_impl::describe()
             break;
         case dt_long_long:
             bind_into<dt_long_long>();
+            break;
+        case dt_unsigned_long_long:
+            bind_into<dt_unsigned_long_long>();
             break;
         case dt_date:
             bind_into<dt_date>();

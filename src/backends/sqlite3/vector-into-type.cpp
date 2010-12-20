@@ -9,6 +9,7 @@
 #include "soci-sqlite3.h"
 #include "common.h"
 // std
+#include <cassert>
 #include <cstddef>
 #include <cstdlib>
 #include <ctime>
@@ -36,12 +37,12 @@ namespace // anonymous
 {
 
 template <typename T>
-void set_in_vector(void *p, int indx, T const &val)
+void set_in_vector(void* p, int indx, T const& val)
 {
-    std::vector<T> *dest =
-    static_cast<std::vector<T> *>(p);
+    assert(NULL != p);
 
-    std::vector<T> &v = *dest;
+    std::vector<T>* dest = static_cast<std::vector<T>*>(p);
+    std::vector<T>& v = *dest;
     v[indx] = val;
 }
 
@@ -49,80 +50,92 @@ void set_in_vector(void *p, int indx, T const &val)
 
 void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
 {
-    if (gotData)
+    if (!gotData)
     {
-        int endRow = static_cast<int>(statement_.dataCache_.size());
-        for (int i = 0; i < endRow; ++i)
+        // no data retrieved
+        return;
+    }
+
+    int const endRow = static_cast<int>(statement_.dataCache_.size());
+    for (int i = 0; i < endRow; ++i)
+    {
+        sqlite3_column const& curCol =
+            statement_.dataCache_[i][position_-1];
+
+        if (curCol.isNull_)
         {
-            const sqlite3_column& curCol =
-                statement_.dataCache_[i][position_-1];
-
-            if (curCol.isNull_)
+            if (ind == NULL)
             {
-                if (ind == NULL)
-                {
-                    throw soci_error(
-                        "Null value fetched and no indicator defined.");
-                }
-
-                ind[i] = i_null;
+                throw soci_error(
+                    "Null value fetched and no indicator defined.");
             }
-            else
+            ind[i] = i_null;
+
+            // no need to convert data if it is null, go to next row
+            continue;
+        }
+        else
+        {
+            if (ind != NULL)
             {
-                if (ind != NULL)
-                {
-                    ind[i] = i_ok;
-                }
+                ind[i] = i_ok;
             }
+        }
 
-            const char * buf = curCol.data_.c_str();
+        const char * buf = curCol.data_.c_str();
 
+        // set buf to a null string if a null pointer is returned
+        if (buf == NULL)
+        {
+            buf = "";
+        }
 
-            // set buf to a null string if a null pointer is returned
-            if (buf == NULL)
-            {
-                buf = "";
-            }
-
-            switch (type_)
-            {
-            case x_char:
-                set_in_vector(data_, i, *buf);
-                break;
-            case x_stdstring:
-                set_in_vector<std::string>(data_, i, buf);
-                break;
-            case x_short:
-            {
-                long val = std::strtol(buf, NULL, 10);
-                set_in_vector(data_, i, static_cast<short>(val));
-            }
+        switch (type_)
+        {
+        case x_char:
+            set_in_vector(data_, i, *buf);
             break;
-            case x_integer:
-            {
-                long val = std::strtol(buf, NULL, 10);
-                set_in_vector(data_, i, static_cast<int>(val));
-            }
+        case x_stdstring:
+            set_in_vector<std::string>(data_, i, buf);
             break;
-            case x_unsigned_long:
+        case x_short:
             {
-                long long val = strtoll(buf, NULL, 10);
-                set_in_vector(data_, i, static_cast<unsigned long>(val));
-            }
-            break;
-            case x_long_long:
-            {
-                long long val = strtoll(buf, NULL, 10);
+                short const val = string_to_integer<short>(buf);
                 set_in_vector(data_, i, val);
             }
             break;
-            case x_double:
+        case x_integer:
             {
-                double val = strtod(buf, NULL);
+                int const val = string_to_integer<int>(buf);
                 set_in_vector(data_, i, val);
             }
             break;
-            case x_stdtm:
+        case x_unsigned_long:
+            {
+                unsigned long const val = string_to_unsigned_integer<unsigned long>(buf);
+                set_in_vector(data_, i, val);
+            }
+            break;
+        case x_long_long:
+            {
+                long long const val = string_to_integer<long long>(buf);
+                set_in_vector(data_, i, val);
+            }
+            break;
+        case x_unsigned_long_long:
+            {
+                unsigned long long const val
+                    = string_to_unsigned_integer<unsigned long long>(buf);
+                set_in_vector(data_, i, val);
+            }
+            break;
+        case x_double:
+            {
+                double const val = strtod(buf, NULL);
+                set_in_vector(data_, i, val);
+            }
+            break;
+        case x_stdtm:
             {
                 // attempt to parse the string and convert to std::tm
                 std::tm t;
@@ -131,15 +144,9 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                 set_in_vector(data_, i, t);
             }
             break;
-
-            default:
-                throw soci_error("Into element used with non-supported type.");
-            }
+        default:
+            throw soci_error("Into element used with non-supported type.");
         }
-    }
-    else // no data retrieved
-    {
-        // nothing to do, into vectors are already truncated
     }
 }
 
@@ -162,6 +169,9 @@ void sqlite3_vector_into_type_backend::resize(std::size_t sz)
         break;
     case x_long_long:
         resize_vector<long long>(data_, sz);
+        break;
+    case x_unsigned_long_long:
+        resize_vector<unsigned long long>(data_, sz);
         break;
     case x_double:
         resize_vector<double>(data_, sz);
@@ -197,6 +207,9 @@ std::size_t sqlite3_vector_into_type_backend::size()
         break;
     case x_long_long:
         sz = get_vector_size<long long>(data_);
+        break;
+    case x_unsigned_long_long:
+        sz = get_vector_size<unsigned long long>(data_);
         break;
     case x_double:
         sz = get_vector_size<double>(data_);

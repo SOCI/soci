@@ -124,7 +124,10 @@ macro(soci_backend NAME)
       # TODO: Extract as macros: soci_shared_lib_target and soci_static_lib_target --mloskot
 
       # Shared library target
-      add_library(${THIS_BACKEND_TARGET} SHARED ${THIS_BACKEND_SOURCES})
+      add_library(${THIS_BACKEND_TARGET}
+          SHARED
+          ${THIS_BACKEND_SOURCES}
+          ${THIS_BACKEND_HEADERS})
 
       target_link_libraries(${THIS_BACKEND_TARGET}
 		${SOCI_CORE_TARGET}
@@ -147,7 +150,10 @@ macro(soci_backend NAME)
         CLEAN_DIRECT_OUTPUT 1)
 
       # Static library target
-      add_library(${THIS_BACKEND_TARGET}-static STATIC ${THIS_BACKEND_SOURCES})
+      add_library(${THIS_BACKEND_TARGET}-static
+          STATIC
+          ${THIS_BACKEND_SOURCES}
+          ${THIS_BACKEND_HEADERS})
 
       set_target_properties(${THIS_BACKEND_TARGET}-static
 		PROPERTIES
@@ -156,7 +162,10 @@ macro(soci_backend NAME)
 		CLEAN_DIRECT_OUTPUT 1)
 
       # Backend installation
-      install(FILES ${THIS_BACKEND_HEADERS} DESTINATION ${INCLUDEDIR}/${PROJECTNAMEL}/${NAMEL})
+      install(FILES ${THIS_BACKEND_HEADERS}
+          DESTINATION
+          ${INCLUDEDIR}/${PROJECTNAMEL}/${NAMEL})
+
       install(TARGETS ${THIS_BACKEND_TARGET} ${THIS_BACKEND_TARGET}-static
 		RUNTIME DESTINATION ${BINDIR}
 		LIBRARY DESTINATION ${LIBDIR}

@@ -16,6 +16,21 @@
 using namespace soci;
 using namespace details;
 
+row::row()
+    : uppercaseColumnNames_(false)
+    , currentPos_(0)
+{}
+
+row::~row()
+{
+    clean_up();
+}
+
+void row::uppercase_column_names(bool forceToUpper)
+{
+    uppercaseColumnNames_ = forceToUpper;
+}
+
 void row::add_properties(column_properties const &cp)
 {
     columns_.push_back(cp);
@@ -95,9 +110,4 @@ std::size_t row::find_column(std::string const &name) const
     }
 
     return it->second;
-}
-
-row::~row()
-{
-    clean_up();
 }
