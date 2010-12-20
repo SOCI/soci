@@ -10,8 +10,10 @@
 
 #include "soci-postgresql.h"
 #include <limits>
+#include <cstdio>
 #include <cstring>
 #include <ctime>
+#include <vector>
 
 namespace soci
 {
@@ -28,8 +30,8 @@ T string_to_integer(char const * buf)
 {
     long long t(0);
     int n(0);
-    int const converted = sscanf(buf, "%lld%n", &t, &n);
-    if (converted == 1 && static_cast<std::size_t>(n) == strlen(buf))
+    int const converted = std::sscanf(buf, "%lld%n", &t, &n);
+    if (converted == 1 && static_cast<std::size_t>(n) == std::strlen(buf))
     {
         // successfully converted to long long
         // and no other characters were found in the buffer
@@ -73,8 +75,8 @@ T string_to_unsigned_integer(char const * buf)
 {
     unsigned long long t(0);
     int n(0);
-    int const converted = sscanf(buf, "%llu%n", &t, &n);
-    if (converted == 1 && static_cast<std::size_t>(n) == strlen(buf))
+    int const converted = std::sscanf(buf, "%llu%n", &t, &n);
+    if (converted == 1 && static_cast<std::size_t>(n) == std::strlen(buf))
     {
         // successfully converted to unsigned long long
         // and no other characters were found in the buffer
