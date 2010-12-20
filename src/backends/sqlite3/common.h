@@ -8,11 +8,13 @@
 #ifndef SOCI_SQLITE3_COMMON_H_INCLUDED
 #define SOCI_SQLITE3_COMMON_H_INCLUDED
 
+#include <error.h>
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
 #include <vector>
+#include <limits>
 
 namespace soci { namespace details { namespace sqlite3 {
 
