@@ -38,6 +38,8 @@
 
 <p>Running CMake from the command line allows to set variables in the CMake cache with the following syntax: <code>-DVARIABLE:TYPE=VALUE</code>. If you are new to CMake, you may find <a href="http://cmake.org/cmake/help/runningcmake.html">Running CMake</a> helpful.</p>
 
+<p><em>TODO: group CMake variables specific to SOCI by backends + add variables used to defined LIB and INCLUDE for backend deps.<em></p>
+
 <table class="cmake-variables" cellpadding="2" cellspacing="2" summary="List of a few essential and common CMake variables">
 <caption class="cmake-variables">List of a few essential and common CMake variables</caption>
 <tr>
@@ -126,8 +128,8 @@
 </tr>
 </table>
 
-<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="List of variables used to control detection of SOCI external dependencies">
-<caption class="cmake-variables">List of variables used to control detection of SOCI external dependencies</caption>
+<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="List of variables used to control SOCI tests">
+<caption class="cmake-variables">List of variables used to control SOCI tests</caption>
 <tr>
   <td class="variable-name">SOCI_TESTS</td>
   <td class="variable-type">boolean</td>
