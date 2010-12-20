@@ -102,7 +102,8 @@ private:
         exchange_for_row(into(*t, *ind));
     }
 
-    template<data_type> void bind_into();
+    template<data_type>
+    void bind_into();
 
     bool alreadyDescribed_;
 
