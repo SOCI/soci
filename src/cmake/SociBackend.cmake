@@ -9,9 +9,11 @@
 ################################################################################
 # Macros in this module:
 #   
-#   soci_backend - defines project of a database backend for SOCI library
+#   soci_backend
+#     - defines project of a database backend for SOCI library
 #
-#   soci_backend_test - defines test project of a database backend for SOCI library
+#   soci_backend_test
+#     - defines test project of a database backend for SOCI library
 ################################################################################
 
 # Defines project of a database backend for SOCI library
@@ -203,6 +205,8 @@ endmacro()
 
 # Generates .vcxproj.user for target of each test.
 #
+# soci_backend_test_create_vcxproj_user(PostgreSQLTest "dbname=soci_test")
+#
 function(soci_backend_test_create_vcxproj_user TARGET_NAME TEST_CMD_ARGS)
   if(MSVC)
     set(SYSTEM_NAME $ENV{USERDOMAIN})
@@ -210,9 +214,6 @@ function(soci_backend_test_create_vcxproj_user TARGET_NAME TEST_CMD_ARGS)
     set(SOCI_TEST_CMD_ARGS ${TEST_CMD_ARGS})
 
     if(MSVC_VERSION EQUAL 1600)
-      message(STATUS "X:${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.vcxproj.user")
-      message(STATUS "Y:${SOCI_TEST_CMD_ARGS}")
-
       configure_file(
         ${SOCI_SOURCE_DIR}/cmake/resources/vs2010-test-cmd-args.vcxproj.user.in
         ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.vcxproj.user
