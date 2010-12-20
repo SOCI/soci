@@ -37,7 +37,7 @@ public:
         }
         else
         {
-            throw std::bad_cast();
+            throw std::bad_cast("type_holder bad cast");
         }
     }
 
