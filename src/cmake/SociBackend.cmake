@@ -201,6 +201,26 @@ macro(soci_backend NAME)
   #message("DEPENDS_INCLUDE_DIRS: ${THIS_BACKEND_DEPENDS_INCLUDE_DIRS}")
 endmacro()
 
+# Generates .vcxproj.user for target of each test.
+#
+function(soci_backend_test_create_vcxproj_user TARGET_NAME TEST_CMD_ARGS)
+  if(MSVC)
+    set(SYSTEM_NAME $ENV{USERDOMAIN})
+    set(USER_NAME $ENV{USERNAME})
+    set(SOCI_TEST_CMD_ARGS ${TEST_CMD_ARGS})
+
+    if(MSVC_VERSION EQUAL 1600)
+      message(STATUS "X:${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.vcxproj.user")
+      message(STATUS "Y:${SOCI_TEST_CMD_ARGS}")
+
+      configure_file(
+        ${SOCI_SOURCE_DIR}/cmake/resources/vs2010-test-cmd-args.vcxproj.user.in
+        ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.vcxproj.user
+        @ONLY)
+    endif()
+  endif()
+endfunction(soci_backend_test_create_vcxproj_user)
+
 # Defines test project of a database backend for SOCI library
 #
 # soci_backend_test(BACKEND mybackend SOURCE mytest1.cpp
@@ -278,6 +298,10 @@ macro(soci_backend_test)
     add_test(${TEST_TARGET}_static
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET}_static
       ${${TEST_CONNSTR_VAR}})
+
+    # Convenient .vcxproj.user making tests ready to run and debug from within IDE
+    soci_backend_test_create_vcxproj_user(${TEST_TARGET} ${${TEST_CONNSTR_VAR}})
+    soci_backend_test_create_vcxproj_user(${TEST_TARGET}_static ${${TEST_CONNSTR_VAR}})
 
 	# Ask make check to try to build tests first before executing them
 	add_dependencies(check ${TEST_TARGET} ${TEST_TARGET}_static)
