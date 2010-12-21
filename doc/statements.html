@@ -77,8 +77,9 @@ does not actually provide this functionality - in which case the library will in
 execute the query in a single phase, without really separating
 the statement preparation from execution.</p>
 <p>For PostgreSQL servers older than 8.0 it is necessary to define the
-<code>SOCI_PGSQL_NOPREPARE</code> macro while compiling the library
-to fall back to this one-phase behaviour.</p>
+<code>SOCI_POSTGRESQL_NOPREPARE</code> macro while compiling the library
+to fall back to this one-phase behaviour. Simply, pass
+<code>-DSOCI_POSTGRESQL_NOPREPARE=ON</code> variable to CMake.</p>
 </div>
 
 <h3 id="rowset">Rowset and iterator-based access</h3>

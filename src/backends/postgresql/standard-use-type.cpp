@@ -18,9 +18,9 @@
 #include <limits>
 #include <sstream>
 
-#ifdef SOCI_PGSQL_NOPARAMS
-#define SOCI_PGSQL_NOBINDBYNAME
-#endif // SOCI_PGSQL_NOPARAMS
+#ifdef SOCI_POSTGRESQL_NOPARAMS
+#define SOCI_POSTGRESQL_NOBINDBYNAME
+#endif // SOCI_POSTGRESQL_NOPARAMS
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355 4996)

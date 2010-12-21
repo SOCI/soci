@@ -16,9 +16,9 @@
 #include <ctime>
 #include <sstream>
 
-#ifdef SOCI_PGSQL_NOPARAMS
-#define SOCI_PGSQL_NOBINDBYNAME
-#endif // SOCI_PGSQL_NOPARAMS
+#ifdef SOCI_POSTGRESQL_NOPARAMS
+#define SOCI_POSTGRESQL_NOBINDBYNAME
+#endif // SOCI_POSTGRESQL_NOPARAMS
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -53,7 +53,7 @@ void postgresql_statement_backend::clean_up()
 void postgresql_statement_backend::prepare(std::string const & query,
     statement_type stType)
 {
-#ifdef SOCI_PGSQL_NOBINDBYNAME
+#ifdef SOCI_POSTGRESQL_NOBINDBYNAME
     query_ = query;
 #else
     // rewrite the query by transforming all named parameters into
@@ -147,9 +147,9 @@ void postgresql_statement_backend::prepare(std::string const & query,
         query_ += ss.str();
     }
 
-#endif // SOCI_PGSQL_NOBINDBYNAME
+#endif // SOCI_POSTGRESQL_NOBINDBYNAME
 
-#ifndef SOCI_PGSQL_NOPREPARE
+#ifndef SOCI_POSTGRESQL_NOPREPARE
 
     if (stType == st_repeatable_query)
     {
@@ -171,7 +171,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
 
     stType_ = stType;
 
-#endif // SOCI_PGSQL_NOPREPARE
+#endif // SOCI_POSTGRESQL_NOPREPARE
 }
 
 statement_backend::exec_fetch_result
@@ -202,7 +202,7 @@ postgresql_statement_backend::execute(int number)
         // not supported anyway, so in the effect the 'number' parameter here
         // specifies the size of vectors (into/use), but 'numberOfExecutions'
         // specifies the number of loops that need to be performed.
-        
+
         int numberOfExecutions = 1;
         if (number > 0)
         {
@@ -262,13 +262,13 @@ postgresql_statement_backend::execute(int number)
                     }
                 }
 
-#ifdef SOCI_PGSQL_NOPARAMS
+#ifdef SOCI_POSTGRESQL_NOPARAMS
 
                 throw soci_error("Queries with parameters are not supported.");
 
 #else
 
-#ifdef SOCI_PGSQL_NOPREPARE
+#ifdef SOCI_POSTGRESQL_NOPREPARE
 
                 result_ = PQexecParams(session_.conn_, query_.c_str(),
                     static_cast<int>(paramValues.size()),
@@ -295,9 +295,9 @@ postgresql_statement_backend::execute(int number)
                         NULL, &paramValues[0], NULL, NULL, 0);
                 }
 
-#endif // SOCI_PGSQL_NOPREPARE
+#endif // SOCI_POSTGRESQL_NOPREPARE
 
-#endif // SOCI_PGSQL_NOPARAMS
+#endif // SOCI_POSTGRESQL_NOPARAMS
 
                 if (numberOfExecutions > 1)
                 {
@@ -330,7 +330,7 @@ postgresql_statement_backend::execute(int number)
             // there are no use elements
             // - execute the query without parameter information
 
-#ifdef SOCI_PGSQL_NOPREPARE
+#ifdef SOCI_POSTGRESQL_NOPREPARE
 
             result_ = PQexec(session_.conn_, query_.c_str());
 #else
@@ -347,7 +347,7 @@ postgresql_statement_backend::execute(int number)
                 result_ = PQexec(session_.conn_, query_.c_str());
             }
 
-#endif // SOCI_PGSQL_NOPREPARE
+#endif // SOCI_POSTGRESQL_NOPREPARE
 
             if (result_ == NULL)
             {

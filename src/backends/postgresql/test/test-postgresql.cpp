@@ -56,7 +56,7 @@ void test1()
         int id;
         std::string name;
 
-#ifndef SOCI_PGSQL_NOPARAMS
+#ifndef SOCI_POSTGRESQL_NOPARAMS
 
         sql << "select id, name from soci_test where oid = :rid",
             into(id), into(name), use(rid);
@@ -72,7 +72,7 @@ void test1()
         sql << "select id, name from soci_test where oid = " << oid,
             into(id), into(name);
 
-#endif // SOCI_PGSQL_NOPARAMS
+#endif // SOCI_POSTGRESQL_NOPARAMS
 
         assert(id == 7);
         assert(name == "John");
@@ -94,7 +94,7 @@ public:
         try { sql << "create language plpgsql"; }
         catch (soci_error const &) {} // ignore if error
 
-#ifndef SOCI_PGSQL_NOPARAMS
+#ifndef SOCI_POSTGRESQL_NOPARAMS
 
         sql  <<
             "create or replace function soci_test(msg varchar) "
@@ -131,7 +131,7 @@ void test2()
         std::string in("my message");
         std::string out;
 
-#ifndef SOCI_PGSQL_NOPARAMS
+#ifndef SOCI_POSTGRESQL_NOPARAMS
 
         statement st = (sql.prepare <<
             "select soci_test(:input)",
@@ -145,7 +145,7 @@ void test2()
             "select soci_test(\'" << in << "\')",
             into(out));
 
-#endif // SOCI_PGSQL_NOPARAMS
+#endif // SOCI_POSTGRESQL_NOPARAMS
 
         st.execute(true);
         assert(out == in);
@@ -155,7 +155,7 @@ void test2()
             std::string in("my message2");
             std::string out;
 
-#ifndef SOCI_PGSQL_NOPARAMS
+#ifndef SOCI_POSTGRESQL_NOPARAMS
 
             procedure proc = (sql.prepare <<
                 "soci_test(:input)",
@@ -167,7 +167,7 @@ void test2()
             procedure proc = (sql.prepare <<
                 "soci_test(\'" << in << "\')", into(out));
 
-#endif // SOCI_PGSQL_NOPARAMS
+#endif // SOCI_POSTGRESQL_NOPARAMS
 
             proc.execute(true);
             assert(out == in);
@@ -197,7 +197,7 @@ void test3()
         session sql(backEnd, connectString);
 
         blob_table_creator tableCreator(sql);
-        
+
         char buf[] = "abcdefghijklmnopqrstuvwxyz";
 
         sql << "insert into soci_test(id, img) values(7, lo_creat(-1))";
