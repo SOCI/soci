@@ -94,7 +94,8 @@ void test2()
         }
         catch (mysql_soci_error const &e)
         {
-            assert(e.err_num_ == CR_UNKNOWN_HOST || e.err_num_ == CR_CONN_HOST_ERROR);
+            assert(e.err_num_ == CR_UNKNOWN_HOST ||
+                   e.err_num_ == CR_CONN_HOST_ERROR);
         }
     }
 
@@ -416,6 +417,46 @@ void test6()
     std::cout << "test 6 passed" << std::endl;
 }
 
+// test for number of affected rows
+
+struct table_creator_for_test7 : table_creator_base
+{
+    table_creator_for_test7(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val integer)";
+    }
+};
+
+void test7()
+{
+    {
+        session sql(backEnd, connectString);
+
+        table_creator_for_test7 tableCreator(sql);
+
+        for (int i = 0; i != 10; i++)
+        {
+            sql << "insert into soci_test(val) values(:val)", use(i);
+        }
+
+        statement st1 = (sql.prepare <<
+            "update soci_test set val = val + 1");
+        st1.execute(false);
+
+        assert(st1.get_affected_rows() == 10);
+
+        statement st2 = (sql.prepare <<
+            "delete from soci_test where val <= 5");
+        st2.execute(false);
+
+        assert(st2.get_affected_rows() == 5);
+    }
+
+    std::cout << "test 7 passed" << std::endl;
+}
+
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -524,6 +565,7 @@ int main(int argc, char** argv)
         test4();
         test5();
         test6();
+        test7();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;
