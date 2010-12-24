@@ -17,6 +17,12 @@
 set(SOCI_COMPILER_NAME)
 set(SOCI_PLATFORM_NAME)
 
+if(MINGW OR UNIX)
+  exec_program(gcc ARGS -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+  string(REPLACE "." "" GCC_VERSION_STR_FULL ${GCC_VERSION})
+  string(REGEX MATCH "[0-9]+\\.[0-9]+" GCC_VERSION_MAJOR_MINOR ${GCC_VERSION})
+endif()
+
 if(WIN32)
   # Compilers, taken from http://predef.sourceforge.net/precomp.html#sec34
   if(MSVC)
@@ -41,11 +47,7 @@ if(WIN32)
   endif(MSVC)
   
   if(MINGW)
-  	exec_program(gcc ARGS -dumpversion OUTPUT_VARIABLE GCC_VERSION)
-	string(REPLACE "." "" GCC_VERSION_STR_FULL ${GCC_VERSION})
-	string(REGEX MATCH "[0-9]+\\.[0-9]+" GCC_VERSION_MAJOR_MINOR ${GCC_VERSION})
-	string(REPLACE "." "" GCC_VERSION_STR_MAJOR_MINOR ${GCC_VERSION_MAJOR_MINOR})
-    set(SOCI_COMPILER_NAME "mingw-"${GCC_VERSION})
+    set(SOCI_COMPILER_NAME "mingw-${GCC_VERSION}")
   endif( MINGW )
   
   if(CMAKE_GENERATOR MATCHES "Win64")
@@ -56,7 +58,7 @@ if(WIN32)
 endif(WIN32)
 
 if(UNIX)
-  set(SOCI_COMPILER_NAME "gcc-"${GCC_VERSION})
+  set(SOCI_COMPILER_NAME "gcc-${GCC_VERSION}")
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
     set(SOCI_PLATFORM_NAME "x64")
   else()
