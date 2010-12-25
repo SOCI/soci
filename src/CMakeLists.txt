@@ -68,7 +68,7 @@ include(SociDependencies)
 # Installation
 #################################################################################
 
-if(UNIX AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+if(APPLE OR CMAKE_SIZEOF_VOID_P EQUAL 4)
   set(SOCI_LIBDIR "lib")
 else()
   set(SOCI_LIBDIR "lib64")
