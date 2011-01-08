@@ -212,7 +212,7 @@ st.execute();
 while (st.fetch())
 {
     std::vector&lt;int&gt;::iterator pos;
-    for(; pos != valsOut.end(); ++pos)
+    for(pos = valsOut.begin(); pos != valsOut.end(); ++pos)
     {
         cout &lt;&lt; *pos &lt;&lt; '\n';
     }
