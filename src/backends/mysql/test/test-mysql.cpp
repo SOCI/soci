@@ -419,9 +419,9 @@ void test6()
 
 // test for number of affected rows
 
-struct table_creator_for_test7 : table_creator_base
+struct integer_value_table_creator : table_creator_base
 {
-    table_creator_for_test7(session & sql)
+    integer_value_table_creator(session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val integer)";
@@ -433,7 +433,7 @@ void test7()
     {
         session sql(backEnd, connectString);
 
-        table_creator_for_test7 tableCreator(sql);
+        integer_value_table_creator tableCreator(sql);
 
         for (int i = 0; i != 10; i++)
         {
@@ -456,6 +456,42 @@ void test7()
     std::cout << "test 7 passed" << std::endl;
 }
 
+
+// The prepared statements should survive session::reconnect().
+void test8()
+{
+  {
+    session sql(backEnd, connectString);
+
+    integer_value_table_creator tableCreator(sql);
+
+    int i;
+    statement st = (sql.prepare
+        << "insert into soci_test(val) values(:val)", use(i));
+    i = 5;
+    st.execute(true);
+
+    sql.reconnect();
+
+    i = 6;
+    st.execute(true);
+
+    sql.close();
+    sql.reconnect();
+
+    i = 7;
+    st.execute(true);
+
+    std::vector<int> v(5);
+    sql << "select val from soci_test order by val", into(v);
+    assert(v.size() == 3);
+    assert(v[0] == 5);
+    assert(v[1] == 6);
+    assert(v[2] == 7);
+  }
+
+  std::cout << "test 8 passed" << std::endl;
+}
 
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
@@ -566,6 +602,7 @@ int main(int argc, char** argv)
         test5();
         test6();
         test7();
+        test8();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;
