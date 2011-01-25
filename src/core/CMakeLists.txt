@@ -15,6 +15,14 @@ message(STATUS "")
 # Core dependencies
 set(SOCI_CORE_DEPENDENCIES)
 
+include(FindThreads)
+
+if(Threads_FOUND OR CMAKE_USE_WIN32_THREADS_INIT OR CMAKE_THREAD_LIBS_INIT)
+  list(APPEND SOCI_CORE_DEPENDENCIES ${CMAKE_THREAD_LIBS_INIT})
+else()
+  message(FATAL_ERROR "No thread library found")
+endif()
+
 if(NOT MSVC)
   set(DL_FIND_QUIETLY TRUE)
   find_package(DL)
