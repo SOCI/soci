@@ -92,6 +92,8 @@ else()
     SOVERSION ${SOCI_SOVERSION}
     CLEAN_DIRECT_OUTPUT 1)
 endif()
+add_definitions(-DSOCI_LIB_PREFIX="${CMAKE_SHARED_LIBRARY_PREFIX}soci_"
+                -DSOCI_LIB_SUFFIX="${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 #
 # Core static library

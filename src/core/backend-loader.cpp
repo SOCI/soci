@@ -23,9 +23,6 @@
 using namespace soci;
 using namespace soci::dynamic_backends;
 
-#define _STRINGIFY(s) #s
-#define STRINGIFY(s) _STRINGIFY(s)
-
 #ifdef _WIN32
 
 #include <windows.h>
@@ -44,7 +41,7 @@ typedef HMODULE soci_handler_t;
 #endif
 #define DLCLOSE(x) FreeLibrary(x)
 #define DLSYM(x, y) GetProcAddress(x, y)
-#define LIBNAME(x) ("libsoci_" + x + "_" STRINGIFY(SOCI_ABI_VERSION) ".dll")
+#define LIBNAME(x) (SOCI_LIB_PREFIX + x + "_" SOCI_ABI_VERSION SOCI_LIB_SUFFIX)
 
 #else
 
@@ -61,7 +58,11 @@ typedef void * soci_handler_t;
 #define DLOPEN(x) dlopen(x, RTLD_LAZY)
 #define DLCLOSE(x) dlclose(x)
 #define DLSYM(x, y) dlsym(x, y)
-#define LIBNAME(x) ("libsoci_" + x + ".so." STRINGIFY(SOCI_ABI_VERSION))
+#ifdef __APPLE__
+#define LIBNAME(x) (SOCI_LIB_PREFIX + x + "." SOCI_ABI_VERSION SOCI_LIB_SUFFIX)
+#else
+#define LIBNAME(x) (SOCI_LIB_PREFIX + x + SOCI_LIB_SUFFIX "." SOCI_ABI_VERSION)
+#endif
 
 #endif // _WIN32
 

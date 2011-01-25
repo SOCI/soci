@@ -54,6 +54,6 @@ macro(soci_version)
   boost_report_value(${PROJECT_NAME}_VERSION)
   boost_report_value(${PROJECT_NAME}_ABI_VERSION)
 
-  add_definitions(-DSOCI_ABI_VERSION=${${PROJECT_NAME}_ABI_VERSION})
+  add_definitions(-DSOCI_ABI_VERSION="${${PROJECT_NAME}_ABI_VERSION}")
 
 endmacro()
