@@ -28,16 +28,25 @@
 
 #include <cstddef>
 #include <string>
+#include <vector>
+#include <iostream>
+#include <sstream>
+#include <cstring>
 
 #include <sqlcli1.h>
 
 namespace soci
 {
 
+    static const std::size_t maxBuffer =  1024 * 1024 * 1024; //CLI limit is about 3 GB, but 1GB should be enough
 class db2_soci_error : public soci_error {
 public:
     db2_soci_error(std::string const & msg, SQLRETURN rc) : soci_error(msg),errorCode(rc) {};
-    
+    ~db2_soci_error() throw() { };
+   
+    //We have to extract error information before exception throwing, cause CLI handles could be broken at the construction time   
+    static const std::string sqlState(std::string const & msg,const SQLSMALLINT htype,const SQLHANDLE hndl);
+       
     SQLRETURN errorCode;    
 };
 
@@ -46,7 +55,7 @@ struct db2_statement_backend;
 struct SOCI_DB2_DECL db2_standard_into_type_backend : details::standard_into_type_backend
 {
     db2_standard_into_type_backend(db2_statement_backend &st)
-        : statement_(st)
+        : statement_(st),buf(NULL)
     {}
 
     void define_by_pos(int& position, void* data, details::exchange_type type);
@@ -57,12 +66,19 @@ struct SOCI_DB2_DECL db2_standard_into_type_backend : details::standard_into_typ
     void clean_up();
 
     db2_statement_backend& statement_;
+
+    char* buf;
+    void *data;
+    details::exchange_type type;
+    int position;
+    SQLSMALLINT cType;
+    SQLLEN valueLen;
 };
 
 struct SOCI_DB2_DECL db2_vector_into_type_backend : details::vector_into_type_backend
 {
     db2_vector_into_type_backend(db2_statement_backend &st)
-        : statement_(st)
+        : statement_(st),buf(NULL)
     {}
 
     void define_by_pos(int& position, void* data, details::exchange_type type);
@@ -76,12 +92,22 @@ struct SOCI_DB2_DECL db2_vector_into_type_backend : details::vector_into_type_ba
     void clean_up();
 
     db2_statement_backend& statement_;
+
+    void prepare_indicators(std::size_t size);
+
+    SQLLEN *indptr;
+    std::vector<SQLLEN> indVec;
+    void *data;
+    char *buf;
+    details::exchange_type type;
+    SQLSMALLINT cType;
+    std::size_t colSize;
 };
 
 struct SOCI_DB2_DECL db2_standard_use_type_backend : details::standard_use_type_backend
 {
     db2_standard_use_type_backend(db2_statement_backend &st)
-        : statement_(st)
+        : statement_(st),buf(NULL)
     {}
 
     void bind_by_pos(int& position, void* data, details::exchange_type type, bool readOnly);
@@ -93,12 +119,22 @@ struct SOCI_DB2_DECL db2_standard_use_type_backend : details::standard_use_type_
     void clean_up();
 
     db2_statement_backend& statement_;
+
+    void prepare_for_bind(void *&data, SQLLEN &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType);
+    void bind_helper(int &position, void *data, details::exchange_type type);
+
+    void *data;
+    details::exchange_type type;
+    int position;
+    std::string name;
+    char* buf;
+    SQLLEN indptr;
 };
 
 struct SOCI_DB2_DECL db2_vector_use_type_backend : details::vector_use_type_backend
 {
     db2_vector_use_type_backend(db2_statement_backend &st)
-        : statement_(st) {}
+        : statement_(st),buf(NULL) {}
 
     void bind_by_pos(int& position, void* data, details::exchange_type type);
     void bind_by_name(std::string const& name, void* data, details::exchange_type type);
@@ -110,6 +146,17 @@ struct SOCI_DB2_DECL db2_vector_use_type_backend : details::vector_use_type_back
     void clean_up();
 
     db2_statement_backend& statement_;
+
+    void prepare_indicators(std::size_t size);
+    void prepare_for_bind(void *&data, SQLUINTEGER &size,SQLSMALLINT &sqlType, SQLSMALLINT &cType);
+    void bind_helper(int &position, void *data, details::exchange_type type);
+
+    SQLLEN *indptr;
+    std::vector<SQLLEN> indVec;
+    void *data;
+    char *buf;
+    details::exchange_type type;
+    std::size_t colSize;
 };
 
 struct db2_session_backend;
@@ -131,6 +178,7 @@ struct SOCI_DB2_DECL db2_statement_backend : details::statement_backend
 
     int prepare_for_describe();
     void describe_column(int colNum, data_type& dtype, std::string& columnName);
+    std::size_t column_size(int col);
 
     db2_standard_into_type_backend* make_into_type_backend();
     db2_standard_use_type_backend* make_use_type_backend();
@@ -138,6 +186,12 @@ struct SOCI_DB2_DECL db2_statement_backend : details::statement_backend
     db2_vector_use_type_backend* make_vector_use_type_backend();
 
     db2_session_backend& session_;
+
+    SQLHANDLE hStmt;
+    std::string query_;
+    std::vector<std::string> names;
+    bool hasVectorUseElements;
+    SQLUINTEGER numRowsFetched;
 };
 
 struct db2_rowid_backend : details::rowid_backend
@@ -179,6 +233,9 @@ struct db2_session_backend : details::session_backend
     db2_statement_backend* make_statement_backend();
     db2_rowid_backend* make_rowid_backend();
     db2_blob_backend* make_blob_backend();
+
+    void parseConnectString(std::string const &);
+    void parseKeyVal(std::string const &);
 
     std::string dsn;
     std::string username;

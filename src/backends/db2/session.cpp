@@ -16,10 +16,70 @@
 using namespace soci;
 using namespace soci::details;
 
+const std::string db2_soci_error::sqlState(std::string const & msg,const SQLSMALLINT htype,const SQLHANDLE hndl) {
+        std::stringstream ss(msg);
+
+
+    SQLCHAR message[SQL_MAX_MESSAGE_LENGTH + 1];
+    SQLCHAR sqlstate[SQL_SQLSTATE_SIZE + 1];
+    SQLINTEGER sqlcode;
+    SQLSMALLINT length;
+
+    if ( SQLGetDiagRec(htype,
+                       hndl,
+                       1,
+                       sqlstate,
+                       &sqlcode,
+                       message,
+                       SQL_MAX_MESSAGE_LENGTH + 1,
+                       &length) == SQL_SUCCESS ) {
+        ss<<" SQLMESSAGE: ";
+        ss<<message;
+    }
+    return ss.str();
+}
+
+void db2_session_backend::parseKeyVal(std::string const & keyVal) {
+    size_t delimiter=keyVal.find_first_of("=");
+    std::string key=keyVal.substr(0,delimiter);
+    std::string value=keyVal.substr(delimiter+1,keyVal.length());
+
+    if (!key.compare("Dsn")) {
+        this->dsn=value;
+    }
+    if (!key.compare("Uid")) {
+        this->username=value;
+    }
+    if (!key.compare("Pwd")) {
+        this->password=value;
+    }
+    if (!key.compare("autocommit")) {
+        if (!value.compare("off")) {
+            this->autocommit=false;
+        } else {
+            this->autocommit=true;
+        }
+    }
+}
+
+void db2_session_backend::parseConnectString(std::string const &  connectString) {
+    std::string processingString(connectString);
+    size_t delimiter=processingString.find_first_of(";");
+    while(delimiter!=std::string::npos) {
+        std::string keyVal=processingString.substr(0,delimiter);
+        parseKeyVal(keyVal);
+        processingString=processingString.erase(0,delimiter+1);
+        delimiter=processingString.find_first_of(";");
+    }
+    if (!processingString.empty()) {
+        parseKeyVal(processingString);
+    }   
+}
 
 db2_session_backend::db2_session_backend(
     std::string const &  connectString /* DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;AutoCommit=off */)
 {
+    parseConnectString(connectString);
     SQLRETURN cliRC = SQL_SUCCESS;
 
     /* Prepare handles */
@@ -30,24 +90,27 @@ db2_session_backend::db2_session_backend(
     
     cliRC = SQLAllocHandle(SQL_HANDLE_DBC, hEnv, &hDbc);
     if (cliRC != SQL_SUCCESS) {
+        std::string msg=db2_soci_error::sqlState("Error while allocating the connection handle",SQL_HANDLE_ENV,hEnv);
         SQLFreeHandle(SQL_HANDLE_ENV,hEnv);
-        throw db2_soci_error("Error while allocating the connection handle",cliRC);
+        throw db2_soci_error(msg,cliRC);
     }
 
     /* Set autocommit */
     cliRC = SQLSetConnectAttr(hDbc,SQL_ATTR_AUTOCOMMIT, this->autocommit ? (SQLPOINTER)SQL_AUTOCOMMIT_ON : (SQLPOINTER)SQL_AUTOCOMMIT_OFF, SQL_NTS);
     if (cliRC != SQL_SUCCESS) {
+        std::string msg=db2_soci_error::sqlState("Error while setting autocommit attribute",SQL_HANDLE_DBC,hDbc);
         SQLFreeHandle(SQL_HANDLE_DBC,hDbc);
         SQLFreeHandle(SQL_HANDLE_ENV,hEnv);
-        throw db2_soci_error("Error while setting autocommit attribute",cliRC);
+        throw db2_soci_error(msg,cliRC);
     }
 
     /* Connect to database */
-    cliRC = SQLConnect(hDbc,(SQLCHAR*)connectString.c_str(),SQL_NTS,(SQLCHAR*)username.c_str(),SQL_NTS,(SQLCHAR*)password.c_str(),SQL_NTS);
+    cliRC = SQLConnect(hDbc,(SQLCHAR*)dsn.c_str(),SQL_NTS,(SQLCHAR*)username.c_str(),SQL_NTS,(SQLCHAR*)password.c_str(),SQL_NTS);
     if (cliRC != SQL_SUCCESS) {
+        std::string msg=db2_soci_error::sqlState("Error connecting to database",SQL_HANDLE_DBC,hDbc);
         SQLFreeHandle(SQL_HANDLE_DBC,hDbc);
         SQLFreeHandle(SQL_HANDLE_ENV,hEnv);
-        throw db2_soci_error("Error connecting to database",cliRC);
+        throw db2_soci_error(msg,cliRC);
     }
 }
 
