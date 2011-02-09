@@ -6,7 +6,7 @@
 //
 
 #include "soci.h"
-#include "soci-empty.h"
+#include "soci-db2.h"
 #include <iostream>
 #include <string>
 #include <cassert>
@@ -16,7 +16,7 @@
 using namespace soci;
 
 std::string connectString;
-backend_factory const &backEnd = *soci::factory_empty();
+backend_factory const &backEnd = *soci::factory_db2();
 
 
 // NOTE:
@@ -33,98 +33,107 @@ backend_factory const &backEnd = *soci::factory_empty();
 // from the database-development point of view. For new tests, you may wish
 // to remove this code and keep only the general structure of this file.
 
-struct Person
-{
-    int id;
-    std::string firstName;
-    std::string lastName;
-};
-
-namespace soci
-{
-    template<> struct type_conversion<Person>
-    {
-        typedef values base_type;
-        static void from_base(values & /* r */, indicator /* ind */,
-            Person & /* p */)
-        {
-        }
-    };
-}
-
 void test1()
 {
     {
         session sql(backEnd, connectString);
 
-        sql << "Do what I want.";
-        sql << "Do what I want " << 123 << " times.";
+        sql << "SELECT CURRENT TIMESTAMP FROM SYSIBM.SYSDUMMY1";
+        sql << "SELECT " << 123 << " FROM SYSIBM.SYSDUMMY1";
 
-        std::string query = "some query";
+        std::string query = "CREATE TABLE DB2INST1.TEST (ID BIGINT,DATA VARCHAR(8))";
         sql << query;
 
         int i = 7;
-        sql << "insert", use(i);
-        sql << "select", into(i);
+        sql << "insert into db2inst1.TEST (id) values (:id)", use(i,"id");
+        sql << "select id from db2inst1.TEST where id=7", into(i);
 
+        
 #if defined (__LP64__) || ( __WORDSIZE == 64 )
         long int li = 9;
-        sql << "insert", use(li);
-        sql << "select", into(li);
+        sql << "insert into db2inst1.TEST (id) values (:id)", use(li,"id");
+        sql << "select id from db2inst1.TEST where id=9", into(li);
 #endif
 
         long long ll = 11;
-        sql << "insert", use(ll);
-        sql << "select", into(ll);
+        sql << "insert into db2inst1.TEST (id) values (:id)", use(ll,"id");
+        sql << "select id from db2inst1.TEST where id=11", into(ll);
 
         indicator ind = i_ok;
-        sql << "insert", use(i, ind);
-        sql << "select", into(i, ind);
+        sql << "insert into db2inst1.TEST (id) values (:id)", use(i,ind,"id");
+        sql << "select id from db2inst1.TEST where id=7", into(i,ind);
 
         std::vector<int> numbers(100);
-        sql << "insert", use(numbers);
-        sql << "select", into(numbers);
+        sql << "insert into db2inst1.TEST (id) values (:id)", use(numbers,"id");
+        sql << "select id from db2inst1.TEST", into(numbers);
 
         std::vector<indicator> inds(100);
-        sql << "insert", use(numbers, inds);
-        sql << "select", into(numbers, inds);
+        sql << "insert into db2inst1.TEST (id) values (:id)", use(numbers,inds,"id");
+        sql << "select id from db2inst1.TEST", into(numbers,inds);
 
         {
-            statement st = (sql.prepare << "select", into(i));
+            statement st = (sql.prepare << "select id from db2inst1.TEST", into(i));
             st.execute();
             st.fetch();
         }
         {
-            statement st = (sql.prepare << "select", into(i, ind));
+            statement st = (sql.prepare << "select id from db2inst1.TEST", into(i, ind));
         }
         {
-            statement st = (sql.prepare << "select", into(numbers));
+            statement st = (sql.prepare << "select id from db2inst1.TEST", into(numbers));
         }
         {
-            statement st = (sql.prepare << "select", into(numbers, inds));
+            statement st = (sql.prepare << "select id from db2inst1.TEST", into(numbers, inds));
         }
         {
-            statement st = (sql.prepare << "insert", use(i));
+            statement st = (sql.prepare << "select id from db2inst1.TEST", use(i));
         }
         {
-            statement st = (sql.prepare << "insert", use(i, ind));
+            statement st = (sql.prepare << "select id from db2inst1.TEST", use(i, ind));
         }
         {
-            statement st = (sql.prepare << "insert", use(numbers));
+            statement st = (sql.prepare << "select id from db2inst1.TEST", use(numbers));
         }
         {
-            statement st = (sql.prepare << "insert", use(numbers, inds));
-        }
-        {
-            Person p;
-            sql << "select person", into(p);
+            statement st = (sql.prepare << "select id from db2inst1.TEST", use(numbers, inds));
         }
 
+        sql<<"DROP TABLE DB2INST1.TEST";
+
+        sql.commit();
     }
 
     std::cout << "test 1 passed" << std::endl;
 }
 
+void test2() {
+    {
+        session sql(backEnd, connectString);
+
+        std::string query = "CREATE TABLE DB2INST1.TEST (ID BIGINT,DATA VARCHAR(8),DT TIMESTAMP)";
+        sql << query;
+
+        int i = 7;
+        std::string n("test");
+        sql << "insert into db2inst1.TEST (id,data) values (:id,:name)", use(i,"id"),use(n,"name");
+        sql << "select id,data from db2inst1.TEST where id=7", into(i),into(n);
+
+        i = 8;
+        indicator ind = i_ok;
+        sql << "insert into db2inst1.TEST (id) values (:id)", use(i,"id");
+        sql << "select id,data from db2inst1.TEST where id=8", into(i),into(n,ind);
+        assert(ind==i_null);
+
+        std::tm dt;
+        sql << "select current timestamp from sysibm.sysdummy1",into(dt);
+        sql << "insert into db2inst1.TEST (dt) values (:dt)",use(dt,"dt");
+
+        sql<<"DROP TABLE DB2INST1.TEST";
+        sql.commit();
+    }
+
+    std::cout << "test 2 passed" << std::endl;
+}
 
 int main(int argc, char** argv)
 {
@@ -147,14 +156,14 @@ int main(int argc, char** argv)
         std::cout << "usage: " << argv[0]
             << " connectstring\n"
             << "example: " << argv[0]
-            << " \'connect_string_for_empty_backend\'\n";
+            << " \'Dsn=SAMPLE;Uid=db2inst1;Pwd=db2inst1;autocommit=off\'\n";
         std::exit(1);
     }
 
     try
     {
         test1();
-        // test2();
+        test2();
         // ...
 
         std::cout << "\nOK, all tests passed.\n\n";
