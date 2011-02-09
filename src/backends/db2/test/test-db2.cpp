@@ -6,11 +6,7 @@
 //
 
 #include "soci.h"
-<<<<<<< HEAD
 #include "soci-db2.h"
-=======
-#include "soci-empty.h"
->>>>>>> Ignored ide files
 #include <iostream>
 #include <string>
 #include <cassert>
@@ -20,11 +16,7 @@
 using namespace soci;
 
 std::string connectString;
-<<<<<<< HEAD
 backend_factory const &backEnd = *soci::factory_db2();
-=======
-backend_factory const &backEnd = *soci::factory_empty();
->>>>>>> Ignored ide files
 
 
 // NOTE:

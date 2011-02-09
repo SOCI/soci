@@ -28,13 +28,10 @@
 
 #include <cstddef>
 #include <string>
-<<<<<<< HEAD
 #include <vector>
 #include <iostream>
 #include <sstream>
 #include <cstring>
-=======
->>>>>>> Ignored ide files
 
 #include <sqlcli1.h>
 
