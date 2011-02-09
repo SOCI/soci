@@ -28,10 +28,6 @@ set(SOCI_BACKENDS_DB_DEPENDENCIES
   Firebird
   DB2)
 
-set(SOCI_BACKENDS_ALL_DEPENDENCIES
-  Boost
-  ${SOCI_BACKENDS_DB_DEPENDENCIES})
-
 #
 # Perform checks
 # 
