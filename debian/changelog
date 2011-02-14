@@ -1,3 +1,33 @@
+soci (3.1.0+git2013015-5) unstable; urgency=low
+
+  * Git version bump
+
+ -- Denis Chapligin <chollya@satgate.net>  Tue, 05 Feb 2013 10:44:40 +0300
+
+soci (3.1.0+git20120714-4) unstable; urgency=low
+
+  * Git version bump
+
+ -- Denis Chapligin <chollya@satgate.net>  Wed, 18 Jul 2012 10:46:39 +0300
+
+soci (3.1.0+git20120703-3) unstable; urgency=low
+
+  * Git version bump
+
+ -- Denis Chapligin <chollya@satgate.net>  Tue, 03 Jul 2012 10:05:43 +0300
+
+soci (3.1.0+git20111028-2) unstable; urgency=low
+
+  * Git version bump
+
+ -- Denis Chapligin <chollya@satgate.net>  Fri, 28 Oct 2011 09:18:15 +0300
+
+soci (3.1.0+git20110413-1) unstable; urgency=low
+
+  * Git version bump
+
+ -- Denis Chapligin <chollya@satgate.net>  Wed, 13 Apr 2011 12:52:49 +0300
+
 soci (3.1.0+git20110214-1) unstable; urgency=low
 
   * Initial release
