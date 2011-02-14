@@ -1,0 +1,2 @@
+debian/tmp/usr/local/include/*
+debian/tmp/usr/local/lib/*.a

@@ -1,0 +1,2 @@
+debian/tmp/usr/local/lib/libsoci_mysql*.so
+debian/lintian/overrides/libsoci-mysql-gcc ./usr/share/lintian/overrides/

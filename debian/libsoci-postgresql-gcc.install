@@ -1,0 +1,2 @@
+debian/tmp/usr/local/lib/libsoci_postgresql*.so
+debian/lintian/overrides/libsoci-postgresql-gcc ./usr/share/lintian/overrides/

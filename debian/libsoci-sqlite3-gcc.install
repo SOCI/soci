@@ -1,0 +1,2 @@
+debian/tmp/usr/local/lib/libsoci_sqlite3*.so
+debian/lintian/overrides/libsoci-sqlite3-gcc ./usr/share/lintian/overrides/
