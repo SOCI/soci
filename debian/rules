@@ -4,4 +4,4 @@ include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/cmake.mk
 
 DEB_SRCDIR=src
-DEB_BUILDDIR=build
+DEB_BUILDDIR=tmp

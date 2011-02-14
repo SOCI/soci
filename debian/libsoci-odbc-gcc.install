@@ -1,2 +1,2 @@
-debian/tmp/usr/local/lib/libsoci_odbc*.so
+debian/tmp/usr/local/lib/libsoci_odbc*.so*
 debian/lintian/overrides/libsoci-odbc-gcc ./usr/share/lintian/overrides/
