@@ -135,6 +135,27 @@ void test2() {
     std::cout << "test 2 passed" << std::endl;
 }
 
+void test3() {
+    {
+        session sql(backEnd, connectString);
+
+        std::string query = "CREATE TABLE DB2INST1.TEST (ID BIGINT,DATA VARCHAR(8),DT TIMESTAMP)";
+        sql << query;
+
+        std::vector<std::string> strings(100);
+        for(std::vector<std::string>::iterator it=strings.begin();it!=strings.end();it++) {
+    	    *it="test";
+        }
+        sql << "insert into db2inst1.TEST (data) values (:data)", use(strings,"data");
+        rowset<std::string> rs = (sql.prepare<<"SELECT data from db2inst1.TEST");
+
+        sql<<"DROP TABLE DB2INST1.TEST";
+        sql.commit();
+    }
+
+    std::cout << "test 3 passed" << std::endl;
+}
+
 int main(int argc, char** argv)
 {
 
@@ -164,6 +185,7 @@ int main(int argc, char** argv)
     {
         test1();
         test2();
+        test3();
         // ...
 
         std::cout << "\nOK, all tests passed.\n\n";
