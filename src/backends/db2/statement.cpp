@@ -220,7 +220,7 @@ SQLCHAR colNameBuffer[2048];
 
     if (cliRC != SQL_SUCCESS)
     {
-        throw db2_soci_error("Error while describing column",cliRC);
+        throw db2_soci_error(db2_soci_error::sqlState("Error while describing column",SQL_HANDLE_STMT,hStmt),cliRC);
     }
 
     char const *name = reinterpret_cast<char const *>(colNameBuffer);
