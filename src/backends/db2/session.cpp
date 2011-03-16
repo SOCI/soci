@@ -44,7 +44,7 @@ void db2_session_backend::parseKeyVal(std::string const & keyVal) {
     std::string key=keyVal.substr(0,delimiter);
     std::string value=keyVal.substr(delimiter+1,keyVal.length());
 
-    if (!key.compare("Dsn")) {
+    if (!key.compare("DSN")) {
         this->dsn=value;
     }
     if (!key.compare("Uid")) {
