@@ -177,7 +177,7 @@ int main(int argc, char** argv)
         std::cout << "usage: " << argv[0]
             << " connectstring\n"
             << "example: " << argv[0]
-            << " \'Dsn=SAMPLE;Uid=db2inst1;Pwd=db2inst1;autocommit=off\'\n";
+            << " \'DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;autocommit=off\'\n";
         std::exit(1);
     }
 
