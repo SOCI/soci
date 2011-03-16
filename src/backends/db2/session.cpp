@@ -96,7 +96,11 @@ db2_session_backend::db2_session_backend(
     }
 
     /* Set autocommit */
-    cliRC = SQLSetConnectAttr(hDbc,SQL_ATTR_AUTOCOMMIT, this->autocommit ? (SQLPOINTER)SQL_AUTOCOMMIT_ON : (SQLPOINTER)SQL_AUTOCOMMIT_OFF, SQL_NTS);
+    if(this->autocommit) {
+        cliRC = SQLSetConnectAttr(hDbc,SQL_ATTR_AUTOCOMMIT, (SQLPOINTER)SQL_AUTOCOMMIT_ON, SQL_NTS);
+    } else {
+        cliRC = SQLSetConnectAttr(hDbc,SQL_ATTR_AUTOCOMMIT, (SQLPOINTER)SQL_AUTOCOMMIT_OFF, SQL_NTS);
+    }
     if (cliRC != SQL_SUCCESS) {
         std::string msg=db2_soci_error::sqlState("Error while setting autocommit attribute",SQL_HANDLE_DBC,hDbc);
         SQLFreeHandle(SQL_HANDLE_DBC,hDbc);
