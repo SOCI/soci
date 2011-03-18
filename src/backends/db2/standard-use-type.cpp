@@ -106,7 +106,7 @@ void db2_standard_use_type_backend::bind_helper(int &position, void *data, detai
     SQLRETURN cliRC = SQLBindParameter(statement_.hStmt,
                                     static_cast<SQLUSMALLINT>(position++),
                                     SQL_PARAM_INPUT,
-                                    cType, sqlType, size, 0, data, 0, &indptr);
+                                    cType, sqlType, size, 0, data, size, &indptr);
 
     if (cliRC != SQL_SUCCESS)
     {
