@@ -1,5 +1,8 @@
 COMPILER = g++
-CXXFLAGS = -Wall -pedantic -Wno-long-long -DSOCI_ABI_VERSION=3.1.0
+CXXFLAGS = -Wall -pedantic -Wno-long-long \
+         -DSOCI_ABI_VERSION=\"\" \
+         -DSOCI_LIB_PREFIX=\"\" \
+         -DSOCI_LIB_SUFFIX=\"\"
 INCLUDEDIRS = 
 OBJS =  session.o statement.o row.o values.o \
 	into-type.o use-type.o \
