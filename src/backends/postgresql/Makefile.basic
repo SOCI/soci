@@ -11,11 +11,11 @@ CXXFLAGSSO = ${CXXFLAGS} -fPIC
 INCLUDEDIRS = -I../../core ${PGSQLINCLUDEDIR}
 
 
-OBJECTS = blob.o factory.o row-id.o session.o standard-into-type.o \
+OBJECTS = blob.o error.o factory.o row-id.o session.o standard-into-type.o \
 	standard-use-type.o statement.o vector-into-type.o vector-use-type.o \
 	common.o
 
-OBJECTSSO = blob-s.o factory-s.o row-id-s.o session-s.o \
+OBJECTSSO = blob-s.o error-s.o factory-s.o row-id-s.o session-s.o \
 	standard-into-type-s.o standard-use-type-s.o statement-s.o \
 	vector-into-type-s.o vector-use-type-s.o common-s.o
 
@@ -26,6 +26,9 @@ libsoci_postgresql.a : ${OBJECTS}
 
 
 blob.o : blob.cpp
+	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
+
+error.o : error.cpp
 	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 common.o : common.cpp
@@ -61,6 +64,9 @@ shared : ${OBJECTSSO}
 	rm *.o
 
 blob-s.o : blob.cpp
+	${COMPILER} -c -o $@ $? ${CXXFLAGSSO} ${INCLUDEDIRS}
+
+error-s.o : error.cpp
 	${COMPILER} -c -o $@ $? ${CXXFLAGSSO} ${INCLUDEDIRS}
 
 common-s.o : common.cpp

@@ -1,5 +1,6 @@
 //
 // Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2011 Gevorg Voskanyan
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -33,6 +34,17 @@
 
 namespace soci
 {
+
+class postgresql_soci_error : public soci_error
+{
+public:
+    postgresql_soci_error(std::string const & msg, char const * sqlst);
+
+    std::string sqlstate() const;
+
+private:
+    char sqlstate_[ 5 ];   // not std::string to keep copy-constructor no-throw
+};
 
 struct postgresql_statement_backend;
 struct postgresql_standard_into_type_backend : details::standard_into_type_backend

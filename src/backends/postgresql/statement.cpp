@@ -7,6 +7,7 @@
 
 #define SOCI_POSTGRESQL_SOURCE
 #include "soci-postgresql.h"
+#include "error.h"
 #include <soci-platform.h>
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
@@ -26,7 +27,7 @@
 
 using namespace soci;
 using namespace soci::details;
-
+using namespace soci::details::postgresql;
 
 postgresql_statement_backend::postgresql_statement_backend(
     postgresql_session_backend &session)
@@ -164,7 +165,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
         ExecStatusType status = PQresultStatus(res);
         if (status != PGRES_COMMAND_OK)
         {
-            throw soci_error(PQresultErrorMessage(res));
+            throw_postgresql_soci_error(res);
         }
         PQclear(res);
     }
@@ -310,7 +311,7 @@ postgresql_statement_backend::execute(int number)
                     ExecStatusType status = PQresultStatus(result_);
                     if (status != PGRES_COMMAND_OK)
                     {
-                        throw soci_error(PQresultErrorMessage(result_));
+                        throw_postgresql_soci_error(result_);
                     }
                     PQclear(result_);
                 }
@@ -396,7 +397,10 @@ postgresql_statement_backend::execute(int number)
     }
     else
     {
-        throw soci_error(PQresultErrorMessage(result_));
+        throw_postgresql_soci_error(result_);
+
+        // dummy, never reach
+        return ef_no_data;
     }
 }
 
