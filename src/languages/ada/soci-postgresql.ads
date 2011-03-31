@@ -5,8 +5,6 @@
 
 package SOCI.PostgreSQL is
 
-   pragma Pure;
-
    --
    --  Registers the PostgreSQL backend so that it is ready for use
    --  by the dynamic backend loader.

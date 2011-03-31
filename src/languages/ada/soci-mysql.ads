@@ -5,8 +5,6 @@
 
 package SOCI.MySQL is
 
-   pragma Pure;
-
    --
    --  Registers the MySQL backend so that it is ready for use
    --  by the dynamic backend loader.

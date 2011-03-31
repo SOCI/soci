@@ -5,8 +5,6 @@
 
 package SOCI.Oracle is
 
-   pragma Pure;
-
    --
    --  Registers the Oracle backend so that it is ready for use
    --  by the dynamic backend loader.
