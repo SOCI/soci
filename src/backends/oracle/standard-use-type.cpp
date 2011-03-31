@@ -84,6 +84,7 @@ void oracle_standard_use_type_backend::prepare_for_bind(
 
     // cases that require adjustments and buffer management
     case x_long_long:
+    case x_unsigned_long_long:
         oracleType = SQLT_STR;
         size = 100; // arbitrary buffer length
         buf_ = new char[size];
@@ -242,6 +243,12 @@ void oracle_standard_use_type_backend::pre_use(indicator const *ind)
             snprintf(buf_, size, "%lld", *static_cast<long long *>(data_));
         }
         break;
+    case x_unsigned_long_long:
+        {
+            size_t const size = 100; // arbitrary, but consistent with prepare_for_bind
+            snprintf(buf_, size, "%llu", *static_cast<unsigned long long *>(data_));
+        }
+        break;
     case x_double:
         if (readOnly_)
         {
@@ -366,6 +373,18 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
             {
                 long long const original = *static_cast<long long *>(data_);
                 long long const bound = strtoll(buf_, NULL, 10);
+
+                if (original != bound)
+                {
+                    throw soci_error("Attempted modification of const use element");
+                }
+            }
+            break;
+        case x_unsigned_long_long:
+            if (readOnly_)
+            {
+                unsigned long long const original = *static_cast<unsigned long long *>(data_);
+                unsigned long long const bound = strtoull(buf_, NULL, 10);
 
                 if (original != bound)
                 {

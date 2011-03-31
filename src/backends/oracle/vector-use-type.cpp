@@ -113,6 +113,24 @@ void oracle_vector_use_type_backend::prepare_for_bind(
             prepare_indicators(vecSize);
         }
         break;
+    case x_unsigned_long_long:
+        {
+            std::vector<unsigned long long> *vp
+                = static_cast<std::vector<unsigned long long> *>(data);
+            std::vector<unsigned long long> &v(*vp);
+
+            std::size_t const vecSize = v.size();
+            std::size_t const entrySize = 100; // arbitrary
+            std::size_t const bufSize = entrySize * vecSize;
+            buf_ = new char[bufSize];
+
+            oracleType = SQLT_STR;
+            data = buf_;
+            size = entrySize;
+
+            prepare_indicators(vecSize);
+        }
+        break;
     case x_stdstring:
         {
             std::vector<std::string> *vp
@@ -244,6 +262,21 @@ void oracle_vector_use_type_backend::pre_use(indicator const *ind)
             pos += entrySize;
         }
     }
+    else if (type_ == x_unsigned_long_long)
+    {
+        std::vector<unsigned long long> *vp
+            = static_cast<std::vector<unsigned long long> *>(data_);
+        std::vector<unsigned long long> &v(*vp);
+
+        char *pos = buf_;
+        std::size_t const entrySize = 100; // arbitrary, but consistent
+        std::size_t const vecSize = v.size();
+        for (std::size_t i = 0; i != vecSize; ++i)
+        {
+            snprintf(pos, entrySize, "%llu", v[i]);
+            pos += entrySize;
+        }
+    }
     else if (type_ == x_stdtm)
     {
         std::vector<std::tm> *vp
@@ -326,6 +359,13 @@ std::size_t oracle_vector_use_type_backend::size()
         {
             std::vector<long long> *vp
                 = static_cast<std::vector<long long> *>(data_);
+            sz = vp->size();
+        }
+        break;
+    case x_unsigned_long_long:
+        {
+            std::vector<unsigned long long> *vp
+                = static_cast<std::vector<unsigned long long> *>(data_);
             sz = vp->size();
         }
         break;

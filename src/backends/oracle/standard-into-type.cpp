@@ -86,6 +86,7 @@ void oracle_standard_into_type_backend::define_by_pos(
 
     // cases that require adjustments and buffer management
     case x_long_long:
+    case x_unsigned_long_long:
         oracleType = SQLT_STR;
         size = 100; // arbitrary buffer length
         buf_ = new char[size];
@@ -189,6 +190,14 @@ void oracle_standard_into_type_backend::post_fetch(
             {
                 long long *v = static_cast<long long *>(data_);
                 *v = strtoll(buf_, NULL, 10);
+            }
+        }
+        else if (type_ == x_unsigned_long_long)
+        {
+            if (indOCIHolder_ != -1)
+            {
+                unsigned long long *v = static_cast<unsigned long long *>(data_);
+                *v = strtoull(buf_, NULL, 10);
             }
         }
         else if (type_ == x_stdtm)
