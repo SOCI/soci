@@ -1,4 +1,5 @@
 with SOCI;
+with SOCI.PostgreSQL;
 with Ada.Text_IO;
 with Ada.Calendar;
 with Ada.Exceptions;
@@ -590,6 +591,8 @@ begin
       Connection_String : String := Ada.Command_Line.Argument (1);
    begin
       Ada.Text_IO.Put_Line ("testing with " & Connection_String);
+
+      SOCI.PostgreSQL.Register_Factory_PostgreSQL;
 
       Test_1 (Connection_String);
       Test_2 (Connection_String);
