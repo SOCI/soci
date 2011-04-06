@@ -1,6 +1,11 @@
 This file contains the history of changes in the SOCI library.
 
 ---
+Version 3.1.0 differs from 3.0.0 in the following ways:
+
+	TODO - it's going to be a labour
+
+---
 Version 3.0.0 differs from 2.2.0 in the following ways:
 
 - Exposed the session's locale object.
