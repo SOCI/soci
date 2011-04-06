@@ -1,4 +1,4 @@
-with "../soci.gpr";
+with "../soci_ada.gpr";
 with "../soci_postgresql.gpr";
 with "../postgresql_client.gpr";
 
