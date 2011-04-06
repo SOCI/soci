@@ -97,7 +97,9 @@ void odbc_standard_use_type_backend::prepare_for_bind(
     case x_statement:
     case x_rowid:
         break;
-    }
+	case x_long_long: break; // TODO: verify if can be supported
+	case x_unsigned_long_long: break; // TODO: verify if can be supported
+	}
 }
 
 void odbc_standard_use_type_backend::bind_helper(int &position, void *data, exchange_type type)

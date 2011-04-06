@@ -136,6 +136,8 @@ void odbc_vector_into_type_backend::define_by_pos(
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
+	case x_long_long: break; // TODO: verify if can be supported
+	case x_unsigned_long_long: break; // TODO: verify if can be supported
     }
 
     SQLRETURN rc = SQLBindCol(statement_.hstmt_, static_cast<SQLUSMALLINT>(position++),
@@ -312,6 +314,8 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
+	case x_long_long: break; // TODO: verify if can be supported
+	case x_unsigned_long_long: break; // TODO: verify if can be supported
     }
 }
 
@@ -371,6 +375,8 @@ std::size_t odbc_vector_into_type_backend::size()
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
+	case x_long_long: break; // TODO: verify if can be supported
+	case x_unsigned_long_long: break; // TODO: verify if can be supported
     }
 
     return sz;
