@@ -1,0 +1,22 @@
+
+* Pristine:
+-----------
+=> master, src, src_build
+
+* Buried headers:
+-----------------
+=> buried_headers, src_buried_headers, src_build_buried_headers
+
+As buried_headers renames the 'src' directory into 'soci',
+intermediate Git repository structures exist:
+1. The 'src_buried_headers' sub-branch corresponds to the 'src' sub-branch
+   and renames 'src' (without the 'cmake' sub-directory) into 'soci'.
+2. The 'src_build_buried_headers' sub-branch corresponds to the 'src_build'
+   sub-branch and renames 'src/cmake' into 'cmake'.
+3. The 'buried_headers' branch is complete, and corresponds to the 'master'
+   branch (but 'src' has been renamed into 'soci').
+
+* GitHub HTML pages:
+--------------------
+=> gh-pages
+
