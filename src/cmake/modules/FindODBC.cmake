@@ -25,6 +25,8 @@ find_path(ODBC_INCLUDE_DIRECTORIES sql.h
   /usr/local/include/odbc
   /usr/local/odbc/include
   "C:/Program Files/ODBC/include"
+  "C:/Program Files/Microsoft SDKs/Windows/v7.0/include" 
+  "C:/Program Files/Microsoft SDKs/Windows/v6.0a/include" 
   "C:/ODBC/include"
   DOC "Specify the directory containing sql.h."
 )
