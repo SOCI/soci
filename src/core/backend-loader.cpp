@@ -4,9 +4,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef SOCI_ABI_VERSION
-#error "SOCI_ABI_VERSION define is required to configure backend loader"
-#endif
 
 #define SOCI_SOURCE
 #include "backend-loader.h"
@@ -41,7 +38,12 @@ typedef HMODULE soci_handler_t;
 #endif
 #define DLCLOSE(x) FreeLibrary(x)
 #define DLSYM(x, y) GetProcAddress(x, y)
+
+#ifdef SOCI_ABI_VERSION
 #define LIBNAME(x) (SOCI_LIB_PREFIX + x + "_" SOCI_ABI_VERSION SOCI_LIB_SUFFIX)
+#else
+#define LIBNAME(x) (SOCI_LIB_PREFIX + x + SOCI_LIB_SUFFIX)
+#endif // SOCI_ABI_VERSION
 
 #else
 
@@ -58,11 +60,18 @@ typedef void * soci_handler_t;
 #define DLOPEN(x) dlopen(x, RTLD_LAZY)
 #define DLCLOSE(x) dlclose(x)
 #define DLSYM(x, y) dlsym(x, y)
+
+#ifdef SOCI_ABI_VERSION
+
 #ifdef __APPLE__
 #define LIBNAME(x) (SOCI_LIB_PREFIX + x + "." SOCI_ABI_VERSION SOCI_LIB_SUFFIX)
 #else
 #define LIBNAME(x) (SOCI_LIB_PREFIX + x + SOCI_LIB_SUFFIX "." SOCI_ABI_VERSION)
 #endif
+
+#else
+#define LIBNAME(x) (SOCI_LIB_PREFIX + x + SOCI_LIB_SUFFIX)
+#endif // SOCI_ABI_VERSION
 
 #endif // _WIN32
 
