@@ -1351,7 +1351,7 @@ void test7()
 #else
             // Older PostgreSQL does not support use elements.
 
-            sql << "insert into test7(i1, i2, i3) values(5, 6, 7)";
+            sql << "insert into soci_test(i1, i2, i3) values(5, 6, 7)";
 
 #endif // SOCI_PGSQL_NOPARAMS
 
