@@ -300,13 +300,14 @@ postgresql_statement_backend::execute(int number)
 
 #endif // SOCI_POSTGRESQL_NOPARAMS
 
+                if (result_ == NULL)
+                {
+                    throw soci_error("Cannot execute query.");
+                }
+
                 if (numberOfExecutions > 1)
                 {
                     // there are only bulk use elements (no intos)
-                    if (result_ == NULL)
-                    {
-                        throw soci_error("Cannot execute query.");
-                    }
 
                     ExecStatusType status = PQresultStatus(result_);
                     if (status != PGRES_COMMAND_OK)
