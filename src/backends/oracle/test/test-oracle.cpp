@@ -10,6 +10,7 @@
 #include "common-tests.h"
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <cassert>
 #include <ctime>
 
@@ -31,7 +32,16 @@ void test1()
 
         sql << "select t from (select :t as t from dual)",
             into(t1), use(t2);
-        assert(memcmp(&t1, &t2, sizeof(std::tm)) == 0);
+
+        assert(t1.tm_sec == t2.tm_sec);
+        assert(t1.tm_min == t2.tm_min);
+        assert(t1.tm_hour == t2.tm_hour);
+        assert(t1.tm_mday == t2.tm_mday);
+        assert(t1.tm_mon == t2.tm_mon);
+        assert(t1.tm_year == t2.tm_year);
+        assert(t1.tm_wday == t2.tm_wday);
+        assert(t1.tm_yday == t2.tm_yday);
+        assert(t1.tm_isdst == t2.tm_isdst);
 
         // make sure the date is stored properly in Oracle
         char buf[25];
@@ -54,7 +64,15 @@ void test1()
         sql << "select t from (select :t as t from dual)",
              into(t1), use(t2);
 
-        assert(memcmp(&t1, &t2, sizeof(std::tm)) == 0);
+        assert(t1.tm_sec == t2.tm_sec);
+        assert(t1.tm_min == t2.tm_min);
+        assert(t1.tm_hour == t2.tm_hour);
+        assert(t1.tm_mday == t2.tm_mday);
+        assert(t1.tm_mon == t2.tm_mon);
+        assert(t1.tm_year == t2.tm_year);
+        assert(t1.tm_wday == t2.tm_wday);
+        assert(t1.tm_yday == t2.tm_yday);
+        assert(t1.tm_isdst == t2.tm_isdst);
 
         // make sure the date is stored properly in Oracle
         char buf[25];
