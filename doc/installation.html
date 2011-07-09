@@ -19,6 +19,7 @@
   <a href="#windows">On Windows</a><br />
   <a href="#unix-makefiles">Using classic Makefiles on Unix</a><br />
 </div>
+<a href="#testing">Running Tests</a><br />
 <a href="#compilation">Binaries</a><br />
 </div>
 
@@ -128,46 +129,14 @@
 </tr>
 </table>
 
-<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="List of variables used to control SOCI tests">
-<caption class="cmake-variables">List of variables used to control SOCI tests</caption>
-<tr>
-  <td class="variable-name">SOCI_TESTS</td>
-  <td class="variable-type">boolean</td>
-  <td>Should CMake build unit tests for all enabled backends. If OFF, all the connection string variables below are ignored.</td>
-</tr>
-<tr>
-  <td class="variable-name">SOCI_EMPTY_TEST_CONNSTR</td>
-  <td class="variable-type">string</td>
-  <td>Connection string passed to Empty backend test program (e.g. "dummy connection")</td>
-</tr>
-<tr>
-  <td class="variable-name">SOCI_MYSQL_TEST_CONNSTR</td>
-  <td class="variable-type">string</td>
-  <td>Connection string to MySQL test database. Format of the string is explained <a href="backends/mysql.html">MySQL Backend Refernece</a>.</td>
-</tr>
-<tr>
-  <td class="variable-name">SOCI_ODBC_TEST_ACCESS_CONNSTR<br />SOCI_ODBC_TEST_MSSQL_CONNSTR<br />SOCI_ODBC_TEST_MYSQL_CONNSTR<br />SOCI_ODBC_TEST_POSTGRESQL_CONNSTR<br /></td>
-  <td class="variable-type">string</td>
-  <td>ODBC Data Source Name (DSN) or ODBC File Data Source Name (FILEDSN) to test database: Microsoft Access (.mdb), Microsoft SQL Server, MySQL, PostgreSQL or any other ODBC SQL data source. See <a href="backends/odbc.html">ODBC Backend Refernece</a> for details.</td>
-</tr>
-<tr>
-  <td class="variable-name">SOCI_ORACLE_TEST_CONNSTR</td>
-  <td class="variable-type">string</td>
-  <td>Connection string to Oracle test database. Format of the string is explained <a href="backends/oracle.html">Oracle Backend Refernece</a>.</td>
-</tr>
-<tr>
-  <td class="variable-name">SOCI_POSTGRESQL_TEST_CONNSTR</td>
-  <td class="variable-type">string</td>
-  <td>Connection string to PostgreSQL test database. Format of the string is explained <a href="backends/postgresql.html">PostgreSQL Backend Refernece</a>.</td>
-</tr>
-<tr>
-  <td class="variable-name">SOCI_SQLITE3_TEST_CONNSTR</td>
-  <td class="variable-type">string</td>
-  <td>Connection string is simply a file path where SQLite3 test database will be created (e.g. /home/john/soci_test.db). Check <a href="backends/sqlite3.html">SQLite3 Backend Refernece</a> for details.</td>
-</tr>
-</table>
-
-<p>CMake configures SOCI build performing sequence of steps. Each subsequent step is dependant on result of previous steps corresponding with particular feature. First, CMake checks system platform and compilation toolset. Next, CMake tries to find all external dependencies. Then, depending on the results of the dependency check, CMake determines SOCI backends which are possible to build. The SOCI-specific variables described above provide users with basic control of this behaviour.</p>
+<p>CMake configures SOCI build performing sequence of steps. Each
+subsequent step is dependant on result of previous steps corresponding
+with particular feature. First, CMake checks system platform and
+compilation toolset. Next, CMake tries to find all external
+dependencies. Then, depending on the results of the dependency check,
+CMake determines SOCI backends which are possible to build. The
+SOCI-specific variables described above provide users with basic
+control of this behaviour.</p>
 
 <h4 id="unix">On Unix</h4>
 
@@ -232,6 +201,100 @@ Please review their values in case of any compilation problems.</p>
 
 <p>The Makefiles for test programs can be a good starting point to find
 out correct compiler and linker options.</p>
+
+<h3 id="testing">Running test cases</h3>
+
+<p>Running test cases requires that you have a backend that compiles and a working database instance
+for it.</p>
+<p>If you are only interested in testing a few
+backends, you must provide working connection strings for them and
+disable the other backends by setting SOCI_#BACKEND#_DO_NOT_TEST=ON as necessary.</p>
+
+<table class="cmake-variables" summary="List of variables used to control SOCI tests" cellpadding="2" cellspacing="2">
+
+  <caption class="cmake-variables">List of variables used to control
+SOCI tests</caption> <tbody>
+    <tr>
+      <td class="variable-name">SOCI_TESTS</td>
+      <td class="variable-type">boolean</td>
+      <td>Should CMake build unit tests for all enabled backends. If
+OFF, all the connection string variables below are ignored.</td>
+    </tr>
+    <tr>
+      <td class="variable-name">SOCI_EMPTY_TEST_CONNSTR</td>
+      <td class="variable-type">string</td>
+      <td>Connection string passed to Empty backend test program (e.g.
+"dummy connection")</td>
+    </tr>
+    <tr>
+      <td class="variable-name">SOCI_MYSQL_TEST_CONNSTR</td>
+      <td class="variable-type">string</td>
+      <td>Connection string to MySQL test database. Format of the
+string is explained <a href="backends/mysql.html">MySQL Backend
+Refernece</a>.</td>
+    </tr>
+    <tr>
+      <td class="variable-name">SOCI_MYSQL_DO_NOT_TEST</td>
+      <td class="variable-type">boolean</td>
+      <td>If ON, skip testing the MySQL backend.</td>
+    </tr>
+    <tr>
+      <td class="variable-name">SOCI_ODBC_TEST_ACCESS_CONNSTR<br />
+SOCI_ODBC_TEST_MSSQL_CONNSTR<br />
+SOCI_ODBC_TEST_MYSQL_CONNSTR<br />
+SOCI_ODBC_TEST_POSTGRESQL_CONNSTR<br />
+      </td>
+      <td class="variable-type">string</td>
+      <td>ODBC Data Source Name (DSN) or ODBC File Data Source Name
+(FILEDSN) to test database: Microsoft Access (.mdb), Microsoft SQL
+Server, MySQL, PostgreSQL or any other ODBC SQL data source. See <a href="backends/odbc.html">ODBC Backend Refernece</a> for details.</td>
+    </tr>
+    <tr>
+      <td class="variable-name">SOCI_ODBC_DO_NOT_TEST</td>
+      <td class="variable-type">boolean</td>
+      <td>If ON, skip testing the ODBC backend.</td>
+    </tr>
+    <tr>
+      <td class="variable-name">SOCI_ORACLE_TEST_CONNSTR</td>
+      <td class="variable-type">string</td>
+      <td>Connection string to Oracle test database. Format of the
+string is explained <a href="backends/oracle.html">Oracle Backend
+Refernece</a>.</td>
+    </tr>
+    <tr>
+      <td class="variable-name">SOCI_ORACLE_DO_NOT_TEST</td>
+      <td class="variable-type">boolean</td>
+      <td>If ON, skip testing the Oracle backend.</td>
+    </tr>
+    <tr>
+      <td class="variable-name">SOCI_POSTGRESQL_TEST_CONNSTR</td>
+      <td class="variable-type">string</td>
+      <td>Connection string to PostgreSQL test database. Format of the
+string is explained <a href="backends/postgresql.html">PostgreSQL
+Backend Refernece</a>.</td>
+    </tr>
+    <tr>
+      <td class="variable-name">SOCI_POSTGRESQL_DO_NOT_TEST</td>
+      <td class="variable-type">boolean</td>
+      <td>If ON, skip testing the PostgreSQL backend.</td>
+    </tr>
+    <tr>
+      <td class="variable-name">SOCI_SQLITE3_TEST_CONNSTR</td>
+      <td class="variable-type">string</td>
+      <td>Connection string is simply a file path where SQLite3 test
+database will be created (e.g. /home/john/soci_test.db). Check <a href="backends/sqlite3.html">SQLite3 Backend Refernece</a> for details.</td>
+    </tr>
+    <tr>
+      <td class="variable-name">SOCI_SQLITE3_DO_NOT_TEST</td>
+      <td class="variable-type">boolean</td>
+      <td>If ON, skip testing the SQLite backend.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Please consider running periodic tests and submitting them to the
+project's public <a href="http://my.cdash.org/index.php?project=SOCI">CDash</a><br />
+</p>
 
 <table class="foot-links" border="0" cellpadding="2" cellspacing="2">
   <tr>
