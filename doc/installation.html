@@ -12,18 +12,18 @@
 <h2>Installation</h2>
 
 <div class="navigation">
-<a href="#compilation">Downloading</a><br />
-<a href="#compilation">Compilation</a><br />
+<a href="#downloading">Downloading</a><br />
+<a href="#cmake">Building using CMake</a><br />
 <div class="navigation-indented">
   <a href="#unix">On Unix</a><br />
   <a href="#windows">On Windows</a><br />
-  <a href="#unix-makefiles">Using classic Makefiles on Unix</a><br />
 </div>
+<a href="#unix-makefiles">Building using classic Makefiles on Unix</a><br />
 <a href="#testing">Running Tests</a><br />
-<a href="#compilation">Binaries</a><br />
+<a href="#binaries">Binaries</a><br />
 </div>
 
-<h3 id="compilation">Downloading</h3>
+<h3 id="downloading">Downloading</h3>
 
 <p>Download package with latest release of the SOCI source code: soci-X.Y.Z.tar.gz|tar.bz2|zip, where X.Y.Z is the version number. Unpack this file.</p>
 
@@ -31,18 +31,18 @@
 
 <pre>git clone git://soci.git.sourceforge.net/gitroot/soci/soci </pre>
 
-<h3 id="compilation">Compilation</h3>
+<h3 id="cmake">Building using CMake</h3>
 
 <p>SOCI is configured to build using <a href="http://cmake.org/">CMake</a> system in version 2.6+.</p>
 
 <p>The build configuration allows to control various aspects of compilation and installation by setting common CMake variables that change behaviour, describe system or control build (see <a href="http://cmake.org/cmake/help/documentation.html">CMake help</a>) as well as SOCI-specific variables described below. All these variables are available regardless of platform or compilation toolset used.</p>
 
-<p>Running CMake from the command line allows to set variables in the CMake cache with the following syntax: <code>-DVARIABLE:TYPE=VALUE</code>. If you are new to CMake, you may find <a href="http://cmake.org/cmake/help/runningcmake.html">Running CMake</a> helpful.</p>
+<p>Running CMake from the command line allows to set variables in the CMake cache with the following syntax: <code>-DVARIABLE:TYPE=VALUE</code>. If you are new to CMake, you may find the tutorial <a href="http://cmake.org/cmake/help/runningcmake.html">Running CMake</a> helpful.</p>
 
-<p><em>TODO: group CMake variables specific to SOCI by backends + add variables used to defined LIB and INCLUDE for backend deps.</em></p>
+<p>The following tables provide summary of variables accepted by CMake scripts configuring SOCI build. The lists consist of common variables for SOCI core and all backends as well as variables specific to SOCI backends and their direct dependencies.</p>
 
-<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="List of a few essential and common CMake variables">
-<caption class="cmake-variables">List of a few essential and common CMake variables</caption>
+<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="CMake essential variables (refer to CMake manual for complete list)">
+<caption class="cmake-variables">List of a few essential CMake variables</caption>
 <tr>
   <td class="variable-name">CMAKE_BUILD_TYPE</td>
   <td class="variable-type">string</td>
@@ -58,69 +58,89 @@
   <td class="variable-type">boolean</td>
   <td>If ON, create verbose makefile (see CMake <a href="http://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_VERBOSE_MAKEFILE">help</a>).</td>
 </tr>
-
 </table>
 
-<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="List of variables used to control detection of SOCI external dependencies">
-<caption class="cmake-variables">List of variables used to control detection of SOCI external dependencies</caption>
+<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="SOCI Core configuration">
+<caption class="cmake-variables">List of variables to control common SOCI dependencies</caption>
 <tr>
   <td class="variable-name">WITH_BOOST</td>
   <td class="variable-type">boolean</td>
   <td>Should CMake try to detect <a href="http://www.boost.org/">Boost C++ Libraries</a>. If ON, CMake will try to find Boost headers and binaries of <a href="http://www.boost.org/doc/libs/release/doc/html/date_time.html">Boost.Date_Time</a> library.</td>
 </tr>
+</table>
+
+<h4 id="mysql">MySQL</h4>
+
+<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="SOCI MySQL configuration">
+<caption class="cmake-variables">SOCI MySQL backend configuration</caption>
 <tr>
   <td class="variable-name">WITH_MYSQL</td>
   <td class="variable-type">boolean</td>
   <td>Should CMake try to detect <a href="http://dev.mysql.com/doc/refman/5.0/en/c.html">mysqlclient</a> libraries providing MySQL C API. Note, currently the <a href="http://dev.mysql.com/doc/refman/5.0/en/building-clients.html">mysql_config</a> program is not being used.</td>
 </tr>
 <tr>
-  <td class="variable-name">WITH_ODBC</td>
-  <td class="variable-type">boolean</td>
-  <td>Should CMake try to detect ODBC libraries. On Unix systems, CMake tries to find <a href="http://www.unixodbc.org/">unixODBC</a> or <a href="http://www.iodbc.org/">iODBC</a> implementations.</td>
-</tr>
-<tr>
-  <td class="variable-name">WITH_ORACLE</td>
-  <td class="variable-type">boolean</td>
-  <td>Should CMake try to detect <a href="http://en.wikipedia.org/wiki/Oracle_Call_Interface">Oracle Call Interface (OCI)</a> libraries.</td>
-</tr>
-<tr>
-  <td class="variable-name">WITH_POSTGRESQL</td>
-  <td class="variable-type">boolean</td>
-  <td>Should CMake try to detect PostgreSQL client interface libraries. SOCI relies on <a href="http://www.postgresql.org/docs/9.0/interactive/libpq.html">libpq</a> C library.</td>
-</tr>
-<tr>
-  <td class="variable-name">WITH_SQLITE3</td>
-  <td class="variable-type">boolean</td>
-  <td>Should CMak try to detect <a href="http://www.sqlite.org/cintro.html">SQLite C/C++ library</a>. As bonus, the configuration tries <a href="http://trac.osgeo.org/osgeo4w/">OSGeo4W</a> distribution if <code>OSGEO4W_ROOT</code> environment variable is set.</td>
-</tr>
-</table>
-
-<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="List of variables used to control selection of SOCI backend">
-<caption class="cmake-variables">List of variables used to control selection of SOCI backends. All these variables are automatically switched on if corresponding <code>WITH_</code> variable explained above is set to ON.</caption>
-<tr>
-  <td class="variable-name">SOCI_EMPTY</td>
-  <td class="variable-type">boolean</td>
-  <td>Builds the <a href="backends.html">sample backend</a> called Empty. Always ON by default.</td>
-</tr>
-<tr>
   <td class="variable-name">SOCI_MYSQL</td>
   <td class="variable-type">boolean</td>
   <td>Requests to build <a href="backends/mysql.html">MySQL</a> backend. Automatically switched on, if <code>WITH_MYSQL</code> is set to ON.</td>
+</tr>
+</table>
+
+<h4 id="odbc">ODBC</h4>
+
+<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="SOCI ODBC configuration">
+<caption class="cmake-variables">SOCI ODBC backend configuration</caption>
+<tr>
+  <td class="variable-name">WITH_ODBC</td>
+  <td class="variable-type">boolean</td>
+  <td>Should CMake try to detect ODBC libraries. On Unix systems, CMake tries to find <a href="http://www.unixodbc.org/">unixODBC</a> or <a href="http://www.iodbc.org/">iODBC</a> implementations.</td>
 </tr>
 <tr>
   <td class="variable-name">SOCI_ODBC</td>
   <td class="variable-type">boolean</td>
   <td>Requests to build <a href="backends/odbc.html">ODBC</a> backend. Automatically switched on, if <code>WITH_ODBC</code> is set to ON.</td>
 </tr>
+</table>
+
+<h4 id="oracle">Oracle</h4>
+
+<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="SOCI Oracle configuration">
+<caption class="cmake-variables">SOCI Oracle backend configuration</caption>
+<tr>
+  <td class="variable-name">WITH_ORACLE</td>
+  <td class="variable-type">boolean</td>
+  <td>Should CMake try to detect <a href="http://en.wikipedia.org/wiki/Oracle_Call_Interface">Oracle Call Interface (OCI)</a> libraries.</td>
+</tr>
 <tr>
   <td class="variable-name">SOCI_ORACLE</td>
   <td class="variable-type">boolean</td>
   <td>Requests to build <a href="backends/oracle.html">Oracle</a> backend. Automatically switched on, if <code>WITH_ORACLE</code> is set to ON.</td>
 </tr>
+</table>
+
+<h4 id="postgresql">PostgreSQL</h4>
+
+<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="SOCI Oracle configuration">
+<caption class="cmake-variables">SOCI PostgreSQL backend configuration</caption>
+<tr>
+  <td class="variable-name">WITH_POSTGRESQL</td>
+  <td class="variable-type">boolean</td>
+  <td>Should CMake try to detect PostgreSQL client interface libraries. SOCI relies on <a href="http://www.postgresql.org/docs/9.0/interactive/libpq.html">libpq</a> C library.</td>
+</tr>
 <tr>
   <td class="variable-name">SOCI_POSTGRESQL</td>
   <td class="variable-type">boolean</td>
   <td>Requests to build <a href="backends/postgresql.html">PostgreSQL</a> backend. Automatically switched on, if <code>WITH_POSTGRESQL</code> is set to ON.</td>
+</tr>
+</table>
+
+<h4 id="sqlite">SQLite 3</h4>
+
+<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="SOCI Oracle configuration">
+<caption class="cmake-variables">SOCI SQLite 3 backend configuration</caption>
+<tr>
+  <td class="variable-name">WITH_SQLITE3</td>
+  <td class="variable-type">boolean</td>
+  <td>Should CMak try to detect <a href="http://www.sqlite.org/cintro.html">SQLite C/C++ library</a>. As bonus, the configuration tries <a href="http://trac.osgeo.org/osgeo4w/">OSGeo4W</a> distribution if <code>OSGEO4W_ROOT</code> environment variable is set.</td>
 </tr>
 <tr>
   <td class="variable-name">SOCI_SQLITE3</td>
@@ -128,6 +148,19 @@
   <td>Requests to build <a href="backends/sqlite3.html">SQLite3</a> backend. Automatically switched on, if <code>WITH_SQLITE3</code> is set to ON.</td>
 </tr>
 </table>
+
+<h4 id="empty">Empty (sample backend)</h4>
+
+<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="SOCI Oracle configuration">
+<caption class="cmake-variables">SOCI empty sample backend configuration</caption>
+<tr>
+  <td class="variable-name">SOCI_EMPTY</td>
+  <td class="variable-type">boolean</td>
+  <td>Builds the <a href="backends.html">sample backend</a> called Empty. Always ON by default.</td>
+</tr>
+</table>
+
+<p>By default, CMake will try to determine availability of all depdendencies automatically. If you are lucky, you will not need to specify any of the CMake variables explained above. However, if CMake reports some of the core or backend-specific dependencies as missing, you will need specify relevant variables to tell CMake where to look for the required components.</p>
 
 <p>CMake configures SOCI build performing sequence of steps. Each
 subsequent step is dependant on result of previous steps corresponding
@@ -138,7 +171,7 @@ CMake determines SOCI backends which are possible to build. The
 SOCI-specific variables described above provide users with basic
 control of this behaviour.</p>
 
-<h4 id="unix">On Unix</h4>
+<h4 id="unix">Building using CMake on Unix</h4>
 
 <p>Short version using GNU Make makefiles:</p>
 <pre class="example">
@@ -150,7 +183,7 @@ $ make test
 $ make install
 </pre>
 
-<h4 id="windows">On Windows</h4>
+<h4 id="windows">Building using CMake on Windows</h4>
 
 <p>Short version using Visual Studio</p>
 
@@ -161,9 +194,7 @@ C:\build>cmake -G "Visual Studio 10" -DWITH_BOOST=OFF -DWITH_ORACLE=OFF (...) ..
 C:\buikd>devenv.exe SOCI.sln
 </pre>
 
-
-
-<h4 id="unix-makefiles">Using classic Makefiles on Unix</h4>
+<h3 id="unix-makefiles">Building using classic Makefiles on Unix</h3>
 
 <p>The classic set of Makefiles for Unix/Linux systems is provided for those users who need complete control over the whole process
 and who can benefit from the basic scaffolding that they can extend on their own.
@@ -202,7 +233,7 @@ Please review their values in case of any compilation problems.</p>
 <p>The Makefiles for test programs can be a good starting point to find
 out correct compiler and linker options.</p>
 
-<h3 id="testing">Running test cases</h3>
+<h3 id="testing">Running regression tests</h3>
 
 <p>Running test cases requires that you have a backend that compiles and a working database instance
 for it.</p>
@@ -308,6 +339,6 @@ project's public <a href="http://my.cdash.org/index.php?project=SOCI">CDash</a><
 </table>
 
 
-<p class="copyright">Copyright &copy; 2004-2010 Maciej Sobczak, Stephen Hutton, Mateusz Loskot</p>
+<p class="copyright">Copyright &copy; 2004-2011 Maciej Sobczak, Stephen Hutton, Mateusz Loskot</p>
 </body>
 </html>
