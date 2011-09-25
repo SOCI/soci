@@ -61,11 +61,16 @@
 </table>
 
 <table class="cmake-variables" cellpadding="2" cellspacing="2" summary="SOCI Core configuration">
-<caption class="cmake-variables">List of variables to control common SOCI dependencies</caption>
+<caption class="cmake-variables">List of variables to control common SOCI features and dependencies</caption>
 <tr>
   <td class="variable-name">WITH_BOOST</td>
   <td class="variable-type">boolean</td>
   <td>Should CMake try to detect <a href="http://www.boost.org/">Boost C++ Libraries</a>. If ON, CMake will try to find Boost headers and binaries of <a href="http://www.boost.org/doc/libs/release/doc/html/date_time.html">Boost.Date_Time</a> library.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_TESTS</td>
+  <td class="variable-type">boolean</td>
+  <td>Request to build regression tests for SOCI core and all successfully configured backends.</td>
 </tr>
 </table>
 
@@ -79,9 +84,29 @@
   <td>Should CMake try to detect <a href="http://dev.mysql.com/doc/refman/5.0/en/c.html">mysqlclient</a> libraries providing MySQL C API. Note, currently the <a href="http://dev.mysql.com/doc/refman/5.0/en/building-clients.html">mysql_config</a> program is not being used.</td>
 </tr>
 <tr>
+  <td class="variable-name">MYSQL_DIR</td>
+  <td class="variable-type">string</td>
+  <td>Path to MySQL installation root directory. CMake will scan subdirectories <code>MYSQL_DIR/include</code> and <code>MYSQL_DIR/lib</code> respectively for MySQL headers and libraries.</td>
+</tr>
+<tr>
+  <td class="variable-name">MYSQL_INCLUDE_DIR</td>
+  <td class="variable-type">string</td>
+  <td>Path to MySQL include directory where CMake should look for mysql.h header.</td>
+</tr>
+<tr>
+  <td class="variable-name">MYSQL_LIBRARIES</td>
+  <td class="variable-type">string</td>
+  <td>Full paths to libraries to link SOCI against to enable the backend support.</td>
+</tr>
+<tr>
   <td class="variable-name">SOCI_MYSQL</td>
   <td class="variable-type">boolean</td>
   <td>Requests to build <a href="backends/mysql.html">MySQL</a> backend. Automatically switched on, if <code>WITH_MYSQL</code> is set to ON.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_MYSQL_TEST_CONNSTR</td>
+  <td class="variable-type">string</td>
+  <td>Connection string to MySQL test database. Format of the string is explained <a href="backends/mysql.html">MySQL backend refernece</a>. Example: <code>-DSOCI_MYSQL_TEST_CONNSTR:STRING="db=mydb user=mloskot password=secret"</code></td>
 </tr>
 </table>
 
@@ -95,9 +120,24 @@
   <td>Should CMake try to detect ODBC libraries. On Unix systems, CMake tries to find <a href="http://www.unixodbc.org/">unixODBC</a> or <a href="http://www.iodbc.org/">iODBC</a> implementations.</td>
 </tr>
 <tr>
+  <td class="variable-name">ODBC_INCLUDE_DIRECTORIES</td>
+  <td class="variable-type">string</td>
+  <td>Path to ODBC implementation include directories where CMake should look for sql.h header.</td>
+</tr>
+<tr>
+  <td class="variable-name">ODBC_LIBRARIES</td>
+  <td class="variable-type">string</td>
+  <td>Full paths to libraries to link SOCI against to enable the backend support.</td>
+</tr>
+<tr>
   <td class="variable-name">SOCI_ODBC</td>
   <td class="variable-type">boolean</td>
   <td>Requests to build <a href="backends/odbc.html">ODBC</a> backend. Automatically switched on, if <code>WITH_ODBC</code> is set to ON.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_ODBC_TEST_{database}_CONNSTR</td>
+  <td class="variable-type">string</td>
+  <td>ODBC Data Source Name (DSN) or ODBC File Data Source Name (FILEDSN) to test database: Microsoft Access (.mdb), Microsoft SQL Server, MySQL, PostgreSQL or any other ODBC SQL data source. {database} is placeholder for name of database driver ACCESS, MYSQL, POSTGRESQL, etc. See <a href="backends/odbc.html">ODBC backend refernece</a> for details. Example: <code>-DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR="FILEDSN=/home/mloskot/dev/soci/_git/build/test-postgresql.dsn"</code></td>
 </tr>
 </table>
 
@@ -111,9 +151,24 @@
   <td>Should CMake try to detect <a href="http://en.wikipedia.org/wiki/Oracle_Call_Interface">Oracle Call Interface (OCI)</a> libraries.</td>
 </tr>
 <tr>
+  <td class="variable-name">ORACLE_INCLUDE_DIR</td>
+  <td class="variable-type">string</td>
+  <td>Path to Oracle include directory where CMake should look for oci.h header.</td>
+</tr>
+<tr>
+  <td class="variable-name">ORACLE_LIBRARIES</td>
+  <td class="variable-type">string</td>
+  <td>Full paths to libraries to link SOCI against to enable the backend support.</td>
+</tr>
+<tr>
   <td class="variable-name">SOCI_ORACLE</td>
   <td class="variable-type">boolean</td>
   <td>Requests to build <a href="backends/oracle.html">Oracle</a> backend. Automatically switched on, if <code>WITH_ORACLE</code> is set to ON.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_ORACLE_TEST_CONNSTR</td>
+  <td class="variable-type">string</td>
+  <td>Connection string to Oracle test database. Format of the string is explained <a href="backends/oracle.html">Oracle backend refernece</a>. Example: <code>-DSOCI_ORACLE_TEST_CONNSTR:STRING="service=orcl user=scott password=tiger"</code></td>
 </tr>
 </table>
 
@@ -127,9 +182,24 @@
   <td>Should CMake try to detect PostgreSQL client interface libraries. SOCI relies on <a href="http://www.postgresql.org/docs/9.0/interactive/libpq.html">libpq</a> C library.</td>
 </tr>
 <tr>
+  <td class="variable-name">POSTGRESQL_INCLUDE_DIR</td>
+  <td class="variable-type">string</td>
+  <td>Path to PostgreSQL include directory where CMake should look for libpq-fe.h header.</td>
+</tr>
+<tr>
+  <td class="variable-name">POSTGRESQL_LIBRARIES</td>
+  <td class="variable-type">string</td>
+  <td>Full paths to libraries to link SOCI against to enable the backend support.</td>
+</tr>
+<tr>
   <td class="variable-name">SOCI_POSTGRESQL</td>
   <td class="variable-type">boolean</td>
   <td>Requests to build <a href="backends/postgresql.html">PostgreSQL</a> backend. Automatically switched on, if <code>WITH_POSTGRESQL</code> is set to ON.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_POSTGRESQL_TEST_CONNSTR</td>
+  <td class="variable-type">boolean</td>
+  <td>Connection string to PostgreSQL test database. Format of the string is explained <a href="backends/postgresql.html">PostgreSQL backend refernece</a>. Example: <code>-DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="dbname=mydb user=mloskot"</code></td>
 </tr>
 </table>
 
@@ -143,9 +213,24 @@
   <td>Should CMak try to detect <a href="http://www.sqlite.org/cintro.html">SQLite C/C++ library</a>. As bonus, the configuration tries <a href="http://trac.osgeo.org/osgeo4w/">OSGeo4W</a> distribution if <code>OSGEO4W_ROOT</code> environment variable is set.</td>
 </tr>
 <tr>
+  <td class="variable-name">SQLITE_INCLUDE_DIR</td>
+  <td class="variable-type">string</td>
+  <td>Path to SQLite 3 include directory where CMake should look for sqlite3.h header.</td>
+</tr>
+<tr>
+  <td class="variable-name">SQLITE_LIBRARIES</td>
+  <td class="variable-type">string</td>
+  <td>Full paths to libraries to link SOCI against to enable the backend support.</td>
+</tr>
+<tr>
   <td class="variable-name">SOCI_SQLITE3</td>
   <td class="variable-type">boolean</td>
   <td>Requests to build <a href="backends/sqlite3.html">SQLite3</a> backend. Automatically switched on, if <code>WITH_SQLITE3</code> is set to ON.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_SQLITE3_TEST_CONNSTR</td>
+  <td class="variable-type">string</td>
+  <td>Connection string is simply a file path where SQLite3 test database will be created (e.g. /home/john/soci_test.db). Check <a href="backends/sqlite3.html">SQLite3 backend refernece</a> for details. Example: <code>-DSOCI_SQLITE3_TEST_CONNSTR="my.db"</code></td>
 </tr>
 </table>
 
@@ -157,6 +242,11 @@
   <td class="variable-name">SOCI_EMPTY</td>
   <td class="variable-type">boolean</td>
   <td>Builds the <a href="backends.html">sample backend</a> called Empty. Always ON by default.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_EMPTY_TEST_CONNSTR</td>
+  <td class="variable-type">string</td>
+  <td>Connection string used to run regression tests of the Empty backend. It is a dummy value. Example: <code>-DSOCI_EMPTY_TEST_CONNSTR="dummy connection"</code></td>
 </tr>
 </table>
 
@@ -179,19 +269,18 @@ $ mkdir build
 $ cd build
 $ cmake -G "Unix Makefiles" -DWITH_BOOST=OFF -DWITH_ORACLE=OFF (...) ../soci-X.Y.Z
 $ make
-$ make test
 $ make install
 </pre>
 
 <h4 id="windows">Building using CMake on Windows</h4>
 
-<p>Short version using Visual Studio</p>
+<p>Short version using Visual Studio 2010 and MSBuild:</p>
 
 <pre class="example">
 C:\>MKDIR build
 C:\>cd build
 C:\build>cmake -G "Visual Studio 10" -DWITH_BOOST=OFF -DWITH_ORACLE=OFF (...) ..\soci-X.Y.Z
-C:\buikd>devenv.exe SOCI.sln
+C:\build>msbuild.exe SOCI.sln
 </pre>
 
 <h3 id="unix-makefiles">Building using classic Makefiles on Unix</h3>
@@ -230,102 +319,32 @@ These variables are placed at the beginning of the <code>Makefile.basic</code>s.
 Please review their values in case of any compilation problems.</p>
 </div>
 
-<p>The Makefiles for test programs can be a good starting point to find
-out correct compiler and linker options.</p>
+<p>The Makefiles for test programs can be a good starting point to find out correct compiler and linker options.</p>
 
 <h3 id="testing">Running regression tests</h3>
 
-<p>Running test cases requires that you have a backend that compiles and a working database instance
-for it.</p>
-<p>If you are only interested in testing a few
-backends, you must provide working connection strings for them and
-disable the other backends by setting SOCI_#BACKEND#_DO_NOT_TEST=ON as necessary.</p>
+<p>The process of running regression tests highly depends on user's environment and build configuration, so it may be quite involving process. The CMake configuration provides variables to allow users willing to run the tests to configure build and specify database connection parameters (see the tables above for variable names).</p>
 
-<table class="cmake-variables" summary="List of variables used to control SOCI tests" cellpadding="2" cellspacing="2">
+<p>In order to run regression tests, configure and build desired SOCI backends and prepare working database instances for them.</p>
 
-  <caption class="cmake-variables">List of variables used to control
-SOCI tests</caption> <tbody>
-    <tr>
-      <td class="variable-name">SOCI_TESTS</td>
-      <td class="variable-type">boolean</td>
-      <td>Should CMake build unit tests for all enabled backends. If
-OFF, all the connection string variables below are ignored.</td>
-    </tr>
-    <tr>
-      <td class="variable-name">SOCI_EMPTY_TEST_CONNSTR</td>
-      <td class="variable-type">string</td>
-      <td>Connection string passed to Empty backend test program (e.g.
-"dummy connection")</td>
-    </tr>
-    <tr>
-      <td class="variable-name">SOCI_MYSQL_TEST_CONNSTR</td>
-      <td class="variable-type">string</td>
-      <td>Connection string to MySQL test database. Format of the
-string is explained <a href="backends/mysql.html">MySQL Backend
-Refernece</a>.</td>
-    </tr>
-    <tr>
-      <td class="variable-name">SOCI_MYSQL_DO_NOT_TEST</td>
-      <td class="variable-type">boolean</td>
-      <td>If ON, skip testing the MySQL backend.</td>
-    </tr>
-    <tr>
-      <td class="variable-name">SOCI_ODBC_TEST_ACCESS_CONNSTR<br />
-SOCI_ODBC_TEST_MSSQL_CONNSTR<br />
-SOCI_ODBC_TEST_MYSQL_CONNSTR<br />
-SOCI_ODBC_TEST_POSTGRESQL_CONNSTR<br />
-      </td>
-      <td class="variable-type">string</td>
-      <td>ODBC Data Source Name (DSN) or ODBC File Data Source Name
-(FILEDSN) to test database: Microsoft Access (.mdb), Microsoft SQL
-Server, MySQL, PostgreSQL or any other ODBC SQL data source. See <a href="backends/odbc.html">ODBC Backend Refernece</a> for details.</td>
-    </tr>
-    <tr>
-      <td class="variable-name">SOCI_ODBC_DO_NOT_TEST</td>
-      <td class="variable-type">boolean</td>
-      <td>If ON, skip testing the ODBC backend.</td>
-    </tr>
-    <tr>
-      <td class="variable-name">SOCI_ORACLE_TEST_CONNSTR</td>
-      <td class="variable-type">string</td>
-      <td>Connection string to Oracle test database. Format of the
-string is explained <a href="backends/oracle.html">Oracle Backend
-Refernece</a>.</td>
-    </tr>
-    <tr>
-      <td class="variable-name">SOCI_ORACLE_DO_NOT_TEST</td>
-      <td class="variable-type">boolean</td>
-      <td>If ON, skip testing the Oracle backend.</td>
-    </tr>
-    <tr>
-      <td class="variable-name">SOCI_POSTGRESQL_TEST_CONNSTR</td>
-      <td class="variable-type">string</td>
-      <td>Connection string to PostgreSQL test database. Format of the
-string is explained <a href="backends/postgresql.html">PostgreSQL
-Backend Refernece</a>.</td>
-    </tr>
-    <tr>
-      <td class="variable-name">SOCI_POSTGRESQL_DO_NOT_TEST</td>
-      <td class="variable-type">boolean</td>
-      <td>If ON, skip testing the PostgreSQL backend.</td>
-    </tr>
-    <tr>
-      <td class="variable-name">SOCI_SQLITE3_TEST_CONNSTR</td>
-      <td class="variable-type">string</td>
-      <td>Connection string is simply a file path where SQLite3 test
-database will be created (e.g. /home/john/soci_test.db). Check <a href="backends/sqlite3.html">SQLite3 Backend Refernece</a> for details.</td>
-    </tr>
-    <tr>
-      <td class="variable-name">SOCI_SQLITE3_DO_NOT_TEST</td>
-      <td class="variable-type">boolean</td>
-      <td>If ON, skip testing the SQLite backend.</td>
-    </tr>
-  </tbody>
-</table>
+<p>While configuring build with CMake, specify <code>SOCI_TESTS=ON</code> to enable building regression tests. Also, specify <code>SOCI_{backend name}_TEST_CONNSTR</code> variables to tell the tests runner how to connect with your test databases.</p>
 
-<p>Please consider running periodic tests and submitting them to the
-project's public <a href="http://my.cdash.org/index.php?project=SOCI">CDash</a><br />
-</p>
+<p>Dedicated <code>make test</code> target can be used to execute regression tests on build completion:</p>
+<pre class="example">
+$ mkdir build
+$ cd build
+$ cmake -G "Unix Makefiles" -DWITH_BOOST=OFF \
+   -DSOCI_TESTS=ON \
+   -DSOCI_EMPTY_TEST_CONNSTR="dummy connection" \
+   -DSOCI_SQLITE3_TEST_CONNSTR="test.db" \
+   (...)
+   ../soci-X.Y.Z
+$ make
+$ make test
+$ make install
+</pre>
+
+<p>In the example above, regression tests for the sample Empty backend and SQLite 3 backend are configured for execution by <code>make test</code> target.</p>
 
 <table class="foot-links" border="0" cellpadding="2" cellspacing="2">
   <tr>
@@ -337,7 +356,6 @@ project's public <a href="http://my.cdash.org/index.php?project=SOCI">CDash</a><
     </td>
   </tr>
 </table>
-
 
 <p class="copyright">Copyright &copy; 2004-2011 Maciej Sobczak, Stephen Hutton, Mateusz Loskot</p>
 </body>
