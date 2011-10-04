@@ -12,6 +12,7 @@
 <h2>Installation</h2>
 
 <div class="navigation">
+<a href="#requirements">Requirements</a><br />
 <a href="#downloading">Downloading</a><br />
 <a href="#cmake">Building using CMake</a><br />
 <div class="navigation-indented">
@@ -23,9 +24,28 @@
 <a href="#binaries">Binaries</a><br />
 </div>
 
+<h3 id="requirements">Requirements</h3>
+
+<p>Below is an overall list of SOCI core:</p>
+<ul>
+<li>C++ compiler: <a href="http://gcc.gnu.org/">GCC</a>, <a href="http://msdn.microsoft.com/en-us/visualc">Microsoft Visual C++</a>, <a href="http://clang.llvm.org/">LLVM/clang</a></li>
+<li><a href="http://www.cmake.org">CMake</a> 2.8+ - in order to use build configuration for CMake</li>
+<li><a href="http://www.boost.org">Boost C++ Libraries</a>: DateTime, Fusion, Optional, Preprocessor, Tuple</li>
+</ul>
+
+<p>and backend-specific dependencies:</p>
+<ul>
+<li><a href="http://dev.mysql.com/doc/refman/5.6/en/c.html">mysqlclient</a> - C API to MySQL</li>
+<li><a href="">ODBC (Open Database Connectivity)</a> implementation: <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/ms710252.aspx">Microsoft ODBC</a>,  <a href="http://www.iodbc.org/">iODBC</a>, <a href="http://www.unixodbc.org/">unixODBC</a></li>
+<li><a href="http://www.oracle.com/technetwork/database/features/oci/index.html">Oracle Call Interface (OCI)</a></li>
+<li><a href="http://www.postgresql.org/docs/8.4/static/libpq.html">libpq</a> - C API to PostgreSQL</li>
+<li><a href="http://www.sqlite.org/">SQLite 3</a> library</li>
+</li>
+</ul>
+
 <h3 id="downloading">Downloading</h3>
 
-<p>Download package with latest release of the SOCI source code: soci-X.Y.Z.tar.gz|tar.bz2|zip, where X.Y.Z is the version number. Unpack this file.</p>
+<p>Download package with latest release of the SOCI source code: <a href="https://sourceforge.net/projects/soci/files/soci/">soci-X.Y.Z</a>, where X.Y.Z is the version number. Unpack the archive.</p>
 
 <p>If you intend to hack SOCI, you can clone the Git repository:</p>
 
@@ -345,6 +365,10 @@ $ make install
 </pre>
 
 <p>In the example above, regression tests for the sample Empty backend and SQLite 3 backend are configured for execution by <code>make test</code> target.</p>
+
+<h3 id="binaries">Binaries</h3>
+
+<p><em>TODO</em></p>
 
 <table class="foot-links" border="0" cellpadding="2" cellspacing="2">
   <tr>
