@@ -21,6 +21,7 @@
 </div>
 <a href="#unix-makefiles">Building using classic Makefiles on Unix</a><br />
 <a href="#testing">Running Tests</a><br />
+<a href="#usage">Usage</a><br />
 </div>
 
 <h3 id="requirements">Requirements</h3>
@@ -365,6 +366,16 @@ $ make install
 
 <p>In the example above, regression tests for the sample Empty backend and SQLite 3 backend are configured for execution by <code>make test</code> target.</p>
 
+<h3 id="usage">Libraries usage</h3>
+
+<p>CMake build produces set of shared and static libraries for SOCI core and backends separately. On Unix, for example, <code>build/lib</code> directory
+will consist of the static libraries named like <code>libsoci_core.a</code>, <code>libsoci_sqlite3.a</code> and shared libraries with names like
+<code>libsoci_core.so.3.1.0</code>, <code>libsoci_sqlite3.so.3.1.0</code>, and so on.</p>
+
+<p>In order to use SOCI in your program, you need to specify your project build configuration with paths to SOCI headers and libraries,
+and specify linker to link against the libraries you want to use in your program.</p>
+
+</p>
 <table class="foot-links" border="0" cellpadding="2" cellspacing="2">
   <tr>
     <td class="foot-link-left">
