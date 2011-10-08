@@ -1,6 +1,71 @@
 This file contains the history of changes in the SOCI library.
 
 ---
+Version 3.1.0 differs from 3.0.0 in the following ways:
+
+- Added Ada language binding
+
+- Migraded build system from GNU Autotools and Visual Studio projects to CMake
+
+- CMake build tested with Visual Studio, GCC and clang
+
+- Incorporated a compromise for naming versioned shared libraries
+
+- Enhanced and improved integration with Boost libraries:
+-- Boost.DateTime
+-- Boost.Fusion
+-- Boost.Optional
+-- Boost.Tuple
+
+- Bug fixes and improvements in core and backends:
+-- Added soci::values::get_properties accessor useful for composing soci::type_conversion
+-- Export advanced API of backend loader from DLL.
+-- Added static factory registration functions for backends
+-- Added get_affected_rows operation
+-- Fixed thread-safety of connection pool under Windows
+-- Fixed bug with droping const qualifiers when binding to std::vector<soci::indicator>
+-- Fixed bug in default initialization of an object of const backend_factory wihch requires user-provided default constructor (see C++03/C++0x)
+-- Fixes for 64-bit builds
+-- Removed redundant exchange_traits breaking ODR on LP64
+-- Better ODBC support
+-- Type conversion support for unsigned integer types
+-- Bug ID:1971436 - incorrect rowset copy operations
+-- Bug ID:2010367 - memory leak (ODBC)
+-- Bug ID:2010409 - invalid memory allocaton in define by position (ODBC)
+-- Bug ID:2021243 - long long type support in Visual C++
+-- Patch ID:2483066 - 64bit Linux and 64bit integer submitted
+-- Patch ID:2809809 - Fix build with GCC 4.4
+-- Patch ID:2809810 - Fix SQLite3 build with GCC 4.3
+-- Patch ID:2581206 - Windows unicode application
+-- Patch ID:3058275 - install target for cmake build submitted
+-- Patch ID:3069375 - use $(prefix)/lib64 on AMD64 platforms.
+-- Improved performance while accessing query results (MySQL)
+-- Bug fixes for PROCEDURE support (MySQL)
+-- Removed throw statements from mysql_rowid_backend and mysql_blob_backend destructors (MySQL)
+-- Verify that prepared statements survive session::reconnect() operatoin (MySQL)
+-- Improved support for time and date (MySQL, PostgreSQL)
+-- Fixed bug with strings of length exceeding 255 characters (ODBC)
+-- Improved interpretation of the connect string (Oracle)
+-- Added handling of unsigned long long (Oracle, SQLite3, PostgreSQL)
+-- Fixes in integral types support (PostgreSQL)
+-- Support for colon-casts (PostgreSQL)
+-- Added possibility for use BLOB (PostgreSQL)
+-- Added support for connection property "synchronous=on|off" (SQLite3)
+-- Improved BLOB data handling (SQLite3)
+-- Improved boolean type suppport (SQLite3)
+-- Session timeout support (SQLite3)
+-- Improved tests clean-up (SQLite3)
+-- Added missing typedef of sqlite3_destructor_type which has been defined in sqlite3.h but since 3.3.10 (see comment for reference to SQLite ticket)
+
+- Updated tests for various backends and SQL data types
+
+- Migrated from CVS to Git repository
+
+- Changed naming convensions and style across all the source code
+
+- Firebird backend removed from official release as not actively maintained. Available in the Git repository.
+
+---
 Version 3.0.0 differs from 2.2.0 in the following ways:
 
 - Exposed the session's locale object.

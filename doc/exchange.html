@@ -98,8 +98,8 @@ parameters used in the SQL query.</p>
 <p><span class="note">Portability note:</span></p>
 <p>Older versions of the PostgreSQL client API do not allow to use input
 parameters at all. In order to compile SOCI with those old client
-libraries, define the <code>SOCI_PGSQL_NOPARAMS</code> preprocessor
-name.</p>
+libraries, define the <code>SOCI_POSTGRESQL_NOPARAMS</code> preprocessor
+name passing <code>-DSOCI_POSTGRESQL_NOPARAMS=ON</code> variable to CMake.</p>
 </div>
 
 <h4 id="bind_position">Binding by position</h4>
@@ -205,9 +205,11 @@ the given query to the native form - and this is also one of the very few places
 where SOCI intrudes into the SQL query. For portability reasons, it is
 recommended to use named parameters, as shown in the examples above.<br />
 The query rewriting can be switched off by compiling the backend with
-the <code>SOCI_PGSQL_NOBINDBYNAME</code> name defined. Note that in this case
-it is also necessary to define <code>SOCI_PGSQL_NOPREPARE</code>, because
-statement preparation relies on successful query rewriting.
+the <code>SOCI_POSTGRESQL_NOBINDBYNAME</code> name defined (pass
+<code>-DSOCI_POSTGRESQL_NOBINDBYNAME=ON</code> variable to CMake).
+Note that in this case it is also necessary to define <code>SOCI_POSTGRESQL_NOPREPARE</code>
+(controlled by CMake variable <code>-DSOCI_POSTGRESQL_NOPREPARE=ON</code>),
+because statement preparation relies on successful query rewriting.
 In practice, both macros will be needed for PostgreSQL server older than 8.0.</p>
 </div>
 
@@ -371,6 +373,8 @@ following <code>std::vector</code> based into and use types:
 <p>Use of the vector based types mirrors that of the standard types, with
 the size of the vector used to specify the number of records to process
 at a time. See below for examples.</p>
+
+<p>Note that bulk operations are supported only for <code>std::vector</code>s of the types listed above.</p>
 
 <h4 id="dynamic">Dynamic resultset binding</h4>
 
@@ -577,6 +581,8 @@ cout &lt;&lt; "We have " &lt;&lt; i.get() &lt;&lt; " persons in the database.\n"
 </pre>
 
 <p>Note that there is a number of types from the Boost library integrated with SOCI out of the box, see <a href="boost.html">Integration with Boost</a> for complete description. Use these as examples of conversions for more complext data types.</p>
+
+<p>Note also that user-defined datatypes are not supported with <a href="#static_bulk">bulk data transfer</a>.</p>
 
 <p>Another possibility to extend SOCI with custom data types is to use
 the <code>into_type&lt;T&gt;</code> and <code>use_type&lt;T&gt;</code>

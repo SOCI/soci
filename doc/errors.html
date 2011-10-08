@@ -85,10 +85,37 @@ int main()
 </pre>
 </div>
 
+<div class="note">
+<p><span class="note">Portability note:</span></p>
+<p>The PostgreSQL backend can also throw the instances of the <code>postgresql_soci_error</code>,
+which is publicly derived from <code>soci_error</code> and has an
+additional public <code>sqlstate()</code>
+member function returning the five-character "SQLSTATE" error code:</p>
+
+<pre class="example">
+int main()
+{
+    try
+    {
+        // regular code
+    }
+    catch (postgresql_soci_error const &amp; e)
+    {
+        cerr &lt;&lt; "PostgreSQL error: " &lt;&lt; e.sqlstate()
+            &lt;&lt; " " &lt;&lt; e.what() &lt;&lt; endl;
+    }
+    catch (exception const &amp; e)
+    {
+        cerr &lt;&lt; "Some other error: " &lt;&lt; e.what() &lt;&lt; endl;
+    }
+}
+</pre>
+</div>
+
 <table class="foot-links" border="0" cellpadding="2" cellspacing="2">
   <tr>
     <td class="foot-link-left">
-      <a href="structure.html">Previous (Library structure, files and compilation)</a>
+      <a href="installation.html">Previous (Installation)</a>
     </td>
     <td class="foot-link-right">
       <a href="basics.html">Next (Connections and simple queries)</a>

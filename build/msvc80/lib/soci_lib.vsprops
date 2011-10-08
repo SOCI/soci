@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="windows-1250"?>
-<VisualStudioPropertySheet
-	ProjectType="Visual C++"
-	Version="8.00"
-	Name="soci_lib"
-	InheritedPropertySheets="..\soci.vsprops"
-	>
-</VisualStudioPropertySheet>

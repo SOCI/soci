@@ -77,8 +77,9 @@ does not actually provide this functionality - in which case the library will in
 execute the query in a single phase, without really separating
 the statement preparation from execution.</p>
 <p>For PostgreSQL servers older than 8.0 it is necessary to define the
-<code>SOCI_PGSQL_NOPREPARE</code> macro while compiling the library
-to fall back to this one-phase behaviour.</p>
+<code>SOCI_POSTGRESQL_NOPREPARE</code> macro while compiling the library
+to fall back to this one-phase behaviour. Simply, pass
+<code>-DSOCI_POSTGRESQL_NOPREPARE=ON</code> variable to CMake.</p>
 </div>
 
 <h3 id="rowset">Rowset and iterator-based access</h3>
@@ -211,7 +212,7 @@ st.execute();
 while (st.fetch())
 {
     std::vector&lt;int&gt;::iterator pos;
-    for(; pos != valsOut.end(); ++pos)
+    for(pos = valsOut.begin(); pos != valsOut.end(); ++pos)
     {
         cout &lt;&lt; *pos &lt;&lt; '\n';
     }
@@ -299,6 +300,43 @@ class for transaction management:</p>
   <li><code>void commit();</code></li>
   <li><code>void rollback();</code></li>
 </ul>
+
+<p>In addition to the above there is a RAII wrapper that allows to associate the transaction with the
+given scope of code:</p>
+<pre class="example">
+class transaction
+{
+public:
+    explicit transaction(session & sql);
+
+    ~transaction();
+
+    void commit();
+    void rollback();
+
+private:
+    // ...
+};
+</pre>
+
+<p>The object of class <code>transaction</code> will roll back automatically when the object is destroyed
+(usually as a result of leaving the scope) <i>and</i> when the transaction was not explicitly committed before that.</p>
+<p>A typical usage pattern for this class might be:</p>
+<pre class="example">
+{
+    transaction tr(sql);
+
+    sql << "insert into ...";
+    sql << "more sql queries ...";
+    // ...
+
+    tr.commit();
+}
+</pre>
+<p>With the above pattern the transaction is committed only when the code successfully
+reaches the end of block. If some exception is thrown before that, the scope will be left
+without reaching the final statement and the transaction object
+will automatically roll back in its destructor.</p>
 
 <div class="note">
 <p><span class="note">Portability note:</span></p>

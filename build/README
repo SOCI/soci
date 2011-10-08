@@ -1,6 +1,0 @@
-$Id: README,v 1.2 2006/11/08 20:08:14 mloskot Exp $
-
-This directory is dedicated for:
-- VC++ project files
-- Jam files for bjam builder (just like in Boost)
-- other building systems contributed by SOCI team and users 

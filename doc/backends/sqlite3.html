@@ -46,6 +46,7 @@
 <table border="1" cellpadding="5" cellspacing="0">
 <tbody>
 <tr><th>SQLite3 version</th><th>Operating System</th><th>Compiler</th></tr>
+<tr><td>3.5.2</td><td>Mac OS X 10.5</td><td>g++ 4.0.1</td></tr>
 <tr><td>3.1.3</td><td>Mac OS X 10.4</td><td>g++ 4.0.1</td></tr>
 <tr><td>3.2.1</td><td>Linux i686 2.6.10-gentoo-r6</td><td>g++ 3.4.5</td></tr>
 <tr><td>3.3.4</td><td>Ubuntu 5.1</td><td>g++ 4.0.2</td></tr>
@@ -67,14 +68,7 @@
 using the <code>SQLite3</code> backend factory together with the database file name:</p>
 
 <pre class="example">
-BackEndFactory const &amp;backEnd = SQLite3;
-Session sql(backEnd, "database_filename");
-</pre>
-
-<p>or simply:</p>
-
-<pre class="example">
-Session sql(SQLite3, "database_filename");
+session sql(sqlite3, "database_filename");
 </pre>
 
 <p>The only option for the connection string is the name of the file to use as a database.</p>
@@ -157,8 +151,7 @@ sql &lt;&lt; "insert into t(x, y) values(?, ?)", use(i), use(j);
 
 <h4 id="blob">BLOB Data Type</h4>
 
-<p>The SQLite3 does not currently support working with the BLOB type.</p>
-
+<p>The SQLite3 backend supports working with data stored in columns of type Blob, via SOCI's blob class.  Because of SQLite3 general typelessness the column does not have to be declared any particular type.</p>
 <h4 id="rowid">RowID Data Type</h4>
 
 <p>In SQLite3 RowID is an integer.  "Each entry in an SQLite table has a unique integer key called the "rowid". The rowid is always available as an undeclared column named ROWID, OID, or _ROWID_. If the table has a column of type INTEGER PRIMARY KEY then that column is another an alias for the rowid."<a href="http://www.sqlite.org/capi3ref.html#sqlite3_last_insert_rowid">[2]</a></p>

@@ -59,6 +59,23 @@ session sql("postgresql://dbname=mydb");
 <p>The <code>SOCI_BACKENDS_PATH</code> environment variable defines the set of paths where the shared libraries will be searched for. There can be many paths, separated by colons, and they are used from left to right until the library with the appropriate name is found. If this variable is not set or is empty, the current directory is used as a default path for dynamically loaded backends.</p>
 </div>
 
+<p>The run-time selection of backends is also supported with libraries
+linked statically. Each backend provides a separate function of the
+form <code>register_factory_<i>name</i></code>, where
+<code><i>name</i></code> is a backend name. Thus:</p>
+
+<pre class="example">
+extern "C" void register_factory_postgresql();
+// ...
+register_factory_postgresql();
+session sql("postgresql://dbname=mydb");
+</pre>
+
+<p>The above example registers the backend for PostgreSQL and later
+creates the session object for that backend. This form is provided for
+those projects that prefer static linking but still wish to benefit
+from run-time backend selection.</p>
+
 <p>An alternative way to set up the session is to create it in the disconnected state and connect later:</p>
 
 <pre class="example">
@@ -81,7 +98,7 @@ time, even using different backends.</p>
 
 <div class="note">
 <p><span class="note">Portability note:</span></p>
-<p>The following backend factories are currently (as of 3.0.0 release) available:</p>
+<p>The following backend factories are currently (as of 3.1.0 release) available:</p>
 <ul>
   <li><code><a href="backends/mysql.html">mysql</a></code> (requires <code>#include "soci-mysql.h"</code>)</li>
   <li><code><a href="backends/oracle.html">oracle</a></code> (requires <code>#include "soci-oracle.h"</code>)</li>
@@ -91,7 +108,6 @@ time, even using different backends.</p>
 <ul>
   <li><code><a href="backends/sqlite3.html">sqlite3</a></code> (requires <code>#include "soci-sqlite3.h"</code>)</li>
   <li><code><a href="backends/odbc.html">odbc</a></code> (requires <code>#include "soci-odbc.h"</code>)</li>
-  <li><code><a href="backends/firebird.html">firebird</a></code> (requires <code>#include "soci-firebird.h"</code>)</li>
 </ul>
 </div>
 

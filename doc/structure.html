@@ -9,19 +9,7 @@
 <body>
 <p class="banner">SOCI - The C++ Database Access Library</p>
 
-<h2>Library structure, files and compilation</h2>
-
-<div class="navigation">
-<a href="#structure">Structure</a><br />
-<a href="#compilation">Compilation</a><br />
-<div class="navigation-indented">
-  <a href="#script">With build script on Unix/Linux</a><br />
-  <a href="#makefiles">With classic Makefiles on Unix/Linux</a><br />
-  <a href="#msvc">With Microsoft Visual C++ 2005 on Windows</a>
-</div>
-</div>
-
-<h3 id="structure">The SOCI library structure</h3>
+<h2>Structure</h2>
 
 <div class="diagram">
 <img alt="Library structure diagram" src="structure.png" />
@@ -76,189 +64,13 @@ as part of the connection string, in which case no backend-specific
 <code>#include</code> directive is necessary.</p>
 </div>
 
-<h3 id="compilation">Compilation</h3>
-
-<p>Download the SOCI distribution file: soci-X.Y.Z.tar.gz|tar.bz2|zip, where X.Y.Z is the version number. Unpack this file.</p>
-
-<h4 id="script">With build script on Unix/Linux</h4>
-
-<p>Short version:</p>
-<pre class="example">
-$ ./configure
-$ make
-$ make install
-</pre>
-
-<p>Long version:</p>
-
-<p>The <code>configure</code> script verifies that the Tcl interpreter is installed on the system,
-as a dependency for all the build and install scripts, and allows to provide various
-settings if the local environment differs from standard installations.</p>
-<p>When the <code>configure</code> script is run without parameters, the remaining
-part of the process will use <code>/usr/local/include/soci</code> as a default destination for SOCI header files
-and <code>/usr/local/lib</code> as a default destination for library files and the build script
-will try to find all supported database installations in the "usual" set of directories.
-To build the Oracle backend, the <code>ORACLE_HOME</code> environment variable has to be set
-properly as well.</p>
-
-<p>The configuration parameters allow to change the target directory for installing SOCI
-and to name specific directories for chosen database header and library files if they are
-not installed on any of the "usual" paths.
-To learn about all configuration options run:</p>
-<pre class="example">
-$ ./configure --help
-</pre>
-
-<p>For example, if the MySQL header and library files were installed locally in
-<code>/opt/mysql/include</code> and <code>/opt/mysql/lib</code>, then the following
-command will configure the build step accordingly:</p>
-<pre class="example">
-$ ./configure --mysql-include=/opt/mysql/include --mysql-lib=/opt/mysql/lib
-</pre>
-
-<p>After configuring the build and installation steps you can build the SOCI library by simply running <code>make</code>.
-The core library and backends will be placed in <code>build/unix/include</code> and <code>build/unix/lib</code> directories.</p>
-
-<p>The library can be installed by:</p>
-<pre class="example">
-$ make install
-</pre>
-
-<p>Note: depending on the target directory it might be necessary to acquire root permissions before
-installing the library.</p>
-<p>The "undo" script that removes all files and directories
-that were created during installation is created automatically and can be run by:</p>
-<pre class="example">
-$ make uninstall
-</pre>
-
-<p>In addition to the library itself, the test programs for each backend can be compiled as well:</p>
-<pre class="example">
-$ make tests
-</pre>
-
-<p>The compiled test programs are located in <code>build/unix/tests</code> and require, as their single parameter,
-a connection string understood by the relevant backend. Run them without arguments to see the usage description.</p>
-
-<p>All build artefacts (not counting the installed files) can be removed with the following:</p>
-<pre class="example">
-$ make clean
-</pre>
-
-<h4 id="makefiles">With classic Makefiles on Unix/Linux</h4>
-
-<p>The classic set of Makefiles for Unix/Linux systems is provided for those users who need complete control over the whole process
-and who can benefit from the basic scaffolding that they can extend on their own.
-In this sense, the basic Makefiles are supposed to provide a minimal starting point for custom experimentation and are not intended to be a complete build/installation solution.<br />
-At the same time, they are complete in the sense that they can compile the library with all test programs and for some users this level of support will be just fine.</p>
-
-<p>The <code>core</code> directory of the library distribution contains
-the <code>Makefile.basic</code> that can be used to compile the core part of
-the library. Run <code>make -f Makefile.basic</code> or <code>make -f Makefile.basic shared</code> to get the static and shared versions, respectively.
-Similarly, the <code>backends/<i>name</i></code> directory contains the
-backend part for each supported backend with the appropriate <code>Makefile.basic</code>
-and the <code>backends/<i>name</i>/test</code>
-directory contains the test program for the given backend.</p>
-
-<p>For example, the simplest way to compile the static version of the
-library and the test program for PostgreSQL is:</p>
-
-<pre class="example">
-$ cd src/core
-$ make -f Makefile.basic
-$ cd ../backends/postgresql
-$ make -f Makefile.basic
-$ cd test
-$ make -f Makefile.basic
-</pre>
-
-<div class="note">
-<p><span class="note">Note:</span>
-For each backend and its test program, the <code>Makefile.basic</code>s
-contain the variables that can have values specific to the given
-environment - they usually name the include and library paths.
-These variables are placed at the beginning of the <code>Makefile.basic</code>s.
-Please review their values in case of any compilation problems.</p>
-</div>
-
-<p>The Makefiles for test programs can be a good starting point to find
-out correct compiler and linker options.</p>
-
-<h4 id="msvc">With Microsoft Visual C++ 2005 on Windows</h4>
-
-<p>The SOCI distribution package includes solution files for Visual C++ 2005 - they can be found inside the <code>build\msvc80</code> directory:</p>
-<ul>
-    <li><code>dll\soci_dll.sln</code> - to build SOCI as DLL libraries</li>
-    <li><code>lib\soci_lib.sln</code> - to build SOCI as static libraries</li>
-</ul>
-
-<p>Both solutions <a href="http://msdn2.microsoft.com/en-gb/library/tybz7dex(VS.80).aspx" title="MSDN: Property Inheritance">inherit</a> common
-settings and macros from <a href="http://msdn2.microsoft.com/en-gb/library/a4xbdz1e(VS.80).aspx" title="MSDN: Property Sheets">Visual Studio Property Sheet</a> in file <code>build\msvc80\soci.vsprops</code>. The main concept behind the <code>soci.vsprops</code> is to provide common place where paths and
-names of SOCI libraries and external dependencies are defined.</p>
-
-<p><strong>NOTE:</strong> Currently, MySQL backend compilation is not supported due to some problems with linking to MySQL client library. If you know how to use it from Visual C++ 2005 and without rebuilding MySQL libraries on your own, please let us know.</p>
-
-<p>Configure:</p>
-<ol>
-    <li>Open <code>soci_dll.sln</code> or <code>soci_lib.sln</code> solution in Visual C++ IDE</li>
-    <li>Open View -&gt; <a href="http://msdn2.microsoft.com/en-gb/library/z1f703z5(VS.80).aspx" title="MSDN: How to: Edit Project Property Sheets">Property Manager</a></li>
-    <li>Expand one of the projects (it doesn't matter which one), expand selected configuration ie. Debug, go through <code>soci_lib</code> sheet and double-click on <code>soci</code> to open its properties</li>
-    <li>According to your environment, customize paths and list of libraries by editing the following macros (double-click on macro update <code>Value</code> box):
-    <ul>
-        <li><code>FIREBIRD_INCLUDE_DIR</code> - path to FireBird client library headers</li>
-        <li><code>FIREBIRD_LIB_DIR</code> - path to FireBird client library</li>
-        <li><code>FIREBIRD_LIB</code> - FireBird library, can be left unchanged</li>
-        <li><code>MYSQL_INCLUDE_DIR</code> - <em>NOT USED</em></li>
-        <li><code>MYSQL_LIB_DIR</code> - <em>NOT USED</em></li>
-        <li><code>MYSQL_LIB</code> - <em>NOT USED</em></li>
-        <li><code>ODBC_INCLUDE_DIR</code> - ODBC include path, can be left unchanged</li>
-        <li><code>ODBC_LIB_DIR</code> - ODBC libraries path, can be left unchanged</li>
-        <li><code>ODBC_LIB</code> - ODBC library file, can be left unchanged</li>
-        <li><code>ORACLE_INCLUDE_DIR</code> - path to OCI headers</li>
-        <li><code>ORACLE_LIB_DIR</code> - path to OCI libraries</li>
-        <li><code>ORACLE_LIB</code> - list of OCI libraries</li>
-        <li><code>POSTGRESQL_INCLUDE_DIR</code> - path to <code>libpq</code> headers</li>
-        <li><code>POSTGRESQL_LIB_DIR</code> - path to <code>libpq</code> library</li>
-        <li><code>POSTGRESQL_LIB</code> - <code>libpq</code> library, can be left unchanged</li>
-        <li><code>SQLITE3_INCLUDE_DIR</code> - path to SQLite 3 headers</li>
-        <li><code>SQLITE3_LIB_DIR</code> - path to SQLite 3 library</li>
-        <li><code>SQLITE3_LIB</code> - SQLite 3 library, can be left unchanged</li>
-    </ul>
-    </li>
-    <li><strong>Leave the remaining macros untouched</strong></li>
-</ol>
-
-<p>After the configuration is ready, you can build SOCI libraries from the Visual C++ 2005 IDE.</p>
-
-<p>Build:</p>
-<pre class="example">
-Build -&gt; Build Solution
-</pre>
-
-<p>If no errors occured, SOCI libraries and test programs can be found in subdirectory <code>debug</code> or <code>release</code>, depending on selected build configuration.</p>
-
-<p>Running tests:</p>
-<p>You need to edit <code>maketest.mak</code> file and change relevant connection strings in the <code>CONFIGURATION</code> block, according to your environment.</p>
-<p>Run all tests:</p>
-<pre class="example">
-nmake /f maketest.mak
-</pre>
-
-<p>Run test for selected backend:</p>
-<pre class="example">
-nmake /f maketest.mak &lt;backendname&gt;
-</pre>
-
-<p>
-It is also possible to run test programs directly from command prompt, without using <code>maketest.mak</code> controller.</p>
-
 <table class="foot-links" border="0" cellpadding="2" cellspacing="2">
   <tr>
     <td class="foot-link-left">
       <a href="index.html">Previous (Contents)</a>
     </td>
     <td class="foot-link-right">
-      <a href="errors.html">Next (Errors)</a>
+      <a href="installation.html">Next (Installation)</a>
     </td>
   </tr>
 </table>
