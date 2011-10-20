@@ -46,7 +46,7 @@ sqlite3_session_backend::sqlite3_session_backend(
     std::string synchronous;
     std::string dbname(connectString);
     std::stringstream ssconn(connectString);
-    while (!ssconn.eof() && ssconn.str().find('=') >= 0)
+    while (!ssconn.eof() && ssconn.str().find('=') != std::string::npos)
     {
         std::string key, val;
         std::getline(ssconn, key, '=');

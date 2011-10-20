@@ -118,3 +118,7 @@ soci_backend_test_create_vcxproj_user
 ==== Mario Valesco ====
 
 Mario tested building SOCI using MinGW toolset.
+
+==== Gevorg Voskanyan ====
+
+Gevorg submitted new exception type postgresql_soci_error to PostgreSQL backend.

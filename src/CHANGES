@@ -3,8 +3,6 @@ This file contains the history of changes in the SOCI library.
 ---
 Version 3.1.0 differs from 3.0.0 in the following ways:
 
-	TODO - to be reviewed
-
 - Added Ada language binding
 
 - Migraded build system from GNU Autotools and Visual Studio projects to CMake
@@ -64,6 +62,8 @@ Version 3.1.0 differs from 3.0.0 in the following ways:
 - Migrated from CVS to Git repository
 
 - Changed naming convensions and style across all the source code
+
+- Firebird backend removed from official release as not actively maintained. Available in the Git repository.
 
 ---
 Version 3.0.0 differs from 2.2.0 in the following ways:
