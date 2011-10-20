@@ -71,17 +71,19 @@ copy(rs.begin(), rs.end(), ostream_iterator&lt;string&gt;(cout, "\n"));</span>
 
 <p>SOCI offers also extensive integration with Boost datatypes (optional, tuple and fusion) and flexible support
 for user-defined datatypes.</p>
-
+          
+<p>Even though SOCI is mainly a C++ library, it also allows to use it from other programming languages. Currently the package contains the Ada binding, with more bindings likely to come in the future.</p>
+          
 <p>Starting from its 2.0.0 release, SOCI uses the plug-in architecture for
-backends - this allows to target various database servers. Currently (3.0.0),
+backends - this allows to target various database servers. Currently (3.1.0),
 the following database servers are supported:</p>
 <ul>
+            <li>MySQL</li>
+            <li>ODBC (generic backend)</li>
             <li>Oracle</li>
             <li>PostgreSQL</li>
-            <li>MySQL</li>
+            <li>SQLite3</li>
 </ul>
-
-<p>Other (unsupported) backends exist in the CVS repository: ODBC, SQLite and Firebird.</p>
 
 <p>The intent of the library is to cover as many database technologies as
 possible. For this, the project has to rely on volunteer contributions
@@ -93,6 +95,10 @@ If you are interested in participating, please contact the <a
 <p>The SOCI library is distributed under the terms of the <a
  target="_blank" href="http://www.boost.org/LICENSE_1_0.txt">Boost
 Software License</a>.</p>
+
+<p>The current stable release (3.1.0) can be downloaded <a
+href="https://sourceforge.net/projects/soci/"
+target="_blank">here</a>, and all previous releases are available <a href="http://sourceforge.net/project/showfiles.php?group_id=121480" target="_blank">here</a>.</p>
 
 <p>The latest and experimental version of the code is always available from
 <a target="_blank" href="http://soci.git.sourceforge.net/git/gitweb.cgi?p=soci/soci">the Git repository</a>.</p>
