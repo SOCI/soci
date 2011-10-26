@@ -62,6 +62,7 @@ Jakub contributed patches fixing compilation errors with Visual C++ and GCC 3.4.
 ==== Alex Ott ====
 
 Alex contributed patches fixing naming conventions.
+Patch to allow loading of backends from default install directory.
 
 ==== Rainer Bauer ====
 
