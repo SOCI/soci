@@ -17,6 +17,8 @@
 #include <stdint.h>
 #endif
 
+#include "soci_backends_config.h"
+
 using namespace soci;
 using namespace soci::dynamic_backends;
 
@@ -102,6 +104,7 @@ std::vector<std::string> get_default_paths()
     if (0 == penv)
     {
         paths.push_back(".");
+        paths.push_back(DEFAULT_BACKENDS_PATH);
         return paths;
     }
 
@@ -109,6 +112,7 @@ std::vector<std::string> get_default_paths()
     if (env.empty())
     {
         paths.push_back(".");
+        paths.push_back(DEFAULT_BACKENDS_PATH);
         return paths;
     }
 

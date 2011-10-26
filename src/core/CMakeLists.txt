@@ -71,6 +71,11 @@ set(SOCI_CORE_TARGET ${PROJECTNAMEL}_core)
 
 soci_target_output_name(${SOCI_CORE_TARGET} SOCI_CORE_TARGET_OUTPUT_NAME)
 
+# Configure SOCI backend loader to also use default install directory.
+set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR})
+set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR})
+configure_file(soci_backends_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/soci_backends_config.h)
+
 #
 # Core shared library
 #
