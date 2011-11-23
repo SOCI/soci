@@ -258,6 +258,55 @@ void test5()
     std::cout << "test 5 passed" << std::endl;
 }
 
+// Test commit b394d039530f124802d06c3b1a969c3117683152
+// Author: Mika Fischer <mika.fischer@zoopnet.de>
+// Date:   Thu Nov 17 13:28:07 2011 +0100
+// Implement get_affected_rows for SQLite3 backend
+struct table_creator_for_test6 : table_creator_base
+{
+    table_creator_for_test6(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val integer)";
+    }
+};
+
+void test6()
+{
+    {
+        session sql(backEnd, connectString);
+
+        table_creator_for_test6 tableCreator(sql);
+
+        for (int i = 0; i != 10; i++)
+        {
+            sql << "insert into soci_test(val) values(:val)", use(i);
+        }
+
+        statement st1 = (sql.prepare <<
+            "update soci_test set val = val + 1");
+        st1.execute(false);
+
+        assert(st1.get_affected_rows() == 10);
+
+        statement st2 = (sql.prepare <<
+            "delete from soci_test where val <= 5");
+        st2.execute(false);
+
+        assert(st2.get_affected_rows() == 5);
+
+        statement st3 = (sql.prepare <<
+            "update soci_test set val = val + 1");
+        st3.execute(true); // true or false shoudl make no difference, both should lead to load_one()
+
+        assert(st3.get_affected_rows() == 5);
+    }
+
+    std::cout << "test 6 passed" << std::endl;
+}
+
+
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -347,7 +396,6 @@ int main(int argc, char** argv)
 
     try
     {
-
         test_context tc(backEnd, connectString);
         common_tests tests(tc);
         tests.run();
@@ -359,6 +407,7 @@ int main(int argc, char** argv)
         test3();
         test4();
         test5();
+        test6();
 
         std::cout << "\nOK, all tests passed.\n\n";
 
