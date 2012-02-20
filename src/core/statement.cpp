@@ -500,9 +500,9 @@ bool statement_impl::resize_intos(std::size_t upperBound)
 	{
 		rows = 0;
 	}
-    if (upperBound != 0 && upperBound < (std::size_t)rows)
+    if (upperBound != 0 && upperBound < static_cast<std::size_t>(rows))
     {
-        rows = (int)upperBound;
+        rows = static_cast<int>(upperBound);
     }
 
     std::size_t const isize = intos_.size();
