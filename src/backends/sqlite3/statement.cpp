@@ -276,8 +276,7 @@ sqlite3_statement_backend::fetch(int number)
 
 long long sqlite3_statement_backend::get_affected_rows()
 {
-    // ...
-    return -1;
+    return sqlite3_changes(session_.conn_);
 }
 
 int sqlite3_statement_backend::get_number_of_rows()
