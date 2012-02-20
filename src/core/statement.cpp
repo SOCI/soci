@@ -495,16 +495,20 @@ bool statement_impl::resize_intos(std::size_t upperBound)
     // this function does not need to take into account the intosForRow_
     // elements, since they are never used for bulk operations
 
-    std::size_t rows = backEnd_->get_number_of_rows();
-    if (upperBound != 0 && upperBound < rows)
+	int rows = backEnd_->get_number_of_rows();
+	if (rows < 0)
+	{
+		rows = 0;
+	}
+    if (upperBound != 0 && upperBound < (std::size_t)rows)
     {
-        rows = upperBound;
+        rows = (int)upperBound;
     }
 
     std::size_t const isize = intos_.size();
     for (std::size_t i = 0; i != isize; ++i)
     {
-        intos_[i]->resize(rows);
+        intos_[i]->resize((std::size_t)rows);
     }
 
     return rows > 0 ? true : false;
