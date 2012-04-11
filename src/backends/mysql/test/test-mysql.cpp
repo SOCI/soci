@@ -493,6 +493,38 @@ void test8()
   std::cout << "test 8 passed" << std::endl;
 }
 
+struct unsigned_value_table_creator : table_creator_base
+{
+    unsigned_value_table_creator(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val int unsigned)";
+    }
+};
+
+// rowset<> should be able to take INT UNSIGNED.
+void test9()
+{
+  {
+    session sql(backEnd, connectString);
+
+    unsigned_value_table_creator tableCreator(sql);
+
+    unsigned int mask = 0xffffff00;
+    sql << "insert into soci_test set val = " << mask;
+    soci::rowset<> rows(sql.prepare << "select val from soci_test");
+    int cnt = 0;
+    for (soci::rowset<>::iterator it = rows.begin(), end = rows.end();
+         it != end; ++it)
+    {
+        cnt++;
+    }
+    assert(cnt == 1);
+  }
+
+  std::cout << "test 9 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -603,6 +635,7 @@ int main(int argc, char** argv)
         test6();
         test7();
         test8();
+        test9();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;
