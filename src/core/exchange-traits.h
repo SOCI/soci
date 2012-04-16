@@ -90,6 +90,13 @@ struct exchange_traits<long int>
     typedef basic_type_tag type_family;
     enum { x_type = x_long_long };
 };
+#elif ( __WORDSIZE == 32 )
+template <>
+struct exchange_traits<long int>
+{
+    typedef basic_type_tag type_family;
+    enum { x_type = x_integer };
+};
 #endif // #if defined (__LP64__) || ( __WORDSIZE == 64 )
 
 template <>
