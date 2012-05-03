@@ -153,7 +153,9 @@ void parse_connect_string(const string & connectString,
     string *password, bool *password_p,
     string *db, bool *db_p,
     string *unix_socket, bool *unix_socket_p,
-    int *port, bool *port_p)
+    int *port, bool *port_p,
+    string *charset, bool *charset_p,
+    int *timeout, bool *timeout_p)
 {
     *host_p = false;
     *user_p = false;
@@ -161,6 +163,8 @@ void parse_connect_string(const string & connectString,
     *db_p = false;
     *unix_socket_p = false;
     *port_p = false;
+    *charset_p = false;
+    *timeout_p = false;
     string err = "Malformed connection string.";
     string::const_iterator i = connectString.begin(),
         end = connectString.end();
@@ -221,6 +225,24 @@ void parse_connect_string(const string & connectString,
             *unix_socket = val;
             *unix_socket_p = true;
         }
+	 else if (par == "charset" and not *charset_p)
+        {
+            *charset = val;
+            *charset_p = true;
+        }
+	 else if (par == "timeout" and not *timeout_p)
+        {
+            if (not valid_int(val))
+            {
+                throw soci_error(err);
+            }
+            *timeout = std::atoi(val.c_str());
+            if (timeout < 0)
+            {
+                throw soci_error(err);
+            }
+            *timeout_p = true;
+        }
         else
         {
             throw soci_error(err);
@@ -233,16 +255,24 @@ void parse_connect_string(const string & connectString,
 mysql_session_backend::mysql_session_backend(
     std::string const & connectString)
 {
-    string host, user, password, db, unix_socket;
-    int port;
-    bool host_p, user_p, password_p, db_p, unix_socket_p, port_p;
+    string host, user, password, db, unix_socket, charset;
+    int port, timeout;
+    bool host_p, user_p, password_p, db_p, unix_socket_p, port_p, charset_p, timeout_p;
     parse_connect_string(connectString, &host, &host_p, &user, &user_p,
         &password, &password_p, &db, &db_p,
-        &unix_socket, &unix_socket_p, &port, &port_p);
+        &unix_socket, &unix_socket_p, &port, &port_p, &charset, &charset_p, &timeout, &timeout_p);
     conn_ = mysql_init(NULL);
     if (conn_ == NULL)
     {
         throw soci_error("mysql_init() failed.");
+    }
+    my_bool reconnect = 1;
+    mysql_options(conn_, MYSQL_OPT_RECONNECT, &reconnect);
+    if (timeout_p)
+    {
+	mysql_options(conn_, MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
+	mysql_options(conn_, MYSQL_OPT_READ_TIMEOUT, &timeout);
+	mysql_options(conn_, MYSQL_OPT_WRITE_TIMEOUT, &timeout);
     }
     if (mysql_real_connect(conn_,
             host_p ? host.c_str() : NULL,
@@ -257,6 +287,10 @@ mysql_session_backend::mysql_session_backend(
         unsigned int errNum = mysql_errno(conn_);
         clean_up();
         throw mysql_soci_error(errMsg, errNum);
+    }
+    if (charset_p)
+    {
+	mysql_set_character_set(conn_, charset.c_str());
     }
 }
 
