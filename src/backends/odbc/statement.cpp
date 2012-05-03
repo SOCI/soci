@@ -24,7 +24,8 @@ using namespace soci::details;
 
 odbc_statement_backend::odbc_statement_backend(odbc_session_backend &session)
     : session_(session), hstmt_(0), numRowsFetched_(0),
-      hasVectorUseElements_(false), boundByName_(false), boundByPos_(false)
+      hasVectorUseElements_(false), boundByName_(false), boundByPos_(false),
+      lastNoData_(false)
 {
 }
 
@@ -163,6 +164,8 @@ odbc_statement_backend::execute(int number)
                          "Statement Execute");
     }
 
+    lastNoData_ = rc == SQL_NO_DATA;
+
     SQLSMALLINT colCount;
     SQLNumResultCols(hstmt_, &colCount);
 
@@ -201,8 +204,21 @@ odbc_statement_backend::fetch(int number)
 
 long long odbc_statement_backend::get_affected_rows()
 {
-    // ...
-    return -1;
+    // Calling SQLRowCount() when the last call to SQLExecute() returned
+    // SQL_NO_DATA can fail, so simply always return 0 in this case as we know
+    // that nothing was done anyhow.
+    if (lastNoData_)
+        return 0;
+
+    SQLLEN res;
+    SQLRETURN rc = SQLRowCount(hstmt_, &res);
+    if (is_odbc_error(rc))
+    {
+        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
+                          "Getting number of affected rows");
+    }
+
+    return res;
 }
 
 int odbc_statement_backend::get_number_of_rows()
