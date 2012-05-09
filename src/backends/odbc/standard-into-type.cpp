@@ -52,14 +52,6 @@ void odbc_standard_into_type_backend::define_by_pos(
         odbcType_ = SQL_C_ULONG;
         size = sizeof(unsigned long);
         break;
-    case x_long_long:
-        odbcType_ = SQL_C_SBIGINT;
-        size = sizeof(long long);
-        break;
-    case x_unsigned_long_long:
-        odbcType_ = SQL_C_UBIGINT;
-        size = sizeof(unsigned long long);
-        break;
     case x_double:
         odbcType_ = SQL_C_DOUBLE;
         size = sizeof(double);

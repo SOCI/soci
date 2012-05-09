@@ -99,12 +99,7 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend
 struct odbc_standard_use_type_backend : details::standard_use_type_backend
 {
     odbc_standard_use_type_backend(odbc_statement_backend &st)
-        : statement_(st), data_(0), buf_(0), indHolder_(0) {}
-
-    void prepare_for_bind(void *&data, SQLLEN &size,
-                        SQLSMALLINT &sqlType, SQLSMALLINT &cType);
-    void bind_helper(int &position,
-        void *data, details::exchange_type type);
+        : statement_(st), position_(-1), data_(0), buf_(0), indHolder_(0) {}
 
     virtual void bind_by_pos(int &position,
         void *data, details::exchange_type type, bool readOnly);
@@ -116,7 +111,16 @@ struct odbc_standard_use_type_backend : details::standard_use_type_backend
 
     virtual void clean_up();
 
+    // Return the pointer to the buffer containing data to be used by ODBC.
+    // This can be either data_ itself or buf_, that is allocated by this
+    // function if necessary.
+    //
+    // Also fill in the size of the data and SQL and C types of it.
+    void* prepare_for_bind(SQLLEN &size,
+       SQLSMALLINT &sqlType, SQLSMALLINT &cType);
+
     odbc_statement_backend &statement_;
+    int position_;
     void *data_;
     details::exchange_type type_;
     char *buf_;

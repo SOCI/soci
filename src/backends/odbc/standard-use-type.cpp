@@ -14,8 +14,8 @@
 using namespace soci;
 using namespace soci::details;
 
-void odbc_standard_use_type_backend::prepare_for_bind(
-    void *&data, SQLLEN &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType)
+void* odbc_standard_use_type_backend::prepare_for_bind(
+    SQLLEN &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType)
 {
     switch (type_)
     {
@@ -51,20 +51,18 @@ void odbc_standard_use_type_backend::prepare_for_bind(
         size = sizeof(double);
         break;
 
-    // cases that require adjustments and buffer management
     case x_char:
         sqlType = SQL_CHAR;
         cType = SQL_C_CHAR;
-        size = sizeof(char) + 1;
+        size = 2;
         buf_ = new char[size];
-        data = buf_;
+        buf_[0] = *static_cast<char*>(data_);
+        buf_[1] = '\0';
         indHolder_ = SQL_NTS;
         break;
     case x_stdstring:
     {
-        // TODO: No textual value is assigned here!
-
-        std::string* s = static_cast<std::string*>(data);
+        std::string* s = static_cast<std::string*>(data_);
 #ifdef SOCI_ODBC_VERSION_3_IS_TO_BE_CHECKED
         sqlType = SQL_VARCHAR;
 #else
@@ -73,21 +71,35 @@ void odbc_standard_use_type_backend::prepare_for_bind(
         sqlType = SQL_LONGVARCHAR;
 #endif
         cType = SQL_C_CHAR;
-        size = s->size() + 1;
-        buf_ = new char[size];
-        data = buf_;
+        size = s->size();
+        buf_ = new char[size+1];
+        memcpy(buf_, s->c_str(), size);
+        buf_[size++] = '\0';
         indHolder_ = SQL_NTS;
     }
     break;
     case x_stdtm:
+    {
+        std::tm *t = static_cast<std::tm *>(data_);
+
         sqlType = SQL_TIMESTAMP;
         cType = SQL_C_TIMESTAMP;
         buf_ = new char[sizeof(TIMESTAMP_STRUCT)];
-        data = buf_;
         size = 19; // This number is not the size in bytes, but the number
                    // of characters in the date if it was written out
                    // yyyy-mm-dd hh:mm:ss
-        break;
+
+        TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
+
+        ts->year = static_cast<SQLSMALLINT>(t->tm_year + 1900);
+        ts->month = static_cast<SQLUSMALLINT>(t->tm_mon + 1);
+        ts->day = static_cast<SQLUSMALLINT>(t->tm_mday);
+        ts->hour = static_cast<SQLUSMALLINT>(t->tm_hour);
+        ts->minute = static_cast<SQLUSMALLINT>(t->tm_min);
+        ts->second = static_cast<SQLUSMALLINT>(t->tm_sec);
+        ts->fraction = 0;
+    }
+    break;
 
     case x_blob:
     {
@@ -106,31 +118,13 @@ void odbc_standard_use_type_backend::prepare_for_bind(
     break;
     case x_statement:
     case x_rowid:
-        break;
-	}
-}
-
-void odbc_standard_use_type_backend::bind_helper(int &position, void *data, exchange_type type)
-{
-    data_ = data; // for future reference
-    type_ = type; // for future reference
-
-    SQLSMALLINT sqlType;
-    SQLSMALLINT cType;
-    SQLLEN size;
-
-    prepare_for_bind(data, size, sqlType, cType);
-
-    SQLRETURN rc = SQLBindParameter(statement_.hstmt_,
-                                    static_cast<SQLUSMALLINT>(position++),
-                                    SQL_PARAM_INPUT,
-                                    cType, sqlType, size, 0, data, 0, &indHolder_);
-
-    if (is_odbc_error(rc))
-    {
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_,
-                                "Binding");
+        // Unsupported data types.
+        return NULL;
     }
+
+    // Return either the pointer to C++ data itself or the buffer that we
+    // allocated, if any.
+    return buf_ ? buf_ : data_;
 }
 
 void odbc_standard_use_type_backend::bind_by_pos(
@@ -142,7 +136,9 @@ void odbc_standard_use_type_backend::bind_by_pos(
          "Binding for use elements must be either by position or by name.");
     }
 
-    bind_helper(position, data, type);
+    position_ = position++;
+    data_ = data;
+    type_ = type;
 
     statement_.boundByPos_ = true;
 }
@@ -170,16 +166,16 @@ void odbc_standard_use_type_backend::bind_by_name(
         count++;
     }
 
-    if (position != -1)
-    {
-        bind_helper(position, data, type);
-    }
-    else
+    if (position == -1)
     {
         std::ostringstream ss;
         ss << "Unable to find name '" << name << "' to bind to";
         throw soci_error(ss.str().c_str());
     }
+
+    position_ = position;
+    data_ = data;
+    type_ = type;
 
     statement_.boundByName_ = true;
 }
@@ -187,37 +183,22 @@ void odbc_standard_use_type_backend::bind_by_name(
 void odbc_standard_use_type_backend::pre_use(indicator const *ind)
 {
     // first deal with data
-    if (type_ == x_char)
-    {
-        char *c = static_cast<char*>(data_);
-        buf_[0] = *c;
-        buf_[1] = '\0';
-    }
-    else if (type_ == x_stdstring)
-    {
-        std::string *s = static_cast<std::string *>(data_);
-        std::size_t const bufSize = s->size() + 1;
-        // TODO: this is a hack (for buffer re-size? --mloskot)
-        //delete [] buf_;
-        //buf_ = new char[bufSize];
+    SQLSMALLINT sqlType;
+    SQLSMALLINT cType;
+    SQLLEN size;
 
-        std::size_t const sSize = s->size();
-        std::size_t const toCopy = sSize < bufSize -1 ? sSize + 1 : bufSize - 1;
-        strncpy(buf_, s->c_str(), toCopy);
-        buf_[toCopy] = '\0';
-    }
-    else if (type_ == x_stdtm)
-    {
-        std::tm *t = static_cast<std::tm *>(data_);
-        TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
+    void* const sqlData = prepare_for_bind(size, sqlType, cType);
 
-        ts->year = static_cast<SQLSMALLINT>(t->tm_year + 1900);
-        ts->month = static_cast<SQLUSMALLINT>(t->tm_mon + 1);
-        ts->day = static_cast<SQLUSMALLINT>(t->tm_mday);
-        ts->hour = static_cast<SQLUSMALLINT>(t->tm_hour);
-        ts->minute = static_cast<SQLUSMALLINT>(t->tm_min);
-        ts->second = static_cast<SQLUSMALLINT>(t->tm_sec);
-        ts->fraction = 0;
+    SQLRETURN rc = SQLBindParameter(statement_.hstmt_,
+                                    static_cast<SQLUSMALLINT>(position_),
+                                    SQL_PARAM_INPUT,
+                                    cType, sqlType, size, 0,
+                                    sqlData, 0, &indHolder_);
+
+    if (is_odbc_error(rc))
+    {
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_,
+                                "Binding");
     }
 
     // then handle indicators
