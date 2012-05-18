@@ -83,21 +83,17 @@ struct exchange_traits<unsigned long long>
     enum { x_type = x_unsigned_long_long };
 };
 
-#if defined (__LP64__) || ( __WORDSIZE == 64 )
+// long must be mapped either to x_integer or x_long_long:
+template<int long_size> struct long_traits_helper;
+template<> struct long_traits_helper<4> { enum { x_type = x_integer }; };
+template<> struct long_traits_helper<8> { enum { x_type = x_long_long }; };
+
 template <>
 struct exchange_traits<long int>
 {
     typedef basic_type_tag type_family;
-    enum { x_type = x_long_long };
+    enum { x_type = long_traits_helper<sizeof(long int)>::x_type };
 };
-#elif ( __WORDSIZE == 32 )
-template <>
-struct exchange_traits<long int>
-{
-    typedef basic_type_tag type_family;
-    enum { x_type = x_integer };
-};
-#endif // #if defined (__LP64__) || ( __WORDSIZE == 64 )
 
 template <>
 struct exchange_traits<double>
