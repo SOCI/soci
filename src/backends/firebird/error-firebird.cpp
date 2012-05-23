@@ -37,7 +37,7 @@ namespace firebird
 void get_iscerror_details(ISC_STATUS * status_vector, std::string &msg)
 {
     char msg_buffer[SOCI_FIREBIRD_ERRMSG];
-    long *pvector = status_vector;
+    ISC_STATUS *pvector = status_vector;
 
     try
     {
