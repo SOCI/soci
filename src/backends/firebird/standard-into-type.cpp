@@ -86,6 +86,12 @@ void firebird_standard_into_type_backend::exchangeData()
             break;
         case x_integer:
             {
+                int t = from_isc<int>(var);
+                *reinterpret_cast<int *>(data_) = t;
+            }
+            break;
+        case x_long_long:
+            {
                 long long t = from_isc<long long>(var);
                 *reinterpret_cast<long long *>(data_) = t;
             }
