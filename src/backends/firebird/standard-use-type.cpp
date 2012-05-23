@@ -118,21 +118,6 @@ void firebird_standard_use_type_backend::exchangeData()
             to_isc<double>(data_, var);
             break;
 
-            // cases that require adjustments and buffer management
-        case x_cstring:
-            {
-                details::cstring_descriptor *tmp
-                    = static_cast<cstring_descriptor*>(data_);
-
-                // remove trailing nulls
-                while (tmp->str_[tmp->bufSize_-1] == '\0')
-                {
-                    --tmp->bufSize_;
-                }
-
-                setTextParam(tmp->str_, tmp->bufSize_, buf_, var);
-            }
-            break;
         case x_stdstring:
             {
                 std::string *tmp = static_cast<std::string*>(data_);

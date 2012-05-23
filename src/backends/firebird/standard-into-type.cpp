@@ -98,21 +98,6 @@ void firebird_standard_into_type_backend::exchangeData()
             break;
 
             // cases that require adjustments and buffer management
-        case x_cstring:
-            {
-                details::cstring_descriptor *tmp =
-                    static_cast<details::cstring_descriptor*>(data_);
-
-                std::string stmp = getTextParam(var);
-                std::strncpy(tmp->str_, stmp.c_str(), tmp->bufSize_ - 1);
-                tmp->str_[tmp->bufSize_ - 1] = '\0';
-
-                if (stmp.size() >= tmp->bufSize_)
-                {
-                    statement_.inds_[position_][0] = i_truncated;
-                }
-            }
-            break;
         case x_stdstring:
             *(reinterpret_cast<std::string*>(data_)) = getTextParam(var);
             break;
