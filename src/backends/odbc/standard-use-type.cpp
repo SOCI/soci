@@ -35,6 +35,16 @@ void odbc_standard_use_type_backend::prepare_for_bind(
         cType = SQL_C_ULONG;
         size = sizeof(unsigned long);
         break;
+    case x_long_long:
+        sqlType = SQL_BIGINT;
+        cType = SQL_C_SBIGINT;
+        size = sizeof(long long);
+        break;
+    case x_unsigned_long_long:
+        sqlType = SQL_BIGINT;
+        cType = SQL_C_UBIGINT;
+        size = sizeof(unsigned long long);
+        break;
     case x_double:
         sqlType = SQL_DOUBLE;
         cType = SQL_C_DOUBLE;
@@ -97,8 +107,6 @@ void odbc_standard_use_type_backend::prepare_for_bind(
     case x_statement:
     case x_rowid:
         break;
-	case x_long_long: break; // TODO: verify if can be supported
-	case x_unsigned_long_long: break; // TODO: verify if can be supported
 	}
 }
 
