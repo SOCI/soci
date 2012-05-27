@@ -204,55 +204,6 @@ void odbc_standard_use_type_backend::pre_use(indicator const *ind)
 
 void odbc_standard_use_type_backend::post_use(bool gotData, indicator *ind)
 {
-    // TODO: Is it possible to have the bound element being overwritten
-    // by the database? (looks like yes)
-    // If not, then nothing to do here, please remove this comment
-    //         and most likely the code below is also unnecessary.
-    // If yes, then use the value of the readOnly parameter:
-    // - true:  the given object should not be modified and the backend
-    //          should detect if the modification was performed on the
-    //          isolated buffer and throw an exception if the buffer was modified
-    //          (this indicates logic error, because the user used const object
-    //          and executed a query that attempted to modified it)
-    // - false: the modification should be propagated to the given object (as below).
-    //
-    // From the code below I conclude that ODBC allows the database to modify the bound object
-    // and the code below correctly deals with readOnly == false.
-    // The point is that with readOnly == true the propagation of modification should not
-    // take place and in addition the attempt of modification should be detected and reported.
-    // ...
-
-    // first, deal with data
-    if (gotData)
-    {
-        if (type_ == x_char)
-        {
-            char *c = static_cast<char*>(data_);
-            *c = buf_[0];
-        }
-        else if (type_ == x_stdstring)
-        {
-            std::string *s = static_cast<std::string *>(data_);
-
-            *s = buf_;
-        }
-        else if (type_ == x_stdtm)
-        {
-            std::tm *t = static_cast<std::tm *>(data_);
-            TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
-            t->tm_isdst = -1;
-            t->tm_year = ts->year - 1900;
-            t->tm_mon = ts->month - 1;
-            t->tm_mday = ts->day;
-            t->tm_hour = ts->hour;
-            t->tm_min = ts->minute;
-            t->tm_sec = ts->second;
-
-            // normalize and compute the remaining fields
-            std::mktime(t);
-        }
-    }
-
     if (ind != NULL)
     {
         if (gotData)
