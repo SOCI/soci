@@ -63,13 +63,7 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
     case x_stdstring:
     {
         std::string* s = static_cast<std::string*>(data_);
-#ifdef SOCI_ODBC_VERSION_3_IS_TO_BE_CHECKED
         sqlType = SQL_VARCHAR;
-#else
-        // Note: SQL_LONGVARCHAR is an extended type for strings up to 1GB
-        // But it might not work with ODBC version below 3.0
-        sqlType = SQL_LONGVARCHAR;
-#endif
         cType = SQL_C_CHAR;
         size = s->size();
         buf_ = new char[size+1];
