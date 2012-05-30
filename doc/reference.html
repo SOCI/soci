@@ -343,6 +343,7 @@ public:
     void define_and_bind();
 
     bool execute(bool withDataExchange = false);
+    long long get_affected_rows();
     bool fetch();
 
     bool got_data() const;
@@ -385,6 +386,9 @@ parameter is <code>false</code> then there is no data exchange with
 locally bound variables (this form should be used if later <code>fetch</code>
 of multiple rows is foreseen). Returns <code>true</code> if there was at least
 one row of data returned.</li>
+  <li><code>get_affected_rows</code> function returns the number of rows
+affected by the last statement. Returns <code>-1</code> if it's not
+implemented by the backend being used.</li>
   <li><code>fetch</code> function for retrieving the next portion of
 the result. Returns <code>true</code> if there was new data.</li>
 <li><code>got_data</code> return <code>true</code> if the most recent
@@ -893,7 +897,7 @@ described above.</p>
 <table class="foot-links" border="0" cellpadding="2" cellspacing="2">
   <tr>
     <td class="foot-link-left">
-      <a href="beyond.html">Previous (Beyond SOCI)</a>
+      <a href="beyond.html">Previous (Beyond standard SQL)</a>
     </td>
     <td class="foot-link-right">
       <a href="backends.html">Next (Backends reference)</a>
