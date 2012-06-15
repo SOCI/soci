@@ -75,10 +75,6 @@ void oracle_standard_into_type_backend::define_by_pos(
         oracleType = SQLT_INT;
         size = sizeof(int);
         break;
-    case x_unsigned_long:
-        oracleType = SQLT_UIN;
-        size = sizeof(unsigned long);
-        break;
     case x_double:
         oracleType = SQLT_FLT;
         size = sizeof(double);

@@ -110,12 +110,6 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                 set_in_vector(data_, i, val);
             }
             break;
-        case x_unsigned_long:
-            {
-                unsigned long const val = string_to_unsigned_integer<unsigned long>(buf);
-                set_in_vector(data_, i, val);
-            }
-            break;
         case x_long_long:
             {
                 long long const val = string_to_integer<long long>(buf);
@@ -164,9 +158,6 @@ void sqlite3_vector_into_type_backend::resize(std::size_t sz)
     case x_integer:
         resize_vector<int>(data_, sz);
         break;
-    case x_unsigned_long:
-        resize_vector<unsigned long>(data_, sz);
-        break;
     case x_long_long:
         resize_vector<long long>(data_, sz);
         break;
@@ -201,9 +192,6 @@ std::size_t sqlite3_vector_into_type_backend::size()
         break;
     case x_integer:
         sz = get_vector_size<int>(data_);
-        break;
-    case x_unsigned_long:
-        sz = get_vector_size<unsigned long>(data_);
         break;
     case x_long_long:
         sz = get_vector_size<long long>(data_);

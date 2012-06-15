@@ -377,10 +377,8 @@ void mysql_statement_backend::describe_column(int colNum,
     case FIELD_TYPE_CHAR:       //MYSQL_TYPE_TINY:
     case FIELD_TYPE_SHORT:      //MYSQL_TYPE_SHORT:
     case FIELD_TYPE_INT24:      //MYSQL_TYPE_INT24:
-        type = dt_integer;
-        break;
     case FIELD_TYPE_LONG:       //MYSQL_TYPE_LONG:
-        type = field->flags & UNSIGNED_FLAG ? dt_unsigned_long : dt_integer;
+        type = dt_integer;
         break;
     case FIELD_TYPE_LONGLONG:   //MYSQL_TYPE_LONGLONG:
         type = field->flags & UNSIGNED_FLAG ? dt_unsigned_long_long :

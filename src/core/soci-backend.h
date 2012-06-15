@@ -21,7 +21,7 @@ namespace soci
 // data types, as seen by the user
 enum data_type
 {
-    dt_string, dt_date, dt_double, dt_integer, dt_unsigned_long, dt_long_long, dt_unsigned_long_long
+    dt_string, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long
 };
 
 // the enum type for indicator variables
@@ -37,7 +37,7 @@ enum exchange_type
 {
     x_char, x_stdstring,
     x_short, x_integer,
-    x_unsigned_long, x_long_long, x_unsigned_long_long,
+    x_long_long, x_unsigned_long_long,
     x_double, x_stdtm, x_statement,
     x_rowid, x_blob
 };

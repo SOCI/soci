@@ -104,12 +104,6 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
                 *dest = static_cast<int>(val);
             }
             break;
-        case x_unsigned_long:
-            {
-                unsigned long* dest = static_cast<unsigned long*>(data_);
-                *dest = string_to_unsigned_integer<unsigned long >(buf);
-            }
-            break;
         case x_long_long:
             {
                 long long* dest = static_cast<long long*>(data_);

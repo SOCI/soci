@@ -63,13 +63,6 @@ struct exchange_traits<char>
 };
 
 template <>
-struct exchange_traits<unsigned long>
-{
-    typedef basic_type_tag type_family;
-    enum { x_type = x_unsigned_long };
-};
-
-template <>
 struct exchange_traits<long long>
 {
     typedef basic_type_tag type_family;

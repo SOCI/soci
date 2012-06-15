@@ -120,15 +120,6 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
                     *static_cast<int*>(data_));
             }
             break;
-        case x_unsigned_long:
-            {
-                std::size_t const bufSize
-                    = std::numeric_limits<unsigned long>::digits10 + 2;
-                buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%lu",
-                    *static_cast<unsigned long*>(data_));
-            }
-            break;
         case x_long_long:
             {
                 std::size_t const bufSize

@@ -602,12 +602,6 @@ void statement_impl::bind_into<dt_integer>()
 }
 
 template<>
-void statement_impl::bind_into<dt_unsigned_long>()
-{
-    into_row<unsigned long>();
-}
-
-template<>
 void statement_impl::bind_into<dt_long_long>()
 {
     into_row<long long>();
@@ -651,9 +645,6 @@ void statement_impl::describe()
             break;
         case dt_integer:
             bind_into<dt_integer>();
-            break;
-        case dt_unsigned_long:
-            bind_into<dt_unsigned_long>();
             break;
         case dt_long_long:
             bind_into<dt_long_long>();
