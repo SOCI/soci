@@ -29,6 +29,7 @@
 #include <windows.h>
 #endif
 #include <sqlext.h> // ODBC
+#include <string.h> // strcpy()
 
 namespace soci
 {
@@ -268,14 +269,46 @@ public:
                   std::string const & msg)
         : soci_error(msg)
     {
-        SQLSMALLINT length, i = 1;
-        SQLGetDiagRec(htype, hndl, i, sqlstate_, &sqlcode_,
-                      message_, SQL_MAX_MESSAGE_LENGTH + 1,
-                      &length);
+        const char* socierror = NULL;
 
-        if (length == 0)
+        SQLSMALLINT length, i = 1;
+        switch ( SQLGetDiagRec(htype, hndl, i, sqlstate_, &sqlcode_,
+                               message_, SQL_MAX_MESSAGE_LENGTH + 1,
+                               &length) )
         {
-            message_[0] = 0;
+          case SQL_SUCCESS:
+            // The error message was successfully retrieved.
+            break;
+
+          case SQL_INVALID_HANDLE:
+            socierror = "[SOCI]: Invalid handle.";
+            break;
+
+          case SQL_ERROR:
+            socierror = "[SOCI]: SQLGetDiagRec() error.";
+            break;
+
+          case SQL_SUCCESS_WITH_INFO:
+            socierror = "[SOCI]: Error message too long.";
+            break;
+
+          case SQL_NO_DATA:
+            socierror = "[SOCI]: No error.";
+            break;
+
+          default:
+            socierror = "[SOCI]: Unexpected SQLGetDiagRec() return value.";
+            break;
+        }
+
+        if (socierror)
+        {
+            // Use our own error message if we failed to retrieve the ODBC one.
+            strcpy(reinterpret_cast<char*>(message_), socierror);
+
+            // Use "General warning" SQLSTATE code.
+            strcpy(reinterpret_cast<char*>(sqlstate_), "01000");
+
             sqlcode_ = 0;
         }
     }
