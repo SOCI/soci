@@ -39,7 +39,9 @@ void standard_use_type::pre_use()
 void standard_use_type::post_use(bool gotData)
 {
     backEnd_->post_use(gotData, ind_);
-    convert_from_base();
+
+    // There is no need to call convert_from_base() here, the converted value
+    // wouldn't be used anyhow.
 }
 
 void standard_use_type::clean_up()
