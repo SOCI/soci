@@ -14,6 +14,15 @@
 using namespace soci;
 using namespace soci::details;
 
+#ifdef _MSC_VER
+#pragma warning(disable:4996)
+#define snprintf _snprintf
+#define LL_FMT_FLAGS "I64"
+#else
+#define LL_FMT_FLAGS "ll"
+#endif
+
+
 void* odbc_standard_use_type_backend::prepare_for_bind(
     SQLLEN &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType)
 {
@@ -31,14 +40,40 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
         size = sizeof(int);
         break;
     case x_long_long:
-        sqlType = SQL_BIGINT;
-        cType = SQL_C_SBIGINT;
-        size = sizeof(long long);
+        if (use_string_for_bigint())
+        {
+          sqlType = SQL_NUMERIC;
+          cType = SQL_C_CHAR;
+          size = max_bigint_length;
+          buf_ = new char[size];
+          snprintf(buf_, size, "%" LL_FMT_FLAGS "d",
+                   *static_cast<long long *>(data_));
+          indHolder_ = SQL_NTS;
+        }
+        else // Normal case, use ODBC support.
+        {
+          sqlType = SQL_BIGINT;
+          cType = SQL_C_SBIGINT;
+          size = sizeof(long long);
+        }
         break;
     case x_unsigned_long_long:
-        sqlType = SQL_BIGINT;
-        cType = SQL_C_UBIGINT;
-        size = sizeof(unsigned long long);
+        if (use_string_for_bigint())
+        {
+          sqlType = SQL_NUMERIC;
+          cType = SQL_C_CHAR;
+          size = max_bigint_length;
+          buf_ = new char[size];
+          snprintf(buf_, size, "%" LL_FMT_FLAGS "u",
+                   *static_cast<unsigned long long *>(data_));
+          indHolder_ = SQL_NTS;
+        }
+        else // Normal case, use ODBC support.
+        {
+          sqlType = SQL_BIGINT;
+          cType = SQL_C_UBIGINT;
+          size = sizeof(unsigned long long);
+        }
         break;
     case x_double:
         sqlType = SQL_DOUBLE;

@@ -8,9 +8,16 @@
 #define SOCI_ODBC_SOURCE
 #include "soci-odbc.h"
 #include <ctime>
+#include <stdio.h>  // sscanf()
 
 using namespace soci;
 using namespace soci::details;
+
+#ifdef _MSC_VER
+#define LL_FMT_FLAGS "I64"
+#else
+#define LL_FMT_FLAGS "ll"
+#endif
 
 
 void odbc_standard_into_type_backend::define_by_pos(
@@ -49,12 +56,32 @@ void odbc_standard_into_type_backend::define_by_pos(
         size = sizeof(long);
         break;
     case x_long_long:
-        odbcType_ = SQL_C_SBIGINT;
-        size = sizeof(long long);
+        if (use_string_for_bigint())
+        {
+          odbcType_ = SQL_C_CHAR;
+          size = max_bigint_length;
+          buf_ = new char[size];
+          data = buf_;
+        }
+        else // Normal case, use ODBC support.
+        {
+          odbcType_ = SQL_C_SBIGINT;
+          size = sizeof(long long);
+        }
         break;
     case x_unsigned_long_long:
-        odbcType_ = SQL_C_UBIGINT;
-        size = sizeof(unsigned long long);
+        if (use_string_for_bigint())
+        {
+          odbcType_ = SQL_C_CHAR;
+          size = max_bigint_length;
+          buf_ = new char[size];
+          data = buf_;
+        }
+        else // Normal case, use ODBC support.
+        {
+          odbcType_ = SQL_C_UBIGINT;
+          size = sizeof(unsigned long long);
+        }
         break;
     case x_double:
         odbcType_ = SQL_C_DOUBLE;
@@ -152,6 +179,22 @@ void odbc_standard_into_type_backend::post_fetch(
 
             // normalize and compute the remaining fields
             std::mktime(t);
+        }
+        else if (type_ == x_long_long && use_string_for_bigint())
+        {
+          long long *ll = static_cast<long long *>(data_);
+          if (sscanf(buf_, "%" LL_FMT_FLAGS "d", ll) != 1)
+          {
+            throw soci_error("Failed to parse the returned 64-bit integer value");
+          }
+        }
+        else if (type_ == x_unsigned_long_long && use_string_for_bigint())
+        {
+          unsigned long long *ll = static_cast<unsigned long long *>(data_);
+          if (sscanf(buf_, "%" LL_FMT_FLAGS "u", ll) != 1)
+          {
+            throw soci_error("Failed to parse the returned 64-bit integer value");
+          }
         }
     }
 }
