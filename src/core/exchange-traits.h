@@ -49,10 +49,20 @@ struct exchange_traits<short>
 };
 
 template <>
+struct exchange_traits<unsigned short> : exchange_traits<short>
+{
+};
+
+template <>
 struct exchange_traits<int>
 {
     typedef basic_type_tag type_family;
     enum { x_type = x_integer };
+};
+
+template <>
+struct exchange_traits<unsigned int> : exchange_traits<int>
+{
 };
 
 template <>
@@ -86,6 +96,11 @@ struct exchange_traits<long int>
 {
     typedef basic_type_tag type_family;
     enum { x_type = long_traits_helper<sizeof(long int)>::x_type };
+};
+
+template <>
+struct exchange_traits<unsigned long> : exchange_traits<long>
+{
 };
 
 template <>
