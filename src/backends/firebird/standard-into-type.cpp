@@ -110,6 +110,12 @@ void firebird_standard_into_type_backend::exchangeData()
         case x_stdtm:
             tmDecode(var->sqltype,
                      buf_, static_cast<std::tm*>(data_));
+
+            // isc_decode_timestamp() used by tmDecode() incorrectly sets
+            // tm_isdst to 0 in the struct that it creates, see
+            // http://tracker.firebirdsql.org/browse/CORE-3877, work around it
+            // by pretending the DST is actually unknown.
+            static_cast<std::tm*>(data_)->tm_isdst = -1;
             break;
 
             // cases that require special handling
