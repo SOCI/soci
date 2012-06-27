@@ -18,6 +18,4 @@ firebird_rowid_backend::firebird_rowid_backend(firebird_session_backend & /* ses
 
 firebird_rowid_backend::~firebird_rowid_backend()
 {
-    // Unsupported in Firebird backend
-    throw soci_error("RowIDs are not supported");
 }
