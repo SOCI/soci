@@ -135,12 +135,21 @@ void test2()
     std::cout << "test 2 passed" << std::endl;
 }
 
-struct longlong_table_creator : table_creator_base
+struct bigint_table_creator : table_creator_base
 {
-    longlong_table_creator(session & sql)
+    bigint_table_creator(session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val bigint)";
+    }
+};
+
+struct bigint_unsigned_table_creator : table_creator_base
+{
+    bigint_unsigned_table_creator(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val bigint unsigned)";
     }
 };
 
@@ -150,7 +159,7 @@ void test3()
     {
         session sql(backEnd, connectString);
 
-        longlong_table_creator tableCreator(sql);
+        bigint_table_creator tableCreator(sql);
 
         long long v1 = 1000000000000LL;
         assert(v1 / 1000000 == 1000000);
@@ -167,7 +176,7 @@ void test3()
     {
         session sql(backEnd, connectString);
 
-        longlong_table_creator tableCreator(sql);
+        bigint_table_creator tableCreator(sql);
 
         std::vector<long long> v1;
         v1.push_back(1000000000000LL);
@@ -187,6 +196,16 @@ void test3()
         assert(v2[2] == 1000000000002LL);
         assert(v2[3] == 1000000000001LL);
         assert(v2[4] == 1000000000000LL);
+    }
+
+    {
+      session sql(backEnd, connectString);
+
+      bigint_unsigned_table_creator tableCreator(sql);
+
+      sql << "insert into soci_test set val = 18446744073709551615";
+      row v;
+      sql << "select * from soci_test", into(v);
     }
 
     std::cout << "test 3 passed" << std::endl;
