@@ -140,6 +140,13 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                     set_invector_(data_, i, val);
                 }
                 break;
+            case x_unsigned_long_long:
+                {
+                    unsigned long long val;
+                    parse_num(buf, val);
+                    set_invector_(data_, i, val);
+                }
+                break;
             case x_double:
                 {
                     double val;
@@ -190,6 +197,9 @@ void mysql_vector_into_type_backend::resize(std::size_t sz)
     case x_integer:      resizevector_<int>          (data_, sz); break;
     case x_unsigned_long: resizevector_<unsigned long>(data_, sz); break;
     case x_long_long:     resizevector_<long long>    (data_, sz); break;
+    case x_unsigned_long_long:
+        resizevector_<unsigned long long>(data_, sz);
+        break;
     case x_double:       resizevector_<double>       (data_, sz); break;
     case x_stdstring:    resizevector_<std::string>  (data_, sz); break;
     case x_stdtm:        resizevector_<std::tm>      (data_, sz); break;
@@ -210,6 +220,9 @@ std::size_t mysql_vector_into_type_backend::size()
     case x_integer:      sz = get_vector_size<int>          (data_); break;
     case x_unsigned_long: sz = get_vector_size<unsigned long>(data_); break;
     case x_long_long:     sz = get_vector_size<long long>    (data_); break;
+    case x_unsigned_long_long:
+        sz = get_vector_size<unsigned long long>(data_);
+        break;
     case x_double:       sz = get_vector_size<double>       (data_); break;
     case x_stdstring:    sz = get_vector_size<std::string>  (data_); break;
     case x_stdtm:        sz = get_vector_size<std::tm>      (data_); break;

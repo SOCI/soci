@@ -121,6 +121,7 @@ void mysql_standard_into_type_backend::post_fetch(
                     static_cast<unsigned long long*>(data_);
                 parse_num(buf, *dest);
             }
+            break;
         case x_double:
             {
                 double *dest = static_cast<double*>(data_);

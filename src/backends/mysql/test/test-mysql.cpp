@@ -199,13 +199,73 @@ void test3()
     }
 
     {
-      session sql(backEnd, connectString);
+        session sql(backEnd, connectString);
 
-      bigint_unsigned_table_creator tableCreator(sql);
+        bigint_unsigned_table_creator tableCreator(sql);
 
-      sql << "insert into soci_test set val = 18446744073709551615";
-      row v;
-      sql << "select * from soci_test", into(v);
+        sql << "insert into soci_test set val = 18446744073709551615";
+        row v;
+        sql << "select * from soci_test", into(v);
+    }
+
+    {
+        session sql(backEnd, connectString);
+
+        bigint_unsigned_table_creator tableCreator(sql);
+
+        const char* source = "18446744073709551615";
+        sql << "insert into soci_test set val = " << source;
+        unsigned long long vv = 0;
+        sql << "select val from soci_test", into(vv);
+        std::stringstream buf;
+        buf << vv;
+        assert(buf.str() == source);
+    }
+
+    {
+        session sql(backEnd, connectString);
+
+        bigint_unsigned_table_creator tableCreator(sql);
+
+        const char* source = "18446744073709551615";
+        sql << "insert into soci_test set val = " << source;
+        std::vector<unsigned long long> v(1);
+        sql << "select val from soci_test", into(v);
+        std::stringstream buf;
+        buf << v.at(0);
+        assert(buf.str() == source);
+    }
+
+    {
+        session sql(backEnd, connectString);
+
+        bigint_unsigned_table_creator tableCreator(sql);
+
+        unsigned long long n = 18446744073709551615ULL;
+        sql << "insert into soci_test(val) values (:n)", use(n);
+        unsigned long long m = 0;
+        sql << "select val from soci_test", into(m);
+        assert(n == m);
+    }
+
+    {
+        session sql(backEnd, connectString);
+
+        bigint_unsigned_table_creator tableCreator(sql);
+
+        std::vector<unsigned long long> v1;
+        v1.push_back(18446744073709551615ULL);
+        v1.push_back(18446744073709551614ULL);
+        v1.push_back(18446744073709551613ULL);
+        sql << "insert into soci_test(val) values(:val)", use(v1);
+
+        std::vector<unsigned long long> v2(10);
+        sql << "select val from soci_test order by val", into(v2);
+
+        assert(v2.size() == 3);
+        assert(v2[0] == 18446744073709551613ULL);
+        assert(v2[1] == 18446744073709551614ULL);
+        assert(v2[2] == 18446744073709551615ULL);
     }
 
     std::cout << "test 3 passed" << std::endl;
