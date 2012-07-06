@@ -253,8 +253,26 @@ struct odbc_session_backend : details::session_backend
     virtual odbc_rowid_backend * make_rowid_backend();
     virtual odbc_blob_backend * make_blob_backend();
 
+    enum database_product
+    {
+      prod_uninitialized, // Never returned by get_database_product().
+      prod_firebird,
+      prod_mssql,
+      prod_mysql,
+      prod_oracle,
+      prod_postgresql,
+      prod_sqlite,
+      prod_unknown = -1
+    };
+
+    // Determine the type of the database we're connected to.
+    database_product get_database_product();
+
+
     SQLHENV henv_;
     SQLHDBC hdbc_;
+
+    database_product product_;
 };
 
 class SOCI_ODBC_DECL odbc_soci_error : public soci_error

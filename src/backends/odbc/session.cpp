@@ -12,7 +12,7 @@ using namespace soci;
 using namespace soci::details;
 
 odbc_session_backend::odbc_session_backend(std::string const & connectString)
-    : henv_(0), hdbc_(0)
+    : henv_(0), hdbc_(0), product_(prod_uninitialized)
 {
     SQLRETURN rc;
 
@@ -144,4 +144,38 @@ odbc_rowid_backend * odbc_session_backend::make_rowid_backend()
 odbc_blob_backend * odbc_session_backend::make_blob_backend()
 {
     return new odbc_blob_backend(*this);
+}
+
+odbc_session_backend::database_product
+odbc_session_backend::get_database_product()
+{
+    // Cache the product type, it's not going to change during our life time.
+    if (product_ != prod_uninitialized)
+        return product_;
+
+    char product_name[1024];
+    SQLSMALLINT len = sizeof(product_name);
+    SQLRETURN rc = SQLGetInfo(hdbc_, SQL_DBMS_NAME, product_name, len, &len);
+    if (is_odbc_error(rc))
+    {
+        throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
+                            "SQLGetInfo(SQL_DBMS_NAME)");
+    }
+
+    if (strcmp(product_name, "Firebird") == 0)
+        product_ = prod_firebird;
+    else if (strcmp(product_name, "Microsoft SQL Server") == 0)
+        product_ = prod_mssql;
+    else if (strcmp(product_name, "MySQL") == 0)
+        product_ = prod_mysql;
+    else if (strcmp(product_name, "Oracle") == 0)
+        product_ = prod_oracle;
+    else if (strcmp(product_name, "PostgreSQL") == 0)
+        product_ = prod_postgresql;
+    else if (strcmp(product_name, "SQLite") == 0)
+        product_ = prod_sqlite;
+    else
+        product_ = prod_unknown;
+
+    return product_;
 }
