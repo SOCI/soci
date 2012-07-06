@@ -243,6 +243,11 @@ struct odbc_session_backend : details::session_backend
     virtual void commit();
     virtual void rollback();
 
+    virtual bool get_next_sequence_value(session & s,
+        std::string const & sequence, long & value);
+    virtual bool get_last_insert_id(session & s,
+        std::string const & table, long & value);
+
     virtual std::string get_backend_name() const { return "odbc"; }
 
     void reset_transaction();
