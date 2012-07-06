@@ -8,6 +8,7 @@
 #define SOCI_FIREBIRD_SOURCE
 #include "soci-firebird.h"
 #include "error-firebird.h"
+#include "session.h"
 #include <map>
 #include <sstream>
 #include <string>
@@ -212,6 +213,16 @@ void firebird_session_backend::cleanUp()
     }
 
     dbhp_ = 0L;
+}
+
+bool firebird_session_backend::get_next_sequence_value(
+    session & s, std::string const & sequence, long & value)
+{
+    // We could use isq_execute2() directly but this is even simpler.
+    s << "select next value for " + sequence + " from rdb$database",
+          into(value);
+
+    return true;
 }
 
 firebird_statement_backend * firebird_session_backend::make_statement_backend()
