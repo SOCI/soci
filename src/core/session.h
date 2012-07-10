@@ -77,6 +77,21 @@ public:
 
     bool get_uppercase_column_names() const;
 
+    // Functions for dealing with sequence/auto-increment values.
+
+    // If true is returned, value is filled with the next value from the given
+    // sequence. Otherwise either the sequence is invalid (doesn't exist) or
+    // the current backend doesn't support sequences. If you use sequences for
+    // automatically generating primary key values, you should use
+    // get_last_insert_id() after the insertion in this case.
+    bool get_next_sequence_value(std::string const & sequence, long & value);
+
+    // If true is returned, value is filled with the last auto-generated value
+    // for this table (although some backends ignore the table argument and
+    // return the last value auto-generated in this session).
+    bool get_last_insert_id(std::string const & table, long & value);
+
+
     // for diagnostics and advanced users
     // (downcast it to expected back-end session class)
     details::session_backend * get_backend() { return backEnd_; }

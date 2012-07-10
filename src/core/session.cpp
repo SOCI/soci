@@ -350,6 +350,20 @@ bool session::get_uppercase_column_names() const
     }
 }
 
+bool session::get_next_sequence_value(std::string const & sequence, long & value)
+{
+    ensureConnected(backEnd_);
+
+    return backEnd_->get_next_sequence_value(*this, sequence, value);
+}
+
+bool session::get_last_insert_id(std::string const & sequence, long & value)
+{
+    ensureConnected(backEnd_);
+
+    return backEnd_->get_last_insert_id(*this, sequence, value);
+}
+
 std::string session::get_backend_name() const
 {
     return backEnd_->get_backend_name();
