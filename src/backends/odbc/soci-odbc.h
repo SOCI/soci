@@ -29,6 +29,7 @@
 #include <windows.h>
 #endif
 #include <sqlext.h> // ODBC
+#include <string.h> // strcpy()
 
 namespace soci
 {
@@ -99,12 +100,7 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend
 struct odbc_standard_use_type_backend : details::standard_use_type_backend
 {
     odbc_standard_use_type_backend(odbc_statement_backend &st)
-        : statement_(st), data_(0), buf_(0), indHolder_(0) {}
-
-    void prepare_for_bind(void *&data, SQLLEN &size,
-                        SQLSMALLINT &sqlType, SQLSMALLINT &cType);
-    void bind_helper(int &position,
-        void *data, details::exchange_type type);
+        : statement_(st), position_(-1), data_(0), buf_(0), indHolder_(0) {}
 
     virtual void bind_by_pos(int &position,
         void *data, details::exchange_type type, bool readOnly);
@@ -116,7 +112,16 @@ struct odbc_standard_use_type_backend : details::standard_use_type_backend
 
     virtual void clean_up();
 
+    // Return the pointer to the buffer containing data to be used by ODBC.
+    // This can be either data_ itself or buf_, that is allocated by this
+    // function if necessary.
+    //
+    // Also fill in the size of the data and SQL and C types of it.
+    void* prepare_for_bind(SQLLEN &size,
+       SQLSMALLINT &sqlType, SQLSMALLINT &cType);
+
     odbc_statement_backend &statement_;
+    int position_;
     void *data_;
     details::exchange_type type_;
     char *buf_;
@@ -197,6 +202,7 @@ struct odbc_statement_backend : details::statement_backend
     bool hasVectorUseElements_;
     bool boundByName_;
     bool boundByPos_;
+    bool lastNoData_; // true if last query returned SQL_NO_DATA
 
     std::string query_;
     std::vector<std::string> names_; // list of names for named binds
@@ -263,14 +269,46 @@ public:
                   std::string const & msg)
         : soci_error(msg)
     {
-        SQLSMALLINT length, i = 1;
-        SQLGetDiagRec(htype, hndl, i, sqlstate_, &sqlcode_,
-                      message_, SQL_MAX_MESSAGE_LENGTH + 1,
-                      &length);
+        const char* socierror = NULL;
 
-        if (length == 0)
+        SQLSMALLINT length, i = 1;
+        switch ( SQLGetDiagRec(htype, hndl, i, sqlstate_, &sqlcode_,
+                               message_, SQL_MAX_MESSAGE_LENGTH + 1,
+                               &length) )
         {
-            message_[0] = 0;
+          case SQL_SUCCESS:
+            // The error message was successfully retrieved.
+            break;
+
+          case SQL_INVALID_HANDLE:
+            socierror = "[SOCI]: Invalid handle.";
+            break;
+
+          case SQL_ERROR:
+            socierror = "[SOCI]: SQLGetDiagRec() error.";
+            break;
+
+          case SQL_SUCCESS_WITH_INFO:
+            socierror = "[SOCI]: Error message too long.";
+            break;
+
+          case SQL_NO_DATA:
+            socierror = "[SOCI]: No error.";
+            break;
+
+          default:
+            socierror = "[SOCI]: Unexpected SQLGetDiagRec() return value.";
+            break;
+        }
+
+        if (socierror)
+        {
+            // Use our own error message if we failed to retrieve the ODBC one.
+            strcpy(reinterpret_cast<char*>(message_), socierror);
+
+            // Use "General warning" SQLSTATE code.
+            strcpy(reinterpret_cast<char*>(sqlstate_), "01000");
+
             sqlcode_ = 0;
         }
     }
