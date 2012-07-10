@@ -86,6 +86,12 @@ void firebird_standard_into_type_backend::exchangeData()
             break;
         case x_integer:
             {
+                int t = from_isc<int>(var);
+                *reinterpret_cast<int *>(data_) = t;
+            }
+            break;
+        case x_long_long:
+            {
                 long long t = from_isc<long long>(var);
                 *reinterpret_cast<long long *>(data_) = t;
             }
@@ -98,27 +104,18 @@ void firebird_standard_into_type_backend::exchangeData()
             break;
 
             // cases that require adjustments and buffer management
-        case x_cstring:
-            {
-                details::cstring_descriptor *tmp =
-                    static_cast<details::cstring_descriptor*>(data_);
-
-                std::string stmp = getTextParam(var);
-                std::strncpy(tmp->str_, stmp.c_str(), tmp->bufSize_ - 1);
-                tmp->str_[tmp->bufSize_ - 1] = '\0';
-
-                if (stmp.size() >= tmp->bufSize_)
-                {
-                    statement_.inds_[position_][0] = i_truncated;
-                }
-            }
-            break;
         case x_stdstring:
             *(reinterpret_cast<std::string*>(data_)) = getTextParam(var);
             break;
         case x_stdtm:
             tmDecode(var->sqltype,
                      buf_, static_cast<std::tm*>(data_));
+
+            // isc_decode_timestamp() used by tmDecode() incorrectly sets
+            // tm_isdst to 0 in the struct that it creates, see
+            // http://tracker.firebirdsql.org/browse/CORE-3877, work around it
+            // by pretending the DST is actually unknown.
+            static_cast<std::tm*>(data_)->tm_isdst = -1;
             break;
 
             // cases that require special handling

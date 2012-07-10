@@ -542,8 +542,62 @@ void firebird_statement_backend::exchangeData(bool gotData, int row)
 
 long long firebird_statement_backend::get_affected_rows()
 {
-    // ...
-    return -1;
+    ISC_STATUS_ARRAY stat;
+    char type_item[] = { isc_info_sql_records };
+    char res_buffer[256];
+
+    if (isc_dsql_sql_info(stat, &stmtp_, sizeof(type_item), type_item,
+                          sizeof(res_buffer), res_buffer))
+    {
+        throw_iscerror(stat);
+    }
+
+    // We must get back a isc_info_sql_records block, that we parse below,
+    // followed by isc_info_end.
+    if (res_buffer[0] != isc_info_sql_records)
+    {
+        throw soci_error("Can't determine the number of affected rows");
+    }
+
+    char* sql_rec_buf = res_buffer + 1;
+    const int length = isc_vax_integer(sql_rec_buf, 2);
+    sql_rec_buf += 2;
+
+    if (sql_rec_buf[length] != isc_info_end)
+    {
+        throw soci_error("Unexpected isc_info_sql_records return format");
+    }
+
+    // Examine the 4 sub-blocks each of which has a header indicating the block
+    // type, its value length in bytes and the value itself.
+    long long row_count = 0;
+
+    for ( char* p = sql_rec_buf; p < sql_rec_buf + length; )
+    {
+        switch (*p++)
+        {
+            case isc_info_req_select_count:
+            case isc_info_req_insert_count:
+            case isc_info_req_update_count:
+            case isc_info_req_delete_count:
+                {
+                    int len = isc_vax_integer(p, 2);
+                    p += 2;
+
+                    row_count += isc_vax_integer(p, len);
+                    p += len;
+                }
+                break;
+
+            case isc_info_end:
+                break;
+
+            default:
+                throw soci_error("Unknown record counter");
+        }
+    }
+
+    return row_count;
 }
 
 int firebird_statement_backend::get_number_of_rows()
