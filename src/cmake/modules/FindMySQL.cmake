@@ -37,6 +37,20 @@ if(WIN32)
     $ENV{ProgramFiles}/MySQL/*/lib/${libsuffixDist}
     $ENV{SystemDrive}/MySQL/*/lib/${libsuffixDist})
 
+  find_path(MYSQL_DLL_ROOT NAME libmysql.dll
+	NO_DEFAULT_PATH
+	PATHS
+    $ENV{MYSQL_DIR}/lib/
+    $ENV{MYSQL_DIR}/lib/${libsuffixDist}
+    $ENV{MYSQL_DIR}/libmysql
+    $ENV{MYSQL_DIR}/libmysql/${libsuffixBuild}
+    $ENV{MYSQL_DIR}/client/${libsuffixBuild}
+    $ENV{MYSQL_DIR}/libmysql/${libsuffixBuild}
+    $ENV{ProgramFiles}/MySQL/*/lib/${libsuffixDist}
+    $ENV{SystemDrive}/MySQL/*/lib/${libsuffixDist} )
+  
+	set( mysql_DLL ${MYSQL_DLL_ROOT}/libmysql.dll)
+
 else()
 
   find_library(MYSQL_LIBRARY NAMES mysqlclient_r
@@ -50,6 +64,22 @@ else()
     /usr/local/mysql/lib/mysql
     /opt/mysql/mysql/lib
     /opt/mysql/mysql/lib/mysql)
+
+  # TODO - check 'mysql.so' filename
+  find_path(MYSQL_DLL_ROOT NAME mysql.so 
+	PATHS
+    $ENV{MYSQL_DIR}/libmysql_r/.libs
+    $ENV{MYSQL_DIR}/lib
+    $ENV{MYSQL_DIR}/lib/mysql
+    /usr/lib/mysql
+    /usr/local/lib/mysql
+    /usr/local/mysql/lib
+    /usr/local/mysql/lib/mysql
+    /opt/mysql/mysql/lib
+    /opt/mysql/mysql/lib/mysql)
+
+	set( mysql_DLL ${MYSQL_DLL_ROOT}/mysql.so)
+
 endif()
 
 if(MYSQL_LIBRARY)
