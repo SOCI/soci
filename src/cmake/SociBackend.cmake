@@ -259,7 +259,7 @@ macro(soci_backend_test)
       set(${TEST_CONNSTR_VAR} ${THIS_TEST_CONNSTR})
     endif()
 
-	add_definitions( -DSOCI_MYSQL_TEST_CONNSTR=\"${SOCI_MYSQL_TEST_CONNSTR}\" )
+	add_definitions( -D${TEST_CONNSTR_VAR}=\"${${TEST_CONNSTR_VAR}}\" )
     boost_report_value(${TEST_CONNSTR_VAR})
 
     include_directories(${SOCI_SOURCE_DIR}/core/test)
