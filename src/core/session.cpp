@@ -125,6 +125,7 @@ void session::open(backend_factory const & factory,
     if (isFromPool_)
     {
         pool_->at(poolPosition_).open(factory, connectString);
+        backEnd_ = pool_->at(poolPosition_).get_backend();
     }
     else
     {
@@ -145,6 +146,7 @@ void session::open(std::string const & backendName,
     if (isFromPool_)
     {
         pool_->at(poolPosition_).open(backendName, connectString);
+        backEnd_ = pool_->at(poolPosition_).get_backend();
     }
     else
     {
@@ -166,6 +168,7 @@ void session::open(std::string const & connectString)
     if (isFromPool_)
     {
         pool_->at(poolPosition_).open(connectString);
+        backEnd_ = pool_->at(poolPosition_).get_backend();
     }
     else
     {
@@ -192,6 +195,7 @@ void session::close()
     if (isFromPool_)
     {
         pool_->at(poolPosition_).close();
+        backEnd_ = NULL;
     }
     else
     {
@@ -205,6 +209,7 @@ void session::reconnect()
     if (isFromPool_)
     {
         pool_->at(poolPosition_).reconnect();
+        backEnd_ = pool_->at(poolPosition_).get_backend();
     }
     else
     {
