@@ -157,7 +157,7 @@ db2_statement_backend::execute(int  number )
     }
 
     cliRC = SQLExecute(hStmt);
-    if (cliRC != SQL_SUCCESS)
+    if (cliRC != SQL_SUCCESS && cliRC != SQL_SUCCESS_WITH_INFO)
     {
         throw db2_soci_error(db2_soci_error::sqlState("Statement execution error",SQL_HANDLE_STMT,hStmt),cliRC);
     }
@@ -189,9 +189,9 @@ db2_statement_backend::fetch(int  number )
         return ef_no_data;
     }
 
-    if (cliRC != SQL_SUCCESS)
+    if (cliRC != SQL_SUCCESS && cliRC != SQL_SUCCESS_WITH_INFO)
     {
-        throw db2_soci_error("Error while fetching data",cliRC);
+        throw db2_soci_error(db2_soci_error::sqlState("Error while fetching data", SQL_HANDLE_STMT, hStmt), cliRC);
     }
 
     return ef_success;
