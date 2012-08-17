@@ -140,7 +140,8 @@ void db2_statement_backend::prepare(std::string const &  query ,
 statement_backend::exec_fetch_result
 db2_statement_backend::execute(int  number )
 {
-    SQLULEN rows_processed = 0;
+    SQLUINTEGER rows_processed = 0;
+    SQLRETURN cliRC;
 
     if (hasVectorUseElements)
     {
@@ -149,8 +150,13 @@ db2_statement_backend::execute(int  number )
 
     // if we are called twice for the same statement we need to close the open
     // cursor or an "invalid cursor state" error will occur on execute
+    cliRC = SQLFreeStmt(hStmt,SQL_CLOSE);
+    if (cliRC != SQL_SUCCESS)
+    {
+        throw db2_soci_error(db2_soci_error::sqlState("Statement execution error",SQL_HANDLE_STMT,hStmt),cliRC);
+    }
 
-    SQLRETURN cliRC = SQLExecute(hStmt);
+    cliRC = SQLExecute(hStmt);
     if (cliRC != SQL_SUCCESS)
     {
         throw db2_soci_error(db2_soci_error::sqlState("Statement execution error",SQL_HANDLE_STMT,hStmt),cliRC);
@@ -163,8 +169,6 @@ db2_statement_backend::execute(int  number )
     {
         return fetch(number);
     }
-
-    SQLFreeStmt(hStmt,SQL_RESET_PARAMS); //Prepare for next call
 
     return ef_success;
 }
