@@ -37,14 +37,6 @@ void db2_statement_backend::clean_up()
 {
     SQLRETURN cliRC = SQL_SUCCESS;
 
-    cliRC=SQLFreeStmt(hStmt,SQL_CLOSE);
-    if (cliRC != SQL_SUCCESS) {
-        throw db2_soci_error(db2_soci_error::sqlState("Statement handle close error",SQL_HANDLE_STMT,hStmt),cliRC);
-    }
-    cliRC=SQLFreeStmt(hStmt,SQL_UNBIND);
-    if (cliRC != SQL_SUCCESS) {
-        throw db2_soci_error(db2_soci_error::sqlState("Statement handle unbind error",SQL_HANDLE_STMT,hStmt),cliRC);
-    }
     cliRC=SQLFreeHandle(SQL_HANDLE_STMT,hStmt);
     if (cliRC != SQL_SUCCESS) {
         throw db2_soci_error(db2_soci_error::sqlState("Statement handle clean-up error",SQL_HANDLE_STMT,hStmt),cliRC);
