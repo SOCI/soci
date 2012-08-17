@@ -38,6 +38,17 @@
 
 namespace soci
 {
+    namespace details { namespace db2
+    {
+        enum binding_method
+        {
+            BOUND_BY_NONE,
+            BOUND_BY_NAME,
+            BOUND_BY_POSITION
+        };
+    }}
+
+    static const std::size_t maxBuffer =  1024 * 1024 * 1024; //CLI limit is about 3 GB, but 1GB should be enough
 
 class db2_soci_error : public soci_error {
 public:
@@ -192,6 +203,7 @@ struct SOCI_DB2_DECL db2_statement_backend : details::statement_backend
     std::vector<std::string> names;
     bool hasVectorUseElements;
     SQLUINTEGER numRowsFetched;
+    details::db2::binding_method use_binding_method_;
 };
 
 struct db2_rowid_backend : details::rowid_backend

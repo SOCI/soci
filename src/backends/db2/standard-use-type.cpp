@@ -113,13 +113,24 @@ void db2_standard_use_type_backend::bind_helper(int &position, void *data, detai
 void db2_standard_use_type_backend::bind_by_pos(
     int &position, void *data, exchange_type type, bool /* readOnly */)
 {
-    bind_helper(position, data, type);
+    if (statement_.use_binding_method_ == details::db2::BOUND_BY_NAME)
+    {
+        throw soci_error("Binding for use elements must be either by position or by name.");
+    }
+    statement_.use_binding_method_ = details::db2::BOUND_BY_POSITION;
 
+    bind_helper(position, data, type);
 }
 
 void db2_standard_use_type_backend::bind_by_name(
     std::string const &name, void *data, exchange_type type, bool /* readOnly */)
 {
+    if (statement_.use_binding_method_ == details::db2::BOUND_BY_POSITION)
+    {
+        throw soci_error("Binding for use elements must be either by position or by name.");
+    }
+    statement_.use_binding_method_ = details::db2::BOUND_BY_NAME;
+
     int position = -1;
     int count = 1;
 

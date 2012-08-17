@@ -19,7 +19,7 @@ using namespace soci::details;
 
 
 db2_statement_backend::db2_statement_backend(db2_session_backend &session)
-    : session_(session),hasVectorUseElements(false)
+    : session_(session),hasVectorUseElements(false),use_binding_method_(details::db2::BOUND_BY_NONE)
 {
 }
 
