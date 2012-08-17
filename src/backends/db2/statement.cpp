@@ -131,7 +131,7 @@ void db2_statement_backend::prepare(std::string const &  query ,
         query_ += ss.str();
     }
 
-    SQLRETURN cliRC = SQLPrepare(hStmt,(SQLCHAR*)query_.c_str(),SQL_NTS);
+    SQLRETURN cliRC = SQLPrepare(hStmt, const_cast<SQLCHAR *>((const SQLCHAR *) query_.c_str()), SQL_NTS);
     if (cliRC!=SQL_SUCCESS) {
         throw db2_soci_error("Error while preparing query",cliRC);
     }

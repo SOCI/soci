@@ -108,7 +108,9 @@ db2_session_backend::db2_session_backend(
     }
 
     /* Connect to database */
-    cliRC = SQLConnect(hDbc,(SQLCHAR*)dsn.c_str(),SQL_NTS,(SQLCHAR*)username.c_str(),SQL_NTS,(SQLCHAR*)password.c_str(),SQL_NTS);
+    cliRC = SQLConnect(hDbc, const_cast<SQLCHAR *>((const SQLCHAR *) dsn.c_str()), SQL_NTS,
+        const_cast<SQLCHAR *>((const SQLCHAR *) username.c_str()), SQL_NTS,
+        const_cast<SQLCHAR *>((const SQLCHAR *) password.c_str()), SQL_NTS);
     if (cliRC != SQL_SUCCESS) {
         std::string msg=db2_soci_error::sqlState("Error connecting to database",SQL_HANDLE_DBC,hDbc);
         SQLFreeHandle(SQL_HANDLE_DBC,hDbc);
