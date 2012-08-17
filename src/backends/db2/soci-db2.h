@@ -253,6 +253,7 @@ struct db2_session_backend : details::session_backend
     std::string username;
     std::string password;
     bool autocommit;
+    bool in_transaction;
 
     SQLHANDLE hEnv; /* Environment handle */
     SQLHANDLE hDbc; /* Connection handle */

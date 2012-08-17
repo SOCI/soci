@@ -76,7 +76,8 @@ void db2_session_backend::parseConnectString(std::string const &  connectString)
 }
 
 db2_session_backend::db2_session_backend(
-    std::string const &  connectString /* DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;AutoCommit=off */)
+    std::string const &  connectString /* DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;AutoCommit=off */) :
+        in_transaction(false)
 {
     parseConnectString(connectString);
     SQLRETURN cliRC = SQL_SUCCESS;
@@ -126,14 +127,40 @@ db2_session_backend::~db2_session_backend()
 
 void db2_session_backend::begin()
 {
-    //Transations begin implicitly
+    // In DB2, transations begin implicitly; however, autocommit must be disabled for the duration of the transaction
+    if(autocommit)
+    {
+        SQLRETURN cliRC = SQLSetConnectAttr(hDbc, SQL_ATTR_AUTOCOMMIT, (SQLPOINTER) SQL_AUTOCOMMIT_OFF, SQL_NTS);
+        if (cliRC != SQL_SUCCESS && cliRC != SQL_SUCCESS_WITH_INFO)
+        {
+            std::string msg=db2_soci_error::sqlState("Clearing the autocommit attribute failed", SQL_HANDLE_DBC, hDbc);
+            SQLFreeHandle(SQL_HANDLE_DBC,hDbc);
+            SQLFreeHandle(SQL_HANDLE_ENV,hEnv);
+            throw db2_soci_error(msg,cliRC);
+        }
+    }
+
+    in_transaction = true;
 }
 
 void db2_session_backend::commit()
 {
-    if (!autocommit) {
+    if (!autocommit || in_transaction) {
+        in_transaction = false;
         SQLRETURN cliRC = SQLEndTran(SQL_HANDLE_DBC,hDbc,SQL_COMMIT);
-        if (cliRC != SQL_SUCCESS) {
+        if(autocommit)
+        {
+            SQLRETURN cliRC2 = SQLSetConnectAttr(hDbc, SQL_ATTR_AUTOCOMMIT, (SQLPOINTER) SQL_AUTOCOMMIT_ON, SQL_NTS);
+            if ((cliRC == SQL_SUCCESS || cliRC == SQL_SUCCESS_WITH_INFO) &&
+                cliRC2 != SQL_SUCCESS && cliRC2 != SQL_SUCCESS_WITH_INFO)
+            {
+                std::string msg=db2_soci_error::sqlState("Setting the autocommit attribute failed", SQL_HANDLE_DBC, hDbc);
+                SQLFreeHandle(SQL_HANDLE_DBC,hDbc);
+                SQLFreeHandle(SQL_HANDLE_ENV,hEnv);
+                throw db2_soci_error(msg,cliRC);
+            }
+        }
+        if (cliRC != SQL_SUCCESS && cliRC != SQL_SUCCESS_WITH_INFO) {
             throw db2_soci_error("Commit failed",cliRC);
         }
     }
@@ -141,9 +168,22 @@ void db2_session_backend::commit()
 
 void db2_session_backend::rollback()
 {
-    if (!autocommit) {
+    if (!autocommit || in_transaction) {
+        in_transaction = false;
         SQLRETURN cliRC = SQLEndTran(SQL_HANDLE_DBC,hDbc,SQL_ROLLBACK);
-        if (cliRC != SQL_SUCCESS) {
+        if(autocommit)
+        {
+            SQLRETURN cliRC2 = SQLSetConnectAttr(hDbc, SQL_ATTR_AUTOCOMMIT, (SQLPOINTER) SQL_AUTOCOMMIT_ON, SQL_NTS);
+            if ((cliRC == SQL_SUCCESS || cliRC == SQL_SUCCESS_WITH_INFO) &&
+                cliRC2 != SQL_SUCCESS && cliRC2 != SQL_SUCCESS_WITH_INFO)
+            {
+                std::string msg=db2_soci_error::sqlState("Setting the autocommit attribute failed", SQL_HANDLE_DBC, hDbc);
+                SQLFreeHandle(SQL_HANDLE_DBC,hDbc);
+                SQLFreeHandle(SQL_HANDLE_ENV,hEnv);
+                throw db2_soci_error(msg,cliRC);
+            }
+        }
+        if (cliRC != SQL_SUCCESS && cliRC != SQL_SUCCESS_WITH_INFO) {
             throw db2_soci_error("Rollback failed",cliRC);
         }
     }
@@ -151,6 +191,9 @@ void db2_session_backend::rollback()
 
 void db2_session_backend::clean_up()
 {
+    // if a transaction is in progress, it will automatically be rolled back upon when the connection is disconnected/freed
+    in_transaction = false;
+
     SQLDisconnect(hDbc);
     SQLFreeHandle(SQL_HANDLE_DBC,hDbc);
     SQLFreeHandle(SQL_HANDLE_ENV,hEnv);
