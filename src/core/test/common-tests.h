@@ -3117,7 +3117,7 @@ void test28()
     auto_table_creator tableCreator(tc_.table_creator_2(sql));
     {
         boost::tuple<double, int, std::string> t1(3.5, 7, "Joe Hacker");
-        assert(t1.get<0>() == 3.5);
+        assert( fabs(t1.get<0>() - 3.5) < 0.000001 );
         assert(t1.get<1>() == 7);
         assert(t1.get<2>() == "Joe Hacker");
 
@@ -3393,12 +3393,12 @@ void test29()
         assert(boost::fusion::at_c<2>(*pos) == "Tony Coder");
 
         ++pos;
-        assert(boost::fusion::at_c<0>(*pos) == 4.5);
+        assert( fabs(boost::fusion::at_c<0>(*pos) - 4.5) < 0.000001 );
         assert(boost::fusion::at_c<1>(*pos).is_initialized() == false);
         assert(boost::fusion::at_c<2>(*pos) == "Cecile Sharp");
 
         ++pos;
-        assert(boost::fusion::at_c<0>(*pos) == 5.0);
+        assert( fabs(boost::fusion::at_c<0>(*pos) - 5.0) < 0.000001 );
         assert(boost::fusion::at_c<1>(*pos).is_initialized());
         assert(boost::fusion::at_c<1>(*pos).get() == 10);
         assert(boost::fusion::at_c<2>(*pos) == "Djhava Ravaa");

@@ -58,6 +58,7 @@ else()
     $ENV{MYSQL_DIR}/libmysql_r/.libs
     $ENV{MYSQL_DIR}/lib
     $ENV{MYSQL_DIR}/lib/mysql
+    $ENV{MYSQL_DIR}/mysql
     /usr/lib/mysql
     /usr/local/lib/mysql
     /usr/local/mysql/lib
@@ -66,11 +67,12 @@ else()
     /opt/mysql/mysql/lib/mysql)
 
   # TODO - check 'mysql.so' filename
-  find_path(MYSQL_DLL_ROOT NAME mysql.so 
+  find_path(MYSQL_DLL_ROOT NAME mysqlclient_r
 	PATHS
     $ENV{MYSQL_DIR}/libmysql_r/.libs
     $ENV{MYSQL_DIR}/lib
     $ENV{MYSQL_DIR}/lib/mysql
+    $ENV{MYSQL_DIR}/mysql
     /usr/lib/mysql
     /usr/local/lib/mysql
     /usr/local/mysql/lib
@@ -78,7 +80,7 @@ else()
     /opt/mysql/mysql/lib
     /opt/mysql/mysql/lib/mysql)
 
-	set( mysql_DLL ${MYSQL_DLL_ROOT}/mysql.so)
+	set( mysql_DLL ${MYSQL_LIBRARY})
 
 endif()
 
