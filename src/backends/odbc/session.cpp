@@ -55,6 +55,8 @@ odbc_session_backend::odbc_session_backend(std::string const & connectString)
                          "Error Connecting to database");
     }
 
+    connection_string_.assign((const char*)outConnString, strLength);
+
     reset_transaction();
 }
 

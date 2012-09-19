@@ -297,10 +297,13 @@ struct odbc_session_backend : details::session_backend
     // Determine the type of the database we're connected to.
     database_product get_database_product();
 
+    // Return full ODBC connection string.
+    std::string get_connection_string() const { return connection_string_; }
 
     SQLHENV henv_;
     SQLHDBC hdbc_;
 
+    std::string connection_string_;
     database_product product_;
 };
 
