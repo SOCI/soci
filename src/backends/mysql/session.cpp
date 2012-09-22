@@ -153,7 +153,8 @@ void parse_connect_string(const string & connectString,
     string *password, bool *password_p,
     string *db, bool *db_p,
     string *unix_socket, bool *unix_socket_p,
-    int *port, bool *port_p)
+    int *port, bool *port_p, string *ssl_ca, bool *ssl_ca_p,
+    string *ssl_cert, bool *ssl_cert_p, string *ssl_key, bool *ssl_key_p)
 {
     *host_p = false;
     *user_p = false;
@@ -161,6 +162,9 @@ void parse_connect_string(const string & connectString,
     *db_p = false;
     *unix_socket_p = false;
     *port_p = false;
+    *ssl_ca_p = false;
+    *ssl_cert_p = false;
+    *ssl_key_p = false;
     string err = "Malformed connection string.";
     string::const_iterator i = connectString.begin(),
         end = connectString.end();
@@ -221,6 +225,21 @@ void parse_connect_string(const string & connectString,
             *unix_socket = val;
             *unix_socket_p = true;
         }
+        else if (par == "sslca" and not *ssl_ca_p)
+        {
+            *ssl_ca = val;
+            *ssl_ca_p = true;
+        }
+        else if (par == "sslcert" and not *ssl_cert_p)
+        {
+            *ssl_cert = val;
+            *ssl_cert_p = true;
+        }
+        else if (par == "sslkey" and not *ssl_key_p)
+        {
+            *ssl_key = val;
+            *ssl_key_p = true;
+        }
         else
         {
             throw soci_error(err);
@@ -233,16 +252,20 @@ void parse_connect_string(const string & connectString,
 mysql_session_backend::mysql_session_backend(
     std::string const & connectString)
 {
-    string host, user, password, db, unix_socket;
+    string host, user, password, db, unix_socket, ssl_ca, ssl_cert, ssl_key;
     int port;
-    bool host_p, user_p, password_p, db_p, unix_socket_p, port_p;
+    bool host_p, user_p, password_p, db_p, unix_socket_p, port_p, ssl_ca_p, ssl_cert_p, ssl_key_p;
     parse_connect_string(connectString, &host, &host_p, &user, &user_p,
         &password, &password_p, &db, &db_p,
-        &unix_socket, &unix_socket_p, &port, &port_p);
+        &unix_socket, &unix_socket_p, &port, &port_p, &ssl_ca, &ssl_ca_p, &ssl_cert, &ssl_cert_p, &ssl_key, &ssl_key_p);
     conn_ = mysql_init(NULL);
     if (conn_ == NULL)
     {
         throw soci_error("mysql_init() failed.");
+    }
+    if(ssl_ca_p)
+    {
+        mysql_ssl_set(conn_, ssl_key_p ? ssl_key.c_str() : NULL, ssl_cert_p ? ssl_cert.c_str() : NULL, ssl_ca_p ? ssl_ca.c_str() : NULL, 0, 0);
     }
     if (mysql_real_connect(conn_,
             host_p ? host.c_str() : NULL,
