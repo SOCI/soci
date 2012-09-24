@@ -35,6 +35,32 @@
 namespace soci
 {
 
+class mysql_dbengine
+{
+public:
+    // ref to http://dev.mysql.com/doc/refman/5.5/en/create-table.html for possible 
+    // engines - InnoDB, MyISAM, MEMORY, etc
+    explicit mysql_dbengine(const std::string engine = "InnoDB") 
+#if MYSQL_VERSION_ID >= 50500
+        // starting MySQL 5.5 type was renamed to ENGINE
+        // ref to http://dev.mysql.com/doc/refman/5.5/en/create-table.html
+        : keyword_("ENGINE"),
+#else
+        // for pre-5.5 MySQL
+        : keyword_("TYPE"),
+#endif        
+        engine_(engine),
+        full_type_(keyword_ + "=" + engine_)
+        {}
+    operator std::string () const { return full_type_; }
+    const std::string& operator () () const { return full_type_; }
+    const std::string& get_engine() const { return engine_; }
+private:
+    std::string keyword_;
+    std::string engine_;
+    std::string full_type_;
+};
+
 class mysql_soci_error : public soci_error
 {
 public:
