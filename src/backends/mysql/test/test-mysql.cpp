@@ -613,7 +613,7 @@ struct table_creator_one : public table_creator_base
         sql << "create table soci_test(id integer, val integer, c char, "
                  "str varchar(20), sh int2, ul numeric(20), d float8, "
                  "tm datetime, i1 integer, i2 integer, i3 integer, "
-                 "name varchar(20)) type=InnoDB";
+                 "name varchar(20))";
     }
 };
 
@@ -673,6 +673,15 @@ public:
 bool are_transactions_supported()
 {
     session sql(backEnd, connectString);
+    mysql_session_backend *sessionBackEnd
+        = static_cast<mysql_session_backend *>(sql.get_backend());
+    std::string version = mysql_get_server_info(sessionBackEnd->conn_);
+
+    if (version >= "5.5")
+    {
+        return true;
+    }
+
     sql << "drop table if exists soci_test";
     sql << "create table soci_test (id int) type=InnoDB";
     row r;
