@@ -612,8 +612,8 @@ struct table_creator_one : public table_creator_base
     {
         sql << "create table soci_test(id integer, val integer, c char, "
                  "str varchar(20), sh int2, ul numeric(20), d float8, "
-                 "tm datetime, i1 integer, i2 integer, i3 integer, name varchar(20)) " +
-                mysql_dbengine()();
+                 "tm datetime, i1 integer, i2 integer, i3 integer, "
+                 "name varchar(20))";
     }
 };
 
@@ -672,13 +672,21 @@ public:
 
 bool are_transactions_supported()
 {
-    mysql_dbengine engine; // default InnoDB
     session sql(backEnd, connectString);
+    mysql_session_backend *sessionBackEnd
+        = static_cast<mysql_session_backend *>(sql.get_backend());
+    std::string version = mysql_get_server_info(sessionBackEnd->conn_);
+
+    if (version >= "5.5")
+    {
+        return true;
+    }
+
     sql << "drop table if exists soci_test";
-    sql << "create table soci_test (id int) " + engine();
+    sql << "create table soci_test (id int) type=InnoDB";
     row r;
     sql << "show table status like \'soci_test\'", into(r);
-    bool retv = (r.get<std::string>(1) == engine.get_engine());
+    bool retv = (r.get<std::string>(1) == "InnoDB");
     sql << "drop table soci_test";
     return retv;
 }
