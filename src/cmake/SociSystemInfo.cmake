@@ -75,3 +75,4 @@ if(NOT SOCI_PLATFORM_NAME)
   colormsg(_RED_ "WARNING:")
   colormsg(RED "Could not determine platform name to set SOCI_PLATFORM_NAME variable.")
 endif()
+

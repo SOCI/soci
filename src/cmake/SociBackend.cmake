@@ -257,6 +257,8 @@ macro(soci_backend_test)
     if(NOT ${TEST_CONNSTR_VAR} AND THIS_TEST_CONNSTR)
       set(${TEST_CONNSTR_VAR} ${THIS_TEST_CONNSTR})
     endif()
+
+	add_definitions( -D${TEST_CONNSTR_VAR}=\"${${TEST_CONNSTR_VAR}}\" )
     boost_report_value(${TEST_CONNSTR_VAR})
 
     include_directories(${SOCI_SOURCE_DIR}/core/test)
