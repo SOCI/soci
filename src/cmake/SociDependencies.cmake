@@ -19,13 +19,16 @@
 #
 # List of SOCI dependncies
 #
-set(SOCI_BACKENDS_ALL_DEPENDENCIES
-  Boost
+set(SOCI_BACKENDS_DB_DEPENDENCIES
   MySQL
   ODBC
   Oracle
   PostgreSQL
   SQLite3)
+
+set(SOCI_BACKENDS_ALL_DEPENDENCIES
+  Boost
+  ${SOCI_BACKENDS_DB_DEPENDENCIES})
 
 #
 # Perform checks
