@@ -497,6 +497,7 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     case 2275: // cstring
     case 18:   // char
     case 1042: // bpchar
+    case 142: // xml
         type = dt_string;
         break;
 
