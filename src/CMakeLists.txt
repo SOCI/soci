@@ -24,7 +24,6 @@ set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
 
 include(SociUtilities)
 
-message(STATUS "")
 colormsg(_HIBLUE_ "Configuring SOCI:")
 
 #################################################################################

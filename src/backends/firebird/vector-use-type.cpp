@@ -132,11 +132,6 @@ void firebird_vector_use_type_backend::exchangeData(std::size_t row)
             static_cast<void*>(getUseVectorValue<int>(data_, row)),
             var);
         break;
-    case x_unsigned_long:
-        to_isc<unsigned long>(
-            static_cast<void*>(getUseVectorValue<unsigned long>(data_, row)),
-            var);
-        break;
     case x_long_long:
         to_isc<long long>(
             static_cast<void*>(getUseVectorValue<long long>(data_, row)),
@@ -181,9 +176,6 @@ std::size_t firebird_vector_use_type_backend::size()
         break;
     case x_integer:
         sz = getVectorSize<int> (data_);
-        break;
-    case x_unsigned_long:
-        sz = getVectorSize<unsigned long>(data_);
         break;
     case x_long_long:
         sz = getVectorSize<long long> (data_);

@@ -21,11 +21,13 @@ namespace soci
 // data types, as seen by the user
 enum data_type
 {
-    dt_string, dt_date, dt_double, dt_integer, dt_unsigned_long, dt_long_long, dt_unsigned_long_long
+    dt_string, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long
 };
 
 // the enum type for indicator variables
 enum indicator { i_ok, i_null, i_truncated };
+
+class session;
 
 namespace details
 {
@@ -35,7 +37,7 @@ enum exchange_type
 {
     x_char, x_stdstring,
     x_short, x_integer,
-    x_unsigned_long, x_long_long, x_unsigned_long_long,
+    x_long_long, x_unsigned_long_long,
     x_double, x_stdtm, x_statement,
     x_rowid, x_blob
 };
@@ -220,6 +222,21 @@ public:
     virtual void begin() = 0;
     virtual void commit() = 0;
     virtual void rollback() = 0;
+
+    // At least one of these functions is usually not implemented for any given
+    // backend as RDBMS support either sequences or auto-generated values, so
+    // we don't declare them as pure virtuals to avoid having to define trivial
+    // versions of them in the derived classes. However every backend should
+    // define at least one of them to allow the code using auto-generated values
+    // to work.
+    virtual bool get_next_sequence_value(session&, std::string const &, long &)
+    {
+        return false;
+    }
+    virtual bool get_last_insert_id(session&, std::string const &, long &)
+    {
+        return false;
+    }
 
     virtual std::string get_backend_name() const = 0;
 

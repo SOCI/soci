@@ -415,9 +415,6 @@ for(std::size_t i = 0; i != r.size(); ++i)
     case dt_integer:
         doc &lt;&lt; r.get&lt;int&gt;(i);
         break;
-    case dt_unsigned_long:
-        doc &lt;&lt; r.get&lt;unsigned long&gt;(i);
-        break;
     case dt_long_long:
         doc &lt;&lt; r.get&lt;long long&gt;(i);
         break;
@@ -454,10 +451,6 @@ requested.</p>
     <tr>
       <td><code>dt_integer</code></td>
       <td><code>int</code></td>
-    </tr>
-    <tr>
-      <td><code>dt_unsigned_long</code></td>
-      <td><code>unsigned long</code></td>
     </tr>
     <tr>
       <td><code>dt_long_long</code></td>

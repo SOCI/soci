@@ -103,15 +103,16 @@ void mysql_standard_into_type_backend::post_fetch(
                 parse_num(buf, *dest);
             }
             break;
-        case x_unsigned_long:
-            {
-                unsigned long *dest = static_cast<unsigned long *>(data_);
-                parse_num(buf, *dest);
-            }
-            break;
         case x_long_long:
             {
                 long long *dest = static_cast<long long *>(data_);
+                parse_num(buf, *dest);
+            }
+            break;
+        case x_unsigned_long_long:
+            {
+                unsigned long long *dest =
+                    static_cast<unsigned long long*>(data_);
                 parse_num(buf, *dest);
             }
             break;

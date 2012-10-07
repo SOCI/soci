@@ -33,7 +33,7 @@ public:
         type_holder<T>* p = dynamic_cast<type_holder<T> *>(this);
         if (p)
         {
-            return p->value<T>();
+            return p->template value<T>();
         }
         else
         {

@@ -10,7 +10,6 @@
 ################################################################################
 
 colormsg(_HIBLUE_ "Configuring SOCI core library:")
-message(STATUS "")
 
 # Core dependencies
 set(SOCI_CORE_DEPENDENCIES)

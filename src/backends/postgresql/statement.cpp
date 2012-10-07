@@ -525,15 +525,12 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     case 16:   // bool
     case 21:   // int2
     case 23:   // int4
+    case 26:   // oid
         type = dt_integer;
         break;
 
     case 20:   // int8
         type = dt_long_long;
-        break;
-
-    case 26:   // oid
-        type = dt_unsigned_long;
         break;
 
     default:

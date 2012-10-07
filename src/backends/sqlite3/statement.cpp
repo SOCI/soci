@@ -276,8 +276,7 @@ sqlite3_statement_backend::fetch(int number)
 
 long long sqlite3_statement_backend::get_affected_rows()
 {
-    // ...
-    return -1;
+    return sqlite3_changes(session_.conn_);
 }
 
 int sqlite3_statement_backend::get_number_of_rows()
@@ -340,11 +339,6 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
     else if (dt.find("unsigned big int", 0) != std::string::npos)
     {
         type = dt_unsigned_long_long;
-        typeFound = true;
-    }
-    else if (dt.find("unsigned int", 0) != std::string::npos)
-    {
-        type = dt_unsigned_long;
         typeFound = true;
     }
     else if (dt.find("int", 0) != std::string::npos)

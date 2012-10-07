@@ -111,9 +111,9 @@ public:
     conversion_use_type(T const & value, indicator & ind,
             std::string const & name = std::string())
         : use_type<base_type>(details::base_value_holder<T>::val_, ind, name)
-        , value_(value)
+        , value_(const_cast<T &>(value))
         , ind_(ind)
-        , readOnly_(false)
+        , readOnly_(true)
     {
         //convert_to_base();
     }
