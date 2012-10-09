@@ -503,6 +503,7 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     case 2275: // cstring
     case 18:   // char
     case 1042: // bpchar
+    case 142: // xml
         type = dt_string;
         break;
 
@@ -534,7 +535,12 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
         break;
 
     default:
-         throw soci_error("Unknown data type.");
+    {
+        std::stringstream message;
+        message << "unknown data type with typelem: " << typeOid << " for colNum: " << colNum << " with name: " << PQfname(result_, pos);
+        throw soci_error(message.str());
+        
+    }
     }
 
     columnName = PQfname(result_, pos);

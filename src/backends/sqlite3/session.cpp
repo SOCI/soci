@@ -62,9 +62,10 @@ sqlite3_session_backend::sqlite3_session_backend(
             }
             else // space inside value string
             {
+                std::string keepspace;
                 std::getline(ssconn, val, '\"');
                 quotedVal = quotedVal + " " + val;
-                std::getline(ssconn, std::string(), ' ');
+                std::getline(ssconn, keepspace, ' ');
             }     
 
             val = quotedVal;
