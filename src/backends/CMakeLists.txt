@@ -15,7 +15,7 @@ endforeach()
 file(GLOB backend_dirs RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *)
 
 # empty backend always on by default
-set(EMPTY_FOUND ON)
+option(EMPTY_FOUND "Build empty backend" ON)
 
 # enable only found backends
 foreach(dir ${backend_dirs})
