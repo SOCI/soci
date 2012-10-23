@@ -27,6 +27,7 @@ find_path(ODBC_INCLUDE_DIRECTORIES sql.h
   "C:/Program Files/ODBC/include"
   "C:/Program Files/Microsoft SDKs/Windows/v7.0/include" 
   "C:/Program Files/Microsoft SDKs/Windows/v6.0a/include" 
+  "C:/Program Files/Microsoft SDKs/Windows/v7.0A/Include"
   "C:/ODBC/include"
   DOC "Specify the directory containing sql.h."
 )
@@ -41,6 +42,7 @@ find_library(ODBC_LIBRARY
   /usr/local/odbc/lib
   "C:/Program Files/ODBC/lib"
   "C:/ODBC/lib/debug"
+  "C:/Program Files/Microsoft SDKs/Windows/v7.0A/Lib"
   "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib"
   DOC "Specify the ODBC driver manager library here."
 )
