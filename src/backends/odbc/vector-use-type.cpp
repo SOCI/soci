@@ -113,10 +113,11 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             prepare_indicators(vecSize);
             for (std::size_t i = 0; i != vecSize; ++i)
             {
-                std::size_t sz = v[i].length() + 1;  // add one for null
+                std::size_t sz = v[i].length();
                 indHolderVec_[i] = static_cast<long>(sz);
                 maxSize = sz > maxSize ? sz : maxSize;
             }
+			maxSize += 1;  // add 1 for null
 
             buf_ = new char[maxSize * vecSize];
             memset(buf_, 0, maxSize * vecSize);
@@ -129,7 +130,7 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             }
 
             data = buf_;
-            size = static_cast<SQLINTEGER>(maxSize);
+            size = static_cast<SQLINTEGER>(maxSize - 1);
         }
         break;
     case x_stdtm:
@@ -153,7 +154,17 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
-	case x_long_long: break; // TODO: verify if can be supported
+	case x_long_long: 
+        {
+            sqlType = SQL_BIGINT;
+            cType = SQL_C_SBIGINT;
+            size = sizeof(long long);
+            std::vector<long long> *vp = static_cast<std::vector<long long> *>(data);
+            std::vector<long long> &v(*vp);
+            prepare_indicators(v.size());
+            data = &v[0];
+        }
+        break;
 	case x_unsigned_long_long: break; // TODO: verify if can be supported
     }
 
@@ -348,7 +359,12 @@ std::size_t odbc_vector_use_type_backend::size()
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
-	case x_long_long: break; // TODO: verify if can be supported
+	case x_long_long: 
+        {
+            std::vector<long long> *vp = static_cast<std::vector<long long> *>(data_);
+            sz = vp->size();
+        }
+        break;
 	case x_unsigned_long_long: break; // TODO: verify if can be supported
     }
 

@@ -280,8 +280,10 @@ void odbc_statement_backend::describe_column(int colNum, data_type & type,
     case SQL_TINYINT:
     case SQL_SMALLINT:
     case SQL_INTEGER:
-    case SQL_BIGINT:
         type = dt_integer;
+        break;
+    case SQL_BIGINT:
+		type = dt_long_long;
         break;
     case SQL_CHAR:
     case SQL_VARCHAR:

@@ -125,7 +125,16 @@ void odbc_vector_into_type_backend::define_by_pos(
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
-	case x_long_long: break; // TODO: verify if can be supported
+	case x_long_long: 
+        {
+            odbcType_ = SQL_C_SBIGINT;
+            size = sizeof(long long);
+            std::vector<long long> *vp = static_cast<std::vector<long long> *>(data);
+            std::vector<long long> &v(*vp);
+            prepare_indicators(v.size());
+            data = &v[0];
+        }
+        break;
 	case x_unsigned_long_long: break; // TODO: verify if can be supported
     }
 
@@ -296,7 +305,12 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
-	case x_long_long: break; // TODO: verify if can be supported
+	case x_long_long: 
+        {
+            std::vector<long long> *v = static_cast<std::vector<long long> *>(data_);
+            v->resize(sz);
+        }
+        break;
 	case x_unsigned_long_long: break; // TODO: verify if can be supported
     }
 }
@@ -350,7 +364,12 @@ std::size_t odbc_vector_into_type_backend::size()
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
-	case x_long_long: break; // TODO: verify if can be supported
+	case x_long_long: 
+        {
+            std::vector<long long> *v = static_cast<std::vector<long long> *>(data_);
+            sz = v->size();
+        }
+        break;
 	case x_unsigned_long_long: break; // TODO: verify if can be supported
     }
 
