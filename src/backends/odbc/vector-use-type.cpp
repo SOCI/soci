@@ -117,7 +117,7 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
                 indHolderVec_[i] = static_cast<long>(sz);
                 maxSize = sz > maxSize ? sz : maxSize;
             }
-			maxSize += 1;  // add 1 for null
+
 
             buf_ = new char[maxSize * vecSize];
             memset(buf_, 0, maxSize * vecSize);
@@ -130,7 +130,7 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             }
 
             data = buf_;
-            size = static_cast<SQLINTEGER>(maxSize - 1);
+			size = static_cast<SQLINTEGER>(maxSize);
         }
         break;
     case x_stdtm:
