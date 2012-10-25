@@ -9,7 +9,7 @@ branches:
   only:
     - master
 
-script: mkdir -p build && cd build && cmake .. && make
+script: mkdir -p src/build && cd src/build && cmake .. && make
 
 notifications:
   email:
