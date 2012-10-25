@@ -21,3 +21,4 @@ notifications:
   irc:
     channels:
       - "irc.freenode.org#soci"
+
