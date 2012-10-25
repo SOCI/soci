@@ -1,0 +1,22 @@
+# .travis.yml - config file SOCI CI at https://travis-ci.org/
+
+language: cpp
+
+compiler:
+  - gcc
+
+branches:
+  only:
+    - master
+
+script: mkdir -p build && cd build && cmake .. && make
+
+notifications:
+  email:
+    recipients:
+      - mateusz@loskot.net
+
+  irc:
+    channels:
+      - "irc.freenode.org#soci"
+    use_notice: true
