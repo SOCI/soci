@@ -15,8 +15,9 @@ notifications:
   email:
     recipients:
       - mateusz@loskot.net
+    on_success: [always] # default: change
+    on_failure: [always] # default: always
 
   irc:
     channels:
       - "irc.freenode.org#soci"
-    use_notice: true
