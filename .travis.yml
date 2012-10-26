@@ -18,7 +18,9 @@ before_install:
   - sudo apt-get install -qq libboost-dev libboost-date-time-dev
 
 before_script:
+  - mysql --version
   - mysql -e 'create database soci_test;'
+  - psql --version  
   - psql -c 'create database soci_test;' -U postgres
 
 script:
