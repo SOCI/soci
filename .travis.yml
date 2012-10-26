@@ -4,7 +4,7 @@ language: cpp
 compiler:
   - g++
 before_install:
-  - sudo apt-get install libboost-dev
+  - sudo apt-get install libboost-dev libboost-date-time-dev
 branches:
   only:
     - master
