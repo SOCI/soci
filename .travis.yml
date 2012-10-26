@@ -33,7 +33,6 @@ after_script:
   - ctest -V .
 
 notifications:
-  irc: "irc.freenode.net#soci"
   email:
     recipients:
       - mloskot@gmail.com
@@ -41,3 +40,6 @@ notifications:
   on_success: always # [always|never|change] # default: change
   on_failure: always # [always|never|change] # default: always
 
+  irc:
+    channels:
+      - "irc.freenode.net#soci"
