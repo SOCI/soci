@@ -14,12 +14,13 @@ before_install:
   - sudo apt-get install -qq libboost-dev libboost-date-time-dev
 
 before_script:
+  - mysql -e 'create database soci_test;'
   - psql -c 'create database soci_test;' -U postgres
 
 script:
   - mkdir -p src/build
   - cd src/build
-  - cmake -DSOCI_TESTS=ON -DSOCI_EMPTY_TEST_CONNSTR:STRING="dummy connection" -DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="dbname=soci_test user=postgres" -DSOCI_SQLITE3_TEST_CONNSTR:STRING="soci_test.db" ..
+  - cmake -DSOCI_TESTS=ON -DSOCI_EMPTY_TEST_CONNSTR:STRING="dummy connection" -DSOCI_MYSQL_TEST_CONNSTR:STRING="db=soci_test" -DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="dbname=soci_test user=postgres" -DSOCI_SQLITE3_TEST_CONNSTR:STRING="soci_test.db" ..
   - make
   - make test
 
@@ -31,3 +32,4 @@ notifications:
       - mateusz@loskot.net
   on_success: always # [always|never|change] # default: change
   on_failure: always # [always|never|change] # default: always
+
