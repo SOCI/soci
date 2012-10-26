@@ -1,15 +1,28 @@
 # .travis.yml - config file SOCI CI at https://travis-ci.org/
 
 language: cpp
+
 compiler:
   - g++
-before_install:
-  - sudo apt-get install libboost-dev libboost-date-time-dev
+
 branches:
   only:
     - master
+
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq libboost-dev libboost-date-time-dev
+
+before_script:
+  - psql -c 'create database soci_test;' -U postgres
+
 script:
-  - mkdir -p src/build && cd src/build && cmake .. && make
+  - mkdir -p src/build
+  - cd src/build
+  - cmake -DSOCI_TESTS=ON -DSOCI_EMPTY_TEST_CONNSTR:STRING="dummy connection" -DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="dbname=soci_test user=postgres" -DSOCI_SQLITE3_TEST_CONNSTR:STRING="soci_test.db" ..
+  - make
+  - make test
+
 notifications:
   irc: "irc.freenode.net#soci"
   email:
