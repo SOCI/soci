@@ -42,4 +42,5 @@ notifications:
 
   irc:
     channels:
-      - "irc.freenode.net#soci"
+      - "irc.freenode.org#soci"
+    use_notice: true
