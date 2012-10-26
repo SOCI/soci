@@ -25,8 +25,10 @@ script:
   - mkdir -p src/build
   - cd src/build
   - cmake -DSOCI_TESTS=ON -DSOCI_EMPTY_TEST_CONNSTR:STRING="dummy connection" -DSOCI_MYSQL_TEST_CONNSTR:STRING="db=soci_test" -DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="dbname=soci_test user=postgres" -DSOCI_SQLITE3_TEST_CONNSTR:STRING="soci_test.db" ..
-  - make
-  - make test
+  - cmake --build .
+
+after_script:
+  - ctest -V .
 
 notifications:
   irc: "irc.freenode.net#soci"
