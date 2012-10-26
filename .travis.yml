@@ -1,16 +1,15 @@
 # .travis.yml - config file SOCI CI at https://travis-ci.org/
 
 language: cpp
-
 compiler:
-  - gcc
-
+  - g++
+before_install:
+  - sudo apt-get install libboost-dev
 branches:
   only:
     - master
-
-script: mkdir -p src/build && cd src/build && cmake .. && make
-
+script:
+  - mkdir -p src/build && cd src/build && cmake .. && make
 notifications:
   irc: "irc.freenode.net#soci"
   email:
