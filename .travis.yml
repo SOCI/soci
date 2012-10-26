@@ -12,6 +12,7 @@ branches:
 script: mkdir -p src/build && cd src/build && cmake .. && make
 
 notifications:
+  irc: "irc.freenode.org#soci"
   email:
     recipients:
       - mloskot@gmail.com
