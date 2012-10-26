@@ -16,5 +16,5 @@ notifications:
     recipients:
       - mloskot@gmail.com
       - mateusz@loskot.net
-    on_success: [always] # default: change
-    on_failure: [always] # default: always
+  on_success: always # [always|never|change] # default: change
+  on_failure: always # [always|never|change] # default: always
