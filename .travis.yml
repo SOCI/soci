@@ -14,8 +14,7 @@ script: mkdir -p src/build && cd src/build && cmake .. && make
 notifications:
   email:
     recipients:
+      - mloskot@gmail.com
       - mateusz@loskot.net
     on_success: [always] # default: change
     on_failure: [always] # default: always
-
-  irc: "irc.freenode.org#soci"
