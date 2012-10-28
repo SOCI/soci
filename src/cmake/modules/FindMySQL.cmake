@@ -35,6 +35,7 @@ if(WIN32)
     $ENV{MYSQL_DIR}/client/${libsuffixBuild}
     $ENV{MYSQL_DIR}/libmysql/${libsuffixBuild}
     $ENV{ProgramFiles}/MySQL/*/lib/${libsuffixDist}
+    $ENV{ProgramFiles}/MySQL/*/lib
     $ENV{SystemDrive}/MySQL/*/lib/${libsuffixDist})
 
 else()

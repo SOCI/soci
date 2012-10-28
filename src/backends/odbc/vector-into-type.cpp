@@ -58,17 +58,6 @@ void odbc_vector_into_type_backend::define_by_pos(
             data = &v[0];
         }
         break;
-    case x_unsigned_long:
-        {
-            odbcType_ = SQL_C_ULONG;
-            size = sizeof(unsigned long);
-            std::vector<unsigned long> *vp
-                = static_cast<std::vector<unsigned long> *>(data);
-            std::vector<unsigned long> &v(*vp);
-            prepare_indicators(v.size());
-            data = &v[0];
-        }
-        break;
     case x_double:
         {
             odbcType_ = SQL_C_DOUBLE;
@@ -282,13 +271,6 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
             v->resize(sz);
         }
         break;
-    case x_unsigned_long:
-        {
-            std::vector<unsigned long> *v
-                = static_cast<std::vector<unsigned long> *>(data_);
-            v->resize(sz);
-        }
-        break;
     case x_double:
         {
             std::vector<double> *v
@@ -340,13 +322,6 @@ std::size_t odbc_vector_into_type_backend::size()
     case x_integer:
         {
             std::vector<long> *v = static_cast<std::vector<long> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_unsigned_long:
-        {
-            std::vector<unsigned long> *v
-                = static_cast<std::vector<unsigned long> *>(data_);
             sz = v->size();
         }
         break;

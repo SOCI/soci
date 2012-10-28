@@ -31,7 +31,6 @@ macro(soci_backend NAME)
     ""
     ${ARGN})
 
-  message(STATUS "")
   colormsg(HIGREEN "${NAME} - ${THIS_BACKEND_DESCRIPTION}")
 
   # Backend name variants utils

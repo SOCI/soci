@@ -74,12 +74,6 @@ void firebird_vector_into_type_backend::exchangeData(std::size_t row)
             setIntoVector(data_, row, tmp);
         }
         break;
-    case x_unsigned_long:
-        {
-            unsigned long tmp = from_isc<unsigned long>(var);
-            setIntoVector(data_, row, tmp);
-        }
-        break;
     case x_long_long:
         {
             long long tmp = from_isc<long long>(var);
@@ -147,9 +141,6 @@ void firebird_vector_into_type_backend::resize(std::size_t sz)
     case x_integer:
         resizeVector<int> (data_, sz);
         break;
-    case x_unsigned_long:
-        resizeVector<unsigned long>(data_, sz);
-        break;
     case x_long_long:
         resizeVector<long long> (data_, sz);
         break;
@@ -182,9 +173,6 @@ std::size_t firebird_vector_into_type_backend::size()
         break;
     case x_integer:
         sz = getVectorSize<int> (data_);
-        break;
-    case x_unsigned_long:
-        sz = getVectorSize<unsigned long>(data_);
         break;
     case x_long_long:
         sz = getVectorSize<long long> (data_);

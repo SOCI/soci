@@ -509,6 +509,41 @@ void test11()
     std::cout << "test 11 passed" << std::endl;
 }
 
+// test INSERT INTO ... RETURNING syntax
+
+struct table_creator_for_test12 : table_creator_base
+{
+    table_creator_for_test12(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(sid serial, txt text)";
+    }
+};
+
+void test12()
+{
+    {
+        session sql(backEnd, connectString);
+
+        table_creator_for_test12 tableCreator(sql);
+
+        std::vector<long> ids(10);
+        for (int i = 0; i != ids.size(); i++)
+        {
+            long sid(0);
+            std::string txt("abc");
+            sql << "insert into soci_test(txt) values(:txt) returning sid", use(txt, "txt"), into(sid);
+            ids[i] = sid;
+        }
+        
+        std::vector<long> ids2(ids.size());
+        sql << "select sid from soci_test order by sid", into(ids2);
+        assert(std::equal(ids.begin(), ids.end(), ids2.begin()));
+    }
+
+    std::cout << "test 12 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -622,6 +657,7 @@ int main(int argc, char** argv)
         test9();
         test10();
         test11();
+        test12();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;

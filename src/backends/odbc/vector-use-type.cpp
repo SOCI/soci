@@ -62,18 +62,6 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             data = &v[0];
         }
         break;
-    case x_unsigned_long:
-        {
-            sqlType = SQL_BIGINT;
-            cType = SQL_C_ULONG;
-            size = sizeof(unsigned long);
-            std::vector<unsigned long> *vp
-                 = static_cast<std::vector<unsigned long> *>(data);
-            std::vector<unsigned long> &v(*vp);
-            prepare_indicators(v.size());
-            data = &v[0];
-        }
-        break;
     case x_double:
         {
             sqlType = SQL_DOUBLE;
@@ -332,13 +320,6 @@ std::size_t odbc_vector_use_type_backend::size()
     case x_integer:
         {
             std::vector<int> *vp = static_cast<std::vector<int> *>(data_);
-            sz = vp->size();
-        }
-        break;
-    case x_unsigned_long:
-        {
-            std::vector<unsigned long> *vp
-                = static_cast<std::vector<unsigned long> *>(data_);
             sz = vp->size();
         }
         break;

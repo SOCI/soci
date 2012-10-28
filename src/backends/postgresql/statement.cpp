@@ -48,6 +48,12 @@ void postgresql_statement_backend::clean_up()
     {
         PQclear(result_);
         result_ = NULL;
+
+        if (statementName_.empty() == false)
+        {
+            session_.deallocate_prepared_statement(statementName_);
+            statementName_.clear();
+        }
     }
 }
 
@@ -497,6 +503,7 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     case 2275: // cstring
     case 18:   // char
     case 1042: // bpchar
+    case 142: // xml
         type = dt_string;
         break;
 
@@ -519,6 +526,7 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     case 16:   // bool
     case 21:   // int2
     case 23:   // int4
+    case 26:   // oid
         type = dt_integer;
         break;
 
@@ -526,12 +534,13 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
         type = dt_long_long;
         break;
 
-    case 26:   // oid
-        type = dt_unsigned_long;
-        break;
-
     default:
-         throw soci_error("Unknown data type.");
+    {
+        std::stringstream message;
+        message << "unknown data type with typelem: " << typeOid << " for colNum: " << colNum << " with name: " << PQfname(result_, pos);
+        throw soci_error(message.str());
+        
+    }
     }
 
     columnName = PQfname(result_, pos);

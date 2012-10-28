@@ -1,2 +1,4 @@
 tmp
-
+src/build
+*.swp
+*.kate-swp

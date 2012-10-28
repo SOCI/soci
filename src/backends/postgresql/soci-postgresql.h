@@ -236,6 +236,8 @@ struct postgresql_session_backend : details::session_backend
     virtual void commit();
     virtual void rollback();
 
+    void deallocate_prepared_statement(const std::string & statementName);
+
     virtual std::string get_backend_name() const { return "postgresql"; }
 
     void clean_up();

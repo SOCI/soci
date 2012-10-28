@@ -51,6 +51,26 @@ sqlite3_session_backend::sqlite3_session_backend(
         std::string key, val;
         std::getline(ssconn, key, '=');
         std::getline(ssconn, val, ' ');
+
+        if (val.size()>0 && val[0]=='\"')
+        {
+            std::string quotedVal = val.erase(0, 1);
+
+            if (quotedVal[quotedVal.size()-1] ==  '\"')
+            {
+                quotedVal.erase(val.size()-1);
+            }
+            else // space inside value string
+            {
+                std::string keepspace;
+                std::getline(ssconn, val, '\"');
+                quotedVal = quotedVal + " " + val;
+                std::getline(ssconn, keepspace, ' ');
+            }     
+
+            val = quotedVal;
+        }
+
         if ("dbname" == key || "db" == key)
         {
             dbname = val;

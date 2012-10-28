@@ -29,6 +29,7 @@
 #include <windows.h>
 #endif
 #include <sqlext.h> // ODBC
+#include <string.h> // strcpy()
 
 namespace soci
 {
@@ -40,10 +41,34 @@ namespace details
 }
 
 struct odbc_statement_backend;
-struct odbc_standard_into_type_backend : details::standard_into_type_backend
+
+// Helper of into and use backends.
+class odbc_standard_type_backend_base
+{
+protected:
+    odbc_standard_type_backend_base(odbc_statement_backend &st)
+        : statement_(st) {}
+
+    // Check if we need to pass 64 bit integers as strings to the database as
+    // some drivers don't support them directly.
+    inline bool use_string_for_bigint() const;
+
+    // If we do need to use strings for 64 bit integers, this constant defines
+    // the maximal string length needed.
+    enum
+    {
+        // This is the length of decimal representation of UINT64_MAX + 1.
+        max_bigint_length = 21
+    };
+
+    odbc_statement_backend &statement_;
+};
+
+struct odbc_standard_into_type_backend : details::standard_into_type_backend,
+                                         private odbc_standard_type_backend_base
 {
     odbc_standard_into_type_backend(odbc_statement_backend &st)
-        : statement_(st), buf_(0)
+        : odbc_standard_type_backend_base(st), buf_(0)
     {}
 
     virtual void define_by_pos(int &position,
@@ -55,7 +80,6 @@ struct odbc_standard_into_type_backend : details::standard_into_type_backend
 
     virtual void clean_up();
 
-    odbc_statement_backend &statement_;
     char *buf_;        // generic buffer
     void *data_;
     details::exchange_type type_;
@@ -64,10 +88,11 @@ struct odbc_standard_into_type_backend : details::standard_into_type_backend
     SQLLEN valueLen_;
 };
 
-struct odbc_vector_into_type_backend : details::vector_into_type_backend
+struct odbc_vector_into_type_backend : details::vector_into_type_backend,
+                                       private odbc_standard_type_backend_base
 {
     odbc_vector_into_type_backend(odbc_statement_backend &st)
-        : statement_(st), indHolders_(NULL),
+        : odbc_standard_type_backend_base(st), indHolders_(NULL),
           data_(NULL), buf_(NULL) {}
 
     virtual void define_by_pos(int &position,
@@ -85,7 +110,6 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend
     // (as part of the define_by_pos)
     void prepare_indicators(std::size_t size);
 
-    odbc_statement_backend &statement_;
 
     SQLLEN *indHolders_;
     std::vector<SQLLEN> indHolderVec_;
@@ -96,15 +120,12 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend
     SQLSMALLINT odbcType_;
 };
 
-struct odbc_standard_use_type_backend : details::standard_use_type_backend
+struct odbc_standard_use_type_backend : details::standard_use_type_backend,
+                                        private odbc_standard_type_backend_base
 {
     odbc_standard_use_type_backend(odbc_statement_backend &st)
-        : statement_(st), data_(0), buf_(0), indHolder_(0) {}
-
-    void prepare_for_bind(void *&data, SQLLEN &size,
-                        SQLSMALLINT &sqlType, SQLSMALLINT &cType);
-    void bind_helper(int &position,
-        void *data, details::exchange_type type);
+        : odbc_standard_type_backend_base(st),
+          position_(-1), data_(0), buf_(0), indHolder_(0) {}
 
     virtual void bind_by_pos(int &position,
         void *data, details::exchange_type type, bool readOnly);
@@ -116,17 +137,26 @@ struct odbc_standard_use_type_backend : details::standard_use_type_backend
 
     virtual void clean_up();
 
-    odbc_statement_backend &statement_;
+    // Return the pointer to the buffer containing data to be used by ODBC.
+    // This can be either data_ itself or buf_, that is allocated by this
+    // function if necessary.
+    //
+    // Also fill in the size of the data and SQL and C types of it.
+    void* prepare_for_bind(SQLLEN &size,
+       SQLSMALLINT &sqlType, SQLSMALLINT &cType);
+
+    int position_;
     void *data_;
     details::exchange_type type_;
     char *buf_;
     SQLLEN indHolder_;
 };
 
-struct odbc_vector_use_type_backend : details::vector_use_type_backend
+struct odbc_vector_use_type_backend : details::vector_use_type_backend,
+                                      private odbc_standard_type_backend_base
 {
     odbc_vector_use_type_backend(odbc_statement_backend &st)
-        : statement_(st), indHolders_(NULL),
+        : odbc_standard_type_backend_base(st), indHolders_(NULL),
           data_(NULL), buf_(NULL) {}
 
     // helper function for preparing indicators
@@ -149,7 +179,6 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend
 
     virtual void clean_up();
 
-    odbc_statement_backend &statement_;
 
     SQLLEN *indHolders_;
     std::vector<SQLLEN> indHolderVec_;
@@ -197,6 +226,7 @@ struct odbc_statement_backend : details::statement_backend
     bool hasVectorUseElements_;
     bool boundByName_;
     bool boundByPos_;
+    bool lastNoData_; // true if last query returned SQL_NO_DATA
 
     std::string query_;
     std::vector<std::string> names_; // list of names for named binds
@@ -237,6 +267,11 @@ struct odbc_session_backend : details::session_backend
     virtual void commit();
     virtual void rollback();
 
+    virtual bool get_next_sequence_value(session & s,
+        std::string const & sequence, long & value);
+    virtual bool get_last_insert_id(session & s,
+        std::string const & table, long & value);
+
     virtual std::string get_backend_name() const { return "odbc"; }
 
     void reset_transaction();
@@ -247,8 +282,29 @@ struct odbc_session_backend : details::session_backend
     virtual odbc_rowid_backend * make_rowid_backend();
     virtual odbc_blob_backend * make_blob_backend();
 
+    enum database_product
+    {
+      prod_uninitialized, // Never returned by get_database_product().
+      prod_firebird,
+      prod_mssql,
+      prod_mysql,
+      prod_oracle,
+      prod_postgresql,
+      prod_sqlite,
+      prod_unknown = -1
+    };
+
+    // Determine the type of the database we're connected to.
+    database_product get_database_product();
+
+    // Return full ODBC connection string.
+    std::string get_connection_string() const { return connection_string_; }
+
     SQLHENV henv_;
     SQLHDBC hdbc_;
+
+    std::string connection_string_;
+    database_product product_;
 };
 
 class SOCI_ODBC_DECL odbc_soci_error : public soci_error
@@ -263,14 +319,46 @@ public:
                   std::string const & msg)
         : soci_error(msg)
     {
-        SQLSMALLINT length, i = 1;
-        SQLGetDiagRec(htype, hndl, i, sqlstate_, &sqlcode_,
-                      message_, SQL_MAX_MESSAGE_LENGTH + 1,
-                      &length);
+        const char* socierror = NULL;
 
-        if (length == 0)
+        SQLSMALLINT length, i = 1;
+        switch ( SQLGetDiagRec(htype, hndl, i, sqlstate_, &sqlcode_,
+                               message_, SQL_MAX_MESSAGE_LENGTH + 1,
+                               &length) )
         {
-            message_[0] = 0;
+          case SQL_SUCCESS:
+            // The error message was successfully retrieved.
+            break;
+
+          case SQL_INVALID_HANDLE:
+            socierror = "[SOCI]: Invalid handle.";
+            break;
+
+          case SQL_ERROR:
+            socierror = "[SOCI]: SQLGetDiagRec() error.";
+            break;
+
+          case SQL_SUCCESS_WITH_INFO:
+            socierror = "[SOCI]: Error message too long.";
+            break;
+
+          case SQL_NO_DATA:
+            socierror = "[SOCI]: No error.";
+            break;
+
+          default:
+            socierror = "[SOCI]: Unexpected SQLGetDiagRec() return value.";
+            break;
+        }
+
+        if (socierror)
+        {
+            // Use our own error message if we failed to retrieve the ODBC one.
+            strcpy(reinterpret_cast<char*>(message_), socierror);
+
+            // Use "General warning" SQLSTATE code.
+            strcpy(reinterpret_cast<char*>(sqlstate_), "01000");
+
             sqlcode_ = 0;
         }
     }
@@ -299,6 +387,18 @@ inline bool is_odbc_error(SQLRETURN rc)
     {
         return false;
     }
+}
+
+inline bool odbc_standard_type_backend_base::use_string_for_bigint() const
+{
+    // Oracle ODBC driver doesn't support SQL_C_[SU]BIGINT data types
+    // (see appendix G.1 of Oracle Database Administrator's reference at
+    // http://docs.oracle.com/cd/B19306_01/server.102/b15658/app_odbc.htm),
+    // so we need a special workaround for this case and we represent 64
+    // bit integers as strings and rely on ODBC driver for transforming
+    // them to SQL_NUMERIC.
+    return statement_.session_.get_database_product()
+            == odbc_session_backend::prod_oracle;
 }
 
 struct odbc_backend_factory : backend_factory

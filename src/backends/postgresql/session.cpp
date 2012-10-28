@@ -55,7 +55,7 @@ postgresql_session_backend::~postgresql_session_backend()
 namespace // unnamed
 {
 
-// helper function for hardoded queries
+// helper function for hardcoded queries
 void hard_exec(PGconn * conn, char const * query, char const * errMsg)
 {
     PGresult* result = PQexec(conn, query);
@@ -89,6 +89,15 @@ void postgresql_session_backend::commit()
 void postgresql_session_backend::rollback()
 {
     hard_exec(conn_, "ROLLBACK", "Cannot rollback transaction.");
+}
+
+void postgresql_session_backend::deallocate_prepared_statement(
+    const std::string & statementName)
+{
+    const std::string & query = "DEALLOCATE " + statementName;
+
+    hard_exec(conn_, query.c_str(),
+        "Cannot deallocate prepared statement.");
 }
 
 void postgresql_session_backend::clean_up()

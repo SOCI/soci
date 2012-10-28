@@ -135,12 +135,21 @@ void test2()
     std::cout << "test 2 passed" << std::endl;
 }
 
-struct longlong_table_creator : table_creator_base
+struct bigint_table_creator : table_creator_base
 {
-    longlong_table_creator(session & sql)
+    bigint_table_creator(session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val bigint)";
+    }
+};
+
+struct bigint_unsigned_table_creator : table_creator_base
+{
+    bigint_unsigned_table_creator(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val bigint unsigned)";
     }
 };
 
@@ -150,7 +159,7 @@ void test3()
     {
         session sql(backEnd, connectString);
 
-        longlong_table_creator tableCreator(sql);
+        bigint_table_creator tableCreator(sql);
 
         long long v1 = 1000000000000LL;
         assert(v1 / 1000000 == 1000000);
@@ -167,7 +176,7 @@ void test3()
     {
         session sql(backEnd, connectString);
 
-        longlong_table_creator tableCreator(sql);
+        bigint_table_creator tableCreator(sql);
 
         std::vector<long long> v1;
         v1.push_back(1000000000000LL);
@@ -187,6 +196,76 @@ void test3()
         assert(v2[2] == 1000000000002LL);
         assert(v2[3] == 1000000000001LL);
         assert(v2[4] == 1000000000000LL);
+    }
+
+    {
+        session sql(backEnd, connectString);
+
+        bigint_unsigned_table_creator tableCreator(sql);
+
+        sql << "insert into soci_test set val = 18446744073709551615";
+        row v;
+        sql << "select * from soci_test", into(v);
+    }
+
+    {
+        session sql(backEnd, connectString);
+
+        bigint_unsigned_table_creator tableCreator(sql);
+
+        const char* source = "18446744073709551615";
+        sql << "insert into soci_test set val = " << source;
+        unsigned long long vv = 0;
+        sql << "select val from soci_test", into(vv);
+        std::stringstream buf;
+        buf << vv;
+        assert(buf.str() == source);
+    }
+
+    {
+        session sql(backEnd, connectString);
+
+        bigint_unsigned_table_creator tableCreator(sql);
+
+        const char* source = "18446744073709551615";
+        sql << "insert into soci_test set val = " << source;
+        std::vector<unsigned long long> v(1);
+        sql << "select val from soci_test", into(v);
+        std::stringstream buf;
+        buf << v.at(0);
+        assert(buf.str() == source);
+    }
+
+    {
+        session sql(backEnd, connectString);
+
+        bigint_unsigned_table_creator tableCreator(sql);
+
+        unsigned long long n = 18446744073709551615ULL;
+        sql << "insert into soci_test(val) values (:n)", use(n);
+        unsigned long long m = 0;
+        sql << "select val from soci_test", into(m);
+        assert(n == m);
+    }
+
+    {
+        session sql(backEnd, connectString);
+
+        bigint_unsigned_table_creator tableCreator(sql);
+
+        std::vector<unsigned long long> v1;
+        v1.push_back(18446744073709551615ULL);
+        v1.push_back(18446744073709551614ULL);
+        v1.push_back(18446744073709551613ULL);
+        sql << "insert into soci_test(val) values(:val)", use(v1);
+
+        std::vector<unsigned long long> v2(10);
+        sql << "select val from soci_test order by val", into(v2);
+
+        assert(v2.size() == 3);
+        assert(v2[0] == 18446744073709551613ULL);
+        assert(v2[1] == 18446744073709551614ULL);
+        assert(v2[2] == 18446744073709551615ULL);
     }
 
     std::cout << "test 3 passed" << std::endl;
@@ -493,6 +572,38 @@ void test8()
   std::cout << "test 8 passed" << std::endl;
 }
 
+struct unsigned_value_table_creator : table_creator_base
+{
+    unsigned_value_table_creator(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val int unsigned)";
+    }
+};
+
+// rowset<> should be able to take INT UNSIGNED.
+void test9()
+{
+  {
+    session sql(backEnd, connectString);
+
+    unsigned_value_table_creator tableCreator(sql);
+
+    unsigned int mask = 0xffffff00;
+    sql << "insert into soci_test set val = " << mask;
+    soci::rowset<> rows(sql.prepare << "select val from soci_test");
+    int cnt = 0;
+    for (soci::rowset<>::iterator it = rows.begin(), end = rows.end();
+         it != end; ++it)
+    {
+        cnt++;
+    }
+    assert(cnt == 1);
+  }
+
+  std::cout << "test 9 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -502,7 +613,7 @@ struct table_creator_one : public table_creator_base
         sql << "create table soci_test(id integer, val integer, c char, "
                  "str varchar(20), sh int2, ul numeric(20), d float8, "
                  "tm datetime, i1 integer, i2 integer, i3 integer, "
-                 "name varchar(20)) type=InnoDB";
+                 "name varchar(20)) engine=InnoDB";
     }
 };
 
@@ -563,7 +674,7 @@ bool are_transactions_supported()
 {
     session sql(backEnd, connectString);
     sql << "drop table if exists soci_test";
-    sql << "create table soci_test (id int) type=InnoDB";
+    sql << "create table soci_test (id int) engine=InnoDB";
     row r;
     sql << "show table status like \'soci_test\'", into(r);
     bool retv = (r.get<std::string>(1) == "InnoDB");
@@ -603,6 +714,7 @@ int main(int argc, char** argv)
         test6();
         test7();
         test8();
+        test9();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;
