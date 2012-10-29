@@ -528,7 +528,7 @@ void test12()
         table_creator_for_test12 tableCreator(sql);
 
         std::vector<long> ids(10);
-        for (int i = 0; i != ids.size(); i++)
+        for (std::size_t i = 0; i != ids.size(); i++)
         {
             long sid(0);
             std::string txt("abc");
