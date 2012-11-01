@@ -118,7 +118,6 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
                 maxSize = sz > maxSize ? sz : maxSize;
             }
 
-
             buf_ = new char[maxSize * vecSize];
             memset(buf_, 0, maxSize * vecSize);
 
@@ -137,10 +136,25 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
         {
             std::vector<std::tm> *vp
                 = static_cast<std::vector<std::tm> *>(data);
+			std::size_t const vecSize = vp->size();
 
-            prepare_indicators(vp->size());
+            prepare_indicators(vecSize);
 
-            buf_ = new char[sizeof(TIMESTAMP_STRUCT) * vp->size()];
+            buf_ = new char[sizeof(TIMESTAMP_STRUCT) * vecSize];
+			TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
+
+            for (std::size_t i = 0; i != vecSize; ++i, ++ts)
+            {
+				std::tm& t = (*vp)[i];
+
+			    ts->year = static_cast<SQLSMALLINT>(t.tm_year + 1900);
+				ts->month = static_cast<SQLUSMALLINT>(t.tm_mon + 1);
+				ts->day = static_cast<SQLUSMALLINT>(t.tm_mday);
+				ts->hour = static_cast<SQLUSMALLINT>(t.tm_hour);
+				ts->minute = static_cast<SQLUSMALLINT>(t.tm_min);
+				ts->second = static_cast<SQLUSMALLINT>(t.tm_sec);
+				ts->fraction = 0;
+            }
 
             sqlType = SQL_TYPE_TIMESTAMP;
             cType = SQL_C_TYPE_TIMESTAMP;
@@ -249,32 +263,6 @@ void odbc_vector_use_type_backend::bind_by_name(
 
 void odbc_vector_use_type_backend::pre_use(indicator const *ind)
 {
-    // first deal with data
-    if (type_ == x_stdtm)
-    {
-        std::vector<std::tm> *vp
-             = static_cast<std::vector<std::tm> *>(data_);
-
-        std::vector<std::tm> &v(*vp);
-
-        char *pos = buf_;
-        std::size_t const vsize = v.size();
-        for (std::size_t i = 0; i != vsize; ++i)
-        {
-            std::tm t = v[i];
-            TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
-
-            ts->year = static_cast<SQLSMALLINT>(t.tm_year + 1900);
-            ts->month = static_cast<SQLUSMALLINT>(t.tm_mon + 1);
-            ts->day = static_cast<SQLUSMALLINT>(t.tm_mday);
-            ts->hour = static_cast<SQLUSMALLINT>(t.tm_hour);
-            ts->minute = static_cast<SQLUSMALLINT>(t.tm_min);
-            ts->second = static_cast<SQLUSMALLINT>(t.tm_sec);
-            ts->fraction = 0;
-            pos += sizeof(TIMESTAMP_STRUCT);
-        }
-    }
-
     // then handle indicators
     if (ind != NULL)
     {
