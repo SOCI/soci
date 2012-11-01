@@ -56,7 +56,7 @@ public:
     virtual void post_use(bool /*gotData*/)
     {
         v_.reset_get_counter();
-        convert_from_base();
+        //convert_from_base();
     }
 
     virtual void pre_use() {}
@@ -67,7 +67,7 @@ public:
     // (the derived class might be generated automatically by
     // user conversions)
     virtual void convert_to_base() {}
-    virtual void convert_from_base() {}
+    //virtual void convert_from_base() {}
 
 private:
     values & v_;
