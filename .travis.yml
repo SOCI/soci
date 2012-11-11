@@ -43,4 +43,3 @@ notifications:
   irc:
     channels:
       - "irc.freenode.org#soci"
-    use_notice: true
