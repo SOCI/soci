@@ -37,7 +37,9 @@ else(WIN32)
 endif(WIN32)
 
 if(WIN32)
-   string(TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_TOLOWER)
+   if (${CMAKE_BUILD_TYPE})
+    string(TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_TOLOWER)
+   endif()
 
    # path suffix for debug/release mode
    # binary_dist: mysql binary distribution
