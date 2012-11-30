@@ -37,6 +37,12 @@ postgresql_statement_backend::postgresql_statement_backend(
 {
 }
 
+postgresql_statement_backend::~postgresql_statement_backend()
+{
+    if (statementName_.empty() == false)
+        session_.deallocate_prepared_statement(statementName_);
+}
+
 void postgresql_statement_backend::alloc()
 {
     // nothing to do here
