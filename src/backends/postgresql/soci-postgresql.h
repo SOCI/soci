@@ -144,6 +144,7 @@ struct postgresql_session_backend;
 struct postgresql_statement_backend : details::statement_backend
 {
     postgresql_statement_backend(postgresql_session_backend & session);
+    ~postgresql_statement_backend();
 
     virtual void alloc();
     virtual void clean_up();
