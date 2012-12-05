@@ -604,6 +604,20 @@ void test9()
   std::cout << "test 9 passed" << std::endl;
 }
 
+void test10()
+{
+    session sql(backEnd, connectString);
+    
+    row r;
+    
+    sql << "set @day = '5'";
+    sql << "set @mm = 'december'";
+    sql << "set @year = '2012'"; 
+    sql << "select concat(@day,' ',@mm,' ',@year)", into(r);
+    
+    std::cout << "test 10 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -715,6 +729,7 @@ int main(int argc, char** argv)
         test7();
         test8();
         test9();
+        test10();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;
