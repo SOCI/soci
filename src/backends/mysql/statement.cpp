@@ -10,7 +10,7 @@
 #include "soci-mysql.h"
 #include <cctype>
 #include <ciso646>
-#include <iostream>
+//#include <iostream>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -415,7 +415,7 @@ void mysql_statement_backend::describe_column(int colNum,
         type = dt_string;
         break;
     default:
-        std::cerr << "field->type: " << field->type << std::endl;
+        //std::cerr << "field->type: " << field->type << std::endl;
         throw soci_error("Unknown data type.");
     }
     columnName = field->name;
