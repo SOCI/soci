@@ -54,12 +54,6 @@ void postgresql_statement_backend::clean_up()
     {
         PQclear(result_);
         result_ = NULL;
-
-        if (stType_ != st_repeatable_query && statementName_.empty() == false)
-        {
-            session_.deallocate_prepared_statement(statementName_);
-            statementName_.clear();
-        }
     }
 }
 
