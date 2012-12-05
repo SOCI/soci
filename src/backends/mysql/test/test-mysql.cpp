@@ -618,6 +618,76 @@ void test10()
     std::cout << "test 10 passed" << std::endl;
 }
 
+struct double_value_table_creator : table_creator_base
+{
+    double_value_table_creator(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val double)";
+    }
+};
+
+void test11()
+{
+  const std::string expectedError =
+      "Use element used with infinity or NaN, which are "   
+      "not supported by the MySQL server.";
+  {
+    session sql(backEnd, connectString);
+    
+    double x = std::numeric_limits<double>::quiet_NaN();
+    statement st = (sql.prepare << "SELECT :x", use(x, "x"));
+    try {
+        st.execute(true);
+    } catch (soci_error const &e) {
+        if (e.what() != expectedError) {
+            throw;
+        }
+    }
+  }
+  {
+    session sql(backEnd, connectString);
+    
+    double x = std::numeric_limits<double>::infinity();
+    statement st = (sql.prepare << "SELECT :x", use(x, "x"));
+    try {
+        st.execute(true);
+    } catch (soci_error const &e) {
+        if (e.what() != expectedError) {
+            throw;
+        }
+    }
+  }
+  {
+    session sql(backEnd, connectString);
+    double_value_table_creator tableCreator(sql);
+    
+    std::vector<double> v(1, std::numeric_limits<double>::quiet_NaN());
+    try {
+        sql << "insert into soci_test (val) values (:val)", use(v);
+    } catch (soci_error const &e) {
+        if (e.what() != expectedError) {                                      
+            throw;
+        }
+    }
+  }
+  {
+    session sql(backEnd, connectString);
+    double_value_table_creator tableCreator(sql);
+    
+    std::vector<double> v(1, std::numeric_limits<double>::infinity());
+    try {
+        sql << "insert into soci_test (val) values (:val)", use(v);
+    } catch (soci_error const &e) {
+        if (e.what() != expectedError) {                                      
+            throw;
+        }
+    }
+  }
+
+  std::cout << "test 11 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -730,6 +800,12 @@ int main(int argc, char** argv)
         test8();
         test9();
         test10();
+        if (std::numeric_limits<double>::is_iec559) {
+          test11();
+        } else {
+          std::cout << "Skipping test11 "
+                    << "(C++ implementation's double type is not IEC-559)\n";
+        }
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;

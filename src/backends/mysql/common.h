@@ -27,6 +27,21 @@ namespace mysql
 // helper function for parsing datetime values
 void parse_std_tm(char const *buf, std::tm &t);
 
+// The idea is that infinity - infinity gives NaN, and NaN != NaN is true.
+//
+// This should work on any IEEE-754-compliant implementation, which is
+// another way of saying that it does not always work (in particular,
+// according to stackoverflow, it won't work with gcc with the --fast-math
+// option), but I know of no better way of testing this portably in C++ prior
+// to C++11.  When soci moves to C++11 this should be replaced
+// with std::isfinite().
+template <typename T>
+bool is_infinity_or_nan(T x)
+{
+    T y = x - x;
+    return (y != y);
+}
+
 template <typename T>
 void parse_num(char const *buf, T &x)
 {
@@ -34,6 +49,9 @@ void parse_num(char const *buf, T &x)
     iss >> x;
     if (iss.fail() || (iss.eof() == false))
     {
+        throw soci_error("Cannot convert data.");
+    }
+    if (is_infinity_or_nan(x)) {
         throw soci_error("Cannot convert data.");
     }
 }

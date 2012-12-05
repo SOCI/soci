@@ -103,7 +103,11 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
 
         case x_double:
             {
-                // no need to overengineer it (KISS)...
+                if (is_infinity_or_nan(*static_cast<double*>(data_))) {
+                    throw soci_error(
+                        "Use element used with infinity or NaN, which are "
+                        "not supported by the MySQL server.");
+                }
 
                 std::size_t const bufSize = 100;
                 buf_ = new char[bufSize];

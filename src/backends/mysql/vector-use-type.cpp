@@ -134,11 +134,15 @@ void mysql_vector_use_type_backend::pre_use(indicator const *ind)
                 break;
             case x_double:
                 {
-                    // no need to overengineer it (KISS)...
-
                     std::vector<double> *pv
                         = static_cast<std::vector<double> *>(data_);
                     std::vector<double> &v = *pv;
+
+                    if (is_infinity_or_nan(v[i])) {
+                        throw soci_error(
+                            "Use element used with infinity or NaN, which are "
+                            "not supported by the MySQL server.");
+                    }
 
                     std::size_t const bufSize = 100;
                     buf = new char[bufSize];
