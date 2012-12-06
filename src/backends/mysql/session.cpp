@@ -219,7 +219,8 @@ void parse_connect_string(const string & connectString,
             *password = val;
             *password_p = true;
         }
-        else if ((par == "db" or par == "dbname") and not *db_p)
+        else if ((par == "db" or par == "dbname" or par == "service") and
+                 not *db_p)
         {
             *db = val;
             *db_p = true;
