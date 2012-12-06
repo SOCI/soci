@@ -155,7 +155,8 @@ void parse_connect_string(const string & connectString,
     string *unix_socket, bool *unix_socket_p,
     int *port, bool *port_p, string *ssl_ca, bool *ssl_ca_p,
     string *ssl_cert, bool *ssl_cert_p, string *ssl_key, bool *ssl_key_p,
-    int *local_infile, bool *local_infile_p)
+    int *local_infile, bool *local_infile_p,
+    string *charset, bool *charset_p)
 {
     *host_p = false;
     *user_p = false;
@@ -167,6 +168,7 @@ void parse_connect_string(const string & connectString,
     *ssl_cert_p = false;
     *ssl_key_p = false;
     *local_infile_p = false;
+    *charset_p = false;
     string err = "Malformed connection string.";
     string::const_iterator i = connectString.begin(),
         end = connectString.end();
@@ -254,6 +256,10 @@ void parse_connect_string(const string & connectString,
                 throw soci_error(err);
             }
             *local_infile_p = true;
+        } else if (par == "charset" and not *charset_p)
+        {
+            *charset = val;
+            *charset_p = true;
         }
         else
         {
@@ -267,19 +273,28 @@ void parse_connect_string(const string & connectString,
 mysql_session_backend::mysql_session_backend(
     std::string const & connectString)
 {
-    string host, user, password, db, unix_socket, ssl_ca, ssl_cert, ssl_key;
+    string host, user, password, db, unix_socket, ssl_ca, ssl_cert, ssl_key,
+        charset;
     int port, local_infile;
     bool host_p, user_p, password_p, db_p, unix_socket_p, port_p,
-        ssl_ca_p, ssl_cert_p, ssl_key_p, local_infile_p;
+        ssl_ca_p, ssl_cert_p, ssl_key_p, local_infile_p, charset_p;
     parse_connect_string(connectString, &host, &host_p, &user, &user_p,
         &password, &password_p, &db, &db_p,
         &unix_socket, &unix_socket_p, &port, &port_p,
         &ssl_ca, &ssl_ca_p, &ssl_cert, &ssl_cert_p, &ssl_key, &ssl_key_p,
-        &local_infile, &local_infile_p);
+        &local_infile, &local_infile_p, &charset, &charset_p);
     conn_ = mysql_init(NULL);
     if (conn_ == NULL)
     {
         throw soci_error("mysql_init() failed.");
+    }
+    if (charset_p)
+    {
+        if (0 != mysql_options(conn_, MYSQL_SET_CHARSET_NAME, charset.c_str()))
+        {
+            clean_up();
+            throw soci_error("mysql_options(MYSQL_SET_CHARSET_NAME) failed.");
+        }
     }
     if (ssl_ca_p)
     {
