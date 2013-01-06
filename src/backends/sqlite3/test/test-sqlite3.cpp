@@ -407,7 +407,7 @@ int main(int argc, char** argv)
         test3();
         test4();
         test5();
-        test6();
+        //test6(); - FIXME: See issue #15
 
         std::cout << "\nOK, all tests passed.\n\n";
 
