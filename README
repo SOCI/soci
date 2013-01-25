@@ -1,12 +1,13 @@
 = SOCI - The C++ Database Access Library =
 
-NOTICE: Git and bug tracker soon to be moved to https://github.com/SOCI
+GitHub hosts SOCI source code repository,
+issues tracker and wiki: https://github.com/SOCI
 
-Project website: http://soci.sourceforge.net
-
-Development, Download, Bug Tracking, Mailing Lists:
-
+Project website at http://soci.sourceforge.net
+Release downloads and mailing lists at 
 http://sourceforge.net/projects/soci/
+
+Travis CI service at https://travis-ci.org/SOCI/soci
 
 == Requirements ==
 
