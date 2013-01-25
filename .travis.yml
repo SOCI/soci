@@ -35,7 +35,6 @@ after_script:
 notifications:
   email:
     recipients:
-      - mloskot@gmail.com
       - mateusz@loskot.net
   on_success: always # [always|never|change] # default: change
   on_failure: always # [always|never|change] # default: always
