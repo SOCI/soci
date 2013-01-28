@@ -185,7 +185,7 @@ void oracle_standard_into_type_backend::post_fetch(
             if (indOCIHolder_ != -1)
             {
                 long long *v = static_cast<long long *>(data_);
-                *v = strtoll(buf_, NULL, 10);
+                *v = std::strtoll(buf_, NULL, 10);
             }
         }
         else if (type_ == x_unsigned_long_long)
@@ -193,7 +193,7 @@ void oracle_standard_into_type_backend::post_fetch(
             if (indOCIHolder_ != -1)
             {
                 unsigned long long *v = static_cast<unsigned long long *>(data_);
-                *v = strtoull(buf_, NULL, 10);
+                *v = std::strtoull(buf_, NULL, 10);
             }
         }
         else if (type_ == x_stdtm)

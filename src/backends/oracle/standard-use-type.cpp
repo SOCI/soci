@@ -343,7 +343,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
             if (readOnly_)
             {
                 long long const original = *static_cast<long long *>(data_);
-                long long const bound = strtoll(buf_, NULL, 10);
+                long long const bound = std::strtoll(buf_, NULL, 10);
 
                 if (original != bound)
                 {
@@ -355,7 +355,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
             if (readOnly_)
             {
                 unsigned long long const original = *static_cast<unsigned long long *>(data_);
-                unsigned long long const bound = strtoull(buf_, NULL, 10);
+                unsigned long long const bound = std::strtoull(buf_, NULL, 10);
 
                 if (original != bound)
                 {

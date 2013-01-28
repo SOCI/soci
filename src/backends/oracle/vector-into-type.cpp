@@ -213,7 +213,7 @@ void oracle_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             {
                 if (indOCIHolderVec_[i] != -1)
                 {
-                    v[i] = strtoll(pos, NULL, 10);
+                    v[i] = std::strtoll(pos, NULL, 10);
                 }
                 pos += colSize_;
             }
@@ -231,7 +231,7 @@ void oracle_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             {
                 if (indOCIHolderVec_[i] != -1)
                 {
-                    v[i] = strtoull(pos, NULL, 10);
+                    v[i] = std::strtoull(pos, NULL, 10);
                 }
                 pos += colSize_;
             }
