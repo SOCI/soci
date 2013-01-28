@@ -451,7 +451,7 @@ long long postgresql_statement_backend::get_affected_rows()
 {
     const char * resultStr = PQcmdTuples(result_);
     char * end;
-    long long result = strtoll(resultStr, &end, 0);
+    long long result = std::strtoll(resultStr, &end, 0);
     if (end != resultStr)
     {
         return result;
