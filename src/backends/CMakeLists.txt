@@ -17,14 +17,18 @@ endforeach()
 file(GLOB backend_dirs RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *)
 
 # empty backend always on by default
-option(EMPTY_FOUND "Build empty backend" ON)
+option(SOCI_EMPTY "Build empty backend" ON)
+if(SOCI_EMPTY)
+	set(WITH_EMPTY ON)
+	set(EMPTY_FOUND ON)
+endif()
 
 # enable only found backends
 foreach(dir ${backend_dirs})
 	if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${dir})
 		if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/CMakeLists.txt)
 			string(TOUPPER ${dir} dirUP)
-			if(${dirUP}_FOUND AND WITH_${depUP})
+			if(${dirUP}_FOUND AND WITH_${dirUP})
 				add_subdirectory(${dir})
 			endif()
 		endif()
