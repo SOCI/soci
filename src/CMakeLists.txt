@@ -31,7 +31,7 @@ colormsg(_HIBLUE_ "Configuring SOCI:")
 #################################################################################
 include(SociVersion)
 
-soci_version(MAJOR 3 MINOR 1 PATCH 0)
+soci_version(MAJOR 3 MINOR 2 PATCH 0)
 
 #################################################################################
 # Build features and variants
