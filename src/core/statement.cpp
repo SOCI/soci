@@ -101,8 +101,12 @@ void statement_impl::bind(values & values)
                 std::size_t const pos = query_.find(placeholder);
                 if (pos != std::string::npos)
                 {
-                    const char nextChar = query_[pos + placeholder.size()];
-                    if (nextChar == ' ' || nextChar == ',' ||
+                    // Retrieve next char after placeholder
+                    // make sure we do not go out of range on the string
+                    const char nextChar = (pos + placeholder.size()) < query_.size() ?
+                                          query_[pos + placeholder.size()] : '\0';
+                    
+                    if (nextChar == ' ' || nextChar == ',' || nextChar == ';' ||
                         nextChar == '\0' || nextChar == ')')
                     {
                         int position = static_cast<int>(uses_.size());
