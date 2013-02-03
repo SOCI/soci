@@ -70,7 +70,7 @@ IF(SOCI_INCLUDE_DIR AND SOCI_LIBRARY)
         MARK_AS_ADVANCED(SOCI_${plugin}_PLUGIN)
 
         IF(SOCI_${plugin}_PLUGIN)
-            MESSAGE(STATUS "    * Plugin ${plugin} found ${SOCI_${plugin}_LIBRARY}.")
+            MESSAGE(STATUS "    * Plugin ${plugin} found ${SOCI_${plugin}_PLUGIN}.")
             SET(SOCI_${plugin}_FOUND True)
         ELSE()
             MESSAGE(STATUS "    * Plugin ${plugin} not found.")
@@ -83,9 +83,7 @@ IF(SOCI_INCLUDE_DIR AND SOCI_LIBRARY)
     ### FOURTH CHECK: Check if the required components were all found
     #
     FOREACH(component ${Soci_FIND_COMPONENTS})
-        IF(${SOCI_${component}_FOUND})
-            # Does not work with NOT ... . No idea why.
-        ELSE()
+        IF(NOT SOCI_${component}_FOUND)
             MESSAGE(SEND_ERROR "Required component ${component} not found.")
         ENDIF()
     ENDFOREACH()
