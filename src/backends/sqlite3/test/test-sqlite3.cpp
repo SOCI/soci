@@ -273,6 +273,8 @@ struct table_creator_for_test6 : table_creator_base
 
 void test6()
 {
+    std::cout << "test 6 skipped (see issue #15)" << std::endl;
+#if 0
     {
         session sql(backEnd, connectString);
 
@@ -303,6 +305,7 @@ void test6()
     }
 
     std::cout << "test 6 passed" << std::endl;
+#endif
 }
 
 
@@ -407,7 +410,7 @@ int main(int argc, char** argv)
         test3();
         test4();
         test5();
-        //test6(); - FIXME: See issue #15
+        test6(); // FIXME: See issue #15
 
         std::cout << "\nOK, all tests passed.\n\n";
 
