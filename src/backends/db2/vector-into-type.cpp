@@ -59,17 +59,6 @@ void db2_vector_into_type_backend::define_by_pos(
             data = &v[0];
         }
         break;
-    case x_unsigned_long:
-        {
-            cType = SQL_C_ULONG;
-            size = sizeof(unsigned long);
-            std::vector<unsigned long> *vp
-                = static_cast<std::vector<unsigned long> *>(data);
-            std::vector<unsigned long> &v(*vp);
-            prepare_indicators(v.size());
-            data = &v[0];
-        }
-        break;
     case x_long_long:
         {
             cType = SQL_C_SBIGINT;
@@ -302,13 +291,6 @@ void db2_vector_into_type_backend::resize(std::size_t sz)
             v->resize(sz);
         }
         break;
-    case x_unsigned_long:
-        {
-            std::vector<unsigned long> *v
-                = static_cast<std::vector<unsigned long> *>(data);
-            v->resize(sz);
-        }
-        break;
     case x_long_long:
         {
             std::vector<long long> *v
@@ -372,13 +354,6 @@ std::size_t db2_vector_into_type_backend::size()
     case x_integer:
         {
             std::vector<long> *v = static_cast<std::vector<long> *>(data);
-            sz = v->size();
-        }
-        break;
-    case x_unsigned_long:
-        {
-            std::vector<unsigned long> *v
-                = static_cast<std::vector<unsigned long> *>(data);
             sz = v->size();
         }
         break;
