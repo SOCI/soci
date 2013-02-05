@@ -1,4 +1,5 @@
-= SOCI - The C++ Database Access Library =
+SOCI - The C++ Database Access Library
+======================================
 
 GitHub hosts SOCI source code repository,
 issues tracker and wiki: https://github.com/SOCI
@@ -9,7 +10,10 @@ http://sourceforge.net/projects/soci/
 
 Travis CI service at https://travis-ci.org/SOCI/soci
 
-== Requirements ==
+[![Build Status](https://api.travis-ci.org/SOCI/soci.png)](https://travis-ci.org/SOCI/soci)
+
+Requirements
+------------
 
 Core:
 * C++ compiler
@@ -21,7 +25,8 @@ Backend specific:
 * PostgreSQL client library X.Y
 * SQLite 3 library X.Y
 
-== Git repository of SOCI project ==
+Git repository of SOCI project
+------------------------------
 
 * /src - project source code tree
 * /doc - project documentation
