@@ -1,0 +1,7 @@
+libsoci-core-gcc_3.1.0+git2013015-5_amd64.deb libs optional
+libsoci-core-gcc-dev_3.1.0+git2013015-5_amd64.deb libdevel optional
+libsoci-core-gcc-dbg_3.1.0+git2013015-5_amd64.deb libs extra
+libsoci-mysql-gcc_3.1.0+git2013015-5_amd64.deb libs optional
+libsoci-sqlite3-gcc_3.1.0+git2013015-5_amd64.deb libs optional
+libsoci-postgresql-gcc_3.1.0+git2013015-5_amd64.deb libs optional
+libsoci-odbc-gcc_3.1.0+git2013015-5_amd64.deb libs optional

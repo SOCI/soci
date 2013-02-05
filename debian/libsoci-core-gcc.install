@@ -1,2 +1,2 @@
-debian/tmp/usr/local/lib/libsoci_core*.so*
+debian/tmp/usr/lib/libsoci_core*.so*
 debian/lintian/overrides/libsoci-core-gcc ./usr/share/lintian/overrides/

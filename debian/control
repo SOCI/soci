@@ -1,7 +1,7 @@
 Source: soci
 Priority: extra
 Maintainer: Denis Chapligin <chollya@satgate.net>
-Build-Depends: debhelper (>= 7), cdbs, autotools-dev, libboost-dev | libboost1.44-dev,
+Build-Depends: debhelper (>= 7), cdbs, cmake, quilt, libboost-dev | libboost1.44-dev,
  libmysqlclient15-dev, libpq-dev, libsqlite3-dev, unixodbc-dev
 Standards-Version: 3.7.3
 Section: libs
