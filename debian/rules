@@ -6,4 +6,4 @@ DEB_CMAKE_INSTALL_PREFIX=/usr
 include /usr/share/cdbs/1/rules/patchsys-quilt.mk
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/cmake.mk
-
+include /usr/share/cdbs/1/rules/utils.mk
