@@ -32,3 +32,8 @@ Git repository of SOCI project
 * /doc - project documentation
 * /www - project website
 * /build - legacy build configurations (to be removed)
+
+
+== Build Status ==
+
+[![Build Status](https://api.travis-ci.org/SOCI/soci.png)](https://travis-ci.org/SOCI/soci)

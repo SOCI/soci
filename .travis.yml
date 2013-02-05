@@ -15,7 +15,7 @@ services:
 
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq libboost-dev libboost-date-time-dev
+  - sudo apt-get install -qq libboost-dev libboost-date-time-dev unixodbc-dev
 
 before_script:
   - mysql --version
