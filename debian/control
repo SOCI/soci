@@ -11,7 +11,7 @@ Build-Depends: quilt,
  libmysqlclient15-dev, libpq-dev, libsqlite3-dev, unixodbc-dev
 Standards-Version: 3.7.3
 Section: libs
-Homepage: http://soci.sourceforge.net
+Homepage: http://soci.sourceforge.net/
 
 Package: libsoci-core-gcc
 Priority: optional

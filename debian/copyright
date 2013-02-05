@@ -1,11 +1,11 @@
-This package was downloaded from http://sourceforge.net/projects/soci/
+This package was downloaded from https://github.com/SOCI/soci
 
 Files: debian/*
 Licence: GPL-3+
-Copyright: 2008 Neil Williams <codehelp@debian.org>. 2011 Denis Chapligin <chollya@satgate.net>
+Copyright: 2008 Neil Williams <codehelp@debian.org>. 2013 Denis Chapligin <chollya@satgate.net>
 
 Files: *
-Copyright:  2004-2006 Maciej Sobczak, Stephen Hutton,
+Copyright:  2004-2013 Maciej Sobczak, Stephen Hutton,
                       David Courtney, Pawel Aleksander Fedorynski,
                       Rafal Bobrowski, Mateusz Loskot
 Licence: Boost
@@ -33,6 +33,3 @@ Licence: Boost
     FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
     ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
     DEALINGS IN THE SOFTWARE.
-
-On Debian systems, the complete text of the GNU General
-Public License can be found in '/usr/share/common-licenses/GPL-3'
