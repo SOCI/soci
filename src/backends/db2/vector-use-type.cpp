@@ -63,18 +63,6 @@ void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &siz
             data = &v[0];
         }
         break;
-    case x_unsigned_long:
-        {
-            sqlType = SQL_INTEGER;
-            cType = SQL_C_ULONG;
-            size = sizeof(unsigned long);
-            std::vector<unsigned long> *vp
-                 = static_cast<std::vector<unsigned long> *>(data);
-            std::vector<unsigned long> &v(*vp);
-            prepare_indicators(v.size());
-            data = &v[0];
-        }
-        break;
     case x_long_long:
         {
             sqlType = SQL_BIGINT;
@@ -340,13 +328,6 @@ std::size_t db2_vector_use_type_backend::size()
     case x_integer:
         {
             std::vector<int> *vp = static_cast<std::vector<int> *>(data);
-            sz = vp->size();
-        }
-        break;
-    case x_unsigned_long:
-        {
-            std::vector<unsigned long> *vp
-                = static_cast<std::vector<unsigned long> *>(data);
             sz = vp->size();
         }
         break;

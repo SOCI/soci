@@ -31,11 +31,6 @@ void db2_standard_use_type_backend::prepare_for_bind(
         cType = SQL_C_SLONG;
         size = sizeof(int);
         break;
-    case x_unsigned_long:
-        sqlType = SQL_INTEGER;
-        cType = SQL_C_ULONG;
-        size = sizeof(unsigned long);
-        break;
     case x_long_long:
         sqlType = SQL_BIGINT;
         cType = SQL_C_SBIGINT;
