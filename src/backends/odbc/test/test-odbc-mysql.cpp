@@ -108,10 +108,13 @@ int main(int argc, char** argv)
     }
     try
     {
+        std::cout << "\nSOCI ODBC with MySQL Tests:\n\n";
+
         test_context tc(backEnd, connectString);
         common_tests tests(tc);
         tests.run();
 
+        std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;
     }
     catch (soci::odbc_soci_error const & e)
