@@ -67,7 +67,20 @@ include(SociDependencies)
 # Installation
 #################################################################################
 
-if(APPLE OR CMAKE_SIZEOF_VOID_P EQUAL 4)
+if(EXISTS /etc/os-release)
+  file(READ /etc/os-release OS_RELEASE)
+  string(REGEX MATCH "ID(_LIKE?)=debian" DEBIAN ${OS_RELEASE})
+  string(REGEX MATCH "ID(_LIKE?)=fedora" FEDORA ${OS_RELEASE})
+  string(REGEX MATCH "ID(_LIKE?)=ubuntu" UBUNTU ${OS_RELEASE})
+endif()
+
+
+if(DEBIAN)
+  execute_process(COMMAND uname -m
+                  OUTPUT_VARIABLE SOCI_ARCH
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  set(SOCI_LIBDIR "lib/${SOCI_ARCH}-linux-gnu")
+elseif(APPLE OR CMAKE_SIZEOF_VOID_P EQUAL 4)
   set(SOCI_LIBDIR "lib")
 else()
   set(SOCI_LIBDIR "lib64")
