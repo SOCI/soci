@@ -12,11 +12,13 @@ INCLUDEDIRS = -I../../core ${FIREBIRDINCLUDEDIR}
 
 OBJECTS = blob.o factory.o row-id.o session.o standard-into-type.o \
 	standard-use-type.o statement.o vector-into-type.o vector-use-type.o \
-	error.o common.o
+	error-firebird.o common.o
 
 OBJECTSSO = blob-s.o factory-s.o row-id-s.o session-s.o \
 	standard-into-type-s.o standard-use-type-s.o statement-s.o \
-	vector-into-type-s.o vector-use-type-s.o error-s.o common-s.o
+	vector-into-type-s.o vector-use-type-s.o error-firebird-s.o common-s.o
+
+FIREBIRDLIBS = -lfbclient -lpthread
 
 libsoci_firebird.a : ${OBJECTS}
 	ar rv $@ $?
@@ -28,7 +30,7 @@ soci-firebird.o : soci-firebird.cpp
 blob.o : blob.cpp
 	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
-error.o : error.cpp
+error-firebird.o : error-firebird.cpp
 	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 common.o : common.cpp
@@ -59,13 +61,13 @@ vector-use-type.o : vector-use-type.cpp
 	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 shared : ${OBJECTSSO}
-	${COMPILER} -shared -o libsoci_firebird.so ${OBJECTSSO}
+	${COMPILER} -shared -o libsoci_firebird.so ${OBJECTSSO} ${FIREBIRDLIBS}
 	rm *.o
 
 blob-s.o : blob.cpp
 	${COMPILER} -c -o $@ $? ${CXXFLAGSSO} ${INCLUDEDIRS}
 
-error-s.o : error.cpp
+error-firebird-s.o : error-firebird.cpp
 	${COMPILER} -c -o $@ $? ${CXXFLAGSSO} ${INCLUDEDIRS}
 
 common-s.o : common.cpp
