@@ -30,6 +30,11 @@ Travis CI service at https://travis-ci.org/SOCI/soci
 
 [![Build Status](https://api.travis-ci.org/SOCI/soci.png)](https://travis-ci.org/SOCI/soci)
 
+License
+-------
+
+The SOCI library is distributed under the terms of the [Boost Software License](http://www.boost.org/LICENSE_1_0.txt).
+
 Requirements
 ------------
 
