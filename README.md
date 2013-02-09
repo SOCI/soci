@@ -6,7 +6,7 @@ Brief History
 Originally, SOCI was developed by [Maciej Sobczak](http://www.msobczak.com/)
 at [CERN](http://www.cern.ch/) as abstraction layer for Oracle,
 a **Simple Oracle Call Interface**.
-Later, serveral database backends have been developed for SOCI,
+Later, several database backends have been developed for SOCI,
 thus the long name has lost its practicality.
 Currently, if you like, SOCI may stand for **Simple Open (Database) Call Interface**
 or something similar.
