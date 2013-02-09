@@ -258,55 +258,6 @@ void test5()
     std::cout << "test 5 passed" << std::endl;
 }
 
-// Test commit b394d039530f124802d06c3b1a969c3117683152
-// Author: Mika Fischer <mika.fischer@zoopnet.de>
-// Date:   Thu Nov 17 13:28:07 2011 +0100
-// Implement get_affected_rows for SQLite3 backend
-struct table_creator_for_test6 : table_creator_base
-{
-    table_creator_for_test6(session & sql)
-        : table_creator_base(sql)
-    {
-        sql << "create table soci_test(val integer)";
-    }
-};
-
-void test6()
-{
-    {
-        session sql(backEnd, connectString);
-
-        table_creator_for_test6 tableCreator(sql);
-
-        for (int i = 0; i != 10; i++)
-        {
-            sql << "insert into soci_test(val) values(:val)", use(i);
-        }
-
-        statement st1 = (sql.prepare <<
-            "update soci_test set val = val + 1");
-        st1.execute(true);
-
-        assert(st1.get_affected_rows() == 10);
-
-        statement st2 = (sql.prepare <<
-            "delete from soci_test where val <= 5");
-        st2.execute(true);
-
-        assert(st2.get_affected_rows() == 5);
-
-        statement st3 = (sql.prepare <<
-            "update soci_test set val = val + 1");
-        st3.execute(true);
-
-        assert(st3.get_affected_rows() == 5);
-    }
-
-    std::cout << "test 6 passed" << std::endl;
-}
-
-
-
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -340,6 +291,20 @@ struct table_creator_three : public table_creator_base
     }
 };
 
+// Originally, submitted to SQLite3 backend and later moved to common test.
+// Test commit b394d039530f124802d06c3b1a969c3117683152
+// Author: Mika Fischer <mika.fischer@zoopnet.de>
+// Date:   Thu Nov 17 13:28:07 2011 +0100
+// Implement get_affected_rows for SQLite3 backend
+struct table_creator_for_get_affected_rows : table_creator_base
+{
+    table_creator_for_get_affected_rows(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val integer)";
+    }
+};
+
 //
 // Support for SOCI Common Tests
 //
@@ -364,6 +329,11 @@ public:
     table_creator_base* table_creator_3(session& s) const
     {
         return new table_creator_three(s);
+    }
+
+    table_creator_base* table_creator_4(session& s) const
+    {
+        return new table_creator_for_get_affected_rows(s);
     }
 
     std::string to_date_time(std::string const &datdt_string) const
@@ -407,7 +377,6 @@ int main(int argc, char** argv)
         test3();
         test4();
         test5();
-        test6(); // FIXME: See issue #15
 
         std::cout << "\nOK, all tests passed.\n\n";
 
