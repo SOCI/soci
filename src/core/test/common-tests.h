@@ -228,7 +228,7 @@ public:
         : backEndFactory_(backEnd),
           connectString_(connectString) {}
 
-    backend_factory const & getbackend_factory() const
+    backend_factory const & get_backend_factory() const
     {
         return backEndFactory_;
     }
@@ -243,6 +243,7 @@ public:
     virtual table_creator_base* table_creator_1(session&) const = 0;
     virtual table_creator_base* table_creator_2(session&) const = 0;
     virtual table_creator_base* table_creator_3(session&) const = 0;
+    virtual table_creator_base* table_creator_4(session&) const = 0;
 
     virtual ~test_context_base() {} // quiet the compiler
 
@@ -256,7 +257,7 @@ class common_tests
 public:
     common_tests(test_context_base const &tc)
     : tc_(tc),
-      backEndFactory_(tc.getbackend_factory()),
+      backEndFactory_(tc.get_backend_factory()),
       connectString_(tc.get_connect_string())
     {}
 
@@ -303,6 +304,7 @@ public:
         test28();
         test29();
         test30();
+        test_get_affected_rows();
     }
 
 private:
@@ -3488,6 +3490,49 @@ void test30()
 #else
     std::cout << "test 30 skipped (no Boost)" << std::endl;
 #endif // HAVE_BOOST
+}
+
+// Originally, submitted to SQLite3 backend and later moved to common test.
+// Test commit b394d039530f124802d06c3b1a969c3117683152
+// Author: Mika Fischer <mika.fischer@zoopnet.de>
+// Date:   Thu Nov 17 13:28:07 2011 +0100
+// Implement get_affected_rows for SQLite3 backend
+void test_get_affected_rows()
+{
+    {
+        session sql(backEndFactory_, connectString_);
+        auto_table_creator tableCreator(tc_.table_creator_4(sql));
+        if (!tableCreator.get())
+        {
+            std::cout << "test get_affected_rows skipped (function not implemented)" << std::endl;
+            return;
+        }
+
+        for (int i = 0; i != 10; i++)
+        {
+            sql << "insert into soci_test(val) values(:val)", use(i);
+        }
+
+        statement st1 = (sql.prepare <<
+            "update soci_test set val = val + 1");
+        st1.execute(true);
+
+        assert(st1.get_affected_rows() == 10);
+
+        statement st2 = (sql.prepare <<
+            "delete from soci_test where val <= 5");
+        st2.execute(true);
+
+        assert(st2.get_affected_rows() == 5);
+
+        statement st3 = (sql.prepare <<
+            "update soci_test set val = val + 1");
+        st3.execute(true);
+
+        assert(st3.get_affected_rows() == 5);
+    }
+
+    std::cout << "test get_affected_rows passed" << std::endl;
 }
 
 }; // class common_tests
