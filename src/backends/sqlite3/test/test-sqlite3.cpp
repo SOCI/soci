@@ -273,8 +273,6 @@ struct table_creator_for_test6 : table_creator_base
 
 void test6()
 {
-    std::cout << "test 6 skipped (see issue #15)" << std::endl;
-#if 0
     {
         session sql(backEnd, connectString);
 
@@ -287,25 +285,24 @@ void test6()
 
         statement st1 = (sql.prepare <<
             "update soci_test set val = val + 1");
-        st1.execute(false);
+        st1.execute(true);
 
         assert(st1.get_affected_rows() == 10);
 
         statement st2 = (sql.prepare <<
             "delete from soci_test where val <= 5");
-        st2.execute(false);
+        st2.execute(true);
 
         assert(st2.get_affected_rows() == 5);
 
         statement st3 = (sql.prepare <<
             "update soci_test set val = val + 1");
-        st3.execute(true); // true or false shoudl make no difference, both should lead to load_one()
+        st3.execute(true);
 
         assert(st3.get_affected_rows() == 5);
     }
 
     std::cout << "test 6 passed" << std::endl;
-#endif
 }
 
 
