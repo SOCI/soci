@@ -10,6 +10,7 @@
 
 #include "soci-firebird.h"
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
 #include <limits>
 #include <sstream>
@@ -60,7 +61,7 @@ void to_isc(void * val, XSQLVAR * var)
     case SQL_SHORT:
         {
             short tmp = static_cast<short>(value*tens);
-            memcpy(var->sqldata, &tmp, sizeof(short));
+            std::memcpy(var->sqldata, &tmp, sizeof(short));
         }
         break;
     case SQL_LONG:
