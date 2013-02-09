@@ -10,4 +10,4 @@ MaxBufferSize=2048
 FIL=MS Access
 DriverId=25
 DefaultDir=.\
-DBQ=.\soci.mdb
+DBQ=.\soci_test.mdb
