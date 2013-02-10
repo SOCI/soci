@@ -9,8 +9,6 @@
 # FIREBIRD_LIBRARIES - the libraries to link against to use FIREBIRD
 # FIREBIRD_FOUND - true if FIREBIRD was found
 
-cmake_minimum_required(VERSION 2.6)
-
 find_path(FIREBIRD_INCLUDE_DIR ibase.h
   /usr/include
   $ENV{ProgramFiles}/Firebird/*/include
