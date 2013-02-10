@@ -10,6 +10,7 @@
 
 #include "soci-config.h"
 
+#include <map>
 #include <string>
 
 namespace soci
@@ -28,10 +29,38 @@ public:
 
     // Default copy ctor, assignment operator and dtor are all OK for us.
 
+
+    // Retrieve the backend and the connection strings specified in the ctor.
+    backend_factory const * get_factory() const { return factory_; }
+    std::string const & get_connect_string() const { return connectString_; }
+
+    // Set the value of the given option, overwriting any previous value.
+    void set_option(const char * name, std::string const & value)
+    {
+        options_[name] = value;
+    }
+
+    // Return true if the option with the given name was found and fill the
+    // provided parameter with its value.
+    bool get_option(const char * name, std::string & value) const
+    {
+        Options::const_iterator const it = options_.find(name);
+        if (it == options_.end())
+            return false;
+
+        value = it->second;
+
+        return true;
+    }
+
 private:
     // The backend and connection string specified in our ctor.
     backend_factory const * factory_;
     std::string connectString_;
+
+    // We store all the values as strings for simplicity.
+    typedef std::map<const char*, std::string> Options;
+    Options options_;
 };
 
 } // namespace soci
