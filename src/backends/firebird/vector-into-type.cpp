@@ -112,7 +112,7 @@ void firebird_vector_into_type_backend::post_fetch(
     // buffers during fetch()
     if (gotData)
     {
-        std::size_t rows = statement_.inds_[0].size();
+        std::size_t rows = statement_.rowsFetched_;
 
         for (std::size_t i = 0; i<rows; ++i)
         {

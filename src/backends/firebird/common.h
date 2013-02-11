@@ -66,21 +66,27 @@ void to_isc(void * val, XSQLVAR * var)
         break;
     case SQL_LONG:
         {
-            long tmp = static_cast<long>(value*tens);
-            memcpy(var->sqldata, &tmp, sizeof(long));
+            int tmp = static_cast<int>(value*tens);
+            memcpy(var->sqldata, &tmp, sizeof(int));
         }
         break;
     case SQL_INT64:
         {
-            ISC_INT64 tmp = static_cast<ISC_INT64>(value*tens);
-            memcpy(var->sqldata, &tmp, sizeof(ISC_INT64));
+            long long tmp = static_cast<long long>(value*tens);
+            memcpy(var->sqldata, &tmp, sizeof(long long));
         }
         break;
     case SQL_FLOAT:
-        memcpy(var->sqldata, &value, sizeof(float));
-        break;
+        {
+            float sql_value = static_cast<float>(value);
+            memcpy(var->sqldata, &sql_value, sizeof(float));
+            break;
+        }
     case SQL_DOUBLE:
-        memcpy(var->sqldata, &value, sizeof(double));
+        {
+            double sql_value = static_cast<double>(value);
+            memcpy(var->sqldata, &sql_value, sizeof(double));
+        }
         break;
     default:
         throw soci_error("Incorrect data type for numeric conversion");
@@ -114,7 +120,7 @@ T1 from_isc(XSQLVAR * var)
     case SQL_SHORT:
         return static_cast<T1>(*reinterpret_cast<short*>(var->sqldata)/tens);
     case SQL_LONG:
-        return static_cast<T1>(*reinterpret_cast<int*>(var->sqldata)/tens);
+        return static_cast<T1>(*reinterpret_cast<unsigned*>(var->sqldata)/tens);
     case SQL_INT64:
         return static_cast<T1>(*reinterpret_cast<long long*>(var->sqldata)/tens);
     case SQL_FLOAT:

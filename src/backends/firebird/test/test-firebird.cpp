@@ -87,7 +87,7 @@ void test2()
         sql << "delete from test2";
     }
 
-#if 0
+#if 0 // SOCI doesn't support binding into(char *, ...) anymore, use std::string
     {
         char msg[] = "Hello, Firebird!";
         char buf1[100], buf2[100], buf3[100];
@@ -315,10 +315,11 @@ void test5()
         sql << "select NULL from rdb$database", into(i, ind);
         assert(ind == i_null);
 
+#if 0   // SOCI doesn't support binding into(char *, ...) anymore, use std::string
         char buf[4];
-        std::string buf_str;
-        sql << "select \'Hello\' from rdb$database", into(buf_str, ind);
+        sql << "select \'Hello\' from rdb$database", into(buf, ind);
         assert(ind == i_truncated);
+#endif
 
         sql << "select 5 from rdb$database where 0 = 1", into(i, ind);
         assert(sql.got_data() == false);
@@ -336,18 +337,9 @@ void test5()
                    "Null value fetched and no indicator defined.");
         }
 
-        try
-        {
-            // expect error
-            sql << "select 5 from rdb$database where 0 = 1", into(i);
-            assert(false);
-        }
-        catch (soci_error const &e)
-        {
-            std::string error = e.what();
-            assert(error ==
-                   "No data fetched and no indicator defined.");
-        }
+        // expect no data
+        sql << "select 5 from rdb$database where 0 = 1", into(i);
+        assert(!sql.got_data());
     }
 
     std::cout << "test 5 passed" << std::endl;
@@ -1082,8 +1074,8 @@ struct TableCreator2 : public tests::table_creator_base
     TableCreator2(session & sql)
             : tests::table_creator_base(sql)
     {
-        sql  << "create table soci_test(\"num_float\" float, \"num_int\" integer, "
-        "\"name\" varchar(20), \"sometime\" timestamp, \"chr\" char)";
+        sql  << "create table soci_test(num_float float, num_int integer, "
+        "name varchar(20), sometime timestamp, chr char)";
         sql.commit();
         sql.begin();
     }
@@ -1097,8 +1089,8 @@ struct TableCreator3 : public tests::table_creator_base
         // CommonTest uses lower-case column names,
         // so we need to enforce such names here.
         // That's why column names are enclosed in ""
-        sql << "create table soci_test(\"name\" varchar(100) not null, "
-        "\"phone\" varchar(15))";
+        sql << "create table soci_test(name varchar(100) not null, "
+        "phone varchar(15))";
         sql.commit();
         sql.begin();
     }
