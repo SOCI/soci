@@ -62,6 +62,8 @@ protected:
     };
 
     odbc_statement_backend &statement_;
+private:
+	odbc_standard_type_backend_base& operator=(odbc_standard_type_backend_base const &);
 };
 
 struct odbc_standard_into_type_backend : details::standard_into_type_backend,

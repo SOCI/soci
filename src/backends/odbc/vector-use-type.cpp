@@ -113,7 +113,7 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             prepare_indicators(vecSize);
             for (std::size_t i = 0; i != vecSize; ++i)
             {
-                std::size_t sz = v[i].length() + 1;  // add one for null
+                std::size_t sz = v[i].length();
                 indHolderVec_[i] = static_cast<long>(sz);
                 maxSize = sz > maxSize ? sz : maxSize;
             }
@@ -129,17 +129,32 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             }
 
             data = buf_;
-            size = static_cast<SQLINTEGER>(maxSize);
+			size = static_cast<SQLINTEGER>(maxSize);
         }
         break;
     case x_stdtm:
         {
             std::vector<std::tm> *vp
                 = static_cast<std::vector<std::tm> *>(data);
+			std::size_t const vecSize = vp->size();
 
-            prepare_indicators(vp->size());
+            prepare_indicators(vecSize);
 
-            buf_ = new char[sizeof(TIMESTAMP_STRUCT) * vp->size()];
+            buf_ = new char[sizeof(TIMESTAMP_STRUCT) * vecSize];
+			TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
+
+            for (std::size_t i = 0; i != vecSize; ++i, ++ts)
+            {
+				std::tm& t = (*vp)[i];
+
+			    ts->year = static_cast<SQLSMALLINT>(t.tm_year + 1900);
+				ts->month = static_cast<SQLUSMALLINT>(t.tm_mon + 1);
+				ts->day = static_cast<SQLUSMALLINT>(t.tm_mday);
+				ts->hour = static_cast<SQLUSMALLINT>(t.tm_hour);
+				ts->minute = static_cast<SQLUSMALLINT>(t.tm_min);
+				ts->second = static_cast<SQLUSMALLINT>(t.tm_sec);
+				ts->fraction = 0;
+            }
 
             sqlType = SQL_TYPE_TIMESTAMP;
             cType = SQL_C_TYPE_TIMESTAMP;
@@ -153,7 +168,17 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
-	case x_long_long: break; // TODO: verify if can be supported
+	case x_long_long: 
+        {
+            sqlType = SQL_BIGINT;
+            cType = SQL_C_SBIGINT;
+            size = sizeof(long long);
+            std::vector<long long> *vp = static_cast<std::vector<long long> *>(data);
+            std::vector<long long> &v(*vp);
+            prepare_indicators(v.size());
+            data = &v[0];
+        }
+        break;
 	case x_unsigned_long_long: break; // TODO: verify if can be supported
     }
 
@@ -238,32 +263,6 @@ void odbc_vector_use_type_backend::bind_by_name(
 
 void odbc_vector_use_type_backend::pre_use(indicator const *ind)
 {
-    // first deal with data
-    if (type_ == x_stdtm)
-    {
-        std::vector<std::tm> *vp
-             = static_cast<std::vector<std::tm> *>(data_);
-
-        std::vector<std::tm> &v(*vp);
-
-        char *pos = buf_;
-        std::size_t const vsize = v.size();
-        for (std::size_t i = 0; i != vsize; ++i)
-        {
-            std::tm t = v[i];
-            TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
-
-            ts->year = static_cast<SQLSMALLINT>(t.tm_year + 1900);
-            ts->month = static_cast<SQLUSMALLINT>(t.tm_mon + 1);
-            ts->day = static_cast<SQLUSMALLINT>(t.tm_mday);
-            ts->hour = static_cast<SQLUSMALLINT>(t.tm_hour);
-            ts->minute = static_cast<SQLUSMALLINT>(t.tm_min);
-            ts->second = static_cast<SQLUSMALLINT>(t.tm_sec);
-            ts->fraction = 0;
-            pos += sizeof(TIMESTAMP_STRUCT);
-        }
-    }
-
     // then handle indicators
     if (ind != NULL)
     {
@@ -348,7 +347,12 @@ std::size_t odbc_vector_use_type_backend::size()
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
-	case x_long_long: break; // TODO: verify if can be supported
+	case x_long_long: 
+        {
+            std::vector<long long> *vp = static_cast<std::vector<long long> *>(data_);
+            sz = vp->size();
+        }
+        break;
 	case x_unsigned_long_long: break; // TODO: verify if can be supported
     }
 

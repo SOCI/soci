@@ -106,7 +106,7 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
     {
         std::tm *t = static_cast<std::tm *>(data_);
 
-        sqlType = SQL_TIMESTAMP;
+		sqlType = SQL_TYPE_TIMESTAMP;
         cType = SQL_C_TIMESTAMP;
         buf_ = new char[sizeof(TIMESTAMP_STRUCT)];
         size = 19; // This number is not the size in bytes, but the number
@@ -206,6 +206,10 @@ void odbc_standard_use_type_backend::bind_by_name(
 
 void odbc_standard_use_type_backend::pre_use(indicator const *ind)
 {
+	// reset
+	indHolder_ = 0;
+	clean_up();
+
     // first deal with data
     SQLSMALLINT sqlType;
     SQLSMALLINT cType;

@@ -75,7 +75,7 @@ public:
 
     // conversion hook (from arbitrary user type to base type)
     virtual void convert_to_base() {}
-    virtual void convert_from_base() {}
+    //virtual void convert_from_base() {}
 
 protected:
     virtual void pre_use();
