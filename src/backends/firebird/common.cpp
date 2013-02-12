@@ -10,7 +10,9 @@
 #include <ibase.h> // FireBird
 #include <cstddef>
 #include <cstring>
+#include <cstdio>
 #include <sstream>
+#include <iostream>
 #include <string>
 
 namespace soci
@@ -82,6 +84,7 @@ void tmDecode(short type, void * src, std::tm * dst)
 void setTextParam(char const * s, std::size_t size, char * buf_,
     XSQLVAR * var)
 {
+    std::cerr << "setTextParam: var->sqltype=" << var->sqltype << std::endl;
     short sz = 0;
     if (size < static_cast<std::size_t>(var->sqllen))
     {
@@ -105,6 +108,39 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
             memset(buf_+sz, ' ', var->sqllen - sz);
         }
     }
+    else if ((var->sqltype & ~1) == SQL_INT64)
+    {
+        long long t;
+        std::stringstream input(s);
+        input >> t;
+        if (input.bad())
+            throw soci_error("Could not parse integer value.");
+        memcpy(buf_, &t, sizeof(t));
+        to_isc<long long>(buf_, var);
+    }
+    else if ((var->sqltype & ~1) == SQL_TIMESTAMP)
+    {
+        unsigned short year, month, day, hour, min, sec;
+        if (std::sscanf(s, "%hu-%hu-%huT%hu:%hu:%hu",
+                    &year, &month, &day, &hour, &min, &sec) != 6)
+        {
+            if (std::sscanf(s, "%hu-%hu-%hu %hu:%hu:%hu",
+                        &year, &month, &day, &hour, &min, &sec) != 6)
+            {
+                throw soci_error("Could not parse timestamp value.");
+            }
+        }
+        std::tm t;
+        memset(&t, 0, sizeof(t));
+        t.tm_year = year - 1900;
+        t.tm_mon = month - 1;
+        t.tm_mday = day;
+        t.tm_hour = hour;
+        t.tm_min = min;
+        t.tm_sec = sec;
+        memcpy(buf_, &t, sizeof(t));
+        tmEncode(var->sqltype, &t, buf_);
+    }
     else
     {
         throw soci_error("Unexpected string type.");
@@ -113,6 +149,7 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
 
 std::string getTextParam(XSQLVAR const *var)
 {
+    std::cerr << "getTextParam: var->sqltype=" << var->sqltype << std::endl;
     short size;
     std::size_t offset = 0;
 

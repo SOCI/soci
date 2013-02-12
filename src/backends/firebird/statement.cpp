@@ -10,6 +10,7 @@
 #include "error-firebird.h"
 #include <cctype>
 #include <sstream>
+#include <iostream>
 
 using namespace soci;
 using namespace soci::details;
@@ -286,6 +287,7 @@ void firebird_statement_backend::rewriteQuery(
 void firebird_statement_backend::prepare(std::string const & query,
                                          statement_type /* eType */)
 {
+    std::cerr << "prepare: query=" << query << std::endl;
     // clear named parametes
     names_.clear();
 
