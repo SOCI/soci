@@ -14,6 +14,7 @@
 #include <string>
 #include <cassert>
 #include <ctime>
+#include <cstring>
 
 using namespace soci;
 
@@ -86,6 +87,7 @@ void test2()
         sql << "delete from test2";
     }
 
+#if 0 // SOCI doesn't support binding into(char *, ...) anymore, use std::string
     {
         char msg[] = "Hello, Firebird!";
         char buf1[100], buf2[100], buf3[100];
@@ -96,18 +98,7 @@ void test2()
         sql << "insert into test2(p1, p2) values (?,?)", use(b1, 100), use(b1, 100);
         sql << "select p1, p2 from test2", into(b2, 100), into(b3, 100);
 
-        assert(
-            buf2[0] == 'H' && buf3[0] == 'H' &&
-            buf2[1] == 'e' && buf3[1] == 'e' &&
-            buf2[2] == 'l' && buf3[2] == 'l' &&
-            buf2[3] == 'l' && buf3[3] == 'l' &&
-            buf2[4] == 'o' && buf3[4] == 'o' &&
-            buf2[5] == ',' && buf3[5] == ',' &&
-            buf2[6] == ' ' && buf3[6] == ' ' &&
-            buf2[7] == 'F' && buf3[7] == 'F' &&
-            buf2[8] == 'i' && buf3[8] == 'i' &&
-            buf2[9] == 'r' && buf3[9] == 'r' &&
-            buf2[10] == '\0' && buf3[10] == '\0');
+        assert(!std::strcmp(buf2, buf3) && !std::strcmp(buf2, "Hello, Fir"));
 
         sql << "delete from test2";
     }
@@ -121,18 +112,19 @@ void test2()
         use(buf1), use(buf1);
         sql << "select p1, p2 from test2", into(buf2), into(buf3);
 
-        assert(
-            buf2[0] == 'H' && buf3[0] == 'H' &&
-            buf2[1] == 'e' && buf3[1] == 'e' &&
-            buf2[2] == 'l' && buf3[2] == 'l' &&
-            buf2[3] == 'l' && buf3[3] == 'l' &&
-            buf2[4] == 'o' && buf3[4] == 'o' &&
-            buf2[5] == ',' && buf3[5] == ',' &&
-            buf2[6] == ' ' && buf3[6] == ' ' &&
-            buf2[7] == 'F' && buf3[7] == 'F' &&
-            buf2[8] == 'i' && buf3[8] == 'i' &&
-            buf2[9] == 'r' && buf3[9] == 'r' &&
-            buf2[10] == '\0' && buf3[10] == '\0');
+        assert(!std::strcmp(buf2, buf3) && !std::strcmp(buf2, "Hello, Fir"));
+
+        sql << "delete from test2";
+    }
+#endif
+
+    {
+        std::string b1("Hello, Firebird!"), b2, b3;
+
+        sql << "insert into test2(p1, p2) values (?,?)", use(b1), use(b1);
+        sql << "select p1, p2 from test2", into(b2), into(b3);
+
+        assert(b2 == b3 && b2 == "Hello, Fir");
 
         sql << "delete from test2";
     }
@@ -144,7 +136,9 @@ void test2()
         sql << "insert into test2(p1) values(\'" << msg << "\')";
 
         char buf[20];
-        sql << "select p1 from test2", into(buf);
+        std::string buf_str;
+        sql << "select p1 from test2", into(buf_str);
+        std::strcpy(buf, buf_str.c_str());
 
         assert(std::strncmp(buf, msg, 5) == 0);
         assert(std::strncmp(buf+5, "     ", 5) == 0);
@@ -321,9 +315,11 @@ void test5()
         sql << "select NULL from rdb$database", into(i, ind);
         assert(ind == i_null);
 
+#if 0   // SOCI doesn't support binding into(char *, ...) anymore, use std::string
         char buf[4];
         sql << "select \'Hello\' from rdb$database", into(buf, ind);
         assert(ind == i_truncated);
+#endif
 
         sql << "select 5 from rdb$database where 0 = 1", into(i, ind);
         assert(sql.got_data() == false);
@@ -341,18 +337,9 @@ void test5()
                    "Null value fetched and no indicator defined.");
         }
 
-        try
-        {
-            // expect error
-            sql << "select 5 from rdb$database where 0 = 1", into(i);
-            assert(false);
-        }
-        catch (soci_error const &e)
-        {
-            std::string error = e.what();
-            assert(error ==
-                   "No data fetched and no indicator defined.");
-        }
+        // expect no data
+        sql << "select 5 from rdb$database where 0 = 1", into(i);
+        assert(!sql.got_data());
     }
 
     std::cout << "test 5 passed" << std::endl;
@@ -1069,9 +1056,9 @@ void test11()
 // Support for soci Common Tests
 //
 
-struct table_creator_1 : public tests::table_creator_base
+struct TableCreator1 : public tests::table_creator_base
 {
-    table_creator_1(session & sql)
+    TableCreator1(session & sql)
             : tests::table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, val integer, c char, "
@@ -1082,28 +1069,28 @@ struct table_creator_1 : public tests::table_creator_base
     }
 };
 
-struct table_creator_2 : public tests::table_creator_base
+struct TableCreator2 : public tests::table_creator_base
 {
-    table_creator_2(session & sql)
+    TableCreator2(session & sql)
             : tests::table_creator_base(sql)
     {
-        sql  << "create table soci_test(\"num_float\" float, \"num_int\" integer, "
-        "\"name\" varchar(20), \"sometime\" timestamp, \"chr\" char)";
+        sql  << "create table soci_test(num_float float, num_int integer, "
+        "name varchar(20), sometime timestamp, chr char)";
         sql.commit();
         sql.begin();
     }
 };
 
-struct table_creator_3 : public tests::table_creator_base
+struct TableCreator3 : public tests::table_creator_base
 {
-    table_creator_3(session & sql)
+    TableCreator3(session & sql)
             : tests::table_creator_base(sql)
     {
         // CommonTest uses lower-case column names,
         // so we need to enforce such names here.
         // That's why column names are enclosed in ""
-        sql << "create table soci_test(\"name\" varchar(100) not null, "
-        "\"phone\" varchar(15))";
+        sql << "create table soci_test(name varchar(100) not null, "
+        "phone varchar(15))";
         sql.commit();
         sql.begin();
     }
