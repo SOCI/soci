@@ -27,9 +27,15 @@ namespace firebird
 char * allocBuffer(XSQLVAR* var)
 {
     std::size_t size;
-    if ((var->sqltype & ~1) == SQL_VARYING)
+    int type = var->sqltype & ~1;
+    if (type == SQL_VARYING)
     {
         size = var->sqllen + sizeof(short);
+    }
+    else if (type == SQL_TIMESTAMP or type == SQL_TYPE_TIME
+            or type == SQL_TYPE_DATE)
+    {
+        size = sizeof(std::tm);
     }
     else
     {
@@ -84,7 +90,7 @@ void tmDecode(short type, void * src, std::tm * dst)
 void setTextParam(char const * s, std::size_t size, char * buf_,
     XSQLVAR * var)
 {
-    std::cerr << "setTextParam: var->sqltype=" << var->sqltype << std::endl;
+    //std::cerr << "setTextParam: var->sqltype=" << var->sqltype << std::endl;
     short sz = 0;
     if (size < static_cast<std::size_t>(var->sqllen))
     {
@@ -110,39 +116,15 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
     }
     else if ((var->sqltype & ~1) == SQL_SHORT)
     {
-        unsigned short t1;
-        short t2;
-        if (!*str2int(s, t1))
-            std::memcpy(buf_, &t1, sizeof(t1));
-        else if (!*str2int(s, t2))
-            std::memcpy(buf_, &t2, sizeof(t2));
-        else
-            throw soci_error("Could not parse int16 value.");
-        to_isc<short>(buf_, var);
+        parse_decimal<short, unsigned short>(buf_, var, s);
     }
     else if ((var->sqltype & ~1) == SQL_LONG)
     {
-        unsigned t1;
-        int t2;
-        if (!*str2int(s, t1))
-            std::memcpy(buf_, &t1, sizeof(t1));
-        else if (!*str2int(s, t2))
-            std::memcpy(buf_, &t2, sizeof(t2));
-        else
-            throw soci_error("Could not parse int32 value.");
-        to_isc<int>(buf_, var);
+        parse_decimal<int, unsigned int>(buf_, var, s);
     }
     else if ((var->sqltype & ~1) == SQL_INT64)
     {
-        unsigned long long t1;
-        long long t2;
-        if (!*str2int(s, t1))
-            std::memcpy(buf_, &t1, sizeof(t1));
-        else if (!*str2int(s, t2))
-            std::memcpy(buf_, &t2, sizeof(t2));
-        else
-            throw soci_error("Could not parse int64 value.");
-        to_isc<long long>(buf_, var);
+        parse_decimal<long long, unsigned long long>(buf_, var, s);
     }
     else if ((var->sqltype & ~1) == SQL_TIMESTAMP
             or (var->sqltype & ~1) == SQL_TYPE_DATE)
@@ -195,7 +177,7 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
 
 std::string getTextParam(XSQLVAR const *var)
 {
-    std::cerr << "getTextParam: var->sqltype=" << var->sqltype << std::endl;
+    //std::cerr << "getTextParam: var->sqltype=" << var->sqltype << std::endl;
     short size;
     std::size_t offset = 0;
 
