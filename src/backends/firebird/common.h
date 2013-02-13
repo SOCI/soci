@@ -37,6 +37,38 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
 
 std::string getTextParam(XSQLVAR const *var);
 
+template <typename IntType>
+const char *str2int(const char * s, IntType &out)
+{
+    int sign = 1;
+    if ('+' == *s)
+        ++s;
+    else if ('-' == *s)
+    {
+        sign = -1;
+        ++s;
+    }
+    IntType res = 0;
+    for (out = 0; *s; ++s, out = res)
+    {
+        int d = *s - '0';
+        if (d < 0 || d > 9)
+            return s;
+        res = res * 10 + d * sign;
+        if (1 == sign)
+        {
+            if (res < out)
+                return s;
+        }
+        else
+        {
+            if (res > out)
+                return s;
+        }
+    }
+    return s;
+}
+
 template<typename T1>
 void to_isc(void * val, XSQLVAR * var)
 {
@@ -67,25 +99,25 @@ void to_isc(void * val, XSQLVAR * var)
     case SQL_LONG:
         {
             int tmp = static_cast<int>(value*tens);
-            memcpy(var->sqldata, &tmp, sizeof(int));
+            std::memcpy(var->sqldata, &tmp, sizeof(int));
         }
         break;
     case SQL_INT64:
         {
             long long tmp = static_cast<long long>(value*tens);
-            memcpy(var->sqldata, &tmp, sizeof(long long));
+            std::memcpy(var->sqldata, &tmp, sizeof(long long));
         }
         break;
     case SQL_FLOAT:
         {
             float sql_value = static_cast<float>(value);
-            memcpy(var->sqldata, &sql_value, sizeof(float));
-            break;
+            std::memcpy(var->sqldata, &sql_value, sizeof(float));
         }
+        break;
     case SQL_DOUBLE:
         {
             double sql_value = static_cast<double>(value);
-            memcpy(var->sqldata, &sql_value, sizeof(double));
+            std::memcpy(var->sqldata, &sql_value, sizeof(double));
         }
         break;
     default:
