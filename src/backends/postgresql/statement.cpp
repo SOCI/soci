@@ -504,6 +504,7 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     case 18:   // char
     case 1042: // bpchar
     case 142: // xml
+    case 17: // bytea
         type = dt_string;
         break;
 
@@ -533,7 +534,7 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     case 20:   // int8
         type = dt_long_long;
         break;
-
+    
     default:
     {
         std::stringstream message;

@@ -18,8 +18,7 @@ using namespace soci;
 using namespace soci::tests;
 
 std::string connectString;
-backend_factory const &backEnd = odbc;
-
+backend_factory const &backEnd = *soci::factory_odbc();
 
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
