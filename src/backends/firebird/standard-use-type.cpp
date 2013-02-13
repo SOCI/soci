@@ -77,6 +77,7 @@ void firebird_standard_use_type_backend::bind_by_name(
 
 void firebird_standard_use_type_backend::pre_use(indicator const * ind)
 {
+    indISCHolder_ =  0;
     if (ind)
     {
         switch (*ind)
@@ -96,6 +97,9 @@ void firebird_standard_use_type_backend::pre_use(indicator const * ind)
 void firebird_standard_use_type_backend::exchangeData()
 {
     XSQLVAR *var = statement_.sqlda2p_->sqlvar+position_;
+
+    if (0 != indISCHolder_)
+        return;
 
     switch (type_)
     {

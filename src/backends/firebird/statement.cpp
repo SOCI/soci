@@ -10,6 +10,7 @@
 #include "error-firebird.h"
 #include <cctype>
 #include <sstream>
+#include <iostream>
 
 using namespace soci;
 using namespace soci::details;
@@ -17,7 +18,7 @@ using namespace soci::details::firebird;
 
 firebird_statement_backend::firebird_statement_backend(firebird_session_backend &session)
     : session_(session), stmtp_(0), sqldap_(NULL), sqlda2p_(NULL),
-        boundByName_(false), boundByPos_(false), rowsFetched_(0),
+        boundByName_(false), boundByPos_(false), rowsFetched_(0), endOfRowSet_(false),
             intoType_(eStandard), useType_(eStandard), procedure_(false)
 {}
 
@@ -286,6 +287,7 @@ void firebird_statement_backend::rewriteQuery(
 void firebird_statement_backend::prepare(std::string const & query,
                                          statement_type /* eType */)
 {
+    std::cerr << "prepare: query=" << query << std::endl;
     // clear named parametes
     names_.clear();
 
@@ -460,6 +462,9 @@ firebird_statement_backend::execute(int number)
 statement_backend::exec_fetch_result
 firebird_statement_backend::fetch(int number)
 {
+    if (endOfRowSet_)
+        return ef_no_data;
+
     ISC_STATUS stat[stat_size];
 
     for (size_t i = 0; i<static_cast<unsigned int>(sqldap_->sqld); ++i)
@@ -483,11 +488,13 @@ firebird_statement_backend::fetch(int number)
         }
         else if (fetch_stat == 100L)
         {
+            endOfRowSet_ = true;
             return ef_no_data;
         }
         else
         {
             // error
+            endOfRowSet_ = true;
             throw_iscerror(stat);
             return ef_no_data; // unreachable, for compiler only
         }

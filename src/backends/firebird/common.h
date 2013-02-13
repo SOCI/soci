@@ -37,6 +37,38 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
 
 std::string getTextParam(XSQLVAR const *var);
 
+template <typename IntType>
+const char *str2int(const char * s, IntType &out)
+{
+    int sign = 1;
+    if ('+' == *s)
+        ++s;
+    else if ('-' == *s)
+    {
+        sign = -1;
+        ++s;
+    }
+    IntType res = 0;
+    for (out = 0; *s; ++s, out = res)
+    {
+        int d = *s - '0';
+        if (d < 0 || d > 9)
+            return s;
+        res = res * 10 + d * sign;
+        if (1 == sign)
+        {
+            if (res < out)
+                return s;
+        }
+        else
+        {
+            if (res > out)
+                return s;
+        }
+    }
+    return s;
+}
+
 template<typename T1>
 void to_isc(void * val, XSQLVAR * var)
 {
@@ -66,21 +98,27 @@ void to_isc(void * val, XSQLVAR * var)
         break;
     case SQL_LONG:
         {
-            long tmp = static_cast<long>(value*tens);
-            memcpy(var->sqldata, &tmp, sizeof(long));
+            int tmp = static_cast<int>(value*tens);
+            std::memcpy(var->sqldata, &tmp, sizeof(int));
         }
         break;
     case SQL_INT64:
         {
-            ISC_INT64 tmp = static_cast<ISC_INT64>(value*tens);
-            memcpy(var->sqldata, &tmp, sizeof(ISC_INT64));
+            long long tmp = static_cast<long long>(value*tens);
+            std::memcpy(var->sqldata, &tmp, sizeof(long long));
         }
         break;
     case SQL_FLOAT:
-        memcpy(var->sqldata, &value, sizeof(float));
+        {
+            float sql_value = static_cast<float>(value);
+            std::memcpy(var->sqldata, &sql_value, sizeof(float));
+        }
         break;
     case SQL_DOUBLE:
-        memcpy(var->sqldata, &value, sizeof(double));
+        {
+            double sql_value = static_cast<double>(value);
+            std::memcpy(var->sqldata, &sql_value, sizeof(double));
+        }
         break;
     default:
         throw soci_error("Incorrect data type for numeric conversion");
@@ -114,9 +152,9 @@ T1 from_isc(XSQLVAR * var)
     case SQL_SHORT:
         return static_cast<T1>(*reinterpret_cast<short*>(var->sqldata)/tens);
     case SQL_LONG:
-        return static_cast<T1>(*reinterpret_cast<long*>(var->sqldata)/tens);
+        return static_cast<T1>(*reinterpret_cast<unsigned*>(var->sqldata)/tens);
     case SQL_INT64:
-        return static_cast<T1>(*reinterpret_cast<ISC_INT64*>(var->sqldata)/tens);
+        return static_cast<T1>(*reinterpret_cast<long long*>(var->sqldata)/tens);
     case SQL_FLOAT:
         return static_cast<T1>(*reinterpret_cast<float*>(var->sqldata));
     case SQL_DOUBLE:
