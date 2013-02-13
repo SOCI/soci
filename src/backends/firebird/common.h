@@ -38,7 +38,7 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
 std::string getTextParam(XSQLVAR const *var);
 
 template <typename IntType>
-const char *str2int(const char * s, IntType &out)
+const char *str2dec(const char * s, IntType &out, int &scale)
 {
     int sign = 1;
     if ('+' == *s)
@@ -48,9 +48,18 @@ const char *str2int(const char * s, IntType &out)
         sign = -1;
         ++s;
     }
+    scale = 0;
+    bool period = false;
     IntType res = 0;
     for (out = 0; *s; ++s, out = res)
     {
+        if (*s == '.')
+        {
+            if (period)
+                return s;
+            period = true;
+            continue;
+        }
         int d = *s - '0';
         if (d < 0 || d > 9)
             return s;
@@ -65,17 +74,19 @@ const char *str2int(const char * s, IntType &out)
             if (res > out)
                 return s;
         }
+        if (period)
+            ++scale;
     }
     return s;
 }
 
 template<typename T1>
-void to_isc(void * val, XSQLVAR * var)
+void to_isc(void * val, XSQLVAR * var, int x_scale = 0)
 {
     T1 value = *reinterpret_cast<T1*>(val);
-    short scale = var->sqlscale;
+    short scale = var->sqlscale + x_scale;
     short type = var->sqltype & ~1;
-    ISC_INT64 tens = 1;
+    long long divisor = 1, multiplier = 1;
 
     if ((std::numeric_limits<T1>::is_integer == false) && scale >= 0 &&
         (type == SQL_SHORT || type == SQL_LONG || type == SQL_INT64))
@@ -84,27 +95,27 @@ void to_isc(void * val, XSQLVAR * var)
     }
 
     for (int i = 0; i > scale; --i)
-    {
-        tens *= 10;
-    }
+        multiplier *= 10;
+    for (int i = 0; i < scale; ++i)
+        divisor *= 10;
 
-    switch (var->sqltype & ~1)
+    switch (type)
     {
     case SQL_SHORT:
         {
-            short tmp = static_cast<short>(value*tens);
+            short tmp = static_cast<short>(value*multiplier/divisor);
             std::memcpy(var->sqldata, &tmp, sizeof(short));
         }
         break;
     case SQL_LONG:
         {
-            int tmp = static_cast<int>(value*tens);
+            int tmp = static_cast<int>(value*multiplier/divisor);
             std::memcpy(var->sqldata, &tmp, sizeof(int));
         }
         break;
     case SQL_INT64:
         {
-            long long tmp = static_cast<long long>(value*tens);
+            long long tmp = static_cast<long long>(value*multiplier/divisor);
             std::memcpy(var->sqldata, &tmp, sizeof(long long));
         }
         break;
@@ -123,6 +134,21 @@ void to_isc(void * val, XSQLVAR * var)
     default:
         throw soci_error("Incorrect data type for numeric conversion");
     }
+}
+
+template<typename IntType, typename UIntType>
+void parse_decimal(void * val, XSQLVAR * var, const char * s)
+{
+    int scale;
+    UIntType t1;
+    IntType t2;
+    if (!*str2dec(s, t1, scale))
+        std::memcpy(val, &t1, sizeof(t1));
+    else if (!*str2dec(s, t2, scale))
+        std::memcpy(val, &t2, sizeof(t2));
+    else
+        throw soci_error("Could not parse decimal value.");
+    to_isc<IntType>(val, var, scale);
 }
 
 template<typename T1>

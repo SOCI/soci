@@ -15,6 +15,7 @@
 #include <cassert>
 #include <ctime>
 #include <cstring>
+#include <cmath>
 
 using namespace soci;
 
@@ -1052,6 +1053,50 @@ void test11()
     std::cout << "test 11 passed" << std::endl;
 }
 
+void test12()
+{
+    session sql(backEnd, connectString);
+
+    try
+    {
+        sql << "drop table test12";
+    }
+    catch (std::runtime_error &)
+    {} // ignore if error
+
+    sql << "create table test12(a decimal(10,3), b timestamp, c date, d time)";
+    sql.commit();
+    sql.begin();
+
+    // Check if passing input parameters as strings works
+    // for different column types.
+    {
+        std::string a = "-3.14150", b = "2013-02-28 23:36:01",
+            c = "2013-02-28", d = "23:36:01";
+        statement st = (sql.prepare <<
+                "insert into test12(a, b, c, d) values (?, ?, ?, ?)",
+                use(a), use(b), use(c), use(d));
+        st.execute(1);
+        assert(getRowCount(st, eRowsInserted) == 1);
+    }
+
+    {
+        double a;
+        std::tm b, c, d;
+        sql << "select a, b, c, d from test12",
+            into(a), into(b), into(c), into(d);
+        assert(std::fabs(a - (-3.141)) < 0.000001);
+        assert(b.tm_year + 1900 == 2013 && b.tm_mon + 1 == 2 && b.tm_mday == 28);
+        assert(b.tm_hour == 23 && b.tm_min == 36 && b.tm_sec == 1);
+        assert(c.tm_year + 1900 == 2013 && c.tm_mon + 1 == 2 && c.tm_mday == 28);
+        assert(c.tm_hour == 0 && c.tm_min == 0 && c.tm_sec == 0);
+        assert(d.tm_hour == 23 && d.tm_min == 36 && d.tm_sec == 1);
+    }
+
+    sql << "drop table test12";
+    std::cout << "test 12 passed" << std::endl;
+}
+
 //
 // Support for soci Common Tests
 //
@@ -1171,6 +1216,7 @@ int main(int argc, char** argv)
         test9();
         test10();
         test11();
+        test12();
 
         std::cout << "\nOK, all tests passed.\n\n";
 
