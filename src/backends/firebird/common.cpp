@@ -97,48 +97,94 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
 
     if ((var->sqltype & ~1) == SQL_VARYING)
     {
-        memcpy(buf_, &sz, sizeof(short));
-        memcpy(buf_ + sizeof(short), s, sz);
+        std::memcpy(buf_, &sz, sizeof(short));
+        std::memcpy(buf_ + sizeof(short), s, sz);
     }
     else if ((var->sqltype & ~1) == SQL_TEXT)
     {
-        memcpy(buf_, s, sz);
+        std::memcpy(buf_, s, sz);
         if (sz < var->sqllen)
         {
-            memset(buf_+sz, ' ', var->sqllen - sz);
+            std::memset(buf_+sz, ' ', var->sqllen - sz);
         }
+    }
+    else if ((var->sqltype & ~1) == SQL_SHORT)
+    {
+        unsigned short t1;
+        short t2;
+        if (!*str2int(s, t1))
+            std::memcpy(buf_, &t1, sizeof(t1));
+        else if (!*str2int(s, t2))
+            std::memcpy(buf_, &t2, sizeof(t2));
+        else
+            throw soci_error("Could not parse int16 value.");
+        to_isc<short>(buf_, var);
+    }
+    else if ((var->sqltype & ~1) == SQL_LONG)
+    {
+        unsigned t1;
+        int t2;
+        if (!*str2int(s, t1))
+            std::memcpy(buf_, &t1, sizeof(t1));
+        else if (!*str2int(s, t2))
+            std::memcpy(buf_, &t2, sizeof(t2));
+        else
+            throw soci_error("Could not parse int32 value.");
+        to_isc<int>(buf_, var);
     }
     else if ((var->sqltype & ~1) == SQL_INT64)
     {
-        long long t;
-        std::stringstream input(s);
-        input >> t;
-        if (input.bad())
-            throw soci_error("Could not parse integer value.");
-        memcpy(buf_, &t, sizeof(t));
+        unsigned long long t1;
+        long long t2;
+        if (!*str2int(s, t1))
+            std::memcpy(buf_, &t1, sizeof(t1));
+        else if (!*str2int(s, t2))
+            std::memcpy(buf_, &t2, sizeof(t2));
+        else
+            throw soci_error("Could not parse int64 value.");
         to_isc<long long>(buf_, var);
     }
-    else if ((var->sqltype & ~1) == SQL_TIMESTAMP)
+    else if ((var->sqltype & ~1) == SQL_TIMESTAMP
+            or (var->sqltype & ~1) == SQL_TYPE_DATE)
     {
         unsigned short year, month, day, hour, min, sec;
-        if (std::sscanf(s, "%hu-%hu-%huT%hu:%hu:%hu",
+        if (std::sscanf(s, "%hu-%hu-%hu %hu:%hu:%hu",
                     &year, &month, &day, &hour, &min, &sec) != 6)
         {
-            if (std::sscanf(s, "%hu-%hu-%hu %hu:%hu:%hu",
+            if (std::sscanf(s, "%hu-%hu-%huT%hu:%hu:%hu",
                         &year, &month, &day, &hour, &min, &sec) != 6)
             {
-                throw soci_error("Could not parse timestamp value.");
+                hour = min = sec = 0;
+                if (std::sscanf(s, "%hu-%hu-%hu", &year, &month, &day) != 3)
+                {
+                    throw soci_error("Could not parse timestamp value.");
+                }
             }
         }
         std::tm t;
-        memset(&t, 0, sizeof(t));
+        std::memset(&t, 0, sizeof(t));
         t.tm_year = year - 1900;
         t.tm_mon = month - 1;
         t.tm_mday = day;
         t.tm_hour = hour;
         t.tm_min = min;
         t.tm_sec = sec;
-        memcpy(buf_, &t, sizeof(t));
+        std::memcpy(buf_, &t, sizeof(t));
+        tmEncode(var->sqltype, &t, buf_);
+    }
+    else if ((var->sqltype & ~1) == SQL_TYPE_TIME)
+    {
+        unsigned short hour, min, sec;
+        if (std::sscanf(s, "%hu:%hu:%hu", &hour, &min, &sec) != 3)
+        {
+            throw soci_error("Could not parse timestamp value.");
+        }
+        std::tm t;
+        std::memset(&t, 0, sizeof(t));
+        t.tm_hour = hour;
+        t.tm_min = min;
+        t.tm_sec = sec;
+        std::memcpy(buf_, &t, sizeof(t));
         tmEncode(var->sqltype, &t, buf_);
     }
     else
