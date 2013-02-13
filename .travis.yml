@@ -30,7 +30,7 @@ script:
   - cmake --build .
 
 after_script:
-  - ctest -V .
+  - ctest -V --output-on-failure .
 
 notifications:
   email:
