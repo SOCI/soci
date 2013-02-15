@@ -190,7 +190,20 @@ std::string getTextParam(XSQLVAR const *var)
     {
         size = var->sqllen;
     }
-    else throw soci_error("Unexpected string type");
+    else if ((var->sqltype & ~1) == SQL_SHORT)
+    {
+        return format_decimal<short>(var);
+    }
+    else if ((var->sqltype & ~1) == SQL_LONG)
+    {
+        return format_decimal<int>(var);
+    }
+    else if ((var->sqltype & ~1) == SQL_INT64)
+    {
+        return format_decimal<long long>(var);
+    }
+    else
+        throw soci_error("Unexpected string type");
 
     return std::string(var->sqldata + offset, size);
 }

@@ -708,7 +708,7 @@ void test9()
         assert(sql.got_data() == false);
     }
 
-    std::string msg("Hello");
+    std::string msg("Hello"), d_str("3.14");
     int i(1);
     double d(3.14);
     indicator ind(i_ok);
@@ -740,7 +740,8 @@ void test9()
 
     assert(r.get_properties(0).get_data_type() == dt_integer);
     assert(r.get_properties(1).get_data_type() == dt_string);
-    assert(r.get_properties(2).get_data_type() == dt_double);
+    //assert(r.get_properties(2).get_data_type() == dt_double);
+    assert(r.get_properties(2).get_data_type() == dt_string);
 
     // get properties by name
     assert(r.get_properties("ID").get_name() == "ID");
@@ -749,17 +750,20 @@ void test9()
 
     assert(r.get_properties("ID").get_data_type() == dt_integer);
     assert(r.get_properties("MSG").get_data_type() == dt_string);
-    assert(r.get_properties("NTEST").get_data_type() == dt_double);
+    //assert(r.get_properties("NTEST").get_data_type() == dt_double);
+    assert(r.get_properties("NTEST").get_data_type() == dt_string);
 
     // get values by position
     assert(r.get<int>(0) == 1);
     assert(r.get<std::string>(1) == "Hello");
+    assert(r.get<std::string>(2) == d_str);
     assert(r.get<double>(2) == d);
 
     // get values by name
     assert(r.get<int>("ID") == 1);
     assert(r.get<std::string>("MSG") == "Hello");
-    assert(r.get<double>("NTEST") == d);
+    assert(r.get<std::string>("NTEST") == d_str);
+    //assert(r.get<double>("NTEST") == d);
 
     st.fetch();
     assert(r.get<int>(0) == 2);
@@ -767,11 +771,13 @@ void test9()
     assert(r.get_indicator(2) == i_null);
 
     // verify default values
-    assert(r.get<double>("NTEST", 2) == 2);
+    //assert(r.get<double>("NTEST", 2) == 2);
+    assert(r.get<std::string>("NTEST", "2") == "2");
     bool caught = false;
     try
     {
-        double d1 = r.get<double>("NTEST");
+        //double d1 = r.get<double>("NTEST");
+        std::string d1 = r.get<std::string>("NTEST");
         std::cout << d1 << std::endl;     // just for compiler
     }
     catch (soci_error&)
