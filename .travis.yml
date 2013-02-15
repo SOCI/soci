@@ -17,12 +17,14 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq libboost-dev libboost-date-time-dev libmyodbc unixodbc-dev odbc-postgresql firebird2.5-super firebird2.5-dev
   - sudo odbcinst -i -d -f /usr/share/libmyodbc/odbcinst.ini
+  - dpkg-reconfigure -f noninteractive firebird2.5-super
 
 before_script:
   - mysql --version
   - mysql -e 'create database soci_test;'
   - psql --version  
   - psql -c 'create database soci_test;' -U postgres
+  #- TODO: create firebird soci_test db
 
 script:
   - mkdir -p src/_build
