@@ -14,6 +14,7 @@
 #include <ctime>
 #include <limits>
 #include <sstream>
+#include <iomanip>
 #include <string>
 #include <vector>
 
@@ -149,6 +150,20 @@ void parse_decimal(void * val, XSQLVAR * var, const char * s)
     else
         throw soci_error("Could not parse decimal value.");
     to_isc<IntType>(val, var, scale);
+}
+
+template<typename IntType>
+std::string format_decimal(const XSQLVAR * var)
+{
+    std::stringstream out;
+    if (var->sqlscale < 0)
+        out << std::setw(-var->sqlscale + 1) << std::setfill('0');
+    out << *reinterpret_cast<IntType *>(var->sqldata);
+    std::string r = out.str();
+    if (var->sqlscale < 0)
+        return r.substr(0, r.size() + var->sqlscale) + '.' +
+            r.substr(r.size() + var->sqlscale, std::string::npos);
+    return r;
 }
 
 template<typename T1>

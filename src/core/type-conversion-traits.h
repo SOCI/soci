@@ -9,6 +9,10 @@
 #define SOCI_TYPE_CONVERSION_TRAITS_H_INCLUDED
 
 #include "soci-backend.h"
+#ifdef HAVE_BOOST
+#include <string>
+#include <boost/lexical_cast.hpp>
+#endif
 
 namespace soci
 {
@@ -35,6 +39,34 @@ struct type_conversion
         ind = i_ok;
     }
 };
+
+#ifdef HAVE_BOOST
+template <typename T>
+struct string_conversion
+{
+    static void from_string(std::string const & in, indicator ind, T & out)
+    {
+        if (ind == i_null)
+        {
+            throw soci_error("Null value not allowed for string type");
+        }
+        throw std::bad_cast();
+    }
+};
+
+template <>
+struct string_conversion<double>
+{
+    static void from_string(std::string const & in, indicator ind, double & out)
+    {
+        if (ind == i_null)
+        {
+            throw soci_error("Null value not allowed for string type");
+        }
+        out = boost::lexical_cast<double>(in);
+    }
+};
+#endif
 
 } // namespace soci
 
