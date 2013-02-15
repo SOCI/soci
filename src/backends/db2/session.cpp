@@ -17,7 +17,7 @@ using namespace soci;
 using namespace soci::details;
 
 const std::string db2_soci_error::sqlState(std::string const & msg,const SQLSMALLINT htype,const SQLHANDLE hndl) {
-        std::stringstream ss(msg);
+    std::ostringstream ss(msg, std::ostringstream::app);
 
 
     SQLCHAR message[SQL_MAX_MESSAGE_LENGTH + 1];
