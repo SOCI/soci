@@ -1189,14 +1189,11 @@ int main(int argc, char** argv)
     }
     else
     {
-        std::ostringstream msg;
-        msg << "usage: " << argv[0]
-        << " connectstring\n"
-        << "example: " << argv[0]
-        << " \"service=/usr/local/firebird/db/test.fdb user=SYSDBA password=masterkey\"\n";
-
-        std::cout << msg.str().c_str();
-        std::exit(1);
+        std::cout << "usage: " << argv[0]
+            << " connectstring\n"
+            << "example: " << argv[0]
+            << " \"service=/usr/local/firebird/db/test.fdb user=SYSDBA password=masterkey\"\n";
+        return EXIT_FAILURE;
     }
 
     try
@@ -1205,6 +1202,7 @@ int main(int argc, char** argv)
         tests::common_tests tests(tc);
         tests.run();
 
+        std::cout << "\nSOCI Firebird Tests:\n\n";
         test1();
         test2();
         test3();
@@ -1226,6 +1224,5 @@ int main(int argc, char** argv)
     {
         std::cout << e.what() << '\n';
     }
-
     return EXIT_FAILURE;
 }
