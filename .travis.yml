@@ -15,27 +15,35 @@ services:
 
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq libboost-dev libboost-date-time-dev
+  - sudo apt-get install -qq libboost-dev libboost-date-time-dev libmyodbc unixodbc-dev odbc-postgresql firebird2.5-super firebird2.5-dev
+  - sudo odbcinst -i -d -f /usr/share/libmyodbc/odbcinst.ini
+  # See: Non-interactive setup for travis-ci.org 
+  # http://tech.groups.yahoo.com/group/firebird-support/message/120883
+  #- sudo dpkg-reconfigure -f noninteractive firebird2.5-super
+  - sudo sed /ENABLE_FIREBIRD_SERVER=/s/no/yes/ -i /etc/default/firebird2.5
+  - cat /etc/default/firebird2.5
+  - sudo service firebird2.5-super start
 
 before_script:
   - mysql --version
   - mysql -e 'create database soci_test;'
   - psql --version  
   - psql -c 'create database soci_test;' -U postgres
+  - isql-fb -z -q -i /dev/null # --version
+  - echo 'CREATE DATABASE "LOCALHOST:/tmp/soci_test.fdb" PAGE_SIZE = 16384;' > /tmp/create_soci_test.sql
+  - isql-fb -u SYSDBA -p masterkey -i /tmp/create_soci_test.sql -q
+  - ls -l /tmp/
 
 script:
-  - mkdir -p src/build
-  - cd src/build
-  - cmake -DSOCI_TESTS=ON -DSOCI_EMPTY_TEST_CONNSTR:STRING="dummy connection" -DSOCI_MYSQL_TEST_CONNSTR:STRING="db=soci_test" -DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="dbname=soci_test user=postgres" -DSOCI_SQLITE3_TEST_CONNSTR:STRING="soci_test.db" ..
+  - mkdir -p src/_build
+  - cd src/_build
+  - cmake -DSOCI_TESTS=ON -DSOCI_EMPTY_TEST_CONNSTR:STRING="dummy connection" -DSOCI_FIREBIRD_TEST_CONNSTR:STRING="service=LOCALHOST:/tmp/soci_test.fdb user=SYSDBA password=masterkey -DSOCI_MYSQL_TEST_CONNSTR:STRING="db=soci_test" -DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="dbname=soci_test user=postgres" -DSOCI_SQLITE3_TEST_CONNSTR:STRING="soci_test.db" -DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR="FILEDSN=${PWD}/../backends/odbc/test/test-postgresql.dsn;" -DSOCI_ODBC_TEST_MYSQL_CONNSTR="FILEDSN=${PWD}/../backends/odbc/test/test-mysql.dsn;" ..
   - cmake --build .
-
-after_script:
-  - ctest -V .
+  - ctest -V --output-on-failure .
 
 notifications:
   email:
     recipients:
-      - mloskot@gmail.com
       - mateusz@loskot.net
   on_success: always # [always|never|change] # default: change
   on_failure: always # [always|never|change] # default: always

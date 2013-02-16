@@ -451,7 +451,7 @@ long long postgresql_statement_backend::get_affected_rows()
 {
     const char * resultStr = PQcmdTuples(result_);
     char * end;
-    long long result = strtoll(resultStr, &end, 0);
+    long long result = std::strtoll(resultStr, &end, 0);
     if (end != resultStr)
     {
         return result;
@@ -505,6 +505,7 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     case 1042: // bpchar
     case 142: // xml
     case 114:  // json
+    case 17: // bytea
         type = dt_string;
         break;
 
@@ -534,7 +535,7 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     case 20:   // int8
         type = dt_long_long;
         break;
-
+    
     default:
     {
         std::stringstream message;

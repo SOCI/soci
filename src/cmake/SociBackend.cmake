@@ -142,7 +142,8 @@ macro(soci_backend NAME)
       else()
 		set_target_properties(${THIS_BACKEND_TARGET}
           PROPERTIES
-          SOVERSION ${${PROJECT_NAME}_SOVERSION})
+          SOVERSION ${${PROJECT_NAME}_SOVERSION}
+          INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/lib)
       endif()
 
       set_target_properties(${THIS_BACKEND_TARGET}

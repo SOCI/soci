@@ -18,7 +18,7 @@ using namespace soci;
 using namespace soci::tests;
 
 std::string connectString;
-backend_factory const &backEnd = odbc;
+backend_factory const &backEnd = *soci::factory_odbc();
 
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
@@ -45,7 +45,7 @@ struct table_creator_two : public table_creator_base
 
 struct table_creator_three : public table_creator_base
 {
-    table_creator_three(ession & sql)
+    table_creator_three(session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(name varchar(100) not null, "
@@ -69,12 +69,17 @@ public:
         return new table_creator_one(s);
     }
 
-    table_creator_base * tableCreator2(session& s) const
+    table_creator_base * table_creator_2(session& s) const
     {
         return new table_creator_two(s);
     }
 
-    table_creator_base * tableCreator3(session& s) const
+    table_creator_base * table_creator_3(session& s) const
+    {
+        return new table_creator_three(s);
+    }
+
+    table_creator_base * table_creator_4(session& s) const
     {
         return new table_creator_three(s);
     }
@@ -108,10 +113,13 @@ int main(int argc, char** argv)
     }
     try
     {
+        std::cout << "\nSOCI ODBC with MySQL Tests:\n\n";
+
         test_context tc(backEnd, connectString);
         common_tests tests(tc);
         tests.run();
 
+        std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;
     }
     catch (soci::odbc_soci_error const & e)

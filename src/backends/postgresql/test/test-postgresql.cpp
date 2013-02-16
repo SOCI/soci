@@ -544,6 +544,49 @@ void test12()
     std::cout << "test 12 passed" << std::endl;
 }
 
+struct bytea_table_creator : public table_creator_base
+{
+    bytea_table_creator(session& sql)
+        : table_creator_base(sql)
+    {
+        sql << "drop table if exists soci_test;";
+        sql << "create table soci_test ( val bytea null )";
+    }
+};
+
+void test_bytea()
+{
+	{
+        session sql(backEnd, connectString);
+		bytea_table_creator tableCreator(sql);
+
+        int v = 0x0A0B0C0D;
+        unsigned char* b = reinterpret_cast<unsigned char*>(&v);
+        std::string data;
+        std::copy(b, b + sizeof(v), std::back_inserter(data));
+		{
+
+            sql << "insert into soci_test(val) values(:val)", use(data);
+
+            // 1) into string, no Oid mapping
+            std::string bin1;
+            sql << "select val from soci_test", into(bin1);
+            assert(bin1 == "\\x0d0c0b0a");
+
+            // 2) Oid-to-dt_string mapped
+            row r;
+            sql << "select * from soci_test", into(r);
+
+            assert(r.size() == 1);
+            column_properties const& props = r.get_properties(0);
+            assert(props.get_data_type() == soci::dt_string);
+            std::string bin2 = r.get<std::string>(0);
+            assert(bin2 == "\\x0d0c0b0a");
+        }
+	}
+    std::cout << "test_bytea passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -637,11 +680,13 @@ int main(int argc, char** argv)
 
     try
     {
+        test_bytea();
+
         test_context tc(backEnd, connectString);
         common_tests tests(tc);
         tests.run();
 
-        std::cout << "\nSOCI Postgres Tests:\n\n";
+        std::cout << "\nSOCI PostgreSQL Tests:\n\n";
         test1();
         test2();
         test3();
@@ -658,6 +703,7 @@ int main(int argc, char** argv)
         test10();
         test11();
         test12();
+        test_bytea();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;

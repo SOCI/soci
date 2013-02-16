@@ -209,6 +209,7 @@ struct firebird_statement_backend : details::statement_backend
 
 protected:
     int rowsFetched_;
+    bool endOfRowSet_;
 
     virtual void exchangeData(bool gotData, int row);
     virtual void prepareSQLDA(XSQLDA ** sqldap, int size = 10);

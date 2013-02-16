@@ -29,7 +29,8 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
     sword res;
 
     // create the environment
-    res = OCIEnvCreate(&envhp_, OCI_DEFAULT, 0, 0, 0, 0, 0, 0);
+    res = OCIEnvCreate(&envhp_, OCI_THREADED | OCI_ENV_NO_MUTEX,
+        0, 0, 0, 0, 0, 0);
     if (res != OCI_SUCCESS)
     {
         throw soci_error("Cannot create environment");
