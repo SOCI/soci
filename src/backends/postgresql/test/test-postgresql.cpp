@@ -680,8 +680,6 @@ int main(int argc, char** argv)
 
     try
     {
-        test_bytea();
-
         test_context tc(backEnd, connectString);
         common_tests tests(tc);
         tests.run();
@@ -693,10 +691,8 @@ int main(int argc, char** argv)
         test4();
         test4ul();
         test5();
-
-//         test6();
+        //test6();
         std::cout << "test 6 skipped (dynamic backend)\n";
-
         test7();
         test8();
         test9();
@@ -706,6 +702,7 @@ int main(int argc, char** argv)
         test_bytea();
 
         std::cout << "\nOK, all tests passed.\n\n";
+
         return EXIT_SUCCESS;
     }
     catch (std::exception const & e)
