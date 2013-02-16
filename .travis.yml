@@ -31,8 +31,8 @@ before_script:
   - psql --version  
   - psql -c 'create database soci_test;' -U postgres
   - isql-fb -z -q -i /dev/null # --version
-  - echo 'CREATE DATABASE "LOCALHOST:/tmp/soci_test.fdb" PAGE_SIZE = 16384;' > /tmp/create.sql
-  - isql-fb -u SYSDBA -p masterkey -i /tmp/create.sql -q
+  - echo 'CREATE DATABASE "/tmp/soci_test.fdb" PAGE_SIZE = 16384;' > /tmp/create_soci_test.sql
+  - isql-fb -u SYSDBA -p masterkey -i /tmp/create_soci_test.sql -q
   - ls -l /tmp/
 
 script:
