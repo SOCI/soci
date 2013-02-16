@@ -42,16 +42,9 @@ Core:
 * C++ compiler
 
 Backend specific:
+* Firebird client library X.Y
 * MySQL client library X.Y
 * ODBC implementation X.Y
 * Oracle OCI library X.Y
 * PostgreSQL client library X.Y
 * SQLite 3 library X.Y
-
-Git repository of SOCI project
-------------------------------
-
-* /src - project source code tree
-* /doc - project documentation
-* /www - project website
-* /build - legacy build configurations (to be removed)
