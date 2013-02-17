@@ -192,15 +192,15 @@ std::string getTextParam(XSQLVAR const *var)
     }
     else if ((var->sqltype & ~1) == SQL_SHORT)
     {
-        return format_decimal<short>(var);
+        return format_decimal<short>(var->sqldata, var->sqlscale);
     }
     else if ((var->sqltype & ~1) == SQL_LONG)
     {
-        return format_decimal<int>(var);
+        return format_decimal<int>(var->sqldata, var->sqlscale);
     }
     else if ((var->sqltype & ~1) == SQL_INT64)
     {
-        return format_decimal<long long>(var);
+        return format_decimal<long long>(var->sqldata, var->sqlscale);
     }
     else
         throw soci_error("Unexpected string type");

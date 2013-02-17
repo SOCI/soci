@@ -68,25 +68,11 @@ public:
         assert(holders_.size() >= pos + 1);
 
         typedef typename type_conversion<T>::base_type base_type;
-#ifdef HAVE_BOOST
-        try
-        {
-#endif
-            base_type const& baseVal = holders_[pos]->get<base_type>();
-            T ret;
-            type_conversion<T>::from_base(baseVal, *indicators_[pos], ret);
-            return ret;
-#ifdef HAVE_BOOST
-        }
-        catch (std::bad_cast const& )
-        {
-            std::string const& baseVal = holders_[pos]->get<std::string>();
-            T ret;
-            string_conversion<T>::from_string(baseVal, *indicators_[pos], ret);
-            return ret;
+        base_type const& baseVal = holders_[pos]->get<base_type>();
 
-        }
-#endif
+        T ret;
+        type_conversion<T>::from_base(baseVal, *indicators_[pos], ret);
+        return ret;
     }
 
     template <typename T>

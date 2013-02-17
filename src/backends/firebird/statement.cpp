@@ -287,7 +287,7 @@ void firebird_statement_backend::rewriteQuery(
 void firebird_statement_backend::prepare(std::string const & query,
                                          statement_type /* eType */)
 {
-    std::cerr << "prepare: query=" << query << std::endl;
+    //std::cerr << "prepare: query=" << query << std::endl;
     // clear named parametes
     names_.clear();
 
@@ -650,8 +650,10 @@ void firebird_statement_backend::describe_column(int colNum,
     case SQL_LONG:
         if (var->sqlscale < 0)
         {
-            //type = dt_double;
-            type = dt_string;
+            if (session_.get_option_decimals_as_strings())
+                type = dt_string;
+            else
+                type = dt_double;
         }
         else
         {
@@ -661,8 +663,10 @@ void firebird_statement_backend::describe_column(int colNum,
     case SQL_INT64:
         if (var->sqlscale < 0)
         {
-            //type = dt_double;
-            type = dt_string;
+            if (session_.get_option_decimals_as_strings())
+                type = dt_string;
+            else
+                type = dt_double;
         }
         else
         {

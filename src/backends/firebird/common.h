@@ -153,17 +153,24 @@ void parse_decimal(void * val, XSQLVAR * var, const char * s)
 }
 
 template<typename IntType>
-std::string format_decimal(const XSQLVAR * var)
+std::string format_decimal(const void *sqldata, int sqlscale)
 {
+    IntType x = *reinterpret_cast<const IntType *>(sqldata);
     std::stringstream out;
-    if (var->sqlscale < 0)
-        out << std::setw(-var->sqlscale + 1) << std::setfill('0');
-    out << *reinterpret_cast<IntType *>(var->sqldata);
+    out << x;
     std::string r = out.str();
-    if (var->sqlscale < 0)
-        return r.substr(0, r.size() + var->sqlscale) + '.' +
-            r.substr(r.size() + var->sqlscale, std::string::npos);
-    return r;
+    if (sqlscale < 0)
+    {
+        if (r.size() - (x < 0) <= -sqlscale)
+        {
+            r = std::string(size_t(x < 0), '-') +
+                std::string(-sqlscale - (r.size() - (x < 0)) + 1, '0') +
+                r.substr(size_t(x < 0), std::string::npos);
+        }
+        return r.substr(0, r.size() + sqlscale) + '.' +
+            r.substr(r.size() + sqlscale, std::string::npos);
+    }
+    return r + std::string(sqlscale, '0');
 }
 
 template<typename T1>
