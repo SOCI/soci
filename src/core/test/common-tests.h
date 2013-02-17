@@ -264,6 +264,7 @@ public:
     {
         std::cout<<"\nSOCI Common Tests:\n\n";
 
+        test0();
         test1();
         test2();
         test3();
@@ -303,6 +304,8 @@ public:
         test28();
         test29();
         test30();
+        test31();
+        test_pull5();
         test_issue67();
     }
 
@@ -324,6 +327,40 @@ inline bool equal_approx(double const a, double const b)
     return std::fabs(a - b) < epsilon * (scale + (std::max)(std::fabs(a), std::fabs(b)));
 }
 
+// ensure connection is checked, no crash occurs
+
+#define SOCI_TEST_ENSURE_CONNECTED(sql, method) { \
+    std::string msg; \
+    try { \
+        (sql.method)(); \
+        assert(!"exception expected"); \
+    } catch (soci_error const &e) { msg = e.what(); } \
+    assert(msg.empty() == false); } (void)sql
+
+#define SOCI_TEST_ENSURE_CONNECTED2(sql, method) { \
+    std::string msg; \
+    try { std::string seq; long v(0); \
+        (sql.method)(seq, v); \
+        assert(!"exception expected"); \
+    } catch (soci_error const &e) { msg = e.what(); } \
+    assert(msg.empty() == false); } (void)sql
+
+void test0()
+{
+    {
+        soci::session sql; // no connection
+        SOCI_TEST_ENSURE_CONNECTED(sql, begin);
+        SOCI_TEST_ENSURE_CONNECTED(sql, commit);
+        SOCI_TEST_ENSURE_CONNECTED(sql, rollback);
+        SOCI_TEST_ENSURE_CONNECTED(sql, get_backend_name);
+        SOCI_TEST_ENSURE_CONNECTED(sql, make_statement_backend);
+        SOCI_TEST_ENSURE_CONNECTED(sql, make_rowid_backend);
+        SOCI_TEST_ENSURE_CONNECTED(sql, make_blob_backend);
+        SOCI_TEST_ENSURE_CONNECTED2(sql, get_next_sequence_value);
+        SOCI_TEST_ENSURE_CONNECTED2(sql, get_last_insert_id);
+    }
+    std::cout << "test 0 passed\n";
+}
 void test1()
 {
     session sql(backEndFactory_, connectString_);
@@ -3489,6 +3526,61 @@ void test30()
 #else
     std::cout << "test 30 skipped (no Boost)" << std::endl;
 #endif // HAVE_BOOST
+}
+
+// connection pool - simple sequential test, no multiple threads
+void test31()
+{
+    {
+        // phase 1: preparation
+        const size_t pool_size = 10;
+        connection_pool pool(pool_size);
+
+        for (std::size_t i = 0; i != pool_size; ++i)
+        {
+            session & sql = pool.at(i);
+            sql.open(backEndFactory_, connectString_);
+        }
+
+        // phase 2: usage
+        for (std::size_t i = 0; i != pool_size; ++i)
+        {
+            // poor man way to lease more than one connection
+            session sql_unused1(pool);
+            session sql(pool);
+            session sql_unused2(pool);
+            {
+                auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+                char c('a');
+                sql << "insert into soci_test(c) values(:c)", use(c);
+                sql << "select c from soci_test", into(c);
+                assert(c == 'a');
+            }
+        }
+    }
+    std::cout << "test 31 passed\n";
+}
+
+// test fix for: Backend is not set properly with connection pool (pull #5) 
+void test_pull5()
+{
+    {
+        const size_t pool_size = 1;
+        connection_pool pool(pool_size);
+
+        for (std::size_t i = 0; i != pool_size; ++i)
+        {
+            session & sql = pool.at(i);
+            sql.open(backEndFactory_, connectString_);
+        }
+
+        soci::session sql(pool);
+        sql.reconnect();
+        sql.begin(); // no crash expected
+    }
+
+    std::cout << "test_pull5 passed\n";
 }
 
 // issue 67 - Allocated statement backend memory leaks on exception
