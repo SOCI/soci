@@ -224,16 +224,22 @@ void session::reconnect()
 
 void session::begin()
 {
+    ensureConnected(backEnd_);
+
     backEnd_->begin();
 }
 
 void session::commit()
 {
+    ensureConnected(backEnd_);
+
     backEnd_->commit();
 }
 
 void session::rollback()
 {
+    ensureConnected(backEnd_);
+
     backEnd_->rollback();
 }
 
@@ -366,6 +372,8 @@ bool session::get_last_insert_id(std::string const & sequence, long & value)
 
 std::string session::get_backend_name() const
 {
+    ensureConnected(backEnd_);
+
     return backEnd_->get_backend_name();
 }
 
