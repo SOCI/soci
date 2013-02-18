@@ -721,6 +721,15 @@ struct table_creator_three : public table_creator_base
     }
 };
 
+struct table_creator_for_get_affected_rows : table_creator_base
+{
+    table_creator_for_get_affected_rows(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val integer)";
+    }
+};
+
 //
 // Support for SOCI Common Tests
 //
@@ -745,6 +754,11 @@ public:
     table_creator_base* table_creator_3(session& s) const
     {
         return new table_creator_three(s);
+    }
+
+    table_creator_base* table_creator_4(session& s) const
+    {
+        return new table_creator_for_get_affected_rows(s);
     }
 
     std::string to_date_time(std::string const &datdt_string) const

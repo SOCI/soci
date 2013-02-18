@@ -53,6 +53,15 @@ struct table_creator_three : public table_creator_base
     }
 };
 
+struct table_creator_for_get_affected_rows : table_creator_base
+{
+    table_creator_for_get_affected_rows(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val integer)";
+    }
+};
+
 //
 // Support for SOCI Common Tests
 //
