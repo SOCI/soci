@@ -88,6 +88,11 @@ public:
         return new table_creator_three(s);
     }
 
+    table_creator_base * table_creator_4(session& s) const
+    {
+        return new table_creator_for_get_affected_rows(s);
+    }
+
     std::string to_date_time(std::string const &datdt_string) const
     {
         return "convert(datetime, \'" + datdt_string + "\', 120)";
@@ -96,7 +101,6 @@ public:
 
 int main(int argc, char** argv)
 {
-
 #ifdef _MSC_VER
     // Redirect errors, unrecoverable problems, and assert() failures to STDERR,
     // instead of debug message window.
@@ -121,7 +125,7 @@ int main(int argc, char** argv)
         test_context tc(backEnd, connectString);
         common_tests tests(tc);
         tests.run();
-        
+
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;
     }

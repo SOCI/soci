@@ -90,16 +90,6 @@ public:
 
     table_creator_base * table_creator_4(session& s) const
     {
-        return new table_creator_three(s);
-    }
-
-    table_creator_base * tableCreator3(session& s) const
-    {
-        return new table_creator_for_get_affected_rows(s);
-    }
-
-    table_creator_base * table_creator_4(session& s) const
-    {
         return new table_creator_for_get_affected_rows(s);
     }
 
@@ -107,12 +97,10 @@ public:
     {
         return "\'" + datdt_string + "\'";
     }
-
 };
 
 int main(int argc, char** argv)
 {
-
 #ifdef _MSC_VER
     // Redirect errors, unrecoverable problems, and assert() failures to STDERR,
     // instead of debug message window.
