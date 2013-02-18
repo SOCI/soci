@@ -90,16 +90,6 @@ public:
 
     table_creator_base * table_creator_4(session& s) const
     {
-        return new table_creator_three(s);
-    }
-
-    table_creator_base * tableCreator3(session& s) const
-    {
-        return new table_creator_for_get_affected_rows(s);
-    }
-
-    table_creator_base * table_creator_4(session& s) const
-    {
         return new table_creator_for_get_affected_rows(s);
     }
 
