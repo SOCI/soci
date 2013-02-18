@@ -97,12 +97,10 @@ public:
     {
         return "\'" + datdt_string + "\'";
     }
-
 };
 
 int main(int argc, char** argv)
 {
-
 #ifdef _MSC_VER
     // Redirect errors, unrecoverable problems, and assert() failures to STDERR,
     // instead of debug message window.
