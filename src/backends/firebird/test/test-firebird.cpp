@@ -1230,11 +1230,19 @@ struct TableCreator3 : public tests::table_creator_base
     TableCreator3(session & sql)
             : tests::table_creator_base(sql)
     {
-        // CommonTest uses lower-case column names,
-        // so we need to enforce such names here.
-        // That's why column names are enclosed in ""
         sql << "create table soci_test(name varchar(100) not null, "
         "phone varchar(15))";
+        sql.commit();
+        sql.begin();
+    }
+};
+
+struct TableCreator4 : public tests::table_creator_base
+{
+    TableCreator4(session & sql)
+            : tests::table_creator_base(sql)
+    {
+        sql << "create table soci_test(val integer)";
         sql.commit();
         sql.begin();
     }
@@ -1261,6 +1269,11 @@ class test_context : public tests::test_context_base
         tests::table_creator_base* table_creator_3(session& s) const
         {
             return new TableCreator3(s);
+        }
+
+        tests::table_creator_base* table_creator_4(session& s) const
+        {
+            return new TableCreator4(s);
         }
 
         std::string to_date_time(std::string const &datdt_string) const
