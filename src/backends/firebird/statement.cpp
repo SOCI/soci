@@ -579,7 +579,7 @@ long long firebird_statement_backend::get_affected_rows()
     // type, its value length in bytes and the value itself.
     long long row_count = 0;
 
-    for ( char* p = sql_rec_buf; p < sql_rec_buf + length; )
+    for ( char* p = sql_rec_buf; !row_count && p < sql_rec_buf + length; )
     {
         switch (*p++)
         {
