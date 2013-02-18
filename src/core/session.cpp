@@ -125,6 +125,7 @@ void session::open(backend_factory const & factory,
     if (isFromPool_)
     {
         pool_->at(poolPosition_).open(factory, connectString);
+        backEnd_ = pool_->at(poolPosition_).get_backend();
     }
     else
     {
@@ -145,6 +146,7 @@ void session::open(std::string const & backendName,
     if (isFromPool_)
     {
         pool_->at(poolPosition_).open(backendName, connectString);
+        backEnd_ = pool_->at(poolPosition_).get_backend();
     }
     else
     {
@@ -166,6 +168,7 @@ void session::open(std::string const & connectString)
     if (isFromPool_)
     {
         pool_->at(poolPosition_).open(connectString);
+        backEnd_ = pool_->at(poolPosition_).get_backend();
     }
     else
     {
@@ -192,6 +195,7 @@ void session::close()
     if (isFromPool_)
     {
         pool_->at(poolPosition_).close();
+        backEnd_ = NULL;
     }
     else
     {
@@ -205,6 +209,7 @@ void session::reconnect()
     if (isFromPool_)
     {
         pool_->at(poolPosition_).reconnect();
+        backEnd_ = pool_->at(poolPosition_).get_backend();
     }
     else
     {
@@ -224,16 +229,22 @@ void session::reconnect()
 
 void session::begin()
 {
+    ensureConnected(backEnd_);
+
     backEnd_->begin();
 }
 
 void session::commit()
 {
+    ensureConnected(backEnd_);
+
     backEnd_->commit();
 }
 
 void session::rollback()
 {
+    ensureConnected(backEnd_);
+
     backEnd_->rollback();
 }
 
@@ -366,6 +377,8 @@ bool session::get_last_insert_id(std::string const & sequence, long & value)
 
 std::string session::get_backend_name() const
 {
+    ensureConnected(backEnd_);
+
     return backEnd_->get_backend_name();
 }
 

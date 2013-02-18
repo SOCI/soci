@@ -55,7 +55,15 @@ statement_impl::statement_impl(prepare_temp_type const & prep)
 
     // prepare the statement
     query_ = prepInfo->get_query();
-    prepare(query_);
+    try
+    {
+        prepare(query_);
+    }
+    catch(...)
+    {
+        clean_up();
+        throw;
+    }
 
     define_and_bind();
 }

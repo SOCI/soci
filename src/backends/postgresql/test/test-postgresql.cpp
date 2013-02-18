@@ -620,6 +620,15 @@ struct table_creator_three : public table_creator_base
     }
 };
 
+struct table_creator_for_get_affected_rows : table_creator_base
+{
+    table_creator_for_get_affected_rows(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val integer)";
+    }
+};
+
 //
 // Support for soci Common Tests
 //
@@ -644,6 +653,11 @@ public:
     table_creator_base* table_creator_3(session& s) const
     {
         return new table_creator_three(s);
+    }
+
+    table_creator_base* table_creator_4(session& s) const
+    {
+        return new table_creator_for_get_affected_rows(s);
     }
 
     std::string to_date_time(std::string const &datdt_string) const
@@ -680,8 +694,6 @@ int main(int argc, char** argv)
 
     try
     {
-        test_bytea();
-
         test_context tc(backEnd, connectString);
         common_tests tests(tc);
         tests.run();
@@ -693,10 +705,8 @@ int main(int argc, char** argv)
         test4();
         test4ul();
         test5();
-
-//         test6();
+        //test6();
         std::cout << "test 6 skipped (dynamic backend)\n";
-
         test7();
         test8();
         test9();
@@ -706,6 +716,7 @@ int main(int argc, char** argv)
         test_bytea();
 
         std::cout << "\nOK, all tests passed.\n\n";
+
         return EXIT_SUCCESS;
     }
     catch (std::exception const & e)

@@ -1230,11 +1230,19 @@ struct TableCreator3 : public tests::table_creator_base
     TableCreator3(session & sql)
             : tests::table_creator_base(sql)
     {
-        // CommonTest uses lower-case column names,
-        // so we need to enforce such names here.
-        // That's why column names are enclosed in ""
         sql << "create table soci_test(name varchar(100) not null, "
         "phone varchar(15))";
+        sql.commit();
+        sql.begin();
+    }
+};
+
+struct TableCreator4 : public tests::table_creator_base
+{
+    TableCreator4(session & sql)
+            : tests::table_creator_base(sql)
+    {
+        sql << "create table soci_test(val integer)";
         sql.commit();
         sql.begin();
     }
@@ -1263,6 +1271,11 @@ class test_context : public tests::test_context_base
             return new TableCreator3(s);
         }
 
+        tests::table_creator_base* table_creator_4(session& s) const
+        {
+            return new TableCreator4(s);
+        }
+
         std::string to_date_time(std::string const &datdt_string) const
         {
             return "'" + datdt_string + "'";
@@ -1288,14 +1301,11 @@ int main(int argc, char** argv)
     }
     else
     {
-        std::ostringstream msg;
-        msg << "usage: " << argv[0]
-        << " connectstring\n"
-        << "example: " << argv[0]
-        << " \"service=/usr/local/firebird/db/test.fdb user=SYSDBA password=masterkey\"\n";
-
-        std::cout << msg.str().c_str();
-        std::exit(1);
+        std::cout << "usage: " << argv[0]
+            << " connectstring\n"
+            << "example: " << argv[0]
+            << " \"service=/usr/local/firebird/db/test.fdb user=SYSDBA password=masterkey\"\n";
+        return EXIT_FAILURE;
     }
 
     try
@@ -1304,6 +1314,7 @@ int main(int argc, char** argv)
         tests::common_tests tests(tc);
         tests.run();
 
+        std::cout << "\nSOCI Firebird Tests:\n\n";
         test1();
         test2();
         test3();
@@ -1326,6 +1337,5 @@ int main(int argc, char** argv)
     {
         std::cout << e.what() << '\n';
     }
-
     return EXIT_FAILURE;
 }

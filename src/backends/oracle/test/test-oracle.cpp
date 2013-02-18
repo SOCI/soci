@@ -254,7 +254,7 @@ struct procedure_creator : procedure_creator_base
         : procedure_creator_base(sql)
     {
         sql <<
-             "create or replace procedure soci_test(output out varchar2,"
+             "create or replace procedure soci_test_proc(output out varchar2,"
              "input in varchar2) as "
              "begin output := input; end;";
     }
@@ -269,7 +269,7 @@ void test6()
         std::string in("my message");
         std::string out;
         statement st = (sql.prepare <<
-            "begin soci_test(:output, :input); end;",
+            "begin soci_test_proc(:output, :input); end;",
             use(out, "output"),
             use(in, "input"));
         st.execute(1);
@@ -280,7 +280,7 @@ void test6()
             std::string in("my message2");
             std::string out;
             procedure proc = (sql.prepare <<
-                "soci_test(:output, :input)",
+                "soci_test_proc(:output, :input)",
                 use(out, "output"), use(in, "input"));
             proc.execute(1);
             assert(out == in);
@@ -326,7 +326,7 @@ struct in_out_procedure_creator : public procedure_creator_base
     in_out_procedure_creator(session & sql)
         : procedure_creator_base(sql)
     {
-        sql << "create or replace procedure soci_test(s in out varchar2)"
+        sql << "create or replace procedure soci_test_proc(s in out varchar2)"
                 " as begin s := s || s; end;";
     }
 };
@@ -336,7 +336,7 @@ struct returns_null_procedure_creator : public procedure_creator_base
     returns_null_procedure_creator(session & sql)
         : procedure_creator_base(sql)
     {
-        sql << "create or replace procedure soci_test(s in out varchar2)"
+        sql << "create or replace procedure soci_test_proc(s in out varchar2)"
             " as begin s := NULL; end;";
     }
 };
@@ -366,8 +366,9 @@ void test7()
         in_out_procedure_creator procedureCreator(sql);
 
         string_holder sh("test");
-        procedure proc = (sql.prepare << "soci_test(:s)", use(sh));
+        procedure proc = (sql.prepare << "soci_test_proc(:s)", use(sh));
         proc.execute(1);
+        std::cout << "sh.get()=" << sh.get() << std::endl;
         assert(sh.get() == "testtest");
     }
 
@@ -377,7 +378,7 @@ void test7()
 
          string_holder sh;
          indicator ind = i_ok;
-         procedure proc = (sql.prepare << "soci_test(:s)", use(sh, ind));
+         procedure proc = (sql.prepare << "soci_test_proc(:s)", use(sh, ind));
          proc.execute(1);
          assert(ind == i_null);
     }
@@ -768,7 +769,7 @@ struct times100_procedure_creator : public procedure_creator_base
     times100_procedure_creator(session & sql)
         : procedure_creator_base(sql)
     {
-        sql << "create or replace procedure soci_test(id in out number)"
+        sql << "create or replace procedure soci_test_proc(id in out number)"
                " as begin id := id * 100; end;";
     }
 };
@@ -848,7 +849,7 @@ void test10()
         p.id = 1;
         p.firstName = "Pat";
         p.lastName = "Smith";
-        procedure proc = (sql.prepare << "soci_test(:ID)", use(p));
+        procedure proc = (sql.prepare << "soci_test_proc(:ID)", use(p));
         proc.execute(1);
         assert(p.id == 100);
         assert(p.firstName == "Pat");
@@ -863,7 +864,7 @@ void test10()
         person p;
         try
         {
-            procedure proc = (sql.prepare << "soci_test(:FIRST_NAME)",
+            procedure proc = (sql.prepare << "soci_test_proc(:FIRST_NAME)",
                                 use(p));
             proc.execute(1);
         }
@@ -873,7 +874,7 @@ void test10()
         }
         assert(msg == "Null value not allowed for this type");
 
-        procedure proc = (sql.prepare << "soci_test(:GENDER)",
+        procedure proc = (sql.prepare << "soci_test_proc(:GENDER)",
                                 use(p));
         proc.execute(1);
         assert(p.gender == "unknown");
@@ -1132,6 +1133,12 @@ public:
     table_creator_base* table_creator_3(session& s) const
     {
         return new table_creator_three(s);
+    }
+
+    table_creator_base* table_creator_4(session& s) const
+    {
+        // get_affected_rows not implemented in Oracle backend
+        return 0;
     }
 
     std::string to_date_time(std::string const &datdt_string) const
