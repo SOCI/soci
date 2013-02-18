@@ -71,6 +71,7 @@ bool getISCConnectParameter(std::map<std::string, std::string> const & m, std::s
 
 firebird_session_backend::firebird_session_backend(
     std::string const & connectString) : dbhp_(0), trhp_(0)
+                                         , decimals_as_strings_(false)
 {
     // extract connection parameters
     std::map<std::string, std::string> params;
@@ -113,6 +114,10 @@ firebird_session_backend::firebird_session_backend(
         throw_iscerror(stat);
     }
 
+    if (getISCConnectParameter(params, "decimals_as_strings", param))
+    {
+        decimals_as_strings_ = param == "1" or param == "Y" or param == "y";
+    }
     // starting transaction
     begin();
 }
