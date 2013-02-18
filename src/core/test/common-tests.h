@@ -3656,6 +3656,8 @@ void test_issue67()
 
 }; // class common_tests
 
+}; // class common_tests
+
 } // namespace tests
 
 } // namespace soci
