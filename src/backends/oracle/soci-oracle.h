@@ -245,7 +245,8 @@ struct oracle_session_backend : details::session_backend
     oracle_session_backend(std::string const & serviceName,
         std::string const & userName,
         std::string const & password,
-        int mode);
+        int mode,
+        bool decimals_as_strings = false);
 
     ~oracle_session_backend();
 
@@ -261,11 +262,14 @@ struct oracle_session_backend : details::session_backend
     virtual oracle_rowid_backend * make_rowid_backend();
     virtual oracle_blob_backend * make_blob_backend();
 
+    bool get_option_decimals_as_strings() { return decimals_as_strings_; }
+
     OCIEnv *envhp_;
     OCIServer *srvhp_;
     OCIError *errhp_;
     OCISvcCtx *svchp_;
     OCISession *usrhp_;
+    bool decimals_as_strings_;
 };
 
 struct oracle_backend_factory : backend_factory
