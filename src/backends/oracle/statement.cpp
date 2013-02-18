@@ -269,7 +269,10 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
     case SQLT_NUM:
         if (scale > 0)
         {
-            type = dt_double;
+            if (session_.get_option_decimals_as_strings())
+                type = dt_string;
+            else
+                type = dt_double;
         }
         else if (precision < std::numeric_limits<int>::digits10)
         {
