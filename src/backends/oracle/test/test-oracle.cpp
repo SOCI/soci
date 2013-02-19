@@ -361,19 +361,19 @@ void test7()
         assert(dynamicOut.get() == "my string");
     }
 
-    // test procedure with user-defined type as in-out parameter
+    // test procedure with string type as in-out parameter
+    // FIXME: binding user-defined type as in-out parameter
+    // does not work anymore, because of this optimization:
+    // SHA: 22e740a6bd1c120c3608dbaaf57a22b425937e65
     {
         in_out_procedure_creator procedureCreator(sql);
 
-        string_holder sh("test");
-        indicator ind = i_ok;
-        procedure proc = (sql.prepare << "soci_test_proc(:s)", use(sh, ind));
+        //string_holder sh("test");
+        std::string sh("test");
+        procedure proc = (sql.prepare << "soci_test_proc(:s)", use(sh));
         proc.execute(1);
-#if 0 // TODO: fix in-out parameter binding
-        std::cout << "sh.get()=" << sh.get() << std::endl;
-        assert(ind == i_ok);
-        assert(sh.get() == "testtest");
-#endif
+        //assert(sh.get() == "testtest");
+        assert(sh == "testtest");
     }
 
     // test procedure which returns null
