@@ -40,6 +40,7 @@ Requirements
 
 Core:
 * C++ compiler
+* Boost C++ Libraries (optional, headers only)
 
 Backend specific:
 * Firebird client library X.Y

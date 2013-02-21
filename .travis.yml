@@ -21,7 +21,7 @@ before_install:
   # http://tech.groups.yahoo.com/group/firebird-support/message/120883
   #- sudo dpkg-reconfigure -f noninteractive firebird2.5-super
   - sudo sed /ENABLE_FIREBIRD_SERVER=/s/no/yes/ -i /etc/default/firebird2.5
-  - cat /etc/default/firebird2.5
+  - cat /etc/default/firebird2.5 | grep ENABLE_FIREBIRD_SERVER
   - sudo service firebird2.5-super start
 
 before_script:
@@ -32,12 +32,12 @@ before_script:
   - isql-fb -z -q -i /dev/null # --version
   - echo 'CREATE DATABASE "LOCALHOST:/tmp/soci_test.fdb" PAGE_SIZE = 16384;' > /tmp/create_soci_test.sql
   - isql-fb -u SYSDBA -p masterkey -i /tmp/create_soci_test.sql -q
-  - ls -l /tmp/
+  - cat /tmp/create_soci_test.sql
 
 script:
   - mkdir -p src/_build
   - cd src/_build
-  - cmake -DSOCI_TESTS=ON -DSOCI_EMPTY_TEST_CONNSTR:STRING="dummy connection" -DSOCI_FIREBIRD_TEST_CONNSTR:STRING="service=LOCALHOST:/tmp/soci_test.fdb user=SYSDBA password=masterkey -DSOCI_MYSQL_TEST_CONNSTR:STRING="db=soci_test" -DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="dbname=soci_test user=postgres" -DSOCI_SQLITE3_TEST_CONNSTR:STRING="soci_test.db" -DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR="FILEDSN=${PWD}/../backends/odbc/test/test-postgresql.dsn;" -DSOCI_ODBC_TEST_MYSQL_CONNSTR="FILEDSN=${PWD}/../backends/odbc/test/test-mysql.dsn;" ..
+  - cmake -DSOCI_TESTS=ON -DSOCI_EMPTY_TEST_CONNSTR:STRING="dummy connection" -DSOCI_FIREBIRD_TEST_CONNSTR:STRING="service=LOCALHOST:/tmp/soci_test.fdb user=SYSDBA password=masterkey" -DSOCI_MYSQL_TEST_CONNSTR:STRING="db=soci_test" -DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="dbname=soci_test user=postgres" -DSOCI_SQLITE3_TEST_CONNSTR:STRING="soci_test.db" -DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR="FILEDSN=${PWD}/../backends/odbc/test/test-postgresql.dsn;" -DSOCI_ODBC_TEST_MYSQL_CONNSTR="FILEDSN=${PWD}/../backends/odbc/test/test-mysql.dsn;" ..
   - cmake --build .
   - ctest -V --output-on-failure .
 

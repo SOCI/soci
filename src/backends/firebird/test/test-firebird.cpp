@@ -10,6 +10,7 @@
 #include "soci-firebird.h"
 #include "error-firebird.h"            // soci::details::Firebird::throw_iscerror()
 #include "common-tests.h"
+#include "common.h"
 #include <iostream>
 #include <string>
 #include <cassert>
@@ -1097,6 +1098,104 @@ void test12()
     std::cout << "test 12 passed" << std::endl;
 }
 
+// Dynamic binding to row objects: decimals_as_strings
+void test13()
+{
+    using namespace soci::details::firebird;
+
+    int a = -12345678;
+    assert(format_decimal<int>(&a, 1) == "-123456780");
+    assert(format_decimal<int>(&a, 0) == "-12345678");
+    assert(format_decimal<int>(&a, -3) == "-12345.678");
+    assert(format_decimal<int>(&a, -8) == "-0.12345678");
+    assert(format_decimal<int>(&a, -9) == "-0.012345678");
+
+    a = 12345678;
+    assert(format_decimal<int>(&a, 1) == "123456780");
+    assert(format_decimal<int>(&a, 0) == "12345678");
+    assert(format_decimal<int>(&a, -3) == "12345.678");
+    assert(format_decimal<int>(&a, -8) == "0.12345678");
+    assert(format_decimal<int>(&a, -9) == "0.012345678");
+
+    session sql(backEnd, connectString + " decimals_as_strings=1");
+
+    try
+    {
+        sql << "drop table test13";
+    }
+    catch (std::runtime_error &)
+    {} // ignore if error
+
+    sql << "create table test13(ntest1 decimal(10,2), "
+        << "ntest2 decimal(4,4), ntest3 decimal(3,1))";
+    sql.commit();
+
+    sql.begin();
+
+    {
+        row r;
+        sql << "select * from test13", into(r);
+        assert(sql.got_data() == false);
+    }
+
+    std::string d_str0("+03.140"), d_str1("3.14"),
+        d_str2("3.1400"), d_str3("3.1");
+    indicator ind(i_ok);
+
+    {
+        statement st((sql.prepare <<
+                    "insert into test13(ntest1, ntest2, ntest3) "
+                    "values(:ntest1, :ntest2, :ntest3)",
+                use(d_str0, ind, "ntest1"), use(d_str0, "ntest2"),
+                use(d_str0, "ntest3")));
+
+        st.execute(1);
+
+        ind = i_null;
+        st.execute(1);
+    }
+
+    row r;
+    statement st = (sql.prepare << "select * from test13", into(r));
+    st.execute(1);
+
+    assert(r.size() == 3);
+
+    // get properties by position
+    assert(r.get_properties(0).get_name() == "NTEST1");
+    assert(r.get_properties(0).get_data_type() == dt_string);
+    assert(r.get_properties(1).get_name() == "NTEST2");
+    assert(r.get_properties(1).get_data_type() == dt_string);
+    assert(r.get_properties(2).get_name() == "NTEST3");
+    assert(r.get_properties(2).get_data_type() == dt_string);
+
+    // get properties by name
+    assert(r.get_properties("NTEST1").get_name() == "NTEST1");
+    assert(r.get_properties("NTEST1").get_data_type() == dt_string);
+    assert(r.get_properties("NTEST2").get_name() == "NTEST2");
+    assert(r.get_properties("NTEST2").get_data_type() == dt_string);
+    assert(r.get_properties("NTEST3").get_name() == "NTEST3");
+    assert(r.get_properties("NTEST3").get_data_type() == dt_string);
+
+    // get values by position
+    assert(r.get<std::string>(0) == d_str1);
+    assert(r.get<std::string>(1) == d_str2);
+    assert(r.get<std::string>(2) == d_str3);
+
+    // get values by name
+    assert(r.get<std::string>("NTEST1") == d_str1);
+    assert(r.get<std::string>("NTEST2") == d_str2);
+    assert(r.get<std::string>("NTEST3") == d_str3);
+
+    st.fetch();
+    assert(r.get_indicator(0) == i_null);
+    assert(r.get_indicator(1) == i_ok);
+    assert(r.get_indicator(2) == i_ok);
+
+    sql << "drop table test13";
+    std::cout << "test 13 passed" << std::endl;
+}
+
 //
 // Support for soci Common Tests
 //
@@ -1131,11 +1230,19 @@ struct TableCreator3 : public tests::table_creator_base
     TableCreator3(session & sql)
             : tests::table_creator_base(sql)
     {
-        // CommonTest uses lower-case column names,
-        // so we need to enforce such names here.
-        // That's why column names are enclosed in ""
         sql << "create table soci_test(name varchar(100) not null, "
         "phone varchar(15))";
+        sql.commit();
+        sql.begin();
+    }
+};
+
+struct TableCreator4 : public tests::table_creator_base
+{
+    TableCreator4(session & sql)
+            : tests::table_creator_base(sql)
+    {
+        sql << "create table soci_test(val integer)";
         sql.commit();
         sql.begin();
     }
@@ -1164,6 +1271,11 @@ class test_context : public tests::test_context_base
             return new TableCreator3(s);
         }
 
+        tests::table_creator_base* table_creator_4(session& s) const
+        {
+            return new TableCreator4(s);
+        }
+
         std::string to_date_time(std::string const &datdt_string) const
         {
             return "'" + datdt_string + "'";
@@ -1189,14 +1301,11 @@ int main(int argc, char** argv)
     }
     else
     {
-        std::ostringstream msg;
-        msg << "usage: " << argv[0]
-        << " connectstring\n"
-        << "example: " << argv[0]
-        << " \"service=/usr/local/firebird/db/test.fdb user=SYSDBA password=masterkey\"\n";
-
-        std::cout << msg.str().c_str();
-        std::exit(1);
+        std::cout << "usage: " << argv[0]
+            << " connectstring\n"
+            << "example: " << argv[0]
+            << " \"service=/usr/local/firebird/db/test.fdb user=SYSDBA password=masterkey\"\n";
+        return EXIT_FAILURE;
     }
 
     try
@@ -1205,6 +1314,7 @@ int main(int argc, char** argv)
         tests::common_tests tests(tc);
         tests.run();
 
+        std::cout << "\nSOCI Firebird Tests:\n\n";
         test1();
         test2();
         test3();
@@ -1217,6 +1327,7 @@ int main(int argc, char** argv)
         test10();
         test11();
         test12();
+        test13();
 
         std::cout << "\nOK, all tests passed.\n\n";
 
@@ -1226,6 +1337,5 @@ int main(int argc, char** argv)
     {
         std::cout << e.what() << '\n';
     }
-
     return EXIT_FAILURE;
 }

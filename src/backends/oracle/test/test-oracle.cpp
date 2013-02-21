@@ -1134,6 +1134,12 @@ public:
         return new table_creator_three(s);
     }
 
+    table_creator_base* table_creator_4(session& s) const
+    {
+        // get_affected_rows not implemented in Oracle backend
+        return 0;
+    }
+
     std::string to_date_time(std::string const &datdt_string) const
     {
         return "to_date('" + datdt_string + "', 'YYYY-MM-DD HH24:MI:SS')";
