@@ -629,6 +629,46 @@ struct table_creator_for_get_affected_rows : table_creator_base
     }
 };
 
+struct table_creator_json : public table_creator_base
+{
+    table_creator_json(session& sql)
+    : table_creator_base(sql)
+    {
+        sql << "drop table if exists soci_json_test;";
+        sql << "create table soci_json_test(data json)";
+    }
+};
+
+// Test JSON. Only valid for PostgreSQL Server 9.2++
+void test_json()
+{
+    {
+        bool exception = false;
+        session sql(backEnd, connectString);
+        std::string result;
+		std::string valid_input = "{\"tool\":\"soci\",\"result\":42}";
+		std::string invalid_input = "{\"tool\":\"other\",\"result\":invalid}";
+
+        table_creator_json tableCreator(sql);
+
+        sql << "insert into soci_json_test (data) values(:data)",use(valid_input);
+		sql << "select data from  soci_json_test",into(result);
+        assert(result == valid_input);
+
+        try
+        {
+            sql << "insert into soci_json_test (data) values(:data)",use(invalid_input);
+        }
+        catch(soci_error &_exception)
+        {
+            exception = true;
+        }
+        assert(exception);
+    }
+    std::cout << "test json passed" << std::endl;
+}
+
+
 //
 // Support for soci Common Tests
 //
@@ -714,6 +754,7 @@ int main(int argc, char** argv)
         test11();
         test12();
         test_bytea();
+        test_json();
 
         std::cout << "\nOK, all tests passed.\n\n";
 
