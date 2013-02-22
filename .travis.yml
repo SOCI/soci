@@ -3,7 +3,7 @@
 language: cpp
 
 compiler:
-  - g++
+  - gcc
 
 branches:
   only:
