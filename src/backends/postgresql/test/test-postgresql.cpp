@@ -639,20 +639,38 @@ struct table_creator_json : public table_creator_base
     }
 };
 
+
+// Return 9,2 for 9.2.3
+typedef std::pair<int,int> server_version;
+
+server_version get_postgresql_version(session& sql)
+{
+    std::string version;
+    std::pair<int,int> result;
+    sql << "select version()",into(version);
+    if (sscanf(version.c_str(),"PostgreSQL %i.%i", &result.first, &result.second) < 2)
+    {
+        throw std::runtime_error("Failed to retrieve PostgreSQL version number");
+    }
+    return result;
+}
+
 // Test JSON. Only valid for PostgreSQL Server 9.2++
 void test_json()
 {
+    session sql(backEnd, connectString);
+    server_version version = get_postgresql_version(sql);
+    if ( version >= server_version(9,2))
     {
         bool exception = false;
-        session sql(backEnd, connectString);
         std::string result;
-		std::string valid_input = "{\"tool\":\"soci\",\"result\":42}";
-		std::string invalid_input = "{\"tool\":\"other\",\"result\":invalid}";
+        std::string valid_input = "{\"tool\":\"soci\",\"result\":42}";
+        std::string invalid_input = "{\"tool\":\"other\",\"result\":invalid}";
 
         table_creator_json tableCreator(sql);
 
         sql << "insert into soci_json_test (data) values(:data)",use(valid_input);
-		sql << "select data from  soci_json_test",into(result);
+        sql << "select data from  soci_json_test",into(result);
         assert(result == valid_input);
 
         try
@@ -664,8 +682,12 @@ void test_json()
             exception = true;
         }
         assert(exception);
+        std::cout << "test json passed" << std::endl;
     }
-    std::cout << "test json passed" << std::endl;
+    else
+    {
+        std::cout << "json only available for PSQL server >= 9.2. Found version: " << version.first << "." << version.second << std::endl;
+    }
 }
 
 
