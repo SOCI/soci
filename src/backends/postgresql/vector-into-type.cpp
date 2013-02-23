@@ -167,7 +167,7 @@ void resizevector_(void * p, std::size_t sz)
 
 void postgresql_vector_into_type_backend::resize(std::size_t sz)
 {
-    assert(sz < std::numeric_limits<unsigned short>::max()); // Not a strong constraint, for debugging only
+    assert(sz < 10*std::numeric_limits<unsigned short>::max()); // Not a strong constraint, for debugging only. Notice my fix is even worse
 
     switch (type_)
     {
