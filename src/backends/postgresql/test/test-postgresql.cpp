@@ -584,7 +584,7 @@ void test_bytea()
             assert(bin2 == "\\x0d0c0b0a");
         }
 	}
-    std::cout << "test_bytea passed" << std::endl;
+    std::cout << "test bytea passed" << std::endl;
 }
 
 // DDL Creation objects for common tests
@@ -639,7 +639,6 @@ struct table_creator_json : public table_creator_base
     }
 };
 
-
 // Return 9,2 for 9.2.3
 typedef std::pair<int,int> server_version;
 
@@ -677,8 +676,9 @@ void test_json()
         {
             sql << "insert into soci_json_test (data) values(:data)",use(invalid_input);
         }
-        catch(soci_error &_exception)
+        catch(soci_error& e)
         {
+            (void)e;
             exception = true;
         }
         assert(exception);
@@ -686,7 +686,7 @@ void test_json()
     }
     else
     {
-        std::cout << "json only available for PSQL server >= 9.2. Found version: " << version.first << "." << version.second << std::endl;
+    std::cout << "test json skipped (PostgreSQL >= 9.2 required, found " << version.first << "." << version.second << ")" << std::endl;
     }
 }
 
