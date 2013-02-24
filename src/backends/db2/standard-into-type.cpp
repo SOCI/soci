@@ -8,6 +8,7 @@
 
 #define SOCI_DB2_SOURCE
 #include "soci-db2.h"
+#include "common.h"
 #include <ctime>
 
 using namespace soci;
@@ -37,7 +38,7 @@ void db2_standard_into_type_backend::define_by_pos(
         // Patch: set to min between column size and 100MB (used ot be 32769)
         // Column size for text data type can be too large for buffer allocation
         size = statement_.column_size(this->position);
-        size = size > maxBuffer ? maxBuffer : size;
+        size = size > details::db2::cli_max_buffer ? details::db2::cli_max_buffer : size;
         size++;
         buf = new char[size];
         data = buf;
@@ -133,7 +134,7 @@ void db2_standard_into_type_backend::post_fetch(
         {
             std::string *s = static_cast<std::string *>(data);
             *s = buf;
-            if (s->size() >= (maxBuffer - 1))
+            if (s->size() >= (details::db2::cli_max_buffer - 1))
             {
                 throw soci_error("Buffer size overflow; maybe got too large string");
             }
