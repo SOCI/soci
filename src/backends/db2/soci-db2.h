@@ -1,6 +1,6 @@
 //
+// Copyright (C) 2011-2013 Denis Chapligin
 // Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
-// Copyright (C) 2011 Denis Chapligin
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
