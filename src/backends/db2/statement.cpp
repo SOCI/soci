@@ -8,6 +8,7 @@
 
 #define SOCI_DB2_SOURCE
 #include "soci-db2.h"
+#include <cctype>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
