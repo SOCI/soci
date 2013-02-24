@@ -140,7 +140,7 @@ void db2_statement_backend::prepare(std::string const &  query ,
 statement_backend::exec_fetch_result
 db2_statement_backend::execute(int  number )
 {
-    SQLSMALLINT rows_processed = 0;
+    SQLULEN rows_processed = 0;
 
     if (hasVectorUseElements)
     {
