@@ -23,8 +23,10 @@ using namespace soci::details;
 using namespace soci::details::oracle;
 
 oracle_session_backend::oracle_session_backend(std::string const & serviceName,
-    std::string const & userName, std::string const & password, int mode)
+    std::string const & userName, std::string const & password, int mode,
+    bool decimals_as_strings)
     : envhp_(NULL), srvhp_(NULL), errhp_(NULL), svchp_(NULL), usrhp_(NULL)
+      , decimals_as_strings_(decimals_as_strings)
 {
     sword res;
 
