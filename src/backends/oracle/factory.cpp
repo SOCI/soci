@@ -99,7 +99,7 @@ void chop_connect_string(std::string const & connectString,
         }
         else if (key == "decimals_as_strings")
         {
-            decimals_as_strings = value == "1" or value == "Y" or value == "y";
+            decimals_as_strings = value == "1" || value == "Y" || value == "y";
         }
     }
 }
