@@ -23,7 +23,7 @@ void ref_counted_statement::final_action()
     try
     {
         st_.alloc();
-        st_.prepare(session_.get_query_stream().str(), st_one_time_query);
+        st_.prepare(session_.get_query(), st_one_time_query);
         st_.define_and_bind();
 
         const bool gotData = st_.execute(true);
