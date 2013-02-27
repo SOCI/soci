@@ -10,6 +10,7 @@
 #include "connection-pool.h"
 #include "soci-backend.h"
 #include "backend-loader.h"
+#include "query_transformation.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -48,7 +49,7 @@ void ensureConnected(session_backend * backEnd)
 } // namespace anonymous
 
 session::session()
-    : once(this), prepare(this), logStream_(NULL),
+    : once(this), prepare(this), query_transformation_(0), logStream_(NULL),
       lastFactory_(NULL), uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
 {
@@ -56,7 +57,7 @@ session::session()
 
 session::session(backend_factory const & factory,
     std::string const & connectString)
-    : once(this), prepare(this), logStream_(NULL),
+    : once(this), prepare(this), query_transformation_(0), logStream_(NULL),
       lastFactory_(&factory), lastConnectString_(connectString),
       uppercaseColumnNames_(false),
       isFromPool_(false), pool_(NULL)
@@ -66,7 +67,7 @@ session::session(backend_factory const & factory,
 
 session::session(std::string const & backendName,
     std::string const & connectString)
-    : once(this), prepare(this), logStream_(NULL),
+    : once(this), prepare(this), query_transformation_(0), logStream_(NULL),
       uppercaseColumnNames_(false),
       isFromPool_(false), pool_(NULL)
 {
@@ -79,7 +80,7 @@ session::session(std::string const & backendName,
 }
 
 session::session(std::string const & connectString)
-    : once(this), prepare(this), logStream_(NULL),
+    : once(this), prepare(this), query_transformation_(0), logStream_(NULL),
       uppercaseColumnNames_(false),
       isFromPool_(false), pool_(NULL)
 {
@@ -115,6 +116,7 @@ session::~session()
     }
     else
     {
+        delete query_transformation_;
         delete backEnd_;
     }
 }
@@ -258,6 +260,20 @@ std::ostringstream & session::get_query_stream()
     {
         return query_stream_;
     }
+}
+
+std::string session::get_query() const
+{
+    // preserve logical constness of get_query,
+    // stream used as read-only here, 
+    session* pthis = const_cast<session*>(this);
+
+    // sole place where any user-defined query transformation is applied
+    if (query_transformation_)
+    {
+        return (*query_transformation_)(pthis->get_query_stream().str());
+    }
+    return pthis->get_query_stream().str();
 }
 
 void session::set_log_stream(std::ostream * s)

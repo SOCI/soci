@@ -307,6 +307,7 @@ public:
         test30();
         test31();
         test_get_affected_rows();
+        test_query_transformation();
         test_pull5();
         test_issue67();
     }
@@ -3562,6 +3563,52 @@ void test31()
         }
     }
     std::cout << "test 31 passed\n";
+}
+
+// Issue 66 - test query transformation callback feature
+static std::string lower_than_g(std::string query)
+{
+    return query + " WHERE c < 'g'";
+}
+
+struct greater_than_g_lower_than_j : std::unary_function<std::string, std::string>
+{
+    result_type operator()(argument_type query) const
+    {
+        return query + " WHERE c > 'g' AND c < 'j'";
+    }
+};
+
+void test_query_transformation()
+{
+    session sql(backEndFactory_, connectString_);
+    {
+        // create and populate the test table
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+        char c;
+        for (c = 'a'; c <= 'z'; ++c)
+        {
+            sql << "insert into soci_test(c) values(\'" << c << "\')";
+        }
+        
+        char const* query = "select count(*) from soci_test";
+        {
+            sql.set_query_transformation(lower_than_g);
+            int count;
+            sql << query, into(count);
+
+            assert(count == 'g' - 'a');
+        }
+        {
+            sql.set_query_transformation(greater_than_g_lower_than_j());
+            int count;
+            sql << query, into(count);
+
+            assert(count == 'j' - 'h');
+        }
+    }
+    std::cout << "test test_query_transformation passed" << std::endl;
 }
 
 // Originally, submitted to SQLite3 backend and later moved to common test.
