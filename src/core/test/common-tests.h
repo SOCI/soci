@@ -3570,12 +3570,18 @@ static std::string lower_than_g(std::string query)
     return query + " WHERE c < 'g'";
 }
 
-struct greater_than_g_lower_than_j : std::unary_function<std::string, std::string>
+struct where_condition : std::unary_function<std::string, std::string>
 {
+    where_condition(std::string const& where)
+        : where_(where)
+    {}
+
     result_type operator()(argument_type query) const
     {
-        return query + " WHERE c > 'g' AND c < 'j'";
+        return query + " WHERE " + where_;
     }
+
+    std::string where_;
 };
 
 void test_query_transformation()
@@ -3600,11 +3606,14 @@ void test_query_transformation()
             assert(count == 'g' - 'a');
         }
         {
-            sql.set_query_transformation(greater_than_g_lower_than_j());
-            int count;
+            sql.set_query_transformation(where_condition("c > 'g' AND c < 'j'"));
+            int count = 0;
             sql << query, into(count);
-
             assert(count == 'j' - 'h');
+            count = 0;
+            sql.set_query_transformation(where_condition("c > 's' AND c <= 'z'"));
+            sql << query, into(count);
+            assert(count == 'z' - 's');
         }
     }
     std::cout << "test test_query_transformation passed" << std::endl;
