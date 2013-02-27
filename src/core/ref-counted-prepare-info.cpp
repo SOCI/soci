@@ -42,5 +42,5 @@ void ref_counted_prepare_info::final_action()
 
 std::string ref_counted_prepare_info::get_query() const
 {
-    return session_.get_query_stream().str();
+    return session_.get_query();
 }

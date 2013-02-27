@@ -9,6 +9,8 @@
 #define SOCI_SESSION_H_INCLUDED
 
 #include "once-temp-type.h"
+#include "query_transformation.h"
+
 // std
 #include <cstddef>
 #include <ostream>
@@ -62,6 +64,14 @@ public:
     details::once_temp_type operator<<(T const & t) { return once << t; }
 
     std::ostringstream & get_query_stream();
+    std::string get_query() const;
+
+    template <typename T>
+    void set_query_transformation(T callback)
+    {
+        delete query_transformation_;
+        query_transformation_= new details::query_transformation<T>(callback);
+    }
 
     // support for basic logging
     void set_log_stream(std::ostream * s);
@@ -107,6 +117,7 @@ private:
     session& operator=(session const &);
 
     std::ostringstream query_stream_;
+    details::query_transformation_function* query_transformation_;
 
     std::ostream * logStream_;
     std::string lastQuery_;
