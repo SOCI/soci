@@ -35,11 +35,17 @@ namespace details
 // data types, as used to describe exchange format
 enum exchange_type
 {
-    x_char, x_stdstring,
-    x_short, x_integer,
-    x_long_long, x_unsigned_long_long,
-    x_double, x_stdtm, x_statement,
-    x_rowid, x_blob
+    x_char,
+    x_stdstring,
+    x_short,
+    x_integer,
+    x_long_long,
+    x_unsigned_long_long,
+    x_double,
+    x_stdtm,
+    x_statement,
+    x_rowid,
+    x_blob
 };
 
 // type of statement (used for optimizing statement preparation)
