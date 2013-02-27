@@ -31,7 +31,8 @@ using namespace soci::details::postgresql;
 
 postgresql_statement_backend::postgresql_statement_backend(
     postgresql_session_backend &session)
-     : session_(session), result_(NULL), justDescribed_(false),
+     : session_(session), result_(NULL), 
+       rowsAffectedBulk_(-1LL), justDescribed_(false),
        hasIntoElements_(false), hasVectorIntoElements_(false),
        hasUseElements_(false), hasVectorUseElements_(false)
 {
@@ -50,6 +51,10 @@ void postgresql_statement_backend::alloc()
 
 void postgresql_statement_backend::clean_up()
 {
+    // 'reset' the value for a 
+    // potential new execution.
+    rowsAffectedBulk_ = -1;
+
     if (result_ != NULL)
     {
         PQclear(result_);
@@ -320,6 +325,14 @@ postgresql_statement_backend::execute(int number)
                     {
                         throw_postgresql_soci_error(result_);
                     }
+                    
+    				// prepare for accumulating rows affected 
+					// after the fisrt successful execution
+					if (i == 0)	{
+						rowsAffectedBulk_ = 0;
+					}
+					// accumulate number of rows before clearing results
+					rowsAffectedBulk_ += get_affected_rows();                    
                     PQclear(result_);
                 }
             }
@@ -456,7 +469,11 @@ long long postgresql_statement_backend::get_affected_rows()
     {
         return result;
     }
-    else
+    else if (rowsAffectedBulk_ >= 0)
+	{
+		return rowsAffectedBulk_;
+	}
+	else
     {
         return -1;
     }
