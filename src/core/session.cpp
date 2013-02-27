@@ -49,7 +49,7 @@ void ensureConnected(session_backend * backEnd)
 } // namespace anonymous
 
 session::session()
-    : once(this), prepare(this), query_transformation_(0), logStream_(NULL),
+    : once(this), prepare(this), query_transformation_(NULL), logStream_(NULL),
       lastFactory_(NULL), uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
 {
@@ -57,7 +57,7 @@ session::session()
 
 session::session(backend_factory const & factory,
     std::string const & connectString)
-    : once(this), prepare(this), query_transformation_(0), logStream_(NULL),
+    : once(this), prepare(this), query_transformation_(NULL), logStream_(NULL),
       lastFactory_(&factory), lastConnectString_(connectString),
       uppercaseColumnNames_(false),
       isFromPool_(false), pool_(NULL)
@@ -67,7 +67,7 @@ session::session(backend_factory const & factory,
 
 session::session(std::string const & backendName,
     std::string const & connectString)
-    : once(this), prepare(this), query_transformation_(0), logStream_(NULL),
+    : once(this), prepare(this), query_transformation_(NULL), logStream_(NULL),
       uppercaseColumnNames_(false),
       isFromPool_(false), pool_(NULL)
 {
@@ -80,7 +80,7 @@ session::session(std::string const & backendName,
 }
 
 session::session(std::string const & connectString)
-    : once(this), prepare(this), query_transformation_(0), logStream_(NULL),
+    : once(this), prepare(this), query_transformation_(NULL), logStream_(NULL),
       uppercaseColumnNames_(false),
       isFromPool_(false), pool_(NULL)
 {
