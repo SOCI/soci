@@ -158,6 +158,34 @@ namespace soci
 namespace tests
 {
 
+// ensure connection is checked, no crash occurs
+
+#define SOCI_TEST_ENSURE_CONNECTED(sql, method) { \
+    std::string msg; \
+    try { \
+        (sql.method)(); \
+        assert(!"exception expected"); \
+    } catch (soci_error const &e) { msg = e.what(); } \
+    assert(msg.empty() == false); } (void)sql
+
+#define SOCI_TEST_ENSURE_CONNECTED2(sql, method) { \
+    std::string msg; \
+    try { std::string seq; long v(0); \
+        (sql.method)(seq, v); \
+        assert(!"exception expected"); \
+    } catch (soci_error const &e) { msg = e.what(); } \
+    assert(msg.empty() == false); } (void)sql
+
+inline bool equal_approx(double const a, double const b)
+{
+    // The formula taken from CATCH test framework
+    // https://github.com/philsquared/Catch/
+    // Thanks to Richard Harris for his help refining this formula
+    double const epsilon(std::numeric_limits<float>::epsilon() * 100);
+    double const scale(1.0);
+    return std::fabs(a - b) < epsilon * (scale + (std::max)(std::fabs(a), std::fabs(b)));
+}
+
 // TODO: improve cleanup capabilities by subtypes, soci_test name may be omitted --mloskot
 //       i.e. optional ctor param accepting custom table name
 class table_creator_base
@@ -318,35 +346,6 @@ private:
     std::string const connectString_;
 
 typedef std::auto_ptr<table_creator_base> auto_table_creator;
-
-
-inline bool equal_approx(double const a, double const b)
-{
-    // The formula taken from CATCH test framework
-    // https://github.com/philsquared/Catch/
-    // Thanks to Richard Harris for his help refining this formula
-    double const epsilon(std::numeric_limits<float>::epsilon() * 100);
-    double const scale(1.0);
-    return std::fabs(a - b) < epsilon * (scale + (std::max)(std::fabs(a), std::fabs(b)));
-}
-
-// ensure connection is checked, no crash occurs
-
-#define SOCI_TEST_ENSURE_CONNECTED(sql, method) { \
-    std::string msg; \
-    try { \
-        (sql.method)(); \
-        assert(!"exception expected"); \
-    } catch (soci_error const &e) { msg = e.what(); } \
-    assert(msg.empty() == false); } (void)sql
-
-#define SOCI_TEST_ENSURE_CONNECTED2(sql, method) { \
-    std::string msg; \
-    try { std::string seq; long v(0); \
-        (sql.method)(seq, v); \
-        assert(!"exception expected"); \
-    } catch (soci_error const &e) { msg = e.what(); } \
-    assert(msg.empty() == false); } (void)sql
 
 void test0()
 {
