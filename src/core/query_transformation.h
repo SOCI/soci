@@ -18,7 +18,6 @@ namespace soci
 namespace details
 {
 
-// TODO: use std::unary_function<const std::string&, std::string>
 class query_transformation_function : public std::unary_function<std::string const&, std::string>
 {
 public:
