@@ -418,6 +418,9 @@ for(std::size_t i = 0; i != r.size(); ++i)
     case dt_long_long:
         doc &lt;&lt; r.get&lt;long long&gt;(i);
         break;
+    case dt_unsigned_long_long:
+        doc &lt;&lt; r.get&lt;unsigned long long&gt;(i);
+        break;
     case dt_date:
         std::tm when = r.get&lt;std::tm&gt;(i);
         doc &lt;&lt; asctime(&amp;when);
@@ -455,6 +458,10 @@ requested.</p>
     <tr>
       <td><code>dt_long_long</code></td>
       <td><code>long long</code></td>
+    </tr>
+    <tr>
+      <td><code>dt_unsigned_long_long</code></td>
+      <td><code>unsigned long long</code></td>
     </tr>
     <tr>
       <td><code>dt_string</code></td>
@@ -499,8 +506,8 @@ struct that converts to and from one of the following SOCI base types:</p>
 <ul>
   <li><code>double</code></li>
   <li><code>int</code></li>
-  <li><code>unsigned long</code></li>
   <li><code>long long</code></li>
+  <li><code>unsigned long long</code></li>
   <li><code>std::string</code></li>
   <li><code>char</code></li>
   <li><code>std::tm</code></li>
@@ -615,38 +622,41 @@ struct Person
 
 namespace soci
 {
-template&lt;&gt; struct TypeConversion&lt;Person&gt;
-{
-    typedef values base_type;
-    static void from_base(values const &amp; v, indicator /* ind */, Person &amp; p)
+    template&lt;&gt;
+    struct type_conversion&lt;Person&gt;
     {
-        p.id = v.get&lt;int&gt;("ID");
-        p.firstName = v.get&lt;std::string&gt;("FIRST_NAME");
-        p.lastName = v.get&lt;std::string&gt;("LAST_NAME");
+        typedef values base_type;
 
-        // p.gender will be set to the default value "unknown"
-        // when the column is null:
-        p.gender = v.get&lt;std::string&gt;("GENDER", "unknown");
+        static void from_base(values const &amp; v, indicator /* ind */, Person &amp; p)
+        {
+            p.id = v.get&lt;int&gt;("ID");
+            p.firstName = v.get&lt;std::string&gt;("FIRST_NAME");
+            p.lastName = v.get&lt;std::string&gt;("LAST_NAME");
 
-        // alternatively, the indicator can be tested directly:
-        // if (v.indicator("GENDER") == i_null)
-        // {
-        //     p.gender = "unknown";
-        // }
-        // else
-        // {
-        //     p.gender = v.get&lt;std::string&gt;("GENDER");
-        // }
-    }
-    static void to_base(const Person &amp; p, values &amp; v, indicator &amp; ind)
-    {
-        v.set("ID", p.id);
-        v.set("FIRST_NAME", p.firstName);
-        v.set("LAST_NAME", p.lastName);
-        v.set("GENDER", p.gender, p.gender.empty() ? i_null : i_ok);
-        ind = i_ok;
-    }
-};
+            // p.gender will be set to the default value "unknown"
+            // when the column is null:
+            p.gender = v.get&lt;std::string&gt;("GENDER", "unknown");
+
+            // alternatively, the indicator can be tested directly:
+            // if (v.indicator("GENDER") == i_null)
+            // {
+            //     p.gender = "unknown";
+            // }
+            // else
+            // {
+            //     p.gender = v.get&lt;std::string&gt;("GENDER");
+            // }
+        }
+    
+        static void to_base(const Person &amp; p, values &amp; v, indicator &amp; ind)
+        {
+            v.set("ID", p.id);
+            v.set("FIRST_NAME", p.firstName);
+            v.set("LAST_NAME", p.lastName);
+            v.set("GENDER", p.gender, p.gender.empty() ? i_null : i_ok);
+            ind = i_ok;
+        }
+    };
 }
 </pre>
 
