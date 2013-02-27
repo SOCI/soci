@@ -18,7 +18,17 @@ namespace soci
 namespace details
 {
 
-class query_transformation_function : public std::unary_function<std::string const&, std::string>
+// Query transformation is a mechanism that enables user to apply 
+// any string-to-string transformation to SQL statement just
+// before it is executed.
+// Transformation procedure is specified by user,
+// be it a function or an arbitrary type as long as it
+// defines operator() with the appropriate signature:
+// unary function takes any type converible-to std::string
+// and returns std::string.
+
+class query_transformation_function 
+    : public std::unary_function<std::string const&, std::string>
 {
 public:
     virtual result_type operator()(argument_type a) const = 0;
