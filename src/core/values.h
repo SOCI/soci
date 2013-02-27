@@ -220,7 +220,7 @@ public:
 
 private:
 
-    //TODO To make values generally usable outside of TypeConversionS,
+    //TODO To make values generally usable outside of type_conversion's,
     // these should be reference counted smart pointers
     row * row_;
     std::vector<details::standard_use_type *> uses_;
@@ -233,7 +233,7 @@ private:
 
     bool uppercaseColumnNames_;
 
-    // When TypeConversion::to() is called, a values object is created
+    // When type_conversion::to() is called, a values object is created
     // without an underlying row object.  In that case, get_from_uses()
     // returns the underlying field values
     template <typename T>
