@@ -3602,31 +3602,37 @@ void test_get_affected_rows()
         st3.execute(true);
 
         assert(st3.get_affected_rows() == 5);
+
+        std::vector<int> v(5, 0);
+        for (std::size_t i = 0; i < v.size(); ++i)
+        {
+            v[i] = (7 + i);
+        }
         
-    	// Test affected rows for bulk operations.
-	    statement st4 = (sql.prepare <<
-			"delete from soci_test where val = :v", use(v));
+        // test affected rows for bulk operations.
+        statement st4 = (sql.prepare <<
+            "delete from soci_test where val = :v", use(v));
         st4.execute(true);
 
         assert(st4.get_affected_rows() == 5);
 
-		std::vector<std::string> w(2, "1");
-		w[1] = "a"; // This invalid value must cause an exception.
-		statement st5 = (sql.prepare <<
-			"insert into soci_test(val) values(:val)", use(w));
-		bool thrown = false;
-		try { st5.execute(true); } 
-		catch(...) { thrown = true; }
-		assert(thrown);
+        std::vector<std::string> w(2, "1");
+        w[1] = "a"; // this invalid value must cause an exception.
+        statement st5 = (sql.prepare <<
+            "insert into soci_test(val) values(:val)", use(w));
+        bool thrown = false;
+        try { st5.execute(true); } 
+        catch(...) { thrown = true; }
+        assert(thrown);
 
-		// Test the preserved 'number of rows 
-		// affected' after a partial failure.
+        // test the preserved 'number of rows 
+        // affected' after a partial failure.
         assert(st5.get_affected_rows() == 1);
 
-		// Confirm the partial insertion.
-		int val = 0;
-		sql << "select val from soci_test", into(val);
-		assert(val == 1);        
+        // confirm the partial insertion.
+        int val = 0;
+        sql << "select val from soci_test", into(val);
+        assert(val == 1);        
     }
 
     std::cout << "test get_affected_rows passed" << std::endl;

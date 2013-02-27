@@ -326,13 +326,13 @@ postgresql_statement_backend::execute(int number)
                         throw_postgresql_soci_error(result_);
                     }
                     
-    				// prepare for accumulating rows affected 
-					// after the fisrt successful execution
-					if (i == 0)	{
-						rowsAffectedBulk_ = 0;
-					}
-					// accumulate number of rows before clearing results
-					rowsAffectedBulk_ += get_affected_rows();                    
+                    // prepare for accumulating rows affected 
+                    // after the fisrt successful execution
+                    if (i == 0) {
+                        rowsAffectedBulk_ = 0;
+                    }
+                    // accumulate number of rows before clearing results
+                    rowsAffectedBulk_ += get_affected_rows();                    
                     PQclear(result_);
                 }
             }
@@ -470,10 +470,10 @@ long long postgresql_statement_backend::get_affected_rows()
         return result;
     }
     else if (rowsAffectedBulk_ >= 0)
-	{
-		return rowsAffectedBulk_;
-	}
-	else
+    {
+        return rowsAffectedBulk_;
+    }
+    else
     {
         return -1;
     }

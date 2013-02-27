@@ -258,7 +258,7 @@ struct postgresql_session_backend : details::session_backend
 
 struct postgresql_backend_factory : backend_factory
 {
-	postgresql_backend_factory() {}
+    postgresql_backend_factory() {}
     virtual postgresql_session_backend * make_session(
         std::string const & connectString) const;
 };
