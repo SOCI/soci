@@ -176,6 +176,8 @@ struct postgresql_statement_backend : details::statement_backend
     std::string statementName_;
     std::vector<std::string> names_; // list of names for named binds
 
+    long long rowsAffectedBulk_; // number of rows affected by the last bulk operation
+
     int numberOfRows_;  // number of rows retrieved from the server
     int currentRow_;    // "current" row number to consume in postFetch
     int rowsToConsume_; // number of rows to be consumed in postFetch
