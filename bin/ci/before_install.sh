@@ -10,7 +10,8 @@ fi
 tmstamp() { echo -n "[$(date '+%H:%M:%S')]" ; }
 
 # Install dependencies
-echo "$(tmstamp) before_intsall::apt-get starting $(date)"
+echo "$(tmstamp) before_install::apt-get starting $(date)"
+wget http://oss.oracle.com/el4/RPM-GPG-KEY-oracle -O - | sudo apt-key add -
 sudo bash -c 'echo "deb https://oss.oracle.com/debian unstable main non-free" >> /etc/apt/sources.list'
 sudo apt-get update -qq
 sudo apt-get install -qq \
@@ -18,7 +19,7 @@ sudo apt-get install -qq \
 	libmyodbc unixodbc-dev odbc-postgresql \
 	firebird2.5-super firebird2.5-dev \
 	oracle-xe-client
-echo "$(tmstamp) before_intsall::apt-get finished $(date)"
+echo "$(tmstamp) before_install::apt-get finished $(date)"
 
 # Configure Firebird
 # See: Non-interactive setup for travis-ci.org 
