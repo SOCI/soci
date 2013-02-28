@@ -19,4 +19,3 @@ sudo service firebird2.5-super start
 #
 # Configure ODBC
 sudo odbcinst -i -d -f /usr/share/libmyodbc/odbcinst.ini
-#
