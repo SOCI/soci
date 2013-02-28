@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Run script actions for SOCI build at travis-ci.org
 # Mateusz Loskot <mateusz@loskot.net>, http://github.com/SOCI
 #

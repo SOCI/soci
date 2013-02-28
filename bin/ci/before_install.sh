@@ -1,10 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 # Run before_intsall actions for SOCI build at travis-ci.org
 # Mateusz Loskot <mateusz@loskot.net>, http://github.com/SOCI
 #
 set -e
 if [[ "$TRAVIS" != "true" ]] ; then
-	echo_err "Running this script makes no sense outside of travis-ci.org"
+	echo "Running this script makes no sense outside of travis-ci.org"
 	exit 1
 fi
 tmstamp() { echo -n "[$(date '+%H:%M:%S')]" ; }
