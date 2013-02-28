@@ -31,5 +31,4 @@ sudo service firebird2.5-super start
 # Configure ODBC
 sudo odbcinst -i -d -f /usr/share/libmyodbc/odbcinst.ini
 # Confgure oracle
-ORACLE_HOME=/usr/lib/oracle/xe/app/oracle/product/10.2.0/client
-export ORACLE_HOME
+export ORACLE_HOME=/usr/lib/oracle/xe/app/oracle/product/10.2.0/client

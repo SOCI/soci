@@ -8,10 +8,7 @@ if [[ "$TRAVIS" != "true" ]] ; then
 	exit 1
 fi
 
-if [[ -z $ORACLE_HOME ]] ; then
-	echo "ORACLE_HOME is missing"
-	exit 1
-fi
+export ORACLE_HOME=/usr/lib/oracle/xe/app/oracle/product/10.2.0/client
 # Build SOCI using CMake (primary build configuration)
 mkdir -p src/_build
 cd src/_build
