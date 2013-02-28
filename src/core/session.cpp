@@ -98,7 +98,7 @@ session::session(std::string const & connectString)
 }
 
 session::session(connection_pool & pool)
-    : isFromPool_(true), pool_(&pool)
+    : query_transformation_(NULL), logStream_(NULL), isFromPool_(true), pool_(&pool)
 {
     poolPosition_ = pool.lease();
     session & pooledSession = pool.at(poolPosition_);
