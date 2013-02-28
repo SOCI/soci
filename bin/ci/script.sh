@@ -6,6 +6,7 @@ source ./bin/ci/common.sh
 # Build SOCI using CMake (primary build configuration)
 mkdir -p src/_build
 cd src/_build
+echo "$(tmstamp) *** script::cmake-config starting $(date) ***"
 cmake \
 	-DSOCI_TESTS=ON \
 	-DSOCI_EMPTY_TEST_CONNSTR:STRING="dummy connection" \
@@ -17,6 +18,12 @@ cmake \
 	-DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR="FILEDSN=${PWD}/../backends/odbc/test/test-postgresql.dsn;" \
 	-DSOCI_ODBC_TEST_MYSQL_CONNSTR="FILEDSN=${PWD}/../backends/odbc/test/test-mysql.dsn;" \
 	..
+echo "$(tmstamp) *** script::cmake-config finished $(date) ***"
+
+echo "$(tmstamp) *** script::cmake-build starting $(date) ***"
 cmake --build .
-# Run tests
+echo "$(tmstamp) *** script::cmake-build finished $(date) ***"
+
+echo "$(tmstamp) *** script::cmake-test starting $(date) ***"
 ctest -V --output-on-failure .
+echo "$(tmstamp) *** script::cmake-test finished $(date) ***"
