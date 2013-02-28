@@ -20,7 +20,6 @@ sudo apt-get install -qq \
 	firebird2.5-super firebird2.5-dev \
 	oracle-xe-client
 echo "$(tmstamp) before_install::apt-get finished $(date)"
-
 # Configure Firebird
 # See: Non-interactive setup for travis-ci.org 
 # http://tech.groups.yahoo.com/group/firebird-support/message/120883
@@ -28,6 +27,7 @@ echo "$(tmstamp) before_install::apt-get finished $(date)"
 sudo sed /ENABLE_FIREBIRD_SERVER=/s/no/yes/ -i /etc/default/firebird2.5
 cat /etc/default/firebird2.5 | grep ENABLE_FIREBIRD_SERVER
 sudo service firebird2.5-super start
-#
 # Configure ODBC
 sudo odbcinst -i -d -f /usr/share/libmyodbc/odbcinst.ini
+# Confgure oracle
+ORACLE_HOME=/usr/lib/oracle/xe/app/oracle/product/10.2.0/client
