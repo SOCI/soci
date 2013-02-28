@@ -2,13 +2,24 @@
 # Run before_intsall actions for SOCI build at travis-ci.org
 # Mateusz Loskot <mateusz@loskot.net>, http://github.com/SOCI
 #
+set -e
+if [[ "$TRAVIS" != "true" ]] ; then
+	echo_err "Running this script makes no sense outside of travis-ci.org"
+	exit 1
+fi
+tmstamp() { echo -n "[$(date '+%H:%M:%S')]" ; }
+
 # Install dependencies
+echo "$(tstamp) before_intsall::apt-get starting $(date)"
+sudo bash -c 'echo "deb https://oss.oracle.com/debian unstable main non-free" >> /etc/apt/sources.list'
 sudo apt-get update -qq
 sudo apt-get install -qq \
 	libboost-dev libboost-date-time-dev \
 	libmyodbc unixodbc-dev odbc-postgresql \
-	firebird2.5-super firebird2.5-dev
-#
+	firebird2.5-super firebird2.5-dev \
+	oracle-xe-client
+echo "$(tstamp) before_intsall::apt-get finished $(date)"
+
 # Configure Firebird
 # See: Non-interactive setup for travis-ci.org 
 # http://tech.groups.yahoo.com/group/firebird-support/message/120883

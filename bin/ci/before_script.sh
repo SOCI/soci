@@ -2,6 +2,11 @@
 # Run before_script actions for SOCI build at travis-ci.org
 # Mateusz Loskot <mateusz@loskot.net>, http://github.com/SOCI
 #
+set -e
+if [[ "$TRAVIS" != "true" ]] ; then
+	echo_err "Running this script makes no sense outside of travis-ci.org"
+	exit 1
+fi
 # Create local databases
 # MySQL (service provided)
 mysql --version
