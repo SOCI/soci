@@ -305,7 +305,7 @@ macro(soci_backend_test)
 
       target_link_libraries(${TEST_TARGET_STATIC}
         ${SOCI_CORE_TARGET_STATIC}
-        ${SOCI_${BACKENDU}_TARGET}-static
+        ${SOCI_${BACKENDU}_TARGET}_static
         ${${BACKENDU}_LIBRARIES}
         ${SOCI_CORE_STATIC_DEPENDENCIES}
         ${SOCI_TEST_DEPENDENCIES})
