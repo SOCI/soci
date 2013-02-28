@@ -42,6 +42,9 @@ include(SociConfig)
 boost_report_value(SOCI_PLATFORM_NAME)
 boost_report_value(SOCI_COMPILER_NAME)
 
+option(SOCI_STATIC "Enable build of static libraries" ON)
+boost_report_value(SOCI_STATIC)
+
 option(SOCI_TESTS "Enable build of collection of SOCI tests" ON)
 boost_report_value(SOCI_TESTS)
 
