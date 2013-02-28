@@ -4,7 +4,12 @@
 #
 set -e
 if [[ "$TRAVIS" != "true" ]] ; then
-	echo_err "Running this script makes no sense outside of travis-ci.org"
+	echo "Running this script makes no sense outside of travis-ci.org"
+	exit 1
+fi
+
+if [[ -z $ORACLE_HOME ]] ; then
+	echo "ORACLE_HOME is missing"
 	exit 1
 fi
 # Build SOCI using CMake (primary build configuration)
