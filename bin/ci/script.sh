@@ -2,13 +2,7 @@
 # Run script actions for SOCI build at travis-ci.org
 # Mateusz Loskot <mateusz@loskot.net>, http://github.com/SOCI
 #
-set -e
-if [[ "$TRAVIS" != "true" ]] ; then
-	echo "Running this script makes no sense outside of travis-ci.org"
-	exit 1
-fi
-
-export ORACLE_HOME=/usr/lib/oracle/xe/app/oracle/product/10.2.0/client
+source ./bin/ci/common.sh
 # Build SOCI using CMake (primary build configuration)
 mkdir -p src/_build
 cd src/_build
