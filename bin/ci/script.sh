@@ -19,4 +19,4 @@ cmake \
 	..
 cmake --build .
 # Run tests
-#ctest -V --output-on-failure .
+ctest -V --output-on-failure .
