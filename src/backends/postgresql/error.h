@@ -19,9 +19,9 @@ namespace details
 namespace postgresql
 {
 
-void throw_postgresql_soci_error(PGresult *res);
+void throw_postgresql_soci_error(PGresult*& res);
 
-void get_error_details(PGresult *res, std::string &msg, std::string &sqlstate);
+void get_error_details(PGresult* res, std::string &msg, std::string &sqlstate);
 
 } // namespace postgresql
 

@@ -162,18 +162,19 @@ void postgresql_statement_backend::prepare(std::string const & query,
     {
         statementName_ = session_.get_next_statement_name();
 
-        PGresult * res = PQprepare(session_.conn_, statementName_.c_str(),
+        PGresult* result = PQprepare(session_.conn_, statementName_.c_str(),
             query_.c_str(), static_cast<int>(names_.size()), NULL);
-        if (res == NULL)
+        if (result == NULL)
         {
             throw soci_error("Cannot prepare statement.");
         }
-        ExecStatusType status = PQresultStatus(res);
+        ExecStatusType status = PQresultStatus(result);
         if (status != PGRES_COMMAND_OK)
         {
-            throw_postgresql_soci_error(res);
+            // releases result with PQclear
+            throw_postgresql_soci_error(result);
         }
-        PQclear(res);
+        PQclear(result);
     }
 
     stType_ = stType;
@@ -280,9 +281,7 @@ postgresql_statement_backend::execute(int number)
                 result_ = PQexecParams(session_.conn_, query_.c_str(),
                     static_cast<int>(paramValues.size()),
                     NULL, &paramValues[0], NULL, NULL, 0);
-
 #else
-
                 if (stType_ == st_repeatable_query)
                 {
                     // this query was separately prepared
@@ -318,6 +317,7 @@ postgresql_statement_backend::execute(int number)
                     ExecStatusType status = PQresultStatus(result_);
                     if (status != PGRES_COMMAND_OK)
                     {
+                        // releases result_ with PQclear
                         throw_postgresql_soci_error(result_);
                     }
                     PQclear(result_);
@@ -342,7 +342,6 @@ postgresql_statement_backend::execute(int number)
 
             result_ = PQexec(session_.conn_, query_.c_str());
 #else
-
             if (stType_ == st_repeatable_query)
             {
                 // this query was separately prepared
@@ -404,6 +403,7 @@ postgresql_statement_backend::execute(int number)
     }
     else
     {
+        // releases result_ with PQclear
         throw_postgresql_soci_error(result_);
 
         // dummy, never reach

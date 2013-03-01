@@ -59,7 +59,6 @@ namespace // unnamed
 void hard_exec(PGconn * conn, char const * query, char const * errMsg)
 {
     PGresult* result = PQexec(conn, query);
-
     if (0 == result)
     {
         throw soci_error(errMsg);
@@ -68,6 +67,7 @@ void hard_exec(PGconn * conn, char const * query, char const * errMsg)
     ExecStatusType const status = PQresultStatus(result);
     if (PGRES_COMMAND_OK != status)
     {
+        // releases result with PQclear
         throw_postgresql_soci_error(result);
     }
 
