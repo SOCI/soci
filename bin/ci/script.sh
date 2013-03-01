@@ -8,6 +8,7 @@ mkdir -p src/_build
 cd src/_build
 echo "$(tmstamp) *** script::cmake-config starting $(date) ***"
 cmake \
+	-DSOCI_STATIC=OFF \
 	-DSOCI_TESTS=ON \
 	-DSOCI_EMPTY_TEST_CONNSTR:STRING="dummy connection" \
 	-DSOCI_FIREBIRD_TEST_CONNSTR:STRING="service=LOCALHOST:/tmp/soci_test.fdb user=SYSDBA password=masterkey" \
