@@ -22,7 +22,9 @@ cmake \
 echo "$(tmstamp) *** script::cmake-config finished $(date) ***"
 
 echo "$(tmstamp) *** script::cmake-build starting $(date) ***"
-cmake --build .
+echo "$(tmstamp) *** script::cmake-build make -j ${NUMTHREADS} $(date) ***"
+#cmake --build .
+make -j 4
 echo "$(tmstamp) *** script::cmake-build finished $(date) ***"
 
 echo "$(tmstamp) *** script::cmake-test starting $(date) ***"
