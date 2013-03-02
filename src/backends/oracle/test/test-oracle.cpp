@@ -385,7 +385,6 @@ void test7inout()
             in_out_procedure_creator procedureCreator(sql);
 
             string_holder sh("test");
-            auto p = &sh;
             procedure proc = (sql.prepare << "soci_test(:s)", use(sh));
             proc.execute(1);
             assert(sh.get() == "testtest");
