@@ -3616,7 +3616,7 @@ void test_query_transformation()
             assert(count == 'z' - 's');
         }
     }
-    std::cout << "test test_query_transformation passed" << std::endl;
+    std::cout << "test query_transformation passed" << std::endl;
 }
 
 // Originally, submitted to SQLite3 backend and later moved to common test.
@@ -3680,7 +3680,7 @@ void test_pull5()
         sql.begin(); // no crash expected
     }
 
-    std::cout << "test_pull5 passed\n";
+    std::cout << "test pull-5 passed\n";
 }
 
 // issue 67 - Allocated statement backend memory leaks on exception
@@ -3705,7 +3705,7 @@ void test_issue67()
         {
             (void)e;
             assert("expected exception caught");
-            std::cout << "test_issue67 passed - check memory debugger output for leaks" << std::endl;
+            std::cout << "test issue-67 passed - check memory debugger output for leaks" << std::endl;
         }
     }
 

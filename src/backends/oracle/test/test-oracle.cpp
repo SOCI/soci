@@ -390,7 +390,7 @@ void test7inout()
             assert(sh.get() == "testtest");
         }
     }
-    std::cout << "test 7 inout passed" << std::endl;
+    std::cout << "test 7-inout passed" << std::endl;
 }
 
 void test7outnull()
@@ -409,7 +409,7 @@ void test7outnull()
             assert(ind == i_null);
         }
     }
-    std::cout << "test 7 outnull passed" << std::endl;
+    std::cout << "test 7-outnull passed" << std::endl;
 }
 
 // test bulk insert features
