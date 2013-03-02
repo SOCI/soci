@@ -30,18 +30,26 @@ void standard_use_type::bind(statement_impl & st, int & position)
     }
 }
 
-void standard_use_type::pre_use()
+void standard_use_type::pre_use()   
 {
+    // Handle IN direction of parameters of SQL statements and procedures
     convert_to_base();
     backEnd_->pre_use(ind_);
 }
 
 void standard_use_type::post_use(bool gotData)
 {
+    // Handle OUT direction of IN/OUT parameters of stored procedures
     backEnd_->post_use(gotData, ind_);
+    convert_from_base();
 
-    // There is no need to call convert_from_base() here, the converted value
-    // wouldn't be used anyhow.
+    // IMPORTANT:
+    // This treatment of input ("use") parameter as output data sink may be 
+    // confusing, but it is necessary to store OUT data back in the same 
+    // object as IN, of IN/OUT parameter.
+    // As there is no symmetry for IN/OUT in SQL and there are no OUT/IN
+    // we do not perform convert_to_base() for output ("into") parameter.
+    // See conversion_use_type<T>::convert_from_base() for more details.
 }
 
 void standard_use_type::clean_up()

@@ -343,50 +343,74 @@ struct returns_null_procedure_creator : public procedure_creator_base
 
 void test7()
 {
-    session sql(backEnd, connectString);
     {
-        basic_table_creator tableCreator(sql);
+        session sql(backEnd, connectString);
+        {
+            basic_table_creator tableCreator(sql);
 
-        int id(1);
-        string_holder in("my string");
-        sql << "insert into soci_test(id, name) values(:id, :name)", use(id), use(in);
+            int id(1);
+            string_holder in("my string");
+            sql << "insert into soci_test(id, name) values(:id, :name)", use(id), use(in);
 
-        string_holder out;
-        sql << "select name from soci_test", into(out);
-        assert(out.get() == "my string");
+            string_holder out;
+            sql << "select name from soci_test", into(out);
+            assert(out.get() == "my string");
 
-        row r;
-        sql << "select * from soci_test", into(r);
-        string_holder dynamicOut = r.get<string_holder>(1);
-        assert(dynamicOut.get() == "my string");
+            row r;
+            sql << "select * from soci_test", into(r);
+            string_holder dynamicOut = r.get<string_holder>(1);
+            assert(dynamicOut.get() == "my string");
+        }
     }
+    std::cout << "test 7 passed" << std::endl;
+}
 
-    // FIXME: see https://github.com/SOCI/soci/issues/81
-    //        temporarily disabled to allow testing of Oracle on travis-ci
-#if 0
-    // test procedure with user-defined type as in-out parameter
+void test7inout()
+{
     {
-        in_out_procedure_creator procedureCreator(sql);
+        session sql(backEnd, connectString);
 
-        string_holder sh("test");
-        procedure proc = (sql.prepare << "soci_test(:s)", use(sh));
-        proc.execute(1);
-        assert(sh.get() == "testtest");
+        // test procedure with user-defined type as in-out parameter
+        {
+            in_out_procedure_creator procedureCreator(sql);
+
+            std::string sh("test");
+            procedure proc = (sql.prepare << "soci_test(:s)", use(sh));
+            proc.execute(1);
+            assert(sh == "testtest");
+        }
+
+        // test procedure with user-defined type as in-out parameter
+        {
+            in_out_procedure_creator procedureCreator(sql);
+
+            string_holder sh("test");
+            auto p = &sh;
+            procedure proc = (sql.prepare << "soci_test(:s)", use(sh));
+            proc.execute(1);
+            assert(sh.get() == "testtest");
+        }
     }
-#endif
-    // test procedure which returns null
+    std::cout << "test 7 inout passed" << std::endl;
+}
+
+void test7outnull()
+{
     {
-         returns_null_procedure_creator procedureCreator(sql);
+        session sql(backEnd, connectString);
 
-         string_holder sh;
-         indicator ind = i_ok;
-         procedure proc = (sql.prepare << "soci_test(:s)", use(sh, ind));
-         proc.execute(1);
-         assert(ind == i_null);
+        // test procedure which returns null
+        {
+            returns_null_procedure_creator procedureCreator(sql);
+
+            string_holder sh;
+            indicator ind = i_ok;
+            procedure proc = (sql.prepare << "soci_test(:s)", use(sh, ind));
+            proc.execute(1);
+            assert(ind == i_null);
+        }
     }
-
-    // FIXME above std::cout << "test 7 passed (IN/OUT " << std::endl;
-    std::cout << "test 7 passed (IN/OUT proc skipped)" << std::endl;
+    std::cout << "test 7 outnull passed" << std::endl;
 }
 
 // test bulk insert features
@@ -1196,6 +1220,8 @@ int main(int argc, char** argv)
         test5();
         test6();
         test7();
+        test7inout();
+        test7outnull();
         test8();
         test9();
         test10();

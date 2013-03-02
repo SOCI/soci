@@ -120,6 +120,12 @@ public:
 
     void convert_from_base()
     {
+        // NOTE:
+        // readOnly_ flag indicates that use_type object has been generated
+        // based on non-const object passed by user as input argument.
+        // For const objects, this is effectively no-op conversion.
+        // See standard_use_type::post_use() for more details.
+
         if (readOnly_ == false)
         {
             type_conversion<T>::from_base(
