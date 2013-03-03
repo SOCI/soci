@@ -556,15 +556,15 @@ struct bytea_table_creator : public table_creator_base
 
 void test_bytea()
 {
-	{
+    {
         session sql(backEnd, connectString);
-		bytea_table_creator tableCreator(sql);
+        bytea_table_creator tableCreator(sql);
 
         int v = 0x0A0B0C0D;
         unsigned char* b = reinterpret_cast<unsigned char*>(&v);
         std::string data;
         std::copy(b, b + sizeof(v), std::back_inserter(data));
-		{
+        {
 
             sql << "insert into soci_test(val) values(:val)", use(data);
 
@@ -583,7 +583,7 @@ void test_bytea()
             std::string bin2 = r.get<std::string>(0);
             assert(bin2 == "\\x0d0c0b0a");
         }
-	}
+    }
     std::cout << "test bytea passed" << std::endl;
 }
 

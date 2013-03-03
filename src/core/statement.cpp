@@ -507,11 +507,11 @@ bool statement_impl::resize_intos(std::size_t upperBound)
     // this function does not need to take into account the intosForRow_
     // elements, since they are never used for bulk operations
 
-	int rows = backEnd_->get_number_of_rows();
-	if (rows < 0)
-	{
-		rows = 0;
-	}
+    int rows = backEnd_->get_number_of_rows();
+    if (rows < 0)
+    {
+        rows = 0;
+    }
     if (upperBound != 0 && upperBound < static_cast<std::size_t>(rows))
     {
         rows = static_cast<int>(upperBound);
