@@ -3565,6 +3565,11 @@ void test31()
 }
 
 // Issue 66 - test query transformation callback feature
+static std::string no_op_transform(std::string query)
+{
+    return query;
+}
+
 static std::string lower_than_g(std::string query)
 {
     return query + " WHERE c < 'g'";
@@ -3591,20 +3596,30 @@ void test_query_transformation()
         // create and populate the test table
         auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
-        char c;
-        for (c = 'a'; c <= 'z'; ++c)
+        for (char c = 'a'; c <= 'z'; ++c)
         {
             sql << "insert into soci_test(c) values(\'" << c << "\')";
         }
         
         char const* query = "select count(*) from soci_test";
+
+        // free function, no-op
+        {
+            sql.set_query_transformation(no_op_transform);
+            int count;
+            sql << query, into(count);
+            assert(count == 'z' - 'a' + 1);
+        }
+
+        // free function
         {
             sql.set_query_transformation(lower_than_g);
             int count;
             sql << query, into(count);
-
             assert(count == 'g' - 'a');
         }
+
+        // function object with state
         {
             sql.set_query_transformation(where_condition("c > 'g' AND c < 'j'"));
             int count = 0;
@@ -3614,6 +3629,66 @@ void test_query_transformation()
             sql.set_query_transformation(where_condition("c > 's' AND c <= 'z'"));
             sql << query, into(count);
             assert(count == 'z' - 's');
+        }
+
+// Bug in Visual Studio __cplusplus still means C++03
+// https://connect.microsoft.com/VisualStudio/feedback/details/763051/
+#if defined _MSC_VER && _MSC_VER>=1600
+#define SOCI_HAVE_CPP11 1
+#elif __cplusplus >= 201103L
+#define SOCI_HAVE_CPP11 1
+#else
+#undef SOCI_HAVE_CPP11
+#endif
+
+#ifdef SOCI_HAVE_CPP11
+        // lambda
+        {
+            sql.set_query_transformation(
+                [](std::string const& query) {
+                    return query + " WHERE c > 'g' AND c < 'j'";
+            });
+
+            int count = 0;
+            sql << query, into(count);
+            assert(count == 'j' - 'h');
+        }
+#endif
+#undef SOCI_HAVE_CPP11
+
+        // prepared statements
+
+        // constant effect (pre-prepare set transformation)
+        {
+            // set transformation after statement is prepared
+            sql.set_query_transformation(lower_than_g);
+            // prepare statement
+            int count;
+            statement st = (sql.prepare << query, into(count));
+            // observe transformation effect
+            st.execute(true);
+            assert(count == 'g' - 'a');
+            // reset transformation
+            sql.set_query_transformation(no_op_transform);
+            // observe the same transformation, no-op set above has no effect
+            count = 0;
+            st.execute(true);
+            assert(count == 'g' - 'a');
+        }
+
+        // no effect (post-prepare set transformation)
+        {
+            // reset
+            sql.set_query_transformation(no_op_transform);
+
+            // prepare statement
+            int count;
+            statement st = (sql.prepare << query, into(count));
+            // set transformation after statement is prepared
+            sql.set_query_transformation(lower_than_g);
+            // observe no effect of WHERE clause injection
+            st.execute(true);
+            assert(count == 'z' - 'a' + 1);
         }
     }
     std::cout << "test query_transformation passed" << std::endl;
