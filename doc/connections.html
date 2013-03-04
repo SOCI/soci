@@ -3,7 +3,7 @@
 <head>
   <meta content="text/html; charset=ISO-8859-1"  http-equiv="content-type" />
   <link rel="stylesheet" type="text/css" href="style.css" />
-  <title>SOCI - basics</title>
+  <title>SOCI - connections</title>
 </head>
 
 <body>
@@ -112,49 +112,19 @@ time, even using different backends.</p>
 </ul>
 </div>
 
-<h3>Simple SQL statements</h3>
-
-<p>In many cases, the SQL query is intended to be executed only once,
-which means that statement parsing and execution can go together.
-The <code>session</code> class provides a special <code>once</code>
-member, which triggers parsing and execution of such one-time
-statements:</p>
-
-<pre class="example">
-sql.once &lt;&lt; "drop table persons";
-</pre>
-
-<p>For shorter syntax, the following form is also allowed:</p>
-
-<pre class="example">
-sql &lt;&lt; "drop table persons";
-</pre>
-
-<p>The IOStream-like interface is exactly what it looks like, so that
-the
-statement text can be composed of many parts, involving anything that
-is <i>streamable</i> (including custom classes, if they have
-appropriate <code>operator&lt;&lt;</code>):</p>
-
-<pre class="example">
-string tableName = "persons";
-sql &lt;&lt; "drop table " &lt;&lt; tableName;
-
-int id = 123;
-sql &lt;&lt; "delete from companies where id = " &lt;&lt; id;
-</pre>
-
 <table class="foot-links" border="0" cellpadding="2" cellspacing="2">
   <tr>
     <td class="foot-link-left">
       <a href="errors.html">Previous (Errors)</a>
     </td>
     <td class="foot-link-right">
-      <a href="exchange.html">Next (Exchanging data)</a>
+      <a href="queries.html">Next (Queries)</a>
     </td>
   </tr>
 </table>
 
+<p class="copyright">Copyright &copy; 2013 Mateusz Loskot</p>
 <p class="copyright">Copyright &copy; 2004-2008 Maciej Sobczak, Stephen Hutton</p>
+
 </body>
 </html>
