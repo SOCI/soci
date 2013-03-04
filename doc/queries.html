@@ -43,6 +43,88 @@ int id = 123;
 sql &lt;&lt; "delete from companies where id = " &lt;&lt; id;
 </pre>
 
+<h3>Query transformation</h3>
+
+<p>In SOCI 3.2.0, query transformation mechanism was introduced.</p>
+
+<p>Query transformation is specified as user-defined unary function or callable 
+function object with input parameter of type <code>std::string</code> which 
+returns object of type <code>std::string</code> as well.</p>
+  
+<p>The query transformation function is registered for current database session
+using dedicated <code>session::set_query_transformation</code> method.
+Then, the transformation function is called with query string as argument
+just before the query is sent to database backend for execution or for 
+preparation.</p>
+
+<p>For one-time statements, query transformation is performed before 
+each execution of statement. For prepared statements, query is transformed
+only once, before preparation, regardless how many times it is executed.</p>
+
+<p>A few short examples how to use query transformation:</p>
+
+<ul><li>defined as free function:</li></ul>
+
+<pre class="example">
+std::string less_than_ten(std::string query)
+{
+    return query + " WHERE price < 10";
+}
+
+session sql(postgresql, "dbname=mydb");
+sql.set_query_transformation(less_than_ten);
+sql &lt;&lt; "DELETE FROM item";
+</pre>
+
+<ul><li>defined as function object:</li></ul>
+
+<pre class="example">
+struct order : std::unary_function&lt;std::string, std::string&gt;
+{
+    order(std::string const& by) : by_(by) {}
+
+    result_type operator()(argument_type query) const
+    {
+        return query + " ORDER BY " + by_;
+    }
+
+    std::string by_;
+};
+
+char const* query = "SELECT * FROM product";
+sql.set_query_transformation(order("price");
+sql &lt;&lt; query;
+sql.set_query_transformation(order("id");
+sql &lt;&lt; query;
+</pre>
+
+<ul><li>defined as lambda function (since C++11):</li></ul>
+
+<pre class="example">
+std::string dep = "sales";
+sql.set_query_transformation(
+    [&dep](std::string const& query) {
+        return query + " WHERE department = '" + dep + "'";
+});
+sql &lt;&lt; "SELECT * FROM employee";
+</pre>
+
+<p>Query transformations enable users with simple mechanism to apply extra
+requirements to or interact with SQL statement being executed and that is 
+without changing the SQL statement itself which may be passed from different
+parts of application.</p>
+  
+<p>For example, the query transformation may be used to:</p>
+<ul>
+  <li>modify or add clauses of SQL statements (i.e. <code>WHERE</code> 
+    clause with new condition)</li>
+  <li>prefix table names with new schema to allow namespaces switch</li>
+  <li>validate SQL statements</li>
+  <li>perform sanitization checking for any unverified input</li>
+  <li>apply database-specific features like add optimization hints to SQL 
+    statements (i.e. <code>SELECT /*+RULE*/ A FROM C</code> in Oracle 9)</li>
+</ul>
+
 <table class="foot-links" border="0" cellpadding="2" cellspacing="2">
   <tr>
     <td class="foot-link-left">
