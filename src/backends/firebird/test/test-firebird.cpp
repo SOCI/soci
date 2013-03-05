@@ -10,10 +10,13 @@
 #include "soci-firebird.h"
 #include "error-firebird.h"            // soci::details::Firebird::throw_iscerror()
 #include "common-tests.h"
+#include "common.h"
 #include <iostream>
 #include <string>
 #include <cassert>
 #include <ctime>
+#include <cstring>
+#include <cmath>
 
 using namespace soci;
 
@@ -86,6 +89,7 @@ void test2()
         sql << "delete from test2";
     }
 
+#if 0 // SOCI doesn't support binding into(char *, ...) anymore, use std::string
     {
         char msg[] = "Hello, Firebird!";
         char buf1[100], buf2[100], buf3[100];
@@ -96,18 +100,7 @@ void test2()
         sql << "insert into test2(p1, p2) values (?,?)", use(b1, 100), use(b1, 100);
         sql << "select p1, p2 from test2", into(b2, 100), into(b3, 100);
 
-        assert(
-            buf2[0] == 'H' && buf3[0] == 'H' &&
-            buf2[1] == 'e' && buf3[1] == 'e' &&
-            buf2[2] == 'l' && buf3[2] == 'l' &&
-            buf2[3] == 'l' && buf3[3] == 'l' &&
-            buf2[4] == 'o' && buf3[4] == 'o' &&
-            buf2[5] == ',' && buf3[5] == ',' &&
-            buf2[6] == ' ' && buf3[6] == ' ' &&
-            buf2[7] == 'F' && buf3[7] == 'F' &&
-            buf2[8] == 'i' && buf3[8] == 'i' &&
-            buf2[9] == 'r' && buf3[9] == 'r' &&
-            buf2[10] == '\0' && buf3[10] == '\0');
+        assert(!std::strcmp(buf2, buf3) && !std::strcmp(buf2, "Hello, Fir"));
 
         sql << "delete from test2";
     }
@@ -121,18 +114,19 @@ void test2()
         use(buf1), use(buf1);
         sql << "select p1, p2 from test2", into(buf2), into(buf3);
 
-        assert(
-            buf2[0] == 'H' && buf3[0] == 'H' &&
-            buf2[1] == 'e' && buf3[1] == 'e' &&
-            buf2[2] == 'l' && buf3[2] == 'l' &&
-            buf2[3] == 'l' && buf3[3] == 'l' &&
-            buf2[4] == 'o' && buf3[4] == 'o' &&
-            buf2[5] == ',' && buf3[5] == ',' &&
-            buf2[6] == ' ' && buf3[6] == ' ' &&
-            buf2[7] == 'F' && buf3[7] == 'F' &&
-            buf2[8] == 'i' && buf3[8] == 'i' &&
-            buf2[9] == 'r' && buf3[9] == 'r' &&
-            buf2[10] == '\0' && buf3[10] == '\0');
+        assert(!std::strcmp(buf2, buf3) && !std::strcmp(buf2, "Hello, Fir"));
+
+        sql << "delete from test2";
+    }
+#endif
+
+    {
+        std::string b1("Hello, Firebird!"), b2, b3;
+
+        sql << "insert into test2(p1, p2) values (?,?)", use(b1), use(b1);
+        sql << "select p1, p2 from test2", into(b2), into(b3);
+
+        assert(b2 == b3 && b2 == "Hello, Fir");
 
         sql << "delete from test2";
     }
@@ -144,7 +138,9 @@ void test2()
         sql << "insert into test2(p1) values(\'" << msg << "\')";
 
         char buf[20];
-        sql << "select p1 from test2", into(buf);
+        std::string buf_str;
+        sql << "select p1 from test2", into(buf_str);
+        std::strcpy(buf, buf_str.c_str());
 
         assert(std::strncmp(buf, msg, 5) == 0);
         assert(std::strncmp(buf+5, "     ", 5) == 0);
@@ -321,9 +317,11 @@ void test5()
         sql << "select NULL from rdb$database", into(i, ind);
         assert(ind == i_null);
 
+#if 0   // SOCI doesn't support binding into(char *, ...) anymore, use std::string
         char buf[4];
         sql << "select \'Hello\' from rdb$database", into(buf, ind);
         assert(ind == i_truncated);
+#endif
 
         sql << "select 5 from rdb$database where 0 = 1", into(i, ind);
         assert(sql.got_data() == false);
@@ -341,18 +339,9 @@ void test5()
                    "Null value fetched and no indicator defined.");
         }
 
-        try
-        {
-            // expect error
-            sql << "select 5 from rdb$database where 0 = 1", into(i);
-            assert(false);
-        }
-        catch (soci_error const &e)
-        {
-            std::string error = e.what();
-            assert(error ==
-                   "No data fetched and no indicator defined.");
-        }
+        // expect no data
+        sql << "select 5 from rdb$database where 0 = 1", into(i);
+        assert(!sql.got_data());
     }
 
     std::cout << "test 5 passed" << std::endl;
@@ -1065,13 +1054,155 @@ void test11()
     std::cout << "test 11 passed" << std::endl;
 }
 
+void test12()
+{
+    session sql(backEnd, connectString);
+
+    try
+    {
+        sql << "drop table test12";
+    }
+    catch (std::runtime_error &)
+    {} // ignore if error
+
+    sql << "create table test12(a decimal(10,3), b timestamp, c date, d time)";
+    sql.commit();
+    sql.begin();
+
+    // Check if passing input parameters as strings works
+    // for different column types.
+    {
+        std::string a = "-3.14150", b = "2013-02-28 23:36:01",
+            c = "2013-02-28", d = "23:36:01";
+        statement st = (sql.prepare <<
+                "insert into test12(a, b, c, d) values (?, ?, ?, ?)",
+                use(a), use(b), use(c), use(d));
+        st.execute(1);
+        assert(getRowCount(st, eRowsInserted) == 1);
+    }
+
+    {
+        double a;
+        std::tm b, c, d;
+        sql << "select a, b, c, d from test12",
+            into(a), into(b), into(c), into(d);
+        assert(std::fabs(a - (-3.141)) < 0.000001);
+        assert(b.tm_year + 1900 == 2013 && b.tm_mon + 1 == 2 && b.tm_mday == 28);
+        assert(b.tm_hour == 23 && b.tm_min == 36 && b.tm_sec == 1);
+        assert(c.tm_year + 1900 == 2013 && c.tm_mon + 1 == 2 && c.tm_mday == 28);
+        assert(c.tm_hour == 0 && c.tm_min == 0 && c.tm_sec == 0);
+        assert(d.tm_hour == 23 && d.tm_min == 36 && d.tm_sec == 1);
+    }
+
+    sql << "drop table test12";
+    std::cout << "test 12 passed" << std::endl;
+}
+
+// Dynamic binding to row objects: decimals_as_strings
+void test13()
+{
+    using namespace soci::details::firebird;
+
+    int a = -12345678;
+    assert(format_decimal<int>(&a, 1) == "-123456780");
+    assert(format_decimal<int>(&a, 0) == "-12345678");
+    assert(format_decimal<int>(&a, -3) == "-12345.678");
+    assert(format_decimal<int>(&a, -8) == "-0.12345678");
+    assert(format_decimal<int>(&a, -9) == "-0.012345678");
+
+    a = 12345678;
+    assert(format_decimal<int>(&a, 1) == "123456780");
+    assert(format_decimal<int>(&a, 0) == "12345678");
+    assert(format_decimal<int>(&a, -3) == "12345.678");
+    assert(format_decimal<int>(&a, -8) == "0.12345678");
+    assert(format_decimal<int>(&a, -9) == "0.012345678");
+
+    session sql(backEnd, connectString + " decimals_as_strings=1");
+
+    try
+    {
+        sql << "drop table test13";
+    }
+    catch (std::runtime_error &)
+    {} // ignore if error
+
+    sql << "create table test13(ntest1 decimal(10,2), "
+        << "ntest2 decimal(4,4), ntest3 decimal(3,1))";
+    sql.commit();
+
+    sql.begin();
+
+    {
+        row r;
+        sql << "select * from test13", into(r);
+        assert(sql.got_data() == false);
+    }
+
+    std::string d_str0("+03.140"), d_str1("3.14"),
+        d_str2("3.1400"), d_str3("3.1");
+    indicator ind(i_ok);
+
+    {
+        statement st((sql.prepare <<
+                    "insert into test13(ntest1, ntest2, ntest3) "
+                    "values(:ntest1, :ntest2, :ntest3)",
+                use(d_str0, ind, "ntest1"), use(d_str0, "ntest2"),
+                use(d_str0, "ntest3")));
+
+        st.execute(1);
+
+        ind = i_null;
+        st.execute(1);
+    }
+
+    row r;
+    statement st = (sql.prepare << "select * from test13", into(r));
+    st.execute(1);
+
+    assert(r.size() == 3);
+
+    // get properties by position
+    assert(r.get_properties(0).get_name() == "NTEST1");
+    assert(r.get_properties(0).get_data_type() == dt_string);
+    assert(r.get_properties(1).get_name() == "NTEST2");
+    assert(r.get_properties(1).get_data_type() == dt_string);
+    assert(r.get_properties(2).get_name() == "NTEST3");
+    assert(r.get_properties(2).get_data_type() == dt_string);
+
+    // get properties by name
+    assert(r.get_properties("NTEST1").get_name() == "NTEST1");
+    assert(r.get_properties("NTEST1").get_data_type() == dt_string);
+    assert(r.get_properties("NTEST2").get_name() == "NTEST2");
+    assert(r.get_properties("NTEST2").get_data_type() == dt_string);
+    assert(r.get_properties("NTEST3").get_name() == "NTEST3");
+    assert(r.get_properties("NTEST3").get_data_type() == dt_string);
+
+    // get values by position
+    assert(r.get<std::string>(0) == d_str1);
+    assert(r.get<std::string>(1) == d_str2);
+    assert(r.get<std::string>(2) == d_str3);
+
+    // get values by name
+    assert(r.get<std::string>("NTEST1") == d_str1);
+    assert(r.get<std::string>("NTEST2") == d_str2);
+    assert(r.get<std::string>("NTEST3") == d_str3);
+
+    st.fetch();
+    assert(r.get_indicator(0) == i_null);
+    assert(r.get_indicator(1) == i_ok);
+    assert(r.get_indicator(2) == i_ok);
+
+    sql << "drop table test13";
+    std::cout << "test 13 passed" << std::endl;
+}
+
 //
 // Support for soci Common Tests
 //
 
-struct table_creator_1 : public tests::table_creator_base
+struct TableCreator1 : public tests::table_creator_base
 {
-    table_creator_1(session & sql)
+    TableCreator1(session & sql)
             : tests::table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, val integer, c char, "
@@ -1082,28 +1213,36 @@ struct table_creator_1 : public tests::table_creator_base
     }
 };
 
-struct table_creator_2 : public tests::table_creator_base
+struct TableCreator2 : public tests::table_creator_base
 {
-    table_creator_2(session & sql)
+    TableCreator2(session & sql)
             : tests::table_creator_base(sql)
     {
-        sql  << "create table soci_test(\"num_float\" float, \"num_int\" integer, "
-        "\"name\" varchar(20), \"sometime\" timestamp, \"chr\" char)";
+        sql  << "create table soci_test(num_float float, num_int integer, "
+        "name varchar(20), sometime timestamp, chr char)";
         sql.commit();
         sql.begin();
     }
 };
 
-struct table_creator_3 : public tests::table_creator_base
+struct TableCreator3 : public tests::table_creator_base
 {
-    table_creator_3(session & sql)
+    TableCreator3(session & sql)
             : tests::table_creator_base(sql)
     {
-        // CommonTest uses lower-case column names,
-        // so we need to enforce such names here.
-        // That's why column names are enclosed in ""
-        sql << "create table soci_test(\"name\" varchar(100) not null, "
-        "\"phone\" varchar(15))";
+        sql << "create table soci_test(name varchar(100) not null, "
+        "phone varchar(15))";
+        sql.commit();
+        sql.begin();
+    }
+};
+
+struct TableCreator4 : public tests::table_creator_base
+{
+    TableCreator4(session & sql)
+            : tests::table_creator_base(sql)
+    {
+        sql << "create table soci_test(val integer)";
         sql.commit();
         sql.begin();
     }
@@ -1132,6 +1271,11 @@ class test_context : public tests::test_context_base
             return new TableCreator3(s);
         }
 
+        tests::table_creator_base* table_creator_4(session& s) const
+        {
+            return new TableCreator4(s);
+        }
+
         std::string to_date_time(std::string const &datdt_string) const
         {
             return "'" + datdt_string + "'";
@@ -1157,14 +1301,11 @@ int main(int argc, char** argv)
     }
     else
     {
-        std::ostringstream msg;
-        msg << "usage: " << argv[0]
-        << " connectstring\n"
-        << "example: " << argv[0]
-        << " \"service=/usr/local/firebird/db/test.fdb user=SYSDBA password=masterkey\"\n";
-
-        std::cout << msg.str().c_str();
-        std::exit(1);
+        std::cout << "usage: " << argv[0]
+            << " connectstring\n"
+            << "example: " << argv[0]
+            << " \"service=/usr/local/firebird/db/test.fdb user=SYSDBA password=masterkey\"\n";
+        return EXIT_FAILURE;
     }
 
     try
@@ -1173,6 +1314,7 @@ int main(int argc, char** argv)
         tests::common_tests tests(tc);
         tests.run();
 
+        std::cout << "\nSOCI Firebird Tests:\n\n";
         test1();
         test2();
         test3();
@@ -1184,6 +1326,8 @@ int main(int argc, char** argv)
         test9();
         test10();
         test11();
+        test12();
+        test13();
 
         std::cout << "\nOK, all tests passed.\n\n";
 
@@ -1193,6 +1337,5 @@ int main(int argc, char** argv)
     {
         std::cout << e.what() << '\n';
     }
-
     return EXIT_FAILURE;
 }

@@ -55,7 +55,15 @@ statement_impl::statement_impl(prepare_temp_type const & prep)
 
     // prepare the statement
     query_ = prepInfo->get_query();
-    prepare(query_);
+    try
+    {
+        prepare(query_);
+    }
+    catch(...)
+    {
+        clean_up();
+        throw;
+    }
 
     define_and_bind();
 }
@@ -101,8 +109,12 @@ void statement_impl::bind(values & values)
                 std::size_t const pos = query_.find(placeholder);
                 if (pos != std::string::npos)
                 {
-                    const char nextChar = query_[pos + placeholder.size()];
-                    if (nextChar == ' ' || nextChar == ',' ||
+                    // Retrieve next char after placeholder
+                    // make sure we do not go out of range on the string
+                    const char nextChar = (pos + placeholder.size()) < query_.size() ?
+                                          query_[pos + placeholder.size()] : '\0';
+                    
+                    if (nextChar == ' ' || nextChar == ',' || nextChar == ';' ||
                         nextChar == '\0' || nextChar == ')')
                     {
                         int position = static_cast<int>(uses_.size());
@@ -495,11 +507,11 @@ bool statement_impl::resize_intos(std::size_t upperBound)
     // this function does not need to take into account the intosForRow_
     // elements, since they are never used for bulk operations
 
-	int rows = backEnd_->get_number_of_rows();
-	if (rows < 0)
-	{
-		rows = 0;
-	}
+    int rows = backEnd_->get_number_of_rows();
+    if (rows < 0)
+    {
+        rows = 0;
+    }
     if (upperBound != 0 && upperBound < static_cast<std::size_t>(rows))
     {
         rows = static_cast<int>(upperBound);

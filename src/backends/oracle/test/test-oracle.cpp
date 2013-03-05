@@ -343,46 +343,73 @@ struct returns_null_procedure_creator : public procedure_creator_base
 
 void test7()
 {
-    session sql(backEnd, connectString);
     {
-        basic_table_creator tableCreator(sql);
+        session sql(backEnd, connectString);
+        {
+            basic_table_creator tableCreator(sql);
 
-        int id(1);
-        string_holder in("my string");
-        sql << "insert into soci_test(id, name) values(:id, :name)", use(id), use(in);
+            int id(1);
+            string_holder in("my string");
+            sql << "insert into soci_test(id, name) values(:id, :name)", use(id), use(in);
 
-        string_holder out;
-        sql << "select name from soci_test", into(out);
-        assert(out.get() == "my string");
+            string_holder out;
+            sql << "select name from soci_test", into(out);
+            assert(out.get() == "my string");
 
-        row r;
-        sql << "select * from soci_test", into(r);
-        string_holder dynamicOut = r.get<string_holder>(1);
-        assert(dynamicOut.get() == "my string");
+            row r;
+            sql << "select * from soci_test", into(r);
+            string_holder dynamicOut = r.get<string_holder>(1);
+            assert(dynamicOut.get() == "my string");
+        }
     }
-
-    // test procedure with user-defined type as in-out parameter
-    {
-        in_out_procedure_creator procedureCreator(sql);
-
-        string_holder sh("test");
-        procedure proc = (sql.prepare << "soci_test(:s)", use(sh));
-        proc.execute(1);
-        assert(sh.get() == "testtest");
-    }
-
-    // test procedure which returns null
-    {
-         returns_null_procedure_creator procedureCreator(sql);
-
-         string_holder sh;
-         indicator ind = i_ok;
-         procedure proc = (sql.prepare << "soci_test(:s)", use(sh, ind));
-         proc.execute(1);
-         assert(ind == i_null);
-    }
-
     std::cout << "test 7 passed" << std::endl;
+}
+
+void test7inout()
+{
+    {
+        session sql(backEnd, connectString);
+
+        // test procedure with user-defined type as in-out parameter
+        {
+            in_out_procedure_creator procedureCreator(sql);
+
+            std::string sh("test");
+            procedure proc = (sql.prepare << "soci_test(:s)", use(sh));
+            proc.execute(1);
+            assert(sh == "testtest");
+        }
+
+        // test procedure with user-defined type as in-out parameter
+        {
+            in_out_procedure_creator procedureCreator(sql);
+
+            string_holder sh("test");
+            procedure proc = (sql.prepare << "soci_test(:s)", use(sh));
+            proc.execute(1);
+            assert(sh.get() == "testtest");
+        }
+    }
+    std::cout << "test 7-inout passed" << std::endl;
+}
+
+void test7outnull()
+{
+    {
+        session sql(backEnd, connectString);
+
+        // test procedure which returns null
+        {
+            returns_null_procedure_creator procedureCreator(sql);
+
+            string_holder sh;
+            indicator ind = i_ok;
+            procedure proc = (sql.prepare << "soci_test(:s)", use(sh, ind));
+            proc.execute(1);
+            assert(ind == i_null);
+        }
+    }
+    std::cout << "test 7-outnull passed" << std::endl;
 }
 
 // test bulk insert features
@@ -1112,6 +1139,15 @@ struct table_creator_three : public table_creator_base
     }
 };
 
+struct table_creator_four : public table_creator_base
+{
+    table_creator_four(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val number)";
+    }
+};
+
 class test_context :public test_context_base
 {
 public:
@@ -1132,6 +1168,11 @@ public:
     table_creator_base* table_creator_3(session& s) const
     {
         return new table_creator_three(s);
+    }
+
+    table_creator_base* table_creator_4(session& s) const
+    {
+        return new table_creator_four(s);
     }
 
     std::string to_date_time(std::string const &datdt_string) const
@@ -1178,6 +1219,8 @@ int main(int argc, char** argv)
         test5();
         test6();
         test7();
+        test7inout();
+        test7outnull();
         test8();
         test9();
         test10();

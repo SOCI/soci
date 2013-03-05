@@ -12,6 +12,9 @@
 # The following variables are defined:
 #   SOCI_COMPILER_NAME - name of compiler toolset, follows Boost toolset naming.
 #   SOCI_PLATFORM_NAME - target platform name: x64, x86 or win32
+#
+# Based on the Pre-defined Compiler Macros 
+# http://sourceforge.net/p/predef/wiki/Compilers/
 ################################################################################
 
 set(SOCI_COMPILER_NAME)
@@ -24,7 +27,6 @@ if(MINGW OR UNIX)
 endif()
 
 if(WIN32)
-  # Compilers, taken from http://predef.sourceforge.net/precomp.html#sec34
   if(MSVC)
     if(MSVC_VERSION EQUAL 1200)
       set(SOCI_COMPILER_NAME "msvc-6.0")
@@ -33,16 +35,19 @@ if(WIN32)
       set(SOCI_COMPILER_NAME "msvc-7.0")
     endif()
     if(MSVC_VERSION EQUAL 1310)
-      set(SOCI_COMPILER_NAME "msvc-7.1") #Visual Studio 2003
+      set(SOCI_COMPILER_NAME "msvc-7.1") # Visual Studio 2003
     endif()
     if(MSVC_VERSION EQUAL 1400)
-      set(SOCI_COMPILER_NAME "msvc-8.0") #Visual Studio 2005
+      set(SOCI_COMPILER_NAME "msvc-8.0") # Visual Studio 2005
     endif()
     if(MSVC_VERSION EQUAL 1500)
-      set(SOCI_COMPILER_NAME "msvc-9.0") #Visual Studio 2008
+      set(SOCI_COMPILER_NAME "msvc-9.0") # Visual Studio 2008
     endif()
     if(MSVC_VERSION EQUAL 1600)
-      set(SOCI_COMPILER_NAME "msvc-10.0") #Visual Studio 2010
+      set(SOCI_COMPILER_NAME "msvc-10.0") # Visual Studio 2010
+    endif()
+    if(MSVC_VERSION EQUAL 1700)
+      set(SOCI_COMPILER_NAME "msvc-11.0") # Visual Studio 2012
     endif()
   endif(MSVC)
   

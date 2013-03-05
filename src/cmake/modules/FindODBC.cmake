@@ -9,7 +9,7 @@
 # those yourself.
 #  
 # This module defines
-# ODBC_INCLUDE_DIRECTORIES, where to find sql.h
+# ODBC_INCLUDE_DIR, where to find sql.h
 # ODBC_LIBRARIES, the libraries to link against to use ODBC
 # ODBC_FOUND.  If false, you cannot build anything that requires MySQL.
 
@@ -18,12 +18,13 @@
 
 set(ODBC_FOUND FALSE)
 
-find_path(ODBC_INCLUDE_DIRECTORIES sql.h
+find_path(ODBC_INCLUDE_DIR sql.h
   /usr/include
   /usr/include/odbc
   /usr/local/include
   /usr/local/include/odbc
   /usr/local/odbc/include
+  "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Include"
   "C:/Program Files/ODBC/include"
   "C:/Program Files/Microsoft SDKs/Windows/v7.0/include" 
   "C:/Program Files/Microsoft SDKs/Windows/v6.0a/include" 
@@ -39,19 +40,19 @@ find_library(ODBC_LIBRARY
   /usr/local/lib
   /usr/local/lib/odbc
   /usr/local/odbc/lib
+  "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib"
   "C:/Program Files/ODBC/lib"
   "C:/ODBC/lib/debug"
-  "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib"
   DOC "Specify the ODBC driver manager library here."
 )
 
 if(ODBC_LIBRARY)
-  if(ODBC_INCLUDE_DIRECTORIES)
+  if(ODBC_INCLUDE_DIR)
     set( ODBC_FOUND 1 )
   endif()
 endif()
 
 set(ODBC_LIBRARIES ${ODBC_LIBRARY})
 
-mark_as_advanced(ODBC_FOUND ODBC_LIBRARY ODBC_EXTRA_LIBRARIES ODBC_INCLUDE_DIRECTORIES)
+mark_as_advanced(ODBC_FOUND ODBC_LIBRARY ODBC_EXTRA_LIBRARIES ODBC_INCLUDE_DIR)
 

@@ -19,7 +19,7 @@
   <a href="#unix">On Unix</a><br />
   <a href="#windows">On Windows</a><br />
 </div>
-<a href="#unix-makefiles">Building using classic Makefiles on Unix</a><br />
+<a href="#unix-makefiles">Building using classic Makefiles on Unix</a> (deprecated)<br />
 <a href="#testing">Running Tests</a><br />
 <a href="#usage">Usage</a><br />
 </div>
@@ -35,6 +35,8 @@
 
 <p>and backend-specific dependencies:</p>
 <ul>
+<li><a href="http://pic.dhe.ibm.com/infocenter/db2luw/v10r1/topic/com.ibm.swg.im.dbclient.install.doc/doc/c0023452.html">DB2 Call Level Interface (CLI)</a>
+<li><a href="http://www.firebirdsql.org/manual/ufb-cs-clientlib.html">Firebird client library</a>
 <li><a href="http://dev.mysql.com/doc/refman/5.6/en/c.html">mysqlclient</a> - C API to MySQL</li>
 <li><a href="">ODBC (Open Database Connectivity)</a> implementation: <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/ms710252.aspx">Microsoft ODBC</a>,  <a href="http://www.iodbc.org/">iODBC</a>, <a href="http://www.unixodbc.org/">unixODBC</a></li>
 <li><a href="http://www.oracle.com/technetwork/database/features/oci/index.html">Oracle Call Interface (OCI)</a></li>
@@ -47,13 +49,13 @@
 
 <p>Download package with latest release of the SOCI source code: <a href="https://sourceforge.net/projects/soci/files/soci/">soci-X.Y.Z</a>, where X.Y.Z is the version number. Unpack the archive.</p>
 
-<p>If you intend to hack SOCI, you can clone the Git repository:</p>
+<p>You can always clone SOCI from the Git repository:</p>
 
-<pre>git clone git://soci.git.sourceforge.net/gitroot/soci/soci </pre>
+<pre>git clone git://github.com/SOCI/soci.git</pre>
 
 <h3 id="cmake">Building using CMake</h3>
 
-<p>SOCI is configured to build using <a href="http://cmake.org/">CMake</a> system in version 2.6+.</p>
+<p>SOCI is configured to build using <a href="http://cmake.org/">CMake</a> system in version 2.8+.</p>
 
 <p>The build configuration allows to control various aspects of compilation and installation by setting common CMake variables that change behaviour, describe system or control build (see <a href="http://cmake.org/cmake/help/documentation.html">CMake help</a>) as well as SOCI-specific variables described below. All these variables are available regardless of platform or compilation toolset used.</p>
 
@@ -83,14 +85,81 @@
 <table class="cmake-variables" cellpadding="2" cellspacing="2" summary="SOCI Core configuration">
 <caption class="cmake-variables">List of variables to control common SOCI features and dependencies</caption>
 <tr>
-  <td class="variable-name">WITH_BOOST</td>
+  <td class="variable-name">SOCI_STATIC</td>
   <td class="variable-type">boolean</td>
-  <td>Should CMake try to detect <a href="http://www.boost.org/">Boost C++ Libraries</a>. If ON, CMake will try to find Boost headers and binaries of <a href="http://www.boost.org/doc/libs/release/doc/html/date_time.html">Boost.Date_Time</a> library.</td>
+  <td>Request to build static libraries, along with shared, of SOCI core and all successfully configured backends.</td>
 </tr>
 <tr>
   <td class="variable-name">SOCI_TESTS</td>
   <td class="variable-type">boolean</td>
   <td>Request to build regression tests for SOCI core and all successfully configured backends.</td>
+</tr>
+<tr>
+  <td class="variable-name">WITH_BOOST</td>
+  <td class="variable-type">boolean</td>
+  <td>Should CMake try to detect <a href="http://www.boost.org/">Boost C++ Libraries</a>. If ON, CMake will try to find Boost headers and binaries of <a href="http://www.boost.org/doc/libs/release/doc/html/date_time.html">Boost.Date_Time</a> library.</td>
+</tr>
+</table>
+
+<h4 id="H2">IBM DB2</h4>
+
+<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="SOCI DB2 configuration">
+<caption class="cmake-variables">SOCI DB2 backend configuration</caption>
+<tr>
+  <td class="variable-name">WITH_DB2</td>
+  <td class="variable-type">boolean</td>
+  <td>Should CMake try to detect IBM DB2 Call Level Interface (CLI) library.</td>
+</tr>
+<tr>
+  <td class="variable-name">DB2_INCLUDE_DIR</td>
+  <td class="variable-type">string</td>
+  <td>Path to DB2 CLI include directories where CMake should look for <code>sqlcli1.h</code> header.</td>
+</tr>
+<tr>
+  <td class="variable-name">DB2_LIBRARIES</td>
+  <td class="variable-type">string</td>
+  <td>Full paths to  <code>db2</code> or <code>db2api </code> libraries to link SOCI against to enable the backend support.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_DB2</td>
+  <td class="variable-type">boolean</td>
+  <td>Requests to build <a href="backends/db2.html">DB2</a> backend. Automatically switched on, if <code>WITH_DB2</code> is set to ON.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_DB2_TEST_CONNSTR</td>
+  <td class="variable-type">string</td>
+  <td>See <a href="backends/db2.html">DB2 backend refernece</a> for details. Example: <code>-DSOCI_DB2_TEST_CONNSTR:STRING="DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;autocommit=off"</code></td>
+</tr>
+</table>
+
+<h4 id="H1">Firebird</h4>
+
+<table class="cmake-variables" cellpadding="2" cellspacing="2" summary="SOCI Firebird configuration">
+<caption class="cmake-variables">SOCI Firebird backend configuration</caption>
+<tr>
+  <td class="variable-name">WITH_FIREBIRD</td>
+  <td class="variable-type">boolean</td>
+  <td>Should CMake try to detect Firebird client library.</td>
+</tr>
+<tr>
+  <td class="variable-name">FIREBIRD_INCLUDE_DIR</td>
+  <td class="variable-type">string</td>
+  <td>Path to Firebird include directories where CMake should look for <code>ibase.h</code> header.</td>
+</tr>
+<tr>
+  <td class="variable-name">FIREBIRD_LIBRARIES</td>
+  <td class="variable-type">string</td>
+  <td>Full paths to Firebird <code>fbclient</code> or <code>fbclient_ms</code> libraries to link SOCI against to enable the backend support.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_FIREBIRD</td>
+  <td class="variable-type">boolean</td>
+  <td>Requests to build <a href="backends/firebird.html">Firebird</a> backend. Automatically switched on, if <code>WITH_FIREBIRD</code> is set to ON.</td>
+</tr>
+<tr>
+  <td class="variable-name">SOCI_FIREBIRD_TEST_CONNSTR</td>
+  <td class="variable-type">string</td>
+  <td>See <a href="backends/firebird.html">Firebird backend refernece</a> for details. Example: <code>-DSOCI_FIREBIRD_TEST_CONNSTR:STRING="service=LOCALHOST:/tmp/soci_test.fdb user=SYSDBA password=masterkey"</code></td>
 </tr>
 </table>
 
@@ -111,7 +180,7 @@
 <tr>
   <td class="variable-name">MYSQL_INCLUDE_DIR</td>
   <td class="variable-type">string</td>
-  <td>Path to MySQL include directory where CMake should look for mysql.h header.</td>
+  <td>Path to MySQL include directory where CMake should look for <code>mysql.h</code> header.</td>
 </tr>
 <tr>
   <td class="variable-name">MYSQL_LIBRARIES</td>
@@ -140,9 +209,9 @@
   <td>Should CMake try to detect ODBC libraries. On Unix systems, CMake tries to find <a href="http://www.unixodbc.org/">unixODBC</a> or <a href="http://www.iodbc.org/">iODBC</a> implementations.</td>
 </tr>
 <tr>
-  <td class="variable-name">ODBC_INCLUDE_DIRECTORIES</td>
+  <td class="variable-name">ODBC_INCLUDE_DIR</td>
   <td class="variable-type">string</td>
-  <td>Path to ODBC implementation include directories where CMake should look for sql.h header.</td>
+  <td>Path to ODBC implementation include directories where CMake should look for <code>sql.h</code> header.</td>
 </tr>
 <tr>
   <td class="variable-name">ODBC_LIBRARIES</td>
@@ -173,7 +242,7 @@
 <tr>
   <td class="variable-name">ORACLE_INCLUDE_DIR</td>
   <td class="variable-type">string</td>
-  <td>Path to Oracle include directory where CMake should look for oci.h header.</td>
+  <td>Path to Oracle include directory where CMake should look for <code>oci.h</code> header.</td>
 </tr>
 <tr>
   <td class="variable-name">ORACLE_LIBRARIES</td>
@@ -204,7 +273,7 @@
 <tr>
   <td class="variable-name">POSTGRESQL_INCLUDE_DIR</td>
   <td class="variable-type">string</td>
-  <td>Path to PostgreSQL include directory where CMake should look for libpq-fe.h header.</td>
+  <td>Path to PostgreSQL include directory where CMake should look for <code>libpq-fe.h</code> header.</td>
 </tr>
 <tr>
   <td class="variable-name">POSTGRESQL_LIBRARIES</td>
@@ -235,7 +304,7 @@
 <tr>
   <td class="variable-name">SQLITE_INCLUDE_DIR</td>
   <td class="variable-type">string</td>
-  <td>Path to SQLite 3 include directory where CMake should look for sqlite3.h header.</td>
+  <td>Path to SQLite 3 include directory where CMake should look for <code>sqlite3.h</code> header.</td>
 </tr>
 <tr>
   <td class="variable-name">SQLITE_LIBRARIES</td>
@@ -303,7 +372,11 @@ C:\build>cmake -G "Visual Studio 10" -DWITH_BOOST=OFF -DWITH_ORACLE=OFF (...) ..
 C:\build>msbuild.exe SOCI.sln
 </pre>
 
-<h3 id="unix-makefiles">Building using classic Makefiles on Unix</h3>
+<h3 id="unix-makefiles">Building using classic Makefiles on Unix (deprecated)</h3>
+
+<p><em>NOTE: These Makefiles have not been maintained for long time.
+The officially maintained build configuration is CMake. If you still want to 
+use these Makefiles, you've been warned that you may need to patch them.</em></p>
 
 <p>The classic set of Makefiles for Unix/Linux systems is provided for those users who need complete control over the whole process
 and who can benefit from the basic scaffolding that they can extend on their own.
@@ -370,7 +443,7 @@ $ make install
 
 <p>CMake build produces set of shared and static libraries for SOCI core and backends separately. On Unix, for example, <code>build/lib</code> directory
 will consist of the static libraries named like <code>libsoci_core.a</code>, <code>libsoci_sqlite3.a</code> and shared libraries with names like
-<code>libsoci_core.so.3.1.0</code>, <code>libsoci_sqlite3.so.3.1.0</code>, and so on.</p>
+<code>libsoci_core.so.3.2.0</code>, <code>libsoci_sqlite3.so.3.2.0</code>, and so on.</p>
 
 <p>In order to use SOCI in your program, you need to specify your project build configuration with paths to SOCI headers and libraries,
 and specify linker to link against the libraries you want to use in your program.</p>
@@ -387,6 +460,7 @@ and specify linker to link against the libraries you want to use in your program
   </tr>
 </table>
 
-<p class="copyright">Copyright &copy; 2004-2011 Maciej Sobczak, Stephen Hutton, Mateusz Loskot</p>
+<p class="copyright">Copyright &copy; 2010-2013 Mateusz Loskot</p>
+<p class="copyright">Copyright &copy; 2004-2011 Maciej Sobczak, Stephen Hutton</p>
 </body>
 </html>

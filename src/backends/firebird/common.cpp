@@ -10,7 +10,9 @@
 #include <ibase.h> // FireBird
 #include <cstddef>
 #include <cstring>
+#include <cstdio>
 #include <sstream>
+#include <iostream>
 #include <string>
 
 namespace soci
@@ -25,9 +27,15 @@ namespace firebird
 char * allocBuffer(XSQLVAR* var)
 {
     std::size_t size;
-    if ((var->sqltype & ~1) == SQL_VARYING)
+    int type = var->sqltype & ~1;
+    if (type == SQL_VARYING)
     {
         size = var->sqllen + sizeof(short);
+    }
+    else if (type == SQL_TIMESTAMP or type == SQL_TYPE_TIME
+            or type == SQL_TYPE_DATE)
+    {
+        size = sizeof(std::tm);
     }
     else
     {
@@ -82,6 +90,7 @@ void tmDecode(short type, void * src, std::tm * dst)
 void setTextParam(char const * s, std::size_t size, char * buf_,
     XSQLVAR * var)
 {
+    //std::cerr << "setTextParam: var->sqltype=" << var->sqltype << std::endl;
     short sz = 0;
     if (size < static_cast<std::size_t>(var->sqllen))
     {
@@ -94,16 +103,71 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
 
     if ((var->sqltype & ~1) == SQL_VARYING)
     {
-        memcpy(buf_, &sz, sizeof(short));
-        memcpy(buf_ + sizeof(short), s, sz);
+        std::memcpy(buf_, &sz, sizeof(short));
+        std::memcpy(buf_ + sizeof(short), s, sz);
     }
     else if ((var->sqltype & ~1) == SQL_TEXT)
     {
-        memcpy(buf_, s, sz);
+        std::memcpy(buf_, s, sz);
         if (sz < var->sqllen)
         {
-            memset(buf_+sz, ' ', var->sqllen - sz);
+            std::memset(buf_+sz, ' ', var->sqllen - sz);
         }
+    }
+    else if ((var->sqltype & ~1) == SQL_SHORT)
+    {
+        parse_decimal<short, unsigned short>(buf_, var, s);
+    }
+    else if ((var->sqltype & ~1) == SQL_LONG)
+    {
+        parse_decimal<int, unsigned int>(buf_, var, s);
+    }
+    else if ((var->sqltype & ~1) == SQL_INT64)
+    {
+        parse_decimal<long long, unsigned long long>(buf_, var, s);
+    }
+    else if ((var->sqltype & ~1) == SQL_TIMESTAMP
+            or (var->sqltype & ~1) == SQL_TYPE_DATE)
+    {
+        unsigned short year, month, day, hour, min, sec;
+        if (std::sscanf(s, "%hu-%hu-%hu %hu:%hu:%hu",
+                    &year, &month, &day, &hour, &min, &sec) != 6)
+        {
+            if (std::sscanf(s, "%hu-%hu-%huT%hu:%hu:%hu",
+                        &year, &month, &day, &hour, &min, &sec) != 6)
+            {
+                hour = min = sec = 0;
+                if (std::sscanf(s, "%hu-%hu-%hu", &year, &month, &day) != 3)
+                {
+                    throw soci_error("Could not parse timestamp value.");
+                }
+            }
+        }
+        std::tm t;
+        std::memset(&t, 0, sizeof(t));
+        t.tm_year = year - 1900;
+        t.tm_mon = month - 1;
+        t.tm_mday = day;
+        t.tm_hour = hour;
+        t.tm_min = min;
+        t.tm_sec = sec;
+        std::memcpy(buf_, &t, sizeof(t));
+        tmEncode(var->sqltype, &t, buf_);
+    }
+    else if ((var->sqltype & ~1) == SQL_TYPE_TIME)
+    {
+        unsigned short hour, min, sec;
+        if (std::sscanf(s, "%hu:%hu:%hu", &hour, &min, &sec) != 3)
+        {
+            throw soci_error("Could not parse timestamp value.");
+        }
+        std::tm t;
+        std::memset(&t, 0, sizeof(t));
+        t.tm_hour = hour;
+        t.tm_min = min;
+        t.tm_sec = sec;
+        std::memcpy(buf_, &t, sizeof(t));
+        tmEncode(var->sqltype, &t, buf_);
     }
     else
     {
@@ -113,6 +177,7 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
 
 std::string getTextParam(XSQLVAR const *var)
 {
+    //std::cerr << "getTextParam: var->sqltype=" << var->sqltype << std::endl;
     short size;
     std::size_t offset = 0;
 
@@ -125,7 +190,20 @@ std::string getTextParam(XSQLVAR const *var)
     {
         size = var->sqllen;
     }
-    else throw soci_error("Unexpected string type");
+    else if ((var->sqltype & ~1) == SQL_SHORT)
+    {
+        return format_decimal<short>(var->sqldata, var->sqlscale);
+    }
+    else if ((var->sqltype & ~1) == SQL_LONG)
+    {
+        return format_decimal<int>(var->sqldata, var->sqlscale);
+    }
+    else if ((var->sqltype & ~1) == SQL_INT64)
+    {
+        return format_decimal<long long>(var->sqldata, var->sqlscale);
+    }
+    else
+        throw soci_error("Unexpected string type");
 
     return std::string(var->sqldata + offset, size);
 }

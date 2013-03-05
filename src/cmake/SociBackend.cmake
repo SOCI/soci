@@ -142,7 +142,8 @@ macro(soci_backend NAME)
       else()
 		set_target_properties(${THIS_BACKEND_TARGET}
           PROPERTIES
-          SOVERSION ${${PROJECT_NAME}_SOVERSION})
+          SOVERSION ${${PROJECT_NAME}_SOVERSION}
+          INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/lib)
       endif()
 
       set_target_properties(${THIS_BACKEND_TARGET}
@@ -151,23 +152,27 @@ macro(soci_backend NAME)
         CLEAN_DIRECT_OUTPUT 1)
 
       # Static library target
-      add_library(${THIS_BACKEND_TARGET}-static
+      if (SOCI_STATIC)
+        set(THIS_BACKEND_TARGET_STATIC ${THIS_BACKEND_TARGET}_static)
+
+        add_library(${THIS_BACKEND_TARGET_STATIC}
           STATIC
           ${THIS_BACKEND_SOURCES}
           ${THIS_BACKEND_HEADERS})
 
-      set_target_properties(${THIS_BACKEND_TARGET}-static
-		PROPERTIES
-		OUTPUT_NAME ${THIS_BACKEND_TARGET_OUTPUT_NAME}
-		PREFIX "lib"
-		CLEAN_DIRECT_OUTPUT 1)
+        set_target_properties(${THIS_BACKEND_TARGET_STATIC}
+		      PROPERTIES
+		      OUTPUT_NAME ${THIS_BACKEND_TARGET_OUTPUT_NAME}
+		      PREFIX "lib"
+		      CLEAN_DIRECT_OUTPUT 1)
+      endif()
 
       # Backend installation
       install(FILES ${THIS_BACKEND_HEADERS}
           DESTINATION
           ${INCLUDEDIR}/${PROJECTNAMEL}/${NAMEL})
 
-      install(TARGETS ${THIS_BACKEND_TARGET} ${THIS_BACKEND_TARGET}-static
+      install(TARGETS ${THIS_BACKEND_TARGET} ${THIS_BACKEND_TARGET_STATIC}
 		RUNTIME DESTINATION ${BINDIR}
 		LIBRARY DESTINATION ${LIBDIR}
 		ARCHIVE DESTINATION ${LIBDIR})
@@ -277,8 +282,8 @@ macro(soci_backend_test)
 
 	set(TEST_HEADERS ${PROJECT_SOURCE_DIR}/core/test/common-tests.h)
 
+    # Shared libraries test
     add_executable(${TEST_TARGET} ${TEST_HEADERS} ${THIS_TEST_SOURCE})
-    add_executable(${TEST_TARGET}_static ${TEST_HEADERS} ${THIS_TEST_SOURCE})
 
     target_link_libraries(${TEST_TARGET}
       ${SOCI_CORE_TARGET}
@@ -286,27 +291,34 @@ macro(soci_backend_test)
       ${${BACKENDU}_LIBRARIES}
 	  ${SOCI_TEST_DEPENDENCIES})
 
-    target_link_libraries(${TEST_TARGET}_static
-      ${SOCI_CORE_TARGET}-static
-      ${SOCI_${BACKENDU}_TARGET}-static
-      ${${BACKENDU}_LIBRARIES}
-      ${SOCI_CORE_STATIC_DEPENDENCIES}
-	  ${SOCI_TEST_DEPENDENCIES})
-
     add_test(${TEST_TARGET}
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET}
       ${${TEST_CONNSTR_VAR}})
 
-    add_test(${TEST_TARGET}_static
-      ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET}_static
-      ${${TEST_CONNSTR_VAR}})
-
-    # Convenient .vcxproj.user making tests ready to run and debug from within IDE
     soci_backend_test_create_vcxproj_user(${TEST_TARGET} "\"${${TEST_CONNSTR_VAR}}\"")
-    soci_backend_test_create_vcxproj_user(${TEST_TARGET}_static "\"${${TEST_CONNSTR_VAR}}\"")
 
-	# Ask make check to try to build tests first before executing them
-	add_dependencies(check ${TEST_TARGET} ${TEST_TARGET}_static)
+    # Static libraries test
+    if(SOCI_STATIC)
+      set(TEST_TARGET_STATIC ${TEST_TARGET}_static)
+
+      add_executable(${TEST_TARGET_STATIC} ${TEST_HEADERS} ${THIS_TEST_SOURCE})
+
+      target_link_libraries(${TEST_TARGET_STATIC}
+        ${SOCI_CORE_TARGET_STATIC}
+        ${SOCI_${BACKENDU}_TARGET}_static
+        ${${BACKENDU}_LIBRARIES}
+        ${SOCI_CORE_STATIC_DEPENDENCIES}
+        ${SOCI_TEST_DEPENDENCIES})
+
+      add_test(${TEST_TARGET_STATIC}
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET_STATIC}
+        ${${TEST_CONNSTR_VAR}})
+    
+      soci_backend_test_create_vcxproj_user(${TEST_TARGET_STATIC} "\"${${TEST_CONNSTR_VAR}}\"")
+    endif(SOCI_STATIC)
+
+    # Ask make check to try to build tests first before executing them
+    add_dependencies(check ${TEST_TARGET} ${TEST_TARGET_STATIC})
 
     # Group source files for IDE source explorers (e.g. Visual Studio)
     source_group("Header Files" FILES ${TEST_HEADERS})

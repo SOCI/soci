@@ -1,6 +1,4 @@
 [ODBC]
-DRIVER=MySQL ODBC 3.51 Driver
-DATABASE=socitest
-USER=root
-PORT=0
+DRIVER=MySQL
+DATABASE=soci_test
 OPTION=0

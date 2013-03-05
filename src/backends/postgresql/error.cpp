@@ -28,21 +28,29 @@ std::string postgresql_soci_error::sqlstate() const
     return std::string(sqlstate_, 5);
 }
 
-void soci::details::postgresql::get_error_details(PGresult *res,
+void soci::details::postgresql::get_error_details(PGresult *result,
     std::string &msg, std::string &sqlstate)
 {
-   msg = PQresultErrorMessage(res);
-   const char *sqlst = PQresultErrorField(res, PG_DIAG_SQLSTATE);
-   assert(sqlst);
-   assert(std::strlen(sqlst) == 5);
-   sqlstate.assign(sqlst, 5);
+    assert(result);
+
+    msg = PQresultErrorMessage(result);
+    const char *sqlst = PQresultErrorField(result, PG_DIAG_SQLSTATE);
+    const char* blank_sql_state = "     ";
+    if (!sqlst)
+    {
+        sqlst = blank_sql_state;
+    }
+    assert(sqlst && std::strlen(sqlst) == 5);
+    sqlstate.assign(sqlst, 5);
 }
 
-void soci::details::postgresql::throw_postgresql_soci_error(PGresult *res)
+void soci::details::postgresql::throw_postgresql_soci_error(PGresult*& result)
 {
     std::string msg;
     std::string sqlstate;
 
-    get_error_details(res, msg, sqlstate);
+    get_error_details(result, msg, sqlstate);
+    PQclear(result);
+    result = NULL;
     throw postgresql_soci_error(msg, sqlstate.c_str());
 }

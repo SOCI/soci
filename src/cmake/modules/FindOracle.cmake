@@ -10,7 +10,7 @@
 #                       but not for general use are
 # ORACLE_VERSION     = version of library which was found, e.g. "1.2.5"
 #
-# Copyright (c) 2009 Mateusz Loskot <mateusz@loskot.net>
+# Copyright (c) 2009-2013 Mateusz Loskot <mateusz@loskot.net>
 #
 # Developed with inspiration from Petr Vanek <petr@scribus.info>
 # who wrote similar macro for TOra - http://torasql.com/
@@ -26,13 +26,14 @@
 if(DEFINED ENV{ORACLE_HOME})
 
   set(ORACLE_HOME $ENV{ORACLE_HOME})
+  message(STATUS "ORACLE_HOME=${ORACLE_HOME}")
 
   find_path(ORACLE_INCLUDE_DIR
-    oci.h
+    NAMES oci.h
     PATHS
     ${ORACLE_HOME}/rdbms/public
     ${ORACLE_HOME}/include
-    ${ORACLE_HOME}/sdk/include # Oracle SDK
+    ${ORACLE_HOME}/sdk/include  # Oracle SDK
     ${ORACLE_HOME}/OCI/include) # Oracle XE on Windows
 
   set(ORACLE_OCI_NAMES clntsh libclntsh oci)
@@ -41,7 +42,9 @@ if(DEFINED ENV{ORACLE_HOME})
 
   set(ORACLE_LIB_DIR 
     ${ORACLE_HOME}/lib
-    ${ORACLE_HOME}/OCI/lib/MSVC) # Oracle XE on Windows
+    ${ORACLE_HOME}/sdk/lib       # Oracle SDK
+    ${ORACLE_HOME}/sdk/lib/msvc
+    ${ORACLE_HOME}/OCI/lib/msvc) # Oracle XE on Windows
 
   find_library(ORACLE_OCI_LIBRARY  NAMES ${ORACLE_OCI_NAMES} PATHS ${ORACLE_LIB_DIR})
   find_library(ORACLE_OCCI_LIBRARY NAMES ${ORACLE_OCCI_NAMES} PATHS ${ORACLE_LIB_DIR})

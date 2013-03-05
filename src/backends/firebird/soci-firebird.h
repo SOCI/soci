@@ -209,6 +209,7 @@ struct firebird_statement_backend : details::statement_backend
 
 protected:
     int rowsFetched_;
+    bool endOfRowSet_;
 
     virtual void exchangeData(bool gotData, int row);
     virtual void prepareSQLDA(XSQLDA ** sqldap, int size = 10);
@@ -311,9 +312,12 @@ struct firebird_session_backend : details::session_backend
 
     virtual void setDPBOption(int const option, std::string const & value);
 
+    bool get_option_decimals_as_strings() { return decimals_as_strings_; }
+
     isc_db_handle dbhp_;
     isc_tr_handle trhp_;
     std::string dpb_;
+    bool decimals_as_strings_;
 };
 
 struct firebird_backend_factory : backend_factory

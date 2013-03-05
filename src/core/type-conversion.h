@@ -86,6 +86,7 @@ public:
         , ind_(ownInd_)
         , readOnly_(false)
     {
+        // TODO: likely to be removed (SHA: c166625a28f7c907318134f625ff5acea7d9a1f8)
         //convert_to_base();
     }
     
@@ -95,6 +96,7 @@ public:
         , ind_(ownInd_)
         , readOnly_(true)
     {
+        // TODO: likely to be removed (SHA: c166625a28f7c907318134f625ff5acea7d9a1f8)
         //convert_to_base();
     }
     
@@ -105,6 +107,7 @@ public:
         , ind_(ind)
         , readOnly_(false)
     {
+        // TODO: likely to be removed (SHA: c166625a28f7c907318134f625ff5acea7d9a1f8)
         //convert_to_base();
     }
     
@@ -115,11 +118,18 @@ public:
         , ind_(ind)
         , readOnly_(true)
     {
+        // TODO: likely to be removed (SHA: c166625a28f7c907318134f625ff5acea7d9a1f8)
         //convert_to_base();
     }
 
     void convert_from_base()
     {
+        // NOTE:
+        // readOnly_ flag indicates that use_type object has been generated
+        // based on non-const object passed by user as input argument.
+        // For const objects, this is effectively no-op conversion.
+        // See standard_use_type::post_use() for more details.
+
         if (readOnly_ == false)
         {
             type_conversion<T>::from_base(

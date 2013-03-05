@@ -18,8 +18,7 @@ using namespace soci;
 using namespace soci::tests;
 
 std::string connectString;
-backend_factory const &backEnd = odbc;
-
+backend_factory const &backEnd = *soci::factory_odbc();
 
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
@@ -54,6 +53,15 @@ struct table_creator_three : public table_creator_base
     }
 };
 
+struct table_creator_for_get_affected_rows : table_creator_base
+{
+    table_creator_for_get_affected_rows(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val integer)";
+    }
+};
+
 //
 // Support for SOCI Common Tests
 //
@@ -80,6 +88,11 @@ public:
         return new table_creator_three(s);
     }
 
+    table_creator_base * table_creator_4(session& s) const
+    {
+        return new table_creator_for_get_affected_rows(s);
+    }
+
     std::string to_date_time(std::string const &datdt_string) const
     {
         return "convert(datetime, \'" + datdt_string + "\', 120)";
@@ -88,7 +101,6 @@ public:
 
 int main(int argc, char** argv)
 {
-
 #ifdef _MSC_VER
     // Redirect errors, unrecoverable problems, and assert() failures to STDERR,
     // instead of debug message window.
@@ -108,11 +120,13 @@ int main(int argc, char** argv)
     }
     try
     {
+        std::cout << "\nSOCI ODBC with MS SQL Server Tests:\n\n";
+
         test_context tc(backEnd, connectString);
         common_tests tests(tc);
         tests.run();
-        std::cout << "\nOK, all tests passed.\n";
 
+        std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;
     }
     catch (soci::odbc_soci_error const & e)
@@ -130,6 +144,5 @@ int main(int argc, char** argv)
     {
         std::cout << "STD::EXECEPTION " << e.what() << '\n';
     }
-
     return EXIT_FAILURE;
 }

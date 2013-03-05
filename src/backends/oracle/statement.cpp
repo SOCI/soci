@@ -118,16 +118,25 @@ statement_backend::exec_fetch_result oracle_statement_backend::fetch(int number)
 
 long long oracle_statement_backend::get_affected_rows()
 {
-    // ...
-    return -1;
+    ub4 row_count;
+    sword res = OCIAttrGet(static_cast<dvoid*>(stmtp_),
+        OCI_HTYPE_STMT, &row_count,
+        0, OCI_ATTR_ROW_COUNT, session_.errhp_);
+
+    if (res != OCI_SUCCESS)
+    {
+        throw_oracle_soci_error(res, session_.errhp_);
+    }
+
+    return row_count;
 }
 
 int oracle_statement_backend::get_number_of_rows()
 {
     int rows;
     sword res = OCIAttrGet(static_cast<dvoid*>(stmtp_),
-        static_cast<ub4>(OCI_HTYPE_STMT), static_cast<dvoid*>(&rows),
-        0, static_cast<ub4>(OCI_ATTR_ROWS_FETCHED), session_.errhp_);
+        OCI_HTYPE_STMT, static_cast<dvoid*>(&rows),
+        0, OCI_ATTR_ROWS_FETCHED, session_.errhp_);
 
     if (res != OCI_SUCCESS)
     {
@@ -269,7 +278,10 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
     case SQLT_NUM:
         if (scale > 0)
         {
-            type = dt_double;
+            if (session_.get_option_decimals_as_strings())
+                type = dt_string;
+            else
+                type = dt_double;
         }
         else if (precision < std::numeric_limits<int>::digits10)
         {

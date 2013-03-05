@@ -23,13 +23,16 @@ using namespace soci::details;
 using namespace soci::details::oracle;
 
 oracle_session_backend::oracle_session_backend(std::string const & serviceName,
-    std::string const & userName, std::string const & password, int mode)
+    std::string const & userName, std::string const & password, int mode,
+    bool decimals_as_strings)
     : envhp_(NULL), srvhp_(NULL), errhp_(NULL), svchp_(NULL), usrhp_(NULL)
+      , decimals_as_strings_(decimals_as_strings)
 {
     sword res;
 
     // create the environment
-    res = OCIEnvCreate(&envhp_, OCI_DEFAULT, 0, 0, 0, 0, 0, 0);
+    res = OCIEnvCreate(&envhp_, OCI_THREADED | OCI_ENV_NO_MUTEX,
+        0, 0, 0, 0, 0, 0);
     if (res != OCI_SUCCESS)
     {
         throw soci_error("Cannot create environment");

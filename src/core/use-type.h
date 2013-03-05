@@ -50,7 +50,7 @@ public:
         , backEnd_(NULL)
     {
         // FIXME: This was added with Ilia's patch
-        // http://soci.git.sourceforge.net/git/gitweb.cgi?p=soci/soci;a=blobdiff;f=src/core/use-type.h;h=3510ac95fe7530f977bf9e78d74fd502164a4071;hp=b6d9ba9c27aef3640b8edac4b8e44a620b1b5294;hb=c166625a28f7c907318134f625ff5acea7d9a1f8;hpb=ec19564b2f0994b3960acf891643d92fc224b453
+        // https://github.com/SOCI/soci/commit/c166625a28f7c907318134f625ff5acea7d9a1f8
         // but it seems to be a troublemaker, causing duplicated conversions
         //convert_to_base();
     }
