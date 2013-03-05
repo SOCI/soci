@@ -688,6 +688,82 @@ void test11()
   std::cout << "test 11 passed" << std::endl;
 }
 
+struct tinyint_value_table_creator : table_creator_base
+{
+    tinyint_value_table_creator(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val tinyint)";
+    }
+};
+
+struct tinyint_unsigned_value_table_creator : table_creator_base
+{
+    tinyint_unsigned_value_table_creator(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val tinyint unsigned)";
+    }
+};
+
+void test12()
+{
+  {
+    session sql(backEnd, connectString);
+    unsigned_value_table_creator tableCreator(sql);
+    unsigned int mask = 0xffffff00;
+    sql << "insert into soci_test set val = " << mask;
+    row r;
+    sql << "select val from soci_test", into(r);
+    assert(r.size() == 1);
+    assert(r.get_properties("val").get_data_type() == dt_long_long);
+    assert(r.get<long long>("val") == 0xffffff00);
+    assert(r.get<unsigned>("val") == 0xffffff00);
+  }
+  {
+    session sql(backEnd, connectString);
+    tinyint_value_table_creator tableCreator(sql);
+    sql << "insert into soci_test set val = -123";
+    row r;
+    sql << "select val from soci_test", into(r);
+    assert(r.size() == 1);
+    assert(r.get_properties("val").get_data_type() == dt_integer);
+    assert(r.get<int>("val") == -123);
+  }
+  {
+    session sql(backEnd, connectString);
+    tinyint_unsigned_value_table_creator tableCreator(sql);
+    sql << "insert into soci_test set val = 123";
+    row r;
+    sql << "select val from soci_test", into(r);
+    assert(r.size() == 1);
+    assert(r.get_properties("val").get_data_type() == dt_integer);
+    assert(r.get<int>("val") == 123);
+  }
+  {
+    session sql(backEnd, connectString);
+    bigint_unsigned_table_creator tableCreator(sql);
+    sql << "insert into soci_test set val = 123456789012345";
+    row r;
+    sql << "select val from soci_test", into(r);
+    assert(r.size() == 1);
+    assert(r.get_properties("val").get_data_type() == dt_unsigned_long_long);
+    assert(r.get<unsigned long long>("val") == 123456789012345ULL);
+  }
+  {
+    session sql(backEnd, connectString);
+    bigint_table_creator tableCreator(sql);
+    sql << "insert into soci_test set val = -123456789012345";
+    row r;
+    sql << "select val from soci_test", into(r);
+    assert(r.size() == 1);
+    assert(r.get_properties("val").get_data_type() == dt_long_long);
+    assert(r.get<long long>("val") == -123456789012345LL);
+  }
+  
+  std::cout << "test 12 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -806,6 +882,7 @@ int main(int argc, char** argv)
           std::cout << "Skipping test11 "
                     << "(C++ implementation's double type is not IEC-559)\n";
         }
+        test12();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;
