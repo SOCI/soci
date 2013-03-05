@@ -60,6 +60,11 @@
 
 <h4 id="connecting">Connecting to the Database</h4>
 
+<p>On Unix, before using the DB2 backend please make sure, that you have sourced 
+DB2 profile into your environment:</p>
+
+<pre>. ~/db2inst1/sqllib/db2profile</pre>
+
 <p>To establish a connection to the DB2 database, create a session object
 using the <code>DB2</code> backend factory together with the database file name:</p>
 
@@ -78,15 +83,15 @@ soci::session sql(soci::db2, "your DB2 connection string here");
 
 <h4 id="bulk">Bulk Operations</h4>
 
-<p>TODO</p>
+<p>Supported, but with caution as it hasn't been extensively tested.</p>
 
 <h4 id="transactions">Transactions</h4>
 
-<p>TODO</p>
+<p>Currently, not supported.</p>
 
 <h4 id="blob">BLOB Data Type</h4>
 
-<p>TODO</p>
+<p>Currently, not supported.</p>
 
 <h4 id="nested">Nested Statements</h4>
 
@@ -94,7 +99,7 @@ soci::session sql(soci::db2, "your DB2 connection string here");
 
 <h4 id="procedures">Stored Procedures</h4>
 
-<p>TODO</p>
+<p>Stored procedures are supported, with <code>CALL</code> statement.</p>
 
 <h3 id="native">Acessing the native database API</h3>
 
