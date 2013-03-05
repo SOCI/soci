@@ -19,7 +19,7 @@
   <a href="#unix">On Unix</a><br />
   <a href="#windows">On Windows</a><br />
 </div>
-<a href="#unix-makefiles">Building using classic Makefiles on Unix</a><br />
+<a href="#unix-makefiles">Building using classic Makefiles on Unix</a> (deprecated)<br />
 <a href="#testing">Running Tests</a><br />
 <a href="#usage">Usage</a><br />
 </div>
@@ -372,7 +372,11 @@ C:\build>cmake -G "Visual Studio 10" -DWITH_BOOST=OFF -DWITH_ORACLE=OFF (...) ..
 C:\build>msbuild.exe SOCI.sln
 </pre>
 
-<h3 id="unix-makefiles">Building using classic Makefiles on Unix</h3>
+<h3 id="unix-makefiles">Building using classic Makefiles on Unix (deprecated)</h3>
+
+<p><em>NOTE: These Makefiles have not been maintained for long time.
+The officially maintained build configuration is CMake. If you still want to 
+use these Makefiles, you've been warned that you may need to patch them.</em></p>
 
 <p>The classic set of Makefiles for Unix/Linux systems is provided for those users who need complete control over the whole process
 and who can benefit from the basic scaffolding that they can extend on their own.
