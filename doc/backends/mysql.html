@@ -48,7 +48,11 @@ MySQL server doesn't support them.</p>
 <table border="1" cellpadding="5" cellspacing="0">
 <tbody>
 <tr><th>MySQL version</th><th>Operating System</th><th>Compiler</th></tr>
-<tr><td>5.0.45</td><td>Linux i686 2.6.23 (Fedora release 7)</td><td>g++ 4.1.2</td></tr>
+<tr><td>5.5.28</td><td>OS X 10.8.2</td><td>Apple LLVM version 4.2
+(clang-425.0.24)</td></tr>
+<tr><td>5.0.96</td><td>Ubuntu 8.04.4 LTS (Hardy Heron)</td>
+<td>g++ (GCC) 4.2.4 (Ubuntu 4.2.4-1ubuntu4)</td>
+</tr>
 </tbody>
 </table>
 
@@ -80,12 +84,18 @@ session sql("mysql://db=test user=root password='Ala ma kota'");
 
 <p>The set of parameters used in the connection string for MySQL is:</p>
 <ul>
-  <li><code>dbname</code> or <code>db</code> (required)</li>
+  <li><code>dbname</code> or <code>db</code> or <code>service</code>
+  (required)</li>
   <li><code>user</code></li>
   <li><code>password</code> or <code>pass</code></li>
   <li><code>host</code></li>
   <li><code>port</code></li>
   <li><code>unix_socket</code></li>
+  <li><code>sslca</code></li>
+  <li><code>sslcert</code></li>
+  <li><code>local_infile</code> - should be <code>0</code> or <code>1</code>,
+  <code>1</code> means <code>MYSQL_OPT_LOCAL_INFILE</code> will be set.</li>
+  <li><code>charset</code></li>
 </ul>
 
 <p>Once you have created a <code>session</code> object as shown above, you
@@ -121,12 +131,28 @@ For the MySQL backend, this type mapping is:</p>
       <td><code>double</code></td>
     </tr>
     <tr>
-      <td>TINYINT, SMALLINT, INT, BIGINT (provided it's in the range)</td>
+      <td>TINYINT, TINYINT UNSIGNED, SMALLINT, SMALLINT UNSIGNED, INT</td>
       <td><code>dt_integer</code></td>
       <td><code>int</code></td>
     </tr>
     <tr>
-      <td>STRING/BINARY, VARCHAR/VARBINARY</td>
+      <td>INT UNSIGNED</td>
+      <td><code>dt_long_long</code></td>
+      <td><code>long long</code> or <code>unsigned</code></td>
+    </tr>
+    <tr>
+      <td>BIGINT</td>
+      <td><code>dt_long_long</code></td>
+      <td><code>long long</code></td>
+    </tr>
+    <tr>
+      <td>BIGINT UNSIGNED</td>
+      <td><code>dt_unsigned_long_long</code></td>
+      <td><code>unsigned long long</code></td>
+    </tr>
+    <tr>
+      <td>CHAR, VARCHAR, BINARY, VARBINARY, TINYBLOB, MEDIUMBLOB, BLOB,
+      LONGBLOB, TINYTEXT, MEDIUMTEXT, TEXT, LONGTEXT, ENUM</td>
       <td><code>dt_string</code></td>
       <td><code>std::string</code></td>
     </tr>
@@ -175,6 +201,10 @@ and only with appropriate table types.
 <h4 id="blob">BLOB Data Type</h4>
 
 <p>SOCI <code>blob</code> interface is not supported by the MySQL backend.</p>
+<p>Note that this does not mean you cannot use MySQL's <code>BLOB</code>
+types.  They can be selected using the usual SQL syntax and read into
+<code>std::string</code> on the C++ side, so no special interface is
+required.</p>
 
 <h4 id="rowid">RowID Data Type</h4>
 
@@ -194,7 +224,7 @@ documentation</a>). Stored functions can be executed by using
 SOCI's <a href="../statements.html#procedures">procedure</a> class.
 There is currently no support for stored procedures.</p>
 
-<h3 id="native">Acessing the native database API</h3>
+<h3 id="native">Accessing the native database API</h3>
 
 <p>SOCI provides access to underlying datbabase APIs via several <code>get_backend()</code> functions, as described in the <a href="../beyond.html">Beyond SOCI</a> documentation.</p>
 
