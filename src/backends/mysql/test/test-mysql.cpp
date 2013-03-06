@@ -764,6 +764,51 @@ void test12()
   std::cout << "test 12 passed" << std::endl;
 }
 
+struct strings_table_creator : table_creator_base
+{
+    strings_table_creator(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(s1 char(20), s2 varchar(20), "
+            "s3 tinytext, s4 mediumtext, s5 text, s6 longtext, "
+            "b1 binary(20), b2 varbinary(20), b3 tinyblob, b4 mediumblob, "
+            "b5 blob, b6 longblob, e1 enum ('foo', 'bar', 'baz'))";
+    }
+};
+
+void test13()
+{
+    {
+        session sql(backEnd, connectString);
+        strings_table_creator tableCreator(sql);
+        std::string text = "Ala ma kota.";
+        std::string binary("Ala\0ma\0kota.........", 20);
+        sql << "insert into soci_test "
+            "(s1, s2, s3, s4, s5, s6, b1, b2, b3, b4, b5, b6, e1) values "
+            "(:s1, :s2, :s3, :s4, :d5, :s6, :b1, :b2, :b3, :b4, :b5, :b6, "
+            "\'foo\')",
+            use(text), use(text), use(text), use(text), use(text), use(text),
+            use(binary), use(binary), use(binary), use(binary), use(binary),
+            use(binary);
+        row r;
+        sql << "select s1, s2, s3, s4, s5, s6, b1, b2, b3, b4, b5, b6, e1 "
+            "from soci_test", into(r);
+        assert(r.size() == 13);
+        for (int i = 0; i < 13; i++) {
+            assert(r.get_properties(i).get_data_type() == dt_string);
+            if (i < 6) {
+                assert(r.get<std::string>(i) == text);
+            } else if (i < 12) {
+                assert(r.get<std::string>(i) == binary);
+            } else {
+                assert(r.get<std::string>(i) == "foo");
+            }
+        }
+    }
+    
+    std::cout << "test 13 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -897,6 +942,7 @@ int main(int argc, char** argv)
                     << "(C++ implementation's double type is not IEC-559)\n";
         }
         test12();
+        test13();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;
