@@ -11,9 +11,9 @@ sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 16126D3A3E5C1192
 sudo apt-get update -qq
 sudo apt-get install -qq \
     libstdc++5 libboost-dev libboost-date-time-dev \
-	libmyodbc unixodbc-dev odbc-postgresql \
-	firebird2.5-super firebird2.5-dev \
-	oracle-xe-client
+    libmyodbc unixodbc-dev odbc-postgresql \
+    firebird2.5-super firebird2.5-dev \
+    oracle-xe-client
 echo "$(tmstamp) *** before_install::apt-get finished $(date) ***"
 
 echo "$(tmstamp) *** before_install::config starting $(date) ***"
