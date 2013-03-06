@@ -4,8 +4,11 @@
 #
 language: cpp
 
+# Testing against two compilers will create (at least) 2 rows in build matrix
+# http://about.travis-ci.org/docs/user/languages/cpp/
 compiler:
   - g++
+  - clang
 
 branches:
   only:
