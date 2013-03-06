@@ -1,4 +1,5 @@
 //
+// Copyright (C) 2013 Mateusz Loskot
 // Copyright (C) 2011-2013 Denis Chapligin
 // Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
@@ -8,6 +9,7 @@
 
 #include "soci.h"
 #include "soci-db2.h"
+#include "common-tests.h"
 #include <iostream>
 #include <string>
 #include <cassert>
@@ -15,10 +17,10 @@
 #include <ctime>
 
 using namespace soci;
+using namespace soci::tests;
 
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_db2();
-
 
 // NOTE:
 // This file is supposed to serve two purposes:
@@ -157,6 +159,86 @@ void test3() {
     std::cout << "test 3 passed" << std::endl;
 }
 
+//
+// Support for soci Common Tests
+//
+
+// DDL Creation objects for common tests
+struct table_creator_one : public table_creator_base
+{
+    table_creator_one(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(id integer, val integer, c char, "
+                 "str varchar(20), sh smallint, ul numeric(20), d double, "
+                 "tm timestamp, i1 integer, i2 integer, i3 integer, "
+                 "name varchar(20))";
+    }
+};
+
+struct table_creator_two : public table_creator_base
+{
+    table_creator_two(session & sql)
+        : table_creator_base(sql)
+    {
+        sql  << "create table soci_test(num_float double, num_int integer,"
+                     " name varchar(20), sometime timestamp, chr char)";
+    }
+};
+
+struct table_creator_three : public table_creator_base
+{
+    table_creator_three(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(name varchar(100) not null, "
+            "phone varchar(15))";
+    }
+};
+
+struct table_creator_for_get_affected_rows : table_creator_base
+{
+    table_creator_for_get_affected_rows(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val integer)";
+    }
+};
+
+// Common tests context
+class test_context : public test_context_base
+{
+public:
+    test_context(backend_factory const &backEnd, std::string const &connectString)
+        : test_context_base(backEnd, connectString)
+    {}
+
+    table_creator_base* table_creator_1(session& s) const
+    {
+        return new table_creator_one(s);
+    }
+
+    table_creator_base* table_creator_2(session& s) const
+    {
+        return new table_creator_two(s);
+    }
+
+    table_creator_base* table_creator_3(session& s) const
+    {
+        return new table_creator_three(s);
+    }
+
+    table_creator_base* table_creator_4(session& s) const
+    {
+        return new table_creator_for_get_affected_rows(s);
+    }
+
+    std::string to_date_time(std::string const &datdt_string) const
+    {
+        return "TIMESTAMP_FORMAT(\'" + datdt_string + "\', \'YYYY-MM-DD HH24:MI:SS\')";
+    }
+};
+
 int main(int argc, char** argv)
 {
 
@@ -184,6 +266,12 @@ int main(int argc, char** argv)
 
     try
     {
+        test_context tc(backEnd, connectString);
+        common_tests tests(tc);
+        tests.run();
+
+        std::cout << "\nSOCI DB2 Tests:\n\n";
+
         test1();
         test2();
         test3();
