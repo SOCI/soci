@@ -31,6 +31,7 @@ class query_transformation_function
     : public std::unary_function<std::string const&, std::string>
 {
 public:
+    virtual ~query_transformation_function() {}
     virtual result_type operator()(argument_type a) const = 0;
 };
 
