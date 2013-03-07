@@ -15,9 +15,9 @@ using namespace soci::details;
 
 // concrete factory for ODBC concrete strategies
 odbc_session_backend * odbc_backend_factory::make_session(
-     std::string const &connectString) const
+     connection_parameters const & parameters) const
 {
-     return new odbc_session_backend(connectString);
+     return new odbc_session_backend(parameters);
 }
 
 odbc_backend_factory const soci::odbc;

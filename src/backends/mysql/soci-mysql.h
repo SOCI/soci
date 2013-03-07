@@ -228,7 +228,7 @@ struct mysql_blob_backend : details::blob_backend
 
 struct mysql_session_backend : details::session_backend
 {
-    mysql_session_backend(std::string const &connectString);
+    mysql_session_backend(connection_parameters const & parameters);
 
     ~mysql_session_backend();
 
@@ -250,9 +250,9 @@ struct mysql_session_backend : details::session_backend
 
 struct mysql_backend_factory : backend_factory
 {
-	mysql_backend_factory() {}
+    mysql_backend_factory() {}
     virtual mysql_session_backend * make_session(
-        std::string const &connectString) const;
+        connection_parameters const & parameters) const;
 };
 
 extern SOCI_MYSQL_DECL mysql_backend_factory const mysql;

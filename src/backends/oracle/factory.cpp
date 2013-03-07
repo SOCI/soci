@@ -7,6 +7,7 @@
 
 #define SOCI_ORACLE_SOURCE
 #include "soci-oracle.h"
+#include <connection-parameters.h>
 #include <backend-loader.h>
 #include <cctype>
 #include <cstdio>
@@ -106,13 +107,13 @@ void chop_connect_string(std::string const & connectString,
 
 // concrete factory for Empty concrete strategies
 oracle_session_backend * oracle_backend_factory::make_session(
-     std::string const &connectString) const
+     connection_parameters const & parameters) const
 {
     std::string serviceName, userName, password;
     int mode;
     bool decimals_as_strings;
 
-    chop_connect_string(connectString, serviceName, userName, password,
+    chop_connect_string(parameters.get_connect_string(), serviceName, userName, password,
             mode, decimals_as_strings);
 
     return new oracle_session_backend(serviceName, userName, password,

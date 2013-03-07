@@ -218,7 +218,7 @@ struct db2_blob_backend : details::blob_backend
 
 struct db2_session_backend : details::session_backend
 {
-    db2_session_backend(std::string const& connectString);
+    db2_session_backend(connection_parameters const& parameters);
 
     ~db2_session_backend();
 
@@ -249,7 +249,8 @@ struct db2_session_backend : details::session_backend
 struct SOCI_DB2_DECL db2_backend_factory : backend_factory
 {
 	db2_backend_factory() {}
-    db2_session_backend* make_session(std::string const& connectString) const;
+    db2_session_backend* make_session(
+        connection_parameters const & parameters) const;
 };
 
 extern SOCI_DB2_DECL db2_backend_factory const db2;

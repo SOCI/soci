@@ -259,7 +259,7 @@ struct odbc_blob_backend : details::blob_backend
 
 struct odbc_session_backend : details::session_backend
 {
-    odbc_session_backend(std::string const &connectString);
+    odbc_session_backend(connection_parameters const & parameters);
 
     ~odbc_session_backend();
 
@@ -403,9 +403,9 @@ inline bool odbc_standard_type_backend_base::use_string_for_bigint() const
 
 struct odbc_backend_factory : backend_factory
 {
-	odbc_backend_factory() {}
+    odbc_backend_factory() {}
     virtual odbc_session_backend * make_session(
-        std::string const &connectString) const;
+        connection_parameters const & parameters) const;
 };
 
 extern SOCI_ODBC_DECL odbc_backend_factory const odbc;

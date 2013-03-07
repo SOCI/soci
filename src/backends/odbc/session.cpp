@@ -12,7 +12,8 @@
 using namespace soci;
 using namespace soci::details;
 
-odbc_session_backend::odbc_session_backend(std::string const & connectString)
+odbc_session_backend::odbc_session_backend(
+    connection_parameters const & parameters)
     : henv_(0), hdbc_(0), product_(prod_uninitialized)
 {
     SQLRETURN rc;
