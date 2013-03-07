@@ -54,6 +54,15 @@ struct table_creator_three : public table_creator_base
     }
 };
 
+struct table_creator_for_get_affected_rows : table_creator_base
+{
+    table_creator_for_get_affected_rows(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "CREATE TABLE SOCI_TEST(VAL INTEGER)";
+    }
+};
+
 class test_context :public test_context_base
 {
 public:
@@ -76,6 +85,11 @@ public:
     {
         pr_s << "SET CURRENT SCHEMA = 'DB2INST1'";
         return new table_creator_three(pr_s);
+    }
+
+    table_creator_base* table_creator_4(session& s) const
+    {
+        return new table_creator_for_get_affected_rows(s);
     }
 
     std::string to_date_time(std::string const & pi_datdt_string) const

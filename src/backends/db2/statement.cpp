@@ -191,8 +191,19 @@ db2_statement_backend::fetch(int  number )
 
 long long db2_statement_backend::get_affected_rows()
 {
-    // ...
-    return -1;
+    SQLLEN rows;
+
+    SQLRETURN cliRC = SQLRowCount(hStmt, &rows);
+    if (cliRC != SQL_SUCCESS && cliRC != SQL_SUCCESS_WITH_INFO)
+    {
+        throw db2_soci_error(db2_soci_error::sqlState("Error while getting affected row count", SQL_HANDLE_STMT, hStmt), cliRC);
+    }
+    else if (rows == -1)
+    {
+        throw soci_error("Error getting affected row count: statement did not perform an update, insert, delete, or merge"); 
+    }
+
+    return rows;
 }
 
 int db2_statement_backend::get_number_of_rows()
