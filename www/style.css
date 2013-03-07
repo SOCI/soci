@@ -42,6 +42,7 @@ table.footer
 
 table.main
 {
+  width: 60%;
   padding-top: 25px;
 }
 
@@ -71,4 +72,16 @@ span.literal
 div.indent
 {
   margin-left: 40px;
+}
+
+div.column-left
+{
+  width: 50%;
+  float: left;
+}
+
+div.column-right
+{
+  width: 50%;
+  float: right;
 }
