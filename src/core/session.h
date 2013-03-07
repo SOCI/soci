@@ -32,12 +32,14 @@ class blob_backend;
 
 } // namespace details
 
+class connection_parameters;
 class connection_pool;
 
 class SOCI_DECL session
 {
 public:
     session();
+    explicit session(connection_parameters const & parameters);
     session(backend_factory const & factory, std::string const & connectString);
     session(std::string const & backendName, std::string const & connectString);
     explicit session(std::string const & connectString);
@@ -45,6 +47,7 @@ public:
 
     ~session();
 
+    void open(connection_parameters const & parameters);
     void open(backend_factory const & factory, std::string const & connectString);
     void open(std::string const & backendName, std::string const & connectString);
     void open(std::string const & connectString);
