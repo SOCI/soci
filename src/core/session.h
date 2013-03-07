@@ -20,7 +20,7 @@
 namespace soci
 {
 class values;
-struct backend_factory;
+class backend_factory;
 
 namespace details
 {

@@ -260,8 +260,9 @@ private:
 
 // simple base class for the session back-end factory
 
-struct SOCI_DECL backend_factory
+class SOCI_DECL backend_factory
 {
+public:
     backend_factory() {}
     virtual ~backend_factory() {}
 
