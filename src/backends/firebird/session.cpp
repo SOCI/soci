@@ -199,12 +199,12 @@ bool getISCConnectParameter(std::map<std::string, std::string> const & m, std::s
 } // namespace anonymous
 
 firebird_session_backend::firebird_session_backend(
-    std::string const & connectString) : dbhp_(0), trhp_(0)
+    connection_parameters const & parameters) : dbhp_(0), trhp_(0)
                                          , decimals_as_strings_(false)
 {
     // extract connection parameters
     std::map<std::string, std::string>
-        params(explodeISCConnectString(connectString));
+        params(explodeISCConnectString(parameters.get_connect_string()));
 
     ISC_STATUS stat[stat_size];
     std::string param;

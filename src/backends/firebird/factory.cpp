@@ -12,9 +12,9 @@
 using namespace soci;
 
 firebird_session_backend * firebird_backend_factory::make_session(
-    std::string const &connectString) const
+    connection_parameters const & parameters) const
 {
-    return new firebird_session_backend(connectString);
+    return new firebird_session_backend(parameters);
 }
 
 firebird_backend_factory const soci::firebird;

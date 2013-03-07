@@ -10,6 +10,7 @@
 
 #include "once-temp-type.h"
 #include "query_transformation.h"
+#include "connection-parameters.h"
 
 // std
 #include <cstddef>
@@ -32,7 +33,6 @@ class blob_backend;
 
 } // namespace details
 
-class connection_parameters;
 class connection_pool;
 
 class SOCI_DECL session
@@ -125,8 +125,7 @@ private:
     std::ostream * logStream_;
     std::string lastQuery_;
 
-    backend_factory const * lastFactory_;
-    std::string lastConnectString_;
+    connection_parameters lastConnectParameters_;
 
     bool uppercaseColumnNames_;
 

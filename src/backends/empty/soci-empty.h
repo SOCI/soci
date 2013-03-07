@@ -154,7 +154,7 @@ struct empty_blob_backend : details::blob_backend
 
 struct empty_session_backend : details::session_backend
 {
-    empty_session_backend(std::string const& connectString);
+    empty_session_backend(connection_parameters const& parameters);
 
     ~empty_session_backend();
 
@@ -173,8 +173,8 @@ struct empty_session_backend : details::session_backend
 
 struct SOCI_EMPTY_DECL empty_backend_factory : backend_factory
 {
-	empty_backend_factory() {}
-    empty_session_backend* make_session(std::string const& connectString) const;
+    empty_backend_factory() {}
+    empty_session_backend* make_session(connection_parameters const& parameters) const;
 };
 
 extern SOCI_EMPTY_DECL empty_backend_factory const empty;

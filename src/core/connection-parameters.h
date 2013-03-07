@@ -21,6 +21,7 @@ class backend_factory;
 class SOCI_DECL connection_parameters
 {
 public:
+    connection_parameters();
     connection_parameters(backend_factory const & factory, std::string const & connectString);
     connection_parameters(std::string const & backendName, std::string const & connectString);
     explicit connection_parameters(std::string const & fullConnectString);
