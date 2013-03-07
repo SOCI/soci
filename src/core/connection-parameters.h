@@ -15,7 +15,7 @@
 namespace soci
 {
 
-struct backend_factory;
+class backend_factory;
 
 // Simple container for the information used when opening a session.
 class SOCI_DECL connection_parameters
