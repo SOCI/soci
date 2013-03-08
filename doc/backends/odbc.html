@@ -274,11 +274,11 @@ that returns fully expanded connection string as returned by the <code>SQLDriver
 
 <h3 id="options">Configuration options</h3>
 
-<p>This backend supports <code>ODBC_OPTION_DRIVER_COMPLETE</code> option which can be passed to it via <code>connection_parameters</code> class. The value of this option is passed to <code>SQLDriverConnect()</code> function as "driver completion" parameter and so must be one of <code>SQL_DRIVER_XXX</code> values, in the string form. The default value of this option is <code>SQL_DRIVER_PROMPT</code> meaning that the driver will query the user for the user name and/or the password if they are not stored together with the connection. If this is undesirable for some reason, you can use <code>SQL_DRIVER_NOPROMPT</code> value for this option to suppress showing the message box:</p>
+<p>This backend supports <code>odbc_option_driver_complete</code> option which can be passed to it via <code>connection_parameters</code> class. The value of this option is passed to <code>SQLDriverConnect()</code> function as "driver completion" parameter and so must be one of <code>SQL_DRIVER_XXX</code> values, in the string form. The default value of this option is <code>SQL_DRIVER_PROMPT</code> meaning that the driver will query the user for the user name and/or the password if they are not stored together with the connection. If this is undesirable for some reason, you can use <code>SQL_DRIVER_NOPROMPT</code> value for this option to suppress showing the message box:</p>
 
 <pre class="example">
 connection_parameters parameters("odbc", "DSN=mydb");
-parameters.set_option(ODBC_OPTION_DRIVER_COMPLETE, "0" /* SQL_DRIVER_NOPROMPT */);
+parameters.set_option(odbc_option_driver_complete, "0" /* SQL_DRIVER_NOPROMPT */);
 session sql(parameters);
 </pre>
 
