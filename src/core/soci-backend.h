@@ -235,11 +235,11 @@ public:
     // versions of them in the derived classes. However every backend should
     // define at least one of them to allow the code using auto-generated values
     // to work.
-    virtual bool get_next_sequence_value(session&, std::string const &, long &)
+    virtual bool get_next_sequence_value(session&, std::string const&, long&)
     {
         return false;
     }
-    virtual bool get_last_insert_id(session&, std::string const &, long &)
+    virtual bool get_last_insert_id(session&, std::string const&, long&)
     {
         return false;
     }

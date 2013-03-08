@@ -104,14 +104,13 @@ this or derived type only.</p>
 class standard_into_type_backend
 {
 public:
+    standard_into_type_backend() {}
     virtual ~standard_into_type_backend() {}
 
-    virtual void define_by_pos(int &amp; position,
-        void * data, exchange_type type) = 0;
+    virtual void define_by_pos(int&amp; position, void* data, exchange_type type) = 0;
 
     virtual void pre_fetch() = 0;
-    virtual void post_fetch(bool gotData, bool calledFromFetch,
-        indicator * ind) = 0;
+    virtual void post_fetch(bool gotData, bool calledFromFetch, indicator* ind) = 0;
 
     virtual void clean_up() = 0;
 };
@@ -160,13 +159,13 @@ should go there.</p>
 class vector_into_type_backend
 {
 public:
+    vector_into_type_backend() {}
     virtual ~vector_into_type_backend() {}
 
-    virtual void define_by_pos(int &amp; position,
-        void * data, exchange_type type) = 0;
+    virtual void define_by_pos(int&amp; position, void* data, exchange_type type) = 0;
 
     virtual void pre_fetch() = 0;
-    virtual void post_fetch(bool gotData, indicator * ind) = 0;
+    virtual void post_fetch(bool gotData, indicator* ind) = 0;
 
     virtual void resize(std::size_t sz) = 0;
     virtual std::size_t size() = 0;
@@ -194,13 +193,13 @@ class standard_use_type_backend
 public:
     virtual ~standard_use_type_backend() {}
 
-    virtual void bind_by_pos(int &amp; position,
-        void * data, exchange_type type, bool readOnly) = 0;
-    virtual void bind_by_name(std::string const &amp; name,
-        void * data, exchange_type type, bool readOnly) = 0;
+    virtual void bind_by_pos(int&amp; position,
+        void* data, exchange_type type, bool readOnly) = 0;
+    virtual void bind_by_name(std::string const&amp; name,
+        void* data, exchange_type type, bool readOnly) = 0;
 
-    virtual void pre_use(indicator const * ind) = 0;
-    virtual void post_use(bool gotData, indicator * ind) = 0;
+    virtual void pre_use(indicator const* ind) = 0;
+    virtual void post_use(bool gotData, indicator* ind) = 0;
 
     virtual void clean_up() = 0;
 };
@@ -236,12 +235,12 @@ class vector_use_type_backend
 public:
     virtual ~vector_use_type_backend() {}
 
-    virtual void bind_by_pos(int &amp; position,
-        void * data, exchange_type type) = 0;
-    virtual void bind_by_name(std::string const &amp; name,
-        void * data, exchange_type type) = 0;
+    virtual void bind_by_pos(int&amp; position,
+        void* data, exchange_type type) = 0;
+    virtual void bind_by_name(std::string const&amp; name,
+        void* data, exchange_type type) = 0;
 
-    virtual void pre_use(indicator const * ind) = 0;
+    virtual void pre_use(indicator const* ind) = 0;
 
     virtual std::size_t size() = 0;
 
@@ -262,29 +261,36 @@ interface is analogous to those presented above.</p>
 class statement_backend
 {
 public:
+    statement_backend() {}
     virtual ~statement_backend() {}
 
     virtual void alloc() = 0;
     virtual void clean_up() = 0;
 
-    virtual void prepare(std::string const &amp; query, statement_type eType) = 0;
+    virtual void prepare(std::string const&amp; query, statement_type eType) = 0;
 
-    enum exec_fetch_result { ef_success, ef_no_data };
+    enum exec_fetch_result
+    {
+        ef_success,
+        ef_no_data
+    };
+
     virtual exec_fetch_result execute(int number) = 0;
     virtual exec_fetch_result fetch(int number) = 0;
 
+    virtual long long get_affected_rows() = 0;
     virtual int get_number_of_rows() = 0;
 
-    virtual std::string rewrite_for_procedure_call(std::string const &amp; query) = 0;
+    virtual std::string rewrite_for_procedure_call(std::string const&amp; query) = 0;
 
     virtual int prepare_for_describe() = 0;
-    virtual void describe_column(int colNum, data_type &amp; dtype,
-        std::string &amp; column_name) = 0;
+    virtual void describe_column(int colNum, data_type&amp; dtype,
+        std::string&amp; column_name) = 0;
 
-    virtual standard_into_type_backend * make_into_type_backend() = 0;
-    virtual standard_use_type_backend * make_use_type_backend() = 0;
-    virtual vector_into_type_backend * make_vector_into_type_backend() = 0;
-    virtual vector_use_type_backend * make_vector_use_type_backend() = 0;
+    virtual standard_into_type_backend* make_into_type_backend() = 0;
+    virtual standard_use_type_backend* make_use_type_backend() = 0;
+    virtual vector_into_type_backend* make_vector_into_type_backend() = 0;
+    virtual vector_use_type_backend* make_vector_use_type_backend() = 0;
 };
 </pre>
 
@@ -307,6 +313,8 @@ operations).</li>
   <li><code>fetch</code> - Called to fetch next bunch of rows; number
 is positive and determines the requested number of rows (more than 1 is
 used only for bulk operations).</li>
+  <li><code>get_affected_rows</code> - Called to determine the actual
+number of rows affected by data modifying statement.</li>
   <li><code>get_number_of_rows</code> - Called to determine the actual
 number of rows retrieved by the previous call to <code>execute</code>
 or <code>fetch</code>.</li>
@@ -383,6 +391,9 @@ public:
     virtual void commit() = 0;
     virtual void rollback() = 0;
 
+    virtual bool get_next_sequence_value(session&amp;, std::string const&amp;, long&amp;);
+    virtual bool get_last_insert_id(session&amp;, std::string const&amp;, long&amp;);
+
     virtual std::string get_backend_name() const = 0;
 
     virtual statement_backend * make_statement_backend() = 0;
@@ -397,6 +408,10 @@ internals of the <code>session</code> object.</p>
   <li><code>begin</code>, <code>commit</code>, <code>rollback</code>
 - Forward-called when the same functions of <code>session</code> are
 called by user.</li>
+  <li><code>get_next_sequence_value</code>, <code>get_last_insert_id</code> 
+- Called to retrieve sequences or auto-generated values and every backend should 
+define at least one of them to allow the code using auto-generated values to work.
+  </li>
   <li><code>make_statement_backend</code>, <code>make_rowid_backend</code>,
     <code>make_blob_backend</code> - Called to create respective
 implementations for the <code>statement</code>, <code>rowid</code>
@@ -410,7 +425,7 @@ struct backend_factory
     virtual ~backend_factory() {}
 
     virtual details::session_backend * make_session(
-        std::string const &amp; connectString) const = 0;
+        std::string const&amp; connectString) const = 0;
 };
 </pre>
 
@@ -432,8 +447,8 @@ which declares entities of the PostgreSQL backend:</p>
 <pre class="example">
 struct postgresql_backend_factory : backend_factory
 {
-    virtual postgresql_session_backend * make_session(
-        std::string const &amp; connectString) const;
+    virtual postgresql_session_backend* make_session(
+        std::string const&amp; connectString) const;
 };
 
 extern postgresql_backend_factory const postgresql;

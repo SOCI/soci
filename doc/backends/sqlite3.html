@@ -73,20 +73,20 @@ session sql(sqlite3, "database_filename");
 
 <p>The only option for the connection string is the name of the file to use as a database.</p>
 
-<p>Once you have created a <code>Session</code> object as shown above, you can use it to access the database, for example:</p>
+<p>Once you have created a <code>session</code> object as shown above, you can use it to access the database, for example:</p>
 <pre class="example">
 int count;
 sql &lt;&lt; "select count(*) from invoices", into(count);
 </pre>
 
-<p>(See the <a href="../basics.html">SOCI basics</a> and <a href="../exchange.html">exchanging data</a> documentation for general information on using the <code>Session</code> class.)</p>
+<p>(See the <a href="../basics.html">SOCI basics</a> and <a href="../exchange.html">exchanging data</a> documentation for general information on using the <code>session</code> class.)</p>
 
 <h3 id="support">SOCI Feature Support</h3>
 <h4 id="dynamic">Dynamic Binding</h4>
 
-<p>The SQLite3 backend supports the use of the SOCI <code>Row</code> class, which facilitates retrieval of data whose type is not known at compile time.</p>
+<p>The SQLite3 backend supports the use of the SOCI <code>row</code> class, which facilitates retrieval of data whose type is not known at compile time.</p>
 
-<p>When calling <code>Row::get&lt;T&gt;()</code>, the type you should pass as T depends upon the underlying database type.</p>  
+<p>When calling <code>row::get&lt;T&gt;()</code>, the type you should pass as T depends upon the underlying database type.</p>  
 
 <p>For the SQLite3 backend, this type mapping is complicated by the fact the SQLite3 does not enforce types <a href="#INTEGER_PRIMARY_KEY">*</a>, and makes no attempt to validate the type names used in table creation or alteration statements.    SQLite3 will return the type as a string, SOCI will recognize the following strings and match them the corresponding SOCI types:</p>
 
@@ -95,26 +95,26 @@ sql &lt;&lt; "select count(*) from invoices", into(count);
     <tr>
       <th>SQLite3 Data Type</th>
       <th>SOCI Data Type</th>
-      <th><code>Row::get&lt;T&gt;</code> specializations</th>
+      <th><code>row::get&lt;T&gt;</code> specializations</th>
     </tr>
     <tr>
       <td>*float*</td>
-      <td><code>eDouble</code></td>
+      <td><code>dt_ouble</code></td>
       <td><code>double</code></td>
     </tr>
     <tr>
       <td>*int*</td>
-      <td><code>eInteger</code></td>
+      <td><code>dt_integer</code></td>
       <td><code>int</code></td>
     </tr>
     <tr>
       <td>*char*</td>
-      <td><code>eString</code></td>
+      <td><code>dt_string</code></td>
       <td><code>std::string</code></td>
     </tr>
     <tr>
       <td>*date*, *time*</td>
-      <td><code>eDate</code></td>
+      <td><code>dt_date</code></td>
       <td><code>std::tm</code><code></code></td>
     </tr>
   </tbody>
@@ -122,7 +122,7 @@ sql &lt;&lt; "select count(*) from invoices", into(count);
 
 <p id="INTEGER_PRIMARY_KEY">* There is one case where SQLite3 enforces type.  If a column is declared as "integer primary key", then SQLite3 uses that as an alias to the internal ROWID column that exists for every table.  Only integers are allowed in this column.</p>
 
-<p>(See the <a href="../exchange.html#dynamic">dynamic resultset binding</a> documentation for general information on using the <code>Row</code> class.)</p>
+<p>(See the <a href="../exchange.html#dynamic">dynamic resultset binding</a> documentation for general information on using the <code>row</code> class.)</p>
 
 <h4 id="bindingbyname">Binding by Name</h4>
 
@@ -166,7 +166,9 @@ sql &lt;&lt; "insert into t(x, y) values(?, ?)", use(i), use(j);
 
 <h3 id="native">Acessing the native database API</h3>
 
-<p>SOCI provides access to underlying datbabase APIs via several getBackEnd() functions, as described in the <a href="../beyond.html">beyond SOCI</a> documentation.</p>
+<p>SOCI provides access to underlying datbabase APIs via several 
+<code>get_backend()</code> functions, as described in the 
+<a href="../beyond.html">beyond SOCI</a> documentation.</p>
 
 <p>The SQLite3 backend provides the following concrete classes for navite API access:</p>
 
@@ -177,16 +179,16 @@ sql &lt;&lt; "insert into t(x, y) values(?, ?)", use(i), use(j);
       <th>Concrete Class</th>
     </tr>
     <tr>
-      <td><code>SessionBackEnd* Session::getBackEnd()</code></td>
-      <td><code>SQLite3SessionBackEnd</code></td>
+      <td><code>session_backend* session::get_backend()</code></td>
+      <td><code>sqlie3_session_backend</code></td>
     </tr>
     <tr>
-      <td><code>StatementBackEnd* Statement::getBackEnd()</code></td>
-      <td><code>SQLite3StatementBackEnd</code></td>
+      <td><code>statement_backend* statement::get_backend()</code></td>
+      <td><code>sqlite3_statement_backend</code></td>
     </tr>
     <tr>
-      <td><code>RowIDBackEnd* RowID::getBackEnd()</code></td>
-      <td><code>SQLite3RowIDBackEnd</code></td>
+      <td><code>rowid_backend* rowid::get_backend()</code></td>
+      <td><code>sqlite3_rowid_backend</code></td>
     </tr>
   </tbody>
 </table>

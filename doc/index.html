@@ -44,7 +44,7 @@
 using namespace soci;
 using namespace std;
 
-bool getName(string &amp;name)
+bool get_name(string &amp;name)
 {
     cout &lt;&lt; "Enter name: ";
     return cin &gt;&gt; name;
@@ -62,7 +62,7 @@ int main()
         cout &lt;&lt; "We have " &lt;&lt; count &lt;&lt; " entries in the phonebook.\n";
 
         string name;
-        while (getName(name))
+        while (get_name(name))
         {
             string phone;
             indicator ind;
