@@ -229,7 +229,7 @@ struct postgresql_blob_backend : details::blob_backend
 
 struct postgresql_session_backend : details::session_backend
 {
-    postgresql_session_backend(std::string const & connectString);
+    postgresql_session_backend(connection_parameters const & parameters);
 
     ~postgresql_session_backend();
 
@@ -258,7 +258,7 @@ struct postgresql_backend_factory : backend_factory
 {
     postgresql_backend_factory() {}
     virtual postgresql_session_backend * make_session(
-        std::string const & connectString) const;
+        connection_parameters const & parameters) const;
 };
 
 extern SOCI_POSTGRESQL_DECL postgresql_backend_factory const postgresql;

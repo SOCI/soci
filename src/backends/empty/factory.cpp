@@ -18,9 +18,9 @@ using namespace soci::details;
 
 // concrete factory for Empty concrete strategies
 empty_session_backend* empty_backend_factory::make_session(
-     std::string const& connectString) const
+     connection_parameters const& parameters) const
 {
-     return new empty_session_backend(connectString);
+     return new empty_session_backend(parameters);
 }
 
 empty_backend_factory const soci::empty;

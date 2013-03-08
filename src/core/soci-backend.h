@@ -260,13 +260,16 @@ private:
 
 // simple base class for the session back-end factory
 
-struct SOCI_DECL backend_factory
+class connection_parameters;
+
+class SOCI_DECL backend_factory
 {
+public:
     backend_factory() {}
     virtual ~backend_factory() {}
 
     virtual details::session_backend* make_session(
-        std::string const& connectString) const = 0;
+        connection_parameters const& parameters) const = 0;
 };
 
 } // namespace soci

@@ -23,9 +23,9 @@ using namespace soci::details;
 
 // concrete factory for Empty concrete strategies
 postgresql_session_backend * postgresql_backend_factory::make_session(
-     std::string const & connectString) const
+     connection_parameters const & parameters) const
 {
-     return new postgresql_session_backend(connectString);
+     return new postgresql_session_backend(parameters);
 }
 
 postgresql_backend_factory const soci::postgresql;
