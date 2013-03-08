@@ -262,7 +262,7 @@ private:
 
 struct SOCI_DECL backend_factory
 {
-	backend_factory() {}
+    backend_factory() {}
     virtual ~backend_factory() {}
 
     virtual details::session_backend* make_session(
