@@ -24,10 +24,11 @@ script: ./bin/ci/script.sh
 
 matrix:
   include:
-    - env:
-      - CFLAGS="-m32"
-      - CXXFLAGS="-m32"
-      - LDFLAGS="-melf_i386"
+    - compiler: g++
+      CFLAGS="-m32"
+      CXXFLAGS="-m32"
+      LDFLAGS="-melf_i386"
+
 notifications:
   email:
     recipients:
