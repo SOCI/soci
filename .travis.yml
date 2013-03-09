@@ -22,6 +22,12 @@ before_install: ./bin/ci/before_install.sh
 before_script: ./bin/ci/before_script.sh
 script: ./bin/ci/script.sh
 
+matrix:
+  include:
+    - env:
+      - CFLAGS="-m32"
+      - CXXFLAGS="-m32"
+      - LDFLAGS="-melf_i386"
 notifications:
   email:
     recipients:
