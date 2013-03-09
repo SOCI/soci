@@ -211,6 +211,8 @@ protected:
     int rowsFetched_;
     bool endOfRowSet_;
 
+	long long rowsAffectedBulk_; // number of rows affected by the last bulk operation
+
     virtual void exchangeData(bool gotData, int row);
     virtual void prepareSQLDA(XSQLDA ** sqldap, int size = 10);
     virtual void rewriteQuery(std::string const & query,

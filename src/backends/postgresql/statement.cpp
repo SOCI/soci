@@ -231,7 +231,7 @@ postgresql_statement_backend::execute(int number)
                     "Binding for use elements must be either by position "
                     "or by name.");
             }
-
+			long long rowsAffectedBulkTemp = 0;
             for (int i = 0; i != numberOfExecutions; ++i)
             {
                 std::vector<char *> paramValues;
@@ -323,19 +323,16 @@ postgresql_statement_backend::execute(int number)
                     ExecStatusType status = PQresultStatus(result_);
                     if (status != PGRES_COMMAND_OK)
                     {
-                        throw_postgresql_soci_error(result_);
+						// preserve the number of rows affected so far.
+						rowsAffectedBulk_ = rowsAffectedBulkTemp;
+						throw_postgresql_soci_error(result_);
                     }
                     
-                    // prepare for accumulating rows affected 
-                    // after the fisrt successful execution
-                    if (i == 0) {
-                        rowsAffectedBulk_ = 0;
-                    }
-                    // accumulate number of rows before clearing results
-                    rowsAffectedBulk_ += get_affected_rows();                    
+                    rowsAffectedBulkTemp += get_affected_rows();                    
                     PQclear(result_);
                 }
             }
+			rowsAffectedBulk_ = rowsAffectedBulkTemp;
 
             if (numberOfExecutions > 1)
             {

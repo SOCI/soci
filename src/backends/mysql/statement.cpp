@@ -155,6 +155,7 @@ mysql_statement_backend::execute(int number)
                     "Binding for use elements must be either by position "
                     "or by name.");
             }
+			long long rowsAffectedBulkTemp = 0;
             for (int i = 0; i != numberOfExecutions; ++i)
             {
                 std::vector<char *> paramValues;
@@ -225,17 +226,14 @@ mysql_statement_backend::execute(int number)
                     if (0 != mysql_real_query(session_.conn_, query.c_str(),
                             query.size()))
                     {
+						// preserve the number of rows affected so far.
+						rowsAffectedBulk_ = rowsAffectedBulkTemp;
                         throw mysql_soci_error(mysql_error(session_.conn_),
                             mysql_errno(session_.conn_));
                     }
 					else
 					{
-						// prepare for accumulating rows affected 
-						// after the fisrt successful execution
-						if (i == 0) {
-							rowsAffectedBulk_ = 0;
-						}
-						rowsAffectedBulk_ += static_cast<long long>(mysql_affected_rows(session_.conn_));
+						rowsAffectedBulkTemp += static_cast<long long>(mysql_affected_rows(session_.conn_));
 					}
                     if (mysql_field_count(session_.conn_) != 0)
                     {
@@ -245,6 +243,7 @@ mysql_statement_backend::execute(int number)
                     query.clear();
                 }
             }
+			rowsAffectedBulk_ = rowsAffectedBulkTemp;
             if (numberOfExecutions > 1)
             {
                 // bulk
