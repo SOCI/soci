@@ -7,7 +7,6 @@ source ./bin/ci/common.sh
 echo "$(tmstamp) *** before_install::apt-get starting $(date) ***"
 #wget http://oss.oracle.com/el4/RPM-GPG-KEY-oracle -O - | sudo apt-key add -
 #sudo bash -c 'echo "deb https://oss.oracle.com/debian unstable main non-free" >> /etc/apt/sources.list'
-sudo dpkg --add-architecture i386
 sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 16126D3A3E5C1192
 sudo apt-get update -qq
 sudo apt-get install -qq \
