@@ -23,7 +23,8 @@ using std::string;
 
 mysql_statement_backend::mysql_statement_backend(
     mysql_session_backend &session)
-    : session_(session), result_(NULL), justDescribed_(false),
+    : session_(session), result_(NULL), 
+	   rowsAffectedBulk_(-1LL), justDescribed_(false),
        hasIntoElements_(false), hasVectorIntoElements_(false),
        hasUseElements_(false), hasVectorUseElements_(false)
 {
@@ -36,7 +37,11 @@ void mysql_statement_backend::alloc()
 
 void mysql_statement_backend::clean_up()
 {
-    if (result_ != NULL)
+    // 'reset' the value for a 
+    // potential new execution.
+    rowsAffectedBulk_ = -1;
+
+	if (result_ != NULL)
     {
         mysql_free_result(result_);
         result_ = NULL;
@@ -223,6 +228,15 @@ mysql_statement_backend::execute(int number)
                         throw mysql_soci_error(mysql_error(session_.conn_),
                             mysql_errno(session_.conn_));
                     }
+					else
+					{
+						// prepare for accumulating rows affected 
+						// after the fisrt successful execution
+						if (i == 0) {
+							rowsAffectedBulk_ = 0;
+						}
+						rowsAffectedBulk_ += static_cast<long long>(mysql_affected_rows(session_.conn_));
+					}
                     if (mysql_field_count(session_.conn_) != 0)
                     {
                         throw soci_error("The query shouldn't have returned"
@@ -342,6 +356,10 @@ mysql_statement_backend::fetch(int number)
 
 long long mysql_statement_backend::get_affected_rows()
 {
+	if (rowsAffectedBulk_ >= 0)
+    {
+        return rowsAffectedBulk_;
+    }
     return static_cast<long long>(mysql_affected_rows(session_.conn_));
 }
 
