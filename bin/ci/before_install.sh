@@ -13,8 +13,7 @@ sudo apt-get update -qq
 sudo apt-get install -qq \
     libstdc++5 libboost-dev libboost-date-time-dev \
     libmyodbc unixodbc-dev odbc-postgresql \
-    firebird2.5-super firebird2.5-dev 
-
+    firebird2.5-super firebird2.5-dev
 echo "$(tmstamp) *** before_install::apt-get finished $(date) ***"
 
 echo "$(tmstamp) *** before_install::config starting $(date) ***"
