@@ -1,4 +1,4 @@
-################################################################################
+###############################################################################
 #
 # This file is part of CMake configuration for SOCI library
 #
@@ -7,7 +7,7 @@
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 #
-################################################################################
+###############################################################################
 
 colormsg(_HIBLUE_ "Configuring SOCI core library:")
 
@@ -42,7 +42,7 @@ if(Boost_FOUND)
 
   if(Boost_DATE_TIME_FOUND)
     list(APPEND SOCI_CORE_DEPENDENCIES ${Boost_DATE_TIME_LIBRARY})
-	list(APPEND SOCI_COMPILE_DEFINITIONS "HAVE_BOOST_DATE_TIME=1")
+    list(APPEND SOCI_COMPILE_DEFINITIONS "HAVE_BOOST_DATE_TIME=1")
   endif()
 
   set_property(DIRECTORY ${CMAKE_SOURCE_DIR}
