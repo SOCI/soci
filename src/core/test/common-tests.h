@@ -800,6 +800,7 @@ void test3()
                 {
                     for (std::size_t i = 0; i != vec.size(); ++i)
                     {
+                        std::clog << i2 << " -> " << vec[i] << std::endl;
                         assert(i2 == vec[i]);
                         ++i2;
                     }
