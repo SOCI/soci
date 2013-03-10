@@ -42,13 +42,13 @@ Core:
 * C++ compiler
 * Boost C++ Libraries (optional, headers only)
 
-Backend specific:
-* DB2 client library X.Y
-* Firebird client library X.Y
-* MySQL client library X.Y
-* ODBC implementation X.Y
-* Oracle OCI library X.Y
-* PostgreSQL client library X.Y
-* SQLite 3 library X.Y
+Backend specific client libraries for:
+* DB2
+* Firebird
+* MySQL
+* ODBC andwith specific database driver
+* Oracle
+* PostgreSQL
+* SQLite 3
 
 See documentation at http://soci.sourceforge.net for details  
