@@ -8,6 +8,7 @@
 
 #define SOCI_DB2_SOURCE
 #include "soci-db2.h"
+#include <connection-parameters.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -61,6 +62,7 @@ void db2_session_backend::parseKeyVal(std::string const & keyVal) {
     }
 }
 
+/* DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;AutoCommit=off */
 void db2_session_backend::parseConnectString(std::string const &  connectString) {
     std::string processingString(connectString);
     size_t delimiter=processingString.find_first_of(";");
@@ -76,9 +78,9 @@ void db2_session_backend::parseConnectString(std::string const &  connectString)
 }
 
 db2_session_backend::db2_session_backend(
-    std::string const &  connectString /* DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;AutoCommit=off */)
+    connection_parameters const & parameters)
 {
-    parseConnectString(connectString);
+    parseConnectString(parameters.get_connect_string());
     SQLRETURN cliRC = SQL_SUCCESS;
 
     /* Prepare handles */

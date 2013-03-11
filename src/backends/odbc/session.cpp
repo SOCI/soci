@@ -9,10 +9,15 @@
 #include "soci-odbc.h"
 #include "session.h"
 
+#include <cstdio>
+
 using namespace soci;
 using namespace soci::details;
 
-odbc_session_backend::odbc_session_backend(std::string const & connectString)
+char const * soci::odbc_option_driver_complete = "odbc.driver_complete";
+
+odbc_session_backend::odbc_session_backend(
+    connection_parameters const & parameters)
     : henv_(0), hdbc_(0), product_(prod_uninitialized)
 {
     SQLRETURN rc;
@@ -43,11 +48,36 @@ odbc_session_backend::odbc_session_backend(std::string const & connectString)
     SQLCHAR outConnString[1024];
     SQLSMALLINT strLength;
 
-    rc = SQLDriverConnect(hdbc_, NULL, // windows handle
+    // Prompt the user for any missing information (typically UID/PWD) in the
+    // connection string by default but allow overriding this using "prompt"
+    // option.
+    SQLHWND hwnd_for_prompt = NULL;
+    unsigned completion = SQL_DRIVER_COMPLETE;
+    std::string completionString;
+    if (parameters.get_option(odbc_option_driver_complete, completionString))
+    {
+      // The value of the option is supposed to be just the integer value of
+      // one of SQL_DRIVER_XXX constants but don't check for the exact value in
+      // case more of them are added in the future, the ODBC driver will return
+      // an error if we pass it an invalid value anyhow.
+      if (std::sscanf(completionString.c_str(), "%u", &completion) != 1)
+      {
+        throw soci_error("Invalid non-numeric driver completion option value \"" +
+                          completionString + "\".");
+      }
+    }
+
+#ifdef _WIN32
+    if (completion != SQL_DRIVER_NOPROMPT)
+      hwnd_for_prompt = ::GetDesktopWindow();
+#endif // _WIN32
+
+    std::string const & connectString = parameters.get_connect_string();
+    rc = SQLDriverConnect(hdbc_, hwnd_for_prompt,
                           (SQLCHAR *)connectString.c_str(),
                           (SQLSMALLINT)connectString.size(),
-                          outConnString, 1024,
-                          &strLength, SQL_DRIVER_NOPROMPT);
+                          outConnString, 1024, &strLength,
+                          static_cast<SQLUSMALLINT>(completion));
 
     if (is_odbc_error(rc))
     {

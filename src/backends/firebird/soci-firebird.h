@@ -291,7 +291,7 @@ protected:
 
 struct firebird_session_backend : details::session_backend
 {
-    firebird_session_backend(std::string const &connectString);
+    firebird_session_backend(connection_parameters const & parameters);
 
     ~firebird_session_backend();
 
@@ -322,9 +322,9 @@ struct firebird_session_backend : details::session_backend
 
 struct firebird_backend_factory : backend_factory
 {
-	firebird_backend_factory() {}
+    firebird_backend_factory() {}
     virtual firebird_session_backend * make_session(
-        std::string const &connectString) const;
+        connection_parameters const & parameters) const;
 };
 
 extern SOCI_FIREBIRD_DECL firebird_backend_factory const firebird;
