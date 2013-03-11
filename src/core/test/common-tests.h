@@ -3624,7 +3624,7 @@ void test_get_affected_rows()
         try { st5.execute(true); } 
         catch(...) {}
 
-		// test the preserved 'number of rows 
+        // test the preserved 'number of rows 
         // affected' after a potential failure.
         assert(st5.get_affected_rows() != 0);
 

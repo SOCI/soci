@@ -49,7 +49,7 @@ void firebird_statement_backend::alloc()
 
 void firebird_statement_backend::clean_up()
 {
-	rowsAffectedBulk_ = -1LL;
+    rowsAffectedBulk_ = -1LL;
 
     ISC_STATUS stat[stat_size];
 
@@ -409,7 +409,7 @@ firebird_statement_backend::execute(int number)
 
     if (useType_ == eVector)
     {
-		long long rowsAffectedBulkTemp = 0;
+        long long rowsAffectedBulkTemp = 0;
 
         // Here we have to explicitly loop to achieve the
         // effect of inserting or updating with vector use elements.
@@ -425,19 +425,19 @@ firebird_statement_backend::execute(int number)
             // then execute query
             if (isc_dsql_execute(stat, &session_.trhp_, &stmtp_, SQL_DIALECT_V6, t))
             {
-				// preserve the number of rows affected so far.
-				rowsAffectedBulk_ = rowsAffectedBulkTemp;
+                // preserve the number of rows affected so far.
+                rowsAffectedBulk_ = rowsAffectedBulkTemp;
                 throw_iscerror(stat);
             }
-			else
-			{
-				rowsAffectedBulkTemp += get_affected_rows();
-			}
+            else
+            {
+                rowsAffectedBulkTemp += get_affected_rows();
+            }
             // soci does not allow bulk insert/update and bulk select operations
             // in same query. So here, we know that into elements are not
             // vectors. So, there is no need to fetch data here.
         }
-		rowsAffectedBulk_ = rowsAffectedBulkTemp;
+        rowsAffectedBulk_ = rowsAffectedBulkTemp;
     }
     else
     {
@@ -559,10 +559,10 @@ void firebird_statement_backend::exchangeData(bool gotData, int row)
 
 long long firebird_statement_backend::get_affected_rows()
 {
-	if (rowsAffectedBulk_ >= 0)
-	{
-		return rowsAffectedBulk_;
-	}
+    if (rowsAffectedBulk_ >= 0)
+    {
+        return rowsAffectedBulk_;
+    }
 
     ISC_STATUS_ARRAY stat;
     char type_item[] = { isc_info_sql_records };

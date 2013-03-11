@@ -176,7 +176,7 @@ struct mysql_statement_backend : details::statement_backend
     std::vector<std::string> queryChunks_;
     std::vector<std::string> names_; // list of names for named binds
 
-	long long rowsAffectedBulk_; // number of rows affected by the last bulk operation
+    long long rowsAffectedBulk_; // number of rows affected by the last bulk operation
     
     int numberOfRows_;  // number of rows retrieved from the server
     int currentRow_;    // "current" row number to consume in postFetch
@@ -252,7 +252,7 @@ struct mysql_session_backend : details::session_backend
 
 struct mysql_backend_factory : backend_factory
 {
-	mysql_backend_factory() {}
+    mysql_backend_factory() {}
     virtual mysql_session_backend * make_session(
         std::string const &connectString) const;
 };

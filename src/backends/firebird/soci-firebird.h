@@ -214,7 +214,7 @@ protected:
     int rowsFetched_;
     bool endOfRowSet_;
 
-	long long rowsAffectedBulk_; // number of rows affected by the last bulk operation
+    long long rowsAffectedBulk_; // number of rows affected by the last bulk operation
 
     virtual void exchangeData(bool gotData, int row);
     virtual void prepareSQLDA(XSQLDA ** sqldap, int size = 10);
@@ -327,7 +327,7 @@ struct firebird_session_backend : details::session_backend
 
 struct firebird_backend_factory : backend_factory
 {
-	firebird_backend_factory() {}
+    firebird_backend_factory() {}
     virtual firebird_session_backend * make_session(
         std::string const &connectString) const;
 };

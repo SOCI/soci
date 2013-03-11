@@ -24,7 +24,7 @@ using std::string;
 mysql_statement_backend::mysql_statement_backend(
     mysql_session_backend &session)
     : session_(session), result_(NULL), 
-	   rowsAffectedBulk_(-1LL), justDescribed_(false),
+       rowsAffectedBulk_(-1LL), justDescribed_(false),
        hasIntoElements_(false), hasVectorIntoElements_(false),
        hasUseElements_(false), hasVectorUseElements_(false)
 {
@@ -41,7 +41,7 @@ void mysql_statement_backend::clean_up()
     // potential new execution.
     rowsAffectedBulk_ = -1;
 
-	if (result_ != NULL)
+    if (result_ != NULL)
     {
         mysql_free_result(result_);
         result_ = NULL;
@@ -155,7 +155,7 @@ mysql_statement_backend::execute(int number)
                     "Binding for use elements must be either by position "
                     "or by name.");
             }
-			long long rowsAffectedBulkTemp = 0;
+            long long rowsAffectedBulkTemp = 0;
             for (int i = 0; i != numberOfExecutions; ++i)
             {
                 std::vector<char *> paramValues;
@@ -226,15 +226,15 @@ mysql_statement_backend::execute(int number)
                     if (0 != mysql_real_query(session_.conn_, query.c_str(),
                             query.size()))
                     {
-						// preserve the number of rows affected so far.
-						rowsAffectedBulk_ = rowsAffectedBulkTemp;
+                        // preserve the number of rows affected so far.
+                        rowsAffectedBulk_ = rowsAffectedBulkTemp;
                         throw mysql_soci_error(mysql_error(session_.conn_),
                             mysql_errno(session_.conn_));
                     }
-					else
-					{
-						rowsAffectedBulkTemp += static_cast<long long>(mysql_affected_rows(session_.conn_));
-					}
+                    else
+                    {
+                        rowsAffectedBulkTemp += static_cast<long long>(mysql_affected_rows(session_.conn_));
+                    }
                     if (mysql_field_count(session_.conn_) != 0)
                     {
                         throw soci_error("The query shouldn't have returned"
@@ -243,7 +243,7 @@ mysql_statement_backend::execute(int number)
                     query.clear();
                 }
             }
-			rowsAffectedBulk_ = rowsAffectedBulkTemp;
+            rowsAffectedBulk_ = rowsAffectedBulkTemp;
             if (numberOfExecutions > 1)
             {
                 // bulk
@@ -355,7 +355,7 @@ mysql_statement_backend::fetch(int number)
 
 long long mysql_statement_backend::get_affected_rows()
 {
-	if (rowsAffectedBulk_ >= 0)
+    if (rowsAffectedBulk_ >= 0)
     {
         return rowsAffectedBulk_;
     }
