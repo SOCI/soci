@@ -15,22 +15,34 @@
 ###############################################################################
 
 if(UNIX)
+  set(DB2_INSTALL_PATHS
+    /opt/ibm/db2/V10.1
+    /opt/ibm/db2/V9.7
+    /opt/ibm/db2/V9.5
+    /opt/ibm/db2/V9.1)
+
   if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-    set(DB2_LIBDIR "lib")
+    set(DB2_LIBDIRS "lib32" "lib")
   else()
-    set(DB2_LIBDIR "lib64")
+    set(DB2_LIBDIRS "lib64")
   endif()
   
-  set(DB2_FIND_INCLUDE_PATHS
-    /opt/ibm/db2/V10.1/include
-    /opt/ibm/db2/V9.7/include
-    /opt/ibm/db2/V9.5/include
-    /opt/ibm/db2/V9.1/include)
-  set(DB2_FIND_LIB_PATHS
-    /opt/ibm/db2/V10.1/${DB2_LIBDIR}
-    /opt/ibm/db2/V9.7/${DB2_LIBDIR}
-    /opt/ibm/db2/V9.5/${DB2_LIBDIR}
-    /opt/ibm/db2/V9.1/${DB2_LIBDIR})
+  set(DB2_FIND_INCLUDE_PATHS)
+  set(DB2_FIND_LIB_PATHS)
+  foreach(db2_install_path ${DB2_INSTALL_PATHS})
+    if (IS_DIRECTORY ${db2_install_path}/include)
+      set(DB2_FIND_INCLUDE_PATHS
+        ${DB2_FIND_INCLUDE_PATHS}
+        ${db2_install_path}/include)
+    endif()
+    foreach(db2_libdir ${DB2_LIBDIRS})
+      if (IS_DIRECTORY ${db2_install_path}/${db2_libdir})
+        set(DB2_FIND_LIB_PATHS
+          ${DB2_FIND_LIB_PATHS}
+          ${db2_install_path}/${db2_libdir})
+      endif()
+    endforeach(db2_libdir)
+  endforeach(db2_install_path)
 elseif(WIN32)
   if (CMAKE_CL_64) # 64-bit build, DB2 64-bit installed
     set(DB2_FIND_INCLUDE_PATHS $ENV{ProgramW6432}/IBM/SQLLIB/include) 

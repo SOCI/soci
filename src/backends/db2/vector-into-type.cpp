@@ -52,9 +52,9 @@ void db2_vector_into_type_backend::define_by_pos(
     case x_integer:
         {
             cType = SQL_C_SLONG;
-            size = sizeof(long);
-            std::vector<long> *vp = static_cast<std::vector<long> *>(data);
-            std::vector<long> &v(*vp);
+            size = sizeof(SQLINTEGER);
+            std::vector<SQLINTEGER> *vp = static_cast<std::vector<SQLINTEGER> *>(data);
+            std::vector<SQLINTEGER> &v(*vp);
             prepare_indicators(v.size());
             data = &v[0];
         }
@@ -287,7 +287,7 @@ void db2_vector_into_type_backend::resize(std::size_t sz)
         break;
     case x_integer:
         {
-            std::vector<long> *v = static_cast<std::vector<long> *>(data);
+            std::vector<SQLINTEGER> *v = static_cast<std::vector<SQLINTEGER> *>(data);
             v->resize(sz);
         }
         break;
@@ -353,7 +353,7 @@ std::size_t db2_vector_into_type_backend::size()
         break;
     case x_integer:
         {
-            std::vector<long> *v = static_cast<std::vector<long> *>(data);
+            std::vector<SQLINTEGER> *v = static_cast<std::vector<SQLINTEGER> *>(data);
             sz = v->size();
         }
         break;

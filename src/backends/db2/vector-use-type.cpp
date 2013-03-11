@@ -210,8 +210,13 @@ void db2_vector_use_type_backend::bind_helper(int &position, void *data, details
 void db2_vector_use_type_backend::bind_by_pos(int &position,
         void *data, exchange_type type)
 {
-    bind_helper(position, data, type);
+    if (statement_.use_binding_method_ == details::db2::BOUND_BY_NAME)
+    {
+        throw soci_error("Binding for use elements must be either by position or by name.");
+    }
+    statement_.use_binding_method_ = details::db2::BOUND_BY_POSITION;
 
+    bind_helper(position, data, type);
 }
 
 void db2_vector_use_type_backend::bind_by_name(
@@ -219,6 +224,12 @@ void db2_vector_use_type_backend::bind_by_name(
 {
     int position = -1;
     int count = 1;
+
+    if (statement_.use_binding_method_ == details::db2::BOUND_BY_POSITION)
+    {
+        throw soci_error("Binding for use elements must be either by position or by name.");
+    }
+    statement_.use_binding_method_ = details::db2::BOUND_BY_NAME;
 
     for (std::vector<std::string>::iterator it = statement_.names.begin();
          it != statement_.names.end(); ++it)
@@ -241,7 +252,6 @@ void db2_vector_use_type_backend::bind_by_name(
         ss << "Unable to find name '" << name << "' to bind to";
         throw soci_error(ss.str().c_str());
     }
-
 }
 
 void db2_vector_use_type_backend::pre_use(indicator const *ind)
