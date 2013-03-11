@@ -3623,14 +3623,15 @@ void test_get_affected_rows()
         try { st5.execute(true); } 
         catch(...) {}
 
-        // test the preserved 'number of rows 
-        // affected' after a potential failure.
-        assert(st5.get_affected_rows() != 0);
-
         // confirm the partial insertion.
         int val = 0;
-        sql << "select val from soci_test", into(val);
-        assert(val == 1);        
+        sql << "select count(val) from soci_test", into(val);
+        if(val != 0)
+        {        
+            // test the preserved 'number of rows 
+            // affected' after a potential failure.
+            assert(st5.get_affected_rows() != 0);
+        }
     }
 
     std::cout << "test get_affected_rows passed" << std::endl;

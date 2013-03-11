@@ -226,7 +226,8 @@ struct odbc_statement_backend : details::statement_backend
     bool hasVectorUseElements_;
     bool boundByName_;
     bool boundByPos_;
-    bool lastNoData_; // true if last query returned SQL_NO_DATA
+
+    long long rowsAffected_; // number of rows affected by the last operation
 
     std::string query_;
     std::vector<std::string> names_; // list of names for named binds
@@ -403,7 +404,7 @@ inline bool odbc_standard_type_backend_base::use_string_for_bigint() const
 
 struct odbc_backend_factory : backend_factory
 {
-	odbc_backend_factory() {}
+    odbc_backend_factory() {}
     virtual odbc_session_backend * make_session(
         std::string const &connectString) const;
 };
