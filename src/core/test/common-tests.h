@@ -3620,7 +3620,6 @@ void test_get_affected_rows()
         w[1] = "a"; // this invalid value may cause an exception.
         statement st5 = (sql.prepare <<
             "insert into soci_test(val) values(:val)", use(w));
-        bool thrown = false;
         try { st5.execute(true); } 
         catch(...) {}
 
