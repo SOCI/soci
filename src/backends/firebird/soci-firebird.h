@@ -24,6 +24,9 @@
 # define SOCI_FIREBIRD_DECL
 #endif
 
+#ifdef _WIN32
+#include <ciso646> // To understand and/or/not on MSVC9
+#endif
 #include <soci-backend.h>
 #include <ibase.h> // FireBird
 #include <cstdlib>
