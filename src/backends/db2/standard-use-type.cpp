@@ -55,7 +55,7 @@ void db2_standard_use_type_backend::prepare_for_bind(
         size = sizeof(char) + 1;
         buf = new char[size];
         data = buf;
-        indptr = SQL_NTS;
+        ind = SQL_NTS;
         break;
     case x_stdstring:
     {
@@ -67,7 +67,7 @@ void db2_standard_use_type_backend::prepare_for_bind(
         size = s->size() + 1;
         buf = new char[size];
         data = buf;
-        indptr = SQL_NTS;
+        ind = SQL_NTS;
     }
     break;
     case x_stdtm:
@@ -102,7 +102,7 @@ void db2_standard_use_type_backend::bind_helper(int &position, void *data, detai
     SQLRETURN cliRC = SQLBindParameter(statement_.hStmt,
                                     static_cast<SQLUSMALLINT>(position++),
                                     SQL_PARAM_INPUT,
-                                    cType, sqlType, size, 0, data, size, &indptr);
+                                    cType, sqlType, size, 0, data, size, &ind);
 
     if (cliRC != SQL_SUCCESS)
     {
@@ -113,13 +113,24 @@ void db2_standard_use_type_backend::bind_helper(int &position, void *data, detai
 void db2_standard_use_type_backend::bind_by_pos(
     int &position, void *data, exchange_type type, bool /* readOnly */)
 {
-    bind_helper(position, data, type);
+    if (statement_.use_binding_method_ == details::db2::BOUND_BY_NAME)
+    {
+        throw soci_error("Binding for use elements must be either by position or by name.");
+    }
+    statement_.use_binding_method_ = details::db2::BOUND_BY_POSITION;
 
+    bind_helper(position, data, type);
 }
 
 void db2_standard_use_type_backend::bind_by_name(
     std::string const &name, void *data, exchange_type type, bool /* readOnly */)
 {
+    if (statement_.use_binding_method_ == details::db2::BOUND_BY_POSITION)
+    {
+        throw soci_error("Binding for use elements must be either by position or by name.");
+    }
+    statement_.use_binding_method_ = details::db2::BOUND_BY_NAME;
+
     int position = -1;
     int count = 1;
 
@@ -146,7 +157,7 @@ void db2_standard_use_type_backend::bind_by_name(
     }
 }
 
-void db2_standard_use_type_backend::pre_use(indicator const *ind)
+void db2_standard_use_type_backend::pre_use(indicator const *ind_ptr)
 {
     // first deal with data
     if (type == x_char)
@@ -180,9 +191,9 @@ void db2_standard_use_type_backend::pre_use(indicator const *ind)
     }
 
     // then handle indicators
-    if (ind != NULL && *ind == i_null)
+    if (ind_ptr != NULL && *ind_ptr == i_null)
     {
-        indptr = SQL_NULL_DATA; // null
+        ind = SQL_NULL_DATA; // null
     }
 }
 

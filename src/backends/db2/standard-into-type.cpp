@@ -49,7 +49,7 @@ void db2_standard_into_type_backend::define_by_pos(
         break;
     case x_integer:
         cType = SQL_C_SLONG;
-        size = sizeof(long);
+        size = sizeof(SQLINTEGER);
         break;
     case x_long_long:
         cType = SQL_C_SBIGINT;

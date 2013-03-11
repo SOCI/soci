@@ -699,7 +699,7 @@ void test3()
             short sh;
             for (sh = 0; sh != rowsToTest; ++sh)
             {
-                sql << "insert into soci_test(sh) values(\'" << sh << "\')";
+                sql << "insert into soci_test(sh) values(" << sh << ")";
             }
 
             int count;
@@ -750,7 +750,7 @@ void test3()
             int i;
             for (i = 0; i != rowsToTest; ++i)
             {
-                sql << "insert into soci_test(id) values(\'" << i << "\')";
+                sql << "insert into soci_test(id) values(" << i << ")";
             }
 
             int count;
@@ -820,7 +820,7 @@ void test3()
             unsigned long ul;
             for (ul = 0; ul != rowsToTest; ++ul)
             {
-                sql << "insert into soci_test(ul) values(\'" << ul << "\')";
+                sql << "insert into soci_test(ul) values(" << ul << ")";
             }
 
             int count;
@@ -871,7 +871,7 @@ void test3()
             double d = 0.0;
             for (int i = 0; i != rowsToTest; ++i)
             {
-                sql << "insert into soci_test(d) values(\'" << d << "\')";
+                sql << "insert into soci_test(d) values(" << d << ")";
                 d += 0.6;
             }
 
