@@ -14,6 +14,7 @@
 <div class="navigation">
 <a href="#commontypes">commonly used types</a><br />
 <a href="#session">class session</a><br />
+<a href="#parameters">class connection_parameters</a><br />
 <a href="#pool">class connection_pool</a><br />
 <a href="#transaction">class transaction</a><br />
 <a href="#into">function into</a><br />
@@ -75,6 +76,7 @@ class session
 {
 public:
     session();
+    explicit session(connection_parameters const &amp; parameters);
     session(backend_factory const &amp; factory, std::string const &amp; connectString);
     session(std::string const &amp; backendName, std::string const &amp; connectString);
     explicit session(std::string const &amp; connectString);
@@ -121,7 +123,9 @@ public:
 <ul>
   <li>Various constructors. The default one creates the session in the disconnected state.
   The others expect the backend factory object, or the backend name, or the URL-like
-  composed connection string. The last constructor creates a session proxy associated
+  composed connection string or the special parameters object containing both the backend
+  and the connection string as well as possibly other connection options.
+  The last constructor creates a session proxy associated
   with the session that is available in the given pool and releases it back to the pool
   when its lifetime ends. Example:
 <pre class="example">
@@ -197,6 +201,39 @@ of the backend object.</li>
 
 <p>See <a href="basics.html">Connections and simple queries</a> for more
 examples.</p>
+
+<h3 id="parameters">class connection_parameters</h3>
+
+<p>The <code>connection_parameters</code> class is a simple container for the backend pointer, connection string and any other connection options. It is used together with <code>session</code> constructor and <code>open()</code> method.</p>
+
+<pre class="example">
+class connection_parameters
+{
+public:
+    connection_parameters();
+    connection_parameters(backend_factory const &amp; factory, std::string const &amp; connectString);
+    connection_parameters(std::string const &amp; backendName, std::string const &amp; connectString);
+    explicit connection_parameters(std::string const &amp; fullConnectString);
+
+    void set_option(const char * name, std::string const &amp; value);
+    bool get_option(const char * name, std::string &amp; value) const
+};
+</pre>
+
+<p>The methods of this class are:</p>
+<ul>
+    <li>Default constructor is rarely used as it creates an uninitialized
+    object and the only way to initialize it later is to assign another, valid,
+    connection_parameters object to this one.</li>
+    <li>The other constructors correspond to the similar constructors of the
+    <code>session</code> class and specify both the backend, either as a
+    pointer to it or by name, and the connection string.</li>
+    <li><code>set_option</code> can be used to set the value of an option with
+    the given name. Currently all option values are strings, so if you need to
+    set a numeric option you need to convert it to a string first. If an option
+    with the given name had been already set before, its old value is
+    overwritten.</li>
+</ul>
 
 <h3 id="pool">class connection_pool</h3>
 

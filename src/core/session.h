@@ -10,6 +10,7 @@
 
 #include "once-temp-type.h"
 #include "query_transformation.h"
+#include "connection-parameters.h"
 
 // std
 #include <cstddef>
@@ -20,7 +21,7 @@
 namespace soci
 {
 class values;
-struct backend_factory;
+class backend_factory;
 
 namespace details
 {
@@ -38,6 +39,7 @@ class SOCI_DECL session
 {
 public:
     session();
+    explicit session(connection_parameters const & parameters);
     session(backend_factory const & factory, std::string const & connectString);
     session(std::string const & backendName, std::string const & connectString);
     explicit session(std::string const & connectString);
@@ -45,6 +47,7 @@ public:
 
     ~session();
 
+    void open(connection_parameters const & parameters);
     void open(backend_factory const & factory, std::string const & connectString);
     void open(std::string const & backendName, std::string const & connectString);
     void open(std::string const & connectString);
@@ -122,8 +125,7 @@ private:
     std::ostream * logStream_;
     std::string lastQuery_;
 
-    backend_factory const * lastFactory_;
-    std::string lastConnectString_;
+    connection_parameters lastConnectParameters_;
 
     bool uppercaseColumnNames_;
 

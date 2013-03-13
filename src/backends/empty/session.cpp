@@ -17,7 +17,7 @@ using namespace soci::details;
 
 
 empty_session_backend::empty_session_backend(
-    std::string const & /* connectString */)
+    connection_parameters const & /* parameters */)
 {
     // ...
 }

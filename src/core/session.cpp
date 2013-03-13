@@ -7,9 +7,9 @@
 
 #define SOCI_SOURCE
 #include "session.h"
+#include "connection-parameters.h"
 #include "connection-pool.h"
 #include "soci-backend.h"
-#include "backend-loader.h"
 #include "query_transformation.h"
 
 #ifdef _MSC_VER
@@ -21,22 +21,6 @@ using namespace soci::details;
 
 namespace // anonymous
 {
-
-void parseConnectString(std::string const & connectString,
-    std::string & backendName,
-    std::string & connectionParameters)
-{
-    std::string const protocolSeparator = "://";
-
-    std::string::size_type const p = connectString.find(protocolSeparator);
-    if (p == std::string::npos)
-    {
-        throw soci_error("No backend name found in " + connectString);
-    }
-
-    backendName = connectString.substr(0, p);
-    connectionParameters = connectString.substr(p + protocolSeparator.size());
-}
 
 void ensureConnected(session_backend * backEnd)
 {
@@ -50,51 +34,47 @@ void ensureConnected(session_backend * backEnd)
 
 session::session()
     : once(this), prepare(this), query_transformation_(NULL), logStream_(NULL),
-      lastFactory_(NULL), uppercaseColumnNames_(false), backEnd_(NULL),
+      uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
 {
+}
+
+session::session(connection_parameters const & parameters)
+    : once(this), prepare(this), query_transformation_(NULL), logStream_(NULL),
+      lastConnectParameters_(parameters),
+      uppercaseColumnNames_(false), backEnd_(NULL),
+      isFromPool_(false), pool_(NULL)
+{
+    open(lastConnectParameters_);
 }
 
 session::session(backend_factory const & factory,
     std::string const & connectString)
     : once(this), prepare(this), query_transformation_(NULL), logStream_(NULL),
-      lastFactory_(&factory), lastConnectString_(connectString),
-      uppercaseColumnNames_(false),
+      lastConnectParameters_(factory, connectString),
+      uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
 {
-    backEnd_ = factory.make_session(connectString);
+    open(lastConnectParameters_);
 }
 
 session::session(std::string const & backendName,
     std::string const & connectString)
     : once(this), prepare(this), query_transformation_(NULL), logStream_(NULL),
-      uppercaseColumnNames_(false),
+      lastConnectParameters_(backendName, connectString),
+      uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
 {
-    backend_factory const & factory = dynamic_backends::get(backendName);
-
-    lastFactory_ = &factory;
-    lastConnectString_ = connectString;
-
-    backEnd_ = factory.make_session(connectString);
+    open(lastConnectParameters_);
 }
 
 session::session(std::string const & connectString)
     : once(this), prepare(this), query_transformation_(NULL), logStream_(NULL),
-      uppercaseColumnNames_(false),
+      lastConnectParameters_(connectString),
+      uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
 {
-    std::string backendName;
-    std::string connectionParameters;
-
-    parseConnectString(connectString, backendName, connectionParameters);
-
-    backend_factory const & factory = dynamic_backends::get(backendName);
-
-    lastFactory_ = &factory;
-    lastConnectString_ = connectionParameters;
-
-    backEnd_ = factory.make_session(connectionParameters);
+    open(lastConnectParameters_);
 }
 
 session::session(connection_pool & pool)
@@ -121,13 +101,11 @@ session::~session()
     }
 }
 
-void session::open(backend_factory const & factory,
-    std::string const & connectString)
+void session::open(connection_parameters const & parameters)
 {
     if (isFromPool_)
     {
-        pool_->at(poolPosition_).open(factory, connectString);
-        backEnd_ = pool_->at(poolPosition_).get_backend();
+        pool_->at(poolPosition_).open(parameters);
     }
     else
     {
@@ -136,60 +114,32 @@ void session::open(backend_factory const & factory,
             throw soci_error("Cannot open already connected session.");
         }
 
-        backEnd_ = factory.make_session(connectString);
-        lastFactory_ = &factory;
-        lastConnectString_ = connectString;
+        backend_factory const * const factory = parameters.get_factory();
+        if (factory == NULL)
+        {
+            throw soci_error("Cannot connect without a valid backend.");
+        }
+
+        backEnd_ = factory->make_session(parameters);
+        lastConnectParameters_ = parameters;
     }
+}
+
+void session::open(backend_factory const & factory,
+    std::string const & connectString)
+{
+    open(connection_parameters(factory, connectString));
 }
 
 void session::open(std::string const & backendName,
     std::string const & connectString)
 {
-    if (isFromPool_)
-    {
-        pool_->at(poolPosition_).open(backendName, connectString);
-        backEnd_ = pool_->at(poolPosition_).get_backend();
-    }
-    else
-    {
-        if (backEnd_ != NULL)
-        {
-            throw soci_error("Cannot open already connected session.");
-        }
-
-        backend_factory const & factory = dynamic_backends::get(backendName);
-
-        backEnd_ = factory.make_session(connectString);
-        lastFactory_ = &factory;
-        lastConnectString_ = connectString;
-    }
+    open(connection_parameters(backendName, connectString));
 }
 
 void session::open(std::string const & connectString)
 {
-    if (isFromPool_)
-    {
-        pool_->at(poolPosition_).open(connectString);
-        backEnd_ = pool_->at(poolPosition_).get_backend();
-    }
-    else
-    {
-        if (backEnd_ != NULL)
-        {
-            throw soci_error("Cannot open already connected session.");
-        }
-
-        std::string backendName;
-        std::string connectionParameters;
-
-        parseConnectString(connectString, backendName, connectionParameters);
-
-        backend_factory const & factory = dynamic_backends::get(backendName);
-
-        backEnd_ = factory.make_session(connectionParameters);
-        lastFactory_ = &factory;
-        lastConnectString_ = connectionParameters;
-    }
+    open(connection_parameters(connectString));
 }
 
 void session::close()
@@ -215,7 +165,8 @@ void session::reconnect()
     }
     else
     {
-        if (lastFactory_ == NULL)
+        backend_factory const * const lastFactory = lastConnectParameters_.get_factory();
+        if (lastFactory == NULL)
         {
             throw soci_error("Cannot reconnect without previous connection.");
         }
@@ -225,7 +176,7 @@ void session::reconnect()
             close();
         }
 
-        backEnd_ = lastFactory_->make_session(lastConnectString_);
+        backEnd_ = lastFactory->make_session(lastConnectParameters_);
     }
 }
 

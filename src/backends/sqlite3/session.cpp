@@ -8,6 +8,8 @@
 
 #include "soci-sqlite3.h"
 
+#include <connection-parameters.h>
+
 #include <sstream>
 #include <string>
 
@@ -40,10 +42,11 @@ void execude_hardcoded(sqlite_api::sqlite3* conn, char const* const query, char 
 
 
 sqlite3_session_backend::sqlite3_session_backend(
-    std::string const & connectString)
+    connection_parameters const & parameters)
 {
     int timeout = 0;
     std::string synchronous;
+    std::string const & connectString = parameters.get_connect_string();
     std::string dbname(connectString);
     std::stringstream ssconn(connectString);
     while (!ssconn.eof() && ssconn.str().find('=') != std::string::npos)
