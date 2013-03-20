@@ -741,7 +741,7 @@ void test3()
             }
         }
 
-        // repeated fetch and bulk fetch of int
+        // repeated fetch and bulk fetch of int (4-bytes)
         {
             // create and populate the test table
             auto_table_creator tableCreator(tc_.table_creator_1(sql));
@@ -800,7 +800,6 @@ void test3()
                 {
                     for (std::size_t i = 0; i != vec.size(); ++i)
                     {
-                        std::clog << i2 << " -> " << vec[i] << std::endl;
                         assert(i2 == vec[i]);
                         ++i2;
                     }
@@ -811,13 +810,13 @@ void test3()
             }
         }
 
-        // repeated fetch and bulk fetch of unsigned long
+        // repeated fetch and bulk fetch of unsigned int (4-bytes)
         {
             // create and populate the test table
             auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
-            unsigned long const rowsToTest = 100;
-            unsigned long ul;
+            unsigned int const rowsToTest = 100;
+            unsigned int ul;
             for (ul = 0; ul != rowsToTest; ++ul)
             {
                 sql << "insert into soci_test(ul) values(" << ul << ")";
@@ -828,7 +827,7 @@ void test3()
             assert(count == static_cast<int>(rowsToTest));
 
             {
-                unsigned long ul2 = 0;
+                unsigned int ul2 = 0;
 
                 statement st = (sql.prepare <<
                     "select ul from soci_test order by ul", into(ul));
@@ -842,9 +841,9 @@ void test3()
                 assert(ul2 == rowsToTest);
             }
             {
-                unsigned long ul2 = 0;
+                unsigned int ul2 = 0;
 
-                std::vector<unsigned long> vec(8);
+                std::vector<unsigned int> vec(8);
                 statement st = (sql.prepare <<
                     "select ul from soci_test order by ul", into(vec));
                 st.execute();
@@ -1573,11 +1572,11 @@ void test8()
             assert(v2[3] == 2000000000);
         }
 
-        // test for unsigned long
+        // test for unsigned int
         {
             auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
-            std::vector<unsigned long> v;
+            std::vector<unsigned int> v;
             v.push_back(0);
             v.push_back(1);
             v.push_back(123);
@@ -1585,7 +1584,7 @@ void test8()
 
             sql << "insert into soci_test(ul) values(:ul)", use(v);
 
-            std::vector<unsigned long> v2(4);
+            std::vector<unsigned int> v2(4);
 
             sql << "select ul from soci_test order by ul", into(v2);
             assert(v2.size() == 4);

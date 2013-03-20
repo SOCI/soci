@@ -7,6 +7,7 @@
 
 #define SOCI_ODBC_SOURCE
 #include "soci-odbc.h"
+#include <cassert>
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -55,7 +56,8 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
         {
             sqlType = SQL_INTEGER;
             cType = SQL_C_SLONG;
-            size = sizeof(int);
+            size = sizeof(SQLINTEGER);
+            assert(sizeof(SQLINTEGER) == sizeof(int));
             std::vector<int> *vp = static_cast<std::vector<int> *>(data);
             std::vector<int> &v(*vp);
             prepare_indicators(v.size());
@@ -171,7 +173,7 @@ void odbc_vector_use_type_backend::bind_helper(int &position, void *data, exchan
 
     prepare_for_bind(data, size, sqlType, cType);
 
-    SQLINTEGER arraySize = (SQLINTEGER)indHolderVec_.size();
+    SQLULEN const arraySize = static_cast<SQLULEN>(indHolderVec_.size());
     SQLSetStmtAttr(statement_.hstmt_, SQL_ATTR_PARAMSET_SIZE, (SQLPOINTER)arraySize, 0);
 
     SQLRETURN rc = SQLBindParameter(statement_.hstmt_, static_cast<SQLUSMALLINT>(position++),

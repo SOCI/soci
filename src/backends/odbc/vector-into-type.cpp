@@ -7,6 +7,7 @@
 
 #define SOCI_ODBC_SOURCE
 #include "soci-odbc.h"
+#include <cassert>
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -33,7 +34,7 @@ void odbc_vector_into_type_backend::define_by_pos(
     data_ = data; // for future reference
     type_ = type; // for future reference
 
-    SQLINTEGER size = 0;       // also dummy
+    SQLLEN size = 0;       // also dummy
 
     switch (type)
     {
@@ -51,9 +52,10 @@ void odbc_vector_into_type_backend::define_by_pos(
     case x_integer:
         {
             odbcType_ = SQL_C_SLONG;
-            size = sizeof(long);
-            std::vector<long> *vp = static_cast<std::vector<long> *>(data);
-            std::vector<long> &v(*vp);
+            size = sizeof(SQLINTEGER);
+            assert(sizeof(SQLINTEGER) == sizeof(int));
+            std::vector<int> *vp = static_cast<std::vector<int> *>(data);
+            std::vector<int> &v(*vp);
             prepare_indicators(v.size());
             data = &v[0];
         }
@@ -129,8 +131,9 @@ void odbc_vector_into_type_backend::define_by_pos(
 	case x_unsigned_long_long: break; // TODO: verify if can be supported
     }
 
-    SQLRETURN rc = SQLBindCol(statement_.hstmt_, static_cast<SQLUSMALLINT>(position++),
-                              odbcType_, data, size, indHolders_);
+    SQLRETURN rc 
+        = SQLBindCol(statement_.hstmt_, static_cast<SQLUSMALLINT>(position++),
+                odbcType_, static_cast<SQLPOINTER>(data), size, indHolders_);
     if (is_odbc_error(rc))
     {
         throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_,
@@ -267,7 +270,7 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
         break;
     case x_integer:
         {
-            std::vector<long> *v = static_cast<std::vector<long> *>(data_);
+            std::vector<int> *v = static_cast<std::vector<int> *>(data_);
             v->resize(sz);
         }
         break;
@@ -321,7 +324,7 @@ std::size_t odbc_vector_into_type_backend::size()
         break;
     case x_integer:
         {
-            std::vector<long> *v = static_cast<std::vector<long> *>(data_);
+            std::vector<int> *v = static_cast<std::vector<int> *>(data_);
             sz = v->size();
         }
         break;

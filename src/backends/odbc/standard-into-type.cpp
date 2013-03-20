@@ -53,7 +53,7 @@ void odbc_standard_into_type_backend::define_by_pos(
         break;
     case x_integer:
         odbcType_ = SQL_C_SLONG;
-        size = sizeof(long);
+        size = sizeof(int);
         break;
     case x_long_long:
         if (use_string_for_bigint())
