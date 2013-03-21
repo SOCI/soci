@@ -1,9 +1,7 @@
 SOCI - The C++ Database Access Library
 ======================================
 
-http://soci.sourceforge.net
-
-Project website at http://soci.sourceforge.net
+Website: http://soci.sourceforge.net
 
 GitHub hosts SOCI source code repository,
 issues tracker and wiki: https://github.com/SOCI
