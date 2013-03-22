@@ -12,7 +12,9 @@ compiler:
 
 branches:
   only:
+    - develop
     - master
+    - /^release\/[0-9]\.[0-9]$/
 
 services:
   - mysql
