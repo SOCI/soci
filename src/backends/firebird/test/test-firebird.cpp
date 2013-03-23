@@ -246,6 +246,20 @@ void test4()
 
     assert(d1 == d4 && d2 == d5 && d3 == d6);
 
+    // test negative doubles too
+    sql << "delete from test4";
+    d1 = -d1;
+    d2 = -d2;
+    d3 = -d3;
+
+    sql << "insert into test4(p1, p2, p3) values (?,?,?)",
+    use(d1), use(d2), use(d3);
+
+    sql << "select p1, p2, p3 from test4",
+    into(d4), into(d5), into(d6);
+
+    assert(d1 == d4 && d2 == d5 && d3 == d6);
+
     // verify an exception is thrown when fetching non-integral value
     // to integral variable
     try
