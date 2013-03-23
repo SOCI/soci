@@ -370,18 +370,24 @@ void test6()
     }
 
     {
-        char c='a', c1, c2;
+        char c, c1, c2;
 
         statement st = (sql.prepare <<
                         "select p1,p2 from test6 order by p1", into(c1), into(c2));
 
-        st.execute();
-        while (st.fetch())
+        // Verify that fetch after re-executing the same statement works.
+        for (int n = 0; n < 2; ++n)
         {
-            assert(c == c1 && c == c2);
-            ++c;
+            st.execute();
+
+            c='a';
+            while (st.fetch())
+            {
+                assert(c == c1 && c == c2);
+                ++c;
+            }
+            assert(c == 'z'+1);
         }
-        assert(c == 'z'+1);
     }
 
     {
