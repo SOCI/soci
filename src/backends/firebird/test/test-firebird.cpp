@@ -1212,7 +1212,7 @@ struct TableCreator1 : public tests::table_creator_base
             : tests::table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, val integer, c char, "
-        "str varchar(20), sh smallint, ul decimal(9,0), d double precision, "
+        "str varchar(20), sh smallint, ul bigint, d double precision, "
         "tm timestamp, i1 integer, i2 integer, i3 integer, name varchar(20))";
         sql.commit();
         sql.begin();
