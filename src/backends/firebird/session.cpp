@@ -245,7 +245,7 @@ firebird_session_backend::firebird_session_backend(
 
     if (getISCConnectParameter(params, "decimals_as_strings", param))
     {
-        decimals_as_strings_ = param == "1" or param == "Y" or param == "y";
+        decimals_as_strings_ = param == "1" || param == "Y" || param == "y";
     }
     // starting transaction
     begin();
