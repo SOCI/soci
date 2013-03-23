@@ -92,6 +92,13 @@ void postgresql_statement_backend::prepare(std::string const & query,
                     query_ += "::";
                     ++it;
                 }
+                // Check whether this is an assignment(e.g. x:=y)
+                // and treat it as a special case, not as a named binding
+                if ((next_it != end) && (*next_it == '='))
+                {
+                    query_ += ":=";
+                    ++it;
+                }
                 else
                 {
                     state = in_name;
@@ -160,14 +167,19 @@ void postgresql_statement_backend::prepare(std::string const & query,
 
     if (stType == st_repeatable_query)
     {
-        statementName_ = session_.get_next_statement_name();
+        // Holding the name temporarily in this var because
+        // if it fails to prepare it we can't DEALLOCATE it. 
+        std::string statementName = session_.get_next_statement_name();
 
-        PGresult* result = PQprepare(session_.conn_, statementName_.c_str(),
+        PGresult* result = PQprepare(session_.conn_, statementName.c_str(),
             query_.c_str(), static_cast<int>(names_.size()), NULL);
         if (result == NULL)
         {
             throw soci_error("Cannot prepare statement.");
         }
+        // Now it's safe to save this info.
+        statementName_ = statementName;
+        
         ExecStatusType status = PQresultStatus(result);
         if (status != PGRES_COMMAND_OK)
         {
