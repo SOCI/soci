@@ -43,6 +43,7 @@ struct oid_table_creator : public table_creator_base
 // whatever that means.
 void test1()
 {
+    try
     {
         session sql(backEnd, connectString);
 
@@ -76,8 +77,14 @@ void test1()
 
         assert(id == 7);
         assert(name == "John");
+        
+    	// Must not cause the application to crash.
+		statement st(sql);
+		st.prepare(""); // Throws an exception in some versions.
     }
-
+    catch(...)
+    {
+    }
     std::cout << "test 1 passed" << std::endl;
 }
 
@@ -99,6 +106,7 @@ public:
         sql  <<
             "create or replace function soci_test(msg varchar) "
             "returns varchar as $$ "
+            "declare x int := 1;"
             "begin "
             "  return msg; "
             "end $$ language plpgsql";
@@ -107,6 +115,7 @@ public:
        sql <<
             "create or replace function soci_test(varchar) "
             "returns varchar as \' "
+            "declare x int := 1;"
             "begin "
             "  return $1; "
             "end \' language plpgsql";
