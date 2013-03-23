@@ -161,7 +161,7 @@ std::string format_decimal(const void *sqldata, int sqlscale)
     std::string r = out.str();
     if (sqlscale < 0)
     {
-        if (r.size() - (x < 0) <= -sqlscale)
+        if (static_cast<int>(r.size()) - (x < 0) <= -sqlscale)
         {
             r = std::string(size_t(x < 0), '-') +
                 std::string(-sqlscale - (r.size() - (x < 0)) + 1, '0') +
