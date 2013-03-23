@@ -200,7 +200,7 @@ T1 from_isc(XSQLVAR * var)
     case SQL_SHORT:
         return static_cast<T1>(*reinterpret_cast<short*>(var->sqldata)/tens);
     case SQL_LONG:
-        return static_cast<T1>(*reinterpret_cast<unsigned*>(var->sqldata)/tens);
+        return static_cast<T1>(*reinterpret_cast<int*>(var->sqldata)/tens);
     case SQL_INT64:
         return static_cast<T1>(*reinterpret_cast<long long*>(var->sqldata)/tens);
     case SQL_FLOAT:
