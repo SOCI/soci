@@ -41,7 +41,8 @@ if(DEFINED ENV{ORACLE_HOME})
   set(ORACLE_NNZ_NAMES nnz10 libnnz10 nnz11 libnnz11 ociw32)
   set(ORACLE_CLNTSH_NAMES clntsh libclntsh)
 
-  set(ORACLE_LIB_DIR 
+  set(ORACLE_LIB_DIR
+    ${ORACLE_HOME}
     ${ORACLE_HOME}/lib
     ${ORACLE_HOME}/sdk/lib       # Oracle SDK
     ${ORACLE_HOME}/sdk/lib/msvc
