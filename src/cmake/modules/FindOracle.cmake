@@ -36,7 +36,7 @@ if(DEFINED ENV{ORACLE_HOME})
     ${ORACLE_HOME}/sdk/include  # Oracle SDK
     ${ORACLE_HOME}/OCI/include) # Oracle XE on Windows
 
-  set(ORACLE_OCI_NAMES oci)
+  set(ORACLE_OCI_NAMES clntsh libclntsh oci) # Dirty trick might help on OSX, see issues/89
   set(ORACLE_OCCI_NAMES libocci occi oraocci10 oraocci11)
   set(ORACLE_NNZ_NAMES nnz10 libnnz10 nnz11 libnnz11 ociw32)
   set(ORACLE_CLNTSH_NAMES clntsh libclntsh)
