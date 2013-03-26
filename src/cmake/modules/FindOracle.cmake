@@ -36,36 +36,32 @@ if(DEFINED ENV{ORACLE_HOME})
     ${ORACLE_HOME}/sdk/include  # Oracle SDK
     ${ORACLE_HOME}/OCI/include) # Oracle XE on Windows
 
-  set(ORACLE_OCI_NAMES clntsh libclntsh oci)
-  set(ORACLE_NNZ_NAMES nnz10 libnnz10 nnz11 libnnz11 ociw32)
+  set(ORACLE_OCI_NAMES clntsh libclntsh oci) # Dirty trick might help on OSX, see issues/89
   set(ORACLE_OCCI_NAMES libocci occi oraocci10 oraocci11)
+  set(ORACLE_NNZ_NAMES nnz10 libnnz10 nnz11 libnnz11 ociw32)
+  set(ORACLE_CLNTSH_NAMES clntsh libclntsh)
 
-  set(ORACLE_LIB_DIR 
+  set(ORACLE_LIB_DIR
+    ${ORACLE_HOME}
     ${ORACLE_HOME}/lib
     ${ORACLE_HOME}/sdk/lib       # Oracle SDK
     ${ORACLE_HOME}/sdk/lib/msvc
     ${ORACLE_HOME}/OCI/lib/msvc) # Oracle XE on Windows
 
-  find_library(ORACLE_OCI_LIBRARY  NAMES ${ORACLE_OCI_NAMES} PATHS ${ORACLE_LIB_DIR})
-  find_library(ORACLE_OCCI_LIBRARY NAMES ${ORACLE_OCCI_NAMES} PATHS ${ORACLE_LIB_DIR})
-  find_library(ORACLE_NNZ_LIBRARY NAMES ${ORACLE_NNZ_NAMES} PATHS ${ORACLE_LIB_DIR})
+  find_library(ORACLE_OCI_LIBRARY
+    NAMES ${ORACLE_OCI_NAMES} PATHS ${ORACLE_LIB_DIR})
+  find_library(ORACLE_OCCI_LIBRARY
+    NAMES ${ORACLE_OCCI_NAMES} PATHS ${ORACLE_LIB_DIR})
+  find_library(ORACLE_NNZ_LIBRARY
+    NAMES ${ORACLE_NNZ_NAMES} PATHS ${ORACLE_LIB_DIR})
+  find_library(ORACLE_CLNTSH_LIBRARY
+    NAMES ${ORACLE_CLNTSH_NAMES} PATHS ${ORACLE_LIB_DIR})
 
-  set(ORACLE_LIBRARY ${ORACLE_OCI_LIBRARY} ${ORACLE_OCCI_LIBRARY} ${ORACLE_NNZ_LIBRARY})
-
-  if(APPLE)
-    set(ORACLE_OCIEI_NAMES libociei ociei)
-
-    find_library(ORACLE_OCIEI_LIBRARY
-      NAMES libociei ociei
-      PATHS ${ORACLE_LIB_DIR})
-
-    if(ORACLE_OCIEI_LIBRARY)
-      set(ORACLE_LIBRARY ${ORACLE_LIBRARY} ${ORACLE_OCIEI_LIBRARY})
-    else(ORACLE_OCIEI_LIBRARY)
-      message(STATUS
-        "libociei.dylib is not found. It may cause crash if you are building BUNDLE")
-    endif()
-  endif()
+  set(ORACLE_LIBRARY 
+    ${ORACLE_OCI_LIBRARY} 
+    ${ORACLE_OCCI_LIBRARY} 
+    ${ORACLE_NNZ_LIBRARY}
+    ${ORACLE_CLNTSH_LIBRARY})
 
   set(ORACLE_LIBRARIES ${ORACLE_LIBRARY})
 

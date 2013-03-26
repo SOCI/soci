@@ -9,3 +9,4 @@ with subdirectories of versioned documentation, one per each release:
 ...
 
 Documentation pages are copied from /doc directory of each release.
+

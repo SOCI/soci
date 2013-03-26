@@ -32,8 +32,8 @@ char * allocBuffer(XSQLVAR* var)
     {
         size = var->sqllen + sizeof(short);
     }
-    else if (type == SQL_TIMESTAMP or type == SQL_TYPE_TIME
-            or type == SQL_TYPE_DATE)
+    else if (type == SQL_TIMESTAMP || type == SQL_TYPE_TIME
+            || type == SQL_TYPE_DATE)
     {
         size = sizeof(std::tm);
     }
@@ -127,7 +127,7 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
         parse_decimal<long long, unsigned long long>(buf_, var, s);
     }
     else if ((var->sqltype & ~1) == SQL_TIMESTAMP
-            or (var->sqltype & ~1) == SQL_TYPE_DATE)
+            || (var->sqltype & ~1) == SQL_TYPE_DATE)
     {
         unsigned short year, month, day, hour, min, sec;
         if (std::sscanf(s, "%hu-%hu-%hu %hu:%hu:%hu",

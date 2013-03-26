@@ -438,6 +438,10 @@ firebird_statement_backend::execute(int number)
         }
     }
 
+    // Successfully re-executing the statement must reset the "end of rowset"
+    // flag, we might be able to fetch data again now.
+    endOfRowSet_ = false;
+
     if (sqldap_->sqld)
     {
         // query may return some data
