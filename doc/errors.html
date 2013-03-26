@@ -23,7 +23,7 @@ int main()
     {
         // regular code
     }
-    catch (exception const &amp; e)
+    catch (std::exception const &amp; e)
     {
         cerr &lt;&lt; "Bang! " &lt;&lt; e.what() &lt;&lt; endl;
     }
@@ -44,12 +44,12 @@ int main()
     {
         // regular code
     }
-    catch (oracle_soci_error const &amp; e)
+    catch (soci::oracle_soci_error const &amp; e)
     {
         cerr &lt;&lt; "Oracle error: " &lt;&lt; e.err_num_
             &lt;&lt; " " &lt;&lt; e.what() &lt;&lt; endl;
     }
-    catch (exception const &amp; e)
+    catch (soci::exception const &amp; e)
     {
         cerr &lt;&lt; "Some other error: " &lt;&lt; e.what() &lt;&lt; endl;
     }
@@ -72,12 +72,12 @@ int main()
     {
         // regular code
     }
-    catch (mysql_soci_error const &amp; e)
+    catch (soci::mysql_soci_error const &amp; e)
     {
         cerr &lt;&lt; "MySQL error: " &lt;&lt; e.err_num_
             &lt;&lt; " " &lt;&lt; e.what() &lt;&lt; endl;
     }
-    catch (exception const &amp; e)
+    catch (soci::exception const &amp; e)
     {
         cerr &lt;&lt; "Some other error: " &lt;&lt; e.what() &lt;&lt; endl;
     }
@@ -99,12 +99,12 @@ int main()
     {
         // regular code
     }
-    catch (postgresql_soci_error const &amp; e)
+    catch (soci::postgresql_soci_error const &amp; e)
     {
         cerr &lt;&lt; "PostgreSQL error: " &lt;&lt; e.sqlstate()
             &lt;&lt; " " &lt;&lt; e.what() &lt;&lt; endl;
     }
-    catch (exception const &amp; e)
+    catch (soci::exception const &amp; e)
     {
         cerr &lt;&lt; "Some other error: " &lt;&lt; e.what() &lt;&lt; endl;
     }
@@ -118,11 +118,11 @@ int main()
       <a href="installation.html">Previous (Installation)</a>
     </td>
     <td class="foot-link-right">
-      <a href="basics.html">Next (Connections and simple queries)</a>
+      <a href="connections.html">Next (Connections and simple queries)</a>
     </td>
   </tr>
 </table>
 
-<p class="copyright">Copyright &copy; 2004-2012 Maciej Sobczak, Stephen Hutton, Mateusz Loskot</p>
+<p class="copyright">Copyright &copy; 2004-2013 Maciej Sobczak, Stephen Hutton, Mateusz Loskot</p>
 </body>
 </html>

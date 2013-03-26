@@ -12,7 +12,9 @@ compiler:
 
 branches:
   only:
+    - develop
     - master
+    - /^release\/[0-9]\.[0-9]\.[0-9]$/
 
 services:
   - mysql
@@ -25,8 +27,9 @@ script: ./bin/ci/script.sh
 notifications:
   email:
     recipients:
+      - soci-devel@lists.sourceforge.net
       - mateusz@loskot.net
-  on_success: always # [always|never|change] # default: change
+  on_success: change # [always|never|change] # default: change
   on_failure: always # [always|never|change] # default: always
 
   irc:

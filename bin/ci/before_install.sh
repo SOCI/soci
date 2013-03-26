@@ -5,15 +5,15 @@
 source ./bin/ci/common.sh
 # Install dependencies
 echo "$(tmstamp) *** before_install::apt-get starting $(date) ***"
-wget http://oss.oracle.com/el4/RPM-GPG-KEY-oracle -O - | sudo apt-key add -
-sudo bash -c 'echo "deb https://oss.oracle.com/debian unstable main non-free" >> /etc/apt/sources.list'
+#wget http://oss.oracle.com/el4/RPM-GPG-KEY-oracle -O - | sudo apt-key add -
+#sudo bash -c 'echo "deb https://oss.oracle.com/debian unstable main non-free" >> /etc/apt/sources.list'
 sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 16126D3A3E5C1192
 sudo apt-get update -qq
+#if [ `uname -m` = x86_64 ]; then sudo apt-get install -qq --force-yes ia32-libs ia32-libs-multiarch fi
 sudo apt-get install -qq \
     libstdc++5 libboost-dev libboost-date-time-dev \
     libmyodbc unixodbc-dev odbc-postgresql \
-    firebird2.5-super firebird2.5-dev \
-    oracle-xe-client
+    firebird2.5-super firebird2.5-dev
 echo "$(tmstamp) *** before_install::apt-get finished $(date) ***"
 
 echo "$(tmstamp) *** before_install::config starting $(date) ***"

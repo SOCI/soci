@@ -8,6 +8,7 @@
 #define SOCI_POSTGRESQL_SOURCE
 #include "soci-postgresql.h"
 #include "error.h"
+#include <connection-parameters.h>
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
 #include <cstdio>
@@ -27,10 +28,11 @@ using namespace soci;
 using namespace soci::details;
 using namespace soci::details::postgresql;
 
-postgresql_session_backend::postgresql_session_backend(std::string const& connectString)
+postgresql_session_backend::postgresql_session_backend(
+    connection_parameters const& parameters)
     : statementCount_(0)
 {
-    PGconn* conn = PQconnectdb(connectString.c_str());
+    PGconn* conn = PQconnectdb(parameters.get_connect_string().c_str());
     if (0 == conn || CONNECTION_OK != PQstatus(conn))
     {
         std::string msg = "Cannot establish connection to the database.";

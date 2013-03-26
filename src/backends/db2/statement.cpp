@@ -19,7 +19,7 @@ using namespace soci::details;
 
 
 db2_statement_backend::db2_statement_backend(db2_session_backend &session)
-    : session_(session),hasVectorUseElements(false)
+    : session_(session),hasVectorUseElements(false),use_binding_method_(details::db2::BOUND_BY_NONE)
 {
 }
 
@@ -37,14 +37,6 @@ void db2_statement_backend::clean_up()
 {
     SQLRETURN cliRC = SQL_SUCCESS;
 
-    cliRC=SQLFreeStmt(hStmt,SQL_CLOSE);
-    if (cliRC != SQL_SUCCESS) {
-        throw db2_soci_error(db2_soci_error::sqlState("Statement handle close error",SQL_HANDLE_STMT,hStmt),cliRC);
-    }
-    cliRC=SQLFreeStmt(hStmt,SQL_UNBIND);
-    if (cliRC != SQL_SUCCESS) {
-        throw db2_soci_error(db2_soci_error::sqlState("Statement handle unbind error",SQL_HANDLE_STMT,hStmt),cliRC);
-    }
     cliRC=SQLFreeHandle(SQL_HANDLE_STMT,hStmt);
     if (cliRC != SQL_SUCCESS) {
         throw db2_soci_error(db2_soci_error::sqlState("Statement handle clean-up error",SQL_HANDLE_STMT,hStmt),cliRC);
@@ -131,7 +123,7 @@ void db2_statement_backend::prepare(std::string const &  query ,
         query_ += ss.str();
     }
 
-    SQLRETURN cliRC = SQLPrepare(hStmt,(SQLCHAR*)query_.c_str(),SQL_NTS);
+    SQLRETURN cliRC = SQLPrepare(hStmt, const_cast<SQLCHAR *>((const SQLCHAR *) query_.c_str()), SQL_NTS);
     if (cliRC!=SQL_SUCCESS) {
         throw db2_soci_error("Error while preparing query",cliRC);
     }
@@ -140,7 +132,8 @@ void db2_statement_backend::prepare(std::string const &  query ,
 statement_backend::exec_fetch_result
 db2_statement_backend::execute(int  number )
 {
-    SQLULEN rows_processed = 0;
+    SQLUINTEGER rows_processed = 0;
+    SQLRETURN cliRC;
 
     if (hasVectorUseElements)
     {
@@ -149,9 +142,14 @@ db2_statement_backend::execute(int  number )
 
     // if we are called twice for the same statement we need to close the open
     // cursor or an "invalid cursor state" error will occur on execute
-
-    SQLRETURN cliRC = SQLExecute(hStmt);
+    cliRC = SQLFreeStmt(hStmt,SQL_CLOSE);
     if (cliRC != SQL_SUCCESS)
+    {
+        throw db2_soci_error(db2_soci_error::sqlState("Statement execution error",SQL_HANDLE_STMT,hStmt),cliRC);
+    }
+
+    cliRC = SQLExecute(hStmt);
+    if (cliRC != SQL_SUCCESS && cliRC != SQL_SUCCESS_WITH_INFO)
     {
         throw db2_soci_error(db2_soci_error::sqlState("Statement execution error",SQL_HANDLE_STMT,hStmt),cliRC);
     }
@@ -163,8 +161,6 @@ db2_statement_backend::execute(int  number )
     {
         return fetch(number);
     }
-
-    SQLFreeStmt(hStmt,SQL_RESET_PARAMS); //Prepare for next call
 
     return ef_success;
 }
@@ -185,9 +181,9 @@ db2_statement_backend::fetch(int  number )
         return ef_no_data;
     }
 
-    if (cliRC != SQL_SUCCESS)
+    if (cliRC != SQL_SUCCESS && cliRC != SQL_SUCCESS_WITH_INFO)
     {
-        throw db2_soci_error("Error while fetching data",cliRC);
+        throw db2_soci_error(db2_soci_error::sqlState("Error while fetching data", SQL_HANDLE_STMT, hStmt), cliRC);
     }
 
     return ef_success;
@@ -195,8 +191,19 @@ db2_statement_backend::fetch(int  number )
 
 long long db2_statement_backend::get_affected_rows()
 {
-    // ...
-    return -1;
+    SQLLEN rows;
+
+    SQLRETURN cliRC = SQLRowCount(hStmt, &rows);
+    if (cliRC != SQL_SUCCESS && cliRC != SQL_SUCCESS_WITH_INFO)
+    {
+        throw db2_soci_error(db2_soci_error::sqlState("Error while getting affected row count", SQL_HANDLE_STMT, hStmt), cliRC);
+    }
+    else if (rows == -1)
+    {
+        throw soci_error("Error getting affected row count: statement did not perform an update, insert, delete, or merge"); 
+    }
+
+    return rows;
 }
 
 int db2_statement_backend::get_number_of_rows()

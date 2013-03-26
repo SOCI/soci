@@ -235,11 +235,11 @@ public:
     // versions of them in the derived classes. However every backend should
     // define at least one of them to allow the code using auto-generated values
     // to work.
-    virtual bool get_next_sequence_value(session&, std::string const &, long &)
+    virtual bool get_next_sequence_value(session&, std::string const&, long&)
     {
         return false;
     }
-    virtual bool get_last_insert_id(session&, std::string const &, long &)
+    virtual bool get_last_insert_id(session&, std::string const&, long&)
     {
         return false;
     }
@@ -260,13 +260,16 @@ private:
 
 // simple base class for the session back-end factory
 
-struct SOCI_DECL backend_factory
+class connection_parameters;
+
+class SOCI_DECL backend_factory
 {
-	backend_factory() {}
+public:
+    backend_factory() {}
     virtual ~backend_factory() {}
 
     virtual details::session_backend* make_session(
-        std::string const& connectString) const = 0;
+        connection_parameters const& parameters) const = 0;
 };
 
 } // namespace soci

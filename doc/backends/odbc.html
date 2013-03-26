@@ -34,7 +34,7 @@
   <a href="#native">Accessing the Native Database API</a><br />
   <a href="#extensions">Backend-specific Extensions</a><br />
 <div class="navigation-indented">
-    <a href="#odbc_soci_error">ODBCSOCIError</a><br />
+    <a href="#odbc_soci_error">odbc_soci_error</a><br />
 </div>
   <a href="#options">Configuration options</a><br />
 </div>
@@ -49,9 +49,13 @@
 <table border="1" cellpadding="5" cellspacing="0">
 <tbody>
 <tr><th>ODBC version</th><th>Operating System</th><th>Compiler</th></tr>
+<tr><td>3</td><td>Linux (Ubuntu 12.04)</td><td>g++ 4.6.3</td></tr>
+<tr><td>3</td><td>Linux (Ubuntu 12.04)</td><td>clang 3.2</td></tr>
+<tr><td>3.8</td><td>Windows 8</td><td>Visual Studio 2012</td></tr>
+<tr><td>3</td><td>Windows 7</td><td>Visual Studio 2010</td></tr>
 <tr><td>3</td><td>Windows XP</td><td>Visual Studio 2005 (express)</td></tr>
 <tr><td>3</td><td>Windows XP</td><td>Visual C++ 8.0 Professional</td></tr>
-<tr><td>3</td><td>Windows XP</td><td>(cygwin) g++ 3.3.4</td></tr>
+<tr><td>3</td><td>Windows XP</td><td>g++ 3.3.4 (Cygwin)</td></tr>
 </tbody>
 </table>
 
@@ -65,68 +69,68 @@
 using the <code>ODBC</code> backend factory together with a connection string:</p>
 
 <pre class="example">
-BackEndFactory const &amp;backEnd = odbc;
-Session sql(backEnd, "filedsn=c:\\my.dsn");
+backend_factory const&amp; backEnd = odbc;
+session sql(backEnd, "filedsn=c:\\my.dsn");
 </pre>
 
 <p>or simply:</p>
 
 <pre class="example">
-Session sql(odbc, "filedsn=c:\\my.dsn");
+session sql(odbc, "filedsn=c:\\my.dsn");
 </pre>
 
 <p>The set of parameters used in the connection string for ODBC is the same as accepted by the <code><a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/odbcsql/od_odbc_d_4x4k.asp">SQLDriverConnect</a></code> function from the ODBC library.</p>
 
-<p>Once you have created a <code>Session</code> object as shown above, you can use it to access the database, for example:</p>
+<p>Once you have created a <code>session</code> object as shown above, you can use it to access the database, for example:</p>
 <pre class="example">
 int count;
 sql &lt;&lt; "select count(*) from invoices", into(count);
 </pre>
 
-<p>(See the <a href="../basics.html">SOCI basics</a> and <a href="../exchange.html">exchanging data</a> documentation for general information on using the <code>Session</code> class.)</p>
+<p>(See the <a href="../basics.html">SOCI basics</a> and <a href="../exchange.html">exchanging data</a> documentation for general information on using the <code>session</code> class.)</p>
 
 <h3 id="support">SOCI Feature Support</h3>
 <h4 id="dynamic">Dynamic Binding</h4>
 
-<p>The ODBC backend supports the use of the SOCI <code>Row</code> class, which facilitates retrieval of data whose type is not known at compile time.</p>
+<p>The ODBC backend supports the use of the SOCI <code>row</code> class, which facilitates retrieval of data whose type is not known at compile time.</p>
 
-<p>When calling <code>Row::get&lt;T&gt;()</code>, the type you should pass as T depends upon the underlying database type.<br/>  For the ODBC backend, this type mapping is:</p>
+<p>When calling <code>row::get&lt;T&gt;()</code>, the type you should pass as T depends upon the underlying database type.<br/>  For the ODBC backend, this type mapping is:</p>
 
 <table border="1" cellpadding="5" cellspacing="0">
   <tbody>
     <tr>
       <th>ODBC Data Type</th>
       <th>SOCI Data Type</th>
-      <th><code>Row::get&lt;T&gt;</code> specializations</th>
+      <th><code>row::get&lt;T&gt;</code> specializations</th>
     </tr>
     <tr>
       <td>SQL_DOUBLE
-	    , SQL_DECIMAL
-	    , SQL_REAL
-	    , SQL_FLOAT
-	    , SQL_NUMERIC
-	  </td>
-      <td><code>eDouble</code></td>
+      , SQL_DECIMAL
+      , SQL_REAL
+      , SQL_FLOAT
+      , SQL_NUMERIC
+    </td>
+      <td><code>dt_double</code></td>
       <td><code>double</code></td>
     </tr>
     <tr>
       <td>SQL_TINYINT
-	    , SQL_SMALLINT
-	    , SQL_INTEGER
-	    , SQL_BIGINT</td>
-      <td><code>eInteger</code></td>
+      , SQL_SMALLINT
+      , SQL_INTEGER
+      , SQL_BIGINT</td>
+      <td><code>dt_integer</code></td>
       <td><code>int</code></td>
     </tr>
     <tr>
       <td>SQL_CHAR, SQL_VARCHAR</td>
-      <td><code>eString</code></td>
+      <td><code>dt_string</code></td>
       <td><code>std::string</code></td>
     </tr>
     <tr>
       <td>SQL_TYPE_DATE
-	    , SQL_TYPE_TIME
-	    , SQL_TYPE_TIMESTAMP</td>
-      <td><code>eDate</code></td>
+      , SQL_TYPE_TIME
+      , SQL_TYPE_TIMESTAMP</td>
+      <td><code>dt_date</code></td>
       <td><code>std::tm</code><code></code></td>
     </tr>
   </tbody>
@@ -134,7 +138,7 @@ sql &lt;&lt; "select count(*) from invoices", into(count);
 
 <p>Not all ODBC drivers support all datatypes</p>
 
-<p>(See the <a href="../exchange.html#dynamic">dynamic resultset binding</a> documentation for general information on using the <code>Row</code> class.)</p>
+<p>(See the <a href="../exchange.html#dynamic">dynamic resultset binding</a> documentation for general information on using the <code>row</code> class.)</p>
 
 <h4 id="bindingbyname">Binding by Name</h4>
 
@@ -165,25 +169,25 @@ sql &lt;&lt; "insert into t(x, y) values(?, ?)", use(i), use(j);
       <th>Bulk Insert</th>
     </tr>
     <tr>
-	  <td>MS SQL Server 2005</td>
-	  <td>YES</td>
-	  <td>YES</td>	
-	</tr>
+    <td>MS SQL Server 2005</td>
+    <td>YES</td>
+    <td>YES</td>	
+  </tr>
     <tr>
-	  <td>MS Access 2003</td>
-	  <td>YES</td>
-	  <td>NO</td>	
-	</tr>
+    <td>MS Access 2003</td>
+    <td>YES</td>
+    <td>NO</td>	
+  </tr>
     <tr>
-	  <td>PostgresQL 8.1</td>
-	  <td>YES</td>
-	  <td>YES</td>	
-	</tr>
+    <td>PostgresQL 8.1</td>
+    <td>YES</td>
+    <td>YES</td>	
+  </tr>
     <tr>
-	  <td>MySQL 4.1</td>
-	  <td>NO</td>
-	  <td>NO</td>	
-	</tr>
+    <td>MySQL 4.1</td>
+    <td>NO</td>
+    <td>NO</td>	
+  </tr>
   </tbody>
 </table>
 
@@ -220,27 +224,28 @@ sql &lt;&lt; "insert into t(x, y) values(?, ?)", use(i), use(j);
       <th>Concrete Class</th>
     </tr>
     <tr>
-      <td><code>SessionBackEnd* Session::getBackEnd()</code></td>
-      <td><code>ODBCSessionBackEnd</code></td>
+      <td><code>session_backend* session::get_backend()</code></td>
+      <td><code>odbc_statement_backend</code></td>
     </tr>
     <tr>
-      <td><code>StatementBackEnd* Statement::getBackEnd()</code></td>
-      <td><code>ODBCStatementBackEnd</code></td>
+      <td><code>statement_backend* statement::get_backend()</code></td>
+      <td><code>odbc_statement_backend</code></td>
     </tr>
     <tr>
-      <td><code>RowIDBackEnd* RowID::getBackEnd()</code></td>
-      <td><code>ODBCRowIDBackEnd</code></td>
+      <td><code>rowid_backend* rowid::get_backend()</code></td>
+      <td><code>odbc_rowid_backend</code></td>
     </tr>
   </tbody>
 </table>
 
 
 <h3 id="extensions">Backend-specific extensions</h3>
-<h4 id="odbc_soci_error">ODBCSOCIError</h4>
+<h4 id="odbc_soci_error">odbc_soci_error</h4>
 
-<p>The ODBC backend can throw instances of class <code>ODBCSOCIError</code>,
-which is publicly derived from <code>SOCIError</code> and has 
-additional public members containing the ODBC error code, the Native database error code, and the message returned from ODBC:</p>
+<p>The ODBC backend can throw instances of class <code>odbc_soci_error</code>,
+which is publicly derived from <code>soci_error</code> and has 
+additional public members containing the ODBC error code, the Native database 
+error code, and the message returned from ODBC:</p>
 
 <pre class="example">
 int main()
@@ -249,12 +254,12 @@ int main()
     {
         // regular code
     }
-    catch (SOCI::ODBCSOCIError const &amp; e)
+    catch (soci::odbc_soci_error const&amp; e)
     {
-        cerr &lt;&lt; "ODBC Error Code: " &lt;&lt; e.odbcErrorCode() &lt;&lt; endl
-             &lt;&lt; "Native Error Code: " &lt;&lt; e.nativeErrorCode() &lt;&lt; endl
+        cerr &lt;&lt; "ODBC Error Code: " &lt;&lt; e.odbc_error_code() &lt;&lt; endl
+             &lt;&lt; "Native Error Code: " &lt;&lt; e.native_error_code() &lt;&lt; endl
              &lt;&lt; "SOCI Message: " &lt;&lt; e.what() &lt;&lt; std::endl
-             &lt;&lt; "ODBC Message: " &lt;&lt; e.odbcErrorMessage() &lt;&lt; endl;
+             &lt;&lt; "ODBC Message: " &lt;&lt; e.odbc_error_message() &lt;&lt; endl;
     }
    catch (exception const &amp;e)
     {
@@ -269,8 +274,15 @@ that returns fully expanded connection string as returned by the <code>SQLDriver
 
 <h3 id="options">Configuration options</h3>
 
-<p>None</p>
+<p>This backend supports <code>odbc_option_driver_complete</code> option which can be passed to it via <code>connection_parameters</code> class. The value of this option is passed to <code>SQLDriverConnect()</code> function as "driver completion" parameter and so must be one of <code>SQL_DRIVER_XXX</code> values, in the string form. The default value of this option is <code>SQL_DRIVER_PROMPT</code> meaning that the driver will query the user for the user name and/or the password if they are not stored together with the connection. If this is undesirable for some reason, you can use <code>SQL_DRIVER_NOPROMPT</code> value for this option to suppress showing the message box:</p>
 
+<pre class="example">
+connection_parameters parameters("odbc", "DSN=mydb");
+parameters.set_option(odbc_option_driver_complete, "0" /* SQL_DRIVER_NOPROMPT */);
+session sql(parameters);
+</pre>
+
+<p class="copyright">Copyright &copy; 2013 Mateusz Loskot</p>
 <p class="copyright">Copyright &copy; 2004-2006 Maciej Sobczak, Stephen Hutton, David Courtney</p>
 </body>
 </html>

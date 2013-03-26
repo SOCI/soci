@@ -40,6 +40,12 @@ namespace details
     std::size_t const odbc_max_buffer_length = 100 * 1024 * 1024;
 }
 
+// Option allowing to specify the "driver completion" parameter of
+// SQLDriverConnect(). Its possible values are the same as the allowed values
+// for this parameter in the official ODBC, i.e. one of SQL_DRIVER_XXX (in
+// string form as all options are strings currently).
+extern SOCI_ODBC_DECL char const * odbc_option_driver_complete;
+
 struct odbc_statement_backend;
 
 // Helper of into and use backends.
@@ -259,7 +265,7 @@ struct odbc_blob_backend : details::blob_backend
 
 struct odbc_session_backend : details::session_backend
 {
-    odbc_session_backend(std::string const &connectString);
+    odbc_session_backend(connection_parameters const & parameters);
 
     ~odbc_session_backend();
 
@@ -403,9 +409,9 @@ inline bool odbc_standard_type_backend_base::use_string_for_bigint() const
 
 struct odbc_backend_factory : backend_factory
 {
-	odbc_backend_factory() {}
+    odbc_backend_factory() {}
     virtual odbc_session_backend * make_session(
-        std::string const &connectString) const;
+        connection_parameters const & parameters) const;
 };
 
 extern SOCI_ODBC_DECL odbc_backend_factory const odbc;

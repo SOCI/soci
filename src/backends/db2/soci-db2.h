@@ -38,6 +38,17 @@
 
 namespace soci
 {
+    namespace details { namespace db2
+    {
+        enum binding_method
+        {
+            BOUND_BY_NONE,
+            BOUND_BY_NAME,
+            BOUND_BY_POSITION
+        };
+    }}
+
+    static const std::size_t maxBuffer =  1024 * 1024 * 1024; //CLI limit is about 3 GB, but 1GB should be enough
 
 class db2_soci_error : public soci_error {
 public:
@@ -107,7 +118,7 @@ struct SOCI_DB2_DECL db2_vector_into_type_backend : details::vector_into_type_ba
 struct SOCI_DB2_DECL db2_standard_use_type_backend : details::standard_use_type_backend
 {
     db2_standard_use_type_backend(db2_statement_backend &st)
-        : statement_(st),buf(NULL),indptr(NULL)
+        : statement_(st),buf(NULL),ind(0)
     {}
 
     void bind_by_pos(int& position, void* data, details::exchange_type type, bool readOnly);
@@ -128,7 +139,7 @@ struct SOCI_DB2_DECL db2_standard_use_type_backend : details::standard_use_type_
     int position;
     std::string name;
     char* buf;
-    SQLLEN indptr;
+    SQLLEN ind;
 };
 
 struct SOCI_DB2_DECL db2_vector_use_type_backend : details::vector_use_type_backend
@@ -192,6 +203,7 @@ struct SOCI_DB2_DECL db2_statement_backend : details::statement_backend
     std::vector<std::string> names;
     bool hasVectorUseElements;
     SQLUINTEGER numRowsFetched;
+    details::db2::binding_method use_binding_method_;
 };
 
 struct db2_rowid_backend : details::rowid_backend
@@ -218,7 +230,7 @@ struct db2_blob_backend : details::blob_backend
 
 struct db2_session_backend : details::session_backend
 {
-    db2_session_backend(std::string const& connectString);
+    db2_session_backend(connection_parameters const& parameters);
 
     ~db2_session_backend();
 
@@ -241,6 +253,7 @@ struct db2_session_backend : details::session_backend
     std::string username;
     std::string password;
     bool autocommit;
+    bool in_transaction;
 
     SQLHANDLE hEnv; /* Environment handle */
     SQLHANDLE hDbc; /* Connection handle */
@@ -249,7 +262,8 @@ struct db2_session_backend : details::session_backend
 struct SOCI_DB2_DECL db2_backend_factory : backend_factory
 {
 	db2_backend_factory() {}
-    db2_session_backend* make_session(std::string const& connectString) const;
+    db2_session_backend* make_session(
+        connection_parameters const & parameters) const;
 };
 
 extern SOCI_DB2_DECL db2_backend_factory const db2;
