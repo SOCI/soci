@@ -246,6 +246,20 @@ void test4()
 
     assert(d1 == d4 && d2 == d5 && d3 == d6);
 
+    // test negative doubles too
+    sql << "delete from test4";
+    d1 = -d1;
+    d2 = -d2;
+    d3 = -d3;
+
+    sql << "insert into test4(p1, p2, p3) values (?,?,?)",
+    use(d1), use(d2), use(d3);
+
+    sql << "select p1, p2, p3 from test4",
+    into(d4), into(d5), into(d6);
+
+    assert(d1 == d4 && d2 == d5 && d3 == d6);
+
     // verify an exception is thrown when fetching non-integral value
     // to integral variable
     try
@@ -370,18 +384,24 @@ void test6()
     }
 
     {
-        char c='a', c1, c2;
+        char c, c1, c2;
 
         statement st = (sql.prepare <<
                         "select p1,p2 from test6 order by p1", into(c1), into(c2));
 
-        st.execute();
-        while (st.fetch())
+        // Verify that fetch after re-executing the same statement works.
+        for (int n = 0; n < 2; ++n)
         {
-            assert(c == c1 && c == c2);
-            ++c;
+            st.execute();
+
+            c='a';
+            while (st.fetch())
+            {
+                assert(c == c1 && c == c2);
+                ++c;
+            }
+            assert(c == 'z'+1);
         }
-        assert(c == 'z'+1);
     }
 
     {
@@ -1206,7 +1226,7 @@ struct TableCreator1 : public tests::table_creator_base
             : tests::table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, val integer, c char, "
-        "str varchar(20), sh smallint, ul decimal(9,0), d double precision, "
+        "str varchar(20), sh smallint, ul bigint, d double precision, "
         "tm timestamp, i1 integer, i2 integer, i3 integer, name varchar(20))";
         sql.commit();
         sql.begin();
