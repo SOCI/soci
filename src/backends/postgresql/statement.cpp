@@ -94,7 +94,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
                 }
                 // Check whether this is an assignment(e.g. x:=y)
                 // and treat it as a special case, not as a named binding
-                if ((next_it != end) && (*next_it == '='))
+                else if ((next_it != end) && (*next_it == '='))
                 {
                     query_ += ":=";
                     ++it;
