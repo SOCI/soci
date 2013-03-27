@@ -19,14 +19,14 @@ using namespace soci::details;
 
 std::size_t values::size() const
 {
-	if (row_)
-	{
-		return row_->size();
-	}
-	else
-	{
-		return uses_.size();
-	}
+    if (row_)
+    {
+        return row_->size();
+    }
+    else
+    {
+        return uses_.size();
+    }
 }
 
 indicator values::get_indicator(std::size_t pos) const

@@ -51,7 +51,7 @@ public:
 
     values() : row_(NULL), currentPos_(0), uppercaseColumnNames_(false) {}
 
-	std::size_t size() const;
+    std::size_t size() const;
 
     indicator get_indicator(std::size_t pos) const;
     indicator get_indicator(std::string const & name) const;
