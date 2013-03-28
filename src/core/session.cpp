@@ -83,8 +83,8 @@ session::session(connection_pool & pool)
     poolPosition_ = pool.lease();
     session & pooledSession = pool.at(poolPosition_);
 
-    once.set_session(&pooledSession);
-    prepare.set_session(&pooledSession);
+    once.set_session(this);
+    prepare.set_session(this);
     backEnd_ = pooledSession.get_backend();
 }
 
