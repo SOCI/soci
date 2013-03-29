@@ -57,6 +57,7 @@ void odbc_statement_backend::prepare(std::string const & query,
     enum { eNormal, eInQuotes, eInName, eInAccessDate } state = eNormal;
 
     std::string name;
+    query_.reserve(query.length());
 
     for (std::string::const_iterator it = query.begin(), end = query.end();
          it != end; ++it)
@@ -103,9 +104,7 @@ void odbc_statement_backend::prepare(std::string const & query,
             {
                 names_.push_back(name);
                 name.clear();
-                std::ostringstream ss;
-                ss << '?';
-                query_ += ss.str();
+                query_ += "?";
                 query_ += *it;
                 state = eNormal;
             }
@@ -127,9 +126,7 @@ void odbc_statement_backend::prepare(std::string const & query,
     if (state == eInName)
     {
         names_.push_back(name);
-        std::ostringstream ss;
-        ss << '?';
-        query_ += ss.str();
+        query_ += "?";
     }
 
     SQLRETURN rc = SQLPrepare(hstmt_, (SQLCHAR*)query_.c_str(), (SQLINTEGER)query_.size());
