@@ -39,8 +39,16 @@ postgresql_statement_backend::postgresql_statement_backend(
 
 postgresql_statement_backend::~postgresql_statement_backend()
 {
-    if (statementName_.empty() == false)
-        session_.deallocate_prepared_statement(statementName_);
+    try
+    {
+        if (statementName_.empty() == false && !session_.disconnected_)
+            session_.deallocate_prepared_statement(statementName_);
+    }
+    catch(...)
+    {
+        // Despite all efforts there are cases 
+        // where an expection will be thrown here
+    }
 }
 
 void postgresql_statement_backend::alloc()
@@ -94,7 +102,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
                 }
                 // Check whether this is an assignment(e.g. x:=y)
                 // and treat it as a special case, not as a named binding
-                if ((next_it != end) && (*next_it == '='))
+                else if ((next_it != end) && (*next_it == '='))
                 {
                     query_ += ":=";
                     ++it;
@@ -171,8 +179,11 @@ void postgresql_statement_backend::prepare(std::string const & query,
         // if it fails to prepare it we can't DEALLOCATE it. 
         std::string statementName = session_.get_next_statement_name();
 
-        PGresult* result = PQprepare(session_.conn_, statementName.c_str(),
-            query_.c_str(), static_cast<int>(names_.size()), NULL);
+        PGresult* result = NULL;
+        do {
+            result = PQprepare(session_.conn_, statementName.c_str(),
+                query_.c_str(), static_cast<int>(names_.size()), NULL);
+        } while(session_.check_connection(result));
         if (result == NULL)
         {
             throw soci_error("Cannot prepare statement.");
@@ -289,28 +300,49 @@ postgresql_statement_backend::execute(int number)
 #else
 
 #ifdef SOCI_POSTGRESQL_NOPREPARE
-
-                result_ = PQexecParams(session_.conn_, query_.c_str(),
-                    static_cast<int>(paramValues.size()),
-                    NULL, &paramValues[0], NULL, NULL, 0);
+                do {
+                    result_ = PQexecParams(session_.conn_, query_.c_str(),
+                        static_cast<int>(paramValues.size()),
+                        NULL, &paramValues[0], NULL, NULL, 0);
+                } while(session_.check_connection(result_));
 #else
+                // in case this query was separately prepared
                 if (stType_ == st_repeatable_query)
                 {
-                    // this query was separately prepared
+                    // We need to re-prepare the statement if disconnected
+                    bool reprepare = session_.disconnected_;
+                    do {
+                        if (reprepare)
+                        {
+                            // We got a new conn, the statement needs to be reprepared
+                            result_ = PQprepare(session_.conn_, statementName_.c_str(),
+                                query_.c_str(), static_cast<int>(names_.size()), NULL);
+                            reprepare = !(result_ != NULL && PQresultStatus(result_) == PGRES_COMMAND_OK);
+                        }
+                        // Don't execute if the query still needs to be reprepared
+                        if (!reprepare)
+                        {
+                            // It's safe to reuse the prepared statement name
+                            result_ = PQexecPrepared(session_.conn_,
+                                statementName_.c_str(),
+                                static_cast<int>(paramValues.size()),
+                                &paramValues[0], NULL, NULL, 0);
 
-                    result_ = PQexecPrepared(session_.conn_,
-                        statementName_.c_str(),
-                        static_cast<int>(paramValues.size()),
-                        &paramValues[0], NULL, NULL, 0);
+                            // It doesn't matter the execution result, query will 
+                            // need to be reprepared if reconnection takes place
+                            reprepare = true;
+                        }
+                    } while(session_.check_connection(result_));
                 }
                 else // stType_ == st_one_time_query
                 {
                     // this query was not separately prepared and should
                     // be executed as a one-time query
-
-                    result_ = PQexecParams(session_.conn_, query_.c_str(),
-                        static_cast<int>(paramValues.size()),
-                        NULL, &paramValues[0], NULL, NULL, 0);
+                    do {
+                        result_ = PQexecParams(session_.conn_, query_.c_str(),
+                            static_cast<int>(paramValues.size()),
+                            NULL, &paramValues[0], NULL, NULL, 0);
+                    } while(session_.check_connection(result_));
                 }
 
 #endif // SOCI_POSTGRESQL_NOPREPARE
@@ -351,19 +383,41 @@ postgresql_statement_backend::execute(int number)
             // - execute the query without parameter information
 
 #ifdef SOCI_POSTGRESQL_NOPREPARE
-
-            result_ = PQexec(session_.conn_, query_.c_str());
+            do {
+                result_ = PQexec(session_.conn_, query_.c_str());
+            } while(session_.check_connection(result_));
 #else
+            // in case this query was separately prepared
             if (stType_ == st_repeatable_query)
             {
-                // this query was separately prepared
+                // We need to re-prepare the statement if disconnected
+                bool reprepare = session_.disconnected_;
+                do {
+                    if (reprepare)
+                    {
+                        // We got a new conn, the statement needs to be reprepared
+                        result_ = PQprepare(session_.conn_, statementName_.c_str(),
+                            query_.c_str(), static_cast<int>(names_.size()), NULL);
+                        reprepare = !(result_ != NULL && PQresultStatus(result_) == PGRES_COMMAND_OK);
+                    }
+                    // Don't execute if the query still needs to be reprepared
+                    if (!reprepare)
+                    {
+                        // It's safe to reuse the prepared statement name
+                        result_ = PQexecPrepared(session_.conn_,
+                            statementName_.c_str(), 0, NULL, NULL, NULL, 0);
 
-                result_ = PQexecPrepared(session_.conn_,
-                    statementName_.c_str(), 0, NULL, NULL, NULL, 0);
+                        // It doesn't matter the execution result, query will 
+                        // need to be reprepared if reconnection takes place
+                        reprepare = true;
+                    }
+                } while(session_.check_connection(result_));
             }
             else // stType_ == st_one_time_query
             {
-                result_ = PQexec(session_.conn_, query_.c_str());
+                do {
+                    result_ = PQexec(session_.conn_, query_.c_str());
+                } while(session_.check_connection(result_));
             }
 
 #endif // SOCI_POSTGRESQL_NOPREPARE

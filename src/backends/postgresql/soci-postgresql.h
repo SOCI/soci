@@ -251,6 +251,8 @@ struct postgresql_session_backend : details::session_backend
 
     int statementCount_;
     PGconn * conn_;
+    bool disconnected_;
+    bool check_connection(PGresult*& res, int timeout = 10);
 };
 
 

@@ -17,6 +17,24 @@
 #include <ctime>
 #include <cstdlib>
 
+#ifdef WIN32
+#include <conio.h>
+void sleep(unsigned duration) { _sleep(duration*1000); }
+#else
+// make this test barely portable
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+int _kbhit() // only enter works well
+{
+    struct timeval tv = {0, 100};
+    fd_set rfds;
+    FD_ZERO(&rfds);
+    FD_SET(0, &rfds); // stdin
+    return (select(1, &rfds, 0, 0, &tv) > 0);
+}
+#endif
+
 using namespace soci;
 using namespace soci::tests;
 
@@ -78,9 +96,9 @@ void test1()
         assert(id == 7);
         assert(name == "John");
         
-    	// Must not cause the application to crash.
-		statement st(sql);
-		st.prepare(""); // Throws an exception in some versions.
+        // Must not cause the application to crash.
+        statement st(sql);
+        st.prepare(""); // Throws an exception in some versions.
     }
     catch(...)
     {
@@ -738,6 +756,144 @@ public:
     }
 };
 
+void test_reconnect()
+{
+    std::time_t start;
+    bool thrown;
+    std::cin.get();
+
+    session sql(backEnd, connectString);
+    table_creator_one tableCreator(sql);
+
+    sql << "insert into soci_test(id) values (1)";
+
+    start = std::time(NULL);
+    std::cout << "RESTART the database then hit ENTER\n";
+    std::cin.get();
+
+    // Test immediate reconnect for non-prepared statement.
+    sql << "select id from soci_test";
+    if ((std::time(NULL) - start) < 1)
+            std::cout << "Too fast. Did you really restarted it?\n";
+
+    std::cout << "STOP the database then hit ENTER and WAIT between 2 and 8 seconds then START\n";
+    std::cin.get();
+    start = std::time(NULL);
+
+    // Test reconnect for non-prepared statement.
+    sql << "select id from soci_test";
+
+    if ((std::time(NULL) - start) < 3)
+         std::cout << "Too soon. Wait a little longer next time\n";
+
+    std::cout << "STOP the database then hit ENTER and WAIT\n";
+    std::cin.get();
+
+    thrown = false;
+    try
+    {
+        // Test fail to reconnect for non-prepared statement.
+        sql << "select id from soci_test";
+    }
+    catch(soci_error&)
+    {
+        thrown = true;
+    }
+    assert(thrown);
+
+    std::cout << "START the database then hit ENTER\n";
+    std::cin.get();
+
+    // Test reconnect after being disconnected for non-prepared statement.
+    sql << "select id from soci_test";
+
+    thrown = false;
+    try
+    {
+        // Test any other failures without reconnect.
+        sql << "select nonexisting from soci_test";
+    }
+    catch(soci_error&)
+    {
+        thrown = true;
+    }
+    assert(thrown);
+#ifndef SOCI_POSTGRESQL_NOPREPARE
+    {
+        statement st(sql.prepare << "select id from soci_test");
+
+        start = std::time(NULL);
+        std::cout << "RESTART the database then hit ENTER\n";
+        std::cin.get();
+
+        // Test immediate reconnect for prepared statement.
+        st.execute();
+
+        if ((std::time(NULL) - start) < 1)
+             std::cout << "Too fast. Did you really restarted it?\n";
+
+        std::cout << "STOP the database then hit ENTER and WAIT between 2 and 8 seconds then START\n";
+        std::cin.get();
+        start = std::time(NULL);
+
+        // Test reconnect for prepared statement.
+        st.execute();
+
+        if ((std::time(NULL) - start) < 3)
+             std::cout << "Too soon. Wait a little longer next time\n";
+
+        std::cout << "STOP the database then hit ENTER and WAIT\n";
+        std::cin.get();
+
+        thrown = false;
+        try
+        {
+            // Test fail to reconnect for prepared statement.
+            st.execute();
+        }
+        catch(soci_error&)
+        {
+            thrown = true;
+        }
+        assert(thrown);
+
+        std::cout << "START the database then hit ENTER\n";
+        std::cin.get();
+
+        // Test reconnect after being disconnected for prepared statement.
+        st.execute();
+
+        std::cout << "RESTART the database then hit ENTER\n";
+        std::cin.get();
+
+        // Test if exceptions are thrown from the destruction of a prepared statement.
+        // The exception will be thrown because we deallocate a prepared statement that 
+        // doesn't exist in the new connection. But exception must not be propagated here.
+    }
+    
+    statement st(sql.prepare << "select id from soci_test");
+
+    std::cout << "STOP the database then hit ENTER and WAIT\n";
+    std::cin.get();
+
+    thrown = false;
+    try
+    {
+        // Test fail to reconnect for prepared statement.
+        st.execute();
+    }
+    catch(soci_error&)
+    {
+        thrown = true;
+    }
+    assert(thrown);
+
+    // Test if exceptions are thrown from the destruction of a prepared statement.
+    // Must not throw here. We don't deallocate prepared statements if disconnected.
+    std::cout << "START the database now\n";
+#endif
+}
+
 int main(int argc, char** argv)
 {
 
@@ -786,8 +942,22 @@ int main(int argc, char** argv)
         test12();
         test_bytea();
         test_json();
+        
+        std::cout << "hit ENTER in the next 3 seconds for an interactive reconnect test";
+        for (int i = 0; i < 3; ++i)
+        {
+            if (_kbhit())
+            {
+                test_reconnect();
+                std::cout << "\nOk, all tests passed.\n\n";
+                return EXIT_SUCCESS;
+            }
+            sleep(1);
+            std::cout << (i + 1);
+        }
 
-        std::cout << "\nOK, all tests passed.\n\n";
+        std::cout << "\nNo reconnect test.";
+        std::cout << "\nOk, all tests passed.\n\n";
 
         return EXIT_SUCCESS;
     }
