@@ -97,14 +97,20 @@ template<> struct type_conversion<PhonebookEntry>
     static void from_base(values const &v, indicator /* ind */, PhonebookEntry &pe)
     {
         // here we ignore the possibility the the whole object might be NULL
+        assert(v.size() == 2);
         pe.name = v.get<std::string>("NAME");
+        assert(v.size() == 2);
         pe.phone = v.get<std::string>("PHONE", "<NULL>");
+        assert(v.size() == 2);
     }
 
     static void to_base(PhonebookEntry const &pe, values &v, indicator &ind)
     {
+        assert(v.size() == 0);
         v.set("NAME", pe.name);
+        assert(v.size() == 1);
         v.set("PHONE", pe.phone, pe.phone.empty() ? i_null : i_ok);
+        assert(v.size() == 2);
         ind = i_ok;
     }
 };
@@ -117,16 +123,21 @@ template<> struct type_conversion<PhonebookEntry2>
     static void from_base(values const &v, indicator /* ind */, PhonebookEntry2 &pe)
     {
         // here we ignore the possibility the the whole object might be NULL
-
+        assert(v.size() == 2);
         pe.name = v.get<std::string>("NAME");
+        assert(v.size() == 2);
         indicator ind = v.get_indicator("PHONE"); //another way to test for null
+        assert(v.size() == 2);
         pe.phone = ind == i_null ? "<NULL>" : v.get<std::string>("PHONE");
     }
 
     static void to_base(PhonebookEntry2 const &pe, values &v, indicator &ind)
     {
+        assert(v.size() == 0);
         v.set("NAME", pe.name);
+        assert(v.size() == 1);
         v.set("PHONE", pe.phone, pe.phone.empty() ? i_null : i_ok);
+        assert(v.size() == 2);
         ind = i_ok;
     }
 };
@@ -138,15 +149,20 @@ template<> struct type_conversion<PhonebookEntry3>
     static void from_base(values const &v, indicator /* ind */, PhonebookEntry3 &pe)
     {
         // here we ignore the possibility the the whole object might be NULL
-
+        assert(v.size() == 2);
         pe.setName(v.get<std::string>("NAME"));
+        assert(v.size() == 2);
         pe.setPhone(v.get<std::string>("PHONE", "<NULL>"));
+        assert(v.size() == 2);
     }
 
     static void to_base(PhonebookEntry3 const &pe, values &v, indicator &ind)
     {
+        assert(v.size() == 0);
         v.set("NAME", pe.getName());
+        assert(v.size() == 1);
         v.set("PHONE", pe.getPhone(), pe.getPhone().empty() ? i_null : i_ok);
+        assert(v.size() == 2);
         ind = i_ok;
     }
 };
