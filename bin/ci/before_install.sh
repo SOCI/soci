@@ -19,7 +19,7 @@ echo "$(tmstamp) *** before_install::apt-get finished $(date) ***"
 echo "$(tmstamp) *** before_install::wget oracle starting $(date) ***"
 wget http://brzuchol.loskot.net/software/oracle/instantclient_11_2-linux-x64-mloskot.tar.bz2
 unzip instantclient_11_2-linux-x64-mloskot.tar.bz2
-sudo mkdir /opt
+sudo mkdir -p /opt
 sudo mv instantclient_11_2 /opt
 echo "$(tmstamp) *** before_install::wget oracle finished $(date) ***"
 
