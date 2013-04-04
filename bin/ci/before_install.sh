@@ -25,6 +25,7 @@ tar -jxf instantclient_11_2-linux-x64-mloskot.tar.bz2
 sudo mkdir -p /opt
 sudo mv instantclient_11_2 /opt
 sudo ln -s ${ORACLE_HOME}/libclntsh.so.11.1 ${ORACLE_HOME}/libclntsh.so
+sudo ln -s ${ORACLE_HOME}/libocci.so.11.1 ${ORACLE_HOME}/libocci.so
 echo "$(tmstamp) *** before_install::oracle finished $(date) ***"
 
 echo "$(tmstamp) *** before_install::config starting $(date) ***"
