@@ -23,6 +23,8 @@ wget http://brzuchol.loskot.net/software/oracle/instantclient_11_2-linux-x64-mlo
 tar -jxf instantclient_11_2-linux-x64-mloskot.tar.bz2
 sudo mkdir -p /opt
 sudo mv instantclient_11_2 /opt
+ldd ${ORACLE_HOME}/libclntsh.so.11.1
+ldd ${ORACLE_HOME}/libnnz11.so
 echo "$(tmstamp) *** before_install::wget oracle finished $(date) ***"
 
 echo "$(tmstamp) *** before_install::config starting $(date) ***"
