@@ -17,4 +17,5 @@ if [[ -f /sys/devices/system/cpu/online ]]; then
 	NUMTHREADS=$(( ( $(cut -f 2 -d '-' /sys/devices/system/cpu/online) + 1 ) * 15 / 10  ))
 fi
 export NUMTHREADS
-export ORACLE_HOME=/usr/lib/oracle/xe/app/oracle/product/10.2.0/client
+export ORACLE_HOME=/opt/instantclient_11_2
+export LD_LIBRARY_PATH=${ORACLE_HOME}:${LD_LIBRARY_PATH}
