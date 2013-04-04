@@ -1,6 +1,11 @@
 This file contains the history of changes in the SOCI library.
 
 ---
+Version 3.2.1 differs from 3.2.0 in the following ways:
+
+- Dropped patch (micro) version number from documentation URLS on the website
+
+---
 Version 3.2.0 differs from 3.1.0 in the following ways:
 
 - SOCI is now organization at GitHub 
