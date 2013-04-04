@@ -13,6 +13,7 @@ sudo apt-get update -qq
 sudo apt-get install -qq \
     tar bzip2 \
     libstdc++5 \
+    libaio1 \
     libboost-dev libboost-date-time-dev \
     libmyodbc unixodbc-dev odbc-postgresql \
     firebird2.5-super firebird2.5-dev
