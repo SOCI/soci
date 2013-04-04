@@ -14,6 +14,7 @@
 
 // std
 #include <cstddef>
+#include <memory>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -37,6 +38,10 @@ class connection_pool;
 
 class SOCI_DECL session
 {
+private:
+
+    void set_query_transformation_(std::auto_ptr<details::query_transformation_function> qtf);
+
 public:
     session();
     explicit session(connection_parameters const & parameters);
@@ -72,8 +77,10 @@ public:
     template <typename T>
     void set_query_transformation(T callback)
     {
-        delete query_transformation_;
-        query_transformation_= new details::query_transformation<T>(callback);
+        std::auto_ptr<details::query_transformation_function> qtf(new details::query_transformation<T>(callback));
+        set_query_transformation_(qtf);
+
+        assert(qtf.get() == NULL);
     }
 
     // support for basic logging

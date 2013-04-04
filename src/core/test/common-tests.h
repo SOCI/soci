@@ -336,6 +336,7 @@ public:
         test31();
         test_get_affected_rows();
         test_query_transformation();
+        test_query_transformation_with_connection_pool();
         test_pull5();
         test_issue67();
     }
@@ -3692,6 +3693,42 @@ void test_query_transformation()
         }
     }
     std::cout << "test query_transformation passed" << std::endl;
+}
+
+void test_query_transformation_with_connection_pool()
+{
+    // phase 1: preparation
+    const size_t pool_size = 10;
+    connection_pool pool(pool_size);
+
+    for (std::size_t i = 0; i != pool_size; ++i)
+    {
+        session & sql = pool.at(i);
+        sql.open(backEndFactory_, connectString_);
+    }
+
+    session sql(pool);
+    {
+        // create and populate the test table
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+        for (char c = 'a'; c <= 'z'; ++c)
+        {
+            sql << "insert into soci_test(c) values(\'" << c << "\')";
+        }
+
+        char const* query = "select count(*) from soci_test";
+
+        // free function, no-op
+        {
+            sql.set_query_transformation(no_op_transform);
+            int count;
+            sql << query, into(count);
+            assert(count == 'z' - 'a' + 1);
+        }    
+    }
+
+    std::cout << "test query_transformation with connection pool passed" << std::endl;
 }
 
 // Originally, submitted to SQLite3 backend and later moved to common test.
