@@ -3,7 +3,8 @@ This file contains the history of changes in the SOCI library.
 ---
 Version 3.2.1 differs from 3.2.0 in the following ways:
 
-- Fixed recent improvements in x:=y name binding; sent by Poul Bondon in #112
+- Fixed recent improvements in x:=y name binding, by Poul Bondon
+- Fixed query transformation assignment in pooled sessions, by Stefan Chrobot
 - Dropped patch (micro) version number from documentation URLS on the website
 
 ---
