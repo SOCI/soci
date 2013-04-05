@@ -3590,47 +3590,46 @@ struct where_condition : std::unary_function<std::string, std::string>
     std::string where_;
 };
 
-void test_query_transformation()
+
+void run_query_transformation_test(session& sql)
 {
-    session sql(backEndFactory_, connectString_);
+    // create and populate the test table
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+    for (char c = 'a'; c <= 'z'; ++c)
     {
-        // create and populate the test table
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+        sql << "insert into soci_test(c) values(\'" << c << "\')";
+    }
+    
+    char const* query = "select count(*) from soci_test";
 
-        for (char c = 'a'; c <= 'z'; ++c)
-        {
-            sql << "insert into soci_test(c) values(\'" << c << "\')";
-        }
-        
-        char const* query = "select count(*) from soci_test";
+    // free function, no-op
+    {
+        sql.set_query_transformation(no_op_transform);
+        int count;
+        sql << query, into(count);
+        assert(count == 'z' - 'a' + 1);
+    }
 
-        // free function, no-op
-        {
-            sql.set_query_transformation(no_op_transform);
-            int count;
-            sql << query, into(count);
-            assert(count == 'z' - 'a' + 1);
-        }
+    // free function
+    {
+        sql.set_query_transformation(lower_than_g);
+        int count;
+        sql << query, into(count);
+        assert(count == 'g' - 'a');
+    }
 
-        // free function
-        {
-            sql.set_query_transformation(lower_than_g);
-            int count;
-            sql << query, into(count);
-            assert(count == 'g' - 'a');
-        }
-
-        // function object with state
-        {
-            sql.set_query_transformation(where_condition("c > 'g' AND c < 'j'"));
-            int count = 0;
-            sql << query, into(count);
-            assert(count == 'j' - 'h');
-            count = 0;
-            sql.set_query_transformation(where_condition("c > 's' AND c <= 'z'"));
-            sql << query, into(count);
-            assert(count == 'z' - 's');
-        }
+    // function object with state
+    {
+        sql.set_query_transformation(where_condition("c > 'g' AND c < 'j'"));
+        int count = 0;
+        sql << query, into(count);
+        assert(count == 'j' - 'h');
+        count = 0;
+        sql.set_query_transformation(where_condition("c > 's' AND c <= 'z'"));
+        sql << query, into(count);
+        assert(count == 'z' - 's');
+    }
 
 // Bug in Visual Studio __cplusplus still means C++03
 // https://connect.microsoft.com/VisualStudio/feedback/details/763051/
@@ -3643,91 +3642,80 @@ void test_query_transformation()
 #endif
 
 #ifdef SOCI_HAVE_CPP11
-        // lambda
-        {
-            sql.set_query_transformation(
-                [](std::string const& query) {
-                    return query + " WHERE c > 'g' AND c < 'j'";
-            });
+    // lambda
+    {
+        sql.set_query_transformation(
+            [](std::string const& query) {
+                return query + " WHERE c > 'g' AND c < 'j'";
+        });
 
-            int count = 0;
-            sql << query, into(count);
-            assert(count == 'j' - 'h');
-        }
+        int count = 0;
+        sql << query, into(count);
+        assert(count == 'j' - 'h');
+    }
 #endif
 #undef SOCI_HAVE_CPP11
 
-        // prepared statements
+    // prepared statements
 
-        // constant effect (pre-prepare set transformation)
-        {
-            // set transformation after statement is prepared
-            sql.set_query_transformation(lower_than_g);
-            // prepare statement
-            int count;
-            statement st = (sql.prepare << query, into(count));
-            // observe transformation effect
-            st.execute(true);
-            assert(count == 'g' - 'a');
-            // reset transformation
-            sql.set_query_transformation(no_op_transform);
-            // observe the same transformation, no-op set above has no effect
-            count = 0;
-            st.execute(true);
-            assert(count == 'g' - 'a');
-        }
+    // constant effect (pre-prepare set transformation)
+    {
+        // set transformation after statement is prepared
+        sql.set_query_transformation(lower_than_g);
+        // prepare statement
+        int count;
+        statement st = (sql.prepare << query, into(count));
+        // observe transformation effect
+        st.execute(true);
+        assert(count == 'g' - 'a');
+        // reset transformation
+        sql.set_query_transformation(no_op_transform);
+        // observe the same transformation, no-op set above has no effect
+        count = 0;
+        st.execute(true);
+        assert(count == 'g' - 'a');
+    }
 
-        // no effect (post-prepare set transformation)
-        {
-            // reset
-            sql.set_query_transformation(no_op_transform);
+    // no effect (post-prepare set transformation)
+    {
+        // reset
+        sql.set_query_transformation(no_op_transform);
 
-            // prepare statement
-            int count;
-            statement st = (sql.prepare << query, into(count));
-            // set transformation after statement is prepared
-            sql.set_query_transformation(lower_than_g);
-            // observe no effect of WHERE clause injection
-            st.execute(true);
-            assert(count == 'z' - 'a' + 1);
-        }
+        // prepare statement
+        int count;
+        statement st = (sql.prepare << query, into(count));
+        // set transformation after statement is prepared
+        sql.set_query_transformation(lower_than_g);
+        // observe no effect of WHERE clause injection
+        st.execute(true);
+        assert(count == 'z' - 'a' + 1);
+    }
+}
+
+void test_query_transformation()
+{
+    {
+        session sql(backEndFactory_, connectString_);
+        run_query_transformation_test(sql);
     }
     std::cout << "test query_transformation passed" << std::endl;
 }
-
 void test_query_transformation_with_connection_pool()
 {
-    // phase 1: preparation
-    const size_t pool_size = 10;
-    connection_pool pool(pool_size);
-
-    for (std::size_t i = 0; i != pool_size; ++i)
     {
-        session & sql = pool.at(i);
-        sql.open(backEndFactory_, connectString_);
-    }
+        // phase 1: preparation
+        const size_t pool_size = 10;
+        connection_pool pool(pool_size);
 
-    session sql(pool);
-    {
-        // create and populate the test table
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
-        for (char c = 'a'; c <= 'z'; ++c)
+        for (std::size_t i = 0; i != pool_size; ++i)
         {
-            sql << "insert into soci_test(c) values(\'" << c << "\')";
+            session & sql = pool.at(i);
+            sql.open(backEndFactory_, connectString_);
         }
 
-        char const* query = "select count(*) from soci_test";
-
-        // free function, no-op
-        {
-            sql.set_query_transformation(no_op_transform);
-            int count;
-            sql << query, into(count);
-            assert(count == 'z' - 'a' + 1);
-        }    
+        session sql(pool);
+        run_query_transformation_test(sql);
     }
-
     std::cout << "test query_transformation with connection pool passed" << std::endl;
 }
 
