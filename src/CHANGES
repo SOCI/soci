@@ -3,9 +3,11 @@ This file contains the history of changes in the SOCI library.
 ---
 Version 3.2.1 differs from 3.2.0 in the following ways:
 
+- Fixed prepared insert statements with custom data types support, by Tomasz Olszewski
 - Fixed recent improvements in x:=y name binding, by Poul Bondon
 - Fixed query transformation assignment in pooled sessions, by Stefan Chrobot
-- Dropped patch (micro) version number from documentation URLS on the website
+- Cleaned up SOCI_POSTGRESQL_NOPARAMS and related options in code and documentation
+- Dropped patch (micro) version number from documentation URLs on the website
 
 ---
 Version 3.2.0 differs from 3.1.0 in the following ways:
