@@ -1145,7 +1145,7 @@ void test5()
 void test6()
 {
 // Note: this functionality is not available with older PostgreSQL
-#ifndef SOCI_PGSQL_NOPARAMS
+#ifndef SOCI_POSTGRESQL_NOPARAMS
     {
         session sql(backEndFactory_, connectString_);
 
@@ -1381,7 +1381,7 @@ void test6()
     }
 
     std::cout << "test 6 passed" << std::endl;
-#endif // SOCI_PGSQL_NOPARAMS
+#endif // SOCI_POSTGRESQL_NOPARAMS
 }
 
 // test for multiple use (and into) elements
@@ -1396,7 +1396,7 @@ void test7()
             int i2 = 6;
             int i3 = 7;
 
-#ifndef SOCI_PGSQL_NOPARAMS
+#ifndef SOCI_POSTGRESQL_NOPARAMS
 
             sql << "insert into soci_test(i1, i2, i3) values(:i1, :i2, :i3)",
                 use(i1), use(i2), use(i3);
@@ -1406,7 +1406,7 @@ void test7()
 
             sql << "insert into soci_test(i1, i2, i3) values(5, 6, 7)";
 
-#endif // SOCI_PGSQL_NOPARAMS
+#endif // SOCI_POSTGRESQL_NOPARAMS
 
             i1 = 0;
             i2 = 0;
@@ -1425,7 +1425,7 @@ void test7()
             i2 = 0;
             i3 = 0;
 
-#ifndef SOCI_PGSQL_NOPARAMS
+#ifndef SOCI_POSTGRESQL_NOPARAMS
 
             statement st = (sql.prepare
                 << "insert into soci_test(i1, i2, i3) values(:i1, :i2, :i3)",
@@ -1451,7 +1451,7 @@ void test7()
             sql << "insert into soci_test(i1, i2, i3) values(4, 5, 6)";
             sql << "insert into soci_test(i1, i2, i3) values(7, 8, 9)";
 
-#endif // SOCI_PGSQL_NOPARAMS
+#endif // SOCI_POSTGRESQL_NOPARAMS
 
             std::vector<int> v1(5);
             std::vector<int> v2(5);
@@ -1482,7 +1482,7 @@ void test7()
 void test8()
 {
 // Not supported with older PostgreSQL
-#ifndef SOCI_PGSQL_NOPARAMS
+#ifndef SOCI_POSTGRESQL_NOPARAMS
 
     {
         session sql(backEndFactory_, connectString_);
@@ -1691,7 +1691,7 @@ void test8()
 
     std::cout << "test 8 passed" << std::endl;
 
-#endif // SOCI_PGSQL_NOPARAMS
+#endif // SOCI_POSTGRESQL_NOPARAMS
 
 }
 
@@ -1699,7 +1699,7 @@ void test8()
 void test9()
 {
 // Not supported with older PostgreSQL
-#ifndef SOCI_PGSQL_NOPARAMS
+#ifndef SOCI_POSTGRESQL_NOPARAMS
 
     {
         session sql(backEndFactory_, connectString_);
@@ -1772,7 +1772,7 @@ void test9()
 
     std::cout << "test 9 passed" << std::endl;
 
-#endif // SOCI_PGSQL_NOPARAMS
+#endif // SOCI_POSTGRESQL_NOPARAMS
 
 }
 
@@ -1850,7 +1850,7 @@ void test10()
 // test of use elements with indicators
 void test11()
 {
-#ifndef SOCI_PGSQL_NOPARAMS
+#ifndef SOCI_POSTGRESQL_NOPARAMS
     {
         session sql(backEndFactory_, connectString_);
 
@@ -1918,7 +1918,7 @@ void test11()
 
     std::cout << "test 11 passed" << std::endl;
 
-#endif // SOCI_PGSQL_NOPARAMS
+#endif // SOCI_POSTGRESQL_NOPARAMS
 }
 
 // Dynamic binding to Row objects
@@ -2053,7 +2053,7 @@ void test13()
     sql << "insert into soci_test(id, val) values(2, 20)";
     sql << "insert into soci_test(id, val) values(3, 30)";
 
-#ifndef SOCI_PGSQL_NOPARAMS
+#ifndef SOCI_POSTGRESQL_NOPARAMS
     {
         int id = 2;
         row r;
@@ -2096,7 +2096,7 @@ void test13()
         assert(r.get_properties(0).get_data_type() == dt_integer);
         assert(r.get<int>(0) == 20);
     }
-#endif // SOCI_PGSQL_NOPARAMS
+#endif // SOCI_POSTGRESQL_NOPARAMS
 
     std::cout << "test 13 passed" << std::endl;
 }
@@ -2303,7 +2303,7 @@ void test15()
 // test for bulk fetch with single use
 void test16()
 {
-#ifndef SOCI_PGSQL_NOPARAMS
+#ifndef SOCI_POSTGRESQL_NOPARAMS
     {
         session sql(backEndFactory_, connectString_);
 
@@ -2325,7 +2325,7 @@ void test16()
         assert(names[1] == "john");
         assert(names[2] == "julian");
     }
-#endif // SOCI_PGSQL_NOPARAMS
+#endif // SOCI_POSTGRESQL_NOPARAMS
 
     std::cout << "test 16 passed" << std::endl;
 }

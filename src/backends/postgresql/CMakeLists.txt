@@ -42,6 +42,10 @@ soci_backend(PostgreSQL
   HEADERS soci-postgresql.h common.h
   DESCRIPTION "SOCI backend for PostgreSQL database engine"
   AUTHORS "Maciej Sobczak, Stephen Hutton"
-  MAINTAINERS "Maciej Sobczak")
+  MAINTAINERS "Mateusz Loskot")
+
+boost_report_value(SOCI_POSTGRESQL_NOPARAMS)
+boost_report_value(SOCI_POSTGRESQL_NOBINDBYNAME)
+boost_report_value(SOCI_POSTGRESQL_NOPREPARE)
 
 add_subdirectory(test)
