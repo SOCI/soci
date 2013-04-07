@@ -2303,28 +2303,30 @@ void test15()
 
 void test_prepared_insert_with_orm_type()
 {
-    session sql(backEndFactory_, connectString_);
+    {
+        session sql(backEndFactory_, connectString_);
 
-    sql.uppercase_column_names(true);
-    auto_table_creator tableCreator(tc_.table_creator_3(sql));
+        sql.uppercase_column_names(true);
+        auto_table_creator tableCreator(tc_.table_creator_3(sql));
 
-    PhonebookEntry temp;
-    PhonebookEntry e1 = { "name1", "phone1" };
-    PhonebookEntry e2 = { "name2", "phone2" };
+        PhonebookEntry temp;
+        PhonebookEntry e1 = { "name1", "phone1" };
+        PhonebookEntry e2 = { "name2", "phone2" };
 
-    //sql << "insert into soci_test values (:NAME, :PHONE)", use(temp);
-    statement insertStatement = (sql.prepare << "insert into soci_test values (:NAME, :PHONE)", use(temp));
+        //sql << "insert into soci_test values (:NAME, :PHONE)", use(temp);
+        statement insertStatement = (sql.prepare << "insert into soci_test values (:NAME, :PHONE)", use(temp));
 
-    temp = e1;
-    insertStatement.execute(true);
-    temp = e2;
-    insertStatement.execute(true);
+        temp = e1;
+        insertStatement.execute(true);
+        temp = e2;
+        insertStatement.execute(true);
 
-    int count = 0;
+        int count = 0;
 
-    sql << "select count(*) from soci_test where NAME in ('name1', 'name2')", into(count);
+        sql << "select count(*) from soci_test where NAME in ('name1', 'name2')", into(count);
 
-    assert(count == 2);
+        assert(count == 2);
+    }
 
     std::cout << "test test_prepared_insert_with_orm_type passed" << std::endl;
 }
