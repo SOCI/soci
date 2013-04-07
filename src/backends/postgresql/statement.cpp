@@ -10,6 +10,7 @@
 #include "error.h"
 #include <soci-platform.h>
 #include <libpq/libpq-fs.h> // libpq
+#include <cassert>
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
@@ -169,6 +170,8 @@ void postgresql_statement_backend::prepare(std::string const & query,
 
     if (stType == st_repeatable_query)
     {
+        assert(statementName_.empty());
+
         // Holding the name temporarily in this var because
         // if it fails to prepare it we can't DEALLOCATE it. 
         std::string statementName = session_.get_next_statement_name();
@@ -179,8 +182,6 @@ void postgresql_statement_backend::prepare(std::string const & query,
         {
             throw soci_error("Cannot prepare statement.");
         }
-        // Now it's safe to save this info.
-        statementName_ = statementName;
         
         ExecStatusType status = PQresultStatus(result);
         if (status != PGRES_COMMAND_OK)
@@ -189,6 +190,9 @@ void postgresql_statement_backend::prepare(std::string const & query,
             throw_postgresql_soci_error(result);
         }
         PQclear(result);
+
+        // Now it's safe to save this info.
+        statementName_ = statementName;
     }
 
     stType_ = stType;
