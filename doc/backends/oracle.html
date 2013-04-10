@@ -121,7 +121,7 @@ sql &lt;&lt; "select count(*) from user_tables", into(count);
       <td><code>double</code></td>
     </tr>
     <tr>
-      <td>number<br /><i>(where scale = 0 and precision &lt; std::numeric_limits&lt;int&gt;::digits10)</i></td>
+      <td>number<br /><i>(where scale = 0 and precision &le; std::numeric_limits&lt;int&gt;::digits10)</i></td>
       <td><code>dt_integer</code></td>
       <td><code>int</code></td>
     </tr>
