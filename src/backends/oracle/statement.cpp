@@ -283,7 +283,7 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
             else
                 type = dt_double;
         }
-        else if (precision < std::numeric_limits<int>::digits10)
+        else if (precision <= std::numeric_limits<int>::digits10)
         {
             type = dt_integer;
         }
