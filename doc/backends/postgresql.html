@@ -153,7 +153,7 @@ int j = 8;
 sql &lt;&lt; "insert into t(x, y) values($1, $2)", use(i), use(j);
 </pre>
 
-<p>The use of native syntax is not recommended, but can be nevertheless imposed by switching off the query rewriting. This can be achieved by defining the macro <code>SOCI_PGSQL_NOBINDBYNAME</code> and it is actually necessary for PostgreSQL 7.3, in which case binding of use elements is not supported at all. See the <a href="#options">Configuration options</a> section for details.</p>
+<p>The use of native syntax is not recommended, but can be nevertheless imposed by switching off the query rewriting. This can be achieved by defining the macro <code>SOCI_POSTGRESQL_NOBINDBYNAME</code> and it is actually necessary for PostgreSQL 7.3, in which case binding of use elements is not supported at all. See the <a href="#options">Configuration options</a> section for details.</p>
 
 <h4 id="bulk">Bulk Operations</h4>
 
@@ -219,9 +219,9 @@ sql &lt;&lt; "insert into t(x, y) values($1, $2)", use(i), use(j);
 
 <p>To support older PostgreSQL versions, the following configuration macros are recognized:</p>
 <ul>
-<li><code>SOCI_PGSQL_NOBINDBYNAME</code> - switches off the query rewriting.</li>
-<li><code>SOCI_PGSQL_NOPARAMS</code> - disables support for parameterized queries (binding of use elements), automatically imposes also the <code>SOCI_PGSQL_NOBINDBYNAME</code> macro. It is necessary for PostgreSQL 7.3.</li>
-<li><code>SOCI_PGSQL_NOPREPARE</code> - disables support for separate query preparation, which in this backend is significant only in terms of optimization. It is necessary for PostgreSQL 7.3 and 7.4.</li>
+<li><code>SOCI_POSTGRESQL_NOBINDBYNAME</code> - switches off the query rewriting.</li>
+<li><code>SOCI_POSTGRESQL_NOPARAMS</code> - disables support for parameterized queries (binding of use elements), automatically imposes also the <code>SOCI_POSTGRESQL_NOBINDBYNAME</code> macro. It is necessary for PostgreSQL 7.3.</li>
+<li><code>SOCI_POSTGRESQL_NOPREPARE</code> - disables support for separate query preparation, which in this backend is significant only in terms of optimization. It is necessary for PostgreSQL 7.3 and 7.4.</li>
 </ul>
 
 

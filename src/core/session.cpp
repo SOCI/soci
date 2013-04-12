@@ -215,16 +215,37 @@ std::ostringstream & session::get_query_stream()
 
 std::string session::get_query() const
 {
-    // preserve logical constness of get_query,
-    // stream used as read-only here, 
-    session* pthis = const_cast<session*>(this);
-
-    // sole place where any user-defined query transformation is applied
-    if (query_transformation_)
+    if (isFromPool_)
     {
-        return (*query_transformation_)(pthis->get_query_stream().str());
+        return pool_->at(poolPosition_).get_query();
     }
-    return pthis->get_query_stream().str();
+    else
+    {
+        // preserve logical constness of get_query,
+        // stream used as read-only here, 
+        session* pthis = const_cast<session*>(this);
+
+        // sole place where any user-defined query transformation is applied
+        if (query_transformation_)
+        {
+            return (*query_transformation_)(pthis->get_query_stream().str());
+        }
+        return pthis->get_query_stream().str();
+    }
+}
+
+void session::set_query_transformation_(
+        std::auto_ptr<details::query_transformation_function> qtf)
+{
+    if (isFromPool_)
+    {
+        pool_->at(poolPosition_).set_query_transformation_(qtf);
+    }
+    else
+    {
+        delete query_transformation_;
+        query_transformation_= qtf.release();
+    }
 }
 
 void session::set_log_stream(std::ostream * s)
