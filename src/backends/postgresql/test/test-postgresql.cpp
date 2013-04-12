@@ -658,6 +658,43 @@ void test_json()
     }
 }
 
+struct table_creator_text : public table_creator_base
+{
+    table_creator_text(session& sql) : table_creator_base(sql)
+    {
+        sql << "drop table if exists soci_test;";
+        sql << "create table soci_test(name varchar(20))";
+    }
+};
+
+// Test deallocate_prepared_statement called for non-existing statement
+// which creation failed due to invalid SQL syntax.
+// https://github.com/SOCI/soci/issues/116
+void test_statement_prepare_failure()
+{
+    {
+        session sql(backEnd, connectString);
+        table_creator_text tableCreator(sql);
+
+        try
+        {
+            // types mismatch should lead to PQprepare failure
+            statement get_trades =
+                (sql.prepare 
+                    << "select * from soci_test where name=9999");
+            assert(false);
+        }
+        catch(soci_error const& e)
+        {
+            std::string const msg(e.what());
+            // poor-man heuristics
+            assert(msg.find("prepared statement") == std::string::npos);
+            assert(msg.find("operator does not exist") != std::string::npos);
+        }
+    }
+    std::cout << "test_statement_prepare_failure passed" << std::endl;
+}
+
 //
 // Support for soci Common Tests
 //
@@ -786,6 +823,7 @@ int main(int argc, char** argv)
         test12();
         test_bytea();
         test_json();
+        test_statement_prepare_failure();
 
         std::cout << "\nOK, all tests passed.\n\n";
 

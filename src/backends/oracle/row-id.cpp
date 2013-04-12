@@ -1,4 +1,5 @@
 //
+// Copyright (C) 2013 Mateusz Loskot <mateusz@loskot.net>
 // Copyright (C) 2004-2007 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
@@ -7,15 +8,6 @@
 
 #define SOCI_ORACLE_SOURCE
 #include "soci-oracle.h"
-#include <cctype>
-#include <cstdio>
-#include <cstring>
-#include <ctime>
-#include <sstream>
-
-#ifdef SOCI_PGSQL_NOPARAMS
-#define SOCI_PGSQL_NOBINDBYNAME
-#endif // SOCI_PGSQL_NOPARAMS
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)

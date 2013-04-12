@@ -59,7 +59,7 @@ public:
         convert_from_base();
     }
 
-    virtual void pre_use() {}
+    virtual void pre_use() {convert_to_base();}
     virtual void clean_up() {v_.clean_up();}
     virtual std::size_t size() const { return 1; }
 
