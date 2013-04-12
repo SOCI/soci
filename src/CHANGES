@@ -7,7 +7,7 @@ Version 3.2.1 differs from 3.2.0 in the following ways:
 - Fixed Oracle client library detection on Windows, by Tomasz Olszewski
 - Fixed PostgreSQL issue with deallocate_prepared_statement called for non-existing statement
 - Fixed prepared insert statements with custom data types support, by Tomasz Olszewski
-- Fixed recent improvements in x:=y name binding, by Poul Bondon
+- Fixed recent improvements in x:=y name binding, by Poul Bondo
 - Fixed query transformation assignment in pooled sessions, by Stefan Chrobot
 - Cleaned up SOCI_POSTGRESQL_NOPARAMS and related options in code and documentation
 - Dropped patch (micro) version number from documentation URLs on the website
