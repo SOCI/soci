@@ -8,6 +8,7 @@
 #define SOCI_POSTGRESQL_SOURCE
 #include "soci-postgresql.h"
 #include "error.h"
+#include "session.h"
 #include <connection-parameters.h>
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
@@ -102,6 +103,14 @@ void postgresql_session_backend::deallocate_prepared_statement(
 
     hard_exec(conn_, query.c_str(),
         "Cannot deallocate prepared statement.");
+}
+
+bool postgresql_session_backend::get_next_sequence_value(
+    session & s, std::string const & sequence, long & value)
+{
+    s << "select nextval('" + sequence + "')", into(value);
+
+    return true;
 }
 
 void postgresql_session_backend::clean_up()
