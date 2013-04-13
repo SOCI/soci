@@ -43,7 +43,19 @@ postgresql_statement_backend::postgresql_statement_backend(
 postgresql_statement_backend::~postgresql_statement_backend()
 {
     if (statementName_.empty() == false)
-        session_.deallocate_prepared_statement(statementName_);
+    {
+        try
+        {
+            session_.deallocate_prepared_statement(statementName_);
+        }
+        catch (...)
+        {
+            // Don't allow exceptions to escape from dtor. Suppressing them is
+            // not ideal, but terminating the program, as would happen if we're
+            // already unwinding the stack because of a previous exception,
+            // would be even worse.
+        }
+    }
 }
 
 void postgresql_statement_backend::alloc()
