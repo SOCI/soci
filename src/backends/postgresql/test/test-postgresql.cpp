@@ -78,9 +78,9 @@ void test1()
         assert(id == 7);
         assert(name == "John");
         
-    	// Must not cause the application to crash.
-		statement st(sql);
-		st.prepare(""); // Throws an exception in some versions.
+        // Must not cause the application to crash.
+        statement st(sql);
+        st.prepare(""); // Throws an exception in some versions.
     }
     catch(...)
     {
@@ -698,18 +698,18 @@ void test_statement_prepare_failure()
 // Test retrieving a quoted string literal into a row.
 void test_row_with_literal()
 {
-	{
-		session sql(backEnd, connectString);
+    {
+        session sql(backEnd, connectString);
 
-		row r;
-		sql << "select 'x' AS x", into(r);
-		assert(r.size() == 1);
-		assert(r.get_properties(0).get_data_type() == dt_string);
-		assert(r.get_properties(0).get_name() == "x");
-		assert(r.get_indicator(0) == i_ok);
-		assert(r.get<std::string>(0) == "x");
-	}
-	std::cout << "test_row_with_literal passed" << std::endl;
+        row r;
+        sql << "select 'x' AS x", into(r);
+        assert(r.size() == 1);
+        assert(r.get_properties(0).get_data_type() == dt_string);
+        assert(r.get_properties(0).get_name() == "x");
+        assert(r.get_indicator(0) == i_ok);
+        assert(r.get<std::string>(0) == "x");
+    }
+    std::cout << "test_row_with_literal passed" << std::endl;
 }
 
 //
@@ -841,7 +841,7 @@ int main(int argc, char** argv)
         test_bytea();
         test_json();
         test_statement_prepare_failure();
-		test_row_with_literal();
+        test_row_with_literal();
 
         std::cout << "\nOK, all tests passed.\n\n";
 
