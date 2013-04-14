@@ -524,6 +524,7 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     case 142: // xml
     case 114:  // json
     case 17: // bytea
+    case 705: // unknown (literal)
         type = dt_string;
         break;
 
