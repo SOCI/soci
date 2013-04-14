@@ -239,6 +239,9 @@ struct postgresql_session_backend : details::session_backend
 
     void deallocate_prepared_statement(const std::string & statementName);
 
+    virtual bool get_next_sequence_value(session & s,
+        std::string const & sequence, long & value);
+
     virtual std::string get_backend_name() const { return "postgresql"; }
 
     void clean_up();
