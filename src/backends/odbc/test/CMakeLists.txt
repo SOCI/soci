@@ -36,3 +36,9 @@ soci_backend_test(
   BACKEND ODBC
   SOURCE test-odbc-postgresql.cpp
   CONNSTR "test-postgresql.dsn")
+
+soci_backend_test(
+  NAME db2
+  BACKEND ODBC
+  SOURCE test-odbc-db2.cpp
+  CONNSTR "test-db2.dsn")
