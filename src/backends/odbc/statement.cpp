@@ -143,7 +143,7 @@ odbc_statement_backend::execute(int number)
     // made this static because MSVC debugger was reporting
     // that there was an attempt to use rows_processed after the stack
     // was destroyed.  Some ODBC clean_up ?
-    static SQLUSMALLINT rows_processed = 0;
+    static SQLULEN rows_processed = 0;
 
     if (hasVectorUseElements_)
     {
