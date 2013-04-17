@@ -59,7 +59,11 @@ public:
         convert_from_base();
     }
 
-    virtual void pre_use() {convert_to_base();}
+    virtual void pre_use(log_stream & log)
+    {
+        convert_to_base();
+        log << '(' << v_.size() << ')';
+    }
     virtual void clean_up() {v_.clean_up();}
     virtual std::size_t size() const { return 1; }
 

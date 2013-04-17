@@ -552,10 +552,24 @@ void statement_impl::pre_fetch()
 
 void statement_impl::pre_use()
 {
+    log_stream& log = session_.get_log_stream().for_params();
     std::size_t const usize = uses_.size();
-    for (std::size_t i = 0; i != usize; ++i)
+    try
     {
-        uses_[i]->pre_use();
+        for (std::size_t i = 0; i != usize; ++i)
+        {
+            if (i > 0)
+                log << ',';
+            uses_[i]->pre_use(log);
+        }
+        if (usize != 0)
+            log.end_line();
+    }
+    catch(...)
+    {
+        if (usize != 0)
+            log.end_line("{#}");
+        throw;
     }
 }
 

@@ -30,11 +30,11 @@ void standard_use_type::bind(statement_impl & st, int & position)
     }
 }
 
-void standard_use_type::pre_use()   
+void standard_use_type::pre_use(log_stream & log)   
 {
     // Handle IN direction of parameters of SQL statements and procedures
     convert_to_base();
-    backEnd_->pre_use(ind_);
+    backEnd_->pre_use(ind_, log);
 }
 
 void standard_use_type::post_use(bool gotData)
@@ -78,11 +78,11 @@ void vector_use_type::bind(statement_impl & st, int & position)
     }
 }
 
-void vector_use_type::pre_use()
+void vector_use_type::pre_use(log_stream & log)
 {
     convert_to_base();
 
-    backEnd_->pre_use(ind_ ? &ind_->at(0) : NULL);
+    backEnd_->pre_use(ind_ ? &ind_->at(0) : NULL, log);
 }
 
 std::size_t vector_use_type::size() const

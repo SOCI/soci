@@ -16,7 +16,6 @@
 #include <cstring>
 #include <ctime>
 #include <limits>
-#include <sstream>
 
 #ifdef SOCI_POSTGRESQL_NOPARAMS
 #ifndef SOCI_POSTGRESQL_NOBINDBYNAME
@@ -54,11 +53,16 @@ void postgresql_standard_use_type_backend::bind_by_name(
     name_ = name;
 }
 
-void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
+void postgresql_standard_use_type_backend::pre_use(indicator const * ind, log_stream & log)
 {
+    log << ':';
+    (position_ > 0) ? log << position_ : log << name_;
+    log << '=';
+
     if (ind != NULL && *ind == i_null)
     {
         // leave the working buffer as NULL
+        log << "{NULL}";
     }
     else
     {
@@ -70,13 +74,17 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                 buf_ = new char[2];
                 buf_[0] = *static_cast<char *>(data_);
                 buf_[1] = '\0';
+
+                log << '\'' << buf_[0] << '\'';
             }
             break;
         case x_stdstring:
             {
                 std::string * s = static_cast<std::string *>(data_);
                 buf_ = new char[s->size() + 1];
-                std::strcpy(buf_, s->c_str());
+                std::strncpy(buf_, s->c_str(), s->size() + 1);
+
+                log << '\'' << *s << '\'';
             }
             break;
         case x_short:
@@ -84,8 +92,11 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                 std::size_t const bufSize
                     = std::numeric_limits<short>::digits10 + 3;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%d",
+                int n = snprintf(buf_, bufSize, "%d",
                     static_cast<int>(*static_cast<short *>(data_)));
+
+                if (n >= 0 && n < static_cast<int>(bufSize))
+                    log.write(buf_, n);
             }
             break;
         case x_integer:
@@ -93,8 +104,11 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                 std::size_t const bufSize
                     = std::numeric_limits<int>::digits10 + 3;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%d",
+                int n = snprintf(buf_, bufSize, "%d",
                     *static_cast<int *>(data_));
+
+                if (n >= 0 && n < static_cast<int>(bufSize))
+                    log.write(buf_, n);
             }
             break;
         case x_long_long:
@@ -102,8 +116,11 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                 std::size_t const bufSize
                     = std::numeric_limits<long long>::digits10 + 3;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%lld",
+                int n = snprintf(buf_, bufSize, "%lld",
                     *static_cast<long long *>(data_));
+
+                if (n >= 0 && n < static_cast<int>(bufSize))
+                    log.write(buf_, n);
             }
             break;
         case x_unsigned_long_long:
@@ -111,8 +128,11 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                 std::size_t const bufSize
                     = std::numeric_limits<unsigned long long>::digits10 + 2;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%llu",
+                int n = snprintf(buf_, bufSize, "%llu",
                     *static_cast<unsigned long long *>(data_));
+
+                if (n >= 0 && n < static_cast<int>(bufSize))
+                    log.write(buf_, n);
             }
             break;
         case x_double:
@@ -122,8 +142,11 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                 std::size_t const bufSize = 100;
                 buf_ = new char[bufSize];
 
-                snprintf(buf_, bufSize, "%.20g",
+                int n = snprintf(buf_, bufSize, "%.20g",
                     *static_cast<double *>(data_));
+
+                if (n >= 0 && n < static_cast<int>(bufSize))
+                    log.write(buf_, n);
             }
             break;
         case x_stdtm:
@@ -132,9 +155,16 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                 buf_ = new char[bufSize];
 
                 std::tm * t = static_cast<std::tm *>(data_);
-                snprintf(buf_, bufSize, "%d-%02d-%02d %02d:%02d:%02d",
+                int n = snprintf(buf_, bufSize, "%d-%02d-%02d %02d:%02d:%02d",
                     t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
                     t->tm_hour, t->tm_min, t->tm_sec);
+
+                if (n >= 0 && n < static_cast<int>(bufSize))
+                {
+                    log << '{';
+                    log.write(buf_, n);
+                    log << '}';
+                }
             }
             break;
         case x_rowid:
@@ -150,7 +180,13 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                     = std::numeric_limits<unsigned long>::digits10 + 2;
                 buf_ = new char[bufSize];
 
-                snprintf(buf_, bufSize, "%lu", rbe->value_);
+                int n = snprintf(buf_, bufSize, "%lu", rbe->value_);
+                if (n >= 0 && n < static_cast<int>(bufSize))
+                {
+                    log << '{';
+                    log.write(buf_, n);
+                    log << '}';
+                }
             }
             break;
         case x_blob:
@@ -162,7 +198,13 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                 std::size_t const bufSize
                     = std::numeric_limits<unsigned long>::digits10 + 2;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%lu", bbe->oid_);
+                int n = snprintf(buf_, bufSize, "%lu", bbe->oid_);
+                if (n >= 0 && n < static_cast<int>(bufSize))
+                {
+                    log << '{';
+                    log.write(buf_, n);
+                    log << '}';
+                }
             }
             break;
 

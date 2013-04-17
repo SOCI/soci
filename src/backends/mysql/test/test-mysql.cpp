@@ -809,6 +809,103 @@ void test13()
     std::cout << "test 13 passed" << std::endl;
 }
 
+struct table_creator_for_log : table_creator_base
+{
+    table_creator_for_log(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val integer)";
+    }
+};
+
+// Extended log support test
+void test14()
+{
+	std::ostringstream log;
+
+	session sql(backEnd, connectString);
+
+	assert(sql.get_log_stream().is_null() == true);
+	assert(sql.get_log_stream().for_params().is_null() == true);
+
+	sql.set_log_stream(&log);
+
+	assert(sql.get_log_stream().is_null() == false);
+	assert(sql.get_log_stream().for_params().is_null() == true);
+
+	int i = -1;
+	double d = 2.0;
+	long long ll = -3;
+	unsigned long long ull = 4;
+	std::tm t = { 1, 2, 3, 4, 5, 106, 0, 0, 0 }; // 2006-05-04 03:02:01
+	std::string s = "xyz";
+	char c = 'x';
+	int n = 0;
+	indicator ind = i_null;
+
+	sql << "SELECT :1, :2, :3, :4, :5, :6, :7, :8",
+		use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind);
+
+	assert(log.str() == "SELECT :1, :2, :3, :4, :5, :6, :7, :8\n");
+
+	log.str("");
+	sql.get_log_stream().log_params(log_stream::params_next_line());
+	assert(sql.get_log_stream().for_params().is_null() == false);
+
+	sql << "SELECT :1, :2, :3, :4, :5, :6, :7, :8",
+		use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind);
+
+	assert(log.str() == "SELECT :1, :2, :3, :4, :5, :6, :7, :8\n:1=-1,:2=2,:3=-3,:4=4,:5={2006-06-04 03:02:01},:6='xyz',:7='x',:8={NULL}\n");
+
+	log.str("");
+	sql.get_log_stream().log_params(log_stream::params_same_line());
+	assert(sql.get_log_stream().for_params().is_null() == false);
+
+	sql << "SELECT :1, :2, :3, :4, :5, :6, :7, :8",
+		use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind);
+
+	assert(log.str() == "SELECT :1, :2, :3, :4, :5, :6, :7, :8; :1=-1,:2=2,:3=-3,:4=4,:5={2006-06-04 03:02:01},:6='xyz',:7='x',:8={NULL}\n");
+
+	log.str("");
+	sql.get_log_stream().log_params("|"); // custom
+	assert(sql.get_log_stream().for_params().is_null() == false);
+
+	sql << "SELECT :1, :2, :3, :4, :5, :6, :7, :8",
+		use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind);
+
+	assert(log.str() == "SELECT :1, :2, :3, :4, :5, :6, :7, :8|:1=-1,:2=2,:3=-3,:4=4,:5={2006-06-04 03:02:01},:6='xyz',:7='x',:8={NULL}\n");
+
+	log.str("");
+	sql.get_log_stream().log_params(log_stream::nothing()); // no params
+	assert(sql.get_log_stream().for_params().is_null() == true);
+	
+	sql << "SELECT :1, :2, :3, :4, :5, :6, :7, :8",
+		use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind);
+
+	assert(log.str() == "SELECT :1, :2, :3, :4, :5, :6, :7, :8\n");
+
+	table_creator_for_log tableCreator(sql);
+	std::vector<int> v(3);
+	std::vector<indicator> w(3);
+	v[0] = 1;
+	w[0] = i_ok;
+	v[1] = 0;
+	w[1] = i_null;
+	v[2] = -1;
+	w[2] = i_ok;
+
+	log.str("");
+	sql.get_log_stream().log_params(); // log_stream::params_next_line
+	assert(sql.get_log_stream().for_params().is_null() == false);
+	
+	sql << "INSERT INTO soci_test VALUES (:1)",
+		use(v, w);
+
+	assert(log.str() == "INSERT INTO soci_test VALUES (:1)\n:1=[1,{NULL},-1]\n");
+
+	std::cout << "test 14 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -943,6 +1040,7 @@ int main(int argc, char** argv)
         }
         test12();
         test13();
+		test14();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;

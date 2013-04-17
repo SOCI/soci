@@ -254,7 +254,7 @@ void db2_vector_use_type_backend::bind_by_name(
     }
 }
 
-void db2_vector_use_type_backend::pre_use(indicator const *ind)
+void db2_vector_use_type_backend::pre_use(indicator const *ind, log_stream &)
 {
     // first deal with data
     if (type == x_stdtm)

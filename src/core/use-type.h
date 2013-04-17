@@ -28,7 +28,7 @@ public:
     virtual ~use_type_base() {}
 
     virtual void bind(statement_impl & st, int & position) = 0;
-    virtual void pre_use() = 0;
+    virtual void pre_use(log_stream & log) = 0;
     virtual void post_use(bool gotData) = 0;
     virtual void clean_up() = 0;
 
@@ -78,7 +78,7 @@ public:
     virtual void convert_from_base() {}
 
 protected:
-    virtual void pre_use();
+    virtual void pre_use(log_stream & log);
 
 private:
     virtual void post_use(bool gotData);
@@ -120,7 +120,7 @@ public:
 
 private:
     virtual void bind(statement_impl& st, int & position);
-    virtual void pre_use();
+    virtual void pre_use(log_stream & log);
     virtual void post_use(bool) { /* nothing to do */ }
     virtual void clean_up();
     virtual std::size_t size() const;

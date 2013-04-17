@@ -48,17 +48,24 @@ void postgresql_vector_use_type_backend::bind_by_name(
     name_ = name;
 }
 
-void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
+void postgresql_vector_use_type_backend::pre_use(indicator const * ind, log_stream & log)
 {
+    log << ':';
+    (position_ > 0) ? log << position_ : log << name_;
+    log << "=[";
+
     std::size_t const vsize = size();
     for (size_t i = 0; i != vsize; ++i)
     {
         char * buf;
+        if (i > 0) 
+            log << ',';
 
         // the data in vector can be either i_ok or i_null
         if (ind != NULL && ind[i] == i_null)
         {
             buf = NULL;
+            log << "{NULL}";
         }
         else
         {
@@ -74,6 +81,8 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                     buf = new char[2];
                     buf[0] = v[i];
                     buf[1] = '\0';
+
+                    log << '\'' << buf[0] << '\'';
                 }
                 break;
             case x_stdstring:
@@ -83,7 +92,9 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                     std::vector<std::string> & v = *pv;
 
                     buf = new char[v[i].size() + 1];
-                    std::strcpy(buf, v[i].c_str());
+                    std::strncpy(buf, v[i].c_str(), v[i].size() + 1);
+
+                    log << '\'' << v[i] << '\'';
                 }
                 break;
             case x_short:
@@ -95,7 +106,9 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                     std::size_t const bufSize
                         = std::numeric_limits<short>::digits10 + 3;
                     buf = new char[bufSize];
-                    snprintf(buf, bufSize, "%d", static_cast<int>(v[i]));
+                    int n = snprintf(buf, bufSize, "%d", static_cast<int>(v[i]));
+                    if (n >= 0 && n < static_cast<int>(bufSize))
+                        log.write(buf, n);
                 }
                 break;
             case x_integer:
@@ -107,7 +120,9 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                     std::size_t const bufSize
                         = std::numeric_limits<int>::digits10 + 3;
                     buf = new char[bufSize];
-                    snprintf(buf, bufSize, "%d", v[i]);
+                    int n = snprintf(buf, bufSize, "%d", v[i]);
+                    if (n >= 0 && n < static_cast<int>(bufSize))
+                        log.write(buf, n);
                 }
                 break;
             case x_long_long:
@@ -119,7 +134,9 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                     std::size_t const bufSize
                         = std::numeric_limits<long long>::digits10 + 3;
                     buf = new char[bufSize];
-                    snprintf(buf, bufSize, "%lld", v[i]);
+                    int n = snprintf(buf, bufSize, "%lld", v[i]);
+                    if (n >= 0 && n < static_cast<int>(bufSize))
+                        log.write(buf, n);
                 }
                 break;
             case x_unsigned_long_long:
@@ -131,7 +148,9 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                     std::size_t const bufSize
                         = std::numeric_limits<unsigned long long>::digits10 + 2;
                     buf = new char[bufSize];
-                    snprintf(buf, bufSize, "%llu", v[i]);
+                    int n = snprintf(buf, bufSize, "%llu", v[i]);
+                    if (n >= 0 && n < static_cast<int>(bufSize))
+                        log.write(buf, n);
                 }
                 break;
             case x_double:
@@ -145,7 +164,9 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                     std::size_t const bufSize = 100;
                     buf = new char[bufSize];
 
-                    snprintf(buf, bufSize, "%.20g", v[i]);
+                    int n = snprintf(buf, bufSize, "%.20g", v[i]);
+                    if (n >= 0 && n < static_cast<int>(bufSize))
+                        log.write(buf, n);
                 }
                 break;
             case x_stdtm:
@@ -157,9 +178,15 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                     std::size_t const bufSize = 20;
                     buf = new char[bufSize];
 
-                    snprintf(buf, bufSize, "%d-%02d-%02d %02d:%02d:%02d",
+                    int n = snprintf(buf, bufSize, "%d-%02d-%02d %02d:%02d:%02d",
                         v[i].tm_year + 1900, v[i].tm_mon + 1, v[i].tm_mday,
                         v[i].tm_hour, v[i].tm_min, v[i].tm_sec);
+                    if (n >= 0 && n < static_cast<int>(bufSize))
+                    {
+                        log << '{';
+                        log.write(buf, n);
+                        log << '}';
+                    }
                 }
                 break;
 
@@ -171,6 +198,7 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
 
         buffers_.push_back(buf);
     }
+    log << ']';
 
     if (position_ > 0)
     {

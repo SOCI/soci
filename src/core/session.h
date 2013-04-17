@@ -8,6 +8,7 @@
 #ifndef SOCI_SESSION_H_INCLUDED
 #define SOCI_SESSION_H_INCLUDED
 
+#include "error.h"
 #include "once-temp-type.h"
 #include "query_transformation.h"
 #include "connection-parameters.h"
@@ -15,7 +16,6 @@
 // std
 #include <cstddef>
 #include <memory>
-#include <ostream>
 #include <sstream>
 #include <string>
 
@@ -85,7 +85,7 @@ public:
 
     // support for basic logging
     void set_log_stream(std::ostream * s);
-    std::ostream * get_log_stream() const;
+    log_stream & get_log_stream() const;
 
     void log_query(std::string const & query);
     std::string get_last_query() const;
@@ -129,7 +129,7 @@ private:
     std::ostringstream query_stream_;
     details::query_transformation_function* query_transformation_;
 
-    std::ostream * logStream_;
+    mutable log_stream logStream_;
     std::string lastQuery_;
 
     connection_parameters lastConnectParameters_;

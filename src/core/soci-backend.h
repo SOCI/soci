@@ -112,7 +112,7 @@ public:
     virtual void bind_by_name(std::string const& name,
         void* data, exchange_type type, bool readOnly) = 0;
 
-    virtual void pre_use(indicator const* ind) = 0;
+    virtual void pre_use(indicator const* ind, log_stream & log) = 0;
     virtual void post_use(bool gotData, indicator * ind) = 0;
 
     virtual void clean_up() = 0;
@@ -133,7 +133,7 @@ public:
     virtual void bind_by_name(std::string const& name,
         void* data, exchange_type type) = 0;
 
-    virtual void pre_use(indicator const* ind) = 0;
+    virtual void pre_use(indicator const* ind, log_stream & log) = 0;
 
     virtual std::size_t size() = 0;
 

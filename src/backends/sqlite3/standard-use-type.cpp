@@ -66,7 +66,7 @@ void sqlite3_standard_use_type_backend::bind_by_name(std::string const& name,
     statement_.boundByName_ = true;
 }
 
-void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
+void sqlite3_standard_use_type_backend::pre_use(indicator const * ind, log_stream &)
 {
     statement_.useData_.resize(1);
     int const pos = position_ - 1;

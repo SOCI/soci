@@ -99,7 +99,7 @@ struct mysql_standard_use_type_backend : details::standard_use_type_backend
     virtual void bind_by_name(std::string const &name,
         void *data, details::exchange_type type, bool readOnly);
 
-    virtual void pre_use(indicator const *ind);
+    virtual void pre_use(indicator const *ind, log_stream & log);
     virtual void post_use(bool gotData, indicator *ind);
 
     virtual void clean_up();
@@ -123,7 +123,7 @@ struct mysql_vector_use_type_backend : details::vector_use_type_backend
     virtual void bind_by_name(std::string const &name,
         void *data, details::exchange_type type);
 
-    virtual void pre_use(indicator const *ind);
+    virtual void pre_use(indicator const *ind, log_stream & log);
 
     virtual std::size_t size();
 

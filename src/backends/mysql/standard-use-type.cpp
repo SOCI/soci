@@ -41,12 +41,18 @@ void mysql_standard_use_type_backend::bind_by_name(
     name_ = name;
 }
 
-void mysql_standard_use_type_backend::pre_use(indicator const *ind)
+void mysql_standard_use_type_backend::pre_use(indicator const *ind, log_stream & log)
 {
+    log << ':';
+    (position_ > 0) ? log << position_ : log << name_;
+    log << '=';
+
     if (ind != NULL && *ind == i_null)
     {
         buf_ = new char[5];
         std::strcpy(buf_, "NULL");
+
+        log << "{NULL}";
     }
     else
     {
@@ -57,6 +63,8 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
             {
                 char buf[] = { *static_cast<char*>(data_), '\0' };
                 buf_ = quote(statement_.session_.conn_, buf, 1);
+
+                log << '\'' << buf[0] << '\'';
             }
             break;
         case x_stdstring:
@@ -64,6 +72,8 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 std::string *s = static_cast<std::string *>(data_);
                 buf_ = quote(statement_.session_.conn_,
                              s->c_str(), s->size());
+
+                log << '\'' << *s << '\'';
             }
             break;
         case x_short:
@@ -71,8 +81,10 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 std::size_t const bufSize
                     = std::numeric_limits<short>::digits10 + 3;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%d",
+                int n = snprintf(buf_, bufSize, "%d",
                     static_cast<int>(*static_cast<short*>(data_)));
+                if (n >= 0 && n < static_cast<int>(bufSize))
+                    log.write(buf_, n);
             }
             break;
         case x_integer:
@@ -80,7 +92,9 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 std::size_t const bufSize
                     = std::numeric_limits<int>::digits10 + 3;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%d", *static_cast<int*>(data_));
+                int n = snprintf(buf_, bufSize, "%d", *static_cast<int*>(data_));
+                if (n >= 0 && n < static_cast<int>(bufSize))
+                    log.write(buf_, n);
             }
             break;
         case x_long_long:
@@ -88,7 +102,9 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 std::size_t const bufSize
                     = std::numeric_limits<long long>::digits10 + 3;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%lld", *static_cast<long long *>(data_));
+                int n = snprintf(buf_, bufSize, "%lld", *static_cast<long long *>(data_));
+                if (n >= 0 && n < static_cast<int>(bufSize))
+                    log.write(buf_, n);
             }
             break;
         case x_unsigned_long_long:
@@ -96,8 +112,10 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 std::size_t const bufSize
                     = std::numeric_limits<unsigned long long>::digits10 + 3;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%llu",
+                int n = snprintf(buf_, bufSize, "%llu",
                          *static_cast<unsigned long long *>(data_));
+                if (n >= 0 && n < static_cast<int>(bufSize))
+                    log.write(buf_, n);
             }
             break;
 
@@ -112,8 +130,10 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 std::size_t const bufSize = 100;
                 buf_ = new char[bufSize];
 
-                snprintf(buf_, bufSize, "%.20g",
+                int n = snprintf(buf_, bufSize, "%.20g",
                     *static_cast<double*>(data_));
+                if (n >= 0 && n < static_cast<int>(bufSize))
+                    log.write(buf_, n);
             }
             break;
         case x_stdtm:
@@ -122,10 +142,16 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 buf_ = new char[bufSize];
 
                 std::tm *t = static_cast<std::tm *>(data_);
-                snprintf(buf_, bufSize,
+                int n = snprintf(buf_, bufSize,
                     "\'%d-%02d-%02d %02d:%02d:%02d\'",
                     t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
                     t->tm_hour, t->tm_min, t->tm_sec);
+                if (n >= 0 && n < static_cast<int>(bufSize))
+                {
+                    log << '{';
+                    log.write(buf_ + 1, n - 2);
+                    log << '}';
+                }
             }
             break;
         default:
