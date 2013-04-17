@@ -42,9 +42,9 @@ void log_stream::log_params(bool enabled)
 log_stream& log_stream::for_params()
 {
     if (log_params_)
-	{
-		return *this;
-	}
+    {
+        return *this;
+    }
     static log_stream null_log;
     return null_log;
 }

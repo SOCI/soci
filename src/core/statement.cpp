@@ -574,7 +574,7 @@ void statement_impl::pre_use()
         }
         if (usize != 0)
         {
-	        log.end_line();
+            log.end_line();
         }
     }
     catch(...)

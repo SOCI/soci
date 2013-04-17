@@ -723,7 +723,7 @@ void test_log()
 
     // Test log_stream internal line operations.
     {
-		sql.get_log_stream().for_params().end_line();
+        sql.get_log_stream().for_params().end_line();
         assert(log.str() == "");
 
         sql.get_log_stream().log_params(true); // enable parameter logging.
