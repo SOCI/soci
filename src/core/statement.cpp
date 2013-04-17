@@ -234,9 +234,7 @@ void statement_impl::prepare(std::string const & query,
     }
     catch (...)
     {
-        log_stream & log = session_.get_log_stream();
-        log << "<!>";
-        log.end_line();
+        session_.get_log_stream().end_line();
         throw;
     }
 }
@@ -579,7 +577,7 @@ void statement_impl::pre_use()
     }
     catch(...)
     {
-        log << "<?>";
+        log << "{?}";
         log.end_line();
         throw;
     }
