@@ -280,8 +280,8 @@ void session::log_query(std::string const & query)
     }
     else
     {
-        (logStream_ << query).start_params();        
         lastQuery_ = query;
+        logStream_ << lastQuery_;
     }
 }
 

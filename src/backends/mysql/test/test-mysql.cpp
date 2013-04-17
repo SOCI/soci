@@ -821,89 +821,118 @@ struct table_creator_for_log : table_creator_base
 // Extended log support test
 void test14()
 {
-	std::ostringstream log;
+    std::ostringstream log;
 
-	session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
 
-	assert(sql.get_log_stream().is_null() == true);
-	assert(sql.get_log_stream().for_params().is_null() == true);
+    // No logging stream.
+    assert(sql.get_log_stream().is_null() == true);
+    assert(sql.get_log_stream().for_params().is_null() == true);
 
-	sql.set_log_stream(&log);
+    sql.set_log_stream(&log);
 
-	assert(sql.get_log_stream().is_null() == false);
-	assert(sql.get_log_stream().for_params().is_null() == true);
+    // Available logging stream for queries.
+    assert(sql.get_log_stream().is_null() == false);
+    assert(sql.get_log_stream().for_params().is_null() == true);
 
-	int i = -1;
-	double d = 2.0;
-	long long ll = -3;
-	unsigned long long ull = 4;
-	std::tm t = { 1, 2, 3, 4, 5, 106, 0, 0, 0 }; // 2006-05-04 03:02:01
-	std::string s = "xyz";
-	char c = 'x';
-	int n = 0;
-	indicator ind = i_null;
+    // Test log_stream internal line operations.
+    {
+		sql.get_log_stream().for_params().end_line();
+        assert(log.str() == "");
 
-	sql << "SELECT :1, :2, :3, :4, :5, :6, :7, :8",
-		use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind);
+        sql.get_log_stream().log_params(true); // enable parameter logging.
+        sql.get_log_stream().for_params().end_line();
+        assert(log.str() == "\n");
+        sql.get_log_stream().end_line();
+        assert(log.str() == "\n\n");
+        log.str("");
+        sql.set_log_stream(&log); // Reset changes.
+    }
 
-	assert(log.str() == "SELECT :1, :2, :3, :4, :5, :6, :7, :8\n");
+    // Parameters. All types supportted by this backend.
+    int i = -1;
+    double d = 2.0;
+    long long ll = -3;
+    unsigned long long ull = 4;
+    std::tm t = { 1, 2, 3, 4, 5, 106, 0, 0, 0 }; // 2006-05-04 03:02:01
+    std::string s = "xyz";
+    char c = 'x';
+    int n = 0;
+    indicator ind = i_null;
 
-	log.str("");
-	sql.get_log_stream().log_params(log_stream::params_next_line());
-	assert(sql.get_log_stream().for_params().is_null() == false);
+    sql << "SELECT :1, :2, :3, :4, :5, :6, :7, :8",
+        use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind);
 
-	sql << "SELECT :1, :2, :3, :4, :5, :6, :7, :8",
-		use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind);
+    assert(log.str() == "SELECT :1, :2, :3, :4, :5, :6, :7, :8\n");
 
-	assert(log.str() == "SELECT :1, :2, :3, :4, :5, :6, :7, :8\n:1=-1,:2=2,:3=-3,:4=4,:5={2006-06-04 03:02:01},:6='xyz',:7='x',:8={NULL}\n");
+    // Available logging stream for queries and parameter, in a separate line.
+    log.str("");
+    sql.get_log_stream().log_params(true);
+    assert(sql.get_log_stream().for_params().is_null() == false);
 
-	log.str("");
-	sql.get_log_stream().log_params(log_stream::params_same_line());
-	assert(sql.get_log_stream().for_params().is_null() == false);
+    sql << "SELECT :1, :2, :3, :4, :5, :6, :7, :8",
+        use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind);
 
-	sql << "SELECT :1, :2, :3, :4, :5, :6, :7, :8",
-		use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind);
+    assert(log.str() == "SELECT :1, :2, :3, :4, :5, :6, :7, :8\n:1=-1,:2=2,:3=-3,:4=4,:5={2006-06-04 03:02:01},:6='xyz',:7='x',:8={NULL}\n");
 
-	assert(log.str() == "SELECT :1, :2, :3, :4, :5, :6, :7, :8; :1=-1,:2=2,:3=-3,:4=4,:5={2006-06-04 03:02:01},:6='xyz',:7='x',:8={NULL}\n");
+    // Available logging stream for queries only. No more parameters temporarily.
+    log.str("");
+    sql.get_log_stream().log_params(false);
+    assert(sql.get_log_stream().for_params().is_null() == true);
+    
+    sql << "SELECT :1, :2, :3, :4, :5, :6, :7, :8",
+        use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind);
 
-	log.str("");
-	sql.get_log_stream().log_params("|"); // custom
-	assert(sql.get_log_stream().for_params().is_null() == false);
+    assert(log.str() == "SELECT :1, :2, :3, :4, :5, :6, :7, :8\n");
 
-	sql << "SELECT :1, :2, :3, :4, :5, :6, :7, :8",
-		use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind);
+    // Bulk operation logging test
+    table_creator_for_log tableCreator(sql);
+    std::vector<int> v(3);
+    std::vector<indicator> w(3);
+    v[0] = 1;
+    w[0] = i_ok;
+    v[1] = 0;
+    w[1] = i_null;
+    v[2] = -1;
+    w[2] = i_ok;
 
-	assert(log.str() == "SELECT :1, :2, :3, :4, :5, :6, :7, :8|:1=-1,:2=2,:3=-3,:4=4,:5={2006-06-04 03:02:01},:6='xyz',:7='x',:8={NULL}\n");
+    // Available logging stream for queries and parameters again.
+    log.str("");
+    sql.get_log_stream().log_params(true);
+    sql.get_log_stream().log_flush(true); // Not testable for stringstream but must not fail.
+    assert(sql.get_log_stream().for_params().is_null() == false);
+    
+    sql << "INSERT INTO soci_test VALUES (:1)",
+        use(v, w);
 
-	log.str("");
-	sql.get_log_stream().log_params(log_stream::nothing()); // no params
-	assert(sql.get_log_stream().for_params().is_null() == true);
-	
-	sql << "SELECT :1, :2, :3, :4, :5, :6, :7, :8",
-		use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind);
+    assert(log.str() == "INSERT INTO soci_test VALUES (:1)\n:1=[1,{NULL},-1]\n");
 
-	assert(log.str() == "SELECT :1, :2, :3, :4, :5, :6, :7, :8\n");
+    sql << "select count(1) from soci_test", into(n);
+    assert(n == 3);
 
-	table_creator_for_log tableCreator(sql);
-	std::vector<int> v(3);
-	std::vector<indicator> w(3);
-	v[0] = 1;
-	w[0] = i_ok;
-	v[1] = 0;
-	w[1] = i_null;
-	v[2] = -1;
-	w[2] = i_ok;
+    // ORM logging test (number of fields & field sequence)
+    log.str("");
+    values v1;
+    v1.set(i);
+    sql << "INSERT INTO soci_test VALUES(:1)",
+        use(v1);
+    assert(log.str() == "INSERT INTO soci_test VALUES(:1)\n(1),:1=-1\n");
 
-	log.str("");
-	sql.get_log_stream().log_params(); // log_stream::params_next_line
-	assert(sql.get_log_stream().for_params().is_null() == false);
-	
-	sql << "INSERT INTO soci_test VALUES (:1)",
-		use(v, w);
+    sql << "select count(1) from soci_test", into(n);
+    assert(n == 4);
 
-	assert(log.str() == "INSERT INTO soci_test VALUES (:1)\n:1=[1,{NULL},-1]\n");
+    // ORM logging test (number of fields & field names)
+    log.str("");
+    values v2;
+    v2.set("val", i);
+    sql << "INSERT INTO soci_test VALUES(:val)",
+        use(v2);
+    assert(log.str() == "INSERT INTO soci_test VALUES(:val)\n(1),:val=-1\n");
 
-	std::cout << "test 14 passed" << std::endl;
+    sql << "select count(1) from soci_test", into(n);
+    assert(n == 5);
+
+    std::cout << "test 14 passed" << std::endl;
 }
 
 // DDL Creation objects for common tests
@@ -1040,7 +1069,7 @@ int main(int argc, char** argv)
         }
         test12();
         test13();
-		test14();
+        test14();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;

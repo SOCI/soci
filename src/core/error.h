@@ -28,12 +28,7 @@ public:
 class SOCI_DECL log_stream
 {
 public:
-    static const std::string& nothing();
-    static const std::string& params_next_line();
-    static const std::string& params_same_line();
-
-public:
-    log_stream(std::ostream *log = NULL);
+    log_stream(std::ostream * log = NULL);
 
     template <typename T>
     log_stream& operator<<(const T& val);
@@ -42,23 +37,22 @@ public:
 
     void log_flush(bool enabled = true);
 
-    void log_params(const std::string& separator = params_next_line());
+    void log_params(bool enabled);
 
-    log_stream& for_params();
+    log_stream & for_params();
 
-    void start_params();
+    void end_line();
 
-    void end_line(const std::string& line_end_sufix = nothing());
-
-	bool is_null() const;
+    bool is_null() const;
 
 private:
-	std::ostream & log();
+    void flush();
+    std::ostream & log();
 
 private:
-    bool log_flush_;
-    std::string params_sep_;
     std::ostream * log_;
+    bool log_params_;
+    bool log_flush_;
 };
 
 template <typename T>

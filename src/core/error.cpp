@@ -9,100 +9,72 @@
 
 #include "error.h"
 
-soci::soci_error::soci_error(std::string const & msg)
+using namespace soci;
+
+soci_error::soci_error(std::string const & msg)
      : std::runtime_error(msg)
 {
 }
 
-/*static*/ const std::string& soci::log_stream::nothing()
-{
-	static std::string value = "";
-	return value;
-}
-
-/*static*/ const std::string& soci::log_stream::params_next_line()
-{
-	static std::string value = "\n";
-	return value;
-}
-
-/*static*/ const std::string& soci::log_stream::params_same_line()
-{
-	static std::string value = "; ";
-	return value;
-}
-
-soci::log_stream::log_stream(std::ostream *log /*= NULL*/)
+log_stream::log_stream(std::ostream *log /*= NULL*/)
     : log_(log)
-    , params_sep_(soci::log_stream::nothing())
+    , log_params_(false)
     , log_flush_(false)
 {
 }
 
-void soci::log_stream::write(const char * val, std::size_t size)
+void log_stream::write(const char * val, std::size_t size)
 {
-	if (!is_null())
+    if (!is_null())
         log().write(val, size);
 }
 
-void soci::log_stream::log_flush(bool enabled /*= true*/)
+void log_stream::log_flush(bool enabled /*= true*/)
 {
     log_flush_ = enabled;
 }
 
-void soci::log_stream::log_params(const std::string& separator /*= log_stream::params_next_line*/)
+void log_stream::log_params(bool enabled)
 {
-    params_sep_ = separator;
+    log_params_ = enabled;
 }
 
-soci::log_stream& soci::log_stream::for_params()
+log_stream& log_stream::for_params()
 {
-    if (params_sep_.empty())
-    {
-        static log_stream null_log;
-        return null_log;
-    }
-    return *this;
+    if (log_params_)
+	{
+		return *this;
+	}
+    static log_stream null_log;
+    return null_log;
 }
 
-void soci::log_stream::start_params()
+void log_stream::end_line()
 {
-    if (params_sep_.empty() || params_sep_ == params_next_line())
+    if (!is_null())
     {
-        end_line();
-    }
-    else if (log_ != NULL)
-    {
-        log() << params_sep_;
+        flush();
     }
 }
 
-void soci::log_stream::end_line(const std::string& line_end_sufix /*= log_stream::nothing*/)
+inline bool log_stream::is_null() const
 {
-	if (!is_null())
-    {
-        if (!line_end_sufix.empty())
-        {
-            log() << line_end_sufix;
-        }
+    return (log_ == NULL);
+}
 
-        if (log_flush_)
-        {
-            log() << std::endl;
-        }
-        else
-        {
-            log() << '\n';
-        }
+void log_stream::flush()
+{
+    if (log_flush_)
+    {
+        log() << std::endl;
+    }
+    else
+    {
+        log() << '\n';
     }
 }
 
-inline bool soci::log_stream::is_null() const
+inline std::ostream & log_stream::log()
 {
-	return (log_ == NULL);
-}
-
-inline std::ostream & soci::log_stream::log()
-{
-	return *log_;
+    return *log_;
 }

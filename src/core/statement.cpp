@@ -115,7 +115,7 @@ void statement_impl::bind(values & values)
                                           query_[pos + placeholder.size()] : '\0';
                     
                     if (nextChar == ' ' || nextChar == ',' || nextChar == ';' ||
-                        nextChar == '\0' || nextChar == ')')
+                        nextChar == '\0' || nextChar == ')' || nextChar == ':') // This last only for some backends.
                     {
                         int position = static_cast<int>(uses_.size());
                         (*it)->bind(*this, position);
@@ -226,9 +226,19 @@ void statement_impl::prepare(std::string const & query,
     statement_type eType)
 {
     query_ = query;
-    session_.log_query(query);
-
-    backEnd_->prepare(query, eType);
+    try
+    {
+        session_.log_query(query);
+        backEnd_->prepare(query, eType);
+        session_.get_log_stream().end_line();
+    }
+    catch (...)
+    {
+        log_stream & log = session_.get_log_stream();
+        log << "<!>";
+        log.end_line();
+        throw;
+    }
 }
 
 void statement_impl::define_and_bind()
@@ -552,7 +562,7 @@ void statement_impl::pre_fetch()
 
 void statement_impl::pre_use()
 {
-    log_stream& log = session_.get_log_stream().for_params();
+    log_stream & log = session_.get_log_stream().for_params();
     std::size_t const usize = uses_.size();
     try
     {
@@ -563,12 +573,14 @@ void statement_impl::pre_use()
             uses_[i]->pre_use(log);
         }
         if (usize != 0)
-            log.end_line();
+        {
+	        log.end_line();
+        }
     }
     catch(...)
     {
-        if (usize != 0)
-            log.end_line("{#}");
+        log << "<?>";
+        log.end_line();
         throw;
     }
 }
