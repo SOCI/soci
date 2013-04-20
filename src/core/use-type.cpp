@@ -9,6 +9,7 @@
 #include "use-type.h"
 #include "statement.h"
 #include "soci-platform.h"
+#include <cstring>
 
 using namespace soci;
 using namespace soci::details;
