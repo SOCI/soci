@@ -75,7 +75,7 @@ void firebird_standard_use_type_backend::bind_by_name(
     statement_.boundByName_ = true;
 }
 
-void firebird_standard_use_type_backend::pre_use(indicator const * ind, log_stream &)
+void firebird_standard_use_type_backend::pre_use(indicator const * ind)
 {
     indISCHolder_ =  0;
     if (ind)

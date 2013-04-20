@@ -124,7 +124,7 @@ struct SOCI_DB2_DECL db2_standard_use_type_backend : details::standard_use_type_
     void bind_by_pos(int& position, void* data, details::exchange_type type, bool readOnly);
     void bind_by_name(std::string const& name, void* data, details::exchange_type type, bool readOnly);
 
-    void pre_use(indicator const* ind, log_stream &);
+    void pre_use(indicator const* ind);
     void post_use(bool gotData, indicator* ind);
 
     void clean_up();
@@ -150,7 +150,7 @@ struct SOCI_DB2_DECL db2_vector_use_type_backend : details::vector_use_type_back
     void bind_by_pos(int& position, void* data, details::exchange_type type);
     void bind_by_name(std::string const& name, void* data, details::exchange_type type);
 
-    void pre_use(indicator const* ind, log_stream &);
+    void pre_use(indicator const* ind);
 
     std::size_t size();
 

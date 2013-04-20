@@ -35,6 +35,7 @@ namespace details
 // data types, as used to describe exchange format
 enum exchange_type
 {
+	x_unknown,
     x_char,
     x_stdstring,
     x_short,
@@ -112,10 +113,12 @@ public:
     virtual void bind_by_name(std::string const& name,
         void* data, exchange_type type, bool readOnly) = 0;
 
-    virtual void pre_use(indicator const* ind, log_stream & log) = 0;
+    virtual void pre_use(indicator const* ind) = 0;
     virtual void post_use(bool gotData, indicator * ind) = 0;
 
     virtual void clean_up() = 0;
+	
+	virtual const char * c_str(std::size_t & /*length*/) const { return NULL; }
 
 private:
     // noncopyable
@@ -133,11 +136,13 @@ public:
     virtual void bind_by_name(std::string const& name,
         void* data, exchange_type type) = 0;
 
-    virtual void pre_use(indicator const* ind, log_stream & log) = 0;
+    virtual void pre_use(indicator const* ind) = 0;
 
     virtual std::size_t size() = 0;
 
     virtual void clean_up() = 0;
+	
+	virtual const char * c_str(std::size_t & /*length*/, std::size_t /*index*/) const { return NULL; }
 
 private:
     // noncopyable

@@ -20,6 +20,75 @@
 using namespace soci;
 using namespace soci::details;
 
+// helpers for logging the query parameter values 
+namespace {
+
+void log_use_pos_or_name(log_stream& log, std::vector<use_type_base*>& uses, std::size_t index)
+{
+	std::size_t base = (uses[0]->get_type() == x_unknown) ? 1 : 0;
+	if (base > index)
+	{
+		// Skip 'values'
+		return;
+	}
+
+	if (index > base)
+		log << ',';
+	log << ':';
+	std::string name = uses[index]->get_name();
+	if (name.empty())
+		log << index + 1 - base;
+	else
+		log << name;
+	log << '=';
+}
+
+void log_use_current_value(log_stream& log, std::vector<use_type_base*>& uses, std::size_t index)
+{
+	if (uses[index]->get_type() == x_unknown)
+	{
+		// Skip 'values'
+		return;
+	}
+
+	std::size_t usize = uses[index]->size();
+	if (usize > 1)
+		log << '[';
+	for (std::size_t u = 0; u < usize; ++u)
+	{
+		if (u > 0)
+			log << ',';
+		std::size_t len = 0;
+		const char* str = uses[index]->to_string(len, u);
+		if (str == NULL)
+		{
+			log << "<NULL>";
+		}
+		else
+		{
+			switch (uses[index]->get_type())
+			{
+			case x_char: case x_stdstring:
+				log << '\'';
+				log.write(str, len);
+				log << '\'';
+				break;
+			case x_stdtm: case x_statement: case x_rowid: case x_blob:
+				log << '<';
+				log.write(str, len);
+				log << '>';
+				break;
+			default:
+				log.write(str, len);
+			}
+		}
+	}
+	if (usize > 1)
+		log << ']';
+}
+
+} // unnamed
+
 void statement::exchange(into_type_ptr const & i)
 {
     impl_->exchange(i);
@@ -566,9 +635,9 @@ void statement_impl::pre_use()
     {
         for (std::size_t i = 0; i != usize; ++i)
         {
-            if (i > 0)
-                log << ',';
-            uses_[i]->pre_use(log);
+            log_use_pos_or_name(log, uses_, i);
+            uses_[i]->pre_use();
+			log_use_current_value(log, uses_, i);
         }
         if (usize != 0)
         {
@@ -577,7 +646,7 @@ void statement_impl::pre_use()
     }
     catch(...)
     {
-        log << "{?}";
+        log << '?';
         log.end_line();
         throw;
     }

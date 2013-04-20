@@ -46,26 +46,19 @@ void mysql_vector_use_type_backend::bind_by_name(
     name_ = name;
 }
 
-void mysql_vector_use_type_backend::pre_use(indicator const *ind, log_stream & log)
+void mysql_vector_use_type_backend::pre_use(indicator const *ind)
 {
-    log << ':';
-    (position_ > 0) ? log << position_ : log << name_;
-    log << "=[";
-
     std::size_t const vsize = size();
     for (size_t i = 0; i != vsize; ++i)
     {
         char *buf;
-        if (i > 0) 
-            log << ',';
+		int n = -1;
 
         // the data in vector can be either i_ok or i_null
         if (ind != NULL && ind[i] == i_null)
         {
-            buf = new char[5];
-            std::strcpy(buf, "NULL");
-
-            log << "{NULL}";
+            buf = null_val();
+			n = 0;
         }
         else
         {
@@ -79,9 +72,8 @@ void mysql_vector_use_type_backend::pre_use(indicator const *ind, log_stream & l
                     std::vector<char> &v = *pv;
 
                     char tmp[] = { v[i], '\0' };
-                    buf = quote(statement_.session_.conn_, tmp, 1);
-
-                    log << '\'' << tmp[0] << '\'';
+                    n = 1;
+                    buf = quote(statement_.session_.conn_, tmp, n);
                 }
                 break;
             case x_stdstring:
@@ -90,10 +82,9 @@ void mysql_vector_use_type_backend::pre_use(indicator const *ind, log_stream & l
                         = static_cast<std::vector<std::string> *>(data_);
                     std::vector<std::string> &v = *pv;
 
+                    n = v[i].size();
                     buf = quote(statement_.session_.conn_,
-                        v[i].c_str(), v[i].size());
-
-                    log << '\'' << v[i] << '\'';
+                        v[i].c_str(), n);
                 }
                 break;
             case x_short:
@@ -105,9 +96,9 @@ void mysql_vector_use_type_backend::pre_use(indicator const *ind, log_stream & l
                     std::size_t const bufSize
                         = std::numeric_limits<short>::digits10 + 3;
                     buf = new char[bufSize];
-                    int n = snprintf(buf, bufSize, "%d", static_cast<int>(v[i]));
-                    if (n >= 0 && n < static_cast<int>(bufSize))
-                        log.write(buf, n);
+                    n = snprintf(buf, bufSize, "%d", static_cast<int>(v[i]));
+                    if (n < 0 && n >= static_cast<int>(bufSize))
+                        n = 0;
                 }
                 break;
             case x_integer:
@@ -119,9 +110,9 @@ void mysql_vector_use_type_backend::pre_use(indicator const *ind, log_stream & l
                     std::size_t const bufSize
                         = std::numeric_limits<int>::digits10 + 3;
                     buf = new char[bufSize];
-                    int n = snprintf(buf, bufSize, "%d", v[i]);
-                    if (n >= 0 && n < static_cast<int>(bufSize))
-                        log.write(buf, n);
+                    n = snprintf(buf, bufSize, "%d", v[i]);
+                    if (n < 0 && n >= static_cast<int>(bufSize))
+                        n = 0;
                 }
                 break;
             case x_long_long:
@@ -133,9 +124,9 @@ void mysql_vector_use_type_backend::pre_use(indicator const *ind, log_stream & l
                     std::size_t const bufSize
                         = std::numeric_limits<long long>::digits10 + 3;
                     buf = new char[bufSize];
-                    int n = snprintf(buf, bufSize, "%lld", v[i]);
-                    if (n >= 0 && n < static_cast<int>(bufSize))
-                        log.write(buf, n);
+                    n = snprintf(buf, bufSize, "%lld", v[i]);
+                    if (n < 0 && n >= static_cast<int>(bufSize))
+                        n = 0;
                 }
                 break;
             case x_unsigned_long_long:
@@ -147,9 +138,9 @@ void mysql_vector_use_type_backend::pre_use(indicator const *ind, log_stream & l
                     std::size_t const bufSize
                         = std::numeric_limits<unsigned long long>::digits10 + 3;
                     buf = new char[bufSize];
-                    int n = snprintf(buf, bufSize, "%llu", v[i]);
-                    if (n >= 0 && n < static_cast<int>(bufSize))
-                        log.write(buf, n);
+                    n = snprintf(buf, bufSize, "%llu", v[i]);
+                    if (n < 0 && n >= static_cast<int>(bufSize))
+                        n = 0;
                 }
                 break;
             case x_double:
@@ -167,9 +158,9 @@ void mysql_vector_use_type_backend::pre_use(indicator const *ind, log_stream & l
                     std::size_t const bufSize = 100;
                     buf = new char[bufSize];
 
-                    int n = snprintf(buf, bufSize, "%.20g", v[i]);
-                    if (n >= 0 && n < static_cast<int>(bufSize))
-                        log.write(buf, n);
+                    n = snprintf(buf, bufSize, "%.20g", v[i]);
+                    if (n < 0 && n >= static_cast<int>(bufSize))
+                        n = 0;
                 }
                 break;
             case x_stdtm:
@@ -181,16 +172,12 @@ void mysql_vector_use_type_backend::pre_use(indicator const *ind, log_stream & l
                     std::size_t const bufSize = 22;
                     buf = new char[bufSize];
 
-                    int n = snprintf(buf, bufSize, "\'%d-%02d-%02d %02d:%02d:%02d\'",
+                    n = snprintf(buf, bufSize, "\'%d-%02d-%02d %02d:%02d:%02d\'",
                         v[i].tm_year + 1900, v[i].tm_mon + 1, v[i].tm_mday,
                         v[i].tm_hour, v[i].tm_min, v[i].tm_sec);
 
-                    if (n >= 0 && n < static_cast<int>(bufSize))
-                    {
-                        log << '{';
-                        log.write(buf + 1, n - 2);
-                        log << '}';
-                    }
+                    if (n < 0 && n >= static_cast<int>(bufSize))
+                        n = 0;
                 }
                 break;
 
@@ -200,9 +187,9 @@ void mysql_vector_use_type_backend::pre_use(indicator const *ind, log_stream & l
             }
         }
 
+		bufSizes_.push_back(n);
         buffers_.push_back(buf);
     }
-    log << ']';
 
     if (position_ > 0)
     {
@@ -245,6 +232,22 @@ void mysql_vector_use_type_backend::clean_up()
     std::size_t const bsize = buffers_.size();
     for (std::size_t i = 0; i != bsize; ++i)
     {
-        delete [] buffers_[i];
-    }
+		if (buffers_[i] != null_val()) // Skip deleting literal 
+			delete [] buffers_[i];
+		buffers_[i] = NULL;
+		bufSizes_[i] = 0;
+	}
+}
+
+const char * mysql_vector_use_type_backend::c_str(std::size_t & length, std::size_t index) const
+{
+	const char * buf = buffers_.at(index);
+	length = bufSizes_.at(index);
+	if ((type_ == x_stdtm || type_ == x_stdstring || type_ == x_char) && buf && length > 0)
+	{
+		// Skip quotes
+		length -= 2;
+		return (buf + 1); 
+	}
+	return buf;
 }

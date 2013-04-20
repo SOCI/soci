@@ -29,7 +29,7 @@ struct exchange_traits<values>
     typedef basic_type_tag type_family;
 
     // dummy value to satisfy the template engine, never used
-    enum { x_type = 0 };
+    enum { x_type = x_unknown };
 };
 
 template <>
@@ -59,14 +59,13 @@ public:
         convert_from_base();
     }
 
-    virtual void pre_use(log_stream & log)
-    {
-        convert_to_base();
-        log << '(' << v_.size() << ')';
-    }
+    virtual void pre_use() { convert_to_base(); }
     virtual void clean_up() {v_.clean_up();}
     virtual std::size_t size() const { return 1; }
-
+	virtual exchange_type get_type() const { return x_unknown; }
+	virtual std::string get_name() const { return ""; }	
+	virtual const char * to_string(std::size_t & /*length*/, std::size_t /*index*/) { return NULL; }	
+	
     // these are used only to re-dispatch to derived class
     // (the derived class might be generated automatically by
     // user conversions)

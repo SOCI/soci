@@ -57,7 +57,7 @@ void parse_num(char const *buf, T &x)
 }
 
 // helper for escaping strings
-char * quote(MYSQL * conn, const char *s, int len);
+char * quote(MYSQL * conn, const char *s, int & len);
 
 // helper for vector operations
 template <typename T>

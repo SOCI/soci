@@ -238,7 +238,7 @@ void odbc_vector_use_type_backend::bind_by_name(
     statement_.boundByName_ = true;
 }
 
-void odbc_vector_use_type_backend::pre_use(indicator const *ind, log_stream &)
+void odbc_vector_use_type_backend::pre_use(indicator const *ind)
 {
     // first deal with data
     if (type_ == x_stdtm)

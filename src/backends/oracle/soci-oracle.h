@@ -120,7 +120,7 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
     // common part for bind_by_pos and bind_by_name
     void prepare_for_bind(void *&data, sb4 &size, ub2 &oracleType, bool readOnly);
 
-    virtual void pre_use(indicator const *ind, log_stream &);
+    virtual void pre_use(indicator const *ind);
     virtual void post_use(bool gotData, indicator *ind);
 
     virtual void clean_up();
@@ -153,7 +153,7 @@ struct oracle_vector_use_type_backend : details::vector_use_type_backend
     // (as part of the bind_by_pos and bind_by_name)
     void prepare_indicators(std::size_t size);
 
-    virtual void pre_use(indicator const *ind, log_stream &);
+    virtual void pre_use(indicator const *ind);
 
     virtual std::size_t size();
 

@@ -29,7 +29,7 @@ void empty_vector_use_type_backend::bind_by_name(
     // ...
 }
 
-void empty_vector_use_type_backend::pre_use(indicator const * /* ind */, log_stream & /* log */)
+void empty_vector_use_type_backend::pre_use(indicator const * /* ind */)
 {
     // ...
 }

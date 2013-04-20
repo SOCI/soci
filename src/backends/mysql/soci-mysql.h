@@ -89,6 +89,9 @@ struct mysql_vector_into_type_backend : details::vector_into_type_backend
     int position_;
 };
 
+// null value literal for use types
+inline char * null_val() { return "NULL"; }
+
 struct mysql_standard_use_type_backend : details::standard_use_type_backend
 {
     mysql_standard_use_type_backend(mysql_statement_backend &st)
@@ -99,18 +102,21 @@ struct mysql_standard_use_type_backend : details::standard_use_type_backend
     virtual void bind_by_name(std::string const &name,
         void *data, details::exchange_type type, bool readOnly);
 
-    virtual void pre_use(indicator const *ind, log_stream & log);
+    virtual void pre_use(indicator const *ind);
     virtual void post_use(bool gotData, indicator *ind);
 
     virtual void clean_up();
 
-    mysql_statement_backend &statement_;
+	virtual const char * c_str(std::size_t & length) const;
+
+	mysql_statement_backend &statement_;
     
     void *data_;
     details::exchange_type type_;
     int position_;
     std::string name_;
-    char *buf_;
+	char *buf_;
+	int bufSize_;
 };
 
 struct mysql_vector_use_type_backend : details::vector_use_type_backend
@@ -123,11 +129,13 @@ struct mysql_vector_use_type_backend : details::vector_use_type_backend
     virtual void bind_by_name(std::string const &name,
         void *data, details::exchange_type type);
 
-    virtual void pre_use(indicator const *ind, log_stream & log);
+    virtual void pre_use(indicator const *ind);
 
     virtual std::size_t size();
 
     virtual void clean_up();
+
+	virtual const char * c_str(std::size_t & length, std::size_t index) const;
 
     mysql_statement_backend &statement_;
     
@@ -135,7 +143,8 @@ struct mysql_vector_use_type_backend : details::vector_use_type_backend
     details::exchange_type type_;
     int position_;
     std::string name_;
-    std::vector<char *> buffers_;
+	std::vector<char *> buffers_;
+	std::vector<int> bufSizes_;
 };
 
 struct mysql_session_backend;

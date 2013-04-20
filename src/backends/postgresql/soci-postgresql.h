@@ -101,10 +101,12 @@ struct postgresql_standard_use_type_backend : details::standard_use_type_backend
     virtual void bind_by_name(std::string const & name,
         void * data, details::exchange_type type, bool readOnly);
 
-    virtual void pre_use(indicator const * ind, log_stream & log);
+    virtual void pre_use(indicator const * ind);
     virtual void post_use(bool gotData, indicator * ind);
 
     virtual void clean_up();
+	
+	virtual const char * c_str(std::size_t & length) const;
 
     postgresql_statement_backend & statement_;
 
@@ -113,6 +115,7 @@ struct postgresql_standard_use_type_backend : details::standard_use_type_backend
     int position_;
     std::string name_;
     char * buf_;
+	std::size_t bufSize_;
 };
 
 struct postgresql_vector_use_type_backend : details::vector_use_type_backend
@@ -125,11 +128,13 @@ struct postgresql_vector_use_type_backend : details::vector_use_type_backend
     virtual void bind_by_name(std::string const & name,
         void * data, details::exchange_type type);
 
-    virtual void pre_use(indicator const * ind, log_stream & log);
+    virtual void pre_use(indicator const * ind);
 
     virtual std::size_t size();
 
     virtual void clean_up();
+	
+	virtual const char * c_str(std::size_t & length, std::size_t index) const;
 
     postgresql_statement_backend & statement_;
 
@@ -138,6 +143,7 @@ struct postgresql_vector_use_type_backend : details::vector_use_type_backend
     int position_;
     std::string name_;
     std::vector<char *> buffers_;
+    std::vector<std::size_t> bufSizes_;	
 };
 
 struct postgresql_session_backend;

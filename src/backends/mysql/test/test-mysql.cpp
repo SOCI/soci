@@ -873,7 +873,7 @@ void test14()
     sql << "SELECT :1, :2, :3, :4, :5, :6, :7, :8",
         use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind);
 
-    assert(log.str() == "SELECT :1, :2, :3, :4, :5, :6, :7, :8\n:1=-1,:2=2,:3=-3,:4=4,:5={2006-06-04 03:02:01},:6='xyz',:7='x',:8={NULL}\n");
+    assert(log.str() == "SELECT :1, :2, :3, :4, :5, :6, :7, :8\n:1=-1,:2=2,:3=-3,:4=4,:5=<2006-06-04 03:02:01>,:6='xyz',:7='x',:8=<NULL>\n");
 
     // Available logging stream for queries only. No more parameters temporarily.
     log.str("");
@@ -905,7 +905,7 @@ void test14()
     sql << "INSERT INTO soci_test VALUES (:1)",
         use(v, w);
 
-    assert(log.str() == "INSERT INTO soci_test VALUES (:1)\n:1=[1,{NULL},-1]\n");
+    assert(log.str() == "INSERT INTO soci_test VALUES (:1)\n:1=[1,<NULL>,-1]\n");
 
     sql << "select count(1) from soci_test", into(n);
     assert(n == 3);
@@ -916,7 +916,7 @@ void test14()
     v1.set(i);
     sql << "INSERT INTO soci_test VALUES(:1)",
         use(v1);
-    assert(log.str() == "INSERT INTO soci_test VALUES(:1)\n(1),:1=-1\n");
+    assert(log.str() == "INSERT INTO soci_test VALUES(:1)\n:1=-1\n");
 
     sql << "select count(1) from soci_test", into(n);
     assert(n == 4);
@@ -927,7 +927,7 @@ void test14()
     v2.set("val", i);
     sql << "INSERT INTO soci_test VALUES(:val)",
         use(v2);
-    assert(log.str() == "INSERT INTO soci_test VALUES(:val)\n(1),:val=-1\n");
+    assert(log.str() == "INSERT INTO soci_test VALUES(:val)\n:val=-1\n");
 
     sql << "select count(1) from soci_test", into(n);
     assert(n == 5);
