@@ -826,13 +826,13 @@ void test14()
     session sql(backEnd, connectString);
 
     // No logging stream.
-	assert(sql.log_params() == false);
+   assert(sql.log_params() == false);
     assert(sql.get_log_stream() == NULL);
 
     sql.set_log_stream(&log);
 
     // Available logging stream for queries.
-	assert(sql.log_params() == false);
+   assert(sql.log_params() == false);
     assert(sql.get_log_stream() != NULL);
 
     // Parameters. All types supportted by this backend.
@@ -854,7 +854,7 @@ void test14()
     // Available logging stream for queries and parameter, in a separate line.
     log.str("");
     sql.set_log_params(true);
-	assert(sql.log_params() == true);
+   assert(sql.log_params() == true);
 
     sql << "SELECT :1, :2, :3, :4, :5, :6, :7, :8",
         use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind);
@@ -864,7 +864,7 @@ void test14()
     // Available logging stream for queries only. No more parameters temporarily.
     log.str("");
     sql.set_log_params(false);
-	assert(sql.log_params() == false);
+   assert(sql.log_params() == false);
     
     sql << "SELECT :1, :2, :3, :4, :5, :6, :7, :8",
         use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind);

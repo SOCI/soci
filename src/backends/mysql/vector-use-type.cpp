@@ -52,13 +52,13 @@ void mysql_vector_use_type_backend::pre_use(indicator const *ind)
     for (size_t i = 0; i != vsize; ++i)
     {
         char *buf;
-		int n = -1;
+      int n = -1;
 
         // the data in vector can be either i_ok or i_null
         if (ind != NULL && ind[i] == i_null)
         {
             buf = null_val();
-			n = 0;
+         n = 0;
         }
         else
         {
@@ -187,7 +187,7 @@ void mysql_vector_use_type_backend::pre_use(indicator const *ind)
             }
         }
 
-		bufSizes_.push_back(n);
+      bufSizes_.push_back(n);
         buffers_.push_back(buf);
     }
 
@@ -232,27 +232,27 @@ void mysql_vector_use_type_backend::clean_up()
     std::size_t const bsize = buffers_.size();
     for (std::size_t i = 0; i != bsize; ++i)
     {
-		if (buffers_[i] != null_val()) // Skip deleting literal 
-			delete [] buffers_[i];
-		buffers_[i] = NULL;
-		bufSizes_[i] = 0;
-	}
+      if (buffers_[i] != null_val()) // Skip deleting literal 
+         delete [] buffers_[i];
+      buffers_[i] = NULL;
+      bufSizes_[i] = 0;
+   }
 }
 
 const char * mysql_vector_use_type_backend::c_str(std::size_t & length, std::size_t index) const
 {
-	const char * buf = buffers_.at(index);
-	length = bufSizes_.at(index);
-	if (buf == null_val())
-	{
-		length = 0;
-		return NULL;
-	}
-	if ((type_ == x_stdtm || type_ == x_stdstring || type_ == x_char) && buf && length > 0)
-	{
-		// Skip quotes
-		length -= 2;
-		return (buf + 1); 
-	}
-	return buf;
+   const char * buf = buffers_.at(index);
+   length = bufSizes_.at(index);
+   if (buf == null_val())
+   {
+      length = 0;
+      return NULL;
+   }
+   if ((type_ == x_stdtm || type_ == x_stdstring || type_ == x_char) && buf && length > 0)
+   {
+      // Skip quotes
+      length -= 2;
+      return (buf + 1); 
+   }
+   return buf;
 }

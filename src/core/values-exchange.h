@@ -62,10 +62,10 @@ public:
     virtual void pre_use() { convert_to_base(); }
     virtual void clean_up() {v_.clean_up();}
     virtual std::size_t size() const { return 1; }
-	virtual exchange_type get_type() const { return x_unknown; }
-	virtual std::string get_name() const { return ""; }	
-	virtual const char * to_string(std::size_t & /*length*/, std::size_t /*index*/) { return NULL; }	
-	
+   virtual exchange_type get_type() const { return x_unknown; }
+   virtual std::string get_name() const { return ""; }   
+   virtual const char * to_string(std::size_t & /*length*/, std::size_t /*index*/) { return NULL; }   
+   
     // these are used only to re-dispatch to derived class
     // (the derived class might be generated automatically by
     // user conversions)

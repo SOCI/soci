@@ -33,12 +33,12 @@ public:
     virtual void clean_up() = 0;
 
     virtual std::size_t size() const = 0;  // returns the number of elements
-	virtual exchange_type get_type() const = 0;
-	virtual std::string get_name() const = 0;
-	virtual const char * to_string(std::size_t & length, std::size_t index = 0) = 0;
+   virtual exchange_type get_type() const = 0;
+   virtual std::string get_name() const = 0;
+   virtual const char * to_string(std::size_t & length, std::size_t index = 0) = 0;
 
 protected:
-	static void to_string(std::string & str, void* data, exchange_type type);
+   static void to_string(std::string & str, void* data, exchange_type type);
 };
 
 typedef type_ptr<use_type_base> use_type_ptr;
@@ -76,7 +76,7 @@ public:
 
     virtual ~standard_use_type();
     virtual void bind(statement_impl & st, int & position);
-	virtual std::string get_name() const { return name_; }
+   virtual std::string get_name() const { return name_; }
     virtual void * get_data() { return data_; }
 
     // conversion hook (from arbitrary user type to base type)
@@ -90,15 +90,15 @@ private:
     virtual void post_use(bool gotData);
     virtual void clean_up();
     virtual std::size_t size() const { return 1; }
-	virtual exchange_type get_type() const { return type_; }
-	virtual const char * to_string(std::size_t & length, std::size_t index);
+   virtual exchange_type get_type() const { return type_; }
+   virtual const char * to_string(std::size_t & length, std::size_t index);
 
     void* data_;
     exchange_type type_;
     indicator* ind_;
     bool readOnly_;
     std::string name_;
-	std::string str_;
+   std::string str_;
     standard_use_type_backend* backEnd_;
 };
 
@@ -132,15 +132,15 @@ private:
     virtual void post_use(bool) { /* nothing to do */ }
     virtual void clean_up();
     virtual std::size_t size() const;
-	virtual exchange_type get_type() const;
-	virtual std::string get_name() const { return name_; }
-	virtual const char * to_string(std::size_t & length, std::size_t index);
+   virtual exchange_type get_type() const;
+   virtual std::string get_name() const { return name_; }
+   virtual const char * to_string(std::size_t & length, std::size_t index);
 
     void* data_;
     exchange_type type_;
     std::vector<indicator> const* ind_;
     std::string name_;
-	std::vector<std::string> strs_;
+   std::vector<std::string> strs_;
     vector_use_type_backend * backEnd_;
 
     virtual void convert_to_base() {}

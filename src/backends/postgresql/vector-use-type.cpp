@@ -54,13 +54,13 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
     for (size_t i = 0; i != vsize; ++i)
     {
         char * buf;
-		int n = -1;
-		
+      int n = -1;
+      
         // the data in vector can be either i_ok or i_null
         if (ind != NULL && ind[i] == i_null)
         {
             buf = NULL;
-			n = 0;
+         n = 0;
         }
         else
         {
@@ -76,7 +76,7 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                     buf = new char[2];
                     buf[0] = v[i];
                     buf[1] = '\0';
-					n = 1;
+               n = 1;
                 }
                 break;
             case x_stdstring:
@@ -87,7 +87,7 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
 
                     buf = new char[v[i].size() + 1];
                     std::strncpy(buf, v[i].c_str(), v[i].size() + 1);
-					n = v[i].size();
+               n = v[i].size();
                 }
                 break;
             case x_short:
@@ -185,7 +185,7 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
             }
         }
 
-		bufSizes_.push_back(n);
+      bufSizes_.push_back(n);
         buffers_.push_back(buf);
     }
  
@@ -249,7 +249,7 @@ void postgresql_vector_use_type_backend::clean_up()
 
 const char * postgresql_vector_use_type_backend::c_str(std::size_t & length, std::size_t index) const
 {
-	const char * buf = buffers_.at(index);
-	length = bufSizes_.at(index);
-	return buf;
+   const char * buf = buffers_.at(index);
+   length = bufSizes_.at(index);
+   return buf;
 }

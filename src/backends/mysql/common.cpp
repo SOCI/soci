@@ -82,6 +82,6 @@ char * soci::details::mysql::quote(MYSQL * conn, const char *s, int & len)
     int len_esc = mysql_real_escape_string(conn, retv + 1, s, len);
     retv[len_esc + 1] = '\'';
     retv[len_esc + 2] = '\0';
-	len = len_esc + 2;
+   len = len_esc + 2;
     return retv;
 }

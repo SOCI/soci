@@ -274,7 +274,7 @@ struct oracle_session_backend : details::session_backend
 
 struct oracle_backend_factory : backend_factory
 {
-	  oracle_backend_factory() {}
+     oracle_backend_factory() {}
     virtual oracle_session_backend * make_session(
         connection_parameters const & parameters) const;
 };

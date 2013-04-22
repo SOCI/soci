@@ -105,8 +105,8 @@ struct postgresql_standard_use_type_backend : details::standard_use_type_backend
     virtual void post_use(bool gotData, indicator * ind);
 
     virtual void clean_up();
-	
-	virtual const char * c_str(std::size_t & length) const;
+   
+   virtual const char * c_str(std::size_t & length) const;
 
     postgresql_statement_backend & statement_;
 
@@ -115,7 +115,7 @@ struct postgresql_standard_use_type_backend : details::standard_use_type_backend
     int position_;
     std::string name_;
     char * buf_;
-	std::size_t bufSize_;
+   std::size_t bufSize_;
 };
 
 struct postgresql_vector_use_type_backend : details::vector_use_type_backend
@@ -133,8 +133,8 @@ struct postgresql_vector_use_type_backend : details::vector_use_type_backend
     virtual std::size_t size();
 
     virtual void clean_up();
-	
-	virtual const char * c_str(std::size_t & length, std::size_t index) const;
+   
+   virtual const char * c_str(std::size_t & length, std::size_t index) const;
 
     postgresql_statement_backend & statement_;
 
@@ -143,7 +143,7 @@ struct postgresql_vector_use_type_backend : details::vector_use_type_backend
     int position_;
     std::string name_;
     std::vector<char *> buffers_;
-    std::vector<std::size_t> bufSizes_;	
+    std::vector<std::size_t> bufSizes_;   
 };
 
 struct postgresql_session_backend;

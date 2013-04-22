@@ -46,7 +46,7 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
     if (ind != NULL && *ind == i_null)
     {
         buf_ = null_val();
-		bufSize_ = 0;
+      bufSize_ = 0;
     }
     else
     {
@@ -56,9 +56,9 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
         case x_char:
             {
                 char buf[] = { *static_cast<char*>(data_), '\0' };
-				bufSize_ = 1;
+            bufSize_ = 1;
                 buf_ = quote(statement_.session_.conn_, buf, bufSize_);
-			}
+         }
             break;
         case x_stdstring:
             {
@@ -77,8 +77,8 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                     static_cast<int>(*static_cast<short*>(data_)));
                 if (n >= 0 && n < static_cast<int>(bufSize))
                     bufSize_ = n;
-				else
-					bufSize_ = 0;
+            else
+               bufSize_ = 0;
             }
             break;
         case x_integer:
@@ -89,8 +89,8 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 int n = snprintf(buf_, bufSize, "%d", *static_cast<int*>(data_));
                 if (n >= 0 && n < static_cast<int>(bufSize))
                     bufSize_ = n;
-				else
-					bufSize_ = 0;
+            else
+               bufSize_ = 0;
             }
             break;
         case x_long_long:
@@ -101,8 +101,8 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 int n = snprintf(buf_, bufSize, "%lld", *static_cast<long long *>(data_));
                 if (n >= 0 && n < static_cast<int>(bufSize))
                     bufSize_ = n;
-				else
-					bufSize_ = 0;
+            else
+               bufSize_ = 0;
             }
             break;
         case x_unsigned_long_long:
@@ -114,8 +114,8 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                          *static_cast<unsigned long long *>(data_));
                 if (n >= 0 && n < static_cast<int>(bufSize))
                     bufSize_ = n;
-				else
-					bufSize_ = 0;
+            else
+               bufSize_ = 0;
             }
             break;
 
@@ -134,8 +134,8 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                     *static_cast<double*>(data_));
                 if (n >= 0 && n < static_cast<int>(bufSize))
                     bufSize_ = n;
-				else
-					bufSize_ = 0;
+            else
+               bufSize_ = 0;
             }
             break;
         case x_stdtm:
@@ -150,8 +150,8 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                     t->tm_hour, t->tm_min, t->tm_sec);
                 if (n >= 0 && n < static_cast<int>(bufSize))
                     bufSize_ = n;
-				else
-					bufSize_ = 0;
+            else
+               bufSize_ = 0;
             }
             break;
         default:
@@ -192,26 +192,26 @@ void mysql_standard_use_type_backend::clean_up()
 {
     if (buf_ != NULL)
     {
-		if (buf_ != null_val()) // Skip deleting literal
-			delete [] buf_;
+      if (buf_ != null_val()) // Skip deleting literal
+         delete [] buf_;
         buf_ = NULL;
-		bufSize_ = 0;
+      bufSize_ = 0;
     }
 }
 
 const char * mysql_standard_use_type_backend::c_str(std::size_t & length) const
 {
-	if (buf_ == null_val())
-	{
-		length = 0;
-		return NULL;
-	}
-	length = bufSize_;
-	if ((type_ == x_stdtm || type_ == x_stdstring || type_ == x_char) && buf_ && length > 0)
-	{
-		// Skip quotes
-		length -= 2;
-		return (buf_ + 1);
-	}
-	return buf_;
+   if (buf_ == null_val())
+   {
+      length = 0;
+      return NULL;
+   }
+   length = bufSize_;
+   if ((type_ == x_stdtm || type_ == x_stdstring || type_ == x_char) && buf_ && length > 0)
+   {
+      // Skip quotes
+      length -= 2;
+      return (buf_ + 1);
+   }
+   return buf_;
 }

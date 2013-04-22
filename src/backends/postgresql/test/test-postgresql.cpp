@@ -712,13 +712,13 @@ void test_log()
     session sql(backEnd, connectString);
 
     // No logging stream.
-	assert(sql.log_params() == false);
+   assert(sql.log_params() == false);
     assert(sql.get_log_stream() == NULL);
 
     sql.set_log_stream(&log);
 
     // Available logging stream for queries.
-	assert(sql.log_params() == false);
+   assert(sql.log_params() == false);
     assert(sql.get_log_stream() != NULL);
 
     // Parameters. All types supportted by this backend.
@@ -744,7 +744,7 @@ void test_log()
     // Available logging stream for queries and parameter, in a separate line.
     log.str("");
     sql.set_log_params(true);
-	assert(sql.log_params() == true);
+   assert(sql.log_params() == true);
 
     sql << "SELECT :1::int, :2::float8, :3::bigint, :4::numeric, :5::timestamp, :6::text, :7::text, :8::int, :9::oid, :10::oid",
         use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind), use(r), use(b);
@@ -754,7 +754,7 @@ void test_log()
     // Available logging stream for queries only. No more parameters temporarily.
     log.str("");
     sql.set_log_params(false);
-	assert(sql.log_params() == false);
+   assert(sql.log_params() == false);
     
     sql << "SELECT :1::int, :2::float8, :3::bigint, :4::numeric, :5::timestamp, :6::text, :7::text, :8::int, :9::oid, :10::oid",
         use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind), use(r), use(b);
