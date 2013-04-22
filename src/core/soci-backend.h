@@ -35,7 +35,7 @@ namespace details
 // data types, as used to describe exchange format
 enum exchange_type
 {
-   x_unknown,
+    x_unknown,
     x_char,
     x_stdstring,
     x_short,
@@ -117,8 +117,8 @@ public:
     virtual void post_use(bool gotData, indicator * ind) = 0;
 
     virtual void clean_up() = 0;
-   
-   virtual const char * c_str(std::size_t & /*length*/) const { return NULL; }
+    
+    virtual const char * c_str(std::size_t & /*length*/) const { return NULL; }
 
 private:
     // noncopyable
@@ -141,8 +141,8 @@ public:
     virtual std::size_t size() = 0;
 
     virtual void clean_up() = 0;
-   
-   virtual const char * c_str(std::size_t & /*length*/, std::size_t /*index*/) const { return NULL; }
+    
+    virtual const char * c_str(std::size_t & /*length*/, std::size_t /*index*/) const { return NULL; }
 
 private:
     // noncopyable

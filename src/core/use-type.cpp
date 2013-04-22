@@ -16,59 +16,59 @@ using namespace soci::details;
 
 void use_type_base::to_string(std::string & str, void * data, exchange_type type)
 {
-   int n = -1;
-   switch (type)
-   {
-   case x_short:
-      str.resize(6);
-      n = snprintf(const_cast<char*>(str.data()), str.size(), "%d", static_cast<int>(*static_cast<short*>(data)));
-      break;
-   case x_integer:
-      str.resize(11);
-      n = snprintf(const_cast<char*>(str.data()), str.size(), "%d", *static_cast<int*>(data));
-      break;
-   case x_long_long:
-      str.resize(21);
-      n = snprintf(const_cast<char*>(str.data()), str.size(), "%lld", *static_cast<long long*>(data));
-      break;
-   case x_unsigned_long_long:
-      str.resize(20);
-      n = snprintf(const_cast<char*>(str.data()), str.size(), "%llu", *static_cast<unsigned long long*>(data));
-      break;
-   case x_double:
-      str.resize(100);
-      n = snprintf(const_cast<char*>(str.data()), str.size(), "%.20g", *static_cast<double*>(data));
-      break;
-   case x_stdtm:
-      {
-         str.resize(19);
-         const std::tm* val = static_cast<std::tm*>(data);
-         n = snprintf(const_cast<char*>(str.data()), str.size(), "%04d-%02d-%02d %02d:%02d:%02d",
-            val->tm_year + 1900, val->tm_mon + 1, val->tm_mday, 
-            val->tm_hour, val->tm_min, val->tm_sec);
-      }
-      break;
-   case x_statement:
-      n = 1;
-      str = "s";
-      break;
-   case x_rowid:
-      n = 1;
-      str = "r";
-      break;
-   case x_blob:
-      n = 1;
-      str = "b";
-      break;
-   default:
-      n = 1;
-      str = "?";
-      break;
-   }
-   if (n < 0 || n > static_cast<int>(str.size()))
-      str.clear();
-   else
-      str.resize(n);
+    int n = -1;
+    switch (type)
+    {
+    case x_short:
+        str.resize(6);
+        n = snprintf(const_cast<char*>(str.data()), str.size(), "%d", static_cast<int>(*static_cast<short*>(data)));
+        break;
+    case x_integer:
+        str.resize(11);
+        n = snprintf(const_cast<char*>(str.data()), str.size(), "%d", *static_cast<int*>(data));
+        break;
+    case x_long_long:
+        str.resize(21);
+        n = snprintf(const_cast<char*>(str.data()), str.size(), "%lld", *static_cast<long long*>(data));
+        break;
+    case x_unsigned_long_long:
+        str.resize(20);
+        n = snprintf(const_cast<char*>(str.data()), str.size(), "%llu", *static_cast<unsigned long long*>(data));
+        break;
+    case x_double:
+        str.resize(100);
+        n = snprintf(const_cast<char*>(str.data()), str.size(), "%.20g", *static_cast<double*>(data));
+        break;
+    case x_stdtm:
+        {
+            str.resize(19);
+            const std::tm* val = static_cast<std::tm*>(data);
+            n = snprintf(const_cast<char*>(str.data()), str.size(), "%04d-%02d-%02d %02d:%02d:%02d",
+                val->tm_year + 1900, val->tm_mon + 1, val->tm_mday, 
+                val->tm_hour, val->tm_min, val->tm_sec);
+        }
+        break;
+    case x_statement:
+        n = 1;
+        str = "s";
+        break;
+    case x_rowid:
+        n = 1;
+        str = "r";
+        break;
+    case x_blob:
+        n = 1;
+        str = "b";
+        break;
+    default:
+        n = 1;
+        str = "?";
+        break;
+    }
+    if (n < 0 || n > static_cast<int>(str.size()))
+        str.clear();
+    else
+        str.resize(n);
 }
 
 standard_use_type::~standard_use_type()
@@ -121,34 +121,34 @@ void standard_use_type::clean_up()
 
 const char * standard_use_type::to_string(std::size_t & length, std::size_t /*index*/)
 {
-   length = 0;
-   if (ind_ && *ind_ == i_null)
-   {
-      return NULL;
-   }
+    length = 0;
+    if (ind_ && *ind_ == i_null)
+    {
+        return NULL;
+    }
 
-   const char * str = backEnd_->c_str(length);
-   if (str == NULL)
-   {
-      if (type_ == x_char)
-      {
-         str = static_cast<char*>(data_);
-         length = 1;
-      }
-      else if (type_ == x_stdstring)
-      {
-         std::string* s = static_cast<std::string*>(data_); 
-         str = s->c_str();
-         length = s->length();
-      }
-      else
-      {
-         use_type_base::to_string(str_, data_, type_);
-         str = str_.c_str();
-         length = str_.length();
-      }
-   }
-   return str;
+    const char * str = backEnd_->c_str(length);
+    if (str == NULL)
+    {
+        if (type_ == x_char)
+        {
+            str = static_cast<char*>(data_);
+            length = 1;
+        }
+        else if (type_ == x_stdstring)
+        {
+            std::string* s = static_cast<std::string*>(data_); 
+            str = s->c_str();
+            length = s->length();
+        }
+        else
+        {
+            use_type_base::to_string(str_, data_, type_);
+            str = str_.c_str();
+            length = str_.length();
+        }
+    }
+    return str;
 }
 
 vector_use_type::~vector_use_type()
@@ -191,42 +191,42 @@ void vector_use_type::clean_up()
 
 exchange_type vector_use_type::get_type() const
 {
-   return type_;
+    return type_;
 }
 
 const char * vector_use_type::to_string(std::size_t & length, std::size_t index)
 {
-   length = 0;
-   if (ind_ && ind_->at(index) == i_null)
-   {
-      return NULL;
-   }
+    length = 0;
+    if (ind_ && ind_->at(index) == i_null)
+    {
+        return NULL;
+    }
 
-   const char * str = backEnd_->c_str(length, index);
-   if (str == NULL)
-   {
-      if (type_ == x_char)
-      {
-         str = static_cast<char*>(data_);
-         length = 1;
-      }
-      else if (type_ == x_stdstring)
-      {
-         std::string* s = static_cast<std::string*>(data_); 
-         str = s->c_str();
-         length = s->length();
-      }
-      else
-      {
-         if (strs_.empty())
-         {
-            strs_.resize(size());
-         }
-         std::string & strs = strs_.at(index);
-         use_type_base::to_string(strs, data_, type_);
-         str = strs.c_str();
-         length = strs.length();
-      }
-   }
-   return str;
+    const char * str = backEnd_->c_str(length, index);
+    if (str == NULL)
+    {
+        if (type_ == x_char)
+        {
+            str = static_cast<char*>(data_);
+            length = 1;
+        }
+        else if (type_ == x_stdstring)
+        {
+            std::string* s = static_cast<std::string*>(data_); 
+            str = s->c_str();
+            length = s->length();
+        }
+        else
+        {
+            if (strs_.empty())
+            {
+                strs_.resize(size());
+            }
+            std::string & strs = strs_.at(index);
+            use_type_base::to_string(strs, data_, type_);
+            str = strs.c_str();
+            length = strs.length();
+        }
+    }
+    return str;
 }

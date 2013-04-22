@@ -58,7 +58,7 @@ void db2_session_backend::parseKeyVal(std::string const & keyVal) {
     if (!key.compare("autocommit")) {
         if (!value.compare("off")) {
             this->autocommit=false;
-   }
+    }
     }
 }
 

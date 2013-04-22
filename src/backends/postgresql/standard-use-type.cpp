@@ -69,7 +69,7 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                 buf_ = new char[2];
                 buf_[0] = *static_cast<char *>(data_);
                 buf_[1] = '\0';
-            bufSize_ = 1;
+                bufSize_ = 1;
             }
             break;
         case x_stdstring:
@@ -77,7 +77,7 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                 std::string * s = static_cast<std::string *>(data_);
                 buf_ = new char[s->size() + 1];
                 std::strncpy(buf_, s->c_str(), s->size() + 1);
-            bufSize_ = s->size();
+                bufSize_ = s->size();
             }
             break;
         case x_short:
@@ -90,8 +90,8 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
 
                 if (n >= 0 && n < static_cast<int>(bufSize))
                     bufSize_ = n;
-            else
-               bufSize_ = 0;
+                else
+                    bufSize_ = 0;
             }
             break;
         case x_integer:
@@ -104,8 +104,8 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
 
                 if (n >= 0 && n < static_cast<int>(bufSize))
                     bufSize_ = n;
-            else
-               bufSize_ = 0;
+                else
+                    bufSize_ = 0;
             }
             break;
         case x_long_long:
@@ -118,8 +118,8 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
 
                 if (n >= 0 && n < static_cast<int>(bufSize))
                     bufSize_ = n;
-            else
-               bufSize_ = 0;
+                else
+                    bufSize_ = 0;
             }
             break;
         case x_unsigned_long_long:
@@ -132,8 +132,8 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
 
                 if (n >= 0 && n < static_cast<int>(bufSize))
                     bufSize_ = n;
-            else
-               bufSize_ = 0;
+                else
+                    bufSize_ = 0;
             }
             break;
         case x_double:
@@ -148,8 +148,8 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
 
                 if (n >= 0 && n < static_cast<int>(bufSize))
                     bufSize_ = n;
-            else
-               bufSize_ = 0;
+                else
+                    bufSize_ = 0;
             }
             break;
         case x_stdtm:
@@ -164,8 +164,8 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
 
                 if (n >= 0 && n < static_cast<int>(bufSize))
                     bufSize_ = n;
-            else
-               bufSize_ = 0;
+                else
+                    bufSize_ = 0;
             }
             break;
         case x_rowid:
@@ -184,8 +184,8 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                 int n = snprintf(buf_, bufSize, "%lu", rbe->value_);
                 if (n >= 0 && n < static_cast<int>(bufSize))
                     bufSize_ = n;
-            else
-               bufSize_ = 0;
+                else
+                    bufSize_ = 0;
             }
             break;
         case x_blob:
@@ -200,8 +200,8 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                 int n = snprintf(buf_, bufSize, "%lu", bbe->oid_);
                 if (n >= 0 && n < static_cast<int>(bufSize))
                     bufSize_ = n;
-            else
-               bufSize_ = 0;
+                else
+                    bufSize_ = 0;
             }
             break;
 
@@ -246,6 +246,6 @@ void postgresql_standard_use_type_backend::clean_up()
 
 const char * postgresql_standard_use_type_backend::c_str(std::size_t & length) const
 {
-   length = bufSize_;
-   return buf_;
+    length = bufSize_;
+    return buf_;
 }
