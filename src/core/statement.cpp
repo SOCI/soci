@@ -23,68 +23,68 @@ using namespace soci::details;
 // helpers for logging the query parameter values 
 namespace {
 
-void log_use_pos_or_name(log_stream& log, std::vector<use_type_base*>& uses, std::size_t index)
+void log_use_pos_or_name(std::ostream & log, std::vector<use_type_base*>& uses, std::size_t index)
 {
-	std::size_t base = (uses[0]->get_type() == x_unknown) ? 1 : 0;
-	if (base > index)
-	{
-		// Skip 'values'
-		return;
-	}
+    std::size_t base = (uses[0]->get_type() == x_unknown) ? 1 : 0;
+    if (base > index)
+    {
+        // Skip 'values'
+        return;
+    }
 
-	if (index > base)
-		log << ',';
-	log << ':';
-	std::string name = uses[index]->get_name();
-	if (name.empty())
-		log << index + 1 - base;
-	else
-		log << name;
-	log << '=';
+    if (index > base)
+        log << ',';
+    log << ':';
+    std::string name = uses[index]->get_name();
+    if (name.empty())
+        log << index + 1 - base;
+    else
+        log << name;
+    log << '=';
 }
 
-void log_use_current_value(log_stream& log, std::vector<use_type_base*>& uses, std::size_t index)
+void log_use_current_value(std::ostream & log, std::vector<use_type_base*>& uses, std::size_t index)
 {
-	if (uses[index]->get_type() == x_unknown)
-	{
-		// Skip 'values'
-		return;
-	}
+    if (uses[index]->get_type() == x_unknown)
+    {
+        // Skip 'values'
+        return;
+    }
 
-	std::size_t usize = uses[index]->size();
-	if (usize > 1)
-		log << '[';
-	for (std::size_t u = 0; u < usize; ++u)
-	{
-		if (u > 0)
-			log << ',';
-		std::size_t len = 0;
-		const char* str = uses[index]->to_string(len, u);
-		if (str == NULL)
-		{
-			log << "<NULL>";
-		}
-		else
-		{
-			switch (uses[index]->get_type())
-			{
-			case x_char: case x_stdstring:
-				log << '\'';
-				log.write(str, len);
-				log << '\'';
-				break;
-			case x_stdtm: case x_statement: case x_rowid: case x_blob:
-				log << '<';
-				log.write(str, len);
-				log << '>';
-				break;
-			default:
-				log.write(str, len);
-			}
-		}
-	}
-	if (usize > 1)
-		log << ']';
+    std::size_t usize = uses[index]->size();
+    if (usize > 1)
+        log << '[';
+    for (std::size_t u = 0; u < usize; ++u)
+    {
+        if (u > 0)
+            log << ',';
+        std::size_t len = 0;
+        const char* str = uses[index]->to_string(len, u);
+        if (str == NULL)
+        {
+            log << "<NULL>";
+        }
+        else
+        {
+            switch (uses[index]->get_type())
+            {
+            case x_char: case x_stdstring:
+                log << '\'';
+                log.write(str, len);
+                log << '\'';
+                break;
+            case x_stdtm: case x_statement: case x_rowid: case x_blob:
+                log << '<';
+                log.write(str, len);
+                log << '>';
+                break;
+            default:
+                log.write(str, len);
+            }
+        }
+    }
+    if (usize > 1)
+        log << ']';
 }
 
 } // unnamed
@@ -295,17 +295,8 @@ void statement_impl::prepare(std::string const & query,
     statement_type eType)
 {
     query_ = query;
-    try
-    {
-        session_.log_query(query);
-        backEnd_->prepare(query, eType);
-        session_.get_log_stream().end_line();
-    }
-    catch (...)
-    {
-        session_.get_log_stream().end_line();
-        throw;
-    }
+    session_.log_query(query);
+    backEnd_->prepare(query, eType);
 }
 
 void statement_impl::define_and_bind()
@@ -629,25 +620,44 @@ void statement_impl::pre_fetch()
 
 void statement_impl::pre_use()
 {
-    log_stream & log = session_.get_log_stream().for_params();
+    last_params_.clear();
+
+    std::ostream * log = session_.get_log_stream();
+    bool log_params = log && session_.log_params();
+
     std::size_t const usize = uses_.size();
     try
     {
         for (std::size_t i = 0; i != usize; ++i)
         {
-            log_use_pos_or_name(log, uses_, i);
+            if (log_params)
+            {
+                log_use_pos_or_name(*log, uses_, i);
+            }
             uses_[i]->pre_use();
-			log_use_current_value(log, uses_, i);
+            if (log_params)
+            {
+                log_use_current_value(*log, uses_, i);
+            }
         }
-        if (usize != 0)
+        if (usize != 0 && log_params)
         {
-            log.end_line();
+            if (session_.log_endl())
+                *log << std::endl;
+            else
+                *log << '\n';
         }
     }
     catch(...)
     {
-        log << '?';
-        log.end_line();
+        if (log_params)
+        {
+            *log << '?';
+            if (session_.log_endl())
+                *log << std::endl;
+            else
+                *log << '\n';
+        }
         throw;
     }
 }
@@ -790,6 +800,22 @@ void statement_impl::set_row(row * r)
 std::string statement_impl::rewrite_for_procedure_call(std::string const & query)
 {
     return backEnd_->rewrite_for_procedure_call(query);
+}
+
+const std::string & statement_impl::get_last_parameters()
+{
+    if (last_params_.empty())
+    {
+        std::ostringstream params;
+        std::size_t const usize = uses_.size();
+        for (std::size_t i = 0; i != usize; ++i)
+        {
+            log_use_pos_or_name(params, uses_, i);
+            log_use_current_value(params, uses_, i);
+        }
+        last_params_ = params.str();
+    }
+    return last_params_;
 }
 
 void statement_impl::inc_ref()

@@ -33,7 +33,8 @@ void ensureConnected(session_backend * backEnd)
 } // namespace anonymous
 
 session::session()
-    : once(this), prepare(this), query_transformation_(NULL), 
+    : once(this), prepare(this), query_transformation_(NULL),
+	  log_params_(false), log_endl_(false), logStream_(NULL), 
       uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
 {
@@ -41,6 +42,7 @@ session::session()
 
 session::session(connection_parameters const & parameters)
     : once(this), prepare(this), query_transformation_(NULL),
+	  log_params_(false), log_endl_(false), logStream_(NULL), 
       lastConnectParameters_(parameters),
       uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
@@ -51,6 +53,7 @@ session::session(connection_parameters const & parameters)
 session::session(backend_factory const & factory,
     std::string const & connectString)
     : once(this), prepare(this), query_transformation_(NULL),
+	  log_params_(false), log_endl_(false), logStream_(NULL), 
       lastConnectParameters_(factory, connectString),
       uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
@@ -61,6 +64,7 @@ session::session(backend_factory const & factory,
 session::session(std::string const & backendName,
     std::string const & connectString)
     : once(this), prepare(this), query_transformation_(NULL),
+	  log_params_(false), log_endl_(false), logStream_(NULL), 
       lastConnectParameters_(backendName, connectString),
       uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
@@ -70,6 +74,7 @@ session::session(std::string const & backendName,
 
 session::session(std::string const & connectString)
     : once(this), prepare(this), query_transformation_(NULL),
+	  log_params_(false), log_endl_(false), logStream_(NULL), 
       lastConnectParameters_(connectString),
       uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
@@ -78,7 +83,9 @@ session::session(std::string const & connectString)
 }
 
 session::session(connection_pool & pool)
-    : query_transformation_(NULL), isFromPool_(true), pool_(&pool)
+    : query_transformation_(NULL), 
+	  log_params_(false), log_endl_(false), logStream_(NULL), 
+	  isFromPool_(true), pool_(&pool)
 {
     poolPosition_ = pool.lease();
     session & pooledSession = pool.at(poolPosition_);
@@ -256,11 +263,11 @@ void session::set_log_stream(std::ostream * s)
     }
     else
     {
-        logStream_ = log_stream(s);
+        logStream_ = s;
     }
 }
 
-log_stream & session::get_log_stream() const
+std::ostream * session::get_log_stream() const
 {
     if (isFromPool_)
     {
@@ -269,6 +276,54 @@ log_stream & session::get_log_stream() const
     else
     {
         return logStream_;
+    }
+}
+
+void session::set_log_endl(bool enable)
+{
+    if (isFromPool_)
+    {
+        pool_->at(poolPosition_).set_log_endl(enable);
+    }
+    else
+    {
+        log_endl_ = enable;
+    }
+}
+
+bool session::log_endl() const
+{
+    if (isFromPool_)
+    {
+        return pool_->at(poolPosition_).log_endl();
+    }
+    else
+    {
+        return log_endl_;
+    }
+}
+
+void session::set_log_params(bool enable)
+{
+    if (isFromPool_)
+    {
+        pool_->at(poolPosition_).set_log_params(enable);
+    }
+    else
+    {
+        log_params_ = enable;
+    }
+}
+
+bool session::log_params() const
+{
+	if (isFromPool_)
+    {
+        return pool_->at(poolPosition_).log_params();
+    }
+    else
+    {
+        return log_params_;
     }
 }
 
@@ -281,7 +336,14 @@ void session::log_query(std::string const & query)
     else
     {
         lastQuery_ = query;
-        logStream_ << lastQuery_;
+		if (logStream_)
+		{
+			*logStream_ << lastQuery_;
+			if (log_endl_)
+				*logStream_ << std::endl;
+			else
+				*logStream_ << '\n';
+		}
     }
 }
 

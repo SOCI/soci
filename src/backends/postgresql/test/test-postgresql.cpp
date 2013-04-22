@@ -712,28 +712,14 @@ void test_log()
     session sql(backEnd, connectString);
 
     // No logging stream.
-    assert(sql.get_log_stream().is_null() == true);
-    assert(sql.get_log_stream().for_params().is_null() == true);
+	assert(sql.log_params() == false);
+    assert(sql.get_log_stream() == NULL);
 
     sql.set_log_stream(&log);
 
     // Available logging stream for queries.
-    assert(sql.get_log_stream().is_null() == false);
-    assert(sql.get_log_stream().for_params().is_null() == true);
-
-    // Test log_stream internal line operations.
-    {
-        sql.get_log_stream().for_params().end_line();
-        assert(log.str() == "");
-
-        sql.get_log_stream().log_params(true); // enable parameter logging.
-        sql.get_log_stream().for_params().end_line();
-        assert(log.str() == "\n");
-        sql.get_log_stream().end_line();
-        assert(log.str() == "\n\n");
-        log.str("");
-        sql.set_log_stream(&log); // Reset changes.
-    }
+	assert(sql.log_params() == false);
+    assert(sql.get_log_stream() != NULL);
 
     // Parameters. All types supportted by this backend.
     int i = -1;
@@ -757,8 +743,8 @@ void test_log()
 
     // Available logging stream for queries and parameter, in a separate line.
     log.str("");
-    sql.get_log_stream().log_params(true);
-    assert(sql.get_log_stream().for_params().is_null() == false);
+    sql.set_log_params(true);
+	assert(sql.log_params() == true);
 
     sql << "SELECT :1::int, :2::float8, :3::bigint, :4::numeric, :5::timestamp, :6::text, :7::text, :8::int, :9::oid, :10::oid",
         use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind), use(r), use(b);
@@ -767,8 +753,8 @@ void test_log()
 
     // Available logging stream for queries only. No more parameters temporarily.
     log.str("");
-    sql.get_log_stream().log_params(false);
-    assert(sql.get_log_stream().for_params().is_null() == true);
+    sql.set_log_params(false);
+	assert(sql.log_params() == false);
     
     sql << "SELECT :1::int, :2::float8, :3::bigint, :4::numeric, :5::timestamp, :6::text, :7::text, :8::int, :9::oid, :10::oid",
         use(i), use(d), use(ll), use(ull), use(t), use(s), use(c), use(n, ind), use(r), use(b);
@@ -788,9 +774,8 @@ void test_log()
 
     // Available logging stream for queries and parameters again.
     log.str("");
-    sql.get_log_stream().log_params(true);
-    sql.get_log_stream().log_flush(true); // Not testable for stringstream but must not fail.
-    assert(sql.get_log_stream().for_params().is_null() == false);
+    sql.set_log_params(true);
+    sql.set_log_endl(true); // Not testable for stringstream but must not fail.
     
     sql << "INSERT INTO soci_test VALUES (:1::int)",
         use(v, w);

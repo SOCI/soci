@@ -85,7 +85,11 @@ public:
 
     // support for basic logging
     void set_log_stream(std::ostream * s);
-    log_stream & get_log_stream() const;
+    std::ostream * get_log_stream() const;
+	void set_log_endl(bool enable);
+	bool log_endl() const;
+    void set_log_params(bool enable);
+	bool log_params() const;
 
     void log_query(std::string const & query);
     std::string get_last_query() const;
@@ -129,7 +133,9 @@ private:
     std::ostringstream query_stream_;
     details::query_transformation_function* query_transformation_;
 
-    mutable log_stream logStream_;
+	bool log_params_;
+	bool log_endl_;
+    std::ostream * logStream_;
     std::string lastQuery_;
 
     connection_parameters lastConnectParameters_;

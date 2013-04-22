@@ -71,6 +71,7 @@ public:
     session & session_;
 
     std::string rewrite_for_procedure_call(std::string const & query);
+    const std::string & get_last_parameters();
 
 protected:
     std::vector<details::into_type_base *> intos_;
@@ -116,6 +117,7 @@ private:
     bool resize_intos(std::size_t upperBound = 0);
     void truncate_intos();
 
+    std::string last_params_;
     soci::details::statement_backend * backEnd_;
 
     // The type is noncopyable.
@@ -174,6 +176,11 @@ public:
     long long get_affected_rows()
     {
         return impl_->get_affected_rows();
+    }
+
+    const std::string & get_last_parameters()
+    {
+        return impl_->get_last_parameters();
     }
 
     bool fetch()
