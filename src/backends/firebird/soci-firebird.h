@@ -15,9 +15,10 @@
 #   define SOCI_FIREBIRD_DECL __declspec(dllexport)
 #  else
 #   define SOCI_FIREBIRD_DECL __declspec(dllimport)
-#  endif // SOCI_FIREBIRD_SOURCE
-# endif // SOCI_DLL
+#  endif // SOCI_DLL
+# endif // SOCI_FIREBIRD_SOURCE
 #endif // _WIN32
+
 //
 // If SOCI_FIREBIRD_DECL isn't defined yet define it now
 #ifndef SOCI_FIREBIRD_DECL
