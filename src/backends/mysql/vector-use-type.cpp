@@ -243,6 +243,11 @@ const char * mysql_vector_use_type_backend::c_str(std::size_t & length, std::siz
 {
 	const char * buf = buffers_.at(index);
 	length = bufSizes_.at(index);
+	if (buf == null_val())
+	{
+		length = 0;
+		return NULL;
+	}
 	if ((type_ == x_stdtm || type_ == x_stdstring || type_ == x_char) && buf && length > 0)
 	{
 		// Skip quotes

@@ -201,6 +201,11 @@ void mysql_standard_use_type_backend::clean_up()
 
 const char * mysql_standard_use_type_backend::c_str(std::size_t & length) const
 {
+	if (buf_ == null_val())
+	{
+		length = 0;
+		return NULL;
+	}
 	length = bufSize_;
 	if ((type_ == x_stdtm || type_ == x_stdstring || type_ == x_char) && buf_ && length > 0)
 	{

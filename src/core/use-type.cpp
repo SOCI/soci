@@ -49,15 +49,19 @@ void use_type_base::to_string(std::string & str, void * data, exchange_type type
 		}
 		break;
 	case x_statement:
+		n = 1;
 		str = "s";
 		break;
 	case x_rowid:
+		n = 1;
 		str = "r";
 		break;
 	case x_blob:
+		n = 1;
 		str = "b";
 		break;
 	default:
+		n = 1;
 		str = "?";
 		break;
 	}
