@@ -1,7 +1,4 @@
 [ODBC]
-DRIVER=MySQL ODBC 5.2a Driver
-UID=root
-PORT=3306
-DATABASE=test
-SERVER=localhost
-PASSWORD=su
+DRIVER=MySQL
+DATABASE=soci_test
+OPTION=0
