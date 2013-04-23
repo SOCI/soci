@@ -43,7 +43,7 @@ void log_use_pos_or_name(std::ostream & log, std::vector<use_type_base*>& uses, 
     log << '=';
 }
 
-void log_use_current_value(std::ostream & log, std::vector<use_type_base*>& uses, std::size_t index)
+void log_use_current_value(std::ostream & log, std::vector<use_type_base*>& uses, std::size_t index, bool expand)
 {
     if (uses[index]->get_type() == x_unknown)
     {
@@ -54,34 +54,41 @@ void log_use_current_value(std::ostream & log, std::vector<use_type_base*>& uses
     std::size_t usize = uses[index]->size();
     if (usize > 1)
         log << '[';
-    for (std::size_t u = 0; u < usize; ++u)
+    if (expand)
     {
-        if (u > 0)
-            log << ',';
-        std::size_t len = 0;
-        const char* str = uses[index]->to_string(len, u);
-        if (str == NULL)
+        for (std::size_t u = usize; u < usize; ++u)
         {
-            log << "<NULL>";
-        }
-        else
-        {
-            switch (uses[index]->get_type())
+            if (u > 0)
+                log << ',';
+            std::size_t len = 0;
+            const char* str = uses[index]->to_string(len, u);
+            if (str == NULL)
             {
-            case x_char: case x_stdstring:
-                log << '\'';
-                log.write(str, len);
-                log << '\'';
-                break;
-            case x_stdtm: case x_statement: case x_rowid: case x_blob:
-                log << '<';
-                log.write(str, len);
-                log << '>';
-                break;
-            default:
-                log.write(str, len);
+                log << "<NULL>";
+            }
+            else
+            {
+                switch (uses[index]->get_type())
+                {
+                case x_char: case x_stdstring:
+                    log << '\'';
+                    log.write(str, len);
+                    log << '\'';
+                    break;
+                case x_stdtm: case x_statement: case x_rowid: case x_blob:
+                    log << '<';
+                    log.write(str, len);
+                    log << '>';
+                    break;
+                default:
+                    log.write(str, len);
+                }
             }
         }
+    }
+    else
+    {
+        log << usize;
     }
     if (usize > 1)
         log << ']';
@@ -637,7 +644,8 @@ void statement_impl::pre_use()
             uses_[i]->pre_use();
             if (log_params)
             {
-                log_use_current_value(*log, uses_, i);
+                log_use_current_value(*log, uses_, i,
+                    session_.expand_vector_params());
             }
         }
         if (usize != 0 && log_params)
@@ -811,7 +819,8 @@ const std::string & statement_impl::get_last_parameters()
         for (std::size_t i = 0; i != usize; ++i)
         {
             log_use_pos_or_name(params, uses_, i);
-            log_use_current_value(params, uses_, i);
+            log_use_current_value(params, uses_, i,
+                session_.expand_vector_params());
         }
         last_params_ = params.str();
     }
