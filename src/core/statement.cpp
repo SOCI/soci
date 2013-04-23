@@ -54,9 +54,9 @@ void log_use_current_value(std::ostream & log, std::vector<use_type_base*>& uses
     std::size_t usize = uses[index]->size();
     if (usize > 1)
         log << '[';
-    if (expand)
+    if (expand || usize == 1)
     {
-        for (std::size_t u = usize; u < usize; ++u)
+        for (std::size_t u = 0; u < usize; ++u)
         {
             if (u > 0)
                 log << ',';
