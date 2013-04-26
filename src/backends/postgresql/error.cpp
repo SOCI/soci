@@ -47,14 +47,8 @@ details::postgresql_result::check_for_data(char const* errMsg) const
         case PGRES_TUPLES_OK:
             return true;
 
-        case PGRES_COPY_OUT:
-        case PGRES_COPY_IN:
-        case PGRES_BAD_RESPONSE:
-        case PGRES_NONFATAL_ERROR:
-        case PGRES_FATAL_ERROR:
-        case PGRES_COPY_BOTH:
-        case PGRES_SINGLE_TUPLE:
-            // Some of the above status codes are not really errors but we're
+        default:
+            // Some of the other status codes are not really errors but we're
             // not prepared to handle them right now and shouldn't ever receive
             // them so throw nevertheless
             break;
