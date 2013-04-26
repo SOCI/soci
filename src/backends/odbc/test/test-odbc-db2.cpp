@@ -95,6 +95,163 @@ public:
     }
 };
 
+struct table_creator_bigint : table_creator_base
+{
+    table_creator_bigint(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "CREATE TABLE SOCI_TEST (VAL BIGINT)";
+    }
+};
+
+void test_odbc_db2_long_long()
+{
+    const int num_recs = 100;
+    session sql(backEnd, connectString);
+    table_creator_bigint table(sql);
+
+    {
+        long long n;
+        statement st = (sql.prepare <<
+            "INSERT INTO SOCI_TEST (VAL) VALUES (:val)", use(n));
+        for (int i = 0; i < num_recs; i++)
+        {
+            n = 1000000000LL + i;
+            st.execute();
+        }
+    }
+    {
+        long long n2;
+        statement st = (sql.prepare <<
+            "SELECT VAL FROM SOCI_TEST ORDER BY VAL", into(n2));
+        st.execute();
+        for (int i = 0; i < num_recs; i++)
+        {
+            st.fetch();
+            assert(n2 = 1000000000LL + i);
+        }
+    }
+
+    std::cout << "test odbc_db2_long_long passed" << std::endl;
+}
+
+void test_odbc_db2_unsigned_long_long()
+{
+    const int num_recs = 100;
+    session sql(backEnd, connectString);
+    table_creator_bigint table(sql);
+
+    {
+        unsigned long long n;
+        statement st = (sql.prepare <<
+            "INSERT INTO SOCI_TEST (VAL) VALUES (:val)", use(n));
+        for (int i = 0; i < num_recs; i++)
+        {
+            n = 1000000000LL + i;
+            st.execute();
+        }
+    }
+    {
+        unsigned long long n2;
+        statement st = (sql.prepare <<
+            "SELECT VAL FROM SOCI_TEST ORDER BY VAL", into(n2));
+        st.execute();
+        for (int i = 0; i < num_recs; i++)
+        {
+            st.fetch();
+            assert(n2 = 1000000000LL + i);
+        }
+    }
+
+    std::cout << "test odbc_db2_unsigned_long_long passed" << std::endl;
+}
+
+void test_odbc_db2_long_long_vector()
+{
+    const std::size_t num_recs = 100;
+    session sql(backEnd, connectString);
+    table_creator_bigint table(sql);
+
+    {
+        std::vector<long long> v(num_recs);
+        for (std::size_t i = 0; i < num_recs; i++)
+        {
+            v[i] = 1000000000LL + i;
+        }
+
+        sql << "INSERT INTO SOCI_TEST (VAL) VALUES (:bi)", use(v);
+    }
+    {
+        std::size_t recs = 0;
+
+        std::vector<long long> v(num_recs / 2 + 1);
+        statement st = (sql.prepare <<
+            "SELECT VAL FROM SOCI_TEST ORDER BY VAL", into(v));
+        st.execute();
+        while (true)
+        {
+            if (!st.fetch())
+            {
+                break;
+            }
+
+            const std::size_t vsize = v.size();
+            for (std::size_t i = 0; i < vsize; i++)
+            {
+                assert(v[i] == 1000000000LL +
+                    static_cast<long long>(recs));
+                recs++;
+            }
+        }
+        assert(recs == num_recs);
+    }
+
+    std::cout << "test odbc_db2_long_long_vector passed" << std::endl;
+}
+
+void test_odbc_db2_unsigned_long_long_vector()
+{
+    const std::size_t num_recs = 100;
+    session sql(backEnd, connectString);
+    table_creator_bigint table(sql);
+
+    {
+        std::vector<unsigned long long> v(num_recs);
+        for (std::size_t i = 0; i < num_recs; i++)
+        {
+            v[i] = 1000000000LL + i;
+        }
+
+        sql << "INSERT INTO SOCI_TEST (VAL) VALUES (:bi)", use(v);
+    }
+    {
+        std::size_t recs = 0;
+
+        std::vector<unsigned long long> v(num_recs / 2 + 1);
+        statement st = (sql.prepare <<
+            "SELECT VAL FROM SOCI_TEST ORDER BY VAL", into(v));
+        st.execute();
+        while (true)
+        {
+            if (!st.fetch())
+            {
+                break;
+            }
+
+            const std::size_t vsize = v.size();
+            for (std::size_t i = 0; i < vsize; i++)
+            {
+                assert(v[i] == 1000000000LL +
+                    static_cast<unsigned long long>(recs));
+                recs++;
+            }
+        }
+        assert(recs == num_recs);
+    }
+
+    std::cout << "test odbc_db2_unsigned_long_long_vector passed" << std::endl;
+}
+
 int main(int argc, char** argv)
 {
 #ifdef _MSC_VER
@@ -124,6 +281,12 @@ int main(int argc, char** argv)
         test_context tc(backEnd, connectString);
         common_tests tests(tc);
         tests.run();
+
+        std::cout << "\nSOCI DB2 Specific Tests:\n\n";
+        test_odbc_db2_long_long();
+        test_odbc_db2_unsigned_long_long();
+        test_odbc_db2_long_long_vector();
+        test_odbc_db2_unsigned_long_long_vector();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;
