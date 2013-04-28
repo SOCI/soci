@@ -61,6 +61,7 @@ elseif(WIN32)
       $ENV{ProgramW6432}/IBM/SQLLIB/include
       $ENV{ProgramFiles}/IBM/SQLLIB/include)
     set(DB2_FIND_LIB_PATHS
+      $ENV{ProgramFiles}/IBM/SQLLIB/lib
       $ENV{ProgramFiles}/IBM/SQLLIB/lib/win32
       $ENV{ProgramW6432}/IBM/SQLLIB/lib/win32)
   endif()
