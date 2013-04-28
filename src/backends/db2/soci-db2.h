@@ -110,6 +110,7 @@ struct SOCI_DB2_DECL db2_vector_into_type_backend : details::vector_into_type_ba
     std::vector<SQLLEN> indVec;
     void *data;
     char *buf;
+    int position_;
     details::exchange_type type;
     SQLSMALLINT cType;
     std::size_t colSize;
@@ -131,8 +132,7 @@ struct SOCI_DB2_DECL db2_standard_use_type_backend : details::standard_use_type_
 
     db2_statement_backend& statement_;
 
-    void prepare_for_bind(void *&data, SQLLEN &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType);
-    void bind_helper(int &position, void *data, details::exchange_type type);
+    void *prepare_for_bind(void *data, SQLLEN &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType);
 
     void *data;
     details::exchange_type type;
@@ -261,7 +261,7 @@ struct db2_session_backend : details::session_backend
 
 struct SOCI_DB2_DECL db2_backend_factory : backend_factory
 {
-	db2_backend_factory() {}
+    db2_backend_factory() {}
     db2_session_backend* make_session(
         connection_parameters const & parameters) const;
 };
