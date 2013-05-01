@@ -17,4 +17,5 @@ echo 'CREATE DATABASE "LOCALHOST:/tmp/soci_test.fdb" PAGE_SIZE = 16384;' > /tmp/
 isql-fb -u SYSDBA -p masterkey -i /tmp/create_soci_test.sql -q
 cat /tmp/create_soci_test.sql
 sudo -u db2inst1 -i db2 "CREATE DATABASE SOCITEST"
+sudo -u db2inst1 -i db2 "ACTIVATE DATABASE SOCITEST"
 echo "$(tmstamp) *** before_script::createdb finished $(date) ***"
