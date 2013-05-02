@@ -116,10 +116,10 @@ void statement_impl::bind(values & values)
                                           query_[pos + placeholder.size()] : '\0';
                     
                     if (std::isalnum(nextChar))
-					{
-						values.add_unused(*it, values.indicators_[cnt]);
-					}
-					else
+                    {
+                        values.add_unused(*it, values.indicators_[cnt]);
+                    }
+                    else
                     {
                         int position = static_cast<int>(uses_.size());
                         (*it)->bind(*this, position);
