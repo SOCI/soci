@@ -12,6 +12,7 @@
 #include "use-type.h"
 #include "values.h"
 #include <ctime>
+#include <cctype>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -114,18 +115,16 @@ void statement_impl::bind(values & values)
                     const char nextChar = (pos + placeholder.size()) < query_.size() ?
                                           query_[pos + placeholder.size()] : '\0';
                     
-                    if (nextChar == ' ' || nextChar == ',' || nextChar == ';' ||
-                        nextChar == '\0' || nextChar == ')' || 
-                        nextChar == ':') // This last specific for PostgreSQL-style casts.
+                    if (std::isalnum(nextChar))
+					{
+						values.add_unused(*it, values.indicators_[cnt]);
+					}
+					else
                     {
                         int position = static_cast<int>(uses_.size());
                         (*it)->bind(*this, position);
                         uses_.push_back(*it);
                         indicators_.push_back(values.indicators_[cnt]);
-                    }
-                    else
-                    {
-                        values.add_unused(*it, values.indicators_[cnt]);
                     }
                 }
                 else
