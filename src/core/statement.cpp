@@ -115,7 +115,8 @@ void statement_impl::bind(values & values)
                                           query_[pos + placeholder.size()] : '\0';
                     
                     if (nextChar == ' ' || nextChar == ',' || nextChar == ';' ||
-                        nextChar == '\0' || nextChar == ')')
+                        nextChar == '\0' || nextChar == ')' || 
+                        nextChar == ':') // This last specific for PostgreSQL-style casts.
                     {
                         int position = static_cast<int>(uses_.size());
                         (*it)->bind(*this, position);
