@@ -1,5 +1,6 @@
-_build*
-src/build
-tmp
 *.swp
 *.kate-swp
+_build*
+src/build
+tags
+tmp

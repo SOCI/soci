@@ -1,7 +1,7 @@
 ################################################################################
 # SociBackend.cmake - part of CMake configuration of SOCI library
 ################################################################################
-# Copyright (C) 2010 Mateusz Loskot <mateusz@loskot.net>
+# Copyright (C) 2010-2013 Mateusz Loskot <mateusz@loskot.net>
 #
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
@@ -16,10 +16,44 @@
 #     - defines test project of a database backend for SOCI library
 ################################################################################
 
+macro(soci_backend_deps_found NAME DEPS)
+
+  # Determine required dependencies
+  set(DEPS_INCLUDE_DIRS)
+  set(DEPS_LIBRARIES)
+  set(DEPS_DEFS)
+  set(DEPS_NOT_FOUND)
+
+  # CMake 2.8+ syntax only:
+  #foreach(dep IN LISTS DEPS)
+  foreach(dep ${DEPS})
+    soci_check_package_found(${dep} DEPEND_FOUND)
+    if(NOT DEPEND_FOUND)
+      list(APPEND DEPS_NOT_FOUND ${dep}) 
+    else()
+      string(TOUPPER "${dep}" DEPU)
+      list(APPEND DEPS_INCLUDE_DIRS ${${DEPU}_INCLUDE_DIR})
+      list(APPEND DEPS_INCLUDE_DIRS ${${DEPU}_INCLUDE_DIRS})
+      list(APPEND DEPS_LIBRARIES ${${DEPU}_LIBRARIES})
+      list(APPEND DEPS_DEFS HAVE_${DEPU}=1)
+    endif()
+  endforeach()
+
+  list(LENGTH DEPS_NOT_FOUND NOT_FOUND_COUNT)
+  
+  if (NOT_FOUND_COUNT GREATER 0)
+    set(${SUCCESS} False)
+  else()
+    set(${NAME}_DEPS_INCLUDE_DIRS ${DEPS_INCLUDE_DIRS})
+    set(${NAME}_DEPS_LIBRARIES ${DEPS_LIBRARIES})
+    set(${NAME}_DEPS_DEFS ${DEPS_DEFS})
+    set(${SUCCESS} True)
+  endif()
+endmacro()
+
 # Defines project of a database backend for SOCI library
 #
 # soci_backend(backendname
-#              HEADERS header1 header2
 #              DEPENDS dependency1 dependency2
 #              DESCRIPTION description
 #              AUTHORS author1 author2
@@ -27,7 +61,7 @@
 #
 macro(soci_backend NAME)
   parse_arguments(THIS_BACKEND
-    "HEADERS;DEPENDS;DESCRIPTION;AUTHORS;MAINTAINERS;"
+    "DEPENDS;DESCRIPTION;AUTHORS;MAINTAINERS;"
     ""
     ${ARGN})
 
@@ -43,31 +77,9 @@ macro(soci_backend NAME)
   option(${THIS_BACKEND_OPTION}
     "Attempt to build ${PROJECT_NAME} backend for ${NAME}" ON)
 
-  # Determine required dependencies
-  set(THIS_BACKEND_DEPENDS_INCLUDE_DIRS)
-  set(THIS_BACKEND_DEPENDS_LIBRARIES)
-  set(THIS_BACKEND_DEPENDS_DEFS)
-  set(DEPENDS_NOT_FOUND)
+  soci_backend_deps_found(${NAMEU} "${THIS_BACKEND_DEPENDS}" ${NAMEU}_DEPS_FOUND)
 
-  # CMake 2.8+ syntax only:
-  #foreach(dep IN LISTS THIS_BACKEND_DEPENDS)
-  foreach(dep ${THIS_BACKEND_DEPENDS})
-
-    soci_check_package_found(${dep} DEPEND_FOUND)
-    if(NOT DEPEND_FOUND)
-      list(APPEND DEPENDS_NOT_FOUND ${dep}) 
-    else()
-      string(TOUPPER "${dep}" DEPU)
-      list(APPEND THIS_BACKEND_DEPENDS_INCLUDE_DIRS ${${DEPU}_INCLUDE_DIR})
-      list(APPEND THIS_BACKEND_DEPENDS_INCLUDE_DIRS ${${DEPU}_INCLUDE_DIRS})
-      list(APPEND THIS_BACKEND_DEPENDS_LIBRARIES ${${DEPU}_LIBRARIES})
-      list(APPEND THIS_BACKEND_DEPENDS_DEFS -DHAVE_${DEPU}=1)
-    endif()
-  endforeach()
-
-  list(LENGTH DEPENDS_NOT_FOUND NOT_FOUND_COUNT)
-
-  if (NOT_FOUND_COUNT GREATER 0)
+  if (${NAMEU}_DEPS_FOUND)
 
     colormsg(_RED_ "WARNING:")
     colormsg(RED "Some required dependencies of ${NAME} backend not found:")
@@ -87,43 +99,55 @@ macro(soci_backend NAME)
 
     set(${THIS_BACKEND_OPTION} OFF)
 
-  else(NOT_FOUND_COUNT GREATER 0)
+  else()
 
     if(${THIS_BACKEND_OPTION})
+      
+      get_directory_property(THIS_INCLUDE_DIRS INCLUDE_DIRECTORIES)
+      get_directory_property(THIS_COMPILE_DEFS COMPILE_DEFINITIONS)
+      
+      # Backend-specific depedencies 
+      set(THIS_BACKEND_DEPENDS_INCLUDE_DIRS ${${NAMEU}_DEPS_INCLUDE_DIRS})
+      set(THIS_BACKEND_DEPENDS_LIBRARIES ${${NAMEU}_DEPS_LIBRARIES})
+      set(THIS_BACKEND_DEPENDS_DEFS ${${NAMEU}_DEPS_DEFS})
 
-      # Backend-specific include directories
-      list(APPEND THIS_BACKEND_DEPENDS_INCLUDE_DIRS ${SOCI_SOURCE_DIR}/core)
-      set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES
-		"${THIS_BACKEND_DEPENDS_INCLUDE_DIRS}")
-
-      # Backend-specific preprocessor definitions
-      add_definitions(${THIS_BACKEND_DEPENDS_DEFS})
+      # Collect include directories
+      list(APPEND THIS_INCLUDE_DIRS ${SOCI_SOURCE_DIR}/include/soci/${NAMEL})
+      list(APPEND THIS_INCLUDE_DIRS ${SOCI_SOURCE_DIR}/include/private)
+      list(APPEND THIS_INCLUDE_DIRS ${SOCI_SOURCE_DIR}/include/private/${NAMEL})
+      list(APPEND THIS_INCLUDE_DIRS ${THIS_BACKEND_DEPENDS_INCLUDE_DIRS})
+      # Collect compile definitions
+      list(APPEND THIS_COMPILE_DEFS ${THIS_BACKEND_DEPENDS_DEFS})
 
       # Backend installable headers and sources
-      if (NOT THIS_BACKEND_HEADERS)
-		file(GLOB THIS_BACKEND_HEADERS *.h)
-      endif()
+      file(GLOB THIS_BACKEND_HEADERS ${SOCI_SOURCE_DIR}/include/soci/${NAMEL}/*.h)
       file(GLOB THIS_BACKEND_SOURCES *.cpp)
       set(THIS_BACKEND_HEADERS_VAR SOCI_${NAMEU}_HEADERS)
       set(${THIS_BACKEND_HEADERS_VAR} ${THIS_BACKEND_HEADERS}) 
 
-	  # Group source files for IDE source explorers (e.g. Visual Studio)
+      # Group source files for IDE source explorers (e.g. Visual Studio)
       source_group("Header Files" FILES ${THIS_BACKEND_HEADERS})
-	  source_group("Source Files" FILES ${THIS_BACKEND_SOURCES})
+      source_group("Source Files" FILES ${THIS_BACKEND_SOURCES})
       source_group("CMake Files" FILES CMakeLists.txt)
 
+      
       # Backend target
+      set(THIS_BACKEND_VAR SOCI_${NAMEU})
       set(THIS_BACKEND_TARGET ${PROJECTNAMEL}_${NAMEL})
-      set(THIS_BACKEND_TARGET_VAR SOCI_${NAMEU}_TARGET)
+      set(THIS_BACKEND_TARGET_VAR ${THIS_BACKEND_VAR}_TARGET)
       set(${THIS_BACKEND_TARGET_VAR} ${THIS_BACKEND_TARGET})
       
-      soci_target_output_name(${THIS_BACKEND_TARGET} ${THIS_BACKEND_TARGET_VAR}_OUTPUT_NAME)
+      soci_target_output_name(${THIS_BACKEND_TARGET} ${THIS_BACKEND_VAR}_OUTPUT_NAME)
 
-      set(THIS_BACKEND_TARGET_OUTPUT_NAME ${${THIS_BACKEND_TARGET_VAR}_OUTPUT_NAME})
-      set(THIS_BACKEND_TARGET_OUTPUT_NAME_VAR ${THIS_BACKEND_TARGET_VAR}_OUTPUT_NAME)
+      set(THIS_BACKEND_OUTPUT_NAME ${${THIS_BACKEND_VAR}_OUTPUT_NAME})
+      set(THIS_BACKEND_OUTPUT_NAME_VAR ${THIS_BACKEND_VAR}_OUTPUT_NAME)
+
+      set(${THIS_BACKEND_VAR}_COMPILE_DEFINITIONS ${THIS_COMPILE_DEFS})
+      set(THIS_BACKEND_COMPILE_DEFINITIONS_VAR ${THIS_BACKEND_VAR}_COMPILE_DEFINITIONS)
+      message(${THIS_BACKEND_COMPILE_DEFINITIONS_VAR})
+      message(${${THIS_BACKEND_COMPILE_DEFINITIONS_VAR}})
 
       # TODO: Extract as macros: soci_shared_lib_target and soci_static_lib_target --mloskot
-
       # Shared library target
       add_library(${THIS_BACKEND_TARGET}
           SHARED
@@ -131,16 +155,26 @@ macro(soci_backend NAME)
           ${THIS_BACKEND_HEADERS})
 
       target_link_libraries(${THIS_BACKEND_TARGET}
-		${SOCI_CORE_TARGET}
-		${THIS_BACKEND_DEPENDS_LIBRARIES})
+        ${SOCI_CORE_TARGET}
+        ${THIS_BACKEND_DEPENDS_LIBRARIES})
+
+      message("TARGET=${THIS_BACKEND_TARGET}")
+      message("DEPENDS_DEFS=${THIS_BACKEND_DEPENDS_DEFS}")
+      message("INCLUDE_DIRS=${THIS_INCLUDE_DIRS}")
+      get_target_property(TARGET_INCLUDE_DIRS ${THIS_BACKEND_TARGET} INCLUDE_DIRECTORIES)
+      get_target_property(TARGET_COMPILE_DEFS ${THIS_BACKEND_TARGET} COMPILE_DEFINITIONS)
+      set_target_properties(${THIS_BACKEND_TARGET}
+        PROPERTIES
+        COMPILE_DEFINITIONS "${THIS_BACKEND_DEPENDS_DEFS}"
+        INCLUDE_DIRECTORIES "${THIS_INCLUDE_DIRS}")
 
       if(WIN32)
-		set_target_properties(${THIS_BACKEND_TARGET}
+        set_target_properties(${THIS_BACKEND_TARGET}
           PROPERTIES
-          OUTPUT_NAME ${THIS_BACKEND_TARGET_OUTPUT_NAME}
+          OUTPUT_NAME ${THIS_BACKEND_OUTPUT_NAME}
           DEFINE_SYMBOL SOCI_DLL)
       else()
-		set_target_properties(${THIS_BACKEND_TARGET}
+		    set_target_properties(${THIS_BACKEND_TARGET}
           PROPERTIES
           SOVERSION ${${PROJECT_NAME}_SOVERSION}
           INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/lib)
@@ -159,38 +193,41 @@ macro(soci_backend NAME)
           STATIC
           ${THIS_BACKEND_SOURCES}
           ${THIS_BACKEND_HEADERS})
-
+        
+        get_target_property(TARGET_INCLUDE_DIRS ${THIS_BACKEND_TARGET_STATIC} INCLUDE_DIRECTORIES)
+        get_target_property(TARGET_COMPILE_DEFS ${THIS_BACKEND_TARGET_STATIC} COMPILE_DEFINITIONS)
+        
         set_target_properties(${THIS_BACKEND_TARGET_STATIC}
 		      PROPERTIES
-		      OUTPUT_NAME ${THIS_BACKEND_TARGET_OUTPUT_NAME}
+		      OUTPUT_NAME ${THIS_BACKEND_OUTPUT_NAME}
 		      PREFIX "lib"
-		      CLEAN_DIRECT_OUTPUT 1)
+		      CLEAN_DIRECT_OUTPUT 1
+          COMPILE_DEFINITIONS "${THIS_BACKEND_DEPENDS_DEFS}"
+          INCLUDE_DIRECTORIES "${THIS_INCLUDE_DIRS}")
       endif()
 
       # Backend installation
       install(FILES ${THIS_BACKEND_HEADERS}
-          DESTINATION
-          ${INCLUDEDIR}/${PROJECTNAMEL}/${NAMEL})
+        DESTINATION
+        ${INCLUDEDIR}/${PROJECTNAMEL}/${NAMEL})
 
       install(TARGETS ${THIS_BACKEND_TARGET} ${THIS_BACKEND_TARGET_STATIC}
-		RUNTIME DESTINATION ${BINDIR}
-		LIBRARY DESTINATION ${LIBDIR}
-		ARCHIVE DESTINATION ${LIBDIR})
+        RUNTIME DESTINATION ${BINDIR}
+        LIBRARY DESTINATION ${LIBDIR}
+        ARCHIVE DESTINATION ${LIBDIR})
 
-	else()
-      colormsg(HIRED "${NAME}" RED "backend disabled, since")
-	endif()
+    else()
+        colormsg(HIRED "${NAME}" RED "backend disabled, since")
+    endif()
 
-  endif(NOT_FOUND_COUNT GREATER 0)
+  endif()
 
   boost_report_value(${THIS_BACKEND_OPTION})
 
   if(${THIS_BACKEND_OPTION})
     boost_report_value(${THIS_BACKEND_TARGET_VAR})
-    boost_report_value(${THIS_BACKEND_TARGET_OUTPUT_NAME_VAR})
-    boost_report_value(${THIS_BACKEND_HEADERS_VAR})
-
-    soci_report_directory_property(COMPILE_DEFINITIONS)    
+    boost_report_value(${THIS_BACKEND_OUTPUT_NAME_VAR})
+    boost_report_value(${THIS_BACKEND_COMPILE_DEFINITIONS_VAR})
   endif()
 
   # LOG
@@ -201,7 +238,6 @@ macro(soci_backend NAME)
   #message("DESCRIPTION: ${THIS_BACKEND_DESCRIPTION}")
   #message("AUTHORS: ${THIS_BACKEND_AUTHORS}")
   #message("MAINTAINERS: ${THIS_BACKEND_MAINTAINERS}")
-  #message("HEADERS: ${THIS_BACKEND_HEADERS}")
   #message("SOURCES: ${THIS_BACKEND_SOURCES}")
   #message("DEPENDS_LIBRARIES: ${THIS_BACKEND_DEPENDS_LIBRARIES}")
   #message("DEPENDS_INCLUDE_DIRS: ${THIS_BACKEND_DEPENDS_INCLUDE_DIRS}")
@@ -232,7 +268,7 @@ endfunction(soci_backend_test_create_vcxproj_user)
 #
 # soci_backend_test(BACKEND mybackend SOURCE mytest1.cpp
 #   NAME mytest1
-#	CONNSTR "my test connection"
+#	  CONNSTR "my test connection"
 #   DEPENDS library1 library2)
 #
 macro(soci_backend_test)
@@ -249,11 +285,12 @@ macro(soci_backend_test)
 
     # Test name
     if(THIS_TEST_NAME)
-	  string(TOUPPER "${THIS_TEST_NAME}" NAMEU)
-	  set(TEST_FULL_NAME SOCI_${BACKENDU}_TEST_${NAMEU})
-	else()
-	  set(TEST_FULL_NAME SOCI_${BACKENDU}_TEST)
+      string(TOUPPER "${THIS_TEST_NAME}" NAMEU)
+      set(TEST_FULL_NAME SOCI_${BACKENDU}_TEST_${NAMEU})
+    else()
+      set(TEST_FULL_NAME SOCI_${BACKENDU}_TEST)
     endif()
+    string(TOLOWER "${TEST_FULL_NAME}" TEST_TARGET)
 
     set(TEST_CONNSTR_VAR ${TEST_FULL_NAME}_CONNSTR)
     set(${TEST_CONNSTR_VAR} ""
@@ -264,32 +301,21 @@ macro(soci_backend_test)
     endif()
     boost_report_value(${TEST_CONNSTR_VAR})
 
-    include_directories(${SOCI_SOURCE_DIR}/core/test)
-    include_directories(${SOCI_SOURCE_DIR}/backends/${BACKENDL})
-
-    # TODO: Find more generic way of adding Boost to core and backend tests only.
-    #       Ideally, from within Boost.cmake.
-	set(SOCI_TEST_DEPENDENCIES)
-    if(Boost_FOUND)
-	  include_directories(${Boost_INCLUDE_DIRS})
-	  if(Boost_DATE_TIME_FOUND)
-		set(SOCI_TEST_DEPENDENCIES ${Boost_DATE_TIME_LIBRARY})
-		add_definitions(-DHAVE_BOOST_DATE_TIME=1)
-	  endif()
-	endif()
-
-    string(TOLOWER "${TEST_FULL_NAME}" TEST_TARGET)
-
-	set(TEST_HEADERS ${PROJECT_SOURCE_DIR}/core/test/common-tests.h)
+    set(THIS_INCLUDE_DIRS
+      ${SOCI_SOURCE_DIR}/include/soci
+      ${SOCI_SOURCE_DIR}/include/soci/${BACKENDL}
+      ${SOCI_SOURCE_DIR}/include/private
+      ${SOCI_SOURCE_DIR}/include/private/${BACKENDL})
+	  set(TEST_HEADERS common-tests.h)
+    set(TEST_DEPS soci_core soci_${BACKENDL})
 
     # Shared libraries test
     add_executable(${TEST_TARGET} ${TEST_HEADERS} ${THIS_TEST_SOURCE})
 
-    target_link_libraries(${TEST_TARGET}
-      ${SOCI_CORE_TARGET}
-      ${SOCI_${BACKENDU}_TARGET}
-      ${${BACKENDU}_LIBRARIES}
-	  ${SOCI_TEST_DEPENDENCIES})
+    target_link_libraries(${TEST_TARGET} ${TEST_DEPS})
+
+    set_target_properties(${TEST_TARGET}
+      PROPERTIES INCLUDE_DIRECTORIES "${THIS_INCLUDE_DIRS}")
 
     add_test(${TEST_TARGET}
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET}
@@ -300,15 +326,14 @@ macro(soci_backend_test)
     # Static libraries test
     if(SOCI_STATIC)
       set(TEST_TARGET_STATIC ${TEST_TARGET}_static)
+      set(TEST_DEPS_STATIC soci_core_static soci_${BACKENDL}_static)
 
       add_executable(${TEST_TARGET_STATIC} ${TEST_HEADERS} ${THIS_TEST_SOURCE})
 
-      target_link_libraries(${TEST_TARGET_STATIC}
-        ${SOCI_CORE_TARGET_STATIC}
-        ${SOCI_${BACKENDU}_TARGET}_static
-        ${${BACKENDU}_LIBRARIES}
-        ${SOCI_CORE_STATIC_DEPENDENCIES}
-        ${SOCI_TEST_DEPENDENCIES})
+      target_link_libraries(${TEST_TARGET_STATIC} ${TEST_DEPS_STATIC})
+
+      set_target_properties(${TEST_TARGET_STATIC}
+        PROPERTIES INCLUDE_DIRECTORIES "${THIS_INCLUDE_DIRS}")
 
       add_test(${TEST_TARGET_STATIC}
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET_STATIC}
