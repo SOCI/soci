@@ -118,12 +118,9 @@ public:
             std::string const & name = std::string())
         : use_type<base_type>(details::base_value_holder<T>::val_, ind, name)
         , value_(value)
-        , ownInd_(ind) // unused, just keep the pair of indicator(s) consistent
         , ind_(ind)
         , readOnly_(false)
     {
-        assert(ownInd_ == ind_);
-
         // TODO: likely to be removed (SHA: c166625a28f7c907318134f625ff5acea7d9a1f8)
         //convert_to_base();
     }
@@ -132,12 +129,9 @@ public:
             std::string const & name = std::string())
         : use_type<base_type>(details::base_value_holder<T>::val_, ind, name)
         , value_(const_cast<T &>(value))
-        , ownInd_(ind) // unused, just keep the pair of indicator(s) consistent
         , ind_(ind)
         , readOnly_(true)
     {
-        assert(ownInd_ == ind_);
-
         // TODO: likely to be removed (SHA: c166625a28f7c907318134f625ff5acea7d9a1f8)
         //convert_to_base();
     }
@@ -213,11 +207,8 @@ public:
         : details::base_vector_holder<T>(value.size())
         , into_type<base_type>(details::base_vector_holder<T>::vec_, ind)
         , value_(value)
-        , ownInd_(ind) // unused, just keep the pair of indicator(s) consistent
         , ind_(ind)
-    {
-        assert(ownInd_ == ind_);
-    }
+    {}
 
     virtual std::size_t size() const
     {
@@ -290,12 +281,9 @@ public:
         : details::base_vector_holder<T>(value.size())
         , use_type<base_type>(
             details::base_vector_holder<T>::vec_, ind, name)
-        , ownInd_(ind) // unused, just keep the pair of indicator(s) consistent
         , value_(value)
         , ind_(ind)
-    {
-        assert(ownInd_ == ind_);
-    }
+    {}
 
 private:
     void convert_from_base()
