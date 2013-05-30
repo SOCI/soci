@@ -12,6 +12,7 @@
 #include "into-type.h"
 #include "use-type.h"
 // std
+#include <cassert>
 #include <cstddef>
 #include <string>
 #include <vector>
@@ -44,14 +45,21 @@ public:
     conversion_into_type(T & value)
         : into_type<base_type>(details::base_value_holder<T>::val_, ownInd_)
         , value_(value)
+        , ownInd_()
         , ind_(ownInd_)
-    {}
+    {
+        assert(ownInd_ == ind_);
+    }
     
     conversion_into_type(T & value, indicator & ind)
         : into_type<base_type>(details::base_value_holder<T>::val_, ind)
         , value_(value)
+        , ownInd_(ind) // unused, just keep the pair of indicator(s) consistent
         , ind_(ind)
-    {}
+    {
+        assert(ownInd_ == ind_);
+    }
+
 
 private:
     void convert_from_base()
@@ -83,9 +91,12 @@ public:
     conversion_use_type(T & value, std::string const & name = std::string())
         : use_type<base_type>(details::base_value_holder<T>::val_, ownInd_, name)
         , value_(value)
+        , ownInd_()
         , ind_(ownInd_)
         , readOnly_(false)
     {
+        assert(ownInd_ == ind_);
+
         // TODO: likely to be removed (SHA: c166625a28f7c907318134f625ff5acea7d9a1f8)
         //convert_to_base();
     }
@@ -93,9 +104,12 @@ public:
     conversion_use_type(T const & value, std::string const & name = std::string())
         : use_type<base_type>(details::base_value_holder<T>::val_, ownInd_, name)
         , value_(const_cast<T &>(value))
+        , ownInd_()
         , ind_(ownInd_)
         , readOnly_(true)
     {
+        assert(ownInd_ == ind_);
+
         // TODO: likely to be removed (SHA: c166625a28f7c907318134f625ff5acea7d9a1f8)
         //convert_to_base();
     }
@@ -183,8 +197,11 @@ public:
         : details::base_vector_holder<T>(value.size())
         , into_type<base_type>(details::base_vector_holder<T>::vec_, ownInd_)
         , value_(value)
+        , ownInd_()
         , ind_(ownInd_)
-    {}
+    {
+        assert(ownInd_ == ind_);
+    }
 
     conversion_into_type(std::vector<T> & value, std::vector<indicator> & ind)
         : details::base_vector_holder<T>(value.size())
@@ -252,8 +269,11 @@ public:
         , use_type<base_type>(
             details::base_vector_holder<T>::vec_, ownInd_, name)
         , value_(value)
+        , ownInd_()
         , ind_(ownInd_)
-    {}
+    {
+        assert(ownInd_ == ind_);
+    }
 
     conversion_use_type(std::vector<T> & value,
             std::vector<indicator> & ind,
