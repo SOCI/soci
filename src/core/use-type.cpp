@@ -19,7 +19,10 @@ standard_use_type::~standard_use_type()
 
 void standard_use_type::bind(statement_impl & st, int & position)
 {
-    backEnd_ = st.make_use_type_backend();
+    if (backEnd_ == NULL)
+    {
+        backEnd_ = st.make_use_type_backend();
+    }
     if (name_.empty())
     {
         backEnd_->bind_by_pos(position, data_, type_, readOnly_);
@@ -67,7 +70,10 @@ vector_use_type::~vector_use_type()
 
 void vector_use_type::bind(statement_impl & st, int & position)
 {
-    backEnd_ = st.make_vector_use_type_backend();
+    if (backEnd_ == NULL)
+    {
+        backEnd_ = st.make_vector_use_type_backend();
+    }
     if (name_.empty())
     {
         backEnd_->bind_by_pos(position, data_, type_);

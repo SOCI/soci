@@ -340,6 +340,7 @@ public:
         test_pull5();
         test_issue67();
         test_prepared_insert_with_orm_type();
+        test_issue154();
     }
 
 private:
@@ -3840,7 +3841,47 @@ void test_issue67()
         }
     }
 
-}; // class common_tests
+}
+
+// issue 154 - Calling undefine_and_bind and then define_and_bind causes a leak.
+// If the test runs under memory debugger and it passes, then
+// soci::details::standard_use_type_backend and vector_use_type_backend must not leak
+void test_issue154()
+{
+    session sql(backEndFactory_, connectString_);
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+    sql << "insert into soci_test(id) values (1)";
+    {
+        int id = 1;
+        int val = 0;
+        statement st(sql);
+        st.exchange(use(id));
+        st.alloc();
+        st.prepare("select id from soci_test where id = :1");
+        st.define_and_bind();
+        st.undefine_and_bind();
+        st.exchange(soci::into(val));
+        st.define_and_bind();
+        st.execute(true);
+        assert(val == 1);
+    }
+    // vector variation
+    {
+        std::vector<int> id(1, 1);
+        int val = 0;
+        statement st(sql);
+        st.exchange(use(id));
+        st.alloc();
+        st.prepare("select id from soci_test where id = :1");
+        st.define_and_bind();
+        st.undefine_and_bind();
+        st.exchange(soci::into(val));
+        st.define_and_bind();
+        st.execute(true);
+        assert(val == 1);
+    }
+    std::cout << "test issue-154 passed - check memory debugger output for leaks" << std::endl;
+}
 
 }; // class common_tests
 
