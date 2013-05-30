@@ -118,7 +118,7 @@ public:
             std::string const & name = std::string())
         : use_type<base_type>(details::base_value_holder<T>::val_, ind, name)
         , value_(value)
-        , ownInd_(ind), // unused, just keep the pair of indicator(s) consistent
+        , ownInd_(ind) // unused, just keep the pair of indicator(s) consistent
         , ind_(ind)
         , readOnly_(false)
     {
@@ -132,7 +132,7 @@ public:
             std::string const & name = std::string())
         : use_type<base_type>(details::base_value_holder<T>::val_, ind, name)
         , value_(const_cast<T &>(value))
-        , ownInd_(ind), // unused, just keep the pair of indicator(s) consistent
+        , ownInd_(ind) // unused, just keep the pair of indicator(s) consistent
         , ind_(ind)
         , readOnly_(true)
     {
