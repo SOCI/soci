@@ -695,6 +695,15 @@ void test_statement_prepare_failure()
     std::cout << "test_statement_prepare_failure passed" << std::endl;
 }
 
+// Test the support of PostgreSQL-style casts with ORM
+void test_orm_cast()
+{
+    session sql(backEnd, connectString);
+    values v;
+    v.set("a", 1);
+    sql << "select :a::int", use(v); // Must not throw an exception!
+}
+
 //
 // Support for soci Common Tests
 //
@@ -824,6 +833,7 @@ int main(int argc, char** argv)
         test_bytea();
         test_json();
         test_statement_prepare_failure();
+        test_orm_cast();
 
         std::cout << "\nOK, all tests passed.\n\n";
 

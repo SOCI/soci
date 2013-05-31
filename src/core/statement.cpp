@@ -12,6 +12,7 @@
 #include "use-type.h"
 #include "values.h"
 #include <ctime>
+#include <cctype>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -106,28 +107,32 @@ void statement_impl::bind(values & values)
                 // named use element - check if it is used
                 std::string const placeholder = ":" + useName;
 
-                std::size_t const pos = query_.find(placeholder);
-                if (pos != std::string::npos)
+                std::size_t pos = query_.find(placeholder);
+                while (pos != std::string::npos)
                 {
                     // Retrieve next char after placeholder
                     // make sure we do not go out of range on the string
                     const char nextChar = (pos + placeholder.size()) < query_.size() ?
                                           query_[pos + placeholder.size()] : '\0';
                     
-                    if (nextChar == ' ' || nextChar == ',' || nextChar == ';' ||
-                        nextChar == '\0' || nextChar == ')')
+                    if (std::isalnum(nextChar))
+                    {
+                        // We got a partial match only, 
+                        // keep looking for the placeholder
+                        pos = query_.find(placeholder, pos + placeholder.size());
+                    }
+                    else
                     {
                         int position = static_cast<int>(uses_.size());
                         (*it)->bind(*this, position);
                         uses_.push_back(*it);
                         indicators_.push_back(values.indicators_[cnt]);
-                    }
-                    else
-                    {
-                        values.add_unused(*it, values.indicators_[cnt]);
+                        // Ok we found it, done
+                        break;
                     }
                 }
-                else
+                // In case we couldn't find the placeholder
+                if (pos == std::string::npos)
                 {
                     values.add_unused(*it, values.indicators_[cnt]);
                 }
