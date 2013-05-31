@@ -107,8 +107,8 @@ void statement_impl::bind(values & values)
                 // named use element - check if it is used
                 std::string const placeholder = ":" + useName;
 
-                std::size_t const pos = query_.find(placeholder);
-                if (pos != std::string::npos)
+                std::size_t pos = query_.find(placeholder);
+                while (pos != std::string::npos)
                 {
                     // Retrieve next char after placeholder
                     // make sure we do not go out of range on the string
@@ -117,7 +117,9 @@ void statement_impl::bind(values & values)
                     
                     if (std::isalnum(nextChar))
                     {
-                        values.add_unused(*it, values.indicators_[cnt]);
+                        // We got a partial match only, 
+                        // keep looking for the placeholder
+                        pos = query_.find(placeholder, pos + placeholder.size());
                     }
                     else
                     {
@@ -125,9 +127,12 @@ void statement_impl::bind(values & values)
                         (*it)->bind(*this, position);
                         uses_.push_back(*it);
                         indicators_.push_back(values.indicators_[cnt]);
+                        // Ok we found it, done
+                        break;
                     }
                 }
-                else
+                // In case we couldn't find the placeholder
+                if (pos == std::string::npos)
                 {
                     values.add_unused(*it, values.indicators_[cnt]);
                 }

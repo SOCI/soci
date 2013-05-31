@@ -340,6 +340,7 @@ public:
         test_pull5();
         test_issue67();
         test_prepared_insert_with_orm_type();
+        test_placeholder_partial_matching_with_orm_type();
     }
 
 private:
@@ -2329,6 +2330,26 @@ void test_prepared_insert_with_orm_type()
     }
 
     std::cout << "test test_prepared_insert_with_orm_type passed" << std::endl;
+}
+
+void test_placeholder_partial_matching_with_orm_type()
+{
+    {
+        session sql(backEndFactory_, connectString_);
+        sql.uppercase_column_names(true);
+        auto_table_creator tableCreator(tc_.table_creator_3(sql));
+
+        PhonebookEntry in = { "name1", "phone1" };
+        std::string name = "nameA";
+        sql << "insert into soci_test values (:NAMED, :PHONE)", use(in), use(name, "NAMED");
+
+        PhonebookEntry out;
+        sql << "select * from soci_test where PHONE = 'phone1'", into(out);
+        assert(out.name == "nameA");
+        assert(out.phone == "phone1");
+    }
+
+    std::cout << "test test_placeholder_partial_matching_with_orm_type passed" << std::endl;
 }
 
 // test for bulk fetch with single use
