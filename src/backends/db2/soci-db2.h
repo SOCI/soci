@@ -230,9 +230,12 @@ struct db2_blob_backend : details::blob_backend
 
 struct db2_session_backend : details::session_backend
 {
-    db2_session_backend(connection_parameters const& parameters);
+    db2_session_backend();
 
     ~db2_session_backend();
+
+    virtual bool opened() const;
+    virtual void open(connection_parameters const& parameters);
 
     void begin();
     void commit();
@@ -240,7 +243,7 @@ struct db2_session_backend : details::session_backend
 
     std::string get_backend_name() const { return "DB2"; }
 
-    void clean_up();
+    virtual void clean_up();
 
     db2_statement_backend* make_statement_backend();
     db2_rowid_backend* make_rowid_backend();
@@ -262,8 +265,7 @@ struct db2_session_backend : details::session_backend
 struct SOCI_DB2_DECL db2_backend_factory : backend_factory
 {
 	db2_backend_factory() {}
-    db2_session_backend* make_session(
-        connection_parameters const & parameters) const;
+    db2_session_backend* make_session() const;
 };
 
 extern SOCI_DB2_DECL db2_backend_factory const db2;

@@ -229,9 +229,12 @@ struct postgresql_blob_backend : details::blob_backend
 
 struct postgresql_session_backend : details::session_backend
 {
-    postgresql_session_backend(connection_parameters const & parameters);
+    postgresql_session_backend();
 
     ~postgresql_session_backend();
+
+    virtual bool opened() const;
+    virtual void open(connection_parameters const& parameters);
 
     virtual void begin();
     virtual void commit();
@@ -241,7 +244,7 @@ struct postgresql_session_backend : details::session_backend
 
     virtual std::string get_backend_name() const { return "postgresql"; }
 
-    void clean_up();
+    virtual void clean_up();
 
     virtual postgresql_statement_backend * make_statement_backend();
     virtual postgresql_rowid_backend * make_rowid_backend();
@@ -257,8 +260,7 @@ struct postgresql_session_backend : details::session_backend
 struct postgresql_backend_factory : backend_factory
 {
     postgresql_backend_factory() {}
-    virtual postgresql_session_backend * make_session(
-        connection_parameters const & parameters) const;
+    virtual postgresql_session_backend * make_session() const;
 };
 
 extern SOCI_POSTGRESQL_DECL postgresql_backend_factory const postgresql;

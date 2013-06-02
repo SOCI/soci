@@ -228,9 +228,12 @@ struct mysql_blob_backend : details::blob_backend
 
 struct mysql_session_backend : details::session_backend
 {
-    mysql_session_backend(connection_parameters const & parameters);
+    mysql_session_backend();
 
     ~mysql_session_backend();
+
+    virtual bool opened() const;
+    virtual void open(connection_parameters const& parameters);
 
     virtual void begin();
     virtual void commit();
@@ -238,7 +241,7 @@ struct mysql_session_backend : details::session_backend
 
     virtual std::string get_backend_name() const { return "mysql"; }
 
-    void clean_up();
+    virtual void clean_up();
 
     virtual mysql_statement_backend * make_statement_backend();
     virtual mysql_rowid_backend * make_rowid_backend();
@@ -251,8 +254,7 @@ struct mysql_session_backend : details::session_backend
 struct mysql_backend_factory : backend_factory
 {
     mysql_backend_factory() {}
-    virtual mysql_session_backend * make_session(
-        connection_parameters const & parameters) const;
+    virtual mysql_session_backend * make_session() const;
 };
 
 extern SOCI_MYSQL_DECL mysql_backend_factory const mysql;

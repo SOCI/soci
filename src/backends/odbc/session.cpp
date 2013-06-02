@@ -16,9 +16,18 @@ using namespace soci::details;
 
 char const * soci::odbc_option_driver_complete = "odbc.driver_complete";
 
-odbc_session_backend::odbc_session_backend(
+odbc_session_backend::odbc_session_backend()
+    : henv_(NULL), hdbc_(NULL), product_(prod_uninitialized)
+{
+}
+
+bool odbc_session_backend::opened() const
+{
+    return (hdbc_ != NULL);
+}
+
+void odbc_session_backend::open(
     connection_parameters const & parameters)
-    : henv_(0), hdbc_(0), product_(prod_uninitialized)
 {
     SQLRETURN rc;
 
@@ -244,6 +253,9 @@ void odbc_session_backend::clean_up()
         throw odbc_soci_error(SQL_HANDLE_ENV, henv_,
                             "SQLFreeHandle ENV");
     }
+    henv_ = NULL;
+    hdbc_ = NULL;
+    product_ = prod_uninitialized;
 }
 
 odbc_statement_backend * odbc_session_backend::make_statement_backend()

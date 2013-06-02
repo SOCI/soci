@@ -107,21 +107,21 @@ void session::open(connection_parameters const & parameters)
     {
         pool_->at(poolPosition_).open(parameters);
     }
-    else
+    else if (backEnd_ == NULL)
     {
-        if (backEnd_ != NULL)
-        {
-            throw soci_error("Cannot open already connected session.");
-        }
-
         backend_factory const * const factory = parameters.get_factory();
         if (factory == NULL)
         {
             throw soci_error("Cannot connect without a valid backend.");
         }
 
-        backEnd_ = factory->make_session(parameters);
         lastConnectParameters_ = parameters;
+        backEnd_ = factory->make_session();
+        backEnd_->open(lastConnectParameters_);
+    }
+    else if (backEnd_->opened())
+    {
+        throw soci_error("Cannot open already connected session.");
     }
 }
 
@@ -147,12 +147,10 @@ void session::close()
     if (isFromPool_)
     {
         pool_->at(poolPosition_).close();
-        backEnd_ = NULL;
     }
-    else
+    else if (backEnd_ != NULL)
     {
-        delete backEnd_;
-        backEnd_ = NULL;
+        backEnd_->clean_up();
     }
 }
 
@@ -161,22 +159,15 @@ void session::reconnect()
     if (isFromPool_)
     {
         pool_->at(poolPosition_).reconnect();
-        backEnd_ = pool_->at(poolPosition_).get_backend();
     }
     else
     {
-        backend_factory const * const lastFactory = lastConnectParameters_.get_factory();
-        if (lastFactory == NULL)
+        close();
+        if (backEnd_ == NULL)
         {
             throw soci_error("Cannot reconnect without previous connection.");
         }
-
-        if (backEnd_ != NULL)
-        {
-            close();
-        }
-
-        backEnd_ = lastFactory->make_session(lastConnectParameters_);
+        backEnd_->open(lastConnectParameters_);
     }
 }
 

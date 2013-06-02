@@ -16,10 +16,21 @@ using namespace soci;
 using namespace soci::details;
 
 
-empty_session_backend::empty_session_backend(
+empty_session_backend::empty_session_backend()
+    : connected_(false)
+{
+}
+
+bool empty_session_backend::opened() const
+{
+    return connected_;
+}
+
+void empty_session_backend::open(
     connection_parameters const & /* parameters */)
 {
     // ...
+    connected_ = true;
 }
 
 empty_session_backend::~empty_session_backend()
@@ -45,6 +56,7 @@ void empty_session_backend::rollback()
 void empty_session_backend::clean_up()
 {
     // ...
+    connected_ = false;
 }
 
 empty_statement_backend * empty_session_backend::make_statement_backend()

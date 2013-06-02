@@ -30,9 +30,18 @@ using namespace soci;
 using namespace soci::details;
 using namespace soci::details::postgresql;
 
-postgresql_session_backend::postgresql_session_backend(
+postgresql_session_backend::postgresql_session_backend()
+    : statementCount_(0), conn_(NULL)
+{
+}
+
+bool postgresql_session_backend::opened() const
+{
+    return (conn_ != NULL);
+}
+
+void postgresql_session_backend::open(
     connection_parameters const& parameters)
-    : statementCount_(0)
 {
     PGconn* conn = PQconnectdb(parameters.get_connect_string().c_str());
     if (0 == conn || CONNECTION_OK != PQstatus(conn))

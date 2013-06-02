@@ -77,9 +77,18 @@ void db2_session_backend::parseConnectString(std::string const &  connectString)
     }   
 }
 
-db2_session_backend::db2_session_backend(
-    connection_parameters const & parameters) :
-        in_transaction(false)
+db2_session_backend::db2_session_backend() :
+    autocommit(false), in_transaction(false), hEnv(NULL), hDbc(NULL)
+{
+}
+
+bool db2_session_backend::opened() const
+{
+    return (hDbc != NULL);
+}
+
+void db2_session_backend::open(
+    connection_parameters const & parameters)
 {
     parseConnectString(parameters.get_connect_string());
     SQLRETURN cliRC = SQL_SUCCESS;
@@ -199,6 +208,8 @@ void db2_session_backend::clean_up()
     SQLDisconnect(hDbc);
     SQLFreeHandle(SQL_HANDLE_DBC,hDbc);
     SQLFreeHandle(SQL_HANDLE_ENV,hEnv);
+    hDbc = NULL;
+    hEnv = NULL;
 }
 
 db2_statement_backend * db2_session_backend::make_statement_backend()

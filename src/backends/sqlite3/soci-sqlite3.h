@@ -234,9 +234,12 @@ private:
 
 struct sqlite3_session_backend : details::session_backend
 {
-    sqlite3_session_backend(connection_parameters const & parameters);
+    sqlite3_session_backend();
 
     ~sqlite3_session_backend();
+
+    virtual bool opened() const;
+    virtual void open(connection_parameters const& parameters);
 
     virtual void begin();
     virtual void commit();
@@ -244,7 +247,7 @@ struct sqlite3_session_backend : details::session_backend
 
     virtual std::string get_backend_name() const { return "sqlite3"; }
 
-    void clean_up();
+    virtual void clean_up();
 
     virtual sqlite3_statement_backend * make_statement_backend();
     virtual sqlite3_rowid_backend * make_rowid_backend();
@@ -256,8 +259,7 @@ struct sqlite3_session_backend : details::session_backend
 struct sqlite3_backend_factory : backend_factory
 {
     sqlite3_backend_factory() {}
-    virtual sqlite3_session_backend * make_session(
-        connection_parameters const & parameters) const;
+    virtual sqlite3_session_backend * make_session() const;
 };
 
 extern SOCI_SQLITE3_DECL sqlite3_backend_factory const sqlite3;

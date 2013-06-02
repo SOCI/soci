@@ -17,10 +17,9 @@ using namespace soci;
 using namespace soci::details;
 
 // concrete factory for Empty concrete strategies
-empty_session_backend* empty_backend_factory::make_session(
-     connection_parameters const& parameters) const
+empty_session_backend* empty_backend_factory::make_session() const
 {
-     return new empty_session_backend(parameters);
+     return new empty_session_backend();
 }
 
 empty_backend_factory const soci::empty;

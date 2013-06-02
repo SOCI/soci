@@ -41,7 +41,17 @@ void execude_hardcoded(sqlite_api::sqlite3* conn, char const* const query, char 
 } // namespace anonymous
 
 
-sqlite3_session_backend::sqlite3_session_backend(
+sqlite3_session_backend::sqlite3_session_backend()
+	: conn_(NULL)
+{
+}
+
+bool sqlite3_session_backend::opened() const
+{
+    return (conn_ != NULL);
+}
+
+void sqlite3_session_backend::open(
     connection_parameters const & parameters)
 {
     int timeout = 0;
@@ -138,6 +148,7 @@ void sqlite3_session_backend::rollback()
 void sqlite3_session_backend::clean_up()
 {
     sqlite3_close(conn_);
+    conn_ = NULL;
 }
 
 sqlite3_statement_backend * sqlite3_session_backend::make_statement_backend()

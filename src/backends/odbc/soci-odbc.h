@@ -265,9 +265,12 @@ struct odbc_blob_backend : details::blob_backend
 
 struct odbc_session_backend : details::session_backend
 {
-    odbc_session_backend(connection_parameters const & parameters);
+    odbc_session_backend();
 
     ~odbc_session_backend();
+
+    virtual bool opened() const;
+    virtual void open(connection_parameters const& parameters);
 
     virtual void begin();
     virtual void commit();
@@ -282,7 +285,7 @@ struct odbc_session_backend : details::session_backend
 
     void reset_transaction();
 
-    void clean_up();
+    virtual void clean_up();
 
     virtual odbc_statement_backend * make_statement_backend();
     virtual odbc_rowid_backend * make_rowid_backend();
@@ -410,8 +413,7 @@ inline bool odbc_standard_type_backend_base::use_string_for_bigint() const
 struct odbc_backend_factory : backend_factory
 {
     odbc_backend_factory() {}
-    virtual odbc_session_backend * make_session(
-        connection_parameters const & parameters) const;
+    virtual odbc_session_backend * make_session() const;
 };
 
 extern SOCI_ODBC_DECL odbc_backend_factory const odbc;

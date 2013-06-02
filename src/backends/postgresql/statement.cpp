@@ -73,7 +73,8 @@ void postgresql_statement_backend::prepare(std::string const & query,
 
     std::string name;
     int position = 1;
-
+    // Be sure to start a new query
+    query_.clear();
     for (std::string::const_iterator it = query.begin(), end = query.end();
          it != end; ++it)
     {
@@ -170,8 +171,6 @@ void postgresql_statement_backend::prepare(std::string const & query,
 
     if (stType == st_repeatable_query)
     {
-        assert(statementName_.empty());
-
         // Holding the name temporarily in this var because
         // if it fails to prepare it we can't DEALLOCATE it. 
         std::string statementName = session_.get_next_statement_name();

@@ -20,10 +20,9 @@ using namespace soci::details;
 
 
 // concrete factory for MySQL concrete strategies
-mysql_session_backend * mysql_backend_factory::make_session(
-     connection_parameters const & parameters) const
+mysql_session_backend * mysql_backend_factory::make_session() const
 {
-     return new mysql_session_backend(parameters);
+     return new mysql_session_backend();
 }
 
 mysql_backend_factory const soci::mysql;

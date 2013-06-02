@@ -17,10 +17,9 @@ using namespace soci;
 using namespace soci::details;
 
 // concrete factory for Empty concrete strategies
-sqlite3_session_backend * sqlite3_backend_factory::make_session(
-     connection_parameters const & parameters) const
+sqlite3_session_backend * sqlite3_backend_factory::make_session() const
 {
-     return new sqlite3_session_backend(parameters);
+     return new sqlite3_session_backend();
 }
 
 sqlite3_backend_factory const soci::sqlite3;

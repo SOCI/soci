@@ -198,9 +198,18 @@ bool getISCConnectParameter(std::map<std::string, std::string> const & m, std::s
 
 } // namespace anonymous
 
-firebird_session_backend::firebird_session_backend(
-    connection_parameters const & parameters) : dbhp_(0), trhp_(0)
+firebird_session_backend::firebird_session_backend() : dbhp_(0), trhp_(0)
                                          , decimals_as_strings_(false)
+{
+}
+
+bool firebird_session_backend::opened() const
+{
+    return (dbhp_ != NULL);
+}
+
+void firebird_session_backend::open(
+    connection_parameters const & parameters)
 {
     // extract connection parameters
     std::map<std::string, std::string>
@@ -269,7 +278,7 @@ void firebird_session_backend::begin()
 
 firebird_session_backend::~firebird_session_backend()
 {
-    cleanUp();
+    clean_up();
 }
 
 void firebird_session_backend::setDPBOption(int const option, std::string const & value)
@@ -326,8 +335,13 @@ void firebird_session_backend::rollback()
 
 }
 
-void firebird_session_backend::cleanUp()
+void firebird_session_backend::clean_up()
 {
+    if (dbhp_ == NULL)
+    {
+        return;
+    }
+
     ISC_STATUS stat[stat_size];
 
     // at the end of session our transaction is finally commited.
@@ -345,8 +359,9 @@ void firebird_session_backend::cleanUp()
     {
         throw_iscerror(stat);
     }
-
+    dpb_.clear();
     dbhp_ = 0L;
+    decimals_as_strings_ = false;
 }
 
 bool firebird_session_backend::get_next_sequence_value(

@@ -272,7 +272,17 @@ void parse_connect_string(const string & connectString,
 
 } // namespace anonymous
 
-mysql_session_backend::mysql_session_backend(
+mysql_session_backend::mysql_session_backend()
+    : conn_(NULL)
+{
+}
+
+bool mysql_session_backend::opened() const
+{
+    return (conn_ != NULL);
+}
+
+void mysql_session_backend::open(
     connection_parameters const & parameters)
 {
     string host, user, password, db, unix_socket, ssl_ca, ssl_cert, ssl_key,

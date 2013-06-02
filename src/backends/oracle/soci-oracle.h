@@ -242,13 +242,12 @@ struct oracle_blob_backend : details::blob_backend
 
 struct oracle_session_backend : details::session_backend
 {
-    oracle_session_backend(std::string const & serviceName,
-        std::string const & userName,
-        std::string const & password,
-        int mode,
-        bool decimals_as_strings = false);
+    oracle_session_backend();
 
     ~oracle_session_backend();
+
+    virtual bool opened() const;
+    virtual void open(connection_parameters const& parameters);
 
     virtual void begin();
     virtual void commit();
@@ -256,7 +255,7 @@ struct oracle_session_backend : details::session_backend
 
     virtual std::string get_backend_name() const { return "oracle"; }
 
-    void clean_up();
+    virtual void clean_up();
 
     virtual oracle_statement_backend * make_statement_backend();
     virtual oracle_rowid_backend * make_rowid_backend();
@@ -275,8 +274,7 @@ struct oracle_session_backend : details::session_backend
 struct oracle_backend_factory : backend_factory
 {
 	  oracle_backend_factory() {}
-    virtual oracle_session_backend * make_session(
-        connection_parameters const & parameters) const;
+    virtual oracle_session_backend * make_session() const;
 };
 
 extern SOCI_ORACLE_DECL oracle_backend_factory const oracle;

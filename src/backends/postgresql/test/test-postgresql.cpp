@@ -658,6 +658,54 @@ void test_json()
     }
 }
 
+struct table_creator_int : public table_creator_base
+{
+    table_creator_int(session& sql)
+    : table_creator_base(sql)
+    {
+        sql << "drop table if exists soci_test;";
+        sql << "create table soci_test(val integer)";
+    }
+};
+
+// The prepared statements should survive session::reconnect() for a re-prepare.
+void test_re_prepared()
+{
+  {
+    session sql(backEnd, connectString);
+
+	table_creator_int tableCreator(sql);
+
+    int i;
+    statement st = (sql.prepare
+        << "insert into soci_test(val) values(:val)", use(i));
+    i = 5;
+    st.execute(true);
+
+    sql.reconnect();
+
+    i = 6;
+	st.prepare(sql.get_last_query());
+    st.execute(true);
+
+    sql.close();
+    sql.reconnect();
+
+    i = 7;
+    st.prepare(sql.get_last_query());
+	st.execute(true);
+
+    std::vector<int> v(5);
+    sql << "select val from soci_test order by val", into(v);
+    assert(v.size() == 3);
+    assert(v[0] == 5);
+    assert(v[1] == 6);
+    assert(v[2] == 7);
+  }
+
+  std::cout << "test_re_prepared passed" << std::endl;
+}
+
 struct table_creator_text : public table_creator_base
 {
     table_creator_text(session& sql) : table_creator_base(sql)
@@ -824,6 +872,7 @@ int main(int argc, char** argv)
         test_bytea();
         test_json();
         test_statement_prepare_failure();
+        test_re_prepared();
 
         std::cout << "\nOK, all tests passed.\n\n";
 

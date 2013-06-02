@@ -291,9 +291,12 @@ protected:
 
 struct firebird_session_backend : details::session_backend
 {
-    firebird_session_backend(connection_parameters const & parameters);
+    firebird_session_backend();
 
     ~firebird_session_backend();
+
+    virtual bool opened() const;
+    virtual void open(connection_parameters const& parameters);
 
     virtual void begin();
     virtual void commit();
@@ -304,7 +307,7 @@ struct firebird_session_backend : details::session_backend
 
     virtual std::string get_backend_name() const { return "firebird"; }
 
-    void cleanUp();
+    virtual void clean_up();
 
     virtual firebird_statement_backend * make_statement_backend();
     virtual firebird_rowid_backend * make_rowid_backend();
@@ -323,8 +326,7 @@ struct firebird_session_backend : details::session_backend
 struct firebird_backend_factory : backend_factory
 {
     firebird_backend_factory() {}
-    virtual firebird_session_backend * make_session(
-        connection_parameters const & parameters) const;
+    virtual firebird_session_backend * make_session() const;
 };
 
 extern SOCI_FIREBIRD_DECL firebird_backend_factory const firebird;

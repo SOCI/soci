@@ -15,10 +15,9 @@ using namespace soci::details;
 
 
 // concrete factory for ODBC concrete strategies
-db2_session_backend * db2_backend_factory::make_session(
-     connection_parameters const & parameters) const
+db2_session_backend * db2_backend_factory::make_session() const
 {
-     return new db2_session_backend(parameters);
+     return new db2_session_backend();
 }
 
 db2_backend_factory const soci::db2;

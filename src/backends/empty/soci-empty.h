@@ -154,9 +154,12 @@ struct empty_blob_backend : details::blob_backend
 
 struct empty_session_backend : details::session_backend
 {
-    empty_session_backend(connection_parameters const& parameters);
+    empty_session_backend();
 
     ~empty_session_backend();
+
+    virtual bool opened() const;
+    virtual void open(connection_parameters const& parameters);
 
     void begin();
     void commit();
@@ -164,17 +167,20 @@ struct empty_session_backend : details::session_backend
 
     std::string get_backend_name() const { return "empty"; }
 
-    void clean_up();
+    virtual void clean_up();
 
     empty_statement_backend* make_statement_backend();
     empty_rowid_backend* make_rowid_backend();
     empty_blob_backend* make_blob_backend();
+
+    // Simulate reconnection
+    bool connected_;
 };
 
 struct SOCI_EMPTY_DECL empty_backend_factory : backend_factory
 {
     empty_backend_factory() {}
-    empty_session_backend* make_session(connection_parameters const& parameters) const;
+    empty_session_backend* make_session() const;
 };
 
 extern SOCI_EMPTY_DECL empty_backend_factory const empty;

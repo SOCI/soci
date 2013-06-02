@@ -28,6 +28,7 @@ enum data_type
 enum indicator { i_ok, i_null, i_truncated };
 
 class session;
+class connection_parameters;
 
 namespace details
 {
@@ -225,6 +226,10 @@ public:
     session_backend() {}
     virtual ~session_backend() {}
 
+    virtual bool opened() const = 0;
+    virtual void open(connection_parameters const& parameters) = 0;
+    virtual void clean_up() = 0;
+
     virtual void begin() = 0;
     virtual void commit() = 0;
     virtual void rollback() = 0;
@@ -268,8 +273,7 @@ public:
     backend_factory() {}
     virtual ~backend_factory() {}
 
-    virtual details::session_backend* make_session(
-        connection_parameters const& parameters) const = 0;
+    virtual details::session_backend* make_session() const = 0;
 };
 
 } // namespace soci
