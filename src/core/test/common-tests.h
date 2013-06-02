@@ -3140,6 +3140,7 @@ void test27()
         try
         {
             sql.reconnect();
+            statement st(sql);
             assert(false);
         }
         catch (soci_error const &e)
@@ -3148,9 +3149,12 @@ void test27()
                        "Cannot reconnect without previous connection."));
         }
 
-        // open from empty session
-        sql.open(backEndFactory_, connectString_);
-        sql.close();
+        {
+            // open from empty session
+            sql.open(backEndFactory_, connectString_);
+            statement st(sql);
+            sql.close();
+        }
 
         // reconnecting from closed session
         sql.reconnect();
@@ -3159,6 +3163,7 @@ void test27()
         try
         {
             sql.open(backEndFactory_, connectString_);
+            statement st(sql);
             assert(false);
         }
         catch (soci_error const &e)
@@ -3168,12 +3173,15 @@ void test27()
         }
 
         sql.close();
+        {
+            // open from closed
+            sql.open(backEndFactory_, connectString_);
+            statement st1(sql);
 
-        // open from closed
-        sql.open(backEndFactory_, connectString_);
-
-        // reconnect from already connected session
-        sql.reconnect();
+            // reconnect from already connected session
+            sql.reconnect();
+            statement st2(sql);
+        }
     }
 
     {
@@ -3840,7 +3848,7 @@ void test_issue67()
         }
     }
 
-}; // class common_tests
+}
 
 }; // class common_tests
 
