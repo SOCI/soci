@@ -35,12 +35,7 @@ void db2_statement_backend::alloc()
 
 void db2_statement_backend::clean_up()
 {
-    SQLRETURN cliRC = SQL_SUCCESS;
-
-    cliRC=SQLFreeHandle(SQL_HANDLE_STMT,hStmt);
-    if (cliRC != SQL_SUCCESS) {
-        throw db2_soci_error(db2_soci_error::sqlState("Statement handle clean-up error",SQL_HANDLE_STMT,hStmt),cliRC);
-    }
+    SQLFreeHandle(SQL_HANDLE_STMT,hStmt);
 }
 
 void db2_statement_backend::prepare(std::string const &  query ,
