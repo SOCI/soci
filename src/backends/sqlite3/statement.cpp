@@ -66,7 +66,7 @@ void sqlite3_statement_backend::prepare(std::string const & query,
         std::ostringstream ss;
         ss << "sqlite3_statement_backend::prepare: "
            << zErrMsg;
-        throw soci_error(ss.str());
+        throw sqlite3_soci_error(ss.str(), res);
     }
     databaseReady_ = true;
 }
@@ -145,7 +145,7 @@ sqlite3_statement_backend::load_rowset(int totalRows)
                 std::ostringstream ss;
                 ss << "sqlite3_statement_backend::loadRS: "
                    << zErrMsg;
-                throw soci_error(ss.str());
+                throw sqlite3_soci_error(ss.str(), res);
             }
         }
     }
@@ -180,7 +180,7 @@ sqlite3_statement_backend::load_one()
         std::ostringstream ss;
         ss << "sqlite3_statement_backend::loadOne: "
            << zErrMsg;
-        throw soci_error(ss.str());
+        throw sqlite3_soci_error(ss.str(), res);
     }
 
     return retVal;
@@ -227,7 +227,7 @@ sqlite3_statement_backend::bind_and_execute(int number)
             {
                 // preserve the number of rows affected so far.
                 rowsAffectedBulk_ = rowsAffectedBulkTemp;
-                throw soci_error("Failure to bind on bulk operations");
+                throw sqlite3_soci_error("Failure to bind on bulk operations", bindRes);
             }
         }
 
@@ -360,7 +360,8 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
         typeFound = true;
     }
 
-    if (dt.find("float", 0) != std::string::npos || dt.find("double", 0) != std::string::npos)
+    if (dt.find("float", 0) != std::string::npos || dt.find("double", 0) != std::string::npos
+        || dt.find("real", 0) != std::string::npos)
     {
         type = dt_double;
         typeFound = true;
