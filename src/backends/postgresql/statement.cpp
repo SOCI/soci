@@ -556,10 +556,18 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     
     default:
     {
-        std::stringstream message;
-        message << "unknown data type with typelem: " << typeOid << " for colNum: " << colNum << " with name: " << PQfname(result_, pos);
-        throw soci_error(message.str());
-        
+        int form = PQfformat(result_, pos);
+        int size = PQfsize(result_, pos);
+        if (form == 0 && size == -1)
+        {
+            type = dt_string;
+        }
+        else
+        {
+            std::stringstream message;
+            message << "unknown data type with typelem: " << typeOid << " for colNum: " << colNum << " with name: " << PQfname(result_, pos);
+            throw soci_error(message.str());
+        }
     }
     }
 
