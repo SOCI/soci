@@ -25,6 +25,9 @@
 # define SOCI_FIREBIRD_DECL
 #endif
 
+#ifdef _WIN32
+#include <ciso646> // To understand and/or/not on MSVC9
+#endif
 #include <soci-backend.h>
 #include <ibase.h> // FireBird
 #include <cstdlib>
@@ -211,6 +214,8 @@ struct firebird_statement_backend : details::statement_backend
 protected:
     int rowsFetched_;
     bool endOfRowSet_;
+
+    long long rowsAffectedBulk_; // number of rows affected by the last bulk operation
 
     virtual void exchangeData(bool gotData, int row);
     virtual void prepareSQLDA(XSQLDA ** sqldap, int size = 10);
