@@ -142,16 +142,6 @@ void odbc_statement_backend::prepare(std::string const & query,
 statement_backend::exec_fetch_result
 odbc_statement_backend::execute(int number)
 {
-    // made this static because MSVC debugger was reporting
-    // that there was an attempt to use rows_processed after the stack
-    // was destroyed.  Some ODBC clean_up ?
-    static SQLUSMALLINT rows_processed = 0;
-
-    if (hasVectorUseElements_)
-    {
-        SQLSetStmtAttr(hstmt_, SQL_ATTR_PARAMS_PROCESSED_PTR, &rows_processed, 0);
-    }
-
     // if we are called twice for the same statement we need to close the open
     // cursor or an "invalid cursor state" error will occur on execute
     SQLCloseCursor(hstmt_);
@@ -303,8 +293,10 @@ void odbc_statement_backend::describe_column(int colNum, data_type & type,
     case SQL_TINYINT:
     case SQL_SMALLINT:
     case SQL_INTEGER:
-    case SQL_BIGINT:
         type = dt_integer;
+        break;
+    case SQL_BIGINT:
+        type = dt_long_long;
         break;
     case SQL_CHAR:
     case SQL_VARCHAR:

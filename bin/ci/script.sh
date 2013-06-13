@@ -17,6 +17,7 @@ fi
 cmake \
 	-DSOCI_STATIC=OFF \
 	-DSOCI_TESTS=ON \
+	-DSOCI_DB2_TEST_CONNSTR:STRING="DSN=SOCITEST\;Uid=db2inst1\;Pwd=db2inst1" \
 	-DSOCI_EMPTY_TEST_CONNSTR:STRING="dummy connection" \
 	-DSOCI_FIREBIRD_TEST_CONNSTR:STRING="service=LOCALHOST:/tmp/soci_test.fdb user=SYSDBA password=masterkey" \
 	-DSOCI_MYSQL_TEST_CONNSTR:STRING="db=soci_test" \
@@ -25,6 +26,7 @@ cmake \
 	-DSOCI_SQLITE3_TEST_CONNSTR:STRING="soci_test.db" \
 	-DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR="FILEDSN=${PWD}/../backends/odbc/test/test-postgresql.dsn;" \
 	-DSOCI_ODBC_TEST_MYSQL_CONNSTR="FILEDSN=${PWD}/../backends/odbc/test/test-mysql.dsn;" \
+	-DSOCI_ODBC_TEST_DB2_CONNSTR:STRING="Driver=DB2\;Database=SOCITEST\;Uid=db2inst1\;Pwd=db2inst1" \
 	..
 echo "$(tmstamp) *** script::cmake-config finished $(date) ***"
 

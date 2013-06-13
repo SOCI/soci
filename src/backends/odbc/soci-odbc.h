@@ -228,7 +228,7 @@ struct odbc_statement_backend : details::statement_backend
 
     odbc_session_backend &session_;
     SQLHSTMT hstmt_;
-    SQLUINTEGER numRowsFetched_;
+    SQLULEN numRowsFetched_;
     bool hasVectorUseElements_;
     bool boundByName_;
     bool boundByPos_;
