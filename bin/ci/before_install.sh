@@ -11,10 +11,22 @@ sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 16126D3A3E5C1192
 sudo apt-get update -qq
 #if [ `uname -m` = x86_64 ]; then sudo apt-get install -qq --force-yes ia32-libs ia32-libs-multiarch fi
 sudo apt-get install -qq \
-    libstdc++5 libboost-dev libboost-date-time-dev \
+    tar bzip2 \
+    libstdc++5 \
+    libaio1 \
+    libboost-dev libboost-date-time-dev \
     libmyodbc unixodbc-dev odbc-postgresql \
     firebird2.5-super firebird2.5-dev
 echo "$(tmstamp) *** before_install::apt-get finished $(date) ***"
+
+echo "$(tmstamp) *** before_install::oracle starting $(date) ***"
+wget http://brzuchol.loskot.net/software/oracle/instantclient_11_2-linux-x64-mloskot.tar.bz2
+tar -jxf instantclient_11_2-linux-x64-mloskot.tar.bz2
+sudo mkdir -p /opt
+sudo mv instantclient_11_2 /opt
+sudo ln -s ${ORACLE_HOME}/libclntsh.so.11.1 ${ORACLE_HOME}/libclntsh.so
+sudo ln -s ${ORACLE_HOME}/libocci.so.11.1 ${ORACLE_HOME}/libocci.so
+echo "$(tmstamp) *** before_install::oracle finished $(date) ***"
 
 echo "$(tmstamp) *** before_install::config starting $(date) ***"
 # Configure Firebird

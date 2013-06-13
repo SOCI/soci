@@ -13,7 +13,6 @@
 
 using namespace soci;
 using namespace soci::details;
-using namespace soci::details::postgresql;
 
 postgresql_soci_error::postgresql_soci_error(
     std::string const & msg, char const *sqlst)
@@ -28,29 +27,47 @@ std::string postgresql_soci_error::sqlstate() const
     return std::string(sqlstate_, 5);
 }
 
-void soci::details::postgresql::get_error_details(PGresult *result,
-    std::string &msg, std::string &sqlstate)
+void
+details::postgresql_result::check_for_errors(char const* errMsg) const
 {
-    assert(result);
-
-    msg = PQresultErrorMessage(result);
-    const char *sqlst = PQresultErrorField(result, PG_DIAG_SQLSTATE);
-    const char* blank_sql_state = "     ";
-    if (!sqlst)
-    {
-        sqlst = blank_sql_state;
-    }
-    assert(sqlst && std::strlen(sqlst) == 5);
-    sqlstate.assign(sqlst, 5);
+    static_cast<void>(check_for_data(errMsg));
 }
 
-void soci::details::postgresql::throw_postgresql_soci_error(PGresult*& result)
+bool
+details::postgresql_result::check_for_data(char const* errMsg) const
 {
-    std::string msg;
-    std::string sqlstate;
+    ExecStatusType const status = PQresultStatus(result_);
+    switch (status)
+    {
+        case PGRES_EMPTY_QUERY:
+        case PGRES_COMMAND_OK:
+            // No data but don't throw neither.
+            return false;
 
-    get_error_details(result, msg, sqlstate);
-    PQclear(result);
-    result = NULL;
-    throw postgresql_soci_error(msg, sqlstate.c_str());
+        case PGRES_TUPLES_OK:
+            return true;
+
+        default:
+            // Some of the other status codes are not really errors but we're
+            // not prepared to handle them right now and shouldn't ever receive
+            // them so throw nevertheless
+            break;
+    }
+
+    std::string msg(errMsg);
+    const char* const pqError = PQresultErrorMessage(result_);
+    if (pqError && *pqError)
+    {
+      msg += " ";
+      msg += pqError;
+    }
+
+    const char* sqlstate = PQresultErrorField(result_, PG_DIAG_SQLSTATE);
+    const char* const blank_sql_state = "     ";
+    if (!sqlstate)
+    {
+        sqlstate = blank_sql_state;
+    }
+
+    throw postgresql_soci_error(msg, sqlstate);
 }
