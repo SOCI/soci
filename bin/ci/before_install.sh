@@ -36,7 +36,8 @@ echo "$(tmstamp) *** before_install::oracle finished $(date) ***"
 
 echo "$(tmstamp) *** before_install::db2 starting $(date) ***"
 echo "Running apt-get install db2exc"
-sudo apt-get install -qq db2exc
+# deliberately verbose to test - mloskot
+sudo apt-get install -y db2exc
 echo "Running db2profile and db2rmln"
 sudo /bin/sh -c '. ~db2inst1/sqllib/db2profile ; $DB2DIR/cfg/db2rmln'
 echo "Setting up db2 users"
