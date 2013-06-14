@@ -35,11 +35,15 @@ fi
 echo "$(tmstamp) *** before_install::oracle finished $(date) ***"
 
 echo "$(tmstamp) *** before_install::db2 starting $(date) ***"
+echo "Running apt-get install db2exc"
 sudo apt-get install -qq db2exc
+echo "Running db2profile and db2rmln"
 sudo /bin/sh -c '. ~db2inst1/sqllib/db2profile ; $DB2DIR/cfg/db2rmln'
+echo "Setting up db2 users"
 echo -e "db2inst1\ndb2inst1" | sudo passwd db2inst1
 echo -e "db2fenc1\ndb2fenc1" | sudo passwd db2fenc1
 echo -e "dasusr1\ndasusr1" | sudo passwd dasusr1
+echo "Configuring DB2 ODBC driver"
 if test `getconf LONG_BIT` = "64" ; then
     if test -f /home/db2inst1/sqllib/lib64/libdb2o.so ; then
 	DB2_ODBC_DRIVER=/home/db2inst1/sqllib/lib64/libdb2o.so
