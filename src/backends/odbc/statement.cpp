@@ -142,12 +142,8 @@ void odbc_statement_backend::prepare(std::string const & query,
 statement_backend::exec_fetch_result
 odbc_statement_backend::execute(int number)
 {
-    // TODO: to be reviewed, see comments in #83
-    // made this static because MSVC debugger was reporting
-    // that there was an attempt to use rows_processed after the stack
-    // was destroyed. Some ODBC clean_up ?
-    static SQLUSMALLINT rows_processed = 0;
-
+	// Store the number of rows processed by this call.
+    SQLULEN rows_processed = 0;
     if (hasVectorUseElements_)
     {
         SQLSetStmtAttr(hstmt_, SQL_ATTR_PARAMS_PROCESSED_PTR, &rows_processed, 0);
