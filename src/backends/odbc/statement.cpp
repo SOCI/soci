@@ -142,7 +142,7 @@ void odbc_statement_backend::prepare(std::string const & query,
 statement_backend::exec_fetch_result
 odbc_statement_backend::execute(int number)
 {
-	// Store the number of rows processed by this call.
+    // Store the number of rows processed by this call.
     SQLULEN rows_processed = 0;
     if (hasVectorUseElements_)
     {
