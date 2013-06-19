@@ -73,8 +73,8 @@ public:
     std::string rewrite_for_procedure_call(std::string const & query);
 
 protected:
-    std::vector<details::into_type_base *> intos_;
-    std::vector<details::use_type_base *> uses_;
+    std::vector<details::into_type_ptr> intos_;
+    std::vector<details::use_type_ptr> uses_;
     std::vector<indicator *> indicators_;
 
 private:
@@ -87,7 +87,7 @@ private:
     std::string query_;
     std::map<std::string, use_type_base *> namedUses_;
 
-    std::vector<into_type_base *> intosForRow_;
+    std::vector<into_type_ptr> intosForRow_;
     int definePositionForRow_;
 
     void exchange_for_row(into_type_ptr const & i);

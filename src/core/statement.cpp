@@ -148,14 +148,12 @@ void statement_impl::bind(values & values)
 
 void statement_impl::exchange(into_type_ptr const & i)
 {
-    intos_.push_back(i.get());
-    i.release();
+    intos_.push_back(i);
 }
 
 void statement_impl::exchange_for_row(into_type_ptr const & i)
 {
-    intosForRow_.push_back(i.get());
-    i.release();
+    intosForRow_.push_back(i);
 }
 
 void statement_impl::exchange_for_rowset(into_type_ptr const & i)
@@ -165,19 +163,16 @@ void statement_impl::exchange_for_rowset(into_type_ptr const & i)
         throw soci_error("Explicit into elements not allowed with rowset.");
     }
 
-    into_type_base* p = i.get();
-    intos_.push_back(p);
-    i.release();
-
+    intos_.push_back(i);
+    
     int definePosition = 1;
-    p->define(*this, definePosition);
+    i->define(*this, definePosition);
     definePositionForRow_ = definePosition;
 }
 
 void statement_impl::exchange(use_type_ptr const & u)
 {
-    uses_.push_back(u.get());
-    u.release();
+    uses_.push_back(u);
 }
 
 void statement_impl::clean_up()
@@ -187,25 +182,22 @@ void statement_impl::clean_up()
     for (std::size_t i = isize; i != 0; --i)
     {
         intos_[i - 1]->clean_up();
-        delete intos_[i - 1];
-        intos_.resize(i - 1);
     }
+    intos_.clear();
 
     std::size_t const ifrsize = intosForRow_.size();
     for (std::size_t i = ifrsize; i != 0; --i)
     {
         intosForRow_[i - 1]->clean_up();
-        delete intosForRow_[i - 1];
-        intosForRow_.resize(i - 1);
     }
+    intosForRow_.clear();
 
     std::size_t const usize = uses_.size();
     for (std::size_t i = usize; i != 0; --i)
     {
         uses_[i - 1]->clean_up();
-        delete uses_[i - 1];
-        uses_.resize(i - 1);
     }
+    uses_.clear();
 
     std::size_t const indsize = indicators_.size();
     for (std::size_t i = 0; i != indsize; ++i)
