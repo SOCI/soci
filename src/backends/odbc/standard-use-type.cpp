@@ -4,6 +4,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 
 #define SOCI_ODBC_SOURCE
+#include <soci-platform.h>
 #include "soci-odbc.h"
 #include <cctype>
 #include <cstdio>
@@ -17,9 +18,6 @@ using namespace soci::details;
 #ifdef _MSC_VER
 #pragma warning(disable:4996)
 #define snprintf _snprintf
-#define LL_FMT_FLAGS "I64"
-#else
-#define LL_FMT_FLAGS "ll"
 #endif
 
 

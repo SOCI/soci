@@ -6,19 +6,13 @@
 //
 
 #define SOCI_ODBC_SOURCE
+#include <soci-platform.h>
 #include "soci-odbc.h"
 #include <ctime>
 #include <stdio.h>  // sscanf()
 
 using namespace soci;
 using namespace soci::details;
-
-#ifdef _MSC_VER
-#define LL_FMT_FLAGS "I64"
-#else
-#define LL_FMT_FLAGS "ll"
-#endif
-
 
 void odbc_standard_into_type_backend::define_by_pos(
     int & position, void * data, exchange_type type)

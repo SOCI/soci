@@ -7,6 +7,7 @@
 
 #define SOCI_ODBC_SOURCE
 #include "soci-odbc.h"
+#include <soci-platform.h>
 #include <cassert>
 #include <cctype>
 #include <cstdio>
@@ -21,15 +22,8 @@
 #pragma warning(disable:4312)
 #endif
 
-
 using namespace soci;
 using namespace soci::details;
-
-#ifdef _MSC_VER
-#define LL_FMT_FLAGS "I64"
-#else
-#define LL_FMT_FLAGS "ll"
-#endif
 
 void odbc_vector_use_type_backend::prepare_indicators(std::size_t size)
 {

@@ -6,6 +6,7 @@
 //
 
 #define SOCI_POSTGRESQL_SOURCE
+#include <soci-platform.h>
 #include "soci-postgresql.h"
 #include "common.h"
 #include "rowid.h"

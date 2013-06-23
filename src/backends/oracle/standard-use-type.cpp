@@ -224,13 +224,13 @@ void oracle_standard_use_type_backend::pre_use(indicator const *ind)
     case x_long_long:
         {
             size_t const size = 100; // arbitrary, but consistent with prepare_for_bind
-            snprintf(buf_, size, "%lld", *static_cast<long long *>(data_));
+            snprintf(buf_, size, "%" LL_FMT_FLAGS "d", *static_cast<long long *>(data_));
         }
         break;
     case x_unsigned_long_long:
         {
             size_t const size = 100; // arbitrary, but consistent with prepare_for_bind
-            snprintf(buf_, size, "%llu", *static_cast<unsigned long long *>(data_));
+            snprintf(buf_, size, "%" LL_FMT_FLAGS "u", *static_cast<unsigned long long *>(data_));
         }
         break;
     case x_double:
