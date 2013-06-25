@@ -8,10 +8,12 @@
 #ifndef SOCI_ROW_H_INCLUDED
 #define SOCI_ROW_H_INCLUDED
 
+#include "soci/exchange-traits.h"
 #include "soci/type-holder.h"
 #include "soci/soci-backend.h"
 #include "soci/type-conversion.h"
 // std
+#include <cassert>
 #include <cstddef>
 #include <map>
 #include <string>
@@ -64,7 +66,10 @@ public:
     template <typename T>
     T get(std::size_t pos) const
     {
-        typedef typename type_conversion<T>::base_type base_type;
+        assert(holders_.size() >= pos + 1);
+
+        //typedef typename type_conversion<T>::base_type base_type;
+        typedef typename details::exchange_traits<T>::base_type base_type;
         base_type const& baseVal = holders_.at(pos)->get<base_type>();
 
         T ret;
