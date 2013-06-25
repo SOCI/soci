@@ -8,6 +8,7 @@
 #ifndef SOCI_ROW_H_INCLUDED
 #define SOCI_ROW_H_INCLUDED
 
+#include "exchange-traits.h"
 #include "type-holder.h"
 #include "soci-backend.h"
 #include "type-conversion.h"
@@ -67,7 +68,8 @@ public:
     {
         assert(holders_.size() >= pos + 1);
 
-        typedef typename type_conversion<T>::base_type base_type;
+        //typedef typename type_conversion<T>::base_type base_type;
+        typedef typename details::exchange_traits<T>::base_type base_type;
         base_type const& baseVal = holders_[pos]->get<base_type>();
 
         T ret;
