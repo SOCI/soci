@@ -140,4 +140,8 @@ void firebird_standard_into_type_backend::clean_up()
         delete [] buf_;
         buf_ = NULL;
     }
+    std::vector<void*>::iterator it = 
+        std::find(statement_.intos_.begin(), statement_.intos_.end(), this);
+    if (it != statement_.intos_.end())
+        statement_.intos_.erase(it);
 }

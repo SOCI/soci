@@ -204,4 +204,8 @@ void firebird_vector_use_type_backend::clean_up()
         delete [] buf_;
         buf_ = NULL;
     }
+    std::vector<void*>::iterator it = 
+        std::find(statement_.uses_.begin(), statement_.uses_.end(), this);
+    if (it != statement_.uses_.end())
+        statement_.uses_.erase(it);
 }
