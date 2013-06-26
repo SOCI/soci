@@ -9,10 +9,6 @@
 #include "soci-firebird.h"
 #include "common.h"
 
-#include <cstdlib>
-#include <ctime>
-#include <string>
-
 using namespace soci;
 using namespace soci::details;
 using namespace soci::details::firebird;
