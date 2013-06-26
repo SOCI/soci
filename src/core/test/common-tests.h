@@ -3918,20 +3918,20 @@ void test_issue154()
     }
     // vector variation
     {
-        std::vector<int> id(1, 1);
+        std::vector<int> ids(1, 2);
+        std::vector<int> vals(1, 1);
         int val = 0;
         statement st(sql);
-        st.exchange(use(id));
+        st.exchange(use(ids));
         st.alloc();
-        st.prepare("select id from soci_test where id = :1");
+        st.prepare("insert into soci_test(id, val) values (:1, :2)");
         st.define_and_bind();
         st.undefine_and_bind();
-        st.exchange(soci::into(val));
+        st.exchange(use(vals));
         st.define_and_bind();
-        // FIXME: issue #154
-        // the following execute throws ODBC error: Function sequence error
-        //st.execute(true);
-        //assert(val == 1);
+        st.execute(true);
+        sql << "select val from soci_test where id = 2", into(val);
+        assert(val == 1);
     }
     std::cout << "test issue-154 passed - check memory debugger output for leaks" << std::endl;
 }
