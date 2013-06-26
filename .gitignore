@@ -1,6 +1,7 @@
 *.kate-swp
 *.swp
 _build*
+src/_build
 src/build
 tags
 tmp
