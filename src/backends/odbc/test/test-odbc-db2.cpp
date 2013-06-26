@@ -128,7 +128,7 @@ void test_odbc_db2_long_long()
         for (int i = 0; i < num_recs; i++)
         {
             st.fetch();
-            assert(n2 = 1000000000LL + i);
+            assert(n2 == 1000000000LL + i);
         }
     }
 
@@ -159,7 +159,7 @@ void test_odbc_db2_unsigned_long_long()
         for (int i = 0; i < num_recs; i++)
         {
             st.fetch();
-            assert(n2 = 1000000000LL + i);
+            assert(n2 == 1000000000LL + i);
         }
     }
 
