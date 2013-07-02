@@ -47,6 +47,9 @@ class SOCI_DECL values
     friend class details::into_type<values>;
     friend class details::use_type<values>;
 
+    template <typename TT, typename X> 
+    friend class details::conversion_into_type;
+
 public:
 
     values() : row_(NULL), currentPos_(0), uppercaseColumnNames_(false) {}
