@@ -49,8 +49,6 @@ public:
     std::size_t size() const;
     void clean_up();
 
-
-
     //bulk buffer size
     std::size_t bulk_size() const {return bulk_size_;}
     void bulk_size(std::size_t sz) {bulk_size_ = sz;}

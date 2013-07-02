@@ -323,45 +323,45 @@ private:
 template <typename T>
 into_type_ptr do_into(T & t, user_type_tag)
 {
-    return into_type_ptr(new conversion_into_type<T, type_conversion<T>::base_type>(t));
+    return into_type_ptr(new conversion_into_type<T, typename type_conversion<T>::base_type>(t));
 }
 
 template <typename T>
 into_type_ptr do_into(std::vector<T> & t, user_type_tag)
 {
-    return into_type_ptr(new conversion_into_type<std::vector<T>, type_conversion<T>::base_type>(t));
+    return into_type_ptr(new conversion_into_type<std::vector<T>, typename type_conversion<T>::base_type>(t));
 }
 
 template <typename T>
 into_type_ptr do_into(T & t, indicator & ind, user_type_tag)
 {
-    return into_type_ptr(new conversion_into_type<T, type_conversion<T>::base_type>(t, ind));
+    return into_type_ptr(new conversion_into_type<T, typename type_conversion<T>::base_type>(t, ind));
 }
 
 template <typename T>
 use_type_ptr do_use(T & t, std::string const & name, user_type_tag)
 {
-    return use_type_ptr(new conversion_use_type<T, type_conversion<T>::base_type>(t, name));
+    return use_type_ptr(new conversion_use_type<T, typename type_conversion<T>::base_type>(t, name));
 }
 
 template <typename T>
 use_type_ptr do_use(T const & t, std::string const & name, user_type_tag)
 {
-    return use_type_ptr(new conversion_use_type<T, type_conversion<T>::base_type>(t, name));
+    return use_type_ptr(new conversion_use_type<T, typename type_conversion<T>::base_type>(t, name));
 }
 
 template <typename T>
 use_type_ptr do_use(T & t, indicator & ind,
     std::string const & name, user_type_tag)
 {
-    return use_type_ptr(new conversion_use_type<T, type_conversion<T>::base_type>(t, ind, name));
+    return use_type_ptr(new conversion_use_type<T, typename type_conversion<T>::base_type>(t, ind, name));
 }
 
 template <typename T>
 use_type_ptr do_use(T const & t, indicator & ind,
     std::string const & name, user_type_tag)
 {
-    return use_type_ptr(new conversion_use_type<T, type_conversion<T>::base_type>(t, ind, name));
+    return use_type_ptr(new conversion_use_type<T, typename type_conversion<T>::base_type>(t, ind, name));
 }
 
 } // namespace details

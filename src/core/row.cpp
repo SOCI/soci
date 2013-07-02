@@ -80,8 +80,6 @@ void row::clean_up()
     index_.clear();
 }
 
-
-
 column_properties const & row::get_properties(std::size_t pos) const
 {
     assert(columns_.size() >= pos + 1);
