@@ -283,6 +283,11 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
             else
                 type = dt_double;
         }
+        //create table T(t number)--> we get: scale=precision=0, size=22
+        else if (scale == 0 && precision == 0 && size == 22)
+        {
+            type = dt_double;
+        }
         else if (precision <= std::numeric_limits<int>::digits10)
         {
             type = dt_integer;
