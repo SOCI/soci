@@ -1215,8 +1215,6 @@ void test_orm_bulk()
     std::cout << "test ORM bulk select passed" << std::endl;
 }
 
-#define FLOAT_EQ(x,v) (((v - 1.00e-07) < x) && (x <( v + 1.00e-07)))
-
 void test_convert()
 {
     //session sql(backEndFactory_, connectString_);
@@ -1229,8 +1227,8 @@ void test_convert()
 
     double d1, d2;
     sql << "select sh+0, sh from soci_test", into(d1), into(d2);
-    assert(FLOAT_EQ(d1, d2));
-    assert(FLOAT_EQ(d1, 10.5));
+    assert(equal_approx(d1, d2));
+    assert(equal_approx(d1, 10.5));
 
     soci::rowset<soci::row> rs1 = (
         sql.prepare << "select sh+0.6 sh_0, sh from soci_test");
@@ -1249,17 +1247,17 @@ void test_convert()
     {
         double i;
         i = row1.get<double>(0);
-        assert(FLOAT_EQ(i, 11.1));
+        assert(equal_approx(i, 11.1));
         i = row1.get<double>(1);
-        assert(FLOAT_EQ(i, 10.5));
+        assert(equal_approx(i, 10.5));
     }
 
     {
         float i;
         i = row1.get<float>(0);
-        assert(FLOAT_EQ(i, 11.1f));
+        assert(equal_approx(i, 11.1f));
         i = row1.get<float>(1);
-        assert(FLOAT_EQ(i, 10.5f));
+        assert(equal_approx(i, 10.5f));
     }
 
     std::cout << "test convert passed" << std::endl;
