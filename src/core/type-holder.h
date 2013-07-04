@@ -99,7 +99,7 @@ private:
     class ret<Holder_T, T, 0>
     {
     public:   
-        static T return_value(const Holder_T& h)
+        static T return_value(const Holder_T& )
         {
             throw std::bad_cast();
         }
