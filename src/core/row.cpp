@@ -16,7 +16,7 @@
 using namespace soci;
 using namespace details;
 
-row::row(size_t bulk_size)
+row::row(std::size_t bulk_size)
     : uppercaseColumnNames_(false)
       ,currentPos_(0)
       ,bulk_pos_(0)

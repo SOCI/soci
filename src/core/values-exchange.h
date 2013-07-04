@@ -85,13 +85,13 @@ template <>
 class into_type<values> : public into_type<row>
 {
 public:
-    into_type(values & v, size_t bulk_size = 1)
+    into_type(values & v, std::size_t bulk_size = 1)
         : into_type<row>(v.get_row()), v_(v)
     {
         v.row_->bulk_size(bulk_size);
     }
 
-    into_type(values & v, indicator & ind, size_t bulk_size = 1)
+    into_type(values & v, indicator & ind, std::size_t bulk_size = 1)
         : into_type<row>(v.get_row(), ind), v_(v)
     {
         v.row_->bulk_size(bulk_size);
@@ -154,9 +154,9 @@ private:
     void convert_from_base()
     {
         values& v = base_value_holder<T>::val_;
-        size_t data_size = value_.size();
+        std::size_t data_size = value_.size();
 
-        for (size_t i=0; i<data_size; ++i)
+        for (std::size_t i=0; i<data_size; ++i)
         {
             type_conversion<T>::from_base(v, i_ok, value_[i]);
 

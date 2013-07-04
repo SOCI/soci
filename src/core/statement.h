@@ -96,7 +96,7 @@ private:
     template<typename T>
     void into_row()
     {
-        size_t bulk_size = row_->bulk_size();
+        std::size_t bulk_size = row_->bulk_size();
 
         std::vector<T>* t = new std::vector<T>(bulk_size);
         std::vector<indicator>* ind = new std::vector<indicator>(bulk_size);

@@ -41,7 +41,7 @@ private:
 class SOCI_DECL row
 {
 public:    
-    row(size_t bulk_size = 1);
+    row(std::size_t bulk_size = 1);
     ~row();
 
     void uppercase_column_names(bool forceToUpper);
@@ -87,11 +87,7 @@ public:
         assert(holders_.size() >= pos + 1);
 
         typedef typename type_conversion<T>::base_type base_type;
-        
-        //in case: double d; const int & ref_d = d; 
-        // here ref_d is a temp var, and we can't reference it anymore . 
-        // so just store it's value to another var.
-        base_type baseVal = holders_[pos]->get<base_type>(bulk_pos_);
+        base_type const& baseVal = holders_[pos]->get<base_type>(bulk_pos_);
 
         T ret;
         type_conversion<T>::from_base(baseVal, (*indicators_[pos])[bulk_pos_], ret);
@@ -171,7 +167,7 @@ private:
     bool uppercaseColumnNames_;
     mutable std::size_t currentPos_;    //column
     mutable std::size_t bulk_pos_;      //row
-    size_t bulk_size_;
+    mutable std::size_t bulk_size_;
 };
 
 } // namespace soci

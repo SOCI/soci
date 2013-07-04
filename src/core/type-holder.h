@@ -10,6 +10,8 @@
 // std
 #include <typeinfo>
 #include <vector>
+#include <string>
+#include <ctime>
 
 namespace soci
 {
@@ -22,10 +24,10 @@ namespace details
 //otherwise the test will failed with undefined runtime error.
 //default:: any type convert is not allowed 
 template <typename from, typename to> 
-class convertible{public:enum {IS = 0};};
+class convertible{public:enum {ALLOW = 0};};
 
 template<typename T>
-class convertible<T, T>{public:enum {IS = 1};};
+class convertible<T, T>{public:enum {ALLOW = 1};};
 
 
 // Base class holder + derived class type_holder for storing type data
@@ -40,12 +42,12 @@ public:
     virtual ~vector_holder() {}
 
     template<typename T>
-    const T& get(size_t pos)
+    T get(std::size_t pos)
     {
         //statement_impl::bind_into have those types::
         //std::string, double, int, long long, unsigned long long, std::tm
 
-        //typeid() is faster than dynamic_cast
+        //typeid() + static_cast is faster than dynamic_cast
 
         const std::type_info& ti = this->type();
 
@@ -75,38 +77,50 @@ public:
         }
         else
         {
-            throw soci_error("not support type");
+            throw std::bad_cast();
         }
     }
 
     virtual const std::type_info & type() const = 0;
 
 private:
-    template<typename Holder_T, typename T>
-    const T& cast(size_t pos)
+
+    template<typename Holder_T, typename T, size_t allow>
+    class ret
     {
-#ifdef _MSC_VER
-#pragma warning( push ) 
-#pragma warning(disable:4127)
-#endif // _MSC_VER
-
-        //Holder_T can convert to T.  sample code: T t; Holder_T s; t=s;
-        if (convertible<Holder_T, T>::IS)   //diable warning 4127
+    public:
+        static T return_value(const Holder_T& h)
         {
-            vector_type_holder<Holder_T>* p = 
-                static_cast<vector_type_holder<Holder_T> *>(this);
-            return (const T&)p->template value<Holder_T>(pos);
+            return h;
         }
+    };
 
-#ifdef _MSC_VER
-#pragma warning( pop ) 
-#endif // _MSC_VER
+    template<typename Holder_T, typename T>
+    class ret<Holder_T, T, 0>
+    {
+    public:   //not allowed convert. complie error is much better than runtime error
+        static T return_value(const Holder_T& h)
 
-        throw std::bad_cast();
+        //warning:: I add implement here, just for pass test12 which is convert double to std::string
+        //it's best make it failed at compile time, so please remove this implement and rewrite test12
+        {
+            throw std::bad_cast();
+        }
+    };
+
+    template<typename Holder_T, typename T>
+    T cast(std::size_t pos)
+    {
+        vector_type_holder<Holder_T>* p = 
+            static_cast<vector_type_holder<Holder_T> *>(this);
+
+        Holder_T& h = p->template value<Holder_T>(pos);
+
+        return ret<Holder_T, T, convertible<Holder_T, T>::ALLOW >::return_value(h);        
     }
 
     template<typename T>
-    T& value(size_t pos) const;
+    T& value(std::size_t pos) const;
 };
 
 template <typename T>
@@ -117,7 +131,7 @@ public:
     ~vector_type_holder() { delete vec_; }
 
     template<typename TypeValue>
-    TypeValue& value(size_t pos) const { return (*vec_)[pos];}
+    TypeValue& value(std::size_t pos) const { return (*vec_)[pos];}
 
     const std::type_info & type() const {return typeid(T);}
 
@@ -127,7 +141,7 @@ private:
 
 //partial convertible class
 #define CONVERTIBLE(T, R, yes_no) \
-    template<> class convertible<T, R>{public:enum {IS = yes_no};}
+    template<> class convertible<T, R>{public:enum {ALLOW = yes_no};}
 
 #define INTEGRAL_CONVERTIBLE(T) \
     CONVERTIBLE(T, bool, 1);\
