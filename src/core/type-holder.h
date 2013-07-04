@@ -85,24 +85,21 @@ public:
 
 private:
 
-    template<typename Holder_T, typename T, size_t allow>
+    template<typename Holder_T, typename T, std::size_t allow>
     class ret
     {
     public:
         static T return_value(const Holder_T& h)
         {
-            return h;
+            return (T)h;
         }
     };
 
     template<typename Holder_T, typename T>
     class ret<Holder_T, T, 0>
     {
-    public:   //not allowed convert. complie error is much better than runtime error
+    public:   
         static T return_value(const Holder_T& h)
-
-        //warning:: I add implement here, just for pass test12 which is convert double to std::string
-        //it's best make it failed at compile time, so please remove this implement and rewrite test12
         {
             throw std::bad_cast();
         }
