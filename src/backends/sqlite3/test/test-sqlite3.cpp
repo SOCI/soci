@@ -258,6 +258,31 @@ void test5()
     std::cout << "test 5 passed" << std::endl;
 }
 
+void test_bulk_size_1()
+{
+    // we need to have an table that uses autoincrement to test this.
+    session sql(backEnd, connectString);
+
+    test4_table_creator tableCreator(sql);
+
+    sql << "insert into soci_test(name) values('john')";
+    sql << "insert into soci_test(name) values('james')";
+
+    {
+        std::vector<std::string> vec_name(2);
+        sql << "select name from soci_test", into(vec_name);
+        assert(vec_name.size() == 2);
+    }
+
+    {
+        std::vector<std::string> vec_name(1);
+        sql << "select name from soci_test", into(vec_name);
+        assert(vec_name.size() == 1);
+    }
+
+    std::cout << "test bulk size 1 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -377,6 +402,7 @@ int main(int argc, char** argv)
         test3();
         test4();
         test5();
+        test_bulk_size_1();
 
         std::cout << "\nOK, all tests passed.\n\n";
 
