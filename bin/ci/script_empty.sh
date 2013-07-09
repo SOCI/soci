@@ -21,3 +21,4 @@ cmake \
 
 [[ ${NUMTHREADS} -gt 0 ]] && make -j ${NUMTHREADS} || make
 ctest -V --output-on-failure .
+

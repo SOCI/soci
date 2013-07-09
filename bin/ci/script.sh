@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run script actions for SOCI build at travis-ci.org
+# Run test script actions for SOCI build at travis-ci.org
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
