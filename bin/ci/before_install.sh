@@ -10,4 +10,5 @@ sudo apt-get update -qq
 sudo apt-get install -qq tar bzip2 libstdc++5 libboost-dev libboost-date-time-dev
 
 before_install="./bin/ci/before_install_${SOCI_TRAVIS_BACKEND}.sh"
-[ -x ${before_install} ] && ${before_install}
+[ -x ${before_install} ] && ${before_install} || echo "nothing to run"
+

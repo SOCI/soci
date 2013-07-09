@@ -6,5 +6,4 @@
 source ./bin/ci/common.sh
 
 before_script="./bin/ci/before_script_${SOCI_TRAVIS_BACKEND}.sh"
-[ -x ${before_script} ] && ${before_script}
-
+[ -x ${before_script} ] && ${before_script} || echo "nothing to run"
