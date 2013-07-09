@@ -1,6 +1,7 @@
 #!/bin/bash
 # Common definitions used by SOCI build scripts at travis-ci.org
-# Mateusz Loskot <mateusz@loskot.net>, http://github.com/SOCI
+#
+# Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
 set -e
 

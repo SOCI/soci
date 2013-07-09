@@ -1,14 +1,18 @@
 # .travis.yml
-# Configure Travis CI service to build SOCI library
-# Mateusz Loskot <mateusz@loskot.net>, http://github.com/SOCI
+# Configure Travis CI service to build SOCI library, http://github.com/SOCI
+#
+# Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
 language: cpp
 
-# Testing against two compilers will create (at least) 2 rows in build matrix
-# http://about.travis-ci.org/docs/user/languages/cpp/
 compiler:
   - g++
-  - clang
+  #- clang
+
+env:
+    matrix:
+        - SOCI_TRAVIS_BACKEND=empty
+        - SOCI_TRAVIS_BACKEND=sqlite3
 
 services:
   - mysql
