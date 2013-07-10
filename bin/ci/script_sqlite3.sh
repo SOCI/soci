@@ -3,7 +3,7 @@
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-source ./bin/ci/common.sh
+source ${TRAVIS_BUILD_DIR}/bin/ci/common.sh
 
 builddir=./src/_build
 cd ${builddir} || { echo "'${builddir}' does not exist"; exit 1; }
