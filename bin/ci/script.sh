@@ -12,5 +12,5 @@ mkdir -p ${builddir} && cd ${builddir} \
 
 # build and run tests
 script="${TRAVIS_BUILD_DIR}/bin/ci/script_${SOCI_TRAVIS_BACKEND}.sh"
-[ -x ${script} ] && ${script} \
-    || { echo "'${script}' does not exist"; exit 1; }
+[ -x ${script} ] || { echo "'${script}' does not exist"; exit 1; }
+${script}

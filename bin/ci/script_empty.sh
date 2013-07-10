@@ -4,7 +4,8 @@
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
 source ${TRAVIS_BUILD_DIR}/bin/ci/common.sh
-
+echo $TRAVIS_BUILD_DIR
+echo $PWD
 cmake \
 	-DSOCI_STATIC=OFF \
 	-DSOCI_TESTS=ON \
