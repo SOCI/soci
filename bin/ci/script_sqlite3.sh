@@ -9,8 +9,8 @@ builddir=${TRAVIS_BUILD_DIR}/src/_build
 cd ${builddir} || { echo "'${builddir}' does not exist"; exit 1; }
 
 cmake \
-	-DSOCI_STATIC=OFF \
-	-DSOCI_TESTS=ON \
+    -DSOCI_STATIC=OFF \
+    -DSOCI_TESTS=ON \
     -DSOCI_SQLITE3=ON \
     -DSOCI_SQLITE3_TEST_CONNSTR:STRING="soci_test.db" \
     -DSOCI_DB2=OFF \ 
@@ -19,8 +19,7 @@ cmake \
     -DSOCI_MYSQL=OFF \ 
     -DSOCI_ODBC=OFF \ 
     -DSOCI_ORACLE=OFF \ 
-    -DSOCI_POSTGRESQL=OFF \ 
-	..
+    -DSOCI_POSTGRESQL=OFF ..
 
 [[ ${NUMTHREADS} -gt 0 ]] && make -j ${NUMTHREADS} || make
 ctest -V --output-on-failure .
