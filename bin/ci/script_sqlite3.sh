@@ -19,7 +19,8 @@ cmake \
     -DSOCI_MYSQL=OFF \ 
     -DSOCI_ODBC=OFF \ 
     -DSOCI_ORACLE=OFF \ 
-    -DSOCI_POSTGRESQL=OFF ..
+    -DSOCI_POSTGRESQL=OFF \
+    ${TRAVIS_BUILD_DIR}/src
 
 [[ ${NUMTHREADS} -gt 0 ]] && make -j ${NUMTHREADS} || make
 ctest -V --output-on-failure .
