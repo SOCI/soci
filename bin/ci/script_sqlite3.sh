@@ -5,7 +5,7 @@
 #
 source ${TRAVIS_BUILD_DIR}/bin/ci/common.sh
 
-builddir=./src/_build
+builddir=${TRAVIS_BUILD_DIR}/src/_build
 cd ${builddir} || { echo "'${builddir}' does not exist"; exit 1; }
 
 cmake \
