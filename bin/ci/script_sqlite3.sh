@@ -5,8 +5,8 @@
 #
 source ${TRAVIS_BUILD_DIR}/bin/ci/common.sh
 
-mkdir -p $TCI_BLD_DIR
-cd $TCI_BLD_DIR
+mkdir -p src/_build
+cd src/_build
 
 cmake \
     -DSOCI_STATIC=OFF \
@@ -19,8 +19,7 @@ cmake \
     -DSOCI_ORACLE=OFF \ 
     -DSOCI_POSTGRESQL=OFF \
     -DSOCI_SQLITE3=ON \
-    -DSOCI_SQLITE3_TEST_CONNSTR:STRING="soci_test.db" \
-    $TCI_SRC_DIR
+    -DSOCI_SQLITE3_TEST_CONNSTR:STRING="soci_test.db" ..
 
 make -j $TCI_NUMTHREADS
 ctest -V --output-on-failure .
