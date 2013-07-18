@@ -5,9 +5,6 @@
 #
 source ${TRAVIS_BUILD_DIR}/bin/ci/common.sh
 
-mkdir -p src/_build
-cd src/_build
-
 cmake \
     -DSOCI_STATIC=OFF \
     -DSOCI_TESTS=ON \
@@ -19,7 +16,8 @@ cmake \
     -DSOCI_ODBC=OFF \ 
     -DSOCI_ORACLE=OFF \ 
     -DSOCI_POSTGRESQL=OFF \
-    -DSOCI_SQLITE3=OFF ..
+    -DSOCI_SQLITE3=OFF \
+    ${TRAVIS_BUILD_DIR}/src
 
 make -j $TCI_NUMTHREADS
 ctest -V --output-on-failure .

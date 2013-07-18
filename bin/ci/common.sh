@@ -10,8 +10,6 @@ fi
 # Functions
 tmstamp() { echo -n "[$(date '+%H:%M:%S')]" ; }
 # Environment
-TCI_BLD_DIR=${TRAVIS_BUILD_DIR}/_build
-TCI_SRC_DIR=${TRAVIS_BUILD_DIR}/src
 TCI_NUMTHREADS=2
 if [[ -f /sys/devices/system/cpu/online ]]; then
 	# Calculates 1.5 times physical threads
