@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 # Run before_install actions for SOCI build at travis-ci.org
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
