@@ -11,6 +11,8 @@ cmake \
     -DSOCI_DB2=OFF \
     -DSOCI_EMPTY=OFF \
     -DSOCI_FIREBIRD=OFF \
+    -DSOCI_MYSQL=OFF \
+    -DSOCI_POSTGRESQL=OFF \
     ..
 
 #make -j $TCI_NUMTHREADS
