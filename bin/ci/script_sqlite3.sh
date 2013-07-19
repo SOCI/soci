@@ -16,7 +16,7 @@ cmake \
     -DSOCI_ORACLE=OFF \ 
     -DSOCI_POSTGRESQL=OFF \
     -DSOCI_SQLITE3=ON \
-    -DSOCI_SQLITE3_TEST_CONNSTR:STRING="soci_test.db" \
+    -DSOCI_SQLITE3_TEST_CONNSTR=\"soci_test.db\" \
     ..
 
 make -j $TCI_NUMTHREADS
