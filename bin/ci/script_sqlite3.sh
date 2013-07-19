@@ -9,6 +9,8 @@ cmake \
     -DSOCI_TESTS=ON \
     -DSOCI_STATIC=OFF \
     -DSOCI_DB2=OFF \
+    -DSOCI_EMPTY=OFF \
+    -DSOCI_FIREBIRD=OFF \
     ..
 
 #make -j $TCI_NUMTHREADS
