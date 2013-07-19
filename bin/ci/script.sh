@@ -6,7 +6,7 @@
 source ./bin/ci/common.sh
 
 # prepare build directory
-builddir="${TRAVIS_BUILD_DIR}/_build"
+builddir="${TRAVIS_BUILD_DIR}/src/_build"
 mkdir -p ${builddir} && cd ${builddir} \
     || { echo "'${builddir}' does not exist"; exit 1; }
 
