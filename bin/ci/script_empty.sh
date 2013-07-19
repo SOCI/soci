@@ -5,8 +5,8 @@
 #
 source ${TRAVIS_BUILD_DIR}/bin/ci/common.sh
 
-echo $PWD
-cmake ${TRAVIS_BUILD_DIR}/src
+cmake \
+    ${TRAVIS_BUILD_DIR}/src
 
 make -j $TCI_NUMTHREADS
 ctest -V --output-on-failure .
