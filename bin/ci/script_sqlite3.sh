@@ -3,10 +3,9 @@
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-source ${TRAVIS_BUILD_DIR}/bin/ci/common.sh
+source $TRAVIS_BUILD_DIR/bin/ci/common.sh
 
-cmake \
-    -DSOCI_STATIC=OFF \
+cmake -DSOCI_STATIC=OFF \
     -DSOCI_TESTS=ON \
     -DSOCI_DB2=OFF \ 
     -DSOCI_EMPTY=OFF \ 
@@ -17,7 +16,7 @@ cmake \
     -DSOCI_POSTGRESQL=OFF \
     -DSOCI_SQLITE3=ON \
     -DSOCI_SQLITE3_TEST_CONNSTR:STRING="soci_test.db" \
-    ${TRAVIS_BUILD_DIR}/src
+    $TRAVIS_BUILD_DIR/src
 
 make -j $TCI_NUMTHREADS
 ctest -V --output-on-failure .
