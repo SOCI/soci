@@ -3,7 +3,7 @@
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-source ./bin/ci/common.sh
+source ${TRAVIS_BUILD_DIR}/bin/ci/common.sh
 
 sudo apt-get install -qq firebird2.5-super firebird2.5-dev
 

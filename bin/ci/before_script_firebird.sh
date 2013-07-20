@@ -3,7 +3,7 @@
 #
 # Mateusz Loskot <mateusz@loskot.net>, http://github.com/SOCI
 #
-source ./bin/ci/common.sh
+source ${TRAVIS_BUILD_DIR}/bin/ci/common.sh
 
 isql-fb -z -q -i /dev/null # --version
 echo 'CREATE DATABASE "LOCALHOST:/tmp/soci_test.fdb" PAGE_SIZE = 16384;' > /tmp/create_soci_test.sql

@@ -3,6 +3,7 @@
 #
 # Mateusz Loskot <mateusz@loskot.net>, http://github.com/SOCI
 #
-source ./bin/ci/common.sh
+source ${TRAVIS_BUILD_DIR}/bin/ci/common.sh
+
 mysql --version
 mysql -e 'create database soci_test;'
