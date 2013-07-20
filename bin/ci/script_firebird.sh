@@ -14,7 +14,7 @@ cmake \
     -DSOCI_MYSQL=OFF \
     -DSOCI_ODBC=OFF \
     -DSOCI_ORACLE=OFF \
-    -DSOCI_POSTGRESQL=ON \
+    -DSOCI_POSTGRESQL=OFF \
     -DSOCI_SQLITE3=OFF \
     -DSOCI_FIREBIRD_TEST_CONNSTR:STRING="service=LOCALHOST:/tmp/soci_test.fdb user=SYSDBA password=masterkey" \
     ..  
