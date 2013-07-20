@@ -9,14 +9,15 @@ compiler:
   - g++
   #- clang
 
-env:
-    matrix:
-        - SOCI_TRAVIS_BACKEND=empty
-        - SOCI_TRAVIS_BACKEND=sqlite3
-
 services:
   - mysql
   - postgresql
+
+env:
+    matrix:
+        - SOCI_TRAVIS_BACKEND=empty
+        - SOCI_TRAVIS_BACKEND=postgresql
+        - SOCI_TRAVIS_BACKEND=sqlite3
 
 before_install: ./bin/ci/before_install.sh
 before_script: ./bin/ci/before_script.sh
