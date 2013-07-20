@@ -16,7 +16,7 @@ cmake \
     -DSOCI_ORACLE=OFF \
     -DSOCI_POSTGRESQL=ON \
     -DSOCI_SQLITE3=OFF \
-    -DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="dbname=soci_test user=postgres" \
+    -DSOCI_MYSQL_TEST_CONNSTR:STRING="db=soci_test" \
     ..  
 
 run_make
