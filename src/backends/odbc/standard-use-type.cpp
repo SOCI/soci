@@ -88,12 +88,31 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
         buf_[1] = '\0';
         indHolder_ = SQL_NTS;
         break;
+    case x_stdwstring:
+    {
+        std::wstring* s = static_cast<std::wstring*>(data_);
+        sqlType = SQL_WVARCHAR;
+        cType = SQL_C_WCHAR;
+        size = s->size() * sizeof(wchar_t);
+		//if greater than truncation limit than use as NTEXT column
+		if (size > (SQLLEN)statement_.session_.get_trunc_fix_above_limit())
+			sqlType = SQL_WLONGVARCHAR;
+        buf_ = new char[size+sizeof(wchar_t)];
+        memcpy(buf_, s->c_str(), size);
+		for(size_t i=0; i<sizeof(wchar_t); i++)
+	        buf_[size++] = '\0';
+        indHolder_ = SQL_NTS;
+    }
+    break;
     case x_stdstring:
     {
         std::string* s = static_cast<std::string*>(data_);
         sqlType = SQL_VARCHAR;
         cType = SQL_C_CHAR;
         size = s->size();
+		//if greater than truncation limit than use as NTEXT column
+		if (size > (SQLLEN)statement_.session_.get_trunc_fix_above_limit())
+			sqlType = SQL_LONGVARCHAR;
         buf_ = new char[size+1];
         memcpy(buf_, s->c_str(), size);
         buf_[size++] = '\0';
@@ -122,22 +141,7 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
         ts->fraction = 0;
     }
     break;
-
     case x_blob:
-    {
-//         sqlType = SQL_VARBINARY;
-//         cType = SQL_C_BINARY;
-
-//         BLOB *b = static_cast<BLOB *>(data);
-
-//         odbc_blob_backend *bbe
-//         = static_cast<odbc_blob_backend *>(b->getBackEnd());
-
-//         size = 0;
-//         indHolder_ = size;
-        //TODO            data = &bbe->lobp_;
-    }
-    break;
     case x_statement:
     case x_rowid:
         // Unsupported data types.

@@ -285,7 +285,12 @@ void odbc_statement_backend::describe_column(int colNum, data_type & type,
 
     switch (dataType)
     {
-    case SQL_TYPE_DATE:
+	case SQL_WCHAR:
+	case SQL_WVARCHAR:
+	case SQL_WLONGVARCHAR:
+		type = dt_wstring;
+		break;
+	case SQL_TYPE_DATE:
     case SQL_TYPE_TIME:
     case SQL_TYPE_TIMESTAMP:
         type = dt_date;
@@ -307,7 +312,7 @@ void odbc_statement_backend::describe_column(int colNum, data_type & type,
         break;
     case SQL_CHAR:
     case SQL_VARCHAR:
-    case SQL_LONGVARCHAR:
+	case SQL_LONGVARCHAR:
     default:
         type = dt_string;
         break;
@@ -334,6 +339,16 @@ std::size_t odbc_statement_backend::column_size(int colNum)
                          "column size");
     }
 
+	if (
+		(dataType == SQL_LONGVARCHAR)
+		||
+		(dataType == SQL_WLONGVARCHAR)
+	)
+	{
+		//can't use unsigned max long as column size for buffer binding.
+		//needs to know at least a maximum buffer per element!
+		colSize = session_.get_max_text_length();
+	}
     return colSize;
 }
 

@@ -14,11 +14,15 @@
 using namespace soci;
 using namespace soci::details;
 
-char const * soci::odbc_option_driver_complete = "odbc.driver_complete";
+char const * soci::odbc_option_driver_complete	= "odbc.driver_complete";
+char const * soci::odbc_option_max_text_length	= "odbc.max_text_length";
+char const * soci::odbc_option_fix_trunc_above	= "odbc.fix_trunc_above";
+
 
 odbc_session_backend::odbc_session_backend(
     connection_parameters const & parameters)
-    : henv_(0), hdbc_(0), product_(prod_uninitialized)
+    : henv_(0), hdbc_(0), product_(prod_uninitialized), 
+	  max_text_length_(32000), fix_trunc_above_(254)
 {
     SQLRETURN rc;
 
@@ -66,6 +70,42 @@ odbc_session_backend::odbc_session_backend(
                           completionString + "\".");
       }
     }
+
+   std::size_t max_val = max_text_length_;
+   std::string text_max;
+   if (parameters.get_option(odbc_option_max_text_length, text_max))
+   {
+	   // The value of this option is intended to define the maximum size for TEXT/NTEXT columns
+	   // can be superset by pre-sized string or stringvector elements
+	   if (std::sscanf(text_max.c_str(), "%u", &max_val) != 1)
+	   {
+           throw soci_error("Invalid non-numeric max text length option value \"" +
+                  text_max + "\".");
+
+	   }
+	   else
+	   {
+		   max_text_length_ = max_val;
+	   }
+   }
+
+   max_val = fix_trunc_above_;
+   std::string trunc_max; 
+   if (parameters.get_option(odbc_option_fix_trunc_above, trunc_max))
+   {
+	   // The value of this option is intended to define the maximum size for string
+	   // before sqlType will be changed into corresponding TEXT/NTEXT type
+	   // to avoid driver truncation to 254 chars for very long strings
+	   if (std::sscanf(trunc_max.c_str(), "%u", &max_val) != 1)
+	   {
+			throw soci_error("Invalid non-numeric fix truncation option value \"" +
+							  trunc_max + "\".");
+	   }
+	   else
+	   {
+		   fix_trunc_above_ = max_val;
+	   }
+   }
 
 #ifdef _WIN32
     if (completion != SQL_DRIVER_NOPROMPT)
@@ -293,4 +333,14 @@ odbc_session_backend::get_database_product()
         product_ = prod_unknown;
 
     return product_;
+}
+
+std::size_t odbc_session_backend::get_max_text_length()
+{
+	return max_text_length_;
+}
+
+std::size_t odbc_session_backend::get_trunc_fix_above_limit()
+{
+	return fix_trunc_above_;
 }

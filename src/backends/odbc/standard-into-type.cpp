@@ -31,15 +31,31 @@ void odbc_standard_into_type_backend::define_by_pos(
         buf_ = new char[size];
         data = buf_;
         break;
+	case x_stdwstring:
+		{
+			odbcType_ = SQL_C_WCHAR;
+			//statement already knows max size for NTEXT columns !
+			size = statement_.column_size(position_) * sizeof(wchar_t);
+			//superset size if the string is presized longer than max definition
+			std::wstring *s = static_cast<std::wstring *>(data_);
+			if (s->length() > size) size = s->length();
+			size += sizeof(wchar_t); //add for term 0
+			buf_ = new char[size];
+			data = buf_;
+		}
+		break;
     case x_stdstring:
-        odbcType_ = SQL_C_CHAR;
-        // Patch: set to min between column size and 100MB (used ot be 32769)
-        // Column size for text data type can be too large for buffer allocation
-        size = statement_.column_size(position_);
-        size = size > odbc_max_buffer_length ? odbc_max_buffer_length : size;
-        size++;
-        buf_ = new char[size];
-        data = buf_;
+		{
+			odbcType_ = SQL_C_CHAR;
+			//statement already knows max size for TEXT columns!
+			size = statement_.column_size(position_);
+			//superset size if the string is presized longer than max definition
+			std::string *s = static_cast<std::string *>(data_);
+			if (s->length() > size) size = s->length();
+			size++;
+			buf_ = new char[size];
+			data = buf_;
+		}
         break;
     case x_short:
         odbcType_ = SQL_C_SSHORT;
@@ -149,11 +165,32 @@ void odbc_standard_into_type_backend::post_fetch(
             char *c = static_cast<char*>(data_);
             *c = buf_[0];
         }
-        if (type_ == x_stdstring)
+		if (type_ == x_stdwstring)
+        {
+            std::wstring *s = static_cast<std::wstring *>(data_);
+			//collect max for overflow check
+			std::size_t max = statement_.session_.get_max_text_length();
+			//respect supersets
+			if (s->size() > max) max = s->size();
+			//assign buffer
+            *s = (wchar_t*)buf_;
+			//check possible overflow/truncation now
+			if (s->size() >= max)
+            {
+                throw soci_error("Buffer size overflow; maybe got too large string");
+            }
+        }
+        else if (type_ == x_stdstring)
         {
             std::string *s = static_cast<std::string *>(data_);
+			//collect max for overflow check
+			std::size_t max = statement_.session_.get_max_text_length();
+			//respect supersets
+			if (s->size() > max) max = s->size();
+			//assign buffer
             *s = buf_;
-            if (s->size() >= (odbc_max_buffer_length - 1))
+			//check possible overflow/truncation now
+			if (s->size() >= max)
             {
                 throw soci_error("Buffer size overflow; maybe got too large string");
             }

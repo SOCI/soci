@@ -34,18 +34,22 @@
 
 namespace soci
 {
-
-    // TODO: Do we want to make it a part of public interface? --mloskot
-namespace details
-{
-    std::size_t const odbc_max_buffer_length = 100 * 1024 * 1024;
-}
-
 // Option allowing to specify the "driver completion" parameter of
 // SQLDriverConnect(). Its possible values are the same as the allowed values
 // for this parameter in the official ODBC, i.e. one of SQL_DRIVER_XXX (in
 // string form as all options are strings currently).
 extern SOCI_ODBC_DECL char const * odbc_option_driver_complete;
+
+// Option allowing predefinition of maximum TEXT/NTEXT columns sizes
+// sizes can be superset by into bindings, if string or blob gets presized to higher size
+// same for vector based binding, each element needs to be presized to superset this default max
+extern SOCI_ODBC_DECL char const * odbc_option_max_text_length; //default: 32000
+
+// Option allowing truncation prevention if TEXT/NTEXT columns will be written
+// some driver/databases truncate the large string to first 254 chars even if column is variable sized
+// instead of sending sqlType = SQL_CHAR it will use sqlType = SQL_LONGVARCHAR
+// instead of sending sqlType = SQL_WVARCHAR it will use sqlType = SQL_WLONGVARCHAR
+extern SOCI_ODBC_DECL char const * odbc_option_fix_trunc_above; //default: 254
 
 struct odbc_statement_backend;
 
@@ -305,11 +309,19 @@ struct odbc_session_backend : details::session_backend
     // Determine the type of the database we're connected to.
     database_product get_database_product();
 
+	//maximum for TEXT/NTEXT columns
+	virtual std::size_t			get_max_text_length(); 
+	//maximum string length before changing the sqlType
+	virtual std::size_t			get_trunc_fix_above_limit(); 
+
     // Return full ODBC connection string.
     std::string get_connection_string() const { return connection_string_; }
 
     SQLHENV henv_;
     SQLHDBC hdbc_;
+
+	std::size_t max_text_length_;
+	std::size_t fix_trunc_above_;
 
     std::string connection_string_;
     database_product product_;

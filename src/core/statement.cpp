@@ -599,6 +599,11 @@ namespace details
 {
 
 // Map data_types to stock types for dynamic result set support
+template<>
+void statement_impl::bind_into<dt_wstring>()
+{
+    into_row<std::wstring>();
+}
 
 template<>
 void statement_impl::bind_into<dt_string>()
@@ -654,6 +659,9 @@ void statement_impl::describe()
 
         switch (dtype)
         {
+		case dt_wstring:
+            bind_into<dt_wstring>();
+            break;
         case dt_string:
             bind_into<dt_string>();
             break;

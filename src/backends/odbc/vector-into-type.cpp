@@ -139,12 +139,39 @@ void odbc_vector_into_type_backend::define_by_pos(
             data = buf_;
         }
         break;
-    case x_stdstring:
+    case x_stdwstring:
+        {
+            odbcType_ = SQL_C_WCHAR;
+            std::vector<std::wstring> *v
+                = static_cast<std::vector<std::wstring> *>(data);
+			//statement already knows max size for TEXT columns!
+            colSize_ = statement_.column_size(position) * sizeof(wchar_t) + sizeof(wchar_t);
+			//superset size if the string is presized longer than max definition
+			//use the first vector elements size fo it
+			if ((v->size() > 0) && (v->at(0).size() > colSize_)) 
+				colSize_ = v->at(0).size() * sizeof(wchar_t) + sizeof(wchar_t);
+
+            std::size_t bufSize = colSize_ * v->size();
+            buf_ = new char[bufSize];
+
+            prepare_indicators(v->size());
+
+            size = static_cast<SQLINTEGER>(colSize_);
+            data = buf_;
+        }
+        break;
+	case x_stdstring:
         {
             odbcType_ = SQL_C_CHAR;
             std::vector<std::string> *v
                 = static_cast<std::vector<std::string> *>(data);
+			//statement already knows max size for TEXT columns!
             colSize_ = statement_.column_size(position) + 1;
+			//superset size if the string is presized longer than max definition
+			//use the first vector elements size fo it
+			if ((v->size() > 0) && (v->at(0).size() > colSize_)) 
+				colSize_ = v->at(0).size() +1;
+
             std::size_t bufSize = colSize_ * v->size();
             buf_ = new char[bufSize];
 
@@ -213,7 +240,22 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                 pos += colSize_;
             }
         }
-        if (type_ == x_stdstring)
+        if (type_ == x_stdwstring)
+        {
+            std::vector<std::wstring> *vp
+                = static_cast<std::vector<std::wstring> *>(data_);
+
+            std::vector<std::wstring> &v(*vp);
+
+            char *pos = buf_;
+            std::size_t const vsize = v.size();
+            for (std::size_t i = 0; i != vsize; ++i)
+            {
+                v[i].assign((wchar_t*)pos, wcslen((wchar_t*)pos));
+                pos += colSize_;
+            }
+        }
+        else if (type_ == x_stdstring)
         {
             std::vector<std::string> *vp
                 = static_cast<std::vector<std::string> *>(data_);
@@ -373,6 +415,13 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
             v->resize(sz);
         }
         break;
+    case x_stdwstring:
+        {
+            std::vector<std::wstring> *v
+                = static_cast<std::vector<std::wstring> *>(data_);
+            v->resize(sz);
+        }
+        break;
     case x_stdstring:
         {
             std::vector<std::string> *v
@@ -436,6 +485,13 @@ std::size_t odbc_vector_into_type_backend::size()
         {
             std::vector<double> *v
                 = static_cast<std::vector<double> *>(data_);
+            sz = v->size();
+        }
+        break;
+    case x_stdwstring:
+        {
+            std::vector<std::wstring> *v
+                = static_cast<std::vector<std::wstring> *>(data_);
             sz = v->size();
         }
         break;
