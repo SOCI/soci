@@ -600,6 +600,12 @@ namespace details
 
 // Map data_types to stock types for dynamic result set support
 template<>
+void statement_impl::bind_into<dt_binary>()
+{
+	into_row<soci::binarydata>();
+}
+
+template<>
 void statement_impl::bind_into<dt_wstring>()
 {
     into_row<std::wstring>();
@@ -659,6 +665,9 @@ void statement_impl::describe()
 
         switch (dtype)
         {
+		case dt_binary:
+            bind_into<dt_binary>();
+            break;
 		case dt_wstring:
             bind_into<dt_wstring>();
             break;

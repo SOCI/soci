@@ -107,6 +107,19 @@ void odbc_standard_into_type_backend::define_by_pos(
         odbcType_ = SQL_C_ULONG;
         size = sizeof(unsigned long);
         break;
+	case x_binary:
+		{
+			odbcType_ = SQL_C_BINARY;
+			//statement already knows max size for CLOB, BINARY columns!
+			size = statement_.column_size(position_);
+			//superset size if the blob is presized longer than max definition
+			soci::binarydata *s = static_cast<soci::binarydata *>(data_);
+			if (s->size() > size) size = s->size();
+			size++;
+			buf_ = new char[size];
+			data = buf_;
+		}
+        break;
     default:
         throw soci_error("Into element used with non-supported type.");
     }
@@ -165,7 +178,12 @@ void odbc_standard_into_type_backend::post_fetch(
             char *c = static_cast<char*>(data_);
             *c = buf_[0];
         }
-		if (type_ == x_stdwstring)
+		if (type_ == x_binary)
+		{
+			soci::binarydata *s = static_cast<soci::binarydata *>(data_);
+			s->assign(buf_,  buf_ + valueLen_);
+		}
+        else if (type_ == x_stdwstring)
         {
             std::wstring *s = static_cast<std::wstring *>(data_);
 			//collect max for overflow check

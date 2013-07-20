@@ -16,13 +16,13 @@ using namespace soci::details;
 
 char const * soci::odbc_option_driver_complete	= "odbc.driver_complete";
 char const * soci::odbc_option_max_text_length	= "odbc.max_text_length";
+char const * soci::odbc_option_max_blob_length	= "odbc.max_blob_length";
 char const * soci::odbc_option_fix_trunc_above	= "odbc.fix_trunc_above";
-
 
 odbc_session_backend::odbc_session_backend(
     connection_parameters const & parameters)
     : henv_(0), hdbc_(0), product_(prod_uninitialized), 
-	  max_text_length_(32000), fix_trunc_above_(254)
+	  max_text_length_(32000), fix_trunc_above_(254), max_blob_length_(1000000)
 {
     SQLRETURN rc;
 
@@ -73,6 +73,7 @@ odbc_session_backend::odbc_session_backend(
 
    std::size_t max_val = max_text_length_;
    std::string text_max;
+   std::string blob_max;
    if (parameters.get_option(odbc_option_max_text_length, text_max))
    {
 	   // The value of this option is intended to define the maximum size for TEXT/NTEXT columns
@@ -86,6 +87,19 @@ odbc_session_backend::odbc_session_backend(
 	   else
 	   {
 		   max_text_length_ = max_val;
+	   }
+   }
+   if (parameters.get_option(odbc_option_max_blob_length, blob_max))
+   {
+	   if (std::sscanf(blob_max.c_str(), "%u", &max_val) != 1)
+	   {
+           throw soci_error("Invalid non-numeric max blob length option value \"" +
+                  text_max + "\".");
+
+	   }
+	   else
+	   {
+		   max_blob_length_ = max_val;
 	   }
    }
 
@@ -338,6 +352,11 @@ odbc_session_backend::get_database_product()
 std::size_t odbc_session_backend::get_max_text_length()
 {
 	return max_text_length_;
+}
+
+std::size_t odbc_session_backend::get_max_blob_length()
+{
+	return max_blob_length_;
 }
 
 std::size_t odbc_session_backend::get_trunc_fix_above_limit()

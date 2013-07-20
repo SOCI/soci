@@ -202,16 +202,37 @@ void odbc_vector_into_type_backend::define_by_pos(
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
-    }
+	case x_binary:
+		{
+			odbcType_ = SQL_C_BINARY;
+			std::vector<soci::binarydata> *v
+				= static_cast<std::vector<soci::binarydata> *>(data);
 
-    SQLRETURN rc 
-        = SQLBindCol(statement_.hstmt_, static_cast<SQLUSMALLINT>(position++),
-                odbcType_, static_cast<SQLPOINTER>(data), size, indHolders_);
-    if (is_odbc_error(rc))
-    {
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_,
-                            "vector into type define by pos");
-    }
+			//statement already knows max size for CLOB, BINARY columns!
+			colSize_ = statement_.column_size(position) +1;
+			//superset size if the blob is presized longer than max definition
+			if ((v->size() > 0) && (v->at(0).size() > colSize_))
+				colSize_ = v->at(0).size() +1;
+
+            std::size_t bufSize = colSize_ * v->size();
+            buf_ = new char[bufSize];
+
+            prepare_indicators(v->size());
+
+            size = static_cast<SQLINTEGER>(colSize_);
+            data = buf_;
+		}
+		break;
+	}
+
+	SQLRETURN rc 
+		= SQLBindCol(statement_.hstmt_, static_cast<SQLUSMALLINT>(position++),
+				odbcType_, static_cast<SQLPOINTER>(data), size, indHolders_);
+	if (is_odbc_error(rc))
+	{
+		throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_,
+							"vector into type define by pos");
+	}
 }
 
 void odbc_vector_into_type_backend::pre_fetch()
@@ -329,6 +350,20 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                 pos += colSize_;
             }
         }
+		else if (type_ == x_binary)
+		{
+			std::vector<soci::binarydata> *vp
+                = static_cast<std::vector<soci::binarydata> *>(data_);
+			std::vector<soci::binarydata> &v(*vp);
+
+			char *pos = buf_;
+            std::size_t const vsize = v.size();
+            for (std::size_t i = 0; i != vsize; ++i)
+            {
+				v[i].assign(pos, pos + __min(indHolderVec_[i], (SQLINTEGER)colSize_));
+                pos += colSize_;
+            }
+		}
 
         // then - deal with indicators
         if (ind != NULL)
@@ -440,6 +475,13 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
+	case x_binary:
+		{
+			std::vector<soci::binarydata> *v
+				= static_cast<std::vector<soci::binarydata> *>(data_);
+			v->resize(sz);
+		}
+		break;
     }
 }
 
@@ -513,6 +555,13 @@ std::size_t odbc_vector_into_type_backend::size()
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
+	case x_binary:
+        {
+			std::vector<soci::binarydata> *v
+                = static_cast<std::vector<soci::binarydata> *>(data_);
+            sz = v->size();
+        }
+        break;
     }
 
     return sz;

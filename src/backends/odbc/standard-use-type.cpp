@@ -146,6 +146,18 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
     case x_rowid:
         // Unsupported data types.
         return NULL;
+	case x_binary:
+		{
+			soci::binarydata* s = static_cast<soci::binarydata*>(data_);
+			sqlType = SQL_BINARY;
+			cType = SQL_C_BINARY;
+			size = s->size();
+			buf_ = new char[size+1];
+			std::copy(s->begin(), s->end(), buf_);
+			buf_[size++] = '\0'; //safety only
+			indHolder_ = SQL_NTS;
+		}
+		break;
     }
 
     // Return either the pointer to C++ data itself or the buffer that we

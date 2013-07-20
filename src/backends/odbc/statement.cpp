@@ -285,6 +285,11 @@ void odbc_statement_backend::describe_column(int colNum, data_type & type,
 
     switch (dataType)
     {
+	case SQL_BINARY:
+	case SQL_VARBINARY:
+	case SQL_LONGVARBINARY:
+		type = dt_binary;
+		break;
 	case SQL_WCHAR:
 	case SQL_WVARCHAR:
 	case SQL_WLONGVARCHAR:
@@ -349,6 +354,17 @@ std::size_t odbc_statement_backend::column_size(int colNum)
 		//needs to know at least a maximum buffer per element!
 		colSize = session_.get_max_text_length();
 	}
+	if (
+		(dataType == SQL_BINARY)
+		||
+		(dataType == SQL_VARBINARY)
+		||
+		(dataType == SQL_LONGVARBINARY)
+	)
+	{
+		colSize = session_.get_max_blob_length();
+	}
+
     return colSize;
 }
 

@@ -245,6 +245,39 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
+	case x_binary:
+        {
+            sqlType = SQL_BINARY;
+            cType = SQL_C_BINARY;
+
+			std::vector<soci::binarydata> *vp
+                = static_cast<std::vector<soci::binarydata> *>(data);
+            std::vector<soci::binarydata> &v(*vp);
+
+            std::size_t maxSize = 0;
+            std::size_t const vecSize = v.size();
+            prepare_indicators(vecSize);
+            for (std::size_t i = 0; i != vecSize; ++i)
+            {
+                std::size_t sz = v[i].size();
+                indHolderVec_[i] = static_cast<long>(sz);
+                maxSize = sz > maxSize ? sz : maxSize;
+            }
+
+            buf_ = new char[maxSize * vecSize];
+            memset(buf_, 0, maxSize * vecSize);
+
+            char *pos = buf_;
+            for (std::size_t i = 0; i != vecSize; ++i)
+            {
+				std::copy(v[i].begin(), v[i].end(), pos);
+                pos += maxSize;
+            }
+
+            data = buf_;
+            size = static_cast<SQLINTEGER>(maxSize);
+        }
+        break;
     }
 
     colSize_ = size;
@@ -394,8 +427,9 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
             }
             else
             {
-	            // for strings we have already set the values
-	            if ((type_ != x_stdstring) && (type_ != x_stdwstring))
+				// for strings we have already set the values
+				// for binarydata we have already set the values
+				if ((type_ != x_stdstring) && (type_ != x_stdwstring) && (type_ != x_binary))
                 {
                     indHolderVec_[i] = SQL_NTS;  // value is OK
                 }
@@ -409,7 +443,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
         for (std::size_t i = 0; i != vsize; ++i, ++ind)
         {
             // for strings we have already set the values
-            if ((type_ != x_stdstring) && (type_ != x_stdwstring))
+            if ((type_ != x_stdstring) && (type_ != x_stdwstring) && (type_ != x_binary))
             {
                 indHolderVec_[i] = SQL_NTS;  // value is OK
             }
@@ -487,6 +521,13 @@ std::size_t odbc_vector_use_type_backend::size()
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
+	case x_binary:
+        {
+			std::vector<soci::binarydata> *vp
+				= static_cast<std::vector<soci::binarydata> *>(data_);
+            sz = vp->size();
+        }
+		break;
     }
 
     return sz;

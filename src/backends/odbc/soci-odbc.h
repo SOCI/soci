@@ -45,6 +45,11 @@ extern SOCI_ODBC_DECL char const * odbc_option_driver_complete;
 // same for vector based binding, each element needs to be presized to superset this default max
 extern SOCI_ODBC_DECL char const * odbc_option_max_text_length; //default: 32000
 
+// Option allowing predefinition of maximum CLOB/BINARY columns sizes
+// sizes can be superset by into bindings, if soci::binarydata gets presized to higher size
+// same for vector based binding, each element needs to be presized to superset this default max
+extern SOCI_ODBC_DECL char const * odbc_option_max_blob_length;	//default: 1000000
+
 // Option allowing truncation prevention if TEXT/NTEXT columns will be written
 // some driver/databases truncate the large string to first 254 chars even if column is variable sized
 // instead of sending sqlType = SQL_CHAR it will use sqlType = SQL_LONGVARCHAR
@@ -311,6 +316,8 @@ struct odbc_session_backend : details::session_backend
 
 	//maximum for TEXT/NTEXT columns
 	virtual std::size_t			get_max_text_length(); 
+	//maximum for CLOB/BINARY columns
+	virtual std::size_t			get_max_blob_length(); 
 	//maximum string length before changing the sqlType
 	virtual std::size_t			get_trunc_fix_above_limit(); 
 
@@ -321,6 +328,7 @@ struct odbc_session_backend : details::session_backend
     SQLHDBC hdbc_;
 
 	std::size_t max_text_length_;
+	std::size_t max_blob_length_;
 	std::size_t fix_trunc_above_;
 
     std::string connection_string_;
