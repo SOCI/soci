@@ -18,6 +18,5 @@ cmake \
     -DSOCI_SQLITE3=OFF \
     ..
 
-#make -j $TCI_NUMTHREADS
-#ctest -V --output-on-failure .
-
+run_make
+run_test
