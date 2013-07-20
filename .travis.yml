@@ -16,6 +16,7 @@ services:
 env:
     matrix:
         - SOCI_TRAVIS_BACKEND=empty
+        - SOCI_TRAVIS_BACKEND=firebird
         - SOCI_TRAVIS_BACKEND=mysql
         - SOCI_TRAVIS_BACKEND=postgresql
         - SOCI_TRAVIS_BACKEND=sqlite3
