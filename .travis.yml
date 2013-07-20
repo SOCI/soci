@@ -1,18 +1,27 @@
 # .travis.yml
-# Configure Travis CI service to build SOCI library
-# Mateusz Loskot <mateusz@loskot.net>, http://github.com/SOCI
+# Configure Travis CI service to build SOCI library, http://github.com/SOCI
+#
+# Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
 language: cpp
 
-# Testing against two compilers will create (at least) 2 rows in build matrix
-# http://about.travis-ci.org/docs/user/languages/cpp/
 compiler:
   - g++
-  - clang
+  #- clang
 
 services:
   - mysql
   - postgresql
+
+env:
+    matrix:
+        - SOCI_TRAVIS_BACKEND=empty
+        - SOCI_TRAVIS_BACKEND=firebird
+        - SOCI_TRAVIS_BACKEND=mysql
+        - SOCI_TRAVIS_BACKEND=odbc
+        - SOCI_TRAVIS_BACKEND=oracle
+        - SOCI_TRAVIS_BACKEND=postgresql
+        - SOCI_TRAVIS_BACKEND=sqlite3
 
 before_install: ./bin/ci/before_install.sh
 before_script: ./bin/ci/before_script.sh
@@ -22,7 +31,6 @@ notifications:
   email:
     recipients:
       - soci-devel@lists.sourceforge.net
-      - mateusz@loskot.net
   on_success: change # [always|never|change] # default: change
   on_failure: always # [always|never|change] # default: always
 
