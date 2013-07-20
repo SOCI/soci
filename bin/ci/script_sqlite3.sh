@@ -15,7 +15,7 @@ cmake \
     -DSOCI_ODBC=OFF \
     -DSOCI_ORACLE=OFF \
     -DSOCI_POSTGRESQL=OFF \
-    -DSOCI_SQLITE3=OFF \
+    -DSOCI_SQLITE3=ON \
     ..
 
 #make -j $TCI_NUMTHREADS
