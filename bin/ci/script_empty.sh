@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Run test script for SOCI backend empty at travis-ci.org
+# Builds and tests SOCI backend empty at travis-ci.org
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
