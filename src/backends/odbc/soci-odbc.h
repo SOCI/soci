@@ -312,7 +312,12 @@ struct odbc_session_backend : details::session_backend
     };
 
     // Determine the type of the database we're connected to.
-    database_product get_database_product();
+    // requests the Database Vendor string via ODBC SQLGetInfo
+    virtual std::string			get_database_vendor_info();
+    // unify the Database Vendor string to enum
+    virtual database_product	get_database_product();
+    // unify the Database Vendor string to lowercased string
+    virtual std::string			get_database_product_string();
 
 	//maximum for TEXT/NTEXT columns
 	virtual std::size_t			get_max_text_length(); 

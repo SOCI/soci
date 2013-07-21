@@ -315,6 +315,21 @@ odbc_blob_backend * odbc_session_backend::make_blob_backend()
     return new odbc_blob_backend(*this);
 }
 
+std::string odbc_session_backend::get_database_vendor_info()
+{
+	std::string vendor_name;
+	vendor_name.resize(1024,0);
+    SQLSMALLINT len = 1024;
+	SQLRETURN rc = SQLGetInfo(hdbc_, SQL_DBMS_NAME, (SQLPOINTER)vendor_name.c_str(), len, &len);
+    if (is_odbc_error(rc))
+    {
+        throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
+                            "SQLGetInfo(SQL_DBMS_NAME)");
+    }
+	vendor_name.resize(len);
+	return vendor_name;
+}
+
 odbc_session_backend::database_product
 odbc_session_backend::get_database_product()
 {
@@ -322,31 +337,59 @@ odbc_session_backend::get_database_product()
     if (product_ != prod_uninitialized)
         return product_;
 
-    char product_name[1024];
-    SQLSMALLINT len = sizeof(product_name);
-    SQLRETURN rc = SQLGetInfo(hdbc_, SQL_DBMS_NAME, product_name, len, &len);
-    if (is_odbc_error(rc))
-    {
-        throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
-                            "SQLGetInfo(SQL_DBMS_NAME)");
-    }
+	std::string vendor_info = get_database_vendor_info();
 
-    if (strcmp(product_name, "Firebird") == 0)
+	if (strcmp(vendor_info.c_str(), "Firebird") == 0)
         product_ = prod_firebird;
-    else if (strcmp(product_name, "Microsoft SQL Server") == 0)
+    else if (strcmp(vendor_info.c_str(), "Microsoft SQL Server") == 0)
         product_ = prod_mssql;
-    else if (strcmp(product_name, "MySQL") == 0)
+    else if (strcmp(vendor_info.c_str(), "MySQL") == 0)
         product_ = prod_mysql;
-    else if (strcmp(product_name, "Oracle") == 0)
+    else if (strcmp(vendor_info.c_str(), "Oracle") == 0)
         product_ = prod_oracle;
-    else if (strcmp(product_name, "PostgreSQL") == 0)
+    else if (strcmp(vendor_info.c_str(), "PostgreSQL") == 0)
         product_ = prod_postgresql;
-    else if (strcmp(product_name, "SQLite") == 0)
+    else if (strcmp(vendor_info.c_str(), "SQLite") == 0)
         product_ = prod_sqlite;
     else
         product_ = prod_unknown;
 
     return product_;
+}
+
+std::string odbc_session_backend::get_database_product_string()
+{
+	std::string prod = "unknown";
+
+    if (product_ == prod_uninitialized)
+		get_database_product(); //eval it
+
+	//unified text like native backends would report
+	switch (product_)
+	{
+		case prod_firebird:
+			prod = "firebird";
+			break;
+		case prod_mssql:
+			prod = "mssql";
+			break;
+		case prod_mysql:
+			prod = "mysql";
+			break;
+		case prod_oracle:
+			prod = "oracle";
+			break;
+		case prod_postgresql:
+			prod = "postresql";
+			break;
+		case prod_sqlite:
+			prod = "sqlite3";
+			break;
+		case prod_uninitialized:
+		default:
+			break;
+	}
+	return prod;
 }
 
 std::size_t odbc_session_backend::get_max_text_length()
