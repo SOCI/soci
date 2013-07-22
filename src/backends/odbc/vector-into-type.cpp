@@ -361,7 +361,9 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             std::size_t const vsize = v.size();
             for (std::size_t i = 0; i != vsize; ++i)
             {
-				v[i].assign(pos, pos + std::min( indHolderVec_[i], (SQLINTEGER)colSize_) );
+				SQLLEN l = indHolderVec_[i];
+				SQLLEN r = (SQLLEN)colSize_;
+				v[i].assign(pos, pos + std::min(l,r) );
                 pos += colSize_;
             }
 		}
