@@ -15,6 +15,7 @@
 #include <ctime>
 #include <sstream>
 #include <stdio.h>  // sscanf()
+#include <algorithm>  // std::min
 
 using namespace soci;
 using namespace soci::details;
@@ -360,7 +361,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             std::size_t const vsize = v.size();
             for (std::size_t i = 0; i != vsize; ++i)
             {
-				v[i].assign(pos, pos + __min(indHolderVec_[i], (SQLINTEGER)colSize_));
+				v[i].assign(pos, pos + std::min( indHolderVec_[i], (SQLINTEGER)colSize_) );
                 pos += colSize_;
             }
 		}

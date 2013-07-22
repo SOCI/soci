@@ -17,6 +17,7 @@
 // Portability hacks for Microsoft Visual C++ compiler
 #ifdef _MSC_VER
 #include <stdlib.h>
+#define NOMINMAX
 
 // Define if you have the vsnprintf variants.
 #if _MSC_VER < 1500
