@@ -84,19 +84,19 @@ void statement_impl::bind(values & values)
 
     try
     {
-        for (std::vector<details::standard_use_type*>::iterator it =
+        for (std::vector<details::use_type_ptr>::iterator it =
             values.uses_.begin(); it != values.uses_.end(); ++it)
         {
             // only bind those variables which are:
             // - either named and actually referenced in the statement,
             // - or positional
 
-            std::string const& useName = (*it)->get_name();
+            std::string const& useName = static_cast<details::standard_use_type *>(it->get())->get_name();
             if (useName.empty())
             {
                 // positional use element
 
-                int position = static_cast<int>(uses_.size());
+                int position = static_cast<int>(uses_.size())+1;
                 (*it)->bind(*this, position);
                 uses_.push_back(*it);
                 indicators_.push_back(values.indicators_[cnt]);
@@ -175,7 +175,7 @@ void statement_impl::exchange(use_type_ptr const & u)
     uses_.push_back(u);
 }
 
-void statement_impl::clean_up()
+void statement_impl::bind_clean_up()
 {
     // deallocate all bind and define objects
     std::size_t const isize = intos_.size();
@@ -199,13 +199,12 @@ void statement_impl::clean_up()
     }
     uses_.clear();
 
-    std::size_t const indsize = indicators_.size();
-    for (std::size_t i = 0; i != indsize; ++i)
-    {
-        delete indicators_[i];
-        indicators_[i] = NULL;
-    }
+    indicators_.clear();
+}
 
+void statement_impl::clean_up()
+{
+    bind_clean_up();
     if (backEnd_ != NULL)
     {
         backEnd_->clean_up();

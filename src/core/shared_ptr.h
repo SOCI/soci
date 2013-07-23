@@ -46,10 +46,15 @@ struct shared_ptr
 
     shared_ptr<T> &operator=(const shared_ptr &sp) { dec(); m_ptr = sp.m_ptr; inc(); return *this; }
 
-    T &operator*() { assert(m_ptr); return *m_ptr->ptr; }
+    T &operator*() const { assert(m_ptr); return *m_ptr->ptr; }
     T *operator->() const { assert(m_ptr); return m_ptr->ptr; }
 
-    T *get() { assert(m_ptr); return m_ptr->ptr; }
+    T *get() const { assert(m_ptr); return m_ptr->ptr; }
+
+    bool operator<(const shared_ptr<T> &sp) const { return m_ptr->ptr < sp.m_ptr->ptr; }
+    bool operator<=(const shared_ptr<T> &sp) const { return m_ptr->ptr <= sp.m_ptr->ptr; }
+    bool operator>(const shared_ptr<T> &sp) const { return m_ptr->ptr > sp.m_ptr->ptr; }
+    bool operator>=(const shared_ptr<T> &sp) const { return m_ptr->ptr >= sp.m_ptr->ptr; }
 
     private:
         void inc() { if (m_ptr) m_ptr->counter++; }

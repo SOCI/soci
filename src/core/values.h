@@ -194,7 +194,7 @@ public:
             {
                 type_conversion<T>::to_base(
                         value,
-                        static_cast<details::copy_holder<base_type>*>(deepCopies_[index])->value_,
+                        static_cast<details::copy_holder<base_type>*>(deepCopies_[index].get())->value_,
                         *indicators_[index]);
             }
         }
@@ -238,11 +238,11 @@ private:
     //TODO To make values generally usable outside of type_conversion's,
     // these should be reference counted smart pointers
     row * row_;
-    std::vector<details::standard_use_type *> uses_;
-    std::map<details::use_type_base *, indicator *> unused_;
-    std::vector<indicator *> indicators_;
+    std::vector<details::use_type_ptr> uses_;
+    std::map<shared_ptr<details::use_type_base>, shared_ptr<indicator> > unused_;
+    std::vector<shared_ptr<indicator> > indicators_;
     std::map<std::string, std::size_t> index_;
-    std::vector<details::copy_base *> deepCopies_;
+    std::vector<shared_ptr<details::copy_base> > deepCopies_;
 
     mutable std::size_t currentPos_;
 
@@ -281,7 +281,7 @@ private:
     template <typename T>
     T get_from_uses(std::size_t pos) const
     {
-        details::standard_use_type* u = uses_[pos];
+        details::standard_use_type* u = static_cast<details::standard_use_type*>(uses_[pos].get());
 
         typedef typename type_conversion<T>::base_type base_type;
 
@@ -314,9 +314,9 @@ private:
     }
     
     // this is called by Statement::bind(values)
-    void add_unused(details::use_type_base * u, indicator * i)
+    void add_unused(details::use_type_ptr &u, shared_ptr<indicator> &i)
     {
-        static_cast<details::standard_use_type *>(u)->convert_to_base();
+        static_cast<details::standard_use_type *>(u.get())->convert_to_base();
         unused_.insert(std::make_pair(u, i));
     }
 
@@ -330,17 +330,8 @@ private:
         // delete any uses and indicators which were created  by set() but
         // were not bound by the Statement
         // (bound uses and indicators are deleted in Statement::clean_up())
-        for (std::map<details::use_type_base *, indicator *>::iterator pos =
-            unused_.begin(); pos != unused_.end(); ++pos)
-        {
-            delete pos->first;
-            delete pos->second;
-        }
-
-        for (std::size_t i = 0; i != deepCopies_.size(); ++i)
-        {
-            delete deepCopies_[i];
-        }
+        unused_.clear();
+        deepCopies_.clear();
     }
 };
 

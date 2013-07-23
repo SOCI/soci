@@ -41,6 +41,7 @@ public:
 
     void alloc();
     void bind(values & v);
+    void bind_clean_up();
     void exchange(into_type_ptr const & i);
     void exchange(use_type_ptr const & u);
     void clean_up();
@@ -75,7 +76,7 @@ public:
 protected:
     std::vector<details::into_type_ptr> intos_;
     std::vector<details::use_type_ptr> uses_;
-    std::vector<indicator *> indicators_;
+    std::vector<shared_ptr<indicator> > indicators_;
 
 private:
 
@@ -153,6 +154,7 @@ public:
 
     void alloc()                         { impl_->alloc();    }
     void bind(values & v)                { impl_->bind(v);    }
+    void bind_clean_up()                 { impl_->bind_clean_up(); }
     void exchange(details::into_type_ptr const & i);
     void exchange(details::use_type_ptr const & u);
     void clean_up()                      { impl_->clean_up(); }
