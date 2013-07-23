@@ -97,7 +97,7 @@ void statement_impl::bind(values & values)
             {
                 // positional use element
 
-                int position = static_cast<int>(uses_.size());
+                int position = static_cast<int>(uses_.size())+1;
                 (*it)->bind(*this, position);
                 uses_.push_back(*it);
                 indicators_.push_back(values.indicators_[cnt]);
@@ -185,7 +185,7 @@ void statement_impl::exchange(use_type_ptr const & u)
     u.release();
 }
 
-void statement_impl::clean_up()
+void statement_impl::bind_clean_up()
 {
     // deallocate all bind and define objects
     std::size_t const isize = intos_.size();
@@ -218,7 +218,11 @@ void statement_impl::clean_up()
         delete indicators_[i];
         indicators_[i] = NULL;
     }
+}
 
+void statement_impl::clean_up()
+{
+    bind_clean_up();
     if (backEnd_ != NULL)
     {
         backEnd_->clean_up();
