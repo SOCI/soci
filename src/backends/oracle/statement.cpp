@@ -76,6 +76,7 @@ statement_backend::exec_fetch_result oracle_statement_backend::execute(int numbe
 
     if (res == OCI_SUCCESS || res == OCI_SUCCESS_WITH_INFO)
     {
+        noData_ = false;
         return ef_success;
     }
     else if (res == OCI_NO_DATA)
