@@ -66,7 +66,7 @@ std::size_t sqlite3_blob_backend::write(
         memcpy(buf_, oldBuf, oldLen);
         delete [] oldBuf;
     }
-    memcpy(buf_ + offset, buf, len_);
+    memcpy(buf_ + offset, buf, toWrite);
 
     return len_;
 }
