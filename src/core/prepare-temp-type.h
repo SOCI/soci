@@ -10,6 +10,7 @@
 
 #include "into-type.h"
 #include "use-type.h"
+#include "use.h"
 #include "ref-counted-prepare-info.h"
 
 namespace soci
@@ -36,9 +37,22 @@ public:
     }
 
     prepare_temp_type & operator,(into_type_ptr const & i);
-    prepare_temp_type & operator,(use_type_ptr const & u);
+    
+    template <typename T, typename Indicator>
+    prepare_temp_type &operator,(into_container<T, Indicator> const &ic)
+    {
+        rcpi_->exchange(ic);
+        return *this;
+    }
+    template <typename T, typename Indicator>
+    prepare_temp_type &operator,(use_container<T, Indicator> const &uc)
+    {
+        rcpi_->exchange(uc);
+        return *this;
+    }
 
     ref_counted_prepare_info * get_prepare_info() const { return rcpi_; }
+
 
 private:
     ref_counted_prepare_info * rcpi_;
