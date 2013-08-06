@@ -40,10 +40,12 @@ if(Boost_FOUND)
     PROPERTY COMPILE_DEFINITIONS)
 
   list(APPEND SOCI_COMPILE_DEFINITIONS "HAVE_BOOST=1")
+  add_definitions(-DHAVE_BOOST=1)
 
   if(Boost_DATE_TIME_FOUND)
     list(APPEND SOCI_CORE_DEPENDENCIES ${Boost_DATE_TIME_LIBRARY})
     list(APPEND SOCI_COMPILE_DEFINITIONS "HAVE_BOOST_DATE_TIME=1")
+    add_definitions(-DHAVE_BOOST_DATE_TIME=1)
   endif()
 
   list(APPEND SOCI_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
@@ -88,6 +90,9 @@ soci_target_output_name(${SOCI_CORE_TARGET} SOCI_CORE_TARGET_OUTPUT_NAME)
 # Core shared library
 #
 add_library(${SOCI_CORE_TARGET} SHARED ${SOCI_CORE_HEADERS} ${SOCI_CORE_SOURCES})
+if (Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+endif()
 
 target_link_libraries(${SOCI_CORE_TARGET} ${SOCI_CORE_DEPENDENCIES})
 

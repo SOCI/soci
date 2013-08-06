@@ -161,6 +161,10 @@ message("XCD=${XCD}")
           SHARED
           ${THIS_BACKEND_SOURCES}
           ${THIS_BACKEND_HEADERS})
+      
+      if (Boost_FOUND)
+          include_directories(${Boost_INCLUDE_DIRS})
+      endif()
 
       target_link_libraries(${THIS_BACKEND_TARGET}
         ${SOCI_CORE_TARGET}
