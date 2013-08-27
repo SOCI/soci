@@ -89,7 +89,7 @@ void soci::details::postgresql::parse_std_tm(char const * buf, std::tm & t)
     t.tm_min  = minute;
     t.tm_sec  = second;
 
-    std::mktime(&t);
+    timegm(&t);
 }
 
 double soci::details::postgresql::string_to_double(char const * buf)
