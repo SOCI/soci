@@ -151,6 +151,42 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             data = buf_;
         }
         break;
+    case x_stdwstring:
+        {
+            sqlType = SQL_WVARCHAR;
+            cType = SQL_C_WCHAR;
+
+            std::vector<std::wstring> *vp
+                = static_cast<std::vector<std::wstring> *>(data);
+            std::vector<std::wstring> &v(*vp);
+
+            std::size_t maxSize = 0;
+            std::size_t const vecSize = v.size();
+            prepare_indicators(vecSize);
+            for (std::size_t i = 0; i != vecSize; ++i)
+            {
+                std::size_t sz = v[i].length() * sizeof(wchar_t);
+                indHolderVec_[i] = static_cast<long>(v[i].length() * sizeof(wchar_t));
+                maxSize = sz > maxSize ? sz : maxSize;
+            }
+			//if greater than truncation limit than use as NTEXT column
+			if (maxSize > statement_.session_.get_trunc_fix_above_limit() * sizeof(wchar_t))
+				sqlType = SQL_WLONGVARCHAR;
+
+            buf_ = new char[maxSize * vecSize];
+            memset(buf_, 0, maxSize * vecSize);
+
+            char *pos = buf_;
+            for (std::size_t i = 0; i != vecSize; ++i)
+            {
+                wcsncpy((wchar_t*)pos, v[i].c_str(), v[i].length());
+                pos += maxSize;
+            }
+
+            data = buf_;
+            size = static_cast<SQLINTEGER>(maxSize);
+        }
+        break;
     case x_stdstring:
         {
             sqlType = SQL_CHAR;
@@ -165,10 +201,14 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             prepare_indicators(vecSize);
             for (std::size_t i = 0; i != vecSize; ++i)
             {
-                std::size_t sz = v[i].length() + 1;  // add one for null
-                indHolderVec_[i] = static_cast<long>(sz);
+                std::size_t sz = v[i].length();
+                indHolderVec_[i] = static_cast<long>(v[i].length());
                 maxSize = sz > maxSize ? sz : maxSize;
             }
+
+			//if greater than truncation limit than use as NTEXT column
+			if (maxSize > statement_.session_.get_trunc_fix_above_limit())
+				sqlType = SQL_LONGVARCHAR;
 
             buf_ = new char[maxSize * vecSize];
             memset(buf_, 0, maxSize * vecSize);
@@ -205,6 +245,39 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
+	case x_binary:
+        {
+            sqlType = SQL_BINARY;
+            cType = SQL_C_BINARY;
+
+			std::vector<soci::binarydata> *vp
+                = static_cast<std::vector<soci::binarydata> *>(data);
+            std::vector<soci::binarydata> &v(*vp);
+
+            std::size_t maxSize = 0;
+            std::size_t const vecSize = v.size();
+            prepare_indicators(vecSize);
+            for (std::size_t i = 0; i != vecSize; ++i)
+            {
+                std::size_t sz = v[i].size();
+                indHolderVec_[i] = static_cast<long>(sz);
+                maxSize = sz > maxSize ? sz : maxSize;
+            }
+
+            buf_ = new char[maxSize * vecSize];
+            memset(buf_, 0, maxSize * vecSize);
+
+            char *pos = buf_;
+            for (std::size_t i = 0; i != vecSize; ++i)
+            {
+				std::copy(v[i].begin(), v[i].end(), pos);
+                pos += maxSize;
+            }
+
+            data = buf_;
+            size = static_cast<SQLINTEGER>(maxSize);
+        }
+        break;
     }
 
     colSize_ = size;
@@ -354,8 +427,9 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
             }
             else
             {
-            // for strings we have already set the values
-            if (type_ != x_stdstring)
+				// for strings we have already set the values
+				// for binarydata we have already set the values
+				if ((type_ != x_stdstring) && (type_ != x_stdwstring) && (type_ != x_binary))
                 {
                     indHolderVec_[i] = SQL_NTS;  // value is OK
                 }
@@ -369,7 +443,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
         for (std::size_t i = 0; i != vsize; ++i, ++ind)
         {
             // for strings we have already set the values
-            if (type_ != x_stdstring)
+            if ((type_ != x_stdstring) && (type_ != x_stdwstring) && (type_ != x_binary))
             {
                 indHolderVec_[i] = SQL_NTS;  // value is OK
             }
@@ -422,6 +496,13 @@ std::size_t odbc_vector_use_type_backend::size()
             sz = vp->size();
         }
         break;
+    case x_stdwstring:
+        {
+            std::vector<std::wstring> *vp
+                = static_cast<std::vector<std::wstring> *>(data_);
+            sz = vp->size();
+        }
+        break;
     case x_stdstring:
         {
             std::vector<std::string> *vp
@@ -440,6 +521,13 @@ std::size_t odbc_vector_use_type_backend::size()
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
+	case x_binary:
+        {
+			std::vector<soci::binarydata> *vp
+				= static_cast<std::vector<soci::binarydata> *>(data_);
+            sz = vp->size();
+        }
+		break;
     }
 
     return sz;

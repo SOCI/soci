@@ -111,6 +111,20 @@ struct exchange_traits<double>
 };
 
 template <>
+struct exchange_traits<soci::binarydata>
+{
+    typedef basic_type_tag type_family;
+    enum { x_type = x_binary };
+};
+
+template <>
+struct exchange_traits<std::wstring>
+{
+    typedef basic_type_tag type_family;
+    enum { x_type = x_stdwstring };
+};
+
+template <>
 struct exchange_traits<std::string>
 {
     typedef basic_type_tag type_family;

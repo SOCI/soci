@@ -14,11 +14,15 @@
 using namespace soci;
 using namespace soci::details;
 
-char const * soci::odbc_option_driver_complete = "odbc.driver_complete";
+char const * soci::odbc_option_driver_complete	= "odbc.driver_complete";
+char const * soci::odbc_option_max_text_length	= "odbc.max_text_length";
+char const * soci::odbc_option_max_blob_length	= "odbc.max_blob_length";
+char const * soci::odbc_option_fix_trunc_above	= "odbc.fix_trunc_above";
 
 odbc_session_backend::odbc_session_backend(
     connection_parameters const & parameters)
-    : henv_(0), hdbc_(0), product_(prod_uninitialized)
+    : henv_(0), hdbc_(0), product_(prod_uninitialized), 
+	  max_text_length_(32000), fix_trunc_above_(254), max_blob_length_(1000000)
 {
     SQLRETURN rc;
 
@@ -66,6 +70,56 @@ odbc_session_backend::odbc_session_backend(
                           completionString + "\".");
       }
     }
+
+   std::size_t max_val = max_text_length_;
+   std::string text_max;
+   std::string blob_max;
+   if (parameters.get_option(odbc_option_max_text_length, text_max))
+   {
+	   // The value of this option is intended to define the maximum size for TEXT/NTEXT columns
+	   // can be superset by pre-sized string or stringvector elements
+	   if (std::sscanf(text_max.c_str(), "%u", &max_val) != 1)
+	   {
+           throw soci_error("Invalid non-numeric max text length option value \"" +
+                  text_max + "\".");
+
+	   }
+	   else
+	   {
+		   max_text_length_ = max_val;
+	   }
+   }
+   if (parameters.get_option(odbc_option_max_blob_length, blob_max))
+   {
+	   if (std::sscanf(blob_max.c_str(), "%u", &max_val) != 1)
+	   {
+           throw soci_error("Invalid non-numeric max blob length option value \"" +
+                  text_max + "\".");
+
+	   }
+	   else
+	   {
+		   max_blob_length_ = max_val;
+	   }
+   }
+
+   max_val = fix_trunc_above_;
+   std::string trunc_max; 
+   if (parameters.get_option(odbc_option_fix_trunc_above, trunc_max))
+   {
+	   // The value of this option is intended to define the maximum size for string
+	   // before sqlType will be changed into corresponding TEXT/NTEXT type
+	   // to avoid driver truncation to 254 chars for very long strings
+	   if (std::sscanf(trunc_max.c_str(), "%u", &max_val) != 1)
+	   {
+			throw soci_error("Invalid non-numeric fix truncation option value \"" +
+							  trunc_max + "\".");
+	   }
+	   else
+	   {
+		   fix_trunc_above_ = max_val;
+	   }
+   }
 
 #ifdef _WIN32
     if (completion != SQL_DRIVER_NOPROMPT)
@@ -261,6 +315,21 @@ odbc_blob_backend * odbc_session_backend::make_blob_backend()
     return new odbc_blob_backend(*this);
 }
 
+std::string odbc_session_backend::get_database_vendor_info()
+{
+	std::string vendor_name;
+	vendor_name.resize(1024,0);
+    SQLSMALLINT len = 1024;
+	SQLRETURN rc = SQLGetInfo(hdbc_, SQL_DBMS_NAME, (SQLPOINTER)vendor_name.c_str(), len, &len);
+    if (is_odbc_error(rc))
+    {
+        throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
+                            "SQLGetInfo(SQL_DBMS_NAME)");
+    }
+	vendor_name.resize(len);
+	return vendor_name;
+}
+
 odbc_session_backend::database_product
 odbc_session_backend::get_database_product()
 {
@@ -268,29 +337,72 @@ odbc_session_backend::get_database_product()
     if (product_ != prod_uninitialized)
         return product_;
 
-    char product_name[1024];
-    SQLSMALLINT len = sizeof(product_name);
-    SQLRETURN rc = SQLGetInfo(hdbc_, SQL_DBMS_NAME, product_name, len, &len);
-    if (is_odbc_error(rc))
-    {
-        throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
-                            "SQLGetInfo(SQL_DBMS_NAME)");
-    }
+	std::string vendor_info = get_database_vendor_info();
 
-    if (strcmp(product_name, "Firebird") == 0)
+	if (strcmp(vendor_info.c_str(), "Firebird") == 0)
         product_ = prod_firebird;
-    else if (strcmp(product_name, "Microsoft SQL Server") == 0)
+    else if (strcmp(vendor_info.c_str(), "Microsoft SQL Server") == 0)
         product_ = prod_mssql;
-    else if (strcmp(product_name, "MySQL") == 0)
+    else if (strcmp(vendor_info.c_str(), "MySQL") == 0)
         product_ = prod_mysql;
-    else if (strcmp(product_name, "Oracle") == 0)
+    else if (strcmp(vendor_info.c_str(), "Oracle") == 0)
         product_ = prod_oracle;
-    else if (strcmp(product_name, "PostgreSQL") == 0)
+    else if (strcmp(vendor_info.c_str(), "PostgreSQL") == 0)
         product_ = prod_postgresql;
-    else if (strcmp(product_name, "SQLite") == 0)
+    else if (strcmp(vendor_info.c_str(), "SQLite") == 0)
         product_ = prod_sqlite;
     else
         product_ = prod_unknown;
 
     return product_;
+}
+
+std::string odbc_session_backend::get_database_product_string()
+{
+	std::string prod = "unknown";
+
+    if (product_ == prod_uninitialized)
+		get_database_product(); //eval it
+
+	//unified text like native backends would report
+	switch (product_)
+	{
+		case prod_firebird:
+			prod = "firebird";
+			break;
+		case prod_mssql:
+			prod = "mssql";
+			break;
+		case prod_mysql:
+			prod = "mysql";
+			break;
+		case prod_oracle:
+			prod = "oracle";
+			break;
+		case prod_postgresql:
+			prod = "postresql";
+			break;
+		case prod_sqlite:
+			prod = "sqlite3";
+			break;
+		case prod_uninitialized:
+		default:
+			break;
+	}
+	return prod;
+}
+
+std::size_t odbc_session_backend::get_max_text_length()
+{
+	return max_text_length_;
+}
+
+std::size_t odbc_session_backend::get_max_blob_length()
+{
+	return max_blob_length_;
+}
+
+std::size_t odbc_session_backend::get_trunc_fix_above_limit()
+{
+	return fix_trunc_above_;
 }

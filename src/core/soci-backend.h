@@ -14,14 +14,24 @@
 #include <cstddef>
 #include <map>
 #include <string>
+#include <vector>
 
 namespace soci
 {
 
+// binary data encapsulation using pulic vector inheritance
+// dedicated new data type for CLOB/BINARY database columns
+class binarydata : public std::vector<unsigned char>
+{
+public:
+	binarydata():std::vector<unsigned char>() {}
+	binarydata(std::size_t size):std::vector<unsigned char>(size) {}
+};
+
 // data types, as seen by the user
 enum data_type
 {
-    dt_string, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long
+    dt_wstring, dt_string, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long, dt_binary
 };
 
 // the enum type for indicator variables
@@ -37,6 +47,7 @@ enum exchange_type
 {
     x_char,
     x_stdstring,
+	x_stdwstring,
     x_short,
     x_integer,
     x_long_long,
@@ -45,7 +56,8 @@ enum exchange_type
     x_stdtm,
     x_statement,
     x_rowid,
-    x_blob
+    x_blob,
+	x_binary
 };
 
 // type of statement (used for optimizing statement preparation)
