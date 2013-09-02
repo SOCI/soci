@@ -84,19 +84,19 @@ void statement_impl::bind(values & values)
 
     try
     {
-        for (std::vector<details::standard_use_type*>::iterator it =
+        for (std::vector<details::use_type_ptr>::iterator it =
             values.uses_.begin(); it != values.uses_.end(); ++it)
         {
             // only bind those variables which are:
             // - either named and actually referenced in the statement,
             // - or positional
 
-            std::string const& useName = (*it)->get_name();
+            std::string const& useName = static_cast<details::standard_use_type *>(it->get())->get_name();
             if (useName.empty())
             {
                 // positional use element
 
-                int position = static_cast<int>(uses_.size());
+                int position = static_cast<int>(uses_.size())+1;
                 (*it)->bind(*this, position);
                 uses_.push_back(*it);
                 indicators_.push_back(values.indicators_[cnt]);
@@ -148,14 +148,12 @@ void statement_impl::bind(values & values)
 
 void statement_impl::exchange(into_type_ptr const & i)
 {
-    intos_.push_back(i.get());
-    i.release();
+    intos_.push_back(i);
 }
 
 void statement_impl::exchange_for_row(into_type_ptr const & i)
 {
-    intosForRow_.push_back(i.get());
-    i.release();
+    intosForRow_.push_back(i);
 }
 
 void statement_impl::exchange_for_rowset(into_type_ptr const & i)
@@ -165,55 +163,48 @@ void statement_impl::exchange_for_rowset(into_type_ptr const & i)
         throw soci_error("Explicit into elements not allowed with rowset.");
     }
 
-    into_type_base* p = i.get();
-    intos_.push_back(p);
-    i.release();
-
+    intos_.push_back(i);
+    
     int definePosition = 1;
-    p->define(*this, definePosition);
+    i->define(*this, definePosition);
     definePositionForRow_ = definePosition;
 }
 
 void statement_impl::exchange(use_type_ptr const & u)
 {
-    uses_.push_back(u.get());
-    u.release();
+    uses_.push_back(u);
 }
 
-void statement_impl::clean_up()
+void statement_impl::bind_clean_up()
 {
     // deallocate all bind and define objects
     std::size_t const isize = intos_.size();
     for (std::size_t i = isize; i != 0; --i)
     {
         intos_[i - 1]->clean_up();
-        delete intos_[i - 1];
-        intos_.resize(i - 1);
     }
+    intos_.clear();
 
     std::size_t const ifrsize = intosForRow_.size();
     for (std::size_t i = ifrsize; i != 0; --i)
     {
         intosForRow_[i - 1]->clean_up();
-        delete intosForRow_[i - 1];
-        intosForRow_.resize(i - 1);
     }
+    intosForRow_.clear();
 
     std::size_t const usize = uses_.size();
     for (std::size_t i = usize; i != 0; --i)
     {
         uses_[i - 1]->clean_up();
-        delete uses_[i - 1];
-        uses_.resize(i - 1);
     }
+    uses_.clear();
 
-    std::size_t const indsize = indicators_.size();
-    for (std::size_t i = 0; i != indsize; ++i)
-    {
-        delete indicators_[i];
-        indicators_[i] = NULL;
-    }
+    indicators_.clear();
+}
 
+void statement_impl::clean_up()
+{
+    bind_clean_up();
     if (backEnd_ != NULL)
     {
         backEnd_->clean_up();

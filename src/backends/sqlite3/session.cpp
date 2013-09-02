@@ -34,7 +34,7 @@ void execude_hardcoded(sqlite_api::sqlite3* conn, char const* const query, char 
         std::ostringstream ss;
         ss << errMsg << " " << zErrMsg;
         sqlite3_free(zErrMsg);
-        throw soci_error(ss.str());
+        throw sqlite3_soci_error(ss.str(), res);
     }
 }
 
@@ -95,7 +95,7 @@ sqlite3_session_backend::sqlite3_session_backend(
         const char *zErrMsg = sqlite3_errmsg(conn_);
         std::ostringstream ss;
         ss << "Cannot establish connection to the database. " << zErrMsg;
-        throw soci_error(ss.str());
+        throw sqlite3_soci_error(ss.str(), res);
     }
 
     if (!synchronous.empty())
@@ -111,7 +111,7 @@ sqlite3_session_backend::sqlite3_session_backend(
         const char *zErrMsg = sqlite3_errmsg(conn_);
         std::ostringstream ss;
         ss << "Failed to set busy timeout for connection. " << zErrMsg;
-        throw soci_error(ss.str());
+        throw sqlite3_soci_error(ss.str(), res);
     }
 }
 
@@ -139,6 +139,13 @@ void sqlite3_session_backend::clean_up()
 {
     sqlite3_close(conn_);
 }
+
+bool sqlite3_session_backend::get_last_insert_id(session&, std::string const&, long &id)
+{
+    id = (long)sqlite3_last_insert_rowid(conn_);
+    return true;
+}
+
 
 sqlite3_statement_backend * sqlite3_session_backend::make_statement_backend()
 {

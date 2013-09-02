@@ -46,8 +46,8 @@ private:
 
     session& session_;
 
-    std::vector<into_type_base*> intos_;
-    std::vector<use_type_base*> uses_;
+    std::vector<into_type_ptr> intos_;
+    std::vector<use_type_ptr> uses_;
 
     std::string get_query() const;
 };

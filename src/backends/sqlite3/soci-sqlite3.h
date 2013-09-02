@@ -26,6 +26,7 @@
 #include <cstdarg>
 #include <vector>
 #include "soci-backend.h"
+#include "error.h"
 
 // Disable flood of nonsense warnings generated for SQLite
 #ifdef _MSC_VER
@@ -242,6 +243,8 @@ struct sqlite3_session_backend : details::session_backend
     virtual void begin();
     virtual void commit();
     virtual void rollback();
+
+    virtual bool get_last_insert_id(session&, std::string const&, long&);
 
     virtual std::string get_backend_name() const { return "sqlite3"; }
 

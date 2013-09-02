@@ -9,7 +9,7 @@
 #define SOCI_USE_TYPE_H_INCLUDED
 
 #include "soci-backend.h"
-#include "type-ptr.h"
+#include "shared_ptr.h"
 #include "exchange-traits.h"
 // std
 #include <cstddef>
@@ -35,7 +35,7 @@ public:
     virtual std::size_t size() const = 0;  // returns the number of elements
 };
 
-typedef type_ptr<use_type_base> use_type_ptr;
+typedef shared_ptr<use_type_base> use_type_ptr;
 
 class SOCI_DECL standard_use_type : public use_type_base
 {
@@ -159,7 +159,7 @@ public:
     
     use_type(T const& t, indicator& ind, std::string const& name = std::string())
         : standard_use_type(const_cast<T*>(&t),
-            static_cast<exchange_type>(exchange_traits<T>::x_type), ind, false, name)
+            static_cast<exchange_type>(exchange_traits<T>::x_type), ind, true, name)
     {}
 };
 

@@ -9,7 +9,7 @@
 #define SOCI_INTO_TYPE_H_INCLUDED
 
 #include "soci-backend.h"
-#include "type-ptr.h"
+#include "shared_ptr.h"
 #include "exchange-traits.h"
 // std
 #include <cstddef>
@@ -44,7 +44,7 @@ public:
     virtual void resize(std::size_t /* sz */) {} // used for vectors only
 };
 
-typedef type_ptr<into_type_base> into_type_ptr;
+typedef shared_ptr<into_type_base> into_type_ptr;
 
 // standard types
 
