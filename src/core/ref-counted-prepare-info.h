@@ -8,7 +8,9 @@
 #ifndef SOCI_REF_COUNTED_PREPARE_INFO_INCLUDED
 #define SOCI_REF_COUNTED_PREPARE_INFO_INCLUDED
 
+#include "bind-values.h"
 #include "ref-counted-statement.h"
+
 // std
 #include <string>
 #include <vector>
@@ -35,8 +37,17 @@ public:
         , session_(s)
     {}
 
-    void exchange(into_type_ptr const& i);
-    void exchange(use_type_ptr const& u);
+    void exchange(use_type_ptr const& u) { uses_.exchange(u); }
+
+    template <typename T, typename Indicator>
+    void exchange(use_container<T, Indicator> const &uc)
+    { uses_.exchange(uc); }
+
+    void exchange(into_type_ptr const& i) { intos_.exchange(i); }
+
+    template <typename T, typename Indicator>
+    void exchange(into_container<T, Indicator> const &ic)
+    { intos_.exchange(ic); }
 
     void final_action();
 
@@ -46,8 +57,8 @@ private:
 
     session& session_;
 
-    std::vector<into_type_base*> intos_;
-    std::vector<use_type_base*> uses_;
+    into_type_vector intos_;
+    use_type_vector  uses_;
 
     std::string get_query() const;
 };
