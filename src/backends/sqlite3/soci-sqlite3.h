@@ -23,6 +23,7 @@
 # define SOCI_SQLITE3_DECL
 #endif
 
+#include <cstdarg>
 #include <vector>
 #include "soci-backend.h"
 
