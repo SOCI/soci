@@ -11,6 +11,12 @@
 #include "ref-counted-statement.h"
 #include "prepare-temp-type.h"
 
+#if __cplusplus >= 201103L
+#define SOCI_ONCE_TEMP_TYPE_NOEXCEPT noexcept(false)
+#else
+#define SOCI_ONCE_TEMP_TYPE_NOEXCEPT
+#endif
+
 namespace soci
 {
 
@@ -29,8 +35,8 @@ public:
     once_temp_type(session & s);
     once_temp_type(once_temp_type const & o);
     once_temp_type & operator=(once_temp_type const & o);
-
-    ~once_temp_type();
+    
+    ~once_temp_type() SOCI_ONCE_TEMP_TYPE_NOEXCEPT;
 
     template <typename T>
     once_temp_type & operator<<(T const & t)
