@@ -51,7 +51,7 @@ void sqlite3_statement_backend::prepare(std::string const & query,
     clean_up();
 
     char const* tail = 0; // unused;
-    int const res = sqlite3_prepare(session_.conn_,
+    int const res = sqlite3_prepare_v2(session_.conn_,
                               query.c_str(),
                               static_cast<int>(query.size()),
                               &stmt_,
