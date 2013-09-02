@@ -96,8 +96,10 @@ private:
     template<typename T>
     void into_row()
     {
-        T * t = new T();
-        indicator * ind = new indicator(i_ok);
+        std::size_t bulk_size = row_->bulk_size();
+
+        std::vector<T>* t = new std::vector<T>(bulk_size);
+        std::vector<indicator>* ind = new std::vector<indicator>(bulk_size);
         row_->add_holder(t, ind);
         exchange_for_row(into(*t, *ind));
     }

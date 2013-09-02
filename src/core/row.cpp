@@ -16,10 +16,13 @@
 using namespace soci;
 using namespace details;
 
-row::row()
+row::row(std::size_t bulk_size)
     : uppercaseColumnNames_(false)
-    , currentPos_(0)
-{}
+      ,currentPos_(0)
+      ,bulk_pos_(0)
+      ,bulk_size_(bulk_size)
+{
+}
 
 row::~row()
 {
@@ -75,17 +78,6 @@ void row::clean_up()
     holders_.clear();
     indicators_.clear();
     index_.clear();
-}
-
-indicator row::get_indicator(std::size_t pos) const
-{
-    assert(indicators_.size() >= static_cast<std::size_t>(pos + 1));
-    return *indicators_[pos];
-}
-
-indicator row::get_indicator(std::string const &name) const
-{
-    return get_indicator(find_column(name));
 }
 
 column_properties const & row::get_properties(std::size_t pos) const

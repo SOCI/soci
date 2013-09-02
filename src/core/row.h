@@ -41,7 +41,7 @@ private:
 class SOCI_DECL row
 {
 public:    
-    row();
+    row(std::size_t bulk_size = 1);
     ~row();
 
     void uppercase_column_names(bool forceToUpper);
@@ -49,14 +49,33 @@ public:
     std::size_t size() const;
     void clean_up();
 
-    indicator get_indicator(std::size_t pos) const;
-    indicator get_indicator(std::string const& name) const;
+    //bulk buffer size
+    std::size_t bulk_size() const {return bulk_size_;}
+    void bulk_size(std::size_t sz) {bulk_size_ = sz;}
+
+    indicator get_indicator(std::size_t pos) const
+    {
+        assert(indicators_.size() >= static_cast<std::size_t>(pos + 1));
+
+        return (*indicators_[pos])[bulk_pos_];
+    }
+
+    indicator get_indicator(std::string const& name) const
+    {
+        return get_indicator(find_column(name));
+    }
 
     template <typename T>
     inline void add_holder(T* t, indicator* ind)
     {
-        holders_.push_back(new details::type_holder<T>(t));
-        indicators_.push_back(ind);
+        throw soci_error("no suppport");
+    }
+
+    template <typename T>
+    inline void add_holder(std::vector<T>* t, std::vector<indicator>* ind)
+    {
+        holders_.push_back(new details::vector_type_holder<T>(t));
+        indicators_.push_back(ind);        
     }
 
     column_properties const& get_properties(std::size_t pos) const;
@@ -68,10 +87,10 @@ public:
         assert(holders_.size() >= pos + 1);
 
         typedef typename type_conversion<T>::base_type base_type;
-        base_type const& baseVal = holders_[pos]->get<base_type>();
+        base_type const& baseVal = holders_[pos]->get<base_type>(bulk_pos_);
 
         T ret;
-        type_conversion<T>::from_base(baseVal, *indicators_[pos], ret);
+        type_conversion<T>::from_base(baseVal, (*indicators_[pos])[bulk_pos_], ret);
         return ret;
     }
 
@@ -80,7 +99,7 @@ public:
     {
         assert(holders_.size() >= pos + 1);
 
-        if (i_null == *indicators_[pos])
+        if (i_null == (*indicators_[pos])[bulk_pos_])
         {
             return nullValue;
         }
@@ -100,7 +119,7 @@ public:
     {
         std::size_t const pos = find_column(name);
 
-        if (i_null == *indicators_[pos])
+        if (i_null == (*indicators_[pos])[bulk_pos_] )  // vector->at is much slower
         {
             return nullValue;
         }
@@ -124,6 +143,13 @@ public:
     void reset_get_counter() const
     {
         currentPos_ = 0;
+        bulk_pos_   = 0;
+    }
+
+    void next(std::size_t num = 1) const
+    {
+        currentPos_  = 0;
+        bulk_pos_   += num;
     }
 
 private:
@@ -134,12 +160,14 @@ private:
     std::size_t find_column(std::string const& name) const;
 
     std::vector<column_properties> columns_;
-    std::vector<details::holder*> holders_;
-    std::vector<indicator*> indicators_;
+    std::vector<details::vector_holder*> holders_;
+    std::vector< std::vector<indicator>* > indicators_;
     std::map<std::string, std::size_t> index_;
 
     bool uppercaseColumnNames_;
-    mutable std::size_t currentPos_;
+    mutable std::size_t currentPos_;    //column
+    mutable std::size_t bulk_pos_;      //row
+    mutable std::size_t bulk_size_;
 };
 
 } // namespace soci

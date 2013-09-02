@@ -170,6 +170,9 @@ sqlite3_statement_backend::load_one()
     }
     else if (SQLITE_ROW == res)
     {
+        //get_number_of_rows() need return 1. since we do not fetch data, 
+        //sqlite3_vector_into_type_backend::post_fetch() need process this case
+        dataCache_.resize(1);
     }
     else
     {
@@ -280,7 +283,7 @@ sqlite3_statement_backend::execute(int number)
 statement_backend::exec_fetch_result
 sqlite3_statement_backend::fetch(int number)
 {
-    return load_rowset(number);
+    return (1 == number) ? load_one():load_rowset(number);
 }
 
 long long sqlite3_statement_backend::get_affected_rows()

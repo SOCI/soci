@@ -509,9 +509,6 @@ std::size_t statement_impl::uses_size()
 
 bool statement_impl::resize_intos(std::size_t upperBound)
 {
-    // this function does not need to take into account the intosForRow_
-    // elements, since they are never used for bulk operations
-
     int rows = backEnd_->get_number_of_rows();
     if (rows < 0)
     {
@@ -526,6 +523,13 @@ bool statement_impl::resize_intos(std::size_t upperBound)
     for (std::size_t i = 0; i != isize; ++i)
     {
         intos_[i]->resize((std::size_t)rows);
+    }
+
+    //for bulk ORM operations
+    std::size_t const ifrsize = intosForRow_.size();
+    for (std::size_t i = 0; i != ifrsize; ++i)
+    {
+        intosForRow_[i]->resize((std::size_t)rows);
     }
 
     return rows > 0 ? true : false;

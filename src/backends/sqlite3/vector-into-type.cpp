@@ -57,90 +57,25 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
     }
 
     int const endRow = static_cast<int>(statement_.dataCache_.size());
+
+    if (1 == endRow)
+    {
+        // sqlite columns start at 0
+        int const pos = position_ - 1;
+        bool is_null = (sqlite3_column_type(statement_.stmt_, pos) == SQLITE_NULL);
+        const char *buf = reinterpret_cast<const char*>(
+            sqlite3_column_text(statement_.stmt_,pos));
+
+        fetch_data(is_null, buf, 0, ind);
+        return;
+    }
+
     for (int i = 0; i < endRow; ++i)
     {
         sqlite3_column const& curCol =
             statement_.dataCache_[i][position_-1];
 
-        if (curCol.isNull_)
-        {
-            if (ind == NULL)
-            {
-                throw soci_error(
-                    "Null value fetched and no indicator defined.");
-            }
-            ind[i] = i_null;
-
-            // no need to convert data if it is null, go to next row
-            continue;
-        }
-        else
-        {
-            if (ind != NULL)
-            {
-                ind[i] = i_ok;
-            }
-        }
-
-        const char * buf = curCol.data_.c_str();
-
-        // set buf to a null string if a null pointer is returned
-        if (buf == NULL)
-        {
-            buf = "";
-        }
-
-        switch (type_)
-        {
-        case x_char:
-            set_in_vector(data_, i, *buf);
-            break;
-        case x_stdstring:
-            set_in_vector<std::string>(data_, i, buf);
-            break;
-        case x_short:
-            {
-                short const val = string_to_integer<short>(buf);
-                set_in_vector(data_, i, val);
-            }
-            break;
-        case x_integer:
-            {
-                int const val = string_to_integer<int>(buf);
-                set_in_vector(data_, i, val);
-            }
-            break;
-        case x_long_long:
-            {
-                long long const val = string_to_integer<long long>(buf);
-                set_in_vector(data_, i, val);
-            }
-            break;
-        case x_unsigned_long_long:
-            {
-                unsigned long long const val
-                    = string_to_unsigned_integer<unsigned long long>(buf);
-                set_in_vector(data_, i, val);
-            }
-            break;
-        case x_double:
-            {
-                double const val = strtod(buf, NULL);
-                set_in_vector(data_, i, val);
-            }
-            break;
-        case x_stdtm:
-            {
-                // attempt to parse the string and convert to std::tm
-                std::tm t;
-                parse_std_tm(buf, t);
-
-                set_in_vector(data_, i, t);
-            }
-            break;
-        default:
-            throw soci_error("Into element used with non-supported type.");
-        }
+        fetch_data(curCol.isNull_, curCol.data_.c_str(), i, ind);
     }
 }
 
@@ -218,4 +153,87 @@ std::size_t sqlite3_vector_into_type_backend::size()
 void sqlite3_vector_into_type_backend::clean_up()
 {
     // ...
+}
+
+
+void sqlite3_vector_into_type_backend::fetch_data(bool is_null, 
+                        const char* buf, int i, indicator * ind ) 
+{
+    if (is_null)
+    {
+        if (ind == NULL)
+        {
+            throw soci_error(
+                "Null value fetched and no indicator defined.");
+        }
+        ind[i] = i_null;
+
+        // no need to convert data if it is null, go to next row
+        return;
+    }
+    else
+    {
+        if (ind != NULL)
+        {
+            ind[i] = i_ok;
+        }
+    }
+
+    // set buf to a null string if a null pointer is returned
+    if (buf == NULL)
+    {
+        buf = "";
+    }
+
+    switch (type_)
+    {
+    case x_char:
+        set_in_vector(data_, i, *buf);
+        break;
+    case x_stdstring:
+        set_in_vector<std::string>(data_, i, buf);
+        break;
+    case x_short:
+        {
+            short const val = string_to_integer<short>(buf);
+            set_in_vector(data_, i, val);
+        }
+        break;
+    case x_integer:
+        {
+            int const val = string_to_integer<int>(buf);
+            set_in_vector(data_, i, val);
+        }
+        break;
+    case x_long_long:
+        {
+            long long const val = string_to_integer<long long>(buf);
+            set_in_vector(data_, i, val);
+        }
+        break;
+    case x_unsigned_long_long:
+        {
+            unsigned long long const val
+                = string_to_unsigned_integer<unsigned long long>(buf);
+            set_in_vector(data_, i, val);
+        }
+        break;
+    case x_double:
+        {
+            double const val = strtod(buf, NULL);
+            set_in_vector(data_, i, val);
+        }
+        break;
+    case x_stdtm:
+        {
+            // attempt to parse the string and convert to std::tm
+            std::tm t;
+            parse_std_tm(buf, t);
+
+            set_in_vector(data_, i, t);
+        }
+        break;
+    default:
+        throw soci_error("Into element used with non-supported type.");
+    }
 }

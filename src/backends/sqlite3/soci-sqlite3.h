@@ -98,6 +98,9 @@ struct sqlite3_vector_into_type_backend : details::vector_into_type_backend
     void *data_;
     details::exchange_type type_;
     int position_;
+
+private:
+    void fetch_data(bool is_null, const char* buf, int i, indicator * ind );
 };
 
 struct sqlite3_standard_use_type_backend : details::standard_use_type_backend
