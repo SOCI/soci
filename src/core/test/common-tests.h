@@ -2624,6 +2624,41 @@ void test20()
                 assert(r2.get<std::string>("CHR") == "b");
             }
         }
+
+        {
+            // Non-empty rowset with NULL values
+            sql << "insert into soci_test "
+                << "(num_int, num_float , name, sometime, chr) "
+                << "values (0, NULL, NULL, NULL, NULL)";
+
+            rowset<row> rs = (sql.prepare
+                     << "select num_int, num_float, name, sometime, chr "
+                     << "from soci_test where num_int = 0");
+
+            rowset<row>::const_iterator it = rs.begin();
+            assert(it != rs.end());
+
+            //
+            // First row
+            //
+            row const& r1 = (*it);
+
+            // Properties
+            assert(r1.size() == 5);
+            assert(r1.get_properties(0).get_data_type() == dt_integer);
+            assert(r1.get_properties(1).get_data_type() == dt_double);
+            assert(r1.get_properties(2).get_data_type() == dt_string);
+            assert(r1.get_properties(3).get_data_type() == dt_date);
+            assert(r1.get_properties(4).get_data_type() == dt_string);
+
+            // Data
+            assert(r1.get_indicator(0) == soci::i_ok);
+            assert(r1.get<int>(0) == 0);
+            assert(r1.get_indicator(1) == soci::i_null);
+            assert(r1.get_indicator(2) == soci::i_null);
+            assert(r1.get_indicator(3) == soci::i_null);
+            assert(r1.get_indicator(4) == soci::i_null);
+        }
     }
 
     std::cout << "test 20 passed" << std::endl;
