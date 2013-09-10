@@ -38,6 +38,17 @@ void execude_hardcoded(sqlite_api::sqlite3* conn, char const* const query, char 
     }
 }
 
+void check_sqlite_err(sqlite_api::sqlite3* conn, int res, char const* const errMsg)
+{
+    if (SQLITE_OK != res)
+    {
+        const char *zErrMsg = sqlite3_errmsg(conn);
+        std::ostringstream ss;
+        ss << errMsg << zErrMsg;
+        throw soci_error(ss.str());
+    }
+}
+
 } // namespace anonymous
 
 
@@ -45,6 +56,7 @@ sqlite3_session_backend::sqlite3_session_backend(
     connection_parameters const & parameters)
 {
     int timeout = 0;
+    int connection_flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
     std::string synchronous;
     std::string const & connectString = parameters.get_connect_string();
     std::string dbname(connectString);
@@ -65,9 +77,9 @@ sqlite3_session_backend::sqlite3_session_backend(
             }
             else // space inside value string
             {
-                std::string keepspace;
                 std::getline(ssconn, val, '\"');
                 quotedVal = quotedVal + " " + val;
+                std::string keepspace;
                 std::getline(ssconn, keepspace, ' ');
             }     
 
@@ -87,16 +99,14 @@ sqlite3_session_backend::sqlite3_session_backend(
         {
             synchronous = val;
         }
+        else if ("shared_cache" == key && "true" == val)
+        {
+            connection_flags |=  SQLITE_OPEN_SHAREDCACHE;
+        }
     }
 
-    int res = sqlite3_open(dbname.c_str(), &conn_);
-    if (SQLITE_OK != res)
-    {
-        const char *zErrMsg = sqlite3_errmsg(conn_);
-        std::ostringstream ss;
-        ss << "Cannot establish connection to the database. " << zErrMsg;
-        throw soci_error(ss.str());
-    }
+    int res = sqlite3_open_v2(dbname.c_str(), &conn_, connection_flags, NULL);
+    check_sqlite_err(conn_, res, "Cannot establish connection to the database. ");
 
     if (!synchronous.empty())
     {
@@ -106,13 +116,8 @@ sqlite3_session_backend::sqlite3_session_backend(
     }
 
     res = sqlite3_busy_timeout(conn_, timeout * 1000);
-    if (SQLITE_OK != res)
-    {
-        const char *zErrMsg = sqlite3_errmsg(conn_);
-        std::ostringstream ss;
-        ss << "Failed to set busy timeout for connection. " << zErrMsg;
-        throw soci_error(ss.str());
-    }
+    check_sqlite_err(conn_, res, "Failed to set busy timeout for connection. ");
+
 }
 
 sqlite3_session_backend::~sqlite3_session_backend()
