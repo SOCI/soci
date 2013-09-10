@@ -137,7 +137,7 @@ based types:</p>
 <pre class="example">
 // Example 3.
 const int BATCH_SIZE = 25;
-std::vector&lt;int&gt; valsIn;
+std::vector&lt;int&gt; ids;
 for (int i = 0; i != BATCH_SIZE; ++i)
 {
     ids.push_back(i);
@@ -145,7 +145,7 @@ for (int i = 0; i != BATCH_SIZE; ++i)
 
 statement st = (sql.prepare &lt;&lt;
                 "insert into numbers(value) values(:val)",
-                use(valsIn));
+                use(ids));
 for (int i = 0; i != 4; ++i)
 {
     st.execute(true);
