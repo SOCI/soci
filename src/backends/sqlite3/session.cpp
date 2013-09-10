@@ -38,7 +38,7 @@ void execude_hardcoded(sqlite_api::sqlite3* conn, char const* const query, char 
     }
 }
 
-void check_sqlite_err(sqlite_api::sqlite3* conn,int res,char const* const errMsg)
+void check_sqlite_err(sqlite_api::sqlite3* conn, int res, char const* const errMsg)
 {
     if (SQLITE_OK != res)
     {
@@ -101,12 +101,12 @@ sqlite3_session_backend::sqlite3_session_backend(
         }
         else if ("shared_cache" == key && "true" == val)
         {
-         connection_flags |=  SQLITE_OPEN_SHAREDCACHE;
+            connection_flags |=  SQLITE_OPEN_SHAREDCACHE;
         }
     }
 
     int res = sqlite3_open_v2(dbname.c_str(), &conn_, connection_flags, NULL);
-    check_sqlite_err(conn_,res,"Cannot establish connection to the database. ");
+    check_sqlite_err(conn_, res, "Cannot establish connection to the database. ");
 
     if (!synchronous.empty())
     {
@@ -116,7 +116,7 @@ sqlite3_session_backend::sqlite3_session_backend(
     }
 
     res = sqlite3_busy_timeout(conn_, timeout * 1000);
-    check_sqlite_err(conn_,res,"Failed to set busy timeout for connection. ");
+    check_sqlite_err(conn_, res, "Failed to set busy timeout for connection. ");
 
 }
 
