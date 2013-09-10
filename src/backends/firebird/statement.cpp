@@ -18,7 +18,7 @@ using namespace soci::details::firebird;
 
 firebird_statement_backend::firebird_statement_backend(firebird_session_backend &session)
     : session_(session), stmtp_(0), sqldap_(NULL), sqlda2p_(NULL),
-        boundByName_(false), boundByPos_(false), rowsFetched_(0), endOfRowSet_(false),
+        boundByName_(false), boundByPos_(false), rowsFetched_(0), endOfRowSet_(false), rowsAffectedBulk_(-1LL), 
             intoType_(eStandard), useType_(eStandard), procedure_(false)
 {}
 
@@ -49,6 +49,8 @@ void firebird_statement_backend::alloc()
 
 void firebird_statement_backend::clean_up()
 {
+    rowsAffectedBulk_ = -1LL;
+
     ISC_STATUS stat[stat_size];
 
     if (stmtp_ != NULL)
@@ -407,6 +409,8 @@ firebird_statement_backend::execute(int number)
 
     if (useType_ == eVector)
     {
+        long long rowsAffectedBulkTemp = 0;
+
         // Here we have to explicitly loop to achieve the
         // effect of inserting or updating with vector use elements.
         std::size_t rows = static_cast<firebird_vector_use_type_backend*>(uses_[0])->size();
@@ -421,13 +425,19 @@ firebird_statement_backend::execute(int number)
             // then execute query
             if (isc_dsql_execute(stat, &session_.trhp_, &stmtp_, SQL_DIALECT_V6, t))
             {
+                // preserve the number of rows affected so far.
+                rowsAffectedBulk_ = rowsAffectedBulkTemp;
                 throw_iscerror(stat);
             }
-
+            else
+            {
+                rowsAffectedBulkTemp += get_affected_rows();
+            }
             // soci does not allow bulk insert/update and bulk select operations
             // in same query. So here, we know that into elements are not
             // vectors. So, there is no need to fetch data here.
         }
+        rowsAffectedBulk_ = rowsAffectedBulkTemp;
     }
     else
     {
@@ -553,6 +563,11 @@ void firebird_statement_backend::exchangeData(bool gotData, int row)
 
 long long firebird_statement_backend::get_affected_rows()
 {
+    if (rowsAffectedBulk_ >= 0)
+    {
+        return rowsAffectedBulk_;
+    }
+
     ISC_STATUS_ARRAY stat;
     char type_item[] = { isc_info_sql_records };
     char res_buffer[256];

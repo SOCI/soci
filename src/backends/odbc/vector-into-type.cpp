@@ -7,12 +7,14 @@
 
 #define SOCI_ODBC_SOURCE
 #include "soci-odbc.h"
+#include <soci-platform.h>
 #include <cassert>
 #include <cctype>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
 #include <sstream>
+#include <stdio.h>  // sscanf()
 
 using namespace soci;
 using namespace soci::details;
@@ -58,6 +60,52 @@ void odbc_vector_into_type_backend::define_by_pos(
             std::vector<int> &v(*vp);
             prepare_indicators(v.size());
             data = &v[0];
+        }
+        break;
+    case x_long_long:
+        {
+            std::vector<long long> *vp =
+                static_cast<std::vector<long long> *>(data);
+            std::vector<long long> &v(*vp);
+            prepare_indicators(v.size());
+            if (use_string_for_bigint())
+            {
+                odbcType_ = SQL_C_CHAR;
+                size = max_bigint_length;
+                std::size_t bufSize = size * v.size();
+                colSize_ = size;
+                buf_ = new char[bufSize];
+                data = buf_;
+            }
+            else // Normal case, use ODBC support.
+            {
+                odbcType_ = SQL_C_SBIGINT;
+                size = sizeof(long long);
+                data = &v[0];
+            }
+        }
+        break;
+    case x_unsigned_long_long:
+        {
+            std::vector<unsigned long long> *vp =
+                static_cast<std::vector<unsigned long long> *>(data);
+            std::vector<unsigned long long> &v(*vp);
+            prepare_indicators(v.size());
+            if (use_string_for_bigint())
+            {
+                odbcType_ = SQL_C_CHAR;
+                size = max_bigint_length;
+                std::size_t bufSize = size * v.size();
+                colSize_ = size;
+                buf_ = new char[bufSize];
+                data = buf_;
+            }
+            else // Normal case, use ODBC support.
+            {
+                odbcType_ = SQL_C_UBIGINT;
+                size = sizeof(unsigned long long);
+                data = &v[0];
+            }
         }
         break;
     case x_double:
@@ -127,8 +175,6 @@ void odbc_vector_into_type_backend::define_by_pos(
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
-	case x_long_long: break; // TODO: verify if can be supported
-	case x_unsigned_long_long: break; // TODO: verify if can be supported
     }
 
     SQLRETURN rc 
@@ -209,6 +255,38 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                 pos += colSize_;
             }
         }
+        else if (type_ == x_long_long && use_string_for_bigint())
+        {
+            std::vector<long long> *vp
+                = static_cast<std::vector<long long> *>(data_);
+            std::vector<long long> &v(*vp);
+            char *pos = buf_;
+            std::size_t const vsize = v.size();
+            for (std::size_t i = 0; i != vsize; ++i)
+            {
+                if (sscanf(pos, "%" LL_FMT_FLAGS "d", &v[i]) != 1)
+                {
+                    throw soci_error("Failed to parse the returned 64-bit integer value");
+                }
+                pos += colSize_;
+            }
+        }
+        else if (type_ == x_unsigned_long_long && use_string_for_bigint())
+        {
+            std::vector<unsigned long long> *vp
+                = static_cast<std::vector<unsigned long long> *>(data_);
+            std::vector<unsigned long long> &v(*vp);
+            char *pos = buf_;
+            std::size_t const vsize = v.size();
+            for (std::size_t i = 0; i != vsize; ++i)
+            {
+                if (sscanf(pos, "%" LL_FMT_FLAGS "u", &v[i]) != 1)
+                {
+                    throw soci_error("Failed to parse the returned 64-bit integer value");
+                }
+                pos += colSize_;
+            }
+        }
 
         // then - deal with indicators
         if (ind != NULL)
@@ -274,6 +352,20 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
             v->resize(sz);
         }
         break;
+    case x_long_long:
+        {
+            std::vector<long long> *v =
+                static_cast<std::vector<long long> *>(data_);
+            v->resize(sz);
+        }
+        break;
+    case x_unsigned_long_long:
+        {
+            std::vector<unsigned long long> *v =
+                static_cast<std::vector<unsigned long long> *>(data_);
+            v->resize(sz);
+        }
+        break;
     case x_double:
         {
             std::vector<double> *v
@@ -299,8 +391,6 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
-	case x_long_long: break; // TODO: verify if can be supported
-	case x_unsigned_long_long: break; // TODO: verify if can be supported
     }
 }
 
@@ -328,6 +418,20 @@ std::size_t odbc_vector_into_type_backend::size()
             sz = v->size();
         }
         break;
+    case x_long_long:
+        {
+            std::vector<long long> *v =
+                static_cast<std::vector<long long> *>(data_);
+            sz = v->size();
+        }
+        break;
+    case x_unsigned_long_long:
+        {
+            std::vector<unsigned long long> *v =
+                static_cast<std::vector<unsigned long long> *>(data_);
+            sz = v->size();
+        }
+        break;
     case x_double:
         {
             std::vector<double> *v
@@ -353,8 +457,6 @@ std::size_t odbc_vector_into_type_backend::size()
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
-	case x_long_long: break; // TODO: verify if can be supported
-	case x_unsigned_long_long: break; // TODO: verify if can be supported
     }
 
     return sz;

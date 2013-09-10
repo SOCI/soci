@@ -88,7 +88,7 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 std::size_t const bufSize
                     = std::numeric_limits<long long>::digits10 + 3;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%lld", *static_cast<long long *>(data_));
+                snprintf(buf_, bufSize, "%" LL_FMT_FLAGS "d", *static_cast<long long *>(data_));
             }
             break;
         case x_unsigned_long_long:
@@ -96,7 +96,7 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 std::size_t const bufSize
                     = std::numeric_limits<unsigned long long>::digits10 + 3;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%llu",
+                snprintf(buf_, bufSize, "%" LL_FMT_FLAGS "u",
                          *static_cast<unsigned long long *>(data_));
             }
             break;

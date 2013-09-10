@@ -32,9 +32,10 @@ using namespace soci::details;
 
 postgresql_statement_backend::postgresql_statement_backend(
     postgresql_session_backend &session)
-     : session_(session), justDescribed_(false),
-       hasIntoElements_(false), hasVectorIntoElements_(false),
-       hasUseElements_(false), hasVectorUseElements_(false)
+     : session_(session)
+     , rowsAffectedBulk_(-1LL), justDescribed_(false)
+     , hasIntoElements_(false), hasVectorIntoElements_(false)
+     , hasUseElements_(false), hasVectorUseElements_(false)
 {
 }
 
@@ -63,6 +64,10 @@ void postgresql_statement_backend::alloc()
 
 void postgresql_statement_backend::clean_up()
 {
+    // 'reset' the value for a 
+    // potential new execution.
+    rowsAffectedBulk_ = -1;
+    
     // nothing to do here
 }
 
@@ -241,7 +246,7 @@ postgresql_statement_backend::execute(int number)
                     "Binding for use elements must be either by position "
                     "or by name.");
             }
-
+            long long rowsAffectedBulkTemp = 0;
             for (int i = 0; i != numberOfExecutions; ++i)
             {
                 std::vector<char *> paramValues;
@@ -323,9 +328,15 @@ postgresql_statement_backend::execute(int number)
                 {
                     // there are only bulk use elements (no intos)
 
+                    // preserve the number of rows affected so far.
+                    rowsAffectedBulk_ = rowsAffectedBulkTemp;
+                    
                     result_.check_for_errors("Cannot execute query.");
+                    
+                    rowsAffectedBulkTemp += get_affected_rows();                    
                 }
             }
+            rowsAffectedBulk_ = rowsAffectedBulkTemp;
 
             if (numberOfExecutions > 1)
             {
@@ -447,6 +458,10 @@ long long postgresql_statement_backend::get_affected_rows()
     {
         return result;
     }
+    else if (rowsAffectedBulk_ >= 0)
+    {
+        return rowsAffectedBulk_;
+    }
     else
     {
         return -1;
@@ -529,10 +544,18 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     
     default:
     {
-        std::stringstream message;
-        message << "unknown data type with typelem: " << typeOid << " for colNum: " << colNum << " with name: " << PQfname(result_, pos);
-        throw soci_error(message.str());
-        
+        int form = PQfformat(result_, pos);
+        int size = PQfsize(result_, pos);
+        if (form == 0 && size == -1)
+        {
+            type = dt_string;
+        }
+        else
+        {
+            std::stringstream message;
+            message << "unknown data type with typelem: " << typeOid << " for colNum: " << colNum << " with name: " << PQfname(result_, pos);
+            throw soci_error(message.str());
+        }
     }
     }
 

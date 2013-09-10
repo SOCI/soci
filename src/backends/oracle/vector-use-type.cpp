@@ -247,7 +247,7 @@ void oracle_vector_use_type_backend::pre_use(indicator const *ind)
         std::size_t const vecSize = v.size();
         for (std::size_t i = 0; i != vecSize; ++i)
         {
-            snprintf(pos, entrySize, "%lld", v[i]);
+            snprintf(pos, entrySize, "%" LL_FMT_FLAGS "d", v[i]);
             pos += entrySize;
         }
     }
@@ -262,7 +262,7 @@ void oracle_vector_use_type_backend::pre_use(indicator const *ind)
         std::size_t const vecSize = v.size();
         for (std::size_t i = 0; i != vecSize; ++i)
         {
-            snprintf(pos, entrySize, "%llu", v[i]);
+            snprintf(pos, entrySize, "%" LL_FMT_FLAGS "u", v[i]);
             pos += entrySize;
         }
     }

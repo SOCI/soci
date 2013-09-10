@@ -1,6 +1,68 @@
 This file contains the history of changes in the SOCI library.
 
 ---
+Version 3.2.2 differs from 3.2.1 in the following ways:
+
+- Fixed once_temp_type destructor with noexcept(false) specifier for C++11
+- Fix uninitialized indicators in conversion_into_type and conversion_use_type specialisations 
+- Fixed placeholder matching for PostgreSQL-style casts with ORM
+- Fixed memory leaking in use binding in case of bind/unbind sequence
+- Fixed sscanf formatter for MinGW/MSVC in backends
+- Fixed partial placeholder name matching for ORM cases
+- Added test for use of indicators with rowset<row>
+- Added test for get_affected_rows after bulk operations
+
+- DB2
+-- Enable build and testing on Travis CI
+-- Fixed use type size calculation during bind/pre_use
+
+- Firebird
+-- Enable memory cleanup to avoid leaks after binding
+-- Added missing C++ library headers
+-- Added get_affected_rows() support for bulk operations
+-- Fixed compilation with VS2008
+-- Fixed building tests with the backend built as DLL.
+
+- MySQL
+-- Added get_affected_rows() support for bulk operations
+
+- ODBC
+-- Always call ASCII version of ODBC function SQLGetDiagRec
+-- Fixed invalid condition test in assertions
+-- Added get_affected_rows() support for bulk operations
+-- Added support for (unsigned) long long vectors
+-- Changed mapping of SQL_BIGINT to dt_long_long in ODBC backend
+-- Added some trivial optimizations in statement preparation code
+
+- Oracle
+-- Fixed missing noData_ reported in particular case when OCIStmtExecute returns success
+-- Improved Oracle testing setup on Travis CI
+
+- PostgreSQL
+-- Added session::get_next_sequence_value() for PostgreSQL backend
+-- Added get_affected_rows() support for bulk operations
+-- Applied RAII and simplified error handling logic
+-- Fixed issue with exceptions escaping postgresql_statement_backend destructor
+
+- SQLite3
+-- Replaced sqlite3_prepare with sqlite3_prepare_v2
+-- Added missing <cstdarg> header
+-- Fixed wrong size used in memcpy() during bulk processing
+-- Added get_affected_rows() support for bulk operations
+-- Added shared_cache=true propery to control SQLITE_OPEN_SHAREDCACHE flag
+
+- Documentation
+-- Corrected usage examples
+
+- Building
+-- Updated CMake for Oracle 12g
+-- Restructured and improved Travis CI setup to do single build per backend
+-- Fixed wrong GCC_VERSION used in CMake config for commandline-overriden GCC
+-- Allows CMake to find 32-bit DB2 on Windows x64
+-- Removed redundant Oracle libclntsh library lookup
+-- Fixed SQLITE3_LIBRARIES handling by find_package_handle_standard_args
+
+---
 Version 3.2.1 differs from 3.2.0 in the following ways:
 
 - Fixed binding of Oracle type NUMBER(9,0) to C++ int, by Tomasz Olszewski

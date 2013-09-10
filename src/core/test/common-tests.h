@@ -340,6 +340,8 @@ public:
         test_pull5();
         test_issue67();
         test_prepared_insert_with_orm_type();
+        test_issue154();
+        test_placeholder_partial_matching_with_orm_type();
     }
 
 private:
@@ -2331,6 +2333,26 @@ void test_prepared_insert_with_orm_type()
     std::cout << "test test_prepared_insert_with_orm_type passed" << std::endl;
 }
 
+void test_placeholder_partial_matching_with_orm_type()
+{
+    {
+        session sql(backEndFactory_, connectString_);
+        sql.uppercase_column_names(true);
+        auto_table_creator tableCreator(tc_.table_creator_3(sql));
+
+        PhonebookEntry in = { "name1", "phone1" };
+        std::string name = "nameA";
+        sql << "insert into soci_test values (:NAMED, :PHONE)", use(in), use(name, "NAMED");
+
+        PhonebookEntry out;
+        sql << "select * from soci_test where PHONE = 'phone1'", into(out);
+        assert(out.name == "nameA");
+        assert(out.phone == "phone1");
+    }
+
+    std::cout << "test test_placeholder_partial_matching_with_orm_type passed" << std::endl;
+}
+
 // test for bulk fetch with single use
 void test16()
 {
@@ -2601,6 +2623,41 @@ void test20()
                 assert(r2.get<std::string>("NAME") == "Robert");
                 assert(r2.get<std::string>("CHR") == "b");
             }
+        }
+
+        {
+            // Non-empty rowset with NULL values
+            sql << "insert into soci_test "
+                << "(num_int, num_float , name, sometime, chr) "
+                << "values (0, NULL, NULL, NULL, NULL)";
+
+            rowset<row> rs = (sql.prepare
+                     << "select num_int, num_float, name, sometime, chr "
+                     << "from soci_test where num_int = 0");
+
+            rowset<row>::const_iterator it = rs.begin();
+            assert(it != rs.end());
+
+            //
+            // First row
+            //
+            row const& r1 = (*it);
+
+            // Properties
+            assert(r1.size() == 5);
+            assert(r1.get_properties(0).get_data_type() == dt_integer);
+            assert(r1.get_properties(1).get_data_type() == dt_double);
+            assert(r1.get_properties(2).get_data_type() == dt_string);
+            assert(r1.get_properties(3).get_data_type() == dt_date);
+            assert(r1.get_properties(4).get_data_type() == dt_string);
+
+            // Data
+            assert(r1.get_indicator(0) == soci::i_ok);
+            assert(r1.get<int>(0) == 0);
+            assert(r1.get_indicator(1) == soci::i_null);
+            assert(r1.get_indicator(2) == soci::i_null);
+            assert(r1.get_indicator(3) == soci::i_null);
+            assert(r1.get_indicator(4) == soci::i_null);
         }
     }
 
@@ -3788,6 +3845,36 @@ void test_get_affected_rows()
         st3.execute(true);
 
         assert(st3.get_affected_rows() == 5);
+
+        std::vector<int> v(5, 0);
+        for (std::size_t i = 0; i < v.size(); ++i)
+        {
+            v[i] = (7 + i);
+        }
+        
+        // test affected rows for bulk operations.
+        statement st4 = (sql.prepare <<
+            "delete from soci_test where val = :v", use(v));
+        st4.execute(true);
+
+        assert(st4.get_affected_rows() == 5);
+
+        std::vector<std::string> w(2, "1");
+        w[1] = "a"; // this invalid value may cause an exception.
+        statement st5 = (sql.prepare <<
+            "insert into soci_test(val) values(:val)", use(w));
+        try { st5.execute(true); } 
+        catch(...) {}
+
+        // confirm the partial insertion.
+        int val = 0;
+        sql << "select count(val) from soci_test", into(val);
+        if(val != 0)
+        {        
+            // test the preserved 'number of rows 
+            // affected' after a potential failure.
+            assert(st5.get_affected_rows() != 0);
+        }
     }
 
     std::cout << "test get_affected_rows passed" << std::endl;
@@ -3840,7 +3927,49 @@ void test_issue67()
         }
     }
 
-}; // class common_tests
+}
+
+// issue 154 - Calling undefine_and_bind and then define_and_bind causes a leak.
+// If the test runs under memory debugger and it passes, then
+// soci::details::standard_use_type_backend and vector_use_type_backend must not leak
+void test_issue154()
+{
+    session sql(backEndFactory_, connectString_);
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+    sql << "insert into soci_test(id) values (1)";
+    {
+        int id = 1;
+        int val = 0;
+        statement st(sql);
+        st.exchange(use(id));
+        st.alloc();
+        st.prepare("select id from soci_test where id = :1");
+        st.define_and_bind();
+        st.undefine_and_bind();
+        st.exchange(soci::into(val));
+        st.define_and_bind();
+        st.execute(true);
+        assert(val == 1);
+    }
+    // vector variation
+    {
+        std::vector<int> ids(1, 2);
+        std::vector<int> vals(1, 1);
+        int val = 0;
+        statement st(sql);
+        st.exchange(use(ids));
+        st.alloc();
+        st.prepare("insert into soci_test(id, val) values (:1, :2)");
+        st.define_and_bind();
+        st.undefine_and_bind();
+        st.exchange(use(vals));
+        st.define_and_bind();
+        st.execute(true);
+        sql << "select val from soci_test where id = 2", into(val);
+        assert(val == 1);
+    }
+    std::cout << "test issue-154 passed - check memory debugger output for leaks" << std::endl;
+}
 
 }; // class common_tests
 

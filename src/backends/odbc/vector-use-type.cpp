@@ -7,6 +7,7 @@
 
 #define SOCI_ODBC_SOURCE
 #include "soci-odbc.h"
+#include <soci-platform.h>
 #include <cassert>
 #include <cctype>
 #include <cstdio>
@@ -20,7 +21,6 @@
 // SQLSetStmtAttr(statement_.hstmt_, SQL_ATTR_PARAMSET_SIZE, (SQLPOINTER)arraySize, 0);
 #pragma warning(disable:4312)
 #endif
-
 
 using namespace soci;
 using namespace soci::details;
@@ -62,6 +62,56 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             std::vector<int> &v(*vp);
             prepare_indicators(v.size());
             data = &v[0];
+        }
+        break;
+    case x_long_long:
+        {
+            std::vector<long long> *vp =
+                static_cast<std::vector<long long> *>(data);
+            std::vector<long long> &v(*vp);
+            std::size_t const vsize = v.size();
+            prepare_indicators(vsize);
+
+            if (use_string_for_bigint())
+            {
+                sqlType = SQL_NUMERIC;
+                cType = SQL_C_CHAR;
+                size = max_bigint_length;
+                buf_ = new char[size * vsize];
+                data = buf_;
+            }
+            else // Normal case, use ODBC support.
+            {
+                sqlType = SQL_BIGINT;
+                cType = SQL_C_SBIGINT;
+                size = sizeof(long long);
+                data = &v[0];
+            }
+        }
+        break;
+    case x_unsigned_long_long:
+        {
+            std::vector<unsigned long long> *vp =
+                static_cast<std::vector<unsigned long long> *>(data);
+            std::vector<unsigned long long> &v(*vp);
+            std::size_t const vsize = v.size();
+            prepare_indicators(vsize);
+
+            if (use_string_for_bigint())
+            {
+                sqlType = SQL_NUMERIC;
+                cType = SQL_C_CHAR;
+                size = max_bigint_length;
+                buf_ = new char[size * vsize];
+                data = buf_;
+            }
+            else // Normal case, use ODBC support.
+            {
+                sqlType = SQL_BIGINT;
+                cType = SQL_C_SBIGINT;
+                size = sizeof(unsigned long long);
+                data = &v[0];
+            }
         }
         break;
     case x_double:
@@ -155,8 +205,6 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
-	case x_long_long: break; // TODO: verify if can be supported
-	case x_unsigned_long_long: break; // TODO: verify if can be supported
     }
 
     colSize_ = size;
@@ -265,6 +313,34 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
             pos += sizeof(TIMESTAMP_STRUCT);
         }
     }
+    else if (type_ == x_long_long && use_string_for_bigint())
+    {
+        std::vector<long long> *vp
+             = static_cast<std::vector<long long> *>(data_);
+        std::vector<long long> &v(*vp);
+
+        char *pos = buf_;
+        std::size_t const vsize = v.size();
+        for (std::size_t i = 0; i != vsize; ++i)
+        {
+            snprintf(pos, max_bigint_length, "%" LL_FMT_FLAGS "d", v[i]);
+            pos += max_bigint_length;
+        }
+    }
+    else if (type_ == x_unsigned_long_long && use_string_for_bigint())
+    {
+        std::vector<unsigned long long> *vp
+             = static_cast<std::vector<unsigned long long> *>(data_);
+        std::vector<unsigned long long> &v(*vp);
+
+        char *pos = buf_;
+        std::size_t const vsize = v.size();
+        for (std::size_t i = 0; i != vsize; ++i)
+        {
+            snprintf(pos, max_bigint_length, "%" LL_FMT_FLAGS "u", v[i]);
+            pos += max_bigint_length;
+        }
+    }
 
     // then handle indicators
     if (ind != NULL)
@@ -325,6 +401,20 @@ std::size_t odbc_vector_use_type_backend::size()
             sz = vp->size();
         }
         break;
+    case x_long_long:
+        {
+            std::vector<long long> *vp =
+                static_cast<std::vector<long long> *>(data_);
+            sz = vp->size();
+        }
+        break;
+    case x_unsigned_long_long:
+        {
+            std::vector<unsigned long long> *vp =
+                static_cast<std::vector<unsigned long long> *>(data_);
+            sz = vp->size();
+        }
+        break;
     case x_double:
         {
             std::vector<double> *vp
@@ -350,8 +440,6 @@ std::size_t odbc_vector_use_type_backend::size()
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
-	case x_long_long: break; // TODO: verify if can be supported
-	case x_unsigned_long_long: break; // TODO: verify if can be supported
     }
 
     return sz;
