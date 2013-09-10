@@ -26,7 +26,7 @@ inline void throw_odbc_error(SQLSMALLINT htype, SQLHANDLE hndl, char const * msg
     i = 1;
 
     /* get multiple field settings of diagnostic record */
-    while (SQLGetDiagRec(htype,
+    while (SQLGetDiagRecA(htype,
                          hndl,
                          i,
                          sqlstate,

@@ -25,7 +25,7 @@ using namespace soci::details;
 odbc_statement_backend::odbc_statement_backend(odbc_session_backend &session)
     : session_(session), hstmt_(0), numRowsFetched_(0),
       hasVectorUseElements_(false), boundByName_(false), boundByPos_(false),
-      lastNoData_(false)
+      rowsAffected_(-1LL)
 {
 }
 
@@ -44,6 +44,8 @@ void odbc_statement_backend::alloc()
 
 void odbc_statement_backend::clean_up()
 {
+    rowsAffected_ = -1LL;
+
     SQLFreeHandle(SQL_HANDLE_STMT, hstmt_);
 }
 
@@ -57,6 +59,7 @@ void odbc_statement_backend::prepare(std::string const & query,
     enum { eNormal, eInQuotes, eInName, eInAccessDate } state = eNormal;
 
     std::string name;
+    query_.reserve(query.length());
 
     for (std::string::const_iterator it = query.begin(), end = query.end();
          it != end; ++it)
@@ -103,9 +106,7 @@ void odbc_statement_backend::prepare(std::string const & query,
             {
                 names_.push_back(name);
                 name.clear();
-                std::ostringstream ss;
-                ss << '?';
-                query_ += ss.str();
+                query_ += "?";
                 query_ += *it;
                 state = eNormal;
             }
@@ -127,9 +128,7 @@ void odbc_statement_backend::prepare(std::string const & query,
     if (state == eInName)
     {
         names_.push_back(name);
-        std::ostringstream ss;
-        ss << '?';
-        query_ += ss.str();
+        query_ += "?";
     }
 
     SQLRETURN rc = SQLPrepare(hstmt_, (SQLCHAR*)query_.c_str(), (SQLINTEGER)query_.size());
@@ -143,29 +142,63 @@ void odbc_statement_backend::prepare(std::string const & query,
 statement_backend::exec_fetch_result
 odbc_statement_backend::execute(int number)
 {
-    // made this static because MSVC debugger was reporting
-    // that there was an attempt to use rows_processed after the stack
-    // was destroyed.  Some ODBC clean_up ?
-    static SQLUSMALLINT rows_processed = 0;
-
+    // Store the number of rows processed by this call.
+    SQLULEN rows_processed = 0;
     if (hasVectorUseElements_)
     {
         SQLSetStmtAttr(hstmt_, SQL_ATTR_PARAMS_PROCESSED_PTR, &rows_processed, 0);
     }
-
+    
     // if we are called twice for the same statement we need to close the open
     // cursor or an "invalid cursor state" error will occur on execute
     SQLCloseCursor(hstmt_);
-
+    
     SQLRETURN rc = SQLExecute(hstmt_);
     if (is_odbc_error(rc))
     {
+        // If executing bulk operation a partial 
+        // number of rows affected may be available.
+        if (hasVectorUseElements_)
+        {
+            rowsAffected_ = 0;
+
+            do
+            {
+                SQLLEN res = 0;
+                // SQLRowCount will return error after a partially executed statement.
+                // SQL_DIAG_ROW_COUNT returns the same info but must be collected immediatelly after the execution.
+                rc = SQLGetDiagField(SQL_HANDLE_STMT, hstmt_, 0, SQL_DIAG_ROW_COUNT, &res, 0, NULL);
+                if (!is_odbc_error(rc) && res > 0) // 'res' will be -1 for the where the statement failed.
+                {
+                    rowsAffected_ += res;
+                }
+                --rows_processed; // Avoid unnecessary calls to SQLGetDiagField
+            }
+            // Move forward to the next result while there are rows processed.
+            while (rows_processed > 0 && SQLMoreResults(hstmt_) == SQL_SUCCESS);
+        }
         throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
                          "Statement Execute");
     }
+    // We should preserve the number of rows affected here 
+    // where we know for sure that a bulk operation was executed.
+    else
+    {
+        rowsAffected_ = 0;
 
-    lastNoData_ = rc == SQL_NO_DATA;
-
+        do {
+            SQLLEN res = 0;
+            SQLRETURN rc = SQLRowCount(hstmt_, &res);
+            if (is_odbc_error(rc))
+            {
+                throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
+                                  "Getting number of affected rows");
+            }
+            rowsAffected_ += res;
+        }
+        // Move forward to the next result if executing a bulk operation.
+        while (hasVectorUseElements_ && SQLMoreResults(hstmt_) == SQL_SUCCESS);
+    }
     SQLSMALLINT colCount;
     SQLNumResultCols(hstmt_, &colCount);
 
@@ -205,21 +238,7 @@ odbc_statement_backend::fetch(int number)
 
 long long odbc_statement_backend::get_affected_rows()
 {
-    // Calling SQLRowCount() when the last call to SQLExecute() returned
-    // SQL_NO_DATA can fail, so simply always return 0 in this case as we know
-    // that nothing was done anyhow.
-    if (lastNoData_)
-        return 0;
-
-    SQLLEN res;
-    SQLRETURN rc = SQLRowCount(hstmt_, &res);
-    if (is_odbc_error(rc))
-    {
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
-                          "Getting number of affected rows");
-    }
-
-    return res;
+    return rowsAffected_;
 }
 
 int odbc_statement_backend::get_number_of_rows()
@@ -281,8 +300,10 @@ void odbc_statement_backend::describe_column(int colNum, data_type & type,
     case SQL_TINYINT:
     case SQL_SMALLINT:
     case SQL_INTEGER:
-    case SQL_BIGINT:
         type = dt_integer;
+        break;
+    case SQL_BIGINT:
+        type = dt_long_long;
         break;
     case SQL_CHAR:
     case SQL_VARCHAR:

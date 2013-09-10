@@ -26,6 +26,7 @@
 #include <vector>
 #include <soci-backend.h>
 #if defined(_MSC_VER) || defined(__MINGW32__)
+#include <soci-platform.h>
 #include <windows.h>
 #endif
 #include <sqlext.h> // ODBC
@@ -228,11 +229,12 @@ struct odbc_statement_backend : details::statement_backend
 
     odbc_session_backend &session_;
     SQLHSTMT hstmt_;
-    SQLUINTEGER numRowsFetched_;
+    SQLULEN numRowsFetched_;
     bool hasVectorUseElements_;
     bool boundByName_;
     bool boundByPos_;
-    bool lastNoData_; // true if last query returned SQL_NO_DATA
+
+    long long rowsAffected_; // number of rows affected by the last operation
 
     std::string query_;
     std::vector<std::string> names_; // list of names for named binds
@@ -328,7 +330,7 @@ public:
         const char* socierror = NULL;
 
         SQLSMALLINT length, i = 1;
-        switch ( SQLGetDiagRec(htype, hndl, i, sqlstate_, &sqlcode_,
+        switch ( SQLGetDiagRecA(htype, hndl, i, sqlstate_, &sqlcode_,
                                message_, SQL_MAX_MESSAGE_LENGTH + 1,
                                &length) )
         {

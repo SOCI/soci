@@ -27,6 +27,7 @@ sqlite3_statement_backend::sqlite3_statement_backend(
     , databaseReady_(false)
     , boundByName_(false)
     , boundByPos_(false)
+    , rowsAffectedBulk_(-1LL)
 {
 }
 
@@ -37,6 +38,8 @@ void sqlite3_statement_backend::alloc()
 
 void sqlite3_statement_backend::clean_up()
 {
+    rowsAffectedBulk_ = -1LL;
+
     if (stmt_)
     {
         sqlite3_finalize(stmt_);
@@ -51,7 +54,7 @@ void sqlite3_statement_backend::prepare(std::string const & query,
     clean_up();
 
     char const* tail = 0; // unused;
-    int const res = sqlite3_prepare(session_.conn_,
+    int const res = sqlite3_prepare_v2(session_.conn_,
                               query.c_str(),
                               static_cast<int>(query.size()),
                               &stmt_,
@@ -189,6 +192,8 @@ sqlite3_statement_backend::bind_and_execute(int number)
 {
     statement_backend::exec_fetch_result retVal = ef_no_data;
 
+    long long rowsAffectedBulkTemp = 0;
+
     int const rows = static_cast<int>(useData_.size());
     for (int row = 0; row < rows; ++row)
     {
@@ -220,6 +225,8 @@ sqlite3_statement_backend::bind_and_execute(int number)
 
             if (SQLITE_OK != bindRes)
             {
+                // preserve the number of rows affected so far.
+                rowsAffectedBulk_ = rowsAffectedBulkTemp;
                 throw soci_error("Failure to bind on bulk operations");
             }
         }
@@ -232,7 +239,9 @@ sqlite3_statement_backend::bind_and_execute(int number)
         }
 
         retVal = load_one(); //execute each bound line
+        rowsAffectedBulkTemp += get_affected_rows();
     }
+    rowsAffectedBulk_ = rowsAffectedBulkTemp;
     return retVal;
 }
 
@@ -276,6 +285,10 @@ sqlite3_statement_backend::fetch(int number)
 
 long long sqlite3_statement_backend::get_affected_rows()
 {
+    if (rowsAffectedBulk_ >= 0)
+    {
+        return rowsAffectedBulk_;
+    }
     return sqlite3_changes(session_.conn_);
 }
 

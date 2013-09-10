@@ -6,6 +6,7 @@
 //
 
 #include "soci-sqlite3.h"
+#include <soci-platform.h>
 #include "rowid.h"
 #include "blob.h"
 // std
@@ -19,7 +20,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355 4996)
-#define snprintf _snprintf
+#define snprintf _snprintf // TODO: use soci-platform.h
 #endif
 
 using namespace soci;
@@ -125,7 +126,7 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
                 std::size_t const bufSize
                     = std::numeric_limits<long long>::digits10 + 3;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%lld",
+                snprintf(buf_, bufSize, "%" LL_FMT_FLAGS "d",
                     *static_cast<long long *>(data_));
             }
             break;
@@ -134,7 +135,7 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
                 std::size_t const bufSize
                     = std::numeric_limits<unsigned long long>::digits10 + 2;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%llu",
+                snprintf(buf_, bufSize, "%" LL_FMT_FLAGS "u",
                     *static_cast<unsigned long long *>(data_));
             }
             break;

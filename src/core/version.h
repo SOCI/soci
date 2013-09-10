@@ -27,6 +27,6 @@
 //  but as a *string* in the form "x_y[_z]" where x is the major version
 //  number, y is the minor version number, and z is the patch level if not 0.
 
-#define SOCI_LIB_VERSION "3_2_1"
+#define SOCI_LIB_VERSION "3_2_2"
 
 #endif // SOCI_VERSION_HPP

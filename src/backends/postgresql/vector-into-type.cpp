@@ -6,6 +6,7 @@
 //
 
 #define SOCI_POSTGRESQL_SOURCE
+#include <soci-platform.h>
 #include "soci-postgresql.h"
 #include "common.h"
 #include <libpq/libpq-fs.h> // libpq
@@ -169,7 +170,7 @@ void resizevector_(void * p, std::size_t sz)
 
 void postgresql_vector_into_type_backend::resize(std::size_t sz)
 {
-    assert(sz < 10*std::numeric_limits<unsigned short>::max()); // Not a strong constraint, for debugging only. Notice my fix is even worse
+    assert(sz < 10u*std::numeric_limits<unsigned short>::max()); // Not a strong constraint, for debugging only. Notice my fix is even worse
 
     switch (type_)
     {

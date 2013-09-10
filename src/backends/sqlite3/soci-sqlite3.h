@@ -23,6 +23,7 @@
 # define SOCI_SQLITE3_DECL
 #endif
 
+#include <cstdarg>
 #include <vector>
 #include "soci-backend.h"
 
@@ -193,6 +194,8 @@ struct sqlite3_statement_backend : details::statement_backend
     bool databaseReady_;
     bool boundByName_;
     bool boundByPos_;
+
+    long long rowsAffectedBulk_; // number of rows affected by the last bulk operation
 
 private:
     exec_fetch_result load_rowset(int totalRows);

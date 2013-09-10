@@ -21,7 +21,7 @@
 using namespace soci;
 
 std::string connectString;
-soci::backend_factory const &backEnd = firebird;
+soci::backend_factory const &backEnd = *factory_firebird();
 
 // fundamental tests - transactions in Firebird
 void test1()

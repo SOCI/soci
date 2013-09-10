@@ -127,7 +127,7 @@ match.</p>
 <h4 id="bind_name">Binding by name</h4>
 
 <p>The SQL placeholders that have their names (with colon) can be bound
-by name to clearly associate the local variable with the given placehorder.</p>
+by name to clearly associate the local variable with the given placeholder.</p>
 
 <p>This explicit naming allows to use different order of elements:</p>
 
@@ -476,6 +476,17 @@ requested.</p>
 
 <p>The mapping of underlying database column types to SOCI datatypes is database specific.
 See the <a href="backends/index.html">backend documentation</a> for details.</p>
+
+<p>The <code>row</code> also provides access to indicators for each column:</p>
+
+<pre>
+row r;
+sql &lt;&lt; "select name from some_table where id = 1", into(r);
+if (r.get_indicator(0) != soci::i_null)
+{
+   std::cout &lt;&lt; r.get&lt;std::string&gt;(0);
+}
+</pre>
 
 <p>It is also possible to extract data from the <code>row</code> object using its stream-like
 interface, where each extracted variable should have matching type respective to its position in the chain:</p>

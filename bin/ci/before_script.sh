@@ -1,19 +1,9 @@
-#!/bin/bash
+#!/bin/bash -e
 # Run before_script actions for SOCI build at travis-ci.org
-# Mateusz Loskot <mateusz@loskot.net>, http://github.com/SOCI
 #
-source ./bin/ci/common.sh
-# Create local databases
-echo "$(tmstamp) *** before_script::createdb starting $(date) ***"
-# MySQL (service provided)
-mysql --version
-mysql -e 'create database soci_test;'
-# PostgreSQL (service provided)
-psql --version  
-psql -c 'create database soci_test;' -U postgres
-# Firebird (installed manually, see before_install.sh)
-isql-fb -z -q -i /dev/null # --version
-echo 'CREATE DATABASE "LOCALHOST:/tmp/soci_test.fdb" PAGE_SIZE = 16384;' > /tmp/create_soci_test.sql
-isql-fb -u SYSDBA -p masterkey -i /tmp/create_soci_test.sql -q
-cat /tmp/create_soci_test.sql
-echo "$(tmstamp) *** before_script::createdb finished $(date) ***"
+# Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
+#
+source ${TRAVIS_BUILD_DIR}/bin/ci/common.sh
+
+before_script="${TRAVIS_BUILD_DIR}/bin/ci/before_script_${SOCI_TRAVIS_BACKEND}.sh"
+[ -x ${before_script} ] && ${before_script} || echo "nothing to run"

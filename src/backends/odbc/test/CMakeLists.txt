@@ -36,3 +36,13 @@ soci_backend_test(
   BACKEND ODBC
   SOURCE test-odbc-postgresql.cpp
   CONNSTR "test-postgresql.dsn")
+
+# TODO: DB2 backend is tested by Travis CI on dedicated VM, separate from ODBC,
+# in order to test DB2 with ODBC, it would be best to install DB2 driver only.
+if (NOT $ENV{TRAVIS})
+soci_backend_test(
+  NAME db2
+  BACKEND ODBC
+  SOURCE test-odbc-db2.cpp
+  CONNSTR "test-db2.dsn")
+endif()

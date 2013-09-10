@@ -42,7 +42,7 @@ T string_to_integer(char const * buf)
 {
     long long t(0);
     int n(0);
-    int const converted = std::sscanf(buf, "%lld%n", &t, &n);
+    int const converted = std::sscanf(buf, "%" LL_FMT_FLAGS "d%n", &t, &n);
     if (converted == 1 && static_cast<std::size_t>(n) == std::strlen(buf))
     {
         // successfully converted to long long
@@ -66,7 +66,7 @@ T string_to_unsigned_integer(char const * buf)
 {
     unsigned long long t(0);
     int n(0);
-    int const converted = std::sscanf(buf, "%llu%n", &t, &n);
+    int const converted = std::sscanf(buf, "%" LL_FMT_FLAGS "u%n", &t, &n);
     if (converted == 1 && static_cast<std::size_t>(n) == std::strlen(buf))
     {
         // successfully converted to unsigned long long

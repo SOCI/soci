@@ -5,11 +5,11 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include "common.h"
+#include <soci-platform.h>
 #include <soci-backend.h>
 #include <cstdlib>
 #include <ctime>
-
+#include "common.h"
 
 namespace // anonymous
 {
