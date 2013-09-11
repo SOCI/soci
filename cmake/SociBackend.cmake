@@ -295,11 +295,6 @@ macro(soci_backend_test)
     endif()
     boost_report_value(${TEST_CONNSTR_VAR})
 
-    list(APPEND THIS_INCLUDE_DIRS ${SOCI_SOURCE_DIR}/include/soci)
-    list(APPEND THIS_INCLUDE_DIRS ${SOCI_SOURCE_DIR}/include/soci/${BACKENDL})
-    list(APPEND THIS_INCLUDE_DIRS ${SOCI_SOURCE_DIR}/include/private)
-    list(APPEND THIS_INCLUDE_DIRS ${SOCI_SOURCE_DIR}/include/private/${BACKENDL})
-
     set(TEST_HEADERS common-tests.h)
     set(TEST_DEPS soci_core soci_${BACKENDL})
 
@@ -308,8 +303,10 @@ macro(soci_backend_test)
 
     target_link_libraries(${TEST_TARGET} ${TEST_DEPS})
 
-    set_target_properties(${TEST_TARGET}
-      PROPERTIES INCLUDE_DIRECTORIES "${THIS_INCLUDE_DIRS}")
+    set_property(TARGET ${TEST_TARGET}
+      APPEND PROPERTY INCLUDE_DIRECTORIES ${THIS_INCLUDE_DIRS}
+      ${SOCI_SOURCE_DIR}/include/soci/${BACKENDL}
+      ${SOCI_SOURCE_DIR}/include/private/${BACKENDL})
 
 get_target_property(TID ${TEST_TARGET} INCLUDE_DIRECTORIES)
 message("TID:${TID}")
