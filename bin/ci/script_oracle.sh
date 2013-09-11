@@ -13,6 +13,7 @@ else
 fi
 
 cmake \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DSOCI_TESTS=ON \
     -DSOCI_STATIC=OFF \
     -DSOCI_DB2=OFF \
