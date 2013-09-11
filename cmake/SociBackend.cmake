@@ -119,18 +119,15 @@ macro(soci_backend NAME)
       # Collect compile definitions
       list(APPEND THIS_COMPILE_DEFS ${THIS_BACKEND_DEPENDS_DEFS})
 
-      # Backend installable headers and sources
-      file(GLOB THIS_BACKEND_HEADERS ${SOCI_SOURCE_DIR}/include/soci/${NAMEL}/*.h)
-      file(GLOB THIS_BACKEND_SOURCES *.cpp)
-      set(THIS_BACKEND_HEADERS_VAR SOCI_${NAMEU}_HEADERS)
-      set(${THIS_BACKEND_HEADERS_VAR} ${THIS_BACKEND_HEADERS}) 
-
-      # Group source files for IDE source explorers (e.g. Visual Studio)
-      source_group("Header Files" FILES ${THIS_BACKEND_HEADERS})
-      source_group("Source Files" FILES ${THIS_BACKEND_SOURCES})
-      source_group("CMake Files" FILES CMakeLists.txt)
-
+      set_directory_properties(PROPERTIES
+        INCLUDE_DIRECTORIES "${THIS_INCLUDE_DIRS}"
+        COMPILE_DEFINITIONS "${THIS_COMPILE_DEFS}")
       
+get_directory_property(XID INCLUDE_DIRECTORIES)
+get_directory_property(XCD DEFS COMPILE_DEFINITIONS)
+message("XID=${XID}")
+message("XCD=${XCD}")
+
       # Backend target
       set(THIS_BACKEND_VAR SOCI_${NAMEU})
       set(THIS_BACKEND_TARGET ${PROJECTNAMEL}_${NAMEL})
@@ -144,8 +141,19 @@ macro(soci_backend NAME)
 
       set(${THIS_BACKEND_VAR}_COMPILE_DEFINITIONS ${THIS_COMPILE_DEFS})
       set(THIS_BACKEND_COMPILE_DEFINITIONS_VAR ${THIS_BACKEND_VAR}_COMPILE_DEFINITIONS)
-      message(${THIS_BACKEND_COMPILE_DEFINITIONS_VAR})
-      message(${${THIS_BACKEND_COMPILE_DEFINITIONS_VAR}})
+
+      set(${THIS_BACKEND_VAR}_INCLUDE_DIRECTORIES ${THIS_INCLUDE_DIRS})
+      set(THIS_BACKEND_INCLUDE_DIRECTORIES_VAR ${THIS_BACKEND_VAR}_INCLUDE_DIRECTORIES)
+
+      # Backend installable headers and sources
+      file(GLOB THIS_BACKEND_HEADERS ${SOCI_SOURCE_DIR}/include/soci/${NAMEL}/*.h)
+      file(GLOB THIS_BACKEND_SOURCES *.cpp)
+      set(THIS_BACKEND_HEADERS_VAR SOCI_${NAMEU}_HEADERS)
+      set(${THIS_BACKEND_HEADERS_VAR} ${THIS_BACKEND_HEADERS})
+      # Group source files for IDE source explorers (e.g. Visual Studio)
+      source_group("Header Files" FILES ${THIS_BACKEND_HEADERS})
+      source_group("Source Files" FILES ${THIS_BACKEND_SOURCES})
+      source_group("CMake Files" FILES CMakeLists.txt)
 
       # TODO: Extract as macros: soci_shared_lib_target and soci_static_lib_target --mloskot
       # Shared library target
@@ -157,16 +165,6 @@ macro(soci_backend NAME)
       target_link_libraries(${THIS_BACKEND_TARGET}
         ${SOCI_CORE_TARGET}
         ${THIS_BACKEND_DEPENDS_LIBRARIES})
-
-      message("TARGET=${THIS_BACKEND_TARGET}")
-      message("DEPENDS_DEFS=${THIS_BACKEND_DEPENDS_DEFS}")
-      message("INCLUDE_DIRS=${THIS_INCLUDE_DIRS}")
-      get_target_property(TARGET_INCLUDE_DIRS ${THIS_BACKEND_TARGET} INCLUDE_DIRECTORIES)
-      get_target_property(TARGET_COMPILE_DEFS ${THIS_BACKEND_TARGET} COMPILE_DEFINITIONS)
-      set_target_properties(${THIS_BACKEND_TARGET}
-        PROPERTIES
-        COMPILE_DEFINITIONS "${THIS_BACKEND_DEPENDS_DEFS}"
-        INCLUDE_DIRECTORIES "${THIS_INCLUDE_DIRS}")
 
       if(WIN32)
         set_target_properties(${THIS_BACKEND_TARGET}
@@ -186,24 +184,19 @@ macro(soci_backend NAME)
         CLEAN_DIRECT_OUTPUT 1)
 
       # Static library target
-      if (SOCI_STATIC)
+      if(SOCI_STATIC)
         set(THIS_BACKEND_TARGET_STATIC ${THIS_BACKEND_TARGET}_static)
 
         add_library(${THIS_BACKEND_TARGET_STATIC}
           STATIC
           ${THIS_BACKEND_SOURCES}
           ${THIS_BACKEND_HEADERS})
-        
-        get_target_property(TARGET_INCLUDE_DIRS ${THIS_BACKEND_TARGET_STATIC} INCLUDE_DIRECTORIES)
-        get_target_property(TARGET_COMPILE_DEFS ${THIS_BACKEND_TARGET_STATIC} COMPILE_DEFINITIONS)
-        
+
         set_target_properties(${THIS_BACKEND_TARGET_STATIC}
-		      PROPERTIES
-		      OUTPUT_NAME ${THIS_BACKEND_OUTPUT_NAME}
-		      PREFIX "lib"
-		      CLEAN_DIRECT_OUTPUT 1
-          COMPILE_DEFINITIONS "${THIS_BACKEND_DEPENDS_DEFS}"
-          INCLUDE_DIRECTORIES "${THIS_INCLUDE_DIRS}")
+          PROPERTIES
+          OUTPUT_NAME ${THIS_BACKEND_OUTPUT_NAME}
+          PREFIX "lib"
+          CLEAN_DIRECT_OUTPUT 1)
       endif()
 
       # Backend installation
@@ -228,6 +221,7 @@ macro(soci_backend NAME)
     boost_report_value(${THIS_BACKEND_TARGET_VAR})
     boost_report_value(${THIS_BACKEND_OUTPUT_NAME_VAR})
     boost_report_value(${THIS_BACKEND_COMPILE_DEFINITIONS_VAR})
+    boost_report_value(${THIS_BACKEND_INCLUDE_DIRECTORIES_VAR})
   endif()
 
   # LOG
