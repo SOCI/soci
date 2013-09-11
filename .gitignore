@@ -1,5 +1,6 @@
 # General
 *.swp
+*.kate-swp
 tags
 tmp
 
