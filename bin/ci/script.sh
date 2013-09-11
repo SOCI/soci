@@ -11,4 +11,6 @@ mkdir -p ${builddir}
 cd ${builddir}
 
 # build and run tests
-${TRAVIS_BUILD_DIR}/bin/ci/script_${SOCI_TRAVIS_BACKEND}.sh
+SCRIPT=${TRAVIS_BUILD_DIR}/bin/ci/script_${SOCI_TRAVIS_BACKEND}.sh
+echo "Running ${SCRIPT}"
+${SCRIPT}
