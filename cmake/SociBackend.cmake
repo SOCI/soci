@@ -308,9 +308,6 @@ macro(soci_backend_test)
       ${SOCI_SOURCE_DIR}/include/soci/${BACKENDL}
       ${SOCI_SOURCE_DIR}/include/private/${BACKENDL})
 
-get_target_property(TID ${TEST_TARGET} INCLUDE_DIRECTORIES)
-message("TID:${TID}")
-
     add_test(${TEST_TARGET}
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET}
       ${${TEST_CONNSTR_VAR}})
