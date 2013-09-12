@@ -31,7 +31,7 @@ script: ./bin/ci/script.sh
 notifications:
   email:
     recipients:
-      #- soci-devel@lists.sourceforge.net
+      - soci-devel@lists.sourceforge.net
   on_success: change # [always|never|change] # default: change
   on_failure: always # [always|never|change] # default: always
 
