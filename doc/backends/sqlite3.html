@@ -69,9 +69,20 @@ using the <code>SQLite3</code> backend factory together with the database file n
 
 <pre class="example">
 session sql(sqlite3, "database_filename");
+
+// or:
+
+session sql("sqlite3", "db=db.sqlite timeout=2 shared_cache=true");
 </pre>
 
-<p>The only option for the connection string is the name of the file to use as a database.</p>
+<p>The set of parameters used in the connection string for SQLite is:</p>
+<ul>
+  <li><code>dbname</code> or <code>db</code></li>
+  <li><code>timeout</code> - set sqlite busy timeout (in seconds) (<a href="http://www.sqlite.org/c3ref/busy_timeout.html">link</a></li>
+  <li><code>synchronous</code> - set the pragma synchronous flag (<a href="http://www.sqlite.org/pragma.html#pragma_synchronous">link</a>)</li>
+  <li><code>shared_cache</code> - should be <code>true</code> (<a href="http://www.sqlite.org/c3ref/enable_shared_cache.html">link</a>)</li>
+</ul>
+
 
 <p>Once you have created a <code>session</code> object as shown above, you can use it to access the database, for example:</p>
 <pre class="example">
@@ -98,17 +109,27 @@ sql &lt;&lt; "select count(*) from invoices", into(count);
       <th><code>row::get&lt;T&gt;</code> specializations</th>
     </tr>
     <tr>
-      <td>*float*</td>
-      <td><code>dt_ouble</code></td>
+      <td>*float*, *double*</td>
+      <td><code>dt_double</code></td>
       <td><code>double</code></td>
     </tr>
     <tr>
-      <td>*int*</td>
+      <td>*int8*, *bigint*</td>
+      <td><code>dt_long_long</code></td>
+      <td><code>long long</code></td>
+    </tr>
+    <tr>
+      <td>*unsigned big int*</td>
+      <td><code>dt_unsigned_long_long</code></td>
+      <td><code>unsigned long long</code></td>
+    </tr>
+    <tr>
+      <td>*int*, *boolean*</td>
       <td><code>dt_integer</code></td>
       <td><code>int</code></td>
     </tr>
     <tr>
-      <td>*char*</td>
+      <td>*text, *char*</td>
       <td><code>dt_string</code></td>
       <td><code>std::string</code></td>
     </tr>
