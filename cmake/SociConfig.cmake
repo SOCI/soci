@@ -12,6 +12,15 @@
 # Force compilation flags and set desired warnings level
 #
 
+if(WITH_CXX11)
+  set(SOCI_CXX_VERSION 11)
+else()
+  set(SOCI_CXX_VERSION 98)
+endif()
+
+set(SOCI_CXX_DIALECT c)
+
+
 if (MSVC)
   if (MSVC80 OR MSVC90 OR MSVC10)
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
@@ -25,6 +34,8 @@ if (MSVC)
   else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
   endif()
+
+  # TODO add C++11-related flags, if any
   
 else()
 
@@ -36,9 +47,7 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC ${SOCI_GCC_CLANG_COMMON_FLAGS}")
     if (CMAKE_COMPILER_IS_GNUCXX)
         if (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++98")
-        else()
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++98")
+            set(SOCI_CXX_DIALECT gnu)
         endif()
     endif()
 
@@ -49,5 +58,7 @@ else()
   else()
 	message(FATAL_ERROR "CMake is unable to recognize compilation toolset to build SOCI for you!")
   endif()
+
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=${SOCI_CXX_DIALECT}++${SOCI_CXX_VERSION}")
 
 endif()
