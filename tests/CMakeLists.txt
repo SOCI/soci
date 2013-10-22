@@ -8,7 +8,13 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
-include_directories(${SOCI_SOURCE_DIR}/include/private)
 
-add_subdirectory(core)
-add_subdirectory(backends)
+colormsg(_HIBLUE_ "Configuring SOCI tests:")
+
+include_directories(
+  ${SOCI_SOURCE_DIR}/include/soci
+  ${SOCI_SOURCE_DIR}/include/private)
+
+add_subdirectory(assert)
+
+message(STATUS "")

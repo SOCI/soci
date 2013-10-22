@@ -159,7 +159,7 @@ public:
     
     use_type(T const& t, indicator& ind, std::string const& name = std::string())
         : standard_use_type(const_cast<T*>(&t),
-            static_cast<exchange_type>(exchange_traits<T>::x_type), ind, false, name)
+            static_cast<exchange_type>(exchange_traits<T>::x_type), ind, true, name)
     {}
 };
 

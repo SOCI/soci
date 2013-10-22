@@ -19,6 +19,10 @@
 #
 # List of SOCI dependncies
 #
+set(SOCI_CORE_DEPENDENCIES
+  Threads
+  Boost)
+
 set(SOCI_BACKENDS_DB_DEPENDENCIES
   MySQL
   ODBC
@@ -28,8 +32,8 @@ set(SOCI_BACKENDS_DB_DEPENDENCIES
   Firebird
   DB2)
 
-set(SOCI_BACKENDS_ALL_DEPENDENCIES
-  Boost
+set(SOCI_ALL_DEPENDENCIES
+  ${SOCI_CORE_DEPENDENCIES}
   ${SOCI_BACKENDS_DB_DEPENDENCIES})
 
 #
@@ -69,7 +73,7 @@ option(WITH_VALGRIND "Run tests under valgrind" OFF)
 #
 # Detect available dependencies
 #
-foreach(external ${SOCI_BACKENDS_ALL_DEPENDENCIES})
+foreach(external ${SOCI_ALL_DEPENDENCIES})
   string(TOUPPER "${external}" EXTERNAL)
   option(WITH_${EXTERNAL} "Attempt to find and configure ${external}" ON)
   if(WITH_${EXTERNAL})

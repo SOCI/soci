@@ -27,7 +27,7 @@ tmstamp()
 
 run_make()
 {
-    [ $TCI_NUMTHREADS -gt 0 ] && make -j $TCI_NUMTHREADS ] || make 
+    [ $TCI_NUMTHREADS -gt 0 ] && make -j $TCI_NUMTHREADS || make
 }
 
 run_test()

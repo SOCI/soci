@@ -5,7 +5,7 @@
 ################################################################################
 # Copyright (C) 2007 Douglas Gregor <doug.gregor@gmail.com>
 # Copyright (C) 2007 Troy Straszheim
-# Copyright (C) 2010 Mateusz Loskot <mateusz@loskot.net> 
+# Copyright (C) 2010-2013 Mateusz Loskot <mateusz@loskot.net> 
 #
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at
@@ -362,10 +362,10 @@ endmacro()
 #
 # Pretty-print of given property of current directory.
 #
-macro(soci_report_directory_property PROPNAME)
+function(soci_report_directory_property PROPNAME)
   get_directory_property(${PROPNAME} ${PROPNAME})
   boost_report_value(${PROPNAME})
-endmacro()
+endfunction()
 
 #
 # Scans the current directory and returns a list of subdirectories.

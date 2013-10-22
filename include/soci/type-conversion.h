@@ -91,7 +91,7 @@ public:
     conversion_use_type(T & value, std::string const & name = std::string())
         : use_type<base_type>(details::base_value_holder<T>::val_, ownInd_, name)
         , value_(value)
-        , ownInd_()
+        , ownInd_(i_ok)
         , ind_(ownInd_)
         , readOnly_(false)
     {
@@ -104,7 +104,7 @@ public:
     conversion_use_type(T const & value, std::string const & name = std::string())
         : use_type<base_type>(details::base_value_holder<T>::val_, ownInd_, name)
         , value_(const_cast<T &>(value))
-        , ownInd_()
+        , ownInd_(i_ok)
         , ind_(ownInd_)
         , readOnly_(true)
     {
