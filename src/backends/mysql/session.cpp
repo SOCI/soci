@@ -364,6 +364,14 @@ void mysql_session_backend::rollback()
     hard_exec(conn_, "ROLLBACK");
 }
 
+bool mysql_session_backend::get_last_insert_id(
+    session & /* s */, std::string const & /* table */, long & value)
+{
+    value = static_cast<long>(mysql_insert_id(conn_));
+
+    return true;
+}
+
 void mysql_session_backend::clean_up()
 {
     if (conn_ != NULL)
