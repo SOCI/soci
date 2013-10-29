@@ -32,6 +32,8 @@
 #if _MSC_VER >= 1300
 # define HAVE_STRTOLL 1
 # define HAVE_STRTOULL 1
+
+#if _MSC_VER < 1800
 namespace std {
     inline long long strtoll(char const* str, char** str_end, int base)
     {
@@ -43,6 +45,8 @@ namespace std {
         return _strtoui64(str, str_end, base);
     }
 }
+#endif
+
 #else
 # undef HAVE_STRTOLL
 # undef HAVE_STRTOULL
