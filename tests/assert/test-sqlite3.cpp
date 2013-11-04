@@ -258,6 +258,32 @@ void test5()
     std::cout << "test 5 passed" << std::endl;
 }
 
+struct table_creator_for_get_last_insert_id : table_creator_base
+{
+    table_creator_for_get_last_insert_id(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(id integer primary key autoincrement)";
+        sql << "insert into soci_test (id) values (41)";
+        sql << "delete from soci_test where id = 41";
+    }
+};
+
+void test6()
+{
+    {
+        session sql(backEnd, connectString);
+        table_creator_for_get_last_insert_id tableCreator(sql);
+        sql << "insert into soci_test default values";
+        long id;
+        bool result = sql.get_last_insert_id("soci_test", id);
+        assert(result == true);
+        assert(id == 42);
+    }
+
+    std::cout << "test 6 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -377,6 +403,7 @@ int main(int argc, char** argv)
         test3();
         test4();
         test5();
+        test6();
 
         std::cout << "\nOK, all tests passed.\n\n";
 
