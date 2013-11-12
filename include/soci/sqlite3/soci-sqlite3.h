@@ -245,6 +245,8 @@ struct sqlite3_session_backend : details::session_backend
     virtual void commit();
     virtual void rollback();
 
+    virtual bool get_last_insert_id(session&, std::string const&, long&);
+
     virtual std::string get_backend_name() const { return "sqlite3"; }
 
     void clean_up();
