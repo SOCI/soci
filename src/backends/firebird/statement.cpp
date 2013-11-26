@@ -53,13 +53,13 @@ void firebird_statement_backend::clean_up()
 
     ISC_STATUS stat[stat_size];
 
-    if (stmtp_ != NULL)
+    if (stmtp_ != 0)
     {
         if (isc_dsql_free_statement(stat, &stmtp_, DSQL_drop))
         {
             throw_iscerror(stat);
         }
-        stmtp_ = NULL;
+        stmtp_ = 0;
     }
 
     if (sqldap_ != NULL)
