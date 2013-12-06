@@ -530,6 +530,12 @@ void test7()
         st2.execute(false);
 
         assert(st2.get_affected_rows() == 5);
+
+        MyInt mi(11);
+        statement st3 = (sql.prepare <<
+            "insert into soci_test(val) values(:val)", use(mi));
+        st3.execute();
+        assert(st3.get_affected_rows() == 1);
     }
 
     std::cout << "test 7 passed" << std::endl;
