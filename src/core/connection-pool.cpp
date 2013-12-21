@@ -183,7 +183,7 @@ void connection_pool::give_back(std::size_t pos)
 #else
 // Windows implementation
 
-#include <Windows.h>
+#include <windows.h>
 
 using namespace soci;
 
