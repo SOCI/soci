@@ -6,7 +6,7 @@
 //
 
 #include "soci.h"
-#include "soci-empty.h"
+#include "empty/soci-empty.h"
 #include <iostream>
 #include <string>
 #include <cassert>

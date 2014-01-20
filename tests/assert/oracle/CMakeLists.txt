@@ -9,12 +9,7 @@
 #
 ###############################################################################
 
-include_directories(
-  ${SOCI_SOURCE_DIR}/include/soci
-  ${SOCI_SOURCE_DIR}/include/private
-  ${CMAKE_CURRENT_SOURCE_DIR})
-
-file(GLOB SOCI_TESTS_COMMON common-tests.h)
-
-add_subdirectory(empty)
-add_subdirectory(sqlite3)
+soci_backend_test(
+  BACKEND Oracle
+  SOURCE test-oracle.cpp ${SOCI_TESTS_COMMON}
+  CONNSTR "service=orcl user=scott password=tiger")

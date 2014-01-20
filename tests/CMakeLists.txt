@@ -11,10 +11,4 @@
 
 colormsg(_HIBLUE_ "Configuring SOCI tests:")
 
-include_directories(
-  ${SOCI_SOURCE_DIR}/include/soci
-  ${SOCI_SOURCE_DIR}/include/private)
-
 add_subdirectory(assert)
-
-message(STATUS "")

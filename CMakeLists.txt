@@ -60,9 +60,57 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # Find SOCI dependencies
 ###############################################################################
 
-set(SOCI_CORE_DEPENDENCIES)
+set(SOCI_CORE_TARGET)
+set(SOCI_CORE_TARGET_STATIC)
+set(SOCI_CORE_DEPS_LIBS)
 
 include(SociDependencies)
+
+get_property(SOCI_INCLUDE_DIRS DIRECTORY ${CMAKE_SOURCE_DIR}
+  PROPERTY INCLUDE_DIRECTORIES)
+
+if(Threads_FOUND)
+  list(APPEND SOCI_CORE_DEPS_LIBS ${CMAKE_THREAD_LIBS_INIT})
+else()
+  message(FATAL_ERROR "No thread library found")
+endif()
+
+if(NOT MSVC)
+  set(DL_FIND_QUIETLY TRUE)
+  find_package(DL)
+  if(DL_FOUND)
+    list(APPEND SOCI_CORE_DEPS_LIBS ${DL_LIBRARY})
+    set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES ${DL_INCLUDE_DIR})
+    add_definitions(-DHAVE_DL=1)
+  endif()
+endif()
+
+if(Boost_FOUND)
+  get_property(SOCI_COMPILE_DEFINITIONS
+    DIRECTORY ${CMAKE_SOURCE_DIR}
+    PROPERTY COMPILE_DEFINITIONS)
+
+  list(APPEND SOCI_COMPILE_DEFINITIONS "HAVE_BOOST=1")
+
+  if(Boost_DATE_TIME_FOUND)
+    list(APPEND SOCI_CORE_DEPS_LIBS ${Boost_DATE_TIME_LIBRARY})
+    list(APPEND SOCI_COMPILE_DEFINITIONS "HAVE_BOOST_DATE_TIME=1")
+  endif()
+
+  list(APPEND SOCI_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
+  list(APPEND SOCI_CORE_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
+
+  set_directory_properties(PROPERTY COMPILE_DEFINITIONS "${SOCI_COMPILE_DEFINITIONS}")
+
+  set_property(DIRECTORY ${SOCI_SOURCE_DIR}
+    PROPERTY COMPILE_DEFINITIONS "${SOCI_COMPILE_DEFINITIONS}")
+endif()
+
+list(APPEND SOCI_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR})
+
+set_property(DIRECTORY ${CMAKE_SOURCE_DIR}
+  PROPERTY
+  INCLUDE_DIRECTORIES ${SOCI_INCLUDE_DIRS})
 
 ###############################################################################
 # Installation
@@ -97,7 +145,7 @@ include(SociBackend)
 include_directories(${SOCI_SOURCE_DIR}/include/soci)
 
 add_subdirectory(src)
-#TODO: Fix https://github.com/SOCI/soci/issues/199
-#add_subdirectory(tests)
+add_subdirectory(tests)
 
 message(STATUS "")
+

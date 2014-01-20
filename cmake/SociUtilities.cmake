@@ -357,6 +357,8 @@ macro(soci_check_package_found NAME SUCCESS)
       set(${SUCCESS} TRUE)
     endif()
   endif()
+
+  #message(STATUS "soci_check_package_found: ${SUCCESS}=${${SUCCESS}}")
 endmacro()
 
 #

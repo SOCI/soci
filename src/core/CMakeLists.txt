@@ -10,60 +10,11 @@
 ###############################################################################
 colormsg(_HIBLUE_ "Configuring SOCI core library:")
 
-# Core dependencies
-set(SOCI_CORE_DEPENDENCIES)
-
-# INCLUDE_DIRECTORIES updated below
+# Set INCLUDE_DIRECTORIES
 get_directory_property(SOCI_CORE_INCLUDE_DIRS INCLUDE_DIRECTORIES)
-get_property(SOCI_INCLUDE_DIRS DIRECTORY ${CMAKE_SOURCE_DIR}
-  PROPERTY INCLUDE_DIRECTORIES)
-
-if(Threads_FOUND)
-  list(APPEND SOCI_CORE_DEPENDENCIES ${CMAKE_THREAD_LIBS_INIT})
-else()
-  message(FATAL_ERROR "No thread library found")
-endif()
-
-if(NOT MSVC)
-  set(DL_FIND_QUIETLY TRUE)
-  find_package(DL)
-  if(DL_FOUND)
-    list(APPEND SOCI_CORE_DEPENDENCIES ${DL_LIBRARY})
-    set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES ${DL_INCLUDE_DIR})
-    add_definitions(-DHAVE_DL=1)
-  endif()
-endif()
-
-if(Boost_FOUND)
-  get_property(SOCI_COMPILE_DEFINITIONS
-    DIRECTORY ${CMAKE_SOURCE_DIR}
-    PROPERTY COMPILE_DEFINITIONS)
-
-  list(APPEND SOCI_COMPILE_DEFINITIONS "HAVE_BOOST=1")
-
-  if(Boost_DATE_TIME_FOUND)
-    list(APPEND SOCI_CORE_DEPENDENCIES ${Boost_DATE_TIME_LIBRARY})
-    list(APPEND SOCI_COMPILE_DEFINITIONS "HAVE_BOOST_DATE_TIME=1")
-  endif()
-
-  list(APPEND SOCI_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
-  list(APPEND SOCI_CORE_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
-
-  set_directory_properties(PROPERTY COMPILE_DEFINITIONS "${SOCI_COMPILE_DEFINITIONS}")
-
-  set_property(DIRECTORY ${SOCI_SOURCE_DIR}
-    PROPERTY COMPILE_DEFINITIONS "${SOCI_COMPILE_DEFINITIONS}")
-endif()
-
-list(APPEND SOCI_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR})
 list(APPEND SOCI_CORE_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR})
-
-# Set determined compile definitions
-
-# Set determined include directories
-set_property(DIRECTORY ${CMAKE_SOURCE_DIR}
-  PROPERTY INCLUDE_DIRECTORIES ${SOCI_INCLUDE_DIRS})
-set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES "${SOCI_CORE_INCLUDE_DIRS}")
+set_directory_properties(PROPERTIES
+  INCLUDE_DIRECTORIES "${SOCI_CORE_INCLUDE_DIRS}")
 
 # Configure backend loader to also use default install directory.
 configure_file(soci_backends_config.h.in
@@ -89,7 +40,7 @@ soci_target_output_name(${SOCI_CORE_TARGET} SOCI_CORE_TARGET_OUTPUT_NAME)
 #
 add_library(${SOCI_CORE_TARGET} SHARED ${SOCI_CORE_HEADERS} ${SOCI_CORE_SOURCES})
 
-target_link_libraries(${SOCI_CORE_TARGET} ${SOCI_CORE_DEPENDENCIES})
+target_link_libraries(${SOCI_CORE_TARGET} ${SOCI_CORE_DEPS_LIBS})
 
 if(WIN32)
   set_target_properties(${SOCI_CORE_TARGET}
@@ -139,16 +90,9 @@ install(TARGETS ${SOCI_CORE_TARGET} ${SOCI_CORE_TARGET_STATIC}
 #
 boost_report_value(SOCI_CORE_TARGET)
 boost_report_value(SOCI_CORE_TARGET_OUTPUT_NAME)
-boost_report_value(SOCI_CORE_DEPENDENCIES)
+boost_report_value(SOCI_CORE_DEPS_LIBS)
 boost_report_value(SOCI_CORE_INCLUDE_DIRS)
 boost_report_value(WITH_BOOST)
 soci_report_directory_property(COMPILE_DEFINITIONS)
-
-# Export core target name to make it visible by backends
-set(SOCI_CORE_TARGET ${SOCI_CORE_TARGET} PARENT_SCOPE)
-if (SOCI_STATIC)
-  set(SOCI_CORE_TARGET_STATIC ${SOCI_CORE_TARGET_STATIC} PARENT_SCOPE)
-endif()
-set(SOCI_CORE_STATIC_DEPENDENCIES ${SOCI_CORE_DEPENDENCIES} PARENT_SCOPE)
 
 message(STATUS "")

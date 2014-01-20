@@ -16,7 +16,8 @@
 #     - defines test project of a database backend for SOCI library
 ################################################################################
 
-macro(soci_backend_deps_found NAME DEPS)
+macro(soci_backend_deps_found NAME DEPS SUCCESS)
+  #message(STATUS "DEPS=${DEPS}")
 
   # Determine required dependencies
   set(DEPS_INCLUDE_DIRS)
@@ -49,6 +50,8 @@ macro(soci_backend_deps_found NAME DEPS)
     set(${NAME}_DEPS_DEFS ${DEPS_DEFS})
     set(${SUCCESS} True)
   endif()
+  
+  #message(STATUS "soci_backend_deps_found: ${SUCCESS}=${${SUCCESS}}")
 endmacro()
 
 # Defines project of a database backend for SOCI library
@@ -78,13 +81,12 @@ macro(soci_backend NAME)
     "Attempt to build ${PROJECT_NAME} backend for ${NAME}" ON)
 
   soci_backend_deps_found(${NAMEU} "${THIS_BACKEND_DEPENDS}" ${NAMEU}_DEPS_FOUND)
-
-  if (${NAMEU}_DEPS_FOUND)
+  if(NOT ${NAMEU}_DEPS_FOUND)
 
     colormsg(_RED_ "WARNING:")
     colormsg(RED "Some required dependencies of ${NAME} backend not found:")
 
-    if (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.8)
+    if(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.8)
       foreach(dep ${DEPENDS_NOT_FOUND})
         colormsg(RED "   ${dep}")
       endforeach()
@@ -122,11 +124,6 @@ macro(soci_backend NAME)
       set_directory_properties(PROPERTIES
         INCLUDE_DIRECTORIES "${THIS_INCLUDE_DIRS}"
         COMPILE_DEFINITIONS "${THIS_COMPILE_DEFS}")
-      
-get_directory_property(XID INCLUDE_DIRECTORIES)
-get_directory_property(XCD DEFS COMPILE_DEFINITIONS)
-message("XID=${XID}")
-message("XCD=${XCD}")
 
       # Backend target
       set(THIS_BACKEND_VAR SOCI_${NAMEU})
@@ -285,6 +282,27 @@ macro(soci_backend_test)
       set(TEST_FULL_NAME SOCI_${BACKENDU}_TEST)
     endif()
     string(TOLOWER "${TEST_FULL_NAME}" TEST_TARGET)
+    string(TOUPPER "${TEST_FULL_NAME}" NAMEU)
+
+    soci_backend_deps_found(${NAMEU} "${THIS_TEST_DEPENDS}" ${NAMEU}_DEPS_FOUND)
+    if(${NAMEU}_DEPS_FOUND)
+      get_directory_property(THIS_INCLUDE_DIRS INCLUDE_DIRECTORIES)
+      get_directory_property(THIS_COMPILE_DEFS COMPILE_DEFINITIONS)
+
+      set(THIS_TEST_DEPENDS_INCLUDE_DIRS ${${NAMEU}_DEPS_INCLUDE_DIRS})
+      set(THIS_TEST_DEPENDS_LIBRARIES ${${NAMEU}_DEPS_LIBRARIES})
+      set(THIS_TEST_DEPENDS_DEFS ${${NAMEU}_DEPS_DEFS})
+
+      list(APPEND THIS_INCLUDE_DIRS ${THIS_TEST_DEPENDS_INCLUDE_DIRS})
+      list(APPEND THIS_COMPILE_DEFS ${THIS_TEST_DEPENDS_DEFS})
+      
+      set_directory_properties(PROPERTIES
+        INCLUDE_DIRECTORIES "${THIS_INCLUDE_DIRS}"
+        COMPILE_DEFINITIONS "${THIS_COMPILE_DEFS}")
+    else()
+       colormsg(_RED_ "WARNING:")
+       colormsg(RED "Some dependencies of ${THIS_TEST_BACKEND} test not found")
+    endif()
 
     set(TEST_CONNSTR_VAR ${TEST_FULL_NAME}_CONNSTR)
     set(${TEST_CONNSTR_VAR} ""
@@ -295,18 +313,14 @@ macro(soci_backend_test)
     endif()
     boost_report_value(${TEST_CONNSTR_VAR})
 
-    set(TEST_HEADERS common-tests.h)
-    set(TEST_DEPS soci_core soci_${BACKENDL})
-
     # Shared libraries test
-    add_executable(${TEST_TARGET} ${TEST_HEADERS} ${THIS_TEST_SOURCE})
+    add_executable(${TEST_TARGET} ${THIS_TEST_SOURCE})
 
-    target_link_libraries(${TEST_TARGET} ${TEST_DEPS})
-
-    set_property(TARGET ${TEST_TARGET}
-      APPEND PROPERTY INCLUDE_DIRECTORIES ${THIS_INCLUDE_DIRS}
-      ${SOCI_SOURCE_DIR}/include/soci/${BACKENDL}
-      ${SOCI_SOURCE_DIR}/include/private/${BACKENDL})
+    target_link_libraries(${TEST_TARGET}
+      ${SOCI_CORE_DEPS_LIBS}
+      ${THIS_TEST_DEPENDS_LIBRARIES}
+      soci_core
+      soci_${BACKENDL})
 
     add_test(${TEST_TARGET}
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET}
@@ -317,14 +331,14 @@ macro(soci_backend_test)
     # Static libraries test
     if(SOCI_STATIC)
       set(TEST_TARGET_STATIC ${TEST_TARGET}_static)
-      set(TEST_DEPS_STATIC soci_core_static soci_${BACKENDL}_static)
 
-      add_executable(${TEST_TARGET_STATIC} ${TEST_HEADERS} ${THIS_TEST_SOURCE})
+      add_executable(${TEST_TARGET_STATIC} ${THIS_TEST_SOURCE})
 
-      target_link_libraries(${TEST_TARGET_STATIC} ${TEST_DEPS_STATIC})
-
-      set_target_properties(${TEST_TARGET_STATIC}
-        PROPERTIES INCLUDE_DIRECTORIES "${THIS_INCLUDE_DIRS}")
+      target_link_libraries(${TEST_TARGET_STATIC}
+        ${SOCI_CORE_DEPS_LIBS}
+        ${THIS_TEST_DEPENDS_LIBRARIES}
+        soci_core_static
+        soci_${BACKENDL}_static)
 
       add_test(${TEST_TARGET_STATIC}
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET_STATIC}
@@ -337,18 +351,8 @@ macro(soci_backend_test)
     add_dependencies(check ${TEST_TARGET} ${TEST_TARGET_STATIC})
 
     # Group source files for IDE source explorers (e.g. Visual Studio)
-    source_group("Header Files" FILES ${TEST_HEADERS})
     source_group("Source Files" FILES ${THIS_TEST_SOURCE})
     source_group("CMake Files" FILES CMakeLists.txt)
 
   endif()
-
-  # LOG
-  #message("NAME=${NAME}")
-  #message("THIS_TEST_NAME=${THIS_TEST_NAME}")
-  #message("THIS_TEST_BACKEND=${THIS_TEST_BACKEND}")
-  #message("THIS_TEST_CONNSTR=${THIS_TEST_CONNSTR}")
-  #message("THIS_TEST_SOURCE=${THIS_TEST_SOURCE}")
-  #message("THIS_TEST_OPTION=${THIS_TEST_OPTION}")
-
 endmacro()

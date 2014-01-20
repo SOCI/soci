@@ -6,7 +6,7 @@
 //
 
 #include "soci.h"
-#include "soci-sqlite3.h"
+#include "sqlite3/soci-sqlite3.h"
 #include "common-tests.h"
 #include <iostream>
 #include <sstream>
