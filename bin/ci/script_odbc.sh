@@ -5,6 +5,12 @@
 #
 source ${TRAVIS_BUILD_DIR}/bin/ci/common.sh
 
+ODBC_TEST=${PWD}/../tests/assert/odbc
+if test ! -d ${ODBC_TEST}; then
+    echo "ERROR: '${ODBC_TEST}' directory not found"
+    exit 1
+fi
+
 cmake \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DSOCI_TESTS=ON \
@@ -17,8 +23,8 @@ cmake \
     -DSOCI_ORACLE=OFF \
     -DSOCI_POSTGRESQL=OFF \
     -DSOCI_SQLITE3=OFF \
-    -DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR="FILEDSN=${PWD}/../backends/odbc/test/test-postgresql.dsn;" \
-    -DSOCI_ODBC_TEST_MYSQL_CONNSTR="FILEDSN=${PWD}/../backends/odbc/test/test-mysql.dsn;" \
+    -DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR="FILEDSN=${ODBC_TEST}/test-postgresql.dsn;" \
+    -DSOCI_ODBC_TEST_MYSQL_CONNSTR="FILEDSN=${ODBC_TEST}/test-mysql.dsn;" \
    ..
 
 run_make
