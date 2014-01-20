@@ -390,9 +390,7 @@ private:
             sqlcode_ = 0;
         }
 
-        ss << " SQLSTATE: " << sqlstate_;
-        ss << " SQLCODE: " << sqlcode_;
-        ss << " SQLMESSAGE: " << message_;
+        ss << ": " << message_ << " (" << sqlstate_ << ")";
 
         return ss.str();
     }
