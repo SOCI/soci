@@ -7,10 +7,10 @@
 //
 
 #include "soci.h"
-#include "soci-firebird.h"
-#include "error-firebird.h"            // soci::details::Firebird::throw_iscerror()
+#include "firebird/soci-firebird.h"
+#include "firebird/error-firebird.h"            // soci::details::Firebird::throw_iscerror()
+#include "firebird/common.h"
 #include "common-tests.h"
-#include "common.h"
 #include <iostream>
 #include <string>
 #include <cassert>

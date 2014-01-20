@@ -7,7 +7,7 @@
 //
 
 #include "soci.h"
-#include "soci-mysql.h"
+#include "mysql/soci-mysql.h"
 #include "common-tests.h"
 #include <iostream>
 #include <sstream>

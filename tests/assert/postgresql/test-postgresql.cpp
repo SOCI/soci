@@ -6,7 +6,7 @@
 //
 
 #include "soci.h"
-#include "soci-postgresql.h"
+#include "postgresql/soci-postgresql.h"
 #include "common-tests.h"
 #include <iostream>
 #include <sstream>

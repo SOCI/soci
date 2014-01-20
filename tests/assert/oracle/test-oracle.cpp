@@ -6,7 +6,7 @@
 //
 
 #include "soci.h"
-#include "soci-oracle.h"
+#include "oracle/soci-oracle.h"
 #include "common-tests.h"
 #include <iostream>
 #include <string>

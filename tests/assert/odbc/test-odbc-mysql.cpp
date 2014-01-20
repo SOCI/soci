@@ -6,7 +6,7 @@
 //
 
 #include "soci.h"
-#include "soci-odbc.h"
+#include "odbc/soci-odbc.h"
 #include "common-tests.h"
 #include <iostream>
 #include <string>
