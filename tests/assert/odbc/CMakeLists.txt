@@ -15,6 +15,7 @@ if (WIN32)
   soci_backend_test(
     NAME access
     BACKEND ODBC
+    DEPENDS ODBC
     SOURCE test-odbc-access.cpp ${SOCI_TESTS_COMMON}
     CONNSTR "test-access.dsn")
 
@@ -22,6 +23,7 @@ if (WIN32)
   soci_backend_test(
     NAME mssql
     BACKEND ODBC
+    DEPENDS ODBC
     SOURCE test-odbc-mssql.cpp ${SOCI_TESTS_COMMON}
     CONNSTR "test-mssql.dsn")
 else()
@@ -31,11 +33,13 @@ endif()
 soci_backend_test(
   NAME mysql
   BACKEND ODBC
+  DEPENDS ODBC
   SOURCE test-odbc-mysql.cpp ${SOCI_TESTS_COMMON}
   CONNSTR "test-mysql.dsn")
 
 soci_backend_test(
   NAME postgresql
   BACKEND ODBC
+  DEPENDS ODBC
   SOURCE test-odbc-postgresql.cpp ${SOCI_TESTS_COMMON}
   CONNSTR "test-postgresql.dsn")

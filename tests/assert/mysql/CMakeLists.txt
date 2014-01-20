@@ -11,5 +11,6 @@
 
 soci_backend_test(
   BACKEND MySQL
+  BACKEND MySQL
   SOURCE test-mysql.cpp ${SOCI_TESTS_COMMON}
   CONNSTR "db=soci_test")

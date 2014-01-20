@@ -11,5 +11,6 @@
 
 soci_backend_test(
   BACKEND PostgreSQL
+  DEPENDS PostgreSQL
   SOURCE test-postgresql.cpp ${SOCI_TESTS_COMMON}
   CONNSTR "dbname=soci_test")

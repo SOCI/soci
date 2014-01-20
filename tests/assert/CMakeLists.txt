@@ -17,4 +17,10 @@ include_directories(
 file(GLOB SOCI_TESTS_COMMON common-tests.h)
 
 add_subdirectory(empty)
+add_subdirectory(db2)
+add_subdirectory(firebird)
+add_subdirectory(mysql)
+add_subdirectory(odbc)
+add_subdirectory(oracle)
+add_subdirectory(postgresql)
 add_subdirectory(sqlite3)

@@ -11,5 +11,6 @@
 
 soci_backend_test(
   BACKEND DB2
+  DEPENDS DB2
   SOURCE test-db2.cpp ${SOCI_TESTS_COMMON}
   CONNSTR "DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;autocommit=off")
