@@ -85,6 +85,12 @@ odbc_session_backend::odbc_session_backend(
                          "Error Connecting to database");
     }
 
+    if (rc == SQL_NO_DATA)
+    {
+        throw soci_error("SQLDriverConnect returned SQL_NO_DATA. User hit cancel"
+              " when prompted, or missed info in connect string (eg UID)?");
+    }
+
     connection_string_.assign((const char*)outConnString, strLength);
 
     reset_transaction();
