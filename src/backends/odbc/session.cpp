@@ -87,8 +87,7 @@ odbc_session_backend::odbc_session_backend(
 
     if (rc == SQL_NO_DATA)
     {
-        throw soci_error("SQLDriverConnect returned SQL_NO_DATA. User hit cancel"
-              " when prompted, or missed info in connect string (eg UID)?");
+        throw soci_error("Connection cancelled by user");
     }
 
     connection_string_.assign((const char*)outConnString, strLength);
