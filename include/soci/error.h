@@ -22,6 +22,12 @@ public:
     explicit soci_error(std::string const & msg);
 };
 
+class SOCI_DECL connection_cancelled : public soci_error
+{
+public:
+    explicit connection_cancelled(std::string const & msg);
+};
+
 } // namespace soci
 
 #endif // SOCI_ERROR_H_INCLUDED

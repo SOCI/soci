@@ -87,7 +87,7 @@ odbc_session_backend::odbc_session_backend(
 
     if (rc == SQL_NO_DATA)
     {
-        throw soci_error("Connection cancelled by user");
+        throw connection_cancelled("Connection cancelled by user");
     }
 
     connection_string_.assign((const char*)outConnString, strLength);
