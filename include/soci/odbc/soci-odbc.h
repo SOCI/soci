@@ -315,7 +315,7 @@ struct odbc_session_backend : details::session_backend
     database_product product_;
 };
 
-class SOCI_ODBC_DECL odbc_soci_error : public soci_error
+class SOCI_ODBC_DECL odbc_soci_error : public sql_error
 {
     SQLCHAR message_[SQL_MAX_MESSAGE_LENGTH + 1];
     SQLCHAR sqlstate_[SQL_SQLSTATE_SIZE + 1];
@@ -324,9 +324,38 @@ class SOCI_ODBC_DECL odbc_soci_error : public soci_error
 public:
     odbc_soci_error(SQLSMALLINT htype,
                   SQLHANDLE hndl,
-                  std::string const & msg)
-        : soci_error(msg)
+                  std::string const & msg);
+
+    ~odbc_soci_error();
+
+    SQLCHAR const * odbc_error_code() const
     {
+        return sqlstate_;
+    }
+    SQLINTEGER native_error_code() const
+    {
+        return sqlcode_;
+    }
+    SQLCHAR const * odbc_error_message() const
+    {
+        return message_;
+    }
+
+    int native_code() const
+    {
+        return sqlcode_;
+    }
+
+    std::string sql_state() const
+    {
+        return reinterpret_cast<const char*>(sqlstate_);
+    }
+
+private:
+    std::string interpret_odbc_error(SQLSMALLINT htype, SQLHANDLE hndl, std::string const& msg)
+    {
+        std::ostringstream ss(msg, std::ostringstream::app);
+
         const char* socierror = NULL;
 
         SQLSMALLINT length, i = 1;

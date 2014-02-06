@@ -16,6 +16,17 @@ using namespace soci::details;
 
 char const * soci::odbc_option_driver_complete = "odbc.driver_complete";
 
+odbc_soci_error::odbc_soci_error(SQLSMALLINT htype,
+  SQLHANDLE hndl,
+  std::string const & msg)
+  : sql_error(interpret_odbc_error(htype, hndl, msg))
+{
+}
+
+odbc_soci_error::~odbc_soci_error()
+{
+}
+
 odbc_session_backend::odbc_session_backend(
     connection_parameters const & parameters)
     : henv_(0), hdbc_(0), product_(prod_uninitialized)

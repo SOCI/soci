@@ -20,3 +20,12 @@ connection_cancelled::connection_cancelled(std::string const & msg)
      : soci_error(msg)
 {
 }
+
+sql_error::sql_error(std::string const & msg)
+     : soci_error(msg)
+{
+}
+
+sql_error::~sql_error()
+{
+}
