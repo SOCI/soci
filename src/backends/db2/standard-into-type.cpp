@@ -83,7 +83,7 @@ void db2_standard_into_type_backend::define_by_pos(
         static_cast<SQLUSMALLINT>(cType), data, size, &valueLen);
     if (cliRC != SQL_SUCCESS)
     {
-        throw db2_soci_error("Error while pre-fething into type",cliRC);
+        throw db2_soci_error("Error while pre-fething into type",cliRC,SQL_HANDLE_STMT,statement_.hStmt);
     }
 }
 

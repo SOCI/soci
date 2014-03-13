@@ -154,7 +154,7 @@ void db2_vector_into_type_backend::define_by_pos(
                               cType, data, size, indptr);
     if (cliRC != SQL_SUCCESS)
     {
-        throw db2_soci_error("Error while pre-fetching into vector",cliRC);
+        throw db2_soci_error("Error while pre-fetching into vector",cliRC,SQL_HANDLE_STMT,statement_.hStmt);
     }
 }
 

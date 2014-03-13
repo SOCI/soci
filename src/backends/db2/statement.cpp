@@ -29,7 +29,7 @@ void db2_statement_backend::alloc()
 
     cliRC = SQLAllocHandle(SQL_HANDLE_STMT,session_.hDbc,&hStmt);
     if (cliRC != SQL_SUCCESS) {
-        throw db2_soci_error("Error while allocation statement handle",cliRC);
+        throw db2_soci_error("Error while allocation statement handle",cliRC,SQL_HANDLE_DBC,session_.hDbc);
     }
 }
 
@@ -39,7 +39,7 @@ void db2_statement_backend::clean_up()
 
     cliRC=SQLFreeHandle(SQL_HANDLE_STMT,hStmt);
     if (cliRC != SQL_SUCCESS) {
-        throw db2_soci_error(db2_soci_error::sqlState("Statement handle clean-up error",SQL_HANDLE_STMT,hStmt),cliRC);
+        throw db2_soci_error("Statement handle clean-up error",cliRC,SQL_HANDLE_STMT,hStmt);
     }
 }
 
@@ -125,7 +125,7 @@ void db2_statement_backend::prepare(std::string const &  query ,
 
     SQLRETURN cliRC = SQLPrepare(hStmt, const_cast<SQLCHAR *>((const SQLCHAR *) query_.c_str()), SQL_NTS);
     if (cliRC!=SQL_SUCCESS) {
-        throw db2_soci_error("Error while preparing query",cliRC);
+        throw db2_soci_error("Error while preparing query", cliRC, SQL_HANDLE_STMT, hStmt);
     }
 }
 
@@ -145,13 +145,13 @@ db2_statement_backend::execute(int  number )
     cliRC = SQLFreeStmt(hStmt,SQL_CLOSE);
     if (cliRC != SQL_SUCCESS)
     {
-        throw db2_soci_error(db2_soci_error::sqlState("Statement execution error",SQL_HANDLE_STMT,hStmt),cliRC);
+        throw db2_soci_error("Statement execution error",cliRC,SQL_HANDLE_STMT,hStmt);
     }
 
     cliRC = SQLExecute(hStmt);
     if (cliRC != SQL_SUCCESS && cliRC != SQL_SUCCESS_WITH_INFO)
     {
-        throw db2_soci_error(db2_soci_error::sqlState("Statement execution error",SQL_HANDLE_STMT,hStmt),cliRC);
+        throw db2_soci_error("Statement execution error",cliRC,SQL_HANDLE_STMT,hStmt);
     }
 
     SQLSMALLINT colCount;
@@ -183,7 +183,7 @@ db2_statement_backend::fetch(int  number )
 
     if (cliRC != SQL_SUCCESS && cliRC != SQL_SUCCESS_WITH_INFO)
     {
-        throw db2_soci_error(db2_soci_error::sqlState("Error while fetching data", SQL_HANDLE_STMT, hStmt), cliRC);
+        throw db2_soci_error("Error while fetching data", cliRC, SQL_HANDLE_STMT, hStmt);
     }
 
     return ef_success;
@@ -196,7 +196,7 @@ long long db2_statement_backend::get_affected_rows()
     SQLRETURN cliRC = SQLRowCount(hStmt, &rows);
     if (cliRC != SQL_SUCCESS && cliRC != SQL_SUCCESS_WITH_INFO)
     {
-        throw db2_soci_error(db2_soci_error::sqlState("Error while getting affected row count", SQL_HANDLE_STMT, hStmt), cliRC);
+        throw db2_soci_error("Error while getting affected row count", cliRC, SQL_HANDLE_STMT, hStmt);
     }
     else if (rows == -1)
     {
@@ -241,7 +241,7 @@ SQLCHAR colNameBuffer[2048];
 
     if (cliRC != SQL_SUCCESS)
     {
-        throw db2_soci_error(db2_soci_error::sqlState("Error while describing column",SQL_HANDLE_STMT,hStmt),cliRC);
+        throw db2_soci_error("Error while describing column",cliRC,SQL_HANDLE_STMT,hStmt);
     }
 
     char const *name = reinterpret_cast<char const *>(colNameBuffer);
@@ -293,7 +293,7 @@ std::size_t db2_statement_backend::column_size(int col) {
 
     if (cliRC != SQL_SUCCESS)
     {
-        throw db2_soci_error(db2_soci_error::sqlState("Error while detecting column size",SQL_HANDLE_STMT,hStmt),cliRC);
+        throw db2_soci_error("Error while detecting column size",cliRC,SQL_HANDLE_STMT,hStmt);
     }
 
     return colSize;    

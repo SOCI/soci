@@ -176,7 +176,7 @@ void db2_standard_use_type_backend::pre_use(indicator const *ind_ptr)
 
     if (cliRC != SQL_SUCCESS)
     {
-        throw db2_soci_error("Error while binding value",cliRC);
+        throw db2_soci_error("Error while binding value",cliRC,SQL_HANDLE_STMT,statement_.hStmt);
     }
 
     // then handle indicators

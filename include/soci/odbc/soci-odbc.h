@@ -24,6 +24,7 @@
 #endif
 
 #include <vector>
+#include <sstream>
 #include "soci/soci-backend.h"
 #if defined(_MSC_VER) || defined(__MINGW32__)
 #include "soci/soci-platform.h"
@@ -398,19 +399,8 @@ private:
 
             sqlcode_ = 0;
         }
-    }
 
-    SQLCHAR const * odbc_error_code() const
-    {
-        return reinterpret_cast<SQLCHAR const *>(sqlstate_);
-    }
-    SQLINTEGER native_error_code() const
-    {
-        return sqlcode_;
-    }
-    SQLCHAR const * odbc_error_message() const
-    {
-        return reinterpret_cast<SQLCHAR const *>(message_);
+        return ss.str();
     }
 };
 

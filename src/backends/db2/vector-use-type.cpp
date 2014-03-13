@@ -203,7 +203,7 @@ void db2_vector_use_type_backend::bind_helper(int &position, void *data, details
 
     if ( cliRC != SQL_SUCCESS )
     {
-        throw db2_soci_error("Error while binding value to column", cliRC);
+        throw db2_soci_error("Error while binding value to column", cliRC, SQL_HANDLE_STMT, statement_.hStmt);
     }
 }
 

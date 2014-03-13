@@ -17,26 +17,55 @@
 using namespace soci;
 using namespace soci::details;
 
-const std::string db2_soci_error::sqlState(std::string const & msg,const SQLSMALLINT htype,const SQLHANDLE hndl) {
+std::string db2_soci_error::sqlState(std::string const & msg,const SQLSMALLINT htype,const SQLHANDLE hndl)
+{
     std::ostringstream ss(msg, std::ostringstream::app);
 
+    const char* socierror = NULL;
 
-    SQLCHAR message[SQL_MAX_MESSAGE_LENGTH + 1];
-    SQLCHAR sqlstate[SQL_SQLSTATE_SIZE + 1];
-    SQLINTEGER sqlcode;
-    SQLSMALLINT length;
+    SQLSMALLINT length, i = 1;
+    switch ( SQLGetDiagRec(htype, hndl, i, sqlstate_, &sqlcode_,
+                            message_, SQL_MAX_MESSAGE_LENGTH + 1,
+                            &length) )
+    {
+      case SQL_SUCCESS:
+        // The error message was successfully retrieved.
+        break;
 
-    if ( SQLGetDiagRec(htype,
-                       hndl,
-                       1,
-                       sqlstate,
-                       &sqlcode,
-                       message,
-                       SQL_MAX_MESSAGE_LENGTH + 1,
-                       &length) == SQL_SUCCESS ) {
-        ss<<" SQLMESSAGE: ";
-        ss<<message;
+      case SQL_INVALID_HANDLE:
+        socierror = "[SOCI]: Invalid handle.";
+        break;
+
+      case SQL_ERROR:
+        socierror = "[SOCI]: SQLGetDiagRec() error.";
+        break;
+
+      case SQL_SUCCESS_WITH_INFO:
+        socierror = "[SOCI]: Error message too long.";
+        break;
+
+      case SQL_NO_DATA:
+        socierror = "[SOCI]: No error.";
+        break;
+
+      default:
+        socierror = "[SOCI]: Unexpected SQLGetDiagRec() return value.";
+        break;
     }
+
+    if (socierror)
+    {
+        // Use our own error message if we failed to retrieve
+        strcpy(reinterpret_cast<char*>(message_), socierror);
+
+        // Use "General warning" SQLSTATE code
+        strcpy(reinterpret_cast<char*>(sqlstate_), "01000");
+
+        sqlcode_ = 0;
+    }
+
+    ss << ": " << message_ << " (" << sqlstate_ << ")";
+
     return ss.str();
 }
 
@@ -87,14 +116,14 @@ db2_session_backend::db2_session_backend(
     /* Prepare handles */
     cliRC = SQLAllocHandle(SQL_HANDLE_ENV,SQL_NULL_HANDLE,&hEnv);
     if (cliRC != SQL_SUCCESS) {
-        throw db2_soci_error("Error while allocating the enironment handle",cliRC);
+        throw soci_error("Error while allocating the DB2 environment handle");
     }
     
     cliRC = SQLAllocHandle(SQL_HANDLE_DBC, hEnv, &hDbc);
     if (cliRC != SQL_SUCCESS) {
-        std::string msg=db2_soci_error::sqlState("Error while allocating the connection handle",SQL_HANDLE_ENV,hEnv);
+        db2_soci_error e("Error while allocating the connection handle",cliRC,SQL_HANDLE_ENV,hEnv);
         SQLFreeHandle(SQL_HANDLE_ENV,hEnv);
-        throw db2_soci_error(msg,cliRC);
+        throw e;
     }
 
     /* Set autocommit */
@@ -104,10 +133,10 @@ db2_session_backend::db2_session_backend(
         cliRC = SQLSetConnectAttr(hDbc,SQL_ATTR_AUTOCOMMIT, (SQLPOINTER)SQL_AUTOCOMMIT_OFF, SQL_NTS);
     }
     if (cliRC != SQL_SUCCESS) {
-        std::string msg=db2_soci_error::sqlState("Error while setting autocommit attribute",SQL_HANDLE_DBC,hDbc);
+        db2_soci_error e("Error while setting autocommit attribute",cliRC,SQL_HANDLE_DBC,hDbc);
         SQLFreeHandle(SQL_HANDLE_DBC,hDbc);
         SQLFreeHandle(SQL_HANDLE_ENV,hEnv);
-        throw db2_soci_error(msg,cliRC);
+        throw e;
     }
 
     /* Connect to database */
@@ -115,10 +144,10 @@ db2_session_backend::db2_session_backend(
         const_cast<SQLCHAR *>((const SQLCHAR *) username.c_str()), SQL_NTS,
         const_cast<SQLCHAR *>((const SQLCHAR *) password.c_str()), SQL_NTS);
     if (cliRC != SQL_SUCCESS) {
-        std::string msg=db2_soci_error::sqlState("Error connecting to database",SQL_HANDLE_DBC,hDbc);
+        db2_soci_error e("Error connecting to database",cliRC,SQL_HANDLE_DBC,hDbc);
         SQLFreeHandle(SQL_HANDLE_DBC,hDbc);
         SQLFreeHandle(SQL_HANDLE_ENV,hEnv);
-        throw db2_soci_error(msg,cliRC);
+        throw e;
     }
 }
 
@@ -135,10 +164,10 @@ void db2_session_backend::begin()
         SQLRETURN cliRC = SQLSetConnectAttr(hDbc, SQL_ATTR_AUTOCOMMIT, (SQLPOINTER) SQL_AUTOCOMMIT_OFF, SQL_NTS);
         if (cliRC != SQL_SUCCESS && cliRC != SQL_SUCCESS_WITH_INFO)
         {
-            std::string msg=db2_soci_error::sqlState("Clearing the autocommit attribute failed", SQL_HANDLE_DBC, hDbc);
+            db2_soci_error e("Clearing the autocommit attribute failed", cliRC, SQL_HANDLE_DBC, hDbc);
             SQLFreeHandle(SQL_HANDLE_DBC,hDbc);
             SQLFreeHandle(SQL_HANDLE_ENV,hEnv);
-            throw db2_soci_error(msg,cliRC);
+            throw e;
         }
     }
 
@@ -156,14 +185,14 @@ void db2_session_backend::commit()
             if ((cliRC == SQL_SUCCESS || cliRC == SQL_SUCCESS_WITH_INFO) &&
                 cliRC2 != SQL_SUCCESS && cliRC2 != SQL_SUCCESS_WITH_INFO)
             {
-                std::string msg=db2_soci_error::sqlState("Setting the autocommit attribute failed", SQL_HANDLE_DBC, hDbc);
+                db2_soci_error e("Setting the autocommit attribute failed", cliRC, SQL_HANDLE_DBC, hDbc);
                 SQLFreeHandle(SQL_HANDLE_DBC,hDbc);
                 SQLFreeHandle(SQL_HANDLE_ENV,hEnv);
-                throw db2_soci_error(msg,cliRC);
+                throw e;
             }
         }
         if (cliRC != SQL_SUCCESS && cliRC != SQL_SUCCESS_WITH_INFO) {
-            throw db2_soci_error("Commit failed",cliRC);
+            throw db2_soci_error("Commit failed",cliRC, SQL_HANDLE_DBC, hDbc);
         }
     }
 }
@@ -179,14 +208,14 @@ void db2_session_backend::rollback()
             if ((cliRC == SQL_SUCCESS || cliRC == SQL_SUCCESS_WITH_INFO) &&
                 cliRC2 != SQL_SUCCESS && cliRC2 != SQL_SUCCESS_WITH_INFO)
             {
-                std::string msg=db2_soci_error::sqlState("Setting the autocommit attribute failed", SQL_HANDLE_DBC, hDbc);
+                db2_soci_error e("Setting the autocommit attribute failed", cliRC, SQL_HANDLE_DBC, hDbc);
                 SQLFreeHandle(SQL_HANDLE_DBC,hDbc);
                 SQLFreeHandle(SQL_HANDLE_ENV,hEnv);
-                throw db2_soci_error(msg,cliRC);
+                throw e;
             }
         }
         if (cliRC != SQL_SUCCESS && cliRC != SQL_SUCCESS_WITH_INFO) {
-            throw db2_soci_error("Rollback failed",cliRC);
+            throw db2_soci_error("Rollback failed", cliRC, SQL_HANDLE_DBC, hDbc);
         }
     }
 }
