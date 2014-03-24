@@ -406,7 +406,8 @@ void test7()
         }
         catch (soci_error const & e)
         {
-            assert(e.what() == std::string("Cannot convert data."));
+            char const * expectedPrefix = "Cannot convert data";
+            assert(strncmp(e.what(), expectedPrefix, strlen(expectedPrefix)) == 0);
         }
     }
 
