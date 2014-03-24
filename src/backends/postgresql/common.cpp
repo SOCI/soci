@@ -91,21 +91,3 @@ void soci::details::postgresql::parse_std_tm(char const * buf, std::tm & t)
 
     std::mktime(&t);
 }
-
-double soci::details::postgresql::string_to_double(char const * buf)
-{
-    double t;
-    int n;
-    int const converted = sscanf(buf, "%lf%n", &t, &n);
-    if (converted == 1 && static_cast<std::size_t>(n) == strlen(buf))
-    {
-        // successfully converted to double
-        // and no other characters were found in the buffer
-
-        return t;
-    }
-    else
-    {
-        throw soci_error("Cannot convert data.");
-    }
-}

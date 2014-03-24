@@ -8,6 +8,7 @@
 #define SOCI_POSTGRESQL_SOURCE
 #include <soci-platform.h>
 #include "soci-postgresql.h"
+#include "soci-cstrtod.h"
 #include "common.h"
 #include "rowid.h"
 #include "blob.h"
@@ -125,7 +126,7 @@ void postgresql_standard_into_type_backend::post_fetch(
         case x_double:
             {
                 double * dest = static_cast<double *>(data_);
-                *dest = string_to_double(buf);
+                *dest = cstring_to_double(buf);
             }
             break;
         case x_stdtm:

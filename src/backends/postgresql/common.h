@@ -112,9 +112,6 @@ T string_to_unsigned_integer(char const * buf)
     }
 }
 
-// helper function for parsing doubles
-double string_to_double(char const * buf);
-
 // helper function for parsing datetime values
 void parse_std_tm(char const * buf, std::tm & t);
 

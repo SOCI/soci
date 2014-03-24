@@ -8,6 +8,7 @@
 #define SOCI_POSTGRESQL_SOURCE
 #include <soci-platform.h>
 #include "soci-postgresql.h"
+#include "soci-cstrtod.h"
 #include "common.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cassert>
@@ -131,7 +132,7 @@ void postgresql_vector_into_type_backend::post_fetch(bool gotData, indicator * i
                 break;
             case x_double:
                 {
-                    double const val = string_to_double(buf);
+                    double const val = cstring_to_double(buf);
                     set_invector_(data_, i, val);
                 }
                 break;
