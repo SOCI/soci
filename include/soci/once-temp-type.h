@@ -8,8 +8,8 @@
 #ifndef SOCI_ONCE_TEMP_TYPE_H_INCLUDED
 #define SOCI_ONCE_TEMP_TYPE_H_INCLUDED
 
-#include "ref-counted-statement.h"
-#include "prepare-temp-type.h"
+#include "soci/ref-counted-statement.h"
+#include "soci/prepare-temp-type.h"
 
 #if __cplusplus >= 201103L
 #define SOCI_ONCE_TEMP_TYPE_NOEXCEPT noexcept(false)

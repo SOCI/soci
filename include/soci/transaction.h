@@ -8,8 +8,8 @@
 #ifndef SOCI_TRANSACTION_H_INCLUDED
 #define SOCI_TRANSACTION_H_INCLUDED
 
-#include "session.h"
-#include "soci-config.h"
+#include "soci/session.h"
+#include "soci/soci-config.h"
 
 namespace soci
 {

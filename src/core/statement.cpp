@@ -6,11 +6,11 @@
 //
 
 #define SOCI_SOURCE
-#include "statement.h"
-#include "session.h"
-#include "into-type.h"
-#include "use-type.h"
-#include "values.h"
+#include "soci/statement.h"
+#include "soci/session.h"
+#include "soci/into-type.h"
+#include "soci/use-type.h"
+#include "soci/values.h"
 #include <ctime>
 #include <cctype>
 

@@ -8,9 +8,9 @@
 #ifndef SOCI_INTO_H_INCLUDED
 #define SOCI_INTO_H_INCLUDED
 
-#include "into-type.h"
-#include "exchange-traits.h"
-#include "type-conversion.h"
+#include "soci/into-type.h"
+#include "soci/exchange-traits.h"
+#include "soci/type-conversion.h"
 // std
 #include <cstddef>
 #include <vector>

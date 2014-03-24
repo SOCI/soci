@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include "soci.h"
-#include "postgresql/soci-postgresql.h"
+#include "soci/soci.h"
+#include "soci/postgresql/soci-postgresql.h"
 #include "common-tests.h"
 #include <iostream>
 #include <sstream>

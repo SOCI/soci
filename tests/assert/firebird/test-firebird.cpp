@@ -6,8 +6,8 @@
 //
 //
 
-#include "soci.h"
-#include "firebird/soci-firebird.h"
+#include "soci/soci.h"
+#include "soci/firebird/soci-firebird.h"
 #include "firebird/error-firebird.h"            // soci::details::Firebird::throw_iscerror()
 #include "firebird/common.h"
 #include "common-tests.h"

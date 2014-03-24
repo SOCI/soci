@@ -6,8 +6,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include "soci.h"
-#include "mysql/soci-mysql.h"
+#include "soci/soci.h"
+#include "soci/mysql/soci-mysql.h"
 #include "common-tests.h"
 #include <iostream>
 #include <sstream>

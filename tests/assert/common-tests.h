@@ -8,17 +8,17 @@
 #ifndef SOCI_COMMON_TESTS_H_INCLUDED
 #define SOCI_COMMON_TESTS_H_INCLUDED
 
-#include "soci.h"
-#include "soci-config.h"
+#include "soci/soci.h"
+#include "soci/soci-config.h"
 
 #ifdef HAVE_BOOST
 // explicitly pull conversions for Boost's optional, tuple and fusion:
 #include <boost/version.hpp>
-#include <boost-optional.h>
-#include <boost-tuple.h>
-#include <boost-gregorian-date.h>
+#include "soci/boost-optional.h"
+#include "soci/boost-tuple.h"
+#include "soci/boost-gregorian-date.h"
 #if defined(BOOST_VERSION) && BOOST_VERSION >= 103500
-#include <boost-fusion.h>
+#include "soci/boost-fusion.h"
 #endif // BOOST_VERSION
 #endif // HAVE_BOOST
 

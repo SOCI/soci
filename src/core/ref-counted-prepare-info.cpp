@@ -6,8 +6,8 @@
 //
 
 #define SOCI_SOURCE
-#include "ref-counted-prepare-info.h"
-#include "session.h"
+#include "soci/ref-counted-prepare-info.h"
+#include "soci/session.h"
 
 using namespace soci;
 using namespace soci::details;

@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include "soci.h"
-#include "empty/soci-empty.h"
+#include "soci/soci.h"
+#include "soci/empty/soci-empty.h"
 #include <iostream>
 #include <string>
 #include <cassert>

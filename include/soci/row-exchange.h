@@ -8,10 +8,10 @@
 #ifndef SOCI_INTO_ROW_H_INCLUDED
 #define SOCI_INTO_ROW_H_INCLUDED
 
-#include "into-type.h"
-#include "exchange-traits.h"
-#include "row.h"
-#include "statement.h"
+#include "soci/into-type.h"
+#include "soci/exchange-traits.h"
+#include "soci/row.h"
+#include "soci/statement.h"
 // std
 #include <cstddef>
 

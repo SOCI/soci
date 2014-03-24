@@ -8,8 +8,8 @@
 #ifndef SOCI_BOOST_TUPLE_H_INCLUDED
 #define SOCI_BOOST_TUPLE_H_INCLUDED
 
-#include "values.h"
-#include "type-conversion-traits.h"
+#include "soci/values.h"
+#include "soci/type-conversion-traits.h"
 // boost
 #include <boost/tuple/tuple.hpp>
 
@@ -317,7 +317,7 @@ struct type_conversion<boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> >
 } // namespace soci
 
 #else // BOOST_VERSION >= 103500
-#   include "boost-fusion.h"
+#   include "soci/boost-fusion.h"
 #   include <boost/fusion/adapted/boost_tuple.hpp>
 #endif
 

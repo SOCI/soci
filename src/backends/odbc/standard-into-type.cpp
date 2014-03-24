@@ -6,8 +6,8 @@
 //
 
 #define SOCI_ODBC_SOURCE
-#include <soci-platform.h>
-#include "soci-odbc.h"
+#include "soci/soci-platform.h"
+#include "soci/odbc/soci-odbc.h"
 #include <ctime>
 #include <stdio.h>  // sscanf()
 

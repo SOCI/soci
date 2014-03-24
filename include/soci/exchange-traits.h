@@ -8,8 +8,8 @@
 #ifndef SOCI_EXCHANGE_TRAITS_H_INCLUDED
 #define SOCI_EXCHANGE_TRAITS_H_INCLUDED
 
-#include "type-conversion-traits.h"
-#include "soci-backend.h"
+#include "soci/type-conversion-traits.h"
+#include "soci/soci-backend.h"
 // std
 #include <ctime>
 #include <string>

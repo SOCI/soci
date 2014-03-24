@@ -6,8 +6,8 @@
 //
 
 #define SOCI_SOURCE
-#include "into-type.h"
-#include "statement.h"
+#include "soci/into-type.h"
+#include "soci/statement.h"
 
 using namespace soci;
 using namespace soci::details;

@@ -8,9 +8,9 @@
 #ifndef SOCI_TYPE_CONVERSION_H_INCLUDED
 #define SOCI_TYPE_CONVERSION_H_INCLUDED
 
-#include "type-conversion-traits.h"
-#include "into-type.h"
-#include "use-type.h"
+#include "soci/type-conversion-traits.h"
+#include "soci/into-type.h"
+#include "soci/use-type.h"
 // std
 #include <cassert>
 #include <cstddef>

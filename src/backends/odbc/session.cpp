@@ -6,8 +6,8 @@
 //
 
 #define SOCI_ODBC_SOURCE
-#include "soci-odbc.h"
-#include "session.h"
+#include "soci/odbc/soci-odbc.h"
+#include "soci/session.h"
 
 #include <cstdio>
 

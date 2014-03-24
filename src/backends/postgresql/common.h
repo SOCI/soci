@@ -8,7 +8,7 @@
 #ifndef SOCI_POSTGRESQL_COMMON_H_INCLUDED
 #define SOCI_POSTGRESQL_COMMON_H_INCLUDED
 
-#include "soci-postgresql.h"
+#include "soci/postgresql/soci-postgresql.h"
 #include <limits>
 #include <cstdio>
 #include <cstring>

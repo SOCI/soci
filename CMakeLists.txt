@@ -142,7 +142,7 @@ add_custom_target(check COMMAND ctest)
 ###############################################################################
 include(SociBackend)
 
-include_directories(${SOCI_SOURCE_DIR}/include/soci)
+include_directories(${SOCI_SOURCE_DIR}/include)
 
 add_subdirectory(src)
 add_subdirectory(tests)

@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <soci-platform.h>
-#include <soci-backend.h>
+#include "soci/soci-platform.h"
+#include "soci/soci-backend.h"
 #include <cstdlib>
 #include <ctime>
 #include "common.h"

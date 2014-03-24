@@ -6,10 +6,10 @@
 //
 
 #define SOCI_POSTGRESQL_SOURCE
-#include "soci-postgresql.h"
-#include "blob.h"
-#include "rowid.h"
-#include <soci-platform.h>
+#include "soci/postgresql/soci-postgresql.h"
+#include "soci/blob.h"
+#include "soci/rowid.h"
+#include "soci/soci-platform.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
 #include <cstdio>

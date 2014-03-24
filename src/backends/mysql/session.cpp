@@ -7,8 +7,8 @@
 //
 
 #define SOCI_MYSQL_SOURCE
-#include "soci-mysql.h"
-#include <connection-parameters.h>
+#include "soci/mysql/soci-mysql.h"
+#include "soci/connection-parameters.h"
 // std
 #include <cctype>
 #include <cerrno>

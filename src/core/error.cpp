@@ -7,7 +7,7 @@
 
 #define SOCI_SOURCE
 
-#include "error.h"
+#include "soci/error.h"
 
 using namespace soci;
 

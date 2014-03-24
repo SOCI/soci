@@ -8,7 +8,7 @@
 #ifndef SOCI_FIREBIRD_ERROR_H_INCLUDED
 #define SOCI_FIREBIRD_ERROR_H_INCLUDED
 
-#include "firebird/soci-firebird.h"
+#include "soci/firebird/soci-firebird.h"
 #include <string>
 
 namespace soci
