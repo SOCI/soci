@@ -809,6 +809,36 @@ void test13()
     std::cout << "test 13 passed" << std::endl;
 }
 
+std::string escape_string(soci::session& sql, const std::string& s)
+{
+    mysql_session_backend* backend = static_cast<mysql_session_backend*>(
+        sql.get_backend());
+    char* escaped = new char[2 * s.size() + 1];
+    mysql_real_escape_string(backend->conn_, escaped, s.data(), s.size());
+    std::string retv = escaped;
+    delete [] escaped;
+    return retv;
+}
+
+void test14()
+{
+    {
+        session sql(backEnd, connectString);
+        strings_table_creator tableCreator(sql);
+        std::string s = "word1'word2:word3";
+        std::string escaped = escape_string(sql, s);
+        std::string query = "insert into soci_test (s5) values ('";
+        query.append(escaped);
+        query.append("')");
+        sql << query;
+        std::string s2;
+        sql << "select s5 from soci_test", into(s2);
+        assert(s == s2);
+    }
+
+    std::cout << "test 14 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -932,7 +962,9 @@ int main(int argc, char** argv)
         test5();
         test6();
         test7();
-        test8();
+        // Test 8 commented out because a bug in soci can make it crash
+        // https://github.com/SOCI/soci/issues/136
+        //test8();
         test9();
         test10();
         if (std::numeric_limits<double>::is_iec559) {
@@ -943,6 +975,7 @@ int main(int argc, char** argv)
         }
         test12();
         test13();
+        test14();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;

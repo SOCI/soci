@@ -57,6 +57,7 @@ void mysql_statement_backend::prepare(std::string const & query,
     std::string name;
     queryChunks_.push_back("");
 
+    bool escaped = false;
     for (std::string::const_iterator it = query.begin(), end = query.end();
          it != end; ++it)
     {
@@ -78,7 +79,7 @@ void mysql_statement_backend::prepare(std::string const & query,
             }
             break;
         case eInQuotes:
-            if (*it == '\'')
+            if (*it == '\'' && !escaped)
             {
                 queryChunks_.back() += *it;
                 state = eNormal;
@@ -87,6 +88,7 @@ void mysql_statement_backend::prepare(std::string const & query,
             {
                 queryChunks_.back() += *it;
             }
+            escaped = *it == '\\' && !escaped;
             break;
         case eInName:
             if (std::isalnum(*it) || *it == '_')
