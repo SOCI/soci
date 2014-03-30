@@ -10,7 +10,6 @@
 ###############################################################################
 
 include_directories(
-  ${SOCI_SOURCE_DIR}/include/soci
   ${SOCI_SOURCE_DIR}/include/private
   ${CMAKE_CURRENT_SOURCE_DIR})
 

@@ -6,8 +6,8 @@
 //
 
 #define SOCI_SOURCE
-#include "backend-loader.h"
-#include "error.h"
+#include "soci/backend-loader.h"
+#include "soci/error.h"
 #include <cassert>
 #include <cstdlib>
 #include <map>

@@ -8,10 +8,10 @@
 #ifndef SOCI_VALUES_EXCHANGE_H_INCLUDED
 #define SOCI_VALUES_EXCHANGE_H_INCLUDED
 
-#include "values.h"
-#include "into-type.h"
-#include "use-type.h"
-#include "row-exchange.h"
+#include "soci/values.h"
+#include "soci/into-type.h"
+#include "soci/use-type.h"
+#include "soci/row-exchange.h"
 // std
 #include <cstddef>
 #include <string>

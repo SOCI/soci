@@ -114,9 +114,7 @@ macro(soci_backend NAME)
       set(THIS_BACKEND_DEPENDS_DEFS ${${NAMEU}_DEPS_DEFS})
 
       # Collect include directories
-      list(APPEND THIS_INCLUDE_DIRS ${SOCI_SOURCE_DIR}/include/soci/${NAMEL})
       list(APPEND THIS_INCLUDE_DIRS ${SOCI_SOURCE_DIR}/include/private)
-      list(APPEND THIS_INCLUDE_DIRS ${SOCI_SOURCE_DIR}/include/private/${NAMEL})
       list(APPEND THIS_INCLUDE_DIRS ${THIS_BACKEND_DEPENDS_INCLUDE_DIRS})
       # Collect compile definitions
       list(APPEND THIS_COMPILE_DEFS ${THIS_BACKEND_DEPENDS_DEFS})

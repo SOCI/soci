@@ -8,7 +8,7 @@
 #ifndef SOCI_BOOST_OPTIONAL_H_INCLUDED
 #define SOCI_BOOST_OPTIONAL_H_INCLUDED
 
-#include "type-conversion-traits.h"
+#include "soci/type-conversion-traits.h"
 // boost
 #include <boost/optional.hpp>
 

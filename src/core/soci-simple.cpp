@@ -7,8 +7,8 @@
 
 #define SOCI_SOURCE
 
-#include "soci-simple.h"
-#include "soci.h"
+#include "soci/soci-simple.h"
+#include "soci/soci.h"
 
 #include <cstddef>
 #include <cstdio>

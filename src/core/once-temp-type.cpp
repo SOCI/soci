@@ -6,9 +6,9 @@
 //
 
 #define SOCI_SOURCE
-#include "once-temp-type.h"
-#include "ref-counted-statement.h"
-#include "session.h"
+#include "soci/once-temp-type.h"
+#include "soci/ref-counted-statement.h"
+#include "soci/session.h"
 
 using namespace soci;
 using namespace soci::details;

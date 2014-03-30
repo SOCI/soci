@@ -8,7 +8,7 @@
 #ifndef SOCI_MYSQL_COMMON_H_INCLUDED
 #define SOCI_MYSQL_COMMON_H_INCLUDED
 
-#include "soci-mysql.h"
+#include "soci/mysql/soci-mysql.h"
 // std
 #include <cstddef>
 #include <ctime>

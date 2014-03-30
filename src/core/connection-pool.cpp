@@ -6,9 +6,9 @@
 //
 
 #define SOCI_SOURCE
-#include "connection-pool.h"
-#include "error.h"
-#include "session.h"
+#include "soci/connection-pool.h"
+#include "soci/error.h"
+#include "soci/session.h"
 #include <vector>
 #include <utility>
 

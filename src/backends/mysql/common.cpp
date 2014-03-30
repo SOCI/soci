@@ -6,7 +6,7 @@
 //
 
 #include "common.h"
-#include "soci-backend.h"
+#include "soci/soci-backend.h"
 #include <ciso646>
 #include <cstdlib>
 #include <cstring>

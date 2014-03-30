@@ -6,7 +6,7 @@
 //
 
 #define SOCI_SOURCE
-#include "row.h"
+#include "soci/row.h"
 
 #include <cstddef>
 #include <cctype>

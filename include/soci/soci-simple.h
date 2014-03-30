@@ -8,7 +8,7 @@
 #ifndef SOCI_SIMPLE_H_INCLUDED
 #define SOCI_SIMPLE_H_INCLUDED
 
-#include "soci-config.h"
+#include "soci/soci-config.h"
 
 #ifdef __cplusplus
 extern "C"

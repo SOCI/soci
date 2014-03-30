@@ -6,9 +6,9 @@
 //
 
 
-#include "soci-sqlite3.h"
+#include "soci/sqlite3/soci-sqlite3.h"
 
-#include <connection-parameters.h>
+#include "soci/connection-parameters.h"
 
 #include <sstream>
 #include <string>

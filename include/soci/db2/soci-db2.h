@@ -24,7 +24,7 @@
 # define SOCI_DB2_DECL
 #endif
 
-#include "soci-backend.h"
+#include "soci/soci-backend.h"
 
 #include <cstddef>
 #include <string>

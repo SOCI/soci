@@ -8,9 +8,9 @@
 #ifndef SOCI_VALUES_H_INCLUDED
 #define SOCI_VALUES_H_INCLUDED
 
-#include "statement.h"
-#include "into-type.h"
-#include "use-type.h"
+#include "soci/statement.h"
+#include "soci/into-type.h"
+#include "soci/use-type.h"
 // std
 #include <cstddef>
 #include <map>

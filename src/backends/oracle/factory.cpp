@@ -6,9 +6,9 @@
 //
 
 #define SOCI_ORACLE_SOURCE
-#include "soci-oracle.h"
-#include <connection-parameters.h>
-#include <backend-loader.h>
+#include "soci/oracle/soci-oracle.h"
+#include "soci/connection-parameters.h"
+#include "soci/backend-loader.h"
 #include <cctype>
 #include <cstdio>
 #include <cstring>

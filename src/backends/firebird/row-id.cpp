@@ -6,7 +6,7 @@
 //
 
 #define SOCI_FIREBIRD_SOURCE
-#include "soci-firebird.h"
+#include "soci/firebird/soci-firebird.h"
 
 using namespace soci;
 

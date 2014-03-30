@@ -7,7 +7,7 @@
 //
 
 #define SOCI_DB2_SOURCE
-#include "soci-db2.h"
+#include "soci/db2/soci-db2.h"
 #include <cctype>
 #include <cstdio>
 #include <cstring>

@@ -8,9 +8,9 @@
 #ifndef SOCI_PREPARE_TEMP_TYPE_INCLUDED
 #define SOCI_PREPARE_TEMP_TYPE_INCLUDED
 
-#include "into-type.h"
-#include "use-type.h"
-#include "ref-counted-prepare-info.h"
+#include "soci/into-type.h"
+#include "soci/use-type.h"
+#include "soci/ref-counted-prepare-info.h"
 
 namespace soci
 {

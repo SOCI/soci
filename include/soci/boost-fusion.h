@@ -12,8 +12,8 @@
 #define SOCI_MAX_FUSION_SEQUENCE_LENGTH 10
 #endif
 
-#include "values.h"
-#include "type-conversion-traits.h"
+#include "soci/values.h"
+#include "soci/type-conversion-traits.h"
 // boost
 #include <boost/fusion/container/vector.hpp>
 #include <boost/fusion/sequence/intrinsic/at.hpp>

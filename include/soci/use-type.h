@@ -8,9 +8,9 @@
 #ifndef SOCI_USE_TYPE_H_INCLUDED
 #define SOCI_USE_TYPE_H_INCLUDED
 
-#include "soci-backend.h"
-#include "type-ptr.h"
-#include "exchange-traits.h"
+#include "soci/soci-backend.h"
+#include "soci/type-ptr.h"
+#include "soci/exchange-traits.h"
 // std
 #include <cstddef>
 #include <string>

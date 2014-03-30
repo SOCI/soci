@@ -8,11 +8,11 @@
 #ifndef SOCI_STATEMENT_H_INCLUDED
 #define SOCI_STATEMENT_H_INCLUDED
 
-#include "into-type.h"
-#include "into.h"
-#include "use-type.h"
-#include "soci-backend.h"
-#include "row.h"
+#include "soci/into-type.h"
+#include "soci/into.h"
+#include "soci/use-type.h"
+#include "soci/soci-backend.h"
+#include "soci/row.h"
 // std
 #include <cstddef>
 #include <string>

@@ -8,7 +8,7 @@
 #ifndef SOCI_PRIVATE_SOCI_CSTRTOD_H_INCLUDED
 #define SOCI_PRIVATE_SOCI_CSTRTOD_H_INCLUDED
 
-#include "error.h"
+#include "soci/error.h"
 
 #include <locale>
 #include <sstream>

@@ -8,7 +8,7 @@
 #ifndef SOCI_PROCEDURE_H_INCLUDED
 #define SOCI_PROCEDURE_H_INCLUDED
 
-#include "statement.h"
+#include "soci/statement.h"
 
 namespace soci
 {

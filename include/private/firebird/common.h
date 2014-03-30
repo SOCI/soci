@@ -8,7 +8,7 @@
 #ifndef SOCI_FIREBIRD_COMMON_H_INCLUDED
 #define SOCI_FIREBIRD_COMMON_H_INCLUDED
 
-#include "firebird/soci-firebird.h"
+#include "soci/firebird/soci-firebird.h"
 #include <cstdlib>
 #include <cstring>
 #include <ctime>

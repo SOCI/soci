@@ -8,9 +8,9 @@
 #ifndef SOCI_ROW_H_INCLUDED
 #define SOCI_ROW_H_INCLUDED
 
-#include "type-holder.h"
-#include "soci-backend.h"
-#include "type-conversion.h"
+#include "soci/type-holder.h"
+#include "soci/soci-backend.h"
+#include "soci/type-conversion.h"
 // std
 #include <cassert>
 #include <cstddef>

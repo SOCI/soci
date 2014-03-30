@@ -8,7 +8,7 @@
 #ifndef SOCI_REF_COUNTED_PREPARE_INFO_INCLUDED
 #define SOCI_REF_COUNTED_PREPARE_INFO_INCLUDED
 
-#include "ref-counted-statement.h"
+#include "soci/ref-counted-statement.h"
 // std
 #include <string>
 #include <vector>

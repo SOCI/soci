@@ -7,8 +7,8 @@
 //
 
 #define SOCI_DB2_SOURCE
-#include "soci-db2.h"
-#include <connection-parameters.h>
+#include "soci/db2/soci-db2.h"
+#include "soci/connection-parameters.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)

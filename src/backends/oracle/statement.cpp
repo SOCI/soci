@@ -7,9 +7,9 @@
 
 #define soci_ORACLE_SOURCE
 
-#include "soci-oracle.h"
+#include "soci/oracle/soci-oracle.h"
 #include "error.h"
-#include <soci-backend.h>
+#include "soci/soci-backend.h"
 #include <cctype>
 #include <cstdio>
 #include <cstring>

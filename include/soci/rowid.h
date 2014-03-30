@@ -8,7 +8,7 @@
 #ifndef SOCI_ROWID_H_INCLUDED
 #define SOCI_ROWID_H_INCLUDED
 
-#include "soci-config.h"
+#include "soci/soci-config.h"
 
 namespace soci
 {

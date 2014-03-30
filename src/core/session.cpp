@@ -6,11 +6,11 @@
 //
 
 #define SOCI_SOURCE
-#include "session.h"
-#include "connection-parameters.h"
-#include "connection-pool.h"
-#include "soci-backend.h"
-#include "query_transformation.h"
+#include "soci/session.h"
+#include "soci/connection-parameters.h"
+#include "soci/connection-pool.h"
+#include "soci/soci-backend.h"
+#include "soci/query_transformation.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)

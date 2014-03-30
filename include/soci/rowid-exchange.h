@@ -8,10 +8,10 @@
 #ifndef SOCI_ROWID_EXCHANGE_H_INCLUDED
 #define SOCI_ROWID_EXCHANGE_H_INCLUDED
 
-#include "rowid.h"
-#include "into-type.h"
-#include "use-type.h"
-#include "exchange-traits.h"
+#include "soci/rowid.h"
+#include "soci/into-type.h"
+#include "soci/use-type.h"
+#include "soci/exchange-traits.h"
 // std
 #include <string>
 
