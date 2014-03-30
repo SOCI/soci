@@ -10,6 +10,7 @@
 #include "soci/rowid.h"
 #include "common.h"
 #include "soci/blob.h"
+#include "soci-cstrtod.h"
 // std
 #include <cstdlib>
 #include <ctime>
@@ -119,8 +120,7 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
         case x_double:
             {
                 double *dest = static_cast<double*>(data_);
-                double val = strtod(buf, NULL);
-                *dest = static_cast<double>(val);
+                *dest = cstring_to_double(buf);
             }
             break;
         case x_stdtm:

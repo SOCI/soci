@@ -9,6 +9,7 @@
 #include "soci/soci.h"
 #include "soci/mysql/soci-mysql.h"
 #include "common-tests.h"
+#include <string.h>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -304,7 +305,8 @@ void test_num(const char* s, bool valid, T value)
         }
         else
         {
-            assert(std::string(e.what()) == "Cannot convert data.");
+            char const * expectedPrefix = "Cannot convert data";
+            assert(strncmp(e.what(), expectedPrefix, strlen(expectedPrefix)) == 0);
         }
     }
 }

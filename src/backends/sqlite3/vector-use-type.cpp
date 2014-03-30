@@ -7,6 +7,7 @@
 
 #include "soci/sqlite3/soci-sqlite3.h"
 #include "soci/soci-platform.h"
+#include "soci-dtocstr.h"
 #include "common.h"
 // std
 #include <cstdio>
@@ -179,10 +180,10 @@ void sqlite3_vector_use_type_backend::pre_use(indicator const * ind)
                         = static_cast<std::vector<double> *>(data_);
                     std::vector<double> &v = *pv;
 
-                    std::size_t const bufSize = 100;
-                    buf = new char[bufSize];
+                    std::string const s = double_to_cstring(v[i]);
 
-                    snprintf(buf, bufSize, "%.20g", v[i]);
+                    buf = new char[s.size() + 1];
+                    std::strcpy(buf, s.c_str());
                 }
                 break;
             case x_stdtm:

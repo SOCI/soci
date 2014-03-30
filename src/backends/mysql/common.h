@@ -9,9 +9,11 @@
 #define SOCI_MYSQL_COMMON_H_INCLUDED
 
 #include "soci/mysql/soci-mysql.h"
+#include "soci-cstrtod.h"
 // std
 #include <cstddef>
 #include <ctime>
+#include <locale>
 #include <sstream>
 #include <vector>
 
@@ -51,8 +53,16 @@ void parse_num(char const *buf, T &x)
     {
         throw soci_error("Cannot convert data.");
     }
+}
+
+inline
+void parse_num(char const *buf, double &x)
+{
+    x = cstring_to_double(buf);
+
     if (is_infinity_or_nan(x)) {
-        throw soci_error("Cannot convert data.");
+        throw soci_error(std::string("Cannot convert data: string \"") + buf +
+                         "\" is not a finite number.");
     }
 }
 
