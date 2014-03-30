@@ -9,6 +9,7 @@
 #include "soci/soci-platform.h"
 #include "soci/rowid.h"
 #include "soci/blob.h"
+#include "soci-dtocstr.h"
 // std
 #include <cstdio>
 #include <cstdlib>
@@ -141,13 +142,10 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
             break;
         case x_double:
             {
-                // no need to overengineer it (KISS)...
+                std::string const s = double_to_cstring(*static_cast<double *>(data_));
 
-                std::size_t const bufSize = 100;
-                buf_ = new char[bufSize];
-
-                snprintf(buf_, bufSize, "%.20g",
-                    *static_cast<double*>(data_));
+                buf_ = new char[s.size() + 1];
+                std::strcpy(buf_, s.c_str());
             }
             break;
         case x_stdtm:
