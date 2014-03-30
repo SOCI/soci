@@ -23,6 +23,7 @@
 #endif // HAVE_BOOST
 
 #include <algorithm>
+#include <clocale>
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -254,7 +255,10 @@ public:
     test_context_base(backend_factory const &backEnd,
                     std::string const &connectString)
         : backEndFactory_(backEnd),
-          connectString_(connectString) {}
+          connectString_(connectString)
+    {
+        std::setlocale(LC_ALL, "");
+    }
 
     backend_factory const & get_backend_factory() const
     {
