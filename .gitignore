@@ -22,3 +22,4 @@ src/build
 *.creator*
 *.files
 *.includes
+CMakeLists.txt.user
