@@ -20,7 +20,7 @@ env:
         - SOCI_TRAVIS_BACKEND=firebird
         - SOCI_TRAVIS_BACKEND=mysql
         - SOCI_TRAVIS_BACKEND=odbc
-        - SOCI_TRAVIS_BACKEND=oracle
+        #- SOCI_TRAVIS_BACKEND=oracle
         - SOCI_TRAVIS_BACKEND=postgresql
         - SOCI_TRAVIS_BACKEND=sqlite3
 
