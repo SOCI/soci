@@ -568,6 +568,23 @@ void test_bytea()
 {
     {
         session sql(backEnd, connectString);
+
+        // PostgreSQL supports two different output formats for bytea values:
+        // historical "escape" format, which is the only one supported until
+        // PostgreSQL 9.0, and "hex" format used by default since 9.0, we need
+        // to determine which one is actually in use.
+        std::string bytea_output_format;
+        sql << "select setting from pg_settings where name='bytea_output'",
+               into(bytea_output_format);
+        char const* expectedBytea;
+        if (bytea_output_format.empty() || bytea_output_format == "escape")
+          expectedBytea = "\\015\\014\\013\\012";
+        else if (bytea_output_format == "hex")
+          expectedBytea = "\\x0d0c0b0a";
+        else
+          throw std::runtime_error("Unknown PostgreSQL bytea_output \"" +
+                                   bytea_output_format + "\"");
+
         bytea_table_creator tableCreator(sql);
 
         int v = 0x0A0B0C0D;
@@ -581,7 +598,7 @@ void test_bytea()
             // 1) into string, no Oid mapping
             std::string bin1;
             sql << "select val from soci_test", into(bin1);
-            assert(bin1 == "\\x0d0c0b0a");
+            assert(bin1 == expectedBytea);
 
             // 2) Oid-to-dt_string mapped
             row r;
@@ -591,7 +608,7 @@ void test_bytea()
             column_properties const& props = r.get_properties(0);
             assert(props.get_data_type() == soci::dt_string);
             std::string bin2 = r.get<std::string>(0);
-            assert(bin2 == "\\x0d0c0b0a");
+            assert(bin2 == expectedBytea);
         }
     }
     std::cout << "test bytea passed" << std::endl;
