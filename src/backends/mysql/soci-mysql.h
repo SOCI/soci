@@ -224,8 +224,13 @@ struct mysql_blob_backend : details::blob_backend
         std::size_t toWrite);
     virtual std::size_t append(char const *buf, std::size_t toWrite);
     virtual void trim(std::size_t newLen);
+    std::size_t set_data(char const *buf, std::size_t toWrite);
+    char *get_data();
 
     mysql_session_backend &session_;
+private:
+    char *buf_;
+    size_t len_;
 };
 
 struct mysql_session_backend : details::session_backend
