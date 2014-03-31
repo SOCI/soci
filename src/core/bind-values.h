@@ -36,9 +36,9 @@ public:
     void exchange(use_container<T, Indicator> const &uc)
     {
 #ifdef HAVE_BOOST
-        _exchange(uc, (typename boost::fusion::traits::is_sequence<T>::type *)NULL);
+        exchange_(uc, (typename boost::fusion::traits::is_sequence<T>::type *)NULL);
 #else
-        _exchange(uc, NULL);
+        exchange_(uc, NULL);
 #endif // HAVE_BOOST
     }
 
@@ -76,13 +76,13 @@ private:
     };
 
     template <typename T, typename Indicator>
-    void _exchange(use_container<T, Indicator> const &uc, boost::mpl::true_ * /* fusion sequence */)
+    void exchange_(use_container<T, Indicator> const &uc, boost::mpl::true_ * /* fusion sequence */)
     {
         boost::fusion::for_each(uc.t, use_sequence<T, Indicator>(*this, uc.ind));
     }
 
     template <typename T>
-    void _exchange(use_container<T, details::no_indicator> const &uc, boost::mpl::true_ * /* fusion sequence */)
+    void exchange_(use_container<T, details::no_indicator> const &uc, boost::mpl::true_ * /* fusion sequence */)
     {
         boost::fusion::for_each(uc.t, use_sequence<T, details::no_indicator>(*this));
     }
@@ -90,19 +90,19 @@ private:
 #endif // HAVE_BOOST
 
     template <typename T, typename Indicator>
-    void _exchange(use_container<T, Indicator> const &uc, ...)
+    void exchange_(use_container<T, Indicator> const &uc, ...)
     { exchange(do_use(uc.t, uc.ind, uc.name, typename details::exchange_traits<T>::type_family())); }
 
     template <typename T>
-    void _exchange(use_container<T, details::no_indicator> const &uc, ...)
+    void exchange_(use_container<T, details::no_indicator> const &uc, ...)
     { exchange(do_use(uc.t, uc.name, typename details::exchange_traits<T>::type_family())); }
         
     template <typename T, typename Indicator>
-    void _exchange(use_container<const T, Indicator> const &uc, ...)
+    void exchange_(use_container<const T, Indicator> const &uc, ...)
     { exchange(do_use(uc.t, uc.ind, uc.name, typename details::exchange_traits<T>::type_family())); }
         
     template <typename T>
-    void _exchange(use_container<const T, details::no_indicator> const &uc, ...)
+    void exchange_(use_container<const T, details::no_indicator> const &uc, ...)
     { exchange(do_use(uc.t, uc.name, typename details::exchange_traits<T>::type_family())); }
 };
 
@@ -122,9 +122,9 @@ public:
     void exchange(into_container<T, Indicator> const &ic)
     {
 #ifdef HAVE_BOOST
-        _exchange(ic, (typename boost::fusion::traits::is_sequence<T>::type *)NULL);
+        exchange_(ic, (typename boost::fusion::traits::is_sequence<T>::type *)NULL);
 #else
-        _exchange(ic, NULL);
+        exchange_(ic, NULL);
 #endif // HAVE_BOOST
     }
         
@@ -162,24 +162,24 @@ private:
     };
 
     template <typename T, typename Indicator>
-    void _exchange(into_container<T, Indicator> const &ic, boost::mpl::true_ * /* fusion sequence */)
+    void exchange_(into_container<T, Indicator> const &ic, boost::mpl::true_ * /* fusion sequence */)
     {
         boost::fusion::for_each(ic.t, into_sequence<T, Indicator>(*this, ic.ind));
     }
 
     template <typename T>
-    void _exchange(into_container<T, details::no_indicator> const &ic, boost::mpl::true_ * /* fusion sequence */)
+    void exchange_(into_container<T, details::no_indicator> const &ic, boost::mpl::true_ * /* fusion sequence */)
     {
         boost::fusion::for_each(ic.t, into_sequence<T, details::no_indicator>(*this));
     }
 #endif // HAVE_BOOST
 
     template <typename T, typename Indicator>
-    void _exchange(into_container<T, Indicator> const &ic, ...)
+    void exchange_(into_container<T, Indicator> const &ic, ...)
     { exchange(do_into(ic.t, ic.ind, typename details::exchange_traits<T>::type_family())); }
 
     template <typename T>
-    void _exchange(into_container<T, details::no_indicator> const &ic, ...)
+    void exchange_(into_container<T, details::no_indicator> const &ic, ...)
     { exchange(do_into(ic.t, typename details::exchange_traits<T>::type_family())); }        
 };
 

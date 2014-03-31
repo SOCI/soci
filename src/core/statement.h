@@ -65,10 +65,10 @@ public:
     bool fetch();
     void describe();
     void set_row(row * r);
-    void exchange_for_rowset(into_type_ptr const & i) { _exchange_for_rowset(i); }
+    void exchange_for_rowset(into_type_ptr const & i) { exchange_for_rowset_(i); }
     template<typename T, typename Indicator>
     void exchange_for_rowset(into_container<T, Indicator> const &ic)
-    { _exchange_for_rowset(ic); }
+    { exchange_for_rowset_(ic); }
 
     // for diagnostics and advanced users
     // (downcast it to expected back-end statement class)
@@ -105,7 +105,7 @@ private:
     int definePositionForRow_;
 
     template <typename Into>
-    void _exchange_for_rowset(Into const &i)
+    void exchange_for_rowset_(Into const &i)
     {
         if (intos_.empty() == false)
         {
