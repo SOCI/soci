@@ -7,6 +7,7 @@
 
 #include "soci/soci-platform.h"
 #include "soci/sqlite3/soci-sqlite3.h"
+#include "soci-cstrtod.h"
 #include "common.h"
 // std
 #include <cassert>
@@ -125,7 +126,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
             break;
         case x_double:
             {
-                double const val = strtod(buf, NULL);
+                double const val = cstring_to_double(buf);
                 set_in_vector(data_, i, val);
             }
             break;
