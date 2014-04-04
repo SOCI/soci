@@ -54,4 +54,12 @@ namespace std {
 #endif // _MSC_VER >= 1300
 #endif // _MSC_VER
 
+#if defined(__CYGWIN__) || defined(__MINGW32__)
+#include <stdlib.h>
+namespace std {
+    using ::strtoll;
+    using ::strtoull;
+}
+#endif
+
 #endif // SOCI_PLATFORM_H_INCLUDED
