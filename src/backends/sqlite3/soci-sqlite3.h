@@ -42,6 +42,10 @@ namespace sqlite_api
 typedef void (*sqlite3_destructor_type)(void*);
 #endif
 
+#ifdef _SQLITE3_H_
+#error "sqlite3 is already included. You should remove any reference you have to sqlite3 and let SOCI handle the library includes"
+#endif
+
 #include <sqlite3.h>
 
 } // namespace sqlite_api
