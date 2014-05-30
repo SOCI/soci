@@ -35,16 +35,18 @@ public:
     {
         if (--refCount_ == 0)
         {
-            try
+            if (!std::uncaught_exception())
             {
-                final_action();
+                try
+                {
+                    final_action();
+                }
+                catch (...)
+                {
+                    delete this;
+                    throw;
+                }
             }
-            catch (...)
-            {
-                delete this;
-                throw;
-            }
-
             delete this;
         }
     }
