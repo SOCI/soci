@@ -71,7 +71,18 @@ void mysql_statement_backend::prepare(std::string const & query,
             }
             else if (*it == ':')
             {
-                state = eInName;
+                const std::string::const_iterator next_it = it + 1;
+                // Check whether this is an assignment (e.g. @x:=y)
+                // and treat it as a special case, not as a named binding.
+                if (next_it != end && *next_it == '=')
+                {
+                    queryChunks_.back() += ":=";
+                    ++it;
+                }
+                else
+                {
+                    state = eInName;
+                }
             }
             else // regular character, stay in the same state
             {

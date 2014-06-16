@@ -839,6 +839,18 @@ void test14()
     std::cout << "test 14 passed" << std::endl;
 }
 
+void test15()
+{
+    {
+        session sql(backEnd, connectString);
+        int n;
+        sql << "select @a := 123", into(n);
+        assert(n == 123);
+    }
+    
+    std::cout << "test 15 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -976,6 +988,7 @@ int main(int argc, char** argv)
         test12();
         test13();
         test14();
+        test15();
 
         std::cout << "\nOK, all tests passed.\n\n";
         return EXIT_SUCCESS;
