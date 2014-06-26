@@ -112,7 +112,7 @@ void odbc_session_backend::commit()
     if (is_odbc_error(rc))
     {
         throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
-                         "Commiting");
+                         "Committing");
     }
     reset_transaction();
 }
