@@ -327,7 +327,7 @@ public:
                   SQLHANDLE hndl,
                   std::string const & msg);
 
-    ~odbc_soci_error();
+    ~odbc_soci_error() throw();
 
     SQLCHAR const * odbc_error_code() const
     {

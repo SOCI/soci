@@ -32,7 +32,7 @@ class SOCI_DECL sql_error : public soci_error
 {
 public:
     explicit sql_error(std::string const & msg);
-    ~sql_error();
+    ~sql_error() throw();
 
     virtual int native_code() const = 0;
     virtual std::string sql_state() const = 0;

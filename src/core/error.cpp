@@ -26,6 +26,6 @@ sql_error::sql_error(std::string const & msg)
 {
 }
 
-sql_error::~sql_error()
+sql_error::~sql_error() throw()
 {
 }

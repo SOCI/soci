@@ -23,7 +23,7 @@ odbc_soci_error::odbc_soci_error(SQLSMALLINT htype,
 {
 }
 
-odbc_soci_error::~odbc_soci_error()
+odbc_soci_error::~odbc_soci_error() throw()
 {
 }
 
