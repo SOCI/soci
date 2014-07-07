@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -33,5 +35,7 @@ SOCI_DECL void unload_all();
 } // namespace dynamic_backends
 
 } // namespace soci
+
+#include "../../build/windows/MSVC_MEMORY_END.def"
 
 #endif // SOCI_BACKEND_LOADER_H_INCLUDED

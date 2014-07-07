@@ -10,6 +10,8 @@
 #include "statement.h"
 #include "prepare-temp-type.h"
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 using namespace soci;
 using namespace soci::details;
 

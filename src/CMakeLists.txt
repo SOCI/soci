@@ -56,6 +56,25 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+#MSVC specific
+IF(MSVC)
+    # This option enables the Visual studio memory leak detector in debug version
+    OPTION(MSVC_MEMORY_LEAK_DETECTOR "Set to ON to build ciciWORKS with the memory leak detection enabled (Visual Studio 2005 and above)." OFF)
+    IF(MSVC_MEMORY_LEAK_DETECTOR)
+        ADD_DEFINITIONS(-DMSVC_MEMORY_LEAK_DETECTOR)
+    ENDIF(MSVC_MEMORY_LEAK_DETECTOR)
+    # This option is to enable the /MP switch for Visual Studio 2005 and above compilers
+    OPTION(MSVC_USE_MP "Set to ON to build ciciWORKS with the /MP option (Visual Studio 2005 and above)." ON)
+    MARK_AS_ADVANCED(MSVC_USE_MP)
+    IF(MSVC_USE_MP)
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+    ENDIF(MSVC_USE_MP)
+    # More MSVC specific compilation flags
+    ADD_DEFINITIONS(-D_SCL_SECURE_NO_WARNINGS)
+    ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
+ENDIF(MSVC)
+
+
 ###############################################################################
 # Find SOCI dependencies
 ###############################################################################

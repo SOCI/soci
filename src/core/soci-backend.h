@@ -15,6 +15,8 @@
 #include <map>
 #include <string>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -270,8 +272,11 @@ public:
 
     virtual details::session_backend* make_session(
         connection_parameters const& parameters) const = 0;
+
+    /** should be implemented in backend implementation in order to support local database creation. */
+    virtual void create_database(const std::string&) const { throw soci_error("This backend does not support direct sql execution!"); }
 };
 
 } // namespace soci
-
+#include "../../build/windows/MSVC_MEMORY_END.def"
 #endif // SOCI_BACKEND_H_INCLUDED

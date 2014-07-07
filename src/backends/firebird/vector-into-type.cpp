@@ -13,6 +13,8 @@ using namespace soci;
 using namespace soci::details;
 using namespace soci::details::firebird;
 
+#include "../../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 void firebird_vector_into_type_backend::define_by_pos(
     int & position, void * data, exchange_type type)
 {

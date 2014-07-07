@@ -27,7 +27,8 @@ if(NOT MSVC)
   find_package(DL)
   if(DL_FOUND)
     list(APPEND SOCI_CORE_DEPENDENCIES ${DL_LIBRARY})
-    set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES ${DL_INCLUDE_DIR})
+    #set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES ${DL_INCLUDE_DIR})
+    include_directories(${DL_INCLUDE_DIR}) 
     add_definitions(-DHAVE_DL=1)
   endif()
 endif()
@@ -45,13 +46,8 @@ if(Boost_FOUND)
     list(APPEND SOCI_COMPILE_DEFINITIONS "HAVE_BOOST_DATE_TIME=1")
   endif()
 
-  set_property(DIRECTORY ${CMAKE_SOURCE_DIR}
-    PROPERTY COMPILE_DEFINITIONS ${SOCI_COMPILE_DEFINITIONS})
-
-  set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
-
-  set_property(DIRECTORY ${CMAKE_SOURCE_DIR}
-    PROPERTY INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
+  set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY COMPILE_DEFINITIONS ${SOCI_COMPILE_DEFINITIONS})
+  include_directories(${Boost_INCLUDE_DIRS})
 
 endif()
 
@@ -71,8 +67,7 @@ set(SOCI_CORE_TARGET ${PROJECTNAMEL}_core)
 soci_target_output_name(${SOCI_CORE_TARGET} SOCI_CORE_TARGET_OUTPUT_NAME)
 
 # Configure SOCI backend loader to also use default install directory.
-set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR})
-set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES ${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 configure_file(soci_backends_config.h.in ${CMAKE_CURRENT_BINARY_DIR}/soci_backends_config.h)
 
 #
@@ -97,6 +92,18 @@ else()
     INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/lib
     CLEAN_DIRECT_OUTPUT 1)
 endif()
+
+#Configure compile definition so we have appropriate control over debug postfix from cmake. 
+set_property(
+   TARGET ${SOCI_CORE_TARGET}
+   PROPERTY COMPILE_DEFINITIONS_DEBUG SOCI_DEBUG_SUFFIX="${CMAKE_DEBUG_POSTFIX}"
+   )
+set_property(
+   TARGET ${SOCI_CORE_TARGET}
+   PROPERTY COMPILE_DEFINITIONS_RELEASE SOCI_DEBUG_SUFFIX=""
+   )
+
+
 add_definitions(-DSOCI_LIB_PREFIX="${CMAKE_SHARED_LIBRARY_PREFIX}soci_"
                 -DSOCI_LIB_SUFFIX="${CMAKE_SHARED_LIBRARY_SUFFIX}")
 

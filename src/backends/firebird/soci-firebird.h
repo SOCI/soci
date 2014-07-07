@@ -34,6 +34,8 @@
 #include <vector>
 #include <string>
 
+#include "../../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -331,6 +333,11 @@ struct firebird_backend_factory : backend_factory
     firebird_backend_factory() {}
     virtual firebird_session_backend * make_session(
         connection_parameters const & parameters) const;
+
+    /** Firebird expects SQL that creates new local database.
+        Example: CREATE DATABASE 'TEST.FDB' USER 'SYSDBA' PASSWORD 'masterkey' DEFAULT CHARACTER SET UTF8
+    */
+    virtual void create_database(const std::string& createSql) const;
 };
 
 extern SOCI_FIREBIRD_DECL firebird_backend_factory const firebird;
@@ -345,5 +352,7 @@ SOCI_FIREBIRD_DECL void register_factory_firebird();
 } // extern "C"
 
 } // namespace soci
+
+#include "../../../build/windows/MSVC_MEMORY_END.def"
 
 #endif // SOCI_FIREBIRD_H_INCLUDED

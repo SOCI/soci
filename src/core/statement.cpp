@@ -13,6 +13,7 @@
 #include "values.h"
 #include <ctime>
 #include <cctype>
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)

@@ -11,6 +11,8 @@
 
 #include <cstddef>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 using namespace soci;
 
 blob::blob(session & s)

@@ -6,12 +6,15 @@
 //
 
 #define SOCI_SQLITE3_SOURCE
+#include <sstream>
 #include "soci-sqlite3.h"
 #include <backend-loader.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
+
+#include "../../../build/windows/MSVC_MEMORY_BEGIN.def"
 
 using namespace soci;
 using namespace soci::details;
@@ -21,6 +24,19 @@ sqlite3_session_backend * sqlite3_backend_factory::make_session(
      connection_parameters const & parameters) const
 {
      return new sqlite3_session_backend(parameters);
+}
+
+void sqlite3_backend_factory::create_database(const std::string& path) const
+{
+    sqlite_api::sqlite3* db;
+    if( sqlite_api::sqlite3_open_v2(path.c_str(), &db,SQLITE_OPEN_CREATE, NULL) != SQLITE_OK )
+    {
+        const char *zErrMsg = sqlite_api::sqlite3_errmsg(db);
+        std::ostringstream ss;
+        ss << "Failed to create sqlite3 database " << path << ": " << zErrMsg;
+        sqlite_api::sqlite3_close_v2(db);
+        throw soci::soci_error(ss.str());
+    }
 }
 
 sqlite3_backend_factory const soci::sqlite3;

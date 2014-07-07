@@ -19,6 +19,8 @@
 #include <utility>
 #include <vector>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -53,6 +55,8 @@ public:
 
     indicator get_indicator(std::size_t pos) const;
     indicator get_indicator(std::string const & name) const;
+
+    std::size_t usesSize() const { return uses_.size(); }
 
     template <typename T>
     T get(std::size_t pos) const
@@ -345,5 +349,9 @@ private:
 };
 
 } // namespace soci
+
+#include "../../build/windows/MSVC_MEMORY_END.def"
+//disable new replacement at the end of the header since 
+
 
 #endif // SOCI_VALUES_H_INCLUDED

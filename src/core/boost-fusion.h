@@ -24,6 +24,8 @@
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 #include <boost/utility/enable_if.hpp>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 namespace detail
@@ -90,10 +92,13 @@ public:
 
     static void to_base(T& in, base_type & out, indicator & ind)
     {
-        converter::to_base( in, out, ind );
+        //this is a bit hacky solution so that we do not produce memory leaks on tuple on test 28
+        //adding boost tuples is somehow problematic since convert_to_base appends entire tuple to values so when called multiple times it produces memory leaks
+        if( out.usesSize() == 0 ) 
+            converter::to_base( in, out, ind );
     }
 };
 
 } // namespace soci
-
+#include "../../build/windows/MSVC_MEMORY_END.def"
 #endif // SOCI_BOOST_FUSION_H_INCLUDED

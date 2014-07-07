@@ -15,6 +15,8 @@
 #include <cstddef>
 #include <vector>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -51,5 +53,5 @@ details::into_type_ptr into(T & t, std::size_t bufSize)
 }
 
 } // namespace soci
-
+#include "../../build/windows/MSVC_MEMORY_END.def"
 #endif // SOCI_INTO_H_INCLUDED

@@ -6,12 +6,15 @@
 //
 
 #define SOCI_SOURCE
-#include "row.h"
 
 #include <cstddef>
 #include <cctype>
 #include <sstream>
 #include <string>
+
+#include "row.h"
+
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
 
 using namespace soci;
 using namespace details;

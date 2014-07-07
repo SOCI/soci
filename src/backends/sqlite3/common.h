@@ -16,6 +16,8 @@
 #include <vector>
 #include <limits>
 
+#include "../../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci { namespace details { namespace sqlite3 {
 
 // helper function for parsing datetime values
@@ -83,5 +85,5 @@ T string_to_unsigned_integer(char const * buf)
 }
 
 }}} // namespace soci::details::sqlite3
-
+#include "../../../build/windows/MSVC_MEMORY_END.def"
 #endif // SOCI_SQLITE3_COMMON_H_INCLUDED

@@ -9,6 +9,8 @@
 #include "transaction.h"
 #include "error.h"
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 using namespace soci;
 
 transaction::transaction(session& sql)

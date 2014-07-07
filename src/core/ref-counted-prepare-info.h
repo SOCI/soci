@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -55,5 +57,5 @@ private:
 } // namespace details
 
 } // namespace soci
-
+#include "../../build/windows/MSVC_MEMORY_END.def"
 #endif

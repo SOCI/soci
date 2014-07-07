@@ -14,6 +14,8 @@
 // std
 #include <string>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -54,5 +56,5 @@ struct exchange_traits<soci::blob>
 } // namespace details
 
 } // namespace soci
-
+#include "../../build/windows/MSVC_MEMORY_END.def"
 #endif // SOCI_BLOB_EXCHANGE_H_INCLUDED

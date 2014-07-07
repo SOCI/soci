@@ -13,6 +13,8 @@
 #include <iterator>
 #include <memory>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -238,5 +240,5 @@ private:
 }; // class rowset
 
 } // namespace soci
-
+#include "../../build/windows/MSVC_MEMORY_END.def"
 #endif // SOCI_ROWSET_H_INCLUDED

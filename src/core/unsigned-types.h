@@ -11,6 +11,8 @@
 #include "type-conversion-traits.h"
 #include <limits>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -110,5 +112,5 @@ struct type_conversion<unsigned int>
 };
 
 } // namespace soci
-
+#include "../../build/windows/MSVC_MEMORY_END.def"
 #endif // SOCI_UNSIGNED_TYPES_H_INCLUDED

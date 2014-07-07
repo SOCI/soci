@@ -16,6 +16,8 @@
 #include <string>
 #include <vector>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci { namespace details {
 
 class statement_impl;
@@ -235,5 +237,5 @@ use_type_ptr do_use(T const & t, std::vector<indicator> & ind,
 } // namespace details
 
 } // namesapce soci
-
+#include "../../build/windows/MSVC_MEMORY_END.def"
 #endif // SOCI_USE_TYPE_H_INCLUDED

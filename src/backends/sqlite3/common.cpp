@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <ctime>
 
+#include "../../../build/windows/MSVC_MEMORY_BEGIN.def"
 
 namespace // anonymous
 {

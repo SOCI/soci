@@ -13,6 +13,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -23,5 +25,5 @@ public:
 };
 
 } // namespace soci
-
+#include "../../build/windows/MSVC_MEMORY_END.def"
 #endif // SOCI_ERROR_H_INCLUDED

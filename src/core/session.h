@@ -19,6 +19,8 @@
 #include <sstream>
 #include <string>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 class values;
@@ -146,5 +148,5 @@ private:
 };
 
 } // namespace soci
-
+#include "../../build/windows/MSVC_MEMORY_END.def"
 #endif // SOCI_SESSION_H_INCLUDED

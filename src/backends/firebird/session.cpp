@@ -17,6 +17,8 @@
 using namespace soci;
 using namespace soci::details::firebird;
 
+#include "../../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace
 {
 

@@ -11,6 +11,8 @@
 
 using namespace soci;
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 soci_error::soci_error(std::string const & msg)
      : std::runtime_error(msg)
 {

@@ -15,6 +15,8 @@
 #include <cstddef>
 #include <vector>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -160,5 +162,5 @@ into_type_ptr do_into(T & t, std::vector<indicator> & ind, basic_type_tag)
 } // namespace details
 
 } // namespace soci
-
+#include "../../build/windows/MSVC_MEMORY_END.def"
 #endif // SOCI_INTO_TYPE_H_INCLUDED

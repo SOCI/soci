@@ -1,0 +1,13 @@
+//#include this macro in headers where memory leak detection should occur when
+//using visual studio memory leak detection
+#if defined(MSVC_MEMORY_LEAK_DETECTOR) && defined(_DEBUG) 
+    #define _CRTDBG_MAP_ALLOC
+    #ifdef DEBUG_NEW
+        #undef DEBUG_NEW
+    #endif
+    #define DEBUG_NEW new( _NORMAL_BLOCK, __FILE__, __LINE__ )
+    #ifdef new
+        #undef new
+    #endif
+    #define new DEBUG_NEW
+#endif

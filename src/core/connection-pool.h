@@ -12,6 +12,8 @@
 // std
 #include <cstddef>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -35,5 +37,5 @@ private:
 };
 
 }
-
+#include "../../build/windows/MSVC_MEMORY_END.def"
 #endif // SOCI_CONNECTION_POOL_H_INCLUDED

@@ -19,6 +19,8 @@
 #include <map>
 #include <vector>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -96,7 +98,14 @@ private:
     template<typename T>
     void into_row()
     {
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4345)
+#endif 
         T * t = new T();
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif 
         indicator * ind = new indicator(i_ok);
         row_->add_holder(t, ind);
         exchange_for_row(into(*t, *ind));
@@ -267,5 +276,5 @@ public:
 } // namespace details
 
 } // namespace soci
-
+#include "../../build/windows/MSVC_MEMORY_END.def"
 #endif // SOCI_STATEMENT_H_INCLUDED

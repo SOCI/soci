@@ -17,6 +17,8 @@
 #pragma warning(disable:4355)
 #endif
 
+#include "../../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 using namespace soci;
 using namespace soci::details;
 using namespace sqlite_api;
@@ -55,69 +57,83 @@ void check_sqlite_err(sqlite_api::sqlite3* conn, int res, char const* const errM
 sqlite3_session_backend::sqlite3_session_backend(
     connection_parameters const & parameters)
 {
-    int timeout = 0;
-    int connection_flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
-    std::string synchronous;
-    std::string const & connectString = parameters.get_connect_string();
-    std::string dbname(connectString);
-    std::stringstream ssconn(connectString);
-    while (!ssconn.eof() && ssconn.str().find('=') != std::string::npos)
+    try
     {
-        std::string key, val;
-        std::getline(ssconn, key, '=');
-        std::getline(ssconn, val, ' ');
-
-        if (val.size()>0 && val[0]=='\"')
+        int timeout = 0;
+        int connection_flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+        std::string synchronous;
+        std::string const & connectString = parameters.get_connect_string();
+        std::string dbname(connectString);
+        std::stringstream ssconn(connectString);
+        while (!ssconn.eof() && ssconn.str().find('=') != std::string::npos)
         {
-            std::string quotedVal = val.erase(0, 1);
+            std::string key, val;
+            std::getline(ssconn, key, '=');
+            std::getline(ssconn, val, ' ');
 
-            if (quotedVal[quotedVal.size()-1] ==  '\"')
+            if (val.size()>0 && val[0]=='\"')
             {
-                quotedVal.erase(val.size()-1);
+                std::string quotedVal = val.erase(0, 1);
+
+                if (quotedVal[quotedVal.size()-1] ==  '\"')
+                {
+                    quotedVal.erase(val.size()-1);
+                }
+                else // space inside value string
+                {
+                    std::getline(ssconn, val, '\"');
+                    quotedVal = quotedVal + " " + val;
+                    std::string keepspace;
+                    std::getline(ssconn, keepspace, ' ');
+                }     
+
+                val = quotedVal;
             }
-            else // space inside value string
+
+            if ("dbname" == key || "db" == key)
             {
-                std::getline(ssconn, val, '\"');
-                quotedVal = quotedVal + " " + val;
-                std::string keepspace;
-                std::getline(ssconn, keepspace, ' ');
-            }     
-
-            val = quotedVal;
+                dbname = val;
+            }
+            else if ("timeout" == key)
+            {
+                std::istringstream converter(val);
+                converter >> timeout;
+            }
+            else if ("synchronous" == key)
+            {
+                synchronous = val;
+            }
+            else if ("shared_cache" == key && "true" == val)
+            {
+                connection_flags |=  SQLITE_OPEN_SHAREDCACHE;
+            }
         }
 
-        if ("dbname" == key || "db" == key)
+        int res = sqlite3_open_v2(dbname.c_str(), &conn_, connection_flags, NULL);
+        check_sqlite_err(conn_, res, "Cannot establish connection to the database. ");
+
+        if (!synchronous.empty())
         {
-            dbname = val;
+            std::string const query("pragma synchronous=" + synchronous);
+            std::string const errMsg("Query failed: " + query);
+            execude_hardcoded(conn_, query.c_str(), errMsg.c_str());
         }
-        else if ("timeout" == key)
-        {
-            std::istringstream converter(val);
-            converter >> timeout;
-        }
-        else if ("synchronous" == key)
-        {
-            synchronous = val;
-        }
-        else if ("shared_cache" == key && "true" == val)
-        {
-            connection_flags |=  SQLITE_OPEN_SHAREDCACHE;
-        }
+
+        res = sqlite3_busy_timeout(conn_, timeout * 1000);
+        check_sqlite_err(conn_, res, "Failed to set busy timeout for connection. ");
     }
-
-    int res = sqlite3_open_v2(dbname.c_str(), &conn_, connection_flags, NULL);
-    check_sqlite_err(conn_, res, "Cannot establish connection to the database. ");
-
-    if (!synchronous.empty())
+    catch(const soci_error& se)
     {
-        std::string const query("pragma synchronous=" + synchronous);
-        std::string const errMsg("Query failed: " + query);
-        execude_hardcoded(conn_, query.c_str(), errMsg.c_str());
+        //this should be called here since all code happens in constructor and memory leaks occurs if we do
+        //not close database even if sqlite3_open failed        
+        if( conn_ )
+        {
+            int res = sqlite3_close_v2(conn_);
+            if( res != SQLITE_OK )
+                throw soci_error("Failed to close connection in a failed session backend constructor!" );
+        }
+        throw se;
     }
-
-    res = sqlite3_busy_timeout(conn_, timeout * 1000);
-    check_sqlite_err(conn_, res, "Failed to set busy timeout for connection. ");
-
 }
 
 sqlite3_session_backend::~sqlite3_session_backend()

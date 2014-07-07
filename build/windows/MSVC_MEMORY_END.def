@@ -1,0 +1,8 @@
+//if header inline code needs memory leak management then we need to call
+//this block of preprocessor commands in order to restore new operator
+#if defined(MSVC_MEMORY_LEAK_DETECTOR) && defined(_DEBUG)
+    #undef _CRTDBG_MAP_ALLOC //this has no effect on malloc(memory leak is shown without source file info). new operator, however works
+    #undef DEBUG_NEW
+    #undef new
+    #define new new
+#endif

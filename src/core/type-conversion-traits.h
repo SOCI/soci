@@ -10,6 +10,8 @@
 
 #include "soci-backend.h"
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -35,7 +37,7 @@ struct type_conversion
         ind = i_ok;
     }
 };
-
+#include "../../build/windows/MSVC_MEMORY_END.def"
 } // namespace soci
 
 #endif // SOCI_TYPE_CONVERSION_TRAITS_H_INCLUDED
