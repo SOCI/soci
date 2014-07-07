@@ -8,6 +8,10 @@
 #define SOCI_FIREBIRD_SOURCE
 #include "soci-firebird.h"
 
+#ifdef _MSC_VER
+#pragma warning(disable:4702)
+#endif
+
 using namespace soci;
 
 firebird_rowid_backend::firebird_rowid_backend(firebird_session_backend & /* session */)

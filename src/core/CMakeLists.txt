@@ -97,6 +97,18 @@ else()
     INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/lib
     CLEAN_DIRECT_OUTPUT 1)
 endif()
+
+#Configure compile definition so we have appropriate control over debug postfix from cmake. 
+set_property(
+   TARGET ${SOCI_CORE_TARGET}
+   PROPERTY COMPILE_DEFINITIONS_DEBUG SOCI_DEBUG_SUFFIX="${CMAKE_DEBUG_POSTFIX}"
+   )
+set_property(
+   TARGET ${SOCI_CORE_TARGET}
+   PROPERTY COMPILE_DEFINITIONS_RELEASE SOCI_DEBUG_SUFFIX=""
+   )
+
+
 add_definitions(-DSOCI_LIB_PREFIX="${CMAKE_SHARED_LIBRARY_PREFIX}soci_"
                 -DSOCI_LIB_SUFFIX="${CMAKE_SHARED_LIBRARY_SUFFIX}")
 

@@ -90,7 +90,12 @@ public:
 
     static void to_base(T& in, base_type & out, indicator & ind)
     {
-        converter::to_base( in, out, ind );
+        //converter::to_base( in, out, ind );
+        //this is a bit hacky solution so that memory leak is solved on tuple on test 28,29
+        //convert_to_base on  boost tuples is somehow problematic since it appends all tuple values and each call producing dangling values that are not deleted appropriatelly
+        //!!!!!!! This is not proper solution but just indication of what the problem is
+        if( out.usesSize() == 0 ) 
+            converter::to_base( in, out, ind ); 
     }
 };
 

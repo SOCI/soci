@@ -231,8 +231,7 @@ struct sqlite3_blob_backend : details::blob_backend
     std::size_t set_data(char const *buf, std::size_t toWrite);
 
 private:
-    char *buf_;
-    size_t len_;
+    std::vector<char> buf_;
 };
 
 struct sqlite3_session_backend : details::session_backend
@@ -261,6 +260,8 @@ struct sqlite3_backend_factory : backend_factory
     sqlite3_backend_factory() {}
     virtual sqlite3_session_backend * make_session(
         connection_parameters const & parameters) const;
+    /** SQLite expects local path where new SQLite database should be created.*/
+    virtual void create_database(const std::string& path) const;
 };
 
 extern SOCI_SQLITE3_DECL sqlite3_backend_factory const sqlite3;

@@ -54,6 +54,8 @@ public:
     indicator get_indicator(std::size_t pos) const;
     indicator get_indicator(std::string const & name) const;
 
+    std::size_t usesSize() const { return uses_.size(); }
+
     template <typename T>
     T get(std::size_t pos) const
     {
