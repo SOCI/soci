@@ -267,13 +267,28 @@ void test5()
 //test sqlite specific connections
 void test6()
 {
-    //create new database test
+    std::string db = "sqlitetestdb.db";
+    
+    //remove existing database(if exists)
+    std::remove(db.c_str());
+    //create new empty database
+    backEnd.create_database(db);
+    try
+    {
+        backEnd.create_database(db);
+    }
+    catch(const std::exception& ex)
+    {
+        //expected error...
+        std::string error = ex.what();
+        assert(error == "Database already exists.");
+    }
+    //remove before further testing
+    std::remove(db.c_str());
     if(uriFilenamesEnabled) 
     {
-        std::string db = "sqlitetestdb.db";
         try
         {
-            std::remove(db.c_str()); //delete file
             std::string connection = "file:" + db + "?mode=rw";
             //try to open sqlite test.db in current directory readWrite / not create
             session sql(backEnd, connection); //this should fail

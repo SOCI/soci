@@ -37,7 +37,6 @@ std::size_t sqlite3_blob_backend::read(
     if (toRead > len - offset)
         toRead = len - offset;
     std::copy(&(*buf_.begin()) + offset, &(*buf_.begin()) + offset + toRead, buf);
-    //memcpy(buf, &(*buf_.begin()) + offset, toRead);
     return toRead;
 }
 
