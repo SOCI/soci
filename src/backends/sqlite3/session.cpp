@@ -128,7 +128,7 @@ sqlite3_session_backend::sqlite3_session_backend(
         //not close database even if sqlite3_open failed        
         if( conn_ )
         {
-            int res = sqlite3_close_v2(conn_);
+            int res = sqlite_api::sqlite3_close_v2(conn_);
             if( res != SQLITE_OK )
                 throw soci_error("Failed to close connection in a failed session backend constructor!" );
         }
