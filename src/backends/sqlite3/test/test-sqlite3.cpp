@@ -411,10 +411,8 @@ int main(int argc, char** argv)
     _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
     _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
 
-    //_crtBreakAlloc = 43227;
-
     //enable msvc memory leak manager
-    #if defined(_DEBUG)
+    #if defined(_DEBUG) &&  defined(MSVC_MEMORY_LEAK_DETECTOR)
         _CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
     #endif
 #endif //_MSC_VER

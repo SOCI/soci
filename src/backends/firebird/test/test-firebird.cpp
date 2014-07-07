@@ -1327,6 +1327,10 @@ int main(int argc, char** argv)
     // NOTE: Comment this 2 lines for debugging with Visual C++ debugger to catch assertions inside.
     _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
     _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
+    //enable msvc memory leak manager
+    #if defined(_DEBUG) &&  defined(MSVC_MEMORY_LEAK_DETECTOR)
+        _CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+    #endif
 #endif //_MSC_VER
 
     bool tempDatabase = false;

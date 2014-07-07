@@ -234,8 +234,6 @@ struct sqlite3_blob_backend : details::blob_backend
 
 private:
     std::vector<char> buf_;
-    /*char *buf_;
-    size_t len_;*/
 };
 
 struct sqlite3_session_backend : details::session_backend
