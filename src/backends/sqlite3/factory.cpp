@@ -7,6 +7,7 @@
 
 #define SOCI_SQLITE3_SOURCE
 #include <sstream>
+
 #include "soci-sqlite3.h"
 #include <backend-loader.h>
 
@@ -18,7 +19,6 @@
 
 using namespace soci;
 using namespace soci::details;
-using namespace sqlite_api;
 
 // concrete factory for Empty concrete strategies
 sqlite3_session_backend * sqlite3_backend_factory::make_session(
@@ -32,7 +32,7 @@ void error_msg(sqlite_api::sqlite3* db, const std::string& error)
     std::string zErrMsg = sqlite3_errmsg(db);
     std::ostringstream ss;
     ss << error << (zErrMsg == "not an error" ? "" : zErrMsg);
-    sqlite3_close_v2(db);
+    sqlite_api::sqlite3_close_v2(db);
     throw soci::soci_error(ss.str());
 }
 
@@ -41,14 +41,14 @@ void sqlite3_backend_factory::create_database(const std::string& path) const
     sqlite_api::sqlite3* db=NULL;
 
     //check if database can be opened for read/write meaning databse already exists
-    if( sqlite3_open_v2(path.c_str(), &db,SQLITE_OPEN_READWRITE, NULL) == SQLITE_OK )
+    if( sqlite_api::sqlite3_open_v2(path.c_str(), &db,SQLITE_OPEN_READWRITE, NULL) == SQLITE_OK )
         error_msg(db,"Database already exists.");
     //close db handle even if this code
-    sqlite3_close_v2(db);db=NULL;
-    if( sqlite3_open_v2(path.c_str(), &db,SQLITE_OPEN_CREATE|SQLITE_OPEN_READWRITE, NULL) != SQLITE_OK )
+    sqlite_api::sqlite3_close_v2(db);db=NULL;
+    if( sqlite_api::sqlite3_open_v2(path.c_str(), &db,SQLITE_OPEN_CREATE|SQLITE_OPEN_READWRITE, NULL) != SQLITE_OK )
         error_msg(db,"");
     //close database handle before exit
-    sqlite3_close_v2(db);
+    sqlite_api::sqlite3_close_v2(db);
 }
 
 sqlite3_backend_factory const soci::sqlite3;

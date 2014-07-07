@@ -11,6 +11,8 @@
 #include "error-firebird.h"            // soci::details::Firebird::throw_iscerror()
 #include "common-tests.h"
 #include "common.h"
+
+#include <stdio.h>
 #include <iostream>
 #include <string>
 #include <cassert>
@@ -1344,7 +1346,7 @@ int main(int argc, char** argv)
         {
             try
             {
-                std::remove("TEST.FDB");
+                remove("TEST.FDB");
                 //if no connection string is set then create temporary local database using default Firebird credentials
                 backEnd.create_database("CREATE DATABASE 'TEST.FDB' USER 'SYSDBA' PASSWORD 'masterkey' DEFAULT CHARACTER SET UTF8"); //create database in current dir
                 tempDatabase=true;
@@ -1383,14 +1385,14 @@ int main(int argc, char** argv)
 
         //delete temp database
         if( tempDatabase )
-            std::remove("TEST.FDB");
+            remove("TEST.FDB");
         return EXIT_SUCCESS;
     }
     catch (std::exception const & e)
     {
         std::cout << e.what() << '\n';
         if( tempDatabase )
-            std::remove("TEST.FDB");
+            remove("TEST.FDB");
     }
     return EXIT_FAILURE;
 }

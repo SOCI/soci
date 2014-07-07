@@ -11,6 +11,7 @@
 
 #include <sqlite3.h>
 
+#include <stdio.h>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -270,7 +271,7 @@ void test6()
     std::string db = "sqlitetestdb.db";
     
     //remove existing database(if exists)
-    std::remove(db.c_str());
+    remove(db.c_str());
     //create new empty database
     backEnd.create_database(db);
     try
@@ -284,7 +285,7 @@ void test6()
         assert(error == "Database already exists.");
     }
     //remove before further testing
-    std::remove(db.c_str());
+    remove(db.c_str());
     if(uriFilenamesEnabled) 
     {
         try
@@ -306,7 +307,7 @@ void test6()
             {
                 session sql(backEnd, connection); //this should create new database
             }
-            std::remove(db.c_str());
+            remove(db.c_str());
         }
         catch( const std::exception&)
         {
