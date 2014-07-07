@@ -15,6 +15,8 @@
 #include <iostream>
 #include <string>
 
+#include "../../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -188,7 +190,17 @@ std::string getTextParam(XSQLVAR const *var)
     }
     else if ((var->sqltype & ~1) == SQL_TEXT)
     {
-        size = var->sqllen;
+        /*based on The Firebird book page 163:
+        Fixed-Length Character Data:
+            Leading spaces characters (ASCII character 32) in fixed-length string input are significant,
+            whereas trailing spaces are not. When storing fixed-length strings, Firebird
+            strips trailing space characters. The strings are retrieved with right-padding out to the
+            full declared length. 
+            Using fixed-length types is not recommended for data that might contain significant
+            trailing space characters or items whose actual lengths are expected to vary
+            widely*/
+        size = var->sqllen; //right trim here since text has trailing spaces till full size(i.e. UTF8, UNICODE_FSS character sets )
+        while(var->sqldata[size-1] == ' ') size--; //decrement size
     }
     else if ((var->sqltype & ~1) == SQL_SHORT)
     {

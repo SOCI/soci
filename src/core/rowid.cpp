@@ -9,6 +9,8 @@
 #include "rowid.h"
 #include "session.h"
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 using namespace soci;
 using namespace soci::details;
 

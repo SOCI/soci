@@ -15,6 +15,8 @@
 // std
 #include <cstddef>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -73,5 +75,5 @@ struct exchange_traits<row>
 } // namespace details
 
 } // namespace soci
-
+#include "../../build/windows/MSVC_MEMORY_END.def"
 #endif

@@ -12,6 +12,8 @@
 #include "exchange-traits.h"
 #include "type-conversion.h"
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -83,5 +85,5 @@ details::use_type_ptr use(T const & t, std::size_t bufSize,
 }
 
 } // namespace soci
-
+#include "../../build/windows/MSVC_MEMORY_END.def"
 #endif // SOCI_USE_H_INCLUDED

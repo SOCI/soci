@@ -15,6 +15,8 @@
 #include <limits>
 #include <sstream>
 
+#include "../../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 #ifdef _MSC_VER
 #pragma warning(disable:4355 4996)
 #define snprintf _snprintf // TODO: use soci-platform.h

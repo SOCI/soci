@@ -9,6 +9,8 @@
 #include "use-type.h"
 #include "statement.h"
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 using namespace soci;
 using namespace soci::details;
 

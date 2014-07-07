@@ -10,6 +10,12 @@
 
 using namespace soci;
 
+#ifdef _MSC_VER
+#pragma warning(disable:4702)
+#endif 
+
+#include "../../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 firebird_rowid_backend::firebird_rowid_backend(firebird_session_backend & /* session */)
 {
     // Unsupported in Firebird backend

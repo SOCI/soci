@@ -16,6 +16,8 @@
 #include <string>
 #include <vector>
 
+#include "../../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 using namespace soci;
 using namespace soci::details;
 using namespace soci::details::sqlite3;

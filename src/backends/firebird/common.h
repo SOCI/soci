@@ -19,6 +19,12 @@
 #include <vector>
 #include <algorithm>
 
+#ifdef _MSC_VER
+#pragma warning(disable: 4127)
+#endif
+
+#include "../../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -65,7 +71,7 @@ const char *str2dec(const char * s, IntType &out, int &scale)
         int d = *s - '0';
         if (d < 0 || d > 9)
             return s;
-        res = res * 10 + d * sign;
+        res = res * 10 + (IntType)d * (IntType)sign;
         if (1 == sign)
         {
             if (res < out)
@@ -86,7 +92,7 @@ template<typename T1>
 void to_isc(void * val, XSQLVAR * var, int x_scale = 0)
 {
     T1 value = *reinterpret_cast<T1*>(val);
-    short scale = var->sqlscale + x_scale;
+    short scale = var->sqlscale + (ISC_SHORT)x_scale;
     short type = var->sqltype & ~1;
     long long divisor = 1, multiplier = 1;
 
@@ -182,7 +188,8 @@ T1 from_isc(XSQLVAR * var)
 
     if (scale < 0)
     {
-        if (std::numeric_limits<T1>::is_integer)
+        static bool isInteger = std::numeric_limits<T1>::is_integer;
+        if (isInteger)
         {
             std::ostringstream msg;
             msg << "Can't convert value with scale " << -scale
@@ -232,5 +239,5 @@ void resizeVector(void *p, std::size_t sz)
 } // namespace details
 
 } // namespace soci
-
+#include "../../../build/windows/MSVC_MEMORY_END.def"
 #endif // SOCI_FIREBIRD_COMMON_H_INCLUDED

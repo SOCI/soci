@@ -12,6 +12,8 @@
 using namespace soci;
 using namespace soci::details::firebird;
 
+#include "../../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 firebird_blob_backend::firebird_blob_backend(firebird_session_backend &session)
         : session_(session), from_db_(false), bhp_(0), loaded_(false),
         max_seg_size_(0)

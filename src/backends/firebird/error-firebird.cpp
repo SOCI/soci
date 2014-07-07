@@ -12,6 +12,8 @@
 #include <cstdlib>
 #include <string>
 
+#include "../../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 

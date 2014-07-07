@@ -9,8 +9,12 @@
 #include "ref-counted-prepare-info.h"
 #include "session.h"
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 using namespace soci;
 using namespace soci::details;
+
+
 
 void ref_counted_prepare_info::exchange(into_type_ptr const & i)
 {

@@ -185,6 +185,8 @@ void connection_pool::give_back(std::size_t pos)
 
 #include <Windows.h>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 using namespace soci;
 
 struct connection_pool::connection_pool_impl

@@ -18,6 +18,8 @@
 #include <string>
 #include <vector>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 using namespace soci;
 
 namespace // unnamed

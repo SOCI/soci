@@ -12,6 +12,8 @@
 using namespace soci;
 using namespace soci::details;
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 standard_into_type::~standard_into_type()
 {
     delete backEnd_;

@@ -12,6 +12,8 @@
 // boost
 #include <boost/optional.hpp>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -51,5 +53,7 @@ struct type_conversion<boost::optional<T> >
 };
 
 } // namespace soci
+
+#include "../../build/windows/MSVC_MEMORY_END.def"
 
 #endif // SOCI_BOOST_OPTIONAL_H_INCLUDED

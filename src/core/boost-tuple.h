@@ -15,6 +15,8 @@
 
 #if defined(BOOST_VERSION) && BOOST_VERSION < 103500
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -320,5 +322,5 @@ struct type_conversion<boost::tuple<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9> >
 #   include "boost-fusion.h"
 #   include <boost/fusion/adapted/boost_tuple.hpp>
 #endif
-
+#include "../../build/windows/MSVC_MEMORY_END.def"
 #endif // SOCI_BOOST_TUPLE_H_INCLUDED

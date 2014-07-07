@@ -15,6 +15,8 @@
 // std
 #include <string>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -55,5 +57,5 @@ struct exchange_traits<soci::rowid>
 } // namespace details
 
 } // namespace soci
-
+#include "../../build/windows/MSVC_MEMORY_END.def"
 #endif // SOCI_ROWID_EXCHANGE_H_INCLUDED

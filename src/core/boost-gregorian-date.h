@@ -15,6 +15,8 @@
 // std
 #include <ctime>
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 namespace soci
 {
 
@@ -43,5 +45,5 @@ struct type_conversion<boost::gregorian::date>
 };
 
 } // namespace soci
-
+#include "../../build/windows/MSVC_MEMORY_END.def"
 #endif // SOCI_BOOST_GREGORIAN_DATE_H_INCLUDED

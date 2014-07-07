@@ -29,6 +29,8 @@
 #include <string>
 #include <typeinfo>
 
+#include "../../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 // Objects used later in tests 14,15
 struct PhonebookEntry
 {
@@ -3849,7 +3851,7 @@ void test_get_affected_rows()
         std::vector<int> v(5, 0);
         for (std::size_t i = 0; i < v.size(); ++i)
         {
-            v[i] = (7 + i);
+            v[i] = (7 + (int)i);
         }
         
         // test affected rows for bulk operations.
@@ -3976,5 +3978,7 @@ void test_issue154()
 } // namespace tests
 
 } // namespace soci
+
+#include "../../../build/windows/MSVC_MEMORY_END.def"
 
 #endif // SOCI_COMMON_TESTS_H_INCLUDED

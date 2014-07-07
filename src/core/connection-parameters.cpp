@@ -10,6 +10,8 @@
 #include "soci-backend.h"
 #include "backend-loader.h"
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 using namespace soci;
 
 namespace // anonymous

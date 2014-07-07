@@ -77,6 +77,7 @@ typedef void * soci_handler_t;
 
 #endif // _WIN32
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
 
 namespace // unnamed
 {

@@ -13,6 +13,8 @@
 using namespace soci;
 using namespace soci::details;
 
+#include "../../build/windows/MSVC_MEMORY_BEGIN.def"
+
 once_temp_type::once_temp_type(session & s)
     : rcst_(new ref_counted_statement(s))
 {
