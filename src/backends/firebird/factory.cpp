@@ -36,7 +36,7 @@ void firebird_backend_factory::create_database(const std::string& createSql) con
         ISC_SCHAR buf[512];
         std::ostringstream oss;
         const ISC_STATUS* start = status;
-        while( fb_interpret(buf,(unsigned int)strlen(buf),&start) )
+        while( fb_interpret(buf,sizeof(buf),&start) )
             oss << buf << std::endl;
         throw soci_error(oss.str());
     }
