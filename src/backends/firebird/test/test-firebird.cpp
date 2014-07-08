@@ -11,6 +11,8 @@
 #include "error-firebird.h"            // soci::details::Firebird::throw_iscerror()
 #include "common-tests.h"
 #include "common.h"
+
+#include <stdio.h>
 #include <iostream>
 #include <string>
 #include <cassert>
