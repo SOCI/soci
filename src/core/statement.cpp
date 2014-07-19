@@ -11,6 +11,7 @@
 #include "into-type.h"
 #include "use-type.h"
 #include "values.h"
+#include "blob-exchange.h"
 #include <ctime>
 #include <cctype>
 
@@ -636,6 +637,21 @@ void statement_impl::bind_into<dt_date>()
     into_row<std::tm>();
 }
 
+template<>
+void statement_impl::into_row<blob>()
+{
+    blob * t = new blob(session_);
+    indicator * ind = new indicator(i_ok);
+    row_->add_holder(t, ind);
+    exchange_for_row(into(*t, *ind));
+}
+
+template<>
+void statement_impl::bind_into<dt_blob>()
+{
+    into_row<blob>();
+}
+
 void statement_impl::describe()
 {
     row_->clean_up();
@@ -671,6 +687,9 @@ void statement_impl::describe()
             break;
         case dt_date:
             bind_into<dt_date>();
+            break;
+        case dt_blob:
+            bind_into<dt_blob>();
             break;
         default:
             std::ostringstream msg;

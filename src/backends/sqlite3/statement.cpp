@@ -380,6 +380,11 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
         type = dt_integer;
         typeFound = true;
     }
+    else if (dt.find("blob", 0) != std::string::npos)
+    {
+        type = dt_blob;
+        typeFound = true;
+    }
 
     if (typeFound)
     {
