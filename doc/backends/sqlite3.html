@@ -33,6 +33,9 @@
 </div>
   <a href="#native">Accessing the Native Database API</a><br />
   <a href="#extensions">Backend-specific Extensions</a><br />
+  <div class="navigation-indented">
+    <a href="#result">SQLite3 result code support</a><br />
+  </div>
   <a href="#options">Configuration options</a><br />
 </div>
 
@@ -196,7 +199,11 @@ sql &lt;&lt; "insert into t(x, y) values(?, ?)", use(i), use(j);
 
 <h3 id="extensions">Backend-specific extensions</h3>
 
-<p>None.</p>
+<h4 id="result">SQLite3 result code support</h4>
+
+<p>SQLite3 result code is provided via the backend specific <code>sqlite3_soci_error</code>
+class. Catching the backend specific error yields the value of SQLite3 result code via the
+<code>result()</code> method.</p>
 
 <h3 id="options">Configuration options</h3>
 
