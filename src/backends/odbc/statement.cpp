@@ -291,7 +291,7 @@ void odbc_statement_backend::describe_column(int colNum, data_type & type,
         type = dt_date;
         break;
     case SQL_NUMERIC:
-    {
+    { //
         if (decDigits > 0)
         {
             type = dt_double;
@@ -328,24 +328,6 @@ void odbc_statement_backend::describe_column(int colNum, data_type & type,
         break;
     }
 }
-
-    case SQLT_NUM:
-        if (scale > 0)
-        {
-            if (session_.get_option_decimals_as_strings())
-                type = dt_string;
-            else
-                type = dt_double;
-        }
-        else if (precision <= std::numeric_limits<int>::digits10)
-        {
-            type = dt_integer;
-        }
-        else
-        {
-            type = dt_long_long;
-        }
-        break;
 
 std::size_t odbc_statement_backend::column_size(int colNum)
 {
