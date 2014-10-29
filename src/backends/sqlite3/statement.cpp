@@ -5,6 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 #include "soci-sqlite3.h"
+#include "row.h"
 // std
 #include <algorithm>
 #include <sstream>
@@ -308,10 +309,13 @@ int sqlite3_statement_backend::prepare_for_describe()
     return sqlite3_column_count(stmt_);
 }
 
-void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
-                                                std::string & columnName)
+void sqlite3_statement_backend::describe_column(int colNum, column_properties* ptrcolProperties)
 {
-    columnName = sqlite3_column_name(stmt_, colNum-1);
+    //
+    // To-Do: set all functions of column_properties here
+    //
+
+    ptrcolProperties->set_name(sqlite3_column_name(stmt_, colNum-1));
 
     // This is a hack, but the sqlite3 type system does not
     // have a date or time field.  Also it does not reliably
@@ -329,6 +333,8 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
     }
 
     std::string dt = declType;
+
+    data_type type = dt_string;
 
     // do all comparisons in lower case
     std::transform(dt.begin(), dt.end(), dt.begin(), tolower);
@@ -411,6 +417,8 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
     }
 
     sqlite3_reset(stmt_);
+
+    ptrcolProperties->set_data_type(type);
 }
 
 sqlite3_standard_into_type_backend *

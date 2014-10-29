@@ -9,6 +9,7 @@
 
 #include "soci-oracle.h"
 #include "error.h"
+#include "row.h"
 #include <soci-backend.h>
 #include <cctype>
 #include <cstdio>
@@ -178,13 +179,8 @@ int oracle_statement_backend::prepare_for_describe()
     return cols;
 }
 
-void oracle_statement_backend::describe_column(int colNum, data_type &type,
-    std::string &columnName)
+void oracle_statement_backend::describe_column(int colNum, column_properties* ptrcolProperties)
 {
-    int size;
-    int precision;
-    int scale;
-
     ub2 dbtype;
     text* dbname;
     ub4 nameLength;
@@ -192,6 +188,7 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
     ub2 dbsize;
     sb2 dbprec;
     ub1 dbscale; //sb2 in some versions of Oracle?
+    ub1 dbisnullable;
 
     // Get the column handle
     OCIParam* colhd;
@@ -265,26 +262,43 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
         throw_oracle_soci_error(res, session_.errhp_);
     }
 
-    columnName.assign(dbname, dbname + nameLength);
-    size = static_cast<int>(dbsize);
-    precision = static_cast<int>(dbprec);
-    scale = static_cast<int>(dbscale);
+    // get the nullable marker
+    res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd),
+        static_cast<ub4>(OCI_DTYPE_PARAM),
+        reinterpret_cast<dvoid*>(&dbisnullable),
+        0,
+        static_cast<ub4>(OCI_ATTR_IS_NULL),
+        reinterpret_cast<OCIError*>(session_.errhp_));
+    if (res != OCI_SUCCESS)
+    {
+        throw_oracle_soci_error(res, session_.errhp_);
+    }
+
+    std::string strColName = "";
+    strColName.assign(dbname, dbname + nameLength);
+    ptrcolProperties->set_name(strColName);
+    ptrcolProperties->set_decimal_digits(dbscale);
+    //OCI_ATTR_IS_NULL Returns 0 if null values are not permitted for the column
+    ptrcolProperties->set_is_nullable(dbisnullable != 0);
+
+    data_type type = dt_string;
 
     switch (dbtype)
     {
     case SQLT_CHR:
     case SQLT_AFC:
         type = dt_string;
+        ptrcolProperties->set_column_size(dbsize);
         break;
     case SQLT_NUM:
-        if (scale > 0)
+        if (dbscale > 0)
         {
             if (session_.get_option_decimals_as_strings())
                 type = dt_string;
             else
                 type = dt_double;
         }
-        else if (precision <= std::numeric_limits<int>::digits10)
+        else if (dbprec <= std::numeric_limits<int>::digits10)
         {
             type = dt_integer;
         }
@@ -292,9 +306,11 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
         {
             type = dt_long_long;
         }
+        ptrcolProperties->set_column_size(dbprec);
         break;
     case SQLT_DAT:
         type = dt_date;
+        ptrcolProperties->set_column_size(dbsize);
         break;
     }
 }

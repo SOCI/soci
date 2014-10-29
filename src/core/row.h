@@ -27,15 +27,24 @@ class SOCI_DECL column_properties
     // of the getters lazy in the future
 public:
 
-    std::string get_name() const { return name_; }
-    data_type get_data_type() const { return dataType_; }
+    const std::string&  get_name() const { return name_; }
+    data_type           get_data_type() const { return dataType_; }
+    unsigned int        get_column_size() const { return colSize_; }
+    short               get_decimal_digits() const { return decDigits_; }
+    bool                get_is_nullable() const { return isNullable_; }
 
     void set_name(std::string const& name) { name_ = name; }
     void set_data_type(data_type dataType)  { dataType_ = dataType; }
+    void set_column_size(unsigned int iColSize) { colSize_ = iColSize;  }
+    void set_decimal_digits(short iDecDigits) { decDigits_ = iDecDigits;  }
+    void set_is_nullable(bool bIsNullable) { isNullable_ = bIsNullable; }
 
 private:
     std::string name_;
     data_type dataType_;
+    unsigned int colSize_;
+    short decDigits_;
+    bool  isNullable_;
 };
 
 class SOCI_DECL row

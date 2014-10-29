@@ -8,6 +8,7 @@
 #define SOCI_POSTGRESQL_SOURCE
 #include "soci-postgresql.h"
 #include <soci-platform.h>
+#include "row.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cassert>
 #include <cctype>
@@ -490,12 +491,16 @@ int postgresql_statement_backend::prepare_for_describe()
     return columns;
 }
 
-void postgresql_statement_backend::describe_column(int colNum, data_type & type,
-    std::string & columnName)
+void postgresql_statement_backend::describe_column(int colNum, column_properties* ptrcolProperties)
 {
+    //
+    // To-Do: set all functions of column_properties here
+    //
+
     // In postgresql_ column numbers start from 0
     int const pos = colNum - 1;
 
+    data_type type = dt_string;
     unsigned long const typeOid = PQftype(result_, pos);
     switch (typeOid)
     {
@@ -559,7 +564,8 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     }
     }
 
-    columnName = PQfname(result_, pos);
+    ptrcolProperties->set_name(PQfname(result_, pos));
+    ptrcolProperties->set_data_type(type);
 }
 
 postgresql_standard_into_type_backend *

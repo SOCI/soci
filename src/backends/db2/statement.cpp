@@ -8,7 +8,9 @@
 
 #define SOCI_DB2_SOURCE
 #include "soci-db2.h"
+#include "row.h"
 #include <cctype>
+#include <limits>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -225,9 +227,12 @@ int db2_statement_backend::prepare_for_describe()
 }
 
 void db2_statement_backend::describe_column(int  colNum,
-    data_type &  type, std::string & columnName )
+    column_properties* ptrcolProperties)
 {
-SQLCHAR colNameBuffer[2048];
+    //
+    // To-Do: set all functions of column_properties here
+    //
+    SQLCHAR colNameBuffer[2048];
     SQLSMALLINT colNameBufferOverflow;
     SQLSMALLINT dataType;
     SQLULEN colSize;
@@ -245,7 +250,9 @@ SQLCHAR colNameBuffer[2048];
     }
 
     char const *name = reinterpret_cast<char const *>(colNameBuffer);
-    columnName.assign(name, std::strlen(name));
+    ptrcolProperties->set_name(name);
+
+    data_type type = dt_string;
 
     switch (dataType)
     {
@@ -276,6 +283,8 @@ SQLCHAR colNameBuffer[2048];
         type = dt_string;
         break;
     }
+
+    ptrcolProperties->set_data_type(type);
 }
 
 std::size_t db2_statement_backend::column_size(int col) {

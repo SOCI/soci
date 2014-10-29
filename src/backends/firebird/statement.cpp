@@ -8,6 +8,7 @@
 #define SOCI_FIREBIRD_SOURCE
 #include "soci-firebird.h"
 #include "error-firebird.h"
+#include "row.h"
 #include <cctype>
 #include <sstream>
 #include <iostream>
@@ -644,11 +645,17 @@ int firebird_statement_backend::prepare_for_describe()
 }
 
 void firebird_statement_backend::describe_column(int colNum,
-                                                data_type & type, std::string & columnName)
+                                                column_properties* ptrcolProperties)
 {
+    //
+    // To-Do: set all functions of column_properties here
+    //
     XSQLVAR * var = sqldap_->sqlvar+(colNum-1);
 
+    std::string columnName = "";
     columnName.assign(var->aliasname, var->aliasname_length);
+    ptrcolProperties->set_name(columnName);
+    data_type type = dt_string;
 
     switch (var->sqltype & ~1)
     {
@@ -701,6 +708,8 @@ void firebird_statement_backend::describe_column(int colNum,
         throw soci_error(msg.str());
         break;
     }
+
+    ptrcolProperties->set_data_type(type);
 }
 
 firebird_standard_into_type_backend * firebird_statement_backend::make_into_type_backend()

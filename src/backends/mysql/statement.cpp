@@ -8,6 +8,7 @@
 
 #define SOCI_MYSQL_SOURCE
 #include "soci-mysql.h"
+#include "row.h"
 #include <cctype>
 #include <ciso646>
 //#include <iostream>
@@ -398,10 +399,16 @@ int mysql_statement_backend::prepare_for_describe()
 }
 
 void mysql_statement_backend::describe_column(int colNum,
-    data_type & type, std::string & columnName)
+    column_properties* ptrcolProperties)
 {
+    //
+    // To-Do: set all functions of column_properties here
+    //
     int pos = colNum - 1;
     MYSQL_FIELD *field = mysql_fetch_field_direct(result_, pos);
+    
+    data_type type = dt_string;
+
     switch (field->type)
     {
     case FIELD_TYPE_CHAR:       //MYSQL_TYPE_TINY:
@@ -448,7 +455,9 @@ void mysql_statement_backend::describe_column(int colNum,
         //std::cerr << "field->type: " << field->type << std::endl;
         throw soci_error("Unknown data type.");
     }
-    columnName = field->name;
+
+    ptrcolProperties->set_name(field->name);
+    ptrcolProperties->set_data_type(type);
 }
 
 mysql_standard_into_type_backend *

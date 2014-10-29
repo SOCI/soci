@@ -235,8 +235,7 @@ struct postgresql_statement_backend : details::statement_backend
     virtual std::string rewrite_for_procedure_call(std::string const & query);
 
     virtual int prepare_for_describe();
-    virtual void describe_column(int colNum, data_type & dtype,
-        std::string & columnName);
+    virtual void describe_column(int colNum, column_properties* ptrcolProperties);
 
     virtual postgresql_standard_into_type_backend * make_into_type_backend();
     virtual postgresql_standard_use_type_backend * make_use_type_backend();

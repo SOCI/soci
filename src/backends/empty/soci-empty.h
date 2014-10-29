@@ -120,7 +120,7 @@ struct SOCI_EMPTY_DECL empty_statement_backend : details::statement_backend
     std::string rewrite_for_procedure_call(std::string const& query);
 
     int prepare_for_describe();
-    void describe_column(int colNum, data_type& dtype, std::string& columnName);
+    void describe_column(int colNum, soci::column_properties* ptrcolProperties);
 
     empty_standard_into_type_backend* make_into_type_backend();
     empty_standard_use_type_backend* make_use_type_backend();

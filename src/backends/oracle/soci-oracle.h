@@ -192,8 +192,7 @@ struct oracle_statement_backend : details::statement_backend
     virtual std::string rewrite_for_procedure_call(std::string const &query);
 
     virtual int prepare_for_describe();
-    virtual void describe_column(int colNum, data_type &dtype,
-        std::string &columnName);
+    virtual void describe_column(int colNum, column_properties* ptrcolProperties);
 
     // helper for defining into vector<string>
     std::size_t column_size(int position);

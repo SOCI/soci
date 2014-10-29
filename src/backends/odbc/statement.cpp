@@ -7,9 +7,11 @@
 
 #define SOCI_ODBC_SOURCE
 #include "soci-odbc.h"
+#include "row.h"
 #include <cctype>
 #include <sstream>
 #include <cstring>
+#include <limits>
 
 #ifdef _MSC_VER
 // disables the warning about converting int to void*.  This is a 64 bit compatibility
@@ -259,8 +261,7 @@ int odbc_statement_backend::prepare_for_describe()
     return numCols;
 }
 
-void odbc_statement_backend::describe_column(int colNum, data_type & type,
-                                          std::string & columnName)
+void odbc_statement_backend::describe_column(int colNum, column_properties* ptrcolProperties)
 {
     SQLCHAR colNameBuffer[2048];
     SQLSMALLINT colNameBufferOverflow;
@@ -280,8 +281,13 @@ void odbc_statement_backend::describe_column(int colNum, data_type & type,
                          "describe Column");
     }
 
-    char const *name = reinterpret_cast<char const *>(colNameBuffer);
-    columnName.assign(name, std::strlen(name));
+    ptrcolProperties->set_column_size(colSize);
+    ptrcolProperties->set_decimal_digits(decDigits);
+    ptrcolProperties->set_is_nullable(isNullable == SQL_NULLABLE);
+
+    ptrcolProperties->set_name(reinterpret_cast<char const *>(colNameBuffer));
+
+    data_type type;
 
     switch (dataType)
     {
@@ -327,6 +333,8 @@ void odbc_statement_backend::describe_column(int colNum, data_type & type,
         type = dt_string;
         break;
     }
+
+    ptrcolProperties->set_data_type(type);
 }
 
 std::size_t odbc_statement_backend::column_size(int colNum)
