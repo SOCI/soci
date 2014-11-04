@@ -309,13 +309,13 @@ int sqlite3_statement_backend::prepare_for_describe()
     return sqlite3_column_count(stmt_);
 }
 
-void sqlite3_statement_backend::describe_column(int colNum, column_properties* ptrcolProperties)
+void sqlite3_statement_backend::describe_column(int colNum, column_properties& colProperties)
 {
     //
     // To-Do: set all functions of column_properties here
     //
 
-    ptrcolProperties->set_name(sqlite3_column_name(stmt_, colNum-1));
+    colProperties.set_name(sqlite3_column_name(stmt_, colNum-1));
 
     // This is a hack, but the sqlite3 type system does not
     // have a date or time field.  Also it does not reliably
@@ -418,7 +418,7 @@ void sqlite3_statement_backend::describe_column(int colNum, column_properties* p
 
     sqlite3_reset(stmt_);
 
-    ptrcolProperties->set_data_type(type);
+    colProperties.set_data_type(type);
 }
 
 sqlite3_standard_into_type_backend *

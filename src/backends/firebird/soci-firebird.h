@@ -189,7 +189,7 @@ struct firebird_statement_backend : details::statement_backend
     virtual std::string rewrite_for_procedure_call(std::string const &query);
 
     virtual int prepare_for_describe();
-    virtual void describe_column(int colNum, column_properties* ptrcolProperties);
+    virtual void describe_column(int colNum, column_properties& colProperties);
 
     virtual firebird_standard_into_type_backend * make_into_type_backend();
     virtual firebird_standard_use_type_backend * make_use_type_backend();

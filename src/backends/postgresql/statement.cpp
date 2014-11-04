@@ -491,7 +491,7 @@ int postgresql_statement_backend::prepare_for_describe()
     return columns;
 }
 
-void postgresql_statement_backend::describe_column(int colNum, column_properties* ptrcolProperties)
+void postgresql_statement_backend::describe_column(int colNum, column_properties& colProperties)
 {
     //
     // To-Do: set all functions of column_properties here
@@ -564,8 +564,8 @@ void postgresql_statement_backend::describe_column(int colNum, column_properties
     }
     }
 
-    ptrcolProperties->set_name(PQfname(result_, pos));
-    ptrcolProperties->set_data_type(type);
+    colProperties.set_name(PQfname(result_, pos));
+    colProperties.set_data_type(type);
 }
 
 postgresql_standard_into_type_backend *

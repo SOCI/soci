@@ -179,7 +179,7 @@ int oracle_statement_backend::prepare_for_describe()
     return cols;
 }
 
-void oracle_statement_backend::describe_column(int colNum, column_properties* ptrcolProperties)
+void oracle_statement_backend::describe_column(int colNum, column_properties& colProperties)
 {
     ub2 dbtype;
     text* dbname;
@@ -276,10 +276,10 @@ void oracle_statement_backend::describe_column(int colNum, column_properties* pt
 
     std::string strColName = "";
     strColName.assign(dbname, dbname + nameLength);
-    ptrcolProperties->set_name(strColName);
-    ptrcolProperties->set_decimal_digits(dbscale);
+    colProperties.set_name(strColName);
+    colProperties.set_decimal_digits(dbscale);
     //OCI_ATTR_IS_NULL Returns 0 if null values are not permitted for the column
-    ptrcolProperties->set_is_nullable(dbisnullable != 0);
+    colProperties.set_is_nullable(dbisnullable != 0);
 
     data_type type = dt_string;
 
@@ -288,7 +288,7 @@ void oracle_statement_backend::describe_column(int colNum, column_properties* pt
     case SQLT_CHR:
     case SQLT_AFC:
         type = dt_string;
-        ptrcolProperties->set_column_size(dbsize);
+        colProperties.set_column_size(dbsize);
         break;
     case SQLT_NUM:
         if (dbscale > 0)
@@ -306,11 +306,11 @@ void oracle_statement_backend::describe_column(int colNum, column_properties* pt
         {
             type = dt_long_long;
         }
-        ptrcolProperties->set_column_size(dbprec);
+        colProperties.set_column_size(dbprec);
         break;
     case SQLT_DAT:
         type = dt_date;
-        ptrcolProperties->set_column_size(dbsize);
+        colProperties.set_column_size(dbsize);
         break;
     }
 }

@@ -10,7 +10,6 @@
 #include "soci-db2.h"
 #include "row.h"
 #include <cctype>
-#include <limits>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -227,7 +226,7 @@ int db2_statement_backend::prepare_for_describe()
 }
 
 void db2_statement_backend::describe_column(int  colNum,
-    column_properties* ptrcolProperties)
+    column_properties& colProperties)
 {
     //
     // To-Do: set all functions of column_properties here
@@ -250,7 +249,7 @@ void db2_statement_backend::describe_column(int  colNum,
     }
 
     char const *name = reinterpret_cast<char const *>(colNameBuffer);
-    ptrcolProperties->set_name(name);
+    colProperties.set_name(name);
 
     data_type type = dt_string;
 
@@ -284,7 +283,7 @@ void db2_statement_backend::describe_column(int  colNum,
         break;
     }
 
-    ptrcolProperties->set_data_type(type);
+    colProperties.set_data_type(type);
 }
 
 std::size_t db2_statement_backend::column_size(int col) {

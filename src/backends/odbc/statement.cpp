@@ -261,7 +261,7 @@ int odbc_statement_backend::prepare_for_describe()
     return numCols;
 }
 
-void odbc_statement_backend::describe_column(int colNum, column_properties* ptrcolProperties)
+void odbc_statement_backend::describe_column(int colNum, column_properties& colProperties)
 {
     SQLCHAR colNameBuffer[2048];
     SQLSMALLINT colNameBufferOverflow;
@@ -281,11 +281,11 @@ void odbc_statement_backend::describe_column(int colNum, column_properties* ptrc
                          "describe Column");
     }
 
-    ptrcolProperties->set_column_size(colSize);
-    ptrcolProperties->set_decimal_digits(decDigits);
-    ptrcolProperties->set_is_nullable(isNullable == SQL_NULLABLE);
+    colProperties.set_column_size(colSize);
+    colProperties.set_decimal_digits(decDigits);
+    colProperties.set_is_nullable(isNullable == SQL_NULLABLE);
 
-    ptrcolProperties->set_name(reinterpret_cast<char const *>(colNameBuffer));
+    colProperties.set_name(reinterpret_cast<char const *>(colNameBuffer));
 
     data_type type;
 
@@ -334,7 +334,7 @@ void odbc_statement_backend::describe_column(int colNum, column_properties* ptrc
         break;
     }
 
-    ptrcolProperties->set_data_type(type);
+    colProperties.set_data_type(type);
 }
 
 std::size_t odbc_statement_backend::column_size(int colNum)

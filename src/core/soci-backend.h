@@ -174,7 +174,7 @@ public:
     virtual std::string rewrite_for_procedure_call(std::string const& query) = 0;
 
     virtual int prepare_for_describe() = 0;
-    virtual void describe_column(int colNum, column_properties* ptrcolProperties) = 0;
+    virtual void describe_column(int colNum, column_properties& colProperties) = 0;
 
     virtual standard_into_type_backend* make_into_type_backend() = 0;
     virtual standard_use_type_backend* make_use_type_backend() = 0;

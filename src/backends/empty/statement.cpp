@@ -76,7 +76,7 @@ int empty_statement_backend::prepare_for_describe()
 }
 
 void empty_statement_backend::describe_column(int /* colNum */,
-    soci::column_properties*)
+    soci::column_properties&)
 {
     // ...
 }

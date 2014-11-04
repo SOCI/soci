@@ -644,7 +644,7 @@ void statement_impl::describe()
     for (int i = 1; i <= numcols; ++i)
     {
         column_properties props;
-        backEnd_->describe_column(i, &props);
+        backEnd_->describe_column(i, props);
 
         switch (props.get_data_type())
         {

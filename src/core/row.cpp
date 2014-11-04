@@ -16,6 +16,27 @@
 using namespace soci;
 using namespace details;
 
+column_properties::column_properties()
+    : name_(""), dataType_(dt_string), colSize_(0), decDigits_(0), isNullable_(false)
+{
+}
+
+column_properties::column_properties(const column_properties& obj)
+{
+    *this = obj;
+}
+
+column_properties& column_properties::operator = (const column_properties& obj)
+{
+    name_ = obj.name_;
+    dataType_ = obj.dataType_;
+    colSize_ = obj.colSize_;
+    decDigits_ = obj.decDigits_;
+    isNullable_ = obj.isNullable_;
+
+    return *this;
+}
+
 row::row()
     : uppercaseColumnNames_(false)
     , currentPos_(0)

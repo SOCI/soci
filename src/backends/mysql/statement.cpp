@@ -399,7 +399,7 @@ int mysql_statement_backend::prepare_for_describe()
 }
 
 void mysql_statement_backend::describe_column(int colNum,
-    column_properties* ptrcolProperties)
+    column_properties& colProperties)
 {
     //
     // To-Do: set all functions of column_properties here
@@ -456,8 +456,8 @@ void mysql_statement_backend::describe_column(int colNum,
         throw soci_error("Unknown data type.");
     }
 
-    ptrcolProperties->set_name(field->name);
-    ptrcolProperties->set_data_type(type);
+    colProperties.set_name(field->name);
+    colProperties.set_data_type(type);
 }
 
 mysql_standard_into_type_backend *

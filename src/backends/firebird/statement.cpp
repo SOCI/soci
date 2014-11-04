@@ -645,7 +645,7 @@ int firebird_statement_backend::prepare_for_describe()
 }
 
 void firebird_statement_backend::describe_column(int colNum,
-                                                column_properties* ptrcolProperties)
+                                                column_properties& colProperties)
 {
     //
     // To-Do: set all functions of column_properties here
@@ -654,7 +654,7 @@ void firebird_statement_backend::describe_column(int colNum,
 
     std::string columnName = "";
     columnName.assign(var->aliasname, var->aliasname_length);
-    ptrcolProperties->set_name(columnName);
+    colProperties.set_name(columnName);
     data_type type = dt_string;
 
     switch (var->sqltype & ~1)
@@ -709,7 +709,7 @@ void firebird_statement_backend::describe_column(int colNum,
         break;
     }
 
-    ptrcolProperties->set_data_type(type);
+    colProperties.set_data_type(type);
 }
 
 firebird_standard_into_type_backend * firebird_statement_backend::make_into_type_backend()

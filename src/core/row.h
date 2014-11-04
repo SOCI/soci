@@ -26,6 +26,10 @@ class SOCI_DECL column_properties
     // use getters/setters in case we want to make some
     // of the getters lazy in the future
 public:
+    column_properties();
+    column_properties(const column_properties& obj);
+
+    column_properties& operator=(const column_properties& obj);
 
     const std::string&  get_name() const { return name_; }
     data_type           get_data_type() const { return dataType_; }
