@@ -6,6 +6,8 @@
 //
 
 #include "soci/sqlite3/soci-sqlite3.h"
+
+#include <algorithm>
 #include <cstring>
 
 using namespace soci;
