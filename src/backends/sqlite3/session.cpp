@@ -140,6 +140,12 @@ void sqlite3_session_backend::rollback()
     execude_hardcoded(conn_, "ROLLBACK", "Cannot rollback transaction.");
 }
 
+bool sqlite3_session_backend::get_last_insert_id(session& sess, std::string const& table, long& id)
+{
+	id = sqlite3_last_insert_rowid(conn_);
+	return id > 0;
+}
+
 void sqlite3_session_backend::clean_up()
 {
     sqlite3_close(conn_);
