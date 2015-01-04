@@ -20,7 +20,7 @@
 //  SOCI_VERSION / 100 % 1000 is the minor version
 //  SOCI_VERSION / 100000 is the major version
 
-#define SOCI_VERSION 300201
+#define SOCI_VERSION 300202
 
 //
 //  SOCI_LIB_VERSION must be defined to be the same as SOCI_VERSION
