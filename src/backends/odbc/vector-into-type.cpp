@@ -8,6 +8,7 @@
 #define SOCI_ODBC_SOURCE
 #include "soci-odbc.h"
 #include <soci-platform.h>
+#include "mnsocistring.h"
 #include <cassert>
 #include <cctype>
 #include <cstdio>
@@ -26,7 +27,7 @@ void odbc_vector_into_type_backend::prepare_indicators(std::size_t size)
          throw soci_error("Vectors of size 0 are not allowed.");
     }
 
-    indHolderVec_.resize(size);
+    indHolderVec_.resize(size, SQL_NTS);
     indHolders_ = &indHolderVec_[0];
 }
 
@@ -139,12 +140,28 @@ void odbc_vector_into_type_backend::define_by_pos(
             data = buf_;
         }
         break;
+    case x_mnsocistring:
+    {
+        odbcType_ = SQL_C_CHAR;
+        std::vector<MNSociString> *v
+            = static_cast<std::vector<MNSociString> *>(data);
+        colSize_ = statement_.column_size(position) + 1;
+        std::size_t bufSize = colSize_ * v->size();
+        buf_ = new char[bufSize];
+
+        prepare_indicators(v->size());
+
+        size = static_cast<SQLINTEGER>(colSize_);
+        data = buf_;
+        break;
+    }
     case x_stdstring:
         {
             odbcType_ = SQL_C_CHAR;
             std::vector<std::string> *v
                 = static_cast<std::vector<std::string> *>(data);
-            colSize_ = statement_.column_size(position) + 1;
+            //colSize_ = statement_.column_size(position) + 1;
+            colSize_ = 256;
             std::size_t bufSize = colSize_ * v->size();
             buf_ = new char[bufSize];
 
@@ -228,6 +245,21 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                 pos += colSize_;
             }
         }
+        //else if (type_ == x_mnsocistring)
+        //{
+        //    std::vector<MNSociString> *vp
+        //        = static_cast<std::vector<MNSociString> *>(data_);
+
+        //    std::vector<MNSociString> &v(*vp);
+
+            //char *pos = buf_;
+            //std::size_t const vsize = v.size();
+            //for (std::size_t i = 0; i != vsize; ++i)
+            //{
+            //    v[i].assign(pos, strlen(pos));
+            //    pos += colSize_;
+            //}
+        //}
         else if (type_ == x_stdtm)
         {
             std::vector<std::tm> *vp
@@ -380,6 +412,13 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
             v->resize(sz);
         }
         break;
+    case x_mnsocistring:
+    {
+        std::vector<MNSociString> *v
+            = static_cast<std::vector<MNSociString> *>(data_);
+        v->resize(sz);
+        break;
+    }
     case x_stdtm:
         {
             std::vector<std::tm> *v
@@ -446,6 +485,13 @@ std::size_t odbc_vector_into_type_backend::size()
             sz = v->size();
         }
         break;
+    case x_mnsocistring:
+    {
+        std::vector<MNSociString> *v
+            = static_cast<std::vector<MNSociString> *>(data_);
+        sz = v->size();
+    }
+    break;
     case x_stdtm:
         {
             std::vector<std::tm> *v

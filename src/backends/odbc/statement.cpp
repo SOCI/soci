@@ -44,9 +44,14 @@ void odbc_statement_backend::alloc()
     }
 }
 
+void odbc_statement_backend::cancel_statement()
+{
+    SQLCancel(hstmt_);
+}
+
 void odbc_statement_backend::clean_up()
 {
-    rowsAffected_ = -1LL;
+    rowsAffected_ = -1LL; 
 
     SQLFreeHandle(SQL_HANDLE_STMT, hstmt_);
 }
@@ -160,25 +165,25 @@ odbc_statement_backend::execute(int number)
     {
         // If executing bulk operation a partial 
         // number of rows affected may be available.
-        if (hasVectorUseElements_)
-        {
-            rowsAffected_ = 0;
+        //if (hasVectorUseElements_)
+        //{
+        //    rowsAffected_ = 0;
 
-            do
-            {
-                SQLLEN res = 0;
-                // SQLRowCount will return error after a partially executed statement.
-                // SQL_DIAG_ROW_COUNT returns the same info but must be collected immediatelly after the execution.
-                rc = SQLGetDiagField(SQL_HANDLE_STMT, hstmt_, 0, SQL_DIAG_ROW_COUNT, &res, 0, NULL);
-                if (!is_odbc_error(rc) && res > 0) // 'res' will be -1 for the where the statement failed.
-                {
-                    rowsAffected_ += res;
-                }
-                --rows_processed; // Avoid unnecessary calls to SQLGetDiagField
-            }
-            // Move forward to the next result while there are rows processed.
-            while (rows_processed > 0 && SQLMoreResults(hstmt_) == SQL_SUCCESS);
-        }
+        //    do
+        //    {
+        //        SQLLEN res = 0;
+        //        // SQLRowCount will return error after a partially executed statement.
+        //        // SQL_DIAG_ROW_COUNT returns the same info but must be collected immediatelly after the execution.
+        //        rc = SQLGetDiagField(SQL_HANDLE_STMT, hstmt_, 0, SQL_DIAG_ROW_COUNT, &res, 0, NULL);
+        //        if (!is_odbc_error(rc) && res > 0) // 'res' will be -1 for the where the statement failed.
+        //        {
+        //            rowsAffected_ += res;
+        //        }
+        //        --rows_processed; // Avoid unnecessary calls to SQLGetDiagField
+        //    }
+        //    // Move forward to the next result while there are rows processed.
+        //    while (rows_processed > 0 && SQLMoreResults(hstmt_) == SQL_SUCCESS);
+        //}
         throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
                          "Statement Execute");
     }
@@ -297,6 +302,7 @@ void odbc_statement_backend::describe_column(int colNum, column_properties& colP
         type = dt_date;
         break;
     case SQL_NUMERIC:
+    case SQL_DECIMAL:
     { //
         if (decDigits > 0)
         {
@@ -313,7 +319,6 @@ void odbc_statement_backend::describe_column(int colNum, column_properties& colP
         break;
     }
     case SQL_DOUBLE:
-    case SQL_DECIMAL:
     case SQL_REAL:
     case SQL_FLOAT:
         type = dt_double;

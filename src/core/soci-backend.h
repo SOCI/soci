@@ -21,7 +21,7 @@ namespace soci
 // data types, as seen by the user
 enum data_type
 {
-    dt_string, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long
+    dt_string/*, dt_string_mn_256, dt_string_mn_4000*/, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long
 };
 
 // the enum type for indicator variables
@@ -46,7 +46,8 @@ enum exchange_type
     x_stdtm,
     x_statement,
     x_rowid,
-    x_blob
+    x_blob,
+    x_mnsocistring
 };
 
 // type of statement (used for optimizing statement preparation)
@@ -156,6 +157,7 @@ public:
 
     virtual void alloc() = 0;
     virtual void clean_up() = 0;
+    virtual void cancel_statement() {}
 
     virtual void prepare(std::string const& query, statement_type eType) = 0;
 

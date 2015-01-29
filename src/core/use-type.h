@@ -31,6 +31,7 @@ public:
     virtual void pre_use() = 0;
     virtual void post_use(bool gotData) = 0;
     virtual void clean_up() = 0;
+    virtual std::string to_string() = 0;
 
     virtual std::size_t size() const = 0;  // returns the number of elements
 };
@@ -84,6 +85,7 @@ private:
     virtual void post_use(bool gotData);
     virtual void clean_up();
     virtual std::size_t size() const { return 1; }
+    virtual std::string to_string();
 
     void* data_;
     exchange_type type_;
@@ -124,6 +126,9 @@ private:
     virtual void post_use(bool) { /* nothing to do */ }
     virtual void clean_up();
     virtual std::size_t size() const;
+    virtual std::string to_string() {
+        return "vector_use_type::to_string not implemented";
+    }
 
     void* data_;
     exchange_type type_;

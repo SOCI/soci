@@ -156,6 +156,10 @@ public:
     void exchange(details::into_type_ptr const & i);
     void exchange(details::use_type_ptr const & u);
     void clean_up()                      { impl_->clean_up(); }
+    void cancel_statement() 
+    {
+        impl_->get_backend()->cancel_statement();
+    }
 
     void prepare(std::string const & query,
         details::statement_type eType = details::st_repeatable_query)

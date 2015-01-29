@@ -10,6 +10,7 @@
 
 #include "type-conversion-traits.h"
 #include "soci-backend.h"
+#include "mnsocistring.h"
 // std
 #include <ctime>
 #include <string>
@@ -115,6 +116,13 @@ struct exchange_traits<std::string>
 {
     typedef basic_type_tag type_family;
     enum { x_type = x_stdstring };
+};
+
+template <>
+struct exchange_traits<MNSociString>
+{
+    typedef basic_type_tag type_family;
+    enum { x_type = x_mnsocistring };
 };
 
 template <>

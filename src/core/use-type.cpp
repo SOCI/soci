@@ -8,6 +8,7 @@
 #define SOCI_SOURCE
 #include "use-type.h"
 #include "statement.h"
+#include "mnsocistring.h"
 
 using namespace soci;
 using namespace soci::details;
@@ -38,6 +39,82 @@ void standard_use_type::pre_use()
     // Handle IN direction of parameters of SQL statements and procedures
     convert_to_base();
     backEnd_->pre_use(ind_);
+}
+
+std::string 
+standard_use_type::to_string()
+{
+    std::string strVal;
+    char msg[50];
+
+    convert_to_base();
+    switch (this->type_)
+    {
+    case x_char:
+    {
+        strVal = "x_char:";
+        strVal += (char)data_;
+        break;
+    }
+    case x_stdstring:
+    {
+        strVal = "x_stdstring:";
+        strVal += *(std::string*)data_;
+        break;
+    }
+    case x_mnsocistring:
+    {
+        strVal = "x_mnsocistring:";
+        strVal += ((MNSociString*)data_)->m_ptrCharData;
+        break;
+        break;
+    }
+    case x_short:
+    {
+        sprintf(msg, "%d", *(short*)data_);
+        strVal = "x_short:";
+        strVal += msg;
+        break;
+    }
+    case x_integer:
+    {
+        sprintf(msg, "%d", *(int*)data_);
+        strVal = "x_integer:";
+        strVal += msg;
+        break;
+    }
+    case x_long_long:
+    {
+        sprintf(msg, "%d", *(long long*)data_);
+        strVal = "x_long_long:";
+        strVal += msg;
+        break;
+    }
+    case x_unsigned_long_long:
+    {
+        sprintf(msg, "%d", *(unsigned long long*)data_);
+        strVal = "x_unsigned_long_long:";
+        strVal += msg;
+        break;
+    }
+    case x_double:
+    {
+        sprintf(msg, "%f", *(double*)data_);
+        strVal = "x_double:";
+        strVal += msg;
+        break;
+    }
+    case x_stdtm:
+    {
+        std::tm myTime = *(std::tm*)data_;
+        sprintf(msg, "%d.%d.%d %02d:%02d:%02d", myTime.tm_mday, myTime.tm_mon + 1, myTime.tm_year + 1900, myTime.tm_hour, myTime.tm_min, myTime.tm_sec);
+        strVal = "x_stdtm:";
+        strVal += msg;
+        break;
+    }
+    }
+
+    return strVal;
 }
 
 void standard_use_type::post_use(bool gotData)

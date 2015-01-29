@@ -8,6 +8,7 @@
 #define SOCI_ODBC_SOURCE
 #include <soci-platform.h>
 #include "soci-odbc.h"
+#include "mnsocistring.h"
 #include <ctime>
 #include <stdio.h>  // sscanf()
 
@@ -31,13 +32,19 @@ void odbc_standard_into_type_backend::define_by_pos(
         buf_ = new char[size];
         data = buf_;
         break;
+    case x_mnsocistring:
+        odbcType_ = SQL_C_CHAR;
+        size = ((MNSociString*)data)->m_iCharLength;
+        data = ((MNSociString*)data)->m_ptrCharData;
+        break;
     case x_stdstring:
         odbcType_ = SQL_C_CHAR;
         // Patch: set to min between column size and 100MB (used ot be 32769)
         // Column size for text data type can be too large for buffer allocation
-        size = statement_.column_size(position_);
-        size = size > odbc_max_buffer_length ? odbc_max_buffer_length : size;
-        size++;
+        //size = statement_.column_size(position_);
+        //size = size > odbc_max_buffer_length ? odbc_max_buffer_length : size;
+        //size++;
+        size = 256;
         buf_ = new char[size];
         data = buf_;
         break;
@@ -149,14 +156,14 @@ void odbc_standard_into_type_backend::post_fetch(
             char *c = static_cast<char*>(data_);
             *c = buf_[0];
         }
-        if (type_ == x_stdstring)
+        else if (type_ == x_stdstring)
         {
             std::string *s = static_cast<std::string *>(data_);
             *s = buf_;
-            if (s->size() >= (odbc_max_buffer_length - 1))
-            {
-                throw soci_error("Buffer size overflow; maybe got too large string");
-            }
+            //if (s->size() >= (odbc_max_buffer_length - 1))
+            //{
+            //    throw soci_error("Buffer size overflow; maybe got too large string");
+            //}
         }
         else if (type_ == x_stdtm)
         {

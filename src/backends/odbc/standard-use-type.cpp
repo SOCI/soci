@@ -6,6 +6,7 @@
 #define SOCI_ODBC_SOURCE
 #include <soci-platform.h>
 #include "soci-odbc.h"
+#include "mnsocistring.h"
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -86,6 +87,12 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
         buf_ = new char[size];
         buf_[0] = *static_cast<char*>(data_);
         buf_[1] = '\0';
+        indHolder_ = SQL_NTS;
+        break;
+    case x_mnsocistring:
+        sqlType = SQL_CHAR;
+        cType = SQL_C_CHAR;
+        size = ((MNSociString*)data_)->m_iCharLength;
         indHolder_ = SQL_NTS;
         break;
     case x_stdstring:

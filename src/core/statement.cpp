@@ -11,6 +11,7 @@
 #include "into-type.h"
 #include "use-type.h"
 #include "values.h"
+#include "mnsocistring.h"
 #include <ctime>
 #include <cctype>
 
@@ -231,7 +232,28 @@ void statement_impl::prepare(std::string const & query,
     statement_type eType)
 {
     query_ = query;
-    session_.log_query(query);
+
+    if (session_.get_log_stream() != NULL)
+    {
+        std::string strDummy = query;
+
+        if (!uses_.empty())
+        {
+            strDummy += ", Uses: ";
+
+            for (int i = 0; i < this->uses_.size(); ++i)
+            {
+                strDummy += this->uses_.at(i)->to_string();
+                if (i != this->uses_size() - 1)
+                {
+                    strDummy += ", ";
+                }
+            }
+        }
+
+
+        session_.log_query(strDummy);
+    }
 
     backEnd_->prepare(query, eType);
 }
@@ -396,26 +418,26 @@ bool statement_impl::fetch()
 
     bool gotData = false;
 
-    // vectors might have been resized between fetches
-    std::size_t const newFetchSize = intos_size();
-    if (newFetchSize > initialFetchSize_)
-    {
-        // this is not allowed, because most likely caused reallocation
-        // of the vector - this would require complete re-bind
+    //// vectors might have been resized between fetches
+    //std::size_t const newFetchSize = intos_size();
+    //if (newFetchSize > initialFetchSize_)
+    //{
+    //    // this is not allowed, because most likely caused reallocation
+    //    // of the vector - this would require complete re-bind
 
-        throw soci_error(
-            "Increasing the size of the output vector is not supported.");
-    }
-    else if (newFetchSize == 0)
-    {
-        session_.set_got_data(false);
-        return false;
-    }
-    else
-    {
-        // the output vector was downsized or remains the same as before
-        fetchSize_ = newFetchSize;
-    }
+    //    throw soci_error(
+    //        "Increasing the size of the output vector is not supported.");
+    //}
+    //else if (newFetchSize == 0)
+    //{
+    //    session_.set_got_data(false);
+    //    return false;
+    //}
+    //else
+    //{
+    //    // the output vector was downsized or remains the same as before
+    //    fetchSize_ = newFetchSize;
+    //}
 
     statement_backend::exec_fetch_result const res = backEnd_->fetch(static_cast<int>(fetchSize_));
     if (res == statement_backend::ef_success)
@@ -599,6 +621,17 @@ namespace details
 {
 
 // Map data_types to stock types for dynamic result set support
+
+//template<>
+//void statement_impl::bind_into<dt_string_mn_256>()
+//{
+//    into_row<MNSociString>();
+//}
+//template<>
+//void statement_impl::bind_into<dt_string_mn_4000>()
+//{
+//    into_row<std::string>();
+//}
 
 template<>
 void statement_impl::bind_into<dt_string>()

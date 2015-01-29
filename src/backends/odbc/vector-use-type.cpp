@@ -8,6 +8,7 @@
 #define SOCI_ODBC_SOURCE
 #include "soci-odbc.h"
 #include <soci-platform.h>
+#include "mnsocistring.h"
 #include <cassert>
 #include <cctype>
 #include <cstdio>
@@ -165,8 +166,15 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             prepare_indicators(vecSize);
             for (std::size_t i = 0; i != vecSize; ++i)
             {
-                std::size_t sz = v[i].length() + 1;  // add one for null
-                indHolderVec_[i] = static_cast<long>(sz);
+                std::size_t sz = v[i].length(); // +1;  // add one for null
+                if (sz != 0)
+                {
+                    indHolderVec_[i] = static_cast<long>(sz);
+                }
+                else
+                {
+                    indHolderVec_[i] = SQL_NULL_DATA;
+                }
                 maxSize = sz > maxSize ? sz : maxSize;
             }
 
@@ -176,7 +184,14 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             char *pos = buf_;
             for (std::size_t i = 0; i != vecSize; ++i)
             {
-                strncpy(pos, v[i].c_str(), v[i].length());
+                if (v[i].empty())
+                {
+                    strcpy(pos, "");
+                }
+                else
+                {
+                    strncpy(pos, v[i].c_str(), v[i].length());
+                }
                 pos += maxSize;
             }
 
@@ -184,6 +199,36 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             size = static_cast<SQLINTEGER>(maxSize);
         }
         break;
+    case x_mnsocistring:
+        {
+            sqlType = SQL_CHAR;
+            cType = SQL_C_CHAR;
+
+            std::vector<MNSociString> *vp
+                = static_cast<std::vector<MNSociString> *>(data);
+            std::vector<MNSociString> &v(*vp);
+
+            std::size_t maxSize = 0;
+            std::size_t const vecSize = v.size();
+            prepare_indicators(vecSize);
+
+            maxSize = v[0].m_iCharLength + 1;
+
+            buf_ = new char[maxSize * vecSize];
+            memset(buf_, 0, maxSize * vecSize);
+
+            char *pos = buf_;
+            for (std::size_t i = 0; i != vecSize; ++i)
+            {
+                indHolderVec_[i] = strlen(v[i].m_ptrCharData);
+                strncpy(pos, v[i].m_ptrCharData, indHolderVec_[i]);
+                pos += maxSize;
+            }
+
+            data = buf_;
+            size = static_cast<SQLINTEGER>(maxSize);
+        }
+        break;                          
     case x_stdtm:
         {
             std::vector<std::tm> *vp
@@ -196,9 +241,25 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             sqlType = SQL_TYPE_TIMESTAMP;
             cType = SQL_C_TYPE_TIMESTAMP;
             data = buf_;
-            size = 19; // This number is not the size in bytes, but the number
-                      // of characters in the date if it was written out
-                      // yyyy-mm-dd hh:mm:ss
+            //size = 19; // This number is not the size in bytes, but the number
+            //          // of characters in the date if it was written out
+            //          // yyyy-mm-dd hh:mm:ss
+            if (statement_.session_.get_database_product() == soci::odbc_session_backend::prod_oracle)
+            {
+                 // oracle date columns require the pure 16 byte length to work as expected
+                size = sizeof(TIMESTAMP_STRUCT);
+                 // my sql with SQL_DATETIME for values less than 1970
+                if (statement_.session_.get_database_product() == soci::odbc_session_backend::prod_mysql)
+                {
+                    sqlType = SQL_DATETIME;
+                }
+            }
+            else
+            {
+                size = 19; // This number is not the size in bytes, but the number
+                 // of characters in the date if it was written out
+                     // yyyy-mm-dd hh:mm:ss
+            }
         }
         break;
 
@@ -352,27 +413,6 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
             {
                 indHolderVec_[i] = SQL_NULL_DATA; // null
             }
-            else
-            {
-            // for strings we have already set the values
-            if (type_ != x_stdstring)
-                {
-                    indHolderVec_[i] = SQL_NTS;  // value is OK
-                }
-            }
-        }
-    }
-    else
-    {
-        // no indicators - treat all fields as OK
-        std::size_t const vsize = size();
-        for (std::size_t i = 0; i != vsize; ++i, ++ind)
-        {
-            // for strings we have already set the values
-            if (type_ != x_stdstring)
-            {
-                indHolderVec_[i] = SQL_NTS;  // value is OK
-            }
         }
     }
 }
@@ -426,6 +466,13 @@ std::size_t odbc_vector_use_type_backend::size()
         {
             std::vector<std::string> *vp
                 = static_cast<std::vector<std::string> *>(data_);
+            sz = vp->size();
+        }
+        break;
+    case x_mnsocistring:
+        {
+            std::vector<MNSociString> *vp
+                = static_cast<std::vector<MNSociString> *>(data_);
             sz = vp->size();
         }
         break;

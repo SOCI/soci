@@ -204,6 +204,7 @@ struct odbc_statement_backend : details::statement_backend
 
     virtual void alloc();
     virtual void clean_up();
+    virtual void cancel_statement();
     virtual void prepare(std::string const &query,
         details::statement_type eType);
 

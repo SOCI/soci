@@ -283,6 +283,7 @@ void session::log_query(std::string const & query)
         if (logStream_ != NULL)
         {
             *logStream_ << query << '\n';
+            logStream_->flush();
         }
 
         lastQuery_ = query;
