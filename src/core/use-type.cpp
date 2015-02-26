@@ -112,6 +112,14 @@ standard_use_type::to_string()
         strVal += msg;
         break;
     }
+    case x_odbctimestamp:
+    {
+        TIMESTAMP_STRUCT myTime = *(TIMESTAMP_STRUCT*)data_;
+        sprintf(msg, "%d.%d.%d %02d:%02d:%02d", myTime.day, myTime.month, myTime.year, myTime.hour, myTime.minute, myTime.second);
+        strVal = "x_odbctimestamp:";
+        strVal += msg;
+        break;
+    }
     }
 
     return strVal;

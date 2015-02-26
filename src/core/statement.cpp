@@ -622,16 +622,11 @@ namespace details
 
 // Map data_types to stock types for dynamic result set support
 
-//template<>
-//void statement_impl::bind_into<dt_string_mn_256>()
-//{
-//    into_row<MNSociString>();
-//}
-//template<>
-//void statement_impl::bind_into<dt_string_mn_4000>()
-//{
-//    into_row<std::string>();
-//}
+template<>
+void statement_impl::bind_into<dt_string_mn_256>()
+{
+    into_row<MNSociString>();
+}
 
 template<>
 void statement_impl::bind_into<dt_string>()
@@ -669,6 +664,12 @@ void statement_impl::bind_into<dt_date>()
     into_row<std::tm>();
 }
 
+template<>
+void statement_impl::bind_into<dt_timestamp_struct>()
+{
+    into_row<TIMESTAMP_STRUCT>();
+}
+
 void statement_impl::describe()
 {
     row_->clean_up();
@@ -682,7 +683,15 @@ void statement_impl::describe()
         switch (props.get_data_type())
         {
         case dt_string:
-            bind_into<dt_string>();
+            if (props.get_column_size() > 255)
+            {
+                bind_into<dt_string>();
+            }
+            else
+            {
+                bind_into<dt_string_mn_256>();
+                props.set_data_type(dt_string_mn_256);
+            }
             break;
         case dt_double:
             bind_into<dt_double>();
@@ -697,7 +706,9 @@ void statement_impl::describe()
             bind_into<dt_unsigned_long_long>();
             break;
         case dt_date:
-            bind_into<dt_date>();
+            //bind_into<dt_date>();
+            bind_into<dt_timestamp_struct>();
+            props.set_data_type(dt_timestamp_struct);
             break;
         default:
             std::ostringstream msg;

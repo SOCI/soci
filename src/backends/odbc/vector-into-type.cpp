@@ -188,6 +188,16 @@ void odbc_vector_into_type_backend::define_by_pos(
             data = buf_;
         }
         break;
+    case x_odbctimestamp:
+    {
+        odbcType_ = SQL_C_TYPE_TIMESTAMP;
+        size = sizeof(TIMESTAMP_STRUCT);
+        std::vector<TIMESTAMP_STRUCT> *vp = static_cast<std::vector<TIMESTAMP_STRUCT> *>(data);
+        std::vector<TIMESTAMP_STRUCT> &v(*vp);
+        prepare_indicators(v.size());
+        data = &v[0];
+        break;
+    }
 
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
@@ -426,6 +436,13 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
             v->resize(sz);
         }
         break;
+    case x_odbctimestamp:
+    {
+        std::vector<TIMESTAMP_STRUCT> *v
+            = static_cast<std::vector<TIMESTAMP_STRUCT> *>(data_);
+        v->resize(sz);
+    }
+    break;
 
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
@@ -499,6 +516,13 @@ std::size_t odbc_vector_into_type_backend::size()
             sz = v->size();
         }
         break;
+    case x_odbctimestamp:
+    {
+        std::vector<TIMESTAMP_STRUCT> *v
+            = static_cast<std::vector<TIMESTAMP_STRUCT> *>(data_);
+        sz = v->size();
+    }
+    break;
 
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported

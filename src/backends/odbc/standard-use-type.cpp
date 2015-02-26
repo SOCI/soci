@@ -129,6 +129,13 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
         ts->fraction = 0;
     }
     break;
+    case x_odbctimestamp:
+    {
+        sqlType = SQL_TIMESTAMP;
+        cType = SQL_C_TIMESTAMP;
+        size = sizeof(TIMESTAMP_STRUCT); 
+        break;
+    }
 
     case x_blob:
     {

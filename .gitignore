@@ -2,11 +2,13 @@
 *.swp
 tags
 tmp
+build/win
 
 # Build directories
 _build*
 src/_build*
 src/build
+src/build*
 
 # Visual Studio
 *.opensdf

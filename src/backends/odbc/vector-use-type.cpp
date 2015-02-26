@@ -262,6 +262,17 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             }
         }
         break;
+    case x_odbctimestamp:
+    {
+        sqlType = SQL_TYPE_TIMESTAMP;
+        cType = SQL_C_TYPE_TIMESTAMP;
+        size = sizeof(TIMESTAMP_STRUCT);
+        std::vector<TIMESTAMP_STRUCT> *vp = static_cast<std::vector<TIMESTAMP_STRUCT> *>(data);
+        std::vector<TIMESTAMP_STRUCT> &v(*vp);
+        prepare_indicators(v.size());
+        data = &v[0];
+    }
+    break;
 
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
@@ -483,6 +494,13 @@ std::size_t odbc_vector_use_type_backend::size()
             sz = vp->size();
         }
         break;
+    case x_odbctimestamp:
+    {
+        std::vector<TIMESTAMP_STRUCT> *vp
+            = static_cast<std::vector<TIMESTAMP_STRUCT> *>(data_);
+        sz = vp->size();
+    }
+    break;
 
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported

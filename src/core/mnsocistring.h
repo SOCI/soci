@@ -15,8 +15,8 @@
 class SOCI_DECL MNSociString
 {
 public:
-    MNSociString(short iCharLength = 255, soci::indicator ind = soci::i_ok) { m_iCharLength = iCharLength; m_ptrCharData = new char[m_iCharLength + 1]; m_ptrCharData[0] = '\0'; m_iInd = ind; }
-    MNSociString(const char* ptrChar, short iCharLength, const soci::indicator& ind) { m_iCharLength = iCharLength; m_ptrCharData = new char[m_iCharLength + 1]; strcpy(m_ptrCharData, ptrChar); m_iInd = ind; }
+    MNSociString(short iCharLength = 256) { m_iCharLength = iCharLength; m_ptrCharData = new char[m_iCharLength + 1]; m_ptrCharData[0] = '\0'; }
+    MNSociString(const char* ptrChar, short iCharLength) { m_iCharLength = iCharLength; m_ptrCharData = new char[m_iCharLength + 1]; strcpy(m_ptrCharData, ptrChar); }
     MNSociString(const MNSociString& obj) { m_iCharLength = obj.m_iCharLength; m_ptrCharData = new char[m_iCharLength + 1]; *this = obj; }
     ~MNSociString() 
     {
@@ -27,13 +27,12 @@ public:
         }
     }
 
-    MNSociString& operator = (const MNSociString& obj)  { strcpy(m_ptrCharData, obj.m_ptrCharData); m_iInd = obj.m_iInd; return *this; }
-    MNSociString& operator = (char* ptrChar)            { strcpy(m_ptrCharData, ptrChar); m_iInd = ptrChar == NULL ? soci::i_null : soci::i_ok; return *this; }
-    MNSociString& operator = (const char* ptrChar)      { strcpy(m_ptrCharData, ptrChar); m_iInd = ptrChar == NULL ? soci::i_null : soci::i_ok; return *this; }
+    MNSociString& operator = (const MNSociString& obj)  { strcpy(m_ptrCharData, obj.m_ptrCharData); return *this; }
+    MNSociString& operator = (char* ptrChar)            { strcpy(m_ptrCharData, ptrChar); return *this; }
+    MNSociString& operator = (const char* ptrChar)      { strcpy(m_ptrCharData, ptrChar); return *this; }
 
     char* m_ptrCharData;
     short m_iCharLength;
-    soci::indicator     m_iInd;
 };
 
 #endif // MNSOCISTRING_H_INCLUDED

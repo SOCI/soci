@@ -16,6 +16,11 @@
 #include <string>
 #include <vector>
 
+#if defined(_MSC_VER) || defined(__MINGW32__)
+#include <windows.h>
+#endif
+#include <sqlext.h> // ODBC
+
 namespace soci
 {
 
@@ -130,6 +135,13 @@ struct exchange_traits<std::tm>
 {
     typedef basic_type_tag type_family;
     enum { x_type = x_stdtm };
+};
+
+template <>
+struct exchange_traits<TIMESTAMP_STRUCT>
+{
+    typedef basic_type_tag type_family;
+    enum { x_type = x_odbctimestamp };
 };
 
 template <typename T>

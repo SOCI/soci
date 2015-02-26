@@ -76,6 +76,14 @@ public:
     column_properties const& get_properties(std::string const& name) const;
 
     template <typename T>
+    T get_without_cast(std::size_t pos) const
+    {
+        assert(holders_.size() >= pos + 1);
+
+        return holders_[pos]->get<T>();
+    }
+
+    template <typename T>
     T get(std::size_t pos) const
     {
         assert(holders_.size() >= pos + 1);

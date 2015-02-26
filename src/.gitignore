@@ -18,3 +18,7 @@ missing
 Makefile
 Makefile.in
 tmp
+*.bat
+*.cache
+build_x64
+build_x86

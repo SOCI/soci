@@ -21,7 +21,7 @@ namespace soci
 // data types, as seen by the user
 enum data_type
 {
-    dt_string/*, dt_string_mn_256, dt_string_mn_4000*/, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long
+    dt_string, dt_string_mn_256, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long, dt_timestamp_struct
 };
 
 // the enum type for indicator variables
@@ -47,7 +47,8 @@ enum exchange_type
     x_statement,
     x_rowid,
     x_blob,
-    x_mnsocistring
+    x_mnsocistring,
+    x_odbctimestamp
 };
 
 // type of statement (used for optimizing statement preparation)

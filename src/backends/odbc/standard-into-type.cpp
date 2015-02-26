@@ -94,6 +94,10 @@ void odbc_standard_into_type_backend::define_by_pos(
         buf_ = new char[size];
         data = buf_;
         break;
+    case x_odbctimestamp:
+        odbcType_ = SQL_C_TYPE_TIMESTAMP;
+        size = sizeof(TIMESTAMP_STRUCT);
+        break;
     case x_rowid:
         odbcType_ = SQL_C_ULONG;
         size = sizeof(unsigned long);
