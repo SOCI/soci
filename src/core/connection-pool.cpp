@@ -116,6 +116,12 @@ bool connection_pool::try_lease(std::size_t & pos, int timeout)
 
         tm.tv_sec = tmv.tv_sec + timeout / 1000;
         tm.tv_nsec = tmv.tv_usec * 1000 + (timeout % 1000) * 1000 * 1000;
+
+        if (tm.tv_nsec >= 1000 * 1000 * 1000)
+        {
+            ++tm.tv_sec;
+            tm.tv_nsec -= 1000 * 1000 * 1000;
+        }
     }
 
     int cc = pthread_mutex_lock(&(pimpl_->mtx_));
