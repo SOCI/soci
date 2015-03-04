@@ -270,6 +270,8 @@ public:
 
     virtual details::session_backend* make_session(
         connection_parameters const& parameters) const = 0;
+    /** should be implemented in backend implementation in order to support local database creation. */
+    virtual void create_database(const std::string&) const { throw soci_error("This backend does not support database creation!"); }
 };
 
 } // namespace soci

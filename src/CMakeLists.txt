@@ -56,6 +56,21 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+#MSVC specific
+IF(MSVC)
+    # This option is to enable the /MP switch for Visual Studio 2005 and above compilers
+    OPTION(MSVC_USE_MP "Set to ON to build soci with the /MP option (Visual Studio 2005 and above)." ON)
+    IF(MSVC_USE_MP)
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+    ENDIF(MSVC_USE_MP)
+    #tell compiler to suppress deprecated warnings
+    ADD_DEFINITIONS(-D_SCL_SECURE_NO_WARNINGS)
+    ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
+ENDIF(MSVC)
+
+
+
+
 ###############################################################################
 # Find SOCI dependencies
 ###############################################################################

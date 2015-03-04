@@ -331,6 +331,7 @@ struct firebird_backend_factory : backend_factory
     firebird_backend_factory() {}
     virtual firebird_session_backend * make_session(
         connection_parameters const & parameters) const;
+    virtual void create_database(const std::string& createSql) const;
 };
 
 extern SOCI_FIREBIRD_DECL firebird_backend_factory const firebird;

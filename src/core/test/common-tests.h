@@ -3849,7 +3849,7 @@ void test_get_affected_rows()
         std::vector<int> v(5, 0);
         for (std::size_t i = 0; i < v.size(); ++i)
         {
-            v[i] = (7 + i);
+            v[i] = (7 + (int)i);
         }
         
         // test affected rows for bulk operations.

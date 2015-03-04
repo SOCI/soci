@@ -8,6 +8,10 @@
 #include "soci.h"
 #include "soci-sqlite3.h"
 #include "common-tests.h"
+
+#include <sqlite3.h>
+
+#include <stdio.h>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -21,6 +25,7 @@ using namespace soci::tests;
 
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_sqlite3();
+bool uriFilenamesEnabled;
 
 // ROWID test
 // In sqlite3 the row id can be called ROWID, _ROWID_ or oid
@@ -258,6 +263,58 @@ void test5()
     std::cout << "test 5 passed" << std::endl;
 }
 
+//test sqlite specific connections
+void test6()
+{
+    std::string db = "sqlitetestdb.db";
+    
+    //remove existing database(if exists)
+    remove(db.c_str());
+    //create new empty database
+    backEnd.create_database(db);
+    try
+    {
+        backEnd.create_database(db);
+    }
+    catch(const std::exception& ex)
+    {
+        //expected error...
+        std::string error = ex.what();
+        assert(error == "Database already exists.");
+    }
+    //remove before further testing
+    remove(db.c_str());
+    if(uriFilenamesEnabled) 
+    {
+        try
+        {
+            std::string connection = "file:" + db + "?mode=rw";
+            //try to open sqlite test.db in current directory readWrite / not create
+            session sql(backEnd, connection); //this should fail
+            assert(false); //exception should occur here
+        }
+        catch(const std::exception& ex)
+        {
+            std::string error = ex.what();
+            assert( error == "Cannot establish connection to the database. unable to open database file");
+        }
+
+        try
+        {
+            std::string connection = "file:" + db + "?mode=rwc";
+            {
+                session sql(backEnd, connection); //this should create new database
+            }
+            remove(db.c_str());
+        }
+        catch( const std::exception&)
+        {
+            assert(false); //exception should occur here
+        }
+    }
+    std::cout << "test 6 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -344,7 +401,6 @@ public:
 
 int main(int argc, char** argv)
 {
-
 #ifdef _MSC_VER
     // Redirect errors, unrecoverable problems, and assert() failures to STDERR,
     // instead of debug message window.
@@ -364,6 +420,11 @@ int main(int argc, char** argv)
         connectString = ":memory:";
     }
 
+    uriFilenamesEnabled=false;
+#ifdef SQLITE_CONFIG_URI
+    uriFilenamesEnabled= sqlite_api::sqlite3_config(SQLITE_CONFIG_URI,1) == SQLITE_OK;
+#endif
+
     try
     {
         test_context tc(backEnd, connectString);
@@ -377,6 +438,7 @@ int main(int argc, char** argv)
         test3();
         test4();
         test5();
+        test6();
 
         std::cout << "\nOK, all tests passed.\n\n";
 
