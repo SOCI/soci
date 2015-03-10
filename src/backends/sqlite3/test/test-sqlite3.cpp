@@ -32,25 +32,35 @@ void test1()
         try { sql << "drop table test1"; }
         catch (soci_error const &) {} // ignore if error
 
-        sql <<
-        "create table test1 ("
-        "    id integer,"
-        "    name varchar(100)"
-        ")";
+        soci::transaction sqlTx(sql);
+        {
+            sql <<
+            "create table test1 ("
+            "    id integer,"
+            "    name varchar(100)"
+            ")";
 
-        sql << "insert into test1(id, name) values(7, \'John\')";
+            soci::transaction sqlTx2(sql);
+            {
+                sql << "insert into test1(id, name) values(7, \'John\')";
 
-        rowid rid(sql);
-        sql << "select oid from test1 where id = 7", into(rid);
+                rowid rid(sql);
+                sql << "select oid from test1 where id = 7", into(rid);
 
-        int id;
-        std::string name;
+                int id;
+                std::string name;
 
-        sql << "select id, name from test1 where oid = :rid",
-        into(id), into(name), use(rid);
+                sql << "select id, name from test1 where oid = :rid",
+                into(id), into(name), use(rid);
 
-        assert(id == 7);
-        assert(name == "John");
+                assert(id == 7);
+                assert(name == "John");
+
+                sqlTx2.commit();
+            }
+
+            sqlTx.commit();
+        }
 
         sql << "drop table test1";
     }
