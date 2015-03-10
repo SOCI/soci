@@ -125,31 +125,33 @@ macro(soci_backend NAME)
       # TODO: Extract as macros: soci_shared_lib_target and soci_static_lib_target --mloskot
 
       # Shared library target
-      add_library(${THIS_BACKEND_TARGET}
+      if (SOCI_SHARED)
+        add_library(${THIS_BACKEND_TARGET}
           SHARED
           ${THIS_BACKEND_SOURCES}
           ${THIS_BACKEND_HEADERS})
 
-      target_link_libraries(${THIS_BACKEND_TARGET}
-		${SOCI_CORE_TARGET}
-		${THIS_BACKEND_DEPENDS_LIBRARIES})
+        target_link_libraries(${THIS_BACKEND_TARGET}
+	  ${SOCI_CORE_TARGET}
+	  ${THIS_BACKEND_DEPENDS_LIBRARIES})
 
-      if(WIN32)
-		set_target_properties(${THIS_BACKEND_TARGET}
+        if(WIN32)
+	  set_target_properties(${THIS_BACKEND_TARGET}
+            PROPERTIES
+            OUTPUT_NAME ${THIS_BACKEND_TARGET_OUTPUT_NAME}
+            DEFINE_SYMBOL SOCI_DLL)
+        else()
+	  set_target_properties(${THIS_BACKEND_TARGET}
+            PROPERTIES
+            SOVERSION ${${PROJECT_NAME}_SOVERSION}
+            INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/lib)
+        endif()
+
+        set_target_properties(${THIS_BACKEND_TARGET}
           PROPERTIES
-          OUTPUT_NAME ${THIS_BACKEND_TARGET_OUTPUT_NAME}
-          DEFINE_SYMBOL SOCI_DLL)
-      else()
-		set_target_properties(${THIS_BACKEND_TARGET}
-          PROPERTIES
-          SOVERSION ${${PROJECT_NAME}_SOVERSION}
-          INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/lib)
+          VERSION ${${PROJECT_NAME}_VERSION}
+          CLEAN_DIRECT_OUTPUT 1)
       endif()
-
-      set_target_properties(${THIS_BACKEND_TARGET}
-        PROPERTIES
-        VERSION ${${PROJECT_NAME}_VERSION}
-        CLEAN_DIRECT_OUTPUT 1)
 
       # Static library target
       if (SOCI_STATIC)
@@ -172,10 +174,19 @@ macro(soci_backend NAME)
           DESTINATION
           ${INCLUDEDIR}/${PROJECTNAMEL}/${NAMEL})
 
-      install(TARGETS ${THIS_BACKEND_TARGET} ${THIS_BACKEND_TARGET_STATIC}
-		RUNTIME DESTINATION ${BINDIR}
-		LIBRARY DESTINATION ${LIBDIR}
-		ARCHIVE DESTINATION ${LIBDIR})
+      if (SOCI_SHARED)
+        install(TARGETS ${THIS_BACKEND_TARGET}
+	  RUNTIME DESTINATION ${BINDIR}
+	  LIBRARY DESTINATION ${LIBDIR}
+	  ARCHIVE DESTINATION ${LIBDIR})
+      endif()
+
+      if (SOCI_SHARED)
+        install(TARGETS ${THIS_BACKEND_TARGET_STATIC}
+	  RUNTIME DESTINATION ${BINDIR}
+	  LIBRARY DESTINATION ${LIBDIR}
+	  ARCHIVE DESTINATION ${LIBDIR})
+      endif()
 
 	else()
       colormsg(HIRED "${NAME}" RED "backend disabled, since")
