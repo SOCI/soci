@@ -35,10 +35,17 @@
 namespace soci
 {
 
-    // TODO: Do we want to make it a part of public interface? --mloskot
 namespace details
 {
+    // TODO: Do we want to make it a part of public interface? --mloskot
     std::size_t const odbc_max_buffer_length = 100 * 1024 * 1024;
+
+    // This cast is only used to avoid compiler warnings when passing strings
+    // to ODBC functions, the returned string may *not* be really modified.
+    inline SQLCHAR* sqlchar_cast(std::string const& s)
+    {
+      return reinterpret_cast<SQLCHAR*>(const_cast<char*>(s.c_str()));
+    }
 }
 
 // Option allowing to specify the "driver completion" parameter of

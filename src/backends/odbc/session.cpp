@@ -74,7 +74,7 @@ odbc_session_backend::odbc_session_backend(
 
     std::string const & connectString = parameters.get_connect_string();
     rc = SQLDriverConnect(hdbc_, hwnd_for_prompt,
-                          (SQLCHAR *)connectString.c_str(),
+                          sqlchar_cast(connectString),
                           (SQLSMALLINT)connectString.size(),
                           outConnString, 1024, &strLength,
                           static_cast<SQLUSMALLINT>(completion));

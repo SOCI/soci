@@ -131,7 +131,7 @@ void odbc_statement_backend::prepare(std::string const & query,
         query_ += "?";
     }
 
-    SQLRETURN rc = SQLPrepare(hstmt_, (SQLCHAR*)query_.c_str(), (SQLINTEGER)query_.size());
+    SQLRETURN rc = SQLPrepare(hstmt_, sqlchar_cast(query_), (SQLINTEGER)query_.size());
     if (is_odbc_error(rc))
     {
         throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
