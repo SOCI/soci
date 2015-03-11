@@ -181,10 +181,6 @@ int oracle_statement_backend::prepare_for_describe()
 void oracle_statement_backend::describe_column(int colNum, data_type &type,
     std::string &columnName)
 {
-    int size;
-    int precision;
-    int scale;
-
     ub2 dbtype;
     text* dbname;
     ub4 nameLength;
@@ -266,9 +262,6 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
     }
 
     columnName.assign(dbname, dbname + nameLength);
-    size = static_cast<int>(dbsize);
-    precision = static_cast<int>(dbprec);
-    scale = static_cast<int>(dbscale);
 
     switch (dbtype)
     {
@@ -277,14 +270,14 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
         type = dt_string;
         break;
     case SQLT_NUM:
-        if (scale > 0)
+        if (dbscale > 0)
         {
             if (session_.get_option_decimals_as_strings())
                 type = dt_string;
             else
                 type = dt_double;
         }
-        else if (precision <= std::numeric_limits<int>::digits10)
+        else if (dbprec <= std::numeric_limits<int>::digits10)
         {
             type = dt_integer;
         }
