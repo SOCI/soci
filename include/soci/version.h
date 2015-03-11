@@ -10,6 +10,8 @@
 #ifndef SOCI_VERSION_HPP
 #define SOCI_VERSION_HPP
 
+// When updating the version here, don't forget to update it in CMakeLists.txt!
+
 //
 //  Caution, this is the only SOCI header that is guarenteed
 //  to change with every SOCI release, including this header
