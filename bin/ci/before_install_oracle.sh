@@ -8,9 +8,7 @@ source ${TRAVIS_BUILD_DIR}/bin/ci/oracle.sh
 
 sudo apt-get install -qq tar bzip2 libaio1 
 
-wget http://brzuchol.loskot.net/software/oracle/instantclient_11_2-linux-x64-mloskot.tar.bz2
-tar -jxf instantclient_11_2-linux-x64-mloskot.tar.bz2
+wget https://www.dropbox.com/s/30ex7s0d1pru0ur/instantclient_11_2-linux-x64.tar.bz2
+tar -jxvf instantclient_11_2-linux-x64.tar.bz2
 sudo mkdir -p /opt
 sudo mv instantclient_11_2 /opt
-sudo ln -s ${ORACLE_HOME}/libclntsh.so.11.1 ${ORACLE_HOME}/libclntsh.so
-sudo ln -s ${ORACLE_HOME}/libocci.so.11.1 ${ORACLE_HOME}/libocci.so
