@@ -28,4 +28,6 @@ cmake \
     ..  
 
 run_make
-run_test
+
+# Disabled as Oracle test database above is not available any longer.
+#run_test
