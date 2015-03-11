@@ -14,10 +14,15 @@ find_path(FIREBIRD_INCLUDE_DIR ibase.h
   $ENV{ProgramFiles}/Firebird/*/include
 )
 
+if(SOCI_FIREBIRD_EMBEDDED)
+  set(FIREBIRD_LIB_NAMES fbembed)
+else()
+  set(FIREBIRD_LIB_NAMES fbclient fbclient_ms)
+endif()
+
 find_library(FIREBIRD_LIBRARIES
   NAMES
-    fbclient
-    fbclient_ms
+    ${FIREBIRD_LIB_NAMES}
   PATHS
     /usr/lib
     $ENV{ProgramFiles}/Firebird/*/lib

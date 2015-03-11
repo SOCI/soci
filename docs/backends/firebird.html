@@ -42,8 +42,10 @@
 <h3 id="prerequisites">Prerequisites</h3>
 <h4 id="versions">Supported Versions</h4>
 
-<p>The SOCI Firebird backend is currently supported for use with Firebird 1.5.<br />
-Other versions of Firebird may work as well, but they have not been tested by the SOCI team.</p>
+<p>The SOCI Firebird backend supports versions of Firebird from 1.5 to 2.5 and
+can be used with either the client-server or embedded Firebird libraries. The
+former is the default, to select the latter set <tt>SOCI_FIREBIRD_EMBEDDED</tt>
+CMake option to <tt>ON</tt> value when building.</p>
 
 <h4 id="tested">Tested Platforms</h4>
 
@@ -53,6 +55,7 @@ Other versions of Firebird may work as well, but they have not been tested by th
 <tr><td>1.5.2.4731</td><td>SunOS 5.10</td><td>g++ 3.4.3</td></tr>
 <tr><td>1.5.2.4731</td><td>Windows XP</td><td>Visual C++ 8.0</td></tr>
 <tr><td>1.5.3.4870</td><td>Windows XP</td><td>Visual C++ 8.0 Professional</td></tr>
+<tr><td>2.5.2.26540</td><td>Debian GNU/Linux 7</td><td>g++ 4.7.2</td></tr>
 </tbody>
 </table>
 
