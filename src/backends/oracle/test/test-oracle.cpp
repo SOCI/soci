@@ -1179,6 +1179,16 @@ public:
     {
         return "to_date('" + datdt_string + "', 'YYYY-MM-DD HH24:MI:SS')";
     }
+
+    bool supportsTransactions() const
+    {
+        return true;
+    }
+
+    bool supportsNestedTransactions() const
+    {
+        return false;
+    }
 };
 
 int main(int argc, char** argv)

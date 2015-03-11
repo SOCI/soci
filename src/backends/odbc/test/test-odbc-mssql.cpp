@@ -97,6 +97,17 @@ public:
     {
         return "convert(datetime, \'" + datdt_string + "\', 120)";
     }
+
+    bool supportsTransactions() const
+    {
+        return true;
+    }
+
+    bool supportsNestedTransactions() const
+    {
+        return false;
+    }
+
 };
 
 int main(int argc, char** argv)

@@ -929,19 +929,29 @@ public:
         return "\'" + datdt_string + "\'";
     }
 
-};
+    bool are_transactions_supported() const
+    {
+        session sql(get_backend_factory(), get_connect_string());
+        sql << "drop table if exists soci_test";
+        sql << "create table soci_test (id int) engine=InnoDB";
+        row r;
+        sql << "show table status like \'soci_test\'", into(r);
+        bool retv = (r.get<std::string>(1) == "InnoDB");
+        sql << "drop table soci_test";
+        return retv;
+    }
 
-bool are_transactions_supported()
-{
-    session sql(backEnd, connectString);
-    sql << "drop table if exists soci_test";
-    sql << "create table soci_test (id int) engine=InnoDB";
-    row r;
-    sql << "show table status like \'soci_test\'", into(r);
-    bool retv = (r.get<std::string>(1) == "InnoDB");
-    sql << "drop table soci_test";
-    return retv;
-}
+    bool supportsTransactions() const
+    {
+        return are_transactions_supported();
+    }
+
+    bool supportsNestedTransactions() const
+    {
+        return are_transactions_supported();
+    }
+
+};
 
 int main(int argc, char** argv)
 {
@@ -962,8 +972,7 @@ int main(int argc, char** argv)
     {
         test_context tc(backEnd, connectString);
         common_tests tests(tc);
-        bool checkTransactions = are_transactions_supported();
-        tests.run(checkTransactions);
+        tests.run();
 
         std::cout << "\nSOCI MySQL Tests:\n\n";
 

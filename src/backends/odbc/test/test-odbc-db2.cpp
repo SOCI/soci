@@ -93,6 +93,16 @@ public:
     {
         return "\'" + datdt_string + "\'";
     }
+
+    bool supportsTransactions() const
+    {
+        return true;
+    }
+
+    bool supportsNestedTransactions() const
+    {
+        return false;
+    }
 };
 
 struct table_creator_bigint : table_creator_base

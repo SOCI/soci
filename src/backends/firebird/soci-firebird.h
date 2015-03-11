@@ -301,9 +301,9 @@ struct firebird_session_backend : details::session_backend
 
     ~firebird_session_backend();
 
-    virtual void begin();
-    virtual void commit();
-    virtual void rollback();
+    virtual void begin(const char* beginTx);
+    virtual void commit(const char* commitTx);
+    virtual void rollback(const char* rollbackTx);
 
     virtual bool get_next_sequence_value(session & s,
         std::string const & sequence, long & value);

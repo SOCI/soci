@@ -152,7 +152,7 @@ oracle_session_backend::~oracle_session_backend()
     clean_up();
 }
 
-void oracle_session_backend::begin()
+void oracle_session_backend::begin(const char* /*beginTx*/)
 {
     // This code is commented out because it causes one of the transaction
     // tests in common_tests::test10() to fail with error 'Invalid handle'
@@ -164,7 +164,7 @@ void oracle_session_backend::begin()
     //    }
 }
 
-void oracle_session_backend::commit()
+void oracle_session_backend::commit(const char* /*commitTx*/)
 {
     sword res = OCITransCommit(svchp_, errhp_, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
@@ -173,7 +173,7 @@ void oracle_session_backend::commit()
     }
 }
 
-void oracle_session_backend::rollback()
+void oracle_session_backend::rollback(const char* /*rollbackTx*/)
 {
     sword res = OCITransRollback(svchp_, errhp_, OCI_DEFAULT);
     if (res != OCI_SUCCESS)

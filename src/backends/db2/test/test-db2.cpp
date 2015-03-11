@@ -96,6 +96,17 @@ public:
     {
         return "to_date('" + pi_datdt_string + "', 'YYYY-MM-DD HH24:MI:SS')";
     }
+
+    bool supportsTransactions() const
+    {
+        return true;
+    }
+
+    bool supportsNestedTransactions() const
+    {
+        return false;
+    }
+
 };
 
 
@@ -107,6 +118,7 @@ void test1()
 {
     {
         session sql(backEnd, connectString);
+        transaction tr(sql);
 
         sql << "SELECT CURRENT TIMESTAMP FROM SYSIBM.SYSDUMMY1";
         sql << "SELECT " << 123 << " FROM SYSIBM.SYSDUMMY1";
@@ -284,7 +296,7 @@ void test1()
 
         sql<<"DROP TABLE DB2INST1.SOCI_TEST";
 
-        sql.commit();
+        tr.commit();
     }
 
     std::cout << "test 1 passed" << std::endl;
@@ -293,6 +305,7 @@ void test1()
 void test2() {
     {
         session sql(backEnd, connectString);
+        transaction tr(sql);
 
         std::string query = "CREATE TABLE DB2INST1.SOCI_TEST (ID BIGINT,DATA VARCHAR(8),DT TIMESTAMP)";
         sql << query;
@@ -330,7 +343,7 @@ void test2() {
         }
         
         sql<<"DROP TABLE DB2INST1.SOCI_TEST";
-        sql.commit();
+        tr.commit();
     }
 
     std::cout << "test 2 passed" << std::endl;
@@ -339,6 +352,7 @@ void test2() {
 void test3() {
     {
         session sql(backEnd, connectString);
+        transaction tr(sql);
         int i;
 
         std::string query = "CREATE TABLE DB2INST1.SOCI_TEST (ID BIGINT,DATA VARCHAR(8),DT TIMESTAMP)";
@@ -384,7 +398,7 @@ void test3() {
         }
         
         sql<<"DROP TABLE DB2INST1.SOCI_TEST";
-        sql.commit();
+        tr.commit();
     }
 
     std::cout << "test 3 passed" << std::endl;

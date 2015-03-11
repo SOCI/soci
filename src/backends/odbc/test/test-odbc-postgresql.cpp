@@ -98,6 +98,16 @@ public:
         return "timestamptz(\'" + datdt_string + "\')";
     }
 
+    bool supportsTransactions() const
+    {
+        return true;
+    }
+
+    bool supportsNestedTransactions() const
+    {
+        return false;
+    }
+
 };
 
 int main(int argc, char** argv)

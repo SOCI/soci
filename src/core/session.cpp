@@ -35,7 +35,7 @@ void ensureConnected(session_backend * backEnd)
 session::session()
     : once(this), prepare(this), query_transformation_(NULL), logStream_(NULL),
       uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      isFromPool_(false), pool_(NULL), transaction_level_(0)
 {
 }
 
@@ -43,7 +43,7 @@ session::session(connection_parameters const & parameters)
     : once(this), prepare(this), query_transformation_(NULL), logStream_(NULL),
       lastConnectParameters_(parameters),
       uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      isFromPool_(false), pool_(NULL), transaction_level_(0)
 {
     open(lastConnectParameters_);
 }
@@ -53,7 +53,7 @@ session::session(backend_factory const & factory,
     : once(this), prepare(this), query_transformation_(NULL), logStream_(NULL),
       lastConnectParameters_(factory, connectString),
       uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      isFromPool_(false), pool_(NULL), transaction_level_(0)
 {
     open(lastConnectParameters_);
 }
@@ -63,7 +63,7 @@ session::session(std::string const & backendName,
     : once(this), prepare(this), query_transformation_(NULL), logStream_(NULL),
       lastConnectParameters_(backendName, connectString),
       uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      isFromPool_(false), pool_(NULL), transaction_level_(0)
 {
     open(lastConnectParameters_);
 }
@@ -72,13 +72,13 @@ session::session(std::string const & connectString)
     : once(this), prepare(this), query_transformation_(NULL), logStream_(NULL),
       lastConnectParameters_(connectString),
       uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      isFromPool_(false), pool_(NULL), transaction_level_(0)
 {
     open(lastConnectParameters_);
 }
 
 session::session(connection_pool & pool)
-    : query_transformation_(NULL), logStream_(NULL), isFromPool_(true), pool_(&pool)
+    : query_transformation_(NULL), logStream_(NULL), isFromPool_(true), pool_(&pool), transaction_level_(0)
 {
     poolPosition_ = pool.lease();
     session & pooledSession = pool.at(poolPosition_);
@@ -123,6 +123,7 @@ void session::open(connection_parameters const & parameters)
         backEnd_ = factory->make_session(parameters);
         lastConnectParameters_ = parameters;
     }
+    transaction_level_ = 0;
 }
 
 void session::open(backend_factory const & factory,
@@ -178,27 +179,67 @@ void session::reconnect()
 
         backEnd_ = lastFactory->make_session(lastConnectParameters_);
     }
+    transaction_level_ = 0;
 }
 
 void session::begin()
 {
     ensureConnected(backEnd_);
 
-    backEnd_->begin();
+    std::string sql;
+    if (transaction_level_ == 0)
+    {
+        sql = "BEGIN";
+    }
+    else
+    {
+        std::ostringstream ss;
+        ss << "SAVEPOINT SOCI_L" << transaction_level_;
+        sql = ss.str();
+    }
+
+    backEnd_->begin(sql.c_str());
+
+    ++transaction_level_;
 }
 
 void session::commit()
 {
     ensureConnected(backEnd_);
 
-    backEnd_->commit();
+    std::string sql;
+    transaction_commit_helper(true, sql);
+
+    backEnd_->commit(sql.c_str());
 }
 
 void session::rollback()
 {
     ensureConnected(backEnd_);
 
-    backEnd_->rollback();
+    std::string sql;
+    transaction_commit_helper(false, sql);
+
+    backEnd_->rollback(sql.c_str());
+}
+
+void session::transaction_commit_helper(bool commit, std::string &sql)
+{
+    if (transaction_level_ <= 0)
+    {
+        throw soci_error("invalid transaction state");
+    }
+    if (--transaction_level_ == 0)
+    {
+        sql = commit ? "COMMIT" : "ROLLBACK";
+    }
+    else
+    {
+        std::ostringstream ss;
+        ss << (commit ? "RELEASE SAVEPOINT " : "ROLLBACK TO SAVEPOINT ") << " SOCI_L" << transaction_level_;
+
+        sql = ss.str();
+    }
 }
 
 std::ostringstream & session::get_query_stream()

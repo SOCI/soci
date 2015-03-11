@@ -234,9 +234,9 @@ struct db2_session_backend : details::session_backend
 
     ~db2_session_backend();
 
-    void begin();
-    void commit();
-    void rollback();
+    virtual void begin(const char* beginTx);
+    virtual void commit(const char* commitTx);
+    virtual void rollback(const char* rollbackTx);
 
     std::string get_backend_name() const { return "DB2"; }
 

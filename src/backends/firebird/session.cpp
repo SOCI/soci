@@ -248,11 +248,11 @@ firebird_session_backend::firebird_session_backend(
         decimals_as_strings_ = param == "1" || param == "Y" || param == "y";
     }
     // starting transaction
-    begin();
+    begin("BEGIN");
 }
 
 
-void firebird_session_backend::begin()
+void firebird_session_backend::begin(const char * /*beginTx*/)
 {
     // Transaction is always started in ctor, because Firebird can't work
     // without active transaction.
@@ -286,7 +286,7 @@ void firebird_session_backend::setDPBOption(int const option, std::string const 
     dpb_.append(value);
 }
 
-void firebird_session_backend::commit()
+void firebird_session_backend::commit(const char * /*commitTx*/)
 {
     ISC_STATUS stat[stat_size];
 
@@ -301,12 +301,12 @@ void firebird_session_backend::commit()
     }
 
 #ifndef SOCI_FIREBIRD_NORESTARTTRANSACTION
-    begin();
+    begin("BEGIN");
 #endif
 
 }
 
-void firebird_session_backend::rollback()
+void firebird_session_backend::rollback(const char * /*rollbackTx*/)
 {
     ISC_STATUS stat[stat_size];
 
@@ -321,7 +321,7 @@ void firebird_session_backend::rollback()
     }
 
 #ifndef SOCI_FIREBIRD_NORESTARTTRANSACTION
-    begin();
+    begin("BEGIN");
 #endif
 
 }

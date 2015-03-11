@@ -241,9 +241,9 @@ struct sqlite3_session_backend : details::session_backend
 
     ~sqlite3_session_backend();
 
-    virtual void begin();
-    virtual void commit();
-    virtual void rollback();
+    virtual void begin(const char* beginTx);
+    virtual void commit(const char* commitTx);
+    virtual void rollback(const char* rollbackTx);
 
     virtual std::string get_backend_name() const { return "sqlite3"; }
 

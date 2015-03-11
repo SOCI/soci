@@ -340,6 +340,17 @@ public:
     {
         return "datetime(\'" + datdt_string + "\')";
     }
+
+    bool supportsTransactions() const
+    {
+        return true;
+    }
+
+    bool supportsNestedTransactions() const
+    {
+        return true;
+    }
+
 };
 
 int main(int argc, char** argv)

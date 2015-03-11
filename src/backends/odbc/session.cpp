@@ -95,7 +95,7 @@ odbc_session_backend::~odbc_session_backend()
     clean_up();
 }
 
-void odbc_session_backend::begin()
+void odbc_session_backend::begin(const char* /*beginTx*/)
 {
     SQLRETURN rc = SQLSetConnectAttr( hdbc_, SQL_ATTR_AUTOCOMMIT,
                     (SQLPOINTER)SQL_AUTOCOMMIT_OFF, 0 );
@@ -106,7 +106,7 @@ void odbc_session_backend::begin()
     }
 }
 
-void odbc_session_backend::commit()
+void odbc_session_backend::commit(const char* /*commitTx*/)
 {
     SQLRETURN rc = SQLEndTran(SQL_HANDLE_DBC, hdbc_, SQL_COMMIT);
     if (is_odbc_error(rc))
@@ -117,7 +117,7 @@ void odbc_session_backend::commit()
     reset_transaction();
 }
 
-void odbc_session_backend::rollback()
+void odbc_session_backend::rollback(const char* /*rollbackTx*/)
 {
     SQLRETURN rc = SQLEndTran(SQL_HANDLE_DBC, hdbc_, SQL_ROLLBACK);
     if (is_odbc_error(rc))

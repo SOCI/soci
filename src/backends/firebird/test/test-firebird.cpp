@@ -30,11 +30,11 @@ void test1()
         session sql(backEnd, connectString);
 
         // In Firebird transaction is always required and is started
-        // automatically when session is opened. There is no need to
-        // call session::begin(); it will do nothing if there is active
-        // transaction.
+        // automatically when session is opened.
+        // while begin won't actually begin a transaction in Firebird,
+        // it is expected to match a commit or rollback statement.
 
-        // sql.begin();
+        sql.begin();
 
         try
         {
@@ -65,6 +65,8 @@ void test1()
 void test2()
 {
     session sql(backEnd, connectString);
+
+    sql.begin();
 
     try
     {
@@ -168,6 +170,8 @@ void test3()
 {
     session sql(backEnd, connectString);
 
+    sql.begin();
+
     try
     {
         sql << "drop table test3";
@@ -221,6 +225,8 @@ void test3()
 void test4()
 {
     session sql(backEnd, connectString);
+
+    sql.begin();
 
     try
     {
@@ -302,6 +308,8 @@ void test5()
 {
     session sql(backEnd, connectString);
 
+    sql.begin();
+
     {
         short sh(0);
         sql << "select 3 from rdb$database", into(sh);
@@ -365,6 +373,8 @@ void test5()
 void test6()
 {
     session sql(backEnd, connectString);
+
+    sql.begin();
 
     try
     {
@@ -512,6 +522,8 @@ void test7()
 {
     session sql(backEnd, connectString);
 
+    sql.begin();
+
     try
     {
         sql << "drop table test7";
@@ -630,6 +642,8 @@ void test8()
 {
     session sql(backEnd, connectString);
 
+    sql.begin();
+
     try
     {
         sql << "drop table test8";
@@ -710,6 +724,8 @@ void test8()
 void test9()
 {
     session sql(backEnd, connectString);
+
+    sql.begin();
 
     try
     {
@@ -821,6 +837,8 @@ void test9()
 void test10()
 {
     session sql(backEnd, connectString);
+
+    sql.begin();
 
     try
     {
@@ -1010,6 +1028,8 @@ void test11()
 {
     session sql(backEnd, connectString);
 
+    sql.begin();
+
     try
     {
         sql << "drop table test11";
@@ -1078,6 +1098,8 @@ void test12()
 {
     session sql(backEnd, connectString);
 
+    sql.begin();
+
     try
     {
         sql << "drop table test12";
@@ -1138,6 +1160,8 @@ void test13()
     assert(format_decimal<int>(&a, -9) == "0.012345678");
 
     session sql(backEnd, connectString + " decimals_as_strings=1");
+
+    sql.begin();
 
     try
     {
@@ -1300,6 +1324,17 @@ class test_context : public tests::test_context_base
         {
             return "'" + datdt_string + "'";
         }
+
+        bool supportsTransactions() const
+        {
+            return true;
+        }
+
+        bool supportsNestedTransactions() const
+        {
+            return false;
+        }
+
 };
 
 

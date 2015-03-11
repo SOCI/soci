@@ -125,19 +125,19 @@ sqlite3_session_backend::~sqlite3_session_backend()
     clean_up();
 }
 
-void sqlite3_session_backend::begin()
+void sqlite3_session_backend::begin(const char* beginTx)
 {
-    execude_hardcoded(conn_, "BEGIN", "Cannot begin transaction.");
+    execude_hardcoded(conn_, beginTx, "Cannot begin transaction.");
 }
 
-void sqlite3_session_backend::commit()
+void sqlite3_session_backend::commit(const char* commitTx)
 {
-    execude_hardcoded(conn_, "COMMIT", "Cannot commit transaction.");
+    execude_hardcoded(conn_, commitTx, "Cannot commit transaction.");
 }
 
-void sqlite3_session_backend::rollback()
+void sqlite3_session_backend::rollback(const char* rollbackTx)
 {
-    execude_hardcoded(conn_, "ROLLBACK", "Cannot rollback transaction.");
+    execude_hardcoded(conn_, rollbackTx, "Cannot rollback transaction.");
 }
 
 void sqlite3_session_backend::clean_up()

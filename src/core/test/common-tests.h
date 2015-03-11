@@ -273,6 +273,10 @@ public:
     virtual table_creator_base* table_creator_3(session&) const = 0;
     virtual table_creator_base* table_creator_4(session&) const = 0;
 
+    // features
+    virtual bool supportsTransactions() const = 0;
+    virtual bool supportsNestedTransactions() const = 0;
+
     virtual ~test_context_base() {} // quiet the compiler
 
 private:
@@ -289,7 +293,7 @@ public:
       connectString_(tc.get_connect_string())
     {}
 
-    void run(bool dbSupportsTransactions = true)
+    void run()
     {
         std::cout<<"\nSOCI Common Tests:\n\n";
 
@@ -304,13 +308,22 @@ public:
         test8();
         test9();
 
-        if (dbSupportsTransactions)
+        if (tc_.supportsTransactions())
         {
             test10();
         }
         else
         {
             std::cout<<"skipping test 10 (database doesn't support transactions)\n";
+        }
+
+        if (tc_.supportsNestedTransactions())
+        {
+            test10nested();
+        }
+        else
+        {
+            std::cout << "skipping test 10nested (database doesn't support nested transactions)\n";
         }
 
         test11();
@@ -1848,6 +1861,79 @@ void test10()
     }
 
     std::cout << "test 10 passed" << std::endl;
+}
+
+// transaction test
+void test10nested()
+{
+    {
+        session sql(backEndFactory_, connectString_);
+
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+        int count;
+        sql << "select count(*) from soci_test", into(count);
+        assert(count == 0);
+
+        {
+            transaction tr(sql);
+
+            sql << "insert into soci_test (id, name) values(1, 'John')";
+            {
+                transaction tr2(sql);
+                sql << "insert into soci_test (id, name) values(2, 'Anna')";
+                tr2.commit();
+            }
+            
+            sql << "insert into soci_test (id, name) values(3, 'Mike')";
+
+            {
+                transaction tr2(sql);
+                sql << "insert into soci_test (id, name) values(4, 'Stan')";
+                sql << "select count(*) from soci_test", into(count);
+                assert(count == 4);
+                // default is to rollback
+            }
+            {
+                transaction tr2(sql);
+                sql << "insert into soci_test (id, name) values(4, 'Stan')";
+                sql << "select count(*) from soci_test", into(count);
+                assert(count == 4);
+                tr2.rollback();
+            }
+            tr.commit();
+        }
+
+        sql << "select count(*) from soci_test", into(count);
+        assert(count == 3);
+
+        sql << "delete from soci_test";
+
+        sql << "select count(*) from soci_test", into(count);
+        assert(count == 0);
+
+        // tests that inner commits don't commit outer transaction
+        {
+            transaction tr(sql);
+
+            sql << "insert into soci_test (id, name) values(1, 'John')";
+            {
+                transaction tr2(sql);
+                sql << "insert into soci_test (id, name) values(2, 'Anna')";
+                {
+                    transaction tr3(sql);
+                    sql << "insert into soci_test (id, name) values(3, 'Mike')";
+                    tr3.commit();
+                }
+                tr2.commit();
+            }
+            tr.rollback();
+        }
+        sql << "select count(*) from soci_test", into(count);
+        assert(count == 0);
+    }
+
+    std::cout << "test 10nested passed" << std::endl;
 }
 
 // test of use elements with indicators

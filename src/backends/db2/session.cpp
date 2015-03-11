@@ -127,7 +127,7 @@ db2_session_backend::~db2_session_backend()
     clean_up();
 }
 
-void db2_session_backend::begin()
+void db2_session_backend::begin(const char* /*beginTx*/)
 {
     // In DB2, transations begin implicitly; however, autocommit must be disabled for the duration of the transaction
     if(autocommit)
@@ -145,7 +145,7 @@ void db2_session_backend::begin()
     in_transaction = true;
 }
 
-void db2_session_backend::commit()
+void db2_session_backend::commit(const char* /*commitTx*/)
 {
     if (!autocommit || in_transaction) {
         in_transaction = false;
@@ -168,7 +168,7 @@ void db2_session_backend::commit()
     }
 }
 
-void db2_session_backend::rollback()
+void db2_session_backend::rollback(const char* /*rollbackTx*/)
 {
     if (!autocommit || in_transaction) {
         in_transaction = false;

@@ -349,19 +349,19 @@ void hard_exec(MYSQL *conn, const string & query)
 
 } // namespace unnamed
 
-void mysql_session_backend::begin()
+void mysql_session_backend::begin(const char *beginTx)
 {
-    hard_exec(conn_, "BEGIN");
+    hard_exec(conn_, beginTx);
 }
 
-void mysql_session_backend::commit()
+void mysql_session_backend::commit(const char *commitTx)
 {
-    hard_exec(conn_, "COMMIT");
+    hard_exec(conn_, commitTx);
 }
 
-void mysql_session_backend::rollback()
+void mysql_session_backend::rollback(const char *rollbackTx)
 {
-    hard_exec(conn_, "ROLLBACK");
+    hard_exec(conn_, rollbackTx);
 }
 
 void mysql_session_backend::clean_up()
