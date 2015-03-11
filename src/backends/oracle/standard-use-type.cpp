@@ -12,6 +12,9 @@
 #include "soci/rowid.h"
 #include "soci/statement.h"
 #include "soci/soci-platform.h"
+
+#include "soci-compiler.h"
+
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -369,10 +372,16 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
                 const double original = *static_cast<double *>(data_);
                 const double bound = *static_cast<double *>(static_cast<void *>(buf_));
 
+                // Exact comparison is fine here, they are really supposed to
+                // be exactly the same.
+                GCC_WARNING_SUPPRESS(float-equal)
+
                 if (original != bound)
                 {
                     throw soci_error("Attempted modification of const use element");
                 }
+
+                GCC_WARNING_RESTORE(float-equal)
             }
             break;
         case x_stdstring:

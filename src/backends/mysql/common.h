@@ -10,6 +10,7 @@
 
 #include "soci/mysql/soci-mysql.h"
 #include "soci-cstrtod.h"
+#include "soci-compiler.h"
 // std
 #include <cstddef>
 #include <ctime>
@@ -41,7 +42,13 @@ template <typename T>
 bool is_infinity_or_nan(T x)
 {
     T y = x - x;
+
+    // We really need exact floating point comparison here.
+    GCC_WARNING_SUPPRESS(float-equal)
+
     return (y != y);
+
+    GCC_WARNING_RESTORE(float-equal)
 }
 
 template <typename T>

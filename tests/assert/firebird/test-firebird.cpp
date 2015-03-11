@@ -8,6 +8,7 @@
 
 #include "soci/soci.h"
 #include "soci/firebird/soci-firebird.h"
+#include "soci-compiler.h"
 #include "firebird/error-firebird.h"            // soci::details::Firebird::throw_iscerror()
 #include "firebird/common.h"
 #include "common-tests.h"
@@ -244,6 +245,10 @@ void test4()
     sql << "select p1, p2, p3 from test4",
     into(d4), into(d5), into(d6);
 
+    // The doubles should make the round trip unchanged, the exact comparisons
+    // are fine here.
+    GCC_WARNING_SUPPRESS(float-equal)
+
     assert(d1 == d4 && d2 == d5 && d3 == d6);
 
     // test negative doubles too
@@ -259,6 +264,8 @@ void test4()
     into(d4), into(d5), into(d6);
 
     assert(d1 == d4 && d2 == d5 && d3 == d6);
+
+    GCC_WARNING_RESTORE(float-equal)
 
     // verify an exception is thrown when fetching non-integral value
     // to integral variable
@@ -772,6 +779,8 @@ void test9()
     assert(r.get_properties("MSG").get_data_type() == dt_string);
     assert(r.get_properties("NTEST").get_data_type() == dt_double);
 
+    GCC_WARNING_SUPPRESS(float-equal)
+
     // get values by position
     assert(r.get<int>(0) == 1);
     assert(r.get<std::string>(1) == "Hello");
@@ -800,6 +809,8 @@ void test9()
         caught = true;
     }
     assert(caught);
+
+    GCC_WARNING_RESTORE(float-equal)
 
     // verify exception thrown on invalid get<>
     caught = false;
