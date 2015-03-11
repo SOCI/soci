@@ -4,9 +4,7 @@
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
 source ${TRAVIS_BUILD_DIR}/bin/ci/common.sh
-
-export ORACLE_HOME=/opt/instantclient_11_2
-export LD_LIBRARY_PATH=${ORACLE_HOME}:${LD_LIBRARY_PATH}
+source ${TRAVIS_BUILD_DIR}/bin/ci/oracle.sh
 
 sudo apt-get install -qq tar bzip2 libaio1 
 
