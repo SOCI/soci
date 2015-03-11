@@ -14,4 +14,3 @@ wget https://www.dropbox.com/s/30ex7s0d1pru0ur/instantclient_11_2-linux-x64.tar.
 tar -jxvf instantclient_11_2-linux-x64.tar.bz2
 sudo mkdir -p /opt
 sudo mv instantclient_11_2 /opt
-ls -lR $ORACLE_HOME
