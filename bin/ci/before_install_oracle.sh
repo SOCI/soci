@@ -5,6 +5,9 @@
 #
 source ${TRAVIS_BUILD_DIR}/bin/ci/common.sh
 
+export ORACLE_HOME=/opt/instantclient_11_2
+export LD_LIBRARY_PATH=${ORACLE_HOME}:${LD_LIBRARY_PATH}
+
 sudo apt-get install -qq tar bzip2 libaio1 
 
 wget http://brzuchol.loskot.net/software/oracle/instantclient_11_2-linux-x64-mloskot.tar.bz2
