@@ -15,8 +15,6 @@ if [[ -f /sys/devices/system/cpu/online ]]; then
 	# Calculates 1.5 times physical threads
 	TCI_NUMTHREADS=$(( ( $(cut -f 2 -d '-' /sys/devices/system/cpu/online) + 1 ) * 15 / 10  ))
 fi
-export ORACLE_HOME=/opt/instantclient_11_2
-export LD_LIBRARY_PATH=${ORACLE_HOME}:${LD_LIBRARY_PATH}
 #
 # Functions
 #
