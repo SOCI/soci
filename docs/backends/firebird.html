@@ -36,7 +36,6 @@
 <div class="navigation-indented">
     <a href="#firebird_soci_error">FirebirdSOCIError</a><br />
 </div>
-  <a href="#options">Configuration options</a><br />
 </div>
 
 <h3 id="prerequisites">Prerequisites</h3>
@@ -168,8 +167,11 @@ sql &lt;&lt; "select name from person where id = :id", use(id, "id")
 <h4 id="transactions">Transactions</h4>
 
 <p><a href="../statements.html#transactions">Transactions</a> are also fully 
-supported by the Firebird backend. In fact, there is always a transaction which is automatically commited in <code>Session's</code> destructor.
-<br />See the <a href="#options">Configuration options</a> section for more details.</p>
+supported by the Firebird backend. In fact, an implicit transaction is always
+started when using this backend if one hadn't been started by explicitly calling
+<tt>begin()</tt> before. The current transaction is automatically committed in
+<code>Session's</code> destructor.
+</p>
 
 <h4 id="blob">BLOB Data Type</h4>
 
@@ -228,15 +230,6 @@ modifications of existing Blob means creating a new one. Firebird backend hides 
 <p>The Firebird backend can throw instances of class <code>FirebirdSOCIError</code>,
 which is publicly derived from <code>SOCIError</code> and has an
 additional public <code>status_</code> member containing the Firebird status vector.</p>
-
-<h3 id="options">Configuration options</h3>
-
-<p>The Firebird backend recognize the following configuration macros :</p>
-<ul>
-<li><code>SOCI_FIREBIRD_NORESTARTTRANSACTION </code> - 
-    Transactions will not be restarted automatically after commit() or rollback().
-    The default is to restart transactions.</li>
-</ul>
 
 <p class="copyright">Copyright &copy; 2004-2006 Maciej Sobczak, Stephen Hutton, Rafal Bobrowski</p>
 </body>

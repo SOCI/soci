@@ -247,16 +247,11 @@ firebird_session_backend::firebird_session_backend(
     {
         decimals_as_strings_ = param == "1" || param == "Y" || param == "y";
     }
-    // starting transaction
-    begin();
 }
 
 
 void firebird_session_backend::begin()
 {
-    // Transaction is always started in ctor, because Firebird can't work
-    // without active transaction.
-    // Transaction will be automatically commited in cleanUp method.
     if (trhp_ == 0)
     {
         ISC_STATUS stat[stat_size];
@@ -299,11 +294,6 @@ void firebird_session_backend::commit()
 
         trhp_ = 0;
     }
-
-#ifndef SOCI_FIREBIRD_NORESTARTTRANSACTION
-    begin();
-#endif
-
 }
 
 void firebird_session_backend::rollback()
@@ -319,11 +309,14 @@ void firebird_session_backend::rollback()
 
         trhp_ = 0;
     }
+}
 
-#ifndef SOCI_FIREBIRD_NORESTARTTRANSACTION
+isc_tr_handle* firebird_session_backend::current_transaction()
+{
+    // It will do nothing if we're already inside a transaction.
     begin();
-#endif
 
+    return &trhp_;
 }
 
 void firebird_session_backend::cleanUp()

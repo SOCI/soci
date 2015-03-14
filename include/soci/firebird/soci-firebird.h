@@ -320,7 +320,15 @@ struct firebird_session_backend : details::session_backend
 
     bool get_option_decimals_as_strings() { return decimals_as_strings_; }
 
+    // Returns the pointer to the current transaction handle, starting a new
+    // transaction if necessary.
+    //
+    // The returned pointer should
+    isc_tr_handle* current_transaction();
+
     isc_db_handle dbhp_;
+
+private:
     isc_tr_handle trhp_;
     std::string dpb_;
     bool decimals_as_strings_;

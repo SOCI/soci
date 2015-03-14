@@ -226,7 +226,7 @@ void firebird_statement_backend::rewriteQuery(
     }
 
     // prepare temporary statement
-    if (isc_dsql_prepare(stat, &(session_.trhp_), &tmpStmtp, 0,
+    if (isc_dsql_prepare(stat, session_.current_transaction(), &tmpStmtp, 0,
         &tmpQuery[0], SQL_DIALECT_V6, sqldap_))
     {
         throw_iscerror(stat);
@@ -302,7 +302,7 @@ void firebird_statement_backend::prepare(std::string const & query,
     ISC_STATUS stat[stat_size];
 
     // prepare real statement
-    if (isc_dsql_prepare(stat, &(session_.trhp_), &stmtp_, 0,
+    if (isc_dsql_prepare(stat, session_.current_transaction(), &stmtp_, 0,
         &queryBuffer[0], SQL_DIALECT_V6, sqldap_))
     {
         throw_iscerror(stat);
@@ -423,7 +423,7 @@ firebird_statement_backend::execute(int number)
             }
 
             // then execute query
-            if (isc_dsql_execute(stat, &session_.trhp_, &stmtp_, SQL_DIALECT_V6, t))
+            if (isc_dsql_execute(stat, session_.current_transaction(), &stmtp_, SQL_DIALECT_V6, t))
             {
                 // preserve the number of rows affected so far.
                 rowsAffectedBulk_ = rowsAffectedBulkTemp;
@@ -442,7 +442,7 @@ firebird_statement_backend::execute(int number)
     else
     {
         // use elements aren't vectors
-        if (isc_dsql_execute(stat, &session_.trhp_, &stmtp_, SQL_DIALECT_V6, t))
+        if (isc_dsql_execute(stat, session_.current_transaction(), &stmtp_, SQL_DIALECT_V6, t))
         {
             throw_iscerror(stat);
         }
