@@ -800,6 +800,11 @@ public:
     {
         return "timestamptz(\'" + datdt_string + "\')";
     }
+
+    virtual bool has_fp_bug() const
+    {
+        return false;
+    }
 };
 
 int main(int argc, char** argv)
