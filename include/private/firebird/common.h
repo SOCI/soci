@@ -82,6 +82,21 @@ const char *str2dec(const char * s, IntType &out, int &scale)
     return s;
 }
 
+template <typename T>
+inline
+T round_for_isc(T value)
+{
+  return value;
+}
+
+inline
+double round_for_isc(double value)
+{
+  // Unfortunately all the rounding functions are C99 and so are not supported
+  // by MSVC, so do it manually.
+  return value < 0 ? value - 0.5 : value + 0.5;
+}
+
 template<typename T1>
 void to_isc(void * val, XSQLVAR * var, int x_scale = 0)
 {
@@ -105,19 +120,19 @@ void to_isc(void * val, XSQLVAR * var, int x_scale = 0)
     {
     case SQL_SHORT:
         {
-            short tmp = static_cast<short>(value*multiplier/divisor);
+            short tmp = static_cast<short>(round_for_isc(value*multiplier)/divisor);
             std::memcpy(var->sqldata, &tmp, sizeof(short));
         }
         break;
     case SQL_LONG:
         {
-            int tmp = static_cast<int>(value*multiplier/divisor);
+            int tmp = static_cast<int>(round_for_isc(value*multiplier)/divisor);
             std::memcpy(var->sqldata, &tmp, sizeof(int));
         }
         break;
     case SQL_INT64:
         {
-            long long tmp = static_cast<long long>(value*multiplier/divisor);
+            long long tmp = static_cast<long long>(round_for_isc(value*multiplier)/divisor);
             std::memcpy(var->sqldata, &tmp, sizeof(long long));
         }
         break;
