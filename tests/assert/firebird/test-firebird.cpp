@@ -687,7 +687,7 @@ void test8()
         std::size_t x(0);
         while (st.fetch())
         {
-            assert(i = in1[x] && m == in2[x]);
+            assert(i == in1[x] && m == in2[x]);
             ++x;
         }
     }
