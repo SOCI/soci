@@ -366,6 +366,24 @@ public:
     {
         return "datetime(\'" + datdt_string + "\')";
     }
+
+    virtual bool has_fp_bug() const
+    {
+        /*
+            SQLite seems to be buggy when using text conversion, e.g.:
+
+                 % echo 'create table t(f real); \
+                         insert into t(f) values(1.79999999999999982); \
+                         select * from t;' | sqlite3
+                 1.8
+
+            And there doesn't seem to be any way to avoid this rounding, so we
+            have no hope of getting back exactly what we write into it unless,
+            perhaps, we start using sqlite3_bind_double() in the backend code.
+         */
+
+        return true;
+    }
 };
 
 int main(int argc, char** argv)
