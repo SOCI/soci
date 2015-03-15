@@ -22,10 +22,13 @@
 #endif // BOOST_VERSION
 #endif // HAVE_BOOST
 
+#include "soci-compiler.h"
+
 #include <algorithm>
 #include <clocale>
 #include <cstdlib>
 #include <cmath>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <string>
@@ -178,15 +181,6 @@ namespace tests
     } catch (soci_error const &e) { msg = e.what(); } \
     assert(msg.empty() == false); } (void)sql
 
-inline bool equal_approx(double const a, double const b)
-{
-    // The formula taken from CATCH test framework
-    // https://github.com/philsquared/Catch/
-    // Thanks to Richard Harris for his help refining this formula
-    double const epsilon(std::numeric_limits<float>::epsilon() * 100);
-    double const scale(1.0);
-    return std::fabs(a - b) < epsilon * (scale + (std::max)(std::fabs(a), std::fabs(b)));
-}
 
 // TODO: improve cleanup capabilities by subtypes, soci_test name may be omitted --mloskot
 //       i.e. optional ctor param accepting custom table name
@@ -283,12 +277,100 @@ public:
     virtual table_creator_base* table_creator_3(session&) const = 0;
     virtual table_creator_base* table_creator_4(session&) const = 0;
 
+    // Override this if the backend handles floating point values correctly,
+    // i.e. writing a value and reading it back returns exactly the same value.
+    //
+    // Be pessimistic by default because this can't be tested to work with all
+    // the backends currently.
+    virtual bool has_fp_bug() const { return true; }
+
     virtual ~test_context_base() {} // quiet the compiler
 
 private:
     backend_factory const &backEndFactory_;
     std::string const connectString_;
 };
+
+// Compare doubles for approximate equality. This has to be used everywhere
+// where we write "3.14" (or "6.28") to the database as a string and then
+// compare the value read back with the literal 3.14 floating point constant
+// because they are not the same.
+//
+// It is also used for the backends which currently don't handle doubles
+// correctly.
+//
+// Notice that this function is normally not used directly but rather from the
+// macro below.
+inline bool are_doubles_approx_equal(double const a, double const b)
+{
+    // The formula taken from CATCH test framework
+    // https://github.com/philsquared/Catch/
+    // Thanks to Richard Harris for his help refining this formula
+    double const epsilon(std::numeric_limits<float>::epsilon() * 100);
+    double const scale(1.0);
+    return std::fabs(a - b) < epsilon * (scale + (std::max)(std::fabs(a), std::fabs(b)));
+}
+
+// This is a macro to ensure we use the correct line numbers. The weird
+// do/while construction is used to make this a statement and the even weirder
+// condition in while ensures that the loop is executed exactly once without
+// triggering warnings from MSVC about the condition being always false.
+#define ASSERT_EQUAL_APPROX(a, b) \
+    do { \
+      if (!are_doubles_approx_equal((a), (b))) { \
+        std::cerr << "Approximate equality check failed at " \
+                  << __FILE__ << ":" << __LINE__ << ":" \
+                  << std::fixed \
+                  << std::setprecision(std::numeric_limits<double>::digits10 + 1) \
+                  << (a) << " != " << (b) \
+                  << std::endl; \
+        assert(!"approximate equality failed"); \
+      } \
+    } while ( (void)0, 0 )
+
+
+// Compare two floating point numbers either exactly or approximately depending
+// on test_context::has_fp_bug() return value.
+inline bool
+are_doubles_equal(test_context_base const& tc, double a, double b)
+{
+  if (tc.has_fp_bug())
+  {
+    return are_doubles_approx_equal(a, b);
+  }
+  else // can compare exactly and check that we really round trip
+  {
+    // Avoid g++ warnings: we do really want the exact equality here.
+    GCC_WARNING_SUPPRESS(float-equal)
+
+    return a == b;
+
+    GCC_WARNING_RESTORE(float-equal)
+  }
+}
+
+// This macro should be used when where we don't have any problems with string
+// literals vs floating point literals mismatches described above and would
+// ideally compare the numbers exactly but, unfortunately, currently can't do
+// this unconditionally because at least some backends are currently buggy and
+// don't handle the floating point values correctly.
+//
+// This can be only used from inside the common_tests class as it relies on
+// having an accessible "tc_" variable to determine whether exact or
+// approximate comparison should be used.
+#define ASSERT_EQUAL(a, b) \
+    do { \
+      if (!are_doubles_equal(tc_, (a), (b))) { \
+        std::cerr << "Equality check failed at " \
+                  << __FILE__ << ":" << __LINE__ << ":" \
+                  << std::fixed \
+                  << std::setprecision(std::numeric_limits<double>::digits10 + 1) \
+                  << (a) << " != " << (b) \
+                  << std::endl; \
+        assert(!"equality failed"); \
+      } \
+    } while ( (void)0, 0 )
+
 
 class common_tests
 {
@@ -465,7 +547,7 @@ void test2()
             sql << "insert into soci_test(d) values(:d)", use(pi);
             double d(0.0);
             sql << "select d from soci_test", into(d);
-            assert(equal_approx(d, 3.14159265));
+            ASSERT_EQUAL(d, pi);
         }
         
         {
@@ -882,9 +964,12 @@ void test3()
 
             int const rowsToTest = 100;
             double d = 0.0;
+
+            statement st = (sql.prepare <<
+                "insert into soci_test(d) values(:d)", use(d));
             for (int i = 0; i != rowsToTest; ++i)
             {
-                sql << "insert into soci_test(d) values(" << d << ")";
+                st.execute(true);
                 d += 0.6;
             }
 
@@ -902,7 +987,7 @@ void test3()
                 st.execute();
                 while (st.fetch())
                 {
-                    assert(equal_approx(d, d2));
+                    ASSERT_EQUAL(d, d2);
                     d2 += 0.6;
                     ++i;
                 }
@@ -920,7 +1005,7 @@ void test3()
                 {
                     for (std::size_t j = 0; j != vec.size(); ++j)
                     {
-                        assert(equal_approx(d2, vec[j]));
+                        ASSERT_EQUAL(d2, vec[j]);
                         d2 += 0.6;
                         ++i;
                     }
@@ -1231,7 +1316,7 @@ void test6()
             double d2 = 0;
             sql << "select d from soci_test", into(d2);
 
-            assert(equal_approx(d2, d));
+            ASSERT_EQUAL(d2, d);
         }
 
         // test for std::tm
@@ -1358,7 +1443,7 @@ void test6()
             double d2 = 0;
             sql << "select d from soci_test", into(d2);
 
-            assert(equal_approx(d2, d));
+            ASSERT_EQUAL(d2, d);
         }
 
         // test for std::tm
@@ -1624,10 +1709,10 @@ void test8()
 
             sql << "select d from soci_test order by d", into(v2);
             assert(v2.size() == 4);
-            assert(equal_approx(v2[0],-0.0001));
-            assert(equal_approx(v2[1], 0));
-            assert(equal_approx(v2[2], 0.0001));
-            assert(equal_approx(v2[3], 3.1415926));
+            ASSERT_EQUAL(v2[0],-0.0001);
+            ASSERT_EQUAL(v2[1], 0);
+            ASSERT_EQUAL(v2[2], 0.0001);
+            ASSERT_EQUAL(v2[3], 3.1415926);
         }
 
         // test for std::tm
@@ -1978,7 +2063,7 @@ void test12()
             assert(r.get_properties(3).get_name() == "SOMETIME");
             assert(r.get_properties(4).get_name() == "CHR");
 
-            assert(equal_approx(r.get<double>(0), 3.14));
+            ASSERT_EQUAL_APPROX(r.get<double>(0), 3.14);
             assert(r.get<int>(1) == 123);
             assert(r.get<std::string>(2) == "Johny");
             std::tm t = { 0 };
@@ -1988,7 +2073,7 @@ void test12()
             // again, type char is visible as string
             assert(r.get<std::string>(4) == "a");
 
-            assert(equal_approx(r.get<double>("NUM_FLOAT"), 3.14));
+            ASSERT_EQUAL_APPROX(r.get<double>("NUM_FLOAT"), 3.14);
             assert(r.get<int>("NUM_INT") == 123);
             assert(r.get<std::string>("NAME") == "Johny");
             assert(r.get<std::string>("CHR") == "a");
@@ -2017,7 +2102,7 @@ void test12()
 
                 r >> d >> i >> s >> t >> c;
 
-                assert(equal_approx(d, 3.14));
+                ASSERT_EQUAL_APPROX(d, 3.14);
                 assert(i == 123);
                 assert(s == "Johny");
                 assert(t.tm_year == 105);
@@ -2557,27 +2642,27 @@ void test20()
             assert(name == "Johny" || name == "Robert");
             if (name == "Johny")
             {
-                assert(equal_approx(r1.get<double>(0), 3.14));
+                ASSERT_EQUAL_APPROX(r1.get<double>(0), 3.14);
                 assert(r1.get<int>(1) == 123);
                 assert(r1.get<std::string>(2) == "Johny");
                 std::tm t1 = { 0 };
                 t1 = r1.get<std::tm>(3);
                 assert(t1.tm_year == 105);
                 assert(r1.get<std::string>(4) == "a");
-                assert(equal_approx(r1.get<double>("NUM_FLOAT"), 3.14));
+                ASSERT_EQUAL_APPROX(r1.get<double>("NUM_FLOAT"), 3.14);
                 assert(r1.get<int>("NUM_INT") == 123);
                 assert(r1.get<std::string>("NAME") == "Johny");
                 assert(r1.get<std::string>("CHR") == "a");
             }
             else
             {
-                assert(equal_approx(r1.get<double>(0), 6.28));
+                ASSERT_EQUAL(r1.get<double>(0), 6.28);
                 assert(r1.get<int>(1) == 246);
                 assert(r1.get<std::string>(2) == "Robert");
                 std::tm t1 = r1.get<std::tm>(3);
                 assert(t1.tm_year == 104);
                 assert(r1.get<std::string>(4) == "b");
-                assert(equal_approx(r1.get<double>("NUM_FLOAT"), 6.28));
+                ASSERT_EQUAL(r1.get<double>("NUM_FLOAT"), 6.28);
                 assert(r1.get<int>("NUM_INT") == 246);
                 assert(r1.get<std::string>("NAME") == "Robert");
                 assert(r1.get<std::string>("CHR") == "b");
@@ -2609,26 +2694,26 @@ void test20()
 
             if (newName == "Johny")
             {
-                assert(equal_approx(r2.get<double>(0), 3.14));
+                ASSERT_EQUAL_APPROX(r2.get<double>(0), 3.14);
                 assert(r2.get<int>(1) == 123);
                 assert(r2.get<std::string>(2) == "Johny");
                 std::tm t2 = r2.get<std::tm>(3);
                 assert(t2.tm_year == 105);
                 assert(r2.get<std::string>(4) == "a");
-                assert(equal_approx(r2.get<double>("NUM_FLOAT"), 3.14));
+                ASSERT_EQUAL_APPROX(r2.get<double>("NUM_FLOAT"), 3.14);
                 assert(r2.get<int>("NUM_INT") == 123);
                 assert(r2.get<std::string>("NAME") == "Johny");
                 assert(r2.get<std::string>("CHR") == "a");
             }
             else
             {
-                assert(equal_approx(r2.get<double>(0), 6.28));
+                ASSERT_EQUAL_APPROX(r2.get<double>(0), 6.28);
                 assert(r2.get<int>(1) == 246);
                 assert(r2.get<std::string>(2) == "Robert");
                 std::tm t2 = r2.get<std::tm>(3);
                 assert(t2.tm_year == 104);
                 assert(r2.get<std::string>(4) == "b");
-                assert(equal_approx(r2.get<double>("NUM_FLOAT"), 6.28));
+                ASSERT_EQUAL_APPROX(r2.get<double>("NUM_FLOAT"), 6.28);
                 assert(r2.get<int>("NUM_INT") == 246);
                 assert(r2.get<std::string>("NAME") == "Robert");
                 assert(r2.get<std::string>("CHR") == "b");
@@ -3268,7 +3353,7 @@ void test28()
     auto_table_creator tableCreator(tc_.table_creator_2(sql));
     {
         boost::tuple<double, int, std::string> t1(3.5, 7, "Joe Hacker");
-        assert(equal_approx(t1.get<0>(), 3.5));
+        ASSERT_EQUAL(t1.get<0>(), 3.5);
         assert(t1.get<1>() == 7);
         assert(t1.get<2>() == "Joe Hacker");
 
@@ -3279,7 +3364,7 @@ void test28()
         boost::tuple<double, int, std::string> t2;
         sql << "select num_float, num_int, name from soci_test", into(t2);
 
-        assert(equal_approx(t2.get<0>(), 3.5));
+        ASSERT_EQUAL(t2.get<0>(), 3.5);
         assert(t2.get<1>() == 7);
         assert(t2.get<2>() == "Joe Hacker");
 
@@ -3292,7 +3377,7 @@ void test28()
         // use:
         boost::tuple<double, boost::optional<int>, std::string> t1(
             3.5, boost::optional<int>(7), "Joe Hacker");
-        assert(equal_approx(t1.get<0>(), 3.5));
+        ASSERT_EQUAL(t1.get<0>(), 3.5);
         assert(t1.get<1>().is_initialized());
         assert(t1.get<1>().get() == 7);
         assert(t1.get<2>() == "Joe Hacker");
@@ -3303,7 +3388,7 @@ void test28()
         boost::tuple<double, boost::optional<int>, std::string> t2;
         sql << "select num_float, num_int, name from soci_test", into(t2);
 
-        assert(equal_approx(t2.get<0>(), 3.5));
+        ASSERT_EQUAL(t2.get<0>(), 3.5);
         assert(t2.get<1>().is_initialized());
         assert(t2.get<1>().get() == 7);
         assert(t2.get<2>() == "Joe Hacker");
@@ -3316,7 +3401,7 @@ void test28()
 
         // use:
         boost::tuple<double, MyInt, std::string> t1(3.5, 7, "Joe Hacker");
-        assert(equal_approx(t1.get<0>(), 3.5));
+        ASSERT_EQUAL(t1.get<0>(), 3.5);
         assert(t1.get<1>().get() == 7);
         assert(t1.get<2>() == "Joe Hacker");
 
@@ -3327,7 +3412,7 @@ void test28()
 
         sql << "select num_float, num_int, name from soci_test", into(t2);
 
-        assert(equal_approx(t2.get<0>(), 3.5));
+        ASSERT_EQUAL(t2.get<0>(), 3.5);
         assert(t2.get<1>().get() == 7);
         assert(t2.get<2>() == "Joe Hacker");
 
@@ -3340,7 +3425,7 @@ void test28()
         // use:
         boost::tuple<double, boost::optional<MyInt>, std::string> t1(
             3.5, boost::optional<MyInt>(7), "Joe Hacker");
-        assert(equal_approx(t1.get<0>(), 3.5));
+        ASSERT_EQUAL(t1.get<0>(), 3.5);
         assert(t1.get<1>().is_initialized());
         assert(t1.get<1>().get().get() == 7);
         assert(t1.get<2>() == "Joe Hacker");
@@ -3352,7 +3437,7 @@ void test28()
 
         sql << "select num_float, num_int, name from soci_test", into(t2);
 
-        assert(equal_approx(t2.get<0>(), 3.5));
+        ASSERT_EQUAL(t2.get<0>(), 3.5);
         assert(t2.get<1>().is_initialized());
         assert(t2.get<1>().get().get() == 7);
         assert(t2.get<2>() == "Joe Hacker");
@@ -3361,7 +3446,7 @@ void test28()
 
         sql << "select num_float, num_int, name from soci_test", into(t2);
 
-        assert(equal_approx(t2.get<0>(), 3.5));
+        ASSERT_EQUAL(t2.get<0>(), 3.5);
         assert(t2.get<1>().is_initialized() == false);
         assert(t2.get<2>() == "Joe Hacker");
     }
@@ -3380,23 +3465,23 @@ void test28()
 
         rowset<T>::const_iterator pos = rs.begin();
 
-        assert(equal_approx(pos->get<0>(), 3.5));
+        ASSERT_EQUAL(pos->get<0>(), 3.5);
         assert(pos->get<1>().is_initialized() == false);
         assert(pos->get<2>() == "Joe Hacker");
 
         ++pos;
-        assert(equal_approx(pos->get<0>(), 4.0));
+        ASSERT_EQUAL(pos->get<0>(), 4.0);
         assert(pos->get<1>().is_initialized());
         assert(pos->get<1>().get() == 8);
         assert(pos->get<2>() == "Tony Coder");
 
         ++pos;
-        assert(equal_approx(pos->get<0>(), 4.5));
+        ASSERT_EQUAL(pos->get<0>(), 4.5);
         assert(pos->get<1>().is_initialized() == false);
         assert(pos->get<2>() == "Cecile Sharp");
 
         ++pos;
-        assert(equal_approx(pos->get<0>(),  5.0));
+        ASSERT_EQUAL(pos->get<0>(),  5.0);
         assert(pos->get<1>().is_initialized());
         assert(pos->get<1>().get() == 10);
         assert(pos->get<2>() == "Djhava Ravaa");
@@ -3421,7 +3506,7 @@ void test29()
     auto_table_creator tableCreator(tc_.table_creator_2(sql));
     {
         boost::fusion::vector<double, int, std::string> t1(3.5, 7, "Joe Hacker");
-        assert(equal_approx(boost::fusion::at_c<0>(t1), 3.5));
+        ASSERT_EQUAL(boost::fusion::at_c<0>(t1), 3.5);
         assert(boost::fusion::at_c<1>(t1) == 7);
         assert(boost::fusion::at_c<2>(t1) == "Joe Hacker");
 
@@ -3432,7 +3517,7 @@ void test29()
         boost::fusion::vector<double, int, std::string> t2;
         sql << "select num_float, num_int, name from soci_test", into(t2);
 
-        assert(equal_approx(boost::fusion::at_c<0>(t2), 3.5));
+        ASSERT_EQUAL(boost::fusion::at_c<0>(t2), 3.5);
         assert(boost::fusion::at_c<1>(t2) == 7);
         assert(boost::fusion::at_c<2>(t2) == "Joe Hacker");
 
@@ -3445,7 +3530,7 @@ void test29()
         // use:
         boost::fusion::vector<double, boost::optional<int>, std::string> t1(
             3.5, boost::optional<int>(7), "Joe Hacker");
-        assert(equal_approx(boost::fusion::at_c<0>(t1), 3.5));
+        ASSERT_EQUAL(boost::fusion::at_c<0>(t1), 3.5);
         assert(boost::fusion::at_c<1>(t1).is_initialized());
         assert(boost::fusion::at_c<1>(t1).get() == 7);
         assert(boost::fusion::at_c<2>(t1) == "Joe Hacker");
@@ -3456,7 +3541,7 @@ void test29()
         boost::fusion::vector<double, boost::optional<int>, std::string> t2;
         sql << "select num_float, num_int, name from soci_test", into(t2);
 
-        assert(equal_approx(boost::fusion::at_c<0>(t2), 3.5));
+        ASSERT_EQUAL(boost::fusion::at_c<0>(t2), 3.5);
         assert(boost::fusion::at_c<1>(t2).is_initialized());
         assert(boost::fusion::at_c<1>(t2) == 7);
         assert(boost::fusion::at_c<2>(t2) == "Joe Hacker");
@@ -3469,7 +3554,7 @@ void test29()
 
         // use:
         boost::fusion::vector<double, MyInt, std::string> t1(3.5, 7, "Joe Hacker");
-        assert(equal_approx(boost::fusion::at_c<0>(t1), 3.5));
+        ASSERT_EQUAL(boost::fusion::at_c<0>(t1), 3.5);
         assert(boost::fusion::at_c<1>(t1).get() == 7);
         assert(boost::fusion::at_c<2>(t1) == "Joe Hacker");
 
@@ -3480,7 +3565,7 @@ void test29()
 
         sql << "select num_float, num_int, name from soci_test", into(t2);
 
-        assert(equal_approx(boost::fusion::at_c<0>(t2), 3.5));
+        ASSERT_EQUAL(boost::fusion::at_c<0>(t2), 3.5);
         assert(boost::fusion::at_c<1>(t2).get() == 7);
         assert(boost::fusion::at_c<2>(t2) == "Joe Hacker");
 
@@ -3493,7 +3578,7 @@ void test29()
         // use:
         boost::fusion::vector<double, boost::optional<MyInt>, std::string> t1(
             3.5, boost::optional<MyInt>(7), "Joe Hacker");
-        assert(equal_approx(boost::fusion::at_c<0>(t1), 3.5));
+        ASSERT_EQUAL(boost::fusion::at_c<0>(t1), 3.5);
         assert(boost::fusion::at_c<1>(t1).is_initialized());
         assert(boost::fusion::at_c<1>(t1).get().get() == 7);
         assert(boost::fusion::at_c<2>(t1) == "Joe Hacker");
@@ -3505,7 +3590,7 @@ void test29()
 
         sql << "select num_float, num_int, name from soci_test", into(t2);
 
-        assert(equal_approx(boost::fusion::at_c<0>(t2), 3.5));
+        ASSERT_EQUAL(boost::fusion::at_c<0>(t2), 3.5);
         assert(boost::fusion::at_c<1>(t2).is_initialized());
         assert(boost::fusion::at_c<1>(t2).get().get() == 7);
         assert(boost::fusion::at_c<2>(t2) == "Joe Hacker");
@@ -3514,7 +3599,7 @@ void test29()
 
         sql << "select num_float, num_int, name from soci_test", into(t2);
 
-        assert(equal_approx(boost::fusion::at_c<0>(t2), 3.5));
+        ASSERT_EQUAL(boost::fusion::at_c<0>(t2), 3.5);
         assert(boost::fusion::at_c<1>(t2).is_initialized() == false);
         assert(boost::fusion::at_c<2>(t2) == "Joe Hacker");
     }
@@ -3533,23 +3618,23 @@ void test29()
 
         rowset<T>::const_iterator pos = rs.begin();
 
-        assert(equal_approx(boost::fusion::at_c<0>(*pos), 3.5));
+        ASSERT_EQUAL(boost::fusion::at_c<0>(*pos), 3.5);
         assert(boost::fusion::at_c<1>(*pos).is_initialized() == false);
         assert(boost::fusion::at_c<2>(*pos) == "Joe Hacker");
 
         ++pos;
-        assert(equal_approx(boost::fusion::at_c<0>(*pos), 4.0));
+        ASSERT_EQUAL(boost::fusion::at_c<0>(*pos), 4.0);
         assert(boost::fusion::at_c<1>(*pos).is_initialized());
         assert(boost::fusion::at_c<1>(*pos).get() == 8);
         assert(boost::fusion::at_c<2>(*pos) == "Tony Coder");
 
         ++pos;
-        assert(equal_approx(boost::fusion::at_c<0>(*pos), 4.5));
+        ASSERT_EQUAL(boost::fusion::at_c<0>(*pos), 4.5);
         assert(boost::fusion::at_c<1>(*pos).is_initialized() == false);
         assert(boost::fusion::at_c<2>(*pos) == "Cecile Sharp");
 
         ++pos;
-        assert(equal_approx(boost::fusion::at_c<0>(*pos), 5.0));
+        ASSERT_EQUAL(boost::fusion::at_c<0>(*pos), 5.0);
         assert(boost::fusion::at_c<1>(*pos).is_initialized());
         assert(boost::fusion::at_c<1>(*pos).get() == 10);
         assert(boost::fusion::at_c<2>(*pos) == "Djhava Ravaa");
