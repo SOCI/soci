@@ -289,6 +289,7 @@ struct odbc_session_backend : details::session_backend
 
     virtual std::string get_backend_name() const { return "odbc"; }
 
+    void configure_connection();
     void reset_transaction();
 
     void clean_up();

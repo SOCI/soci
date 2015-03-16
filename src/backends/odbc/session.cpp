@@ -88,6 +88,53 @@ odbc_session_backend::odbc_session_backend(
     connection_string_.assign((const char*)outConnString, strLength);
 
     reset_transaction();
+
+    configure_connection();
+}
+
+void odbc_session_backend::configure_connection()
+{
+    if ( get_database_product() == prod_postgresql )
+    {
+        // Increase the number of digits used for floating point values to
+        // ensure that the conversions to/from text round trip correctly, which
+        // is not the case with the default value of 0. Use the maximal
+        // supported value, which was 2 until 9.x and is 3 since it.
+
+        char product_ver[1024];
+        SQLSMALLINT len = sizeof(product_ver);
+        SQLRETURN rc = SQLGetInfo(hdbc_, SQL_DBMS_VER, product_ver, len, &len);
+        if (is_odbc_error(rc))
+        {
+            throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
+                                  "SQLGetInfo(SQL_DBMS_VER)");
+        }
+
+        // The returned string is of the form "##.##.#### ...", but we don't
+        // need to parse it fully, we just need the major version which,
+        // conveniently, comes first.
+        unsigned major_ver = 0;
+        if (std::sscanf(product_ver, "%u", &major_ver) != 1)
+        {
+            throw soci_error("DBMS version \"" + std::string(product_ver) +
+                             "\" in unrecognizable format.");
+        }
+
+        odbc_statement_backend st(*this);
+        st.alloc();
+
+        std::string const q(major_ver >= 9 ? "SET extra_float_digits = 3"
+                                           : "SET extra_float_digits = 2");
+        rc = SQLExecDirect(st.hstmt_, sqlchar_cast(q), q.size());
+
+        st.clean_up();
+
+        if (is_odbc_error(rc))
+        {
+            throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
+                                  "Setting extra_float_digits for PostgreSQL");
+        }
+    }
 }
 
 odbc_session_backend::~odbc_session_backend()
