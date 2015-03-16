@@ -316,8 +316,6 @@ struct firebird_session_backend : details::session_backend
     virtual firebird_rowid_backend * make_rowid_backend();
     virtual firebird_blob_backend * make_blob_backend();
 
-    virtual void setDPBOption(int const option, std::string const & value);
-
     bool get_option_decimals_as_strings() { return decimals_as_strings_; }
 
     // Returns the pointer to the current transaction handle, starting a new
@@ -330,7 +328,6 @@ struct firebird_session_backend : details::session_backend
 
 private:
     isc_tr_handle trhp_;
-    std::string dpb_;
     bool decimals_as_strings_;
 };
 
