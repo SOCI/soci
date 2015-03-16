@@ -1311,11 +1311,6 @@ class test_context : public tests::test_context_base
         {
             return "'" + datdt_string + "'";
         }
-
-        virtual bool has_fp_bug() const
-        {
-            return false;
-        }
 };
 
 

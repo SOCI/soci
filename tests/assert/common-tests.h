@@ -277,12 +277,10 @@ public:
     virtual table_creator_base* table_creator_3(session&) const = 0;
     virtual table_creator_base* table_creator_4(session&) const = 0;
 
-    // Override this if the backend handles floating point values correctly,
-    // i.e. writing a value and reading it back returns exactly the same value.
-    //
-    // Be pessimistic by default because this can't be tested to work with all
-    // the backends currently.
-    virtual bool has_fp_bug() const { return true; }
+    // Override this if the backend doesn't handle floating point values
+    // correctly, i.e. writing a value and reading it back doesn't return
+    // *exactly* the same value.
+    virtual bool has_fp_bug() const { return false; }
 
     virtual ~test_context_base() {} // quiet the compiler
 
