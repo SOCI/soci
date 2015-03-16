@@ -300,7 +300,7 @@ int main(int argc, char** argv)
     }
     catch (std::exception const & e)
     {
-        std::cout << "STD::EXECEPTION " << e.what() << '\n';
+        std::cout << e.what() << '\n';
     }
     return EXIT_FAILURE;
 }
