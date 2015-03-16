@@ -11,11 +11,77 @@
 #include <iostream>
 #include <string>
 #include <cassert>
+#include <cstdio>
 #include <ctime>
 #include <cmath>
 
 using namespace soci;
 using namespace soci::tests;
+
+// A generic version class: we might want to factor it out later if it is
+// needed elsewhere (it would probably also need to be renamed to something
+// less generic then).
+class version
+{
+public:
+    version()
+    {
+        initialized_ = false;
+    }
+
+    version(unsigned major, unsigned minor, unsigned release)
+        : major_(major), minor_(minor), release_(release)
+    {
+        initialized_ = true;
+    }
+
+    bool init_from_string(char const* s)
+    {
+        initialized_ = std::sscanf(s, "%u.%u.%u",
+                                   &major_, &minor_, &release_) == 3;
+        return initialized_;
+    }
+
+    bool is_initialized() const { return initialized_; }
+
+    std::string as_string() const
+    {
+        if (initialized_)
+        {
+            char buf[128];
+            // This uses the ODBC convention of padding the minor and release
+            // versions with 0 and might be not appropriate in general.
+            std::sprintf(buf, "%u.%02u.%04u", major_, minor_, release_);
+            return buf;
+        }
+        else
+        {
+            return "(uninitialized)";
+        }
+    }
+
+    // Compare versions using the lexicographical sort order, with
+    // uninitialized version considered less than any initialized one.
+    bool operator<(version const& v) const
+    {
+        if (!initialized_)
+            return v.initialized_;
+
+        return major_ < v.major_ ||
+                (major_ == v.major_ && (minor_ < v.minor_ ||
+                    (minor_ == v.minor_ && release_ < v.release_)));
+    }
+
+private:
+    unsigned major_, minor_, release_;
+    bool initialized_;
+};
+
+std::ostream& operator<<(std::ostream& os, version const& v)
+{
+    os << v.as_string();
+    return os;
+}
 
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_odbc();
@@ -71,7 +137,11 @@ class test_context : public test_context_base
 public:
     test_context(backend_factory const &backEnd,
                 std::string const &connectString)
-        : test_context_base(backEnd, connectString) {}
+        : test_context_base(backEnd, connectString),
+          m_verDriver(get_driver_version())
+    {
+        std::cout << "Using ODBC driver version " << m_verDriver << "\n";
+    }
 
     table_creator_base * table_creator_1(session& s) const
     {
@@ -98,6 +168,51 @@ public:
         return "timestamptz(\'" + datdt_string + "\')";
     }
 
+    virtual bool has_fp_bug() const
+    {
+        // The bug with using insufficiently many digits for double values was
+        // only fixed in 9.03.0400 version of the ODBC driver (see commit
+        // a5fed2338b59ae16a2d3a8d2744b084949684775 in its repository), so we
+        // need to check for its version here.
+        //
+        // Be pessimistic if we failed to retrieve the version at all.
+        return !m_verDriver.is_initialized() || m_verDriver < version(9, 3, 400);
+    }
+
+private:
+    version get_driver_version() const
+    {
+        session sql(get_backend_factory(), get_connect_string());
+        odbc_session_backend* const
+            odbc_session = static_cast<odbc_session_backend*>(sql.get_backend());
+        if (!odbc_session)
+        {
+            std::cerr << "Failed to get odbc_session_backend?\n";
+            return version();
+        }
+
+        char driver_ver[1024];
+        SQLSMALLINT len = sizeof(driver_ver);
+        SQLRETURN rc = SQLGetInfo(odbc_session->hdbc_, SQL_DRIVER_VER,
+                                  driver_ver, len, &len);
+        if (soci::is_odbc_error(rc))
+        {
+            std::cerr << "Retrieving ODBC driver version failed: "
+                      << rc << "\n";
+            return version();
+        }
+
+        version v;
+        if (!v.init_from_string(driver_ver))
+        {
+            std::cerr << "Unknown ODBC driver version format: \""
+                      << driver_ver << "\"\n";
+        }
+
+        return v;
+    }
+
+    version const m_verDriver;
 };
 
 int main(int argc, char** argv)
