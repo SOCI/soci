@@ -915,6 +915,12 @@ public:
         return "\'" + datdt_string + "\'";
     }
 
+    virtual bool has_fp_bug() const
+    {
+        // MySQL fails in the common test3() with "1.8000000000000000 !=
+        // 1.7999999999999998", so don't use exact doubles comparisons for it.
+        return true;
+    }
 };
 
 bool are_transactions_supported()
