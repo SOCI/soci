@@ -327,24 +327,41 @@ inline bool are_doubles_approx_equal(double const a, double const b)
     } while ( (void)0, 0 )
 
 
-// Compare two floating point numbers either exactly or approximately depending
-// on test_context::has_fp_bug() return value.
+// Exact double comparison function. We need one, instead of writing "a == b",
+// only in order to have some place to put the pragmas disabling gcc warnings.
 inline bool
-are_doubles_equal(test_context_base const& tc, double a, double b)
+are_doubles_exactly_equal(double a, double b)
 {
-  if (tc.has_fp_bug())
-  {
-    return are_doubles_approx_equal(a, b);
-  }
-  else // can compare exactly and check that we really round trip
-  {
     // Avoid g++ warnings: we do really want the exact equality here.
     GCC_WARNING_SUPPRESS(float-equal)
 
     return a == b;
 
     GCC_WARNING_RESTORE(float-equal)
-  }
+}
+
+#define ASSERT_EQUAL_EXACT(a, b) \
+    do { \
+      if (!are_doubles_exactly_equal((a), (b))) { \
+        std::cerr << "Exact equality check failed at " \
+                  << __FILE__ << ":" << __LINE__ << ":" \
+                  << std::fixed \
+                  << std::setprecision(std::numeric_limits<double>::digits10 + 1) \
+                  << (a) << " != " << (b) \
+                  << std::endl; \
+        assert(!"exact equality failed"); \
+      } \
+    } while ( (void)0, 0 )
+
+
+// Compare two floating point numbers either exactly or approximately depending
+// on test_context::has_fp_bug() return value.
+inline bool
+are_doubles_equal(test_context_base const& tc, double a, double b)
+{
+    return tc.has_fp_bug()
+                ? are_doubles_approx_equal(a, b)
+                : are_doubles_exactly_equal(a, b);
 }
 
 // This macro should be used when where we don't have any problems with string
@@ -432,6 +449,7 @@ public:
         test_prepared_insert_with_orm_type();
         test_issue154();
         test_placeholder_partial_matching_with_orm_type();
+        test_numeric_round_trip();
     }
 
 private:
@@ -2444,6 +2462,33 @@ void test_placeholder_partial_matching_with_orm_type()
     }
 
     std::cout << "test test_placeholder_partial_matching_with_orm_type passed" << std::endl;
+}
+
+void test_numeric_round_trip()
+{
+    session sql(backEndFactory_, connectString_);
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+    double d1 = 0.003958,
+           d2;
+
+    sql << "insert into soci_test(num76) values (:d1)", use(d1);
+    sql << "select num76 from soci_test", into(d2);
+
+    // The numeric value should make the round trip unchanged, we really want
+    // to use exact comparisons here.
+    ASSERT_EQUAL_EXACT(d1, d2);
+
+    // test negative doubles too
+    sql << "delete from soci_test";
+    d1 = -d1;
+
+    sql << "insert into soci_test(num76) values (:d1)", use(d1);
+    sql << "select num76 from soci_test", into(d2);
+
+    ASSERT_EQUAL_EXACT(d1, d2);
+
+    std::cout << "test numeric_round_trip passed" << std::endl;
 }
 
 // test for bulk fetch with single use

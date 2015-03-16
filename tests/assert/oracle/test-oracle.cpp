@@ -1115,6 +1115,7 @@ struct table_creator_one : public table_creator_base
     {
         sql << "create table soci_test(id number(10,0), val number(4,0), c char, "
                  "str varchar2(20), sh number, ul number, d number, "
+                 "num76 numeric(7,6), "
                  "tm date, i1 number, i2 number, i3 number, name varchar2(20))";
     }
 };
