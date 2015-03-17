@@ -180,9 +180,12 @@ odbc_statement_backend::execute(int number)
         throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
                          "Statement Execute");
     }
-    // We should preserve the number of rows affected here 
-    // where we know for sure that a bulk operation was executed.
-    else
+    else if (hasVectorUseElements_)
+    {
+        // We already have the number of rows, no need to do anything.
+        rowsAffected_ = rows_processed;
+    }
+    else // We need to retrieve the number of rows affected explicitly.
     {
         rowsAffected_ = 0;
 
