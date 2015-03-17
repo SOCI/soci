@@ -30,5 +30,5 @@ run_make()
 
 run_test()
 {
-    ctest -V --output-on-failure .
+    ctest -V --output-on-failure "$@" .
 }

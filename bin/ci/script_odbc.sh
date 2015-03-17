@@ -28,4 +28,6 @@ cmake \
    ..
 
 run_make
-run_test
+
+# Exclude the test which can't be run as there is no MS SQL server available.
+run_test -E soci_odbc_test_mssql

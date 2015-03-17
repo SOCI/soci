@@ -10,7 +10,6 @@
 ###############################################################################
 
 if (WIN32)
-  
   # MDBTools driver seems unreliable
   soci_backend_test(
     NAME access
@@ -18,17 +17,16 @@ if (WIN32)
     DEPENDS ODBC
     SOURCE test-odbc-access.cpp ${SOCI_TESTS_COMMON}
     CONNSTR "test-access.dsn")
-
-  # We have no means to test SQL Server at travis-ci.org
-  soci_backend_test(
-    NAME mssql
-    BACKEND ODBC
-    DEPENDS ODBC
-    SOURCE test-odbc-mssql.cpp ${SOCI_TESTS_COMMON}
-    CONNSTR "test-mssql.dsn")
 else()
-    message(STATUS "SQL Server, MS Access tests disabled on non-Windows platform")
+    message(STATUS "MS Access test disabled on non-Windows platform")
 endif()
+
+soci_backend_test(
+  NAME mssql
+  BACKEND ODBC
+  DEPENDS ODBC
+  SOURCE test-odbc-mssql.cpp ${SOCI_TESTS_COMMON}
+  CONNSTR "test-mssql.dsn")
 
 soci_backend_test(
   NAME mysql
