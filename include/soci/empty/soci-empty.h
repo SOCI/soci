@@ -23,7 +23,7 @@
 # define SOCI_EMPTY_DECL
 #endif
 
-#include "soci/soci-backend.h"
+#include <soci/soci-backend.h>
 
 #include <cstddef>
 #include <string>

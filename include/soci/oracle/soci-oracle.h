@@ -23,7 +23,7 @@
 # define SOCI_ORACLE_DECL
 #endif
 
-#include "soci/soci-backend.h"
+#include <soci/soci-backend.h>
 #include <oci.h> // OCI
 #include <vector>
 
