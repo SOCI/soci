@@ -98,6 +98,15 @@ public:
     {
         return "convert(datetime, \'" + datdt_string + "\', 120)";
     }
+
+    virtual bool has_multiple_select_bug() const
+    {
+        // MS SQL does support MARS (multiple active result sets) since 2005
+        // version, but this support needs to be explicitly enabled and is not
+        // implemented in FreeTDS ODBC driver used under Unix currently, so err
+        // on the side of caution and suppose that it's not supported.
+        return true;
+    }
 };
 
 int main(int argc, char** argv)

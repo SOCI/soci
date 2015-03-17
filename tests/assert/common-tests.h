@@ -282,6 +282,11 @@ public:
     // *exactly* the same value.
     virtual bool has_fp_bug() const { return false; }
 
+    // Override this if the backend doesn't handle multiple active select
+    // statements at the same time, i.e. a result set must be entirely consumed
+    // before creating a new one (this is the case of MS SQL without MARS).
+    virtual bool has_multiple_select_bug() const { return false; }
+
     virtual ~test_context_base() {} // quiet the compiler
 
 private:
@@ -2589,6 +2594,7 @@ void test18()
         assert(rs1.end() == rs3.end());
     }
 
+    if (!tc_.has_multiple_select_bug())
     {
         // Assignment
         rowset<row> rs1 = (sql.prepare << "select * from soci_test");
