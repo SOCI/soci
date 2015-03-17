@@ -24,7 +24,7 @@
 #endif
 
 #include <vector>
-#include "soci/soci-backend.h"
+#include <soci/soci-backend.h>
 #if defined(_MSC_VER) || defined(__MINGW32__)
 #include "soci/soci-platform.h"
 #include <windows.h>
