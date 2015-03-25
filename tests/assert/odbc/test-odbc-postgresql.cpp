@@ -21,15 +21,15 @@ using namespace soci::tests;
 // A generic version class: we might want to factor it out later if it is
 // needed elsewhere (it would probably also need to be renamed to something
 // less generic then).
-class version
+class odbc_version
 {
 public:
-    version()
+    odbc_version()
     {
         initialized_ = false;
     }
 
-    version(unsigned major, unsigned minor, unsigned release)
+    odbc_version(unsigned major, unsigned minor, unsigned release)
         : major_(major), minor_(minor), release_(release)
     {
         initialized_ = true;
@@ -62,7 +62,7 @@ public:
 
     // Compare versions using the lexicographical sort order, with
     // uninitialized version considered less than any initialized one.
-    bool operator<(version const& v) const
+    bool operator<(odbc_version const& v) const
     {
         if (!initialized_)
             return v.initialized_;
@@ -77,7 +77,7 @@ private:
     bool initialized_;
 };
 
-std::ostream& operator<<(std::ostream& os, version const& v)
+std::ostream& operator<<(std::ostream& os, odbc_version const& v)
 {
     os << v.as_string();
     return os;
@@ -177,11 +177,11 @@ public:
         // need to check for its version here.
         //
         // Be pessimistic if we failed to retrieve the version at all.
-        return !m_verDriver.is_initialized() || m_verDriver < version(9, 3, 400);
+        return !m_verDriver.is_initialized() || m_verDriver < odbc_version(9, 3, 400);
     }
 
 private:
-    version get_driver_version() const
+    odbc_version get_driver_version() const
     {
         session sql(get_backend_factory(), get_connect_string());
         odbc_session_backend* const
@@ -189,7 +189,7 @@ private:
         if (!odbc_session)
         {
             std::cerr << "Failed to get odbc_session_backend?\n";
-            return version();
+            return odbc_version();
         }
 
         char driver_ver[1024];
@@ -200,10 +200,10 @@ private:
         {
             std::cerr << "Retrieving ODBC driver version failed: "
                       << rc << "\n";
-            return version();
+            return odbc_version();
         }
 
-        version v;
+        odbc_version v;
         if (!v.init_from_string(driver_ver))
         {
             std::cerr << "Unknown ODBC driver version format: \""
@@ -213,7 +213,7 @@ private:
         return v;
     }
 
-    version const m_verDriver;
+    odbc_version const m_verDriver;
 };
 
 int main(int argc, char** argv)
