@@ -14,7 +14,6 @@
 #include "common-tests.h"
 #include <iostream>
 #include <string>
-#include <cassert>
 #include <ctime>
 #include <cstring>
 #include <cmath>
@@ -25,45 +24,41 @@ std::string connectString;
 soci::backend_factory const &backEnd = *factory_firebird();
 
 // fundamental tests - transactions in Firebird
-void test1()
+TEST_CASE("Firebird transactions", "[firebird][transaction]")
 {
+    session sql(backEnd, connectString);
+
+    // In Firebird transaction is always required and is started
+    // automatically when session is opened. There is no need to
+    // call session::begin(); it will do nothing if there is active
+    // transaction.
+
+    // sql.begin();
+
+    try
     {
-        session sql(backEnd, connectString);
-
-        // In Firebird transaction is always required and is started
-        // automatically when session is opened. There is no need to
-        // call session::begin(); it will do nothing if there is active
-        // transaction.
-
-        // sql.begin();
-
-        try
-        {
-            sql << "drop table test1";
-        }
-        catch (soci_error const &)
-        {} // ignore if error
-
-        sql << "create table test1 (id integer)";
-
-        // After DDL statement transaction must be commited or changes
-        // won't be visible to active transaction.
-        sql.commit();
-
-        // After commit or rollback, transaction must be started manually.
-        sql.begin();
-
-        sql << "insert into test1(id) values(5)";
         sql << "drop table test1";
-
-        // Transaction is automatically commited in session's destructor
     }
+    catch (soci_error const &)
+    {} // ignore if error
 
-    std::cout << "test 1 passed" << std::endl;
+    sql << "create table test1 (id integer)";
+
+    // After DDL statement transaction must be commited or changes
+    // won't be visible to active transaction.
+    sql.commit();
+
+    // After commit or rollback, transaction must be started manually.
+    sql.begin();
+
+    sql << "insert into test1(id) values(5)";
+    sql << "drop table test1";
+
+    // Transaction is automatically commited in session's destructor
 }
 
 // character types
-void test2()
+TEST_CASE("Firebird char types", "[firebird][string]")
 {
     session sql(backEnd, connectString);
 
@@ -85,7 +80,8 @@ void test2()
         sql << "insert into test2(p1,p2) values(?,?)", use(a), use(b);
 
         sql << "select p1,p2 from test2", into(c1), into(c2);
-        assert(c1 == 'a' && c2 == 'b');
+        CHECK(c1 == 'a');
+        CHECK(c2 == 'b');
 
         sql << "delete from test2";
     }
@@ -101,7 +97,8 @@ void test2()
         sql << "insert into test2(p1, p2) values (?,?)", use(b1, 100), use(b1, 100);
         sql << "select p1, p2 from test2", into(b2, 100), into(b3, 100);
 
-        assert(!std::strcmp(buf2, buf3) && !std::strcmp(buf2, "Hello, Fir"));
+        CHECK(!std::strcmp(buf2, buf3));
+        CHECK(!std::strcmp(buf2, "Hello, Fir"));
 
         sql << "delete from test2";
     }
@@ -115,7 +112,8 @@ void test2()
         use(buf1), use(buf1);
         sql << "select p1, p2 from test2", into(buf2), into(buf3);
 
-        assert(!std::strcmp(buf2, buf3) && !std::strcmp(buf2, "Hello, Fir"));
+        CHECK(!std::strcmp(buf2, buf3));
+        CHECK(!std::strcmp(buf2, "Hello, Fir"));
 
         sql << "delete from test2";
     }
@@ -127,7 +125,8 @@ void test2()
         sql << "insert into test2(p1, p2) values (?,?)", use(b1), use(b1);
         sql << "select p1, p2 from test2", into(b2), into(b3);
 
-        assert(b2 == b3 && b2 == "Hello, Fir");
+        CHECK(b2 == b3);
+        CHECK(b2 == "Hello, Fir");
 
         sql << "delete from test2";
     }
@@ -143,8 +142,8 @@ void test2()
         sql << "select p1 from test2", into(buf_str);
         std::strcpy(buf, buf_str.c_str());
 
-        assert(std::strncmp(buf, msg, 5) == 0);
-        assert(std::strncmp(buf+5, "     ", 5) == 0);
+        CHECK(std::strncmp(buf, msg, 5) == 0);
+        CHECK(std::strncmp(buf+5, "     ", 5) == 0);
 
         sql << "delete from test2";
     }
@@ -155,17 +154,17 @@ void test2()
         use(str1), use(str1);
 
         sql << "select p1, p2 from test2", into(str2), into(str3);
-        assert(str2 == "Hello, Fir" && str3 == "Hello, Fir");
+        CHECK(str2 == "Hello, Fir");
+        CHECK(str3 == "Hello, Fir");
 
         sql << "delete from test2";
     }
 
     sql << "drop table test2";
-    std::cout << "test 2 passed" << std::endl;
 }
 
 // date and time
-void test3()
+TEST_CASE("Firebird date and time", "[firebird][datetime]")
 {
     session sql(backEnd, connectString);
 
@@ -191,35 +190,34 @@ void test3()
     sql << "select p1, p2, p3 from test3", into(t1), into(t2), into(t3);
 
     // timestamp
-    assert(t1.tm_year == t.tm_year);
-    assert(t1.tm_mon  == t.tm_mon);
-    assert(t1.tm_mday == t.tm_mday);
-    assert(t1.tm_hour == t.tm_hour);
-    assert(t1.tm_min  == t.tm_min);
-    assert(t1.tm_sec  == t.tm_sec);
+    CHECK(t1.tm_year == t.tm_year);
+    CHECK(t1.tm_mon  == t.tm_mon);
+    CHECK(t1.tm_mday == t.tm_mday);
+    CHECK(t1.tm_hour == t.tm_hour);
+    CHECK(t1.tm_min  == t.tm_min);
+    CHECK(t1.tm_sec  == t.tm_sec);
 
     // date
-    assert(t2.tm_year == t.tm_year);
-    assert(t2.tm_mon  == t.tm_mon);
-    assert(t2.tm_mday == t.tm_mday);
-    assert(t2.tm_hour == 0);
-    assert(t2.tm_min  == 0);
-    assert(t2.tm_sec  == 0);
+    CHECK(t2.tm_year == t.tm_year);
+    CHECK(t2.tm_mon  == t.tm_mon);
+    CHECK(t2.tm_mday == t.tm_mday);
+    CHECK(t2.tm_hour == 0);
+    CHECK(t2.tm_min  == 0);
+    CHECK(t2.tm_sec  == 0);
 
     // time
-    assert(t3.tm_year == 0);
-    assert(t3.tm_mon  == 0);
-    assert(t3.tm_mday == 0);
-    assert(t3.tm_hour == t.tm_hour);
-    assert(t3.tm_min  == t.tm_min);
-    assert(t3.tm_sec  == t.tm_sec);
+    CHECK(t3.tm_year == 0);
+    CHECK(t3.tm_mon  == 0);
+    CHECK(t3.tm_mday == 0);
+    CHECK(t3.tm_hour == t.tm_hour);
+    CHECK(t3.tm_min  == t.tm_min);
+    CHECK(t3.tm_sec  == t.tm_sec);
 
     sql << "drop table test3";
-    std::cout << "test 3 passed" << std::endl;
 }
 
 // floating points
-void test4()
+TEST_CASE("Firebird floating point", "[firebird][float]")
 {
     session sql(backEnd, connectString);
 
@@ -245,11 +243,11 @@ void test4()
     sql << "select p1, p2, p3 from test4",
     into(d4), into(d5), into(d6);
 
-    // The doubles should make the round trip unchanged, the exact comparisons
-    // are fine here.
-    GCC_WARNING_SUPPRESS(float-equal)
-
-    assert(d1 == d4 && d2 == d5 && d3 == d6);
+    // The doubles should make the round trip unchanged, so use the exact
+    // comparisons here.
+    CHECK(tests::are_doubles_exactly_equal(d1, d4));
+    CHECK(tests::are_doubles_exactly_equal(d2, d5));
+    CHECK(tests::are_doubles_exactly_equal(d3, d6));
 
     // test negative doubles too
     sql << "delete from test4";
@@ -263,9 +261,9 @@ void test4()
     sql << "select p1, p2, p3 from test4",
     into(d4), into(d5), into(d6);
 
-    assert(d1 == d4 && d2 == d5 && d3 == d6);
-
-    GCC_WARNING_RESTORE(float-equal)
+    CHECK(tests::are_doubles_exactly_equal(d1, d4));
+    CHECK(tests::are_doubles_exactly_equal(d2, d5));
+    CHECK(tests::are_doubles_exactly_equal(d3, d6));
 
     // verify an exception is thrown when fetching non-integral value
     // to integral variable
@@ -275,12 +273,12 @@ void test4()
         sql << "select p1 from test4", into(i);
 
         // expecting error
-        assert(false);
+        CHECK(false);
     }
     catch (soci_error const &e)
     {
         std::string error = e.what();
-        assert(error ==
+        CHECK(error ==
                "Can't convert value with scale 2 to integral type");
     }
 
@@ -291,40 +289,39 @@ void test4()
         sql << "insert into test4(p4) values(?)", use(d1);
 
         // expecting error
-        assert(false);
+        CHECK(false);
     }
     catch (soci_error const &e)
     {
         std::string error = e.what();
-        assert(error ==
+        CHECK(error ==
                "Can't convert non-integral value to integral column type");
     }
 
     sql << "drop table test4";
-    std::cout << "test 4 passed" << std::endl;
 }
 
 // integer types and indicators
-void test5()
+TEST_CASE("Firebird integers", "[firebird][int]")
 {
     session sql(backEnd, connectString);
 
     {
         short sh(0);
         sql << "select 3 from rdb$database", into(sh);
-        assert(sh == 3);
+        CHECK(sh == 3);
     }
 
     {
         int i(0);
         sql << "select 5 from rdb$database", into(i);
-        assert(i == 5);
+        CHECK(i == 5);
     }
 
     {
         unsigned long ul(0);
         sql << "select 7 from rdb$database", into(ul);
-        assert(ul == 7);
+        CHECK(ul == 7);
     }
 
     {
@@ -333,43 +330,41 @@ void test5()
         int i;
 
         sql << "select 2 from rdb$database", into(i, ind);
-        assert(ind == i_ok);
+        CHECK(ind == i_ok);
 
         sql << "select NULL from rdb$database", into(i, ind);
-        assert(ind == i_null);
+        CHECK(ind == i_null);
 
 #if 0   // SOCI doesn't support binding into(char *, ...) anymore, use std::string
         char buf[4];
         sql << "select \'Hello\' from rdb$database", into(buf, ind);
-        assert(ind == i_truncated);
+        CHECK(ind == i_truncated);
 #endif
 
         sql << "select 5 from rdb$database where 0 = 1", into(i, ind);
-        assert(sql.got_data() == false);
+        CHECK(sql.got_data() == false);
 
         try
         {
             // expect error
             sql << "select NULL from rdb$database", into(i);
-            assert(false);
+            CHECK(false);
         }
         catch (soci_error const &e)
         {
             std::string error = e.what();
-            assert(error ==
+            CHECK(error ==
                    "Null value fetched and no indicator defined.");
         }
 
         // expect no data
         sql << "select 5 from rdb$database where 0 = 1", into(i);
-        assert(!sql.got_data());
+        CHECK(!sql.got_data());
     }
-
-    std::cout << "test 5 passed" << std::endl;
 }
 
 // repeated fetch and bulk operations for character types
-void test6()
+TEST_CASE("Firebird bulk operations", "[firebird][bulk]")
 {
     session sql(backEnd, connectString);
 
@@ -404,10 +399,11 @@ void test6()
             c='a';
             while (st.fetch())
             {
-                assert(c == c1 && c == c2);
+                CHECK(c == c1);
+                CHECK(c == c2);
                 ++c;
             }
-            assert(c == 'z'+1);
+            CHECK(c == 'z'+1);
         }
     }
 
@@ -424,11 +420,12 @@ void test6()
         {
             for (std::size_t i = 0; i != c1.size(); ++i)
             {
-                assert(c == c1[i] && c == c2[i]);
+                CHECK(c == c1[i]);
+                CHECK(c == c2[i]);
                 ++c;
             }
         }
-        assert(c == 'z' + 1);
+        CHECK(c == 'z' + 1);
     }
 
     {
@@ -437,12 +434,12 @@ void test6()
         try
         {
             sql << "select p1 from test6", into(vec);
-            assert(false);
+            CHECK(false);
         }
         catch (soci_error const &e)
         {
             std::string msg = e.what();
-            assert(msg == "Vectors of size 0 are not allowed.");
+            CHECK(msg == "Vectors of size 0 are not allowed.");
         }
     }
 
@@ -463,7 +460,7 @@ void test6()
 
     int count;
     sql << "select count(*) from test6", into(count);
-    assert(count == rowsToTest);
+    CHECK(count == rowsToTest);
 
     {
         int i = 0;
@@ -480,10 +477,11 @@ void test6()
 
             // Note: CHAR fields are always padded with whitespaces
             ss << "   ";
-            assert(s1 == ss.str() && s2 == x);
+            CHECK(s1 == ss.str());
+            CHECK(s2 == x);
             ++i;
         }
-        assert(i == rowsToTest);
+        CHECK(i == rowsToTest);
     }
 
     {
@@ -503,19 +501,19 @@ void test6()
 
                 // Note: CHAR fields are always padded with whitespaces
                 ss << "   ";
-                assert(ss.str() == s1[j] && x == s2[j]);
+                CHECK(ss.str() == s1[j]);
+                CHECK(x == s2[j]);
                 ++i;
             }
         }
-        assert(i == rowsToTest);
+        CHECK(i == rowsToTest);
     }
 
     sql << "drop table test6";
-    std::cout << "test 6 passed" << std::endl;
 }
 
 // blob test
-void test7()
+TEST_CASE("Firebird blobs", "[firebird][blob]")
 {
     session sql(backEnd, connectString);
 
@@ -538,8 +536,8 @@ void test7()
         sql << "insert into test7(id, img) values(1,?)", use(b);
         sql << "select img from test7 where id = 1", into(b, ind);
 
-        assert(ind == i_ok);
-        assert(b.get_len() == 0);
+        CHECK(ind == i_ok);
+        CHECK(b.get_len() == 0);
 
         sql << "delete from test7";
     }
@@ -554,7 +552,9 @@ void test7()
         char str2[20];
         std::size_t i = b.read(3, str2, 2);
         str2[i] = '\0';
-        assert(str2[0] == 'l' && str2[1] == 'o' && str2[2] == '\0');
+        CHECK(str2[0] == 'l');
+        CHECK(str2[1] == 'o');
+        CHECK(str2[2] == '\0');
 
         char str3[] = ", Firebird!";
         b.append(str3, strlen(str3));
@@ -570,7 +570,7 @@ void test7()
 
         std::vector<char> text(b.get_len());
         b.read(0, &text[0], b.get_len());
-        assert(strncmp(&text[0], "Hello, Firebird!", b.get_len()) == 0);
+        CHECK(strncmp(&text[0], "Hello, Firebird!", b.get_len()) == 0);
 
         char str1[] = "FIREBIRD";
         b.write(7, str1, strlen(str1));
@@ -592,7 +592,7 @@ void test7()
         b.write(0, str1, strlen(str1));
 
         b.read(0, &text[0], b.get_len());
-        assert(strncmp(&text[0], "HELLO, FIREBIRD!", b.get_len()) == 0);
+        CHECK(strncmp(&text[0], "HELLO, FIREBIRD!", b.get_len()) == 0);
 
         b.trim(5);
         sql << "insert into test7(id, img) values(2,?)", use(b);
@@ -607,12 +607,12 @@ void test7()
         st.fetch();
         std::vector<char> text(b.get_len());
         b.read(0, &text[0], b.get_len());
-        assert(strncmp(&text[0], "Hello, FIREBIRD!", b.get_len()) == 0);
+        CHECK(strncmp(&text[0], "Hello, FIREBIRD!", b.get_len()) == 0);
 
         st.fetch();
         text.resize(b.get_len());
         b.read(0, &text[0], b.get_len());
-        assert(strncmp(&text[0], "HELLO", b.get_len()) == 0);
+        CHECK(strncmp(&text[0], "HELLO", b.get_len()) == 0);
     }
 
     {
@@ -622,18 +622,17 @@ void test7()
         sql << "update test7 set img=? where id = 1", use(b, ind);
 
         sql << "select img from test7 where id = 2", into(b, ind);
-        assert(ind==i_ok);
+        CHECK(ind==i_ok);
 
         sql << "select img from test7 where id = 1", into(b, ind);
-        assert(ind==i_null);
+        CHECK(ind==i_null);
     }
 
     sql << "drop table test7";
-    std::cout << "test 7 passed" << std::endl;
 }
 
 // named parameters
-void test8()
+TEST_CASE("Firebird named parameters", "[firebird][named-params]")
 {
     session sql(backEnd, connectString);
 
@@ -653,7 +652,8 @@ void test8()
     sql << "insert into test8(id1, id2) values(:id1, :id2)",
     use(k, "id2"), use(j, "id1");
     sql << "select id1, id2 from test8", into(i), into(m);
-    assert(i == j && m == k);
+    CHECK(i == j);
+    CHECK(m == k);
 
     sql << "delete from test8";
 
@@ -687,7 +687,8 @@ void test8()
         std::size_t x(0);
         while (st.fetch())
         {
-            assert(i == in1[x] && m == in2[x]);
+            CHECK(i == in1[x]);
+            CHECK(m == in2[x]);
             ++x;
         }
     }
@@ -702,19 +703,19 @@ void test8()
 
     sql << "select id1, id2 from test8", into(out1), into(out2);
     std::size_t s = out1.size();
-    assert(s == 3);
+    CHECK(s == 3);
 
     for (std::size_t x = 0; x<s; ++x)
     {
-        assert(out1[x] == in1[x] && out2[x] == in2[x]);
+        CHECK(out1[x] == in1[x]);
+        CHECK(out2[x] == in2[x]);
     }
 
     sql << "drop table test8";
-    std::cout << "test 8 passed" << std::endl;
 }
 
 // Dynamic binding to row objects
-void test9()
+TEST_CASE("Firebird dynamic binding", "[firebird][dynamic]")
 {
     session sql(backEnd, connectString);
 
@@ -733,7 +734,7 @@ void test9()
     {
         row r;
         sql << "select * from test9", into(r);
-        assert(sql.got_data() == false);
+        CHECK(sql.got_data() == false);
     }
 
     std::string msg("Hello");
@@ -759,77 +760,54 @@ void test9()
                     "select * from test9", into(r));
     st.execute(1);
 
-    assert(r.size() == 3);
+    CHECK(r.size() == 3);
 
     // get properties by position
-    assert(r.get_properties(0).get_name() == "ID");
-    assert(r.get_properties(1).get_name() == "MSG");
-    assert(r.get_properties(2).get_name() == "NTEST");
+    CHECK(r.get_properties(0).get_name() == "ID");
+    CHECK(r.get_properties(1).get_name() == "MSG");
+    CHECK(r.get_properties(2).get_name() == "NTEST");
 
-    assert(r.get_properties(0).get_data_type() == dt_integer);
-    assert(r.get_properties(1).get_data_type() == dt_string);
-    assert(r.get_properties(2).get_data_type() == dt_double);
+    CHECK(r.get_properties(0).get_data_type() == dt_integer);
+    CHECK(r.get_properties(1).get_data_type() == dt_string);
+    CHECK(r.get_properties(2).get_data_type() == dt_double);
 
     // get properties by name
-    assert(r.get_properties("ID").get_name() == "ID");
-    assert(r.get_properties("MSG").get_name() == "MSG");
-    assert(r.get_properties("NTEST").get_name() == "NTEST");
+    CHECK(r.get_properties("ID").get_name() == "ID");
+    CHECK(r.get_properties("MSG").get_name() == "MSG");
+    CHECK(r.get_properties("NTEST").get_name() == "NTEST");
 
-    assert(r.get_properties("ID").get_data_type() == dt_integer);
-    assert(r.get_properties("MSG").get_data_type() == dt_string);
-    assert(r.get_properties("NTEST").get_data_type() == dt_double);
-
-    GCC_WARNING_SUPPRESS(float-equal)
+    CHECK(r.get_properties("ID").get_data_type() == dt_integer);
+    CHECK(r.get_properties("MSG").get_data_type() == dt_string);
+    CHECK(r.get_properties("NTEST").get_data_type() == dt_double);
 
     // get values by position
-    assert(r.get<int>(0) == 1);
-    assert(r.get<std::string>(1) == "Hello");
-    assert(r.get<double>(2) == d);
+    CHECK(r.get<int>(0) == 1);
+    CHECK(r.get<std::string>(1) == "Hello");
+    CHECK(tests::are_doubles_exactly_equal(r.get<double>(2), d));
 
     // get values by name
-    assert(r.get<int>("ID") == 1);
-    assert(r.get<std::string>("MSG") == "Hello");
-    assert(r.get<double>("NTEST") == d);
+    CHECK(r.get<int>("ID") == 1);
+    CHECK(r.get<std::string>("MSG") == "Hello");
+    CHECK(tests::are_doubles_exactly_equal(r.get<double>("NTEST"), d));
 
     st.fetch();
-    assert(r.get<int>(0) == 2);
-    assert(r.get<std::string>("MSG") == "Firebird");
-    assert(r.get_indicator(2) == i_null);
+    CHECK(r.get<int>(0) == 2);
+    CHECK(r.get<std::string>("MSG") == "Firebird");
+    CHECK(r.get_indicator(2) == i_null);
 
     // verify default values
-    assert(r.get<double>("NTEST", 2) == 2);
-    bool caught = false;
-    try
-    {
-        double d1 = r.get<double>("NTEST");
-        std::cout << d1 << std::endl;     // just for compiler
-    }
-    catch (soci_error&)
-    {
-        caught = true;
-    }
-    assert(caught);
+    CHECK(tests::are_doubles_exactly_equal(r.get<double>("NTEST", 2), 2));
 
-    GCC_WARNING_RESTORE(float-equal)
+    CHECK_THROWS_AS(r.get<double>("NTEST"), soci_error);
 
     // verify exception thrown on invalid get<>
-    caught = false;
-    try
-    {
-        r.get<std::string>(0);
-    }
-    catch (std::bad_cast const &)
-    {
-        caught = true;
-    }
-    assert(caught);
+    CHECK_THROWS_AS(r.get<std::string>(0), std::bad_cast);
 
     sql << "drop table test9";
-    std::cout << "test 9 passed" << std::endl;
 }
 
 // stored procedures
-void test10()
+TEST_CASE("Firebird stored procedures", "[firebird][procedure]")
 {
     session sql(backEnd, connectString);
 
@@ -884,7 +862,8 @@ void test10()
     // 'select ... from ...' statement
     sql << "select * from sp_test10", into(r);
 
-    assert(r.get<int>(0) == p1 && r.get<int>(1) == p2);
+    CHECK(r.get<int>(0) == p1);
+    CHECK(r.get<int>(1) == p2);
 
     sql << "delete from test10";
 
@@ -902,7 +881,8 @@ void test10()
         procedure proc = (sql.prepare << "sp_test10", into(rw));
         proc.execute(1);
 
-        assert(rw.get<int>(0) == p1 && rw.get<int>(1) == p2);
+        CHECK(rw.get<int>(0) == p1);
+        CHECK(rw.get<int>(1) == p2);
     }
 
     sql << "delete from test10";
@@ -928,12 +908,15 @@ void test10()
         procedure proc = (sql.prepare << "sp_test10", into(rw));
 
         proc.execute(1);
-        assert(rw.get<int>(0) == in1[0] && rw.get<int>(1) == in2[0]);
+        CHECK(rw.get<int>(0) == in1[0]);
+        CHECK(rw.get<int>(1) == in2[0]);
         proc.fetch();
-        assert(rw.get<int>(0) == in1[1] && rw.get<int>(1) == in2[1]);
+        CHECK(rw.get<int>(0) == in1[1]);
+        CHECK(rw.get<int>(1) == in2[1]);
         proc.fetch();
-        assert(rw.get<int>(0) == in1[2] && rw.get<int>(1) == in2[2]);
-        assert(proc.fetch() == false);
+        CHECK(rw.get<int>(0) == in1[2]);
+        CHECK(rw.get<int>(1) == in2[2]);
+        CHECK(proc.fetch() == false);
     }
 
     {
@@ -942,11 +925,12 @@ void test10()
         proc.execute(1);
 
         std::size_t s = out1.size();
-        assert(s == 3);
+        CHECK(s == 3);
 
         for (std::size_t x = 0; x < s; ++x)
         {
-            assert(out1[x] == in1[x] && out2[x] == in2[x]);
+            CHECK(out1[x] == in1[x]);
+            CHECK(out2[x] == in2[x]);
         }
     }
 
@@ -956,8 +940,6 @@ void test10()
     sql << "drop procedure sp_test10";
     sql << "drop procedure sp_test10a";
     sql << "drop table test10";
-
-    std::cout << "test 10 passed" << std::endl;
 }
 
 // direct access to Firebird using handles exposed by
@@ -1017,7 +999,7 @@ namespace soci
 
 } // namespace soci
 
-void test11()
+TEST_CASE("Firebird direct API use", "[firebird][native]")
 {
     session sql(backEnd, connectString);
 
@@ -1047,7 +1029,7 @@ void test11()
         // statement to achieve the effect of inserting vectors of values.
         // Since getRowCount() returns number of rows affected by the *last*
         // statement, it will return 1 here.
-        assert(getRowCount(st, eRowsInserted) == 1);
+        CHECK(getRowCount(st, eRowsInserted) == 1);
     }
 
     {
@@ -1055,10 +1037,10 @@ void test11()
         statement st = (sql.prepare << "update test11 set id = ? where id<3",
                         use(i));
         st.execute(1);
-        assert(getRowCount(st, eRowsUpdated) == 2);
+        CHECK(getRowCount(st, eRowsUpdated) == 2);
 
         // verify that no rows were deleted
-        assert(getRowCount(st, eRowsDeleted) == 0);
+        CHECK(getRowCount(st, eRowsDeleted) == 0);
     }
 
     {
@@ -1066,26 +1048,25 @@ void test11()
         statement st = (sql.prepare << "select id from test11", into(out));
         st.execute(1);
 
-        assert(getRowCount(st, eRowsSelected) == 3);
+        CHECK(getRowCount(st, eRowsSelected) == 3);
     }
 
     {
         statement st = (sql.prepare << "delete from test11 where id=10");
         st.execute(1);
-        assert(getRowCount(st, eRowsDeleted) == 0);
+        CHECK(getRowCount(st, eRowsDeleted) == 0);
     }
 
     {
         statement st = (sql.prepare << "delete from test11");
         st.execute(1);
-        assert(getRowCount(st, eRowsDeleted) == 3);
+        CHECK(getRowCount(st, eRowsDeleted) == 3);
     }
 
     sql << "drop table test11";
-    std::cout << "test 11 passed" << std::endl;
 }
 
-void test12()
+TEST_CASE("Firebird string coercions", "[firebird][string]")
 {
     session sql(backEnd, connectString);
 
@@ -1109,7 +1090,7 @@ void test12()
                 "insert into test12(a, b, c, d) values (?, ?, ?, ?)",
                 use(a), use(b), use(c), use(d));
         st.execute(1);
-        assert(getRowCount(st, eRowsInserted) == 1);
+        CHECK(getRowCount(st, eRowsInserted) == 1);
     }
 
     {
@@ -1117,36 +1098,45 @@ void test12()
         std::tm b, c, d;
         sql << "select a, b, c, d from test12",
             into(a), into(b), into(c), into(d);
-        assert(std::fabs(a - (-3.141)) < 0.000001);
-        assert(b.tm_year + 1900 == 2013 && b.tm_mon + 1 == 2 && b.tm_mday == 28);
-        assert(b.tm_hour == 23 && b.tm_min == 36 && b.tm_sec == 1);
-        assert(c.tm_year + 1900 == 2013 && c.tm_mon + 1 == 2 && c.tm_mday == 28);
-        assert(c.tm_hour == 0 && c.tm_min == 0 && c.tm_sec == 0);
-        assert(d.tm_hour == 23 && d.tm_min == 36 && d.tm_sec == 1);
+        CHECK(std::fabs(a - (-3.141)) < 0.000001);
+        CHECK(b.tm_year == 2013 - 1900);
+        CHECK(b.tm_mon == 2 - 1);
+        CHECK(b.tm_mday == 28);
+        CHECK(b.tm_hour == 23);
+        CHECK(b.tm_min == 36);
+        CHECK(b.tm_sec == 1);
+        CHECK(c.tm_year == 2013 - 1900);
+        CHECK(c.tm_mon == 2 - 1);
+        CHECK(c.tm_mday == 28);
+        CHECK(c.tm_hour == 0);
+        CHECK(c.tm_min == 0);
+        CHECK(c.tm_sec == 0);
+        CHECK(d.tm_hour == 23);
+        CHECK(d.tm_min == 36);
+        CHECK(d.tm_sec == 1);
     }
 
     sql << "drop table test12";
-    std::cout << "test 12 passed" << std::endl;
 }
 
 // Dynamic binding to row objects: decimals_as_strings
-void test13()
+TEST_CASE("Firebird decimals as strings", "[firebird][decimal][string]")
 {
     using namespace soci::details::firebird;
 
     int a = -12345678;
-    assert(format_decimal<int>(&a, 1) == "-123456780");
-    assert(format_decimal<int>(&a, 0) == "-12345678");
-    assert(format_decimal<int>(&a, -3) == "-12345.678");
-    assert(format_decimal<int>(&a, -8) == "-0.12345678");
-    assert(format_decimal<int>(&a, -9) == "-0.012345678");
+    CHECK(format_decimal<int>(&a, 1) == "-123456780");
+    CHECK(format_decimal<int>(&a, 0) == "-12345678");
+    CHECK(format_decimal<int>(&a, -3) == "-12345.678");
+    CHECK(format_decimal<int>(&a, -8) == "-0.12345678");
+    CHECK(format_decimal<int>(&a, -9) == "-0.012345678");
 
     a = 12345678;
-    assert(format_decimal<int>(&a, 1) == "123456780");
-    assert(format_decimal<int>(&a, 0) == "12345678");
-    assert(format_decimal<int>(&a, -3) == "12345.678");
-    assert(format_decimal<int>(&a, -8) == "0.12345678");
-    assert(format_decimal<int>(&a, -9) == "0.012345678");
+    CHECK(format_decimal<int>(&a, 1) == "123456780");
+    CHECK(format_decimal<int>(&a, 0) == "12345678");
+    CHECK(format_decimal<int>(&a, -3) == "12345.678");
+    CHECK(format_decimal<int>(&a, -8) == "0.12345678");
+    CHECK(format_decimal<int>(&a, -9) == "0.012345678");
 
     session sql(backEnd, connectString + " decimals_as_strings=1");
 
@@ -1166,7 +1156,7 @@ void test13()
     {
         row r;
         sql << "select * from test13", into(r);
-        assert(sql.got_data() == false);
+        CHECK(sql.got_data() == false);
     }
 
     std::string d_str0("+03.140"), d_str1("3.14"),
@@ -1190,41 +1180,40 @@ void test13()
     statement st = (sql.prepare << "select * from test13", into(r));
     st.execute(1);
 
-    assert(r.size() == 3);
+    CHECK(r.size() == 3);
 
     // get properties by position
-    assert(r.get_properties(0).get_name() == "NTEST1");
-    assert(r.get_properties(0).get_data_type() == dt_string);
-    assert(r.get_properties(1).get_name() == "NTEST2");
-    assert(r.get_properties(1).get_data_type() == dt_string);
-    assert(r.get_properties(2).get_name() == "NTEST3");
-    assert(r.get_properties(2).get_data_type() == dt_string);
+    CHECK(r.get_properties(0).get_name() == "NTEST1");
+    CHECK(r.get_properties(0).get_data_type() == dt_string);
+    CHECK(r.get_properties(1).get_name() == "NTEST2");
+    CHECK(r.get_properties(1).get_data_type() == dt_string);
+    CHECK(r.get_properties(2).get_name() == "NTEST3");
+    CHECK(r.get_properties(2).get_data_type() == dt_string);
 
     // get properties by name
-    assert(r.get_properties("NTEST1").get_name() == "NTEST1");
-    assert(r.get_properties("NTEST1").get_data_type() == dt_string);
-    assert(r.get_properties("NTEST2").get_name() == "NTEST2");
-    assert(r.get_properties("NTEST2").get_data_type() == dt_string);
-    assert(r.get_properties("NTEST3").get_name() == "NTEST3");
-    assert(r.get_properties("NTEST3").get_data_type() == dt_string);
+    CHECK(r.get_properties("NTEST1").get_name() == "NTEST1");
+    CHECK(r.get_properties("NTEST1").get_data_type() == dt_string);
+    CHECK(r.get_properties("NTEST2").get_name() == "NTEST2");
+    CHECK(r.get_properties("NTEST2").get_data_type() == dt_string);
+    CHECK(r.get_properties("NTEST3").get_name() == "NTEST3");
+    CHECK(r.get_properties("NTEST3").get_data_type() == dt_string);
 
     // get values by position
-    assert(r.get<std::string>(0) == d_str1);
-    assert(r.get<std::string>(1) == d_str2);
-    assert(r.get<std::string>(2) == d_str3);
+    CHECK(r.get<std::string>(0) == d_str1);
+    CHECK(r.get<std::string>(1) == d_str2);
+    CHECK(r.get<std::string>(2) == d_str3);
 
     // get values by name
-    assert(r.get<std::string>("NTEST1") == d_str1);
-    assert(r.get<std::string>("NTEST2") == d_str2);
-    assert(r.get<std::string>("NTEST3") == d_str3);
+    CHECK(r.get<std::string>("NTEST1") == d_str1);
+    CHECK(r.get<std::string>("NTEST2") == d_str2);
+    CHECK(r.get<std::string>("NTEST3") == d_str3);
 
     st.fetch();
-    assert(r.get_indicator(0) == i_null);
-    assert(r.get_indicator(1) == i_ok);
-    assert(r.get_indicator(2) == i_ok);
+    CHECK(r.get_indicator(0) == i_null);
+    CHECK(r.get_indicator(1) == i_ok);
+    CHECK(r.get_indicator(2) == i_ok);
 
     sql << "drop table test13";
-    std::cout << "test 13 passed" << std::endl;
 }
 
 //
@@ -1327,47 +1316,27 @@ int main(int argc, char** argv)
     _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
 #endif //_MSC_VER
 
-    if (argc == 2)
+    if (argc >= 2)
     {
         connectString = argv[1];
+
+        // Replace the connect string with the process name to ensure that
+        // CATCH uses the correct name in its messages.
+        argv[1] = argv[0];
+
+        argc--;
+        argv++;
     }
     else
     {
         std::cout << "usage: " << argv[0]
-            << " connectstring\n"
+            << " connectstring [test-arguments...]\n"
             << "example: " << argv[0]
             << " \"service=/usr/local/firebird/db/test.fdb user=SYSDBA password=masterkey\"\n";
         return EXIT_FAILURE;
     }
 
-    try
-    {
-        test_context tc(backEnd, connectString);
-        tests::common_tests tests(tc);
-        tests.run();
+    test_context tc(backEnd, connectString);
 
-        std::cout << "\nSOCI Firebird Tests:\n\n";
-        test1();
-        test2();
-        test3();
-        test4();
-        test5();
-        test6();
-        test7();
-        test8();
-        test9();
-        test10();
-        test11();
-        test12();
-        test13();
-
-        std::cout << "\nOK, all tests passed.\n\n";
-
-        return EXIT_SUCCESS;
-    }
-    catch (std::exception const & e)
-    {
-        std::cout << e.what() << '\n';
-    }
-    return EXIT_FAILURE;
+    return Catch::Session().run(argc, argv);
 }

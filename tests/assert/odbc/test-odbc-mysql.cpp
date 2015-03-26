@@ -10,7 +10,6 @@
 #include "common-tests.h"
 #include <iostream>
 #include <string>
-#include <cassert>
 #include <ctime>
 #include <cmath>
 
@@ -111,35 +110,23 @@ int main(int argc, char** argv)
     _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
 #endif //_MSC_VER
 
-    if (argc == 2)
+    if (argc >= 2 && argv[1][0] != '-')
     {
         connectString = argv[1];
+
+        // Replace the connect string with the process name to ensure that
+        // CATCH uses the correct name in its messages.
+        argv[1] = argv[0];
+
+        argc--;
+        argv++;
     }
     else
     {
         connectString = "FILEDSN=./test-mysql.dsn";
     }
-    try
-    {
-        std::cout << "\nSOCI ODBC with MySQL Tests:\n\n";
 
-        test_context tc(backEnd, connectString);
-        common_tests tests(tc);
-        tests.run();
+    test_context tc(backEnd, connectString);
 
-        std::cout << "\nOK, all tests passed.\n\n";
-        return EXIT_SUCCESS;
-    }
-    catch (soci::odbc_soci_error const & e)
-    {
-        std::cout << "ODBC Error Code: " << e.odbc_error_code() << std::endl
-                  << "Native Error Code: " << e.native_error_code() << std::endl
-                  << "SOCI Message: " << e.what() << std::endl
-                  << "ODBC Message: " << e.odbc_error_message() << std::endl;
-    }
-    catch (std::exception const & e)
-    {
-        std::cout << e.what() << '\n';
-    }
-    return EXIT_FAILURE;
+    return Catch::Session().run(argc, argv);
 }
