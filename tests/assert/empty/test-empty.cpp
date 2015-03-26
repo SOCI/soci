@@ -7,9 +7,14 @@
 
 #include "soci/soci.h"
 #include "soci/empty/soci-empty.h"
+
+// Normally the tests would include common-tests.h here, but we can't run any
+// of the tests registered there, so instead include CATCH header directly.
+#define CATCH_CONFIG_RUNNER
+#include <catch.hpp>
+
 #include <iostream>
 #include <string>
-#include <cassert>
 #include <cstdlib>
 #include <ctime>
 
@@ -52,77 +57,72 @@ namespace soci
     };
 }
 
-void test1()
+TEST_CASE("Dummy test", "[empty]")
 {
-    {
-        session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
 
-        sql << "Do what I want.";
-        sql << "Do what I want " << 123 << " times.";
+    sql << "Do what I want.";
+    sql << "Do what I want " << 123 << " times.";
 
-        std::string query = "some query";
-        sql << query;
+    std::string query = "some query";
+    sql << query;
 
-        int i = 7;
-        sql << "insert", use(i);
-        sql << "select", into(i);
+    int i = 7;
+    sql << "insert", use(i);
+    sql << "select", into(i);
 
 #if defined (__LP64__) || ( __WORDSIZE == 64 )
-        long int li = 9;
-        sql << "insert", use(li);
-        sql << "select", into(li);
+    long int li = 9;
+    sql << "insert", use(li);
+    sql << "select", into(li);
 #endif
 
-        long long ll = 11;
-        sql << "insert", use(ll);
-        sql << "select", into(ll);
+    long long ll = 11;
+    sql << "insert", use(ll);
+    sql << "select", into(ll);
 
-        indicator ind = i_ok;
-        sql << "insert", use(i, ind);
-        sql << "select", into(i, ind);
+    indicator ind = i_ok;
+    sql << "insert", use(i, ind);
+    sql << "select", into(i, ind);
 
-        std::vector<int> numbers(100);
-        sql << "insert", use(numbers);
-        sql << "select", into(numbers);
+    std::vector<int> numbers(100);
+    sql << "insert", use(numbers);
+    sql << "select", into(numbers);
 
-        std::vector<indicator> inds(100);
-        sql << "insert", use(numbers, inds);
-        sql << "select", into(numbers, inds);
+    std::vector<indicator> inds(100);
+    sql << "insert", use(numbers, inds);
+    sql << "select", into(numbers, inds);
 
-        {
-            statement st = (sql.prepare << "select", into(i));
-            st.execute();
-            st.fetch();
-        }
-        {
-            statement st = (sql.prepare << "select", into(i, ind));
-        }
-        {
-            statement st = (sql.prepare << "select", into(numbers));
-        }
-        {
-            statement st = (sql.prepare << "select", into(numbers, inds));
-        }
-        {
-            statement st = (sql.prepare << "insert", use(i));
-        }
-        {
-            statement st = (sql.prepare << "insert", use(i, ind));
-        }
-        {
-            statement st = (sql.prepare << "insert", use(numbers));
-        }
-        {
-            statement st = (sql.prepare << "insert", use(numbers, inds));
-        }
-        {
-            Person p;
-            sql << "select person", into(p);
-        }
-
+    {
+        statement st = (sql.prepare << "select", into(i));
+        st.execute();
+        st.fetch();
     }
-
-    std::cout << "test 1 passed" << std::endl;
+    {
+        statement st = (sql.prepare << "select", into(i, ind));
+    }
+    {
+        statement st = (sql.prepare << "select", into(numbers));
+    }
+    {
+        statement st = (sql.prepare << "select", into(numbers, inds));
+    }
+    {
+        statement st = (sql.prepare << "insert", use(i));
+    }
+    {
+        statement st = (sql.prepare << "insert", use(i, ind));
+    }
+    {
+        statement st = (sql.prepare << "insert", use(numbers));
+    }
+    {
+        statement st = (sql.prepare << "insert", use(numbers, inds));
+    }
+    {
+        Person p;
+        sql << "select person", into(p);
+    }
 }
 
 
@@ -138,33 +138,25 @@ int main(int argc, char** argv)
     _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
 #endif //_MSC_VER
 
-    if (argc == 2)
+    if (argc >= 2)
     {
         connectString = argv[1];
+
+        // Replace the connect string with the process name to ensure that
+        // CATCH uses the correct name in its messages.
+        argv[1] = argv[0];
+
+        argc--;
+        argv++;
     }
     else
     {
         std::cout << "usage: " << argv[0]
-            << " connectstring\n"
+          << " connectstring [test-arguments...]\n"
             << "example: " << argv[0]
             << " \'connect_string_for_empty_backend\'\n";
         std::exit(1);
     }
 
-    try
-    {
-        test1();
-        // test2();
-        // ...
-
-        std::cout << "\nOK, all tests passed.\n\n";
-
-        return EXIT_SUCCESS;
-    }
-    catch (std::exception const & e)
-    {
-        std::cout << e.what() << '\n';
-    }
-
-    return EXIT_FAILURE;
+    return Catch::Session().run(argc, argv);
 }

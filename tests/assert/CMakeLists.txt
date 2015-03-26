@@ -11,6 +11,7 @@
 
 include_directories(
   ${SOCI_SOURCE_DIR}/include/private
+  ${SOCI_SOURCE_DIR}/tests
   ${CMAKE_CURRENT_SOURCE_DIR})
 
 file(GLOB SOCI_TESTS_COMMON common-tests.h)
