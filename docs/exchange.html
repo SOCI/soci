@@ -434,7 +434,7 @@ doc &lt;&lt; "&lt;/row&gt;";
 
 <p>The type <code>T</code> parameter that should be passed to
 <code>row::get&lt;T&gt;()</code> depends on the SOCI data type that
-is returned from    
+is returned from
 <code>column_properties::get_data_type()</code>.</p>
 <p><code>row::get&lt;T&gt;()</code>
 throws an exception of type
@@ -658,7 +658,7 @@ namespace soci
             //     p.gender = v.get&lt;std::string&gt;("GENDER");
             // }
         }
-    
+
         static void to_base(const Person &amp; p, values &amp; v, indicator &amp; ind)
         {
             v.set("ID", p.id);

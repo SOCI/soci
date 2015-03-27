@@ -18,7 +18,7 @@ using namespace soci::details::firebird;
 
 firebird_statement_backend::firebird_statement_backend(firebird_session_backend &session)
     : session_(session), stmtp_(0), sqldap_(NULL), sqlda2p_(NULL),
-        boundByName_(false), boundByPos_(false), rowsFetched_(0), endOfRowSet_(false), rowsAffectedBulk_(-1LL), 
+        boundByName_(false), boundByPos_(false), rowsFetched_(0), endOfRowSet_(false), rowsAffectedBulk_(-1LL),
             intoType_(eStandard), useType_(eStandard), procedure_(false)
 {}
 

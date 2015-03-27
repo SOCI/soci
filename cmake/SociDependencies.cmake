@@ -11,7 +11,7 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 ################################################################################
 # Macros in this module:
-#   
+#
 #   soci_backend - defines a database backend for SOCI library
 #
 ################################################################################
@@ -38,7 +38,7 @@ set(SOCI_ALL_DEPENDENCIES
 
 #
 # Perform checks
-# 
+#
 colormsg(_HIBLUE_ "Looking for SOCI dependencies:")
 
 macro(boost_external_report NAME)
@@ -50,7 +50,7 @@ macro(boost_external_report NAME)
   list(REMOVE_AT VARNAMES 0)
 
   # Test both, given original name and uppercase version too
-  if(NOT SUCCESS) 
+  if(NOT SUCCESS)
     string(TOUPPER ${NAME} VARNAME)
     set(SUCCESS ${${VARNAME}_FOUND})
     if(NOT SUCCESS)

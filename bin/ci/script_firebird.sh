@@ -18,7 +18,7 @@ cmake \
     -DSOCI_POSTGRESQL=OFF \
     -DSOCI_SQLITE3=OFF \
     -DSOCI_FIREBIRD_TEST_CONNSTR:STRING="service=LOCALHOST:/tmp/soci_test.fdb user=SYSDBA password=masterkey" \
-    ..  
+    ..
 
 run_make
 run_test

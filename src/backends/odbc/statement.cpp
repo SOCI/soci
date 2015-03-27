@@ -148,15 +148,15 @@ odbc_statement_backend::execute(int number)
     {
         SQLSetStmtAttr(hstmt_, SQL_ATTR_PARAMS_PROCESSED_PTR, &rows_processed, 0);
     }
-    
+
     // if we are called twice for the same statement we need to close the open
     // cursor or an "invalid cursor state" error will occur on execute
     SQLCloseCursor(hstmt_);
-    
+
     SQLRETURN rc = SQLExecute(hstmt_);
     if (is_odbc_error(rc))
     {
-        // If executing bulk operation a partial 
+        // If executing bulk operation a partial
         // number of rows affected may be available.
         if (hasVectorUseElements_)
         {

@@ -8,7 +8,7 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 ################################################################################
 # Macros in this module:
-#   
+#
 #   soci_version - defines version information for SOCI library
 #
 ################################################################################

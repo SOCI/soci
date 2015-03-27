@@ -177,7 +177,7 @@ void odbc_vector_into_type_backend::define_by_pos(
     case x_blob:      break; // not supported
     }
 
-    SQLRETURN rc 
+    SQLRETURN rc
         = SQLBindCol(statement_.hstmt_, static_cast<SQLUSMALLINT>(position++),
                 odbcType_, static_cast<SQLPOINTER>(data), size, indHolders_);
     if (is_odbc_error(rc))

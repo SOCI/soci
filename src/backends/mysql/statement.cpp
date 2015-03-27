@@ -23,7 +23,7 @@ using std::string;
 
 mysql_statement_backend::mysql_statement_backend(
     mysql_session_backend &session)
-    : session_(session), result_(NULL), 
+    : session_(session), result_(NULL),
        rowsAffectedBulk_(-1LL), justDescribed_(false),
        hasIntoElements_(false), hasVectorIntoElements_(false),
        hasUseElements_(false), hasVectorUseElements_(false)
@@ -37,7 +37,7 @@ void mysql_statement_backend::alloc()
 
 void mysql_statement_backend::clean_up()
 {
-    // 'reset' the value for a 
+    // 'reset' the value for a
     // potential new execution.
     rowsAffectedBulk_ = -1;
 
@@ -132,7 +132,7 @@ mysql_statement_backend::execute(int number)
     if (justDescribed_ == false)
     {
         clean_up();
-        
+
         if (number > 1 && hasIntoElements_)
         {
              throw soci_error(
@@ -145,7 +145,7 @@ mysql_statement_backend::execute(int number)
         {
              numberOfExecutions = hasUseElements_ ? 1 : number;
         }
-        
+
         std::string query;
         if (not useByPosBuffers_.empty() or not useByNameBuffers_.empty())
         {
@@ -325,7 +325,7 @@ mysql_statement_backend::fetch(int number)
     // function, and the actual consumption of this data will take place
     // in the postFetch functions, called for each into element.
     // Here, we only prepare for this to happen (to emulate "the Oracle way").
-    
+
     // forward the "cursor" from the last fetch
     currentRow_ += rowsToConsume_;
 

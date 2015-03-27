@@ -49,7 +49,7 @@ void mysql_standard_into_type_backend::post_fetch(
         // no need to do anything (fetch() will return false)
         return;
     }
-    
+
     if (gotData)
     {
         int pos = position_ - 1;

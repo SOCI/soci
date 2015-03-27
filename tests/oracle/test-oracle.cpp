@@ -11,7 +11,6 @@
 #include <iostream>
 #include <string>
 #include <cstring>
-#include <cassert>
 #include <ctime>
 
 using namespace soci;
@@ -21,7 +20,7 @@ std::string connectString;
 backend_factory const &backEnd = *soci::factory_oracle();
 
 // Extra tests for date/time
-void test1()
+TEST_CASE("Oracle datetime", "[oracle][datetime]")
 {
     session sql(backEnd, connectString);
 
@@ -33,15 +32,15 @@ void test1()
         sql << "select t from (select :t as t from dual)",
             into(t1), use(t2);
 
-        assert(t1.tm_sec == t2.tm_sec);
-        assert(t1.tm_min == t2.tm_min);
-        assert(t1.tm_hour == t2.tm_hour);
-        assert(t1.tm_mday == t2.tm_mday);
-        assert(t1.tm_mon == t2.tm_mon);
-        assert(t1.tm_year == t2.tm_year);
-        assert(t1.tm_wday == t2.tm_wday);
-        assert(t1.tm_yday == t2.tm_yday);
-        assert(t1.tm_isdst == t2.tm_isdst);
+        CHECK(t1.tm_sec == t2.tm_sec);
+        CHECK(t1.tm_min == t2.tm_min);
+        CHECK(t1.tm_hour == t2.tm_hour);
+        CHECK(t1.tm_mday == t2.tm_mday);
+        CHECK(t1.tm_mon == t2.tm_mon);
+        CHECK(t1.tm_year == t2.tm_year);
+        CHECK(t1.tm_wday == t2.tm_wday);
+        CHECK(t1.tm_yday == t2.tm_yday);
+        CHECK(t1.tm_isdst == t2.tm_isdst);
 
         // make sure the date is stored properly in Oracle
         char buf[25];
@@ -52,7 +51,7 @@ void test1()
         sql << "select to_char(t, :format) from (select :t as t from dual)",
             into(t_out), use(format), use(t2);
 
-        assert(t_out == std::string(buf));
+        CHECK(t_out == std::string(buf));
     }
 
     {
@@ -64,15 +63,15 @@ void test1()
         sql << "select t from (select :t as t from dual)",
              into(t1), use(t2);
 
-        assert(t1.tm_sec == t2.tm_sec);
-        assert(t1.tm_min == t2.tm_min);
-        assert(t1.tm_hour == t2.tm_hour);
-        assert(t1.tm_mday == t2.tm_mday);
-        assert(t1.tm_mon == t2.tm_mon);
-        assert(t1.tm_year == t2.tm_year);
-        assert(t1.tm_wday == t2.tm_wday);
-        assert(t1.tm_yday == t2.tm_yday);
-        assert(t1.tm_isdst == t2.tm_isdst);
+        CHECK(t1.tm_sec == t2.tm_sec);
+        CHECK(t1.tm_min == t2.tm_min);
+        CHECK(t1.tm_hour == t2.tm_hour);
+        CHECK(t1.tm_mday == t2.tm_mday);
+        CHECK(t1.tm_mon == t2.tm_mon);
+        CHECK(t1.tm_year == t2.tm_year);
+        CHECK(t1.tm_wday == t2.tm_wday);
+        CHECK(t1.tm_yday == t2.tm_yday);
+        CHECK(t1.tm_isdst == t2.tm_isdst);
 
         // make sure the date is stored properly in Oracle
         char buf[25];
@@ -83,14 +82,12 @@ void test1()
         sql << "select to_char(t, :format) from (select :t as t from dual)",
             into(t_out), use(format), use(t2);
 
-        assert(t_out == std::string(buf));
+        CHECK(t_out == std::string(buf));
     }
-
-    std::cout << "test 1 passed" << std::endl;
 }
 
 // explicit calls test
-void test2()
+TEST_CASE("Oracle explicit calls", "[oracle]")
 {
     session sql(backEnd, connectString);
 
@@ -101,9 +98,7 @@ void test2()
     st.prepare("select 7 from dual");
     st.define_and_bind();
     st.execute(1);
-    assert(i == 7);
-
-    std::cout << "test 2 passed" << std::endl;
+    CHECK(i == 7);
 }
 
 // DDL + blob test
@@ -121,10 +116,10 @@ struct blob_table_creator : public table_creator_base
     }
 };
 
-void test3()
+TEST_CASE("Oracle blob", "[oracle][blob]")
 {
     session sql(backEnd, connectString);
-    
+
     blob_table_creator tableCreator(sql);
 
     char buf[] = "abcdefghijklmnopqrstuvwxyz";
@@ -143,31 +138,29 @@ void test3()
             sessionBackEnd->errhp_, blobBackEnd->lobp_);
 
         sql << "select img from soci_test where id = 7", into(b);
-        assert(b.get_len() == 0);
+        CHECK(b.get_len() == 0);
 
         // note: blob offsets start from 1
         b.write(1, buf, sizeof(buf));
-        assert(b.get_len() == sizeof(buf));
+        CHECK(b.get_len() == sizeof(buf));
         b.trim(10);
-        assert(b.get_len() == 10);
+        CHECK(b.get_len() == 10);
 
         // append does not work (Oracle bug #886191 ?)
         //b.append(buf, sizeof(buf));
-        //assert(b.get_len() == sizeof(buf) + 10);
+        //CHECK(b.get_len() == sizeof(buf) + 10);
         sql.commit();
     }
 
     {
         blob b(sql);
         sql << "select img from soci_test where id = 7", into(b);
-        //assert(b.get_len() == sizeof(buf) + 10);
-        assert(b.get_len() == 10);
+        //CHECK(b.get_len() == sizeof(buf) + 10);
+        CHECK(b.get_len() == 10);
         char buf2[100];
         b.read(1, buf2, 10);
-        assert(strncmp(buf2, "abcdefghij", 10) == 0);
+        CHECK(strncmp(buf2, "abcdefghij", 10) == 0);
     }
-
-    std::cout << "test 3 passed" << std::endl;
 }
 
 // nested statement test
@@ -187,7 +180,7 @@ struct basic_table_creator : public table_creator_base
     }
 };
 
-void test4()
+TEST_CASE("Oracle nested statement", "[oracle][blob]")
 {
     session sql(backEnd, connectString);
     basic_table_creator tableCreator(sql);
@@ -216,17 +209,15 @@ void test4()
     std::vector<std::string> names;
     while (stInner.fetch())    { names.push_back(name); }
 
-    assert(names.size() == 3);
-    assert(names[0] == "John");
-    assert(names[1] == "Anna");
-    assert(names[2] == "Mike");
-
-    std::cout << "test 4 passed" << std::endl;
+    REQUIRE(names.size() == 3);
+    CHECK(names[0] == "John");
+    CHECK(names[1] == "Anna");
+    CHECK(names[2] == "Mike");
 }
 
 
 // ROWID test
-void test5()
+TEST_CASE("Oracle rowid", "[oracle][rowid]")
 {
     session sql(backEnd, connectString);
     basic_table_creator tableCreator(sql);
@@ -241,10 +232,8 @@ void test5()
     sql << "select id, name from soci_test where rowid = :rid",
         into(id), into(name), use(rid);
 
-    assert(id == 7);
-    assert(name == "John");
-
-    std::cout << "test 5 passed" << std::endl;
+    CHECK(id == 7);
+    CHECK(name == "John");
 }
 
 // Stored procedures
@@ -260,34 +249,30 @@ struct procedure_creator : procedure_creator_base
     }
 };
 
-void test6()
+TEST_CASE("Oracle stored procedure", "[oracle][stored-procedure]")
 {
+    session sql(backEnd, connectString);
+    procedure_creator procedure_creator(sql);
+
+    std::string in("my message");
+    std::string out;
+    statement st = (sql.prepare <<
+        "begin soci_test(:output, :input); end;",
+        use(out, "output"),
+        use(in, "input"));
+    st.execute(1);
+    CHECK(out == in);
+
+    // explicit procedure syntax
     {
-        session sql(backEnd, connectString);
-        procedure_creator procedure_creator(sql);
-
-        std::string in("my message");
+        std::string in("my message2");
         std::string out;
-        statement st = (sql.prepare <<
-            "begin soci_test(:output, :input); end;",
-            use(out, "output"),
-            use(in, "input"));
-        st.execute(1);
-        assert(out == in);
-
-        // explicit procedure syntax
-        {
-            std::string in("my message2");
-            std::string out;
-            procedure proc = (sql.prepare <<
-                "soci_test(:output, :input)",
-                use(out, "output"), use(in, "input"));
-            proc.execute(1);
-            assert(out == in);
-        }
+        procedure proc = (sql.prepare <<
+            "soci_test(:output, :input)",
+            use(out, "output"), use(in, "input"));
+        proc.execute(1);
+        CHECK(out == in);
     }
-
-    std::cout << "test 6 passed" << std::endl;
 }
 
 // bind into user-defined objects
@@ -341,79 +326,68 @@ struct returns_null_procedure_creator : public procedure_creator_base
     }
 };
 
-void test7()
+TEST_CASE("Oracle user-defined objects", "[oracle][type_conversion]")
 {
+    session sql(backEnd, connectString);
     {
-        session sql(backEnd, connectString);
-        {
-            basic_table_creator tableCreator(sql);
+        basic_table_creator tableCreator(sql);
 
-            int id(1);
-            string_holder in("my string");
-            sql << "insert into soci_test(id, name) values(:id, :name)", use(id), use(in);
+        int id(1);
+        string_holder in("my string");
+        sql << "insert into soci_test(id, name) values(:id, :name)", use(id), use(in);
 
-            string_holder out;
-            sql << "select name from soci_test", into(out);
-            assert(out.get() == "my string");
+        string_holder out;
+        sql << "select name from soci_test", into(out);
+        CHECK(out.get() == "my string");
 
-            row r;
-            sql << "select * from soci_test", into(r);
-            string_holder dynamicOut = r.get<string_holder>(1);
-            assert(dynamicOut.get() == "my string");
-        }
+        row r;
+        sql << "select * from soci_test", into(r);
+        string_holder dynamicOut = r.get<string_holder>(1);
+        CHECK(dynamicOut.get() == "my string");
     }
-    std::cout << "test 7 passed" << std::endl;
 }
 
-void test7inout()
+TEST_CASE("Oracle user-defined objects in/out", "[oracle][type_conversion]")
 {
+    session sql(backEnd, connectString);
+
+    // test procedure with user-defined type as in-out parameter
     {
-        session sql(backEnd, connectString);
+        in_out_procedure_creator procedureCreator(sql);
 
-        // test procedure with user-defined type as in-out parameter
-        {
-            in_out_procedure_creator procedureCreator(sql);
-
-            std::string sh("test");
-            procedure proc = (sql.prepare << "soci_test(:s)", use(sh));
-            proc.execute(1);
-            assert(sh == "testtest");
-        }
-
-        // test procedure with user-defined type as in-out parameter
-        {
-            in_out_procedure_creator procedureCreator(sql);
-
-            string_holder sh("test");
-            procedure proc = (sql.prepare << "soci_test(:s)", use(sh));
-            proc.execute(1);
-            assert(sh.get() == "testtest");
-        }
+        std::string sh("test");
+        procedure proc = (sql.prepare << "soci_test(:s)", use(sh));
+        proc.execute(1);
+        CHECK(sh == "testtest");
     }
-    std::cout << "test 7-inout passed" << std::endl;
+
+    // test procedure with user-defined type as in-out parameter
+    {
+        in_out_procedure_creator procedureCreator(sql);
+
+        string_holder sh("test");
+        procedure proc = (sql.prepare << "soci_test(:s)", use(sh));
+        proc.execute(1);
+        CHECK(sh.get() == "testtest");
+    }
 }
 
-void test7outnull()
+TEST_CASE("Oracle null user-defined objects in/out", "[oracle][null][type_conversion]")
 {
-    {
-        session sql(backEnd, connectString);
+    session sql(backEnd, connectString);
 
-        // test procedure which returns null
-        {
-            returns_null_procedure_creator procedureCreator(sql);
+    // test procedure which returns null
+    returns_null_procedure_creator procedureCreator(sql);
 
-            string_holder sh;
-            indicator ind = i_ok;
-            procedure proc = (sql.prepare << "soci_test(:s)", use(sh, ind));
-            proc.execute(1);
-            assert(ind == i_null);
-        }
-    }
-    std::cout << "test 7-outnull passed" << std::endl;
+    string_holder sh;
+    indicator ind = i_ok;
+    procedure proc = (sql.prepare << "soci_test(:s)", use(sh, ind));
+    proc.execute(1);
+    CHECK(ind == i_null);
 }
 
 // test bulk insert features
-void test8()
+TEST_CASE("Oracle bulk insert", "[oracle][insert][bulk]")
 {
     session sql(backEnd, connectString);
 
@@ -437,7 +411,8 @@ void test8()
         {
             error = e.what();
         }
-        assert(error.find("Bind variable size mismatch")
+        CAPTURE(error);
+        CHECK(error.find("Bind variable size mismatch")
             != std::string::npos);
 
         try
@@ -448,7 +423,8 @@ void test8()
         {
             error = e.what();
         }
-        assert(error.find("Bind variable size mismatch")
+        CAPTURE(error);
+        CHECK(error.find("Bind variable size mismatch")
             != std::string::npos);
     }
 
@@ -469,10 +445,11 @@ void test8()
             //TODO e could be made to tell which row(s) failed
         }
         sql.commit();
-        assert(error.find("ORA-01438") != std::string::npos);
+        CAPTURE(error);
+        CHECK(error.find("ORA-01438") != std::string::npos);
         int count(7);
         sql << "select count(*) from soci_test", into(count);
-        assert(count == 1);
+        CHECK(count == 1);
         sql << "delete from soci_test";
     }
 
@@ -489,37 +466,19 @@ void test8()
         st.execute(1);
         int count;
         sql << "select count(*) from soci_test", into(count);
-        assert(count == 3);
+        CHECK(count == 3);
     }
 
     //verify an exception is thrown if into vector is zero length
     {
         std::vector<int> ids;
-        bool caught(false);
-        try
-        {
-            sql << "select id from soci_test", into(ids);
-        }
-        catch (soci_error const &)
-        {
-            caught = true;
-        }
-        assert(caught);
+        CHECK_THROWS_AS((sql << "select id from soci_test", into(ids)), soci_error);
     }
 
     // verify an exception is thrown if use vector is zero length
     {
         std::vector<int> ids;
-        bool caught(false);
-        try
-        {
-            sql << "insert into soci_test(id) values(:id)", use(ids);
-        }
-        catch (soci_error const &)
-        {
-            caught = true;
-        }
-        assert(caught);
+        CHECK_THROWS_AS((sql << "insert into soci_test(id) values(:id)", use(ids)), soci_error);
     }
 
     // test "no data" condition
@@ -530,7 +489,7 @@ void test8()
                         into(ids_out, inds));
 
         // false return value means "no data"
-        assert(st.execute(1) == false);
+        CHECK(st.execute(1) == false);
 
         // that's it - nothing else is guaranteed
         // and nothing else is to be tested here
@@ -558,10 +517,13 @@ void test8()
         std::vector<int> codes(3);
 
         sql << "select code from soci_test", into(codes, inds_out);
-        assert(codes.size() == 3 && inds_out.size() == 3);
-        assert(codes[0] == 10 && codes[2] == 10);
-        assert(inds_out[0] == i_ok && inds_out[1] == i_null
-            && inds_out[2] == i_ok);
+        REQUIRE(codes.size() == 3);
+        REQUIRE(inds_out.size() == 3);
+        CHECK(codes[0] == 10);
+        CHECK(codes[2] == 10);
+        CHECK(inds_out[0] == i_ok);
+        CHECK(inds_out[1] == i_null);
+        CHECK(inds_out[2] == i_ok);
     }
 
     // verify an exception is thrown if null is selected
@@ -577,7 +539,7 @@ void test8()
         {
             msg = e.what();
         }
-        assert(msg == "Null value fetched and no indicator defined." );
+        CHECK(msg == "Null value fetched and no indicator defined." );
     }
 
     // test basic select
@@ -588,12 +550,14 @@ void test8()
         statement st = (sql.prepare << "select id from soci_test",
             into(ids_out, inds));
         const bool gotData = st.execute(true);
-        assert(gotData);
-        assert(ids_out.size() == sz);
-        assert(ids_out[0] == 10);
-        assert(ids_out[2] == 12);
-        assert(inds.size() == 3 && inds[0] == i_ok
-            && inds[1] == i_ok && inds[2] == i_ok);
+        CHECK(gotData);
+        REQUIRE(ids_out.size() == sz);
+        CHECK(ids_out[0] == 10);
+        CHECK(ids_out[2] == 12);
+        REQUIRE(inds.size() == 3);
+        CHECK(inds[0] == i_ok);
+        CHECK(inds[1] == i_ok);
+        CHECK(inds[2] == i_ok);
     }
 
     // verify execute(0)
@@ -603,15 +567,18 @@ void test8()
             into(ids_out));
 
         st.execute();
-        assert(ids_out.size() == 2);
+        REQUIRE(ids_out.size() == 2);
         bool gotData = st.fetch();
-        assert(gotData);
-        assert(ids_out.size() == 2 && ids_out[0] == 10 && ids_out[1] == 11);
+        CHECK(gotData);
+        REQUIRE(ids_out.size() == 2);
+        CHECK(ids_out[0] == 10);
+        CHECK(ids_out[1] == 11);
         gotData = st.fetch();
-        assert(gotData);
-        assert(ids_out.size() == 1 && ids_out[0] == 12);
+        CHECK(gotData);
+        REQUIRE(ids_out.size() == 1);
+        CHECK(ids_out[0] == 12);
         gotData = st.fetch();
-        assert(gotData == false);
+        CHECK(gotData == false);
     }
 
     // verify resizing happens if vector is larger
@@ -621,10 +588,10 @@ void test8()
         statement st2 = (sql.prepare << "select id from soci_test",
             into(ids_out));
         bool gotData = st2.execute(true);
-        assert(gotData);
-        assert(ids_out.size() == 3);
-        assert(ids_out[0] == 10);
-        assert(ids_out[2] == 12);
+        CHECK(gotData);
+        REQUIRE(ids_out.size() == 3);
+        CHECK(ids_out[0] == 10);
+        CHECK(ids_out[2] == 12);
     }
 
     // verify resizing happens properly during fetch()
@@ -637,29 +604,27 @@ void test8()
         std::vector<int> ids(2);
         statement st3 = (sql.prepare << "select id from soci_test", into(ids));
         bool gotData = st3.execute(true);
-        assert(gotData);
-        assert(ids[0] == 10);
-        assert(ids[1] == 11);
+        CHECK(gotData);
+        CHECK(ids[0] == 10);
+        CHECK(ids[1] == 11);
 
         gotData = st3.fetch();
-        assert(gotData);
-        assert(ids[0] == 12);
-        assert(ids[1] == 13);
+        CHECK(gotData);
+        CHECK(ids[0] == 12);
+        CHECK(ids[1] == 13);
 
         gotData = st3.fetch();
-        assert(gotData);
-        assert(ids.size() == 1);
-        assert(ids[0] == 14);
+        CHECK(gotData);
+        REQUIRE(ids.size() == 1);
+        CHECK(ids[0] == 14);
 
         gotData = st3.fetch();
-        assert(gotData == false);
+        CHECK(gotData == false);
     }
-
-    std::cout << "test 8 passed" << std::endl;
 }
 
 // more tests for bulk fetch
-void test9()
+TEST_CASE("Oracle bulk insert", "[oracle][fetch][bulk]")
 {
     session sql(backEnd, connectString);
 
@@ -675,7 +640,7 @@ void test9()
 
     int count(0);
     sql << "select count(*) from soci_test", into(count);
-    assert(count == 10);
+    CHECK(count == 10);
 
     // verify that the exception is thrown when trying to resize
     // the output vector to the size that is bigger than that
@@ -688,20 +653,20 @@ void test9()
         st.execute();
 
         st.fetch();
-        assert(out.size() == 4);
-        assert(out[0] == 1);
-        assert(out[1] == 2);
-        assert(out[2] == 3);
-        assert(out[3] == 4);
+        REQUIRE(out.size() == 4);
+        CHECK(out[0] == 1);
+        CHECK(out[1] == 2);
+        CHECK(out[2] == 3);
+        CHECK(out[3] == 4);
         out.resize(5); // this should be detected as error
         try
         {
             st.fetch();
-            assert(false); // should never reach here
+            FAIL("expected exception not thrown");
         }
         catch (soci_error const &e)
         {
-            assert(std::string(e.what()) ==
+            CHECK(std::string(e.what()) ==
                 "Increasing the size of the output vector is not supported.");
         }
     }
@@ -715,28 +680,26 @@ void test9()
         st.execute();
 
         st.fetch();
-        assert(out.size() == 4);
-        assert(out[0] == 1);
-        assert(out[1] == 2);
-        assert(out[2] == 3);
-        assert(out[3] == 4);
+        REQUIRE(out.size() == 4);
+        CHECK(out[0] == 1);
+        CHECK(out[1] == 2);
+        CHECK(out[2] == 3);
+        CHECK(out[3] == 4);
         out.resize(3); // ok
         st.fetch();
-        assert(out.size() == 3);
-        assert(out[0] == 5);
-        assert(out[1] == 6);
-        assert(out[2] == 7);
+        REQUIRE(out.size() == 3);
+        CHECK(out[0] == 5);
+        CHECK(out[1] == 6);
+        CHECK(out[2] == 7);
         out.resize(4); // ok, not bigger than initially
         st.fetch();
-        assert(out.size() == 3); // downsized because of end of data
-        assert(out[0] == 8);
-        assert(out[1] == 9);
-        assert(out[2] == 10);
+        REQUIRE(out.size() == 3); // downsized because of end of data
+        CHECK(out[0] == 8);
+        CHECK(out[1] == 9);
+        CHECK(out[2] == 10);
         bool gotData = st.fetch();
-        assert(gotData == false); // end of data
+        CHECK(gotData == false); // end of data
     }
-
-    std::cout << "test 9 passed" << std::endl;
 }
 
 struct person
@@ -800,7 +763,7 @@ struct times100_procedure_creator : public procedure_creator_base
     }
 };
 
-void test10()
+TEST_CASE("Oracle ORM", "[oracle][orm]")
 {
     session sql(backEnd, connectString);
 
@@ -815,31 +778,33 @@ void test10()
             << "values(:ID, :FIRST_NAME, :LAST_NAME, :GENDER)", use(p);
 
         // p should be unchanged
-        assert(p.id == 1);
-        assert(p.firstName == "Pat");
-        assert(p.lastName.get() == "Smith");
+        CHECK(p.id == 1);
+        CHECK(p.firstName == "Pat");
+        CHECK(p.lastName.get() == "Smith");
 
         person p1;
         sql << "select * from soci_test", into(p1);
-        assert(p1.id == 1);
-        assert(p1.firstName + p1.lastName.get() == "PatSmith");
-        assert(p1.gender == "unknown");
+        CHECK(p1.id == 1);
+        CHECK(p1.firstName == "Pat");
+        CHECK(p1.lastName.get() == "Smith");
+        CHECK(p1.gender == "unknown");
 
         p.firstName = "Patricia";
         sql << "update soci_test set first_name = :FIRST_NAME "
                "where id = :ID", use(p);
 
         // p should be unchanged
-        assert(p.id == 1);
-        assert(p.firstName == "Patricia");
-        assert(p.lastName.get() == "Smith");
+        CHECK(p.id == 1);
+        CHECK(p.firstName == "Patricia");
+        CHECK(p.lastName.get() == "Smith");
         // Note: gender is now "unknown" because of the mapping, not ""
-        assert(p.gender == "unknown");
+        CHECK(p.gender == "unknown");
 
         person p2;
         sql << "select * from soci_test", into(p2);
-        assert(p2.id == 1);
-        assert(p2.firstName + p2.lastName.get() == "PatriciaSmith");
+        CHECK(p2.id == 1);
+        CHECK(p2.firstName == "Patricia");
+        CHECK(p2.lastName.get() == "Smith");
 
         // insert a second row so we can test fetching
         person p3;
@@ -855,16 +820,16 @@ void test10()
 
         st.execute();
         bool gotData = st.fetch();
-        assert(gotData);
-        assert(p4.id == 1);
-        assert(p4.firstName == "Patricia");
+        CHECK(gotData);
+        CHECK(p4.id == 1);
+        CHECK(p4.firstName == "Patricia");
 
         gotData = st.fetch();
-        assert(gotData);
-        assert(p4.id == 2);
-        assert(p4.firstName == "Joe");
+        CHECK(gotData);
+        CHECK(p4.id == 2);
+        CHECK(p4.firstName == "Joe");
         gotData = st.fetch();
-        assert(gotData == false);
+        CHECK(gotData == false);
     }
 
     // test with stored procedure
@@ -877,9 +842,9 @@ void test10()
         p.lastName = "Smith";
         procedure proc = (sql.prepare << "soci_test(:ID)", use(p));
         proc.execute(1);
-        assert(p.id == 100);
-        assert(p.firstName == "Pat");
-        assert(p.lastName.get() == "Smith");
+        CHECK(p.id == 100);
+        CHECK(p.firstName == "Pat");
+        CHECK(p.lastName.get() == "Smith");
     }
 
     // test with stored procedure which returns null
@@ -898,15 +863,14 @@ void test10()
         {
             msg = e.what();
         }
-        assert(msg == "Null value not allowed for this type");
+        CHECK(msg == "Null value not allowed for this type");
 
         procedure proc = (sql.prepare << "soci_test(:GENDER)",
                                 use(p));
         proc.execute(1);
-        assert(p.gender == "unknown");
+        CHECK(p.gender == "unknown");
 
     }
-    std::cout << "test 10 passed" << std::endl;
 }
 
 // Experimental support for position based O/R Mapping
@@ -954,7 +918,7 @@ namespace soci
     };
 }
 
-void test11()
+TEST_CASE("Oracle ORM by index", "[oracle][orm]")
 {
     session sql(backEnd, connectString);
 
@@ -970,20 +934,20 @@ void test11()
     //  test position-based conversion
     person2 p3;
     sql << "select id, first_name, last_name, gender from soci_test", into(p3);
-    assert(p3.id == 1);
-    assert(p3.firstName + p3.lastName == "PatriciaSmith");
-    assert(p3.gender == "whoknows");
+    CHECK(p3.id == 1);
+    CHECK(p3.firstName == "Patricia");
+    CHECK(p3.lastName == "Smith");
+    CHECK(p3.gender == "whoknows");
 
     sql << "update soci_test set gender = 'F' where id = 1";
 
     // additional test for stream-like conversion
     person3 p4;
     sql << "select id, first_name, last_name, gender from soci_test", into(p4);
-    assert(p4.id == 1);
-    assert(p4.firstName + p4.lastName == "PatriciaSmith");
-    assert(p4.gender == "F");
-
-    std::cout << "test 11 passed" << std::endl;
+    CHECK(p4.id == 1);
+    CHECK(p4.firstName == "Patricia");
+    CHECK(p4.lastName == "Smith");
+    CHECK(p4.gender == "F");
 }
 
 //
@@ -999,7 +963,7 @@ struct long_table_creator : public table_creator_base
     }
 };
 
-void test12()
+TEST_CASE("Oracle large strings as long", "[oracle][compatibility]")
 {
     session sql(backEnd, connectString);
     long_table_creator creator(sql);
@@ -1012,14 +976,12 @@ void test12()
     std::string out;
     sql << "select l from soci_test", into(out);
 
-    assert(out.size() == max);
-    assert(in == out);
-
-    std::cout << "test 12 passed" << std::endl;
+    CHECK(out.size() == max);
+    CHECK(in == out);
 }
 
 // test for modifiable and const use elements
-void test13()
+TEST_CASE("Oracle const and modifiable parameters", "[oracle][use]")
 {
     session sql(backEnd, connectString);
 
@@ -1027,7 +989,7 @@ void test13()
     sql << "begin "
         "select 2 * :i into :i from dual; "
         "end;", use(i);
-    assert(i == 14);
+    CHECK(i == 14);
 
     const int j = 7;
     try
@@ -1036,15 +998,13 @@ void test13()
             "select 2 * :i into :i from dual;"
             " end;", use(j);
 
-        assert(false); // should never get here
+        FAIL("expected exception not thrown");
     }
     catch (soci_error const & e)
     {
         const std::string msg = e.what();
-        assert(msg == "Attempted modification of const use element");
+        CHECK(msg == "Attempted modification of const use element");
     }
-
-    std::cout << "test 13 passed" << std::endl;
 }
 
 struct longlong_table_creator : table_creator_base
@@ -1057,7 +1017,7 @@ struct longlong_table_creator : table_creator_base
 };
 
 // long long test
-void test14()
+TEST_CASE("Oracle long long", "[oracle][longlong]")
 {
     {
         session sql(backEnd, connectString);
@@ -1065,14 +1025,12 @@ void test14()
         longlong_table_creator tableCreator(sql);
 
         long long v1 = 1000000000000LL;
-        assert(v1 / 1000000 == 1000000);
-
         sql << "insert into soci_test(val) values(:val)", use(v1);
 
         long long v2 = 0LL;
         sql << "select val from soci_test", into(v2);
 
-        assert(v2 == v1);
+        CHECK(v2 == v1);
     }
 
     // vector<long long>
@@ -1093,15 +1051,13 @@ void test14()
         std::vector<long long> v2(10);
         sql << "select val from soci_test order by val desc", into(v2);
 
-        assert(v2.size() == 5);
-        assert(v2[0] == 1000000000004LL);
-        assert(v2[1] == 1000000000003LL);
-        assert(v2[2] == 1000000000002LL);
-        assert(v2[3] == 1000000000001LL);
-        assert(v2[4] == 1000000000000LL);
+        REQUIRE(v2.size() == 5);
+        CHECK(v2[0] == 1000000000004LL);
+        CHECK(v2[1] == 1000000000003LL);
+        CHECK(v2[2] == 1000000000002LL);
+        CHECK(v2[3] == 1000000000001LL);
+        CHECK(v2[4] == 1000000000000LL);
     }
-
-    std::cout << "test 14 passed" << std::endl;
 }
 
 //
@@ -1193,50 +1149,27 @@ int main(int argc, char** argv)
     _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
 #endif //_MSC_VER
 
-    if (argc == 2)
+    if (argc >= 2)
     {
         connectString = argv[1];
+
+        // Replace the connect string with the process name to ensure that
+        // CATCH uses the correct name in its messages.
+        argv[1] = argv[0];
+
+        argc--;
+        argv++;
     }
     else
     {
         std::cout << "usage: " << argv[0]
-            << " connectstring\n"
+            << " connectstring [test-arguments...]\n"
             << "example: " << argv[0]
             << " \'service=orcl user=scott password=tiger\'\n";
         std::exit(1);
     }
 
-    try
-    {
-        test_context tc(backEnd, connectString);
-        common_tests tests(tc);
-        tests.run();
+    test_context tc(backEnd, connectString);
 
-        std::cout << "\nsoci Oracle tests:\n\n";
-        test1();
-        test2();
-        test3();
-        test4();
-        test5();
-        test6();
-        test7();
-        test7inout();
-        test7outnull();
-        test8();
-        test9();
-        test10();
-        test11();
-        test12();
-        test13();
-        test14();
-
-        std::cout << "\nOK, all tests passed.\n\n";
-
-        return EXIT_SUCCESS;
-    }
-    catch (std::exception const & e)
-    {
-        std::cout << e.what() << '\n';
-    }
-    return EXIT_FAILURE;
+    return Catch::Session().run(argc, argv);
 }

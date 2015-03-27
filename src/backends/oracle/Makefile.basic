@@ -22,9 +22,9 @@ libsoci_oracle.a : ${OBJECTS}
 	ar rv $@ $?
 	rm *.o
 
-soci-oracle.o : soci-oracle.cpp 
+soci-oracle.o : soci-oracle.cpp
 	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
-	
+
 blob.o : blob.cpp
 	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 

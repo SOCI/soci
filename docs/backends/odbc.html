@@ -19,7 +19,7 @@
   <a href="#required">Required Client Libraries</a><br />
 </div>
 <a href="#connecting">Connecting to the Database</a><br />
-     
+
 <a href="#support">SOCI Feature Support</a><br />
 <div class="navigation-indented">
     <a href="#dynamic">Dynamic Binding</a><br />
@@ -171,22 +171,22 @@ sql &lt;&lt; "insert into t(x, y) values(?, ?)", use(i), use(j);
     <tr>
     <td>MS SQL Server 2005</td>
     <td>YES</td>
-    <td>YES</td>	
+    <td>YES</td>
   </tr>
     <tr>
     <td>MS Access 2003</td>
     <td>YES</td>
-    <td>NO</td>	
+    <td>NO</td>
   </tr>
     <tr>
     <td>PostgresQL 8.1</td>
     <td>YES</td>
-    <td>YES</td>	
+    <td>YES</td>
   </tr>
     <tr>
     <td>MySQL 4.1</td>
     <td>NO</td>
-    <td>NO</td>	
+    <td>NO</td>
   </tr>
   </tbody>
 </table>
@@ -243,8 +243,8 @@ sql &lt;&lt; "insert into t(x, y) values(?, ?)", use(i), use(j);
 <h4 id="odbc_soci_error">odbc_soci_error</h4>
 
 <p>The ODBC backend can throw instances of class <code>odbc_soci_error</code>,
-which is publicly derived from <code>soci_error</code> and has 
-additional public members containing the ODBC error code, the Native database 
+which is publicly derived from <code>soci_error</code> and has
+additional public members containing the ODBC error code, the Native database
 error code, and the message returned from ODBC:</p>
 
 <pre class="example">

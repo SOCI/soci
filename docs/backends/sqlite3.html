@@ -19,7 +19,7 @@
   <a href="#required">Required Client Libraries</a><br />
 </div>
 <a href="#connecting">Connecting to the Database</a><br />
-     
+
 <a href="#support">SOCI Feature Support</a><br />
 <div class="navigation-indented">
     <a href="#dynamic">Dynamic Binding</a><br />
@@ -86,7 +86,7 @@ sql &lt;&lt; "select count(*) from invoices", into(count);
 
 <p>The SQLite3 backend supports the use of the SOCI <code>row</code> class, which facilitates retrieval of data whose type is not known at compile time.</p>
 
-<p>When calling <code>row::get&lt;T&gt;()</code>, the type you should pass as T depends upon the underlying database type.</p>  
+<p>When calling <code>row::get&lt;T&gt;()</code>, the type you should pass as T depends upon the underlying database type.</p>
 
 <p>For the SQLite3 backend, this type mapping is complicated by the fact the SQLite3 does not enforce types <a href="#INTEGER_PRIMARY_KEY">*</a>, and makes no attempt to validate the type names used in table creation or alteration statements.    SQLite3 will return the type as a string, SOCI will recognize the following strings and match them the corresponding SOCI types:</p>
 
@@ -166,8 +166,8 @@ sql &lt;&lt; "insert into t(x, y) values(?, ?)", use(i), use(j);
 
 <h3 id="native">Acessing the native database API</h3>
 
-<p>SOCI provides access to underlying datbabase APIs via several 
-<code>get_backend()</code> functions, as described in the 
+<p>SOCI provides access to underlying datbabase APIs via several
+<code>get_backend()</code> functions, as described in the
 <a href="../beyond.html">beyond SOCI</a> documentation.</p>
 
 <p>The SQLite3 backend provides the following concrete classes for navite API access:</p>

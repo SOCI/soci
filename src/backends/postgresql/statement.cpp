@@ -64,10 +64,10 @@ void postgresql_statement_backend::alloc()
 
 void postgresql_statement_backend::clean_up()
 {
-    // 'reset' the value for a 
+    // 'reset' the value for a
     // potential new execution.
     rowsAffectedBulk_ = -1;
-    
+
     // nothing to do here
 }
 
@@ -184,7 +184,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
         assert(statementName_.empty());
 
         // Holding the name temporarily in this var because
-        // if it fails to prepare it we can't DEALLOCATE it. 
+        // if it fails to prepare it we can't DEALLOCATE it.
         std::string statementName = session_.get_next_statement_name();
 
         postgresql_result result(
@@ -330,10 +330,10 @@ postgresql_statement_backend::execute(int number)
 
                     // preserve the number of rows affected so far.
                     rowsAffectedBulk_ = rowsAffectedBulkTemp;
-                    
+
                     result_.check_for_errors("Cannot execute query.");
-                    
-                    rowsAffectedBulkTemp += get_affected_rows();                    
+
+                    rowsAffectedBulkTemp += get_affected_rows();
                 }
             }
             rowsAffectedBulk_ = rowsAffectedBulkTemp;
@@ -541,7 +541,7 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     case 20:   // int8
         type = dt_long_long;
         break;
-    
+
     default:
     {
         int form = PQfformat(result_, pos);

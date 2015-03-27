@@ -26,7 +26,7 @@ if(UNIX)
   else()
     set(DB2_LIBDIRS "lib64")
   endif()
-  
+
   set(DB2_FIND_INCLUDE_PATHS)
   set(DB2_FIND_LIB_PATHS)
   foreach(db2_install_path ${DB2_INSTALL_PATHS})
@@ -45,10 +45,10 @@ if(UNIX)
   endforeach(db2_install_path)
 elseif(WIN32)
   if (CMAKE_CL_64) # 64-bit build, DB2 64-bit installed
-    set(DB2_FIND_INCLUDE_PATHS $ENV{ProgramW6432}/IBM/SQLLIB/include) 
+    set(DB2_FIND_INCLUDE_PATHS $ENV{ProgramW6432}/IBM/SQLLIB/include)
     set(DB2_FIND_LIB_PATHS     $ENV{ProgramW6432}/IBM/SQLLIB/lib)
   else() # 32-bit build, DB2 64-bit or DB2 32-bit installed
-    
+
     if(EXISTS "$ENV{ProgramW6432}/IBM/SQLLIB/lib")
       # On 64-bit Windows with DB2 64-bit installed:
       # LIB environment points to {DB2}/IBM/SQLLIB/lib with64-bit db2api.lib,
@@ -56,8 +56,8 @@ elseif(WIN32)
       set(DB2_FIND_LIB_NO_LIB NO_SYSTEM_ENVIRONMENT_PATH)
 
     endif()
-    
-    set(DB2_FIND_INCLUDE_PATHS 
+
+    set(DB2_FIND_INCLUDE_PATHS
       $ENV{ProgramW6432}/IBM/SQLLIB/include
       $ENV{ProgramFiles}/IBM/SQLLIB/include)
     set(DB2_FIND_LIB_PATHS

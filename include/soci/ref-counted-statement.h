@@ -25,7 +25,7 @@ class SOCI_DECL ref_counted_statement_base
 {
 public:
     ref_counted_statement_base(session& s);
-    
+
     virtual ~ref_counted_statement_base() {}
 
     virtual void final_action() = 0;

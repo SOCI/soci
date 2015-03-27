@@ -26,7 +26,7 @@ cmake \
     -DSOCI_POSTGRESQL=OFF \
     -DSOCI_SQLITE3=OFF \
     -DSOCI_ORACLE_TEST_CONNSTR:STRING="service=brzuchol.loskot.net user=${ORACLE_USER} password=soci_secret" \
-    ..  
+    ..
 
 run_make
 
