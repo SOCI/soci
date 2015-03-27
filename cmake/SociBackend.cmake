@@ -8,7 +8,7 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 ################################################################################
 # Macros in this module:
-#   
+#
 #   soci_backend
 #     - defines project of a database backend for SOCI library
 #
@@ -30,7 +30,7 @@ macro(soci_backend_deps_found NAME DEPS SUCCESS)
   foreach(dep ${DEPS})
     soci_check_package_found(${dep} DEPEND_FOUND)
     if(NOT DEPEND_FOUND)
-      list(APPEND DEPS_NOT_FOUND ${dep}) 
+      list(APPEND DEPS_NOT_FOUND ${dep})
     else()
       string(TOUPPER "${dep}" DEPU)
       list(APPEND DEPS_INCLUDE_DIRS ${${DEPU}_INCLUDE_DIR})
@@ -41,7 +41,7 @@ macro(soci_backend_deps_found NAME DEPS SUCCESS)
   endforeach()
 
   list(LENGTH DEPS_NOT_FOUND NOT_FOUND_COUNT)
-  
+
   if (NOT_FOUND_COUNT GREATER 0)
     set(${SUCCESS} False)
   else()
@@ -50,7 +50,7 @@ macro(soci_backend_deps_found NAME DEPS SUCCESS)
     set(${NAME}_DEPS_DEFS ${DEPS_DEFS})
     set(${SUCCESS} True)
   endif()
-  
+
   #message(STATUS "soci_backend_deps_found: ${SUCCESS}=${${SUCCESS}}")
 endmacro()
 
@@ -104,11 +104,11 @@ macro(soci_backend NAME)
   else()
 
     if(${THIS_BACKEND_OPTION})
-      
+
       get_directory_property(THIS_INCLUDE_DIRS INCLUDE_DIRECTORIES)
       get_directory_property(THIS_COMPILE_DEFS COMPILE_DEFINITIONS)
-      
-      # Backend-specific depedencies 
+
+      # Backend-specific depedencies
       set(THIS_BACKEND_DEPENDS_INCLUDE_DIRS ${${NAMEU}_DEPS_INCLUDE_DIRS})
       set(THIS_BACKEND_DEPENDS_LIBRARIES ${${NAMEU}_DEPS_LIBRARIES})
       set(THIS_BACKEND_DEPENDS_DEFS ${${NAMEU}_DEPS_DEFS})
@@ -128,7 +128,7 @@ macro(soci_backend NAME)
       set(THIS_BACKEND_TARGET ${PROJECTNAMEL}_${NAMEL})
       set(THIS_BACKEND_TARGET_VAR ${THIS_BACKEND_VAR}_TARGET)
       set(${THIS_BACKEND_TARGET_VAR} ${THIS_BACKEND_TARGET})
-      
+
       soci_target_output_name(${THIS_BACKEND_TARGET} ${THIS_BACKEND_VAR}_OUTPUT_NAME)
 
       set(THIS_BACKEND_OUTPUT_NAME ${${THIS_BACKEND_VAR}_OUTPUT_NAME})
@@ -293,7 +293,7 @@ macro(soci_backend_test)
 
       list(APPEND THIS_INCLUDE_DIRS ${THIS_TEST_DEPENDS_INCLUDE_DIRS})
       list(APPEND THIS_COMPILE_DEFS ${THIS_TEST_DEPENDS_DEFS})
-      
+
       set_directory_properties(PROPERTIES
         INCLUDE_DIRECTORIES "${THIS_INCLUDE_DIRS}"
         COMPILE_DEFINITIONS "${THIS_COMPILE_DEFS}")
@@ -305,7 +305,7 @@ macro(soci_backend_test)
     set(TEST_CONNSTR_VAR ${TEST_FULL_NAME}_CONNSTR)
     set(${TEST_CONNSTR_VAR} ""
       CACHE STRING "Connection string for ${BACKENDU} test")
-    
+
     if(NOT ${TEST_CONNSTR_VAR} AND THIS_TEST_CONNSTR)
       set(${TEST_CONNSTR_VAR} ${THIS_TEST_CONNSTR})
     endif()
@@ -341,7 +341,7 @@ macro(soci_backend_test)
       add_test(${TEST_TARGET_STATIC}
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET_STATIC}
         ${${TEST_CONNSTR_VAR}})
-    
+
       soci_backend_test_create_vcxproj_user(${TEST_TARGET_STATIC} "\"${${TEST_CONNSTR_VAR}}\"")
     endif(SOCI_STATIC)
 

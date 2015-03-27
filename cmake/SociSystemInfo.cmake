@@ -13,7 +13,7 @@
 #   SOCI_COMPILER_NAME - name of compiler toolset, follows Boost toolset naming.
 #   SOCI_PLATFORM_NAME - target platform name: x64, x86 or win32
 #
-# Based on the Pre-defined Compiler Macros 
+# Based on the Pre-defined Compiler Macros
 # http://sourceforge.net/p/predef/wiki/Compilers/
 ################################################################################
 
@@ -50,11 +50,11 @@ if(WIN32)
       set(SOCI_COMPILER_NAME "msvc-11.0") # Visual Studio 2012
     endif()
   endif(MSVC)
-  
+
   if(MINGW)
     set(SOCI_COMPILER_NAME "mingw-${GCC_VERSION}")
   endif( MINGW )
-  
+
   if(CMAKE_GENERATOR MATCHES "Win64")
     set(SOCI_PLATFORM_NAME "x64")
   else()

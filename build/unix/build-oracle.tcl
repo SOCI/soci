@@ -10,7 +10,7 @@ proc findOracle {} {
             puts "The ORACLE_HOME variable is not set."
             return {}
         }
-    
+
         set ORACLE_HOME $env(ORACLE_HOME)
 
         set includeDir [file join $ORACLE_HOME "rdbms/public"]

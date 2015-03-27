@@ -586,12 +586,12 @@ TEST_CASE("MySQL unsigned int", "[mysql][int]")
 TEST_CASE("MySQL function call", "[mysql][function]")
 {
     session sql(backEnd, connectString);
-    
+
     row r;
-    
+
     sql << "set @day = '5'";
     sql << "set @mm = 'december'";
-    sql << "set @year = '2012'"; 
+    sql << "set @year = '2012'";
     sql << "select concat(@day,' ',@mm,' ',@year)", into(r);
 }
 
@@ -613,11 +613,11 @@ TEST_CASE("MySQL special floating point values", "[mysql][float]")
     }
 
   const std::string expectedError =
-      "Use element used with infinity or NaN, which are "   
+      "Use element used with infinity or NaN, which are "
       "not supported by the MySQL server.";
   {
     session sql(backEnd, connectString);
-    
+
     double x = std::numeric_limits<double>::quiet_NaN();
     statement st = (sql.prepare << "SELECT :x", use(x, "x"));
     try {
@@ -628,7 +628,7 @@ TEST_CASE("MySQL special floating point values", "[mysql][float]")
   }
   {
     session sql(backEnd, connectString);
-    
+
     double x = std::numeric_limits<double>::infinity();
     statement st = (sql.prepare << "SELECT :x", use(x, "x"));
     try {
@@ -640,7 +640,7 @@ TEST_CASE("MySQL special floating point values", "[mysql][float]")
   {
     session sql(backEnd, connectString);
     double_value_table_creator tableCreator(sql);
-    
+
     std::vector<double> v(1, std::numeric_limits<double>::quiet_NaN());
     try {
         sql << "insert into soci_test (val) values (:val)", use(v);
@@ -651,7 +651,7 @@ TEST_CASE("MySQL special floating point values", "[mysql][float]")
   {
     session sql(backEnd, connectString);
     double_value_table_creator tableCreator(sql);
-    
+
     std::vector<double> v(1, std::numeric_limits<double>::infinity());
     try {
         sql << "insert into soci_test (val) values (:val)", use(v);

@@ -88,7 +88,7 @@ public:
     into_type(values & v)
         : into_type<row>(v.get_row()), v_(v)
     {}
-    
+
     into_type(values & v, indicator & ind)
         : into_type<row>(v.get_row(), ind), v_(v)
     {}

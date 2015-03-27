@@ -146,17 +146,17 @@ public:
         : standard_use_type(&t,
             static_cast<exchange_type>(exchange_traits<T>::x_type), false, name)
     {}
-    
+
     use_type(T const& t, std::string const& name = std::string())
         : standard_use_type(const_cast<T*>(&t),
             static_cast<exchange_type>(exchange_traits<T>::x_type), true, name)
     {}
-    
+
     use_type(T& t, indicator& ind, std::string const& name = std::string())
         : standard_use_type(&t,
             static_cast<exchange_type>(exchange_traits<T>::x_type), ind, false, name)
     {}
-    
+
     use_type(T const& t, indicator& ind, std::string const& name = std::string())
         : standard_use_type(const_cast<T*>(&t),
             static_cast<exchange_type>(exchange_traits<T>::x_type), ind, false, name)
@@ -171,18 +171,18 @@ public:
         : vector_use_type(&v,
             static_cast<exchange_type>(exchange_traits<T>::x_type), name)
     {}
-    
+
     use_type(std::vector<T> const& v, std::string const& name = std::string())
         : vector_use_type(const_cast<std::vector<T>*>(&v),
             static_cast<exchange_type>(exchange_traits<T>::x_type), name)
     {}
-    
+
     use_type(std::vector<T>& v, std::vector<indicator> const& ind,
         std::string const& name = std::string())
         : vector_use_type(&v,
             static_cast<exchange_type>(exchange_traits<T>::x_type), ind, name)
     {}
-    
+
     use_type(std::vector<T> const& v, std::vector<indicator> const& ind,
         std::string const& name = std::string())
         : vector_use_type(const_cast<std::vector<T> *>(&v),

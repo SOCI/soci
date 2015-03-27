@@ -6,7 +6,7 @@
 source ${TRAVIS_BUILD_DIR}/bin/ci/common.sh
 source ${TRAVIS_BUILD_DIR}/bin/ci/oracle.sh
 
-sudo apt-get install -qq tar bzip2 libaio1 
+sudo apt-get install -qq tar bzip2 libaio1
 
 wget https://www.dropbox.com/s/30ex7s0d1pru0ur/instantclient_11_2-linux-x64.tar.bz2
 tar -jxvf instantclient_11_2-linux-x64.tar.bz2

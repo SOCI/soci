@@ -79,7 +79,7 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                 }
 
                 ind[i] = i_null;
-                
+
                 // no need to convert data if it is null, go to next row
                 continue;
             }

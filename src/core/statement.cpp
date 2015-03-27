@@ -114,10 +114,10 @@ void statement_impl::bind(values & values)
                     // make sure we do not go out of range on the string
                     const char nextChar = (pos + placeholder.size()) < query_.size() ?
                                           query_[pos + placeholder.size()] : '\0';
-                    
+
                     if (std::isalnum(nextChar))
                     {
-                        // We got a partial match only, 
+                        // We got a partial match only,
                         // keep looking for the placeholder
                         pos = query_.find(placeholder, pos + placeholder.size());
                     }
@@ -373,7 +373,7 @@ bool statement_impl::execute(bool withDataExchange)
     {
         post_fetch(gotData, false);
     }
-    
+
     post_use(gotData);
 
     session_.set_got_data(gotData);

@@ -54,11 +54,11 @@ class db2_soci_error : public soci_error {
 public:
     db2_soci_error(std::string const & msg, SQLRETURN rc) : soci_error(msg),errorCode(rc) {};
     ~db2_soci_error() throw() { };
-   
-    //We have to extract error information before exception throwing, cause CLI handles could be broken at the construction time   
+
+    //We have to extract error information before exception throwing, cause CLI handles could be broken at the construction time
     static const std::string sqlState(std::string const & msg,const SQLSMALLINT htype,const SQLHANDLE hndl);
-       
-    SQLRETURN errorCode;    
+
+    SQLRETURN errorCode;
 };
 
 struct db2_statement_backend;

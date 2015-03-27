@@ -6,7 +6,7 @@ Website: http://soci.sourceforge.net
 GitHub hosts SOCI source code repository, issues tracker and wiki:
 https://github.com/SOCI
 
-Downloads and mailing lists at 
+Downloads and mailing lists at
 http://sourceforge.net/projects/soci/
 
 Travis CI service at https://travis-ci.org/SOCI/soci
@@ -34,7 +34,7 @@ Backend specific client libraries for:
 * PostgreSQL
 * SQLite 3
 
-See documentation at http://soci.sourceforge.net for details  
+See documentation at http://soci.sourceforge.net for details
 
 Brief History
 -------------

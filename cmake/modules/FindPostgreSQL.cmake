@@ -31,7 +31,7 @@ if(PG_CONFIG)
 
   exec_program(${PG_CONFIG}
     ARGS "--includedir"
-    OUTPUT_VARIABLE PG_CONFIG_INCLUDEDIR)  
+    OUTPUT_VARIABLE PG_CONFIG_INCLUDEDIR)
 
   exec_program(${PG_CONFIG}
     ARGS "--libdir"
@@ -53,7 +53,7 @@ find_path(POSTGRESQL_INCLUDE_DIR libpq-fe.h
 
 find_library(POSTGRESQL_LIBRARIES NAMES pq libpq
   PATHS
-  ${PG_CONFIG_LIBDIR}  
+  ${PG_CONFIG_LIBDIR}
   /usr/lib
   /usr/local/lib
   /usr/lib/postgresql

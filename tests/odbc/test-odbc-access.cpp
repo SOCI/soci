@@ -69,12 +69,12 @@ struct table_creator_for_get_affected_rows : table_creator_base
 class test_context : public test_context_base
 {
 public:
-    
+
 test_context(backend_factory const &backEnd, std::string const &connectString)
         : test_context_base(backEnd, connectString) {}
 
     table_creator_base * table_creator_1(session& s) const
-    {   
+    {
         return new table_creator_one(s);
     }
 

@@ -164,7 +164,7 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
                 // RowID is internally identical to unsigned long
 
                 rowid *rid = static_cast<rowid *>(data_);
-                sqlite3_rowid_backend *rbe = 
+                sqlite3_rowid_backend *rbe =
 static_cast<sqlite3_rowid_backend *>(rid->get_backend());
 
                 std::size_t const bufSize

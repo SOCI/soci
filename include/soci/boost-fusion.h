@@ -71,7 +71,7 @@ BOOST_PP_REPEAT_FROM_TO(1, BOOST_PP_ADD(SOCI_MAX_FUSION_SEQUENCE_LENGTH, 1), SOC
 } // namespace detail
 
 template <typename T>
-struct type_conversion<T, 
+struct type_conversion<T,
     typename boost::enable_if<
         boost::fusion::traits::is_sequence<T>
     >::type >

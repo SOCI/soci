@@ -40,7 +40,7 @@ private:
 
 class SOCI_DECL row
 {
-public:    
+public:
     row();
     ~row();
 
