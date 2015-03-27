@@ -19,7 +19,7 @@ cmake \
     -DSOCI_POSTGRESQL=OFF \
     -DSOCI_SQLITE3=OFF \
     -DSOCI_DB2_TEST_CONNSTR:STRING="DSN=SOCITEST\;Uid=db2inst1\;Pwd=db2inst1" \
-    ..  
+    ..
 
 run_make
 run_test

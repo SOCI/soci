@@ -243,7 +243,7 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
     // unload the existing handler if it's already loaded
 
     do_unload(name);
-    
+
     backend_factory const* f = entry();
 
     info new_entry;
@@ -300,7 +300,7 @@ SOCI_DECL void dynamic_backends::register_backend(
     // unload the existing handler if it's already loaded
 
     do_unload(name);
-    
+
     info new_entry;
     new_entry.factory_ = &factory;
 

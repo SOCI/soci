@@ -408,8 +408,8 @@ internals of the <code>session</code> object.</p>
   <li><code>begin</code>, <code>commit</code>, <code>rollback</code>
 - Forward-called when the same functions of <code>session</code> are
 called by user.</li>
-  <li><code>get_next_sequence_value</code>, <code>get_last_insert_id</code> 
-- Called to retrieve sequences or auto-generated values and every backend should 
+  <li><code>get_next_sequence_value</code>, <code>get_last_insert_id</code>
+- Called to retrieve sequences or auto-generated values and every backend should
 define at least one of them to allow the code using auto-generated values to work.
   </li>
   <li><code>make_statement_backend</code>, <code>make_rowid_backend</code>,

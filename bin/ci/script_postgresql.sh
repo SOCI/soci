@@ -18,7 +18,7 @@ cmake \
     -DSOCI_POSTGRESQL=ON \
     -DSOCI_SQLITE3=OFF \
     -DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="dbname=soci_test user=postgres" \
-    ..  
+    ..
 
 run_make
 run_test

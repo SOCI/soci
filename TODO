@@ -75,7 +75,7 @@ Additional pair based val/indicator interface?
 Consolidate iteration methods?
 most radical: do we still need Statement::fetch()? into()?
 (Rowset<Row> can currently be used for any query, supports indicators,
-defaults, and no need to check for eNodata) 
+defaults, and no need to check for eNodata)
 
 ---
 ColumnProperties() more logically belongs to Rowset than to Row
@@ -121,7 +121,7 @@ Sub-concepts:
 - joins are tricky
 
 - boolean operators (<,>,=,<=,=> and <>) and WHERE-like clause support as a query
-    
+
 rowset<Row> rs = (s.prepare << "age > 28") // rows where field 'age' is less than 28
 rowset<Row> rs = (s.prepare << "age <> 28") // rows where field 'age' is less or more than 28
 rowset<Row> rs = (s.prepare << "firstname='John' AND age > 28") // multi-fields combined queries

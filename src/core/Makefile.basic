@@ -1,6 +1,6 @@
 COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
-INCLUDEDIRS = 
+INCLUDEDIRS =
 
 BACKENDLOADERDEFS = -DSOCI_LIB_PREFIX=\"libsoci_\" -DSOCI_LIB_SUFFIX=\".so\"
 
@@ -11,13 +11,13 @@ OBJS =  session.o statement.o row.o values.o \
 	connection-pool.o soci-simple.o
 
 
-libsoci_core.a : ${OBJS} 
+libsoci_core.a : ${OBJS}
 	ar rv $@ $?
 	rm *.o
 
-shared : ${OBJS} 
+shared : ${OBJS}
 	${COMPILER} -fPIC -c $? ${CXXFLAGS} ${INCLUDEDIRS}
-	${COMPILER} -shared -o libsoci_core.so ${OBJS} 
+	${COMPILER} -shared -o libsoci_core.so ${OBJS}
 	rm *.o
 
 session.o : session.cpp
@@ -37,7 +37,7 @@ into-type.o : into-type.cpp
 
 use-type.o : use-type.cpp
 	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
-	
+
 blob.o : blob.cpp
 	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 

@@ -200,7 +200,7 @@ long long db2_statement_backend::get_affected_rows()
     }
     else if (rows == -1)
     {
-        throw soci_error("Error getting affected row count: statement did not perform an update, insert, delete, or merge"); 
+        throw soci_error("Error getting affected row count: statement did not perform an update, insert, delete, or merge");
     }
 
     return rows;
@@ -296,7 +296,7 @@ std::size_t db2_statement_backend::column_size(int col) {
         throw db2_soci_error(db2_soci_error::sqlState("Error while detecting column size",SQL_HANDLE_STMT,hStmt),cliRC);
     }
 
-    return colSize;    
+    return colSize;
 }
 
 db2_standard_into_type_backend * db2_statement_backend::make_into_type_backend()

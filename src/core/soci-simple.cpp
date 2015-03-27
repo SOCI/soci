@@ -200,7 +200,7 @@ bool cannot_add_elements(statement_wrapper & wrapper, statement_wrapper::kind k,
         wrapper.error_message = "Cannot add more data items.";
         return true;
     }
-    
+
     if (into)
     {
         if (k == statement_wrapper::single && wrapper.into_kind == statement_wrapper::bulk)

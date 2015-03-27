@@ -19,7 +19,7 @@
   <a href="#required">Required Client Libraries</a><br />
 </div>
 <a href="#connecting">Connecting to the Database</a><br />
-     
+
 <a href="#support">SOCI Feature Support</a><br />
 <div class="navigation-indented">
     <a href="#dynamic">Dynamic Binding</a><br />
@@ -61,7 +61,7 @@
 
 <h4 id="connecting">Connecting to the Database</h4>
 
-<p>On Unix, before using the DB2 backend please make sure, that you have sourced 
+<p>On Unix, before using the DB2 backend please make sure, that you have sourced
 DB2 profile into your environment:</p>
 
 <pre>. ~/db2inst1/sqllib/db2profile</pre>
@@ -96,7 +96,7 @@ soci::session sql(soci::db2, "your DB2 connection string here");
 
 <h4 id="nested">Nested Statements</h4>
 
-<p>Nesting statements are not processed by SOCI in any special way and 
+<p>Nesting statements are not processed by SOCI in any special way and
 they work as implemented by the DB2 database.</p>
 
 <h4 id="procedures">Stored Procedures</h4>

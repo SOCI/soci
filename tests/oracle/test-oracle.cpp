@@ -119,7 +119,7 @@ struct blob_table_creator : public table_creator_base
 TEST_CASE("Oracle blob", "[oracle][blob]")
 {
     session sql(backEnd, connectString);
-    
+
     blob_table_creator tableCreator(sql);
 
     char buf[] = "abcdefghijklmnopqrstuvwxyz";

@@ -264,7 +264,7 @@ public:
     {
         return backEndFactory_;
     }
-    
+
     std::string get_connect_string() const
     {
         return connectString_;
@@ -435,7 +435,7 @@ TEST_CASE_METHOD(common_tests, "Exception on not connected", "[core][exception]"
 TEST_CASE_METHOD(common_tests, "Basic functionality")
 {
     session sql(backEndFactory_, connectString_);
-    
+
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
     CHECK_THROWS_AS(sql << "drop table soci_test_nosuchtable", soci_error);
@@ -2159,7 +2159,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic binding with type conversions", "[core][
     session sql(backEndFactory_, connectString_);
 
     sql.uppercase_column_names(true);
-    
+
     // simple conversion (between single basic type and user type)
 
     {
@@ -2220,7 +2220,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic binding with type conversions", "[core][
         PhonebookEntry p2;
         statement st = (sql.prepare << "select * from soci_test", into(p2));
         st.execute();
-        
+
         int count = 0;
         while (st.fetch())
         {
@@ -2296,7 +2296,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic binding with type conversions", "[core][
         PhonebookEntry2 p2;
         statement st = (sql.prepare << "select * from soci_test", into(p2));
         st.execute();
-        
+
         int count = 0;
         while (st.fetch())
         {
@@ -2455,7 +2455,7 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
 TEST_CASE_METHOD(common_tests, "Rowset creation and copying", "[core][rowset]")
 {
     session sql(backEndFactory_, connectString_);
-    
+
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
     {
@@ -2497,7 +2497,7 @@ TEST_CASE_METHOD(common_tests, "Rowset creation and copying", "[core][rowset]")
 TEST_CASE_METHOD(common_tests, "Rowset iteration", "[core][rowset]")
 {
     session sql(backEndFactory_, connectString_);
-    
+
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
     {
@@ -2521,7 +2521,7 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
     session sql(backEndFactory_, connectString_);
 
     sql.uppercase_column_names(true);
-    
+
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_2(sql));
     {
@@ -2699,7 +2699,7 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
 TEST_CASE_METHOD(common_tests, "Reading ints from rowset", "[core][rowset]")
 {
     session sql(backEndFactory_, connectString_);
-    
+
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
     {
@@ -2735,7 +2735,7 @@ TEST_CASE_METHOD(common_tests, "Reading ints from rowset", "[core][rowset]")
 TEST_CASE_METHOD(common_tests, "Reading strings from rowset", "[core][rowset]")
 {
     session sql(backEndFactory_, connectString_);
-    
+
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
     {
@@ -2768,7 +2768,7 @@ TEST_CASE_METHOD(common_tests, "Reading strings from rowset", "[core][rowset]")
 TEST_CASE_METHOD(common_tests, "Rowset expected exception", "[core][exception][rowset]")
 {
     session sql(backEndFactory_, connectString_);
-    
+
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
     sql << "insert into soci_test(str) values('abc')";
@@ -2786,7 +2786,7 @@ TEST_CASE_METHOD(common_tests, "Rowset expected exception", "[core][exception][r
 TEST_CASE_METHOD(common_tests, "NULL expected exception", "[core][exception][null]")
 {
     session sql(backEndFactory_, connectString_);
-    
+
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
     sql << "insert into soci_test(val) values(1)";
@@ -2814,7 +2814,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic binding with rowset", "[core][dynamic][t
     session sql(backEndFactory_, connectString_);
 
     sql.uppercase_column_names(true);
-    
+
     {
         auto_table_creator tableCreator(tc_.table_creator_3(sql));
 
@@ -2830,7 +2830,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic binding with rowset", "[core][dynamic][t
         sql << "insert into soci_test values('doe', '(404)123-4567')";
 
         rowset<PhonebookEntry> rs = (sql.prepare << "select * from soci_test");
-        
+
         int count = 0;
         for (rowset<PhonebookEntry>::const_iterator it = rs.begin(); it != rs.end(); ++it)
         {
@@ -2994,7 +2994,7 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
 
             rowset<row>::const_iterator it = rs.begin();
             CHECK(it != rs.end());
-            
+
             row const& r1 = (*it);
 
             CHECK(r1.size() == 3);

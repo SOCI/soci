@@ -19,7 +19,7 @@
   <a href="#required">Required Client Libraries</a><br />
 </div>
 <a href="#connecting">Connecting to the Database</a><br />
-     
+
 <a href="#support">SOCI Feature Support</a><br />
 <div class="navigation-indented">
     <a href="#dynamic">Dynamic Binding</a><br />
@@ -69,14 +69,14 @@ using the firebird backend factory together with a connection string:</p>
 
 <pre class="example">
 BackEndFactory const &amp;backEnd = firebird;
-Session sql(backEnd, 
+Session sql(backEnd,
         "service=/usr/local/firbird/db/test.fdb user=SYSDBA password=masterkey");
 </pre>
 
 <p>or simply:</p>
 
 <pre class="example">
-Session sql(firebird, 
+Session sql(firebird,
         "service=/usr/local/firbird/db/test.fdb user=SYSDBA password=masterkey");
 </pre>
 
@@ -145,7 +145,7 @@ sql &lt;&lt; "select count(*) from user_tables", into(count);
     </tr>
   </tbody>
 </table>
-<p><a name="note1" />&nbsp;<sup>[1]</sup> &nbsp;There is also 64bit integer type for larger values which is 
+<p><a name="note1" />&nbsp;<sup>[1]</sup> &nbsp;There is also 64bit integer type for larger values which is
 currently not supported.</p>
 <p>(See the <a href="../exchange.html#dynamic">dynamic resultset binding</a> documentation for general information on using the <code>Row</code> class.)</p>
 
@@ -162,11 +162,11 @@ sql &lt;&lt; "select name from person where id = :id", use(id, "id")
 
 <h4 id="bulk">Bulk Operations</h4>
 
-<p>The Firebird backend has full support for SOCI's <a href="../statements.html#bulk">bulk operations</a> interface. This feature is also supported by emulation.</p> 
+<p>The Firebird backend has full support for SOCI's <a href="../statements.html#bulk">bulk operations</a> interface. This feature is also supported by emulation.</p>
 
 <h4 id="transactions">Transactions</h4>
 
-<p><a href="../statements.html#transactions">Transactions</a> are also fully 
+<p><a href="../statements.html#transactions">Transactions</a> are also fully
 supported by the Firebird backend. In fact, an implicit transaction is always
 started when using this backend if one hadn't been started by explicitly calling
 <tt>begin()</tt> before. The current transaction is automatically committed in
@@ -176,7 +176,7 @@ started when using this backend if one hadn't been started by explicitly calling
 <h4 id="blob">BLOB Data Type</h4>
 
 <p>The Firebird backend supports working with data stored in columns of type Blob, via SOCI's <a href="../exchange.html#blob"><code>BLOB</code></a> class.</p>
-<p>It should by noted, that entire Blob data is fetched from database to allow random read and write access. 
+<p>It should by noted, that entire Blob data is fetched from database to allow random read and write access.
 This is because Firebird itself allows only writing to a new Blob or reading from existing one -
 modifications of existing Blob means creating a new one. Firebird backend hides those details from user.</p>
 

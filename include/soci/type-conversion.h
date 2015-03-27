@@ -50,7 +50,7 @@ public:
     {
         assert(ownInd_ == ind_);
     }
-    
+
     conversion_into_type(T & value, indicator & ind)
         : into_type<base_type>(details::base_value_holder<T>::val_, ind)
         , value_(value)
@@ -100,7 +100,7 @@ public:
         // TODO: likely to be removed (SHA: c166625a28f7c907318134f625ff5acea7d9a1f8)
         //convert_to_base();
     }
-    
+
     conversion_use_type(T const & value, std::string const & name = std::string())
         : use_type<base_type>(details::base_value_holder<T>::val_, ownInd_, name)
         , value_(const_cast<T &>(value))
@@ -113,7 +113,7 @@ public:
         // TODO: likely to be removed (SHA: c166625a28f7c907318134f625ff5acea7d9a1f8)
         //convert_to_base();
     }
-    
+
     conversion_use_type(T & value, indicator & ind,
             std::string const & name = std::string())
         : use_type<base_type>(details::base_value_holder<T>::val_, ind, name)
@@ -124,7 +124,7 @@ public:
         // TODO: likely to be removed (SHA: c166625a28f7c907318134f625ff5acea7d9a1f8)
         //convert_to_base();
     }
-    
+
     conversion_use_type(T const & value, indicator & ind,
             std::string const & name = std::string())
         : use_type<base_type>(details::base_value_holder<T>::val_, ind, name)

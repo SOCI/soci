@@ -60,7 +60,7 @@ struct mysql_standard_into_type_backend : details::standard_into_type_backend
     virtual void clean_up();
 
     mysql_statement_backend &statement_;
-    
+
     void *data_;
     details::exchange_type type_;
     int position_;
@@ -83,7 +83,7 @@ struct mysql_vector_into_type_backend : details::vector_into_type_backend
     virtual void clean_up();
 
     mysql_statement_backend &statement_;
-    
+
     void *data_;
     details::exchange_type type_;
     int position_;
@@ -105,7 +105,7 @@ struct mysql_standard_use_type_backend : details::standard_use_type_backend
     virtual void clean_up();
 
     mysql_statement_backend &statement_;
-    
+
     void *data_;
     details::exchange_type type_;
     int position_;
@@ -130,7 +130,7 @@ struct mysql_vector_use_type_backend : details::vector_use_type_backend
     virtual void clean_up();
 
     mysql_statement_backend &statement_;
-    
+
     void *data_;
     details::exchange_type type_;
     int position_;
@@ -166,9 +166,9 @@ struct mysql_statement_backend : details::statement_backend
     virtual mysql_vector_use_type_backend * make_vector_use_type_backend();
 
     mysql_session_backend &session_;
-    
+
     MYSQL_RES *result_;
-    
+
     // The query is split into chunks, separated by the named parameters;
     // e.g. for "SELECT id FROM ttt WHERE name = :foo AND gender = :bar"
     // we will have query chunks "SELECT id FROM ttt WHERE name = ",
@@ -177,11 +177,11 @@ struct mysql_statement_backend : details::statement_backend
     std::vector<std::string> names_; // list of names for named binds
 
     long long rowsAffectedBulk_; // number of rows affected by the last bulk operation
-    
+
     int numberOfRows_;  // number of rows retrieved from the server
     int currentRow_;    // "current" row number to consume in postFetch
     int rowsToConsume_; // number of rows to be consumed in postFetch
-    
+
     bool justDescribed_; // to optimize row description with immediately
                          // following actual statement execution
 
@@ -193,7 +193,7 @@ struct mysql_statement_backend : details::statement_backend
     bool hasVectorIntoElements_;
     bool hasUseElements_;
     bool hasVectorUseElements_;
-    
+
     // the following maps are used for finding data buffers according to
     // use elements specified by the user
 
@@ -247,7 +247,7 @@ struct mysql_session_backend : details::session_backend
     virtual mysql_statement_backend * make_statement_backend();
     virtual mysql_rowid_backend * make_rowid_backend();
     virtual mysql_blob_backend * make_blob_backend();
-    
+
     MYSQL *conn_;
 };
 

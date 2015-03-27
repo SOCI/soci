@@ -209,7 +209,7 @@ void oracle_standard_into_type_backend::post_fetch(
                 t.tm_hour = *pos++ - 1;
                 t.tm_min = *pos++ - 1;
                 t.tm_sec = *pos++ - 1;
-                
+
                 // normalize and compute the remaining fields
                 std::mktime(&t);
             }

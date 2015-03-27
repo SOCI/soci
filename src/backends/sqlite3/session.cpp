@@ -81,7 +81,7 @@ sqlite3_session_backend::sqlite3_session_backend(
                 quotedVal = quotedVal + " " + val;
                 std::string keepspace;
                 std::getline(ssconn, keepspace, ' ');
-            }     
+            }
 
             val = quotedVal;
         }

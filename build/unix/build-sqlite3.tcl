@@ -79,7 +79,7 @@ proc buildSqlite3 {} {
     execute "cp ../../src/backends/sqlite3/libsoci_sqlite3.a lib"
     eval exec mkdir -p "include"
     execute "cp ../../src/backends/sqlite3/soci-sqlite3.h include"
-    
+
 }
 
 proc buildSqlite3So {} {

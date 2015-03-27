@@ -97,7 +97,7 @@ public:
     {
         return row_ != NULL ? row_->get<T>(name) : get_from_uses<T>(name);
     }
-    
+
     template <typename T>
     T get(std::string const & name, T const & nullValue) const
     {
@@ -161,7 +161,7 @@ public:
             currentPos_ = 0;
         }
     }
-    
+
     template <typename T>
     void set(std::string const & name, T const & value, indicator indic = i_ok)
     {
@@ -317,7 +317,7 @@ private:
 
         return * row_;
     }
-    
+
     // this is called by Statement::bind(values)
     void add_unused(details::use_type_base * u, indicator * i)
     {
