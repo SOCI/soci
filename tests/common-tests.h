@@ -255,7 +255,7 @@ public:
 
     static test_context_base const& get_instance()
     {
-        CHECK(the_test_context_);
+        REQUIRE(the_test_context_);
 
         return *the_test_context_;
     }
