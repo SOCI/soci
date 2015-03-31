@@ -400,32 +400,33 @@ TEST_CASE("Oracle bulk insert", "[oracle][insert][bulk]")
         ids.push_back(2);
         std::vector<int> codes;
         codes.push_back(1);
-        std::string error;
 
         try
         {
             sql << "insert into soci_test(id,code) values(:id,:code)",
                 use(ids), use(codes);
+            FAIL("expected exception not thrown");
         }
         catch (soci_error const &e)
         {
-            error = e.what();
+            std::string const error = e.what();
+            CAPTURE(error);
+            CHECK(error.find("Bind variable size mismatch")
+                != std::string::npos);
         }
-        CAPTURE(error);
-        CHECK(error.find("Bind variable size mismatch")
-            != std::string::npos);
 
         try
         {
             sql << "select from soci_test", into(ids), into(codes);
+            FAIL("expected exception not thrown");
         }
         catch (std::exception const &e)
         {
-            error = e.what();
+            std::string const error = e.what();
+            CAPTURE(error);
+            CHECK(error.find("Bind variable size mismatch")
+                != std::string::npos);
         }
-        CAPTURE(error);
-        CHECK(error.find("Bind variable size mismatch")
-            != std::string::npos);
     }
 
     // verify partial insert occurs when one of the records is bad
@@ -434,19 +435,19 @@ TEST_CASE("Oracle bulk insert", "[oracle][insert][bulk]")
         ids.push_back(100);
         ids.push_back(1000000); // too big for column
 
-        std::string error;
         try
         {
             sql << "insert into soci_test (id) values(:id)", use(ids, "id");
+            FAIL("expected exception not thrown");
         }
         catch (soci_error const &e)
         {
-            error = e.what();
+            std::string const error = e.what();
             //TODO e could be made to tell which row(s) failed
+            CAPTURE(error);
+            CHECK(error.find("ORA-01438") != std::string::npos);
         }
         sql.commit();
-        CAPTURE(error);
-        CHECK(error.find("ORA-01438") != std::string::npos);
         int count(7);
         sql << "select count(*) from soci_test", into(count);
         CHECK(count == 1);
@@ -534,12 +535,13 @@ TEST_CASE("Oracle bulk insert", "[oracle][insert][bulk]")
         try
         {
             sql << "select code from soci_test", into(intos);
+            FAIL("expected exception not thrown");
         }
         catch (soci_error const &e)
         {
-            msg = e.what();
+            CHECK(e.get_error_message() ==
+                "Null value fetched and no indicator defined." );
         }
-        CHECK(msg == "Null value fetched and no indicator defined." );
     }
 
     // test basic select
@@ -666,7 +668,7 @@ TEST_CASE("Oracle bulk insert", "[oracle][fetch][bulk]")
         }
         catch (soci_error const &e)
         {
-            CHECK(std::string(e.what()) ==
+            CHECK(e.get_error_message() ==
                 "Increasing the size of the output vector is not supported.");
         }
     }
@@ -851,19 +853,19 @@ TEST_CASE("Oracle ORM", "[oracle][orm]")
     {
         returns_null_procedure_creator procedureCreator(sql);
 
-        std::string msg;
         person p;
         try
         {
             procedure proc = (sql.prepare << "soci_test(:FIRST_NAME)",
                                 use(p));
             proc.execute(1);
+            FAIL("expected exception not thrown");
         }
         catch (soci_error& e)
         {
-            msg = e.what();
+            CHECK(e.get_error_message() ==
+                "Null value not allowed for this type");
         }
-        CHECK(msg == "Null value not allowed for this type");
 
         procedure proc = (sql.prepare << "soci_test(:GENDER)",
                                 use(p));
@@ -1002,8 +1004,8 @@ TEST_CASE("Oracle const and modifiable parameters", "[oracle][use]")
     }
     catch (soci_error const & e)
     {
-        const std::string msg = e.what();
-        CHECK(msg == "Attempted modification of const use element");
+        CHECK(e.get_error_message() ==
+            "Attempted modification of const use element");
     }
 }
 

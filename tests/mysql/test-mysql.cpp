@@ -623,7 +623,7 @@ TEST_CASE("MySQL special floating point values", "[mysql][float]")
     try {
         st.execute(true);
     } catch (soci_error const &e) {
-        CHECK(e.what() == expectedError);
+        CHECK(e.get_error_message() == expectedError);
     }
   }
   {
@@ -634,7 +634,7 @@ TEST_CASE("MySQL special floating point values", "[mysql][float]")
     try {
         st.execute(true);
     } catch (soci_error const &e) {
-        CHECK(e.what() == expectedError);
+        CHECK(e.get_error_message() == expectedError);
     }
   }
   {
@@ -645,7 +645,7 @@ TEST_CASE("MySQL special floating point values", "[mysql][float]")
     try {
         sql << "insert into soci_test (val) values (:val)", use(v);
     } catch (soci_error const &e) {
-        CHECK(e.what() == expectedError);
+        CHECK(e.get_error_message() == expectedError);
     }
   }
   {
@@ -656,7 +656,7 @@ TEST_CASE("MySQL special floating point values", "[mysql][float]")
     try {
         sql << "insert into soci_test (val) values (:val)", use(v);
     } catch (soci_error const &e) {
-        CHECK(e.what() == expectedError);
+        CHECK(e.get_error_message() == expectedError);
     }
   }
 }

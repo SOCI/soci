@@ -277,8 +277,7 @@ TEST_CASE("Firebird floating point", "[firebird][float]")
     }
     catch (soci_error const &e)
     {
-        std::string error = e.what();
-        CHECK(error ==
+        CHECK(e.get_error_message() ==
                "Can't convert value with scale 2 to integral type");
     }
 
@@ -293,8 +292,7 @@ TEST_CASE("Firebird floating point", "[firebird][float]")
     }
     catch (soci_error const &e)
     {
-        std::string error = e.what();
-        CHECK(error ==
+        CHECK(e.get_error_message() ==
                "Can't convert non-integral value to integral column type");
     }
 
@@ -352,8 +350,7 @@ TEST_CASE("Firebird integers", "[firebird][int]")
         }
         catch (soci_error const &e)
         {
-            std::string error = e.what();
-            CHECK(error ==
+            CHECK(e.get_error_message() ==
                    "Null value fetched and no indicator defined.");
         }
 
@@ -438,8 +435,8 @@ TEST_CASE("Firebird bulk operations", "[firebird][bulk]")
         }
         catch (soci_error const &e)
         {
-            std::string msg = e.what();
-            CHECK(msg == "Vectors of size 0 are not allowed.");
+            CHECK(e.get_error_message() ==
+                "Vectors of size 0 are not allowed.");
         }
     }
 
