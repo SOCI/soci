@@ -14,6 +14,7 @@
 #include "soci/row-exchange.h"
 // std
 #include <cstddef>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -51,6 +52,32 @@ public:
 
         convert_to_base();
         st.bind(v_);
+    }
+
+    virtual std::string get_name() const
+    {
+        std::ostringstream oss;
+
+        oss << "(";
+
+        std::size_t const num_columns = v_.get_number_of_columns();
+        for (std::size_t n = 0; n < num_columns; ++n)
+        {
+            if (n != 0)
+                oss << ", ";
+
+            oss << v_.get_properties(n).get_name();
+        }
+
+        oss << ")";
+
+        return oss.str();
+    }
+
+    virtual void dump_value(std::ostream& os) const
+    {
+        // TODO: Dump all columns.
+        os << "<value>";
     }
 
     virtual void post_use(bool /*gotData*/)

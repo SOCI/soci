@@ -13,6 +13,7 @@
 #include "soci/exchange-traits.h"
 // std
 #include <cstddef>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -28,6 +29,8 @@ public:
     virtual ~use_type_base() {}
 
     virtual void bind(statement_impl & st, int & position) = 0;
+    virtual std::string get_name() const = 0;
+    virtual void dump_value(std::ostream& os) const = 0;
     virtual void pre_use() = 0;
     virtual void post_use(bool gotData) = 0;
     virtual void clean_up() = 0;
@@ -70,7 +73,8 @@ public:
 
     virtual ~standard_use_type();
     virtual void bind(statement_impl & st, int & position);
-    std::string get_name() const { return name_; }
+    virtual std::string get_name() const { return name_; }
+    virtual void dump_value(std::ostream& os) const;
     virtual void * get_data() { return data_; }
 
     // conversion hook (from arbitrary user type to base type)
@@ -120,6 +124,8 @@ public:
 
 private:
     virtual void bind(statement_impl& st, int & position);
+    virtual std::string get_name() const { return name_; }
+    virtual void dump_value(std::ostream& os) const;
     virtual void pre_use();
     virtual void post_use(bool) { /* nothing to do */ }
     virtual void clean_up();
