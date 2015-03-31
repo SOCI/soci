@@ -3937,6 +3937,79 @@ TEST_CASE_METHOD(common_tests, "Bind memory leak", "[core][leak]")
     }
 }
 
+TEST_CASE_METHOD(common_tests, "Insert error", "[core][insert][exception]")
+{
+    session sql(backEndFactory_, connectString_);
+
+    struct pk_table_creator : table_creator_base
+    {
+        explicit pk_table_creator(session& sql) : table_creator_base(sql)
+        {
+            // For some backends (at least Firebird), it is important to
+            // execute the DDL statements in a separate transaction, so start
+            // one here and commit it before using the new table below.
+            sql.begin();
+            sql << "create table soci_test("
+                        "name varchar(100) not null primary key, "
+                        "age integer not null"
+                   ")";
+            sql.commit();
+        }
+    } table_creator(sql);
+
+    SECTION("literal SQL queries appear in the error message")
+    {
+        sql << "insert into soci_test(name, age) values ('John', 74)";
+        sql << "insert into soci_test(name, age) values ('Paul', 72)";
+        sql << "insert into soci_test(name, age) values ('George', 72)";
+
+        try
+        {
+            // Oops, this should have been 'Ringo'
+            sql << "insert into soci_test(name, age) values ('John', 74)";
+
+            FAIL("exception expected on unique constraint violation not thrown");
+        }
+        catch (soci_error const &e)
+        {
+            std::string const msg = e.what();
+            CAPTURE(msg);
+
+            CHECK(msg.find("John") != std::string::npos);
+        }
+    }
+
+    SECTION("SQL queries parameters appear in the error message")
+    {
+        char const* const names[] = { "John", "Paul", "George", "John", NULL };
+        int const ages[] = { 74, 72, 72, 74, 0 };
+
+        std::string name;
+        int age;
+
+        statement st = (sql.prepare <<
+            "insert into soci_test(name, age) values (:name, :age)",
+            use(name), use(age));
+        try
+        {
+            int const *a = ages;
+            for (char const* const* n = names; n; ++n, ++a)
+            {
+                name = *n;
+                age = *a;
+                st.execute(true);
+            }
+        }
+        catch (soci_error const &e)
+        {
+            std::string const msg = e.what();
+            CAPTURE(msg);
+
+            CHECK(msg.find("John") != std::string::npos);
+        }
+    }
+}
+
 } // namespace tests
 
 } // namespace soci
