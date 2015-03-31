@@ -16,7 +16,6 @@
 // std
 #include <cstddef>
 #include <string>
-#include <map>
 #include <vector>
 
 namespace soci
@@ -85,7 +84,6 @@ private:
     std::size_t fetchSize_;
     std::size_t initialFetchSize_;
     std::string query_;
-    std::map<std::string, use_type_base *> namedUses_;
 
     std::vector<into_type_base *> intosForRow_;
     int definePositionForRow_;
