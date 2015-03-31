@@ -7,6 +7,7 @@
 
 #define SOCI_FIREBIRD_SOURCE
 #include "soci/firebird/soci-firebird.h"
+#include "soci-exchange-cast.h"
 #include "firebird/common.h"
 #include "soci/soci.h"
 
@@ -104,7 +105,7 @@ void firebird_standard_use_type_backend::exchangeData()
     switch (type_)
     {
         case x_char:
-            setTextParam(static_cast<char*>(data_), 1, buf_, var);
+            setTextParam(&exchange_type_cast<x_char>(data_), 1, buf_, var);
             break;
         case x_short:
             to_isc<short>(data_, var);
@@ -121,13 +122,12 @@ void firebird_standard_use_type_backend::exchangeData()
 
         case x_stdstring:
             {
-                std::string *tmp = static_cast<std::string*>(data_);
-                setTextParam(tmp->c_str(), tmp->size(), buf_, var);
+                std::string const& tmp = exchange_type_cast<x_stdstring>(data_);
+                setTextParam(tmp.c_str(), tmp.size(), buf_, var);
             }
             break;
         case x_stdtm:
-            tmEncode(var->sqltype,
-                     static_cast<std::tm*>(data_), buf_);
+            tmEncode(var->sqltype, &exchange_type_cast<x_stdtm>(data_), buf_);
             break;
 
             // cases that require special handling

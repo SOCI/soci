@@ -14,6 +14,7 @@
 #include "soci/soci-platform.h"
 
 #include "soci-compiler.h"
+#include "soci-exchange-cast.h"
 
 #include <cctype>
 #include <cstdio>
@@ -209,64 +210,64 @@ void oracle_standard_use_type_backend::pre_use(indicator const *ind)
     case x_char:
         if (readOnly_)
         {
-            buf_[0] = *static_cast<char *>(data_);
+            buf_[0] = exchange_type_cast<x_char>(data_);
         }
         break;
     case x_short:
         if (readOnly_)
         {
-            *static_cast<short *>(static_cast<void *>(buf_)) = *static_cast<short *>(data_);
+            exchange_type_cast<x_short>(buf_) = exchange_type_cast<x_short>(data_);
         }
         break;
     case x_integer:
         if (readOnly_)
         {
-            *static_cast<int *>(static_cast<void *>(buf_)) = *static_cast<int *>(data_);
+            exchange_type_cast<x_integer>(buf_) = exchange_type_cast<x_integer>(data_);
         }
         break;
     case x_long_long:
         {
             size_t const size = 100; // arbitrary, but consistent with prepare_for_bind
-            snprintf(buf_, size, "%" LL_FMT_FLAGS "d", *static_cast<long long *>(data_));
+            snprintf(buf_, size, "%" LL_FMT_FLAGS "d", exchange_type_cast<x_long_long>(data_));
         }
         break;
     case x_unsigned_long_long:
         {
             size_t const size = 100; // arbitrary, but consistent with prepare_for_bind
-            snprintf(buf_, size, "%" LL_FMT_FLAGS "u", *static_cast<unsigned long long *>(data_));
+            snprintf(buf_, size, "%" LL_FMT_FLAGS "u", exchange_type_cast<x_unsigned_long_long>(data_));
         }
         break;
     case x_double:
         if (readOnly_)
         {
-            *static_cast<double *>(static_cast<void *>(buf_)) = *static_cast<double *>(data_);
+            exchange_type_cast<x_double>(buf_) = exchange_type_cast<x_double>(data_);
         }
         break;
     case x_stdstring:
         {
-            std::string *s = static_cast<std::string *>(data_);
+            std::string const& s = exchange_type_cast<x_stdstring>(data_);
 
             // 4000 is Oracle max VARCHAR2 size; 32768 is max LONG size
             std::size_t const bufSize = 32769;
-            std::size_t const sSize = s->size();
+            std::size_t const sSize = s.size();
             std::size_t const toCopy =
                 sSize < bufSize -1 ? sSize + 1 : bufSize - 1;
-            strncpy(buf_, s->c_str(), toCopy);
+            strncpy(buf_, s.c_str(), toCopy);
             buf_[toCopy] = '\0';
         }
         break;
     case x_stdtm:
         {
-            std::tm *t = static_cast<std::tm *>(data_);
+            std::tm const& t = exchange_type_cast<x_stdtm>(data_);
             ub1* pos = reinterpret_cast<ub1*>(buf_);
 
-            *pos++ = static_cast<ub1>(100 + (1900 + t->tm_year) / 100);
-            *pos++ = static_cast<ub1>(100 + t->tm_year % 100);
-            *pos++ = static_cast<ub1>(t->tm_mon + 1);
-            *pos++ = static_cast<ub1>(t->tm_mday);
-            *pos++ = static_cast<ub1>(t->tm_hour + 1);
-            *pos++ = static_cast<ub1>(t->tm_min + 1);
-            *pos = static_cast<ub1>(t->tm_sec + 1);
+            *pos++ = static_cast<ub1>(100 + (1900 + t.tm_year) / 100);
+            *pos++ = static_cast<ub1>(100 + t.tm_year % 100);
+            *pos++ = static_cast<ub1>(t.tm_mon + 1);
+            *pos++ = static_cast<ub1>(t.tm_mday);
+            *pos++ = static_cast<ub1>(t.tm_hour + 1);
+            *pos++ = static_cast<ub1>(t.tm_min + 1);
+            *pos = static_cast<ub1>(t.tm_sec + 1);
         }
         break;
     case x_statement:
@@ -309,7 +310,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
         case x_char:
             if (readOnly_)
             {
-                const char original = *static_cast<char *>(data_);
+                const char original = exchange_type_cast<x_char>(data_);
                 const char bound = buf_[0];
 
                 if (original != bound)
@@ -321,8 +322,8 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
         case x_short:
             if (readOnly_)
             {
-                const short original = *static_cast<short *>(data_);
-                const short bound = *static_cast<short *>(static_cast<void *>(buf_));
+                const short original = exchange_type_cast<x_short>(data_);
+                const short bound = exchange_type_cast<x_short>(buf_);
 
                 if (original != bound)
                 {
@@ -333,8 +334,8 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
         case x_integer:
             if (readOnly_)
             {
-                const int original = *static_cast<int *>(data_);
-                const int bound = *static_cast<int *>(static_cast<void *>(buf_));
+                const int original = exchange_type_cast<x_integer>(data_);
+                const int bound = exchange_type_cast<x_integer>(buf_);
 
                 if (original != bound)
                 {
@@ -345,7 +346,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
         case x_long_long:
             if (readOnly_)
             {
-                long long const original = *static_cast<long long *>(data_);
+                long long const original = exchange_type_cast<x_long_long>(data_);
                 long long const bound = std::strtoll(buf_, NULL, 10);
 
                 if (original != bound)
@@ -357,7 +358,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
         case x_unsigned_long_long:
             if (readOnly_)
             {
-                unsigned long long const original = *static_cast<unsigned long long *>(data_);
+                unsigned long long const original = exchange_type_cast<x_unsigned_long_long>(data_);
                 unsigned long long const bound = std::strtoull(buf_, NULL, 10);
 
                 if (original != bound)
@@ -369,8 +370,8 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
         case x_double:
             if (readOnly_)
             {
-                const double original = *static_cast<double *>(data_);
-                const double bound = *static_cast<double *>(static_cast<void *>(buf_));
+                const double original = exchange_type_cast<x_double>(data_);
+                const double bound = exchange_type_cast<x_double>(buf_);
 
                 // Exact comparison is fine here, they are really supposed to
                 // be exactly the same.
@@ -386,7 +387,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
             break;
         case x_stdstring:
             {
-                std::string & original = *static_cast<std::string *>(data_);
+                std::string& original = exchange_type_cast<x_stdstring>(data_);
                 if (original != buf_)
                 {
                     if (readOnly_)
@@ -402,7 +403,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
             break;
         case x_stdtm:
             {
-                std::tm & original = *static_cast<std::tm *>(data_);
+                std::tm& original = exchange_type_cast<x_stdtm>(data_);
 
                 std::tm bound;
                 ub1 *pos = reinterpret_cast<ub1*>(buf_);

@@ -12,6 +12,7 @@
 #include "soci/rowid.h"
 #include "soci/statement.h"
 #include "soci/soci-platform.h"
+#include "soci-exchange-cast.h"
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -176,44 +177,41 @@ void oracle_standard_into_type_backend::post_fetch(
         {
             if (indOCIHolder_ != -1)
             {
-                std::string *s = static_cast<std::string *>(data_);
-                *s = buf_;
+                exchange_type_cast<x_stdstring>(data_) = buf_;
             }
         }
         else if (type_ == x_long_long)
         {
             if (indOCIHolder_ != -1)
             {
-                long long *v = static_cast<long long *>(data_);
-                *v = std::strtoll(buf_, NULL, 10);
+                exchange_type_cast<x_long_long>(data_) = std::strtoll(buf_, NULL, 10);
             }
         }
         else if (type_ == x_unsigned_long_long)
         {
             if (indOCIHolder_ != -1)
             {
-                unsigned long long *v = static_cast<unsigned long long *>(data_);
-                *v = std::strtoull(buf_, NULL, 10);
+                exchange_type_cast<x_unsigned_long_long>(data_) = std::strtoull(buf_, NULL, 10);
             }
         }
         else if (type_ == x_stdtm)
         {
             if (indOCIHolder_ != -1)
             {
-                std::tm *t = static_cast<std::tm *>(data_);
+                std::tm& t = exchange_type_cast<x_stdtm>(data_);
 
                 ub1 *pos = reinterpret_cast<ub1*>(buf_);
-                t->tm_isdst = -1;
-                t->tm_year = (*pos++ - 100) * 100;
-                t->tm_year += *pos++ - 2000;
-                t->tm_mon = *pos++ - 1;
-                t->tm_mday = *pos++;
-                t->tm_hour = *pos++ - 1;
-                t->tm_min = *pos++ - 1;
-                t->tm_sec = *pos++ - 1;
+                t.tm_isdst = -1;
+                t.tm_year = (*pos++ - 100) * 100;
+                t.tm_year += *pos++ - 2000;
+                t.tm_mon = *pos++ - 1;
+                t.tm_mday = *pos++;
+                t.tm_hour = *pos++ - 1;
+                t.tm_min = *pos++ - 1;
+                t.tm_sec = *pos++ - 1;
                 
                 // normalize and compute the remaining fields
-                std::mktime(t);
+                std::mktime(&t);
             }
         }
         else if (type_ == x_statement)

@@ -8,6 +8,7 @@
 
 #define SOCI_DB2_SOURCE
 #include "soci/db2/soci-db2.h"
+#include "soci-exchange-cast.h"
 #include "common.h"
 #include <ctime>
 
@@ -127,33 +128,32 @@ void db2_standard_into_type_backend::post_fetch(
         // only std::string and std::tm need special handling
         if (type == x_char)
         {
-            char *c = static_cast<char*>(data);
-            *c = buf[0];
+            exchange_type_cast<x_char>(data) = buf[0];
         }
         if (type == x_stdstring)
         {
-            std::string *s = static_cast<std::string *>(data);
-            *s = buf;
-            if (s->size() >= (details::db2::cli_max_buffer - 1))
+            std::string& s = exchange_type_cast<x_stdstring>(data);
+            s = buf;
+            if (s.size() >= (details::db2::cli_max_buffer - 1))
             {
                 throw soci_error("Buffer size overflow; maybe got too large string");
             }
         }
         else if (type == x_stdtm)
         {
-            std::tm *t = static_cast<std::tm *>(data);
+            std::tm& t = exchange_type_cast<x_stdtm>(data);
 
             TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf);
-            t->tm_isdst = -1;
-            t->tm_year = ts->year - 1900;
-            t->tm_mon = ts->month - 1;
-            t->tm_mday = ts->day;
-            t->tm_hour = ts->hour;
-            t->tm_min = ts->minute;
-            t->tm_sec = ts->second;
+            t.tm_isdst = -1;
+            t.tm_year = ts->year - 1900;
+            t.tm_mon = ts->month - 1;
+            t.tm_mday = ts->day;
+            t.tm_hour = ts->hour;
+            t.tm_min = ts->minute;
+            t.tm_sec = ts->second;
 
             // normalize and compute the remaining fields
-            std::mktime(t);
+            std::mktime(&t);
         }
     }
 }
