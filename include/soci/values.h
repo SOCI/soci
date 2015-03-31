@@ -230,6 +230,11 @@ public:
         uppercaseColumnNames_ = forceToUpper;
     }
 
+    std::size_t get_number_of_columns() const
+    {
+        return row_ ? row_->size() : 0;
+    }
+
     column_properties const& get_properties(std::size_t pos) const;
     column_properties const& get_properties(std::string const &name) const;
 
