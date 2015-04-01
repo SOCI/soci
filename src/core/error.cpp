@@ -74,6 +74,28 @@ private:
     std::vector<std::string> contexts_;
 };
 
+namespace
+{
+
+// Make a safe, even in presence of exceptions, heap-allocated copy of the
+// given object if it's non-null (otherwise just return null pointer).
+soci_error_extra_info *make_safe_copy(soci_error_extra_info* info)
+{
+    try
+    {
+        return info ? new soci_error_extra_info(*info) : NULL;
+    }
+    catch (...)
+    {
+        // Copy ctor of an exception class shouldn't throw to avoid program
+        // termination, so it's better to lose the extra information than allow
+        // an exception to except from here.
+        return NULL;
+    }
+}
+
+} // anonymous namespace
+
 soci_error::soci_error(std::string const & msg)
      : std::runtime_error(msg)
 {
@@ -83,7 +105,7 @@ soci_error::soci_error(std::string const & msg)
 soci_error::soci_error(soci_error const& e)
     : std::runtime_error(e)
 {
-    info_ = e.info_ ? new soci_error_extra_info(*e.info_) : NULL;
+    info_ = make_safe_copy(e.info_);
 }
 
 soci_error& soci_error::operator=(soci_error const& e)
@@ -91,7 +113,7 @@ soci_error& soci_error::operator=(soci_error const& e)
     std::runtime_error::operator=(e);
 
     delete info_;
-    info_ = e.info_ ? new soci_error_extra_info(*e.info_) : NULL;
+    info_ = make_safe_copy(e.info_);
 
     return *this;
 }
