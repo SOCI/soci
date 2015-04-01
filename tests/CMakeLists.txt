@@ -11,4 +11,17 @@
 
 colormsg(_HIBLUE_ "Configuring SOCI tests:")
 
-add_subdirectory(assert)
+include_directories(
+  ${SOCI_SOURCE_DIR}/include/private
+  ${CMAKE_CURRENT_SOURCE_DIR})
+
+file(GLOB SOCI_TESTS_COMMON common-tests.h)
+
+add_subdirectory(empty)
+add_subdirectory(db2)
+add_subdirectory(firebird)
+add_subdirectory(mysql)
+add_subdirectory(odbc)
+add_subdirectory(oracle)
+add_subdirectory(postgresql)
+add_subdirectory(sqlite3)

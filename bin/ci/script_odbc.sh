@@ -5,7 +5,7 @@
 #
 source ${TRAVIS_BUILD_DIR}/bin/ci/common.sh
 
-ODBC_TEST=${PWD}/../tests/assert/odbc
+ODBC_TEST=${PWD}/../tests/odbc
 if test ! -d ${ODBC_TEST}; then
     echo "ERROR: '${ODBC_TEST}' directory not found"
     exit 1

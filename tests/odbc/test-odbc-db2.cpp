@@ -10,7 +10,6 @@
 #include "common-tests.h"
 #include <iostream>
 #include <string>
-#include <cassert>
 #include <ctime>
 #include <cmath>
 
@@ -105,7 +104,7 @@ struct table_creator_bigint : table_creator_base
     }
 };
 
-void test_odbc_db2_long_long()
+TEST_CASE("ODBC/DB2 long long", "[odbc][db2][longlong]")
 {
     const int num_recs = 100;
     session sql(backEnd, connectString);
@@ -129,14 +128,12 @@ void test_odbc_db2_long_long()
         for (int i = 0; i < num_recs; i++)
         {
             st.fetch();
-            assert(n2 == 1000000000LL + i);
+            CHECK(n2 == 1000000000LL + i);
         }
     }
-
-    std::cout << "test odbc_db2_long_long passed" << std::endl;
 }
 
-void test_odbc_db2_unsigned_long_long()
+TEST_CASE("ODBC/DB2 unsigned long long", "[odbc][db2][unsigned][longlong]")
 {
     const int num_recs = 100;
     session sql(backEnd, connectString);
@@ -160,14 +157,12 @@ void test_odbc_db2_unsigned_long_long()
         for (int i = 0; i < num_recs; i++)
         {
             st.fetch();
-            assert(n2 == 1000000000LL + i);
+            CHECK(n2 == 1000000000LL + i);
         }
     }
-
-    std::cout << "test odbc_db2_unsigned_long_long passed" << std::endl;
 }
 
-void test_odbc_db2_long_long_vector()
+TEST_CASE("ODBC/DB2 vector long long", "[odbc][db2][vector][longlong]")
 {
     const std::size_t num_recs = 100;
     session sql(backEnd, connectString);
@@ -199,18 +194,16 @@ void test_odbc_db2_long_long_vector()
             const std::size_t vsize = v.size();
             for (std::size_t i = 0; i < vsize; i++)
             {
-                assert(v[i] == 1000000000LL +
+                CHECK(v[i] == 1000000000LL +
                     static_cast<long long>(recs));
                 recs++;
             }
         }
-        assert(recs == num_recs);
+        CHECK(recs == num_recs);
     }
-
-    std::cout << "test odbc_db2_long_long_vector passed" << std::endl;
 }
 
-void test_odbc_db2_unsigned_long_long_vector()
+TEST_CASE("ODBC/DB2 vector unsigned long long", "[odbc][db2][vector][unsigned][longlong]")
 {
     const std::size_t num_recs = 100;
     session sql(backEnd, connectString);
@@ -242,12 +235,12 @@ void test_odbc_db2_unsigned_long_long_vector()
             const std::size_t vsize = v.size();
             for (std::size_t i = 0; i < vsize; i++)
             {
-                assert(v[i] == 1000000000LL +
+                CHECK(v[i] == 1000000000LL +
                     static_cast<unsigned long long>(recs));
                 recs++;
             }
         }
-        assert(recs == num_recs);
+        CHECK(recs == num_recs);
     }
 
     std::cout << "test odbc_db2_unsigned_long_long_vector passed" << std::endl;
@@ -264,9 +257,16 @@ int main(int argc, char** argv)
     _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
 #endif //_MSC_VER
 
-    if (argc == 2)
+    if (argc >= 2)
     {
         connectString = argv[1];
+
+        // Replace the connect string with the process name to ensure that
+        // CATCH uses the correct name in its messages.
+        argv[1] = argv[0];
+
+        argc--;
+        argv++;
     }
     else
     {
@@ -275,33 +275,8 @@ int main(int argc, char** argv)
             std::endl << std::endl;
         return EXIT_FAILURE;
     }
-    try
-    {
-        std::cout << "\nSOCI ODBC with DB2 Tests:\n\n";
 
-        test_context tc(backEnd, connectString);
-        common_tests tests(tc);
-        tests.run();
+    test_context tc(backEnd, connectString);
 
-        std::cout << "\nSOCI DB2 Specific Tests:\n\n";
-        test_odbc_db2_long_long();
-        test_odbc_db2_unsigned_long_long();
-        test_odbc_db2_long_long_vector();
-        test_odbc_db2_unsigned_long_long_vector();
-
-        std::cout << "\nOK, all tests passed.\n\n";
-        return EXIT_SUCCESS;
-    }
-    catch (soci::odbc_soci_error const & e)
-    {
-        std::cout << "ODBC Error Code: " << e.odbc_error_code() << std::endl
-                  << "Native Error Code: " << e.native_error_code() << std::endl
-                  << "SOCI Message: " << e.what() << std::endl
-                  << "ODBC Message: " << e.odbc_error_message() << std::endl;
-    }
-    catch (std::exception const & e)
-    {
-        std::cout << e.what() << '\n';
-    }
-    return EXIT_FAILURE;
+    return Catch::Session().run(argc, argv);
 }
