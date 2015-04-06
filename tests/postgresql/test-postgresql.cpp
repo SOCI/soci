@@ -339,7 +339,8 @@ TEST_CASE("PostgreSQL dynamic backend", "[postgresql][backend][.]")
     }
     catch (soci_error const & e)
     {
-        CHECK(e.what() == std::string("Failed to open: libsoci_nosuchbackend.so"));
+        CHECK(e.get_error_message() ==
+            "Failed to open: libsoci_nosuchbackend.so");
     }
 
     {

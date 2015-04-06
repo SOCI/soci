@@ -3,6 +3,10 @@ This file contains the history of changes in the SOCI library.
 ---
 Version 4.0.0 differs from 3.2.x in the following ways:
 
+- Provide context of the failure in soci_error::what() which now returns a
+  longer and more useful message. Use the new get_error_message() method to get
+  just the brief error message which used to be returned by what().
+
 - Firebird
 -- Add SOCI_FIREBIRD_EMBEDDED option to allow building with embedded library.
 

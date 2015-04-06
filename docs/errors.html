@@ -30,6 +30,12 @@ int main()
 }
 </pre>
 
+<p>
+The only public method of <code>soci_error</code> is <code>std::string get_error_message() const</code>,
+which returns just the brief error message, without any additional information
+that can be present in the full error message returned by <code>what()</code>.
+</p>
+
 <div class="note">
 <p><span class="note">Portability note:</span></p>
 <p>The Oracle backend can also throw the instances of the <code>oracle_soci_error</code>,

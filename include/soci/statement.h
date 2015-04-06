@@ -77,6 +77,11 @@ protected:
     std::vector<indicator *> indicators_;
 
 private:
+    // Call this method from a catch clause (only!) to rethrow the exception
+    // after adding the context in which it happened, including the provided
+    // description of the operation that failed, the SQL query and, if
+    // applicable, its parameters.
+    void rethrow_current_exception_with_context(char const* operation);
 
     int refCount_;
 

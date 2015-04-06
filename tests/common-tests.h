@@ -593,8 +593,7 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         }
         catch (soci_error const &e)
         {
-            std::string error = e.what();
-            CHECK(error ==
+            CHECK(e.get_error_message() ==
                 "Null value fetched and no indicator defined.");
         }
 
@@ -676,8 +675,8 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             }
             catch (soci_error const &e)
             {
-                 std::string msg = e.what();
-                 CHECK(msg == "Vectors of size 0 are not allowed.");
+                 CHECK(e.get_error_message() ==
+                     "Vectors of size 0 are not allowed.");
             }
         }
 
@@ -1751,8 +1750,7 @@ TEST_CASE_METHOD(common_tests, "Named parameters", "[core][use][named-params]")
         }
         catch (soci_error const& e)
         {
-            std::string what(e.what());
-            CHECK(what ==
+            CHECK(e.get_error_message() ==
                 "Binding for use elements must be either by position "
                 "or by name.");
         }
@@ -1869,8 +1867,7 @@ TEST_CASE_METHOD(common_tests, "Transactions", "[core][transaction]")
         }
         catch (soci_error const &e)
         {
-            std::string msg = e.what();
-            CHECK(msg ==
+            CHECK(e.get_error_message() ==
                 "The transaction object cannot be handled twice.");
         }
     }
@@ -3207,8 +3204,8 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
         }
         catch (soci_error const &e)
         {
-            CHECK(e.what() == std::string(
-                       "Cannot reconnect without previous connection."));
+            CHECK(e.get_error_message() ==
+               "Cannot reconnect without previous connection.");
         }
 
         // open from empty session
@@ -3226,8 +3223,8 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
         }
         catch (soci_error const &e)
         {
-            CHECK(e.what() == std::string(
-                       "Cannot open already connected session."));
+            CHECK(e.get_error_message() ==
+               "Cannot open already connected session.");
         }
 
         sql.close();
@@ -3249,7 +3246,8 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
         }
         catch (soci_error const &e)
         {
-            CHECK(e.what() == std::string("Session is not connected."));
+            CHECK(e.get_error_message() ==
+                "Session is not connected.");
         }
     }
 
@@ -3585,7 +3583,8 @@ TEST_CASE_METHOD(common_tests, "Boost date", "[core][boost][datetime]")
         }
         catch (soci_error const & e)
         {
-            CHECK(e.what() == std::string("Null value not allowed for this type"));
+            CHECK(e.get_error_message() ==
+                "Null value not allowed for this type");
         }
     }
 
@@ -3935,6 +3934,79 @@ TEST_CASE_METHOD(common_tests, "Bind memory leak", "[core][leak]")
         st.execute(true);
         sql << "select val from soci_test where id = 2", into(val);
         CHECK(val == 1);
+    }
+}
+
+TEST_CASE_METHOD(common_tests, "Insert error", "[core][insert][exception]")
+{
+    session sql(backEndFactory_, connectString_);
+
+    struct pk_table_creator : table_creator_base
+    {
+        explicit pk_table_creator(session& sql) : table_creator_base(sql)
+        {
+            // For some backends (at least Firebird), it is important to
+            // execute the DDL statements in a separate transaction, so start
+            // one here and commit it before using the new table below.
+            sql.begin();
+            sql << "create table soci_test("
+                        "name varchar(100) not null primary key, "
+                        "age integer not null"
+                   ")";
+            sql.commit();
+        }
+    } table_creator(sql);
+
+    SECTION("literal SQL queries appear in the error message")
+    {
+        sql << "insert into soci_test(name, age) values ('John', 74)";
+        sql << "insert into soci_test(name, age) values ('Paul', 72)";
+        sql << "insert into soci_test(name, age) values ('George', 72)";
+
+        try
+        {
+            // Oops, this should have been 'Ringo'
+            sql << "insert into soci_test(name, age) values ('John', 74)";
+
+            FAIL("exception expected on unique constraint violation not thrown");
+        }
+        catch (soci_error const &e)
+        {
+            std::string const msg = e.what();
+            CAPTURE(msg);
+
+            CHECK(msg.find("John") != std::string::npos);
+        }
+    }
+
+    SECTION("SQL queries parameters appear in the error message")
+    {
+        char const* const names[] = { "John", "Paul", "George", "John", NULL };
+        int const ages[] = { 74, 72, 72, 74, 0 };
+
+        std::string name;
+        int age;
+
+        statement st = (sql.prepare <<
+            "insert into soci_test(name, age) values (:name, :age)",
+            use(name), use(age));
+        try
+        {
+            int const *a = ages;
+            for (char const* const* n = names; n; ++n, ++a)
+            {
+                name = *n;
+                age = *a;
+                st.execute(true);
+            }
+        }
+        catch (soci_error const &e)
+        {
+            std::string const msg = e.what();
+            CAPTURE(msg);
+
+            CHECK(msg.find("John") != std::string::npos);
+        }
     }
 }
 

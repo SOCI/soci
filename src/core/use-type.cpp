@@ -8,6 +8,9 @@
 #define SOCI_SOURCE
 #include "soci/use-type.h"
 #include "soci/statement.h"
+#include "soci-exchange-cast.h"
+
+#include <cstdio>
 
 using namespace soci;
 using namespace soci::details;
@@ -31,6 +34,76 @@ void standard_use_type::bind(statement_impl & st, int & position)
     {
         backEnd_->bind_by_name(name_, data_, type_, readOnly_);
     }
+}
+
+void standard_use_type::dump_value(std::ostream& os) const
+{
+    if (ind_ && *ind_ == i_null)
+    {
+        os << "NULL";
+        return;
+    }
+
+    switch (type_)
+    {
+        case x_char:
+            os << "'" << exchange_type_cast<x_char>(data_) << "'";
+            return;
+
+        case x_stdstring:
+            // TODO: Escape quotes?
+            os << "\"" << exchange_type_cast<x_stdstring>(data_) << "\"";
+            return;
+
+        case x_short:
+            os << exchange_type_cast<x_short>(data_);
+            return;
+
+        case x_integer:
+            os << exchange_type_cast<x_integer>(data_);
+            return;
+
+        case x_long_long:
+            os << exchange_type_cast<x_long_long>(data_);
+            return;
+
+        case x_unsigned_long_long:
+            os << exchange_type_cast<x_unsigned_long_long>(data_);
+            return;
+
+        case x_double:
+            os << exchange_type_cast<x_double>(data_);
+            return;
+
+        case x_stdtm:
+            {
+                std::tm const& t = exchange_type_cast<x_stdtm>(data_);
+
+                char buf[32];
+                std::snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d:%02d",
+                              t.tm_year + 1900, t.tm_mon + 1, t.tm_mday,
+                              t.tm_hour, t.tm_min, t.tm_sec);
+
+                os << buf;
+            }
+            return;
+
+        case x_statement:
+            os << "<statement>";
+            return;
+
+        case x_rowid:
+            os << "<rowid>";
+            return;
+
+        case x_blob:
+            os << "<blob>";
+            return;
+    }
+
+    // This is normally unreachable, but avoid throwing from here as we're
+    // typically called from an exception handler.
+    os << "<unknown>";
 }
 
 void standard_use_type::pre_use()
@@ -82,6 +155,12 @@ void vector_use_type::bind(statement_impl & st, int & position)
     {
         backEnd_->bind_by_name(name_, data_, type_);
     }
+}
+
+void vector_use_type::dump_value(std::ostream& os) const
+{
+    // TODO: Provide more information.
+    os << "<vector>";
 }
 
 void vector_use_type::pre_use()
