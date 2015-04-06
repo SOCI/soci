@@ -25,6 +25,7 @@ env:
   - SOCI_TRAVIS_BACKEND=sqlite3
 
 matrix:
+  fast_finish: true
   allow_failures:
     - env: SOCI_TRAVIS_BACKEND=postgression
 
