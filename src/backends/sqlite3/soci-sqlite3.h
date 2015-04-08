@@ -56,6 +56,17 @@ typedef void (*sqlite3_destructor_type)(void*);
 namespace soci
 {
 
+class sqlite3_soci_error : public soci_error
+{
+public:
+    sqlite3_soci_error(std::string const & msg, int result);
+
+    int result() const;
+
+private:
+    int result_;
+};
+
 struct sqlite3_statement_backend;
 struct sqlite3_standard_into_type_backend : details::standard_into_type_backend
 {

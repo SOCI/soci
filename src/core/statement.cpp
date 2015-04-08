@@ -21,15 +21,6 @@
 using namespace soci;
 using namespace soci::details;
 
-void statement::exchange(into_type_ptr const & i)
-{
-    impl_->exchange(i);
-}
-
-void statement::exchange(use_type_ptr const & u)
-{
-    impl_->exchange(u);
-}
 
 statement_impl::statement_impl(session & s)
     : session_(s), refCount_(1), row_(0),
@@ -149,40 +140,6 @@ void statement_impl::bind(values & values)
         }
         throw;
     }
-}
-
-void statement_impl::exchange(into_type_ptr const & i)
-{
-    intos_.push_back(i.get());
-    i.release();
-}
-
-void statement_impl::exchange_for_row(into_type_ptr const & i)
-{
-    intosForRow_.push_back(i.get());
-    i.release();
-}
-
-void statement_impl::exchange_for_rowset(into_type_ptr const & i)
-{
-    if (intos_.empty() == false)
-    {
-        throw soci_error("Explicit into elements not allowed with rowset.");
-    }
-
-    into_type_base* p = i.get();
-    intos_.push_back(p);
-    i.release();
-
-    int definePosition = 1;
-    p->define(*this, definePosition);
-    definePositionForRow_ = definePosition;
-}
-
-void statement_impl::exchange(use_type_ptr const & u)
-{
-    uses_.push_back(u.get());
-    u.release();
 }
 
 void statement_impl::clean_up()

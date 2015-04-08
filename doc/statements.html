@@ -131,26 +131,38 @@ std::copy(rs.begin(), rs.end(), std::ostream_iterator&lt;std::string&gt;(std::co
 
 <h3 id="bulk">Bulk operations</h3>
 
-<p>When using some databases, further performance improvements may be possible by having the underlying database API group operations together to reduce network roundtrips. SOCI makes such bulk operations possible by supporting <code>std::vector</code>
-based types:</p>
+<p>When using some databases, further performance improvements may be possible by 
+having the underlying database API group operations together to reduce network roundtrips. 
+SOCI makes such bulk operations possible by supporting <code>std::vector</code>
+based types.</p>
+
+<p>The following example presents how to insert 100 records in 4 batches. 
+It is also important to note, that size of vector remains equal in every batch interaction. 
+This ensures vector is not reallocated and, what's crucial for the bulk trick, new data 
+should be pushed to the vector before every call to <code>statement::execute</code>:</p>
 
 <pre class="example">
 // Example 3.
-const int BATCH_SIZE = 25;
-std::vector&lt;int&gt; ids;
-for (int i = 0; i != BATCH_SIZE; ++i)
+void fill_ids(std::vector<int>& ids)
 {
-    ids.push_back(i);
+   for (std::size_t i = 0; i < ids.size(); ++i)
+      ids[i] = i; // mimics source of a new ID
 }
 
-statement st = (sql.prepare &lt;&lt;
+const int BATCH_SIZE = 25;
+std::vector<int> ids(BATCH_SIZE);
+
+statement st = (sql.prepare <<
                 "insert into numbers(value) values(:val)",
                 use(ids));
 for (int i = 0; i != 4; ++i)
 {
+    fill_ids(ids);
     st.execute(true);
 }
 </pre>
+
+<p>Given batch size is 25, this example should insert 4 x 25 = 100 records.</p>
 
 <p>(Of course, the size of the vector that will achieve optimum
 performance will vary, depending on many environmental factors, such as

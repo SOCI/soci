@@ -19,6 +19,7 @@
 #include <boost-gregorian-date.h>
 #if defined(BOOST_VERSION) && BOOST_VERSION >= 103500
 #include <boost-fusion.h>
+#include <boost-tuple.h>
 #endif // BOOST_VERSION
 #endif // HAVE_BOOST
 

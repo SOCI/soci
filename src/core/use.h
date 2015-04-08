@@ -8,79 +8,63 @@
 #ifndef SOCI_USE_H_INCLUDED
 #define SOCI_USE_H_INCLUDED
 
-#include "use-type.h"
-#include "exchange-traits.h"
-#include "type-conversion.h"
+#include "soci-backend.h"
 
 namespace soci
 {
 
-// the use function is a helper for defining input variables
-// these helpers work with both basic and user-defined types thanks to
-// the tag-dispatching, as defined in exchange_traits template
+namespace details
+{
+template <typename T, typename Indicator>
+struct use_container
+{
+    use_container(T &_t, Indicator &_ind, const std::string &_name)
+        : t(_t), ind(_ind), name(_name) {}
+
+    T &t;
+    Indicator &ind;
+    const std::string &name;
+};
+
+typedef void no_indicator;
+template <typename T>
+struct use_container<T, no_indicator>
+{
+    use_container(T &_t, const std::string &_name)
+        : t(_t), name(_name) {}
+
+    T &t;
+    const std::string &name;
+};
+
+} // namespace details
 
 template <typename T>
-details::use_type_ptr use(T & t, std::string const & name = std::string())
-{
-    return details::do_use(t, name,
-        typename details::exchange_traits<T>::type_family());
-}
+details::use_container<T, details::no_indicator> use(T &t, const std::string &name = std::string())
+{ return details::use_container<T, details::no_indicator>(t, name); }
 
 template <typename T>
-details::use_type_ptr use(T const & t,
-    std::string const & name = std::string())
-{
-    return details::do_use(t, name,
-        typename details::exchange_traits<T>::type_family());
-}
+details::use_container<const T, details::no_indicator> use(T const &t, const std::string &name = std::string())
+{ return details::use_container<const T, details::no_indicator>(t, name); }
 
 template <typename T>
-details::use_type_ptr use(T & t, indicator & ind,
-    std::string const &name = std::string())
-{
-    return details::do_use(t, ind, name,
-        typename details::exchange_traits<T>::type_family());
-}
+details::use_container<T, indicator> use(T &t, indicator & ind, std::string const &name = std::string())
+{ return details::use_container<T, indicator>(t, ind, name); }
 
 template <typename T>
-details::use_type_ptr use(T const & t, indicator & ind,
-    std::string const &name = std::string())
-{
-    return details::do_use(t, ind, name,
-        typename details::exchange_traits<T>::type_family());
-}
+details::use_container<const T, indicator> use(T const &t, indicator & ind, std::string const &name = std::string())
+{ return details::use_container<const T, indicator>(t, ind, name); }
+
+// vector containers
+template <typename T>
+details::use_container<T, std::vector<indicator> > 
+    use(T &t, std::vector<indicator> & ind, const std::string &name = std::string())
+{ return details::use_container<T, std::vector<indicator> >(t, ind, name); }
 
 template <typename T>
-details::use_type_ptr use(T & t, std::vector<indicator> & ind,
-    std::string const & name = std::string())
-{
-    return details::do_use(t, ind, name,
-        typename details::exchange_traits<T>::type_family());
-}
-
-template <typename T>
-details::use_type_ptr use(T const & t, std::vector<indicator> & ind,
-    std::string const & name = std::string())
-{
-    return details::do_use(t, ind, name,
-        typename details::exchange_traits<T>::type_family());
-}
-
-// for char buffer with run-time size information
-template <typename T>
-details::use_type_ptr use(T & t, std::size_t bufSize,
-    std::string const & name = std::string())
-{
-    return details::use_type_ptr(new details::use_type<T>(t, bufSize));
-}
-
-// for char buffer with run-time size information
-template <typename T>
-details::use_type_ptr use(T const & t, std::size_t bufSize,
-    std::string const & name = std::string())
-{
-    return details::use_type_ptr(new details::use_type<T>(t, bufSize));
-}
+details::use_container<std::vector<T>, details::no_indicator > 
+    use(std::vector<T> &t, const std::string &name = std::string())
+{ return details::use_container<std::vector<T>, details::no_indicator>(t, name); }
 
 } // namespace soci
 
