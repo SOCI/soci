@@ -1,6 +1,35 @@
 This file contains the history of changes in the SOCI library.
 
 ---
+Version 3.2.3 differs from 3.2.2 in the following ways:
+
+- Improved Boost Tuple & Fusion integration by using boost::fusion::foreach
+  to reference each member of a sequence. Breaks compatibility with Boost 1.35 (2008).
+- Fixed linker error when building 64-bit target with Visual Studio.
+- Fixed several issues with building using Cygwin and MinGW.
+- Clarified documentation and examples on bulk operations.
+
+- MySQL
+-- Fixed building against MySQL 3.23.
+
+- ODBC
+- Improve readability of ODBC error messages.
+- Fixed CMake configuration of ODBC backend for Visual Studio 64-bit targets.
+
+- Oracle
+-- We've had to disable Oracle target in the Travis CI configuration until we
+   figure out how to setup Oracle on Travis CI directly.
+   Therefore, this release hasn't been extensively tested against Oracle.
+
+- PostgreSQL
+-- Added support for UUID column type (tests and docs updated).
+
+- SQLite3
+-- Added sqlite3_soci_error exception as subclass of soci_error to provide useful
+   exposure of specific SQLite3 error codes (tests and docs updated).
+
+  
+---
 Version 3.2.2 differs from 3.2.1 in the following ways:
 
 - Fixed once_temp_type destructor with noexcept(false) specifier for C++11
