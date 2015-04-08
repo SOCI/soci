@@ -258,6 +258,38 @@ void test5()
     std::cout << "test 5 passed" << std::endl;
 }
 
+struct test6_table_creator : table_creator_base
+{
+    test6_table_creator(session & sql) : table_creator_base(sql)
+    {
+        sql << "create table soci_test (id INTEGER PRIMARY KEY, name char)";
+    }
+};
+
+void test6()
+{
+    {
+        session sql(backEnd, connectString);
+
+        test6_table_creator tableCreator(sql);
+
+        sql << "insert into soci_test(id, name) values(1, 'john')";
+
+        {
+            try
+            {
+                // using same primary key causes constraint violation error
+                sql << "insert into soci_test(id, name) values(1, 'jack')";
+            }
+            catch (sqlite3_soci_error const& e)
+            {
+                assert(SQLITE_CONSTRAINT == (0xFF & e.result()));
+            }
+        }
+    }
+    std::cout << "test 6 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -377,6 +409,7 @@ int main(int argc, char** argv)
         test3();
         test4();
         test5();
+        test6();
 
         std::cout << "\nOK, all tests passed.\n\n";
 

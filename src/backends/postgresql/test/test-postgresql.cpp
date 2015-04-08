@@ -704,6 +704,61 @@ void test_orm_cast()
     sql << "select :a::int", use(v); // Must not throw an exception!
 }
 
+struct table_creator_for_uuid_column_type_support : table_creator_base
+{
+    table_creator_for_uuid_column_type_support(session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val uuid)";
+    }
+};
+
+void try_one_uuid_format(session& sql, const std::string& uuid, const std::string& uuidExpected)
+{
+    sql << "insert into soci_test(val) values(:val)", use(uuid);
+
+    // 1) into string, no Oid mapping
+    std::string uuid1;
+    sql << "select val from soci_test", into(uuid1);
+    assert(uuid1 == uuidExpected);
+
+    // 2) Oid-to-dt_string mapped
+    row r;
+    sql << "select * from soci_test", into(r);
+
+    assert(r.size() == 1);
+    column_properties const& props = r.get_properties(0);
+    assert(props.get_data_type() == soci::dt_string);
+    std::string uuid2 = r.get<std::string>(0);
+    assert(uuid2 == uuidExpected);
+}
+
+void test_uuid_column_type_support()
+{
+    {
+        session sql(backEnd, connectString);
+        table_creator_for_uuid_column_type_support tableCreator(sql);
+
+        static const std::string standardUuid("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11");
+        std::vector<std::string> uuidFormats;
+
+        uuidFormats.push_back(standardUuid);
+        uuidFormats.push_back("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11");
+        uuidFormats.push_back("{a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11}");
+        uuidFormats.push_back("a0eebc999c0b4ef8bb6d6bb9bd380a11");
+        uuidFormats.push_back("a0ee-bc99-9c0b-4ef8-bb6d-6bb9-bd38-0a11");
+        uuidFormats.push_back("{a0eebc99-9c0b4ef8-bb6d6bb9-bd380a11}");
+
+        std::vector<std::string>::const_iterator it = uuidFormats.begin();
+        while (it != uuidFormats.end())
+        {
+            std::string uuid = *it++;
+            try_one_uuid_format(sql, uuid, standardUuid);
+        }
+    }
+    std::cout << "test uuid passed" << std::endl;
+}
+
 //
 // Support for soci Common Tests
 //
@@ -834,6 +889,7 @@ int main(int argc, char** argv)
         test_json();
         test_statement_prepare_failure();
         test_orm_cast();
+        test_uuid_column_type_support();
 
         std::cout << "\nOK, all tests passed.\n\n";
 
