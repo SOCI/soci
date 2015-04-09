@@ -43,6 +43,9 @@ include(SociConfig)
 boost_report_value(SOCI_PLATFORM_NAME)
 boost_report_value(SOCI_COMPILER_NAME)
 
+option(SOCI_SHARED "Enable build of shared libraries" ON)
+boost_report_value(SOCI_SHARED)
+
 option(SOCI_STATIC "Enable build of static libraries" ON)
 boost_report_value(SOCI_STATIC)
 
@@ -69,7 +72,7 @@ include(SociDependencies)
 
 get_property(SOCI_INCLUDE_DIRS DIRECTORY ${CMAKE_SOURCE_DIR}
   PROPERTY INCLUDE_DIRECTORIES)
-
+  
 if(Threads_FOUND)
   list(APPEND SOCI_CORE_DEPS_LIBS ${CMAKE_THREAD_LIBS_INIT})
 else()

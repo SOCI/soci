@@ -75,10 +75,10 @@ public:
     ref_counted_statement(session & s)
         : ref_counted_statement_base(s), st_(s) {}
 
-    void exchange(into_type_ptr const & i) { st_.exchange(i); }
-    void exchange(use_type_ptr const & u) { st_.exchange(u); }
-
     virtual void final_action();
+
+    template <typename T>
+    void exchange(T &t) { st_.exchange(t); }
 
 private:
     statement st_;

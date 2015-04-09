@@ -22,26 +22,39 @@ namespace soci
 // these helpers work with both basic and user-defined types thanks to
 // the tag-dispatching, as defined in exchange_traits template
 
-template <typename T>
-details::into_type_ptr into(T & t)
+namespace details
 {
-    return details::do_into(t,
-        typename details::exchange_traits<T>::type_family());
-}
+template <typename T, typename Indicator>
+struct into_container
+{
+    into_container(T &_t, Indicator &_ind)
+        : t(_t), ind(_ind) {}
+
+    T &t;
+    Indicator &ind;
+};
+
+typedef void no_indicator;
+template <typename T>
+struct into_container<T, no_indicator>
+{
+    into_container(T &_t)
+        : t(_t) {}
+
+    T &t;
+};
+
+} // namespace details
 
 template <typename T>
-details::into_type_ptr into(T & t, indicator & ind)
-{
-    return details::do_into(t, ind,
-        typename details::exchange_traits<T>::type_family());
-}
+details::into_container<T, details::no_indicator>
+    into(T &t)
+{ return details::into_container<T, details::no_indicator>(t); }
 
-template <typename T>
-details::into_type_ptr into(T & t, std::vector<indicator> & ind)
-{
-    return details::do_into(t, ind,
-        typename details::exchange_traits<T>::type_family());
-}
+template <typename T, typename Indicator>
+details::into_container<T, Indicator>
+    into(T &t, Indicator &ind)
+{ return details::into_container<T, Indicator>(t, ind); }
 
 // for char buffer with run-time size information
 template <typename T>

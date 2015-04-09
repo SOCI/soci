@@ -798,6 +798,48 @@ TEST_CASE("MySQL last insert id", "[mysql][last-insert-id]")
     CHECK(id == 42);
 }
 
+std::string escape_string(soci::session& sql, const std::string& s)
+{
+    mysql_session_backend* backend = static_cast<mysql_session_backend*>(
+        sql.get_backend());
+    char* escaped = new char[2 * s.size() + 1];
+    mysql_real_escape_string(backend->conn_, escaped, s.data(), s.size());
+    std::string retv = escaped;
+    delete [] escaped;
+    return retv;
+}
+
+void test14()
+{
+    {
+        session sql(backEnd, connectString);
+        strings_table_creator tableCreator(sql);
+        std::string s = "word1'word2:word3";
+        std::string escaped = escape_string(sql, s);
+        std::string query = "insert into soci_test (s5) values ('";
+        query.append(escaped);
+        query.append("')");
+        sql << query;
+        std::string s2;
+        sql << "select s5 from soci_test", into(s2);
+        assert(s == s2);
+    }
+
+    std::cout << "test 14 passed" << std::endl;
+}
+
+void test15()
+{
+    {
+        session sql(backEnd, connectString);
+        int n;
+        sql << "select @a := 123", into(n);
+        assert(n == 123);
+    }
+    
+    std::cout << "test 15 passed" << std::endl;
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {

@@ -25,6 +25,7 @@
 
 #include <vector>
 #include <soci/soci-backend.h>
+#include <sstream>
 #if defined(_MSC_VER) || defined(__MINGW32__)
 #include "soci/soci-platform.h"
 #include <windows.h>
@@ -333,8 +334,27 @@ public:
     odbc_soci_error(SQLSMALLINT htype,
                   SQLHANDLE hndl,
                   std::string const & msg)
-        : soci_error(msg)
+        : soci_error(interpret_odbc_error(htype, hndl, msg))
     {
+    }
+
+    SQLCHAR const * odbc_error_code() const
+    {
+        return sqlstate_;
+    }
+    SQLINTEGER native_error_code() const
+    {
+        return sqlcode_;
+    }
+    SQLCHAR const * odbc_error_message() const
+    {
+        return message_;
+    }
+private:
+    std::string interpret_odbc_error(SQLSMALLINT htype, SQLHANDLE hndl, std::string const& msg)
+    {
+        std::ostringstream ss(msg, std::ostringstream::app);
+
         const char* socierror = NULL;
 
         SQLSMALLINT length, i = 1;
@@ -377,19 +397,10 @@ public:
 
             sqlcode_ = 0;
         }
-    }
 
-    SQLCHAR const * odbc_error_code() const
-    {
-        return reinterpret_cast<SQLCHAR const *>(sqlstate_);
-    }
-    SQLINTEGER native_error_code() const
-    {
-        return sqlcode_;
-    }
-    SQLCHAR const * odbc_error_message() const
-    {
-        return reinterpret_cast<SQLCHAR const *>(message_);
+        ss << ": " << message_ << " (" << sqlstate_ << ")";
+
+        return ss.str();
     }
 };
 

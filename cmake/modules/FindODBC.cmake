@@ -33,20 +33,25 @@ find_path(ODBC_INCLUDE_DIR sql.h
   DOC "Specify the directory containing sql.h."
 )
 
-find_library(ODBC_LIBRARY
-  NAMES iodbc odbc odbcinst odbc32
-  PATHS
-  /usr/lib
-  /usr/lib/odbc
-  /usr/local/lib
-  /usr/local/lib/odbc
-  /usr/local/odbc/lib
-  "C:/Program Files (x86)/Windows Kits/8.0/Lib/win8/um/x86/"
-  "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib"
-  "C:/Program Files/ODBC/lib"
-  "C:/ODBC/lib/debug"
-  DOC "Specify the ODBC driver manager library here."
-)
+if(MSVC)
+    # msvc knows where to find sdk libs
+    set(ODBC_LIBRARY odbc32)
+else()
+    find_library(ODBC_LIBRARY
+      NAMES iodbc odbc odbcinst odbc32
+      PATHS
+          /usr/lib
+          /usr/lib/odbc
+          /usr/local/lib
+          /usr/local/lib/odbc
+          /usr/local/odbc/lib
+          "C:/Program Files (x86)/Windows Kits/8.0/Lib/win8/um/x86/"
+          "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Lib"
+          "C:/Program Files/ODBC/lib"
+          "C:/ODBC/lib/debug"
+      DOC "Specify the ODBC driver manager library here."
+    )
+endif()
 
 if(ODBC_LIBRARY)
   if(ODBC_INCLUDE_DIR)

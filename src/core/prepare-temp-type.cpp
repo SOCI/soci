@@ -45,9 +45,3 @@ prepare_temp_type & prepare_temp_type::operator,(into_type_ptr const & i)
     rcpi_->exchange(i);
     return *this;
 }
-
-prepare_temp_type & prepare_temp_type::operator,(use_type_ptr const & u)
-{
-    rcpi_->exchange(u);
-    return *this;
-}

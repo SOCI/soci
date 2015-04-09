@@ -34,7 +34,7 @@ void execude_hardcoded(sqlite_api::sqlite3* conn, char const* const query, char 
         std::ostringstream ss;
         ss << errMsg << " " << zErrMsg;
         sqlite3_free(zErrMsg);
-        throw soci_error(ss.str());
+        throw sqlite3_soci_error(ss.str(), res);
     }
 }
 
@@ -45,7 +45,7 @@ void check_sqlite_err(sqlite_api::sqlite3* conn, int res, char const* const errM
         const char *zErrMsg = sqlite3_errmsg(conn);
         std::ostringstream ss;
         ss << errMsg << zErrMsg;
-        throw soci_error(ss.str());
+        throw sqlite3_soci_error(ss.str(), res);
     }
 }
 

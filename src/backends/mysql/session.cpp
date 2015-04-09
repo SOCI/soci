@@ -320,7 +320,11 @@ mysql_session_backend::mysql_session_backend(
             db_p ? db.c_str() : NULL,
             port_p ? port : 0,
             unix_socket_p ? unix_socket.c_str() : NULL,
+#ifdef CLIENT_MULTI_RESULTS
             CLIENT_FOUND_ROWS | CLIENT_MULTI_RESULTS) == NULL)
+#else
+            CLIENT_FOUND_ROWS) == NULL)
+#endif
     {
         string errMsg = mysql_error(conn_);
         unsigned int errNum = mysql_errno(conn_);

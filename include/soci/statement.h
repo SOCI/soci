@@ -8,9 +8,11 @@
 #ifndef SOCI_STATEMENT_H_INCLUDED
 #define SOCI_STATEMENT_H_INCLUDED
 
+#include "soci/bind-values.h"
 #include "soci/into-type.h"
 #include "soci/into.h"
 #include "soci/use-type.h"
+#include "soci/use.h"
 #include "soci/soci-backend.h"
 #include "soci/row.h"
 // std
@@ -40,8 +42,17 @@ public:
 
     void alloc();
     void bind(values & v);
-    void exchange(into_type_ptr const & i);
-    void exchange(use_type_ptr const & u);
+
+    void exchange(into_type_ptr const & i) { intos_.exchange(i); }
+    template <typename T, typename Indicator>
+    void exchange(into_container<T, Indicator> const &ic)
+    { intos_.exchange(ic); }
+
+    void exchange(use_type_ptr const & u) { uses_.exchange(u); }
+    template <typename T, typename Indicator>
+    void exchange(use_container<T, Indicator> const &uc)
+    { uses_.exchange(uc); }
+    
     void clean_up();
 
     void prepare(std::string const & query,
@@ -53,7 +64,10 @@ public:
     bool fetch();
     void describe();
     void set_row(row * r);
-    void exchange_for_rowset(into_type_ptr const & i);
+    void exchange_for_rowset(into_type_ptr const & i) { exchange_for_rowset_(i); }
+    template<typename T, typename Indicator>
+    void exchange_for_rowset(into_container<T, Indicator> const &ic)
+    { exchange_for_rowset_(ic); }
 
     // for diagnostics and advanced users
     // (downcast it to expected back-end statement class)
@@ -72,8 +86,8 @@ public:
     std::string rewrite_for_procedure_call(std::string const & query);
 
 protected:
-    std::vector<details::into_type_base *> intos_;
-    std::vector<details::use_type_base *> uses_;
+    into_type_vector intos_;
+    use_type_vector uses_;
     std::vector<indicator *> indicators_;
 
 private:
@@ -90,10 +104,32 @@ private:
     std::size_t initialFetchSize_;
     std::string query_;
 
-    std::vector<into_type_base *> intosForRow_;
+    into_type_vector intosForRow_;
     int definePositionForRow_;
 
-    void exchange_for_row(into_type_ptr const & i);
+    template <typename Into>
+    void exchange_for_rowset_(Into const &i)
+    {
+        if (intos_.empty() == false)
+        {
+            throw soci_error("Explicit into elements not allowed with rowset.");
+        }
+
+        intos_.exchange(i);
+    
+        int definePosition = 1;
+        for(into_type_vector::iterator iter = intos_.begin(),
+                                       end = intos_.end();
+            iter != end; iter++)
+        { (*iter)->define(*this, definePosition); }
+        definePositionForRow_ = definePosition;
+    }
+
+
+    template <typename T, typename Indicator>
+    void exchange_for_row(into_container<T, Indicator> const &ic)
+    { intosForRow_.exchange(ic); }
+    void exchange_for_row(into_type_ptr const & i) { intosForRow_.exchange(i); }
     void define_for_row();
 
     template<typename T>
@@ -156,8 +192,12 @@ public:
 
     void alloc()                         { impl_->alloc();    }
     void bind(values & v)                { impl_->bind(v);    }
-    void exchange(details::into_type_ptr const & i);
-    void exchange(details::use_type_ptr const & u);
+    void exchange(details::into_type_ptr const & i) { impl_->exchange(i); }
+    template <typename T, typename Indicator>
+    void exchange(details::into_container<T, Indicator>  const &ic) { impl_->exchange(ic); }
+    void exchange(details::use_type_ptr const & u) { impl_->exchange(u); }
+    template <typename T, typename Indicator>
+    void exchange(details::use_container<T, Indicator>  const &uc) { impl_->exchange(uc); }
     void clean_up()                      { impl_->clean_up(); }
 
     void prepare(std::string const & query,
@@ -189,6 +229,13 @@ public:
 
     void describe()       { impl_->describe(); }
     void set_row(row * r) { impl_->set_row(r); }
+    
+    template <typename T, typename Indicator>
+    void exchange_for_rowset(details::into_container<T, Indicator> const & ic)
+    {
+        impl_->exchange_for_rowset(ic);
+    }
+
     void exchange_for_rowset(details::into_type_ptr const & i)
     {
         impl_->exchange_for_rowset(i);

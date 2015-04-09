@@ -46,7 +46,18 @@ public:
     }
 
     once_temp_type & operator,(into_type_ptr const &);
-    once_temp_type & operator,(use_type_ptr const &);
+    template <typename T, typename Indicator>
+    once_temp_type &operator,(into_container<T, Indicator> const &ic)
+    {
+        rcst_->exchange(ic);
+        return *this;
+    }
+    template <typename T, typename Indicator>
+    once_temp_type &operator,(use_container<T, Indicator> const &uc)
+    {
+        rcst_->exchange(uc);
+        return *this;
+    }
 
 private:
     ref_counted_statement * rcst_;

@@ -512,6 +512,7 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     case 142: // xml
     case 114:  // json
     case 17: // bytea
+    case 2950: // uuid
         type = dt_string;
         break;
 
