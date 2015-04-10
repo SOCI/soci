@@ -14,29 +14,18 @@ services:
   - postgresql
 
 env:
-  - SOCI_TRAVIS_BACKEND=db2
-  - SOCI_TRAVIS_BACKEND=empty
-  - SOCI_TRAVIS_BACKEND=firebird
-  - SOCI_TRAVIS_BACKEND=mysql
-  - SOCI_TRAVIS_BACKEND=odbc
-  - SOCI_TRAVIS_BACKEND=oracle
-  - SOCI_TRAVIS_BACKEND=postgresql
-  - SOCI_TRAVIS_BACKEND=sqlite3
+  - SOCI_TRAVIS_BACKEND=postgression
 
 matrix:
   fast_finish: true
+  allow_failures:
+    - env: SOCI_TRAVIS_BACKEND=postgression
 
 before_install: ./bin/ci/before_install.sh
 before_script: ./bin/ci/before_script.sh
 script: ./bin/ci/script.sh
 
 notifications:
-  email:
-    recipients:
-      - soci-devel@lists.sourceforge.net
-    on_success: change # [always|never|change] # default: change
-    on_failure: always # [always|never|change] # default: always
-
   irc:
     channels:
       - "irc.freenode.org#soci"
