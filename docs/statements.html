@@ -143,7 +143,7 @@ should be pushed to the vector before every call to <code>statement::execute</co
 
 <pre class="example">
 // Example 3.
-void fill_ids(std::vector<int>& ids)
+void fill_ids(std::vector<int>&amp; ids)
 {
    for (std::size_t i = 0; i < ids.size(); ++i)
       ids[i] = i; // mimics source of a new ID
@@ -319,7 +319,7 @@ given scope of code:</p>
 class transaction
 {
 public:
-    explicit transaction(session & sql);
+    explicit transaction(session &amp; sql);
 
     ~transaction();
 

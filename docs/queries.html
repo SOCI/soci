@@ -81,7 +81,7 @@ sql &lt;&lt; "DELETE FROM item";
 <pre class="example">
 struct order : std::unary_function&lt;std::string, std::string&gt;
 {
-    order(std::string const& by) : by_(by) {}
+    order(std::string const&amp; by) : by_(by) {}
 
     result_type operator()(argument_type query) const
     {
@@ -103,7 +103,7 @@ sql &lt;&lt; query;
 <pre class="example">
 std::string dep = "sales";
 sql.set_query_transformation(
-    [&dep](std::string const& query) {
+    [&dep](std::string const&amp; query) {
         return query + " WHERE department = '" + dep + "'";
 });
 sql &lt;&lt; "SELECT * FROM employee";
