@@ -37,7 +37,7 @@ public:
     }
 
     prepare_temp_type & operator,(into_type_ptr const & i);
-    
+
     template <typename T, typename Indicator>
     prepare_temp_type &operator,(into_container<T, Indicator> const &ic)
     {

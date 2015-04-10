@@ -23,7 +23,7 @@ namespace details
 class use_type_vector: public std::vector<use_type_base *>
 {
 public:
-    ~use_type_vector() 
+    ~use_type_vector()
     {
         for(iterator iter = begin(), _end = end();
             iter != _end; iter++)
@@ -31,7 +31,7 @@ public:
     }
 
     void exchange(use_type_ptr const& u) { push_back(u.get()); u.release(); }
-    
+
     template <typename T, typename Indicator>
     void exchange(use_container<T, Indicator> const &uc)
     {
@@ -96,11 +96,11 @@ private:
     template <typename T>
     void exchange_(use_container<T, details::no_indicator> const &uc, ...)
     { exchange(do_use(uc.t, uc.name, typename details::exchange_traits<T>::type_family())); }
-        
+
     template <typename T, typename Indicator>
     void exchange_(use_container<const T, Indicator> const &uc, ...)
     { exchange(do_use(uc.t, uc.ind, uc.name, typename details::exchange_traits<T>::type_family())); }
-        
+
     template <typename T>
     void exchange_(use_container<const T, details::no_indicator> const &uc, ...)
     { exchange(do_use(uc.t, uc.name, typename details::exchange_traits<T>::type_family())); }
@@ -109,7 +109,7 @@ private:
 class into_type_vector: public std::vector<details::into_type_base *>
 {
 public:
-    ~into_type_vector() 
+    ~into_type_vector()
     {
         for(iterator iter = begin(), _end = end();
             iter != _end; iter++)
@@ -127,7 +127,7 @@ public:
         exchange_(ic, NULL);
 #endif // HAVE_BOOST
     }
-        
+
 private:
 #ifdef HAVE_BOOST
     template <typename T, typename Indicator>
@@ -180,7 +180,7 @@ private:
 
     template <typename T>
     void exchange_(into_container<T, details::no_indicator> const &ic, ...)
-    { exchange(do_into(ic.t, typename details::exchange_traits<T>::type_family())); }        
+    { exchange(do_into(ic.t, typename details::exchange_traits<T>::type_family())); }
 };
 
 } // namespace details

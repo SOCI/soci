@@ -836,7 +836,7 @@ void test15()
         sql << "select @a := 123", into(n);
         assert(n == 123);
     }
-    
+
     std::cout << "test 15 passed" << std::endl;
 }
 

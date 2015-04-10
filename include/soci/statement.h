@@ -52,7 +52,7 @@ public:
     template <typename T, typename Indicator>
     void exchange(use_container<T, Indicator> const &uc)
     { uses_.exchange(uc); }
-    
+
     void clean_up();
 
     void prepare(std::string const & query,
@@ -116,7 +116,7 @@ private:
         }
 
         intos_.exchange(i);
-    
+
         int definePosition = 1;
         for(into_type_vector::iterator iter = intos_.begin(),
                                        end = intos_.end();
@@ -229,7 +229,7 @@ public:
 
     void describe()       { impl_->describe(); }
     void set_row(row * r) { impl_->set_row(r); }
-    
+
     template <typename T, typename Indicator>
     void exchange_for_rowset(details::into_container<T, Indicator> const & ic)
     {

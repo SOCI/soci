@@ -131,14 +131,14 @@ std::copy(rs.begin(), rs.end(), std::ostream_iterator&lt;std::string&gt;(std::co
 
 <h3 id="bulk">Bulk operations</h3>
 
-<p>When using some databases, further performance improvements may be possible by 
-having the underlying database API group operations together to reduce network roundtrips. 
+<p>When using some databases, further performance improvements may be possible by
+having the underlying database API group operations together to reduce network roundtrips.
 SOCI makes such bulk operations possible by supporting <code>std::vector</code>
 based types.</p>
 
-<p>The following example presents how to insert 100 records in 4 batches. 
-It is also important to note, that size of vector remains equal in every batch interaction. 
-This ensures vector is not reallocated and, what's crucial for the bulk trick, new data 
+<p>The following example presents how to insert 100 records in 4 batches.
+It is also important to note, that size of vector remains equal in every batch interaction.
+This ensures vector is not reallocated and, what's crucial for the bulk trick, new data
 should be pushed to the vector before every call to <code>statement::execute</code>:</p>
 
 <pre class="example">
