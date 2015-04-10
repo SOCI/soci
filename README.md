@@ -29,7 +29,7 @@ Backend specific client libraries for:
 * DB2
 * Firebird
 * MySQL
-* ODBC andwith specific database driver
+* ODBC with specific database driver
 * Oracle
 * PostgreSQL
 * SQLite 3
