@@ -82,13 +82,8 @@ if(DB2_LIBRARY)
   get_filename_component(DB2_LIBRARY_DIR ${DB2_LIBRARY} PATH)
 endif()
 
-# TODO: To be removed to avoid setting *_directories at random directory-scope
 if(DB2_INCLUDE_DIR AND DB2_LIBRARY_DIR)
   set(DB2_FOUND TRUE)
-
-  include_directories(${DB2_INCLUDE_DIR})
-  link_directories(${DB2_LIBRARY_DIR})
-
 endif()
 
 set(DB2_LIBRARIES ${DB2_LIBRARY})
