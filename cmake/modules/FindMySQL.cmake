@@ -23,6 +23,7 @@ if(WIN32)
       $ENV{MYSQL_DIR}/include
       $ENV{ProgramFiles}/MySQL/*/include
       $ENV{SystemDrive}/MySQL/*/include
+      $ENV{ProgramW6432}/MySQL/*/include
    )
 else(WIN32)
    find_path(MYSQL_INCLUDE_DIR mysql.h
@@ -54,41 +55,30 @@ if(WIN32)
    endif(CMAKE_BUILD_TYPE_TOLOWER MATCHES "debug")
 
 #   find_library(MYSQL_LIBRARIES NAMES mysqlclient
-   find_library(MYSQL_LIBRARIES NAMES libmysql
-      PATHS
+   set(MYSQL_LIB_PATHS
       $ENV{MYSQL_DIR}/lib/${binary_dist}
       $ENV{MYSQL_DIR}/libmysql/${build_dist}
       $ENV{MYSQL_DIR}/client/${build_dist}
       $ENV{ProgramFiles}/MySQL/*/lib/${binary_dist}
       $ENV{SystemDrive}/MySQL/*/lib/${binary_dist}
+      $ENV{MYSQL_DIR}/lib/opt
+      $ENV{MYSQL_DIR}/client/release
+      $ENV{ProgramFiles}/MySQL/*/lib/opt
+      $ENV{SystemDrive}/MySQL/*/lib/opt
+      $ENV{ProgramW6432}/MySQL/*/lib
+   )
+   find_library(MYSQL_LIBRARIES NAMES mysqlclient libmysql
+      PATHS
+      ${MYSQL_LIB_PATHS}
    )
 else(WIN32)
 #   find_library(MYSQL_LIBRARIES NAMES mysqlclient
-   find_library(MYSQL_LIBRARIES NAMES libmysql
-      PATHS
+   set(MYSQL_LIB_PATHS
       $ENV{MYSQL_DIR}/libmysql_r/.libs
       $ENV{MYSQL_DIR}/lib
       $ENV{MYSQL_DIR}/lib/mysql
       /usr/local/mysql/lib
       /opt/mysql/mysql/lib
-      PATH_SUFFIXES
-      mysql
-   )
-endif(WIN32)
-
-if(WIN32)
-   set(MYSQL_LIB_PATHS
-      $ENV{MYSQL_DIR}/lib/opt
-      $ENV{MYSQL_DIR}/client/release
-      $ENV{ProgramFiles}/MySQL/*/lib/opt
-      $ENV{SystemDrive}/MySQL/*/lib/opt
-   )
-   find_library(MYSQL_LIBRARIES NAMES mysqlclient
-      PATHS
-      ${MYSQL_LIB_PATHS}
-   )
-else(WIN32)
-   set(MYSQL_LIB_PATHS
       $ENV{MYSQL_DIR}/libmysql_r/.libs
       $ENV{MYSQL_DIR}/lib
       $ENV{MYSQL_DIR}/lib/mysql
