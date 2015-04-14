@@ -451,18 +451,18 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
 {
     session sql(backEndFactory_, connectString_);
 
-    {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
+    SECTION("Round trip works for char")
+    {
         char c('a');
         sql << "insert into soci_test(c) values(:c)", use(c);
         sql << "select c from soci_test", into(c);
         CHECK(c == 'a');
     }
 
+    SECTION("Round trip works for string")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         std::string helloSOCI("Hello, SOCI!");
         sql << "insert into soci_test(str) values(:s)", use(helloSOCI);
         std::string str;
@@ -470,9 +470,8 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         CHECK(str == "Hello, SOCI!");
     }
 
+    SECTION("Round trip works for short")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         short three(3);
         sql << "insert into soci_test(sh) values(:id)", use(three);
         short sh(0);
@@ -480,9 +479,8 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         CHECK(sh == 3);
     }
 
+    SECTION("Round trip works for int")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         int five(5);
         sql << "insert into soci_test(id) values(:id)", use(five);
         int i(0);
@@ -490,8 +488,8 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         CHECK(i == 5);
     }
 
+    SECTION("Round trip works for unsigned long")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
         unsigned long seven(7);
         sql << "insert into soci_test(ul) values(:ul)", use(seven);
         unsigned long ul(0);
@@ -499,9 +497,8 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         CHECK(ul == 7);
     }
 
+    SECTION("Round trip works for double")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         double pi(3.14159265);
         sql << "insert into soci_test(d) values(:d)", use(pi);
         double d(0.0);
@@ -509,9 +506,8 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         ASSERT_EQUAL(d, pi);
     }
 
+    SECTION("Round trip works for date without time")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         std::tm nov15;
         nov15.tm_year = 105;
         nov15.tm_mon = 10;
@@ -532,9 +528,8 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         CHECK(t.tm_sec  == 0);
     }
 
+    SECTION("Round trip works for date with time")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         std::tm nov15;
         nov15.tm_year = 105;
         nov15.tm_mon = 10;
@@ -555,10 +550,8 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         CHECK(t.tm_sec  == 17);
     }
 
-    // test indicators
+    SECTION("Indicator is filled correctly in the simplest case")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         int id(1);
         std::string str("Hello");
         sql << "insert into soci_test(id, str) values(:id, :str)",
@@ -570,10 +563,8 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         CHECK(ind == i_ok);
     }
 
-    // more indicator tests, NULL values
+    SECTION("Indicators work correctly more generally")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         sql << "insert into soci_test(id,tm) values(NULL,NULL)";
         int i;
         indicator ind;
