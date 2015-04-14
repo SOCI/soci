@@ -615,11 +615,11 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
 {
     session sql(backEndFactory_, connectString_);
 
-    // repeated fetch and bulk fetch of char
-    {
-        // create and populate the test table
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+    // create and populate the test table
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
+    SECTION("char")
+    {
         char c;
         for (c = 'a'; c <= 'z'; ++c)
         {
@@ -682,10 +682,8 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
     }
 
     // repeated fetch and bulk fetch of std::string
+    SECTION("std::string")
     {
-        // create and populate the test table
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         int const rowsToTest = 10;
         for (int i = 0; i != rowsToTest; ++i)
         {
@@ -739,11 +737,8 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
         }
     }
 
-    // repeated fetch and bulk fetch of short
+    SECTION("short")
     {
-        // create and populate the test table
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         short const rowsToTest = 100;
         short sh;
         for (sh = 0; sh != rowsToTest; ++sh)
@@ -790,11 +785,8 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
         }
     }
 
-    // repeated fetch and bulk fetch of int (4-bytes)
+    SECTION("int")
     {
-        // create and populate the test table
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         int const rowsToTest = 100;
         int i;
         for (i = 0; i != rowsToTest; ++i)
@@ -859,11 +851,8 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
         }
     }
 
-    // repeated fetch and bulk fetch of unsigned int (4-bytes)
+    SECTION("unsigned int")
     {
-        // create and populate the test table
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         unsigned int const rowsToTest = 100;
         unsigned int ul;
         for (ul = 0; ul != rowsToTest; ++ul)
@@ -910,11 +899,8 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
         }
     }
 
-    // repeated fetch and bulk fetch of double
+    SECTION("double")
     {
-        // create and populate the test table
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         int const rowsToTest = 100;
         double d = 0.0;
 
@@ -969,11 +955,8 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
         }
     }
 
-    // repeated fetch and bulk fetch of std::tm
+    SECTION("std::tm")
     {
-        // create and populate the test table
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         int const rowsToTest = 8;
         for (int i = 0; i != rowsToTest; ++i)
         {
@@ -1195,9 +1178,10 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
 {
     session sql(backEndFactory_, connectString_);
 
-    // test for char
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+    SECTION("char")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
         char c('a');
         sql << "insert into soci_test(c) values(:c)", use(c);
 
@@ -1207,9 +1191,8 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
 
     }
 
-    // test for std::string
+    SECTION("std::string")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
         std::string s = "Hello SOCI!";
         sql << "insert into soci_test(str) values(:s)", use(s);
 
@@ -1219,9 +1202,8 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(str == "Hello SOCI!");
     }
 
-    // test for short
+    SECTION("short")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
         short s = 123;
         sql << "insert into soci_test(id) values(:id)", use(s);
 
@@ -1231,9 +1213,8 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(s2 == 123);
     }
 
-    // test for int
+    SECTION("int")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
         int i = -12345678;
         sql << "insert into soci_test(id) values(:i)", use(i);
 
@@ -1243,9 +1224,8 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(i2 == -12345678);
     }
 
-    // test for unsigned long
+    SECTION("unsigned long")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
         unsigned long ul = 4000000000ul;
         sql << "insert into soci_test(ul) values(:num)", use(ul);
 
@@ -1255,9 +1235,8 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(ul2 == 4000000000ul);
     }
 
-    // test for double
+    SECTION("double")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
         double d = 3.14159265;
         sql << "insert into soci_test(d) values(:d)", use(d);
 
@@ -1267,9 +1246,8 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         ASSERT_EQUAL(d2, d);
     }
 
-    // test for std::tm
+    SECTION("std::tm")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
         std::tm t;
         t.tm_year = 105;
         t.tm_mon = 10;
@@ -1297,9 +1275,8 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(t.tm_sec  == 57);
     }
 
-    // test for repeated use
+    SECTION("repeated use")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
         int i;
         statement st = (sql.prepare
             << "insert into soci_test(id) values(:id)", use(i));
@@ -1322,9 +1299,8 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
 
     // tests for use of const objects
 
-    // test for char
+    SECTION("const char")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
         char const c('a');
         sql << "insert into soci_test(c) values(:c)", use(c);
 
@@ -1334,9 +1310,8 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
 
     }
 
-    // test for std::string
+    SECTION("const std::string")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
         std::string const s = "Hello const SOCI!";
         sql << "insert into soci_test(str) values(:s)", use(s);
 
@@ -1346,9 +1321,8 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(str == "Hello const SOCI!");
     }
 
-    // test for short
+    SECTION("const short")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
         short const s = 123;
         sql << "insert into soci_test(id) values(:id)", use(s);
 
@@ -1358,9 +1332,8 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(s2 == 123);
     }
 
-    // test for int
+    SECTION("const int")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
         int const i = -12345678;
         sql << "insert into soci_test(id) values(:i)", use(i);
 
@@ -1370,9 +1343,8 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(i2 == -12345678);
     }
 
-    // test for unsigned long
+    SECTION("const unsigned long")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
         unsigned long const ul = 4000000000ul;
         sql << "insert into soci_test(ul) values(:num)", use(ul);
 
@@ -1382,9 +1354,8 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(ul2 == 4000000000ul);
     }
 
-    // test for double
+    SECTION("const double")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
         double const d = 3.14159265;
         sql << "insert into soci_test(d) values(:d)", use(d);
 
@@ -1394,9 +1365,8 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         ASSERT_EQUAL(d2, d);
     }
 
-    // test for std::tm
+    SECTION("const std::tm")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
         std::tm t;
         t.tm_year = 105;
         t.tm_mon = 10;
@@ -1526,10 +1496,10 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
 {
     session sql(backEndFactory_, connectString_);
 
-    // test for char
-    {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
+    SECTION("char")
+    {
         std::vector<char> v;
         v.push_back('a');
         v.push_back('b');
@@ -1548,10 +1518,8 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         CHECK(v2[3] == 'd');
     }
 
-    // test for std::string
+    SECTION("std::string")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         std::vector<std::string> v;
         v.push_back("ala");
         v.push_back("ma");
@@ -1568,10 +1536,8 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         CHECK(v2[2] == "ma");
     }
 
-    // test for short
+    SECTION("short")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         std::vector<short> v;
         v.push_back(-5);
         v.push_back(6);
@@ -1590,10 +1556,8 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         CHECK(v2[3] == 123);
     }
 
-    // test for int
+    SECTION("int")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         std::vector<int> v;
         v.push_back(-2000000000);
         v.push_back(0);
@@ -1612,10 +1576,8 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         CHECK(v2[3] == 2000000000);
     }
 
-    // test for unsigned int
+    SECTION("unsigned int")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         std::vector<unsigned int> v;
         v.push_back(0);
         v.push_back(1);
@@ -1634,10 +1596,8 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         CHECK(v2[3] == 1000);
     }
 
-    // test for double
+    SECTION("double")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         std::vector<double> v;
         v.push_back(0);
         v.push_back(-0.0001);
@@ -1656,10 +1616,8 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         ASSERT_EQUAL(v2[3], 3.1415926);
     }
 
-    // test for std::tm
+    SECTION("std::tm")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         std::vector<std::tm> v;
         std::tm t;
         t.tm_year = 105;
@@ -1703,10 +1661,8 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         CHECK(v2[2].tm_sec  == 37);
     }
 
-    // additional test for int (use const vector)
+    SECTION("const int")
     {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
         std::vector<int> v;
         v.push_back(-2000000000);
         v.push_back(0);
@@ -2156,158 +2112,150 @@ TEST_CASE_METHOD(common_tests, "Dynamic binding with type conversions", "[core][
 
     sql.uppercase_column_names(true);
 
-    // simple conversion (between single basic type and user type)
-
+    SECTION("simple conversions")
     {
         auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
-        MyInt mi;
-        mi.set(123);
-        sql << "insert into soci_test(id) values(:id)", use(mi);
-
-        int i;
-        sql << "select id from soci_test", into(i);
-        CHECK(i == 123);
-
-        sql << "update soci_test set id = id + 1";
-
-        sql << "select id from soci_test", into(mi);
-        CHECK(mi.get() == 124);
-    }
-
-    // simple conversion with use const
-
-    {
-        auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
-        MyInt mi;
-        mi.set(123);
-
-        MyInt const & cmi = mi;
-        sql << "insert into soci_test(id) values(:id)", use(cmi);
-
-        int i;
-        sql << "select id from soci_test", into(i);
-        CHECK(i == 123);
-    }
-
-    // conversions based on values (many fields involved -> ORM)
-
-    {
-        auto_table_creator tableCreator(tc_.table_creator_3(sql));
-
-        PhonebookEntry p1;
-        sql << "select * from soci_test", into(p1);
-        CHECK(p1.name ==  "");
-        CHECK(p1.phone == "");
-
-        p1.name = "david";
-
-        // Note: uppercase column names are used here (and later on)
-        // for consistency with how they can be read from database
-        // (which means forced to uppercase on Oracle) and how they are
-        // set/get in the type conversion routines for PhonebookEntry.
-        // In short, IF the database is Oracle,
-        // then all column names for binding should be uppercase.
-        sql << "insert into soci_test values(:NAME, :PHONE)", use(p1);
-        sql << "insert into soci_test values('john', '(404)123-4567')";
-        sql << "insert into soci_test values('doe', '(404)123-4567')";
-
-        PhonebookEntry p2;
-        statement st = (sql.prepare << "select * from soci_test", into(p2));
-        st.execute();
-
-        int count = 0;
-        while (st.fetch())
+        SECTION("between single basic type and user type")
         {
-            ++count;
-            if (p2.name == "david")
-            {
-                // see type_conversion<PhonebookEntry>
-                CHECK(p2.phone =="<NULL>");
-            }
-            else
-            {
-                CHECK(p2.phone == "(404)123-4567");
-            }
+            MyInt mi;
+            mi.set(123);
+            sql << "insert into soci_test(id) values(:id)", use(mi);
+
+            int i;
+            sql << "select id from soci_test", into(i);
+            CHECK(i == 123);
+
+            sql << "update soci_test set id = id + 1";
+
+            sql << "select id from soci_test", into(mi);
+            CHECK(mi.get() == 124);
         }
-        CHECK(count == 3);
-    }
 
-    // conversions based on values with use const
-
-    {
-        auto_table_creator tableCreator(tc_.table_creator_3(sql));
-
-        PhonebookEntry p1;
-        p1.name = "Joe Coder";
-        p1.phone = "123-456";
-
-        PhonebookEntry const & cp1 = p1;
-
-        sql << "insert into soci_test values(:NAME, :PHONE)", use(cp1);
-
-        PhonebookEntry p2;
-        sql << "select * from soci_test", into(p2);
-        CHECK(sql.got_data());
-
-        CHECK(p2.name == "Joe Coder");
-        CHECK(p2.phone == "123-456");
-    }
-
-    // conversions based on accessor functions (as opposed to direct variable bindings)
-
-    {
-        auto_table_creator tableCreator(tc_.table_creator_3(sql));
-
-        PhonebookEntry3 p1;
-        p1.setName("Joe Hacker");
-        p1.setPhone("10010110");
-
-        sql << "insert into soci_test values(:NAME, :PHONE)", use(p1);
-
-        PhonebookEntry3 p2;
-        sql << "select * from soci_test", into(p2);
-        CHECK(sql.got_data());
-
-        CHECK(p2.getName() == "Joe Hacker");
-        CHECK(p2.getPhone() == "10010110");
-    }
-
-    {
-        // Use the PhonebookEntry2 type conversion, to test
-        // calls to values::get_indicator()
-        auto_table_creator tableCreator(tc_.table_creator_3(sql));
-
-        PhonebookEntry2 p1;
-        sql << "select * from soci_test", into(p1);
-        CHECK(p1.name ==  "");
-        CHECK(p1.phone == "");
-        p1.name = "david";
-
-        sql << "insert into soci_test values(:NAME, :PHONE)", use(p1);
-        sql << "insert into soci_test values('john', '(404)123-4567')";
-        sql << "insert into soci_test values('doe', '(404)123-4567')";
-
-        PhonebookEntry2 p2;
-        statement st = (sql.prepare << "select * from soci_test", into(p2));
-        st.execute();
-
-        int count = 0;
-        while (st.fetch())
+        SECTION("with use const")
         {
-            ++count;
-            if (p2.name == "david")
-            {
-                // see type_conversion<PhonebookEntry2>
-                CHECK(p2.phone =="<NULL>");
-            }
-            else
-            {
-                CHECK(p2.phone == "(404)123-4567");
-            }
+            MyInt mi;
+            mi.set(123);
+
+            MyInt const & cmi = mi;
+            sql << "insert into soci_test(id) values(:id)", use(cmi);
+
+            int i;
+            sql << "select id from soci_test", into(i);
+            CHECK(i == 123);
         }
-        CHECK(count == 3);
+    }
+
+    SECTION("ORM conversions")
+    {
+        auto_table_creator tableCreator(tc_.table_creator_3(sql));
+
+        SECTION("conversions based on values")
+        {
+            PhonebookEntry p1;
+            sql << "select * from soci_test", into(p1);
+            CHECK(p1.name ==  "");
+            CHECK(p1.phone == "");
+
+            p1.name = "david";
+
+            // Note: uppercase column names are used here (and later on)
+            // for consistency with how they can be read from database
+            // (which means forced to uppercase on Oracle) and how they are
+            // set/get in the type conversion routines for PhonebookEntry.
+            // In short, IF the database is Oracle,
+            // then all column names for binding should be uppercase.
+            sql << "insert into soci_test values(:NAME, :PHONE)", use(p1);
+            sql << "insert into soci_test values('john', '(404)123-4567')";
+            sql << "insert into soci_test values('doe', '(404)123-4567')";
+
+            PhonebookEntry p2;
+            statement st = (sql.prepare << "select * from soci_test", into(p2));
+            st.execute();
+
+            int count = 0;
+            while (st.fetch())
+            {
+                ++count;
+                if (p2.name == "david")
+                {
+                    // see type_conversion<PhonebookEntry>
+                    CHECK(p2.phone =="<NULL>");
+                }
+                else
+                {
+                    CHECK(p2.phone == "(404)123-4567");
+                }
+            }
+            CHECK(count == 3);
+        }
+
+        SECTION("conversions based on values with use const")
+        {
+            PhonebookEntry p1;
+            p1.name = "Joe Coder";
+            p1.phone = "123-456";
+
+            PhonebookEntry const & cp1 = p1;
+
+            sql << "insert into soci_test values(:NAME, :PHONE)", use(cp1);
+
+            PhonebookEntry p2;
+            sql << "select * from soci_test", into(p2);
+            CHECK(sql.got_data());
+
+            CHECK(p2.name == "Joe Coder");
+            CHECK(p2.phone == "123-456");
+        }
+
+        SECTION("conversions based on accessor functions (as opposed to direct variable bindings)")
+        {
+            PhonebookEntry3 p1;
+            p1.setName("Joe Hacker");
+            p1.setPhone("10010110");
+
+            sql << "insert into soci_test values(:NAME, :PHONE)", use(p1);
+
+            PhonebookEntry3 p2;
+            sql << "select * from soci_test", into(p2);
+            CHECK(sql.got_data());
+
+            CHECK(p2.getName() == "Joe Hacker");
+            CHECK(p2.getPhone() == "10010110");
+        }
+
+        SECTION("PhonebookEntry2 type conversion to test calls to values::get_indicator()")
+        {
+            PhonebookEntry2 p1;
+            sql << "select * from soci_test", into(p1);
+            CHECK(p1.name ==  "");
+            CHECK(p1.phone == "");
+            p1.name = "david";
+
+            sql << "insert into soci_test values(:NAME, :PHONE)", use(p1);
+            sql << "insert into soci_test values('john', '(404)123-4567')";
+            sql << "insert into soci_test values('doe', '(404)123-4567')";
+
+            PhonebookEntry2 p2;
+            statement st = (sql.prepare << "select * from soci_test", into(p2));
+            st.execute();
+
+            int count = 0;
+            while (st.fetch())
+            {
+                ++count;
+                if (p2.name == "david")
+                {
+                    // see type_conversion<PhonebookEntry2>
+                    CHECK(p2.phone =="<NULL>");
+                }
+                else
+                {
+                    CHECK(p2.phone == "(404)123-4567");
+                }
+            }
+            CHECK(count == 3);
+        }
     }
 }
 
