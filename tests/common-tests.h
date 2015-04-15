@@ -413,6 +413,14 @@ protected:
 
 typedef std::auto_ptr<table_creator_base> auto_table_creator;
 
+// Define the test cases in their own namespace to avoid clashes with the test
+// cases defined in individual backend tests: as only line number is used for
+// building the name of the "anonymous" function by the TEST_CASE macro, we
+// could have a conflict between a test defined here and in some backend if
+// they happened to start on the same line.
+namespace test_cases
+{
+
 TEST_CASE_METHOD(common_tests, "Exception on not connected", "[core][exception]")
 {
     soci::session sql; // no connection
@@ -4000,6 +4008,8 @@ TEST_CASE_METHOD(common_tests, "Insert error", "[core][insert][exception]")
         }
     }
 }
+
+} // namespace test_cases
 
 } // namespace tests
 
