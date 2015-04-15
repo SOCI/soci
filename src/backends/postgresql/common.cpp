@@ -7,6 +7,7 @@
 
 #include "soci/soci-platform.h"
 #include "soci/soci-backend.h"
+#include "soci-mktime.h"
 #include <cstdlib>
 #include <ctime>
 #include "common.h"
@@ -81,13 +82,5 @@ void soci::details::postgresql::parse_std_tm(char const * buf, std::tm & t)
         }
     }
 
-    t.tm_isdst = -1;
-    t.tm_year = year - 1900;
-    t.tm_mon  = month - 1;
-    t.tm_mday = day;
-    t.tm_hour = hour;
-    t.tm_min  = minute;
-    t.tm_sec  = second;
-
-    std::mktime(&t);
+    details::mktime_from_ymdhms(t, year, month, day, hour, minute, second);
 }

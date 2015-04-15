@@ -15,6 +15,7 @@
 
 #include "soci-compiler.h"
 #include "soci-exchange-cast.h"
+#include "soci-mktime.h"
 
 #include <cctype>
 #include <cstdio>
@@ -405,16 +406,17 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
             {
                 std::tm& original = exchange_type_cast<x_stdtm>(data_);
 
-                std::tm bound;
                 ub1 *pos = reinterpret_cast<ub1*>(buf_);
-                bound.tm_isdst = -1;
-                bound.tm_year = (*pos++ - 100) * 100;
-                bound.tm_year += *pos++ - 2000;
-                bound.tm_mon = *pos++ - 1;
-                bound.tm_mday = *pos++;
-                bound.tm_hour = *pos++ - 1;
-                bound.tm_min = *pos++ - 1;
-                bound.tm_sec = *pos++ - 1;
+                int year = (*pos++ - 100) * 100;
+                year += *pos++ - 100;
+                int const month = *pos++;
+                int const day = *pos++;
+                int const hour = *pos++ - 1;
+                int const minute = *pos++ - 1;
+                int const second = *pos++ - 1;
+
+                std::tm bound;
+                details::mktime_from_ymdhms(bound, year, month, day, hour, minute, second);
 
                 if (original.tm_year != bound.tm_year ||
                     original.tm_mon != bound.tm_mon ||
@@ -430,9 +432,6 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
                     else
                     {
                         original = bound;
-
-                        // normalize and compute the remaining fields
-                        std::mktime(&original);
                     }
                 }
             }

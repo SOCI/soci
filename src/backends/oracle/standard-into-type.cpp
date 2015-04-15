@@ -13,6 +13,7 @@
 #include "soci/statement.h"
 #include "soci/soci-platform.h"
 #include "soci-exchange-cast.h"
+#include "soci-mktime.h"
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -201,17 +202,15 @@ void oracle_standard_into_type_backend::post_fetch(
                 std::tm& t = exchange_type_cast<x_stdtm>(data_);
 
                 ub1 *pos = reinterpret_cast<ub1*>(buf_);
-                t.tm_isdst = -1;
-                t.tm_year = (*pos++ - 100) * 100;
-                t.tm_year += *pos++ - 2000;
-                t.tm_mon = *pos++ - 1;
-                t.tm_mday = *pos++;
-                t.tm_hour = *pos++ - 1;
-                t.tm_min = *pos++ - 1;
-                t.tm_sec = *pos++ - 1;
+                int year = (*pos++ - 100) * 100;
+                year += *pos++ - 100;
+                int const month = *pos++;
+                int const day = *pos++;
+                int const hour = *pos++ - 1;
+                int const minute = *pos++ - 1;
+                int const second = *pos++ - 1;
 
-                // normalize and compute the remaining fields
-                std::mktime(&t);
+                details::mktime_from_ymdhms(t, year, month, day, hour, minute, second);
             }
         }
         else if (type_ == x_statement)

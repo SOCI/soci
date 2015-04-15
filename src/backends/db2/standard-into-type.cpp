@@ -9,6 +9,7 @@
 #define SOCI_DB2_SOURCE
 #include "soci/db2/soci-db2.h"
 #include "soci-exchange-cast.h"
+#include "soci-mktime.h"
 #include "common.h"
 #include <ctime>
 
@@ -144,16 +145,10 @@ void db2_standard_into_type_backend::post_fetch(
             std::tm& t = exchange_type_cast<x_stdtm>(data);
 
             TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf);
-            t.tm_isdst = -1;
-            t.tm_year = ts->year - 1900;
-            t.tm_mon = ts->month - 1;
-            t.tm_mday = ts->day;
-            t.tm_hour = ts->hour;
-            t.tm_min = ts->minute;
-            t.tm_sec = ts->second;
 
-            // normalize and compute the remaining fields
-            std::mktime(&t);
+            details::mktime_from_ymdhms(t,
+                                        ts->year, ts->month, ts->day,
+                                        ts->hour, ts->minute, ts->second);
         }
     }
 }

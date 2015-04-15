@@ -9,6 +9,7 @@
 #include "soci/soci-platform.h"
 #include "soci/odbc/soci-odbc.h"
 #include "soci-exchange-cast.h"
+#include "soci-mktime.h"
 #include <ctime>
 #include <stdio.h>  // sscanf()
 
@@ -163,16 +164,10 @@ void odbc_standard_into_type_backend::post_fetch(
             std::tm& t = exchange_type_cast<x_stdtm>(data_);
 
             TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
-            t.tm_isdst = -1;
-            t.tm_year = ts->year - 1900;
-            t.tm_mon = ts->month - 1;
-            t.tm_mday = ts->day;
-            t.tm_hour = ts->hour;
-            t.tm_min = ts->minute;
-            t.tm_sec = ts->second;
 
-            // normalize and compute the remaining fields
-            std::mktime(&t);
+            details::mktime_from_ymdhms(t,
+                                        ts->year, ts->month, ts->day,
+                                        ts->hour, ts->minute, ts->second);
         }
         else if (type_ == x_long_long && use_string_for_bigint())
         {
