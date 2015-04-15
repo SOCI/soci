@@ -147,7 +147,7 @@ void odbc_statement_backend::prepare(std::string const & query,
 }
 
 statement_backend::exec_fetch_result
-odbc_statement_backend::execute(int number)
+odbc_statement_backend::execute(bool withDataExchange, mn_odbc_error_info& err_info)
 {
     // Store the number of rows processed by this call.
     SQLULEN rows_processed = 0;
@@ -184,8 +184,17 @@ odbc_statement_backend::execute(int number)
         //    // Move forward to the next result while there are rows processed.
         //    while (rows_processed > 0 && SQLMoreResults(hstmt_) == SQL_SUCCESS);
         //}
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
+        
+        odbc_soci_error myErr(SQL_HANDLE_STMT, hstmt_,
                          "Statement Execute");
+
+        err_info.native_error_code_ = myErr.native_error_code();
+        err_info.odbc_error_code_ = myErr.native_error_code();
+        err_info.odbc_error_message_ = (char*)myErr.odbc_error_message();
+        err_info.odbc_func_name_ = "SQLExecute";
+        err_info.odbc_func_returnval_ = rc;
+
+        return ef_error;
     }
     // We should preserve the number of rows affected here 
     // where we know for sure that a bulk operation was executed.
@@ -198,8 +207,16 @@ odbc_statement_backend::execute(int number)
             SQLRETURN rc = SQLRowCount(hstmt_, &res);
             if (is_odbc_error(rc))
             {
-                throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
+                odbc_soci_error myErr(SQL_HANDLE_STMT, hstmt_,
                                   "Getting number of affected rows");
+
+                err_info.native_error_code_ = myErr.native_error_code();
+                err_info.odbc_error_code_ = myErr.native_error_code();
+                err_info.odbc_error_message_ = (char*)myErr.odbc_error_message();
+                err_info.odbc_func_name_ = "SQLRowCount";
+                err_info.odbc_func_returnval_ = rc;
+
+                return ef_error;
             }
             rowsAffected_ += res;
         }
@@ -209,16 +226,16 @@ odbc_statement_backend::execute(int number)
     SQLSMALLINT colCount;
     SQLNumResultCols(hstmt_, &colCount);
 
-    if (number > 0 && colCount > 0)
+    if (withDataExchange && colCount > 0)
     {
-        return fetch(number);
+        return fetch(1, err_info);
     }
 
     return ef_success;
 }
 
 statement_backend::exec_fetch_result
-odbc_statement_backend::fetch(int number)
+odbc_statement_backend::fetch(int number, mn_odbc_error_info& err_info)
 {
     numRowsFetched_ = 0;
     SQLULEN const row_array_size = static_cast<SQLULEN>(number);
@@ -236,8 +253,16 @@ odbc_statement_backend::fetch(int number)
 
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
+        odbc_soci_error myErr(SQL_HANDLE_STMT, hstmt_,
                          "Statement Fetch");
+
+        err_info.native_error_code_ = myErr.native_error_code();
+        err_info.odbc_error_code_ = myErr.native_error_code();
+        err_info.odbc_error_message_ = (char*)myErr.odbc_error_message();
+        err_info.odbc_func_name_ = "SQLFetch";
+        err_info.odbc_func_returnval_ = rc;
+
+        return ef_error;
     }
 
     return ef_success;
@@ -266,7 +291,7 @@ int odbc_statement_backend::prepare_for_describe()
     return numCols;
 }
 
-void odbc_statement_backend::describe_column(int colNum, column_properties& colProperties)
+bool odbc_statement_backend::describe_column(int colNum, column_properties& colProperties, mn_odbc_error_info& err_info)
 {
     SQLCHAR colNameBuffer[2048];
     SQLSMALLINT colNameBufferOverflow;
@@ -282,8 +307,16 @@ void odbc_statement_backend::describe_column(int colNum, column_properties& colP
 
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
+        odbc_soci_error myErr(SQL_HANDLE_STMT, hstmt_,
                          "describe Column");
+
+        err_info.native_error_code_ = myErr.native_error_code();
+        err_info.odbc_error_code_ = myErr.native_error_code();
+        err_info.odbc_error_message_ = (char*)myErr.odbc_error_message();
+        err_info.odbc_func_name_ = "SQLDescribeCol";
+        err_info.odbc_func_returnval_ = rc;
+
+        return false;
     }
 
     colProperties.set_column_size(colSize);
@@ -340,6 +373,8 @@ void odbc_statement_backend::describe_column(int colNum, column_properties& colP
     }
 
     colProperties.set_data_type(type);
+
+    return true;
 }
 
 std::size_t odbc_statement_backend::column_size(int colNum)

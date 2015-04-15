@@ -32,10 +32,10 @@ void standard_into_type::post_fetch(bool gotData, bool calledFromFetch)
 {
     backEnd_->post_fetch(gotData, calledFromFetch, ind_);
 
-    if (gotData)
-    {
-        convert_from_base();
-    }
+    //if (gotData)
+    //{
+    //    convert_from_base();
+    //}
 }
 
 void standard_into_type::clean_up()
@@ -75,10 +75,10 @@ void vector_into_type::post_fetch(bool gotData, bool /* calledFromFetch */)
         backEnd_->post_fetch(gotData, NULL);
     }
 
-    if (gotData)
-    {
-        convert_from_base();
-    }
+    //if (gotData)
+    //{
+    //    convert_from_base();
+    //}
 }
 
 void vector_into_type::resize(std::size_t sz)

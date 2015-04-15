@@ -46,13 +46,13 @@ private:
     {
         r_.reset_get_counter();
 
-        if (gotData)
-        {
+        //if (gotData)
+        //{
             // this is used only to re-dispatch to derived class, if any
             // (the derived class might be generated automatically by
             // user conversions)
-            convert_from_base();
-        }
+            //convert_from_base();
+        //}
     }
 
     virtual void clean_up() {}

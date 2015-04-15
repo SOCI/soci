@@ -49,10 +49,10 @@ public:
                     statement_type eType = st_repeatable_query);
     void define_and_bind();
     void undefine_and_bind();
-    bool execute(bool withDataExchange = false);
+    bool execute(bool withDataExchange, mn_odbc_error_info& err_info);
     long long get_affected_rows();
-    bool fetch();
-    void describe();
+    bool fetch(mn_odbc_error_info& err_info);
+    bool describe(mn_odbc_error_info& err_info);
     void set_row(row * r);
     void exchange_for_rowset(into_type_ptr const & i);
 
@@ -169,9 +169,9 @@ public:
 
     void define_and_bind() { impl_->define_and_bind(); }
     void undefine_and_bind()  { impl_->undefine_and_bind(); }
-    bool execute(bool withDataExchange = false)
+    bool execute(bool withDataExchange, mn_odbc_error_info& err_info)
     {
-        gotData_ = impl_->execute(withDataExchange);
+        gotData_ = impl_->execute(withDataExchange, err_info);
         return gotData_;
     }
 
@@ -180,15 +180,15 @@ public:
         return impl_->get_affected_rows();
     }
 
-    bool fetch()
+    bool fetch(mn_odbc_error_info& err_info)
     {
-        gotData_ = impl_->fetch();
+        gotData_ = impl_->fetch(err_info);
         return gotData_;
     }
 
     bool got_data() const { return gotData_; }
 
-    void describe()       { impl_->describe(); }
+    bool describe(mn_odbc_error_info& err_info)       { return impl_->describe(err_info); }
     void set_row(row * r) { impl_->set_row(r); }
     void exchange_for_rowset(details::into_type_ptr const & i)
     {

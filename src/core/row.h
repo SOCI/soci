@@ -59,10 +59,10 @@ public:
 
     void uppercase_column_names(bool forceToUpper);
     void add_properties(column_properties const& cp);
-    std::size_t size() const;
+    const std::size_t& size() const;
     void clean_up();
 
-    indicator get_indicator(std::size_t pos) const;
+    indicator get_indicator(const std::size_t& pos) const;
     indicator get_indicator(std::string const& name) const;
 
     template <typename T>
@@ -70,10 +70,14 @@ public:
     {
         holders_.push_back(new details::type_holder<T>(t));
         indicators_.push_back(ind);
+
+        row_size_ = holders_.size();
     }
 
-    column_properties const& get_properties(std::size_t pos) const;
+    column_properties const& get_properties(const std::size_t& pos) const;
     column_properties const& get_properties(std::string const& name) const;
+
+    data_type                getDatatypeForColumn(const std::size_t& pos) const;
 
     template <typename T>
     T get_without_cast(std::size_t pos) const
@@ -84,7 +88,7 @@ public:
     }
 
     template <typename T>
-    T get(std::size_t pos) const
+    T get(const std::size_t& pos) const
     {
         assert(holders_.size() >= pos + 1);
 
@@ -97,7 +101,7 @@ public:
     }
 
     template <typename T>
-    T get(std::size_t pos, T const &nullValue) const
+    T get(const std::size_t& pos, T const &nullValue) const
     {
         assert(holders_.size() >= pos + 1);
 
@@ -161,6 +165,7 @@ private:
 
     bool uppercaseColumnNames_;
     mutable std::size_t currentPos_;
+    size_t  row_size_;
 };
 
 } // namespace soci

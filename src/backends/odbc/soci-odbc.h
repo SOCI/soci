@@ -58,7 +58,7 @@ protected:
 
     // Check if we need to pass 64 bit integers as strings to the database as
     // some drivers don't support them directly.
-    inline bool use_string_for_bigint() const;
+    //inline bool use_string_for_bigint() const;
 
     // If we do need to use strings for 64 bit integers, this constant defines
     // the maximal string length needed.
@@ -208,8 +208,8 @@ struct odbc_statement_backend : details::statement_backend
     virtual void prepare(std::string const &query,
         details::statement_type eType);
 
-    virtual exec_fetch_result execute(int number);
-    virtual exec_fetch_result fetch(int number);
+    virtual exec_fetch_result execute(bool withDataExchange, mn_odbc_error_info& err_info);
+    virtual exec_fetch_result fetch(int number, mn_odbc_error_info& err_info);
 
     virtual long long get_affected_rows();
     virtual int get_number_of_rows();
@@ -217,7 +217,7 @@ struct odbc_statement_backend : details::statement_backend
     virtual std::string rewrite_for_procedure_call(std::string const &query);
 
     virtual int prepare_for_describe();
-    virtual void describe_column(int colNum, column_properties& colProperties);
+    virtual bool describe_column(int colNum, column_properties& colProperties, mn_odbc_error_info& err_info);
 
     // helper for defining into vector<string>
     std::size_t column_size(int position);
@@ -397,17 +397,25 @@ inline bool is_odbc_error(SQLRETURN rc)
     }
 }
 
-inline bool odbc_standard_type_backend_base::use_string_for_bigint() const
-{
-    // Oracle ODBC driver doesn't support SQL_C_[SU]BIGINT data types
-    // (see appendix G.1 of Oracle Database Administrator's reference at
-    // http://docs.oracle.com/cd/B19306_01/server.102/b15658/app_odbc.htm),
-    // so we need a special workaround for this case and we represent 64
-    // bit integers as strings and rely on ODBC driver for transforming
-    // them to SQL_NUMERIC.
-    return statement_.session_.get_database_product()
-            == odbc_session_backend::prod_oracle;
-}
+//inline bool odbc_standard_type_backend_base::use_string_for_bigint() const
+//{
+//    // Oracle ODBC driver doesn't support SQL_C_[SU]BIGINT data types
+//    // (see appendix G.1 of Oracle Database Administrator's reference at
+//    // http://docs.oracle.com/cd/B19306_01/server.102/b15658/app_odbc.htm),
+//    // so we need a special workaround for this case and we represent 64
+//    // bit integers as strings and rely on ODBC driver for transforming
+//    // them to SQL_NUMERIC.
+//    static bool bChecked = false;
+//    static bool bIsOracle = false;
+//    if (!bChecked)
+//    {  //only check once!!
+//        bIsOracle = statement_.session_.get_database_product()
+//            == odbc_session_backend::prod_oracle;
+//        bChecked = true;
+//    }
+//
+//    return bIsOracle;
+//}
 
 struct odbc_backend_factory : backend_factory
 {

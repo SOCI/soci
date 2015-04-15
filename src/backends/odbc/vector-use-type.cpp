@@ -73,21 +73,21 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             std::size_t const vsize = v.size();
             prepare_indicators(vsize);
 
-            if (use_string_for_bigint())
-            {
-                sqlType = SQL_NUMERIC;
-                cType = SQL_C_CHAR;
-                size = max_bigint_length;
-                buf_ = new char[size * vsize];
-                data = buf_;
-            }
-            else // Normal case, use ODBC support.
-            {
-                sqlType = SQL_BIGINT;
-                cType = SQL_C_SBIGINT;
+            //if (use_string_for_bigint())
+            //{
+            //    sqlType = SQL_NUMERIC;
+            //    cType = SQL_C_CHAR;
+            //    size = max_bigint_length;
+            //    buf_ = new char[size * vsize];
+            //    data = buf_;
+            //}
+            //else // Normal case, use ODBC support.
+            //{
+                sqlType = SQL_INTEGER;
+                cType = SQL_C_SLONG;
                 size = sizeof(long long);
                 data = &v[0];
-            }
+            //}
         }
         break;
     case x_unsigned_long_long:
@@ -98,21 +98,21 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             std::size_t const vsize = v.size();
             prepare_indicators(vsize);
 
-            if (use_string_for_bigint())
-            {
-                sqlType = SQL_NUMERIC;
-                cType = SQL_C_CHAR;
-                size = max_bigint_length;
-                buf_ = new char[size * vsize];
-                data = buf_;
-            }
-            else // Normal case, use ODBC support.
-            {
-                sqlType = SQL_BIGINT;
-                cType = SQL_C_SBIGINT;
+            //if (use_string_for_bigint())
+            //{
+            //    sqlType = SQL_NUMERIC;
+            //    cType = SQL_C_CHAR;
+            //    size = max_bigint_length;
+            //    buf_ = new char[size * vsize];
+            //    data = buf_;
+            //}
+            //else // Normal case, use ODBC support.
+            //{
+            sqlType = SQL_INTEGER;
+            cType = SQL_C_SLONG;
                 size = sizeof(unsigned long long);
                 data = &v[0];
-            }
+            //}
         }
         break;
     case x_double:
@@ -208,60 +208,61 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
                 = static_cast<std::vector<MNSociString> *>(data);
             std::vector<MNSociString> &v(*vp);
 
-            std::size_t maxSize = 0;
+            //std::size_t maxSize = 0;
             std::size_t const vecSize = v.size();
             prepare_indicators(vecSize);
 
-            maxSize = v[0].m_iCharLength + 1;
+            //maxSize = 257 + 1;
+            //must have size + 1 for the vector iteration!!
 
-            buf_ = new char[maxSize * vecSize];
-            memset(buf_, 0, maxSize * vecSize);
+            buf_ = new char[256 * vecSize];
+            memset(buf_, 0, 256 * vecSize);
 
             char *pos = buf_;
             for (std::size_t i = 0; i != vecSize; ++i)
             {
                 indHolderVec_[i] = strlen(v[i].m_ptrCharData);
                 strncpy(pos, v[i].m_ptrCharData, indHolderVec_[i]);
-                pos += maxSize;
+                pos += 256;
             }
 
             data = buf_;
-            size = static_cast<SQLINTEGER>(maxSize);
+            size = static_cast<SQLINTEGER>(256);
         }
         break;                          
-    case x_stdtm:
-        {
-            std::vector<std::tm> *vp
-                = static_cast<std::vector<std::tm> *>(data);
+    //case x_stdtm:
+    //    {
+    //        std::vector<std::tm> *vp
+    //            = static_cast<std::vector<std::tm> *>(data);
 
-            prepare_indicators(vp->size());
+    //        prepare_indicators(vp->size());
 
-            buf_ = new char[sizeof(TIMESTAMP_STRUCT) * vp->size()];
+    //        buf_ = new char[sizeof(TIMESTAMP_STRUCT) * vp->size()];
 
-            sqlType = SQL_TYPE_TIMESTAMP;
-            cType = SQL_C_TYPE_TIMESTAMP;
-            data = buf_;
-            //size = 19; // This number is not the size in bytes, but the number
-            //          // of characters in the date if it was written out
-            //          // yyyy-mm-dd hh:mm:ss
-            if (statement_.session_.get_database_product() == soci::odbc_session_backend::prod_oracle)
-            {
-                 // oracle date columns require the pure 16 byte length to work as expected
-                size = sizeof(TIMESTAMP_STRUCT);
-                 // my sql with SQL_DATETIME for values less than 1970
-                if (statement_.session_.get_database_product() == soci::odbc_session_backend::prod_mysql)
-                {
-                    sqlType = SQL_DATETIME;
-                }
-            }
-            else
-            {
-                size = 19; // This number is not the size in bytes, but the number
-                 // of characters in the date if it was written out
-                     // yyyy-mm-dd hh:mm:ss
-            }
-        }
-        break;
+    //        sqlType = SQL_TYPE_TIMESTAMP;
+    //        cType = SQL_C_TYPE_TIMESTAMP;
+    //        data = buf_;
+    //        //size = 19; // This number is not the size in bytes, but the number
+    //        //          // of characters in the date if it was written out
+    //        //          // yyyy-mm-dd hh:mm:ss
+    //        if (statement_.session_.get_database_product() == soci::odbc_session_backend::prod_oracle)
+    //        {
+    //             // oracle date columns require the pure 16 byte length to work as expected
+    //            size = sizeof(TIMESTAMP_STRUCT);
+    //             // my sql with SQL_DATETIME for values less than 1970
+    //            if (statement_.session_.get_database_product() == soci::odbc_session_backend::prod_mysql)
+    //            {
+    //                sqlType = SQL_DATETIME;
+    //            }
+    //        }
+    //        else
+    //        {
+    //            size = 19; // This number is not the size in bytes, but the number
+    //             // of characters in the date if it was written out
+    //                 // yyyy-mm-dd hh:mm:ss
+    //        }
+    //    }
+    //    break;
     case x_odbctimestamp:
     {
         sqlType = SQL_TYPE_TIMESTAMP;
@@ -361,58 +362,58 @@ void odbc_vector_use_type_backend::bind_by_name(
 void odbc_vector_use_type_backend::pre_use(indicator const *ind)
 {
     // first deal with data
-    if (type_ == x_stdtm)
-    {
-        std::vector<std::tm> *vp
-             = static_cast<std::vector<std::tm> *>(data_);
+    //if (type_ == x_stdtm)
+    //{
+    //    std::vector<std::tm> *vp
+    //         = static_cast<std::vector<std::tm> *>(data_);
 
-        std::vector<std::tm> &v(*vp);
+    //    std::vector<std::tm> &v(*vp);
 
-        char *pos = buf_;
-        std::size_t const vsize = v.size();
-        for (std::size_t i = 0; i != vsize; ++i)
-        {
-            std::tm t = v[i];
-            TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
+    //    char *pos = buf_;
+    //    std::size_t const vsize = v.size();
+    //    for (std::size_t i = 0; i != vsize; ++i)
+    //    {
+    //        std::tm t = v[i];
+    //        TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
 
-            ts->year = static_cast<SQLSMALLINT>(t.tm_year + 1900);
-            ts->month = static_cast<SQLUSMALLINT>(t.tm_mon + 1);
-            ts->day = static_cast<SQLUSMALLINT>(t.tm_mday);
-            ts->hour = static_cast<SQLUSMALLINT>(t.tm_hour);
-            ts->minute = static_cast<SQLUSMALLINT>(t.tm_min);
-            ts->second = static_cast<SQLUSMALLINT>(t.tm_sec);
-            ts->fraction = 0;
-            pos += sizeof(TIMESTAMP_STRUCT);
-        }
-    }
-    else if (type_ == x_long_long && use_string_for_bigint())
-    {
-        std::vector<long long> *vp
-             = static_cast<std::vector<long long> *>(data_);
-        std::vector<long long> &v(*vp);
+    //        ts->year = static_cast<SQLSMALLINT>(t.tm_year + 1900);
+    //        ts->month = static_cast<SQLUSMALLINT>(t.tm_mon + 1);
+    //        ts->day = static_cast<SQLUSMALLINT>(t.tm_mday);
+    //        ts->hour = static_cast<SQLUSMALLINT>(t.tm_hour);
+    //        ts->minute = static_cast<SQLUSMALLINT>(t.tm_min);
+    //        ts->second = static_cast<SQLUSMALLINT>(t.tm_sec);
+    //        ts->fraction = 0;
+    //        pos += sizeof(TIMESTAMP_STRUCT);
+    //    }
+    //}
+    //else if (type_ == x_long_long && use_string_for_bigint())
+    //{
+    //    std::vector<long long> *vp
+    //         = static_cast<std::vector<long long> *>(data_);
+    //    std::vector<long long> &v(*vp);
 
-        char *pos = buf_;
-        std::size_t const vsize = v.size();
-        for (std::size_t i = 0; i != vsize; ++i)
-        {
-            snprintf(pos, max_bigint_length, "%" LL_FMT_FLAGS "d", v[i]);
-            pos += max_bigint_length;
-        }
-    }
-    else if (type_ == x_unsigned_long_long && use_string_for_bigint())
-    {
-        std::vector<unsigned long long> *vp
-             = static_cast<std::vector<unsigned long long> *>(data_);
-        std::vector<unsigned long long> &v(*vp);
+    //    char *pos = buf_;
+    //    std::size_t const vsize = v.size();
+    //    for (std::size_t i = 0; i != vsize; ++i)
+    //    {
+    //        snprintf(pos, max_bigint_length, "%" LL_FMT_FLAGS "d", v[i]);
+    //        pos += max_bigint_length;
+    //    }
+    //}
+    //else if (type_ == x_unsigned_long_long && use_string_for_bigint())
+    //{
+    //    std::vector<unsigned long long> *vp
+    //         = static_cast<std::vector<unsigned long long> *>(data_);
+    //    std::vector<unsigned long long> &v(*vp);
 
-        char *pos = buf_;
-        std::size_t const vsize = v.size();
-        for (std::size_t i = 0; i != vsize; ++i)
-        {
-            snprintf(pos, max_bigint_length, "%" LL_FMT_FLAGS "u", v[i]);
-            pos += max_bigint_length;
-        }
-    }
+    //    char *pos = buf_;
+    //    std::size_t const vsize = v.size();
+    //    for (std::size_t i = 0; i != vsize; ++i)
+    //    {
+    //        snprintf(pos, max_bigint_length, "%" LL_FMT_FLAGS "u", v[i]);
+    //        pos += max_bigint_length;
+    //    }
+    //}
 
     // then handle indicators
     if (ind != NULL)
@@ -487,13 +488,13 @@ std::size_t odbc_vector_use_type_backend::size()
             sz = vp->size();
         }
         break;
-    case x_stdtm:
-        {
-            std::vector<std::tm> *vp
-                = static_cast<std::vector<std::tm> *>(data_);
-            sz = vp->size();
-        }
-        break;
+    //case x_stdtm:
+    //    {
+    //        std::vector<std::tm> *vp
+    //            = static_cast<std::vector<std::tm> *>(data_);
+    //        sz = vp->size();
+    //    }
+    //    break;
     case x_odbctimestamp:
     {
         std::vector<TIMESTAMP_STRUCT> *vp

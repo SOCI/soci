@@ -37,7 +37,7 @@ void standard_use_type::bind(statement_impl & st, int & position)
 void standard_use_type::pre_use()   
 {
     // Handle IN direction of parameters of SQL statements and procedures
-    convert_to_base();
+    //convert_to_base();
     backEnd_->pre_use(ind_);
 }
 
@@ -47,7 +47,7 @@ standard_use_type::to_string()
     std::string strVal;
     char msg[50];
 
-    convert_to_base();
+    //convert_to_base();
     switch (this->type_)
     {
     case x_char:
@@ -104,14 +104,14 @@ standard_use_type::to_string()
         strVal += msg;
         break;
     }
-    case x_stdtm:
-    {
-        std::tm myTime = *(std::tm*)data_;
-        sprintf(msg, "%d.%d.%d %02d:%02d:%02d", myTime.tm_mday, myTime.tm_mon + 1, myTime.tm_year + 1900, myTime.tm_hour, myTime.tm_min, myTime.tm_sec);
-        strVal = "x_stdtm:";
-        strVal += msg;
-        break;
-    }
+    //case x_stdtm:
+    //{
+    //    std::tm myTime = *(std::tm*)data_;
+    //    sprintf(msg, "%d.%d.%d %02d:%02d:%02d", myTime.tm_mday, myTime.tm_mon + 1, myTime.tm_year + 1900, myTime.tm_hour, myTime.tm_min, myTime.tm_sec);
+    //    strVal = "x_stdtm:";
+    //    strVal += msg;
+    //    break;
+    //}
     case x_odbctimestamp:
     {
         TIMESTAMP_STRUCT myTime = *(TIMESTAMP_STRUCT*)data_;
@@ -129,7 +129,7 @@ void standard_use_type::post_use(bool gotData)
 {
     // Handle OUT direction of IN/OUT parameters of stored procedures
     backEnd_->post_use(gotData, ind_);
-    convert_from_base();
+    //convert_from_base();
 
     // IMPORTANT:
     // This treatment of input ("use") parameter as output data sink may be 

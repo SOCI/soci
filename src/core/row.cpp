@@ -22,8 +22,8 @@ column_properties::column_properties()
 }
 
 column_properties::column_properties(const column_properties& obj)
+    : name_(obj.name_), dataType_(obj.dataType_), colSize_(obj.colSize_), decDigits_(obj.decDigits_), isNullable_(obj.isNullable_)
 {
-    *this = obj;
 }
 
 column_properties& column_properties::operator = (const column_properties& obj)
@@ -40,6 +40,7 @@ column_properties& column_properties::operator = (const column_properties& obj)
 row::row()
     : uppercaseColumnNames_(false)
     , currentPos_(0)
+    , row_size_(0)
 {}
 
 row::~row()
@@ -78,9 +79,10 @@ void row::add_properties(column_properties const &cp)
     index_[columnName] = columns_.size() - 1;
 }
 
-std::size_t row::size() const
+const std::size_t& row::size() const
 {
-    return holders_.size();
+    return row_size_;
+    //return holders_.size();
 }
 
 void row::clean_up()
@@ -96,9 +98,10 @@ void row::clean_up()
     holders_.clear();
     indicators_.clear();
     index_.clear();
+    row_size_ = 0;
 }
 
-indicator row::get_indicator(std::size_t pos) const
+indicator row::get_indicator(const std::size_t& pos) const
 {
     assert(indicators_.size() >= static_cast<std::size_t>(pos + 1));
     return *indicators_[pos];
@@ -109,7 +112,12 @@ indicator row::get_indicator(std::string const &name) const
     return get_indicator(find_column(name));
 }
 
-column_properties const & row::get_properties(std::size_t pos) const
+data_type row::getDatatypeForColumn(const std::size_t& pos) const
+{
+    return columns_[pos].get_data_type();
+}
+
+column_properties const & row::get_properties(const std::size_t& pos) const
 {
     assert(columns_.size() >= pos + 1);
     return columns_[pos];

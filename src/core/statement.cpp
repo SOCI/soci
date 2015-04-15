@@ -241,7 +241,7 @@ void statement_impl::prepare(std::string const & query,
         {
             strDummy += ", Uses: ";
 
-            for (int i = 0; i < this->uses_.size(); ++i)
+            for (int i = 0; i < (int)this->uses_.size(); ++i)
             {
                 strDummy += this->uses_.at(i)->to_string();
                 if (i != this->uses_size() - 1)
@@ -311,7 +311,7 @@ void statement_impl::undefine_and_bind()
     }
 }
 
-bool statement_impl::execute(bool withDataExchange)
+bool statement_impl::execute(bool withDataExchange, mn_odbc_error_info& err_info)
 {
     initialFetchSize_ = intos_size();
 
@@ -319,7 +319,11 @@ bool statement_impl::execute(bool withDataExchange)
     {
         // this can happen only with into-vectors elements
         // and is not allowed when calling execute
-        throw soci_error("Vectors of size 0 are not allowed.");
+        err_info.native_error_code_ = -1;
+        err_info.odbc_error_code_ = "";
+        err_info.odbc_error_message_ = "Vectors of size 0 are not allowed.";
+        return false;
+        //throw soci_error("Vectors of size 0 are not allowed.");
     }
 
     fetchSize_ = initialFetchSize_;
@@ -333,8 +337,12 @@ bool statement_impl::execute(bool withDataExchange)
 
     if (bindSize > 1 && fetchSize_ > 1)
     {
-        throw soci_error(
-             "Bulk insert/update and bulk select not allowed in same query");
+        err_info.native_error_code_ = -1;
+        err_info.odbc_error_code_ = "";
+        err_info.odbc_error_message_ = "Bulk insert/update and bulk select not allowed in same query";
+        //throw soci_error(
+        //     "Bulk insert/update and bulk select not allowed in same query");
+        return false;
     }
 
     // looks like a hack and it is - row description should happen
@@ -344,7 +352,10 @@ bool statement_impl::execute(bool withDataExchange)
     // implicit data exchange
     if (row_ != NULL && alreadyDescribed_ == false)
     {
-        describe();
+        if (!describe(err_info))
+        {
+            return false;
+        }
         define_for_row();
     }
 
@@ -365,7 +376,7 @@ bool statement_impl::execute(bool withDataExchange)
         }
     }
 
-    statement_backend::exec_fetch_result res = backEnd_->execute(num);
+    statement_backend::exec_fetch_result res = backEnd_->execute(num, err_info);
 
     bool gotData = false;
 
@@ -381,6 +392,10 @@ bool statement_impl::execute(bool withDataExchange)
             // ensure into vectors have correct size
             resize_intos(static_cast<std::size_t>(num));
         }
+    }
+    else if (res == statement_backend::ef_error)
+    {
+        return false;
     }
     else // res == ef_no_data
     {
@@ -407,7 +422,7 @@ long long statement_impl::get_affected_rows()
     return backEnd_->get_affected_rows();
 }
 
-bool statement_impl::fetch()
+bool statement_impl::fetch(mn_odbc_error_info& err_info)
 {
     if (fetchSize_ == 0)
     {
@@ -439,7 +454,7 @@ bool statement_impl::fetch()
     //    fetchSize_ = newFetchSize;
     //}
 
-    statement_backend::exec_fetch_result const res = backEnd_->fetch(static_cast<int>(fetchSize_));
+    statement_backend::exec_fetch_result const res = backEnd_->fetch(static_cast<int>(fetchSize_), err_info);
     if (res == statement_backend::ef_success)
     {
         // the "success" means that some number of rows was read
@@ -447,8 +462,15 @@ bool statement_impl::fetch()
 
         gotData = true;
 
-        // ensure into vectors have correct size
-        resize_intos(fetchSize_);
+        if (fetchSize_ > 1)
+        {
+            // ensure into vectors have correct size
+            resize_intos(fetchSize_);
+        }
+    }
+    else if (res == statement_backend::ef_error)
+    {
+        return false;
     }
     else // res == ef_no_data
     {
@@ -661,7 +683,7 @@ void statement_impl::bind_into<dt_unsigned_long_long>()
 template<>
 void statement_impl::bind_into<dt_date>()
 {
-    into_row<std::tm>();
+    into_row<TIMESTAMP_STRUCT>();
 }
 
 template<>
@@ -670,7 +692,7 @@ void statement_impl::bind_into<dt_timestamp_struct>()
     into_row<TIMESTAMP_STRUCT>();
 }
 
-void statement_impl::describe()
+bool statement_impl::describe(mn_odbc_error_info& err_info)
 {
     row_->clean_up();
 
@@ -678,7 +700,10 @@ void statement_impl::describe()
     for (int i = 1; i <= numcols; ++i)
     {
         column_properties props;
-        backEnd_->describe_column(i, props);
+        if (!backEnd_->describe_column(i, props, err_info))
+        {
+            return false;
+        }
 
         switch (props.get_data_type())
         {
@@ -720,6 +745,8 @@ void statement_impl::describe()
     }
 
     alreadyDescribed_ = true;
+
+    return true;
 }
 
 } // namespace details

@@ -69,21 +69,21 @@ void odbc_vector_into_type_backend::define_by_pos(
                 static_cast<std::vector<long long> *>(data);
             std::vector<long long> &v(*vp);
             prepare_indicators(v.size());
-            if (use_string_for_bigint())
-            {
-                odbcType_ = SQL_C_CHAR;
-                size = max_bigint_length;
-                std::size_t bufSize = size * v.size();
-                colSize_ = size;
-                buf_ = new char[bufSize];
-                data = buf_;
-            }
-            else // Normal case, use ODBC support.
-            {
-                odbcType_ = SQL_C_SBIGINT;
+            //if (use_string_for_bigint())
+            //{
+            //    odbcType_ = SQL_C_CHAR;
+            //    size = max_bigint_length;
+            //    std::size_t bufSize = size * v.size();
+            //    colSize_ = size;
+            //    buf_ = new char[bufSize];
+            //    data = buf_;
+            //}
+            //else // Normal case, use ODBC support.
+            //{
+            odbcType_ = SQL_C_SLONG;
                 size = sizeof(long long);
                 data = &v[0];
-            }
+            //}
         }
         break;
     case x_unsigned_long_long:
@@ -92,21 +92,21 @@ void odbc_vector_into_type_backend::define_by_pos(
                 static_cast<std::vector<unsigned long long> *>(data);
             std::vector<unsigned long long> &v(*vp);
             prepare_indicators(v.size());
-            if (use_string_for_bigint())
-            {
-                odbcType_ = SQL_C_CHAR;
-                size = max_bigint_length;
-                std::size_t bufSize = size * v.size();
-                colSize_ = size;
-                buf_ = new char[bufSize];
-                data = buf_;
-            }
-            else // Normal case, use ODBC support.
-            {
-                odbcType_ = SQL_C_UBIGINT;
+            //if (use_string_for_bigint())
+            //{
+            //    odbcType_ = SQL_C_CHAR;
+            //    size = max_bigint_length;
+            //    std::size_t bufSize = size * v.size();
+            //    colSize_ = size;
+            //    buf_ = new char[bufSize];
+            //    data = buf_;
+            //}
+            //else // Normal case, use ODBC support.
+            //{
+            odbcType_ = SQL_C_SLONG;
                 size = sizeof(unsigned long long);
                 data = &v[0];
-            }
+//            }
         }
         break;
     case x_double:
@@ -171,23 +171,23 @@ void odbc_vector_into_type_backend::define_by_pos(
             data = buf_;
         }
         break;
-    case x_stdtm:
-        {
-            odbcType_ = SQL_C_TYPE_TIMESTAMP;
-            std::vector<std::tm> *v
-                = static_cast<std::vector<std::tm> *>(data);
+    //case x_stdtm:
+    //    {
+    //        odbcType_ = SQL_C_TYPE_TIMESTAMP;
+    //        std::vector<std::tm> *v
+    //            = static_cast<std::vector<std::tm> *>(data);
 
-            prepare_indicators(v->size());
+    //        prepare_indicators(v->size());
 
-            size = sizeof(TIMESTAMP_STRUCT);
-            colSize_ = size;
+    //        size = sizeof(TIMESTAMP_STRUCT);
+    //        colSize_ = size;
 
-            std::size_t bufSize = size * v->size();
+    //        std::size_t bufSize = size * v->size();
 
-            buf_ = new char[bufSize];
-            data = buf_;
-        }
-        break;
+    //        buf_ = new char[bufSize];
+    //        data = buf_;
+    //    }
+    //    break;
     case x_odbctimestamp:
     {
         odbcType_ = SQL_C_TYPE_TIMESTAMP;
@@ -226,20 +226,20 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
         // first, deal with data
 
         // only std::string, std::tm and Statement need special handling
-        if (type_ == x_char)
-        {
-            std::vector<char> *vp
-                = static_cast<std::vector<char> *>(data_);
+        //if (type_ == x_char)
+        //{
+        //    std::vector<char> *vp
+        //        = static_cast<std::vector<char> *>(data_);
 
-            std::vector<char> &v(*vp);
-            char *pos = buf_;
-            std::size_t const vsize = v.size();
-            for (std::size_t i = 0; i != vsize; ++i)
-            {
-                v[i] = *pos;
-                pos += colSize_;
-            }
-        }
+        //    std::vector<char> &v(*vp);
+        //    char *pos = buf_;
+        //    std::size_t const vsize = v.size();
+        //    for (std::size_t i = 0; i != vsize; ++i)
+        //    {
+        //        v[i] = *pos;
+        //        pos += colSize_;
+        //    }
+        //}
         if (type_ == x_stdstring)
         {
             std::vector<std::string> *vp
@@ -270,65 +270,65 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             //    pos += colSize_;
             //}
         //}
-        else if (type_ == x_stdtm)
-        {
-            std::vector<std::tm> *vp
-                = static_cast<std::vector<std::tm> *>(data_);
+        //else if (type_ == x_stdtm)
+        //{
+        //    std::vector<std::tm> *vp
+        //        = static_cast<std::vector<std::tm> *>(data_);
 
-            std::vector<std::tm> &v(*vp);
-            char *pos = buf_;
-            std::size_t const vsize = v.size();
-            for (std::size_t i = 0; i != vsize; ++i)
-            {
-                std::tm t;
+        //    std::vector<std::tm> &v(*vp);
+        //    char *pos = buf_;
+        //    std::size_t const vsize = v.size();
+        //    for (std::size_t i = 0; i != vsize; ++i)
+        //    {
+        //        std::tm t;
 
-                TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
-                t.tm_isdst = -1;
-                t.tm_year = ts->year - 1900;
-                t.tm_mon = ts->month - 1;
-                t.tm_mday = ts->day;
-                t.tm_hour = ts->hour;
-                t.tm_min = ts->minute;
-                t.tm_sec = ts->second;
+        //        TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
+        //        t.tm_isdst = -1;
+        //        t.tm_year = ts->year - 1900;
+        //        t.tm_mon = ts->month - 1;
+        //        t.tm_mday = ts->day;
+        //        t.tm_hour = ts->hour;
+        //        t.tm_min = ts->minute;
+        //        t.tm_sec = ts->second;
 
-                // normalize and compute the remaining fields
-                std::mktime(&t);
-                v[i] = t;
-                pos += colSize_;
-            }
-        }
-        else if (type_ == x_long_long && use_string_for_bigint())
-        {
-            std::vector<long long> *vp
-                = static_cast<std::vector<long long> *>(data_);
-            std::vector<long long> &v(*vp);
-            char *pos = buf_;
-            std::size_t const vsize = v.size();
-            for (std::size_t i = 0; i != vsize; ++i)
-            {
-                if (sscanf(pos, "%" LL_FMT_FLAGS "d", &v[i]) != 1)
-                {
-                    throw soci_error("Failed to parse the returned 64-bit integer value");
-                }
-                pos += colSize_;
-            }
-        }
-        else if (type_ == x_unsigned_long_long && use_string_for_bigint())
-        {
-            std::vector<unsigned long long> *vp
-                = static_cast<std::vector<unsigned long long> *>(data_);
-            std::vector<unsigned long long> &v(*vp);
-            char *pos = buf_;
-            std::size_t const vsize = v.size();
-            for (std::size_t i = 0; i != vsize; ++i)
-            {
-                if (sscanf(pos, "%" LL_FMT_FLAGS "u", &v[i]) != 1)
-                {
-                    throw soci_error("Failed to parse the returned 64-bit integer value");
-                }
-                pos += colSize_;
-            }
-        }
+        //        // normalize and compute the remaining fields
+        //        std::mktime(&t);
+        //        v[i] = t;
+        //        pos += colSize_;
+        //    }
+        //}
+        //else if (type_ == x_long_long && use_string_for_bigint())
+        //{
+        //    std::vector<long long> *vp
+        //        = static_cast<std::vector<long long> *>(data_);
+        //    std::vector<long long> &v(*vp);
+        //    char *pos = buf_;
+        //    std::size_t const vsize = v.size();
+        //    for (std::size_t i = 0; i != vsize; ++i)
+        //    {
+        //        if (sscanf(pos, "%" LL_FMT_FLAGS "d", &v[i]) != 1)
+        //        {
+        //            throw soci_error("Failed to parse the returned 64-bit integer value");
+        //        }
+        //        pos += colSize_;
+        //    }
+        //}
+        //else if (type_ == x_unsigned_long_long && use_string_for_bigint())
+        //{
+        //    std::vector<unsigned long long> *vp
+        //        = static_cast<std::vector<unsigned long long> *>(data_);
+        //    std::vector<unsigned long long> &v(*vp);
+        //    char *pos = buf_;
+        //    std::size_t const vsize = v.size();
+        //    for (std::size_t i = 0; i != vsize; ++i)
+        //    {
+        //        if (sscanf(pos, "%" LL_FMT_FLAGS "u", &v[i]) != 1)
+        //        {
+        //            throw soci_error("Failed to parse the returned 64-bit integer value");
+        //        }
+        //        pos += colSize_;
+        //    }
+        //}
 
         // then - deal with indicators
         if (ind != NULL)
@@ -429,13 +429,13 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
         v->resize(sz);
         break;
     }
-    case x_stdtm:
-        {
-            std::vector<std::tm> *v
-                = static_cast<std::vector<std::tm> *>(data_);
-            v->resize(sz);
-        }
-        break;
+    //case x_stdtm:
+    //    {
+    //        std::vector<std::tm> *v
+    //            = static_cast<std::vector<std::tm> *>(data_);
+    //        v->resize(sz);
+    //    }
+    //    break;
     case x_odbctimestamp:
     {
         std::vector<TIMESTAMP_STRUCT> *v
@@ -509,13 +509,13 @@ std::size_t odbc_vector_into_type_backend::size()
         sz = v->size();
     }
     break;
-    case x_stdtm:
-        {
-            std::vector<std::tm> *v
-                = static_cast<std::vector<std::tm> *>(data_);
-            sz = v->size();
-        }
-        break;
+    //case x_stdtm:
+    //    {
+    //        std::vector<std::tm> *v
+    //            = static_cast<std::vector<std::tm> *>(data_);
+    //        sz = v->size();
+    //    }
+    //    break;
     case x_odbctimestamp:
     {
         std::vector<TIMESTAMP_STRUCT> *v

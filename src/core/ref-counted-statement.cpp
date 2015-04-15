@@ -26,7 +26,10 @@ void ref_counted_statement::final_action()
         st_.prepare(session_.get_query(), st_one_time_query);
         st_.define_and_bind();
 
-        const bool gotData = st_.execute(true);
+        mn_odbc_error_info err_info;
+
+        const bool gotData = st_.execute(true, err_info);
+
         session_.set_got_data(gotData);
     }
     catch (...)

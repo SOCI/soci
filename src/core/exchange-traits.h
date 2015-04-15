@@ -130,12 +130,12 @@ struct exchange_traits<MNSociString>
     enum { x_type = x_mnsocistring };
 };
 
-template <>
-struct exchange_traits<std::tm>
-{
-    typedef basic_type_tag type_family;
-    enum { x_type = x_stdtm };
-};
+//template <>
+//struct exchange_traits<std::tm>
+//{
+//    typedef basic_type_tag type_family;
+//    enum { x_type = x_stdtm };
+//};
 
 template <>
 struct exchange_traits<TIMESTAMP_STRUCT>

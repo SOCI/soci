@@ -43,7 +43,7 @@ enum exchange_type
     x_long_long,
     x_unsigned_long_long,
     x_double,
-    x_stdtm,
+    //x_stdtm,
     x_statement,
     x_rowid,
     x_blob,
@@ -165,11 +165,12 @@ public:
     enum exec_fetch_result
     {
         ef_success,
-        ef_no_data
+        ef_no_data,
+        ef_error
     };
 
-    virtual exec_fetch_result execute(int number) = 0;
-    virtual exec_fetch_result fetch(int number) = 0;
+    virtual exec_fetch_result execute(bool withDataExchange, mn_odbc_error_info& err_info) = 0;
+    virtual exec_fetch_result fetch(int number, mn_odbc_error_info& err_info) = 0;
 
     virtual long long get_affected_rows() = 0;
     virtual int get_number_of_rows() = 0;
@@ -177,7 +178,7 @@ public:
     virtual std::string rewrite_for_procedure_call(std::string const& query) = 0;
 
     virtual int prepare_for_describe() = 0;
-    virtual void describe_column(int colNum, column_properties& colProperties) = 0;
+    virtual bool describe_column(int colNum, column_properties& colProperties, mn_odbc_error_info& err_info) = 0;
 
     virtual standard_into_type_backend* make_into_type_backend() = 0;
     virtual standard_use_type_backend* make_use_type_backend() = 0;

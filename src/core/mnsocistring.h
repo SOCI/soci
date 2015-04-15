@@ -15,9 +15,9 @@
 class SOCI_DECL MNSociString
 {
 public:
-    MNSociString(short iCharLength = 256) { m_iCharLength = iCharLength; m_ptrCharData = new char[m_iCharLength + 1]; m_ptrCharData[0] = '\0'; }
-    MNSociString(const char* ptrChar, short iCharLength) { m_iCharLength = iCharLength; m_ptrCharData = new char[m_iCharLength + 1]; strcpy(m_ptrCharData, ptrChar); }
-    MNSociString(const MNSociString& obj) { m_iCharLength = obj.m_iCharLength; m_ptrCharData = new char[m_iCharLength + 1]; *this = obj; }
+    MNSociString() { m_ptrCharData = new char[257]; m_ptrCharData[0] = '\0'; }
+    MNSociString(const char* ptrChar) { m_ptrCharData = new char[257]; strcpy(m_ptrCharData, ptrChar); }
+    MNSociString(const MNSociString& obj) { m_ptrCharData = new char[257]; *this = obj; }
     ~MNSociString() 
     {
         if (m_ptrCharData != NULL)  
@@ -32,7 +32,6 @@ public:
     MNSociString& operator = (const char* ptrChar)      { strcpy(m_ptrCharData, ptrChar); return *this; }
 
     char* m_ptrCharData;
-    short m_iCharLength;
 };
 
 #endif // MNSOCISTRING_H_INCLUDED

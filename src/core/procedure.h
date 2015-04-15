@@ -62,15 +62,15 @@ public:
     // forwarders to procedure_impl
     // (or rather to its base interface from statement_impl)
 
-    bool execute(bool withDataExchange = false)
+    bool execute(bool withDataExchange, mn_odbc_error_info& err_info)
     {
-        gotData_ = impl_->execute(withDataExchange);
+        gotData_ = impl_->execute(withDataExchange, err_info);
         return gotData_;
     }
 
-    bool fetch()
+    bool fetch(mn_odbc_error_info& err_info)
     {
-        gotData_ = impl_->fetch();
+        gotData_ = impl_->fetch(err_info);
         return gotData_;
     }
 

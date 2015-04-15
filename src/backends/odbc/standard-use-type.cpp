@@ -39,40 +39,40 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
         size = sizeof(int);
         break;
     case x_long_long:
-        if (use_string_for_bigint())
-        {
-          sqlType = SQL_NUMERIC;
-          cType = SQL_C_CHAR;
-          size = max_bigint_length;
-          buf_ = new char[size];
-          snprintf(buf_, size, "%" LL_FMT_FLAGS "d",
-                   *static_cast<long long *>(data_));
-          indHolder_ = SQL_NTS;
-        }
-        else // Normal case, use ODBC support.
-        {
-          sqlType = SQL_BIGINT;
-          cType = SQL_C_SBIGINT;
+        //if (use_string_for_bigint())
+        //{
+        //  sqlType = SQL_NUMERIC;
+        //  cType = SQL_C_CHAR;
+        //  size = max_bigint_length;
+        //  buf_ = new char[size];
+        //  snprintf(buf_, size, "%" LL_FMT_FLAGS "d",
+        //           *static_cast<long long *>(data_));
+        //  indHolder_ = SQL_NTS;
+        //}
+        //else // Normal case, use ODBC support.
+        //{
+        sqlType = SQL_INTEGER;
+        cType = SQL_C_SLONG;
           size = sizeof(long long);
-        }
+        //}
         break;
     case x_unsigned_long_long:
-        if (use_string_for_bigint())
-        {
-          sqlType = SQL_NUMERIC;
-          cType = SQL_C_CHAR;
-          size = max_bigint_length;
-          buf_ = new char[size];
-          snprintf(buf_, size, "%" LL_FMT_FLAGS "u",
-                   *static_cast<unsigned long long *>(data_));
-          indHolder_ = SQL_NTS;
-        }
-        else // Normal case, use ODBC support.
-        {
-          sqlType = SQL_BIGINT;
-          cType = SQL_C_UBIGINT;
+        //if (use_string_for_bigint())
+        //{
+        //  sqlType = SQL_NUMERIC;
+        //  cType = SQL_C_CHAR;
+        //  size = max_bigint_length;
+        //  buf_ = new char[size];
+        //  snprintf(buf_, size, "%" LL_FMT_FLAGS "u",
+        //           *static_cast<unsigned long long *>(data_));
+        //  indHolder_ = SQL_NTS;
+        //}
+        //else // Normal case, use ODBC support.
+        //{
+        sqlType = SQL_INTEGER;
+        cType = SQL_C_SLONG;
           size = sizeof(unsigned long long);
-        }
+        //}
         break;
     case x_double:
         sqlType = SQL_DOUBLE;
@@ -92,7 +92,7 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
     case x_mnsocistring:
         sqlType = SQL_CHAR;
         cType = SQL_C_CHAR;
-        size = ((MNSociString*)data_)->m_iCharLength;
+        size = 257;
         indHolder_ = SQL_NTS;
         break;
     case x_stdstring:
@@ -107,28 +107,28 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
         indHolder_ = SQL_NTS;
     }
     break;
-    case x_stdtm:
-    {
-        std::tm *t = static_cast<std::tm *>(data_);
+    //case x_stdtm:
+    //{
+    //    std::tm *t = static_cast<std::tm *>(data_);
 
-        sqlType = SQL_TIMESTAMP;
-        cType = SQL_C_TIMESTAMP;
-        buf_ = new char[sizeof(TIMESTAMP_STRUCT)];
-        size = 19; // This number is not the size in bytes, but the number
-                   // of characters in the date if it was written out
-                   // yyyy-mm-dd hh:mm:ss
+    //    sqlType = SQL_TIMESTAMP;
+    //    cType = SQL_C_TIMESTAMP;
+    //    buf_ = new char[sizeof(TIMESTAMP_STRUCT)];
+    //    size = 19; // This number is not the size in bytes, but the number
+    //               // of characters in the date if it was written out
+    //               // yyyy-mm-dd hh:mm:ss
 
-        TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
+    //    TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
 
-        ts->year = static_cast<SQLSMALLINT>(t->tm_year + 1900);
-        ts->month = static_cast<SQLUSMALLINT>(t->tm_mon + 1);
-        ts->day = static_cast<SQLUSMALLINT>(t->tm_mday);
-        ts->hour = static_cast<SQLUSMALLINT>(t->tm_hour);
-        ts->minute = static_cast<SQLUSMALLINT>(t->tm_min);
-        ts->second = static_cast<SQLUSMALLINT>(t->tm_sec);
-        ts->fraction = 0;
-    }
-    break;
+    //    ts->year = static_cast<SQLSMALLINT>(t->tm_year + 1900);
+    //    ts->month = static_cast<SQLUSMALLINT>(t->tm_mon + 1);
+    //    ts->day = static_cast<SQLUSMALLINT>(t->tm_mday);
+    //    ts->hour = static_cast<SQLUSMALLINT>(t->tm_hour);
+    //    ts->minute = static_cast<SQLUSMALLINT>(t->tm_min);
+    //    ts->second = static_cast<SQLUSMALLINT>(t->tm_sec);
+    //    ts->fraction = 0;
+    //}
+    //break;
     case x_odbctimestamp:
     {
         sqlType = SQL_TIMESTAMP;

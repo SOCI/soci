@@ -49,14 +49,14 @@ public:
     {
         v_.uppercase_column_names(st.session_.get_uppercase_column_names());
 
-        convert_to_base();
+        //convert_to_base();
         st.bind(v_);
     }
 
     virtual void post_use(bool /*gotData*/)
     {
         v_.reset_get_counter();
-        convert_from_base();
+        //convert_from_base();
     }
 
     virtual void pre_use() {convert_to_base();}
