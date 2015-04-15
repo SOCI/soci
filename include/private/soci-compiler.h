@@ -36,12 +36,4 @@
 #   define GCC_WARNING_RESTORE(x)
 #endif
 
-#if defined(__GNUC__)
-#   define SOCI_NORETURN __attribute__((noreturn)) void
-#elif defined(__VISUALC__)
-#   define SOCI_NORETURN __declspec(noreturn) void
-#else
-#   define SOCI_NORETURN void
-#endif
-
 #endif // SOCI_PRIVATE_SOCI_COMPILER_H_INCLUDED
