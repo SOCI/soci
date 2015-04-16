@@ -147,6 +147,12 @@ int oracle_statement_backend::get_number_of_rows()
     return rows;
 }
 
+std::string oracle_statement_backend::get_parameter_name(int /* index */) const
+{
+    // TODO: How to get the parameter names from the query we prepared?
+    return std::string();
+}
+
 std::string oracle_statement_backend::rewrite_for_procedure_call(
     std::string const &query)
 {

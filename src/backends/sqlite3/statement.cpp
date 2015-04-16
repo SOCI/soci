@@ -294,6 +294,29 @@ int sqlite3_statement_backend::get_number_of_rows()
     return static_cast<int>(dataCache_.size());
 }
 
+std::string sqlite3_statement_backend::get_parameter_name(int index) const
+{
+    // Notice that SQLite host parameters are counted from 1, not 0.
+    char const* name = sqlite3_bind_parameter_name(stmt_, index + 1);
+    if (!name)
+        return std::string();
+
+    // SQLite returns parameters with the leading colon which is inconsistent
+    // with the other backends, so get rid of it as well several other
+    // characters which can be used for named parameters with SQLite.
+    switch (*name)
+    {
+        case ':':
+        case '?':
+        case '@':
+        case '$':
+            name++;
+            break;
+    }
+
+    return name;
+}
+
 std::string sqlite3_statement_backend::rewrite_for_procedure_call(
     std::string const &query)
 {

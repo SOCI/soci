@@ -116,6 +116,7 @@ struct SOCI_EMPTY_DECL empty_statement_backend : details::statement_backend
 
     long long get_affected_rows();
     int get_number_of_rows();
+    std::string get_parameter_name(int index) const;
 
     std::string rewrite_for_procedure_call(std::string const& query);
 

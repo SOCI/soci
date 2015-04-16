@@ -631,6 +631,19 @@ int firebird_statement_backend::get_number_of_rows()
     return rowsFetched_;
 }
 
+std::string firebird_statement_backend::get_parameter_name(int index) const
+{
+    for (std::map<std::string, int>::const_iterator i = names_.begin();
+         i != names_.end();
+         ++i)
+    {
+        if (i->second == index)
+            return i->first;
+    }
+
+    return std::string();
+}
+
 std::string firebird_statement_backend::rewrite_for_procedure_call(
     std::string const &query)
 {

@@ -753,12 +753,19 @@ statement_impl::rethrow_current_exception_with_context(char const* operation)
                         oss << ", ";
 
                     details::use_type_base const& u = *uses_[i];
-                    std::string const& name = u.get_name();
-                    oss << ":";
+
+                    // Use the name specified in the "use()" call if any,
+                    // otherwise get the name of the matching parameter from
+                    // the query itself, as parsed by the backend.
+                    std::string name = u.get_name();
                     if (name.empty())
-                        oss << (i + 1);
-                    else
+                        name = backEnd_->get_parameter_name(i);
+
+                    oss << ":";
+                    if (!name.empty())
                         oss << name;
+                    else
+                        oss << (i + 1);
                     oss << "=";
 
                     u.dump_value(oss);

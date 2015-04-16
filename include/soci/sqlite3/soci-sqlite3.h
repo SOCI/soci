@@ -186,6 +186,7 @@ struct sqlite3_statement_backend : details::statement_backend
 
     virtual long long get_affected_rows();
     virtual int get_number_of_rows();
+    virtual std::string get_parameter_name(int index) const;
 
     virtual std::string rewrite_for_procedure_call(std::string const &query);
 

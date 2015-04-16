@@ -380,6 +380,11 @@ int mysql_statement_backend::get_number_of_rows()
     return numberOfRows_ - currentRow_;
 }
 
+std::string mysql_statement_backend::get_parameter_name(int index) const
+{
+    return names_.at(index);
+}
+
 std::string mysql_statement_backend::rewrite_for_procedure_call(
     std::string const &query)
 {
