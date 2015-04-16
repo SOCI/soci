@@ -200,7 +200,7 @@ struct SOCI_DB2_DECL db2_statement_backend : details::statement_backend
 
     SQLHANDLE hStmt;
     std::string query_;
-    std::vector<std::string> names;
+    std::vector<std::string> names_;
     bool hasVectorUseElements;
     SQLUINTEGER numRowsFetched;
     details::db2::binding_method use_binding_method_;

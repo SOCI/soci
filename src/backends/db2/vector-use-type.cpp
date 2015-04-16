@@ -231,8 +231,8 @@ void db2_vector_use_type_backend::bind_by_name(
     }
     statement_.use_binding_method_ = details::db2::BOUND_BY_NAME;
 
-    for (std::vector<std::string>::iterator it = statement_.names.begin();
-         it != statement_.names.end(); ++it)
+    for (std::vector<std::string>::iterator it = statement_.names_.begin();
+         it != statement_.names_.end(); ++it)
     {
         if (*it == name)
         {

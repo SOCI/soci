@@ -102,7 +102,7 @@ void db2_statement_backend::prepare(std::string const &  query ,
             }
             else // end of name
             {
-                names.push_back(name);
+                names_.push_back(name);
                 name.clear();
                 std::ostringstream ss;
                 ss << '?';
@@ -117,7 +117,7 @@ void db2_statement_backend::prepare(std::string const &  query ,
 
     if (state == in_name)
     {
-        names.push_back(name);
+        names_.push_back(name);
         std::ostringstream ss;
         ss << '?';
         query_ += ss.str();

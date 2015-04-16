@@ -135,8 +135,8 @@ void db2_standard_use_type_backend::bind_by_name(
     int position = -1;
     int count = 1;
 
-    for (std::vector<std::string>::iterator it = statement_.names.begin();
-         it != statement_.names.end(); ++it)
+    for (std::vector<std::string>::iterator it = statement_.names_.begin();
+         it != statement_.names_.end(); ++it)
     {
         if (*it == name)
         {
