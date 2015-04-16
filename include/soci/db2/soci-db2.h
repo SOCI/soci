@@ -46,6 +46,17 @@ namespace soci
             BOUND_BY_NAME,
             BOUND_BY_POSITION
         };
+
+        inline SQLPOINTER int_as_ptr(int n)
+        {
+            union
+            {
+                SQLPOINTER p;
+                int n;
+            } u;
+            u.n = n;
+            return u.p;
+        }
     }}
 
     static const std::size_t maxBuffer =  1024 * 1024 * 1024; //CLI limit is about 3 GB, but 1GB should be enough

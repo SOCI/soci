@@ -171,7 +171,7 @@ db2_statement_backend::fetch(int  number )
     numRowsFetched = 0;
 
     SQLSetStmtAttr(hStmt, SQL_ATTR_ROW_BIND_TYPE, SQL_BIND_BY_COLUMN, 0);
-    SQLSetStmtAttr(hStmt, SQL_ATTR_ROW_ARRAY_SIZE, (SQLPOINTER)number, 0);
+    SQLSetStmtAttr(hStmt, SQL_ATTR_ROW_ARRAY_SIZE, db2::int_as_ptr(number), 0);
     SQLSetStmtAttr(hStmt, SQL_ATTR_ROWS_FETCHED_PTR, &numRowsFetched, 0);
 
     SQLRETURN cliRC = SQLFetch(hStmt);

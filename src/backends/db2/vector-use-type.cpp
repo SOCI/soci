@@ -195,7 +195,7 @@ void db2_vector_use_type_backend::bind_helper(int &position, void *data, details
     prepare_for_bind(data, size, sqlType, cType);
 
     SQLINTEGER arraySize = (SQLINTEGER)indVec.size();
-    SQLSetStmtAttr(statement_.hStmt, SQL_ATTR_PARAMSET_SIZE, (SQLPOINTER)arraySize, 0);
+    SQLSetStmtAttr(statement_.hStmt, SQL_ATTR_PARAMSET_SIZE, db2::int_as_ptr(arraySize), 0);
 
     SQLRETURN cliRC = SQLBindParameter(statement_.hStmt, static_cast<SQLUSMALLINT>(position++),
                                     SQL_PARAM_INPUT, cType, sqlType, size, 0,
