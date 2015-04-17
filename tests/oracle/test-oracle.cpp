@@ -626,7 +626,7 @@ TEST_CASE("Oracle bulk insert", "[oracle][insert][bulk]")
 }
 
 // more tests for bulk fetch
-TEST_CASE("Oracle bulk insert", "[oracle][fetch][bulk]")
+TEST_CASE("Oracle bulk fetch", "[oracle][fetch][bulk]")
 {
     session sql(backEnd, connectString);
 
