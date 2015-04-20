@@ -84,7 +84,7 @@ void oracle_vector_into_type_backend::define_by_pos(
         break;
     case x_double:
         {
-            oracleType = SQLT_FLT;
+            oracleType = statement_.session_.get_double_sql_type();
             size = sizeof(double);
             std::vector<double> *vp = static_cast<std::vector<double> *>(data);
             std::vector<double> &v(*vp);

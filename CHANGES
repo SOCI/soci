@@ -10,6 +10,9 @@ Version 4.0.0 differs from 3.2.x in the following ways:
 - Firebird
 -- Add SOCI_FIREBIRD_EMBEDDED option to allow building with embedded library.
 
+- Oracle
+-- Use SQLT_BDOUBLE for floating point values instead of SQLT_FLT.
+
 ---
 Version 3.2.3 differs from 3.2.2 in the following ways:
 

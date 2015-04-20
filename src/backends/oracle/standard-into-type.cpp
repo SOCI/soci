@@ -78,7 +78,7 @@ void oracle_standard_into_type_backend::define_by_pos(
         size = sizeof(int);
         break;
     case x_double:
-        oracleType = SQLT_FLT;
+        oracleType = statement_.session_.get_double_sql_type();
         size = sizeof(double);
         break;
 

@@ -265,6 +265,11 @@ struct oracle_session_backend : details::session_backend
 
     bool get_option_decimals_as_strings() { return decimals_as_strings_; }
 
+    // Return either SQLT_FLT or SQLT_BDOUBLE as the type to use when binding
+    // values of C type "double" (the latter is preferable but might not be
+    // always available).
+    ub2 get_double_sql_type() const;
+
     OCIEnv *envhp_;
     OCIServer *srvhp_;
     OCIError *errhp_;
