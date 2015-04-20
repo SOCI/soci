@@ -8,7 +8,6 @@
 #define SOCI_SOURCE
 #include "soci/backend-loader.h"
 #include "soci/error.h"
-#include <cassert>
 #include <cstdlib>
 #include <map>
 #include <string>
@@ -273,8 +272,6 @@ backend_factory const& dynamic_backends::get(std::string const& name)
     // second attempt, must succeed (the backend is already loaded)
 
     i = factories_.find(name);
-
-    assert(i != factories_.end());
 
     return *(i->second.factory_);
 }

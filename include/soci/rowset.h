@@ -41,10 +41,6 @@ public:
     rowset_iterator(statement & st, T & define)
         : st_(&st), define_(&define)
     {
-        assert(0 != st_);
-        assert(0 != define_);
-        assert(0 != st_->get_backend());
-
         // Fetch first row to properly initialize iterator
         ++(*this);
     }
@@ -119,9 +115,6 @@ public:
     rowset_impl(details::prepare_temp_type const & prep)
         : refs_(1), st_(new statement(prep)), define_(new T())
     {
-        assert(0 != st_.get());
-        assert(0 != define_.get());
-
         st_->exchange_for_rowset(into(*define_));
         st_->execute();
     }
@@ -184,29 +177,21 @@ public:
     rowset(details::prepare_temp_type const& prep)
         : pimpl_(new details::rowset_impl<T>(prep))
     {
-        assert(0 != pimpl_);
     }
 
     rowset(rowset const & other)
         : pimpl_(other.pimpl_)
     {
-        assert(0 != pimpl_);
-
         pimpl_->incRef();
     }
 
     ~rowset()
     {
-        assert(0 != pimpl_);
-
         pimpl_->decRef();
     }
 
     rowset& operator=(rowset const& rhs)
     {
-        assert(0 != pimpl_);
-        assert(0 != rhs.pimpl_);
-
         if (&rhs != this)
         {
             rhs.pimpl_->incRef();
@@ -218,15 +203,11 @@ public:
 
     const_iterator begin() const
     {
-        assert(0 != pimpl_);
-
         return pimpl_->begin();
     }
 
     const_iterator end() const
     {
-        assert(0 != pimpl_);
-
         return pimpl_->end();
     }
 

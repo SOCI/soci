@@ -9,7 +9,6 @@
 #include "soci/sqlite3/soci-sqlite3.h"
 #include "error.h"
 #include <cstring>
-#include <cassert>
 
 using namespace soci;
 

@@ -10,7 +10,6 @@
 #include "soci-cstrtod.h"
 #include "common.h"
 // std
-#include <cassert>
 #include <cstddef>
 #include <cstdlib>
 #include <ctime>
@@ -40,8 +39,6 @@ namespace // anonymous
 template <typename T>
 void set_in_vector(void* p, int indx, T const& val)
 {
-    assert(NULL != p);
-
     std::vector<T>* dest = static_cast<std::vector<T>*>(p);
     std::vector<T>& v = *dest;
     v[indx] = val;

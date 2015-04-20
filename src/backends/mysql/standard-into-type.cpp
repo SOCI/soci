@@ -12,7 +12,6 @@
 #include "common.h"
 #include "soci-exchange-cast.h"
 // std
-#include <cassert>
 #include <ciso646>
 #include <cstdlib>
 #include <cstring>

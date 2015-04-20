@@ -79,8 +79,6 @@ public:
     {
         std::auto_ptr<details::query_transformation_function> qtf(new details::query_transformation<T>(callback));
         set_query_transformation_(qtf);
-
-        assert(qtf.get() == NULL);
     }
 
     // support for basic logging
