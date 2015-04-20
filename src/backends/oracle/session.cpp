@@ -214,3 +214,18 @@ oracle_blob_backend * oracle_session_backend::make_blob_backend()
 {
     return new oracle_blob_backend(*this);
 }
+
+ub2 oracle_session_backend::get_double_sql_type() const
+{
+    // SQLT_BDOUBLE avoids unnecessary conversions which is better from both
+    // performance and correctness point of view as it avoids rounding
+    // problems, however it's only available starting in Oracle 10.1, so
+    // normally we should do run-time Oracle version detection here, but for
+    // now just assume that if we use new headers (i.e. have high enough
+    // compile-time version), then the run-time is at least as high.
+#ifdef SQLT_BDOUBLE
+    return SQLT_BDOUBLE;
+#else
+    return SQLT_FLT;
+#endif
+}

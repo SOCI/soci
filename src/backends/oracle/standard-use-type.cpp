@@ -69,7 +69,7 @@ void oracle_standard_use_type_backend::prepare_for_bind(
         }
         break;
     case x_double:
-        oracleType = SQLT_FLT;
+        oracleType = statement_.session_.get_double_sql_type();
         size = sizeof(double);
         if (readOnly)
         {
