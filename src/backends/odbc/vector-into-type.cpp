@@ -9,7 +9,7 @@
 #include "soci/odbc/soci-odbc.h"
 #include "soci/soci-platform.h"
 #include "soci-mktime.h"
-#include <cassert>
+#include "soci-static-assert.h"
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -56,7 +56,7 @@ void odbc_vector_into_type_backend::define_by_pos(
         {
             odbcType_ = SQL_C_SLONG;
             size = sizeof(SQLINTEGER);
-            assert(sizeof(SQLINTEGER) == sizeof(int));
+            SOCI_STATIC_ASSERT(sizeof(SQLINTEGER) == sizeof(int));
             std::vector<int> *vp = static_cast<std::vector<int> *>(data);
             std::vector<int> &v(*vp);
             prepare_indicators(v.size());
