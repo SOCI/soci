@@ -12,7 +12,6 @@
 #include "soci/soci-backend.h"
 #include "soci/type-conversion.h"
 // std
-#include <cassert>
 #include <cstddef>
 #include <map>
 #include <string>
@@ -65,22 +64,18 @@ public:
     template <typename T>
     T get(std::size_t pos) const
     {
-        assert(holders_.size() >= pos + 1);
-
         typedef typename type_conversion<T>::base_type base_type;
-        base_type const& baseVal = holders_[pos]->get<base_type>();
+        base_type const& baseVal = holders_.at(pos)->get<base_type>();
 
         T ret;
-        type_conversion<T>::from_base(baseVal, *indicators_[pos], ret);
+        type_conversion<T>::from_base(baseVal, *indicators_.at(pos), ret);
         return ret;
     }
 
     template <typename T>
     T get(std::size_t pos, T const &nullValue) const
     {
-        assert(holders_.size() >= pos + 1);
-
-        if (i_null == *indicators_[pos])
+        if (i_null == *indicators_.at(pos))
         {
             return nullValue;
         }
