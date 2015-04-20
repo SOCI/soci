@@ -822,7 +822,7 @@ void test14()
         sql << query;
         std::string s2;
         sql << "select s5 from soci_test", into(s2);
-        assert(s == s2);
+        CHECK(s == s2);
     }
 
     std::cout << "test 14 passed" << std::endl;
@@ -834,7 +834,7 @@ void test15()
         session sql(backEnd, connectString);
         int n;
         sql << "select @a := 123", into(n);
-        assert(n == 123);
+        CHECK(n == 123);
     }
 
     std::cout << "test 15 passed" << std::endl;
