@@ -18,4 +18,13 @@
 #define SOCI_STRINGIZE_IMPL(x) #x
 #define SOCI_STRINGIZE(x) SOCI_STRINGIZE_IMPL(x)
 
+// SOCI_MAKE_UNIQUE_NAME() creates a uniquely named identifier with the given
+// prefix.
+//
+// It uses __COUNTER__ macro to avoid problems with broken __LINE__ in MSVC
+// when using "Edit and Continue" (/ZI) option as there are no compilers known
+// to work with SOCI and not support it. If one such is ever discovered, we
+// should use __LINE__ for it instead.
+#define SOCI_MAKE_UNIQUE_NAME(name) SOCI_CONCAT(name, __COUNTER__)
+
 #endif // SOCI_PRIVATE_SOCI_CPP_H_INCLUDED
