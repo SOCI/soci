@@ -377,6 +377,7 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
             }
             break;
         case dt_long_long:
+        case dt_unsigned_long_long:
             {
                 typedef std::map<std::string, long long>::const_iterator
                     iterator;
@@ -429,6 +430,7 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
             }
             break;
         case dt_long_long:
+        case dt_unsigned_long_long:
             {
                 typedef std::map
                     <
@@ -865,6 +867,7 @@ SOCI_DECL void soci_into_resize_v(statement_handle st, int new_size)
             wrapper->into_ints_v[i].resize(new_size);
             break;
         case dt_long_long:
+        case dt_unsigned_long_long:
             wrapper->into_longlongs_v[i].resize(new_size);
             break;
         case dt_double:
@@ -1559,6 +1562,7 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
                         into(wrapper->into_ints[i], wrapper->into_indicators[i]));
                     break;
                 case dt_long_long:
+                case dt_unsigned_long_long:
                     wrapper->st.exchange(
                         into(wrapper->into_longlongs[i], wrapper->into_indicators[i]));
                     break;
@@ -1589,6 +1593,7 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
                         into(wrapper->into_ints_v[i], wrapper->into_indicators_v[i]));
                     break;
                 case dt_long_long:
+                case dt_unsigned_long_long:
                     wrapper->st.exchange(
                         into(wrapper->into_longlongs_v[i], wrapper->into_indicators_v[i]));
                     break;
