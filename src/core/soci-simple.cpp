@@ -398,8 +398,6 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
                 name_exists = (it != wrapper.use_dates.end());
             }
             break;
-        default:
-            assert(false);
         }
     }
     else
@@ -457,8 +455,6 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
                 name_exists = (it != wrapper.use_dates_v.end());
             }
             break;
-        default:
-            assert(false);
         }
     }
 
@@ -877,8 +873,6 @@ SOCI_DECL void soci_into_resize_v(statement_handle st, int new_size)
         case dt_date:
             wrapper->into_dates_v[i].resize(new_size);
             break;
-        default:
-            assert(false);
         }
     }
 
@@ -1576,8 +1570,6 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
                     wrapper->st.exchange(
                         into(wrapper->into_dates[i], wrapper->into_indicators[i]));
                     break;
-                default:
-                    assert(false);
                 }
             }
         }
@@ -1608,8 +1600,6 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
                     wrapper->st.exchange(
                         into(wrapper->into_dates_v[i], wrapper->into_indicators_v[i]));
                     break;
-                default:
-                    assert(false);
                 }
             }
         }
