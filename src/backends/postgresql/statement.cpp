@@ -9,7 +9,6 @@
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci/soci-platform.h"
 #include <libpq/libpq-fs.h> // libpq
-#include <cassert>
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
@@ -181,7 +180,10 @@ void postgresql_statement_backend::prepare(std::string const & query,
 
     if (stType == st_repeatable_query)
     {
-        assert(statementName_.empty());
+        if (!statementName_.empty())
+        {
+            throw soci_error("Shouldn't already have a prepared statement.");
+        }
 
         // Holding the name temporarily in this var because
         // if it fails to prepare it we can't DEALLOCATE it.

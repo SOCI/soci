@@ -11,7 +11,6 @@
 #include "soci-cstrtod.h"
 #include "common.h"
 #include <libpq/libpq-fs.h> // libpq
-#include <cassert>
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -171,8 +170,6 @@ void resizevector_(void * p, std::size_t sz)
 
 void postgresql_vector_into_type_backend::resize(std::size_t sz)
 {
-    assert(sz < 10u*std::numeric_limits<unsigned short>::max()); // Not a strong constraint, for debugging only. Notice my fix is even worse
-
     switch (type_)
     {
         // simple cases

@@ -12,7 +12,6 @@
 #include "soci/into-type.h"
 #include "soci/use-type.h"
 // std
-#include <cassert>
 #include <cstddef>
 #include <string>
 #include <vector>
@@ -48,7 +47,6 @@ public:
         , ownInd_()
         , ind_(ownInd_)
     {
-        assert(ownInd_ == ind_);
     }
 
     conversion_into_type(T & value, indicator & ind)
@@ -57,7 +55,6 @@ public:
         , ownInd_(ind) // unused, just keep the pair of indicator(s) consistent
         , ind_(ind)
     {
-        assert(ownInd_ == ind_);
     }
 
 
@@ -95,8 +92,6 @@ public:
         , ind_(ownInd_)
         , readOnly_(false)
     {
-        assert(ownInd_ == ind_);
-
         // TODO: likely to be removed (SHA: c166625a28f7c907318134f625ff5acea7d9a1f8)
         //convert_to_base();
     }
@@ -108,8 +103,6 @@ public:
         , ind_(ownInd_)
         , readOnly_(true)
     {
-        assert(ownInd_ == ind_);
-
         // TODO: likely to be removed (SHA: c166625a28f7c907318134f625ff5acea7d9a1f8)
         //convert_to_base();
     }
@@ -200,7 +193,6 @@ public:
         , ownInd_()
         , ind_(ownInd_)
     {
-        assert(ownInd_ == ind_);
     }
 
     conversion_into_type(std::vector<T> & value, std::vector<indicator> & ind)
@@ -272,7 +264,6 @@ public:
         , ownInd_()
         , ind_(ownInd_)
     {
-        assert(ownInd_ == ind_);
     }
 
     conversion_use_type(std::vector<T> & value,

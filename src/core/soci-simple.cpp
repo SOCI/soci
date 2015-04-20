@@ -1277,12 +1277,14 @@ SOCI_DECL int soci_use_get_size_v(statement_handle st)
         return -1;
     }
 
-    typedef std::map<std::string,
-        std::vector<indicator> >::const_iterator iterator;
-    iterator const any_element = wrapper->use_indicators_v.begin();
-    assert(any_element != wrapper->use_indicators_v.end());
+    if (wrapper->use_indicators_v.empty())
+    {
+        wrapper->is_ok = false;
+        wrapper->error_message = "Empty indicators vector.";
+        return -1;
+    }
 
-    return static_cast<int>(any_element->second.size());
+    return static_cast<int>(wrapper->use_indicators_v.begin()->second.size());
 }
 
 SOCI_DECL void soci_use_resize_v(statement_handle st, int new_size)

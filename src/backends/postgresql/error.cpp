@@ -8,7 +8,6 @@
 #define SOCI_POSTGRESQL_SOURCE
 #include "soci/postgresql/soci-postgresql.h"
 #include <cstring>
-#include <cassert>
 
 using namespace soci;
 using namespace soci::details;
@@ -17,7 +16,6 @@ postgresql_soci_error::postgresql_soci_error(
     std::string const & msg, char const *sqlst)
     : soci_error(msg)
 {
-    assert(std::strlen(sqlst) == 5);
     std::memcpy(sqlstate_, sqlst, 5);
 }
 
