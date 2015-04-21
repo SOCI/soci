@@ -288,7 +288,7 @@ public:
     virtual bool has_multiple_select_bug() const { return false; }
 
     // Override this if the backend may not have transactions support.
-    virtual bool has_transactions_support() const { return true; }
+    virtual bool has_transactions_support(session&) const { return true; }
 
     virtual ~test_context_base()
     {
@@ -1759,13 +1759,13 @@ TEST_CASE_METHOD(common_tests, "Named parameters", "[core][use][named-params]")
 // transaction test
 TEST_CASE_METHOD(common_tests, "Transactions", "[core][transaction]")
 {
-    if (!tc_.has_transactions_support())
+    session sql(backEndFactory_, connectString_);
+
+    if (!tc_.has_transactions_support(sql))
     {
         WARN("Transactions not supported by the database, skipping the test.");
         return;
     }
-
-    session sql(backEndFactory_, connectString_);
 
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
