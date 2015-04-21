@@ -987,7 +987,6 @@ namespace Catch {
 #include <limits>
 #include <vector>
 #include <cstddef>
-#include <boost/optional.hpp>
 
 #ifdef __OBJC__
 // #included from: catch_objc_arc.hpp
