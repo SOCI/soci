@@ -9,6 +9,7 @@ Version 4.0.0 differs from 3.2.x in the following ways:
 
 - Firebird
 -- Add SOCI_FIREBIRD_EMBEDDED option to allow building with embedded library.
+-- Throw an exception instead of truncating too long VARCHAR columns values.
 
 ---
 Version 3.2.3 differs from 3.2.2 in the following ways:

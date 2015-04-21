@@ -290,6 +290,14 @@ public:
     // Override this if the backend may not have transactions support.
     virtual bool has_transactions_support(session&) const { return true; }
 
+    // Override this if the backend silently truncates string values too long
+    // to fit by default.
+    virtual bool has_silent_truncate_bug(session&) const { return false; }
+
+    // Override this to call commit() if it's necessary for the DDL statements
+    // to be taken into account (currently this is only the case for Firebird).
+    virtual void on_after_ddl(session&) const { }
+
     virtual ~test_context_base()
     {
         the_test_context_ = NULL;
@@ -3954,6 +3962,74 @@ TEST_CASE_METHOD(common_tests, "Insert error", "[core][insert][exception]")
 
             CHECK(msg.find("John") != std::string::npos);
         }
+    }
+}
+
+namespace
+{
+
+// This is just a helper to avoid duplicating the same code in two sections in
+// the test below, it's logically part of it.
+void check_for_exception_on_truncation(session& sql)
+{
+    // As the name column has length 20, inserting a longer string into it
+    // shouldn't work, unless we're dealing with a database that doesn't
+    // respect column types at all (hello SQLite).
+    try
+    {
+        std::string const long_name("George Raymond Richard Martin");
+        sql << "insert into soci_test(name) values(:name)", use(long_name);
+
+        // If insert didn't throw, it should have at least preserved the data
+        // (only SQLite does this currently).
+        std::string name;
+        sql << "select name from soci_test", into(name);
+        CHECK(name == long_name);
+    }
+    catch (soci_error const &)
+    {
+        // Unfortunately the contents of the message differ too much between
+        // the backends (most give an error about value being "too long",
+        // Oracle says "too large" while SQL Server (via ODBC) just says that
+        // it "would be truncated"), so we can't really check that we received
+        // the right error here -- be optimistic and hope that we did.
+    }
+}
+
+} // anonymous namespace
+
+TEST_CASE_METHOD(common_tests, "Truncation error", "[core][insert][truncate][exception]")
+{
+    session sql(backEndFactory_, connectString_);
+
+    if (tc_.has_silent_truncate_bug(sql))
+    {
+        WARN("Database is broken and silently truncates input data.");
+        return;
+    }
+
+    SECTION("Error given for char column")
+    {
+        struct fixed_name_table_creator : table_creator_base
+        {
+            fixed_name_table_creator(session& sql)
+                : table_creator_base(sql)
+            {
+                sql << "create table soci_test(name char(20))";
+            }
+        } tableCreator(sql);
+
+        tc_.on_after_ddl(sql);
+
+        check_for_exception_on_truncation(sql);
+    }
+
+    SECTION("Error given for varchar column")
+    {
+        // Reuse one of the standard tables which has a varchar(20) column.
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+        check_for_exception_on_truncation(sql);
     }
 }
 

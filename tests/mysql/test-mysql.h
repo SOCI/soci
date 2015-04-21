@@ -102,6 +102,16 @@ public:
         sql << "drop table soci_test";
         return retv;
     }
+
+    virtual bool has_silent_truncate_bug(session& sql) const
+    {
+        std::string sql_mode;
+        sql << "select @@session.sql_mode", into(sql_mode);
+
+        // The database must be configured to use STRICT_{ALL,TRANS}_TABLES in
+        // SQL mode to avoid silent truncation of too long values.
+        return sql_mode.find("STRICT_") == std::string::npos;
+    }
 };
 
 #endif // SOCI_TESTS_MYSQL_H_INCLUDED
