@@ -189,6 +189,11 @@ macro(soci_backend NAME)
           ${THIS_BACKEND_SOURCES}
           ${THIS_BACKEND_HEADERS})
 
+        target_link_libraries(${THIS_BACKEND_TARGET_STATIC}
+          ${SOCI_CORE_TARGET}
+          ${THIS_BACKEND_DEPENDS_LIBRARIES})
+
+
         set_target_properties(${THIS_BACKEND_TARGET_STATIC}
           PROPERTIES
           OUTPUT_NAME ${THIS_BACKEND_OUTPUT_NAME}
@@ -347,6 +352,7 @@ macro(soci_backend_test)
         ${SOCI_CORE_DEPS_LIBS}
         ${THIS_TEST_DEPENDS_LIBRARIES}
         soci_core_static
+        dl # BEN - Temp fix
         soci_${BACKENDL}_static)
 
       add_test(${TEST_TARGET_STATIC}

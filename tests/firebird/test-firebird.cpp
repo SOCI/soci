@@ -18,6 +18,14 @@
 #include <cstring>
 #include <cmath>
 
+
+namespace boost {
+    std::basic_ostream<char, std::char_traits<char> >& operator<< (std::basic_ostream<char, std::char_traits<char> > & stream, boost::optional<int> const & value){
+        std::ostringstream oss;
+        return oss << "Currently not supported."; 
+    }
+}
+
 using namespace soci;
 
 std::string connectString;

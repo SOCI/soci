@@ -17,6 +17,13 @@
 #include <string>
 #include <vector>
 
+// BEN - Under Clang this naughty passing of a subclass reference to a parent base class is rightly caught
+// but I've no idea how to fix it properly
+#ifdef _COMPILER_CLANG
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wuninitialized"
+#endif
+
 namespace soci
 {
 
@@ -361,5 +368,9 @@ use_type_ptr do_use(T const & t, indicator & ind,
 } // namespace details
 
 } // namespace soci
+
+#ifdef _COMPILER_CLANG
+#pragma clang diagnostic pop
+#endif
 
 #endif // SOCI_TYPE_CONVERSION_H_INCLUDED

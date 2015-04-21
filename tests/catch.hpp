@@ -1091,7 +1091,9 @@ namespace Detail {
             oss << _value;
             return oss.str();
         }
+
     };
+
 
     std::string rawMemoryToString( const void *object, std::size_t size );
 
