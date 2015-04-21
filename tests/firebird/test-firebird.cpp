@@ -120,13 +120,14 @@ TEST_CASE("Firebird char types", "[firebird][string]")
 #endif
 
     {
-        std::string b1("Hello, Firebird!"), b2, b3;
+        // The test string is exactly 10 bytes long, i.e. same as column length.
+        std::string b1("Hello, FB!"), b2, b3;
 
         sql << "insert into test2(p1, p2) values (?,?)", use(b1), use(b1);
         sql << "select p1, p2 from test2", into(b2), into(b3);
 
         CHECK(b2 == b3);
-        CHECK(b2 == "Hello, Fir");
+        CHECK(b2 == "Hello, FB!");
 
         sql << "delete from test2";
     }
@@ -144,18 +145,6 @@ TEST_CASE("Firebird char types", "[firebird][string]")
 
         CHECK(std::strncmp(buf, msg, 5) == 0);
         CHECK(std::strncmp(buf+5, "     ", 5) == 0);
-
-        sql << "delete from test2";
-    }
-
-    {
-        std::string str1("Hello, Firebird!"), str2, str3;
-        sql << "insert into test2(p1, p2) values (?, ?)",
-        use(str1), use(str1);
-
-        sql << "select p1, p2 from test2", into(str2), into(str3);
-        CHECK(str2 == "Hello, Fir");
-        CHECK(str3 == "Hello, Fir");
 
         sql << "delete from test2";
     }
@@ -1297,6 +1286,11 @@ class test_context : public tests::test_context_base
         std::string to_date_time(std::string const &datdt_string) const
         {
             return "'" + datdt_string + "'";
+        }
+
+        virtual void on_after_ddl(session& sql) const
+        {
+            sql.commit();
         }
 };
 

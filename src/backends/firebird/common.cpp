@@ -92,27 +92,31 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
 {
     int const sqltype = var->sqltype & ~1;
 
-    short sz = 0;
-    if (size < static_cast<std::size_t>(var->sqllen))
+    if (sqltype == SQL_VARYING || sqltype == SQL_TEXT)
     {
-        sz = static_cast<short>(size);
-    }
-    else
-    {
-        sz = var->sqllen;
-    }
-
-    if (sqltype == SQL_VARYING)
-    {
-        std::memcpy(buf_, &sz, sizeof(short));
-        std::memcpy(buf_ + sizeof(short), s, sz);
-    }
-    else if (sqltype == SQL_TEXT)
-    {
-        std::memcpy(buf_, s, sz);
-        if (sz < var->sqllen)
+        if (size > static_cast<std::size_t>(var->sqllen))
         {
-            std::memset(buf_+sz, ' ', var->sqllen - sz);
+            std::ostringstream msg;
+            msg << "Value \"" << s << "\" is too long ("
+                << size << " bytes) to be stored in column of size "
+                << var->sqllen << " bytes";
+            throw soci_error(msg.str());
+        }
+
+        short const sz = static_cast<short>(size);
+
+        if (sqltype == SQL_VARYING)
+        {
+            std::memcpy(buf_, &sz, sizeof(short));
+            std::memcpy(buf_ + sizeof(short), s, sz);
+        }
+        else // sqltype == SQL_TEXT
+        {
+            std::memcpy(buf_, s, sz);
+            if (sz < var->sqllen)
+            {
+                std::memset(buf_+sz, ' ', var->sqllen - sz);
+            }
         }
     }
     else if (sqltype == SQL_SHORT)
