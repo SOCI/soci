@@ -21,6 +21,13 @@ using namespace soci::tests;
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_sqlite3();
 
+namespace boost {
+    std::basic_ostream<char, std::char_traits<char> >& operator<< (std::basic_ostream<char, std::char_traits<char> > & stream, boost::optional<int> const & value){
+        std::ostringstream oss;
+        return oss << "Currently not supported."; 
+    }
+}
+
 // ROWID test
 // In sqlite3 the row id can be called ROWID, _ROWID_ or oid
 TEST_CASE("SQLite rowid", "[sqlite][rowid][oid]")

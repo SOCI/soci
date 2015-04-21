@@ -2799,6 +2799,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic binding with rowset", "[core][dynamic][t
 
 // test for handling NULL values with boost::optional
 // (both into and use)
+
 TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
 {
 

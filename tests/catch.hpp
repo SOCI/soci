@@ -987,6 +987,7 @@ namespace Catch {
 #include <limits>
 #include <vector>
 #include <cstddef>
+#include <boost/optional.hpp>
 
 #ifdef __OBJC__
 // #included from: catch_objc_arc.hpp
@@ -1091,7 +1092,9 @@ namespace Detail {
             oss << _value;
             return oss.str();
         }
+
     };
+
 
     std::string rawMemoryToString( const void *object, std::size_t size );
 

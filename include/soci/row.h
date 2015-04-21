@@ -18,6 +18,13 @@
 #include <string>
 #include <vector>
 
+// Annoyingly, there is some weird template stuff going on that causes warnings
+#ifdef __GNUG__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
+
 namespace soci
 {
 
@@ -143,5 +150,9 @@ private:
 };
 
 } // namespace soci
+
+#ifdef __GNUG__
+#pragma GCC diagnostic pop
+#endif
 
 #endif // SOCI_ROW_H_INCLUDED

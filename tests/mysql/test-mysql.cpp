@@ -27,6 +27,13 @@ using namespace soci::tests;
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_mysql();
 
+namespace boost {
+    std::basic_ostream<char, std::char_traits<char> >& operator<< (std::basic_ostream<char, std::char_traits<char> > & stream, boost::optional<int> const & value){
+        std::ostringstream oss;
+        return oss << "Currently not supported."; 
+    }
+}
+
 
 // procedure call test
 TEST_CASE("MySQL stored procedures", "[mysql][stored-procedure]")

@@ -235,7 +235,7 @@ std::string session::get_query() const
 }
 
 void session::set_query_transformation_(
-        std::auto_ptr<details::query_transformation_function> qtf)
+        std::unique_ptr<details::query_transformation_function> &qtf)
 {
     if (isFromPool_)
     {
