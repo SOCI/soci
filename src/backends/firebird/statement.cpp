@@ -492,7 +492,8 @@ firebird_statement_backend::fetch(int number)
     rowsFetched_ = 0;
     for (int i = 0; i < number; ++i)
     {
-        long fetch_stat = isc_dsql_fetch(stat, &stmtp_, SQL_DIALECT_V6, sqldap_);
+        ISC_STATUS const
+            fetch_stat = isc_dsql_fetch(stat, &stmtp_, SQL_DIALECT_V6, sqldap_);
 
         // there is more data to read
         if (fetch_stat == 0)
