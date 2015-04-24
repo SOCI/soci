@@ -23,7 +23,7 @@ Requirements
 
 Core:
 * C++ compiler
-* Boost C++ Libraries (optional, headers only)
+* Boost C++ Libraries (optional, headers and Boost.DateTime)
 
 Backend specific client libraries for:
 * DB2
