@@ -5,8 +5,10 @@
 # Notice that this file is not executable, it is supposed to be sourced from
 # the other files.
 
-ORACLE_HOME=/opt/instantclient_11_2
-export ORACLE_HOME
+# Load Oracle environment variables
+. /usr/lib/oracle/xe/app/oracle/product/10.2.0/server/bin/oracle_env.sh
+echo "ORACLE_HOME=${ORACLE_HOME}"
+echo "ORACLE_SID=${ORACLE_SID}"
 
 LD_LIBRARY_PATH=${ORACLE_HOME}:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH
