@@ -99,6 +99,15 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
         memcpy(buf_, s.c_str(), size);
         buf_[size++] = '\0';
         indHolder_ = SQL_NTS;
+
+        // Strings of greater length are silently truncated at 8000 limit by MS
+        // SQL unless SQL_SS_LENGTH_UNLIMITED (which is defined as 0, but not
+        // available in all headers) is used.
+        if (size > 8000)
+        {
+          sqlType = SQL_LONGVARCHAR;
+          size = 0 /* SQL_SS_LENGTH_UNLIMITED */;
+        }
     }
     break;
     case x_stdtm:
