@@ -19,6 +19,60 @@ using namespace soci::tests;
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_odbc();
 
+// MS SQL-specific tests
+TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
+{
+    session sql(backEnd, connectString);
+
+    struct long_text_table_creator : public table_creator_base
+    {
+        explicit long_text_table_creator(session& sql)
+            : table_creator_base(sql)
+        {
+            // Notice that 4000 is the maximal length of an nvarchar() column,
+            // at least when using FreeTDS ODBC driver.
+            sql << "create table soci_test ("
+                        "long_text nvarchar(max) null, "
+                        "fixed_text nvarchar(4000) null"
+                    ")";
+        }
+    } long_text_table_creator(sql);
+
+    // Build a string at least 8000 characters long to test that it survives
+    // the round trip unscathed.
+    std::ostringstream os;
+    for ( int n = 0; n < 1000; ++n )
+    {
+        os << "Line #" << n << "\n";
+    }
+
+    std::string const str_in = os.str();
+    sql << "insert into soci_test(long_text) values(:str)", use(str_in);
+
+    std::string str_out;
+    sql << "select long_text from soci_test", into(str_out);
+
+    // Don't just compare the strings because the error message in case they
+    // differ is completely unreadable due to their size, so give a better
+    // error in the common failure case.
+    if (str_out.length() != str_in.length())
+    {
+        FAIL("Read back string of length " << str_out.length() <<
+             " instead of expected " << str_in.length());
+    }
+    else
+    {
+        CHECK(str_out == str_in);
+    }
+
+    // The long string should be truncated when inserting it into a fixed size
+    // column.
+    CHECK_THROWS_AS(
+        (sql << "insert into soci_test(fixed_text) values(:str)", use(str_in)),
+        soci_error
+    );
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
