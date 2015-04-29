@@ -8,6 +8,21 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 ################################################################################
 
+include(CheckCXXSymbolExists)
+
+if(WIN32)
+  check_cxx_symbol_exists("_M_AMD64" "" SOCI_TARGET_ARCH_X64)
+  if(NOT RTC_ARCH_X64)
+    check_cxx_symbol_exists("_M_IX86" "" SOCI_TARGET_ARCH_X86)
+  endif(NOT RTC_ARCH_X64)
+  # add check for arm here
+  # see http://msdn.microsoft.com/en-us/library/b0084kay.aspx
+else(WIN32)
+  check_cxx_symbol_exists("__i386__" "" SOCI_TARGET_ARCH_X86)
+  check_cxx_symbol_exists("__x86_64__" "" SOCI_TARGET_ARCH_X64)
+  check_cxx_symbol_exists("__arm__" "" SOCI_TARGET_ARCH_ARM)
+endif(WIN32)
+
 #
 # Force compilation flags and set desired warnings level
 #

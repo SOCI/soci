@@ -23,6 +23,7 @@ set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
 
 include(SociUtilities)
+include(SociConfig)
 
 colormsg(_HIBLUE_ "Configuring SOCI:")
 
@@ -36,12 +37,7 @@ soci_version(MAJOR 4 MINOR 0 PATCH 0)
 
 ###############################################################################
 # Build features and variants
-###############################################################################
-include(SociSystemInfo)
-include(SociConfig)
-
-boost_report_value(SOCI_PLATFORM_NAME)
-boost_report_value(SOCI_COMPILER_NAME)
+##############################################################################
 
 option(SOCI_SHARED "Enable build of shared libraries" ON)
 boost_report_value(SOCI_SHARED)
