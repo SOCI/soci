@@ -7,7 +7,6 @@
 
 #define SOCI_SQLITE3_SOURCE
 #include "soci/sqlite3/soci-sqlite3.h"
-#include "error.h"
 #include <cstring>
 
 using namespace soci;
