@@ -60,7 +60,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # Find SOCI dependencies
 ###############################################################################
 
-set(SOCI_CORE_TARGET)
+# Core targets configuration
+string(TOLOWER "${PROJECT_NAME}" PROJECTNAMEL)
+set(SOCI_CORE_TARGET ${PROJECTNAMEL}_core)
+soci_target_output_name(${SOCI_CORE_TARGET} SOCI_CORE_TARGET_OUTPUT_NAME)
+
 set(SOCI_CORE_TARGET_STATIC)
 set(SOCI_CORE_DEPS_LIBS)
 
