@@ -23,6 +23,7 @@
 #endif // HAVE_BOOST
 
 #include "soci-compiler.h"
+#include "soci/soci-platform.h"
 
 #define CATCH_CONFIG_RUNNER
 #include <catch.hpp>
@@ -3659,17 +3660,8 @@ void run_query_transformation_test(test_context_base const& tc, session& sql)
         CHECK(count == 'z' - 's');
     }
 
-// Bug in Visual Studio __cplusplus still means C++03
-// https://connect.microsoft.com/VisualStudio/feedback/details/763051/
-#if defined _MSC_VER && _MSC_VER>=1600
-#define SOCI_HAVE_CPP11 1
-#elif __cplusplus >= 201103L
-#define SOCI_HAVE_CPP11 1
-#else
-#undef SOCI_HAVE_CPP11
-#endif
 
-#ifdef SOCI_HAVE_CPP11
+#if SOCI_HAVE_LAMBDA
     // lambda
     {
         sql.set_query_transformation(
@@ -3681,8 +3673,7 @@ void run_query_transformation_test(test_context_base const& tc, session& sql)
         sql << query, into(count);
         CHECK(count == 'j' - 'h');
     }
-#endif
-#undef SOCI_HAVE_CPP11
+#endif // SOCI_HAVE_LAMBDA
 
     // prepared statements
 
