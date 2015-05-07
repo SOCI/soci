@@ -67,6 +67,8 @@ soci_target_output_name(${SOCI_CORE_TARGET} SOCI_CORE_TARGET_OUTPUT_NAME)
 
 set(SOCI_CORE_TARGET_STATIC)
 set(SOCI_CORE_DEPS_LIBS)
+# required for automatic linking of static libraries (currently boost).
+set(SOCI_CORE_DEPS_LIBRARY_DIRS)
 
 include(SociDependencies)
 
@@ -84,6 +86,7 @@ if(NOT MSVC)
   find_package(DL)
   if(DL_FOUND)
     list(APPEND SOCI_CORE_DEPS_LIBS ${DL_LIBRARY})
+    list(APPEND SOCI_CORE_DEPS_LIBRARY_DIRS ${DL_LIBRARY_DIR})
     set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES ${DL_INCLUDE_DIR})
     add_definitions(-DHAVE_DL=1)
   endif()
@@ -98,6 +101,7 @@ if(Boost_FOUND)
 
   if(Boost_DATE_TIME_FOUND)
     list(APPEND SOCI_CORE_DEPS_LIBS ${Boost_DATE_TIME_LIBRARY})
+    list(APPEND SOCI_CORE_DEPS_LIBRARY_DIRS ${Boost_LIBRARY_DIR})
     list(APPEND SOCI_COMPILE_DEFINITIONS "HAVE_BOOST_DATE_TIME=1")
   endif()
 

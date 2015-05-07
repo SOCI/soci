@@ -22,6 +22,7 @@ macro(soci_backend_deps_found NAME DEPS SUCCESS)
   # Determine required dependencies
   set(DEPS_INCLUDE_DIRS)
   set(DEPS_LIBRARIES)
+  set(DEPS_LIBRARY_DIRS)
   set(DEPS_DEFS)
   set(DEPS_NOT_FOUND)
 
@@ -36,6 +37,8 @@ macro(soci_backend_deps_found NAME DEPS SUCCESS)
       list(APPEND DEPS_INCLUDE_DIRS ${${DEPU}_INCLUDE_DIR})
       list(APPEND DEPS_INCLUDE_DIRS ${${DEPU}_INCLUDE_DIRS})
       list(APPEND DEPS_LIBRARIES ${${DEPU}_LIBRARIES})
+      list(APPEND DEPS_LIBRARY_DIRS ${${DEPU}_LIBRARY_DIR})
+      list(APPEND DEPS_LIBRARY_DIRS ${${DEPU}_LIBRARY_DIRS})
       list(APPEND DEPS_DEFS HAVE_${DEPU}=1)
     endif()
   endforeach()
@@ -321,6 +324,9 @@ macro(soci_backend_test)
       set(${TEST_CONNSTR_VAR} ${THIS_TEST_CONNSTR})
     endif()
     boost_report_value(${TEST_CONNSTR_VAR})
+
+    # required for automatic linking of static libraries
+    link_directories(${SOCI_CORE_DEPS_LIBRARY_DIRS} ${THIS_TEST_DEPENDS_LIBRARY_DIRS})
 
     # Shared libraries test
     add_executable(${TEST_TARGET} ${THIS_TEST_SOURCE})
