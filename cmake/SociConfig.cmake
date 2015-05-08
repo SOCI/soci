@@ -62,7 +62,7 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SOCI_GCC_CLANG_COMMON_FLAGS}")
 
   else()
-	message(FATAL_ERROR "CMake is unable to recognize compilation toolset to build SOCI for you!")
+	message(WARNING "Unknown toolset - using default flags to build SOCI")
   endif()
 
 endif()
