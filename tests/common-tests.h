@@ -3659,18 +3659,8 @@ void run_query_transformation_test(test_context_base const& tc, session& sql)
         CHECK(count == 'z' - 's');
     }
 
-// Bug in Visual Studio __cplusplus still means C++03
-// https://connect.microsoft.com/VisualStudio/feedback/details/763051/
-#if defined _MSC_VER && _MSC_VER>=1600
-#define SOCI_HAVE_CPP11 1
-#elif __cplusplus >= 201103L
-#define SOCI_HAVE_CPP11 1
-#else
-#undef SOCI_HAVE_CPP11
-#endif
-
-#ifdef SOCI_HAVE_CPP11
-    // lambda
+#if 0
+    // lambda is just presented as an example to curious users
     {
         sql.set_query_transformation(
             [](std::string const& query) {
@@ -3682,7 +3672,6 @@ void run_query_transformation_test(test_context_base const& tc, session& sql)
         CHECK(count == 'j' - 'h');
     }
 #endif
-#undef SOCI_HAVE_CPP11
 
     // prepared statements
 
