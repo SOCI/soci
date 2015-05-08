@@ -3661,7 +3661,7 @@ void run_query_transformation_test(test_context_base const& tc, session& sql)
     }
 
 
-#if SOCI_HAVE_LAMBDA
+#ifdef SOCI_HAVE_LAMBDA
     // lambda
     {
         sql.set_query_transformation(

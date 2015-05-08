@@ -12,7 +12,7 @@
 #include "soci/prepare-temp-type.h"
 #include "soci/soci-platform.h"
 
-#if SOCI_HAVE_NOEXCEPT
+#ifdef SOCI_HAVE_NOEXCEPT
 #define SOCI_ONCE_TEMP_TYPE_NOEXCEPT noexcept(false)
 #else
 #define SOCI_ONCE_TEMP_TYPE_NOEXCEPT
