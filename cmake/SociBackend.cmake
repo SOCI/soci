@@ -172,6 +172,12 @@ macro(soci_backend NAME)
             PROPERTIES
             SOVERSION ${${PROJECT_NAME}_SOVERSION}
             INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/lib)
+
+          if(APPLE)
+            set_target_properties(${THIS_BACKEND_TARGET}
+              PROPERTIES
+              LINK_FLAGS "-Wl,-flat_namespace -Wl,-undefined -Wl,suppress")
+          endif()
         endif()
 
         set_target_properties(${THIS_BACKEND_TARGET}
