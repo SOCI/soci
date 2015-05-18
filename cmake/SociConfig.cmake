@@ -24,6 +24,13 @@ else(WIN32)
 endif(WIN32)
 
 #
+# C++11 Option
+#
+
+set (SOCI_CXX_C11 OFF CACHE BOOL "Build to the C++11 standard")
+
+
+#
 # Force compilation flags and set desired warnings level
 #
 
@@ -44,16 +51,24 @@ if (MSVC)
 else()
 
   set(SOCI_GCC_CLANG_COMMON_FLAGS
-	"-pedantic -ansi -Wall -Wpointer-arith -Wcast-align -Wcast-qual -Wfloat-equal -Wredundant-decls -Wno-long-long")
+	"-pedantic -Werror -Wall -Wpointer-arith -Wcast-align -Wcast-qual -Wfloat-equal -Wredundant-decls -Wno-long-long")
+
+
+  if (SOCI_CXX_C11)
+    set(SOCI_CXX_VERSION_FLAGS "-std=c++11")
+    add_definitions(-DSOCI_CXX_C11)
+  else()
+    set(SOCI_CXX_VERSION_FLAGS "-ansi -std=gnu++98")
+  endif()
 
   if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC ${SOCI_GCC_CLANG_COMMON_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC ${SOCI_GCC_CLANG_COMMON_FLAGS} ${SOCI_CXX_VERSION_FLAGS} ")
     if (CMAKE_COMPILER_IS_GNUCXX)
         if (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++98")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
         else()
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++98 -Wno-variadic-macros")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-variadic-macros")
         endif()
     endif()
 

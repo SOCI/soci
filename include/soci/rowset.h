@@ -147,8 +147,14 @@ private:
 
     unsigned int refs_;
 
+#ifdef SOCI_CXX_C11
+    const std::unique_ptr<statement> st_;
+    const std::unique_ptr<T> define_;
+#else
     const std::auto_ptr<statement> st_;
     const std::auto_ptr<T> define_;
+#endif
+
 
     // Non-copyable
     rowset_impl(rowset_impl const &);

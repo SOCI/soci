@@ -24,6 +24,17 @@
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_mysql();
 
+// It appears later versions of GCC arent happy with this - to be fixed properly
+
+#if (__GNUC__ == 4 && (__GNUC_MINOR__ > 6)) || (__clang__ == 1)
+namespace boost {
+    std::basic_ostream<char, std::char_traits<char> >& operator<< (std::basic_ostream<char, std::char_traits<char> > & stream, boost::optional<int> const & value){
+        std::ostringstream oss;
+        return oss << "Currently not supported."; 
+    }
+}
+#endif
+
 
 // procedure call test
 TEST_CASE("MySQL stored procedures", "[mysql][stored-procedure]")

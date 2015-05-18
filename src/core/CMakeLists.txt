@@ -71,6 +71,13 @@ if (SOCI_STATIC)
 
   add_library(${SOCI_CORE_TARGET_STATIC} STATIC
     ${SOCI_CORE_HEADERS} ${SOCI_CORE_SOURCES})
+  
+  # we still need to link against dl if we have it
+  target_link_libraries (${SOCI_CORE_TARGET_STATIC}
+    ${SOCI_CORE_DEPS_LIBS}
+  )
+  
+
 
   set_target_properties(${SOCI_CORE_TARGET_STATIC}
     PROPERTIES
