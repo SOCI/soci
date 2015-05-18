@@ -12,6 +12,13 @@ SOCI_POSTGRESQL_CONNSTR=$(curl http://api.postgression.com)
 #SOCI_POSTGRESQL_CONNSTR=$(curl http://api.postgression.com | \
 #sed 's|postgres://\([^:]\+\):\([^@]\+\)@\([^:]\+\):\([0-9]\+\)/\(.*\)|user=\1 password=\2 host=\3 port=\4 dbname=\5|')
 
+# Before proceeding with build, check Postgression availability
+echo $SOCI_POSTGRESQL_CONNSTR | grep NO_DATABASES_AVAILABLE
+if [ $? -eq 0 ];then
+  echo ${SOCI_POSTGRESQL_CONNSTR}
+  exit 1
+fi
+
 echo "Postgression connection parameters: $SOCI_POSTGRESQL_CONNSTR"
 
 echo "PostgreSQL client version:"
