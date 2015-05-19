@@ -19,6 +19,23 @@ using namespace soci::tests;
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_odbc();
 
+#ifdef HAVE_BOOST
+// It appears later versions of GCC arent happy with this - to be fixed properly
+#if (__GNUC__ == 4 && (__GNUC_MINOR__ > 6)) || (__clang__ == 1)
+#include <boost/optional.hpp>
+
+namespace boost {
+    std::basic_ostream<char, std::char_traits<char> >&
+    operator<< (std::basic_ostream<char, std::char_traits<char> > & stream
+              , boost::optional<int> const & value)
+    {
+        std::ostringstream oss;
+        return oss << "Currently not supported.";
+    }
+}
+#endif
+#endif // HAVE_BOOST
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {

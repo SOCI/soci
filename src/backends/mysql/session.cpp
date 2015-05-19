@@ -272,6 +272,18 @@ void parse_connect_string(const string & connectString,
 
 } // namespace anonymous
 
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wuninitialized"
+#endif
+
+#if defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ > 6)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
+
 mysql_session_backend::mysql_session_backend(
     connection_parameters const & parameters)
 {
@@ -332,6 +344,16 @@ mysql_session_backend::mysql_session_backend(
         throw mysql_soci_error(errMsg, errNum);
     }
 }
+
+#if defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ > 6)
+#pragma GCC diagnostic pop
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+
 
 mysql_session_backend::~mysql_session_backend()
 {

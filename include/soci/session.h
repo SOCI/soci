@@ -40,7 +40,13 @@ class SOCI_DECL session
 {
 private:
 
+#ifdef SOCI_CXX_C11
+    void set_query_transformation_(std::unique_ptr<details::query_transformation_function> & qtf);
+#else
     void set_query_transformation_(std::auto_ptr<details::query_transformation_function> qtf);
+#endif
+
+
 
 public:
     session();
@@ -77,9 +83,14 @@ public:
     template <typename T>
     void set_query_transformation(T callback)
     {
+
+#ifdef CXX_C11
+        std::unique_ptr<details::query_transformation_function> qtf(new details::query_transformation<T>(callback));
+#else
         std::auto_ptr<details::query_transformation_function> qtf(new details::query_transformation<T>(callback));
-        set_query_transformation_(qtf);
-    }
+#endif
+
+   }
 
     // support for basic logging
     void set_log_stream(std::ostream * s);
