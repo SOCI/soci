@@ -76,7 +76,7 @@ namespace soci
 
 TEST_CASE("Dummy test", "[empty]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     sql << "Do what I want.";
     sql << "Do what I want " << 123 << " times.";

@@ -43,7 +43,7 @@ backend_factory const &backEnd = *soci::factory_postgresql();
 
 struct oid_table_creator : public table_creator_base
 {
-    oid_table_creator(session& sql)
+    oid_table_creator(soci::session& sql)
     : table_creator_base(sql)
     {
         sql << "create table soci_test ("
@@ -59,7 +59,7 @@ struct oid_table_creator : public table_creator_base
 // whatever that means.
 TEST_CASE("PostgreSQL ROWID", "[postgresql][rowid][oid]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     oid_table_creator tableCreator(sql);
 
@@ -95,7 +95,7 @@ TEST_CASE("PostgreSQL ROWID", "[postgresql][rowid][oid]")
 
 TEST_CASE("PostgreSQL prepare error", "[postgresql][exception]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     // Must not cause the application to crash.
     statement st(sql);
@@ -107,7 +107,7 @@ class function_creator : function_creator_base
 {
 public:
 
-    function_creator(session & sql)
+    function_creator(soci::session & sql)
     : function_creator_base(sql)
     {
         // before a language can be used it must be defined
@@ -146,7 +146,7 @@ protected:
 
 TEST_CASE("PostgreSQL function call", "[postgresql][function]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     function_creator functionCreator(sql);
 
@@ -199,7 +199,7 @@ TEST_CASE("PostgreSQL function call", "[postgresql][function]")
 // BLOB test
 struct blob_table_creator : public table_creator_base
 {
-    blob_table_creator(session & sql)
+    blob_table_creator(soci::session & sql)
     : table_creator_base(sql)
     {
         sql <<
@@ -212,7 +212,7 @@ struct blob_table_creator : public table_creator_base
 
 TEST_CASE("PostgreSQL blob", "[postgresql][blob]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     blob_table_creator tableCreator(sql);
 
@@ -251,7 +251,7 @@ TEST_CASE("PostgreSQL blob", "[postgresql][blob]")
 
 struct longlong_table_creator : table_creator_base
 {
-    longlong_table_creator(session & sql)
+    longlong_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val int8)";
@@ -261,7 +261,7 @@ struct longlong_table_creator : table_creator_base
 // long long test
 TEST_CASE("PostgreSQL long long", "[postgresql][longlong]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     longlong_table_creator tableCreator(sql);
 
@@ -277,7 +277,7 @@ TEST_CASE("PostgreSQL long long", "[postgresql][longlong]")
 // vector<long long>
 TEST_CASE("PostgreSQL vector long long", "[postgresql][vector][longlong]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     longlong_table_creator tableCreator(sql);
 
@@ -304,7 +304,7 @@ TEST_CASE("PostgreSQL vector long long", "[postgresql][vector][longlong]")
 // unsigned long long test
 TEST_CASE("PostgreSQL unsigned long long", "[postgresql][unsigned][longlong]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     longlong_table_creator tableCreator(sql);
 
@@ -319,7 +319,7 @@ TEST_CASE("PostgreSQL unsigned long long", "[postgresql][unsigned][longlong]")
 
 struct boolean_table_creator : table_creator_base
 {
-    boolean_table_creator(session & sql)
+    boolean_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val boolean)";
@@ -328,7 +328,7 @@ struct boolean_table_creator : table_creator_base
 
 TEST_CASE("PostgreSQL boolean", "[postgresql][boolean]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     boolean_table_creator tableCreator(sql);
 
@@ -351,7 +351,7 @@ TEST_CASE("PostgreSQL dynamic backend", "[postgresql][backend][.]")
 {
     try
     {
-        session sql("nosuchbackend://" + connectString);
+        soci::session sql("nosuchbackend://" + connectString);
         FAIL("expected exception not thrown");
     }
     catch (soci_error const & e)
@@ -368,7 +368,7 @@ TEST_CASE("PostgreSQL dynamic backend", "[postgresql][backend][.]")
         CHECK(backends[0] == "pgsql");
 
         {
-            session sql("pgsql://" + connectString);
+            soci::session sql("pgsql://" + connectString);
         }
 
         dynamic_backends::unload("pgsql");
@@ -378,13 +378,13 @@ TEST_CASE("PostgreSQL dynamic backend", "[postgresql][backend][.]")
     }
 
     {
-        session sql("postgresql://" + connectString);
+        soci::session sql("postgresql://" + connectString);
     }
 }
 
 TEST_CASE("PostgreSQL literals", "[postgresql][into]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     int i;
     sql << "select 123", into(i);
@@ -405,7 +405,7 @@ TEST_CASE("PostgreSQL literals", "[postgresql][into]")
 
 TEST_CASE("PostgreSQL backend name", "[postgresql][backend]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     CHECK(sql.get_backend_name() == "postgresql");
 }
@@ -413,7 +413,7 @@ TEST_CASE("PostgreSQL backend name", "[postgresql][backend]")
 // test for double-colon cast in SQL expressions
 TEST_CASE("PostgreSQL double colon cast", "[postgresql][cast]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     int a = 123;
     int b = 0;
@@ -424,7 +424,7 @@ TEST_CASE("PostgreSQL double colon cast", "[postgresql][cast]")
 // test for date, time and timestamp parsing
 TEST_CASE("PostgreSQL datetime", "[postgresql][datetime]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     std::string someDate = "2009-06-17 22:51:03.123";
     std::tm t1, t2, t3;
@@ -461,7 +461,7 @@ TEST_CASE("PostgreSQL datetime", "[postgresql][datetime]")
 
 struct table_creator_for_test11 : table_creator_base
 {
-    table_creator_for_test11(session & sql)
+    table_creator_for_test11(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val integer)";
@@ -470,7 +470,7 @@ struct table_creator_for_test11 : table_creator_base
 
 TEST_CASE("PostgreSQL get affected rows", "[postgresql][affected-rows]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     table_creator_for_test11 tableCreator(sql);
 
@@ -496,7 +496,7 @@ TEST_CASE("PostgreSQL get affected rows", "[postgresql][affected-rows]")
 
 struct table_creator_for_test12 : table_creator_base
 {
-    table_creator_for_test12(session & sql)
+    table_creator_for_test12(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(sid serial, txt text)";
@@ -505,7 +505,7 @@ struct table_creator_for_test12 : table_creator_base
 
 TEST_CASE("PostgreSQL insert into ... returning", "[postgresql]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     table_creator_for_test12 tableCreator(sql);
 
@@ -525,7 +525,7 @@ TEST_CASE("PostgreSQL insert into ... returning", "[postgresql]")
 
 struct bytea_table_creator : public table_creator_base
 {
-    bytea_table_creator(session& sql)
+    bytea_table_creator(soci::session& sql)
         : table_creator_base(sql)
     {
         sql << "drop table if exists soci_test;";
@@ -535,7 +535,7 @@ struct bytea_table_creator : public table_creator_base
 
 TEST_CASE("PostgreSQL bytea", "[postgresql][bytea]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     // PostgreSQL supports two different output formats for bytea values:
     // historical "escape" format, which is the only one supported until
@@ -583,7 +583,7 @@ TEST_CASE("PostgreSQL bytea", "[postgresql][bytea]")
 // json
 struct table_creator_json : public table_creator_base
 {
-    table_creator_json(session& sql)
+    table_creator_json(soci::session& sql)
     : table_creator_base(sql)
     {
         sql << "drop table if exists soci_json_test;";
@@ -594,7 +594,7 @@ struct table_creator_json : public table_creator_base
 // Return 9,2 for 9.2.3
 typedef std::pair<int,int> server_version;
 
-server_version get_postgresql_version(session& sql)
+server_version get_postgresql_version(soci::session& sql)
 {
     std::string version;
     std::pair<int,int> result;
@@ -609,7 +609,7 @@ server_version get_postgresql_version(session& sql)
 // Test JSON. Only valid for PostgreSQL Server 9.2++
 TEST_CASE("PostgreSQL JSON", "[postgresql][json]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     server_version version = get_postgresql_version(sql);
     if ( version >= server_version(9,2))
     {
@@ -637,7 +637,7 @@ TEST_CASE("PostgreSQL JSON", "[postgresql][json]")
 
 struct table_creator_text : public table_creator_base
 {
-    table_creator_text(session& sql) : table_creator_base(sql)
+    table_creator_text(soci::session& sql) : table_creator_base(sql)
     {
         sql << "drop table if exists soci_test;";
         sql << "create table soci_test(name varchar(20))";
@@ -649,7 +649,7 @@ struct table_creator_text : public table_creator_base
 // https://github.com/SOCI/soci/issues/116
 TEST_CASE("PostgreSQL statement prepare failure", "[postgresql][prepare]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     table_creator_text tableCreator(sql);
 
     try
@@ -674,7 +674,7 @@ TEST_CASE("PostgreSQL statement prepare failure", "[postgresql][prepare]")
 // Test the support of PostgreSQL-style casts with ORM
 TEST_CASE("PostgreSQL ORM cast", "[postgresql][orm]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     values v;
     v.set("a", 1);
     sql << "select :a::int", use(v); // Must not throw an exception!
@@ -687,7 +687,7 @@ TEST_CASE("PostgreSQL ORM cast", "[postgresql][orm]")
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
-    table_creator_one(session & sql)
+    table_creator_one(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, val integer, c char, "
@@ -700,7 +700,7 @@ struct table_creator_one : public table_creator_base
 
 struct table_creator_two : public table_creator_base
 {
-    table_creator_two(session & sql)
+    table_creator_two(soci::session & sql)
         : table_creator_base(sql)
     {
         sql  << "create table soci_test(num_float float8, num_int integer,"
@@ -710,7 +710,7 @@ struct table_creator_two : public table_creator_base
 
 struct table_creator_three : public table_creator_base
 {
-    table_creator_three(session & sql)
+    table_creator_three(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(name varchar(100) not null, "
@@ -720,7 +720,7 @@ struct table_creator_three : public table_creator_base
 
 struct table_creator_for_get_affected_rows : table_creator_base
 {
-    table_creator_for_get_affected_rows(session & sql)
+    table_creator_for_get_affected_rows(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val integer)";
@@ -735,22 +735,22 @@ public:
         : test_context_base(backEnd, connectString)
     {}
 
-    table_creator_base* table_creator_1(session& s) const
+    table_creator_base* table_creator_1(soci::session& s) const
     {
         return new table_creator_one(s);
     }
 
-    table_creator_base* table_creator_2(session& s) const
+    table_creator_base* table_creator_2(soci::session& s) const
     {
         return new table_creator_two(s);
     }
 
-    table_creator_base* table_creator_3(session& s) const
+    table_creator_base* table_creator_3(soci::session& s) const
     {
         return new table_creator_three(s);
     }
 
-    table_creator_base* table_creator_4(session& s) const
+    table_creator_base* table_creator_4(soci::session& s) const
     {
         return new table_creator_for_get_affected_rows(s);
     }

@@ -450,7 +450,7 @@ TEST_CASE_METHOD(common_tests, "Exception on not connected", "[core][exception]"
 
 TEST_CASE_METHOD(common_tests, "Basic functionality")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
@@ -465,7 +465,7 @@ TEST_CASE_METHOD(common_tests, "Basic functionality")
 // "into" tests, type conversions, etc.
 TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
@@ -621,7 +621,7 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
 // repeated fetch and bulk fetch
 TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
@@ -1032,7 +1032,7 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
 // test for indicators (repeated fetch and bulk)
 TEST_CASE_METHOD(common_tests, "Indicators", "[core][indicator]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
@@ -1147,7 +1147,7 @@ TEST_CASE_METHOD(common_tests, "Indicators", "[core][indicator]")
 // (library should force ind. vector to have same size as data vector)
 TEST_CASE_METHOD(common_tests, "Indicators vector", "[core][indicator][vector]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
@@ -1184,7 +1184,7 @@ TEST_CASE_METHOD(common_tests, "Indicators vector", "[core][indicator][vector]")
 // "use" tests, type conversions, etc.
 TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
@@ -1409,7 +1409,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
 // test for multiple use (and into) elements
 TEST_CASE_METHOD(common_tests, "Multiple use and into", "[core][use][into]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
     {
@@ -1502,7 +1502,7 @@ TEST_CASE_METHOD(common_tests, "Multiple use and into", "[core][use][into]")
 // use vector elements
 TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
@@ -1695,7 +1695,7 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
 // test for named binding
 TEST_CASE_METHOD(common_tests, "Named parameters", "[core][use][named-params]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
     {
         auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
@@ -1767,7 +1767,7 @@ TEST_CASE_METHOD(common_tests, "Named parameters", "[core][use][named-params]")
 // transaction test
 TEST_CASE_METHOD(common_tests, "Transactions", "[core][transaction]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     if (!tc_.has_transactions_support(sql))
     {
@@ -1841,7 +1841,7 @@ TEST_CASE_METHOD(common_tests, "Transactions", "[core][transaction]")
 // test of use elements with indicators
 TEST_CASE_METHOD(common_tests, "Use with indicators", "[core][use][indicator]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
@@ -1910,7 +1910,7 @@ TEST_CASE_METHOD(common_tests, "Use with indicators", "[core][use][indicator]")
 // Dynamic binding to Row objects
 TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     sql.uppercase_column_names(true);
 
@@ -2027,7 +2027,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
 // more dynamic bindings
 TEST_CASE_METHOD(common_tests, "Dynamic row binding 2", "[core][dynamic]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
@@ -2084,7 +2084,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding 2", "[core][dynamic]")
 // More Dynamic binding to row objects
 TEST_CASE_METHOD(common_tests, "Dynamic row binding 3", "[core][dynamic]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     sql.uppercase_column_names(true);
 
@@ -2116,7 +2116,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding 3", "[core][dynamic]")
 // This is like the previous test but with a type_conversion instead of a row
 TEST_CASE_METHOD(common_tests, "Dynamic binding with type conversions", "[core][dynamic][type_conversion]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     sql.uppercase_column_names(true);
 
@@ -2269,7 +2269,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic binding with type conversions", "[core][
 
 TEST_CASE_METHOD(common_tests, "Prepared insert with ORM", "[core][orm]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     sql.uppercase_column_names(true);
     auto_table_creator tableCreator(tc_.table_creator_3(sql));
@@ -2295,7 +2295,7 @@ TEST_CASE_METHOD(common_tests, "Prepared insert with ORM", "[core][orm]")
 
 TEST_CASE_METHOD(common_tests, "Partial match with ORM", "[core][orm]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
     sql.uppercase_column_names(true);
     auto_table_creator tableCreator(tc_.table_creator_3(sql));
 
@@ -2311,7 +2311,7 @@ TEST_CASE_METHOD(common_tests, "Partial match with ORM", "[core][orm]")
 
 TEST_CASE_METHOD(common_tests, "Numeric round trip", "[core][float]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
     double d1 = 0.003958,
@@ -2339,7 +2339,7 @@ TEST_CASE_METHOD(common_tests, "Numeric round trip", "[core][float]")
 // test for bulk fetch with single use
 TEST_CASE_METHOD(common_tests, "Bulk fetch with single use", "[core][bulk]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
@@ -2365,7 +2365,7 @@ TEST_CASE_METHOD(common_tests, "Bulk fetch with single use", "[core][bulk]")
 // test for basic logging support
 TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     std::ostringstream log;
     sql.set_log_stream(&log);
@@ -2406,7 +2406,7 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
 // test for rowset creation and copying
 TEST_CASE_METHOD(common_tests, "Rowset creation and copying", "[core][rowset]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
@@ -2448,7 +2448,7 @@ TEST_CASE_METHOD(common_tests, "Rowset creation and copying", "[core][rowset]")
 // test for simple iterating using rowset iterator (without reading data)
 TEST_CASE_METHOD(common_tests, "Rowset iteration", "[core][rowset]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
@@ -2470,7 +2470,7 @@ TEST_CASE_METHOD(common_tests, "Rowset iteration", "[core][rowset]")
 // test for reading rowset<row> using iterator
 TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     sql.uppercase_column_names(true);
 
@@ -2650,7 +2650,7 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
 // test for reading rowset<int> using iterator
 TEST_CASE_METHOD(common_tests, "Reading ints from rowset", "[core][rowset]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
@@ -2686,7 +2686,7 @@ TEST_CASE_METHOD(common_tests, "Reading ints from rowset", "[core][rowset]")
 // test for handling 'use' and reading rowset<std::string> using iterator
 TEST_CASE_METHOD(common_tests, "Reading strings from rowset", "[core][rowset]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
@@ -2719,7 +2719,7 @@ TEST_CASE_METHOD(common_tests, "Reading strings from rowset", "[core][rowset]")
 // test for handling troublemaker
 TEST_CASE_METHOD(common_tests, "Rowset expected exception", "[core][exception][rowset]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
@@ -2737,7 +2737,7 @@ TEST_CASE_METHOD(common_tests, "Rowset expected exception", "[core][exception][r
 // "Null value fetched and no indicator defined."
 TEST_CASE_METHOD(common_tests, "NULL expected exception", "[core][exception][null]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
@@ -2763,7 +2763,7 @@ TEST_CASE_METHOD(common_tests, "NULL expected exception", "[core][exception][nul
 // This is like the first dynamic binding test but with rowset and iterators use
 TEST_CASE_METHOD(common_tests, "Dynamic binding with rowset", "[core][dynamic][type_conversion]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     sql.uppercase_column_names(true);
 
@@ -2810,7 +2810,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic binding with rowset", "[core][dynamic][t
 TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
 {
 
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
@@ -3147,7 +3147,7 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
 {
     {
         // empty session
-        session sql;
+        soci::session sql;
 
         // idempotent:
         sql.close();
@@ -3192,7 +3192,7 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
     }
 
     {
-        session sql;
+        soci::session sql;
 
         try
         {
@@ -3212,7 +3212,7 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
 
 TEST_CASE_METHOD(common_tests, "Boost tuple", "[core][boost][tuple]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     auto_table_creator tableCreator(tc_.table_creator_2(sql));
     {
@@ -3360,7 +3360,7 @@ TEST_CASE_METHOD(common_tests, "Boost tuple", "[core][boost][tuple]")
 TEST_CASE_METHOD(common_tests, "Boost fusion", "[core][boost][fusion]")
 {
 
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     auto_table_creator tableCreator(tc_.table_creator_2(sql));
     {
@@ -3508,7 +3508,7 @@ TEST_CASE_METHOD(common_tests, "Boost fusion", "[core][boost][fusion]")
 // test for boost::gregorian::date
 TEST_CASE_METHOD(common_tests, "Boost date", "[core][boost][datetime]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     {
         auto_table_creator tableCreator(tc_.table_creator_1(sql));
@@ -3579,9 +3579,9 @@ TEST_CASE_METHOD(common_tests, "Connection pool", "[core][connection][pool]")
     for (std::size_t i = 0; i != pool_size; ++i)
     {
         // poor man way to lease more than one connection
-        session sql_unused1(pool);
-        session sql(pool);
-        session sql_unused2(pool);
+        soci::session sql_unused1(pool);
+        soci::session sql(pool);
+        soci::session sql_unused2(pool);
         {
             auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
@@ -3711,7 +3711,7 @@ void run_query_transformation_test(test_context_base const& tc, session& sql)
 
 TEST_CASE_METHOD(common_tests, "Query transformation", "[core][query-transform]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
     run_query_transformation_test(tc_, sql);
 }
 
@@ -3727,7 +3727,7 @@ TEST_CASE_METHOD(common_tests, "Query transformation with connection pool", "[co
         sql.open(backEndFactory_, connectString_);
     }
 
-    session sql(pool);
+    soci::session sql(pool);
     run_query_transformation_test(tc_, sql);
 }
 
@@ -3738,7 +3738,7 @@ TEST_CASE_METHOD(common_tests, "Query transformation with connection pool", "[co
 // Implement get_affected_rows for SQLite3 backend
 TEST_CASE_METHOD(common_tests, "Get affected rows", "[core][affected-rows]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
     auto_table_creator tableCreator(tc_.table_creator_4(sql));
     if (!tableCreator.get())
     {
@@ -3822,7 +3822,7 @@ TEST_CASE_METHOD(common_tests, "Backend with connection pool", "[core][pool]")
 // soci::details::statement_impl::backEnd_ must not leak
 TEST_CASE_METHOD(common_tests, "Backend memory leak", "[core][leak]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
     try
     {
@@ -3845,7 +3845,7 @@ TEST_CASE_METHOD(common_tests, "Backend memory leak", "[core][leak]")
 // soci::details::standard_use_type_backend and vector_use_type_backend must not leak
 TEST_CASE_METHOD(common_tests, "Bind memory leak", "[core][leak]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
     sql << "insert into soci_test(id) values (1)";
     {
@@ -3883,7 +3883,7 @@ TEST_CASE_METHOD(common_tests, "Bind memory leak", "[core][leak]")
 
 TEST_CASE_METHOD(common_tests, "Insert error", "[core][insert][exception]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     struct pk_table_creator : table_creator_base
     {
@@ -3989,7 +3989,7 @@ void check_for_exception_on_truncation(session& sql)
 
 TEST_CASE_METHOD(common_tests, "Truncation error", "[core][insert][truncate][exception]")
 {
-    session sql(backEndFactory_, connectString_);
+    soci::session sql(backEndFactory_, connectString_);
 
     if (tc_.has_silent_truncate_bug(sql))
     {
