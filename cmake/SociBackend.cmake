@@ -189,6 +189,11 @@ macro(soci_backend NAME)
           ${THIS_BACKEND_SOURCES}
           ${THIS_BACKEND_HEADERS})
 
+        # Still need to link the libraries for tests to work
+        target_link_libraries (${THIS_BACKEND_TARGET_STATIC}
+          ${THIS_BACKEND_DEPENDS_LIBRARIES}
+        )
+
         set_target_properties(${THIS_BACKEND_TARGET_STATIC}
           PROPERTIES
           OUTPUT_NAME ${THIS_BACKEND_OUTPUT_NAME}
