@@ -42,7 +42,7 @@ backend_factory const &backEnd = *soci::factory_sqlite3();
 // In sqlite3 the row id can be called ROWID, _ROWID_ or oid
 TEST_CASE("SQLite rowid", "[sqlite][rowid][oid]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     try { sql << "drop table test1"; }
     catch (soci_error const &) {} // ignore if error
@@ -86,7 +86,7 @@ struct blob_table_creator : public table_creator_base
 
 TEST_CASE("SQLite blob", "[sqlite][blob]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     blob_table_creator tableCreator(sql);
 
@@ -136,7 +136,7 @@ struct test3_table_creator : table_creator_base
 
 TEST_CASE("SQLite use and vector into", "[sqlite][use][into][vector]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     test3_table_creator tableCreator(sql);
 
@@ -182,7 +182,7 @@ struct test4_table_creator : table_creator_base
 TEST_CASE("SQLite select from sequence", "[sqlite][sequence]")
 {
     // we need to have an table that uses autoincrement to test this.
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     test4_table_creator tableCreator(sql);
 
@@ -215,7 +215,7 @@ struct longlong_table_creator : table_creator_base
 // long long test
 TEST_CASE("SQLite long long", "[sqlite][longlong]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     longlong_table_creator tableCreator(sql);
 
@@ -230,7 +230,7 @@ TEST_CASE("SQLite long long", "[sqlite][longlong]")
 
 TEST_CASE("SQLite vector long long", "[sqlite][vector][longlong]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     longlong_table_creator tableCreator(sql);
 
@@ -267,7 +267,7 @@ struct table_creator_for_get_last_insert_id : table_creator_base
 
 TEST_CASE("SQLite last insert id", "[sqlite][last-insert-id]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     table_creator_for_get_last_insert_id tableCreator(sql);
     sql << "insert into soci_test default values";
     long id;

@@ -39,7 +39,7 @@ namespace boost {
 // Extra tests for date/time
 TEST_CASE("Oracle datetime", "[oracle][datetime]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     {
         std::time_t now = std::time(NULL);
@@ -106,7 +106,7 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
 // explicit calls test
 TEST_CASE("Oracle explicit calls", "[oracle]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     statement st(sql);
     st.alloc();
@@ -135,7 +135,7 @@ struct blob_table_creator : public table_creator_base
 
 TEST_CASE("Oracle blob", "[oracle][blob]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     blob_table_creator tableCreator(sql);
 
@@ -199,7 +199,7 @@ struct basic_table_creator : public table_creator_base
 
 TEST_CASE("Oracle nested statement", "[oracle][blob]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     basic_table_creator tableCreator(sql);
 
     int id;
@@ -236,7 +236,7 @@ TEST_CASE("Oracle nested statement", "[oracle][blob]")
 // ROWID test
 TEST_CASE("Oracle rowid", "[oracle][rowid]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     basic_table_creator tableCreator(sql);
 
     sql << "insert into soci_test(id, name) values(7, \'John\')";
@@ -268,7 +268,7 @@ struct procedure_creator : procedure_creator_base
 
 TEST_CASE("Oracle stored procedure", "[oracle][stored-procedure]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     procedure_creator procedure_creator(sql);
 
     std::string in("my message");
@@ -345,7 +345,7 @@ struct returns_null_procedure_creator : public procedure_creator_base
 
 TEST_CASE("Oracle user-defined objects", "[oracle][type_conversion]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     {
         basic_table_creator tableCreator(sql);
 
@@ -366,7 +366,7 @@ TEST_CASE("Oracle user-defined objects", "[oracle][type_conversion]")
 
 TEST_CASE("Oracle user-defined objects in/out", "[oracle][type_conversion]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     // test procedure with user-defined type as in-out parameter
     {
@@ -391,7 +391,7 @@ TEST_CASE("Oracle user-defined objects in/out", "[oracle][type_conversion]")
 
 TEST_CASE("Oracle null user-defined objects in/out", "[oracle][null][type_conversion]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     // test procedure which returns null
     returns_null_procedure_creator procedureCreator(sql);
@@ -406,7 +406,7 @@ TEST_CASE("Oracle null user-defined objects in/out", "[oracle][null][type_conver
 // test bulk insert features
 TEST_CASE("Oracle bulk insert", "[oracle][insert][bulk]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     basic_table_creator tableCreator(sql);
 
@@ -645,7 +645,7 @@ TEST_CASE("Oracle bulk insert", "[oracle][insert][bulk]")
 // more tests for bulk fetch
 TEST_CASE("Oracle bulk fetch", "[oracle][fetch][bulk]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     basic_table_creator tableCreator(sql);
 
@@ -784,7 +784,7 @@ struct times100_procedure_creator : public procedure_creator_base
 
 TEST_CASE("Oracle ORM", "[oracle][orm]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     {
         person_table_creator tableCreator(sql);
@@ -939,7 +939,7 @@ namespace soci
 
 TEST_CASE("Oracle ORM by index", "[oracle][orm]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     person_table_creator tableCreator(sql);
 
@@ -984,7 +984,7 @@ struct long_table_creator : public table_creator_base
 
 TEST_CASE("Oracle large strings as long", "[oracle][compatibility]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     long_table_creator creator(sql);
 
     const std::string::size_type max = 32768;
@@ -1002,7 +1002,7 @@ TEST_CASE("Oracle large strings as long", "[oracle][compatibility]")
 // test for modifiable and const use elements
 TEST_CASE("Oracle const and modifiable parameters", "[oracle][use]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     int i = 7;
     sql << "begin "
@@ -1039,7 +1039,7 @@ struct longlong_table_creator : table_creator_base
 TEST_CASE("Oracle long long", "[oracle][longlong]")
 {
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
 
         longlong_table_creator tableCreator(sql);
 
@@ -1054,7 +1054,7 @@ TEST_CASE("Oracle long long", "[oracle][longlong]")
 
     // vector<long long>
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
 
         longlong_table_creator tableCreator(sql);
 

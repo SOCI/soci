@@ -59,7 +59,7 @@ struct oid_table_creator : public table_creator_base
 // whatever that means.
 TEST_CASE("PostgreSQL ROWID", "[postgresql][rowid][oid]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     oid_table_creator tableCreator(sql);
 
@@ -95,7 +95,7 @@ TEST_CASE("PostgreSQL ROWID", "[postgresql][rowid][oid]")
 
 TEST_CASE("PostgreSQL prepare error", "[postgresql][exception]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     // Must not cause the application to crash.
     statement st(sql);
@@ -146,7 +146,7 @@ protected:
 
 TEST_CASE("PostgreSQL function call", "[postgresql][function]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     function_creator functionCreator(sql);
 
@@ -212,7 +212,7 @@ struct blob_table_creator : public table_creator_base
 
 TEST_CASE("PostgreSQL blob", "[postgresql][blob]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     blob_table_creator tableCreator(sql);
 
@@ -261,7 +261,7 @@ struct longlong_table_creator : table_creator_base
 // long long test
 TEST_CASE("PostgreSQL long long", "[postgresql][longlong]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     longlong_table_creator tableCreator(sql);
 
@@ -277,7 +277,7 @@ TEST_CASE("PostgreSQL long long", "[postgresql][longlong]")
 // vector<long long>
 TEST_CASE("PostgreSQL vector long long", "[postgresql][vector][longlong]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     longlong_table_creator tableCreator(sql);
 
@@ -304,7 +304,7 @@ TEST_CASE("PostgreSQL vector long long", "[postgresql][vector][longlong]")
 // unsigned long long test
 TEST_CASE("PostgreSQL unsigned long long", "[postgresql][unsigned][longlong]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     longlong_table_creator tableCreator(sql);
 
@@ -328,7 +328,7 @@ struct boolean_table_creator : table_creator_base
 
 TEST_CASE("PostgreSQL boolean", "[postgresql][boolean]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     boolean_table_creator tableCreator(sql);
 
@@ -351,7 +351,7 @@ TEST_CASE("PostgreSQL dynamic backend", "[postgresql][backend][.]")
 {
     try
     {
-        session sql("nosuchbackend://" + connectString);
+        soci::session sql("nosuchbackend://" + connectString);
         FAIL("expected exception not thrown");
     }
     catch (soci_error const & e)
@@ -368,7 +368,7 @@ TEST_CASE("PostgreSQL dynamic backend", "[postgresql][backend][.]")
         CHECK(backends[0] == "pgsql");
 
         {
-            session sql("pgsql://" + connectString);
+            soci::session sql("pgsql://" + connectString);
         }
 
         dynamic_backends::unload("pgsql");
@@ -378,13 +378,13 @@ TEST_CASE("PostgreSQL dynamic backend", "[postgresql][backend][.]")
     }
 
     {
-        session sql("postgresql://" + connectString);
+        soci::session sql("postgresql://" + connectString);
     }
 }
 
 TEST_CASE("PostgreSQL literals", "[postgresql][into]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     int i;
     sql << "select 123", into(i);
@@ -405,7 +405,7 @@ TEST_CASE("PostgreSQL literals", "[postgresql][into]")
 
 TEST_CASE("PostgreSQL backend name", "[postgresql][backend]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     CHECK(sql.get_backend_name() == "postgresql");
 }
@@ -413,7 +413,7 @@ TEST_CASE("PostgreSQL backend name", "[postgresql][backend]")
 // test for double-colon cast in SQL expressions
 TEST_CASE("PostgreSQL double colon cast", "[postgresql][cast]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     int a = 123;
     int b = 0;
@@ -424,7 +424,7 @@ TEST_CASE("PostgreSQL double colon cast", "[postgresql][cast]")
 // test for date, time and timestamp parsing
 TEST_CASE("PostgreSQL datetime", "[postgresql][datetime]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     std::string someDate = "2009-06-17 22:51:03.123";
     std::tm t1, t2, t3;
@@ -470,7 +470,7 @@ struct table_creator_for_test11 : table_creator_base
 
 TEST_CASE("PostgreSQL get affected rows", "[postgresql][affected-rows]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     table_creator_for_test11 tableCreator(sql);
 
@@ -505,7 +505,7 @@ struct table_creator_for_test12 : table_creator_base
 
 TEST_CASE("PostgreSQL insert into ... returning", "[postgresql]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     table_creator_for_test12 tableCreator(sql);
 
@@ -535,7 +535,7 @@ struct bytea_table_creator : public table_creator_base
 
 TEST_CASE("PostgreSQL bytea", "[postgresql][bytea]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     // PostgreSQL supports two different output formats for bytea values:
     // historical "escape" format, which is the only one supported until
@@ -609,7 +609,7 @@ server_version get_postgresql_version(session& sql)
 // Test JSON. Only valid for PostgreSQL Server 9.2++
 TEST_CASE("PostgreSQL JSON", "[postgresql][json]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     server_version version = get_postgresql_version(sql);
     if ( version >= server_version(9,2))
     {
@@ -649,7 +649,7 @@ struct table_creator_text : public table_creator_base
 // https://github.com/SOCI/soci/issues/116
 TEST_CASE("PostgreSQL statement prepare failure", "[postgresql][prepare]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     table_creator_text tableCreator(sql);
 
     try
@@ -674,7 +674,7 @@ TEST_CASE("PostgreSQL statement prepare failure", "[postgresql][prepare]")
 // Test the support of PostgreSQL-style casts with ORM
 TEST_CASE("PostgreSQL ORM cast", "[postgresql][orm]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     values v;
     v.set("a", 1);
     sql << "select :a::int", use(v); // Must not throw an exception!

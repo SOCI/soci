@@ -121,7 +121,7 @@ public:
 
 TEST_CASE("DB2 test 1", "[db2]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     sql << "SELECT CURRENT TIMESTAMP FROM SYSIBM.SYSDUMMY1";
     sql << "SELECT " << 123 << " FROM SYSIBM.SYSDUMMY1";
@@ -303,7 +303,7 @@ TEST_CASE("DB2 test 1", "[db2]")
 
 TEST_CASE("DB2 test 2", "[db2]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     std::string query = "CREATE TABLE DB2INST1.SOCI_TEST (ID BIGINT,DATA VARCHAR(8),DT TIMESTAMP)";
     sql << query;
@@ -350,7 +350,7 @@ TEST_CASE("DB2 test 2", "[db2]")
 
 TEST_CASE("DB2 test 3", "[db2]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     int i;
 
     std::string query = "CREATE TABLE DB2INST1.SOCI_TEST (ID BIGINT,DATA VARCHAR(8),DT TIMESTAMP)";

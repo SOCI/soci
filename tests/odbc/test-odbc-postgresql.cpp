@@ -199,7 +199,7 @@ public:
 private:
     odbc_version get_driver_version() const
     {
-        session sql(get_backend_factory(), get_connect_string());
+        soci::session sql(get_backend_factory(), get_connect_string());
         odbc_session_backend* const
             odbc_session = static_cast<odbc_session_backend*>(sql.get_backend());
         if (!odbc_session)

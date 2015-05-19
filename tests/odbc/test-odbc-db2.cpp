@@ -124,7 +124,7 @@ struct table_creator_bigint : table_creator_base
 TEST_CASE("ODBC/DB2 long long", "[odbc][db2][longlong]")
 {
     const int num_recs = 100;
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     table_creator_bigint table(sql);
 
     {
@@ -153,7 +153,7 @@ TEST_CASE("ODBC/DB2 long long", "[odbc][db2][longlong]")
 TEST_CASE("ODBC/DB2 unsigned long long", "[odbc][db2][unsigned][longlong]")
 {
     const int num_recs = 100;
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     table_creator_bigint table(sql);
 
     {
@@ -182,7 +182,7 @@ TEST_CASE("ODBC/DB2 unsigned long long", "[odbc][db2][unsigned][longlong]")
 TEST_CASE("ODBC/DB2 vector long long", "[odbc][db2][vector][longlong]")
 {
     const std::size_t num_recs = 100;
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     table_creator_bigint table(sql);
 
     {
@@ -223,7 +223,7 @@ TEST_CASE("ODBC/DB2 vector long long", "[odbc][db2][vector][longlong]")
 TEST_CASE("ODBC/DB2 vector unsigned long long", "[odbc][db2][vector][unsigned][longlong]")
 {
     const std::size_t num_recs = 100;
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     table_creator_bigint table(sql);
 
     {
