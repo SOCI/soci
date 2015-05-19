@@ -278,7 +278,7 @@ void parse_connect_string(const string & connectString,
 #pragma clang diagnostic ignored "-Wuninitialized"
 #endif
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ > 6)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
@@ -345,7 +345,7 @@ mysql_session_backend::mysql_session_backend(
     }
 }
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ > 6)
 #pragma GCC diagnostic pop
 #endif
 
