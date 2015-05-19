@@ -148,7 +148,7 @@ TEST_CASE("MySQL error reporting", "[mysql][exception]")
 
 struct bigint_table_creator : table_creator_base
 {
-    bigint_table_creator(session & sql)
+    bigint_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val bigint)";
@@ -157,7 +157,7 @@ struct bigint_table_creator : table_creator_base
 
 struct bigint_unsigned_table_creator : table_creator_base
 {
-    bigint_unsigned_table_creator(session & sql)
+    bigint_unsigned_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val bigint unsigned)";
@@ -504,7 +504,7 @@ TEST_CASE("MySQL text and blob", "[mysql][text][blob]")
 
 struct integer_value_table_creator : table_creator_base
 {
-    integer_value_table_creator(session & sql)
+    integer_value_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val integer)";
@@ -570,7 +570,7 @@ TEST_CASE("MySQL statements after reconnect", "[mysql][connect]")
 
 struct unsigned_value_table_creator : table_creator_base
 {
-    unsigned_value_table_creator(session & sql)
+    unsigned_value_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val int unsigned)";
@@ -610,7 +610,7 @@ TEST_CASE("MySQL function call", "[mysql][function]")
 
 struct double_value_table_creator : table_creator_base
 {
-    double_value_table_creator(session & sql)
+    double_value_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val double)";
@@ -676,7 +676,7 @@ TEST_CASE("MySQL special floating point values", "[mysql][float]")
 
 struct tinyint_value_table_creator : table_creator_base
 {
-    tinyint_value_table_creator(session & sql)
+    tinyint_value_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val tinyint)";
@@ -685,7 +685,7 @@ struct tinyint_value_table_creator : table_creator_base
 
 struct tinyint_unsigned_value_table_creator : table_creator_base
 {
-    tinyint_unsigned_value_table_creator(session & sql)
+    tinyint_unsigned_value_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val tinyint unsigned)";
@@ -750,7 +750,7 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
 
 struct strings_table_creator : table_creator_base
 {
-    strings_table_creator(session & sql)
+    strings_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(s1 char(20), s2 varchar(20), "
@@ -791,7 +791,7 @@ TEST_CASE("MySQL strings", "[mysql][string]")
 
 struct table_creator_for_get_last_insert_id : table_creator_base
 {
-    table_creator_for_get_last_insert_id(session & sql)
+    table_creator_for_get_last_insert_id(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(id integer not null auto_increment, "

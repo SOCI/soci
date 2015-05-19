@@ -122,7 +122,7 @@ TEST_CASE("Oracle explicit calls", "[oracle]")
 
 struct blob_table_creator : public table_creator_base
 {
-    blob_table_creator(session & sql)
+    blob_table_creator(soci::session & sql)
     : table_creator_base(sql)
     {
         sql <<
@@ -185,7 +185,7 @@ TEST_CASE("Oracle blob", "[oracle][blob]")
 
 struct basic_table_creator : public table_creator_base
 {
-    basic_table_creator(session & sql)
+    basic_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql <<
@@ -256,7 +256,7 @@ TEST_CASE("Oracle rowid", "[oracle][rowid]")
 // Stored procedures
 struct procedure_creator : procedure_creator_base
 {
-    procedure_creator(session & sql)
+    procedure_creator(soci::session & sql)
         : procedure_creator_base(sql)
     {
         sql <<
@@ -325,7 +325,7 @@ namespace soci
 
 struct in_out_procedure_creator : public procedure_creator_base
 {
-    in_out_procedure_creator(session & sql)
+    in_out_procedure_creator(soci::session & sql)
         : procedure_creator_base(sql)
     {
         sql << "create or replace procedure soci_test(s in out varchar2)"
@@ -335,7 +335,7 @@ struct in_out_procedure_creator : public procedure_creator_base
 
 struct returns_null_procedure_creator : public procedure_creator_base
 {
-    returns_null_procedure_creator(session & sql)
+    returns_null_procedure_creator(soci::session & sql)
         : procedure_creator_base(sql)
     {
         sql << "create or replace procedure soci_test(s in out varchar2)"
@@ -763,7 +763,7 @@ namespace soci
 
 struct person_table_creator : public table_creator_base
 {
-    person_table_creator(session & sql)
+    person_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(id numeric(5,0) NOT NULL,"
@@ -774,7 +774,7 @@ struct person_table_creator : public table_creator_base
 
 struct times100_procedure_creator : public procedure_creator_base
 {
-    times100_procedure_creator(session & sql)
+    times100_procedure_creator(soci::session & sql)
         : procedure_creator_base(sql)
     {
         sql << "create or replace procedure soci_test(id in out number)"
@@ -975,7 +975,7 @@ TEST_CASE("Oracle ORM by index", "[oracle][orm]")
 ///
 struct long_table_creator : public table_creator_base
 {
-    long_table_creator(session & sql)
+    long_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(l long)";
@@ -1028,7 +1028,7 @@ TEST_CASE("Oracle const and modifiable parameters", "[oracle][use]")
 
 struct longlong_table_creator : table_creator_base
 {
-    longlong_table_creator(session & sql)
+    longlong_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val number(20))";
@@ -1085,7 +1085,7 @@ TEST_CASE("Oracle long long", "[oracle][longlong]")
 
 struct table_creator_one : public table_creator_base
 {
-    table_creator_one(session & sql)
+    table_creator_one(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(id number(10,0), val number(4,0), c char, "
@@ -1097,7 +1097,7 @@ struct table_creator_one : public table_creator_base
 
 struct table_creator_two : public table_creator_base
 {
-    table_creator_two(session & sql)
+    table_creator_two(soci::session & sql)
         : table_creator_base(sql)
     {
         sql  << "create table soci_test(num_float number, num_int numeric(4,0),"
@@ -1107,7 +1107,7 @@ struct table_creator_two : public table_creator_base
 
 struct table_creator_three : public table_creator_base
 {
-    table_creator_three(session & sql)
+    table_creator_three(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(name varchar2(100) not null, "
@@ -1117,7 +1117,7 @@ struct table_creator_three : public table_creator_base
 
 struct table_creator_four : public table_creator_base
 {
-    table_creator_four(session & sql)
+    table_creator_four(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val number)";
@@ -1131,22 +1131,22 @@ public:
                 std::string const &connectString)
         : test_context_base(backEnd, connectString) {}
 
-    table_creator_base* table_creator_1(session& s) const
+    table_creator_base* table_creator_1(soci::session& s) const
     {
         return new table_creator_one(s);
     }
 
-    table_creator_base* table_creator_2(session& s) const
+    table_creator_base* table_creator_2(soci::session& s) const
     {
         return new table_creator_two(s);
     }
 
-    table_creator_base* table_creator_3(session& s) const
+    table_creator_base* table_creator_3(soci::session& s) const
     {
         return new table_creator_three(s);
     }
 
-    table_creator_base* table_creator_4(session& s) const
+    table_creator_base* table_creator_4(soci::session& s) const
     {
         return new table_creator_four(s);
     }

@@ -43,7 +43,7 @@ namespace boost {
 
 struct table_creator_one : public table_creator_base
 {
-    table_creator_one(session & sql)
+    table_creator_one(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "CREATE TABLE SOCI_TEST(ID INTEGER, VAL SMALLINT, C CHAR, STR VARCHAR(20), SH SMALLINT, UL NUMERIC(20), D DOUBLE, "
@@ -54,7 +54,7 @@ struct table_creator_one : public table_creator_base
 
 struct table_creator_two : public table_creator_base
 {
-    table_creator_two(session & sql)
+    table_creator_two(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "CREATE TABLE SOCI_TEST(NUM_FLOAT DOUBLE, NUM_INT INTEGER, NAME VARCHAR(20), SOMETIME TIMESTAMP, CHR CHAR)";
@@ -63,7 +63,7 @@ struct table_creator_two : public table_creator_base
 
 struct table_creator_three : public table_creator_base
 {
-    table_creator_three(session & sql)
+    table_creator_three(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "CREATE TABLE SOCI_TEST(NAME VARCHAR(100) NOT NULL, PHONE VARCHAR(15))";
@@ -72,7 +72,7 @@ struct table_creator_three : public table_creator_base
 
 struct table_creator_for_get_affected_rows : table_creator_base
 {
-    table_creator_for_get_affected_rows(session & sql)
+    table_creator_for_get_affected_rows(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "CREATE TABLE SOCI_TEST(VAL INTEGER)";
@@ -85,25 +85,25 @@ public:
     test_context(backend_factory const & pi_back_end, std::string const & pi_connect_string)
         : test_context_base(pi_back_end, pi_connect_string) {}
 
-    table_creator_base* table_creator_1(session & pr_s) const
+    table_creator_base* table_creator_1(soci::session & pr_s) const
     {
         pr_s << "SET CURRENT SCHEMA = 'DB2INST1'";
         return new table_creator_one(pr_s);
     }
 
-    table_creator_base* table_creator_2(session & pr_s) const
+    table_creator_base* table_creator_2(soci::session & pr_s) const
     {
         pr_s << "SET CURRENT SCHEMA = 'DB2INST1'";
         return new table_creator_two(pr_s);
     }
 
-    table_creator_base* table_creator_3(session & pr_s) const
+    table_creator_base* table_creator_3(soci::session & pr_s) const
     {
         pr_s << "SET CURRENT SCHEMA = 'DB2INST1'";
         return new table_creator_three(pr_s);
     }
 
-    table_creator_base* table_creator_4(session& s) const
+    table_creator_base* table_creator_4(soci::session& s) const
     {
         return new table_creator_for_get_affected_rows(s);
     }

@@ -1225,7 +1225,7 @@ TEST_CASE("Firebird decimals as strings", "[firebird][decimal][string]")
 
 struct TableCreator1 : public tests::table_creator_base
 {
-    TableCreator1(session & sql)
+    TableCreator1(soci::session & sql)
             : tests::table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, val integer, c char, "
@@ -1239,7 +1239,7 @@ struct TableCreator1 : public tests::table_creator_base
 
 struct TableCreator2 : public tests::table_creator_base
 {
-    TableCreator2(session & sql)
+    TableCreator2(soci::session & sql)
             : tests::table_creator_base(sql)
     {
         sql  << "create table soci_test(num_float float, num_int integer, "
@@ -1251,7 +1251,7 @@ struct TableCreator2 : public tests::table_creator_base
 
 struct TableCreator3 : public tests::table_creator_base
 {
-    TableCreator3(session & sql)
+    TableCreator3(soci::session & sql)
             : tests::table_creator_base(sql)
     {
         sql << "create table soci_test(name varchar(100) not null, "
@@ -1263,7 +1263,7 @@ struct TableCreator3 : public tests::table_creator_base
 
 struct TableCreator4 : public tests::table_creator_base
 {
-    TableCreator4(session & sql)
+    TableCreator4(soci::session & sql)
             : tests::table_creator_base(sql)
     {
         sql << "create table soci_test(val integer)";
@@ -1280,22 +1280,22 @@ class test_context : public tests::test_context_base
                 : test_context_base(backEnd, connectString)
         {}
 
-        tests::table_creator_base* table_creator_1(session& s) const
+        tests::table_creator_base* table_creator_1(soci::session& s) const
         {
             return new TableCreator1(s);
         }
 
-        tests::table_creator_base* table_creator_2(session& s) const
+        tests::table_creator_base* table_creator_2(soci::session& s) const
         {
             return new TableCreator2(s);
         }
 
-        tests::table_creator_base* table_creator_3(session& s) const
+        tests::table_creator_base* table_creator_3(soci::session& s) const
         {
             return new TableCreator3(s);
         }
 
-        tests::table_creator_base* table_creator_4(session& s) const
+        tests::table_creator_base* table_creator_4(soci::session& s) const
         {
             return new TableCreator4(s);
         }
@@ -1305,7 +1305,7 @@ class test_context : public tests::test_context_base
             return "'" + datdt_string + "'";
         }
 
-        virtual void on_after_ddl(session& sql) const
+        virtual void on_after_ddl(soci::session& sql) const
         {
             sql.commit();
         }
