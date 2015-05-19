@@ -48,6 +48,9 @@ boost_report_value(SOCI_STATIC)
 option(SOCI_TESTS "Enable build of collection of SOCI tests" ON)
 boost_report_value(SOCI_TESTS)
 
+# from SociConfig.cmake
+boost_report_value(SOCI_CXX_C11)
+
 # Put the libaries and binaries that get built into directories at the
 # top of the build tree rather than in hard-to-find leaf
 # directories. This simplifies manual testing and the use of the build
