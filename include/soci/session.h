@@ -89,7 +89,7 @@ public:
 #else
         std::auto_ptr<details::query_transformation_function> qtf(new details::query_transformation<T>(callback));
 #endif
-
+        set_query_transformation_(qtf);
    }
 
     // support for basic logging
