@@ -84,7 +84,7 @@ public:
     void set_query_transformation(T callback)
     {
 
-#ifdef CXX_C11
+#ifdef SOCI_CXX_C11
         std::unique_ptr<details::query_transformation_function> qtf(new details::query_transformation<T>(callback));
 #else
         std::auto_ptr<details::query_transformation_function> qtf(new details::query_transformation<T>(callback));
