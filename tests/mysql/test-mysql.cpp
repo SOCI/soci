@@ -24,11 +24,10 @@
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_mysql();
 
-
 // procedure call test
 TEST_CASE("MySQL stored procedures", "[mysql][stored-procedure]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     mysql_session_backend *sessionBackEnd
         = static_cast<mysql_session_backend *>(sql.get_backend());
@@ -83,7 +82,7 @@ TEST_CASE("MySQL error reporting", "[mysql][exception]")
     {
         try
         {
-            session sql(backEnd, "host=test.soci.invalid");
+            soci::session sql(backEnd, "host=test.soci.invalid");
         }
         catch (mysql_soci_error const &e)
         {
@@ -97,7 +96,7 @@ TEST_CASE("MySQL error reporting", "[mysql][exception]")
     }
 
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
         sql << "create table soci_test (id integer)";
         try
         {
@@ -132,7 +131,7 @@ TEST_CASE("MySQL error reporting", "[mysql][exception]")
 
 struct bigint_table_creator : table_creator_base
 {
-    bigint_table_creator(session & sql)
+    bigint_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val bigint)";
@@ -141,7 +140,7 @@ struct bigint_table_creator : table_creator_base
 
 struct bigint_unsigned_table_creator : table_creator_base
 {
-    bigint_unsigned_table_creator(session & sql)
+    bigint_unsigned_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val bigint unsigned)";
@@ -151,7 +150,7 @@ struct bigint_unsigned_table_creator : table_creator_base
 TEST_CASE("MySQL long long", "[mysql][longlong]")
 {
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
 
         bigint_table_creator tableCreator(sql);
 
@@ -166,7 +165,7 @@ TEST_CASE("MySQL long long", "[mysql][longlong]")
 
     // vector<long long>
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
 
         bigint_table_creator tableCreator(sql);
 
@@ -191,7 +190,7 @@ TEST_CASE("MySQL long long", "[mysql][longlong]")
     }
 
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
 
         bigint_unsigned_table_creator tableCreator(sql);
 
@@ -201,7 +200,7 @@ TEST_CASE("MySQL long long", "[mysql][longlong]")
     }
 
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
 
         bigint_unsigned_table_creator tableCreator(sql);
 
@@ -215,7 +214,7 @@ TEST_CASE("MySQL long long", "[mysql][longlong]")
     }
 
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
 
         bigint_unsigned_table_creator tableCreator(sql);
 
@@ -229,7 +228,7 @@ TEST_CASE("MySQL long long", "[mysql][longlong]")
     }
 
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
 
         bigint_unsigned_table_creator tableCreator(sql);
 
@@ -241,7 +240,7 @@ TEST_CASE("MySQL long long", "[mysql][longlong]")
     }
 
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
 
         bigint_unsigned_table_creator tableCreator(sql);
 
@@ -266,7 +265,7 @@ void test_num(const char* s, bool valid, T value)
 {
     try
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
         T val;
         sql << "select \'" << s << "\'", into(val);
         if (valid)
@@ -361,7 +360,7 @@ TEST_CASE("MySQL number conversion", "[mysql][float][int]")
 
 TEST_CASE("MySQL datetime", "[mysql][datetime]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     std::tm t;
     sql << "select maketime(19, 54, 52)", into(t);
     CHECK(t.tm_year == 100);
@@ -375,7 +374,7 @@ TEST_CASE("MySQL datetime", "[mysql][datetime]")
 // TEXT and BLOB types support test.
 TEST_CASE("MySQL text and blob", "[mysql][text][blob]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     std::string a("asdfg\0hjkl", 10);
     std::string b("lkjhg\0fd\0\0sa\0", 13);
     std::string c("\\0aa\\0bb\\0cc\\0", 10);
@@ -488,7 +487,7 @@ TEST_CASE("MySQL text and blob", "[mysql][text][blob]")
 
 struct integer_value_table_creator : table_creator_base
 {
-    integer_value_table_creator(session & sql)
+    integer_value_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val integer)";
@@ -497,7 +496,7 @@ struct integer_value_table_creator : table_creator_base
 
 TEST_CASE("MySQL get affected rows", "[mysql][affected-rows]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     integer_value_table_creator tableCreator(sql);
 
@@ -523,7 +522,7 @@ TEST_CASE("MySQL get affected rows", "[mysql][affected-rows]")
 // The prepared statements should survive session::reconnect().
 TEST_CASE("MySQL statements after reconnect", "[mysql][connect]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     integer_value_table_creator tableCreator(sql);
 
@@ -554,7 +553,7 @@ TEST_CASE("MySQL statements after reconnect", "[mysql][connect]")
 
 struct unsigned_value_table_creator : table_creator_base
 {
-    unsigned_value_table_creator(session & sql)
+    unsigned_value_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val int unsigned)";
@@ -564,7 +563,7 @@ struct unsigned_value_table_creator : table_creator_base
 // rowset<> should be able to take INT UNSIGNED.
 TEST_CASE("MySQL unsigned int", "[mysql][int]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     unsigned_value_table_creator tableCreator(sql);
 
@@ -582,7 +581,7 @@ TEST_CASE("MySQL unsigned int", "[mysql][int]")
 
 TEST_CASE("MySQL function call", "[mysql][function]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     row r;
 
@@ -594,7 +593,7 @@ TEST_CASE("MySQL function call", "[mysql][function]")
 
 struct double_value_table_creator : table_creator_base
 {
-    double_value_table_creator(session & sql)
+    double_value_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val double)";
@@ -613,7 +612,7 @@ TEST_CASE("MySQL special floating point values", "[mysql][float]")
       "Use element used with infinity or NaN, which are "
       "not supported by the MySQL server.";
   {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     double x = std::numeric_limits<double>::quiet_NaN();
     statement st = (sql.prepare << "SELECT :x", use(x, "x"));
@@ -624,7 +623,7 @@ TEST_CASE("MySQL special floating point values", "[mysql][float]")
     }
   }
   {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     double x = std::numeric_limits<double>::infinity();
     statement st = (sql.prepare << "SELECT :x", use(x, "x"));
@@ -635,7 +634,7 @@ TEST_CASE("MySQL special floating point values", "[mysql][float]")
     }
   }
   {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     double_value_table_creator tableCreator(sql);
 
     std::vector<double> v(1, std::numeric_limits<double>::quiet_NaN());
@@ -646,7 +645,7 @@ TEST_CASE("MySQL special floating point values", "[mysql][float]")
     }
   }
   {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     double_value_table_creator tableCreator(sql);
 
     std::vector<double> v(1, std::numeric_limits<double>::infinity());
@@ -660,7 +659,7 @@ TEST_CASE("MySQL special floating point values", "[mysql][float]")
 
 struct tinyint_value_table_creator : table_creator_base
 {
-    tinyint_value_table_creator(session & sql)
+    tinyint_value_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val tinyint)";
@@ -669,7 +668,7 @@ struct tinyint_value_table_creator : table_creator_base
 
 struct tinyint_unsigned_value_table_creator : table_creator_base
 {
-    tinyint_unsigned_value_table_creator(session & sql)
+    tinyint_unsigned_value_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val tinyint unsigned)";
@@ -679,7 +678,7 @@ struct tinyint_unsigned_value_table_creator : table_creator_base
 TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
 {
   {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     unsigned_value_table_creator tableCreator(sql);
     unsigned int mask = 0xffffff00;
     sql << "insert into soci_test set val = " << mask;
@@ -691,7 +690,7 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
     CHECK(r.get<unsigned>("val") == 0xffffff00);
   }
   {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     tinyint_value_table_creator tableCreator(sql);
     sql << "insert into soci_test set val = -123";
     row r;
@@ -701,7 +700,7 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
     CHECK(r.get<int>("val") == -123);
   }
   {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     tinyint_unsigned_value_table_creator tableCreator(sql);
     sql << "insert into soci_test set val = 123";
     row r;
@@ -711,7 +710,7 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
     CHECK(r.get<int>("val") == 123);
   }
   {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     bigint_unsigned_table_creator tableCreator(sql);
     sql << "insert into soci_test set val = 123456789012345";
     row r;
@@ -721,7 +720,7 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
     CHECK(r.get<unsigned long long>("val") == 123456789012345ULL);
   }
   {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     bigint_table_creator tableCreator(sql);
     sql << "insert into soci_test set val = -123456789012345";
     row r;
@@ -734,7 +733,7 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
 
 struct strings_table_creator : table_creator_base
 {
-    strings_table_creator(session & sql)
+    strings_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(s1 char(20), s2 varchar(20), "
@@ -746,7 +745,7 @@ struct strings_table_creator : table_creator_base
 
 TEST_CASE("MySQL strings", "[mysql][string]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     strings_table_creator tableCreator(sql);
     std::string text = "Ala ma kota.";
     std::string binary("Ala\0ma\0kota.........", 20);
@@ -775,7 +774,7 @@ TEST_CASE("MySQL strings", "[mysql][string]")
 
 struct table_creator_for_get_last_insert_id : table_creator_base
 {
-    table_creator_for_get_last_insert_id(session & sql)
+    table_creator_for_get_last_insert_id(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(id integer not null auto_increment, "
@@ -786,7 +785,7 @@ struct table_creator_for_get_last_insert_id : table_creator_base
 
 TEST_CASE("MySQL last insert id", "[mysql][last-insert-id]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     table_creator_for_get_last_insert_id tableCreator(sql);
     sql << "insert into soci_test () values ()";
     long id;
@@ -809,7 +808,7 @@ std::string escape_string(soci::session& sql, const std::string& s)
 void test14()
 {
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
         strings_table_creator tableCreator(sql);
         std::string s = "word1'word2:word3";
         std::string escaped = escape_string(sql, s);
@@ -828,7 +827,7 @@ void test14()
 void test15()
 {
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
         int n;
         sql << "select @a := 123", into(n);
         CHECK(n == 123);

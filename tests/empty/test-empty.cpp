@@ -23,7 +23,6 @@ using namespace soci;
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_empty();
 
-
 // NOTE:
 // This file is supposed to serve two purposes:
 // 1. To be a starting point for implementing new tests (for new backends).
@@ -59,7 +58,7 @@ namespace soci
 
 TEST_CASE("Dummy test", "[empty]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     sql << "Do what I want.";
     sql << "Do what I want " << 123 << " times.";

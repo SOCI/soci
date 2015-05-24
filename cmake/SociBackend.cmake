@@ -175,6 +175,12 @@ macro(soci_backend NAME)
             PROPERTIES
             SOVERSION ${${PROJECT_NAME}_SOVERSION}
             INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/lib)
+
+          if(APPLE)
+            set_target_properties(${THIS_BACKEND_TARGET}
+              PROPERTIES
+              LINK_FLAGS "-Wl,-flat_namespace -Wl,-undefined -Wl,suppress")
+          endif()
         endif()
 
         set_target_properties(${THIS_BACKEND_TARGET}
@@ -191,6 +197,11 @@ macro(soci_backend NAME)
           STATIC
           ${THIS_BACKEND_SOURCES}
           ${THIS_BACKEND_HEADERS})
+
+        # Still need to link the libraries for tests to work
+        target_link_libraries (${THIS_BACKEND_TARGET_STATIC}
+          ${THIS_BACKEND_DEPENDS_LIBRARIES}
+        )
 
         set_target_properties(${THIS_BACKEND_TARGET_STATIC}
           PROPERTIES

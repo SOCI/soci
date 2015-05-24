@@ -26,7 +26,7 @@ soci::backend_factory const &backEnd = *factory_firebird();
 // fundamental tests - transactions in Firebird
 TEST_CASE("Firebird transactions", "[firebird][transaction]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     // In Firebird transaction is always required and is started
     // automatically when session is opened. There is no need to
@@ -60,7 +60,7 @@ TEST_CASE("Firebird transactions", "[firebird][transaction]")
 // character types
 TEST_CASE("Firebird char types", "[firebird][string]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     try
     {
@@ -155,7 +155,7 @@ TEST_CASE("Firebird char types", "[firebird][string]")
 // date and time
 TEST_CASE("Firebird date and time", "[firebird][datetime]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     try
     {
@@ -208,7 +208,7 @@ TEST_CASE("Firebird date and time", "[firebird][datetime]")
 // floating points
 TEST_CASE("Firebird floating point", "[firebird][float]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     try
     {
@@ -291,7 +291,7 @@ TEST_CASE("Firebird floating point", "[firebird][float]")
 // integer types and indicators
 TEST_CASE("Firebird integers", "[firebird][int]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     {
         short sh(0);
@@ -352,7 +352,7 @@ TEST_CASE("Firebird integers", "[firebird][int]")
 // repeated fetch and bulk operations for character types
 TEST_CASE("Firebird bulk operations", "[firebird][bulk]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     try
     {
@@ -501,7 +501,7 @@ TEST_CASE("Firebird bulk operations", "[firebird][bulk]")
 // blob test
 TEST_CASE("Firebird blobs", "[firebird][blob]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     try
     {
@@ -620,7 +620,7 @@ TEST_CASE("Firebird blobs", "[firebird][blob]")
 // named parameters
 TEST_CASE("Firebird named parameters", "[firebird][named-params]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     try
     {
@@ -703,7 +703,7 @@ TEST_CASE("Firebird named parameters", "[firebird][named-params]")
 // Dynamic binding to row objects
 TEST_CASE("Firebird dynamic binding", "[firebird][dynamic]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     try
     {
@@ -795,7 +795,7 @@ TEST_CASE("Firebird dynamic binding", "[firebird][dynamic]")
 // stored procedures
 TEST_CASE("Firebird stored procedures", "[firebird][procedure]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     try
     {
@@ -987,7 +987,7 @@ namespace soci
 
 TEST_CASE("Firebird direct API use", "[firebird][native]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     try
     {
@@ -1054,7 +1054,7 @@ TEST_CASE("Firebird direct API use", "[firebird][native]")
 
 TEST_CASE("Firebird string coercions", "[firebird][string]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     try
     {
@@ -1124,7 +1124,7 @@ TEST_CASE("Firebird decimals as strings", "[firebird][decimal][string]")
     CHECK(format_decimal<int>(&a, -8) == "0.12345678");
     CHECK(format_decimal<int>(&a, -9) == "0.012345678");
 
-    session sql(backEnd, connectString + " decimals_as_strings=1");
+    soci::session sql(backEnd, connectString + " decimals_as_strings=1");
 
     try
     {
@@ -1208,7 +1208,7 @@ TEST_CASE("Firebird decimals as strings", "[firebird][decimal][string]")
 
 struct TableCreator1 : public tests::table_creator_base
 {
-    TableCreator1(session & sql)
+    TableCreator1(soci::session & sql)
             : tests::table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, val integer, c char, "
@@ -1222,7 +1222,7 @@ struct TableCreator1 : public tests::table_creator_base
 
 struct TableCreator2 : public tests::table_creator_base
 {
-    TableCreator2(session & sql)
+    TableCreator2(soci::session & sql)
             : tests::table_creator_base(sql)
     {
         sql  << "create table soci_test(num_float float, num_int integer, "
@@ -1234,7 +1234,7 @@ struct TableCreator2 : public tests::table_creator_base
 
 struct TableCreator3 : public tests::table_creator_base
 {
-    TableCreator3(session & sql)
+    TableCreator3(soci::session & sql)
             : tests::table_creator_base(sql)
     {
         sql << "create table soci_test(name varchar(100) not null, "
@@ -1246,7 +1246,7 @@ struct TableCreator3 : public tests::table_creator_base
 
 struct TableCreator4 : public tests::table_creator_base
 {
-    TableCreator4(session & sql)
+    TableCreator4(soci::session & sql)
             : tests::table_creator_base(sql)
     {
         sql << "create table soci_test(val integer)";
@@ -1263,22 +1263,22 @@ class test_context : public tests::test_context_base
                 : test_context_base(backEnd, connectString)
         {}
 
-        tests::table_creator_base* table_creator_1(session& s) const
+        tests::table_creator_base* table_creator_1(soci::session& s) const
         {
             return new TableCreator1(s);
         }
 
-        tests::table_creator_base* table_creator_2(session& s) const
+        tests::table_creator_base* table_creator_2(soci::session& s) const
         {
             return new TableCreator2(s);
         }
 
-        tests::table_creator_base* table_creator_3(session& s) const
+        tests::table_creator_base* table_creator_3(soci::session& s) const
         {
             return new TableCreator3(s);
         }
 
-        tests::table_creator_base* table_creator_4(session& s) const
+        tests::table_creator_base* table_creator_4(soci::session& s) const
         {
             return new TableCreator4(s);
         }
@@ -1288,7 +1288,7 @@ class test_context : public tests::test_context_base
             return "'" + datdt_string + "'";
         }
 
-        virtual void on_after_ddl(session& sql) const
+        virtual void on_after_ddl(soci::session& sql) const
         {
             sql.commit();
         }

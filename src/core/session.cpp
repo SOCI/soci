@@ -234,8 +234,14 @@ std::string session::get_query() const
     }
 }
 
-void session::set_query_transformation_(
-        std::auto_ptr<details::query_transformation_function> qtf)
+
+#ifdef SOCI_CXX_C11
+void session::set_query_transformation_( std::unique_ptr<details::query_transformation_function> &qtf)
+#else
+void session::set_query_transformation_( std::auto_ptr<details::query_transformation_function> qtf)
+#endif
+
+
 {
     if (isFromPool_)
     {

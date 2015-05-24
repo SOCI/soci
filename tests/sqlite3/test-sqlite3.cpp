@@ -25,7 +25,7 @@ backend_factory const &backEnd = *soci::factory_sqlite3();
 // In sqlite3 the row id can be called ROWID, _ROWID_ or oid
 TEST_CASE("SQLite rowid", "[sqlite][rowid][oid]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     try { sql << "drop table test1"; }
     catch (soci_error const &) {} // ignore if error
@@ -56,7 +56,7 @@ TEST_CASE("SQLite rowid", "[sqlite][rowid][oid]")
 // BLOB test
 struct blob_table_creator : public table_creator_base
 {
-    blob_table_creator(session & sql)
+    blob_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql <<
@@ -69,7 +69,7 @@ struct blob_table_creator : public table_creator_base
 
 TEST_CASE("SQLite blob", "[sqlite][blob]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     blob_table_creator tableCreator(sql);
 
@@ -111,7 +111,7 @@ TEST_CASE("SQLite blob", "[sqlite][blob]")
 
 struct test3_table_creator : table_creator_base
 {
-    test3_table_creator(session & sql) : table_creator_base(sql)
+    test3_table_creator(soci::session & sql) : table_creator_base(sql)
     {
         sql << "create table soci_test( id integer, name varchar, subname varchar);";
     }
@@ -119,7 +119,7 @@ struct test3_table_creator : table_creator_base
 
 TEST_CASE("SQLite use and vector into", "[sqlite][use][into][vector]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     test3_table_creator tableCreator(sql);
 
@@ -156,7 +156,7 @@ TEST_CASE("SQLite use and vector into", "[sqlite][use][into][vector]")
 
 struct test4_table_creator : table_creator_base
 {
-    test4_table_creator(session & sql) : table_creator_base(sql)
+    test4_table_creator(soci::session & sql) : table_creator_base(sql)
     {
         sql << "create table soci_test (col INTEGER PRIMARY KEY AUTOINCREMENT, name char)";
     }
@@ -165,7 +165,7 @@ struct test4_table_creator : table_creator_base
 TEST_CASE("SQLite select from sequence", "[sqlite][sequence]")
 {
     // we need to have an table that uses autoincrement to test this.
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     test4_table_creator tableCreator(sql);
 
@@ -188,7 +188,7 @@ TEST_CASE("SQLite select from sequence", "[sqlite][sequence]")
 
 struct longlong_table_creator : table_creator_base
 {
-    longlong_table_creator(session & sql)
+    longlong_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val number(20))";
@@ -198,7 +198,7 @@ struct longlong_table_creator : table_creator_base
 // long long test
 TEST_CASE("SQLite long long", "[sqlite][longlong]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     longlong_table_creator tableCreator(sql);
 
@@ -213,7 +213,7 @@ TEST_CASE("SQLite long long", "[sqlite][longlong]")
 
 TEST_CASE("SQLite vector long long", "[sqlite][vector][longlong]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     longlong_table_creator tableCreator(sql);
 
@@ -239,7 +239,7 @@ TEST_CASE("SQLite vector long long", "[sqlite][vector][longlong]")
 
 struct table_creator_for_get_last_insert_id : table_creator_base
 {
-    table_creator_for_get_last_insert_id(session & sql)
+    table_creator_for_get_last_insert_id(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(id integer primary key autoincrement)";
@@ -250,7 +250,7 @@ struct table_creator_for_get_last_insert_id : table_creator_base
 
 TEST_CASE("SQLite last insert id", "[sqlite][last-insert-id]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     table_creator_for_get_last_insert_id tableCreator(sql);
     sql << "insert into soci_test default values";
     long id;
@@ -262,7 +262,7 @@ TEST_CASE("SQLite last insert id", "[sqlite][last-insert-id]")
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
-    table_creator_one(session & sql)
+    table_creator_one(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, val integer, c char, "
@@ -275,7 +275,7 @@ struct table_creator_one : public table_creator_base
 
 struct table_creator_two : public table_creator_base
 {
-    table_creator_two(session & sql)
+    table_creator_two(soci::session & sql)
         : table_creator_base(sql)
     {
         sql  << "create table soci_test(num_float float, num_int integer,"
@@ -285,7 +285,7 @@ struct table_creator_two : public table_creator_base
 
 struct table_creator_three : public table_creator_base
 {
-    table_creator_three(session & sql)
+    table_creator_three(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(name varchar(100) not null, "
@@ -300,7 +300,7 @@ struct table_creator_three : public table_creator_base
 // Implement get_affected_rows for SQLite3 backend
 struct table_creator_for_get_affected_rows : table_creator_base
 {
-    table_creator_for_get_affected_rows(session & sql)
+    table_creator_for_get_affected_rows(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val integer)";
@@ -318,22 +318,22 @@ public:
                 std::string const &connectString)
         : test_context_base(backEnd, connectString) {}
 
-    table_creator_base* table_creator_1(session& s) const
+    table_creator_base* table_creator_1(soci::session& s) const
     {
         return new table_creator_one(s);
     }
 
-    table_creator_base* table_creator_2(session& s) const
+    table_creator_base* table_creator_2(soci::session& s) const
     {
         return new table_creator_two(s);
     }
 
-    table_creator_base* table_creator_3(session& s) const
+    table_creator_base* table_creator_3(soci::session& s) const
     {
         return new table_creator_three(s);
     }
 
-    table_creator_base* table_creator_4(session& s) const
+    table_creator_base* table_creator_4(soci::session& s) const
     {
         return new table_creator_for_get_affected_rows(s);
     }
