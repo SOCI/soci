@@ -1,2 +1,0 @@
-#define DEFAULT_BACKENDS_PATH "."
-
