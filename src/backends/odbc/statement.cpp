@@ -146,8 +146,8 @@ void odbc_statement_backend::prepare(std::string const & query,
     }
 }
 
-statement_backend::exec_fetch_result
-odbc_statement_backend::execute(bool withDataExchange, mn_odbc_error_info& err_info)
+int
+odbc_statement_backend::execute(int iFetchSize, mn_odbc_error_info& err_info)
 {
     // Store the number of rows processed by this call.
     SQLULEN rows_processed = 0;
@@ -189,12 +189,11 @@ odbc_statement_backend::execute(bool withDataExchange, mn_odbc_error_info& err_i
                          "Statement Execute");
 
         err_info.native_error_code_ = myErr.native_error_code();
-        err_info.odbc_error_code_ = myErr.native_error_code();
         err_info.odbc_error_message_ = (char*)myErr.odbc_error_message();
         err_info.odbc_func_name_ = "SQLExecute";
         err_info.odbc_func_returnval_ = rc;
 
-        return ef_error;
+        return -1;
     }
     // We should preserve the number of rows affected here 
     // where we know for sure that a bulk operation was executed.
@@ -211,12 +210,11 @@ odbc_statement_backend::execute(bool withDataExchange, mn_odbc_error_info& err_i
                                   "Getting number of affected rows");
 
                 err_info.native_error_code_ = myErr.native_error_code();
-                err_info.odbc_error_code_ = myErr.native_error_code();
                 err_info.odbc_error_message_ = (char*)myErr.odbc_error_message();
                 err_info.odbc_func_name_ = "SQLRowCount";
                 err_info.odbc_func_returnval_ = rc;
 
-                return ef_error;
+                return -1;
             }
             rowsAffected_ += res;
         }
@@ -226,15 +224,15 @@ odbc_statement_backend::execute(bool withDataExchange, mn_odbc_error_info& err_i
     SQLSMALLINT colCount;
     SQLNumResultCols(hstmt_, &colCount);
 
-    if (withDataExchange && colCount > 0)
+    if (iFetchSize > 0 && colCount > 0)
     {
-        return fetch(1, err_info);
+        return fetch(iFetchSize, err_info);
     }
 
-    return ef_success;
+    return 1;
 }
 
-statement_backend::exec_fetch_result
+int
 odbc_statement_backend::fetch(int number, mn_odbc_error_info& err_info)
 {
     numRowsFetched_ = 0;
@@ -248,7 +246,7 @@ odbc_statement_backend::fetch(int number, mn_odbc_error_info& err_info)
 
     if (SQL_NO_DATA == rc)
     {
-        return ef_no_data;
+        return numRowsFetched_;
     }
 
     if (is_odbc_error(rc))
@@ -257,15 +255,14 @@ odbc_statement_backend::fetch(int number, mn_odbc_error_info& err_info)
                          "Statement Fetch");
 
         err_info.native_error_code_ = myErr.native_error_code();
-        err_info.odbc_error_code_ = myErr.native_error_code();
         err_info.odbc_error_message_ = (char*)myErr.odbc_error_message();
         err_info.odbc_func_name_ = "SQLFetch";
         err_info.odbc_func_returnval_ = rc;
 
-        return ef_error;
+        return -1;
     }
 
-    return ef_success;
+    return numRowsFetched_;
 }
 
 long long odbc_statement_backend::get_affected_rows()
@@ -311,7 +308,6 @@ bool odbc_statement_backend::describe_column(int colNum, column_properties& colP
                          "describe Column");
 
         err_info.native_error_code_ = myErr.native_error_code();
-        err_info.odbc_error_code_ = myErr.native_error_code();
         err_info.odbc_error_message_ = (char*)myErr.odbc_error_message();
         err_info.odbc_func_name_ = "SQLDescribeCol";
         err_info.odbc_func_returnval_ = rc;

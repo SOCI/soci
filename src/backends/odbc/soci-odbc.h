@@ -208,8 +208,8 @@ struct odbc_statement_backend : details::statement_backend
     virtual void prepare(std::string const &query,
         details::statement_type eType);
 
-    virtual exec_fetch_result execute(bool withDataExchange, mn_odbc_error_info& err_info);
-    virtual exec_fetch_result fetch(int number, mn_odbc_error_info& err_info);
+    virtual int execute(int iFetchSize, mn_odbc_error_info& err_info);
+    virtual int fetch(int number, mn_odbc_error_info& err_info);
 
     virtual long long get_affected_rows();
     virtual int get_number_of_rows();

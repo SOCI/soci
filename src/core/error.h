@@ -17,10 +17,9 @@ namespace soci
 {
     struct SOCI_DECL mn_odbc_error_info
     {
-        void setDefault() { native_error_code_ = 0; odbc_error_message_.clear(); odbc_error_code_.clear(); odbc_func_returnval_ = 0; odbc_func_name_.clear(); }
+        void setDefault() { native_error_code_ = 0; odbc_error_message_.clear(); odbc_func_returnval_ = 0; odbc_func_name_.clear(); }
         int         native_error_code_;
         std::string odbc_error_message_;
-        std::string odbc_error_code_;
         int         odbc_func_returnval_;
         std::string odbc_func_name_;
     };

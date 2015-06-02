@@ -67,7 +67,7 @@ public:
     {
         // Fetch next row from dataset
         
-        if (st_->fetch() == false)
+        if (st_->fetch() == 0)
         {
             // Set iterator to non-derefencable state (pass-the-end)
             st_ = 0;

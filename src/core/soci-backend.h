@@ -48,7 +48,8 @@ enum exchange_type
     x_rowid,
     x_blob,
     x_mnsocistring,
-    x_odbctimestamp
+    x_odbctimestamp,
+    x_mnsociarraystring
 };
 
 // type of statement (used for optimizing statement preparation)
@@ -169,8 +170,8 @@ public:
         ef_error
     };
 
-    virtual exec_fetch_result execute(bool withDataExchange, mn_odbc_error_info& err_info) = 0;
-    virtual exec_fetch_result fetch(int number, mn_odbc_error_info& err_info) = 0;
+    virtual int execute(int iFetchSize, mn_odbc_error_info& err_info) = 0;
+    virtual int fetch(int number, mn_odbc_error_info& err_info) = 0;
 
     virtual long long get_affected_rows() = 0;
     virtual int get_number_of_rows() = 0;

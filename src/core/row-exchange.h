@@ -42,7 +42,7 @@ private:
     }
 
     virtual void pre_fetch() {}
-    virtual void post_fetch(bool gotData, bool /* calledFromFetch */)
+    virtual void post_fetch(bool /*gotData*/, bool /* calledFromFetch */)
     {
         r_.reset_get_counter();
 

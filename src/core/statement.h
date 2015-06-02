@@ -49,9 +49,9 @@ public:
                     statement_type eType = st_repeatable_query);
     void define_and_bind();
     void undefine_and_bind();
-    bool execute(bool withDataExchange, mn_odbc_error_info& err_info);
+    int execute(int iFetchSize, mn_odbc_error_info& err_info);
     long long get_affected_rows();
-    bool fetch(mn_odbc_error_info& err_info);
+    int fetch(mn_odbc_error_info& err_info);
     bool describe(mn_odbc_error_info& err_info);
     void set_row(row * r);
     void exchange_for_rowset(into_type_ptr const & i);
@@ -132,14 +132,14 @@ class SOCI_DECL statement
 {
 public:
     statement(session & s)
-        : impl_(new details::statement_impl(s)) {}
+        : impl_(new details::statement_impl(s)), resultSetSize_(0) {}
     statement(details::prepare_temp_type const & prep)
-        : impl_(new details::statement_impl(prep)) {}
+        : impl_(new details::statement_impl(prep)), resultSetSize_(0) {}
     ~statement() { impl_->dec_ref(); }
 
     // copy is supported for this handle class
     statement(statement const & other)
-        : impl_(other.impl_)
+        : impl_(other.impl_), resultSetSize_(0)
     {
         impl_->inc_ref();
     }
@@ -149,6 +149,7 @@ public:
         other.impl_->inc_ref();
         impl_->dec_ref();
         impl_ = other.impl_;
+        resultSetSize_ = other.resultSetSize_;
     }
 
     void alloc()                         { impl_->alloc();    }
@@ -169,10 +170,11 @@ public:
 
     void define_and_bind() { impl_->define_and_bind(); }
     void undefine_and_bind()  { impl_->undefine_and_bind(); }
-    bool execute(bool withDataExchange, mn_odbc_error_info& err_info)
+    int execute(int iFetchSize, mn_odbc_error_info& err_info)
     {
-        gotData_ = impl_->execute(withDataExchange, err_info);
-        return gotData_;
+        resultSetSize_ = impl_->execute(iFetchSize, err_info);
+        gotData_ = resultSetSize_ != 0; 
+        return resultSetSize_;
     }
 
     long long get_affected_rows()
@@ -180,10 +182,11 @@ public:
         return impl_->get_affected_rows();
     }
 
-    bool fetch(mn_odbc_error_info& err_info)
+    int fetch(mn_odbc_error_info& err_info)
     {
-        gotData_ = impl_->fetch(err_info);
-        return gotData_;
+        resultSetSize_ = impl_->fetch(err_info);
+        gotData_ = resultSetSize_ != 0; 
+        return resultSetSize_;
     }
 
     bool got_data() const { return gotData_; }
@@ -230,6 +233,7 @@ public:
 private:
     details::statement_impl * impl_;
     bool gotData_;
+    int  resultSetSize_;
 };
 
 namespace details

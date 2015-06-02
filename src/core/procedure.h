@@ -62,16 +62,18 @@ public:
     // forwarders to procedure_impl
     // (or rather to its base interface from statement_impl)
 
-    bool execute(bool withDataExchange, mn_odbc_error_info& err_info)
+    int execute(int iFetchSize, mn_odbc_error_info& err_info)
     {
-        gotData_ = impl_->execute(withDataExchange, err_info);
-        return gotData_;
+        resultSetSize_ = impl_->execute(iFetchSize, err_info);
+        gotData_ = resultSetSize_ != 0;
+        return resultSetSize_;
     }
 
-    bool fetch(mn_odbc_error_info& err_info)
+    int fetch(mn_odbc_error_info& err_info)
     {
-        gotData_ = impl_->fetch(err_info);
-        return gotData_;
+        resultSetSize_ = impl_->fetch(err_info);
+        gotData_ = resultSetSize_ != 0; 
+        return resultSetSize_;
     }
 
     bool got_data() const
@@ -82,6 +84,7 @@ public:
 private:
     details::procedure_impl * impl_;
     bool gotData_;
+    int  resultSetSize_;
 };
 
 } // namespace soci

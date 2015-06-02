@@ -199,6 +199,22 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             size = static_cast<SQLINTEGER>(maxSize);
         }
         break;
+
+    case x_mnsociarraystring:
+    {
+        sqlType = SQL_CHAR;
+        cType = SQL_C_CHAR;
+        
+        MNSociArrayString *v = static_cast<MNSociArrayString *>(data);
+        prepare_indicators(v->getCurrentInsertedElementCount());
+        for (int i = 0; i != v->getCurrentInsertedElementCount(); ++i)
+        {
+            indHolderVec_[i] = strlen(v->getValue(i));
+        }
+        size = 257;
+        data = v->getArrayCharData();
+        break;
+    }
     case x_mnsocistring:
         {
             sqlType = SQL_CHAR;
@@ -441,6 +457,12 @@ std::size_t odbc_vector_use_type_backend::size()
             sz = vp->size();
         }
         break;
+    case x_mnsociarraystring:
+    {
+        MNSociArrayString *vp = static_cast<MNSociArrayString *>(data_);
+        sz = vp->getCurrentInsertedElementCount(); 
+        break;
+    }
     case x_short:
         {
             std::vector<short> *vp = static_cast<std::vector<short> *>(data_);

@@ -11,6 +11,7 @@
 #include "soci-backend.h"
 #include "type-ptr.h"
 #include "exchange-traits.h"
+#include "mnsocistring.h"
 // std
 #include <cstddef>
 #include <vector>
@@ -135,6 +136,18 @@ public:
     into_type(std::vector<T> & v, std::vector<indicator> & ind)
         : vector_into_type(&v,
             static_cast<exchange_type>(exchange_traits<T>::x_type), ind) {}
+};
+
+template <>
+class into_type<MNSociArrayString > : public vector_into_type
+{
+public:
+    into_type(MNSociArrayString & v)
+        : vector_into_type(&v,
+        static_cast<exchange_type>(exchange_traits<MNSociArrayString>::x_type)) {}
+    into_type(MNSociArrayString & v, std::vector<indicator> & ind)
+        : vector_into_type(&v,
+        static_cast<exchange_type>(exchange_traits<MNSociArrayString>::x_type), ind) {}
 };
 
 // helper dispatchers for basic types

@@ -28,7 +28,7 @@ void ref_counted_statement::final_action()
 
         mn_odbc_error_info err_info;
 
-        const bool gotData = st_.execute(true, err_info);
+        const bool gotData = st_.execute(1, err_info) != 0;
 
         session_.set_got_data(gotData);
     }

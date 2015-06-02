@@ -90,9 +90,10 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
         indHolder_ = SQL_NTS;
         break;
     case x_mnsocistring:
-        sqlType = SQL_CHAR;
+        sqlType = SQL_VARCHAR;
         cType = SQL_C_CHAR;
-        size = 257;
+        size = 256;
+        buf_ = &(((MNSociString*)data_)->m_ptrCharData[0]); //use the char* inside the odbc call!!
         indHolder_ = SQL_NTS;
         break;
     case x_stdstring:
@@ -270,7 +271,10 @@ void odbc_standard_use_type_backend::clean_up()
 {
     if (buf_ != NULL)
     {
-        delete [] buf_;
+        if (type_ != x_mnsocistring)
+        {
+            delete[] buf_;
+        }
         buf_ = NULL;
     }
 }

@@ -11,6 +11,7 @@
 #include "soci-backend.h"
 #include "type-ptr.h"
 #include "exchange-traits.h"
+#include "mnsocistring.h"
 // std
 #include <cstddef>
 #include <string>
@@ -168,6 +169,31 @@ public:
     {}
 };
 
+//template <>
+//class use_type<MNSociString> : public standard_use_type
+//{
+//public:
+//    use_type(MNSociString& t, std::string const& name = std::string())
+//        : standard_use_type(&t.m_ptrCharData[0],
+//        static_cast<exchange_type>(exchange_traits<MNSociString>::x_type), false, name)
+//    {}
+//
+//    use_type(MNSociString const& t, std::string const& name = std::string())
+//        : standard_use_type(const_cast<MNSociString*>(&t),
+//        static_cast<exchange_type>(exchange_traits<MNSociString>::x_type), true, name)
+//    {}
+//
+//    use_type(MNSociString& t, indicator& ind, std::string const& name = std::string())
+//        : standard_use_type(&t,
+//        static_cast<exchange_type>(exchange_traits<MNSociString>::x_type), ind, false, name)
+//    {}
+//
+//    use_type(MNSociString const& t, indicator& ind, std::string const& name = std::string())
+//        : standard_use_type(const_cast<MNSociString*>(&t),
+//        static_cast<exchange_type>(exchange_traits<MNSociString>::x_type), ind, false, name)
+//    {}
+//};
+
 template <typename T>
 class use_type<std::vector<T> > : public vector_use_type
 {
@@ -192,6 +218,33 @@ public:
         std::string const& name = std::string())
         : vector_use_type(const_cast<std::vector<T> *>(&v),
             static_cast<exchange_type>(exchange_traits<T>::x_type), ind, name)
+    {}
+};
+
+template <>
+class use_type<MNSociArrayString > : public vector_use_type
+{
+public:
+    use_type(MNSociArrayString& v, std::string const& name = std::string())
+        : vector_use_type(&v,
+        static_cast<exchange_type>(exchange_traits<MNSociArrayString>::x_type), name)
+    {}
+
+    use_type(MNSociArrayString const& v, std::string const& name = std::string())
+        : vector_use_type(const_cast<MNSociArrayString*>(&v),
+        static_cast<exchange_type>(exchange_traits<MNSociArrayString>::x_type), name)
+    {}
+
+    use_type(MNSociArrayString& v, std::vector<indicator> const& ind,
+        std::string const& name = std::string())
+        : vector_use_type(&v,
+        static_cast<exchange_type>(exchange_traits<MNSociArrayString>::x_type), ind, name)
+    {}
+
+    use_type(MNSociArrayString const& v, std::vector<indicator> const& ind,
+        std::string const& name = std::string())
+        : vector_use_type(const_cast<MNSociArrayString *>(&v),
+        static_cast<exchange_type>(exchange_traits<MNSociArrayString>::x_type), ind, name)
     {}
 };
 

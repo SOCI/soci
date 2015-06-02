@@ -241,7 +241,7 @@ void statement_impl::prepare(std::string const & query,
         {
             strDummy += ", Uses: ";
 
-            for (int i = 0; i < (int)this->uses_.size(); ++i)
+            for (size_t i = 0; i < (int)this->uses_.size(); ++i)
             {
                 strDummy += this->uses_.at(i)->to_string();
                 if (i != this->uses_size() - 1)
@@ -311,7 +311,7 @@ void statement_impl::undefine_and_bind()
     }
 }
 
-bool statement_impl::execute(bool withDataExchange, mn_odbc_error_info& err_info)
+int statement_impl::execute(int iFetchSize, mn_odbc_error_info& err_info)
 {
     initialFetchSize_ = intos_size();
 
@@ -320,7 +320,6 @@ bool statement_impl::execute(bool withDataExchange, mn_odbc_error_info& err_info
         // this can happen only with into-vectors elements
         // and is not allowed when calling execute
         err_info.native_error_code_ = -1;
-        err_info.odbc_error_code_ = "";
         err_info.odbc_error_message_ = "Vectors of size 0 are not allowed.";
         return false;
         //throw soci_error("Vectors of size 0 are not allowed.");
@@ -338,7 +337,6 @@ bool statement_impl::execute(bool withDataExchange, mn_odbc_error_info& err_info
     if (bindSize > 1 && fetchSize_ > 1)
     {
         err_info.native_error_code_ = -1;
-        err_info.odbc_error_code_ = "";
         err_info.odbc_error_message_ = "Bulk insert/update and bulk select not allowed in same query";
         //throw soci_error(
         //     "Bulk insert/update and bulk select not allowed in same query");
@@ -360,9 +358,9 @@ bool statement_impl::execute(bool withDataExchange, mn_odbc_error_info& err_info
     }
 
     int num = 0;
-    if (withDataExchange)
+    if (iFetchSize != 0)
     {
-        num = 1;
+        num = fetchSize_;
 
         pre_fetch();
 
@@ -376,35 +374,36 @@ bool statement_impl::execute(bool withDataExchange, mn_odbc_error_info& err_info
         }
     }
 
-    statement_backend::exec_fetch_result res = backEnd_->execute(num, err_info);
+    int recordsRead = backEnd_->execute(num, err_info);
 
-    bool gotData = false;
+    bool gotData = recordsRead != 0;
 
-    if (res == statement_backend::ef_success)
-    {
-        // the "success" means that the statement executed correctly
-        // and for select statement this also means that some rows were read
+    //if (res == statement_backend::ef_success)
+    //{
+    //    // the "success" means that the statement executed correctly
+    //    // and for select statement this also means that some rows were read
 
-        if (num > 0)
-        {
-            gotData = true;
+    //    if (num > 0)
+    //    {
+    //        gotData = true;
 
-            // ensure into vectors have correct size
-            resize_intos(static_cast<std::size_t>(num));
-        }
-    }
-    else if (res == statement_backend::ef_error)
+    //        // ensure into vectors have correct size
+    //        resize_intos(static_cast<std::size_t>(num));
+    //    }
+    //}
+    //else if (res == statement_backend::ef_error)
+    if (recordsRead == -1)
     {
         return false;
     }
-    else // res == ef_no_data
-    {
-        // the "no data" means that the end-of-rowset condition was hit
-        // but still some rows might have been read (the last bunch of rows)
-        // it can also mean that the statement did not produce any results
+    //else // res == ef_no_data
+    //{
+    //    // the "no data" means that the end-of-rowset condition was hit
+    //    // but still some rows might have been read (the last bunch of rows)
+    //    // it can also mean that the statement did not produce any results
 
-        gotData = fetchSize_ > 1 ? resize_intos() : false;
-    }
+    //    gotData = fetchSize_ > 1 ? resize_intos() : false;
+    //}
 
     if (num > 0)
     {
@@ -414,7 +413,7 @@ bool statement_impl::execute(bool withDataExchange, mn_odbc_error_info& err_info
     post_use(gotData);
 
     session_.set_got_data(gotData);
-    return gotData;
+    return recordsRead;
 }
 
 long long statement_impl::get_affected_rows()
@@ -422,13 +421,13 @@ long long statement_impl::get_affected_rows()
     return backEnd_->get_affected_rows();
 }
 
-bool statement_impl::fetch(mn_odbc_error_info& err_info)
+int statement_impl::fetch(mn_odbc_error_info& err_info)
 {
     if (fetchSize_ == 0)
     {
         truncate_intos();
         session_.set_got_data(false);
-        return false;
+        return 0;
     }
 
     bool gotData = false;
@@ -454,44 +453,51 @@ bool statement_impl::fetch(mn_odbc_error_info& err_info)
     //    fetchSize_ = newFetchSize;
     //}
 
-    statement_backend::exec_fetch_result const res = backEnd_->fetch(static_cast<int>(fetchSize_), err_info);
-    if (res == statement_backend::ef_success)
-    {
-        // the "success" means that some number of rows was read
-        // and that it is not yet the end-of-rowset (there are more rows)
+    int recordsRead = backEnd_->fetch(static_cast<int>(fetchSize_), err_info);
+    
+    gotData = recordsRead != 0;
 
-        gotData = true;
+    //if (res == statement_backend::ef_success)
+    //{
+    //    // the "success" means that some number of rows was read
+    //    // and that it is not yet the end-of-rowset (there are more rows)
 
-        if (fetchSize_ > 1)
-        {
-            // ensure into vectors have correct size
-            resize_intos(fetchSize_);
-        }
-    }
-    else if (res == statement_backend::ef_error)
+    //    gotData = true;
+
+    //    if (fetchSize_ > 1)
+    //    {
+    //        // ensure into vectors have correct size
+    //        resize_intos(fetchSize_);
+    //    }
+    //}
+    //else if (res == statement_backend::ef_error)
+    //{
+    //    return false;
+    //}
+    if (recordsRead == -1)
     {
         return false;
     }
-    else // res == ef_no_data
-    {
-        // end-of-rowset condition
+    //else // res == ef_no_data
+    //{
+    //    // end-of-rowset condition
 
-        if (fetchSize_ > 1)
-        {
-            // but still the last bunch of rows might have been read
-            gotData = resize_intos();
-            fetchSize_ = 0;
-        }
-        else
-        {
-            truncate_intos();
-            gotData = false;
-        }
-    }
+    //    if (fetchSize_ > 1)
+    //    {
+    //        // but still the last bunch of rows might have been read
+    //        gotData = resize_intos();
+    //        fetchSize_ = 0;
+    //    }
+    //    else
+    //    {
+    //        truncate_intos();
+    //        gotData = false;
+    //    }
+    //}
 
     post_fetch(gotData, true);
     session_.set_got_data(gotData);
-    return gotData;
+    return recordsRead;
 }
 
 std::size_t statement_impl::intos_size()
@@ -524,31 +530,45 @@ std::size_t statement_impl::intos_size()
 
 std::size_t statement_impl::uses_size()
 {
-    std::size_t usesSize = 0;
-    std::size_t const usize = uses_.size();
-    for (std::size_t i = 0; i != usize; ++i)
+    if (uses_.empty())
     {
-        if (i==0)
-        {
-            usesSize = uses_[i]->size();
-            if (usesSize == 0)
-            {
-                 // this can happen only for vectors
-                 throw soci_error("Vectors of size 0 are not allowed.");
-            }
-        }
-        else if (usesSize != uses_[i]->size())
-        {
-            std::ostringstream msg;
-            msg << "Bind variable size mismatch (use["
-                << static_cast<unsigned long>(i) << "] has size "
-                << static_cast<unsigned long>(uses_[i]->size())
-                << ", use[0] has size "
-                << static_cast<unsigned long>(usesSize);
-            throw soci_error(msg.str());
-        }
+        return 0;
     }
-    return usesSize;
+    else
+    {
+        std::size_t usesSize = uses_[0]->size();
+        if (usesSize == 0)
+        {
+            // this can happen only for vectors
+            throw soci_error("Vectors of size 0 are not allowed.");
+        }
+        return usesSize;
+    }
+    //std::size_t usesSize = 0;
+    //std::size_t const usize = uses_.size();
+    //for (std::size_t i = 0; i != usize; ++i)
+    //{
+    //    if (i==0)
+    //    {
+    //        usesSize = uses_[i]->size();
+    //        if (usesSize == 0)
+    //        {
+    //             // this can happen only for vectors
+    //             throw soci_error("Vectors of size 0 are not allowed.");
+    //        }
+    //    }
+    //    else if (usesSize != uses_[i]->size())
+    //    {
+    //        std::ostringstream msg;
+    //        msg << "Bind variable size mismatch (use["
+    //            << static_cast<unsigned long>(i) << "] has size "
+    //            << static_cast<unsigned long>(uses_[i]->size())
+    //            << ", use[0] has size "
+    //            << static_cast<unsigned long>(usesSize);
+    //        throw soci_error(msg.str());
+    //    }
+    //}
+    //return usesSize;
 }
 
 bool statement_impl::resize_intos(std::size_t upperBound)

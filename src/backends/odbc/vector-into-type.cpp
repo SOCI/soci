@@ -155,6 +155,15 @@ void odbc_vector_into_type_backend::define_by_pos(
         data = buf_;
         break;
     }
+    case x_mnsociarraystring:
+    {
+        odbcType_ = SQL_C_CHAR;
+        MNSociArrayString* v = static_cast<MNSociArrayString *>(data);
+        prepare_indicators(v->getCurrentInsertedElementCount() == 0 ? v->getArraySize() : v->getCurrentInsertedElementCount());
+        size = 257;
+        data = v->getArrayCharData();
+        break;
+    }
     case x_stdstring:
         {
             odbcType_ = SQL_C_CHAR;
@@ -382,6 +391,12 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
             v->resize(sz);
         }
         break;
+    case x_mnsociarraystring:
+    { 
+        //MNSociArrayString *v = static_cast<MNSociArrayString *>(data_);
+        //v->reset(sz);
+        break;
+    }
     case x_short:
         {
             std::vector<short> *v = static_cast<std::vector<short> *>(data_);
@@ -462,6 +477,12 @@ std::size_t odbc_vector_into_type_backend::size()
             sz = v->size();
         }
         break;
+    case x_mnsociarraystring:
+    {
+        MNSociArrayString *v = static_cast<MNSociArrayString*>(data_);
+        sz = v->getArraySize();
+        break;
+    }
     case x_short:
         {
             std::vector<short> *v = static_cast<std::vector<short> *>(data_);

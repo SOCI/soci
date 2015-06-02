@@ -34,4 +34,45 @@ public:
     char* m_ptrCharData;
 };
 
+class SOCI_DECL MNSociArrayString
+{
+public:
+    MNSociArrayString(int iArraySize) 
+    { 
+        m_ptrArrayCharData = new char[257 * iArraySize]; 
+        m_ptrArrayCharData[0] = '\0'; 
+        m_iCurrentArrayInsertPosition = 0; 
+        m_iArraySize = iArraySize; 
+    }
+
+    ~MNSociArrayString()
+    {
+        if (m_ptrArrayCharData)
+        {
+            delete m_ptrArrayCharData;
+            m_ptrArrayCharData = NULL;
+        }
+    }
+
+    MNSociArrayString& operator = (const MNSociArrayString& obj); //create compile error when used
+
+    void    push_back(const char* ptrChar) { strcpy(&m_ptrArrayCharData[m_iCurrentArrayInsertPosition * 257], ptrChar); ++m_iCurrentArrayInsertPosition; }
+    void    push_back(char* ptrChar) { strcpy(&m_ptrArrayCharData[m_iCurrentArrayInsertPosition * 257], ptrChar); ++m_iCurrentArrayInsertPosition; }
+    
+    char*   getValue(const int& iCurrentArrayReadPos) { return &m_ptrArrayCharData[iCurrentArrayReadPos * 257]; }
+
+    char*       getArrayCharData()  { return m_ptrArrayCharData; }
+    const int&  getArraySize()      { return m_iArraySize; }
+    int         getCurrentInsertedElementCount() { return m_iCurrentArrayInsertPosition; }
+
+    void        reset() {  m_iCurrentArrayInsertPosition = 0; }
+
+private:
+    int     m_iArraySize;
+    //starts with 0
+    int     m_iCurrentArrayInsertPosition;
+
+    char*   m_ptrArrayCharData;
+};
+
 #endif // MNSOCISTRING_H_INCLUDED

@@ -35,16 +35,17 @@ void odbc_standard_into_type_backend::define_by_pos(
     case x_mnsocistring:
         odbcType_ = SQL_C_CHAR;
         size = 257;
-        data = ((MNSociString*)data)->m_ptrCharData;
+        buf_ = &(((MNSociString*)data_)->m_ptrCharData[0]); //use the char* inside the odbc call!!
+        data = buf_;
         break;
     case x_stdstring:
         odbcType_ = SQL_C_CHAR;
         // Patch: set to min between column size and 100MB (used ot be 32769)
         // Column size for text data type can be too large for buffer allocation
-        //size = statement_.column_size(position_);
+        size = statement_.column_size(position_);
         //size = size > odbc_max_buffer_length ? odbc_max_buffer_length : size;
-        //size++;
-        size = 257;
+        size++;
+        //size = 257;
         buf_ = new char[size];
         data = buf_;
         break;
@@ -210,7 +211,10 @@ void odbc_standard_into_type_backend::clean_up()
 {
     if (buf_)
     {
-        delete [] buf_;
+        if (type_ != x_mnsocistring)
+        {
+            delete[] buf_;
+        }
         buf_ = 0;
     }
 }
