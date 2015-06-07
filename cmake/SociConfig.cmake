@@ -58,7 +58,7 @@ else()
     set(SOCI_CXX_VERSION_FLAGS "-std=c++11")
     add_definitions(-DSOCI_CXX_C11)
   else()
-    set(SOCI_CXX_VERSION_FLAGS "-ansi -std=gnu++98")
+    set(SOCI_CXX_VERSION_FLAGS "-std=gnu++98")
   endif()
 
   if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
