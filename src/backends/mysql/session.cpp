@@ -480,6 +480,7 @@ void mysql_session_backend::clean_up()
     if (conn_ != NULL)
     {
         mysql_close(conn_);
+        mysql_library_end();
         conn_ = NULL;
     }
 }
