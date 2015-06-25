@@ -20,6 +20,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
+#pragma warning(disable:4996)
 #endif
 
 using namespace soci;
@@ -65,7 +66,7 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
             {
                 std::string const& s = exchange_type_cast<x_stdstring>(data_);
                 buf_ = quote(statement_.session_.conn_,
-                             s.c_str(), s.size());
+                             s.c_str(), (int)s.size());
             }
             break;
         case x_short:

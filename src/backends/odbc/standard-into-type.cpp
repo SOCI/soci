@@ -13,6 +13,10 @@
 #include <ctime>
 #include <stdio.h>  // sscanf()
 
+#if defined(_MSC_VER)
+#pragma warning(disable:4996)
+#endif
+
 using namespace soci;
 using namespace soci::details;
 
@@ -37,7 +41,7 @@ void odbc_standard_into_type_backend::define_by_pos(
         odbcType_ = SQL_C_CHAR;
         // Patch: set to min between column size and 100MB (used ot be 32769)
         // Column size for text data type can be too large for buffer allocation
-        size = statement_.column_size(position_);
+        size = (SQLINTEGER)statement_.column_size(position_);
         size = size > odbc_max_buffer_length ? odbc_max_buffer_length : size;
         size++;
         buf_ = new char[size];

@@ -33,7 +33,7 @@ void firebird_statement_backend::prepareSQLDA(XSQLDA ** sqldap, int size)
         *sqldap = reinterpret_cast<XSQLDA*>(malloc(XSQLDA_LENGTH(size)));
     }
 
-    (*sqldap)->sqln = size;
+    (*sqldap)->sqln = (ISC_SHORT)size;
     (*sqldap)->version = 1;
 }
 
@@ -165,7 +165,7 @@ namespace
         if (res_buffer[0] == isc_info_sql_stmt_type)
         {
             length = isc_vax_integer(res_buffer+1, 2);
-            stype = isc_vax_integer(res_buffer+3, length);
+            stype = isc_vax_integer(res_buffer+3, (short)length);
         }
         else
         {
@@ -611,7 +611,7 @@ long long firebird_statement_backend::get_affected_rows()
                     int len = isc_vax_integer(p, 2);
                     p += 2;
 
-                    row_count += isc_vax_integer(p, len);
+                    row_count += isc_vax_integer(p, (short)len);
                     p += len;
                 }
                 break;

@@ -759,7 +759,7 @@ statement_impl::rethrow_current_exception_with_context(char const* operation)
                     // the query itself, as parsed by the backend.
                     std::string name = u.get_name();
                     if (name.empty())
-                        name = backEnd_->get_parameter_name(i);
+                        name = backEnd_->get_parameter_name((int)i);
 
                     oss << ":";
                     if (!name.empty())

@@ -76,6 +76,10 @@ typedef void * soci_handler_t;
 
 #endif // _WIN32
 
+#if defined(_MSC_VER)
+#pragma warning(disable:4996)
+#endif
+
 
 namespace // unnamed
 {

@@ -19,6 +19,11 @@
 #include <vector>
 #include <algorithm>
 
+#if defined(_MSC_VER)
+#pragma warning(disable:4127)
+#endif
+
+
 namespace soci
 {
 
@@ -65,7 +70,7 @@ const char *str2dec(const char * s, IntType &out, int &scale)
         int d = *s - '0';
         if (d < 0 || d > 9)
             return s;
-        res = res * 10 + d * sign;
+        res = res * 10 + (IntType)(d * sign);
         if (1 == sign)
         {
             if (res < out)
@@ -101,7 +106,7 @@ template<typename T1>
 void to_isc(void * val, XSQLVAR * var, int x_scale = 0)
 {
     T1 value = *reinterpret_cast<T1*>(val);
-    short scale = var->sqlscale + x_scale;
+    short scale = var->sqlscale + (short)x_scale;
     short type = var->sqltype & ~1;
     long long divisor = 1, multiplier = 1;
 

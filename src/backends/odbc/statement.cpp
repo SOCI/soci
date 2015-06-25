@@ -246,7 +246,7 @@ long long odbc_statement_backend::get_affected_rows()
 
 int odbc_statement_backend::get_number_of_rows()
 {
-    return numRowsFetched_;
+    return (int)numRowsFetched_;
 }
 
 std::string odbc_statement_backend::get_parameter_name(int index) const

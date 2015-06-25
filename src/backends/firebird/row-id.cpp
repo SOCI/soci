@@ -10,6 +10,10 @@
 
 using namespace soci;
 
+#if defined(_MSC_VER)
+#pragma warning(disable:4702)
+#endif
+
 firebird_rowid_backend::firebird_rowid_backend(firebird_session_backend & /* session */)
 {
     // Unsupported in Firebird backend

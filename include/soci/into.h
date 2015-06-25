@@ -27,6 +27,9 @@ namespace details
 template <typename T, typename Indicator>
 struct into_container
 {
+private:
+    into_container& operator=(const into_container&); //supress compiler warning: assignment operator could not be generated
+public:
     into_container(T &_t, Indicator &_ind)
         : t(_t), ind(_ind) {}
 
@@ -38,6 +41,9 @@ typedef void no_indicator;
 template <typename T>
 struct into_container<T, no_indicator>
 {
+private:
+    into_container& operator=(const into_container&); //supress compiler warning: assignment operator could not be generated
+public:
     into_container(T &_t)
         : t(_t) {}
 

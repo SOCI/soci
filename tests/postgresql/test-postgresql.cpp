@@ -16,6 +16,12 @@
 #include <ctime>
 #include <cstdlib>
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:4996)
+#endif
+
+
 using namespace soci;
 using namespace soci::tests;
 
@@ -596,7 +602,6 @@ TEST_CASE("PostgreSQL JSON", "[postgresql][json]")
     server_version version = get_postgresql_version(sql);
     if ( version >= server_version(9,2))
     {
-        bool exception = false;
         std::string result;
         std::string valid_input = "{\"tool\":\"soci\",\"result\":42}";
         std::string invalid_input = "{\"tool\":\"other\",\"result\":invalid}";
