@@ -23,6 +23,7 @@
 #endif // HAVE_BOOST
 
 #include "soci-compiler.h"
+#include "soci/soci-platform.h"
 
 #define CATCH_CONFIG_RUNNER
 #include <catch.hpp>

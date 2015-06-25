@@ -8,6 +8,23 @@
 #ifndef SOCI_PLATFORM_H_INCLUDED
 #define SOCI_PLATFORM_H_INCLUDED
 
+// Check some C++11 Features
+#if defined(_MSC_VER)
+// Bug in Visual Studio: __cplusplus still means C++03
+// https://connect.microsoft.com/VisualStudio/feedback/details/763051/
+#if (_MSC_VER >= 1900)
+#define SOCI_HAVE_NOEXCEPT
+#endif
+#if (_MSC_VER >= 1600)
+#define SOCI_HAVE_LAMBDA
+#endif
+
+#elif defined(__cplusplus) && __cplusplus >= 201103L
+// This simple check leaves the user with a too old compiler barfing.
+#define SOCI_HAVE_NOEXCEPT
+#define SOCI_HAVE_LAMBDA
+#endif // Other C++11 compiler
+
 #if defined(_MSC_VER) || defined(__MINGW32__)
 #define LL_FMT_FLAGS "I64"
 #else
@@ -24,7 +41,9 @@
 #endif
 
 // Define if you have the snprintf variants.
+#if _MSC_VER < 1900
 #define snprintf _snprintf
+#endif
 
 // Define if you have the strtoll and strtoull variants.
 #if _MSC_VER < 1300
