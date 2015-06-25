@@ -31,6 +31,8 @@ source_group("CMake Files" FILES CMakeLists.txt)
 
 # Core targets configuration
 string(TOLOWER "${PROJECT_NAME}" PROJECTNAMEL)
+#this command will update parent scope variable
+set(SOCI_CORE_TARGET ${PROJECTNAMEL}_core PARENT_SCOPE)
 set(SOCI_CORE_TARGET ${PROJECTNAMEL}_core)
 
 soci_target_output_name(${SOCI_CORE_TARGET} SOCI_CORE_TARGET_OUTPUT_NAME)
