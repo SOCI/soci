@@ -11,6 +11,10 @@
 
 #include <cstdio>
 
+#if defined(_MSC_VER)
+#pragma warning(disable:4996)
+#endif
+
 using namespace soci;
 using namespace soci::details;
 
@@ -125,7 +129,7 @@ void odbc_session_backend::configure_connection()
 
         std::string const q(major_ver >= 9 ? "SET extra_float_digits = 3"
                                            : "SET extra_float_digits = 2");
-        rc = SQLExecDirect(st.hstmt_, sqlchar_cast(q), q.size());
+        rc = SQLExecDirect(st.hstmt_, sqlchar_cast(q), (SQLINTEGER)q.size());
 
         st.clean_up();
 

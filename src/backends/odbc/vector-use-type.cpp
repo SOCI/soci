@@ -20,6 +20,7 @@
 // warning, but odbc requires the value to be converted on this line
 // SQLSetStmtAttr(statement_.hstmt_, SQL_ATTR_PARAMSET_SIZE, (SQLPOINTER)arraySize, 0);
 #pragma warning(disable:4312)
+#pragma warning(disable:4996)
 #endif
 
 using namespace soci;

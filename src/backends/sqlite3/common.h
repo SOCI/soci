@@ -16,6 +16,11 @@
 #include <vector>
 #include <limits>
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:4996)
+#endif
+
 namespace soci { namespace details { namespace sqlite3 {
 
 // helper function for parsing datetime values
@@ -83,5 +88,9 @@ T string_to_unsigned_integer(char const * buf)
 }
 
 }}} // namespace soci::details::sqlite3
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 #endif // SOCI_SQLITE3_COMMON_H_INCLUDED

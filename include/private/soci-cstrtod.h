@@ -13,6 +13,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:4996)
+#endif
+
+
 namespace soci
 {
 
@@ -76,5 +82,9 @@ double cstring_to_double(char const* s)
 } // namespace details
 
 } // namespace soci
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 #endif // SOCI_PRIVATE_SOCI_CSTRTOD_H_INCLUDED

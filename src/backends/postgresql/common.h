@@ -15,6 +15,12 @@
 #include <ctime>
 #include <vector>
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:4996)
+#endif
+
+
 namespace soci
 {
 
@@ -128,5 +134,10 @@ std::size_t get_vector_size(void * p)
 } // namespace details
 
 } // namespace soci
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
 
 #endif // SOCI_POSTGRESQL_COMMON_H_INCLUDED

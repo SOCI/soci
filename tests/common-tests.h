@@ -38,6 +38,11 @@
 #include <string>
 #include <typeinfo>
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:4996)
+#endif
+
 #ifdef HAVE_BOOST
 // It appears later versions of GCC arent happy with this - to be fixed properly
 #if (__GNUC__ == 4 && (__GNUC_MINOR__ > 6)) || (__clang__ == 1)
@@ -3791,7 +3796,7 @@ TEST_CASE_METHOD(common_tests, "Get affected rows", "[core][affected-rows]")
     std::vector<int> v(5, 0);
     for (std::size_t i = 0; i < v.size(); ++i)
     {
-        v[i] = (7 + i);
+        v[i] = (7 + (int)i);
     }
 
     // test affected rows for bulk operations.
@@ -4046,5 +4051,10 @@ TEST_CASE_METHOD(common_tests, "Truncation error", "[core][insert][truncate][exc
 } // namespace tests
 
 } // namespace soci
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
 
 #endif // SOCI_COMMON_TESTS_H_INCLUDED
