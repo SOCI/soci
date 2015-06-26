@@ -33,6 +33,13 @@
 #include <sqlext.h> // ODBC
 #include <string.h> // strcpy()
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:4996)
+#endif
+
+
+
 namespace soci
 {
 
@@ -60,6 +67,8 @@ struct odbc_statement_backend;
 // Helper of into and use backends.
 class odbc_standard_type_backend_base
 {
+private:
+    odbc_standard_type_backend_base& operator=(const odbc_standard_type_backend_base&); //supress compiler warning about assignment operator
 protected:
     odbc_standard_type_backend_base(odbc_statement_backend &st)
         : statement_(st) {}
@@ -449,4 +458,10 @@ SOCI_ODBC_DECL void register_factory_odbc();
 
 } // namespace soci
 
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
+
 #endif // SOCI_EMPTY_H_INCLUDED
+

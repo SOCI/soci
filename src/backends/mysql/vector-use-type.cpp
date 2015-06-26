@@ -24,6 +24,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
+#pragma warning(disable:4996)
 #endif
 
 using namespace soci;
@@ -82,7 +83,7 @@ void mysql_vector_use_type_backend::pre_use(indicator const *ind)
                     std::vector<std::string> &v = *pv;
 
                     buf = quote(statement_.session_.conn_,
-                        v[i].c_str(), v[i].size());
+                        v[i].c_str(), (int)v[i].size());
                 }
                 break;
             case x_short:

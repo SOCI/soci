@@ -21,6 +21,10 @@
 #include <mysqld_error.h>
 #include <errmsg.h>
 
+#if defined(_MSC_VER)
+#pragma warning(disable:4127)
+#endif
+
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_mysql();
 
@@ -799,7 +803,7 @@ std::string escape_string(soci::session& sql, const std::string& s)
     mysql_session_backend* backend = static_cast<mysql_session_backend*>(
         sql.get_backend());
     char* escaped = new char[2 * s.size() + 1];
-    mysql_real_escape_string(backend->conn_, escaped, s.data(), s.size());
+    mysql_real_escape_string(backend->conn_, escaped, s.data(), (unsigned long)s.size());
     std::string retv = escaped;
     delete [] escaped;
     return retv;

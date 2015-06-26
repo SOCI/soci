@@ -20,6 +20,10 @@
 
 using namespace soci;
 
+#if defined(_MSC_VER)
+#pragma warning(disable:4996)
+#endif
+
 std::string connectString;
 soci::backend_factory const &backEnd = *factory_firebird();
 
@@ -970,7 +974,7 @@ namespace soci
             char count_type = *ptr++;
             int m = isc_vax_integer(ptr, 2);
             ptr += 2;
-            count = isc_vax_integer(ptr, m);
+            count = isc_vax_integer(ptr, (short)m);
 
             if (count_type == type_)
             {

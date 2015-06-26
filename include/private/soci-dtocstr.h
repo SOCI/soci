@@ -13,6 +13,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:4996)
+#endif
+
 namespace soci
 {
 
@@ -53,5 +58,10 @@ std::string double_to_cstring(double d)
 } // namespace details
 
 } // namespace soci
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
 
 #endif // SOCI_PRIVATE_SOCI_DTOCSTR_H_INCLUDED
