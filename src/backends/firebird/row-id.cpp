@@ -10,12 +10,18 @@
 
 using namespace soci;
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4702) //unreachable code
+#endif
 firebird_rowid_backend::firebird_rowid_backend(firebird_session_backend & /* session */)
 {
     // Unsupported in Firebird backend
     throw soci_error("RowIDs are not supported");
 }
-
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 firebird_rowid_backend::~firebird_rowid_backend()
 {
 }

@@ -77,6 +77,9 @@ protected:
     };
 
     odbc_statement_backend &statement_;
+private:
+    //assignment operator is not possible in this class
+    odbc_standard_type_backend_base& operator=(const odbc_standard_type_backend_base&);
 };
 
 struct odbc_standard_into_type_backend : details::standard_into_type_backend,
@@ -101,6 +104,9 @@ struct odbc_standard_into_type_backend : details::standard_into_type_backend,
     int position_;
     SQLSMALLINT odbcType_;
     SQLLEN valueLen_;
+private:
+    //assignment operator is not possible in this class
+    odbc_standard_into_type_backend& operator=(const odbc_standard_into_type_backend&);
 };
 
 struct odbc_vector_into_type_backend : details::vector_into_type_backend,

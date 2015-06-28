@@ -105,7 +105,8 @@ void to_isc(void * val, XSQLVAR * var, int x_scale = 0)
     short type = var->sqltype & ~1;
     long long divisor = 1, multiplier = 1;
 
-    if ((std::numeric_limits<T1>::is_integer == false) && scale >= 0 &&
+    static bool is_integer = std::numeric_limits<T1>::is_integer;
+    if ((is_integer == false) && scale >= 0 &&
         (type == SQL_SHORT || type == SQL_LONG || type == SQL_INT64))
     {
         throw soci_error("Can't convert non-integral value to integral column type");
@@ -197,7 +198,8 @@ T1 from_isc(XSQLVAR * var)
 
     if (scale < 0)
     {
-        if (std::numeric_limits<T1>::is_integer)
+        static bool is_integer = std::numeric_limits<T1>::is_integer;
+        if (is_integer)
         {
             std::ostringstream msg;
             msg << "Can't convert value with scale " << -scale

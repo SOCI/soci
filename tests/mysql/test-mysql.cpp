@@ -602,7 +602,8 @@ struct double_value_table_creator : table_creator_base
 
 TEST_CASE("MySQL special floating point values", "[mysql][float]")
 {
-    if (!std::numeric_limits<double>::is_iec559)
+    static bool is_iec559 = std::numeric_limits<double>::is_iec559;
+    if (!is_iec559)
     {
         WARN("C++ double type is not IEC-559, skipping test.");
         return;

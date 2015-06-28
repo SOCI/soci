@@ -32,6 +32,9 @@ struct into_container
 
     T &t;
     Indicator &ind;
+private:
+    //assignment operator is not possible in this class
+    into_container& operator=(const into_container&);
 };
 
 typedef void no_indicator;
@@ -42,6 +45,9 @@ struct into_container<T, no_indicator>
         : t(_t) {}
 
     T &t;
+private:
+    //assignment operator is not possible in this class
+    into_container& operator=(const into_container&);
 };
 
 } // namespace details
