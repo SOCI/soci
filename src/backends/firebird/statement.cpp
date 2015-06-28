@@ -33,7 +33,7 @@ void firebird_statement_backend::prepareSQLDA(XSQLDA ** sqldap, int size)
         *sqldap = reinterpret_cast<XSQLDA*>(malloc(XSQLDA_LENGTH(size)));
     }
 
-    (*sqldap)->sqln = size;
+    (*sqldap)->sqln = static_cast<ISC_SHORT>(size);
     (*sqldap)->version = 1;
 }
 
@@ -165,7 +165,7 @@ namespace
         if (res_buffer[0] == isc_info_sql_stmt_type)
         {
             length = isc_vax_integer(res_buffer+1, 2);
-            stype = isc_vax_integer(res_buffer+3, length);
+            stype = isc_vax_integer(res_buffer+3, static_cast<short>(length));
         }
         else
         {
@@ -611,7 +611,7 @@ long long firebird_statement_backend::get_affected_rows()
                     int len = isc_vax_integer(p, 2);
                     p += 2;
 
-                    row_count += isc_vax_integer(p, len);
+                    row_count += isc_vax_integer(p, static_cast<short>(len));
                     p += len;
                 }
                 break;
@@ -629,7 +629,7 @@ long long firebird_statement_backend::get_affected_rows()
 
 int firebird_statement_backend::get_number_of_rows()
 {
-    return rowsFetched_;
+    return static_cast<int>(rowsFetched_);
 }
 
 std::string firebird_statement_backend::get_parameter_name(int index) const

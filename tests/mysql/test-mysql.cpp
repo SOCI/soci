@@ -799,7 +799,7 @@ std::string escape_string(soci::session& sql, const std::string& s)
     mysql_session_backend* backend = static_cast<mysql_session_backend*>(
         sql.get_backend());
     char* escaped = new char[2 * s.size() + 1];
-    mysql_real_escape_string(backend->conn_, escaped, s.data(), s.size());
+    mysql_real_escape_string(backend->conn_, escaped, s.data(), static_cast<unsigned long>(s.size()));
     std::string retv = escaped;
     delete [] escaped;
     return retv;

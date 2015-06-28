@@ -68,7 +68,7 @@ void *db2_standard_use_type_backend::prepare_for_bind(
         std::string const& s = exchange_type_cast<x_stdstring>(data);
         sqlType = SQL_LONGVARCHAR;
         cType = SQL_C_CHAR;
-        size = s.size() + 1;
+        size = static_cast<SQLINTEGER>(s.size()) + 1;
         buf = new char[size];
         strncpy(buf, s.c_str(), size);
         ind = SQL_NTS;

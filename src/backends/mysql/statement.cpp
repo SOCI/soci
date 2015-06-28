@@ -237,7 +237,7 @@ mysql_statement_backend::execute(int number)
                     // bulk operation
                     //std::cerr << "bulk operation:\n" << query << std::endl;
                     if (0 != mysql_real_query(session_.conn_, query.c_str(),
-                            query.size()))
+                            static_cast<unsigned long>(query.size())))
                     {
                         // preserve the number of rows affected so far.
                         rowsAffectedBulk_ = rowsAffectedBulkTemp;
@@ -270,7 +270,7 @@ mysql_statement_backend::execute(int number)
 
         //std::cerr << query << std::endl;
         if (0 != mysql_real_query(session_.conn_, query.c_str(),
-                query.size()))
+                static_cast<unsigned long>(query.size())))
         {
             throw mysql_soci_error(mysql_error(session_.conn_),
                 mysql_errno(session_.conn_));

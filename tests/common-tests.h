@@ -3791,7 +3791,7 @@ TEST_CASE_METHOD(common_tests, "Get affected rows", "[core][affected-rows]")
     std::vector<int> v(5, 0);
     for (std::size_t i = 0; i < v.size(); ++i)
     {
-        v[i] = (7 + i);
+        v[i] = (7 + static_cast<int>(i));
     }
 
     // test affected rows for bulk operations.

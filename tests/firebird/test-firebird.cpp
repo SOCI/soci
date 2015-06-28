@@ -970,7 +970,7 @@ namespace soci
             char count_type = *ptr++;
             int m = isc_vax_integer(ptr, 2);
             ptr += 2;
-            count = isc_vax_integer(ptr, m);
+            count = isc_vax_integer(ptr, static_cast<short>(m));
 
             if (count_type == type_)
             {
