@@ -8,7 +8,7 @@
 #ifndef SOCI_BACKEND_H_INCLUDED
 #define SOCI_BACKEND_H_INCLUDED
 
-#include "soci/soci-config.h"
+#include "soci/soci-platform.h"
 #include "soci/error.h"
 // std
 #include <cstddef>

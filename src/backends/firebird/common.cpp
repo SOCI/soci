@@ -7,6 +7,7 @@
 
 #include "firebird/common.h"
 #include "soci/soci-backend.h"
+#include "soci/soci-platform.h"
 #include <ibase.h> // FireBird
 #include <cstddef>
 #include <cstring>

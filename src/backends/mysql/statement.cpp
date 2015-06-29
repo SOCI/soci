@@ -10,11 +10,6 @@
 #include "soci/mysql/soci-mysql.h"
 #include <cctype>
 #include <ciso646>
-//#include <iostream>
-
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
 
 using namespace soci;
 using namespace soci::details;

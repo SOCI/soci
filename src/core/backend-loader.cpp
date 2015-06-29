@@ -7,6 +7,7 @@
 
 #define SOCI_SOURCE
 #include "soci/backend-loader.h"
+#include "soci/soci-platform.h"
 #include "soci/error.h"
 #include <cstdlib>
 #include <map>
@@ -99,15 +100,7 @@ std::vector<std::string> get_default_paths()
     std::vector<std::string> paths;
 
     // TODO: may be problem with finding getenv in std namespace in Visual C++ --mloskot
-    char const* const penv = std::getenv("SOCI_BACKENDS_PATH");
-    if (0 == penv)
-    {
-        paths.push_back(".");
-        paths.push_back(DEFAULT_BACKENDS_PATH);
-        return paths;
-    }
-
-    std::string const env = penv;
+    std::string env = soci::getenv("SOCI_BACKENDS_PATH");
     if (env.empty())
     {
         paths.push_back(".");

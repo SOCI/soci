@@ -62,6 +62,8 @@ private:
     virtual void convert_from_base() {}
 
     row & r_;
+
+    into_type& operator=(const into_type&);
 };
 
 template <>

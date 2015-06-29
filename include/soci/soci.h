@@ -8,10 +8,6 @@
 #ifndef SOCI_H_INCLUDED
 #define SOCI_H_INCLUDED
 
-#ifdef _MSC_VER
-#pragma warning(disable:4251 4512 4511)
-#endif
-
 // namespace soci
 #include "soci/backend-loader.h"
 #include "soci/blob.h"
@@ -33,7 +29,6 @@
 #include "soci/rowset.h"
 #include "soci/session.h"
 #include "soci/soci-backend.h"
-#include "soci/soci-config.h"
 #include "soci/soci-platform.h"
 #include "soci/statement.h"
 #include "soci/transaction.h"

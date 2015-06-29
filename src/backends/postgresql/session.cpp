@@ -7,6 +7,7 @@
 
 #define SOCI_POSTGRESQL_SOURCE
 #include "soci/postgresql/soci-postgresql.h"
+#include "soci/soci-platform.h"
 #include "soci/session.h"
 #include "soci/connection-parameters.h"
 #include <libpq/libpq-fs.h> // libpq
@@ -21,10 +22,6 @@
 #define SOCI_POSTGRESQL_NOBINDBYNAME
 #endif // SOCI_POSTGRESQL_NOBINDBYNAME
 #endif // SOCI_POSTGRESQL_NOPARAMS
-
-#ifdef _MSC_VER
-#pragma warning(disable:4355 4996)
-#endif
 
 using namespace soci;
 using namespace soci::details;

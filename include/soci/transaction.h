@@ -9,7 +9,7 @@
 #define SOCI_TRANSACTION_H_INCLUDED
 
 #include "soci/session.h"
-#include "soci/soci-config.h"
+#include "soci/soci-platform.h"
 
 namespace soci
 {

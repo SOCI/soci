@@ -9,7 +9,7 @@
 #define SOCI_COMMON_TESTS_H_INCLUDED
 
 #include "soci/soci.h"
-#include "soci/soci-config.h"
+#include "soci/soci-platform.h"
 
 #ifdef HAVE_BOOST
 // explicitly pull conversions for Boost's optional, tuple and fusion:
@@ -209,6 +209,8 @@ private:
         }
     }
     session& msession;
+
+    table_creator_base& operator=(const table_creator_base&);
 };
 
 class procedure_creator_base
@@ -224,6 +226,8 @@ private:
         try { msession << "drop procedure soci_test"; } catch (soci_error&) {}
     }
     session& msession;
+
+    procedure_creator_base& operator=(const procedure_creator_base&);
 };
 
 class function_creator_base
@@ -246,6 +250,8 @@ private:
         try { msession << dropstatement(); } catch (soci_error&) {}
     }
     session& msession;
+
+    function_creator_base& operator=(const function_creator_base&);
 };
 
 // This is a singleton class, at any given time there is at most one test
@@ -268,7 +274,7 @@ public:
         // environment variable can be set and then the current default locale
         // (which can itself be changed by setting LC_ALL environment variable)
         // will then be used.
-        if (getenv("SOCI_TEST_USE_LC_ALL"))
+        if (!soci::getenv("SOCI_TEST_USE_LC_ALL").empty())
             std::setlocale(LC_ALL, "");
     }
 
@@ -327,6 +333,8 @@ private:
     std::string const connectString_;
 
     static test_context_base* the_test_context_;
+
+    test_context_base& operator=(const test_context_base&);
 };
 
 // Currently all tests consist of just a single source file, so we can define
@@ -436,6 +444,8 @@ protected:
     test_context_base const & tc_;
     backend_factory const &backEndFactory_;
     std::string const connectString_;
+
+    common_tests& operator=(const common_tests&);
 };
 
 typedef std::auto_ptr<table_creator_base> auto_table_creator;

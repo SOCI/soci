@@ -16,12 +16,6 @@
 using namespace soci;
 using namespace soci::details;
 
-#ifdef _MSC_VER
-#pragma warning(disable:4996)
-#define snprintf _snprintf
-#endif
-
-
 void* odbc_standard_use_type_backend::prepare_for_bind(
     SQLLEN &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType)
 {
