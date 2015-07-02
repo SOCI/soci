@@ -55,7 +55,31 @@ inline namespace boost {
 #endif
 #endif // HAVE_BOOST
 
+// Firebird returns string that represents entire byte-size(not character size) of the column( i.e. CHAR(10) NONE - 10bytes, CHAR(10) UTF8 - 40bytes )
+// MySql returns right trimmed value by default or space padded up to column character size when PAD_CHAR_TO_FULL_LENGTH
+// PostgreSQL returns space padded version up to actual column character size (not byte size )
+// SQLite has TEXT affinity for all char types so it is not an issue here - macro bellow will match correctly
+// TODO: comments for other backends(DB, ODBC)
 
+// This method will check result string from column defined as fixed char
+// It will check only bytes up to the original string size.
+// If padded string is bigger than expected string then all remaining chars must be spaces so if any non-space character is found it will fail.
+inline void checkEqualPadded(const std::string& padded_str, const std::string& expected_str)
+{
+    size_t const len = expected_str.length();
+    std::string const start_str(padded_str, 0, len);
+
+    if( start_str != expected_str )
+        throw soci::soci_error("Expected string \"" + expected_str +"\" does not match with padded string \"" + padded_str + "\"");
+    if ( padded_str.length() > len )
+    {
+        std::string const end_str(padded_str, len);
+        if( end_str != std::string(padded_str.length() - len, ' ') )
+            throw soci::soci_error("\"" + padded_str + "\" starts with \"" + padded_str + "\" but non-space characater(s) are found aftewards!");
+    }
+}
+#define CHECK_EQUAL_PADDED(padded_str, expected_str) \
+    CHECK_NOTHROW(checkEqualPadded(padded_str,expected_str));
 
 // Objects used later in tests 14,15
 struct PhonebookEntry
@@ -316,6 +340,9 @@ public:
     // Override this to call commit() if it's necessary for the DDL statements
     // to be taken into account (currently this is only the case for Firebird).
     virtual void on_after_ddl(session&) const { }
+
+    // Override this if the backend does not support trailing space character type
+    virtual bool enable_std_char_padding(session&) const { return true; }
 
     virtual ~test_context_base()
     {
@@ -1977,12 +2004,13 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         CHECK(t.tm_year == 105);
 
         // again, type char is visible as string
-        CHECK(r.get<std::string>(4) == "a");
+        // Firebird with default encoding other than NONE can return multiple bytes ('a   'for UTF-8 default encoding).
+        CHECK_EQUAL_PADDED(r.get<std::string>(4),"a");
 
         ASSERT_EQUAL_APPROX(r.get<double>("NUM_FLOAT"), 3.14);
         CHECK(r.get<int>("NUM_INT") == 123);
         CHECK(r.get<std::string>("NAME") == "Johny");
-        CHECK(r.get<std::string>("CHR") == "a");
+        CHECK_EQUAL_PADDED(r.get<std::string>("CHR"),"a");
 
         CHECK(r.get_indicator(0) == i_ok);
 
@@ -2017,7 +2045,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
             CHECK(t.tm_hour == 22);
             CHECK(t.tm_min == 14);
             CHECK(t.tm_sec == 17);
-            CHECK(c == "a");
+            CHECK_EQUAL_PADDED(c, "a");
         }
     }
 
@@ -2548,11 +2576,11 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
                 std::tm t1 = { 0 };
                 t1 = r1.get<std::tm>(3);
                 CHECK(t1.tm_year == 105);
-                CHECK(r1.get<std::string>(4) == "a");
+                CHECK_EQUAL_PADDED(r1.get<std::string>(4),"a");
                 ASSERT_EQUAL_APPROX(r1.get<double>("NUM_FLOAT"), 3.14);
                 CHECK(r1.get<int>("NUM_INT") == 123);
                 CHECK(r1.get<std::string>("NAME") == "Johny");
-                CHECK(r1.get<std::string>("CHR") == "a");
+                CHECK_EQUAL_PADDED(r1.get<std::string>("CHR"),"a");
             }
             else if (name == "Robert")
             {
@@ -2565,7 +2593,7 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
                 ASSERT_EQUAL(r1.get<double>("NUM_FLOAT"), 6.28);
                 CHECK(r1.get<int>("NUM_INT") == 246);
                 CHECK(r1.get<std::string>("NAME") == "Robert");
-                CHECK(r1.get<std::string>("CHR") == "b");
+                CHECK_EQUAL_PADDED(r1.get<std::string>("CHR"),"b");
             }
             else
             {
@@ -2616,11 +2644,11 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
                 CHECK(r2.get<std::string>(2) == "Robert");
                 std::tm t2 = r2.get<std::tm>(3);
                 CHECK(t2.tm_year == 104);
-                CHECK(r2.get<std::string>(4) == "b");
+                CHECK_EQUAL_PADDED(r2.get<std::string>(4),"b");
                 ASSERT_EQUAL_APPROX(r2.get<double>("NUM_FLOAT"), 6.28);
                 CHECK(r2.get<int>("NUM_INT") == 246);
                 CHECK(r2.get<std::string>("NAME") == "Robert");
-                CHECK(r2.get<std::string>("CHR") == "b");
+                CHECK_EQUAL_PADDED(r2.get<std::string>("CHR"),"b");
             }
             else
             {
@@ -4039,6 +4067,49 @@ TEST_CASE_METHOD(common_tests, "Truncation error", "[core][insert][truncate][exc
 
         check_for_exception_on_truncation(sql);
     }
+}
+
+TEST_CASE_METHOD(common_tests, "Blank padding", "[core][insert][exception]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+    if( !tc_.enable_std_char_padding(sql) )
+    {
+        WARN("No need to check for trailing space functionallity on backend that does not support it.");
+        return;
+    }
+
+    struct fixed_name_table_creator : table_creator_base
+    {
+        fixed_name_table_creator(session& sql)
+            : table_creator_base(sql)
+        {
+            sql.begin();
+            sql << "create table soci_test(sc char, name char(10), name2 varchar(10))";
+            sql.commit();
+        }
+    } tableCreator(sql);
+
+    std::string test1="abcde     ";
+    std::string singleChar = "a";
+    sql << "insert into soci_test(sc, name,name2) values(:sc,:name,:name2)",use(singleChar),use(test1),use(test1);
+
+    std::string sc, tchar,tvarchar;
+    sql << "select sc,name,name2 from soci_test",into(sc), into(tchar),into(tvarchar);
+
+    //check only bytes that were actually inserted - firebird returns 'a   ' for utf8 encoding.
+    CHECK_EQUAL_PADDED(sc,singleChar);
+    CHECK_EQUAL_PADDED(tchar,test1); //! tchar size represent actual size in bytes for this column
+    CHECK(tvarchar==test1);
+
+    //check 10-space string - same as inserting empty string since spaces will be padded up to full size of the column
+    test1 = "          ";
+    singleChar = " ";
+    sql << "update soci_test set sc=:sc, name=:name, name2=:name2",use(singleChar),use(test1),use(test1);
+    sql << "select sc, name,name2 from soci_test",into(sc),into(tchar),into(tvarchar);
+
+    CHECK_EQUAL_PADDED(sc,singleChar); 
+    CHECK_EQUAL_PADDED(tchar,test1);
+    CHECK(tvarchar==test1); //returns correct 10-space string
 }
 
 } // namespace test_cases

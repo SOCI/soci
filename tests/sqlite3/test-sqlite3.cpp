@@ -360,6 +360,12 @@ public:
 
         return true;
     }
+
+    virtual bool enable_std_char_padding(session&) const 
+    {
+        // SQlite does not support right padded char type.
+        return false; 
+    }
 };
 
 int main(int argc, char** argv)
