@@ -112,6 +112,22 @@ public:
         // SQL mode to avoid silent truncation of too long values.
         return sql_mode.find("STRICT_") == std::string::npos;
     }
+
+    virtual bool enable_std_char_padding(session& sql) const
+    {
+        // turn on standard right padding on mysql. This options is supported as of version 5.1.20
+        try
+        {
+            sql << "SET @@session.sql_mode = 'PAD_CHAR_TO_FULL_LENGTH'";
+            return true;
+        }
+        catch(const soci_error& e)
+        {
+            // Padding cannot be enabled - test will not be performed
+            return false;
+        }
+        return true;
+    }
 };
 
 #endif // SOCI_TESTS_MYSQL_H_INCLUDED
