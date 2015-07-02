@@ -11,7 +11,9 @@
 #include <stdarg.h>
 #include <string>
 #include <cstring>
-#include <time.h>
+#include <cstdlib>
+#include <ctime>
+
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
 #define LL_FMT_FLAGS "I64"
@@ -124,9 +126,9 @@ namespace soci
             return result;
         }
     #else
-        penv = getenv(envVarName);
+        penv = std::getenv(envVarName);
         if( penv != 0 )
-            return penv;
+            return std::string(penv);
     #endif
         return std::string();
     }
@@ -137,7 +139,7 @@ namespace soci
         errno_t err = localtime_s(&tstruct,&timer);
         return err;
     #else //fallback on std localtime for all other systems
-        std::tm* result = std::localtime(&timer);
+        tm* result = std::localtime(&timer);
         if( result == 0 )
             return -1; //indicate error
         tstruct = *result;
