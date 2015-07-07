@@ -103,8 +103,9 @@ void odbc_standard_into_type_backend::define_by_pos(
         static_cast<SQLUSMALLINT>(odbcType_), data, size, &valueLen_);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_,
-                            "into type pre_fetch");
+        std::ostringstream ss;
+        ss << "binding output column #" << position_;
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, ss.str());
     }
 }
 

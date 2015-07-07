@@ -230,8 +230,9 @@ void odbc_vector_use_type_backend::bind_helper(int &position, void *data, exchan
 
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_,
-            "Error while binding value to column");
+        std::ostringstream ss;
+        ss << "binding input vector parameter #" << position;
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, ss.str());
     }
 }
 

@@ -183,8 +183,9 @@ void odbc_vector_into_type_backend::define_by_pos(
                 odbcType_, static_cast<SQLPOINTER>(data), size, indHolders_);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_,
-                            "vector into type define by pos");
+        std::ostringstream ss;
+        ss << "binding output vector column #" << position;
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, ss.str());
     }
 }
 

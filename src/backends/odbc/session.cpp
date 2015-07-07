@@ -33,8 +33,7 @@ odbc_session_backend::odbc_session_backend(
     rc = SQLSetEnvAttr(henv_, SQL_ATTR_ODBC_VERSION, (void*)SQL_OV_ODBC3, 0);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_ENV, henv_,
-                         "Setting ODBC version");
+        throw odbc_soci_error(SQL_HANDLE_ENV, henv_, "setting ODBC version 3");
     }
 
     // Allocate connection handle
@@ -42,7 +41,7 @@ odbc_session_backend::odbc_session_backend(
     if (is_odbc_error(rc))
     {
         throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
-                         "Allocating connection handle");
+                              "allocating connection handle");
     }
 
     SQLCHAR outConnString[1024];
@@ -81,8 +80,7 @@ odbc_session_backend::odbc_session_backend(
 
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
-                         "Error Connecting to database");
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "connecting to database");
     }
 
     connection_string_.assign((const char*)outConnString, strLength);
@@ -107,7 +105,7 @@ void odbc_session_backend::configure_connection()
         if (is_odbc_error(rc))
         {
             throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
-                                  "SQLGetInfo(SQL_DBMS_VER)");
+                                  "getting PostgreSQL ODBC driver version");
         }
 
         // The returned string is of the form "##.##.#### ...", but we don't
@@ -132,7 +130,7 @@ void odbc_session_backend::configure_connection()
         if (is_odbc_error(rc))
         {
             throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
-                                  "Setting extra_float_digits for PostgreSQL");
+                                  "setting extra_float_digits for PostgreSQL");
         }
     }
 }
@@ -148,8 +146,7 @@ void odbc_session_backend::begin()
                     (SQLPOINTER)SQL_AUTOCOMMIT_OFF, 0 );
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
-                         "Begin Transaction");
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "beginning transaction");
     }
 }
 
@@ -158,8 +155,7 @@ void odbc_session_backend::commit()
     SQLRETURN rc = SQLEndTran(SQL_HANDLE_DBC, hdbc_, SQL_COMMIT);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
-                         "Committing");
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "committing transaction");
     }
     reset_transaction();
 }
@@ -169,8 +165,7 @@ void odbc_session_backend::rollback()
     SQLRETURN rc = SQLEndTran(SQL_HANDLE_DBC, hdbc_, SQL_ROLLBACK);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
-                         "Rolling back");
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "rolling back transaction");
     }
     reset_transaction();
 }
@@ -263,8 +258,7 @@ void odbc_session_backend::reset_transaction()
                     (SQLPOINTER)SQL_AUTOCOMMIT_ON, 0 );
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
-                            "Set Auto Commit");
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "enabling auto commit");
     }
 }
 
@@ -274,22 +268,19 @@ void odbc_session_backend::clean_up()
     SQLRETURN rc = SQLDisconnect(hdbc_);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
-                            "SQLDisconnect");
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "disconnecting");
     }
 
     rc = SQLFreeHandle(SQL_HANDLE_DBC, hdbc_);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
-                            "SQLFreeHandle DBC");
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "freeing connection");
     }
 
     rc = SQLFreeHandle(SQL_HANDLE_ENV, henv_);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_ENV, henv_,
-                            "SQLFreeHandle ENV");
+        throw odbc_soci_error(SQL_HANDLE_ENV, henv_, "freeing environment");
     }
 }
 
@@ -321,7 +312,7 @@ odbc_session_backend::get_database_product()
     if (is_odbc_error(rc))
     {
         throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
-                            "SQLGetInfo(SQL_DBMS_NAME)");
+                              "getting ODBC driver name");
     }
 
     if (strcmp(product_name, "Firebird") == 0)

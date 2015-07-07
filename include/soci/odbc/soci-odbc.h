@@ -354,8 +354,6 @@ public:
 private:
     std::string interpret_odbc_error(SQLSMALLINT htype, SQLHANDLE hndl, std::string const& msg)
     {
-        std::ostringstream ss(msg, std::ostringstream::app);
-
         const char* socierror = NULL;
 
         SQLSMALLINT length, i = 1;
@@ -399,7 +397,8 @@ private:
             sqlcode_ = 0;
         }
 
-        ss << ": " << message_ << " (" << sqlstate_ << ")";
+        std::ostringstream ss;
+        ss << "Error " << msg << ": " << message_ << " (" << sqlstate_ << ")";
 
         return ss.str();
     }
