@@ -398,7 +398,7 @@ private:
         }
 
         std::ostringstream ss;
-        ss << "Error " << msg << ": " << message_ << " (" << sqlstate_ << ")";
+        ss << "Error " << msg << ": " << message_ << " (SQL state " << sqlstate_ << ")";
 
         return ss.str();
     }
