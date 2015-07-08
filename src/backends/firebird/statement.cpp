@@ -22,7 +22,7 @@ firebird_statement_backend::firebird_statement_backend(firebird_session_backend 
             intoType_(eStandard), useType_(eStandard), procedure_(false)
 {}
 
-void firebird_statement_backend::prepareSQLDA(XSQLDA ** sqldap, int size)
+void firebird_statement_backend::prepareSQLDA(XSQLDA ** sqldap, short size)
 {
     if (*sqldap != NULL)
     {
@@ -33,7 +33,7 @@ void firebird_statement_backend::prepareSQLDA(XSQLDA ** sqldap, int size)
         *sqldap = reinterpret_cast<XSQLDA*>(malloc(XSQLDA_LENGTH(size)));
     }
 
-    (*sqldap)->sqln = static_cast<ISC_SHORT>(size);
+    (*sqldap)->sqln = size;
     (*sqldap)->version = 1;
 }
 
@@ -629,7 +629,7 @@ long long firebird_statement_backend::get_affected_rows()
 
 int firebird_statement_backend::get_number_of_rows()
 {
-    return static_cast<int>(rowsFetched_);
+    return rowsFetched_;
 }
 
 std::string firebird_statement_backend::get_parameter_name(int index) const

@@ -40,7 +40,7 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
 std::string getTextParam(XSQLVAR const *var);
 
 template <typename IntType>
-const char *str2dec(const char * s, IntType &out, int &scale)
+const char *str2dec(const char * s, IntType &out, short &scale)
 {
     int sign = 1;
     if ('+' == *s)
@@ -98,10 +98,10 @@ double round_for_isc(double value)
 }
 
 template<typename T1>
-void to_isc(void * val, XSQLVAR * var, int x_scale = 0)
+void to_isc(void * val, XSQLVAR * var, short x_scale = 0)
 {
     T1 value = *reinterpret_cast<T1*>(val);
-    short scale = var->sqlscale + static_cast<short>(x_scale);
+    short scale = var->sqlscale + x_scale;
     short type = var->sqltype & ~1;
     long long divisor = 1, multiplier = 1;
 
@@ -157,12 +157,12 @@ void to_isc(void * val, XSQLVAR * var, int x_scale = 0)
 template<typename IntType, typename UIntType>
 void parse_decimal(void * val, XSQLVAR * var, const char * s)
 {
-    int scale;
+    short scale;
     UIntType t1;
     IntType t2;
-    if (!*str2dec(s, t1, scale))
+    if (!*str2dec<UIntType>(s, t1, scale))
         std::memcpy(val, &t1, sizeof(t1));
-    else if (!*str2dec(s, t2, scale))
+    else if (!*str2dec<IntType>(s, t2, scale))
         std::memcpy(val, &t2, sizeof(t2));
     else
         throw soci_error("Could not parse decimal value.");

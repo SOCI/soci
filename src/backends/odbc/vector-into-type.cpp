@@ -6,8 +6,8 @@
 //
 
 #define SOCI_ODBC_SOURCE
-#include "soci/odbc/soci-odbc.h"
 #include "soci/soci-platform.h"
+#include "soci/odbc/soci-odbc.h"
 #include "soci-mktime.h"
 #include "soci-static-assert.h"
 #include <cctype>

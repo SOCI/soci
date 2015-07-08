@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include "soci/sqlite3/soci-sqlite3.h"
 #include "soci/soci-platform.h"
+#include "soci/sqlite3/soci-sqlite3.h"
 #include "soci-dtocstr.h"
 #include "common.h"
 // std

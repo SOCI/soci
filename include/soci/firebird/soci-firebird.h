@@ -219,7 +219,7 @@ protected:
     long long rowsAffectedBulk_; // number of rows affected by the last bulk operation
 
     virtual void exchangeData(bool gotData, int row);
-    virtual void prepareSQLDA(XSQLDA ** sqldap, int size = 10);
+    virtual void prepareSQLDA(XSQLDA ** sqldap, short size = 10);
     virtual void rewriteQuery(std::string const & query,
         std::vector<char> & buffer);
     virtual void rewriteParameters(std::string const & src,

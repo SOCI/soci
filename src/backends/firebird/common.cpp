@@ -5,9 +5,9 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include "soci/soci-platform.h"
 #include "firebird/common.h"
 #include "soci/soci-backend.h"
-#include "soci/soci-platform.h"
 #include <ibase.h> // FireBird
 #include <cstddef>
 #include <cstring>

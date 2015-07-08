@@ -8,6 +8,7 @@
 #ifndef SOCI_PRIVATE_SOCI_DTOCSTR_H_INCLUDED
 #define SOCI_PRIVATE_SOCI_DTOCSTR_H_INCLUDED
 
+#include "soci/soci-platform.h"
 #include "soci/error.h"
 
 #include <stdlib.h>

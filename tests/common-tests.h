@@ -274,7 +274,7 @@ public:
         // environment variable can be set and then the current default locale
         // (which can itself be changed by setting LC_ALL environment variable)
         // will then be used.
-        if (!soci::getenv("SOCI_TEST_USE_LC_ALL").empty())
+        if (!std::getenv("SOCI_TEST_USE_LC_ALL"))
             std::setlocale(LC_ALL, "");
     }
 

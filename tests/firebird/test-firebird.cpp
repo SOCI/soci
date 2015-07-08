@@ -170,9 +170,8 @@ TEST_CASE("Firebird date and time", "[firebird][datetime]")
     sql.begin();
 
     std::tm t1, t2, t3;
-    std::tm t;
-    soci::localtime(t,std::time(NULL));
-
+    std::time_t now = std::time(NULL);
+    std::tm t = *std::localtime(&now);
     sql << "insert into test3(p1, p2, p3) "
     << "values (?,?,?)", use(t), use(t), use(t);
 

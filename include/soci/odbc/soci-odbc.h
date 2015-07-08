@@ -23,11 +23,11 @@
 # define SOCI_ODBC_DECL
 #endif
 
+#include "soci/soci-platform.h"
 #include <vector>
 #include <soci/soci-backend.h>
 #include <sstream>
 #if defined(_MSC_VER) || defined(__MINGW32__)
-#include "soci/soci-platform.h"
 #include <windows.h>
 #endif
 #include <sqlext.h> // ODBC

@@ -61,7 +61,7 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
             {
                 std::string const& s = exchange_type_cast<x_stdstring>(data_);
                 buf_ = quote(statement_.session_.conn_,
-                             s.c_str(), static_cast<int>(s.size()));
+                             s.c_str(), s.size());
             }
             break;
         case x_short:

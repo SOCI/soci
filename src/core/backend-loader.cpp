@@ -100,7 +100,14 @@ std::vector<std::string> get_default_paths()
     std::vector<std::string> paths;
 
     // TODO: may be problem with finding getenv in std namespace in Visual C++ --mloskot
-    std::string env = soci::getenv("SOCI_BACKENDS_PATH");
+    char* penv = std::getenv("SOCI_BACKENDS_PATH");
+    if (!penv )
+    {
+        paths.push_back(".");
+        paths.push_back(DEFAULT_BACKENDS_PATH);
+        return paths;
+    }
+    std::string env = penv;
     if (env.empty())
     {
         paths.push_back(".");

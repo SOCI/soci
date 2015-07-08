@@ -24,7 +24,6 @@ void odbc_standard_into_type_backend::define_by_pos(
     position_ = position++;
 
     SQLUINTEGER size = 0;
-
     switch (type_)
     {
     case x_char:
