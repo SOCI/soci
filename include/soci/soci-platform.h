@@ -8,9 +8,10 @@
 #ifndef SOCI_PLATFORM_H_INCLUDED
 #define SOCI_PLATFORM_H_INCLUDED
 
-#if _MSC_VER >= 1400 //use secure version removing compiler warnings
-    #define _CRT_SECURE_NO_WARNINGS
-#endif 
+//disable MSVC deprecated warnings
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #include <stdarg.h>
 #include <string.h>
@@ -18,7 +19,6 @@
 #include <cstring>
 #include <cstdlib>
 #include <ctime>
-
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
 #define LL_FMT_FLAGS "I64"
@@ -34,13 +34,13 @@
 //base class must have dll interface
 #pragma warning(disable:4251 4275)
 
-#define _CRT_SECURE_NO_WARNINGS
 
 // Define if you have the vsnprintf variants.
 #if _MSC_VER < 1500
 # define vsnprintf _vsnprintf
 #endif
 
+// Define if you have the snprintf variants.
 #define snprintf _snprintf
 
 // Define if you have the strtoll and strtoull variants.

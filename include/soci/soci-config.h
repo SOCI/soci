@@ -8,7 +8,6 @@
 #ifndef SOCICONFIG_H_INCLUDED
 #define SOCICONFIG_H_INCLUDED
 
-#pragma message("This header is obsolete. Use soci-platform.h instead.")
 #include "soci/soci-platform.h"
 
 #endif // SOCICONFIG_H_INCLUDED

@@ -160,9 +160,9 @@ void parse_decimal(void * val, XSQLVAR * var, const char * s)
     short scale;
     UIntType t1;
     IntType t2;
-    if (!*str2dec<UIntType>(s, t1, scale))
+    if (!*str2dec(s, t1, scale))
         std::memcpy(val, &t1, sizeof(t1));
-    else if (!*str2dec<IntType>(s, t2, scale))
+    else if (!*str2dec(s, t2, scale))
         std::memcpy(val, &t2, sizeof(t2));
     else
         throw soci_error("Could not parse decimal value.");

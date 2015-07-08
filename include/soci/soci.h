@@ -9,6 +9,7 @@
 #define SOCI_H_INCLUDED
 
 // namespace soci
+#include "soci/soci-platform.h"
 #include "soci/backend-loader.h"
 #include "soci/blob.h"
 #include "soci/blob-exchange.h"
@@ -29,7 +30,6 @@
 #include "soci/rowset.h"
 #include "soci/session.h"
 #include "soci/soci-backend.h"
-#include "soci/soci-platform.h"
 #include "soci/statement.h"
 #include "soci/transaction.h"
 #include "soci/type-conversion.h"
