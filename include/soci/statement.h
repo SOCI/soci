@@ -54,7 +54,9 @@ public:
     void exchange(use_container<T, Indicator> const &uc)
     { uses_.exchange(uc); }
 
+
     void clean_up();
+    void bind_clean_up();
 
     void prepare(std::string const & query,
                     statement_type eType = st_repeatable_query);
@@ -200,6 +202,7 @@ public:
     template <typename T, typename Indicator>
     void exchange(details::use_container<T, Indicator>  const &uc) { impl_->exchange(uc); }
     void clean_up()                      { impl_->clean_up(); }
+    void bind_clean_up()                 { impl_->bind_clean_up(); }
 
     void prepare(std::string const & query,
         details::statement_type eType = details::st_repeatable_query)
