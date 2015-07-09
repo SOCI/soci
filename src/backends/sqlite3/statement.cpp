@@ -7,8 +7,11 @@
 #include "soci/sqlite3/soci-sqlite3.h"
 // std
 #include <algorithm>
+#include <functional>
 #include <sstream>
 #include <string>
+
+#include <string.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -90,8 +93,22 @@ statement_backend::exec_fetch_result
 sqlite3_statement_backend::load_rowset(int totalRows)
 {
     statement_backend::exec_fetch_result retVal = ef_success;
-    int numCols = -1;
+
     int i = 0;
+    int numCols = 0;
+
+    // just a hack because in some case, describe() is not called, so columns_ is empty
+    if (columns_.empty())
+    {
+        numCols = sqlite3_column_count(stmt_);
+        data_type type;
+        std::string name;
+        for (int c = 1; c <= numCols; ++c)
+            describe_column(c, type, name);
+    }
+    else
+        numCols = columns_.size();
+
 
     if (!databaseReady_)
     {
@@ -101,6 +118,11 @@ sqlite3_statement_backend::load_rowset(int totalRows)
     {
         // make the vector big enough to hold the data we need
         dataCache_.resize(totalRows);
+        for (sqlite3_recordset::iterator it = dataCache_.begin(),
+            end = dataCache_.end(); it != end; ++it)
+        {
+            (*it).resize(numCols);
+        }
 
         for (i = 0; i < totalRows && databaseReady_; ++i)
         {
@@ -114,28 +136,48 @@ sqlite3_statement_backend::load_rowset(int totalRows)
             }
             else if (SQLITE_ROW == res)
             {
-                // only need to set the number of columns once
-                if (-1 == numCols)
-                {
-                    numCols = sqlite3_column_count(stmt_);
-                    for (sqlite3_recordset::iterator it = dataCache_.begin(),
-                         end = dataCache_.end(); it != end; ++it)
-                    {
-                        (*it).resize(numCols);
-                    }
-                }
                 for (int c = 0; c < numCols; ++c)
                 {
-                    char const* buf =
-                        reinterpret_cast<char const*>(sqlite3_column_text(stmt_, c));
-                    bool isNull = false;
-                    if (0 == buf)
+                    const sqlite3_column_info &coldef = columns_[c];
+                    sqlite3_column &col = dataCache_[i][c];
+
+                    if (sqlite3_column_type(stmt_, c) == SQLITE_NULL)
                     {
-                        isNull = true;
-                        buf = "";
+                        col.isNull_ = true;
+                        continue;
                     }
-                    dataCache_[i][c].data_ = buf;
-                    dataCache_[i][c].isNull_ = isNull;
+
+                    col.isNull_ = false;
+                    col.type_ = coldef.type_;
+
+                    switch (coldef.type_)
+                    {
+                        case dt_string:
+                        case dt_date:
+                            col.buffer_.size_ = sqlite3_column_bytes(stmt_, c);
+                            col.buffer_.data_ = new char[col.buffer_.size_+1];
+                            memcpy(col.buffer_.data_, sqlite3_column_text(stmt_, c), col.buffer_.size_+1);
+                            break;
+
+                        case dt_double:
+                            col.floating_ = sqlite3_column_double(stmt_, c);
+                            break;
+
+                        case dt_integer:
+                            col.int32_ = sqlite3_column_int(stmt_, c);
+                            break;
+
+                        case dt_long_long:
+                        case dt_unsigned_long_long:
+                            col.int64_ = sqlite3_column_int64(stmt_, c);
+                            break;
+
+                        case dt_blob:
+                            col.buffer_.size_ = sqlite3_column_bytes(stmt_, c);
+                            col.buffer_.data_ = (col.buffer_.size_ > 0 ? new char[col.buffer_.size_] : NULL);
+                            memcpy(col.buffer_.data_, sqlite3_column_blob(stmt_, c), col.buffer_.size_);
+                            break;
+                    }
                 }
             }
             else
@@ -200,24 +242,37 @@ sqlite3_statement_backend::bind_and_execute(int number)
         for (int pos = 1; pos <= totalPositions; ++pos)
         {
             int bindRes = SQLITE_OK;
-            const sqlite3_column& curCol = useData_[row][pos-1];
-            if (curCol.isNull_)
+            const sqlite3_column &col = useData_[row][pos-1];
+            if (col.isNull_)
             {
                 bindRes = sqlite3_bind_null(stmt_, pos);
             }
-            else if (curCol.blobBuf_)
-            {
-                bindRes = sqlite3_bind_blob(stmt_, pos,
-                                            curCol.blobBuf_,
-                                            static_cast<int>(curCol.blobSize_),
-                                            SQLITE_STATIC);
-            }
             else
             {
-                bindRes = sqlite3_bind_text(stmt_, pos,
-                                            curCol.data_.c_str(),
-                                            static_cast<int>(curCol.data_.length()),
-                                            SQLITE_STATIC);
+                switch (col.type_)
+                {
+                    case dt_string:
+                    case dt_date:
+                        bindRes = sqlite3_bind_text(stmt_, pos, col.buffer_.constData_, col.buffer_.size_, NULL);
+                        break;
+
+                    case dt_double:
+                        bindRes = sqlite3_bind_double(stmt_, pos, col.floating_);
+                        break;
+
+                    case dt_integer:
+                        bindRes = sqlite3_bind_int(stmt_, pos, col.int32_);
+                        break;
+
+                    case dt_long_long:
+                    case dt_unsigned_long_long:
+                        bindRes = sqlite3_bind_int64(stmt_, pos, col.int64_);
+                        break;
+
+                    case dt_blob:
+                        bindRes = sqlite3_bind_blob(stmt_, pos, col.buffer_.constData_, col.buffer_.size_, NULL);
+                        break;
+                }
             }
 
             if (SQLITE_OK != bindRes)
@@ -238,6 +293,7 @@ sqlite3_statement_backend::bind_and_execute(int number)
         retVal = load_one(); //execute each bound line
         rowsAffectedBulkTemp += get_affected_rows();
     }
+
     rowsAffectedBulk_ = rowsAffectedBulkTemp;
     return retVal;
 }
@@ -277,7 +333,11 @@ sqlite3_statement_backend::execute(int number)
 statement_backend::exec_fetch_result
 sqlite3_statement_backend::fetch(int number)
 {
-    return load_rowset(number);
+    if (number > 1)
+        return load_rowset(number);
+    else
+        return load_one();
+
 }
 
 long long sqlite3_statement_backend::get_affected_rows()
@@ -328,18 +388,82 @@ int sqlite3_statement_backend::prepare_for_describe()
     return sqlite3_column_count(stmt_);
 }
 
+typedef std::map<std::string, data_type> sqlite3_data_type_map;
+static sqlite3_data_type_map get_data_type_map()
+{
+    sqlite3_data_type_map m;
+
+    // dt_blob
+    m["blob"]               = dt_blob;
+
+    // dt_date
+    m["date"]               = dt_date;
+    m["time"]               = dt_date;
+    m["datetime"]           = dt_date;
+
+    // dt_double
+    m["decimal"]            = dt_double;
+    m["double"]             = dt_double;
+    m["double precision"]   = dt_double;
+    m["float"]              = dt_double;
+    m["number"]             = dt_double;
+    m["numeric"]            = dt_double;
+    m["real"]               = dt_double;
+
+    // dt_integer
+    m["boolean"]            = dt_integer;
+    m["int"]                = dt_integer;
+    m["integer"]            = dt_integer;
+    m["int2"]               = dt_integer;
+    m["mediumint"]          = dt_integer;
+    m["smallint"]           = dt_integer;
+    m["tinyint"]            = dt_integer;
+
+    // dt_long_long
+    m["bigint"]             = dt_long_long;
+    m["int8"]               = dt_long_long;
+
+    // dt_string
+    m["char"]               = dt_string;
+    m["character"]          = dt_string;
+    m["clob"]               = dt_string;
+    m["native character"]   = dt_string;
+    m["nchar"]              = dt_string;
+    m["nvarchar"]           = dt_string;
+    m["text"]               = dt_string;
+    m["varchar"]            = dt_string;
+    m["varying character"]  = dt_string;
+
+    // dt_unsigned_long_long
+    m["unsigned big int"]   = dt_unsigned_long_long;
+
+
+    return m;
+}
+
 void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
                                                 std::string & columnName)
 {
-    columnName = sqlite3_column_name(stmt_, colNum-1);
+    static const sqlite3_data_type_map dataTypeMap = get_data_type_map();
+    
+    if (columns_.size() < (size_t)colNum)
+        columns_.resize(colNum);
+    sqlite3_column_info &coldef = columns_[colNum - 1];
+
+    if (!coldef.name_.empty())
+    {
+        columnName = coldef.name_;
+        type = coldef.type_;
+        return;
+    }
+
+    coldef.name_ = columnName = sqlite3_column_name(stmt_, colNum - 1);
 
     // This is a hack, but the sqlite3 type system does not
     // have a date or time field.  Also it does not reliably
     // id other data types.  It has a tendency to see everything
     // as text.  sqlite3_column_decltype returns the text that is
     // used in the create table statement
-    bool typeFound = false;
-
     char const* declType = sqlite3_column_decltype(stmt_, colNum-1);
 
     if ( declType == NULL )
@@ -350,59 +474,18 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
 
     std::string dt = declType;
 
+    // remove extra characters for example "(20)" in "varchar(20)"
+    std::string::iterator siter = std::find_if(dt.begin(), dt.end(), std::not1(std::ptr_fun(isalnum)));
+    if (siter != dt.end())
+        dt.resize(siter - dt.begin());
+
     // do all comparisons in lower case
     std::transform(dt.begin(), dt.end(), dt.begin(), tolower);
 
-    if (dt.find("time", 0) != std::string::npos)
+    sqlite3_data_type_map::const_iterator iter = dataTypeMap.find(dt);
+    if (iter != dataTypeMap.end())
     {
-        type = dt_date;
-        typeFound = true;
-    }
-    if (dt.find("date", 0) != std::string::npos)
-    {
-        type = dt_date;
-        typeFound = true;
-    }
-
-    if (dt.find("int8", 0) != std::string::npos || dt.find("bigint", 0) != std::string::npos)
-    {
-        type = dt_long_long;
-        typeFound = true;
-    }
-    else if (dt.find("unsigned big int", 0) != std::string::npos)
-    {
-        type = dt_unsigned_long_long;
-        typeFound = true;
-    }
-    else if (dt.find("int", 0) != std::string::npos)
-    {
-        type = dt_integer;
-        typeFound = true;
-    }
-
-    if (dt.find("float", 0) != std::string::npos || dt.find("double", 0) != std::string::npos)
-    {
-        type = dt_double;
-        typeFound = true;
-    }
-    if (dt.find("text", 0) != std::string::npos)
-    {
-        type = dt_string;
-        typeFound = true;
-    }
-    if (dt.find("char", 0) != std::string::npos)
-    {
-        type = dt_string;
-        typeFound = true;
-    }
-    if (dt.find("boolean", 0) != std::string::npos)
-    {
-        type = dt_integer;
-        typeFound = true;
-    }
-
-    if (typeFound)
-    {
+        coldef.type_ = type = iter->second;
         return;
     }
 
@@ -429,6 +512,7 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
         type = dt_string;
         break;
     }
+    coldef.type_ = type;
 
     sqlite3_reset(stmt_);
 }
