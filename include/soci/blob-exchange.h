@@ -49,6 +49,7 @@ template <>
 struct exchange_traits<soci::blob>
 {
     typedef basic_type_tag type_family;
+    enum { x_type = x_blob };
 };
 
 } // namespace details

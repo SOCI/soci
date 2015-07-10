@@ -134,6 +134,157 @@ SOCI_DECL char const * soci_session_error_message(session_handle s)
 }
 
 
+// blob
+struct blob_wrapper
+{
+    blob_wrapper(session &sql)
+        : blob_(sql), is_ok(true) {}
+
+    blob blob_;
+    bool is_ok;
+    std::string error_message;
+};
+
+blob_wrapper *soci_create_blob_session(soci::session &sql)
+{
+    blob_wrapper *bw = NULL;
+    try
+    {
+        bw = new blob_wrapper(sql);
+    }
+    catch (...)
+    {
+        delete bw;
+        return NULL;
+    }
+
+    return bw;
+}
+
+SOCI_DECL blob_handle soci_create_blob(session_handle s)
+{
+    session_wrapper * session = static_cast<session_wrapper *>(s);
+    if (!session->is_ok)
+        return NULL;
+
+    return soci_create_blob_session(session->sql);
+}
+
+SOCI_DECL void soci_destroy_blob(blob_handle b)
+{
+    blob_wrapper *blob = static_cast<blob_wrapper *>(b);
+    try
+    {
+        delete blob;
+    }
+    catch (...)
+    {}
+}
+
+SOCI_DECL int soci_blob_get_len(blob_handle b)
+{
+    blob_wrapper *blob = static_cast<blob_wrapper *>(b);
+    return blob->blob_.get_len();
+}
+
+SOCI_DECL int soci_blob_read(blob_handle b, int offset, char *buf, int toRead)
+{
+    blob_wrapper *blob = static_cast<blob_wrapper *>(b);
+    try
+    {
+        return blob->blob_.read(offset, buf, toRead);
+    }
+    catch (std::exception &e)
+    {
+        blob->is_ok = false;
+        blob->error_message = e.what();
+        return -1;
+    }
+    catch (...)
+    {
+        blob->is_ok = false;
+        blob->error_message = "unknown exception";
+        return -1;
+    }
+}
+
+SOCI_DECL int soci_blob_write(blob_handle b, int offset, char const *buf, int toWrite)
+{
+    blob_wrapper *blob = static_cast<blob_wrapper *>(b);
+    try
+    {
+        return blob->blob_.write(offset, buf, toWrite);
+    }
+    catch (std::exception &e)
+    {
+        blob->is_ok = false;
+        blob->error_message = e.what();
+        return -1;
+    }
+    catch (...)
+    {
+        blob->is_ok = false;
+        blob->error_message = "unknown exception";
+        return -1;
+    }
+}
+
+SOCI_DECL int soci_blob_append(blob_handle b, char const *buf, int toWrite)
+{
+    blob_wrapper *blob = static_cast<blob_wrapper *>(b);
+    try
+    {
+        return blob->blob_.append(buf, toWrite);
+    }
+    catch (std::exception &e)
+    {
+        blob->is_ok = false;
+        blob->error_message = e.what();
+        return -1;
+    }
+    catch (...)
+    {
+        blob->is_ok = false;
+        blob->error_message = "unknown exception";
+        return -1;
+    }
+}
+
+SOCI_DECL int soci_blob_trim(blob_handle b, int newLen)
+{
+    blob_wrapper *blob = static_cast<blob_wrapper *>(b);
+    try
+    {
+        blob->blob_.trim(newLen);
+    }
+    catch (std::exception &e)
+    {
+        blob->is_ok = false;
+        blob->error_message = e.what();
+        return -1;
+    }
+    catch (...)
+    {
+        blob->is_ok = false;
+        blob->error_message = "unknown exception";
+        return -1;
+    }
+
+    return 0;
+}
+
+SOCI_DECL int soci_blob_state(blob_handle b)
+{
+    blob_wrapper *blob = static_cast<blob_wrapper *>(b);
+    return (blob->is_ok ? 1 : 0);
+}
+
+SOCI_DECL char const * soci_blob_error_message(blob_handle b)
+{
+    blob_wrapper *blob = static_cast<blob_wrapper *>(b);
+    return blob->error_message.c_str();
+}
+
 // statement
 
 
@@ -142,10 +293,13 @@ namespace // unnamed
 
 struct statement_wrapper
 {
-    statement_wrapper(session & sql)
-        : st(sql), statement_state(clean), into_kind(empty), use_kind(empty),
+    statement_wrapper(session & _sql)
+        : sql(_sql), st(sql), statement_state(clean), into_kind(empty), use_kind(empty),
           next_position(0), is_ok(true) {}
 
+    ~statement_wrapper();
+
+    session  &sql;
     statement st;
 
     enum state { clean, defining, executing } statement_state;
@@ -160,6 +314,7 @@ struct statement_wrapper
     std::map<int, long long> into_longlongs;
     std::map<int, double> into_doubles;
     std::map<int, std::tm> into_dates;
+    std::map<int, blob_wrapper *> into_blob;
 
     std::vector<std::vector<indicator> > into_indicators_v;
     std::map<int, std::vector<std::string> > into_strings_v;
@@ -175,6 +330,7 @@ struct statement_wrapper
     std::map<std::string, long long> use_longlongs;
     std::map<std::string, double> use_doubles;
     std::map<std::string, std::tm> use_dates;
+    std::map<std::string, blob_wrapper *> use_blob;
 
     std::map<std::string, std::vector<indicator> > use_indicators_v;
     std::map<std::string, std::vector<std::string> > use_strings_v;
@@ -189,6 +345,24 @@ struct statement_wrapper
     bool is_ok;
     std::string error_message;
 };
+
+statement_wrapper::~statement_wrapper()
+{
+    for (std::map<int, blob_wrapper *>::iterator iter = into_blob.begin(), last = into_blob.end();
+         iter != last; ++iter)
+    {
+        soci_destroy_blob(iter->second);
+    }
+
+    for (std::map<std::string, blob_wrapper *>::iterator iter = use_blob.begin(), last = use_blob.end();
+         iter != last; ++iter)
+    {
+        soci::indicator &ind = use_indicators[iter->first];
+        blob_wrapper *&blob = iter->second;
+        if (ind == i_null && blob != NULL)
+            soci_destroy_blob(blob);
+    }
+}
 
 // helper for checking if the attempt was made to add more into/use elements
 // after the statement was set for execution
@@ -399,6 +573,13 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
                 name_exists = (it != wrapper.use_dates.end());
             }
             break;
+        case dt_blob:
+            {
+                typedef std::map<std::string, blob_wrapper *>::const_iterator iterator;
+                iterator const it = wrapper.use_blob.find(name);
+                name_exists = (it != wrapper.use_blob.end());
+            }
+            break;
         }
     }
     else
@@ -456,6 +637,9 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
                 iterator const it = wrapper.use_dates_v.find(name);
                 name_exists = (it != wrapper.use_dates_v.end());
             }
+            break;
+        case dt_blob:
+            // no support for bulk load
             break;
         }
     }
@@ -645,6 +829,24 @@ SOCI_DECL int soci_into_date(statement_handle st)
     return wrapper->next_position++;
 }
 
+SOCI_DECL int soci_into_blob(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::single;
+
+    wrapper->into_types.push_back(dt_blob);
+    wrapper->into_indicators.push_back(i_ok);
+    wrapper->into_blob[wrapper->next_position] = soci_create_blob_session(wrapper->sql); // create new entry
+    return wrapper->next_position++;
+}
+
 SOCI_DECL int soci_into_string_v(statement_handle st)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
@@ -822,6 +1024,20 @@ SOCI_DECL char const * soci_get_into_date(statement_handle st, int position)
     return format_date(*wrapper, d);
 }
 
+SOCI_DECL blob_handle soci_get_into_blob(statement_handle st, int position)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (position_check_failed(*wrapper,
+            statement_wrapper::single, position, dt_blob, "blob") ||
+        not_null_check_failed(*wrapper, position))
+    {
+        return NULL;
+    }
+
+    return wrapper->into_blob[position];
+}
+
 SOCI_DECL int soci_into_get_size_v(statement_handle st)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
@@ -875,6 +1091,9 @@ SOCI_DECL void soci_into_resize_v(statement_handle st, int new_size)
             break;
         case dt_date:
             wrapper->into_dates_v[i].resize(new_size);
+            break;
+        case dt_blob:
+            // no support for bulk blob
             break;
         }
     }
@@ -1087,6 +1306,23 @@ SOCI_DECL void soci_use_date(statement_handle st, char const * name)
     wrapper->use_dates[name]; // create new entry
 }
 
+SOCI_DECL void soci_use_blob(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::single, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::single;
+
+    wrapper->use_indicators[name] = i_null; // create new entry
+    wrapper->use_blob[name] = soci_create_blob_session(wrapper->sql); // create new entry
+}
+
 SOCI_DECL void soci_use_string_v(statement_handle st, char const * name)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
@@ -1264,6 +1500,25 @@ SOCI_DECL void soci_set_use_date(statement_handle st, char const * name, char co
 
     wrapper->use_indicators[name] = i_ok;
     wrapper->use_dates[name] = dt;
+}
+
+SOCI_DECL void soci_set_use_blob(statement_handle st, char const * name, blob_handle b)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, dt_blob, statement_wrapper::single, "blob"))
+    {
+        return;
+    }
+
+    soci::indicator &ind = wrapper->use_indicators[name];
+    blob_wrapper *&blob = wrapper->use_blob[name];
+    if (ind == i_null && blob != NULL)
+        soci_destroy_blob(blob);
+
+    ind = i_ok;
+    blob = static_cast<blob_wrapper *>(b);
 }
 
 SOCI_DECL int soci_use_get_size_v(statement_handle st)
@@ -1538,6 +1793,19 @@ SOCI_DECL char const * soci_get_use_date(statement_handle st, char const * name)
     return wrapper->date_formatted;
 }
 
+SOCI_DECL blob_handle soci_get_use_blob(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, dt_blob, statement_wrapper::bulk, "blob"))
+    {
+        return NULL;
+    }
+
+    return wrapper->use_blob[name];
+}
+
 SOCI_DECL void soci_prepare(statement_handle st, char const * query)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
@@ -1576,6 +1844,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
                     wrapper->st.exchange(
                         into(wrapper->into_dates[i], wrapper->into_indicators[i]));
                     break;
+                case dt_blob:
+                    wrapper->st.exchange(
+                        into(wrapper->into_blob[i]->blob_, wrapper->into_indicators[i]));
+                    break;
                 }
             }
         }
@@ -1606,6 +1878,9 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
                 case dt_date:
                     wrapper->st.exchange(
                         into(wrapper->into_dates_v[i], wrapper->into_indicators_v[i]));
+                    break;
+                case dt_blob:
+                    // no support for bulk blob
                     break;
                 }
             }
@@ -1675,6 +1950,19 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
                 std::tm & use_date = uit->second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
                 wrapper->st.exchange(use(use_date, use_ind, use_name));
+            }
+        }
+        {
+            // blobs
+            typedef std::map<std::string, blob_wrapper *>::iterator iterator;
+            iterator uit = wrapper->use_blob.begin();
+            iterator uend = wrapper->use_blob.end();
+            for ( ; uit != uend; ++uit)
+            {
+                std::string const & use_name = uit->first;
+                blob &use_blob = uit->second->blob_;
+                indicator & use_ind = wrapper->use_indicators[use_name];
+                wrapper->st.exchange(use(use_blob, use_ind, use_name));
             }
         }
 
