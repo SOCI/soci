@@ -28,9 +28,7 @@ private:
     bool handled_;
     session& sql_;
 
-    // Disable copying
-    transaction(transaction const& other);
-    transaction& operator=(transaction const& other);
+    SOCI_NOT_COPYABLE(transaction)
 };
 
 } // namespace soci

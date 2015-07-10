@@ -9,7 +9,7 @@
 #define SOCI_PLATFORM_H_INCLUDED
 
 //disable MSVC deprecated warnings
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
@@ -84,6 +84,16 @@ namespace std {
 #ifndef SOCI_DECL
 # define SOCI_DECL
 #endif
+
+#define SOCI_NOT_ASSIGNABLE(classname) \
+    classname& operator=(const classname&); 
+
+#define SOCI_NOT_COPYABLE(classname) \
+    classname(const classname&); \
+    SOCI_NOT_ASSIGNABLE(classname)
+
+#define SOCI_UNUSED(x) (void)x;
+
 
 
 #endif // SOCI_PLATFORM_H_INCLUDED

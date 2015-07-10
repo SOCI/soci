@@ -238,13 +238,6 @@ protected:
     bool procedure_;
 };
 
-struct firebird_rowid_backend : details::rowid_backend
-{
-    firebird_rowid_backend(firebird_session_backend &session);
-
-    ~firebird_rowid_backend();
-};
-
 struct firebird_blob_backend : details::blob_backend
 {
     firebird_blob_backend(firebird_session_backend &session);
@@ -314,7 +307,7 @@ struct firebird_session_backend : details::session_backend
     void cleanUp();
 
     virtual firebird_statement_backend * make_statement_backend();
-    virtual firebird_rowid_backend * make_rowid_backend();
+    virtual details::rowid_backend* make_rowid_backend();
     virtual firebird_blob_backend * make_blob_backend();
 
     bool get_option_decimals_as_strings() { return decimals_as_strings_; }

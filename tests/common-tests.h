@@ -9,7 +9,6 @@
 #define SOCI_COMMON_TESTS_H_INCLUDED
 
 #include "soci/soci.h"
-#include "soci/soci-platform.h"
 
 #ifdef HAVE_BOOST
 // explicitly pull conversions for Boost's optional, tuple and fusion:
@@ -210,7 +209,7 @@ private:
     }
     session& msession;
 
-    table_creator_base& operator=(const table_creator_base&);
+    SOCI_NOT_COPYABLE(table_creator_base)
 };
 
 class procedure_creator_base
@@ -227,7 +226,7 @@ private:
     }
     session& msession;
 
-    procedure_creator_base& operator=(const procedure_creator_base&);
+    SOCI_NOT_COPYABLE(procedure_creator_base)
 };
 
 class function_creator_base
@@ -251,7 +250,7 @@ private:
     }
     session& msession;
 
-    function_creator_base& operator=(const function_creator_base&);
+    SOCI_NOT_COPYABLE(function_creator_base)
 };
 
 // This is a singleton class, at any given time there is at most one test
@@ -334,7 +333,7 @@ private:
 
     static test_context_base* the_test_context_;
 
-    test_context_base& operator=(const test_context_base&);
+    SOCI_NOT_COPYABLE(test_context_base)
 };
 
 // Currently all tests consist of just a single source file, so we can define
@@ -445,7 +444,7 @@ protected:
     backend_factory const &backEndFactory_;
     std::string const connectString_;
 
-    common_tests& operator=(const common_tests&);
+    SOCI_NOT_COPYABLE(common_tests)
 };
 
 typedef std::auto_ptr<table_creator_base> auto_table_creator;

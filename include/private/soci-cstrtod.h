@@ -9,7 +9,6 @@
 #define SOCI_PRIVATE_SOCI_CSTRTOD_H_INCLUDED
 
 #include "soci/error.h"
-#include "soci/soci-platform.h"
 
 #include <stdlib.h>
 #include <string.h>

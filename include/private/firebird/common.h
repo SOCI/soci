@@ -97,6 +97,21 @@ double round_for_isc(double value)
   return value < 0 ? value - 0.5 : value + 0.5;
 }
 
+//helper template to generate proper code based on compile time type check
+template<bool cond> struct cond_to_isc {};
+template<> struct cond_to_isc<false> 
+{
+    static void checkInteger(short scale, short type)
+    {
+        if( scale >= 0 && (type == SQL_SHORT || type == SQL_LONG || type == SQL_INT64) )
+            throw soci_error("Can't convert non-integral value to integral column type");
+    }
+};
+template<> struct cond_to_isc<true> 
+{ 
+    static void checkInteger(short scale,short type) { SOCI_UNUSED(scale) SOCI_UNUSED(type) } 
+};
+
 template<typename T1>
 void to_isc(void * val, XSQLVAR * var, short x_scale = 0)
 {
@@ -105,12 +120,7 @@ void to_isc(void * val, XSQLVAR * var, short x_scale = 0)
     short type = var->sqltype & ~1;
     long long divisor = 1, multiplier = 1;
 
-    static bool is_integer = std::numeric_limits<T1>::is_integer;
-    if ((is_integer == false) && scale >= 0 &&
-        (type == SQL_SHORT || type == SQL_LONG || type == SQL_INT64))
-    {
-        throw soci_error("Can't convert non-integral value to integral column type");
-    }
+    cond_to_isc<std::numeric_limits<T1>::is_integer>::checkInteger(scale,type);
 
     for (int i = 0; i > scale; --i)
         multiplier *= 10;
@@ -190,6 +200,22 @@ std::string format_decimal(const void *sqldata, int sqlscale)
     return r + std::string(sqlscale, '0');
 }
 
+
+template<bool cond> struct cond_from_isc {};
+template<> struct cond_from_isc<true> {
+    static void checkInteger(short scale)
+    {
+        std::ostringstream msg;
+        msg << "Can't convert value with scale " << -scale
+            << " to integral type";
+        throw soci_error(msg.str());
+    }
+};
+template<> struct cond_from_isc<false> 
+{ 
+    static void checkInteger(short scale) { SOCI_UNUSED(scale) } 
+};
+
 template<typename T1>
 T1 from_isc(XSQLVAR * var)
 {
@@ -198,15 +224,7 @@ T1 from_isc(XSQLVAR * var)
 
     if (scale < 0)
     {
-        static bool is_integer = std::numeric_limits<T1>::is_integer;
-        if (is_integer)
-        {
-            std::ostringstream msg;
-            msg << "Can't convert value with scale " << -scale
-                << " to integral type";
-            throw soci_error(msg.str());
-        }
-
+        cond_from_isc<std::numeric_limits<T1>::is_integer>::checkInteger(scale);
         for (int i = 0; i > scale; --i)
         {
             tens *= 10;

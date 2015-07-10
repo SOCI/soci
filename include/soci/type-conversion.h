@@ -74,7 +74,7 @@ private:
     // and can be used by conversion routines
     indicator & ind_;
 
-    conversion_into_type& operator=(const conversion_into_type&);
+    SOCI_NOT_COPYABLE(conversion_into_type)
 };
 
 // Automatically create use_type from a type_conversion
@@ -164,7 +164,7 @@ private:
 
     bool readOnly_;
 
-    conversion_use_type& operator=(const conversion_use_type&);
+    SOCI_NOT_COPYABLE(conversion_use_type)
 };
 
 // this class is used to ensure correct order of construction
@@ -244,7 +244,7 @@ private:
     // and can be used by conversion routines
     std::vector<indicator> & ind_;
 
-    conversion_into_type& operator=(const conversion_into_type&);
+    SOCI_NOT_COPYABLE(conversion_into_type)
 };
 
 
@@ -316,7 +316,7 @@ private:
     // and can be used by conversion routines
     std::vector<indicator> & ind_;
 
-    conversion_use_type& operator=(const conversion_use_type&);
+    SOCI_NOT_COPYABLE(conversion_use_type)
 };
 
 template <typename T>

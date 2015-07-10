@@ -59,7 +59,7 @@ private:
         use_type_vector &p;
         Indicator &ind;
     private:
-        use_sequence& operator=(const use_sequence&);
+        SOCI_NOT_COPYABLE(use_sequence)
     };
 
     template <typename T>
@@ -76,7 +76,7 @@ private:
 
         use_type_vector &p;
     private:
-        use_sequence& operator=(const use_sequence&);
+        SOCI_NOT_COPYABLE(use_sequence)
     };
 
     template <typename T, typename Indicator>
@@ -149,7 +149,7 @@ private:
         into_type_vector &p;
         Indicator &ind;
     private:
-        into_sequence& operator=(const into_sequence&);
+        SOCI_NOT_COPYABLE(into_sequence)
     };
 
     template <typename T>
@@ -166,7 +166,7 @@ private:
 
         into_type_vector &p;
     private:
-        into_sequence& operator=(const into_sequence&);
+        SOCI_NOT_COPYABLE(into_sequence)
     };
 
     template <typename T, typename Indicator>

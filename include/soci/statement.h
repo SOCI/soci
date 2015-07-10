@@ -158,10 +158,7 @@ private:
 
     soci::details::statement_backend * backEnd_;
 
-    // The type is noncopyable.
-    statement_impl(statement_impl const &);
-    statement_impl& operator=(statement_impl const &);
-
+    SOCI_NOT_COPYABLE(statement_impl)
 };
 
 } // namespace details

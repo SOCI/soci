@@ -99,7 +99,7 @@ public:
 private:
     values & v_;
 
-    use_type& operator=(const use_type&);
+    SOCI_NOT_COPYABLE(use_type)
 };
 
 // this is not supposed to be used - no support for bulk ORM
@@ -130,7 +130,7 @@ public:
 private:
     values & v_;
 
-    into_type& operator=(const into_type&);
+    SOCI_NOT_COPYABLE(into_type)
 };
 
 // this is not supposed to be used - no support for bulk ORM

@@ -278,7 +278,7 @@ SQLCHAR colNameBuffer[2048];
     }
 }
 
-SQLUINTEGER db2_statement_backend::column_size(int col) {
+size_t db2_statement_backend::column_size(int col) {
     SQLCHAR colNameBuffer[2048];
     SQLSMALLINT colNameBufferOverflow;
     SQLSMALLINT dataType;

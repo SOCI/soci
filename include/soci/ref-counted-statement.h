@@ -62,9 +62,7 @@ protected:
     session & session_;
 
 private:
-    // noncopyable
-    ref_counted_statement_base(ref_counted_statement_base const&);
-    ref_counted_statement_base& operator=(ref_counted_statement_base const&);
+    SOCI_NOT_COPYABLE(ref_counted_statement_base)
 };
 
 // this class is supposed to be a vehicle for the "once" statements

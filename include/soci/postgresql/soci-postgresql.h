@@ -110,9 +110,7 @@ private:
 
     PGresult* result_;
 
-    // This class can't be copied as it owns result_ which can't be duplicated.
-    postgresql_result(postgresql_result const &);
-    postgresql_result& operator=(postgresql_result const &);
+    SOCI_NOT_COPYABLE(postgresql_result)
 };
 
 } // namespace details

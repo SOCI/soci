@@ -132,8 +132,7 @@ public:
     details::blob_backend * make_blob_backend();
 
 private:
-    session(session const &);
-    session& operator=(session const &);
+    SOCI_NOT_COPYABLE(session)
 
     std::ostringstream query_stream_;
     details::query_transformation_function* query_transformation_;

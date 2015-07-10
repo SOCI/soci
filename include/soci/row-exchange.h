@@ -63,7 +63,7 @@ private:
 
     row & r_;
 
-    into_type& operator=(const into_type&);
+    SOCI_NOT_COPYABLE(into_type)
 };
 
 template <>
