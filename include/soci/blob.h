@@ -26,6 +26,7 @@ class blob_backend;
 class SOCI_DECL blob
 {
 public:
+    blob();
     explicit blob(session & s);
     ~blob();
 

@@ -160,6 +160,7 @@ struct statement_wrapper
     std::map<int, long long> into_longlongs;
     std::map<int, double> into_doubles;
     std::map<int, std::tm> into_dates;
+    std::map<int, blob> into_blob;
 
     std::vector<std::vector<indicator> > into_indicators_v;
     std::map<int, std::vector<std::string> > into_strings_v;
@@ -167,6 +168,7 @@ struct statement_wrapper
     std::map<int, std::vector<long long> > into_longlongs_v;
     std::map<int, std::vector<double> > into_doubles_v;
     std::map<int, std::vector<std::tm> > into_dates_v;
+    std::map<int, std::vector<blob> > into_blob_v;
 
     // use elements
     std::map<std::string, indicator> use_indicators;
@@ -175,6 +177,7 @@ struct statement_wrapper
     std::map<std::string, long long> use_longlongs;
     std::map<std::string, double> use_doubles;
     std::map<std::string, std::tm> use_dates;
+    std::map<std::string, blob> use_blob;
 
     std::map<std::string, std::vector<indicator> > use_indicators_v;
     std::map<std::string, std::vector<std::string> > use_strings_v;
@@ -182,6 +185,7 @@ struct statement_wrapper
     std::map<std::string, std::vector<long long> > use_longlongs_v;
     std::map<std::string, std::vector<double> > use_doubles_v;
     std::map<std::string, std::vector<std::tm> > use_dates_v;
+    std::map<std::string, std::vector<blob> > use_blob_v;
 
     // format is: "YYYY MM DD hh mm ss"
     char date_formatted[20];
@@ -399,6 +403,13 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
                 name_exists = (it != wrapper.use_dates.end());
             }
             break;
+        case dt_blob:
+            {
+                typedef std::map<std::string, blob>::const_iterator iterator;
+                iterator const it = wrapper.use_blob.find(name);
+                name_exists = (it != wrapper.use_blob.end());
+            }
+            break;
         }
     }
     else
@@ -455,6 +466,16 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
                         std::vector<std::tm> >::const_iterator iterator;
                 iterator const it = wrapper.use_dates_v.find(name);
                 name_exists = (it != wrapper.use_dates_v.end());
+            }
+            break;
+        case dt_blob:
+            {
+                typedef std::map<
+                        std::string,
+                        std::vector<blob>
+                    >::const_iterator iterator;
+                iterator const it = wrapper.use_blob_v.find(name);
+                name_exists = (it != wrapper.use_blob_v.end());
             }
             break;
         }
@@ -875,6 +896,9 @@ SOCI_DECL void soci_into_resize_v(statement_handle st, int new_size)
             break;
         case dt_date:
             wrapper->into_dates_v[i].resize(new_size);
+            break;
+        case dt_blob:
+            wrapper->into_blob_v[i].resize(new_size);
             break;
         }
     }
@@ -1576,6 +1600,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
                     wrapper->st.exchange(
                         into(wrapper->into_dates[i], wrapper->into_indicators[i]));
                     break;
+                case dt_blob:
+                    wrapper->st.exchange(
+                        into(wrapper->into_blob[i], wrapper->into_indicators[i]));
+                    break;
                 }
             }
         }
@@ -1606,6 +1634,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
                 case dt_date:
                     wrapper->st.exchange(
                         into(wrapper->into_dates_v[i], wrapper->into_indicators_v[i]));
+                    break;
+                case dt_blob:
+                    wrapper->st.exchange(
+                        into(wrapper->into_blob_v[i], wrapper->into_indicators_v[i]));
                     break;
                 }
             }
