@@ -5,9 +5,9 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include "common-tests.h"
 #include "soci/soci.h"
 #include "soci/oracle/soci-oracle.h"
-#include "common-tests.h"
 #include <iostream>
 #include <string>
 #include <cstring>
