@@ -179,6 +179,49 @@ Note the following details about the above examples:
 
 Taking these points under consideration, the above code example should be treated as an idiomatic way of reading many rows by bunches of requested size.
 
+### Statement caching
+
+Some backends have some facilities to improve statement parsing and compilation to limit overhead when creating commonly used query. But for backends that does not support this kind optimization you can keep prepared statement and use it later with new references. To do such, prepare a statement as usual, you have to use `exchange` to bind new variables to statement object, then `execute` statement and finish by cleaning bound references with `bind_clean_up`.
+
+    sql << "CREATE TABLE test(a INTEGER)";
+
+    {
+        // prepare statement
+        soci::statement stmt = (db.prepare << "INSERT INTO numbers(value) VALUES(:val)");
+
+        {
+            // first insert
+            int a0 = 0;
+
+            // update reference
+            stmt.exchange(soci::use(a0));
+
+            stmt.define_and_bind();
+            stmt.execute(true);
+            stmt.bind_clean_up();
+        }
+
+        {
+            // come later, second insert
+            int a1 = 1;
+
+            // update reference
+            stmt.exchange(soci::use(a1));
+
+            stmt.define_and_bind();
+            stmt.execute(true);
+            stmt.bind_clean_up();
+        }
+    }
+
+    {
+        std::vector<int> v(10);
+        db << "SELECT value FROM numbers", soci::into(v);
+        for (int i = 0; i < v.size(); ++i)
+            std::cout << "value " << i << ": " << v[i] << std::endl;
+    }
+
+
 #####Portability note:
 Actually, all supported backends guarantee that the requested number of rows will be read with each fetch and that the vector will never be down-sized, unless for the last fetch, when the end of rowset condition is met. This means that the manual vector resizing is in practice not needed - the vector will keep its size until the end of rowset. The above idiom, however, is provided with future backends in mind, where the constant size of the vector might be too expensive to guarantee and where allowing `fetch` to down-size the vector even before reaching the end of rowset might buy some performance gains.
 
