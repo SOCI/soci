@@ -32,6 +32,8 @@ struct into_container
 
     T &t;
     Indicator &ind;
+private:
+    SOCI_NOT_ASSIGNABLE(into_container)
 };
 
 typedef void no_indicator;
@@ -42,6 +44,8 @@ struct into_container<T, no_indicator>
         : t(_t) {}
 
     T &t;
+private:
+    SOCI_NOT_ASSIGNABLE(into_container)
 };
 
 } // namespace details

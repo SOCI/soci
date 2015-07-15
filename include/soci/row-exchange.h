@@ -62,6 +62,8 @@ private:
     virtual void convert_from_base() {}
 
     row & r_;
+
+    SOCI_NOT_COPYABLE(into_type)
 };
 
 template <>

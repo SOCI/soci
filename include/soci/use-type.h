@@ -8,6 +8,7 @@
 #ifndef SOCI_USE_TYPE_H_INCLUDED
 #define SOCI_USE_TYPE_H_INCLUDED
 
+#include "soci/soci-platform.h"
 #include "soci/soci-backend.h"
 #include "soci/type-ptr.h"
 #include "soci/exchange-traits.h"

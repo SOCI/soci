@@ -6,6 +6,7 @@
 //
 
 #define SOCI_SOURCE
+#include "soci/soci-platform.h"
 #include "soci/backend-loader.h"
 #include "soci/error.h"
 #include <cstdlib>

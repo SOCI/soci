@@ -6,6 +6,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 
 #define SOCI_DB2_SOURCE
+#include "soci/soci-platform.h"
 #include "soci/db2/soci-db2.h"
 #include "soci-exchange-cast.h"
 #include <cctype>
@@ -68,7 +69,7 @@ void *db2_standard_use_type_backend::prepare_for_bind(
         std::string const& s = exchange_type_cast<x_stdstring>(data);
         sqlType = SQL_LONGVARCHAR;
         cType = SQL_C_CHAR;
-        size = s.size() + 1;
+        size = static_cast<SQLINTEGER>(s.size()) + 1;
         buf = new char[size];
         strncpy(buf, s.c_str(), size);
         ind = SQL_NTS;

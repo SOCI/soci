@@ -15,10 +15,6 @@
 #include <ctime>
 #include <cctype>
 
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
-
 using namespace soci;
 using namespace soci::details;
 
@@ -759,7 +755,7 @@ statement_impl::rethrow_current_exception_with_context(char const* operation)
                     // the query itself, as parsed by the backend.
                     std::string name = u.get_name();
                     if (name.empty())
-                        name = backEnd_->get_parameter_name(i);
+                        name = backEnd_->get_parameter_name(static_cast<int>(i));
 
                     oss << ":";
                     if (!name.empty())

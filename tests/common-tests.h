@@ -9,7 +9,6 @@
 #define SOCI_COMMON_TESTS_H_INCLUDED
 
 #include "soci/soci.h"
-#include "soci/soci-config.h"
 
 #ifdef HAVE_BOOST
 // explicitly pull conversions for Boost's optional, tuple and fusion:
@@ -190,6 +189,8 @@ private:
         }
     }
     session& msession;
+
+    SOCI_NOT_COPYABLE(table_creator_base)
 };
 
 class procedure_creator_base
@@ -205,6 +206,8 @@ private:
         try { msession << "drop procedure soci_test"; } catch (soci_error&) {}
     }
     session& msession;
+
+    SOCI_NOT_COPYABLE(procedure_creator_base)
 };
 
 class function_creator_base
@@ -227,6 +230,8 @@ private:
         try { msession << dropstatement(); } catch (soci_error&) {}
     }
     session& msession;
+
+    SOCI_NOT_COPYABLE(function_creator_base)
 };
 
 // This is a singleton class, at any given time there is at most one test
@@ -249,7 +254,7 @@ public:
         // environment variable can be set and then the current default locale
         // (which can itself be changed by setting LC_ALL environment variable)
         // will then be used.
-        if (getenv("SOCI_TEST_USE_LC_ALL"))
+        if (std::getenv("SOCI_TEST_USE_LC_ALL"))
             std::setlocale(LC_ALL, "");
     }
 
@@ -308,6 +313,8 @@ private:
     std::string const connectString_;
 
     static test_context_base* the_test_context_;
+
+    SOCI_NOT_COPYABLE(test_context_base)
 };
 
 // Currently all tests consist of just a single source file, so we can define
@@ -417,6 +424,8 @@ protected:
     test_context_base const & tc_;
     backend_factory const &backEndFactory_;
     std::string const connectString_;
+
+    SOCI_NOT_COPYABLE(common_tests)
 };
 
 typedef std::auto_ptr<table_creator_base> auto_table_creator;
@@ -3772,7 +3781,7 @@ TEST_CASE_METHOD(common_tests, "Get affected rows", "[core][affected-rows]")
     std::vector<int> v(5, 0);
     for (std::size_t i = 0; i < v.size(); ++i)
     {
-        v[i] = (7 + i);
+        v[i] = (7 + static_cast<int>(i));
     }
 
     // test affected rows for bulk operations.

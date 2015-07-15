@@ -98,6 +98,8 @@ public:
 
 private:
     values & v_;
+
+    SOCI_NOT_COPYABLE(use_type)
 };
 
 // this is not supposed to be used - no support for bulk ORM
@@ -127,6 +129,8 @@ public:
 
 private:
     values & v_;
+
+    SOCI_NOT_COPYABLE(into_type)
 };
 
 // this is not supposed to be used - no support for bulk ORM

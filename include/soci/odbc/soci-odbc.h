@@ -23,11 +23,11 @@
 # define SOCI_ODBC_DECL
 #endif
 
+#include "soci/soci-platform.h"
 #include <vector>
 #include <soci/soci-backend.h>
 #include <sstream>
 #if defined(_MSC_VER) || defined(__MINGW32__)
-#include "soci/soci-platform.h"
 #include <windows.h>
 #endif
 #include <sqlext.h> // ODBC
@@ -77,6 +77,8 @@ protected:
     };
 
     odbc_statement_backend &statement_;
+private:
+    SOCI_NOT_COPYABLE(odbc_standard_type_backend_base)
 };
 
 struct odbc_standard_into_type_backend : details::standard_into_type_backend,
@@ -101,6 +103,8 @@ struct odbc_standard_into_type_backend : details::standard_into_type_backend,
     int position_;
     SQLSMALLINT odbcType_;
     SQLLEN valueLen_;
+private:
+    SOCI_NOT_COPYABLE(odbc_standard_into_type_backend)
 };
 
 struct odbc_vector_into_type_backend : details::vector_into_type_backend,

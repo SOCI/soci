@@ -10,13 +10,8 @@
 #include "soci/db2/soci-db2.h"
 #include <cctype>
 
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
-
 using namespace soci;
 using namespace soci::details;
-
 
 db2_statement_backend::db2_statement_backend(db2_session_backend &session)
     : session_(session),hasVectorUseElements(false),use_binding_method_(details::db2::BOUND_BY_NONE)
@@ -283,7 +278,7 @@ SQLCHAR colNameBuffer[2048];
     }
 }
 
-std::size_t db2_statement_backend::column_size(int col) {
+size_t db2_statement_backend::column_size(int col) {
     SQLCHAR colNameBuffer[2048];
     SQLSMALLINT colNameBufferOverflow;
     SQLSMALLINT dataType;

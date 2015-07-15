@@ -24,7 +24,6 @@ void odbc_standard_into_type_backend::define_by_pos(
     position_ = position++;
 
     SQLUINTEGER size = 0;
-
     switch (type_)
     {
     case x_char:
@@ -37,7 +36,7 @@ void odbc_standard_into_type_backend::define_by_pos(
         odbcType_ = SQL_C_CHAR;
         // Patch: set to min between column size and 100MB (used ot be 32769)
         // Column size for text data type can be too large for buffer allocation
-        size = statement_.column_size(position_);
+        size = static_cast<SQLUINTEGER>(statement_.column_size(position_));
         size = size > odbc_max_buffer_length ? odbc_max_buffer_length : size;
         size++;
         buf_ = new char[size];

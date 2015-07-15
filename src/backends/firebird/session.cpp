@@ -358,9 +358,9 @@ firebird_statement_backend * firebird_session_backend::make_statement_backend()
     return new firebird_statement_backend(*this);
 }
 
-firebird_rowid_backend * firebird_session_backend::make_rowid_backend()
+details::rowid_backend* firebird_session_backend::make_rowid_backend()
 {
-    return new firebird_rowid_backend(*this);
+    throw soci_error("RowIDs are not supported");
 }
 
 firebird_blob_backend * firebird_session_backend::make_blob_backend()

@@ -122,9 +122,7 @@ public:
     }
 
 private:
-    // copy not supported
-    row(row const &);
-    void operator=(row const &);
+    SOCI_NOT_COPYABLE(row)
 
     std::size_t find_column(std::string const& name) const;
 
