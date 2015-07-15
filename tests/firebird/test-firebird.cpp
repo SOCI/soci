@@ -172,7 +172,6 @@ TEST_CASE("Firebird date and time", "[firebird][datetime]")
     std::tm t1, t2, t3;
     std::time_t now = std::time(NULL);
     std::tm t = *std::localtime(&now);
-
     sql << "insert into test3(p1, p2, p3) "
     << "values (?,?,?)", use(t), use(t), use(t);
 
@@ -970,7 +969,7 @@ namespace soci
             char count_type = *ptr++;
             int m = isc_vax_integer(ptr, 2);
             ptr += 2;
-            count = isc_vax_integer(ptr, m);
+            count = isc_vax_integer(ptr, static_cast<short>(m));
 
             if (count_type == type_)
             {

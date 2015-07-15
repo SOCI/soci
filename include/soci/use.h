@@ -27,6 +27,8 @@ struct use_container
     T &t;
     Indicator &ind;
     const std::string &name;
+private:
+    SOCI_NOT_ASSIGNABLE(use_container)
 };
 
 typedef void no_indicator;
@@ -38,6 +40,8 @@ struct use_container<T, no_indicator>
 
     T &t;
     const std::string &name;
+private:
+    SOCI_NOT_ASSIGNABLE(use_container)
 };
 
 } // namespace details

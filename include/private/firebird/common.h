@@ -40,7 +40,7 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
 std::string getTextParam(XSQLVAR const *var);
 
 template <typename IntType>
-const char *str2dec(const char * s, IntType &out, int &scale)
+const char *str2dec(const char * s, IntType &out, short &scale)
 {
     int sign = 1;
     if ('+' == *s)
@@ -65,7 +65,7 @@ const char *str2dec(const char * s, IntType &out, int &scale)
         int d = *s - '0';
         if (d < 0 || d > 9)
             return s;
-        res = res * 10 + d * sign;
+        res = res * 10 + static_cast<IntType>(d * sign);
         if (1 == sign)
         {
             if (res < out)
@@ -97,19 +97,30 @@ double round_for_isc(double value)
   return value < 0 ? value - 0.5 : value + 0.5;
 }
 
+//helper template to generate proper code based on compile time type check
+template<bool cond> struct cond_to_isc {};
+template<> struct cond_to_isc<false> 
+{
+    static void checkInteger(short scale, short type)
+    {
+        if( scale >= 0 && (type == SQL_SHORT || type == SQL_LONG || type == SQL_INT64) )
+            throw soci_error("Can't convert non-integral value to integral column type");
+    }
+};
+template<> struct cond_to_isc<true> 
+{ 
+    static void checkInteger(short scale,short type) { SOCI_UNUSED(scale) SOCI_UNUSED(type) } 
+};
+
 template<typename T1>
-void to_isc(void * val, XSQLVAR * var, int x_scale = 0)
+void to_isc(void * val, XSQLVAR * var, short x_scale = 0)
 {
     T1 value = *reinterpret_cast<T1*>(val);
     short scale = var->sqlscale + x_scale;
     short type = var->sqltype & ~1;
     long long divisor = 1, multiplier = 1;
 
-    if ((std::numeric_limits<T1>::is_integer == false) && scale >= 0 &&
-        (type == SQL_SHORT || type == SQL_LONG || type == SQL_INT64))
-    {
-        throw soci_error("Can't convert non-integral value to integral column type");
-    }
+    cond_to_isc<std::numeric_limits<T1>::is_integer>::checkInteger(scale,type);
 
     for (int i = 0; i > scale; --i)
         multiplier *= 10;
@@ -156,7 +167,7 @@ void to_isc(void * val, XSQLVAR * var, int x_scale = 0)
 template<typename IntType, typename UIntType>
 void parse_decimal(void * val, XSQLVAR * var, const char * s)
 {
-    int scale;
+    short scale;
     UIntType t1;
     IntType t2;
     if (!*str2dec(s, t1, scale))
@@ -189,6 +200,22 @@ std::string format_decimal(const void *sqldata, int sqlscale)
     return r + std::string(sqlscale, '0');
 }
 
+
+template<bool cond> struct cond_from_isc {};
+template<> struct cond_from_isc<true> {
+    static void checkInteger(short scale)
+    {
+        std::ostringstream msg;
+        msg << "Can't convert value with scale " << -scale
+            << " to integral type";
+        throw soci_error(msg.str());
+    }
+};
+template<> struct cond_from_isc<false> 
+{ 
+    static void checkInteger(short scale) { SOCI_UNUSED(scale) } 
+};
+
 template<typename T1>
 T1 from_isc(XSQLVAR * var)
 {
@@ -197,14 +224,7 @@ T1 from_isc(XSQLVAR * var)
 
     if (scale < 0)
     {
-        if (std::numeric_limits<T1>::is_integer)
-        {
-            std::ostringstream msg;
-            msg << "Can't convert value with scale " << -scale
-                << " to integral type";
-            throw soci_error(msg.str());
-        }
-
+        cond_from_isc<std::numeric_limits<T1>::is_integer>::checkInteger(scale);
         for (int i = 0; i > scale; --i)
         {
             tens *= 10;

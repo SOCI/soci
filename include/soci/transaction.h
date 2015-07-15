@@ -8,8 +8,8 @@
 #ifndef SOCI_TRANSACTION_H_INCLUDED
 #define SOCI_TRANSACTION_H_INCLUDED
 
+#include "soci/soci-platform.h"
 #include "soci/session.h"
-#include "soci/soci-config.h"
 
 namespace soci
 {
@@ -28,9 +28,7 @@ private:
     bool handled_;
     session& sql_;
 
-    // Disable copying
-    transaction(transaction const& other);
-    transaction& operator=(transaction const& other);
+    SOCI_NOT_COPYABLE(transaction)
 };
 
 } // namespace soci

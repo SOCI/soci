@@ -219,7 +219,7 @@ protected:
     long long rowsAffectedBulk_; // number of rows affected by the last bulk operation
 
     virtual void exchangeData(bool gotData, int row);
-    virtual void prepareSQLDA(XSQLDA ** sqldap, int size = 10);
+    virtual void prepareSQLDA(XSQLDA ** sqldap, short size = 10);
     virtual void rewriteQuery(std::string const & query,
         std::vector<char> & buffer);
     virtual void rewriteParameters(std::string const & src,
@@ -236,13 +236,6 @@ protected:
     std::map <std::string, int> names_;
 
     bool procedure_;
-};
-
-struct firebird_rowid_backend : details::rowid_backend
-{
-    firebird_rowid_backend(firebird_session_backend &session);
-
-    ~firebird_rowid_backend();
 };
 
 struct firebird_blob_backend : details::blob_backend
@@ -314,7 +307,7 @@ struct firebird_session_backend : details::session_backend
     void cleanUp();
 
     virtual firebird_statement_backend * make_statement_backend();
-    virtual firebird_rowid_backend * make_rowid_backend();
+    virtual details::rowid_backend* make_rowid_backend();
     virtual firebird_blob_backend * make_blob_backend();
 
     bool get_option_decimals_as_strings() { return decimals_as_strings_; }

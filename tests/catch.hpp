@@ -5225,7 +5225,7 @@ namespace Catch {
         char const* const branchName;
 
     private:
-        void operator=( Version const& );
+        SOCI_NOT_COPYABLE(Version)
     };
 
     extern Version libraryVersion;
@@ -5659,9 +5659,7 @@ namespace Catch {
 
         class RegistryHub : public IRegistryHub, public IMutableRegistryHub {
 
-            RegistryHub( RegistryHub const& );
-            void operator=( RegistryHub const& );
-
+            SOCI_NOT_COPYABLE(RegistryHub)
         public: // IRegistryHub
             RegistryHub() {
             }
@@ -5830,8 +5828,7 @@ namespace Catch {
     class Context : public IMutableContext {
 
         Context() : m_config( NULL ), m_runner( NULL ), m_resultCapture( NULL ) {}
-        Context( Context const& );
-        void operator=( Context const& );
+        SOCI_NOT_COPYABLE(Context)
 
     public: // IContext
         virtual IResultCapture* getResultCapture() {
@@ -7293,12 +7290,12 @@ namespace Catch {
 
         struct BySectionInfo {
             BySectionInfo( SectionInfo const& other ) : m_other( other ) {}
-			BySectionInfo( BySectionInfo const& other ) : m_other( other.m_other ) {}
+            BySectionInfo( BySectionInfo const& other ) : m_other( other.m_other ) {}
             bool operator() ( Ptr<SectionNode> const& node ) const {
                 return node->stats.sectionInfo.lineInfo == m_other.lineInfo;
             }
         private:
-			void operator=( BySectionInfo const& );
+            SOCI_NOT_ASSIGNABLE(BySectionInfo)
             SectionInfo const& m_other;
         };
 
@@ -7623,8 +7620,7 @@ namespace Catch {
         }
 
     private:
-        XmlWriter( XmlWriter const& );
-        void operator=( XmlWriter const& );
+        SOCI_NOT_COPYABLE(XmlWriter)
 
         std::ostream& stream() {
             return *m_os;

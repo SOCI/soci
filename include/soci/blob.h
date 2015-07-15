@@ -8,7 +8,7 @@
 #ifndef SOCI_BLOB_H_INCLUDED
 #define SOCI_BLOB_H_INCLUDED
 
-#include "soci/soci-config.h"
+#include "soci/soci-platform.h"
 // std
 #include <cstddef>
 

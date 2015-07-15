@@ -73,6 +73,8 @@ private:
     // in any case, ind_ refers to some valid indicator
     // and can be used by conversion routines
     indicator & ind_;
+
+    SOCI_NOT_COPYABLE(conversion_into_type)
 };
 
 // Automatically create use_type from a type_conversion
@@ -161,6 +163,8 @@ private:
     indicator & ind_;
 
     bool readOnly_;
+
+    SOCI_NOT_COPYABLE(conversion_use_type)
 };
 
 // this class is used to ensure correct order of construction
@@ -239,6 +243,8 @@ private:
     // in any case, ind_ refers to some valid vector of indicators
     // and can be used by conversion routines
     std::vector<indicator> & ind_;
+
+    SOCI_NOT_COPYABLE(conversion_into_type)
 };
 
 
@@ -309,6 +315,8 @@ private:
     // in any case, ind_ refers to some valid vector of indicators
     // and can be used by conversion routines
     std::vector<indicator> & ind_;
+
+    SOCI_NOT_COPYABLE(conversion_use_type)
 };
 
 template <typename T>

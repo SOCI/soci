@@ -6,6 +6,7 @@
 //
 
 #define SOCI_ODBC_SOURCE
+#include "soci/soci-platform.h"
 #include "soci/odbc/soci-odbc.h"
 #include "soci/session.h"
 
@@ -123,7 +124,7 @@ void odbc_session_backend::configure_connection()
 
         std::string const q(major_ver >= 9 ? "SET extra_float_digits = 3"
                                            : "SET extra_float_digits = 2");
-        rc = SQLExecDirect(st.hstmt_, sqlchar_cast(q), q.size());
+        rc = SQLExecDirect(st.hstmt_, sqlchar_cast(q), static_cast<SQLINTEGER>(q.size()));
 
         st.clean_up();
 

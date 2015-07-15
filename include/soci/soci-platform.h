@@ -8,6 +8,18 @@
 #ifndef SOCI_PLATFORM_H_INCLUDED
 #define SOCI_PLATFORM_H_INCLUDED
 
+//disable MSVC deprecated warnings
+#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
+#include <stdarg.h>
+#include <string.h>
+#include <string>
+#include <cstring>
+#include <cstdlib>
+#include <ctime>
+
 #if defined(_MSC_VER) || defined(__MINGW32__)
 #define LL_FMT_FLAGS "I64"
 #else
@@ -17,6 +29,11 @@
 // Portability hacks for Microsoft Visual C++ compiler
 #ifdef _MSC_VER
 #include <stdlib.h>
+
+//Disables warnings about STL objects need to have dll-interface and/or
+//base class must have dll interface
+#pragma warning(disable:4251 4275)
+
 
 // Define if you have the vsnprintf variants.
 #if _MSC_VER < 1500
@@ -51,5 +68,32 @@ namespace std {
     using ::strtoull;
 }
 #endif
+
+//define DLL import/export on WIN32
+#ifdef _WIN32
+# ifdef SOCI_DLL
+#  ifdef SOCI_SOURCE
+#   define SOCI_DECL __declspec(dllexport)
+#  else
+#   define SOCI_DECL __declspec(dllimport)
+#  endif // SOCI_SOURCE
+# endif // SOCI_DLL
+#endif // _WIN32
+//
+// If SOCI_DECL isn't defined yet define it now
+#ifndef SOCI_DECL
+# define SOCI_DECL
+#endif
+
+#define SOCI_NOT_ASSIGNABLE(classname) \
+    classname& operator=(const classname&); 
+
+#define SOCI_NOT_COPYABLE(classname) \
+    classname(const classname&); \
+    SOCI_NOT_ASSIGNABLE(classname)
+
+#define SOCI_UNUSED(x) (void)x;
+
+
 
 #endif // SOCI_PLATFORM_H_INCLUDED

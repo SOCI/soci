@@ -8,7 +8,7 @@
 #ifndef SOCI_BACKEND_H_INCLUDED
 #define SOCI_BACKEND_H_INCLUDED
 
-#include "soci/soci-config.h"
+#include "soci/soci-platform.h"
 #include "soci/error.h"
 // std
 #include <cstddef>
@@ -71,9 +71,7 @@ public:
     virtual void clean_up() = 0;
 
 private:
-    // noncopyable
-    standard_into_type_backend(standard_into_type_backend const&);
-    standard_into_type_backend& operator=(standard_into_type_backend const&);
+    SOCI_NOT_COPYABLE(standard_into_type_backend)
 };
 
 class vector_into_type_backend
@@ -94,9 +92,7 @@ public:
     virtual void clean_up() = 0;
 
 private:
-    // noncopyable
-    vector_into_type_backend(vector_into_type_backend const&);
-    vector_into_type_backend& operator=(vector_into_type_backend const&);
+    SOCI_NOT_COPYABLE(vector_into_type_backend)
 };
 
 // polymorphic use type backend
@@ -118,9 +114,7 @@ public:
     virtual void clean_up() = 0;
 
 private:
-    // noncopyable
-    standard_use_type_backend(standard_use_type_backend const&);
-    standard_use_type_backend& operator=(standard_use_type_backend const&);
+    SOCI_NOT_COPYABLE(standard_use_type_backend)
 };
 
 class vector_use_type_backend
@@ -140,9 +134,7 @@ public:
     virtual void clean_up() = 0;
 
 private:
-    // noncopyable
-    vector_use_type_backend(vector_use_type_backend const&);
-    vector_use_type_backend& operator=(vector_use_type_backend const&);
+    SOCI_NOT_COPYABLE(vector_use_type_backend)
 };
 
 // polymorphic statement backend
@@ -184,9 +176,7 @@ public:
     virtual vector_use_type_backend* make_vector_use_type_backend() = 0;
 
 private:
-    // noncopyable
-    statement_backend(statement_backend const&);
-    statement_backend& operator=(statement_backend const&);
+    SOCI_NOT_COPYABLE(statement_backend)
 };
 
 // polymorphic RowID backend
@@ -214,9 +204,7 @@ public:
     virtual void trim(std::size_t newLen) = 0;
 
 private:
-    // noncopyable
-    blob_backend(blob_backend const&);
-    blob_backend& operator=(blob_backend const&);
+    SOCI_NOT_COPYABLE(blob_backend)
 };
 
 // polymorphic session backend
@@ -253,9 +241,7 @@ public:
     virtual blob_backend* make_blob_backend() = 0;
 
 private:
-    // noncopyable
-    session_backend(session_backend const&);
-    session_backend& operator=(session_backend const&);
+    SOCI_NOT_COPYABLE(session_backend)
 };
 
 } // namespace details

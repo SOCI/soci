@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include "soci/sqlite3/soci-sqlite3.h"
 #include "soci/soci-platform.h"
+#include "soci/sqlite3/soci-sqlite3.h"
 #include "soci-dtocstr.h"
 #include "common.h"
 // std
@@ -16,10 +16,6 @@
 #include <limits>
 #include <sstream>
 
-#ifdef _MSC_VER
-#pragma warning(disable:4355 4996)
-#define snprintf _snprintf // TODO: use soci-platform.h
-#endif
 
 using namespace soci;
 using namespace soci::details;

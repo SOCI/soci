@@ -22,7 +22,7 @@ firebird_statement_backend::firebird_statement_backend(firebird_session_backend 
             intoType_(eStandard), useType_(eStandard), procedure_(false)
 {}
 
-void firebird_statement_backend::prepareSQLDA(XSQLDA ** sqldap, int size)
+void firebird_statement_backend::prepareSQLDA(XSQLDA ** sqldap, short size)
 {
     if (*sqldap != NULL)
     {
@@ -165,7 +165,7 @@ namespace
         if (res_buffer[0] == isc_info_sql_stmt_type)
         {
             length = isc_vax_integer(res_buffer+1, 2);
-            stype = isc_vax_integer(res_buffer+3, length);
+            stype = isc_vax_integer(res_buffer+3, static_cast<short>(length));
         }
         else
         {
@@ -611,7 +611,7 @@ long long firebird_statement_backend::get_affected_rows()
                     int len = isc_vax_integer(p, 2);
                     p += 2;
 
-                    row_count += isc_vax_integer(p, len);
+                    row_count += isc_vax_integer(p, static_cast<short>(len));
                     p += len;
                 }
                 break;

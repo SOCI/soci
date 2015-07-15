@@ -596,7 +596,6 @@ TEST_CASE("PostgreSQL JSON", "[postgresql][json]")
     server_version version = get_postgresql_version(sql);
     if ( version >= server_version(9,2))
     {
-        bool exception = false;
         std::string result;
         std::string valid_input = "{\"tool\":\"soci\",\"result\":42}";
         std::string invalid_input = "{\"tool\":\"other\",\"result\":invalid}";

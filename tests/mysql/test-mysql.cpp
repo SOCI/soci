@@ -602,7 +602,8 @@ struct double_value_table_creator : table_creator_base
 
 TEST_CASE("MySQL special floating point values", "[mysql][float]")
 {
-    if (!std::numeric_limits<double>::is_iec559)
+    static bool is_iec559 = std::numeric_limits<double>::is_iec559;
+    if (!is_iec559)
     {
         WARN("C++ double type is not IEC-559, skipping test.");
         return;
@@ -799,7 +800,7 @@ std::string escape_string(soci::session& sql, const std::string& s)
     mysql_session_backend* backend = static_cast<mysql_session_backend*>(
         sql.get_backend());
     char* escaped = new char[2 * s.size() + 1];
-    mysql_real_escape_string(backend->conn_, escaped, s.data(), s.size());
+    mysql_real_escape_string(backend->conn_, escaped, s.data(), static_cast<unsigned long>(s.size()));
     std::string retv = escaped;
     delete [] escaped;
     return retv;

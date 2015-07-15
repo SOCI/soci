@@ -9,7 +9,7 @@
 #ifndef SOCI_ERROR_H_INCLUDED
 #define SOCI_ERROR_H_INCLUDED
 
-#include "soci/soci-config.h"
+#include "soci/soci-platform.h"
 // std
 #include <stdexcept>
 #include <string>

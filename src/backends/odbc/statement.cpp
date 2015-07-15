@@ -11,13 +11,6 @@
 #include <sstream>
 #include <cstring>
 
-#ifdef _MSC_VER
-// disables the warning about converting int to void*.  This is a 64 bit compatibility
-// warning, but odbc requires the value to be converted on this line
-// SQLSetStmtAttr(hstmt_, SQL_ATTR_ROW_ARRAY_SIZE, (SQLPOINTER)number, 0);
-#pragma warning(disable:4312)
-#endif
-
 using namespace soci;
 using namespace soci::details;
 
@@ -245,7 +238,7 @@ long long odbc_statement_backend::get_affected_rows()
 
 int odbc_statement_backend::get_number_of_rows()
 {
-    return numRowsFetched_;
+    return static_cast<int>(numRowsFetched_);
 }
 
 std::string odbc_statement_backend::get_parameter_name(int index) const

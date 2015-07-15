@@ -39,7 +39,7 @@ void db2_standard_into_type_backend::define_by_pos(
         cType = SQL_C_CHAR;
         // Patch: set to min between column size and 100MB (used ot be 32769)
         // Column size for text data type can be too large for buffer allocation
-        size = statement_.column_size(this->position);
+        size = static_cast<SQLUINTEGER>(statement_.column_size(this->position));
         size = size > details::db2::cli_max_buffer ? details::db2::cli_max_buffer : size;
         size++;
         buf = new char[size];
