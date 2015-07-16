@@ -177,6 +177,9 @@ void statement_impl::bind_clean_up()
         delete indicators_[i];
         indicators_[i] = NULL;
     }
+
+    row_ = NULL;
+    alreadyDescribed_ = false;
 }
 
 void statement_impl::clean_up()
