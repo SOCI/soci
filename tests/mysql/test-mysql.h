@@ -121,12 +121,11 @@ public:
             sql << "SET @@session.sql_mode = 'PAD_CHAR_TO_FULL_LENGTH'";
             return true;
         }
-        catch(const soci_error& e)
+        catch(const soci_error&)
         {
             // Padding cannot be enabled - test will not be performed
             return false;
         }
-        return true;
     }
 };
 
