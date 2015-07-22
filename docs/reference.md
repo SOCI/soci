@@ -566,6 +566,27 @@ The functions above provide the *session* abstraction with the help of opaque ha
 
 Note that the only function that cannot report all errors this way is `soci_create_session`, which returns `NULL` if it was not possible to create an internal object representing the session. However, if the proxy object was created, but the connection could not be established for whatever reason, the error message can be obtained in the regular way.
 
+
+    typedef void *blob_handle;
+    blob_handle soci_create_blob(session_handle s);
+    void soci_destroy_blob(blob_handle b);
+
+    int soci_blob_get_len(blob_handle b);
+    int soci_blob_read(blob_handle b, int offset, char *buf, int toRead);
+    int soci_blob_write(blob_handle b, int offset, char const *buf, int toWrite);
+    int soci_blob_append(blob_handle b, char const *buf, int toWrite);
+    int soci_blob_trim(blob_handle b, int newLen);
+
+    int soci_blob_state(blob_handle b);
+    char const * soci_blob_error_message(blob_handle b);
+
+The functions above provide the *blob* abstraction with the help of opaque handle. The `soci_blob_state` function returns `1` if there was no error during the most recently executed function and `0` otherwise, in which case the `soci_session_error_message` can be used to obtain a human-readable error description.
+
+For easy error testing, functions `soci_blob_read`, `soci_blob_write`, `soci_blob_append`, and `soci_blob_trim` return `-1` in case of error and `soci_session_error_message` can be used to obtain a human-readable error description.
+
+Note that the only function that cannot report all errors this way is `soci_create_blob`, which returns `NULL` if it was not possible to create an internal object representing the blob.
+
+
     typedef void * statement_handle;
     statement_handle soci_create_statement(session_handle s);
     void soci_destroy_statement(statement_handle st);
@@ -581,6 +602,7 @@ The functions above create and destroy the statement object. If the statement ca
     int soci_into_long_long(statement_handle st);
     int soci_into_double   (statement_handle st);
     int soci_into_date     (statement_handle st);
+    int soci_into_blob     (statement_handle st);
 
     int soci_into_string_v   (statement_handle st);
     int soci_into_int_v      (statement_handle st);
@@ -603,6 +625,7 @@ This function returns `1` if the into element at the given position has non-null
     long long    soci_get_into_long_long(statement_handle st, int position);
     double       soci_get_into_double   (statement_handle st, int position);
     char const * soci_get_into_date     (statement_handle st, int position);
+    blob_handle  soci_get_into_blob     (statement_handle st, int position);
 
     char const * soci_get_into_string_v   (statement_handle st, int position, int index);
     int          soci_get_into_int_v      (statement_handle st, int position, int index);
@@ -619,6 +642,7 @@ Note: the `date` function returns the date value in the "`YYYY MM DD HH mm ss`" 
     void soci_use_long_long(statement_handle st, char const * name);
     void soci_use_double   (statement_handle st, char const * name);
     void soci_use_date     (statement_handle st, char const * name);
+    void soci_use_blob     (statement_handle st, char const * name);
 
     void soci_use_string_v   (statement_handle st, char const * name);
     void soci_use_int_v      (statement_handle st, char const * name);
@@ -643,6 +667,7 @@ These functions get and set the size of vector use elements (see comments for ve
     void soci_set_use_long_long(statement_handle st, char const * name, long long val);
     void soci_set_use_double   (statement_handle st, char const * name, double val);
     void soci_set_use_date     (statement_handle st, char const * name, char const * val);
+    void soci_set_use_blob     (statement_handle st, char const * name, blob_handle blob);
 
     void soci_set_use_state_v    (statement_handle st, char const * name, int index, int state);
     void soci_set_use_string_v   (statement_handle st, char const * name, int index, char const * val);
@@ -662,6 +687,7 @@ Note: the expected format for the data values is "`YYYY MM DD HH mm ss`".
     long long    soci_get_use_long_long(statement_handle st, char const * name);
     double       soci_get_use_double   (statement_handle st, char const * name);
     char const * soci_get_use_date     (statement_handle st, char const * name);
+    blob_handle  soci_get_use_blob     (statement_handle st, char const * name);
 
 These functions allow to inspect the state and value of named use elements.
 ---

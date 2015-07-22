@@ -28,6 +28,23 @@ SOCI_DECL void soci_rollback(session_handle s);
 SOCI_DECL int soci_session_state(session_handle s);
 SOCI_DECL char const * soci_session_error_message(session_handle s);
 
+
+// blob
+
+typedef void *blob_handle;
+SOCI_DECL blob_handle soci_create_blob(session_handle s);
+SOCI_DECL void soci_destroy_blob(blob_handle b);
+
+SOCI_DECL int soci_blob_get_len(blob_handle b);
+SOCI_DECL int soci_blob_read(blob_handle b, int offset, char *buf, int toRead);
+SOCI_DECL int soci_blob_write(blob_handle b, int offset, char const *buf, int toWrite);
+SOCI_DECL int soci_blob_append(blob_handle b, char const *buf, int toWrite);
+SOCI_DECL int soci_blob_trim(blob_handle b, int newLen);
+
+SOCI_DECL int soci_blob_state(blob_handle b);
+SOCI_DECL char const * soci_blob_error_message(blob_handle b);
+
+
 // statement
 
 typedef void * statement_handle;
@@ -40,6 +57,7 @@ SOCI_DECL int soci_into_int      (statement_handle st);
 SOCI_DECL int soci_into_long_long(statement_handle st);
 SOCI_DECL int soci_into_double   (statement_handle st);
 SOCI_DECL int soci_into_date     (statement_handle st);
+SOCI_DECL int soci_into_blob     (statement_handle st);
 
 // vector versions
 SOCI_DECL int soci_into_string_v   (statement_handle st);
@@ -55,6 +73,7 @@ SOCI_DECL int          soci_get_into_int      (statement_handle st, int position
 SOCI_DECL long long    soci_get_into_long_long(statement_handle st, int position);
 SOCI_DECL double       soci_get_into_double   (statement_handle st, int position);
 SOCI_DECL char const * soci_get_into_date     (statement_handle st, int position);
+SOCI_DECL blob_handle  soci_get_into_blob     (statement_handle st, int position);
 
 // positional (re)size of vectors
 SOCI_DECL int  soci_into_get_size_v(statement_handle st);
@@ -75,6 +94,7 @@ SOCI_DECL void soci_use_int      (statement_handle st, char const * name);
 SOCI_DECL void soci_use_long_long(statement_handle st, char const * name);
 SOCI_DECL void soci_use_double   (statement_handle st, char const * name);
 SOCI_DECL void soci_use_date     (statement_handle st, char const * name);
+SOCI_DECL void soci_use_blob     (statement_handle st, char const * name);
 
 // vector versions
 SOCI_DECL void soci_use_string_v   (statement_handle st, char const * name);
@@ -91,6 +111,7 @@ SOCI_DECL void soci_set_use_int      (statement_handle st, char const * name, in
 SOCI_DECL void soci_set_use_long_long(statement_handle st, char const * name, long long val);
 SOCI_DECL void soci_set_use_double   (statement_handle st, char const * name, double val);
 SOCI_DECL void soci_set_use_date     (statement_handle st, char const * name, char const * val);
+SOCI_DECL void soci_set_use_blob     (statement_handle st, char const * name, blob_handle blob);
 
 // positional (re)size of vectors
 SOCI_DECL int  soci_use_get_size_v(statement_handle st);
@@ -118,6 +139,7 @@ SOCI_DECL int          soci_get_use_int      (statement_handle st, char const * 
 SOCI_DECL long long    soci_get_use_long_long(statement_handle st, char const * name);
 SOCI_DECL double       soci_get_use_double   (statement_handle st, char const * name);
 SOCI_DECL char const * soci_get_use_date     (statement_handle st, char const * name);
+SOCI_DECL blob_handle  soci_get_use_blob     (statement_handle st, char const * name);
 
 
 // statement preparation and execution
