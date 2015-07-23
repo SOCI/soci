@@ -72,6 +72,21 @@ public:
         //convert_to_base();
     }
 
+    // Const indicator constructor
+    standard_use_type(void* data, exchange_type type, const indicator& ind,
+        bool readOnly, std::string const& name = std::string())
+        : data_(data)
+        , type_(type)
+        // Const cast will allow the code to compile and run but any modification to ind_ in readonly mode will result in undefined behaviour
+        , ind_(&const_cast<indicator&>(ind)) 
+        , readOnly_(readOnly)
+        , name_(name)
+        , backEnd_(NULL)
+    {
+        // FIXME
+        //convert_to_base();
+    }
+
     virtual ~standard_use_type();
     virtual void bind(statement_impl & st, int & position);
     virtual std::string get_name() const { return name_; }
@@ -164,9 +179,19 @@ public:
             static_cast<exchange_type>(exchange_traits<T>::x_type), ind, false, name)
     {}
 
+    use_type(T& t, indicator const & ind, std::string const& name = std::string())
+        : standard_use_type(&t,
+            static_cast<exchange_type>(exchange_traits<T>::x_type), ind, true, name)
+    {}
+
     use_type(T const& t, indicator& ind, std::string const& name = std::string())
         : standard_use_type(const_cast<T*>(&t),
-            static_cast<exchange_type>(exchange_traits<T>::x_type), ind, false, name)
+            static_cast<exchange_type>(exchange_traits<T>::x_type), ind, true, name)
+    {}
+
+    use_type(T const& t, indicator const & ind, std::string const& name = std::string())
+        : standard_use_type(const_cast<T*>(&t),
+            static_cast<exchange_type>(exchange_traits<T>::x_type), ind, true, name)
     {}
 };
 
@@ -219,7 +244,21 @@ use_type_ptr do_use(T & t, indicator & ind,
 }
 
 template <typename T>
+use_type_ptr do_use(T & t, indicator const & ind,
+    std::string const & name, basic_type_tag)
+{
+    return use_type_ptr(new use_type<T>(t, ind, name));
+}
+
+template <typename T>
 use_type_ptr do_use(T const & t, indicator & ind,
+    std::string const & name, basic_type_tag)
+{
+    return use_type_ptr(new use_type<T>(t, ind, name));
+}
+
+template <typename T>
+use_type_ptr do_use(T const & t, indicator const & ind,
     std::string const & name, basic_type_tag)
 {
     return use_type_ptr(new use_type<T>(t, ind, name));
