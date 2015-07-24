@@ -113,8 +113,7 @@ struct sqlite3_vector_into_type_backend : details::vector_into_type_backend
 
 struct sqlite3_standard_use_type_backend : details::standard_use_type_backend
 {
-    sqlite3_standard_use_type_backend(sqlite3_statement_backend &st)
-        : statement_(st), buf_(0) {}
+    sqlite3_standard_use_type_backend(sqlite3_statement_backend &st);
 
     virtual void bind_by_pos(int &position,
         void *data, details::exchange_type type, bool readOnly);
@@ -128,11 +127,10 @@ struct sqlite3_standard_use_type_backend : details::standard_use_type_backend
 
     sqlite3_statement_backend &statement_;
 
-    void *data_;
-    details::exchange_type type_;
-    int position_;
-    std::string name_;
-    char *buf_;
+    void *data_;                    // pointer to used data: soci::use(myvariable) --> data_ = &myvariable
+    details::exchange_type type_;   // type of data_
+    int position_;                  // binding position
+    std::string name_;              // binding name
 };
 
 struct sqlite3_vector_use_type_backend : details::vector_use_type_backend
@@ -161,14 +159,37 @@ struct sqlite3_vector_use_type_backend : details::vector_use_type_backend
 
 struct sqlite3_column
 {
-    std::string data_;
     bool isNull_;
-    char * blobBuf_;
-    std::size_t blobSize_;
+    data_type type_;
+
+    union
+    {
+        struct
+        {
+            std::size_t size_;
+            union
+            {
+                const char *constData_;
+                char *data_;
+            };
+        } buffer_;
+
+        int int32_;
+        sqlite_api::sqlite3_int64 int64_;
+        double double_;
+    };
 };
 
 typedef std::vector<sqlite3_column> sqlite3_row;
 typedef std::vector<sqlite3_row> sqlite3_recordset;
+
+
+struct sqlite3_column_info
+{
+    data_type type_;
+    std::string name_;
+};
+typedef std::vector<sqlite3_column_info> sqlite3_column_info_list;
 
 struct sqlite3_session_backend;
 struct sqlite3_statement_backend : details::statement_backend
@@ -206,6 +227,8 @@ struct sqlite3_statement_backend : details::statement_backend
     bool databaseReady_;
     bool boundByName_;
     bool boundByPos_;
+    sqlite3_column_info_list columns_;
+
 
     long long rowsAffectedBulk_; // number of rows affected by the last bulk operation
 
@@ -241,6 +264,7 @@ struct sqlite3_blob_backend : details::blob_backend
     sqlite3_session_backend &session_;
 
     std::size_t set_data(char const *buf, std::size_t toWrite);
+    const char *get_buffer() const { return buf_; }
 
 private:
     char *buf_;
