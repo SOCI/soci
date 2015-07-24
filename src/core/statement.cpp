@@ -140,7 +140,7 @@ void statement_impl::bind(values & values)
     }
 }
 
-void statement_impl::clean_up()
+void statement_impl::bind_clean_up()
 {
     // deallocate all bind and define objects
     std::size_t const isize = intos_.size();
@@ -174,6 +174,13 @@ void statement_impl::clean_up()
         indicators_[i] = NULL;
     }
 
+    row_ = NULL;
+    alreadyDescribed_ = false;
+}
+
+void statement_impl::clean_up()
+{
+    bind_clean_up();
     if (backEnd_ != NULL)
     {
         backEnd_->clean_up();

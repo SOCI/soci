@@ -274,6 +274,7 @@ The `statement` class encapsulates the prepared statement.
         void exchange(*IT* const & i);
         void exchange(*IT* const & u);
         void clean_up();
+        void bind_clean_up();
 
         void prepare(std::string const & query);
         void define_and_bind();
@@ -303,6 +304,7 @@ This class contains the following members:
 * `bind` function, which is used to bind the `values` object - this is used in the object-relational mapping and normally called automatically.
 * exchange functions for registering the binding of local data - they expect the result of calling the `into` or `use` functions and are normally invoked automatically.
 * `clean_up` function for cleaning up resources, normally called automatically.
+* `bind_clean_up` function for cleaning up any bound references. It allows to keep statement in cache and reuse it later with new references by calling `exchange` for each new bind variable.
 * `prepare` function for preparing the statement for repeated execution.
 * `define_and_bind` function for actually executing the registered bindings, normally called automatically.
 * `execute` function for executing the statement. If its parameter is `false` then there is no data exchange with locally bound variables (this form should be used if later `fetch` of multiple rows is foreseen). Returns `true` if there was at least one row of data returned.
