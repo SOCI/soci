@@ -637,6 +637,46 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         CHECK(ind == i_ok);
     }
 
+    SECTION("Const Indicator and use_null")
+    {
+        int i;
+        indicator ind;
+
+        // Check const indicator support
+        sql << "insert into soci_test(id) values(:id)",
+            use(3,i_ok);
+        sql << "select id from soci_test", into(i, ind);
+        CHECK(ind == i_ok);
+        CHECK(i == 3);
+        sql << "delete from soci_test";
+
+        // Check const indicator null
+        i=0;
+        ind = i_ok;
+        sql << "insert into soci_test(id) values(:id)",
+            use(2,i_null);
+        sql << "select id from soci_test", into(i, ind);
+        CHECK(ind == i_null);
+        CHECK(i != 2);
+        sql << "delete from soci_test";
+
+        // use_null test
+        ind = i_ok;
+        sql << "insert into soci_test(id) values(:id)",
+            use_null();
+        sql << "select id from soci_test", into(i, ind);
+        CHECK(ind == i_null);
+        sql << "delete from soci_test";
+
+        // use_null test by value
+        ind = i_ok;
+        sql << "insert into soci_test(id) values(:id)",
+            use_null("id");
+        sql << "select id from soci_test", into(i, ind);
+        CHECK(ind == i_null);
+        sql << "delete from soci_test";
+    }
+
     SECTION("Indicators work correctly more generally")
     {
         sql << "insert into soci_test(id,tm) values(NULL,NULL)";

@@ -59,6 +59,13 @@ private:
 
 } // namespace details
 
+// use_null support
+inline details::use_container<const int, const indicator> use_null(const std::string &name = std::string()) 
+{
+    static const soci::indicator null_indicator = soci::i_null;
+    return details::use_container<const int, const indicator>(0,null_indicator, name); 
+}
+
 template <typename T>
 details::use_container<T, details::no_indicator> use(T &t, const std::string &name = std::string())
 { return details::use_container<T, details::no_indicator>(t, name); }
