@@ -184,7 +184,7 @@ SOCI_DECL void soci_destroy_blob(blob_handle b)
 SOCI_DECL int soci_blob_get_len(blob_handle b)
 {
     blob_wrapper *blob = static_cast<blob_wrapper *>(b);
-    return blob->blob_.get_len();
+    return static_cast<int>(blob->blob_.get_len());
 }
 
 SOCI_DECL int soci_blob_read(blob_handle b, int offset, char *buf, int toRead)
@@ -192,7 +192,7 @@ SOCI_DECL int soci_blob_read(blob_handle b, int offset, char *buf, int toRead)
     blob_wrapper *blob = static_cast<blob_wrapper *>(b);
     try
     {
-        return blob->blob_.read(offset, buf, toRead);
+        return static_cast<int>(blob->blob_.read(offset, buf, toRead));
     }
     catch (std::exception &e)
     {
@@ -213,7 +213,7 @@ SOCI_DECL int soci_blob_write(blob_handle b, int offset, char const *buf, int to
     blob_wrapper *blob = static_cast<blob_wrapper *>(b);
     try
     {
-        return blob->blob_.write(offset, buf, toWrite);
+        return static_cast<int>(blob->blob_.write(offset, buf, toWrite));
     }
     catch (std::exception &e)
     {
@@ -234,7 +234,7 @@ SOCI_DECL int soci_blob_append(blob_handle b, char const *buf, int toWrite)
     blob_wrapper *blob = static_cast<blob_wrapper *>(b);
     try
     {
-        return blob->blob_.append(buf, toWrite);
+        return static_cast<int>(blob->blob_.append(buf, toWrite));
     }
     catch (std::exception &e)
     {
@@ -344,6 +344,9 @@ struct statement_wrapper
 
     bool is_ok;
     std::string error_message;
+
+private:
+    SOCI_NOT_COPYABLE(statement_wrapper)
 };
 
 statement_wrapper::~statement_wrapper()
