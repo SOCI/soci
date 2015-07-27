@@ -107,7 +107,7 @@ sqlite3_statement_backend::load_rowset(int totalRows)
             describe_column(c, type, name);
     }
     else
-        numCols = columns_.size();
+        numCols = static_cast<int>(columns_.size());
 
 
     if (!databaseReady_)
@@ -253,7 +253,7 @@ sqlite3_statement_backend::bind_and_execute(int number)
                 {
                     case dt_string:
                     case dt_date:
-                        bindRes = sqlite3_bind_text(stmt_, pos, col.buffer_.constData_, col.buffer_.size_, NULL);
+                        bindRes = sqlite3_bind_text(stmt_, pos, col.buffer_.constData_, static_cast<int>(col.buffer_.size_), NULL);
                         break;
 
                     case dt_double:
@@ -270,7 +270,7 @@ sqlite3_statement_backend::bind_and_execute(int number)
                         break;
 
                     case dt_blob:
-                        bindRes = sqlite3_bind_blob(stmt_, pos, col.buffer_.constData_, col.buffer_.size_, NULL);
+                        bindRes = sqlite3_bind_blob(stmt_, pos, col.buffer_.constData_, static_cast<int>(col.buffer_.size_), NULL);
                         break;
                 }
             }
