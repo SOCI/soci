@@ -168,8 +168,8 @@ struct odbc_standard_use_type_backend : details::standard_use_type_backend,
     void *data_;
     details::exchange_type type_;
     char *buf_;
-    bool readOnly_;
     SQLLEN indHolder_;
+    bool readOnly_;
 };
 
 struct odbc_vector_use_type_backend : details::vector_use_type_backend,
