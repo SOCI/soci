@@ -144,7 +144,7 @@ struct odbc_standard_use_type_backend : details::standard_use_type_backend,
 {
     odbc_standard_use_type_backend(odbc_statement_backend &st)
         : odbc_standard_type_backend_base(st),
-          position_(-1), data_(0), buf_(0), indHolder_(0) {}
+        position_(-1), data_(0), buf_(0), indHolder_(0),readOnly_(false) {}
 
     virtual void bind_by_pos(int &position,
         void *data, details::exchange_type type, bool readOnly);
@@ -168,6 +168,7 @@ struct odbc_standard_use_type_backend : details::standard_use_type_backend,
     void *data_;
     details::exchange_type type_;
     char *buf_;
+    bool readOnly_;
     SQLLEN indHolder_;
 };
 

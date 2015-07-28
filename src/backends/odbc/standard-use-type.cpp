@@ -154,8 +154,9 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
 }
 
 void odbc_standard_use_type_backend::bind_by_pos(
-    int &position, void *data, exchange_type type, bool /* readOnly */)
+    int &position, void *data, exchange_type type, bool  readOnly )
 {
+    readOnly_ = readOnly;
     if (statement_.boundByName_)
     {
         throw soci_error(
@@ -170,8 +171,9 @@ void odbc_standard_use_type_backend::bind_by_pos(
 }
 
 void odbc_standard_use_type_backend::bind_by_name(
-    std::string const &name, void *data, exchange_type type, bool /* readOnly */)
+    std::string const &name, void *data, exchange_type type, bool  readOnly )
 {
+    readOnly_ = readOnly;
     if (statement_.boundByPos_)
     {
         throw soci_error(
@@ -237,7 +239,7 @@ void odbc_standard_use_type_backend::pre_use(indicator const *ind)
 
 void odbc_standard_use_type_backend::post_use(bool gotData, indicator *ind)
 {
-    if (ind != NULL)
+    if (ind != NULL && !readOnly_)
     {
         if (gotData)
         {
