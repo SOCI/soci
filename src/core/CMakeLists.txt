@@ -63,7 +63,7 @@ if (SOCI_SHARED)
 endif()
 
 add_definitions(-DSOCI_LIB_PREFIX="${CMAKE_SHARED_LIBRARY_PREFIX}soci_"
-                -DSOCI_LIB_SUFFIX="${CMAKE_SHARED_LIBRARY_SUFFIX}")
+                -DSOCI_LIB_SUFFIX="${CMAKE_DEBUG_POSTFIX}${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 #
 # Core static library
