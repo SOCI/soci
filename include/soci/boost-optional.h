@@ -11,6 +11,7 @@
 #include "soci/type-conversion-traits.h"
 // boost
 #include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
 
 namespace soci
 {
