@@ -361,7 +361,7 @@ public:
         return true;
     }
 
-    virtual bool enable_std_char_padding(session&) const
+    virtual bool enable_std_char_padding(soci::session& s) const
     {
         // SQLite does not support right padded char type.
         return false;
