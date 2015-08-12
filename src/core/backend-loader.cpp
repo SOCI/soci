@@ -42,7 +42,11 @@ typedef HMODULE soci_handler_t;
 #define DLSYM(x, y) GetProcAddress(x, y)
 
 #ifdef SOCI_ABI_VERSION
-#define LIBNAME(x) (SOCI_LIB_PREFIX + x + "_" SOCI_ABI_VERSION SOCI_LIB_SUFFIX)
+  #ifndef NDEBUG
+    #define LIBNAME(x) (SOCI_LIB_PREFIX + x + "_" SOCI_ABI_VERSION SOCI_DEBUG_POSTFIX SOCI_LIB_SUFFIX)
+  #else
+    #define LIBNAME(x) (SOCI_LIB_PREFIX + x + "_" SOCI_ABI_VERSION SOCI_LIB_SUFFIX)
+  #endif
 #else
 #define LIBNAME(x) (SOCI_LIB_PREFIX + x + SOCI_LIB_SUFFIX)
 #endif // SOCI_ABI_VERSION

@@ -62,8 +62,10 @@ if (SOCI_SHARED)
   endif()
 endif()
 
+# This adds definitions to all build configurations. SOCI_DEBUG_POSTFIX is passed to soci library
 add_definitions(-DSOCI_LIB_PREFIX="${CMAKE_SHARED_LIBRARY_PREFIX}soci_"
-                -DSOCI_LIB_SUFFIX="${CMAKE_DEBUG_POSTFIX}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+                -DSOCI_LIB_SUFFIX="${CMAKE_SHARED_LIBRARY_SUFFIX}"
+                -DSOCI_DEBUG_POSTFIX="${CMAKE_DEBUG_POSTFIX}")
 
 #
 # Core static library
