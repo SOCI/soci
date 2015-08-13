@@ -199,7 +199,7 @@ void parse_connect_string(const string & connectString,
                 throw soci_error(err);
             }
             *port = std::atoi(val.c_str());
-            if (port < 0)
+            if (*port < 0)
             {
                 throw soci_error(err);
             }
