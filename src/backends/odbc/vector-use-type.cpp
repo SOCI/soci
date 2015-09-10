@@ -78,6 +78,7 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
                 cType = SQL_C_CHAR;
                 size = max_bigint_length;
                 buf_ = new char[size * vsize];
+                memset(buf_, 0, size * vsize);
                 data = buf_;
             }
             else // Normal case, use ODBC support.
@@ -103,6 +104,7 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
                 cType = SQL_C_CHAR;
                 size = max_bigint_length;
                 buf_ = new char[size * vsize];
+                memset(buf_, 0, size * vsize);
                 data = buf_;
             }
             else // Normal case, use ODBC support.
@@ -192,6 +194,7 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             prepare_indicators(vp->size());
 
             buf_ = new char[sizeof(TIMESTAMP_STRUCT) * vp->size()];
+            memset(buf_, 0, sizeof(TIMESTAMP_STRUCT) * vp->size());
 
             sqlType = SQL_TYPE_TIMESTAMP;
             cType = SQL_C_TYPE_TIMESTAMP;

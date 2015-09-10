@@ -76,6 +76,7 @@ void odbc_vector_into_type_backend::define_by_pos(
                 std::size_t bufSize = size * v.size();
                 colSize_ = size;
                 buf_ = new char[bufSize];
+                memset(buf_, 0, bufSize);
                 data = buf_;
             }
             else // Normal case, use ODBC support.
@@ -99,6 +100,7 @@ void odbc_vector_into_type_backend::define_by_pos(
                 std::size_t bufSize = size * v.size();
                 colSize_ = size;
                 buf_ = new char[bufSize];
+                memset(buf_, 0, bufSize);
                 data = buf_;
             }
             else // Normal case, use ODBC support.
@@ -137,6 +139,7 @@ void odbc_vector_into_type_backend::define_by_pos(
             colSize_ = size;
 
             buf_ = new char[bufSize];
+            memset(buf_, 0, bufSize);
             data = buf_;
         }
         break;
@@ -148,6 +151,7 @@ void odbc_vector_into_type_backend::define_by_pos(
             colSize_ = statement_.column_size(position) + 1;
             std::size_t bufSize = colSize_ * v->size();
             buf_ = new char[bufSize];
+            memset(buf_, 0, bufSize);
 
             prepare_indicators(v->size());
 
@@ -169,6 +173,7 @@ void odbc_vector_into_type_backend::define_by_pos(
             std::size_t bufSize = size * v->size();
 
             buf_ = new char[bufSize];
+            memset(buf_, 0, bufSize);
             data = buf_;
         }
         break;
