@@ -20,7 +20,7 @@
 #include <cstdlib>
 #include <ctime>
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
+#if defined(_MSC_VER)
 #define LL_FMT_FLAGS "I64"
 #else
 #define LL_FMT_FLAGS "ll"
