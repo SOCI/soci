@@ -10,8 +10,12 @@
 
 #include "soci/type-conversion-traits.h"
 // boost
+#include <boost/version.hpp>
+#if (BOOST_VERSION < 105800)
 #include <boost/optional.hpp>
-
+#else
+#include <boost/optional/optional_io.hpp>
+#endif
 namespace soci
 {
 

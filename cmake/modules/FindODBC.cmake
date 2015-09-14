@@ -17,8 +17,11 @@
 # ODBC_LIBRARY, where to find the ODBC driver manager library.
 
 set(ODBC_FOUND FALSE)
+include(CheckIncludeFiles)
+check_include_files("windows.h;sqlext.h" HAVE_SQLEXT_H)
 
-find_path(ODBC_INCLUDE_DIR sql.h
+find_path(ODBC_INCLUDE_DIR sqlext.h
+  /include
   /usr/include
   /usr/include/odbc
   /usr/local/include
@@ -54,7 +57,7 @@ else()
 endif()
 
 if(ODBC_LIBRARY)
-  if(ODBC_INCLUDE_DIR)
+  if(ODBC_INCLUDE_DIR OR HAVE_SQLEXT_H)
     set( ODBC_FOUND 1 )
   endif()
 endif()
