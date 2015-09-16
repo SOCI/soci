@@ -1,0 +1,42 @@
+version: 4.0.0.{build}
+
+environment:
+    MINGW_ARCHIVE: C:\projects\mingw\x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z
+#    MINGW_URL: http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/4.8.3/threads-posix/seh/x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z/download
+    MINGW_URL: http://iweb.dl.sourceforge.net/project/mingw-w64/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/4.8.3/threads-posix/seh/x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z
+    matrix:
+      - PRJ_GEN: "Visual Studio 11 2012 Win64"
+        BDIR: msvc2012
+        PRJ_CFG: Release
+        SOCI_MYSQL: OFF
+      - PRJ_GEN: "Visual Studio 12 2013 Win64"
+        BDIR: msvc2013
+        PRJ_CFG: Release
+        SOCI_MYSQL: OFF
+      - PRJ_GEN: "Visual Studio 14 2015 Win64"
+        BDIR: msvc2015
+        PRJ_CFG: Release
+        SOCI_MYSQL: OFF
+      - PRJ_GEN: "MinGW Makefiles"
+        BDIR: gcc483
+        PRJ_CFG: Release
+        SOCI_MYSQL: OFF
+        MINGW_ROOT: C:\projects\mingw\4.8.3\mingw64\bin
+
+cache:
+    - C:\projects\mingw
+
+install:
+    - ps: if (!(Test-Path C:\projects\mingw)) { mkdir C:\projects\mingw }
+    - ps: if (!(Test-Path $env:MINGW_ARCHIVE)) {(new-object net.webclient).DownloadFile("$env:MINGW_URL", "$env:MINGW_ARCHIVE")}
+    - 7z x -y -oC:\projects\mingw\4.8.3\ C:\projects\mingw\x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z > nul
+
+build_script:
+    # dirty little hack - remove sh from Git to make generator happy
+    - del /Q "%ProgramFiles(x86)%\Git\bin\sh.exe"
+    - set PATH=%MINGW_ROOT%;%PATH%
+    - mkdir build.%BDIR%
+    - cd build.%BDIR%
+    - cmake .. -G"%PRJ_GEN%" -DCMAKE_BUILD_TYPE=%PRJ_CFG% -DWITH_MYSQL=%SOCI_MYSQL%
+    - cmake --build . --config %PRJ_CFG% --clean-first
+
