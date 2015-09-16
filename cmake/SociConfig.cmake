@@ -51,7 +51,7 @@ if (MSVC)
 else()
 
   set(SOCI_GCC_CLANG_COMMON_FLAGS
-	"-pedantic -Werror -Wall -Wpointer-arith -Wcast-align -Wcast-qual -Wfloat-equal -Wredundant-decls -Wno-long-long")
+	"-Werror -Wall -Wpointer-arith -Wcast-align -Wcast-qual -Wfloat-equal -Wredundant-decls -Wno-long-long")
 
 
   if (SOCI_CXX_C11)
