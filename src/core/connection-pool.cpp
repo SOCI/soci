@@ -95,7 +95,8 @@ session & connection_pool::at(std::size_t pos)
 
 std::size_t connection_pool::lease()
 {
-    std::size_t pos;
+    // dummy default value avoids compiler warning, never leaks to client
+    std::size_t pos(0);
 
     // no timeout, so can't fail
     try_lease(pos, -1);
