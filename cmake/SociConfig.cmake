@@ -69,7 +69,7 @@ else()
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
         elseif (CMAKE_SYSTEM_NAME MATCHES "Windows")
             # We need to disable the warnings for using %I64d with MinGW.
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-pedantic-ms-format")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-pedantic-ms-format -Wno-format")
         else()
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-variadic-macros")
         endif()
