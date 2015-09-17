@@ -51,7 +51,7 @@ if (MSVC)
 else()
 
   set(SOCI_GCC_CLANG_COMMON_FLAGS
-	"-Werror -Wall -Wpointer-arith -Wcast-align -Wcast-qual -Wfloat-equal -Wredundant-decls -Wno-long-long")
+	"-pedantic -Werror -Wall -Wpointer-arith -Wcast-align -Wcast-qual -Wfloat-equal -Wredundant-decls -Wno-long-long")
 
 
   if (SOCI_CXX_C11)
@@ -67,6 +67,9 @@ else()
     if (CMAKE_COMPILER_IS_GNUCXX)
         if (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+        elseif (CMAKE_SYSTEM_NAME MATCHES "Windows")
+            # We need to disable the warnings for using %I64d with MinGW.
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-pedantic-ms-format")
         else()
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-variadic-macros")
         endif()
