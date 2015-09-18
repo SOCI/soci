@@ -215,9 +215,9 @@ void odbc_vector_use_type_backend::bind_helper(int &position, void *data, exchan
     data_ = data; // for future reference
     type_ = type; // for future reference
 
-    SQLSMALLINT sqlType;
-    SQLSMALLINT cType;
-    SQLUINTEGER size;
+    SQLSMALLINT sqlType(0);
+    SQLSMALLINT cType(0);
+    SQLUINTEGER size(0);
 
     prepare_for_bind(data, size, sqlType, cType);
 
