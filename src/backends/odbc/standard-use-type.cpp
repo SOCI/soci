@@ -209,9 +209,9 @@ void odbc_standard_use_type_backend::bind_by_name(
 void odbc_standard_use_type_backend::pre_use(indicator const *ind)
 {
     // first deal with data
-    SQLSMALLINT sqlType;
-    SQLSMALLINT cType;
-    SQLLEN size;
+    SQLSMALLINT sqlType(0);
+    SQLSMALLINT cType(0);
+    SQLLEN size(0);
 
     void* const sqlData = prepare_for_bind(size, sqlType, cType);
 
