@@ -1,4 +1,4 @@
-version: 4.0.0.{build}
+`version: 4.0.0.{build}
 
 environment:
     MINGW_ARCHIVE: C:\projects\mingw\x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z
@@ -40,3 +40,9 @@ build_script:
     - cmake .. -G"%PRJ_GEN%" -DCMAKE_BUILD_TYPE=%PRJ_CFG% -DWITH_MYSQL=%SOCI_MYSQL% -DCMAKE_VERBOSE_MAKEFILE=ON
     - cmake --build . --config %PRJ_CFG% --clean-first
 
+notifications:
+  - provider: Webhook
+    url: https://webhooks.gitter.im/e/c4e6bbf2afbfe3476632
+    on_build_success: false
+    on_build_failure: true
+    on_build_status_changed: true
