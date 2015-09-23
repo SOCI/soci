@@ -1,4 +1,4 @@
-`version: 4.0.0.{build}
+version: 4.0.0.{build}
 
 environment:
     MINGW_ARCHIVE: C:\projects\mingw\x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z
