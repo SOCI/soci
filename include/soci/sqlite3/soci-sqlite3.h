@@ -157,6 +157,16 @@ struct sqlite3_vector_use_type_backend : details::vector_use_type_backend
     std::string name_;
 };
 
+struct sqlite3_column_buffer
+{
+    std::size_t size_;
+    union
+    {
+        const char *constData_;
+        char *data_;
+    };
+};
+
 struct sqlite3_column
 {
     bool isNull_;
@@ -164,16 +174,7 @@ struct sqlite3_column
 
     union
     {
-        struct
-        {
-            std::size_t size_;
-            union
-            {
-                const char *constData_;
-                char *data_;
-            };
-        } buffer_;
-
+        sqlite3_column_buffer buffer_;
         int int32_;
         sqlite_api::sqlite3_int64 int64_;
         double double_;
