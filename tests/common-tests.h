@@ -110,7 +110,7 @@ public:
 class MyInt
 {
 public:
-    MyInt() {}
+    MyInt() : i_() {}
     MyInt(int i) : i_(i) {}
     void set(int i) { i_ = i; }
     int get() const { return i_; }
