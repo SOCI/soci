@@ -223,7 +223,7 @@ macro(soci_backend NAME)
          ARCHIVE DESTINATION ${LIBDIR})
       endif()
 
-      if (SOCI_SHARED)
+      if (SOCI_STATIC)
         install(TARGETS ${THIS_BACKEND_TARGET_STATIC}
          RUNTIME DESTINATION ${BINDIR}
          LIBRARY DESTINATION ${LIBDIR}
@@ -379,7 +379,7 @@ macro(soci_backend_test)
       add_dependencies(check ${TEST_TARGET_STATIC})
     endif(SOCI_STATIC)
 
-    
+
 
     # Group source files for IDE source explorers (e.g. Visual Studio)
     source_group("Source Files" FILES ${THIS_TEST_SOURCE})
