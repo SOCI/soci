@@ -30,6 +30,7 @@
 #include <cassert>
 #include <clocale>
 #include <cstdlib>
+#include <cstring>
 #include <cmath>
 #include <iomanip>
 #include <iostream>
@@ -1905,24 +1906,30 @@ TEST_CASE_METHOD(common_tests, "Use with indicators", "[core][use][indicator]")
 
     indicator ind1 = i_ok;
     indicator ind2 = i_ok;
+    indicator ind3 = i_ok;
 
     int id = 1;
     int val = 10;
-
-    sql << "insert into soci_test(id, val) values(:id, :val)",
-        use(id, ind1), use(val, ind2);
+    std::tm tm = {0};
+    strptime("2015-09-27 20:00", "%Y-%m-%dT %H:%M", &tm);
+    sql << "insert into soci_test(id, val, tm) values(:id, :val, :tm)",
+        use(id, ind1), use(val, ind2), use(tm, ind3);
 
     id = 2;
     val = 11;
     ind2 = i_null;
-    sql << "insert into soci_test(id, val) values(:id, :val)",
-        use(id, ind1), use(val, ind2);
+    std::memset(&tm, 0, sizeof(std::tm));
+    ind3 = i_null;
+
+    sql << "insert into soci_test(id, val, tm) values(:id, :val, :tm)",
+        use(id, ind1), use(val, ind2), use(tm, ind3);
 
     sql << "select val from soci_test where id = 1", into(val, ind2);
     CHECK(ind2 == i_ok);
     CHECK(val == 10);
-    sql << "select val from soci_test where id = 2", into(val, ind2);
+    sql << "select val, tm from soci_test where id = 2", into(val, ind2), into(tm, ind3);
     CHECK(ind2 == i_null);
+    CHECK(ind3 == i_null);
 
     std::vector<int> ids;
     ids.push_back(3);
