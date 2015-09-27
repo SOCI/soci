@@ -1898,9 +1898,14 @@ TEST_CASE_METHOD(common_tests, "Transactions", "[core][transaction]")
 
 std::tm  generate_tm()
 {
-    std::tm tm = {0};
-    strptime("2015-09-27 20:00", "%Y-%m-%dT %H:%M", &tm);
-    return tm;
+    std::tm t = {0};
+    t.tm_year = 105;
+    t.tm_mon = 10;
+    t.tm_mday = 15;
+    t.tm_hour = 22;
+    t.tm_min = 14;
+    t.tm_sec = 17;
+    return t;
 }
 
 // test of use elements with indicators
