@@ -30,7 +30,6 @@
 #include <cassert>
 #include <clocale>
 #include <cstdlib>
-#include <cstring>
 #include <cmath>
 #include <iomanip>
 #include <iostream>
@@ -1897,6 +1896,13 @@ TEST_CASE_METHOD(common_tests, "Transactions", "[core][transaction]")
 
 #ifndef SOCI_POSTGRESQL_NOPARAMS
 
+std::tm  generate_tm()
+{
+    std::tm tm = {0};
+    strptime("2015-09-27 20:00", "%Y-%m-%dT %H:%M", &tm);
+    return tm;
+}
+
 // test of use elements with indicators
 TEST_CASE_METHOD(common_tests, "Use with indicators", "[core][use][indicator]")
 {
@@ -1910,15 +1916,13 @@ TEST_CASE_METHOD(common_tests, "Use with indicators", "[core][use][indicator]")
 
     int id = 1;
     int val = 10;
-    std::tm tm = {0};
-    strptime("2015-09-27 20:00", "%Y-%m-%dT %H:%M", &tm);
-    sql << "insert into soci_test(id, val, tm) values(:id, :val, :tm)",
-        use(id, ind1), use(val, ind2), use(tm, ind3);
+    char const* insert = "insert into soci_test(id, val, tm) values(:id, :val, :tm)";
+    sql << insert, use(id, ind1), use(val, ind2), use(generate_tm(), ind3);
 
     id = 2;
     val = 11;
     ind2 = i_null;
-    std::memset(&tm, 0, sizeof(std::tm));
+    std::tm tm = {0};
     ind3 = i_null;
 
     sql << "insert into soci_test(id, val, tm) values(:id, :val, :tm)",
