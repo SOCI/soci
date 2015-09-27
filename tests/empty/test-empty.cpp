@@ -63,8 +63,15 @@ TEST_CASE("Dummy test", "[empty]")
     sql << "Do what I want.";
     sql << "Do what I want " << 123 << " times.";
 
-    std::string query = "some query";
-    sql << query;
+    {
+        char const* const query = "some query";
+        sql << query;
+    }
+
+    {
+        std::string query = "some query";
+        sql << query;
+    }
 
     int i = 7;
     sql << "insert", use(i);
