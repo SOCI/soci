@@ -1,6 +1,8 @@
 SOCI - The C++ Database Access Library
 ======================================
 
+[![Join the chat at https://gitter.im/SOCI/soci](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/SOCI/soci?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Branches        | Travis-CI      | AppVeyor-CI |
 ----------------|--------------- |-----------
 master          | [![Build Status](https://travis-ci.org/SOCI/soci.svg?branch=master)](https://travis-ci.org/SOCI/soci)         | [![Build status](https://ci.appveyor.com/api/projects/status/ree3vx3kfgs23qk6/branch/master?svg=true)](https://ci.appveyor.com/project/mloskot/soci/branch/master)
