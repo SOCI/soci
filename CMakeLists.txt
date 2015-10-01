@@ -137,24 +137,27 @@ set(DATADIR "share" CACHE PATH "The directory to install data files into.")
 set(INCLUDEDIR "include" CACHE PATH "The directory to install includes into.")
 
 ###############################################################################
-# Enable tests
-###############################################################################
-enable_testing()
-# Configure for testing with dashboard submissions to CDash
-#include(CTest) # disabled as unused
-
-# Define "make check" as alias for "make test"
-add_custom_target(check COMMAND ctest)
-
-###############################################################################
 # Build configured components
 ###############################################################################
 include(SociBackend)
 
 include_directories(${SOCI_SOURCE_DIR}/include)
-
 add_subdirectory(src)
-add_subdirectory(tests)
+
+if(SOCI_TESTS)
+  ###############################################################################
+  # Enable tests
+  ###############################################################################
+  enable_testing()
+  # Configure for testing with dashboard submissions to CDash
+  #include(CTest) # disabled as unused
+
+  file(TO_NATIVE_PATH ${PROJECT_SOURCE_DIR} TEST_ACCESS_PATH)
+  configure_file(${PROJECT_SOURCE_DIR}/cmake/configs/test-access.cmake ${PROJECT_SOURCE_DIR}/tests/odbc/test-access.dsn @ONLY)
+  # Define "make check" as alias for "make test"
+  add_custom_target(check COMMAND ctest)
+  add_subdirectory(tests)
+endif()
 
 message(STATUS "")
 

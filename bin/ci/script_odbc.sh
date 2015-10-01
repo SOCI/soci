@@ -23,8 +23,6 @@ cmake \
     -DSOCI_ORACLE=OFF \
     -DSOCI_POSTGRESQL=OFF \
     -DSOCI_SQLITE3=OFF \
-    -DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR="FILEDSN=${ODBC_TEST}/test-postgresql.dsn;" \
-    -DSOCI_ODBC_TEST_MYSQL_CONNSTR="FILEDSN=${ODBC_TEST}/test-mysql.dsn;" \
    ..
 
 run_make
