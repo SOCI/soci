@@ -27,6 +27,11 @@ environment:
         MINGW_ROOT: C:\projects\mingw\4.8.3\mingw64\bin
         BOOST_ROOT: C:\Libraries\boost_1_59_0
 
+services:
+    - mssql2014
+    - mysql
+    - postgresql
+
 cache:
     - C:\projects\mingw
 
