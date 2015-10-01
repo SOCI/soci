@@ -46,22 +46,35 @@ install:
             (new-object net.webclient).DownloadFile("$env:MINGW_URL", "$env:MINGW_ARCHIVE")
             7z x -y -oC:\projects\mingw\4.8.3\ C:\projects\mingw\x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z > $null
           }
+    - git clone https://github.com/snikulov/sqlite.cmake.build.git C:\projects\sqlite\src
 
-build_script:
+before_build:
     # dirty little hack - remove sh from Git to make generator happy
     - del /Q "%ProgramFiles(x86)%\Git\bin\sh.exe"
-    - set PATH=%MINGW_ROOT%;%PATH%
+    - cd C:\projects\sqlite\src
+    - mkdir build.%BDIR%
+    - cd build.%BDIR%
+    - set SQLITE_ROOT=C:\projects\sqlite\sqlite.%BDIR%
+    - set PATH=%MINGW_ROOT%;%PATH%;%SQLITE_ROOT%\bin
+    - echo %PATH%
     - cmake --version
+    - cmake .. -G"%PRJ_GEN%" -DCMAKE_BUILD_TYPE=%PRJ_CFG% -DCMAKE_INSTALL_PREFIX=C:\projects\sqlite\sqlite.%BDIR%
+    - cmake --build . --config %PRJ_CFG% --target INSTALL
+
+build_script:
+    - cd C:\projects\soci
     - mkdir build.%BDIR%
     - cd build.%BDIR%
     - cmake .. -G"%PRJ_GEN%" -DCMAKE_BUILD_TYPE=%PRJ_CFG% -DWITH_MYSQL=%SOCI_MYSQL% -DCMAKE_VERBOSE_MAKEFILE=ON
     - cmake --build . --config %PRJ_CFG% --clean-first
 
 test_script:
-    - ctest -V --output-on-failure
+    - ctest -V --output-on-failure -E odbc
 
 notifications:
-  - provider: Webhook
-    url: https://webhooks.gitter.im/e/c4e6bbf2afbfe3476632
-    on_build_success: true
-    on_build_failure: true
+    - provider: Webhook
+      url: https://webhooks.gitter.im/e/ff1ff4818e9d3a166786
+      on_build_success: true
+      on_build_failure: true
+      on_build_status_changed: true
+
