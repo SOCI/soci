@@ -14,9 +14,12 @@
 
 find_program(PG_CONFIG NAMES pg_config
   PATHS
+  ${POSTGRESQL_ROOT}/bin
+  $ENV{POSTGRESQL_ROOT}/bin
   /usr/bin
   /usr/local/bin
   $ENV{ProgramFiles}/PostgreSQL/*/bin
+  $ENV{ProgramW6432}/PostgreSQL/*/bin
   $ENV{SystemDrive}/PostgreSQL/*/bin
   DOC "Path to pg_config utility")
 
@@ -42,6 +45,8 @@ endif()
 
 find_path(POSTGRESQL_INCLUDE_DIR libpq-fe.h
   ${PG_CONFIG_INCLUDEDIR}
+  ${POSTGRESQL_ROOT}/include
+  $ENV{POSTGRESQL_ROOT}/include
   /usr/include/server
   /usr/include/pgsql/server
   /usr/local/include/pgsql/server
@@ -49,11 +54,14 @@ find_path(POSTGRESQL_INCLUDE_DIR libpq-fe.h
   /usr/include/postgresql/server
   /usr/include/postgresql/*/server
   $ENV{ProgramFiles}/PostgreSQL/*/include
+  $ENV{ProgramW6432}/PostgreSQL/*/include
   $ENV{SystemDrive}/PostgreSQL/*/include)
 
 find_library(POSTGRESQL_LIBRARIES NAMES pq libpq
   PATHS
   ${PG_CONFIG_LIBDIR}
+  ${POSTGRESQL_ROOT}/lib
+  $ENV{POSTGRESQL_ROOT}/lib
   /usr/lib
   /usr/local/lib
   /usr/lib/postgresql
@@ -63,6 +71,7 @@ find_library(POSTGRESQL_LIBRARIES NAMES pq libpq
   $ENV{ProgramFiles}/PostgreSQL/*/lib
   $ENV{SystemDrive}/PostgreSQL/*/lib
   $ENV{ProgramFiles}/PostgreSQL/*/lib/ms
+  $ENV{ProgramW6432}/PostgreSQL/*/lib/ms
   $ENV{SystemDrive}/PostgreSQL/*/lib/ms)
 
 if(POSTGRESQL_INCLUDE_DIR AND POSTGRESQL_LIBRARIES)
