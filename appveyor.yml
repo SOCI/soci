@@ -8,28 +8,28 @@ environment:
       - PRJ_GEN: "Visual Studio 11 2012 Win64"
         BDIR: msvc2012
         PRJ_CFG: Release
-        SOCI_MYSQL: OFF
         BOOST_ROOT: C:\Libraries\boost_1_58_0
         POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
+        MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.6
       - PRJ_GEN: "Visual Studio 12 2013 Win64"
         BDIR: msvc2013
         PRJ_CFG: Release
-        SOCI_MYSQL: OFF
         BOOST_ROOT: C:\Libraries\boost_1_58_0
         POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
+        MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.6
       - PRJ_GEN: "Visual Studio 14 2015 Win64"
         BDIR: msvc2015
         PRJ_CFG: Release
-        SOCI_MYSQL: OFF
         BOOST_ROOT: C:\Libraries\boost_1_59_0
         POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
+        MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.6
       - PRJ_GEN: "MinGW Makefiles"
         BDIR: gcc483
         PRJ_CFG: Release
-        SOCI_MYSQL: OFF
         MINGW_ROOT: C:\projects\mingw\4.8.3\mingw64\bin
         BOOST_ROOT: C:\Libraries\boost_1_59_0
         POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
+        MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.6
 
 services:
     - mssql2014
@@ -59,12 +59,15 @@ before_build:
     - mkdir build.%BDIR%
     - cd build.%BDIR%
     - set SQLITE_ROOT=C:\projects\sqlite\sqlite.%BDIR%
-    - set PATH=%MINGW_ROOT%;%PATH%;%SQLITE_ROOT%\bin;%POSTGRESQL_ROOT%\bin
+    - set PATH=%MINGW_ROOT%;%PATH%;%SQLITE_ROOT%\bin;%POSTGRESQL_ROOT%\bin;%MYSQL_DIR%\bin;%MYSQL_DIR%\lib
     - echo %PATH%
     - cmake --version
     - set PGUSER=postgres
     - set PGPASSWORD=Password12!
     - createdb soci_test
+    - set MYSQL_PWD=Password12!
+    - set USER=root
+    - mysql -e "create database soci_test;" --user=root
     - cmake .. -G"%PRJ_GEN%" -DCMAKE_BUILD_TYPE=%PRJ_CFG% -DCMAKE_INSTALL_PREFIX=C:\projects\sqlite\sqlite.%BDIR%
     - cmake --build . --config %PRJ_CFG% --target INSTALL
 
@@ -72,11 +75,11 @@ build_script:
     - cd C:\projects\soci
     - mkdir build.%BDIR%
     - cd build.%BDIR%
-    - cmake .. -G"%PRJ_GEN%" -DCMAKE_BUILD_TYPE=%PRJ_CFG% -DWITH_MYSQL=%SOCI_MYSQL% -DCMAKE_VERBOSE_MAKEFILE=ON
+    - cmake .. -G"%PRJ_GEN%" -DCMAKE_BUILD_TYPE=%PRJ_CFG% -DCMAKE_VERBOSE_MAKEFILE=ON
     - cmake --build . --config %PRJ_CFG% --clean-first
 
 test_script:
-    - ctest -V --output-on-failure -E odbc
+    - ctest -V --output-on-failure -E "odbc|mysql"
 
 notifications:
     - provider: Webhook
