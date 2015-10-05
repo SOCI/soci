@@ -37,3 +37,6 @@ CMakeLists.txt.user
 
 # Eclipse
 /.project
+
+# Test Spam from top level CMakeLists.txt (generated file)
+tests/odbc/test-access.dsn

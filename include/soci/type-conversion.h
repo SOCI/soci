@@ -87,6 +87,13 @@ class conversion_use_type
 public:
     typedef typename type_conversion<T>::base_type base_type;
 
+#if (__clang__)
+// TODO: ownInd_ is passed to the base class before it is initialized!
+// This allows it to compile, however, it should be cleaned up.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wuninitialized"
+#endif
+
     conversion_use_type(T & value, std::string const & name = std::string())
         : use_type<base_type>(details::base_value_holder<T>::val_, ownInd_, name)
         , value_(value)
@@ -108,6 +115,10 @@ public:
         // TODO: likely to be removed (SHA: c166625a28f7c907318134f625ff5acea7d9a1f8)
         //convert_to_base();
     }
+
+#if (__clang__)
+#pragma clang diagnostic pop
+#endif
 
     conversion_use_type(T & value, indicator & ind,
             std::string const & name = std::string())
