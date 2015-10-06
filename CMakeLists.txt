@@ -86,9 +86,6 @@ if(NOT MSVC)
     set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES ${DL_INCLUDE_DIR})
     add_definitions(-DHAVE_DL=1)
   endif()
-else() #MSVC
-  # This flag enables multi process compiling for Visual Studio 2005 and above
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 endif()
 
 if(Boost_FOUND)

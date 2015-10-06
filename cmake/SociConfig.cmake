@@ -35,12 +35,10 @@ set (SOCI_CXX_C11 OFF CACHE BOOL "Build to the C++11 standard")
 #
 
 if (MSVC)
-  if (MSVC80 OR MSVC90 OR MSVC10)
-    add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-    add_definitions(-D_CRT_NONSTDC_NO_WARNING)
-    add_definitions(-D_SCL_SECURE_NO_WARNINGS)
-  endif()
+  add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+  add_definitions(-D_CRT_NONSTDC_NO_WARNING)
+  add_definitions(-D_SCL_SECURE_NO_WARNINGS)
 
   if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
     string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
