@@ -16,6 +16,31 @@
 using namespace soci;
 using namespace soci::tests;
 
+class mssql_init : public test_init
+{
+public:
+    mssql_init() {}
+    ~mssql_init() {}
+
+    void setup(session& sql) const
+    {
+        try
+        {
+            sql << "IF db_id('soci_test') IS NULL BEGIN CREATE DATABASE [soci_test] END";
+            sql << "USE [soci_test]";
+        }
+        catch (soci_error const& e)
+        {
+            std::cerr << e.what() << std::endl;
+        }
+    }
+
+    void teardown(session& ) const
+    {
+    }
+
+};
+
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_odbc();
 
@@ -23,11 +48,12 @@ backend_factory const &backEnd = *soci::factory_odbc();
 TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
 {
     session sql(backEnd, connectString);
+    mssql_init mi;
 
     struct long_text_table_creator : public table_creator_base
     {
-        explicit long_text_table_creator(session& sql)
-            : table_creator_base(sql)
+        explicit long_text_table_creator(session& sql, mssql_init * init)
+            : table_creator_base(sql, init)
         {
             // Notice that 4000 is the maximal length of an nvarchar() column,
             // at least when using FreeTDS ODBC driver.
@@ -36,7 +62,7 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
                         "fixed_text nvarchar(4000) null"
                     ")";
         }
-    } long_text_table_creator(sql);
+    } long_text_table_creator(sql, &mi);
 
     // Build a string at least 8000 characters long to test that it survives
     // the round trip unscathed.
@@ -76,8 +102,8 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
-    table_creator_one(soci::session & sql)
-        : table_creator_base(sql)
+    table_creator_one(soci::session & sql, const mssql_init * init)
+        : table_creator_base(sql, init)
     {
         sql << "create table soci_test(id integer, val integer, c char, "
                  "str varchar(20), sh smallint, ul numeric(20), d float, "
@@ -89,8 +115,8 @@ struct table_creator_one : public table_creator_base
 
 struct table_creator_two : public table_creator_base
 {
-    table_creator_two(soci::session & sql)
-        : table_creator_base(sql)
+    table_creator_two(soci::session & sql, const mssql_init * init)
+        : table_creator_base(sql, init)
     {
         sql  << "create table soci_test(num_float float, num_int integer,"
                      " name varchar(20), sometime datetime, chr char)";
@@ -99,8 +125,8 @@ struct table_creator_two : public table_creator_base
 
 struct table_creator_three : public table_creator_base
 {
-    table_creator_three(soci::session & sql)
-        : table_creator_base(sql)
+    table_creator_three(soci::session & sql, const mssql_init * init)
+        : table_creator_base(sql, init)
     {
         sql << "create table soci_test(name varchar(100) not null, "
             "phone varchar(15))";
@@ -109,8 +135,8 @@ struct table_creator_three : public table_creator_base
 
 struct table_creator_for_get_affected_rows : table_creator_base
 {
-    table_creator_for_get_affected_rows(soci::session & sql)
-        : table_creator_base(sql)
+    table_creator_for_get_affected_rows(soci::session & sql, const mssql_init * init)
+        : table_creator_base(sql, init)
     {
         sql << "create table soci_test(val integer)";
     }
@@ -129,22 +155,22 @@ public:
 
     table_creator_base* table_creator_1(soci::session& s) const
     {
-        return new table_creator_one(s);
+        return new table_creator_one(s, &init_);
     }
 
     table_creator_base* table_creator_2(soci::session& s) const
     {
-        return new table_creator_two(s);
+        return new table_creator_two(s, &init_);
     }
 
     table_creator_base* table_creator_3(soci::session& s) const
     {
-        return new table_creator_three(s);
+        return new table_creator_three(s, &init_);
     }
 
     table_creator_base * table_creator_4(soci::session& s) const
     {
-        return new table_creator_for_get_affected_rows(s);
+        return new table_creator_for_get_affected_rows(s, &init_);
     }
 
     std::string to_date_time(std::string const &datdt_string) const
@@ -160,6 +186,8 @@ public:
         // on the side of caution and suppose that it's not supported.
         return true;
     }
+
+    mssql_init init_;
 };
 
 int main(int argc, char** argv)

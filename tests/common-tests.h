@@ -210,15 +210,38 @@ namespace soci
 namespace tests
 {
 
+class test_init
+{
+public:
+    virtual ~test_init() {}
+
+    virtual void setup(session& sql) const = 0;
+    virtual void teardown(session& sql) const = 0;
+};
+
 // TODO: improve cleanup capabilities by subtypes, soci_test name may be omitted --mloskot
 //       i.e. optional ctor param accepting custom table name
 class table_creator_base
 {
 public:
-    table_creator_base(session& sql)
-        : msession(sql) { drop(); }
+    table_creator_base(session& sql, const test_init * i = 0)
+        : msession(sql), init_(i)
+    {
+        if (init_)
+        {
+            init_->setup(msession);
+        }
+        drop();
+    }
 
-    virtual ~table_creator_base() { drop();}
+    virtual ~table_creator_base()
+    {
+        drop();
+        if (init_)
+        {
+            init_->teardown(msession);
+        }
+    }
 private:
     void drop()
     {
@@ -233,6 +256,7 @@ private:
         }
     }
     session& msession;
+    const test_init * init_;
 
     SOCI_NOT_COPYABLE(table_creator_base)
 };
