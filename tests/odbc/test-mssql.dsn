@@ -1,8 +1,9 @@
 [ODBC]
-DRIVER=SQL Native Client
-UID=David
-DATABASE=soci_test
-WSID=NANO
-APP=Microsoft Data Access Components
-Trusted_Connection=Yes
-SERVER=localhost\SQLEXPRESS
+DRIVER=SQL Server Native Client 10.0
+UID=sa
+PWD=Password12!
+WSID=NIKULOV-NB
+APP=Microsoft® Windows® Operating System
+SERVER=(local)\SQL2014
+Description=SQL on AppVeyor
+
