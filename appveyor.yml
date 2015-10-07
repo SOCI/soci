@@ -51,6 +51,9 @@ install:
             7z x -y -oC:\projects\mingw\4.8.3\ C:\projects\mingw\x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z > $null
           }
     - git clone https://github.com/snikulov/sqlite.cmake.build.git C:\projects\sqlite\src
+    - ps: |
+          Import-Module C:\projects\soci\bin\windows\Get-ODBCList.ps1
+          Get-ODBCList
 
 before_build:
     # dirty little hack - remove sh from Git to make generator happy
@@ -68,6 +71,7 @@ before_build:
     - set MYSQL_PWD=Password12!
     - set USER=root
     - mysql -e "create database soci_test;" --user=root
+    - sqlcmd -U sa -P Password12! -S (local)\SQL2014 -i C:\projects\soci\bin\windows\mssql_db_create.sql 
     - cmake .. -G"%PRJ_GEN%" -DCMAKE_BUILD_TYPE=%PRJ_CFG% -DCMAKE_INSTALL_PREFIX=C:\projects\sqlite\sqlite.%BDIR%
     - cmake --build . --config %PRJ_CFG% --target INSTALL
 
@@ -79,7 +83,7 @@ build_script:
     - cmake --build . --config %PRJ_CFG% --clean-first
 
 test_script:
-    - ctest -V --output-on-failure -E "odbc|mysql"
+    - ctest -V --output-on-failure -R "soci_empty|soci_postgresql|soci_sqlite3|soci_odbc_test_mssql|soci_mysql"
 
 notifications:
     - provider: Webhook
