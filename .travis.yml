@@ -37,6 +37,10 @@ addons:
     coverity_scan:
         project:
             name: "SOCI/soci"
+        notification_email: soci-devel@lists.sourceforge.net
+        build_command_prepend: "mkdir build.cov; cd build.cov; cmake .."
+        build_command: "make -j 4"
+        branch_pattern: master
 
 before_install: ./bin/ci/before_install.sh
 before_script: ./bin/ci/before_script.sh
