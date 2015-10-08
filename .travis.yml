@@ -49,11 +49,11 @@ before_script: ./bin/ci/before_script.sh
 script: ./bin/ci/script.sh
 
 notifications:
-    email:
-        recipients:
-            - soci-devel@lists.sourceforge.net
-        on_success: change # [always|never|change] # default: change
-        on_failure: always # [always|never|change] # default: always
+    #email:
+    #    recipients:
+    #        - soci-devel@lists.sourceforge.net
+    #    on_success: change # [always|never|change] # default: change
+    #    on_failure: always # [always|never|change] # default: always
     irc:
         channels:
             - "irc.freenode.org#soci"
