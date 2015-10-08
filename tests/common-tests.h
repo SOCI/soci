@@ -3820,28 +3820,35 @@ TEST_CASE_METHOD(common_tests, "Get affected rows", "[core][affected-rows]")
         return;
     }
 
+
     for (int i = 0; i != 10; i++)
     {
         sql << "insert into soci_test(val) values(:val)", use(i);
     }
 
+    int step = 2; 
     statement st1 = (sql.prepare <<
-        "update soci_test set val = val + 1");
+        "update soci_test set val = val + :step where val = 5", use(step, "step"));
     st1.execute(true);
-
-    CHECK(st1.get_affected_rows() == 10);
+    CHECK(st1.get_affected_rows() == 1);
 
     statement st2 = (sql.prepare <<
-        "delete from soci_test where val <= 5");
+        "update soci_test set val = val + 1");
     st2.execute(true);
 
-    CHECK(st2.get_affected_rows() == 5);
+    CHECK(st2.get_affected_rows() == 10);
 
     statement st3 = (sql.prepare <<
-        "update soci_test set val = val + 1");
+        "delete from soci_test where val <= 5");
     st3.execute(true);
 
     CHECK(st3.get_affected_rows() == 5);
+
+    statement st4 = (sql.prepare <<
+        "update soci_test set val = val + 1");
+    st4.execute(true);
+
+    CHECK(st4.get_affected_rows() == 5);
 
     std::vector<int> v(5, 0);
     for (std::size_t i = 0; i < v.size(); ++i)
@@ -3850,17 +3857,17 @@ TEST_CASE_METHOD(common_tests, "Get affected rows", "[core][affected-rows]")
     }
 
     // test affected rows for bulk operations.
-    statement st4 = (sql.prepare <<
+    statement st5 = (sql.prepare <<
         "delete from soci_test where val = :v", use(v));
-    st4.execute(true);
+    st5.execute(true);
 
-    CHECK(st4.get_affected_rows() == 5);
+    CHECK(st5.get_affected_rows() == 5);
 
     std::vector<std::string> w(2, "1");
     w[1] = "a"; // this invalid value may cause an exception.
-    statement st5 = (sql.prepare <<
+    statement st6 = (sql.prepare <<
         "insert into soci_test(val) values(:val)", use(w));
-    try { st5.execute(true); }
+    try { st6.execute(true); }
     catch(...) {}
 
     // confirm the partial insertion.
@@ -3870,7 +3877,7 @@ TEST_CASE_METHOD(common_tests, "Get affected rows", "[core][affected-rows]")
     {
         // test the preserved 'number of rows
         // affected' after a potential failure.
-        CHECK(st5.get_affected_rows() != 0);
+        CHECK(st6.get_affected_rows() != 0);
     }
 }
 
