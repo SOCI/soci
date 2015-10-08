@@ -32,3 +32,8 @@ run_test()
 {
     ctest -V --output-on-failure "$@" .
 }
+
+run_test_memcheck()
+{
+    valgrind --leak-check=full --error-exitcode=1 --trace-children=yes ctest -V --output-on-failure "$@" .
+}
