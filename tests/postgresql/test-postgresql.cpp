@@ -329,6 +329,31 @@ TEST_CASE("PostgreSQL boolean", "[postgresql][boolean]")
     CHECK(i2 == 1);
 }
 
+struct uuid_table_creator : table_creator_base
+{
+    uuid_table_creator(soci::session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val uuid)";
+    }
+};
+
+// uuid test
+TEST_CASE("PostgreSQL uuid", "[postgresql][uuid]")
+{
+    soci::session sql(backEnd, connectString);
+
+    uuid_table_creator tableCreator(sql);
+
+    std::string v1("cd2dcb78-3817-442e-b12a-17c7e42669a0");
+    sql << "insert into soci_test(val) values(:val)", use(v1);
+
+    std::string v2;
+    sql << "select val from soci_test", into(v2);
+
+    CHECK(v2 == v1);
+}
+
 // dynamic backend test -- currently skipped by default
 TEST_CASE("PostgreSQL dynamic backend", "[postgresql][backend][.]")
 {
