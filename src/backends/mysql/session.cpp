@@ -314,7 +314,7 @@ mysql_session_backend::mysql_session_backend(
     {
         mysql_ssl_set(conn_, ssl_key_p ? ssl_key.c_str() : NULL,
                       ssl_cert_p ? ssl_cert.c_str() : NULL,
-                      ssl_ca_p ? ssl_ca.c_str() : NULL, 0, 0);
+                      ssl_ca.c_str(), 0, 0);
     }
     if (local_infile_p and local_infile == 1)
     {
