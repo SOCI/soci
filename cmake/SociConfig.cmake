@@ -72,6 +72,12 @@ else()
 
   elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" OR "${CMAKE_CXX_COMPILER}" MATCHES "clang")
 
+    # enforce C++11 for Clang
+    set(SOCI_CXX_C11 ON)
+    set(SOCI_CXX_VERSION_FLAGS "-std=c++11")
+    add_definitions(-DSOCI_CXX_C11)
+    add_definitions(-DCATCH_CONFIG_CPP11_NO_IS_ENUM)
+
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SOCI_GCC_CLANG_COMMON_FLAGS} ${SOCI_CXX_VERSION_FLAGS}")
 
   else()
