@@ -10,7 +10,7 @@ sudo add-apt-repository -y ppa:apt-fast/stable
 sudo apt-get update -qq -y
 sudo apt-get install -qq -y apt-fast
 sudo apt-fast update -qq -y
-sudo apt-fast install -qq -y libboost-dev libboost-date-time-dev
+sudo apt-fast install -qq -y libboost-dev libboost-date-time-dev valgrind
 
 before_install="${TRAVIS_BUILD_DIR}/bin/ci/before_install_${SOCI_TRAVIS_BACKEND}.sh"
 if [ -x ${before_install} ]; then

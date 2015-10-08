@@ -26,11 +26,13 @@ env:
         - SOCI_TRAVIS_BACKEND=postgresql
         - SOCI_TRAVIS_BACKEND=postgression
         - SOCI_TRAVIS_BACKEND=sqlite3
+        - SOCI_TRAVIS_BACKEND=valgrind
 
 matrix:
     fast_finish: true
     allow_failures:
         - env: SOCI_TRAVIS_BACKEND=postgression
+        - env: SOCI_TRAVIS_BACKEND=valgrind
         - compiler: clang
 
 addons:
