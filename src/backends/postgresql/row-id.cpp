@@ -31,7 +31,7 @@ using namespace soci::details;
 postgresql_rowid_backend::postgresql_rowid_backend(
     postgresql_session_backend & /* session */)
 {
-    // nothing to do here
+    value_ = 0;
 }
 
 postgresql_rowid_backend::~postgresql_rowid_backend()
