@@ -16,8 +16,8 @@ using namespace soci::details;
 
 sqlite3_rowid_backend::sqlite3_rowid_backend(
     sqlite3_session_backend & /* session */)
+    : value_(0)
 {
-    // ...
 }
 
 sqlite3_rowid_backend::~sqlite3_rowid_backend()
