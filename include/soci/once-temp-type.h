@@ -11,7 +11,7 @@
 #include "soci/ref-counted-statement.h"
 #include "soci/prepare-temp-type.h"
 
-#if __cplusplus >= 201103L
+#ifdef SOCI_CXX_C11
 #define SOCI_ONCE_TEMP_TYPE_NOEXCEPT noexcept(false)
 #else
 #define SOCI_ONCE_TEMP_TYPE_NOEXCEPT
