@@ -13,6 +13,7 @@ src/build
 Makefile
 src/core/soci_backends_config.h
 tests/odbc/test-access.dsn
+tests/odbc/test-mysql.dsn
 
 # ... and the rest of CMake spam
 CMakeFiles/

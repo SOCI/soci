@@ -151,6 +151,13 @@ if(SOCI_TESTS)
 
   file(TO_NATIVE_PATH ${PROJECT_SOURCE_DIR} TEST_ACCESS_PATH)
   configure_file(${PROJECT_SOURCE_DIR}/cmake/configs/test-access.cmake ${PROJECT_SOURCE_DIR}/tests/odbc/test-access.dsn @ONLY)
+
+  set(MYSQL_DRIVER_NAME "MySQL")
+  if(WIN32)
+    set(MYSQL_DRIVER_NAME "MySQL ODBC 5.3 ANSI Driver")
+  endif()
+  configure_file(${PROJECT_SOURCE_DIR}/cmake/configs/test-mysql.cmake ${PROJECT_SOURCE_DIR}/tests/odbc/test-mysql.dsn @ONLY)
+
   # Define "make check" as alias for "make test"
   add_custom_target(check COMMAND ctest)
   add_subdirectory(tests)
