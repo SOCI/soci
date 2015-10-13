@@ -54,7 +54,6 @@ else()
 
   if (SOCI_CXX_C11)
     set(SOCI_CXX_VERSION_FLAGS "-std=c++11")
-    add_definitions(-DSOCI_CXX_C11)
   else()
     set(SOCI_CXX_VERSION_FLAGS "-std=gnu++98")
   endif()
@@ -75,7 +74,6 @@ else()
     # enforce C++11 for Clang
     set(SOCI_CXX_C11 ON)
     set(SOCI_CXX_VERSION_FLAGS "-std=c++11")
-    add_definitions(-DSOCI_CXX_C11)
     add_definitions(-DCATCH_CONFIG_CPP11_NO_IS_ENUM)
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SOCI_GCC_CLANG_COMMON_FLAGS} ${SOCI_CXX_VERSION_FLAGS}")
@@ -84,4 +82,8 @@ else()
 	message(WARNING "Unknown toolset - using default flags to build SOCI")
   endif()
 
+endif()
+
+if(SOCI_CXX_C11)
+  add_definitions(-DSOCI_CXX_C11)
 endif()
