@@ -1898,7 +1898,7 @@ TEST_CASE_METHOD(common_tests, "Transactions", "[core][transaction]")
 
 std::tm  generate_tm()
 {
-    std::tm t = {0};
+    std::tm t = std::tm();
     t.tm_year = 105;
     t.tm_mon = 10;
     t.tm_mday = 15;
@@ -1927,7 +1927,7 @@ TEST_CASE_METHOD(common_tests, "Use with indicators", "[core][use][indicator]")
     id = 2;
     val = 11;
     ind2 = i_null;
-    std::tm tm = {0};
+    std::tm tm = std::tm();
     ind3 = i_null;
 
     sql << "insert into soci_test(id, val, tm) values(:id, :val, :tm)",
@@ -2027,7 +2027,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         ASSERT_EQUAL_APPROX(r.get<double>(0), 3.14);
         CHECK(r.get<int>(1) == 123);
         CHECK(r.get<std::string>(2) == "Johny");
-        std::tm t = { 0 };
+        std::tm t = std::tm();
         t = r.get<std::tm>(3);
         CHECK(t.tm_year == 105);
 
@@ -2600,7 +2600,7 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
                 ASSERT_EQUAL_APPROX(r1.get<double>(0), 3.14);
                 CHECK(r1.get<int>(1) == 123);
                 CHECK(r1.get<std::string>(2) == "Johny");
-                std::tm t1 = { 0 };
+                std::tm t1 = std::tm();
                 t1 = r1.get<std::tm>(3);
                 CHECK(t1.tm_year == 105);
                 CHECK_EQUAL_PADDED(r1.get<std::string>(4), "a");
@@ -3826,7 +3826,7 @@ TEST_CASE_METHOD(common_tests, "Get affected rows", "[core][affected-rows]")
         sql << "insert into soci_test(val) values(:val)", use(i);
     }
 
-    int step = 2; 
+    int step = 2;
     statement st1 = (sql.prepare <<
         "update soci_test set val = val + :step where val = 5", use(step, "step"));
     st1.execute(true);
