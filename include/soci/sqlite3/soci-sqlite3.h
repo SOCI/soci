@@ -71,7 +71,9 @@ struct sqlite3_statement_backend;
 struct sqlite3_standard_into_type_backend : details::standard_into_type_backend
 {
     sqlite3_standard_into_type_backend(sqlite3_statement_backend &st)
-        : statement_(st) {}
+        : statement_(st), data_(0), type_(), position_(0)
+    {
+    }
 
     virtual void define_by_pos(int &position,
                              void *data, details::exchange_type type);
@@ -92,7 +94,9 @@ struct sqlite3_standard_into_type_backend : details::standard_into_type_backend
 struct sqlite3_vector_into_type_backend : details::vector_into_type_backend
 {
     sqlite3_vector_into_type_backend(sqlite3_statement_backend &st)
-        : statement_(st) {}
+        : statement_(st), data_(0), type_(), position_(0)
+    {
+    }
 
     void define_by_pos(int& position, void* data, details::exchange_type type);
 
@@ -136,7 +140,9 @@ struct sqlite3_standard_use_type_backend : details::standard_use_type_backend
 struct sqlite3_vector_use_type_backend : details::vector_use_type_backend
 {
     sqlite3_vector_use_type_backend(sqlite3_statement_backend &st)
-        : statement_(st) {}
+        : statement_(st), data_(0), type_(), position_(0)
+    {
+    }
 
     virtual void bind_by_pos(int &position,
                            void *data, details::exchange_type type);
