@@ -3832,6 +3832,10 @@ TEST_CASE_METHOD(common_tests, "Get affected rows", "[core][affected-rows]")
     st1.execute(true);
     CHECK(st1.get_affected_rows() == 1);
 
+    // attempts to run the query again, no rows should be affected
+    st1.execute(true);
+    CHECK(st1.get_affected_rows() == 0);
+
     statement st2 = (sql.prepare <<
         "update soci_test set val = val + 1");
     st2.execute(true);
