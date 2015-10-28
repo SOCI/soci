@@ -208,6 +208,7 @@ struct sqlite3_statement_backend : details::statement_backend
     virtual void prepare(std::string const &query,
         details::statement_type eType);
     void reset_if_needed();
+    void reset();
 
     virtual exec_fetch_result execute(int number);
     virtual exec_fetch_result fetch(int number);
