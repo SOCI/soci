@@ -80,11 +80,16 @@ void sqlite3_statement_backend::reset_if_needed()
 {
     if (stmt_ && databaseReady_ == false)
     {
-        int const res = sqlite3_reset(stmt_);
-        if (SQLITE_OK == res)
-        {
-            databaseReady_ = true;
-        }
+        reset();
+    }
+}
+
+void sqlite3_statement_backend::reset()
+{
+    int const res = sqlite3_reset(stmt_);
+    if (SQLITE_OK == res)
+    {
+        databaseReady_ = true;
     }
 }
 
