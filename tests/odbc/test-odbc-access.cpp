@@ -16,7 +16,7 @@
 using namespace soci;
 using namespace soci::tests;
 
-#ifdef HAVE_BOOST
+#ifdef SOCI_HAVE_BOOST
 // It appears later versions of GCC arent happy with this - to be fixed properly
 #if (__GNUC__ == 4 && (__GNUC_MINOR__ > 6)) || (__clang__ == 1)
 #include <boost/optional.hpp>
@@ -31,7 +31,7 @@ namespace boost {
     }
 }
 #endif
-#endif // HAVE_BOOST
+#endif // SOCI_HAVE_BOOST
 
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_odbc();
