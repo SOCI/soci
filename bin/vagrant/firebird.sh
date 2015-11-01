@@ -6,7 +6,9 @@
 source /vagrant/bin/vagrant/common.env
 export DEBIAN_FRONTEND="noninteractive"
 # FIXME: these debconf lines should automate the Firebird config but do/may not :(
-#        We work around this bug with Expect script below used to update SYSDBA password.
+# However, keep them enabled to allow smooth(er) apt-get/dpkg operations.
+# Othwerise, installation of firebird packages may fail, randomly.
+# We work around this bug with Expect script below used to update SYSDBA password.
 sudo debconf-set-selections <<< "firebird2.5-super shared/firebird/enabled boolean true"
 sudo debconf-set-selections <<< "firebird2.5-super shared/firebird/sysdba_password/first_install password masterkey"
 # Installation
