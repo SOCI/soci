@@ -41,10 +41,18 @@ Vagrant.configure(2) do |config|
   #   end
   # end
   #
-  # # Configure database box with IBM DB2 Express-C
-  # config.vm.define "db2" do |db2|
-  #   db2.vm.provision "database", type: "shell" do |s|
-  #     s.inline = "echo Installing DB2'"
-  #   end
-  # end
+  # Configure database box with IBM DB2 Express-C
+  config.vm.define "db2" do |db2|
+    db2.vm.network "forwarded_port", guest: 50000, host: 50000
+    db2.vm.provider :virtualbox do |vb|
+      vb.customize ["modifyvm", :id, "--memory", "1024"]
+    end
+    scripts = [
+      "bootstrap.sh",
+      "db2.sh"
+    ]
+    scripts.each { |script|
+      db2.vm.provision :shell, privileged: false, :path => "bin/vagrant/" << script
+    }
+  end
 end
