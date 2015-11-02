@@ -4,11 +4,9 @@
 # Copyright (c) 2013 Brian R. Toonen <toonen@alcf.anl.gov>
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-source ${TRAVIS_BUILD_DIR}/bin/ci/common.sh
-
 sudo bash -c 'echo "deb http://archive.canonical.com/ubuntu precise partner" >> /etc/apt/sources.list'
-sudo apt-get update -qq
-sudo apt-get install -y db2exc
+sudo apt-get update -qq -y
+sudo apt-get install -qq -y db2exc
 
 echo "Running db2profile and db2rmln"
 sudo /bin/sh -c '. ~db2inst1/sqllib/db2profile ; $DB2DIR/cfg/db2rmln'
