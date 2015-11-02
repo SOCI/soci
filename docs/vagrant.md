@@ -9,7 +9,7 @@ virtual environments for SOCI development.
 * Multi-machine set-up with three VMs: soci, oracle, db2.
 * `soci.vm`:
   * build essentials
-  * core dependenciesh
+  * core dependencies
   * backend dependencies
   * FOSS databases installed with sample `soci` user and instance pre-configured
   * during provision, automatically clones and builds SOCI from `master` branch.
@@ -44,7 +44,8 @@ git pull origin master
 vagrant {suspend|halt|destroy} soci
 ```
 
-Check Vagrant [command-line interface](https://docs.vagrantup.com/v2/cli/index.html) for complete list of commands.
+Check Vagrant [command-line interface](https://docs.vagrantup.com/v2/cli/index.html)
+for complete list of commands.
 
 ### Environment variables
 
@@ -60,6 +61,7 @@ Note, those variables are also used by provision scripts to set up databases.
 ## Troubleshooting
 
 * Analyze `vagrant up` output.
-* On Windows, prefer `vagrant ssh` from inside MinGW Shell with `ssh.exe`
-  installed or learn how to use Vagrant with PuTTY.
-* If you modify any of `bin/vagrant/*.sh` scripts, **ensure** they have unified end-of-line characters to `LF` only. Othwerise, provisioning steps may fail.
+* On Windows, prefer `vagrant ssh` from inside MinGW Shell where  `ssh.exe` is available or
+  learn how to use Vagrant with PuTTY.
+* If you modify any of `bin/vagrant/*.sh` scripts, **ensure** they have unified
+  end-of-line characters to `LF` only. Othwerise, provisioning steps may fail.
