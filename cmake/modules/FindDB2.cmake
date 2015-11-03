@@ -70,11 +70,15 @@ endif()
 find_path(DB2_INCLUDE_DIR sqlcli1.h
   $ENV{DB2_INCLUDE_DIR}
   $ENV{DB2_DIR}/include
+  $ENV{DB2_HOME}
+  $ENV{IBM_DB_INCLUDE}
   ${DB2_FIND_INCLUDE_PATHS})
 
 find_library(DB2_LIBRARY
   NAMES db2 db2api
   PATHS
+  $ENV{DB2LIB}
+  $ENV{IBM_DB_LIB}
   ${DB2_FIND_LIB_PATHS}
   ${DB2_FIND_LIB_NO_LIB})
 
