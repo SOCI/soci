@@ -23,5 +23,6 @@ sudo apt-get -o Dpkg::Options::='--force-confnew' -y -q install \
   libsqlite3-dev \
   odbc-postgresql \
   unixodbc-dev \
-  valgrind
+  valgrind \
+  zip
 # Post-installation
