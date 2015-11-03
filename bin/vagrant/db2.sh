@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Part of Vagrant virtual development environments for SOCI
 
-# Installs PostgreSQL with 'soci' user and database
+# Installs DB2 Express-C 9.7
 # Pre-installation
 source /vagrant/bin/vagrant/common.env
 export DEBIAN_FRONTEND="noninteractive"
