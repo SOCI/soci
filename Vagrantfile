@@ -23,6 +23,7 @@ Vagrant.configure(2) do |config|
     scripts = [
       "bootstrap.sh",
       "devel.sh",
+      "db2cli.sh",
       "firebird.sh",
       "mysql.sh",
       "postgresql.sh",

@@ -6,7 +6,7 @@ virtual environments for SOCI development.
 ## Features
 
 * Ubuntu 14.04 (Trusty) virtual machine
-* Multi-machine set-up with three VMs: soci, oracle, db2.
+* Multi-machine set-up with three VMs: `soci`, `oracle`, `db2`.
 * `soci.vm`:
   * build essentials
   * core dependencies
@@ -16,16 +16,39 @@ virtual environments for SOCI development.
 * `oracle.vm`:
   * *TODO*: provision with Oracle XE
 * `db2.vm`:
-  * *TODO*: provision with IBM DB2 Express-C
+  * IBM DB2 Express-C 9.7 installed from http://archive.canonical.com packages.
+  * *TODO*: Vagrant networking settings.
+
+## Prerequisites
+
+* Speedy broadband, time and coffee.
+* Recommended 4GB or much more RAM (tested with 16GB only).
+
+### SOCI DB2 backend
+
+The `soci.vm` will be configured properly to build the DB2 backend only if
+it is provisioned with complete DB2 CLI client (libraries and headers).
+You need to download "IBM Data Server Driver Package (DS Driver)" manually
+and make it visible to Vagrant:
+
+  1. Go to http://www-01.ibm.com/support/docview.wss?uid=swg21385217
+  2. Download "IBM Data Server Driver Package (DS Driver)"
+  3. Copy the package to `{SOCI SOURCE TREE ROOT}/tmp` directory.
+
+### SOCI DB2 backend
+
+*TODO*
 
 ## Usage
 
 * [Boot](https://docs.vagrantup.com/v2/getting-started/up.html)
 ```
-vagrant up soci
+vagrant up # boots all three VMs: soci, db2, oracle (to be provided)
+vagrant up soci # boots only soci.vm
+vagrant up db2 # boots only db2.vm
 ```
-First time you run it, be patient as Vagrant downloads VM box and provisions it
-installing all the necessary packages.
+First time you run it, be patient as Vagrant downloads VM box and
+provisions it installing all the necessary packages.
 
 * You can SSH into the machine
 ```

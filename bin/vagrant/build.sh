@@ -22,10 +22,9 @@ fi
 echo "Build: building SOCI"
 cd ${SOCI_HOME}/_build && \
 cmake \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DSOCI_TESTS=ON \
     -DSOCI_STATIC=OFF \
-    -DSOCI_DB2=OFF \
+    -DSOCI_DB2=ON \
     -DSOCI_ODBC=OFF \
     -DSOCI_ORACLE=OFF \
     -DSOCI_EMPTY=ON \
