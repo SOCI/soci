@@ -36,6 +36,8 @@ cmake \
     -DSOCI_MYSQL_TEST_CONNSTR:STRING="host=localhost db=${SOCI_USER} user=${SOCI_USER} password==${SOCI_PASS}" \
     -DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="host=localhost port=5432 dbname=${SOCI_USER} user=${SOCI_USER} password==${SOCI_PASS}" \
     .. && \
-make && \
-ctest -V --output-on-failure .
+make
+# Do not run tests during provisioning, thay may fail terribly, so just build
+# and let to run them manually after developer vagrant ssh'ed to the VM.
+#ctest -V --output-on-failure .
 echo "Build: building DONE"
