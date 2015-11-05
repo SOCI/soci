@@ -22,6 +22,9 @@ Vagrant.configure(2) do |config|
   config.vm.define "soci" do |soci|
     soci.vm.hostname = "vmsoci"
     soci.vm.network "private_network", type: "dhcp"
+    soci.vm.provider :virtualbox do |vb|
+      vb.customize ["modifyvm", :id, "--memory", "1024"]
+    end
     scripts = [
       "bootstrap.sh",
       "devel.sh",
