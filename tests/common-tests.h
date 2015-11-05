@@ -10,7 +10,7 @@
 
 #include "soci/soci.h"
 
-#ifdef HAVE_BOOST
+#ifdef SOCI_HAVE_BOOST
 // explicitly pull conversions for Boost's optional, tuple and fusion:
 #include <boost/version.hpp>
 #include "soci/boost-optional.h"
@@ -19,7 +19,7 @@
 #if defined(BOOST_VERSION) && BOOST_VERSION >= 103500
 #include "soci/boost-fusion.h"
 #endif // BOOST_VERSION
-#endif // HAVE_BOOST
+#endif // SOCI_HAVE_BOOST
 
 #include "soci-compiler.h"
 
@@ -2877,7 +2877,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic binding with rowset", "[core][dynamic][t
     }
 }
 
-#ifdef HAVE_BOOST
+#ifdef SOCI_HAVE_BOOST
 
 // test for handling NULL values with boost::optional
 // (both into and use)
@@ -3214,7 +3214,7 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
     }
 }
 
-#endif // HAVE_BOOST
+#endif // SOCI_HAVE_BOOST
 
 // connection and reconnection tests
 TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
@@ -3282,7 +3282,7 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
 
 }
 
-#ifdef HAVE_BOOST
+#ifdef SOCI_HAVE_BOOST
 
 TEST_CASE_METHOD(common_tests, "Boost tuple", "[core][boost][tuple]")
 {
@@ -3634,7 +3634,7 @@ TEST_CASE_METHOD(common_tests, "Boost date", "[core][boost][datetime]")
 
 }
 
-#endif // HAVE_BOOST
+#endif // SOCI_HAVE_BOOST
 
 // connection pool - simple sequential test, no multiple threads
 TEST_CASE_METHOD(common_tests, "Connection pool", "[core][connection][pool]")

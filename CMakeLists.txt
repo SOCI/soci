@@ -93,12 +93,13 @@ if(Boost_FOUND)
     DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     PROPERTY COMPILE_DEFINITIONS)
 
-  list(APPEND SOCI_COMPILE_DEFINITIONS "HAVE_BOOST=1")
+  set(SOCI_HAVE_BOOST ON)
+
   list(APPEND SOCI_COMPILE_DEFINITIONS "BOOST_ALL_NO_LIB")
 
   if(Boost_DATE_TIME_FOUND)
     list(APPEND SOCI_CORE_DEPS_LIBS ${Boost_DATE_TIME_LIBRARY})
-    list(APPEND SOCI_COMPILE_DEFINITIONS "HAVE_BOOST_DATE_TIME=1")
+    set(SOCI_HAVE_BOOST_DATE_TIME ON)
   endif()
 
   list(APPEND SOCI_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
@@ -108,7 +109,13 @@ if(Boost_FOUND)
 
   set_property(DIRECTORY ${SOCI_SOURCE_DIR}
     PROPERTY COMPILE_DEFINITIONS "${SOCI_COMPILE_DEFINITIONS}")
+else()
+  set(SOCI_HAVE_BOOST OFF)
+  set(SOCI_HAVE_BOOST_DATE_TIME OFF)
 endif()
+
+set(SOCI_HAVE_BOOST ${SOCI_HAVE_BOOST} CACHE INTERNAL "Boost library")
+set(SOCI_HAVE_BOOST_DATE_TIME ${SOCI_HAVE_BOOST_DATE_TIME} CACHE INTERNAL "Boost date_time library")
 
 list(APPEND SOCI_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -134,11 +141,21 @@ set(DATADIR "share" CACHE PATH "The directory to install data files into.")
 set(INCLUDEDIR "include" CACHE PATH "The directory to install includes into.")
 
 ###############################################################################
+# Configuration files
+###############################################################################
+set(CONFIG_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
+install(DIRECTORY ${CONFIG_INCLUDE_DIR}/soci DESTINATION ${INCLUDEDIR})
+set(CONFIG_FILE_IN "include/soci/soci-config.h.in")
+set(CONFIG_FILE_OUT "${CONFIG_INCLUDE_DIR}/soci/soci-config.h")
+
+
+
+###############################################################################
 # Build configured components
 ###############################################################################
 include(SociBackend)
 
-include_directories(${SOCI_SOURCE_DIR}/include)
+include_directories(${SOCI_SOURCE_DIR}/include ${CONFIG_INCLUDE_DIR})
 add_subdirectory(src)
 
 if(SOCI_TESTS)
@@ -162,6 +179,25 @@ if(SOCI_TESTS)
   add_custom_target(check COMMAND ctest)
   add_subdirectory(tests)
 endif()
+
+###############################################################################
+# build config file
+###############################################################################
+
+get_cmake_property(ALL_VARIABLES CACHE_VARIABLES)
+set(CONFIGURED_VARIABLES)
+foreach(v ${ALL_VARIABLES})
+    if (v MATCHES "^SOCI_HAVE.*")
+	get_property(CACHE_HELPSTRING CACHE ${v} PROPERTY HELPSTRING)
+		set(CONFIGURED_VARIABLES "${CONFIGURED_VARIABLES}\n// ${CACHE_HELPSTRING}\n")
+        if (${${v}})
+            set(CONFIGURED_VARIABLES "${CONFIGURED_VARIABLES}#define ${v}\n")
+        else()
+            set(CONFIGURED_VARIABLES "${CONFIGURED_VARIABLES}/* #undef ${v} */\n")
+        endif()
+    endif()
+endforeach()
+configure_file("${CONFIG_FILE_IN}" "${CONFIG_FILE_OUT}")
 
 message(STATUS "")
 

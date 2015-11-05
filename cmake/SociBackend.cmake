@@ -22,7 +22,6 @@ macro(soci_backend_deps_found NAME DEPS SUCCESS)
   # Determine required dependencies
   set(DEPS_INCLUDE_DIRS)
   set(DEPS_LIBRARIES)
-  set(DEPS_DEFS)
   set(DEPS_NOT_FOUND)
 
   # CMake 2.8+ syntax only:
@@ -40,7 +39,6 @@ macro(soci_backend_deps_found NAME DEPS SUCCESS)
         list(APPEND DEPS_INCLUDE_DIRS ${${DEPU}_INCLUDE_DIRS})
       endif()
       list(APPEND DEPS_LIBRARIES ${${DEPU}_LIBRARIES})
-      list(APPEND DEPS_DEFS HAVE_${DEPU}=1)
     endif()
   endforeach()
 
@@ -51,7 +49,6 @@ macro(soci_backend_deps_found NAME DEPS SUCCESS)
   else()
     set(${NAME}_DEPS_INCLUDE_DIRS ${DEPS_INCLUDE_DIRS})
     set(${NAME}_DEPS_LIBRARIES ${DEPS_LIBRARIES})
-    set(${NAME}_DEPS_DEFS ${DEPS_DEFS})
     set(${SUCCESS} True)
   endif()
 
