@@ -7,7 +7,9 @@ virtual environments for SOCI development.
 
 * Ubuntu 14.04 (Trusty) virtual machine
 * Multi-machine set-up with three VMs: `soci`, `oracle`, `db2`.
+* Support networking between the configured machines.
 * `soci.vm`:
+  * hostname: `vmsoci.local`
   * build essentials
   * core dependencies
   * backend dependencies
@@ -16,6 +18,7 @@ virtual environments for SOCI development.
 * `oracle.vm`:
   * *TODO*: provision with Oracle XE
 * `db2.vm`:
+  * hostname: `vmdb2.local`
   * IBM DB2 Express-C 9.7 installed from http://archive.canonical.com packages.
   * *TODO*: Vagrant networking settings.
 
