@@ -20,6 +20,8 @@ Vagrant.configure(2) do |config|
 
   # Configure main SOCI development box with build essentials, OSS DBs
   config.vm.define "soci" do |soci|
+    soci.vm.hostname = "vmsoci"
+    soci.vm.network "private_network", type: "dhcp"
     scripts = [
       "bootstrap.sh",
       "devel.sh",
@@ -44,7 +46,8 @@ Vagrant.configure(2) do |config|
   #
   # Configure database box with IBM DB2 Express-C
   config.vm.define "db2" do |db2|
-    db2.vm.network "forwarded_port", guest: 50000, host: 50000
+    db2.vm.hostname = "vmdb2"
+    db2.vm.network "private_network", type: "dhcp"
     db2.vm.provider :virtualbox do |vb|
       vb.customize ["modifyvm", :id, "--memory", "1024"]
     end
