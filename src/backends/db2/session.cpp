@@ -58,6 +58,7 @@ void db2_session_backend::parseKeyVal(std::string const & keyVal) {
 }
 
 /* DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;AutoCommit=off */
+/* DATABASE=SAMPLE;hostname=server.com;UID=db2inst1;PWD=db2inst1;ServiceName=50000;Protocol=TCPIP; */
 void db2_session_backend::parseConnectString(std::string const &  connectString) {
     std::string processingString(connectString);
     size_t delimiter=processingString.find_first_of(";");
