@@ -8,10 +8,11 @@
 #ifndef SOCI_ONCE_TEMP_TYPE_H_INCLUDED
 #define SOCI_ONCE_TEMP_TYPE_H_INCLUDED
 
+#include "soci/soci-config.h"
 #include "soci/ref-counted-statement.h"
 #include "soci/prepare-temp-type.h"
 
-#ifdef SOCI_CXX_C11
+#ifdef SOCI_HAVE_CXX_C11
 #define SOCI_ONCE_TEMP_TYPE_NOEXCEPT noexcept(false)
 #else
 #define SOCI_ONCE_TEMP_TYPE_NOEXCEPT

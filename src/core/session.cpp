@@ -6,6 +6,7 @@
 //
 
 #define SOCI_SOURCE
+#include "soci/soci-config.h"
 #include "soci/session.h"
 #include "soci/connection-parameters.h"
 #include "soci/connection-pool.h"
@@ -231,7 +232,7 @@ std::string session::get_query() const
 }
 
 
-#ifdef SOCI_CXX_C11
+#ifdef SOCI_HAVE_CXX_C11
 void session::set_query_transformation_( std::unique_ptr<details::query_transformation_function> &qtf)
 #else
 void session::set_query_transformation_( std::auto_ptr<details::query_transformation_function> qtf)

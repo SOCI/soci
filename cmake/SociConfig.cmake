@@ -84,6 +84,5 @@ else()
 
 endif()
 
-if(SOCI_CXX_C11)
-  add_definitions(-DSOCI_CXX_C11)
-endif()
+# Set SOCI_HAVE_* variables for soci-config.h generator
+set(SOCI_HAVE_CXX_C11 ${SOCI_CXX_C11} CACHE INTERNAL "Enables C++11 support")

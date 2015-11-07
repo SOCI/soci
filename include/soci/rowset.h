@@ -8,6 +8,7 @@
 #ifndef SOCI_ROWSET_H_INCLUDED
 #define SOCI_ROWSET_H_INCLUDED
 
+#include "soci/soci-config.h"
 #include "soci/statement.h"
 // std
 #include <iterator>
@@ -147,7 +148,7 @@ private:
 
     unsigned int refs_;
 
-#ifdef SOCI_CXX_C11
+#ifdef SOCI_HAVE_CXX_C11
     const std::unique_ptr<statement> st_;
     const std::unique_ptr<T> define_;
 #else
