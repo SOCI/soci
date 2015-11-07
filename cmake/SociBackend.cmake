@@ -337,7 +337,7 @@ macro(soci_backend_test)
       endif()
     endif()
 
-    boost_report_value(${TEST_CONNSTR_VAR})
+    boost_message_value(${TEST_CONNSTR_VAR})
 
     if( SOCI_SHARED )
       # Shared libraries test
