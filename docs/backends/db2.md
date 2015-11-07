@@ -85,6 +85,19 @@ TODO
 
 None.
 
-### <a name="config"></a> Configuration options
+### <a name="configuration"></a> Configuration options
 
-None.
+This backend supports `db2_option_driver_complete` option which can be passed to
+it via `connection_parameters` class. The value of this option is passed to
+`SQLDriverConnect()` function as "driver completion" parameter and so must be
+one of `SQL_DRIVER_XXX` values, in the string form. The default value of this
+option is `SQL_DRIVER_PROMPT` meaning that the driver will query the user for
+the user name and/or the password if they are not stored together with the
+connection. If this is undesirable for some reason, you can use `SQL_DRIVER_NOPROMPT` value for this option to suppress showing the message box:
+
+  connection_parameters parameters("db2", "DSN=sample");
+  parameters.set_option(db2_option_driver_complete, "0" /* SQL_DRIVER_NOPROMPT */);
+  session sql(parameters);
+
+Note, `db2_option_driver_complete` controls driver completion specific to the
+IBM DB2 driver for ODBC and CLI.
