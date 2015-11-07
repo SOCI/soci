@@ -72,6 +72,12 @@ public:
     SQLRETURN errorCode;
 };
 
+// Option allowing to specify the "driver completion" parameter of
+// SQLDriverConnect(). Its possible values are the same as the allowed values
+// for this parameter in the official DB2 CLI, i.e. one of SQL_DRIVER_XXX
+// (in string form as all options are strings currently).
+extern SOCI_DB2_DECL char const * db2_option_driver_complete;
+
 struct db2_statement_backend;
 
 struct SOCI_DB2_DECL db2_standard_into_type_backend : details::standard_into_type_backend
@@ -261,9 +267,7 @@ struct db2_session_backend : details::session_backend
     void parseConnectString(std::string const &);
     void parseKeyVal(std::string const &);
 
-    std::string dsn;
-    std::string username;
-    std::string password;
+    std::string connection_string_;
     bool autocommit;
     bool in_transaction;
 
