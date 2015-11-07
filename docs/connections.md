@@ -37,6 +37,9 @@ The most general form of the constructor takes a single object of `connection_pa
 
 Notice that you need to `#include &lt;soci-odbc.h&gt;` to obtain the option name declaration. The existing options are described in the backend-specific part of the documentation.
 
+IBM DB2 driver for ODBC and CLI also support the driver completion requests.
+So, the DB2 backend provides similar option `db2_option_driver_complete`
+with `#include &lt;soci-db1.h&gt;` required to obtain the option name.
 
 ### Environment configuration
 
