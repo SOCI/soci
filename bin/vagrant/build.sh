@@ -28,6 +28,7 @@ cmake \
     -DSOCI_MYSQL=ON \
     -DSOCI_POSTGRESQL=ON \
     -DSOCI_SQLITE3=ON \
+    -DSOCI_DB2_TEST_CONNSTR:STRING="DATABASE=${SOCI_USER};hostname=${SOCI_DB2_HOST};UID=${SOCI_DB2_USER};PWD=${SOCI_DB2_PASS};ServiceName=50000;Protocol=TCPIP;" \
     -DSOCI_FIREBIRD_TEST_CONNSTR:STRING="service=LOCALHOST:/tmp/soci.fdb user=${SOCI_USER} password==${SOCI_PASS}" \
     -DSOCI_MYSQL_TEST_CONNSTR:STRING="host=localhost db=${SOCI_USER} user=${SOCI_USER} password==${SOCI_PASS}" \
     -DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="host=localhost port=5432 dbname=${SOCI_USER} user=${SOCI_USER} password==${SOCI_PASS}" \
