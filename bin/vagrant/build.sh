@@ -34,9 +34,8 @@ cmake \
     -DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="host=localhost port=5432 dbname=${SOCI_USER} user=${SOCI_USER} password=${SOCI_PASS}" \
     ${SOCI_HOME} && \
 make
+echo "Build: building DONE"
 
 # Do not run tests during provisioning, thay may fail terribly, so just build
 # and let to run them manually after developer vagrant ssh'ed to the VM.
-#ctest -V --output-on-failure .
-echo "Build: building DONE"
 echo "Build: ready to test SOCI by running: cd ${SOCI_BUILD}; ctest -V --output-on-failure ."
