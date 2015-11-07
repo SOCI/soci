@@ -1,7 +1,7 @@
 # Vagrant SOCI
 
 [Vagrant](https://www.vagrantup.com/) used to build and provision
-virtual environments for SOCI development.
+virtual environments for **hassle-free** SOCI development.
 
 ## Features
 
@@ -36,38 +36,53 @@ and make it visible to Vagrant:
 
   1. Go to http://www-01.ibm.com/support/docview.wss?uid=swg21385217
   2. Download "IBM Data Server Driver Package (DS Driver)"
-  3. Copy the package to `{SOCI SOURCE TREE ROOT}/tmp` directory.
-
-### SOCI DB2 backend
-
-*TODO*
+  3. Copy the package to `${SOCI_HOME}/tmp` directory, on host machine.
 
 ## Usage
 
+Below, simple and easy development workflow with Vagrant is outlined:
+
 * [Boot](https://docs.vagrantup.com/v2/getting-started/up.html)
 ```
-vagrant up # boots all three VMs: soci, db2, oracle (to be provided)
-vagrant up soci # boots only soci.vm
-vagrant up db2 # boots only db2.vm
+vagrant up
+```
+or boot VMs selectively:
+```
+vagrant up {soci|db2}
 ```
 First time you run it, be patient as Vagrant downloads VM box and
 provisions it installing all the necessary packages.
 
 * You can SSH into the machine
 ```
-vagrant ssh soci
+vagrant ssh {soci|db2}
 ```
 
 * Develop
+  * Run git commands can either from host or VM `soci` (once connected via SSH)
 ```
-cd $SOCI_HOME
+cd /vagrant # aka $SOCI_HOME
 git pull origin master
-# edit - build - test - commit
 ```
+  * You can edit source code on both, on host or VM `soci`
+  * Build on VM `soci`
+```
+vagrant ssh soci
+cd /vagrant    # aka $SOCI_HOME
+cd soci-build  # aka $SOCI_BUILD
+make
+```
+You can also execute the `build.h` script provided to run CMake and make
+```
+vagrant ssh soci
+cd $SOCI_BUILD
+/vagrant/bin/vagrant/build.sh
+```
+  * Debug, only on VM `soci` with gdb.
 
 * [Teardown](https://docs.vagrantup.com/v2/getting-started/teardown.html)
 ```
-vagrant {suspend|halt|destroy} soci
+vagrant {suspend|halt|destroy} {soci|db2}
 ```
 
 Check Vagrant [command-line interface](https://docs.vagrantup.com/v2/cli/index.html)
@@ -75,12 +90,17 @@ for complete list of commands.
 
 ### Environment variables
 
-The variables available to the `vagrant` user on the virtual machine(s):
+All variables available to the `vagrant` user on the VMs are defined in and sourced from `/vagrant/bin/vagrant/common.env`:
 
-* `SOCI_HOME` is where SOCI master is cloned
+* `SOCI_HOME` where SOCI master is cloned (`/vagrant` on VM `soci`)
+* `SOCI_BUILD` where CMake generates build configuration (`/home/vagrant/soci-build` on VM `soci`)
+* `SOCI_HOST` network accessible VM `soci` hostname (`ping vmsoci.local`)
 * `SOCI_USER` default database user and database name
 * `SOCI_PASS` default database password for both, `SOCI_USER` and root/sysdba
   of particular database.
+* `SOCI_DB2_HOST` network accessible VM `db2` hostname (`ping vmdb2.local`)
+* `SOCI_DB2_USER` admin username to DB2 instance.
+* `SOCI_DB2_USER` admin password to DB2 instance.
 
 Note, those variables are also used by provision scripts to set up databases.
 
