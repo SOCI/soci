@@ -15,12 +15,13 @@ virtual environments for **hassle-free** SOCI development.
   * backend dependencies
   * FOSS databases installed with sample `soci` user and instance pre-configured
   * during provision, automatically clones and builds SOCI from `master` branch.
-* `oracle.vm`:
-  * *TODO*: provision with Oracle XE
 * `db2.vm`:
   * hostname: `vmdb2.local`
   * IBM DB2 Express-C 9.7 installed from http://archive.canonical.com packages.
-  * *TODO*: Vagrant networking settings.
+* `oracle.vm`:
+    * *TODO*: provision with Oracle XE
+* SOCI local git repository (aka `$SOCI_HOME`) is automatically shared on host
+  and all guest machines.
 
 ## Prerequisites
 
@@ -64,8 +65,12 @@ vagrant ssh {soci|db2}
 cd /vagrant # aka $SOCI_HOME
 git pull origin master
 ```
-  * You can edit source code on both, on host or VM `soci`
-  * Build on VM `soci`
+  * You can edit source code on both, on host or VM `soci`.
+  * For example, edit in your favourite editor on host machine, then build,
+    run, test and debug on guest machine from command line.
+  * Alternatively, edit and build on host machine using your favourite IDE,
+    then test and debug connecting to DBs on guest machines via network.
+* Build on VM `soci`
 ```
 vagrant ssh soci
 cd /vagrant    # aka $SOCI_HOME
@@ -110,4 +115,4 @@ Note, those variables are also used by provision scripts to set up databases.
 * On Windows, prefer `vagrant ssh` from inside MinGW Shell where  `ssh.exe` is available or
   learn how to use Vagrant with PuTTY.
 * If you modify any of `bin/vagrant/*.sh` scripts, **ensure** they have unified
-  end-of-line characters to `LF` only. Othwerise, provisioning steps may fail.
+  end-of-line characters to `LF` only. Otherwise, provisioning steps may fail.
