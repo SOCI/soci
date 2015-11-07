@@ -24,14 +24,14 @@ cmake \
     -DSOCI_ODBC=OFF \
     -DSOCI_ORACLE=OFF \
     -DSOCI_EMPTY=ON \
-    -DSOCI_FIREBIRD=OFF \
+    -DSOCI_FIREBIRD=ON \
     -DSOCI_MYSQL=ON \
     -DSOCI_POSTGRESQL=ON \
     -DSOCI_SQLITE3=ON \
-    -DSOCI_DB2_TEST_CONNSTR:STRING="DATABASE=${SOCI_USER};hostname=${SOCI_DB2_HOST};UID=${SOCI_DB2_USER};PWD=${SOCI_DB2_PASS};ServiceName=50000;Protocol=TCPIP;" \
-    -DSOCI_FIREBIRD_TEST_CONNSTR:STRING="service=LOCALHOST:/tmp/soci.fdb user=${SOCI_USER} password==${SOCI_PASS}" \
-    -DSOCI_MYSQL_TEST_CONNSTR:STRING="host=localhost db=${SOCI_USER} user=${SOCI_USER} password==${SOCI_PASS}" \
-    -DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="host=localhost port=5432 dbname=${SOCI_USER} user=${SOCI_USER} password==${SOCI_PASS}" \
+    -DSOCI_DB2_TEST_CONNSTR:STRING="DATABASE=${SOCI_USER}\\;hostname=${SOCI_DB2_HOST}\\;UID=${SOCI_DB2_USER}\\;PWD=${SOCI_DB2_PASS}\\;ServiceName=50000\\;Protocol=TCPIP\\;" \
+    -DSOCI_FIREBIRD_TEST_CONNSTR:STRING="service=LOCALHOST:/tmp/soci.fdb user=${SOCI_USER} password=${SOCI_PASS}" \
+    -DSOCI_MYSQL_TEST_CONNSTR:STRING="host=localhost db=${SOCI_USER} user=${SOCI_USER} password=${SOCI_PASS}" \
+    -DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="host=localhost port=5432 dbname=${SOCI_USER} user=${SOCI_USER} password=${SOCI_PASS}" \
     ${SOCI_HOME} && \
 make
 
@@ -39,3 +39,4 @@ make
 # and let to run them manually after developer vagrant ssh'ed to the VM.
 #ctest -V --output-on-failure .
 echo "Build: building DONE"
+echo "Build: ready to test SOCI by running: cd ${SOCI_BUILD}; ctest -V --output-on-failure ."
