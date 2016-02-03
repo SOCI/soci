@@ -9,7 +9,7 @@
 #define SOCI_H_INCLUDED
 
 // namespace soci
-#include "soci/soci-config.h"
+#include "soci/soci-platform.h"
 #include "soci/backend-loader.h"
 #include "soci/blob.h"
 #include "soci/blob-exchange.h"

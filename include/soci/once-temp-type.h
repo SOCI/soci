@@ -8,7 +8,7 @@
 #ifndef SOCI_ONCE_TEMP_TYPE_H_INCLUDED
 #define SOCI_ONCE_TEMP_TYPE_H_INCLUDED
 
-#include "soci/soci-config.h"
+#include "soci/soci-platform.h"
 #include "soci/ref-counted-statement.h"
 #include "soci/prepare-temp-type.h"
 
