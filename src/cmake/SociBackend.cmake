@@ -181,7 +181,7 @@ macro(soci_backend NAME)
 	  ARCHIVE DESTINATION ${LIBDIR})
       endif()
 
-      if (SOCI_SHARED)
+      if (SOCI_STATIC)
         install(TARGETS ${THIS_BACKEND_TARGET_STATIC}
 	  RUNTIME DESTINATION ${BINDIR}
 	  LIBRARY DESTINATION ${LIBDIR}
