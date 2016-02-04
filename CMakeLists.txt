@@ -32,8 +32,7 @@ colormsg(_HIBLUE_ "Configuring SOCI:")
 ###############################################################################
 include(SociVersion)
 
-# The version here should be in sync with the one in include/soci/version.h.
-soci_version(MAJOR 4 MINOR 0 PATCH 0)
+soci_version()
 
 ###############################################################################
 # Build features and variants
