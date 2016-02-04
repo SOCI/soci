@@ -20,6 +20,8 @@
 #include <cstdlib>
 #include <ctime>
 
+#include "soci/soci-config.h" // for SOCI_HAVE_CXX_C11
+
 #if defined(_MSC_VER)
 #define LL_FMT_FLAGS "I64"
 #else
@@ -85,12 +87,23 @@ namespace std {
 # define SOCI_DECL
 #endif
 
-#define SOCI_NOT_ASSIGNABLE(classname) \
-    classname& operator=(const classname&);
+// C++11 features are always available in MSVS as it has no separate C++98
+// mode, we just need to check for the minimal compiler version supporting them
+// (see https://msdn.microsoft.com/en-us/library/hh567368.aspx).
 
-#define SOCI_NOT_COPYABLE(classname) \
-    classname(const classname&); \
-    SOCI_NOT_ASSIGNABLE(classname)
+#if defined(SOCI_HAVE_CXX_C11) || (defined(_MSC_VER) && _MSC_VER >= 1800)
+    #define SOCI_NOT_ASSIGNABLE(classname) \
+        classname& operator=(const classname&) = delete;
+    #define SOCI_NOT_COPYABLE(classname) \
+        classname(const classname&) = delete; \
+        SOCI_NOT_ASSIGNABLE(classname)
+#else // no C++11 deleted members support
+    #define SOCI_NOT_ASSIGNABLE(classname) \
+        classname& operator=(const classname&);
+    #define SOCI_NOT_COPYABLE(classname) \
+        classname(const classname&); \
+        SOCI_NOT_ASSIGNABLE(classname)
+#endif // C++11 deleted members available
 
 #define SOCI_UNUSED(x) (void)x;
 
