@@ -54,16 +54,4 @@ macro(soci_version)
 
   add_definitions(-DSOCI_ABI_VERSION="${${PROJECT_NAME}_ABI_VERSION}")
 
-  math(
-      EXPR
-      SOCI_VERSION_H
-      "${${PROJECT_NAME}_VERSION_MAJOR} * 100000
-       + ${${PROJECT_NAME}_VERSION_MINOR} * 100
-       + ${${PROJECT_NAME}_VERSION_PATCH}"
-    )
-
-  set(SOCI_LIB_VERSION_H
-      "${${PROJECT_NAME}_VERSION_MAJOR}_${${PROJECT_NAME}_VERSION_MINOR}_${${PROJECT_NAME}_VERSION_PATCH}")
-
-  configure_file("include/soci/version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/include/soci/version.h")
 endmacro()
