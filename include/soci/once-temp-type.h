@@ -8,15 +8,9 @@
 #ifndef SOCI_ONCE_TEMP_TYPE_H_INCLUDED
 #define SOCI_ONCE_TEMP_TYPE_H_INCLUDED
 
-#include "soci/soci-config.h"
+#include "soci/soci-platform.h"
 #include "soci/ref-counted-statement.h"
 #include "soci/prepare-temp-type.h"
-
-#ifdef SOCI_HAVE_CXX_C11
-#define SOCI_ONCE_TEMP_TYPE_NOEXCEPT noexcept(false)
-#else
-#define SOCI_ONCE_TEMP_TYPE_NOEXCEPT
-#endif
 
 namespace soci
 {
@@ -37,7 +31,7 @@ public:
     once_temp_type(once_temp_type const & o);
     once_temp_type & operator=(once_temp_type const & o);
 
-    ~once_temp_type() SOCI_ONCE_TEMP_TYPE_NOEXCEPT;
+    ~once_temp_type() SOCI_NOEXCEPT_FALSE;
 
     template <typename T>
     once_temp_type & operator<<(T const & t)
