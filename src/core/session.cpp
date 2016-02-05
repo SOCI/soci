@@ -6,7 +6,6 @@
 //
 
 #define SOCI_SOURCE
-#include "soci/soci-config.h"
 #include "soci/session.h"
 #include "soci/connection-parameters.h"
 #include "soci/connection-pool.h"
