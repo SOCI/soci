@@ -41,23 +41,36 @@ cache:
 
 install:
     - ps: |
-          if (!(Test-Path C:\projects\mingw))
+          if ($env:PRJ_GEN -eq "MinGW Makefiles")
           {
-            mkdir C:\projects\mingw
+            if (!(Test-Path C:\projects\mingw))
+            {
+              mkdir C:\projects\mingw
+            }
+            if (!(Test-Path $env:MINGW_ARCHIVE))
+            {
+              (new-object net.webclient).DownloadFile("$env:MINGW_URL", "$env:MINGW_ARCHIVE")
+              7z x -y -oC:\projects\mingw\4.8.3\ C:\projects\mingw\x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z > $null
+            }
           }
-          if (!(Test-Path $env:MINGW_ARCHIVE))
-          {
-            (new-object net.webclient).DownloadFile("$env:MINGW_URL", "$env:MINGW_ARCHIVE")
-            7z x -y -oC:\projects\mingw\4.8.3\ C:\projects\mingw\x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z > $null
-          }
-    - git clone https://github.com/snikulov/sqlite.cmake.build.git C:\projects\sqlite\src
-    - ps: |
           Import-Module C:\projects\soci\bin\windows\Get-ODBCList.ps1
           Get-ODBCList
+    - git clone https://github.com/snikulov/sqlite.cmake.build.git C:\projects\sqlite\src
 
 before_build:
     # dirty little hack - remove sh from Git to make generator happy
-    - del /Q "%ProgramFiles(x86)%\Git\bin\sh.exe"
+    - ps: |
+          if ($env:PRJ_GEN -eq "MinGW Makefiles")
+          {
+            $shellPath = (Get-Command sh.exe).definition
+            if ($shellPath)
+            {
+              if (Test-Path $shellPath)
+              {
+                Remove-Item $shellPath
+              }
+            }
+          }
     - cd C:\projects\sqlite\src
     - mkdir build.%BDIR%
     - cd build.%BDIR%
