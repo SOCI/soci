@@ -41,11 +41,7 @@ class SOCI_DECL session
 {
 private:
 
-#ifdef SOCI_HAVE_CXX_C11
-    void set_query_transformation_(std::unique_ptr<details::query_transformation_function> & qtf);
-#else
-    void set_query_transformation_(std::auto_ptr<details::query_transformation_function> qtf);
-#endif
+    void set_query_transformation_(cxx_details::auto_ptr<details::query_transformation_function>& qtf);
 
 
 
@@ -85,11 +81,7 @@ public:
     void set_query_transformation(T callback)
     {
 
-#ifdef SOCI_HAVE_CXX_C11
-        std::unique_ptr<details::query_transformation_function> qtf(new details::query_transformation<T>(callback));
-#else
-        std::auto_ptr<details::query_transformation_function> qtf(new details::query_transformation<T>(callback));
-#endif
+        cxx_details::auto_ptr<details::query_transformation_function> qtf(new details::query_transformation<T>(callback));
         set_query_transformation_(qtf);
    }
 
