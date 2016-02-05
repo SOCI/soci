@@ -8,7 +8,7 @@
 #ifndef SOCI_SESSION_H_INCLUDED
 #define SOCI_SESSION_H_INCLUDED
 
-#include "soci/soci-config.h"
+#include "soci/soci-platform.h"
 #include "soci/once-temp-type.h"
 #include "soci/query_transformation.h"
 #include "soci/connection-parameters.h"
