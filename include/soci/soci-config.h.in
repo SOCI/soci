@@ -8,8 +8,6 @@
 #ifndef SOCICONFIG_H_INCLUDED
 #define SOCICONFIG_H_INCLUDED
 
-#include "soci/soci-platform.h"
-
 //
 // SOCI has been build with support for:
 //
