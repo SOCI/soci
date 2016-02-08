@@ -148,13 +148,8 @@ private:
 
     unsigned int refs_;
 
-#ifdef SOCI_HAVE_CXX_C11
-    const std::unique_ptr<statement> st_;
-    const std::unique_ptr<T> define_;
-#else
-    const std::auto_ptr<statement> st_;
-    const std::auto_ptr<T> define_;
-#endif
+    const cxx_details::auto_ptr<statement> st_;
+    const cxx_details::auto_ptr<T> define_;
     SOCI_NOT_COPYABLE(rowset_impl)
 }; // class rowset_impl
 

@@ -19,6 +19,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <ctime>
+#include <memory>
 
 #include "soci/soci-config.h" // for SOCI_HAVE_CXX_C11
 
@@ -90,6 +91,23 @@ namespace std {
 // C++11 features are always available in MSVS as it has no separate C++98
 // mode, we just need to check for the minimal compiler version supporting them
 // (see https://msdn.microsoft.com/en-us/library/hh567368.aspx).
+
+namespace soci
+{
+
+namespace cxx_details
+{
+
+#if defined(SOCI_HAVE_CXX_C11) || (defined(_MSC_VER) && _MSC_VER >= 1600)
+    template <typename T>
+    using auto_ptr = std::unique_ptr<T>;
+#else // std::unique_ptr<> not available
+    using std::auto_ptr;
+#endif
+
+} // namespace cxx_details
+
+} // namespace soci
 
 #if defined(SOCI_HAVE_CXX_C11) || (defined(_MSC_VER) && _MSC_VER >= 1800)
     #define SOCI_NOT_ASSIGNABLE(classname) \

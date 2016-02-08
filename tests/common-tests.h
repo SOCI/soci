@@ -477,7 +477,7 @@ protected:
     SOCI_NOT_COPYABLE(common_tests)
 };
 
-typedef std::auto_ptr<table_creator_base> auto_table_creator;
+typedef cxx_details::auto_ptr<table_creator_base> auto_table_creator;
 
 // Define the test cases in their own namespace to avoid clashes with the test
 // cases defined in individual backend tests: as only line number is used for
