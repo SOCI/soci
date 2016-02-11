@@ -10,9 +10,19 @@
 ###############################################################################
 # General settings
 ###############################################################################
-cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8.10 FATAL_ERROR)
 
 project(SOCI)
+
+###############################################################################
+# Build features and variants
+##############################################################################
+
+option(SOCI_SHARED "Enable build of shared libraries" ON)
+option(SOCI_STATIC "Enable build of static libraries" ON)
+option(SOCI_TESTS "Enable build of collection of SOCI tests" ON)
+option(SOCI_ASAN "Enable address sanitizer on GCC v4.8+/Clang v 3.1+" OFF)
+
 
 ###############################################################################
 # SOCI CMake modules
@@ -38,14 +48,10 @@ soci_version()
 # Build features and variants
 ##############################################################################
 
-option(SOCI_SHARED "Enable build of shared libraries" ON)
 boost_report_value(SOCI_SHARED)
-
-option(SOCI_STATIC "Enable build of static libraries" ON)
 boost_report_value(SOCI_STATIC)
-
-option(SOCI_TESTS "Enable build of collection of SOCI tests" ON)
 boost_report_value(SOCI_TESTS)
+boost_report_value(SOCI_ASAN)
 
 # from SociConfig.cmake
 boost_report_value(SOCI_CXX_C11)
