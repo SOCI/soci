@@ -98,7 +98,7 @@ namespace soci
 namespace cxx_details
 {
 
-#if defined(SOCI_HAVE_CXX_C11) || (defined(_MSC_VER) && _MSC_VER >= 1600)
+#if defined(SOCI_HAVE_CXX_C11) || (defined(_MSC_VER) && _MSC_VER >= 1800)
     template <typename T>
     using auto_ptr = std::unique_ptr<T>;
 #else // std::unique_ptr<> not available
