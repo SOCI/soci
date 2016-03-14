@@ -204,17 +204,17 @@ In the above example, the row is inserted with `name` attribute set to null.
 
 Indicator variables can also be used in conjunction with vector based insert, update, and select statements:
 
-    vector<string< names(100);
-    vector<indicator< inds;
+    vector<string> names(100);
+    vector<indicator> inds;
     sql << "select name from person where id = 7", into(names, inds);
 
 The above example retrieves first 100 rows of data (or less). The initial size of `names` vector provides the (maximum) number of rows that should be read. Both vectors will be automatically resized according to the number of rows that were actually read.
 
 The following example inserts null for each value of name:
 
-    vector<int< ids;
-    vector<string< names;
-    vector<indicator< nameIndicators;
+    vector<int> ids;
+    vector<string> names;
+    vector<indicator> nameIndicators;
 
     for (int i = 0; i != 10; ++i)
     {
@@ -275,48 +275,48 @@ For example, the code below creates an XML document from a selected row of data 
     sql << "select * from some_table", into(r);
 
     std::ostringstream doc;
-    doc << "<row<" << std::endl;
+    doc << "<row>" << std::endl;
     for(std::size_t i = 0; i != r.size(); ++i)
     {
         const column_properties & props = r.get_properties(i);
 
-        doc << '<' << props.get_name() << '<';
+        doc << '<' << props.get_name() << '>';
 
         switch(props.get_data_type())
         {
         case dt_string:
-            doc << r.get<std::string<(i);
+            doc << r.get<std::string>(i);
             break;
         case dt_double:
-            doc << r.get<double<(i);
+            doc << r.get<double>(i);
             break;
         case dt_integer:
-            doc << r.get<int<(i);
+            doc << r.get<int>(i);
             break;
         case dt_long_long:
-            doc << r.get<long long<(i);
+            doc << r.get<long long>(i);
             break;
         case dt_unsigned_long_long:
-            doc << r.get<unsigned long long<(i);
+            doc << r.get<unsigned long long>(i);
             break;
         case dt_date:
-            std::tm when = r.get<std::tm<(i);
+            std::tm when = r.get<std::tm>(i);
             doc << asctime(&when);
             break;
         }
 
-        doc << "</" << props.get_name() << '<' << std::endl;
+        doc << "</" << props.get_name() << '>' << std::endl;
     }
-    doc << "</row<";
+    doc << "</row>";
 
 
-The type `T` parameter that should be passed to `row::get<T<()` depends on the SOCI data type that is returned from `column_properties::get_data_type()`.
+The type `T` parameter that should be passed to `row::get<T>()` depends on the SOCI data type that is returned from `column_properties::get_data_type()`.
 
-`row::get<T<()` throws an exception of type `std::bad_cast` if an incorrect type `T` is requested.
+`row::get<T>()` throws an exception of type `std::bad_cast` if an incorrect type `T` is requested.
 
 #####SOCI Data Type
 
-`row::get<T<` specialization
+`row::get<T>` specialization
 
 *dt_double - double
 *dt_integer - int
@@ -333,7 +333,7 @@ The `row` also provides access to indicators for each column:
     sql << "select name from some_table where id = 1", into(r);
     if (r.get_indicator(0) != soci::i_null)
     {
-       std::cout << r.get<std::string<(0);
+       std::cout << r.get<std::string>(0);
     }
 
 It is also possible to extract data from the `row` object using its stream-like interface, where each extracted variable should have matching type respective to its position in the chain:
@@ -390,7 +390,7 @@ The following example shows how the user can extend SOCI to support his own type
     namespace soci
     {
         template <<
-        struct type_conversion<MyInt<
+        struct type_conversion<MyInt>
         {
             typedef int base_type;
 
@@ -412,7 +412,7 @@ The following example shows how the user can extend SOCI to support his own type
         };
     }
 
-The above specialization for `soci::type_conversion<MyInt<` is enough to enable the following:
+The above specialization for `soci::type_conversion<MyInt>` is enough to enable the following:
 
     MyInt i;
 
@@ -448,20 +448,20 @@ Note that the mapping is non-invasive - the `Person` object itself does not cont
 
     namespace soci
     {
-        template<<
-        struct type_conversion<Person<
+        template<>
+        struct type_conversion<Person>
         {
             typedef values base_type;
 
             static void from_base(values const & v, indicator /* ind */, Person & p)
             {
-                p.id = v.get<int<("ID");
-                p.firstName = v.get<std::string<("FIRST_NAME");
-                p.lastName = v.get<std::string<("LAST_NAME");
+                p.id = v.get<int>("ID");
+                p.firstName = v.get<std::string>("FIRST_NAME");
+                p.lastName = v.get<std::string>("LAST_NAME");
 
                 // p.gender will be set to the default value "unknown"
                 // when the column is null:
-                p.gender = v.get<std::string<("GENDER", "unknown");
+                p.gender = v.get<std::string>("GENDER", "unknown");
 
                 // alternatively, the indicator can be tested directly:
                 // if (v.indicator("GENDER") == i_null)
@@ -470,7 +470,7 @@ Note that the mapping is non-invasive - the `Person` object itself does not cont
                 // }
                 // else
                 // {
-                //     p.gender = v.get<std::string<("GENDER");
+                //     p.gender = v.get<std::string>("GENDER");
                 // }
             }
 
