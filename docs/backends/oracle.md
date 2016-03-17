@@ -61,7 +61,8 @@ The set of parameters used in the connection string for Oracle is:
 * `service`
 * `user`
 * `password`
-* `mode` (optional)
+* `mode` (optional; valid values are `sysdba`, `sysoper` and `default`)
+* `charset` and `ncharset` (optional; valid values are `utf8`, `utf16`, `we8mswin1252` and `win1252`)
 
 Once you have created a `session` object as shown above, you can use it to access the database, for example:
 
