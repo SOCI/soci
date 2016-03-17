@@ -247,7 +247,9 @@ struct oracle_session_backend : details::session_backend
         std::string const & userName,
         std::string const & password,
         int mode,
-        bool decimals_as_strings = false);
+        bool decimals_as_strings = false,
+        int charset = 0,
+        int ncharset = 0);
 
     ~oracle_session_backend();
 

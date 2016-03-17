@@ -24,15 +24,28 @@ using namespace soci::details::oracle;
 
 oracle_session_backend::oracle_session_backend(std::string const & serviceName,
     std::string const & userName, std::string const & password, int mode,
-    bool decimals_as_strings)
+    bool decimals_as_strings, int charset, int ncharset)
     : envhp_(NULL), srvhp_(NULL), errhp_(NULL), svchp_(NULL), usrhp_(NULL)
       , decimals_as_strings_(decimals_as_strings)
 {
+    // assume service/user/password are utf8-compatible already
+    const int defaultSourceCharSetId = 871;
+
+    // arbitrary length for charset conversion buffer
+    const size_t nlsBufLen = 100;
+    
+    char nlsService[nlsBufLen];
+    size_t nlsServiceLen;
+    char nlsUserName[nlsBufLen];
+    size_t nlsUserNameLen;
+    char nlsPassword[nlsBufLen];
+    size_t nlsPasswordLen;
+    
     sword res;
 
     // create the environment
-    res = OCIEnvCreate(&envhp_, OCI_THREADED | OCI_ENV_NO_MUTEX,
-        0, 0, 0, 0, 0, 0);
+    res = OCIEnvNlsCreate(&envhp_, OCI_THREADED | OCI_ENV_NO_MUTEX,
+        0, 0, 0, 0, 0, 0, charset, ncharset);
     if (res != OCI_SUCCESS)
     {
         throw soci_error("Cannot create environment");
@@ -56,11 +69,84 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         throw soci_error("Cannot create error handle");
     }
 
+    if (charset != 0)
+    {
+        // convert service/user/password to the expected charset
+        
+        res = OCINlsCharSetConvert(envhp_, errhp_,
+            charset, nlsService, nlsBufLen,
+            defaultSourceCharSetId, serviceName.c_str(), serviceName.size(), &nlsServiceLen);
+        if (res != OCI_SUCCESS)
+        {
+            std::string msg;
+            int errNum;
+            get_error_details(res, errhp_, msg, errNum);
+            clean_up();
+            throw oracle_soci_error(msg, errNum);
+        }
+        
+        res = OCINlsCharSetConvert(envhp_, errhp_,
+            charset, nlsUserName, nlsBufLen,
+            defaultSourceCharSetId, userName.c_str(), userName.size(), &nlsUserNameLen);
+        if (res != OCI_SUCCESS)
+        {
+            std::string msg;
+            int errNum;
+            get_error_details(res, errhp_, msg, errNum);
+            clean_up();
+            throw oracle_soci_error(msg, errNum);
+        }
+        
+        res = OCINlsCharSetConvert(envhp_, errhp_,
+            charset, nlsPassword, nlsBufLen,
+            defaultSourceCharSetId, password.c_str(), password.size(), &nlsPasswordLen);
+        if (res != OCI_SUCCESS)
+        {
+            std::string msg;
+            int errNum;
+            get_error_details(res, errhp_, msg, errNum);
+            clean_up();
+            throw oracle_soci_error(msg, errNum);
+        }
+    }
+    else
+    {
+        // do not perform any charset conversions
+        
+        nlsServiceLen = serviceName.size();
+        if (nlsServiceLen < nlsBufLen)
+        {
+            std::strcpy(nlsService, serviceName.c_str());
+        }
+        else
+        {
+            throw soci_error("Service name is too long.");
+        }
+
+        nlsUserNameLen = userName.size();
+        if (nlsUserNameLen < nlsBufLen)
+        {
+            std::strcpy(nlsUserName, userName.c_str());
+        }
+        else
+        {
+            throw soci_error("User name is too long.");
+        }
+
+        nlsPasswordLen = password.size();
+        if (nlsPasswordLen < nlsBufLen)
+        {
+            std::strcpy(nlsPassword, password.c_str());
+        }
+        else
+        {
+            throw soci_error("Password is too long.");
+        }
+    }
+    
     // create the server context
-    sb4 serviceNameLen = static_cast<sb4>(serviceName.size());
     res = OCIServerAttach(srvhp_, errhp_,
-        reinterpret_cast<text*>(const_cast<char*>(serviceName.c_str())),
-        serviceNameLen, OCI_DEFAULT);
+        reinterpret_cast<text*>(nlsService), nlsServiceLen, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
         std::string msg;
@@ -101,10 +187,9 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
     }
 
     // set username attribute in the user session handle
-    sb4 userNameLen = static_cast<sb4>(userName.size());
     res = OCIAttrSet(usrhp_, OCI_HTYPE_SESSION,
-        reinterpret_cast<dvoid*>(const_cast<char*>(userName.c_str())),
-        userNameLen, OCI_ATTR_USERNAME, errhp_);
+        reinterpret_cast<dvoid*>(nlsUserName),
+        nlsUserNameLen, OCI_ATTR_USERNAME, errhp_);
     if (res != OCI_SUCCESS)
     {
         clean_up();
@@ -112,10 +197,9 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
     }
 
     // set password attribute
-    sb4 passwordLen = static_cast<sb4>(password.size());
     res = OCIAttrSet(usrhp_, OCI_HTYPE_SESSION,
-        reinterpret_cast<dvoid*>(const_cast<char*>(password.c_str())),
-        passwordLen, OCI_ATTR_PASSWORD, errhp_);
+        reinterpret_cast<dvoid*>(nlsPassword),
+        nlsPasswordLen, OCI_ATTR_PASSWORD, errhp_);
     if (res != OCI_SUCCESS)
     {
         clean_up();
