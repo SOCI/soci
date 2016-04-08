@@ -24,7 +24,11 @@
 # define SOCI_POSTGRESQL_DECL
 #endif
 
+#ifdef SOCI_POSTGRESQL_SOURCE
 #include <soci-backend.h>
+#else
+#include <soci/soci-backend.h>
+#endif
 #include <libpq-fe.h>
 #include <vector>
 
