@@ -186,29 +186,40 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         throw soci_error("Cannot allocate user session handle");
     }
 
-    // set username attribute in the user session handle
-    res = OCIAttrSet(usrhp_, OCI_HTYPE_SESSION,
-        reinterpret_cast<dvoid*>(nlsUserName),
-        nlsUserNameLen, OCI_ATTR_USERNAME, errhp_);
-    if (res != OCI_SUCCESS)
+    // select credentials type - use rdbms based credentials by default
+    // and switch to external credentials if username and 
+    // password are both not specified
+    ub4 credentialType = OCI_CRED_RDBMS;
+    if (userName.empty() && password.empty())
     {
-        clean_up();
-        throw soci_error("Cannot set username");
+        credentialType = OCI_CRED_EXT;
     }
-
-    // set password attribute
-    res = OCIAttrSet(usrhp_, OCI_HTYPE_SESSION,
-        reinterpret_cast<dvoid*>(nlsPassword),
-        nlsPasswordLen, OCI_ATTR_PASSWORD, errhp_);
-    if (res != OCI_SUCCESS)
+    else
     {
-        clean_up();
-        throw soci_error("Cannot set password");
+        // set username attribute in the user session handle
+        res = OCIAttrSet(usrhp_, OCI_HTYPE_SESSION,
+            reinterpret_cast<dvoid*>(nlsUserName),
+            nlsUserNameLen, OCI_ATTR_USERNAME, errhp_);
+        if (res != OCI_SUCCESS)
+        {
+            clean_up();
+            throw soci_error("Cannot set username");
+        }
+
+        // set password attribute
+        res = OCIAttrSet(usrhp_, OCI_HTYPE_SESSION,
+            reinterpret_cast<dvoid*>(nlsPassword),
+            nlsPasswordLen, OCI_ATTR_PASSWORD, errhp_);
+        if (res != OCI_SUCCESS)
+        {
+            clean_up();
+            throw soci_error("Cannot set password");
+        }
     }
 
     // begin the session
     res = OCISessionBegin(svchp_, errhp_, usrhp_,
-        OCI_CRED_RDBMS, mode);
+        credentialType, mode);
     if (res != OCI_SUCCESS)
     {
         std::string msg;
