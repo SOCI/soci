@@ -64,6 +64,8 @@ The set of parameters used in the connection string for Oracle is:
 * `mode` (optional; valid values are `sysdba`, `sysoper` and `default`)
 * `charset` and `ncharset` (optional; valid values are `utf8`, `utf16`, `we8mswin1252` and `win1252`)
 
+If both `user` and `password` are provided, the session will authenticate using the database credentials, whereas if none of them is set, then external Oracle credentials will be used - this allows integration with so called Oracle wallet authentication.
+
 Once you have created a `session` object as shown above, you can use it to access the database, for example:
 
     int count;
