@@ -40,6 +40,21 @@ public:
     // highest level context.
     void add_context(std::string const& context);
 
+    // Basic error classes.
+    enum error_category
+    {
+        connection_error,
+        invalid_statement,
+        no_privilege,
+        no_data,
+        constraint_violation,
+        system_error,
+        unknown
+    };
+
+    // Basic error classification support
+    virtual error_category get_error_category() const { return unknown; }
+
 private:
     // Optional extra information (currently just the context data).
     class soci_error_extra_info* info_;

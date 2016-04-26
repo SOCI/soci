@@ -38,8 +38,11 @@ public:
 
     std::string sqlstate() const;
 
+    virtual error_category get_error_category() const { return cat_; }
+
 private:
     char sqlstate_[ 5 ];   // not std::string to keep copy-constructor no-throw
+    error_category cat_;
 };
 
 namespace details

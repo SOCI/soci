@@ -40,7 +40,10 @@ class SOCI_ORACLE_DECL oracle_soci_error : public soci_error
 public:
     oracle_soci_error(std::string const & msg, int errNum = 0);
 
+    virtual error_category get_error_category() const { return cat_; }
+
     int err_num_;
+    error_category cat_;
 };
 
 

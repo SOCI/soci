@@ -14,9 +14,37 @@ using namespace soci::details;
 
 postgresql_soci_error::postgresql_soci_error(
     std::string const & msg, char const *sqlst)
-    : soci_error(msg)
+    : soci_error(msg), cat_(unknown)
 {
     std::memcpy(sqlstate_, sqlst, 5);
+
+    if (std::memcmp(sqlst, "08", 2) == 0)
+    {
+        cat_ = connection_error;
+    }
+    else if (std::memcmp(sqlst, "42501", 5) == 0)
+    {
+        cat_ = no_privilege;
+    }
+    else if (std::memcmp(sqlst, "42", 2) == 0)
+    {
+        cat_ = invalid_statement;
+    }
+    else if (std::memcmp(sqlst, "02", 2) == 0)
+    {
+        cat_ = no_data;
+    }
+    else if (std::memcmp(sqlst, "23", 2) == 0)
+    {
+        cat_ = constraint_violation;
+    }
+    else if ((std::memcmp(sqlst, "53", 2) == 0) ||
+        (std::memcmp(sqlst, "54", 2) == 0) ||
+        (std::memcmp(sqlst, "58", 2) == 0) ||
+        (std::memcmp(sqlst, "XX", 2) == 0))
+    {
+        cat_ = system_error;
+    }
 }
 
 std::string postgresql_soci_error::sqlstate() const

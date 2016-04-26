@@ -20,8 +20,16 @@ using namespace soci::details;
 using namespace soci::details::oracle;
 
 oracle_soci_error::oracle_soci_error(std::string const & msg, int errNum)
-    : soci_error(msg), err_num_(errNum)
+    : soci_error(msg), err_num_(errNum), cat_(unknown)
 {
+    if (errNum == 12162)
+    {
+        cat_ = connection_error;
+    }
+    else if (errNum == 1400)
+    {
+        cat_ = constraint_violation;
+    }
 }
 
 void soci::details::oracle::get_error_details(sword res, OCIError *errhp,
