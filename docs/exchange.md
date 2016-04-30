@@ -237,7 +237,7 @@ The following types are currently supported for use with `into` and `use` expres
 
 * `char` (for character values)
 * `short`, `int`, `unsigned long`, `long long`, `double` (for numeric values)
-* `char*`, `char[]`, `std::string` (for string values)
+* `std::string` (for string values)
 * `std::tm``` (for datetime values)
 * `soci::statement` (for nested statements and PL/SQL cursors)
 * `soci::blob` (for Binary Large OBjects)
