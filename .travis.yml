@@ -31,6 +31,7 @@ env:
 matrix:
     fast_finish: true
     allow_failures:
+        - env: SOCI_TRAVIS_BACKEND=db2
         - env: SOCI_TRAVIS_BACKEND=postgression
         - env: SOCI_TRAVIS_BACKEND=valgrind
         - env: SOCI_TRAVIS_BACKEND=oracle CFLAGS=-m32 CXXFLAGS=-m32 LDFLAGS=-m32 WITH_BOOST=OFF
