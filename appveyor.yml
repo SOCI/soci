@@ -10,26 +10,26 @@ environment:
         PRJ_CFG: Release
         BOOST_ROOT: C:\Libraries\boost_1_58_0
         POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
-        MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.6
+        MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
       - PRJ_GEN: "Visual Studio 12 2013 Win64"
         BDIR: msvc2013
         PRJ_CFG: Release
         BOOST_ROOT: C:\Libraries\boost_1_58_0
         POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
-        MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.6
+        MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
       - PRJ_GEN: "Visual Studio 14 2015 Win64"
         BDIR: msvc2015
         PRJ_CFG: Release
         BOOST_ROOT: C:\Libraries\boost_1_59_0
         POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
-        MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.6
+        MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
       - PRJ_GEN: "MinGW Makefiles"
         BDIR: gcc483
         PRJ_CFG: Release
         MINGW_ROOT: C:\projects\mingw\4.8.3\mingw64\bin
         BOOST_ROOT: C:\Libraries\boost_1_59_0
         POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
-        MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.6
+        MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
 
 services:
     - mssql2014
