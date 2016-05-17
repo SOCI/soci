@@ -138,7 +138,7 @@ void postgresql_vector_into_type_backend::post_fetch(bool gotData, indicator * i
             case x_stdtm:
                 {
                     // attempt to parse the string and convert to std::tm
-                    std::tm t;
+                    std::tm t = {};
                     parse_std_tm(buf, t);
 
                     set_invector_(data_, i, t);
