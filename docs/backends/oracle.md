@@ -20,7 +20,7 @@
 
 
 ### <a name="prerequisites"></a> Prerequisites
- 
+
 #### <a name="versions"></a> Supported Versions
 
 The SOCI Oracle backend is currently supported for use with Oracle 10 or later.
@@ -55,6 +55,9 @@ To establish a connection to an Oracle database, create a `session` object using
 
     // or:
     session sql("oracle://service=orcl user=scott password=tiger");
+
+    // or:
+    session sql(oracle, "service=//your_host:1521/your_sid  user=scott password=tiger");    
 
 The set of parameters used in the connection string for Oracle is:
 
