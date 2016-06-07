@@ -220,7 +220,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
     // begin the session
     res = OCISessionBegin(svchp_, errhp_, usrhp_,
         credentialType, mode);
-    if (res != OCI_SUCCESS)
+    if (res != OCI_SUCCESS && res != OCI_SUCCESS_WITH_INFO)
     {
         std::string msg;
         int errNum;
