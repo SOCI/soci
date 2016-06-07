@@ -113,7 +113,34 @@ public:
     // return the last value auto-generated in this session).
     bool get_last_insert_id(std::string const & table, long & value);
 
+    // Returns once_temp_type for the internally composed query
+    // for the list of tables in the current schema.
+    // Since this query usually returns multiple results (for multiple tables),
+    // it makes sense to bind std::vector<std::string> for the single output field.
+    details::once_temp_type get_table_names();
 
+    // Returns prepare_temp_type for the internally composed query
+    // for the list of tables in the current schema.
+    // Since this is intended for use with statement objects, where results are obtained one row after another,
+    // it makes sense to bind std::string for the output field.
+    details::prepare_temp_type prepare_table_names();
+
+    // Returns once_temp_type for the internally composed query
+    // for the list of column descriptions.
+    // Since this query usually returns multiple results (for multiple columns),
+    // it makes sense to bind std::vector<std::string> for each output field.
+    // Note: table_name is a non-const reference to prevent temporary objects,
+    // this argument is bound as a regular "use" element.
+    details::once_temp_type get_column_descriptions(std::string & table_name);
+
+    // Returns prepare_temp_type for the internally composed query
+    // for the list of column descriptions.
+    // Since this is intended for use with statement objects, where results are obtained one row after another,
+    // it makes sense to bind either std::string for each output field or soci::column_info for the whole row.
+    // Note: table_name is a non-const reference to prevent temporary objects,
+    // this argument is bound as a regular "use" element.
+    details::prepare_temp_type prepare_column_descriptions(std::string & table_name);
+    
     // for diagnostics and advanced users
     // (downcast it to expected back-end session class)
     details::session_backend * get_backend() { return backEnd_; }

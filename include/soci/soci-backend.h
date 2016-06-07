@@ -234,6 +234,28 @@ public:
         return false;
     }
 
+    // There is a set of standard SQL metadata structures that can be
+    // queried in a portable way - backends that are standard compliant
+    // do not need to override the following methods, which are intended
+    // to return a proper query for basic metadata statements.
+    virtual std::string get_table_names_query() const
+    {
+        return "select table_name as \"TABLE_NAME\""
+            " from information_schema.tables"
+            " where table_schema = 'public'";
+    }
+    virtual std::string get_column_descriptions_query() const
+    {
+        return "select column_name as \"COLUMN_NAME\","
+            " data_type as \"DATA_TYPE\","
+            " character_maximum_length as \"CHARACTER_MAXIMUM_LENGTH\","
+            " numeric_precision as \"NUMERIC_PRECISION\","
+            " numeric_scale as \"NUMERIC_SCALE\","
+            " is_nullable as \"IS_NULLABLE\""
+            " from information_schema.columns"
+            " where table_schema = 'public' and table_name = :t";
+    }
+
     virtual std::string get_backend_name() const = 0;
 
     virtual statement_backend* make_statement_backend() = 0;

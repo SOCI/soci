@@ -260,6 +260,24 @@ struct oracle_session_backend : details::session_backend
     virtual void commit();
     virtual void rollback();
 
+    virtual std::string get_table_names_query() const
+    {
+        return "select table_name"
+            " from user_tables";
+    }
+
+    virtual std::string get_column_descriptions_query() const
+    {
+        return "select column_name,"
+            " data_type,"
+            " char_length as character_maximum_length,"
+            " data_precision as numeric_precision,"
+            " data_scale as numeric_scale,"
+            " decode(nullable, 'Y', 'YES', 'N', 'NO') as is_nullable"
+            " from user_tab_columns"
+            " where table_name = :t";
+    }
+    
     virtual std::string get_backend_name() const { return "oracle"; }
 
     void clean_up();
