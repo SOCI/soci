@@ -369,11 +369,6 @@ details::prepare_temp_type session::prepare_table_names()
     return prepare << backEnd_->get_table_names_query();
 }
 
-details::once_temp_type session::get_column_descriptions(std::string & table_name)
-{
-    return once << backEnd_->get_column_descriptions_query(), use(table_name, "t");
-}
-
 details::prepare_temp_type session::prepare_column_descriptions(std::string & table_name)
 {
     return prepare << backEnd_->get_column_descriptions_query(), use(table_name, "t");

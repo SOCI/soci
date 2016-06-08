@@ -125,14 +125,6 @@ public:
     // it makes sense to bind std::string for the output field.
     details::prepare_temp_type prepare_table_names();
 
-    // Returns once_temp_type for the internally composed query
-    // for the list of column descriptions.
-    // Since this query usually returns multiple results (for multiple columns),
-    // it makes sense to bind std::vector<std::string> for each output field.
-    // Note: table_name is a non-const reference to prevent temporary objects,
-    // this argument is bound as a regular "use" element.
-    details::once_temp_type get_column_descriptions(std::string & table_name);
-
     // Returns prepare_temp_type for the internally composed query
     // for the list of column descriptions.
     // Since this is intended for use with statement objects, where results are obtained one row after another,

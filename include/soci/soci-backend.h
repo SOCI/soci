@@ -238,12 +238,17 @@ public:
     // queried in a portable way - backends that are standard compliant
     // do not need to override the following methods, which are intended
     // to return a proper query for basic metadata statements.
+
+    // Returns a parameterless query for the list of table names in the current schema.
     virtual std::string get_table_names_query() const
     {
         return "select table_name as \"TABLE_NAME\""
             " from information_schema.tables"
             " where table_schema = 'public'";
     }
+    
+    // Returns a query with a single parameter (table name) for the list
+    // of columns and their properties.
     virtual std::string get_column_descriptions_query() const
     {
         return "select column_name as \"COLUMN_NAME\","
