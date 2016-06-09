@@ -22,13 +22,26 @@ using namespace soci::details::oracle;
 oracle_soci_error::oracle_soci_error(std::string const & msg, int errNum)
     : soci_error(msg), err_num_(errNum), cat_(unknown)
 {
-    if (errNum == 12162)
+    if (errNum == 12162 || errNum == 25403)
     {
         cat_ = connection_error;
     }
     else if (errNum == 1400)
     {
         cat_ = constraint_violation;
+    }
+    else if (errNum == 1466 ||
+        errNum == 2055 ||
+        errNum == 2067 ||
+        errNum == 2091 ||
+        errNum == 2092 ||
+        errNum == 25401 ||
+        errNum == 25402 ||
+        errNum == 25405 ||
+        errNum == 25408 ||
+        errNum == 25409)
+    {
+        cat_ = unknown_transaction_state;
     }
 }
 
