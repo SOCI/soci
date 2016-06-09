@@ -48,6 +48,7 @@ public:
         no_privilege,
         no_data,
         constraint_violation,
+        unknown_transaction_state,
         system_error,
         unknown
     };
