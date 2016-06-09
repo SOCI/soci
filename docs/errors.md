@@ -15,8 +15,15 @@ This allows to handle database errors within the standard exception framework:
         }
     }
 
-The only public method of `soci_error` is `std::string get_error_message() const`, which returns just the brief error message, without any additional information that can be present in the full error message returned by `what()`.
+The `soci_error` class exposes two public functions:
 
+The `get_error_message() const` function returns `std::string` with a brief error message, without any additional information that can be present in the full error message returned by `what()`.
+
+The `get_error_category() const` function returns one of the `error_category` enumeration values, which allows the user to portably react to some subset of common errors. For example, `connection_error` or `constraint_violation` have meanings that are common across different database backends, even though the actual mechanics might differ.
+
+#### Portability note:
+
+Error categories are not universally supported and there is no claim that all possible errors that are reported by the database server are covered or interpreted. If the error category is not recognized by the backend, it defaults to `unknown`.
 
 #### Portability note:
 
