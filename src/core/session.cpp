@@ -359,6 +359,21 @@ bool session::get_last_insert_id(std::string const & sequence, long & value)
     return backEnd_->get_last_insert_id(*this, sequence, value);
 }
 
+details::once_temp_type session::get_table_names()
+{
+    return once << backEnd_->get_table_names_query();
+}
+
+details::prepare_temp_type session::prepare_table_names()
+{
+    return prepare << backEnd_->get_table_names_query();
+}
+
+details::prepare_temp_type session::prepare_column_descriptions(std::string & table_name)
+{
+    return prepare << backEnd_->get_column_descriptions_query(), use(table_name, "t");
+}
+    
 std::string session::get_backend_name() const
 {
     ensureConnected(backEnd_);

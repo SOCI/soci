@@ -5,6 +5,7 @@
 * [Bulk operations](#bulk)
 * [Stored procedures](#procedures)
 * [Transactions](#transactions)
+* [Metadata queries](#metadata)
 * [Basic logging support](#logging)
 
 ### <a name="preparation"></a> Statement preparation and repeated execution
@@ -288,6 +289,37 @@ A typical usage pattern for this class might be:
     }
 
 With the above pattern the transaction is committed only when the code successfully reaches the end of block. If some exception is thrown before that, the scope will be left without reaching the final statement and the transaction object will automatically roll back in its destructor.
+
+### <a name="metadata"></a> Metadata queries
+
+It is possible to portably query the database server to obtain basic metadata information.
+
+In order to get the list of table names in the current schema:
+
+    std::vector<std::string> names(100);
+    sql.get_table_names(), into(names);
+
+alternatively:
+
+    std::string name;
+    soci::statement st = (sql.prepare_table_names(), into(name));
+    
+    st.execute();
+    while (st.fetch())
+    {
+        // ...
+    }
+
+Similarly, to get the description of all columns in the given table:
+
+    soci::column_info ci;
+    soci::statement st = (sql.prepare_column_descriptions(table_name), into(ci));
+
+    st.execute();
+    while (st.fetch())
+    {
+        // ci fields describe each column in turn
+    }
 
 ### <a name="logging"></a> Basic logging support
 

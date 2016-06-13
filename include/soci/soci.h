@@ -13,6 +13,7 @@
 #include "soci/backend-loader.h"
 #include "soci/blob.h"
 #include "soci/blob-exchange.h"
+#include "soci/column-info.h"
 #include "soci/connection-pool.h"
 #include "soci/error.h"
 #include "soci/exchange-traits.h"
