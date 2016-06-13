@@ -215,7 +215,8 @@ struct postgresql_vector_use_type_backend : details::vector_use_type_backend
 struct postgresql_session_backend;
 struct postgresql_statement_backend : details::statement_backend
 {
-    postgresql_statement_backend(postgresql_session_backend & session);
+    postgresql_statement_backend(postgresql_session_backend & session,
+        bool single_row_mode);
     ~postgresql_statement_backend();
 
     virtual void alloc();
@@ -242,6 +243,8 @@ struct postgresql_statement_backend : details::statement_backend
     virtual postgresql_vector_use_type_backend * make_vector_use_type_backend();
 
     postgresql_session_backend & session_;
+
+    bool single_row_mode_;
 
     details::postgresql_result result_;
     std::string query_;
@@ -304,7 +307,8 @@ struct postgresql_blob_backend : details::blob_backend
 
 struct postgresql_session_backend : details::session_backend
 {
-    postgresql_session_backend(connection_parameters const & parameters);
+    postgresql_session_backend(connection_parameters const & parameters,
+        bool single_row_mode);
 
     ~postgresql_session_backend();
 
@@ -328,6 +332,7 @@ struct postgresql_session_backend : details::session_backend
     std::string get_next_statement_name();
 
     int statementCount_;
+    bool single_row_mode_;
     PGconn * conn_;
 };
 
