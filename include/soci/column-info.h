@@ -25,35 +25,35 @@ struct SOCI_DECL column_info
     bool nullable;
 };
 
-std::size_t get_numeric_value(const values & v,
-    const std::string & field_name)
-{
-    data_type dt = v.get_properties(field_name).get_data_type();
-    switch (dt)
-    {
-    case dt_double:
-        return static_cast<std::size_t>(
-            v.get<double>(field_name, 0.0));
-    case dt_integer:
-        return static_cast<std::size_t>(
-            v.get<int>(field_name, 0));
-    case dt_long_long:
-        return static_cast<std::size_t>(
-            v.get<long long>(field_name, 0ll));
-    case dt_unsigned_long_long:
-        return static_cast<std::size_t>(
-            v.get<unsigned long long>(field_name, 0ull));
-        break;
-    default:
-        return 0u;
-    }        
-}
-
 template <>
 struct type_conversion<column_info>
 {
     typedef values base_type;
     
+    static std::size_t get_numeric_value(const values & v,
+        const std::string & field_name)
+    {
+        data_type dt = v.get_properties(field_name).get_data_type();
+        switch (dt)
+        {
+        case dt_double:
+            return static_cast<std::size_t>(
+                v.get<double>(field_name, 0.0));
+        case dt_integer:
+            return static_cast<std::size_t>(
+                v.get<int>(field_name, 0));
+        case dt_long_long:
+            return static_cast<std::size_t>(
+                v.get<long long>(field_name, 0ll));
+        case dt_unsigned_long_long:
+            return static_cast<std::size_t>(
+                v.get<unsigned long long>(field_name, 0ull));
+            break;
+        default:
+            return 0u;
+        }        
+    }
+
     static void from_base(values const & v, indicator /* ind */, column_info & ci)
     {
         ci.name = v.get<std::string>("COLUMN_NAME");
