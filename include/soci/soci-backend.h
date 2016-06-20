@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2016 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -14,6 +14,7 @@
 #include <cstddef>
 #include <map>
 #include <string>
+#include <sstream>
 
 namespace soci
 {
@@ -260,7 +261,117 @@ public:
             " from information_schema.columns"
             " where table_schema = 'public' and table_name = :t";
     }
+    
+    virtual std::string create_table(const std::string & tableName)
+    {
+        return "create table " + tableName + " (";
+    }
+    virtual std::string drop_table(const std::string & tableName)
+    {
+        return "drop table " + tableName;
+    }
+    virtual std::string truncate_table(const std::string & tableName)
+    {
+        return "truncate table " + tableName;
+    }
+    virtual std::string create_column(const std::string & columnName, data_type dt,
+        int precision, int scale)
+    {
+        // PostgreSQL was selected as a baseline for the syntax:
+        
+        std::string res = columnName + " ";
+        switch (dt)
+        {
+        case dt_string:
+            {
+                std::ostringstream oss;
+                oss << "varchar(" << precision << ")";
+                
+                res += oss.str();
+            }
+            break;
+            
+        case dt_date:
+            res += "timestamp";
+            break;
 
+        case dt_double:
+            {
+                std::ostringstream oss;
+                if (precision == 0)
+                {
+                    oss << "numeric";
+                }
+                else
+                {
+                    oss << "numeric(" << precision << ", " << scale << ")";
+                }
+                
+                res += oss.str();
+            }
+            break;
+
+        case dt_integer:
+            res += "integer";
+            break;
+
+        case dt_long_long:
+            res += "bigint";
+            break;
+            
+        case dt_unsigned_long_long:
+            res += "bigint";
+            break;
+
+        case dt_blob:
+            res += "bytea";
+            break;
+        }
+
+        return res;
+    }
+    virtual std::string add_column(const std::string & tableName,
+        const std::string & columnName, data_type dt,
+        int precision, int scale)
+    {
+        return "alter table " + tableName + " add column " +
+            create_column(columnName, dt, precision, scale);
+    }
+    virtual std::string alter_column(const std::string & tableName,
+        const std::string & columnName, data_type dt,
+        int precision, int scale)
+    {
+        return "alter table " + tableName + " alter column " +
+            create_column(columnName, dt, precision, scale);
+    }
+    virtual std::string drop_column(const std::string & tableName,
+        const std::string & columnName)
+    {
+        return "alter table " + tableName +
+            " drop column " + columnName;
+    }
+    virtual std::string constraint_unique(const std::string & name,
+        const std::string & columnNames)
+    {
+        return "constraint " + name +
+            " unique (" + columnNames + ")";
+    }
+    virtual std::string constraint_primary_key(const std::string & name,
+        const std::string & columnNames)
+    {
+        return "constraint " + name +
+            " primary key (" + columnNames + ")";
+    }
+    virtual std::string constraint_foreign_key(const std::string & name,
+        const std::string & columnNames,
+        const std::string & refTableName,
+        const std::string & refColumnNames)
+    {
+        return "constraint " + name +
+            " foreign key (" + columnNames + ")" +
+            " references " + refTableName + " (" + refColumnNames + ")";
+    }
+    
     virtual std::string get_backend_name() const = 0;
 
     virtual statement_backend* make_statement_backend() = 0;

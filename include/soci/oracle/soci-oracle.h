@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2007 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2016 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -25,6 +25,7 @@
 
 #include <soci/soci-backend.h>
 #include <oci.h> // OCI
+#include <sstream>
 #include <vector>
 
 #ifdef _MSC_VER
@@ -278,6 +279,77 @@ struct oracle_session_backend : details::session_backend
             " where table_name = :t";
     }
     
+    virtual std::string create_column(const std::string & columnName, data_type dt,
+        int precision, int scale)
+    {
+        //  Oracle-specific SQL syntax:
+        
+        std::string res = columnName + " ";
+        switch (dt)
+        {
+        case dt_string:
+            {
+                std::ostringstream oss;
+                oss << "varchar(" << precision << ")";
+                
+                res += oss.str();
+            }
+            break;
+            
+        case dt_date:
+            res += "timestamp";
+            break;
+
+        case dt_double:
+            {
+                std::ostringstream oss;
+                if (precision == 0)
+                {
+                    oss << "number";
+                }
+                else
+                {
+                    oss << "number(" << precision << ", " << scale << ")";
+                }
+                
+                res += oss.str();
+            }
+            break;
+
+        case dt_integer:
+            res += "integer";
+            break;
+
+        case dt_long_long:
+            res += "number";
+            break;
+            
+        case dt_unsigned_long_long:
+            res += "number";
+            break;
+
+        case dt_blob:
+            res += "blob";
+            break;
+        }
+
+        return res;
+    }
+    virtual std::string add_column(const std::string & tableName,
+        const std::string & columnName, data_type dt,
+        int precision, int scale)
+    {
+        return "alter table " + tableName + " add " +
+            create_column(columnName, dt, precision, scale);
+    }
+    virtual std::string alter_column(const std::string & tableName,
+        const std::string & columnName, data_type dt,
+        int precision, int scale)
+    {
+        return "alter table " + tableName + " modify " +
+            create_column(columnName, dt, precision, scale);
+    }
+
     virtual std::string get_backend_name() const { return "oracle"; }
 
     void clean_up();

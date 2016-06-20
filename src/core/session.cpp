@@ -374,6 +374,58 @@ details::prepare_temp_type session::prepare_column_descriptions(std::string & ta
     return prepare << backEnd_->get_column_descriptions_query(), use(table_name, "t");
 }
     
+ddl_type session::create_table(const std::string & tableName)
+{
+    ddl_type ddl(*this);
+
+    ddl.create_table(tableName);
+    ddl.set_tail(")");
+
+    return ddl;
+}
+
+void session::drop_table(const std::string & tableName)
+{
+    once << backEnd_->drop_table(tableName);
+}
+
+void session::truncate_table(const std::string & tableName)
+{
+    once << backEnd_->truncate_table(tableName);
+}
+
+ddl_type session::add_column(const std::string & tableName,
+    const std::string & columnName, data_type dt,
+    int precision, int scale)
+{
+    ddl_type ddl(*this);
+
+    ddl.add_column(tableName, columnName, dt, precision, scale);
+
+    return ddl;
+}
+
+ddl_type session::alter_column(const std::string & tableName,
+    const std::string & columnName, data_type dt,
+    int precision, int scale)
+{
+    ddl_type ddl(*this);
+
+    ddl.alter_column(tableName, columnName, dt, precision, scale);
+
+    return ddl;
+}
+
+ddl_type session::drop_column(const std::string & tableName,
+    const std::string & columnName)
+{
+    ddl_type ddl(*this);
+
+    ddl.drop_column(tableName, columnName);
+
+    return ddl;
+}
+
 std::string session::get_backend_name() const
 {
     ensureConnected(backEnd_);

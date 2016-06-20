@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2016 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -83,7 +83,7 @@ public:
 
         cxx_details::auto_ptr<details::query_transformation_function> qtf(new details::query_transformation<T>(callback));
         set_query_transformation_(qtf);
-   }
+    }
 
     // support for basic logging
     void set_log_stream(std::ostream * s);
@@ -133,6 +133,20 @@ public:
     // this argument is bound as a regular "use" element.
     details::prepare_temp_type prepare_column_descriptions(std::string & table_name);
     
+    // Functions for basic portable DDL statements.
+
+    ddl_type create_table(const std::string & tableName);
+    void drop_table(const std::string & tableName);
+    void truncate_table(const std::string & tableName);
+    ddl_type add_column(const std::string & tableName,
+        const std::string & columnName, data_type dt,
+        int precision = 0, int scale = 0);
+    ddl_type alter_column(const std::string & tableName,
+        const std::string & columnName, data_type dt,
+        int precision = 0, int scale = 0);
+    ddl_type drop_column(const std::string & tableName,
+        const std::string & columnName);
+
     // for diagnostics and advanced users
     // (downcast it to expected back-end session class)
     details::session_backend * get_backend() { return backEnd_; }

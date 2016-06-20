@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2016 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -108,6 +108,48 @@ private:
 };
 
 } // namespace details
+
+// Note: ddl_type is intended to be used just as once_type_type,
+// but since it can be also used directly (explicitly) by the user code,
+// it is declared outside of the namespace details.
+class SOCI_DECL ddl_type
+{
+public:
+
+    ddl_type(session & s);
+    ddl_type(const ddl_type & d);
+    ddl_type & operator=(const ddl_type & d);
+
+    ~ddl_type() SOCI_NOEXCEPT_FALSE;
+
+    void create_table(const std::string & tableName);
+    void add_column(const std::string & tableName,
+        const std::string & columnName, data_type dt,
+        int precision, int scale);
+    void alter_column(const std::string & tableName,
+        const std::string & columnName, data_type dt,
+        int precision, int scale);
+    void drop_column(const std::string & tableName,
+        const std::string & columnName);
+    ddl_type & column(const std::string & columnName, data_type dt,
+        int precision = 0, int scale = 0);
+    ddl_type & unique(const std::string & name,
+        const std::string & columnNames);
+    ddl_type & primary_key(const std::string & name,
+        const std::string & columnNames);
+    ddl_type & foreign_key(const std::string & name,
+        const std::string & columnNames,
+        const std::string & refTableName,
+        const std::string & refColumnNames);
+
+    ddl_type & operator()(const std::string & arbitrarySql);
+
+    void set_tail(const std::string & tail);
+
+private:
+    session * s_;
+    details::ref_counted_statement * rcst_;
+};
 
 } // namespace soci
 
