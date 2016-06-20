@@ -38,7 +38,7 @@ void hard_exec(PGconn * conn, char const * query, char const * errMsg)
 } // namespace unnamed
 
 postgresql_session_backend::postgresql_session_backend(
-    connection_parameters const& parameters)
+    connection_parameters const& parameters, bool single_row_mode)
     : statementCount_(0)
 {
     PGconn* conn = PQconnectdb(parameters.get_connect_string().c_str());
@@ -64,6 +64,8 @@ postgresql_session_backend::postgresql_session_backend(
         version >= 90000 ? "SET extra_float_digits = 3"
                          : "SET extra_float_digits = 2",
         "Cannot set extra_float_digits parameter");
+
+    single_row_mode_ = single_row_mode;
 
     conn_ = conn;
 }
@@ -123,7 +125,7 @@ std::string postgresql_session_backend::get_next_statement_name()
 
 postgresql_statement_backend * postgresql_session_backend::make_statement_backend()
 {
-    return new postgresql_statement_backend(*this);
+    return new postgresql_statement_backend(*this, single_row_mode_);
 }
 
 postgresql_rowid_backend * postgresql_session_backend::make_rowid_backend()

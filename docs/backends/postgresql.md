@@ -60,6 +60,20 @@ To establish a connection to the PostgreSQL database, create a `session` object 
 
 The set of parameters used in the connection string for PostgreSQL is the same as accepted by the `[PQconnectdb](http://www.postgresql.org/docs/8.3/interactive/libpq.html#LIBPQ-CONNECT)` function from the `libpq` library.
 
+In addition to standard PostgreSQL connection parameters, the following can be set:
+
+* `singlerow` or `singlerows`
+
+For example:
+
+    session sql(postgresql, "dbname=mydatabase singlerows=true");
+
+If the `singlerows` parameter is set to `true` or `yes`, then queries will be executed in the single-row mode, which prevents the client library from loading full query result set into memory and instead fetches rows one by one, as they are requested by the statement's fetch() function. This mode can be of interest to those users who want to make their client applications more responsive (with more fine-grained operation) by avoiding potentially long blocking times when complete query results are loaded to client's memory.
+Note that in the single-row operation:
+
+* bulk queries are not supported, and
+* in order to fulfill the expectations of the underlying client library, the complete rowset has to be exhausted before executing further queries on the same session.
+
 Once you have created a `session` object as shown above, you can use it to access the database, for example:
 
     int count;
