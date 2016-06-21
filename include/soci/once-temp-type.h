@@ -109,7 +109,7 @@ private:
 
 } // namespace details
 
-// Note: ddl_type is intended to be used just as once_type_type,
+// Note: ddl_type is intended to be used just as once_temp_type,
 // but since it can be also used directly (explicitly) by the user code,
 // it is declared outside of the namespace details.
 class SOCI_DECL ddl_type
@@ -144,6 +144,8 @@ public:
 
     ddl_type & operator()(const std::string & arbitrarySql);
 
+    // helper function for handling delimiters
+    // between various parts of DDL statements
     void set_tail(const std::string & tail);
 
 private:

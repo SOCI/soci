@@ -301,7 +301,7 @@ It is possible to create a new table in a single statement:
 
 Above, table "t1" will be created with two columns ("i", "j") of type integer.
 
-It is also possible to build such a statement piece by piece:
+It is also possible to build similar statements piece by piece, which is useful if the table structure is computed dynamically:
 
    {
       soci::ddl_type ddl = sql.create_table("t2");
