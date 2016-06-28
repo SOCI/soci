@@ -5,6 +5,7 @@
 * [Bulk operations](#bulk)
 * [Stored procedures](#procedures)
 * [Transactions](#transactions)
+* [Portable DDL](#ddl)
 * [Metadata queries](#metadata)
 * [Basic logging support](#logging)
 
@@ -289,6 +290,58 @@ A typical usage pattern for this class might be:
     }
 
 With the above pattern the transaction is committed only when the code successfully reaches the end of block. If some exception is thrown before that, the scope will be left without reaching the final statement and the transaction object will automatically roll back in its destructor.
+
+### <a name="ddl"></a> Portable DDL
+
+SOCI supports some basic methods to construct portable DDL queries. That is, instead of writing explicit SQL statement for creating or modifying tables, it is possible to use dedicated SOCI functions, which prepare appropriate DDL statements behind the scenes, thus enabling the user application to create basic database structures in a way that is portable across different database servers. Note that the actual support for these functions depends on the actual backend implementation.
+
+It is possible to create a new table in a single statement:
+
+   sql.create_table("t1").column("i", soci::dt_integer).column("j", soci::dt_integer);
+
+Above, table "t1" will be created with two columns ("i", "j") of type integer.
+
+It is also possible to build similar statements piece by piece, which is useful if the table structure is computed dynamically:
+
+   {
+      soci::ddl_type ddl = sql.create_table("t2");
+      ddl.column("i", soci::dt_integer);
+      ddl.column("j", soci::dt_integer);
+      ddl.column("k", soci::dt_integer)("not null");
+      ddl.primary_key("t2_pk", "j");
+   }
+
+The actual statement is executed at the end of above block, when the ddl object goes out of scope. The "not null" constraint was added to the definition of column "k" explicitly and in fact any piece of SQL can be inserted this way - with the obvious caveat of having limited portability (the "not null" piece seems to be universaly portable).
+
+Columns can be added to and dropped from already existing tables as well:
+
+   sql.add_column("t1", "k", soci::dt_integer);
+   // or with constraint:
+   //sql.add_column("t1", "k", soci::dt_integer)("not null");
+   
+   sql.drop_column("t1", "i");
+
+If needed, precision and scale can be defined with additional integer arguments to functions that create columns:
+
+   sql.add_column("t1", "s", soci::dt_string, precision);
+   sql.add_column("t1", "d", soci::dt_double, precision, scale);
+
+Tables with foreign keys to each other can be also created:
+
+   {
+      soci::ddl_type ddl = sql.create_table("t3");
+      ddl.column("x", soci::dt_integer);
+      ddl.column("y", soci::dt_integer);
+      ddl.foreign_key("t3_fk", "x", "t2", "j");
+   }
+
+Tables can be dropped, too:
+
+   sql.drop_table("t1");
+   sql.drop_table("t3");
+   sql.drop_table("t2");
+
+Note that due to the differences in the set of types that are actually supported on the target database server, the type mappings, as well as precision and scales, might be different, even in the way that makes them impossible to portably recover with metadata queries.
 
 ### <a name="metadata"></a> Metadata queries
 

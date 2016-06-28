@@ -687,6 +687,217 @@ TEST_CASE("PostgreSQL ORM cast", "[postgresql][orm]")
     sql << "select :a::int", use(v); // Must not throw an exception!
 }
 
+// Test the DDL and metadata functionality
+TEST_CASE("PostgreSQL DDL with metadata", "[postfresql][ddl]")
+{
+    soci::session sql(backEnd, connectString);
+
+    // note: prepare_column_descriptions expects l-value
+    std::string ddl_t1 = "ddl_t1";
+    std::string ddl_t2 = "ddl_t2";
+    std::string ddl_t3 = "ddl_t3";
+    
+    // single-expression variant:
+    sql.create_table(ddl_t1).column("i", soci::dt_integer).column("j", soci::dt_integer);
+
+    // check whether this table was created:
+    
+    bool ddl_t1_found = false;
+    bool ddl_t2_found = false;
+    bool ddl_t3_found = false;
+    std::string table_name;
+    soci::statement st = (sql.prepare_table_names(), into(table_name));
+    st.execute();
+    while (st.fetch())
+    {
+        if (table_name == ddl_t1) { ddl_t1_found = true; }
+        if (table_name == ddl_t2) { ddl_t2_found = true; }
+        if (table_name == ddl_t3) { ddl_t3_found = true; }
+    }
+
+    CHECK(ddl_t1_found);
+    CHECK(ddl_t2_found == false);
+    CHECK(ddl_t3_found == false);
+
+    // check whether ddl_t1 has the right structure:
+    
+    bool i_found = false;
+    bool j_found = false;
+    bool other_found = false;
+    soci::column_info ci;
+    soci::statement st1 = (sql.prepare_column_descriptions(ddl_t1), into(ci));
+    st1.execute();
+    while (st1.fetch())
+    {
+        if (ci.name == "i")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.nullable);
+            i_found = true;
+        }
+        else if (ci.name == "j")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.nullable);
+            j_found = true;
+        }
+        else
+        {
+            other_found = true;
+        }
+    }
+
+    CHECK(i_found);
+    CHECK(j_found);
+    CHECK(other_found == false);
+
+    // two more tables:
+    
+    // separately defined columns:
+    // (note: statement is executed when ddl object goes out of scope)
+    {
+        soci::ddl_type ddl = sql.create_table(ddl_t2);
+        ddl.column("i", soci::dt_integer);
+        ddl.column("j", soci::dt_integer);
+        ddl.column("k", soci::dt_integer)("not null");
+        ddl.primary_key("t2_pk", "j");
+    }
+
+    sql.add_column(ddl_t1, "k", soci::dt_integer);
+    sql.drop_column(ddl_t1, "i");
+
+    // or with constraint as in t2:
+    sql.add_column(ddl_t2, "m", soci::dt_integer)("not null");
+
+    // third table with a foreign key to the second one
+    {
+        soci::ddl_type ddl = sql.create_table(ddl_t3);
+        ddl.column("x", soci::dt_integer);
+        ddl.column("y", soci::dt_integer);
+        ddl.foreign_key("t3_fk", "x", ddl_t2, "j");
+    }
+
+    // check if all tables were created:
+    
+    ddl_t1_found = false;
+    ddl_t2_found = false;
+    ddl_t3_found = false;
+    soci::statement st2 = (sql.prepare_table_names(), into(table_name));
+    st2.execute();
+    while (st2.fetch())
+    {
+        if (table_name == ddl_t1) { ddl_t1_found = true; }
+        if (table_name == ddl_t2) { ddl_t2_found = true; }
+        if (table_name == ddl_t3) { ddl_t3_found = true; }
+    }
+
+    CHECK(ddl_t1_found);
+    CHECK(ddl_t2_found);
+    CHECK(ddl_t3_found);
+
+    // check if ddl_t1 has the right structure (it was altered):
+    
+    i_found = false;
+    j_found = false;
+    bool k_found = false;
+    other_found = false;
+    soci::statement st3 = (sql.prepare_column_descriptions(ddl_t1), into(ci));
+    st3.execute();
+    while (st3.fetch())
+    {
+        if (ci.name == "j")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.nullable);
+            j_found = true;
+        }
+        else if (ci.name == "k")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.nullable);
+            k_found = true;
+        }
+        else
+        {
+            other_found = true;
+        }
+    }
+
+    CHECK(i_found == false);
+    CHECK(j_found);
+    CHECK(k_found);
+    CHECK(other_found == false);
+    
+    // check if ddl_t2 has the right structure:
+    
+    i_found = false;
+    j_found = false;
+    k_found = false;
+    bool m_found = false;
+    other_found = false;
+    soci::statement st4 = (sql.prepare_column_descriptions(ddl_t2), into(ci));
+    st4.execute();
+    while (st4.fetch())
+    {
+        if (ci.name == "i")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.nullable);
+            i_found = true;
+        }
+        else if (ci.name == "j")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.nullable == false); // primary key
+            j_found = true;
+        }
+        else if (ci.name == "k")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.nullable == false);
+            k_found = true;
+        }
+        else if (ci.name == "m")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.nullable == false);
+            m_found = true;
+        }
+        else
+        {
+            other_found = true;
+        }
+    }
+
+    CHECK(i_found);
+    CHECK(j_found);
+    CHECK(k_found);
+    CHECK(m_found);
+    CHECK(other_found == false);
+
+    sql.drop_table(ddl_t1);
+    sql.drop_table(ddl_t3); // note: this must be dropped before ddl_t2
+    sql.drop_table(ddl_t2);
+    
+    // check if all tables were dropped:
+    
+    ddl_t1_found = false;
+    ddl_t2_found = false;
+    ddl_t3_found = false;
+    st2 = (sql.prepare_table_names(), into(table_name));
+    st2.execute();
+    while (st2.fetch())
+    {
+        if (table_name == ddl_t1) { ddl_t1_found = true; }
+        if (table_name == ddl_t2) { ddl_t2_found = true; }
+        if (table_name == ddl_t3) { ddl_t3_found = true; }
+    }
+
+    CHECK(ddl_t1_found == false);
+    CHECK(ddl_t2_found == false);
+    CHECK(ddl_t3_found == false);
+}
+
 //
 // Support for soci Common Tests
 //
