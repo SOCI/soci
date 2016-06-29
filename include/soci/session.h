@@ -36,6 +36,7 @@ class blob_backend;
 } // namespace details
 
 class connection_pool;
+class failover_callback;
 
 class SOCI_DECL session
 {
@@ -147,6 +148,12 @@ public:
     ddl_type drop_column(const std::string & tableName,
         const std::string & columnName);
 
+    // Sets the failover callback object.
+    void set_failover_callback(failover_callback & callback)
+    {
+        backEnd_->set_failover_callback(callback, *this);
+    }
+    
     // for diagnostics and advanced users
     // (downcast it to expected back-end session class)
     details::session_backend * get_backend() { return backEnd_; }

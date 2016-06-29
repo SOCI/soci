@@ -29,6 +29,7 @@ enum data_type
 enum indicator { i_ok, i_null, i_truncated };
 
 class session;
+class failover_callback;
 
 namespace details
 {
@@ -213,7 +214,7 @@ private:
 class session_backend
 {
 public:
-    session_backend() {}
+    session_backend() : failoverCallback_(NULL), session_(NULL) {}
     virtual ~session_backend() {}
 
     virtual void begin() = 0;
@@ -372,11 +373,20 @@ public:
             " references " + refTableName + " (" + refColumnNames + ")";
     }
     
+    void set_failover_callback(failover_callback & callback, session & sql)
+    {
+        failoverCallback_ = &callback;
+        session_ = &sql;
+    }
+
     virtual std::string get_backend_name() const = 0;
 
     virtual statement_backend* make_statement_backend() = 0;
     virtual rowid_backend* make_rowid_backend() = 0;
     virtual blob_backend* make_blob_backend() = 0;
+
+    failover_callback * failoverCallback_;
+    session * session_;
 
 private:
     SOCI_NOT_COPYABLE(session_backend)

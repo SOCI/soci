@@ -45,6 +45,8 @@ private:
     error_category cat_;
 };
 
+struct postgresql_session_backend;
+
 namespace details
 {
 
@@ -54,18 +56,21 @@ class postgresql_result
 {
 public:
     // Creates a wrapper for the given, possibly NULL, result. The wrapper
-    // object takes ownership of the object and will call PQclear() on it.
-    explicit postgresql_result(PGresult* result = NULL)
+    // object takes ownership of the result object and will call PQclear() on it.
+    explicit postgresql_result(
+        postgresql_session_backend & sessionBackend,
+        PGresult * result)
+        : sessionBackend_(sessionBackend)
     {
-      init(result);
+        init(result);
     }
 
     // Frees any currently stored result pointer and takes ownership of the
     // given one.
     void reset(PGresult* result = NULL)
     {
-      free();
-      init(result);
+        free();
+        init(result);
     }
 
     // Check whether the status is PGRES_COMMAND_OK and throw an exception if
@@ -101,7 +106,7 @@ public:
 private:
     void init(PGresult* result)
     {
-      result_ = result;
+        result_ = result;
     }
 
     void free()
@@ -111,6 +116,7 @@ private:
         PQclear(result_);
     }
 
+    postgresql_session_backend & sessionBackend_;
     PGresult* result_;
 
     SOCI_NOT_COPYABLE(postgresql_result)
@@ -212,7 +218,6 @@ struct postgresql_vector_use_type_backend : details::vector_use_type_backend
     std::vector<char *> buffers_;
 };
 
-struct postgresql_session_backend;
 struct postgresql_statement_backend : details::statement_backend
 {
     postgresql_statement_backend(postgresql_session_backend & session,
@@ -312,6 +317,8 @@ struct postgresql_session_backend : details::session_backend
 
     ~postgresql_session_backend();
 
+    void connect(connection_parameters const & parameters);
+    
     virtual void begin();
     virtual void commit();
     virtual void rollback();

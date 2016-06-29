@@ -7,6 +7,7 @@
 
 #define SOCI_ORACLE_SOURCE
 #include "soci/oracle/soci-oracle.h"
+#include "soci/callbacks.h"
 #include "error.h"
 #include <cctype>
 #include <cstdio>
@@ -22,11 +23,109 @@ using namespace soci;
 using namespace soci::details;
 using namespace soci::details::oracle;
 
+namespace // unnamed
+{
+
+sb4 fo_callback(void * svchp, void * envhp, void * fo_ctx,
+    ub4 fo_type, ub4 fo_event)
+{
+    oracle_session_backend * backend =
+        static_cast<oracle_session_backend *>(fo_ctx);
+
+    failover_callback * callback = backend->failoverCallback_;
+    
+    if (callback != NULL)
+    {
+        session * sql = backend->session_;
+        
+        switch (fo_event)
+        {
+        case OCI_FO_BEGIN:
+            // failover operation was initiated
+    
+            try
+            {
+                callback->started();
+            }
+            catch (...)
+            {
+                // ignore exceptions from user callbacks
+            }
+            
+            break;
+            
+        case OCI_FO_END:
+            // failover was successful
+            
+            try
+            {
+                callback->finished(*sql);
+            }
+            catch (...)
+            {
+                // ignore exceptions from user callbacks
+            }
+
+            break;
+            
+        case OCI_FO_ABORT:
+            // failover was aborted with no possibility to recovery
+
+            try
+            {
+                callback->aborted();
+            }
+            catch (...)
+            {
+                // ignore exceptions from user callbacks
+            }
+
+            break;
+
+        case OCI_FO_ERROR:
+            // failover failed, but can be retried
+            
+            try
+            {
+                bool retry = false;
+                std::string newTarget;
+                callback->failed(retry, newTarget);
+                
+                // newTarget is ignored, as the new target
+                // is selected by Oracle client configuration
+                
+                if (retry)
+                {
+                    return OCI_FO_RETRY;
+                }
+            }
+            catch (...)
+            {
+                // ignore exceptions from user callbacks
+            }
+
+            break;
+
+        case OCI_FO_REAUTH:
+            // nothing interesting
+            break;
+            
+        default:
+            // ignore unknown callback types (if any)
+            break;
+        }
+    }
+
+    return 0;
+}
+
+} // unnamed namespace
+
 oracle_session_backend::oracle_session_backend(std::string const & serviceName,
     std::string const & userName, std::string const & password, int mode,
     bool decimals_as_strings, int charset, int ncharset)
-    : envhp_(NULL), srvhp_(NULL), errhp_(NULL), svchp_(NULL), usrhp_(NULL)
-      , decimals_as_strings_(decimals_as_strings)
+    : envhp_(NULL), srvhp_(NULL), errhp_(NULL), svchp_(NULL), usrhp_(NULL),
+      decimals_as_strings_(decimals_as_strings)
 {
     // assume service/user/password are utf8-compatible already
     const int defaultSourceCharSetId = 871;
@@ -147,6 +246,22 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
     // create the server context
     res = OCIServerAttach(srvhp_, errhp_,
         reinterpret_cast<text*>(nlsService), nlsServiceLen, OCI_DEFAULT);
+    if (res != OCI_SUCCESS)
+    {
+        std::string msg;
+        int errNum;
+        get_error_details(res, errhp_, msg, errNum);
+        clean_up();
+        throw oracle_soci_error(msg, errNum);
+    }
+
+    // register failover callback
+    OCIFocbkStruct fo;
+    fo.fo_ctx = this;
+    fo.callback_function = &fo_callback;
+
+    res = OCIAttrSet(srvhp_, static_cast<ub4>(OCI_HTYPE_SERVER),
+        &fo, 0, static_cast<ub4>(OCI_ATTR_FOCBK), errhp_);
     if (res != OCI_SUCCESS)
     {
         std::string msg;

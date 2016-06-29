@@ -59,10 +59,11 @@ void throw_soci_error(PGconn * conn, const char * msg)
 
 postgresql_statement_backend::postgresql_statement_backend(
     postgresql_session_backend &session, bool single_row_mode)
-    : session_(session), single_row_mode_(single_row_mode)
-     , rowsAffectedBulk_(-1LL), justDescribed_(false)
-     , hasIntoElements_(false), hasVectorIntoElements_(false)
-     , hasUseElements_(false), hasVectorUseElements_(false)
+    : session_(session), single_row_mode_(single_row_mode),
+      result_(session, NULL),
+      rowsAffectedBulk_(-1LL), justDescribed_(false),
+      hasIntoElements_(false), hasVectorIntoElements_(false),
+      hasUseElements_(false), hasVectorUseElements_(false)
 {
 }
 
@@ -235,7 +236,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
         {
             // default multi-row query execution
             
-            postgresql_result result(
+            postgresql_result result(session_,
                 PQprepare(session_.conn_, statementName.c_str(),
                     query_.c_str(), static_cast<int>(names_.size()), NULL));
             result.check_for_errors("Cannot prepare statement.");
