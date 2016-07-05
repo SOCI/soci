@@ -91,3 +91,32 @@ The following backends are also available, with various levels of completeness:
 * [sqlite3](backends/sqlite3.html) (requires `#include "soci-sqlite3.h"`)
 * [odbc](backends/odbc.html) (requires `#include "soci-odbc.h"`)
 * [firebird](backends/firebird.html) (requires `#include "soci-firebird.h"`)
+
+The `failover_callback` interface can be used as a callback channel for notifications of events that are automatically processed when the session is forcibly closed due to connectivity problems. The user can override the following methods:
+
+    // Called when the failover operation has started,
+    // after discovering connectivity problems.
+    virtual void started();
+
+    // Called after successful failover and creating a new connection;
+    // the sql parameter denotes the new connection and allows the user
+    // to replay any initial sequence of commands (like session configuration).
+    virtual void finished(session & sql);
+
+    // Called when the attempt to reconnect failed,
+    // if the user code sets the retry parameter to true,
+    // then new connection will be attempted;
+    // the newTarget connection string is a hint that can be ignored
+    // by external means.
+    virtual void failed(bool & retry, std::string & newTarget);
+    
+    // Called when there was a failure that prevents further failover attempts.
+    virtual void aborted();
+
+The user-provided callback implementation can be installed (or reset) with:
+
+    sql.set_failover_callback(myCallback);
+
+### Portability note
+
+The `failover_callback` functionality is currently supported only by PostgreSQL and Oracle backends (in the latter case the failover mechanism is governed by the Oracle-specific cluster configuration settings). Other backends allow the callback object to be installed, but will ignore it and will not generate notification calls.
