@@ -7,6 +7,8 @@
 
 #define SOCI_POSTGRESQL_SOURCE
 #include "soci/postgresql/soci-postgresql.h"
+#include "soci/callbacks.h"
+#include "soci/connection-parameters.h"
 #include <cstring>
 
 using namespace soci;
@@ -61,6 +63,8 @@ details::postgresql_result::check_for_errors(char const* errMsg) const
 bool
 details::postgresql_result::check_for_data(char const* errMsg) const
 {
+    std::string msg(errMsg);
+
     ExecStatusType const status = PQresultStatus(result_);
     switch (status)
     {
@@ -72,19 +76,74 @@ details::postgresql_result::check_for_data(char const* errMsg) const
         case PGRES_TUPLES_OK:
             return true;
 
+        case PGRES_FATAL_ERROR:
+            msg += " Fatal error.";
+            
+            if (PQstatus(sessionBackend_.conn_) == CONNECTION_BAD)
+            {
+                msg += " Connection failed.";
+                
+                // call the failover callback, if registered
+                
+                failover_callback * callback = sessionBackend_.failoverCallback_;
+                if (callback != NULL)
+                {
+                    bool reconnected = false;
+                    
+                    try
+                    {
+                        callback->started();
+                        
+                        bool retry = false;
+                        std::string newTarget;
+                        
+                        callback->failed(retry, newTarget);
+                        
+                        if (retry)
+                        {
+                            connection_parameters parameters("postgresql", newTarget);
+                            
+                            sessionBackend_.clean_up();
+                            
+                            sessionBackend_.connect(parameters);
+                            
+                            reconnected = true;
+                        }
+                    }
+                    catch (...)
+                    {
+                        // ignore exceptions from user callbacks
+                    }
+                    
+                    if (reconnected == false)
+                    {
+                        try
+                        {
+                            callback->aborted();
+                        }
+                        catch (...)
+                        {
+                            // ignore exceptions from user callbacks
+                        }
+                    }
+                }
+            }
+            
+            break;
+            
         default:
             // Some of the other status codes are not really errors but we're
             // not prepared to handle them right now and shouldn't ever receive
             // them so throw nevertheless
+
             break;
     }
 
-    std::string msg(errMsg);
     const char* const pqError = PQresultErrorMessage(result_);
     if (pqError && *pqError)
     {
-      msg += " ";
-      msg += pqError;
+        msg += " ";
+        msg += pqError;
     }
 
     const char* sqlstate = PQresultErrorField(result_, PG_DIAG_SQLSTATE);
