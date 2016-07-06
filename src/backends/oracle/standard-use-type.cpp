@@ -449,7 +449,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
         }
     }
 
-    if (ind != NULL)
+    if (ind != NULL && !readOnly_)
     {
         if (gotData)
         {

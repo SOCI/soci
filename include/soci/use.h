@@ -44,7 +44,27 @@ private:
     SOCI_NOT_ASSIGNABLE(use_container)
 };
 
+// Second specialiation for const indicator
+template <typename T>
+struct use_container<T, const no_indicator>
+{
+    use_container(T &_t, const std::string &_name)
+        : t(_t), name(_name) {}
+
+    T &t;
+    const std::string &name;
+private:
+    SOCI_NOT_ASSIGNABLE(use_container)
+};
+
 } // namespace details
+
+// use_null support
+inline details::use_container<const int, const indicator> use_null(const std::string &name = std::string()) 
+{
+    static const soci::indicator null_indicator = soci::i_null;
+    return details::use_container<const int, const indicator>(0,null_indicator, name); 
+}
 
 template <typename T>
 details::use_container<T, details::no_indicator> use(T &t, const std::string &name = std::string())
@@ -59,8 +79,17 @@ details::use_container<T, indicator> use(T &t, indicator & ind, std::string cons
 { return details::use_container<T, indicator>(t, ind, name); }
 
 template <typename T>
+details::use_container<T, const indicator> use(T &t, indicator const & ind, std::string const &name = std::string())
+{ return details::use_container<T, const indicator>(t, ind, name); }
+
+template <typename T>
 details::use_container<const T, indicator> use(T const &t, indicator & ind, std::string const &name = std::string())
 { return details::use_container<const T, indicator>(t, ind, name); }
+
+template <typename T>
+details::use_container<const T, const indicator> use(T const &t, indicator const & ind, std::string const &name = std::string())
+{ return details::use_container<const T, const indicator>(t, ind, name); }
+
 
 // vector containers
 template <typename T>

@@ -98,6 +98,10 @@ private:
     void exchange_(use_container<T, Indicator> const &uc, ...)
     { exchange(do_use(uc.t, uc.ind, uc.name, typename details::exchange_traits<T>::type_family())); }
 
+    template <typename T, typename Indicator>
+    void exchange_(use_container<T, const Indicator> const &uc, ...)
+    { exchange(do_use(uc.t, uc.ind, uc.name, typename details::exchange_traits<T>::type_family())); }
+
     template <typename T>
     void exchange_(use_container<T, details::no_indicator> const &uc, ...)
     { exchange(do_use(uc.t, uc.name, typename details::exchange_traits<T>::type_family())); }
@@ -105,6 +109,11 @@ private:
     template <typename T, typename Indicator>
     void exchange_(use_container<const T, Indicator> const &uc, ...)
     { exchange(do_use(uc.t, uc.ind, uc.name, typename details::exchange_traits<T>::type_family())); }
+
+    template <typename T, typename Indicator>
+    void exchange_(use_container<const T, const Indicator> const &uc, ...)
+    { exchange(do_use(uc.t, uc.ind, uc.name, typename details::exchange_traits<T>::type_family())); }
+
 
     template <typename T>
     void exchange_(use_container<const T, details::no_indicator> const &uc, ...)
