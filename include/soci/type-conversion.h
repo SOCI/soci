@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2016 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -190,21 +190,32 @@ public:
             typename type_conversion<T>::base_type
         > base_type;
 
-    conversion_into_type(std::vector<T> & value)
-        : details::base_vector_holder<T>(value.size())
-        , into_type<base_type>(details::base_vector_holder<T>::vec_, ownInd_)
-        , value_(value)
-        , ownInd_()
-        , ind_(ownInd_)
+    conversion_into_type(std::vector<T> & value,
+        std::size_t begin, std::size_t * end)
+        : details::base_vector_holder<T>(value.size()),
+        into_type<base_type>(
+            details::base_vector_holder<T>::vec_, ownInd_, begin, end),
+        value_(value),
+        ownInd_(),
+        ind_(ownInd_),
+        begin_(begin),
+        end_(end)
     {
+        user_ranges_ = end != NULL;
     }
 
-    conversion_into_type(std::vector<T> & value, std::vector<indicator> & ind)
-        : details::base_vector_holder<T>(value.size())
-        , into_type<base_type>(details::base_vector_holder<T>::vec_, ind)
-        , value_(value)
-        , ind_(ind)
-    {}
+    conversion_into_type(std::vector<T> & value, std::vector<indicator> & ind,
+        std::size_t begin, std::size_t * end)
+        : details::base_vector_holder<T>(value.size()),
+        into_type<base_type>(
+            details::base_vector_holder<T>::vec_, ind, begin, end),
+        value_(value),
+        ind_(ind),
+        begin_(begin),
+        end_(end)
+    {
+        user_ranges_ = end != NULL;
+    }
 
     virtual std::size_t size() const
     {
@@ -213,25 +224,39 @@ public:
 
         std::size_t const userSize = value_.size();
         details::base_vector_holder<T>::vec_.resize(userSize);
-        return userSize;
+        
+        return into_type<base_type>::size();
     }
 
     virtual void resize(std::size_t sz)
     {
-        value_.resize(sz);
-        ind_.resize(sz);
-        details::base_vector_holder<T>::vec_.resize(sz);
+        into_type<base_type>::resize(sz);
+
+        std::size_t actual_size = details::base_vector_holder<T>::vec_.size();
+        value_.resize(actual_size);
+        ind_.resize(actual_size);
     }
 
 private:
     void convert_from_base()
     {
-        std::size_t const sz = details::base_vector_holder<T>::vec_.size();
-
-        for (std::size_t i = 0; i != sz; ++i)
+        if (user_ranges_)
         {
-            type_conversion<T>::from_base(
-                details::base_vector_holder<T>::vec_[i], ind_[i], value_[i]);
+            for (std::size_t i = begin_; i != *end_; ++i)
+            {
+                type_conversion<T>::from_base(
+                    details::base_vector_holder<T>::vec_[i], ind_[i], value_[i]);
+            }
+        }
+        else
+        {
+            std::size_t const sz = details::base_vector_holder<T>::vec_.size();
+
+            for (std::size_t i = 0; i != sz; ++i)
+            {
+                type_conversion<T>::from_base(
+                    details::base_vector_holder<T>::vec_[i], ind_[i], value_[i]);
+            }
         }
     }
 
@@ -243,6 +268,10 @@ private:
     // in any case, ind_ refers to some valid vector of indicators
     // and can be used by conversion routines
     std::vector<indicator> & ind_;
+
+    std::size_t begin_;
+    std::size_t * end_;
+    bool user_ranges_;
 
     SOCI_NOT_COPYABLE(conversion_into_type)
 };
@@ -262,25 +291,34 @@ public:
         > base_type;
 
     conversion_use_type(std::vector<T> & value,
-            std::string const & name=std::string())
-        : details::base_vector_holder<T>(value.size())
-        , use_type<base_type>(
-            details::base_vector_holder<T>::vec_, ownInd_, name)
-        , value_(value)
-        , ownInd_()
-        , ind_(ownInd_)
+        std::size_t begin, std::size_t * end,
+        std::string const & name=std::string())
+        : details::base_vector_holder<T>(value.size()),
+        use_type<base_type>(
+            details::base_vector_holder<T>::vec_, ownInd_, begin, end, name),
+        value_(value),
+        ownInd_(),
+        ind_(ownInd_),
+        begin_(begin),
+        end_(end)
     {
+        user_ranges_ = end != NULL;
     }
 
     conversion_use_type(std::vector<T> & value,
-            std::vector<indicator> & ind,
-            std::string const & name = std::string())
-        : details::base_vector_holder<T>(value.size())
-        , use_type<base_type>(
-            details::base_vector_holder<T>::vec_, ind, name)
-        , value_(value)
-        , ind_(ind)
-    {}
+        std::vector<indicator> & ind,
+        std::size_t begin, std::size_t * end,
+        std::string const & name = std::string())
+        : details::base_vector_holder<T>(value.size()),
+        use_type<base_type>(
+            details::base_vector_holder<T>::vec_, ind, begin, end, name),
+        value_(value),
+        ind_(ind),
+        begin_(begin),
+        end_(end)
+    {
+        user_ranges_ = end != NULL;
+    }
 
 private:
     void convert_from_base()
@@ -288,10 +326,22 @@ private:
         std::size_t const sz = details::base_vector_holder<T>::vec_.size();
         value_.resize(sz);
         ind_.resize(sz);
-        for (std::size_t i = 0; i != sz; ++i)
+        
+        if (user_ranges_)
         {
-            type_conversion<T>::from_base(
-                details::base_vector_holder<T>::vec_[i], value_[i], ind_[i]);
+            for (std::size_t i = begin_; i != *end_; ++i)
+            {
+                type_conversion<T>::from_base(
+                    details::base_vector_holder<T>::vec_[i], value_[i], ind_[i]);
+            }
+        }
+        else
+        {
+            for (std::size_t i = 0; i != sz; ++i)
+            {
+                type_conversion<T>::from_base(
+                    details::base_vector_holder<T>::vec_[i], value_[i], ind_[i]);
+            }
         }
     }
 
@@ -300,10 +350,22 @@ private:
         std::size_t const sz = value_.size();
         details::base_vector_holder<T>::vec_.resize(sz);
         ind_.resize(sz);
-        for (std::size_t i = 0; i != sz; ++i)
+        
+        if (user_ranges_)
         {
-            type_conversion<T>::to_base(value_[i],
-                details::base_vector_holder<T>::vec_[i], ind_[i]);
+            for (std::size_t i = begin_; i != *end_; ++i)
+            {
+                type_conversion<T>::to_base(value_[i],
+                    details::base_vector_holder<T>::vec_[i], ind_[i]);
+            }
+        }
+        else
+        {
+            for (std::size_t i = 0; i != sz; ++i)
+            {
+                type_conversion<T>::to_base(value_[i],
+                    details::base_vector_holder<T>::vec_[i], ind_[i]);
+            }
         }
     }
 
@@ -315,6 +377,10 @@ private:
     // in any case, ind_ refers to some valid vector of indicators
     // and can be used by conversion routines
     std::vector<indicator> & ind_;
+
+    std::size_t begin_;
+    std::size_t * end_;
+    bool user_ranges_;
 
     SOCI_NOT_COPYABLE(conversion_use_type)
 };
@@ -329,6 +395,22 @@ template <typename T>
 into_type_ptr do_into(T & t, indicator & ind, user_type_tag)
 {
     return into_type_ptr(new conversion_into_type<T>(t, ind));
+}
+
+template <typename T>
+into_type_ptr do_into(std::vector<T> & t,
+    std::size_t begin, size_t * end, user_type_tag)
+{
+    return into_type_ptr(
+        new conversion_into_type<std::vector<T> >(t, begin, end));
+}
+
+template <typename T>
+into_type_ptr do_into(std::vector<T> & t, std::vector<indicator> & ind,
+    std::size_t begin, size_t * end, user_type_tag)
+{
+    return into_type_ptr(
+        new conversion_into_type<std::vector<T> >(t, ind, begin, end));
 }
 
 template <typename T>
@@ -355,6 +437,42 @@ use_type_ptr do_use(T const & t, indicator & ind,
     std::string const & name, user_type_tag)
 {
     return use_type_ptr(new conversion_use_type<T>(t, ind, name));
+}
+
+template <typename T>
+use_type_ptr do_use(std::vector<T> & t,
+    std::size_t begin, size_t * end,
+    std::string const & name, user_type_tag)
+{
+    return use_type_ptr(
+        new conversion_use_type<std::vector<T> >(t, begin, end, name));
+}
+
+template <typename T>
+use_type_ptr do_use(const std::vector<T> & t,
+    std::size_t begin, size_t * end,
+    std::string const & name, user_type_tag)
+{
+    return use_type_ptr(
+        new conversion_use_type<std::vector<T> >(t, begin, end, name));
+}
+
+template <typename T>
+use_type_ptr do_use(std::vector<T> & t, std::vector<indicator> & ind,
+    std::size_t begin, size_t * end,
+    std::string const & name, user_type_tag)
+{
+    return use_type_ptr(
+        new conversion_use_type<std::vector<T> >(t, ind, begin, end, name));
+}
+
+template <typename T>
+use_type_ptr do_use(const std::vector<T> & t, std::vector<indicator> & ind,
+    std::size_t begin, size_t * end,
+    std::string const & name, user_type_tag)
+{
+    return use_type_ptr(
+        new conversion_use_type<std::vector<T> >(t, ind, begin, end, name));
 }
 
 } // namespace details

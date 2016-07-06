@@ -79,16 +79,25 @@ struct oracle_vector_into_type_backend : details::vector_into_type_backend
 {
     oracle_vector_into_type_backend(oracle_statement_backend &st)
         : statement_(st), defnp_(NULL), indOCIHolders_(NULL),
-          data_(NULL), buf_(NULL) {}
+        data_(NULL), buf_(NULL), user_ranges_(true) {}
 
     virtual void define_by_pos(int &position,
-        void *data, details::exchange_type type);
+        void *data, details::exchange_type type)
+    {
+        user_ranges_ = false;
+        define_by_pos(position, data, type, 0, &end_var_);
+    }
+    
+    virtual void define_by_pos(
+        int & position, void * data, details::exchange_type type,
+        std::size_t begin, std::size_t * end);
 
     virtual void pre_fetch();
     virtual void post_fetch(bool gotData, indicator *ind);
 
     virtual void resize(std::size_t sz);
     virtual std::size_t size();
+    std::size_t full_size();
 
     virtual void clean_up();
 
@@ -104,6 +113,10 @@ struct oracle_vector_into_type_backend : details::vector_into_type_backend
     void *data_;
     char *buf_;              // generic buffer
     details::exchange_type type_;
+    std::size_t begin_;
+    std::size_t * end_;
+    std::size_t end_var_;
+    bool user_ranges_;
     std::size_t colSize_;    // size of the string column (used for strings)
     std::vector<ub2> sizes_; // sizes of data fetched (used for strings)
 
@@ -145,10 +158,25 @@ struct oracle_vector_use_type_backend : details::vector_use_type_backend
         : statement_(st), bindp_(NULL), indOCIHolders_(NULL),
           data_(NULL), buf_(NULL) {}
 
-    virtual void bind_by_pos(int &position,
-        void *data, details::exchange_type type);
+    virtual void bind_by_pos(int & position,
+        void * data, details::exchange_type type)
+    {
+        bind_by_pos(position, data, type, 0, &end_var_);
+    }
+    
+    virtual void bind_by_pos(int & position,
+        void * data, details::exchange_type type,
+        std::size_t begin, std::size_t * end);
+    
+    virtual void bind_by_name(const std::string & name,
+        void * data, details::exchange_type type)
+    {
+        bind_by_name(name, data, type, 0, &end_var_);
+    }
+
     virtual void bind_by_name(std::string const &name,
-        void *data, details::exchange_type type);
+        void *data, details::exchange_type type,
+        std::size_t begin, std::size_t * end);
 
     // common part for bind_by_pos and bind_by_name
     void prepare_for_bind(void *&data, sb4 &size, ub2 &oracleType);
@@ -159,7 +187,8 @@ struct oracle_vector_use_type_backend : details::vector_use_type_backend
 
     virtual void pre_use(indicator const *ind);
 
-    virtual std::size_t size();
+    virtual std::size_t size(); // active size (might be lower than full vector size)
+    std::size_t full_size();    // actual size of the user-provided vector
 
     virtual void clean_up();
 
@@ -171,6 +200,9 @@ struct oracle_vector_use_type_backend : details::vector_use_type_backend
     void *data_;
     char *buf_;        // generic buffer
     details::exchange_type type_;
+    std::size_t begin_;
+    std::size_t * end_;
+    std::size_t end_var_;
 
     // used for strings only
     std::vector<ub2> sizes_;

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2016 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -107,6 +107,20 @@ public:
         : data_(data)
         , type_(type)
         , ind_(NULL)
+        , begin_(0)
+        , end_(NULL)
+        , name_(name)
+        , backEnd_(NULL)
+    {}
+
+    vector_use_type(void* data, exchange_type type,
+        std::size_t begin, std::size_t * end,
+        std::string const& name = std::string())
+        : data_(data)
+        , type_(type)
+        , ind_(NULL)
+        , begin_(begin)
+        , end_(end)
         , name_(name)
         , backEnd_(NULL)
     {}
@@ -117,6 +131,21 @@ public:
         : data_(data)
         , type_(type)
         , ind_(&ind)
+        , begin_(0)
+        , end_(NULL)
+        , name_(name)
+        , backEnd_(NULL)
+    {}
+
+    vector_use_type(void* data, exchange_type type,
+        std::vector<indicator> const& ind,
+        std::size_t begin, std::size_t * end,
+        std::string const& name = std::string())
+        : data_(data)
+        , type_(type)
+        , ind_(&ind)
+        , begin_(begin)
+        , end_(end)
         , name_(name)
         , backEnd_(NULL)
     {}
@@ -135,6 +164,8 @@ private:
     void* data_;
     exchange_type type_;
     std::vector<indicator> const* ind_;
+    std::size_t begin_;
+    std::size_t * end_;
     std::string name_;
 
     vector_use_type_backend * backEnd_;
@@ -179,9 +210,21 @@ public:
             static_cast<exchange_type>(exchange_traits<T>::x_type), name)
     {}
 
+    use_type(std::vector<T>& v, std::size_t begin, std::size_t * end,
+        std::string const& name = std::string())
+        : vector_use_type(&v,
+            static_cast<exchange_type>(exchange_traits<T>::x_type), begin, end, name)
+    {}
+
     use_type(std::vector<T> const& v, std::string const& name = std::string())
         : vector_use_type(const_cast<std::vector<T>*>(&v),
             static_cast<exchange_type>(exchange_traits<T>::x_type), name)
+    {}
+
+    use_type(std::vector<T> const& v, std::size_t begin, std::size_t * end,
+        std::string const& name = std::string())
+        : vector_use_type(const_cast<std::vector<T>*>(&v),
+            static_cast<exchange_type>(exchange_traits<T>::x_type), begin, end, name)
     {}
 
     use_type(std::vector<T>& v, std::vector<indicator> const& ind,
@@ -190,10 +233,22 @@ public:
             static_cast<exchange_type>(exchange_traits<T>::x_type), ind, name)
     {}
 
+    use_type(std::vector<T>& v, std::vector<indicator> const& ind,
+        std::size_t begin, std::size_t * end, std::string const& name = std::string())
+        : vector_use_type(&v,
+            static_cast<exchange_type>(exchange_traits<T>::x_type), ind, begin, end, name)
+    {}
+
     use_type(std::vector<T> const& v, std::vector<indicator> const& ind,
         std::string const& name = std::string())
         : vector_use_type(const_cast<std::vector<T> *>(&v),
             static_cast<exchange_type>(exchange_traits<T>::x_type), ind, name)
+    {}
+
+    use_type(std::vector<T> const& v, std::vector<indicator> const& ind,
+        std::size_t begin, std::size_t * end, std::string const& name = std::string())
+        : vector_use_type(const_cast<std::vector<T> *>(&v),
+            static_cast<exchange_type>(exchange_traits<T>::x_type), ind, begin, end, name)
     {}
 };
 
@@ -237,6 +292,42 @@ use_type_ptr do_use(T const & t, std::vector<indicator> & ind,
     std::string const & name, basic_type_tag)
 {
     return use_type_ptr(new use_type<T>(t, ind, name));
+}
+
+template <typename T>
+use_type_ptr do_use(std::vector<T> & t,
+    std::size_t begin, std::size_t * end,
+    std::string const & name, basic_type_tag)
+{
+    return use_type_ptr(
+        new use_type<std::vector<T> >(t, begin, end, name));
+}
+
+template <typename T>
+use_type_ptr do_use(const std::vector<T> & t,
+    std::size_t begin, std::size_t * end,
+    std::string const & name, basic_type_tag)
+{
+    return use_type_ptr(
+        new use_type<std::vector<T> >(t, begin, end, name));
+}
+
+template <typename T>
+use_type_ptr do_use(std::vector<T> & t, std::vector<indicator> & ind,
+    std::size_t begin, std::size_t * end,
+    std::string const & name, basic_type_tag)
+{
+    return use_type_ptr(
+        new use_type<std::vector<T> >(t, ind, begin, end, name));
+}
+
+template <typename T>
+use_type_ptr do_use(const std::vector<T> & t, std::vector<indicator> & ind,
+    std::size_t begin, std::size_t * end,
+    std::string const & name, basic_type_tag)
+{
+    return use_type_ptr(
+        new use_type<std::vector<T> >(t, ind, begin, end, name));
 }
 
 } // namespace details
