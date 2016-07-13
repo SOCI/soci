@@ -33,6 +33,10 @@
 #include <sqlext.h> // ODBC
 #include <string.h> // strcpy()
 
+#ifndef SQL_SS_LENGTH_UNLIMITED
+#define SQL_SS_LENGTH_UNLIMITED 0
+#endif
+
 namespace soci
 {
 
@@ -40,6 +44,10 @@ namespace details
 {
     // TODO: Do we want to make it a part of public interface? --mloskot
     std::size_t const odbc_max_buffer_length = 100 * 1024 * 1024;
+
+    // select max size from following MSDN article
+    // https://msdn.microsoft.com/en-us/library/ms130896.aspx
+    SQLLEN const ODBC_MAX_COL_SIZE = 8000;
 
     // This cast is only used to avoid compiler warnings when passing strings
     // to ODBC functions, the returned string may *not* be really modified.
