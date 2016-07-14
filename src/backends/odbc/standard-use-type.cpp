@@ -93,15 +93,6 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
         memcpy(buf_, s.c_str(), size);
         buf_[size++] = '\0';
         indHolder_ = SQL_NTS;
-
-        // Strings of greater length are silently truncated at 8000 limit by MS
-        // SQL unless SQL_SS_LENGTH_UNLIMITED (which is defined as 0, but not
-        // available in all headers) is used.
-        if (size > 8000)
-        {
-          sqlType = SQL_LONGVARCHAR;
-          size = 0 /* SQL_SS_LENGTH_UNLIMITED */;
-        }
     }
     break;
     case x_stdtm:
@@ -212,14 +203,19 @@ void odbc_standard_use_type_backend::pre_use(indicator const *ind)
     SQLSMALLINT sqlType(0);
     SQLSMALLINT cType(0);
     SQLLEN size(0);
+    SQLLEN bufLen(0);
 
     void* const sqlData = prepare_for_bind(size, sqlType, cType);
-
+    if (size > ODBC_MAX_COL_SIZE)
+    {
+        bufLen = size;
+        size   = SQL_SS_LENGTH_UNLIMITED;
+    }
     SQLRETURN rc = SQLBindParameter(statement_.hstmt_,
                                     static_cast<SQLUSMALLINT>(position_),
                                     SQL_PARAM_INPUT,
                                     cType, sqlType, size, 0,
-                                    sqlData, 0, &indHolder_);
+                                    sqlData, bufLen, &indHolder_);
 
     if (is_odbc_error(rc))
     {
