@@ -2,18 +2,18 @@ version: 4.0.0.{build}
 
 environment:
     matrix:
-      - PRJ_GEN: "Visual Studio 11 2012 Win64"
-        BDIR: msvc2012
-        PRJ_CFG: Release
-        BOOST_ROOT: C:\Libraries\boost_1_58_0
-        POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
-        MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
-      - PRJ_GEN: "Visual Studio 12 2013 Win64"
-        BDIR: msvc2013
-        PRJ_CFG: Release
-        BOOST_ROOT: C:\Libraries\boost_1_58_0
-        POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
-        MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
+#      - PRJ_GEN: "Visual Studio 11 2012 Win64"
+#        BDIR: msvc2012
+#        PRJ_CFG: Release
+#        BOOST_ROOT: C:\Libraries\boost_1_58_0
+#        POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
+#        MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
+#      - PRJ_GEN: "Visual Studio 12 2013 Win64"
+#        BDIR: msvc2013
+#        PRJ_CFG: Release
+#        BOOST_ROOT: C:\Libraries\boost_1_58_0
+#        POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
+#        MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
       - PRJ_GEN: "Visual Studio 14 2015 Win64"
         BDIR: msvc2015
         PRJ_CFG: Release
@@ -71,7 +71,7 @@ before_build:
     - mysql -e "create database soci_test;" --user=root
     - sqlcmd -U sa -P Password12! -S (local)\SQL2014 -i C:\projects\soci\bin\windows\mssql_db_create.sql 
     - cmake .. -G"%PRJ_GEN%" -DCMAKE_BUILD_TYPE=%PRJ_CFG% -DCMAKE_INSTALL_PREFIX=C:\projects\sqlite\sqlite.%BDIR%
-    - cmake --build . --config %PRJ_CFG% --target INSTALL
+    - cmake --build . --config %PRJ_CFG% --target install
 
 build_script:
     - cd C:\projects\soci
