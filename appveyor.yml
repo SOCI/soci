@@ -2,8 +2,7 @@ version: 4.0.0.{build}
 
 environment:
     MINGW_ARCHIVE: C:\projects\mingw\x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z
-#    MINGW_URL: http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/4.8.3/threads-posix/seh/x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z/download
-    MINGW_URL: http://iweb.dl.sourceforge.net/project/mingw-w64/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/4.8.3/threads-posix/seh/x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z
+    MINGW_URL: https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/4.8.3/threads-posix/seh/x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z/download
     matrix:
       - PRJ_GEN: "Visual Studio 11 2012 Win64"
         BDIR: msvc2012
@@ -50,7 +49,7 @@ install:
             if (!(Test-Path $env:MINGW_ARCHIVE))
             {
               (new-object net.webclient).DownloadFile("$env:MINGW_URL", "$env:MINGW_ARCHIVE")
-              7z x -y -oC:\projects\mingw\4.8.3\ C:\projects\mingw\x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z > $null
+              7z x -y -oC:\projects\mingw\4.8.3\ $env:MINGW_ARCHIVE > $null
             }
           }
           Import-Module C:\projects\soci\bin\windows\Get-ODBCList.ps1
@@ -86,7 +85,7 @@ before_build:
     - mysql -e "create database soci_test;" --user=root
     - sqlcmd -U sa -P Password12! -S (local)\SQL2014 -i C:\projects\soci\bin\windows\mssql_db_create.sql 
     - cmake .. -G"%PRJ_GEN%" -DCMAKE_BUILD_TYPE=%PRJ_CFG% -DCMAKE_INSTALL_PREFIX=C:\projects\sqlite\sqlite.%BDIR%
-    - cmake --build . --config %PRJ_CFG% --target INSTALL
+    - cmake --build . --config %PRJ_CFG% --target install
 
 build_script:
     - cd C:\projects\soci
