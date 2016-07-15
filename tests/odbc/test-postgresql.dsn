@@ -1,6 +1,6 @@
 [ODBC]
-Description=DSN for SOCI ODBC connection to PostgreSQL(AppVeyor)
-Driver=PostgreSQL ANSI(x64)
+Description=DSN for SOCI ODBC connection to PostgreSQL(Travis-CI)
+Driver=PostgreSQL ANSI
 Server=localhost
 Port=5432
 Database=soci_test
