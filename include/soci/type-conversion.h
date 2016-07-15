@@ -191,7 +191,7 @@ public:
         > base_type;
 
     conversion_into_type(std::vector<T> & value,
-        std::size_t begin, std::size_t * end)
+        std::size_t begin = 0, std::size_t * end = NULL)
         : details::base_vector_holder<T>(value.size()),
         into_type<base_type>(
             details::base_vector_holder<T>::vec_, ownInd_, begin, end),
@@ -205,7 +205,7 @@ public:
     }
 
     conversion_into_type(std::vector<T> & value, std::vector<indicator> & ind,
-        std::size_t begin, std::size_t * end)
+        std::size_t begin = 0, std::size_t * end = NULL)
         : details::base_vector_holder<T>(value.size()),
         into_type<base_type>(
             details::base_vector_holder<T>::vec_, ind, begin, end),
@@ -291,6 +291,20 @@ public:
         > base_type;
 
     conversion_use_type(std::vector<T> & value,
+        std::string const & name=std::string())
+        : details::base_vector_holder<T>(value.size()),
+        use_type<base_type>(
+            details::base_vector_holder<T>::vec_, ownInd_, 0, NULL, name),
+        value_(value),
+        ownInd_(),
+        ind_(ownInd_),
+        begin_(0),
+        end_(NULL),
+        user_ranges_(false)
+    {
+    }
+
+    conversion_use_type(std::vector<T> & value,
         std::size_t begin, std::size_t * end,
         std::string const & name=std::string())
         : details::base_vector_holder<T>(value.size()),
@@ -303,6 +317,20 @@ public:
         end_(end)
     {
         user_ranges_ = end != NULL;
+    }
+
+    conversion_use_type(std::vector<T> & value,
+        std::vector<indicator> & ind,
+        std::string const & name = std::string())
+        : details::base_vector_holder<T>(value.size()),
+        use_type<base_type>(
+            details::base_vector_holder<T>::vec_, ind, 0, NULL, name),
+        value_(value),
+        ind_(ind),
+        begin_(0),
+        end_(NULL),
+        user_ranges_(false)
+    {
     }
 
     conversion_use_type(std::vector<T> & value,
