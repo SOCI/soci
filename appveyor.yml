@@ -1,0 +1,95 @@
+version: 3.2.4.{build}
+
+environment:
+    MINGW_ARCHIVE: C:\projects\mingw\x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z
+    MINGW_URL: https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/4.8.3/threads-posix/seh/x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z/download
+    BOOST_ROOT: C:\Libraries\boost
+    matrix:
+      - PRJ_GEN: "Visual Studio 11 2012 Win64"
+        BDIR: msvc2012
+        PRJ_CFG: Release
+      - PRJ_GEN: "Visual Studio 12 2013 Win64"
+        BDIR: msvc2013
+        PRJ_CFG: Release
+      - PRJ_GEN: "Visual Studio 14 2015 Win64"
+        BDIR: msvc2015
+        PRJ_CFG: Release
+      - PRJ_GEN: "MinGW Makefiles"
+        BDIR: gcc483
+        PRJ_CFG: Release
+        MINGW_ROOT: C:\projects\mingw\4.8.3\mingw64\bin
+
+services:
+    - mssql2014
+    - mysql
+    - postgresql
+
+cache:
+    - C:\projects\mingw
+
+install:
+    - ps: |
+          if ($env:PRJ_GEN -eq "MinGW Makefiles")
+          {
+            if (!(Test-Path C:\projects\mingw))
+            {
+              mkdir C:\projects\mingw
+            }
+            if (!(Test-Path $env:MINGW_ARCHIVE))
+            {
+              (new-object net.webclient).DownloadFile("$env:MINGW_URL", "$env:MINGW_ARCHIVE")
+              7z x -y -oC:\projects\mingw\4.8.3\ $env:MINGW_ARCHIVE > $null
+            }
+          }
+          Import-Module C:\projects\soci\bin\windows\Get-ODBCList.ps1
+          Get-ODBCList
+    - git clone https://github.com/snikulov/sqlite.cmake.build.git C:\projects\sqlite\src
+
+before_build:
+    # dirty little hack - remove sh from Git to make generator happy
+    - ps: |
+          if ($env:PRJ_GEN -eq "MinGW Makefiles")
+          {
+            $shellPath = (Get-Command sh.exe).definition
+            if ($shellPath)
+            {
+              if (Test-Path $shellPath)
+              {
+                Remove-Item $shellPath
+              }
+            }
+          }
+    - cd C:\projects\sqlite\src
+    - mkdir build.%BDIR%
+    - cd build.%BDIR%
+    - set SQLITE_ROOT=C:\projects\sqlite\sqlite.%BDIR%
+    - set PATH=%MINGW_ROOT%;%PATH%;%SQLITE_ROOT%\bin;%BOOST_ROOT%\lib
+    - echo %PATH%
+    - cmake --version
+#    - set PGUSER=postgres
+#    - set PGPASSWORD=Password12!
+#    - createdb soci_test
+#    - set MYSQL_PWD=Password12!
+#    - set USER=root
+#    - mysql -e "create database soci_test;" --user=root
+    - sqlcmd -U sa -P Password12! -S (local)\SQL2014 -i C:\projects\soci\bin\windows\mssql_db_create.sql 
+    - cmake .. -G"%PRJ_GEN%" -DCMAKE_BUILD_TYPE=%PRJ_CFG% -DCMAKE_INSTALL_PREFIX=C:\projects\sqlite\sqlite.%BDIR%
+    - cmake --build . --config %PRJ_CFG% --target install
+
+build_script:
+    - cd C:\projects\soci
+    - mkdir build.%BDIR%
+    - cd build.%BDIR%
+    - cmake ..\src -G"%PRJ_GEN%" -DCMAKE_BUILD_TYPE=%PRJ_CFG% -DCMAKE_VERBOSE_MAKEFILE=ON -DWITH_POSTGRESQL=OFF -DWITH_MYSQL=OFF -DUSE_STATIC_BOOST=OFF
+    - cmake --build . --config %PRJ_CFG% --clean-first
+
+test_script:
+    - ctest -V --output-on-failure -R "soci_empty|soci_sqlite3|soci_odbc_test_mssql"
+
+notifications:
+    - provider: Webhook
+      url: https://webhooks.gitter.im/e/ff1ff4818e9d3a166786
+      on_build_success: true
+      on_build_failure: true
+      on_build_status_changed: true
+

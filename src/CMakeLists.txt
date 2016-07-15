@@ -51,6 +51,9 @@ boost_report_value(SOCI_STATIC)
 option(SOCI_TESTS "Enable build of collection of SOCI tests" ON)
 boost_report_value(SOCI_TESTS)
 
+option(USE_STATIC_BOOST "Use Boost static libraries" ON)
+boost_report_value(USE_STATIC_BOOST)
+
 # Put the libaries and binaries that get built into directories at the
 # top of the build tree rather than in hard-to-find leaf
 # directories. This simplifies manual testing and the use of the build
@@ -68,6 +71,10 @@ set(SOCI_CORE_DEPENDENCIES)
 include(SociDependencies)
 
 #message("${SOCI_CORE_DEPENDENCIES}")
+if(Boost_FOUND)
+  add_definitions("-DBOOST_ALL_NO_LIB=1")
+  link_directories(${Boost_LIBRARY_DIRS})
+endif()
 
 ###############################################################################
 # Installation
@@ -88,8 +95,6 @@ set(INCLUDEDIR "include" CACHE PATH "The directory to install includes into.")
 # Enable tests
 ###############################################################################
 enable_testing()
-# Configure for testing with dashboard submissions to CDash
-#include(CTest) # disabled as unused
 
 # Define "make check" as alias for "make test"
 add_custom_target(check COMMAND ctest)
