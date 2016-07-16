@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2016 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -83,18 +83,30 @@ class SOCI_DECL vector_into_type : public into_type_base
 {
 public:
     vector_into_type(void * data, exchange_type type)
-        : data_(data), type_(type), indVec_(NULL), backEnd_(NULL) {}
+        : data_(data), type_(type), indVec_(NULL),
+        begin_(0), end_(NULL), backEnd_(NULL) {}
+
+    vector_into_type(void * data, exchange_type type,
+        std::size_t begin, std::size_t * end)
+        : data_(data), type_(type), indVec_(NULL),
+        begin_(begin), end_(end), backEnd_(NULL) {}
 
     vector_into_type(void * data, exchange_type type,
         std::vector<indicator> & ind)
-        : data_(data), type_(type), indVec_(&ind), backEnd_(NULL) {}
+        : data_(data), type_(type), indVec_(&ind),
+        begin_(0), end_(NULL), backEnd_(NULL) {}
+
+    vector_into_type(void * data, exchange_type type,
+        std::vector<indicator> & ind,
+        std::size_t begin, std::size_t * end)
+        : data_(data), type_(type), indVec_(&ind),
+        begin_(begin), end_(end), backEnd_(NULL) {}
 
     ~vector_into_type();
 
 protected:
     virtual void post_fetch(bool gotData, bool calledFromFetch);
 
-private:
     virtual void define(statement_impl & st, int & position);
     virtual void pre_fetch();
     virtual void clean_up();
@@ -104,6 +116,8 @@ private:
     void * data_;
     exchange_type type_;
     std::vector<indicator> * indVec_;
+    std::size_t begin_;
+    std::size_t * end_;
 
     vector_into_type_backend * backEnd_;
 
@@ -132,9 +146,21 @@ public:
     into_type(std::vector<T> & v)
         : vector_into_type(&v,
             static_cast<exchange_type>(exchange_traits<T>::x_type)) {}
+    
+    into_type(std::vector<T> & v, std::size_t begin, std::size_t * end)
+        : vector_into_type(&v,
+            static_cast<exchange_type>(exchange_traits<T>::x_type),
+            begin, end) {}
+    
     into_type(std::vector<T> & v, std::vector<indicator> & ind)
         : vector_into_type(&v,
             static_cast<exchange_type>(exchange_traits<T>::x_type), ind) {}
+    
+    into_type(std::vector<T> & v, std::vector<indicator> & ind,
+        std::size_t begin, std::size_t * end)
+        : vector_into_type(&v,
+            static_cast<exchange_type>(exchange_traits<T>::x_type), ind,
+            begin, end) {}
 };
 
 // helper dispatchers for basic types
@@ -155,6 +181,20 @@ template <typename T>
 into_type_ptr do_into(T & t, std::vector<indicator> & ind, basic_type_tag)
 {
     return into_type_ptr(new into_type<T>(t, ind));
+}
+
+template <typename T>
+into_type_ptr do_into(std::vector<T> & t,
+    std::size_t begin, std::size_t * end, basic_type_tag)
+{
+    return into_type_ptr(new into_type<std::vector<T> >(t, begin, end));
+}
+
+template <typename T>
+into_type_ptr do_into(std::vector<T> & t, std::vector<indicator> & ind,
+    std::size_t begin, std::size_t * end, basic_type_tag)
+{
+    return into_type_ptr(new into_type<std::vector<T> >(t, ind, begin, end));
 }
 
 } // namespace details

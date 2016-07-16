@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2016 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -150,11 +150,25 @@ void vector_use_type::bind(statement_impl & st, int & position)
     }
     if (name_.empty())
     {
-        backEnd_->bind_by_pos(position, data_, type_);
+        if (end_ != NULL)
+        {
+            backEnd_->bind_by_pos(position, data_, type_, begin_, end_);
+        }
+        else
+        {
+            backEnd_->bind_by_pos(position, data_, type_);
+        }
     }
     else
     {
-        backEnd_->bind_by_name(name_, data_, type_);
+        if (end_ != NULL)
+        {
+            backEnd_->bind_by_name(name_, data_, type_, begin_, end_);
+        }
+        else
+        {
+            backEnd_->bind_by_name(name_, data_, type_);
+        }
     }
 }
 

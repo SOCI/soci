@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2016 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -29,11 +29,16 @@ using namespace soci::details::postgresql;
 
 
 void postgresql_vector_into_type_backend::define_by_pos(
-    int & position, void * data, exchange_type type)
+    int & position, void * data, exchange_type type,
+    std::size_t begin, std::size_t * end)
 {
     data_ = data;
     type_ = type;
+    begin_ = begin;
+    end_ = end;
     position_ = position++;
+
+    end_var_ = full_size();
 }
 
 void postgresql_vector_into_type_backend::pre_fetch()
@@ -68,7 +73,7 @@ void postgresql_vector_into_type_backend::post_fetch(bool gotData, indicator * i
 
         int const endRow = statement_.currentRow_ + statement_.rowsToConsume_;
 
-        for (int curRow = statement_.currentRow_, i = 0;
+        for (int curRow = statement_.currentRow_, i = begin_;
              curRow != endRow; ++curRow, ++i)
         {
             // first, deal with indicators
@@ -170,39 +175,72 @@ void resizevector_(void * p, std::size_t sz)
 
 void postgresql_vector_into_type_backend::resize(std::size_t sz)
 {
-    switch (type_)
+    if (user_ranges_)
     {
-        // simple cases
-    case x_char:
-        resizevector_<char>(data_, sz);
-        break;
-    case x_short:
-        resizevector_<short>(data_, sz);
-        break;
-    case x_integer:
-        resizevector_<int>(data_, sz);
-        break;
-    case x_long_long:
-        resizevector_<long long>(data_, sz);
-        break;
-    case x_unsigned_long_long:
-        resizevector_<unsigned long long>(data_, sz);
-        break;
-    case x_double:
-        resizevector_<double>(data_, sz);
-        break;
-    case x_stdstring:
-        resizevector_<std::string>(data_, sz);
-        break;
-    case x_stdtm:
-        resizevector_<std::tm>(data_, sz);
-        break;
-    default:
-        throw soci_error("Into vector element used with non-supported type.");
+        // resize only in terms of user-provided ranges (below)
     }
+    else
+    {
+        switch (type_)
+        {
+            // simple cases
+        case x_char:
+            resizevector_<char>(data_, sz);
+            break;
+        case x_short:
+            resizevector_<short>(data_, sz);
+            break;
+        case x_integer:
+            resizevector_<int>(data_, sz);
+            break;
+        case x_long_long:
+            resizevector_<long long>(data_, sz);
+            break;
+        case x_unsigned_long_long:
+            resizevector_<unsigned long long>(data_, sz);
+            break;
+        case x_double:
+            resizevector_<double>(data_, sz);
+            break;
+        case x_stdstring:
+            resizevector_<std::string>(data_, sz);
+            break;
+        case x_stdtm:
+            resizevector_<std::tm>(data_, sz);
+            break;
+        default:
+            throw soci_error("Into vector element used with non-supported type.");
+        }
+
+        end_var_ = sz;
+    }
+
+    // resize ranges, either user-provided or internally managed
+    *end_ = begin_ + sz;
 }
 
 std::size_t postgresql_vector_into_type_backend::size()
+{
+    // as a special error-detection measure, check if the actual vector size
+    // was changed since the original bind (when it was stored in end_var_):
+    const std::size_t actual_size = full_size();
+    if (actual_size != end_var_)
+    {
+        // ... and in that case return the actual size
+        return actual_size;
+    }
+    
+    if (end_ != NULL && *end_ != 0)
+    {
+        return *end_ - begin_;
+    }
+    else
+    {
+        return end_var_;
+    }
+}
+
+std::size_t postgresql_vector_into_type_backend::full_size()
 {
     std::size_t sz = 0; // dummy initialization to please the compiler
     switch (type_)

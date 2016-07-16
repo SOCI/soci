@@ -5,6 +5,7 @@
     * [Binding input data](#bind_input)
     * [Binding by position](#bind_position)
     * [Binding by name](#bind_name)
+* [Bulk operations](exchange.html#bulk)
 * [Handling of nulls and other conditions](exchange.html#data_states)
     * [Indicators](#indicators)
 * [Types](#types)
@@ -145,6 +146,42 @@ The PostgreSQL backend allows to use the "native" PostgreSQL way of naming param
 The query rewriting can be switched off by compiling the backend with the `SOCI_POSTGRESQL_NOBINDBYNAME` name defined (pass `-DSOCI_POSTGRESQL_NOBINDBYNAME=ON` variable to CMake). Note that in this case it is also necessary to define `SOCI_POSTGRESQL_NOPREPARE` (controlled by CMake variable `-DSOCI_POSTGRESQL_NOPREPARE=ON`), because statement preparation relies on successful query rewriting.
 In practice, both macros will be needed for PostgreSQL server older than 8.0.
 
+### <a name="bulk"></a> Bulk operations
+
+Bulk operations allow the user to bind, as into or use element, whole vectors of objects. This allows the database backend to optimize access and data transfer and benefit from the fact that `std::vector` stores data in contiguous memory blocks (the actual optimization depends on the backend and the capability of the underlying data base server).
+
+It is possible to `use` the vector as a data source:
+
+    std::vector<int> v;
+    // ...
+    sql << "insert into t ...", use(v);
+
+as well as a destination:
+
+    std::vector<int> v;
+    v.resize(100);
+    sql << "select ...", into(v);
+
+In the latter case the initial size of the vector defines the maximum number of data elements that the user is willing to accept and after executing the query the vector will be automatically resized to reflect that actual number of rows that were read and transmitted. That is, the vector will be automatically shrunk if the amount of data that was available was smaller than requested.
+
+It is also possible to operate on the chosen sub-range of the vector:
+
+    std::vector<int> v;
+    // ...
+    std::size_t begin = ...;
+    std::size_t end = ...;
+    sql << "insert into t ...", use(v, begin, end);
+
+    // or:
+
+    sql << "select ...", into(v, begin, end);
+
+Above, only the sub-range of the vector is used for data transfer and in the case of `into` operation, the `end` variable will be automatically adjusted to reflect the amount of data that was actually transmitted, but the vector object as a whole will retain its initial size.
+
+Bulk operations can also involve indicators, see below.
+
+Bulk operations support user-defined data types, if they have appropriate conversion routines defined.
+
 ### <a name="data_states"></a> Handling nulls and other conditions
 #### <a name="indicators"></a> Indicators
 In order to support null values and other conditions which are not real errors, the concept of *indicator* is provided.
@@ -260,7 +297,7 @@ Bulk inserts, updates, and selects are supported through the following `std::vec
 
 Use of the vector based types mirrors that of the standard types, with the size of the vector used to specify the number of records to process at a time. See below for examples.
 
-Note that bulk operations are supported only for `std::vector`s of the types listed above.
+Bulk operations are supported also for `std::vector`s of the user-provided types that have appropriate conversion routines defines.
 
 #### <a name="dynamic"></a> Dynamic resultset binding
 
@@ -421,8 +458,6 @@ The above specialization for `soci::type_conversion<MyInt>` is enough to enable 
     cout << "We have " << i.get() << " persons in the database.\n";
 
 Note that there is a number of types from the Boost library integrated with SOCI out of the box, see [Integration with Boost](boost.html) for complete description. Use these as examples of conversions for more complext data types.
-
-Note also that user-defined datatypes are not supported with [bulk data transfer](static_bulk)
 
 Another possibility to extend SOCI with custom data types is to use the `into_type<T<` and `use_type<T<` class templates, which specializations can be user-provided. These specializations need to implement the interface defined by, respectively, the `into_type_base` and `use_type_base`
 classes.

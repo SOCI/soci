@@ -149,16 +149,25 @@ struct postgresql_standard_into_type_backend : details::standard_into_type_backe
 struct postgresql_vector_into_type_backend : details::vector_into_type_backend
 {
     postgresql_vector_into_type_backend(postgresql_statement_backend & st)
-        : statement_(st) {}
+        : statement_(st), user_ranges_(true) {}
 
     virtual void define_by_pos(int & position,
-        void * data, details::exchange_type type);
+        void * data, details::exchange_type type)
+    {
+        user_ranges_ = false;
+        define_by_pos(position, data, type, 0, &end_var_);
+    }
+
+    virtual void define_by_pos(int & position,
+        void * data, details::exchange_type type,
+        std::size_t begin, std::size_t * end);
 
     virtual void pre_fetch();
     virtual void post_fetch(bool gotData, indicator * ind);
 
     virtual void resize(std::size_t sz);
-    virtual std::size_t size();
+    virtual std::size_t size(); // active size (might be lower than full vector size)
+    std::size_t full_size();    // actual size of the user-provided vector
 
     virtual void clean_up();
 
@@ -166,6 +175,10 @@ struct postgresql_vector_into_type_backend : details::vector_into_type_backend
 
     void * data_;
     details::exchange_type type_;
+    std::size_t begin_;
+    std::size_t * end_;
+    std::size_t end_var_;
+    bool user_ranges_;
     int position_;
 };
 
@@ -199,13 +212,29 @@ struct postgresql_vector_use_type_backend : details::vector_use_type_backend
         : statement_(st), position_(0) {}
 
     virtual void bind_by_pos(int & position,
-        void * data, details::exchange_type type);
+        void * data, details::exchange_type type)
+    {
+        bind_by_pos(position, data, type, 0, &end_var_);
+    }
+    
+    virtual void bind_by_pos(int & position,
+        void * data, details::exchange_type type,
+        std::size_t begin, std::size_t * end);
+    
     virtual void bind_by_name(std::string const & name,
-        void * data, details::exchange_type type);
+        void * data, details::exchange_type type)
+    {
+        bind_by_name(name, data, type, 0, &end_var_);
+    }
 
+    virtual void bind_by_name(const std::string & name,
+        void * data, details::exchange_type type,
+        std::size_t begin, std::size_t * end);
+    
     virtual void pre_use(indicator const * ind);
 
-    virtual std::size_t size();
+    virtual std::size_t size(); // active size (might be lower than full vector size)
+    std::size_t full_size();    // actual size of the user-provided vector
 
     virtual void clean_up();
 
@@ -213,6 +242,9 @@ struct postgresql_vector_use_type_backend : details::vector_use_type_backend
 
     void * data_;
     details::exchange_type type_;
+    std::size_t begin_;
+    std::size_t * end_;
+    std::size_t end_var_;
     int position_;
     std::string name_;
     std::vector<char *> buffers_;

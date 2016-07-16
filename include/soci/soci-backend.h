@@ -83,6 +83,13 @@ public:
     vector_into_type_backend() {}
     virtual ~vector_into_type_backend() {}
 
+    virtual void define_by_pos(
+        int & /* position */, void * /* data */, exchange_type /* type */,
+        std::size_t /* begin */, std::size_t * /* end */)
+    {
+        throw soci_error("into bulk iterators are not supported with this backend");
+    }
+    
     virtual void define_by_pos(int& position, void* data, exchange_type type) = 0;
 
     virtual void pre_fetch() = 0;
@@ -126,8 +133,21 @@ public:
     virtual ~vector_use_type_backend() {}
 
     virtual void bind_by_pos(int& position, void* data, exchange_type type) = 0;
+    virtual void bind_by_pos(int& /* position */, void* /* data */, exchange_type /* type */,
+        std::size_t /* begin */, std::size_t * /* end */)
+    {
+        throw soci_error("use bulk iterators are not supported with this backend");
+    }
+
     virtual void bind_by_name(std::string const& name,
         void* data, exchange_type type) = 0;
+
+    virtual void bind_by_name(std::string const& /* name */,
+        void* /* data */, exchange_type /* type */,
+        std::size_t /* begin */, std::size_t * /* end */)
+    {
+        throw soci_error("use bulk iterators are not supported with this backend");
+    }
 
     virtual void pre_use(indicator const* ind) = 0;
 

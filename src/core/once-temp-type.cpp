@@ -46,6 +46,12 @@ once_temp_type & once_temp_type::operator,(into_type_ptr const & i)
     return *this;
 }
 
+once_temp_type & once_temp_type::operator,(use_type_ptr const & u)
+{
+    rcst_->exchange(u);
+    return *this;
+}
+
 ddl_type::ddl_type(session & s)
     : s_(&s), rcst_(new ref_counted_statement(s))
 {

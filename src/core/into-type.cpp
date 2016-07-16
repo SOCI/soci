@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2016 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -55,7 +55,15 @@ vector_into_type::~vector_into_type()
 void vector_into_type::define(statement_impl & st, int & position)
 {
     backEnd_ = st.make_vector_into_type_backend();
-    backEnd_->define_by_pos(position, data_, type_);
+
+    if (end_ != NULL)
+    {
+        backEnd_->define_by_pos(position, data_, type_, begin_, end_);
+    }
+    else
+    {
+        backEnd_->define_by_pos(position, data_, type_);
+    }
 }
 
 void vector_into_type::pre_fetch()
@@ -82,7 +90,7 @@ void vector_into_type::post_fetch(bool gotData, bool /* calledFromFetch */)
 
 void vector_into_type::resize(std::size_t sz)
 {
-    if (indVec_ != NULL)
+    if (indVec_ != NULL && end_ == NULL)
     {
         indVec_->resize(sz);
     }
