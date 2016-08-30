@@ -205,8 +205,10 @@ sqlite3_statement_backend::load_rowset(int totalRows)
 statement_backend::exec_fetch_result
 sqlite3_statement_backend::load_one()
 {
-    statement_backend::exec_fetch_result retVal = ef_success;
+    if( !databaseReady_ )
+        return ef_no_data;
 
+    statement_backend::exec_fetch_result retVal = ef_success;
     int const res = sqlite3_step(stmt_);
 
     if (SQLITE_DONE == res)
@@ -223,10 +225,9 @@ sqlite3_statement_backend::load_one()
 
         std::ostringstream ss;
         ss << "sqlite3_statement_backend::loadOne: "
-           << zErrMsg;
+            << zErrMsg;
         throw sqlite3_soci_error(ss.str(), res);
     }
-
     return retVal;
 }
 
@@ -297,7 +298,8 @@ sqlite3_statement_backend::bind_and_execute(int number)
             return load_rowset(number);
         }
 
-        retVal = load_one(); //execute each bound line
+        databaseReady_=true; // Mark sqlite engine is ready to perform sqlite3_step
+        retVal = load_one(); // execute each bound line
         rowsAffectedBulkTemp += get_affected_rows();
     }
 

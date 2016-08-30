@@ -518,6 +518,18 @@ TEST_CASE_METHOD(common_tests, "Basic functionality")
     int id;
     sql << "select id from soci_test", into(id);
     CHECK(id == 123);
+
+    sql << "insert into soci_test (id) values (" << 234 << ")";
+    sql << "insert into soci_test (id) values (" << 345 << ")";
+    // Test prepare, execute, fetch correctness
+    statement st = (sql.prepare << "select id from soci_test", into(id));
+    st.execute();
+    int count = 0;
+    while(st.fetch())
+        count++;
+    CHECK(count == 3 );
+    bool fetchEnd = st.fetch(); // All the data has been read here so additional fetch must return false
+    CHECK(fetchEnd == false);
 }
 
 // "into" tests, type conversions, etc.
