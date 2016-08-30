@@ -29,6 +29,8 @@ psql --version
 #psql -c 'select version();' "$SOCI_POSTGRESQL_CONNSTR"
 
 cmake \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DSOCI_ASAN=ON \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DSOCI_TESTS=ON \
     -DSOCI_STATIC=OFF \

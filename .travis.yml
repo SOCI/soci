@@ -34,9 +34,16 @@ matrix:
         - env: SOCI_TRAVIS_BACKEND=db2
         - env: SOCI_TRAVIS_BACKEND=postgression
         - env: SOCI_TRAVIS_BACKEND=valgrind
+        - env: SOCI_TRAVIS_BACKEND=asan
         - env: SOCI_TRAVIS_BACKEND=oracle CFLAGS=-m32 CXXFLAGS=-m32 LDFLAGS=-m32 WITH_BOOST=OFF
 
 addons:
+    apt:
+        sources:
+            - ubuntu-toolchain-r-test
+            - kalakris-cmake
+        packages:
+            - cmake
     coverity_scan:
         project:
             name: "SOCI/soci"

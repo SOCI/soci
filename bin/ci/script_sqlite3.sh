@@ -6,6 +6,8 @@
 source ${TRAVIS_BUILD_DIR}/bin/ci/common.sh
 
 cmake \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DSOCI_ASAN=ON \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DSOCI_TESTS=ON \
     -DSOCI_STATIC=OFF \

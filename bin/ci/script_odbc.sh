@@ -12,6 +12,8 @@ if test ! -d ${ODBC_TEST}; then
 fi
 
 cmake \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DSOCI_ASAN=ON \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DSOCI_TESTS=ON \
     -DSOCI_STATIC=OFF \

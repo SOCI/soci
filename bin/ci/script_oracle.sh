@@ -7,6 +7,8 @@ source ${TRAVIS_BUILD_DIR}/bin/ci/common.sh
 source ${TRAVIS_BUILD_DIR}/bin/ci/oracle.sh
 
 cmake \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DSOCI_ASAN=ON \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DWITH_BOOST=OFF \
     -DSOCI_TESTS=ON \
