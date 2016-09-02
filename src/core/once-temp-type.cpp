@@ -37,14 +37,7 @@ once_temp_type & once_temp_type::operator=(once_temp_type const & o)
 
 once_temp_type::~once_temp_type() SOCI_NOEXCEPT_FALSE
 {
-    //try
-    {
-        rcst_->dec_ref();
-    }
-    /*catch(...)
-    {
-        //Throwing an exception out of a destructor is forbidden
-    }*/
+    rcst_->dec_ref();
 }
 
 once_temp_type & once_temp_type::operator,(into_type_ptr const & i)

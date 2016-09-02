@@ -29,6 +29,11 @@ endif(WIN32)
 
 set (SOCI_CXX_C11 OFF CACHE BOOL "Build to the C++11 standard")
 
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    if(NOT CMAKE_CXX_COMPILER_VERSION LESS 4.7)
+      set(SOCI_CXX_C11 ON)
+    endif()
+endif()
 
 #
 # Force compilation flags and set desired warnings level
@@ -94,3 +99,7 @@ endif()
 
 # Set SOCI_HAVE_* variables for soci-config.h generator
 set(SOCI_HAVE_CXX_C11 ${SOCI_CXX_C11} CACHE INTERNAL "Enables C++11 support")
+
+if(SOCI_CXX_C11)
+  add_definitions(-DSOCI_CXX_C11)
+endif()
