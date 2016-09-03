@@ -75,13 +75,11 @@ if (SOCI_STATIC)
 
   add_library(${SOCI_CORE_TARGET_STATIC} STATIC
     ${SOCI_CORE_HEADERS} ${SOCI_CORE_SOURCES})
-  
+
   # we still need to link against dl if we have it
   target_link_libraries (${SOCI_CORE_TARGET_STATIC}
     ${SOCI_CORE_DEPS_LIBS}
   )
-  
-
 
   set_target_properties(${SOCI_CORE_TARGET_STATIC}
     PROPERTIES
@@ -97,6 +95,7 @@ install(FILES ${SOCI_CORE_HEADERS} DESTINATION ${INCLUDEDIR}/${PROJECTNAMEL})
 
 if (SOCI_SHARED)
   install(TARGETS ${SOCI_CORE_TARGET}
+    EXPORT SOCI
     RUNTIME DESTINATION ${BINDIR}
     LIBRARY DESTINATION ${LIBDIR}
     ARCHIVE DESTINATION ${LIBDIR})
@@ -104,10 +103,13 @@ endif()
 
 if (SOCI_STATIC)
   install(TARGETS ${SOCI_CORE_TARGET_STATIC}
+    EXPORT SOCI
     RUNTIME DESTINATION ${BINDIR}
     LIBRARY DESTINATION ${LIBDIR}
     ARCHIVE DESTINATION ${LIBDIR})
 endif()
+
+install(EXPORT SOCI NAMESPACE SOCI:: DESTINATION cmake)
 
 #
 # Core configuration summary
