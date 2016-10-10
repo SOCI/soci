@@ -556,10 +556,8 @@ The SOCI library provides also an interface for basic operations on large object
 The following functions are provided in the `blob` interface, mimicking the file-like operations:
 
     *`std::size_t get_len();`
-    *`std::size_t read(std::size_t offset, char *buf, std::size_t
-    toRead);`
-    *`std::size_t write(std::size_t offset, char const *buf,
-    std::size_t toWrite);`
+    *`std::size_t read_from_start(char * buf, std::size_t toRead, std::size_t offset = 0);`
+    *`std::size_t write_from_start(const char * buf, std::size_t toWrite, std::size_t offset = 0);`
     *`std::size_t append(char const *buf, std::size_t toWrite);`
     *`void trim(std::size_t newLen);`
 

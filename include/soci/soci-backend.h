@@ -218,11 +218,27 @@ public:
     virtual ~blob_backend() {}
 
     virtual std::size_t get_len() = 0;
+    
     virtual std::size_t read(std::size_t offset, char* buf,
         std::size_t toRead) = 0;
+    
+    virtual std::size_t read_from_start(char * buf, std::size_t toRead,
+        std::size_t offset)
+    {
+        throw soci_error("read_from_start is not implemented for this backend");
+    }
+    
     virtual std::size_t write(std::size_t offset, char const* buf,
         std::size_t toWrite) = 0;
+    
+    virtual std::size_t write_from_start(const char * buf, std::size_t toWrite,
+        std::size_t offset)
+    {
+        throw soci_error("write_from_start is not implemented for this backend");
+    }
+    
     virtual std::size_t append(char const* buf, std::size_t toWrite) = 0;
+    
     virtual void trim(std::size_t newLen) = 0;
 
 private:
