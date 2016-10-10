@@ -37,6 +37,7 @@
 #include "soci/type-conversion-traits.h"
 #include "soci/type-holder.h"
 #include "soci/type-ptr.h"
+#include "soci/type-wrappers.h"
 #include "soci/unsigned-types.h"
 #include "soci/use.h"
 #include "soci/use-type.h"

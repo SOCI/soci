@@ -729,7 +729,7 @@ TEST_CASE("PostgreSQL ORM cast", "[postgresql][orm]")
 }
 
 // Test the DDL and metadata functionality
-TEST_CASE("PostgreSQL DDL with metadata", "[postfresql][ddl]")
+TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
 {
     soci::session sql(backEnd, connectString);
 
@@ -940,7 +940,7 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postfresql][ddl]")
 }
 
 // Test the bulk iterators functionality
-TEST_CASE("Bulk iterators", "[postfresql][bulkiters]")
+TEST_CASE("Bulk iterators", "[postgresql][bulkiters]")
 {
     soci::session sql(backEnd, connectString);
 
@@ -1019,6 +1019,28 @@ TEST_CASE("Bulk iterators", "[postfresql][bulkiters]")
     }
 
     sql << "drop table t";
+}
+
+// Test support for XML wrapper type
+TEST_CASE("XML wrapper type", "[postgresql][xml]")
+{
+    session sql(backEnd, connectString);
+
+    sql << "create table xml_test (id integer, x xml)";
+
+    int id = 1;
+    xml_type xml;
+    xml.value = "<file>abc</file>";
+
+    sql << "insert into xml_test (id, x) values (:1, :2)", use(id), use(xml);
+
+    xml_type xml2;
+
+    sql << "select x from xml_test where id = :1", into(xml2), use(id);
+
+    CHECK(xml.value == xml2.value);
+
+    sql << "drop table xml_test";
 }
 
 //

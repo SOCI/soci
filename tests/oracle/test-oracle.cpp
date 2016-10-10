@@ -1404,6 +1404,41 @@ TEST_CASE("Bulk iterators", "[oracle][bulkiters]")
     sql << "drop table t";
 }
 
+// XML and big string test
+TEST_CASE("XML and big string", "[oracle][xml]")
+{
+    session sql(backEnd, connectString);
+
+    sql << "create table xml_test (id integer, x xmltype)";
+
+    int id = 1;
+    xml_type xml;
+    xml.value = "<file>";
+    for (int i = 0; i != 200; ++i)
+    {
+        xml.value += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    }
+    xml.value += "</file>";
+
+    sql << "insert into xml_test (id, x) values (:1, xmltype(:2))", use(id), use(xml);
+
+    xml_type xml2;
+
+    sql << "select t.x.getCLOBVal() from xml_test t where id = :1", into(xml2), use(id);
+
+    // note: getCLOBVal() returns XML value with newline added at the end
+    CHECK(xml.value + '\n' == xml2.value);
+
+    sql << "update xml_test set x = null where id = :1", use(id);
+
+    indicator ind;
+    sql << "select t.x.getCLOBVal() from xml_test t where id = :1", into(xml2, ind), use(id);
+
+    CHECK(ind == i_null);
+    
+    sql << "drop table xml_test";
+}
+
 //
 // Support for soci Common Tests
 //

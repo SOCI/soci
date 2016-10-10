@@ -12,6 +12,7 @@
 #include "common.h"
 #include "soci/rowid.h"
 #include "soci/blob.h"
+#include "soci/type-wrappers.h"
 #include "soci-exchange-cast.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
@@ -148,6 +149,14 @@ void postgresql_standard_into_type_backend::post_fetch(
 
                 bbe->fd_ = fd;
                 bbe->oid_ = oid;
+            }
+            break;
+        case x_xmltype:
+            {
+                long_string * ls = static_cast<long_string *>(data_);
+                std::string * dest = &(ls->value);
+                
+                dest->assign(buf);
             }
             break;
 

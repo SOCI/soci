@@ -100,6 +100,14 @@ void standard_use_type::dump_value(std::ostream& os) const
         case x_blob:
             os << "<blob>";
             return;
+
+        case x_xmltype:
+            os << "<xml>";
+            return;
+
+        case x_longstring:
+            os << "<long string>";
+            return;
     }
 
     // This is normally unreachable, but avoid throwing from here as we're

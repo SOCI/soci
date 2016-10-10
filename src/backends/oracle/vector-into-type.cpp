@@ -158,9 +158,11 @@ void oracle_vector_into_type_backend::define_by_pos(
         }
         break;
 
-    case x_statement: break; // not supported
-    case x_rowid:     break; // not supported
-    case x_blob:      break; // not supported
+    case x_xmltype:    break; // not supported
+    case x_longstring: break; // not supported
+    case x_statement:  break; // not supported
+    case x_rowid:      break; // not supported
+    case x_blob:       break; // not supported
     }
 
     sword res = OCIDefineByPos(statement_.stmtp_, &defnp_,
@@ -380,9 +382,11 @@ void oracle_vector_into_type_backend::resize(std::size_t sz)
             }
             break;
 
-        case x_statement: break; // not supported
-        case x_rowid:     break; // not supported
-        case x_blob:      break; // not supported
+        case x_xmltype:    break; // not supported
+        case x_longstring: break; // not supported
+        case x_statement:  break; // not supported
+        case x_rowid:      break; // not supported
+        case x_blob:       break; // not supported
         }
 
         end_var_ = sz;
@@ -473,9 +477,11 @@ std::size_t oracle_vector_into_type_backend::full_size()
         }
         break;
 
-    case x_statement: break; // not supported
-    case x_rowid:     break; // not supported
-    case x_blob:      break; // not supported
+    case x_xmltype:    break; // not supported
+    case x_longstring: break; // not supported
+    case x_statement:  break; // not supported
+    case x_rowid:      break; // not supported
+    case x_blob:       break; // not supported
     }
 
     return sz;
