@@ -114,9 +114,11 @@ ddl_type & ddl_type::column(const std::string & columnName, data_type dt,
     {
         rcst_->accumulate(", ");
     }
-        
-    rcst_->accumulate(s_->get_backend()->create_column(
-            columnName, dt, precision, scale));
+
+    rcst_->accumulate(columnName);
+    rcst_->accumulate(" ");
+    rcst_->accumulate(
+        s_->get_backend()->create_column_type(dt, precision, scale));
 
     rcst_->set_need_comma(true);
         

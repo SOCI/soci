@@ -311,12 +311,12 @@ public:
     {
         return "truncate table " + tableName;
     }
-    virtual std::string create_column(const std::string & columnName, data_type dt,
+    virtual std::string create_column_type(data_type dt,
         int precision, int scale)
     {
         // PostgreSQL was selected as a baseline for the syntax:
         
-        std::string res = columnName + " ";
+        std::string res;
         switch (dt)
         {
         case dt_string:
@@ -371,15 +371,16 @@ public:
         const std::string & columnName, data_type dt,
         int precision, int scale)
     {
-        return "alter table " + tableName + " add column " +
-            create_column(columnName, dt, precision, scale);
+        return "alter table " + tableName + " add column " + columnName +
+            create_column_type(dt, precision, scale);
     }
     virtual std::string alter_column(const std::string & tableName,
         const std::string & columnName, data_type dt,
         int precision, int scale)
     {
         return "alter table " + tableName + " alter column " +
-            create_column(columnName, dt, precision, scale);
+            columnName + " type " +
+            create_column_type(dt, precision, scale);
     }
     virtual std::string drop_column(const std::string & tableName,
         const std::string & columnName)

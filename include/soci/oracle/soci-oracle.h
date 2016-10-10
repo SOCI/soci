@@ -327,12 +327,12 @@ struct oracle_session_backend : details::session_backend
             " where table_name = :t";
     }
     
-    virtual std::string create_column(const std::string & columnName, data_type dt,
+    virtual std::string create_column_type(data_type dt,
         int precision, int scale)
     {
         //  Oracle-specific SQL syntax:
         
-        std::string res = columnName + " ";
+        std::string res;
         switch (dt)
         {
         case dt_string:
@@ -388,14 +388,14 @@ struct oracle_session_backend : details::session_backend
         int precision, int scale)
     {
         return "alter table " + tableName + " add " +
-            create_column(columnName, dt, precision, scale);
+            columnName + " " + create_column_type(dt, precision, scale);
     }
     virtual std::string alter_column(const std::string & tableName,
         const std::string & columnName, data_type dt,
         int precision, int scale)
     {
         return "alter table " + tableName + " modify " +
-            create_column(columnName, dt, precision, scale);
+            columnName + " " + create_column_type(dt, precision, scale);
     }
 
     virtual std::string get_backend_name() const { return "oracle"; }
