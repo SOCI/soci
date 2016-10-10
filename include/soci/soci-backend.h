@@ -372,7 +372,7 @@ public:
         int precision, int scale)
     {
         return "alter table " + tableName + " add column " + columnName +
-            create_column_type(dt, precision, scale);
+            " " + create_column_type(dt, precision, scale);
     }
     virtual std::string alter_column(const std::string & tableName,
         const std::string & columnName, data_type dt,
