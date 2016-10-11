@@ -182,6 +182,9 @@ sqlite3_statement_backend::load_rowset(int totalRows)
                             col.buffer_.data_ = (col.buffer_.size_ > 0 ? new char[col.buffer_.size_] : NULL);
                             memcpy(col.buffer_.data_, sqlite3_column_blob(stmt_, c), col.buffer_.size_);
                             break;
+
+                        case dt_xml:
+                            throw soci_error("XML data type is not supported");
                     }
                 }
             }
@@ -280,6 +283,9 @@ sqlite3_statement_backend::bind_and_execute(int number)
                     case dt_blob:
                         bindRes = sqlite3_bind_blob(stmt_, pos, col.buffer_.constData_, static_cast<int>(col.buffer_.size_), NULL);
                         break;
+
+                    case dt_xml:
+                        throw soci_error("XML data type is not supported");
                 }
             }
 
