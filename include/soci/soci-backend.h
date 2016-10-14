@@ -326,7 +326,15 @@ public:
         case dt_string:
             {
                 std::ostringstream oss;
-                oss << "varchar(" << precision << ")";
+                
+                if (precision == 0)
+                {
+                    oss << "text";
+                }
+                else
+                {
+                    oss << "varchar(" << precision << ")";
+                }
                 
                 res += oss.str();
             }

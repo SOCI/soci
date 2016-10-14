@@ -345,7 +345,15 @@ struct oracle_session_backend : details::session_backend
         case dt_string:
             {
                 std::ostringstream oss;
-                oss << "varchar(" << precision << ")";
+                
+                if (precision == 0)
+                {
+                    oss << "clob";
+                }
+                else
+                {
+                    oss << "varchar(" << precision << ")";
+                }
                 
                 res += oss.str();
             }

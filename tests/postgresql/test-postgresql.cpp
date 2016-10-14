@@ -805,6 +805,7 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     }
 
     sql.add_column(ddl_t1, "k", soci::dt_integer);
+    sql.add_column(ddl_t1, "big", soci::dt_string, 0); // "unlimited" length -> text
     sql.drop_column(ddl_t1, "i");
 
     // or with constraint as in t2:
@@ -841,6 +842,7 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     i_found = false;
     j_found = false;
     bool k_found = false;
+    bool big_found = false;
     other_found = false;
     soci::statement st3 = (sql.prepare_column_descriptions(ddl_t1), into(ci));
     st3.execute();
@@ -858,6 +860,12 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
             CHECK(ci.nullable);
             k_found = true;
         }
+        else if (ci.name == "big")
+        {
+            CHECK(ci.type == soci::dt_string);
+            CHECK(ci.precision == 0); // "unlimited" for strings
+            big_found = true;
+        }
         else
         {
             other_found = true;
@@ -867,6 +875,7 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     CHECK(i_found == false);
     CHECK(j_found);
     CHECK(k_found);
+    CHECK(big_found);
     CHECK(other_found == false);
     
     // check if ddl_t2 has the right structure:
