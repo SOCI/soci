@@ -31,7 +31,7 @@
 namespace soci
 {
 
-class postgresql_soci_error : public soci_error
+class SOCI_POSTGRESQL_DECL postgresql_soci_error : public soci_error
 {
 public:
     postgresql_soci_error(std::string const & msg, char const * sqlst);

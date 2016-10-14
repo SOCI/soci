@@ -35,7 +35,7 @@
 namespace soci
 {
 
-class mysql_soci_error : public soci_error
+class SOCI_MYSQL_DECL mysql_soci_error : public soci_error
 {
 public:
     mysql_soci_error(std::string const & msg, int errNum)
