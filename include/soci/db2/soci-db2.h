@@ -61,7 +61,7 @@ namespace soci
 
     static const std::size_t maxBuffer =  1024 * 1024 * 1024; //CLI limit is about 3 GB, but 1GB should be enough
 
-class db2_soci_error : public soci_error {
+class SOCI_DB2_DECL db2_soci_error : public soci_error {
 public:
     db2_soci_error(std::string const & msg, SQLRETURN rc) : soci_error(msg),errorCode(rc) {};
     ~db2_soci_error() throw() { };
