@@ -58,6 +58,8 @@ struct oracle_standard_into_type_backend : details::standard_into_type_backend
     virtual void define_by_pos(int &position,
         void *data, details::exchange_type type);
 
+    void read_from_lob(OCILobLocator * lobp, std::string & value);
+    
     virtual void pre_fetch();
     virtual void post_fetch(bool gotData, bool calledFromFetch,
         indicator *ind);
@@ -69,6 +71,7 @@ struct oracle_standard_into_type_backend : details::standard_into_type_backend
     OCIDefine *defnp_;
     sb2 indOCIHolder_;
     void *data_;
+    void *ociData_;
     char *buf_;        // generic buffer
     details::exchange_type type_;
 
@@ -137,6 +140,9 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
     // common part for bind_by_pos and bind_by_name
     void prepare_for_bind(void *&data, sb4 &size, ub2 &oracleType, bool readOnly);
 
+    // common helper for pre_use for LOB-directed wrapped types
+    void write_to_lob(OCILobLocator * lobp, const std::string & value);
+    
     virtual void pre_use(indicator const *ind);
     virtual void post_use(bool gotData, indicator *ind);
 
@@ -147,6 +153,7 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
     OCIBind *bindp_;
     sb2 indOCIHolder_;
     void *data_;
+    void *ociData_;
     bool readOnly_;
     char *buf_;        // generic buffer
     details::exchange_type type_;
@@ -338,7 +345,15 @@ struct oracle_session_backend : details::session_backend
         case dt_string:
             {
                 std::ostringstream oss;
-                oss << "varchar(" << precision << ")";
+                
+                if (precision == 0)
+                {
+                    oss << "clob";
+                }
+                else
+                {
+                    oss << "varchar(" << precision << ")";
+                }
                 
                 res += oss.str();
             }
@@ -379,6 +394,13 @@ struct oracle_session_backend : details::session_backend
         case dt_blob:
             res += "blob";
             break;
+
+        case dt_xml:
+            res += "xmltype";
+            break;
+
+        default:
+            throw soci_error("this data_type is not supported in create_column");
         }
 
         return res;

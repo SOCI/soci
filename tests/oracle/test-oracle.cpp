@@ -1188,6 +1188,7 @@ TEST_CASE("Oracle DDL with metadata", "[oracle][ddl]")
     }
 
     sql.add_column(ddl_t1, "K", soci::dt_integer);
+    sql.add_column(ddl_t1, "BIG", soci::dt_string, 0); // "unlimited" length -> CLOB
     sql.drop_column(ddl_t1, "I");
 
     // or with constraint as in t2:
@@ -1224,6 +1225,7 @@ TEST_CASE("Oracle DDL with metadata", "[oracle][ddl]")
     i_found = false;
     j_found = false;
     bool k_found = false;
+    bool big_found = false;
     other_found = false;
     soci::statement st3 = (sql.prepare_column_descriptions(ddl_t1), into(ci));
     st3.execute();
@@ -1241,6 +1243,12 @@ TEST_CASE("Oracle DDL with metadata", "[oracle][ddl]")
             CHECK(ci.nullable);
             k_found = true;
         }
+        else if (ci.name == "BIG")
+        {
+            CHECK(ci.type == soci::dt_string);
+            CHECK(ci.precision == 0); // "unlimited" for strings
+            big_found = true;
+        }
         else
         {
             other_found = true;
@@ -1250,6 +1258,7 @@ TEST_CASE("Oracle DDL with metadata", "[oracle][ddl]")
     CHECK(i_found == false);
     CHECK(j_found);
     CHECK(k_found);
+    CHECK(big_found);
     CHECK(other_found == false);
     
     // check if ddl_t2 has the right structure:
@@ -1402,6 +1411,41 @@ TEST_CASE("Bulk iterators", "[oracle][bulkiters]")
     }
 
     sql << "drop table t";
+}
+
+// XML and big string test
+TEST_CASE("XML and big string", "[oracle][xml]")
+{
+    session sql(backEnd, connectString);
+
+    sql << "create table xml_test (id integer, x xmltype)";
+
+    int id = 1;
+    xml_type xml;
+    xml.value = "<file>";
+    for (int i = 0; i != 200; ++i)
+    {
+        xml.value += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    }
+    xml.value += "</file>";
+
+    sql << "insert into xml_test (id, x) values (:1, xmltype(:2))", use(id), use(xml);
+
+    xml_type xml2;
+
+    sql << "select t.x.getCLOBVal() from xml_test t where id = :1", into(xml2), use(id);
+
+    // note: getCLOBVal() returns XML value with newline added at the end
+    CHECK(xml.value + '\n' == xml2.value);
+
+    sql << "update xml_test set x = null where id = :1", use(id);
+
+    indicator ind;
+    sql << "select t.x.getCLOBVal() from xml_test t where id = :1", into(xml2, ind), use(id);
+
+    CHECK(ind == i_null);
+    
+    sql << "drop table xml_test";
 }
 
 //

@@ -10,6 +10,7 @@
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci-cstrtod.h"
 #include "common.h"
+#include "soci/type-wrappers.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
 #include <cstdio>
@@ -57,6 +58,16 @@ void set_invector_(void * p, int indx, T const & val)
 
     std::vector<T> & v = *dest;
     v[indx] = val;
+}
+
+template <typename T, typename V>
+void set_invector_wrappers_(void * p, int indx, V const & val)
+{
+    std::vector<T> * dest =
+        static_cast<std::vector<T> *>(p);
+
+    std::vector<T> & v = *dest;
+    v[indx].value = val;
 }
 
 } // namespace anonymous
@@ -149,6 +160,12 @@ void postgresql_vector_into_type_backend::post_fetch(bool gotData, indicator * i
                     set_invector_(data_, i, t);
                 }
                 break;
+            case x_xmltype:
+                set_invector_wrappers_<xml_type, std::string>(data_, i, buf);
+                break;
+            case x_longstring:
+                set_invector_wrappers_<long_string, std::string>(data_, i, buf);
+                break;
 
             default:
                 throw soci_error("Into element used with non-supported type.");
@@ -207,6 +224,12 @@ void postgresql_vector_into_type_backend::resize(std::size_t sz)
             break;
         case x_stdtm:
             resizevector_<std::tm>(data_, sz);
+            break;
+        case x_xmltype:
+            resizevector_<xml_type>(data_, sz);
+            break;
+        case x_longstring:
+            resizevector_<long_string>(data_, sz);
             break;
         default:
             throw soci_error("Into vector element used with non-supported type.");
@@ -269,6 +292,12 @@ std::size_t postgresql_vector_into_type_backend::full_size()
         break;
     case x_stdtm:
         sz = get_vector_size<std::tm>(data_);
+        break;
+    case x_xmltype:
+        sz = get_vector_size<xml_type>(data_);
+        break;
+    case x_longstring:
+        sz = get_vector_size<long_string>(data_);
         break;
     default:
         throw soci_error("Into vector element used with non-supported type.");

@@ -22,7 +22,8 @@ namespace soci
 // data types, as seen by the user
 enum data_type
 {
-    dt_string, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long, dt_blob
+    dt_string, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long,
+    dt_blob, dt_xml
 };
 
 // the enum type for indicator variables
@@ -47,7 +48,10 @@ enum exchange_type
     x_stdtm,
     x_statement,
     x_rowid,
-    x_blob
+    x_blob,
+    
+    x_xmltype,
+    x_longstring
 };
 
 // type of statement (used for optimizing statement preparation)
@@ -322,7 +326,15 @@ public:
         case dt_string:
             {
                 std::ostringstream oss;
-                oss << "varchar(" << precision << ")";
+                
+                if (precision == 0)
+                {
+                    oss << "text";
+                }
+                else
+                {
+                    oss << "varchar(" << precision << ")";
+                }
                 
                 res += oss.str();
             }
@@ -361,8 +373,15 @@ public:
             break;
 
         case dt_blob:
-            res += "bytea";
+            res += "oid";
             break;
+
+        case dt_xml:
+            res += "xml";
+            break;
+
+        default:
+            throw soci_error("this data_type is not supported in create_column");
         }
 
         return res;

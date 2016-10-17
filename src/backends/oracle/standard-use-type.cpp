@@ -11,6 +11,7 @@
 #include "error.h"
 #include "soci/rowid.h"
 #include "soci/statement.h"
+#include "soci/type-wrappers.h"
 #include "soci/soci-platform.h"
 
 #include "soci-compiler.h"
@@ -140,6 +141,34 @@ void oracle_standard_use_type_backend::prepare_for_bind(
             data = &bbe->lobp_;
         }
         break;
+        
+    case x_xmltype:
+    case x_longstring:
+        {
+            oracleType = SQLT_CLOB;
+            
+            OCILobLocator * lobp;
+            sword res = OCIDescriptorAlloc(statement_.session_.envhp_,
+                reinterpret_cast<dvoid**>(&lobp), OCI_DTYPE_LOB, 0, 0);
+            if (res != OCI_SUCCESS)
+            {
+                throw_oracle_soci_error(res, statement_.session_.errhp_);
+            }
+            
+            res = OCILobCreateTemporary(statement_.session_.svchp_,
+                statement_.session_.errhp_,
+                lobp, 0, SQLCS_IMPLICIT,
+                OCI_TEMP_CLOB, OCI_ATTR_NOCACHE, OCI_DURATION_SESSION);
+            if (res != OCI_SUCCESS)
+            {
+                throw_oracle_soci_error(res, statement_.session_.errhp_);
+            }
+
+            size = sizeof(lobp);
+            data = &ociData_;
+            ociData_ = lobp;
+        }
+        break;
     }
 }
 
@@ -201,6 +230,40 @@ void oracle_standard_use_type_backend::bind_by_name(
     }
 
     statement_.boundByName_ = true;
+}
+
+void oracle_standard_use_type_backend::write_to_lob(OCILobLocator * lobp, const std::string & value)
+{
+    ub4 toWrite = value.size();
+    ub4 offset = 1;
+
+    sword res = OCILobWrite(statement_.session_.svchp_, statement_.session_.errhp_,
+        lobp, &toWrite, offset,
+        reinterpret_cast<dvoid*>(const_cast<char*>(value.data())),
+        toWrite, OCI_ONE_PIECE, 0, 0, 0, SQLCS_IMPLICIT);
+    if (res != OCI_SUCCESS)
+    {
+        throw_oracle_soci_error(res, statement_.session_.errhp_);
+    }
+
+    ub4 len;
+
+    res = OCILobGetLength(statement_.session_.svchp_, statement_.session_.errhp_,
+        lobp, &len);
+    if (res != OCI_SUCCESS)
+    {
+        throw_oracle_soci_error(res, statement_.session_.errhp_);
+    }
+
+    if (toWrite < len)
+    {
+        res = OCILobTrim(statement_.session_.svchp_, statement_.session_.errhp_,
+            lobp, toWrite);
+        if (res != OCI_SUCCESS)
+        {
+            throw_oracle_soci_error(res, statement_.session_.errhp_);
+        }
+    }
 }
 
 void oracle_standard_use_type_backend::pre_use(indicator const *ind)
@@ -278,6 +341,24 @@ void oracle_standard_use_type_backend::pre_use(indicator const *ind)
             s->undefine_and_bind();
         }
         break;
+        
+    case x_xmltype:
+        {
+            OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
+            xml_type * xml = static_cast<xml_type *>(data_);
+
+            write_to_lob(lobp, xml->value);
+        }
+        break;
+    case x_longstring:
+        {
+            OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
+            long_string * ls = static_cast<long_string *>(data_);
+
+            write_to_lob(lobp, ls->value);
+        }
+        break;
+        
     case x_rowid:
     case x_blob:
         // nothing to do
@@ -444,6 +525,8 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
             break;
         case x_rowid:
         case x_blob:
+        case x_xmltype:
+        case x_longstring:
             // nothing to do here
             break;
         }
@@ -471,6 +554,15 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
 
 void oracle_standard_use_type_backend::clean_up()
 {
+    if (type_ == x_xmltype || type_ == x_longstring)
+    {
+        OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
+
+        // ignore errors from this call
+        (void) OCILobFreeTemporary(statement_.session_.svchp_, statement_.session_.errhp_,
+            lobp);
+    }
+    
     if (bindp_ != NULL)
     {
         OCIHandleFree(bindp_, OCI_HTYPE_DEFINE);

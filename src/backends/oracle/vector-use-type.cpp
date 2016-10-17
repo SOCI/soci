@@ -155,9 +155,11 @@ void oracle_vector_use_type_backend::prepare_for_bind(
         }
         break;
 
-    case x_statement: break; // not supported
-    case x_rowid:     break; // not supported
-    case x_blob:      break; // not supported
+    case x_xmltype:    break; // not supported
+    case x_longstring: break; // not supported
+    case x_statement:  break; // not supported
+    case x_rowid:      break; // not supported
+    case x_blob:       break; // not supported
     }
 }
 
@@ -398,9 +400,11 @@ std::size_t oracle_vector_use_type_backend::full_size()
         }
         break;
 
-    case x_statement: break; // not supported
-    case x_rowid:     break; // not supported
-    case x_blob:      break; // not supported
+    case x_xmltype:    break; // not supported
+    case x_longstring: break; // not supported
+    case x_statement:  break; // not supported
+    case x_rowid:      break; // not supported
+    case x_blob:       break; // not supported
     }
 
     return sz;

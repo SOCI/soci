@@ -63,7 +63,8 @@ struct type_conversion<column_info>
         ci.scale = get_numeric_value(v, "NUMERIC_SCALE");
 
         const std::string & type_name = v.get<std::string>("DATA_TYPE");
-        if (type_name == "text" ||
+        if (type_name == "text" || type_name == "TEXT" ||
+            type_name == "clob" || type_name == "CLOB" ||
             type_name.find("char") != std::string::npos ||
             type_name.find("CHAR") != std::string::npos)
         {
@@ -96,10 +97,15 @@ struct type_conversion<column_info>
         }
         else if (type_name.find("blob") != std::string::npos ||
             type_name.find("BLOB") != std::string::npos ||
-            type_name.find("bytea") != std::string::npos ||
-            type_name.find("BYTEA") != std::string::npos)
+            type_name.find("oid") != std::string::npos ||
+            type_name.find("OID") != std::string::npos)
         {
             ci.type = dt_blob;
+        }
+        else if (type_name.find("xml") != std::string::npos ||
+            type_name.find("XML") != std::string::npos)
+        {
+            ci.type = dt_xml;
         }
         else
         {

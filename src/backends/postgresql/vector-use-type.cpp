@@ -10,6 +10,7 @@
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci-dtocstr.h"
 #include "common.h"
+#include "soci/type-wrappers.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
 #include <cstdio>
@@ -178,6 +179,26 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                         v[i].tm_hour, v[i].tm_min, v[i].tm_sec);
                 }
                 break;
+            case x_xmltype:
+                {
+                    std::vector<xml_type> * pv
+                        = static_cast<std::vector<xml_type> *>(data_);
+                    std::vector<xml_type> & v = *pv;
+
+                    buf = new char[v[i].value.size() + 1];
+                    std::strcpy(buf, v[i].value.c_str());
+                }
+                break;
+            case x_longstring:
+                {
+                    std::vector<long_string> * pv
+                        = static_cast<std::vector<long_string> *>(data_);
+                    std::vector<long_string> & v = *pv;
+
+                    buf = new char[v[i].value.size() + 1];
+                    std::strcpy(buf, v[i].value.c_str());
+                }
+                break;
 
             default:
                 throw soci_error(
@@ -250,6 +271,12 @@ std::size_t postgresql_vector_use_type_backend::full_size()
         break;
     case x_stdtm:
         sz = get_vector_size<std::tm>(data_);
+        break;
+    case x_xmltype:
+        sz = get_vector_size<xml_type>(data_);
+        break;
+    case x_longstring:
+        sz = get_vector_size<long_string>(data_);
         break;
     default:
         throw soci_error("Use vector element used with non-supported type.");

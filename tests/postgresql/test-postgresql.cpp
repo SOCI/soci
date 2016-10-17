@@ -729,7 +729,7 @@ TEST_CASE("PostgreSQL ORM cast", "[postgresql][orm]")
 }
 
 // Test the DDL and metadata functionality
-TEST_CASE("PostgreSQL DDL with metadata", "[postfresql][ddl]")
+TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
 {
     soci::session sql(backEnd, connectString);
 
@@ -805,6 +805,7 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postfresql][ddl]")
     }
 
     sql.add_column(ddl_t1, "k", soci::dt_integer);
+    sql.add_column(ddl_t1, "big", soci::dt_string, 0); // "unlimited" length -> text
     sql.drop_column(ddl_t1, "i");
 
     // or with constraint as in t2:
@@ -841,6 +842,7 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postfresql][ddl]")
     i_found = false;
     j_found = false;
     bool k_found = false;
+    bool big_found = false;
     other_found = false;
     soci::statement st3 = (sql.prepare_column_descriptions(ddl_t1), into(ci));
     st3.execute();
@@ -858,6 +860,12 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postfresql][ddl]")
             CHECK(ci.nullable);
             k_found = true;
         }
+        else if (ci.name == "big")
+        {
+            CHECK(ci.type == soci::dt_string);
+            CHECK(ci.precision == 0); // "unlimited" for strings
+            big_found = true;
+        }
         else
         {
             other_found = true;
@@ -867,6 +875,7 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postfresql][ddl]")
     CHECK(i_found == false);
     CHECK(j_found);
     CHECK(k_found);
+    CHECK(big_found);
     CHECK(other_found == false);
     
     // check if ddl_t2 has the right structure:
@@ -940,7 +949,7 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postfresql][ddl]")
 }
 
 // Test the bulk iterators functionality
-TEST_CASE("Bulk iterators", "[postfresql][bulkiters]")
+TEST_CASE("Bulk iterators", "[postgresql][bulkiters]")
 {
     soci::session sql(backEnd, connectString);
 
@@ -1019,6 +1028,28 @@ TEST_CASE("Bulk iterators", "[postfresql][bulkiters]")
     }
 
     sql << "drop table t";
+}
+
+// Test support for XML wrapper type
+TEST_CASE("XML wrapper type", "[postgresql][xml]")
+{
+    session sql(backEnd, connectString);
+
+    sql << "create table xml_test (id integer, x xml)";
+
+    int id = 1;
+    xml_type xml;
+    xml.value = "<file>abc</file>";
+
+    sql << "insert into xml_test (id, x) values (:1, :2)", use(id), use(xml);
+
+    xml_type xml2;
+
+    sql << "select x from xml_test where id = :1", into(xml2), use(id);
+
+    CHECK(xml.value == xml2.value);
+
+    sql << "drop table xml_test";
 }
 
 //

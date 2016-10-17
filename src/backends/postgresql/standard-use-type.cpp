@@ -9,6 +9,7 @@
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci/blob.h"
 #include "soci/rowid.h"
+#include "soci/type-wrappers.h"
 #include "soci/soci-platform.h"
 #include "soci-dtocstr.h"
 #include "soci-exchange-cast.h"
@@ -159,7 +160,25 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                 snprintf(buf_, bufSize, "%lu", bbe->oid_);
             }
             break;
-
+        case x_xmltype:
+            {
+                xml_type * xml = static_cast<xml_type *>(data_);
+                std::string * s = &(xml->value);
+                
+                buf_ = new char[s->size() + 1];
+                std::strcpy(buf_, s->c_str());
+            }
+            break;
+        case x_longstring:
+            {
+                long_string * ls = static_cast<long_string *>(data_);
+                std::string * s = &(ls->value);
+                
+                buf_ = new char[s->size() + 1];
+                std::strcpy(buf_, s->c_str());
+            }
+            break;
+            
         default:
             throw soci_error("Use element used with non-supported type.");
         }
