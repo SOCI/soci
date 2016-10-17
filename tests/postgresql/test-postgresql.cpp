@@ -946,6 +946,14 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     CHECK(ddl_t1_found == false);
     CHECK(ddl_t2_found == false);
     CHECK(ddl_t3_found == false);
+    
+    int i = -1;
+    sql << "select lo_unlink(" + sql.empty_blob() + ")", into(i);
+    CHECK(i == 1);
+    sql << "select " + sql.nvl() + "(1, 2)", into(i);
+    CHECK(i == 1);
+    sql << "select " + sql.nvl() + "(NULL, 2)", into(i);
+    CHECK(i == 2);
 }
 
 // Test the bulk iterators functionality

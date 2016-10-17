@@ -428,6 +428,14 @@ public:
             " foreign key (" + columnNames + ")" +
             " references " + refTableName + " (" + refColumnNames + ")";
     }
+    virtual std::string empty_blob()
+    {
+        return "lo_creat(-1)";
+    }
+    virtual std::string nvl()
+    {
+        return "coalesce";
+    }
     
     void set_failover_callback(failover_callback & callback, session & sql)
     {

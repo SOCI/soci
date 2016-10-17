@@ -147,6 +147,8 @@ public:
         int precision = 0, int scale = 0);
     ddl_type drop_column(const std::string & tableName,
         const std::string & columnName);
+    std::string empty_blob();
+    std::string nvl();
 
     // Sets the failover callback object.
     void set_failover_callback(failover_callback & callback)

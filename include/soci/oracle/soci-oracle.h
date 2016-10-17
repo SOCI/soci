@@ -419,6 +419,14 @@ struct oracle_session_backend : details::session_backend
         return "alter table " + tableName + " modify " +
             columnName + " " + create_column_type(dt, precision, scale);
     }
+    virtual std::string empty_blob()
+    {
+        return "empty_blob()";
+    }
+    virtual std::string nvl()
+    {
+        return "nvl";
+    }
 
     virtual std::string get_backend_name() const { return "oracle"; }
 

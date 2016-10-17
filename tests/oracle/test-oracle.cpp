@@ -1329,6 +1329,14 @@ TEST_CASE("Oracle DDL with metadata", "[oracle][ddl]")
     CHECK(ddl_t1_found == false);
     CHECK(ddl_t2_found == false);
     CHECK(ddl_t3_found == false);
+
+    int i = -1;
+    sql << "select length(" + sql.empty_blob() + ") from dual", into(i);
+    CHECK(i == 0);
+    sql << "select " + sql.nvl() + "(1, 2) from dual", into(i);
+    CHECK(i == 1);
+    sql << "select " + sql.nvl() + "(NULL, 2) from dual", into(i);
+    CHECK(i == 2);
 }
 
 // Test the bulk iterators functionality

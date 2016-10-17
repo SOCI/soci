@@ -291,6 +291,11 @@ struct sqlite3_session_backend : details::session_backend
 
     virtual bool get_last_insert_id(session&, std::string const&, long&);
 
+    virtual std::string empty_blob()
+    {
+        return "x\'\'";
+    }
+    
     virtual std::string get_backend_name() const { return "sqlite3"; }
 
     void clean_up();

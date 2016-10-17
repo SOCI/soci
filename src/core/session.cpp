@@ -426,6 +426,16 @@ ddl_type session::drop_column(const std::string & tableName,
     return ddl;
 }
 
+std::string session::empty_blob()
+{
+    return backEnd_->empty_blob();
+}
+
+std::string session::nvl()
+{
+    return backEnd_->nvl();
+}
+
 std::string session::get_backend_name() const
 {
     ensureConnected(backEnd_);

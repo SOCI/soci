@@ -343,6 +343,24 @@ Tables can be dropped, too:
 
 Note that due to the differences in the set of types that are actually supported on the target database server, the type mappings, as well as precision and scales, might be different, even in the way that makes them impossible to portably recover with metadata queries.
 
+In the category of portability utilities, the following functions are also available:
+
+   sql.empty_blob()
+
+the above call returns the string containing expression that represents an empty BLOB value in the given target backend. This expression can be used as part of a bigger SQL statement, for example:
+
+   sql << "insert into my_table (x) values (" + sql.empty_blob() + ")";
+
+and:
+
+   sql.nvl()
+
+the above call returns the string containing the name of the SQL function that implements the NVL or COALESCE operation in the given target backend, for example:
+
+   sql << "select name, " + sql.nvl() + "(phone, \'UNKNOWN\') from phone_book";
+
+Note: `empty_blob` and `nvl` are implemented in Oracle, PostgreSQL and SQLite3 backends; for other backends their behaviour is as for PostgreSQL.
+
 ### <a name="metadata"></a> Metadata queries
 
 It is possible to portably query the database server to obtain basic metadata information.

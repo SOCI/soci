@@ -237,6 +237,19 @@ TEST_CASE("SQLite vector long long", "[sqlite][vector][longlong]")
     CHECK(v2[4] == 1000000000000LL);
 }
 
+TEST_CASE("SQLite DDL wrappers", "[sqlite][ddl]")
+{
+    soci::session sql(backEnd, connectString);
+
+    int i = -1;
+    sql << "select length(" + sql.empty_blob() + ")", into(i);
+    CHECK(i == 0);
+    sql << "select " + sql.nvl() + "(1, 2)", into(i);
+    CHECK(i == 1);
+    sql << "select " + sql.nvl() + "(NULL, 2)", into(i);
+    CHECK(i == 2);
+}
+
 struct table_creator_for_get_last_insert_id : table_creator_base
 {
     table_creator_for_get_last_insert_id(soci::session & sql)
