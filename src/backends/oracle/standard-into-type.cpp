@@ -207,17 +207,21 @@ void oracle_standard_into_type_backend::read_from_lob(OCILobLocator * lobp, std:
     }
 
     std::vector<char> buf(len);
-    ub4 offset = 1;
 
-    res = OCILobRead(statement_.session_.svchp_, statement_.session_.errhp_,
-        lobp, &len,
-        offset, reinterpret_cast<dvoid*>(&buf[0]),
-        len, 0, 0, 0, 0);
-    if (res != OCI_SUCCESS)
+    if (len != 0)
     {
-        throw_oracle_soci_error(res, statement_.session_.errhp_);
-    }
+        ub4 offset = 1;
 
+        res = OCILobRead(statement_.session_.svchp_, statement_.session_.errhp_,
+            lobp, &len,
+            offset, reinterpret_cast<dvoid*>(&buf[0]),
+            len, 0, 0, 0, 0);
+        if (res != OCI_SUCCESS)
+        {
+            throw_oracle_soci_error(res, statement_.session_.errhp_);
+        }
+    }
+    
     value.assign(buf.begin(), buf.end());
 }
 

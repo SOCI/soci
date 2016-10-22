@@ -236,14 +236,18 @@ void oracle_standard_use_type_backend::write_to_lob(OCILobLocator * lobp, const 
 {
     ub4 toWrite = value.size();
     ub4 offset = 1;
+    sword res;
 
-    sword res = OCILobWrite(statement_.session_.svchp_, statement_.session_.errhp_,
-        lobp, &toWrite, offset,
-        reinterpret_cast<dvoid*>(const_cast<char*>(value.data())),
-        toWrite, OCI_ONE_PIECE, 0, 0, 0, SQLCS_IMPLICIT);
-    if (res != OCI_SUCCESS)
+    if (toWrite != 0)
     {
-        throw_oracle_soci_error(res, statement_.session_.errhp_);
+        res = OCILobWrite(statement_.session_.svchp_, statement_.session_.errhp_,
+            lobp, &toWrite, offset,
+            reinterpret_cast<dvoid*>(const_cast<char*>(value.data())),
+            toWrite, OCI_ONE_PIECE, 0, 0, 0, SQLCS_IMPLICIT);
+        if (res != OCI_SUCCESS)
+        {
+            throw_oracle_soci_error(res, statement_.session_.errhp_);
+        }
     }
 
     ub4 len;

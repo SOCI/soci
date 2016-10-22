@@ -1454,6 +1454,29 @@ TEST_CASE("XML and big string", "[oracle][xml]")
     CHECK(ind == i_null);
     
     sql << "drop table xml_test";
+
+    // additional test for empty and non-empty long_string
+
+    sql << "create table long_string_test (id integer, s clob)";
+
+    long_string s1; // empty
+    sql << "insert into long_string_test(id, s) values (1, :s)", use(s1);
+
+    long_string s2;
+    s2.value = "hello";
+    sql << "select s from long_string_test where id = 1", into(s2);
+
+    CHECK(s2.value.size() == 0);
+
+    s1.value = xml.value; // some long value
+    
+    sql << "update long_string_test set s = :s where id = 1", use(s1);
+    
+    sql << "select s from long_string_test where id = 1", into(s2);
+
+    CHECK(s2.value == xml.value);
+    
+    sql << "drop table long_string_test";
 }
 
 //
