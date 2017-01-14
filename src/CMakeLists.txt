@@ -39,6 +39,10 @@ soci_version(MAJOR 3 MINOR 2 PATCH 3)
 include(SociSystemInfo)
 include(SociConfig)
 
+if(CMAKE_COMPILER_IS_GNUCXX)
+  add_definitions(-std=gnu++0x)
+endif()
+
 boost_report_value(SOCI_PLATFORM_NAME)
 boost_report_value(SOCI_COMPILER_NAME)
 

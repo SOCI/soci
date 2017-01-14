@@ -350,7 +350,7 @@ private:
     backend_factory const &backEndFactory_;
     std::string const connectString_;
 
-typedef std::auto_ptr<table_creator_base> auto_table_creator;
+typedef std::unique_ptr<table_creator_base> auto_table_creator;
 
 void test0()
 {
