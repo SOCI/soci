@@ -442,6 +442,10 @@ void mysql_statement_backend::describe_column(int colNum,
     case FIELD_TYPE_TINY_BLOB:
     case FIELD_TYPE_MEDIUM_BLOB:
     case FIELD_TYPE_LONG_BLOB:
+    // MySQL v. 5.7 introduces the type JSON
+    // As with MYSQL_TYPE_NEWDECIMAL, the field type is sent regardless
+    // of the version of the client library.
+    case 245:                   //MYSQL_TYPE_JSON
         type = dt_string;
         break;
     default:
