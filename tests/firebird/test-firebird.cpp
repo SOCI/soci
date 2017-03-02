@@ -614,6 +614,23 @@ TEST_CASE("Firebird blobs", "[firebird][blob]")
         CHECK(ind==i_null);
     }
 
+    {
+        //create large blob
+        const int blobSize = 65536; //max segment size is 65535(unsigned short) 
+        std::vector<char> data(blobSize); 
+        blob b(sql);
+        b.write(0, data.data(), blobSize);
+        sql << "insert into test7(id, img) values(3,?)", use(b);
+
+        //now read blob back from database and make sure it has correct content and size
+        blob br(sql);
+        sql << "select img from test7 where id = 3", into(br);
+        std::vector<char> data2(br.get_len());
+        if(br.get_len()>0)
+            br.read(0, data2.data(), br.get_len());
+        CHECK(data == data2);
+    }
+
     sql << "drop table test7";
 }
 
