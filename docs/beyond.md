@@ -15,8 +15,7 @@ It can be useful to know how many rows were affected by the last SQL statement, 
     }
 
 ---
-#####Portability note:
-
+##### Portability note:
 This method is currently not supported by the Oracle backend. It is however
 supported when using Oracle database via ODBC backend.
 ---

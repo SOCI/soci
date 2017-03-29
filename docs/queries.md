@@ -8,7 +8,7 @@ In many cases, the SQL query is intended to be executed only once, which means t
 
 For shorter syntax, the following form is also allowed:
 
-  sql << "drop table persons";
+    sql << "drop table persons";
 
 The IOStream-like interface is exactly what it looks like, so that the statement text can be composed of many parts, involving anything that is *streamable* (including custom classes, if they have appropriate `operator<<`):
 

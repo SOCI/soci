@@ -352,16 +352,16 @@ The type `T` parameter that should be passed to `row::get<T>()` depends on the S
 
 `row::get<T>()` throws an exception of type `std::bad_cast` if an incorrect type `T` is requested.
 
-#####SOCI Data Type
+##### SOCI Data Type
 
 `row::get<T>` specialization
 
-*dt_double - double
-*dt_integer - int
-*dt_long_long - long long
-*dt_unsigned_long_long - unsigned long long
-*dt_string - std::string
-*dt_date - std::tm
+* `dt_double` - `double`
+* `dt_integer` - `int`
+* `dt_long_long` - `long long`
+* `dt_unsigned_long_long` - `unsigned long long`
+* `dt_string` - `std::string`
+* `dt_date` - `std::tm`
 
 The mapping of underlying database column types to SOCI datatypes is database specific. See the [backend documentation](backends/index.html) for details.
 
@@ -394,13 +394,13 @@ SOCI can be easily extended with support for user-defined datatypes.
 The extension mechanism relies on appropriate specialization of the `type_conversion`
 struct that converts to and from one of the following SOCI base types:
 
-*`double`
-*`int`
-*`long long`
-*`unsigned long long`
-*`std::string`
-*`char`
-*`std::tm`
+* `double`
+* `int`
+* `long long`
+* `unsigned long long`
+* `std::string`
+* `char`
+* `std::tm`
 
 There are three required class members for a valid `type_conversion` specialization:
 
@@ -556,11 +556,11 @@ The SOCI library provides also an interface for basic operations on large object
 
 The following functions are provided in the `blob` interface, mimicking the file-like operations:
 
-    *`std::size_t get_len();`
-    *`std::size_t read_from_start(char * buf, std::size_t toRead, std::size_t offset = 0);`
-    *`std::size_t write_from_start(const char * buf, std::size_t toWrite, std::size_t offset = 0);`
-    *`std::size_t append(char const *buf, std::size_t toWrite);`
-    *`void trim(std::size_t newLen);`
+* `std::size_t get_len();`
+* `std::size_t read_from_start(char * buf, std::size_t toRead, std::size_t offset = 0);`
+* `std::size_t write_from_start(const char * buf, std::size_t toWrite, std::size_t offset = 0);`
+* `std::size_t append(char const *buf, std::size_t toWrite);`
+* `void trim(std::size_t newLen);`
 
 The `offset` parameter is always counted from the beginning of the BLOB's data.
 
@@ -589,10 +589,10 @@ Values of these wrapper types can be used with `into` and `use` elements with th
 
 For Oracle, these database-side types are, respectively:
 
-    *`XMLType`,
-    *`CLOB`
+* `XMLType`,
+* `CLOB`
 
 For PostgreSQL, these types are:
 
-    *`XML`
-    *`text`
+* `XML`
+* `text`

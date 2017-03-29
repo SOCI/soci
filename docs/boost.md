@@ -2,7 +2,7 @@
 
 The SOCI user code can be easily integrated with the [Boost library](http://www.boost.org/) thanks to the very flexible type conversion facility. There are three important Boost types that are supported out of the box.
 
-####boost::optional<T>
+#### boost::optional<T>
 
 `boost::optional<T>` provides an alternative way to support the null data condition and as such relieves the user from necessity to handle separate indicator values.
 
@@ -27,7 +27,7 @@ Example:
 The `boost::optional<T>` objects are fully supported for both `into` and `use` elements, in both single and vector forms. They can be also used for user-defined data types.
 
 
-####boost::tuple<T1, ...>
+#### boost::tuple<T1, ...>
 
 `boost::tuple<T1, ...>` allows to work with whole rows of information and in some cases can be more convenient to use than the more dynamically-oriented `row` type.
 
@@ -54,17 +54,17 @@ Tuples can be also composed with `boost::optional<T>`
         // this person does not have a phone number
     }
 
-####boost::fusion::vector<T1, ...>
+#### boost::fusion::vector<T1, ...>
 
 The `boost::fusion::vector` types are supported in the same way as tuples.
 
 
-####boost::gregorian::date
+#### boost::gregorian::date
 
 The `boost::gregorian::date` is provided as a conversion for base type `std::tm` and can be used as a replacement for it.
 
 ---
-#####Optional integration:
+##### Optional integration:
 The integration with Boost types is optional and *not* enabled by default, which means that SOCI can be compiled and used without any dependency on Boost.
 ---
 
