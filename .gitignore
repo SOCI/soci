@@ -4,14 +4,15 @@ tags
 tmp
 
 # Build directories
-_build*
-src/_build*
-src/build
+/*build*
+src/*build*
 
-# Visual Studio
+# Visual Studio / Visual Studio Code
 *.opensdf
 *.sdf
 *.suo
+/*.vs*
+/src/*.vs*
 
 # KDevelop
 *.kate-swp
