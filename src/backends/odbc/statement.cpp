@@ -291,11 +291,26 @@ void odbc_statement_backend::describe_column(int colNum, data_type & type,
     case SQL_TYPE_TIMESTAMP:
         type = dt_date;
         break;
+    case SQL_NUMERIC:
+    { //
+        if (decDigits > 0)
+        {
+            type = dt_double;
+        }
+        else if (colSize <= std::numeric_limits<int>::digits10)
+        {
+            type = dt_integer;
+        }
+        else
+        {
+            type = dt_long_long;
+        }
+        break;
+    }
     case SQL_DOUBLE:
     case SQL_DECIMAL:
     case SQL_REAL:
     case SQL_FLOAT:
-    case SQL_NUMERIC:
         type = dt_double;
         break;
     case SQL_TINYINT:
