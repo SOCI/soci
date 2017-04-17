@@ -64,7 +64,7 @@ public:
     template <typename T>
     T get(std::size_t pos) const
     {
-        typedef typename type_conversion<T>::base_type base_type;
+        typedef typename details::exchange_traits<T>::base_type base_type;
         base_type const& baseVal = holders_.at(pos)->get<base_type>();
 
         T ret;
