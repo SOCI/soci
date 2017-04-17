@@ -30,6 +30,7 @@ void odbc_standard_into_type_backend::define_by_pos(
         odbcType_ = SQL_C_CHAR;
         size = sizeof(char) + 1;
         buf_ = new char[size];
+        memset(buf_, 0, size);
         data = buf_;
         break;
     case x_stdstring:
@@ -40,6 +41,7 @@ void odbc_standard_into_type_backend::define_by_pos(
         size = (size > odbc_max_buffer_length || size == 0) ? odbc_max_buffer_length : size;
         size++;
         buf_ = new char[size];
+        memset(buf_, 0, size);
         data = buf_;
         break;
     case x_short:
@@ -56,6 +58,7 @@ void odbc_standard_into_type_backend::define_by_pos(
           odbcType_ = SQL_C_CHAR;
           size = max_bigint_length;
           buf_ = new char[size];
+          memset(buf_, 0, size);
           data = buf_;
         }
         else // Normal case, use ODBC support.
@@ -70,6 +73,7 @@ void odbc_standard_into_type_backend::define_by_pos(
           odbcType_ = SQL_C_CHAR;
           size = max_bigint_length;
           buf_ = new char[size];
+          memset(buf_, 0, size);
           data = buf_;
         }
         else // Normal case, use ODBC support.
@@ -86,6 +90,7 @@ void odbc_standard_into_type_backend::define_by_pos(
         odbcType_ = SQL_C_TYPE_TIMESTAMP;
         size = sizeof(TIMESTAMP_STRUCT);
         buf_ = new char[size];
+        memset(buf_, 0, size);
         data = buf_;
         break;
     case x_rowid:
