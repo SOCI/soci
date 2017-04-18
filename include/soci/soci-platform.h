@@ -8,6 +8,10 @@
 #ifndef SOCI_PLATFORM_H_INCLUDED
 #define SOCI_PLATFORM_H_INCLUDED
 
+#ifdef HAVE_SOCI_CONFIG_H
+#include "soci/soci-config.h"
+#endif
+
 //disable MSVC deprecated warnings
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS
