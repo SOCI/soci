@@ -1,0 +1,16 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -67,11 +67,8 @@
+ # Installation
+ #################################################################################
+ 
+-if(APPLE OR CMAKE_SIZEOF_VOID_P EQUAL 4)
+-  set(SOCI_LIBDIR "lib")
+-else()
+-  set(SOCI_LIBDIR "lib64")
+-endif()
++#Debian always uses lib
++set(SOCI_LIBDIR "lib")
+ 
+ set(BINDIR "bin" CACHE PATH "The directory to install binaries into.")
+ set(LIBDIR ${SOCI_LIBDIR} CACHE PATH "The directory to install libraries into.")

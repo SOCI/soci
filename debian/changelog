@@ -1,0 +1,5 @@
+soci (3.1.0+git2013015-5) unstable; urgency=low
+
+  * Debian packaging for SOCI
+
+ -- Denis Chapligin <chollya@satgate.net>  Tue, 05 Feb 2013 10:44:40 +0300
