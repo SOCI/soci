@@ -2811,13 +2811,26 @@ TEST_CASE_METHOD(common_tests, "Rowset expected exception", "[core][exception][r
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
     sql << "insert into soci_test(str) values('abc')";
 
+    std::string troublemaker;
     CHECK_THROWS_AS(
-            std::string troublemaker;
-            rowset<std::string> rs1 = (sql.prepare << "select str from soci_test",
-                    into(troublemaker)),
-            soci_error
+        rowset<std::string>((sql.prepare << "select str from soci_test", into(troublemaker))),
+        soci_error
         );
 }
+
+// functor for next test
+struct THelper
+{
+    THelper()
+        : val_()
+    {
+    }
+    void operator()(int i)
+    {
+        val_ = i;
+    }
+    int val_;
+};
 
 // test for handling NULL values with expected exception:
 // "Null value fetched and no indicator defined."
@@ -2833,17 +2846,8 @@ TEST_CASE_METHOD(common_tests, "NULL expected exception", "[core][exception][nul
     sql << "insert into soci_test(val) values(3)";
 
     rowset<int> rs = (sql.prepare << "select val from soci_test order by val asc");
-    int tester = 0;
 
-    CHECK_THROWS_AS(
-        for (rowset<int>::const_iterator it = rs.begin(); it != rs.end(); ++it)
-        {
-            tester = *it;
-        },
-        soci_error
-    );
-
-    (void)tester;
+    CHECK_THROWS_AS( std::for_each(rs.begin(), rs.end(), THelper()), soci_error );
 }
 
 // This is like the first dynamic binding test but with rowset and iterators use
