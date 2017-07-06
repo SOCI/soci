@@ -1498,7 +1498,7 @@ SOCI_DECL void soci_set_use_date(statement_handle st, char const * name, char co
         return;
     }
 
-    std::tm dt = {};
+    std::tm dt = std::tm();
     bool const converted = string_to_date(val, dt, *wrapper);
     if (converted == false)
     {
@@ -1701,7 +1701,7 @@ SOCI_DECL void soci_set_use_date_v(statement_handle st,
         return;
     }
 
-    std::tm dt = {};
+    std::tm dt = std::tm();
     bool const converted = string_to_date(val, dt, *wrapper);
     if (converted == false)
     {
