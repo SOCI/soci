@@ -173,9 +173,8 @@ void odbc_vector_into_type_backend::define_by_pos(
         }
         break;
 
-    case x_statement: break; // not supported
-    case x_rowid:     break; // not supported
-    case x_blob:      break; // not supported
+    default:
+        throw soci_error("Into element used with non-supported type.");
     }
 
     SQLRETURN rc
@@ -380,9 +379,8 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
         }
         break;
 
-    case x_statement: break; // not supported
-    case x_rowid:     break; // not supported
-    case x_blob:      break; // not supported
+    default:
+        throw soci_error("Into vector element used with non-supported type.");
     }
 }
 
@@ -446,9 +444,8 @@ std::size_t odbc_vector_into_type_backend::size()
         }
         break;
 
-    case x_statement: break; // not supported
-    case x_rowid:     break; // not supported
-    case x_blob:      break; // not supported
+    default:
+        throw soci_error("Into vector element used with non-supported type.");
     }
 
     return sz;
