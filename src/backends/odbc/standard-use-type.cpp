@@ -118,25 +118,9 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
     }
     break;
 
-    case x_blob:
-    {
-//         sqlType = SQL_VARBINARY;
-//         cType = SQL_C_BINARY;
-
-//         BLOB *b = static_cast<BLOB *>(data);
-
-//         odbc_blob_backend *bbe
-//         = static_cast<odbc_blob_backend *>(b->getBackEnd());
-
-//         size = 0;
-//         indHolder_ = size;
-        //TODO            data = &bbe->lobp_;
-    }
-    break;
-    case x_statement:
-    case x_rowid:
-        // Unsupported data types.
-        return NULL;
+    // unsupported types
+    default:
+        throw soci_error("Use element used with non-supported type.");
     }
 
     // Return either the pointer to C++ data itself or the buffer that we

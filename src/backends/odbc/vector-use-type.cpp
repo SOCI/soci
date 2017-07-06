@@ -202,9 +202,9 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
         }
         break;
 
-    case x_statement: break; // not supported
-    case x_rowid:     break; // not supported
-    case x_blob:      break; // not supported
+    // not supported
+    default:
+        throw soci_error("Use vector element used with non-supported type.");
     }
 
     colSize_ = size;
@@ -438,9 +438,9 @@ std::size_t odbc_vector_use_type_backend::size()
         }
         break;
 
-    case x_statement: break; // not supported
-    case x_rowid:     break; // not supported
-    case x_blob:      break; // not supported
+    // not supported
+    default:
+        throw soci_error("Use vector element used with non-supported type.");
     }
 
     return sz;
