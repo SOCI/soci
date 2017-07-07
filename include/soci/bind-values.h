@@ -31,7 +31,7 @@ public:
             delete *iter;
     }
 
-    void exchange(use_type_ptr const& u) { push_back(u.get()); u.release(); }
+    void exchange(use_type_ptr const& u) { push_back(u.release()); }
 
     template <typename T, typename Indicator>
     void exchange(use_container<T, Indicator> const &uc)
@@ -121,7 +121,7 @@ public:
             delete *iter;
     }
 
-    void exchange(into_type_ptr const& i) { push_back(i.get()); i.release(); }
+    void exchange(into_type_ptr const& i) { push_back(i.release()); }
 
     template <typename T, typename Indicator>
     void exchange(into_container<T, Indicator> const &ic)

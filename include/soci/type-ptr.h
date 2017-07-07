@@ -8,6 +8,8 @@
 #ifndef SOCI_TYPE_PTR_H_INCLUDED
 #define SOCI_TYPE_PTR_H_INCLUDED
 
+#include <algorithm>
+
 namespace soci { namespace details {
 
 template <typename T>
@@ -18,9 +20,38 @@ public:
     ~type_ptr() { delete p_; }
 
     T * get() const { return p_; }
-    void release() const { p_ = 0; }
+    T * release() const
+    {
+        T * tmp = 0;
+        std::swap(tmp, p_);
+        return tmp;
+    }
+
+    // rhs will loose it ownership
+    type_ptr& operator=(const type_ptr& rhs)
+    {
+        // move sematics
+        std::swap(this->p_, rhs.p_);
+        if (rhs.p_)
+        {
+            delete rhs.p_;
+            rhs.p_ = 0;
+        }
+    }
+
+    // rhs will loose it ownership
+    type_ptr(const type_ptr& rhs)
+        : p_(rhs.p_)
+    {
+        if (rhs.p_)
+        {
+            // avoid double free
+            rhs.p_ = 0;
+        }
+    }
 
 private:
+
     mutable T * p_;
 };
 
