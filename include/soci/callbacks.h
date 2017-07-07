@@ -35,7 +35,7 @@ public:
     // the newTarget connection string is a hint that can be ignored
     // by external means.
     virtual void failed(bool & /* out */ /* retry */,
-        std::string & /* out */ newTarget) {}
+        std::string & /* out */ /* newTarget */) {}
 
     // Called when there was a failure that prevents further failover attempts.
     virtual void aborted() {}

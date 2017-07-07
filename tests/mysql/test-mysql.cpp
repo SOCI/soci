@@ -361,7 +361,7 @@ TEST_CASE("MySQL number conversion", "[mysql][float][int]")
 TEST_CASE("MySQL datetime", "[mysql][datetime]")
 {
     soci::session sql(backEnd, connectString);
-    std::tm t;
+    std::tm t = std::tm();
     sql << "select maketime(19, 54, 52)", into(t);
     CHECK(t.tm_year == 100);
     CHECK(t.tm_mon == 0);

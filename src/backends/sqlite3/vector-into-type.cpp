@@ -223,7 +223,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                     case dt_blob:
                     {
                         // attempt to parse the string and convert to std::tm
-                        std::tm t;
+                        std::tm t = std::tm();
                         parse_std_tm(col.buffer_.constData_, t);
 
                         set_in_vector(data_, i, t);

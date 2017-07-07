@@ -170,7 +170,9 @@ TEST_CASE("Firebird date and time", "[firebird][datetime]")
 
     sql.begin();
 
-    std::tm t1, t2, t3;
+    std::tm t1 = std::tm();
+    std::tm t2 = std::tm();
+    std::tm t3 = std::tm();
     std::time_t now = std::time(NULL);
     std::tm t = *std::localtime(&now);
     sql << "insert into test3(p1, p2, p3) "
@@ -1098,7 +1100,7 @@ TEST_CASE("Firebird string coercions", "[firebird][string]")
 
     {
         double a;
-        std::tm b, c, d;
+        std::tm b = std::tm(), c = std::tm(), d = std::tm();
         sql << "select a, b, c, d from test12",
             into(a), into(b), into(c), into(d);
         CHECK(std::fabs(a - (-3.141)) < 0.000001);

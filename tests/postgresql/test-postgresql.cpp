@@ -476,7 +476,7 @@ TEST_CASE("PostgreSQL datetime", "[postgresql][datetime]")
     soci::session sql(backEnd, connectString);
 
     std::string someDate = "2009-06-17 22:51:03.123";
-    std::tm t1, t2, t3;
+    std::tm t1 = std::tm(), t2 = std::tm(), t3 = std::tm();
 
     sql << "select :sd::date, :sd::time, :sd::timestamp",
         use(someDate, "sd"), into(t1), into(t2), into(t3);

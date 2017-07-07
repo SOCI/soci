@@ -594,7 +594,7 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
 
     SECTION("Round trip works for date without time")
     {
-        std::tm nov15;
+        std::tm nov15 = std::tm();
         nov15.tm_year = 105;
         nov15.tm_mon = 10;
         nov15.tm_mday = 15;
@@ -604,7 +604,7 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
 
         sql << "insert into soci_test(tm) values(:tm)", use(nov15);
 
-        std::tm t;
+        std::tm t = std::tm();
         sql << "select tm from soci_test", into(t);
         CHECK(t.tm_year == 105);
         CHECK(t.tm_mon  == 10);
@@ -616,7 +616,7 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
 
     SECTION("Round trip works for date with time")
     {
-        std::tm nov15;
+        std::tm nov15 = std::tm();
         nov15.tm_year = 105;
         nov15.tm_mon = 10;
         nov15.tm_mday = 15;
@@ -626,7 +626,7 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
 
         sql << "insert into soci_test(tm) values(:tm)", use(nov15);
 
-        std::tm t;
+        std::tm t = std::tm();
         sql << "select tm from soci_test", into(t);
         CHECK(t.tm_year == 105);
         CHECK(t.tm_mon  == 10);
@@ -658,7 +658,7 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         CHECK(ind == i_null);
 
         // additional test for NULL with std::tm
-        std::tm t;
+        std::tm t = std::tm();
         sql << "select tm from soci_test", into(t, ind);
         CHECK(ind == i_null);
 
@@ -1051,7 +1051,7 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
         CHECK(count == rowsToTest);
 
         {
-            std::tm t;
+            std::tm t = std::tm();
             int i = 0;
 
             statement st = (sql.prepare <<
@@ -1326,7 +1326,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
 
     SECTION("std::tm")
     {
-        std::tm t;
+        std::tm t = std::tm();
         t.tm_year = 105;
         t.tm_mon = 10;
         t.tm_mday = 19;
@@ -1335,7 +1335,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         t.tm_sec = 57;
         sql << "insert into soci_test(tm) values(:t)", use(t);
 
-        std::tm t2;
+        std::tm t2 = std::tm();
         t2.tm_year = 0;
         t2.tm_mon = 0;
         t2.tm_mday = 0;
@@ -1445,7 +1445,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
 
     SECTION("const std::tm")
     {
-        std::tm t;
+        std::tm t = std::tm();
         t.tm_year = 105;
         t.tm_mon = 10;
         t.tm_mday = 19;
@@ -1455,7 +1455,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         std::tm const & ct = t;
         sql << "insert into soci_test(tm) values(:t)", use(ct);
 
-        std::tm t2;
+        std::tm t2 = std::tm();
         t2.tm_year = 0;
         t2.tm_mon = 0;
         t2.tm_mday = 0;
@@ -1697,7 +1697,7 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
     SECTION("std::tm")
     {
         std::vector<std::tm> v;
-        std::tm t;
+        std::tm t = std::tm();
         t.tm_year = 105;
         t.tm_mon  = 10;
         t.tm_mday = 26;
@@ -2070,7 +2070,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
             double d;
             int i;
             std::string s;
-            std::tm t;
+            std::tm t = std::tm();
             std::string c;
 
             r >> d >> i >> s >> t >> c;
@@ -2811,13 +2811,26 @@ TEST_CASE_METHOD(common_tests, "Rowset expected exception", "[core][exception][r
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
     sql << "insert into soci_test(str) values('abc')";
 
+    std::string troublemaker;
     CHECK_THROWS_AS(
-            std::string troublemaker;
-            rowset<std::string> rs1 = (sql.prepare << "select str from soci_test",
-                    into(troublemaker)),
-            soci_error
+        rowset<std::string>((sql.prepare << "select str from soci_test", into(troublemaker))),
+        soci_error
         );
 }
+
+// functor for next test
+struct THelper
+{
+    THelper()
+        : val_()
+    {
+    }
+    void operator()(int i)
+    {
+        val_ = i;
+    }
+    int val_;
+};
 
 // test for handling NULL values with expected exception:
 // "Null value fetched and no indicator defined."
@@ -2833,17 +2846,8 @@ TEST_CASE_METHOD(common_tests, "NULL expected exception", "[core][exception][nul
     sql << "insert into soci_test(val) values(3)";
 
     rowset<int> rs = (sql.prepare << "select val from soci_test order by val asc");
-    int tester = 0;
 
-    CHECK_THROWS_AS(
-        for (rowset<int>::const_iterator it = rs.begin(); it != rs.end(); ++it)
-        {
-            tester = *it;
-        },
-        soci_error
-    );
-
-    (void)tester;
+    CHECK_THROWS_AS( std::for_each(rs.begin(), rs.end(), THelper()), soci_error );
 }
 
 // This is like the first dynamic binding test but with rowset and iterators use
@@ -3599,7 +3603,7 @@ TEST_CASE_METHOD(common_tests, "Boost date", "[core][boost][datetime]")
     {
         auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
-        std::tm nov15;
+        std::tm nov15 = std::tm();
         nov15.tm_year = 105;
         nov15.tm_mon = 10;
         nov15.tm_mday = 15;
@@ -3636,7 +3640,7 @@ TEST_CASE_METHOD(common_tests, "Boost date", "[core][boost][datetime]")
 
         sql << "insert into soci_test(tm) values(:tm)", use(bgd);
 
-        std::tm t;
+        std::tm t = std::tm();
         sql << "select tm from soci_test", into(t);
 
         CHECK(t.tm_year == 108);
