@@ -32,26 +32,33 @@ public:
 
     // Retrieve the backend and the connection strings specified in the ctor.
     backend_factory const * get_factory() const { return factory_; }
-    void set_connect_string(const std::string & connectString) { connectString_ = connectString; }
+    void set_connect_string(std::string const & connectString)
+    {
+        connectString_ = connectString;
+        parse();
+    }
     std::string const & get_connect_string() const { return connectString_; }
 
     // Set the value of the given option, overwriting any previous value.
-    void set_option(const char * name, std::string const & value)
+    void set_option(std::string const & name, std::string const & value)
     {
         options_[name] = value;
     }
 
+    // common method to parse param=value from connection string
+    void parse();
+
     // Return true if the option with the given name was found and fill the
     // provided parameter with its value.
-    bool get_option(const char * name, std::string & value) const
+    bool get_option(std::string const & key, std::string & value) const
     {
-        Options::const_iterator const it = options_.find(name);
-        if (it == options_.end())
-            return false;
-
-        value = it->second;
-
-        return true;
+        Options::const_iterator const it = options_.find(key);
+        if (it != options_.end())
+        {
+            value = it->second;
+            return true;
+        }
+        return false;
     }
 
 private:

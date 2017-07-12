@@ -4171,6 +4171,7 @@ TEST_CASE_METHOD(common_tests, "Blank padding", "[core][insert][exception]")
     CHECK(tvarchar == test1);
 }
 
+
 } // namespace test_cases
 
 } // namespace tests

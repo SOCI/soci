@@ -30,107 +30,6 @@ using std::string;
 namespace
 { // anonymous
 
-void skip_white(std::string::const_iterator *i,
-    std::string::const_iterator const & end, bool endok)
-{
-    for (;;)
-    {
-        if (*i == end)
-        {
-            if (endok)
-            {
-                return;
-            }
-            else
-            {
-                throw soci_error("Unexpected end of connection string.");
-            }
-        }
-        if (std::isspace(**i))
-        {
-            ++*i;
-        }
-        else
-        {
-            return;
-        }
-    }
-}
-
-std::string param_name(std::string::const_iterator *i,
-    std::string::const_iterator const & end)
-{
-    std::string val("");
-    for (;;)
-    {
-        if (*i == end or (not std::isalpha(**i) and **i != '_'))
-        {
-            break;
-        }
-        val += **i;
-        ++*i;
-    }
-    return val;
-}
-
-string param_value(string::const_iterator *i,
-    string::const_iterator const & end)
-{
-    string err = "Malformed connection string.";
-    bool quot;
-    if (**i == '\'')
-    {
-        quot = true;
-        ++*i;
-    }
-    else
-    {
-        quot = false;
-    }
-    string val("");
-    for (;;)
-    {
-        if (*i == end)
-        {
-            if (quot)
-            {
-                throw soci_error(err);
-            }
-            else
-            {
-                break;
-            }
-        }
-        if (**i == '\'')
-        {
-            if (quot)
-            {
-                ++*i;
-                break;
-            }
-            else
-            {
-                throw soci_error(err);
-            }
-        }
-        if (not quot and std::isspace(**i))
-        {
-            break;
-        }
-        if (**i == '\\')
-        {
-            ++*i;
-            if (*i == end)
-            {
-                throw soci_error(err);
-            }
-        }
-        val += **i;
-        ++*i;
-    }
-    return val;
-}
-
 bool valid_int(const string & s)
 {
     char *tail;
@@ -148,155 +47,62 @@ bool valid_int(const string & s)
     return true;
 }
 
-void parse_connect_string(const string & connectString,
-    string *host, bool *host_p,
-    string *user, bool *user_p,
-    string *password, bool *password_p,
-    string *db, bool *db_p,
-    string *unix_socket, bool *unix_socket_p,
-    int *port, bool *port_p, string *ssl_ca, bool *ssl_ca_p,
-    string *ssl_cert, bool *ssl_cert_p, string *ssl_key, bool *ssl_key_p,
-    int *local_infile, bool *local_infile_p,
-    string *charset, bool *charset_p)
-{
-    *host_p = false;
-    *user_p = false;
-    *password_p = false;
-    *db_p = false;
-    *unix_socket_p = false;
-    *port_p = false;
-    *ssl_ca_p = false;
-    *ssl_cert_p = false;
-    *ssl_key_p = false;
-    *local_infile_p = false;
-    *charset_p = false;
-    string err = "Malformed connection string.";
-    string::const_iterator i = connectString.begin(),
-        end = connectString.end();
-    while (i != end)
-    {
-        skip_white(&i, end, true);
-        if (i == end)
-        {
-            return;
-        }
-        string par = param_name(&i, end);
-        skip_white(&i, end, false);
-        if (*i == '=')
-        {
-            ++i;
-        }
-        else
-        {
-            throw soci_error(err);
-        }
-        skip_white(&i, end, false);
-        string val = param_value(&i, end);
-        if (par == "port" and not *port_p)
-        {
-            if (not valid_int(val))
-            {
-                throw soci_error(err);
-            }
-            *port = std::atoi(val.c_str());
-            if (*port < 0)
-            {
-                throw soci_error(err);
-            }
-            *port_p = true;
-        }
-        else if (par == "host" and not *host_p)
-        {
-            *host = val;
-            *host_p = true;
-        }
-        else if (par == "user" and not *user_p)
-        {
-            *user = val;
-            *user_p = true;
-        }
-        else if ((par == "pass" or par == "password") and not *password_p)
-        {
-            *password = val;
-            *password_p = true;
-        }
-        else if ((par == "db" or par == "dbname" or par == "service") and
-                 not *db_p)
-        {
-            *db = val;
-            *db_p = true;
-        }
-        else if (par == "unix_socket" and not *unix_socket_p)
-        {
-            *unix_socket = val;
-            *unix_socket_p = true;
-        }
-        else if (par == "sslca" and not *ssl_ca_p)
-        {
-            *ssl_ca = val;
-            *ssl_ca_p = true;
-        }
-        else if (par == "sslcert" and not *ssl_cert_p)
-        {
-            *ssl_cert = val;
-            *ssl_cert_p = true;
-        }
-        else if (par == "sslkey" and not *ssl_key_p)
-        {
-            *ssl_key = val;
-            *ssl_key_p = true;
-        }
-        else if (par == "local_infile" and not *local_infile_p)
-        {
-            if (not valid_int(val))
-            {
-                throw soci_error(err);
-            }
-            *local_infile = std::atoi(val.c_str());
-            if (*local_infile != 0 and *local_infile != 1)
-            {
-                throw soci_error(err);
-            }
-            *local_infile_p = true;
-        } else if (par == "charset" and not *charset_p)
-        {
-            *charset = val;
-            *charset_p = true;
-        }
-        else
-        {
-            throw soci_error(err);
-        }
-    }
-}
-
 } // namespace anonymous
 
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wuninitialized"
-#endif
-
-#if defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ > 6)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
-
-
 mysql_session_backend::mysql_session_backend(
-    connection_parameters const & parameters)
+    connection_parameters const & params)
 {
-    string host, user, password, db, unix_socket, ssl_ca, ssl_cert, ssl_key,
-        charset;
-    int port, local_infile;
-    bool host_p, user_p, password_p, db_p, unix_socket_p, port_p,
-        ssl_ca_p, ssl_cert_p, ssl_key_p, local_infile_p, charset_p;
-    parse_connect_string(parameters.get_connect_string(), &host, &host_p, &user, &user_p,
-        &password, &password_p, &db, &db_p,
-        &unix_socket, &unix_socket_p, &port, &port_p,
-        &ssl_ca, &ssl_ca_p, &ssl_cert, &ssl_cert_p, &ssl_key, &ssl_key_p,
-        &local_infile, &local_infile_p, &charset, &charset_p);
+    string host, user, password, db, unix_socket, portstr, ssl_ca, ssl_cert, ssl_key,
+        charset, local_infstr;
+    int port = 0, local_infile = 0;
+
+    bool host_p = params.get_option("host", host);
+    bool user_p = params.get_option("user", user);
+    bool password_p = (params.get_option("pass", password) ||
+            params.get_option("password", password));
+    bool db_p = ( params.get_option("db", db) ||
+            params.get_option("dbname", db) ||
+            params.get_option("service", db) );
+    bool unix_socket_p = params.get_option("unix_socket", unix_socket);
+    bool port_p = params.get_option("port", portstr);
+    if (port_p)
+    {
+        if (valid_int(portstr))
+        {
+            port = std::atoi(portstr.c_str());
+            if (port < 0)
+            {
+                throw soci_error("Wrong port value");
+            }
+        }
+        else
+        {
+            throw soci_error("Wrong port value");
+        }
+    }
+
+    bool ssl_ca_p = params.get_option("sslca", ssl_ca);
+    bool ssl_cert_p = params.get_option("sslcert", ssl_cert);
+    bool ssl_key_p = params.get_option("sslkey", ssl_key);
+    bool local_infile_p = params.get_option("local_infile", local_infstr);
+    if (local_infile_p)
+    {
+        if (valid_int(local_infstr))
+        {
+            local_infile = std::atoi(local_infstr.c_str());
+            if (local_infile < 0 || local_infile > 1)
+            {
+                throw soci_error("Wrong local_infile parameter");
+            }
+        }
+        else
+        {
+            throw soci_error("Wrong local_infile parameter");
+        }
+    }
+    bool charset_p = params.get_option("charset", charset);
+
     conn_ = mysql_init(NULL);
     if (conn_ == NULL)
     {
@@ -344,15 +150,6 @@ mysql_session_backend::mysql_session_backend(
         throw mysql_soci_error(errMsg, errNum);
     }
 }
-
-#if defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ > 6)
-#pragma GCC diagnostic pop
-#endif
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
 
 
 mysql_session_backend::~mysql_session_backend()

@@ -24,6 +24,16 @@
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_mysql();
 
+TEST_CASE("MySQL connection parameters", "[mysql][connection_parameters]")
+{
+    soci::connection_parameters myparam("mysql", "dbname=test user=root password='test123'");
+    std::string dbname;
+    CHECK(myparam.get_option("dbname", dbname));
+    CHECK(myparam.get_option("user", dbname));
+    CHECK(myparam.get_option("password", dbname));
+    CHECK(!myparam.get_option("something_wrong", dbname));
+}
+
 // procedure call test
 TEST_CASE("MySQL stored procedures", "[mysql][stored-procedure]")
 {
@@ -261,7 +271,7 @@ TEST_CASE("MySQL long long", "[mysql][longlong]")
 }
 
 template <typename T>
-void test_num(const char* s, bool valid, T value)
+void test_num(const std::string& s, bool valid, T value)
 {
     try
     {
@@ -523,7 +533,6 @@ TEST_CASE("MySQL get affected rows", "[mysql][affected-rows]")
 TEST_CASE("MySQL statements after reconnect", "[mysql][connect]")
 {
     soci::session sql(backEnd, connectString);
-
     integer_value_table_creator tableCreator(sql);
 
     int i;
