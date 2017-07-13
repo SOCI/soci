@@ -78,7 +78,7 @@ mysql_session_backend::mysql_session_backend(
         }
         else
         {
-            throw soci_error("Wrong port value");
+            throw soci_error("Port value must be a number");
         }
     }
 
