@@ -62,48 +62,24 @@ sqlite3_session_backend::sqlite3_session_backend(
     std::string const & connectString = parameters.get_connect_string();
     std::string dbname(connectString);
     std::stringstream ssconn(connectString);
-    while (!ssconn.eof() && ssconn.str().find('=') != std::string::npos)
+
+    std::string kval;
+    if (parameters.get_option("dbname", kval) || parameters.get_option("db", kval))
     {
-        std::string key, val;
-        std::getline(ssconn, key, '=');
-        std::getline(ssconn, val, ' ');
-
-        if (val.size()>0 && val[0]=='\"')
-        {
-            std::string quotedVal = val.erase(0, 1);
-
-            if (quotedVal[quotedVal.size()-1] ==  '\"')
-            {
-                quotedVal.erase(val.size()-1);
-            }
-            else // space inside value string
-            {
-                std::getline(ssconn, val, '\"');
-                quotedVal = quotedVal + " " + val;
-                std::string keepspace;
-                std::getline(ssconn, keepspace, ' ');
-            }
-
-            val = quotedVal;
-        }
-
-        if ("dbname" == key || "db" == key)
-        {
-            dbname = val;
-        }
-        else if ("timeout" == key)
-        {
-            std::istringstream converter(val);
-            converter >> timeout;
-        }
-        else if ("synchronous" == key)
-        {
-            synchronous = val;
-        }
-        else if ("shared_cache" == key && "true" == val)
-        {
-            connection_flags |=  SQLITE_OPEN_SHAREDCACHE;
-        }
+        dbname = kval;
+    }
+    if (parameters.get_option("timeout", kval))
+    {
+        std::istringstream converter(kval);
+        converter >> timeout;
+    }
+    if (parameters.get_option("synchronous", kval))
+    {
+        synchronous = kval;
+    }
+    if (parameters.get_option("shared_cache", kval) && "true" == kval)
+    {
+        connection_flags |=  SQLITE_OPEN_SHAREDCACHE;
     }
 
     int res = sqlite3_open_v2(dbname.c_str(), &conn_, connection_flags, NULL);
