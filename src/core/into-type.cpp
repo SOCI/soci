@@ -19,7 +19,11 @@ standard_into_type::~standard_into_type()
 
 void standard_into_type::define(statement_impl & st, int & position)
 {
-    backEnd_ = st.make_into_type_backend();
+    if (backEnd_ == NULL)
+    {
+        backEnd_ = st.make_into_type_backend();
+    }
+    
     backEnd_->define_by_pos(position, data_, type_);
 }
 
@@ -54,7 +58,10 @@ vector_into_type::~vector_into_type()
 
 void vector_into_type::define(statement_impl & st, int & position)
 {
-    backEnd_ = st.make_vector_into_type_backend();
+    if (backEnd_ == NULL)
+    {
+        backEnd_ = st.make_vector_into_type_backend();
+    }
 
     if (end_ != NULL)
     {
