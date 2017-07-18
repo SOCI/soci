@@ -450,6 +450,22 @@ std::string session::nvl()
     return backEnd_->nvl();
 }
 
+std::string session::get_dummy_from_table() const
+{
+    ensureConnected(backEnd_);
+
+    return backEnd_->get_dummy_from_table();
+}
+
+std::string session::get_dummy_from_clause() const
+{
+    std::string clause = get_dummy_from_table();
+    if (!clause.empty())
+        clause.insert(0, " from ");
+
+    return clause;
+}
+
 void session::set_failover_callback(failover_callback & callback)
 {
     ensureConnected(backEnd_);

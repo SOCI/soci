@@ -301,6 +301,8 @@ struct odbc_session_backend : details::session_backend
     virtual bool get_last_insert_id(session & s,
         std::string const & table, long & value);
 
+    virtual std::string get_dummy_from_table() const;
+
     virtual std::string get_backend_name() const { return "odbc"; }
 
     void configure_connection();
@@ -325,7 +327,7 @@ struct odbc_session_backend : details::session_backend
     };
 
     // Determine the type of the database we're connected to.
-    database_product get_database_product();
+    database_product get_database_product() const;
 
     // Return full ODBC connection string.
     std::string get_connection_string() const { return connection_string_; }
@@ -334,7 +336,9 @@ struct odbc_session_backend : details::session_backend
     SQLHDBC hdbc_;
 
     std::string connection_string_;
-    database_product product_;
+
+private:
+    mutable database_product product_;
 };
 
 class SOCI_ODBC_DECL odbc_soci_error : public soci_error

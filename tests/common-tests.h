@@ -4171,6 +4171,17 @@ TEST_CASE_METHOD(common_tests, "Blank padding", "[core][insert][exception]")
     CHECK(tvarchar == test1);
 }
 
+TEST_CASE_METHOD(common_tests, "Select without table", "[core][select][dummy_from]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    int plus17;
+    sql << ("select abs(-17)" + sql.get_dummy_from_clause()),
+           into(plus17);
+
+    CHECK(plus17 == 17);
+}
+
 } // namespace test_cases
 
 } // namespace tests

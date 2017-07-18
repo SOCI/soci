@@ -296,6 +296,8 @@ struct sqlite3_session_backend : details::session_backend
         return "x\'\'";
     }
     
+    virtual std::string get_dummy_from_table() const { return std::string(); }
+
     virtual std::string get_backend_name() const { return "sqlite3"; }
 
     void clean_up();
