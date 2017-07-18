@@ -279,9 +279,13 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
         if (dbscale > 0)
         {
             if (session_.get_option_decimals_as_strings())
+            {
                 type = dt_string;
+            }
             else
+            {
                 type = dt_double;
+            }
         }
         else if (dbprec <= std::numeric_limits<int>::digits10)
         {
@@ -291,6 +295,9 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
         {
             type = dt_long_long;
         }
+        break;
+    case OCI_TYPECODE_BDOUBLE:
+        type = dt_double;
         break;
     case SQLT_DAT:
         type = dt_date;
