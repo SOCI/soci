@@ -361,16 +361,22 @@ bool session::get_last_insert_id(std::string const & sequence, long & value)
 
 details::once_temp_type session::get_table_names()
 {
+    ensureConnected(backEnd_);
+
     return once << backEnd_->get_table_names_query();
 }
 
 details::prepare_temp_type session::prepare_table_names()
 {
+    ensureConnected(backEnd_);
+
     return prepare << backEnd_->get_table_names_query();
 }
 
 details::prepare_temp_type session::prepare_column_descriptions(std::string & table_name)
 {
+    ensureConnected(backEnd_);
+
     return prepare << backEnd_->get_column_descriptions_query(), use(table_name, "t");
 }
     
@@ -386,11 +392,15 @@ ddl_type session::create_table(const std::string & tableName)
 
 void session::drop_table(const std::string & tableName)
 {
+    ensureConnected(backEnd_);
+
     once << backEnd_->drop_table(tableName);
 }
 
 void session::truncate_table(const std::string & tableName)
 {
+    ensureConnected(backEnd_);
+
     once << backEnd_->truncate_table(tableName);
 }
 
@@ -428,12 +438,23 @@ ddl_type session::drop_column(const std::string & tableName,
 
 std::string session::empty_blob()
 {
+    ensureConnected(backEnd_);
+
     return backEnd_->empty_blob();
 }
 
 std::string session::nvl()
 {
+    ensureConnected(backEnd_);
+
     return backEnd_->nvl();
+}
+
+void session::set_failover_callback(failover_callback & callback)
+{
+    ensureConnected(backEnd_);
+
+    backEnd_->set_failover_callback(callback, *this);
 }
 
 std::string session::get_backend_name() const

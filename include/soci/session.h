@@ -151,10 +151,7 @@ public:
     std::string nvl();
 
     // Sets the failover callback object.
-    void set_failover_callback(failover_callback & callback)
-    {
-        backEnd_->set_failover_callback(callback, *this);
-    }
+    void set_failover_callback(failover_callback & callback);
     
     // for diagnostics and advanced users
     // (downcast it to expected back-end session class)
