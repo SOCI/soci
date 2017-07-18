@@ -253,6 +253,37 @@ bool odbc_session_backend::get_last_insert_id(
     return true;
 }
 
+std::string odbc_session_backend::get_dummy_from_table() const
+{
+    std::string table;
+
+    switch ( get_database_product() )
+    {
+        case prod_firebird:
+            table = "rdb$database";
+            break;
+
+        case prod_oracle:
+            table = "dual";
+            break;
+
+        case prod_mssql:
+        case prod_mysql:
+        case prod_sqlite:
+        case prod_postgresql:
+            // No special dummy table needed.
+            break;
+
+            // These cases are here just to make the switch exhaustive, we
+            // can't really do anything about them anyhow.
+        case prod_unknown:
+        case prod_uninitialized:
+            break;
+    }
+
+    return table;
+}
+
 void odbc_session_backend::reset_transaction()
 {
     SQLRETURN rc = SQLSetConnectAttr( hdbc_, SQL_ATTR_AUTOCOMMIT,
@@ -301,7 +332,7 @@ odbc_blob_backend * odbc_session_backend::make_blob_backend()
 }
 
 odbc_session_backend::database_product
-odbc_session_backend::get_database_product()
+odbc_session_backend::get_database_product() const
 {
     // Cache the product type, it's not going to change during our life time.
     if (product_ != prod_uninitialized)

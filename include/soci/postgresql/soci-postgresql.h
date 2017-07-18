@@ -376,6 +376,8 @@ struct postgresql_session_backend : details::session_backend
     virtual bool get_next_sequence_value(session & s,
         std::string const & sequence, long & value);
 
+    virtual std::string get_dummy_from_table() const { return std::string(); }
+
     virtual std::string get_backend_name() const { return "postgresql"; }
 
     void clean_up();

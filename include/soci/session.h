@@ -150,6 +150,19 @@ public:
     std::string empty_blob();
     std::string nvl();
 
+    // And some functions to help with writing portable DML statements.
+
+    // Get the name of the dummy table that needs to be used in the FROM clause
+    // of a SELECT statement not operating on any tables, e.g. "dual" for
+    // Oracle. The returned string is empty if no such table is needed.
+    std::string get_dummy_from_table() const;
+
+    // Returns a possibly empty string that needs to be used as a FROM clause
+    // of a SELECT statement not operating on any tables, e.g. " FROM DUAL"
+    // (notice the leading space).
+    std::string get_dummy_from_clause() const;
+
+
     // Sets the failover callback object.
     void set_failover_callback(failover_callback & callback)
     {

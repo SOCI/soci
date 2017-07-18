@@ -163,6 +163,8 @@ struct empty_session_backend : details::session_backend
     void commit();
     void rollback();
 
+    virtual std::string get_dummy_from_table() const { return std::string(); }
+
     std::string get_backend_name() const { return "empty"; }
 
     void clean_up();

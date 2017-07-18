@@ -7,6 +7,7 @@
 * [Transactions](#transactions)
 * [Portable DDL](#ddl)
 * [Metadata queries](#metadata)
+* [Portable DML](#dml)
 * [Basic logging support](#logging)
 
 ### <a name="preparation"></a> Statement preparation and repeated execution
@@ -391,6 +392,28 @@ Similarly, to get the description of all columns in the given table:
     {
         // ci fields describe each column in turn
     }
+
+
+### <a name="dml"></a> Portable DDL
+
+Only two related functions are currently available in this category:
+`get_dummy_from_clause()` can be used to construct select statements that don't
+operate on any table in a portable way, as while some databases allow simply
+omitting the from clause in this case, others -- e.g. Oracle -- still require
+providing some syntactically valid from clause even if it is not used. To use
+this function, simply append the result of this function to the statement:
+
+    double databasePi;
+    session << ("select 4*atan(1)" + session.get_dummy_from_clause()),
+               into(databasePi);
+
+
+If just the name of the dummy table is needed, and not the full clause, you can
+use `get_dummy_from_table()` to obtain it.
+
+Notice that both functions require the session to be connected as their result
+depends on the database it is connected to.
+
 
 ### <a name="logging"></a> Basic logging support
 

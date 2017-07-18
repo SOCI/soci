@@ -87,6 +87,9 @@ The `session` class encapsulates the connection to the database.
 
         void uppercase_column_names(bool forceToUpper);
 
+        std::string get_dummy_from_table() const;
+        std::string get_dummy_from_clause() const;
+
         details::session_backend * get_backend();
 
         std::string get_backend_name() const;
@@ -124,6 +127,7 @@ This class contains the following members:
 * `set_log_stream` and `get_log_stream` functions for setting and getting the current stream object used for basic query logging. By default, it is `NULL`, which means no logging The string value that is actually logged into the stream is one-line verbatim copy of the query string provided by the user, without including any data from the `use` elements. The query is logged exactly once, before the preparation step.
 * `get_last_query` retrieves the text of the last used query.
 * `uppercase_column_names` allows to force all column names to uppercase in dynamic row description; this function is particularly useful for portability, since various database servers report column names differently (some preserve case, some change it).
+* `get_dummy_from_table` and `get_dummy_from_clause()`: helpers for writing portable DML statements, see [DML helpers](statement.html#dml) for more details.
 * `get_backend` returns the internal pointer to the concrete backend implementation of the session. This is provided for advanced users that need access to the functionality that is not otherwise available.
 *`get_backend_name` is a convenience forwarder to the same function of the backend object.
 
