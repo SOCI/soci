@@ -241,6 +241,10 @@ struct mysql_session_backend : details::session_backend
 
     virtual bool get_last_insert_id(session&, std::string const&, long&);
 
+    // Note that MySQL supports both "SELECT 2+2" and "SELECT 2+2 FROM DUAL"
+    // syntaxes, but there doesn't seem to be any reason to use the longer one.
+    virtual std::string get_dummy_from_table() const { return std::string(); }
+
     virtual std::string get_backend_name() const { return "mysql"; }
 
     void clean_up();
