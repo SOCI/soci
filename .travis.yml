@@ -5,6 +5,12 @@
 #
 language: cpp
 
+# Several scripts hard code Precise and don't currently work in any other
+# environment (e.g. the default Trusty).
+dist: precise
+
+sudo: required
+
 compiler:
     - g++
     - clang
