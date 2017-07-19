@@ -55,5 +55,5 @@ void soci::details::sqlite3::parse_std_tm(char const *buf, std::tm &t)
         second = parse10(p1, p2, errMsg);
     }
 
-    details::mktime_from_ymdhms(t, year, month, day, hour, minute, second);
+    details::mktime_from_ymdhms(t, (int)year, (int)month, (int)day, (int)hour, (int)minute, (int)second);
 }
