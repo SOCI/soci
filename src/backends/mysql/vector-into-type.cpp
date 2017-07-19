@@ -8,6 +8,7 @@
 
 #define SOCI_MYSQL_SOURCE
 #include "soci/mysql/soci-mysql.h"
+#include "soci-mktime.h"
 #include "common.h"
 #include "soci/soci-platform.h"
 #include <ciso646>

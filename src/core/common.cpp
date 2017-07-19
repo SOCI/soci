@@ -1,16 +1,16 @@
 //
 // Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2017 Vadim Zeitlin.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include "soci/soci-platform.h"
-#include "soci/soci-backend.h"
+#define SOCI_SOURCE
+#include "soci/error.h"
 #include "soci-mktime.h"
 #include <cstdlib>
 #include <ctime>
-#include "common.h"
 
 namespace // anonymous
 {
@@ -32,8 +32,7 @@ long parse10(char const * & p1, char * & p2, char const * msg)
 
 } // namespace anonymous
 
-
-void soci::details::postgresql::parse_std_tm(char const * buf, std::tm & t)
+void soci::details::parse_std_tm(char const * buf, std::tm & t)
 {
     char const * p1 = buf;
     char * p2;
@@ -82,5 +81,5 @@ void soci::details::postgresql::parse_std_tm(char const * buf, std::tm & t)
         }
     }
 
-    details::mktime_from_ymdhms(t, year, month, day, hour, minute, second);
+    mktime_from_ymdhms(t, year, month, day, hour, minute, second);
 }

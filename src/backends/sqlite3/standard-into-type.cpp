@@ -12,6 +12,7 @@
 #include "common.h"
 #include "soci/blob.h"
 #include "soci-cstrtod.h"
+#include "soci-mktime.h"
 #include "soci-exchange-cast.h"
 // std
 #include <cstdlib>
