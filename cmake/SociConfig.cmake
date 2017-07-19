@@ -58,7 +58,20 @@ else()
     set(SOCI_CXX_VERSION_FLAGS "-std=gnu++98")
   endif()
 
-  if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+  if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" OR "${CMAKE_CXX_COMPILER}" MATCHES "clang")
+
+    if(NOT CMAKE_CXX_COMPILER_VERSION LESS 3.1 AND SOCI_ASAN)
+      set(SOCI_GCC_CLANG_COMMON_FLAGS "${SOCI_GCC_CLANG_COMMON_FLAGS} -fsanitize=address")
+    endif()
+
+    # enforce C++11 for Clang
+    set(SOCI_CXX_C11 ON)
+    set(SOCI_CXX_VERSION_FLAGS "-std=c++11")
+    add_definitions(-DCATCH_CONFIG_CPP11_NO_IS_ENUM)
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SOCI_GCC_CLANG_COMMON_FLAGS} ${SOCI_CXX_VERSION_FLAGS}")
+
+  elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 
     if(NOT CMAKE_CXX_COMPILER_VERSION LESS 4.8 AND SOCI_ASAN)
       set(SOCI_GCC_CLANG_COMMON_FLAGS "${SOCI_GCC_CLANG_COMMON_FLAGS} -fsanitize=address")
@@ -72,19 +85,6 @@ else()
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-variadic-macros")
         endif()
     endif()
-
-  elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" OR "${CMAKE_CXX_COMPILER}" MATCHES "clang")
-
-    if(NOT CMAKE_CXX_COMPILER_VERSION LESS 3.1 AND SOCI_ASAN)
-      set(SOCI_GCC_CLANG_COMMON_FLAGS "${SOCI_GCC_CLANG_COMMON_FLAGS} -fsanitize=address")
-    endif()
-
-    # enforce C++11 for Clang
-    set(SOCI_CXX_C11 ON)
-    set(SOCI_CXX_VERSION_FLAGS "-std=c++11")
-    add_definitions(-DCATCH_CONFIG_CPP11_NO_IS_ENUM)
-
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SOCI_GCC_CLANG_COMMON_FLAGS} ${SOCI_CXX_VERSION_FLAGS}")
 
   else()
 	message(WARNING "Unknown toolset - using default flags to build SOCI")
