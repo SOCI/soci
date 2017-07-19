@@ -290,57 +290,86 @@ void odbc_vector_use_type_backend::bind_by_name(
 void odbc_vector_use_type_backend::pre_use(indicator const *ind)
 {
     // first deal with data
-    if (type_ == x_stdtm)
+    switch (type_)
     {
-        std::vector<std::tm> *vp
-             = static_cast<std::vector<std::tm> *>(data_);
+        case x_short:
+        case x_integer:
+        case x_double:
+        case x_char:
+        case x_stdstring:
+            // Nothing special to do.
+            break;
 
-        std::vector<std::tm> &v(*vp);
+        case x_stdtm:
+            {
+                std::vector<std::tm> *vp
+                     = static_cast<std::vector<std::tm> *>(data_);
 
-        char *pos = buf_;
-        std::size_t const vsize = v.size();
-        for (std::size_t i = 0; i != vsize; ++i)
-        {
-            std::tm t = v[i];
-            TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
+                std::vector<std::tm> &v(*vp);
 
-            ts->year = static_cast<SQLSMALLINT>(t.tm_year + 1900);
-            ts->month = static_cast<SQLUSMALLINT>(t.tm_mon + 1);
-            ts->day = static_cast<SQLUSMALLINT>(t.tm_mday);
-            ts->hour = static_cast<SQLUSMALLINT>(t.tm_hour);
-            ts->minute = static_cast<SQLUSMALLINT>(t.tm_min);
-            ts->second = static_cast<SQLUSMALLINT>(t.tm_sec);
-            ts->fraction = 0;
-            pos += sizeof(TIMESTAMP_STRUCT);
-        }
-    }
-    else if (type_ == x_long_long && use_string_for_bigint())
-    {
-        std::vector<long long> *vp
-             = static_cast<std::vector<long long> *>(data_);
-        std::vector<long long> &v(*vp);
+                char *pos = buf_;
+                std::size_t const vsize = v.size();
+                for (std::size_t i = 0; i != vsize; ++i)
+                {
+                    std::tm t = v[i];
+                    TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
 
-        char *pos = buf_;
-        std::size_t const vsize = v.size();
-        for (std::size_t i = 0; i != vsize; ++i)
-        {
-            snprintf(pos, max_bigint_length, "%" LL_FMT_FLAGS "d", v[i]);
-            pos += max_bigint_length;
-        }
-    }
-    else if (type_ == x_unsigned_long_long && use_string_for_bigint())
-    {
-        std::vector<unsigned long long> *vp
-             = static_cast<std::vector<unsigned long long> *>(data_);
-        std::vector<unsigned long long> &v(*vp);
+                    ts->year = static_cast<SQLSMALLINT>(t.tm_year + 1900);
+                    ts->month = static_cast<SQLUSMALLINT>(t.tm_mon + 1);
+                    ts->day = static_cast<SQLUSMALLINT>(t.tm_mday);
+                    ts->hour = static_cast<SQLUSMALLINT>(t.tm_hour);
+                    ts->minute = static_cast<SQLUSMALLINT>(t.tm_min);
+                    ts->second = static_cast<SQLUSMALLINT>(t.tm_sec);
+                    ts->fraction = 0;
+                    pos += sizeof(TIMESTAMP_STRUCT);
+                }
+            }
+            break;
 
-        char *pos = buf_;
-        std::size_t const vsize = v.size();
-        for (std::size_t i = 0; i != vsize; ++i)
-        {
-            snprintf(pos, max_bigint_length, "%" LL_FMT_FLAGS "u", v[i]);
-            pos += max_bigint_length;
-        }
+        case x_long_long:
+            if (use_string_for_bigint())
+            {
+                std::vector<long long> *vp
+                     = static_cast<std::vector<long long> *>(data_);
+                std::vector<long long> &v(*vp);
+
+                char *pos = buf_;
+                std::size_t const vsize = v.size();
+                for (std::size_t i = 0; i != vsize; ++i)
+                {
+                    snprintf(pos, max_bigint_length, "%" LL_FMT_FLAGS "d", v[i]);
+                    pos += max_bigint_length;
+                }
+            }
+            break;
+
+        case x_unsigned_long_long:
+            if (use_string_for_bigint())
+            {
+                std::vector<unsigned long long> *vp
+                     = static_cast<std::vector<unsigned long long> *>(data_);
+                std::vector<unsigned long long> &v(*vp);
+
+                char *pos = buf_;
+                std::size_t const vsize = v.size();
+                for (std::size_t i = 0; i != vsize; ++i)
+                {
+                    snprintf(pos, max_bigint_length, "%" LL_FMT_FLAGS "u", v[i]);
+                    pos += max_bigint_length;
+                }
+            }
+            break;
+
+        case x_statement:
+        case x_rowid:
+        case x_blob:
+        case x_xmltype:
+        case x_longstring:
+            // Those are unreachable, we would have thrown from
+            // prepare_for_bind() if we we were using one of them, only handle
+            // them here to avoid compiler warnings about unhandled enum
+            // elements.
+            break;
     }
 
     // then handle indicators
