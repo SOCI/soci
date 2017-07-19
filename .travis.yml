@@ -23,18 +23,11 @@ env:
         - SOCI_TRAVIS_BACKEND=mysql
         - SOCI_TRAVIS_BACKEND=odbc
         - SOCI_TRAVIS_BACKEND=postgresql
-        - SOCI_TRAVIS_BACKEND=oracle CFLAGS=-m32 CXXFLAGS=-m32 LDFLAGS=-m32 WITH_BOOST=OFF
         - SOCI_TRAVIS_BACKEND=sqlite3
         - SOCI_TRAVIS_BACKEND=valgrind
 
-matrix:
-    fast_finish: true
-    allow_failures:
-        - env: SOCI_TRAVIS_BACKEND=db2
-        - env: SOCI_TRAVIS_BACKEND=valgrind
-        - env: SOCI_TRAVIS_BACKEND=odbc
-        - env: SOCI_TRAVIS_BACKEND=mysql
-        - env: SOCI_TRAVIS_BACKEND=oracle CFLAGS=-m32 CXXFLAGS=-m32 LDFLAGS=-m32 WITH_BOOST=OFF
+# This build is disabled because Oracle setup is currently broken, see #554.
+# - SOCI_TRAVIS_BACKEND=oracle CFLAGS=-m32 CXXFLAGS=-m32 LDFLAGS=-m32 WITH_BOOST=OFF
 
 addons:
     apt:
