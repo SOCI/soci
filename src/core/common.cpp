@@ -9,6 +9,7 @@
 #define SOCI_SOURCE
 #include "soci/error.h"
 #include "soci-mktime.h"
+#include <climits>
 #include <cstdlib>
 #include <ctime>
 
@@ -16,7 +17,7 @@ namespace // anonymous
 {
 
 // helper function for parsing decimal data (for std::tm)
-long parse10(char const * & p1, char * & p2)
+int parse10(char const * & p1, char * & p2)
 {
     long v = std::strtol(p1, &p2, 10);
     if (p2 != p1)
@@ -24,8 +25,13 @@ long parse10(char const * & p1, char * & p2)
         if (v < 0)
             throw soci::soci_error("Negative date/time field component.");
 
+        if (v > INT_MAX)
+            throw soci::soci_error("Out of range date/time field component.");
+
         p1 = p2 + 1;
-        return v;
+
+        // Cast is safe due to check above.
+        return static_cast<int>(v);
     }
     else
     {
@@ -41,9 +47,9 @@ void soci::details::parse_std_tm(char const * buf, std::tm & t)
     char const * p1 = buf;
     char * p2;
     char separator;
-    long a, b, c;
-    long year = 1900, month = 1, day = 1;
-    long hour = 0, minute = 0, second = 0;
+    int a, b, c;
+    int year = 1900, month = 1, day = 1;
+    int hour = 0, minute = 0, second = 0;
 
     a = parse10(p1, p2);
     separator = *p2;
