@@ -21,6 +21,9 @@ long parse10(char const * & p1, char * & p2)
     long v = std::strtol(p1, &p2, 10);
     if (p2 != p1)
     {
+        if (v < 0)
+            throw soci::soci_error("Negative date/time field component.");
+
         p1 = p2 + 1;
         return v;
     }
