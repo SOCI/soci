@@ -290,14 +290,18 @@ void odbc_vector_use_type_backend::bind_by_name(
 void odbc_vector_use_type_backend::pre_use(indicator const *ind)
 {
     // first deal with data
+    SQLLEN non_null_indicator = 0;
     switch (type_)
     {
         case x_short:
         case x_integer:
         case x_double:
+            // Length of the parameter value is ignored for these types.
+            break;
+
         case x_char:
         case x_stdstring:
-            // Nothing special to do.
+            non_null_indicator = SQL_NTS;
             break;
 
         case x_stdtm:
@@ -340,6 +344,8 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
                     snprintf(pos, max_bigint_length, "%" LL_FMT_FLAGS "d", v[i]);
                     pos += max_bigint_length;
                 }
+
+                non_null_indicator = SQL_NTS;
             }
             break;
 
@@ -357,6 +363,8 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
                     snprintf(pos, max_bigint_length, "%" LL_FMT_FLAGS "u", v[i]);
                     pos += max_bigint_length;
                 }
+
+                non_null_indicator = SQL_NTS;
             }
             break;
 
@@ -387,7 +395,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
             // for strings we have already set the values
             if (type_ != x_stdstring)
                 {
-                    indHolderVec_[i] = SQL_NTS;  // value is OK
+                    indHolderVec_[i] = non_null_indicator;
                 }
             }
         }
@@ -401,7 +409,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
             // for strings we have already set the values
             if (type_ != x_stdstring)
             {
-                indHolderVec_[i] = SQL_NTS;  // value is OK
+                indHolderVec_[i] = non_null_indicator;
             }
         }
     }
