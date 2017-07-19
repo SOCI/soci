@@ -16,7 +16,7 @@ namespace // anonymous
 {
 
 // helper function for parsing decimal data (for std::tm)
-long parse10(char const * & p1, char * & p2, char const * msg)
+long parse10(char const * & p1, char * & p2)
 {
     long v = std::strtol(p1, &p2, 10);
     if (p2 != p1)
@@ -26,7 +26,8 @@ long parse10(char const * & p1, char * & p2, char const * msg)
     }
     else
     {
-        throw soci::soci_error(msg);
+        throw soci::soci_error("Cannot parse date/time field component.");
+
     }
 }
 
@@ -41,12 +42,10 @@ void soci::details::parse_std_tm(char const * buf, std::tm & t)
     long year = 1900, month = 1, day = 1;
     long hour = 0, minute = 0, second = 0;
 
-    char const * errMsg = "Cannot convert data to std::tm.";
-
-    a = parse10(p1, p2, errMsg);
+    a = parse10(p1, p2);
     separator = *p2;
-    b = parse10(p1, p2, errMsg);
-    c = parse10(p1, p2, errMsg);
+    b = parse10(p1, p2);
+    c = parse10(p1, p2);
 
     if (*p2 == ' ')
     {
@@ -56,9 +55,9 @@ void soci::details::parse_std_tm(char const * buf, std::tm & t)
         year = a;
         month = b;
         day = c;
-        hour   = parse10(p1, p2, errMsg);
-        minute = parse10(p1, p2, errMsg);
-        second = parse10(p1, p2, errMsg);
+        hour   = parse10(p1, p2);
+        minute = parse10(p1, p2);
+        second = parse10(p1, p2);
     }
     else
     {
