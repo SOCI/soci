@@ -27,7 +27,9 @@ endif(WIN32)
 # C++11 Option
 #
 
-set (SOCI_CXX_C11 OFF CACHE BOOL "Build to the C++11 standard")
+if (NOT SOCI_CXX_C11 ) 
+    set (SOCI_CXX_C11 OFF CACHE BOOL "Build to the C++11 standard")
+endif (NOT SOCI_CXX_C11 ) 
 
 
 #
