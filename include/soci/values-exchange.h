@@ -80,6 +80,8 @@ public:
         os << "<value>";
     }
 
+    virtual void pre_exec(int /* num */) {}
+
     virtual void post_use(bool /*gotData*/)
     {
         v_.reset_get_counter();

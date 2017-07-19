@@ -71,6 +71,7 @@ public:
 
     virtual void define_by_pos(int& position, void* data, exchange_type type) = 0;
 
+    virtual void pre_exec(int /* num */) {}
     virtual void pre_fetch() = 0;
     virtual void post_fetch(bool gotData, bool calledFromFetch, indicator* ind) = 0;
 
@@ -96,6 +97,7 @@ public:
     
     virtual void define_by_pos(int& position, void* data, exchange_type type) = 0;
 
+    virtual void pre_exec(int /* num */) {}
     virtual void pre_fetch() = 0;
     virtual void post_fetch(bool gotData, indicator* ind) = 0;
 
@@ -121,6 +123,7 @@ public:
     virtual void bind_by_name(std::string const& name,
         void* data, exchange_type type, bool readOnly) = 0;
 
+    virtual void pre_exec(int /* num */) {}
     virtual void pre_use(indicator const* ind) = 0;
     virtual void post_use(bool gotData, indicator * ind) = 0;
 
@@ -153,6 +156,7 @@ public:
         throw soci_error("use bulk iterators are not supported with this backend");
     }
 
+    virtual void pre_exec(int /* num */) {}
     virtual void pre_use(indicator const* ind) = 0;
 
     virtual std::size_t size() = 0;

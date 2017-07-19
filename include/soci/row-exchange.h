@@ -41,6 +41,7 @@ private:
         // as part of the statement execute
     }
 
+    virtual void pre_exec(int /* num */) {}
     virtual void pre_fetch() {}
     virtual void post_fetch(bool gotData, bool /* calledFromFetch */)
     {

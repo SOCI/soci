@@ -149,22 +149,11 @@ void oracle_standard_into_type_backend::define_by_pos(
         {
             oracleType = SQLT_CLOB;
 
-            OCILobLocator * lobp;
-            sword res = OCIDescriptorAlloc(statement_.session_.envhp_,
-                reinterpret_cast<dvoid**>(&lobp), OCI_DTYPE_LOB, 0, 0);
-            if (res != OCI_SUCCESS)
-            {
-                throw_oracle_soci_error(res, statement_.session_.errhp_);
-            }
+            // lazy initialization of the temporary LOB object,
+            // actual creation of this object is in pre_exec, which
+            // is called right before statement's execute
             
-            res = OCILobCreateTemporary(statement_.session_.svchp_,
-                statement_.session_.errhp_,
-                lobp, 0, SQLCS_IMPLICIT,
-                OCI_TEMP_CLOB, OCI_ATTR_NOCACHE, OCI_DURATION_SESSION);
-            if (res != OCI_SUCCESS)
-            {
-                throw_oracle_soci_error(res, statement_.session_.errhp_);
-            }
+            OCILobLocator * lobp = NULL;
 
             size = sizeof(lobp);
             data = &ociData_;
@@ -181,6 +170,33 @@ void oracle_standard_into_type_backend::define_by_pos(
     if (res != OCI_SUCCESS)
     {
         throw_oracle_soci_error(res, statement_.session_.errhp_);
+    }
+}
+
+void oracle_standard_into_type_backend::pre_exec(int /* num */)
+{
+    if (type_ == x_xmltype || type_ == x_longstring)
+    {
+        // lazy initialization of the temporary LOB object
+        
+        OCILobLocator * lobp;
+        sword res = OCIDescriptorAlloc(statement_.session_.envhp_,
+            reinterpret_cast<dvoid**>(&lobp), OCI_DTYPE_LOB, 0, 0);
+        if (res != OCI_SUCCESS)
+        {
+            throw_oracle_soci_error(res, statement_.session_.errhp_);
+        }
+        
+        res = OCILobCreateTemporary(statement_.session_.svchp_,
+            statement_.session_.errhp_,
+            lobp, 0, SQLCS_IMPLICIT,
+            OCI_TEMP_CLOB, OCI_ATTR_NOCACHE, OCI_DURATION_SESSION);
+        if (res != OCI_SUCCESS)
+        {
+            throw_oracle_soci_error(res, statement_.session_.errhp_);
+        }
+
+        ociData_ = lobp;
     }
 }
 
