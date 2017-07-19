@@ -440,7 +440,9 @@ public:
     {
         return "coalesce";
     }
-    
+
+    virtual std::string get_dummy_from_table() const = 0;
+
     void set_failover_callback(failover_callback & callback, session & sql)
     {
         failoverCallback_ = &callback;

@@ -149,6 +149,8 @@ void db2_vector_into_type_backend::define_by_pos(
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
+    case x_xmltype:   break; // not supported
+    case x_longstring:break; // not supported
     }
 
     SQLRETURN cliRC = SQLBindCol(statement_.hStmt, static_cast<SQLUSMALLINT>(position++),
@@ -321,6 +323,8 @@ void db2_vector_into_type_backend::resize(std::size_t sz)
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
+    case x_xmltype:   break; // not supported
+    case x_longstring:break; // not supported
     }
 }
 
@@ -387,6 +391,8 @@ std::size_t db2_vector_into_type_backend::size()
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
+    case x_xmltype:   break; // not supported
+    case x_longstring:break; // not supported
     }
 
     return sz;

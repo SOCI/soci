@@ -256,6 +256,8 @@ struct db2_session_backend : details::session_backend
     void commit();
     void rollback();
 
+    virtual std::string get_dummy_from_table() const { return "sysibm.sysdummy1"; }
+
     std::string get_backend_name() const { return "DB2"; }
 
     void clean_up();

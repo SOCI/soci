@@ -433,6 +433,8 @@ struct oracle_session_backend : details::session_backend
         return "nvl";
     }
 
+    virtual std::string get_dummy_from_table() const { return "dual"; }
+
     virtual std::string get_backend_name() const { return "oracle"; }
 
     void clean_up();

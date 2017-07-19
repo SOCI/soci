@@ -302,6 +302,8 @@ struct firebird_session_backend : details::session_backend
     virtual bool get_next_sequence_value(session & s,
         std::string const & sequence, long & value);
 
+    virtual std::string get_dummy_from_table() const { return "rdb$database"; }
+
     virtual std::string get_backend_name() const { return "firebird"; }
 
     void cleanUp();
