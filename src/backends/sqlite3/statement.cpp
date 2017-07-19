@@ -4,6 +4,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
+
+#define SOCI_SQLITE3_SOURCE
 #include "soci/sqlite3/soci-sqlite3.h"
 // std
 #include <algorithm>
