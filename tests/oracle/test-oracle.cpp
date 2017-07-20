@@ -1555,6 +1555,11 @@ public:
     {
         return "to_date('" + datdt_string + "', 'YYYY-MM-DD HH24:MI:SS')";
     }
+
+    virtual std::string get_length_function_name() const
+    {
+        return "length";
+    }
 };
 
 int main(int argc, char** argv)
