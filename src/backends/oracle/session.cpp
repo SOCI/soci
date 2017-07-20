@@ -26,8 +26,8 @@ using namespace soci::details::oracle;
 namespace // unnamed
 {
 
-sb4 fo_callback(void * svchp, void * envhp, void * fo_ctx,
-    ub4 fo_type, ub4 fo_event)
+sb4 fo_callback(void * /* svchp */, void * /* envhp */, void * fo_ctx,
+    ub4 /* fo_type */, ub4 fo_event)
 {
     oracle_session_backend * backend =
         static_cast<oracle_session_backend *>(fo_ctx);
