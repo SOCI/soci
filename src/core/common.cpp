@@ -1,53 +1,60 @@
 //
 // Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2017 Vadim Zeitlin.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include "soci/soci-platform.h"
-#include "soci/soci-backend.h"
+#define SOCI_SOURCE
+#include "soci/error.h"
 #include "soci-mktime.h"
+#include <climits>
 #include <cstdlib>
 #include <ctime>
-#include "common.h"
 
 namespace // anonymous
 {
 
 // helper function for parsing decimal data (for std::tm)
-long parse10(char const * & p1, char * & p2, char const * msg)
+int parse10(char const * & p1, char * & p2)
 {
     long v = std::strtol(p1, &p2, 10);
     if (p2 != p1)
     {
+        if (v < 0)
+            throw soci::soci_error("Negative date/time field component.");
+
+        if (v > INT_MAX)
+            throw soci::soci_error("Out of range date/time field component.");
+
         p1 = p2 + 1;
-        return v;
+
+        // Cast is safe due to check above.
+        return static_cast<int>(v);
     }
     else
     {
-        throw soci::soci_error(msg);
+        throw soci::soci_error("Cannot parse date/time field component.");
+
     }
 }
 
 } // namespace anonymous
 
-
-void soci::details::postgresql::parse_std_tm(char const * buf, std::tm & t)
+void soci::details::parse_std_tm(char const * buf, std::tm & t)
 {
     char const * p1 = buf;
     char * p2;
     char separator;
-    long a, b, c;
-    long year = 1900, month = 1, day = 1;
-    long hour = 0, minute = 0, second = 0;
+    int a, b, c;
+    int year = 1900, month = 1, day = 1;
+    int hour = 0, minute = 0, second = 0;
 
-    char const * errMsg = "Cannot convert data to std::tm.";
-
-    a = parse10(p1, p2, errMsg);
+    a = parse10(p1, p2);
     separator = *p2;
-    b = parse10(p1, p2, errMsg);
-    c = parse10(p1, p2, errMsg);
+    b = parse10(p1, p2);
+    c = parse10(p1, p2);
 
     if (*p2 == ' ')
     {
@@ -57,9 +64,9 @@ void soci::details::postgresql::parse_std_tm(char const * buf, std::tm & t)
         year = a;
         month = b;
         day = c;
-        hour   = parse10(p1, p2, errMsg);
-        minute = parse10(p1, p2, errMsg);
-        second = parse10(p1, p2, errMsg);
+        hour   = parse10(p1, p2);
+        minute = parse10(p1, p2);
+        second = parse10(p1, p2);
     }
     else
     {
@@ -82,5 +89,5 @@ void soci::details::postgresql::parse_std_tm(char const * buf, std::tm & t)
         }
     }
 
-    details::mktime_from_ymdhms(t, year, month, day, hour, minute, second);
+    mktime_from_ymdhms(t, year, month, day, hour, minute, second);
 }

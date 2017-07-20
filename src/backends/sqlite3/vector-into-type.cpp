@@ -17,6 +17,7 @@
 #include "soci/soci-platform.h"
 #include "soci/sqlite3/soci-sqlite3.h"
 #include "soci-cstrtod.h"
+#include "soci-mktime.h"
 #include "common.h"
 // std
 #include <cstddef>

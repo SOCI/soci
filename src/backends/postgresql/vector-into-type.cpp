@@ -9,6 +9,7 @@
 #include "soci/soci-platform.h"
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci-cstrtod.h"
+#include "soci-mktime.h"
 #include "common.h"
 #include "soci/type-wrappers.h"
 #include <libpq/libpq-fs.h> // libpq
