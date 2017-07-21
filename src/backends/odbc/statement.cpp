@@ -184,20 +184,15 @@ odbc_statement_backend::execute(int number)
     }
     else // We need to retrieve the number of rows affected explicitly.
     {
-        rowsAffected_ = 0;
-
-        do {
-            SQLLEN res = 0;
-            rc = SQLRowCount(hstmt_, &res);
-            if (is_odbc_error(rc))
-            {
-                throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
-                                      "getting number of affected rows");
-            }
-            rowsAffected_ += res;
+        SQLLEN res = 0;
+        rc = SQLRowCount(hstmt_, &res);
+        if (is_odbc_error(rc))
+        {
+            throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
+                                  "getting number of affected rows");
         }
-        // Move forward to the next result if executing a bulk operation.
-        while (hasVectorUseElements_ && SQLMoreResults(hstmt_) == SQL_SUCCESS);
+
+        rowsAffected_ = res;
     }
     SQLSMALLINT colCount;
     SQLNumResultCols(hstmt_, &colCount);
