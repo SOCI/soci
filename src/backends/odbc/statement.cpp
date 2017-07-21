@@ -150,6 +150,10 @@ odbc_statement_backend::execute(int number)
     SQLRETURN rc = SQLExecute(hstmt_);
     if (is_odbc_error(rc))
     {
+        // Construct the error object immediately, before calling any other
+        // ODBC functions, in order to not lose the error message.
+        const odbc_soci_error err(SQL_HANDLE_STMT, hstmt_, "executing statement");
+
         // If executing bulk operation a partial
         // number of rows affected may be available.
         if (hasVectorUseElements_)
@@ -171,7 +175,7 @@ odbc_statement_backend::execute(int number)
             // Move forward to the next result while there are rows processed.
             while (rows_processed > 0 && SQLMoreResults(hstmt_) == SQL_SUCCESS);
         }
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, "executing statement");
+        throw err;
     }
     else if (hasVectorUseElements_)
     {
