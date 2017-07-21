@@ -127,6 +127,11 @@ public:
             return false;
         }
     }
+
+    virtual std::string get_length_function_name() const
+    {
+        return "char_length";
+    }
 };
 
 #endif // SOCI_TESTS_MYSQL_H_INCLUDED

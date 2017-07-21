@@ -179,6 +179,11 @@ public:
         return !m_verDriver.is_initialized() || m_verDriver < odbc_version(9, 3, 400);
     }
 
+    virtual std::string get_length_function_name() const
+    {
+        return "char_length";
+    }
+
 private:
     odbc_version get_driver_version() const
     {

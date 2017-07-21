@@ -194,11 +194,23 @@ void db2_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
 
             std::vector<std::string> &v(*vp);
 
-            char *pos = buf;
+            const char *pos = buf;
             std::size_t const vsize = v.size();
             for (std::size_t i = 0; i != vsize; ++i)
             {
-                v[i].assign(pos, strlen(pos));
+                // See ODBC backend for explanation, this code for determining
+                // the string length is exactly the same as there.
+                const char* end = pos + indVec[i];
+                while (end != pos)
+                {
+                    if (*--end != ' ')
+                    {
+                        ++end;
+                        break;
+                    }
+                }
+
+                v[i].assign(pos, end - pos);
                 pos += colSize;
             }
         }

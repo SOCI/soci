@@ -1172,6 +1172,11 @@ public:
     {
         return false;
     }
+
+    virtual std::string get_length_function_name() const
+    {
+        return "char_length";
+    }
 };
 
 int main(int argc, char** argv)

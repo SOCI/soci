@@ -107,6 +107,11 @@ test_context(backend_factory const &backEnd, std::string const &connectString)
     {
         return "#" + datdt_string + "#";
     }
+
+    virtual std::string get_length_function_name() const
+    {
+        return "len";
+    }
 };
 
 int main(int argc, char** argv)

@@ -160,6 +160,11 @@ public:
         // on the side of caution and suppose that it's not supported.
         return true;
     }
+
+    virtual std::string get_length_function_name() const
+    {
+        return "len";
+    }
 };
 
 int main(int argc, char** argv)

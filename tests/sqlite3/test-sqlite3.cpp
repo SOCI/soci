@@ -379,6 +379,11 @@ public:
         // SQLite does not support right padded char type.
         return false;
     }
+
+    virtual std::string get_length_function_name() const
+    {
+        return "length";
+    }
 };
 
 int main(int argc, char** argv)

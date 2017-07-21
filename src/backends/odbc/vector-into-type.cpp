@@ -221,11 +221,33 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
 
             std::vector<std::string> &v(*vp);
 
-            char *pos = buf_;
+            const char *pos = buf_;
             std::size_t const vsize = v.size();
             for (std::size_t i = 0; i != vsize; ++i)
             {
-                v[i].assign(pos, strlen(pos));
+                // Find the actual length of the string: for a VARCHAR(N)
+                // column, it may be right-padded with spaces up to the length
+                // of the longest string in the result set. This happens with
+                // at least MS SQL (and the exact behaviour depends on the
+                // value of the ANSI_PADDING option) and it seems like some
+                // other ODBC drivers also have options like "PADVARCHAR", so
+                // it's probably not the only case when it does.
+                //
+                // So deal with this generically by just trimming all the
+                // spaces from the right hand-side.
+                const char* end = pos + indHolderVec_[i];
+                while (end != pos)
+                {
+                    // Pre-decrement as "end" is one past the end, as usual.
+                    if (*--end != ' ')
+                    {
+                        // We must count the last non-space character.
+                        ++end;
+                        break;
+                    }
+                }
+
+                v[i].assign(pos, end - pos);
                 pos += colSize_;
             }
         }

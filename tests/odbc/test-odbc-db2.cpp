@@ -93,6 +93,11 @@ public:
     {
         return "\'" + datdt_string + "\'";
     }
+
+    virtual std::string get_length_function_name() const
+    {
+        return "length";
+    }
 };
 
 struct table_creator_bigint : table_creator_base

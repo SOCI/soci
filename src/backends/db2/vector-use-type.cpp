@@ -139,10 +139,12 @@ void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &siz
             prepare_indicators(vecSize);
             for (std::size_t i = 0; i != vecSize; ++i)
             {
-                std::size_t sz = v[i].length() + 1;  // add one for null
+                std::size_t sz = v[i].length();
                 indVec[i] = static_cast<long>(sz);
                 maxSize = sz > maxSize ? sz : maxSize;
             }
+
+            maxSize++; // For terminating nul.
 
             buf = new char[maxSize * vecSize];
             memset(buf, 0, maxSize * vecSize);
@@ -150,7 +152,7 @@ void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &siz
             char *pos = buf;
             for (std::size_t i = 0; i != vecSize; ++i)
             {
-                strncpy(pos, v[i].c_str(), v[i].length());
+                memcpy(pos, v[i].c_str(), v[i].length());
                 pos += maxSize;
             }
 

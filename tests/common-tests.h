@@ -352,6 +352,11 @@ public:
     // whatever we do.
     virtual bool enable_std_char_padding(session&) const { return true; }
 
+    // Return the name of the function for determining the length of a string,
+    // i.e. "char_length" in standard SQL but often "len" or "length" in
+    // practice.
+    virtual std::string get_length_function_name() const = 0;
+
     virtual ~test_context_base()
     {
         the_test_context_ = NULL;
@@ -917,9 +922,9 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             st.execute();
             while (st.fetch())
             {
-                for (std::size_t i = 0; i != vec.size(); ++i)
+                for (std::size_t n = 0; n != vec.size(); ++n)
                 {
-                    CHECK(i2 == vec[i]);
+                    CHECK(i2 == vec[n]);
                     ++i2;
                 }
 
@@ -982,11 +987,11 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
         int const rowsToTest = 100;
         double d = 0.0;
 
-        statement st = (sql.prepare <<
+        statement sti = (sql.prepare <<
             "insert into soci_test(d) values(:d)", use(d));
         for (int i = 0; i != rowsToTest; ++i)
         {
-            st.execute(true);
+            sti.execute(true);
             d += 0.6;
         }
 
@@ -2013,7 +2018,6 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
 
     // select into a row
     {
-        row r;
         statement st = (sql.prepare <<
             "select * from soci_test", into(r));
         st.execute(true);
@@ -2039,9 +2043,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         ASSERT_EQUAL_APPROX(r.get<double>(0), 3.14);
         CHECK(r.get<int>(1) == 123);
         CHECK(r.get<std::string>(2) == "Johny");
-        std::tm t = std::tm();
-        t = r.get<std::tm>(3);
-        CHECK(t.tm_year == 105);
+        CHECK(r.get<std::tm>(3).tm_year == 105);
 
         // again, type char is visible as string
         CHECK_EQUAL_PADDED(r.get<std::string>(4), "a");
@@ -2091,7 +2093,6 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
     // additional test to check if the row object can be
     // reused between queries
     {
-        row r;
         sql << "select * from soci_test", into(r);
 
         CHECK(r.size() == 5);
@@ -3895,8 +3896,15 @@ TEST_CASE_METHOD(common_tests, "Get affected rows", "[core][affected-rows]")
     sql << "select count(val) from soci_test", into(val);
     if(val != 0)
     {
-        // test the preserved 'number of rows
-        // affected' after a potential failure.
+        // Notice that some ODBC drivers don't return the number of updated
+        // rows at all in the case of partially executed statement like this
+        // one, while MySQL ODBC driver wrongly returns 2 affected rows even
+        // though only one was actually inserted.
+        //
+        // So we can't check for "get_affected_rows() == val" here, it would
+        // fail in too many cases -- just check that the backend doesn't lie to
+        // us about no rows being affected at all (even if it just honestly
+        // admits that it has no idea by returning -1).
         CHECK(st6.get_affected_rows() != 0);
     }
 }
@@ -4086,6 +4094,22 @@ void check_for_exception_on_truncation(session& sql)
     }
 }
 
+// And another helper for the test below.
+void check_for_no_truncation(session& sql)
+{
+    const std::string str20 = "exactly of length 20";
+
+    sql << "delete from soci_test";
+
+    // Also check that there is no truncation when inserting a string of
+    // the same length as the column size.
+    CHECK_NOTHROW( (sql << "insert into soci_test(name) values(:s)", use(str20)) );
+
+    std::string s;
+    sql << "select name from soci_test", into(s);
+    CHECK( s == str20 );
+}
+
 } // anonymous namespace
 
 TEST_CASE_METHOD(common_tests, "Truncation error", "[core][insert][truncate][exception]")
@@ -4112,6 +4136,8 @@ TEST_CASE_METHOD(common_tests, "Truncation error", "[core][insert][truncate][exc
         tc_.on_after_ddl(sql);
 
         check_for_exception_on_truncation(sql);
+
+        check_for_no_truncation(sql);
     }
 
     SECTION("Error given for varchar column")
@@ -4120,6 +4146,8 @@ TEST_CASE_METHOD(common_tests, "Truncation error", "[core][insert][truncate][exc
         auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
         check_for_exception_on_truncation(sql);
+
+        check_for_no_truncation(sql);
     }
 }
 
@@ -4180,6 +4208,56 @@ TEST_CASE_METHOD(common_tests, "Select without table", "[core][select][dummy_fro
            into(plus17);
 
     CHECK(plus17 == 17);
+}
+
+TEST_CASE_METHOD(common_tests, "String length", "[core][string][length]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+    std::string s("123");
+    sql << "insert into soci_test(str) values(:s)", use(s);
+
+    const std::string& len_func = tc_.get_length_function_name();
+
+    std::string sout;
+    size_t slen;
+    sql << "select str," + len_func + "(str)"
+           " from soci_test",
+           into(sout), into(slen);
+    CHECK(slen == 3);
+    CHECK(sout.length() == 3);
+    CHECK(sout == s);
+
+    sql << "delete from soci_test";
+
+
+    std::vector<std::string> v;
+    v.push_back("Hello");
+    v.push_back("");
+    v.push_back("whole of varchar(20)");
+
+    CHECK_NOTHROW( (sql << "insert into soci_test(str) values(:s)", use(v)) );
+
+    std::vector<std::string> vout(10);
+    std::vector<unsigned int> vlen(10);
+    sql << "select str," + len_func + "(str)"
+           " from soci_test"
+           " order by " + len_func + "(str)",
+           into(vout), into(vlen);
+
+    REQUIRE(vout.size() == 3);
+    REQUIRE(vlen.size() == 3);
+
+    CHECK(vlen[0] == 0);
+    CHECK(vout[0].length() == 0);
+
+    CHECK(vlen[1] == 5);
+    CHECK(vout[1].length() == 5);
+
+    CHECK(vlen[2] == 20);
+    CHECK(vout[2].length() == 20);
 }
 
 } // namespace test_cases
