@@ -917,9 +917,9 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             st.execute();
             while (st.fetch())
             {
-                for (std::size_t i = 0; i != vec.size(); ++i)
+                for (std::size_t n = 0; n != vec.size(); ++n)
                 {
-                    CHECK(i2 == vec[i]);
+                    CHECK(i2 == vec[n]);
                     ++i2;
                 }
 
@@ -982,11 +982,11 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
         int const rowsToTest = 100;
         double d = 0.0;
 
-        statement st = (sql.prepare <<
+        statement sti = (sql.prepare <<
             "insert into soci_test(d) values(:d)", use(d));
         for (int i = 0; i != rowsToTest; ++i)
         {
-            st.execute(true);
+            sti.execute(true);
             d += 0.6;
         }
 
@@ -2013,7 +2013,6 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
 
     // select into a row
     {
-        row r;
         statement st = (sql.prepare <<
             "select * from soci_test", into(r));
         st.execute(true);
@@ -2039,9 +2038,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         ASSERT_EQUAL_APPROX(r.get<double>(0), 3.14);
         CHECK(r.get<int>(1) == 123);
         CHECK(r.get<std::string>(2) == "Johny");
-        std::tm t = std::tm();
-        t = r.get<std::tm>(3);
-        CHECK(t.tm_year == 105);
+        CHECK(r.get<std::tm>(3).tm_year == 105);
 
         // again, type char is visible as string
         CHECK_EQUAL_PADDED(r.get<std::string>(4), "a");
@@ -2091,7 +2088,6 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
     // additional test to check if the row object can be
     // reused between queries
     {
-        row r;
         sql << "select * from soci_test", into(r);
 
         CHECK(r.size() == 5);

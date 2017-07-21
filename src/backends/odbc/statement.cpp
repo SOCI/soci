@@ -188,7 +188,7 @@ odbc_statement_backend::execute(int number)
 
         do {
             SQLLEN res = 0;
-            SQLRETURN rc = SQLRowCount(hstmt_, &res);
+            rc = SQLRowCount(hstmt_, &res);
             if (is_odbc_error(rc))
             {
                 throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
