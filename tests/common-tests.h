@@ -4086,6 +4086,22 @@ void check_for_exception_on_truncation(session& sql)
     }
 }
 
+// And another helper for the test below.
+void check_for_no_truncation(session& sql)
+{
+    const std::string str20 = "exactly of length 20";
+
+    sql << "delete from soci_test";
+
+    // Also check that there is no truncation when inserting a string of
+    // the same length as the column size.
+    CHECK_NOTHROW( (sql << "insert into soci_test(name) values(:s)", use(str20)) );
+
+    std::string s;
+    sql << "select name from soci_test", into(s);
+    CHECK( s == str20 );
+}
+
 } // anonymous namespace
 
 TEST_CASE_METHOD(common_tests, "Truncation error", "[core][insert][truncate][exception]")
@@ -4112,6 +4128,8 @@ TEST_CASE_METHOD(common_tests, "Truncation error", "[core][insert][truncate][exc
         tc_.on_after_ddl(sql);
 
         check_for_exception_on_truncation(sql);
+
+        check_for_no_truncation(sql);
     }
 
     SECTION("Error given for varchar column")
@@ -4120,6 +4138,8 @@ TEST_CASE_METHOD(common_tests, "Truncation error", "[core][insert][truncate][exc
         auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
         check_for_exception_on_truncation(sql);
+
+        check_for_no_truncation(sql);
     }
 }
 
