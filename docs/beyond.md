@@ -16,8 +16,12 @@ It can be useful to know how many rows were affected by the last SQL statement, 
 
 ---
 ##### Portability note:
-This method is currently not supported by the Oracle backend. It is however
-supported when using Oracle database via ODBC backend.
+This method behaviour in case of partially executed update, i.e. when some
+records were updated or inserted while some other have failed to be updated or
+inserted, depends on the exact backend and, in the case of ODBC backend, on the
+exact ODBC driver used. It can return `-1`, meaning that the number of rows is
+unknown, the number of rows actually updated or the total number of affected
+rows.
 ---
 
 ### Working with sequences

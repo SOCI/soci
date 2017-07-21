@@ -3891,8 +3891,15 @@ TEST_CASE_METHOD(common_tests, "Get affected rows", "[core][affected-rows]")
     sql << "select count(val) from soci_test", into(val);
     if(val != 0)
     {
-        // test the preserved 'number of rows
-        // affected' after a potential failure.
+        // Notice that some ODBC drivers don't return the number of updated
+        // rows at all in the case of partially executed statement like this
+        // one, while MySQL ODBC driver wrongly returns 2 affected rows even
+        // though only one was actually inserted.
+        //
+        // So we can't check for "get_affected_rows() == val" here, it would
+        // fail in too many cases -- just check that the backend doesn't lie to
+        // us about no rows being affected at all (even if it just honestly
+        // admits that it has no idea by returning -1).
         CHECK(st6.get_affected_rows() != 0);
     }
 }
