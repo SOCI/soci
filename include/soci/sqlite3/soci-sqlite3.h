@@ -310,6 +310,28 @@ struct sqlite3_session_backend : details::session_backend
         return "select name as \"TABLE_NAME\""
                 " from sqlite_master where type = 'table'";
     }
+    virtual std::string create_column_type(data_type dt,
+                                           int , int )
+    {
+        switch (dt)
+        {
+            case dt_xml:
+            case dt_string:
+                return "text";
+            case dt_double:
+                return "real";
+            case dt_date:
+            case dt_integer:
+            case dt_long_long:
+            case dt_unsigned_long_long:
+                return "integer";
+            case dt_blob:
+                return "blob";
+            default:
+                throw soci_error("this data_type is not supported in create_column");
+        }
+
+    }
     sqlite_api::sqlite3 *conn_;
 };
 
