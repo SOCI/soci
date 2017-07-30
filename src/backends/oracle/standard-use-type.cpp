@@ -147,22 +147,11 @@ void oracle_standard_use_type_backend::prepare_for_bind(
         {
             oracleType = SQLT_CLOB;
             
-            OCILobLocator * lobp;
-            sword res = OCIDescriptorAlloc(statement_.session_.envhp_,
-                reinterpret_cast<dvoid**>(&lobp), OCI_DTYPE_LOB, 0, 0);
-            if (res != OCI_SUCCESS)
-            {
-                throw_oracle_soci_error(res, statement_.session_.errhp_);
-            }
+            // lazy initialization of the temporary LOB object,
+            // actual creation of this object is in pre_exec, which
+            // is called right before statement's execute
             
-            res = OCILobCreateTemporary(statement_.session_.svchp_,
-                statement_.session_.errhp_,
-                lobp, 0, SQLCS_IMPLICIT,
-                OCI_TEMP_CLOB, OCI_ATTR_NOCACHE, OCI_DURATION_SESSION);
-            if (res != OCI_SUCCESS)
-            {
-                throw_oracle_soci_error(res, statement_.session_.errhp_);
-            }
+            OCILobLocator * lobp = NULL;
 
             size = sizeof(lobp);
             data = &ociData_;
@@ -270,6 +259,62 @@ void oracle_standard_use_type_backend::write_to_lob(OCILobLocator * lobp, const 
     }
 }
 
+void oracle_standard_use_type_backend::lazy_temp_lob_init()
+{
+    OCILobLocator * lobp;
+    sword res = OCIDescriptorAlloc(statement_.session_.envhp_,
+        reinterpret_cast<dvoid**>(&lobp), OCI_DTYPE_LOB, 0, 0);
+    if (res != OCI_SUCCESS)
+    {
+        throw_oracle_soci_error(res, statement_.session_.errhp_);
+    }
+    
+    res = OCILobCreateTemporary(statement_.session_.svchp_,
+        statement_.session_.errhp_,
+        lobp, 0, SQLCS_IMPLICIT,
+        OCI_TEMP_CLOB, OCI_ATTR_NOCACHE, OCI_DURATION_SESSION);
+    if (res != OCI_SUCCESS)
+    {
+        throw_oracle_soci_error(res, statement_.session_.errhp_);
+    }
+
+    ociData_ = lobp;
+}
+
+void oracle_standard_use_type_backend::pre_exec(int /* num */)
+{
+    switch (type_)
+    {
+    case x_xmltype:
+        {
+            // lazy initialization of the temporary LOB object
+            
+            lazy_temp_lob_init();
+            
+            OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
+            xml_type * xml = static_cast<xml_type *>(data_);
+
+            write_to_lob(lobp, xml->value);
+        }
+        break;
+    case x_longstring:
+        {
+            // lazy initialization of the temporary LOB object
+            
+            lazy_temp_lob_init();
+            
+            OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
+            long_string * ls = static_cast<long_string *>(data_);
+
+            write_to_lob(lobp, ls->value);
+        }
+        break;
+    default:
+        // nothing to do
+        break;
+    }
+}
+
 void oracle_standard_use_type_backend::pre_use(indicator const *ind)
 {
     // first deal with data
@@ -347,22 +392,7 @@ void oracle_standard_use_type_backend::pre_use(indicator const *ind)
         break;
         
     case x_xmltype:
-        {
-            OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
-            xml_type * xml = static_cast<xml_type *>(data_);
-
-            write_to_lob(lobp, xml->value);
-        }
-        break;
     case x_longstring:
-        {
-            OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
-            long_string * ls = static_cast<long_string *>(data_);
-
-            write_to_lob(lobp, ls->value);
-        }
-        break;
-        
     case x_rowid:
     case x_blob:
         // nothing to do

@@ -60,6 +60,7 @@ struct oracle_standard_into_type_backend : details::standard_into_type_backend
 
     void read_from_lob(OCILobLocator * lobp, std::string & value);
     
+    virtual void pre_exec(int num);
     virtual void pre_fetch();
     virtual void post_fetch(bool gotData, bool calledFromFetch,
         indicator *ind);
@@ -143,6 +144,10 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
     // common helper for pre_use for LOB-directed wrapped types
     void write_to_lob(OCILobLocator * lobp, const std::string & value);
     
+    // common lazy initialization of the temporary LOB object
+    void lazy_temp_lob_init();
+    
+    virtual void pre_exec(int num);
     virtual void pre_use(indicator const *ind);
     virtual void post_use(bool gotData, indicator *ind);
 

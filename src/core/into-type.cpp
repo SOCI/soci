@@ -27,6 +27,11 @@ void standard_into_type::define(statement_impl & st, int & position)
     backEnd_->define_by_pos(position, data_, type_);
 }
 
+void standard_into_type::pre_exec(int num)
+{
+    backEnd_->pre_exec(num);
+}
+
 void standard_into_type::pre_fetch()
 {
     backEnd_->pre_fetch();
@@ -71,6 +76,11 @@ void vector_into_type::define(statement_impl & st, int & position)
     {
         backEnd_->define_by_pos(position, data_, type_);
     }
+}
+
+void vector_into_type::pre_exec(int num)
+{
+    backEnd_->pre_exec(num);
 }
 
 void vector_into_type::pre_fetch()

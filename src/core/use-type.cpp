@@ -116,6 +116,11 @@ void standard_use_type::dump_value(std::ostream& os) const
     os << "<unknown>";
 }
 
+void standard_use_type::pre_exec(int num)
+{
+    backEnd_->pre_exec(num);
+}
+
 void standard_use_type::pre_use()
 {
     // Handle IN direction of parameters of SQL statements and procedures
@@ -186,6 +191,11 @@ void vector_use_type::dump_value(std::ostream& os) const
 {
     // TODO: Provide more information.
     os << "<vector>";
+}
+
+void vector_use_type::pre_exec(int num)
+{
+    backEnd_->pre_exec(num);
 }
 
 void vector_use_type::pre_use()

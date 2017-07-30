@@ -36,6 +36,7 @@ public:
     virtual ~into_type_base() {}
 
     virtual void define(statement_impl & st, int & position) = 0;
+    virtual void pre_exec(int num) = 0;
     virtual void pre_fetch() = 0;
     virtual void post_fetch(bool gotData, bool calledFromFetch) = 0;
     virtual void clean_up() = 0;
@@ -63,6 +64,7 @@ protected:
 
 private:
     virtual void define(statement_impl & st, int & position);
+    virtual void pre_exec(int num);
     virtual void pre_fetch();
     virtual void clean_up();
 
@@ -108,6 +110,7 @@ protected:
     virtual void post_fetch(bool gotData, bool calledFromFetch);
 
     virtual void define(statement_impl & st, int & position);
+    virtual void pre_exec(int num);
     virtual void pre_fetch();
     virtual void clean_up();
     virtual void resize(std::size_t sz);

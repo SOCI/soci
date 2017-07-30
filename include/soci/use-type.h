@@ -32,6 +32,7 @@ public:
     virtual void bind(statement_impl & st, int & position) = 0;
     virtual std::string get_name() const = 0;
     virtual void dump_value(std::ostream& os) const = 0;
+    virtual void pre_exec(int num) = 0;
     virtual void pre_use() = 0;
     virtual void post_use(bool gotData) = 0;
     virtual void clean_up() = 0;
@@ -86,6 +87,7 @@ protected:
     virtual void pre_use();
 
 private:
+    virtual void pre_exec(int num);
     virtual void post_use(bool gotData);
     virtual void clean_up();
     virtual std::size_t size() const { return 1; }
@@ -156,6 +158,7 @@ private:
     virtual void bind(statement_impl& st, int & position);
     virtual std::string get_name() const { return name_; }
     virtual void dump_value(std::ostream& os) const;
+    virtual void pre_exec(int num);
     virtual void pre_use();
     virtual void post_use(bool) { /* nothing to do */ }
     virtual void clean_up();
