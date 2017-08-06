@@ -1,28 +1,13 @@
-## Client interface reference
+# API Reference
 
-* [commonly used types](#commontypes)
-* [class session](#session)
-* [class connection_parameters](#parameters)
-* [class connection_pool](#pool)
-* [class transaction](#transaction)
-* [function into](#into)
-* [function use](#use)
-* [class statement](#statement)
-* [class procedure](#procedure)
-* [class type_conversion](#typeconversion)
-* [class row](#row)
-* [class column_properties](#columnproperties)
-* [class values](#values)
-* [class blob](#blob)
-* [class rowid](#rowid)
-* [class backend_factory](#backendfactory)
-* [Simple client interface](#simpleclient)
+The core client interface is a set of classes and free functions declared in the `soci.h` header file.
+All names are dbeclared in the `soci` namespace.
 
-The core client interface is a set of classes and free functions declared in the `soci.h` header file. All names are dbeclared in the `soci` namespace.
+There are also additional names declared in the `soci::details` namespace, but they are not supposed to be directly used by the users of the library and are therefore not documented here.
+When such types are used in the declarations that are part of the "public" interface, they are replaced by "IT", which means "internal type".
+Types related to the backend interface are named here.
 
-There are also additional names declared in the `soci::details` namespace, but they are not supposed to be directly used by the users of the library and are therefore not documented here. When such types are used in the declarations that are part of the "public" interface, they are replaced by "IT", which means "internal type". Types related to the backend interface are named here.
-
-### <a name="#commontypes"></a> commonly used types
+## Commonly used types
 
 The following types are commonly used in the rest of the interface:
 
@@ -42,7 +27,7 @@ The `indicator` type defines the possible states of data.
 The `soci_error` type is used for error reporting.
 
 
-### <a name="#session"></a> class session
+## class session
 
 The `session` class encapsulates the connection to the database.
 
@@ -133,7 +118,7 @@ This class contains the following members:
 
 See [Connections and simple queries](basics.html) for more examples.
 
-### <a name="#parameters"></a> class connection_parameters
+## class connection_parameters
 
 The `connection_parameters` class is a simple container for the backend pointer, connection string and any other connection options. It is used together with `session` constructor and `open()` method.
 
@@ -157,7 +142,7 @@ The methods of this class are:
 * The other constructors correspond to the similar constructors of the `session` class and specify both the backend, either as a pointer to it or by name, and the connection string.
 * `set_option` can be used to set the value of an option with the given name. Currently all option values are strings, so if you need to set a numeric option you need to convert it to a string first. If an option with the given name had been already set before, its old value is overwritten.
 
-### <a name="#pool"></a> class connection_pool
+## class connection_pool
 
 The `connection_pool` class encapsulates the thread-safe pool of connections and ensures that only one thread at a time has access to any connection that it manages.
 
@@ -182,8 +167,7 @@ The operations of the pool are:
 * `try_lease` acts like `lease`, but allows to set up a time-out (relative, in milliseconds) on waiting. Negative time-out value means no time-out. Returns `true` if the entry was obtained, in which case its position is written to the `pos` parametr, and `false` if no entry was available before the time-out.
 * `give_back` should be called when the entry on the given position is no longer in use and can be passed to other requesting thread.
 
-
-### <a name="#transaction"></a> class transaction
+## class transaction
 
 The class `transaction` can be used for associating the transaction with some code scope. It is a RAII wrapper for regular transaction operations that automatically rolls back in its destructor *if* the transaction was not explicitly committed before.
 
@@ -203,7 +187,7 @@ The class `transaction` can be used for associating the transaction with some co
 
 Note that objects of this class are not notified of other transaction related operations that might be executed by user code explicitly or hidden inside SQL queries. It is not recommended to mix different ways of managing transactions.
 
-### function into
+## function into
 
 The function `into` is used for binding local output data (in other words, it defines where the results of the query are stored).
 
@@ -229,7 +213,7 @@ Example:
 
 See [Binding local dat](exchange.html#bind_local) for more examples
 
-### <a name="#commontypes"></a> function use
+## function use
 
 The function `use` is used for binding local input data (in other words, it defines where the parameters of the query come from).
 
@@ -259,7 +243,7 @@ Example:
 
 See [Binding local data](exchange.html#bind_local) for more examples.
 
-### <a name="#statement"></a> class statement
+## class statement
 
 The `statement` class encapsulates the prepared statement.
 
@@ -315,7 +299,7 @@ This class contains the following members:
 * `get_affected_rows` function returns the number of rows affected by the last statement. Returns `-1` if it's not implemented by the backend being used.
 * `fetch` function for retrieving the next portion of the result. Returns `true` if there was new data.
 * `got_data` return `true` if the most recent execution returned any rows.
-* `describe` function for extracting the type information for the result (note: no data is exchanged). This is normally called automatically and only when dynamic resultset binding is used.
+* `describe` function for extracting the type information for the result (**Note:** no data is exchanged). This is normally called automatically and only when dynamic resultset binding is used.
 * `set_row` function for associating the `statement` and `row` objects, normally called automatically.
 * `exchange_for_rowset` as a special case for binding `rowset` objects.
 * `get_backend` function that returns the internal pointer to the concrete backend implementation of the statement object. This is provided for advanced users that need access to the functionality that is not otherwise available.
@@ -324,7 +308,7 @@ See [Statement preparation and repeated execution](statements.html#preparation) 
 
 Most of the functions from the `statement` class interface are called automatically, but can be also used explicitly. See [Interfaces](interfaces) for the description of various way to use this interface.
 
-### <a name="#procedure"></a> class procedure
+## class procedure
 
 The `procedure` class encapsulates the call to the stored procedure and is aimed for higher portability of the client code.
 
@@ -342,7 +326,7 @@ The constructor expects the result of using `prepare` on the `session` object.
 
 See [Stored procedures](statements.html#procedures) for examples.
 
-### <a name="#typeconversion"></a> class type_conversion
+## class type_conversion
 
 The `type_conversion` class is a traits class that is supposed to be provided (specialized) by the user for defining conversions to and from one of the basic SOCI types.
 
@@ -360,7 +344,7 @@ Users are supposed to properly implement the `from_base` and `to_base` functions
 
 See [Extending SOCI to support custom (user-defined) C++ types](exchange.html#custom_types).
 
-### <a name="#row"></a> class row
+## class row
 
 The `row` class encapsulates the data and type information retrieved for the single row when the dynamic rowset binding is used.
 
@@ -413,7 +397,7 @@ This class contains the following members:
 
 See [Dynamic resultset binding](exchange.html#dynamic) for examples.
 
-### <a name="#columnproperties"></a> class column_properties
+## class column_properties
 
 The `column_properties` class provides the type and name information about the particular column in a rowset.
 
@@ -431,7 +415,7 @@ This class contains the following members:
 
 See [Dynamic resultset binding](exchange.html#dynamic) for examples.
 
-### <a name="#values"></a> class values
+## class values
 
 The `values` class encapsulates the data and type information and is used for object-relational mapping.
 
@@ -480,7 +464,7 @@ This class contains the same members as the `row` class (with the same meaning) 
 
 See [Object-relational mapping](exchange.html#object_relational) for examples.
 
-### <a name="#blob"></a> class blob
+## class blob
 
 The `blob` class encapsulates the "large object" functionality.
 
@@ -511,7 +495,7 @@ This class contains the following members:
 
 See [Large objects (BLOBs)](exchange.html#blob) for more discussion.
 
-### <a name="#rowid"></a> class rowid
+## class rowid
 
 The `rowid` class encapsulates the "row identifier" object.
 
@@ -530,7 +514,7 @@ This class contains the following members:
 * `get_backend` function that returns the internal pointer to the concrete backend implementation of the `rowid` object.
 
 
-### <a name="#backendfactory"></a> class backend_factory
+## class backend_factory
 
 The `backend_factory` class provides the abstract interface for concrete backend factories.
 
@@ -549,7 +533,7 @@ Objects of this type are declared by each backend and should be provided to the 
 
     session sql(factory, parameters);
 
-### <a name="#simpleclient"></a> Simple client interface
+## Simple Client Interface
 
 The simple client interface is provided with other languages in mind, to allow easy integration of the SOCI library with script interpreters and those languages that have the ability to link directly with object files using the "C" calling convention.
 
@@ -640,8 +624,8 @@ This function returns `1` if the into element at the given position has non-null
     char const * soci_get_into_date_v     (statement_handle st, int position, int index);
 
 The functions above allow to retrieve the current value of the given into element.
----
-Note: the `date` function returns the date value in the "`YYYY MM DD HH mm ss`" string format.
+
+**Note:** The `date` function returns the date value in the "`YYYY MM DD HH mm ss`" string format.
 
     void soci_use_string   (statement_handle st, char const * name);
     void soci_use_int      (statement_handle st, char const * name);
@@ -655,7 +639,6 @@ Note: the `date` function returns the date value in the "`YYYY MM DD HH mm ss`" 
     void soci_use_long_long_v(statement_handle st, char const * name);
     void soci_use_double_v   (statement_handle st, char const * name);
     void soci_use_date_v     (statement_handle st, char const * name);
----
 
 The functions above allow to create new data elements that will be used to provide data to the query (*use elements*). The new elements can be later identified by given name, which must be unique for the given statement.
 
@@ -684,8 +667,7 @@ These functions get and set the size of vector use elements (see comments for ve
 
 The functions above set the value of the given use element, for both single and vector elements.
 
----
-Note: the expected format for the data values is "`YYYY MM DD HH mm ss`".
+**Note:** The expected format for the data values is "`YYYY MM DD HH mm ss`".
 
     int          soci_get_use_state    (statement_handle st, char const * name);
     char const * soci_get_use_string   (statement_handle st, char const * name);
@@ -696,8 +678,8 @@ Note: the expected format for the data values is "`YYYY MM DD HH mm ss`".
     blob_handle  soci_get_use_blob     (statement_handle st, char const * name);
 
 These functions allow to inspect the state and value of named use elements.
----
-Note: these functions are provide only for single use elements, not for vectors; the rationale for this is that modifiable use elements are not supported for bulk operations.
+
+***Note:*** these functions are provide only for single use elements, not for vectors; the rationale for this is that modifiable use elements are not supported for bulk operations.
 
     void soci_prepare(statement_handle st, char const * query);
     int  soci_execute(statement_handle st, int withDataExchange);
@@ -705,4 +687,3 @@ Note: these functions are provide only for single use elements, not for vectors;
     int  soci_got_data(statement_handle st);
 
 The functions above provide the core execution functionality for the statement object and their meaning is equivalent to the respective functions in the core C++ interface described above.
-

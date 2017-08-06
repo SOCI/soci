@@ -1,15 +1,16 @@
-## Backends reference
+# Backends reference
 
-This part of the documentation is provided for those who want towrite (and contribute!) their own backends. It is anyway recommendedthat authors of new backend see the code of some existing backend forhints on how things are really done.
+This part of the documentation is provided for those who want towrite (and contribute!) their own backends.
+It is anyway recommendedthat authors of new backend see the code of some existing backend forhints on how things are really done.
 
-The backend interface is a set of base classes that the actual backendsare supposed to specialize. The main SOCI interface uses only theinterface and respecting the protocol (for example, the order offunction calls) described here. Note that both the interface and theprotocol were initially designed with the Oracle database in mind,
-which means that whereas it is quite natural with respect to the way Oracle API
-(OCI) works, it might impose some implementation burden on otherbackends, where things are done differently and therefore have to beadjusted, cached, converted, etc.
+The backend interface is a set of base classes that the actual backendsare supposed to specialize.
+The main SOCI interface uses only theinterface and respecting the protocol (for example, the order offunction calls) described here.
+Note that both the interface and theprotocol were initially designed with the Oracle database in mind, which means that whereas it is quite natural with respect to the way Oracle API (OCI) works, it might impose some implementation burden on otherbackends, where things are done differently and therefore have to beadjusted, cached, converted, etc.
 
-The interface to the common SOCI interface is defined in the `core/soci-backend.h` header file. This file is dissected below.
+The interface to the common SOCI interface is defined in the `core/soci-backend.h` header file.
+This file is dissected below.
 
 All names are defined in either `soci` or `soci::details` namespace.
-
 
     // data types, as seen by the user
     enum data_type
@@ -52,15 +53,19 @@ All names are defined in either `soci` or `soci::details` namespace.
         soci_error(std::string const & msg);
     };
 
-The `data_type` enumeration type defines all types that form the core type support for SOCI. The enum itself can be used by clients when dealing with dynamic rowset description.
+The `data_type` enumeration type defines all types that form the core type support for SOCI.
+The enum itself can be used by clients when dealing with dynamic rowset description.
 
-The `indicator` enumeration type defines all recognized *states* of data. The `i_truncated` state is provided for the case where the string is retrieved from the database into the char buffer that is not long enough to hold the whole value.
+The `indicator` enumeration type defines all recognized *states* of data.
+The `i_truncated` state is provided for the case where the string is retrieved from the database into the char buffer that is not long enough to hold the whole value.
 
 The `exchange_type` enumeration type defines all possible types that can be used with the `into` and `use` elements.
 
-The `cstring_descriptor` is a helper class that allows to store the address of `char` buffer together with its size. The objects of this class are passed to the backend when the `x_cstring` type is involved.
+The `cstring_descriptor` is a helper class that allows to store the address of `char` buffer together with its size.
+The objects of this class are passed to the backend when the `x_cstring` type is involved.
 
-The `soci_error` class is an exception type used for database-related (and also usage-related) errors. The backends should throw exceptions of this or derived type only.
+The `soci_error` class is an exception type used for database-related (and also usage-related) errors.
+The backends should throw exceptions of this or derived type only.
 
     class standard_into_type_backend
     {
@@ -76,14 +81,16 @@ The `soci_error` class is an exception type used for database-related (and also 
         virtual void clean_up() = 0;
     };
 
-The `standard_into_type_back_end` class implements the dynamic interactions with the simple (non-bulk) `into` elements. The objects of this class (or, rather, of the derived class implemented by the actual backend) are created by the `statement` object when the `into` element is bound - in terms of lifetime management, `statement` is the master of this class.
+The `standard_into_type_back_end` class implements the dynamic interactions with the simple (non-bulk) `into` elements.
+The objects of this class (or, rather, of the derived class implemented by the actual backend) are created by the `statement` object when the `into` element is bound - in terms of lifetime management, `statement` is the master of this class.
 
 * `define_by_pos` - Called when the `into` element is bound, once and before the statement is executed. The `data` pointer points to the variable used for `into` element (or to the `cstring_descriptor` object, which is artificially created when the plain `char` buffer is used for data exchange). The `position` parameter is a "column number", assigned by the library. The backend should increase this parameter, according to the number of fields actually taken (usually 1).
 * `pre_fetch` - Called before each row is fetched.
 * `post_fetch` - Called after each row is fetched. The `gotData` parameter is `true` if the fetch operation really retrievedsome data and `false` otherwise; `calledFromFetch` is `true` when the call is from the fetch operation and `false` if it is from the execute operation (this is also the case for simple, one-time queries). In particular, `(calledFromFetch && !gotData)` indicates that there is an end-of-rowset condition. `ind` points to the indicator provided by the user, or is `NULL`, if there is no indicator.
 * `clean_up` - Called once when the statement is destroyed.
 
-The intended use of `pre_fetch` and `post_fetch` functions is to manage any internal buffer and/or data conversion foreach value retrieved from the database. If the given server supportsbinary data transmission and the data format for the given type agreeswith what is used on the client machine, then these two functions neednot do anything; otherwise buffer management and data conversionsshould go there.
+The intended use of `pre_fetch` and `post_fetch` functions is to manage any internal buffer and/or data conversion foreach value retrieved from the database.
+If the given server supportsbinary data transmission and the data format for the given type agreeswith what is used on the client machine, then these two functions neednot do anything; otherwise buffer management and data conversionsshould go there.
 
     class vector_into_type_backend
     {
@@ -104,16 +111,17 @@ The intended use of `pre_fetch` and `post_fetch` functions is to manage any inte
 
 The `vector_into_type_back_end` has similar structure and purpose as the previous one, but is used for vectors (bulk data retrieval).
 
-The `data` pointer points to the variable of type `std::vector<T>;` (and *not* to its internal buffer), `resize` is supposed to really resize the user-provided vector and `size`
-is supposed to return the current size of this vector. The important difference with regard to the previous class is that `ind` points (if not `NULL`) to the beginning of the *array* of indicators. The backend should fill this array according to the actual state of the retrieved data.
-
+The `data` pointer points to the variable of type `std::vector<T>;` (and *not* to its internal buffer), `resize` is supposed to really resize the user-provided vector and `size` is supposed to return the current size of this vector.
+The important difference with regard to the previous class is that `ind` points (if not `NULL`) to the beginning of the *array* of indicators.
+The backend should fill this array according to the actual state of the retrieved data.
 
 * `bind_by_pos` - Called for each `use` element, once and before the statement is executed - for those `use` elements that do not provide explicit names for parameter binding. The meaning of parameters is same as in previous classes.
 * `bind_by_name` - Called for those `use` elements that provide the explicit name. 
 * `pre_use` - Called before the data is transmitted to the server (this means before the statement is executed, which can happen many times for the prepared statement). `ind` points to the indicator provided by the user (or is `NULL`).
 * `post_use` - Called after statement execution. `gotData` and `ind` have the same meaning as in `standard_into_type_back_end::post_fetch`, and this can be used by those backends whose respective servers support two-way data exchange (like in/out parameters in stored procedures).
 
-The intended use for `pre_use` and `post_use` methods is to manage any internal buffers and/or data conversion. They can be called many times with the same statement.
+The intended use for `pre_use` and `post_use` methods is to manage any internal buffers and/or data conversion.
+They can be called many times with the same statement.
 
     class vector_use_type_backend
     {
@@ -133,8 +141,9 @@ The intended use for `pre_use` and `post_use` methods is to manage any internal 
     };
 
 
-Objects of this type (or rather of type derived from this one) are used to implement interactions with user-provided vector (bulk) `use` elements and are managed by the `statement` object. The `data` pointer points to the whole vector object provided by the user (and *not* to its internal buffer); `ind` points to the beginning of the array of indicators (or is `NULL`). The meaning of this
-interface is analogous to those presented above.
+Objects of this type (or rather of type derived from this one) are used to implement interactions with user-provided vector (bulk) `use` elements and are managed by the `statement` object.
+The `data` pointer points to the whole vector object provided by the user (and *not* to its internal buffer); `ind` points to the beginning of the array of indicators (or is `NULL`).
+The meaning of this interface is analogous to those presented above.
 
     class statement_backend
     {
@@ -171,7 +180,8 @@ interface is analogous to those presented above.
         virtual vector_use_type_backend* make_vector_use_type_backend() = 0;
     };
 
-The `statement_backend` type implements the internals of the `statement` objects. The objects of this class are created by the `session` object.
+The `statement_backend` type implements the internals of the `statement` objects.
+The objects of this class are created by the `session` object.
 
 * `alloc` - Called once to allocate everything that is needed for the statement to work correctly.
 * `clean_up` - Supposed to clean up the resources, called once.
@@ -185,7 +195,7 @@ The `statement_backend` type implements the internals of the `statement` objects
 * `describe_column` - Called once for each column (column numbers - `colNum` - start from 1), should fill its parameters according to the column properties.
 * `make_into_type_backend`, `make_use_type_backend`, `make_vector_into_type_backend`, `make_vector_use_type_backend` - Called once for each `into` or `use` element, to create the objects of appropriate classes (described above).
 
-Notes
+**Notes:**
 
 1. Whether the query is executed using the simple one-time syntax or is prepared, the `alloc`, `prepare` and `execute` functions are always called, in this order.
 2. All `into` and `use` elements are bound (their `define_by_pos` or `bind_by_pos`/`bind_by_name` functions are called) *between* statement preparation and execution.

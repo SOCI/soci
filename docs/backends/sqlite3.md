@@ -1,32 +1,14 @@
-## SQLite3 Backend Reference
+# SQLite3 Backend Reference
 
-* [Prerequisites](#prerequisites)
-    * [Supported Versions](#versions)
-    * [Tested Platforms](#tested)
-    * [Required Client Libraries](#required)
-* [Connecting to the Database](#connecting)
-* [SOCI Feature Support](#support)
-    * [Dynamic Binding](#dynamic)
-    * [Binding by Name](#name)
-    * [Bulk Operations](#bulk)
-    * [Transactions](#transactions)
-    * [BLOB Data Type](#blob)
-    * [RowID Data Type](#rowid)
-    * [Nested Statements](#nested)
-    * [Stored Procedures](#stored)
-* [Accessing the Native Database API](#native)
-* [Backend-specific Extensions](#extensions)
-      * [SQLite3 result code support](#sqlite3result)
-* [Configuration options](#options)
+SOCI backend for accessign SQLite 3 database.
 
+## Prerequisites
 
-### <a name="prerequisites"></a> Prerequisites
-
-#### <a name="versions"></a> Supported Versions
+### Supported Versions
 
 The SOCI SQLite3 backend is supported for use with SQLite3 >= 3.1
 
-#### <a name="tested"></a> Tested Platforms
+### Tested Platforms
 
 <table>
 <tbody>
@@ -43,11 +25,11 @@ The SOCI SQLite3 backend is supported for use with SQLite3 >= 3.1
 </tbody>
 </table>
 
-#### <a name="required"></a> Required Client Libraries
+### Required Client Libraries
 
 The SOCI SQLite3 backend requires SQLite3's `libsqlite3` client library.
 
-#### <a name="connecting"></a> Connecting to the Database
+### Connecting to the Database
 
 To establish a connection to the SQLite3 database, create a Session object using the `SQLite3` backend factory together with the database file name:
 
@@ -71,9 +53,9 @@ Once you have created a `session` object as shown above, you can use it to acces
 
 (See the [SOCI basics](../basics.html) and [exchanging data](../exchange.html) documentation for general information on using the `session` class.)
 
-### <a name="features"></a> SOCI Feature Support
+## SOCI Feature Support
 
-#### <a name="dynamic"></a> Dynamic Binding
+### Dynamic Binding
 
 The SQLite3 backend supports the use of the SOCI `row` class, which facilitates retrieval of data whose type is not known at compile time.
 
@@ -125,7 +107,7 @@ For the SQLite3 backend, this type mapping is complicated by the fact the SQLite
 
 (See the [dynamic resultset binding](../exchange.html#dynamic) documentation for general information on using the `row` class.)
 
-#### <a name="name"></a> Binding by Name
+### Binding by Name
 
 In addition to [binding by position](../exchange.html#bind_position), the SQLite3 backend supports [binding by name](../exchange.html#bind_name), via an overload of the `use()` function:
 
@@ -138,31 +120,31 @@ The backend also supports the SQLite3 native numbered syntax, "one or more liter
     int j = 8;
     sql << "insert into t(x, y) values(?, ?)", use(i), use(j);
 
-#### <a name="bulk"></a> Bulk Operations
+### Bulk Operations
 
 The SQLite3 backend has full support for SOCI's [bulk operations](../statements.html#bulk) interface.  However, this support is emulated and is not native.
 
-#### <a name="transactions"></a> Transactions
+### Transactions
 
 [Transactions](../statements.html#transactions) are also fully supported by the SQLite3 backend.
 
-#### <a name="blob"></a> BLOB Data Type
+### BLOB Data Type
 
 The SQLite3 backend supports working with data stored in columns of type Blob, via SOCI's blob class. Because of SQLite3 general typelessness the column does not have to be declared any particular type.
 
-#### <a name="rowid"></a> RowID Data Type
+### RowID Data Type
 
 In SQLite3 RowID is an integer.  "Each entry in an SQLite table has a unique integer key called the "rowid". The rowid is always available as an undeclared column named ROWID, OID, or _ROWID_. If the table has a column of type INTEGER PRIMARY KEY then that column is another an alias for the rowid."[[2]](http://www.sqlite.org/capi3ref.html#sqlite3_last_insert_rowid)
 
-#### <a name="nested"></a> Nested Statements
+### Nested Statements
 
 Nested statements are not supported by SQLite3 backend.
 
-#### <a name="stored"></a> Stored Procedures
+### Stored Procedures
 
 Stored procedures are not supported by SQLite3 backend
 
-### <a name="native"></a> Acessing the native database API
+## Native API Access
 
 SOCI provides access to underlying datbabase APIs via several `get_backend()` functions, as described in the [beyond SOCI](../beyond.html) documentation.
 
@@ -189,12 +171,12 @@ The SQLite3 backend provides the following concrete classes for navite API acces
   </tbody>
 </table>
 
-### <a name="extensions"></a> Backend-specific extensions
+## Backend-specific extensions
 
-#### <a name="sqlite3result"></a> SQLite3 result code support
+### SQLite3 result code support
 
 SQLite3 result code is provided via the backend specific `sqlite3_soci_error` class. Catching the backend specific error yields the value of SQLite3 result code via the `result()` method.
 
-### <a name="configuration"></a> Configuration options
+## Configuration options
 
 None

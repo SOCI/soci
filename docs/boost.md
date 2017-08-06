@@ -1,8 +1,19 @@
-## Integration with Boost
+# Boost Integration
 
-The SOCI user code can be easily integrated with the [Boost library](http://www.boost.org/) thanks to the very flexible type conversion facility. There are three important Boost types that are supported out of the box.
+The SOCI user code can be easily integrated with the [Boost library](http://www.boost.org/) thanks to the very flexible type conversion facility.
 
-#### boost::optional<T>
+The integration with Boost types is optional and is *not* enabled by default, which means that SOCI can also be compiled and used without any dependency on Boost.
+
+In order to enable the support for any of the above types, the user needs to either include one of these headers:
+
+    #include <boost-optional.h>
+    #include <boost-tuple.h>
+    #include <boost-fusion.h>
+    #include <boost-gregorian-date.h>
+
+or to define the `SOCI_USE_BOOST` macro before including the `soci.h` main header file.
+
+## Boost.Optional
 
 `boost::optional<T>` provides an alternative way to support the null data condition and as such relieves the user from necessity to handle separate indicator values.
 
@@ -27,7 +38,7 @@ Example:
 The `boost::optional<T>` objects are fully supported for both `into` and `use` elements, in both single and vector forms. They can be also used for user-defined data types.
 
 
-#### boost::tuple<T1, ...>
+## Boost.Tuple
 
 `boost::tuple<T1, ...>` allows to work with whole rows of information and in some cases can be more convenient to use than the more dynamically-oriented `row` type.
 
@@ -36,7 +47,8 @@ The `boost::optional<T>` objects are fully supported for both `into` and `use` e
     sql << "select name, phone, salary from persons where ...",
         into(person);
 
-Tuples are supported for both `into` and `use` elements. They can be used with `rowset` as well.
+Tuples are supported for both `into` and `use` elements.
+They can be used with `rowset` as well.
 
 Tuples can be also composed with `boost::optional<T>`
 
@@ -54,25 +66,12 @@ Tuples can be also composed with `boost::optional<T>`
         // this person does not have a phone number
     }
 
-#### boost::fusion::vector<T1, ...>
+## Boost.Fusion
 
 The `boost::fusion::vector` types are supported in the same way as tuples.
 
+**Note:** Support for `boost::fusion::vector` is enabled only if the detected Boost version is at least 1.35.
 
-#### boost::gregorian::date
+## Boost.DateTime
 
 The `boost::gregorian::date` is provided as a conversion for base type `std::tm` and can be used as a replacement for it.
-
----
-##### Optional integration:
-The integration with Boost types is optional and *not* enabled by default, which means that SOCI can be compiled and used without any dependency on Boost.
----
-
-In order to enable the support for any of the above types, the user needs to either include one of these headers:
-
-    #include <boost-optional.h>
-    #include <boost-tuple.h>
-    #include <boost-fusion.h>
-    #include <boost-gregorian-date.h>
-
-or to define the `SOCI_USE_BOOST` macro before including the `soci.h` main header file. Note that in this case the support for `boost::fusion::vector` is enabled only if the detected Boost version is at least 1.35.

@@ -1,6 +1,6 @@
-## Queries
+# Queries
 
-### Simple SQL statements
+## Simple SQL statements
 
 In many cases, the SQL query is intended to be executed only once, which means that statement parsing and execution can go together. The `session` class provides a special `once` member, which triggers parsing and execution of such one-time statements:
 
@@ -19,7 +19,7 @@ The IOStream-like interface is exactly what it looks like, so that the statement
     int id = 123;
     sql << "delete from companies where id = " << id;
 
-### Query transformation
+## Query transformation
 
 In SOCI 3.2.0, query transformation mechanism was introduced.
 

@@ -1,32 +1,14 @@
-## MySQL Backend Reference
+# MySQL Backend Reference
 
-* [Prerequisites](#prerequisites)
-    * [Supported Versions](#versions)
-    * [Tested Platforms](#tested)
-    * [Required Client Libraries](#required)
-* [Connecting to the Database](#connecting)
-* [SOCI Feature Support](#support)
-    * [Dynamic Binding](#dynamic)
-    * [Binding by Name](#name)
-    * [Bulk Operations](#bulk)
-    * [Transactions](#transactions)
-    * [BLOB Data Type](#blob)
-    * [RowID Data Type](#rowid)
-    * [Nested Statements](#nested)
-    * [Stored Procedures](#stored)
-* [Accessing the Native Database API](#native)
-* [Backend-specific Extensions](#extensions)
-* [Configuration options](#configuration)
+SOCI backend for accessing MySQL database.
 
+## Prerequisites
 
-
-### <a name="prerequisites"></a> Prerequisites
-
-#### <a name="versions"></a> Supported Versions
+### Supported Versions
 
 The SOCI MySQL backend should in principle work with every version of MySQL 5.x. Some of the features (transactions, stored functions) are not available when MySQL server doesn't support them.
 
-#### <a name="tested"></a> Tested Platforms
+### Tested Platforms
 
 <table>
 <tbody>
@@ -39,7 +21,7 @@ The SOCI MySQL backend should in principle work with every version of MySQL 5.x.
 </tbody>
 </table>
 
-#### <a name="required"></a> Required Client Libraries
+### Required Client Libraries
 
 The SOCI MySQL backend requires MySQL's `libmysqlclient` client library.
 
@@ -47,7 +29,7 @@ Note that the SOCI library itself depends also on `libdl`, so the minimum set of
 
     -lsoci_core -lsoci_mysql -ldl -lmysqlclient
 
-### <a name="connecting"></a> Connecting to the Database
+## Connecting to the Database
 
 To establish a connection to a MySQL server, create a `session` object using the `mysql` backend factory together with a connection string:
 
@@ -80,10 +62,9 @@ Once you have created a `session` object as shown above, you can use it to acces
 
 (See the [SOCI basics]("../basics.html) and [exchanging data](../exchange.html) documentation for general information on using the `session` class.)
 
+## SOCI Feature Support
 
-### <a name="support"></a> SOCI Feature Support
-
-#### <a name="dynamic"></a> Dynamic Binding
+### Dynamic Binding
 
 The MySQL backend supports the use of the SOCI `row` class, which facilitates retrieval of data which type is not known at compile time.
 
@@ -139,7 +120,7 @@ For the MySQL backend, this type mapping is:
 
 (See the [dynamic resultset binding](../exchange.html#dynamic) documentation for general information on using the `Row` class.)
 
-#### <a name="name"></a> Binding by Name
+### Binding by Name
 
 In addition to [binding by position](../exchange.html#bind_position), the MySQL backend supports
 [binding by name](../exchange.html#bind_name), via an overload of the `use()` function:
@@ -149,30 +130,29 @@ In addition to [binding by position](../exchange.html#bind_position), the MySQL 
 
 It should be noted that parameter binding of any kind is supported only by means of emulation, since the underlying API used by the backend doesn't provide this feature.
 
-#### <a name="bulk"></a> Bulk Operations
+### Bulk Operations
 
 [Transactions](../statements.html#transactions) are also supported by the MySQL backend. Please note, however, that transactions can only be used when the MySQL server supports them (it depends on options used during the compilation of the server; typically, but not always, servers >=4.0 support transactions and earlier versions do not) and only with appropriate table types.
 
-#### <a name="blob"></a> BLOB Data Type
+### BLOB Data Type
 
 SOCI `blob` interface is not supported by the MySQL backend.
 
 Note that this does not mean you cannot use MySQL's `BLOB` types.  They can be selected using the usual SQL syntax and read into `std::string` on the C++ side, so no special interface is required.
 
-#### <a name="rowid"></a> RowID Data Type
+### RowID Data Type
 
 The `rowid` functionality is not supported by the MySQL backend.
 
-#### <a name="nested"></a> Nested Statements
+### Nested Statements
 
 Nested statements are not supported by the MySQL backend.
 
-#### <a name="stored"></a> Stored Procedures
+### Stored Procedures
 
 MySQL version 5.0 and later supports two kinds of stored routines: stored procedures and stored functions (for details, please consult the [procedure MySQL documentation](http://dev.mysql.com/doc/refman/5.0/en/stored-procedures.html)). Stored functions can be executed by using SOCI's [procedure class](../statements.html#procedures). There is currently no support for stored procedures.
 
-
-### <a name="native"></a> Accessing the native database API
+## Native API Access
 
 SOCI provides access to underlying datbabase APIs via several `get_backend()` functions, as described in the [Beyond SOCI](../beyond.html) documentation.
 
@@ -195,10 +175,10 @@ The MySQL backend provides the following concrete classes for native API access:
   </tbody>
 </table>
 
-### <a name="extensions"></a> Backend-specific extensions
+## Backend-specific extensions
 
 None.
 
-### <a name="configuration"></a> Configuration options
+## Configuration options
 
 None.
