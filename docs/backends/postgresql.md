@@ -1,31 +1,14 @@
-## PostgreSQL Backend Reference
+# PostgreSQL Backend Reference
 
-* [Prerequisites](#prerequisites)
-    * [Supported Versions](#versions)
-    * [Tested Platforms](#tested)
-    * [Required Client Libraries](#required)
-* [Connecting to the Database](#connecting)
-* [SOCI Feature Support](#support)
-    * [Dynamic Binding](#dynamic)
-    * [Binding by Name](#name)
-    * [Bulk Operations](#bulk)
-    * [Transactions](#transactions)
-    * [BLOB Data Type](#blob)
-    * [RowID Data Type](#rowid)
-    * [Nested Statements](#nested)
-    * [Stored Procedures](#stored)
-* [Accessing the Native Database API](#native)
-* [Backend-specific Extensions](#extensions)
-      * [UUID Data Type](#uuid)
-* [Configuration options](#configuration)
+SOCI backend for accessing PostgreSQL database.
 
-### <a name="prerequisites"></a> Prerequisites
+## Prerequisites
 
-#### <a name="versions"></a> Supported Versions
+### Supported Versions
 
 The SOCI PostgreSQL backend is supported for use with PostgreSQL >= 7.3, although versions older than 8.0 will suffer from limited feature support. See below for details.
 
-#### <a name="tested"></a> Tested Platforms
+### Tested Platforms
 
 <table>
 <tbody>
@@ -37,7 +20,7 @@ The SOCI PostgreSQL backend is supported for use with PostgreSQL >= 7.3, althoug
 </tbody>
 </table>
 
-#### <a name="required"></a> Required Client Libraries
+### Required Client Libraries
 
 The SOCI PostgreSQL backend requires PostgreSQL's `libpq` client library.
 
@@ -45,7 +28,7 @@ Note that the SOCI library itself depends also on `libdl`, so the minimum set of
 
     -lsoci_core -lsoci_postgresql -ldl -lpq
 
-#### <a name="connecting"></a> Connecting to the Database
+### Connecting to the Database
 
 To establish a connection to the PostgreSQL database, create a `session` object using the `postgresql` backend factory together with a connection string:
 
@@ -81,9 +64,9 @@ Once you have created a `session` object as shown above, you can use it to acces
 
 (See the [exchanging data](../basics.html">SOCI basics</a> and <a href="../exchange.html) documentation for general information on using the `session` class.)
 
-### <a name="features"></a>  SOCI Feature Support
+##  SOCI Feature Support
 
-#### <a name="dynamic"></a> Dynamic Binding
+### Dynamic Binding
 
 The PostgreSQL backend supports the use of the SOCI `row` class, which facilitates retrieval of data whose type is not known at compile time.
 
@@ -131,7 +114,7 @@ When calling `row::get<T>()`, the type you should pass as `T` depends upon the u
 
 (See the [dynamic resultset binding](../exchange.html#dynamic) documentation for general information on using the `row` class.)
 
-#### <a name="name"></a> Binding by Name
+### Binding by Name
 
 In addition to [binding by position](../exchange.html#bind_position), the PostgreSQL backend supports [binding by name](../exchange.html#bind_name), via an overload of the `use()` function:
 
@@ -146,31 +129,31 @@ Apart from the portable "colon-name" syntax above, which is achieved by rewritin
 
 The use of native syntax is not recommended, but can be nevertheless imposed by switching off the query rewriting. This can be achieved by defining the macro `SOCI_POSTGRESQL_NOBINDBYNAME` and it is actually necessary for PostgreSQL 7.3, in which case binding of use elements is not supported at all. See the [Configuration options](#options) section for details.
 
-#### <a name="bulk"></a> Bulk Operations
+### Bulk Operations
 
 The PostgreSQL backend has full support for SOCI's [bulk operations](../statements.html#bulk) interface.
 
-#### <a name="transactions"></a> Transactions
+### Transactions
 
 [Transactions](../statements.html#transactions) are also fully supported by the PostgreSQL backend.
 
-#### <a name="blob"></a> blob Data Type
+### blob Data Type
 
 The PostgreSQL backend supports working with data stored in columns of type Blob, via SOCI's [blob](../exchange.html#blob) class with the exception that trimming is not supported.
 
-#### <a name="rowid"></a> rowid Data Type
+### rowid Data Type
 
 The concept of row identifier (OID in PostgreSQL) is supported via SOCI's [rowid](../reference.html#rowid) class.
 
-#### <a name="nested"></a> Nested Statements
+### Nested Statements
 
 Nested statements are not supported by PostgreSQL backend.
 
-#### <a name="stored"></a> Stored Procedures
+### Stored Procedures
 
 PostgreSQL stored procedures can be executed by using SOCI's [procedure](../statements.html#procedures) class.
 
-### <a name="native"></a> Acessing the native database API
+## Native API Access
 
 SOCI provides access to underlying datbabase APIs via several `get_backend()` functions, as described in the [beyond SOCI](../beyond.html) documentation.
 
@@ -201,15 +184,14 @@ The PostgreSQL backend provides the following concrete classes for navite API ac
   </tbody>
 </table>
 
+## Backend-specific extensions
 
-### <a name="extensions"></a> Backend-specific extensions
-
-#### <a name="uuid"></a> uuid Data Type
+### uuid Data Type
 
 The PostgreSQL backend supports working with data stored in columns of type UUID via simple string operations. All string representations of UUID supported by PostgreSQL are accepted on input, the backend will return the standard
 format of UUID on output. See the test `test_uuid_column_type_support` for usage examples.
 
-### <a name="configuration"></a> Configuration options
+## Configuration options
 
 To support older PostgreSQL versions, the following configuration macros are recognized:
 

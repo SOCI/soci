@@ -1,31 +1,15 @@
-## Firebird Backend Reference
+# Firebird Backend Reference
 
-* [Prerequisites](#prerequisites)
-    * [Supported Versions](#versions)
-    * [Tested Platforms](#platforms)
-    * [Required Client Libraries](#required)
-* [Connecting to the Database](#connecting)
-* [SOCI Feature Support](#features)
-    * [Dynamic Binding](#dynamic)
-    * [Binding by Name](#name)
-    * [Bulk Operations](#bulk)
-    * [Transactions](#transactions)
-    * [BLOB Data Type](#blob)
-    * [RowID Data Type](#rowid)
-    * [Nested Statements](#nested)
-    * [Stored Procedures](#stored)
-* [Accessing the Native Database API](#native)
-* [Backend-specific Extensions](#extensions)
-* [Configuration options](#configuration)
-    * [FirebirdSOCIError](#firebirdsocierror)
+SOCI backend for accessing Firebird database.
 
-### <a name="prerequisites"></a> Prerequisites
+## Prerequisites
 
-#### <a name="versions"></a> Supported Versions
+### Supported Versions
 
-The SOCI Firebird backend supports versions of Firebird from 1.5 to 2.5 and can be used with either the client-server or embedded Firebird libraries. The former is the default, to select the latter set <tt>SOCI_FIREBIRD_EMBEDDED</tt> CMake option to <tt>ON</tt> value when building.
+The SOCI Firebird backend supports versions of Firebird from 1.5 to 2.5 and can be used with either the client-server or embedded Firebird libraries.
+The former is the default, to select the latter set <tt>SOCI_FIREBIRD_EMBEDDED</tt> CMake option to <tt>ON</tt> value when building.
 
-#### <a name="tested"></a> Tested Platforms
+### Tested Platforms
 
 <table>
 <tbody>
@@ -37,11 +21,11 @@ The SOCI Firebird backend supports versions of Firebird from 1.5 to 2.5 and can 
 </tbody>
 </table>
 
-#### <a name="required"></a> Required Client Libraries
+### Required Client Libraries
 
 The Firebird backend requires Firebird's `libfbclient` client library.
 
-### <a name="connecting"></a> Connecting to the Database
+## Connecting to the Database
 
 To establish a connection to a Firebird database, create a Session object using the firebird backend factory together with a connection string:
 
@@ -72,9 +56,9 @@ Once you have created a `Session` object as shown above, you can use it to acces
 (See the [SOCI basics](../basics.html) and [exchanging data](../exchange.html) documentation for general information on using the `Session` class.)
 
 
-### <a name="features"></a> SOCI Feature Support
+## SOCI Feature Support
 
-#### <a name="dynamic"></a> Dynamic Binding
+### Dynamic Binding
 
 The Firebird backend supports the use of the SOCI `Row` class, which facilitates retrieval of data whose type is not known at compile time.
 
@@ -126,7 +110,7 @@ currently not supported.
 (See the [dynamic resultset binding](../exchange.html#dynamic) documentation for general information on using the `Row` class.)
 
 
-#### <a name="binding"></a> Binding by Name
+### Binding by Name
 
 In addition to [binding by position](../exchange.html#bind_position), the Firebird backend supports [binding by name](../exchange.html#bind_name), via an overload of the `use()` function:
 
@@ -135,34 +119,33 @@ In addition to [binding by position](../exchange.html#bind_position), the Firebi
 
 It should be noted that parameter binding by name is supported only by means of emulation, since the underlying API used by the backend doesn't provide this feature.
 
-#### <a name="bulk"></a> Bulk Operations
+### Bulk Operations
 
 The Firebird backend has full support for SOCI's [bulk operations](../statements.html#bulk) interface. This feature is also supported by emulation.
 
-#### <a name="transactions"></a> Transactions
+### Transactions
 
 [Transactions](../statements.html#transactions) are also fully supported by the Firebird backend. In fact, an implicit transaction is always started when using this backend if one hadn't been started by explicitly calling <tt>begin()</tt> before. The current transaction is automatically committed in `Session's` destructor.
 
-#### <a name="blob"></a> BLOB Data Type
+### BLOB Data Type
 
 The Firebird backend supports working with data stored in columns of type Blob, via SOCI's `[BLOB](../exchange.html#blob)` class.
 
 It should by noted, that entire Blob data is fetched from database to allow random read and write access. This is because Firebird itself allows only writing to a new Blob or reading from existing one - modifications of existing Blob means creating a new one. Firebird backend hides those details from user.
 
-#### <a name="rowid"></a> RowID Data Type
+### RowID Data Type
 
 This feature is not supported by Firebird backend.
 
-#### <a name="nested"></a> Nested Statements
+### Nested Statements
 
 This feature is not supported by Firebird backend.
 
-#### <a name="stored"></a> Stored Procedures
+### Stored Procedures
 
 Firebird stored procedures can be executed by using SOCI's [Procedure](../statements.html#procedures) class.
 
-
-### <a name="native"></a> Acessing the native database API
+## Native API Access
 
 SOCI provides access to underlying datbabase APIs via several getBackEnd() functions, as described in the [beyond SOCI](../beyond.html) documentation.
 
@@ -193,8 +176,8 @@ The Firebird backend provides the following concrete classes for navite API acce
   </tbody>
 </table>
 
-### <a name="extensions"></a> Backend-specific extensions
+## Backend-specific extensions
 
-#### <a name="firebirdsocierror"></a> FirebirdSOCIError
+### FirebirdSOCIError
 
 The Firebird backend can throw instances of class `FirebirdSOCIError`, which is publicly derived from `SOCIError` and has an additional public `status_` member containing the Firebird status vector.

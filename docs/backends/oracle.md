@@ -1,32 +1,15 @@
-## Oracle Backend Reference
+# Oracle Backend Reference
 
-* [Prerequisites](#prerequisites)
-    * [Supported Versions](#versions)
-    * [Tested Platforms](#tested)
-    * [Required Client Libraries](#required)
-* [Connecting to the Database](#connecting)
-* [SOCI Feature Support](#support)
-    * [Dynamic Binding](#dynamic)
-    * [Binding by Name](#name)
-    * [Bulk Operations](#bulk)
-    * [Transactions](#transactions)
-    * [BLOB Data Type](#blob)
-    * [RowID Data Type](#rowid)
-    * [Nested Statements](#nested)
-    * [Stored Procedures](#stored)
-* [Accessing the Native Database API](#native)
-* [Backend-specific Extensions](#extensions)
-    * [oracle_soci_error](#oraclesocierror)
+SOCI backend for accessing Oracle database.
 
+## Prerequisites
 
-### <a name="prerequisites"></a> Prerequisites
-
-#### <a name="versions"></a> Supported Versions
+### Supported Versions
 
 The SOCI Oracle backend is currently supported for use with Oracle 10 or later.
 Older versions of Oracle may work as well, but they have not been tested by the SOCI team.
 
-#### <a name="tested"></a> Tested Platforms
+### Tested Platforms
 
 <table>
 <tbody>
@@ -35,8 +18,7 @@ Older versions of Oracle may work as well, but they have not been tested by the 
 </tbody>
 </table>
 
-
-#### <a name="required"></a> Required Client Libraries
+### Required Client Libraries
 
 The SOCI Oracle backend requires Oracle's `libclntsh` client library. Depending on the particular system, the `libnnz10` library might be needed as well.
 
@@ -44,7 +26,7 @@ Note that the SOCI library itself depends also on `libdl`, so the minimum set of
 
     -lsoci_core -lsoci_oracle -ldl -lclntsh -lnnz10
 
-#### <a name="connecting"></a> Connecting to the Database
+### Connecting to the Database
 
 To establish a connection to an Oracle database, create a `session` object using the oracle backend factory together with a connection string:
 
@@ -76,9 +58,9 @@ Once you have created a `session` object as shown above, you can use it to acces
 
 (See the [SOCI basics](../basics.html) and [exchanging data](../exchange.html) documentation for general information on using the `session` class.)#
 
-### <a name="features"></a> SOCI Feature Support
+## SOCI Feature Support
 
-#### <a name="dynamic"></a> Dynamic Binding
+### Dynamic Binding
 
 The Oracle backend supports the use of the SOCI `row` class, which facilitates retrieval of data which type is not known at compile time.
 
@@ -122,7 +104,7 @@ When calling `row::get<T>()`, the type you should pass as `T` depends upon the n
 
 (See the [dynamic resultset binding](../exchange.html#dynamic) documentation for general information on using the `row` class.)
 
-#### <a name="name"></a> Binding by Name
+### Binding by Name
 
 In addition to [binding by position](../exchange.html#bind_position), the Oracle backend supports [binding by name](../exchange.html#bind_name), via an overload of the `use()` function:
 
@@ -131,24 +113,24 @@ In addition to [binding by position](../exchange.html#bind_position), the Oracle
 
 SOCI's use of ':' to indicate a value to be bound within a SQL string is consistant with the underlying Oracle client library syntax.
 
-#### <a name="bulk"></a> Bulk Operations
+### Bulk Operations
 
 The Oracle backend has full support for SOCI's [bulk operations](../statements.html#bulk) interface.
 
-#### <a name="transactions"></a> Transactions
+### Transactions
 
 [Transactions](../statements.html#transactions) are also fully supported by the Oracle backend,
 although transactions with non-default isolation levels have to be managed by explicit SQL statements.
 
-#### <a name="blob"></a> blob Data Type
+### blob Data Type
 
 The Oracle backend supports working with data stored in columns of type Blob, via SOCI's [blob](../exchange.html#blob) class.
 
-#### <a name="rowid"></a> rowid Data Type
+### rowid Data Type
 
 Oracle rowid's are accessible via SOCI's [rowid](../reference.html#rowid) class.
 
-#### <a name="nested"></a> Nested Statements
+### Nested Statements
 
 The Oracle backend supports selecting into objects of type `statement`, so that you may work with nested sql statements and PL/SQL cursors:
 
@@ -166,11 +148,11 @@ The Oracle backend supports selecting into objects of type `statement`, so that 
         std::cout << name << '\n';
     }
 
-#### <a name="stored"></a> Stored Procedures
+### Stored Procedures
 
 Oracle stored procedures can be executed by using SOCI's [procedure](../statements.html#procedures) class.
 
-### <a name="native"></a> Acessing the native database API
+## Native API Access
 
 SOCI provides access to underlying datbabase APIs via several `get_backend()` functions, as described in the [Beyond SOCI](../beyond.html) documentation.
 
@@ -201,9 +183,9 @@ The Oracle backend provides the following concrete classes for navite API access
   </tbody>
 </table>
 
-### <a name="extensions"></a> Backend-specific extensions
+## Backend-specific extensions
 
-#### <a name="oraclesocierror"></a> oracle_soci_error
+### oracle_soci_error
 
 The Oracle backend can throw instances of class `oracle_soci_error`, which is publicly derived from `soci_error` and has an additional public `err_num_` member containing the Oracle error code:
 

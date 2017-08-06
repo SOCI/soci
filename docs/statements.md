@@ -1,16 +1,6 @@
-## Statements, procedures and transactions
+# Statements
 
-* [Statement preparation and repeated execution](#preparation)
-* [Rowset and iterator-based access](#rowset)
-* [Bulk operations](#bulk)
-* [Stored procedures](#procedures)
-* [Transactions](#transactions)
-* [Portable DDL](#ddl)
-* [Metadata queries](#metadata)
-* [Portable DML](#dml)
-* [Basic logging support](#logging)
-
-### <a name="preparation"></a> Statement preparation and repeated execution
+## Prepared statement
 
 Consider the following examples:
 
@@ -26,10 +16,13 @@ Consider the following examples:
         sql << "insert into numbers(value) values(:val)", use(i);
     }
 
-
 Both examples will populate the table `numbers` with the values from `0` to `99`.
 
-The problem is that in both examples, not only the statement execution is repeated 100 times, but also the statement parsing and preparation. This means unnecessary overhead, even if some of the database servers are likely to optimize the second case. In fact, more complicated queries are likely to suffer in terms of lower performance, because finding the optimal execution plan is quite expensive and here it would be needlessly repeated.
+The problem is that in both examples, not only the statement execution is repeated 100 times, but also the statement parsing and preparation.
+This means unnecessary overhead, even if some of the database servers are likely to optimize the second case.
+In fact, more complicated queries are likely to suffer in terms of lower performance, because finding the optimal execution plan is quite expensive and here it would be needlessly repeated.
+
+### Statement preparation
 
 The following example uses the class `statement` explicitly, by preparing the statement only once and repeating its execution with changing data (note the use of `prepare` member of `session` class):
 
@@ -42,16 +35,18 @@ The following example uses the class `statement` explicitly, by preparing the st
         st.execute(true);
     }
 
-The `true` parameter given to the `execute` method indicates that the actual data exchange is wanted, so that the meaning of the whole example is "prepare the statement and exchange the data for each value of variable `i`".
+The `true` parameter given to the `execute` method indicates that the actual data exchange is wanted, so that the meaning of the whole example is
 
-##### Portability note:
+> "prepare the statement and exchange the data for each value of variable `i`".
+
+### Portability note:
 
 The above syntax is supported for all backends, even if some database server does not actually provide this functionality - in which case the library will internally execute the query in a single phase, without really separating the statement preparation from execution.
 
-For PostgreSQL servers older than 8.0 it is necessary to define the `SOCI_POSTGRESQL_NOPREPARE` macro while compiling the library to fall back to this one-phase behaviour. Simply, pass `-DSOCI_POSTGRESQL_NOPREPARE=ON` variable to CMake.
+For PostgreSQL servers older than 8.0 it is necessary to define the `SOCI_POSTGRESQL_NOPREPARE` macro while compiling the library to fall back to this one-phase behaviour.
+Simply, pass `-DSOCI_POSTGRESQL_NOPREPARE=ON` variable to CMake.
 
-
-### <a name="rowset"></a> Rowset and iterator-based access
+## Rowset and iterator
 
 The `rowset` class provides an alternative means of executing queries and accessing results using STL-like iterator interface.
 
@@ -59,8 +54,8 @@ The `rowset_iterator` type is compatible with requirements defined for input ite
 
 The `rowset` itself can be used only with select queries.
 
-The following example creates an instance of the `rowset` class and binds query results into elements of `int` type - in this query only one result column is expected. After executing the query the code iterates through the query result using `rowset_iterator`:
-
+The following example creates an instance of the `rowset` class and binds query results into elements of `int` type - in this query only one result column is expected.
+After executing the query the code iterates through the query result using `rowset_iterator`:
 
     rowset<int> rs = (sql.prepare << "select values from numbers");
 
@@ -70,7 +65,6 @@ The following example creates an instance of the `rowset` class and binds query 
     }
 
 Another example shows how to retrieve more complex results, where `rowset` elements are of type `row` and therefore use [dynamic bindings](exchange.html#dynamic):
-
 
     // person table has 4 columns
 
@@ -87,21 +81,23 @@ Another example shows how to retrieve more complex results, where `rowset` eleme
              << "Gender: " << row.get<string>(3) << endl;
     }
 
-`rowset_iterator` can be used with standard algorithms as well:
-
+The `rowset_iterator` can be used with standard algorithms as well:
 
     rowset<string> rs = (sql.prepare << "select firstname from person");
 
     std::copy(rs.begin(), rs.end(), std::ostream_iterator<std::string>(std::cout, "\n"));
 
-Above, the query result contains a single column which is bound to `rowset` element of type of `std::string`. All records are sent to standard output using the `std::copy` algorithm.
+Above, the query result contains a single column which is bound to `rowset` element of type of `std::string`.
+All records are sent to standard output using the `std::copy` algorithm.
 
-### Bulk operations
+## Bulk operations
 
-When using some databases, further performance improvements may be possible by having the underlying database API group operations together to reduce network roundtrips. SOCI makes such bulk operations possible by supporting `std::vector` based types.
+When using some databases, further performance improvements may be possible by having the underlying database API group operations together to reduce network roundtrips.
+SOCI makes such bulk operations possible by supporting `std::vector` based types.
 
-The following example presents how to insert 100 records in 4 batches. It is also important to note, that size of vector remains equal in every batch interaction. This ensures vector is not reallocated and, what's crucial for the bulk trick, new data should be pushed to the vector before every call to `statement::execute`:
-
+The following example presents how to insert 100 records in 4 batches.
+It is also important to note, that size of vector remains equal in every batch interaction.
+This ensures vector is not reallocated and, what's crucial for the bulk trick, new data should be pushed to the vector before every call to `statement::execute`:
 
     // Example 3.
     void fill_ids(std::vector<int>& ids)
@@ -138,9 +134,11 @@ It is also possible to read all the numbers written in the above examples:
         cout << i << '\n';
     }
 
-In the above example, the `execute` method is called with the default parameter `false`. This means that the statement should be executed, but the actual data exchange will be performed later.
+In the above example, the `execute` method is called with the default parameter `false`.
+This means that the statement should be executed, but the actual data exchange will be performed later.
 
-Further `fetch` calls perform the actual data retrieval and cursor traversal. The *end-of-cursor* condition is indicated by the `fetch` function returning `false`.
+Further `fetch` calls perform the actual data retrieval and cursor traversal.
+The *end-of-cursor* condition is indicated by the `fetch` function returning `false`.
 
 The above code example should be treated as an idiomatic way of reading many rows of data, *one at a time*.
 
@@ -149,7 +147,8 @@ It is further possible to select records in batches into `std::vector` based typ
     std::vector<int> valsOut(100);
     sql << "select val from numbers", into(valsOut);
 
-Above, the value `100` indicates that no more values should be retrieved, even if it would be otherwise possible. If there are less rows than asked for, the vector will be appropriately down-sized.
+Above, the value `100` indicates that no more values should be retrieved, even if it would be otherwise possible.
+If there are less rows than asked for, the vector will be appropriately down-sized.
 
 The `statement::execute()` and `statement::fetch()` functions can also be used to repeatedly select all rows returned by a query into a vector based type:
 
@@ -171,9 +170,11 @@ The `statement::execute()` and `statement::fetch()` functions can also be used t
         valsOut.resize(BATCH_SIZE);
     }
 
-Assuming there are 100 rows returned by the query, the above code will retrieve and print all of them. Since the output vector was created with size 30, it will take (at least) 4 calls to `fetch()` to retrieve all 100 values. Each call to `fetch()` can potentially resize the vector to a size less than its initial size
-- how often this happens depends on the underlying database implementation. This explains why the `resize(BATCH_SIZE)` operation is needed - it is there to ensure that each time the `fetch()` is called, the vector is ready to accept the next bunch of values. Without this operation, the vector *might* be getting smaller with subsequent iterations of the loop, forcing more iterations to be performed (because *all* rows will be read anyway), than really needed.
-
+Assuming there are 100 rows returned by the query, the above code will retrieve and print all of them.
+Since the output vector was created with size 30, it will take (at least) 4 calls to `fetch()` to retrieve all 100 values.
+Each call to `fetch()` can potentially resize the vector to a size less than its initial size - how often this happens depends on the underlying database implementation.
+This explains why the `resize(BATCH_SIZE)` operation is needed - it is there to ensure that each time the `fetch()` is called, the vector is ready to accept the next bunch of values.
+Without this operation, the vector *might* be getting smaller with subsequent iterations of the loop, forcing more iterations to be performed (because *all* rows will be read anyway), than really needed.
 
 Note the following details about the above examples:
 
@@ -182,9 +183,18 @@ Note the following details about the above examples:
 
 Taking these points under consideration, the above code example should be treated as an idiomatic way of reading many rows by bunches of requested size.
 
-### Statement caching
+### Portability note
 
-Some backends have some facilities to improve statement parsing and compilation to limit overhead when creating commonly used query. But for backends that does not support this kind optimization you can keep prepared statement and use it later with new references. To do such, prepare a statement as usual, you have to use `exchange` to bind new variables to statement object, then `execute` statement and finish by cleaning bound references with `bind_clean_up`.
+Actually, all supported backends guarantee that the requested number of rows will be read with each fetch and that the vector will never be down-sized, unless for the last fetch, when the end of rowset condition is met.
+This means that the manual vector resizing is in practice not needed - the vector will keep its size until the end of rowset.
+The above idiom, however, is provided with future backends in mind, where the constant size of the vector might be too expensive to guarantee and where allowing `fetch` to down-size the vector even before reaching the end of rowset might buy some performance gains.
+
+
+## Statement caching
+
+Some backends have some facilities to improve statement parsing and compilation to limit overhead when creating commonly used query.
+But for backends that does not support this kind optimization you can keep prepared statement and use it later with new references.
+To do such, prepare a statement as usual, you have to use `exchange` to bind new variables to statement object, then `execute` statement and finish by cleaning bound references with `bind_clean_up`.
 
     sql << "CREATE TABLE test(a INTEGER)";
 
@@ -223,215 +233,3 @@ Some backends have some facilities to improve statement parsing and compilation 
         for (int i = 0; i < v.size(); ++i)
             std::cout << "value " << i << ": " << v[i] << std::endl;
     }
-
-
-##### Portability note:
-Actually, all supported backends guarantee that the requested number of rows will be read with each fetch and that the vector will never be down-sized, unless for the last fetch, when the end of rowset condition is met. This means that the manual vector resizing is in practice not needed - the vector will keep its size until the end of rowset. The above idiom, however, is provided with future backends in mind, where the constant size of the vector might be too expensive to guarantee and where allowing `fetch` to down-size the vector even before reaching the end of rowset might buy some performance gains.
-
-
-### <a name="procedures"></a> Stored procedures
-
-The `procedure` class provides a convenient mechanism for calling stored procedures:
-
-    sql << "create or replace procedure echo(output out varchar2,"
-           "input in varchar2) as "
-           "begin output := input; end;";
-
-    std::string in("my message");
-    std::string out;
-    procedure proc = (sql.prepare << "echo(:output, :input)",
-                                     use(out, "output"),
-                                     use(in, "input"));
-    proc.execute(true);
-    assert(out == "my message");
-
-
-##### Portability note:
-
-The above way of calling stored procedures is provided for portability of the code that might need it. It is of course still possible to call procedures or functions using the syntax supported by the given database server.
-
-
-### <a name="transactions"></a> Transactions
-
-The SOCI library provides the following members of the `session` class for transaction management:
-
-* `void begin();`
-* `void commit();`
-* `void rollback();`
-
-In addition to the above there is a RAII wrapper that allows to associate the transaction with the given scope of code:
-
-    class transaction
-    {
-    public:
-        explicit transaction(session & sql);
-
-        ~transaction();
-
-        void commit();
-        void rollback();
-
-    private:
-        // ...
-    };
-
-The object of class `transaction` will roll back automatically when the object is destroyed
-(usually as a result of leaving the scope) *and* when the transaction was not explicitly committed before that.
-
-A typical usage pattern for this class might be:
-
-    {
-        transaction tr(sql);
-
-        sql << "insert into ...";
-        sql << "more sql queries ...";
-        // ...
-
-        tr.commit();
-    }
-
-With the above pattern the transaction is committed only when the code successfully reaches the end of block. If some exception is thrown before that, the scope will be left without reaching the final statement and the transaction object will automatically roll back in its destructor.
-
-### <a name="ddl"></a> Portable DDL
-
-SOCI supports some basic methods to construct portable DDL queries. That is, instead of writing explicit SQL statement for creating or modifying tables, it is possible to use dedicated SOCI functions, which prepare appropriate DDL statements behind the scenes, thus enabling the user application to create basic database structures in a way that is portable across different database servers. Note that the actual support for these functions depends on the actual backend implementation.
-
-It is possible to create a new table in a single statement:
-
-    sql.create_table("t1").column("i", soci::dt_integer).column("j", soci::dt_integer);
-
-Above, table "t1" will be created with two columns ("i", "j") of type integer.
-
-It is also possible to build similar statements piece by piece, which is useful if the table structure is computed dynamically:
-
-    {
-        soci::ddl_type ddl = sql.create_table("t2");
-        ddl.column("i", soci::dt_integer);
-        ddl.column("j", soci::dt_integer);
-        ddl.column("k", soci::dt_integer)("not null");
-        ddl.primary_key("t2_pk", "j");
-    }
-
-The actual statement is executed at the end of above block, when the ddl object goes out of scope. The "not null" constraint was added to the definition of column "k" explicitly and in fact any piece of SQL can be inserted this way - with the obvious caveat of having limited portability (the "not null" piece seems to be universaly portable).
-
-Columns can be added to and dropped from already existing tables as well:
-
-    sql.add_column("t1", "k", soci::dt_integer);
-    // or with constraint:
-    //sql.add_column("t1", "k", soci::dt_integer)("not null");
-    
-    sql.drop_column("t1", "i");
-
-If needed, precision and scale can be defined with additional integer arguments to functions that create columns:
-
-    sql.add_column("t1", "s", soci::dt_string, precision);
-    sql.add_column("t1", "d", soci::dt_double, precision, scale);
-
-Tables with foreign keys to each other can be also created:
-
-    {
-        soci::ddl_type ddl = sql.create_table("t3");
-        ddl.column("x", soci::dt_integer);
-        ddl.column("y", soci::dt_integer);
-        ddl.foreign_key("t3_fk", "x", "t2", "j");
-    }
-
-Tables can be dropped, too:
-
-    sql.drop_table("t1");
-    sql.drop_table("t3");
-    sql.drop_table("t2");
-
-Note that due to the differences in the set of types that are actually supported on the target database server, the type mappings, as well as precision and scales, might be different, even in the way that makes them impossible to portably recover with metadata queries.
-
-In the category of portability utilities, the following functions are also available:
-
-    sql.empty_blob()
-
-the above call returns the string containing expression that represents an empty BLOB value in the given target backend. This expression can be used as part of a bigger SQL statement, for example:
-
-    sql << "insert into my_table (x) values (" + sql.empty_blob() + ")";
-
-and:
-
-    sql.nvl()
-
-the above call returns the string containing the name of the SQL function that implements the NVL or COALESCE operation in the given target backend, for example:
-
-    sql << "select name, " + sql.nvl() + "(phone, \'UNKNOWN\') from phone_book";
-
-Note: `empty_blob` and `nvl` are implemented in Oracle, PostgreSQL and SQLite3 backends; for other backends their behaviour is as for PostgreSQL.
-
-### <a name="metadata"></a> Metadata queries
-
-It is possible to portably query the database server to obtain basic metadata information.
-
-In order to get the list of table names in the current schema:
-
-    std::vector<std::string> names(100);
-    sql.get_table_names(), into(names);
-
-alternatively:
-
-    std::string name;
-    soci::statement st = (sql.prepare_table_names(), into(name));
-    
-    st.execute();
-    while (st.fetch())
-    {
-        // ...
-    }
-
-Similarly, to get the description of all columns in the given table:
-
-    soci::column_info ci;
-    soci::statement st = (sql.prepare_column_descriptions(table_name), into(ci));
-
-    st.execute();
-    while (st.fetch())
-    {
-        // ci fields describe each column in turn
-    }
-
-
-### <a name="dml"></a> Portable DDL
-
-Only two related functions are currently available in this category:
-`get_dummy_from_clause()` can be used to construct select statements that don't
-operate on any table in a portable way, as while some databases allow simply
-omitting the from clause in this case, others -- e.g. Oracle -- still require
-providing some syntactically valid from clause even if it is not used. To use
-this function, simply append the result of this function to the statement:
-
-    double databasePi;
-    session << ("select 4*atan(1)" + session.get_dummy_from_clause()),
-               into(databasePi);
-
-
-If just the name of the dummy table is needed, and not the full clause, you can
-use `get_dummy_from_table()` to obtain it.
-
-Notice that both functions require the session to be connected as their result
-depends on the database it is connected to.
-
-
-### <a name="logging"></a> Basic logging support
-
-The following members of the `session` class support the basic logging functionality:
-
-* `void set_log_stream(std::ostream * s);`
-* `std::ostream * get_log_stream() const;`
-* `std::string get_last_query() const;`
-
-The first two functions allow to set the user-provided output stream object for logging. The `NULL` value, which is the default, means that there is no logging. An example use might be:
-
-    session sql(oracle, "...");
-
-    ofstream file("my_log.txt");
-    sql.set_log_stream(&file);
-
-    // ...
-
-Each statement logs its query string before the preparation step (whether explicit or implicit) and therefore logging is effective whether the query succeeds or not. Note that each prepared query is logged only once, independent on how many times it is executed.
-
-The `get_last_query` function allows to retrieve the last used query.

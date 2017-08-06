@@ -1,15 +1,6 @@
-## Installation
+# Installation
 
-* [Requirements](#requirements)
-* [Downloading](#downloading)
-* [Building using CMake](#building)
-    * [On Unix](#unix)
-    * [On Windows](#windows)
-* [Building using classic Makefiles on Unix](#makefiles)
-* [Running Tests](#regression)
-* [Usage](#library)
-
-### <a name="requirements"></a> Requirements
+## Requirements
 
 Below is an overall list of SOCI core:
 
@@ -27,31 +18,67 @@ and backend-specific dependencies:
 * [libpq](http://www.postgresql.org/docs/8.4/static/libpq.html) - C API to PostgreSQL
 * [SQLite 3](http://www.sqlite.org/) library
 
-### <a name="downloading"></a> Downloading
+## Downloads
 
-Download package with latest release of the SOCI source code: [soci-X.Y.Z](https://sourceforge.net/projects/soci/), where X.Y.Z is the version number. Unpack the archive.
+Download package with latest release of the SOCI source code: [soci-X.Y.Z](https://sourceforge.net/projects/soci/), where X.Y.Z is the version number.
+Unpack the archive.
 
 You can always clone SOCI from the Git repository:
 
     git clone git://github.com/SOCI/soci.git
 
-### <a name="building"></a> Building using CMake
+## Building with CMake
 
 SOCI is configured to build using [CMake](http://cmake.org/) system in version 2.8+.
 
-The build configuration allows to control various aspects of compilation and installation by setting common CMake variables that change behaviour, describe system or control build (see [CMake help](http://cmake.org/cmake/help/documentation.html)) as well as SOCI-specific variables described below. All these variables are available regardless of platform or compilation toolset used.
+The build configuration allows to control various aspects of compilation and installation by setting common CMake variables that change behaviour, describe system or control build (see [CMake help](http://cmake.org/cmake/help/documentation.html)) as well as SOCI-specific variables described below.
+All these variables are available regardless of platform or compilation toolset used.
 
-Running CMake from the command line allows to set variables in the CMake cache with the following syntax: `-DVARIABLE:TYPE=VALUE`. If you are new to CMake, you may find the tutorial [Running CMake](http://cmake.org/cmake/help/runningcmake.html") helpful.
+Running CMake from the command line allows to set variables in the CMake cache with the following syntax: `-DVARIABLE:TYPE=VALUE`.
+If you are new to CMake, you may find the tutorial [Running CMake](http://cmake.org/cmake/help/runningcmake.html") helpful.
 
-The following tables provide summary of variables accepted by CMake scripts configuring SOCI build. The lists consist of common variables for SOCI core and all backends as well as variables specific to SOCI backends and their direct dependencies.
+### Running CMake on Unix
 
-#### List of a few essential CMake variables
+Steps outline using GNU Make makefiles:
+
+    $ mkdir build
+    $ cd build
+    $ cmake -G "Unix Makefiles" -DWITH_BOOST=OFF -DWITH_ORACLE=OFF (...) /path/to/soci-X.Y.Z
+    $ make
+    $ make install
+
+### Running CMake on Windows
+
+Steps outline using Visual Studio 2010 and MSBuild:
+
+    > mkdir build
+    > cd build
+    > cmake -G "Visual Studio 10" -DWITH_BOOST=OFF -DWITH_ORACLE=OFF (...) C:\path\to\soci-X.Y.Z
+    > msbuild.exe SOCI.sln
+
+### CMake configuration
+
+By default, CMake will try to determine availability of all depdendencies automatically.
+If you are lucky, you will not need to specify any of the CMake variables explained below.
+However, if CMake reports some of the core or backend-specific dependencies as missing, you will need specify relevant variables to tell CMake where to look for the required components.
+
+CMake configures SOCI build performing sequence of steps.
+Each subsequent step is dependant on result of previous steps corresponding with particular feature.
+First, CMake checks system platform and compilation toolset.
+Next, CMake tries to find all external dependencies.
+Then, depending on the results of the dependency check, CMake determines SOCI backends which are possible to build.
+The SOCI-specific variables described below provide users with basic control of this behaviour.
+
+The following sections provide summary of variables accepted by CMake scripts configuring SOCI build.
+The lists consist of common variables for SOCI core and all backends as well as variables specific to SOCI backends and their direct dependencies.
+
+List of a few essential CMake variables:
 
 * CMAKE_BUILD_TYPE - string - Specifies the build type for make based generators (see CMake [help](http://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_BUILD_TYPE)).
 * CMAKE_INSTALL_PREFIX - path - Install directory used by install command (see CMake [help](http://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_INSTALL_PREFIX)).
 * CMAKE_VERBOSE_MAKEFILE - boolean - If ON, create verbose makefile (see CMake [help](http://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_VERBOSE_MAKEFILE)).
 
-#### List of variables to control common SOCI features and dependencies
+List of variables to control common SOCI features and dependencies:
 
 * SOCI_STATIC - boolean - Request to build static libraries, along with shared, of SOCI core and all successfully configured backends.
 * SOCI_TESTS - boolean - Request to build regression tests for SOCI core and all successfully configured backends.
@@ -59,19 +86,13 @@ The following tables provide summary of variables accepted by CMake scripts conf
 
 #### IBM DB2
 
-#### SOCI DB2 backend configuration
-
 * WITH_DB2 - boolean - Should CMake try to detect IBM DB2 Call Level Interface (CLI) library.
 * DB2_INCLUDE_DIR - string - Path to DB2 CLI include directories where CMake should look for `sqlcli1.h` header.
 * DB2_LIBRARIES - string - Full paths to  `db2` or `db2api` libraries to link SOCI against to enable the backend support.
 * SOCI_DB2 - boolean - Requests to build [DB2](backends/db2.html) backend. Automatically switched on, if `WITH_DB2` is set to ON.
 * SOCI_DB2_TEST_CONNSTR - string - See [DB2 backend reference](backends/db2.html) for details. Example: `-DSOCI_DB2_TEST_CONNSTR:STRING="DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;autocommit=off"`
 
-
-
 #### Firebird
-
-##### SOCI Firebird backend configuration
 
 * WITH_FIREBIRD - boolean - Should CMake try to detect Firebird client library.
 * FIREBIRD_INCLUDE_DIR - string - Path to Firebird include directories where CMake should look for `ibase.h` header.
@@ -81,8 +102,6 @@ The following tables provide summary of variables accepted by CMake scripts conf
 
 #### MySQL
 
-##### SOCI MySQL backend configuration
-
 * WITH_MYSQL - boolean - Should CMake try to detect [mysqlclient](http://dev.mysql.com/doc/refman/5.0/en/c.html) libraries providing MySQL C API. Note, currently the [mysql_config](http://dev.mysql.com/doc/refman/5.0/en/building-clients.html) program is not being used.
 * MYSQL_DIR - string - Path to MySQL installation root directory. CMake will scan subdirectories `MYSQL_DIR/include` and `MYSQL_DIR/lib` respectively for MySQL headers and libraries.
 * MYSQL_INCLUDE_DIR - string - Path to MySQL include directory where CMake should look for `mysql.h` header.
@@ -90,10 +109,7 @@ The following tables provide summary of variables accepted by CMake scripts conf
 * SOCI_MYSQL - boolean - Requests to build [MySQL](backends/mysql.html) backend. Automatically switched on, if `WITH_MYSQL` is set to ON.
 * SOCI_MYSQL_TEST_CONNSTR - string - Connection string to MySQL test database. Format of the string is explained [MySQL backend refernece](backends/mysql.html). Example: `-DSOCI_MYSQL_TEST_CONNSTR:STRING="db=mydb user=mloskot password=secret"`
 
-
 #### ODBC
-
-##### SOCI ODBC backend configuration
 
 * WITH_ODBC - boolean - Should CMake try to detect ODBC libraries. On Unix systems, CMake tries to find [unixODBC](http://www.unixodbc.org/) or [iODBC](http://www.iodbc.org/) implementations.
 * ODBC_INCLUDE_DIR - string - Path to ODBC implementation include directories where CMake should look for `sql.h` header.
@@ -103,8 +119,6 @@ The following tables provide summary of variables accepted by CMake scripts conf
 
 #### Oracle
 
-##### SOCI Oracle backend configuration
-
 * WITH_ORACLE - boolean - Should CMake try to detect [Oracle Call Interface (OCI)](http://en.wikipedia.org/wiki/Oracle_Call_Interface) libraries.
 * ORACLE_INCLUDE_DIR - string - Path to Oracle include directory where CMake should look for `oci.h` header.
 * ORACLE_LIBRARIES - string - Full paths to libraries to link SOCI against to enable the backend support.
@@ -112,8 +126,6 @@ The following tables provide summary of variables accepted by CMake scripts conf
 * SOCI_ORACLE_TEST_CONNSTR - string - Connection string to Oracle test database. Format of the string is explained [Oracle backend reference](backends/oracle.html). Example: `-DSOCI_ORACLE_TEST_CONNSTR:STRING="service=orcl user=scott password=tiger"`
 
 #### PostgreSQL
-
-##### SOCI PostgreSQL backend configuration
 
 * WITH_POSTGRESQL - boolean - Should CMake try to detect PostgreSQL client interface libraries. SOCI relies on [libpq](http://www.postgresql.org/docs/9.0/interactive/libpq.html") C library.
 * POSTGRESQL_INCLUDE_DIR - string - Path to PostgreSQL include directory where CMake should look for `libpq-fe.h` header.
@@ -127,48 +139,26 @@ The following tables provide summary of variables accepted by CMake scripts conf
 
 #### Empty (sample backend)
 
-##### SOCI empty sample backend configuration
-
 * SOCI_EMPTY - boolean - Builds the [sample backend](backends.html) called Empty. Always ON by default.
 * SOCI_EMPTY_TEST_CONNSTR - string - Connection string used to run regression tests of the Empty backend. It is a dummy value. Example: `-DSOCI_EMPTY_TEST_CONNSTR="dummy connection"`
 
-By default, CMake will try to determine availability of all depdendencies automatically. If you are lucky, you will not need to specify any of the CMake variables explained above. However, if CMake reports some of the core or backend-specific dependencies as missing, you will need specify relevant variables to tell CMake where to look for the required components.
+-----
 
-CMake configures SOCI build performing sequence of steps. Each subsequent step is dependant on result of previous steps corresponding with particular feature. First, CMake checks system platform and compilation toolset. Next, CMake tries to find all external dependencies. Then, depending on the results of the dependency check, CMake determines SOCI backends which are possible to build. The SOCI-specific variables described above provide users with basic control of this behaviour.
+## Building with Makefiles on Unix
 
-#### <a name="unix"></a> Building using CMake on Unix
+*NOTE: These (classic) Makefiles have not been maintained for long time.
+The officially maintained build configuration is CMake.
+If you still want to use these Makefiles, you've been warned that you may need to patch them.*
 
-Short version using GNU Make makefiles:
-
-    $ mkdir build
-    $ cd build
-    $ cmake -G "Unix Makefiles" -DWITH_BOOST=OFF -DWITH_ORACLE=OFF (...) ../soci-X.Y.Z
-    $ make
-    $ make install
-
-
-#### <a name="windows"></a> Building using CMake on Windows
-
-
-Short version using Visual Studio 2010 and MSBuild:
-
-    C:\>MKDIR build
-    C:\>cd build
-    C:\build>cmake -G "Visual Studio 10" -DWITH_BOOST=OFF -DWITH_ORACLE=OFF (...) ..\soci-X.Y.Z
-    C:\build>msbuild.exe SOCI.sln
-
-
-### <a name="makefiles"></a> Building using classic Makefiles on Unix (deprecated)
-
-*NOTE: These Makefiles have not been maintained for long time. The officially maintained build configuration is CMake. If you still want to use these Makefiles, you've been warned that you may need to patch them.*
-
-The classic set of Makefiles for Unix/Linux systems is provided for those users who need complete control over the whole processand who can benefit from the basic scaffolding that they can extend on their own. In this sense, the basic Makefiles are supposed to provide a minimal starting point for custom experimentation and are not intended to be a complete build/installation solution.
+The classic set of Makefiles for Unix/Linux systems is provided for those users who need complete control over the whole processand who can benefit from the basic scaffolding that they can extend on their own.
+In this sense, the basic Makefiles are supposed to provide a minimal starting point for custom experimentation and are not intended to be a complete build/installation solution.
 At the same time, they are complete in the sense that they can compile the library with all test programs and for some users this level of support will be just fine.
 
-The `core` directory of the library distribution contains the `Makefile.basic` that can be used to compile the core part of the library. Run `make -f Makefile.basic` or `make -f Makefile.basic shared` to get the static and shared versions, respectively. Similarly, the `backends/<i>name</i>` directory contains the backend part for each supported backend with the appropriate `Makefile.basic` and the `backends/<i>name</i>/test` directory contains the test program for the given backend.
+The `core` directory of the library distribution contains the `Makefile.basic` that can be used to compile the core part of the library. 
+Run `make -f Makefile.basic` or `make -f Makefile.basic shared` to get the static and shared versions, respectively.
+Similarly, the `backends/<i>name</i>` directory contains the backend part for each supported backend with the appropriate `Makefile.basic` and the `backends/<i>name</i>/test` directory contains the test program for the given backend.
 
-For example, the simplest way to compile the static version of the
-library and the test program for PostgreSQL is:
+For example, the simplest way to compile the static version of the library and the test program for PostgreSQL is:
 
     $ cd src/core
     $ make -f Makefile.basic
@@ -177,18 +167,21 @@ library and the test program for PostgreSQL is:
     $ cd test
     $ make -f Makefile.basic
 
-
-For each backend and its test program, the `Makefile.basic`s contain the variables that can have values specific to the given environment - they usually name the include and library paths. These variables are placed at the beginning of the `Makefile.basic`s. Please review their values in case of any compilation problems.
+For each backend and its test program, the `Makefile.basic`s contain the variables that can have values specific to the given environment - they usually name the include and library paths.
+These variables are placed at the beginning of the `Makefile.basic`s.
+Please review their values in case of any compilation problems.
 
 The Makefiles for test programs can be a good starting point to find out correct compiler and linker options.
 
-### <a name="regression"></a> Running regression tests
+## Running tests
 
-The process of running regression tests highly depends on user's environment and build configuration, so it may be quite involving process. The CMake configuration provides variables to allow users willing to run the tests to configure build and specify database connection parameters (see the tables above for variable names).
+The process of running regression tests highly depends on user's environment and build configuration, so it may be quite involving process.
+The CMake configuration provides variables to allow users willing to run the tests to configure build and specify database connection parameters (see the lists above for variable names).
 
 In order to run regression tests, configure and build desired SOCI backends and prepare working database instances for them.
 
-While configuring build with CMake, specify `SOCI_TESTS=ON` to enable building regression tests. Also, specify `SOCI_{backend name}_TEST_CONNSTR` variables to tell the tests runner how to connect with your test databases.
+While configuring build with CMake, specify `SOCI_TESTS=ON` to enable building regression tests.
+Also, specify `SOCI_{backend name}_TEST_CONNSTR` variables to tell the tests runner how to connect with your test databases.
 
 Dedicated `make test` target can be used to execute regression tests on build completion:
 
@@ -206,8 +199,10 @@ Dedicated `make test` target can be used to execute regression tests on build co
 
 In the example above, regression tests for the sample Empty backend and SQLite 3 backend are configured for execution by `make test` target.
 
-### <a name="library"></a> Libraries usage
+## Using library
 
-CMake build produces set of shared and static libraries for SOCI core and backends separately. On Unix, for example, `build/lib` directory will consist of the static libraries named like `libsoci_core.a`, `libsoci_sqlite3.a` and shared libraries with names like `libsoci_core.so.4.0.0`, `libsoci_sqlite3.so.4.0.0`, and so on.
+CMake build produces set of shared and static libraries for SOCI core and backends separately.
+On Unix, for example, `build/lib` directory will consist of the static libraries named like `libsoci_core.a`, `libsoci_sqlite3.a` and shared libraries with names like `libsoci_core.so.4.0.0`, `libsoci_sqlite3.so.4.0.0`, and so on.
 
-In order to use SOCI in your program, you need to specify your project build configuration with paths to SOCI headers and libraries, and specify linker to link against the libraries you want to use in your program.
+In order to use SOCI in your program, you need to specify your project build configuration with paths to SOCI headers and libraries.
+Then, tell the linker to link against the libraries you want to use in your program.
