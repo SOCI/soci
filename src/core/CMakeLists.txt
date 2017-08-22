@@ -60,6 +60,12 @@ if (SOCI_SHARED)
       INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/lib
       CLEAN_DIRECT_OUTPUT 1)
   endif()
+
+  target_include_directories(${SOCI_CORE_TARGET}
+      PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include>
+  )
+
 endif()
 
 # This adds definitions to all build configurations. SOCI_DEBUG_POSTFIX is passed to soci library
@@ -86,7 +92,16 @@ if (SOCI_STATIC)
     OUTPUT_NAME ${SOCI_CORE_TARGET_OUTPUT_NAME}
     PREFIX "lib"
     CLEAN_DIRECT_OUTPUT 1)
+
+  target_include_directories(${SOCI_CORE_TARGET_STATIC}
+      PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include>
+  )
+
 endif()
+
+
+
 
 #
 # Core installation
