@@ -47,14 +47,14 @@ public:
     typedef typename type_conversion<T>::base_type base_type;
 
     conversion_into_type(T & value)
-        : into_type<base_type>(details::base_value_holder<T>::val_, details::base_value_holder<T>::ownInd_)
+        : into_type<base_type>(base_value_holder<T>::val_, base_value_holder<T>::ownInd_)
         , value_(value)
-        , ind_(details::base_value_holder<T>::ownInd_)
+        , ind_(base_value_holder<T>::ownInd_)
     {
     }
 
     conversion_into_type(T & value, indicator & ind)
-        : into_type<base_type>(details::base_value_holder<T>::val_, ind)
+        : into_type<base_type>(base_value_holder<T>::val_, ind)
         , value_(value)
         , ind_(ind)
     {
@@ -65,7 +65,7 @@ private:
     void convert_from_base()
     {
         type_conversion<T>::from_base(
-            details::base_value_holder<T>::val_, ind_, value_);
+            base_value_holder<T>::val_, ind_, value_);
     }
 
     T & value_;
@@ -82,16 +82,16 @@ private:
 
 template <typename T>
 class conversion_use_type
-    : private details::base_value_holder<T>,
+    : private base_value_holder<T>,
       public use_type<typename type_conversion<T>::base_type>
 {
 public:
     typedef typename type_conversion<T>::base_type base_type;
 
     conversion_use_type(T & value, std::string const & name = std::string())
-        : use_type<base_type>(details::base_value_holder<T>::val_, details::base_value_holder<T>::ownInd_, name)
+        : use_type<base_type>(base_value_holder<T>::val_, base_value_holder<T>::ownInd_, name)
         , value_(value)
-        , ind_(details::base_value_holder<T>::ownInd_)
+        , ind_(base_value_holder<T>::ownInd_)
         , readOnly_(false)
     {
         // TODO: likely to be removed (SHA: c166625a28f7c907318134f625ff5acea7d9a1f8)
@@ -99,9 +99,9 @@ public:
     }
 
     conversion_use_type(T const & value, std::string const & name = std::string())
-        : use_type<base_type>(details::base_value_holder<T>::val_, details::base_value_holder<T>::ownInd_, name)
+        : use_type<base_type>(base_value_holder<T>::val_, base_value_holder<T>::ownInd_, name)
         , value_(const_cast<T &>(value))
-        , ind_(details::base_value_holder<T>::ownInd_)
+        , ind_(base_value_holder<T>::ownInd_)
         , readOnly_(true)
     {
         // TODO: likely to be removed (SHA: c166625a28f7c907318134f625ff5acea7d9a1f8)
@@ -110,7 +110,7 @@ public:
 
     conversion_use_type(T & value, indicator & ind,
             std::string const & name = std::string())
-        : use_type<base_type>(details::base_value_holder<T>::val_, ind, name)
+        : use_type<base_type>(base_value_holder<T>::val_, ind, name)
         , value_(value)
         , ind_(ind)
         , readOnly_(false)
@@ -121,7 +121,7 @@ public:
 
     conversion_use_type(T const & value, indicator & ind,
             std::string const & name = std::string())
-        : use_type<base_type>(details::base_value_holder<T>::val_, ind, name)
+        : use_type<base_type>(base_value_holder<T>::val_, ind, name)
         , value_(const_cast<T &>(value))
         , ind_(ind)
         , readOnly_(true)
@@ -141,14 +141,14 @@ public:
         if (readOnly_ == false)
         {
             type_conversion<T>::from_base(
-                details::base_value_holder<T>::val_, ind_, value_);
+                base_value_holder<T>::val_, ind_, value_);
         }
     }
 
     void convert_to_base()
     {
         type_conversion<T>::to_base(value_,
-            details::base_value_holder<T>::val_, ind_);
+            base_value_holder<T>::val_, ind_);
     }
 
 private:
@@ -178,7 +178,7 @@ struct base_vector_holder
 
 template <typename T>
 class conversion_into_type<std::vector<T> >
-    : private details::base_vector_holder<T>,
+    : private base_vector_holder<T>,
       public into_type<std::vector<typename type_conversion<T>::base_type> >
 {
 public:
@@ -189,9 +189,9 @@ public:
 
     conversion_into_type(std::vector<T> & value,
         std::size_t begin = 0, std::size_t * end = NULL)
-        : details::base_vector_holder<T>(value.size()),
+        : base_vector_holder<T>(value.size()),
         into_type<base_type>(
-            details::base_vector_holder<T>::vec_, ownInd_, begin, end),
+            base_vector_holder<T>::vec_, ownInd_, begin, end),
         value_(value),
         ownInd_(),
         ind_(ownInd_),
@@ -203,9 +203,9 @@ public:
 
     conversion_into_type(std::vector<T> & value, std::vector<indicator> & ind,
         std::size_t begin = 0, std::size_t * end = NULL)
-        : details::base_vector_holder<T>(value.size()),
+        : base_vector_holder<T>(value.size()),
         into_type<base_type>(
-            details::base_vector_holder<T>::vec_, ind, begin, end),
+            base_vector_holder<T>::vec_, ind, begin, end),
         value_(value),
         ind_(ind),
         begin_(begin),
@@ -220,7 +220,7 @@ public:
         // -> synchronize the base-value mirror to have the same size
 
         std::size_t const userSize = value_.size();
-        details::base_vector_holder<T>::vec_.resize(userSize);
+        base_vector_holder<T>::vec_.resize(userSize);
         
         return into_type<base_type>::size();
     }
@@ -229,7 +229,7 @@ public:
     {
         into_type<base_type>::resize(sz);
 
-        std::size_t actual_size = details::base_vector_holder<T>::vec_.size();
+        std::size_t actual_size = base_vector_holder<T>::vec_.size();
         value_.resize(actual_size);
         ind_.resize(actual_size);
     }
@@ -242,17 +242,17 @@ private:
             for (std::size_t i = begin_; i != *end_; ++i)
             {
                 type_conversion<T>::from_base(
-                    details::base_vector_holder<T>::vec_[i], ind_[i], value_[i]);
+                    base_vector_holder<T>::vec_[i], ind_[i], value_[i]);
             }
         }
         else
         {
-            std::size_t const sz = details::base_vector_holder<T>::vec_.size();
+            std::size_t const sz = base_vector_holder<T>::vec_.size();
 
             for (std::size_t i = 0; i != sz; ++i)
             {
                 type_conversion<T>::from_base(
-                    details::base_vector_holder<T>::vec_[i], ind_[i], value_[i]);
+                    base_vector_holder<T>::vec_[i], ind_[i], value_[i]);
             }
         }
     }
@@ -278,7 +278,7 @@ private:
 
 template <typename T>
 class conversion_use_type<std::vector<T> >
-     : private details::base_vector_holder<T>,
+     : private base_vector_holder<T>,
        public use_type<std::vector<typename type_conversion<T>::base_type> >
 {
 public:
@@ -289,9 +289,9 @@ public:
 
     conversion_use_type(std::vector<T> & value,
         std::string const & name=std::string())
-        : details::base_vector_holder<T>(value.size()),
+        : base_vector_holder<T>(value.size()),
         use_type<base_type>(
-            details::base_vector_holder<T>::vec_, ownInd_, 0, NULL, name),
+            base_vector_holder<T>::vec_, ownInd_, 0, NULL, name),
         value_(value),
         ownInd_(),
         ind_(ownInd_),
@@ -304,9 +304,9 @@ public:
     conversion_use_type(std::vector<T> & value,
         std::size_t begin, std::size_t * end,
         std::string const & name=std::string())
-        : details::base_vector_holder<T>(value.size()),
+        : base_vector_holder<T>(value.size()),
         use_type<base_type>(
-            details::base_vector_holder<T>::vec_, ownInd_, begin, end, name),
+            base_vector_holder<T>::vec_, ownInd_, begin, end, name),
         value_(value),
         ownInd_(),
         ind_(ownInd_),
@@ -319,9 +319,9 @@ public:
     conversion_use_type(std::vector<T> & value,
         std::vector<indicator> & ind,
         std::string const & name = std::string())
-        : details::base_vector_holder<T>(value.size()),
+        : base_vector_holder<T>(value.size()),
         use_type<base_type>(
-            details::base_vector_holder<T>::vec_, ind, 0, NULL, name),
+            base_vector_holder<T>::vec_, ind, 0, NULL, name),
         value_(value),
         ind_(ind),
         begin_(0),
@@ -334,9 +334,9 @@ public:
         std::vector<indicator> & ind,
         std::size_t begin, std::size_t * end,
         std::string const & name = std::string())
-        : details::base_vector_holder<T>(value.size()),
+        : base_vector_holder<T>(value.size()),
         use_type<base_type>(
-            details::base_vector_holder<T>::vec_, ind, begin, end, name),
+            base_vector_holder<T>::vec_, ind, begin, end, name),
         value_(value),
         ind_(ind),
         begin_(begin),
@@ -348,7 +348,7 @@ public:
 private:
     void convert_from_base()
     {
-        std::size_t const sz = details::base_vector_holder<T>::vec_.size();
+        std::size_t const sz = base_vector_holder<T>::vec_.size();
         value_.resize(sz);
         ind_.resize(sz);
         
@@ -357,7 +357,7 @@ private:
             for (std::size_t i = begin_; i != *end_; ++i)
             {
                 type_conversion<T>::from_base(
-                    details::base_vector_holder<T>::vec_[i], value_[i], ind_[i]);
+                    base_vector_holder<T>::vec_[i], value_[i], ind_[i]);
             }
         }
         else
@@ -365,7 +365,7 @@ private:
             for (std::size_t i = 0; i != sz; ++i)
             {
                 type_conversion<T>::from_base(
-                    details::base_vector_holder<T>::vec_[i], value_[i], ind_[i]);
+                    base_vector_holder<T>::vec_[i], value_[i], ind_[i]);
             }
         }
     }
@@ -373,7 +373,7 @@ private:
     void convert_to_base()
     {
         std::size_t const sz = value_.size();
-        details::base_vector_holder<T>::vec_.resize(sz);
+        base_vector_holder<T>::vec_.resize(sz);
         ind_.resize(sz);
         
         if (user_ranges_)
@@ -381,7 +381,7 @@ private:
             for (std::size_t i = begin_; i != *end_; ++i)
             {
                 type_conversion<T>::to_base(value_[i],
-                    details::base_vector_holder<T>::vec_[i], ind_[i]);
+                    base_vector_holder<T>::vec_[i], ind_[i]);
             }
         }
         else
@@ -389,7 +389,7 @@ private:
             for (std::size_t i = 0; i != sz; ++i)
             {
                 type_conversion<T>::to_base(value_[i],
-                    details::base_vector_holder<T>::vec_[i], ind_[i]);
+                    base_vector_holder<T>::vec_[i], ind_[i]);
             }
         }
     }
