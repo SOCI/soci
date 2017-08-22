@@ -28,7 +28,12 @@ namespace details
 template <typename T>
 struct base_value_holder
 {
+    base_value_holder()
+      : ownInd_(i_ok)
+    {}
+
     typename type_conversion<T>::base_type val_;
+    indicator ownInd_;
 };
 
 // Automatically create into_type from a type_conversion
@@ -42,17 +47,15 @@ public:
     typedef typename type_conversion<T>::base_type base_type;
 
     conversion_into_type(T & value)
-        : into_type<base_type>(details::base_value_holder<T>::val_, ownInd_)
+        : into_type<base_type>(details::base_value_holder<T>::val_, details::base_value_holder<T>::ownInd_)
         , value_(value)
-        , ownInd_()
-        , ind_(ownInd_)
+        , ind_(details::base_value_holder<T>::ownInd_)
     {
     }
 
     conversion_into_type(T & value, indicator & ind)
         : into_type<base_type>(details::base_value_holder<T>::val_, ind)
         , value_(value)
-        , ownInd_(ind) // unused, just keep the pair of indicator(s) consistent
         , ind_(ind)
     {
     }
@@ -66,8 +69,6 @@ private:
     }
 
     T & value_;
-
-    indicator ownInd_;
 
     // ind_ refers to either ownInd_, or the one provided by the user
     // in any case, ind_ refers to some valid indicator
@@ -88,10 +89,9 @@ public:
     typedef typename type_conversion<T>::base_type base_type;
 
     conversion_use_type(T & value, std::string const & name = std::string())
-        : use_type<base_type>(details::base_value_holder<T>::val_, ownInd_ = i_ok, name)
+        : use_type<base_type>(details::base_value_holder<T>::val_, details::base_value_holder<T>::ownInd_, name)
         , value_(value)
-        , ownInd_(i_ok)
-        , ind_(ownInd_)
+        , ind_(details::base_value_holder<T>::ownInd_)
         , readOnly_(false)
     {
         // TODO: likely to be removed (SHA: c166625a28f7c907318134f625ff5acea7d9a1f8)
@@ -99,10 +99,9 @@ public:
     }
 
     conversion_use_type(T const & value, std::string const & name = std::string())
-        : use_type<base_type>(details::base_value_holder<T>::val_, ownInd_ = i_ok, name)
+        : use_type<base_type>(details::base_value_holder<T>::val_, details::base_value_holder<T>::ownInd_, name)
         , value_(const_cast<T &>(value))
-        , ownInd_(i_ok)
-        , ind_(ownInd_)
+        , ind_(details::base_value_holder<T>::ownInd_)
         , readOnly_(true)
     {
         // TODO: likely to be removed (SHA: c166625a28f7c907318134f625ff5acea7d9a1f8)
@@ -154,8 +153,6 @@ public:
 
 private:
     T & value_;
-
-    indicator ownInd_;
 
     // ind_ refers to either ownInd_, or the one provided by the user
     // in any case, ind_ refers to some valid indicator
