@@ -63,7 +63,7 @@ struct firebird_statement_backend;
 struct firebird_standard_into_type_backend : details::standard_into_type_backend
 {
     firebird_standard_into_type_backend(firebird_statement_backend &st)
-        : statement_(st), buf_(NULL)
+        : statement_(st), buf_(NULL), indISCHolder_(0)
     {}
 
     virtual void define_by_pos(int &position,
@@ -89,7 +89,7 @@ struct firebird_standard_into_type_backend : details::standard_into_type_backend
 struct firebird_vector_into_type_backend : details::vector_into_type_backend
 {
     firebird_vector_into_type_backend(firebird_statement_backend &st)
-        : statement_(st), buf_(NULL)
+        : statement_(st), buf_(NULL), indISCHolder_(0)
     {}
 
     virtual void define_by_pos(int &position,
