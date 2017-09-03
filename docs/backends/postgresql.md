@@ -57,6 +57,11 @@ Note that in the single-row operation:
 * bulk queries are not supported, and
 * in order to fulfill the expectations of the underlying client library, the complete rowset has to be exhausted before executing further queries on the same session.
 
+Also please note that single rows mode requires PostgreSQL 9 or later, both at
+compile- and run-time. If you need to support earlier versions of PostgreSQL,
+you can define `SOCI_POSTGRESQL_NOSINLGEROWMODE` when building the library to
+disable it.
+
 Once you have created a `session` object as shown above, you can use it to access the database, for example:
 
     int count;
