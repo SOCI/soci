@@ -13,8 +13,8 @@ using namespace soci;
 using namespace soci::details::firebird;
 
 firebird_blob_backend::firebird_blob_backend(firebird_session_backend &session)
-        : session_(session), from_db_(false), bhp_(0), loaded_(false),
-        max_seg_size_(0)
+	  : session_(session), bid_(), from_db_(false), bhp_(0), data_(),
+		loaded_(false), max_seg_size_(0)
 {}
 
 firebird_blob_backend::~firebird_blob_backend()
