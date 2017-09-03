@@ -40,7 +40,7 @@ void oracle_vector_into_type_backend::prepare_indicators(std::size_t size)
     rCodes_.resize(size);
 }
 
-void oracle_vector_into_type_backend::define_by_pos(
+void oracle_vector_into_type_backend::define_by_pos_bulk(
     int & position, void * data, exchange_type type,
     std::size_t begin, std::size_t * end)
 {

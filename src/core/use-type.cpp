@@ -167,7 +167,7 @@ void vector_use_type::bind(statement_impl & st, int & position)
     {
         if (end_ != NULL)
         {
-            backEnd_->bind_by_pos(position, data_, type_, begin_, end_);
+            backEnd_->bind_by_pos_bulk(position, data_, type_, begin_, end_);
         }
         else
         {
@@ -178,7 +178,7 @@ void vector_use_type::bind(statement_impl & st, int & position)
     {
         if (end_ != NULL)
         {
-            backEnd_->bind_by_name(name_, data_, type_, begin_, end_);
+            backEnd_->bind_by_name_bulk(name_, data_, type_, begin_, end_);
         }
         else
         {

@@ -88,7 +88,7 @@ public:
     vector_into_type_backend() {}
     virtual ~vector_into_type_backend() {}
 
-    virtual void define_by_pos(
+    virtual void define_by_pos_bulk(
         int & /* position */, void * /* data */, exchange_type /* type */,
         std::size_t /* begin */, std::size_t * /* end */)
     {
@@ -140,7 +140,7 @@ public:
     virtual ~vector_use_type_backend() {}
 
     virtual void bind_by_pos(int& position, void* data, exchange_type type) = 0;
-    virtual void bind_by_pos(int& /* position */, void* /* data */, exchange_type /* type */,
+    virtual void bind_by_pos_bulk(int& /* position */, void* /* data */, exchange_type /* type */,
         std::size_t /* begin */, std::size_t * /* end */)
     {
         throw soci_error("use bulk iterators are not supported with this backend");
@@ -149,7 +149,7 @@ public:
     virtual void bind_by_name(std::string const& name,
         void* data, exchange_type type) = 0;
 
-    virtual void bind_by_name(std::string const& /* name */,
+    virtual void bind_by_name_bulk(std::string const& /* name */,
         void* /* data */, exchange_type /* type */,
         std::size_t /* begin */, std::size_t * /* end */)
     {

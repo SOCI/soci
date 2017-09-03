@@ -31,7 +31,7 @@ using namespace soci::details;
 using namespace soci::details::postgresql;
 
 
-void postgresql_vector_use_type_backend::bind_by_pos(int & position,
+void postgresql_vector_use_type_backend::bind_by_pos_bulk(int & position,
     void * data, exchange_type type,
     std::size_t begin, std::size_t * end)
 {
@@ -44,7 +44,7 @@ void postgresql_vector_use_type_backend::bind_by_pos(int & position,
     end_var_ = full_size();
 }
 
-void postgresql_vector_use_type_backend::bind_by_name(
+void postgresql_vector_use_type_backend::bind_by_name_bulk(
     std::string const & name, void * data, exchange_type type,
     std::size_t begin, std::size_t * end)
 {

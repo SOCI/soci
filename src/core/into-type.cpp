@@ -70,7 +70,7 @@ void vector_into_type::define(statement_impl & st, int & position)
 
     if (end_ != NULL)
     {
-        backEnd_->define_by_pos(position, data_, type_, begin_, end_);
+        backEnd_->define_by_pos_bulk(position, data_, type_, begin_, end_);
     }
     else
     {
