@@ -163,7 +163,7 @@ void oracle_vector_use_type_backend::prepare_for_bind(
     }
 }
 
-void oracle_vector_use_type_backend::bind_by_pos(int & position,
+void oracle_vector_use_type_backend::bind_by_pos_bulk(int & position,
     void * data, exchange_type type,
     std::size_t begin, std::size_t * end)
 {
@@ -196,7 +196,7 @@ void oracle_vector_use_type_backend::bind_by_pos(int & position,
     }
 }
 
-void oracle_vector_use_type_backend::bind_by_name(
+void oracle_vector_use_type_backend::bind_by_name_bulk(
     std::string const &name, void *data, exchange_type type,
     std::size_t begin, std::size_t * end)
 {

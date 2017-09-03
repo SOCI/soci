@@ -89,10 +89,10 @@ struct oracle_vector_into_type_backend : details::vector_into_type_backend
         void *data, details::exchange_type type)
     {
         user_ranges_ = false;
-        define_by_pos(position, data, type, 0, &end_var_);
+        define_by_pos_bulk(position, data, type, 0, &end_var_);
     }
     
-    virtual void define_by_pos(
+    virtual void define_by_pos_bulk(
         int & position, void * data, details::exchange_type type,
         std::size_t begin, std::size_t * end);
 
@@ -173,20 +173,20 @@ struct oracle_vector_use_type_backend : details::vector_use_type_backend
     virtual void bind_by_pos(int & position,
         void * data, details::exchange_type type)
     {
-        bind_by_pos(position, data, type, 0, &end_var_);
+        bind_by_pos_bulk(position, data, type, 0, &end_var_);
     }
     
-    virtual void bind_by_pos(int & position,
+    virtual void bind_by_pos_bulk(int & position,
         void * data, details::exchange_type type,
         std::size_t begin, std::size_t * end);
     
     virtual void bind_by_name(const std::string & name,
         void * data, details::exchange_type type)
     {
-        bind_by_name(name, data, type, 0, &end_var_);
+        bind_by_name_bulk(name, data, type, 0, &end_var_);
     }
 
-    virtual void bind_by_name(std::string const &name,
+    virtual void bind_by_name_bulk(std::string const &name,
         void *data, details::exchange_type type,
         std::size_t begin, std::size_t * end);
 

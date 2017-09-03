@@ -30,7 +30,7 @@ using namespace soci::details;
 using namespace soci::details::postgresql;
 
 
-void postgresql_vector_into_type_backend::define_by_pos(
+void postgresql_vector_into_type_backend::define_by_pos_bulk(
     int & position, void * data, exchange_type type,
     std::size_t begin, std::size_t * end)
 {
