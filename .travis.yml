@@ -3,11 +3,11 @@
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-# TODO: Switch to Trusty https://github.com/SOCI/soci/issues/574
-dist: precise
-language: cpp
+dist: trusty
 
 sudo: required
+
+language: cpp
 
 compiler:
   - g++
@@ -34,13 +34,18 @@ matrix:
         - env: SOCI_TRAVIS_BACKEND=oracle WITH_BOOST=OFF
 
 addons:
-  coverity_scan:
-    project:
-      name: "SOCI/soci"
-    notification_email: soci-devel@lists.sourceforge.net
-    build_command_prepend: "sh ${TRAVIS_BUILD_DIR}/scripts/travis/install_cmake.sh; mkdir build.cov; cd build.cov; cmake .."
-    build_command: "make -j 4"
-    branch_pattern: coverity_scan
+    apt:
+        sources:
+            - ubuntu-toolchain-r-test
+        packages:
+            - cmake
+    coverity_scan:
+        project:
+            name: "SOCI/soci"
+        notification_email: soci-devel@lists.sourceforge.net
+        build_command_prepend: "mkdir build.cov; cd build.cov; cmake .."
+        build_command: "make -j 4"
+        branch_pattern: coverity_scan
 
 before_install: ./scripts/travis/before_install.sh
 before_script: ./scripts/travis/before_script.sh

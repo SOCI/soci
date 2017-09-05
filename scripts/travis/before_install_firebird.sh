@@ -5,12 +5,26 @@
 #
 source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
 
-sudo apt-get install -qq firebird2.5-super firebird2.5-dev
+sudo apt-get install -qq expect firebird2.5-super firebird2.5-dev
 
-# Configure Firebird server
-# See: Non-interactive setup for travis-ci.org
-# http://tech.groups.yahoo.com/group/firebird-support/message/120883
-#sudo dpkg-reconfigure -f noninteractive firebird2.5-super
-sudo sed /ENABLE_FIREBIRD_SERVER=/s/no/yes/ -i /etc/default/firebird2.5
-cat /etc/default/firebird2.5 | grep ENABLE_FIREBIRD_SERVER
-sudo service firebird2.5-super start
+export DEBIAN_FRONTEND="readline"
+# Expect script feeding dpkg-reconfigure prompts
+sudo /usr/bin/expect - << ENDMARK > /dev/null
+spawn dpkg-reconfigure firebird2.5-super -freadline
+expect "Enable Firebird server?"
+send "Y\r"
+
+expect "Password for SYSDBA:"
+send "masterkey\r"
+
+# done
+expect eof
+ENDMARK
+# End of Expect script
+export DEBIAN_FRONTEND="noninteractive"
+echo "Firebird: cat /etc/firebird/2.5/SYSDBA.password"
+sudo cat /etc/firebird/2.5/SYSDBA.password | grep ISC_
+echo
+echo "Firebird: restarting"
+sudo service firebird2.5-super restart
+echo "Firebird: DONE"
