@@ -1,0 +1,13 @@
+# This is the EditorConfig (http://editorconfig.org/) coding style file for SOCI.
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+[{Vagrantfile,CMakeLists.txt,*.cmake}]
+indent_size = 2
