@@ -5,10 +5,8 @@
 # Notice that this file is not executable, it is supposed to be sourced from
 # the other files.
 
-# Load Oracle environment variables
-. /usr/lib/oracle/xe/app/oracle/product/10.2.0/server/bin/oracle_env.sh
-echo "ORACLE_HOME=${ORACLE_HOME}"
-echo "ORACLE_SID=${ORACLE_SID}"
-
-LD_LIBRARY_PATH=${ORACLE_HOME}:${LD_LIBRARY_PATH}
-export LD_LIBRARY_PATH
+# Oracle environment required by https://github.com/cbandy/travis-oracle
+export ORACLE_COOKIE=sqldev
+export ORACLE_FILE=oracle11g/xe/oracle-xe-11.2.0-1.0.x86_64.rpm.zip
+export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe
+export ORACLE_SID=XE
