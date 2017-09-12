@@ -1038,56 +1038,6 @@ TEST_CASE("Bulk iterators", "[postgresql][bulkiters]")
     sql << "drop table t";
 }
 
-// Test support for XML and long string wrapper types
-TEST_CASE("XML wrapper type", "[postgresql][xml]")
-{
-    session sql(backEnd, connectString);
-
-    sql << "create table xml_test (id integer, x xml)";
-
-    int id = 1;
-    xml_type xml;
-    xml.value = "<file>";
-    for (int i = 0; i != 200; ++i)
-    {
-        xml.value += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    }
-    xml.value += "</file>";
-
-    sql << "insert into xml_test (id, x) values (:1, :2)", use(id), use(xml);
-
-    xml_type xml2;
-
-    sql << "select x from xml_test where id = :1", into(xml2), use(id);
-
-    CHECK(xml.value == xml2.value);
-
-    sql << "drop table xml_test";
-
-    // additional test for empty and non-empty long_string
-
-    sql << "create table long_string_test (id integer, s text)";
-
-    long_string s1; // empty
-    sql << "insert into long_string_test(id, s) values (1, :s)", use(s1);
-
-    long_string s2;
-    s2.value = "hello";
-    sql << "select s from long_string_test where id = 1", into(s2);
-
-    CHECK(s2.value.size() == 0);
-
-    s1.value = xml.value; // some long value
-    
-    sql << "update long_string_test set s = :s where id = 1", use(s1);
-    
-    sql << "select s from long_string_test where id = 1", into(s2);
-
-    CHECK(s2.value == xml.value);
-    
-    sql << "drop table long_string_test";
-}
-
 //
 // Support for soci Common Tests
 //
@@ -1135,6 +1085,24 @@ struct table_creator_for_get_affected_rows : table_creator_base
     }
 };
 
+struct table_creator_for_xml : table_creator_base
+{
+    table_creator_for_xml(soci::session& sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(id integer, x xml)";
+    }
+};
+
+struct table_creator_for_clob : table_creator_base
+{
+    table_creator_for_clob(soci::session& sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(id integer, s text)";
+    }
+};
+
 // Common tests context
 class test_context : public test_context_base
 {
@@ -1161,6 +1129,16 @@ public:
     table_creator_base* table_creator_4(soci::session& s) const
     {
         return new table_creator_for_get_affected_rows(s);
+    }
+
+    table_creator_base* table_creator_xml(soci::session& s) const
+    {
+        return new table_creator_for_xml(s);
+    }
+
+    table_creator_base* table_creator_clob(soci::session& s) const
+    {
+        return new table_creator_for_clob(s);
     }
 
     std::string to_date_time(std::string const &datdt_string) const

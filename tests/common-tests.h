@@ -326,6 +326,25 @@ public:
     virtual table_creator_base* table_creator_3(session&) const = 0;
     virtual table_creator_base* table_creator_4(session&) const = 0;
 
+    // Override this to return the table creator for a simple table containing
+    // an integer "id" column and CLOB "s" one.
+    //
+    // Returns null by default to indicate that CLOB is not supported.
+    virtual table_creator_base* table_creator_clob(session&) const { return NULL; }
+
+    // Override this to return the table creator for a simple table containing
+    // an integer "id" column and XML "x" one.
+    //
+    // Returns null by default to indicate that XML is not supported.
+    virtual table_creator_base* table_creator_xml(session&) const { return NULL; }
+
+    // Return the casts that must be used to convert the between the database
+    // XML type and the query parameters.
+    //
+    // By default no special casts are done.
+    virtual std::string to_xml(std::string const& x) const { return x; }
+    virtual std::string from_xml(std::string const& x) const { return x; }
+
     // Override this if the backend doesn't handle floating point values
     // correctly, i.e. writing a value and reading it back doesn't return
     // *exactly* the same value.
@@ -4258,6 +4277,97 @@ TEST_CASE_METHOD(common_tests, "String length", "[core][string][length]")
 
     CHECK(vlen[2] == 20);
     CHECK(vout[2].length() == 20);
+}
+
+// Helper function used in two tests below.
+static std::string make_long_xml_string()
+{
+    std::string s;
+    s.reserve(6 + 200*26 + 7);
+
+    s += "<file>";
+    for (int i = 0; i != 200; ++i)
+    {
+        s += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    }
+    s += "</file>";
+
+    return s;
+}
+
+TEST_CASE_METHOD(common_tests, "CLOB", "[core][clob]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_clob(sql));
+    if (!tableCreator.get())
+    {
+        WARN("CLOB type not supported by the database, skipping the test.");
+        return;
+    }
+
+    long_string s1; // empty
+    sql << "insert into soci_test(id, s) values (1, :s)", use(s1);
+
+    long_string s2;
+    s2.value = "hello";
+    sql << "select s from soci_test where id = 1", into(s2);
+
+    CHECK(s2.value.size() == 0);
+
+    s1.value = make_long_xml_string();
+
+    sql << "update soci_test set s = :s where id = 1", use(s1);
+
+    sql << "select s from soci_test where id = 1", into(s2);
+
+    CHECK(s2.value == s1.value);
+}
+
+TEST_CASE_METHOD(common_tests, "XML", "[core][xml]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_xml(sql));
+    if (!tableCreator.get())
+    {
+        WARN("XML type not supported by the database, skipping the test.");
+        return;
+    }
+
+    int id = 1;
+    xml_type xml;
+
+    // The extra new line is a special hack for Oracle: its getCLOBVal()
+    // seems to reformat the returned XML and, in particular, appends a new
+    // line to it if its last line doesn't contain one already. So if we didn't
+    // append it here the check for round trip below would fail because of the
+    // extra new line.
+    xml.value = make_long_xml_string() + "\n";
+
+    sql << "insert into soci_test (id, x) values (:1, "
+        << tc_.to_xml(":2")
+        << ")",
+        use(id), use(xml);
+
+    xml_type xml2;
+
+    sql << "select "
+        << tc_.from_xml("x")
+        << " from soci_test where id = :1",
+        into(xml2), use(id);
+
+    CHECK(xml.value == xml2.value);
+
+    sql << "update soci_test set x = null where id = :1", use(id);
+
+    indicator ind;
+    sql << "select "
+        << tc_.from_xml("x")
+        << " from soci_test where id = :1",
+        into(xml2, ind), use(id);
+
+    CHECK(ind == i_null);
 }
 
 } // namespace test_cases
