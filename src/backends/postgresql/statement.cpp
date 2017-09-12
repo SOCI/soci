@@ -30,18 +30,19 @@ namespace // unnamed
 
 // used only with asynchronous operations in single-row mode
 
-void wait_until_operation_complete(PGconn * conn)
+void wait_until_operation_complete(postgresql_session_backend & session)
 {
     while (true)
     {
-        PGresult * result = PQgetResult(conn);
+        PGresult * result = PQgetResult(session.conn);
         if (result == NULL)
         {
             break;
         }
         else
         {
-            PQclear(result);
+            postgresql_result r(session, result);
+            r.check_for_errors("Cannot execute asynchronous query in single-row mode");
         }
     }
 }
@@ -237,7 +238,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
                     "Cannot prepare statement in singlerow mode");
             }
 
-            wait_until_operation_complete(session_.conn_);
+            wait_until_operation_complete(session_);
         }
         else
 #endif // !SOCI_POSTGRESQL_NOSINLGEROWMODE
@@ -598,11 +599,11 @@ postgresql_statement_backend::execute(int number)
         }
         else
         {
-            PGresult * res = PQgetResult(session_.conn_); 
+            PGresult * res = PQgetResult(session_.conn_);
             result_.reset(res);
         }
 
-        process_result = result_.get_result() != NULL;
+        process_result = result_.check_for_data("Cannot execute query.");
     }
     else
 #endif // !SOCI_POSTGRESQL_NOSINLGEROWMODE
