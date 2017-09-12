@@ -3,11 +3,9 @@
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-language: cpp
-
-# Several scripts hard code Precise and don't currently work in any other
-# environment (e.g. the default Trusty).
+# TODO: Switc to Trusty https://github.com/SOCI/soci/issues/574
 dist: precise
+language: cpp
 
 sudo: required
 
@@ -50,9 +48,9 @@ addons:
         build_command: "make -j 4"
         branch_pattern: coverity_scan
 
-before_install: ./bin/ci/before_install.sh
-before_script: ./bin/ci/before_script.sh
-script: ./bin/ci/script.sh
+before_install: ./scripts/travis/before_install.sh
+before_script: ./scripts/travis/before_script.sh
+script: ./scripts/travis/script.sh
 
 notifications:
     #email:

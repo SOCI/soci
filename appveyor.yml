@@ -52,7 +52,7 @@ install:
               7z x -y -oC:\projects\mingw\4.8.3\ $env:MINGW_ARCHIVE > $null
             }
           }
-          Import-Module C:\projects\soci\bin\windows\Get-ODBCList.ps1
+          Import-Module C:\projects\soci\scripts\windows\Get-ODBCList.ps1
           Get-ODBCList
     - git clone https://github.com/snikulov/sqlite.cmake.build.git C:\projects\sqlite\src
 
@@ -83,7 +83,7 @@ before_build:
     - set MYSQL_PWD=Password12!
     - set USER=root
     - mysql -e "create database soci_test;" --user=root
-    - sqlcmd -U sa -P Password12! -S (local)\SQL2014 -i C:\projects\soci\bin\windows\mssql_db_create.sql 
+    - sqlcmd -U sa -P Password12! -S (local)\SQL2014 -i C:\projects\soci\scripts\windows\mssql_db_create.sql
     - cmake .. -G"%PRJ_GEN%" -DCMAKE_BUILD_TYPE=%PRJ_CFG% -DCMAKE_INSTALL_PREFIX=C:\projects\sqlite\sqlite.%BDIR%
     - cmake --build . --config %PRJ_CFG% --target install
 

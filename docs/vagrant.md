@@ -81,7 +81,7 @@ You can also execute the `build.h` script provided to run CMake and make
 ```
 vagrant ssh soci
 cd $SOCI_BUILD
-/vagrant/bin/vagrant/build.sh
+/vagrant/scripts/vagrant/build.sh
 ```
   * Debug, only on VM `soci` with gdb.
 
@@ -95,7 +95,7 @@ for complete list of commands.
 
 ### Environment variables
 
-All variables available to the `vagrant` user on the VMs are defined in and sourced from `/vagrant/bin/vagrant/common.env`:
+All variables available to the `vagrant` user on the VMs are defined in and sourced from `/vagrant/scripts/vagrant/common.env`:
 
 * `SOCI_HOME` where SOCI master is cloned (`/vagrant` on VM `soci`)
 * `SOCI_BUILD` where CMake generates build configuration (`/home/vagrant/soci-build` on VM `soci`)
@@ -114,5 +114,5 @@ Note, those variables are also used by provision scripts to set up databases.
 * Analyze `vagrant up` output.
 * On Windows, prefer `vagrant ssh` from inside MinGW Shell where  `ssh.exe` is available or
   learn how to use Vagrant with PuTTY.
-* If you modify any of `bin/vagrant/*.sh` scripts, **ensure** they have unified
+* If you modify any of `scripts/vagrant/*.sh` scripts, **ensure** they have unified
   end-of-line characters to `LF` only. Otherwise, provisioning steps may fail.

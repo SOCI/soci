@@ -32,7 +32,7 @@ Vagrant.configure(2) do |config|
       "db2.sh"
     ]
     scripts.each { |script|
-      db2.vm.provision :shell, privileged: false, :path => "bin/vagrant/" << script
+      db2.vm.provision :shell, privileged: false, :path => "scripts/vagrant/" << script
     }
   end
 
@@ -62,7 +62,7 @@ Vagrant.configure(2) do |config|
       "build.sh"
     ]
     scripts.each { |script|
-      soci.vm.provision :shell, privileged: false, :path => "bin/vagrant/" << script
+      soci.vm.provision :shell, privileged: false, :path => "scripts/vagrant/" << script
     }
   end
 end
