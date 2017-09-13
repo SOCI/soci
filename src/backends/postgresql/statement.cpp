@@ -34,7 +34,7 @@ void wait_until_operation_complete(postgresql_session_backend & session)
 {
     while (true)
     {
-        PGresult * result = PQgetResult(session.conn);
+        PGresult * result = PQgetResult(session.conn_);
         if (result == NULL)
         {
             break;
