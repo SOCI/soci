@@ -59,6 +59,7 @@ enum BuffersType
     eStandard, eVector
 };
 
+struct firebird_blob_backend;
 struct firebird_statement_backend;
 struct firebird_standard_into_type_backend : details::standard_into_type_backend
 {
@@ -117,7 +118,8 @@ struct firebird_vector_into_type_backend : details::vector_into_type_backend
 struct firebird_standard_use_type_backend : details::standard_use_type_backend
 {
     firebird_standard_use_type_backend(firebird_statement_backend &st)
-        : statement_(st), data_(NULL), type_(), position_(0), buf_(NULL), indISCHolder_(0)
+        : statement_(st), data_(NULL), type_(), position_(0), buf_(NULL), indISCHolder_(0),
+          blob_(NULL)
     {}
 
     virtual void bind_by_pos(int &position,
@@ -139,6 +141,9 @@ struct firebird_standard_use_type_backend : details::standard_use_type_backend
 
     char *buf_;
     short indISCHolder_;
+
+    // This is used for types mapping to CLOB.
+    firebird_blob_backend* blob_;
 };
 
 struct firebird_vector_use_type_backend : details::vector_use_type_backend

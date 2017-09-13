@@ -11,6 +11,8 @@
 #include "firebird/common.h"
 #include "soci/soci.h"
 
+#include <sstream>
+
 using namespace soci;
 using namespace soci::details;
 using namespace soci::details::firebird;
@@ -119,6 +121,28 @@ void firebird_standard_into_type_backend::exchangeData()
                 blob->assign(*reinterpret_cast<ISC_QUAD*>(buf_));
             }
             break;
+
+        case x_longstring:
+            {
+                long_string* const dst = static_cast<long_string*>(data_);
+
+                firebird_blob_backend blob(statement_.session_);
+                blob.assign(*reinterpret_cast<ISC_QUAD*>(buf_));
+
+                std::size_t const len_total = blob.get_len();
+                dst->value.resize(len_total);
+
+                std::size_t len_read = blob.read(0, &dst->value[0], len_total);
+                if (len_read != len_total)
+                {
+                    std::ostringstream os;
+                    os << "Read " << len_read << " bytes instead of expected "
+                       << len_total << " from Firebird text blob object";
+                    throw soci_error(os.str());
+                }
+            }
+            break;
+
         default:
             throw soci_error("Into element used with non-supported type.");
     } // switch
