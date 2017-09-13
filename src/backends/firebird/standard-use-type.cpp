@@ -152,16 +152,29 @@ void firebird_standard_use_type_backend::exchangeData()
             {
                 long_string const* const src = static_cast<long_string*>(data_);
 
-                blob_ = new firebird_blob_backend(statement_.session_);
-                blob_->append(src->value.c_str(), src->value.length());
-                blob_->save();
-                memcpy(buf_, &blob_->bid_, var->sqllen);
+                copy_to_blob(src->value);
+            }
+            break;
+
+        case x_xmltype:
+            {
+                xml_type const* const src = static_cast<xml_type*>(data_);
+
+                copy_to_blob(src->value);
             }
             break;
 
         default:
             throw soci_error("Use element used with non-supported type.");
     } // switch
+}
+
+void firebird_standard_use_type_backend::copy_to_blob(const std::string& in)
+{
+    blob_ = new firebird_blob_backend(statement_.session_);
+    blob_->append(in.c_str(), in.length());
+    blob_->save();
+    memcpy(buf_, &blob_->bid_, sizeof(blob_->bid_));
 }
 
 void firebird_standard_use_type_backend::post_use(
