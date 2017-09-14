@@ -146,11 +146,12 @@ void db2_vector_into_type_backend::define_by_pos(
         }
         break;
 
-    case x_statement: break; // not supported
-    case x_rowid:     break; // not supported
-    case x_blob:      break; // not supported
-    case x_xmltype:   break; // not supported
-    case x_longstring:break; // not supported
+    case x_statement:
+    case x_rowid:
+    case x_blob:
+    case x_xmltype:
+    case x_longstring:
+        throw soci_error("Unsupported type for vector into parameter");
     }
 
     SQLRETURN cliRC = SQLBindCol(statement_.hStmt, static_cast<SQLUSMALLINT>(position++),
