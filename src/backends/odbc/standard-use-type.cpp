@@ -113,6 +113,15 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
     }
     break;
 
+    case x_longstring:
+        copy_from_string(exchange_type_cast<x_longstring>(data_).value,
+                         size, sqlType, cType);
+        break;
+    case x_xmltype:
+        copy_from_string(exchange_type_cast<x_xmltype>(data_).value,
+                         size, sqlType, cType);
+        break;
+
     // unsupported types
     default:
         throw soci_error("Use element used with non-supported type.");

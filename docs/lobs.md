@@ -54,3 +54,10 @@ For PostgreSQL, these types are:
 
 For Firebird, there is no special XML support, but `BLOB SUB_TYPE TEXT` can be
 used for storing it, as well as long strings.
+
+For ODBC backend, these types depend on the type of the database connected to.
+In particularly important special case of Microsoft SQL Server, these types
+are:
+
+* `xml`
+* `text`
