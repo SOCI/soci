@@ -152,16 +152,10 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
             }
             break;
         case x_xmltype:
-            {
-                xml_type * xml = static_cast<xml_type *>(data_);
-                copy_from_string(xml->value);
-            }
+            copy_from_string(exchange_type_cast<x_xmltype>(data_).value);
             break;
         case x_longstring:
-            {
-                long_string * ls = static_cast<long_string *>(data_);
-                copy_from_string(xml->value);
-            }
+            copy_from_string(exchange_type_cast<x_longstring>(data_).value);
             break;
             
         default:

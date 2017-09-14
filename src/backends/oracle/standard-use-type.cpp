@@ -292,9 +292,8 @@ void oracle_standard_use_type_backend::pre_exec(int /* num */)
             lazy_temp_lob_init();
             
             OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
-            xml_type * xml = static_cast<xml_type *>(data_);
 
-            write_to_lob(lobp, xml->value);
+            write_to_lob(lobp, exchange_type_cast<x_xmltype>(data_).value);
         }
         break;
     case x_longstring:
@@ -304,9 +303,8 @@ void oracle_standard_use_type_backend::pre_exec(int /* num */)
             lazy_temp_lob_init();
             
             OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
-            long_string * ls = static_cast<long_string *>(data_);
 
-            write_to_lob(lobp, ls->value);
+            write_to_lob(lobp, exchange_type_cast<x_longstring>(data_).value);
         }
         break;
     default:

@@ -149,19 +149,11 @@ void firebird_standard_use_type_backend::exchangeData()
             break;
 
         case x_longstring:
-            {
-                long_string const* const src = static_cast<long_string*>(data_);
-
-                copy_to_blob(src->value);
-            }
+            copy_to_blob(exchange_type_cast<x_longstring>(data_).value);
             break;
 
         case x_xmltype:
-            {
-                xml_type const* const src = static_cast<xml_type*>(data_);
-
-                copy_to_blob(src->value);
-            }
+            copy_to_blob(exchange_type_cast<x_xmltype>(data_).value);
             break;
 
         default:
