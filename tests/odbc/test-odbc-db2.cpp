@@ -94,9 +94,9 @@ public:
         return "\'" + datdt_string + "\'";
     }
 
-    virtual std::string get_length_function_name() const
+    virtual std::string sql_length(std::string const& s) const
     {
-        return "length";
+        return "length(" + s + ")";
     }
 };
 

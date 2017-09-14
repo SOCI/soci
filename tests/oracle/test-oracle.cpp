@@ -1556,9 +1556,12 @@ public:
         return "to_date('" + datdt_string + "', 'YYYY-MM-DD HH24:MI:SS')";
     }
 
-    virtual std::string get_length_function_name() const
+    virtual std::string sql_length(std::string const& s) const
     {
-        return "length";
+        // Oracle treats empty strings as NULLs, but we want to return the
+        // length of 0 for them for consistency with the other backends, so use
+        // nvl() explicitly to achieve this.
+        return "nvl(length(" + s + "), 0)";
     }
 };
 

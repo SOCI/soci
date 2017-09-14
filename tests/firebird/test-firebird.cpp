@@ -1312,9 +1312,9 @@ class test_context : public tests::test_context_base
             sql.commit();
         }
 
-        virtual std::string get_length_function_name() const
+        virtual std::string sql_length(std::string const& s) const
         {
-            return "char_length";
+            return "char_length(" + s + ")";
         }
 };
 

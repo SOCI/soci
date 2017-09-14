@@ -96,9 +96,9 @@ public:
         return "to_date('" + pi_datdt_string + "', 'YYYY-MM-DD HH24:MI:SS')";
     }
 
-    virtual std::string get_length_function_name() const
+    virtual std::string sql_length(std::string const& s) const
     {
-        return "length";
+        return "length(" + s + ")";
     }
 };
 

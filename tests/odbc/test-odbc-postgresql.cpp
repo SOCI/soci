@@ -179,9 +179,9 @@ public:
         return !m_verDriver.is_initialized() || m_verDriver < odbc_version(9, 3, 400);
     }
 
-    virtual std::string get_length_function_name() const
+    virtual std::string sql_length(std::string const& s) const
     {
-        return "char_length";
+        return "char_length(" + s + ")";
     }
 
 private:
