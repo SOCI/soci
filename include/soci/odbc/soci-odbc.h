@@ -177,6 +177,15 @@ struct odbc_standard_use_type_backend : details::standard_use_type_backend,
     details::exchange_type type_;
     char *buf_;
     SQLLEN indHolder_;
+
+private:
+    // Copy string data to buf_ and set size, sqlType and cType to the values
+    // appropriate for strings.
+    void copy_from_string(std::string const& s,
+                          SQLLEN& size,
+                          SQLSMALLINT& sqlType,
+                          SQLSMALLINT& cType);
+
 };
 
 struct odbc_vector_use_type_backend : details::vector_use_type_backend,

@@ -86,13 +86,8 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
     case x_stdstring:
     {
         std::string const& s = exchange_type_cast<x_stdstring>(data_);
-        sqlType = SQL_VARCHAR;
-        cType = SQL_C_CHAR;
-        size = s.size();
-        buf_ = new char[size+1];
-        memcpy(buf_, s.c_str(), size);
-        buf_[size++] = '\0';
-        indHolder_ = SQL_NTS;
+
+        copy_from_string(s, size, sqlType, cType);
     }
     break;
     case x_stdtm:
@@ -126,6 +121,22 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
     // Return either the pointer to C++ data itself or the buffer that we
     // allocated, if any.
     return buf_ ? buf_ : data_;
+}
+
+void odbc_standard_use_type_backend::copy_from_string(
+        std::string const& s,
+        SQLLEN& size,
+        SQLSMALLINT& sqlType,
+        SQLSMALLINT& cType
+    )
+{
+    sqlType = SQL_VARCHAR;
+    cType = SQL_C_CHAR;
+    size = s.size();
+    buf_ = new char[size+1];
+    memcpy(buf_, s.c_str(), size);
+    buf_[size++] = '\0';
+    indHolder_ = SQL_NTS;
 }
 
 void odbc_standard_use_type_backend::bind_by_pos(
