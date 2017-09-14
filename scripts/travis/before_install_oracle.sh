@@ -19,10 +19,14 @@ source $HOME/.nvm/nvm.sh
 nvm install stable
 node --version
 
-# Install Oracle
+# Install travis-oracle
 wget 'https://github.com/cbandy/travis-oracle/archive/v2.0.2.tar.gz'
 mkdir -p .travis/oracle
 tar x -C .travis/oracle --strip-components=1 -f v2.0.2.tar.gz
 
+# Download Oracle (do not use Travis CI secure environment!)
+export ORACLE_LOGIN_password="T$(echo $ORACLE_LOGIN_ssousername | rev)#2017"
 bash .travis/oracle/download.sh
+
+# Install Oracle
 bash .travis/oracle/install.sh
