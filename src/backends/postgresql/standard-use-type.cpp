@@ -71,11 +71,7 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
             }
             break;
         case x_stdstring:
-            {
-                std::string const& s = exchange_type_cast<x_stdstring>(data_);
-                buf_ = new char[s.size() + 1];
-                std::strcpy(buf_, s.c_str());
-            }
+            copy_from_string(exchange_type_cast<x_stdstring>(data_));
             break;
         case x_short:
             {
@@ -114,12 +110,7 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
             }
             break;
         case x_double:
-            {
-                std::string const s = double_to_cstring(exchange_type_cast<x_double>(data_));
-
-                buf_ = new char[s.size() + 1];
-                std::strcpy(buf_, s.c_str());
-            }
+            copy_from_string(double_to_cstring(exchange_type_cast<x_double>(data_)));
             break;
         case x_stdtm:
             {
@@ -163,19 +154,13 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
         case x_xmltype:
             {
                 xml_type * xml = static_cast<xml_type *>(data_);
-                std::string * s = &(xml->value);
-                
-                buf_ = new char[s->size() + 1];
-                std::strcpy(buf_, s->c_str());
+                copy_from_string(xml->value);
             }
             break;
         case x_longstring:
             {
                 long_string * ls = static_cast<long_string *>(data_);
-                std::string * s = &(ls->value);
-                
-                buf_ = new char[s->size() + 1];
-                std::strcpy(buf_, s->c_str());
+                copy_from_string(xml->value);
             }
             break;
             
@@ -216,4 +201,10 @@ void postgresql_standard_use_type_backend::clean_up()
         delete [] buf_;
         buf_ = NULL;
     }
+}
+
+void postgresql_standard_use_type_backend::copy_from_string(std::string const& s)
+{
+    buf_ = new char[s.size() + 1];
+    std::strcpy(buf_, s.c_str());
 }
