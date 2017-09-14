@@ -352,10 +352,10 @@ public:
     // whatever we do.
     virtual bool enable_std_char_padding(session&) const { return true; }
 
-    // Return the name of the function for determining the length of a string,
-    // i.e. "char_length" in standard SQL but often "len" or "length" in
-    // practice.
-    virtual std::string get_length_function_name() const = 0;
+    // Return the SQL expression giving the length of the specified string,
+    // i.e. "char_length(s)" in standard SQL but often "len(s)" or "length(s)"
+    // in practice and sometimes even worse (thanks Oracle).
+    virtual std::string sql_length(std::string const& s) const = 0;
 
     virtual ~test_context_base()
     {
@@ -4217,15 +4217,16 @@ TEST_CASE_METHOD(common_tests, "String length", "[core][string][length]")
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
     std::string s("123");
-    sql << "insert into soci_test(str) values(:s)", use(s);
-
-    const std::string& len_func = tc_.get_length_function_name();
+    REQUIRE_NOTHROW((
+        sql << "insert into soci_test(str) values(:s)", use(s)
+    ));
 
     std::string sout;
     size_t slen;
-    sql << "select str," + len_func + "(str)"
-           " from soci_test",
-           into(sout), into(slen);
+    REQUIRE_NOTHROW((
+        sql << "select str," + tc_.sql_length("str") + " from soci_test",
+           into(sout), into(slen)
+    ));
     CHECK(slen == 3);
     CHECK(sout.length() == 3);
     CHECK(sout == s);
@@ -4238,14 +4239,22 @@ TEST_CASE_METHOD(common_tests, "String length", "[core][string][length]")
     v.push_back("");
     v.push_back("whole of varchar(20)");
 
-    CHECK_NOTHROW( (sql << "insert into soci_test(str) values(:s)", use(v)) );
+    REQUIRE_NOTHROW((
+        sql << "insert into soci_test(str) values(:s)", use(v)
+    ));
 
     std::vector<std::string> vout(10);
+    // Although none of the strings here is really null, Oracle handles the
+    // empty string as being null, so to avoid an error about not providing
+    // the indicator when retrieving a null value, we must provide it here.
+    std::vector<indicator> vind(10);
     std::vector<unsigned int> vlen(10);
-    sql << "select str," + len_func + "(str)"
-           " from soci_test"
-           " order by " + len_func + "(str)",
-           into(vout), into(vlen);
+
+    REQUIRE_NOTHROW((
+        sql << "select str," + tc_.sql_length("str") + " from soci_test"
+               " order by " + tc_.sql_length("str"),
+               into(vout, vind), into(vlen)
+    ));
 
     REQUIRE(vout.size() == 3);
     REQUIRE(vlen.size() == 3);
