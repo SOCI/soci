@@ -4355,13 +4355,7 @@ TEST_CASE_METHOD(common_tests, "XML", "[core][xml]")
 
     int id = 1;
     xml_type xml;
-
-    // The extra new line is a special hack for Oracle: its getCLOBVal()
-    // seems to reformat the returned XML and, in particular, appends a new
-    // line to it if its last line doesn't contain one already. So if we didn't
-    // append it here the check for round trip below would fail because of the
-    // extra new line.
-    xml.value = make_long_xml_string() + "\n";
+    xml.value = make_long_xml_string();
 
     sql << "insert into soci_test (id, x) values (:1, "
         << tc_.to_xml(":2")
@@ -4374,6 +4368,15 @@ TEST_CASE_METHOD(common_tests, "XML", "[core][xml]")
         << tc_.from_xml("x")
         << " from soci_test where id = :1",
         into(xml2), use(id);
+
+    // The returned value doesn't need to be identical to the original one as
+    // string, only structurally equal as XML. In particular, extra whitespace
+    // can be added and this does happen with Oracle, for example, which adds
+    // an extra new line, so remove it if it's present.
+    if (!xml2.value.empty() && *xml2.value.rbegin() == '\n')
+    {
+        xml2.value.resize(xml2.value.length() - 1);
+    }
 
     CHECK(xml.value == xml2.value);
 
