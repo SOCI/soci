@@ -158,11 +158,12 @@ void oracle_vector_into_type_backend::define_by_pos_bulk(
         }
         break;
 
-    case x_xmltype:    break; // not supported
-    case x_longstring: break; // not supported
-    case x_statement:  break; // not supported
-    case x_rowid:      break; // not supported
-    case x_blob:       break; // not supported
+    case x_xmltype:
+    case x_longstring:
+    case x_statement:
+    case x_rowid:
+    case x_blob:
+        throw soci_error("Unsupported type for vector into parameter");
     }
 
     sword res = OCIDefineByPos(statement_.stmtp_, &defnp_,
