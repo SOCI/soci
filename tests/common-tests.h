@@ -4217,12 +4217,16 @@ TEST_CASE_METHOD(common_tests, "String length", "[core][string][length]")
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
     std::string s("123");
-    sql << "insert into soci_test(str) values(:s)", use(s);
+    REQUIRE_NOTHROW((
+        sql << "insert into soci_test(str) values(:s)", use(s)
+    ));
 
     std::string sout;
     size_t slen;
-    sql << "select str," + tc_.sql_length("str") + " from soci_test",
-           into(sout), into(slen);
+    REQUIRE_NOTHROW((
+        sql << "select str," + tc_.sql_length("str") + " from soci_test",
+           into(sout), into(slen)
+    ));
     CHECK(slen == 3);
     CHECK(sout.length() == 3);
     CHECK(sout == s);
@@ -4235,7 +4239,9 @@ TEST_CASE_METHOD(common_tests, "String length", "[core][string][length]")
     v.push_back("");
     v.push_back("whole of varchar(20)");
 
-    CHECK_NOTHROW( (sql << "insert into soci_test(str) values(:s)", use(v)) );
+    REQUIRE_NOTHROW((
+        sql << "insert into soci_test(str) values(:s)", use(v)
+    ));
 
     std::vector<std::string> vout(10);
     // Although none of the strings here is really null, Oracle handles the
@@ -4243,9 +4249,12 @@ TEST_CASE_METHOD(common_tests, "String length", "[core][string][length]")
     // the indicator when retrieving a null value, we must provide it here.
     std::vector<indicator> vind(10);
     std::vector<unsigned int> vlen(10);
-    sql << "select str," + tc_.sql_length("str") + " from soci_test"
-           " order by " + tc_.sql_length("str"),
-           into(vout, vind), into(vlen);
+
+    REQUIRE_NOTHROW((
+        sql << "select str," + tc_.sql_length("str") + " from soci_test"
+               " order by " + tc_.sql_length("str"),
+               into(vout, vind), into(vlen)
+    ));
 
     REQUIRE(vout.size() == 3);
     REQUIRE(vlen.size() == 3);
