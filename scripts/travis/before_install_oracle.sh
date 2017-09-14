@@ -4,6 +4,11 @@
 # Uses Oracle downloader and installer from https://github.com/cbandy/travis-oracle
 #
 # set -ex
+if [[ "$TRAVIS_PULL_REQUEST" != "false" ]] ; then
+    echo "Skipping Oracle installation for PR builds"
+    exit 0
+fi
+
 source ${TRAVIS_BUILD_DIR}/scripts/travis/oracle.sh
 
 # Install Oracle and travis-oracle requirements

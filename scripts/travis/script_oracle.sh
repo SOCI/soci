@@ -3,6 +3,11 @@
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
+if [[ "$TRAVIS_PULL_REQUEST" != "false" ]] ; then
+    echo "Skipping Oracle build for PR builds"
+    exit 0
+fi
+
 source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
 source ${TRAVIS_BUILD_DIR}/scripts/travis/oracle.sh
 
