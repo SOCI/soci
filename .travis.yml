@@ -3,7 +3,7 @@
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-# TODO: Switc to Trusty https://github.com/SOCI/soci/issues/574
+# TODO: Switch to Trusty https://github.com/SOCI/soci/issues/574
 dist: precise
 language: cpp
 
@@ -29,9 +29,7 @@ env:
         - SOCI_TRAVIS_BACKEND=postgresql
         - SOCI_TRAVIS_BACKEND=sqlite3
         - SOCI_TRAVIS_BACKEND=valgrind
-
-# This build is disabled because Oracle setup is currently broken, see #554.
-# - SOCI_TRAVIS_BACKEND=oracle CFLAGS=-m32 CXXFLAGS=-m32 LDFLAGS=-m32 WITH_BOOST=OFF
+        - SOCI_TRAVIS_BACKEND=oracle WITH_BOOST=OFF
 
 addons:
     apt:
