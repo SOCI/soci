@@ -51,3 +51,6 @@ For PostgreSQL, these types are:
 
 * `XML`
 * `text`
+
+For Firebird, there is no special XML support, but `BLOB SUB_TYPE TEXT` can be
+used for storing it, as well as long strings.
