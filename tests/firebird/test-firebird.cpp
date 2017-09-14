@@ -1274,6 +1274,28 @@ struct TableCreator4 : public tests::table_creator_base
     }
 };
 
+struct TableCreatorCLOB : public tests::table_creator_base
+{
+    TableCreatorCLOB(soci::session & sql)
+            : tests::table_creator_base(sql)
+    {
+        sql << "create table soci_test(id integer, s blob sub_type text)";
+        sql.commit();
+        sql.begin();
+    }
+};
+
+struct TableCreatorXML : public tests::table_creator_base
+{
+    TableCreatorXML(soci::session & sql)
+            : tests::table_creator_base(sql)
+    {
+        sql << "create table soci_test(id integer, x blob sub_type text)";
+        sql.commit();
+        sql.begin();
+    }
+};
+
 class test_context : public tests::test_context_base
 {
     public:
@@ -1300,6 +1322,16 @@ class test_context : public tests::test_context_base
         tests::table_creator_base* table_creator_4(soci::session& s) const
         {
             return new TableCreator4(s);
+        }
+
+        tests::table_creator_base* table_creator_clob(soci::session& s) const
+        {
+            return new TableCreatorCLOB(s);
+        }
+
+        tests::table_creator_base* table_creator_xml(soci::session& s) const
+        {
+            return new TableCreatorXML(s);
         }
 
         std::string to_date_time(std::string const &datdt_string) const
