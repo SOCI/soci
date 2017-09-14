@@ -61,3 +61,11 @@ are:
 
 * `xml`
 * `text`
+
+When using ODBC backend to connect to a PostgreSQL database, please be aware
+that by default PostgreSQL ODBC driver truncates all "unknown" types, such as
+XML, to maximal varchar type size which is just 256 bytes and so is often
+insufficient for XML values in practice. It is advised to set the
+`UnknownsAsLongVarchar` connection option to 1 to avoid truncating XML strings
+or use PostgreSQL ODBC driver 9.6.300 or later, which allows the backend to set
+this option to 1 automatically on connection.

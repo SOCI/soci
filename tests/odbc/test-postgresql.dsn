@@ -6,3 +6,4 @@ Port=5432
 Database=soci_test
 UID=postgres
 PWD=Password12!
+UnknownsAsLongVarchar=1

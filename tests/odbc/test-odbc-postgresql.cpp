@@ -128,6 +128,24 @@ struct table_creator_for_get_affected_rows : table_creator_base
     }
 };
 
+struct table_creator_for_xml : table_creator_base
+{
+    table_creator_for_xml(soci::session& sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(id integer, x xml)";
+    }
+};
+
+struct table_creator_for_clob : table_creator_base
+{
+    table_creator_for_clob(soci::session& sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(id integer, s text)";
+    }
+};
+
 //
 // Support for SOCI Common Tests
 //
@@ -161,6 +179,16 @@ public:
     table_creator_base * table_creator_4(soci::session& s) const
     {
         return new table_creator_for_get_affected_rows(s);
+    }
+
+    table_creator_base* table_creator_xml(soci::session& s) const
+    {
+        return new table_creator_for_xml(s);
+    }
+
+    table_creator_base* table_creator_clob(soci::session& s) const
+    {
+        return new table_creator_for_clob(s);
     }
 
     std::string to_date_time(std::string const &datdt_string) const
