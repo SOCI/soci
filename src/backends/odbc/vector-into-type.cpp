@@ -223,8 +223,16 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
 
             const char *pos = buf_;
             std::size_t const vsize = v.size();
-            for (std::size_t i = 0; i != vsize; ++i)
+            for (std::size_t i = 0; i != vsize; ++i, pos += colSize_)
             {
+                SQLLEN const len = indHolderVec_[i];
+                if (len == -1)
+                {
+                    // Value is null.
+                    v[i].clear();
+                    continue;
+                }
+
                 // Find the actual length of the string: for a VARCHAR(N)
                 // column, it may be right-padded with spaces up to the length
                 // of the longest string in the result set. This happens with
@@ -235,7 +243,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                 //
                 // So deal with this generically by just trimming all the
                 // spaces from the right hand-side.
-                const char* end = pos + indHolderVec_[i];
+                const char* end = pos + len;
                 while (end != pos)
                 {
                     // Pre-decrement as "end" is one past the end, as usual.
@@ -248,7 +256,6 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                 }
 
                 v[i].assign(pos, end - pos);
-                pos += colSize_;
             }
         }
         else if (type_ == x_stdtm)

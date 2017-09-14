@@ -1227,11 +1227,11 @@ TEST_CASE_METHOD(common_tests, "Indicators vector", "[core][indicator][vector]")
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
     {
-        sql << "insert into soci_test(id, val) values(1, 10)";
-        sql << "insert into soci_test(id, val) values(2, 11)";
-        sql << "insert into soci_test(id, val) values(3, NULL)";
-        sql << "insert into soci_test(id, val) values(4, NULL)";
-        sql << "insert into soci_test(id, val) values(5, 12)";
+        sql << "insert into soci_test(id, str, val) values(1, 'ten', 10)";
+        sql << "insert into soci_test(id, str, val) values(2, 'elf', 11)";
+        sql << "insert into soci_test(id, str, val) values(3, NULL, NULL)";
+        sql << "insert into soci_test(id, str, val) values(4, NULL, NULL)";
+        sql << "insert into soci_test(id, str, val) values(5, 'xii', 12)";
 
         {
             std::vector<int> vals(4);
@@ -1248,6 +1248,15 @@ TEST_CASE_METHOD(common_tests, "Indicators vector", "[core][indicator][vector]")
             st.fetch();
             CHECK(vals.size() == 1);
             CHECK(inds.size() == 1);
+
+            std::vector<std::string> strs(5);
+            sql << "select str from soci_test order by id", into(strs, inds);
+            REQUIRE(inds.size() == 5);
+            CHECK(inds[0] == i_ok);
+            CHECK(inds[1] == i_ok);
+            CHECK(inds[2] == i_null);
+            CHECK(inds[3] == i_null);
+            CHECK(inds[4] == i_ok);
         }
     }
 
