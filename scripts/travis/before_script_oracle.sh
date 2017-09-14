@@ -7,11 +7,6 @@
 # Changes:
 # - Check connection as user for testing
 #
-if [[ "$TRAVIS_PULL_REQUEST" != "false" ]] ; then
-    echo "Skipping Oracle database creation for PR builds"
-    exit 0
-fi
-
 source ${TRAVIS_BUILD_DIR}/scripts/travis/oracle.sh
 echo "ORACLE_HOME=${ORACLE_HOME}"
 echo "ORACLE_SID=${ORACLE_SID}"
