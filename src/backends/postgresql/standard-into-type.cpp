@@ -153,20 +153,10 @@ void postgresql_standard_into_type_backend::post_fetch(
             }
             break;
         case x_xmltype:
-            {
-                xml_type * xml = static_cast<xml_type *>(data_);
-                std::string * dest = &(xml->value);
-                
-                dest->assign(buf);
-            }
+            exchange_type_cast<x_xmltype>(data_).value.assign(buf);
             break;
         case x_longstring:
-            {
-                long_string * ls = static_cast<long_string *>(data_);
-                std::string * dest = &(ls->value);
-                
-                dest->assign(buf);
-            }
+            exchange_type_cast<x_longstring>(data_).value.assign(buf);
             break;
 
         default:

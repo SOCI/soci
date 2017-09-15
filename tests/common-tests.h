@@ -345,6 +345,13 @@ public:
     virtual std::string to_xml(std::string const& x) const { return x; }
     virtual std::string from_xml(std::string const& x) const { return x; }
 
+    // Override this if the backend not only supports working with XML values
+    // (and so returns a non-null value from table_creator_xml()), but the
+    // database itself has real XML support instead of just allowing to store
+    // and retrieve XML as text. "Real" support means at least preventing the
+    // application from storing malformed XML in the database.
+    virtual bool has_real_xml_support() const { return false; }
+
     // Override this if the backend doesn't handle floating point values
     // correctly, i.e. writing a value and reading it back doesn't return
     // *exactly* the same value.
@@ -4355,13 +4362,7 @@ TEST_CASE_METHOD(common_tests, "XML", "[core][xml]")
 
     int id = 1;
     xml_type xml;
-
-    // The extra new line is a special hack for Oracle: its getCLOBVal()
-    // seems to reformat the returned XML and, in particular, appends a new
-    // line to it if its last line doesn't contain one already. So if we didn't
-    // append it here the check for round trip below would fail because of the
-    // extra new line.
-    xml.value = make_long_xml_string() + "\n";
+    xml.value = make_long_xml_string();
 
     sql << "insert into soci_test (id, x) values (:1, "
         << tc_.to_xml(":2")
@@ -4375,6 +4376,15 @@ TEST_CASE_METHOD(common_tests, "XML", "[core][xml]")
         << " from soci_test where id = :1",
         into(xml2), use(id);
 
+    // The returned value doesn't need to be identical to the original one as
+    // string, only structurally equal as XML. In particular, extra whitespace
+    // can be added and this does happen with Oracle, for example, which adds
+    // an extra new line, so remove it if it's present.
+    if (!xml2.value.empty() && *xml2.value.rbegin() == '\n')
+    {
+        xml2.value.resize(xml2.value.length() - 1);
+    }
+
     CHECK(xml.value == xml2.value);
 
     sql << "update soci_test set x = null where id = :1", use(id);
@@ -4386,6 +4396,20 @@ TEST_CASE_METHOD(common_tests, "XML", "[core][xml]")
         into(xml2, ind), use(id);
 
     CHECK(ind == i_null);
+
+    // Inserting malformed XML into an XML column must fail but some backends
+    // (e.g. Firebird) don't have real XML support, so exclude them from this
+    // test.
+    if (tc_.has_real_xml_support())
+    {
+        xml.value = "<foo></not_foo>";
+        CHECK_THROWS_AS(
+            (sql << "insert into soci_test(id, x) values (2, "
+                        + tc_.to_xml(":1") + ")",
+                    use(xml)
+            ), soci_error
+        );
+    }
 }
 
 } // namespace test_cases

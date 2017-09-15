@@ -204,6 +204,10 @@ struct postgresql_standard_use_type_backend : details::standard_use_type_backend
     int position_;
     std::string name_;
     char * buf_;
+
+private:
+    // Allocate buf_ of appropriate size and copy string data into it.
+    void copy_from_string(std::string const& s);
 };
 
 struct postgresql_vector_use_type_backend : details::vector_use_type_backend

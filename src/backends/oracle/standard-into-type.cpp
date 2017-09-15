@@ -297,9 +297,8 @@ void oracle_standard_into_type_backend::post_fetch(
             if (indOCIHolder_ != -1)
             {
                 OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
-                xml_type * xml = static_cast<xml_type *>(data_);
 
-                read_from_lob(lobp, xml->value);
+                read_from_lob(lobp, exchange_type_cast<x_xmltype>(data_).value);
             }
         }
         else if (type_ == x_longstring)
@@ -307,9 +306,8 @@ void oracle_standard_into_type_backend::post_fetch(
             if (indOCIHolder_ != -1)
             {
                 OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
-                long_string * ls = static_cast<long_string *>(data_);
-                
-                read_from_lob(lobp, ls->value);
+
+                read_from_lob(lobp, exchange_type_cast<x_longstring>(data_).value);
             }
         }
     }

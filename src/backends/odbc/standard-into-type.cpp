@@ -33,6 +33,8 @@ void odbc_standard_into_type_backend::define_by_pos(
         data = buf_;
         break;
     case x_stdstring:
+    case x_longstring:
+    case x_xmltype:
         odbcType_ = SQL_C_CHAR;
         // Patch: set to min between column size and 100MB (used ot be 32769)
         // Column size for text data type can be too large for buffer allocation
@@ -158,6 +160,14 @@ void odbc_standard_into_type_backend::post_fetch(
             {
                 throw soci_error("Buffer size overflow; maybe got too large string");
             }
+        }
+        else if (type_ == x_longstring)
+        {
+            exchange_type_cast<x_longstring>(data_).value = buf_;
+        }
+        else if (type_ == x_xmltype)
+        {
+            exchange_type_cast<x_xmltype>(data_).value = buf_;
         }
         else if (type_ == x_stdtm)
         {
