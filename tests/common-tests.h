@@ -345,6 +345,13 @@ public:
     virtual std::string to_xml(std::string const& x) const { return x; }
     virtual std::string from_xml(std::string const& x) const { return x; }
 
+    // Override this if the backend not only supports working with XML values
+    // (and so returns a non-null value from table_creator_xml()), but the
+    // database itself has real XML support instead of just allowing to store
+    // and retrieve XML as text. "Real" support means at least preventing the
+    // application from storing malformed XML in the database.
+    virtual bool has_real_xml_support() const { return false; }
+
     // Override this if the backend doesn't handle floating point values
     // correctly, i.e. writing a value and reading it back doesn't return
     // *exactly* the same value.
@@ -4389,6 +4396,20 @@ TEST_CASE_METHOD(common_tests, "XML", "[core][xml]")
         into(xml2, ind), use(id);
 
     CHECK(ind == i_null);
+
+    // Inserting malformed XML into an XML column must fail but some backends
+    // (e.g. Firebird) don't have real XML support, so exclude them from this
+    // test.
+    if (tc_.has_real_xml_support())
+    {
+        xml.value = "<foo></not_foo>";
+        CHECK_THROWS_AS(
+            (sql << "insert into soci_test(id, x) values (2, "
+                        + tc_.to_xml(":1") + ")",
+                    use(xml)
+            ), soci_error
+        );
+    }
 }
 
 } // namespace test_cases

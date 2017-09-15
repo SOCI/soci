@@ -175,6 +175,11 @@ public:
         return new table_creator_for_xml(s);
     }
 
+    bool has_real_xml_support() const
+    {
+        return true;
+    }
+
     std::string to_date_time(std::string const &datdt_string) const
     {
         return "convert(datetime, \'" + datdt_string + "\', 120)";

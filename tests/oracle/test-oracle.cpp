@@ -1533,6 +1533,11 @@ public:
         return "(" + x + ").getCLOBVal()";
     }
 
+    bool has_real_xml_support() const
+    {
+        return true;
+    }
+
     std::string to_date_time(std::string const &datdt_string) const
     {
         return "to_date('" + datdt_string + "', 'YYYY-MM-DD HH24:MI:SS')";
