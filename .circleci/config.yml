@@ -1,0 +1,25 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:2.7
+    branches:
+      only:
+        - master
+        - /release*/
+    steps:
+      - checkout
+      - run:
+          name: install system packages
+          command: |
+            sudo apt-get update -q
+            sudo apt-get install -y lftp
+      - run:
+          name: install mkdocs
+          command: sudo pip install mkdocs
+      - run:
+          name: generate docs
+          command: mkdocs build --clean
+      - run:
+          name: deploy docs
+          command: lftp sftp://${DEPLOY_DOCS_USER}:${DEPLOY_DOCS_PASS}@${DEPLOY_DOCS_HOST} -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate no; set sftp:auto-confirm yes; mirror -v -R ./site ${DEPLOY_DOCS_BASE}/doc/${CIRCLE_BRANCH}; quit"

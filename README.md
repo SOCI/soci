@@ -1,11 +1,11 @@
 SOCI - The C++ Database Access Library
 ======================================
 
-Branches        | Travis-CI      | AppVeyor-CI | Coverity Scan  |
-----------------|--------------- |-------------|----------------|
-master          | [![Build Status](https://travis-ci.org/SOCI/soci.svg?branch=master)](https://travis-ci.org/SOCI/soci)         | [![Build status](https://ci.appveyor.com/api/projects/status/qii4fq3k8krg3da8/branch/master?svg=true)](https://ci.appveyor.com/project/mloskot/soci/branch/master) |  [![Coverage](https://scan.coverity.com/projects/6581/badge.svg)](https://scan.coverity.com/projects/soci-soci) |
-release/3.2     | [![Build Status](https://travis-ci.org/SOCI/soci.svg?branch=release%2F3.2)](https://travis-ci.org/SOCI/soci)  |                                                                                                                                                                    |                                                                                                                 |
---------------------------------------------------------------------
+Branches        | Travis-CI      | AppVeyor-CI | Coverity Scan  | Documentation |
+----------------|--------------- |-------------|----------------|---------------|
+master          | [![Build Status](https://travis-ci.org/SOCI/soci.svg?branch=master)](https://travis-ci.org/SOCI/soci)         | [![Build status](https://ci.appveyor.com/api/projects/status/qii4fq3k8krg3da8/branch/master?svg=true)](https://ci.appveyor.com/project/mloskot/soci/branch/master) |  [![Coverage](https://scan.coverity.com/projects/6581/badge.svg)](https://scan.coverity.com/projects/soci-soci) | [![CircleCI](https://circleci.com/gh/SOCI/soci/tree/master.svg?style=svg)](https://circleci.com/gh/SOCI/soci/tree/master) |
+release/3.2     | [![Build Status](https://travis-ci.org/SOCI/soci.svg?branch=release%2F3.2)](https://travis-ci.org/SOCI/soci)  |                                                                                                                                                                    |                                                                                                                 |                                                                                                                                 |
+---------------------------------------------------------------------------------
 
 
 
