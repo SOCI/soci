@@ -1,9 +1,9 @@
 # SOCI - The C++ Database Access Library
 
-[![GitHub release](https://img.shields.io/github/tag/SOCI/soci.svg)]()
-[![GitHub commits](https://img.shields.io/github/commits-since/SOCI/soci/3.2.3.svg)]()
+[![GitHub release](https://img.shields.io/github/tag/SOCI/soci.svg)](https://github.com/SOCI/soci/releases/tag/3.2.3)
+[![GitHub commits](https://img.shields.io/github/commits-since/SOCI/soci/3.2.3.svg)](https://github.com/SOCI/soci/tree/master)
 
-[![Website](https://img.shields.io/website-up-down-green-red/http/shields.io.svg?label=soci.sourceforge.net)](https://soci.sourceforge.net)
+[![Website](https://img.shields.io/website-up-down-green-red/http/shields.io.svg?label=soci.sourceforge.net)](http://soci.sourceforge.net)
 [![SourceForge](https://img.shields.io/sourceforge/dm/soci.svg)](https://sourceforge.net/projects/soci/files/)
 
 [![Gitter](https://img.shields.io/gitter/room/SOCI/soci.svg)](https://gitter.im/SOCI/soci)
