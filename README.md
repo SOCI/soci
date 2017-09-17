@@ -57,4 +57,4 @@ See documentation at http://soci.sourceforge.net for details
 ---
 
 [BSL](http://www.boost.org/LICENSE_1_0.txt) &copy;
-[Maciej Sobczak](http://github.com/msobczak) and [contributors](https://github.com/lexicalunit/nanodbc/graphs/contributors).
+[Maciej Sobczak](http://github.com/msobczak) and [contributors](https://github.com/SOCI/soci/graphs/contributors).
