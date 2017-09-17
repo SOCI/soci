@@ -55,3 +55,8 @@ or something similar.
 > layer in some of the control system components."
 
 -- Maciej Sobczak at [Inspirel](http://www.inspirel.com/users.html)
+
+---
+
+[BSL](http://www.boost.org/LICENSE_1_0.txt) &copy;
+[Maciej Sobczak](http://github.com/msobczak) and [contributors](https://github.com/lexicalunit/nanodbc/graphs/contributors).
