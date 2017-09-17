@@ -51,17 +51,13 @@ before_script: ./scripts/travis/before_script.sh
 script: ./scripts/travis/script.sh
 
 notifications:
+  webhooks:
+    - https://webhooks.gitter.im/e/000781732a3b1637ef82
+  irc:
+    channels:
+      - "irc.freenode.org#soci"
   #email:
   #    recipients:
   #        - soci-devel@lists.sourceforge.net
   #    on_success: change # [always|never|change] # default: change
   #    on_failure: always # [always|never|change] # default: always
-  irc:
-    channels:
-      - "irc.freenode.org#soci"
-  webhooks:
-    urls:
-      - https://webhooks.gitter.im/e/000781732a3b1637ef8
-    on_success: always  # options: [always|never|change] default: always
-    on_failure: always  # options: [always|never|change] default: always
-    on_start: always     # options: [always|never|change] default: always
