@@ -23,3 +23,6 @@ jobs:
       - run:
           name: deploy docs
           command: lftp sftp://${DEPLOY_DOCS_USER}:${DEPLOY_DOCS_PASS}@${DEPLOY_DOCS_HOST} -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate no; set sftp:auto-confirm yes; mirror -v -R ./site ${DEPLOY_DOCS_BASE}/doc/${CIRCLE_BRANCH}; quit"
+notify:
+  webhooks:
+    - url: https://webhooks.gitter.im/e/4b0a667f22355d934dc6
