@@ -52,12 +52,12 @@ script: ./scripts/travis/script.sh
 
 notifications:
   webhooks:
-    - https://webhooks.gitter.im/e/000781732a3b1637ef82
+    urls:
+      - https://webhooks.gitter.im/e/000781732a3b1637ef82
+    on_start: always
   irc:
     channels:
       - "irc.freenode.org#soci"
   #email:
   #    recipients:
   #        - soci-devel@lists.sourceforge.net
-  #    on_success: change # [always|never|change] # default: change
-  #    on_failure: always # [always|never|change] # default: always
