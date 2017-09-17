@@ -61,7 +61,7 @@ notifications:
       - "irc.freenode.org#soci"
   webhooks:
     urls:
-      - https://webhooks.gitter.im/e/379a56f450b22684c051 # SOCI unique webhook url for this service
+      - https://webhooks.gitter.im/e/000781732a3b1637ef8
     on_success: always  # options: [always|never|change] default: always
     on_failure: always  # options: [always|never|change] default: always
     on_start: always     # options: [always|never|change] default: always
