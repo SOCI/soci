@@ -13,11 +13,9 @@ The SOCI MySQL backend should in principle work with every version of MySQL 5.x.
 <table>
 <tbody>
 <tr><th>MySQL version</th><th>Operating System</th><th>Compiler</th></tr>
-<tr><td>5.5.28</td><td>OS X 10.8.2</td><td>Apple LLVM version 4.2
-(clang-425.0.24)</td></tr>
-<tr><td>5.0.96</td><td>Ubuntu 8.04.4 LTS (Hardy Heron)</td>
-<td>g++ (GCC) 4.2.4 (Ubuntu 4.2.4-1ubuntu4)</td>
-</tr>
+<tr><td>8.0.1</td><td>Windows 10</td><td>Visual Studio 2017 (15.3.3)</td></tr>
+<tr><td>5.5.28</td><td>OS X 10.8.2</td><td>Apple LLVM version 4.2 (clang-425.0.24)</td></tr>
+<tr><td>5.0.96</td><td>Ubuntu 8.04.4 LTS (Hardy Heron)</td><td>g++ (GCC) 4.2.4 (Ubuntu 4.2.4-1ubuntu4)</td></tr>
 </tbody>
 </table>
 
