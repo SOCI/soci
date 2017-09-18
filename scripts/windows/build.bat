@@ -44,6 +44,13 @@ cmake.exe ^
     -G %GENERATOR% ^
     rem -DBOOST_ROOT:PATH=%BOOST_ROOT% ^
     rem -DBOOST_LIBRARYDIR:PATH=%BOOST_ROOT%/lib%P%-msvc-14.0 ^
+    -DSOCI_EMPTY:BOOLEAN=ON ^
+    -DSOCI_DB2:BOOLEAN=OFF ^
+    -DSOCI_FIREBIRD:BOOLEAN=OFF ^
+    -DSOCI_MYSQL:BOOLEAN=OFF ^
+    -DSOCI_ODBC:BOOLEAN=OFF ^
+    -DSOCI_ORACLE:BOOLEAN=OFF ^
+    -DSOCI_POSTGRESQL:BOOLEAN=OFF ^
     ..
 move SOCI.sln SOCI%P%%U%.sln
 rem msbuild.exe SOCI%P%%U%.sln /p:Configuration=Release /p:Platform=%MSBUILDP%
