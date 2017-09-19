@@ -11,7 +11,7 @@ sudo: required
 
 compiler:
   - g++
-  - clang
+  #- clang
 
 services:
   - mysql
