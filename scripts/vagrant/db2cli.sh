@@ -15,12 +15,14 @@ DSDRIVER=${DSPREFIX}/dsdriver
 SOCITMP=/vagrant/tmp
 
 # Try to download from known location
-wget https://raw.githubusercontent.com/rorymckinley/gold_importer/master/3rdparty/ibm_data_server_driver_package_linuxx64_v10.5.tar.gz
+echo "DB2CLI: downloading ${DSPKG} from github.com/rorymckinley/gold_importer"
+wget -q https://raw.githubusercontent.com/rorymckinley/gold_importer/master/3rdparty/ibm_data_server_driver_package_linuxx64_v10.5.tar.gz
 
 # Check if driver package is available
-if [[ ! -f ${DSPKG} && ! -f ${SOCITMP}/${DSPKG} ]; then
+if [[ ! -f ${DSPKG} && ! -f ${SOCITMP}/${DSPKG} ]]; then
   echo "DB2CLI: missing ${SOCITMP}/${DSPKG}"
-  echo "DB2CLI: skipping driver installation"
+  echo "DB2CLI: try manual download, then provision VM to install"
+  echo "DB2CLI: meanwhile, skipping driver installation"
   exit 0
 fi
 
