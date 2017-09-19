@@ -4,7 +4,7 @@
 # Installs DB2 CLI Driver 10.5 (64-bit and 32-bit) from
 # IBM Data Server Driver Package (DS Driver)
 
-# Prerequisities:
+# Prerequisities (manual download if wget fails):
 # 1. Go to http://www-01.ibm.com/support/docview.wss?uid=swg21385217
 # 2. Go to "IBM Data Server Driver Package (DS Driver)"
 # 3. Download "IBM Data Server Driver Package (Linux AMD64 and Intel EM64T)"
@@ -14,11 +14,18 @@ DSPREFIX=/opt/ibm
 DSDRIVER=${DSPREFIX}/dsdriver
 SOCITMP=/vagrant/tmp
 
+# Try to download from known location
+wget https://raw.githubusercontent.com/rorymckinley/gold_importer/master/3rdparty/ibm_data_server_driver_package_linuxx64_v10.5.tar.gz
+
 # Check if driver package is available
-if [ ! -f "${SOCITMP}/${DSPKG}" ]; then
+if [[ ! -f ${DSPKG} && ! -f ${SOCITMP}/${DSPKG} ]; then
   echo "DB2CLI: missing ${SOCITMP}/${DSPKG}"
   echo "DB2CLI: skipping driver installation"
   exit 0
+fi
+
+if [ -f ${SOCITMP}/${DSPKG} ]; then
+    DSPKG=${SOCITMP}/${DSPKG}
 fi
 
 # If the drivers is already installed, skip re-installation
@@ -33,9 +40,9 @@ fi
 sudo apt-get -o Dpkg::Options::='--force-confnew' -y -q install \
   ksh
 
-echo "DB2CLI: unpacking ${SOCITMP}/${DSPKG} to ${DSPREFIX}"
+echo "DB2CLI: unpacking ${DSPKG} to ${DSPREFIX}"
 sudo mkdir -p ${DSPREFIX}
-sudo tar -zxf ${SOCITMP}/${DSPKG} -C ${DSPREFIX}
+sudo tar -zxf ${DSPKG} -C ${DSPREFIX}
 echo "DB2CLI: running ${DSDRIVER}/installDSDriver script"
 sudo ${DSDRIVER}/installDSDriver
 echo "DB2CLI: cat ${DSDRIVER}/installDSDriver.log"
