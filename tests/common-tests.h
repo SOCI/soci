@@ -537,7 +537,7 @@ TEST_CASE_METHOD(common_tests, "Exception on not connected", "[core][exception]"
     CHECK_THROWS_AS(sql.get_last_insert_id(s, l), soci_error);
 }
 
-TEST_CASE_METHOD(common_tests, "Basic functionality", "basics")
+TEST_CASE_METHOD(common_tests, "Basic functionality", "[core][basics]")
 {
     soci::session sql(backEndFactory_, connectString_);
 
@@ -570,7 +570,7 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
 
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
-    SECTION("Round trip works for char", "section")
+    SECTION("Round trip works for char", "[dummy]")
     {
         char c('a');
         sql << "insert into soci_test(c) values(:c)", use(c);
@@ -578,7 +578,7 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         CHECK(c == 'a');
     }
 
-    SECTION("Round trip works for string", "section")
+    SECTION("Round trip works for string", "[dummy]")
     {
         std::string helloSOCI("Hello, SOCI!");
         sql << "insert into soci_test(str) values(:s)", use(helloSOCI);
@@ -587,7 +587,7 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         CHECK(str == "Hello, SOCI!");
     }
 
-    SECTION("Round trip works for short", "section")
+    SECTION("Round trip works for short", "[dummy]")
     {
         short three(3);
         sql << "insert into soci_test(sh) values(:id)", use(three);
@@ -596,7 +596,7 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         CHECK(sh == 3);
     }
 
-    SECTION("Round trip works for int", "section")
+    SECTION("Round trip works for int", "[dummy]")
     {
         int five(5);
         sql << "insert into soci_test(id) values(:id)", use(five);
@@ -605,7 +605,7 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         CHECK(i == 5);
     }
 
-    SECTION("Round trip works for unsigned long", "section")
+    SECTION("Round trip works for unsigned long", "[dummy]")
     {
         unsigned long seven(7);
         sql << "insert into soci_test(ul) values(:ul)", use(seven);
@@ -614,7 +614,7 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         CHECK(ul == 7);
     }
 
-    SECTION("Round trip works for double", "section")
+    SECTION("Round trip works for double", "[dummy]")
     {
         double pi(3.14159265);
         sql << "insert into soci_test(d) values(:d)", use(pi);
@@ -623,7 +623,7 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         ASSERT_EQUAL(d, pi);
     }
 
-    SECTION("Round trip works for date without time", "section")
+    SECTION("Round trip works for date without time", "[dummy]")
     {
         std::tm nov15 = std::tm();
         nov15.tm_year = 105;
@@ -645,7 +645,7 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         CHECK(t.tm_sec  == 0);
     }
 
-    SECTION("Round trip works for date with time", "section")
+    SECTION("Round trip works for date with time", "[dummy]")
     {
         std::tm nov15 = std::tm();
         nov15.tm_year = 105;
@@ -667,7 +667,7 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         CHECK(t.tm_sec  == 17);
     }
 
-    SECTION("Indicator is filled correctly in the simplest case", "section")
+    SECTION("Indicator is filled correctly in the simplest case", "[dummy]")
     {
         int id(1);
         std::string str("Hello");
@@ -680,7 +680,7 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         CHECK(ind == i_ok);
     }
 
-    SECTION("Indicators work correctly more generally", "section")
+    SECTION("Indicators work correctly more generally", "[dummy]")
     {
         sql << "insert into soci_test(id,tm) values(NULL,NULL)";
         int i;
@@ -727,7 +727,7 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
-    SECTION("char", "section")
+    SECTION("char", "[dummy]")
     {
         char c;
         for (c = 'a'; c <= 'z'; ++c)
@@ -791,7 +791,7 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
     }
 
     // repeated fetch and bulk fetch of std::string
-    SECTION("std::string", "section")
+    SECTION("std::string", "[dummy]")
     {
         int const rowsToTest = 10;
         for (int i = 0; i != rowsToTest; ++i)
@@ -846,7 +846,7 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
         }
     }
 
-    SECTION("short", "section")
+    SECTION("short", "[dummy]")
     {
         short const rowsToTest = 100;
         short sh;
@@ -894,7 +894,7 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
         }
     }
 
-    SECTION("int", "section")
+    SECTION("int", "[dummy]")
     {
         int const rowsToTest = 100;
         int i;
@@ -960,7 +960,7 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
         }
     }
 
-    SECTION("unsigned int", "section")
+    SECTION("unsigned int", "[dummy]")
     {
         unsigned int const rowsToTest = 100;
         unsigned int ul;
@@ -1008,7 +1008,7 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
         }
     }
 
-    SECTION("double", "section")
+    SECTION("double", "[dummy]")
     {
         int const rowsToTest = 100;
         double d = 0.0;
@@ -1064,7 +1064,7 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
         }
     }
 
-    SECTION("std::tm", "section")
+    SECTION("std::tm", "[dummy]")
     {
         int const rowsToTest = 8;
         for (int i = 0; i != rowsToTest; ++i)
@@ -1298,7 +1298,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
 
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
-    SECTION("char", "section")
+    SECTION("char", "[dummy]")
     {
         char c('a');
         sql << "insert into soci_test(c) values(:c)", use(c);
@@ -1309,7 +1309,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
 
     }
 
-    SECTION("std::string", "section")
+    SECTION("std::string", "[dummy]")
     {
         std::string s = "Hello SOCI!";
         sql << "insert into soci_test(str) values(:s)", use(s);
@@ -1320,7 +1320,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(str == "Hello SOCI!");
     }
 
-    SECTION("short", "section")
+    SECTION("short", "[dummy]")
     {
         short s = 123;
         sql << "insert into soci_test(id) values(:id)", use(s);
@@ -1331,7 +1331,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(s2 == 123);
     }
 
-    SECTION("int", "section")
+    SECTION("int", "[dummy]")
     {
         int i = -12345678;
         sql << "insert into soci_test(id) values(:i)", use(i);
@@ -1342,7 +1342,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(i2 == -12345678);
     }
 
-    SECTION("unsigned long", "section")
+    SECTION("unsigned long", "[dummy]")
     {
         unsigned long ul = 4000000000ul;
         sql << "insert into soci_test(ul) values(:num)", use(ul);
@@ -1353,7 +1353,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(ul2 == 4000000000ul);
     }
 
-    SECTION("double", "section")
+    SECTION("double", "[dummy]")
     {
         double d = 3.14159265;
         sql << "insert into soci_test(d) values(:d)", use(d);
@@ -1364,7 +1364,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         ASSERT_EQUAL(d2, d);
     }
 
-    SECTION("std::tm", "section")
+    SECTION("std::tm", "[dummy]")
     {
         std::tm t = std::tm();
         t.tm_year = 105;
@@ -1393,7 +1393,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(t.tm_sec  == 57);
     }
 
-    SECTION("repeated use", "section")
+    SECTION("repeated use", "[dummy]")
     {
         int i;
         statement st = (sql.prepare
@@ -1417,7 +1417,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
 
     // tests for use of const objects
 
-    SECTION("const char", "section")
+    SECTION("const char", "[dummy]")
     {
         char const c('a');
         sql << "insert into soci_test(c) values(:c)", use(c);
@@ -1428,7 +1428,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
 
     }
 
-    SECTION("const std::string", "section")
+    SECTION("const std::string", "[dummy]")
     {
         std::string const s = "Hello const SOCI!";
         sql << "insert into soci_test(str) values(:s)", use(s);
@@ -1439,7 +1439,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(str == "Hello const SOCI!");
     }
 
-    SECTION("const short", "section")
+    SECTION("const short", "[dummy]")
     {
         short const s = 123;
         sql << "insert into soci_test(id) values(:id)", use(s);
@@ -1450,7 +1450,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(s2 == 123);
     }
 
-    SECTION("const int", "section")
+    SECTION("const int", "[dummy]")
     {
         int const i = -12345678;
         sql << "insert into soci_test(id) values(:i)", use(i);
@@ -1461,7 +1461,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(i2 == -12345678);
     }
 
-    SECTION("const unsigned long", "section")
+    SECTION("const unsigned long", "[dummy]")
     {
         unsigned long const ul = 4000000000ul;
         sql << "insert into soci_test(ul) values(:num)", use(ul);
@@ -1472,7 +1472,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(ul2 == 4000000000ul);
     }
 
-    SECTION("const double", "section")
+    SECTION("const double", "[dummy]")
     {
         double const d = 3.14159265;
         sql << "insert into soci_test(d) values(:d)", use(d);
@@ -1483,7 +1483,7 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         ASSERT_EQUAL(d2, d);
     }
 
-    SECTION("const std::tm", "section")
+    SECTION("const std::tm", "[dummy]")
     {
         std::tm t = std::tm();
         t.tm_year = 105;
@@ -1616,7 +1616,7 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
 
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
-    SECTION("char", "section")
+    SECTION("char", "[dummy]")
     {
         std::vector<char> v;
         v.push_back('a');
@@ -1636,7 +1636,7 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         CHECK(v2[3] == 'd');
     }
 
-    SECTION("std::string", "section")
+    SECTION("std::string", "[dummy]")
     {
         std::vector<std::string> v;
         v.push_back("ala");
@@ -1654,7 +1654,7 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         CHECK(v2[2] == "ma");
     }
 
-    SECTION("short", "section")
+    SECTION("short", "[dummy]")
     {
         std::vector<short> v;
         v.push_back(-5);
@@ -1674,7 +1674,7 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         CHECK(v2[3] == 123);
     }
 
-    SECTION("int", "section")
+    SECTION("int", "[dummy]")
     {
         std::vector<int> v;
         v.push_back(-2000000000);
@@ -1694,7 +1694,7 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         CHECK(v2[3] == 2000000000);
     }
 
-    SECTION("unsigned int", "section")
+    SECTION("unsigned int", "[dummy]")
     {
         std::vector<unsigned int> v;
         v.push_back(0);
@@ -1714,7 +1714,7 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         CHECK(v2[3] == 1000);
     }
 
-    SECTION("double", "section")
+    SECTION("double", "[dummy]")
     {
         std::vector<double> v;
         v.push_back(0);
@@ -1734,7 +1734,7 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         ASSERT_EQUAL(v2[3], 3.1415926);
     }
 
-    SECTION("std::tm", "section")
+    SECTION("std::tm", "[dummy]")
     {
         std::vector<std::tm> v;
         std::tm t = std::tm();
@@ -1779,7 +1779,7 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         CHECK(v2[2].tm_sec  == 37);
     }
 
-    SECTION("const int", "section")
+    SECTION("const int", "[dummy]")
     {
         std::vector<int> v;
         v.push_back(-2000000000);
@@ -2242,11 +2242,11 @@ TEST_CASE_METHOD(common_tests, "Dynamic binding with type conversions", "[core][
 
     sql.uppercase_column_names(true);
 
-    SECTION("simple conversions", "section")
+    SECTION("simple conversions", "[dummy]")
     {
         auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
-        SECTION("between single basic type and user type", "section")
+        SECTION("between single basic type and user type", "[dummy]")
         {
             MyInt mi;
             mi.set(123);
@@ -2262,7 +2262,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic binding with type conversions", "[core][
             CHECK(mi.get() == 124);
         }
 
-        SECTION("with use const", "section")
+        SECTION("with use const", "[dummy]")
         {
             MyInt mi;
             mi.set(123);
@@ -2276,11 +2276,11 @@ TEST_CASE_METHOD(common_tests, "Dynamic binding with type conversions", "[core][
         }
     }
 
-    SECTION("ORM conversions", "section")
+    SECTION("ORM conversions", "[dummy]")
     {
         auto_table_creator tableCreator(tc_.table_creator_3(sql));
 
-        SECTION("conversions based on values", "section")
+        SECTION("conversions based on values", "[dummy]")
         {
             PhonebookEntry p1;
             sql << "select * from soci_test", into(p1);
@@ -2320,7 +2320,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic binding with type conversions", "[core][
             CHECK(count == 3);
         }
 
-        SECTION("conversions based on values with use const", "section")
+        SECTION("conversions based on values with use const", "[dummy]")
         {
             PhonebookEntry p1;
             p1.name = "Joe Coder";
@@ -2338,7 +2338,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic binding with type conversions", "[core][
             CHECK(p2.phone == "123-456");
         }
 
-        SECTION("conversions based on accessor functions (as opposed to direct variable bindings)", "section")
+        SECTION("conversions based on accessor functions (as opposed to direct variable bindings)", "[dummy]")
         {
             PhonebookEntry3 p1;
             p1.setName("Joe Hacker");
@@ -2354,7 +2354,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic binding with type conversions", "[core][
             CHECK(p2.getPhone() == "10010110");
         }
 
-        SECTION("PhonebookEntry2 type conversion to test calls to values::get_indicator()", "section")
+        SECTION("PhonebookEntry2 type conversion to test calls to values::get_indicator()", "[dummy]")
         {
             PhonebookEntry2 p1;
             sql << "select * from soci_test", into(p1);
@@ -4045,7 +4045,7 @@ TEST_CASE_METHOD(common_tests, "Insert error", "[core][insert][exception]")
         }
     } table_creator(sql);
 
-    SECTION("literal SQL queries appear in the error message", "section")
+    SECTION("literal SQL queries appear in the error message", "[dummy]")
     {
         sql << "insert into soci_test(name, age) values ('John', 74)";
         sql << "insert into soci_test(name, age) values ('Paul', 72)";
@@ -4067,7 +4067,7 @@ TEST_CASE_METHOD(common_tests, "Insert error", "[core][insert][exception]")
         }
     }
 
-    SECTION("SQL queries parameters appear in the error message", "section")
+    SECTION("SQL queries parameters appear in the error message", "[dummy]")
     {
         char const* const names[] = { "John", "Paul", "George", "John", NULL };
         int const ages[] = { 74, 72, 72, 74, 0 };
@@ -4157,7 +4157,7 @@ TEST_CASE_METHOD(common_tests, "Truncation error", "[core][insert][truncate][exc
         return;
     }
 
-    SECTION("Error given for char column", "section")
+    SECTION("Error given for char column", "[dummy]")
     {
         struct fixed_name_table_creator : table_creator_base
         {
@@ -4175,7 +4175,7 @@ TEST_CASE_METHOD(common_tests, "Truncation error", "[core][insert][truncate][exc
         check_for_no_truncation(sql);
     }
 
-    SECTION("Error given for varchar column", "section")
+    SECTION("Error given for varchar column", "[dummy]")
     {
         // Reuse one of the standard tables which has a varchar(20) column.
         auto_table_creator tableCreator(tc_.table_creator_1(sql));
