@@ -74,6 +74,7 @@ namespace std {
 
 //define DLL import/export on WIN32
 #ifdef _WIN32
+# define _WIN32_WINNT 0x0500
 # ifdef SOCI_DLL
 #  ifdef SOCI_SOURCE
 #   define SOCI_DECL __declspec(dllexport)
