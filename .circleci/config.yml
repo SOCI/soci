@@ -12,10 +12,10 @@ jobs:
             markdownlint --version
       - run:
           name: lint README.md
-          command: mdl README.md
+          command: markdownlint --config .markdownlint.json README.md
       - run:
-          name: lint docs
-          command: mdl docs/
+          name: lint docs/
+          command: markdownlint --config .markdownlint.json docs/
   build:
     docker:
       - image: circleci/python:2.7
