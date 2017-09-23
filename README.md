@@ -12,11 +12,10 @@
 
 ## Build Status
 
-Branches        | Travis-CI      | AppVeyor-CI | Coverity Scan  | Documentation |
-----------------|--------------- |-------------|----------------|---------------|
-master          | [![Build Status](https://travis-ci.org/SOCI/soci.svg?branch=master)](https://travis-ci.org/SOCI/soci)         | [![Build status](https://ci.appveyor.com/api/projects/status/dtp5mvbeyu9aqupr/branch/master?svg=true)](https://ci.appveyor.com/project/SOCI/soci/branch/master) |  [![Coverage](https://scan.coverity.com/projects/6581/badge.svg)](https://scan.coverity.com/projects/soci-soci) | [![Docs Status](https://circleci.com/gh/SOCI/soci.svg?style=shield&circle-token=5d31c692ed5fcffa5c5fc6b7fe2257b34d78f3c9)](https://circleci.com/gh/SOCI/soci) |
-release/3.2     | [![Build Status](https://travis-ci.org/SOCI/soci.svg?branch=release%2F3.2)](https://travis-ci.org/SOCI/soci)  |                                                                                                                                                                    |                                                                                                                 |                                                                                                                                 |
----------------------------------------------------------------------------------
+| Branches    | Travis-CI | AppVeyor-CI | Coverity Scan  | Documentation |
+|-------------|-----------|-------------|----------------|---------------|
+| master      | [![Build Status](https://travis-ci.org/SOCI/soci.svg?branch=master)](https://travis-ci.org/SOCI/soci) | [![Build status](https://ci.appveyor.com/api/projects/status/dtp5mvbeyu9aqupr/branch/master?svg=true)](https://ci.appveyor.com/project/SOCI/soci/branch/master) |  [![Coverage](https://scan.coverity.com/projects/6581/badge.svg)](https://scan.coverity.com/projects/soci-soci) | [![Docs Status](https://circleci.com/gh/SOCI/soci.svg?style=shield&circle-token=5d31c692ed5fcffa5c5fc6b7fe2257b34d78f3c9)](https://circleci.com/gh/SOCI/soci) |
+| release/3.2 | [![Build Status](https://travis-ci.org/SOCI/soci.svg?branch=release%2F3.2)](https://travis-ci.org/SOCI/soci) | | | |
 
 ## History
 
