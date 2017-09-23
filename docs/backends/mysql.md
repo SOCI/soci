@@ -10,14 +10,11 @@ The SOCI MySQL backend should in principle work with every version of MySQL 5.x.
 
 ### Tested Platforms
 
-<table>
-<tbody>
-<tr><th>MySQL version</th><th>Operating System</th><th>Compiler</th></tr>
-<tr><td>8.0.1</td><td>Windows 10</td><td>Visual Studio 2017 (15.3.3)</td></tr>
-<tr><td>5.5.28</td><td>OS X 10.8.2</td><td>Apple LLVM version 4.2 (clang-425.0.24)</td></tr>
-<tr><td>5.0.96</td><td>Ubuntu 8.04.4 LTS (Hardy Heron)</td><td>g++ (GCC) 4.2.4 (Ubuntu 4.2.4-1ubuntu4)</td></tr>
-</tbody>
-</table>
+|MySQL|OS|Compiler|
+|--- |--- |--- |
+|8.0.1|Windows 10|Visual Studio 2017 (15.3.3)|
+|5.5.28|OS X 10.8.2|Apple LLVM version 4.2 (clang-425.0.24)|
+|5.0.96|Ubuntu 8.04.4 LTS (Hardy Heron)|g++ (GCC) 4.2.4 (Ubuntu 4.2.4-1ubuntu4)|
 
 ### Required Client Libraries
 
@@ -57,7 +54,6 @@ Once you have created a `session` object as shown above, you can use it to acces
     int count;
     sql << "select count(*) from invoices", into(count);
 
-
 (See the [SOCI basics]("../basics.html) and [exchanging data](../exchange.html) documentation for general information on using the `session` class.)
 
 ## SOCI Feature Support
@@ -69,52 +65,15 @@ The MySQL backend supports the use of the SOCI `row` class, which facilitates re
 When calling `row::get&lt;T&gt;()`, the type you should pass as `T` depends upon the underlying database type.
 For the MySQL backend, this type mapping is:
 
-<table>
-  <tbody>
-    <tr>
-      <th>MySQL Data Type</th>
-      <th>SOCI Data Type</th>
-      <th><code>row::get&lt;T&gt;</code> specializations</th>
-    </tr>
-    <tr>
-      <td>FLOAT, DOUBLE, DECIMAL and synonyms</td>
-      <td><code>dt_double</code></td>
-      <td><code>double</code></td>
-    </tr>
-    <tr>
-      <td>TINYINT, TINYINT UNSIGNED, SMALLINT, SMALLINT UNSIGNED, INT</td>
-      <td><code>dt_integer</code></td>
-      <td><code>int</code></td>
-    </tr>
-    <tr>
-      <td>INT UNSIGNED</td>
-      <td><code>dt_long_long</code></td>
-      <td><code>long long</code> or </code>unsigned</code></td>
-    </tr>
-    <tr>
-      <td>BIGINT</td>
-      <td><code>dt_long_long</code></td>
-      <td><code>long long</code></td>
-    </tr>
-    <tr>
-      <td>BIGINT UNSIGNED</td>
-      <td><code>dt_unsigned_long_long</code></td>
-      <td><code>unsigned long long</code></td>
-    </tr>
-    <tr>
-      <td>CHAR, VARCHAR, BINARY, VARBINARY, TINYBLOB, MEDIUMBLOB, BLOB,
-      LONGBLOB, TINYTEXT, MEDIUMTEXT, TEXT, LONGTEXT, ENUM</td>
-      <td><code>dt_string</code></td>
-      <td><code>std::string</code></td>
-    </tr>
-    <tr>
-      <td>TIMESTAMP (works only with MySQL >=&nbsp;5.0), DATE,
-      TIME, DATETIME</td>
-      <td><code>dt_date</code></td>
-      <td><code>std::tm</code></td>
-    </tr>
-  </tbody>
-</table>
+|MySQL Data Type|SOCI Data Type|`row::get<T>` specializations|
+|--- |--- |--- |
+|FLOAT, DOUBLE, DECIMAL and synonyms|dt_double|double|
+|TINYINT, TINYINT UNSIGNED, SMALLINT, SMALLINT UNSIGNED, INT|dt_integer|int|
+|INT UNSIGNED|dt_long_long|long long or unsigned|
+|BIGINT|dt_long_long|long long|
+|BIGINT UNSIGNED|dt_unsigned_long_long|unsigned long long|
+|CHAR, VARCHAR, BINARY, VARBINARY, TINYBLOB, MEDIUMBLOB, BLOB,LONGBLOB, TINYTEXT, MEDIUMTEXT, TEXT, LONGTEXT, ENUM|dt_string|std::string|
+|TIMESTAMP (works only with MySQL >= 5.0), DATE, TIME, DATETIME|dt_date|std::tm|
 
 (See the [dynamic resultset binding](../exchange.html#dynamic) documentation for general information on using the `Row` class.)
 
@@ -156,22 +115,10 @@ SOCI provides access to underlying datbabase APIs via several `get_backend()` fu
 
 The MySQL backend provides the following concrete classes for native API access:
 
-<table>
-  <tbody>
-    <tr>
-      <th>Accessor Function</th>
-      <th>Concrete Class</th>
-    </tr>
-    <tr>
-      <td><code>session_backend * session::get_backend()</code></td>
-      <td><code>mysql_session_backend</code></td>
-    </tr>
-    <tr>
-      <td><code>statement_backend * statement::get_backend()</code></td>
-      <td><code>mysql_statement_backend</code></td>
-    </tr>
-  </tbody>
-</table>
+|Accessor Function|Concrete Class|
+|--- |--- |
+|session_backend * session::get_backend()|mysql_session_backend|
+|statement_backend * statement::get_backend()|mysql_statement_backend|
 
 ## Backend-specific extensions
 

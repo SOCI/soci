@@ -10,20 +10,23 @@ The SOCI SQLite3 backend is supported for use with SQLite3 >= 3.1
 
 ### Tested Platforms
 
-<table>
-<tbody>
-<tr><th>SQLite3 version</th><th>Operating System</th><th>Compiler</th></tr>
-<tr><td>3.5.2</td><td>Mac OS X 10.5</td><td>g++ 4.0.1</td></tr>
-<tr><td>3.1.3</td><td>Mac OS X 10.4</td><td>g++ 4.0.1</td></tr>
-<tr><td>3.2.1</td><td>Linux i686 2.6.10-gentoo-r6</td><td>g++ 3.4.5</td></tr>
-<tr><td>3.3.4</td><td>Ubuntu 5.1</td><td>g++ 4.0.2</td></tr>
-<tr><td>3.3.4</td><td>Windows XP</td><td>(cygwin) g++ 3.3.4</td></tr>
-<tr><td>3.3.4</td><td>Windows XP</td><td>Visual C++ 2005 Express Edition</td></tr>
-<tr><td>3.3.8</td><td>Windows XP</td><td>Visual C++ 2005 Professional</td></tr>
-<tr><td>3.4.0</td><td>Windows XP</td><td>(cygwin) g++ 3.4.4</td></tr>
-<tr><td>3.4.0</td><td>Windows XP</td><td>Visual C++ 2005 Express Edition</td></tr>
-</tbody>
-</table>
+|SQLite3|OS|Compiler|
+|--- |--- |--- |
+|3.12.1|Windows Server 2016|MSVC++ 14.1|
+|3.12.1|Windows Server 2012 R2|MSVC++ 14.0|
+|3.12.1|Windows Server 2012 R2|MSVC++ 12.0|
+|3.12.1|Windows Server 2012 R2|MSVC++ 11.0|
+|3.12.1|Windows Server 2012 R2|Mingw-w64/GCC 4.8|
+|3.7.9|Ubuntu 12.04|g++ 4.6.3|
+|3.4.0|Windows XP|(cygwin) g++ 3.4.4|
+|3.4.0|Windows XP|Visual C++ 2005 Express Edition|
+|3.3.8|Windows XP|Visual C++ 2005 Professional|
+|3.5.2|Mac OS X 10.5|g++ 4.0.1|
+|3.3.4|Ubuntu 5.1|g++ 4.0.2|
+|3.3.4|Windows XP|(cygwin) g++ 3.3.4|
+|3.3.4|Windows XP|Visual C++ 2005 Express Edition|
+|3.2.1|Linux i686 2.6.10-gentoo-r6|g++ 3.4.5|
+|3.1.3|Mac OS X 10.4|g++ 4.0.1|
 
 ### Required Client Libraries
 
@@ -33,11 +36,13 @@ The SOCI SQLite3 backend requires SQLite3's `libsqlite3` client library.
 
 To establish a connection to the SQLite3 database, create a Session object using the `SQLite3` backend factory together with the database file name:
 
-    session sql(sqlite3, "database_filename");
+```cpp
+session sql(sqlite3, "database_filename");
 
-    // or:
+// or:
 
-    session sql("sqlite3", "db=db.sqlite timeout=2 shared_cache=true");
+session sql("sqlite3", "db=db.sqlite timeout=2 shared_cache=true");
+```
 
 The set of parameters used in the connection string for SQLite is:
 
@@ -48,8 +53,10 @@ The set of parameters used in the connection string for SQLite is:
 
 Once you have created a `session` object as shown above, you can use it to access the database, for example:
 
-    int count;
-    sql << "select count(*) from invoices", into(count);
+```cpp
+int count;
+sql << "select count(*) from invoices", into(count);
+```
 
 (See the [SOCI basics](../basics.html) and [exchanging data](../exchange.html) documentation for general information on using the `session` class.)
 
@@ -63,45 +70,14 @@ When calling `row::get<T>()`, the type you should pass as T depends upon the und
 
 For the SQLite3 backend, this type mapping is complicated by the fact the SQLite3 does not enforce [types][INTEGER_PRIMARY_KEY] and makes no attempt to validate the type names used in table creation or alteration statements. SQLite3 will return the type as a string, SOCI will recognize the following strings and match them the corresponding SOCI types:
 
-<table>
-  <tbody>
-    <tr>
-      <th>SQLite3 Data Type</th>
-      <th>SOCI Data Type</th>
-      <th><code>row::get&lt;T&gt;</code> specializations</th>
-    </tr>
-    <tr>
-      <td>*float*, *double*</td>
-      <td><code>dt_double</code></td>
-      <td><code>double</code></td>
-    </tr>
-    <tr>
-      <td>*int8*, *bigint*</td>
-      <td><code>dt_long_long</code></td>
-      <td><code>long long</code></td>
-    </tr>
-    <tr>
-      <td>*unsigned big int*</td>
-      <td><code>dt_unsigned_long_long</code></td>
-      <td><code>unsigned long long</code></td>
-    </tr>
-    <tr>
-      <td>*int*, *boolean*</td>
-      <td><code>dt_integer</code></td>
-      <td><code>int</code></td>
-    </tr>
-    <tr>
-      <td>*text, *char*</td>
-      <td><code>dt_string</code></td>
-      <td><code>std::string</code></td>
-    </tr>
-    <tr>
-      <td>*date*, *time*</td>
-      <td><code>dt_date</code></td>
-      <td><code>std::tm</code></code></code></td>
-    </tr>
-  </tbody>
-</table>
+|SQLite3 Data Type|SOCI Data Type|`row::get<T>` specializations|
+|--- |--- |--- |
+|*float*, *double*|dt_double|double|
+|*int8*, *bigint*|dt_long_long|long long|
+|*unsigned big int*|dt_unsigned_long_long|unsigned long long|
+|*int*, *boolean*|dt_integer|int|
+|*text, *char*|dt_string|std::string|
+|*date*, *time*|dt_date|std::tm|
 
 [INTEGER_PRIMARY_KEY] : There is one case where SQLite3 enforces type. If a column is declared as "integer primary key", then SQLite3 uses that as an alias to the internal ROWID column that exists for every table.  Only integers are allowed in this column.
 
@@ -111,14 +87,18 @@ For the SQLite3 backend, this type mapping is complicated by the fact the SQLite
 
 In addition to [binding by position](../exchange.html#bind_position), the SQLite3 backend supports [binding by name](../exchange.html#bind_name), via an overload of the `use()` function:
 
-    int id = 7;
-    sql << "select name from person where id = :id", use(id, "id")
+```cpp
+int id = 7;
+sql << "select name from person where id = :id", use(id, "id")
+```
 
 The backend also supports the SQLite3 native numbered syntax, "one or more literals can be replace by a parameter "?" or ":AAA" or "@AAA" or "$VVV" where AAA is an alphanumeric identifier and VVV is a variable name according to the syntax rules of the TCL programming language." [[1]](http://www.sqlite.org/capi3ref.html#sqlite3_bind_int):
 
-    int i = 7;
-    int j = 8;
-    sql << "insert into t(x, y) values(?, ?)", use(i), use(j);
+```cpp
+int i = 7;
+int j = 8;
+sql << "insert into t(x, y) values(?, ?)", use(i), use(j);
+```
 
 ### Bulk Operations
 
@@ -150,26 +130,11 @@ SOCI provides access to underlying datbabase APIs via several `get_backend()` fu
 
 The SQLite3 backend provides the following concrete classes for navite API access:
 
-<table>
-  <tbody>
-    <tr>
-      <th>Accessor Function</th>
-      <th>Concrete Class</th>
-    </tr>
-    <tr>
-      <td><code>session_backend* session::get_backend()</code></td>
-      <td><code>sqlie3_session_backend</code></td>
-    </tr>
-    <tr>
-      <td><code>statement_backend* statement::get_backend()</code></td>
-      <td><code>sqlite3_statement_backend</code></td>
-    </tr>
-    <tr>
-      <td><code>rowid_backend* rowid::get_backend()</code></td>
-      <td><code>sqlite3_rowid_backend</code></td>
-    </tr>
-  </tbody>
-</table>
+|Accessor Function|Concrete Class|
+|--- |--- |
+|session_backend* session::get_backend()|sqlie3_session_backend|
+|statement_backend* statement::get_backend()|sqlite3_statement_backend|
+|rowid_backend* rowid::get_backend()|sqlite3_rowid_backend|
 
 ## Backend-specific extensions
 
