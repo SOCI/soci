@@ -16,20 +16,17 @@ jobs:
       - run:
           name: lint docs/
           command: markdownlint --config .markdownlint.json docs/
-  build:
+  build-deploy:
     docker:
       - image: circleci/python:2.7
     steps:
+      - checkout
       - run:
           name: install mkdocs
           command: sudo pip install mkdocs
       - run:
           name: generate docs
           command: mkdocs build --clean
-  deploy:
-    docker:
-      - image: circleci/python:2.7
-    steps:
       - run:
           name: install lftp
           command: |
@@ -49,17 +46,9 @@ workflows:
               only:
                 - master
                 - /release*/
-      - build:
+      - build-deploy:
           requires:
             - lint
-          filters:
-            branches:
-              only:
-                - master
-                - /release*/
-      - deploy:
-          requires:
-            - build
           filters:
             branches:
               only:
