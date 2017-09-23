@@ -26,6 +26,11 @@
 #define CATCH_CONFIG_RUNNER
 #include <catch.hpp>
 
+#if defined(_MSC_VER) && (_MSC_VER < 1500)
+#undef SECTION
+#define SECTION(name) INTERNAL_CATCH_SECTION(name, "dummy-for-vc8")
+#endif
+
 #include <algorithm>
 #include <cassert>
 #include <clocale>
@@ -537,7 +542,7 @@ TEST_CASE_METHOD(common_tests, "Exception on not connected", "[core][exception]"
     CHECK_THROWS_AS(sql.get_last_insert_id(s, l), soci_error);
 }
 
-TEST_CASE_METHOD(common_tests, "Basic functionality")
+TEST_CASE_METHOD(common_tests, "Basic functionality", "[core][basics]")
 {
     soci::session sql(backEndFactory_, connectString_);
 
