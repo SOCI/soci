@@ -29,7 +29,7 @@ The SOCI PostgreSQL backend requires PostgreSQL's `libpq` client library.
 
 Note that the SOCI library itself depends also on `libdl`, so the minimum set of libraries needed to compile a basic client program is:
 
-```sh
+```console
 -lsoci_core -lsoci_postgresql -ldl -lpq
 ```
 

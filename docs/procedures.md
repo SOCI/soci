@@ -2,18 +2,17 @@
 
 The `procedure` class provides a convenient mechanism for calling stored procedures:
 
-    sql << "create or replace procedure echo(output out varchar2,"
-           "input in varchar2) as "
-           "begin output := input; end;";
+```cpp
+sql << "create or replace procedure echo(output out varchar2,"
+        "input in varchar2) as "
+        "begin output := input; end;";
 
-    std::string in("my message");
-    std::string out;
-    procedure proc = (sql.prepare << "echo(:output, :input)",
-                                     use(out, "output"),
-                                     use(in, "input"));
-    proc.execute(true);
-    assert(out == "my message");
-
+std::string in("my message");
+std::string out;
+procedure proc = (sql.prepare << "echo(:output, :input)", use(out, "output"), use(in, "input"));
+proc.execute(true);
+assert(out == "my message");
+```
 
 ## Portability note
 

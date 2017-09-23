@@ -8,28 +8,28 @@ Depending on the design of the client application this might be also the most st
 For some applications, however, it might be preferable to decouple the set of threads from the set of sessions, so that they can be optimized separately with different resources in mind.
 The `connection_pool` class is provided for this purpose:
 
+```cpp
+// phase 1: preparation
 
-    // phase 1: preparation
+const size_t poolSize = 10;
+connection_pool pool(poolSize);
 
-    const size_t poolSize = 10;
-    connection_pool pool(poolSize);
+for (size_t i = 0; i != poolSize; ++i)
+{
+    session &amp; sql = pool.at(i);
 
-    for (size_t i = 0; i != poolSize; ++i)
-    {
-        session &amp; sql = pool.at(i);
+    sql.open("postgresql://dbname=mydb");
+}
 
-        sql.open("postgresql://dbname=mydb");
-    }
+// phase 2: usage from working threads
 
-    // phase 2: usage from working threads
+{
+    session sql(pool);
 
-    {
-        session sql(pool);
+    sql << "select something from somewhere...";
 
-        sql << "select something from somewhere...";
-
-    } // session is returned to the pool automatically
-
+} // session is returned to the pool automatically
+```
 
 The `connection_pool`'s constructor expects the size of the pool and internally creates an array of `session`s in the disconnected state.
 Later, the `at` function provides *non-synchronized* access to each element of the array.

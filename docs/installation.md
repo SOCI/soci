@@ -25,7 +25,9 @@ Unpack the archive.
 
 You can always clone SOCI from the Git repository:
 
-    git clone git://github.com/SOCI/soci.git
+```console
+git clone git://github.com/SOCI/soci.git
+```
 
 ## Building with CMake
 
@@ -41,20 +43,24 @@ If you are new to CMake, you may find the tutorial [Running CMake](http://cmake.
 
 Steps outline using GNU Make makefiles:
 
-    $ mkdir build
-    $ cd build
-    $ cmake -G "Unix Makefiles" -DWITH_BOOST=OFF -DWITH_ORACLE=OFF (...) /path/to/soci-X.Y.Z
-    $ make
-    $ make install
+```console
+mkdir build
+cd build
+cmake -G "Unix Makefiles" -DWITH_BOOST=OFF -DWITH_ORACLE=OFF (...) /path/to/soci-X.Y.Z
+make
+make install
+```
 
 ### Running CMake on Windows
 
 Steps outline using Visual Studio 2010 and MSBuild:
 
-    > mkdir build
-    > cd build
-    > cmake -G "Visual Studio 10" -DWITH_BOOST=OFF -DWITH_ORACLE=OFF (...) C:\path\to\soci-X.Y.Z
-    > msbuild.exe SOCI.sln
+```console
+mkdir build
+cd build
+cmake -G "Visual Studio 10" -DWITH_BOOST=OFF -DWITH_ORACLE=OFF (...) C:\path\to\soci-X.Y.Z
+msbuild.exe SOCI.sln
+```
 
 ### CMake configuration
 
@@ -74,75 +80,73 @@ The lists consist of common variables for SOCI core and all backends as well as 
 
 List of a few essential CMake variables:
 
-* CMAKE_BUILD_TYPE - string - Specifies the build type for make based generators (see CMake [help](http://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_BUILD_TYPE)).
-* CMAKE_INSTALL_PREFIX - path - Install directory used by install command (see CMake [help](http://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_INSTALL_PREFIX)).
-* CMAKE_VERBOSE_MAKEFILE - boolean - If ON, create verbose makefile (see CMake [help](http://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_VERBOSE_MAKEFILE)).
+* `CMAKE_BUILD_TYPE` - string - Specifies the build type for make based generators (see CMake [help](http://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_BUILD_TYPE)).
+* `CMAKE_INSTALL_PREFIX` - path - Install directory used by install command (see CMake [help](http://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_INSTALL_PREFIX)).
+* `CMAKE_VERBOSE_MAKEFILE` - boolean - If ON, create verbose makefile (see CMake [help](http://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_VERBOSE_MAKEFILE)).
 
 List of variables to control common SOCI features and dependencies:
 
-* SOCI_STATIC - boolean - Request to build static libraries, along with shared, of SOCI core and all successfully configured backends.
-* SOCI_TESTS - boolean - Request to build regression tests for SOCI core and all successfully configured backends.
-* WITH_BOOST - boolean - Should CMake try to detect [Boost C++ Libraries](http://www.boost.org/). If ON, CMake will try to find Boost headers and binaries of [Boost.Date_Time](http://www.boost.org/doc/libs/release/doc/html/date_time.html) library.
-
-#### IBM DB2
-
-* WITH_DB2 - boolean - Should CMake try to detect IBM DB2 Call Level Interface (CLI) library.
-* DB2_INCLUDE_DIR - string - Path to DB2 CLI include directories where CMake should look for `sqlcli1.h` header.
-* DB2_LIBRARIES - string - Full paths to  `db2` or `db2api` libraries to link SOCI against to enable the backend support.
-* SOCI_DB2 - boolean - Requests to build [DB2](backends/db2.html) backend. Automatically switched on, if `WITH_DB2` is set to ON.
-* SOCI_DB2_TEST_CONNSTR - string - See [DB2 backend reference](backends/db2.html) for details. Example: `-DSOCI_DB2_TEST_CONNSTR:STRING="DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;autocommit=off"`
-
-#### Firebird
-
-* WITH_FIREBIRD - boolean - Should CMake try to detect Firebird client library.
-* FIREBIRD_INCLUDE_DIR - string - Path to Firebird include directories where CMake should look for `ibase.h` header.
-* FIREBIRD_LIBRARIES - string - Full paths to Firebird `fbclient` or `fbclient_ms` libraries to link SOCI against to enable the backend support.
-* SOCI_FIREBIRD - boolean - Requests to build [Firebird](backends/firebird.html) backend. Automatically switched on, if `WITH_FIREBIRD` is set to ON.
-* SOCI_FIREBIRD_TEST_CONNSTR - string - See [Firebird backend refernece](backends/firebird.html) for details. Example: `-DSOCI_FIREBIRD_TEST_CONNSTR:STRING="service=LOCALHOST:/tmp/soci_test.fdb user=SYSDBA password=masterkey"`
-
-#### MySQL
-
-* WITH_MYSQL - boolean - Should CMake try to detect [mysqlclient](http://dev.mysql.com/doc/refman/5.0/en/c.html) libraries providing MySQL C API. Note, currently the [mysql_config](http://dev.mysql.com/doc/refman/5.0/en/building-clients.html) program is not being used.
-* MYSQL_DIR - string - Path to MySQL installation root directory. CMake will scan subdirectories `MYSQL_DIR/include` and `MYSQL_DIR/lib` respectively for MySQL headers and libraries.
-* MYSQL_INCLUDE_DIR - string - Path to MySQL include directory where CMake should look for `mysql.h` header.
-* MYSQL_LIBRARIES - string - Full paths to libraries to link SOCI against to enable the backend support.
-* SOCI_MYSQL - boolean - Requests to build [MySQL](backends/mysql.html) backend. Automatically switched on, if `WITH_MYSQL` is set to ON.
-* SOCI_MYSQL_TEST_CONNSTR - string - Connection string to MySQL test database. Format of the string is explained [MySQL backend refernece](backends/mysql.html). Example: `-DSOCI_MYSQL_TEST_CONNSTR:STRING="db=mydb user=mloskot password=secret"`
-
-#### ODBC
-
-* WITH_ODBC - boolean - Should CMake try to detect ODBC libraries. On Unix systems, CMake tries to find [unixODBC](http://www.unixodbc.org/) or [iODBC](http://www.iodbc.org/) implementations.
-* ODBC_INCLUDE_DIR - string - Path to ODBC implementation include directories where CMake should look for `sql.h` header.
-* ODBC_LIBRARIES - string - Full paths to libraries to link SOCI against to enable the backend support.
-* SOCI_ODBC - boolean - Requests to build [ODBC](backends/odbc.html) backend. Automatically switched on, if `WITH_ODBC` is set to ON.
-* SOCI_ODBC_TEST_{database}_CONNSTR - string - ODBC Data Source Name (DSN) or ODBC File Data Source Name (FILEDSN) to test database: Microsoft Access (.mdb), Microsoft SQL Server, MySQL, PostgreSQL or any other ODBC SQL data source. {database} is placeholder for name of database driver ACCESS, MYSQL, POSTGRESQL, etc. See [ODBC](backends/odbc.html) backend refernece for details. Example: `-DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR="FILEDSN=/home/mloskot/dev/soci/_git/build/test-postgresql.dsn"`
-
-#### Oracle
-
-* WITH_ORACLE - boolean - Should CMake try to detect [Oracle Call Interface (OCI)](http://en.wikipedia.org/wiki/Oracle_Call_Interface) libraries.
-* ORACLE_INCLUDE_DIR - string - Path to Oracle include directory where CMake should look for `oci.h` header.
-* ORACLE_LIBRARIES - string - Full paths to libraries to link SOCI against to enable the backend support.
-* SOCI_ORACLE - boolean - Requests to build [Oracle](backends/oracle.html) backend. Automatically switched on, if `WITH_ORACLE` is set to ON.
-* SOCI_ORACLE_TEST_CONNSTR - string - Connection string to Oracle test database. Format of the string is explained [Oracle backend reference](backends/oracle.html). Example: `-DSOCI_ORACLE_TEST_CONNSTR:STRING="service=orcl user=scott password=tiger"`
-
-#### PostgreSQL
-
-* WITH_POSTGRESQL - boolean - Should CMake try to detect PostgreSQL client interface libraries. SOCI relies on [libpq](http://www.postgresql.org/docs/9.0/interactive/libpq.html") C library.
-* POSTGRESQL_INCLUDE_DIR - string - Path to PostgreSQL include directory where CMake should look for `libpq-fe.h` header.
-* POSTGRESQL_LIBRARIES - string - Full paths to libraries to link SOCI against to enable the backend support.
-* SOCI_POSTGRESQL - boolean - Requests to build [PostgreSQL](backends/postgresql.html") backend. Automatically switched on, if `WITH_POSTGRESQL` is set to ON.
-* SOCI_POSTGRESQL_TEST_CONNSTR - boolean - Should CMak try to detect [SQLite C/C++ library](http://www.sqlite.org/cintro.html). As bonus, the configuration tries [OSGeo4W distribution](http://trac.osgeo.org/osgeo4w/) if `OSGEO4W_ROOT` environment variable is set.
-* SQLITE_INCLUDE_DIR - string - Path to SQLite 3 include directory where CMake should look for `sqlite3.h` header.
-* SQLITE_LIBRARIES - string - Full paths to libraries to link SOCI against to enable the backend support.
-* SOCI_SQLITE3 - boolean - Requests to build [SQLite3](backends/sqlite3.html) backend. Automatically switched on, if `WITH_SQLITE3` is set to ON.
-* SOCI_SQLITE3_TEST_CONNSTR - string - Connection string is simply a file path where SQLite3 test database will be created (e.g. /home/john/soci_test.db). Check [SQLite3 backend reference](backends/sqlite3.html) for details. Example: `-DSOCI_SQLITE3_TEST_CONNSTR="my.db"`
+* `SOCI_STATIC` - boolean - Request to build static libraries, along with shared, of SOCI core and all successfully configured backends.
+* `SOCI_TESTS` - boolean - Request to build regression tests for SOCI core and all successfully configured backends.
+* `WITH_BOOST` - boolean - Should CMake try to detect [Boost C++ Libraries](http://www.boost.org/). If ON, CMake will try to find Boost headers and binaries of [Boost.Date_Time](http://www.boost.org/doc/libs/release/doc/html/date_time.html) library.
 
 #### Empty (sample backend)
 
-* SOCI_EMPTY - boolean - Builds the [sample backend](backends.html) called Empty. Always ON by default.
-* SOCI_EMPTY_TEST_CONNSTR - string - Connection string used to run regression tests of the Empty backend. It is a dummy value. Example: `-DSOCI_EMPTY_TEST_CONNSTR="dummy connection"`
+* `SOCI_EMPTY` - boolean - Builds the [sample backend](backends.html) called Empty. Always ON by default.
+* `SOCI_EMPTY_TEST_CONNSTR` - string - Connection string used to run regression tests of the Empty backend. It is a dummy value. Example: `-DSOCI_EMPTY_TEST_CONNSTR="dummy connection"`
 
------
+#### IBM DB2
+
+* `WITH_DB2` - boolean - Should CMake try to detect IBM DB2 Call Level Interface (CLI) library.
+* `DB2_INCLUDE_DIR` - string - Path to DB2 CLI include directories where CMake should look for `sqlcli1.h` header.
+* `DB2_LIBRARIES` - string - Full paths to  `db2` or `db2api` libraries to link SOCI against to enable the backend support.
+* `SOCI_DB2` - boolean - Requests to build [DB2](backends/db2.html) backend. Automatically switched on, if `WITH_DB2` is set to ON.
+* `SOCI_DB2_TEST_CONNSTR` - string - See [DB2 backend reference](backends/db2.html) for details. Example: `-DSOCI_DB2_TEST_CONNSTR:STRING="DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;autocommit=off"`
+
+#### Firebird
+
+* `WITH_FIREBIRD` - boolean - Should CMake try to detect Firebird client library.
+* `FIREBIRD_INCLUDE_DIR` - string - Path to Firebird include directories where CMake should look for `ibase.h` header.
+* `FIREBIRD_LIBRARIES` - string - Full paths to Firebird `fbclient` or `fbclient_ms` libraries to link SOCI against to enable the backend support.
+* `SOCI_FIREBIRD` - boolean - Requests to build [Firebird](backends/firebird.html) backend. Automatically switched on, if `WITH_FIREBIRD` is set to ON.
+* `SOCI_FIREBIRD_TEST_CONNSTR` - string - See [Firebird backend refernece](backends/firebird.html) for details. Example: `-DSOCI_FIREBIRD_TEST_CONNSTR:STRING="service=LOCALHOST:/tmp/soci_test.fdb user=SYSDBA password=masterkey"`
+
+#### MySQL
+
+* `WITH_MYSQL` - boolean - Should CMake try to detect [mysqlclient](http://dev.mysql.com/doc/refman/5.0/en/c.html) libraries providing MySQL C API. Note, currently the [mysql_config](http://dev.mysql.com/doc/refman/5.0/en/building-clients.html) program is not being used.
+* `MYSQL_DIR` - string - Path to MySQL installation root directory. CMake will scan subdirectories `MYSQL_DIR/include` and `MYSQL_DIR/lib` respectively for MySQL headers and libraries.
+* `MYSQL_INCLUDE_DIR` - string - Path to MySQL include directory where CMake should look for `mysql.h` header.
+* `MYSQL_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
+* `SOCI_MYSQL` - boolean - Requests to build [MySQL](backends/mysql.html) backend. Automatically switched on, if `WITH_MYSQL` is set to ON.
+* `SOCI_MYSQL_TEST_CONNSTR` - string - Connection string to MySQL test database. Format of the string is explained [MySQL backend refernece](backends/mysql.html). Example: `-DSOCI_MYSQL_TEST_CONNSTR:STRING="db=mydb user=mloskot password=secret"`
+
+#### ODBC
+
+* `WITH_ODBC` - boolean - Should CMake try to detect ODBC libraries. On Unix systems, CMake tries to find [unixODBC](http://www.unixodbc.org/) or [iODBC](http://www.iodbc.org/) implementations.
+* `ODBC_INCLUDE_DIR` - string - Path to ODBC implementation include directories where CMake should look for `sql.h` header.
+* `ODBC_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
+* `SOCI_ODBC` - boolean - Requests to build [ODBC](backends/odbc.html) backend. Automatically switched on, if `WITH_ODBC` is set to ON.
+* `SOCI_ODBC_TEST_{database}_CONNSTR` - string - ODBC Data Source Name (DSN) or ODBC File Data Source Name (FILEDSN) to test database: Microsoft Access (.mdb), Microsoft SQL Server, MySQL, PostgreSQL or any other ODBC SQL data source. {database} is placeholder for name of database driver ACCESS, MYSQL, POSTGRESQL, etc. See [ODBC](backends/odbc.html) backend refernece for details. Example: `-DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR="FILEDSN=/home/mloskot/dev/soci/_git/build/test-postgresql.dsn"`
+
+#### Oracle
+
+* `WITH_ORACLE` - boolean - Should CMake try to detect [Oracle Call Interface (OCI)](http://en.wikipedia.org/wiki/Oracle_Call_Interface) libraries.
+* `ORACLE_INCLUDE_DIR` - string - Path to Oracle include directory where CMake should look for `oci.h` header.
+* `ORACLE_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
+* `SOCI_ORACLE` - boolean - Requests to build [Oracle](backends/oracle.html) backend. Automatically switched on, if `WITH_ORACLE` is set to ON.
+* `SOCI_ORACLE_TEST_CONNSTR` - string - Connection string to Oracle test database. Format of the string is explained [Oracle backend reference](backends/oracle.html). Example: `-DSOCI_ORACLE_TEST_CONNSTR:STRING="service=orcl user=scott password=tiger"`
+
+#### PostgreSQL
+
+* `WITH_POSTGRESQL` - boolean - Should CMake try to detect PostgreSQL client interface libraries. SOCI relies on [libpq](http://www.postgresql.org/docs/9.0/interactive/libpq.html") C library.
+* `POSTGRESQL_INCLUDE_DIR` - string - Path to PostgreSQL include directory where CMake should look for `libpq-fe.h` header.
+* `POSTGRESQL_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
+* `SOCI_POSTGRESQL` - boolean - Requests to build [PostgreSQL](backends/postgresql.html") backend. Automatically switched on, if `WITH_POSTGRESQL` is set to ON.
+* `SOCI_POSTGRESQL_TEST_CONNSTR` - boolean - Should CMak try to detect [SQLite C/C++ library](http://www.sqlite.org/cintro.html). As bonus, the configuration tries [OSGeo4W distribution](http://trac.osgeo.org/osgeo4w/) if `OSGEO4W_ROOT` environment variable is set.
+* `SQLITE_INCLUDE_DIR` - string - Path to SQLite 3 include directory where CMake should look for `sqlite3.h` header.
+* `SQLITE_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
+* `SOCI_SQLITE3` - boolean - Requests to build [SQLite3](backends/sqlite3.html) backend. Automatically switched on, if `WITH_SQLITE3` is set to ON.
+* `SOCI_SQLITE3_TEST_CONNSTR` - string - Connection string is simply a file path where SQLite3 test database will be created (e.g. /home/john/soci_test.db). Check [SQLite3 backend reference](backends/sqlite3.html) for details. Example: `-DSOCI_SQLITE3_TEST_CONNSTR="my.db"`
 
 ## Building with Makefiles on Unix
 
@@ -154,18 +158,20 @@ The classic set of Makefiles for Unix/Linux systems is provided for those users 
 In this sense, the basic Makefiles are supposed to provide a minimal starting point for custom experimentation and are not intended to be a complete build/installation solution.
 At the same time, they are complete in the sense that they can compile the library with all test programs and for some users this level of support will be just fine.
 
-The `core` directory of the library distribution contains the `Makefile.basic` that can be used to compile the core part of the library. 
+The `core` directory of the library distribution contains the `Makefile.basic` that can be used to compile the core part of the library.
 Run `make -f Makefile.basic` or `make -f Makefile.basic shared` to get the static and shared versions, respectively.
 Similarly, the `backends/<i>name</i>` directory contains the backend part for each supported backend with the appropriate `Makefile.basic` and the `backends/<i>name</i>/test` directory contains the test program for the given backend.
 
 For example, the simplest way to compile the static version of the library and the test program for PostgreSQL is:
 
-    $ cd src/core
-    $ make -f Makefile.basic
-    $ cd ../backends/postgresql
-    $ make -f Makefile.basic
-    $ cd test
-    $ make -f Makefile.basic
+```console
+cd src/core
+make -f Makefile.basic
+cd ../backends/postgresql
+make -f Makefile.basic
+cd test
+make -f Makefile.basic
+```
 
 For each backend and its test program, the `Makefile.basic`s contain the variables that can have values specific to the given environment - they usually name the include and library paths.
 These variables are placed at the beginning of the `Makefile.basic`s.
@@ -185,17 +191,20 @@ Also, specify `SOCI_{backend name}_TEST_CONNSTR` variables to tell the tests run
 
 Dedicated `make test` target can be used to execute regression tests on build completion:
 
-    $ mkdir build
-    $ cd build
-    $ cmake -G "Unix Makefiles" -DWITH_BOOST=OFF \
-       -DSOCI_TESTS=ON \
-       -DSOCI_EMPTY_TEST_CONNSTR="dummy connection" \
-       -DSOCI_SQLITE3_TEST_CONNSTR="test.db" \
-       (...)
-       ../soci-X.Y.Z
-    $ make
-    $ make test
-    $ make install
+```console
+mkdir build
+cd build
+cmake -G "Unix Makefiles" \
+        -DWITH_BOOST=OFF \
+        -DSOCI_TESTS=ON \
+        -DSOCI_EMPTY_TEST_CONNSTR="dummy connection" \
+        -DSOCI_SQLITE3_TEST_CONNSTR="test.db" \
+        (...)
+        ../soci-X.Y.Z
+make
+make test
+make install
+```
 
 In the example above, regression tests for the sample Empty backend and SQLite 3 backend are configured for execution by `make test` target.
 

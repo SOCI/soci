@@ -22,9 +22,9 @@ The SOCI-Ada library offers the following features to the Ada community:
 
 Currently the following database servers are directly supported via their native interfaces:
 
-  * Oracle
-  * PostgreSQL
-  * MySQL
+* Oracle
+* PostgreSQL
+* MySQL
 
 Other backends exist in the SOCI Git repository and can be provided with future version of the library.
 

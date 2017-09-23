@@ -45,43 +45,45 @@ Once the data type for each column is known, the data can be formatted appropria
 
 For example, the code below creates an XML document from a selected row of data from an arbitrary table:
 
-    row r;
-    sql << "select * from some_table", into(r);
+```cpp
+row r;
+sql << "select * from some_table", into(r);
 
-    std::ostringstream doc;
-    doc << "<row>" << std::endl;
-    for(std::size_t i = 0; i != r.size(); ++i)
+std::ostringstream doc;
+doc << "<row>" << std::endl;
+for(std::size_t i = 0; i != r.size(); ++i)
+{
+    const column_properties & props = r.get_properties(i);
+
+    doc << '<' << props.get_name() << '>';
+
+    switch(props.get_data_type())
     {
-        const column_properties & props = r.get_properties(i);
-
-        doc << '<' << props.get_name() << '>';
-
-        switch(props.get_data_type())
-        {
-        case dt_string:
-            doc << r.get<std::string>(i);
-            break;
-        case dt_double:
-            doc << r.get<double>(i);
-            break;
-        case dt_integer:
-            doc << r.get<int>(i);
-            break;
-        case dt_long_long:
-            doc << r.get<long long>(i);
-            break;
-        case dt_unsigned_long_long:
-            doc << r.get<unsigned long long>(i);
-            break;
-        case dt_date:
-            std::tm when = r.get<std::tm>(i);
-            doc << asctime(&when);
-            break;
-        }
-
-        doc << "</" << props.get_name() << '>' << std::endl;
+    case dt_string:
+        doc << r.get<std::string>(i);
+        break;
+    case dt_double:
+        doc << r.get<double>(i);
+        break;
+    case dt_integer:
+        doc << r.get<int>(i);
+        break;
+    case dt_long_long:
+        doc << r.get<long long>(i);
+        break;
+    case dt_unsigned_long_long:
+        doc << r.get<unsigned long long>(i);
+        break;
+    case dt_date:
+        std::tm when = r.get<std::tm>(i);
+        doc << asctime(&when);
+        break;
     }
-    doc << "</row>";
+
+    doc << "</" << props.get_name() << '>' << std::endl;
+}
+doc << "</row>";
+```
 
 The type `T` parameter that should be passed to `row::get<T>()` depends on the SOCI data type that is returned from `column_properties::get_data_type()`.
 
@@ -101,22 +103,26 @@ See the [backend documentation](backends/index.html) for details.
 
 The `row` also provides access to indicators for each column:
 
-    row r;
-    sql << "select name from some_table where id = 1", into(r);
-    if (r.get_indicator(0) != soci::i_null)
-    {
-       std::cout << r.get<std::string>(0);
-    }
+```cpp
+row r;
+sql << "select name from some_table where id = 1", into(r);
+if (r.get_indicator(0) != soci::i_null)
+{
+    std::cout << r.get<std::string>(0);
+}
+```
 
 It is also possible to extract data from the `row` object using its stream-like interface, where each extracted variable should have matching type respective to its position in the chain:
 
-    row r;
-    sql << "select name, address, age from persons where id = 123", into(r);
+```cpp
+row r;
+sql << "select name, address, age from persons where id = 123", into(r);
 
-    string name, address;
-    int age;
+string name, address;
+int age;
 
-    r >> name >> address >> age;
+r >> name >> address >> age;
+```
 
 Note, however, that this interface is *not* compatible with the standard `std::istream` class and that it is only possible to extract a single row at a time - for "safety" reasons the row boundary is preserved and it is necessary to perform the `fetch` operation explicitly for each consecutive row.
 
@@ -144,51 +150,55 @@ Note that no database-specific code is required to define user conversion.
 
 The following example shows how the user can extend SOCI to support his own type `MyInt`, which here is some wrapper for the fundamental `int` type:
 
-    class MyInt
+```cpp
+class MyInt
+{
+public:
+    MyInt() {}
+    MyInt(int i) : i_(i) {}
+
+    void set(int i) { i_ = i; }
+    int get() const { return i_; }
+
+private:
+    int i_;
+};
+
+namespace soci
+{
+    template <<
+    struct type_conversion<MyInt>
     {
-    public:
-        MyInt() {}
-        MyInt(int i) : i_(i) {}
+        typedef int base_type;
 
-        void set(int i) { i_ = i; }
-        int get() const { return i_; }
-
-    private:
-        int i_;
-    };
-
-    namespace soci
-    {
-        template <<
-        struct type_conversion<MyInt>
+        static void from_base(int i, indicator ind, MyInt & mi)
         {
-            typedef int base_type;
-
-            static void from_base(int i, indicator ind, MyInt & mi)
+            if (ind == i_null)
             {
-                if (ind == i_null)
-                {
-                    throw soci_error("Null value not allowed for this type");
-                }
-
-                mi.set(i);
+                throw soci_error("Null value not allowed for this type");
             }
 
-            static void to_base(const MyInt & mi, int & i, indicator & ind)
-            {
-                i = mi.get();
-                ind = i_ok;
-            }
-        };
-    }
+            mi.set(i);
+        }
+
+        static void to_base(const MyInt & mi, int & i, indicator & ind)
+        {
+            i = mi.get();
+            ind = i_ok;
+        }
+    };
+}
+```
 
 The above specialization for `soci::type_conversion<MyInt>` is enough to enable the following:
 
-    MyInt i;
+```cpp
+MyInt i;
 
-    sql << "select count(*) from person", into(i);
+sql << "select count(*) from person", into(i);
 
-    cout << "We have " << i.get() << " persons in the database.\n";
+cout << "We have " << i.get() << " persons in the database.\n";
+```
 
 Note that there is a number of types from the Boost library integrated with SOCI out of the box, see [Integration with Boost](boost.html) for complete description. Use these as examples of conversions for more complext data types.
 
@@ -206,73 +216,77 @@ For example, the following code maps a `Person` object to and from a database ta
 
 Note that the mapping is non-invasive - the `Person` object itself does not contain any SOCI-specific code:
 
-    struct Person
-    {
-        int id;
-        std::string firstName;
-        std::string lastName;
-        std::string gender;
-    };
+```cpp
+struct Person
+{
+    int id;
+    std::string firstName;
+    std::string lastName;
+    std::string gender;
+};
 
-    namespace soci
+namespace soci
+{
+    template<>
+    struct type_conversion<Person>
     {
-        template<>
-        struct type_conversion<Person>
+        typedef values base_type;
+
+        static void from_base(values const & v, indicator /* ind */, Person & p)
         {
-            typedef values base_type;
+            p.id = v.get<int>("ID");
+            p.firstName = v.get<std::string>("FIRST_NAME");
+            p.lastName = v.get<std::string>("LAST_NAME");
 
-            static void from_base(values const & v, indicator /* ind */, Person & p)
-            {
-                p.id = v.get<int>("ID");
-                p.firstName = v.get<std::string>("FIRST_NAME");
-                p.lastName = v.get<std::string>("LAST_NAME");
+            // p.gender will be set to the default value "unknown"
+            // when the column is null:
+            p.gender = v.get<std::string>("GENDER", "unknown");
 
-                // p.gender will be set to the default value "unknown"
-                // when the column is null:
-                p.gender = v.get<std::string>("GENDER", "unknown");
+            // alternatively, the indicator can be tested directly:
+            // if (v.indicator("GENDER") == i_null)
+            // {
+            //     p.gender = "unknown";
+            // }
+            // else
+            // {
+            //     p.gender = v.get<std::string>("GENDER");
+            // }
+        }
 
-                // alternatively, the indicator can be tested directly:
-                // if (v.indicator("GENDER") == i_null)
-                // {
-                //     p.gender = "unknown";
-                // }
-                // else
-                // {
-                //     p.gender = v.get<std::string>("GENDER");
-                // }
-            }
-
-            static void to_base(const Person & p, values & v, indicator & ind)
-            {
-                v.set("ID", p.id);
-                v.set("FIRST_NAME", p.firstName);
-                v.set("LAST_NAME", p.lastName);
-                v.set("GENDER", p.gender, p.gender.empty() ? i_null : i_ok);
-                ind = i_ok;
-            }
-        };
-    }
+        static void to_base(const Person & p, values & v, indicator & ind)
+        {
+            v.set("ID", p.id);
+            v.set("FIRST_NAME", p.firstName);
+            v.set("LAST_NAME", p.lastName);
+            v.set("GENDER", p.gender, p.gender.empty() ? i_null : i_ok);
+            ind = i_ok;
+        }
+    };
+}
+```
 
 With the above `type_conversion` specialization in place, it is possible to use `Person` directly with SOCI:
 
-    session sql(oracle, "service=db1 user=scott password=tiger");
+```cpp
+session sql(oracle, "service=db1 user=scott password=tiger");
 
-    Person p;
-    p.id = 1;
-    p.lastName = "Smith";
-    p.firstName = "Pat";
-    sql << "insert into person(id, first_name, last_name) "
-           "values(:ID, :FIRST_NAME, :LAST_NAME)", use(p);
+Person p;
+p.id = 1;
+p.lastName = "Smith";
+p.firstName = "Pat";
+sql << "insert into person(id, first_name, last_name) "
+        "values(:ID, :FIRST_NAME, :LAST_NAME)", use(p);
 
-    Person p1;
-    sql << "select * from person", into(p1);
-    assert(p1.id == 1);
-    assert(p1.firstName + p.lastName == "PatSmith");
-    assert(p1.gender == "unknown");
+Person p1;
+sql << "select * from person", into(p1);
+assert(p1.id == 1);
+assert(p1.firstName + p.lastName == "PatSmith");
+assert(p1.gender == "unknown");
 
-    p.firstName = "Patricia";
-    sql << "update person set first_name = :FIRST_NAME "
-           "where id = :ID", use(p);
+p.firstName = "Patricia";
+sql << "update person set first_name = :FIRST_NAME "
+        "where id = :ID", use(p);
+```
 
-**Note:** The `values` class is currently not suited for use outside of `type_conversion`specializations.
+Note: The `values` class is currently not suited for use outside of `type_conversion`specializations.
 It is specially designed to facilitate object-relational mapping when used as shown above.

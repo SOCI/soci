@@ -27,7 +27,7 @@ The SOCI DB2 backend requires IBM DB2 Call Level Interface (CLI) library.
 
 On Unix, before using the DB2 backend please make sure, that you have sourced DB2 profile into your environment:
 
-```sh
+```console
 . ~/db2inst1/sqllib/db2profile
 ```
 
