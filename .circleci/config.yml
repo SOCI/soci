@@ -7,7 +7,9 @@ jobs:
       - checkout
       - run:
           name: install markdownlint
-          command: gem install mdl
+          command: |
+            npm install -g markdownlint-cli
+            markdownlint --version
       - run:
           name: lint README.md
           command: mdl README.md
