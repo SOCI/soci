@@ -1,6 +1,4 @@
-# SOCI-Ada Bindings
-
-## Concepts
+# SOCI-Ada Bindings - Concepts
 
 The SOCI-Ada library borrows its concepts and naming from the main SOCI project. They are shortly explained here in the bottom-up fashion.
 
