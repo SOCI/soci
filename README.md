@@ -40,10 +40,12 @@ SOCI library is distributed under the terms of the [Boost Software License](http
 ## Requirements
 
 Core:
+
 * C++ compiler
 * Boost C++ Libraries (optional, headers and Boost.DateTime)
 
 Backend specific client libraries for:
+
 * DB2
 * Firebird
 * MySQL
@@ -52,9 +54,7 @@ Backend specific client libraries for:
 * PostgreSQL
 * SQLite 3
 
-See documentation at http://soci.sourceforge.net for details
-
----
+See documentation at [soci.sourceforge.net](http://soci.sourceforge.net) for details
 
 [BSL](http://www.boost.org/LICENSE_1_0.txt) &copy;
 [Maciej Sobczak](http://github.com/msobczak) and [contributors](https://github.com/SOCI/soci/graphs/contributors).
