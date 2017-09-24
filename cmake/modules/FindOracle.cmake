@@ -37,7 +37,9 @@ PATHS
 ${ORACLE_HOME}/rdbms/public
 ${ORACLE_HOME}/include
 ${ORACLE_HOME}/sdk/include  # Oracle SDK
-${ORACLE_HOME}/OCI/include) # Oracle XE on Windows
+${ORACLE_HOME}/OCI/include # Oracle XE on Windows
+# instant client from rpm
+/usr/include/oracle/*/client${LIB_SUFFIX})
 
 set(ORACLE_OCI_NAMES clntsh libclntsh oci) # Dirty trick might help on OSX, see issues/89
 set(ORACLE_OCCI_NAMES libocci occi oraocci10 oraocci11 oraocci12)
@@ -48,7 +50,9 @@ ${ORACLE_HOME}
 ${ORACLE_HOME}/lib
 ${ORACLE_HOME}/sdk/lib       # Oracle SDK
 ${ORACLE_HOME}/sdk/lib/msvc
-${ORACLE_HOME}/OCI/lib/msvc) # Oracle XE on Windows
+${ORACLE_HOME}/OCI/lib/msvc # Oracle XE on Windows
+# Instant client from rpm
+/usr/lib/oracle/*/client${LIB_SUFFIX}/lib)
 
 find_library(ORACLE_OCI_LIBRARY
 NAMES ${ORACLE_OCI_NAMES} PATHS ${ORACLE_LIB_DIR})
