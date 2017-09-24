@@ -19,12 +19,14 @@ if(UNIX)
     /opt/ibm/db2/V10.1
     /opt/ibm/db2/V9.7
     /opt/ibm/db2/V9.5
-    /opt/ibm/db2/V9.1)
+    /opt/ibm/db2/V9.1
+    /opt/ibm/clidriver
+    /opt/clidriver)
 
   if(CMAKE_SIZEOF_VOID_P EQUAL 4)
     set(DB2_LIBDIRS "lib32" "lib")
   else()
-    set(DB2_LIBDIRS "lib64")
+    set(DB2_LIBDIRS "lib64" "lib")
   endif()
 
   set(DB2_FIND_INCLUDE_PATHS)
