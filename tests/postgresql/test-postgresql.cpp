@@ -737,12 +737,12 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     std::string ddl_t1 = "ddl_t1";
     std::string ddl_t2 = "ddl_t2";
     std::string ddl_t3 = "ddl_t3";
-    
+
     // single-expression variant:
     sql.create_table(ddl_t1).column("i", soci::dt_integer).column("j", soci::dt_integer);
 
     // check whether this table was created:
-    
+
     bool ddl_t1_found = false;
     bool ddl_t2_found = false;
     bool ddl_t3_found = false;
@@ -761,7 +761,7 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     CHECK(ddl_t3_found == false);
 
     // check whether ddl_t1 has the right structure:
-    
+
     bool i_found = false;
     bool j_found = false;
     bool other_found = false;
@@ -793,7 +793,7 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     CHECK(other_found == false);
 
     // two more tables:
-    
+
     // separately defined columns:
     // (note: statement is executed when ddl object goes out of scope)
     {
@@ -820,7 +820,7 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     }
 
     // check if all tables were created:
-    
+
     ddl_t1_found = false;
     ddl_t2_found = false;
     ddl_t3_found = false;
@@ -838,7 +838,7 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     CHECK(ddl_t3_found);
 
     // check if ddl_t1 has the right structure (it was altered):
-    
+
     i_found = false;
     j_found = false;
     bool k_found = false;
@@ -877,9 +877,9 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     CHECK(k_found);
     CHECK(big_found);
     CHECK(other_found == false);
-    
+
     // check if ddl_t2 has the right structure:
-    
+
     i_found = false;
     j_found = false;
     k_found = false;
@@ -928,9 +928,9 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     sql.drop_table(ddl_t1);
     sql.drop_table(ddl_t3); // note: this must be dropped before ddl_t2
     sql.drop_table(ddl_t2);
-    
+
     // check if all tables were dropped:
-    
+
     ddl_t1_found = false;
     ddl_t2_found = false;
     ddl_t3_found = false;
@@ -946,7 +946,7 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     CHECK(ddl_t1_found == false);
     CHECK(ddl_t2_found == false);
     CHECK(ddl_t3_found == false);
-    
+
     int i = -1;
     sql << "select lo_unlink(" + sql.empty_blob() + ")", into(i);
     CHECK(i == 1);
@@ -1111,52 +1111,52 @@ public:
         : test_context_base(backEnd, connectString)
     {}
 
-    table_creator_base* table_creator_1(soci::session& s) const
+    table_creator_base* table_creator_1(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_one(s);
     }
 
-    table_creator_base* table_creator_2(soci::session& s) const
+    table_creator_base* table_creator_2(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_two(s);
     }
 
-    table_creator_base* table_creator_3(soci::session& s) const
+    table_creator_base* table_creator_3(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_three(s);
     }
 
-    table_creator_base* table_creator_4(soci::session& s) const
+    table_creator_base* table_creator_4(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_for_get_affected_rows(s);
     }
 
-    table_creator_base* table_creator_xml(soci::session& s) const
+    table_creator_base* table_creator_xml(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_for_xml(s);
     }
 
-    table_creator_base* table_creator_clob(soci::session& s) const
+    table_creator_base* table_creator_clob(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_for_clob(s);
     }
 
-    bool has_real_xml_support() const
+    bool has_real_xml_support() const SOCI_OVERRIDE
     {
         return true;
     }
 
-    std::string to_date_time(std::string const &datdt_string) const
+    std::string to_date_time(std::string const &datdt_string) const SOCI_OVERRIDE
     {
         return "timestamptz(\'" + datdt_string + "\')";
     }
 
-    virtual bool has_fp_bug() const
+    bool has_fp_bug() const SOCI_OVERRIDE
     {
         return false;
     }
 
-    virtual std::string sql_length(std::string const& s) const
+    std::string sql_length(std::string const& s) const SOCI_OVERRIDE
     {
         return "char_length(" + s + ")";
     }

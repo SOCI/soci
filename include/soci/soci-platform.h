@@ -95,6 +95,12 @@ namespace std {
 // mode, we just need to check for the minimal compiler version supporting them
 // (see https://msdn.microsoft.com/en-us/library/hh567368.aspx).
 
+#if defined(SOCI_HAVE_CXX_C11) || (defined(_MSC_VER) && _MSC_VER >= 1800)
+# define SOCI_OVERRIDE override
+#else
+# define SOCI_OVERRIDE
+#endif
+
 namespace soci
 {
 

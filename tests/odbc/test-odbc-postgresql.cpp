@@ -161,47 +161,47 @@ public:
         std::cout << "Using ODBC driver version " << m_verDriver << "\n";
     }
 
-    table_creator_base * table_creator_1(soci::session& s) const
+    table_creator_base * table_creator_1(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_one(s);
     }
 
-    table_creator_base * table_creator_2(soci::session& s) const
+    table_creator_base * table_creator_2(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_two(s);
     }
 
-    table_creator_base * table_creator_3(soci::session& s) const
+    table_creator_base * table_creator_3(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_three(s);
     }
 
-    table_creator_base * table_creator_4(soci::session& s) const
+    table_creator_base * table_creator_4(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_for_get_affected_rows(s);
     }
 
-    table_creator_base* table_creator_xml(soci::session& s) const
+    table_creator_base* table_creator_xml(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_for_xml(s);
     }
 
-    table_creator_base* table_creator_clob(soci::session& s) const
+    table_creator_base* table_creator_clob(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_for_clob(s);
     }
 
-    bool has_real_xml_support() const
+    bool has_real_xml_support() const SOCI_OVERRIDE
     {
         return true;
     }
 
-    std::string to_date_time(std::string const &datdt_string) const
+    std::string to_date_time(std::string const &datdt_string) const SOCI_OVERRIDE
     {
         return "timestamptz(\'" + datdt_string + "\')";
     }
 
-    virtual bool has_fp_bug() const
+    bool has_fp_bug() const SOCI_OVERRIDE
     {
         // The bug with using insufficiently many digits for double values was
         // only fixed in 9.03.0400 version of the ODBC driver (see commit
@@ -212,7 +212,7 @@ public:
         return !m_verDriver.is_initialized() || m_verDriver < odbc_version(9, 3, 400);
     }
 
-    virtual std::string sql_length(std::string const& s) const
+    std::string sql_length(std::string const& s) const SOCI_OVERRIDE
     {
         return "char_length(" + s + ")";
     }

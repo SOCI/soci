@@ -57,18 +57,18 @@ public:
     standard_into_type(void * data, exchange_type type, indicator & ind)
         : data_(data), type_(type), ind_(&ind), backEnd_(NULL) {}
 
-    virtual ~standard_into_type();
+    ~standard_into_type() SOCI_OVERRIDE;
 
 protected:
-    virtual void post_fetch(bool gotData, bool calledFromFetch);
+    void post_fetch(bool gotData, bool calledFromFetch) SOCI_OVERRIDE;
 
 private:
-    virtual void define(statement_impl & st, int & position);
-    virtual void pre_exec(int num);
-    virtual void pre_fetch();
-    virtual void clean_up();
+    void define(statement_impl & st, int & position) SOCI_OVERRIDE;
+    void pre_exec(int num) SOCI_OVERRIDE;
+    void pre_fetch() SOCI_OVERRIDE;
+    void clean_up() SOCI_OVERRIDE;
 
-    virtual std::size_t size() const { return 1; }
+    std::size_t size() const SOCI_OVERRIDE { return 1; }
 
     // conversion hook (from base type to arbitrary user type)
     virtual void convert_from_base() {}
@@ -104,17 +104,17 @@ public:
         : data_(data), type_(type), indVec_(&ind),
         begin_(begin), end_(end), backEnd_(NULL) {}
 
-    ~vector_into_type();
+    ~vector_into_type() SOCI_OVERRIDE;
 
 protected:
-    virtual void post_fetch(bool gotData, bool calledFromFetch);
+    void post_fetch(bool gotData, bool calledFromFetch) SOCI_OVERRIDE;
 
-    virtual void define(statement_impl & st, int & position);
-    virtual void pre_exec(int num);
-    virtual void pre_fetch();
-    virtual void clean_up();
-    virtual void resize(std::size_t sz);
-    virtual std::size_t size() const;
+    void define(statement_impl & st, int & position) SOCI_OVERRIDE;
+    void pre_exec(int num) SOCI_OVERRIDE;
+    void pre_fetch() SOCI_OVERRIDE;
+    void clean_up() SOCI_OVERRIDE;
+    void resize(std::size_t sz) SOCI_OVERRIDE;
+    std::size_t size() const SOCI_OVERRIDE;
 
     void * data_;
     exchange_type type_;
@@ -149,16 +149,16 @@ public:
     into_type(std::vector<T> & v)
         : vector_into_type(&v,
             static_cast<exchange_type>(exchange_traits<T>::x_type)) {}
-    
+
     into_type(std::vector<T> & v, std::size_t begin, std::size_t * end)
         : vector_into_type(&v,
             static_cast<exchange_type>(exchange_traits<T>::x_type),
             begin, end) {}
-    
+
     into_type(std::vector<T> & v, std::vector<indicator> & ind)
         : vector_into_type(&v,
             static_cast<exchange_type>(exchange_traits<T>::x_type), ind) {}
-    
+
     into_type(std::vector<T> & v, std::vector<indicator> & ind,
         std::size_t begin, std::size_t * end)
         : vector_into_type(&v,

@@ -62,7 +62,7 @@ public:
 
 
 private:
-    void convert_from_base()
+    void convert_from_base() SOCI_OVERRIDE
     {
         type_conversion<T>::from_base(
             base_value_holder<T>::val_, ind_, value_);
@@ -130,7 +130,7 @@ public:
         //convert_to_base();
     }
 
-    void convert_from_base()
+    void convert_from_base() SOCI_OVERRIDE
     {
         // NOTE:
         // readOnly_ flag indicates that use_type object has been generated
@@ -145,7 +145,7 @@ public:
         }
     }
 
-    void convert_to_base()
+    void convert_to_base() SOCI_OVERRIDE
     {
         type_conversion<T>::to_base(value_,
             base_value_holder<T>::val_, ind_);
@@ -214,18 +214,18 @@ public:
         user_ranges_ = end != NULL;
     }
 
-    virtual std::size_t size() const
+    std::size_t size() const SOCI_OVERRIDE
     {
         // the user might have resized his vector in the meantime
         // -> synchronize the base-value mirror to have the same size
 
         std::size_t const userSize = value_.size();
         base_vector_holder<T>::vec_.resize(userSize);
-        
+
         return into_type<base_type>::size();
     }
 
-    virtual void resize(std::size_t sz)
+    void resize(std::size_t sz) SOCI_OVERRIDE
     {
         into_type<base_type>::resize(sz);
 
@@ -235,7 +235,7 @@ public:
     }
 
 private:
-    void convert_from_base()
+    void convert_from_base() SOCI_OVERRIDE
     {
         if (user_ranges_)
         {
@@ -351,7 +351,7 @@ private:
         std::size_t const sz = base_vector_holder<T>::vec_.size();
         value_.resize(sz);
         ind_.resize(sz);
-        
+
         if (user_ranges_)
         {
             for (std::size_t i = begin_; i != *end_; ++i)
@@ -370,12 +370,12 @@ private:
         }
     }
 
-    void convert_to_base()
+    void convert_to_base() SOCI_OVERRIDE
     {
         std::size_t const sz = value_.size();
         base_vector_holder<T>::vec_.resize(sz);
         ind_.resize(sz);
-        
+
         if (user_ranges_)
         {
             for (std::size_t i = begin_; i != *end_; ++i)
