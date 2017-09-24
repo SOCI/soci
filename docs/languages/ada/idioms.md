@@ -1,4 +1,4 @@
-# SOCI-Ada Bindings - Idioms
+# Ada Idioms
 
 As any other library, SOCI-Ada has its set of idioms that ensure optimal work in terms of performance and resource usage. Still, the optimal use will depend on the concrete usage scenario - the places where programmer choices are needed will be described explicitly.
 

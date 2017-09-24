@@ -42,10 +42,10 @@ pages:
   - API:
     - Client API: api/client.md
     - Backend API: api/backend.md
-    - Languages:
-      - Ada: languages/ada/index.md
-# - Ada Concepts: languages/ada/concepts.md
-# - Ada Idioms: languages/ada/idioms.md
-# - Ada API Reference: languages/ada/reference.md
+    - Ada:
+        - languages/ada/index.md
+        - languages/ada/concepts.md
+        - languages/ada/idioms.md
+        - languages/ada/reference.md
 
 #theme: readthedocs

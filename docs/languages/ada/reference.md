@@ -1,6 +1,4 @@
-# SOCI-Ada Bindings - Reference
-
-## API Reference
+# Ada API Reference
 
 The SOCI-Ada library is entirely implemented as a single package named `SOCI`. Additional child packages contain single procedures for static registration of backends - these child packages are not necessary for typical use, but can be useful to force static linking of backend code.
 
