@@ -23,14 +23,22 @@ else(WIN32)
   check_cxx_symbol_exists("__arm__" "" SOCI_TARGET_ARCH_ARM)
 endif(WIN32)
 
+if(NOT DEFINED LIB_SUFFIX)
+  if(SOCI_TARGET_ARCH_X64)
+    set(_lib_suffix "64")
+  else()
+    set(_lib_suffix "")
+  endif()
+  set(LIB_SUFFIX ${_lib_suffix} CACHE STRING "Specifies suffix for the lib directory")
+endif()
+
 #
 # C++11 Option
 #
 
-if (NOT SOCI_CXX_C11 ) 
-    set (SOCI_CXX_C11 OFF CACHE BOOL "Build to the C++11 standard")
-endif (NOT SOCI_CXX_C11 ) 
-
+if(NOT SOCI_CXX_C11)
+  set (SOCI_CXX_C11 OFF CACHE BOOL "Build to the C++11 standard")
+endif()
 
 #
 # Force compilation flags and set desired warnings level
