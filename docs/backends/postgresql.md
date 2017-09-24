@@ -168,3 +168,4 @@ To support older PostgreSQL versions, the following configuration macros are rec
 * `SOCI_POSTGRESQL_NOBINDBYNAME` - switches off the query rewriting.
 * `SOCI_POSTGRESQL_NOPARAMS` - disables support for parameterized queries (binding of use elements),automatically imposes also the `SOCI_POSTGRESQL_NOBINDBYNAME` macro. It is necessary for PostgreSQL 7.3.
 * `SOCI_POSTGRESQL_NOPREPARE` - disables support for separate query preparation, which in this backend is significant only in terms of optimization. It is necessary for PostgreSQL 7.3 and 7.4.
+* `SOCI_POSTGRESQL_NOSINLGEROWMODE` - disable single mode retrieving query results row-by-row. It is necessary for PostgreSQL prior to version 9.
