@@ -23,6 +23,7 @@ value when building.
 ### Required Client Libraries
 
 The Firebird backend requires Firebird's `libfbclient` client library.
+For example, on Ubuntu Linux, for example, `firebird-dev` package and its dependencies are required.
 
 ## Connecting to the Database
 
