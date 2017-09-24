@@ -169,8 +169,6 @@ if(SOCI_TESTS)
   # Enable tests
   ###############################################################################
   enable_testing()
-  # Configure for testing with dashboard submissions to CDash
-  #include(CTest) # disabled as unused
 
   file(TO_NATIVE_PATH ${PROJECT_SOURCE_DIR} TEST_ACCESS_PATH)
   configure_file(${PROJECT_SOURCE_DIR}/cmake/configs/test-access.cmake ${PROJECT_SOURCE_DIR}/tests/odbc/test-access.dsn @ONLY)
