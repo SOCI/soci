@@ -73,10 +73,10 @@ public:
         //convert_to_base();
     }
 
-    virtual ~standard_use_type();
-    virtual void bind(statement_impl & st, int & position);
-    virtual std::string get_name() const { return name_; }
-    virtual void dump_value(std::ostream& os) const;
+    ~standard_use_type() SOCI_OVERRIDE;
+    void bind(statement_impl & st, int & position) SOCI_OVERRIDE;
+    std::string get_name() const SOCI_OVERRIDE { return name_; }
+    void dump_value(std::ostream& os) const SOCI_OVERRIDE;
     virtual void * get_data() { return data_; }
 
     // conversion hook (from arbitrary user type to base type)
@@ -84,13 +84,13 @@ public:
     virtual void convert_from_base() {}
 
 protected:
-    virtual void pre_use();
+    void pre_use() SOCI_OVERRIDE;
 
 private:
-    virtual void pre_exec(int num);
-    virtual void post_use(bool gotData);
-    virtual void clean_up();
-    virtual std::size_t size() const { return 1; }
+    void pre_exec(int num) SOCI_OVERRIDE;
+    void post_use(bool gotData) SOCI_OVERRIDE;
+    void clean_up() SOCI_OVERRIDE;
+    std::size_t size() const SOCI_OVERRIDE { return 1; }
 
     void* data_;
     exchange_type type_;
@@ -152,17 +152,17 @@ public:
         , backEnd_(NULL)
     {}
 
-    ~vector_use_type();
+    ~vector_use_type() SOCI_OVERRIDE;
 
 private:
-    virtual void bind(statement_impl& st, int & position);
-    virtual std::string get_name() const { return name_; }
-    virtual void dump_value(std::ostream& os) const;
-    virtual void pre_exec(int num);
-    virtual void pre_use();
-    virtual void post_use(bool) { /* nothing to do */ }
-    virtual void clean_up();
-    virtual std::size_t size() const;
+    void bind(statement_impl& st, int & position) SOCI_OVERRIDE;
+    std::string get_name() const SOCI_OVERRIDE { return name_; }
+    void dump_value(std::ostream& os) const SOCI_OVERRIDE;
+    void pre_exec(int num) SOCI_OVERRIDE;
+    void pre_use() SOCI_OVERRIDE;
+    void post_use(bool) SOCI_OVERRIDE { /* nothing to do */ }
+    void clean_up() SOCI_OVERRIDE;
+    std::size_t size() const SOCI_OVERRIDE;
 
     void* data_;
     exchange_type type_;

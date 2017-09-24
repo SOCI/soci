@@ -120,7 +120,7 @@ TEST_CASE("Oracle blob", "[oracle][blob]")
 {
     {
         session sql(backEnd, connectString);
-    
+
         blob_table_creator tableCreator(sql);
 
         char buf[] = "abcdefghijklmnopqrstuvwxyz";
@@ -167,7 +167,7 @@ TEST_CASE("Oracle blob", "[oracle][blob]")
     // additional sibling test for read_from_start and write_from_start
     {
         session sql(backEnd, connectString);
-    
+
         blob_table_creator tableCreator(sql);
 
         char buf[] = "abcdefghijklmnopqrstuvwxyz";
@@ -1120,12 +1120,12 @@ TEST_CASE("Oracle DDL with metadata", "[oracle][ddl]")
     std::string ddl_t1 = "DDL_T1";
     std::string ddl_t2 = "DDL_T2";
     std::string ddl_t3 = "DDL_T3";
-    
+
     // single-expression variant:
     sql.create_table(ddl_t1).column("I", soci::dt_integer).column("J", soci::dt_integer);
 
     // check whether this table was created:
-    
+
     bool ddl_t1_found = false;
     bool ddl_t2_found = false;
     bool ddl_t3_found = false;
@@ -1144,7 +1144,7 @@ TEST_CASE("Oracle DDL with metadata", "[oracle][ddl]")
     CHECK(ddl_t3_found == false);
 
     // check whether ddl_t1 has the right structure:
-    
+
     bool i_found = false;
     bool j_found = false;
     bool other_found = false;
@@ -1176,7 +1176,7 @@ TEST_CASE("Oracle DDL with metadata", "[oracle][ddl]")
     CHECK(other_found == false);
 
     // two more tables:
-    
+
     // separately defined columns:
     // (note: statement is executed when ddl object goes out of scope)
     {
@@ -1203,7 +1203,7 @@ TEST_CASE("Oracle DDL with metadata", "[oracle][ddl]")
     }
 
     // check if all tables were created:
-    
+
     ddl_t1_found = false;
     ddl_t2_found = false;
     ddl_t3_found = false;
@@ -1221,7 +1221,7 @@ TEST_CASE("Oracle DDL with metadata", "[oracle][ddl]")
     CHECK(ddl_t3_found);
 
     // check if ddl_t1 has the right structure (it was altered):
-    
+
     i_found = false;
     j_found = false;
     bool k_found = false;
@@ -1260,9 +1260,9 @@ TEST_CASE("Oracle DDL with metadata", "[oracle][ddl]")
     CHECK(k_found);
     CHECK(big_found);
     CHECK(other_found == false);
-    
+
     // check if ddl_t2 has the right structure:
-    
+
     i_found = false;
     j_found = false;
     k_found = false;
@@ -1311,9 +1311,9 @@ TEST_CASE("Oracle DDL with metadata", "[oracle][ddl]")
     sql.drop_table(ddl_t1);
     sql.drop_table(ddl_t3); // note: this must be dropped before ddl_t2
     sql.drop_table(ddl_t2);
-    
+
     // check if all tables were dropped:
-    
+
     ddl_t1_found = false;
     ddl_t2_found = false;
     ddl_t3_found = false;
@@ -1491,59 +1491,59 @@ public:
                 std::string const &connectString)
         : test_context_base(backEnd, connectString) {}
 
-    table_creator_base* table_creator_1(soci::session& s) const
+    table_creator_base* table_creator_1(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_one(s);
     }
 
-    table_creator_base* table_creator_2(soci::session& s) const
+    table_creator_base* table_creator_2(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_two(s);
     }
 
-    table_creator_base* table_creator_3(soci::session& s) const
+    table_creator_base* table_creator_3(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_three(s);
     }
 
-    table_creator_base* table_creator_4(soci::session& s) const
+    table_creator_base* table_creator_4(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_four(s);
     }
 
-    table_creator_base* table_creator_clob(soci::session& s) const
+    table_creator_base* table_creator_clob(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_for_clob(s);
     }
 
-    table_creator_base* table_creator_xml(soci::session& s) const
+    table_creator_base* table_creator_xml(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_for_xml(s);
     }
 
-    std::string to_xml(std::string const& x) const
+    std::string to_xml(std::string const& x) const SOCI_OVERRIDE
     {
         return "xmltype(" + x + ")";
     }
 
-    std::string from_xml(std::string const& x) const
+    std::string from_xml(std::string const& x) const SOCI_OVERRIDE
     {
         // Notice that using just x.getCLOBVal() doesn't work, only
         // table.x.getCLOBVal() or (x).getCLOBVal(), as used here, does.
         return "(" + x + ").getCLOBVal()";
     }
 
-    bool has_real_xml_support() const
+    bool has_real_xml_support() const SOCI_OVERRIDE
     {
         return true;
     }
 
-    std::string to_date_time(std::string const &datdt_string) const
+    std::string to_date_time(std::string const &datdt_string) const SOCI_OVERRIDE
     {
         return "to_date('" + datdt_string + "', 'YYYY-MM-DD HH24:MI:SS')";
     }
 
-    virtual std::string sql_length(std::string const& s) const
+    std::string sql_length(std::string const& s) const SOCI_OVERRIDE
     {
         // Oracle treats empty strings as NULLs, but we want to return the
         // length of 0 for them for consistency with the other backends, so use

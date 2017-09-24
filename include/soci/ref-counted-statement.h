@@ -41,7 +41,7 @@ public:
                 {
                     accumulate(tail_);
                 }
-                
+
                 final_action();
             }
             catch (...)
@@ -86,7 +86,7 @@ public:
     ref_counted_statement(session & s)
         : ref_counted_statement_base(s), st_(s) {}
 
-    virtual void final_action();
+    void final_action() SOCI_OVERRIDE;
 
     template <typename T>
     void exchange(T &t) { st_.exchange(t); }
