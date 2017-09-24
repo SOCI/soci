@@ -21,7 +21,7 @@ See [Tested Platforms](#tested-platforms).
 
 ### Required Client Libraries
 
-The SOCI DB2 backend requires IBM DB2 Call Level Interface (CLI) library.
+The SOCI DB2 backend requires client library from the [IBM Data Server Driver Package (DS Driver)](https://www-01.ibm.com/support/docview.wss?uid=swg21385217).
 
 ## Connecting to the Database
 
