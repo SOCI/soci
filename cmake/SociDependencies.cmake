@@ -51,9 +51,7 @@ macro(boost_external_report NAME)
 
   # Test both, given original name and uppercase version too
   if(NOT ${VARNAME}_FOUND AND NOT ${VARNAMEU}_FOUND)
-    colormsg(_RED_ "WARNING:")
-    colormsg(RED "${NAME} not found, some libraries or features will be disabled.")
-    colormsg(RED "See the documentation for ${NAME} or manually set these variables:")
+    colormsg(_RED_ "WARNING: ${NAME} libraries not found, some features will be disabled.")
   endif()
 
   foreach(variable ${VARNAMES})

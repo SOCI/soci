@@ -84,8 +84,7 @@ macro(soci_backend NAME)
   soci_backend_deps_found(${NAMEU} "${THIS_BACKEND_DEPENDS}" ${NAMEU}_DEPS_FOUND)
   if(NOT ${NAMEU}_DEPS_FOUND)
 
-    colormsg(_RED_ "WARNING:")
-    colormsg(RED "Some required dependencies of ${NAME} backend not found:")
+    colormsg(_RED_ "WARNING: Some required dependencies of ${NAME} backend not found:")
 
     if(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.8)
       foreach(dep ${DEPENDS_NOT_FOUND})
@@ -326,8 +325,7 @@ macro(soci_backend_test)
         INCLUDE_DIRECTORIES "${THIS_INCLUDE_DIRS}"
         COMPILE_DEFINITIONS "${THIS_COMPILE_DEFS}")
     else()
-       colormsg(_RED_ "WARNING:")
-       colormsg(RED "Some dependencies of ${THIS_TEST_BACKEND} test not found")
+       colormsg(_RED_ "WARNING: Some dependencies of ${THIS_TEST_BACKEND} test not found")
     endif()
 
     set(TEST_CONNSTR_VAR ${TEST_FULL_NAME}_CONNSTR)
