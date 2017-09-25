@@ -6,7 +6,8 @@ SOCI backend for accessing MySQL database.
 
 ### Supported Versions
 
-The SOCI MySQL backend should in principle work with every version of MySQL 5.x. Some of the features (transactions, stored functions) are not available when MySQL server doesn't support them.
+The SOCI MySQL backend should in principle work with every version of MySQL 5.x.
+Some of the features (transactions, stored functions) are not available when MySQL server doesn't support them.
 
 ### Tested Platforms
 
@@ -18,7 +19,7 @@ The SOCI MySQL backend should in principle work with every version of MySQL 5.x.
 
 ### Required Client Libraries
 
-The SOCI MySQL backend requires MySQL's `libmysqlclient` client library.
+The SOCI MySQL backend requires MySQL's `libmysqlclient` client library from the [MySQL Connector/C](https://dev.mysql.com/downloads/connector/c/).
 
 Note that the SOCI library itself depends also on `libdl`, so the minimum set of libraries needed to compile a basic client program is:
 
