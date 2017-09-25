@@ -126,7 +126,7 @@ List of variables to control common SOCI features and dependencies:
 * `ODBC_INCLUDE_DIR` - string - Path to ODBC implementation include directories where CMake should look for `sql.h` header.
 * `ODBC_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
 * `SOCI_ODBC` - boolean - Requests to build [ODBC](backends/odbc.html) backend. Automatically switched on, if `WITH_ODBC` is set to ON.
-* `SOCI_ODBC_TEST_{database}_CONNSTR` - string - ODBC Data Source Name (DSN) or ODBC File Data Source Name (FILEDSN) to test database: Microsoft Access (.mdb), Microsoft SQL Server, MySQL, PostgreSQL or any other ODBC SQL data source. {database} is placeholder for name of database driver ACCESS, MYSQL, POSTGRESQL, etc. See [ODBC](backends/odbc.html) backend refernece for details. Example: `-DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR="FILEDSN=/home/mloskot/dev/soci/_git/build/test-postgresql.dsn"`
+* `SOCI_ODBC_TEST_{database}_CONNSTR` - string - ODBC Data Source Name (DSN) or ODBC File Data Source Name (FILEDSN) to test database: Microsoft Access (.mdb), Microsoft SQL Server, MySQL, PostgreSQL or any other ODBC SQL data source. {database} is placeholder for name of database driver ACCESS, MYSQL, POSTGRESQL, etc. See [ODBC](backends/odbc.html) backend refernece for details. Example: `-DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR="FILEDSN=/home/mloskot/soci/build/test-postgresql.dsn"`
 
 #### Oracle
 
@@ -142,11 +142,15 @@ List of variables to control common SOCI features and dependencies:
 * `POSTGRESQL_INCLUDE_DIR` - string - Path to PostgreSQL include directory where CMake should look for `libpq-fe.h` header.
 * `POSTGRESQL_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
 * `SOCI_POSTGRESQL` - boolean - Requests to build [PostgreSQL](backends/postgresql.html") backend. Automatically switched on, if `WITH_POSTGRESQL` is set to ON.
-* `SOCI_POSTGRESQL_TEST_CONNSTR` - boolean - Should CMak try to detect [SQLite C/C++ library](http://www.sqlite.org/cintro.html). As bonus, the configuration tries [OSGeo4W distribution](http://trac.osgeo.org/osgeo4w/) if `OSGEO4W_ROOT` environment variable is set.
+* `SOCI_POSTGRESQL_TEST_CONNSTR` - string - Connection string to PostgreSQL test database. Format of the string is explained PostgreSQL backend refernece. Example: `-DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="dbname=mydb user=scott"`
+
+#### SQLite 3
+
+* `WITH_SQLITE3` - boolean - Should CMak try to detect SQLite C/C++ library. As bonus, the configuration tries OSGeo4W distribution if OSGEO4W_ROOT environment variable is set.
 * `SQLITE_INCLUDE_DIR` - string - Path to SQLite 3 include directory where CMake should look for `sqlite3.h` header.
 * `SQLITE_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
 * `SOCI_SQLITE3` - boolean - Requests to build [SQLite3](backends/sqlite3.html) backend. Automatically switched on, if `WITH_SQLITE3` is set to ON.
-* `SOCI_SQLITE3_TEST_CONNSTR` - string - Connection string is simply a file path where SQLite3 test database will be created (e.g. /home/john/soci_test.db). Check [SQLite3 backend reference](backends/sqlite3.html) for details. Example: `-DSOCI_SQLITE3_TEST_CONNSTR="my.db"`
+* `SOCI_SQLITE3_TEST_CONNSTR` - string - Connection string is simply a file path where SQLite3 test database will be created (e.g. /home/john/soci_test.db). Check [SQLite3 backend reference](backends/sqlite3.html) for details. Example: `-DSOCI_SQLITE3_TEST_CONNSTR="my.db"` or `-DSOCI_SQLITE3_TEST_CONNSTR=":memory:"`.
 
 ## Building with Makefiles on Unix
 
