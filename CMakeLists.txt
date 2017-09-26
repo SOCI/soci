@@ -55,6 +55,7 @@ boost_report_value(SOCI_ASAN)
 
 # from SociConfig.cmake
 boost_report_value(SOCI_CXX_C11)
+boost_report_value(LIB_SUFFIX)
 
 # Put the libaries and binaries that get built into directories at the
 # top of the build tree rather than in hard-to-find leaf
@@ -168,8 +169,6 @@ if(SOCI_TESTS)
   # Enable tests
   ###############################################################################
   enable_testing()
-  # Configure for testing with dashboard submissions to CDash
-  #include(CTest) # disabled as unused
 
   file(TO_NATIVE_PATH ${PROJECT_SOURCE_DIR} TEST_ACCESS_PATH)
   configure_file(${PROJECT_SOURCE_DIR}/cmake/configs/test-access.cmake ${PROJECT_SOURCE_DIR}/tests/odbc/test-access.dsn @ONLY)

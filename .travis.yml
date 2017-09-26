@@ -58,6 +58,3 @@ notifications:
   irc:
     channels:
       - "irc.freenode.org#soci"
-  #email:
-  #    recipients:
-  #        - soci-devel@lists.sourceforge.net

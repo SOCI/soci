@@ -311,7 +311,7 @@ void db2_vector_use_type_backend::pre_use(indicator const *ind)
     {
         // no indicators - treat all fields as OK
         std::size_t const vsize = size();
-        for (std::size_t i = 0; i != vsize; ++i, ++ind)
+        for (std::size_t i = 0; i != vsize; ++i)
         {
             // for strings we have already set the values
             if (type != x_stdstring)

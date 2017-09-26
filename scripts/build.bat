@@ -11,9 +11,9 @@ rem 4. Optionally, run devenv.exe SOCI{32|64}.sln from command line
 rem ### CONFIGURATION #####################################
 rem ### Connection strings for tests (alternatively, use command line-c option)
 rem ### For example, SQL Server LocalDB instance, MySQL and PostgreSQL on the Vagrant VM.
-set TEST_CONNSTR_MSSQL=Driver={ODBC Driver 11 for SQL Server};Server=(localdb)\MSSQL13DEV;Integrated Security=True;Database=vagrant;MARS_Connection=Yes;
-set TEST_CONNSTR_MYSQL=Driver={MySQL ODBC 5.3 Unicode Driver};Database=vagrant;Server=localhost;User=vagrant;Password=vagrant;Option=3;
-set TEST_CONNSTR_PGSQL=Driver={PostgreSQL Unicode(x64)};Server=localhost;Database=vagrant;UID=vagrant;PWD=vagrant;
+set TEST_CONNSTR_MSSQL=""
+set TEST_CONNSTR_MYSQL=""
+set TEST_CONNSTR_PGSQL=""
 setlocal
 set BOOST_ROOT=C:/local/boost_1_59_0
 rem #######################################################
@@ -42,15 +42,31 @@ mkdir %BUILDDIR%
 pushd %BUILDDIR%
 cmake.exe ^
     -G %GENERATOR% ^
-    rem -DBOOST_ROOT:PATH=%BOOST_ROOT% ^
-    rem -DBOOST_LIBRARYDIR:PATH=%BOOST_ROOT%/lib%P%-msvc-14.0 ^
-    -DSOCI_EMPTY:BOOLEAN=ON ^
-    -DSOCI_DB2:BOOLEAN=OFF ^
-    -DSOCI_FIREBIRD:BOOLEAN=OFF ^
-    -DSOCI_MYSQL:BOOLEAN=OFF ^
-    -DSOCI_ODBC:BOOLEAN=OFF ^
-    -DSOCI_ORACLE:BOOLEAN=OFF ^
-    -DSOCI_POSTGRESQL:BOOLEAN=OFF ^
+    -DWITH_BOOST=ON ^
+    -DWITH_DB2=ON ^
+    -DWITH_FIREBIRD=ON ^
+    -DWITH_MYSQL=ON ^
+    -DWITH_ODBC=ON ^
+    -DWITH_ORACLE=ON ^
+    -DWITH_POSTGRESQL=ON ^
+    -DWITH_SQLITE3=ON ^
+    -DSOCI_EMPTY=ON ^
+    -DSOCI_EMPTY_TEST_CONNSTR="" ^
+    -DSOCI_DB2=ON ^
+    -DSOCI_DB2_TEST_CONNSTR="" ^
+    -DSOCI_FIREBIRD=ON ^
+    -DSOCI_FIREBIRD_TEST_CONNSTR="" ^
+    -DSOCI_MYSQL=ON ^
+    -DSOCI_MYSQL_TEST_CONNSTR="" ^
+    -DSOCI_ODBC=ON ^
+    -DSOCI_ODBC_TEST_MYSQL_CONNSTR="" ^
+    -DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR="" ^
+    -DSOCI_ORACLE=ON ^
+    -DSOCI_ORACLE_TEST_CONNSTR="" ^
+    -DSOCI_POSTGRESQL=ON ^
+    -DSOCI_POSTGRESQL_TEST_CONNSTR="" ^
+    -DSOCI_SQLITE3=ON ^
+    -DSOCI_SQLITE3_TEST_CONNSTR="" ^
     ..
 move SOCI.sln SOCI%P%%U%.sln
 rem msbuild.exe SOCI%P%%U%.sln /p:Configuration=Release /p:Platform=%MSBUILDP%

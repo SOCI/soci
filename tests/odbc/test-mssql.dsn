@@ -1,5 +1,5 @@
 [ODBC]
-DRIVER=SQL Server Native Client 10.0
+DRIVER=SQL Server Native Client 11.0
 UID=sa
 PWD=Password12!
 WSID=SOLARWIND

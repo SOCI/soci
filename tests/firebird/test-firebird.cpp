@@ -618,8 +618,8 @@ TEST_CASE("Firebird blobs", "[firebird][blob]")
 
     {
         //create large blob
-        const int blobSize = 65536; //max segment size is 65535(unsigned short) 
-        std::vector<char> data(blobSize); 
+        const int blobSize = 65536; //max segment size is 65535(unsigned short)
+        std::vector<char> data(blobSize);
         blob b(sql);
         b.write(0, data.data(), blobSize);
         sql << "insert into test7(id, img) values(3,?)", use(b);
@@ -1304,47 +1304,47 @@ class test_context : public tests::test_context_base
                 : test_context_base(backEnd, connectString)
         {}
 
-        tests::table_creator_base* table_creator_1(soci::session& s) const
+        tests::table_creator_base* table_creator_1(soci::session& s) const SOCI_OVERRIDE
         {
             return new TableCreator1(s);
         }
 
-        tests::table_creator_base* table_creator_2(soci::session& s) const
+        tests::table_creator_base* table_creator_2(soci::session& s) const SOCI_OVERRIDE
         {
             return new TableCreator2(s);
         }
 
-        tests::table_creator_base* table_creator_3(soci::session& s) const
+        tests::table_creator_base* table_creator_3(soci::session& s) const SOCI_OVERRIDE
         {
             return new TableCreator3(s);
         }
 
-        tests::table_creator_base* table_creator_4(soci::session& s) const
+        tests::table_creator_base* table_creator_4(soci::session& s) const SOCI_OVERRIDE
         {
             return new TableCreator4(s);
         }
 
-        tests::table_creator_base* table_creator_clob(soci::session& s) const
+        tests::table_creator_base* table_creator_clob(soci::session& s) const SOCI_OVERRIDE
         {
             return new TableCreatorCLOB(s);
         }
 
-        tests::table_creator_base* table_creator_xml(soci::session& s) const
+        tests::table_creator_base* table_creator_xml(soci::session& s) const SOCI_OVERRIDE
         {
             return new TableCreatorXML(s);
         }
 
-        std::string to_date_time(std::string const &datdt_string) const
+        std::string to_date_time(std::string const &datdt_string) const SOCI_OVERRIDE
         {
             return "'" + datdt_string + "'";
         }
 
-        virtual void on_after_ddl(soci::session& sql) const
+        void on_after_ddl(soci::session& sql) const SOCI_OVERRIDE
         {
             sql.commit();
         }
 
-        virtual std::string sql_length(std::string const& s) const
+        std::string sql_length(std::string const& s) const SOCI_OVERRIDE
         {
             return "char_length(" + s + ")";
         }

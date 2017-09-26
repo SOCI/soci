@@ -34,7 +34,7 @@ TEST_CASE("MySQL stored procedures", "[mysql][stored-procedure]")
     std::string version = mysql_get_server_info(sessionBackEnd->conn_);
     int v;
     std::istringstream iss(version);
-    if ((iss >> v) and v < 5)
+    if ((iss >> v) && v < 5)
     {
         WARN("MySQL server version " << v
                 << " does not support stored procedures, skipping test.");

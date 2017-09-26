@@ -8,67 +8,87 @@ SOCI supports some basic methods to construct portable DDL queries. That is, ins
 
 It is possible to create a new table in a single statement:
 
-    sql.create_table("t1").column("i", soci::dt_integer).column("j", soci::dt_integer);
+```cpp
+sql.create_table("t1").column("i", soci::dt_integer).column("j", soci::dt_integer);
+```
 
 Above, table "t1" will be created with two columns ("i", "j") of type integer.
 
 It is also possible to build similar statements piece by piece, which is useful if the table structure is computed dynamically:
 
-    {
-        soci::ddl_type ddl = sql.create_table("t2");
-        ddl.column("i", soci::dt_integer);
-        ddl.column("j", soci::dt_integer);
-        ddl.column("k", soci::dt_integer)("not null");
-        ddl.primary_key("t2_pk", "j");
-    }
+```cpp
+{
+    soci::ddl_type ddl = sql.create_table("t2");
+    ddl.column("i", soci::dt_integer);
+    ddl.column("j", soci::dt_integer);
+    ddl.column("k", soci::dt_integer)("not null");
+    ddl.primary_key("t2_pk", "j");
+}
+```
 
 The actual statement is executed at the end of above block, when the ddl object goes out of scope. The "not null" constraint was added to the definition of column "k" explicitly and in fact any piece of SQL can be inserted this way - with the obvious caveat of having limited portability (the "not null" piece seems to be universaly portable).
 
 Columns can be added to and dropped from already existing tables as well:
 
-    sql.add_column("t1", "k", soci::dt_integer);
-    // or with constraint:
-    //sql.add_column("t1", "k", soci::dt_integer)("not null");
-    
-    sql.drop_column("t1", "i");
+```cpp
+sql.add_column("t1", "k", soci::dt_integer);
+// or with constraint:
+//sql.add_column("t1", "k", soci::dt_integer)("not null");
+
+sql.drop_column("t1", "i");
+```
 
 If needed, precision and scale can be defined with additional integer arguments to functions that create columns:
 
-    sql.add_column("t1", "s", soci::dt_string, precision);
-    sql.add_column("t1", "d", soci::dt_double, precision, scale);
+```cpp
+sql.add_column("t1", "s", soci::dt_string, precision);
+sql.add_column("t1", "d", soci::dt_double, precision, scale);
+```
 
 Tables with foreign keys to each other can be also created:
 
-    {
-        soci::ddl_type ddl = sql.create_table("t3");
-        ddl.column("x", soci::dt_integer);
-        ddl.column("y", soci::dt_integer);
-        ddl.foreign_key("t3_fk", "x", "t2", "j");
-    }
+```cpp
+{
+    soci::ddl_type ddl = sql.create_table("t3");
+    ddl.column("x", soci::dt_integer);
+    ddl.column("y", soci::dt_integer);
+    ddl.foreign_key("t3_fk", "x", "t2", "j");
+}
+```
 
 Tables can be dropped, too:
 
-    sql.drop_table("t1");
-    sql.drop_table("t3");
-    sql.drop_table("t2");
+```cpp
+sql.drop_table("t1");
+sql.drop_table("t3");
+sql.drop_table("t2");
+```
 
 Note that due to the differences in the set of types that are actually supported on the target database server, the type mappings, as well as precision and scales, might be different, even in the way that makes them impossible to portably recover with metadata queries.
 
 In the category of portability utilities, the following functions are also available:
 
-    sql.empty_blob()
+```cpp
+sql.empty_blob()
+```
 
 the above call returns the string containing expression that represents an empty BLOB value in the given target backend. This expression can be used as part of a bigger SQL statement, for example:
 
-    sql << "insert into my_table (x) values (" + sql.empty_blob() + ")";
+```cpp
+sql << "insert into my_table (x) values (" + sql.empty_blob() + ")";
+```
 
 and:
 
-    sql.nvl()
+```cpp
+sql.nvl()
+```
 
 the above call returns the string containing the name of the SQL function that implements the NVL or COALESCE operation in the given target backend, for example:
 
-    sql << "select name, " + sql.nvl() + "(phone, \'UNKNOWN\') from phone_book";
+```cpp
+sql << "select name, " + sql.nvl() + "(phone, \'UNKNOWN\') from phone_book";
+```
 
 Note: `empty_blob` and `nvl` are implemented in Oracle, PostgreSQL and SQLite3 backends; for other backends their behaviour is as for PostgreSQL.
 
@@ -81,10 +101,11 @@ omitting the from clause in this case, others -- e.g. Oracle -- still require
 providing some syntactically valid from clause even if it is not used. To use
 this function, simply append the result of this function to the statement:
 
-    double databasePi;
-    session << ("select 4*atan(1)" + session.get_dummy_from_clause()),
-               into(databasePi);
-
+```cpp
+double databasePi;
+session << ("select 4*atan(1)" + session.get_dummy_from_clause()),
+            into(databasePi);
+```
 
 If just the name of the dummy table is needed, and not the full clause, you can
 use `get_dummy_from_table()` to obtain it.
@@ -98,27 +119,33 @@ It is possible to portably query the database server to obtain basic metadata in
 
 In order to get the list of table names in the current schema:
 
-    std::vector<std::string> names(100);
-    sql.get_table_names(), into(names);
+```cpp
+std::vector<std::string> names(100);
+sql.get_table_names(), into(names);
+```
 
 alternatively:
 
-    std::string name;
-    soci::statement st = (sql.prepare_table_names(), into(name));
-    
-    st.execute();
-    while (st.fetch())
-    {
-        // ...
-    }
+```cpp
+std::string name;
+soci::statement st = (sql.prepare_table_names(), into(name));
+
+st.execute();
+while (st.fetch())
+{
+    // ...
+}
+```
 
 Similarly, to get the description of all columns in the given table:
 
-    soci::column_info ci;
-    soci::statement st = (sql.prepare_column_descriptions(table_name), into(ci));
+```cpp
+soci::column_info ci;
+soci::statement st = (sql.prepare_column_descriptions(table_name), into(ci));
 
-    st.execute();
-    while (st.fetch())
-    {
-        // ci fields describe each column in turn
-    }
+st.execute();
+while (st.fetch())
+{
+    // ci fields describe each column in turn
+}
+```

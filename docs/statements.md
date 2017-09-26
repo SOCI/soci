@@ -4,17 +4,19 @@
 
 Consider the following examples:
 
-    // Example 1.
-    for (int i = 0; i != 100; ++i)
-    {
-        sql << "insert into numbers(value) values(" << i << ")";
-    }
+```cpp
+// Example 1.
+for (int i = 0; i != 100; ++i)
+{
+    sql << "insert into numbers(value) values(" << i << ")";
+}
 
-    // Example 2.
-    for (int i = 0; i != 100; ++i)
-    {
-        sql << "insert into numbers(value) values(:val)", use(i);
-    }
+// Example 2.
+for (int i = 0; i != 100; ++i)
+{
+    sql << "insert into numbers(value) values(:val)", use(i);
+}
+```
 
 Both examples will populate the table `numbers` with the values from `0` to `99`.
 
@@ -26,14 +28,16 @@ In fact, more complicated queries are likely to suffer in terms of lower perform
 
 The following example uses the class `statement` explicitly, by preparing the statement only once and repeating its execution with changing data (note the use of `prepare` member of `session` class):
 
-    int i;
-    statement st = (sql.prepare <<
-                    "insert into numbers(value) values(:val)",
-                    use(i));
-    for (i = 0; i != 100; ++i)
-    {
-        st.execute(true);
-    }
+```cpp
+int i;
+statement st = (sql.prepare <<
+                "insert into numbers(value) values(:val)",
+                use(i));
+for (i = 0; i != 100; ++i)
+{
+    st.execute(true);
+}
+```
 
 The `true` parameter given to the `execute` method indicates that the actual data exchange is wanted, so that the meaning of the whole example is
 
@@ -57,35 +61,41 @@ The `rowset` itself can be used only with select queries.
 The following example creates an instance of the `rowset` class and binds query results into elements of `int` type - in this query only one result column is expected.
 After executing the query the code iterates through the query result using `rowset_iterator`:
 
-    rowset<int> rs = (sql.prepare << "select values from numbers");
+```cpp
+rowset<int> rs = (sql.prepare << "select values from numbers");
 
-    for (rowset<int>::const_iterator it = rs.begin(); it != rs.end(); ++it)
-    {
-         cout << *it << '\n';
-    }
+for (rowset<int>::const_iterator it = rs.begin(); it != rs.end(); ++it)
+{
+        cout << *it << '\n';
+}
+```
 
 Another example shows how to retrieve more complex results, where `rowset` elements are of type `row` and therefore use [dynamic bindings](exchange.html#dynamic):
 
-    // person table has 4 columns
+```cpp
+// person table has 4 columns
 
-    rowset<row> rs = (sql.prepare << "select id, firstname, lastname, gender from person");
+rowset<row> rs = (sql.prepare << "select id, firstname, lastname, gender from person");
 
-    // iteration through the resultset:
-    for (rowset<row>::const_iterator it = rs.begin(); it != rs.end(); ++it)
-    {
-        row const& row = *it;
+// iteration through the resultset:
+for (rowset<row>::const_iterator it = rs.begin(); it != rs.end(); ++it)
+{
+    row const& row = *it;
 
-        // dynamic data extraction from each row:
-        cout << "Id: " << row.get<int>(0) << '\n'
-             << "Name: " << row.get<string>(1) << " " << row.get<string>(2) << '\n'
-             << "Gender: " << row.get<string>(3) << endl;
-    }
+    // dynamic data extraction from each row:
+    cout << "Id: " << row.get<int>(0) << '\n'
+            << "Name: " << row.get<string>(1) << " " << row.get<string>(2) << '\n'
+            << "Gender: " << row.get<string>(3) << endl;
+}
+```
 
 The `rowset_iterator` can be used with standard algorithms as well:
 
-    rowset<string> rs = (sql.prepare << "select firstname from person");
+```cpp
+rowset<string> rs = (sql.prepare << "select firstname from person");
 
-    std::copy(rs.begin(), rs.end(), std::ostream_iterator<std::string>(std::cout, "\n"));
+std::copy(rs.begin(), rs.end(), std::ostream_iterator<std::string>(std::cout, "\n"));
+```
 
 Above, the query result contains a single column which is bound to `rowset` element of type of `std::string`.
 All records are sent to standard output using the `std::copy` algorithm.
@@ -99,24 +109,24 @@ The following example presents how to insert 100 records in 4 batches.
 It is also important to note, that size of vector remains equal in every batch interaction.
 This ensures vector is not reallocated and, what's crucial for the bulk trick, new data should be pushed to the vector before every call to `statement::execute`:
 
-    // Example 3.
-    void fill_ids(std::vector<int>& ids)
-    {
-       for (std::size_t i = 0; i < ids.size(); ++i)
-          ids[i] = i; // mimics source of a new ID
-    }
+```cpp
+// Example 3.
+void fill_ids(std::vector<int>& ids)
+{
+    for (std::size_t i = 0; i < ids.size(); ++i)
+        ids[i] = i; // mimics source of a new ID
+}
 
-    const int BATCH_SIZE = 25;
-    std::vector<int> ids(BATCH_SIZE);
+const int BATCH_SIZE = 25;
+std::vector<int> ids(BATCH_SIZE);
 
-    statement st = (sql.prepare <<
-                    "insert into numbers(value) values(:val)",
-                    use(ids));
-    for (int i = 0; i != 4; ++i)
-    {
-        fill_ids(ids);
-        st.execute(true);
-    }
+statement st = (sql.prepare << "insert into numbers(value) values(:val)", use(ids));
+for (int i = 0; i != 4; ++i)
+{
+    fill_ids(ids);
+    st.execute(true);
+}
+```
 
 Given batch size is 25, this example should insert 4 x 25 = 100 records.
 
@@ -124,15 +134,15 @@ Given batch size is 25, this example should insert 4 x 25 = 100 records.
 
 It is also possible to read all the numbers written in the above examples:
 
-    int i;
-    statement st = (sql.prepare <<
-                    "select value from numbers order by value",
-                    into(i));
-    st.execute();
-    while (st.fetch())
-    {
-        cout << i << '\n';
-    }
+```cpp
+int i;
+statement st = (sql.prepare << "select value from numbers order by value", into(i));
+st.execute();
+while (st.fetch())
+{
+    cout << i << '\n';
+}
+```
 
 In the above example, the `execute` method is called with the default parameter `false`.
 This means that the statement should be executed, but the actual data exchange will be performed later.
@@ -144,31 +154,34 @@ The above code example should be treated as an idiomatic way of reading many row
 
 It is further possible to select records in batches into `std::vector` based types, with the size of the vector specifying the number of records to retrieve in each round trip:
 
-    std::vector<int> valsOut(100);
-    sql << "select val from numbers", into(valsOut);
+```cpp
+std::vector<int> valsOut(100);
+sql << "select val from numbers", into(valsOut);
+```
 
 Above, the value `100` indicates that no more values should be retrieved, even if it would be otherwise possible.
 If there are less rows than asked for, the vector will be appropriately down-sized.
 
 The `statement::execute()` and `statement::fetch()` functions can also be used to repeatedly select all rows returned by a query into a vector based type:
 
-
-    const int BATCH_SIZE = 30;
-    std::vector<int> valsOut(BATCH_SIZE);
-    statement st = (sql.prepare <<
-                    "select value from numbers",
-                    into(valsOut));
-    st.execute();
-    while (st.fetch())
+```cpp
+const int BATCH_SIZE = 30;
+std::vector<int> valsOut(BATCH_SIZE);
+statement st = (sql.prepare <<
+                "select value from numbers",
+                into(valsOut));
+st.execute();
+while (st.fetch())
+{
+    std::vector<int>::iterator pos;
+    for(pos = valsOut.begin(); pos != valsOut.end(); ++pos)
     {
-        std::vector<int>::iterator pos;
-        for(pos = valsOut.begin(); pos != valsOut.end(); ++pos)
-        {
-            cout << *pos << '\n';
-        }
-
-        valsOut.resize(BATCH_SIZE);
+        cout << *pos << '\n';
     }
+
+    valsOut.resize(BATCH_SIZE);
+}
+```
 
 Assuming there are 100 rows returned by the query, the above code will retrieve and print all of them.
 Since the output vector was created with size 30, it will take (at least) 4 calls to `fetch()` to retrieve all 100 values.
@@ -189,47 +202,48 @@ Actually, all supported backends guarantee that the requested number of rows wil
 This means that the manual vector resizing is in practice not needed - the vector will keep its size until the end of rowset.
 The above idiom, however, is provided with future backends in mind, where the constant size of the vector might be too expensive to guarantee and where allowing `fetch` to down-size the vector even before reaching the end of rowset might buy some performance gains.
 
-
 ## Statement caching
 
 Some backends have some facilities to improve statement parsing and compilation to limit overhead when creating commonly used query.
 But for backends that does not support this kind optimization you can keep prepared statement and use it later with new references.
 To do such, prepare a statement as usual, you have to use `exchange` to bind new variables to statement object, then `execute` statement and finish by cleaning bound references with `bind_clean_up`.
 
-    sql << "CREATE TABLE test(a INTEGER)";
+```cpp
+sql << "CREATE TABLE test(a INTEGER)";
+
+{
+    // prepare statement
+    soci::statement stmt = (db.prepare << "INSERT INTO numbers(value) VALUES(:val)");
 
     {
-        // prepare statement
-        soci::statement stmt = (db.prepare << "INSERT INTO numbers(value) VALUES(:val)");
+        // first insert
+        int a0 = 0;
 
-        {
-            // first insert
-            int a0 = 0;
+        // update reference
+        stmt.exchange(soci::use(a0));
 
-            // update reference
-            stmt.exchange(soci::use(a0));
-
-            stmt.define_and_bind();
-            stmt.execute(true);
-            stmt.bind_clean_up();
-        }
-
-        {
-            // come later, second insert
-            int a1 = 1;
-
-            // update reference
-            stmt.exchange(soci::use(a1));
-
-            stmt.define_and_bind();
-            stmt.execute(true);
-            stmt.bind_clean_up();
-        }
+        stmt.define_and_bind();
+        stmt.execute(true);
+        stmt.bind_clean_up();
     }
 
     {
-        std::vector<int> v(10);
-        db << "SELECT value FROM numbers", soci::into(v);
-        for (int i = 0; i < v.size(); ++i)
-            std::cout << "value " << i << ": " << v[i] << std::endl;
+        // come later, second insert
+        int a1 = 1;
+
+        // update reference
+        stmt.exchange(soci::use(a1));
+
+        stmt.define_and_bind();
+        stmt.execute(true);
+        stmt.bind_clean_up();
     }
+}
+
+{
+    std::vector<int> v(10);
+    db << "SELECT value FROM numbers", soci::into(v);
+    for (int i = 0; i < v.size(); ++i)
+        std::cout << "value " << i << ": " << v[i] << std::endl;
+}
+```

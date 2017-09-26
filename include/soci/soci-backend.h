@@ -49,7 +49,7 @@ enum exchange_type
     x_statement,
     x_rowid,
     x_blob,
-    
+
     x_xmltype,
     x_longstring
 };
@@ -94,7 +94,7 @@ public:
     {
         throw soci_error("into bulk iterators are not supported with this backend");
     }
-    
+
     virtual void define_by_pos(int& position, void* data, exchange_type type) = 0;
 
     virtual void pre_exec(int /* num */) {}
@@ -226,27 +226,27 @@ public:
     virtual ~blob_backend() {}
 
     virtual std::size_t get_len() = 0;
-    
+
     virtual std::size_t read(std::size_t offset, char* buf,
         std::size_t toRead) = 0;
-    
+
     virtual std::size_t read_from_start(char * /* buf */, std::size_t /* toRead */,
         std::size_t /* offset */)
     {
         throw soci_error("read_from_start is not implemented for this backend");
     }
-    
+
     virtual std::size_t write(std::size_t offset, char const* buf,
         std::size_t toWrite) = 0;
-    
+
     virtual std::size_t write_from_start(const char * /* buf */, std::size_t /* toWrite */,
         std::size_t /* offset */)
     {
         throw soci_error("write_from_start is not implemented for this backend");
     }
-    
+
     virtual std::size_t append(char const* buf, std::size_t toWrite) = 0;
-    
+
     virtual void trim(std::size_t newLen) = 0;
 
 private:
@@ -292,7 +292,7 @@ public:
             " from information_schema.tables"
             " where table_schema = 'public'";
     }
-    
+
     // Returns a query with a single parameter (table name) for the list
     // of columns and their properties.
     virtual std::string get_column_descriptions_query() const
@@ -306,7 +306,7 @@ public:
             " from information_schema.columns"
             " where table_schema = 'public' and table_name = :t";
     }
-    
+
     virtual std::string create_table(const std::string & tableName)
     {
         return "create table " + tableName + " (";
@@ -323,14 +323,14 @@ public:
         int precision, int scale)
     {
         // PostgreSQL was selected as a baseline for the syntax:
-        
+
         std::string res;
         switch (dt)
         {
         case dt_string:
             {
                 std::ostringstream oss;
-                
+
                 if (precision == 0)
                 {
                     oss << "text";
@@ -339,11 +339,11 @@ public:
                 {
                     oss << "varchar(" << precision << ")";
                 }
-                
+
                 res += oss.str();
             }
             break;
-            
+
         case dt_date:
             res += "timestamp";
             break;
@@ -359,7 +359,7 @@ public:
                 {
                     oss << "numeric(" << precision << ", " << scale << ")";
                 }
-                
+
                 res += oss.str();
             }
             break;
@@ -371,7 +371,7 @@ public:
         case dt_long_long:
             res += "bigint";
             break;
-            
+
         case dt_unsigned_long_long:
             res += "bigint";
             break;

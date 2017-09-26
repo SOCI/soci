@@ -9,11 +9,15 @@ which meaning is backend-dependent.
 
 Example:
 
-    session sql(oracle, "service=orcl user=scott password=tiger");
+```cpp
+session sql(oracle, "service=orcl user=scott password=tiger");
+```
 
 Another example might be:
 
-    session sql(postgresql, "dbname=mydb");
+```cpp
+session sql(postgresql, "dbname=mydb");
+```
 
 Above, the `sql` object is a local (automatic) object that encapsulates the connection.
 
@@ -25,11 +29,15 @@ Dynamically loadable backends are compiled as shared libraries and allow to sele
 
 The usage is similar to the above, but instead of providing the factory object, the backend name is expected:
 
-    session sql("postgresql", "dbname=mydb");
+```cpp
+session sql("postgresql", "dbname=mydb");
+```
 
 For convenience, the URL-like form that combines both the backend name with connection parameters is supported as well:
 
-    session sql("postgresql://dbname=mydb");
+```cpp
+session sql("postgresql://dbname=mydb");
+```
 
 The last two constructors described above try to locate the shared library with the name `libsoci_ABC.so` (or `libsoci_ABC.dll` on Windows), where ABC is the backend name.
 In the above examples, the expected library name will be `libsoci_postgresql.so` for Unix-like systems.
@@ -39,9 +47,11 @@ Using this constructor is the only way to pass any non-default options to the ba
 
 For example, to suppress any interactive prompts when using ODBC backend you could do:
 
-    connection_parameters parameters("odbc", "DSN=mydb");
-    parameters.set_option(odbc_option_driver_complete, "0" /* SQL_DRIVER_NOPROMPT */);
-    session sql(parameters);
+```cpp
+connection_parameters parameters("odbc", "DSN=mydb");
+parameters.set_option(odbc_option_driver_complete, "0" /* SQL_DRIVER_NOPROMPT */);
+session sql(parameters);
+```
 
 Notice that you need to `#include<soci-odbc.h>` to obtain the option name declaration.
 The existing options are described in the backend-specific part of the documentation.
@@ -60,27 +70,31 @@ The run-time selection of backends is also supported with libraries linked stati
 
 Each backend provides a separate function of the form `register_factory_*name*`, where `*name*` is a backend name. Thus:
 
-    extern "C" void register_factory_postgresql();
-    // ...
-    register_factory_postgresql();
-    session sql("postgresql://dbname=mydb");
+```cpp
+extern "C" void register_factory_postgresql();
+// ...
+register_factory_postgresql();
+session sql("postgresql://dbname=mydb");
+```
 
 The above example registers the backend for PostgreSQL and later creates the session object for that backend.
 This form is provided for those projects that prefer static linking but still wish to benefit from run-time backend selection.
 
 An alternative way to set up the session is to create it in the disconnected state and connect later:
 
-    session sql;
+```cpp
+session sql;
 
-    // some time later:
-    sql.open(postgresql, "dbname=mydb");
+// some time later:
+sql.open(postgresql, "dbname=mydb");
 
-    // or:
-    sql.open("postgresql://dbname=mydb");
+// or:
+sql.open("postgresql://dbname=mydb");
 
-    // or also:
-    connection_parameters parameters("postgresql", "dbname=mydb");
-    sql.open(parameters);
+// or also:
+connection_parameters parameters("postgresql", "dbname=mydb");
+sql.open(parameters);
+```
 
 The rules for backend naming are the same as with the constructors described above.
 
@@ -109,28 +123,32 @@ The following backends are also available, with various levels of completeness:
 
 The `failover_callback` interface can be used as a callback channel for notifications of events that are automatically processed when the session is forcibly closed due to connectivity problems. The user can override the following methods:
 
-    // Called when the failover operation has started,
-    // after discovering connectivity problems.
-    virtual void started();
+```cpp
+// Called when the failover operation has started,
+// after discovering connectivity problems.
+virtual void started();
 
-    // Called after successful failover and creating a new connection;
-    // the sql parameter denotes the new connection and allows the user
-    // to replay any initial sequence of commands (like session configuration).
-    virtual void finished(session & sql);
+// Called after successful failover and creating a new connection;
+// the sql parameter denotes the new connection and allows the user
+// to replay any initial sequence of commands (like session configuration).
+virtual void finished(session & sql);
 
-    // Called when the attempt to reconnect failed,
-    // if the user code sets the retry parameter to true,
-    // then new connection will be attempted;
-    // the newTarget connection string is a hint that can be ignored
-    // by external means.
-    virtual void failed(bool & retry, std::string & newTarget);
-    
-    // Called when there was a failure that prevents further failover attempts.
-    virtual void aborted();
+// Called when the attempt to reconnect failed,
+// if the user code sets the retry parameter to true,
+// then new connection will be attempted;
+// the newTarget connection string is a hint that can be ignored
+// by external means.
+virtual void failed(bool & retry, std::string & newTarget);
+
+// Called when there was a failure that prevents further failover attempts.
+virtual void aborted();
+```
 
 The user-provided callback implementation can be installed (or reset) with:
 
-    sql.set_failover_callback(myCallback);
+```cpp
+sql.set_failover_callback(myCallback);
+```
 
 ### Portability note
 

@@ -3,17 +3,19 @@
 All DB-related errors manifest themselves as exceptions of type `soci_error`, which is derived from `std::runtime_error`.
 This allows to handle database errors within the standard exception framework:
 
-    int main()
+```cpp
+int main()
+{
+    try
     {
-        try
-        {
-            // regular code
-        }
-        catch (std::exception const & e)
-        {
-            cerr << "Bang! " << e.what() << endl;
-        }
+        // regular code
     }
+    catch (std::exception const & e)
+    {
+        cerr << "Bang! " << e.what() << endl;
+    }
+}
+```
 
 The `soci_error` class exposes two public functions:
 
@@ -31,61 +33,67 @@ If the error category is not recognized by the backend, it defaults to `unknown`
 
 The MySQL backend can throw instances of the `mysql_soci_error`, which is publicly derived from `soci_error` and has an additional public `err_num_` member containing the MySQL error code (as returned by `mysql_errno()`):
 
-    int main()
+```cpp
+int main()
+{
+    try
     {
-        try
-        {
-            // regular code
-        }
-        catch (soci::mysql_soci_error const & e)
-        {
-            cerr << "MySQL error: " << e.err_num_
-                << " " << e.what() << endl;
-        }
-        catch (soci::exception const & e)
-        {
-            cerr << "Some other error: " << e.what() << endl;
-        }
+        // regular code
     }
+    catch (soci::mysql_soci_error const & e)
+    {
+        cerr << "MySQL error: " << e.err_num_
+            << " " << e.what() << endl;
+    }
+    catch (soci::exception const & e)
+    {
+        cerr << "Some other error: " << e.what() << endl;
+    }
+}
+```
 
 ## Oracle
 
 The Oracle backend can also throw the instances of the `oracle_soci_error`, which is publicly derived from `soci_error` and has an additional public `err_num_` member containing the Oracle error code:
 
-    int main()
+```cpp
+int main()
+{
+    try
     {
-        try
-        {
-            // regular code
-        }
-        catch (soci::oracle_soci_error const & e)
-        {
-            cerr << "Oracle error: " << e.err_num_
-                << " " << e.what() << endl;
-        }
-        catch (soci::exception const & e)
-        {
-            cerr << "Some other error: " << e.what() << endl;
-        }
+        // regular code
     }
+    catch (soci::oracle_soci_error const & e)
+    {
+        cerr << "Oracle error: " << e.err_num_
+            << " " << e.what() << endl;
+    }
+    catch (soci::exception const & e)
+    {
+        cerr << "Some other error: " << e.what() << endl;
+    }
+}
+```
 
 ## PostgreSQL
 
 The PostgreSQL backend can also throw the instances of the `postgresql_soci_error`, which is publicly derived from `soci_error` and has an additional public `sqlstate()` member function returning the five-character "SQLSTATE" error code:
 
-    int main()
+```cpp
+int main()
+{
+    try
     {
-        try
-        {
-            // regular code
-        }
-        catch (soci::postgresql_soci_error const & e)
-        {
-            cerr << "PostgreSQL error: " << e.sqlstate()
-                << " " << e.what() << endl;
-        }
-        catch (soci::exception const & e)
-        {
-            cerr << "Some other error: " << e.what() << endl;
-        }
+        // regular code
     }
+    catch (soci::postgresql_soci_error const & e)
+    {
+        cerr << "PostgreSQL error: " << e.sqlstate()
+            << " " << e.what() << endl;
+    }
+    catch (soci::exception const & e)
+    {
+        cerr << "Some other error: " << e.what() << endl;
+    }
+}
+```

@@ -8,34 +8,38 @@ The SOCI library provides the following members of the `session` class for trans
 
 In addition to the above there is a RAII wrapper that allows to associate the transaction with the given scope of code:
 
-    class transaction
-    {
-    public:
-        explicit transaction(session & sql);
+```cpp
+class transaction
+{
+public:
+    explicit transaction(session & sql);
 
-        ~transaction();
+    ~transaction();
 
-        void commit();
-        void rollback();
+    void commit();
+    void rollback();
 
-    private:
-        // ...
-    };
+private:
+    // ...
+};
+```
 
 The object of class `transaction` will roll back automatically when the object is destroyed
 (usually as a result of leaving the scope) *and* when the transaction was not explicitly committed before that.
 
 A typical usage pattern for this class might be:
 
-    {
-        transaction tr(sql);
+```cpp
+{
+    transaction tr(sql);
 
-        sql << "insert into ...";
-        sql << "more sql queries ...";
-        // ...
+    sql << "insert into ...";
+    sql << "more sql queries ...";
+    // ...
 
-        tr.commit();
-    }
+    tr.commit();
+}
+```
 
 With the above pattern the transaction is committed only when the code successfully reaches the end of block.
 If some exception is thrown before that, the scope will be left without reaching the final statement and the transaction object will automatically roll back in its destructor.

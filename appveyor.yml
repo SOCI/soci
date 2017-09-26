@@ -1,30 +1,29 @@
 version: 4.0.0.{build}
 
+configuration: Release
+
 environment:
   MINGW_ARCHIVE: C:\projects\mingw\x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z
   MINGW_URL: https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/4.8.3/threads-posix/seh/x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z/download
   matrix:
-    - PRJ_GEN: "Visual Studio 11 2012 Win64"
-      BDIR: msvc2012
-      PRJ_CFG: Release
-      BOOST_ROOT: C:\Libraries\boost_1_58_0
-      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
+    - G: "Visual Studio 15 2017 Win64"
+      BOOST_ROOT: C:\Libraries\boost_1_59_0
+      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.6
       MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
-    - PRJ_GEN: "Visual Studio 12 2013 Win64"
-      BDIR: msvc2013
-      PRJ_CFG: Release
-      BOOST_ROOT: C:\Libraries\boost_1_58_0
-      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
-      MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
-    - PRJ_GEN: "Visual Studio 14 2015 Win64"
-      BDIR: msvc2015
-      PRJ_CFG: Release
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    - G: "Visual Studio 14 2015 Win64"
       BOOST_ROOT: C:\Libraries\boost_1_59_0
       POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
       MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
-    - PRJ_GEN: "MinGW Makefiles"
-      BDIR: gcc483
-      PRJ_CFG: Release
+    - G: "Visual Studio 12 2013 Win64"
+      BOOST_ROOT: C:\Libraries\boost_1_58_0
+      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
+      MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
+    - G: "Visual Studio 11 2012 Win64"
+      BOOST_ROOT: C:\Libraries\boost_1_58_0
+      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
+      MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
+    - G: "MinGW Makefiles"
       MINGW_ROOT: C:\projects\mingw\4.8.3\mingw64\bin
       BOOST_ROOT: C:\Libraries\boost_1_59_0
       POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
@@ -40,7 +39,7 @@ cache:
 
 install:
   - ps: |
-      if ($env:PRJ_GEN -eq "MinGW Makefiles")
+      if ($env:G -eq "MinGW Makefiles")
       {
         if (!(Test-Path C:\projects\mingw))
         {
@@ -59,7 +58,7 @@ install:
 before_build:
   # dirty little hack - remove sh from Git to make generator happy
   - ps: |
-      if ($env:PRJ_GEN -eq "MinGW Makefiles")
+      if ($env:G -eq "MinGW Makefiles")
       {
         $shellPath = (Get-Command sh.exe).definition
         if ($shellPath)
@@ -71,9 +70,9 @@ before_build:
         }
       }
   - cd C:\projects\sqlite\src
-  - mkdir build.%BDIR%
-  - cd build.%BDIR%
-  - set SQLITE_ROOT=C:\projects\sqlite\sqlite.%BDIR%
+  - mkdir build
+  - cd build
+  - set SQLITE_ROOT=C:\projects\sqlite\sqlite
   - set PATH=%MINGW_ROOT%;%PATH%;%SQLITE_ROOT%\bin;%POSTGRESQL_ROOT%\bin;%MYSQL_DIR%\bin;%MYSQL_DIR%\lib
   - echo %PATH%
   - cmake --version
@@ -84,15 +83,15 @@ before_build:
   - set USER=root
   - mysql -e "create database soci_test;" --user=root
   - sqlcmd -U sa -P Password12! -S (local)\SQL2014 -i C:\projects\soci\scripts\windows\mssql_db_create.sql
-  - cmake .. -G"%PRJ_GEN%" -DCMAKE_BUILD_TYPE=%PRJ_CFG% -DCMAKE_INSTALL_PREFIX=C:\projects\sqlite\sqlite.%BDIR%
-  - cmake --build . --config %PRJ_CFG% --target install
+  - cmake .. -G"%G%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_INSTALL_PREFIX=C:\projects\sqlite\sqlite
+  - cmake --build . --config %CONFIGURATION% --target install
 
 build_script:
   - cd C:\projects\soci
-  - mkdir build.%BDIR%
-  - cd build.%BDIR%
-  - cmake .. -G"%PRJ_GEN%" -DCMAKE_BUILD_TYPE=%PRJ_CFG% -DCMAKE_VERBOSE_MAKEFILE=ON
-  - cmake --build . --config %PRJ_CFG% --clean-first
+  - mkdir build
+  - cd build
+  - cmake .. -G"%G%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_VERBOSE_MAKEFILE=ON
+  - cmake --build . --config %CONFIGURATION% --clean-first
 
 test_script:
   - ctest -V --output-on-failure -R "soci_empty|soci_postgresql|soci_sqlite3|soci_odbc_test_mssql|soci_mysql|soci_odbc_test_mysql|soci_odbc_test_postgresql"

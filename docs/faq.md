@@ -4,7 +4,7 @@ This part of the documentation is supposed to gather in a single place the usual
 
 ## Q: Why "SOCI"?
 
-SOCI was initially developed in the environment where Oracle was the main database technology in use. As a wrapper for the native OCI API (Oracle Call Interface), the name "Simple Oracle Call Interface" was quite obvious - until the 2.0 release, when the internal architecture was largely redesigned to allow the use of *backends* that support other database servers. We have kept the same name to indicate that Oracle is the main supported technology in the sense that the library includes only those features that were naturally implemented in Oracle. With the 2.1 release of the library, two new backends were added (MySQL and SQLite3) and we decided to drop the original full name so that new users looking for a library supporting any of these simpler libraries are not discouraged by seeing "Oracle" somewhere in the name. 
+SOCI was initially developed in the environment where Oracle was the main database technology in use. As a wrapper for the native OCI API (Oracle Call Interface), the name "Simple Oracle Call Interface" was quite obvious - until the 2.0 release, when the internal architecture was largely redesigned to allow the use of *backends* that support other database servers. We have kept the same name to indicate that Oracle is the main supported technology in the sense that the library includes only those features that were naturally implemented in Oracle. With the 2.1 release of the library, two new backends were added (MySQL and SQLite3) and we decided to drop the original full name so that new users looking for a library supporting any of these simpler libraries are not discouraged by seeing "Oracle" somewhere in the name.
 
 The other possible interpretation was "Syntax Oriented Call Interface", which stresses the fact that SOCI was built to support the most natural and easy interface for the user that is similar to the Embedded SQL concept (see below). But on the other hand, SOCI also provides other features (like object-relational mapping) and as a whole it is not just "emulator" of the Embedded SQL. With all these considerations in mind, SOCI is just "SOCI - The C++ Database Access Library".
 
@@ -15,28 +15,30 @@ that it's actually not that bad and the abstractions provided by the library are
 
 The basic SOCI syntax was inspired by the Embedded SQL, which is part of the SQL standard, supported by the major DB technologies and even available as built-in part of the languages used in some DB-oriented integrated development environments. The term "Embedded SQL" is enough for Google to spit millions of references - one of the typical examples is:
 
-    {
-        int a;
-        /* ... */
-        EXEC SQL SELECT salary INTO :a
-                 FROM Employee
-                 WHERE SSN=876543210;
-        /* ... */
-        printf("The salary is %d\n", a);
-        /* ... */
-    }
+```cpp
+{
+    int a;
+    /* ... */
+    EXEC SQL SELECT salary INTO :a
+                FROM Employee
+                WHERE SSN=876543210;
+    /* ... */
+    printf("The salary is %d\n", a);
+    /* ... */
+}
+```
 
 The above is not a regular C (nor C++) code, of course. It's the mix of C and SQL and there is a separate, pecialized preprocessor needed to convert it to something that the actual C (or C++) compiler will be able to understand. This means that the compilation of the program using embedded SQL is two-phase: preprocess the embedded SQL part and compile the result. This two-phase development is quite troublesome, especially when it comes to debugging. Yet, the advantage of it is that the code expresses the programmer's intents in a very straightforward
 way: read something from the database and put it into the local variable. Just like that.
-
 
 The SOCI library was born as an anwer to the following question: is it possible to have the same expressive power without the disadvantages of two-phase builds?
 
 The following was chosen to be the basic SOCI syntax that can mirror the above Embedded SQL example:
 
-    int a;
-    sql << "SELECT salary FROM Employee WHERE SSN=876543210", into(a);
-
+```cpp
+int a;
+sql << "SELECT salary FROM Employee WHERE SSN=876543210", into(a);
+```
 
 (as you see, SOCI changes the order of elements a little bit, so that the SQL query is separate and not mixed with other elements)
 
@@ -61,27 +63,31 @@ What is the most important, though, is that SOCI does not try to mess with the t
 
 An example of the stream-like interface might be something like this (this is imaginary syntax, not supported by SOCI):
 
-    sql.exec("select a, b, c from some_table");
+```cpp
+sql.exec("select a, b, c from some_table");
 
-    while (!sql.eof())
-    {
-        int a, b, c;
-        sql >> a >> b >> c;
-        // ...
-    }
+while (!sql.eof())
+{
+    int a, b, c;
+    sql >> a >> b >> c;
+    // ...
+}
+```
 
 We think that the data stored in the relational database should be treated as a set of relations - which is exactly what it is. This means that what is read from the database as a result of some SQL query is a *set of rows*. This set might be ordered, but it is still a set of rows, not a uniformly flat list of values. This distinction might seem to be unnecessarily low-level and that the uniform stream-like presentation of data is more preferable, but it's actually the other way round - the set of rows is something more structured - and that structure was *designed* into the database - than the flat stream and is therefore less prone to programming errors like miscounting the number of values that is expected in each row.
 
 Consider the following programming error:
 
-    sql.exec("select a, b from some_table"); // only TWO columns
+```cpp
+sql.exec("select a, b from some_table"); // only TWO columns
 
-    while (!sql.eof())
-    {
-        int a, b, c;
-        sql >> a >> b >> c; // this causes "row-tearing"
-        // ...
-    }
+while (!sql.eof())
+{
+    int a, b, c;
+    sql >> a >> b >> c; // this causes "row-tearing"
+    // ...
+}
+```
 
 *"How to detect the end of each line in a file"* is a common beginner's question that relates to the use of IOStreams - and this common question clearly shows that for the record-oriented data the stream is not an optimal abstraction. Of course, we don't claim that IOStreams is bad - but we do insist that the record-oriented data is
 better manipulated in a way that is also record-aware.
@@ -92,7 +98,6 @@ data returned from the database is still structured into rows, but each row can 
 ## Q: Why use indicators instead of some special value to discover that something is null?
 
 Some programmers are used to indicating the null value by using some special (which means: "unlikely" to be ever used) value - for example, to use the smallest integer value to indicate null integer. Or to use empty string to indicate null string. And so on.
-
 
 We think that it's *completely wrong*. Null (in the database sense) is an information *about* the data. It describes the *state* of the data and if it's null, then there's *no data at all*. Nothing. Null. It does not make any sense to talk about some special value if in fact there is *no* value at all - especially if we take into account that, for example, the smallest integer value (or whatever else you choose as the "special" value) might not be *that* special in the given application or domain.
 
@@ -112,11 +117,10 @@ Above, the "and" plays a role of the comma. Even if overloading the comma operat
 
 Indeed, the `operator<<` in the basic SOCI syntax shows that something (the query) is *sent* somewhere (to the server). Some people don't like this, especially when the "select" statements are involved. If the high-level idea is to *read*  data from somewhere, then `operator<<` seems unintuitive to the die-hard IOStreams users. The fact is, however, that the code containing SQL statement already indicates that there is a client-server relationship with some other software component (very likely remote). In such code it does not make any sense to pretend that the communication is one-way only, because it's clear that even the "select" statements need to be *sent* somewhere. This approach is also more uniform and allows to cover other statements like "drop table" or alike, where no data is expected to be exchanged at all (and therefore the IOStreams analogies for data exchange have no sense at all). No matter what is the kind of the SQL statement, it is *sent*  to the server and this "sending" justifies the choice of `operator<<`.
 
-
 Using different operators (`operator>>` and `operator<<`) as a way of distinguishing between different high-level ideas (*reading* and *writing* from the data store, respectively) does make sense on much higher level of abstraction, where the SQL statement itself is already hidden - and we do encourage programmers to use SOCI for implementing such high-level abstractions. For this, the object-relational mapping facilities available in SOCI might prove to be a valuable tool as well, as an effective bridge
 between the low-level world of SQL statements and the high-level world of user-defined abstract data types.
 
-##` Q: Why the Boost license?
+## Q: Why the Boost license?
 
 We decided to use the [Boost license](http://www.boost.org/LICENSE_1_0.txt), because
 it's well recognized in the C++ community, allows us to keep our minimum copyrights, and at the same time allows SOCI to be safely used in commercial projects, without imposing concerns (or just plainuncertainty) typical to other open source licenses, like GPL. We also hope that by choosing the Boost license we have made the life easier

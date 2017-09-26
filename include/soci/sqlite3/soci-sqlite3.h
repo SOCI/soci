@@ -75,14 +75,14 @@ struct sqlite3_standard_into_type_backend : details::standard_into_type_backend
     {
     }
 
-    virtual void define_by_pos(int &position,
-                             void *data, details::exchange_type type);
+    void define_by_pos(int &position,
+                             void *data, details::exchange_type type) SOCI_OVERRIDE;
 
-    virtual void pre_fetch();
-    virtual void post_fetch(bool gotData, bool calledFromFetch,
-                           indicator *ind);
+    void pre_fetch() SOCI_OVERRIDE;
+    void post_fetch(bool gotData, bool calledFromFetch,
+                           indicator *ind) SOCI_OVERRIDE;
 
-    virtual void clean_up();
+    void clean_up() SOCI_OVERRIDE;
 
     sqlite3_statement_backend &statement_;
 
@@ -98,15 +98,15 @@ struct sqlite3_vector_into_type_backend : details::vector_into_type_backend
     {
     }
 
-    void define_by_pos(int& position, void* data, details::exchange_type type);
+    void define_by_pos(int& position, void* data, details::exchange_type type) SOCI_OVERRIDE;
 
-    void pre_fetch();
-    void post_fetch(bool gotData, indicator* ind);
+    void pre_fetch() SOCI_OVERRIDE;
+    void post_fetch(bool gotData, indicator* ind) SOCI_OVERRIDE;
 
-    void resize(std::size_t sz);
-    std::size_t size();
+    void resize(std::size_t sz) SOCI_OVERRIDE;
+    std::size_t size() SOCI_OVERRIDE;
 
-    virtual void clean_up();
+    void clean_up() SOCI_OVERRIDE;
 
     sqlite3_statement_backend& statement_;
 
@@ -119,15 +119,15 @@ struct sqlite3_standard_use_type_backend : details::standard_use_type_backend
 {
     sqlite3_standard_use_type_backend(sqlite3_statement_backend &st);
 
-    virtual void bind_by_pos(int &position,
-        void *data, details::exchange_type type, bool readOnly);
-    virtual void bind_by_name(std::string const &name,
-        void *data, details::exchange_type type, bool readOnly);
+    void bind_by_pos(int &position,
+        void *data, details::exchange_type type, bool readOnly) SOCI_OVERRIDE;
+    void bind_by_name(std::string const &name,
+        void *data, details::exchange_type type, bool readOnly) SOCI_OVERRIDE;
 
-    virtual void pre_use(indicator const *ind);
-    virtual void post_use(bool gotData, indicator *ind);
+    void pre_use(indicator const *ind) SOCI_OVERRIDE;
+    void post_use(bool gotData, indicator *ind) SOCI_OVERRIDE;
 
-    virtual void clean_up();
+    void clean_up() SOCI_OVERRIDE;
 
     sqlite3_statement_backend &statement_;
 
@@ -144,16 +144,16 @@ struct sqlite3_vector_use_type_backend : details::vector_use_type_backend
     {
     }
 
-    virtual void bind_by_pos(int &position,
-                           void *data, details::exchange_type type);
-    virtual void bind_by_name(std::string const &name,
-                            void *data, details::exchange_type type);
+    void bind_by_pos(int &position,
+                           void *data, details::exchange_type type) SOCI_OVERRIDE;
+    void bind_by_name(std::string const &name,
+                            void *data, details::exchange_type type) SOCI_OVERRIDE;
 
-    virtual void pre_use(indicator const *ind);
+    void pre_use(indicator const *ind) SOCI_OVERRIDE;
 
-    virtual std::size_t size();
+    std::size_t size() SOCI_OVERRIDE;
 
-    virtual void clean_up();
+    void clean_up() SOCI_OVERRIDE;
 
     sqlite3_statement_backend &statement_;
 
@@ -203,30 +203,30 @@ struct sqlite3_statement_backend : details::statement_backend
 {
     sqlite3_statement_backend(sqlite3_session_backend &session);
 
-    virtual void alloc();
-    virtual void clean_up();
-    virtual void prepare(std::string const &query,
-        details::statement_type eType);
+    void alloc() SOCI_OVERRIDE;
+    void clean_up() SOCI_OVERRIDE;
+    void prepare(std::string const &query,
+        details::statement_type eType) SOCI_OVERRIDE;
     void reset_if_needed();
     void reset();
 
-    virtual exec_fetch_result execute(int number);
-    virtual exec_fetch_result fetch(int number);
+    exec_fetch_result execute(int number) SOCI_OVERRIDE;
+    exec_fetch_result fetch(int number) SOCI_OVERRIDE;
 
-    virtual long long get_affected_rows();
-    virtual int get_number_of_rows();
-    virtual std::string get_parameter_name(int index) const;
+    long long get_affected_rows() SOCI_OVERRIDE;
+    int get_number_of_rows() SOCI_OVERRIDE;
+    std::string get_parameter_name(int index) const SOCI_OVERRIDE;
 
-    virtual std::string rewrite_for_procedure_call(std::string const &query);
+    std::string rewrite_for_procedure_call(std::string const &query) SOCI_OVERRIDE;
 
-    virtual int prepare_for_describe();
-    virtual void describe_column(int colNum, data_type &dtype,
-                                std::string &columnName);
+    int prepare_for_describe() SOCI_OVERRIDE;
+    void describe_column(int colNum, data_type &dtype,
+                                std::string &columnName) SOCI_OVERRIDE;
 
-    virtual sqlite3_standard_into_type_backend * make_into_type_backend();
-    virtual sqlite3_standard_use_type_backend * make_use_type_backend();
-    virtual sqlite3_vector_into_type_backend * make_vector_into_type_backend();
-    virtual sqlite3_vector_use_type_backend * make_vector_use_type_backend();
+    sqlite3_standard_into_type_backend * make_into_type_backend() SOCI_OVERRIDE;
+    sqlite3_standard_use_type_backend * make_use_type_backend() SOCI_OVERRIDE;
+    sqlite3_vector_into_type_backend * make_vector_into_type_backend() SOCI_OVERRIDE;
+    sqlite3_vector_use_type_backend * make_vector_use_type_backend() SOCI_OVERRIDE;
 
     sqlite3_session_backend &session_;
     sqlite_api::sqlite3_stmt *stmt_;
@@ -250,7 +250,7 @@ struct sqlite3_rowid_backend : details::rowid_backend
 {
     sqlite3_rowid_backend(sqlite3_session_backend &session);
 
-    ~sqlite3_rowid_backend();
+    ~sqlite3_rowid_backend() SOCI_OVERRIDE;
 
     unsigned long value_;
 };
@@ -259,15 +259,15 @@ struct sqlite3_blob_backend : details::blob_backend
 {
     sqlite3_blob_backend(sqlite3_session_backend &session);
 
-    ~sqlite3_blob_backend();
+    ~sqlite3_blob_backend() SOCI_OVERRIDE;
 
-    virtual std::size_t get_len();
-    virtual std::size_t read(std::size_t offset, char *buf,
-                             std::size_t toRead);
-    virtual std::size_t write(std::size_t offset, char const *buf,
-                              std::size_t toWrite);
-    virtual std::size_t append(char const *buf, std::size_t toWrite);
-    virtual void trim(std::size_t newLen);
+    std::size_t get_len() SOCI_OVERRIDE;
+    std::size_t read(std::size_t offset, char *buf,
+                             std::size_t toRead) SOCI_OVERRIDE;
+    std::size_t write(std::size_t offset, char const *buf,
+                              std::size_t toWrite) SOCI_OVERRIDE;
+    std::size_t append(char const *buf, std::size_t toWrite) SOCI_OVERRIDE;
+    void trim(std::size_t newLen) SOCI_OVERRIDE;
 
     sqlite3_session_backend &session_;
 
@@ -283,35 +283,35 @@ struct sqlite3_session_backend : details::session_backend
 {
     sqlite3_session_backend(connection_parameters const & parameters);
 
-    ~sqlite3_session_backend();
+    ~sqlite3_session_backend() SOCI_OVERRIDE;
 
-    virtual void begin();
-    virtual void commit();
-    virtual void rollback();
+    void begin() SOCI_OVERRIDE;
+    void commit() SOCI_OVERRIDE;
+    void rollback() SOCI_OVERRIDE;
 
-    virtual bool get_last_insert_id(session&, std::string const&, long&);
+    bool get_last_insert_id(session&, std::string const&, long&) SOCI_OVERRIDE;
 
-    virtual std::string empty_blob()
+    std::string empty_blob() SOCI_OVERRIDE
     {
         return "x\'\'";
     }
-    
-    virtual std::string get_dummy_from_table() const { return std::string(); }
 
-    virtual std::string get_backend_name() const { return "sqlite3"; }
+    std::string get_dummy_from_table() const SOCI_OVERRIDE { return std::string(); }
+
+    std::string get_backend_name() const SOCI_OVERRIDE { return "sqlite3"; }
 
     void clean_up();
 
-    virtual sqlite3_statement_backend * make_statement_backend();
-    virtual sqlite3_rowid_backend * make_rowid_backend();
-    virtual sqlite3_blob_backend * make_blob_backend();
-    virtual std::string get_table_names_query() const
+    sqlite3_statement_backend * make_statement_backend() SOCI_OVERRIDE;
+    sqlite3_rowid_backend * make_rowid_backend() SOCI_OVERRIDE;
+    sqlite3_blob_backend * make_blob_backend() SOCI_OVERRIDE;
+    std::string get_table_names_query() const SOCI_OVERRIDE
     {
         return "select name as \"TABLE_NAME\""
                 " from sqlite_master where type = 'table'";
     }
-    virtual std::string create_column_type(data_type dt,
-                                           int , int )
+    std::string create_column_type(data_type dt,
+                                           int , int ) SOCI_OVERRIDE
     {
         switch (dt)
         {
@@ -338,8 +338,8 @@ struct sqlite3_session_backend : details::session_backend
 struct sqlite3_backend_factory : backend_factory
 {
     sqlite3_backend_factory() {}
-    virtual sqlite3_session_backend * make_session(
-        connection_parameters const & parameters) const;
+    sqlite3_session_backend * make_session(
+        connection_parameters const & parameters) const SOCI_OVERRIDE;
 };
 
 extern SOCI_SQLITE3_DECL sqlite3_backend_factory const sqlite3;

@@ -1,6 +1,7 @@
 site_name: SOCI 4.0.0
 site_description: SOCI - The C++ Database Access Library
 repo_url: https://github.com/SOCI/soci/
+copyright: Copyright &copy; 2017 <a href="https://github.com/msobczak">Maciej Sobczak</a> and <a href="http://soci.sourceforge.net/people.html">SOCI Team</a>.
 
 pages:
   - Home: index.md
@@ -41,7 +42,10 @@ pages:
   - API:
     - Client API: api/client.md
     - Backend API: api/backend.md
-    - Languages:
-      - Ada: languages/ada/index.md
+    - Ada:
+        - languages/ada/index.md
+        - languages/ada/concepts.md
+        - languages/ada/idioms.md
+        - languages/ada/reference.md
 
 #theme: readthedocs

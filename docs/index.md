@@ -1,3 +1,5 @@
+# SOCI - The C++ Database Access Library
+
 SOCI is a database access library written in C++ that makes an illusion of embedding
 SQL queries in the regular C++ code, staying entirely within the Standard C++.
 
@@ -8,37 +10,42 @@ If you find existing libraries too difficult for your needs or just distracting,
 
 The simplest motivating code example for the SQL query that is supposed to retrieve a single row is:
 
-    int id = ...;
-    string name;
-    int salary;
+```cpp
+int id = ...;
+string name;
+int salary;
 
-    sql << "select name, salary from persons where id = " << id,
+sql << "select name, salary from persons where id = " << id,
         into(name), into(salary);
+```
 
 ## Basic ORM
 
 The following benefits from extensive support for object-relational mapping:
 
-    int id = ...;
-    Person p;
+```cpp
+int id = ...;
+Person p;
 
-    sql << "select first_name, last_name, date_of_birth "
-        "from persons where id = " << id,
-        into(p);
+sql << "select first_name, last_name, date_of_birth "
+       "from persons where id = " << id, into(p);
+```
 
 ## Integrations
 
 Integration with STL is also supported:
 
-    Rowset<string> rs = (sql.prepare << "select name from persons");
-    std::copy(rs.begin(), rs.end(), std::ostream_iterator<std::string>(std::cout, "\n"));
+```cpp
+Rowset<string> rs = (sql.prepare << "select name from persons");
+std::copy(rs.begin(), rs.end(), std::ostream_iterator<std::string>(std::cout, "\n"));
+```
 
 SOCI offers also extensive [integration with Boost](boost.md) datatypes (optional, tuple and fusion) and flexible support for user-defined datatypes.
 
 ## Database Backends
 
-Starting from its 2.0.0 release, SOCI uses the plug-in architecture for backends
-- this allows to target various database servers.
+Starting from its 2.0.0 release, SOCI uses the plug-in architecture for
+backends - this allows to target various database servers.
 
 Currently (SOCI 4.0.0), backends for following database systems are supported:
 
