@@ -220,34 +220,42 @@ public:
 private:
     odbc_version get_driver_version() const
     {
-        soci::session sql(get_backend_factory(), get_connect_string());
-        odbc_session_backend* const
-            odbc_session = static_cast<odbc_session_backend*>(sql.get_backend());
-        if (!odbc_session)
+        try
         {
-            std::cerr << "Failed to get odbc_session_backend?\n";
+            soci::session sql(get_backend_factory(), get_connect_string());
+            odbc_session_backend* const
+                odbc_session = static_cast<odbc_session_backend*>(sql.get_backend());
+            if (!odbc_session)
+            {
+                std::cerr << "Failed to get odbc_session_backend?\n";
+                return odbc_version();
+            }
+
+            char driver_ver[1024];
+            SQLSMALLINT len = sizeof(driver_ver);
+            SQLRETURN rc = SQLGetInfo(odbc_session->hdbc_, SQL_DRIVER_VER,
+                                      driver_ver, len, &len);
+            if (soci::is_odbc_error(rc))
+            {
+                std::cerr << "Retrieving ODBC driver version failed: "
+                          << rc << "\n";
+                return odbc_version();
+            }
+
+            odbc_version v;
+            if (!v.init_from_string(driver_ver))
+            {
+                std::cerr << "Unknown ODBC driver version format: \""
+                          << driver_ver << "\"\n";
+            }
+
+            return v;
+        }
+        catch ( ... )
+        {
+            // Failure getting the version is not fatal.
             return odbc_version();
         }
-
-        char driver_ver[1024];
-        SQLSMALLINT len = sizeof(driver_ver);
-        SQLRETURN rc = SQLGetInfo(odbc_session->hdbc_, SQL_DRIVER_VER,
-                                  driver_ver, len, &len);
-        if (soci::is_odbc_error(rc))
-        {
-            std::cerr << "Retrieving ODBC driver version failed: "
-                      << rc << "\n";
-            return odbc_version();
-        }
-
-        odbc_version v;
-        if (!v.init_from_string(driver_ver))
-        {
-            std::cerr << "Unknown ODBC driver version format: \""
-                      << driver_ver << "\"\n";
-        }
-
-        return v;
     }
 
     odbc_version const m_verDriver;
