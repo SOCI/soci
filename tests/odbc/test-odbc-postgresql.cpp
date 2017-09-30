@@ -26,6 +26,7 @@ public:
     odbc_version()
     {
         initialized_ = false;
+        major_ = minor_ = release_ = 0;
     }
 
     odbc_version(unsigned major, unsigned minor, unsigned release)
@@ -155,10 +156,8 @@ class test_context : public test_context_base
 public:
     test_context(backend_factory const &backEnd,
                 std::string const &connectString)
-        : test_context_base(backEnd, connectString),
-          m_verDriver(get_driver_version())
+                : test_context_base(backEnd, connectString)
     {
-        std::cout << "Using ODBC driver version " << m_verDriver << "\n";
     }
 
     table_creator_base * table_creator_1(soci::session& s) const SOCI_OVERRIDE
@@ -209,7 +208,11 @@ public:
         // need to check for its version here.
         //
         // Be pessimistic if we failed to retrieve the version at all.
-        return !m_verDriver.is_initialized() || m_verDriver < odbc_version(9, 3, 400);
+        if (!m_verDriver.is_initialized()) {
+            m_verDriver.init_from_string(get_driver_version().as_string().c_str());
+            std::cout << "Using ODBC driver version " << m_verDriver << "\n";
+        }
+        return m_verDriver < odbc_version(9, 3, 400);
     }
 
     std::string sql_length(std::string const& s) const SOCI_OVERRIDE
@@ -250,7 +253,7 @@ private:
         return v;
     }
 
-    odbc_version const m_verDriver;
+    mutable odbc_version m_verDriver;
 };
 
 int main(int argc, char** argv)
