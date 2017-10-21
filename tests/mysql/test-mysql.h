@@ -113,7 +113,7 @@ public:
         return sql_mode.find("STRICT_") == std::string::npos;
     }
 
-    bool enable_std_char_padding(session& sql) const SOCI_OVERRIDE
+    bool enable_std_char_padding(soci::session& sql) const SOCI_OVERRIDE
     {
         // turn on standard right padding on mysql. This options is supported as of version 5.1.20
         try
