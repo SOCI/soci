@@ -196,7 +196,7 @@ struct blob_table_creator : public table_creator_base
 TEST_CASE("PostgreSQL blob", "[postgresql][blob]")
 {
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
 
         blob_table_creator tableCreator(sql);
 
@@ -235,7 +235,7 @@ TEST_CASE("PostgreSQL blob", "[postgresql][blob]")
 
     // additional sibling test for read_from_start and write_from_start
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
 
         blob_table_creator tableCreator(sql);
 
