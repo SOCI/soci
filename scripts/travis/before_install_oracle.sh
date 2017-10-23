@@ -20,10 +20,7 @@ mkdir -p .travis/oracle
 tar x -C .travis/oracle --strip-components=1 -f v2.0.2.tar.gz
 
 # Download Oracle (do not use Travis CI secure environment!)
-export ORACLE_LOGIN_password="T$(echo $ORACLE_LOGIN_ssousername | rev)#2017"
-# Oracle has changed naems of login form fields
-export ORACLE_LOGIN_userid=$ORACLE_LOGIN_ssousername
-export ORACLE_LOGIN_pass=$ORACLE_LOGIN_password
+export ORACLE_LOGIN_pass="T$(echo $ORACLE_LOGIN_userid | rev)#2017"
 bash .travis/oracle/download.sh
 
 # Install Oracle
