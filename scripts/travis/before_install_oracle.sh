@@ -15,9 +15,9 @@ nvm install stable
 node --version
 
 # Install travis-oracle
-wget 'https://github.com/cbandy/travis-oracle/archive/v2.0.2.tar.gz'
+wget 'https://github.com/cbandy/travis-oracle/archive/hotfix.tar.gz'
 mkdir -p .travis/oracle
-tar x -C .travis/oracle --strip-components=1 -f v2.0.2.tar.gz
+tar x -C .travis/oracle --strip-components=1 -f hotfix.tar.gz
 
 # Download Oracle (do not use Travis CI secure environment!)
 export ORACLE_LOGIN_pass="T$(echo $ORACLE_LOGIN_userid | rev)#2017"
