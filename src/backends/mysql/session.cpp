@@ -368,7 +368,11 @@ void hard_exec(MYSQL *conn, const string & query)
     if (0 != mysql_real_query(conn, query.c_str(),
             static_cast<unsigned long>(query.size())))
     {
-        throw soci_error(mysql_error(conn));
+        //throw soci_error(mysql_error(conn));		
+        string errMsg = mysql_error(conn);
+        unsigned int errNum = mysql_errno(conn);
+        throw mysql_soci_error(errMsg, errNum);
+
     }
 }
 
