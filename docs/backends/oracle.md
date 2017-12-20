@@ -60,7 +60,7 @@ int count;
 sql << "select count(*) from user_tables", into(count);
 ```
 
-(See the [SOCI basics](../basics.html) and [exchanging data](../exchange.html) documentation for general information on using the `session` class.)#
+(See the [connection](../connections.md) and [data binding](../binding.md) documentation for general information on using the `session` class.)
 
 ## SOCI Feature Support
 
@@ -68,7 +68,7 @@ sql << "select count(*) from user_tables", into(count);
 
 The Oracle backend supports the use of the SOCI `row` class, which facilitates retrieval of data which type is not known at compile time.
 
-When calling `row::get<T>()`, the type you should pass as `T` depends upon the nderlying database type. For the Oracle backend, this type mapping is:
+When calling `row::get<T>()`, the type you should pass as `T` depends upon the underlying database type. For the Oracle backend, this type mapping is:
 
 |Oracle Data Type|SOCI Data Type|`row::get<T>` specializations|
 |--- |--- |--- |
@@ -78,11 +78,11 @@ When calling `row::get<T>()`, the type you should pass as `T` depends upon the n
 |char, varchar, varchar2|dt_string|std::string|
 |date|dt_date|std::tm|
 
-(See the [dynamic resultset binding](../exchange.html#dynamic) documentation for general information on using the `row` class.)
+(See the [dynamic resultset binding](../types.md#dynamic-binding) documentation for general information on using the `row` class.)
 
 ### Binding by Name
 
-In addition to [binding by position](../exchange.html#bind_position), the Oracle backend supports [binding by name](../exchange.html#bind_name), via an overload of the `use()` function:
+In addition to [binding by position](../binding.md#binding-by-position), the Oracle backend supports [binding by name](../binding.md#binding-by-name), via an overload of the `use()` function:
 
 ```cpp
 int id = 7;
@@ -93,7 +93,7 @@ SOCI's use of ':' to indicate a value to be bound within a SQL string is consist
 
 ### Bulk Operations
 
-The Oracle backend has full support for SOCI's [bulk operations](../statements.html#bulk) interface.
+The Oracle backend has full support for SOCI's [bulk operations](../binding.md#bulk-operations) interface.
 
 ### Transactions
 
@@ -102,11 +102,11 @@ although transactions with non-default isolation levels have to be managed by ex
 
 ### blob Data Type
 
-The Oracle backend supports working with data stored in columns of type Blob, via SOCI's [blob](../exchange.html#blob) class.
+The Oracle backend supports working with data stored in columns of type Blob, via SOCI's [blob](../lobs.md) class.
 
 ### rowid Data Type
 
-Oracle rowid's are accessible via SOCI's [rowid](../reference.html#rowid) class.
+Oracle rowid's are accessible via SOCI's [rowid](../api/client.md#class-rowid) class.
 
 ### Nested Statements
 
@@ -130,11 +130,11 @@ while (stInner.fetch())
 
 ### Stored Procedures
 
-Oracle stored procedures can be executed by using SOCI's [procedure](../statements.html#procedures) class.
+Oracle stored procedures can be executed by using SOCI's [procedure](../procedures.md) class.
 
 ## Native API Access
 
-SOCI provides access to underlying datbabase APIs via several `get_backend()` functions, as described in the [Beyond SOCI](../beyond.html) documentation.
+SOCI provides access to underlying datbabase APIs via several `get_backend()` functions, as described in the [Beyond SOCI](../beyond.md) documentation.
 
 The Oracle backend provides the following concrete classes for navite API access:
 
@@ -158,12 +158,12 @@ int main()
     {
         // regular code
     }
-    catch (oracle_soci_error const &amp; e)
+    catch (oracle_soci_error const & e)
     {
         cerr << "Oracle error: " << e.err_num_
             << " " << e.what() << endl;
     }
-    catch (exception const &amp;e)
+    catch (exception const & e)
     {
         cerr << "Some other error: "<< e.what() << endl;
     }

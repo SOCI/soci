@@ -1,6 +1,6 @@
 # SQLite3 Backend Reference
 
-SOCI backend for accessign SQLite 3 database.
+SOCI backend for accessing SQLite 3 database.
 
 ## Prerequisites
 
@@ -47,7 +47,7 @@ session sql("sqlite3", "db=db.sqlite timeout=2 shared_cache=true");
 The set of parameters used in the connection string for SQLite is:
 
 * `dbname` or `db`
-* `timeout` - set sqlite busy timeout (in seconds) ([link](http://www.sqlite.org/c3ref/busy_timeout.html)
+* `timeout` - set sqlite busy timeout (in seconds) ([link](http://www.sqlite.org/c3ref/busy_timeout.html))
 * `synchronous` - set the pragma synchronous flag ([link](http://www.sqlite.org/pragma.html#pragma_synchronous))
 * `shared_cache` - should be `true` ([link](http://www.sqlite.org/c3ref/enable_shared_cache.html))
 
@@ -58,7 +58,7 @@ int count;
 sql << "select count(*) from invoices", into(count);
 ```
 
-(See the [SOCI basics](../basics.html) and [exchanging data](../exchange.html) documentation for general information on using the `session` class.)
+(See the [connection](../connections.md) and [data binding](../binding.md) documentation for general information on using the `session` class.)
 
 ## SOCI Feature Support
 
@@ -81,11 +81,11 @@ For the SQLite3 backend, this type mapping is complicated by the fact the SQLite
 
 [INTEGER_PRIMARY_KEY] : There is one case where SQLite3 enforces type. If a column is declared as "integer primary key", then SQLite3 uses that as an alias to the internal ROWID column that exists for every table.  Only integers are allowed in this column.
 
-(See the [dynamic resultset binding](../exchange.html#dynamic) documentation for general information on using the `row` class.)
+(See the [dynamic resultset binding](../types.md#dynamic-binding) documentation for general information on using the `row` class.)
 
 ### Binding by Name
 
-In addition to [binding by position](../exchange.html#bind_position), the SQLite3 backend supports [binding by name](../exchange.html#bind_name), via an overload of the `use()` function:
+In addition to [binding by position](../binding.md#binding-by-position), the SQLite3 backend supports [binding by name](../binding.md#binding-by-name), via an overload of the `use()` function:
 
 ```cpp
 int id = 7;
@@ -102,19 +102,19 @@ sql << "insert into t(x, y) values(?, ?)", use(i), use(j);
 
 ### Bulk Operations
 
-The SQLite3 backend has full support for SOCI's [bulk operations](../statements.html#bulk) interface.  However, this support is emulated and is not native.
+The SQLite3 backend has full support for SOCI's [bulk operations](../binding.md#bulk-operations) interface.  However, this support is emulated and is not native.
 
 ### Transactions
 
-[Transactions](../statements.html#transactions) are also fully supported by the SQLite3 backend.
+[Transactions](../transactions.md) are also fully supported by the SQLite3 backend.
 
 ### BLOB Data Type
 
-The SQLite3 backend supports working with data stored in columns of type Blob, via SOCI's blob class. Because of SQLite3 general typelessness the column does not have to be declared any particular type.
+The SQLite3 backend supports working with data stored in columns of type Blob, via SOCI's [BLOB](../lobs.md) class. Because of SQLite3 general typelessness the column does not have to be declared any particular type.
 
 ### RowID Data Type
 
-In SQLite3 RowID is an integer.  "Each entry in an SQLite table has a unique integer key called the "rowid". The rowid is always available as an undeclared column named ROWID, OID, or _ROWID_. If the table has a column of type INTEGER PRIMARY KEY then that column is another an alias for the rowid."[[2]](http://www.sqlite.org/capi3ref.html#sqlite3_last_insert_rowid)
+In SQLite3 RowID is an integer. "Each entry in an SQLite table has a unique integer key called the "rowid". The rowid is always available as an undeclared column named ROWID, OID, or _ROWID_. If the table has a column of type INTEGER PRIMARY KEY then that column is another an alias for the rowid."[[2]](http://www.sqlite.org/capi3ref.html#sqlite3_last_insert_rowid)
 
 ### Nested Statements
 
@@ -126,7 +126,7 @@ Stored procedures are not supported by SQLite3 backend
 
 ## Native API Access
 
-SOCI provides access to underlying datbabase APIs via several `get_backend()` functions, as described in the [beyond SOCI](../beyond.html) documentation.
+SOCI provides access to underlying datbabase APIs via several `get_backend()` functions, as described in the [beyond SOCI](../beyond.md) documentation.
 
 The SQLite3 backend provides the following concrete classes for navite API access:
 

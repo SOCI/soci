@@ -55,7 +55,8 @@ Once you have created a `session` object as shown above, you can use it to acces
     int count;
     sql << "select count(*) from invoices", into(count);
 
-(See the [SOCI basics]("../basics.html) and [exchanging data](../exchange.html) documentation for general information on using the `session` class.)
+(See the [connection](../connections.md) and [data binding](../binding.md) documentation
+for general information on using the `session` class.)
 
 ## SOCI Feature Support
 
@@ -63,7 +64,7 @@ Once you have created a `session` object as shown above, you can use it to acces
 
 The MySQL backend supports the use of the SOCI `row` class, which facilitates retrieval of data which type is not known at compile time.
 
-When calling `row::get&lt;T&gt;()`, the type you should pass as `T` depends upon the underlying database type.
+When calling `row::get<T>()`, the type you should pass as `T` depends upon the underlying database type.
 For the MySQL backend, this type mapping is:
 
 |MySQL Data Type|SOCI Data Type|`row::get<T>` specializations|
@@ -76,12 +77,13 @@ For the MySQL backend, this type mapping is:
 |CHAR, VARCHAR, BINARY, VARBINARY, TINYBLOB, MEDIUMBLOB, BLOB,LONGBLOB, TINYTEXT, MEDIUMTEXT, TEXT, LONGTEXT, ENUM|dt_string|std::string|
 |TIMESTAMP (works only with MySQL >= 5.0), DATE, TIME, DATETIME|dt_date|std::tm|
 
-(See the [dynamic resultset binding](../exchange.html#dynamic) documentation for general information on using the `Row` class.)
+(See the [dynamic resultset binding](../types.md#dynamic-binding) documentation for general information
+on using the `Row` class.)
 
 ### Binding by Name
 
-In addition to [binding by position](../exchange.html#bind_position), the MySQL backend supports
-[binding by name](../exchange.html#bind_name), via an overload of the `use()` function:
+In addition to [binding by position](../binding.md#binding-by-position), the MySQL backend supports
+[binding by name](../binding.md#binding-by-name), via an overload of the `use()` function:
 
     int id = 7;
     sql << "select name from person where id = :id", use(id, "id")
@@ -90,7 +92,9 @@ It should be noted that parameter binding of any kind is supported only by means
 
 ### Bulk Operations
 
-[Transactions](../statements.html#transactions) are also supported by the MySQL backend. Please note, however, that transactions can only be used when the MySQL server supports them (it depends on options used during the compilation of the server; typically, but not always, servers >=4.0 support transactions and earlier versions do not) and only with appropriate table types.
+### Transactions
+
+[Transactions](../transactions.md) are also supported by the MySQL backend. Please note, however, that transactions can only be used when the MySQL server supports them (it depends on options used during the compilation of the server; typically, but not always, servers >=4.0 support transactions and earlier versions do not) and only with appropriate table types.
 
 ### BLOB Data Type
 
@@ -108,11 +112,11 @@ Nested statements are not supported by the MySQL backend.
 
 ### Stored Procedures
 
-MySQL version 5.0 and later supports two kinds of stored routines: stored procedures and stored functions (for details, please consult the [procedure MySQL documentation](http://dev.mysql.com/doc/refman/5.0/en/stored-procedures.html)). Stored functions can be executed by using SOCI's [procedure class](../statements.html#procedures). There is currently no support for stored procedures.
+MySQL version 5.0 and later supports two kinds of stored routines: stored procedures and stored functions (for details, please consult the [procedure MySQL documentation](http://dev.mysql.com/doc/refman/5.0/en/stored-procedures.html)). Stored functions can be executed by using SOCI's [procedure class](../procedures.md). There is currently no support for stored procedures.
 
 ## Native API Access
 
-SOCI provides access to underlying datbabase APIs via several `get_backend()` functions, as described in the [Beyond SOCI](../beyond.html) documentation.
+SOCI provides access to underlying datbabase APIs via several `get_backend()` functions, as described in the [Beyond SOCI](../beyond.md) documentation.
 
 The MySQL backend provides the following concrete classes for native API access:
 

@@ -70,7 +70,7 @@ for (rowset<int>::const_iterator it = rs.begin(); it != rs.end(); ++it)
 }
 ```
 
-Another example shows how to retrieve more complex results, where `rowset` elements are of type `row` and therefore use [dynamic bindings](exchange.html#dynamic):
+Another example shows how to retrieve more complex results, where `rowset` elements are of type `row` and therefore use [dynamic bindings](types.md#dynamic-binding):
 
 ```cpp
 // person table has 4 columns
@@ -99,6 +99,28 @@ std::copy(rs.begin(), rs.end(), std::ostream_iterator<std::string>(std::cout, "\
 
 Above, the query result contains a single column which is bound to `rowset` element of type of `std::string`.
 All records are sent to standard output using the `std::copy` algorithm.
+
+If you need to use the Core interface with `rowset`, the following example shows how:
+
+```cpp
+row r;
+
+statement st(sql);
+st.alloc();
+st.prepare("select values from numbers");
+st.define_and_bind();
+
+// after define_and_bind and before execute
+st.exchange_for_rowset(into(r));
+
+st.execute(false);
+
+rowset_iterator<row> it(st, r);
+rowset_iterator<row> end;
+for (; it != end; ++it) {
+    // ... access *it
+}
+```
 
 ## Bulk operations
 

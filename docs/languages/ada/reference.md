@@ -46,9 +46,9 @@ Other backends can be added to the library in the future or by the user himself,
 
 The `parameters` component of the `Connection_String` depends on the given backend, please see the documentation of the main SOCI project for the meaning and recognized options. The web pages related to the backends above are:
 
-* [Oracle](http://soci.sourceforge.net/doc/backends/oracle.html)
-* [PostgreSQL](http://soci.sourceforge.net/doc/backends/postgresql.html)
-* [MySQL](http://soci.sourceforge.net/doc/backends/mysql.html)
+* [Oracle](../../backends/oracle.md)
+* [PostgreSQL](../../backends/postgresql.md)
+* [MySQL](../../backends/mysql.md)
 
 The `Open` operation can be called only in the disconnected state (which changes the state of `Session` object to connected). The `Close` operation can be called in any state (provided that the session is not associated with the connection pool, see below) and after that the `Session` is in the disconnected state.
 

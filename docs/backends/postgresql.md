@@ -47,7 +47,7 @@ session sql("postgresql", "dbname=mydatabase");
 session sql("postgresql://dbname=mydatabase");
 ```
 
-The set of parameters used in the connection string for PostgreSQL is the same as accepted by the `[PQconnectdb](http://www.postgresql.org/docs/8.3/interactive/libpq.html#LIBPQ-CONNECT)` function from the `libpq` library.
+The set of parameters used in the connection string for PostgreSQL is the same as accepted by the [PQconnectdb](http://www.postgresql.org/docs/8.3/interactive/libpq.html#LIBPQ-CONNECT) function from the `libpq` library.
 
 In addition to standard PostgreSQL connection parameters, the following can be set:
 
@@ -77,7 +77,7 @@ int count;
 sql << "select count(*) from invoices", into(count);
 ```
 
-(See the [exchanging data](../basics.html">SOCI basics</a> and <a href="../exchange.html) documentation for general information on using the `session` class.)
+(See the [connection](../connections.md) and [data binding](../binding.md) documentation for general information on using the `session` class.)
 
 ## SOCI Feature Support
 
@@ -96,11 +96,11 @@ When calling `row::get<T>()`, the type you should pass as `T` depends upon the u
 |char, varchar, text, cstring, bpchar|dt_string|std::string|
 |abstime, reltime, date, time, timestamp, timestamptz, timetz|dt_date|std::tm|
 
-(See the [dynamic resultset binding](../exchange.html#dynamic) documentation for general information on using the `row` class.)
+(See the [dynamic resultset binding](../types.md#dynamic-binding) documentation for general information on using the `row` class.)
 
 ### Binding by Name
 
-In addition to [binding by position](../exchange.html#bind_position), the PostgreSQL backend supports [binding by name](../exchange.html#bind_name), via an overload of the `use()` function:
+In addition to [binding by position](../binding.md#binding-by-position), the PostgreSQL backend supports [binding by name](../binding.md#binding-by-name), via an overload of the `use()` function:
 
 ```cpp
 int id = 7;
@@ -119,19 +119,19 @@ The use of native syntax is not recommended, but can be nevertheless imposed by 
 
 ### Bulk Operations
 
-The PostgreSQL backend has full support for SOCI's [bulk operations](../statements.html#bulk) interface.
+The PostgreSQL backend has full support for SOCI's [bulk operations](../binding.md#bulk-operations) interface.
 
 ### Transactions
 
-[Transactions](../statements.html#transactions) are also fully supported by the PostgreSQL backend.
+[Transactions](../transactions.md) are also fully supported by the PostgreSQL backend.
 
 ### blob Data Type
 
-The PostgreSQL backend supports working with data stored in columns of type Blob, via SOCI's [blob](../exchange.html#blob) class with the exception that trimming is not supported.
+The PostgreSQL backend supports working with data stored in columns of type Blob, via SOCI's [blob](../lobs.md) class with the exception that trimming is not supported.
 
 ### rowid Data Type
 
-The concept of row identifier (OID in PostgreSQL) is supported via SOCI's [rowid](../reference.html#rowid) class.
+The concept of row identifier (OID in PostgreSQL) is supported via SOCI's [rowid](../api/client.md#class-rowid) class.
 
 ### Nested Statements
 
@@ -139,11 +139,11 @@ Nested statements are not supported by PostgreSQL backend.
 
 ### Stored Procedures
 
-PostgreSQL stored procedures can be executed by using SOCI's [procedure](../statements.html#procedures) class.
+PostgreSQL stored procedures can be executed by using SOCI's [procedure](../procedures.md) class.
 
 ## Native API Access
 
-SOCI provides access to underlying datbabase APIs via several `get_backend()` functions, as described in the [beyond SOCI](../beyond.html) documentation.
+SOCI provides access to underlying datbabase APIs via several `get_backend()` functions, as described in the [beyond SOCI](../beyond.md) documentation.
 
 The PostgreSQL backend provides the following concrete classes for navite API access:
 
@@ -166,6 +166,6 @@ format of UUID on output. See the test `test_uuid_column_type_support` for usage
 To support older PostgreSQL versions, the following configuration macros are recognized:
 
 * `SOCI_POSTGRESQL_NOBINDBYNAME` - switches off the query rewriting.
-* `SOCI_POSTGRESQL_NOPARAMS` - disables support for parameterized queries (binding of use elements),automatically imposes also the `SOCI_POSTGRESQL_NOBINDBYNAME` macro. It is necessary for PostgreSQL 7.3.
+* `SOCI_POSTGRESQL_NOPARAMS` - disables support for parameterized queries (binding of use elements), automatically imposes also the `SOCI_POSTGRESQL_NOBINDBYNAME` macro. It is necessary for PostgreSQL 7.3.
 * `SOCI_POSTGRESQL_NOPREPARE` - disables support for separate query preparation, which in this backend is significant only in terms of optimization. It is necessary for PostgreSQL 7.3 and 7.4.
 * `SOCI_POSTGRESQL_NOSINLGEROWMODE` - disable single mode retrieving query results row-by-row. It is necessary for PostgreSQL prior to version 9.

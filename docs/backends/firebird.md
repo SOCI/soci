@@ -59,7 +59,7 @@ int count;
 sql << "select count(*) from user_tables", into(count);
 ```
 
-(See the [SOCI basics](../basics.html) and [exchanging data](../exchange.html) documentation
+(See the [connection](../connections.md) and [data binding](../binding.md) documentation
 for general information on using the `session` class.)
 
 ## SOCI Feature Support
@@ -84,13 +84,13 @@ For the Firebird backend, this type mapping is:
 [^1] There is also 64bit integer type for larger values which is
 currently not supported.
 
-(See the [dynamic resultset binding](../exchange.html#dynamic) documentation for general information
+(See the [dynamic resultset binding](../types.md#dynamic-binding) documentation for general information
 on using the `Row` class.)
 
 ### Binding by Name
 
-In addition to [binding by position](../exchange.html#bind_position), the Firebird backend supports
-[binding by name](../exchange.html#bind_name), via an overload of the `use()` function:
+In addition to [binding by position](../binding.md#binding-by-position), the Firebird backend supports
+[binding by name](../binding.md#binding-by-name), via an overload of the `use()` function:
 
     int id = 7;
     sql << "select name from person where id = :id", use(id, "id")
@@ -100,12 +100,12 @@ since the underlying API used by the backend doesn't provide this feature.
 
 ### Bulk Operations
 
-The Firebird backend has full support for SOCI [bulk operations](../statements.html#bulk) interface.
+The Firebird backend has full support for SOCI [bulk operations](../binding.md#bulk-operations) interface.
 This feature is also supported by emulation.
 
 ### Transactions
 
-[Transactions](../statements.html#transactions) are also fully supported by the Firebird backend.
+[Transactions](../transactions.md) are also fully supported by the Firebird backend.
 In fact, an implicit transaction is always started when using this backend if one hadn't been
 started by explicitly calling `begin()` before. The current transaction is automatically
 committed in `session` destructor.
@@ -113,7 +113,7 @@ committed in `session` destructor.
 ### BLOB Data Type
 
 The Firebird backend supports working with data stored in columns of type Blob,
-via SOCI `[BLOB](../exchange.html#blob)` class.
+via SOCI [BLOB](../lobs.md) class.
 
 It should by noted, that entire Blob data is fetched from database to allow random read and write access.
 This is because Firebird itself allows only writing to a new Blob or reading from existing one -
@@ -130,12 +130,12 @@ This feature is not supported by Firebird backend.
 
 ### Stored Procedures
 
-Firebird stored procedures can be executed by using SOCI [Procedure](../statements.html#procedures) class.
+Firebird stored procedures can be executed by using SOCI [Procedure](../procedures.md) class.
 
 ## Native API Access
 
 SOCI provides access to underlying datbabase APIs via several getBackEnd() functions,
-as described in the [beyond SOCI](../beyond.html) documentation.
+as described in the [beyond SOCI](../beyond.md) documentation.
 
 The Firebird backend provides the following concrete classes for navite API access:
 

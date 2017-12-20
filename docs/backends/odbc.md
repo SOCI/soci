@@ -48,7 +48,7 @@ int count;
 sql << "select count(*) from invoices", into(count);
 ```
 
-(See the [SOCI basics](../basics.html) and [exchanging data](../exchange.html) documentation for general information on using the `session` class.)
+(See the [connection](../connections.md) and [data binding](../binding.md) documentation for general information on using the `session` class.)
 
 ## SOCI Feature Support
 
@@ -68,11 +68,11 @@ For the ODBC backend, this type mapping is:
 
 Not all ODBC drivers support all datatypes.
 
-(See the [dynamic resultset binding](../exchange.html#dynamic) documentation for general information on using the `row` class.)
+(See the [dynamic resultset binding](../types.md#dynamic-binding) documentation for general information on using the `row` class.)
 
 ### Binding by Name
 
-In addition to [binding by position](../exchange.html#bind_position), the ODBC backend supports [binding by name](../exchange.html#bind_name), via an overload of the `use()` function:
+In addition to [binding by position](../binding.md#binding-by-position), the ODBC backend supports [binding by name](../binding.md#binding-by-name), via an overload of the `use()` function:
 
 ```cpp
 int id = 7;
@@ -89,7 +89,7 @@ sql << "insert into t(x, y) values(?, ?)", use(i), use(j);
 
 ### Bulk Operations
 
-The ODBC backend has support for SOCI's [bulk operations](../statements.html#bulk) interface.  Not all ODBC drivers support bulk operations, the following is a list of some tested backends:
+The ODBC backend has support for SOCI's [bulk operations](../binding.md#bulk-operations) interface.  Not all ODBC drivers support bulk operations, the following is a list of some tested backends:
 
 |ODBC Driver|Bulk Read|Bulk Insert|
 |--- |--- |--- |
@@ -100,7 +100,7 @@ The ODBC backend has support for SOCI's [bulk operations](../statements.html#bul
 
 ### Transactions
 
-[Transactions](../statements.html#transactions) are also fully supported by the ODBC backend, provided that they are supported by the underlying database.
+[Transactions](../transactions.md) are also fully supported by the ODBC backend, provided that they are supported by the underlying database.
 
 ### BLOB Data Type
 
@@ -120,7 +120,7 @@ Not currently supported.
 
 ## Native API Access
 
-SOCI provides access to underlying datbabase APIs via several getBackEnd() functions, as described in the [beyond SOCI](../beyond.html) documentation.
+SOCI provides access to underlying datbabase APIs via several getBackEnd() functions, as described in the [beyond SOCI](../beyond.md) documentation.
 
 The ODBC backend provides the following concrete classes for navite API access:
 

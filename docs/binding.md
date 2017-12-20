@@ -19,7 +19,7 @@ sql << "select name from person where id = 7", into(name);
 
 In the above examples, some data is retrieved from the database and transmitted *into* the given local variable.
 
-There should be as many `into` elements as there are expected columns in the result (see [dynamic resultset binding](#dynamic") for the exception to this rule).
+There should be as many `into` elements as there are expected columns in the result (see [dynamic resultset binding](types.md#dynamic-binding) for the exception to this rule).
 
 ## Binding input data (use)
 
