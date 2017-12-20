@@ -60,7 +60,7 @@ int count;
 sql << "select count(*) from user_tables", into(count);
 ```
 
-(See the [connection](../connections.md) and [data binding](../binding.md) documentation for general information on using the `session` class.)#
+(See the [connection](../connections.md) and [data binding](../binding.md) documentation for general information on using the `session` class.)
 
 ## SOCI Feature Support
 
@@ -158,12 +158,12 @@ int main()
     {
         // regular code
     }
-    catch (oracle_soci_error const &amp; e)
+    catch (oracle_soci_error const & e)
     {
         cerr << "Oracle error: " << e.err_num_
             << " " << e.what() << endl;
     }
-    catch (exception const &amp;e)
+    catch (exception const & e)
     {
         cerr << "Some other error: "<< e.what() << endl;
     }
