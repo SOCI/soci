@@ -76,7 +76,7 @@ soci_destroy_session(sql);
 The *simple* interface supports single and bulk data exchange for static binding.
 Dynamic row description is not supported in this release.
 
-See [Simple client interface](/reference.html#simpleclient) reference documentation for more details.
+See [Simple client interface](api/client.md#simple-client-interface) reference documentation for more details.
 
 ## Low-level backend interface
 

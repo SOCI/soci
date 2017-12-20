@@ -99,4 +99,4 @@ sql << "insert into person(id, name) values(:id, :name)",
         use(ids), use(name, nameIndicators);
 ```
 
-See also [Integration with Boost](boost.html) to learn how the Boost.Optional library can be used to handle null data conditions in a more natural way.
+See also [Integration with Boost](boost.md) to learn how the Boost.Optional library can be used to handle null data conditions in a more natural way.

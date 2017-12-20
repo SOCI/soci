@@ -16,7 +16,7 @@ connection_pool pool(poolSize);
 
 for (size_t i = 0; i != poolSize; ++i)
 {
-    session &amp; sql = pool.at(i);
+    session & sql = pool.at(i);
 
     sql.open("postgresql://dbname=mydb");
 }
@@ -44,4 +44,4 @@ This way, the connection pool guarantees that its session objects are never used
 
 Note that the above scheme is the simplest way to use the connection pool, but it is also constraining in the fact that the `session`'s constructor can *block* waiting for the availability of some entry in the pool.
 For more demanding users there are also low-level functions that allow to lease sessions from the pool with timeout on wait.
-Please consult the [reference](reference.html) for details.
+Please consult the [reference](api/client.md) for details.
