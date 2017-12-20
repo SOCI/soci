@@ -70,7 +70,7 @@ for (rowset<int>::const_iterator it = rs.begin(); it != rs.end(); ++it)
 }
 ```
 
-Another example shows how to retrieve more complex results, where `rowset` elements are of type `row` and therefore use [dynamic bindings](exchange.html#dynamic):
+Another example shows how to retrieve more complex results, where `rowset` elements are of type `row` and therefore use [dynamic bindings](types.md#dynamic-binding):
 
 ```cpp
 // person table has 4 columns
