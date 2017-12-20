@@ -9,7 +9,7 @@ The following types are currently supported for use with `into` and `use` expres
 * `char` (for character values)
 * `short`, `int`, `unsigned long`, `long long`, `double` (for numeric values)
 * `std::string` (for string values)
-* `std::tm``` (for datetime values)
+* `std::tm` (for datetime values)
 * `soci::statement` (for nested statements and PL/SQL cursors)
 * `soci::blob` (for Binary Large OBjects)
 * `soci::row_id` (for row identifiers)
@@ -99,7 +99,7 @@ The type `T` parameter that should be passed to `row::get<T>()` depends on the S
 | `dt_date`      | `std::tm`                    |
 
 The mapping of underlying database column types to SOCI datatypes is database specific.
-See the [backend documentation](backends/index.html) for details.
+See the [backend documentation](backends/index.md) for details.
 
 The `row` also provides access to indicators for each column:
 
@@ -200,9 +200,9 @@ sql << "select count(*) from person", into(i);
 cout << "We have " << i.get() << " persons in the database.\n";
 ```
 
-Note that there is a number of types from the Boost library integrated with SOCI out of the box, see [Integration with Boost](boost.html) for complete description. Use these as examples of conversions for more complext data types.
+Note that there is a number of types from the Boost library integrated with SOCI out of the box, see [Integration with Boost](boost.md) for complete description. Use these as examples of conversions for more complext data types.
 
-Another possibility to extend SOCI with custom data types is to use the `into_type<T<` and `use_type<T<` class templates, which specializations can be user-provided. These specializations need to implement the interface defined by, respectively, the `into_type_base` and `use_type_base`
+Another possibility to extend SOCI with custom data types is to use the `into_type<T>` and `use_type<T>` class templates, which specializations can be user-provided. These specializations need to implement the interface defined by, respectively, the `into_type_base` and `use_type_base`
 classes.
 
 Note that when specializing these template classes the only convention is that when the indicator
