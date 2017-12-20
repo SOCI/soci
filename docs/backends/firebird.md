@@ -113,7 +113,7 @@ committed in `session` destructor.
 ### BLOB Data Type
 
 The Firebird backend supports working with data stored in columns of type Blob,
-via SOCI `[BLOB](../lobs.md)` class.
+via SOCI [BLOB](../lobs.md) class.
 
 It should by noted, that entire Blob data is fetched from database to allow random read and write access.
 This is because Firebird itself allows only writing to a new Blob or reading from existing one -
