@@ -15,7 +15,7 @@ and backend-specific dependencies:
 * [mysqlclient](http://dev.mysql.com/doc/refman/5.6/en/c.html) - C API to MySQL
 * ODBC (Open Database Connectivity) implementation: [Microsoft ODBC](http://msdn.microsoft.com/en-us/library/windows/desktop/ms710252.aspx) [iODBC](http://www.iodbc.org/), [unixODBC](http://www.unixodbc.org/)
 * [Oracle Call Interface (OCI)](http://www.oracle.com/technetwork/database/features/oci/index.html)
-* [libpq](http://www.postgresql.org/docs/8.4/static/libpq.html) - C API to PostgreSQL
+* [libpq](http://www.postgresql.org/docs/current/static/libpq.html) - C API to PostgreSQL
 * [SQLite 3](http://www.sqlite.org/) library
 
 ## Downloads
@@ -92,7 +92,7 @@ List of variables to control common SOCI features and dependencies:
 
 #### Empty (sample backend)
 
-* `SOCI_EMPTY` - boolean - Builds the [sample backend](backends.html) called Empty. Always ON by default.
+* `SOCI_EMPTY` - boolean - Builds the [sample backend](backends/index.md) called Empty. Always ON by default.
 * `SOCI_EMPTY_TEST_CONNSTR` - string - Connection string used to run regression tests of the Empty backend. It is a dummy value. Example: `-DSOCI_EMPTY_TEST_CONNSTR="dummy connection"`
 
 #### IBM DB2
@@ -100,16 +100,16 @@ List of variables to control common SOCI features and dependencies:
 * `WITH_DB2` - boolean - Should CMake try to detect IBM DB2 Call Level Interface (CLI) library.
 * `DB2_INCLUDE_DIR` - string - Path to DB2 CLI include directories where CMake should look for `sqlcli1.h` header.
 * `DB2_LIBRARIES` - string - Full paths to  `db2` or `db2api` libraries to link SOCI against to enable the backend support.
-* `SOCI_DB2` - boolean - Requests to build [DB2](backends/db2.html) backend. Automatically switched on, if `WITH_DB2` is set to ON.
-* `SOCI_DB2_TEST_CONNSTR` - string - See [DB2 backend reference](backends/db2.html) for details. Example: `-DSOCI_DB2_TEST_CONNSTR:STRING="DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;autocommit=off"`
+* `SOCI_DB2` - boolean - Requests to build [DB2](backends/db2.md) backend. Automatically switched on, if `WITH_DB2` is set to ON.
+* `SOCI_DB2_TEST_CONNSTR` - string - See [DB2 backend reference](backends/db2.md) for details. Example: `-DSOCI_DB2_TEST_CONNSTR:STRING="DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;autocommit=off"`
 
 #### Firebird
 
 * `WITH_FIREBIRD` - boolean - Should CMake try to detect Firebird client library.
 * `FIREBIRD_INCLUDE_DIR` - string - Path to Firebird include directories where CMake should look for `ibase.h` header.
 * `FIREBIRD_LIBRARIES` - string - Full paths to Firebird `fbclient` or `fbclient_ms` libraries to link SOCI against to enable the backend support.
-* `SOCI_FIREBIRD` - boolean - Requests to build [Firebird](backends/firebird.html) backend. Automatically switched on, if `WITH_FIREBIRD` is set to ON.
-* `SOCI_FIREBIRD_TEST_CONNSTR` - string - See [Firebird backend refernece](backends/firebird.html) for details. Example: `-DSOCI_FIREBIRD_TEST_CONNSTR:STRING="service=LOCALHOST:/tmp/soci_test.fdb user=SYSDBA password=masterkey"`
+* `SOCI_FIREBIRD` - boolean - Requests to build [Firebird](backends/firebird.md) backend. Automatically switched on, if `WITH_FIREBIRD` is set to ON.
+* `SOCI_FIREBIRD_TEST_CONNSTR` - string - See [Firebird backend refernece](backends/firebird.md) for details. Example: `-DSOCI_FIREBIRD_TEST_CONNSTR:STRING="service=LOCALHOST:/tmp/soci_test.fdb user=SYSDBA password=masterkey"`
 
 #### MySQL
 
@@ -117,31 +117,31 @@ List of variables to control common SOCI features and dependencies:
 * `MYSQL_DIR` - string - Path to MySQL installation root directory. CMake will scan subdirectories `MYSQL_DIR/include` and `MYSQL_DIR/lib` respectively for MySQL headers and libraries.
 * `MYSQL_INCLUDE_DIR` - string - Path to MySQL include directory where CMake should look for `mysql.h` header.
 * `MYSQL_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
-* `SOCI_MYSQL` - boolean - Requests to build [MySQL](backends/mysql.html) backend. Automatically switched on, if `WITH_MYSQL` is set to ON.
-* `SOCI_MYSQL_TEST_CONNSTR` - string - Connection string to MySQL test database. Format of the string is explained [MySQL backend refernece](backends/mysql.html). Example: `-DSOCI_MYSQL_TEST_CONNSTR:STRING="db=mydb user=mloskot password=secret"`
+* `SOCI_MYSQL` - boolean - Requests to build [MySQL](backends/mysql.md) backend. Automatically switched on, if `WITH_MYSQL` is set to ON.
+* `SOCI_MYSQL_TEST_CONNSTR` - string - Connection string to MySQL test database. Format of the string is explained [MySQL backend refernece](backends/mysql.md). Example: `-DSOCI_MYSQL_TEST_CONNSTR:STRING="db=mydb user=mloskot password=secret"`
 
 #### ODBC
 
 * `WITH_ODBC` - boolean - Should CMake try to detect ODBC libraries. On Unix systems, CMake tries to find [unixODBC](http://www.unixodbc.org/) or [iODBC](http://www.iodbc.org/) implementations.
 * `ODBC_INCLUDE_DIR` - string - Path to ODBC implementation include directories where CMake should look for `sql.h` header.
 * `ODBC_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
-* `SOCI_ODBC` - boolean - Requests to build [ODBC](backends/odbc.html) backend. Automatically switched on, if `WITH_ODBC` is set to ON.
-* `SOCI_ODBC_TEST_{database}_CONNSTR` - string - ODBC Data Source Name (DSN) or ODBC File Data Source Name (FILEDSN) to test database: Microsoft Access (.mdb), Microsoft SQL Server, MySQL, PostgreSQL or any other ODBC SQL data source. {database} is placeholder for name of database driver ACCESS, MYSQL, POSTGRESQL, etc. See [ODBC](backends/odbc.html) backend refernece for details. Example: `-DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR="FILEDSN=/home/mloskot/soci/build/test-postgresql.dsn"`
+* `SOCI_ODBC` - boolean - Requests to build [ODBC](backends/odbc.md) backend. Automatically switched on, if `WITH_ODBC` is set to ON.
+* `SOCI_ODBC_TEST_{database}_CONNSTR` - string - ODBC Data Source Name (DSN) or ODBC File Data Source Name (FILEDSN) to test database: Microsoft Access (.mdb), Microsoft SQL Server, MySQL, PostgreSQL or any other ODBC SQL data source. {database} is placeholder for name of database driver ACCESS, MYSQL, POSTGRESQL, etc. See [ODBC](backends/odbc.md) backend refernece for details. Example: `-DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR="FILEDSN=/home/mloskot/soci/build/test-postgresql.dsn"`
 
 #### Oracle
 
 * `WITH_ORACLE` - boolean - Should CMake try to detect [Oracle Call Interface (OCI)](http://en.wikipedia.org/wiki/Oracle_Call_Interface) libraries.
 * `ORACLE_INCLUDE_DIR` - string - Path to Oracle include directory where CMake should look for `oci.h` header.
 * `ORACLE_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
-* `SOCI_ORACLE` - boolean - Requests to build [Oracle](backends/oracle.html) backend. Automatically switched on, if `WITH_ORACLE` is set to ON.
-* `SOCI_ORACLE_TEST_CONNSTR` - string - Connection string to Oracle test database. Format of the string is explained [Oracle backend reference](backends/oracle.html). Example: `-DSOCI_ORACLE_TEST_CONNSTR:STRING="service=orcl user=scott password=tiger"`
+* `SOCI_ORACLE` - boolean - Requests to build [Oracle](backends/oracle.md) backend. Automatically switched on, if `WITH_ORACLE` is set to ON.
+* `SOCI_ORACLE_TEST_CONNSTR` - string - Connection string to Oracle test database. Format of the string is explained [Oracle backend reference](backends/oracle.md). Example: `-DSOCI_ORACLE_TEST_CONNSTR:STRING="service=orcl user=scott password=tiger"`
 
 #### PostgreSQL
 
-* `WITH_POSTGRESQL` - boolean - Should CMake try to detect PostgreSQL client interface libraries. SOCI relies on [libpq](http://www.postgresql.org/docs/9.0/interactive/libpq.html") C library.
+* `WITH_POSTGRESQL` - boolean - Should CMake try to detect PostgreSQL client interface libraries. SOCI relies on [libpq](http://www.postgresql.org/docs/current/static/libpq.html") C library.
 * `POSTGRESQL_INCLUDE_DIR` - string - Path to PostgreSQL include directory where CMake should look for `libpq-fe.h` header.
 * `POSTGRESQL_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
-* `SOCI_POSTGRESQL` - boolean - Requests to build [PostgreSQL](backends/postgresql.html") backend. Automatically switched on, if `WITH_POSTGRESQL` is set to ON.
+* `SOCI_POSTGRESQL` - boolean - Requests to build [PostgreSQL](backends/postgresql.md") backend. Automatically switched on, if `WITH_POSTGRESQL` is set to ON.
 * `SOCI_POSTGRESQL_TEST_CONNSTR` - string - Connection string to PostgreSQL test database. Format of the string is explained PostgreSQL backend refernece. Example: `-DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="dbname=mydb user=scott"`
 
 #### SQLite 3
@@ -149,8 +149,8 @@ List of variables to control common SOCI features and dependencies:
 * `WITH_SQLITE3` - boolean - Should CMak try to detect SQLite C/C++ library. As bonus, the configuration tries OSGeo4W distribution if OSGEO4W_ROOT environment variable is set.
 * `SQLITE_INCLUDE_DIR` - string - Path to SQLite 3 include directory where CMake should look for `sqlite3.h` header.
 * `SQLITE_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
-* `SOCI_SQLITE3` - boolean - Requests to build [SQLite3](backends/sqlite3.html) backend. Automatically switched on, if `WITH_SQLITE3` is set to ON.
-* `SOCI_SQLITE3_TEST_CONNSTR` - string - Connection string is simply a file path where SQLite3 test database will be created (e.g. /home/john/soci_test.db). Check [SQLite3 backend reference](backends/sqlite3.html) for details. Example: `-DSOCI_SQLITE3_TEST_CONNSTR="my.db"` or `-DSOCI_SQLITE3_TEST_CONNSTR=":memory:"`.
+* `SOCI_SQLITE3` - boolean - Requests to build [SQLite3](backends/sqlite3.md) backend. Automatically switched on, if `WITH_SQLITE3` is set to ON.
+* `SOCI_SQLITE3_TEST_CONNSTR` - string - Connection string is simply a file path where SQLite3 test database will be created (e.g. /home/john/soci_test.db). Check [SQLite3 backend reference](backends/sqlite3.md) for details. Example: `-DSOCI_SQLITE3_TEST_CONNSTR="my.db"` or `-DSOCI_SQLITE3_TEST_CONNSTR=":memory:"`.
 
 ## Building with Makefiles on Unix
 
