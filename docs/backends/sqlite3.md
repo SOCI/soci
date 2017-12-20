@@ -1,6 +1,6 @@
 # SQLite3 Backend Reference
 
-SOCI backend for accessign SQLite 3 database.
+SOCI backend for accessing SQLite 3 database.
 
 ## Prerequisites
 
@@ -47,7 +47,7 @@ session sql("sqlite3", "db=db.sqlite timeout=2 shared_cache=true");
 The set of parameters used in the connection string for SQLite is:
 
 * `dbname` or `db`
-* `timeout` - set sqlite busy timeout (in seconds) ([link](http://www.sqlite.org/c3ref/busy_timeout.html)
+* `timeout` - set sqlite busy timeout (in seconds) ([link](http://www.sqlite.org/c3ref/busy_timeout.html))
 * `synchronous` - set the pragma synchronous flag ([link](http://www.sqlite.org/pragma.html#pragma_synchronous))
 * `shared_cache` - should be `true` ([link](http://www.sqlite.org/c3ref/enable_shared_cache.html))
 
