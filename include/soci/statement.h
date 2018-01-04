@@ -172,9 +172,9 @@ class SOCI_DECL statement
 {
 public:
     statement(session & s)
-        : impl_(new details::statement_impl(s)) {}
+        : impl_(new details::statement_impl(s)), gotData_(false) {}
     statement(details::prepare_temp_type const & prep)
-        : impl_(new details::statement_impl(prep)) {}
+        : impl_(new details::statement_impl(prep)), gotData_(false) {}
     ~statement() { impl_->dec_ref(); }
 
     // copy is supported for this handle class
@@ -189,6 +189,7 @@ public:
         other.impl_->inc_ref();
         impl_->dec_ref();
         impl_ = other.impl_;
+        gotData_ = other.gotData_;
     }
 
     void alloc()                         { impl_->alloc();    }
