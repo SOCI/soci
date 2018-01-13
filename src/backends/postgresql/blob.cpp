@@ -38,7 +38,10 @@ postgresql_blob_backend::postgresql_blob_backend(
 
 postgresql_blob_backend::~postgresql_blob_backend()
 {
-    lo_close(session_.conn_, fd_);
+    if (fd_ != -1)
+    {
+        lo_close(session_.conn_, fd_);
+    }
 }
 
 std::size_t postgresql_blob_backend::get_len()
