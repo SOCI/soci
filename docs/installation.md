@@ -86,6 +86,7 @@ List of a few essential CMake variables:
 
 List of variables to control common SOCI features and dependencies:
 
+* `SOCI_CXX_C11` - boolean - Request to compile in C++11 compatibility mode. Default is `OFF`.
 * `SOCI_STATIC` - boolean - Request to build static libraries, along with shared, of SOCI core and all successfully configured backends.
 * `SOCI_TESTS` - boolean - Request to build regression tests for SOCI core and all successfully configured backends.
 * `WITH_BOOST` - boolean - Should CMake try to detect [Boost C++ Libraries](http://www.boost.org/). If ON, CMake will try to find Boost headers and binaries of [Boost.Date_Time](http://www.boost.org/doc/libs/release/doc/html/date_time.html) library.
