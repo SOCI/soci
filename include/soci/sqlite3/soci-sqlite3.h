@@ -42,7 +42,7 @@ namespace sqlite_api
 typedef void (*sqlite3_destructor_type)(void*);
 #endif
 
-#include <sqlite3.h>
+#include <sqlite3/sqlite3.h>
 
 } // namespace sqlite_api
 

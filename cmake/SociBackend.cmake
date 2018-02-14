@@ -162,6 +162,10 @@ macro(soci_backend NAME)
           ${SOCI_CORE_TARGET}
           ${THIS_BACKEND_DEPENDS_LIBRARIES})
 
+        target_include_directories(${THIS_BACKEND_TARGET}
+          PUBLIC $<BUILD_INTERFACE:${THIS_INCLUDE_DIRS}>
+        )
+
         if(WIN32)
           set_target_properties(${THIS_BACKEND_TARGET}
             PROPERTIES
@@ -198,6 +202,10 @@ macro(soci_backend NAME)
         # Still need to link the libraries for tests to work
         target_link_libraries (${THIS_BACKEND_TARGET_STATIC}
           ${THIS_BACKEND_DEPENDS_LIBRARIES}
+        )
+
+        target_include_directories(${THIS_BACKEND_TARGET_STATIC}
+          PUBLIC $<BUILD_INTERFACE:${THIS_INCLUDE_DIRS}>
         )
 
         set_target_properties(${THIS_BACKEND_TARGET_STATIC}

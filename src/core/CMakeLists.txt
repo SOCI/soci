@@ -17,8 +17,7 @@ set_directory_properties(PROPERTIES
   INCLUDE_DIRECTORIES "${SOCI_CORE_INCLUDE_DIRS}")
 
 # Configure backend loader to also use default install directory.
-configure_file(soci_backends_config.h.in
-  ${CMAKE_CURRENT_BINARY_DIR}/soci_backends_config.h)
+configure_file(${PROJECT_SOURCE_DIR}/src/core/soci_backends_config.h.in ${PROJECT_SOURCE_DIR}/src/core/soci_backends_config.h)
 
 # Core source files
 file(GLOB SOCI_CORE_HEADERS ${SOCI_SOURCE_DIR}/include/soci/*.h)
@@ -96,6 +95,7 @@ if (SOCI_STATIC)
   target_include_directories(${SOCI_CORE_TARGET_STATIC}
       PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include>
+      $<INSTALL_INTERFACE:include>
   )
 
 endif()
