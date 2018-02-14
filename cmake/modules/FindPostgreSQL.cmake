@@ -78,25 +78,25 @@ set( POSTGRESQL_ROOT_DIRECTORIES
    ENV POSTGRESQL_ROOT
    ${POSTGRESQL_ROOT}
 )
-foreach(suffix ${POSTGRESQL_KNOWN_VERSIONS})
-  if(WIN32)
-    list(APPEND POSTGRESQL_LIBRARY_ADDITIONAL_SEARCH_SUFFIXES
-        "PostgreSQL/${suffix}/lib")
-    list(APPEND POSTGRESQL_INCLUDE_ADDITIONAL_SEARCH_SUFFIXES
-        "PostgreSQL/${suffix}/include")
-    list(APPEND POSTGRESQL_TYPE_ADDITIONAL_SEARCH_SUFFIXES
-        "PostgreSQL/${suffix}/include/server")
-  endif()
-  if(UNIX)
-    list(APPEND POSTGRESQL_LIBRARY_ADDITIONAL_SEARCH_SUFFIXES
-        "pgsql-${suffix}/lib")
-    list(APPEND POSTGRESQL_INCLUDE_ADDITIONAL_SEARCH_SUFFIXES
-        "pgsql-${suffix}/include")
-    list(APPEND POSTGRESQL_TYPE_ADDITIONAL_SEARCH_SUFFIXES
-        "postgresql/${suffix}/server"
-        "pgsql-${suffix}/include/server")
-  endif()
-endforeach()
+#foreach(suffix ${POSTGRESQL_KNOWN_VERSIONS})
+#  if(WIN32)
+#    list(APPEND POSTGRESQL_LIBRARY_ADDITIONAL_SEARCH_SUFFIXES
+#        "PostgreSQL/${suffix}/lib")
+#    list(APPEND POSTGRESQL_INCLUDE_ADDITIONAL_SEARCH_SUFFIXES
+#        "PostgreSQL/${suffix}/include")
+#    list(APPEND POSTGRESQL_TYPE_ADDITIONAL_SEARCH_SUFFIXES
+#        "PostgreSQL/${suffix}/include/server")
+#  endif()
+#  if(UNIX)
+#    list(APPEND POSTGRESQL_LIBRARY_ADDITIONAL_SEARCH_SUFFIXES
+#        "pgsql-${suffix}/lib")
+#    list(APPEND POSTGRESQL_INCLUDE_ADDITIONAL_SEARCH_SUFFIXES
+#        "pgsql-${suffix}/include")
+#    list(APPEND POSTGRESQL_TYPE_ADDITIONAL_SEARCH_SUFFIXES
+#        "postgresql/${suffix}/server"
+#        "pgsql-${suffix}/include/server")
+#  endif()
+#endforeach()
 
 #
 # Look for an installation.
@@ -132,8 +132,9 @@ find_library(POSTGRESQL_LIBRARY
    lib
    ${POSTGRESQL_LIBRARY_ADDITIONAL_SEARCH_SUFFIXES}
  # Help the user find it if we cannot.
- DOC "The ${POSTGRESQL_LIBRARY_DIR_MESSAGE}"
+ DOC "The ${POSTGRESQL_LIBRARY_DIR_MESSAGE}" NO_SYSTEM_ENVIRONMENT_PATH
 )
+
 get_filename_component(POSTGRESQL_LIBRARY_DIR ${POSTGRESQL_LIBRARY} PATH)
 
 if (POSTGRESQL_INCLUDE_DIR)
