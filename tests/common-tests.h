@@ -1877,6 +1877,44 @@ TEST_CASE_METHOD(common_tests, "Named parameters", "[core][use][named-params]")
     }
 }
 
+TEST_CASE_METHOD(common_tests, "Named parameters with similar names", "[core][use][named-params]")
+{
+    // Verify parsing of parameters with similar names,
+    // where one name is part of the other, etc.
+    // https://github.com/SOCI/soci/issues/26
+
+    soci::session sql(backEndFactory_, connectString_);
+    {
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+        std::string passwd("abc");
+        std::string passwd_clear("clear");
+
+        SECTION("unnamed")
+        {
+            sql << "INSERT INTO soci_test(str,name) VALUES(:passwd_clear, :passwd)",
+                    soci::use(passwd), soci::use(passwd_clear);
+        }
+
+        SECTION("same order")
+        {
+            sql << "INSERT INTO soci_test(str,name) VALUES(:passwd_clear, :passwd)",
+                    soci::use(passwd_clear, "passwd_clear"), soci::use(passwd, "passwd");
+        }
+
+        SECTION("reversed order")
+        {
+            sql << "INSERT INTO soci_test(str,name) VALUES(:passwd_clear, :passwd)",
+                    soci::use(passwd, "passwd"), soci::use(passwd_clear, "passwd_clear");
+        }
+
+        // TODO: Allow binding the same varibale multiple times
+        // SECTION("one for multiple placeholders")
+        // {
+        //     sql << "INSERT INTO soci_test(str,name) VALUES(:passwd, :passwd)",
+        //             soci::use(passwd, "passwd");
+        // }
+    }
+}
 #endif // SOCI_POSTGRESQL_NOPARAMS
 
 // transaction test
