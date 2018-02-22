@@ -83,11 +83,6 @@ string const& name = getNameFromSomewhere();
 sql << "insert into person(name) values(:n)", use(name);
 ```
 
-### Portability note
-
-Older versions of the PostgreSQL client API do not allow to use input parameters at all.
-In order to compile SOCI with those old client libraries, define the `SOCI_POSTGRESQL_NOPARAMS` preprocessor name passing `-DSOCI_POSTGRESQL_NOPARAMS=ON` variable to CMake.
-
 ## Binding by position
 
 If there is more output or input "holes" in the single statement, it is possible to use many `into` and `use` expressions, separated by commas, where each expression will be responsible for the consecutive "hole" in the statement:
@@ -127,17 +122,6 @@ sql << "update person"
         " where id = 7",
         use(addr, "addr");
 ```
-
-### Portability notes
-
-The PostgreSQL backend allows to use the "native" PostgreSQL way of naming parameters in the query, which is by numbers like `$1`, `$2`, `$3`, etc.
-In fact, the backend *rewrites* the given query to the native form - and this is also one of the very few places where SOCI intrudes into the SQL query.
-For portability reasons, it is recommended to use named parameters, as shown in the examples above.
-
-The query rewriting can be switched off by compiling the backend with the `SOCI_POSTGRESQL_NOBINDBYNAME` name defined (pass `-DSOCI_POSTGRESQL_NOBINDBYNAME=ON` variable to CMake).
-Note that in this case it is also necessary to define `SOCI_POSTGRESQL_NOPREPARE` (controlled by CMake variable `-DSOCI_POSTGRESQL_NOPREPARE=ON`), because statement preparation relies on successful query rewriting.
-
-In practice, both macros will be needed for PostgreSQL server older than 8.0.
 
 ## Bulk operations
 

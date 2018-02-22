@@ -16,12 +16,6 @@
 #include <ctime>
 #include <sstream>
 
-#ifdef SOCI_POSTGRESQL_NOPARAMS
-#ifndef SOCI_POSTGRESQL_NOBINDBYNAME
-#define SOCI_POSTGRESQL_NOBINDBYNAME
-#endif // SOCI_POSTGRESQL_NOBINDBYNAME
-#endif // SOCI_POSTGRESQL_NOPARAMS
-
 using namespace soci;
 using namespace soci::details;
 
@@ -109,9 +103,6 @@ void postgresql_statement_backend::clean_up()
 void postgresql_statement_backend::prepare(std::string const & query,
     statement_type stType)
 {
-#ifdef SOCI_POSTGRESQL_NOBINDBYNAME
-    query_ = query;
-#else
     // rewrite the query by transforming all named parameters into
     // the postgresql_ numbers ones (:abc -> $1, etc.)
 
@@ -210,10 +201,6 @@ void postgresql_statement_backend::prepare(std::string const & query,
         query_ += ss.str();
     }
 
-#endif // SOCI_POSTGRESQL_NOBINDBYNAME
-
-#ifndef SOCI_POSTGRESQL_NOPREPARE
-
     if (stType == st_repeatable_query)
     {
         if (!statementName_.empty())
@@ -256,8 +243,6 @@ void postgresql_statement_backend::prepare(std::string const & query,
     }
 
     stType_ = stType;
-
-#endif // SOCI_POSTGRESQL_NOPREPARE
 }
 
 statement_backend::exec_fetch_result
@@ -359,43 +344,6 @@ postgresql_statement_backend::execute(int number)
                     }
                 }
 
-#ifdef SOCI_POSTGRESQL_NOPARAMS
-
-                throw soci_error("Queries with parameters are not supported.");
-
-#else
-
-#ifdef SOCI_POSTGRESQL_NOPREPARE
-
-#ifndef SOCI_POSTGRESQL_NOSINGLEROWMODE
-                if (single_row_mode_)
-                {
-                    int result = PQsendQueryParams(
-                        session_.conn_, query_.c_str(),
-                        static_cast<int>(paramValues.size()),
-                        NULL, &paramValues[0], NULL, NULL, 0);
-                    if (result != 1)
-                    {
-                        throw_soci_error(session_.conn_,
-                            "Cannot execute query in single-row mode");
-                    }
-
-                    result = PQsetSingleRowMode(session_.conn_);
-                    if (result != 1)
-                    {
-                        throw_soci_error(session_.conn_,
-                            "cannot set singlerow mode");
-                    }
-                }
-                else
-#endif // !SOCI_POSTGRESQL_NOSINGLEROWMODE
-                {
-                    // default multi-row execution
-                    result_.reset(PQexecParams(session_.conn_, query_.c_str(),
-                            static_cast<int>(paramValues.size()),
-                            NULL, &paramValues[0], NULL, NULL, 0));
-                }
-#else
                 if (stType_ == st_repeatable_query)
                 {
                     // this query was separately prepared
@@ -466,10 +414,6 @@ postgresql_statement_backend::execute(int number)
                     }
                 }
 
-#endif // SOCI_POSTGRESQL_NOPREPARE
-
-#endif // SOCI_POSTGRESQL_NOPARAMS
-
                 if (numberOfExecutions > 1)
                 {
                     // there are only bulk use elements (no intos)
@@ -497,34 +441,6 @@ postgresql_statement_backend::execute(int number)
         {
             // there are no use elements
             // - execute the query without parameter information
-
-#ifdef SOCI_POSTGRESQL_NOPREPARE
-
-#ifndef SOCI_POSTGRESQL_NOSINGLEROWMODE
-            if (single_row_mode_)
-            {
-                int result = PQsendQuery(session_.conn_, query_.c_str());
-                if (result != 1)
-                {
-                    throw_soci_error(session_.conn_,
-                        "Cannot execute query in single-row mode");
-                }
-
-                result = PQsetSingleRowMode(session_.conn_);
-                if (result != 1)
-                {
-                    throw_soci_error(session_.conn_,
-                        "Cannot set single-row mode");
-                }
-            }
-            else
-#endif // !SOCI_POSTGRESQL_NOSINGLEROWMODE
-            {
-                // default multi-row execution
-
-                result_.reset(PQexec(session_.conn_, query_.c_str()));
-            }
-#else
             if (stType_ == st_repeatable_query)
             {
                 // this query was separately prepared
@@ -583,8 +499,6 @@ postgresql_statement_backend::execute(int number)
                     result_.reset(PQexec(session_.conn_, query_.c_str()));
                 }
             }
-
-#endif // SOCI_POSTGRESQL_NOPREPARE
         }
     }
 

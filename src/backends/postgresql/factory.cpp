@@ -11,12 +11,6 @@
 #include "soci/backend-loader.h"
 #include <libpq/libpq-fs.h> // libpq
 
-#ifdef SOCI_POSTGRESQL_NOPARAMS
-#ifndef SOCI_POSTGRESQL_NOBINDBYNAME
-#define SOCI_POSTGRESQL_NOBINDBYNAME
-#endif // SOCI_POSTGRESQL_NOBINDBYNAME
-#endif // SOCI_POSTGRESQL_NOPARAMS
-
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
@@ -80,7 +74,7 @@ std::string chop_connect_string(std::string const & connectString,
     bool & single_row_mode)
 {
     std::string pruned_conn_string;
-    
+
     single_row_mode = false;
 
     std::string key, value;
@@ -119,7 +113,7 @@ postgresql_session_backend * postgresql_backend_factory::make_session(
 
     connection_parameters pruned_parameters(parameters);
     pruned_parameters.set_connect_string(pruned_conn_string);
-    
+
     return new postgresql_session_backend(pruned_parameters, single_row_mode);
 }
 

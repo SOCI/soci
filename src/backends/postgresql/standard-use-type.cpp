@@ -21,12 +21,6 @@
 #include <limits>
 #include <sstream>
 
-#ifdef SOCI_POSTGRESQL_NOPARAMS
-#ifndef SOCI_POSTGRESQL_NOBINDBYNAME
-#define SOCI_POSTGRESQL_NOBINDBYNAME
-#endif // SOCI_POSTGRESQL_NOBINDBYNAME
-#endif // SOCI_POSTGRESQL_NOPARAMS
-
 using namespace soci;
 using namespace soci::details;
 
@@ -157,7 +151,7 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
         case x_longstring:
             copy_from_string(exchange_type_cast<x_longstring>(data_).value);
             break;
-            
+
         default:
             throw soci_error("Use element used with non-supported type.");
         }

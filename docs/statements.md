@@ -47,9 +47,6 @@ The `true` parameter given to the `execute` method indicates that the actual dat
 
 The above syntax is supported for all backends, even if some database server does not actually provide this functionality - in which case the library will internally execute the query in a single phase, without really separating the statement preparation from execution.
 
-For PostgreSQL servers older than 8.0 it is necessary to define the `SOCI_POSTGRESQL_NOPREPARE` macro while compiling the library to fall back to this one-phase behaviour.
-Simply, pass `-DSOCI_POSTGRESQL_NOPREPARE=ON` variable to CMake.
-
 ## Rowset and iterator
 
 The `rowset` class provides an alternative means of executing queries and accessing results using STL-like iterator interface.
