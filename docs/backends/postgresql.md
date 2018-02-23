@@ -67,7 +67,7 @@ Note that in the single-row operation:
 
 Also please note that single rows mode requires PostgreSQL 9 or later, both at
 compile- and run-time. If you need to support earlier versions of PostgreSQL,
-you can define `SOCI_POSTGRESQL_NOSINLGEROWMODE` when building the library to
+you can define `SOCI_POSTGRESQL_NOSINGLEROWMODE` when building the library to
 disable it.
 
 Once you have created a `session` object as shown above, you can use it to access the database, for example:
@@ -168,4 +168,4 @@ To support older PostgreSQL versions, the following configuration macros are rec
 * `SOCI_POSTGRESQL_NOBINDBYNAME` - switches off the query rewriting.
 * `SOCI_POSTGRESQL_NOPARAMS` - disables support for parameterized queries (binding of use elements), automatically imposes also the `SOCI_POSTGRESQL_NOBINDBYNAME` macro. It is necessary for PostgreSQL 7.3.
 * `SOCI_POSTGRESQL_NOPREPARE` - disables support for separate query preparation, which in this backend is significant only in terms of optimization. It is necessary for PostgreSQL 7.3 and 7.4.
-* `SOCI_POSTGRESQL_NOSINLGEROWMODE` - disable single mode retrieving query results row-by-row. It is necessary for PostgreSQL prior to version 9.
+* `SOCI_POSTGRESQL_NOSINGLEROWMODE` - disable single mode retrieving query results row-by-row. It is necessary for PostgreSQL prior to version 9.
