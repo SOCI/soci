@@ -39,11 +39,13 @@ void hard_exec(postgresql_session_backend & session_backend,
 } // namespace unnamed
 
 postgresql_session_backend::postgresql_session_backend(
-    connection_parameters const& parameters, bool single_row_mode)
+    connection_parameters const& parameters,
+    bool single_row_mode,
+    int statement_timeout)
     : statementCount_(0)
+    , single_row_mode_(single_row_mode)
+    , statement_timeout_(statement_timeout)
 {
-    single_row_mode_ = single_row_mode;
-
     connect(parameters);
 }
 
@@ -73,6 +75,13 @@ void postgresql_session_backend::connect(
         version >= 90000 ? "SET extra_float_digits = 3"
                          : "SET extra_float_digits = 2",
         "Cannot set extra_float_digits parameter");
+
+    {
+        std::ostringstream oss;
+        oss << "SET statement_timeout = " << statement_timeout_;
+        hard_exec(*this, conn, oss.str().c_str(),
+            "Cannot set statement_timeout parameter")
+    }
 
     conn_ = conn;
 }

@@ -51,7 +51,8 @@ The set of parameters used in the connection string for PostgreSQL is the same a
 
 In addition to standard PostgreSQL connection parameters, the following can be set:
 
-* `singlerow` or `singlerows`
+* `singlerow` or `singlerows` - to control single-row mode
+* `statement_timeout` - to set override statement default timeout (milliseconds)
 
 For example:
 

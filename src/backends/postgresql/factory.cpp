@@ -77,11 +77,12 @@ std::string::const_iterator get_key_value(std::string::const_iterator & i,
 // retrieves specific parameters from the
 // uniform connect string
 std::string chop_connect_string(std::string const & connectString,
-    bool & single_row_mode)
+    bool & single_row_mode, int & statement_timeout)
 {
     std::string pruned_conn_string;
     
     single_row_mode = false;
+    statement_timeout = 0; // PostgreSQL default turns this off
 
     std::string key, value;
     std::string::const_iterator i = connectString.begin();
@@ -91,6 +92,11 @@ std::string chop_connect_string(std::string const & connectString,
         if (key == "singlerow" || key == "singlerows")
         {
             single_row_mode = (value == "true" || value == "yes");
+        }
+        else if (key == "statement_timeout")
+        {
+            std::istringstream iss(value);
+            iss >> statement_timeout;
         }
         else
         {
@@ -113,14 +119,15 @@ postgresql_session_backend * postgresql_backend_factory::make_session(
      connection_parameters const & parameters) const
 {
     bool single_row_mode;
+    int statement_timeout;
 
     const std::string pruned_conn_string =
-        chop_connect_string(parameters.get_connect_string(), single_row_mode);
+        chop_connect_string(parameters.get_connect_string(), single_row_mode, statement_timeout);
 
     connection_parameters pruned_parameters(parameters);
     pruned_parameters.set_connect_string(pruned_conn_string);
     
-    return new postgresql_session_backend(pruned_parameters, single_row_mode);
+    return new postgresql_session_backend(pruned_parameters, single_row_mode, statement_timeout);
 }
 
 postgresql_backend_factory const soci::postgresql;
