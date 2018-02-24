@@ -38,7 +38,7 @@ logger_impl::~logger_impl()
 {
 }
 
-void logger_impl::set_stream(std::ostream * s)
+void logger_impl::set_stream(std::ostream *)
 {
     throw_not_supported();
 }
