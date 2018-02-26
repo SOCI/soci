@@ -12,6 +12,7 @@
 #include "soci/once-temp-type.h"
 #include "soci/query_transformation.h"
 #include "soci/connection-parameters.h"
+#include "soci/logger.h"
 
 // std
 #include <cstddef>
@@ -86,7 +87,17 @@ public:
         set_query_transformation_(qtf);
     }
 
-    // support for basic logging
+    // Support for custom logging of database operations.
+
+    // Set the custom logger to use.
+    void set_logger(logger const & logger);
+
+    // Return the currently used logger, by default, this is an instance of a
+    // standard SOCI logger.
+    logger const & get_logger() const;
+
+
+    // support for basic logging (use set_logger() for more control).
     void set_log_stream(std::ostream * s);
     std::ostream * get_log_stream() const;
 
@@ -182,8 +193,7 @@ private:
     std::ostringstream query_stream_;
     details::query_transformation_function* query_transformation_;
 
-    std::ostream * logStream_;
-    std::string lastQuery_;
+    logger logger_;
 
     connection_parameters lastConnectParameters_;
 

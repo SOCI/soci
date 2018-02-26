@@ -4455,6 +4455,49 @@ TEST_CASE_METHOD(common_tests, "XML", "[core][xml]")
     }
 }
 
+TEST_CASE_METHOD(common_tests, "Logger", "[core][log]")
+{
+    // Logger class used for testing: appends all queries to the provided
+    // buffer.
+    class test_log_impl : public soci::logger_impl
+    {
+    public:
+        explicit test_log_impl(std::vector<std::string>& logbuf)
+            : m_logbuf(logbuf)
+        {
+        }
+
+        virtual void start_query(std::string const & query)
+        {
+            m_logbuf.push_back(query);
+        }
+
+    private:
+        virtual logger_impl* do_clone() const
+        {
+            return new test_log_impl(m_logbuf);
+        }
+
+        std::vector<std::string>& m_logbuf;
+    };
+
+    soci::session sql(backEndFactory_, connectString_);
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+    soci::logger const logger_orig = sql.get_logger();
+
+    std::vector<std::string> logbuf;
+    sql.set_logger(new test_log_impl(logbuf));
+
+    int count;
+    sql << "select count(*) from soci_test", into(count);
+
+    REQUIRE( logbuf.size() == 1 );
+    CHECK( logbuf.front() == "select count(*) from soci_test" );
+
+    sql.set_logger(logger_orig);
+}
+
 } // namespace test_cases
 
 } // namespace tests

@@ -26,17 +26,63 @@ void ensureConnected(session_backend * backEnd)
     }
 }
 
+// Standard logger class used by default.
+class standard_logger_impl : public logger_impl
+{
+public:
+    standard_logger_impl()
+    {
+        logStream_ = NULL;
+    }
+
+    virtual void start_query(std::string const & query)
+    {
+        if (logStream_ != NULL)
+        {
+            *logStream_ << query << '\n';
+        }
+
+        lastQuery_ = query;
+    }
+
+    virtual void set_stream(std::ostream * s)
+    {
+        logStream_ = s;
+    }
+
+    virtual std::ostream * get_stream() const
+    {
+        return logStream_;
+    }
+
+    virtual std::string get_last_query() const
+    {
+        return lastQuery_;
+    }
+
+private:
+    virtual logger_impl* do_clone() const
+    {
+        return new standard_logger_impl;
+    }
+
+    std::ostream * logStream_;
+    std::string lastQuery_;
+};
+
 } // namespace anonymous
 
 session::session()
-    : once(this), prepare(this), query_transformation_(NULL), logStream_(NULL),
+    : once(this), prepare(this), query_transformation_(NULL),
+      logger_(new standard_logger_impl),
       uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
 {
 }
 
 session::session(connection_parameters const & parameters)
-    : once(this), prepare(this), query_transformation_(NULL), logStream_(NULL),
+    : once(this), prepare(this), query_transformation_(NULL),
+      logger_(new standard_logger_impl),
       lastConnectParameters_(parameters),
       uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
@@ -46,7 +92,8 @@ session::session(connection_parameters const & parameters)
 
 session::session(backend_factory const & factory,
     std::string const & connectString)
-    : once(this), prepare(this), query_transformation_(NULL), logStream_(NULL),
+    : once(this), prepare(this), query_transformation_(NULL),
+    logger_(new standard_logger_impl),
       lastConnectParameters_(factory, connectString),
       uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
@@ -56,7 +103,8 @@ session::session(backend_factory const & factory,
 
 session::session(std::string const & backendName,
     std::string const & connectString)
-    : once(this), prepare(this), query_transformation_(NULL), logStream_(NULL),
+    : once(this), prepare(this), query_transformation_(NULL),
+      logger_(new standard_logger_impl),
       lastConnectParameters_(backendName, connectString),
       uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
@@ -65,7 +113,8 @@ session::session(std::string const & backendName,
 }
 
 session::session(std::string const & connectString)
-    : once(this), prepare(this), query_transformation_(NULL), logStream_(NULL),
+    : once(this), prepare(this), query_transformation_(NULL),
+      logger_(new standard_logger_impl),
       lastConnectParameters_(connectString),
       uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
@@ -74,7 +123,9 @@ session::session(std::string const & connectString)
 }
 
 session::session(connection_pool & pool)
-    : query_transformation_(NULL), logStream_(NULL), isFromPool_(true), pool_(&pool)
+    : query_transformation_(NULL),
+      logger_(new standard_logger_impl),
+      isFromPool_(true), pool_(&pool)
 {
     poolPosition_ = pool.lease();
     session & pooledSession = pool.at(poolPosition_);
@@ -244,6 +295,30 @@ void session::set_query_transformation_(cxx_details::auto_ptr<details::query_tra
     }
 }
 
+void session::set_logger(logger const & logger)
+{
+    if (isFromPool_)
+    {
+        pool_->at(poolPosition_).set_logger(logger);
+    }
+    else
+    {
+        logger_ = logger;
+    }
+}
+
+logger const & session::get_logger() const
+{
+    if (isFromPool_)
+    {
+        return pool_->at(poolPosition_).get_logger();
+    }
+    else
+    {
+        return logger_;
+    }
+}
+
 void session::set_log_stream(std::ostream * s)
 {
     if (isFromPool_)
@@ -252,7 +327,7 @@ void session::set_log_stream(std::ostream * s)
     }
     else
     {
-        logStream_ = s;
+        logger_.set_stream(s);
     }
 }
 
@@ -264,7 +339,7 @@ std::ostream * session::get_log_stream() const
     }
     else
     {
-        return logStream_;
+        return logger_.get_stream();
     }
 }
 
@@ -276,12 +351,7 @@ void session::log_query(std::string const & query)
     }
     else
     {
-        if (logStream_ != NULL)
-        {
-            *logStream_ << query << '\n';
-        }
-
-        lastQuery_ = query;
+        logger_.start_query(query);
     }
 }
 
@@ -293,7 +363,7 @@ std::string session::get_last_query() const
     }
     else
     {
-        return lastQuery_;
+        return logger_.get_last_query();
     }
 }
 
