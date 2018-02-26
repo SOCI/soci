@@ -54,23 +54,8 @@ TEST_CASE("PostgreSQL ROWID", "[postgresql][rowid][oid]")
     int id;
     std::string name;
 
-#ifndef SOCI_POSTGRESQL_NOPARAMS
-
     sql << "select id, name from soci_test where oid = :rid",
         into(id), into(name), use(rid);
-
-#else
-    // Older PostgreSQL does not support use elements.
-
-    postgresql_rowid_backend *rbe
-        = static_cast<postgresql_rowid_backend *>(rid.get_backend());
-
-    unsigned long oid = rbe->value_;
-
-    sql << "select id, name from soci_test where oid = " << oid,
-        into(id), into(name);
-
-#endif // SOCI_POSTGRESQL_NOPARAMS
 
     CHECK(id == 7);
     CHECK(name == "John");
@@ -98,8 +83,6 @@ public:
         try { sql << "create language plpgsql"; }
         catch (soci_error const &) {} // ignore if error
 
-#ifndef SOCI_POSTGRESQL_NOPARAMS
-
         sql  <<
             "create or replace function soci_test(msg varchar) "
             "returns varchar as $$ "
@@ -107,16 +90,6 @@ public:
             "begin "
             "  return msg; "
             "end $$ language plpgsql";
-#else
-
-       sql <<
-            "create or replace function soci_test(varchar) "
-            "returns varchar as \' "
-            "declare x int := 1;"
-            "begin "
-            "  return $1; "
-            "end \' language plpgsql";
-#endif
     }
 
 protected:
@@ -136,21 +109,10 @@ TEST_CASE("PostgreSQL function call", "[postgresql][function]")
     std::string in("my message");
     std::string out;
 
-#ifndef SOCI_POSTGRESQL_NOPARAMS
-
     statement st = (sql.prepare <<
         "select soci_test(:input)",
         into(out),
         use(in, "input"));
-
-#else
-    // Older PostgreSQL does not support use elements.
-
-    statement st = (sql.prepare <<
-        "select soci_test(\'" << in << "\')",
-        into(out));
-
-#endif // SOCI_POSTGRESQL_NOPARAMS
 
     st.execute(true);
     CHECK(out == in);
@@ -160,19 +122,9 @@ TEST_CASE("PostgreSQL function call", "[postgresql][function]")
         std::string in("my message2");
         std::string out;
 
-#ifndef SOCI_POSTGRESQL_NOPARAMS
-
         procedure proc = (sql.prepare <<
             "soci_test(:input)",
             into(out), use(in, "input"));
-
-#else
-    // Older PostgreSQL does not support use elements.
-
-        procedure proc = (sql.prepare <<
-            "soci_test(\'" << in << "\')", into(out));
-
-#endif // SOCI_POSTGRESQL_NOPARAMS
 
         proc.execute(true);
         CHECK(out == in);

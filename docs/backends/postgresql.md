@@ -107,16 +107,6 @@ int id = 7;
 sql << "select name from person where id = :id", use(id, "id")
 ```
 
-Apart from the portable "colon-name" syntax above, which is achieved by rewriting the query string, the backend also supports the PostgreSQL native numbered syntax:
-
-```cpp
-int i = 7;
-int j = 8;
-sql << "insert into t(x, y) values($1, $2)", use(i), use(j);
-```
-
-The use of native syntax is not recommended, but can be nevertheless imposed by switching off the query rewriting. This can be achieved by defining the macro `SOCI_POSTGRESQL_NOBINDBYNAME` and it is actually necessary for PostgreSQL 7.3, in which case binding of use elements is not supported at all. See the [Configuration options](#options) section for details.
-
 ### Bulk Operations
 
 The PostgreSQL backend has full support for SOCI's [bulk operations](../binding.md#bulk-operations) interface.
@@ -165,7 +155,4 @@ format of UUID on output. See the test `test_uuid_column_type_support` for usage
 
 To support older PostgreSQL versions, the following configuration macros are recognized:
 
-* `SOCI_POSTGRESQL_NOBINDBYNAME` - switches off the query rewriting.
-* `SOCI_POSTGRESQL_NOPARAMS` - disables support for parameterized queries (binding of use elements), automatically imposes also the `SOCI_POSTGRESQL_NOBINDBYNAME` macro. It is necessary for PostgreSQL 7.3.
-* `SOCI_POSTGRESQL_NOPREPARE` - disables support for separate query preparation, which in this backend is significant only in terms of optimization. It is necessary for PostgreSQL 7.3 and 7.4.
-* `SOCI_POSTGRESQL_NOSINGLEROWMODE` - disable single mode retrieving query results row-by-row. It is necessary for PostgreSQL prior to version 9.
+* `SOCI_POSTGRESQL_NOSINLGEROWMODE` - disable single mode retrieving query results row-by-row. It is necessary for PostgreSQL prior to version 9.

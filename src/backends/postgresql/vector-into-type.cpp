@@ -19,12 +19,6 @@
 #include <ctime>
 #include <sstream>
 
-#ifdef SOCI_POSTGRESQL_NOPARAMS
-#ifndef SOCI_POSTGRESQL_NOBINDBYNAME
-#define SOCI_POSTGRESQL_NOBINDBYNAME
-#endif // SOCI_POSTGRESQL_NOBINDBYNAME
-#endif // SOCI_POSTGRESQL_NOPARAMS
-
 using namespace soci;
 using namespace soci::details;
 using namespace soci::details::postgresql;
@@ -253,7 +247,7 @@ std::size_t postgresql_vector_into_type_backend::size()
         // ... and in that case return the actual size
         return actual_size;
     }
-    
+
     if (end_ != NULL && *end_ != 0)
     {
         return *end_ - begin_;
