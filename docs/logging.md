@@ -28,7 +28,6 @@ Note that each prepared query is logged only once, independent on how many times
 
 The `get_last_query` function allows to retrieve the last used query.
 
-
 ## Flexible logging using custom loggers
 
 If the above is not enough, it is also possible to log the queries in exactly
