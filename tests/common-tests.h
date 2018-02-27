@@ -1293,9 +1293,6 @@ TEST_CASE_METHOD(common_tests, "Indicators vector", "[core][indicator][vector]")
 
 }
 
-// Note: this functionality is not available with older PostgreSQL
-#ifndef SOCI_POSTGRESQL_NOPARAMS
-
 // "use" tests, type conversions, etc.
 TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
 {
@@ -1519,8 +1516,6 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
     }
 }
 
-#endif // SOCI_POSTGRESQL_NOPARAMS
-
 // test for multiple use (and into) elements
 TEST_CASE_METHOD(common_tests, "Multiple use and into", "[core][use][into]")
 {
@@ -1532,17 +1527,8 @@ TEST_CASE_METHOD(common_tests, "Multiple use and into", "[core][use][into]")
         int i2 = 6;
         int i3 = 7;
 
-#ifndef SOCI_POSTGRESQL_NOPARAMS
-
         sql << "insert into soci_test(i1, i2, i3) values(:i1, :i2, :i3)",
             use(i1), use(i2), use(i3);
-
-#else
-        // Older PostgreSQL does not support use elements.
-
-        sql << "insert into soci_test(i1, i2, i3) values(5, 6, 7)";
-
-#endif // SOCI_POSTGRESQL_NOPARAMS
 
         i1 = 0;
         i2 = 0;
@@ -1561,8 +1547,6 @@ TEST_CASE_METHOD(common_tests, "Multiple use and into", "[core][use][into]")
         i2 = 0;
         i3 = 0;
 
-#ifndef SOCI_POSTGRESQL_NOPARAMS
-
         statement st = (sql.prepare
             << "insert into soci_test(i1, i2, i3) values(:i1, :i2, :i3)",
             use(i1), use(i2), use(i3));
@@ -1579,15 +1563,6 @@ TEST_CASE_METHOD(common_tests, "Multiple use and into", "[core][use][into]")
         i2 = 8;
         i3 = 9;
         st.execute(true);
-
-#else
-        // Older PostgreSQL does not support use elements.
-
-        sql << "insert into soci_test(i1, i2, i3) values(1, 2, 3)";
-        sql << "insert into soci_test(i1, i2, i3) values(4, 5, 6)";
-        sql << "insert into soci_test(i1, i2, i3) values(7, 8, 9)";
-
-#endif // SOCI_POSTGRESQL_NOPARAMS
 
         std::vector<int> v1(5);
         std::vector<int> v2(5);
@@ -1610,9 +1585,6 @@ TEST_CASE_METHOD(common_tests, "Multiple use and into", "[core][use][into]")
         CHECK(v3[2] == 9);
     }
 }
-
-// Not supported with older PostgreSQL
-#ifndef SOCI_POSTGRESQL_NOPARAMS
 
 // use vector elements
 TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
@@ -1877,7 +1849,44 @@ TEST_CASE_METHOD(common_tests, "Named parameters", "[core][use][named-params]")
     }
 }
 
-#endif // SOCI_POSTGRESQL_NOPARAMS
+TEST_CASE_METHOD(common_tests, "Named parameters with similar names", "[core][use][named-params]")
+{
+    // Verify parsing of parameters with similar names,
+    // where one name is part of the other, etc.
+    // https://github.com/SOCI/soci/issues/26
+
+    soci::session sql(backEndFactory_, connectString_);
+    {
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+        std::string passwd("abc");
+        std::string passwd_clear("clear");
+
+        SECTION("unnamed")
+        {
+            sql << "INSERT INTO soci_test(str,name) VALUES(:passwd_clear, :passwd)",
+                    soci::use(passwd), soci::use(passwd_clear);
+        }
+
+        SECTION("same order")
+        {
+            sql << "INSERT INTO soci_test(str,name) VALUES(:passwd_clear, :passwd)",
+                    soci::use(passwd_clear, "passwd_clear"), soci::use(passwd, "passwd");
+        }
+
+        SECTION("reversed order")
+        {
+            sql << "INSERT INTO soci_test(str,name) VALUES(:passwd_clear, :passwd)",
+                    soci::use(passwd, "passwd"), soci::use(passwd_clear, "passwd_clear");
+        }
+
+        // TODO: Allow binding the same varibale multiple times
+        // SECTION("one for multiple placeholders")
+        // {
+        //     sql << "INSERT INTO soci_test(str,name) VALUES(:passwd, :passwd)",
+        //             soci::use(passwd, "passwd");
+        // }
+    }
+}
 
 // transaction test
 TEST_CASE_METHOD(common_tests, "Transactions", "[core][transaction]")
@@ -1950,8 +1959,6 @@ TEST_CASE_METHOD(common_tests, "Transactions", "[core][transaction]")
         }
     }
 }
-
-#ifndef SOCI_POSTGRESQL_NOPARAMS
 
 std::tm  generate_tm()
 {
@@ -2035,8 +2042,6 @@ TEST_CASE_METHOD(common_tests, "Use with indicators", "[core][use][indicator]")
     CHECK(vals[2] == 12);
     CHECK(vals[4] == 10);
 }
-
-#endif // SOCI_POSTGRESQL_NOPARAMS
 
 // Dynamic binding to Row objects
 TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
@@ -2162,7 +2167,6 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding 2", "[core][dynamic]")
     sql << "insert into soci_test(id, val) values(2, 20)";
     sql << "insert into soci_test(id, val) values(3, 30)";
 
-#ifndef SOCI_POSTGRESQL_NOPARAMS
     {
         int id = 2;
         row r;
@@ -2196,16 +2200,6 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding 2", "[core][dynamic]")
         CHECK(r.get_properties(0).get_data_type() == dt_integer);
         CHECK(r.get<int>(0) == 10);
     }
-#else
-    {
-        row r;
-        sql << "select val from soci_test where id = 2", into(r);
-
-        CHECK(r.size() == 1);
-        CHECK(r.get_properties(0).get_data_type() == dt_integer);
-        CHECK(r.get<int>(0) == 20);
-    }
-#endif // SOCI_POSTGRESQL_NOPARAMS
 }
 
 // More Dynamic binding to row objects
@@ -2461,8 +2455,6 @@ TEST_CASE_METHOD(common_tests, "Numeric round trip", "[core][float]")
     ASSERT_EQUAL_EXACT(d1, d2);
 }
 
-#ifndef SOCI_POSTGRESQL_NOPARAMS
-
 // test for bulk fetch with single use
 TEST_CASE_METHOD(common_tests, "Bulk fetch with single use", "[core][bulk]")
 {
@@ -2486,8 +2478,6 @@ TEST_CASE_METHOD(common_tests, "Bulk fetch with single use", "[core][bulk]")
     CHECK(names[1] == "john");
     CHECK(names[2] == "julian");
 }
-
-#endif // SOCI_POSTGRESQL_NOPARAMS
 
 // test for basic logging support
 TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
@@ -4415,6 +4405,49 @@ TEST_CASE_METHOD(common_tests, "XML", "[core][xml]")
             ), soci_error
         );
     }
+}
+
+TEST_CASE_METHOD(common_tests, "Logger", "[core][log]")
+{
+    // Logger class used for testing: appends all queries to the provided
+    // buffer.
+    class test_log_impl : public soci::logger_impl
+    {
+    public:
+        explicit test_log_impl(std::vector<std::string>& logbuf)
+            : m_logbuf(logbuf)
+        {
+        }
+
+        virtual void start_query(std::string const & query)
+        {
+            m_logbuf.push_back(query);
+        }
+
+    private:
+        virtual logger_impl* do_clone() const
+        {
+            return new test_log_impl(m_logbuf);
+        }
+
+        std::vector<std::string>& m_logbuf;
+    };
+
+    soci::session sql(backEndFactory_, connectString_);
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+    soci::logger const logger_orig = sql.get_logger();
+
+    std::vector<std::string> logbuf;
+    sql.set_logger(new test_log_impl(logbuf));
+
+    int count;
+    sql << "select count(*) from soci_test", into(count);
+
+    REQUIRE( logbuf.size() == 1 );
+    CHECK( logbuf.front() == "select count(*) from soci_test" );
+
+    sql.set_logger(logger_orig);
 }
 
 } // namespace test_cases

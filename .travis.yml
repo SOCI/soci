@@ -35,7 +35,7 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
-      - kalakris-cmake
+      - sourceline: 'ppa:roblib/ppa'
     packages:
       - cmake
   coverity_scan:

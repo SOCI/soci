@@ -62,7 +62,7 @@ For this, the project has to rely on volunteer contributions from other programm
 who have expertise with the existing database interfaces and would like to help
 writing dedicated backends.
 
-## Langauge Bindings
+## Language Bindings
 
 Even though SOCI is mainly a C++ library, it also allows to use it from other programming languages.
 Currently the package contains the Ada binding, with more bindings likely to come in the future.
