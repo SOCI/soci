@@ -255,6 +255,8 @@ void odbc_standard_use_type_backend::post_use(bool gotData, indicator *ind)
             }
         }
     }
+
+    clean_up();
 }
 
 void odbc_standard_use_type_backend::clean_up()
