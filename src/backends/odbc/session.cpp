@@ -79,8 +79,19 @@ odbc_session_backend::odbc_session_backend(
                           outConnString, 1024, &strLength,
                           static_cast<SQLUSMALLINT>(completion));
 
-    if (is_odbc_error(rc))
+    // Don't use is_odbc_error() here as it doesn't consider SQL_NO_DATA to be
+    // an error -- but it is one here, as it's returned if a message box shown
+    // by SQLDriverConnect() was cancelled and this means we failed to connect.
+    switch (rc)
     {
+      case SQL_SUCCESS:
+      case SQL_SUCCESS_WITH_INFO:
+        break;
+
+      case SQL_NO_DATA:
+        throw soci_error("Connecting to the database cancelled by user.");
+
+      default:
         throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "connecting to database");
     }
 
