@@ -46,7 +46,7 @@ odbc_session_backend::odbc_session_backend(
     }
 
     SQLCHAR outConnString[1024];
-    SQLSMALLINT strLength;
+    SQLSMALLINT strLength = 0;
 
     // Prompt the user for any missing information (typically UID/PWD) in the
     // connection string by default but allow overriding this using "prompt"
