@@ -42,3 +42,6 @@ CMakeLists.txt.user
 
 # Vagrant
 /.vagrant/
+
+# IDEA
+/.idea
