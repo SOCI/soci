@@ -50,6 +50,7 @@ The set of parameters used in the connection string for MySQL is:
 * `sslcert`
 * `local_infile` - should be `0` or `1`, `1` means `MYSQL_OPT_LOCAL_INFILE` will be set.
 * `charset`
+* `reconnect` - if set to 1, set `MYSQL_OPT_RECONNECT` to reconnect on connection loss.
 * `connect_timeout` - should be positive integer value that means seconds corresponding to `MYSQL_OPT_CONNECT_TIMEOUT`.
 * `read_timeout` - should be positive integer value that means seconds corresponding to `MYSQL_OPT_READ_TIMEOUT`.
 * `write_timeout` - should be positive integer value that means seconds corresponding to `MYSQL_OPT_WRITE_TIMEOUT`.
