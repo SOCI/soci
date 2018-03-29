@@ -127,6 +127,12 @@ bool connection_pool::try_lease(std::size_t & pos, int timeout)
         {
             break;
         }
+        // pthread_cond_timedwait can return EINVAL or EPERM
+        if (cc == EINVAL || cc == EPERM)
+        {
+            // Without this break the while loop can result in an infinate loop
+            break;
+        }
     }
 
     if (cc == 0)
