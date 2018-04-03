@@ -708,6 +708,8 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         {
             CHECK(e.get_error_message() ==
                 "Null value fetched and no indicator defined.");
+            CHECK_THAT(e.what(),
+                Catch::Contains("for the parameter number 1"));
         }
 
         sql << "select id from soci_test where id = 1000", into(i, ind);
