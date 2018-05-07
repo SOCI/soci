@@ -17,25 +17,21 @@
 # ODBC_LIBRARY, where to find the ODBC driver manager library.
 
 set(ODBC_FOUND FALSE)
-include(CheckIncludeFiles)
-check_include_files("windows.h;sqlext.h" HAVE_SQLEXT_H)
 
-if(NOT HAVE_SQLEXT_H)
-  find_path(ODBC_INCLUDE_DIR sqlext.h
-    /usr/include
-    /usr/include/odbc
-    /usr/local/include
-    /usr/local/include/odbc
-    /usr/local/odbc/include
-    "C:/Program Files (x86)/Windows Kits/8.0/include/um"
-    "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Include"
-    "C:/Program Files/ODBC/include"
-    "C:/Program Files/Microsoft SDKs/Windows/v7.0/include"
-    "C:/Program Files/Microsoft SDKs/Windows/v6.0a/include"
-    "C:/ODBC/include"
-    DOC "Specify the directory containing sql.h."
-  )
-endif()
+find_path(ODBC_INCLUDE_DIR sqlext.h
+  /usr/include
+  /usr/include/odbc
+  /usr/local/include
+  /usr/local/include/odbc
+  /usr/local/odbc/include
+  "C:/Program Files (x86)/Windows Kits/8.0/include/um"
+  "C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Include"
+  "C:/Program Files/ODBC/include"
+  "C:/Program Files/Microsoft SDKs/Windows/v7.0/include"
+  "C:/Program Files/Microsoft SDKs/Windows/v6.0a/include"
+  "C:/ODBC/include"
+  DOC "Specify the directory containing sql.h."
+)
 
 if(MSVC)
     # msvc knows where to find sdk libs

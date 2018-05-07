@@ -13,6 +13,8 @@ sudo apt-get install -qq -y apt-fast
 sudo apt-fast update -qq -y
 sudo apt-fast install -qq -y libboost-dev libboost-date-time-dev valgrind
 
+sh ${TRAVIS_BUILD_DIR}/scripts/travis/install_cmake.sh
+
 before_install="${TRAVIS_BUILD_DIR}/scripts/travis/before_install_${SOCI_TRAVIS_BACKEND}.sh"
 if [ -x ${before_install} ]; then
 	echo "Running ${before_install}"
