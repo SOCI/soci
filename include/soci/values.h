@@ -166,7 +166,7 @@ public:
     void set(std::string const & name, T const & value, indicator indic = i_ok)
     {
         typedef typename type_conversion<T>::base_type base_type;
-        if(index_.find(name) == index_.end())
+        if (index_.find(name) == index_.end())
         {
             index_.insert(std::make_pair(name, uses_.size()));
 
@@ -174,10 +174,7 @@ public:
             indicators_.push_back(pind);
 
             base_type baseValue;
-            if (indic == i_ok)
-            {
-                type_conversion<T>::to_base(value, baseValue, *pind);
-            }
+            type_conversion<T>::to_base(value, baseValue, *pind);
 
             details::copy_holder<base_type> * pcopy =
                     new details::copy_holder<base_type>(baseValue);
