@@ -222,7 +222,7 @@ macro(soci_backend NAME)
 
       if (SOCI_SHARED)
         install(TARGETS ${THIS_BACKEND_TARGET}
-          EXPORT SOCI
+          EXPORT sociConfig
           RUNTIME DESTINATION ${BINDIR}
           LIBRARY DESTINATION ${LIBDIR}
           ARCHIVE DESTINATION ${LIBDIR})
@@ -230,14 +230,14 @@ macro(soci_backend NAME)
 
       if (SOCI_STATIC)
         install(TARGETS ${THIS_BACKEND_TARGET_STATIC}
-          EXPORT SOCI
+          EXPORT sociConfig
           RUNTIME DESTINATION ${BINDIR}
           LIBRARY DESTINATION ${LIBDIR}
           ARCHIVE DESTINATION ${LIBDIR}
          )
       endif()
 
-      install(EXPORT SOCI NAMESPACE SOCI:: DESTINATION cmake)
+      export(TARGETS ${THIS_BACKEND_TARGET_STATIC} ${THIS_BACKEND_TARGET} FILE sociConfig.cmake)
 
     else()
         colormsg(HIRED "${NAME}" RED "backend disabled, since")

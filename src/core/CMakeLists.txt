@@ -61,8 +61,8 @@ if (SOCI_SHARED)
   endif()
 
   target_include_directories(${SOCI_CORE_TARGET}
-      PUBLIC
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include>
+      PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include>
+             $<INSTALL_INTERFACE:include>
   )
 
 endif()
@@ -93,9 +93,8 @@ if (SOCI_STATIC)
     CLEAN_DIRECT_OUTPUT 1)
 
   target_include_directories(${SOCI_CORE_TARGET_STATIC}
-      PUBLIC
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include>
-      $<INSTALL_INTERFACE:include>
+      PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include>
+             $<INSTALL_INTERFACE:include>
   )
 
 endif()
@@ -110,7 +109,7 @@ install(FILES ${SOCI_CORE_HEADERS} DESTINATION ${INCLUDEDIR}/${PROJECTNAMEL})
 
 if (SOCI_SHARED)
   install(TARGETS ${SOCI_CORE_TARGET}
-    EXPORT SOCI
+    EXPORT sociConfig
     RUNTIME DESTINATION ${BINDIR}
     LIBRARY DESTINATION ${LIBDIR}
     ARCHIVE DESTINATION ${LIBDIR})
@@ -118,13 +117,14 @@ endif()
 
 if (SOCI_STATIC)
   install(TARGETS ${SOCI_CORE_TARGET_STATIC}
-    EXPORT SOCI
+    EXPORT sociConfig
     RUNTIME DESTINATION ${BINDIR}
     LIBRARY DESTINATION ${LIBDIR}
     ARCHIVE DESTINATION ${LIBDIR})
 endif()
 
-install(EXPORT SOCI NAMESPACE SOCI:: DESTINATION cmake)
+export(TARGETS ${SOCI_CORE_TARGET_STATIC} ${SOCI_CORE_TARGET} FILE sociConfig.cmake)
+install(EXPORT sociConfig DESTINATION cmake)
 
 #
 # Core configuration summary
