@@ -1,0 +1,40 @@
+# SOCI
+
+This repository contains a mirror of [SOCI](https://github.com/SOCI/soci).
+Checkout the [original readme](ORIGINAL_README.md) for more information.
+
+## Requirements
+
+SOCI requires DB engines to be already installed.
+
+If a DB engine has been installed through its official installer, then SOCI's
+build system will find it automatically.
+
+If instead you have installed a DB engine to a custom location, you have to
+specify the root installation path at build time.
+
+This applies to engines built with the algoB dev system as well. The example
+below is for SQLite 3.
+
+* First, clone, build and install the algoB version of SQLite 3. In the example
+  below, we will install it to `$HOME/lib`.
+
+```bash
+$ cd ~/code
+$ git clone --recursive git@github.com:algoB/sqlite3.git
+$ cd sqlite3/build
+$ cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/lib
+$ ninja
+$ ninja install
+```
+
+* Then specify the SQLite 3 install path in your top-level CMake command:
+
+```bash
+$ cd ~/code
+$ cd your_project/build
+$ cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DSQLITE_ROOT_DIR=$HOME/lib
+```
+
+SOCI's build system will look into `$HOME/lib` and will find our installed
+files and targets.
