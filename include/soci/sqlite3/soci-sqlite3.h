@@ -321,6 +321,7 @@ struct sqlite3_session_backend : details::session_backend
             case dt_double:
                 return "real";
             case dt_date:
+                return "datetime";
             case dt_integer:
             case dt_long_long:
             case dt_unsigned_long_long:
