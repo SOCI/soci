@@ -55,7 +55,7 @@ public:
     explicit session(std::string const & connectString);
     explicit session(connection_pool & pool);
 
-    ~session();
+    ~session() SOCI_NOEXCEPT_FALSE;
 
     void open(connection_parameters const & parameters);
     void open(backend_factory const & factory, std::string const & connectString);

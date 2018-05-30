@@ -135,7 +135,7 @@ session::session(connection_pool & pool)
     backEnd_ = pooledSession.get_backend();
 }
 
-session::~session()
+session::~session() SOCI_NOEXCEPT_FALSE
 {
     if (isFromPool_)
     {
