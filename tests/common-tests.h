@@ -123,6 +123,17 @@ private:
     int i_;
 };
 
+//Object used later in test "DDL data types"
+struct SociDataTypes
+{
+    double double_type;
+    int integer_type;
+    long long long_long_type;
+    unsigned long long unsigned_long_long_type;
+    std::string string_type;
+    std::tm date_type;
+};
+
 namespace soci
 {
 
@@ -208,6 +219,34 @@ template<> struct type_conversion<PhonebookEntry3>
     }
 };
 
+template<>
+struct type_conversion<SociDataTypes>
+{
+    typedef values base_type;
+
+    static void from_base(values const & v, indicator /* ind */, SociDataTypes &sdt)
+    {
+        sdt.double_type = v.get<double>("double_type");
+        sdt.integer_type = v.get<int>("integer_type");
+        sdt.long_long_type = v.get<long long>("long_long_type");
+        sdt.unsigned_long_long_type = v.get<unsigned long long>("unsigned_long_long_type");
+        sdt.string_type = v.get<std::string>("string_type");
+        sdt.date_type = v.get<std::tm>("date_type");
+    }
+
+    static void to_base(const SociDataTypes & sdt, values & v, indicator & ind)
+    {
+        v.set("double_type", sdt.double_type);
+        v.set("integer_type", sdt.integer_type);
+        v.set("long_long_type", sdt.long_long_type);
+        v.set("unsigned_long_long_type", sdt.unsigned_long_long_type);
+        v.set("string_type", sdt.string_type);
+        v.set("date_type", sdt.date_type);
+
+        ind = i_ok;
+    }
+};
+
 } // namespace soci
 
 namespace soci
@@ -240,6 +279,22 @@ private:
     session& msession;
 
     SOCI_NOT_COPYABLE(table_creator_base)
+};
+
+// Table used to store data of the structure SociDataTypes
+struct table_creator_5 : public table_creator_base
+{
+    table_creator_5(soci::session & sql)
+        : table_creator_base(sql)
+    {
+        soci::ddl_type ddl = sql.create_table("soci_test");
+        ddl.column("double_type", soci::dt_double);
+        ddl.column("integer_type", soci::dt_integer);
+        ddl.column("long_long_type", soci::dt_long_long);
+        ddl.column("unsigned_long_long_type", soci::dt_unsigned_long_long);
+        ddl.column("string_type", soci::dt_string);
+        ddl.column("date_type", soci::dt_date);
+    }
 };
 
 class procedure_creator_base
@@ -330,6 +385,10 @@ public:
     virtual table_creator_base* table_creator_2(session&) const = 0;
     virtual table_creator_base* table_creator_3(session&) const = 0;
     virtual table_creator_base* table_creator_4(session&) const = 0;
+    virtual table_creator_base* table_creator_5(session& s) const
+    {
+        return new tests::table_creator_5(s);
+    }
 
     // Override this to return the table creator for a simple table containing
     // an integer "id" column and CLOB "s" one.
@@ -4448,6 +4507,114 @@ TEST_CASE_METHOD(common_tests, "Logger", "[core][log]")
     CHECK( logbuf.front() == "select count(*) from soci_test" );
 
     sql.set_logger(logger_orig);
+}
+
+// This test checks the correctness of the data types used by the portable
+// DDL query create table
+TEST_CASE_METHOD(common_tests, "DDL data types", "[core][ddl][data_types]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_5(sql));
+
+    SECTION("dt_double")
+    {
+        double write(3.14159265);
+        sql << "insert into soci_test(double_type) values(:double_type)", use(write);
+        double read(0.0);
+        sql << "select double_type from soci_test", into(read);
+        ASSERT_EQUAL(read, write);
+    }
+
+    SECTION("dt_integer")
+    {
+        int write(-10);
+        sql << "insert into soci_test(integer_type) values(:integer_type)", use(write);
+        int read(0);
+        sql << "select integer_type from soci_test", into(read);
+        CHECK(read == write);
+    }
+
+    SECTION("dt_long_long")
+    {
+        long long write(-20);
+        sql << "insert into soci_test(long_long_type) values(:long_long_type)", use(write);
+        long long read(0);
+        sql << "select long_long_type from soci_test", into(read);
+        CHECK(read == write);
+    }
+
+    SECTION("dt_unsigned_long_long")
+    {
+        unsigned long long write(30);
+        sql << "insert into soci_test(unsigned_long_long_type) "
+               "values(:unsigned_long_long_type)", use(write);
+        unsigned long long read(0);
+        sql << "select unsigned_long_long_type from soci_test", into(read);
+        CHECK(read == write);
+    }
+
+    SECTION("dt_string")
+    {
+        std::string write("Helo SOCI!");
+        sql << "insert into soci_test(string_type) values(:string_type)", use(write);
+        std::string read;
+        sql << "select string_type from soci_test", into(read);
+        CHECK(read == write);
+    }
+
+    SECTION("dt_date")
+    {
+        std::tm write;
+        write.tm_year = 1990;
+        write.tm_mon = 7;
+        write.tm_mday = 11;
+        write.tm_hour = 12;
+        write.tm_min = 13;
+        write.tm_sec = 14;
+        sql << "insert into soci_test(date_type) values(:date_type)", use(write);
+        std::tm read;
+        sql << "select date_type from soci_test", into(read);
+        CHECK(write.tm_year == read.tm_year);
+        CHECK(write.tm_mon == read.tm_mon);
+        CHECK(write.tm_mday == read.tm_mday);
+        CHECK(write.tm_hour == read.tm_hour);
+        CHECK(write.tm_min == read.tm_min);
+        CHECK(write.tm_sec == read.tm_sec);
+    }
+
+    SECTION("ORM")
+    {
+        std::tm t;
+        t.tm_year = 1990;
+        t.tm_mon = 7;
+        t.tm_mday = 11;
+        t.tm_hour = 12;
+        t.tm_min = 13;
+        t.tm_sec = 14;
+
+        SociDataTypes write = {3.14159265, -10, -20, 30, "Helo SOCI!", t};
+        sql << "insert into soci_test(double_type, integer_type, long_long_type, "
+               "unsigned_long_long_type, string_type, date_type) values(:double_type, "
+               ":integer_type, :long_long_type, :unsigned_long_long_type, :string_type, "
+               ":date_type)", use(write);
+
+        SociDataTypes read;
+        sql << "select double_type, integer_type, long_long_type, unsigned_long_long_type, "
+               "string_type, date_type from soci_test", into(read);
+
+        ASSERT_EQUAL(write.double_type, read.double_type);
+        CHECK(write.integer_type == read.integer_type);
+        CHECK(write.long_long_type == read.long_long_type);
+        CHECK(write.unsigned_long_long_type == read.unsigned_long_long_type);
+        CHECK(write.string_type == read.string_type);
+        CHECK(write.date_type.tm_year == read.date_type.tm_year);
+        CHECK(write.date_type.tm_mon == read.date_type.tm_mon);
+        CHECK(write.date_type.tm_mday == read.date_type.tm_mday);
+        CHECK(write.date_type.tm_hour == read.date_type.tm_hour);
+        CHECK(write.date_type.tm_min == read.date_type.tm_min);
+        CHECK(write.date_type.tm_sec == read.date_type.tm_sec);
+    }
 }
 
 } // namespace test_cases

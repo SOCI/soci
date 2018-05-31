@@ -315,18 +315,22 @@ struct sqlite3_session_backend : details::session_backend
     {
         switch (dt)
         {
-            case dt_xml:
             case dt_string:
                 return "text";
             case dt_double:
                 return "real";
             case dt_date:
+                return "datetime";
             case dt_integer:
-            case dt_long_long:
-            case dt_unsigned_long_long:
                 return "integer";
+            case dt_long_long:
+                return "bigint";
+            case dt_unsigned_long_long:
+                return "unsigned big int";
             case dt_blob:
                 return "blob";
+            case dt_xml:
+                throw soci_error("XML data type is not supported");
             default:
                 throw soci_error("this data_type is not supported in create_column");
         }

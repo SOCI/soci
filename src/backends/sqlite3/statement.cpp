@@ -491,10 +491,10 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
 
     std::string dt = declType;
 
-    // remove extra characters for example "(20)" in "varchar(20)"
-    std::string::iterator siter = std::find_if(dt.begin(), dt.end(), std::not1(std::ptr_fun(isalnum)));
-    if (siter != dt.end())
-        dt.resize(siter - dt.begin());
+    // remove possible size between parenthesis. For example "(20)" in "varing character(20)"
+    size_t size_new = dt.find_first_of("(");
+    if (size_new != std::string::npos)
+        dt.resize(size_new);
 
     // do all comparisons in lower case
     std::transform(dt.begin(), dt.end(), dt.begin(), tolower);
