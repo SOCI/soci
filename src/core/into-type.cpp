@@ -14,7 +14,9 @@ using namespace soci::details;
 
 standard_into_type::~standard_into_type()
 {
+    clean_up();
     delete backEnd_;
+    backEnd_ = NULL;
 }
 
 void standard_into_type::define(statement_impl & st, int & position)
@@ -58,7 +60,9 @@ void standard_into_type::clean_up()
 
 vector_into_type::~vector_into_type()
 {
+    clean_up();
     delete backEnd_;
+    backEnd_ = NULL;
 }
 
 void vector_into_type::define(statement_impl & st, int & position)
