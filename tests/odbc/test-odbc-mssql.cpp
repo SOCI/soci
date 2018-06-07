@@ -22,11 +22,11 @@ backend_factory const &backEnd = *soci::factory_odbc();
 // MS SQL-specific tests
 TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
     struct long_text_table_creator : public table_creator_base
     {
-        explicit long_text_table_creator(session& sql)
+        explicit long_text_table_creator(soci::session& sql)
             : table_creator_base(sql)
         {
             // Notice that 4000 is the maximal length of an nvarchar() column,
