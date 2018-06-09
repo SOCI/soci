@@ -3725,13 +3725,13 @@ static std::string lower_than_g(std::string query)
     return query + " WHERE c < 'g'";
 }
 
-struct where_condition : std::unary_function<std::string, std::string>
+struct where_condition
 {
     where_condition(std::string const& where)
         : where_(where)
     {}
 
-    result_type operator()(argument_type query) const
+    std::string operator()(std::string const& query) const
     {
         return query + " WHERE " + where_;
     }
