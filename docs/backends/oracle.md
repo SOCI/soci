@@ -15,6 +15,7 @@ Older versions of Oracle may work as well, but they have not been tested by the 
 |--- |--- |--- |
 |10.2.0 (XE)|RedHat 5|g++ 4.3|
 |11.2.0 (XE)|Ubuntu 12.04|g++ 4.6.3|
+|12.2.0.1|macOS High Sierra 10.13.5|AppleClang 9.1.0.9020039|
 
 ### Required Client Libraries
 
