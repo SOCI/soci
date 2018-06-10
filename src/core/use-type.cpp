@@ -18,7 +18,9 @@ using namespace soci::details;
 
 standard_use_type::~standard_use_type()
 {
+    clean_up();
     delete backEnd_;
+    backEnd_ = NULL;
 }
 
 void standard_use_type::bind(statement_impl & st, int & position)
@@ -153,7 +155,9 @@ void standard_use_type::clean_up()
 
 vector_use_type::~vector_use_type()
 {
+    clean_up();
     delete backEnd_;
+    backEnd_ = NULL;
 }
 
 void vector_use_type::bind(statement_impl & st, int & position)

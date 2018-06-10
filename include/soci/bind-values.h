@@ -21,15 +21,95 @@ namespace soci
 namespace details
 {
 
-class use_type_vector: public std::vector<use_type_base *>
+class use_type_vector
 {
 public:
-    ~use_type_vector()
+    typedef std::vector<use_type_base*> type;
+    typedef typename type::iterator iterator;
+    typedef typename type::const_iterator const_iterator;
+    typedef typename type::reverse_iterator reverse_iterator;
+    typedef typename type::const_reverse_iterator const_reverse_iterator;
+public:
+    virtual ~use_type_vector()
     {
-        for(iterator iter = begin(), _end = end();
-            iter != _end; iter++)
-            delete *iter;
     }
+
+    // std mapping - begin
+    type::value_type& operator[](const type::size_type pos)
+    { return _data.operator[](pos); }
+
+    const type::value_type& operator[](const type::size_type pos) const
+    { return _data.operator[](pos); }
+
+    type::value_type& at(const type::size_type pos)
+    { return _data.at(pos); }
+
+    const type::value_type& at(const type::size_type pos) const
+    { return _data.at(pos); }
+
+    void reserve(const type::size_type maxCount)
+    { _data.reserve(maxCount); }
+
+    void resize(const type::size_type newSize)
+    { _data.resize(newSize); }
+
+    type& dataVec()
+    { return _data; }
+
+    const type& dataVec() const
+    { return _data; }
+
+    iterator begin()
+    { return _data.begin(); }
+
+    const_iterator begin() const
+    { return _data.begin(); }
+
+    iterator end()
+    { return _data.end(); }
+
+    const_iterator end() const
+    { return _data.end(); }
+
+    reverse_iterator rbegin()
+    { return _data.rbegin(); }
+
+    const_reverse_iterator rbegin() const
+    { return _data.rbegin(); }
+
+    reverse_iterator rend()
+    { return _data.rend(); }
+
+    const_reverse_iterator rend() const
+    { return _data.rend(); }
+
+    const_iterator cbegin() const
+    { return _data.cbegin(); }
+
+    const_iterator cend() const
+    { return _data.cend(); }
+
+    const_reverse_iterator crbegin() const
+    { return _data.crbegin(); }
+
+    const_reverse_iterator crend() const
+    { return _data.crend(); }
+
+    void clear()
+    { return _data.clear(); }
+
+    void swap(use_type_vector& right)
+    { _data.swap(right.dataVec()); }
+
+    type::size_type size() const
+    { return _data.size(); }
+
+    bool empty() const
+    { return _data.empty(); }
+
+    void push_back(type::value_type u)
+    { _data.push_back(u); }
+    // std mapping - end
 
     void exchange(use_type_ptr const& u) { push_back(u.get()); u.release(); }
 
@@ -83,13 +163,13 @@ private:
     template <typename T, typename Indicator>
     void exchange_(use_container<T, Indicator> const &uc, boost::mpl::true_ * /* fusion sequence */)
     {
-        boost::fusion::for_each(uc.t, use_sequence<T, Indicator>(*this, uc.ind));
+        boost::fusion::for_each(uc.t, use_sequence<T, Indicator>(_data, uc.ind));
     }
 
     template <typename T>
     void exchange_(use_container<T, details::no_indicator> const &uc, boost::mpl::true_ * /* fusion sequence */)
     {
-        boost::fusion::for_each(uc.t, use_sequence<T, details::no_indicator>(*this));
+        boost::fusion::for_each(uc.t, use_sequence<T, details::no_indicator>(_data));
     }
 
 #endif // SOCI_HAVE_BOOST
@@ -109,17 +189,100 @@ private:
     template <typename T>
     void exchange_(use_container<const T, details::no_indicator> const &uc, ...)
     { exchange(do_use(uc.t, uc.name, typename details::exchange_traits<T>::type_family())); }
+
+private:
+    type _data;
 };
 
-class into_type_vector: public std::vector<details::into_type_base *>
+class into_type_vector
 {
 public:
-    ~into_type_vector()
+    typedef std::vector<into_type_base*> type;
+    typedef typename type::iterator iterator;
+    typedef typename type::const_iterator const_iterator;
+    typedef typename type::reverse_iterator reverse_iterator;
+    typedef typename type::const_reverse_iterator const_reverse_iterator;
+public:
+    virtual ~into_type_vector()
     {
-        for(iterator iter = begin(), _end = end();
-            iter != _end; iter++)
-            delete *iter;
     }
+
+    // std mapping - begin
+    type::value_type& operator[](const type::size_type pos)
+    { return _data.operator[](pos); }
+
+    const type::value_type& operator[](const type::size_type pos) const
+    { return _data.operator[](pos); }
+
+    type::value_type& at(const type::size_type pos)
+    { return _data.at(pos); }
+
+    const type::value_type& at(const type::size_type pos) const
+    { return _data.at(pos); }
+
+    void reserve(const type::size_type maxCount)
+    { _data.reserve(maxCount); }
+
+    void resize(const type::size_type newSize)
+    { _data.resize(newSize); }
+
+    type& dataVec()
+    { return _data; }
+
+    const type& dataVec() const
+    { return _data; }
+
+    iterator begin()
+    { return _data.begin(); }
+
+    const_iterator begin() const
+    { return _data.begin(); }
+
+    iterator end()
+    { return _data.end(); }
+
+    const_iterator end() const
+    { return _data.end(); }
+
+    reverse_iterator rbegin()
+    { return _data.rbegin(); }
+
+    const_reverse_iterator rbegin() const
+    { return _data.rbegin(); }
+
+    reverse_iterator rend()
+    { return _data.rend(); }
+
+    const_reverse_iterator rend() const
+    { return _data.rend(); }
+
+    const_iterator cbegin() const
+    { return _data.cbegin(); }
+
+    const_iterator cend() const
+    { return _data.cend(); }
+
+    const_reverse_iterator crbegin() const
+    { return _data.crbegin(); }
+
+    const_reverse_iterator crend() const
+    { return _data.crend(); }
+
+    void clear()
+    { return _data.clear(); }
+
+    void swap(into_type_vector& right)
+    { _data.swap(right.dataVec()); }
+
+    type::size_type size() const
+    { return _data.size(); }
+
+    bool empty() const
+    { return _data.empty(); }
+
+    void push_back(type::value_type u)
+    { _data.push_back(u); }
+    // std mapping - end
 
     void exchange(into_type_ptr const& i) { push_back(i.get()); i.release(); }
 
@@ -173,13 +336,13 @@ private:
     template <typename T, typename Indicator>
     void exchange_(into_container<T, Indicator> const &ic, boost::mpl::true_ * /* fusion sequence */)
     {
-        boost::fusion::for_each(ic.t, into_sequence<T, Indicator>(*this, ic.ind));
+        boost::fusion::for_each(ic.t, into_sequence<T, Indicator>(_data, ic.ind));
     }
 
     template <typename T>
     void exchange_(into_container<T, details::no_indicator> const &ic, boost::mpl::true_ * /* fusion sequence */)
     {
-        boost::fusion::for_each(ic.t, into_sequence<T, details::no_indicator>(*this));
+        boost::fusion::for_each(ic.t, into_sequence<T, details::no_indicator>(_data));
     }
 #endif // SOCI_HAVE_BOOST
 
@@ -190,6 +353,9 @@ private:
     template <typename T>
     void exchange_(into_container<T, details::no_indicator> const &ic, ...)
     { exchange(do_into(ic.t, typename details::exchange_traits<T>::type_family())); }
+
+private:
+    type _data;
 };
 
 } // namespace details
