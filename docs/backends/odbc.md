@@ -19,6 +19,7 @@ The SOCI ODBC backend is supported for use with ODBC 3.
 |3|Windows XP|Visual Studio 2005 (express)|
 |3|Windows XP|Visual C++ 8.0 Professional|
 |3|Windows XP|g++ 3.3.4 (Cygwin)|
+|3|macOS High Sierra 10.13.5|AppleClang 9.1.0.9020039|
 
 ### Required Client Libraries
 
