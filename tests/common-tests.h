@@ -4125,7 +4125,7 @@ void check_for_exception_on_truncation(session& sql)
 }
 
 // And another helper for the test below.
-void check_for_no_truncation(session& sql)
+void check_for_no_truncation(session& sql, bool with_padding)
 {
     const std::string str20 = "exactly of length 20";
 
@@ -4137,7 +4137,13 @@ void check_for_no_truncation(session& sql)
 
     std::string s;
     sql << "select name from soci_test", into(s);
-    CHECK( s == str20 );
+
+    // Firebird can pad CHAR(N) columns when using UTF-8 encoding.
+    // the result will be padded to 80 bytes (UTF-8 max for 20 chars)
+    if (with_padding)
+      CHECK_EQUAL_PADDED(s, str20)
+    else
+      CHECK( s == str20 );
 }
 
 } // anonymous namespace
@@ -4167,7 +4173,8 @@ TEST_CASE_METHOD(common_tests, "Truncation error", "[core][insert][truncate][exc
 
         check_for_exception_on_truncation(sql);
 
-        check_for_no_truncation(sql);
+        // Firebird can pad CHAR(N) columns when using UTF-8 encoding.
+        check_for_no_truncation(sql, sql.get_backend_name() == "firebird");
     }
 
     SECTION("Error given for varchar column")
@@ -4177,7 +4184,7 @@ TEST_CASE_METHOD(common_tests, "Truncation error", "[core][insert][truncate][exc
 
         check_for_exception_on_truncation(sql);
 
-        check_for_no_truncation(sql);
+        check_for_no_truncation(sql, false);
     }
 }
 
