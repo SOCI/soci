@@ -1985,8 +1985,9 @@ TEST_CASE_METHOD(common_tests, "Use with indicators", "[core][use][indicator]")
 
     int id = 1;
     int val = 10;
+    std::tm tm_gen = generate_tm();
     char const* insert = "insert into soci_test(id, val, tm) values(:id, :val, :tm)";
-    sql << insert, use(id, ind1), use(val, ind2), use(generate_tm(), ind3);
+    sql << insert, use(id, ind1), use(val, ind2), use(tm_gen, ind3);
 
     id = 2;
     val = 11;
