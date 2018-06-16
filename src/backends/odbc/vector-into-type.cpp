@@ -351,6 +351,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
 void odbc_vector_into_type_backend::resize(std::size_t sz)
 {
     indHolderVec_.resize(sz);
+    indHolders_ = &indHolderVec_[0];
     switch (type_)
     {
     // simple cases
