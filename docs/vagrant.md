@@ -19,7 +19,7 @@ virtual environments for **hassle-free** SOCI development.
   * hostname: `vmdb2.local`
   * IBM DB2 Express-C 9.7 installed from [archive.canonical.com](http://archive.canonical.com) packages.
 * `oracle.vm`:
-    * *TODO*: provision with Oracle XE
+  * *TODO*: provision with Oracle XE
 * SOCI local git repository (aka `$SOCI_HOME`) is automatically shared on host
   and all guest machines.
 
