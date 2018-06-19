@@ -84,6 +84,12 @@ protected:
         max_bigint_length = 21
     };
 
+    // IBM DB2 driver is not compliant to ODBC spec for indicators in 64bit
+    // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
+    inline bool requires_not_spec_compliant_indicators() const;
+    inline SQLLEN get_spec_compliant_sqllen_from_value(const SQLLEN val) const;
+
+
     odbc_statement_backend &statement_;
 private:
     SOCI_NOT_COPYABLE(odbc_standard_type_backend_base)
@@ -137,6 +143,9 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
     // (as part of the define_by_pos)
     void prepare_indicators(std::size_t size);
 
+    // IBM DB2 driver is not compliant to ODBC spec for indicators in 64bit
+    // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
+    inline SQLLEN get_spec_compliant_sqllen_from_vector_at(std::size_t idx) const;
 
     SQLLEN *indHolders_;
     std::vector<SQLLEN> indHolderVec_;
@@ -215,6 +224,9 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend,
 
     void clean_up() SOCI_OVERRIDE;
 
+    // IBM DB2 driver is not compliant to ODBC spec for indicators in 64bit
+    // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
+    inline void set_spec_compliant_sqllen_into_vector_at(const std::size_t idx, const SQLLEN val);
 
     SQLLEN *indHolders_;
     std::vector<SQLLEN> indHolderVec_;
@@ -326,6 +338,7 @@ struct odbc_session_backend : details::session_backend
     enum database_product
     {
       prod_uninitialized, // Never returned by get_database_product().
+      prod_db2,
       prod_firebird,
       prod_mssql,
       prod_mysql,
@@ -451,6 +464,50 @@ inline bool odbc_standard_type_backend_base::use_string_for_bigint() const
     // them to SQL_NUMERIC.
     return statement_.session_.get_database_product()
             == odbc_session_backend::prod_oracle;
+}
+
+inline bool odbc_standard_type_backend_base::requires_not_spec_compliant_indicators() const
+{
+    // IBM DB2 did not implement the ODBC specification for indicator sizes in 64bit.
+    // They still use SQLLEN as 32bit even if the driver is compiled 64bit
+    // This breaks the backend in terms of using indicators
+    // see: https://bugs.php.net/bug.php?id=54007
+#if defined(__LP64__) || defined(_WIN64) || (defined(__x86_64__) && !defined(__ILP32__) ) || defined(_M_X64) || defined(__ia64) || defined (_M_IA64) || defined(__aarch64__) || defined(__powerpc64__)
+    return statement_.session_.get_database_product()
+            == odbc_session_backend::prod_db2;
+#else
+    return false;
+#endif
+}
+
+inline SQLLEN odbc_standard_type_backend_base::get_spec_compliant_sqllen_from_value(const SQLLEN val) const
+{
+    if (requires_not_spec_compliant_indicators())
+    {
+        return *reinterpret_cast<const int*>(&val);
+    }
+    return val;
+}
+
+inline SQLLEN odbc_vector_into_type_backend::get_spec_compliant_sqllen_from_vector_at(std::size_t idx) const
+{
+    if (requires_not_spec_compliant_indicators())
+    {
+        return reinterpret_cast<const int*>(&indHolderVec_[0])[idx];
+    }
+    return indHolderVec_[idx];
+}
+
+inline void odbc_vector_use_type_backend::set_spec_compliant_sqllen_into_vector_at(const std::size_t idx, const SQLLEN val)
+{
+    if (requires_not_spec_compliant_indicators())
+    {
+        reinterpret_cast<int*>(&indHolderVec_[0])[idx] = *reinterpret_cast<const int*>(&val);
+    }
+    else
+    {
+        indHolderVec_[idx] = val;
+    }
 }
 
 struct odbc_backend_factory : backend_factory

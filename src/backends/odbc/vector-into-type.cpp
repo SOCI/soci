@@ -145,7 +145,7 @@ void odbc_vector_into_type_backend::define_by_pos(
             odbcType_ = SQL_C_CHAR;
             std::vector<std::string> *v
                 = static_cast<std::vector<std::string> *>(data);
-            colSize_ = statement_.column_size(position) + 1;
+            colSize_ = get_spec_compliant_sqllen_from_value(statement_.column_size(position)) + 1;
             std::size_t bufSize = colSize_ * v->size();
             buf_ = new char[bufSize];
 
@@ -225,7 +225,8 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             std::size_t const vsize = v.size();
             for (std::size_t i = 0; i != vsize; ++i, pos += colSize_)
             {
-                SQLLEN const len = indHolderVec_[i];
+                SQLLEN const len = get_spec_compliant_sqllen_from_vector_at(i);
+
                 if (len == -1)
                 {
                     // Value is null.
@@ -314,11 +315,12 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             std::size_t const indSize = statement_.get_number_of_rows();
             for (std::size_t i = 0; i != indSize; ++i)
             {
-                if (indHolderVec_[i] > 0)
+                SQLLEN const val = get_spec_compliant_sqllen_from_vector_at(i);
+                if (val > 0)
                 {
                     ind[i] = i_ok;
                 }
-                else if (indHolderVec_[i] == SQL_NULL_DATA)
+                else if (val == SQL_NULL_DATA)
                 {
                     ind[i] = i_null;
                 }
@@ -333,7 +335,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             std::size_t const indSize = statement_.get_number_of_rows();
             for (std::size_t i = 0; i != indSize; ++i)
             {
-                if (indHolderVec_[i] == SQL_NULL_DATA)
+                if (get_spec_compliant_sqllen_from_vector_at(i) == SQL_NULL_DATA)
                 {
                     // fetched null and no indicator - programming error!
                     throw soci_error(
@@ -350,6 +352,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
 
 void odbc_vector_into_type_backend::resize(std::size_t sz)
 {
+    // stays 64bit but gets but casted, see: get_spec_compliant_sqllen_from_vector_at(...)
     indHolderVec_.resize(sz);
     switch (type_)
     {
