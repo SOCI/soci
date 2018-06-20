@@ -484,7 +484,10 @@ inline SQLLEN odbc_standard_type_backend_base::get_spec_compliant_sqllen_from_va
 {
     if (requires_not_spec_compliant_indicators())
     {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
         return *reinterpret_cast<const int*>(&val);
+#pragma GCC diagnostic pop
     }
     return val;
 }
@@ -502,7 +505,10 @@ inline void odbc_vector_use_type_backend::set_spec_compliant_sqllen_into_vector_
 {
     if (requires_not_spec_compliant_indicators())
     {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
         reinterpret_cast<int*>(&indHolderVec_[0])[idx] = *reinterpret_cast<const int*>(&val);
+#pragma GCC diagnostic pop
     }
     else
     {
