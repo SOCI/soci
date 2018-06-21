@@ -166,7 +166,7 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             for (std::size_t i = 0; i != vecSize; ++i)
             {
                 std::size_t sz = v[i].length();
-                set_spec_compliant_sqllen_into_vector_at(i, static_cast<long>(sz));
+                set_sqllen_from_vector_at(i, static_cast<long>(sz));
                 maxSize = sz > maxSize ? sz : maxSize;
             }
 
@@ -390,14 +390,14 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
         {
             if (*ind == i_null)
             {
-                set_spec_compliant_sqllen_into_vector_at(i, SQL_NULL_DATA);
+                set_sqllen_from_vector_at(i, SQL_NULL_DATA);
             }
             else
             {
                 // for strings we have already set the values
                 if (type_ != x_stdstring)
                 {
-                    set_spec_compliant_sqllen_into_vector_at(i, non_null_indicator);
+                    set_sqllen_from_vector_at(i, non_null_indicator);
                 }
             }
         }
@@ -411,7 +411,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
             // for strings we have already set the values
             if (type_ != x_stdstring)
             {
-                set_spec_compliant_sqllen_into_vector_at(i, non_null_indicator);
+                set_sqllen_from_vector_at(i, non_null_indicator);
             }
         }
     }

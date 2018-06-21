@@ -86,8 +86,9 @@ protected:
 
     // IBM DB2 driver is not compliant to ODBC spec for indicators in 64bit
     // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
-    inline bool requires_not_spec_compliant_indicators() const;
-    inline SQLLEN get_spec_compliant_sqllen_from_value(const SQLLEN val) const;
+    inline bool requires_noncompliant_32bit_sqllen() const;
+    inline SQLLEN get_sqllen_from_value(const SQLLEN val) const;
+    inline void set_sqllen_from_value(SQLLEN &target, const SQLLEN val) const;
 
 
     odbc_statement_backend &statement_;
@@ -145,7 +146,7 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
 
     // IBM DB2 driver is not compliant to ODBC spec for indicators in 64bit
     // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
-    inline SQLLEN get_spec_compliant_sqllen_from_vector_at(std::size_t idx) const;
+    inline SQLLEN get_sqllen_from_vector_at(std::size_t idx) const;
 
     SQLLEN *indHolders_;
     std::vector<SQLLEN> indHolderVec_;
@@ -226,7 +227,7 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend,
 
     // IBM DB2 driver is not compliant to ODBC spec for indicators in 64bit
     // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
-    inline void set_spec_compliant_sqllen_into_vector_at(const std::size_t idx, const SQLLEN val);
+    inline void set_sqllen_from_vector_at(const std::size_t idx, const SQLLEN val);
 
     SQLLEN *indHolders_;
     std::vector<SQLLEN> indHolderVec_;
@@ -466,7 +467,7 @@ inline bool odbc_standard_type_backend_base::use_string_for_bigint() const
             == odbc_session_backend::prod_oracle;
 }
 
-inline bool odbc_standard_type_backend_base::requires_not_spec_compliant_indicators() const
+inline bool odbc_standard_type_backend_base::requires_noncompliant_32bit_sqllen() const
 {
     // IBM DB2 did not implement the ODBC specification for indicator sizes in 64bit.
     // They still use SQLLEN as 32bit even if the driver is compiled 64bit
@@ -480,9 +481,9 @@ inline bool odbc_standard_type_backend_base::requires_not_spec_compliant_indicat
 #endif
 }
 
-inline SQLLEN odbc_standard_type_backend_base::get_spec_compliant_sqllen_from_value(const SQLLEN val) const
+inline SQLLEN odbc_standard_type_backend_base::get_sqllen_from_value(const SQLLEN val) const
 {
-    if (requires_not_spec_compliant_indicators())
+    if (requires_noncompliant_32bit_sqllen())
     {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
@@ -492,18 +493,33 @@ inline SQLLEN odbc_standard_type_backend_base::get_spec_compliant_sqllen_from_va
     return val;
 }
 
-inline SQLLEN odbc_vector_into_type_backend::get_spec_compliant_sqllen_from_vector_at(std::size_t idx) const
+inline void odbc_standard_type_backend_base::set_sqllen_from_value(SQLLEN &target, const SQLLEN val) const
 {
-    if (requires_not_spec_compliant_indicators())
+    if (requires_noncompliant_32bit_sqllen())
+    {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+        reinterpret_cast<int*>(&target)[0] =  *reinterpret_cast<const int*>(&val);
+#pragma GCC diagnostic pop
+    }
+    else
+    {
+        target = val;
+    }
+}
+
+inline SQLLEN odbc_vector_into_type_backend::get_sqllen_from_vector_at(std::size_t idx) const
+{
+    if (requires_noncompliant_32bit_sqllen())
     {
         return reinterpret_cast<const int*>(&indHolderVec_[0])[idx];
     }
     return indHolderVec_[idx];
 }
 
-inline void odbc_vector_use_type_backend::set_spec_compliant_sqllen_into_vector_at(const std::size_t idx, const SQLLEN val)
+inline void odbc_vector_use_type_backend::set_sqllen_from_vector_at(const std::size_t idx, const SQLLEN val)
 {
-    if (requires_not_spec_compliant_indicators())
+    if (requires_noncompliant_32bit_sqllen())
     {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
