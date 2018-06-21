@@ -679,15 +679,43 @@ void resize_in_map(std::map<std::string, std::vector<T> > & m, int new_size)
     }
 }
 
+#define isInRange(what, min, max) (what >= min && what <= max)
+static inline bool isTmValid(std::tm const & d)
+{
+    if (
+        !isInRange(d.tm_year, -2899, 8099) // To ensure 4 digits (positive) [max 9999] or minus + 3 digits [min -999]
+     || !isInRange(d.tm_mon, 0, 11)
+     || !isInRange(d.tm_mday, 1, 31)
+     || !isInRange(d.tm_hour, 0, 23)
+     || !isInRange(d.tm_min, 0, 59)
+       )
+        return false;
+
+    #ifdef SOCI_HAVE_CXX_C11
+    if (!isInRange(d.tm_sec, 0, 60))
+    #else
+    if (!isInRange(d.tm_sec, 0, 61))
+    #endif
+        return false;
+    
+    return true;
+}
+#undef isInRange
+    
 // helper for formatting date values
 char const * format_date(statement_wrapper & wrapper, std::tm const & d)
 {
-    std::sprintf(wrapper.date_formatted, "%d %d %d %d %d %d",
-        d.tm_year + 1900, d.tm_mon + 1, d.tm_mday,
-        d.tm_hour, d.tm_min, d.tm_sec);
-
-    return wrapper.date_formatted;
+    if (isTmValid(d) {
+        std::sprintf(wrapper.date_formatted, "%d %d %d %d %d %d",
+            d.tm_year + 1900, d.tm_mon + 1, d.tm_mday,
+            d.tm_hour, d.tm_min, d.tm_sec);
+        return wrapper.date_formatted;
+    }
+    else {
+        return NULL;
+    }
 }
+
 
 bool string_to_date(char const * val, std::tm & /* out */ dt,
     statement_wrapper & wrapper)
@@ -1793,11 +1821,15 @@ SOCI_DECL char const * soci_get_use_date(statement_handle st, char const * name)
 
     // format is: "YYYY MM DD hh mm ss"
     std::tm const & d = wrapper->use_dates[name];
-    std::sprintf(wrapper->date_formatted, "%d %d %d %d %d %d",
-        d.tm_year + 1900, d.tm_mon + 1, d.tm_mday,
-        d.tm_hour, d.tm_min, d.tm_sec);
-
-    return wrapper->date_formatted;
+    if (isTmValid(d) {
+        std::sprintf(wrapper->date_formatted, "%d %d %d %d %d %d",
+            d.tm_year + 1900, d.tm_mon + 1, d.tm_mday,
+            d.tm_hour, d.tm_min, d.tm_sec);
+        return wrapper->date_formatted;
+    }
+    else {
+        return NULL;
+    }
 }
 
 SOCI_DECL blob_handle soci_get_use_blob(statement_handle st, char const * name)
