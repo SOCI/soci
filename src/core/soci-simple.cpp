@@ -705,7 +705,7 @@ static inline bool isTmValid(std::tm const & d)
 // helper for formatting date values
 char const * format_date(statement_wrapper & wrapper, std::tm const & d)
 {
-    if (isTmValid(d) {
+    if (isTmValid(d)) {
         std::sprintf(wrapper.date_formatted, "%d %d %d %d %d %d",
             d.tm_year + 1900, d.tm_mon + 1, d.tm_mday,
             d.tm_hour, d.tm_min, d.tm_sec);
@@ -745,7 +745,7 @@ bool string_to_date(char const * val, std::tm & /* out */ dt,
     dt.tm_min = minute;
     dt.tm_sec = second;
 
-return true;
+    return true;
 }
 
 } // namespace unnamed
@@ -1821,7 +1821,7 @@ SOCI_DECL char const * soci_get_use_date(statement_handle st, char const * name)
 
     // format is: "YYYY MM DD hh mm ss"
     std::tm const & d = wrapper->use_dates[name];
-    if (isTmValid(d) {
+    if (isTmValid(d)) {
         std::sprintf(wrapper->date_formatted, "%d %d %d %d %d %d",
             d.tm_year + 1900, d.tm_mon + 1, d.tm_mday,
             d.tm_hour, d.tm_min, d.tm_sec);
