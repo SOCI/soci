@@ -17,6 +17,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <limits>
 
 using namespace soci;
 
@@ -339,8 +340,8 @@ struct statement_wrapper
     std::map<std::string, std::vector<double> > use_doubles_v;
     std::map<std::string, std::vector<std::tm> > use_dates_v;
 
-    // format is: "YYYY MM DD hh mm ss"
-    char date_formatted[20];
+    // format is: "YYYY MM DD hh mm ss", year can span the entire range of decltype(std::tm::tm_year) (i.e. int)
+    char date_formatted[28];
 
     bool is_ok;
     std::string error_message;
@@ -682,8 +683,9 @@ void resize_in_map(std::map<std::string, std::vector<T> > & m, int new_size)
 #define isInRange(what, min, max) (what >= min && what <= max)
 static inline bool isTmValid(std::tm const & d)
 {
+    const int max_year = std::numeric_limits<int>::max() - 1900; // int == decltype(std::tm::dt_year)
     if (
-        !isInRange(d.tm_year, -2899, 8099) // To ensure 4 digits (positive) [max 9999] or minus + 3 digits [min -999]
+        (d.tm_year > max_year) // to avoid undefined behaviour
      || !isInRange(d.tm_mon, 0, 11)
      || !isInRange(d.tm_mday, 1, 31)
      || !isInRange(d.tm_hour, 0, 23)
