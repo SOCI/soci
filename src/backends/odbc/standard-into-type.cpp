@@ -128,7 +128,7 @@ void odbc_standard_into_type_backend::post_fetch(
     if (gotData)
     {
         // first, deal with indicators
-        if (SQL_NULL_DATA == valueLen_)
+        if (SQL_NULL_DATA == get_sqllen_from_value(valueLen_))
         {
             if (ind == NULL)
             {

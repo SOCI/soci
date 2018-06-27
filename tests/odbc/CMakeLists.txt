@@ -49,10 +49,14 @@ soci_backend_test(
 
 # TODO: DB2 backend is tested by Travis CI on dedicated VM, separate from ODBC,
 # in order to test DB2 with ODBC, it would be best to install DB2 driver only.
-if (NOT $ENV{TRAVIS})
-soci_backend_test(
-  NAME db2
-  BACKEND ODBC
-  SOURCE test-odbc-db2.cpp
-  CONNSTR "test-db2.dsn")
+# if (NOT $ENV{TRAVIS})
+option(WITH_ODBC_TEST_DB2 "Build ODBC DB2 test" OFF)
+if (WITH_ODBC_TEST_DB2)
+  soci_backend_test(
+    NAME db2
+    BACKEND ODBC
+    SOURCE test-odbc-db2.cpp
+    CONNSTR "test-db2.dsn")
+else()
+  message(STATUS "ODBC DB2 test disabled.")
 endif()
