@@ -485,10 +485,19 @@ inline SQLLEN odbc_standard_type_backend_base::get_sqllen_from_value(const SQLLE
 {
     if (requires_noncompliant_32bit_sqllen())
     {
+#if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#elif defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wstrict-aliasing"
+#endif
         return *reinterpret_cast<const int*>(&val);
+#if defined(__GNUC__)
 #pragma GCC diagnostic pop
+#elif defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     }
     return val;
 }
@@ -497,10 +506,19 @@ inline void odbc_standard_type_backend_base::set_sqllen_from_value(SQLLEN &targe
 {
     if (requires_noncompliant_32bit_sqllen())
     {
+#if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#elif defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wstrict-aliasing"
+#endif
         reinterpret_cast<int*>(&target)[0] =  *reinterpret_cast<const int*>(&val);
+#if defined(__GNUC__)
 #pragma GCC diagnostic pop
+#elif defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     }
     else
     {
@@ -521,10 +539,19 @@ inline void odbc_vector_use_type_backend::set_sqllen_from_vector_at(const std::s
 {
     if (requires_noncompliant_32bit_sqllen())
     {
+#if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#elif defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wstrict-aliasing"
+#endif
         reinterpret_cast<int*>(&indHolderVec_[0])[idx] = *reinterpret_cast<const int*>(&val);
+#if defined(__GNUC__)
 #pragma GCC diagnostic pop
+#elif defined(__clang__)
+#pragma clang diagnostic pop
+#endif
     }
     else
     {
