@@ -5,12 +5,12 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef SOCICONFIG_H_INCLUDED
-#define SOCICONFIG_H_INCLUDED
+#ifndef SOCI_CONFIG_H_INCLUDED
+#define SOCI_CONFIG_H_INCLUDED
 
 //
 // SOCI has been build with support for:
 //
 @CONFIGURED_VARIABLES@
 
-#endif // SOCICONFIG_H_INCLUDED
+#endif // SOCI_CONFIG_H_INCLUDED
