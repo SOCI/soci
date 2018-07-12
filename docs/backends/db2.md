@@ -18,6 +18,7 @@ See [Tested Platforms](#tested-platforms).
 |9.7|Linux|GCC|
 |10.1|Linux|GCC|
 |10.1|Windows 8|Visual Studio 2012|
+|10.5.0.5|macOS High Sierra 10.13.5|AppleClang 9.1.0.9020039|
 
 ### Required Client Libraries
 

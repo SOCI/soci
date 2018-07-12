@@ -206,6 +206,10 @@ bool odbc_session_backend::get_next_sequence_value(
 
     switch ( get_database_product() )
     {
+        case prod_db2:
+            query = "select next value for " + sequence + " from SYSIBM.SYSDUMMY1";
+            break;
+
         case prod_firebird:
             query = "select next value for " + sequence + " from rdb$database";
             break;
@@ -247,6 +251,10 @@ bool odbc_session_backend::get_last_insert_id(
 
     switch ( get_database_product() )
     {
+        case prod_db2:
+            query = "SELECT IDENTITY_VAL_LOCAL() AS LASTID FROM SYSIBM.SYSDUMMY1";
+            break;
+          
         case prod_mssql:
             query = "select ident_current('" + table + "')";
             break;
@@ -287,6 +295,10 @@ std::string odbc_session_backend::get_dummy_from_table() const
 
     switch ( get_database_product() )
     {
+        case prod_db2:
+            table = "SYSIBM.SYSDUMMY1";
+            break;
+
         case prod_firebird:
             table = "rdb$database";
             break;
@@ -387,6 +399,8 @@ odbc_session_backend::get_database_product() const
         product_ = prod_postgresql;
     else if (strcmp(product_name, "SQLite") == 0)
         product_ = prod_sqlite;
+    else if (strstr(product_name, "DB2") == product_name) // "DB2/LINUXX8664"
+        product_ = prod_db2;
     else
         product_ = prod_unknown;
 

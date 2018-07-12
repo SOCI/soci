@@ -52,11 +52,11 @@ sql << "DELETE FROM item";
 * defined as function object:
 
 ```cpp
-struct order : std::unary_function<std::string, std::string>
+struct order
 {
-    order(std::string const&amp; by) : by_(by) {}
+    order(std::string const& by) : by_(by) {}
 
-    result_type operator()(argument_type query) const
+    std::string operator()(std::string const& query) const
     {
         return query + " ORDER BY " + by_;
     }

@@ -767,6 +767,8 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         {
             CHECK(e.get_error_message() ==
                 "Null value fetched and no indicator defined.");
+            CHECK_THAT(e.what(),
+                Catch::Contains("for the parameter number 1"));
         }
 
         sql << "select id from soci_test where id = 1000", into(i, ind);
@@ -2044,8 +2046,9 @@ TEST_CASE_METHOD(common_tests, "Use with indicators", "[core][use][indicator]")
 
     int id = 1;
     int val = 10;
+    std::tm tm_gen = generate_tm();
     char const* insert = "insert into soci_test(id, val, tm) values(:id, :val, :tm)";
-    sql << insert, use(id, ind1), use(val, ind2), use(generate_tm(), ind3);
+    sql << insert, use(id, ind1), use(val, ind2), use(tm_gen, ind3);
 
     id = 2;
     val = 11;
@@ -3784,13 +3787,13 @@ static std::string lower_than_g(std::string query)
     return query + " WHERE c < 'g'";
 }
 
-struct where_condition : std::unary_function<std::string, std::string>
+struct where_condition
 {
     where_condition(std::string const& where)
         : where_(where)
     {}
 
-    result_type operator()(argument_type query) const
+    std::string operator()(std::string const& query) const
     {
         return query + " WHERE " + where_;
     }
@@ -4184,7 +4187,7 @@ void check_for_exception_on_truncation(session& sql)
 }
 
 // And another helper for the test below.
-void check_for_no_truncation(session& sql)
+void check_for_no_truncation(session& sql, bool with_padding)
 {
     const std::string str20 = "exactly of length 20";
 
@@ -4196,7 +4199,13 @@ void check_for_no_truncation(session& sql)
 
     std::string s;
     sql << "select name from soci_test", into(s);
-    CHECK( s == str20 );
+
+    // Firebird can pad CHAR(N) columns when using UTF-8 encoding.
+    // the result will be padded to 80 bytes (UTF-8 max for 20 chars)
+    if (with_padding)
+      CHECK_EQUAL_PADDED(s, str20)
+    else
+      CHECK( s == str20 );
 }
 
 } // anonymous namespace
@@ -4226,7 +4235,8 @@ TEST_CASE_METHOD(common_tests, "Truncation error", "[core][insert][truncate][exc
 
         check_for_exception_on_truncation(sql);
 
-        check_for_no_truncation(sql);
+        // Firebird can pad CHAR(N) columns when using UTF-8 encoding.
+        check_for_no_truncation(sql, sql.get_backend_name() == "firebird");
     }
 
     SECTION("Error given for varchar column")
@@ -4236,7 +4246,7 @@ TEST_CASE_METHOD(common_tests, "Truncation error", "[core][insert][truncate][exc
 
         check_for_exception_on_truncation(sql);
 
-        check_for_no_truncation(sql);
+        check_for_no_truncation(sql, false);
     }
 }
 

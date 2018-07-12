@@ -19,6 +19,7 @@ value when building.
 |1.5.2.4731|Windows XP|Visual C++ 8.0|
 |1.5.3.4870|Windows XP|Visual C++ 8.0 Professional|
 |2.5.2.26540|Debian GNU/Linux 7|g++ 4.7.2|
+|2.5.8.27089|macOS High Sierra 10.13.5|AppleClang 9.1.0.9020039|
 
 ### Required Client Libraries
 

@@ -16,6 +16,7 @@ Some of the features (transactions, stored functions) are not available when MyS
 |8.0.1|Windows 10|Visual Studio 2017 (15.3.3)|
 |5.5.28|OS X 10.8.2|Apple LLVM version 4.2 (clang-425.0.24)|
 |5.0.96|Ubuntu 8.04.4 LTS (Hardy Heron)|g++ (GCC) 4.2.4 (Ubuntu 4.2.4-1ubuntu4)|
+|5.7.22|macOS High Sierra 10.13.5|AppleClang 9.1.0.9020039|
 
 ### Required Client Libraries
 

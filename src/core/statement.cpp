@@ -592,7 +592,21 @@ void statement_impl::post_fetch(bool gotData, bool calledFromFetch)
     std::size_t const isize = intos_.size();
     for (std::size_t i = 0; i != isize; ++i)
     {
-        intos_[i]->post_fetch(gotData, calledFromFetch);
+        try
+        {
+            intos_[i]->post_fetch(gotData, calledFromFetch);
+        }
+        catch (soci_error& e)
+        {
+            // Provide the parameter number in the error message as the
+            // exceptions thrown by the backend only say what went wrong, but
+            // not where.
+            std::ostringstream oss;
+            oss << "for the parameter number " << i + 1;
+            e.add_context(oss.str());
+
+            throw;
+        }
     }
 }
 
