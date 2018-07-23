@@ -353,7 +353,7 @@ public:
                 std::ostringstream oss;
                 if (precision == 0)
                 {
-                    oss << "numeric";
+                    oss << "double precision";
                 }
                 else
                 {
@@ -372,8 +372,10 @@ public:
             res += "bigint";
             break;
 
+        // PostgeSQL haven't got native unsigned types. Treat NUMERIC type with
+        // a precision of 64 bits and a scale of 0 bits as dt_unsigned_long_long
         case dt_unsigned_long_long:
-            res += "bigint";
+            res += "numeric(64,0)";
             break;
 
         case dt_blob:

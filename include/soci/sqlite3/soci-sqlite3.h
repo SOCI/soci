@@ -324,8 +324,9 @@ struct sqlite3_session_backend : details::session_backend
             case dt_integer:
                 return "integer";
             case dt_long_long:
-            case dt_unsigned_long_long:
                 return "bigint";
+            case dt_unsigned_long_long:
+                return "unsigned big int";
             case dt_blob:
                 return "blob";
             case dt_xml:

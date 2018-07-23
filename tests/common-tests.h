@@ -4603,7 +4603,7 @@ TEST_CASE_METHOD(common_tests, "DDL data types", "[core][ddl][data_types]")
         t.tm_min = 13;
         t.tm_sec = 14;
 
-        SociDataTypes write = {3.14159265, -10, -20, 30, "Helo SOCI!", t};
+        SociDataTypes write = {3.14159265, -2147483648, -9223372036854775807LL, 18446744073709551615ULL, "Helo SOCI!", t};
         sql << "insert into soci_test(double_type, integer_type, long_long_type, "
                "unsigned_long_long_type, string_type, date_type) values(:double_type, "
                ":integer_type, :long_long_type, :unsigned_long_long_type, :string_type, "

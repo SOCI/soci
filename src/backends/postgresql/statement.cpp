@@ -746,9 +746,23 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
 
     case 700:  // float4
     case 701:  // float8
-    case 1700: // numeric
         type = dt_double;
         break;
+
+    case 1700: // numeric
+    {
+        int mod = PQfmod(result_, pos);
+        int pgprec = (mod >> 16);
+        int pgscal = ((mod - 4)& 0xFFFF);
+
+        // PostgeSQL haven't got native unsigned types. Treat NUMERIC type with
+        // a precision of 64 bits and a scale of 0 bits as dt_unsigned_long_long
+        if (pgprec == 64 && pgscal == 0)
+            type = dt_unsigned_long_long;
+        else
+            type = dt_double;
+        break;
+    }
 
     case 16:   // bool
     case 21:   // int2

@@ -439,7 +439,6 @@ static sqlite3_data_type_map get_data_type_map()
     // dt_long_long
     m["bigint"]             = dt_long_long;
     m["int8"]               = dt_long_long;
-    m["unsigned big int"]   = dt_long_long;
 
     // dt_string
     m["char"]               = dt_string;
@@ -451,6 +450,10 @@ static sqlite3_data_type_map get_data_type_map()
     m["text"]               = dt_string;
     m["varchar"]            = dt_string;
     m["varying character"]  = dt_string;
+
+    // dt_unsigned_long_long
+    m["unsigned big int"]   = dt_unsigned_long_long;
+
 
     return m;
 }

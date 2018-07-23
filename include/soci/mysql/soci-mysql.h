@@ -253,6 +253,72 @@ struct mysql_session_backend : details::session_backend
     mysql_rowid_backend * make_rowid_backend() SOCI_OVERRIDE;
     mysql_blob_backend * make_blob_backend() SOCI_OVERRIDE;
 
+    std::string create_column_type(data_type dt,
+        int precision, int scale) SOCI_OVERRIDE
+    {
+        std::string res;
+        switch (dt)
+        {
+        case dt_string:
+            {
+                std::ostringstream oss;
+
+                if (precision == 0)
+                {
+                    oss << "text";
+                }
+                else
+                {
+                    oss << "varchar(" << precision << ")";
+                }
+
+                res += oss.str();
+            }
+            break;
+
+        case dt_date:
+            res += "datetime";
+            break;
+
+        case dt_double:
+            {
+                std::ostringstream oss;
+                if (precision == 0)
+                {
+                    oss << "double precision";
+                }
+                else
+                {
+                    oss << "numeric(" << precision << ", " << scale << ")";
+                }
+
+                res += oss.str();
+            }
+            break;
+
+        case dt_integer:
+            res += "integer";
+            break;
+
+        case dt_long_long:
+            res += "bigint";
+            break;
+
+        case dt_unsigned_long_long:
+            res += "bigint unsigned";
+            break;
+
+        case dt_blob:
+            res += "longblob";
+            break;
+
+        default:
+            throw soci_error("this data_type is not supported in create_column");
+        }
+
+        return res;
+    }
+
     MYSQL *conn_;
 };
 
