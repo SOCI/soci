@@ -33,10 +33,6 @@
 #include <sqlext.h> // ODBC
 #include <string.h> // strcpy()
 
-#ifndef SQL_SS_LENGTH_UNLIMITED
-#define SQL_SS_LENGTH_UNLIMITED 0
-#endif
-
 namespace soci
 {
 

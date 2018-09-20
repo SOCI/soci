@@ -139,9 +139,9 @@ void odbc_standard_use_type_backend::copy_from_string(
         SQLSMALLINT& cType
     )
 {
-    sqlType = SQL_VARCHAR;
-    cType = SQL_C_CHAR;
     size = s.size();
+    sqlType = size > ODBC_MAX_COL_SIZE ? SQL_LONGVARCHAR : SQL_VARCHAR;
+    cType = SQL_C_CHAR;
     buf_ = new char[size+1];
     memcpy(buf_, s.c_str(), size);
     buf_[size++] = '\0';
@@ -210,11 +210,7 @@ void odbc_standard_use_type_backend::pre_use(indicator const *ind)
     SQLLEN bufLen(0);
 
     void* const sqlData = prepare_for_bind(size, sqlType, cType);
-    if (size > ODBC_MAX_COL_SIZE)
-    {
-        bufLen = size;
-        size   = SQL_SS_LENGTH_UNLIMITED;
-    }
+
     SQLRETURN rc = SQLBindParameter(statement_.hstmt_,
                                     static_cast<SQLUSMALLINT>(position_),
                                     SQL_PARAM_INPUT,
