@@ -47,7 +47,9 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
     }
 
     std::string const str_in = os.str();
-    sql << "insert into soci_test(long_text) values(:str)", use(str_in);
+    CHECK_NOTHROW((
+        sql << "insert into soci_test(long_text) values(:str)", use(str_in)
+    ));
 
     std::string str_out;
     sql << "select long_text from soci_test", into(str_out);
