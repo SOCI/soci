@@ -24,6 +24,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Target compile_options: common C++ compilation flags
 add_library(compile_options INTERFACE)
 target_compile_features(compile_options INTERFACE cxx_std_98)
+# TODO: detect developer's build mode (.git/HEAD exists),
+#       and add developer_compile_options target with compile diagnostics
+#       See Vtk-m project.
 
 ################################################################################
 include(include/soci/CMakeLists.txt)
