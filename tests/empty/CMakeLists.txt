@@ -8,5 +8,5 @@
 add_executable(test_empty test-empty.cpp)
 target_link_libraries(test_empty
   PUBLIC
-  core
+  soci_core
   z)

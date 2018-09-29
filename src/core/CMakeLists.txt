@@ -6,8 +6,9 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 add_library(soci_core "")
+set_target_properties(soci_core PROPERTIES EXPORT_NAME core)
 
-target_link_libraries(soci_core PUBLIC soci_cxx_flags)
+target_link_libraries(soci_core PUBLIC compile_options)
 
 target_include_directories(soci_core
   PRIVATE
