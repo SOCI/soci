@@ -29,10 +29,15 @@ target_compile_features(compile_options INTERFACE cxx_std_98)
 #       See Vtk-m project.
 
 ################################################################################
+# Configure libraries
 add_subdirectory(include/soci)
 add_subdirectory(src/core)
 add_subdirectory(src/backends/empty)
-#add_subdirectory(src/backends/sqlite3)
+add_subdirectory(src/backends/sqlite3)
+
+################################################################################
+# Configure tests
+# TODO
 
 ################################################################################
 # Install and export targets - support 'make install' or equivalent

@@ -5,21 +5,23 @@
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 #
-find_package(SQLite3)
+find_package(SQLite3 REQUIRED)
 
 add_library(soci_sqlite3 "")
+set_target_properties(soci_sqlite3 PROPERTIES EXPORT_NAME sqlite3)
 
 target_link_libraries(soci_sqlite3
   PUBLIC
     soci_compile_options
-
-    )
+  )
 
 target_include_directories(soci_sqlite3
   PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}"
   PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>)
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include/private>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)
 
 target_sources(soci_sqlite3
   PRIVATE
@@ -40,3 +42,10 @@ if(BUILD_SHARED_LIBS)
     set_target_properties(soci_sqlite3 PROPERTIES SOVERSION ${SOCI_VERSION_MAJOR})
   endif()
 endif()
+
+install(TARGETS soci_sqlite3
+  EXPORT soci-targets
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include)

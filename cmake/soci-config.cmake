@@ -8,4 +8,7 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ################################################################################
+include(include(CMakeFindDependencyMacro)
+find_dependency(SQLite3)
+
 include("${CMAKE_CURRENT_LIST_DIR}/soci-targets.cmake")
