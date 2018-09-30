@@ -22,7 +22,11 @@ endforeach()
 
 configure_file(
   "${CMAKE_CURRENT_LIST_DIR}/soci-config.h.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/soci/soci-config.h")
+  "${CMAKE_CURRENT_BINARY_DIR}/soci-config.h")
 
 unset(_all_variables)
 unset(CONFIGURED_VARIABLES)
+
+install(FILES
+  "${CMAKE_BINARY_DIR}/include/soci/soci-config.h"
+  DESTINATION include)

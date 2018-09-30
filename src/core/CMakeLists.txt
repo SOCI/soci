@@ -15,6 +15,7 @@ target_include_directories(soci_core
     "${CMAKE_SOURCE_DIR}/include/private"
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 
 target_compile_definitions(soci_core
@@ -56,3 +57,14 @@ endif()
 configure_file(
   "${CMAKE_CURRENT_LIST_DIR}/soci_backends_config.h.in"
   "${CMAKE_CURRENT_BINARY_DIR}/soci_backends_config.h")
+
+install(TARGETS soci_core
+  EXPORT soci-targets
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include)
+
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/soci_backends_config.h"
+  DESTINATION include)

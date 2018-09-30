@@ -29,10 +29,10 @@ target_compile_features(compile_options INTERFACE cxx_std_98)
 #       See Vtk-m project.
 
 ################################################################################
-include(include/soci/CMakeLists.txt)
-include(src/core/CMakeLists.txt)
-include(src/backends/empty/CMakeLists.txt)
-#include(src/backends/sqlite3/CMakeLists.txt)
+add_subdirectory(include/soci)
+add_subdirectory(src/core)
+add_subdirectory(src/backends/empty)
+#add_subdirectory(src/backends/sqlite3)
 
 ################################################################################
 # Install and export targets - support 'make install' or equivalent
@@ -46,11 +46,7 @@ configure_file(cmake/soci-config.cmake
   "${CMAKE_CURRENT_BINARY_DIR}/soci-config.cmake"
   COPYONLY)
 
-install(
-  TARGETS
-    compile_options
-    soci_core
-    soci_empty
+install(TARGETS compile_options
   EXPORT soci-targets
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
@@ -71,11 +67,6 @@ install(DIRECTORY
   "${CMAKE_CURRENT_LIST_DIR}/include/soci"
   DESTINATION include
   FILES_MATCHING PATTERN "*.h")
-
-install(FILES
-  "${CMAKE_CURRENT_BINARY_DIR}/soci_backends_config.h"
-  "${CMAKE_CURRENT_BINARY_DIR}/soci/soci-config.h"
-  DESTINATION include)
 
 ################################################################################
 # Export targets - support target consumption from the build directory

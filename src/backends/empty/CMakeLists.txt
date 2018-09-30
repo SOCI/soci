@@ -13,7 +13,7 @@ target_link_libraries(soci_empty PUBLIC compile_options)
 target_include_directories(soci_empty
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)
 
 target_sources(soci_empty
   PRIVATE
@@ -33,3 +33,10 @@ if(BUILD_SHARED_LIBS)
     set_target_properties(soci_empty PROPERTIES SOVERSION ${SOCI_VERSION_MAJOR})
   endif()
 endif()
+
+install(TARGETS soci_empty
+  EXPORT soci-targets
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include)
