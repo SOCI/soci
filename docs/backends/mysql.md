@@ -50,6 +50,9 @@ The set of parameters used in the connection string for MySQL is:
 * `sslcert`
 * `local_infile` - should be `0` or `1`, `1` means `MYSQL_OPT_LOCAL_INFILE` will be set.
 * `charset`
+* `connect_timeout` - should be positive integer value that means seconds corresponding to `MYSQL_OPT_CONNECT_TIMEOUT`.
+* `read_timeout` - should be positive integer value that means seconds corresponding to `MYSQL_OPT_READ_TIMEOUT`.
+* `write_timeout` - should be positive integer value that means seconds corresponding to `MYSQL_OPT_WRITE_TIMEOUT`.
 
 Once you have created a `session` object as shown above, you can use it to access the database, for example:
 
