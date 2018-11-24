@@ -339,8 +339,10 @@ struct statement_wrapper
     std::map<std::string, std::vector<double> > use_doubles_v;
     std::map<std::string, std::vector<std::tm> > use_dates_v;
 
-    // format is: "YYYY MM DD hh mm ss"
-    char date_formatted[20];
+    // format is: "YYYY MM DD hh mm ss", but we make the buffer bigger to
+    // avoid gcc -Wformat-truncation warnings as it considers that the output
+    // could be up to 72 bytes if the integers had maximal values
+    char date_formatted[80];
 
     bool is_ok;
     std::string error_message;
