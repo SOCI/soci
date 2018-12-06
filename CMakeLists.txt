@@ -36,6 +36,12 @@ set(SOCI_CXX_C11	ON CACHE BOOL "activé pour la réception v3" FORCE)
 set(SOCI_SHARED 	ON CACHE BOOL "activé pour la réception v3" FORCE)
 set(SOCI_STATIC 	OFF CACHE BOOL "DÉSactivé pour la réception v3" FORCE)
 
+foreach(OPT DB2 FIREBIRD ODBC ORACLE MYSQL SQLITE3)
+	set(WITH_${OPT}	OFF CACHE BOOL "désactivé pour la réception v3" FORCE)
+endforeach(OPT)
+
+set(WITH_POSTGRESQL	ON CACHE BOOL "activé pour la réception v3" FORCE)
+
 include(SociUtilities)
 include(SociConfig)
 
