@@ -82,11 +82,11 @@ TEST_CASE("Dummy test", "[empty]")
     sql << "insert", use(li);
     sql << "select", into(li);
 #endif
-
+/*
     long long ll = 11;
     sql << "insert", use(ll);
     sql << "select", into(ll);
-
+*/
     indicator ind = i_ok;
     sql << "insert", use(i, ind);
     sql << "select", into(i, ind);

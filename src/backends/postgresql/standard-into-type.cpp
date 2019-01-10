@@ -97,10 +97,10 @@ void postgresql_standard_into_type_backend::post_fetch(
             exchange_type_cast<x_integer>(data_) = string_to_integer<int>(buf);
             break;
         case x_long_long:
-            exchange_type_cast<x_long_long>(data_) = string_to_integer<long long>(buf);
+            exchange_type_cast<x_long_long>(data_) = string_to_integer<long>(buf);
             break;
         case x_unsigned_long_long:
-            exchange_type_cast<x_unsigned_long_long>(data_) = string_to_unsigned_integer<unsigned long long>(buf);
+            exchange_type_cast<x_unsigned_long_long>(data_) = string_to_unsigned_integer<unsigned long>(buf);
             break;
         case x_double:
             exchange_type_cast<x_double>(data_) = cstring_to_double(buf);

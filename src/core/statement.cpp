@@ -648,13 +648,13 @@ void statement_impl::bind_into<dt_integer>()
 template<>
 void statement_impl::bind_into<dt_long_long>()
 {
-    into_row<long long>();
+    into_row<long>();
 }
 
 template<>
 void statement_impl::bind_into<dt_unsigned_long_long>()
 {
-    into_row<unsigned long long>();
+    into_row<unsigned long>();
 }
 
 template<>

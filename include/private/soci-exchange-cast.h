@@ -49,13 +49,13 @@ struct exchange_type_traits<x_integer>
 template <>
 struct exchange_type_traits<x_long_long>
 {
-  typedef long long value_type;
+  typedef long value_type;
 };
 
 template <>
 struct exchange_type_traits<x_unsigned_long_long>
 {
-  typedef unsigned long long value_type;
+  typedef unsigned long value_type;
 };
 
 template <>

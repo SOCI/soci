@@ -37,7 +37,7 @@ void resize_vector(void *p, std::size_t sz)
 template <typename T>
 T string_to_integer(char const * buf)
 {
-    long long t(0);
+    long t(0);
     int n(0);
     int const converted = std::sscanf(buf, "%" LL_FMT_FLAGS "d%n", &t, &n);
     if (converted == 1 && static_cast<std::size_t>(n) == std::strlen(buf))
@@ -47,8 +47,8 @@ T string_to_integer(char const * buf)
 
         const T max = (std::numeric_limits<T>::max)();
         const T min = (std::numeric_limits<T>::min)();
-        if (t <= static_cast<long long>(max) &&
-            t >= static_cast<long long>(min))
+        if (t <= static_cast<long>(max) &&
+            t >= static_cast<long>(min))
         {
             return static_cast<T>(t);
         }
@@ -61,7 +61,7 @@ T string_to_integer(char const * buf)
 template <typename T>
 T string_to_unsigned_integer(char const * buf)
 {
-    unsigned long long t(0);
+    unsigned long t(0);
     int n(0);
     int const converted = std::sscanf(buf, "%" LL_FMT_FLAGS "u%n", &t, &n);
     if (converted == 1 && static_cast<std::size_t>(n) == std::strlen(buf))
@@ -70,7 +70,7 @@ T string_to_unsigned_integer(char const * buf)
         // and no other characters were found in the buffer
 
         T const max = (std::numeric_limits<T>::max)();
-        if (t <= static_cast<unsigned long long>(max))
+        if (t <= static_cast<unsigned long>(max))
         {
             return static_cast<T>(t);
         }

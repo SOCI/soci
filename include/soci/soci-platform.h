@@ -26,7 +26,7 @@
 #if defined(_MSC_VER)
 #define LL_FMT_FLAGS "I64"
 #else
-#define LL_FMT_FLAGS "ll"
+#define LL_FMT_FLAGS "l"
 #endif
 
 // Portability hacks for Microsoft Visual C++ compiler
