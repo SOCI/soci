@@ -65,9 +65,9 @@ struct order
 };
 
 char const* query = "SELECT * FROM product";
-sql.set_query_transformation(order("price");
+sql.set_query_transformation(order("price"));
 sql << query;
-sql.set_query_transformation(order("id");
+sql.set_query_transformation(order("id"));
 sql << query;
 ```
 
@@ -76,7 +76,7 @@ sql << query;
 ```cpp
 std::string dep = "sales";
 sql.set_query_transformation(
-    [&dep](std::string const&amp; query) {
+    [&dep](std::string const& query) {
         return query + " WHERE department = '" + dep + "'";
 });
 sql << "SELECT * FROM employee";
