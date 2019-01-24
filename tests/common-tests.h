@@ -370,7 +370,7 @@ public:
     // Override this if the backend may not have transactions support.
     virtual bool has_transactions_support(session&) const { return true; }
 
-    // Override this if the backend silently truncates string values too long
+    // Override this if the backend silently truncates string values too int64_t
     // to fit by default.
     virtual bool has_silent_truncate_bug(session&) const { return false; }
 
@@ -537,7 +537,7 @@ TEST_CASE_METHOD(common_tests, "Exception on not connected", "[core][exception]"
     CHECK_THROWS_AS(sql.make_blob_backend(), soci_error&);
 
     std::string s;
-    long l;
+    int64_t l;
     CHECK_THROWS_AS(sql.get_next_sequence_value(s, l), soci_error&);
     CHECK_THROWS_AS(sql.get_last_insert_id(s, l), soci_error&);
 }
@@ -610,11 +610,11 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         CHECK(i == 5);
     }
 
-    SECTION("Round trip works for unsigned long")
+    SECTION("Round trip works for uint64_t")
     {
-        unsigned long seven(7);
+        uint64_t seven(7);
         sql << "insert into soci_test(ul) values(:ul)", use(seven);
-        unsigned long ul(0);
+        uint64_t ul(0);
         sql << "select ul from soci_test", into(ul);
         CHECK(ul == 7);
     }
@@ -1346,12 +1346,12 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(i2 == -12345678);
     }
 
-    SECTION("unsigned long")
+    SECTION("uint64_t")
     {
-        unsigned long ul = 4000000000ul;
+        uint64_t ul = 4000000000ul;
         sql << "insert into soci_test(ul) values(:num)", use(ul);
 
-        unsigned long ul2 = 0;
+        uint64_t ul2 = 0;
         sql << "select ul from soci_test", into(ul2);
 
         CHECK(ul2 == 4000000000ul);
@@ -1465,12 +1465,12 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(i2 == -12345678);
     }
 
-    SECTION("const unsigned long")
+    SECTION("const uint64_t")
     {
-        unsigned long const ul = 4000000000ul;
+        uint64_t const ul = 4000000000ul;
         sql << "insert into soci_test(ul) values(:num)", use(ul);
 
-        unsigned long ul2 = 0;
+        uint64_t ul2 = 0;
         sql << "select ul from soci_test", into(ul2);
 
         CHECK(ul2 == 4000000000ul);
@@ -4120,7 +4120,7 @@ void check_for_exception_on_truncation(session& sql)
     catch (soci_error const &)
     {
         // Unfortunately the contents of the message differ too much between
-        // the backends (most give an error about value being "too long",
+        // the backends (most give an error about value being "too int64_t",
         // Oracle says "too large" while SQL Server (via ODBC) just says that
         // it "would be truncated"), so we can't really check that we received
         // the right error here -- be optimistic and hope that we did.

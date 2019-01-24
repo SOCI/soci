@@ -154,7 +154,7 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
         case x_rowid:
         {
             col.type_ = dt_long_long;
-            // RowID is internally identical to unsigned long
+            // RowID is internally identical to uint64_t
             rowid *rid = static_cast<rowid *>(data_);
             sqlite3_rowid_backend *rbe = static_cast<sqlite3_rowid_backend *>(rid->get_backend());
 

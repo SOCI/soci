@@ -97,10 +97,10 @@ void postgresql_standard_into_type_backend::post_fetch(
             exchange_type_cast<x_integer>(data_) = string_to_integer<int>(buf);
             break;
         case x_long_long:
-            exchange_type_cast<x_long_long>(data_) = string_to_integer<long>(buf);
+            exchange_type_cast<x_long_long>(data_) = string_to_integer<int64_t>(buf);
             break;
         case x_unsigned_long_long:
-            exchange_type_cast<x_unsigned_long_long>(data_) = string_to_unsigned_integer<unsigned long>(buf);
+            exchange_type_cast<x_unsigned_long_long>(data_) = string_to_unsigned_integer<uint64_t>(buf);
             break;
         case x_double:
             exchange_type_cast<x_double>(data_) = cstring_to_double(buf);
@@ -111,20 +111,20 @@ void postgresql_standard_into_type_backend::post_fetch(
             break;
         case x_rowid:
             {
-                // RowID is internally identical to unsigned long
+                // RowID is internally identical to uint64_t
 
                 rowid * rid = static_cast<rowid *>(data_);
                 postgresql_rowid_backend * rbe
                     = static_cast<postgresql_rowid_backend *>(
                         rid->get_backend());
 
-                rbe->value_ = string_to_unsigned_integer<unsigned long>(buf);
+                rbe->value_ = string_to_unsigned_integer<uint64_t>(buf);
             }
             break;
         case x_blob:
             {
-                unsigned long oid =
-                    string_to_unsigned_integer<unsigned long>(buf);
+                uint64_t oid =
+                    string_to_unsigned_integer<uint64_t>(buf);
 
                 int fd = lo_open(statement_.session_.conn_, oid,
                     INV_READ | INV_WRITE);

@@ -66,9 +66,9 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
         break;
     case x_long_long:
         {
-            std::vector<long long> *vp =
-                static_cast<std::vector<long long> *>(data);
-            std::vector<long long> &v(*vp);
+            std::vector<int64_t> *vp =
+                static_cast<std::vector<int64_t> *>(data);
+            std::vector<int64_t> &v(*vp);
             std::size_t const vsize = v.size();
             prepare_indicators(vsize);
 
@@ -84,16 +84,16 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             {
                 sqlType = SQL_BIGINT;
                 cType = SQL_C_SBIGINT;
-                size = sizeof(long long);
+                size = sizeof(int64_t);
                 data = &v[0];
             }
         }
         break;
     case x_unsigned_long_long:
         {
-            std::vector<unsigned long long> *vp =
-                static_cast<std::vector<unsigned long long> *>(data);
-            std::vector<unsigned long long> &v(*vp);
+            std::vector<uint64_t> *vp =
+                static_cast<std::vector<uint64_t> *>(data);
+            std::vector<uint64_t> &v(*vp);
             std::size_t const vsize = v.size();
             prepare_indicators(vsize);
 
@@ -109,7 +109,7 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             {
                 sqlType = SQL_BIGINT;
                 cType = SQL_C_SBIGINT;
-                size = sizeof(unsigned long long);
+                size = sizeof(uint64_t);
                 data = &v[0];
             }
         }
@@ -166,7 +166,7 @@ void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &si
             for (std::size_t i = 0; i != vecSize; ++i)
             {
                 std::size_t sz = v[i].length();
-                set_sqllen_from_vector_at(i, static_cast<long>(sz));
+                set_sqllen_from_vector_at(i, static_cast<int64_t>(sz));
                 maxSize = sz > maxSize ? sz : maxSize;
             }
 
@@ -335,9 +335,9 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
         case x_long_long:
             if (use_string_for_bigint())
             {
-                std::vector<long long> *vp
-                     = static_cast<std::vector<long long> *>(data_);
-                std::vector<long long> &v(*vp);
+                std::vector<int64_t> *vp
+                     = static_cast<std::vector<int64_t> *>(data_);
+                std::vector<int64_t> &v(*vp);
 
                 char *pos = buf_;
                 std::size_t const vsize = v.size();
@@ -354,9 +354,9 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
         case x_unsigned_long_long:
             if (use_string_for_bigint())
             {
-                std::vector<unsigned long long> *vp
-                     = static_cast<std::vector<unsigned long long> *>(data_);
-                std::vector<unsigned long long> &v(*vp);
+                std::vector<uint64_t> *vp
+                     = static_cast<std::vector<uint64_t> *>(data_);
+                std::vector<uint64_t> &v(*vp);
 
                 char *pos = buf_;
                 std::size_t const vsize = v.size();
@@ -443,15 +443,15 @@ std::size_t odbc_vector_use_type_backend::size()
         break;
     case x_long_long:
         {
-            std::vector<long long> *vp =
-                static_cast<std::vector<long long> *>(data_);
+            std::vector<int64_t> *vp =
+                static_cast<std::vector<int64_t> *>(data_);
             sz = vp->size();
         }
         break;
     case x_unsigned_long_long:
         {
-            std::vector<unsigned long long> *vp =
-                static_cast<std::vector<unsigned long long> *>(data_);
+            std::vector<uint64_t> *vp =
+                static_cast<std::vector<uint64_t> *>(data_);
             sz = vp->size();
         }
         break;

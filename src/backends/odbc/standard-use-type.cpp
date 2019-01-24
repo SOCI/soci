@@ -47,7 +47,7 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
         {
           sqlType = SQL_BIGINT;
           cType = SQL_C_SBIGINT;
-          size = sizeof(long long);
+          size = sizeof(int64_t);
         }
         break;
     case x_unsigned_long_long:
@@ -65,7 +65,7 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
         {
           sqlType = SQL_BIGINT;
           cType = SQL_C_UBIGINT;
-          size = sizeof(unsigned long long);
+          size = sizeof(uint64_t);
         }
         break;
     case x_double:

@@ -242,9 +242,9 @@ void oracle_vector_use_type_backend::pre_use(indicator const *ind)
     }
     else if (type_ == x_long_long)
     {
-        std::vector<long long> *vp
-            = static_cast<std::vector<long long> *>(data_);
-        std::vector<long long> &v(*vp);
+        std::vector<int64_t> *vp
+            = static_cast<std::vector<int64_t> *>(data_);
+        std::vector<int64_t> &v(*vp);
 
         char *pos = buf_;
         std::size_t const entrySize = 100; // arbitrary, but consistent
@@ -257,9 +257,9 @@ void oracle_vector_use_type_backend::pre_use(indicator const *ind)
     }
     else if (type_ == x_unsigned_long_long)
     {
-        std::vector<unsigned long long> *vp
-            = static_cast<std::vector<unsigned long long> *>(data_);
-        std::vector<unsigned long long> &v(*vp);
+        std::vector<uint64_t> *vp
+            = static_cast<std::vector<uint64_t> *>(data_);
+        std::vector<uint64_t> &v(*vp);
 
         char *pos = buf_;
         std::size_t const entrySize = 100; // arbitrary, but consistent
@@ -366,15 +366,15 @@ std::size_t oracle_vector_use_type_backend::full_size()
         break;
     case x_long_long:
         {
-            std::vector<long long> *vp
-                = static_cast<std::vector<long long> *>(data_);
+            std::vector<int64_t> *vp
+                = static_cast<std::vector<int64_t> *>(data_);
             sz = vp->size();
         }
         break;
     case x_unsigned_long_long:
         {
-            std::vector<unsigned long long> *vp
-                = static_cast<std::vector<unsigned long long> *>(data_);
+            std::vector<uint64_t> *vp
+                = static_cast<std::vector<uint64_t> *>(data_);
             sz = vp->size();
         }
         break;

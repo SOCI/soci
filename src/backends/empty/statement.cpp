@@ -51,7 +51,7 @@ empty_statement_backend::fetch(int /* number */)
     return ef_success;
 }
 
-long long empty_statement_backend::get_affected_rows()
+int64_t empty_statement_backend::get_affected_rows()
 {
     // ...
     return -1;

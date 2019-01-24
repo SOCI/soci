@@ -147,29 +147,29 @@ struct bigint_unsigned_table_creator : table_creator_base
     }
 };
 
-TEST_CASE("MySQL long long", "[mysql][longlong]")
+TEST_CASE("MySQL int64_t", "[mysql][longlong]")
 {
     {
         soci::session sql(backEnd, connectString);
 
         bigint_table_creator tableCreator(sql);
 
-        long long v1 = 1000000000000LL;
+        int64_t v1 = 1000000000000LL;
         sql << "insert into soci_test(val) values(:val)", use(v1);
 
-        long long v2 = 0LL;
+        int64_t v2 = 0LL;
         sql << "select val from soci_test", into(v2);
 
         CHECK(v2 == v1);
     }
 
-    // vector<long long>
+    // vector<int64_t>
     {
         soci::session sql(backEnd, connectString);
 
         bigint_table_creator tableCreator(sql);
 
-        std::vector<long long> v1;
+        std::vector<int64_t> v1;
         v1.push_back(1000000000000LL);
         v1.push_back(1000000000001LL);
         v1.push_back(1000000000002LL);
@@ -178,7 +178,7 @@ TEST_CASE("MySQL long long", "[mysql][longlong]")
 
         sql << "insert into soci_test(val) values(:val)", use(v1);
 
-        std::vector<long long> v2(10);
+        std::vector<int64_t> v2(10);
         sql << "select val from soci_test order by val desc", into(v2);
 
         REQUIRE(v2.size() == 5);
@@ -206,7 +206,7 @@ TEST_CASE("MySQL long long", "[mysql][longlong]")
 
         const char* source = "18446744073709551615";
         sql << "insert into soci_test set val = " << source;
-        unsigned long long vv = 0;
+        uint64_t vv = 0;
         sql << "select val from soci_test", into(vv);
         std::stringstream buf;
         buf << vv;
@@ -220,7 +220,7 @@ TEST_CASE("MySQL long long", "[mysql][longlong]")
 
         const char* source = "18446744073709551615";
         sql << "insert into soci_test set val = " << source;
-        std::vector<unsigned long long> v(1);
+        std::vector<uint64_t> v(1);
         sql << "select val from soci_test", into(v);
         std::stringstream buf;
         buf << v.at(0);
@@ -232,9 +232,9 @@ TEST_CASE("MySQL long long", "[mysql][longlong]")
 
         bigint_unsigned_table_creator tableCreator(sql);
 
-        unsigned long long n = 18446744073709551615ULL;
+        uint64_t n = 18446744073709551615ULL;
         sql << "insert into soci_test(val) values (:n)", use(n);
-        unsigned long long m = 0;
+        uint64_t m = 0;
         sql << "select val from soci_test", into(m);
         CHECK(n == m);
     }
@@ -244,13 +244,13 @@ TEST_CASE("MySQL long long", "[mysql][longlong]")
 
         bigint_unsigned_table_creator tableCreator(sql);
 
-        std::vector<unsigned long long> v1;
+        std::vector<uint64_t> v1;
         v1.push_back(18446744073709551615ULL);
         v1.push_back(18446744073709551614ULL);
         v1.push_back(18446744073709551613ULL);
         sql << "insert into soci_test(val) values(:val)", use(v1);
 
-        std::vector<unsigned long long> v2(10);
+        std::vector<uint64_t> v2(10);
         sql << "select val from soci_test order by val", into(v2);
 
         REQUIRE(v2.size() == 3);
@@ -353,9 +353,9 @@ TEST_CASE("MySQL number conversion", "[mysql][float][int]")
     test_num<int>("-0", true, 0);
     test_num<int>("1.1", false, 0);
 
-    test_num<long long>("123", true, 123);
-    test_num<long long>("9223372036854775807", true, 9223372036854775807LL);
-    test_num<long long>("9223372036854775808", false, 0);
+    test_num<int64_t>("123", true, 123);
+    test_num<int64_t>("9223372036854775807", true, 9223372036854775807LL);
+    test_num<int64_t>("9223372036854775808", false, 0);
 }
 
 TEST_CASE("MySQL datetime", "[mysql][datetime]")
@@ -689,7 +689,7 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
     sql << "select val from soci_test", into(r);
     REQUIRE(r.size() == 1);
     CHECK(r.get_properties("val").get_data_type() == dt_long_long);
-    CHECK(r.get<long long>("val") == 0xffffff00);
+    CHECK(r.get<int64_t>("val") == 0xffffff00);
     CHECK(r.get<unsigned>("val") == 0xffffff00);
   }
   {
@@ -720,7 +720,7 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
     sql << "select val from soci_test", into(r);
     REQUIRE(r.size() == 1);
     CHECK(r.get_properties("val").get_data_type() == dt_unsigned_long_long);
-    CHECK(r.get<unsigned long long>("val") == 123456789012345ULL);
+    CHECK(r.get<uint64_t>("val") == 123456789012345ULL);
   }
   {
     soci::session sql(backEnd, connectString);
@@ -730,7 +730,7 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
     sql << "select val from soci_test", into(r);
     REQUIRE(r.size() == 1);
     CHECK(r.get_properties("val").get_data_type() == dt_long_long);
-    CHECK(r.get<long long>("val") == -123456789012345LL);
+    CHECK(r.get<int64_t>("val") == -123456789012345LL);
   }
 }
 
@@ -791,7 +791,7 @@ TEST_CASE("MySQL last insert id", "[mysql][last-insert-id]")
     soci::session sql(backEnd, connectString);
     table_creator_for_get_last_insert_id tableCreator(sql);
     sql << "insert into soci_test () values ()";
-    long id;
+    int64_t id;
     bool result = sql.get_last_insert_id("soci_test", id);
     CHECK(result == true);
     CHECK(id == 42);
@@ -802,7 +802,7 @@ std::string escape_string(soci::session& sql, const std::string& s)
     mysql_session_backend* backend = static_cast<mysql_session_backend*>(
         sql.get_backend());
     char* escaped = new char[2 * s.size() + 1];
-    mysql_real_escape_string(backend->conn_, escaped, s.data(), static_cast<unsigned long>(s.size()));
+    mysql_real_escape_string(backend->conn_, escaped, s.data(), static_cast<uint64_t>(s.size()));
     std::string retv = escaped;
     delete [] escaped;
     return retv;

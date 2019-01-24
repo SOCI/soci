@@ -117,7 +117,7 @@ statement_backend::exec_fetch_result oracle_statement_backend::fetch(int number)
     }
 }
 
-long long oracle_statement_backend::get_affected_rows()
+int64_t oracle_statement_backend::get_affected_rows()
 {
     ub4 row_count;
     sword res = OCIAttrGet(static_cast<dvoid*>(stmtp_),

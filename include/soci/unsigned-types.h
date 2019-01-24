@@ -19,7 +19,7 @@ namespace soci
 template <>
 struct type_conversion<unsigned char>
 {
-    typedef long long base_type;
+    typedef int64_t base_type;
 
     static void from_base(base_type const & in, indicator ind,
         unsigned char & out)
@@ -50,7 +50,7 @@ struct type_conversion<unsigned char>
 template <>
 struct type_conversion<unsigned short>
 {
-    typedef long long base_type;
+    typedef int64_t base_type;
 
     static void from_base(base_type const & in, indicator ind,
         unsigned short & out)
@@ -60,8 +60,8 @@ struct type_conversion<unsigned short>
             throw soci_error("Null value not allowed for this type.");
         }
 
-        const long long max = (std::numeric_limits<unsigned short>::max)();
-        const long long min = (std::numeric_limits<unsigned short>::min)();
+        const int64_t max = (std::numeric_limits<unsigned short>::max)();
+        const int64_t min = (std::numeric_limits<unsigned short>::min)();
         if (in < min || in > max)
         {
             throw soci_error("Value outside of allowed range.");
@@ -81,7 +81,7 @@ struct type_conversion<unsigned short>
 template <>
 struct type_conversion<unsigned int>
 {
-    typedef long long base_type;
+    typedef int64_t base_type;
 
     static void from_base(base_type const & in, indicator ind,
         unsigned int & out)
@@ -91,8 +91,8 @@ struct type_conversion<unsigned int>
             throw soci_error("Null value not allowed for this type.");
         }
 
-        const long long max = (std::numeric_limits<unsigned int>::max)();
-        const long long min = (std::numeric_limits<unsigned int>::min)();
+        const int64_t max = (std::numeric_limits<unsigned int>::max)();
+        const int64_t min = (std::numeric_limits<unsigned int>::min)();
         if (in < min || in > max)
         {
             throw soci_error("Value outside of allowed range.");

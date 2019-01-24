@@ -268,7 +268,7 @@ struct postgresql_statement_backend : details::statement_backend
     exec_fetch_result execute(int number) SOCI_OVERRIDE;
     exec_fetch_result fetch(int number) SOCI_OVERRIDE;
 
-    long long get_affected_rows() SOCI_OVERRIDE;
+    int64_t get_affected_rows() SOCI_OVERRIDE;
     int get_number_of_rows() SOCI_OVERRIDE;
     std::string get_parameter_name(int index) const SOCI_OVERRIDE;
 
@@ -293,7 +293,7 @@ struct postgresql_statement_backend : details::statement_backend
     std::string statementName_;
     std::vector<std::string> names_; // list of names for named binds
 
-    long long rowsAffectedBulk_; // number of rows affected by the last bulk operation
+    int64_t rowsAffectedBulk_; // number of rows affected by the last bulk operation
 
     int numberOfRows_;  // number of rows retrieved from the server
     int currentRow_;    // "current" row number to consume in postFetch
@@ -323,7 +323,7 @@ struct postgresql_rowid_backend : details::rowid_backend
 
     ~postgresql_rowid_backend() SOCI_OVERRIDE;
 
-    unsigned long value_;
+    uint64_t value_;
 };
 
 struct postgresql_blob_backend : details::blob_backend
@@ -358,7 +358,7 @@ struct postgresql_blob_backend : details::blob_backend
 
     postgresql_session_backend & session_;
 
-    unsigned long oid_; // oid of the large object
+    uint64_t oid_; // oid of the large object
     int fd_;            // descriptor of the large object
 };
 
@@ -378,7 +378,7 @@ struct postgresql_session_backend : details::session_backend
     void deallocate_prepared_statement(const std::string & statementName);
 
     bool get_next_sequence_value(session & s,
-        std::string const & sequence, long & value) SOCI_OVERRIDE;
+        std::string const & sequence, int64_t & value) SOCI_OVERRIDE;
 
     std::string get_dummy_from_table() const SOCI_OVERRIDE { return std::string(); }
 

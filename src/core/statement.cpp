@@ -358,7 +358,7 @@ bool statement_impl::execute(bool withDataExchange)
     }
 }
 
-long long statement_impl::get_affected_rows()
+int64_t statement_impl::get_affected_rows()
 {
     try
     {
@@ -460,10 +460,10 @@ std::size_t statement_impl::intos_size()
         {
             std::ostringstream msg;
             msg << "Bind variable size mismatch (into["
-                << static_cast<unsigned long>(i) << "] has size "
-                << static_cast<unsigned long>(intos_[i]->size())
+                << static_cast<uint64_t>(i) << "] has size "
+                << static_cast<uint64_t>(intos_[i]->size())
                 << ", into[0] has size "
-                << static_cast<unsigned long>(intos_size);
+                << static_cast<uint64_t>(intos_size);
             throw soci_error(msg.str());
         }
     }
@@ -489,10 +489,10 @@ std::size_t statement_impl::uses_size()
         {
             std::ostringstream msg;
             msg << "Bind variable size mismatch (use["
-                << static_cast<unsigned long>(i) << "] has size "
-                << static_cast<unsigned long>(uses_[i]->size())
+                << static_cast<uint64_t>(i) << "] has size "
+                << static_cast<uint64_t>(uses_[i]->size())
                 << ", use[0] has size "
-                << static_cast<unsigned long>(usesSize);
+                << static_cast<uint64_t>(usesSize);
             throw soci_error(msg.str());
         }
     }
@@ -648,13 +648,13 @@ void statement_impl::bind_into<dt_integer>()
 template<>
 void statement_impl::bind_into<dt_long_long>()
 {
-    into_row<long>();
+    into_row<int64_t>();
 }
 
 template<>
 void statement_impl::bind_into<dt_unsigned_long_long>()
 {
-    into_row<unsigned long>();
+    into_row<uint64_t>();
 }
 
 template<>

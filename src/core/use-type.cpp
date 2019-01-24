@@ -107,7 +107,7 @@ void standard_use_type::dump_value(std::ostream& os) const
             return;
 
         case x_longstring:
-            os << "<long string>";
+            os << "<int64_t string>";
             return;
     }
 

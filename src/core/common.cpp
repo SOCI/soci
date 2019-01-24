@@ -19,7 +19,7 @@ namespace // anonymous
 // helper function for parsing decimal data (for std::tm)
 int parse10(char const * & p1, char * & p2)
 {
-    long v = std::strtol(p1, &p2, 10);
+    int64_t v = std::strtol(p1, &p2, 10);
     if (p2 != p1)
     {
         if (v < 0)

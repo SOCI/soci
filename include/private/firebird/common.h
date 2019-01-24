@@ -118,7 +118,7 @@ void to_isc(void * val, XSQLVAR * var, short x_scale = 0)
     T1 value = *reinterpret_cast<T1*>(val);
     short scale = var->sqlscale + x_scale;
     short type = var->sqltype & ~1;
-    long long divisor = 1, multiplier = 1;
+    int64_t divisor = 1, multiplier = 1;
 
     cond_to_isc<std::numeric_limits<T1>::is_integer>::checkInteger(scale,type);
 
@@ -143,8 +143,8 @@ void to_isc(void * val, XSQLVAR * var, short x_scale = 0)
         break;
     case SQL_INT64:
         {
-            long long tmp = static_cast<long long>(round_for_isc(value*multiplier)/divisor);
-            std::memcpy(var->sqldata, &tmp, sizeof(long long));
+            int64_t tmp = static_cast<int64_t>(round_for_isc(value*multiplier)/divisor);
+            std::memcpy(var->sqldata, &tmp, sizeof(int64_t));
         }
         break;
     case SQL_FLOAT:
@@ -238,7 +238,7 @@ T1 from_isc(XSQLVAR * var)
     case SQL_LONG:
         return static_cast<T1>(*reinterpret_cast<int*>(var->sqldata)/tens);
     case SQL_INT64:
-        return static_cast<T1>(*reinterpret_cast<long long*>(var->sqldata)/tens);
+        return static_cast<T1>(*reinterpret_cast<int64_t*>(var->sqldata)/tens);
     case SQL_FLOAT:
         return static_cast<T1>(*reinterpret_cast<float*>(var->sqldata));
     case SQL_DOUBLE:

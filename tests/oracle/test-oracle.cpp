@@ -1010,11 +1010,11 @@ struct long_table_creator : public table_creator_base
     long_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
-        sql << "create table soci_test(l long)";
+        sql << "create table soci_test(l int64_t)";
     }
 };
 
-TEST_CASE("Oracle large strings as long", "[oracle][compatibility]")
+TEST_CASE("Oracle large strings as int64_t", "[oracle][compatibility]")
 {
     soci::session sql(backEnd, connectString);
     long_table_creator creator(sql);
@@ -1067,30 +1067,30 @@ struct longlong_table_creator : table_creator_base
     }
 };
 
-// long long test
-TEST_CASE("Oracle long long", "[oracle][longlong]")
+// int64_t test
+TEST_CASE("Oracle int64_t", "[oracle][longlong]")
 {
     {
         soci::session sql(backEnd, connectString);
 
         longlong_table_creator tableCreator(sql);
 
-        long long v1 = 1000000000000LL;
+        int64_t v1 = 1000000000000LL;
         sql << "insert into soci_test(val) values(:val)", use(v1);
 
-        long long v2 = 0LL;
+        int64_t v2 = 0LL;
         sql << "select val from soci_test", into(v2);
 
         CHECK(v2 == v1);
     }
 
-    // vector<long long>
+    // vector<int64_t>
     {
         soci::session sql(backEnd, connectString);
 
         longlong_table_creator tableCreator(sql);
 
-        std::vector<long long> v1;
+        std::vector<int64_t> v1;
         v1.push_back(1000000000000LL);
         v1.push_back(1000000000001LL);
         v1.push_back(1000000000002LL);
@@ -1099,7 +1099,7 @@ TEST_CASE("Oracle long long", "[oracle][longlong]")
 
         sql << "insert into soci_test(val) values(:val)", use(v1);
 
-        std::vector<long long> v2(10);
+        std::vector<int64_t> v2(10);
         sql << "select val from soci_test order by val desc", into(v2);
 
         REQUIRE(v2.size() == 5);

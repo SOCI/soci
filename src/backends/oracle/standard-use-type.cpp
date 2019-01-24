@@ -460,8 +460,8 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
         case x_long_long:
             if (readOnly_)
             {
-                long long const original = exchange_type_cast<x_long_long>(data_);
-                long long const bound = std::strtoll(buf_, NULL, 10);
+                int64_t const original = exchange_type_cast<x_long_long>(data_);
+                int64_t const bound = std::strtoll(buf_, NULL, 10);
 
                 if (original != bound)
                 {
@@ -472,8 +472,8 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
         case x_unsigned_long_long:
             if (readOnly_)
             {
-                unsigned long long const original = exchange_type_cast<x_unsigned_long_long>(data_);
-                unsigned long long const bound = std::strtoull(buf_, NULL, 10);
+                uint64_t const original = exchange_type_cast<x_unsigned_long_long>(data_);
+                uint64_t const bound = std::strtoull(buf_, NULL, 10);
 
                 if (original != bound)
                 {

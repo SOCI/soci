@@ -180,7 +180,7 @@ TEST_CASE("PostgreSQL blob", "[postgresql][blob]")
             CHECK(std::strncmp(buf2, "abcdefghij", 10) == 0);
         }
 
-        unsigned long oid;
+        uint64_t oid;
         sql << "select img from soci_test where id = 7", into(oid);
         sql << "select lo_unlink(" << oid << ")";
     }
@@ -219,7 +219,7 @@ TEST_CASE("PostgreSQL blob", "[postgresql][blob]")
             CHECK(std::strncmp(buf2, "abcdefghij", 10) == 0);
         }
 
-        unsigned long oid;
+        uint64_t oid;
         sql << "select img from soci_test where id = 7", into(oid);
         sql << "select lo_unlink(" << oid << ")";
     }
@@ -234,30 +234,30 @@ struct longlong_table_creator : table_creator_base
     }
 };
 
-// long long test
-TEST_CASE("PostgreSQL long long", "[postgresql][longlong]")
+// int64_t test
+TEST_CASE("PostgreSQL int64_t", "[postgresql][longlong]")
 {
     soci::session sql(backEnd, connectString);
 
     longlong_table_creator tableCreator(sql);
 
-    long long v1 = 1000000000000LL;
+    int64_t v1 = 1000000000000LL;
     sql << "insert into soci_test(val) values(:val)", use(v1);
 
-    long long v2 = 0LL;
+    int64_t v2 = 0LL;
     sql << "select val from soci_test", into(v2);
 
     CHECK(v2 == v1);
 }
 
-// vector<long long>
-TEST_CASE("PostgreSQL vector long long", "[postgresql][vector][longlong]")
+// vector<int64_t>
+TEST_CASE("PostgreSQL vector int64_t", "[postgresql][vector][longlong]")
 {
     soci::session sql(backEnd, connectString);
 
     longlong_table_creator tableCreator(sql);
 
-    std::vector<long long> v1;
+    std::vector<int64_t> v1;
     v1.push_back(1000000000000LL);
     v1.push_back(1000000000001LL);
     v1.push_back(1000000000002LL);
@@ -266,7 +266,7 @@ TEST_CASE("PostgreSQL vector long long", "[postgresql][vector][longlong]")
 
     sql << "insert into soci_test(val) values(:val)", use(v1);
 
-    std::vector<long long> v2(10);
+    std::vector<int64_t> v2(10);
     sql << "select val from soci_test order by val desc", into(v2);
 
     REQUIRE(v2.size() == 5);
@@ -277,17 +277,17 @@ TEST_CASE("PostgreSQL vector long long", "[postgresql][vector][longlong]")
     CHECK(v2[4] == 1000000000000LL);
 }
 
-// unsigned long long test
-TEST_CASE("PostgreSQL unsigned long long", "[postgresql][unsigned][longlong]")
+// uint64_t test
+TEST_CASE("PostgreSQL uint64_t", "[postgresql][unsigned][longlong]")
 {
     soci::session sql(backEnd, connectString);
 
     longlong_table_creator tableCreator(sql);
 
-    unsigned long long v1 = 1000000000000ULL;
+    uint64_t v1 = 1000000000000ULL;
     sql << "insert into soci_test(val) values(:val)", use(v1);
 
-    unsigned long long v2 = 0ULL;
+    uint64_t v2 = 0ULL;
     sql << "select val from soci_test", into(v2);
 
     CHECK(v2 == v1);
@@ -510,16 +510,16 @@ TEST_CASE("PostgreSQL insert into ... returning", "[postgresql]")
 
     table_creator_for_test12 tableCreator(sql);
 
-    std::vector<long> ids(10);
+    std::vector<int64_t> ids(10);
     for (std::size_t i = 0; i != ids.size(); i++)
     {
-        long sid(0);
+        int64_t sid(0);
         std::string txt("abc");
         sql << "insert into soci_test(txt) values(:txt) returning sid", use(txt, "txt"), into(sid);
         ids[i] = sid;
     }
 
-    std::vector<long> ids2(ids.size());
+    std::vector<int64_t> ids2(ids.size());
     sql << "select sid from soci_test order by sid", into(ids2);
     CHECK(std::equal(ids.begin(), ids.end(), ids2.begin()));
 }

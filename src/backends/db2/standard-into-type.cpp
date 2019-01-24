@@ -55,11 +55,11 @@ void db2_standard_into_type_backend::define_by_pos(
         break;
     case x_long_long:
         cType = SQL_C_SBIGINT;
-        size = sizeof(long long);
+        size = sizeof(int64_t);
         break;
     case x_unsigned_long_long:
         cType = SQL_C_UBIGINT;
-        size = sizeof(unsigned long long);
+        size = sizeof(uint64_t);
         break;
     case x_double:
         cType = SQL_C_DOUBLE;
@@ -73,7 +73,7 @@ void db2_standard_into_type_backend::define_by_pos(
         break;
     case x_rowid:
         cType = SQL_C_UBIGINT;
-        size = sizeof(unsigned long long);
+        size = sizeof(uint64_t);
         break;
     default:
         throw soci_error("Into element used with non-supported type.");

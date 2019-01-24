@@ -44,10 +44,10 @@ struct type_conversion<column_info>
                 v.get<int>(field_name, 0));
         case dt_long_long:
             return static_cast<std::size_t>(
-                v.get<long long>(field_name, 0ll));
+                v.get<int64_t>(field_name, 0ll));
         case dt_unsigned_long_long:
             return static_cast<std::size_t>(
-                v.get<unsigned long long>(field_name, 0ull));
+                v.get<uint64_t>(field_name, 0ull));
             break;
         default:
             return 0u;

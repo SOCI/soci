@@ -21,7 +21,7 @@ namespace details
 // any string-to-string transformation to SQL statement just
 // before it is executed.
 // Transformation procedure is specified by user,
-// be it a function or an arbitrary type as long as it
+// be it a function or an arbitrary type as int64_t as it
 // defines operator() with the appropriate signature:
 // unary function takes any type converible-to std::string
 // and returns std::string.

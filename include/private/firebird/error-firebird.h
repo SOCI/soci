@@ -22,7 +22,7 @@ namespace firebird
 
 void SOCI_FIREBIRD_DECL get_iscerror_details(ISC_STATUS * status_vector, std::string &msg);
 
-bool SOCI_FIREBIRD_DECL check_iscerror(ISC_STATUS const * status_vector, long errNum);
+bool SOCI_FIREBIRD_DECL check_iscerror(ISC_STATUS const * status_vector, int64_t errNum);
 
 void SOCI_FIREBIRD_DECL throw_iscerror(ISC_STATUS * status_vector);
 

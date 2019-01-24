@@ -242,7 +242,7 @@ sqlite3_statement_backend::bind_and_execute(int number)
 {
     statement_backend::exec_fetch_result retVal = ef_no_data;
 
-    long long rowsAffectedBulkTemp = 0;
+    int64_t rowsAffectedBulkTemp = 0;
 
     rowsAffectedBulk_ = -1;
 
@@ -357,7 +357,7 @@ sqlite3_statement_backend::fetch(int number)
 
 }
 
-long long sqlite3_statement_backend::get_affected_rows()
+int64_t sqlite3_statement_backend::get_affected_rows()
 {
     if (rowsAffectedBulk_ >= 0)
     {

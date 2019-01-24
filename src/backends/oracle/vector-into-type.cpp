@@ -187,7 +187,7 @@ void oracle_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
     {
         // first, deal with data
 
-        // only std::string, std::tm, long long and Statement need special handling
+        // only std::string, std::tm, int64_t and Statement need special handling
         if (type_ == x_stdstring)
         {
             std::vector<std::string> *vp
@@ -208,10 +208,10 @@ void oracle_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
         }
         else if (type_ == x_long_long)
         {
-            std::vector<long long> *vp
-                = static_cast<std::vector<long long> *>(data_);
+            std::vector<int64_t> *vp
+                = static_cast<std::vector<int64_t> *>(data_);
 
-            std::vector<long long> &v(*vp);
+            std::vector<int64_t> &v(*vp);
 
             char *pos = buf_;
             std::size_t const vecSize = size();
@@ -226,10 +226,10 @@ void oracle_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
         }
         else if (type_ == x_unsigned_long_long)
         {
-            std::vector<unsigned long long> *vp
-                = static_cast<std::vector<unsigned long long> *>(data_);
+            std::vector<uint64_t> *vp
+                = static_cast<std::vector<uint64_t> *>(data_);
 
-            std::vector<unsigned long long> &v(*vp);
+            std::vector<uint64_t> &v(*vp);
 
             char *pos = buf_;
             std::size_t const vecSize = size();
@@ -349,15 +349,15 @@ void oracle_vector_into_type_backend::resize(std::size_t sz)
             break;
         case x_long_long:
             {
-                std::vector<long long> *v
-                    = static_cast<std::vector<long long> *>(data_);
+                std::vector<int64_t> *v
+                    = static_cast<std::vector<int64_t> *>(data_);
                 v->resize(sz);
             }
             break;
         case x_unsigned_long_long:
             {
-                std::vector<unsigned long long> *v
-                    = static_cast<std::vector<unsigned long long> *>(data_);
+                std::vector<uint64_t> *v
+                    = static_cast<std::vector<uint64_t> *>(data_);
                 v->resize(sz);
             }
             break;
@@ -444,15 +444,15 @@ std::size_t oracle_vector_into_type_backend::full_size()
         break;
     case x_long_long:
         {
-            std::vector<long long> *v
-                = static_cast<std::vector<long long> *>(data_);
+            std::vector<int64_t> *v
+                = static_cast<std::vector<int64_t> *>(data_);
             sz = v->size();
         }
         break;
     case x_unsigned_long_long:
         {
-            std::vector<unsigned long long> *v
-                = static_cast<std::vector<unsigned long long> *>(data_);
+            std::vector<uint64_t> *v
+                = static_cast<std::vector<uint64_t> *>(data_);
             sz = v->size();
         }
         break;

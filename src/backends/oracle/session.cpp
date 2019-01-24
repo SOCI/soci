@@ -219,7 +219,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         }
         else
         {
-            throw soci_error("Service name is too long.");
+            throw soci_error("Service name is too int64_t.");
         }
 
         nlsUserNameLen = userName.size();
@@ -229,7 +229,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         }
         else
         {
-            throw soci_error("User name is too long.");
+            throw soci_error("User name is too int64_t.");
         }
 
         nlsPasswordLen = password.size();
@@ -239,7 +239,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         }
         else
         {
-            throw soci_error("Password is too long.");
+            throw soci_error("Password is too int64_t.");
         }
     }
     

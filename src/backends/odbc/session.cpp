@@ -152,7 +152,7 @@ void odbc_session_backend::configure_connection()
         };
 
         // Also configure the driver to handle unknown types, such as "xml",
-        // that we use for x_xmltype, as long varchar instead of limiting them
+        // that we use for x_xmltype, as int64_t varchar instead of limiting them
         // to 256 characters (by default).
         rc = SQLSetConnectAttr(hdbc_, SQL_ATTR_PGOPT_UNKNOWNSASLONGVARCHAR, (SQLPOINTER)1, 0);
 
@@ -200,7 +200,7 @@ void odbc_session_backend::rollback()
 }
 
 bool odbc_session_backend::get_next_sequence_value(
-    session & s, std::string const & sequence, long & value)
+    session & s, std::string const & sequence, int64_t & value)
 {
     std::string query;
 
@@ -245,7 +245,7 @@ bool odbc_session_backend::get_next_sequence_value(
 }
 
 bool odbc_session_backend::get_last_insert_id(
-    session & s, std::string const & table, long & value)
+    session & s, std::string const & table, int64_t & value)
 {
     std::string query;
 

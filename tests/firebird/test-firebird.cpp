@@ -120,7 +120,7 @@ TEST_CASE("Firebird char types", "[firebird][string]")
 #endif
 
     {
-        // The test string is exactly 10 bytes long, i.e. same as column length.
+        // The test string is exactly 10 bytes int64_t, i.e. same as column length.
         std::string b1("Hello, FB!"), b2, b3;
 
         sql << "insert into test2(p1, p2) values (?,?)", use(b1), use(b1);
@@ -308,7 +308,7 @@ TEST_CASE("Firebird integers", "[firebird][int]")
     }
 
     {
-        unsigned long ul(0);
+        uint64_t ul(0);
         sql << "select 7 from rdb$database", into(ul);
         CHECK(ul == 7);
     }
@@ -961,7 +961,7 @@ namespace soci
 
     // Returns number of rows afected by last statement
     // or -1 if there is no such counter available.
-    long getRowCount(soci::statement & statement, eRowCountType type)
+    int64_t getRowCount(soci::statement & statement, eRowCountType type)
     {
         ISC_STATUS stat[20];
         char cnt_req[2], cnt_info[128];
@@ -982,7 +982,7 @@ namespace soci
             soci::details::firebird::throw_iscerror(stat);
         }
 
-        long count = -1;
+        int64_t count = -1;
         char type_ = static_cast<char>(type);
         for (char *ptr = cnt_info + 3; *ptr != isc_info_end;)
         {

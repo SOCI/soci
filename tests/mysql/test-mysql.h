@@ -109,7 +109,7 @@ public:
         sql << "select @@session.sql_mode", into(sql_mode);
 
         // The database must be configured to use STRICT_{ALL,TRANS}_TABLES in
-        // SQL mode to avoid silent truncation of too long values.
+        // SQL mode to avoid silent truncation of too int64_t values.
         return sql_mode.find("STRICT_") == std::string::npos;
     }
 

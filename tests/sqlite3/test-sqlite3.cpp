@@ -195,29 +195,29 @@ struct longlong_table_creator : table_creator_base
     }
 };
 
-// long long test
-TEST_CASE("SQLite long long", "[sqlite][longlong]")
+// int64_t test
+TEST_CASE("SQLite int64_t", "[sqlite][longlong]")
 {
     soci::session sql(backEnd, connectString);
 
     longlong_table_creator tableCreator(sql);
 
-    long long v1 = 1000000000000LL;
+    int64_t v1 = 1000000000000LL;
     sql << "insert into soci_test(val) values(:val)", use(v1);
 
-    long long v2 = 0LL;
+    int64_t v2 = 0LL;
     sql << "select val from soci_test", into(v2);
 
     CHECK(v2 == v1);
 }
 
-TEST_CASE("SQLite vector long long", "[sqlite][vector][longlong]")
+TEST_CASE("SQLite vector int64_t", "[sqlite][vector][longlong]")
 {
     soci::session sql(backEnd, connectString);
 
     longlong_table_creator tableCreator(sql);
 
-    std::vector<long long> v1;
+    std::vector<int64_t> v1;
     v1.push_back(1000000000000LL);
     v1.push_back(1000000000001LL);
     v1.push_back(1000000000002LL);
@@ -226,7 +226,7 @@ TEST_CASE("SQLite vector long long", "[sqlite][vector][longlong]")
 
     sql << "insert into soci_test(val) values(:val)", use(v1);
 
-    std::vector<long long> v2(10);
+    std::vector<int64_t> v2(10);
     sql << "select val from soci_test order by val desc", into(v2);
 
     REQUIRE(v2.size() == 5);
@@ -266,7 +266,7 @@ TEST_CASE("SQLite last insert id", "[sqlite][last-insert-id]")
     soci::session sql(backEnd, connectString);
     table_creator_for_get_last_insert_id tableCreator(sql);
     sql << "insert into soci_test default values";
-    long id;
+    int64_t id;
     bool result = sql.get_last_insert_id("soci_test", id);
     CHECK(result == true);
     CHECK(id == 42);

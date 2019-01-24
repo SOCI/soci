@@ -58,7 +58,7 @@ void get_iscerror_details(ISC_STATUS * status_vector, std::string &msg)
     }
 }
 
-bool check_iscerror(ISC_STATUS const * status_vector, long errNum)
+bool check_iscerror(ISC_STATUS const * status_vector, int64_t errNum)
 {
     std::size_t i=0;
     while (status_vector[i] != 0)

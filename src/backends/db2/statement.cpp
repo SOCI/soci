@@ -184,7 +184,7 @@ db2_statement_backend::fetch(int  number )
     return ef_success;
 }
 
-long long db2_statement_backend::get_affected_rows()
+int64_t db2_statement_backend::get_affected_rows()
 {
     SQLLEN rows;
 

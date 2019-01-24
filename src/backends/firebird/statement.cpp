@@ -409,7 +409,7 @@ firebird_statement_backend::execute(int number)
 
     if (useType_ == eVector)
     {
-        long long rowsAffectedBulkTemp = 0;
+        int64_t rowsAffectedBulkTemp = 0;
 
         // Here we have to explicitly loop to achieve the
         // effect of inserting or updating with vector use elements.
@@ -562,7 +562,7 @@ void firebird_statement_backend::exchangeData(bool gotData, int row)
     }
 }
 
-long long firebird_statement_backend::get_affected_rows()
+int64_t firebird_statement_backend::get_affected_rows()
 {
     if (rowsAffectedBulk_ >= 0)
     {
@@ -597,7 +597,7 @@ long long firebird_statement_backend::get_affected_rows()
 
     // Examine the 4 sub-blocks each of which has a header indicating the block
     // type, its value length in bytes and the value itself.
-    long long row_count = 0;
+    int64_t row_count = 0;
 
     for ( char* p = sql_rec_buf; !row_count && p < sql_rec_buf + length; )
     {

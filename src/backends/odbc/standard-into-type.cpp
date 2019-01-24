@@ -63,7 +63,7 @@ void odbc_standard_into_type_backend::define_by_pos(
         else // Normal case, use ODBC support.
         {
           odbcType_ = SQL_C_SBIGINT;
-          size = sizeof(long long);
+          size = sizeof(int64_t);
         }
         break;
     case x_unsigned_long_long:
@@ -77,7 +77,7 @@ void odbc_standard_into_type_backend::define_by_pos(
         else // Normal case, use ODBC support.
         {
           odbcType_ = SQL_C_UBIGINT;
-          size = sizeof(unsigned long long);
+          size = sizeof(uint64_t);
         }
         break;
     case x_double:
@@ -92,7 +92,7 @@ void odbc_standard_into_type_backend::define_by_pos(
         break;
     case x_rowid:
         odbcType_ = SQL_C_ULONG;
-        size = sizeof(unsigned long);
+        size = sizeof(uint64_t);
         break;
     default:
         throw soci_error("Into element used with non-supported type.");
@@ -181,7 +181,7 @@ void odbc_standard_into_type_backend::post_fetch(
         }
         else if (type_ == x_long_long && use_string_for_bigint())
         {
-          long long& ll = exchange_type_cast<x_long_long>(data_);
+          int64_t& ll = exchange_type_cast<x_long_long>(data_);
           if (sscanf(buf_, "%" LL_FMT_FLAGS "d", &ll) != 1)
           {
             throw soci_error("Failed to parse the returned 64-bit integer value");
@@ -189,7 +189,7 @@ void odbc_standard_into_type_backend::post_fetch(
         }
         else if (type_ == x_unsigned_long_long && use_string_for_bigint())
         {
-          unsigned long long& ll = exchange_type_cast<x_unsigned_long_long>(data_);
+          uint64_t& ll = exchange_type_cast<x_unsigned_long_long>(data_);
           if (sscanf(buf_, "%" LL_FMT_FLAGS "u", &ll) != 1)
           {
             throw soci_error("Failed to parse the returned 64-bit integer value");

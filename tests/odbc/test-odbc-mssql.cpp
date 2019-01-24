@@ -20,7 +20,7 @@ std::string connectString;
 backend_factory const &backEnd = *soci::factory_odbc();
 
 // MS SQL-specific tests
-TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
+TEST_CASE("MS SQL int64_t string", "[odbc][mssql][int64_t]")
 {
     soci::session sql(backEnd, connectString);
 
@@ -38,7 +38,7 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
         }
     } long_text_table_creator(sql);
 
-    // Build a string at least 8000 characters long to test that it survives
+    // Build a string at least 8000 characters int64_t to test that it survives
     // the round trip unscathed.
     std::ostringstream os;
     for ( int n = 0; n < 1000; ++n )
@@ -67,7 +67,7 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
         CHECK(str_out == str_in);
     }
 
-    // The long string should be truncated when inserting it into a fixed size
+    // The int64_t string should be truncated when inserting it into a fixed size
     // column.
     CHECK_THROWS_AS(
         (sql << "insert into soci_test(fixed_text) values(:str)", use(str_in)),
