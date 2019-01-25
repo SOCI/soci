@@ -229,12 +229,13 @@ private:
     {
         try
         {
-            msession << "drop table soci_test";
+            msession << "drop table if exists soci_test";
         }
         catch (soci_error const& e)
         {
             //std::cerr << e.what() << std::endl;
             e.what();
+			throw;
         }
     }
     session& msession;
@@ -3829,6 +3830,7 @@ void run_query_transformation_test(test_context_base const& tc, session& sql)
         sql.set_query_transformation(lower_than_g);
         // observe no effect of WHERE clause injection
         st.execute(true);
+        sql.set_query_transformation(no_op_transform);
         CHECK(count == 'z' - 'a' + 1);
     }
 }
