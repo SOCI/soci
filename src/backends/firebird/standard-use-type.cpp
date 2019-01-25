@@ -114,7 +114,7 @@ void firebird_standard_use_type_backend::exchangeData()
             to_isc<int>(data_, var);
             break;
         case x_long_long:
-            to_isc<long long>(data_, var);
+            to_isc<int64_t>(data_, var);
             break;
         case x_double:
             to_isc<double>(data_, var);

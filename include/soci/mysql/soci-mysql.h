@@ -151,7 +151,7 @@ struct mysql_statement_backend : details::statement_backend
     exec_fetch_result execute(int number) SOCI_OVERRIDE;
     exec_fetch_result fetch(int number) SOCI_OVERRIDE;
 
-    long long get_affected_rows() SOCI_OVERRIDE;
+    int64_t get_affected_rows() SOCI_OVERRIDE;
     int get_number_of_rows() SOCI_OVERRIDE;
     std::string get_parameter_name(int index) const SOCI_OVERRIDE;
 
@@ -177,7 +177,7 @@ struct mysql_statement_backend : details::statement_backend
     std::vector<std::string> queryChunks_;
     std::vector<std::string> names_; // list of names for named binds
 
-    long long rowsAffectedBulk_; // number of rows affected by the last bulk operation
+    int64_t rowsAffectedBulk_; // number of rows affected by the last bulk operation
 
     int numberOfRows_;  // number of rows retrieved from the server
     int currentRow_;    // "current" row number to consume in postFetch
@@ -239,7 +239,7 @@ struct mysql_session_backend : details::session_backend
     void commit() SOCI_OVERRIDE;
     void rollback() SOCI_OVERRIDE;
 
-    bool get_last_insert_id(session&, std::string const&, long&) SOCI_OVERRIDE;
+    bool get_last_insert_id(session&, std::string const&, int64_t&) SOCI_OVERRIDE;
 
     // Note that MySQL supports both "SELECT 2+2" and "SELECT 2+2 FROM DUAL"
     // syntaxes, but there doesn't seem to be any reason to use the longer one.

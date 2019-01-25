@@ -28,18 +28,18 @@ namespace postgresql
 template <typename T>
 T string_to_integer(char const * buf)
 {
-    long long t(0);
+    int64_t t(0);
     int n(0);
     int const converted = std::sscanf(buf, "%" LL_FMT_FLAGS "d%n", &t, &n);
     if (converted == 1 && static_cast<std::size_t>(n) == std::strlen(buf))
     {
-        // successfully converted to long long
+        // successfully converted to int64_t
         // and no other characters were found in the buffer
 
         const T max = (std::numeric_limits<T>::max)();
         const T min = (std::numeric_limits<T>::min)();
-        if (t <= static_cast<long long>(max) &&
-            t >= static_cast<long long>(min))
+        if (t <= static_cast<int64_t>(max) &&
+            t >= static_cast<int64_t>(min))
         {
             return static_cast<T>(t);
         }
@@ -73,16 +73,16 @@ T string_to_integer(char const * buf)
 template <typename T>
 T string_to_unsigned_integer(char const * buf)
 {
-    unsigned long long t(0);
+    uint64_t t(0);
     int n(0);
     int const converted = std::sscanf(buf, "%" LL_FMT_FLAGS "u%n", &t, &n);
     if (converted == 1 && static_cast<std::size_t>(n) == std::strlen(buf))
     {
-        // successfully converted to unsigned long long
+        // successfully converted to uint64_t
         // and no other characters were found in the buffer
 
         const T max = (std::numeric_limits<T>::max)();
-        if (t <= static_cast<unsigned long long>(max))
+        if (t <= static_cast<uint64_t>(max))
         {
             return static_cast<T>(t);
         }

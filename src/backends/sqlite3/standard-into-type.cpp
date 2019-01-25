@@ -142,10 +142,10 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
 
             case x_rowid:
             {
-                // RowID is internally identical to unsigned long
+                // RowID is internally identical to uint64_t
                 rowid *rid = static_cast<rowid *>(data_);
                 sqlite3_rowid_backend *rbe = static_cast<sqlite3_rowid_backend *>(rid->get_backend());
-                rbe->value_ = static_cast<unsigned long>(sqlite3_column_int64(statement_.stmt_, pos));
+                rbe->value_ = static_cast<uint64_t>(sqlite3_column_int64(statement_.stmt_, pos));
                 break;
             }
 

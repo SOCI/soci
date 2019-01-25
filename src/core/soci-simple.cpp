@@ -311,7 +311,7 @@ struct statement_wrapper
     std::vector<indicator> into_indicators;
     std::map<int, std::string> into_strings;
     std::map<int, int> into_ints;
-    std::map<int, long long> into_longlongs;
+    std::map<int, int64_t> into_longlongs;
     std::map<int, double> into_doubles;
     std::map<int, std::tm> into_dates;
     std::map<int, blob_wrapper *> into_blob;
@@ -319,7 +319,7 @@ struct statement_wrapper
     std::vector<std::vector<indicator> > into_indicators_v;
     std::map<int, std::vector<std::string> > into_strings_v;
     std::map<int, std::vector<int> > into_ints_v;
-    std::map<int, std::vector<long long> > into_longlongs_v;
+    std::map<int, std::vector<int64_t> > into_longlongs_v;
     std::map<int, std::vector<double> > into_doubles_v;
     std::map<int, std::vector<std::tm> > into_dates_v;
 
@@ -327,7 +327,7 @@ struct statement_wrapper
     std::map<std::string, indicator> use_indicators;
     std::map<std::string, std::string> use_strings;
     std::map<std::string, int> use_ints;
-    std::map<std::string, long long> use_longlongs;
+    std::map<std::string, int64_t> use_longlongs;
     std::map<std::string, double> use_doubles;
     std::map<std::string, std::tm> use_dates;
     std::map<std::string, blob_wrapper *> use_blob;
@@ -335,7 +335,7 @@ struct statement_wrapper
     std::map<std::string, std::vector<indicator> > use_indicators_v;
     std::map<std::string, std::vector<std::string> > use_strings_v;
     std::map<std::string, std::vector<int> > use_ints_v;
-    std::map<std::string, std::vector<long long> > use_longlongs_v;
+    std::map<std::string, std::vector<int64_t> > use_longlongs_v;
     std::map<std::string, std::vector<double> > use_doubles_v;
     std::map<std::string, std::vector<std::tm> > use_dates_v;
 
@@ -558,7 +558,7 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
         case dt_long_long:
         case dt_unsigned_long_long:
             {
-                typedef std::map<std::string, long long>::const_iterator
+                typedef std::map<std::string, int64_t>::const_iterator
                     iterator;
                 iterator const it = wrapper.use_longlongs.find(name);
                 name_exists = (it != wrapper.use_longlongs.end());
@@ -623,7 +623,7 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
                 typedef std::map
                     <
                         std::string,
-                        std::vector<long long>
+                        std::vector<int64_t>
                     >::const_iterator iterator;
                 iterator const it = wrapper.use_longlongs_v.find(name);
                 name_exists = (it != wrapper.use_longlongs_v.end());
@@ -988,15 +988,15 @@ SOCI_DECL int soci_get_into_int(statement_handle st, int position)
     return wrapper->into_ints[position];
 }
 
-SOCI_DECL long long soci_get_into_long_long(statement_handle st, int position)
+SOCI_DECL int64_t soci_get_into_long_long(statement_handle st, int position)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (position_check_failed(*wrapper,
-            statement_wrapper::single, position, dt_long_long, "long long") ||
+            statement_wrapper::single, position, dt_long_long, "int64_t") ||
         not_null_check_failed(*wrapper, position))
     {
-        return 0LL;
+        return 0L;
     }
 
     return wrapper->into_longlongs[position];
@@ -1170,17 +1170,17 @@ SOCI_DECL int soci_get_into_int_v(statement_handle st, int position, int index)
     return v[index];
 }
 
-SOCI_DECL long long soci_get_into_long_long_v(statement_handle st, int position, int index)
+SOCI_DECL int64_t soci_get_into_long_long_v(statement_handle st, int position, int index)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (position_check_failed(*wrapper,
-            statement_wrapper::bulk, position, dt_long_long, "long long"))
+            statement_wrapper::bulk, position, dt_long_long, "int64_t"))
     {
         return 0;
     }
 
-    std::vector<long long> const & v = wrapper->into_longlongs_v[position];
+    std::vector<int64_t> const & v = wrapper->into_longlongs_v[position];
     if (index_check_failed(v, *wrapper, index) ||
         not_null_check_failed(*wrapper, position, index))
     {
@@ -1462,12 +1462,12 @@ SOCI_DECL void soci_set_use_int(statement_handle st, char const * name, int val)
     wrapper->use_ints[name] = val;
 }
 
-SOCI_DECL void soci_set_use_long_long(statement_handle st, char const * name, long long val)
+SOCI_DECL void soci_set_use_long_long(statement_handle st, char const * name, int64_t val)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (name_exists_check_failed(*wrapper,
-            name, dt_long_long, statement_wrapper::single, "long long"))
+            name, dt_long_long, statement_wrapper::single, "int64_t"))
     {
         return;
     }
@@ -1645,17 +1645,17 @@ SOCI_DECL void soci_set_use_int_v(statement_handle st,
 }
 
 SOCI_DECL void soci_set_use_long_long_v(statement_handle st,
-    char const * name, int index, long long val)
+    char const * name, int index, int64_t val)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (name_exists_check_failed(*wrapper,
-            name, dt_long_long, statement_wrapper::bulk, "vector long long"))
+            name, dt_long_long, statement_wrapper::bulk, "vector int64_t"))
     {
         return;
     }
 
-    std::vector<long long> & v = wrapper->use_longlongs_v[name];
+    std::vector<int64_t> & v = wrapper->use_longlongs_v[name];
     if (index_check_failed(v, *wrapper, index))
     {
         return;
@@ -1757,14 +1757,14 @@ SOCI_DECL int soci_get_use_int(statement_handle st, char const * name)
     return wrapper->use_ints[name];
 }
 
-SOCI_DECL long long soci_get_use_long_long(statement_handle st, char const * name)
+SOCI_DECL int64_t soci_get_use_long_long(statement_handle st, char const * name)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (name_exists_check_failed(*wrapper,
-            name, dt_long_long, statement_wrapper::bulk, "long long"))
+            name, dt_long_long, statement_wrapper::bulk, "int64_t"))
     {
-        return 0LL;
+        return 0L;
     }
 
     return wrapper->use_longlongs[name];
@@ -1928,13 +1928,13 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
         }
         {
             // longlongs
-            typedef std::map<std::string, long long>::iterator iterator;
+            typedef std::map<std::string, int64_t>::iterator iterator;
             iterator uit = wrapper->use_longlongs.begin();
             iterator const uend = wrapper->use_longlongs.end();
             for ( ; uit != uend; ++uit)
             {
                 std::string const & use_name = uit->first;
-                long long & use_longlong = uit->second;
+                int64_t & use_longlong = uit->second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
                 wrapper->st.exchange(use(use_longlong, use_ind, use_name));
             }
@@ -2013,13 +2013,13 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
         {
             // longlongs
             typedef std::map<std::string,
-                std::vector<long long> >::iterator iterator;
+                std::vector<int64_t> >::iterator iterator;
             iterator uit = wrapper->use_longlongs_v.begin();
             iterator const uend = wrapper->use_longlongs_v.end();
             for ( ; uit != uend; ++uit)
             {
                 std::string const & use_name = uit->first;
-                std::vector<long long> & use_longlong = uit->second;
+                std::vector<int64_t> & use_longlong = uit->second;
                 std::vector<indicator> & use_ind =
                     wrapper->use_indicators_v[use_name];
                 wrapper->st.exchange(use(use_longlong, use_ind, use_name));
@@ -2090,7 +2090,7 @@ SOCI_DECL int soci_execute(statement_handle st, int withDataExchange)
     }
 }
 
-SOCI_DECL long long soci_get_affected_rows(statement_handle st)
+SOCI_DECL int64_t soci_get_affected_rows(statement_handle st)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 

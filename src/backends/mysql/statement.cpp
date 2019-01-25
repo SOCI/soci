@@ -163,7 +163,7 @@ mysql_statement_backend::execute(int number)
                     "Binding for use elements must be either by position "
                     "or by name.");
             }
-            long long rowsAffectedBulkTemp = -1;
+            int64_t rowsAffectedBulkTemp = -1;
             for (int i = 0; i != numberOfExecutions; ++i)
             {
                 std::vector<char *> paramValues;
@@ -232,7 +232,7 @@ mysql_statement_backend::execute(int number)
                     // bulk operation
                     //std::cerr << "bulk operation:\n" << query << std::endl;
                     if (0 != mysql_real_query(session_.conn_, query.c_str(),
-                            static_cast<unsigned long>(query.size())))
+                            static_cast<uint64_t>(query.size())))
                     {
                         // preserve the number of rows affected so far.
                         rowsAffectedBulk_ = rowsAffectedBulkTemp;
@@ -245,7 +245,7 @@ mysql_statement_backend::execute(int number)
                         {
                             rowsAffectedBulkTemp = 0;
                         }
-                        rowsAffectedBulkTemp += static_cast<long long>(mysql_affected_rows(session_.conn_));
+                        rowsAffectedBulkTemp += static_cast<int64_t>(mysql_affected_rows(session_.conn_));
                     }
                     if (mysql_field_count(session_.conn_) != 0)
                     {
@@ -269,7 +269,7 @@ mysql_statement_backend::execute(int number)
 
         //std::cerr << query << std::endl;
         if (0 != mysql_real_query(session_.conn_, query.c_str(),
-                static_cast<unsigned long>(query.size())))
+                static_cast<uint64_t>(query.size())))
         {
             throw mysql_soci_error(mysql_error(session_.conn_),
                 mysql_errno(session_.conn_));
@@ -365,13 +365,13 @@ mysql_statement_backend::fetch(int number)
     }
 }
 
-long long mysql_statement_backend::get_affected_rows()
+int64_t mysql_statement_backend::get_affected_rows()
 {
     if (rowsAffectedBulk_ >= 0)
     {
         return rowsAffectedBulk_;
     }
-    return static_cast<long long>(mysql_affected_rows(session_.conn_));
+    return static_cast<int64_t>(mysql_affected_rows(session_.conn_));
 }
 
 int mysql_statement_backend::get_number_of_rows()

@@ -69,7 +69,7 @@ public:
         {
             std::ostringstream msg;
             msg << "Column at position "
-                << static_cast<unsigned long>(pos)
+                << static_cast<uint64_t>(pos)
                 << " contains NULL value and no default was provided";
             throw soci_error(msg.str());
         }
@@ -130,7 +130,7 @@ public:
         {
             std::ostringstream msg;
             msg << "Column at position "
-                << static_cast<unsigned long>(currentPos_)
+                << static_cast<uint64_t>(currentPos_)
                 << " contains NULL value and no default was provided";
             throw soci_error(msg.str());
         }
@@ -300,7 +300,7 @@ private:
         {
             std::ostringstream msg;
             msg << "Value at position "
-                << static_cast<unsigned long>(pos)
+                << static_cast<uint64_t>(pos)
                 << " was set using a different type"
                    " than the one passed to get()";
             throw soci_error(msg.str());

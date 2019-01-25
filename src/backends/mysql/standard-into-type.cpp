@@ -84,7 +84,7 @@ void mysql_standard_into_type_backend::post_fetch(
         case x_stdstring:
             {
                 std::string& dest = exchange_type_cast<x_stdstring>(data_);
-                unsigned long * lengths =
+                unsigned long* lengths =
                     mysql_fetch_lengths(statement_.result_);
                 dest.assign(buf, lengths[pos]);
             }

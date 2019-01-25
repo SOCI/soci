@@ -68,10 +68,10 @@ void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &siz
         {
             sqlType = SQL_BIGINT;
             cType = SQL_C_SBIGINT;
-            size = sizeof(long long);
-            std::vector<long long> *vp
-                 = static_cast<std::vector<long long> *>(data);
-            std::vector<long long> &v(*vp);
+            size = sizeof(int64_t);
+            std::vector<int64_t> *vp
+                 = static_cast<std::vector<int64_t> *>(data);
+            std::vector<int64_t> &v(*vp);
             prepare_indicators(v.size());
             data = &v[0];
         }
@@ -80,10 +80,10 @@ void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &siz
         {
             sqlType = SQL_BIGINT;
             cType = SQL_C_UBIGINT;
-            size = sizeof(unsigned long long);
-            std::vector<unsigned long long> *vp
-                 = static_cast<std::vector<unsigned long long> *>(data);
-            std::vector<unsigned long long> &v(*vp);
+            size = sizeof(uint64_t);
+            std::vector<uint64_t> *vp
+                 = static_cast<std::vector<uint64_t> *>(data);
+            std::vector<uint64_t> &v(*vp);
             prepare_indicators(v.size());
             data = &v[0];
         }
@@ -140,7 +140,7 @@ void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &siz
             for (std::size_t i = 0; i != vecSize; ++i)
             {
                 std::size_t sz = v[i].length();
-                indVec[i] = static_cast<long>(sz);
+                indVec[i] = static_cast<int64_t>(sz);
                 maxSize = sz > maxSize ? sz : maxSize;
             }
 
@@ -348,15 +348,15 @@ std::size_t db2_vector_use_type_backend::size()
         break;
     case x_long_long:
         {
-            std::vector<long long> *vp
-                = static_cast<std::vector<long long> *>(data);
+            std::vector<int64_t> *vp
+                = static_cast<std::vector<int64_t> *>(data);
             sz = vp->size();
         }
         break;
     case x_unsigned_long_long:
         {
-            std::vector<unsigned long long> *vp
-                = static_cast<std::vector<unsigned long long> *>(data);
+            std::vector<uint64_t> *vp
+                = static_cast<std::vector<uint64_t> *>(data);
             sz = vp->size();
         }
         break;

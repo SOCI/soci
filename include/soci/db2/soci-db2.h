@@ -199,7 +199,7 @@ struct SOCI_DB2_DECL db2_statement_backend : details::statement_backend
     exec_fetch_result execute(int number) SOCI_OVERRIDE;
     exec_fetch_result fetch(int number) SOCI_OVERRIDE;
 
-    long long get_affected_rows() SOCI_OVERRIDE;
+    int64_t get_affected_rows() SOCI_OVERRIDE;
     int get_number_of_rows() SOCI_OVERRIDE;
     std::string get_parameter_name(int index) const SOCI_OVERRIDE;
 

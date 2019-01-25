@@ -213,7 +213,7 @@ struct sqlite3_statement_backend : details::statement_backend
     exec_fetch_result execute(int number) SOCI_OVERRIDE;
     exec_fetch_result fetch(int number) SOCI_OVERRIDE;
 
-    long long get_affected_rows() SOCI_OVERRIDE;
+    int64_t get_affected_rows() SOCI_OVERRIDE;
     int get_number_of_rows() SOCI_OVERRIDE;
     std::string get_parameter_name(int index) const SOCI_OVERRIDE;
 
@@ -238,7 +238,7 @@ struct sqlite3_statement_backend : details::statement_backend
     sqlite3_column_info_list columns_;
 
 
-    long long rowsAffectedBulk_; // number of rows affected by the last bulk operation
+    int64_t rowsAffectedBulk_; // number of rows affected by the last bulk operation
 
 private:
     exec_fetch_result load_rowset(int totalRows);
@@ -252,7 +252,7 @@ struct sqlite3_rowid_backend : details::rowid_backend
 
     ~sqlite3_rowid_backend() SOCI_OVERRIDE;
 
-    unsigned long value_;
+    uint64_t value_;
 };
 
 struct sqlite3_blob_backend : details::blob_backend
@@ -289,7 +289,7 @@ struct sqlite3_session_backend : details::session_backend
     void commit() SOCI_OVERRIDE;
     void rollback() SOCI_OVERRIDE;
 
-    bool get_last_insert_id(session&, std::string const&, long&) SOCI_OVERRIDE;
+    bool get_last_insert_id(session&, std::string const&, int64_t&) SOCI_OVERRIDE;
 
     std::string empty_blob() SOCI_OVERRIDE
     {

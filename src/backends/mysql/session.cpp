@@ -136,7 +136,7 @@ bool valid_int(const string & s)
     char *tail;
     const char *cstr = s.c_str();
     errno = 0;
-    long n = std::strtol(cstr, &tail, 10);
+    int64_t n = std::strtol(cstr, &tail, 10);
     if (errno != 0 || n > INT_MAX || n < INT_MIN)
     {
         return false;
@@ -153,7 +153,7 @@ bool valid_uint(const string & s)
     char *tail;
     const char *cstr = s.c_str();
     errno = 0;
-    unsigned long n = std::strtoul(cstr, &tail, 10);
+    uint64_t n = std::strtoul(cstr, &tail, 10);
     if (errno != 0 || n == 0 || n > UINT_MAX)
         return false;
     if (*tail != '\0')
@@ -435,7 +435,7 @@ namespace // unnamed
 void hard_exec(MYSQL *conn, const string & query)
 {
     if (0 != mysql_real_query(conn, query.c_str(),
-            static_cast<unsigned long>(query.size())))
+            static_cast<uint64_t>(query.size())))
     {
         //throw soci_error(mysql_error(conn));
         string errMsg = mysql_error(conn);
@@ -463,9 +463,9 @@ void mysql_session_backend::rollback()
 }
 
 bool mysql_session_backend::get_last_insert_id(
-    session & /* s */, std::string const & /* table */, long & value)
+    session & /* s */, std::string const & /* table */, int64_t & value)
 {
-    value = static_cast<long>(mysql_insert_id(conn_));
+    value = static_cast<int64_t>(mysql_insert_id(conn_));
 
     return true;
 }

@@ -78,15 +78,15 @@ TEST_CASE("Dummy test", "[empty]")
     sql << query, into(i);
 
 #if defined (__LP64__) || ( __WORDSIZE == 64 )
-    long int li = 9;
+    int64_t li = 9;
     sql << "insert", use(li);
     sql << "select", into(li);
 #endif
-
-    long long ll = 11;
+/*
+    int64_t ll = 11;
     sql << "insert", use(ll);
     sql << "select", into(ll);
-
+*/
     indicator ind = i_ok;
     sql << "insert", use(i, ind);
     sql << "select", into(i, ind);

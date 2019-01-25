@@ -235,7 +235,7 @@ odbc_statement_backend::fetch(int number)
     return ef_success;
 }
 
-long long odbc_statement_backend::get_affected_rows()
+int64_t odbc_statement_backend::get_affected_rows()
 {
     return rowsAffected_;
 }

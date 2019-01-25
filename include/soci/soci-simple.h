@@ -70,7 +70,7 @@ SOCI_DECL int soci_into_date_v     (statement_handle st);
 SOCI_DECL int          soci_get_into_state    (statement_handle st, int position);
 SOCI_DECL char const * soci_get_into_string   (statement_handle st, int position);
 SOCI_DECL int          soci_get_into_int      (statement_handle st, int position);
-SOCI_DECL long long    soci_get_into_long_long(statement_handle st, int position);
+SOCI_DECL int64_t         soci_get_into_long_long(statement_handle st, int position);
 SOCI_DECL double       soci_get_into_double   (statement_handle st, int position);
 SOCI_DECL char const * soci_get_into_date     (statement_handle st, int position);
 SOCI_DECL blob_handle  soci_get_into_blob     (statement_handle st, int position);
@@ -83,7 +83,7 @@ SOCI_DECL void soci_into_resize_v  (statement_handle st, int new_size);
 SOCI_DECL int          soci_get_into_state_v    (statement_handle st, int position, int index);
 SOCI_DECL char const * soci_get_into_string_v   (statement_handle st, int position, int index);
 SOCI_DECL int          soci_get_into_int_v      (statement_handle st, int position, int index);
-SOCI_DECL long long    soci_get_into_long_long_v(statement_handle st, int position, int index);
+SOCI_DECL int64_t         soci_get_into_long_long_v(statement_handle st, int position, int index);
 SOCI_DECL double       soci_get_into_double_v   (statement_handle st, int position, int index);
 SOCI_DECL char const * soci_get_into_date_v     (statement_handle st, int position, int index);
 
@@ -108,7 +108,7 @@ SOCI_DECL void soci_use_date_v     (statement_handle st, char const * name);
 SOCI_DECL void soci_set_use_state    (statement_handle st, char const * name, int state);
 SOCI_DECL void soci_set_use_string   (statement_handle st, char const * name, char const * val);
 SOCI_DECL void soci_set_use_int      (statement_handle st, char const * name, int val);
-SOCI_DECL void soci_set_use_long_long(statement_handle st, char const * name, long long val);
+SOCI_DECL void soci_set_use_long_long(statement_handle st, char const * name, int64_t val);
 SOCI_DECL void soci_set_use_double   (statement_handle st, char const * name, double val);
 SOCI_DECL void soci_set_use_date     (statement_handle st, char const * name, char const * val);
 SOCI_DECL void soci_set_use_blob     (statement_handle st, char const * name, blob_handle blob);
@@ -125,7 +125,7 @@ SOCI_DECL void soci_set_use_string_v(statement_handle st,
 SOCI_DECL void soci_set_use_int_v(statement_handle st,
     char const * name, int index, int val);
 SOCI_DECL void soci_set_use_long_long_v(statement_handle st,
-    char const * name, int index, long long val);
+    char const * name, int index, int64_t val);
 SOCI_DECL void soci_set_use_double_v(statement_handle st,
     char const * name, int index, double val);
 SOCI_DECL void soci_set_use_date_v(statement_handle st,
@@ -136,7 +136,7 @@ SOCI_DECL void soci_set_use_date_v(statement_handle st,
 SOCI_DECL int          soci_get_use_state    (statement_handle st, char const * name);
 SOCI_DECL char const * soci_get_use_string   (statement_handle st, char const * name);
 SOCI_DECL int          soci_get_use_int      (statement_handle st, char const * name);
-SOCI_DECL long long    soci_get_use_long_long(statement_handle st, char const * name);
+SOCI_DECL int64_t         soci_get_use_long_long(statement_handle st, char const * name);
 SOCI_DECL double       soci_get_use_double   (statement_handle st, char const * name);
 SOCI_DECL char const * soci_get_use_date     (statement_handle st, char const * name);
 SOCI_DECL blob_handle  soci_get_use_blob     (statement_handle st, char const * name);
@@ -145,7 +145,7 @@ SOCI_DECL blob_handle  soci_get_use_blob     (statement_handle st, char const * 
 // statement preparation and execution
 SOCI_DECL void      soci_prepare(statement_handle st, char const * query);
 SOCI_DECL int       soci_execute(statement_handle st, int withDataExchange);
-SOCI_DECL long long soci_get_affected_rows(statement_handle st);
+SOCI_DECL int64_t      soci_get_affected_rows(statement_handle st);
 SOCI_DECL int       soci_fetch(statement_handle st);
 SOCI_DECL int       soci_got_data(statement_handle st);
 

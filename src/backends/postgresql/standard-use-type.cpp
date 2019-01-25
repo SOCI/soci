@@ -88,7 +88,7 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
         case x_long_long:
             {
                 std::size_t const bufSize
-                    = std::numeric_limits<long long>::digits10 + 3;
+                    = std::numeric_limits<int64_t>::digits10 + 3;
                 buf_ = new char[bufSize];
                 snprintf(buf_, bufSize, "%" LL_FMT_FLAGS "d",
                     exchange_type_cast<x_long_long>(data_));
@@ -97,7 +97,7 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
         case x_unsigned_long_long:
             {
                 std::size_t const bufSize
-                    = std::numeric_limits<unsigned long long>::digits10 + 2;
+                    = std::numeric_limits<uint64_t>::digits10 + 2;
                 buf_ = new char[bufSize];
                 snprintf(buf_, bufSize, "%" LL_FMT_FLAGS "u",
                     exchange_type_cast<x_unsigned_long_long>(data_));
@@ -119,7 +119,7 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
             break;
         case x_rowid:
             {
-                // RowID is internally identical to unsigned long
+                // RowID is internally identical to uint64_t
 
                 rowid * rid = static_cast<rowid *>(data_);
                 postgresql_rowid_backend * rbe
@@ -127,10 +127,10 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                         rid->get_backend());
 
                 std::size_t const bufSize
-                    = std::numeric_limits<unsigned long>::digits10 + 2;
+                    = std::numeric_limits<uint64_t>::digits10 + 2;
                 buf_ = new char[bufSize];
 
-                snprintf(buf_, bufSize, "%lu", rbe->value_);
+                snprintf(buf_, bufSize, "%" LLU_FMT_FLAGS, rbe->value_);
             }
             break;
         case x_blob:
@@ -140,9 +140,9 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                     static_cast<postgresql_blob_backend *>(b->get_backend());
 
                 std::size_t const bufSize
-                    = std::numeric_limits<unsigned long>::digits10 + 2;
+                    = std::numeric_limits<uint64_t>::digits10 + 2;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%lu", bbe->oid_);
+                snprintf(buf_, bufSize, "%" LLU_FMT_FLAGS, bbe->oid_);
             }
             break;
         case x_xmltype:

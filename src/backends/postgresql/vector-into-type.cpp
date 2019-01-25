@@ -129,14 +129,14 @@ void postgresql_vector_into_type_backend::post_fetch(bool gotData, indicator * i
                 break;
             case x_long_long:
                 {
-                    long long const val = string_to_integer<long long>(buf);
+                    int64_t const val = string_to_integer<int64_t>(buf);
                     set_invector_(data_, i, val);
                 }
                 break;
             case x_unsigned_long_long:
                 {
-                    unsigned long long const val =
-                        string_to_unsigned_integer<unsigned long long>(buf);
+                    uint64_t const val =
+                        string_to_unsigned_integer<uint64_t>(buf);
                     set_invector_(data_, i, val);
                 }
                 break;
@@ -206,10 +206,10 @@ void postgresql_vector_into_type_backend::resize(std::size_t sz)
             resizevector_<int>(data_, sz);
             break;
         case x_long_long:
-            resizevector_<long long>(data_, sz);
+            resizevector_<int64_t>(data_, sz);
             break;
         case x_unsigned_long_long:
-            resizevector_<unsigned long long>(data_, sz);
+            resizevector_<uint64_t>(data_, sz);
             break;
         case x_double:
             resizevector_<double>(data_, sz);
@@ -274,10 +274,10 @@ std::size_t postgresql_vector_into_type_backend::full_size()
         sz = get_vector_size<int>(data_);
         break;
     case x_long_long:
-        sz = get_vector_size<long long>(data_);
+        sz = get_vector_size<int64_t>(data_);
         break;
     case x_unsigned_long_long:
-        sz = get_vector_size<unsigned long long>(data_);
+        sz = get_vector_size<uint64_t>(data_);
         break;
     case x_double:
         sz = get_vector_size<double>(data_);

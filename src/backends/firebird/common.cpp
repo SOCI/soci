@@ -98,7 +98,7 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
         if (size > static_cast<std::size_t>(var->sqllen))
         {
             std::ostringstream msg;
-            msg << "Value \"" << s << "\" is too long ("
+            msg << "Value \"" << s << "\" is too int64_t ("
                 << size << " bytes) to be stored in column of size "
                 << var->sqllen << " bytes";
             throw soci_error(msg.str());
@@ -130,7 +130,7 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
     }
     else if (sqltype == SQL_INT64)
     {
-        parse_decimal<long long, unsigned long long>(buf_, var, s);
+        parse_decimal<int64_t, uint64_t>(buf_, var, s);
     }
     else if (sqltype == SQL_TIMESTAMP
             || sqltype == SQL_TYPE_DATE)
@@ -206,7 +206,7 @@ std::string getTextParam(XSQLVAR const *var)
     }
     else if ((var->sqltype & ~1) == SQL_INT64)
     {
-        return format_decimal<long long>(var->sqldata, var->sqlscale);
+        return format_decimal<int64_t>(var->sqldata, var->sqlscale);
     }
     else
         throw soci_error("Unexpected string type");

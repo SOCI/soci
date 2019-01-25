@@ -97,7 +97,7 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                 break;
             case x_stdstring:
                 {
-                    unsigned long * lengths =
+                    unsigned long* lengths =
                         mysql_fetch_lengths(statement_.result_);
                     // Not sure if it's necessary, but the code below is used
                     // instead of
@@ -124,14 +124,14 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                 break;
             case x_long_long:
                 {
-                    long long val;
+                    int64_t val;
                     parse_num(buf, val);
                     set_invector_(data_, i, val);
                 }
                 break;
             case x_unsigned_long_long:
                 {
-                    unsigned long long val;
+                    uint64_t val;
                     parse_num(buf, val);
                     set_invector_(data_, i, val);
                 }
@@ -184,9 +184,9 @@ void mysql_vector_into_type_backend::resize(std::size_t sz)
     case x_char:         resizevector_<char>         (data_, sz); break;
     case x_short:        resizevector_<short>        (data_, sz); break;
     case x_integer:      resizevector_<int>          (data_, sz); break;
-    case x_long_long:     resizevector_<long long>    (data_, sz); break;
+    case x_long_long:     resizevector_<int64_t>    (data_, sz); break;
     case x_unsigned_long_long:
-        resizevector_<unsigned long long>(data_, sz);
+        resizevector_<uint64_t>(data_, sz);
         break;
     case x_double:       resizevector_<double>       (data_, sz); break;
     case x_stdstring:    resizevector_<std::string>  (data_, sz); break;
@@ -206,9 +206,9 @@ std::size_t mysql_vector_into_type_backend::size()
     case x_char:         sz = get_vector_size<char>         (data_); break;
     case x_short:        sz = get_vector_size<short>        (data_); break;
     case x_integer:      sz = get_vector_size<int>          (data_); break;
-    case x_long_long:     sz = get_vector_size<long long>    (data_); break;
+    case x_long_long:     sz = get_vector_size<int64_t>    (data_); break;
     case x_unsigned_long_long:
-        sz = get_vector_size<unsigned long long>(data_);
+        sz = get_vector_size<uint64_t>(data_);
         break;
     case x_double:       sz = get_vector_size<double>       (data_); break;
     case x_stdstring:    sz = get_vector_size<std::string>  (data_); break;

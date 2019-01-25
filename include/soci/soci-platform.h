@@ -25,8 +25,12 @@
 
 #if defined(_MSC_VER)
 #define LL_FMT_FLAGS "I64"
+#elif __WORDSIZE == 64
+#define LL_FMT_FLAGS "l"
+#define LLU_FMT_FLAGS "lu"
 #else
 #define LL_FMT_FLAGS "ll"
+#define LLU_FMT_FLAGS "llu"
 #endif
 
 // Portability hacks for Microsoft Visual C++ compiler
@@ -51,12 +55,12 @@
 # error "Visual C++ versions prior 1300 don't support _strtoi64 and _strtoui64"
 #elif _MSC_VER >= 1300 && _MSC_VER < 1800
 namespace std {
-    inline long long strtoll(char const* str, char** str_end, int base)
+    inline int64_t strtoll(char const* str, char** str_end, int base)
     {
         return _strtoi64(str, str_end, base);
     }
 
-    inline unsigned long long strtoull(char const* str, char** str_end, int base)
+    inline uint64_t strtoull(char const* str, char** str_end, int base)
     {
         return _strtoui64(str, str_end, base);
     }

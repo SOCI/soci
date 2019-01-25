@@ -174,10 +174,10 @@ std::size_t sqlite3_vector_use_type_backend::size()
         sz = get_vector_size<int>(data_);
         break;
     case x_long_long:
-        sz = get_vector_size<long long>(data_);
+        sz = get_vector_size<int64_t>(data_);
         break;
     case x_unsigned_long_long:
-        sz = get_vector_size<unsigned long long>(data_);
+        sz = get_vector_size<uint64_t>(data_);
         break;
     case x_double:
         sz = get_vector_size<double>(data_);

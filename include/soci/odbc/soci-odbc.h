@@ -81,7 +81,7 @@ protected:
     };
 
     // IBM DB2 driver is not compliant to ODBC spec for indicators in 64bit
-    // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
+    // SQLLEN is still defined 32bit (int) but spec requires 64bit (int64_t)
     inline bool requires_noncompliant_32bit_sqllen() const;
     inline SQLLEN get_sqllen_from_value(const SQLLEN val) const;
     inline void set_sqllen_from_value(SQLLEN &target, const SQLLEN val) const;
@@ -141,7 +141,7 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
     void prepare_indicators(std::size_t size);
 
     // IBM DB2 driver is not compliant to ODBC spec for indicators in 64bit
-    // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
+    // SQLLEN is still defined 32bit (int) but spec requires 64bit (int64_t)
     inline SQLLEN get_sqllen_from_vector_at(std::size_t idx) const;
 
     SQLLEN *indHolders_;
@@ -222,7 +222,7 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend,
     void clean_up() SOCI_OVERRIDE;
 
     // IBM DB2 driver is not compliant to ODBC spec for indicators in 64bit
-    // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
+    // SQLLEN is still defined 32bit (int) but spec requires 64bit (int64_t)
     inline void set_sqllen_from_vector_at(const std::size_t idx, const SQLLEN val);
 
     SQLLEN *indHolders_;
@@ -248,7 +248,7 @@ struct odbc_statement_backend : details::statement_backend
     exec_fetch_result execute(int number) SOCI_OVERRIDE;
     exec_fetch_result fetch(int number) SOCI_OVERRIDE;
 
-    long long get_affected_rows() SOCI_OVERRIDE;
+    int64_t get_affected_rows() SOCI_OVERRIDE;
     int get_number_of_rows() SOCI_OVERRIDE;
     std::string get_parameter_name(int index) const SOCI_OVERRIDE;
 
@@ -273,7 +273,7 @@ struct odbc_statement_backend : details::statement_backend
     bool boundByName_;
     bool boundByPos_;
 
-    long long rowsAffected_; // number of rows affected by the last operation
+    int64_t rowsAffected_; // number of rows affected by the last operation
 
     std::string query_;
     std::vector<std::string> names_; // list of names for named binds
@@ -315,9 +315,9 @@ struct odbc_session_backend : details::session_backend
     void rollback() SOCI_OVERRIDE;
 
     bool get_next_sequence_value(session & s,
-        std::string const & sequence, long & value) SOCI_OVERRIDE;
+        std::string const & sequence, int64_t & value) SOCI_OVERRIDE;
     bool get_last_insert_id(session & s,
-        std::string const & table, long & value) SOCI_OVERRIDE;
+        std::string const & table, int64_t & value) SOCI_OVERRIDE;
 
     std::string get_dummy_from_table() const SOCI_OVERRIDE;
 
@@ -409,7 +409,7 @@ private:
             break;
 
           case SQL_SUCCESS_WITH_INFO:
-            socierror = "[SOCI]: Error message too long.";
+            socierror = "[SOCI]: Error message too int64_t.";
             break;
 
           case SQL_NO_DATA:

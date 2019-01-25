@@ -126,17 +126,17 @@ TEST_CASE("DB2 test 1", "[db2]")
     }
 
     {
-        const long int li = 9;
+        const int64_t li = 9;
         sql << "insert into db2inst1.SOCI_TEST (id) values (:id)", use(li,"id");
-        long int lj = 0;;
+        int64_t lj = 0;;
         sql << "select id from db2inst1.SOCI_TEST where id=9", into(lj);
         CHECK(lj == li);
     }
 
     {
-        const long long ll = 11;
+        const int64_t ll = 11;
         sql << "insert into db2inst1.SOCI_TEST (id) values (:id)", use(ll,"id");
-        long long lj = 0;
+        int64_t lj = 0;
         sql << "select id from db2inst1.SOCI_TEST where id=11", into(lj);
         CHECK(lj == ll);
     }
@@ -344,7 +344,7 @@ TEST_CASE("DB2 test 3", "[db2]")
     std::string query = "CREATE TABLE DB2INST1.SOCI_TEST (ID BIGINT,DATA VARCHAR(8),DT TIMESTAMP)";
     sql << query;
 
-    std::vector<long long> ids(100);
+    std::vector<int64_t> ids(100);
     std::vector<std::string> data(100);
     std::vector<std::tm> dts(100);
     for (int i = 0; i < 100; i++)
@@ -367,7 +367,7 @@ TEST_CASE("DB2 test 3", "[db2]")
     for (rowset<row>::const_iterator it = rs.begin(); it != rs.end(); it++)
     {
         const row & r = *it;
-        const long long id = r.get<long long>(0);
+        const int64_t id = r.get<int64_t>(0);
         const std::string data = r.get<std::string>(1);
         const std::tm dt = r.get<std::tm>(2);
 

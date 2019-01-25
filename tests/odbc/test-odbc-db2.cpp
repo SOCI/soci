@@ -109,14 +109,14 @@ struct table_creator_bigint : table_creator_base
     }
 };
 
-TEST_CASE("ODBC/DB2 long long", "[odbc][db2][longlong]")
+TEST_CASE("ODBC/DB2 int64_t", "[odbc][db2][longlong]")
 {
     const int num_recs = 100;
     soci::session sql(backEnd, connectString);
     table_creator_bigint table(sql);
 
     {
-        long long n;
+        int64_t n;
         statement st = (sql.prepare <<
             "INSERT INTO SOCI_TEST (VAL) VALUES (:val)", use(n));
         for (int i = 0; i < num_recs; i++)
@@ -126,7 +126,7 @@ TEST_CASE("ODBC/DB2 long long", "[odbc][db2][longlong]")
         }
     }
     {
-        long long n2;
+        int64_t n2;
         statement st = (sql.prepare <<
             "SELECT VAL FROM SOCI_TEST ORDER BY VAL", into(n2));
         st.execute();
@@ -138,14 +138,14 @@ TEST_CASE("ODBC/DB2 long long", "[odbc][db2][longlong]")
     }
 }
 
-TEST_CASE("ODBC/DB2 unsigned long long", "[odbc][db2][unsigned][longlong]")
+TEST_CASE("ODBC/DB2 uint64_t", "[odbc][db2][unsigned][longlong]")
 {
     const int num_recs = 100;
     soci::session sql(backEnd, connectString);
     table_creator_bigint table(sql);
 
     {
-        unsigned long long n;
+        uint64_t n;
         statement st = (sql.prepare <<
             "INSERT INTO SOCI_TEST (VAL) VALUES (:val)", use(n));
         for (int i = 0; i < num_recs; i++)
@@ -155,7 +155,7 @@ TEST_CASE("ODBC/DB2 unsigned long long", "[odbc][db2][unsigned][longlong]")
         }
     }
     {
-        unsigned long long n2;
+        uint64_t n2;
         statement st = (sql.prepare <<
             "SELECT VAL FROM SOCI_TEST ORDER BY VAL", into(n2));
         st.execute();
@@ -167,14 +167,14 @@ TEST_CASE("ODBC/DB2 unsigned long long", "[odbc][db2][unsigned][longlong]")
     }
 }
 
-TEST_CASE("ODBC/DB2 vector long long", "[odbc][db2][vector][longlong]")
+TEST_CASE("ODBC/DB2 vector int64_t", "[odbc][db2][vector][longlong]")
 {
     const std::size_t num_recs = 100;
     soci::session sql(backEnd, connectString);
     table_creator_bigint table(sql);
 
     {
-        std::vector<long long> v(num_recs);
+        std::vector<int64_t> v(num_recs);
         for (std::size_t i = 0; i < num_recs; i++)
         {
             v[i] = 1000000000LL + i;
@@ -185,7 +185,7 @@ TEST_CASE("ODBC/DB2 vector long long", "[odbc][db2][vector][longlong]")
     {
         std::size_t recs = 0;
 
-        std::vector<long long> v(num_recs / 2 + 1);
+        std::vector<int64_t> v(num_recs / 2 + 1);
         statement st = (sql.prepare <<
             "SELECT VAL FROM SOCI_TEST ORDER BY VAL", into(v));
         st.execute();
@@ -200,7 +200,7 @@ TEST_CASE("ODBC/DB2 vector long long", "[odbc][db2][vector][longlong]")
             for (std::size_t i = 0; i < vsize; i++)
             {
                 CHECK(v[i] == 1000000000LL +
-                    static_cast<long long>(recs));
+                    static_cast<int64_t>(recs));
                 recs++;
             }
         }
@@ -208,14 +208,14 @@ TEST_CASE("ODBC/DB2 vector long long", "[odbc][db2][vector][longlong]")
     }
 }
 
-TEST_CASE("ODBC/DB2 vector unsigned long long", "[odbc][db2][vector][unsigned][longlong]")
+TEST_CASE("ODBC/DB2 vector uint64_t", "[odbc][db2][vector][unsigned][longlong]")
 {
     const std::size_t num_recs = 100;
     soci::session sql(backEnd, connectString);
     table_creator_bigint table(sql);
 
     {
-        std::vector<unsigned long long> v(num_recs);
+        std::vector<uint64_t> v(num_recs);
         for (std::size_t i = 0; i < num_recs; i++)
         {
             v[i] = 1000000000LL + i;
@@ -226,7 +226,7 @@ TEST_CASE("ODBC/DB2 vector unsigned long long", "[odbc][db2][vector][unsigned][l
     {
         std::size_t recs = 0;
 
-        std::vector<unsigned long long> v(num_recs / 2 + 1);
+        std::vector<uint64_t> v(num_recs / 2 + 1);
         statement st = (sql.prepare <<
             "SELECT VAL FROM SOCI_TEST ORDER BY VAL", into(v));
         st.execute();
@@ -241,7 +241,7 @@ TEST_CASE("ODBC/DB2 vector unsigned long long", "[odbc][db2][vector][unsigned][l
             for (std::size_t i = 0; i < vsize; i++)
             {
                 CHECK(v[i] == 1000000000LL +
-                    static_cast<unsigned long long>(recs));
+                    static_cast<uint64_t>(recs));
                 recs++;
             }
         }

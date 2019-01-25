@@ -147,7 +147,7 @@ void firebird_blob_backend::open()
     }
 
     // get basic blob info
-    long blob_size = getBLOBInfo();
+    int64_t blob_size = getBLOBInfo();
 
     data_.resize(blob_size);
 }
@@ -273,12 +273,12 @@ void firebird_blob_backend::save()
 
 // retrives number of segments and total length of BLOB
 // returns total length of BLOB
-long firebird_blob_backend::getBLOBInfo()
+int64_t firebird_blob_backend::getBLOBInfo()
 {
     char blob_items[] = {isc_info_blob_max_segment, isc_info_blob_total_length};
     char res_buffer[20], *p, item;
     short length;
-    long total_length = 0;
+    int64_t total_length = 0;
 
     ISC_STATUS stat[20];
 

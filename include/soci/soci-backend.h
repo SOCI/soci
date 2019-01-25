@@ -189,7 +189,7 @@ public:
     virtual exec_fetch_result execute(int number) = 0;
     virtual exec_fetch_result fetch(int number) = 0;
 
-    virtual long long get_affected_rows() = 0;
+    virtual int64_t get_affected_rows() = 0;
     virtual int get_number_of_rows() = 0;
 
     virtual std::string get_parameter_name(int index) const = 0;
@@ -271,11 +271,11 @@ public:
     // versions of them in the derived classes. However every backend should
     // define at least one of them to allow the code using auto-generated values
     // to work.
-    virtual bool get_next_sequence_value(session&, std::string const&, long&)
+    virtual bool get_next_sequence_value(session&, std::string const&, int64_t&)
     {
         return false;
     }
-    virtual bool get_last_insert_id(session&, std::string const&, long&)
+    virtual bool get_last_insert_id(session&, std::string const&, int64_t&)
     {
         return false;
     }

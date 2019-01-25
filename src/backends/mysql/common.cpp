@@ -15,7 +15,7 @@ char * soci::details::mysql::quote(MYSQL * conn, const char *s, size_t len)
 {
     char *retv = new char[2 * len + 3];
     retv[0] = '\'';
-    int len_esc = mysql_real_escape_string(conn, retv + 1, s, static_cast<unsigned long>(len));
+    int len_esc = mysql_real_escape_string(conn, retv + 1, s, static_cast<uint64_t>(len));
     retv[len_esc + 1] = '\'';
     retv[len_esc + 2] = '\0';
 

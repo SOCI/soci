@@ -65,9 +65,9 @@ void odbc_vector_into_type_backend::define_by_pos(
         break;
     case x_long_long:
         {
-            std::vector<long long> *vp =
-                static_cast<std::vector<long long> *>(data);
-            std::vector<long long> &v(*vp);
+            std::vector<int64_t> *vp =
+                static_cast<std::vector<int64_t> *>(data);
+            std::vector<int64_t> &v(*vp);
             prepare_indicators(v.size());
             if (use_string_for_bigint())
             {
@@ -81,16 +81,16 @@ void odbc_vector_into_type_backend::define_by_pos(
             else // Normal case, use ODBC support.
             {
                 odbcType_ = SQL_C_SBIGINT;
-                size = sizeof(long long);
+                size = sizeof(int64_t);
                 data = &v[0];
             }
         }
         break;
     case x_unsigned_long_long:
         {
-            std::vector<unsigned long long> *vp =
-                static_cast<std::vector<unsigned long long> *>(data);
-            std::vector<unsigned long long> &v(*vp);
+            std::vector<uint64_t> *vp =
+                static_cast<std::vector<uint64_t> *>(data);
+            std::vector<uint64_t> &v(*vp);
             prepare_indicators(v.size());
             if (use_string_for_bigint())
             {
@@ -104,7 +104,7 @@ void odbc_vector_into_type_backend::define_by_pos(
             else // Normal case, use ODBC support.
             {
                 odbcType_ = SQL_C_UBIGINT;
-                size = sizeof(unsigned long long);
+                size = sizeof(uint64_t);
                 data = &v[0];
             }
         }
@@ -278,9 +278,9 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
         }
         else if (type_ == x_long_long && use_string_for_bigint())
         {
-            std::vector<long long> *vp
-                = static_cast<std::vector<long long> *>(data_);
-            std::vector<long long> &v(*vp);
+            std::vector<int64_t> *vp
+                = static_cast<std::vector<int64_t> *>(data_);
+            std::vector<int64_t> &v(*vp);
             char *pos = buf_;
             std::size_t const vsize = v.size();
             for (std::size_t i = 0; i != vsize; ++i)
@@ -294,9 +294,9 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
         }
         else if (type_ == x_unsigned_long_long && use_string_for_bigint())
         {
-            std::vector<unsigned long long> *vp
-                = static_cast<std::vector<unsigned long long> *>(data_);
-            std::vector<unsigned long long> &v(*vp);
+            std::vector<uint64_t> *vp
+                = static_cast<std::vector<uint64_t> *>(data_);
+            std::vector<uint64_t> &v(*vp);
             char *pos = buf_;
             std::size_t const vsize = v.size();
             for (std::size_t i = 0; i != vsize; ++i)
@@ -377,15 +377,15 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
         break;
     case x_long_long:
         {
-            std::vector<long long> *v =
-                static_cast<std::vector<long long> *>(data_);
+            std::vector<int64_t> *v =
+                static_cast<std::vector<int64_t> *>(data_);
             v->resize(sz);
         }
         break;
     case x_unsigned_long_long:
         {
-            std::vector<unsigned long long> *v =
-                static_cast<std::vector<unsigned long long> *>(data_);
+            std::vector<uint64_t> *v =
+                static_cast<std::vector<uint64_t> *>(data_);
             v->resize(sz);
         }
         break;
@@ -442,15 +442,15 @@ std::size_t odbc_vector_into_type_backend::size()
         break;
     case x_long_long:
         {
-            std::vector<long long> *v =
-                static_cast<std::vector<long long> *>(data_);
+            std::vector<int64_t> *v =
+                static_cast<std::vector<int64_t> *>(data_);
             sz = v->size();
         }
         break;
     case x_unsigned_long_long:
         {
-            std::vector<unsigned long long> *v =
-                static_cast<std::vector<unsigned long long> *>(data_);
+            std::vector<uint64_t> *v =
+                static_cast<std::vector<uint64_t> *>(data_);
             sz = v->size();
         }
         break;

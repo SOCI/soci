@@ -301,7 +301,7 @@ postgresql_statement_backend::execute(int number)
                     "Binding for use elements must be either by position "
                     "or by name.");
             }
-            long long rowsAffectedBulkTemp = 0;
+            int64_t rowsAffectedBulkTemp = 0;
             for (int i = 0; i != numberOfExecutions; ++i)
             {
                 std::vector<char *> paramValues;
@@ -660,13 +660,13 @@ postgresql_statement_backend::fetch(int number)
     }
 }
 
-long long postgresql_statement_backend::get_affected_rows()
+int64_t postgresql_statement_backend::get_affected_rows()
 {
     // PQcmdTuples() doesn't really modify the result but it takes a non-const
     // pointer to it, so we can't rely on implicit conversion here.
     const char * const resultStr = PQcmdTuples(result_.get_result());
     char * end;
-    long long result = std::strtoll(resultStr, &end, 0);
+    int64_t result = std::strtoll(resultStr, &end, 0);
     if (end != resultStr)
     {
         return result;
@@ -714,7 +714,7 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     // In postgresql_ column numbers start from 0
     int const pos = colNum - 1;
 
-    unsigned long const typeOid = PQftype(result_, pos);
+    uint64_t const typeOid = PQftype(result_, pos);
     switch (typeOid)
     {
     // Note: the following list of OIDs was taken from the pg_type table
