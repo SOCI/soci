@@ -32,6 +32,16 @@ option(SOCI_ASAN "Enable address sanitizer on GCC v4.8+/Clang v 3.1+" OFF)
 set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
 
+set(SOCI_CXX_C11	ON CACHE BOOL "activé pour la réception v3" FORCE)
+set(SOCI_SHARED 	ON CACHE BOOL "activé pour la réception v3" FORCE)
+set(SOCI_STATIC 	OFF CACHE BOOL "DÉSactivé pour la réception v3" FORCE)
+
+foreach(OPT DB2 FIREBIRD ODBC ORACLE MYSQL SQLITE3)
+	set(WITH_${OPT}	OFF CACHE BOOL "désactivé pour la réception v3" FORCE)
+endforeach(OPT)
+
+set(WITH_POSTGRESQL	ON CACHE BOOL "activé pour la réception v3" FORCE)
+
 include(SociUtilities)
 include(SociConfig)
 
