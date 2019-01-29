@@ -75,12 +75,12 @@ For the Firebird backend, this type mapping is:
 
 |Firebird Data Type|SOCI Data Type|`row::get<T>` specializations|
 |--- |--- |--- |
-|numeric, decimal (where scale > 0)|eDouble|double|
-|numeric, decimal [^1] (where scale = 0)|eInteger, eDouble|int, double|
-|double precision, float|eDouble|double|
-|smallint, integer|eInteger|int|
-|char, varchar|eString|std::string|
-|date, time, timestamp|eDate|std::tm|
+|numeric, decimal (where scale > 0)|dt_double|double|
+|numeric, decimal [^1] (where scale = 0)|dt_integer, dt_double|int, double|
+|double precision, float|dt_double|double|
+|smallint, integer|dt_integer|int|
+|char, varchar|dt_string|std::string|
+|date, time, timestamp|dt_date|std::tm|
 
 [^1] There is also 64bit integer type for larger values which is
 currently not supported.
