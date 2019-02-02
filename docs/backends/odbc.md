@@ -127,7 +127,7 @@ The ODBC backend provides the following concrete classes for navite API access:
 
 |Accessor Function|Concrete Class|
 |--- |--- |
-|session_backend* session::get_backend()|odbc_statement_backend|
+|session_backend* session::get_backend()|odbc_session_backend|
 |statement_backend* statement::get_backend()|odbc_statement_backend|
 |rowid_backend* rowid::get_backend()|odbc_rowid_backend|
 
