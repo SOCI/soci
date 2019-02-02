@@ -135,21 +135,21 @@ Firebird stored procedures can be executed by using SOCI [Procedure](../procedur
 
 ## Native API Access
 
-SOCI provides access to underlying datbabase APIs via several getBackEnd() functions,
-as described in the [beyond SOCI](../beyond.md) documentation.
+SOCI provides access to underlying datbabase APIs via several `get_backend()` functions,
+as described in the [Beyond SOCI](../beyond.md) documentation.
 
 The Firebird backend provides the following concrete classes for navite API access:
 
 |Accessor Function|Concrete Class|
 |--- |--- |
-|SessionBackEnd* Session::getBackEnd()|FirebirdSessionBackEnd|
-|StatementBackEnd* Statement::getBackEnd()|FirebirdStatementBackEnd|
-|BLOBBackEnd* BLOB::getBackEnd()|FirebirdBLOBBackEnd|
-|RowIDBackEnd* RowID::getBackEnd()|
+|session_backend * session::get_backend()|firebird_session_backend|
+|statement_backend * statement::get_backend()|firebird_statement_backend|
+|blob_backend * blob::get_backend()|firebird_blob_backend|
+|rowid_backend * rowid::get_backend()|
 
 ## Backend-specific extensions
 
-### FirebirdSOCIError
+### firebird_soci_error
 
-The Firebird backend can throw instances of class `FirebirdSOCIError`, which is publicly derived
-from `SOCIError` and has an additional public `status_` member containing the Firebird status vector.
+The Firebird backend can throw instances of class `firebird_soci_error`, which is publicly derived
+from `soci_error` and has an additional public `status_` member containing the Firebird status vector.
