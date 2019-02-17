@@ -73,10 +73,6 @@ reads hints about search locations from the following variables::
 
   Path to ODBC include directory with ``sql.h`` header.
 
-.. variable:: ODBC_LIBRARY
-
-  Path to ODBC library to be linked.
-
 NOTE: The variables above should not usually be used in CMakeLists.txt files!
 
 Limitations
@@ -90,9 +86,9 @@ This module does not allow to search for a specific ODBC driver.
 #]=======================================================================]
 
 ### Try Windows Kits ##########################################################
-if(WIN32)
+if(WIN32 AND (NOT ODBC_LIBRARIES))
   # List names of ODBC libraries on Windows
-  set(ODBC_LIBRARY odbc32.lib)
+  set(ODBC_LIBRARIES odbc32.lib)
   set(_odbc_lib_names odbc32;)
 
   # List additional libraries required to use ODBC library
@@ -175,8 +171,8 @@ if(NOT ODBC_INCLUDE_DIR AND WIN32)
 endif()
 
 ### Find libraries ############################################################
-if(NOT ODBC_LIBRARY)
-  find_library(ODBC_LIBRARY
+if(NOT ODBC_LIBRARIES)
+  find_library(ODBC_LIBRARIES
     NAMES ${_odbc_lib_names}
     PATHS ${_odbc_lib_paths}
     PATH_SUFFIXES odbc)
@@ -198,7 +194,7 @@ if(NOT ODBC_LIBRARY)
 endif()
 
 ### Set result variables ######################################################
-set(REQUIRED_VARS ODBC_LIBRARY)
+set(REQUIRED_VARS ODBC_LIBRARIES)
 if(NOT WIN32)
   list(APPEND REQUIRED_VARS ODBC_INCLUDE_DIR)
 endif()
@@ -206,28 +202,27 @@ endif()
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(ODBC DEFAULT_MSG ${REQUIRED_VARS})
 
-mark_as_advanced(FORCE ODBC_LIBRARY ODBC_INCLUDE_DIR)
+mark_as_advanced(FORCE ODBC_LIBRARIES ODBC_INCLUDE_DIR)
 
 if(ODBC_CONFIG)
   mark_as_advanced(FORCE ODBC_CONFIG)
 endif()
 
 set(ODBC_INCLUDE_DIRS ${ODBC_INCLUDE_DIR})
-list(APPEND ODBC_LIBRARIES ${ODBC_LIBRARY})
 list(APPEND ODBC_LIBRARIES ${_odbc_required_libs_paths})
 
 ### Import targets ############################################################
 if(ODBC_FOUND)
   if(NOT TARGET ODBC::ODBC)
-    if(IS_ABSOLUTE "${ODBC_LIBRARY}")
+    if(IS_ABSOLUTE "${ODBC_LIBRARIES}")
       add_library(ODBC::ODBC UNKNOWN IMPORTED)
       set_target_properties(ODBC::ODBC PROPERTIES
         IMPORTED_LINK_INTERFACE_LANGUAGES "C"
-        IMPORTED_LOCATION "${ODBC_LIBRARY}")
+        IMPORTED_LOCATION "${ODBC_LIBRARIES}")
     else()
       add_library(ODBC::ODBC INTERFACE IMPORTED)
       set_target_properties(ODBC::ODBC PROPERTIES
-        IMPORTED_LIBNAME "${ODBC_LIBRARY}")
+        IMPORTED_LIBNAME "${ODBC_LIBRARIES}")
     endif()
     set_target_properties(ODBC::ODBC PROPERTIES
       INTERFACE_INCLUDE_DIRECTORIES "${ODBC_INCLUDE_DIR}")
