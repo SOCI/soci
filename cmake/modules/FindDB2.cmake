@@ -3,7 +3,6 @@
 #
 # On success, the macro sets the following variables:
 # DB2_FOUND = if the library found
-# DB2_LIBRARY = full path to the library
 # DB2_LIBRARIES = full path to the library
 # DB2_INCLUDE_DIR = where to find the library headers
 #
@@ -76,7 +75,7 @@ find_path(DB2_INCLUDE_DIR sqlcli1.h
   $ENV{IBM_DB_INCLUDE}
   ${DB2_FIND_INCLUDE_PATHS})
 
-find_library(DB2_LIBRARY
+find_library(DB2_LIBRARIES
   NAMES db2 db2api
   PATHS
   $ENV{DB2LIB}
@@ -84,15 +83,13 @@ find_library(DB2_LIBRARY
   ${DB2_FIND_LIB_PATHS}
   ${DB2_FIND_LIB_NO_LIB})
 
-if(DB2_LIBRARY)
-  get_filename_component(DB2_LIBRARY_DIR ${DB2_LIBRARY} PATH)
+if(DB2_LIBRARIES)
+  get_filename_component(DB2_LIBRARY_DIR ${DB2_LIBRARIES} PATH)
 endif()
 
 if(DB2_INCLUDE_DIR AND DB2_LIBRARY_DIR)
   set(DB2_FOUND TRUE)
 endif()
-
-set(DB2_LIBRARIES ${DB2_LIBRARY})
 
 # Handle the QUIETLY and REQUIRED arguments and set DB2_FOUND to TRUE
 # if all listed variables are TRUE
