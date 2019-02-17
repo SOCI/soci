@@ -3,7 +3,6 @@
 #
 # On success, the macro sets the following variables:
 # SQLITE3_FOUND = if the library found
-# SQLITE3_LIBRARY = full path to the library
 # SQLITE3_LIBRARIES = full path to the library
 # SSQLITE3_INCLUDE_DIR = where to find the library headers
 #
@@ -32,7 +31,7 @@ find_path(SQLITE3_INCLUDE_DIR
   $ENV{OSGEO4W_ROOT}/include)
 
 set(SQLITE3_NAMES sqlite3_i sqlite3)
-find_library(SQLITE3_LIBRARY
+find_library(SQLITE3_LIBRARIES
   NAMES ${SQLITE3_NAMES}
   PATHS
   /usr/lib
@@ -46,11 +45,7 @@ find_library(SQLITE3_LIBRARY
   ${SQLITE_ROOT_DIR}/lib
   $ENV{OSGEO4W_ROOT}/lib)
 
-set(SQLITE3_LIBRARIES
-  ${SQLITE3_LIBRARIES}
-  ${SQLITE3_LIBRARY})
-
-#message(STATUS ${SQLITE3_LIBRARY})
+#message(STATUS ${SQLITE3_LIBRARIES})
 # Handle the QUIETLY and REQUIRED arguments and set SQLITE3_FOUND to TRUE
 # if all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
@@ -59,4 +54,4 @@ find_package_handle_standard_args(SQLITE3
   SQLITE3_LIBRARIES
   SQLITE3_INCLUDE_DIR)
 
-mark_as_advanced(SQLITE3_LIBRARY SQLITE3_INCLUDE_DIR SQLITE3_LIBRARIES)
+mark_as_advanced(SQLITE3_INCLUDE_DIR SQLITE3_LIBRARIES)
