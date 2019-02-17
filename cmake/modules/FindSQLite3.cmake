@@ -5,7 +5,7 @@
 # SQLITE3_FOUND = if the library found
 # SQLITE3_LIBRARY = full path to the library
 # SQLITE3_LIBRARIES = full path to the library
-# SSQLITE3_INCLUDE_DIR = where to find the library headers
+# SQLITE3_INCLUDE_DIR = where to find the library headers
 #
 # Copyright (c) 2009 Mateusz Loskot <mateusz@loskot.net>
 #
