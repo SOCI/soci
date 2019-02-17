@@ -134,7 +134,7 @@ find_library(POSTGRESQL_LIBRARIES
  # Help the user find it if we cannot.
  DOC "The ${POSTGRESQL_LIBRARY_DIR_MESSAGE}"
 )
-get_filename_component(POSTGRESQL_LIBRARY_DIR ${POSTGRESQL_LIBRARY} PATH)
+get_filename_component(POSTGRESQL_LIBRARY_DIR ${POSTGRESQL_LIBRARIES} PATH)
 
 if (POSTGRESQL_INCLUDE_DIR)
   # Some platforms include multiple pg_config.hs for multi-lib configurations
