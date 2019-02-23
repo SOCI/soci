@@ -37,7 +37,7 @@ The build configuration allows to control various aspects of compilation and ins
 All these variables are available regardless of platform or compilation toolset used.
 
 Running CMake from the command line allows to set variables in the CMake cache with the following syntax: `-DVARIABLE:TYPE=VALUE`.
-If you are new to CMake, you may find the tutorial [Running CMake](http://cmake.org/cmake/help/runningcmake.html") helpful.
+If you are new to CMake, you may find the tutorial [Running CMake](http://cmake.org/cmake/help/runningcmake.html) helpful.
 
 ### Running CMake on Unix
 
