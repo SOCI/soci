@@ -22,6 +22,7 @@ The SOCI PostgreSQL backend is supported for use with PostgreSQL >= 7.3, althoug
 |8.4|FreeBSD 8.2|g++ 4.1|
 |8.4|Debian 6|g++ 4.3|
 |8.4|RedHat 5|g++ 4.3|
+|10.03|macOS High Sierra 10.13.5|AppleClang 9.1.0.9020039|
 
 ### Required Client Libraries
 

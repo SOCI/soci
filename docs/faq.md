@@ -31,7 +31,7 @@ The basic SOCI syntax was inspired by the Embedded SQL, which is part of the SQL
 The above is not a regular C (nor C++) code, of course. It's the mix of C and SQL and there is a separate, pecialized preprocessor needed to convert it to something that the actual C (or C++) compiler will be able to understand. This means that the compilation of the program using embedded SQL is two-phase: preprocess the embedded SQL part and compile the result. This two-phase development is quite troublesome, especially when it comes to debugging. Yet, the advantage of it is that the code expresses the programmer's intents in a very straightforward
 way: read something from the database and put it into the local variable. Just like that.
 
-The SOCI library was born as an anwer to the following question: is it possible to have the same expressive power without the disadvantages of two-phase builds?
+The SOCI library was born as an answer to the following question: is it possible to have the same expressive power without the disadvantages of two-phase builds?
 
 The following was chosen to be the basic SOCI syntax that can mirror the above Embedded SQL example:
 

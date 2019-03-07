@@ -528,18 +528,18 @@ TEST_CASE_METHOD(common_tests, "Exception on not connected", "[core][exception]"
     soci::session sql; // no connection
 
     // ensure connection is checked, no crash occurs
-    CHECK_THROWS_AS(sql.begin(), soci_error);
-    CHECK_THROWS_AS(sql.commit(), soci_error);
-    CHECK_THROWS_AS(sql.rollback(), soci_error);
-    CHECK_THROWS_AS(sql.get_backend_name(), soci_error);
-    CHECK_THROWS_AS(sql.make_statement_backend(), soci_error);
-    CHECK_THROWS_AS(sql.make_rowid_backend(), soci_error);
-    CHECK_THROWS_AS(sql.make_blob_backend(), soci_error);
+    CHECK_THROWS_AS(sql.begin(), soci_error&);
+    CHECK_THROWS_AS(sql.commit(), soci_error&);
+    CHECK_THROWS_AS(sql.rollback(), soci_error&);
+    CHECK_THROWS_AS(sql.get_backend_name(), soci_error&);
+    CHECK_THROWS_AS(sql.make_statement_backend(), soci_error&);
+    CHECK_THROWS_AS(sql.make_rowid_backend(), soci_error&);
+    CHECK_THROWS_AS(sql.make_blob_backend(), soci_error&);
 
     std::string s;
     long l;
-    CHECK_THROWS_AS(sql.get_next_sequence_value(s, l), soci_error);
-    CHECK_THROWS_AS(sql.get_last_insert_id(s, l), soci_error);
+    CHECK_THROWS_AS(sql.get_next_sequence_value(s, l), soci_error&);
+    CHECK_THROWS_AS(sql.get_last_insert_id(s, l), soci_error&);
 }
 
 TEST_CASE_METHOD(common_tests, "Basic functionality", "[core][basics]")
@@ -548,7 +548,7 @@ TEST_CASE_METHOD(common_tests, "Basic functionality", "[core][basics]")
 
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
-    CHECK_THROWS_AS(sql << "drop table soci_test_nosuchtable", soci_error);
+    CHECK_THROWS_AS(sql << "drop table soci_test_nosuchtable", soci_error&);
 
     sql << "insert into soci_test (id) values (" << 123 << ")";
     int id;
@@ -708,6 +708,8 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         {
             CHECK(e.get_error_message() ==
                 "Null value fetched and no indicator defined.");
+            CHECK_THAT(e.what(),
+                Catch::Contains("for the parameter number 1"));
         }
 
         sql << "select id from soci_test where id = 1000", into(i, ind);
@@ -1985,8 +1987,9 @@ TEST_CASE_METHOD(common_tests, "Use with indicators", "[core][use][indicator]")
 
     int id = 1;
     int val = 10;
+    std::tm tm_gen = generate_tm();
     char const* insert = "insert into soci_test(id, val, tm) values(:id, :val, :tm)";
-    sql << insert, use(id, ind1), use(val, ind2), use(generate_tm(), ind3);
+    sql << insert, use(id, ind1), use(val, ind2), use(tm_gen, ind3);
 
     id = 2;
     val = 11;
@@ -2845,7 +2848,7 @@ TEST_CASE_METHOD(common_tests, "Rowset expected exception", "[core][exception][r
     std::string troublemaker;
     CHECK_THROWS_AS(
         rowset<std::string>((sql.prepare << "select str from soci_test", into(troublemaker))),
-        soci_error
+        soci_error&
         );
 }
 
@@ -2878,7 +2881,7 @@ TEST_CASE_METHOD(common_tests, "NULL expected exception", "[core][exception][nul
 
     rowset<int> rs = (sql.prepare << "select val from soci_test order by val asc");
 
-    CHECK_THROWS_AS( std::for_each(rs.begin(), rs.end(), THelper()), soci_error );
+    CHECK_THROWS_AS( std::for_each(rs.begin(), rs.end(), THelper()), soci_error& );
 }
 
 // This is like the first dynamic binding test but with rowset and iterators use
@@ -3725,13 +3728,13 @@ static std::string lower_than_g(std::string query)
     return query + " WHERE c < 'g'";
 }
 
-struct where_condition : std::unary_function<std::string, std::string>
+struct where_condition
 {
     where_condition(std::string const& where)
         : where_(where)
     {}
 
-    result_type operator()(argument_type query) const
+    std::string operator()(std::string const& query) const
     {
         return query + " WHERE " + where_;
     }
@@ -4125,7 +4128,7 @@ void check_for_exception_on_truncation(session& sql)
 }
 
 // And another helper for the test below.
-void check_for_no_truncation(session& sql)
+void check_for_no_truncation(session& sql, bool with_padding)
 {
     const std::string str20 = "exactly of length 20";
 
@@ -4137,7 +4140,13 @@ void check_for_no_truncation(session& sql)
 
     std::string s;
     sql << "select name from soci_test", into(s);
-    CHECK( s == str20 );
+
+    // Firebird can pad CHAR(N) columns when using UTF-8 encoding.
+    // the result will be padded to 80 bytes (UTF-8 max for 20 chars)
+    if (with_padding)
+      CHECK_EQUAL_PADDED(s, str20)
+    else
+      CHECK( s == str20 );
 }
 
 } // anonymous namespace
@@ -4167,7 +4176,8 @@ TEST_CASE_METHOD(common_tests, "Truncation error", "[core][insert][truncate][exc
 
         check_for_exception_on_truncation(sql);
 
-        check_for_no_truncation(sql);
+        // Firebird can pad CHAR(N) columns when using UTF-8 encoding.
+        check_for_no_truncation(sql, sql.get_backend_name() == "firebird");
     }
 
     SECTION("Error given for varchar column")
@@ -4177,7 +4187,7 @@ TEST_CASE_METHOD(common_tests, "Truncation error", "[core][insert][truncate][exc
 
         check_for_exception_on_truncation(sql);
 
-        check_for_no_truncation(sql);
+        check_for_no_truncation(sql, false);
     }
 }
 
@@ -4402,7 +4412,7 @@ TEST_CASE_METHOD(common_tests, "XML", "[core][xml]")
             (sql << "insert into soci_test(id, x) values (2, "
                         + tc_.to_xml(":1") + ")",
                     use(xml)
-            ), soci_error
+            ), soci_error&
         );
     }
 }

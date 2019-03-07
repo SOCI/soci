@@ -16,6 +16,7 @@ Some of the features (transactions, stored functions) are not available when MyS
 |8.0.1|Windows 10|Visual Studio 2017 (15.3.3)|
 |5.5.28|OS X 10.8.2|Apple LLVM version 4.2 (clang-425.0.24)|
 |5.0.96|Ubuntu 8.04.4 LTS (Hardy Heron)|g++ (GCC) 4.2.4 (Ubuntu 4.2.4-1ubuntu4)|
+|5.7.22|macOS High Sierra 10.13.5|AppleClang 9.1.0.9020039|
 
 ### Required Client Libraries
 
@@ -50,6 +51,9 @@ The set of parameters used in the connection string for MySQL is:
 * `local_infile` - should be `0` or `1`, `1` means `MYSQL_OPT_LOCAL_INFILE` will be set.
 * `charset`
 * `reconnect - setting to any value will cause reconnect on lost connection
+* `connect_timeout` - should be positive integer value that means seconds corresponding to `MYSQL_OPT_CONNECT_TIMEOUT`.
+* `read_timeout` - should be positive integer value that means seconds corresponding to `MYSQL_OPT_READ_TIMEOUT`.
+* `write_timeout` - should be positive integer value that means seconds corresponding to `MYSQL_OPT_WRITE_TIMEOUT`.
 
 Once you have created a `session` object as shown above, you can use it to access the database, for example:
 

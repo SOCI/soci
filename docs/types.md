@@ -166,7 +166,7 @@ private:
 
 namespace soci
 {
-    template <<
+    template <>
     struct type_conversion<MyInt>
     {
         typedef int base_type;

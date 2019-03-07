@@ -27,6 +27,7 @@ The SOCI SQLite3 backend is supported for use with SQLite3 >= 3.1
 |3.3.4|Windows XP|Visual C++ 2005 Express Edition|
 |3.2.1|Linux i686 2.6.10-gentoo-r6|g++ 3.4.5|
 |3.1.3|Mac OS X 10.4|g++ 4.0.1|
+|3.24.0|macOS High Sierra 10.13.5|AppleClang 9.1.0.9020039|
 
 ### Required Client Libraries
 

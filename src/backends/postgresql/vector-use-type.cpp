@@ -164,7 +164,7 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                         = static_cast<std::vector<std::tm> *>(data_);
                     std::vector<std::tm> & v = *pv;
 
-                    std::size_t const bufSize = 20;
+                    std::size_t const bufSize = 80;
                     buf = new char[bufSize];
 
                     snprintf(buf, bufSize, "%d-%02d-%02d %02d:%02d:%02d",

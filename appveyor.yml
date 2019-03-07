@@ -2,6 +2,8 @@ version: 4.0.0.{build}
 
 configuration: Release
 
+image: Previous Visual Studio 2015
+
 environment:
   MINGW_ARCHIVE: C:\projects\mingw\x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z
   MINGW_URL: https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/4.8.3/threads-posix/seh/x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z/download
@@ -10,7 +12,7 @@ environment:
       BOOST_ROOT: C:\Libraries\boost_1_59_0
       POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.6
       MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      APPVEYOR_BUILD_WORKER_IMAGE: Previous Visual Studio 2017
     - G: "Visual Studio 14 2015 Win64"
       BOOST_ROOT: C:\Libraries\boost_1_59_0
       POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4

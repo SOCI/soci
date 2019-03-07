@@ -148,6 +148,19 @@ bool valid_int(const string & s)
     return true;
 }
 
+bool valid_uint(const string & s)
+{
+    char *tail;
+    const char *cstr = s.c_str();
+    errno = 0;
+    unsigned long n = std::strtoul(cstr, &tail, 10);
+    if (errno != 0 || n == 0 || n > UINT_MAX)
+        return false;
+    if (*tail != '\0')
+        return false;
+    return true;
+}
+
 void parse_connect_string(const string & connectString,
     string *host, bool *host_p,
     string *user, bool *user_p,
@@ -158,7 +171,10 @@ void parse_connect_string(const string & connectString,
     string *ssl_cert, bool *ssl_cert_p, string *ssl_key, bool *ssl_key_p,
     int *local_infile, bool *local_infile_p,
     string *charset, bool *charset_p,
-                          bool *reconnect_p)
+                          bool *reconnect_p,
+    unsigned int *connect_timeout, bool *connect_timeout_p,
+    unsigned int *read_timeout, bool *read_timeout_p,
+    unsigned int *write_timeout, bool *write_timeout_p)
 {
     *host_p = false;
     *user_p = false;
@@ -172,6 +188,9 @@ void parse_connect_string(const string & connectString,
     *local_infile_p = false;
     *charset_p = false;
     *reconnect_p = false;
+    *connect_timeout_p = false;
+    *read_timeout_p = false;
+    *write_timeout_p = false;
     string err = "Malformed connection string.";
     string::const_iterator i = connectString.begin(),
         end = connectString.end();
@@ -266,6 +285,27 @@ void parse_connect_string(const string & connectString,
         } else if (par == "reconnect" && !*reconnect_p)
         {
             *reconnect_p = true;
+        } else if (par == "connect_timeout" && !*connect_timeout_p)
+        {
+            if (!valid_uint(val))
+                throw soci_error(err);
+            char *end;
+            *connect_timeout = std::strtoul(val.c_str(), &end, 10);
+            *connect_timeout_p = true;
+        } else if (par == "read_timeout" && !*read_timeout_p)
+        {
+            if (!valid_uint(val))
+                throw soci_error(err);
+            char *end;
+            *read_timeout = std::strtoul(val.c_str(), &end, 10);
+            *read_timeout_p = true;
+        } else if (par == "write_timeout" && !*write_timeout_p)
+        {
+            if (!valid_uint(val))
+                throw soci_error(err);
+            char *end;
+            *write_timeout = std::strtoul(val.c_str(), &end, 10);
+            *write_timeout_p = true;
         }
         else
         {
@@ -294,15 +334,20 @@ mysql_session_backend::mysql_session_backend(
     string host, user, password, db, unix_socket, ssl_ca, ssl_cert, ssl_key,
         charset;
     int port, local_infile;
+    unsigned int connect_timeout, read_timeout, write_timeout;
     bool host_p, user_p, password_p, db_p, unix_socket_p, port_p,
         ssl_ca_p, ssl_cert_p, ssl_key_p, local_infile_p, charset_p,
-        reconnect_p;
+        reconnect_p,
+        connect_timeout_p, read_timeout_p, write_timeout_p;
     parse_connect_string(parameters.get_connect_string(), &host, &host_p, &user, &user_p,
         &password, &password_p, &db, &db_p,
         &unix_socket, &unix_socket_p, &port, &port_p,
         &ssl_ca, &ssl_ca_p, &ssl_cert, &ssl_cert_p, &ssl_key, &ssl_key_p,
         &local_infile, &local_infile_p, &charset, &charset_p,
-        &reconnect_p);
+        &reconnect_p,
+        &connect_timeout, &connect_timeout_p,
+        &read_timeout, &read_timeout_p,
+        &write_timeout, &write_timeout_p);
     conn_ = mysql_init(NULL);
     if (conn_ == NULL)
     {
@@ -337,6 +382,30 @@ mysql_session_backend::mysql_session_backend(
             clean_up();
             throw soci_error(
                 "mysql_options() failed when trying to set local-infile.");
+        }
+    }
+    if (connect_timeout_p)
+    {
+        if (0 != mysql_options(conn_, MYSQL_OPT_CONNECT_TIMEOUT, &connect_timeout))
+        {
+            clean_up();
+            throw soci_error("mysql_options(MYSQL_OPT_CONNECT_TIMEOUT) failed.");
+        }
+    }
+    if (read_timeout_p)
+    {
+        if (0 != mysql_options(conn_, MYSQL_OPT_READ_TIMEOUT, &read_timeout))
+        {
+            clean_up();
+            throw soci_error("mysql_options(MYSQL_OPT_READ_TIMEOUT) failed.");
+        }
+    }
+    if (write_timeout_p)
+    {
+        if (0 != mysql_options(conn_, MYSQL_OPT_WRITE_TIMEOUT, &write_timeout))
+        {
+            clean_up();
+            throw soci_error("mysql_options(MYSQL_OPT_WRITE_TIMEOUT) failed.");
         }
     }
     if (mysql_real_connect(conn_,
@@ -383,7 +452,7 @@ void hard_exec(MYSQL *conn, const string & query)
     if (0 != mysql_real_query(conn, query.c_str(),
             static_cast<unsigned long>(query.size())))
     {
-        //throw soci_error(mysql_error(conn));		
+        //throw soci_error(mysql_error(conn));
         string errMsg = mysql_error(conn);
         unsigned int errNum = mysql_errno(conn);
         throw mysql_soci_error(errMsg, errNum);

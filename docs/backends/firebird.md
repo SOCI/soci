@@ -19,6 +19,7 @@ value when building.
 |1.5.2.4731|Windows XP|Visual C++ 8.0|
 |1.5.3.4870|Windows XP|Visual C++ 8.0 Professional|
 |2.5.2.26540|Debian GNU/Linux 7|g++ 4.7.2|
+|2.5.8.27089|macOS High Sierra 10.13.5|AppleClang 9.1.0.9020039|
 
 ### Required Client Libraries
 
@@ -74,12 +75,12 @@ For the Firebird backend, this type mapping is:
 
 |Firebird Data Type|SOCI Data Type|`row::get<T>` specializations|
 |--- |--- |--- |
-|numeric, decimal (where scale > 0)|eDouble|double|
-|numeric, decimal [^1] (where scale = 0)|eInteger, eDouble|int, double|
-|double precision, float|eDouble|double|
-|smallint, integer|eInteger|int|
-|char, varchar|eString|std::string|
-|date, time, timestamp|eDate|std::tm|
+|numeric, decimal (where scale > 0)|dt_double|double|
+|numeric, decimal [^1] (where scale = 0)|dt_integer, dt_double|int, double|
+|double precision, float|dt_double|double|
+|smallint, integer|dt_integer|int|
+|char, varchar|dt_string|std::string|
+|date, time, timestamp|dt_date|std::tm|
 
 [^1] There is also 64bit integer type for larger values which is
 currently not supported.
@@ -134,21 +135,21 @@ Firebird stored procedures can be executed by using SOCI [Procedure](../procedur
 
 ## Native API Access
 
-SOCI provides access to underlying datbabase APIs via several getBackEnd() functions,
-as described in the [beyond SOCI](../beyond.md) documentation.
+SOCI provides access to underlying datbabase APIs via several `get_backend()` functions,
+as described in the [Beyond SOCI](../beyond.md) documentation.
 
 The Firebird backend provides the following concrete classes for navite API access:
 
 |Accessor Function|Concrete Class|
 |--- |--- |
-|SessionBackEnd* Session::getBackEnd()|FirebirdSessionBackEnd|
-|StatementBackEnd* Statement::getBackEnd()|FirebirdStatementBackEnd|
-|BLOBBackEnd* BLOB::getBackEnd()|FirebirdBLOBBackEnd|
-|RowIDBackEnd* RowID::getBackEnd()|
+|session_backend * session::get_backend()|firebird_session_backend|
+|statement_backend * statement::get_backend()|firebird_statement_backend|
+|blob_backend * blob::get_backend()|firebird_blob_backend|
+|rowid_backend * rowid::get_backend()|
 
 ## Backend-specific extensions
 
-### FirebirdSOCIError
+### firebird_soci_error
 
-The Firebird backend can throw instances of class `FirebirdSOCIError`, which is publicly derived
-from `SOCIError` and has an additional public `status_` member containing the Firebird status vector.
+The Firebird backend can throw instances of class `firebird_soci_error`, which is publicly derived
+from `soci_error` and has an additional public `status_` member containing the Firebird status vector.

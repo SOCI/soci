@@ -9,7 +9,6 @@
 #define SOCI_QUERY_TRANSFORMATION_H_INCLUDED
 
 #include "soci/soci-platform.h"
-#include <functional>
 #include <string>
 
 namespace soci
@@ -28,11 +27,10 @@ namespace details
 // and returns std::string.
 
 class query_transformation_function
-    : public std::unary_function<std::string const&, std::string>
 {
 public:
     virtual ~query_transformation_function() {}
-    virtual result_type operator()(argument_type a) const = 0;
+    virtual std::string operator()(std::string const&) const = 0;
 };
 
 template <typename T>
@@ -43,7 +41,7 @@ public:
         : callback_(callback)
     {}
 
-    result_type operator()(argument_type query) const SOCI_OVERRIDE
+    std::string operator()(std::string const& query) const SOCI_OVERRIDE
     {
         return callback_(query);
     }

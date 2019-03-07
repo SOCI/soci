@@ -108,7 +108,7 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
             break;
         case x_stdtm:
             {
-                std::size_t const bufSize = 20;
+                std::size_t const bufSize = 80;
                 buf_ = new char[bufSize];
 
                 std::tm const& t = exchange_type_cast<x_stdtm>(data_);

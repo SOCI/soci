@@ -52,11 +52,11 @@ sql << "DELETE FROM item";
 * defined as function object:
 
 ```cpp
-struct order : std::unary_function<std::string, std::string>
+struct order
 {
-    order(std::string const&amp; by) : by_(by) {}
+    order(std::string const& by) : by_(by) {}
 
-    result_type operator()(argument_type query) const
+    std::string operator()(std::string const& query) const
     {
         return query + " ORDER BY " + by_;
     }
@@ -65,9 +65,9 @@ struct order : std::unary_function<std::string, std::string>
 };
 
 char const* query = "SELECT * FROM product";
-sql.set_query_transformation(order("price");
+sql.set_query_transformation(order("price"));
 sql << query;
-sql.set_query_transformation(order("id");
+sql.set_query_transformation(order("id"));
 sql << query;
 ```
 
@@ -76,7 +76,7 @@ sql << query;
 ```cpp
 std::string dep = "sales";
 sql.set_query_transformation(
-    [&dep](std::string const&amp; query) {
+    [&dep](std::string const& query) {
         return query + " WHERE department = '" + dep + "'";
 });
 sql << "SELECT * FROM employee";

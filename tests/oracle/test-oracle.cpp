@@ -119,7 +119,7 @@ struct blob_table_creator : public table_creator_base
 TEST_CASE("Oracle blob", "[oracle][blob]")
 {
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
 
         blob_table_creator tableCreator(sql);
 
@@ -166,7 +166,7 @@ TEST_CASE("Oracle blob", "[oracle][blob]")
 
     // additional sibling test for read_from_start and write_from_start
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
 
         blob_table_creator tableCreator(sql);
 
@@ -522,13 +522,13 @@ TEST_CASE("Oracle bulk insert", "[oracle][insert][bulk]")
     //verify an exception is thrown if into vector is zero length
     {
         std::vector<int> ids;
-        CHECK_THROWS_AS((sql << "select id from soci_test", into(ids)), soci_error);
+        CHECK_THROWS_AS((sql << "select id from soci_test", into(ids)), soci_error&);
     }
 
     // verify an exception is thrown if use vector is zero length
     {
         std::vector<int> ids;
-        CHECK_THROWS_AS((sql << "insert into soci_test(id) values(:id)", use(ids)), soci_error);
+        CHECK_THROWS_AS((sql << "insert into soci_test(id) values(:id)", use(ids)), soci_error&);
     }
 
     // test "no data" condition
