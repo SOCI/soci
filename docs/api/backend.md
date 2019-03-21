@@ -258,8 +258,8 @@ public:
     virtual void commit() = 0;
     virtual void rollback() = 0;
 
-    virtual bool get_next_sequence_value(session&, std::string const&, std::int64_t&);
-    virtual bool get_last_insert_id(session&, std::string const&, std::int64_t&);
+    virtual bool get_next_sequence_value(session&, std::string const&, long long&);
+    virtual bool get_last_insert_id(session&, std::string const&, long long&);
 
     virtual std::string get_backend_name() const = 0;
 

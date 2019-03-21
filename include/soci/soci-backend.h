@@ -12,7 +12,6 @@
 #include "soci/error.h"
 // std
 #include <cstddef>
-#include <cstdint>
 #include <map>
 #include <string>
 #include <sstream>
@@ -272,11 +271,11 @@ public:
     // versions of them in the derived classes. However every backend should
     // define at least one of them to allow the code using auto-generated values
     // to work.
-    virtual bool get_next_sequence_value(session&, std::string const&, std::int64_t&)
+    virtual bool get_next_sequence_value(session&, std::string const&, long long&)
     {
         return false;
     }
-    virtual bool get_last_insert_id(session&, std::string const&, std::int64_t&)
+    virtual bool get_last_insert_id(session&, std::string const&, long long&)
     {
         return false;
     }

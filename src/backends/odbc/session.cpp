@@ -200,7 +200,7 @@ void odbc_session_backend::rollback()
 }
 
 bool odbc_session_backend::get_next_sequence_value(
-    session & s, std::string const & sequence, std::int64_t & value)
+    session & s, std::string const & sequence, long long & value)
 {
     std::string query;
 
@@ -245,7 +245,7 @@ bool odbc_session_backend::get_next_sequence_value(
 }
 
 bool odbc_session_backend::get_last_insert_id(
-    session & s, std::string const & table, std::int64_t & value)
+    session & s, std::string const & table, long long & value)
 {
     std::string query;
 
