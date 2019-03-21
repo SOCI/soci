@@ -505,8 +505,8 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
         coldef.type_ = type = iter->second;
 
         //optional support to read 64bit integer value
-        if (type == dt_integer && session_.integer_type_ == dt_long_long
-            && std::strcmp("integer", dt.c_str()))
+        if (type == dt_integer && session_.integer_type_ == dt_long_long &&
+            std::strcmp("integer", dt.c_str()) == 0)
         {
             coldef.type_ = type = dt_long_long;
         }
