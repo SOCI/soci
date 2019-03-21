@@ -142,9 +142,9 @@ void sqlite3_session_backend::rollback()
 }
 
 bool sqlite3_session_backend::get_last_insert_id(
-    session & /* s */, std::string const & /* table */, long & value)
+    session & /* s */, std::string const & /* table */, std::int64_t & value)
 {
-    value = static_cast<long>(sqlite3_last_insert_rowid(conn_));
+    value = static_cast<std::int64_t>(sqlite3_last_insert_rowid(conn_));
 
     return true;
 }

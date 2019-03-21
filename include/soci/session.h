@@ -118,12 +118,12 @@ public:
     // the current backend doesn't support sequences. If you use sequences for
     // automatically generating primary key values, you should use
     // get_last_insert_id() after the insertion in this case.
-    bool get_next_sequence_value(std::string const & sequence, long & value);
+    bool get_next_sequence_value(std::string const & sequence, std::int64_t & value);
 
     // If true is returned, value is filled with the last auto-generated value
     // for this table (although some backends ignore the table argument and
     // return the last value auto-generated in this session).
-    bool get_last_insert_id(std::string const & table, long & value);
+    bool get_last_insert_id(std::string const & table, std::int64_t & value);
 
     // Returns once_temp_type for the internally composed query
     // for the list of tables in the current schema.

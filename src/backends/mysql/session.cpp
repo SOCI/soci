@@ -463,9 +463,9 @@ void mysql_session_backend::rollback()
 }
 
 bool mysql_session_backend::get_last_insert_id(
-    session & /* s */, std::string const & /* table */, long & value)
+    session & /* s */, std::string const & /* table */, std::int64_t & value)
 {
-    value = static_cast<long>(mysql_insert_id(conn_));
+    value = static_cast<std::int64_t>(mysql_insert_id(conn_));
 
     return true;
 }

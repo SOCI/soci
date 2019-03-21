@@ -791,7 +791,7 @@ TEST_CASE("MySQL last insert id", "[mysql][last-insert-id]")
     soci::session sql(backEnd, connectString);
     table_creator_for_get_last_insert_id tableCreator(sql);
     sql << "insert into soci_test () values ()";
-    long id;
+    std::int64_t id;
     bool result = sql.get_last_insert_id("soci_test", id);
     CHECK(result == true);
     CHECK(id == 42);

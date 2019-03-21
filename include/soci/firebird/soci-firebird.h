@@ -315,7 +315,7 @@ struct firebird_session_backend : details::session_backend
     void rollback() SOCI_OVERRIDE;
 
     bool get_next_sequence_value(session & s,
-        std::string const & sequence, long & value) SOCI_OVERRIDE;
+        std::string const & sequence, std::int64_t & value) SOCI_OVERRIDE;
 
     std::string get_dummy_from_table() const SOCI_OVERRIDE { return "rdb$database"; }
 

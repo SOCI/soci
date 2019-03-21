@@ -537,7 +537,7 @@ TEST_CASE_METHOD(common_tests, "Exception on not connected", "[core][exception]"
     CHECK_THROWS_AS(sql.make_blob_backend(), soci_error&);
 
     std::string s;
-    long l;
+    std::int64_t l;
     CHECK_THROWS_AS(sql.get_next_sequence_value(s, l), soci_error&);
     CHECK_THROWS_AS(sql.get_last_insert_id(s, l), soci_error&);
 }

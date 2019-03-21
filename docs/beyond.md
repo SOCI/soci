@@ -38,7 +38,7 @@ If you know which kind of database you use, you may use only one of them: when w
 However if you use multiple SOCI backends or even just a single ODBC backend but support connecting to databases of different types, you actually must use both of them in the following way to insert a row:
 
 ```cpp
-long id;
+std::int64_t id;
 statement st;
 if ( sql.get_next_sequence_value("table_sequence", id) )
 {
