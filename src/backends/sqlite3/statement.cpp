@@ -430,13 +430,13 @@ static sqlite3_data_type_map get_data_type_map()
     // dt_integer
     m["boolean"]            = dt_integer;
     m["int"]                = dt_integer;
-    m["integer"]            = dt_integer;
     m["int2"]               = dt_integer;
     m["mediumint"]          = dt_integer;
     m["smallint"]           = dt_integer;
     m["tinyint"]            = dt_integer;
 
     // dt_long_long
+    m["integer"]            = dt_long_long;
     m["bigint"]             = dt_long_long;
     m["int8"]               = dt_long_long;
 
@@ -516,7 +516,7 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
     switch (sqlite3_type)
     {
     case SQLITE_INTEGER:
-        type = dt_integer;
+        type = dt_long_long;
         break;
     case SQLITE_FLOAT:
         type = dt_double;
