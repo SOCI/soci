@@ -388,10 +388,6 @@ public:
     // in practice and sometimes even worse (thanks Oracle).
     virtual std::string sql_length(std::string const& s) const = 0;
 
-    // Returns the integer type used by the given DB when column type is `integer`,
-    // which is dt_integer for most DBs, except dbs like sqlite3 which is dt_long_long
-    virtual data_type integer_type() const { return dt_integer; }
-
     virtual ~test_context_base()
     {
         the_test_context_ = NULL;
@@ -2058,7 +2054,6 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
     sql.uppercase_column_names(true);
 
     auto_table_creator tableCreator(tc_.table_creator_2(sql));
-    data_type integerType(tc_.integer_type());
 
     row r;
     sql << "select * from soci_test", into(r);
@@ -2077,7 +2072,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         CHECK(r.size() == 5);
 
         CHECK(r.get_properties(0).get_data_type() == dt_double);
-        CHECK(r.get_properties(1).get_data_type() == integerType);
+        CHECK(r.get_properties(1).get_data_type() == dt_integer);
         CHECK(r.get_properties(2).get_data_type() == dt_string);
         CHECK(r.get_properties(3).get_data_type() == dt_date);
 
@@ -2085,7 +2080,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         // - to comply with the implementation for Oracle
         CHECK(r.get_properties(4).get_data_type() == dt_string);
 
-        CHECK(r.get_properties("NUM_INT").get_data_type() == integerType);
+        CHECK(r.get_properties("NUM_INT").get_data_type() == dt_integer);
 
         CHECK(r.get_properties(0).get_name() == "NUM_FLOAT");
         CHECK(r.get_properties(1).get_name() == "NUM_INT");
@@ -2151,7 +2146,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         CHECK(r.size() == 5);
 
         CHECK(r.get_properties(0).get_data_type() == dt_double);
-        CHECK(r.get_properties(1).get_data_type() == integerType);
+        CHECK(r.get_properties(1).get_data_type() == dt_integer);
         CHECK(r.get_properties(2).get_data_type() == dt_string);
         CHECK(r.get_properties(3).get_data_type() == dt_date);
 
@@ -2160,7 +2155,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         CHECK(r.size() == 2);
 
         CHECK(r.get_properties(0).get_data_type() == dt_string);
-        CHECK(r.get_properties(1).get_data_type() == integerType);
+        CHECK(r.get_properties(1).get_data_type() == dt_integer);
     }
 }
 
@@ -2170,7 +2165,6 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding 2", "[core][dynamic]")
     soci::session sql(backEndFactory_, connectString_);
 
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
-    data_type integerType(tc_.integer_type());
 
     sql << "insert into soci_test(id, val) values(1, 10)";
     sql << "insert into soci_test(id, val) values(2, 20)";
@@ -2182,7 +2176,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding 2", "[core][dynamic]")
         sql << "select val from soci_test where id = :id", use(id), into(r);
 
         CHECK(r.size() == 1);
-        CHECK(r.get_properties(0).get_data_type() == integerType);
+        CHECK(r.get_properties(0).get_data_type() == dt_integer);
         CHECK(r.get<int>(0) == 20);
     }
     {
@@ -2194,19 +2188,19 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding 2", "[core][dynamic]")
         id = 2;
         st.execute(true);
         CHECK(r.size() == 1);
-        CHECK(r.get_properties(0).get_data_type() == integerType);
+        CHECK(r.get_properties(0).get_data_type() == dt_integer);
         CHECK(r.get<int>(0) == 20);
 
         id = 3;
         st.execute(true);
         CHECK(r.size() == 1);
-        CHECK(r.get_properties(0).get_data_type() == integerType);
+        CHECK(r.get_properties(0).get_data_type() == dt_integer);
         CHECK(r.get<int>(0) == 30);
 
         id = 1;
         st.execute(true);
         CHECK(r.size() == 1);
-        CHECK(r.get_properties(0).get_data_type() == integerType);
+        CHECK(r.get_properties(0).get_data_type() == dt_integer);
         CHECK(r.get<int>(0) == 10);
     }
 }
@@ -2602,7 +2596,6 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
 
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_2(sql));
-    data_type integerType(tc_.integer_type());
     {
         {
             // Empty rowset
@@ -2632,11 +2625,11 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
             // Properties
             CHECK(r1.size() == 5);
             CHECK(r1.get_properties(0).get_data_type() == dt_double);
-            CHECK(r1.get_properties(1).get_data_type() == integerType);
+            CHECK(r1.get_properties(1).get_data_type() == dt_integer);
             CHECK(r1.get_properties(2).get_data_type() == dt_string);
             CHECK(r1.get_properties(3).get_data_type() == dt_date);
             CHECK(r1.get_properties(4).get_data_type() == dt_string);
-            CHECK(r1.get_properties("NUM_INT").get_data_type() == integerType);
+            CHECK(r1.get_properties("NUM_INT").get_data_type() == dt_integer);
 
             // Data
 
@@ -2695,11 +2688,11 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
             // Properties
             CHECK(r2.size() == 5);
             CHECK(r2.get_properties(0).get_data_type() == dt_double);
-            CHECK(r2.get_properties(1).get_data_type() == integerType);
+            CHECK(r2.get_properties(1).get_data_type() == dt_integer);
             CHECK(r2.get_properties(2).get_data_type() == dt_string);
             CHECK(r2.get_properties(3).get_data_type() == dt_date);
             CHECK(r2.get_properties(4).get_data_type() == dt_string);
-            CHECK(r2.get_properties("NUM_INT").get_data_type() == integerType);
+            CHECK(r2.get_properties("NUM_INT").get_data_type() == dt_integer);
 
             std::string newName = r2.get<std::string>(2);
             CHECK(name != newName);
@@ -2757,7 +2750,7 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
 
             // Properties
             CHECK(r1.size() == 5);
-            CHECK(r1.get_properties(0).get_data_type() == integerType);
+            CHECK(r1.get_properties(0).get_data_type() == dt_integer);
             CHECK(r1.get_properties(1).get_data_type() == dt_double);
             CHECK(r1.get_properties(2).get_data_type() == dt_string);
             CHECK(r1.get_properties(3).get_data_type() == dt_date);
@@ -2945,7 +2938,6 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
 
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
-    data_type integerType(tc_.integer_type());
     {
         sql << "insert into soci_test(val) values(7)";
 
@@ -3100,8 +3092,8 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
             // for the id column - that's why the code below skips this column
             // and tests the remaining column only.
 
-            //CHECK(r1.get_properties(0).get_data_type() == integerType);
-            CHECK(r1.get_properties(1).get_data_type() == integerType);
+            //CHECK(r1.get_properties(0).get_data_type() == dt_integer);
+            CHECK(r1.get_properties(1).get_data_type() == dt_integer);
             CHECK(r1.get_properties(2).get_data_type() == dt_string);
             //CHECK(r1.get<int>(0) == 1);
             CHECK(r1.get<int>(1) == 5);
@@ -3117,8 +3109,8 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
 
             CHECK(r2.size() == 3);
 
-            // CHECK(r2.get_properties(0).get_data_type() == integerType);
-            CHECK(r2.get_properties(1).get_data_type() == integerType);
+            // CHECK(r2.get_properties(0).get_data_type() == dt_integer);
+            CHECK(r2.get_properties(1).get_data_type() == dt_integer);
             CHECK(r2.get_properties(2).get_data_type() == dt_string);
             //CHECK(r2.get<int>(0) == 2);
             try
