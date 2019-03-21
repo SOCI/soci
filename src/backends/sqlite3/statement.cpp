@@ -409,7 +409,7 @@ typedef std::map<std::string, data_type> sqlite3_data_type_map;
 static sqlite3_data_type_map get_data_type_map()
 {
     sqlite3_data_type_map m;
-
+    
     // dt_blob
     m["blob"]               = dt_blob;
 
@@ -430,13 +430,13 @@ static sqlite3_data_type_map get_data_type_map()
     // dt_integer
     m["boolean"]            = dt_integer;
     m["int"]                = dt_integer;
+    m["integer"]            = dt_integer;
     m["int2"]               = dt_integer;
     m["mediumint"]          = dt_integer;
     m["smallint"]           = dt_integer;
     m["tinyint"]            = dt_integer;
 
     // dt_long_long
-    m["integer"]            = dt_long_long;
     m["bigint"]             = dt_long_long;
     m["int8"]               = dt_long_long;
 
@@ -503,6 +503,13 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
     if (iter != dataTypeMap.end())
     {
         coldef.type_ = type = iter->second;
+
+        //optional support to read 64bit integer value
+        if (type == dt_integer && session_.integer_type_ == dt_long_long
+            && std::strcmp("integer", dt.c_str()))
+        {
+            coldef.type_ = type = dt_long_long;
+        }
         return;
     }
 

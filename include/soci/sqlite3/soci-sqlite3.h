@@ -332,6 +332,7 @@ struct sqlite3_session_backend : details::session_backend
         }
 
     }
+    data_type integer_type_ = dt_integer;
     sqlite_api::sqlite3 *conn_;
 };
 
