@@ -385,10 +385,6 @@ public:
         return "length(" + s + ")";
     }
 
-    data_type integer_type() const SOCI_OVERRIDE
-    {
-        return dt_long_long;
-    }
 
 };
 
