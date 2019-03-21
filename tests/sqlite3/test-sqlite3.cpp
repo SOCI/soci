@@ -384,8 +384,6 @@ public:
     {
         return "length(" + s + ")";
     }
-
-
 };
 
 int main(int argc, char** argv)

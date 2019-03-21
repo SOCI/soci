@@ -112,6 +112,10 @@ sqlite3_session_backend::sqlite3_session_backend(
     {
         integer_type_ = dt_long_long;
     }
+    else
+    {
+        integer_type_ = dt_integer;
+    }
 
     int res = sqlite3_open_v2(dbname.c_str(), &conn_, connection_flags, NULL);
     check_sqlite_err(conn_, res, "Cannot establish connection to the database. ");

@@ -409,7 +409,7 @@ typedef std::map<std::string, data_type> sqlite3_data_type_map;
 static sqlite3_data_type_map get_data_type_map()
 {
     sqlite3_data_type_map m;
-    
+
     // dt_blob
     m["blob"]               = dt_blob;
 
