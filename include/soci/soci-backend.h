@@ -12,6 +12,7 @@
 #include "soci/error.h"
 // std
 #include <cstddef>
+#include <cstdint>
 #include <map>
 #include <string>
 #include <sstream>
