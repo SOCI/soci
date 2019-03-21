@@ -523,7 +523,7 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
     switch (sqlite3_type)
     {
     case SQLITE_INTEGER:
-        type = dt_long_long;
+        type = session_.integer_type_;
         break;
     case SQLITE_FLOAT:
         type = dt_double;
