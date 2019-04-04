@@ -28,10 +28,9 @@ namespace postgresql
 template <typename T>
 T string_to_integer(char const * buf)
 {
-    long long t(0);
-    int n(0);
-    int const converted = std::sscanf(buf, "%" LL_FMT_FLAGS "d%n", &t, &n);
-    if (converted == 1 && static_cast<std::size_t>(n) == std::strlen(buf))
+    char * end;
+    long long t = strtoll(buf, &end, 10);
+    if (*buf != '\0' && *end == '\0')
     {
         // successfully converted to long long
         // and no other characters were found in the buffer
