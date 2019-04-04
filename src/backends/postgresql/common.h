@@ -11,6 +11,7 @@
 #include "soci/postgresql/soci-postgresql.h"
 #include <limits>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <vector>
