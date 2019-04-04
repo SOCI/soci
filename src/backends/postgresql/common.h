@@ -11,6 +11,7 @@
 #include "soci/postgresql/soci-postgresql.h"
 #include <limits>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <vector>
@@ -28,10 +29,16 @@ namespace postgresql
 template <typename T>
 T string_to_integer(char const * buf)
 {
-    long long t(0);
-    int n(0);
-    int const converted = std::sscanf(buf, "%" LL_FMT_FLAGS "d%n", &t, &n);
-    if (converted == 1 && static_cast<std::size_t>(n) == std::strlen(buf))
+    char * end;
+
+    // No strtoll() on MSVC versions prior to Visual Studio 2013
+#if !defined (_MSC_VER) || (_MSC_VER >= 1800)
+    long long t = strtoll(buf, &end, 10);
+#else
+    long long t = _strtoi64(buf, &end, 10);
+#endif
+
+    if (*buf != '\0' && *end == '\0')
     {
         // successfully converted to long long
         // and no other characters were found in the buffer
