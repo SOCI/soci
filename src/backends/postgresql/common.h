@@ -30,7 +30,14 @@ template <typename T>
 T string_to_integer(char const * buf)
 {
     char * end;
+
+    // No strtoll() on MSVC versions prior to Visual Studio 2013
+#if defined (_MSC_VER) && (_MSC_VER < 1700)
+    long long t = _strtoi64(buf, &end, 10);
+#else
     long long t = strtoll(buf, &end, 10);
+#endif
+
     if (*buf != '\0' && *end == '\0')
     {
         // successfully converted to long long
