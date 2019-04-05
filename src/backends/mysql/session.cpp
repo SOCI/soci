@@ -354,7 +354,6 @@ mysql_session_backend::mysql_session_backend(
         throw soci_error("mysql_init() failed.");
     }
     if (reconnect_p) {
-	printf("RECONN !\n\n");
         my_bool reconnect = 1;
         if (0 != mysql_options(conn_, MYSQL_OPT_RECONNECT, &reconnect))
         {
