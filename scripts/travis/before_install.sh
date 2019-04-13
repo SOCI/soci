@@ -5,13 +5,8 @@
 #
 source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
 
-sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 16126D3A3E5C1192
-sudo add-apt-repository -y ppa:apt-fast/stable
-
 sudo apt-get update -qq -y
-sudo apt-get install -qq -y apt-fast
-sudo apt-fast update -qq -y
-sudo apt-fast install -qq -y libboost-dev libboost-date-time-dev valgrind
+sudo apt-get install -qq -y libboost-dev libboost-date-time-dev valgrind
 
 sh ${TRAVIS_BUILD_DIR}/scripts/travis/install_cmake.sh
 

@@ -13,27 +13,27 @@ echo "ORACLE_SID=${ORACLE_SID}"
 
 # travis-oracle installer created travis user w/o password
 echo "ALTER USER travis IDENTIFIED BY travis;" | \
-$ORACLE_HOME/bin/sqlplus -S -L sys/admin AS SYSDBA
+$ORACLE_HOME/bin/sqlplus -S -L sys/travis AS SYSDBA
 
 echo "grant connect, resource to travis;" | \
-$ORACLE_HOME/bin/sqlplus -S -L sys/admin AS SYSDBA
+$ORACLE_HOME/bin/sqlplus -S -L sys/travis AS SYSDBA
 
 echo "grant create session, alter any procedure to travis;" | \
-$ORACLE_HOME/bin/sqlplus -S -L sys/admin AS SYSDBA
+$ORACLE_HOME/bin/sqlplus -S -L sys/travis AS SYSDBA
 
 # to enable xa recovery, see: https://community.oracle.com/thread/378954
 echo "grant select on sys.dba_pending_transactions to travis;" | \
-$ORACLE_HOME/bin/sqlplus -S -L sys/admin AS SYSDBA
+$ORACLE_HOME/bin/sqlplus -S -L sys/travis AS SYSDBA
 echo "grant select on sys.pending_trans$ to travis;" | \
-$ORACLE_HOME/bin/sqlplus -S -L sys/admin AS SYSDBA
+$ORACLE_HOME/bin/sqlplus -S -L sys/travis AS SYSDBA
 echo "grant select on sys.dba_2pc_pending to travis;" | \
-$ORACLE_HOME/bin/sqlplus -S -L sys/admin AS SYSDBA
+$ORACLE_HOME/bin/sqlplus -S -L sys/travis AS SYSDBA
 echo "grant execute on sys.dbms_system to travis;" | \
-$ORACLE_HOME/bin/sqlplus -S -L sys/admin AS SYSDBA
+$ORACLE_HOME/bin/sqlplus -S -L sys/travis AS SYSDBA
 
 # increase default=40 value of processes to prevent ORA-12520 failures while testing
 echo "alter system set processes=100 scope=spfile;" | \
-$ORACLE_HOME/bin/sqlplus -S -L sys/admin AS SYSDBA
+$ORACLE_HOME/bin/sqlplus -S -L sys/travis AS SYSDBA
 
 # check connection as user for testing
 echo "Connecting using travis/travis@XE"
