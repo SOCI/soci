@@ -32,8 +32,6 @@ matrix:
         - env: SOCI_TRAVIS_BACKEND=sqlite3
         - env: SOCI_TRAVIS_BACKEND=valgrind
         - env: SOCI_TRAVIS_BACKEND=oracle WITH_BOOST=OFF
-    allow_failures:
-        - env: SOCI_TRAVIS_BACKEND=oracle WITH_BOOST=OFF
 
 addons:
   coverity_scan:
