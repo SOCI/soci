@@ -13,6 +13,13 @@
 #ifdef SOCI_HAVE_BOOST
 #       include <boost/fusion/algorithm/iteration/for_each.hpp>
 #       include <boost/mpl/bool.hpp>
+#       include <boost/version.hpp>
+
+#       if BOOST_VERSION >= 106800
+#       define SOCI_BOOST_FUSION_FOREACH_REFERENCE &
+#       else
+#       define SOCI_BOOST_FUSION_FOREACH_REFERENCE
+#       endif
 #endif // SOCI_HAVE_BOOST
 #include <vector>
 
@@ -83,13 +90,19 @@ private:
     template <typename T, typename Indicator>
     void exchange_(use_container<T, Indicator> const &uc, boost::mpl::true_ * /* fusion sequence */)
     {
-        boost::fusion::for_each(uc.t, use_sequence<T, Indicator>(*this, uc.ind));
+        use_sequence<T, Indicator> f(*this, uc.ind);
+        boost::fusion::for_each<T,
+                                use_sequence<T, Indicator>
+                                    SOCI_BOOST_FUSION_FOREACH_REFERENCE>(uc.t, f);
     }
 
     template <typename T>
     void exchange_(use_container<T, details::no_indicator> const &uc, boost::mpl::true_ * /* fusion sequence */)
     {
-        boost::fusion::for_each(uc.t, use_sequence<T, details::no_indicator>(*this));
+        use_sequence<T, details::no_indicator> f(*this);
+        boost::fusion::for_each<T,
+                                use_sequence<T, details::no_indicator>
+                                    SOCI_BOOST_FUSION_FOREACH_REFERENCE>(uc.t, f);
     }
 
 #endif // SOCI_HAVE_BOOST
@@ -173,13 +186,19 @@ private:
     template <typename T, typename Indicator>
     void exchange_(into_container<T, Indicator> const &ic, boost::mpl::true_ * /* fusion sequence */)
     {
-        boost::fusion::for_each(ic.t, into_sequence<T, Indicator>(*this, ic.ind));
+        into_sequence<T, Indicator> f(*this, ic.ind);
+        boost::fusion::for_each<T,
+                                into_sequence<T, Indicator>
+                                    SOCI_BOOST_FUSION_FOREACH_REFERENCE>(ic.t, f);
     }
 
     template <typename T>
     void exchange_(into_container<T, details::no_indicator> const &ic, boost::mpl::true_ * /* fusion sequence */)
     {
-        boost::fusion::for_each(ic.t, into_sequence<T, details::no_indicator>(*this));
+        into_sequence<T, details::no_indicator> f(*this);
+        boost::fusion::for_each<T,
+                                into_sequence<T, details::no_indicator>
+                                    SOCI_BOOST_FUSION_FOREACH_REFERENCE>(ic.t, f);
     }
 #endif // SOCI_HAVE_BOOST
 
