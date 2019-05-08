@@ -95,20 +95,22 @@ details::postgresql_result::check_for_data(char const* errMsg) const
                         callback->started();
                         
                         bool retry = false;
-                        std::string newTarget;
-                        
-                        callback->failed(retry, newTarget);
-                        
-                        if (retry)
-                        {
-                            connection_parameters parameters("postgresql", newTarget);
-                            
-                            sessionBackend_.clean_up();
-                            
-                            sessionBackend_.connect(parameters);
-                            
-                            reconnected = true;
-                        }
+                        do {
+                            std::string newTarget;
+
+                            callback->failed(retry, newTarget);
+
+                            if (retry)
+                            {
+                                connection_parameters parameters("postgresql", newTarget);
+
+                                sessionBackend_.clean_up();
+
+                                sessionBackend_.connect(parameters);
+
+                                reconnected = true;
+                            }
+                        } while (retry && !reconnected);
                     }
                     catch (...)
                     {
