@@ -126,6 +126,10 @@ details::postgresql_result::check_for_data(char const* errMsg) const
                             // ignore exceptions from user callbacks
                         }
                     }
+                    else
+                    {
+                      callback->finished(*sessionBackend_.session_);
+                    }
                 }
             }
             
