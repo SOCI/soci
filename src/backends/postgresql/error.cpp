@@ -108,7 +108,9 @@ details::postgresql_result::check_for_data(char const* errMsg) const
                         }
                         catch (...)
                         {
-                            // ignore exceptions from user callbacks
+                            // do not continue execution because 
+                            // user callback generated an exception
+                            retry = false;
                         }
 
                         if (retry)
