@@ -113,7 +113,8 @@ details::postgresql_result::check_for_data(char const* errMsg) const
 
                         if (retry)
                         {
-                            connection_parameters parameters("postgresql", newTarget);
+                            connection_parameters parameters;
+                            parameters.set_connect_string(newTarget);
 
                             sessionBackend_.clean_up();
 
