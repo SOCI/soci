@@ -93,29 +93,38 @@ details::postgresql_result::check_for_data(char const* errMsg) const
                     try
                     {
                         callback->started();
-                        
-                        bool retry = false;
-                        do {
-                            std::string newTarget;
-
-                            callback->failed(retry, newTarget);
-
-                            if (retry)
-                            {
-                                connection_parameters parameters("postgresql", newTarget);
-
-                                sessionBackend_.clean_up();
-
-                                sessionBackend_.connect(parameters);
-
-                                reconnected = true;
-                            }
-                        } while (retry && !reconnected);
                     }
                     catch (...)
                     {
                         // ignore exceptions from user callbacks
                     }
+                    bool retry = false;
+                    do {
+                        std::string newTarget;
+
+                        try
+                        {
+                            callback->failed(retry, newTarget);
+                        }
+                        catch (...)
+                        {
+                            // do not continue execution because 
+                            // user callback generated an exception
+                            retry = false;
+                        }
+
+                        if (retry)
+                        {
+                            connection_parameters parameters;
+                            parameters.set_connect_string(newTarget);
+
+                            sessionBackend_.clean_up();
+
+                            sessionBackend_.connect(parameters);
+
+                            reconnected = true;
+                        }
+                    } while (retry && !reconnected);
                     
                     if (reconnected == false)
                     {
@@ -130,7 +139,14 @@ details::postgresql_result::check_for_data(char const* errMsg) const
                     }
                     else
                     {
-                      callback->finished(*sessionBackend_.session_);
+                        try
+                        {
+                            callback->finished(*sessionBackend_.session_);
+                        }
+                        catch (...)
+                        {
+                            // ignore exceptions from user callbacks
+                        }
                     }
                 }
             }
