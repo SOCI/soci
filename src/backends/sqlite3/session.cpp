@@ -106,6 +106,17 @@ sqlite3_session_backend::sqlite3_session_backend(
         }
     }
 
+    std::string integerType;
+    if (parameters.get_option("soci_sqlite3_integer_type", integerType) &&
+        std::strcmp("dt_long_long", integerType.c_str()) == 0)
+    {
+        integer_type_ = dt_long_long;
+    }
+    else
+    {
+        integer_type_ = dt_integer;
+    }
+
     int res = sqlite3_open_v2(dbname.c_str(), &conn_, connection_flags, NULL);
     check_sqlite_err(conn_, res, "Cannot establish connection to the database. ");
 
