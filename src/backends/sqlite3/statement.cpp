@@ -503,13 +503,6 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
     if (iter != dataTypeMap.end())
     {
         coldef.type_ = type = iter->second;
-
-        //optional support to read 64bit integer value
-        if (type == dt_integer && session_.integer_type_ == dt_long_long &&
-            std::strcmp("integer", dt.c_str()) == 0)
-        {
-            coldef.type_ = type = dt_long_long;
-        }
         return;
     }
 
@@ -523,7 +516,7 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
     switch (sqlite3_type)
     {
     case SQLITE_INTEGER:
-        type = session_.integer_type_;
+        type = dt_integer;
         break;
     case SQLITE_FLOAT:
         type = dt_double;
