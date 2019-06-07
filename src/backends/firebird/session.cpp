@@ -344,7 +344,7 @@ void firebird_session_backend::cleanUp()
 }
 
 bool firebird_session_backend::get_next_sequence_value(
-    session & s, std::string const & sequence, long & value)
+    session & s, std::string const & sequence, long long & value)
 {
     // We could use isq_execute2() directly but this is even simpler.
     s << "select next value for " + sequence + " from rdb$database",

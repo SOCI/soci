@@ -378,7 +378,7 @@ struct postgresql_session_backend : details::session_backend
     void deallocate_prepared_statement(const std::string & statementName);
 
     bool get_next_sequence_value(session & s,
-        std::string const & sequence, long & value) SOCI_OVERRIDE;
+        std::string const & sequence, long long & value) SOCI_OVERRIDE;
 
     std::string get_dummy_from_table() const SOCI_OVERRIDE { return std::string(); }
 

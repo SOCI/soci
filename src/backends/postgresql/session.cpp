@@ -101,7 +101,7 @@ void postgresql_session_backend::deallocate_prepared_statement(
 }
 
 bool postgresql_session_backend::get_next_sequence_value(
-    session & s, std::string const & sequence, long & value)
+    session & s, std::string const & sequence, long long & value)
 {
     s << "select nextval('" + sequence + "')", into(value);
 

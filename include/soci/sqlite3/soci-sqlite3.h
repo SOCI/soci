@@ -289,7 +289,7 @@ struct sqlite3_session_backend : details::session_backend
     void commit() SOCI_OVERRIDE;
     void rollback() SOCI_OVERRIDE;
 
-    bool get_last_insert_id(session&, std::string const&, long&) SOCI_OVERRIDE;
+    bool get_last_insert_id(session&, std::string const&, long long&) SOCI_OVERRIDE;
 
     std::string empty_blob() SOCI_OVERRIDE
     {

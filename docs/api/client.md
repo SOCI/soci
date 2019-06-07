@@ -62,8 +62,8 @@ public:
 
     bool got_data() const;
 
-    bool get_next_sequence_value(std::string const & sequence, long & value);
-    bool get_last_insert_id(std::string const & table, long & value);
+    bool get_next_sequence_value(std::string const & sequence, long long & value);
+    bool get_last_insert_id(std::string const & table, long long & value);
 
     std::ostringstream & get_query_stream();
 
