@@ -60,13 +60,14 @@ ddl_type::ddl_type(session & s)
 }
 
 ddl_type::ddl_type(const ddl_type & d)
-    :rcst_(d.rcst_)
+    : s_( d.s_ ), rcst_(d.rcst_)
 {
     rcst_->inc_ref();
 }
 
 ddl_type & ddl_type::operator=(const ddl_type & d)
 {
+    s_ = d.s_;
     d.rcst_->inc_ref();
     rcst_->dec_ref();
     rcst_ = d.rcst_;
