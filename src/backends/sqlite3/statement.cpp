@@ -9,11 +9,11 @@
 #include "soci/sqlite3/soci-sqlite3.h"
 // std
 #include <algorithm>
+#include <cctype>
+#include <cstring>
 #include <functional>
 #include <sstream>
 #include <string>
-
-#include <string.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -492,7 +492,11 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
     std::string dt = declType;
 
     // remove extra characters for example "(20)" in "varchar(20)"
+#if defined(SOCI_HAVE_CXX_C11) || (defined(_MSC_VER) && _MSC_VER >= 1800)
+    std::string::iterator siter = std::find_if(dt.begin(), dt.end(), [](char const c) { return !std::isalnum(c); });
+#else
     std::string::iterator siter = std::find_if(dt.begin(), dt.end(), std::not1(std::ptr_fun(isalnum)));
+#endif
     if (siter != dt.end())
         dt.resize(siter - dt.begin());
 
