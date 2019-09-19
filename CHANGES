@@ -1,22 +1,63 @@
 This file contains the history of changes in the SOCI library.
 
 ---
-Version 4.0.0 differs from 3.2.x in the following ways:
+Version 4.0.0 differs from 3.2.3 in the following ways:
 
+- This is probably the last version based on C++98.
+- Added support for C++11 and C++17 compilation modes.
+- Although the build configuration is based on CMake 2.8,
+  numerous improvements have been applied to the CMake scripts.
+- Adopted new layout of the source tree (#151).
+- Migrated documentation content from HTML to Markdown (#344).
+- Converted all tests to use the Catch framework.
+- Include all public headers using soci/ prefix inside SOCI itself (#239).
 - Provide context of the failure in soci_error::what() which now returns a
   longer and more useful message. Use the new get_error_message() method to get
   just the brief error message which used to be returned by what().
-- Add helpers for generating portable DDL and DML statements.
+- Added helpers for generating portable DDL and DML statements.
+- Improved locale-independent conversions of floating-point numbers to string.
+- Fixed deadlock in soci::connection_pool::try_lease function.
+- Fixed numerous compilation warnings using various compilers.
+- Added helper exchange_type_cast<>() template function as better static_cast (#301).
+- Added values::get_number_of_columns() as convenient accessor.
+- Provided error context in exceptions and richer diagnostics (#302).
+- Fixed issues with throwing from soci_error copy ctor and assignment operator (#302).
+- Added public macro SOCI_NORETURN and use it in declaration.
+- Improved handling and conversions of time and timezone information values (#316).
+- Improved diagnostics with included query parameter names in error messages (#318).
+- Replaced assertion with raising exception in case of connection_pool::lease() failure.
+- Added handling of dt_unsigned_long_long to the simple interface.
+- Added stream operator for boost::optional if built with Boost support.
+- Split statement::clean_up into two operations bind_clean_up and clean_up (#358).
 
 - Firebird
--- Add SOCI_FIREBIRD_EMBEDDED option to allow building with embedded library.
+-- Added SOCI_FIREBIRD_EMBEDDED option to allow building with embedded library.
 -- Throw an exception instead of truncating too long VARCHAR columns values.
+-- Added possibility to build the backend using embedded library (libfbembed).
+-- Fixed too eager start of implicit transaction (#292).
+
+- MySQL
+-- Added get_last_insert_id function (#216).
 
 - ODBC/MS SQL
--- Fix inserting strings of length greater than 8000 bytes into database.
+-- Fixed inserting strings of length greater than 8000 bytes into database.
+-- Fixed ODBC backend get_affected_rows() when using FreeTDS driver.
 
 - Oracle
 -- Use SQLT_BDOUBLE for floating point values instead of SQLT_FLT.
+-- Fixed connection parameters parsing to allow spaces in values (#213).
+-- Added oraocci12 name to Oracle client look-up by CMake.
+
+- PostgreSQL
+-- Fixed string to floating-point number conversions assuming "C" locale (#238).
+-- Improve string to floating-point number conversion to be exact.
+-- Fixed support for bytea across PostgreSQL versions older than 9 (#242).
+-- Explicitly set extra_float_digits to 3 when using PostgreSQL >=9 in ODBC for consistency.
+-- Fixed timestamp handling in UTC (#190).
+
+- SQLite3
+-- Added get_last_insert_id function (#216).
+-- Fixed clean up on error to enable getting detailed diagnostics (#318).
 
 ---
 Version 3.2.3 differs from 3.2.2 in the following ways:
