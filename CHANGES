@@ -3,61 +3,117 @@ This file contains the history of changes in the SOCI library.
 ---
 Version 4.0.0 differs from 3.2.3 in the following ways:
 
-- This is probably the last version based on C++98.
+NOTICE: This is probably the last release compatible with C++98.
+
 - Added support for C++11 and C++17 compilation modes.
-- Although the build configuration is based on CMake 2.8,
-  numerous improvements have been applied to the CMake scripts.
-- Adopted new layout of the source tree (#151).
-- Migrated documentation content from HTML to Markdown (#344).
-- Converted all tests to use the Catch framework.
-- Include all public headers using soci/ prefix inside SOCI itself (#239).
-- Provide context of the failure in soci_error::what() which now returns a
+- Added context of the failure in soci_error::what() which now returns a
   longer and more useful message. Use the new get_error_message() method to get
   just the brief error message which used to be returned by what().
-- Added helpers for generating portable DDL and DML statements.
-- Improved locale-independent conversions of floating-point numbers to string.
-- Fixed deadlock in soci::connection_pool::try_lease function.
-- Fixed numerous compilation warnings using various compilers.
+- Added logger class to allow customizing SOCI logging operations (#245).
+- Added helper for generating portable DDL and DML statements (#484).
+- Added portable column info and other metadata queries (#480).
 - Added helper exchange_type_cast<>() template function as better static_cast (#301).
 - Added values::get_number_of_columns() as convenient accessor.
-- Provided error context in exceptions and richer diagnostics (#302).
-- Fixed issues with throwing from soci_error copy ctor and assignment operator (#302).
 - Added public macro SOCI_NORETURN and use it in declaration.
+- Added handling of dt_unsigned_long_long to the simple interface.
+- Added new data type dt_blob with accompanying simple-interface support (#361).
+- Added basic support for error categories.
+- Added failover_callback interface (#486).
+- Added bulk iterators interface (#487).
+- Added basic package exporting to CMake configuration (#503).
+- Added bigstring (XML and CLOB) support (#509).
+- Added CMake option SOCI_POSTGRESQL_NOSINLGEROWMODE with default value OFF (#594).
+- Adopted new layout of the source tree (#151).
+- Although the build configuration is based on CMake 2.8,
+  numerous improvements have been applied to the CMake scripts.
+- Converted all tests to use the Catch framework.
+- Fixed issues with throwing from soci_error copy ctor and assignment operator (#302).
+- Fixed backends loading in case SOCI is built with CMAKE_DEBUG_POSTFIX set (#368).
+- Fixed deadlock in soci::connection_pool::try_lease function.
+- Fixed numerous compilation warnings using various compilers.
+- Fixed non-copyability of connection_pool (#478).
+- Fixed uniform offset for BLOB read/write operations (#508).
+- Fixed memory leak when reusing into and use elements.
+- Fixed deduction of reference in boost::fusion::for_each (#728).
+- Added empty_blob() and nvl() to portable utilities.
 - Improved handling and conversions of time and timezone information values (#316).
 - Improved diagnostics with included query parameter names in error messages (#318).
+- Improve CMake configuration for integrating SOCI as subproject (#380).
+- Improved locale-independent conversions of floating-point numbers to string.
+- Include all public headers using soci/ prefix inside SOCI itself (#239).
+- Migrated documentation content from HTML to Markdown (#344).
+- Provided error context in exceptions and richer diagnostics (#302).
 - Replaced assertion with raising exception in case of connection_pool::lease() failure.
-- Added handling of dt_unsigned_long_long to the simple interface.
-- Added stream operator for boost::optional if built with Boost support.
+- Remove use of std::unary_function and std::ptr_fun deprecated in C++11/17 (#650, #751).
 - Split statement::clean_up into two operations bind_clean_up and clean_up (#358).
+- Updated the backend documentation.
+- Use 64-bit integer for next sequence and last insert ID values (#720).
+
+- DB2
+-- Fixed ambiguous error handling during statement execution (#431).
+-- Fixed handling of NULL for strings during bulk querying (#581).
+-- Replaced SQLConnect with SQLDriverConnect to establish database session (#438).
 
 - Firebird
 -- Added SOCI_FIREBIRD_EMBEDDED option to allow building with embedded library.
--- Throw an exception instead of truncating too long VARCHAR columns values.
 -- Added possibility to build the backend using embedded library (libfbembed).
+-- Added CLOB and XML support (#578).
 -- Fixed too eager start of implicit transaction (#292).
+-- Fixed bug with writing BLOB values (#524).
+-- Replaced truncation of too long VARCHAR columns values with throwing exception.
 
 - MySQL
+-- Added MySQL 8 to tested versions.
 -- Added get_last_insert_id function (#216).
+-- Added timeout support (#691).
+-- Fixed bug whe nusing get_affected_rows() and user defined types (#221).
+-- Replace throwing generic soci_error with mysql_soci_error (#613).
 
-- ODBC/MS SQL
--- Fixed inserting strings of length greater than 8000 bytes into database.
--- Fixed ODBC backend get_affected_rows() when using FreeTDS driver.
+- ODBC
+-- Added support for ODBC driver for DB2 which is not compliant to ODBC spec (#663).
+-- Fixed inserting strings of length greater than 8000 bytes into database (#383, #681).
+-- Fixed get_affected_rows() when using FreeTDS driver.
+-- Fixed reading from unallocated memory (driver bug?) in ODBC with MySQL (#555).
+-- Fixed handling of NULL for strings during bulk querying (#581).
+-- Fixed memory leak of internal odbc_standard_use_type_backend buffer (#627).
 
 - Oracle
--- Use SQLT_BDOUBLE for floating point values instead of SQLT_FLT.
--- Fixed connection parameters parsing to allow spaces in values (#213).
 -- Added oraocci12 name to Oracle client look-up by CMake.
+-- Added NLS support for connection parameters.
+-- Added Oracle wallet authentication.
+-- Added (partial) handling of OCI_SUCCESS_WITH_INFO.
+-- Added handling of more error codes for error categories.
+-- Added failover_callback interface implementation (#486).
+-- Added bulk iterators interface implementation (#487).
+-- Added bigstring (XML and CLOB) support (#509).
+-- Added lazy initialization of the temporary LOB objects for Oracle.
+-- Fixed uniform offset for BLOB read/write operations (#508).
+-- Fixed connection parameters parsing to allow spaces in values (#213).
+-- Fixed handling of BINARY_DOUBLE in dynamic row.
+-- Use SQLT_BDOUBLE for floating point values instead of SQLT_FLT.
 
 - PostgreSQL
+-- Added singlerows mode for PostgreSQL (#482).
+-- Added failover_callback interface implementation (#486).
+-- Added bulk iterators interface implementation (#487).
+-- Added test for the uuid data type (#420).
+-- Added bigstring (XML and CLOB) support (#509).
+-- Dropped support for PostgreSQL 7.x (#623).
+-- Fixed defining SOCI_POSTGRESQL_NOSINLGEROWMODE for PostgreSQL < 9 (#571).
 -- Fixed string to floating-point number conversions assuming "C" locale (#238).
--- Improve string to floating-point number conversion to be exact.
 -- Fixed support for bytea across PostgreSQL versions older than 9 (#242).
--- Explicitly set extra_float_digits to 3 when using PostgreSQL >=9 in ODBC for consistency.
 -- Fixed timestamp handling in UTC (#190).
+-- Fixed uniform offset for BLOB read/write operations (#508).
+-- Explicitly set extra_float_digits to 3 when using PostgreSQL >=9 in ODBC for consistency.
+-- Improve string to floating-point number conversion to be exact.
 
 - SQLite3
 -- Added get_last_insert_id function (#216).
 -- Fixed clean up on error to enable getting detailed diagnostics (#318).
+-- Fixed issue numerous calls to fetch by better control when backend calls sqlite3_step (#375).
+-- Fixed memory leak in sqlite3_session_backend (#378).
+-- Fixed closing connection after obtaining error diagnostics (#381).
+-- Fixed affected rows count when reusing prepared statements (#428).
 
 ---
 Version 3.2.3 differs from 3.2.2 in the following ways:
