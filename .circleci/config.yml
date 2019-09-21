@@ -12,7 +12,7 @@ jobs:
             markdownlint --version
       - run:
           name: lint .md files
-          command: markdownlint --config .markdownlint.json *.md
+          command: markdownlint --config .markdownlint.json .
   deploy-docs:
     docker:
       - image: circleci/python:2.7
