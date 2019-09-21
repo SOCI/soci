@@ -8,9 +8,10 @@ source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
 
 cmake \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCMAKE_BUILD_TYPE=Debug \
     -DSOCI_TESTS=ON \
     -DSOCI_STATIC=OFF \
-    -DCMAKE_BUILD_TYPE=Debug \
+    -DSOCI_ODBC=OFF \
     ..
 
 run_make
