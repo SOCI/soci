@@ -93,8 +93,10 @@ on using the `Row` class.)
 In addition to [binding by position](../binding.md#binding-by-position), the Firebird backend supports
 [binding by name](../binding.md#binding-by-name), via an overload of the `use()` function:
 
-    int id = 7;
-    sql << "select name from person where id = :id", use(id, "id")
+```cpp
+int id = 7;
+sql << "select name from person where id = :id", use(id, "id")
+```
 
 It should be noted that parameter binding by name is supported only by means of emulation,
 since the underlying API used by the backend doesn't provide this feature.
