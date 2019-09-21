@@ -61,7 +61,7 @@ workflows:
                 - /^release.*/
       - deploy-docs:
           requires:
-            - lint
+            - lint-docs
           filters:
             branches:
               only:
