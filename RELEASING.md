@@ -4,7 +4,7 @@ The releasing guide for the SOCI maintainers.
 
 ## Update CHANGES file
 
-Update the list of important changes in the [CHANGES](https://github.com/SOCI/soci/blob/master/CHANGES) file.
+Update the list of important changes in the [CHANGES](CHANGES) file.
 
 It is helpful to generate complete log of changes in Markdown format:
 
@@ -20,10 +20,10 @@ edit and update if necessary. Finally, copy to the `CHANGES` file.
 
 Update the version number of the new release in the following places:
 
-- [include/soci/version.h](https://github.com/SOCI/soci/blob/master/include/soci/version.h)
+- [include/soci/version.h](include/soci/version.h)
 - [mkdocs.yml](mkdocs.yml)
-- [docs/index.md](https://github.com/SOCI/soci/blob/master/docs/index.md)
-- [appveyor.yml](https://github.com/SOCI/soci/blob/master/appveyor.yml)
+- [docs/index.md](docs/index.md)
+- [appveyor.yml](appveyor.yml)
 
 Search through the source tree looking for other places that use current
 version number and may require an update.
@@ -48,9 +48,9 @@ in order to upload updated files there, you will need:
 - Your SourceForge account credentials with administration rights for SOCI project (used for SFTP authentication)
 - SFTP client, see https://sourceforge.net/p/forge/documentation/SFTP/
 
-For example, you can use `lftp` to upload website and documentation files similarly
-to our CircleCI workflow configured to generate and deploy documentation
-(see [.circleci/config.yml](https://github.com/SOCI/soci/blob/master/.circleci/config.yml)):
+For example, you can use `lftp` to upload website and documentation files
+similarly to our CircleCI workflow configured to generate and deploy
+documentation (see [.circleci/config.yml](.circleci/config.yml)):
 
 ```
 lftp sftp://${DEPLOY_DOCS_USER}:${DEPLOY_DOCS_PASS}@web.sourceforge.net -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate no; set sftp:auto-confirm yes; mirror -v -R <source> <target directory>; quit"
@@ -59,6 +59,13 @@ lftp sftp://${DEPLOY_DOCS_USER}:${DEPLOY_DOCS_PASS}@web.sourceforge.net -e "set 
 where `<source>` denotes a file or folder to be copied
 and `<target directory>` is a directory under Web content folder
 of SOCI on `web.sourceforge.net` i.e. `/home/project-web/soci/htdocs`.
+
+## Create release branch
+
+```
+git checkout master
+git branch release/4.0
+```
 
 ## Create source archive
 
@@ -73,6 +80,8 @@ of SOCI on `web.sourceforge.net` i.e. `/home/project-web/soci/htdocs`.
 
 ## Issue announcement
 
-- soci-devel
-- soci-users
+Post the new release announcement to the project mailing lists:
+
+- [soci-devel](https://sourceforge.net/p/soci/mailman/soci-devel/)
+- [soci-users](https://sourceforge.net/p/soci/mailman/soci-users/)
 
