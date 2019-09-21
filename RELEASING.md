@@ -8,7 +8,7 @@ Update the list of important changes in the [CHANGES](CHANGES) file.
 
 It is helpful to generate complete log of changes in Markdown format:
 
-```
+```console
 git log 3.2.3..master --pretty=format:"1. [%h](http://github.com/soci/soci/commit/%H) - %s"
 ```
 
@@ -42,17 +42,34 @@ on the [www/doc.html](www/doc.html) page.
 
 ## Upload website content
 
-The website is hosted on SourceForge.net at https://soci.sourceforge.net and
-in order to upload updated files there, you will need:
+### Continuous deployment
+
+There is [CircleCI workflow](https://circleci.com/gh/SOCI/workflows/soci)
+configured in [.circleci/config.yml](.circleci/config.yml)
+with dedicated jobs to deploy content website and documentation.
+
+For `master` and `release/X.Y` branches, the jobs do:
+
+- lint all Markdown files
+- run [MkDocs](https://www.mkdocs.org) to generate HTML pages from souce in [doc/](doc)
+- upload generated HTML files to branch-specific documentation folder (e.g. [doc/release/4.0](http://soci.sourceforge.net/doc/release/4.0/))
+- upload static HTML files with website pages
+
+See [manual update](#manual-update) for details about SFTP connection.
+
+### Manual update
+
+The website is hosted on SourceForge.net at [soci.sourceforge.net](https://soci.sourceforge.net)
+and in order to upload updated files there, you will need:
 
 - Your SourceForge account credentials with administration rights for SOCI project (used for SFTP authentication)
-- SFTP client, see https://sourceforge.net/p/forge/documentation/SFTP/
+- [SFTP client to connect to SourceForge host](https://sourceforge.net/p/forge/documentation/SFTP/).
 
 For example, you can use `lftp` to upload website and documentation files
 similarly to our CircleCI workflow configured to generate and deploy
 documentation (see [.circleci/config.yml](.circleci/config.yml)):
 
-```
+```console
 lftp sftp://${DEPLOY_DOCS_USER}:${DEPLOY_DOCS_PASS}@web.sourceforge.net -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate no; set sftp:auto-confirm yes; mirror -v -R <source> <target directory>; quit"
 ```
 
@@ -62,7 +79,7 @@ of SOCI on `web.sourceforge.net` i.e. `/home/project-web/soci/htdocs`.
 
 ## Create release branch
 
-```
+```console
 git checkout master
 git branch release/4.0
 ```
@@ -70,8 +87,6 @@ git branch release/4.0
 ## Create source archive
 
 ...for RC1, 2, ... and final release
-
-*TODO*
 
 ## Publish release
 
@@ -84,4 +99,3 @@ Post the new release announcement to the project mailing lists:
 
 - [soci-devel](https://sourceforge.net/p/soci/mailman/soci-devel/)
 - [soci-users](https://sourceforge.net/p/soci/mailman/soci-users/)
-
