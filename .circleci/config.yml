@@ -72,7 +72,6 @@ workflows:
             branches:
               only:
                 - master
-                - /^release.*/
 
 notify:
   webhooks:
