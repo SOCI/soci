@@ -18,22 +18,47 @@ edit and update if necessary. Finally, copy to the `CHANGES` file.
 
 ## Update version numbers
 
-Update the version numbers in the following places:
+Update the version number of the new release in the following places:
 
 - [include/soci/version.h](https://github.com/SOCI/soci/blob/master/include/soci/version.h)
-- [mkdocs.yml](https://github.com/SOCI/soci/blob/master/mkdocs.yml)
+- [mkdocs.yml](mkdocs.yml)
 - [docs/index.md](https://github.com/SOCI/soci/blob/master/docs/index.md)
 - [appveyor.yml](https://github.com/SOCI/soci/blob/master/appveyor.yml)
 
 Search through the source tree looking for other places that use current
 version number and may require an update.
 
-## Update website
+The version number also has to be updated in number of places on the website,
+see [update website](#update-website) section.
 
-Link docs for new version.
-Build docs and upload or update docs deployment via CI.
+## Update website content
 
-*TODO*
+Update version of the new release on the [www/index.html](www/index.html) page.
+
+Add date and version of the new release on the [www/events.html](www/events.html) page.
+
+Add link to the folder with documentation for the new release
+on the [www/doc.html](www/doc.html) page.
+
+## Upload website content
+
+The website is hosted on SourceForge.net at https://soci.sourceforge.net and
+in order to upload updated files there, you will need:
+
+- Your SourceForge account credentials with administration rights for SOCI project (used for SFTP authentication)
+- SFTP client, see https://sourceforge.net/p/forge/documentation/SFTP/
+
+For example, you can use `lftp` to upload website and documentation files similarly
+to our CircleCI workflow configured to generate and deploy documentation
+(see [.circleci/config.yml](https://github.com/SOCI/soci/blob/master/.circleci/config.yml)):
+
+```
+lftp sftp://${DEPLOY_DOCS_USER}:${DEPLOY_DOCS_PASS}@web.sourceforge.net -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate no; set sftp:auto-confirm yes; mirror -v -R <source> <target directory>; quit"
+```
+
+where `<source>` denotes a file or folder to be copied
+and `<target directory>` is a directory under Web content folder
+of SOCI on `web.sourceforge.net` i.e. `/home/project-web/soci/htdocs`.
 
 ## Create source archive
 
