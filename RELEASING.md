@@ -31,6 +31,10 @@ that use current version number and may require an update.
 The version number also has to be updated in number of places
 on the website, see [update website](#update-website) section.
 
+## Add build status to README.md
+
+Add row for `release/X.Y` to the CI build status table in [README.md](README.md).
+
 ## Update website content
 
 Update version of the new release on the [www/index.html](www/index.html) page.
