@@ -21,7 +21,7 @@ edit and update if necessary. Finally, copy to the `CHANGES` file.
 Update the version number of the new release in the following places:
 
 - [include/soci/version.h](include/soci/version.h)
-- [mkdocs.yml](mkdocs.yml) - replace `master` in `site_name` with version
+- [mkdocs.yml](mkdocs.yml) - in `release/X.Y` branch set `site_name` with **X.Y** and keep **master** in the `master` branch.
 - [docs/index.md](docs/index.md)
 - [appveyor.yml](appveyor.yml)
 
