@@ -21,7 +21,7 @@
 #include <ctime>
 #include <memory>
 
-#include "soci/soci-config.h" // for SOCI_HAVE_CXX_C11
+#include "soci/soci-config.h" // for SOCI_HAVE_CXX11
 
 #if defined(_MSC_VER)
 #define LL_FMT_FLAGS "I64"
@@ -97,7 +97,7 @@ namespace std {
 // mode, we just need to check for the minimal compiler version supporting them
 // (see https://msdn.microsoft.com/en-us/library/hh567368.aspx).
 
-#if defined(SOCI_HAVE_CXX_C11) || (defined(_MSC_VER) && _MSC_VER >= 1800)
+#if defined(SOCI_HAVE_CXX11) || (defined(_MSC_VER) && _MSC_VER >= 1800)
 # define SOCI_OVERRIDE override
 #else
 # define SOCI_OVERRIDE
@@ -109,7 +109,7 @@ namespace soci
 namespace cxx_details
 {
 
-#if defined(SOCI_HAVE_CXX_C11) || (defined(_MSC_VER) && _MSC_VER >= 1800)
+#if defined(SOCI_HAVE_CXX11) || (defined(_MSC_VER) && _MSC_VER >= 1800)
     template <typename T>
     using auto_ptr = std::unique_ptr<T>;
 #else // std::unique_ptr<> not available
@@ -120,7 +120,7 @@ namespace cxx_details
 
 } // namespace soci
 
-#if defined(SOCI_HAVE_CXX_C11) || (defined(_MSC_VER) && _MSC_VER >= 1800)
+#if defined(SOCI_HAVE_CXX11) || (defined(_MSC_VER) && _MSC_VER >= 1800)
     #define SOCI_NOT_ASSIGNABLE(classname) \
         classname& operator=(const classname&) = delete;
     #define SOCI_NOT_COPYABLE(classname) \
@@ -136,7 +136,7 @@ namespace cxx_details
 
 #define SOCI_UNUSED(x) (void)x;
 
-#if defined(SOCI_HAVE_CXX_C11) || (defined(_MSC_VER) && _MSC_VER >= 1900)
+#if defined(SOCI_HAVE_CXX11) || (defined(_MSC_VER) && _MSC_VER >= 1900)
     #define SOCI_NOEXCEPT_FALSE noexcept(false)
 #else
     #define SOCI_NOEXCEPT_FALSE
