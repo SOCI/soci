@@ -86,7 +86,7 @@ List of a few essential CMake variables:
 
 List of variables to control common SOCI features and dependencies:
 
-* `SOCI_CXX11` - boolean - Request to compile in C++11 compatibility mode. Default is `OFF`.
+* `SOCI_CXX11` - boolean - Request to compile in C++11 compatibility mode. Default is `OFF`, unless [CMAKE_CXX_STANDARD](https://cmake.org/cmake/help/v3.1/variable/CMAKE_CXX_STANDARD.html) with version `11` or later is given in the command line.
 * `SOCI_SHARED` - boolean - Request to build shared libraries for SOCI core and all successfully configured backends. Default is `ON`.
 * `SOCI_STATIC` - boolean - Request to build static libraries for SOCI core and all successfully configured backends. Default is `ON`.
 * `SOCI_TESTS` - boolean - Request to build regression tests for SOCI core and all successfully configured backends.

@@ -7,8 +7,9 @@ source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
 
 cmake \
     -DCMAKE_BUILD_TYPE=Debug \
-    -DSOCI_ASAN=ON \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD} \
+    -DSOCI_ASAN=ON \
     -DSOCI_TESTS=ON \
     -DSOCI_STATIC=OFF \
     -DSOCI_DB2=OFF \
