@@ -24,7 +24,8 @@ env:
 matrix:
   include:
     - env: SOCI_TRAVIS_BACKEND=db2
-    - env: SOCI_TRAVIS_BACKEND=empty
+    - env: SOCI_TRAVIS_BACKEND=empty CMAKE_CXX_STANDARD=98
+    - env: SOCI_TRAVIS_BACKEND=empty CMAKE_CXX_STANDARD=11
     - env: SOCI_TRAVIS_BACKEND=firebird
     - env: SOCI_TRAVIS_BACKEND=mysql
     - env: SOCI_TRAVIS_BACKEND=odbc
