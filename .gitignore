@@ -4,6 +4,12 @@
 tags
 tmp
 
+# Release archives
+/soci*.7z
+/soci*.zip
+/soci*.tar.bz2
+/soci*.tar.gz
+
 # Build directories
 /*build*
 /*site*
