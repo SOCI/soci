@@ -48,3 +48,6 @@ CMakeLists.txt.user
 
 # Vagrant
 /.vagrant/
+
+# Python
+.venv/
