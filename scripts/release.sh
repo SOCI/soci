@@ -130,17 +130,25 @@ if [[ ! "$SOCI_VERSION" =~ ^[4-9]\.[0-9]\.[0-9]$ ]]; then
 else
     echo "${MSG_TAG} INFO: Releasing version $SOCI_VERSION"
 fi
+
 SOCI_ARCHIVE=soci-$SOCI_VERSION
+if [[ -n $OPT_RC_NUMBER ]];then
+    SOCI_ARCHIVE=$SOCI_ARCHIVE-rc$OPT_RC_NUMBER
+fi
+
 if [[ -d "$SOCI_ARCHIVE" ]]; then
-    echo "${MSG_TAG} ERROR: Directory '$SOCI_ARCHIVE' already exists. Remove it. Aborting."
+    echo "${MSG_TAG} ERROR: Directory '$SOCI_ARCHIVE' already exists. Aborting."
+    echo "${MSG_TAG} INFO: Delete it and run again."
     exit 1
 fi
 if [[ -f "${SOCI_ARCHIVE}.zip" ]]; then
-    echo "${MSG_TAG} ERROR: Archive '${SOCI_ARCHIVE}.zip' already exists. Remove it. Aborting."
+    echo "${MSG_TAG} ERROR: Archive '${SOCI_ARCHIVE}.zip' already exists. Aborting."
+    echo "${MSG_TAG} INFO: Delete it and run again."
     exit 1
 fi
 if [[ -f "${SOCI_ARCHIVE}.tar.gz" ]]; then
-    echo "${MSG_TAG} ERROR: Archive '${SOCI_ARCHIVE}.tar.gz' already exists. Remove it. Aborting."
+    echo "${MSG_TAG} ERROR: Archive '${SOCI_ARCHIVE}.tar.gz' already exists. Aborting."
+    echo "${MSG_TAG} INFO: Delete it and run again."
     exit 1
 fi
 
@@ -177,7 +185,7 @@ mkdocs build --clean
 echo "${MSG_TAG} INFO: Exiting Python virtual environment"
 deactivate
 
-echo "${MSG_TAG} INFO: Preparing release archive '$SOCI_ARCHIVE'"
+echo "${MSG_TAG} INFO: Preparing release archive in '$SOCI_ARCHIVE'"
 mkdir $SOCI_ARCHIVE
 cp -a cmake $SOCI_ARCHIVE
 cp -a include $SOCI_ARCHIVE
@@ -186,14 +194,14 @@ cp -a src $SOCI_ARCHIVE
 cp -a AUTHORS CHANGES CMakeLists.txt LICENSE_1_0.txt README.md Vagrantfile $SOCI_ARCHIVE/
 mv site $SOCI_ARCHIVE/docs
 
-echo "${MSG_TAG} INFO: Building release archive $SOCI_ARCHIVE.zip"
+echo "${MSG_TAG} INFO: Building release archive '$SOCI_ARCHIVE.zip'"
 zip -q -r $SOCI_ARCHIVE.zip $SOCI_ARCHIVE
 if [[ $? -ne 0 ]]; then
     echo "${MSG_TAG} ERROR: zip failed. Aborting."
     exit 1
 fi
 
-echo "${MSG_TAG} INFO: Building release archive $SOCI_ARCHIVE.tar.gz"
+echo "${MSG_TAG} INFO: Building release archive '$SOCI_ARCHIVE.tar.gz'"
 tar -czf $SOCI_ARCHIVE.tar.gz $SOCI_ARCHIVE
 if [[ $? -ne 0 ]]; then
     echo "${MSG_TAG} ERROR: tar failed. Aborting."
@@ -201,7 +209,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 echo "${MSG_TAG} INFO: Cleaning up"
-rm -rf "${SOCI_ARCHIVE}*"
+rm -rf "${SOCI_ARCHIVE}"
 git checkout $GIT_CURRENT_BRANCH
 
 echo "${MSG_TAG} INFO: Done"

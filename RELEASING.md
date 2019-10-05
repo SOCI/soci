@@ -2,8 +2,9 @@
 
 The releasing guide for the SOCI maintainers.
 
-**NOTICE:** The `4.0` version is used below (e.g. as in `release/4.0`) to keep
-the instructions more concrete, but it is a placeholder similar to `X.Y`.
+**NOTICE:** The `4.0` and `4.0.0` version numbers are used below
+(e.g. as in `release/4.0`) to keep the instructions more concrete,
+but it is a placeholder similar to `X.Y` or `X.Y.Z`.
 It should be replaced with the version number of the new release.
 
 ## Update CHANGES file
@@ -31,6 +32,7 @@ Update the version number of the new release in the following places:
 
 Search through the source tree looking for other places
 that use current version number and may require an update.
+Depending on type of release, update major, minor and micro version numbers.
 
 The version number also has to be updated in number of places
 on the website, see [update website](#update-website) section.
@@ -122,25 +124,37 @@ you will build packages ready for the final release:
 
 This will output the release candidate packages:
 
-- `soci-4.0.Z-rc1.zip`
-- `soci-4.0.Z-rc1.tar.gz`
+- `soci-4.0.0-rc1.zip`
+- `soci-4.0.0-rc1.tar.gz`
 
 or the final release packages:
 
-- `soci-4.0.Z.zip`
-- `soci-4.0.Z.tar.gz`
+- `soci-4.0.0.zip`
+- `soci-4.0.0.tar.gz`
 
-where `Z` is placeholder for the micro version number determined from the current
-value of the `SOCI_LIB_VERSION` macro in [include/soci/version.h](include/soci/version.h).
+where `4.0.0` is placeholder for the major, minor and micro version
+determined from the current value of the `SOCI_LIB_VERSION` macro
+in [include/soci/version.h](include/soci/version.h).
 
-## Publish release
+## Publish release packages on SourceForge.net
 
-- GitHub
-- SourceForge
+## Create annotated tag for final release and push to GitHub
 
-## Issue announcement
+Since we use SourceForge.net to publish release packages, we do not use
+GitHub releases, so there is no need to publish a new release via GitHub.
+Creating and pushing Git annotated tag is sufficient.
+
+```console
+git checkout release/4.0
+git tag -a 4.0.0 -m "Releasing SOCI 4.0.0"
+git push origin 4.0.0
+```
+
+## Announce new release
 
 Post the new release announcement to the project mailing lists:
 
 - [soci-devel](https://sourceforge.net/p/soci/mailman/soci-devel/)
 - [soci-users](https://sourceforge.net/p/soci/mailman/soci-users/)
+
+The End.
