@@ -2,6 +2,10 @@
 
 The releasing guide for the SOCI maintainers.
 
+**NOTICE:** The `4.0` version is used below (e.g. as in `release/4.0`) to keep
+the instructions more concrete, but it is a placeholder similar to `X.Y`.
+It should be replaced with the version number of the new release.
+
 ## Update CHANGES file
 
 Update the list of important changes in the [CHANGES](CHANGES) file.
@@ -91,7 +95,43 @@ git branch release/4.0
 
 ## Create source archive
 
-...for RC1, 2, ... and final release
+**NOTICE:** Run this step in Linux environment only.
+
+Run [scripts/release.sh](scripts/release.sh) script to build release archives
+with content from `release/X.Y` branch.
+
+```console
+cd soci
+./scripts/release.sh --help
+```
+
+First, you will want to build number of release candidates (typically 1-3, rarely 5-6):
+
+```console
+./scripts/release.sh --rc=1 release/4.0
+./scripts/release.sh --rc=2 release/4.0
+...
+```
+
+Eventually, once release candidates have been reviewed and verified,
+you will build packages ready for the final release:
+
+```console
+./scripts/release.sh release/4.0
+```
+
+This will output the release candidate packages:
+
+- `soci-4.0.Z-rc1.zip`
+- `soci-4.0.Z-rc1.tar.gz`
+
+or the final release packages:
+
+- `soci-4.0.Z.zip`
+- `soci-4.0.Z.tar.gz`
+
+where `Z` is placeholder for the micro version number determined from the current
+value of the `SOCI_LIB_VERSION` macro in [include/soci/version.h](include/soci/version.h).
 
 ## Publish release
 

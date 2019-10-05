@@ -5,8 +5,10 @@
 # Copyright (c) 2019 Mateusz Loskot <mateusz@loskot.net>
 #
 # This script performs the following steps:
-# 1. If given release/X.Y does not exist, branch it off of the master branch.
-# 2. If given release/X.Y does exist, assume it is ready for release.
+# 1. If given release/X.Y exists
+#    - on remote as origin/release/X.Y, check it out;
+#    - locally, then pass option --use-local-branch to check it out;
+#    and use it as ready for packaging.
 # 3. Determine the full release version number from `SOCI_LIB_VERSION` value in include/soci/version.h.
 # 4. Build HTML documentation
 # 4.1. Create Python virtual environment
@@ -23,8 +25,9 @@
 usage()
 {
     echo "Usage: `realpath $0` [OPTIONS] <release/X.Y branch>"
+    echo "  --rc <N>            N is number of release candidate (e.g. from 1 to 9)"
     echo "  --use-local-branch  Use existing local release/X.Y branch instead of checking out origin/release/X.Y"
-    echo "  --help              Displays this message"
+    echo "  --help, -h          Displays this message"
     exit 1
 }
 ME=`basename "$0"`
@@ -49,15 +52,22 @@ fi
 
 OPT_USE_LOCAL_RELEASE_BRANCH=0
 OPT_GIT_RELEASE_BRANCH=""
+OPT_RC_NUMBER=""
 while [[ $# -gt 0 ]];
 do
     case $1 in
+        --rc) test ! -z $2 && OPT_RC_NUMBER=$2; shift;;
         --use-local-branch) OPT_USE_LOCAL_RELEASE_BRANCH=1; echo "${MSG_TAG} INFO: Setting --use-local-branch on, using existing local release/X.Y branch";;
-        --help) usage;;
+        -h|--help) usage;;
         *) OPT_GIT_RELEASE_BRANCH=$1;;
     esac;
     shift
 done
+
+if [[ ! "$OPT_RC_NUMBER" =~ ^[1-9]+$ ]]; then
+    echo "${MSG_TAG} ERROR: Release candidate must be single digit integer from 1 to 9, not '$OPT_RC_NUMBER'. Aborting."
+    exit 1
+fi
 
 GIT_RELEASE_BRANCH=$OPT_GIT_RELEASE_BRANCH
 if [[ -z "$GIT_RELEASE_BRANCH" ]] || [[ ! "$GIT_RELEASE_BRANCH" =~ ^release/[3-9]\.[0-9]$ ]]; then
@@ -73,32 +83,40 @@ echo "${MSG_TAG} INFO: Releasing branch $GIT_RELEASE_BRANCH"
 echo "${MSG_TAG} INFO: Fetching branches from origin"
 git fetch origin
 
+# Checkout branch release/X.Y
 GIT_LOCAL_RELEASE_BRANCH=$(git branch -a | grep -Po "(\*?\s+)\K$GIT_RELEASE_BRANCH")
-if [[ $OPT_USE_LOCAL_RELEASE_BRANCH -eq 1 ]] && [[ -z "$GIT_LOCAL_RELEASE_BRANCH" ]]; then
-    echo "${MSG_TAG} ERROR: Local release branch '$GIT_LOCAL_RELEASE_BRANCH' does not exists. Aborting."
-    exit 1
-else
-    echo "${MSG_TAG} INFO: Checking out branch '$GIT_RELEASE_BRANCH'"
-    git checkout $GIT_RELEASE_BRANCH || exit 1
-fi
-
-if [[ $OPT_USE_LOCAL_RELEASE_BRANCH -eq 0 ]] && [[ -n "$GIT_LOCAL_RELEASE_BRANCH" ]]; then
-    echo "${MSG_TAG} ERROR: Local release branch '$GIT_LOCAL_RELEASE_BRANCH' already exists. Aborting."
-    echo "${MSG_TAG} INFO: Delete the local branch and run again to checkout 'origin/$GIT_RELEASE_BRANCH'."
-    exit 1
-fi
-
-if [[ $OPT_USE_LOCAL_RELEASE_BRANCH -eq 0 ]]; then
-    GIT_REMOTE_RELEASE_BRANCH=$(git branch -a | grep -Po "(\*?\s+)\Kremotes/origin/$GIT_RELEASE_BRANCH")
-    if [[ -z "$GIT_REMOTE_RELEASE_BRANCH" ]]; then
-        echo "${MSG_TAG} INFO: Release branch 'origin/$GIT_RELEASE_BRANCH' does not exist."
-        echo "${MSG_TAG} INFO: Branching '$GIT_RELEASE_BRANCH' off of origin/master."
-        git checkout -b $GIT_RELEASE_BRANCH --no-track origin/master || exit 1
+if [[ $OPT_USE_LOCAL_RELEASE_BRANCH -eq 1 ]]; then
+    if [[ -n "$GIT_LOCAL_RELEASE_BRANCH" ]]; then
+        echo "${MSG_TAG} INFO: Checking out branch '$GIT_RELEASE_BRANCH'"
+        git checkout $GIT_RELEASE_BRANCH || exit 1
+        echo "${MSG_TAG} INFO: Updating branch '$GIT_RELEASE_BRANCH' from origin"
+        git pull --ff-only origin $GIT_RELEASE_BRANCH || exit 1
     else
-        echo "${MSG_TAG} INFO: Release branch 'origin/$GIT_RELEASE_BRANCH' does exist. Checking it out."
-        git checkout -b $GIT_RELEASE_BRANCH --no-track origin/$GIT_RELEASE_BRANCH || exit 1
+        echo "${MSG_TAG} ERROR: Local release branch '$GIT_LOCAL_RELEASE_BRANCH' does not exists. Aborting."
+        exit 1
+    fi
+else
+    if [[ -n "$GIT_LOCAL_RELEASE_BRANCH" ]]; then
+        echo "${MSG_TAG} ERROR: Local release branch '$GIT_LOCAL_RELEASE_BRANCH' already exists. Aborting."
+        echo "${MSG_TAG} INFO: Delete the local branch and run again to checkout 'origin/$GIT_RELEASE_BRANCH'."
+        exit 1
     fi
 fi
+
+# Checkout branch origin/release/X.Y as release/X.Y
+if [[ $OPT_USE_LOCAL_RELEASE_BRANCH -eq 0 ]]; then
+    GIT_REMOTE_RELEASE_BRANCH=$(git branch -a | grep -Po "(\*?\s+)\Kremotes/origin/$GIT_RELEASE_BRANCH")
+    if [[ -n "$GIT_REMOTE_RELEASE_BRANCH" ]]; then
+        echo "${MSG_TAG} INFO: Release branch 'origin/$GIT_RELEASE_BRANCH' does exist. Checking it out."
+        git checkout -b $GIT_RELEASE_BRANCH --no-track origin/$GIT_RELEASE_BRANCH || exit 1
+        git pull --ff-only origin $GIT_RELEASE_BRANCH || exit 1
+    else
+        echo "${MSG_TAG} ERROR: Release branch 'origin/$GIT_RELEASE_BRANCH' does not exist. Aborting"
+        echo "${MSG_TAG} INFO: Create release branch 'origin/$GIT_RELEASE_BRANCH' and run again."
+        exit 1
+    fi
+fi
+
 GIT_CURRENT_RELEASE_BRANCH=$(git branch -a | grep -Po "(\*\s+)\K$GIT_RELEASE_BRANCH")
 if [[ "$GIT_CURRENT_RELEASE_BRANCH" != "$GIT_RELEASE_BRANCH" ]]; then
     echo "${MSG_TAG} ERROR: Current branch is not '$GIT_RELEASE_BRANCH' but '$GIT_CURRENT_RELEASE_BRANCH'. Aborting."
