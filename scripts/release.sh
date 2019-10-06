@@ -64,7 +64,7 @@ do
     shift
 done
 
-if [[ ! "$OPT_RC_NUMBER" =~ ^[1-9]+$ ]]; then
+if [[ -n "$OPT_RC_NUMBER" ]] && [[ ! "$OPT_RC_NUMBER" =~ ^[1-9]+$ ]]; then
     echo "${MSG_TAG} ERROR: Release candidate must be single digit integer from 1 to 9, not '$OPT_RC_NUMBER'. Aborting."
     exit 1
 fi
