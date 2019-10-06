@@ -6,6 +6,7 @@ Version 4.0.0 differs from 3.2.3 in the following ways:
 NOTICE: This is probably the last release compatible with C++98.
 
 - Added support for C++11 and C++17 compilation modes.
+- Added RELEASING.md how-to and scripts/release.sh helper for release managers.
 - Added context of the failure in soci_error::what() which now returns a
   longer and more useful message. Use the new get_error_message() method to get
   just the brief error message which used to be returned by what().

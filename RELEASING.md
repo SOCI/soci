@@ -138,6 +138,8 @@ in [include/soci/version.h](include/soci/version.h).
 
 ## Publish release packages on SourceForge.net
 
+*TODO*
+
 ## Create annotated tag for final release and push to GitHub
 
 Since we use SourceForge.net to publish release packages, we do not use
