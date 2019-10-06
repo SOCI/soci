@@ -171,9 +171,13 @@ if [[ ! -f $PWD/.venv/bin/activate ]]; then
     else
         echo "${MSG_TAG} INFO: Creating Python virtual environment using $MASTER_PY (`$MASTER_PY --version`)"
     fi
-    $MASTER_PY -m venv $PWD/.venv
+    $MASTER_PY -m venv $PWD/.venv || exit 1
 fi
 
+if [[ ! -f $PWD/.venv/bin/activate ]]; then
+    echo "${MSG_TAG} ERROR: Python virtual environment script '$PWD/.venv/bin/activate' not found. Aborting."
+    exit 1
+fi
 source $PWD/.venv/bin/activate
 echo "${MSG_TAG} INFO: Using Python from `which python` (`python --version`)"
 python -m pip install --upgrade pip
