@@ -23,7 +23,7 @@ namespace // unnamed
 {
 
 // used only with asynchronous operations in single-row mode
-
+#ifndef SOCI_POSTGRESQL_NOSINGLEROWMODE
 void wait_until_operation_complete(postgresql_session_backend & session)
 {
     while (true)
@@ -49,6 +49,7 @@ void throw_soci_error(PGconn * conn, const char * msg)
 
     throw soci_error(description);
 }
+#endif // !SOCI_POSTGRESQL_NOSINGLEROWMODE
 
 } // unnamed namespace
 
