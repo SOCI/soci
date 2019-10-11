@@ -42,6 +42,9 @@ Then, filter it out from trivial changes keeping only the important ones.
 Next, group changes in sections for core and backends, sort within sections,
 edit and update if necessary. Finally, copy to the `CHANGES` file.
 
+Commit the updates to the `master` branch first.
+See [Create release branch](#create-release-branch).
+
 ## Update version numbers
 
 Update the version number of the new release in the following places:
@@ -115,6 +118,13 @@ of SOCI on `web.sourceforge.net` i.e. `/home/project-web/soci/htdocs`.
 git checkout master
 git branch release/4.0
 ```
+
+**NOTICE:**: All changes preparing the release or hotfixes should be
+committed to `master` branch first, then merged to `release/X.Y` branch
+that is being released. If it is a newly created `release/X.Y` branch,
+then prefer fast-forward merges from `master`. In other cases, e.g.
+if `release/X.Y` is an existing release branch and you are releasing a bugfix
+release, you may have to perform true merge.
 
 ## Create source archive
 
