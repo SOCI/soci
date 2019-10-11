@@ -2,6 +2,17 @@
 
 The releasing guide for the SOCI maintainers.
 
+1. [Update CHANGES file](#update-changes-file)
+2. [Update version numbers](#update-version-numbers)
+3. [Add build status to README](#add-build-status-to-readme)
+4. [Update website content](#update-website-content)
+5. [Upload website content](#upload-website-content)
+6. [Create release branch](#create-release-branch)
+7. [Create source archive](#create-source-archive)
+8. [Publish release packages on SourceForge](#publish-release-packages-on-sourceforgenet)
+9. [Create annotated tag for final release and push to GitHub](create-annotated-tag-for-final-release-and-push-to-github)
+10. [Announce new release](#announce-new-release)
+
 **NOTICE:** The `4.0` and `4.0.0` version numbers are used below
 (e.g. as in `release/4.0`) to keep the instructions more concrete,
 but it is a placeholder similar to `X.Y` or `X.Y.Z`.
@@ -11,7 +22,17 @@ It should be replaced with the version number of the new release.
 
 Update the list of important changes in the [CHANGES](CHANGES) file.
 
-It is helpful to generate complete log of changes in Markdown format:
+First, start new section with new line like this:
+
+> Version X.Y.Z differs from A.B.C in the following ways:
+
+optionally, you may also want to start with `X.Y.Z-rc1`, changing through
+`X.Y.Z-rc2`, `X.Y.Z-rc3`, etc. to `X.Y.Z` on the course of updates
+towards the final release. For example, like so
+
+> Version 4.0.0 differs from 3.2.3 in the following ways:
+
+Next, it is helpful to generate complete log of changes in Markdown format:
 
 ```console
 git log 3.2.3..master --pretty=format:"1. [%h](http://github.com/soci/soci/commit/%H) - %s"
@@ -37,7 +58,7 @@ Depending on type of release, update major, minor and micro version numbers.
 The version number also has to be updated in number of places
 on the website, see [update website](#update-website) section.
 
-## Add build status to README.md
+## Add build status to README
 
 Add row for `release/X.Y` to the CI build status table in [README.md](README.md).
 
@@ -136,9 +157,13 @@ where `4.0.0` is placeholder for the major, minor and micro version
 determined from the current value of the `SOCI_LIB_VERSION` macro
 in [include/soci/version.h](include/soci/version.h).
 
-## Publish release packages on SourceForge.net
+## Publish release packages on SourceForge
 
-TODO
+1. Sign in to SourceForge.net using your own credentials (you need SOCI Admin privileges).
+2. Go to https://sourceforge.net/projects/soci/files/soci/ page.
+3. Hit "Add Folder" and create `soci-X.Y.Z` if it does not exist yet (e.g. `soci-4.0.0`)
+4. Go to https://sourceforge.net/projects/soci/files/soci/soci-4.0.0/
+5. Hit "Add File" and upload source packages prepared for release, including release candidates.
 
 ## Create annotated tag for final release and push to GitHub
 

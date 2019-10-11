@@ -1,7 +1,7 @@
 This file contains the history of changes in the SOCI library.
 
 ---
-Version 4.0.0 differs from 3.2.3 in the following ways:
+Version 4.0.0-rc1 differs from 3.2.3 in the following ways:
 
 NOTICE: This is probably the last release compatible with C++98.
 
@@ -28,7 +28,7 @@ NOTICE: This is probably the last release compatible with C++98.
 - Although the build configuration is based on CMake 2.8,
   numerous improvements have been applied to the CMake scripts.
 - Converted all tests to use the Catch framework.
-- Fixed issues with throwing from soci_error copy ctor and assignment operator (#302).
+- Fixed issues with throwing from soci_error copy constructor and assignment operator (#302).
 - Fixed backends loading in case SOCI is built with CMAKE_DEBUG_POSTFIX set (#368).
 - Fixed deadlock in soci::connection_pool::try_lease function.
 - Fixed numerous compilation warnings using various compilers.
