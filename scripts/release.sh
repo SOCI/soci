@@ -56,7 +56,7 @@ OPT_RC_NUMBER=""
 while [[ $# -gt 0 ]];
 do
     case $1 in
-        --rc) test ! -z $2 && OPT_RC_NUMBER=$2; shift;;
+        --rc) test ! -z $2 && OPT_RC_NUMBER=$2; shift; echo "${MSG_TAG} INFO: Setting --rc=$OPT_RC_NUMBER, building release candidate archive";;
         --use-local-branch) OPT_USE_LOCAL_RELEASE_BRANCH=1; echo "${MSG_TAG} INFO: Setting --use-local-branch on, using existing local release/X.Y branch";;
         -h|--help) usage;;
         *) OPT_GIT_RELEASE_BRANCH=$1;;
@@ -215,5 +215,10 @@ fi
 echo "${MSG_TAG} INFO: Cleaning up"
 rm -rf "${SOCI_ARCHIVE}"
 git checkout $GIT_CURRENT_BRANCH
+
+if [[ $OPT_USE_LOCAL_RELEASE_BRANCH -eq 0 ]]; then
+    echo "${MSG_TAG} INFO: Deleting '$GIT_RELEASE_BRANCH' checked out from 'origin/$GIT_RELEASE_BRANCH'."
+    git branch -D $GIT_RELEASE_BRANCH
+fi
 
 echo "${MSG_TAG} INFO: Done"

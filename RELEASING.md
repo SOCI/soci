@@ -141,8 +141,8 @@ cd soci
 First, you will want to build number of release candidates (typically 1-3, rarely 5-6):
 
 ```console
-./scripts/release.sh --rc=1 release/4.0
-./scripts/release.sh --rc=2 release/4.0
+./scripts/release.sh --rc 1 release/4.0
+./scripts/release.sh --rc 2 release/4.0
 ...
 ```
 
