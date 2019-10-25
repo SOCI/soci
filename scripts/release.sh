@@ -131,10 +131,11 @@ else
     echo "${MSG_TAG} INFO: Releasing version $SOCI_VERSION"
 fi
 
-SOCI_ARCHIVE=soci-$SOCI_VERSION
+SOCI_FULL_VERSION=$SOCI_VERSION
 if [[ -n $OPT_RC_NUMBER ]];then
-    SOCI_ARCHIVE=$SOCI_ARCHIVE-rc$OPT_RC_NUMBER
+    SOCI_FULL_VERSION=$SOCI_VERSION-rc$OPT_RC_NUMBER
 fi
+SOCI_ARCHIVE=soci-$SOCI_FULL_VERSION
 
 if [[ -d "$SOCI_ARCHIVE" ]]; then
     echo "${MSG_TAG} ERROR: Directory '$SOCI_ARCHIVE' already exists. Aborting."
@@ -180,8 +181,8 @@ if [[ ! -f $PWD/.venv/bin/activate ]]; then
 fi
 source $PWD/.venv/bin/activate
 echo "${MSG_TAG} INFO: Using Python from `which python` (`python --version`)"
-python -m pip install --upgrade pip
-python -m pip install --upgrade mkdocs
+python -m pip --quiet install --upgrade pip
+python -m pip --quiet install --upgrade mkdocs
 
 echo "${MSG_TAG} INFO: Building documentation with `mkdocs --version`"
 mkdocs build --clean
@@ -196,8 +197,13 @@ cp -a include $SOCI_ARCHIVE
 cp -a languages $SOCI_ARCHIVE
 cp -a src $SOCI_ARCHIVE
 cp -a tests $SOCI_ARCHIVE
-cp -a AUTHORS CHANGES CMakeLists.txt LICENSE_1_0.txt README.md Vagrantfile $SOCI_ARCHIVE/
+cp -a AUTHORS CMakeLists.txt LICENSE_1_0.txt README.md Vagrantfile $SOCI_ARCHIVE/
 mv site $SOCI_ARCHIVE/docs
+
+# Add git SHA-1 to version in CHANGES file
+RELEASE_BRANCH_SHA1=$(git show-ref --hash=8 origin/$GIT_RELEASE_BRANCH)
+echo "${MSG_TAG} INFO: Appending '$RELEASE_BRANCH_SHA1' hash to version in '$SOCI_ARCHIVE/CHANGES'"
+cat CHANGES | sed "s/Version $SOCI_VERSION.*differs/Version $SOCI_FULL_VERSION ($RELEASE_BRANCH_SHA1) differs/" > $SOCI_ARCHIVE/CHANGES
 
 echo "${MSG_TAG} INFO: Building release archive '$SOCI_ARCHIVE.zip'"
 zip -q -r $SOCI_ARCHIVE.zip $SOCI_ARCHIVE
