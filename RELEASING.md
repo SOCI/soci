@@ -175,6 +175,12 @@ in [include/soci/version.h](include/soci/version.h).
 4. Go to https://sourceforge.net/projects/soci/files/soci/soci-4.0.0/
 5. Hit "Add File" and upload source packages prepared for release, including release candidates.
 
+## Announce release candidates
+
+Post brief announcement about the issued release candidate to the project
+mailing lists: [soci-devel](https://sourceforge.net/p/soci/mailman/soci-devel/)
+and [soci-users](https://sourceforge.net/p/soci/mailman/soci-users/).
+
 ## Create annotated tag for final release and push to GitHub
 
 Since we use SourceForge.net to publish release packages, we do not use
@@ -187,11 +193,10 @@ git tag -a 4.0.0 -m "Releasing SOCI 4.0.0"
 git push origin 4.0.0
 ```
 
-## Announce new release
+## Announce final release
 
-Post the new release announcement to the project mailing lists:
-
-- [soci-devel](https://sourceforge.net/p/soci/mailman/soci-devel/)
-- [soci-users](https://sourceforge.net/p/soci/mailman/soci-users/)
+Post the final release announcement to the project mailing lists:
+[soci-devel](https://sourceforge.net/p/soci/mailman/soci-devel/)
+and [soci-users](https://sourceforge.net/p/soci/mailman/soci-users/).
 
 The End.
