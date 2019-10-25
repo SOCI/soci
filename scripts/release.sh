@@ -195,6 +195,7 @@ cp -a cmake $SOCI_ARCHIVE
 cp -a include $SOCI_ARCHIVE
 cp -a languages $SOCI_ARCHIVE
 cp -a src $SOCI_ARCHIVE
+cp -a tests $SOCI_ARCHIVE
 cp -a AUTHORS CHANGES CMakeLists.txt LICENSE_1_0.txt README.md Vagrantfile $SOCI_ARCHIVE/
 mv site $SOCI_ARCHIVE/docs
 
