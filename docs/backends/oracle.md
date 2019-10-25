@@ -90,7 +90,8 @@ int id = 7;
 sql << "select name from person where id = :id", use(id, "id")
 ```
 
-SOCI's use of ':' to indicate a value to be bound within a SQL string is consistant with the underlying Oracle client library syntax.
+SOCI's use of ':' to indicate a value to be bound within a SQL string is
+consistent with the underlying Oracle client library syntax.
 
 ### Bulk Operations
 
@@ -98,8 +99,9 @@ The Oracle backend has full support for SOCI's [bulk operations](../binding.md#b
 
 ### Transactions
 
-[Transactions](../statements.html#transactions) are also fully supported by the Oracle backend,
-although transactions with non-default isolation levels have to be managed by explicit SQL statements.
+[Transactions](../statements.md#transactions) are also fully supported by
+the Oracle backend, although transactions with non-default isolation levels
+have to be managed by explicit SQL statements.
 
 ### blob Data Type
 

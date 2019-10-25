@@ -103,7 +103,7 @@ We think that it's *completely wrong*. Null (in the database sense) is an inform
 
 Thus, SOCI uses a separate indicators to describe the state of exchanged data. It also has an additional benefit of allowing the library to convey more than two states (null and not null). Indeed, the SOCI library uses indicators also to report that the data was read, but truncated (this applies to strings when reading to fixed-length character arrays). Truncation is also an information about the data and as such it's better to have it in addition to the data, not as part of it.
 
-Having said that, it is important to point at the [Integration with Boost](boost.html) that allows to use `boost::optional<T>` to conveniently pack together the data and the information about its state.
+Having said that, it is important to point at the [Integration with Boost](boost.md) that allows to use `boost::optional<T>` to conveniently pack together the data and the information about its state.
 
 ## Q: Overloaded comma operator is just obfuscation, I don't like it.
 

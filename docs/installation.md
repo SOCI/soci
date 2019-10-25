@@ -20,8 +20,9 @@ and backend-specific dependencies:
 
 ## Downloads
 
-Download package with latest release of the SOCI source code: [soci-X.Y.Z](https://sourceforge.net/projects/soci/), where X.Y.Z is the version number.
-Unpack the archive.
+Download package with latest release of the SOCI source code:
+[soci-X.Y.Z](https://sourceforge.net/projects/soci/),
+where X.Y.Z is the version number. Unpack the archive.
 
 You can always clone SOCI from the Git repository:
 
@@ -33,15 +34,19 @@ git clone git://github.com/SOCI/soci.git
 
 SOCI is configured to build using [CMake](http://cmake.org/) system in version 2.8+.
 
-The build configuration allows to control various aspects of compilation and installation by setting common CMake variables that change behaviour, describe system or control build (see [CMake help](http://cmake.org/cmake/help/documentation.html)) as well as SOCI-specific variables described below.
+The build configuration allows to control various aspects of compilation and
+installation by setting common CMake variables that change behaviour, describe
+system or control build (see [CMake help](http://cmake.org/cmake/help/documentation.html))
+as well as SOCI-specific variables described below.
 All these variables are available regardless of platform or compilation toolset used.
 
-Running CMake from the command line allows to set variables in the CMake cache with the following syntax: `-DVARIABLE:TYPE=VALUE`.
-If you are new to CMake, you may find the tutorial [Running CMake](http://cmake.org/cmake/help/runningcmake.html) helpful.
+Running CMake from the command line allows to set variables in the CMake cache
+with the following syntax: `-DVARIABLE:TYPE=VALUE`. If you are new to CMake,
+you may find the tutorial [Running CMake](http://cmake.org/cmake/help/runningcmake.html) helpful.
 
 ### Running CMake on Unix
 
-Steps outline using GNU Make makefiles:
+Steps outline using GNU Make `Makefile`-s:
 
 ```console
 mkdir build
@@ -66,7 +71,9 @@ msbuild.exe SOCI.sln
 
 By default, CMake will try to determine availability of all dependencies automatically.
 If you are lucky, you will not need to specify any of the CMake variables explained below.
-However, if CMake reports some of the core or backend-specific dependencies as missing, you will need specify relevant variables to tell CMake where to look for the required components.
+However, if CMake reports some of the core or backend-specific dependencies
+as missing, you will need specify relevant variables to tell CMake where to look
+for the required components.
 
 CMake configures SOCI build performing sequence of steps.
 Each subsequent step is dependant on result of previous steps corresponding with particular feature.
@@ -143,7 +150,7 @@ List of variables to control common SOCI features and dependencies:
 * `WITH_POSTGRESQL` - boolean - Should CMake try to detect PostgreSQL client interface libraries. SOCI relies on [libpq](http://www.postgresql.org/docs/current/static/libpq.html") C library.
 * `POSTGRESQL_INCLUDE_DIR` - string - Path to PostgreSQL include directory where CMake should look for `libpq-fe.h` header.
 * `POSTGRESQL_LIBRARY` - string - Full paths to libraries to link SOCI against to enable the backend support. The `POSTGRESQL_LIBRARIES` will be set with PostgreSQL libraries needed for linking.
-* `SOCI_POSTGRESQL` - boolean - Requests to build [PostgreSQL](backends/postgresql.md") backend. Automatically switched on, if `WITH_POSTGRESQL` is set to ON.
+* `SOCI_POSTGRESQL` - boolean - Requests to build [PostgreSQL](backends/postgresql.md) backend. Automatically switched on, if `WITH_POSTGRESQL` is set to ON.
 * `SOCI_POSTGRESQL_TEST_CONNSTR` - string - Connection string to PostgreSQL test database. Format of the string is explained PostgreSQL backend reference. Example: `-DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="dbname=mydb user=scott"`
 
 #### SQLite 3
