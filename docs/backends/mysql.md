@@ -116,7 +116,7 @@ Nested statements are not supported by the MySQL backend.
 
 ### Stored Procedures
 
-MySQL version 5.0 and later supports two kinds of stored routines: stored procedures and stored functions (for details, please consult the [procedure MySQL documentation](http://dev.mysql.com/doc/refman/5.0/en/stored-procedures.html)). Stored functions can be executed by using SOCI's [procedure class](../procedures.md). There is currently no support for stored procedures.
+MySQL version 5.0 and later supports two kinds of stored routines: stored procedures and stored functions (for details, please consult the [Defining Stored Programs](https://dev.mysql.com/doc/refman/5.5/en/stored-programs-defining.html)). Stored functions can be executed by using SOCI's [procedure class](../procedures.md). There is currently no support for stored procedures.
 
 ## Native API Access
 

@@ -12,7 +12,7 @@ and backend-specific dependencies:
 
 * [DB2 Call Level Interface (CLI)](http://pic.dhe.ibm.com/infocenter/db2luw/v10r1/topic/com.ibm.swg.im.dbclient.install.doc/doc/c0023452.html)
 * [Firebird client library](http://www.firebirdsql.org/manual/ufb-cs-clientlib.html)
-* [mysqlclient](http://dev.mysql.com/doc/refman/5.6/en/c.html) - C API to MySQL
+* [mysqlclient](https://dev.mysql.com/doc/refman/5.6/en/c-api.html) - C API to MySQL
 * ODBC (Open Database Connectivity) implementation: [Microsoft ODBC](http://msdn.microsoft.com/en-us/library/windows/desktop/ms710252.aspx) [iODBC](http://www.iodbc.org/), [unixODBC](http://www.unixodbc.org/)
 * [Oracle Call Interface (OCI)](http://www.oracle.com/technetwork/database/features/oci/index.html)
 * [libpq](http://www.postgresql.org/docs/current/static/libpq.html) - C API to PostgreSQL
@@ -122,7 +122,7 @@ List of variables to control common SOCI features and dependencies:
 
 #### MySQL
 
-* `WITH_MYSQL` - boolean - Should CMake try to detect [mysqlclient](http://dev.mysql.com/doc/refman/5.0/en/c.html) libraries providing MySQL C API. Note, currently the [mysql_config](http://dev.mysql.com/doc/refman/5.0/en/building-clients.html) program is not being used.
+* `WITH_MYSQL` - boolean - Should CMake try to detect [mysqlclient](https://dev.mysql.com/doc/refman/5.5/en/c-api.html) libraries providing MySQL C API. Note, currently the [mysql_config](https://dev.mysql.com/doc/refman/5.5/en/c-api-building-clients.html) program is not being used.
 * `MYSQL_DIR` - string - Path to MySQL installation root directory. CMake will scan subdirectories `MYSQL_DIR/include` and `MYSQL_DIR/lib` respectively for MySQL headers and libraries.
 * `MYSQL_INCLUDE_DIR` - string - Path to MySQL include directory where CMake should look for `mysql.h` header.
 * `MYSQL_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
