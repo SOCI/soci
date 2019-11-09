@@ -49,6 +49,7 @@ See [Create release branch](#create-release-branch).
 
 Update the version number of the new release in the following places:
 
+- [README.md](README.md) - version in badges, links to Git tag on GitHub and release
 - [include/soci/version.h](include/soci/version.h)
 - [mkdocs.yml](mkdocs.yml) - in `release/X.Y` branch (see [create release branch](#create-release-branch)) set `site_name` with **X.Y** and keep **master** in the `master` branch.
 - [docs/index.md](docs/index.md)
