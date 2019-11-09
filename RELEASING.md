@@ -50,7 +50,7 @@ See [Create release branch](#create-release-branch).
 Update the version number of the new release in the following places:
 
 - [include/soci/version.h](include/soci/version.h)
-- [mkdocs.yml](mkdocs.yml) - in `release/X.Y` branch set `site_name` with **X.Y** and keep **master** in the `master` branch.
+- [mkdocs.yml](mkdocs.yml) - in `release/X.Y` branch (see [create release branch](#create-release-branch)) set `site_name` with **X.Y** and keep **master** in the `master` branch.
 - [docs/index.md](docs/index.md)
 - [appveyor.yml](appveyor.yml)
 
@@ -72,7 +72,7 @@ Update version of the new release on the [www/index.html](www/index.html) page.
 Add date and version of the new release on the [www/events.html](www/events.html) page.
 
 Add link to the folder with documentation for the new release
-on the [www/doc.html](www/doc.html) page.
+on the [www/doc/index.html](www/doc/index.html) page.
 
 ## Upload website content
 
