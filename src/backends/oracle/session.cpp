@@ -8,6 +8,7 @@
 #define SOCI_ORACLE_SOURCE
 #include "soci/oracle/soci-oracle.h"
 #include "soci/callbacks.h"
+#include "soci/session.h"
 #include "error.h"
 #include <cctype>
 #include <cstdio>
@@ -435,6 +436,15 @@ oracle_rowid_backend * oracle_session_backend::make_rowid_backend()
 oracle_blob_backend * oracle_session_backend::make_blob_backend()
 {
     return new oracle_blob_backend(*this);
+}
+
+bool oracle_session_backend::get_next_sequence_value(
+    session &s, std::string const &sequence,
+    long long &value)
+{
+    s << "select " + sequence + ".nextval from dual", into(value);
+
+    return true;
 }
 
 ub2 oracle_session_backend::get_double_sql_type() const
