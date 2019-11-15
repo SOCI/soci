@@ -226,16 +226,25 @@ void oracle_standard_into_type_backend::read_from_lob(OCILobLocator * lobp, std:
 
     if (len != 0)
     {
+        ub4 lenChunk = len;
         ub4 offset = 1;
-
-        res = OCILobRead(statement_.session_.svchp_, statement_.session_.errhp_,
-            lobp, &len,
-            offset, reinterpret_cast<dvoid*>(&buf[0]),
-            len, 0, 0, 0, 0);
-        if (res != OCI_SUCCESS)
+        do
         {
-            throw_oracle_soci_error(res, statement_.session_.errhp_);
+            res = OCILobRead(statement_.session_.svchp_, statement_.session_.errhp_,
+                lobp, &lenChunk,
+                offset,
+                reinterpret_cast<dvoid*>(&buf[offset - 1]),
+                len - offset + 1, 0, 0, 0, 0);
+            if (res == OCI_NEED_DATA)
+            {
+                offset += lenChunk;
+            }
+            else if (res != OCI_SUCCESS)
+            {
+                throw_oracle_soci_error(res, statement_.session_.errhp_);
+            }
         }
+        while (res == OCI_NEED_DATA);
     }
     
     value.assign(buf.begin(), buf.end());
