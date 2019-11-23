@@ -9,6 +9,7 @@
 #include <soci/sqlite3/soci-sqlite3.h>
 #include "common-tests.h"
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <string>
 #include <cmath>
@@ -284,6 +285,7 @@ struct table_creator_for_std_tm_bind : table_creator_base
     }
 };
 
+#ifndef CATCH_CONFIG_NO_CPP11
 TEST_CASE("SQLite std::tm bind", "[sqlite][std-tm-bind]")
 {
     soci::session sql(backEnd, connectString);
@@ -300,6 +302,7 @@ TEST_CASE("SQLite std::tm bind", "[sqlite][std-tm-bind]")
     REQUIRE(result.size() == 1);
     CHECK(std::mktime(&result.front()) == std::mktime(&datetime));
 }
+#endif
 
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
