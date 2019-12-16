@@ -131,7 +131,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
     const int defaultSourceCharSetId = 871;
 
     // arbitrary length for charset conversion buffer
-    const size_t nlsBufLen = 100;
+    const size_t nlsBufLen = 4096;
     
     char nlsService[nlsBufLen];
     size_t nlsServiceLen;
