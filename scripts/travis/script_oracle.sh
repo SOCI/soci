@@ -21,7 +21,7 @@ cmake \
     -DSOCI_ORACLE=ON \
     -DSOCI_POSTGRESQL=OFF \
     -DSOCI_SQLITE3=OFF \
-    -DSOCI_ORACLE_TEST_CONNSTR:STRING="service=XE user=travis password=travis" \
+    -DSOCI_ORACLE_TEST_CONNSTR:STRING="service=localhost/XE user=travis password=travis" \
     ..
 
 run_make
