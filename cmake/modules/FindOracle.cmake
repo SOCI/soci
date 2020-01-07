@@ -43,8 +43,8 @@ find_path(ORACLE_INCLUDE_DIR
   /usr/include/oracle/*/client${LIB_SUFFIX})
 
 set(ORACLE_OCI_NAMES clntsh libclntsh oci) # Dirty trick might help on OSX, see issues/89
-set(ORACLE_OCCI_NAMES libocci occi oraocci10 oraocci11 oraocci12)
-set(ORACLE_NNZ_NAMES nnz10 libnnz10 nnz11 libnnz11 nnz12 libnnz12 ociw32)
+set(ORACLE_OCCI_NAMES libocci occi oraocci10 oraocci11 oraocci12 oraocci18)
+set(ORACLE_NNZ_NAMES nnz10 libnnz10 nnz11 libnnz11 nnz12 libnnz12 nnz18 libnnz18 ociw32)
 
 set(ORACLE_LIB_DIR
   ${ORACLE_HOME}
@@ -52,6 +52,7 @@ set(ORACLE_LIB_DIR
   ${ORACLE_HOME}/sdk/lib       # Oracle SDK
   ${ORACLE_HOME}/sdk/lib/msvc
   ${ORACLE_HOME}/OCI/lib/msvc # Oracle XE on Windows
+  ${ORACLE_HOME}/OCI/lib/msvc/vc14 # Oracle XE on Windows
   # Instant client from rpm
   /usr/lib/oracle/*/client${LIB_SUFFIX}/lib)
 
