@@ -52,7 +52,6 @@ set(ORACLE_LIB_DIR
   ${ORACLE_HOME}/sdk/lib       # Oracle SDK
   ${ORACLE_HOME}/sdk/lib/msvc
   ${ORACLE_HOME}/OCI/lib/msvc # Oracle XE on Windows
-  ${ORACLE_HOME}/OCI/lib/msvc/vc14 # Oracle XE on Windows
   # Instant client from rpm
   /usr/lib/oracle/*/client${LIB_SUFFIX}/lib)
 
