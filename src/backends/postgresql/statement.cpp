@@ -80,7 +80,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
     // rewrite the query by transforming all named parameters into
     // the postgresql_ numbers ones (:abc -> $1, etc.)
 
-    enum { normal, in_quotes, in_name } state = normal;
+    enum { normal, in_quotes, in_identifier, in_name } state = normal;
 
     std::string name;
     int position = 1;
@@ -95,6 +95,11 @@ void postgresql_statement_backend::prepare(std::string const & query,
             {
                 query_ += *it;
                 state = in_quotes;
+            }
+            else if (*it == '\"')
+            {
+                query_ += *it;
+                state = in_identifier;
             }
             else if (*it == ':')
             {
@@ -124,7 +129,8 @@ void postgresql_statement_backend::prepare(std::string const & query,
             }
             break;
         case in_quotes:
-            if (*it == '\'')
+        case in_identifier:
+            if (*it == '\'' || *it == '\"' )
             {
                 query_ += *it;
                 state = normal;
