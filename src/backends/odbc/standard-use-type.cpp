@@ -4,8 +4,9 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 
 #define SOCI_ODBC_SOURCE
-#include <soci-platform.h>
-#include "soci-odbc.h"
+#include "soci/soci-platform.h"
+#include "soci/odbc/soci-odbc.h"
+#include "soci-exchange-cast.h"
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -14,12 +15,6 @@
 
 using namespace soci;
 using namespace soci::details;
-
-#ifdef _MSC_VER
-#pragma warning(disable:4996)
-#define snprintf _snprintf
-#endif
-
 
 void* odbc_standard_use_type_backend::prepare_for_bind(
     SQLLEN &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType)
@@ -45,7 +40,7 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
           size = max_bigint_length;
           buf_ = new char[size];
           snprintf(buf_, size, "%" LL_FMT_FLAGS "d",
-                   *static_cast<long long *>(data_));
+                   exchange_type_cast<x_long_long>(data_));
           indHolder_ = SQL_NTS;
         }
         else // Normal case, use ODBC support.
@@ -63,7 +58,7 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
           size = max_bigint_length;
           buf_ = new char[size];
           snprintf(buf_, size, "%" LL_FMT_FLAGS "u",
-                   *static_cast<unsigned long long *>(data_));
+                   exchange_type_cast<x_unsigned_long_long>(data_));
           indHolder_ = SQL_NTS;
         }
         else // Normal case, use ODBC support.
@@ -84,25 +79,20 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
         cType = SQL_C_CHAR;
         size = 2;
         buf_ = new char[size];
-        buf_[0] = *static_cast<char*>(data_);
+        buf_[0] = exchange_type_cast<x_char>(data_);
         buf_[1] = '\0';
         indHolder_ = SQL_NTS;
         break;
     case x_stdstring:
     {
-        std::string* s = static_cast<std::string*>(data_);
-        sqlType = SQL_VARCHAR;
-        cType = SQL_C_CHAR;
-        size = s->size();
-        buf_ = new char[size+1];
-        memcpy(buf_, s->c_str(), size);
-        buf_[size++] = '\0';
-        indHolder_ = SQL_NTS;
+        std::string const& s = exchange_type_cast<x_stdstring>(data_);
+
+        copy_from_string(s, size, sqlType, cType);
     }
     break;
     case x_stdtm:
     {
-        std::tm *t = static_cast<std::tm *>(data_);
+        std::tm const& t = exchange_type_cast<x_stdtm>(data_);
 
         sqlType = SQL_TIMESTAMP;
         cType = SQL_C_TIMESTAMP;
@@ -113,40 +103,49 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
 
         TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
 
-        ts->year = static_cast<SQLSMALLINT>(t->tm_year + 1900);
-        ts->month = static_cast<SQLUSMALLINT>(t->tm_mon + 1);
-        ts->day = static_cast<SQLUSMALLINT>(t->tm_mday);
-        ts->hour = static_cast<SQLUSMALLINT>(t->tm_hour);
-        ts->minute = static_cast<SQLUSMALLINT>(t->tm_min);
-        ts->second = static_cast<SQLUSMALLINT>(t->tm_sec);
+        ts->year = static_cast<SQLSMALLINT>(t.tm_year + 1900);
+        ts->month = static_cast<SQLUSMALLINT>(t.tm_mon + 1);
+        ts->day = static_cast<SQLUSMALLINT>(t.tm_mday);
+        ts->hour = static_cast<SQLUSMALLINT>(t.tm_hour);
+        ts->minute = static_cast<SQLUSMALLINT>(t.tm_min);
+        ts->second = static_cast<SQLUSMALLINT>(t.tm_sec);
         ts->fraction = 0;
     }
     break;
 
-    case x_blob:
-    {
-//         sqlType = SQL_VARBINARY;
-//         cType = SQL_C_BINARY;
+    case x_longstring:
+        copy_from_string(exchange_type_cast<x_longstring>(data_).value,
+                         size, sqlType, cType);
+        break;
+    case x_xmltype:
+        copy_from_string(exchange_type_cast<x_xmltype>(data_).value,
+                         size, sqlType, cType);
+        break;
 
-//         BLOB *b = static_cast<BLOB *>(data);
-
-//         odbc_blob_backend *bbe
-//         = static_cast<odbc_blob_backend *>(b->getBackEnd());
-
-//         size = 0;
-//         indHolder_ = size;
-        //TODO            data = &bbe->lobp_;
-    }
-    break;
-    case x_statement:
-    case x_rowid:
-        // Unsupported data types.
-        return NULL;
+    // unsupported types
+    default:
+        throw soci_error("Use element used with non-supported type.");
     }
 
     // Return either the pointer to C++ data itself or the buffer that we
     // allocated, if any.
     return buf_ ? buf_ : data_;
+}
+
+void odbc_standard_use_type_backend::copy_from_string(
+        std::string const& s,
+        SQLLEN& size,
+        SQLSMALLINT& sqlType,
+        SQLSMALLINT& cType
+    )
+{
+    size = s.size();
+    sqlType = size > ODBC_MAX_COL_SIZE ? SQL_LONGVARCHAR : SQL_VARCHAR;
+    cType = SQL_C_CHAR;
+    buf_ = new char[size+1];
+    memcpy(buf_, s.c_str(), size);
+    buf_[size++] = '\0';
+    indHolder_ = SQL_NTS;
 }
 
 void odbc_standard_use_type_backend::bind_by_pos(
@@ -205,9 +204,10 @@ void odbc_standard_use_type_backend::bind_by_name(
 void odbc_standard_use_type_backend::pre_use(indicator const *ind)
 {
     // first deal with data
-    SQLSMALLINT sqlType;
-    SQLSMALLINT cType;
-    SQLLEN size;
+    SQLSMALLINT sqlType(0);
+    SQLSMALLINT cType(0);
+    SQLLEN size(0);
+    SQLLEN bufLen(0);
 
     void* const sqlData = prepare_for_bind(size, sqlType, cType);
 
@@ -215,12 +215,13 @@ void odbc_standard_use_type_backend::pre_use(indicator const *ind)
                                     static_cast<SQLUSMALLINT>(position_),
                                     SQL_PARAM_INPUT,
                                     cType, sqlType, size, 0,
-                                    sqlData, 0, &indHolder_);
+                                    sqlData, bufLen, &indHolder_);
 
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_,
-                                "Binding");
+        std::ostringstream ss;
+        ss << "binding input parameter #" << position_;
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, ss.str());
     }
 
     // then handle indicators
@@ -250,6 +251,8 @@ void odbc_standard_use_type_backend::post_use(bool gotData, indicator *ind)
             }
         }
     }
+
+    clean_up();
 }
 
 void odbc_standard_use_type_backend::clean_up()

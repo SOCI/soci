@@ -1,7 +1,7 @@
 # The following variable is specific to this backend and its correct
 # values might depend on your environment - feel free to set it accordingly.
 
-PGSQLINCLUDEDIR = -I/usr/include
+PGSQLINCLUDEDIR = -I/usr/include/postgresql
 PGSQLLIBDIR = -L/usr/lib
 PGSQLLIBS = -lpq
 
@@ -10,7 +10,7 @@ PGSQLLIBS = -lpq
 COMPILER = g++
 CXXFLAGS = -Wall -pedantic -Wno-long-long
 SHARED_CXXFLAGS = ${CXXFLAGS} -fPIC
-INCLUDEDIRS = -I../../core ${PGSQLINCLUDEDIR}
+INCLUDEDIRS = -I../../../include -I../../../include/private ${PGSQLINCLUDEDIR}
 
 SHARED_LIBDIRS = ${PGSQLLIBDIR}
 SHARED_LIBS = ${PGSQLLIBS} ../../core/libsoci_core.a
@@ -43,7 +43,7 @@ blob.o : blob.cpp
 error.o : error.cpp
 	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
-common.o : common.cpp
+common.o : ../../core/common.cpp
 	${COMPILER} -c $? ${CXXFLAGS} ${INCLUDEDIRS}
 
 factory.o : factory.cpp
@@ -82,7 +82,7 @@ blob-s.o : blob.cpp
 error-s.o : error.cpp
 	${COMPILER} -c -o $@ $? ${CXXFLAGS} ${INCLUDEDIRS}
 
-common-s.o : common.cpp
+common-s.o : ../../core/common.cpp
 	${COMPILER} -c -o $@ $? ${SHARED_CXXFLAGS} ${INCLUDEDIRS}
 
 factory-s.o : factory.cpp

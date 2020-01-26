@@ -5,10 +5,10 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#define SOCI_SQLITE3_SOURCE
+#include "soci/sqlite3/soci-sqlite3.h"
 
-#include "soci-sqlite3.h"
-
-#include <connection-parameters.h>
+#include "soci/connection-parameters.h"
 
 #include <sstream>
 #include <string>
@@ -45,6 +45,7 @@ void check_sqlite_err(sqlite_api::sqlite3* conn, int res, char const* const errM
         const char *zErrMsg = sqlite3_errmsg(conn);
         std::ostringstream ss;
         ss << errMsg << zErrMsg;
+        sqlite3_close(conn); // connection must be closed here
         throw sqlite3_soci_error(ss.str(), res);
     }
 }
@@ -81,7 +82,7 @@ sqlite3_session_backend::sqlite3_session_backend(
                 quotedVal = quotedVal + " " + val;
                 std::string keepspace;
                 std::getline(ssconn, keepspace, ' ');
-            }     
+            }
 
             val = quotedVal;
         }
@@ -138,6 +139,14 @@ void sqlite3_session_backend::commit()
 void sqlite3_session_backend::rollback()
 {
     execude_hardcoded(conn_, "ROLLBACK", "Cannot rollback transaction.");
+}
+
+bool sqlite3_session_backend::get_last_insert_id(
+    session & /* s */, std::string const & /* table */, long long & value)
+{
+    value = static_cast<long long>(sqlite3_last_insert_rowid(conn_));
+
+    return true;
 }
 
 void sqlite3_session_backend::clean_up()

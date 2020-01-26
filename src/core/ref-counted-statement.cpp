@@ -1,20 +1,19 @@
 //
-// Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2016 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
 #define SOCI_SOURCE
-#include "ref-counted-statement.h"
-#include "session.h"
+#include "soci/ref-counted-statement.h"
+#include "soci/session.h"
 
 using namespace soci;
 using namespace soci::details;
 
 ref_counted_statement_base::ref_counted_statement_base(session& s)
-    : refCount_(1)
-    , session_(s)
+    : refCount_(1), session_(s), need_comma_(false)
 {
 }
 

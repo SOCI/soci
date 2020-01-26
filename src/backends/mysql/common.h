@@ -8,10 +8,13 @@
 #ifndef SOCI_MYSQL_COMMON_H_INCLUDED
 #define SOCI_MYSQL_COMMON_H_INCLUDED
 
-#include "soci-mysql.h"
+#include "soci/mysql/soci-mysql.h"
+#include "soci-cstrtod.h"
+#include "soci-compiler.h"
 // std
 #include <cstddef>
 #include <ctime>
+#include <locale>
 #include <sstream>
 #include <vector>
 
@@ -23,9 +26,6 @@ namespace details
 
 namespace mysql
 {
-
-// helper function for parsing datetime values
-void parse_std_tm(char const *buf, std::tm &t);
 
 // The idea is that infinity - infinity gives NaN, and NaN != NaN is true.
 //
@@ -39,7 +39,13 @@ template <typename T>
 bool is_infinity_or_nan(T x)
 {
     T y = x - x;
+
+    // We really need exact floating point comparison here.
+    GCC_WARNING_SUPPRESS(float-equal)
+
     return (y != y);
+
+    GCC_WARNING_RESTORE(float-equal)
 }
 
 template <typename T>
@@ -51,13 +57,21 @@ void parse_num(char const *buf, T &x)
     {
         throw soci_error("Cannot convert data.");
     }
+}
+
+inline
+void parse_num(char const *buf, double &x)
+{
+    x = cstring_to_double(buf);
+
     if (is_infinity_or_nan(x)) {
-        throw soci_error("Cannot convert data.");
+        throw soci_error(std::string("Cannot convert data: string \"") + buf +
+                         "\" is not a finite number.");
     }
 }
 
 // helper for escaping strings
-char * quote(MYSQL * conn, const char *s, int len);
+char * quote(MYSQL * conn, const char *s, size_t len);
 
 // helper for vector operations
 template <typename T>

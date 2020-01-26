@@ -6,9 +6,10 @@
 //
 
 #define SOCI_ODBC_SOURCE
-#include "soci-odbc.h"
-#include <soci-platform.h>
-#include <cassert>
+#include "soci/soci-platform.h"
+#include "soci/odbc/soci-odbc.h"
+#include "soci-mktime.h"
+#include "soci-static-assert.h"
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -55,7 +56,7 @@ void odbc_vector_into_type_backend::define_by_pos(
         {
             odbcType_ = SQL_C_SLONG;
             size = sizeof(SQLINTEGER);
-            assert(sizeof(SQLINTEGER) == sizeof(int));
+            SOCI_STATIC_ASSERT(sizeof(SQLINTEGER) == sizeof(int));
             std::vector<int> *vp = static_cast<std::vector<int> *>(data);
             std::vector<int> &v(*vp);
             prepare_indicators(v.size());
@@ -144,7 +145,7 @@ void odbc_vector_into_type_backend::define_by_pos(
             odbcType_ = SQL_C_CHAR;
             std::vector<std::string> *v
                 = static_cast<std::vector<std::string> *>(data);
-            colSize_ = statement_.column_size(position) + 1;
+            colSize_ = get_sqllen_from_value(statement_.column_size(position)) + 1;
             std::size_t bufSize = colSize_ * v->size();
             buf_ = new char[bufSize];
 
@@ -172,18 +173,18 @@ void odbc_vector_into_type_backend::define_by_pos(
         }
         break;
 
-    case x_statement: break; // not supported
-    case x_rowid:     break; // not supported
-    case x_blob:      break; // not supported
+    default:
+        throw soci_error("Into element used with non-supported type.");
     }
 
-    SQLRETURN rc 
+    SQLRETURN rc
         = SQLBindCol(statement_.hstmt_, static_cast<SQLUSMALLINT>(position++),
                 odbcType_, static_cast<SQLPOINTER>(data), size, indHolders_);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_,
-                            "vector into type define by pos");
+        std::ostringstream ss;
+        ss << "binding output vector column #" << position;
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, ss.str());
     }
 }
 
@@ -220,12 +221,42 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
 
             std::vector<std::string> &v(*vp);
 
-            char *pos = buf_;
+            const char *pos = buf_;
             std::size_t const vsize = v.size();
-            for (std::size_t i = 0; i != vsize; ++i)
+            for (std::size_t i = 0; i != vsize; ++i, pos += colSize_)
             {
-                v[i].assign(pos, strlen(pos));
-                pos += colSize_;
+                SQLLEN const len = get_sqllen_from_vector_at(i);
+
+                if (len == -1)
+                {
+                    // Value is null.
+                    v[i].clear();
+                    continue;
+                }
+
+                // Find the actual length of the string: for a VARCHAR(N)
+                // column, it may be right-padded with spaces up to the length
+                // of the longest string in the result set. This happens with
+                // at least MS SQL (and the exact behaviour depends on the
+                // value of the ANSI_PADDING option) and it seems like some
+                // other ODBC drivers also have options like "PADVARCHAR", so
+                // it's probably not the only case when it does.
+                //
+                // So deal with this generically by just trimming all the
+                // spaces from the right hand-side.
+                const char* end = pos + len;
+                while (end != pos)
+                {
+                    // Pre-decrement as "end" is one past the end, as usual.
+                    if (*--end != ' ')
+                    {
+                        // We must count the last non-space character.
+                        ++end;
+                        break;
+                    }
+                }
+
+                v[i].assign(pos, end - pos);
             }
         }
         else if (type_ == x_stdtm)
@@ -238,20 +269,10 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             std::size_t const vsize = v.size();
             for (std::size_t i = 0; i != vsize; ++i)
             {
-                std::tm t;
-
                 TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
-                t.tm_isdst = -1;
-                t.tm_year = ts->year - 1900;
-                t.tm_mon = ts->month - 1;
-                t.tm_mday = ts->day;
-                t.tm_hour = ts->hour;
-                t.tm_min = ts->minute;
-                t.tm_sec = ts->second;
-
-                // normalize and compute the remaining fields
-                std::mktime(&t);
-                v[i] = t;
+                details::mktime_from_ymdhms(v[i],
+                                            ts->year, ts->month, ts->day,
+                                            ts->hour, ts->minute, ts->second);
                 pos += colSize_;
             }
         }
@@ -294,11 +315,12 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             std::size_t const indSize = statement_.get_number_of_rows();
             for (std::size_t i = 0; i != indSize; ++i)
             {
-                if (indHolderVec_[i] > 0)
+                SQLLEN const val = get_sqllen_from_vector_at(i);
+                if (val > 0)
                 {
                     ind[i] = i_ok;
                 }
-                else if (indHolderVec_[i] == SQL_NULL_DATA)
+                else if (val == SQL_NULL_DATA)
                 {
                     ind[i] = i_null;
                 }
@@ -313,7 +335,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             std::size_t const indSize = statement_.get_number_of_rows();
             for (std::size_t i = 0; i != indSize; ++i)
             {
-                if (indHolderVec_[i] == SQL_NULL_DATA)
+                if (get_sqllen_from_vector_at(i) == SQL_NULL_DATA)
                 {
                     // fetched null and no indicator - programming error!
                     throw soci_error(
@@ -330,6 +352,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
 
 void odbc_vector_into_type_backend::resize(std::size_t sz)
 {
+    // stays 64bit but gets but casted, see: get_sqllen_from_vector_at(...)
     indHolderVec_.resize(sz);
     switch (type_)
     {
@@ -388,9 +411,8 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
         }
         break;
 
-    case x_statement: break; // not supported
-    case x_rowid:     break; // not supported
-    case x_blob:      break; // not supported
+    default:
+        throw soci_error("Into vector element used with non-supported type.");
     }
 }
 
@@ -454,9 +476,8 @@ std::size_t odbc_vector_into_type_backend::size()
         }
         break;
 
-    case x_statement: break; // not supported
-    case x_rowid:     break; // not supported
-    case x_blob:      break; // not supported
+    default:
+        throw soci_error("Into vector element used with non-supported type.");
     }
 
     return sz;

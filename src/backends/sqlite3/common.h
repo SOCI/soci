@@ -8,7 +8,7 @@
 #ifndef SOCI_SQLITE3_COMMON_H_INCLUDED
 #define SOCI_SQLITE3_COMMON_H_INCLUDED
 
-#include <error.h>
+#include "soci/error.h"
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
@@ -17,9 +17,6 @@
 #include <limits>
 
 namespace soci { namespace details { namespace sqlite3 {
-
-// helper function for parsing datetime values
-void parse_std_tm(char const *buf, std::tm &t);
 
 // helper for vector operations
 template <typename T>

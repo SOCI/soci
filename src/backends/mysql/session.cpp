@@ -7,8 +7,8 @@
 //
 
 #define SOCI_MYSQL_SOURCE
-#include "soci-mysql.h"
-#include <connection-parameters.h>
+#include "soci/mysql/soci-mysql.h"
+#include "soci/connection-parameters.h"
 // std
 #include <cctype>
 #include <cerrno>
@@ -63,7 +63,7 @@ std::string param_name(std::string::const_iterator *i,
     std::string val("");
     for (;;)
     {
-        if (*i == end or (not std::isalpha(**i) and **i != '_'))
+        if (*i == end || (!std::isalpha(**i) && **i != '_'))
         {
             break;
         }
@@ -113,7 +113,7 @@ string param_value(string::const_iterator *i,
                 throw soci_error(err);
             }
         }
-        if (not quot and std::isspace(**i))
+        if (!quot && std::isspace(**i))
         {
             break;
         }
@@ -137,7 +137,7 @@ bool valid_int(const string & s)
     const char *cstr = s.c_str();
     errno = 0;
     long n = std::strtol(cstr, &tail, 10);
-    if (errno != 0 or n > INT_MAX or n < INT_MIN)
+    if (errno != 0 || n > INT_MAX || n < INT_MIN)
     {
         return false;
     }
@@ -145,6 +145,19 @@ bool valid_int(const string & s)
     {
         return false;
     }
+    return true;
+}
+
+bool valid_uint(const string & s)
+{
+    char *tail;
+    const char *cstr = s.c_str();
+    errno = 0;
+    unsigned long n = std::strtoul(cstr, &tail, 10);
+    if (errno != 0 || n == 0 || n > UINT_MAX)
+        return false;
+    if (*tail != '\0')
+        return false;
     return true;
 }
 
@@ -157,7 +170,10 @@ void parse_connect_string(const string & connectString,
     int *port, bool *port_p, string *ssl_ca, bool *ssl_ca_p,
     string *ssl_cert, bool *ssl_cert_p, string *ssl_key, bool *ssl_key_p,
     int *local_infile, bool *local_infile_p,
-    string *charset, bool *charset_p)
+    string *charset, bool *charset_p,
+    unsigned int *connect_timeout, bool *connect_timeout_p,
+    unsigned int *read_timeout, bool *read_timeout_p,
+    unsigned int *write_timeout, bool *write_timeout_p)
 {
     *host_p = false;
     *user_p = false;
@@ -170,6 +186,9 @@ void parse_connect_string(const string & connectString,
     *ssl_key_p = false;
     *local_infile_p = false;
     *charset_p = false;
+    *connect_timeout_p = false;
+    *read_timeout_p = false;
+    *write_timeout_p = false;
     string err = "Malformed connection string.";
     string::const_iterator i = connectString.begin(),
         end = connectString.end();
@@ -192,76 +211,96 @@ void parse_connect_string(const string & connectString,
         }
         skip_white(&i, end, false);
         string val = param_value(&i, end);
-        if (par == "port" and not *port_p)
+        if (par == "port" && !*port_p)
         {
-            if (not valid_int(val))
+            if (!valid_int(val))
             {
                 throw soci_error(err);
             }
             *port = std::atoi(val.c_str());
-            if (port < 0)
+            if (*port < 0)
             {
                 throw soci_error(err);
             }
             *port_p = true;
         }
-        else if (par == "host" and not *host_p)
+        else if (par == "host" && !*host_p)
         {
             *host = val;
             *host_p = true;
         }
-        else if (par == "user" and not *user_p)
+        else if (par == "user" && !*user_p)
         {
             *user = val;
             *user_p = true;
         }
-        else if ((par == "pass" or par == "password") and not *password_p)
+        else if ((par == "pass" || par == "password") && !*password_p)
         {
             *password = val;
             *password_p = true;
         }
-        else if ((par == "db" or par == "dbname" or par == "service") and
-                 not *db_p)
+        else if ((par == "db" || par == "dbname" || par == "service") and !*db_p)
         {
             *db = val;
             *db_p = true;
         }
-        else if (par == "unix_socket" and not *unix_socket_p)
+        else if (par == "unix_socket" && !*unix_socket_p)
         {
             *unix_socket = val;
             *unix_socket_p = true;
         }
-        else if (par == "sslca" and not *ssl_ca_p)
+        else if (par == "sslca" && !*ssl_ca_p)
         {
             *ssl_ca = val;
             *ssl_ca_p = true;
         }
-        else if (par == "sslcert" and not *ssl_cert_p)
+        else if (par == "sslcert" && !*ssl_cert_p)
         {
             *ssl_cert = val;
             *ssl_cert_p = true;
         }
-        else if (par == "sslkey" and not *ssl_key_p)
+        else if (par == "sslkey" && !*ssl_key_p)
         {
             *ssl_key = val;
             *ssl_key_p = true;
         }
-        else if (par == "local_infile" and not *local_infile_p)
+        else if (par == "local_infile" && !*local_infile_p)
         {
-            if (not valid_int(val))
+            if (!valid_int(val))
             {
                 throw soci_error(err);
             }
             *local_infile = std::atoi(val.c_str());
-            if (*local_infile != 0 and *local_infile != 1)
+            if (*local_infile != 0 && *local_infile != 1)
             {
                 throw soci_error(err);
             }
             *local_infile_p = true;
-        } else if (par == "charset" and not *charset_p)
+        } else if (par == "charset" && !*charset_p)
         {
             *charset = val;
             *charset_p = true;
+        } else if (par == "connect_timeout" && !*connect_timeout_p)
+        {
+            if (!valid_uint(val))
+                throw soci_error(err);
+            char *end;
+            *connect_timeout = std::strtoul(val.c_str(), &end, 10);
+            *connect_timeout_p = true;
+        } else if (par == "read_timeout" && !*read_timeout_p)
+        {
+            if (!valid_uint(val))
+                throw soci_error(err);
+            char *end;
+            *read_timeout = std::strtoul(val.c_str(), &end, 10);
+            *read_timeout_p = true;
+        } else if (par == "write_timeout" && !*write_timeout_p)
+        {
+            if (!valid_uint(val))
+                throw soci_error(err);
+            char *end;
+            *write_timeout = std::strtoul(val.c_str(), &end, 10);
+            *write_timeout_p = true;
         }
         else
         {
@@ -272,19 +311,36 @@ void parse_connect_string(const string & connectString,
 
 } // namespace anonymous
 
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wuninitialized"
+#endif
+
+#if defined(__GNUC__) && ( __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 6)))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
+
 mysql_session_backend::mysql_session_backend(
     connection_parameters const & parameters)
 {
     string host, user, password, db, unix_socket, ssl_ca, ssl_cert, ssl_key,
         charset;
     int port, local_infile;
+    unsigned int connect_timeout, read_timeout, write_timeout;
     bool host_p, user_p, password_p, db_p, unix_socket_p, port_p,
-        ssl_ca_p, ssl_cert_p, ssl_key_p, local_infile_p, charset_p;
+        ssl_ca_p, ssl_cert_p, ssl_key_p, local_infile_p, charset_p,
+        connect_timeout_p, read_timeout_p, write_timeout_p;
     parse_connect_string(parameters.get_connect_string(), &host, &host_p, &user, &user_p,
         &password, &password_p, &db, &db_p,
         &unix_socket, &unix_socket_p, &port, &port_p,
         &ssl_ca, &ssl_ca_p, &ssl_cert, &ssl_cert_p, &ssl_key, &ssl_key_p,
-        &local_infile, &local_infile_p, &charset, &charset_p);
+        &local_infile, &local_infile_p, &charset, &charset_p,
+        &connect_timeout, &connect_timeout_p,
+        &read_timeout, &read_timeout_p,
+        &write_timeout, &write_timeout_p);
     conn_ = mysql_init(NULL);
     if (conn_ == NULL)
     {
@@ -302,15 +358,39 @@ mysql_session_backend::mysql_session_backend(
     {
         mysql_ssl_set(conn_, ssl_key_p ? ssl_key.c_str() : NULL,
                       ssl_cert_p ? ssl_cert.c_str() : NULL,
-                      ssl_ca_p ? ssl_ca.c_str() : NULL, 0, 0);
+                      ssl_ca.c_str(), 0, 0);
     }
-    if (local_infile_p and local_infile == 1)
+    if (local_infile_p && local_infile == 1)
     {
         if (0 != mysql_options(conn_, MYSQL_OPT_LOCAL_INFILE, NULL))
         {
             clean_up();
             throw soci_error(
                 "mysql_options() failed when trying to set local-infile.");
+        }
+    }
+    if (connect_timeout_p)
+    {
+        if (0 != mysql_options(conn_, MYSQL_OPT_CONNECT_TIMEOUT, &connect_timeout))
+        {
+            clean_up();
+            throw soci_error("mysql_options(MYSQL_OPT_CONNECT_TIMEOUT) failed.");
+        }
+    }
+    if (read_timeout_p)
+    {
+        if (0 != mysql_options(conn_, MYSQL_OPT_READ_TIMEOUT, &read_timeout))
+        {
+            clean_up();
+            throw soci_error("mysql_options(MYSQL_OPT_READ_TIMEOUT) failed.");
+        }
+    }
+    if (write_timeout_p)
+    {
+        if (0 != mysql_options(conn_, MYSQL_OPT_WRITE_TIMEOUT, &write_timeout))
+        {
+            clean_up();
+            throw soci_error("mysql_options(MYSQL_OPT_WRITE_TIMEOUT) failed.");
         }
     }
     if (mysql_real_connect(conn_,
@@ -333,6 +413,16 @@ mysql_session_backend::mysql_session_backend(
     }
 }
 
+#if defined(__GNUC__) && ( __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 6)))
+#pragma GCC diagnostic pop
+#endif
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+
+
 mysql_session_backend::~mysql_session_backend()
 {
     clean_up();
@@ -347,7 +437,11 @@ void hard_exec(MYSQL *conn, const string & query)
     if (0 != mysql_real_query(conn, query.c_str(),
             static_cast<unsigned long>(query.size())))
     {
-        throw soci_error(mysql_error(conn));
+        //throw soci_error(mysql_error(conn));
+        string errMsg = mysql_error(conn);
+        unsigned int errNum = mysql_errno(conn);
+        throw mysql_soci_error(errMsg, errNum);
+
     }
 }
 
@@ -366,6 +460,14 @@ void mysql_session_backend::commit()
 void mysql_session_backend::rollback()
 {
     hard_exec(conn_, "ROLLBACK");
+}
+
+bool mysql_session_backend::get_last_insert_id(
+    session & /* s */, std::string const & /* table */, long long & value)
+{
+    value = static_cast<long long>(mysql_insert_id(conn_));
+
+    return true;
 }
 
 void mysql_session_backend::clean_up()

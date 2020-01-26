@@ -1,14 +1,16 @@
 //
-// Copyright (C) 2004-2008 Maciej Sobczak, Stephen Hutton
+// Copyright (C) 2004-2016 Maciej Sobczak, Stephen Hutton
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
 #define SOCI_POSTGRESQL_SOURCE
-#include <soci-platform.h>
-#include "soci-postgresql.h"
+#include "soci/soci-platform.h"
+#include "soci/postgresql/soci-postgresql.h"
+#include "soci-dtocstr.h"
 #include "common.h"
+#include "soci/type-wrappers.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
 #include <cstdio>
@@ -17,42 +19,51 @@
 #include <limits>
 #include <sstream>
 
-#ifdef SOCI_POSTGRESQL_NOPARAMS
-#ifndef SOCI_POSTGRESQL_NOBINDBYNAME
-#define SOCI_POSTGRESQL_NOBINDBYNAME
-#endif // SOCI_POSTGRESQL_NOBINDBYNAME
-#endif // SOCI_POSTGRESQL_NOPARAMS
-
-#ifdef _MSC_VER
-#pragma warning(disable:4355 4996)
-#define snprintf _snprintf
-#endif
-
 using namespace soci;
 using namespace soci::details;
 using namespace soci::details::postgresql;
 
 
-void postgresql_vector_use_type_backend::bind_by_pos(int & position,
-        void * data, exchange_type type)
+void postgresql_vector_use_type_backend::bind_by_pos_bulk(int & position,
+    void * data, exchange_type type,
+    std::size_t begin, std::size_t * end)
 {
     data_ = data;
     type_ = type;
+    begin_ = begin;
+    end_ = end;
     position_ = position++;
+
+    end_var_ = full_size();
 }
 
-void postgresql_vector_use_type_backend::bind_by_name(
-    std::string const & name, void * data, exchange_type type)
+void postgresql_vector_use_type_backend::bind_by_name_bulk(
+    std::string const & name, void * data, exchange_type type,
+    std::size_t begin, std::size_t * end)
 {
     data_ = data;
     type_ = type;
+    begin_ = begin;
+    end_ = end;
     name_ = name;
+
+    end_var_ = full_size();
 }
 
 void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
 {
-    std::size_t const vsize = size();
-    for (size_t i = 0; i != vsize; ++i)
+    std::size_t vend;
+
+    if (end_ != NULL && *end_ != 0)
+    {
+        vend = *end_;
+    }
+    else
+    {
+        vend = end_var_;
+    }
+
+    for (size_t i = begin_; i != vend; ++i)
     {
         char * buf;
 
@@ -137,16 +148,14 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                 break;
             case x_double:
                 {
-                    // no need to overengineer it (KISS)...
-
                     std::vector<double> * pv
                         = static_cast<std::vector<double> *>(data_);
                     std::vector<double> & v = *pv;
 
-                    std::size_t const bufSize = 100;
-                    buf = new char[bufSize];
+                    std::string const s = double_to_cstring(v[i]);
 
-                    snprintf(buf, bufSize, "%.20g", v[i]);
+                    buf = new char[s.size() + 1];
+                    std::strcpy(buf, s.c_str());
                 }
                 break;
             case x_stdtm:
@@ -155,12 +164,32 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                         = static_cast<std::vector<std::tm> *>(data_);
                     std::vector<std::tm> & v = *pv;
 
-                    std::size_t const bufSize = 20;
+                    std::size_t const bufSize = 80;
                     buf = new char[bufSize];
 
                     snprintf(buf, bufSize, "%d-%02d-%02d %02d:%02d:%02d",
                         v[i].tm_year + 1900, v[i].tm_mon + 1, v[i].tm_mday,
                         v[i].tm_hour, v[i].tm_min, v[i].tm_sec);
+                }
+                break;
+            case x_xmltype:
+                {
+                    std::vector<xml_type> * pv
+                        = static_cast<std::vector<xml_type> *>(data_);
+                    std::vector<xml_type> & v = *pv;
+
+                    buf = new char[v[i].value.size() + 1];
+                    std::strcpy(buf, v[i].value.c_str());
+                }
+                break;
+            case x_longstring:
+                {
+                    std::vector<long_string> * pv
+                        = static_cast<std::vector<long_string> *>(data_);
+                    std::vector<long_string> & v = *pv;
+
+                    buf = new char[v[i].value.size() + 1];
+                    std::strcpy(buf, v[i].value.c_str());
                 }
                 break;
 
@@ -186,6 +215,27 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
 }
 
 std::size_t postgresql_vector_use_type_backend::size()
+{
+    // as a special error-detection measure, check if the actual vector size
+    // was changed since the original bind (when it was stored in end_var_):
+    const std::size_t actual_size = full_size();
+    if (actual_size != end_var_)
+    {
+        // ... and in that case return the actual size
+        return actual_size;
+    }
+
+    if (end_ != NULL && *end_ != 0)
+    {
+        return *end_ - begin_;
+    }
+    else
+    {
+        return end_var_;
+    }
+}
+
+std::size_t postgresql_vector_use_type_backend::full_size()
 {
     std::size_t sz = 0; // dummy initialization to please the compiler
     switch (type_)
@@ -214,6 +264,12 @@ std::size_t postgresql_vector_use_type_backend::size()
         break;
     case x_stdtm:
         sz = get_vector_size<std::tm>(data_);
+        break;
+    case x_xmltype:
+        sz = get_vector_size<xml_type>(data_);
+        break;
+    case x_longstring:
+        sz = get_vector_size<long_string>(data_);
         break;
     default:
         throw soci_error("Use vector element used with non-supported type.");

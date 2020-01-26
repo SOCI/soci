@@ -8,7 +8,7 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
-colormsg(_HIBLUE_ "Configuring SOCI database backends:")
+colormsg(_HIBLUE_ "Configuring SOCI backend libraries:")
 
 # First, we'll investigate what can be found from database engines
 foreach(dep ${SOCI_BACKENDS_DB_DEPENDENCIES})
@@ -21,6 +21,7 @@ foreach(dep ${SOCI_BACKENDS_DB_DEPENDENCIES})
 	else()
 		set(${depUP}_FOUND OFF)
 	endif()
+	set(SOCI_HAVE_${depUP} OFF CACHE INTERNAL "${depUP} backend")
 endforeach()
 
 # get all files in backends
@@ -40,6 +41,7 @@ foreach(dir ${backend_dirs})
 			string(TOUPPER ${dir} dirUP)
 			if(${dirUP}_FOUND AND WITH_${dirUP})
 				add_subdirectory(${dir})
+				set(SOCI_HAVE_${dirUP} ON CACHE INTERNAL "${dirUP} backend")
 			endif()
 		endif()
 	endif()

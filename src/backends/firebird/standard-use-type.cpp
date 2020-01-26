@@ -6,9 +6,10 @@
 //
 
 #define SOCI_FIREBIRD_SOURCE
-#include "soci-firebird.h"
-#include "common.h"
-#include <soci.h>
+#include "soci/firebird/soci-firebird.h"
+#include "soci-exchange-cast.h"
+#include "firebird/common.h"
+#include "soci/soci.h"
 
 using namespace soci;
 using namespace soci::details;
@@ -104,7 +105,7 @@ void firebird_standard_use_type_backend::exchangeData()
     switch (type_)
     {
         case x_char:
-            setTextParam(static_cast<char*>(data_), 1, buf_, var);
+            setTextParam(&exchange_type_cast<x_char>(data_), 1, buf_, var);
             break;
         case x_short:
             to_isc<short>(data_, var);
@@ -121,13 +122,12 @@ void firebird_standard_use_type_backend::exchangeData()
 
         case x_stdstring:
             {
-                std::string *tmp = static_cast<std::string*>(data_);
-                setTextParam(tmp->c_str(), tmp->size(), buf_, var);
+                std::string const& tmp = exchange_type_cast<x_stdstring>(data_);
+                setTextParam(tmp.c_str(), tmp.size(), buf_, var);
             }
             break;
         case x_stdtm:
-            tmEncode(var->sqltype,
-                     static_cast<std::tm*>(data_), buf_);
+            tmEncode(var->sqltype, &exchange_type_cast<x_stdtm>(data_), buf_);
             break;
 
             // cases that require special handling
@@ -147,9 +147,26 @@ void firebird_standard_use_type_backend::exchangeData()
                 memcpy(buf_, &blob->bid_, var->sqllen);
             }
             break;
+
+        case x_longstring:
+            copy_to_blob(exchange_type_cast<x_longstring>(data_).value);
+            break;
+
+        case x_xmltype:
+            copy_to_blob(exchange_type_cast<x_xmltype>(data_).value);
+            break;
+
         default:
             throw soci_error("Use element used with non-supported type.");
     } // switch
+}
+
+void firebird_standard_use_type_backend::copy_to_blob(const std::string& in)
+{
+    blob_ = new firebird_blob_backend(statement_.session_);
+    blob_->append(in.c_str(), in.length());
+    blob_->save();
+    memcpy(buf_, &blob_->bid_, sizeof(blob_->bid_));
 }
 
 void firebird_standard_use_type_backend::post_use(
@@ -175,7 +192,14 @@ void firebird_standard_use_type_backend::clean_up()
         delete [] buf_;
         buf_ = NULL;
     }
-    std::vector<void*>::iterator it = 
+
+    if (blob_)
+    {
+        delete blob_;
+        blob_ = NULL;
+    }
+
+    std::vector<void*>::iterator it =
         std::find(statement_.uses_.begin(), statement_.uses_.end(), this);
     if (it != statement_.uses_.end())
         statement_.uses_.erase(it);

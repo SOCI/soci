@@ -7,7 +7,8 @@
 //
 
 #define SOCI_DB2_SOURCE
-#include "soci-db2.h"
+#include "soci/db2/soci-db2.h"
+#include "soci-mktime.h"
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -145,9 +146,12 @@ void db2_vector_into_type_backend::define_by_pos(
         }
         break;
 
-    case x_statement: break; // not supported
-    case x_rowid:     break; // not supported
-    case x_blob:      break; // not supported
+    case x_statement:
+    case x_rowid:
+    case x_blob:
+    case x_xmltype:
+    case x_longstring:
+        throw soci_error("Unsupported type for vector into parameter");
     }
 
     SQLRETURN cliRC = SQLBindCol(statement_.hStmt, static_cast<SQLUSMALLINT>(position++),
@@ -191,12 +195,30 @@ void db2_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
 
             std::vector<std::string> &v(*vp);
 
-            char *pos = buf;
+            const char *pos = buf;
             std::size_t const vsize = v.size();
-            for (std::size_t i = 0; i != vsize; ++i)
+            for (std::size_t i = 0; i != vsize; ++i, pos += colSize)
             {
-                v[i].assign(pos, strlen(pos));
-                pos += colSize;
+                // See ODBC backend for explanation, this code for determining
+                // the string length is exactly the same as there.
+                SQLLEN const len = indVec[i];
+                if (len == -1)
+                {
+                    v[i].clear();
+                    continue;
+                }
+
+                const char* end = pos + len;
+                while (end != pos)
+                {
+                    if (*--end != ' ')
+                    {
+                        ++end;
+                        break;
+                    }
+                }
+
+                v[i].assign(pos, end - pos);
             }
         }
         else if (type == x_stdtm)
@@ -209,20 +231,10 @@ void db2_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             std::size_t const vsize = v.size();
             for (std::size_t i = 0; i != vsize; ++i)
             {
-                std::tm t;
-
                 TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
-                t.tm_isdst = -1;
-                t.tm_year = ts->year - 1900;
-                t.tm_mon = ts->month - 1;
-                t.tm_mday = ts->day;
-                t.tm_hour = ts->hour;
-                t.tm_min = ts->minute;
-                t.tm_sec = ts->second;
-
-                // normalize and compute the remaining fields
-                std::mktime(&t);
-                v[i] = t;
+                details::mktime_from_ymdhms(v[i],
+                                            ts->year, ts->month, ts->day,
+                                            ts->hour, ts->minute, ts->second);
                 pos += colSize;
             }
         }
@@ -330,6 +342,8 @@ void db2_vector_into_type_backend::resize(std::size_t sz)
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
+    case x_xmltype:   break; // not supported
+    case x_longstring:break; // not supported
     }
 }
 
@@ -396,6 +410,8 @@ std::size_t db2_vector_into_type_backend::size()
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
+    case x_xmltype:   break; // not supported
+    case x_longstring:break; // not supported
     }
 
     return sz;

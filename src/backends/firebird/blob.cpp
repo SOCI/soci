@@ -6,15 +6,15 @@
 //
 
 #define SOCI_FIREBIRD_SOURCE
-#include "soci-firebird.h"
-#include "error-firebird.h"
+#include "soci/firebird/soci-firebird.h"
+#include "firebird/error-firebird.h"
 
 using namespace soci;
 using namespace soci::details::firebird;
 
 firebird_blob_backend::firebird_blob_backend(firebird_session_backend &session)
-        : session_(session), from_db_(false), bhp_(0), loaded_(false),
-        max_seg_size_(0)
+	  : session_(session), bid_(), from_db_(false), bhp_(0), data_(),
+		loaded_(false), max_seg_size_(0)
 {}
 
 firebird_blob_backend::~firebird_blob_backend()
@@ -139,8 +139,8 @@ void firebird_blob_backend::open()
 
     ISC_STATUS stat[20];
 
-    if (isc_open_blob2(stat, &session_.dbhp_, &session_.trhp_, &bhp_,
-                       &bid_, 0, NULL))
+    if (isc_open_blob2(stat, &session_.dbhp_, session_.current_transaction(),
+                       &bhp_, &bid_, 0, NULL))
     {
         bhp_ = 0L;
         throw_iscerror(stat);
@@ -238,7 +238,7 @@ void firebird_blob_backend::save()
     }
 
     // create new blob
-    if (isc_create_blob(stat, &session_.dbhp_, &session_.trhp_,
+    if (isc_create_blob(stat, &session_.dbhp_, session_.current_transaction(),
                         &bhp_, &bid_))
     {
         throw_iscerror(stat);
@@ -247,13 +247,26 @@ void firebird_blob_backend::save()
     if (data_.size() > 0)
     {
         // write data
-        if (isc_put_segment(stat, &bhp_,
-                            static_cast<unsigned short>(data_.size()), &data_[0]))
+        size_t size = data_.size();
+        size_t offset = 0;
+        // Segment Size : Specifying the BLOB segment is throwback to times past, when applications for working 
+        // with BLOB data were written in C(Embedded SQL) with the help of the gpre pre - compiler.
+        // Nowadays, it is effectively irrelevant.The segment size for BLOB data is determined by the client side and is usually larger than the data page size, 
+        // in any case.
+        do
         {
-            throw_iscerror(stat);
-        }
+            unsigned short segmentSize = 0xFFFF; //last unsigned short number
+            if (size - offset < segmentSize) //if content size is less than max segment size or last data segment is about to be written
+                segmentSize = static_cast<unsigned short>(size - offset); 
+            //write segment
+            if (isc_put_segment(stat, &bhp_, segmentSize, &data_[0]+offset))
+            {
+                throw_iscerror(stat);
+            }
+            offset += segmentSize;
+        } 
+        while (offset < size);
     }
-
     cleanUp();
     from_db_ = true;
 }

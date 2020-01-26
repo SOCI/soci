@@ -1,0 +1,75 @@
+version: 2
+jobs:
+  lint-docs:
+    docker:
+      - image: circleci/ruby:2.4.1-node
+    steps:
+      - checkout
+      - run:
+          name: install markdownlint
+          command: |
+            sudo npm install -g markdownlint-cli
+            markdownlint --version
+      - run:
+          name: lint .md files
+          command: markdownlint --config .markdownlint.json .
+  deploy-docs:
+    docker:
+      - image: circleci/python:2.7
+    steps:
+      - checkout
+      - run:
+          name: install mkdocs
+          command: sudo pip install mkdocs
+      - run:
+          name: generate docs
+          command: mkdocs build --clean
+      - run:
+          name: install lftp
+          command: |
+            sudo apt-get update -q
+            sudo apt-get install -y lftp
+      - run:
+          name: deploy docs
+          command: lftp sftp://${DEPLOY_DOCS_USER}:${DEPLOY_DOCS_PASS}@${DEPLOY_DOCS_HOST} -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate no; set sftp:auto-confirm yes; mirror -v -R ./site ${DEPLOY_DOCS_BASE}/doc/${CIRCLE_BRANCH}; quit"
+  deploy-website:
+    docker:
+      - image: circleci/python:2.7
+    steps:
+      - checkout
+      - run:
+          name: install lftp
+          command: |
+            sudo apt-get update -q
+            sudo apt-get install -y lftp
+      - run:
+          name: deploy website
+          command: lftp sftp://${DEPLOY_DOCS_USER}:${DEPLOY_DOCS_PASS}@${DEPLOY_DOCS_HOST} -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate no; set sftp:auto-confirm yes; mirror -v -R ./www ${DEPLOY_DOCS_BASE}; quit"
+
+workflows:
+  version: 2
+  website-workflow:
+    jobs:
+      - lint-docs:
+          filters:
+            branches:
+              only:
+                - master
+                - /^release.*/
+      - deploy-docs:
+          requires:
+            - lint-docs
+          filters:
+            branches:
+              only:
+                - master
+                - /^release.*/
+      - deploy-website:
+          filters:
+            branches:
+              only:
+                - master
+
+notify:
+  webhooks:
+    - url: https://webhooks.gitter.im/e/9ff4be3a6f08f55106e2

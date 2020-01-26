@@ -7,7 +7,8 @@
 //
 
 #define SOCI_DB2_SOURCE
-#include "soci-db2.h"
+#include "soci/soci-platform.h"
+#include "soci/db2/soci-db2.h"
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -138,10 +139,12 @@ void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &siz
             prepare_indicators(vecSize);
             for (std::size_t i = 0; i != vecSize; ++i)
             {
-                std::size_t sz = v[i].length() + 1;  // add one for null
+                std::size_t sz = v[i].length();
                 indVec[i] = static_cast<long>(sz);
                 maxSize = sz > maxSize ? sz : maxSize;
             }
+
+            maxSize++; // For terminating nul.
 
             buf = new char[maxSize * vecSize];
             memset(buf, 0, maxSize * vecSize);
@@ -149,7 +152,7 @@ void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &siz
             char *pos = buf;
             for (std::size_t i = 0; i != vecSize; ++i)
             {
-                strncpy(pos, v[i].c_str(), v[i].length());
+                memcpy(pos, v[i].c_str(), v[i].length());
                 pos += maxSize;
             }
 
@@ -178,6 +181,8 @@ void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &siz
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
+    case x_xmltype:   break; // not supported
+    case x_longstring:break; // not supported
     }
 
     colSize = size;
@@ -195,7 +200,7 @@ void db2_vector_use_type_backend::bind_helper(int &position, void *data, details
     prepare_for_bind(data, size, sqlType, cType);
 
     SQLINTEGER arraySize = (SQLINTEGER)indVec.size();
-    SQLSetStmtAttr(statement_.hStmt, SQL_ATTR_PARAMSET_SIZE, (SQLPOINTER)arraySize, 0);
+    SQLSetStmtAttr(statement_.hStmt, SQL_ATTR_PARAMSET_SIZE, db2::int_as_ptr(arraySize), 0);
 
     SQLRETURN cliRC = SQLBindParameter(statement_.hStmt, static_cast<SQLUSMALLINT>(position++),
                                     SQL_PARAM_INPUT, cType, sqlType, size, 0,
@@ -231,8 +236,8 @@ void db2_vector_use_type_backend::bind_by_name(
     }
     statement_.use_binding_method_ = details::db2::BOUND_BY_NAME;
 
-    for (std::vector<std::string>::iterator it = statement_.names.begin();
-         it != statement_.names.end(); ++it)
+    for (std::vector<std::string>::iterator it = statement_.names_.begin();
+         it != statement_.names_.end(); ++it)
     {
         if (*it == name)
         {
@@ -306,7 +311,7 @@ void db2_vector_use_type_backend::pre_use(indicator const *ind)
     {
         // no indicators - treat all fields as OK
         std::size_t const vsize = size();
-        for (std::size_t i = 0; i != vsize; ++i, ++ind)
+        for (std::size_t i = 0; i != vsize; ++i)
         {
             // for strings we have already set the values
             if (type != x_stdstring)
@@ -380,6 +385,8 @@ std::size_t db2_vector_use_type_backend::size()
     case x_statement: break; // not supported
     case x_rowid:     break; // not supported
     case x_blob:      break; // not supported
+    case x_xmltype:   break; // not supported
+    case x_longstring:break; // not supported
     }
 
     return sz;
