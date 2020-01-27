@@ -5,13 +5,12 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include "soci.h"
-#include "soci-postgresql.h"
+#include "soci/soci.h"
+#include "soci/postgresql/soci-postgresql.h"
 #include "common-tests.h"
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <cassert>
 #include <cmath>
 #include <cstring>
 #include <ctime>
@@ -27,7 +26,7 @@ backend_factory const &backEnd = *soci::factory_postgresql();
 
 struct oid_table_creator : public table_creator_base
 {
-    oid_table_creator(session& sql)
+    oid_table_creator(soci::session& sql)
     : table_creator_base(sql)
     {
         sql << "create table soci_test ("
@@ -41,51 +40,34 @@ struct oid_table_creator : public table_creator_base
 // Note: in PostgreSQL, there is no ROWID, there is OID.
 // It is still provided as a separate type for "portability",
 // whatever that means.
-void test1()
+TEST_CASE("PostgreSQL ROWID", "[postgresql][rowid][oid]")
 {
-    try
-    {
-        session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
-        oid_table_creator tableCreator(sql);
+    oid_table_creator tableCreator(sql);
 
-        sql << "insert into soci_test(id, name) values(7, \'John\')";
+    sql << "insert into soci_test(id, name) values(7, \'John\')";
 
-        rowid rid(sql);
-        sql << "select oid from soci_test where id = 7", into(rid);
+    rowid rid(sql);
+    sql << "select oid from soci_test where id = 7", into(rid);
 
-        int id;
-        std::string name;
+    int id;
+    std::string name;
 
-#ifndef SOCI_POSTGRESQL_NOPARAMS
+    sql << "select id, name from soci_test where oid = :rid",
+        into(id), into(name), use(rid);
 
-        sql << "select id, name from soci_test where oid = :rid",
-            into(id), into(name), use(rid);
+    CHECK(id == 7);
+    CHECK(name == "John");
+}
 
-#else
-        // Older PostgreSQL does not support use elements.
+TEST_CASE("PostgreSQL prepare error", "[postgresql][exception]")
+{
+    soci::session sql(backEnd, connectString);
 
-        postgresql_rowid_backend *rbe
-            = static_cast<postgresql_rowid_backend *>(rid.get_backend());
-
-        unsigned long oid = rbe->value_;
-
-        sql << "select id, name from soci_test where oid = " << oid,
-            into(id), into(name);
-
-#endif // SOCI_POSTGRESQL_NOPARAMS
-
-        assert(id == 7);
-        assert(name == "John");
-        
-    	// Must not cause the application to crash.
-		statement st(sql);
-		st.prepare(""); // Throws an exception in some versions.
-    }
-    catch(...)
-    {
-    }
-    std::cout << "test 1 passed" << std::endl;
+    // Must not cause the application to crash.
+    statement st(sql);
+    st.prepare(""); // Throws an exception in some versions.
 }
 
 // function call test
@@ -93,15 +75,13 @@ class function_creator : function_creator_base
 {
 public:
 
-    function_creator(session & sql)
+    function_creator(soci::session & sql)
     : function_creator_base(sql)
     {
         // before a language can be used it must be defined
         // if it has already been defined then an error will occur
         try { sql << "create language plpgsql"; }
         catch (soci_error const &) {} // ignore if error
-
-#ifndef SOCI_POSTGRESQL_NOPARAMS
 
         sql  <<
             "create or replace function soci_test(msg varchar) "
@@ -110,16 +90,6 @@ public:
             "begin "
             "  return msg; "
             "end $$ language plpgsql";
-#else
-
-       sql <<
-            "create or replace function soci_test(varchar) "
-            "returns varchar as \' "
-            "declare x int := 1;"
-            "begin "
-            "  return $1; "
-            "end \' language plpgsql";
-#endif
     }
 
 protected:
@@ -130,66 +100,41 @@ protected:
     }
 };
 
-void test2()
+TEST_CASE("PostgreSQL function call", "[postgresql][function]")
 {
+    soci::session sql(backEnd, connectString);
+
+    function_creator functionCreator(sql);
+
+    std::string in("my message");
+    std::string out;
+
+    statement st = (sql.prepare <<
+        "select soci_test(:input)",
+        into(out),
+        use(in, "input"));
+
+    st.execute(true);
+    CHECK(out == in);
+
+    // explicit procedure syntax
     {
-        session sql(backEnd, connectString);
-
-        function_creator functionCreator(sql);
-
-        std::string in("my message");
+        std::string in("my message2");
         std::string out;
 
-#ifndef SOCI_POSTGRESQL_NOPARAMS
+        procedure proc = (sql.prepare <<
+            "soci_test(:input)",
+            into(out), use(in, "input"));
 
-        statement st = (sql.prepare <<
-            "select soci_test(:input)",
-            into(out),
-            use(in, "input"));
-
-#else
-        // Older PostgreSQL does not support use elements.
-
-        statement st = (sql.prepare <<
-            "select soci_test(\'" << in << "\')",
-            into(out));
-
-#endif // SOCI_POSTGRESQL_NOPARAMS
-
-        st.execute(true);
-        assert(out == in);
-
-        // explicit procedure syntax
-        {
-            std::string in("my message2");
-            std::string out;
-
-#ifndef SOCI_POSTGRESQL_NOPARAMS
-
-            procedure proc = (sql.prepare <<
-                "soci_test(:input)",
-                into(out), use(in, "input"));
-
-#else
-        // Older PostgreSQL does not support use elements.
-
-            procedure proc = (sql.prepare <<
-                "soci_test(\'" << in << "\')", into(out));
-
-#endif // SOCI_POSTGRESQL_NOPARAMS
-
-            proc.execute(true);
-            assert(out == in);
-        }
+        proc.execute(true);
+        CHECK(out == in);
     }
-
-    std::cout << "test 2 passed" << std::endl;
 }
 
 // BLOB test
 struct blob_table_creator : public table_creator_base
 {
-    blob_table_creator(session & sql)
+    blob_table_creator(soci::session & sql)
     : table_creator_base(sql)
     {
         sql <<
@@ -200,10 +145,10 @@ struct blob_table_creator : public table_creator_base
     }
 };
 
-void test3()
+TEST_CASE("PostgreSQL blob", "[postgresql][blob]")
 {
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
 
         blob_table_creator tableCreator(sql);
 
@@ -218,21 +163,21 @@ void test3()
             blob b(sql);
 
             sql << "select img from soci_test where id = 7", into(b);
-            assert(b.get_len() == 0);
+            CHECK(b.get_len() == 0);
 
             b.write(0, buf, sizeof(buf));
-            assert(b.get_len() == sizeof(buf));
+            CHECK(b.get_len() == sizeof(buf));
 
             b.append(buf, sizeof(buf));
-            assert(b.get_len() == 2 * sizeof(buf));
+            CHECK(b.get_len() == 2 * sizeof(buf));
         }
         {
             blob b(sql);
             sql << "select img from soci_test where id = 7", into(b);
-            assert(b.get_len() == 2 * sizeof(buf));
+            CHECK(b.get_len() == 2 * sizeof(buf));
             char buf2[100];
             b.read(0, buf2, 10);
-            assert(std::strncmp(buf2, "abcdefghij", 10) == 0);
+            CHECK(std::strncmp(buf2, "abcdefghij", 10) == 0);
         }
 
         unsigned long oid;
@@ -240,12 +185,49 @@ void test3()
         sql << "select lo_unlink(" << oid << ")";
     }
 
-    std::cout << "test 3 passed" << std::endl;
+    // additional sibling test for read_from_start and write_from_start
+    {
+        soci::session sql(backEnd, connectString);
+
+        blob_table_creator tableCreator(sql);
+
+        char buf[] = "abcdefghijklmnopqrstuvwxyz";
+
+        sql << "insert into soci_test(id, img) values(7, lo_creat(-1))";
+
+        // in PostgreSQL, BLOB operations must be within transaction block
+        transaction tr(sql);
+
+        {
+            blob b(sql);
+
+            sql << "select img from soci_test where id = 7", into(b);
+            CHECK(b.get_len() == 0);
+
+            b.write_from_start(buf, sizeof(buf));
+            CHECK(b.get_len() == sizeof(buf));
+
+            b.append(buf, sizeof(buf));
+            CHECK(b.get_len() == 2 * sizeof(buf));
+        }
+        {
+            blob b(sql);
+            sql << "select img from soci_test where id = 7", into(b);
+            CHECK(b.get_len() == 2 * sizeof(buf));
+            char buf2[100];
+            b.read_from_start(buf2, 10);
+            CHECK(std::strncmp(buf2, "abcdefghij", 10) == 0);
+        }
+
+        unsigned long oid;
+        sql << "select img from soci_test where id = 7", into(oid);
+        sql << "select lo_unlink(" << oid << ")";
+    }
 }
 
 struct longlong_table_creator : table_creator_base
 {
-    longlong_table_creator(session & sql)
+    longlong_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val int8)";
@@ -253,309 +235,298 @@ struct longlong_table_creator : table_creator_base
 };
 
 // long long test
-void test4()
+TEST_CASE("PostgreSQL long long", "[postgresql][longlong]")
 {
-    {
-        session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
-        longlong_table_creator tableCreator(sql);
+    longlong_table_creator tableCreator(sql);
 
-        long long v1 = 1000000000000LL;
-        assert(v1 / 1000000 == 1000000);
+    long long v1 = 1000000000000LL;
+    sql << "insert into soci_test(val) values(:val)", use(v1);
 
-        sql << "insert into soci_test(val) values(:val)", use(v1);
+    long long v2 = 0LL;
+    sql << "select val from soci_test", into(v2);
 
-        long long v2 = 0LL;
-        sql << "select val from soci_test", into(v2);
+    CHECK(v2 == v1);
+}
 
-        assert(v2 == v1);
-    }
+// vector<long long>
+TEST_CASE("PostgreSQL vector long long", "[postgresql][vector][longlong]")
+{
+    soci::session sql(backEnd, connectString);
 
-    // vector<long long>
-    {
-        session sql(backEnd, connectString);
+    longlong_table_creator tableCreator(sql);
 
-        longlong_table_creator tableCreator(sql);
+    std::vector<long long> v1;
+    v1.push_back(1000000000000LL);
+    v1.push_back(1000000000001LL);
+    v1.push_back(1000000000002LL);
+    v1.push_back(1000000000003LL);
+    v1.push_back(1000000000004LL);
 
-        std::vector<long long> v1;
-        v1.push_back(1000000000000LL);
-        v1.push_back(1000000000001LL);
-        v1.push_back(1000000000002LL);
-        v1.push_back(1000000000003LL);
-        v1.push_back(1000000000004LL);
+    sql << "insert into soci_test(val) values(:val)", use(v1);
 
-        sql << "insert into soci_test(val) values(:val)", use(v1);
+    std::vector<long long> v2(10);
+    sql << "select val from soci_test order by val desc", into(v2);
 
-        std::vector<long long> v2(10);
-        sql << "select val from soci_test order by val desc", into(v2);
-
-        assert(v2.size() == 5);
-        assert(v2[0] == 1000000000004LL);
-        assert(v2[1] == 1000000000003LL);
-        assert(v2[2] == 1000000000002LL);
-        assert(v2[3] == 1000000000001LL);
-        assert(v2[4] == 1000000000000LL);
-    }
-
-    std::cout << "test 4 passed" << std::endl;
+    REQUIRE(v2.size() == 5);
+    CHECK(v2[0] == 1000000000004LL);
+    CHECK(v2[1] == 1000000000003LL);
+    CHECK(v2[2] == 1000000000002LL);
+    CHECK(v2[3] == 1000000000001LL);
+    CHECK(v2[4] == 1000000000000LL);
 }
 
 // unsigned long long test
-void test4ul()
+TEST_CASE("PostgreSQL unsigned long long", "[postgresql][unsigned][longlong]")
 {
-    {
-        session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
-        longlong_table_creator tableCreator(sql);
+    longlong_table_creator tableCreator(sql);
 
-        unsigned long long v1 = 1000000000000ULL;
-        assert(v1 / 1000000 == 1000000);
+    unsigned long long v1 = 1000000000000ULL;
+    sql << "insert into soci_test(val) values(:val)", use(v1);
 
-        sql << "insert into soci_test(val) values(:val)", use(v1);
+    unsigned long long v2 = 0ULL;
+    sql << "select val from soci_test", into(v2);
 
-        unsigned long long v2 = 0ULL;
-        sql << "select val from soci_test", into(v2);
-
-        assert(v2 == v1);
-    }
+    CHECK(v2 == v1);
 }
 
 struct boolean_table_creator : table_creator_base
 {
-    boolean_table_creator(session & sql)
+    boolean_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val boolean)";
     }
 };
 
-void test5()
+TEST_CASE("PostgreSQL boolean", "[postgresql][boolean]")
 {
-    {
-        session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
-        boolean_table_creator tableCreator(sql);
+    boolean_table_creator tableCreator(sql);
 
-        int i1 = 0;
+    int i1 = 0;
 
-        sql << "insert into soci_test(val) values(:val)", use(i1);
+    sql << "insert into soci_test(val) values(:val)", use(i1);
 
-        int i2 = 7;
-        sql << "select val from soci_test", into(i2);
+    int i2 = 7;
+    sql << "select val from soci_test", into(i2);
 
-        assert(i2 == i1);
+    CHECK(i2 == i1);
 
-        sql << "update soci_test set val = true";
-        sql << "select val from soci_test", into(i2);
-        assert(i2 == 1);
-    }
-
-    std::cout << "test 5 passed" << std::endl;
+    sql << "update soci_test set val = true";
+    sql << "select val from soci_test", into(i2);
+    CHECK(i2 == 1);
 }
 
-// dynamic backend test
-void test6()
+struct uuid_table_creator : table_creator_base
+{
+    uuid_table_creator(soci::session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val uuid)";
+    }
+};
+
+// uuid test
+TEST_CASE("PostgreSQL uuid", "[postgresql][uuid]")
+{
+    soci::session sql(backEnd, connectString);
+
+    uuid_table_creator tableCreator(sql);
+
+    std::string v1("cd2dcb78-3817-442e-b12a-17c7e42669a0");
+    sql << "insert into soci_test(val) values(:val)", use(v1);
+
+    std::string v2;
+    sql << "select val from soci_test", into(v2);
+
+    CHECK(v2 == v1);
+}
+
+// dynamic backend test -- currently skipped by default
+TEST_CASE("PostgreSQL dynamic backend", "[postgresql][backend][.]")
 {
     try
     {
-        session sql("nosuchbackend://" + connectString);
-        assert(false);
+        soci::session sql("nosuchbackend://" + connectString);
+        FAIL("expected exception not thrown");
     }
     catch (soci_error const & e)
     {
-        assert(e.what() == std::string("Failed to open: libsoci_nosuchbackend.so"));
+        CHECK(e.get_error_message() ==
+            "Failed to open: libsoci_nosuchbackend.so");
     }
 
     {
         dynamic_backends::register_backend("pgsql", backEnd);
 
         std::vector<std::string> backends = dynamic_backends::list_all();
-        assert(backends.size() == 1);
-        assert(backends[0] == "pgsql");
+        REQUIRE(backends.size() == 1);
+        CHECK(backends[0] == "pgsql");
 
         {
-            session sql("pgsql://" + connectString);
+            soci::session sql("pgsql://" + connectString);
         }
 
         dynamic_backends::unload("pgsql");
 
         backends = dynamic_backends::list_all();
-        assert(backends.empty());
+        CHECK(backends.empty());
     }
 
     {
-        session sql("postgresql://" + connectString);
+        soci::session sql("postgresql://" + connectString);
     }
-
-    std::cout << "test 6 passed" << std::endl;
 }
 
-void test7()
+TEST_CASE("PostgreSQL literals", "[postgresql][into]")
 {
+    soci::session sql(backEnd, connectString);
+
+    int i;
+    sql << "select 123", into(i);
+    CHECK(i == 123);
+
+    try
     {
-        session sql(backEnd, connectString);
-
-        int i;
-        sql << "select 123", into(i);
-        assert(i == 123);
-
-        try
-        {
-            sql << "select 'ABC'", into (i);
-            assert(false);
-        }
-        catch (soci_error const & e)
-        {
-            assert(e.what() == std::string("Cannot convert data."));
-        }
+        sql << "select 'ABC'", into (i);
+        FAIL("expected exception not thrown");
     }
-
-    std::cout << "test 7 passed" << std::endl;
+    catch (soci_error const & e)
+    {
+        char const * expectedPrefix = "Cannot convert data";
+        CAPTURE(e.what());
+        CHECK(strncmp(e.what(), expectedPrefix, strlen(expectedPrefix)) == 0);
+    }
 }
 
-void test8()
+TEST_CASE("PostgreSQL backend name", "[postgresql][backend]")
 {
-    {
-        session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
-        assert(sql.get_backend_name() == "postgresql");
-    }
-
-    std::cout << "test 8 passed" << std::endl;
+    CHECK(sql.get_backend_name() == "postgresql");
 }
 
 // test for double-colon cast in SQL expressions
-void test9()
+TEST_CASE("PostgreSQL double colon cast", "[postgresql][cast]")
 {
-    {
-        session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
-        int a = 123;
-        int b = 0;
-        sql << "select :a::integer", use(a), into(b);
-        assert(b == a);
-    }
-
-    std::cout << "test 9 passed" << std::endl;
+    int a = 123;
+    int b = 0;
+    sql << "select :a::integer", use(a), into(b);
+    CHECK(b == a);
 }
 
 // test for date, time and timestamp parsing
-void test10()
+TEST_CASE("PostgreSQL datetime", "[postgresql][datetime]")
 {
-    {
-        session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
 
-        std::string someDate = "2009-06-17 22:51:03.123";
-        std::tm t1, t2, t3;
+    std::string someDate = "2009-06-17 22:51:03.123";
+    std::tm t1 = std::tm(), t2 = std::tm(), t3 = std::tm();
 
-        sql << "select :sd::date, :sd::time, :sd::timestamp",
-            use(someDate, "sd"), into(t1), into(t2), into(t3);
+    sql << "select :sd::date, :sd::time, :sd::timestamp",
+        use(someDate, "sd"), into(t1), into(t2), into(t3);
 
-        // t1 should contain only the date part
-        assert(t1.tm_year == 2009 - 1900);
-        assert(t1.tm_mon == 6 - 1);
-        assert(t1.tm_mday == 17);
-        assert(t1.tm_hour == 0);
-        assert(t1.tm_min == 0);
-        assert(t1.tm_sec == 0);
+    // t1 should contain only the date part
+    CHECK(t1.tm_year == 2009 - 1900);
+    CHECK(t1.tm_mon == 6 - 1);
+    CHECK(t1.tm_mday == 17);
+    CHECK(t1.tm_hour == 0);
+    CHECK(t1.tm_min == 0);
+    CHECK(t1.tm_sec == 0);
 
-        // t2 should contain only the time of day part
-        assert(t2.tm_year == 0);
-        assert(t2.tm_mon == 0);
-        assert(t2.tm_mday == 1);
-        assert(t2.tm_hour == 22);
-        assert(t2.tm_min == 51);
-        assert(t2.tm_sec == 3);
+    // t2 should contain only the time of day part
+    CHECK(t2.tm_year == 0);
+    CHECK(t2.tm_mon == 0);
+    CHECK(t2.tm_mday == 1);
+    CHECK(t2.tm_hour == 22);
+    CHECK(t2.tm_min == 51);
+    CHECK(t2.tm_sec == 3);
 
-        // t3 should contain all information
-        assert(t3.tm_year == 2009 - 1900);
-        assert(t3.tm_mon == 6 - 1);
-        assert(t3.tm_mday == 17);
-        assert(t3.tm_hour == 22);
-        assert(t3.tm_min == 51);
-        assert(t3.tm_sec == 3);
-    }
-
-    std::cout << "test 10 passed" << std::endl;
+    // t3 should contain all information
+    CHECK(t3.tm_year == 2009 - 1900);
+    CHECK(t3.tm_mon == 6 - 1);
+    CHECK(t3.tm_mday == 17);
+    CHECK(t3.tm_hour == 22);
+    CHECK(t3.tm_min == 51);
+    CHECK(t3.tm_sec == 3);
 }
 
 // test for number of affected rows
 
 struct table_creator_for_test11 : table_creator_base
 {
-    table_creator_for_test11(session & sql)
+    table_creator_for_test11(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val integer)";
     }
 };
 
-void test11()
+TEST_CASE("PostgreSQL get affected rows", "[postgresql][affected-rows]")
 {
+    soci::session sql(backEnd, connectString);
+
+    table_creator_for_test11 tableCreator(sql);
+
+    for (int i = 0; i != 10; i++)
     {
-        session sql(backEnd, connectString);
-
-        table_creator_for_test11 tableCreator(sql);
-
-        for (int i = 0; i != 10; i++)
-        {
-            sql << "insert into soci_test(val) values(:val)", use(i);
-        }
-
-        statement st1 = (sql.prepare <<
-            "update soci_test set val = val + 1");
-        st1.execute(false);
-
-        assert(st1.get_affected_rows() == 10);
-
-        statement st2 = (sql.prepare <<
-            "delete from soci_test where val <= 5");
-        st2.execute(false);
-
-        assert(st2.get_affected_rows() == 5);
+        sql << "insert into soci_test(val) values(:val)", use(i);
     }
 
-    std::cout << "test 11 passed" << std::endl;
+    statement st1 = (sql.prepare <<
+        "update soci_test set val = val + 1");
+    st1.execute(false);
+
+    CHECK(st1.get_affected_rows() == 10);
+
+    statement st2 = (sql.prepare <<
+        "delete from soci_test where val <= 5");
+    st2.execute(false);
+
+    CHECK(st2.get_affected_rows() == 5);
 }
 
 // test INSERT INTO ... RETURNING syntax
 
 struct table_creator_for_test12 : table_creator_base
 {
-    table_creator_for_test12(session & sql)
+    table_creator_for_test12(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(sid serial, txt text)";
     }
 };
 
-void test12()
+TEST_CASE("PostgreSQL insert into ... returning", "[postgresql]")
 {
+    soci::session sql(backEnd, connectString);
+
+    table_creator_for_test12 tableCreator(sql);
+
+    std::vector<long> ids(10);
+    for (std::size_t i = 0; i != ids.size(); i++)
     {
-        session sql(backEnd, connectString);
-
-        table_creator_for_test12 tableCreator(sql);
-
-        std::vector<long> ids(10);
-        for (std::size_t i = 0; i != ids.size(); i++)
-        {
-            long sid(0);
-            std::string txt("abc");
-            sql << "insert into soci_test(txt) values(:txt) returning sid", use(txt, "txt"), into(sid);
-            ids[i] = sid;
-        }
-        
-        std::vector<long> ids2(ids.size());
-        sql << "select sid from soci_test order by sid", into(ids2);
-        assert(std::equal(ids.begin(), ids.end(), ids2.begin()));
+        long sid(0);
+        std::string txt("abc");
+        sql << "insert into soci_test(txt) values(:txt) returning sid", use(txt, "txt"), into(sid);
+        ids[i] = sid;
     }
 
-    std::cout << "test 12 passed" << std::endl;
+    std::vector<long> ids2(ids.size());
+    sql << "select sid from soci_test order by sid", into(ids2);
+    CHECK(std::equal(ids.begin(), ids.end(), ids2.begin()));
 }
 
 struct bytea_table_creator : public table_creator_base
 {
-    bytea_table_creator(session& sql)
+    bytea_table_creator(soci::session& sql)
         : table_creator_base(sql)
     {
         sql << "drop table if exists soci_test;";
@@ -563,43 +534,57 @@ struct bytea_table_creator : public table_creator_base
     }
 };
 
-void test_bytea()
+TEST_CASE("PostgreSQL bytea", "[postgresql][bytea]")
 {
+    soci::session sql(backEnd, connectString);
+
+    // PostgreSQL supports two different output formats for bytea values:
+    // historical "escape" format, which is the only one supported until
+    // PostgreSQL 9.0, and "hex" format used by default since 9.0, we need
+    // to determine which one is actually in use.
+    std::string bytea_output_format;
+    sql << "select setting from pg_settings where name='bytea_output'",
+           into(bytea_output_format);
+    char const* expectedBytea;
+    if (bytea_output_format.empty() || bytea_output_format == "escape")
+      expectedBytea = "\\015\\014\\013\\012";
+    else if (bytea_output_format == "hex")
+      expectedBytea = "\\x0d0c0b0a";
+    else
+      throw std::runtime_error("Unknown PostgreSQL bytea_output \"" +
+                               bytea_output_format + "\"");
+
+    bytea_table_creator tableCreator(sql);
+
+    int v = 0x0A0B0C0D;
+    unsigned char* b = reinterpret_cast<unsigned char*>(&v);
+    std::string data;
+    std::copy(b, b + sizeof(v), std::back_inserter(data));
     {
-        session sql(backEnd, connectString);
-        bytea_table_creator tableCreator(sql);
 
-        int v = 0x0A0B0C0D;
-        unsigned char* b = reinterpret_cast<unsigned char*>(&v);
-        std::string data;
-        std::copy(b, b + sizeof(v), std::back_inserter(data));
-        {
+        sql << "insert into soci_test(val) values(:val)", use(data);
 
-            sql << "insert into soci_test(val) values(:val)", use(data);
+        // 1) into string, no Oid mapping
+        std::string bin1;
+        sql << "select val from soci_test", into(bin1);
+        CHECK(bin1 == expectedBytea);
 
-            // 1) into string, no Oid mapping
-            std::string bin1;
-            sql << "select val from soci_test", into(bin1);
-            assert(bin1 == "\\x0d0c0b0a");
+        // 2) Oid-to-dt_string mapped
+        row r;
+        sql << "select * from soci_test", into(r);
 
-            // 2) Oid-to-dt_string mapped
-            row r;
-            sql << "select * from soci_test", into(r);
-
-            assert(r.size() == 1);
-            column_properties const& props = r.get_properties(0);
-            assert(props.get_data_type() == soci::dt_string);
-            std::string bin2 = r.get<std::string>(0);
-            assert(bin2 == "\\x0d0c0b0a");
-        }
+        REQUIRE(r.size() == 1);
+        column_properties const& props = r.get_properties(0);
+        CHECK(props.get_data_type() == soci::dt_string);
+        std::string bin2 = r.get<std::string>(0);
+        CHECK(bin2 == expectedBytea);
     }
-    std::cout << "test bytea passed" << std::endl;
 }
 
 // json
 struct table_creator_json : public table_creator_base
 {
-    table_creator_json(session& sql)
+    table_creator_json(soci::session& sql)
     : table_creator_base(sql)
     {
         sql << "drop table if exists soci_json_test;";
@@ -610,7 +595,7 @@ struct table_creator_json : public table_creator_base
 // Return 9,2 for 9.2.3
 typedef std::pair<int,int> server_version;
 
-server_version get_postgresql_version(session& sql)
+server_version get_postgresql_version(soci::session& sql)
 {
     std::string version;
     std::pair<int,int> result;
@@ -623,13 +608,12 @@ server_version get_postgresql_version(session& sql)
 }
 
 // Test JSON. Only valid for PostgreSQL Server 9.2++
-void test_json()
+TEST_CASE("PostgreSQL JSON", "[postgresql][json]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     server_version version = get_postgresql_version(sql);
     if ( version >= server_version(9,2))
     {
-        bool exception = false;
         std::string result;
         std::string valid_input = "{\"tool\":\"soci\",\"result\":42}";
         std::string invalid_input = "{\"tool\":\"other\",\"result\":invalid}";
@@ -638,29 +622,22 @@ void test_json()
 
         sql << "insert into soci_json_test (data) values(:data)",use(valid_input);
         sql << "select data from  soci_json_test",into(result);
-        assert(result == valid_input);
+        CHECK(result == valid_input);
 
-        try
-        {
-            sql << "insert into soci_json_test (data) values(:data)",use(invalid_input);
-        }
-        catch(soci_error& e)
-        {
-            (void)e;
-            exception = true;
-        }
-        assert(exception);
-        std::cout << "test json passed" << std::endl;
+        CHECK_THROWS_AS((
+            sql << "insert into soci_json_test (data) values(:data)",use(invalid_input)),
+            soci_error&
+        );
     }
     else
     {
-    std::cout << "test json skipped (PostgreSQL >= 9.2 required, found " << version.first << "." << version.second << ")" << std::endl;
+        WARN("JSON test skipped (PostgreSQL >= 9.2 required, found " << version.first << "." << version.second << ")");
     }
 }
 
 struct table_creator_text : public table_creator_base
 {
-    table_creator_text(session& sql) : table_creator_base(sql)
+    table_creator_text(soci::session& sql) : table_creator_base(sql)
     {
         sql << "drop table if exists soci_test;";
         sql << "create table soci_test(name varchar(20))";
@@ -670,115 +647,377 @@ struct table_creator_text : public table_creator_base
 // Test deallocate_prepared_statement called for non-existing statement
 // which creation failed due to invalid SQL syntax.
 // https://github.com/SOCI/soci/issues/116
-void test_statement_prepare_failure()
+TEST_CASE("PostgreSQL statement prepare failure", "[postgresql][prepare]")
 {
-    {
-        session sql(backEnd, connectString);
-        table_creator_text tableCreator(sql);
+    soci::session sql(backEnd, connectString);
+    table_creator_text tableCreator(sql);
 
-        try
-        {
-            // types mismatch should lead to PQprepare failure
-            statement get_trades =
-                (sql.prepare 
-                    << "select * from soci_test where name=9999");
-            assert(false);
-        }
-        catch(soci_error const& e)
-        {
-            std::string const msg(e.what());
-            // poor-man heuristics
-            assert(msg.find("prepared statement") == std::string::npos);
-            assert(msg.find("operator does not exist") != std::string::npos);
-        }
+    try
+    {
+        // types mismatch should lead to PQprepare failure
+        statement get_trades =
+            (sql.prepare
+                << "select * from soci_test where name=9999");
+        FAIL("expected exception not thrown");
     }
-    std::cout << "test_statement_prepare_failure passed" << std::endl;
+    catch(soci_error const& e)
+    {
+        std::string const msg(e.what());
+        CAPTURE(msg);
+
+        // poor-man heuristics
+        CHECK(msg.find("prepared statement") == std::string::npos);
+        CHECK(msg.find("operator does not exist") != std::string::npos);
+    }
 }
 
 // Test the support of PostgreSQL-style casts with ORM
-void test_orm_cast()
+TEST_CASE("PostgreSQL ORM cast", "[postgresql][orm]")
 {
-    session sql(backEnd, connectString);
+    soci::session sql(backEnd, connectString);
     values v;
     v.set("a", 1);
     sql << "select :a::int", use(v); // Must not throw an exception!
 }
 
-struct table_creator_for_uuid_column_type_support : table_creator_base
+// Test the DDL and metadata functionality
+TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
 {
-    table_creator_for_uuid_column_type_support(session & sql)
-        : table_creator_base(sql)
+    soci::session sql(backEnd, connectString);
+
+    // note: prepare_column_descriptions expects l-value
+    std::string ddl_t1 = "ddl_t1";
+    std::string ddl_t2 = "ddl_t2";
+    std::string ddl_t3 = "ddl_t3";
+
+    // single-expression variant:
+    sql.create_table(ddl_t1).column("i", soci::dt_integer).column("j", soci::dt_integer);
+
+    // check whether this table was created:
+
+    bool ddl_t1_found = false;
+    bool ddl_t2_found = false;
+    bool ddl_t3_found = false;
+    std::string table_name;
+    soci::statement st = (sql.prepare_table_names(), into(table_name));
+    st.execute();
+    while (st.fetch())
     {
-        sql << "create table soci_test(val uuid)";
+        if (table_name == ddl_t1) { ddl_t1_found = true; }
+        if (table_name == ddl_t2) { ddl_t2_found = true; }
+        if (table_name == ddl_t3) { ddl_t3_found = true; }
     }
-};
 
-void try_one_uuid_format(session& sql, const std::string& uuid, const std::string& uuidExpected)
-{
-    sql << "insert into soci_test(val) values(:val)", use(uuid);
+    CHECK(ddl_t1_found);
+    CHECK(ddl_t2_found == false);
+    CHECK(ddl_t3_found == false);
 
-    // 1) into string, no Oid mapping
-    std::string uuid1;
-    sql << "select val from soci_test", into(uuid1);
-    assert(uuid1 == uuidExpected);
+    // check whether ddl_t1 has the right structure:
 
-    // 2) Oid-to-dt_string mapped
-    row r;
-    sql << "select * from soci_test", into(r);
-
-    assert(r.size() == 1);
-    column_properties const& props = r.get_properties(0);
-    assert(props.get_data_type() == soci::dt_string);
-    std::string uuid2 = r.get<std::string>(0);
-    assert(uuid2 == uuidExpected);
-}
-
-void test_uuid_column_type_support()
-{
+    bool i_found = false;
+    bool j_found = false;
+    bool other_found = false;
+    soci::column_info ci;
+    soci::statement st1 = (sql.prepare_column_descriptions(ddl_t1), into(ci));
+    st1.execute();
+    while (st1.fetch())
     {
-        session sql(backEnd, connectString);
-        table_creator_for_uuid_column_type_support tableCreator(sql);
-
-        static const std::string standardUuid("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11");
-        std::vector<std::string> uuidFormats;
-
-        uuidFormats.push_back(standardUuid);
-        uuidFormats.push_back("A0EEBC99-9C0B-4EF8-BB6D-6BB9BD380A11");
-        uuidFormats.push_back("{a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11}");
-        uuidFormats.push_back("a0eebc999c0b4ef8bb6d6bb9bd380a11");
-        uuidFormats.push_back("a0ee-bc99-9c0b-4ef8-bb6d-6bb9-bd38-0a11");
-        uuidFormats.push_back("{a0eebc99-9c0b4ef8-bb6d6bb9-bd380a11}");
-
-        std::vector<std::string>::const_iterator it = uuidFormats.begin();
-        while (it != uuidFormats.end())
+        if (ci.name == "i")
         {
-            std::string uuid = *it++;
-            try_one_uuid_format(sql, uuid, standardUuid);
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.nullable);
+            i_found = true;
+        }
+        else if (ci.name == "j")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.nullable);
+            j_found = true;
+        }
+        else
+        {
+            other_found = true;
         }
     }
-    std::cout << "test uuid passed" << std::endl;
+
+    CHECK(i_found);
+    CHECK(j_found);
+    CHECK(other_found == false);
+
+    // two more tables:
+
+    // separately defined columns:
+    // (note: statement is executed when ddl object goes out of scope)
+    {
+        soci::ddl_type ddl = sql.create_table(ddl_t2);
+        ddl.column("i", soci::dt_integer);
+        ddl.column("j", soci::dt_integer);
+        ddl.column("k", soci::dt_integer)("not null");
+        ddl.primary_key("t2_pk", "j");
+    }
+
+    sql.add_column(ddl_t1, "k", soci::dt_integer);
+    sql.add_column(ddl_t1, "big", soci::dt_string, 0); // "unlimited" length -> text
+    sql.drop_column(ddl_t1, "i");
+
+    // or with constraint as in t2:
+    sql.add_column(ddl_t2, "m", soci::dt_integer)("not null");
+
+    // third table with a foreign key to the second one
+    {
+        soci::ddl_type ddl = sql.create_table(ddl_t3);
+        ddl.column("x", soci::dt_integer);
+        ddl.column("y", soci::dt_integer);
+        ddl.foreign_key("t3_fk", "x", ddl_t2, "j");
+    }
+
+    // check if all tables were created:
+
+    ddl_t1_found = false;
+    ddl_t2_found = false;
+    ddl_t3_found = false;
+    soci::statement st2 = (sql.prepare_table_names(), into(table_name));
+    st2.execute();
+    while (st2.fetch())
+    {
+        if (table_name == ddl_t1) { ddl_t1_found = true; }
+        if (table_name == ddl_t2) { ddl_t2_found = true; }
+        if (table_name == ddl_t3) { ddl_t3_found = true; }
+    }
+
+    CHECK(ddl_t1_found);
+    CHECK(ddl_t2_found);
+    CHECK(ddl_t3_found);
+
+    // check if ddl_t1 has the right structure (it was altered):
+
+    i_found = false;
+    j_found = false;
+    bool k_found = false;
+    bool big_found = false;
+    other_found = false;
+    soci::statement st3 = (sql.prepare_column_descriptions(ddl_t1), into(ci));
+    st3.execute();
+    while (st3.fetch())
+    {
+        if (ci.name == "j")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.nullable);
+            j_found = true;
+        }
+        else if (ci.name == "k")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.nullable);
+            k_found = true;
+        }
+        else if (ci.name == "big")
+        {
+            CHECK(ci.type == soci::dt_string);
+            CHECK(ci.precision == 0); // "unlimited" for strings
+            big_found = true;
+        }
+        else
+        {
+            other_found = true;
+        }
+    }
+
+    CHECK(i_found == false);
+    CHECK(j_found);
+    CHECK(k_found);
+    CHECK(big_found);
+    CHECK(other_found == false);
+
+    // check if ddl_t2 has the right structure:
+
+    i_found = false;
+    j_found = false;
+    k_found = false;
+    bool m_found = false;
+    other_found = false;
+    soci::statement st4 = (sql.prepare_column_descriptions(ddl_t2), into(ci));
+    st4.execute();
+    while (st4.fetch())
+    {
+        if (ci.name == "i")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.nullable);
+            i_found = true;
+        }
+        else if (ci.name == "j")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.nullable == false); // primary key
+            j_found = true;
+        }
+        else if (ci.name == "k")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.nullable == false);
+            k_found = true;
+        }
+        else if (ci.name == "m")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.nullable == false);
+            m_found = true;
+        }
+        else
+        {
+            other_found = true;
+        }
+    }
+
+    CHECK(i_found);
+    CHECK(j_found);
+    CHECK(k_found);
+    CHECK(m_found);
+    CHECK(other_found == false);
+
+    sql.drop_table(ddl_t1);
+    sql.drop_table(ddl_t3); // note: this must be dropped before ddl_t2
+    sql.drop_table(ddl_t2);
+
+    // check if all tables were dropped:
+
+    ddl_t1_found = false;
+    ddl_t2_found = false;
+    ddl_t3_found = false;
+    st2 = (sql.prepare_table_names(), into(table_name));
+    st2.execute();
+    while (st2.fetch())
+    {
+        if (table_name == ddl_t1) { ddl_t1_found = true; }
+        if (table_name == ddl_t2) { ddl_t2_found = true; }
+        if (table_name == ddl_t3) { ddl_t3_found = true; }
+    }
+
+    CHECK(ddl_t1_found == false);
+    CHECK(ddl_t2_found == false);
+    CHECK(ddl_t3_found == false);
+
+    int i = -1;
+    sql << "select lo_unlink(" + sql.empty_blob() + ")", into(i);
+    CHECK(i == 1);
+    sql << "select " + sql.nvl() + "(1, 2)", into(i);
+    CHECK(i == 1);
+    sql << "select " + sql.nvl() + "(NULL, 2)", into(i);
+    CHECK(i == 2);
 }
 
+// Test the bulk iterators functionality
+TEST_CASE("Bulk iterators", "[postgresql][bulkiters]")
+{
+    soci::session sql(backEnd, connectString);
+
+    sql << "create table t (i integer)";
+
+    // test bulk iterators with basic types
+    {
+        std::vector<int> v;
+        v.push_back(10);
+        v.push_back(20);
+        v.push_back(30);
+        v.push_back(40);
+        v.push_back(50);
+
+        std::size_t begin = 2;
+        std::size_t end = 5;
+        sql << "insert into t (i) values (:v)", soci::use(v, begin, end);
+
+        v.clear();
+        v.resize(20);
+        begin = 5;
+        end = 20;
+        sql << "select i from t", soci::into(v, begin, end);
+
+        CHECK(end == 8);
+        for (std::size_t i = 0; i != 5; ++i)
+        {
+            CHECK(v[i] == 0);
+        }
+        CHECK(v[5] == 30);
+        CHECK(v[6] == 40);
+        CHECK(v[7] == 50);
+        for (std::size_t i = end; i != 20; ++i)
+        {
+            CHECK(v[i] == 0);
+        }
+    }
+
+    sql << "delete from t";
+
+    // test bulk iterators with user types
+    {
+        std::vector<MyInt> v;
+        v.push_back(MyInt(10));
+        v.push_back(MyInt(20));
+        v.push_back(MyInt(30));
+        v.push_back(MyInt(40));
+        v.push_back(MyInt(50));
+
+        std::size_t begin = 2;
+        std::size_t end = 5;
+        sql << "insert into t (i) values (:v)", soci::use(v, begin, end);
+
+        v.clear();
+        for (std::size_t i = 0; i != 20; ++i)
+        {
+            v.push_back(MyInt(-1));
+        }
+
+        begin = 5;
+        end = 20;
+        sql << "select i from t", soci::into(v, begin, end);
+
+        CHECK(end == 8);
+        for (std::size_t i = 0; i != 5; ++i)
+        {
+            CHECK(v[i].get() == -1);
+        }
+        CHECK(v[5].get() == 30);
+        CHECK(v[6].get() == 40);
+        CHECK(v[7].get() == 50);
+        for (std::size_t i = end; i != 20; ++i)
+        {
+            CHECK(v[i].get() == -1);
+        }
+    }
+
+    sql << "drop table t";
+}
+
+
+// false_bind_variable_inside_identifier rommel
 struct test_false_bind_variable_inside_identifier_table_creator : table_creator_base
 {
     test_false_bind_variable_inside_identifier_table_creator(session & sql)
         : table_creator_base(sql)
         , msession(sql) 
     {
-        drop();
-        sql << "CREATE TABLE soci_test( \"column_with:colon\" integer)";
-        sql <<  "CREATE FUNCTION \"function_with:colon\"() RETURNS integer LANGUAGE 'sql' AS "
-                "$BODY$"
-                "   SELECT \"column_with:colon\" FROM soci_test LIMIT 1; "
-                "$BODY$;"
-        ;
-        sql << "CREATE TYPE \"type_with:colon\" AS ENUM ('en_one', 'en_two');";
-    }
 
+        try
+        {
+            sql << "CREATE TABLE soci_test( \"column_with:colon\" integer)";
+            sql << "CREATE TYPE \"type_with:colon\" AS ENUM ('en_one', 'en_two');";
+            sql <<  "CREATE FUNCTION \"function_with:colon\"() RETURNS integer LANGUAGE 'sql' AS "
+                    "$BODY$"
+                    "   SELECT \"column_with:colon\" FROM soci_test LIMIT 1; "
+                    "$BODY$;"
+            ;
+        }
+        catch(...)
+        {
+            drop();
+        }
+        
+    }
     ~test_false_bind_variable_inside_identifier_table_creator(){
         drop();
     }
-
 private:
     void drop()
     {
@@ -787,16 +1026,11 @@ private:
             msession << "DROP FUNCTION IF EXISTS \"function_with:colon\"();";
             msession << "DROP TYPE IF EXISTS \"type_with:colon\" ;";
         }
-        catch (soci_error const& e)
-        {
-            //std::cerr << e.what() << std::endl;
-            e.what();
-        }
+        catch (soci_error const& e){}
     }
     session& msession;
 };
-
-void test_false_bind_variable_inside_identifier()
+TEST_CASE("false_bind_variable_inside_identifier", "[postgresql][bind-variables]")
 {
     std::string col_name;
     int fct_return_value;
@@ -806,17 +1040,19 @@ void test_false_bind_variable_inside_identifier()
         session sql(backEnd, connectString);
         test_false_bind_variable_inside_identifier_table_creator tableCreator(sql);
 
-        sql << "insert into soci_test(\"column_with:colon\") values(2020)";
-        sql << "SELECT column_name FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'soci_test';", into(col_name);
-        sql << "SELECT \"function_with:colon\"() ;", into(fct_return_value);
-        sql << "SELECT unnest(enum_range(NULL::\"type_with:colon\"))  ORDER BY 1 LIMIT 1;", into(type_value);
+        try
+        {
+            sql << "insert into soci_test(\"column_with:colon\") values(2020)";
+            sql << "SELECT column_name FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'soci_test';", into(col_name);
+            sql << "SELECT \"function_with:colon\"() ;", into(fct_return_value);
+            sql << "SELECT unnest(enum_range(NULL::\"type_with:colon\"))  ORDER BY 1 LIMIT 1;", into(type_value);
+        }
+        catch(...){}
     }
 
-    assert(col_name.compare("column_with:colon") == 0);
-    assert(fct_return_value == 2020);
-    assert(type_value.compare("en_one")==0);
-
-    std::cout << "teste test_false_bind_variable_inside_identifier passed" << std::endl;
+    CHECK(col_name.compare("column_with:colon") == 0);
+    CHECK(fct_return_value == 2020);
+    CHECK(type_value.compare("en_one")==0);
 }
 
 //
@@ -826,11 +1062,12 @@ void test_false_bind_variable_inside_identifier()
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
-    table_creator_one(session & sql)
+    table_creator_one(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, val integer, c char, "
                  "str varchar(20), sh int2, ul numeric(20), d float8, "
+                 "num76 numeric(7,6), "
                  "tm timestamp, i1 integer, i2 integer, i3 integer, "
                  "name varchar(20))";
     }
@@ -838,7 +1075,7 @@ struct table_creator_one : public table_creator_base
 
 struct table_creator_two : public table_creator_base
 {
-    table_creator_two(session & sql)
+    table_creator_two(soci::session & sql)
         : table_creator_base(sql)
     {
         sql  << "create table soci_test(num_float float8, num_int integer,"
@@ -848,7 +1085,7 @@ struct table_creator_two : public table_creator_base
 
 struct table_creator_three : public table_creator_base
 {
-    table_creator_three(session & sql)
+    table_creator_three(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(name varchar(100) not null, "
@@ -858,10 +1095,28 @@ struct table_creator_three : public table_creator_base
 
 struct table_creator_for_get_affected_rows : table_creator_base
 {
-    table_creator_for_get_affected_rows(session & sql)
+    table_creator_for_get_affected_rows(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val integer)";
+    }
+};
+
+struct table_creator_for_xml : table_creator_base
+{
+    table_creator_for_xml(soci::session& sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(id integer, x xml)";
+    }
+};
+
+struct table_creator_for_clob : table_creator_base
+{
+    table_creator_for_clob(soci::session& sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(id integer, s text)";
     }
 };
 
@@ -873,29 +1128,54 @@ public:
         : test_context_base(backEnd, connectString)
     {}
 
-    table_creator_base* table_creator_1(session& s) const
+    table_creator_base* table_creator_1(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_one(s);
     }
 
-    table_creator_base* table_creator_2(session& s) const
+    table_creator_base* table_creator_2(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_two(s);
     }
 
-    table_creator_base* table_creator_3(session& s) const
+    table_creator_base* table_creator_3(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_three(s);
     }
 
-    table_creator_base* table_creator_4(session& s) const
+    table_creator_base* table_creator_4(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_for_get_affected_rows(s);
     }
 
-    std::string to_date_time(std::string const &datdt_string) const
+    table_creator_base* table_creator_xml(soci::session& s) const SOCI_OVERRIDE
+    {
+        return new table_creator_for_xml(s);
+    }
+
+    table_creator_base* table_creator_clob(soci::session& s) const SOCI_OVERRIDE
+    {
+        return new table_creator_for_clob(s);
+    }
+
+    bool has_real_xml_support() const SOCI_OVERRIDE
+    {
+        return true;
+    }
+
+    std::string to_date_time(std::string const &datdt_string) const SOCI_OVERRIDE
     {
         return "timestamptz(\'" + datdt_string + "\')";
+    }
+
+    bool has_fp_bug() const SOCI_OVERRIDE
+    {
+        return false;
+    }
+
+    std::string sql_length(std::string const& s) const SOCI_OVERRIDE
+    {
+        return "char_length(" + s + ")";
     }
 };
 
@@ -905,60 +1185,33 @@ int main(int argc, char** argv)
 #ifdef _MSC_VER
     // Redirect errors, unrecoverable problems, and assert() failures to STDERR,
     // instead of debug message window.
-    // This hack is required to run asser()-driven tests by Buildbot.
+    // This hack is required to run assert()-driven tests by Buildbot.
     // NOTE: Comment this 2 lines for debugging with Visual C++ debugger to catch assertions inside.
     _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
     _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
 #endif //_MSC_VER
 
-    if (argc == 2)
+    if (argc >= 2)
     {
         connectString = argv[1];
+
+        // Replace the connect string with the process name to ensure that
+        // CATCH uses the correct name in its messages.
+        argv[1] = argv[0];
+
+        argc--;
+        argv++;
     }
     else
     {
         std::cout << "usage: " << argv[0]
-            << " connectstring\n"
+            << " connectstring [test-arguments...]\n"
             << "example: " << argv[0]
             << " \'connect_string_for_PostgreSQL\'\n";
         return EXIT_FAILURE;
     }
 
-    try
-    {
-        test_context tc(backEnd, connectString);
-        common_tests tests(tc);
-        tests.run();
+    test_context tc(backEnd, connectString);
 
-        std::cout << "\nSOCI PostgreSQL Tests:\n\n";
-        test1();
-        test2();
-        test3();
-        test4();
-        test4ul();
-        test5();
-        //test6();
-        std::cout << "test 6 skipped (dynamic backend)\n";
-        test7();
-        test8();
-        test9();
-        test10();
-        test11();
-        test12();
-        test_bytea();
-        test_json();
-        test_statement_prepare_failure();
-        test_orm_cast();
-        test_uuid_column_type_support();
-        test_false_bind_variable_inside_identifier();
-
-        std::cout << "\nOK, all tests passed.\n\n";
-
-        return EXIT_SUCCESS;
-    }
-    catch (std::exception const & e)
-    {
-        std::cout << e.what() << '\n';
-    }
-    return EXIT_FAILURE;
+    return Catch::Session().run(argc, argv);
 }
