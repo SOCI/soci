@@ -1040,14 +1040,10 @@ TEST_CASE("false_bind_variable_inside_identifier", "[postgresql][bind-variables]
         session sql(backEnd, connectString);
         test_false_bind_variable_inside_identifier_table_creator tableCreator(sql);
 
-        try
-        {
-            sql << "insert into soci_test(\"column_with:colon\") values(2020)";
-            sql << "SELECT column_name FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'soci_test';", into(col_name);
-            sql << "SELECT \"function_with:colon\"() ;", into(fct_return_value);
-            sql << "SELECT unnest(enum_range(NULL::\"type_with:colon\"))  ORDER BY 1 LIMIT 1;", into(type_value);
-        }
-        catch(...){}
+        sql << "insert into soci_test(\"column_with:colon\") values(2020)";
+        sql << "SELECT column_name FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'soci_test';", into(col_name);
+        sql << "SELECT \"function_with:colon\"() ;", into(fct_return_value);
+        sql << "SELECT unnest(enum_range(NULL::\"type_with:colon\"))  ORDER BY 1 LIMIT 1;", into(type_value);
     }
 
     CHECK(col_name.compare("column_with:colon") == 0);
