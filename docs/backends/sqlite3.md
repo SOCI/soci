@@ -49,6 +49,8 @@ The set of parameters used in the connection string for SQLite is:
 
 * `dbname` or `db`
 * `timeout` - set sqlite busy timeout (in seconds) ([link](http://www.sqlite.org/c3ref/busy_timeout.html))
+* `flags` - set sqlite open flags ([link](https://www.sqlite.org/c3ref/open.html))
+* `readonly` - open database in read-only mode ([link](https://www.sqlite.org/c3ref/open.html))
 * `synchronous` - set the pragma synchronous flag ([link](http://www.sqlite.org/pragma.html#pragma_synchronous))
 * `shared_cache` - should be `true` ([link](http://www.sqlite.org/c3ref/enable_shared_cache.html))
 

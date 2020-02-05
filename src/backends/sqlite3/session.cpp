@@ -96,13 +96,22 @@ sqlite3_session_backend::sqlite3_session_backend(
             std::istringstream converter(val);
             converter >> timeout;
         }
+        else if ("flags" == key)
+        {
+            std::istringstream converter(val);
+            converter >> connection_flags;
+        }
         else if ("synchronous" == key)
         {
             synchronous = val;
         }
+        else if ("readonly" == key)
+        {
+            connection_flags = (connection_flags | SQLITE_OPEN_READONLY) & ~(SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+        }
         else if ("shared_cache" == key && "true" == val)
         {
-            connection_flags |=  SQLITE_OPEN_SHAREDCACHE;
+            connection_flags |= SQLITE_OPEN_SHAREDCACHE;
         }
     }
 
