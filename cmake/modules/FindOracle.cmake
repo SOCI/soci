@@ -42,9 +42,14 @@ find_path(ORACLE_INCLUDE_DIR
   # instant client from rpm
   /usr/include/oracle/*/client${LIB_SUFFIX})
 
+set(ORACLE_VERSIONS 10 11 12 18 19)
 set(ORACLE_OCI_NAMES clntsh libclntsh oci) # Dirty trick might help on OSX, see issues/89
-set(ORACLE_OCCI_NAMES libocci occi oraocci10 oraocci11 oraocci12 oraocci18)
-set(ORACLE_NNZ_NAMES nnz10 libnnz10 nnz11 libnnz11 nnz12 libnnz12 nnz18 libnnz18 ociw32)
+set(ORACLE_OCCI_NAMES libocci occi)
+set(ORACLE_NNZ_NAMES ociw32)
+foreach(loop_var IN LISTS ORACLE_VERSIONS)
+  set(ORACLE_OCCI_NAMES ${ORACLE_OCCI_NAMES} oraocci${loop_var})
+  set(ORACLE_NNZ_NAMES ${ORACLE_NNZ_NAMES} nnz${loop_var} libnnz${loop_var})
+endforeach(loop_var)
 
 set(ORACLE_LIB_DIR
   ${ORACLE_HOME}
@@ -77,5 +82,9 @@ set(ORACLE_LIBRARIES ${ORACLE_LIBRARY})
 # if all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(ORACLE DEFAULT_MSG ORACLE_LIBRARY ORACLE_INCLUDE_DIR)
+
+if(NOT ORACLE_FOUND)
+	message(STATUS "Try find oracle versions : ${ORACLE_VERSIONS}. If version you need absent, try add it to variable ORACLE_VERSIONS")
+endif()
 
 mark_as_advanced(ORACLE_INCLUDE_DIR ORACLE_LIBRARY)
