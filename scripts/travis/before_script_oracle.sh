@@ -39,7 +39,6 @@ select RESOURCE_NAME,CURRENT_UTILIZATION,LIMIT_VALUE from v$resource_limit;
 exit;
 EOF
 
-$ORACLE_HOME/bin/sqlplus -S -L sys/travis AS SYSDBA @${TRAVIS_BUILD_DIR}/scripts/travis/show_oracle_limits.sh
 # increase default=40 value of processes to prevent ORA-12520 failures while testing
 echo "alter system set processes=100 scope=spfile;" | \
 $ORACLE_HOME/bin/sqlplus -S -L sys/travis AS SYSDBA
