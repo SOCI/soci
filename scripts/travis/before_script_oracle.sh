@@ -40,7 +40,7 @@ exit;
 EOF
 
 # increase default=40 value of processes to prevent ORA-12520 failures while testing
-echo "alter system set processes=200 scope=spfile;" | \
+echo "alter system set processes=200 scope=both;" | \
 $ORACLE_HOME/bin/sqlplus -S -L sys/travis AS SYSDBA
 
 echo "After alter system set processes:"
