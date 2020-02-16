@@ -24,6 +24,7 @@ env:
 matrix:
   include:
     - env: SOCI_TRAVIS_BACKEND=oracle WITH_BOOST=OFF
+      dist: xenial
 
 addons:
     apt:
