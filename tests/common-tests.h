@@ -23,6 +23,8 @@
 
 #include "soci-compiler.h"
 
+#include "soci/callbacks.h"
+
 #define CATCH_CONFIG_RUNNER
 #include <catch.hpp>
 
@@ -4625,6 +4627,9 @@ TEST_CASE_METHOD(common_tests, "Logger", "[core][log]")
     sql.set_logger(logger_orig);
 }
 
+// These tests are disabled by default, as they require manual intevention, but
+// can be run by explicitly giving their names on the command line.
+
 // Check if reconnecting to the database after losing connection to it works.
 TEST_CASE_METHOD(common_tests, "Reconnect", "[keep-alive][.]")
 {
@@ -4665,6 +4670,74 @@ TEST_CASE_METHOD(common_tests, "Reconnect", "[keep-alive][.]")
     int id2 = 1234;
     sql << "select id from soci_test", into(id2);
     CHECK( id2 == id );
+}
+
+// Check if automatically reconnecting to the database works.
+//
+// Note: this test doesn't work at all, failover doesn't happen neither with
+// Oracle nor with PostgreSQL (which are the only backends for which it's
+// implemented at all) and it's not clear how is it even supposed to work.
+TEST_CASE_METHOD(common_tests, "Failover", "[keep-alive][.]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    class MyCallback : public soci::failover_callback
+    {
+    public:
+        MyCallback() : attempted_(false), reconnected_(false)
+        {
+        }
+
+        bool did_reconnect() const { return reconnected_; }
+
+        void started() SOCI_OVERRIDE
+        {
+            std::cout << "Please undo the previous action "
+                         "(restart the server, plug the cable back, ...) "
+                         "and press Enter" << std::endl;
+            std::cin.get();
+        }
+
+        void failed(bool& retry, std::string&) SOCI_OVERRIDE
+        {
+            // We only retry once.
+            retry = !attempted_;
+            attempted_ = true;
+        }
+
+        void finished(soci::session&) SOCI_OVERRIDE
+        {
+            reconnected_ = true;
+        }
+
+        void aborted() SOCI_OVERRIDE
+        {
+            FAIL( "Failover aborted" );
+        }
+
+    private:
+        bool attempted_;
+        bool reconnected_;
+    } myCallback;
+
+    sql.set_failover_callback(myCallback);
+
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+    int id = 17;
+    sql << "insert into soci_test (id) values (:id)", use(id);
+    REQUIRE_NOTHROW( sql.commit() );
+
+    std::cout << "Please break connection to the database "
+                 "(stop the server, unplug the network cable, ...) "
+                 "and press Enter" << std::endl;
+    std::cin.get();
+
+    int id2;
+    sql << "select id from soci_test", into(id2);
+    CHECK( id2 == id );
+
+    CHECK( myCallback.did_reconnect() );
 }
 
 } // namespace test_cases
