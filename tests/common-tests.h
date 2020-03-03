@@ -4625,6 +4625,48 @@ TEST_CASE_METHOD(common_tests, "Logger", "[core][log]")
     sql.set_logger(logger_orig);
 }
 
+// Check if reconnecting to the database after losing connection to it works.
+TEST_CASE_METHOD(common_tests, "Reconnect", "[keep-alive][.]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+    int id = 17;
+    sql << "insert into soci_test (id) values (:id)", use(id);
+
+    REQUIRE_NOTHROW( sql.commit() );
+
+    std::cout << "Please break connection to the database "
+                 "(stop the server, unplug the network cable, ...) "
+                 "and press Enter" << std::endl;
+    std::cin.get();
+
+    try
+    {
+        int id2;
+        sql << "select id from soci_test", into(id2);
+
+        FAIL("Connection to the database still available");
+        return;
+    }
+    catch (soci_error const& e)
+    {
+        INFO( "Exception message: " << e.what() );
+        CHECK( e.get_error_category() == soci_error::connection_error );
+    }
+
+    std::cout << "Please undo the previous action "
+                 "(restart the server, plug the cable back, ...) "
+                 "and press Enter" << std::endl;
+    std::cin.get();
+
+    REQUIRE_NOTHROW( sql.reconnect() );
+
+    int id2 = 1234;
+    sql << "select id from soci_test", into(id2);
+    CHECK( id2 == id );
+}
+
 } // namespace test_cases
 
 } // namespace tests
