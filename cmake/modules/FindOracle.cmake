@@ -84,7 +84,7 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(ORACLE DEFAULT_MSG ORACLE_LIBRARY ORACLE_INCLUDE_DIR)
 
 if(NOT ORACLE_FOUND)
-	message(STATUS "Try find oracle versions : ${ORACLE_VERSIONS}. If version you need absent, try add it to variable ORACLE_VERSIONS")
+	message(STATUS "None of the supported Oracle versions (${ORACLE_VERSIONS}) could be found, consider updating ORACLE_VERSIONS if the version you use is not among them.")
 endif()
 
 mark_as_advanced(ORACLE_INCLUDE_DIR ORACLE_LIBRARY)
