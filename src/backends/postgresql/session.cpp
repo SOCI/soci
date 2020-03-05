@@ -9,7 +9,6 @@
 #include "soci/soci-platform.h"
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci/session.h"
-#include "soci/connection-parameters.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
 #include <cstdio>
@@ -69,6 +68,7 @@ void postgresql_session_backend::connect(
         "Cannot set extra_float_digits parameter");
 
     conn_ = conn;
+    connectionParameters_ = parameters;
 }
 
 postgresql_session_backend::~postgresql_session_backend()

@@ -25,6 +25,7 @@
 #endif
 
 #include <soci/soci-backend.h>
+#include "soci/connection-parameters.h"
 #include <libpq-fe.h>
 #include <vector>
 
@@ -395,6 +396,7 @@ struct postgresql_session_backend : details::session_backend
     int statementCount_;
     bool single_row_mode_;
     PGconn * conn_;
+    connection_parameters connectionParameters_;
 };
 
 
