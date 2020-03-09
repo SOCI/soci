@@ -139,6 +139,12 @@ namespace cxx_details
 #if defined(SOCI_HAVE_CXX11) || (defined(_MSC_VER) && _MSC_VER >= 1900)
     #define SOCI_NOEXCEPT_FALSE noexcept(false)
 #else
+    #if defined(__cplusplus) && __cplusplus >= 201103L
+        // Otherwise throwing from a dtor not marked with noexcept(false) would
+        // simply result in terminating the program.
+        #error "SOCI must be configured with C++11 support when using C++11"
+    #endif
+
     #define SOCI_NOEXCEPT_FALSE
 #endif
 
