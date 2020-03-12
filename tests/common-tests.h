@@ -3150,6 +3150,22 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
             CHECK(so.is_initialized() == false);
         }
 
+        // inserts of non-null const data
+        {
+            sql << "delete from soci_test";
+
+            const int id = 10;
+            const boost::optional<int> val = 11;
+
+            sql << "insert into soci_test(id, val) values(:id, :val)",
+                use(id, "id"),
+                use(val, "val");
+
+            int sum;
+            sql << "select sum(val) from soci_test", into(sum);
+            CHECK(sum == 11);
+        }
+
         // bulk inserts of non-null data
 
         {
@@ -3179,6 +3195,46 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
 
             sql << "insert into soci_test(id, val) values(:id, :val)",
                 use(ids, "id"), use(v, "val");
+
+            sql << "select sum(val) from soci_test", into(sum);
+            CHECK(sum == 41);
+        }
+
+
+        // bulk inserts of non-null data with const vector
+
+        {
+            sql << "delete from soci_test";
+
+            std::vector<int> ids;
+            std::vector<boost::optional<int> > v;
+
+            ids.push_back(10); v.push_back(20);
+            ids.push_back(11); v.push_back(21);
+            ids.push_back(12); v.push_back(22);
+            ids.push_back(13); v.push_back(23);
+
+            const std::vector<int>& cref_ids = ids;
+            const std::vector<boost::optional<int> >& cref_v = v;
+
+            sql << "insert into soci_test(id, val) values(:id, :val)",
+                use(cref_ids, "id"),
+                use(cref_v, "val");
+
+            int sum;
+            sql << "select sum(val) from soci_test", into(sum);
+            CHECK(sum == 86);
+
+            // bulk inserts of some-null data
+
+            sql << "delete from soci_test";
+
+            v[2].reset();
+            v[3].reset();
+
+            sql << "insert into soci_test(id, val) values(:id, :val)",
+                use(cref_ids, "id"),
+                use(cref_v, "val");
 
             sql << "select sum(val) from soci_test", into(sum);
             CHECK(sum == 41);
