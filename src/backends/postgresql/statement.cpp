@@ -61,7 +61,7 @@ postgresql_statement_backend::postgresql_statement_backend(
       hasIntoElements_(false), hasVectorIntoElements_(false),
       hasUseElements_(false), hasVectorUseElements_(false)
 {
-#ifndef SOCI_POSTGRESQL_NOSINGLEROWMODE
+#ifdef SOCI_POSTGRESQL_NOSINGLEROWMODE
   if (single_row_mode)
   {
     throw soci_error("Single row mode not supported in this version of the library");
