@@ -4023,6 +4023,94 @@ TEST_CASE_METHOD(common_tests, "Bind memory leak", "[core][leak]")
     }
 }
 
+// The issue 723 test does not work under Windows as TZ environment variable
+// does not reliably override the system time zone
+#ifndef _MSC_VER
+
+// Helper functions for issue 723 test
+namespace {
+
+    // Creates a std::tm with UK DST threshold 31st March 2019 01:00:00
+    std::tm create_uk_dst_threshold()
+    {
+        std::tm dst_threshold = std::tm();
+        dst_threshold.tm_year = 119;  // 2019
+        dst_threshold.tm_mon = 2;     // March
+        dst_threshold.tm_mday = 31;   // 31st
+        dst_threshold.tm_hour = 1;    // 1AM
+        dst_threshold.tm_min = 0;
+        dst_threshold.tm_sec = 0;
+        dst_threshold.tm_isdst = -1;   // Determine DST from OS
+        return dst_threshold;
+    }
+
+    // Sanity check to verify that the DST threshold causes mktime to modify
+    // the input hour (the condition that causes issue 723). 
+    // This check really shouldn't fail but since it is the basis of the test 
+    // it is worth verifying.
+    bool does_mktime_modify_input_hour()
+    {
+        std::tm dst_threshold = create_uk_dst_threshold();
+        std::tm verify_mktime = dst_threshold;
+        mktime(&verify_mktime);
+        return verify_mktime.tm_hour != dst_threshold.tm_hour;
+    }
+
+    void set_tz_environment_variable(const std::string& time_zone)
+    {
+        setenv("TZ", time_zone.c_str(), 1);
+        tzset();
+    }
+}
+
+// Issue 723 - std::tm timestamp problem with DST.
+// When reading date/time on Daylight Saving Time threshold, hour value is
+// silently changed.
+TEST_CASE_METHOD(common_tests, "std::tm timestamp problem with DST", "[core][into]")
+{
+    // Store original TZ value so it can be replaced when the test finishes
+    std::string original_tz_value;
+    char* tz_value = getenv("TZ");
+    if (tz_value != nullptr)
+    {
+        original_tz_value = tz_value;
+    }
+
+    // Set UK timezone
+    set_tz_environment_variable("Europe/London");
+
+    if (!does_mktime_modify_input_hour())
+    {
+        // Skip test, restoring TZ value so other tests aren't affected.
+        WARN("Timezone not correct for this test, skipping.");
+        set_tz_environment_variable(original_tz_value);
+        return;
+    }
+
+    // Open session and create table with a date/time column.
+    soci::session sql(backEndFactory_, connectString_);
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+    // Round trip dst threshold time to database.
+    std::tm write_time = create_uk_dst_threshold();
+    sql << "insert into soci_test(tm) values(:tm)", use(write_time);
+    std::tm read_time = std::tm();
+    sql << "select tm from soci_test", soci::into(read_time);
+
+    // Check that the round trip was consistent.
+    std::tm dst_threshold = create_uk_dst_threshold();
+    CHECK(read_time.tm_year == dst_threshold.tm_year);
+    CHECK(read_time.tm_mon == dst_threshold.tm_mon);
+    CHECK(read_time.tm_mday == dst_threshold.tm_mday);
+    CHECK(read_time.tm_hour == dst_threshold.tm_hour);
+    CHECK(read_time.tm_min == dst_threshold.tm_min);
+    CHECK(read_time.tm_sec == dst_threshold.tm_sec);
+
+    // Restore TZ value so other tests aren't affected.
+    set_tz_environment_variable(original_tz_value);
+}
+#endif
+
 TEST_CASE_METHOD(common_tests, "Insert error", "[core][insert][exception]")
 {
     soci::session sql(backEndFactory_, connectString_);
