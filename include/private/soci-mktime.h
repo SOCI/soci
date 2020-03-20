@@ -28,15 +28,19 @@ mktime_from_ymdhms(tm& t,
                    int year, int month, int day,
                    int hour, int minute, int second)
 {
-    t.tm_isdst = -1;
+    t.tm_isdst = -1;  // DST is unknown
+    t.tm_wday = -1;   // Not set
+    t.tm_yday = -1;   // Not set
+    
     t.tm_year = year - 1900;
     t.tm_mon  = month - 1;
     t.tm_mday = day;
     t.tm_hour = hour;
     t.tm_min  = minute;
     t.tm_sec  = second;
-
-    mktime(&t);
+    
+    // There is no normalisation via mktime() due to Daylight Saving Time
+    // and time zone complications. See issue 723.
 }
 
 // Helper function for parsing datetime values.
