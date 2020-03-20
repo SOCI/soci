@@ -38,9 +38,9 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
         CHECK(t1.tm_mday == t2.tm_mday);
         CHECK(t1.tm_mon == t2.tm_mon);
         CHECK(t1.tm_year == t2.tm_year);
-        CHECK(t1.tm_wday == t2.tm_wday);
-        CHECK(t1.tm_yday == t2.tm_yday);
-        CHECK(t1.tm_isdst == t2.tm_isdst);
+        CHECK(t1.tm_wday == -1);  // Not calculated by SOCI, always -1
+        CHECK(t1.tm_yday == -1);  // Not calculated by SOCI, always -1
+        CHECK(t1.tm_isdst == -1); // DST is unknown
 
         // make sure the date is stored properly in Oracle
         char buf[25];
@@ -69,9 +69,9 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
         CHECK(t1.tm_mday == t2.tm_mday);
         CHECK(t1.tm_mon == t2.tm_mon);
         CHECK(t1.tm_year == t2.tm_year);
-        CHECK(t1.tm_wday == t2.tm_wday);
-        CHECK(t1.tm_yday == t2.tm_yday);
-        CHECK(t1.tm_isdst == t2.tm_isdst);
+        CHECK(t1.tm_wday == -1);  // Not calculated by SOCI, always -1
+        CHECK(t1.tm_yday == -1);  // Not calculated by SOCI, always -1
+        CHECK(t1.tm_isdst == -1); // DST is unknown
 
         // make sure the date is stored properly in Oracle
         char buf[25];
