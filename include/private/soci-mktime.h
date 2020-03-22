@@ -11,7 +11,7 @@
 // Not <ctime> because we also want to get timegm() if available.
 #include <time.h>
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 #define timegm _mkgmtime
 #endif
 

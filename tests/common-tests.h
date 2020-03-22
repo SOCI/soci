@@ -4025,7 +4025,7 @@ TEST_CASE_METHOD(common_tests, "Bind memory leak", "[core][leak]")
 
 // The issue 723 test does not work under Windows as TZ environment variable
 // does not reliably override the system time zone
-#ifndef _MSC_VER
+#ifndef _WIN32
 
 // Helper functions for issue 723 test
 namespace {
