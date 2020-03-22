@@ -4071,7 +4071,7 @@ TEST_CASE_METHOD(common_tests, "std::tm timestamp problem with DST", "[core][int
     // Store original TZ value so it can be replaced when the test finishes
     std::string original_tz_value;
     char* tz_value = getenv("TZ");
-    if (tz_value != nullptr)
+    if (tz_value != NULL)
     {
         original_tz_value = tz_value;
     }
