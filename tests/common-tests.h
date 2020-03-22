@@ -4056,11 +4056,36 @@ namespace {
         return verify_mktime.tm_hour != dst_threshold.tm_hour;
     }
 
-    void set_tz_environment_variable(const std::string& time_zone)
+    // Helper RAII class changing time zone to the specified one in its ctor
+    // and restoring the original time zone in its dtor.
+    class tz_setter
     {
-        setenv("TZ", time_zone.c_str(), 1);
-        tzset();
-    }
+    public:
+        explicit tz_setter(const std::string& time_zone)
+        {
+            char* tz_value = getenv("TZ");
+            if (tz_value != NULL)
+            {
+                original_tz_value_ = tz_value;
+            }
+
+            setenv("TZ", time_zone.c_str(), 1 /* overwrite */);
+            tzset();
+        }
+
+        ~tz_setter()
+        {
+            // Restore TZ value so other tests aren't affected.
+            if (original_tz_value_.empty())
+                unsetenv("TZ");
+            else
+                setenv("TZ", original_tz_value_.c_str(), 1);
+            tzset();
+        }
+
+    private:
+        std::string original_tz_value_;
+    };
 }
 
 // Issue 723 - std::tm timestamp problem with DST.
@@ -4068,22 +4093,13 @@ namespace {
 // silently changed.
 TEST_CASE_METHOD(common_tests, "std::tm timestamp problem with DST", "[core][into]")
 {
-    // Store original TZ value so it can be replaced when the test finishes
-    std::string original_tz_value;
-    char* tz_value = getenv("TZ");
-    if (tz_value != NULL)
-    {
-        original_tz_value = tz_value;
-    }
-
-    // Set UK timezone
-    set_tz_environment_variable("Europe/London");
+    // Set UK timezone for this test scope.
+    tz_setter switch_to_UK_tz("Europe/London");
 
     if (!does_mktime_modify_input_hour())
     {
         // Skip test, restoring TZ value so other tests aren't affected.
         WARN("Timezone not correct for this test, skipping.");
-        set_tz_environment_variable(original_tz_value);
         return;
     }
 
@@ -4105,9 +4121,6 @@ TEST_CASE_METHOD(common_tests, "std::tm timestamp problem with DST", "[core][int
     CHECK(read_time.tm_hour == dst_threshold.tm_hour);
     CHECK(read_time.tm_min == dst_threshold.tm_min);
     CHECK(read_time.tm_sec == dst_threshold.tm_sec);
-
-    // Restore TZ value so other tests aren't affected.
-    set_tz_environment_variable(original_tz_value);
 }
 #endif
 
