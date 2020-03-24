@@ -4023,10 +4023,6 @@ TEST_CASE_METHOD(common_tests, "Bind memory leak", "[core][leak]")
     }
 }
 
-// The issue 723 test does not work under Windows as TZ environment variable
-// does not reliably override the system time zone
-#ifndef _WIN32
-
 // Helper functions for issue 723 test
 namespace {
 
@@ -4056,6 +4052,11 @@ namespace {
         return verify_mktime.tm_hour != dst_threshold.tm_hour;
     }
 
+    // We don't have any way to change the time zone for just this process
+    // under MSW, so we just skip this test when not running in UK time-zone
+    // there. Under Unix systems we can however switch to UK time zone
+    // temporarily by just setting the TZ environment variable.
+#ifndef _WIN32
     // Helper RAII class changing time zone to the specified one in its ctor
     // and restoring the original time zone in its dtor.
     class tz_setter
@@ -4086,22 +4087,30 @@ namespace {
     private:
         std::string original_tz_value_;
     };
+#endif // !_WIN32
 }
 
 // Issue 723 - std::tm timestamp problem with DST.
 // When reading date/time on Daylight Saving Time threshold, hour value is
 // silently changed.
-TEST_CASE_METHOD(common_tests, "std::tm timestamp problem with DST", "[core][into]")
+TEST_CASE_METHOD(common_tests, "std::tm timestamp problem with DST", "[core][into][tm][dst]")
 {
+#ifdef _WIN32
+    if (!does_mktime_modify_input_hour())
+    {
+        WARN("The DST test can only be run in the UK time zone, please switch to it manually.");
+        return;
+    }
+#else // !_WIN32
     // Set UK timezone for this test scope.
     tz_setter switch_to_UK_tz("Europe/London");
 
     if (!does_mktime_modify_input_hour())
     {
-        // Skip test, restoring TZ value so other tests aren't affected.
-        WARN("Timezone not correct for this test, skipping.");
+        WARN("Switching to the UK time zone unexpectedly failed, skipping the DST test.");
         return;
     }
+#endif // _WIN32/!_WIN32
 
     // Open session and create table with a date/time column.
     soci::session sql(backEndFactory_, connectString_);
@@ -4122,7 +4131,6 @@ TEST_CASE_METHOD(common_tests, "std::tm timestamp problem with DST", "[core][int
     CHECK(read_time.tm_min == dst_threshold.tm_min);
     CHECK(read_time.tm_sec == dst_threshold.tm_sec);
 }
-#endif
 
 TEST_CASE_METHOD(common_tests, "Insert error", "[core][insert][exception]")
 {
