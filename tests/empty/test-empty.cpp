@@ -94,10 +94,7 @@ TEST_CASE("Dummy test", "[empty]")
     sql << query, use(i, ind);
 
     std::vector<int> numbers(100);
-    const std::vector<int>& cref_numbers = numbers;
     sql << "insert", use(numbers);
-    sql << "insert", use(cref_numbers);
-    sql << "insert", use(cref_numbers, "test_name");
     sql << "select", into(numbers);
 
     std::vector<indicator> inds(100);
