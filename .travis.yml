@@ -23,15 +23,6 @@ env:
 
 matrix:
   include:
-    - env: SOCI_TRAVIS_BACKEND=db2
-    - env: SOCI_TRAVIS_BACKEND=empty CMAKE_CXX_STANDARD=98 TEST_RELEASE_PACKAGE=YES
-    - env: SOCI_TRAVIS_BACKEND=empty CMAKE_CXX_STANDARD=11
-    - env: SOCI_TRAVIS_BACKEND=firebird
-    - env: SOCI_TRAVIS_BACKEND=mysql
-    - env: SOCI_TRAVIS_BACKEND=odbc
-    - env: SOCI_TRAVIS_BACKEND=postgresql
-    - env: SOCI_TRAVIS_BACKEND=sqlite3
-    - env: SOCI_TRAVIS_BACKEND=valgrind
     - env: SOCI_TRAVIS_BACKEND=oracle WITH_BOOST=OFF
 
 addons:
