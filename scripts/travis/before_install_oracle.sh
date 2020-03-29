@@ -6,7 +6,7 @@
 # set -ex
 source ${TRAVIS_BUILD_DIR}/scripts/travis/oracle.sh
 
-docker run --name $ORACLE_CONT -e ORACLE_PWD="$ORACLE_PWD" vitorfec/oracle-xe-18c
+docker run -d --name $ORACLE_CONT -e ORACLE_PWD="$ORACLE_PWD" vitorfec/oracle-xe-18c
 
 # We need to wait until the database creation process finishes, so steal this
 # trick from https://github.com/elhigu/travis-node-oracle-18-xe to do it.
