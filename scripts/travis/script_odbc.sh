@@ -31,4 +31,4 @@ run_make
 
 # Exclude the tests which can't be run due to the absence of ODBC drivers (MS
 # SQL and MySQL).
-run_test -E 'soci_odbc_test_m.sql'
+LSAN_OPTIONS=suppressions=${TRAVIS_BUILD_DIR}/scripts/suppress_odbc.txt run_test -E 'soci_odbc_test_m.sql'
