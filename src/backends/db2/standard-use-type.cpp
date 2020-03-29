@@ -191,7 +191,7 @@ void db2_standard_use_type_backend::pre_use(indicator const *ind_ptr)
 
 void db2_standard_use_type_backend::post_use(bool /*gotData*/, indicator* /*ind*/)
 {
-
+    clean_up();
 }
 
 void db2_standard_use_type_backend::clean_up()
