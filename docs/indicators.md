@@ -55,7 +55,7 @@ This means that you should use indicator variables everywhere where the applicat
 
 ## Insert with NULL values
 
-Indicator variables can be also used when binding input data, to control whether the data is to be used as provided, or explicitly overrided to be null:
+Indicator variables can be also used when binding input data, to control whether the data is to be used as provided, or explicitly overridden to be null:
 
 ```cpp
 int id = 7;
