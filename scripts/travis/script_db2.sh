@@ -24,4 +24,4 @@ cmake \
     ..
 
 run_make
-run_test
+LSAN_OPTIONS=suppressions=${TRAVIS_BUILD_DIR}/scripts/suppress_db2.txt run_test

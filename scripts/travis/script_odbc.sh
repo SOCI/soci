@@ -29,5 +29,6 @@ cmake \
 
 run_make
 
-# Exclude the test which can't be run as there is no MS SQL server available.
-run_test -E soci_odbc_test_mssql
+# Exclude the tests which can't be run due to the absence of ODBC drivers (MS
+# SQL and MySQL).
+LSAN_OPTIONS=suppressions=${TRAVIS_BUILD_DIR}/scripts/suppress_odbc.txt run_test -E 'soci_odbc_test_m.sql'

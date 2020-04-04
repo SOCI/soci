@@ -1,0 +1,11 @@
+# This is a suppression file for LeakSanitizer when running DB2 tests.
+
+# This DB2 function leaks memory during initialization.
+leak:LicInitializeNetls
+
+# There is also some other unidentifiable leak from libdb2.so.
+leak:libdb2.so
+
+# And unfortunately there are some other unidentifiable leaks that we also need
+# to disable, even if this means that we'll probably miss any new leaks too.
+leak:libasan.so
