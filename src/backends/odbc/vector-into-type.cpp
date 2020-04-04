@@ -8,6 +8,7 @@
 #define SOCI_ODBC_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/odbc/soci-odbc.h"
+#include "soci-cstrtoi.h"
 #include "soci-mktime.h"
 #include "soci-static-assert.h"
 #include <cctype>
@@ -15,7 +16,6 @@
 #include <cstring>
 #include <ctime>
 #include <sstream>
-#include <stdio.h>  // sscanf()
 
 using namespace soci;
 using namespace soci::details;
@@ -285,7 +285,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             std::size_t const vsize = v.size();
             for (std::size_t i = 0; i != vsize; ++i)
             {
-                if (sscanf(pos, "%" LL_FMT_FLAGS "d", &v[i]) != 1)
+                if (!cstring_to_integer(v[i], pos))
                 {
                     throw soci_error("Failed to parse the returned 64-bit integer value");
                 }
@@ -301,7 +301,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             std::size_t const vsize = v.size();
             for (std::size_t i = 0; i != vsize; ++i)
             {
-                if (sscanf(pos, "%" LL_FMT_FLAGS "u", &v[i]) != 1)
+                if (!cstring_to_unsigned(v[i], pos))
                 {
                     throw soci_error("Failed to parse the returned 64-bit integer value");
                 }

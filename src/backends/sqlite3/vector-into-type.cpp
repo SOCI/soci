@@ -10,6 +10,7 @@
 #endif
 
 #define SOCI_SQLITE3_SOURCE
+#include "soci-cstrtoi.h"
 #include "soci-dtocstr.h"
 #include "soci-exchange-cast.h"
 #include "soci/blob.h"
@@ -64,7 +65,13 @@ void set_number_in_vector(void *p, int idx, const sqlite3_column &col)
         case dt_date:
         case dt_string:
         case dt_blob:
-            set_in_vector(p, idx, string_to_integer<T>(col.buffer_.size_ > 0 ? col.buffer_.constData_ : ""));
+            {
+                T value;
+                if (!details::cstring_to_integer(value, col.buffer_.size_ > 0 ? col.buffer_.constData_ : ""))
+                    throw soci_error("Cannot convert data");
+
+                set_in_vector(p, idx, value);
+            }
             break;
 
         case dt_double:
