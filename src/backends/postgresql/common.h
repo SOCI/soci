@@ -9,9 +9,8 @@
 #define SOCI_POSTGRESQL_COMMON_H_INCLUDED
 
 #include "soci/postgresql/soci-postgresql.h"
-#include <limits>
+#include "soci-cstrtoi.h"
 #include <cstdio>
-#include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <vector>
@@ -25,98 +24,47 @@ namespace details
 namespace postgresql
 {
 
-// helper function for parsing integers
+// helper function for parsing boolean values as integers, throws if parsing
+// fails.
 template <typename T>
-T string_to_integer(char const * buf)
+T parse_as_boolean_or_throw(char const * buf)
 {
-    char * end;
+    // try additional conversion from boolean
+    // (PostgreSQL gives 't' or 'f' for boolean results)
 
-    // No strtoll() on MSVC versions prior to Visual Studio 2013
-#if !defined (_MSC_VER) || (_MSC_VER >= 1800)
-    long long t = strtoll(buf, &end, 10);
-#else
-    long long t = _strtoi64(buf, &end, 10);
-#endif
-
-    if (*buf != '\0' && *end == '\0')
+    if (buf[0] == 't' && buf[1] == '\0')
     {
-        // successfully converted to long long
-        // and no other characters were found in the buffer
-
-        const T max = (std::numeric_limits<T>::max)();
-        const T min = (std::numeric_limits<T>::min)();
-        if (t <= static_cast<long long>(max) &&
-            t >= static_cast<long long>(min))
-        {
-            return static_cast<T>(t);
-        }
-        else
-        {
-            // value out of target range
-            throw soci_error("Cannot convert data.");
-        }
+        return static_cast<T>(1);
+    }
+    else if (buf[0] == 'f' && buf[1] == '\0')
+    {
+        return static_cast<T>(0);
     }
     else
     {
-        // try additional conversion from boolean
-        // (PostgreSQL gives 't' or 'f' for boolean results)
-
-        if (buf[0] == 't' && buf[1] == '\0')
-        {
-            return static_cast<T>(1);
-        }
-        else if (buf[0] == 'f' && buf[1] == '\0')
-        {
-            return static_cast<T>(0);
-        }
-        else
-        {
-            throw soci_error("Cannot convert data.");
-        }
+        throw soci_error("Cannot convert data.");
     }
+}
+
+template <typename T>
+T string_to_integer(char const * buf)
+{
+    T result;
+    if (!cstring_to_integer(result, buf))
+        result = parse_as_boolean_or_throw<T>(buf);
+
+    return result;
 }
 
 // helper function for parsing unsigned integers
 template <typename T>
 T string_to_unsigned_integer(char const * buf)
 {
-    unsigned long long t(0);
-    int n(0);
-    int const converted = std::sscanf(buf, "%" LL_FMT_FLAGS "u%n", &t, &n);
-    if (converted == 1 && static_cast<std::size_t>(n) == std::strlen(buf))
-    {
-        // successfully converted to unsigned long long
-        // and no other characters were found in the buffer
+    T result;
+    if (!cstring_to_unsigned(result, buf))
+        result = parse_as_boolean_or_throw<T>(buf);
 
-        const T max = (std::numeric_limits<T>::max)();
-        if (t <= static_cast<unsigned long long>(max))
-        {
-            return static_cast<T>(t);
-        }
-        else
-        {
-            // value out of target range
-            throw soci_error("Cannot convert data.");
-        }
-    }
-    else
-    {
-        // try additional conversion from boolean
-        // (PostgreSQL gives 't' or 'f' for boolean results)
-
-        if (buf[0] == 't' && buf[1] == '\0')
-        {
-            return static_cast<T>(1);
-        }
-        else if (buf[0] == 'f' && buf[1] == '\0')
-        {
-            return static_cast<T>(0);
-        }
-        else
-        {
-            throw soci_error("Cannot convert data.");
-        }
-    }
+    return result;
 }
 
 // helper for vector operations
