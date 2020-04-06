@@ -267,15 +267,23 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
         else
         {
             msg << "Failed to find shared library \"" << LIBNAME(name) << "\" "
-                << "for backend " << name
-                << " (even using extra search path \"";
-            for (std::size_t i = 0; i != search_paths_.size(); ++i)
+                << "for backend " << name;
+
+            // We always add "." as the first search path element, so it's not
+            // really useful to show it, but do show the search path if there
+            // is something else in it.
+            if (search_paths_.size() > 1 ||
+                (!search_paths_.empty() && search_paths_[0] != "."))
             {
-                if (i != 0)
-                    msg << ":";
-                msg << search_paths_[i];
+                msg << " (even using extra search path \"";
+                for (std::size_t i = 0; i != search_paths_.size(); ++i)
+                {
+                    if (i != 0)
+                        msg << ":";
+                    msg << search_paths_[i];
+                }
+                msg << "\")";
             }
-            msg << "\")";
         }
         throw soci_error(msg.str());
     }
