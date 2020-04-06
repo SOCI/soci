@@ -11,6 +11,7 @@
 #include "soci/error.h"
 #include <cstdlib>
 #include <map>
+#include <sstream>
 #include <string>
 #include <vector>
 #ifndef _MSC_VER
@@ -229,8 +230,10 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
     //   - file named libsoci_NAME.so.SOVERSION is searched in the list of search paths
 
     soci_handler_t h = 0;
+    std::string fullFileName;
     if (shared_object.empty() == false)
     {
+        fullFileName = shared_object;
         h = DLOPEN(shared_object.c_str());
     }
     else
@@ -242,7 +245,7 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
             // try all search paths
             for (std::size_t i = 0; i != search_paths_.size(); ++i)
             {
-                std::string const fullFileName(search_paths_[i] + "/" + LIBNAME(name));
+                fullFileName = search_paths_[i] + "/" + LIBNAME(name);
                 h = DLOPEN(fullFileName.c_str());
                 if (0 != h)
                 {
@@ -255,7 +258,26 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
 
     if (0 == h)
     {
-        throw soci_error("Failed to find shared library for backend " + name);
+        std::ostringstream msg;
+        if (shared_object.empty() == false)
+        {
+            msg << "Failed to load shared library for backend " << name
+                << " from \"" << shared_object << "\"";
+        }
+        else
+        {
+            msg << "Failed to find shared library \"" << LIBNAME(name) << "\" "
+                << "for backend " << name
+                << " (even using extra search path \"";
+            for (std::size_t i = 0; i != search_paths_.size(); ++i)
+            {
+                if (i != 0)
+                    msg << ":";
+                msg << search_paths_[i];
+            }
+            msg << "\")";
+        }
+        throw soci_error(msg.str());
     }
 
     std::string symbol = "factory_" + name;
@@ -269,7 +291,11 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
     if (0 == entry)
     {
         DLCLOSE(h);
-        throw soci_error("Failed to resolve dynamic symbol: " + symbol);
+
+        std::ostringstream msg;
+        msg << "Failed to resolve dynamic symbol \"" << symbol << "\" "
+            << "in the shared library \"" << fullFileName << "\"";
+        throw soci_error(msg.str());
     }
 
     backend_factory const* f = entry();
