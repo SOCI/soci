@@ -52,6 +52,32 @@ typedef HMODULE soci_handler_t;
 #define LIBNAME(x) (SOCI_LIB_PREFIX + x + SOCI_LIB_SUFFIX)
 #endif // SOCI_ABI_VERSION
 
+// We need to disable showing message boxes from LoadLibrary() as we're
+// prepared to handle errors from them. Do this in ctor of this class and
+// restore the original error mode used by the application in its dtor to keep
+// this ugliness as isolated as possible.
+namespace
+{
+
+class MSWErrorMessageBoxDisabler
+{
+public:
+    MSWErrorMessageBoxDisabler()
+        : old_mode_(::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX))
+    {
+    }
+
+    ~MSWErrorMessageBoxDisabler()
+    {
+        ::SetErrorMode(old_mode_);
+    }
+
+private:
+    const UINT old_mode_;
+};
+
+} // unnamed namespace
+
 #else
 
 #include <pthread.h>
@@ -228,6 +254,10 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
     //   it names the library file and the search paths are not used
     // - otherwise (shared_object not provided or empty):
     //   - file named libsoci_NAME.so.SOVERSION is searched in the list of search paths
+
+#ifdef _WIN32
+    MSWErrorMessageBoxDisabler no_message_boxes;
+#endif
 
     soci_handler_t h = 0;
     std::string fullFileName;
