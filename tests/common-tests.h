@@ -3342,7 +3342,7 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
             }
         }
 
-        // prepared statement inserting non-null and null values alternatively
+        // prepared statement inserting non-null and null values alternatively (without passing an explicit indicator)
 
         {
             auto_table_creator tableCreator(tc_.table_creator_1(sql));
