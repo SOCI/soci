@@ -2933,6 +2933,7 @@ TEST_CASE_METHOD(common_tests, "Dynamic binding with rowset", "[core][dynamic][t
 // (both into and use)
 TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
 {
+
     soci::session sql(backEndFactory_, connectString_);
 
     // create and populate the test table
