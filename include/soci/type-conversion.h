@@ -147,6 +147,17 @@ public:
 
     void convert_to_base() SOCI_OVERRIDE
     {
+        if (&ind_ != &(base_value_holder<T>::ownInd_) && ind_ == i_null) {
+            // An indicator was explicitly passed to use(val, ind), and it was i_null.
+            // Therefore, NULL should be put into the DB, and there is no reason to
+            // convert the value.
+            // Furthermore, if ind_ were ownInd_ itself, and if a prepared statement
+            // were repeatedly executed, and if we were to call the user-supplied impl,
+            // and that impl were to set its value to i_null, then it will never get set
+            // back to i_ok before the next execution.
+            return;
+        }
+
         type_conversion<T>::to_base(value_,
             base_value_holder<T>::val_, ind_);
     }

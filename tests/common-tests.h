@@ -3588,6 +3588,90 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
             CHECK((*pos).is_initialized());
             CHECK(13 == (*pos).get());
         }
+
+        // inserting using an i_null indicator with a populated boost::optional (should insert null per docs)
+
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+            {
+                indicator ind = i_null;
+                boost::optional<int> v1(10);
+                sql << "insert into soci_test(id, val) values(1, :val)", use(v1, ind);
+            }
+
+            // verify the value is fetched correctly as null
+            {
+                indicator ind;
+                boost::optional<int> opt;
+
+                ind = (indicator)-1;
+                opt = 0;
+                sql << "select val from soci_test where id = 1", into(opt, ind);
+                CHECK(ind == i_null);
+                CHECK(!opt.is_initialized());
+            }
+        }
+
+        // prepared statement inserting non-null and null values alternatively (without passing an explicit indicator)
+
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+            {
+            #if 0 // non-prepared method
+                boost::optional<int> v1(10);
+                sql << "insert into soci_test(id, val) values(1, :val)", use(v1);
+                boost::optional<int> v2; // null
+                sql << "insert into soci_test(id, val) values(2, :val)", use(v2);
+                boost::optional<int> v3(11);
+                sql << "insert into soci_test(id, val) values(3, :val)", use(v3);
+            #else
+                int id;
+                boost::optional<int> val;
+                statement st = (sql.prepare
+                    << "insert into soci_test(id, val) values (:id, :val)", use(id), use(val));
+
+                id = 1;
+                val = 10;
+                st.execute(true);
+
+                id = 2;
+                val = boost::optional<int>();
+                st.execute(true);
+
+                id = 3;
+                val = 11;
+                st.execute(true);
+            #endif
+            }
+
+            // verify values are fetched correctly
+            {
+                indicator ind;
+                boost::optional<int> opt;
+
+                ind = (indicator)-1;
+                opt = 0;
+                sql << "select val from soci_test where id = 1", into(opt, ind);
+                CHECK(ind == i_ok);
+                CHECK(opt.is_initialized());
+                CHECK(opt.get() == 10);
+
+                ind = (indicator)-1;
+                opt = 0;
+                sql << "select val from soci_test where id = 2", into(opt, ind);
+                CHECK(ind == i_null);
+                CHECK(!opt.is_initialized());
+
+                ind = (indicator)-1;
+                opt = 0;
+                sql << "select val from soci_test where id = 3", into(opt, ind);
+                CHECK(ind == i_ok);
+                CHECK(opt.is_initialized());
+                CHECK(opt.get() == 11);
+            }
+        }
     }
 }
 
