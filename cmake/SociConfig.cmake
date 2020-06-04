@@ -66,9 +66,9 @@ else()
   # Set the -Werror compilation flag (where all the compilation warnings are
   # considered as errors) only when building in Debug mode
   set(SOCI_WERROR_OPTION "")
-  if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  if (SOCI_ENABLE_WERROR)
      set(SOCI_WERROR_OPTION "-Werror")
-  endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  endif (SOCI_ENABLE_WERROR)
 
   set(SOCI_GCC_CLANG_COMMON_FLAGS
     "-pedantic ${SOCI_WERROR_OPTION} -Wno-error=parentheses -Wall -Wextra -Wpointer-arith -Wcast-align -Wcast-qual -Wfloat-equal -Woverloaded-virtual -Wredundant-decls -Wno-long-long")
