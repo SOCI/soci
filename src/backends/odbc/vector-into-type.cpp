@@ -8,6 +8,7 @@
 #define SOCI_ODBC_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/odbc/soci-odbc.h"
+#include "soci-compiler.h"
 #include "soci-cstrtoi.h"
 #include "soci-mktime.h"
 #include "soci-static-assert.h"
@@ -269,7 +270,13 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             std::size_t const vsize = v.size();
             for (std::size_t i = 0; i != vsize; ++i)
             {
+                // See comment for the use of this macro in standard-into-type.cpp.
+                GCC_WARNING_SUPPRESS(cast-align)
+
                 TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
+
+                GCC_WARNING_RESTORE(cast-align)
+
                 details::mktime_from_ymdhms(v[i],
                                             ts->year, ts->month, ts->day,
                                             ts->hour, ts->minute, ts->second);
