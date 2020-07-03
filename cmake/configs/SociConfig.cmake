@@ -1,9 +1,4 @@
-# Dependencies
-include(CMakeFindDependencyMacro)
-find_dependency(S REQUIRED)
-
-# Add the targets file
-include("${CMAKE_CURRENT_LIST_DIR}/MyLibTargets.cmake")
+set(${CMAKE_FIND_PACKAGE_NAME}_comps)
 
 # Work out the set of components to load
 if(${CMAKE_FIND_PACKAGE_NAME}_FIND_COMPONENTS)
@@ -23,3 +18,6 @@ endforeach()
 foreach(comp IN LISTS ${CMAKE_FIND_PACKAGE_NAME}_comps)
     include(${CMAKE_CURRENT_LIST_DIR}/Soci${comp}Config.cmake OPTIONAL)
 endforeach()
+
+# Add the targets file
+include("${CMAKE_CURRENT_LIST_DIR}/SociTargets.cmake")
