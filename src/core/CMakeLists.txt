@@ -32,3 +32,9 @@ target_sources(soci_core
     use-type.cpp
     values.cpp
 )
+target_compile_definitions(soci_core 
+  PRIVATE 
+    SOCI_LIB_PREFIX="${CMAKE_SHARED_LIBRARY_PREFIX}soci_"
+    SOCI_LIB_SUFFIX="${CMAKE_SHARED_LIBRARY_SUFFIX}"
+    SOCI_DEBUG_POSTFIX="${CMAKE_DEBUG_POSTFIX}"
+)

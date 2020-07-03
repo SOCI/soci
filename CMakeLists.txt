@@ -26,11 +26,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# This adds definitions to all build configurations. SOCI_DEBUG_POSTFIX is passed to soci library
-add_definitions(-DSOCI_LIB_PREFIX="${CMAKE_SHARED_LIBRARY_PREFIX}soci_"
-                -DSOCI_LIB_SUFFIX="${CMAKE_SHARED_LIBRARY_SUFFIX}"
-                -DSOCI_DEBUG_POSTFIX="${CMAKE_DEBUG_POSTFIX}")
-
 ###############################################################################
 # Dependencies
 ###############################################################################
@@ -71,30 +66,10 @@ add_subdirectory(src)
 ###############################################################################
 # Installation
 ###############################################################################
-include(GNUInstallDirs)
-set(SOCI_INSTALL_CMAKEDIR ${CMAKE_INSTALL_LIBDIR}/cmake/Soci CACHE STRING "Path to Soci cmake files")
+include(InstallSoci)
 
-install(FILES SociConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/SociConfigVersion.cmake 
-  DESTINATION ${SOCI_INSTALL_CMAKEDIR}
-)
-
-install(TARGETS soci_core soci_version soci_sqlite3 soci_backend_config
-  EXPORT SociTargets
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} 
-          COMPONENT soci_runtime
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}             
-          COMPONENT          soci_runtime           
-          NAMELINK_COMPONENT soci_development   
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}           
-          COMPONENT   soci_development 
-  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
-
-install(EXPORT SociTargets
-  DESTINATION ${SOCI_INSTALL_CMAKEDIR}  
-  NAMESPACE   SOCI::                    
-  COMPONENT   soci_development
-)
+install_component(NAME Soci TARGETS soci_core soci_version)
+install_component(NAME SociSqlite3 TARGETS soci_sqlite3 soci_backend_config)
 
 ###############################################################################
 # Tests
