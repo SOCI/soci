@@ -8,7 +8,5 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
-include_directories(${SOCI_SOURCE_DIR}/include/private)
-
 add_subdirectory(core)
 add_subdirectory(backends)

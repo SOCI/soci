@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>LOBs - SOCI (4.0)</title>
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        <script src="../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../js/bootstrap-3.0.3.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container">
+
+                <!-- Collapsed navigation -->
+                <div class="navbar-header">
+                    <!-- Expander button -->
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="..">SOCI (4.0)</a>
+                </div>
+
+                <!-- Expanded navigation -->
+                <div class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li >
+                                <a href="..">Home</a>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Overview <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../quickstart/">Getting Started</a>
+</li>
+                                    
+<li >
+    <a href="../installation/">Installation</a>
+</li>
+                                    
+<li >
+    <a href="../structure/">Library Structure</a>
+</li>
+                                    
+<li >
+    <a href="../license/">License</a>
+</li>
+                                    
+<li >
+    <a href="../faq/">FAQ</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown active">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">User Guide <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../connections/">Connections</a>
+</li>
+                                    
+<li >
+    <a href="../queries/">Queries</a>
+</li>
+                                    
+<li >
+    <a href="../binding/">Data Binding</a>
+</li>
+                                    
+<li >
+    <a href="../indicators/">Data Indicators</a>
+</li>
+                                    
+<li >
+    <a href="../types/">Data Types</a>
+</li>
+                                    
+<li class="active">
+    <a href="./">LOBs</a>
+</li>
+                                    
+<li >
+    <a href="../statements/">Statements</a>
+</li>
+                                    
+<li >
+    <a href="../transactions/">Transactions</a>
+</li>
+                                    
+<li >
+    <a href="../procedures/">Procedures</a>
+</li>
+                                    
+<li >
+    <a href="../errors/">Errors</a>
+</li>
+                                    
+<li >
+    <a href="../logging/">Logging</a>
+</li>
+                                    
+<li >
+    <a href="../interfaces/">Interfaces</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Backends <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../backends/">Features</a>
+</li>
+                                    
+<li >
+    <a href="../backends/db2/">DB2</a>
+</li>
+                                    
+<li >
+    <a href="../backends/firebird/">Firebird</a>
+</li>
+                                    
+<li >
+    <a href="../backends/mysql/">MySQL</a>
+</li>
+                                    
+<li >
+    <a href="../backends/odbc/">ODBC</a>
+</li>
+                                    
+<li >
+    <a href="../backends/oracle/">Oracle</a>
+</li>
+                                    
+<li >
+    <a href="../backends/postgresql/">PostgreSQL</a>
+</li>
+                                    
+<li >
+    <a href="../backends/sqlite3/">SQLite3</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Miscellaneous <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../beyond/">Beyond SQL</a>
+</li>
+                                    
+<li >
+    <a href="../multithreading/">Multi-threading</a>
+</li>
+                                    
+<li >
+    <a href="../boost/">Boost</a>
+</li>
+                                    
+<li >
+    <a href="../utilities/">Utilities</a>
+</li>
+                                    
+<li >
+    <a href="../vagrant/">Vagrant</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">API <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../api/client/">Client API</a>
+</li>
+                                    
+<li >
+    <a href="../api/backend/">Backend API</a>
+</li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#">Ada</a>
+    <ul class="dropdown-menu">
+            
+<li >
+    <a href="../languages/ada/">Ada Bindings</a>
+</li>
+            
+<li >
+    <a href="../languages/ada/concepts/">Ada Concepts</a>
+</li>
+            
+<li >
+    <a href="../languages/ada/idioms/">Ada Idioms</a>
+</li>
+            
+<li >
+    <a href="../languages/ada/reference/">Ada API Reference</a>
+</li>
+    </ul>
+  </li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li >
+                                <a rel="next" href="../types/">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li >
+                                <a rel="prev" href="../statements/">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://github.com/SOCI/soci/edit/master/docs/lobs.md"><i class="fa fa-github"></i> Edit on GitHub</a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#large-objects-lobs">Large Objects (LOBs)</a></li>
+            <li><a href="#binary-blobs">Binary (BLOBs)</a></li>
+            <li><a href="#long-strings-and-xml">Long strings and XML</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="large-objects-lobs">Large Objects (LOBs)</h1>
+<h2 id="binary-blobs">Binary (BLOBs)</h2>
+<p>The SOCI library provides also an interface for basic operations on large objects (BLOBs - Binary Large OBjects).</p>
+<pre><code>blob b(sql); // sql is a session object
+sql &lt;&lt; "select mp3 from mymusic where id = 123", into(b);
+</code></pre>
+<p>The following functions are provided in the <code>blob</code> interface, mimicking the file-like operations:</p>
+<ul>
+<li><code>std::size_t get_len();</code></li>
+<li><code>std::size_t read_from_start(char * buf, std::size_t toRead, std::size_t offset = 0);</code></li>
+<li><code>std::size_t write_from_start(const char * buf, std::size_t toWrite, std::size_t offset = 0);</code></li>
+<li><code>std::size_t append(char const *buf, std::size_t toWrite);</code></li>
+<li><code>void trim(std::size_t newLen);</code></li>
+</ul>
+<p>The <code>offset</code> parameter is always counted from the beginning of the BLOB's data.</p>
+<h3 id="portability-notes">Portability notes</h3>
+<ul>
+<li>The way to define BLOB table columns and create or destroy BLOB objects in the database varies between different database engines.
+  Please see the SQL documentation relevant for the given server to learn how this is actually done. The test programs provided with the SOCI library can be also a simple source of full working examples.</li>
+<li>The <code>trim</code> function is not currently available for the PostgreSQL backend.</li>
+</ul>
+<h2 id="long-strings-and-xml">Long strings and XML</h2>
+<p>The SOCI library recognizes the fact that long string values are not handled portably and in some databases long string values need to be stored as a different data type.
+Similar concerns relate to the use of XML values, which are essentially strings at the application level, but can be stored in special database-level field types.</p>
+<p>In order to facilitate handling of long strings and XML values the following wrapper types are defined:</p>
+<pre><code>struct xml_type
+{
+    std::string value;
+};
+
+struct long_string
+{
+    std::string value;
+};
+</code></pre>
+<p>Values of these wrapper types can be used with <code>into</code> and <code>use</code> elements with the database target type that is specifically intended to handle XML and long strings data types.</p>
+<p>For Oracle, these database-side types are, respectively:</p>
+<ul>
+<li><code>XMLType</code>,</li>
+<li><code>CLOB</code></li>
+</ul>
+<p>For PostgreSQL, these types are:</p>
+<ul>
+<li><code>XML</code></li>
+<li><code>text</code></li>
+</ul>
+<p>For Firebird, there is no special XML support, but <code>BLOB SUB_TYPE TEXT</code> can be
+used for storing it, as well as long strings.</p>
+<p>For ODBC backend, these types depend on the type of the database connected to.
+In particularly important special case of Microsoft SQL Server, these types
+are:</p>
+<ul>
+<li><code>xml</code></li>
+<li><code>text</code></li>
+</ul>
+<p>When using ODBC backend to connect to a PostgreSQL database, please be aware
+that by default PostgreSQL ODBC driver truncates all "unknown" types, such as
+XML, to maximal varchar type size which is just 256 bytes and so is often
+insufficient for XML values in practice. It is advised to set the
+<code>UnknownsAsLongVarchar</code> connection option to 1 to avoid truncating XML strings
+or use PostgreSQL ODBC driver 9.6.300 or later, which allows the backend to set
+this option to 1 automatically on connection.</p></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+                <p>Copyright &copy; 2017 <a href="https://github.com/msobczak">Maciej Sobczak</a> and <a href="http://soci.sourceforge.net/people.html">SOCI Team</a>.</p>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js" defer></script>
+        <script src="../search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

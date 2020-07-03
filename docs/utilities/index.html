@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Utilities - SOCI (4.0)</title>
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        <script src="../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../js/bootstrap-3.0.3.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container">
+
+                <!-- Collapsed navigation -->
+                <div class="navbar-header">
+                    <!-- Expander button -->
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="..">SOCI (4.0)</a>
+                </div>
+
+                <!-- Expanded navigation -->
+                <div class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li >
+                                <a href="..">Home</a>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Overview <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../quickstart/">Getting Started</a>
+</li>
+                                    
+<li >
+    <a href="../installation/">Installation</a>
+</li>
+                                    
+<li >
+    <a href="../structure/">Library Structure</a>
+</li>
+                                    
+<li >
+    <a href="../license/">License</a>
+</li>
+                                    
+<li >
+    <a href="../faq/">FAQ</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">User Guide <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../connections/">Connections</a>
+</li>
+                                    
+<li >
+    <a href="../queries/">Queries</a>
+</li>
+                                    
+<li >
+    <a href="../binding/">Data Binding</a>
+</li>
+                                    
+<li >
+    <a href="../indicators/">Data Indicators</a>
+</li>
+                                    
+<li >
+    <a href="../types/">Data Types</a>
+</li>
+                                    
+<li >
+    <a href="../lobs/">LOBs</a>
+</li>
+                                    
+<li >
+    <a href="../statements/">Statements</a>
+</li>
+                                    
+<li >
+    <a href="../transactions/">Transactions</a>
+</li>
+                                    
+<li >
+    <a href="../procedures/">Procedures</a>
+</li>
+                                    
+<li >
+    <a href="../errors/">Errors</a>
+</li>
+                                    
+<li >
+    <a href="../logging/">Logging</a>
+</li>
+                                    
+<li >
+    <a href="../interfaces/">Interfaces</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Backends <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../backends/">Features</a>
+</li>
+                                    
+<li >
+    <a href="../backends/db2/">DB2</a>
+</li>
+                                    
+<li >
+    <a href="../backends/firebird/">Firebird</a>
+</li>
+                                    
+<li >
+    <a href="../backends/mysql/">MySQL</a>
+</li>
+                                    
+<li >
+    <a href="../backends/odbc/">ODBC</a>
+</li>
+                                    
+<li >
+    <a href="../backends/oracle/">Oracle</a>
+</li>
+                                    
+<li >
+    <a href="../backends/postgresql/">PostgreSQL</a>
+</li>
+                                    
+<li >
+    <a href="../backends/sqlite3/">SQLite3</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown active">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Miscellaneous <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../beyond/">Beyond SQL</a>
+</li>
+                                    
+<li >
+    <a href="../multithreading/">Multi-threading</a>
+</li>
+                                    
+<li >
+    <a href="../boost/">Boost</a>
+</li>
+                                    
+<li class="active">
+    <a href="./">Utilities</a>
+</li>
+                                    
+<li >
+    <a href="../vagrant/">Vagrant</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">API <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../api/client/">Client API</a>
+</li>
+                                    
+<li >
+    <a href="../api/backend/">Backend API</a>
+</li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#">Ada</a>
+    <ul class="dropdown-menu">
+            
+<li >
+    <a href="../languages/ada/">Ada Bindings</a>
+</li>
+            
+<li >
+    <a href="../languages/ada/concepts/">Ada Concepts</a>
+</li>
+            
+<li >
+    <a href="../languages/ada/idioms/">Ada Idioms</a>
+</li>
+            
+<li >
+    <a href="../languages/ada/reference/">Ada API Reference</a>
+</li>
+    </ul>
+  </li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li >
+                                <a rel="next" href="../boost/">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li >
+                                <a rel="prev" href="../vagrant/">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://github.com/SOCI/soci/edit/master/docs/utilities.md"><i class="fa fa-github"></i> Edit on GitHub</a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#utilities">Utilities</a></li>
+            <li><a href="#ddl">DDL</a></li>
+            <li><a href="#dml">DML</a></li>
+            <li><a href="#database-metadata">Database Metadata</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="utilities">Utilities</h1>
+<p>SOCI provides a portable abstraction for selection of database queries.</p>
+<h2 id="ddl">DDL</h2>
+<p>SOCI supports some basic methods to construct portable DDL queries. That is, instead of writing explicit SQL statement for creating or modifying tables, it is possible to use dedicated SOCI functions, which prepare appropriate DDL statements behind the scenes, thus enabling the user application to create basic database structures in a way that is portable across different database servers. Note that the actual support for these functions depends on the actual backend implementation.</p>
+<p>It is possible to create a new table in a single statement:</p>
+<pre><code class="cpp">sql.create_table(&quot;t1&quot;).column(&quot;i&quot;, soci::dt_integer).column(&quot;j&quot;, soci::dt_integer);
+</code></pre>
+
+<p>Above, table "t1" will be created with two columns ("i", "j") of type integer.</p>
+<p>It is also possible to build similar statements piece by piece, which is useful if the table structure is computed dynamically:</p>
+<pre><code class="cpp">{
+    soci::ddl_type ddl = sql.create_table(&quot;t2&quot;);
+    ddl.column(&quot;i&quot;, soci::dt_integer);
+    ddl.column(&quot;j&quot;, soci::dt_integer);
+    ddl.column(&quot;k&quot;, soci::dt_integer)(&quot;not null&quot;);
+    ddl.primary_key(&quot;t2_pk&quot;, &quot;j&quot;);
+}
+</code></pre>
+
+<p>The actual statement is executed at the end of above block, when the ddl object goes out of scope. The "not null" constraint was added to the definition of column "k" explicitly and in fact any piece of SQL can be inserted this way - with the obvious caveat of having limited portability (the "not null" piece seems to be universaly portable).</p>
+<p>Columns can be added to and dropped from already existing tables as well:</p>
+<pre><code class="cpp">sql.add_column(&quot;t1&quot;, &quot;k&quot;, soci::dt_integer);
+// or with constraint:
+//sql.add_column(&quot;t1&quot;, &quot;k&quot;, soci::dt_integer)(&quot;not null&quot;);
+
+sql.drop_column(&quot;t1&quot;, &quot;i&quot;);
+</code></pre>
+
+<p>If needed, precision and scale can be defined with additional integer arguments to functions that create columns:</p>
+<pre><code class="cpp">sql.add_column(&quot;t1&quot;, &quot;s&quot;, soci::dt_string, precision);
+sql.add_column(&quot;t1&quot;, &quot;d&quot;, soci::dt_double, precision, scale);
+</code></pre>
+
+<p>Tables with foreign keys to each other can be also created:</p>
+<pre><code class="cpp">{
+    soci::ddl_type ddl = sql.create_table(&quot;t3&quot;);
+    ddl.column(&quot;x&quot;, soci::dt_integer);
+    ddl.column(&quot;y&quot;, soci::dt_integer);
+    ddl.foreign_key(&quot;t3_fk&quot;, &quot;x&quot;, &quot;t2&quot;, &quot;j&quot;);
+}
+</code></pre>
+
+<p>Tables can be dropped, too:</p>
+<pre><code class="cpp">sql.drop_table(&quot;t1&quot;);
+sql.drop_table(&quot;t3&quot;);
+sql.drop_table(&quot;t2&quot;);
+</code></pre>
+
+<p>Note that due to the differences in the set of types that are actually supported on the target database server, the type mappings, as well as precision and scales, might be different, even in the way that makes them impossible to portably recover with metadata queries.</p>
+<p>In the category of portability utilities, the following functions are also available:</p>
+<pre><code class="cpp">sql.empty_blob()
+</code></pre>
+
+<p>the above call returns the string containing expression that represents an empty BLOB value in the given target backend. This expression can be used as part of a bigger SQL statement, for example:</p>
+<pre><code class="cpp">sql &lt;&lt; &quot;insert into my_table (x) values (&quot; + sql.empty_blob() + &quot;)&quot;;
+</code></pre>
+
+<p>and:</p>
+<pre><code class="cpp">sql.nvl()
+</code></pre>
+
+<p>the above call returns the string containing the name of the SQL function that implements the NVL or COALESCE operation in the given target backend, for example:</p>
+<pre><code class="cpp">sql &lt;&lt; &quot;select name, &quot; + sql.nvl() + &quot;(phone, \'UNKNOWN\') from phone_book&quot;;
+</code></pre>
+
+<p>Note: <code>empty_blob</code> and <code>nvl</code> are implemented in Oracle, PostgreSQL and SQLite3 backends; for other backends their behaviour is as for PostgreSQL.</p>
+<h2 id="dml">DML</h2>
+<p>Only two related functions are currently available in this category:
+<code>get_dummy_from_clause()</code> can be used to construct select statements that don't
+operate on any table in a portable way, as while some databases allow simply
+omitting the from clause in this case, others -- e.g. Oracle -- still require
+providing some syntactically valid from clause even if it is not used. To use
+this function, simply append the result of this function to the statement:</p>
+<pre><code class="cpp">double databasePi;
+session &lt;&lt; (&quot;select 4*atan(1)&quot; + session.get_dummy_from_clause()),
+            into(databasePi);
+</code></pre>
+
+<p>If just the name of the dummy table is needed, and not the full clause, you can
+use <code>get_dummy_from_table()</code> to obtain it.</p>
+<p>Notice that both functions require the session to be connected as their result
+depends on the database it is connected to.</p>
+<h2 id="database-metadata">Database Metadata</h2>
+<p>It is possible to portably query the database server to obtain basic metadata information.</p>
+<p>In order to get the list of table names in the current schema:</p>
+<pre><code class="cpp">std::vector&lt;std::string&gt; names(100);
+sql.get_table_names(), into(names);
+</code></pre>
+
+<p>alternatively:</p>
+<pre><code class="cpp">std::string name;
+soci::statement st = (sql.prepare_table_names(), into(name));
+
+st.execute();
+while (st.fetch())
+{
+    // ...
+}
+</code></pre>
+
+<p>Similarly, to get the description of all columns in the given table:</p>
+<pre><code class="cpp">soci::column_info ci;
+soci::statement st = (sql.prepare_column_descriptions(table_name), into(ci));
+
+st.execute();
+while (st.fetch())
+{
+    // ci fields describe each column in turn
+}
+</code></pre></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+                <p>Copyright &copy; 2017 <a href="https://github.com/msobczak">Maciej Sobczak</a> and <a href="http://soci.sourceforge.net/people.html">SOCI Team</a>.</p>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js" defer></script>
+        <script src="../search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

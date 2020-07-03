@@ -11,10 +11,6 @@
 // Not <ctime> because we also want to get timegm() if available.
 #include <time.h>
 
-#ifdef _WIN32
-#define timegm _mkgmtime
-#endif
-
 namespace soci
 {
 
@@ -40,7 +36,7 @@ mktime_from_ymdhms(tm& t,
     t.tm_min  = minute;
     t.tm_sec  = second;
 
-    timegm(&t);
+    mktime(&t);
 }
 
 // Helper function for parsing datetime values.

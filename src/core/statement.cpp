@@ -684,12 +684,6 @@ void statement_impl::describe()
         case dt_string:
             bind_into<dt_string>();
             break;
-        case dt_blob:
-            bind_into<dt_string>();
-            break;
-        case dt_xml:
-            bind_into<dt_string>();
-            break;
         case dt_double:
             bind_into<dt_double>();
             break;

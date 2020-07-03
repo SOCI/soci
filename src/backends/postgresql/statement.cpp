@@ -61,7 +61,7 @@ postgresql_statement_backend::postgresql_statement_backend(
       hasIntoElements_(false), hasVectorIntoElements_(false),
       hasUseElements_(false), hasVectorUseElements_(false)
 {
-#ifdef SOCI_POSTGRESQL_NOSINGLEROWMODE
+#ifndef SOCI_POSTGRESQL_NOSINGLEROWMODE
   if (single_row_mode)
   {
     throw soci_error("Single row mode not supported in this version of the library");
@@ -107,7 +107,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
     // rewrite the query by transforming all named parameters into
     // the postgresql_ numbers ones (:abc -> $1, etc.)
 
-    enum { normal, in_quotes, in_identifier, in_name } state = normal;
+    enum { normal, in_quotes, in_name } state = normal;
 
     std::string name;
     int position = 1;
@@ -122,11 +122,6 @@ void postgresql_statement_backend::prepare(std::string const & query,
             {
                 query_ += *it;
                 state = in_quotes;
-            }
-            else if (*it == '\"')
-            {
-                query_ += *it;
-                state = in_identifier;
             }
             else if (*it == ':')
             {
@@ -156,8 +151,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
             }
             break;
         case in_quotes:
-        case in_identifier:
-            if (*it == '\'' || *it == '\"' )
+            if (*it == '\'')
             {
                 query_ += *it;
                 state = normal;

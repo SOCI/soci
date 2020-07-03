@@ -8,9 +8,4 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
-
-soci_backend_test(
-  BACKEND SQLite3
-  DEPENDS SQLite3
-  SOURCE test-sqlite3.cpp ${SOCI_TESTS_COMMON}
-  CONNSTR ":memory:")
+target_sources(soci_sqlite3_test PRIVATE test-sqlite3.cpp)

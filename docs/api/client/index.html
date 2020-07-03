@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../../img/favicon.ico">
+        <title>Client API - SOCI (4.0)</title>
+        <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        <script src="../../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../../js/bootstrap-3.0.3.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container">
+
+                <!-- Collapsed navigation -->
+                <div class="navbar-header">
+                    <!-- Expander button -->
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="../..">SOCI (4.0)</a>
+                </div>
+
+                <!-- Expanded navigation -->
+                <div class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li >
+                                <a href="../..">Home</a>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Overview <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../../quickstart/">Getting Started</a>
+</li>
+                                    
+<li >
+    <a href="../../installation/">Installation</a>
+</li>
+                                    
+<li >
+    <a href="../../structure/">Library Structure</a>
+</li>
+                                    
+<li >
+    <a href="../../license/">License</a>
+</li>
+                                    
+<li >
+    <a href="../../faq/">FAQ</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">User Guide <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../../connections/">Connections</a>
+</li>
+                                    
+<li >
+    <a href="../../queries/">Queries</a>
+</li>
+                                    
+<li >
+    <a href="../../binding/">Data Binding</a>
+</li>
+                                    
+<li >
+    <a href="../../indicators/">Data Indicators</a>
+</li>
+                                    
+<li >
+    <a href="../../types/">Data Types</a>
+</li>
+                                    
+<li >
+    <a href="../../lobs/">LOBs</a>
+</li>
+                                    
+<li >
+    <a href="../../statements/">Statements</a>
+</li>
+                                    
+<li >
+    <a href="../../transactions/">Transactions</a>
+</li>
+                                    
+<li >
+    <a href="../../procedures/">Procedures</a>
+</li>
+                                    
+<li >
+    <a href="../../errors/">Errors</a>
+</li>
+                                    
+<li >
+    <a href="../../logging/">Logging</a>
+</li>
+                                    
+<li >
+    <a href="../../interfaces/">Interfaces</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Backends <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../../backends/">Features</a>
+</li>
+                                    
+<li >
+    <a href="../../backends/db2/">DB2</a>
+</li>
+                                    
+<li >
+    <a href="../../backends/firebird/">Firebird</a>
+</li>
+                                    
+<li >
+    <a href="../../backends/mysql/">MySQL</a>
+</li>
+                                    
+<li >
+    <a href="../../backends/odbc/">ODBC</a>
+</li>
+                                    
+<li >
+    <a href="../../backends/oracle/">Oracle</a>
+</li>
+                                    
+<li >
+    <a href="../../backends/postgresql/">PostgreSQL</a>
+</li>
+                                    
+<li >
+    <a href="../../backends/sqlite3/">SQLite3</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Miscellaneous <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../../beyond/">Beyond SQL</a>
+</li>
+                                    
+<li >
+    <a href="../../multithreading/">Multi-threading</a>
+</li>
+                                    
+<li >
+    <a href="../../boost/">Boost</a>
+</li>
+                                    
+<li >
+    <a href="../../utilities/">Utilities</a>
+</li>
+                                    
+<li >
+    <a href="../../vagrant/">Vagrant</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown active">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">API <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li class="active">
+    <a href="./">Client API</a>
+</li>
+                                    
+<li >
+    <a href="../backend/">Backend API</a>
+</li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#">Ada</a>
+    <ul class="dropdown-menu">
+            
+<li >
+    <a href="../../languages/ada/">Ada Bindings</a>
+</li>
+            
+<li >
+    <a href="../../languages/ada/concepts/">Ada Concepts</a>
+</li>
+            
+<li >
+    <a href="../../languages/ada/idioms/">Ada Idioms</a>
+</li>
+            
+<li >
+    <a href="../../languages/ada/reference/">Ada API Reference</a>
+</li>
+    </ul>
+  </li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li >
+                                <a rel="next" href="../../vagrant/">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li >
+                                <a rel="prev" href="../backend/">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://github.com/SOCI/soci/edit/master/docs/api/client.md"><i class="fa fa-github"></i> Edit on GitHub</a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#api-reference">API Reference</a></li>
+            <li><a href="#commonly-used-types">Commonly used types</a></li>
+            <li><a href="#class-session">class session</a></li>
+            <li><a href="#class-connection_parameters">class connection_parameters</a></li>
+            <li><a href="#class-connection_pool">class connection_pool</a></li>
+            <li><a href="#class-transaction">class transaction</a></li>
+            <li><a href="#function-into">function into</a></li>
+            <li><a href="#function-use">function use</a></li>
+            <li><a href="#class-statement">class statement</a></li>
+            <li><a href="#class-procedure">class procedure</a></li>
+            <li><a href="#class-type_conversion">class type_conversion</a></li>
+            <li><a href="#class-row">class row</a></li>
+            <li><a href="#class-column_properties">class column_properties</a></li>
+            <li><a href="#class-values">class values</a></li>
+            <li><a href="#class-blob">class blob</a></li>
+            <li><a href="#class-rowid">class rowid</a></li>
+            <li><a href="#class-backend_factory">class backend_factory</a></li>
+            <li><a href="#simple-client-interface">Simple Client Interface</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="api-reference">API Reference</h1>
+<p>The core client interface is a set of classes and free functions declared in the <code>soci.h</code> header file.
+All names are dbeclared in the <code>soci</code> namespace.</p>
+<p>There are also additional names declared in the <code>soci::details</code> namespace, but they are not supposed to be directly used by the users of the library and are therefore not documented here.
+When such types are used in the declarations that are part of the "public" interface, they are replaced by "IT", which means "internal type".
+Types related to the backend interface are named here.</p>
+<h2 id="commonly-used-types">Commonly used types</h2>
+<p>The following types are commonly used in the rest of the interface:</p>
+<pre><code class="cpp">// data types, as seen by the user
+enum data_type { dt_string, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long };
+
+// the enum type for indicator variables
+enum indicator { i_ok, i_null, i_truncated };
+
+// the type used for reporting exceptions
+class soci_error : public std::runtime_error { /* ... */ };
+</code></pre>
+
+<p>The <code>data_type</code> type defines the basic SOCI data types. User provided data types need to be associated with one of these basic types.</p>
+<p>The <code>indicator</code> type defines the possible states of data.</p>
+<p>The <code>soci_error</code> type is used for error reporting.</p>
+<h2 id="class-session">class session</h2>
+<p>The <code>session</code> class encapsulates the connection to the database.</p>
+<pre><code class="cpp">class session
+{
+public:
+    session();
+    explicit session(connection_parameters const &amp; parameters);
+    session(backend_factory const &amp; factory, std::string const &amp; connectString);
+    session(std::string const &amp; backendName, std::string const &amp; connectString);
+    explicit session(std::string const &amp; connectString);
+    explicit session(connection_pool &amp; pool);
+
+    ~session();
+
+    void open(backend_factory const &amp; factory, std::string const &amp; connectString);
+    void open(std::string const &amp; backendName, std::string const &amp; connectString);
+    void open(std::string const &amp; connectString);
+    void close();
+    void reconnect();
+
+    void begin();
+    void commit();
+    void rollback();
+
+    *IT* once;
+    *IT* prepare;
+
+    template &lt;typename T&gt; *IT* operator&lt;&lt;(T const &amp; t);
+
+    bool got_data() const;
+
+    bool get_next_sequence_value(std::string const &amp; sequence, long long &amp; value);
+    bool get_last_insert_id(std::string const &amp; table, long long &amp; value);
+
+    std::ostringstream &amp; get_query_stream();
+
+    void set_log_stream(std::ostream * s);
+    std::ostream * get_log_stream() const;
+
+    std::string get_last_query() const;
+
+    void uppercase_column_names(bool forceToUpper);
+
+    std::string get_dummy_from_table() const;
+    std::string get_dummy_from_clause() const;
+
+    details::session_backend * get_backend();
+
+    std::string get_backend_name() const;
+};
+</code></pre>
+
+<p>This class contains the following members:</p>
+<ul>
+<li>Various constructors. The default one creates the session in the disconnected state. The others expect the backend factory object, or the backend name, or the URL-like composed connection string or the special parameters object containing both the backend and the connection string as well as possibly other connection options. The last constructor creates a session proxy associated with the session that is available in the given pool and releases it back to the pool  when its lifetime ends. Example:</li>
+</ul>
+<pre><code class="cpp">session sql(postgresql, &quot;dbname=mydb&quot;);
+session sql(&quot;postgresql&quot;, &quot;dbname=mydb&quot;);
+session sql(&quot;postgresql://dbname=mydb&quot;);
+</code></pre>
+
+<ul>
+<li>The constructors that take backend name as string load the shared library (if not yet loaded) with name computed as <code>libsoci_ABC.so</code> (or <code>libsoci_ABC.dll</code> on Windows) where <code>ABC</code> is the given backend name.</li>
+<li><code>open</code>, <code>close</code> and <code>reconnect</code> functions for   reusing the same session object many times; the <code>reconnect</code> function attempts to establish the connection with the same parameters as most recently used with constructor or <code>open</code>. The arguments for <code>open</code> are treated in the same way as for constructors.</li>
+<li><code>begin</code>, <code>commit</code> and <code>rollback</code> functions for transaction control.</li>
+<li><code>once</code> member, which is used for performing <em>instant</em> queries that do not need to be separately prepared. Example:</li>
+</ul>
+<pre><code class="cpp">sql.once &lt;&lt; &quot;drop table persons&quot;;
+</code></pre>
+
+<ul>
+<li><code>prepare</code> member, which is used for statement preparation - the result of the statement preparation must be provided to the constructor of the <code>statement</code> class. Example:</li>
+</ul>
+<pre><code class="cpp">int i;
+statement st = (sql.prepare &lt;&lt;
+                &quot;insert into numbers(value) values(:val)&quot;, use(i));
+</code></pre>
+
+<ul>
+<li><code>operator&lt;&lt;</code> that is a shortcut forwarder to the equivalent operator of the <code>once</code> member. Example:</li>
+</ul>
+<pre><code class="cpp">sql &lt;&lt; &quot;drop table persons&quot;;
+</code></pre>
+
+<ul>
+<li><code>got_data</code> returns true if the last executed query had non-empty result.</li>
+<li><code>get_next_sequence_value</code> returns true if the next value of   the sequence with the specified name was generated and returned in its second argument. Unless you can be sure that your program will use only   databases that support sequences, consider using this method in conjunction with <code>get_last_insert_id()</code> as explained in <a href="../../beyond/#sequences">"Working with sequences"</a> section.</li>
+<li><code>get_last_insert_id</code> returns true if it could retrieve the last value automatically generated by the database for an auto-incremented field. Notice that although this method takes the table name, for some databases, such as Microsoft SQL Server and SQLite, this value is actually global, so you should attempt to retrieve it immediately after performing an insertion.</li>
+<li><code>get_query_stream</code> provides direct access to the stream object that is used to accumulate the query text and exists in particular to allow the user to imbue specific locale to this stream.</li>
+<li><code>set_log_stream</code> and <code>get_log_stream</code> functions for setting and getting the current stream object used for basic query logging. By default, it is <code>NULL</code>, which means no logging The string value that is actually logged into the stream is one-line verbatim copy of the query string provided by the user, without including any data from the <code>use</code> elements. The query is logged exactly once, before the preparation step.</li>
+<li><code>get_last_query</code> retrieves the text of the last used query.</li>
+<li><code>uppercase_column_names</code> allows to force all column names to uppercase in dynamic row description; this function is particularly useful for portability, since various database servers report column names differently (some preserve case, some change it).</li>
+<li><code>get_dummy_from_table</code> and <code>get_dummy_from_clause()</code>: helpers for writing portable DML statements, see <a href="../../utilities/#dml">DML helpers</a> for more details.</li>
+<li><code>get_backend</code> returns the internal pointer to the concrete backend implementation of the session. This is provided for advanced users that need access to the functionality that is not otherwise available.</li>
+<li><code>get_backend_name</code> is a convenience forwarder to the same function of the backend object.</li>
+</ul>
+<p>See <a href="../../connections/">connection</a> and <a href="../../queries/">queries</a> for more examples.</p>
+<h2 id="class-connection_parameters">class connection_parameters</h2>
+<p>The <code>connection_parameters</code> class is a simple container for the backend pointer, connection string and any other connection options. It is used together with <code>session</code> constructor and <code>open()</code> method.</p>
+<pre><code class="cpp">class connection_parameters
+{
+public:
+    connection_parameters();
+    connection_parameters(backend_factory const &amp; factory, std::string const &amp; connectString);
+    connection_parameters(std::string const &amp; backendName, std::string const &amp; connectString);
+    explicit connection_parameters(std::string const &amp; fullConnectString);
+
+    void set_option(const char * name, std::string const &amp; value);
+    bool get_option(const char * name, std::string &amp; value) const
+};
+</code></pre>
+
+<p>The methods of this class are:</p>
+<ul>
+<li>Default constructor is rarely used as it creates an uninitialized object and the only way to initialize it later is to assign another, valid, connection_parameters object to this one.</li>
+<li>The other constructors correspond to the similar constructors of the <code>session</code> class and specify both the backend, either as a pointer to it or by name, and the connection string.</li>
+<li><code>set_option</code> can be used to set the value of an option with the given name. Currently all option values are strings, so if you need to set a numeric option you need to convert it to a string first. If an option with the given name had been already set before, its old value is overwritten.</li>
+</ul>
+<h2 id="class-connection_pool">class connection_pool</h2>
+<p>The <code>connection_pool</code> class encapsulates the thread-safe pool of connections and ensures that only one thread at a time has access to any connection that it manages.</p>
+<pre><code class="cpp">class connection_pool
+{
+public:
+    explicit connection_pool(std::size_t size);
+    ~connection_pool();
+
+    session &amp; at(std::size_t pos);
+
+    std::size_t lease();
+    bool try_lease(std::size_t &amp; pos, int timeout);
+    void give_back(std::size_t pos);
+};
+</code></pre>
+
+<p>The operations of the pool are:</p>
+<ul>
+<li>Constructor that takes the intended size of the pool. After construction, the pool contains regular <code>session</code> objects in disconnected state.</li>
+<li><code>at</code> function that provides direct access to any given entryin the pool. This function is <em>non-synchronized</em>.</li>
+<li><code>lease</code> function waits until some entry is available (which means that it is not used) and returns the position of that entry in the pool, marking it as <em>locked</em>.</li>
+<li><code>try_lease</code> acts like <code>lease</code>, but allows to set up a time-out (relative, in milliseconds) on waiting. Negative time-out value means no time-out. Returns <code>true</code> if the entry was obtained, in which case its position is written to the <code>pos</code> parametr, and <code>false</code> if no entry was available before the time-out.</li>
+<li><code>give_back</code> should be called when the entry on the given position is no longer in use and can be passed to other requesting thread.</li>
+</ul>
+<h2 id="class-transaction">class transaction</h2>
+<p>The class <code>transaction</code> can be used for associating the transaction with some code scope. It is a RAII wrapper for regular transaction operations that automatically rolls back in its destructor <em>if</em> the transaction was not explicitly committed before.</p>
+<pre><code class="cpp">class transaction
+{
+public:
+    explicit transaction(session &amp; sql);
+
+    ~transaction();
+
+    void commit();
+    void rollback();
+
+private:
+    // ...
+};
+</code></pre>
+
+<p>Note that objects of this class are not notified of other transaction related operations that might be executed by user code explicitly or hidden inside SQL queries. It is not recommended to mix different ways of managing transactions.</p>
+<h2 id="function-into">function into</h2>
+<p>The function <code>into</code> is used for binding local output data (in other words, it defines where the results of the query are stored).</p>
+<pre><code class="cpp">template &lt;typename T&gt;
+IT into(T &amp; t);
+
+template &lt;typename T, typename T1&gt;
+IT into(T &amp; t, T1 p1);
+
+template &lt;typename T&gt;
+IT into(T &amp; t, indicator &amp; ind);
+
+template &lt;typename T, typename T1&gt;
+IT into(T &amp; t, indicator &amp; ind, T1 p1);
+
+template &lt;typename T&gt;
+IT into(T &amp; t, std::vector&lt;indicator&gt; &amp; ind);
+</code></pre>
+
+<p>Example:</p>
+<pre><code class="cpp">int count;
+sql &lt;&lt; &quot;select count(*) from person&quot;, into(count);
+</code></pre>
+
+<p>See <a href="../../binding/#binding-output-data-into">Binding output data</a> for more examples</p>
+<h2 id="function-use">function use</h2>
+<p>The function <code>use</code> is used for binding local input data (in other words, it defines where the parameters of the query come from).</p>
+<pre><code class="cpp">template &lt;typename T&gt;
+*IT* use(T &amp; t);
+
+template &lt;typename T, typename T1&gt;
+*IT* use(T &amp; t, T1 p1);
+
+template &lt;typename T&gt;
+*IT* use(T &amp; t, indicator &amp; ind);
+
+template &lt;typename T, typename T1&gt;
+*IT* use(T &amp; t, indicator &amp; ind, T1 p1);
+
+template &lt;typename T&gt;
+*IT* use(T &amp; t, std::vector&lt;indicator&gt; const &amp; ind);
+
+template &lt;typename T, typename T1&gt;
+*IT* use(T &amp; t, std::vector&lt;indicator&gt; const &amp; ind, T1 p1);
+</code></pre>
+
+<p>Example:</p>
+<pre><code class="cpp">int val = 7;
+sql &lt;&lt; &quot;insert into numbers(val) values(:val)&quot;, use(val);
+</code></pre>
+
+<p>See <a href="../../binding/#binding-input-data-use">Binding input data</a> for more examples.</p>
+<h2 id="class-statement">class statement</h2>
+<p>The <code>statement</code> class encapsulates the prepared statement.</p>
+<pre><code class="cpp">class statement
+{
+public:
+    statement(session &amp; s);
+    statement(*IT* const &amp; prep);
+    ~statement();
+
+    statement(statement const &amp; other);
+    void operator=(statement const &amp; other);
+
+    void alloc();
+    void bind(values &amp; v);
+    void exchange(*IT* const &amp; i);
+    void exchange(*IT* const &amp; u);
+    void clean_up();
+    void bind_clean_up();
+
+    void prepare(std::string const &amp; query);
+    void define_and_bind();
+
+    bool execute(bool withDataExchange = false);
+    long long get_affected_rows();
+    bool fetch();
+
+    bool got_data() const;
+
+    void describe();
+    void set_row(row * r);
+    void exchange_for_rowset(*IT* const &amp; i);
+
+    details::statement_backend * get_backend();
+};
+</code></pre>
+
+<p>This class contains the following members:</p>
+<ul>
+<li>Constructor accepting the <code>session</code> object. This can be used for later query preparation. Example:</li>
+</ul>
+<pre><code class="cpp">statement stmt(sql);
+</code></pre>
+
+<ul>
+<li>Constructor accepting the result of using <code>prepare</code> on the <code>session</code> object, see example provided above for the <code>session</code> class.</li>
+<li>Copy operations.</li>
+<li><code>alloc</code> function, which allocates necessary internal resources.</li>
+<li><code>bind</code> function, which is used to bind the <code>values</code> object - this is used in the object-relational mapping and normally called automatically.</li>
+<li>exchange functions for registering the binding of local data - they expect the result of calling the <code>into</code> or <code>use</code> functions and are normally invoked automatically.</li>
+<li><code>clean_up</code> function for cleaning up resources, normally called automatically.</li>
+<li><code>bind_clean_up</code> function for cleaning up any bound references. It allows to keep statement in cache and reuse it later with new references by calling <code>exchange</code> for each new bind variable.</li>
+<li><code>prepare</code> function for preparing the statement for repeated execution.</li>
+<li><code>define_and_bind</code> function for actually executing the registered bindings, normally called automatically.</li>
+<li><code>execute</code> function for executing the statement. If its parameter is <code>false</code> then there is no data exchange with locally bound variables (this form should be used if later <code>fetch</code> of multiple rows is foreseen). Returns <code>true</code> if there was at least one row of data returned.</li>
+<li><code>get_affected_rows</code> function returns the number of rows affected by the last statement. Returns <code>-1</code> if it's not implemented by the backend being used.</li>
+<li><code>fetch</code> function for retrieving the next portion of the result. Returns <code>true</code> if there was new data.</li>
+<li><code>got_data</code> return <code>true</code> if the most recent execution returned any rows.</li>
+<li><code>describe</code> function for extracting the type information for the result (<strong>Note:</strong> no data is exchanged). This is normally called automatically and only when dynamic resultset binding is used.</li>
+<li><code>set_row</code> function for associating the <code>statement</code> and <code>row</code> objects, normally called automatically.</li>
+<li><code>exchange_for_rowset</code> as a special case for binding <code>rowset</code> objects.</li>
+<li><code>get_backend</code> function that returns the internal pointer to the concrete backend implementation of the statement object. This is provided for advanced users that need access to the functionality that is not otherwise available.</li>
+</ul>
+<p>See <a href="../../statements/">Statement preparation and repeated execution</a> for example uses.</p>
+<p>Most of the functions from the <code>statement</code> class interface are called automatically, but can be also used explicitly. See <a href="../../interfaces/">Interfaces</a> for the description of various way to use this interface.</p>
+<h2 id="class-procedure">class procedure</h2>
+<p>The <code>procedure</code> class encapsulates the call to the stored procedure and is aimed for higher portability of the client code.</p>
+<pre><code class="cpp">class procedure
+{
+public:
+    procedure(*IT* const &amp; prep);
+
+    bool execute(bool withDataExchange = false);
+    bool fetch();
+    bool got_data() const;
+};
+</code></pre>
+
+<p>The constructor expects the result of using <code>prepare</code> on the <code>session</code> object.</p>
+<p>See <a href="../../procedures/">Stored procedures</a> for examples.</p>
+<h2 id="class-type_conversion">class type_conversion</h2>
+<p>The <code>type_conversion</code> class is a traits class that is supposed to be provided (specialized) by the user for defining conversions to and from one of the basic SOCI types.</p>
+<pre><code class="cpp">template &lt;typename T&gt;
+struct type_conversion
+{
+    typedef T base_type;
+
+    static void from_base(base_type const &amp; in, indicator ind, T &amp; out);
+
+    static void to_base(T const &amp; in, base_type &amp; out, indicator &amp; ind);
+};
+</code></pre>
+
+<p>Users are supposed to properly implement the <code>from_base</code> and <code>to_base</code> functions in their specializations of this template class.</p>
+<p>See <a href="../../types/#user-defined-c-types">Extending SOCI to support custom (user-defined) C++ types</a>.</p>
+<h2 id="class-row">class row</h2>
+<p>The <code>row</code> class encapsulates the data and type information retrieved for the single row when the dynamic rowset binding is used.</p>
+<pre><code class="cpp">class row
+{
+public:
+    row();
+    ~row();
+
+    void uppercase_column_names(bool forceToUpper);
+
+    std::size_t size() const;
+
+    indicator get_indicator(std::size_t pos) const;
+    indicator get_indicator(std::string const &amp; name) const;
+
+    column_properties const &amp; get_properties (std::size_t pos) const;
+    column_properties const &amp; get_properties (std::string const &amp; name) const;
+
+    template &lt;typename T&gt;
+    T get(std::size_t pos) const;
+
+    template &lt;typename T&gt;
+    T get(std::size_t pos, T const &amp; nullValue) const;
+
+    template &lt;typename T&gt;
+    T get(std::string const &amp; name) const;
+
+    template &lt;typename T&gt;
+    T get(std::string const &amp; name, T const &amp; nullValue) const;
+
+    template &lt;typename T&gt;
+    row const &amp; operator&gt;&gt;(T &amp; value) const;
+
+    void skip(std::size_t num = 1) const;
+
+    void reset_get_counter() const
+};
+</code></pre>
+
+<p>This class contains the following members:</p>
+<ul>
+<li>Default constructor that allows to declare a <code>row</code> variable.</li>
+<li><code>uppercase_column_names</code> - see the same function in the <code>session</code> class.</li>
+<li><code>size</code> function that returns the number of columns in the row.</li>
+<li><code>get_indicator</code> function that returns the indicator value for the given column (column is specified by position - starting from 0 - or by name).</li>
+<li><code>get_properties</code> function that returns the properties of the column given by position (starting from 0) or by name.</li>
+<li><code>get</code> functions that return the value of the column given by position or name. If the column contains null, then these functions either return the provided "default" <code>nullValue</code> or throw an exception.</li>
+<li><code>operator&gt;&gt;</code> for convenience stream-like extraction interface. Subsequent calls to this function are equivalent to calling <code>get</code> with increasing position parameter, starting from the beginning.</li>
+<li><code>skip</code> and <code>reset_get_counter</code> allow to change the order of data extraction for the above operator.</li>
+</ul>
+<p>See <a href="../../types/#dynamic-binding">Dynamic resultset binding</a> for examples.</p>
+<h2 id="class-column_properties">class column_properties</h2>
+<p>The <code>column_properties</code> class provides the type and name information about the particular column in a rowset.</p>
+<pre><code class="cpp">class column_properties
+{
+public:
+    std::string get_name() const;
+    data_type get_data_type() const;
+};
+</code></pre>
+
+<p>This class contains the following members:</p>
+<ul>
+<li><code>get_name</code> function that returns the name of the column.</li>
+<li><code>get_data_type</code> that returns the type of the column.</li>
+</ul>
+<p>See <a href="../../types/#dynamic-binding">Dynamic resultset binding</a> for examples.</p>
+<h2 id="class-values">class values</h2>
+<p>The <code>values</code> class encapsulates the data and type information and is used for object-relational mapping.</p>
+<pre><code class="cpp">class values
+{
+public:
+    values();
+
+    void uppercase_column_names(bool forceToUpper);
+
+    indicator get_indicator(std::size_t pos) const;
+    indicator get_indicator(std::string const &amp; name) const;
+
+    template &lt;typename T&gt;
+    T get(std::size_t pos) const;
+
+    template &lt;typename T&gt;
+    T get(std::size_t pos, T const &amp; nullValue) const;
+
+    template &lt;typename T&gt;
+    T get(std::string const &amp; name) const;
+
+    template &lt;typename T&gt;
+    T get(std::string const &amp; name, T const &amp; nullValue) const;
+
+    template &lt;typename T&gt;
+    values const &amp; operator&gt;&gt;(T &amp; value) const;
+
+    void skip(std::size_t num = 1) const;
+    void reset_get_counter() const;
+
+    template &lt;typename T&gt;
+    void set(std::string const &amp; name, T const &amp; value, indicator indic = i_ok);
+
+    template &lt;typename T&gt;
+    void set(const T &amp; value, indicator indic = i_ok);
+
+    template &lt;typename T&gt;
+    values &amp; operator&lt;&lt;(T const &amp; value);
+};
+</code></pre>
+
+<p>This class contains the same members as the <code>row</code> class (with the same meaning) plus:</p>
+<ul>
+<li><code>set</code> function for storing values in named columns or in subsequent positions.</li>
+<li><code>operator&lt;&lt;</code> for convenience.</li>
+</ul>
+<p>See <a href="../../types/#object-relational-mapping">Object-relational mapping</a> for examples.</p>
+<h2 id="class-blob">class blob</h2>
+<p>The <code>blob</code> class encapsulates the "large object" functionality.</p>
+<pre><code class="cpp">class blob
+{
+public:
+    explicit blob(session &amp; s);
+    ~blob();
+
+    std::size_t getLen();
+    std::size_t read(std::size_t offset, char * buf, std::size_t toRead);
+    std::size_t write(std::size_t offset, char const * buf, std::size_t toWrite);
+    std::size_t append(char const * buf, std::size_t toWrite);
+    void trim(std::size_t newLen);
+
+    details::blob_backend * get_backend();
+};
+</code></pre>
+
+<p>This class contains the following members:</p>
+<ul>
+<li>Constructor associating the <code>blob</code> object with the <code>session</code> object.</li>
+<li><code>get_len</code> function that returns the size of the BLOB object.</li>
+<li><code>read</code> function that reads the BLOB data into provided buffer.</li>
+<li><code>write</code> function that writes the BLOB data from provided buffer.</li>
+<li><code>append</code> function that appends to the existing BLOB data.</li>
+<li><code>trim</code> function that truncates the existing data to the new length.</li>
+<li><code>get_backend</code> function that returns the internal pointer to the concrete backend implementation of the BLOB object. This is provided for advanced users that need access to the functionality that is not otherwise available.</li>
+</ul>
+<p>See <a href="../../lobs/">Large objects (BLOBs)</a> for more discussion.</p>
+<h2 id="class-rowid">class rowid</h2>
+<p>The <code>rowid</code> class encapsulates the "row identifier" object.</p>
+<pre><code class="cpp">class rowid
+{
+public:
+    explicit rowid(Session &amp; s);
+    ~rowid();
+
+    details::rowid_backend * get_backend();
+};
+</code></pre>
+
+<p>This class contains the following members:</p>
+<ul>
+<li>Constructor associating the <code>rowid</code> object with the <code>session</code> object.</li>
+<li><code>get_backend</code> function that returns the internal pointer to the concrete backend implementation of the <code>rowid</code> object.</li>
+</ul>
+<h2 id="class-backend_factory">class backend_factory</h2>
+<p>The <code>backend_factory</code> class provides the abstract interface for concrete backend factories.</p>
+<pre><code class="cpp">struct backend_factory
+{
+    virtual details::session_backend * make_session(
+        std::string const &amp; connectString) const = 0;
+};
+</code></pre>
+
+<p>The only member of this class is the <code>make_session</code> function that is supposed to create concrete backend implementation of the session object.</p>
+<p>Objects of this type are declared by each backend and should be provided to the constructor of the <code>session</code> class. In simple programs users do not need to use this class directly, but the example use is:</p>
+<pre><code class="cpp">backend_factory &amp; factory = postgresql;
+std::string connectionParameters = &quot;dbname=mydb&quot;;
+
+session sql(factory, parameters);
+</code></pre>
+
+<h2 id="simple-client-interface">Simple Client Interface</h2>
+<p>The simple client interface is provided with other languages in mind, to allow easy integration of the SOCI library with script interpreters and those languages that have the ability to link directly with object files using the "C" calling convention.</p>
+<p>The functionality of this interface is limited and in particular the dynamic rowset description and type conversions are not supported in this release. On the other hand, the important feature of this interface is that it does not require passing pointers to data managed by the user, because all data is handled at the SOCI side. This should make it easier to integrate SOCI with languages that have constrained ability to understand the C type system.</p>
+<p>Users of this interface need to explicitly <code>#include &lt;soci-simple.h&gt;</code>.</p>
+<pre><code class="c">typedef void * session_handle;
+session_handle soci_create_session(char const * connectionString);
+void soci_destroy_session(session_handle s);
+
+void soci_begin(session_handle s);
+void soci_commit(session_handle s);
+void soci_rollback(session_handle s);
+
+int soci_session_state(session_handle s);
+char const * soci_session_error_message(session_handle s);
+</code></pre>
+
+<p>The functions above provide the <em>session</em> abstraction with the help of opaque handle. The <code>soci_session_state</code> function returns <code>1</code> if there was no error during the most recently executed function and <code>0</code> otherwise, in which case the <code>soci_session_error_message</code> can be used to obtain a human-readable error description.</p>
+<p>Note that the only function that cannot report all errors this way is <code>soci_create_session</code>, which returns <code>NULL</code> if it was not possible to create an internal object representing the session. However, if the proxy object was created, but the connection could not be established for whatever reason, the error message can be obtained in the regular way.</p>
+<pre><code class="c">typedef void *blob_handle;
+blob_handle soci_create_blob(session_handle s);
+void soci_destroy_blob(blob_handle b);
+
+int soci_blob_get_len(blob_handle b);
+int soci_blob_read(blob_handle b, int offset, char *buf, int toRead);
+int soci_blob_write(blob_handle b, int offset, char const *buf, int toWrite);
+int soci_blob_append(blob_handle b, char const *buf, int toWrite);
+int soci_blob_trim(blob_handle b, int newLen);
+
+int soci_blob_state(blob_handle b);
+char const * soci_blob_error_message(blob_handle b);
+</code></pre>
+
+<p>The functions above provide the <em>blob</em> abstraction with the help of opaque handle. The <code>soci_blob_state</code> function returns <code>1</code> if there was no error during the most recently executed function and <code>0</code> otherwise, in which case the <code>soci_session_error_message</code> can be used to obtain a human-readable error description.</p>
+<p>For easy error testing, functions <code>soci_blob_read</code>, <code>soci_blob_write</code>, <code>soci_blob_append</code>, and <code>soci_blob_trim</code> return <code>-1</code> in case of error and <code>soci_session_error_message</code> can be used to obtain a human-readable error description.</p>
+<p>Note that the only function that cannot report all errors this way is <code>soci_create_blob</code>, which returns <code>NULL</code> if it was not possible to create an internal object representing the blob.</p>
+<pre><code class="c">typedef void * statement_handle;
+statement_handle soci_create_statement(session_handle s);
+void soci_destroy_statement(statement_handle st);
+
+int soci_statement_state(statement_handle s);
+char const * soci_statement_error_message(statement_handle s);
+</code></pre>
+
+<p>The functions above create and destroy the statement object. If the statement cannot be created by the <code>soci_create_statement</code> function, the error condition is set up in the related session object; for all other functions the error condition is set in the statement object itself.</p>
+<pre><code class="c">int soci_into_string   (statement_handle st);
+int soci_into_int      (statement_handle st);
+int soci_into_long_long(statement_handle st);
+int soci_into_double   (statement_handle st);
+int soci_into_date     (statement_handle st);
+int soci_into_blob     (statement_handle st);
+
+int soci_into_string_v   (statement_handle st);
+int soci_into_int_v      (statement_handle st);
+int soci_into_long_long_v(statement_handle st);
+int soci_into_double_v   (statement_handle st);
+int soci_into_date_v     (statement_handle st);
+</code></pre>
+
+<p>These functions create new data items for storing query results (<em>into elements</em>). These elements can be later identified by their position, which is counted from 0. For convenience, these function return the position of the currently added element. In case of error, <code>-1</code> is returned and the error condition is set in the statement object.</p>
+<p>The <code>_v</code> versions create a <code>vector</code> into elements, which can be used
+to retrieve whole arrays of results.</p>
+<pre><code class="c">int soci_get_into_state(statement_handle st, int position);
+int soci_get_into_state_v(statement_handle st, int position, int index);
+</code></pre>
+
+<p>This function returns <code>1</code> if the into element at the given position has non-null value and <code>0</code> otherwise. The <code>_v</code> version works with <code>vector</code> elements and expects an array index.</p>
+<pre><code class="c">char const * soci_get_into_string   (statement_handle st, int position);
+int          soci_get_into_int      (statement_handle st, int position);
+long long    soci_get_into_long_long(statement_handle st, int position);
+double       soci_get_into_double   (statement_handle st, int position);
+char const * soci_get_into_date     (statement_handle st, int position);
+blob_handle  soci_get_into_blob     (statement_handle st, int position);
+
+char const * soci_get_into_string_v   (statement_handle st, int position, int index);
+int          soci_get_into_int_v      (statement_handle st, int position, int index);
+long long    soci_get_into_long_long_v(statement_handle st, int position, int index);
+double       soci_get_into_double_v   (statement_handle st, int position, int index);
+char const * soci_get_into_date_v     (statement_handle st, int position, int index);
+</code></pre>
+
+<p>The functions above allow to retrieve the current value of the given into element.</p>
+<p><strong>Note:</strong> The <code>date</code> function returns the date value in the "<code>YYYY MM DD HH mm ss</code>" string format.</p>
+<pre><code class="c">void soci_use_string   (statement_handle st, char const * name);
+void soci_use_int      (statement_handle st, char const * name);
+void soci_use_long_long(statement_handle st, char const * name);
+void soci_use_double   (statement_handle st, char const * name);
+void soci_use_date     (statement_handle st, char const * name);
+void soci_use_blob     (statement_handle st, char const * name);
+
+void soci_use_string_v   (statement_handle st, char const * name);
+void soci_use_int_v      (statement_handle st, char const * name);
+void soci_use_long_long_v(statement_handle st, char const * name);
+void soci_use_double_v   (statement_handle st, char const * name);
+void soci_use_date_v     (statement_handle st, char const * name);
+</code></pre>
+
+<p>The functions above allow to create new data elements that will be used to provide data to the query (<em>use elements</em>). The new elements can be later identified by given name, which must be unique for the given statement.</p>
+<pre><code class="c">void soci_set_use_state(statement_handle st, char const * name, int state);
+</code></pre>
+
+<p>The <code>soci_set_use_state</code> function allows to set the state of the given use element. If the <code>state</code> parameter is set to non-zero the use element is considered non-null (which is also the default state after creating the use element).</p>
+<pre><code class="c">int  soci_use_get_size_v(statement_handle st);
+void soci_use_resize_v  (statement_handle st, int new_size);
+</code></pre>
+
+<p>These functions get and set the size of vector use elements (see comments for vector into elements above).</p>
+<pre><code class="c">void soci_set_use_string   (statement_handle st, char const * name, char const * val);
+void soci_set_use_int      (statement_handle st, char const * name, int val);
+void soci_set_use_long_long(statement_handle st, char const * name, long long val);
+void soci_set_use_double   (statement_handle st, char const * name, double val);
+void soci_set_use_date     (statement_handle st, char const * name, char const * val);
+void soci_set_use_blob     (statement_handle st, char const * name, blob_handle blob);
+
+void soci_set_use_state_v    (statement_handle st, char const * name, int index, int state);
+void soci_set_use_string_v   (statement_handle st, char const * name, int index, char const * val);
+void soci_set_use_int_v      (statement_handle st, char const * name, int index, int val);
+void soci_set_use_long_long_v(statement_handle st, char const * name, int index, long long val);
+void soci_set_use_double_v   (statement_handle st, char const * name, int index, double val);
+void soci_set_use_date_v     (statement_handle st, char const * name, int index, char const * val);
+</code></pre>
+
+<p>The functions above set the value of the given use element, for both single and vector elements.</p>
+<p><strong>Note:</strong> The expected format for the data values is "<code>YYYY MM DD HH mm ss</code>".</p>
+<pre><code class="c">int          soci_get_use_state    (statement_handle st, char const * name);
+char const * soci_get_use_string   (statement_handle st, char const * name);
+int          soci_get_use_int      (statement_handle st, char const * name);
+long long    soci_get_use_long_long(statement_handle st, char const * name);
+double       soci_get_use_double   (statement_handle st, char const * name);
+char const * soci_get_use_date     (statement_handle st, char const * name);
+blob_handle  soci_get_use_blob     (statement_handle st, char const * name);
+</code></pre>
+
+<p>These functions allow to inspect the state and value of named use elements.</p>
+<p><strong><em>Note:</em></strong> these functions are provide only for single use elements, not for vectors; the rationale for this is that modifiable use elements are not supported for bulk operations.</p>
+<pre><code class="c">void soci_prepare(statement_handle st, char const * query);
+int  soci_execute(statement_handle st, int withDataExchange);
+int  soci_fetch(statement_handle st);
+int  soci_got_data(statement_handle st);
+</code></pre>
+
+<p>The functions above provide the core execution functionality for the statement object and their meaning is equivalent to the respective functions in the core C++ interface described above.</p></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+                <p>Copyright &copy; 2017 <a href="https://github.com/msobczak">Maciej Sobczak</a> and <a href="http://soci.sourceforge.net/people.html">SOCI Team</a>.</p>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "../..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../../js/base.js" defer></script>
+        <script src="../../search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

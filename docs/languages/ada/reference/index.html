@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../../../img/favicon.ico">
+        <title>Ada API Reference - SOCI (4.0)</title>
+        <link href="../../../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../../../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../../../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        <script src="../../../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../../../js/bootstrap-3.0.3.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container">
+
+                <!-- Collapsed navigation -->
+                <div class="navbar-header">
+                    <!-- Expander button -->
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="../../..">SOCI (4.0)</a>
+                </div>
+
+                <!-- Expanded navigation -->
+                <div class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li >
+                                <a href="../../..">Home</a>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Overview <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../../../quickstart/">Getting Started</a>
+</li>
+                                    
+<li >
+    <a href="../../../installation/">Installation</a>
+</li>
+                                    
+<li >
+    <a href="../../../structure/">Library Structure</a>
+</li>
+                                    
+<li >
+    <a href="../../../license/">License</a>
+</li>
+                                    
+<li >
+    <a href="../../../faq/">FAQ</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">User Guide <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../../../connections/">Connections</a>
+</li>
+                                    
+<li >
+    <a href="../../../queries/">Queries</a>
+</li>
+                                    
+<li >
+    <a href="../../../binding/">Data Binding</a>
+</li>
+                                    
+<li >
+    <a href="../../../indicators/">Data Indicators</a>
+</li>
+                                    
+<li >
+    <a href="../../../types/">Data Types</a>
+</li>
+                                    
+<li >
+    <a href="../../../lobs/">LOBs</a>
+</li>
+                                    
+<li >
+    <a href="../../../statements/">Statements</a>
+</li>
+                                    
+<li >
+    <a href="../../../transactions/">Transactions</a>
+</li>
+                                    
+<li >
+    <a href="../../../procedures/">Procedures</a>
+</li>
+                                    
+<li >
+    <a href="../../../errors/">Errors</a>
+</li>
+                                    
+<li >
+    <a href="../../../logging/">Logging</a>
+</li>
+                                    
+<li >
+    <a href="../../../interfaces/">Interfaces</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Backends <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../../../backends/">Features</a>
+</li>
+                                    
+<li >
+    <a href="../../../backends/db2/">DB2</a>
+</li>
+                                    
+<li >
+    <a href="../../../backends/firebird/">Firebird</a>
+</li>
+                                    
+<li >
+    <a href="../../../backends/mysql/">MySQL</a>
+</li>
+                                    
+<li >
+    <a href="../../../backends/odbc/">ODBC</a>
+</li>
+                                    
+<li >
+    <a href="../../../backends/oracle/">Oracle</a>
+</li>
+                                    
+<li >
+    <a href="../../../backends/postgresql/">PostgreSQL</a>
+</li>
+                                    
+<li >
+    <a href="../../../backends/sqlite3/">SQLite3</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Miscellaneous <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../../../beyond/">Beyond SQL</a>
+</li>
+                                    
+<li >
+    <a href="../../../multithreading/">Multi-threading</a>
+</li>
+                                    
+<li >
+    <a href="../../../boost/">Boost</a>
+</li>
+                                    
+<li >
+    <a href="../../../utilities/">Utilities</a>
+</li>
+                                    
+<li >
+    <a href="../../../vagrant/">Vagrant</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown active">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">API <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../../../api/client/">Client API</a>
+</li>
+                                    
+<li >
+    <a href="../../../api/backend/">Backend API</a>
+</li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#">Ada</a>
+    <ul class="dropdown-menu">
+            
+<li >
+    <a href="../">Ada Bindings</a>
+</li>
+            
+<li >
+    <a href="../concepts/">Ada Concepts</a>
+</li>
+            
+<li >
+    <a href="../idioms/">Ada Idioms</a>
+</li>
+            
+<li class="active">
+    <a href="./">Ada API Reference</a>
+</li>
+    </ul>
+  </li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li >
+                                <a rel="next" href="../idioms/">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="disabled">
+                                <a rel="prev" >
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://github.com/SOCI/soci/edit/master/docs/languages/ada/reference.md"><i class="fa fa-github"></i> Edit on GitHub</a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#ada-api-reference">Ada API Reference</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="ada-api-reference">Ada API Reference</h1>
+<p>The SOCI-Ada library is entirely implemented as a single package named <code>SOCI</code>. Additional child packages contain single procedures for static registration of backends - these child packages are not necessary for typical use, but can be useful to force static linking of backend code.</p>
+<p>The following describes all publicly visible elements of this package:</p>
+<pre><code class="ada">--
+--  General exception related to database and library usage.
+--
+
+Database_Error : exception;
+</code></pre>
+
+<p>Each problem related to the interaction with the database or to the incorrect usage of the library itself is signalled by raising this exception. Each occurrence of this exception has some human-readable error message that can be obtained by a call to <code>Ada.Exceptions.Exception_Message</code>.</p>
+<pre><code class="ada">--
+--  Session.
+--
+
+type Session is tagged limited private;
+
+not overriding
+function Make_Session (Connection_String : in String) return Session;
+
+not overriding
+procedure Open (This : in out Session; Connection_String : in String);
+
+not overriding
+procedure Close (This : in out Session);
+
+not overriding
+function Is_Open (This : in Session) return Boolean;
+</code></pre>
+
+<p>The <code>Session</code> object can exist in two states: "connected" (or "open") and "disconnected". It can be created as connected at initialization time with a call to the constructor function <code>Make_Session</code> or left default-initialized in the disconnected state and later changed to connected with <code>Open</code> (the latter option is the only that is available in the Ada 95 version of the library). <code>Session</code> objects can be also associated with the connection pool, see below.</p>
+<p>The <code>Connection_String</code> should have the form <code>"backendname://parameters"</code>, where <code>backendname</code> is used to construct the name of the dynamically loadable library that will be used to provide specific database services. Backends included in the current distribution of the main SOCI library are:</p>
+<ul>
+<li><code>oracle</code> (implemented as <code>libsoci_oracle.so</code> or <code>libsoci_oracle.dll</code>)</li>
+<li><code>postgresql</code> (implemented as <code>libsoci_postgresql.so</code> or <code>libsoci_postgresql.dll</code>)</li>
+<li><code>mysql</code> (implemented as <code>libsoci_mysql.so</code> or <code>libsoci_mysql.dll</code>)</li>
+</ul>
+<p>Other backends can be added to the library in the future or by the user himself, please see the documentation of the main SOCI library for details.</p>
+<p>The <code>parameters</code> component of the <code>Connection_String</code> depends on the given backend, please see the documentation of the main SOCI project for the meaning and recognized options. The web pages related to the backends above are:</p>
+<ul>
+<li><a href="../../../backends/oracle/">Oracle</a></li>
+<li><a href="../../../backends/postgresql/">PostgreSQL</a></li>
+<li><a href="../../../backends/mysql/">MySQL</a></li>
+</ul>
+<p>The <code>Open</code> operation can be called only in the disconnected state (which changes the state of <code>Session</code> object to connected). The <code>Close</code> operation can be called in any state (provided that the session is not associated with the connection pool, see below) and after that the <code>Session</code> is in the disconnected state.</p>
+<p><code>Session</code> objects are closed automatically as part of their finalization. If the <code>Session</code> object is associated with the connection pool, the finalizer detaches from the pool without closing the connection.</p>
+<pre><code class="ada">--  Transaction management.
+
+not overriding
+procedure Start (This : in Session);
+
+not overriding
+procedure Commit (This : in Session);
+
+not overriding
+procedure Rollback (This : in Session);
+</code></pre>
+
+<p>These operations handle transactions. The exact meaning of transactions and whether transactions are automatic for some kinds of statements (and which ones) depend on the target database.</p>
+<pre><code class="ada">--  Immediate query execution.
+not overriding
+procedure Execute (This : in Session; Query : in String);
+</code></pre>
+
+<p>This operation allows to create implicit statement, prepare it for the given <code>Query</code> and execute it.</p>
+<pre><code class="ada">--
+--  Connection pool management.
+--
+
+type Connection_Pool (Size : Positive) is tagged limited private;
+
+not overriding
+procedure Open
+    (This : in out Connection_Pool;
+    Position : in Positive;
+    Connection_String : in String);
+
+not overriding
+procedure Close (This : in out Connection_Pool; Position : in Positive);
+
+not overriding
+procedure Lease (This : in out Connection_Pool; S : in out Session'Class);
+</code></pre>
+
+<p>The <code>Connection_Pool</code> encapsulates a fixed-size collection of sessions. Individual sessions are indexed from <code>1</code> to <code>Size</code> (provided as discriminant) and can be <code>Open</code>ed and <code>Close</code>d explicitly. Each connection in the pool can be created with different <code>Connection_String</code>, if needed.</p>
+<p>The <code>Lease</code> operation allows to associate a given <code>Session</code> object (that has to be in the disconnected state itself) with one connection from the pool. The pool guarantees that at most one task can lease a given connection from the pool. If there are no free connections in the pool, the <code>Lease</code> operation will block waiting until some connection is freed.</p>
+<p>The <code>Session</code> object that is associated with a connection from the pool automatically gives it back to pool as part of the <code>Session</code>'s finalizer. There is no other way to "detach" from the pool.</p>
+<p>Note:</p>
+<p>It is assumed that the lifetime of <code>Connection_Pool</code> encloses the lifetimes of all <code>Session</code> objects that are leased from it. There is no particular protection against it and it is possible to construct a code example with allocators that create partially overlapping <code>Connection_Pool</code> and <code>Session</code>, but this is considered obscure and not representative to the actual use scenarios. To avoid any potential problems, create <code>Connection_Pool</code> in the scope that encloses the scopes of leased <code>Session</code>s.</p>
+<pre><code class="ada">--
+--  Statement.
+--
+
+type Statement (&amp;lt;&amp;gt;) is tagged limited private;
+
+type Data_State is (Data_Null, Data_Not_Null);
+
+type Into_Position is private;
+
+type Vector_Index is new Natural;
+</code></pre>
+
+<p>The <code>Statement</code> type and supporting types. <code>Data_State</code> is used to indicate null values in the database sense - each value of into or use elements has a state from this type.</p>
+<pre><code class="ada">--  Statement preparation and execution.
+
+not overriding
+procedure Prepare (This : in Statement; Query : in String);
+
+not overriding
+procedure Execute
+    (This : in Statement;
+    With_Data_Exchange : in Boolean := False);
+
+not overriding
+function Execute
+    (This : in Statement;
+    With_Data_Exchange : in Boolean := False) return Boolean;
+
+not overriding
+function Fetch (This : in Statement) return Boolean;
+
+not overriding
+function Got_Data (This : in Statement) return Boolean;
+</code></pre>
+
+<p>The <code>Prepare</code> operation needs to be called before any other operation in the above group and it prepares the execution for the given <code>Query</code>. No into and use elements can be created after this operation is called.</p>
+<p>The <code>Execute</code> operations cause the statement to execute, which might be combined with data exchange if requested. The function version of this operation returns <code>True</code> if some data has been returned back from the database server.</p>
+<p>The <code>Fetch</code> function is used to transfer next portion of data (a single row or a whole bunch) from the database server and returns <code>True</code> if some data has been fetched. If this function returns <code>False</code> it means that no new data will be ever fetched for this statement and indicates the end-of-row condition.</p>
+<p>The <code>Got_Data</code> function returns <code>True</code> if the last execution or fetch resulted in some data being transmitted from the database server.</p>
+<pre><code class="ada">--
+--  Data items handling.
+--
+
+--  Database-specific types.
+--  These types are most likely identical to standard Integer,
+--  Long_Long_Integer and Long_Float, but are defined distinctly
+--  to avoid interfacing problems with other compilers.
+
+type DB_Integer is new Interfaces.C.int;
+type DB_Long_Long_Integer is new Interfaces.Integer_64;
+type DB_Long_Float is new Interfaces.C.double;
+</code></pre>
+
+<p>The data types used for interaction with the database are:</p>
+<ul>
+<li><code>String</code></li>
+<li><code>DB_Integer</code>, defined above</li>
+<li><code>DB_Long_Long_Integer</code>, defined above</li>
+<li><code>DB_Long_Float</code>, defined above</li>
+<li><code>Ada.Calendar.Time</code></li>
+</ul>
+<pre><code class="ada">--  Creation of single into elements.
+
+not overriding
+function Into_String (This : in Statement) return Into_Position;
+
+not overriding
+function Into_Integer (This : in Statement) return Into_Position;
+
+not overriding
+function Into_Long_Long_Integer (This : in Statement) return Into_Position;
+
+not overriding
+function Into_Long_Float (This : in Statement) return Into_Position;
+
+not overriding
+function Into_Time (This : in Statement) return Into_Position;
+</code></pre>
+
+<p>These functions instruct the library to create internal simple into elements of the relevant type. They return the position of the into element, which can be later used to identify it.</p>
+<p>Note: Simple into elements cannot be created together with vector into elements for the same statement.</p>
+<p>Note: Simple into elements cannot be created together with vector into elements for the same statement.</p>
+<pre><code class="ada">--  Inspection of single into elements.
+
+not overriding
+function Get_Into_State
+    (This : in Statement;
+    Position : in Into_Position)
+    return Data_State;
+
+not overriding
+function Get_Into_String
+    (This : in Statement;
+    Position : in Into_Position)
+    return String;
+
+not overriding
+function Get_Into_Integer
+    (This : in Statement;
+    Position : in Into_Position)
+    return DB_Integer;
+
+not overriding
+function Get_Into_Long_Long_Integer
+    (This : in Statement;
+    Position : in Into_Position)
+    return DB_Long_Long_Integer;
+
+not overriding
+function Get_Into_Long_Float
+    (This : in Statement;
+    Position : in Into_Position)
+    return DB_Long_Float;
+
+not overriding
+function Get_Into_Time
+    (This : in Statement;
+    Position : in Into_Position)
+    return Ada.Calendar.Time;
+</code></pre>
+
+<p>These functions allow to inspect the state and value of the simple into element identified by its position. If the state of the given element is <code>Data_Null</code>, the data-reading functions raise exceptions for that element.</p>
+<pre><code class="ada">--  Inspection of vector into elements.
+
+not overriding
+function Get_Into_Vectors_Size (This : in Statement) return Natural;
+
+not overriding
+function Into_Vectors_First_Index (This : in Statement) return Vector_Index;
+
+not overriding
+function Into_Vectors_Last_Index (This : in Statement) return Vector_Index;
+
+not overriding
+procedure Into_Vectors_Resize (This : in Statement; New_Size : in Natural);
+</code></pre>
+
+<p>The <code>Get_Into_Vectors_Size</code> returns the number of entries in any of the vector into elements for the given statement.</p>
+<p>The <code>Into_Vectors_First_Index</code> returns the lowest index value for vector into elements (which is always <code>0</code>, even if the vectors are empty). The <code>Into_Vectors_Last_Index</code> returns the last index of into vectors, and raises the <code>CONSTRAINT_ERROR</code> exception if the vectors are empty.</p>
+<p>The <code>Into_Vectors_Resize</code> procedure allows to change the size of all use vectors for the given statement.</p>
+<pre><code class="ada">not overriding
+function Get_Into_Vector_State
+    (This : in Statement;
+    Position : in Into_Position;
+    Index : in Vector_Index)
+    return Data_State;
+
+not overriding
+function Get_Into_Vector_String
+    (This : in Statement;
+    Position : in Into_Position;
+    Index : in Vector_Index)
+    return String;
+
+not overriding
+function Get_Into_Vector_Integer
+    (This : in Statement;
+    Position : in Into_Position;
+    Index : in Vector_Index)
+    return DB_Integer;
+
+not overriding
+function Get_Into_Vector_Long_Long_Integer
+    (This : in Statement;
+    Position : in Into_Position;
+    Index : in Vector_Index)
+    return DB_Long_Long_Integer;
+
+not overriding
+function Get_Into_Vector_Long_Float
+    (This : in Statement;
+    Position : in Into_Position;
+    Index : in Vector_Index)
+    return DB_Long_Float;
+
+not overriding
+function Get_Into_Vector_Time
+    (This : in Statement;
+    Position : in Into_Position;
+    Index : in Vector_Index)
+    return Ada.Calendar.Time;
+</code></pre>
+
+<p>These functions allow to inspect the state and value of the vector use element identified by its position and index. If the state of the given element is <code>Data_Null</code>, the data-reading functions raise exceptions for that element.</p>
+<pre><code class="ada">--  Creation of single use elements.
+
+not overriding
+procedure Use_String (This : in Statement; Name : in String);
+
+not overriding
+procedure Use_Integer (This : in Statement; Name : in String);
+
+not overriding
+procedure Use_Long_Long_Integer (This : in Statement; Name : in String);
+
+not overriding
+procedure Use_Long_Float (This : in Statement; Name : in String);
+
+not overriding
+procedure Use_Time (This : in Statement; Name : in String);
+</code></pre>
+
+<p>These functions instruct the library to create internal simple use elements of the relevant type, identified by the given <code>Name</code>.</p>
+<p>Note:</p>
+<ul>
+<li>Simple use elements cannot be created together with vector use elements for the same statement.</li>
+<li>Vector use elements cannot be created together with any into elements for the same statement.</li>
+</ul>
+<pre><code class="ada">--  Creation of vector use elements.
+
+not overriding
+procedure Use_Vector_String (This : in Statement; Name : in String);
+
+not overriding
+procedure Use_Vector_Integer (This : in Statement; Name : in String);
+
+not overriding
+procedure Use_Vector_Long_Long_Integer (This : in Statement; Name : in String);
+
+not overriding
+procedure Use_Vector_Long_Float (This : in Statement; Name : in String);
+
+not overriding
+procedure Use_Vector_Time (This : in Statement; Name : in String);
+</code></pre>
+
+<p>These functions instruct the library to create internal vector use elements of the relevant type, identified by the given <code>Name</code>.</p>
+<p>Note:</p>
+<ul>
+<li>Simple use elements cannot be created together with vector use elements for the same statement.</li>
+<li>Vector use elements cannot be created together with any into elements for the same statement.</li>
+</ul>
+<pre><code class="ada">--  Modifiers for single use elements.
+
+not overriding
+procedure Set_Use_State
+    (This : in Statement;
+    Name : in String;
+    State : in Data_State);
+
+not overriding
+procedure Set_Use_String
+    (This : in Statement;
+    Name : in String;
+    Value : in String);
+
+not overriding
+procedure Set_Use_Integer
+    (This : in Statement;
+    Name : in String;
+    Value : in DB_Integer);
+
+not overriding
+procedure Set_Use_Long_Long_Integer
+    (This : in Statement;
+    Name : in String;
+    Value : in DB_Long_Long_Integer);
+
+not overriding
+procedure Set_Use_Long_Float
+    (This : in Statement;
+    Name : in String;
+    Value : in DB_Long_Float);
+
+not overriding
+procedure Set_Use_Time
+    (This : in Statement;
+    Name : in String;
+    Value : in Ada.Calendar.Time);
+</code></pre>
+
+<p>These operations allow to modify the state and value of simple use elements. Setting the value of use element automatically sets its state to <code>Data_Not_Null</code>.</p>
+<pre><code class="ada">--  Modifiers for vector use elements.
+
+not overriding
+function Get_Use_Vectors_Size (This : in Statement) return Natural;
+
+not overriding
+function Use_Vectors_First_Index (This : in Statement) return Vector_Index;
+
+not overriding
+function Use_Vectors_Last_Index (This : in Statement) return Vector_Index;
+
+not overriding
+procedure Use_Vectors_Resize (This : in Statement; New_Size : in Natural);
+</code></pre>
+
+<p>The <code>Get_Use_Vectors_Size</code> returns the number of entries in any of the vector use elements for the given statement.</p>
+<p>The <code>Use_Vectors_First_Index</code> returns the lowest index value for vector use elements (which is always <code>0</code>, even if the vectors are empty). The <code>Use_Vectors_Last_Index</code> returns the last index of use vectors, and raises the <code>CONSTRAINT_ERROR</code> exception if the vectors are empty.</p>
+<p>The <code>Use_Vectors_Resize</code> procedure allows to change the size of all use vectors for the given statement.</p>
+<pre><code class="ada">not overriding
+procedure Set_Use_Vector_State
+    (This : in Statement;
+    Name : in String;
+    Index : in Vector_Index;
+    State : in Data_State);
+
+not overriding
+procedure Set_Use_Vector_String
+    (This : in Statement;
+    Name : in String;
+    Index : in Vector_Index;
+    Value : in String);
+
+not overriding
+procedure Set_Use_Vector_Integer
+    (This : in Statement;
+    Name : in String;
+    Index : in Vector_Index;
+    Value : in DB_Integer);
+
+not overriding
+procedure Set_Use_Vector_Long_Long_Integer
+    (This : in Statement;
+    Name : in String;
+    Index : in Vector_Index;
+    Value : in DB_Long_Long_Integer);
+
+not overriding
+procedure Set_Use_Vector_Long_Float
+    (This : in Statement;
+    Name : in String;
+    Index : in Vector_Index;
+    Value : in DB_Long_Float);
+
+not overriding
+procedure Set_Use_Vector_Time
+    (This : in Statement;
+    Name : in String;
+    Index : in Vector_Index;
+    Value : in Ada.Calendar.Time);
+</code></pre>
+
+<p>These operations allow to modify the state and value of vector use elements. Setting the value of use element automatically sets its state to <code>Data_Not_Null</code>.</p>
+<pre><code class="ada">--  Inspection of single use elements.
+--
+--  Note: Use elements can be modified by the database if they
+--        are bound to out and inout parameters of stored procedures
+--        (although this is not supported by all database backends).
+--        This feature is available only for single use elements.
+
+not overriding
+function Get_Use_State
+    (This : in Statement;
+    Name : in String)
+    return Data_State;
+
+not overriding
+function Get_Use_String
+    (This : in Statement;
+    Name : in String)
+    return String;
+
+not overriding
+function Get_Use_Integer
+    (This : in Statement;
+    Name : in String)
+    return DB_Integer;
+
+not overriding
+function Get_Use_Long_Long_Integer
+    (This : in Statement;
+    Name : in String)
+    return DB_Long_Long_Integer;
+
+not overriding
+function Get_Use_Long_Float
+    (This : in Statement;
+    Name : in String)
+    return DB_Long_Float;
+
+not overriding
+function Get_Use_Time
+    (This : in Statement;
+    Name : in String)
+    return Ada.Calendar.Time;
+</code></pre>
+
+<p>These functions allow to inspect the state and value of the simple use element identified by its name. If the state of the given element is <code>Data_Null</code>, the data-reading functions raise exceptions for that element.</p></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+                <p>Copyright &copy; 2017 <a href="https://github.com/msobczak">Maciej Sobczak</a> and <a href="http://soci.sourceforge.net/people.html">SOCI Team</a>.</p>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "../../..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../../../js/base.js" defer></script>
+        <script src="../../../search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

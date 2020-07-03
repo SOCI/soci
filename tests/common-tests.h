@@ -3150,22 +3150,6 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
             CHECK(so.is_initialized() == false);
         }
 
-        // inserts of non-null const data
-        {
-            sql << "delete from soci_test";
-
-            const int id = 10;
-            const boost::optional<int> val = 11;
-
-            sql << "insert into soci_test(id, val) values(:id, :val)",
-                use(id, "id"),
-                use(val, "val");
-
-            int sum;
-            sql << "select sum(val) from soci_test", into(sum);
-            CHECK(sum == 11);
-        }
-
         // bulk inserts of non-null data
 
         {
@@ -3195,46 +3179,6 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
 
             sql << "insert into soci_test(id, val) values(:id, :val)",
                 use(ids, "id"), use(v, "val");
-
-            sql << "select sum(val) from soci_test", into(sum);
-            CHECK(sum == 41);
-        }
-
-
-        // bulk inserts of non-null data with const vector
-
-        {
-            sql << "delete from soci_test";
-
-            std::vector<int> ids;
-            std::vector<boost::optional<int> > v;
-
-            ids.push_back(10); v.push_back(20);
-            ids.push_back(11); v.push_back(21);
-            ids.push_back(12); v.push_back(22);
-            ids.push_back(13); v.push_back(23);
-
-            const std::vector<int>& cref_ids = ids;
-            const std::vector<boost::optional<int> >& cref_v = v;
-
-            sql << "insert into soci_test(id, val) values(:id, :val)",
-                use(cref_ids, "id"),
-                use(cref_v, "val");
-
-            int sum;
-            sql << "select sum(val) from soci_test", into(sum);
-            CHECK(sum == 86);
-
-            // bulk inserts of some-null data
-
-            sql << "delete from soci_test";
-
-            v[2].reset();
-            v[3].reset();
-
-            sql << "insert into soci_test(id, val) values(:id, :val)",
-                use(cref_ids, "id"),
-                use(cref_v, "val");
 
             sql << "select sum(val) from soci_test", into(sum);
             CHECK(sum == 41);
@@ -4077,115 +4021,6 @@ TEST_CASE_METHOD(common_tests, "Bind memory leak", "[core][leak]")
         sql << "select val from soci_test where id = 2", into(val);
         CHECK(val == 1);
     }
-}
-
-// Helper functions for issue 723 test
-namespace {
-
-    // Creates a std::tm with UK DST threshold 31st March 2019 01:00:00
-    std::tm create_uk_dst_threshold()
-    {
-        std::tm dst_threshold = std::tm();
-        dst_threshold.tm_year = 119;  // 2019
-        dst_threshold.tm_mon = 2;     // March
-        dst_threshold.tm_mday = 31;   // 31st
-        dst_threshold.tm_hour = 1;    // 1AM
-        dst_threshold.tm_min = 0;
-        dst_threshold.tm_sec = 0;
-        dst_threshold.tm_isdst = -1;   // Determine DST from OS
-        return dst_threshold;
-    }
-
-    // Sanity check to verify that the DST threshold causes mktime to modify
-    // the input hour (the condition that causes issue 723). 
-    // This check really shouldn't fail but since it is the basis of the test 
-    // it is worth verifying.
-    bool does_mktime_modify_input_hour()
-    {
-        std::tm dst_threshold = create_uk_dst_threshold();
-        std::tm verify_mktime = dst_threshold;
-        mktime(&verify_mktime);
-        return verify_mktime.tm_hour != dst_threshold.tm_hour;
-    }
-
-    // We don't have any way to change the time zone for just this process
-    // under MSW, so we just skip this test when not running in UK time-zone
-    // there. Under Unix systems we can however switch to UK time zone
-    // temporarily by just setting the TZ environment variable.
-#ifndef _WIN32
-    // Helper RAII class changing time zone to the specified one in its ctor
-    // and restoring the original time zone in its dtor.
-    class tz_setter
-    {
-    public:
-        explicit tz_setter(const std::string& time_zone)
-        {
-            char* tz_value = getenv("TZ");
-            if (tz_value != NULL)
-            {
-                original_tz_value_ = tz_value;
-            }
-
-            setenv("TZ", time_zone.c_str(), 1 /* overwrite */);
-            tzset();
-        }
-
-        ~tz_setter()
-        {
-            // Restore TZ value so other tests aren't affected.
-            if (original_tz_value_.empty())
-                unsetenv("TZ");
-            else
-                setenv("TZ", original_tz_value_.c_str(), 1);
-            tzset();
-        }
-
-    private:
-        std::string original_tz_value_;
-    };
-#endif // !_WIN32
-}
-
-// Issue 723 - std::tm timestamp problem with DST.
-// When reading date/time on Daylight Saving Time threshold, hour value is
-// silently changed.
-TEST_CASE_METHOD(common_tests, "std::tm timestamp problem with DST", "[core][into][tm][dst]")
-{
-#ifdef _WIN32
-    if (!does_mktime_modify_input_hour())
-    {
-        WARN("The DST test can only be run in the UK time zone, please switch to it manually.");
-        return;
-    }
-#else // !_WIN32
-    // Set UK timezone for this test scope.
-    tz_setter switch_to_UK_tz("Europe/London");
-
-    if (!does_mktime_modify_input_hour())
-    {
-        WARN("Switching to the UK time zone unexpectedly failed, skipping the DST test.");
-        return;
-    }
-#endif // _WIN32/!_WIN32
-
-    // Open session and create table with a date/time column.
-    soci::session sql(backEndFactory_, connectString_);
-    auto_table_creator tableCreator(tc_.table_creator_1(sql));
-
-    // Round trip dst threshold time to database.
-    std::tm write_time = create_uk_dst_threshold();
-    sql << "insert into soci_test(tm) values(:tm)", use(write_time);
-    std::tm read_time = std::tm();
-    sql << "select tm from soci_test", soci::into(read_time);
-
-    // Check that the round trip was consistent.
-    std::tm dst_threshold = create_uk_dst_threshold();
-    CHECK(read_time.tm_year == dst_threshold.tm_year);
-    CHECK(read_time.tm_mon == dst_threshold.tm_mon);
-    CHECK(read_time.tm_mday == dst_threshold.tm_mday);
-    CHECK(read_time.tm_hour == dst_threshold.tm_hour);
-    CHECK(read_time.tm_min == dst_threshold.tm_min);
-    CHECK(read_time.tm_sec == dst_threshold.tm_sec);
 }
 
 TEST_CASE_METHOD(common_tests, "Insert error", "[core][insert][exception]")

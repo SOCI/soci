@@ -54,7 +54,7 @@ void get_iscerror_details(ISC_STATUS * status_vector, std::string &msg)
     }
     catch (...)
     {
-        throw firebird_soci_error("Exception caught while fetching error information");
+        throw firebird_soci_error("Exception catched while fetching error information");
     }
 }
 

@@ -6,7 +6,6 @@
 #define SOCI_ODBC_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/odbc/soci-odbc.h"
-#include "soci-compiler.h"
 #include "soci-exchange-cast.h"
 #include <cctype>
 #include <cstdio>
@@ -102,12 +101,7 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
                    // of characters in the date if it was written out
                    // yyyy-mm-dd hh:mm:ss
 
-        // See comment for the use of this macro in standard-into-type.cpp.
-        GCC_WARNING_SUPPRESS(cast-align)
-
         TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
-
-        GCC_WARNING_RESTORE(cast-align)
 
         ts->year = static_cast<SQLSMALLINT>(t.tm_year + 1900);
         ts->month = static_cast<SQLUSMALLINT>(t.tm_mon + 1);

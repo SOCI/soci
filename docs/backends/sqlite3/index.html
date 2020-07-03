@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../../img/favicon.ico">
+        <title>SQLite3 - SOCI (4.0)</title>
+        <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        <script src="../../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../../js/bootstrap-3.0.3.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container">
+
+                <!-- Collapsed navigation -->
+                <div class="navbar-header">
+                    <!-- Expander button -->
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="../..">SOCI (4.0)</a>
+                </div>
+
+                <!-- Expanded navigation -->
+                <div class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li >
+                                <a href="../..">Home</a>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Overview <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../../quickstart/">Getting Started</a>
+</li>
+                                    
+<li >
+    <a href="../../installation/">Installation</a>
+</li>
+                                    
+<li >
+    <a href="../../structure/">Library Structure</a>
+</li>
+                                    
+<li >
+    <a href="../../license/">License</a>
+</li>
+                                    
+<li >
+    <a href="../../faq/">FAQ</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">User Guide <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../../connections/">Connections</a>
+</li>
+                                    
+<li >
+    <a href="../../queries/">Queries</a>
+</li>
+                                    
+<li >
+    <a href="../../binding/">Data Binding</a>
+</li>
+                                    
+<li >
+    <a href="../../indicators/">Data Indicators</a>
+</li>
+                                    
+<li >
+    <a href="../../types/">Data Types</a>
+</li>
+                                    
+<li >
+    <a href="../../lobs/">LOBs</a>
+</li>
+                                    
+<li >
+    <a href="../../statements/">Statements</a>
+</li>
+                                    
+<li >
+    <a href="../../transactions/">Transactions</a>
+</li>
+                                    
+<li >
+    <a href="../../procedures/">Procedures</a>
+</li>
+                                    
+<li >
+    <a href="../../errors/">Errors</a>
+</li>
+                                    
+<li >
+    <a href="../../logging/">Logging</a>
+</li>
+                                    
+<li >
+    <a href="../../interfaces/">Interfaces</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown active">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Backends <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../">Features</a>
+</li>
+                                    
+<li >
+    <a href="../db2/">DB2</a>
+</li>
+                                    
+<li >
+    <a href="../firebird/">Firebird</a>
+</li>
+                                    
+<li >
+    <a href="../mysql/">MySQL</a>
+</li>
+                                    
+<li >
+    <a href="../odbc/">ODBC</a>
+</li>
+                                    
+<li >
+    <a href="../oracle/">Oracle</a>
+</li>
+                                    
+<li >
+    <a href="../postgresql/">PostgreSQL</a>
+</li>
+                                    
+<li class="active">
+    <a href="./">SQLite3</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Miscellaneous <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../../beyond/">Beyond SQL</a>
+</li>
+                                    
+<li >
+    <a href="../../multithreading/">Multi-threading</a>
+</li>
+                                    
+<li >
+    <a href="../../boost/">Boost</a>
+</li>
+                                    
+<li >
+    <a href="../../utilities/">Utilities</a>
+</li>
+                                    
+<li >
+    <a href="../../vagrant/">Vagrant</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">API <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../../api/client/">Client API</a>
+</li>
+                                    
+<li >
+    <a href="../../api/backend/">Backend API</a>
+</li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#">Ada</a>
+    <ul class="dropdown-menu">
+            
+<li >
+    <a href="../../languages/ada/">Ada Bindings</a>
+</li>
+            
+<li >
+    <a href="../../languages/ada/concepts/">Ada Concepts</a>
+</li>
+            
+<li >
+    <a href="../../languages/ada/idioms/">Ada Idioms</a>
+</li>
+            
+<li >
+    <a href="../../languages/ada/reference/">Ada API Reference</a>
+</li>
+    </ul>
+  </li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li >
+                                <a rel="next" href="../postgresql/">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li >
+                                <a rel="prev" href="../../beyond/">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://github.com/SOCI/soci/edit/master/docs/backends/sqlite3.md"><i class="fa fa-github"></i> Edit on GitHub</a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#sqlite3-backend-reference">SQLite3 Backend Reference</a></li>
+            <li><a href="#prerequisites">Prerequisites</a></li>
+            <li><a href="#soci-feature-support">SOCI Feature Support</a></li>
+            <li><a href="#native-api-access">Native API Access</a></li>
+            <li><a href="#backend-specific-extensions">Backend-specific extensions</a></li>
+            <li><a href="#configuration-options">Configuration options</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="sqlite3-backend-reference">SQLite3 Backend Reference</h1>
+<p>SOCI backend for accessing SQLite 3 database.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<h3 id="supported-versions">Supported Versions</h3>
+<p>The SOCI SQLite3 backend is supported for use with SQLite3 &gt;= 3.1</p>
+<h3 id="tested-platforms">Tested Platforms</h3>
+<table>
+<thead>
+<tr>
+<th>SQLite3</th>
+<th>OS</th>
+<th>Compiler</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3.12.1</td>
+<td>Windows Server 2016</td>
+<td>MSVC++ 14.1</td>
+</tr>
+<tr>
+<td>3.12.1</td>
+<td>Windows Server 2012 R2</td>
+<td>MSVC++ 14.0</td>
+</tr>
+<tr>
+<td>3.12.1</td>
+<td>Windows Server 2012 R2</td>
+<td>MSVC++ 12.0</td>
+</tr>
+<tr>
+<td>3.12.1</td>
+<td>Windows Server 2012 R2</td>
+<td>MSVC++ 11.0</td>
+</tr>
+<tr>
+<td>3.12.1</td>
+<td>Windows Server 2012 R2</td>
+<td>Mingw-w64/GCC 4.8</td>
+</tr>
+<tr>
+<td>3.7.9</td>
+<td>Ubuntu 12.04</td>
+<td>g++ 4.6.3</td>
+</tr>
+<tr>
+<td>3.4.0</td>
+<td>Windows XP</td>
+<td>(cygwin) g++ 3.4.4</td>
+</tr>
+<tr>
+<td>3.4.0</td>
+<td>Windows XP</td>
+<td>Visual C++ 2005 Express Edition</td>
+</tr>
+<tr>
+<td>3.3.8</td>
+<td>Windows XP</td>
+<td>Visual C++ 2005 Professional</td>
+</tr>
+<tr>
+<td>3.5.2</td>
+<td>Mac OS X 10.5</td>
+<td>g++ 4.0.1</td>
+</tr>
+<tr>
+<td>3.3.4</td>
+<td>Ubuntu 5.1</td>
+<td>g++ 4.0.2</td>
+</tr>
+<tr>
+<td>3.3.4</td>
+<td>Windows XP</td>
+<td>(cygwin) g++ 3.3.4</td>
+</tr>
+<tr>
+<td>3.3.4</td>
+<td>Windows XP</td>
+<td>Visual C++ 2005 Express Edition</td>
+</tr>
+<tr>
+<td>3.2.1</td>
+<td>Linux i686 2.6.10-gentoo-r6</td>
+<td>g++ 3.4.5</td>
+</tr>
+<tr>
+<td>3.1.3</td>
+<td>Mac OS X 10.4</td>
+<td>g++ 4.0.1</td>
+</tr>
+<tr>
+<td>3.24.0</td>
+<td>macOS High Sierra 10.13.5</td>
+<td>AppleClang 9.1.0.9020039</td>
+</tr>
+</tbody>
+</table>
+<h3 id="required-client-libraries">Required Client Libraries</h3>
+<p>The SOCI SQLite3 backend requires SQLite3's <code>libsqlite3</code> client library.</p>
+<h3 id="connecting-to-the-database">Connecting to the Database</h3>
+<p>To establish a connection to the SQLite3 database, create a Session object using the <code>SQLite3</code> backend factory together with the database file name:</p>
+<pre><code class="cpp">session sql(sqlite3, &quot;database_filename&quot;);
+
+// or:
+
+session sql(&quot;sqlite3&quot;, &quot;db=db.sqlite timeout=2 shared_cache=true&quot;);
+</code></pre>
+
+<p>The set of parameters used in the connection string for SQLite is:</p>
+<ul>
+<li><code>dbname</code> or <code>db</code></li>
+<li><code>timeout</code> - set sqlite busy timeout (in seconds) (<a href="http://www.sqlite.org/c3ref/busy_timeout.html">link</a>)</li>
+<li><code>synchronous</code> - set the pragma synchronous flag (<a href="http://www.sqlite.org/pragma.html#pragma_synchronous">link</a>)</li>
+<li><code>shared_cache</code> - should be <code>true</code> (<a href="http://www.sqlite.org/c3ref/enable_shared_cache.html">link</a>)</li>
+</ul>
+<p>Once you have created a <code>session</code> object as shown above, you can use it to access the database, for example:</p>
+<pre><code class="cpp">int count;
+sql &lt;&lt; &quot;select count(*) from invoices&quot;, into(count);
+</code></pre>
+
+<p>(See the <a href="../../connections/">connection</a> and <a href="../../binding/">data binding</a> documentation for general information on using the <code>session</code> class.)</p>
+<h2 id="soci-feature-support">SOCI Feature Support</h2>
+<h3 id="dynamic-binding">Dynamic Binding</h3>
+<p>The SQLite3 backend supports the use of the SOCI <code>row</code> class, which facilitates retrieval of data whose type is not known at compile time.</p>
+<p>When calling <code>row::get&lt;T&gt;()</code>, the type you should pass as T depends upon the underlying database type.</p>
+<p>For the SQLite3 backend, this type mapping is complicated by the fact the SQLite3 does not enforce [types][INTEGER_PRIMARY_KEY] and makes no attempt to validate the type names used in table creation or alteration statements. SQLite3 will return the type as a string, SOCI will recognize the following strings and match them the corresponding SOCI types:</p>
+<table>
+<thead>
+<tr>
+<th>SQLite3 Data Type</th>
+<th>SOCI Data Type</th>
+<th><code>row::get&lt;T&gt;</code> specializations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><em>float</em>, <em>double</em></td>
+<td>dt_double</td>
+<td>double</td>
+</tr>
+<tr>
+<td><em>int8</em>, <em>bigint</em></td>
+<td>dt_long_long</td>
+<td>long long</td>
+</tr>
+<tr>
+<td><em>unsigned big int</em></td>
+<td>dt_unsigned_long_long</td>
+<td>unsigned long long</td>
+</tr>
+<tr>
+<td><em>int</em>, <em>boolean</em></td>
+<td>dt_integer</td>
+<td>int</td>
+</tr>
+<tr>
+<td><em>text, </em>char*</td>
+<td>dt_string</td>
+<td>std::string</td>
+</tr>
+<tr>
+<td><em>date</em>, <em>time</em></td>
+<td>dt_date</td>
+<td>std::tm</td>
+</tr>
+</tbody>
+</table>
+<p>[INTEGER_PRIMARY_KEY] : There is one case where SQLite3 enforces type. If a column is declared as "integer primary key", then SQLite3 uses that as an alias to the internal ROWID column that exists for every table.  Only integers are allowed in this column.</p>
+<p>(See the <a href="../../types/#dynamic-binding">dynamic resultset binding</a> documentation for general information on using the <code>row</code> class.)</p>
+<h3 id="binding-by-name">Binding by Name</h3>
+<p>In addition to <a href="../../binding/#binding-by-position">binding by position</a>, the SQLite3 backend supports <a href="../../binding/#binding-by-name">binding by name</a>, via an overload of the <code>use()</code> function:</p>
+<pre><code class="cpp">int id = 7;
+sql &lt;&lt; &quot;select name from person where id = :id&quot;, use(id, &quot;id&quot;)
+</code></pre>
+
+<p>The backend also supports the SQLite3 native numbered syntax, "one or more literals can be replace by a parameter "?" or ":AAA" or "@AAA" or "$VVV" where AAA is an alphanumeric identifier and VVV is a variable name according to the syntax rules of the TCL programming language." <a href="http://www.sqlite.org/capi3ref.html#sqlite3_bind_int">[1]</a>:</p>
+<pre><code class="cpp">int i = 7;
+int j = 8;
+sql &lt;&lt; &quot;insert into t(x, y) values(?, ?)&quot;, use(i), use(j);
+</code></pre>
+
+<h3 id="bulk-operations">Bulk Operations</h3>
+<p>The SQLite3 backend has full support for SOCI's <a href="../../binding/#bulk-operations">bulk operations</a> interface.  However, this support is emulated and is not native.</p>
+<h3 id="transactions">Transactions</h3>
+<p><a href="../../transactions/">Transactions</a> are also fully supported by the SQLite3 backend.</p>
+<h3 id="blob-data-type">BLOB Data Type</h3>
+<p>The SQLite3 backend supports working with data stored in columns of type Blob, via SOCI's <a href="../../lobs/">BLOB</a> class. Because of SQLite3 general typelessness the column does not have to be declared any particular type.</p>
+<h3 id="rowid-data-type">RowID Data Type</h3>
+<p>In SQLite3 RowID is an integer. "Each entry in an SQLite table has a unique integer key called the "rowid". The rowid is always available as an undeclared column named ROWID, OID, or <em>ROWID</em>. If the table has a column of type INTEGER PRIMARY KEY then that column is another an alias for the rowid."<a href="http://www.sqlite.org/capi3ref.html#sqlite3_last_insert_rowid">[2]</a></p>
+<h3 id="nested-statements">Nested Statements</h3>
+<p>Nested statements are not supported by SQLite3 backend.</p>
+<h3 id="stored-procedures">Stored Procedures</h3>
+<p>Stored procedures are not supported by SQLite3 backend</p>
+<h2 id="native-api-access">Native API Access</h2>
+<p>SOCI provides access to underlying datbabase APIs via several <code>get_backend()</code> functions, as described in the <a href="../../beyond/">beyond SOCI</a> documentation.</p>
+<p>The SQLite3 backend provides the following concrete classes for navite API access:</p>
+<table>
+<thead>
+<tr>
+<th>Accessor Function</th>
+<th>Concrete Class</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>session_backend* session::get_backend()</td>
+<td>sqlie3_session_backend</td>
+</tr>
+<tr>
+<td>statement_backend* statement::get_backend()</td>
+<td>sqlite3_statement_backend</td>
+</tr>
+<tr>
+<td>rowid_backend* rowid::get_backend()</td>
+<td>sqlite3_rowid_backend</td>
+</tr>
+</tbody>
+</table>
+<h2 id="backend-specific-extensions">Backend-specific extensions</h2>
+<h3 id="sqlite3-result-code-support">SQLite3 result code support</h3>
+<p>SQLite3 result code is provided via the backend specific <code>sqlite3_soci_error</code> class. Catching the backend specific error yields the value of SQLite3 result code via the <code>result()</code> method.</p>
+<h2 id="configuration-options">Configuration options</h2>
+<p>None</p></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+                <p>Copyright &copy; 2017 <a href="https://github.com/msobczak">Maciej Sobczak</a> and <a href="http://soci.sourceforge.net/people.html">SOCI Team</a>.</p>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "../..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../../js/base.js" defer></script>
+        <script src="../../search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

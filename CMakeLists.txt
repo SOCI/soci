@@ -8,200 +8,101 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
-# General settings
+# Preamble
 ###############################################################################
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-
-project(SOCI)
+cmake_minimum_required(VERSION 3.17)
+project(SOCI VERSION 5.0.0 LANGUAGES CXX HOMEPAGE_URL "http://soci.sourceforge.net" DESCRIPTION "SOCI - The C++ Database Access Library") 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 ###############################################################################
-# Build features and variants
+# Project wide setup
 ##############################################################################
+set(CMAKE_CXX_STANDARD 98)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(SOCI_SHARED "Enable build of shared libraries" ON)
-option(SOCI_STATIC "Enable build of static libraries" ON)
-option(SOCI_TESTS "Enable build of collection of SOCI tests" ON)
-option(SOCI_ASAN "Enable address sanitizer on GCC v4.8+/Clang v 3.1+" OFF)
-
-
-###############################################################################
-# SOCI CMake modules
-###############################################################################
-
-# Path to additional CMake modules
-set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
-set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
-
-include(SociUtilities)
-include(SociConfig)
-
-colormsg(_HIBLUE_ "Configuring SOCI:")
-
-###############################################################################
-# SOCI version information
-###############################################################################
-include(SociVersion)
-
-soci_version()
-
-###############################################################################
-# Build features and variants
-##############################################################################
-
-boost_report_value(SOCI_SHARED)
-boost_report_value(SOCI_STATIC)
-boost_report_value(SOCI_TESTS)
-boost_report_value(SOCI_ASAN)
-
-# from SociConfig.cmake
-boost_report_value(SOCI_CXX11)
-boost_report_value(LIB_SUFFIX)
-
-# Put the libaries and binaries that get built into directories at the
-# top of the build tree rather than in hard-to-find leaf
-# directories. This simplifies manual testing and the use of the build
-# tree rather than installed Boost libraries.
+# Put the libaries and binaries at the top of the build tree for easier use
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+# This adds definitions to all build configurations. SOCI_DEBUG_POSTFIX is passed to soci library
+add_definitions(-DSOCI_LIB_PREFIX="${CMAKE_SHARED_LIBRARY_PREFIX}soci_"
+                -DSOCI_LIB_SUFFIX="${CMAKE_SHARED_LIBRARY_SUFFIX}"
+                -DSOCI_DEBUG_POSTFIX="${CMAKE_DEBUG_POSTFIX}")
+
 ###############################################################################
-# Find SOCI dependencies
+# Dependencies
 ###############################################################################
 
-set(SOCI_CORE_TARGET)
-set(SOCI_CORE_TARGET_STATIC)
-set(SOCI_CORE_DEPS_LIBS)
+# Soci core
+find_package(Threads REQUIRED)
 
-include(SociDependencies)
+find_package(Boost COMPONENTS date_time)
 
-get_property(SOCI_INCLUDE_DIRS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  PROPERTY INCLUDE_DIRECTORIES)
+# SQLite3 soci backend
+find_package(SQLite3 REQUIRED)
 
-if(Threads_FOUND)
-  list(APPEND SOCI_CORE_DEPS_LIBS ${CMAKE_THREAD_LIBS_INIT})
-else()
-  message(FATAL_ERROR "No thread library found")
-endif()
+###############################################################################
+# Main build targets
+###############################################################################
 
-if(NOT MSVC)
-  set(DL_FIND_QUIETLY TRUE)
-  find_package(DL)
-  if(DL_FOUND)
-    list(APPEND SOCI_CORE_DEPS_LIBS ${DL_LIBRARY})
-    set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES ${DL_INCLUDE_DIR})
-    add_definitions(-DHAVE_DL=1)
-  endif()
-endif()
+# BUILD_SHARED_LIBS controlls whether the libraries will be static or shared
+configure_file(src/soci_version.cpp.in soci_version.cpp @ONLY)
+add_library(soci_version ${CMAKE_CURRENT_BINARY_DIR}/soci_version.cpp)
+target_include_directories(soci_version PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 
-if(Boost_FOUND)
-  get_property(SOCI_COMPILE_DEFINITIONS
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    PROPERTY COMPILE_DEFINITIONS)
+configure_file(src/backends/soci_backend_config.cpp.in soci_backend_config.cpp @ONLY)
+add_library(soci_backend_config ${CMAKE_CURRENT_BINARY_DIR}/soci_backend_config.cpp)
+target_include_directories(soci_backend_config PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
 
-  set(SOCI_HAVE_BOOST ON)
+add_library(soci_core)
+target_link_libraries(soci_core PRIVATE Threads::Threads Boost::boost Boost::date_time ${CMAKE_DL_LIBS})
+target_include_directories(soci_core PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
+target_include_directories(soci_core PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 
-  list(APPEND SOCI_COMPILE_DEFINITIONS "BOOST_ALL_NO_LIB")
+add_library(soci_sqlite3)
+target_link_libraries(soci_sqlite3 PUBLIC SQLite::SQLite3 PRIVATE soci_core soci_backend_config)
+target_include_directories(soci_sqlite3 PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
+target_include_directories(soci_core PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 
-  if(Boost_DATE_TIME_FOUND)
-    list(APPEND SOCI_CORE_DEPS_LIBS ${Boost_DATE_TIME_LIBRARY})
-    set(SOCI_HAVE_BOOST_DATE_TIME ON)
-  endif()
-
-  list(APPEND SOCI_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
-  list(APPEND SOCI_CORE_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
-
-  set_directory_properties(PROPERTY COMPILE_DEFINITIONS "${SOCI_COMPILE_DEFINITIONS}")
-
-  set_property(DIRECTORY ${SOCI_SOURCE_DIR}
-    PROPERTY COMPILE_DEFINITIONS "${SOCI_COMPILE_DEFINITIONS}")
-else()
-  set(SOCI_HAVE_BOOST OFF)
-  set(SOCI_HAVE_BOOST_DATE_TIME OFF)
-endif()
-
-set(SOCI_HAVE_BOOST ${SOCI_HAVE_BOOST} CACHE INTERNAL "Boost library")
-set(SOCI_HAVE_BOOST_DATE_TIME ${SOCI_HAVE_BOOST_DATE_TIME} CACHE INTERNAL "Boost date_time library")
-
-list(APPEND SOCI_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR})
-
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  PROPERTY
-  INCLUDE_DIRECTORIES ${SOCI_INCLUDE_DIRS})
+add_subdirectory(src)
 
 ###############################################################################
 # Installation
 ###############################################################################
+include(GNUInstallDirs)
+set(SOCI_INSTALL_CMAKEDIR ${CMAKE_INSTALL_LIBDIR}/cmake/Soci CACHE STRING "Path to Soci cmake files")
 
-if(NOT DEFINED SOCI_LIBDIR)
-  if(APPLE OR CMAKE_SIZEOF_VOID_P EQUAL 4)
-    set(SOCI_LIBDIR "lib")
-  else()
-    set(SOCI_LIBDIR "lib64")
-  endif()
+install(FILES SociConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/SociConfigVersion.cmake 
+  DESTINATION ${SOCI_INSTALL_CMAKEDIR}
+)
+
+install(TARGETS soci_core soci_version soci_sqlite3 soci_backend_config
+  EXPORT SociTargets
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} 
+          COMPONENT soci_runtime
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}             
+          COMPONENT          soci_runtime           
+          NAMELINK_COMPONENT soci_development   
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}           
+          COMPONENT   soci_development 
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(EXPORT SociTargets
+  DESTINATION ${SOCI_INSTALL_CMAKEDIR}  
+  NAMESPACE   SOCI::                    
+  COMPONENT   soci_development
+)
+
+###############################################################################
+# Tests
+###############################################################################
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  include(CTest)
 endif()
 
-set(BINDIR "bin" CACHE PATH "The directory to install binaries into.")
-set(LIBDIR ${SOCI_LIBDIR} CACHE PATH "The directory to install libraries into.")
-set(DATADIR "share" CACHE PATH "The directory to install data files into.")
-set(INCLUDEDIR "include" CACHE PATH "The directory to install includes into.")
-
-###############################################################################
-# Configuration files
-###############################################################################
-set(CONFIG_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
-install(DIRECTORY ${CONFIG_INCLUDE_DIR}/soci DESTINATION ${INCLUDEDIR})
-set(CONFIG_FILE_IN "include/soci/soci-config.h.in")
-set(CONFIG_FILE_OUT "${CONFIG_INCLUDE_DIR}/soci/soci-config.h")
-
-
-
-###############################################################################
-# Build configured components
-###############################################################################
-include(SociBackend)
-
-include_directories(${SOCI_SOURCE_DIR}/include ${CONFIG_INCLUDE_DIR})
-add_subdirectory(src)
-
-if(SOCI_TESTS)
-  ###############################################################################
-  # Enable tests
-  ###############################################################################
-  enable_testing()
-
-  file(TO_NATIVE_PATH ${PROJECT_SOURCE_DIR} TEST_ACCESS_PATH)
-  configure_file(${PROJECT_SOURCE_DIR}/cmake/configs/test-access.cmake ${PROJECT_SOURCE_DIR}/tests/odbc/test-access.dsn @ONLY)
-
-  set(MYSQL_DRIVER_NAME "MySQL")
-  if(WIN32)
-    set(MYSQL_DRIVER_NAME "MySQL ODBC 5.3 ANSI Driver")
-  endif()
-  configure_file(${PROJECT_SOURCE_DIR}/cmake/configs/test-mysql.cmake ${PROJECT_SOURCE_DIR}/tests/odbc/test-mysql.dsn @ONLY)
-
-  # Define "make check" as alias for "make test"
-  add_custom_target(check COMMAND ctest)
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
   add_subdirectory(tests)
 endif()
-
-###############################################################################
-# build config file
-###############################################################################
-
-get_cmake_property(ALL_VARIABLES CACHE_VARIABLES)
-set(CONFIGURED_VARIABLES)
-foreach(v ${ALL_VARIABLES})
-    if (v MATCHES "^SOCI_HAVE.*")
-	get_property(CACHE_HELPSTRING CACHE ${v} PROPERTY HELPSTRING)
-		set(CONFIGURED_VARIABLES "${CONFIGURED_VARIABLES}\n// ${CACHE_HELPSTRING}\n")
-        if (${${v}})
-            set(CONFIGURED_VARIABLES "${CONFIGURED_VARIABLES}#define ${v}\n")
-        else()
-            set(CONFIGURED_VARIABLES "${CONFIGURED_VARIABLES}/* #undef ${v} */\n")
-        endif()
-    endif()
-endforeach()
-configure_file("${CONFIG_FILE_IN}" "${CONFIG_FILE_OUT}")
-
-message(STATUS "")
-

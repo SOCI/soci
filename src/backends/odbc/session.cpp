@@ -73,56 +73,26 @@ odbc_session_backend::odbc_session_backend(
 #endif // _WIN32
 
     std::string const & connectString = parameters.get_connect_string();
+    rc = SQLDriverConnect(hdbc_, hwnd_for_prompt,
+                          sqlchar_cast(connectString),
+                          (SQLSMALLINT)connectString.size(),
+                          outConnString, 1024, &strLength,
+                          static_cast<SQLUSMALLINT>(completion));
 
-    // This "infinite" loop can be executed at most twice.
-    std::string errContext;
-    for (;;)
+    // Don't use is_odbc_error() here as it doesn't consider SQL_NO_DATA to be
+    // an error -- but it is one here, as it's returned if a message box shown
+    // by SQLDriverConnect() was cancelled and this means we failed to connect.
+    switch (rc)
     {
-        rc = SQLDriverConnect(hdbc_, hwnd_for_prompt,
-                              sqlchar_cast(connectString),
-                              (SQLSMALLINT)connectString.size(),
-                              outConnString, 1024, &strLength,
-                              static_cast<SQLUSMALLINT>(completion));
-
-        // Don't use is_odbc_error() here as it doesn't consider SQL_NO_DATA to be
-        // an error -- but it is one here, as it's returned if a message box shown
-        // by SQLDriverConnect() was cancelled and this means we failed to connect.
-        switch (rc)
-        {
-          case SQL_SUCCESS:
-          case SQL_SUCCESS_WITH_INFO:
-            break;
-
-          case SQL_NO_DATA:
-            throw soci_error("Connecting to the database cancelled by user.");
-
-          default:
-            odbc_soci_error err(SQL_HANDLE_DBC, hdbc_, "connecting to database");
-
-            // If connection pooling had been enabled by the application, we
-            // would get HY110 ODBC error for any connection attempt not using
-            // SQL_DRIVER_NOPROMPT, so it's worth retrying with it in this
-            // case: in the worst case, we'll hit 28000 ODBC error (login
-            // failed), which we'll report together with the context helping to
-            // understand where it came from.
-            if (memcmp(err.odbc_error_code(), "HY110", 6) == 0 &&
-                    completion != SQL_DRIVER_NOPROMPT)
-            {
-                errContext = "while retrying to connect without prompting, as "
-                             "prompting the user is not supported when using "
-                             "pooled connections";
-                completion = SQL_DRIVER_NOPROMPT;
-                continue;
-            }
-
-            if (!errContext.empty())
-                err.add_context(errContext);
-
-            throw err;
-        }
-
-        // This loop only runs once unless we retry in case of HY110 above.
+      case SQL_SUCCESS:
+      case SQL_SUCCESS_WITH_INFO:
         break;
+
+      case SQL_NO_DATA:
+        throw soci_error("Connecting to the database cancelled by user.");
+
+      default:
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "connecting to database");
     }
 
     connection_string_.assign((const char*)outConnString, strLength);

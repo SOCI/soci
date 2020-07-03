@@ -8,9 +8,16 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
-
-soci_backend(SQLite3
-  DEPENDS SQLite3
-  DESCRIPTION "SOCI backend for SQLite 3"
-  AUTHORS "Maciej Sobczak, Stephen Hutton, David Courtney"
-  MAINTAINERS "Maciej Sobczak, Mateusz Loskot")
+target_sources(soci_sqlite3 
+  PRIVATE
+    blob.cpp
+    error.cpp
+    factory.cpp
+    row-id.cpp
+    session.cpp
+    standard-into-type.cpp
+    standard-use-type.cpp
+    statement.cpp
+    vector-into-type.cpp
+    vector-use-type.cpp
+)

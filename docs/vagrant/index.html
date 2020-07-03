@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Vagrant - SOCI (4.0)</title>
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        <script src="../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../js/bootstrap-3.0.3.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container">
+
+                <!-- Collapsed navigation -->
+                <div class="navbar-header">
+                    <!-- Expander button -->
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="..">SOCI (4.0)</a>
+                </div>
+
+                <!-- Expanded navigation -->
+                <div class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li >
+                                <a href="..">Home</a>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Overview <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../quickstart/">Getting Started</a>
+</li>
+                                    
+<li >
+    <a href="../installation/">Installation</a>
+</li>
+                                    
+<li >
+    <a href="../structure/">Library Structure</a>
+</li>
+                                    
+<li >
+    <a href="../license/">License</a>
+</li>
+                                    
+<li >
+    <a href="../faq/">FAQ</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">User Guide <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../connections/">Connections</a>
+</li>
+                                    
+<li >
+    <a href="../queries/">Queries</a>
+</li>
+                                    
+<li >
+    <a href="../binding/">Data Binding</a>
+</li>
+                                    
+<li >
+    <a href="../indicators/">Data Indicators</a>
+</li>
+                                    
+<li >
+    <a href="../types/">Data Types</a>
+</li>
+                                    
+<li >
+    <a href="../lobs/">LOBs</a>
+</li>
+                                    
+<li >
+    <a href="../statements/">Statements</a>
+</li>
+                                    
+<li >
+    <a href="../transactions/">Transactions</a>
+</li>
+                                    
+<li >
+    <a href="../procedures/">Procedures</a>
+</li>
+                                    
+<li >
+    <a href="../errors/">Errors</a>
+</li>
+                                    
+<li >
+    <a href="../logging/">Logging</a>
+</li>
+                                    
+<li >
+    <a href="../interfaces/">Interfaces</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Backends <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../backends/">Features</a>
+</li>
+                                    
+<li >
+    <a href="../backends/db2/">DB2</a>
+</li>
+                                    
+<li >
+    <a href="../backends/firebird/">Firebird</a>
+</li>
+                                    
+<li >
+    <a href="../backends/mysql/">MySQL</a>
+</li>
+                                    
+<li >
+    <a href="../backends/odbc/">ODBC</a>
+</li>
+                                    
+<li >
+    <a href="../backends/oracle/">Oracle</a>
+</li>
+                                    
+<li >
+    <a href="../backends/postgresql/">PostgreSQL</a>
+</li>
+                                    
+<li >
+    <a href="../backends/sqlite3/">SQLite3</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown active">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Miscellaneous <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../beyond/">Beyond SQL</a>
+</li>
+                                    
+<li >
+    <a href="../multithreading/">Multi-threading</a>
+</li>
+                                    
+<li >
+    <a href="../boost/">Boost</a>
+</li>
+                                    
+<li >
+    <a href="../utilities/">Utilities</a>
+</li>
+                                    
+<li class="active">
+    <a href="./">Vagrant</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">API <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../api/client/">Client API</a>
+</li>
+                                    
+<li >
+    <a href="../api/backend/">Backend API</a>
+</li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#">Ada</a>
+    <ul class="dropdown-menu">
+            
+<li >
+    <a href="../languages/ada/">Ada Bindings</a>
+</li>
+            
+<li >
+    <a href="../languages/ada/concepts/">Ada Concepts</a>
+</li>
+            
+<li >
+    <a href="../languages/ada/idioms/">Ada Idioms</a>
+</li>
+            
+<li >
+    <a href="../languages/ada/reference/">Ada API Reference</a>
+</li>
+    </ul>
+  </li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li >
+                                <a rel="next" href="../utilities/">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li >
+                                <a rel="prev" href="../api/client/">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://github.com/SOCI/soci/edit/master/docs/vagrant.md"><i class="fa fa-github"></i> Edit on GitHub</a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#vagrant-soci">Vagrant SOCI</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#prerequisites">Prerequisites</a></li>
+            <li><a href="#usage">Usage</a></li>
+            <li><a href="#troubleshooting">Troubleshooting</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="vagrant-soci">Vagrant SOCI</h1>
+<p><a href="https://www.vagrantup.com/">Vagrant</a> used to build and provision
+virtual environments for <strong>hassle-free</strong> SOCI development.</p>
+<h2 id="features">Features</h2>
+<ul>
+<li>Ubuntu 14.04 (Trusty) virtual machine</li>
+<li>Multi-machine set-up with three VMs: <code>soci</code>, <code>oracle</code>, <code>db2</code>.</li>
+<li>Support networking between the configured machines.</li>
+<li><code>soci.vm</code>:</li>
+<li>hostname: <code>vmsoci.local</code></li>
+<li>build essentials</li>
+<li>core dependencies</li>
+<li>backend dependencies</li>
+<li>FOSS databases installed with sample <code>soci</code> user and instance pre-configured</li>
+<li>during provision, automatically clones and builds SOCI from <code>master</code> branch.</li>
+<li><code>db2.vm</code>:</li>
+<li>hostname: <code>vmdb2.local</code></li>
+<li>IBM DB2 Express-C 9.7 installed from <a href="http://archive.canonical.com">archive.canonical.com</a> packages.</li>
+<li><code>oracle.vm</code>:</li>
+<li><em>TODO</em>: provision with Oracle XE</li>
+<li>SOCI local git repository (aka <code>$SOCI_HOME</code>) is automatically shared on host
+  and all guest machines.</li>
+</ul>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>Speedy broadband, time and coffee.</li>
+<li>Recommended 4GB or much more RAM (tested with 16GB only).</li>
+</ul>
+<h3 id="soci-db2-backend">SOCI DB2 backend</h3>
+<p>The <code>soci.vm</code> will be configured properly to build the DB2 backend only if
+it is provisioned with complete DB2 CLI client (libraries and headers).
+You need to download "IBM Data Server Driver Package (DS Driver)" manually
+and make it visible to Vagrant:</p>
+<ol>
+<li>Go to <a href="http://www-01.ibm.com/support/docview.wss?uid=swg21385217">IBM Data Server Client Packages</a>.</li>
+<li>Download "IBM Data Server Driver Package (DS Driver)".</li>
+<li>Copy the package to <code>${SOCI_HOME}/tmp</code> directory, on host machine.</li>
+</ol>
+<h2 id="usage">Usage</h2>
+<p>Below, simple and easy development workflow with Vagrant is outlined:</p>
+<ul>
+<li><a href="https://docs.vagrantup.com/v2/getting-started/up.html">Boot</a></li>
+</ul>
+<pre><code class="console">vagrant up
+</code></pre>
+
+<p>or boot VMs selectively:</p>
+<pre><code class="console">vagrant up {soci|db2}
+</code></pre>
+
+<p>First time you run it, be patient as Vagrant downloads VM box and
+provisions it installing all the necessary packages.</p>
+<ul>
+<li>You can SSH into the machine</li>
+</ul>
+<pre><code class="console">vagrant ssh {soci|db2}
+</code></pre>
+
+<ul>
+<li>Run git commands can either from host or VM <code>soci</code> (once connected via SSH)</li>
+</ul>
+<pre><code class="console">cd /vagrant # aka $SOCI_HOME
+git pull origin master
+</code></pre>
+
+<ul>
+<li>You can edit source code on both, on host or VM <code>soci</code>.</li>
+<li>For example, edit in your favourite editor on host machine, then build, run, test and debug on guest machine from command line.</li>
+<li>
+<p>Alternatively, edit and build on host machine using your favourite IDE, then test and debug connecting to DBs on guest machines via network.</p>
+</li>
+<li>
+<p>Build on VM <code>soci</code></p>
+</li>
+</ul>
+<pre><code class="console">vagrant ssh soci
+cd /vagrant    # aka $SOCI_HOME
+cd soci-build  # aka $SOCI_BUILD
+make
+</code></pre>
+
+<p>You can also execute the <code>build.h</code> script provided to run CMake and make</p>
+<pre><code class="console">vagrant ssh soci
+cd $SOCI_BUILD
+/vagrant/scripts/vagrant/build.sh
+</code></pre>
+
+<ul>
+<li>
+<p>Debug, only on VM <code>soci</code>, for example, with gdb or remotely Visual Studio 2017.</p>
+</li>
+<li>
+<p><a href="https://docs.vagrantup.com/v2/getting-started/teardown.html">Teardown</a></p>
+</li>
+</ul>
+<pre><code class="console">vagrant {suspend|halt|destroy} {soci|db2}
+</code></pre>
+
+<p>Check Vagrant <a href="https://docs.vagrantup.com/v2/cli/index.html">command-line interface</a> for complete list of commands.</p>
+<h3 id="environment-variables">Environment variables</h3>
+<p>All variables available to the <code>vagrant</code> user on the VMs are defined in and sourced from <code>/vagrant/scripts/vagrant/common.env</code>:</p>
+<ul>
+<li><code>SOCI_HOME</code> where SOCI master is cloned (<code>/vagrant</code> on VM <code>soci</code>)</li>
+<li><code>SOCI_BUILD</code> where CMake generates build configuration (<code>/home/vagrant/soci-build</code> on VM <code>soci</code>)</li>
+<li><code>SOCI_HOST</code> network accessible VM <code>soci</code> hostname (<code>ping vmsoci.local</code>)</li>
+<li><code>SOCI_USER</code> default database user and database name</li>
+<li><code>SOCI_PASS</code> default database password for both, <code>SOCI_USER</code> and root/sysdba
+  of particular database.</li>
+<li><code>SOCI_DB2_HOST</code> network accessible VM <code>db2</code> hostname (<code>ping vmdb2.local</code>)</li>
+<li><code>SOCI_DB2_USER</code> admin username to DB2 instance.</li>
+<li><code>SOCI_DB2_USER</code> admin password to DB2 instance.</li>
+</ul>
+<p>Note, those variables are also used by provision scripts to set up databases.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<ul>
+<li>Analyze <code>vagrant up</code> output.</li>
+<li>On Windows, prefer <code>vagrant ssh</code> from inside MinGW Shell where  <code>ssh.exe</code> is available or learn how to use Vagrant with PuTTY.</li>
+<li>If you modify any of <code>scripts/vagrant/*.sh</code> scripts, <strong>ensure</strong> they have unified end-of-line characters to <code>LF</code> only. Otherwise, provisioning steps may fail.</li>
+</ul></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+                <p>Copyright &copy; 2017 <a href="https://github.com/msobczak">Maciej Sobczak</a> and <a href="http://soci.sourceforge.net/people.html">SOCI Team</a>.</p>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js" defer></script>
+        <script src="../search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

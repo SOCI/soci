@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../../img/favicon.ico">
+        <title>Firebird - SOCI (4.0)</title>
+        <link href="../../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        <script src="../../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../../js/bootstrap-3.0.3.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container">
+
+                <!-- Collapsed navigation -->
+                <div class="navbar-header">
+                    <!-- Expander button -->
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="../..">SOCI (4.0)</a>
+                </div>
+
+                <!-- Expanded navigation -->
+                <div class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li >
+                                <a href="../..">Home</a>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Overview <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../../quickstart/">Getting Started</a>
+</li>
+                                    
+<li >
+    <a href="../../installation/">Installation</a>
+</li>
+                                    
+<li >
+    <a href="../../structure/">Library Structure</a>
+</li>
+                                    
+<li >
+    <a href="../../license/">License</a>
+</li>
+                                    
+<li >
+    <a href="../../faq/">FAQ</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">User Guide <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../../connections/">Connections</a>
+</li>
+                                    
+<li >
+    <a href="../../queries/">Queries</a>
+</li>
+                                    
+<li >
+    <a href="../../binding/">Data Binding</a>
+</li>
+                                    
+<li >
+    <a href="../../indicators/">Data Indicators</a>
+</li>
+                                    
+<li >
+    <a href="../../types/">Data Types</a>
+</li>
+                                    
+<li >
+    <a href="../../lobs/">LOBs</a>
+</li>
+                                    
+<li >
+    <a href="../../statements/">Statements</a>
+</li>
+                                    
+<li >
+    <a href="../../transactions/">Transactions</a>
+</li>
+                                    
+<li >
+    <a href="../../procedures/">Procedures</a>
+</li>
+                                    
+<li >
+    <a href="../../errors/">Errors</a>
+</li>
+                                    
+<li >
+    <a href="../../logging/">Logging</a>
+</li>
+                                    
+<li >
+    <a href="../../interfaces/">Interfaces</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown active">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Backends <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../">Features</a>
+</li>
+                                    
+<li >
+    <a href="../db2/">DB2</a>
+</li>
+                                    
+<li class="active">
+    <a href="./">Firebird</a>
+</li>
+                                    
+<li >
+    <a href="../mysql/">MySQL</a>
+</li>
+                                    
+<li >
+    <a href="../odbc/">ODBC</a>
+</li>
+                                    
+<li >
+    <a href="../oracle/">Oracle</a>
+</li>
+                                    
+<li >
+    <a href="../postgresql/">PostgreSQL</a>
+</li>
+                                    
+<li >
+    <a href="../sqlite3/">SQLite3</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Miscellaneous <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../../beyond/">Beyond SQL</a>
+</li>
+                                    
+<li >
+    <a href="../../multithreading/">Multi-threading</a>
+</li>
+                                    
+<li >
+    <a href="../../boost/">Boost</a>
+</li>
+                                    
+<li >
+    <a href="../../utilities/">Utilities</a>
+</li>
+                                    
+<li >
+    <a href="../../vagrant/">Vagrant</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">API <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../../api/client/">Client API</a>
+</li>
+                                    
+<li >
+    <a href="../../api/backend/">Backend API</a>
+</li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#">Ada</a>
+    <ul class="dropdown-menu">
+            
+<li >
+    <a href="../../languages/ada/">Ada Bindings</a>
+</li>
+            
+<li >
+    <a href="../../languages/ada/concepts/">Ada Concepts</a>
+</li>
+            
+<li >
+    <a href="../../languages/ada/idioms/">Ada Idioms</a>
+</li>
+            
+<li >
+    <a href="../../languages/ada/reference/">Ada API Reference</a>
+</li>
+    </ul>
+  </li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li >
+                                <a rel="next" href="../db2/">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li >
+                                <a rel="prev" href="../mysql/">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://github.com/SOCI/soci/edit/master/docs/backends/firebird.md"><i class="fa fa-github"></i> Edit on GitHub</a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#firebird-backend-reference">Firebird Backend Reference</a></li>
+            <li><a href="#prerequisites">Prerequisites</a></li>
+            <li><a href="#connecting-to-the-database">Connecting to the Database</a></li>
+            <li><a href="#soci-feature-support">SOCI Feature Support</a></li>
+            <li><a href="#native-api-access">Native API Access</a></li>
+            <li><a href="#backend-specific-extensions">Backend-specific extensions</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="firebird-backend-reference">Firebird Backend Reference</h1>
+<p>SOCI backend for accessing Firebird database.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<h3 id="supported-versions">Supported Versions</h3>
+<p>The SOCI Firebird backend supports versions of Firebird from 1.5 to 2.5 and can be used with
+either the client-server or embedded Firebird libraries.
+The former is the default, to select the latter set <code>SOCI_FIREBIRD_EMBEDDED</code> CMake option to <code>ON</code>
+value when building.</p>
+<h3 id="tested-platforms">Tested Platforms</h3>
+<table>
+<thead>
+<tr>
+<th>Firebird</th>
+<th>OS</th>
+<th>Compiler</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.5.2.4731</td>
+<td>SunOS 5.10</td>
+<td>g++ 3.4.3</td>
+</tr>
+<tr>
+<td>1.5.2.4731</td>
+<td>Windows XP</td>
+<td>Visual C++ 8.0</td>
+</tr>
+<tr>
+<td>1.5.3.4870</td>
+<td>Windows XP</td>
+<td>Visual C++ 8.0 Professional</td>
+</tr>
+<tr>
+<td>2.5.2.26540</td>
+<td>Debian GNU/Linux 7</td>
+<td>g++ 4.7.2</td>
+</tr>
+<tr>
+<td>2.5.8.27089</td>
+<td>macOS High Sierra 10.13.5</td>
+<td>AppleClang 9.1.0.9020039</td>
+</tr>
+</tbody>
+</table>
+<h3 id="required-client-libraries">Required Client Libraries</h3>
+<p>The Firebird backend requires Firebird's <code>libfbclient</code> client library.
+For example, on Ubuntu Linux, for example, <code>firebird-dev</code> package and its dependencies are required.</p>
+<h2 id="connecting-to-the-database">Connecting to the Database</h2>
+<p>To establish a connection to a Firebird database, create a Session object using the firebird
+backend factory together with a connection string:</p>
+<pre><code class="cpp">BackEndFactory const &amp;backEnd = firebird;
+session sql(backEnd, &quot;service=/usr/local/firbird/db/test.fdb user=SYSDBA password=masterkey&quot;);
+</code></pre>
+
+<p>or simply:</p>
+<pre><code class="cpp">session sql(firebird, &quot;service=/usr/local/firbird/db/test.fdb user=SYSDBA password=masterkey&quot;);
+</code></pre>
+
+<p>The set of parameters used in the connection string for Firebird is:</p>
+<ul>
+<li>service</li>
+<li>user</li>
+<li>password</li>
+<li>role</li>
+<li>charset</li>
+</ul>
+<p>The following parameters have to be provided as part of the connection string : <em>service</em>, <em>user</em>,
+<em>password</em>. Role and charset parameters are optional.</p>
+<p>Once you have created a <code>session</code> object as shown above, you can use it to access the database, for example:</p>
+<pre><code class="cpp">int count;
+sql &lt;&lt; &quot;select count(*) from user_tables&quot;, into(count);
+</code></pre>
+
+<p>(See the <a href="../../connections/">connection</a> and <a href="../../binding/">data binding</a> documentation
+for general information on using the <code>session</code> class.)</p>
+<h2 id="soci-feature-support">SOCI Feature Support</h2>
+<h3 id="dynamic-binding">Dynamic Binding</h3>
+<p>The Firebird backend supports the use of the SOCI <code>row</code> class, which facilitates retrieval of data whose
+type is not known at compile time.</p>
+<p>When calling <code>row::get&lt;T&gt;()</code>, the type you should pass as T depends upon the underlying database type.
+For the Firebird backend, this type mapping is:</p>
+<table>
+<thead>
+<tr>
+<th>Firebird Data Type</th>
+<th>SOCI Data Type</th>
+<th><code>row::get&lt;T&gt;</code> specializations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>numeric, decimal (where scale &gt; 0)</td>
+<td>dt_double</td>
+<td>double</td>
+</tr>
+<tr>
+<td>numeric, decimal [^1] (where scale = 0)</td>
+<td>dt_integer, dt_double</td>
+<td>int, double</td>
+</tr>
+<tr>
+<td>double precision, float</td>
+<td>dt_double</td>
+<td>double</td>
+</tr>
+<tr>
+<td>smallint, integer</td>
+<td>dt_integer</td>
+<td>int</td>
+</tr>
+<tr>
+<td>char, varchar</td>
+<td>dt_string</td>
+<td>std::string</td>
+</tr>
+<tr>
+<td>date, time, timestamp</td>
+<td>dt_date</td>
+<td>std::tm</td>
+</tr>
+</tbody>
+</table>
+<p>[^1] There is also 64bit integer type for larger values which is
+currently not supported.</p>
+<p>(See the <a href="../../types/#dynamic-binding">dynamic resultset binding</a> documentation for general information
+on using the <code>Row</code> class.)</p>
+<h3 id="binding-by-name">Binding by Name</h3>
+<p>In addition to <a href="../../binding/#binding-by-position">binding by position</a>, the Firebird backend supports
+<a href="../../binding/#binding-by-name">binding by name</a>, via an overload of the <code>use()</code> function:</p>
+<pre><code class="cpp">int id = 7;
+sql &lt;&lt; &quot;select name from person where id = :id&quot;, use(id, &quot;id&quot;)
+</code></pre>
+
+<p>It should be noted that parameter binding by name is supported only by means of emulation,
+since the underlying API used by the backend doesn't provide this feature.</p>
+<h3 id="bulk-operations">Bulk Operations</h3>
+<p>The Firebird backend has full support for SOCI <a href="../../binding/#bulk-operations">bulk operations</a> interface.
+This feature is also supported by emulation.</p>
+<h3 id="transactions">Transactions</h3>
+<p><a href="../../transactions/">Transactions</a> are also fully supported by the Firebird backend.
+In fact, an implicit transaction is always started when using this backend if one hadn't been
+started by explicitly calling <code>begin()</code> before. The current transaction is automatically
+committed in <code>session</code> destructor.</p>
+<h3 id="blob-data-type">BLOB Data Type</h3>
+<p>The Firebird backend supports working with data stored in columns of type Blob,
+via SOCI <a href="../../lobs/">BLOB</a> class.</p>
+<p>It should by noted, that entire Blob data is fetched from database to allow random read and write access.
+This is because Firebird itself allows only writing to a new Blob or reading from existing one -
+modifications of existing Blob means creating a new one.
+Firebird backend hides those details from user.</p>
+<h3 id="rowid-data-type">RowID Data Type</h3>
+<p>This feature is not supported by Firebird backend.</p>
+<h3 id="nested-statements">Nested Statements</h3>
+<p>This feature is not supported by Firebird backend.</p>
+<h3 id="stored-procedures">Stored Procedures</h3>
+<p>Firebird stored procedures can be executed by using SOCI <a href="../../procedures/">Procedure</a> class.</p>
+<h2 id="native-api-access">Native API Access</h2>
+<p>SOCI provides access to underlying datbabase APIs via several <code>get_backend()</code> functions,
+as described in the <a href="../../beyond/">Beyond SOCI</a> documentation.</p>
+<p>The Firebird backend provides the following concrete classes for navite API access:</p>
+<table>
+<thead>
+<tr>
+<th>Accessor Function</th>
+<th>Concrete Class</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>session_backend * session::get_backend()</td>
+<td>firebird_session_backend</td>
+</tr>
+<tr>
+<td>statement_backend * statement::get_backend()</td>
+<td>firebird_statement_backend</td>
+</tr>
+<tr>
+<td>blob_backend * blob::get_backend()</td>
+<td>firebird_blob_backend</td>
+</tr>
+<tr>
+<td>rowid_backend * rowid::get_backend()</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="backend-specific-extensions">Backend-specific extensions</h2>
+<h3 id="firebird_soci_error">firebird_soci_error</h3>
+<p>The Firebird backend can throw instances of class <code>firebird_soci_error</code>, which is publicly derived
+from <code>soci_error</code> and has an additional public <code>status_</code> member containing the Firebird status vector.</p></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+                <p>Copyright &copy; 2017 <a href="https://github.com/msobczak">Maciej Sobczak</a> and <a href="http://soci.sourceforge.net/people.html">SOCI Team</a>.</p>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "../..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../../js/base.js" defer></script>
+        <script src="../../search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

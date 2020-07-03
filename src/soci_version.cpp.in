@@ -1,0 +1,26 @@
+#include "soci/soci_version.h"
+
+std::string getSOCIVersion()
+{
+    return "@SOCI_VERSION@";
+}
+
+unsigned getSOCIVersionMajor()
+{
+    return @SOCI_VERSION_MAJOR@;
+}
+
+unsigned getSOCIVersionMinor()
+{
+    return @SOCI_VERSION_MINOR@ +0;
+}
+
+unsigned getSOCIVersionPatch()
+{
+    return @SOCI_VERSION_PATCH@ +0;
+}
+
+unsigned getSOCIVersionTweak()
+{
+    return @SOCI_VERSION_TWEAK@ +0;
+}

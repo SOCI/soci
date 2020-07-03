@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>FAQ - SOCI (4.0)</title>
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        <script src="../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../js/bootstrap-3.0.3.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container">
+
+                <!-- Collapsed navigation -->
+                <div class="navbar-header">
+                    <!-- Expander button -->
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="..">SOCI (4.0)</a>
+                </div>
+
+                <!-- Expanded navigation -->
+                <div class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li >
+                                <a href="..">Home</a>
+                            </li>
+                            <li class="dropdown active">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Overview <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../quickstart/">Getting Started</a>
+</li>
+                                    
+<li >
+    <a href="../installation/">Installation</a>
+</li>
+                                    
+<li >
+    <a href="../structure/">Library Structure</a>
+</li>
+                                    
+<li >
+    <a href="../license/">License</a>
+</li>
+                                    
+<li class="active">
+    <a href="./">FAQ</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">User Guide <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../connections/">Connections</a>
+</li>
+                                    
+<li >
+    <a href="../queries/">Queries</a>
+</li>
+                                    
+<li >
+    <a href="../binding/">Data Binding</a>
+</li>
+                                    
+<li >
+    <a href="../indicators/">Data Indicators</a>
+</li>
+                                    
+<li >
+    <a href="../types/">Data Types</a>
+</li>
+                                    
+<li >
+    <a href="../lobs/">LOBs</a>
+</li>
+                                    
+<li >
+    <a href="../statements/">Statements</a>
+</li>
+                                    
+<li >
+    <a href="../transactions/">Transactions</a>
+</li>
+                                    
+<li >
+    <a href="../procedures/">Procedures</a>
+</li>
+                                    
+<li >
+    <a href="../errors/">Errors</a>
+</li>
+                                    
+<li >
+    <a href="../logging/">Logging</a>
+</li>
+                                    
+<li >
+    <a href="../interfaces/">Interfaces</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Backends <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../backends/">Features</a>
+</li>
+                                    
+<li >
+    <a href="../backends/db2/">DB2</a>
+</li>
+                                    
+<li >
+    <a href="../backends/firebird/">Firebird</a>
+</li>
+                                    
+<li >
+    <a href="../backends/mysql/">MySQL</a>
+</li>
+                                    
+<li >
+    <a href="../backends/odbc/">ODBC</a>
+</li>
+                                    
+<li >
+    <a href="../backends/oracle/">Oracle</a>
+</li>
+                                    
+<li >
+    <a href="../backends/postgresql/">PostgreSQL</a>
+</li>
+                                    
+<li >
+    <a href="../backends/sqlite3/">SQLite3</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Miscellaneous <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../beyond/">Beyond SQL</a>
+</li>
+                                    
+<li >
+    <a href="../multithreading/">Multi-threading</a>
+</li>
+                                    
+<li >
+    <a href="../boost/">Boost</a>
+</li>
+                                    
+<li >
+    <a href="../utilities/">Utilities</a>
+</li>
+                                    
+<li >
+    <a href="../vagrant/">Vagrant</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">API <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../api/client/">Client API</a>
+</li>
+                                    
+<li >
+    <a href="../api/backend/">Backend API</a>
+</li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#">Ada</a>
+    <ul class="dropdown-menu">
+            
+<li >
+    <a href="../languages/ada/">Ada Bindings</a>
+</li>
+            
+<li >
+    <a href="../languages/ada/concepts/">Ada Concepts</a>
+</li>
+            
+<li >
+    <a href="../languages/ada/idioms/">Ada Idioms</a>
+</li>
+            
+<li >
+    <a href="../languages/ada/reference/">Ada API Reference</a>
+</li>
+    </ul>
+  </li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li >
+                                <a rel="next" href="../license/">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li >
+                                <a rel="prev" href="../connections/">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://github.com/SOCI/soci/edit/master/docs/faq.md"><i class="fa fa-github"></i> Edit on GitHub</a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#faq">FAQ</a></li>
+            <li><a href="#q-why-soci">Q: Why "SOCI"?</a></li>
+            <li><a href="#q-where-the-basic-soci-syntax-comes-from">Q: Where the basic SOCI syntax comes from?</a></li>
+            <li><a href="#q-why-should-i-use-sql-queries-as-strings-in-my-program-i-prefer-the-query-to-be-generated-or-composed-piece-by-piece-by-separate-functions">Q: Why should I use SQL queries as strings in my program? I prefer the query to be generated or composed piece-by-piece by separate functions.</a></li>
+            <li><a href="#q-why-not-some-stream-like-interface-which-is-well-known-to-all-c-programmers">Q: Why not some stream-like interface, which is well-known to all C++ programmers?</a></li>
+            <li><a href="#q-why-use-indicators-instead-of-some-special-value-to-discover-that-something-is-null">Q: Why use indicators instead of some special value to discover that something is null?</a></li>
+            <li><a href="#q-overloaded-comma-operator-is-just-obfuscation-i-dont-like-it">Q: Overloaded comma operator is just obfuscation, I don't like it.</a></li>
+            <li><a href="#q-the-operatorltlt-provides-a-bad-abstraction-for-the-input-statements">Q: The operator&lt;&lt; provides a bad abstraction for the "input" statements.</a></li>
+            <li><a href="#q-why-the-boost-license">Q: Why the Boost license?</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="faq">FAQ</h1>
+<p>This part of the documentation is supposed to gather in a single place the usual questions (and answers) about SOCI with regard to the design decisions that have shaped it.</p>
+<h2 id="q-why-soci">Q: Why "SOCI"?</h2>
+<p>SOCI was initially developed in the environment where Oracle was the main database technology in use. As a wrapper for the native OCI API (Oracle Call Interface), the name "Simple Oracle Call Interface" was quite obvious - until the 2.0 release, when the internal architecture was largely redesigned to allow the use of <em>backends</em> that support other database servers. We have kept the same name to indicate that Oracle is the main supported technology in the sense that the library includes only those features that were naturally implemented in Oracle. With the 2.1 release of the library, two new backends were added (MySQL and SQLite3) and we decided to drop the original full name so that new users looking for a library supporting any of these simpler libraries are not discouraged by seeing "Oracle" somewhere in the name.</p>
+<p>The other possible interpretation was "Syntax Oriented Call Interface", which stresses the fact that SOCI was built to support the most natural and easy interface for the user that is similar to the Embedded SQL concept (see below). But on the other hand, SOCI also provides other features (like object-relational mapping) and as a whole it is not just "emulator" of the Embedded SQL. With all these considerations in mind, SOCI is just "SOCI - The C++ Database Access Library".</p>
+<p>Still, Oracle is considered to be the main driving server technology in terms of the set of features that are supported by the library. This also means that backends for other servers might need to work around some of the imposed idioms and protocols, but already available and well-working PostgreSQL, MySQL and SQLite3 backends show
+that it's actually not that bad and the abstractions provided by the library are actually very universal. Of course, some of the features that were provided for Oracle might not be supported for all other servers, but we think that it's better to have one leading technology (where at least one group is fully happy) instead of some "common denominator" for all databases (where <em>nobody</em> is happy).</p>
+<h2 id="q-where-the-basic-soci-syntax-comes-from">Q: Where the basic SOCI syntax comes from?</h2>
+<p>The basic SOCI syntax was inspired by the Embedded SQL, which is part of the SQL standard, supported by the major DB technologies and even available as built-in part of the languages used in some DB-oriented integrated development environments. The term "Embedded SQL" is enough for Google to spit millions of references - one of the typical examples is:</p>
+<pre><code class="cpp">{
+    int a;
+    /* ... */
+    EXEC SQL SELECT salary INTO :a
+                FROM Employee
+                WHERE SSN=876543210;
+    /* ... */
+    printf(&quot;The salary is %d\n&quot;, a);
+    /* ... */
+}
+</code></pre>
+
+<p>The above is not a regular C (nor C++) code, of course. It's the mix of C and SQL and there is a separate, pecialized preprocessor needed to convert it to something that the actual C (or C++) compiler will be able to understand. This means that the compilation of the program using embedded SQL is two-phase: preprocess the embedded SQL part and compile the result. This two-phase development is quite troublesome, especially when it comes to debugging. Yet, the advantage of it is that the code expresses the programmer's intents in a very straightforward
+way: read something from the database and put it into the local variable. Just like that.</p>
+<p>The SOCI library was born as an answer to the following question: is it possible to have the same expressive power without the disadvantages of two-phase builds?</p>
+<p>The following was chosen to be the basic SOCI syntax that can mirror the above Embedded SQL example:</p>
+<pre><code class="cpp">int a;
+sql &lt;&lt; &quot;SELECT salary FROM Employee WHERE SSN=876543210&quot;, into(a);
+</code></pre>
+
+<p>(as you see, SOCI changes the order of elements a little bit, so that the SQL query is separate and not mixed with other elements)</p>
+<p>Apart from mimicking the Embedded SQL techniques in the regular, fully standard C++ code, the above syntax has the following benefit: it is <em>minimal</em> with respect to what has to be said. Every single piece above is needed and expresses something important, like:</p>
+<ul>
+<li>which session should be used (the client can be connected to many databases at the same time) - here, the <code>sql</code> object encapsulates the session,</li>
+<li>what SQL query should be executed - here, it's the string literal, but it could be also a <code>std::string</code> variable,</li>
+<li>where to put the result - here, the local variable <code>a</code> will receive the result.</li>
+</ul>
+<p>Everything else is just a couple of operators that allow to treat the whole as a single expression. It's rather difficult to remove anything from this example.</p>
+<p>The fact that the basic SOCI syntax is minimal (but without being obscure at the same time, see below) means that the programmer does not need to bother with unnecessary noise that some other database libraries impose. We hope that after having written one line of code like above by themselves, most programmers will react with something
+like "how obvious!" instead of "how advanced!".</p>
+<h2 id="q-why-should-i-use-sql-queries-as-strings-in-my-program-i-prefer-the-query-to-be-generated-or-composed-piece-by-piece-by-separate-functions">Q: Why should I use SQL queries as strings in my program? I prefer the query to be generated or composed piece-by-piece by separate functions.</h2>
+<p>First, you don't need to use SQL queries as string literals. In bigger projects it is a common practice to store SQL queries externally (in a file, or in a... database) and load them before use. This means that they are not necessarily expected to appear in the program code, as they do in our simple code examples and the advantage of separating them from the source code of the main program is, among others, the possibility to optimize and tune the SQL queries without recompilation and relinking of the whole program.</p>
+<p>What is the most important, though, is that SOCI does not try to mess with the text of the query (apart from very few cases), which means that the database server will get exactly the same text of the query as is used in the program. The advantage of this is that there is no new SQL-like (or even SQL-<em>un</em>like) syntax that you would need to learn, and also that it's much easier to convince a typical DBA to help with SQL tuning or other specialized activities, if he is given the material in the form that is not polluted with any foreign abstractions.</p>
+<h2 id="q-why-not-some-stream-like-interface-which-is-well-known-to-all-c-programmers">Q: Why not some stream-like interface, which is well-known to all C++ programmers?</h2>
+<p>An example of the stream-like interface might be something like this (this is imaginary syntax, not supported by SOCI):</p>
+<pre><code class="cpp">sql.exec(&quot;select a, b, c from some_table&quot;);
+
+while (!sql.eof())
+{
+    int a, b, c;
+    sql &gt;&gt; a &gt;&gt; b &gt;&gt; c;
+    // ...
+}
+</code></pre>
+
+<p>We think that the data stored in the relational database should be treated as a set of relations - which is exactly what it is. This means that what is read from the database as a result of some SQL query is a <em>set of rows</em>. This set might be ordered, but it is still a set of rows, not a uniformly flat list of values. This distinction might seem to be unnecessarily low-level and that the uniform stream-like presentation of data is more preferable, but it's actually the other way round - the set of rows is something more structured - and that structure was <em>designed</em> into the database - than the flat stream and is therefore less prone to programming errors like miscounting the number of values that is expected in each row.</p>
+<p>Consider the following programming error:</p>
+<pre><code class="cpp">sql.exec(&quot;select a, b from some_table&quot;); // only TWO columns
+
+while (!sql.eof())
+{
+    int a, b, c;
+    sql &gt;&gt; a &gt;&gt; b &gt;&gt; c; // this causes &quot;row-tearing&quot;
+    // ...
+}
+</code></pre>
+
+<p><em>"How to detect the end of each line in a file"</em> is a common beginner's question that relates to the use of IOStreams - and this common question clearly shows that for the record-oriented data the stream is not an optimal abstraction. Of course, we don't claim that IOStreams is bad - but we do insist that the record-oriented data is
+better manipulated in a way that is also record-aware.</p>
+<p>Having said that, we <em>have</em> provided some form of the stream-like interface, but with the important limitation that the stream is always bound to the single row, so that the row-tearing effect is not possible. In other words,
+data returned from the database is still structured into rows, but each row can be separately traversed like a stream. We hope that it provides a good balance between convenience and code safety.</p>
+<h2 id="q-why-use-indicators-instead-of-some-special-value-to-discover-that-something-is-null">Q: Why use indicators instead of some special value to discover that something is null?</h2>
+<p>Some programmers are used to indicating the null value by using some special (which means: "unlikely" to be ever used) value - for example, to use the smallest integer value to indicate null integer. Or to use empty string to indicate null string. And so on.</p>
+<p>We think that it's <em>completely wrong</em>. Null (in the database sense) is an information <em>about</em> the data. It describes the <em>state</em> of the data and if it's null, then there's <em>no data at all</em>. Nothing. Null. It does not make any sense to talk about some special value if in fact there is <em>no</em> value at all - especially if we take into account that, for example, the smallest integer value (or whatever else you choose as the "special" value) might not be <em>that</em> special in the given application or domain.</p>
+<p>Thus, SOCI uses a separate indicators to describe the state of exchanged data. It also has an additional benefit of allowing the library to convey more than two states (null and not null). Indeed, the SOCI library uses indicators also to report that the data was read, but truncated (this applies to strings when reading to fixed-length character arrays). Truncation is also an information about the data and as such it's better to have it in addition to the data, not as part of it.</p>
+<p>Having said that, it is important to point at the <a href="../boost/">Integration with Boost</a> that allows to use <code>boost::optional&lt;T&gt;</code> to conveniently pack together the data and the information about its state.</p>
+<h2 id="q-overloaded-comma-operator-is-just-obfuscation-i-dont-like-it">Q: Overloaded comma operator is just obfuscation, I don't like it.</h2>
+<p>Well, consider the following:</p>
+<p>"Send the query X to the server Y <em>and</em> put result into variable Z."</p>
+<p>Above, the "and" plays a role of the comma. Even if overloading the comma operator is not a very popular practice in C++, some libraries do this, achieving terse and easy to learn syntax. We are pretty sure that in SOCI the comma operator was overloaded with a good effect.</p>
+<h2 id="q-the-operatorltlt-provides-a-bad-abstraction-for-the-input-statements">Q: The <code>operator&lt;&lt;</code> provides a bad abstraction for the "input" statements.</h2>
+<p>Indeed, the <code>operator&lt;&lt;</code> in the basic SOCI syntax shows that something (the query) is <em>sent</em> somewhere (to the server). Some people don't like this, especially when the "select" statements are involved. If the high-level idea is to <em>read</em>  data from somewhere, then <code>operator&lt;&lt;</code> seems unintuitive to the die-hard IOStreams users. The fact is, however, that the code containing SQL statement already indicates that there is a client-server relationship with some other software component (very likely remote). In such code it does not make any sense to pretend that the communication is one-way only, because it's clear that even the "select" statements need to be <em>sent</em> somewhere. This approach is also more uniform and allows to cover other statements like "drop table" or alike, where no data is expected to be exchanged at all (and therefore the IOStreams analogies for data exchange have no sense at all). No matter what is the kind of the SQL statement, it is <em>sent</em>  to the server and this "sending" justifies the choice of <code>operator&lt;&lt;</code>.</p>
+<p>Using different operators (<code>operator&gt;&gt;</code> and <code>operator&lt;&lt;</code>) as a way of distinguishing between different high-level ideas (<em>reading</em> and <em>writing</em> from the data store, respectively) does make sense on much higher level of abstraction, where the SQL statement itself is already hidden - and we do encourage programmers to use SOCI for implementing such high-level abstractions. For this, the object-relational mapping facilities available in SOCI might prove to be a valuable tool as well, as an effective bridge
+between the low-level world of SQL statements and the high-level world of user-defined abstract data types.</p>
+<h2 id="q-why-the-boost-license">Q: Why the Boost license?</h2>
+<p>We decided to use the <a href="http://www.boost.org/LICENSE_1_0.txt">Boost license</a>, because
+it's well recognized in the C++ community, allows us to keep our minimum copyrights, and at the same time allows SOCI to be safely used in commercial projects, without imposing concerns (or just plainuncertainty) typical to other open source licenses, like GPL. We also hope that by choosing the Boost license we have made the life easier
+for both us and our users. It saves us from answering law-related questions that were already answered on the <a href="http://www.boost.org/more/license_info.html">Boost license info page</a> and it should also give more confidence to our users - especially to those of them, who already accepted the conditions of the Boost license - the just have one license less to analyze.</p>
+<p>Still, if for any reason the conditions of this license are not acceptable, we encourage the users to contact us directly (see <a href="http://soci.sourceforge.net/people.html">links</a> on the relevant SOCI page) to discuss any remaining concerns.</p></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+                <p>Copyright &copy; 2017 <a href="https://github.com/msobczak">Maciej Sobczak</a> and <a href="http://soci.sourceforge.net/people.html">SOCI Team</a>.</p>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js" defer></script>
+        <script src="../search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

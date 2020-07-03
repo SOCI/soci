@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Beyond SQL - SOCI (4.0)</title>
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        <script src="../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../js/bootstrap-3.0.3.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container">
+
+                <!-- Collapsed navigation -->
+                <div class="navbar-header">
+                    <!-- Expander button -->
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="..">SOCI (4.0)</a>
+                </div>
+
+                <!-- Expanded navigation -->
+                <div class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li >
+                                <a href="..">Home</a>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Overview <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../quickstart/">Getting Started</a>
+</li>
+                                    
+<li >
+    <a href="../installation/">Installation</a>
+</li>
+                                    
+<li >
+    <a href="../structure/">Library Structure</a>
+</li>
+                                    
+<li >
+    <a href="../license/">License</a>
+</li>
+                                    
+<li >
+    <a href="../faq/">FAQ</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">User Guide <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../connections/">Connections</a>
+</li>
+                                    
+<li >
+    <a href="../queries/">Queries</a>
+</li>
+                                    
+<li >
+    <a href="../binding/">Data Binding</a>
+</li>
+                                    
+<li >
+    <a href="../indicators/">Data Indicators</a>
+</li>
+                                    
+<li >
+    <a href="../types/">Data Types</a>
+</li>
+                                    
+<li >
+    <a href="../lobs/">LOBs</a>
+</li>
+                                    
+<li >
+    <a href="../statements/">Statements</a>
+</li>
+                                    
+<li >
+    <a href="../transactions/">Transactions</a>
+</li>
+                                    
+<li >
+    <a href="../procedures/">Procedures</a>
+</li>
+                                    
+<li >
+    <a href="../errors/">Errors</a>
+</li>
+                                    
+<li >
+    <a href="../logging/">Logging</a>
+</li>
+                                    
+<li >
+    <a href="../interfaces/">Interfaces</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Backends <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../backends/">Features</a>
+</li>
+                                    
+<li >
+    <a href="../backends/db2/">DB2</a>
+</li>
+                                    
+<li >
+    <a href="../backends/firebird/">Firebird</a>
+</li>
+                                    
+<li >
+    <a href="../backends/mysql/">MySQL</a>
+</li>
+                                    
+<li >
+    <a href="../backends/odbc/">ODBC</a>
+</li>
+                                    
+<li >
+    <a href="../backends/oracle/">Oracle</a>
+</li>
+                                    
+<li >
+    <a href="../backends/postgresql/">PostgreSQL</a>
+</li>
+                                    
+<li >
+    <a href="../backends/sqlite3/">SQLite3</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown active">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Miscellaneous <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li class="active">
+    <a href="./">Beyond SQL</a>
+</li>
+                                    
+<li >
+    <a href="../multithreading/">Multi-threading</a>
+</li>
+                                    
+<li >
+    <a href="../boost/">Boost</a>
+</li>
+                                    
+<li >
+    <a href="../utilities/">Utilities</a>
+</li>
+                                    
+<li >
+    <a href="../vagrant/">Vagrant</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">API <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li >
+    <a href="../api/client/">Client API</a>
+</li>
+                                    
+<li >
+    <a href="../api/backend/">Backend API</a>
+</li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#">Ada</a>
+    <ul class="dropdown-menu">
+            
+<li >
+    <a href="../languages/ada/">Ada Bindings</a>
+</li>
+            
+<li >
+    <a href="../languages/ada/concepts/">Ada Concepts</a>
+</li>
+            
+<li >
+    <a href="../languages/ada/idioms/">Ada Idioms</a>
+</li>
+            
+<li >
+    <a href="../languages/ada/reference/">Ada API Reference</a>
+</li>
+    </ul>
+  </li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li >
+                                <a rel="next" href="../backends/sqlite3/">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li >
+                                <a rel="prev" href="../multithreading/">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://github.com/SOCI/soci/edit/master/docs/beyond.md"><i class="fa fa-github"></i> Edit on GitHub</a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#beyond-standard-sql">Beyond standard SQL</a></li>
+            <li><a href="#affected-rows">Affected rows</a></li>
+            <li><a href="#sequences">Sequences</a></li>
+            <li><a href="#beyond-soci-api">Beyond SOCI API</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="beyond-standard-sql">Beyond standard SQL</h1>
+<p>Sometimes the standard SQL is not enough and database-specific syntax needs to be used.
+When possible and practical, SOCI provides wrappers hiding the differences between the backends and this section describes these wrappers.
+And, if this is still not enough, you can use the backend-specific methods directly as described below.</p>
+<h2 id="affected-rows">Affected rows</h2>
+<p>It can be useful to know how many rows were affected by the last SQL statement, most often when using <code>INSERT</code>, <code>UPDATE</code> or <code>DELETE</code>.
+SOCI provides <code>statement::get_affected_rows()</code> method allowing to do this:</p>
+<pre><code class="cpp">statement st = (sql.prepare &lt;&lt; &quot;update some_table ...&quot;);
+st.execute(true);
+
+if ( !st.get_affected_rows() )
+{
+    ... investigate why no rows were modified ...
+}
+</code></pre>
+
+<h3 id="portability-note">Portability note</h3>
+<p>This method behaviour in case of partially executed update, i.e. when some records were updated or inserted while some other have failed to be updated or inserted, depends on the exact backend and, in the case of ODBC backend, on the exact ODBC driver used.
+It can return <code>-1</code>, meaning that the number of rows is unknown, the number of rows actually updated or the total number of affected rows.</p>
+<h2 id="sequences">Sequences</h2>
+<p>It is common to have auto-incrementing database fields or fields whose value come from a sequence.
+In the latter case you need to retrieve the value of the field for a new row before inserting it into the database.
+In the former case, this is unnecessary but you may still want to know the value generated by the database, e.g. to use it as a foreign key in another table.
+So it would be useful to have a way to obtain the value of such a field.
+But, of course, to make life of database programmers more interesting, different products usually support either autoincrement fields or sequences but not both -- and they use different syntaxes for them, too.
+SOCI tries to help to deal with this unfortunate situation by providing two functions: <code>session::get_next_sequence_value()</code> and <code>session::get_last_insert_id</code>.</p>
+<p>If you know which kind of database you use, you may use only one of them: when working with sequences, the first one allows to generate the next value in a sequence and when working with autoincrement fields, the second one retrieves the last value generated for such a field for the given table.</p>
+<p>However if you use multiple SOCI backends or even just a single ODBC backend but support connecting to databases of different types, you actually must use both of them in the following way to insert a row:</p>
+<pre><code class="cpp">long long id;
+statement st;
+if ( sql.get_next_sequence_value(&quot;table_sequence&quot;, id) )
+{
+    st &lt;&lt; &quot;insert into table(id, f1, f2) values(:id, :f1, :f2)&quot;,
+        use(id), use(f1), use(f2);
+}
+else
+{
+    // We're not using sequences, so don't specify the value,
+    // it will be automatically generated by the database on insert.
+    st &lt;&lt; &quot;insert into table(f1, f2) value(:f1, :f2)&quot;,
+        use(f1), use(f2);
+
+    // If the ID used for the above row is needed later, get it:
+    if ( !sql.get_last_insert_id(&quot;table&quot;, id) )
+        ... unexpected error, handle appropriately ...
+}
+</code></pre>
+
+<h3 id="portability-note_1">Portability note</h3>
+<p>These methods are currently only implemented in Firebird, MySQL, ODBC, PostgreSQL and SQLite3 backends.</p>
+<h2 id="beyond-soci-api">Beyond SOCI API</h2>
+<p>As the original name of the library (Simple Oracle Call Interface) clearly stated, SOCI is intended to be a <em>simple</em> library, targeting the majority of needs in regular C++ application.
+We do not claim that <em>everything</em> can be done with SOCI and it was never the intent of the library.
+What is important, though, is that the simplicity of the
+library does <em>not</em> prevent the client applications from reaching into the low-level specifics of each database backend in order to achieve special configuration or performance goals.</p>
+<p>Most of the SOCI classes have the <code>getBackEnd</code> method, which returns the pointer to the actual backend object that implements the given functionality.
+The knowledge of the actual backend allows the client application to get access to all low-level details that are involved.</p>
+<pre><code class="cpp">blob b(sql);
+
+oracle_session_back_end * sessionBackEnd = static_cast&lt;oracle_session_back_end *&gt;(sql.get_back_end());
+oracle_blob_back_end * blobBackEnd = static_cast&lt;oracle_blob_back_end *&gt;(b.get_back_end());
+
+OCILobDisableBuffering(sessionBackEnd-&gt;svchp_, sessionBackEnd-&gt;errhp_, blobBackEnd-&gt;lobp_);
+</code></pre>
+
+<p>The above example retrieves the <code>rowid</code> ("something" that identifies the row in the table) from the table and uses the <code>get_back_end</code> function to extract the actual object that implements this functionality.
+Assuming that it is the <code>"postgresql"</code> backend which is in use, the downcast is performed to use the <code>postgresql_rowid_back_end</code> interface to get the actual OID value that is a physical, low-level implementation of row identifier on PostgreSQL databases.</p>
+<p>In order for any of the above to compile, you have to explicitly <code>#include</code> the appropriate backend's header file.</p>
+<p>Please see the header file related to the given backend to learn what low-level handles and descriptors are available.</p></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+                <p>Copyright &copy; 2017 <a href="https://github.com/msobczak">Maciej Sobczak</a> and <a href="http://soci.sourceforge.net/people.html">SOCI Team</a>.</p>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js" defer></script>
+        <script src="../search/main.js" defer></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

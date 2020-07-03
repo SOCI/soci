@@ -9,24 +9,27 @@
 #
 ###############################################################################
 
-colormsg(_HIBLUE_ "Configuring SOCI tests:")
-
 # Request CATCH to disable all the C++11 features
 if (NOT SOCI_CXX11)
   add_definitions(-DCATCH_CONFIG_NO_CPP11)
 endif()
 
-include_directories(
-  ${SOCI_SOURCE_DIR}/include/private
-  ${CMAKE_CURRENT_SOURCE_DIR})
 
-file(GLOB SOCI_TESTS_COMMON common-tests.h)
+add_executable(soci_sqlite3_test)
+target_link_libraries(soci_sqlite3_test PRIVATE soci_core soci_sqlite3)
+target_include_directories(soci_sqlite3_test 
+  PRIVATE 
+    ${SOCI_SOURCE_DIR}/include/private 
+    ${CMAKE_CURRENT_LIST_DIR}
+)
 
-add_subdirectory(empty)
-add_subdirectory(db2)
-add_subdirectory(firebird)
-add_subdirectory(mysql)
-add_subdirectory(odbc)
-add_subdirectory(oracle)
-add_subdirectory(postgresql)
+add_test(NAME soci_sqlite3 COMMAND soci_sqlite3_test)
+
+# add_subdirectory(empty)
+# add_subdirectory(db2)
+# add_subdirectory(firebird)
+# add_subdirectory(mysql)
+# add_subdirectory(odbc)
+# add_subdirectory(oracle)
+# add_subdirectory(postgresql)
 add_subdirectory(sqlite3)

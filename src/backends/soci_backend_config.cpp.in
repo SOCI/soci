@@ -1,0 +1,6 @@
+#include "soci_backend_config.h"
+
+std::string getDefaultBackendPath()
+{
+    return "@CMAKE_INSTALL_PREFIX@/@LIBDIR@";
+}
