@@ -8,9 +8,4 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
-
-soci_backend_test(
-  BACKEND Oracle
-  DEPENDS Oracle
-  SOURCE test-oracle.cpp ${SOCI_TESTS_COMMON}
-  CONNSTR "service=orcl user=scott password=tiger")
+target_sources(soci_oracle_test PRIVATE test-oracle.cpp)

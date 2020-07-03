@@ -12,7 +12,7 @@
 ###############################################################################
 cmake_minimum_required(VERSION 3.17)
 project(SOCI VERSION 5.0.0 LANGUAGES CXX HOMEPAGE_URL "http://soci.sourceforge.net" DESCRIPTION "SOCI - The C++ Database Access Library") 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake" "${CMAKE_CURRENT_LIST_DIR}/cmake/modules")
 
 ###############################################################################
 # Project wide setup
@@ -26,6 +26,15 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+set(WITH_DB2 OFF CACHE BOOL "Add Db2 build target and search for dependencies")
+set(WITH_EMPTY OFF CACHE BOOL "Add Empty build target and search for dependencies")
+set(WITH_FIREBIRD OFF CACHE BOOL "Add Firebird build target and search for dependencies")
+set(WITH_MYSQL OFF CACHE BOOL "Add Mysql build target and search for dependencies")
+set(WITH_ODBC OFF CACHE BOOL "Add Odbc build target and search for dependencies")
+set(WITH_ORACLE OFF CACHE BOOL "Add Oracle build target and search for dependencies")
+set(WITH_POSTGRESQL OFF CACHE BOOL "Add Firebird build target and search for dependencies")
+set(WITH_SQLITE3 OFF CACHE BOOL "Add Sqlite3 build target and search for dependencies")
+
 ###############################################################################
 # Dependencies
 ###############################################################################
@@ -35,8 +44,41 @@ find_package(Threads REQUIRED)
 
 find_package(Boost COMPONENTS date_time)
 
+# DB2 soci backend
+if(WITH_DB2)
+  find_package(DB2 REQUIRED)
+endif()
+
+# Firebird soci backend
+if(WITH_FIREBIRD)
+  find_package(Firebird REQUIRED)
+endif()
+
+# Firebird soci backend
+if(WITH_MYSQL)
+  find_package(MySQL REQUIRED)
+endif()
+
+# ODBC soci backend
+if(WITH_ODBC)
+  find_package(ODBC REQUIRED)
+endif()
+
+# Oracle soci backend
+if(WITH_ORACLE)
+  find_package(Oracle REQUIRED)
+endif()
+
+# Postgresql soci backend
+if(WITH_POSTGRESQL)
+  find_package(PostgreSQL REQUIRED)
+endif()
+
 # SQLite3 soci backend
-find_package(SQLite3 REQUIRED)
+if(WITH_SQLITE3)
+  find_package(SQLite3 REQUIRED)
+endif()
+
 
 ###############################################################################
 # Main build targets
@@ -56,10 +98,68 @@ target_link_libraries(soci_core PRIVATE Threads::Threads Boost::boost Boost::dat
 target_include_directories(soci_core PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
 target_include_directories(soci_core PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 
-add_library(soci_sqlite3)
-target_link_libraries(soci_sqlite3 PUBLIC SQLite::SQLite3 PRIVATE soci_core soci_backend_config)
-target_include_directories(soci_sqlite3 PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
-target_include_directories(soci_core PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+if(WITH_DB2)
+  add_library(soci_db2)
+  target_link_libraries(soci_db2 PRIVATE soci_core soci_backend_config ${DB2_LIBRARIES})
+  target_include_directories(soci_db2 PRIVATE ${DB2_INCLUDE_DIR})
+  target_include_directories(soci_db2 PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
+  target_include_directories(soci_db2 PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+endif()
+
+if(WITH_EMPTY)
+  add_library(soci_empty)
+  target_link_libraries(soci_empty PRIVATE soci_core soci_backend_config)
+  target_include_directories(soci_empty PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
+  target_include_directories(soci_empty PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+endif()
+
+if(WITH_FIREBIRD)
+  add_library(soci_firebird)
+  target_link_libraries(soci_firebird PRIVATE soci_core soci_backend_config ${FIREBIRD_LIBRARIES})
+  target_include_directories(soci_firebird PRIVATE ${FIREBIRD_INCLUDE_DIR})
+  target_include_directories(soci_firebird PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
+  target_include_directories(soci_firebird PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+endif()
+
+if(WITH_MYSQL)
+  add_library(soci_mysql)
+  target_link_libraries(soci_mysql PRIVATE soci_core soci_backend_config ${MYSQL_LIBRARIES})
+  target_include_directories(soci_mysql PRIVATE ${MYSQL_INCLUDE_DIR})
+  target_include_directories(soci_mysql PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
+  target_include_directories(soci_mysql PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+endif()
+
+if(WITH_ODBC)
+  add_library(soci_odbc)
+  target_link_libraries(soci_odbc PRIVATE soci_core soci_backend_config ODBC::ODBC)
+  target_include_directories(soci_odbc PRIVATE ${ODBC_INCLUDE_DIRS})
+  target_include_directories(soci_odbc PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
+  target_include_directories(soci_odbc PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+endif()
+
+if(WITH_ORACLE)
+  add_library(soci_oracle)
+  target_link_libraries(soci_oracle PRIVATE soci_core soci_backend_config ${ORACLE_LIBRARIES})
+  target_include_directories(soci_oracle PRIVATE ${ORACLE_INCLUDE_DIR})
+  target_include_directories(soci_oracle PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
+  target_include_directories(soci_oracle PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+endif()
+
+if(WITH_POSTGRESQL)
+  add_library(soci_postgresql)
+  target_link_libraries(soci_postgresql PRIVATE soci_core soci_backend_config PostgreSQL::PostgreSQL)
+  target_include_directories(soci_postgresql PRIVATE ${PostgreSQL_INCLUDE_DIRS})
+  target_include_directories(soci_postgresql PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
+  target_include_directories(soci_postgresql PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+endif()
+
+if(WITH_SQLITE3)
+  add_library(soci_sqlite3)
+  target_link_libraries(soci_sqlite3 PUBLIC SQLite::SQLite3 PRIVATE soci_core soci_backend_config)
+  target_include_directories(soci_sqlite3 PRIVATE ${SQLite3_INCLUDE_DIRS})
+  target_include_directories(soci_sqlite3 PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
+  target_include_directories(soci_sqlite3 PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+endif()
 
 add_subdirectory(src)
 
@@ -69,7 +169,38 @@ add_subdirectory(src)
 include(InstallSoci)
 
 install_component(NAME Soci TARGETS soci_core soci_version)
-install_component(NAME SociSqlite3 TARGETS soci_sqlite3 soci_backend_config)
+
+if(WITH_DB2)
+  install_component(NAME SociDb2 TARGETS soci_db2 soci_backend_config)
+endif() 
+
+if(WITH_EMPTY)
+  install_component(NAME SociEmpty TARGETS soci_empty soci_backend_config)
+endif() 
+
+if(WITH_FIREBIRD)
+  install_component(NAME SociFirebird TARGETS soci_firebird soci_backend_config)
+endif() 
+
+if(WITH_MYSQL)
+  install_component(NAME SociMySQL TARGETS soci_mysql soci_backend_config)
+endif() 
+
+if(WITH_ODBC)
+  install_component(NAME SociOdbc TARGETS soci_odbc soci_backend_config)
+endif() 
+
+if(WITH_ORACLE)
+  install_component(NAME SociOracle TARGETS soci_oracle soci_backend_config)
+endif() 
+
+if(WITH_POSTGRESQL)
+  install_component(NAME SociPostgresql TARGETS soci_postgresql soci_backend_config)
+endif() 
+
+if(WITH_SQLITE3)
+  install_component(NAME SociSqlite3 TARGETS soci_sqlite3 soci_backend_config)
+endif() 
 
 ###############################################################################
 # Tests

@@ -8,9 +8,4 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
-
-soci_backend_test(
-  BACKEND MySQL
-  DEPENDS MySQL
-  SOURCE test-mysql.cpp ${SOCI_TESTS_COMMON}
-  CONNSTR "db=soci_test")
+target_sources(soci_mysql_test PRIVATE test-mysql.cpp)

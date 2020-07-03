@@ -8,8 +8,16 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
-soci_backend(Oracle
-  DEPENDS Oracle
-  DESCRIPTION "SOCI backend for Oracle 10+"
-  AUTHORS "Maciej Sobczak, Stephen Hutton"
-  MAINTAINERS "Maciej Sobczak")
+target_sources(soci_oracle
+  PRIVATE
+    blob.cpp
+    error.cpp 
+    factory.cpp
+    row-id.cpp
+    session.cpp
+    standard-into-type.cpp
+    standard-use-type.cpp
+    statement.cpp
+    vector-into-type.cpp
+    vector-use-type.cpp
+)

@@ -8,9 +8,4 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
-
-soci_backend_test(
-  BACKEND Firebird
-  DEPENDS Firebird
-  SOURCE test-firebird.cpp ${SOCI_TESTS_COMMON}
-  CONNSTR "service=/tmp/test.fdb user=SYSDBA password=masterkey")
+target_sources(soci_firebird_test PRIVATE test-firebird.cpp)

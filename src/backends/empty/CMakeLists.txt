@@ -8,7 +8,15 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
-soci_backend(Empty
-  DESCRIPTION "SOCI backend skeleton for new backends development"
-  AUTHORS "Maciej Sobczak, Stephen Hutton"
-  MAINTAINERS "Maciej Sobczak")
+target_sources(soci_empty
+  PRIVATE
+    blob.cpp
+    factory.cpp
+    row-id.cpp
+    session.cpp
+    standard-into-type.cpp
+    standard-use-type.cpp
+    statement.cpp
+    vector-into-type.cpp
+    vector-use-type.cpp
+)

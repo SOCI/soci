@@ -8,8 +8,17 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
-soci_backend(MySQL
-  DEPENDS MySQL
-  DESCRIPTION "SOCI backend for MySQL"
-  AUTHORS "Pawel Aleksander Fedorynski"
-  MAINTAINERS "Pawel Aleksander Fedorynski")
+
+target_sources(soci_mysql
+  PRIVATE
+    blob.cpp
+    common.cpp 
+    factory.cpp
+    row-id.cpp
+    session.cpp
+    standard-into-type.cpp
+    standard-use-type.cpp
+    statement.cpp
+    vector-into-type.cpp
+    vector-use-type.cpp
+)

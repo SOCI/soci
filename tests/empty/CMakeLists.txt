@@ -8,8 +8,4 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
-
-soci_backend_test(
-  BACKEND Empty
-  SOURCE test-empty.cpp ${SOCI_TESTS_COMMON}
-  CONNSTR "dummy")
+target_sources(soci_empty_test PRIVATE test-empty.cpp)

@@ -9,8 +9,16 @@
 #
 ###############################################################################
 
-soci_backend(Firebird
-  DEPENDS Firebird
-  DESCRIPTION "SOCI backend for Firebird"
-  AUTHORS "Rafał Bobrowski"
-  MAINTAINERS "Viacheslav Naydenov")
+target_sources(soci_firebird
+  PRIVATE
+    blob.cpp
+    common.cpp 
+    error-firebird.cpp
+    factory.cpp
+    session.cpp
+    standard-into-type.cpp
+    standard-use-type.cpp
+    statement.cpp
+    vector-into-type.cpp
+    vector-use-type.cpp
+)

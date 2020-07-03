@@ -8,7 +8,15 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
-soci_backend(DB2
-  DEPENDS DB2
-  DESCRIPTION "SOCI backend for DB2" AUTHORS "Denis Chapligin"
-  MAINTAINERS "Denis Chapligin")
+target_sources(soci_db2 
+  PRIVATE
+    blob.cpp
+    factory.cpp
+    row-id.cpp
+    session.cpp
+    standard-into-type.cpp
+    standard-use-type.cpp
+    statement.cpp
+    vector-into-type.cpp
+    vector-use-type.cpp
+)

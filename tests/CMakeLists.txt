@@ -8,28 +8,49 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
+include(AddSociTest)
 
 # Request CATCH to disable all the C++11 features
 if (NOT SOCI_CXX11)
   add_definitions(-DCATCH_CONFIG_NO_CPP11)
 endif()
 
+if(WITH_DB2)
+  add_soci_test(NAME odbc)
+  add_subdirectory(db2)
+endif()
 
-add_executable(soci_sqlite3_test)
-target_link_libraries(soci_sqlite3_test PRIVATE soci_core soci_sqlite3)
-target_include_directories(soci_sqlite3_test 
-  PRIVATE 
-    ${SOCI_SOURCE_DIR}/include/private 
-    ${CMAKE_CURRENT_LIST_DIR}
-)
+if(WITH_EMPTY)
+  add_soci_test(NAME empty)
+  add_subdirectory(empty)
+endif()
 
-add_test(NAME soci_sqlite3 COMMAND soci_sqlite3_test)
+if(WITH_FIREBIRD)
+  add_soci_test(NAME firebird)
+  add_subdirectory(firebird)
+endif()
 
-# add_subdirectory(empty)
-# add_subdirectory(db2)
-# add_subdirectory(firebird)
-# add_subdirectory(mysql)
-# add_subdirectory(odbc)
-# add_subdirectory(oracle)
-# add_subdirectory(postgresql)
-add_subdirectory(sqlite3)
+if(WITH_MYSQL)
+  add_soci_test(NAME mysql)
+  add_subdirectory(mysql)
+endif()
+
+if(WITH_ODBC)
+  add_soci_test(NAME odbc)
+  add_subdirectory(odbc)
+endif()
+
+if(WITH_ORACLE)
+  add_soci_test(NAME oracle)
+  add_subdirectory(oracle)
+endif()
+
+if(WITH_POSTGRESQL)
+  add_soci_test(NAME postgresql)
+  add_subdirectory(postgresql)
+endif()
+
+if(WITH_SQLITE3)
+  add_soci_test(NAME sqlite3)
+  add_subdirectory(sqlite3)
+endif()

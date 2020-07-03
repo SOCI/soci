@@ -8,55 +8,11 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
-
-if (WIN32)
-  # MDBTools driver seems unreliable
-  soci_backend_test(
-    NAME access
-    BACKEND ODBC
-    DEPENDS ODBC
-    SOURCE test-odbc-access.cpp ${SOCI_TESTS_COMMON}
-    CONNSTR "test-access.dsn")
-else()
-    message(STATUS "MS Access test disabled on non-Windows platform")
-endif()
-
-soci_backend_test(
-  NAME mssql
-  BACKEND ODBC
-  DEPENDS ODBC
-  SOURCE test-odbc-mssql.cpp ${SOCI_TESTS_COMMON}
-  CONNSTR "test-mssql.dsn")
-
-soci_backend_test(
-  NAME mysql
-  BACKEND ODBC
-  DEPENDS ODBC
-  SOURCE test-odbc-mysql.cpp ${SOCI_TESTS_COMMON}
-  CONNSTR "test-mysql.dsn")
-
-if(WIN32)
-  set(TEST_PGSQL_DSN "test-postgresql-win64.dsn")
-else()
-  set(TEST_PGSQL_DSN "test-postgresql.dsn")
-endif()
-soci_backend_test(
-  NAME postgresql
-  BACKEND ODBC
-  DEPENDS ODBC
-  SOURCE test-odbc-postgresql.cpp ${SOCI_TESTS_COMMON}
-  CONNSTR ${TEST_PGSQL_DSN})
-
-# TODO: DB2 backend is tested by Travis CI on dedicated VM, separate from ODBC,
-# in order to test DB2 with ODBC, it would be best to install DB2 driver only.
-# if (NOT $ENV{TRAVIS})
-option(WITH_ODBC_TEST_DB2 "Build ODBC DB2 test" OFF)
-if (WITH_ODBC_TEST_DB2)
-  soci_backend_test(
-    NAME db2
-    BACKEND ODBC
-    SOURCE test-odbc-db2.cpp
-    CONNSTR "test-db2.dsn")
-else()
-  message(STATUS "ODBC DB2 test disabled.")
-endif()
+target_sources(soci_odbc_test 
+  PRIVATE 
+    test-odbc-access.cpp
+    test-odbc-db2.cpp
+    test-odbc-mssql.cpp
+    test-odbc-mysql.cpp
+    test-odbc-postgresql.cpp
+)
