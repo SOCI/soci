@@ -35,6 +35,11 @@ set(WITH_ORACLE OFF CACHE BOOL "Add Oracle build target and search for dependenc
 set(WITH_POSTGRESQL OFF CACHE BOOL "Add Firebird build target and search for dependencies")
 set(WITH_SQLITE3 OFF CACHE BOOL "Add Sqlite3 build target and search for dependencies")
 
+set (SOCI_CXX11 OFF CACHE BOOL "Build to the C++11 standard")
+if(SOCI_CXX11)
+  add_compile_definitions(SOCI_CXX11)
+endif()
+
 ###############################################################################
 # Dependencies
 ###############################################################################
