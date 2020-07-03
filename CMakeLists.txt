@@ -172,6 +172,8 @@ add_subdirectory(src)
 ###############################################################################
 include(InstallSoci)
 
+INSTALL (DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION include)
+
 install_component(NAME Soci TARGETS soci_core soci_version)
 
 if(WITH_DB2)
