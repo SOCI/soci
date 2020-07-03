@@ -22,7 +22,7 @@ function(install_component)
     )
 
     install(TARGETS ${ARG_TARGETS}
-        EXPORT ${ARG_NAME}
+        EXPORT ${ARG_NAME}Targets
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} 
             COMPONENT ${ARG_NAME}_runtime
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}             
@@ -33,7 +33,7 @@ function(install_component)
         INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
 
-    install(EXPORT ${ARG_NAME}
+    install(EXPORT ${ARG_NAME}Targets
         DESTINATION ${SOCI_INSTALL_CMAKEDIR}  
         NAMESPACE   SOCI::                    
         COMPONENT   ${ARG_NAME}_development
