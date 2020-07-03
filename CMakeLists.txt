@@ -79,6 +79,7 @@ if(WITH_SQLITE3)
   find_package(SQLite3 REQUIRED)
 endif()
 
+option(Test ON)
 
 ###############################################################################
 # Main build targets
@@ -94,7 +95,7 @@ add_library(soci_backend_config ${CMAKE_CURRENT_BINARY_DIR}/soci_backend_config.
 target_include_directories(soci_backend_config PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
 
 add_library(soci_core)
-target_link_libraries(soci_core PRIVATE Threads::Threads $<Boost_FOUND : Boost::boost> $<Boost_date_time_FOUND : Boost::date_time> ${CMAKE_DL_LIBS})
+target_link_libraries(soci_core PRIVATE Threads::Threads $<$<BOOL:Boost_FOUND>:Boost::boost> $<$<BOOL:Boost_DATE_TIME_FOUND>:Boost::date_time> ${CMAKE_DL_LIBS})
 target_include_directories(soci_core PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
 target_include_directories(soci_core PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 
