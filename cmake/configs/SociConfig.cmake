@@ -1,3 +1,6 @@
+include(CMakeFindDependencyMacro)
+find_dependency(Threads)
+
 set(${CMAKE_FIND_PACKAGE_NAME}_comps)
 
 # Work out the set of components to load
@@ -14,10 +17,10 @@ foreach(comp IN LISTS ${CMAKE_FIND_PACKAGE_NAME}_comps)
     endif()
 endforeach()
 
+# Add the target file
+include("${CMAKE_CURRENT_LIST_DIR}/SociTargets.cmake")
+
 # Try to load optional components
 foreach(comp IN LISTS ${CMAKE_FIND_PACKAGE_NAME}_comps)
     include(${CMAKE_CURRENT_LIST_DIR}/Soci${comp}Config.cmake OPTIONAL)
 endforeach()
-
-# Add the targets file
-include("${CMAKE_CURRENT_LIST_DIR}/SociTargets.cmake")
