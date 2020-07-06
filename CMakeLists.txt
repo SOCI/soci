@@ -40,6 +40,8 @@ if(SOCI_CXX11)
   add_compile_definitions(SOCI_CXX11)
 endif()
 
+include(cmake/StaticAnalyzers.cmake)
+
 ###############################################################################
 # Dependencies
 ###############################################################################
