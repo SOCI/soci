@@ -2,6 +2,8 @@ option(ENABLE_CPPCHECK "Enable static analysis with cppcheck" OFF)
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 option(ENABLE_INCLUDE_WHAT_YOU_USE "Enable static analysis with include-what-you-use" OFF)
 
+# TO DO: With cmake 3.18 find_programm gains support for the REQUIRED option
+
 if(ENABLE_CPPCHECK)
   find_program(CPPCHECK cppcheck)
   if(CPPCHECK)
@@ -11,8 +13,7 @@ if(ENABLE_CPPCHECK)
         --enable=all
         --inline-suppr
         --inconclusive
-        -i
-        ${CMAKE_SOURCE_DIR}/imgui/lib)
+    )
   else()
     message(SEND_ERROR "cppcheck requested but executable not found")
   endif()
@@ -23,7 +24,7 @@ if(ENABLE_CLANG_TIDY)
   if(CLANGTIDY)
     set(CMAKE_CXX_CLANG_TIDY ${CLANGTIDY} -extra-arg=-Wno-unknown-warning-option)
   else()
-    message(SEND_ERROR "clang-tidy requested but executable not found")
+   message(SEND_ERROR "clang-tidy requested but executable not found")
   endif()
 endif()
 
