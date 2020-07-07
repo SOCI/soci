@@ -8,6 +8,7 @@
 #define SOCI_ODBC_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/odbc/soci-odbc.h"
+#include "soci-compiler.h"
 #include "soci-static-assert.h"
 #include <cctype>
 #include <cstdio>
@@ -318,7 +319,13 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
                 for (std::size_t i = 0; i != vsize; ++i)
                 {
                     std::tm t = v[i];
+
+                    // See comment for the use of this macro in standard-into-type.cpp.
+                    GCC_WARNING_SUPPRESS(cast-align)
+
                     TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
+
+                    GCC_WARNING_RESTORE(cast-align)
 
                     ts->year = static_cast<SQLSMALLINT>(t.tm_year + 1900);
                     ts->month = static_cast<SQLUSMALLINT>(t.tm_mon + 1);

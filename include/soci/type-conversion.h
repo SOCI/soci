@@ -159,7 +159,7 @@ private:
     // and can be used by conversion routines
     indicator & ind_;
 
-    bool readOnly_;
+    const bool readOnly_;
 
     SOCI_NOT_COPYABLE(conversion_use_type)
 };
@@ -287,7 +287,7 @@ public:
             typename type_conversion<T>::base_type
         > base_type;
 
-    conversion_use_type(std::vector<T> & value,
+    conversion_use_type(const std::vector<T> & value,
         std::string const & name=std::string())
         : base_vector_holder<T>(value.size()),
         use_type<base_type>(
@@ -301,7 +301,7 @@ public:
     {
     }
 
-    conversion_use_type(std::vector<T> & value,
+    conversion_use_type(const std::vector<T> & value,
         std::size_t begin, std::size_t * end,
         std::string const & name=std::string())
         : base_vector_holder<T>(value.size()),
@@ -316,7 +316,7 @@ public:
         user_ranges_ = end != NULL;
     }
 
-    conversion_use_type(std::vector<T> & value,
+    conversion_use_type(const std::vector<T> & value,
         std::vector<indicator> & ind,
         std::string const & name = std::string())
         : base_vector_holder<T>(value.size()),
@@ -330,7 +330,7 @@ public:
     {
     }
 
-    conversion_use_type(std::vector<T> & value,
+    conversion_use_type(const std::vector<T> & value,
         std::vector<indicator> & ind,
         std::size_t begin, std::size_t * end,
         std::string const & name = std::string())
@@ -346,30 +346,6 @@ public:
     }
 
 private:
-    void convert_from_base()
-    {
-        std::size_t const sz = base_vector_holder<T>::vec_.size();
-        value_.resize(sz);
-        ind_.resize(sz);
-
-        if (user_ranges_)
-        {
-            for (std::size_t i = begin_; i != *end_; ++i)
-            {
-                type_conversion<T>::from_base(
-                    base_vector_holder<T>::vec_[i], value_[i], ind_[i]);
-            }
-        }
-        else
-        {
-            for (std::size_t i = 0; i != sz; ++i)
-            {
-                type_conversion<T>::from_base(
-                    base_vector_holder<T>::vec_[i], value_[i], ind_[i]);
-            }
-        }
-    }
-
     void convert_to_base() SOCI_OVERRIDE
     {
         std::size_t const sz = value_.size();
@@ -394,7 +370,7 @@ private:
         }
     }
 
-    std::vector<T> & value_;
+    const std::vector<T> & value_;
 
     std::vector<indicator> ownInd_;
 

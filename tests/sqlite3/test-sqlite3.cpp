@@ -27,18 +27,14 @@ TEST_CASE("SQLite rowid", "[sqlite][rowid][oid]")
 {
     soci::session sql(backEnd, connectString);
 
-    try
-    {
-        sql << "drop table test1";
-    }
-    catch (soci_error const &)
-    {
-    } // ignore if error
+    try { sql << "drop table test1"; }
+    catch (soci_error const &) {} // ignore if error
 
-    sql << "create table test1 ("
-           "    id integer,"
-           "    name varchar(100)"
-           ")";
+    sql <<
+    "create table test1 ("
+    "    id integer,"
+    "    name varchar(100)"
+    ")";
 
     sql << "insert into test1(id, name) values(7, \'John\')";
 
@@ -49,7 +45,7 @@ TEST_CASE("SQLite rowid", "[sqlite][rowid][oid]")
     std::string name;
 
     sql << "select id, name from test1 where oid = :rid",
-        into(id), into(name), use(rid);
+    into(id), into(name), use(rid);
 
     CHECK(id == 7);
     CHECK(name == "John");
@@ -60,13 +56,14 @@ TEST_CASE("SQLite rowid", "[sqlite][rowid][oid]")
 // BLOB test
 struct blob_table_creator : public table_creator_base
 {
-    blob_table_creator(soci::session &sql)
+    blob_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
-        sql << "create table soci_test ("
-               "    id integer,"
-               "    img blob"
-               ")";
+        sql <<
+            "create table soci_test ("
+            "    id integer,"
+            "    img blob"
+            ")";
     }
 };
 
@@ -104,6 +101,7 @@ TEST_CASE("SQLite blob", "[sqlite][blob]")
 
         sql << "select img from soci_test where id = 7", into(b);
         CHECK(b.get_len() == sizeof(buf));
+
     }
 }
 
@@ -113,7 +111,7 @@ TEST_CASE("SQLite blob", "[sqlite][blob]")
 
 struct test3_table_creator : table_creator_base
 {
-    test3_table_creator(soci::session &sql) : table_creator_base(sql)
+    test3_table_creator(soci::session & sql) : table_creator_base(sql)
     {
         sql << "create table soci_test( id integer, name varchar, subname varchar);";
     }
@@ -148,6 +146,7 @@ TEST_CASE("SQLite use and vector into", "[sqlite][use][into][vector]")
     }
 }
 
+
 // Test case from Amnon David 11/1/2007
 // I've noticed that table schemas in SQLite3 can sometimes have typeless
 // columns. One (and only?) example is the sqlite_sequence that sqlite
@@ -157,7 +156,7 @@ TEST_CASE("SQLite use and vector into", "[sqlite][use][into][vector]")
 
 struct test4_table_creator : table_creator_base
 {
-    test4_table_creator(soci::session &sql) : table_creator_base(sql)
+    test4_table_creator(soci::session & sql) : table_creator_base(sql)
     {
         sql << "create table soci_test (col INTEGER PRIMARY KEY AUTOINCREMENT, name char)";
     }
@@ -181,7 +180,7 @@ TEST_CASE("SQLite select from sequence", "[sqlite][sequence]")
 
         rowset<row> rs = (sql.prepare << "select * from sqlite_sequence");
         rowset<row>::const_iterator it = rs.begin();
-        row const &r1 = (*it);
+        row const& r1 = (*it);
         CHECK(r1.get<std::string>(0) == "soci_test");
         CHECK(r1.get<std::string>(1) == "2");
     }
@@ -189,7 +188,7 @@ TEST_CASE("SQLite select from sequence", "[sqlite][sequence]")
 
 struct longlong_table_creator : table_creator_base
 {
-    longlong_table_creator(soci::session &sql)
+    longlong_table_creator(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val number(20))";
@@ -238,6 +237,44 @@ TEST_CASE("SQLite vector long long", "[sqlite][vector][longlong]")
     CHECK(v2[4] == 1000000000000LL);
 }
 
+struct type_inference_table_creator : table_creator_base
+{
+    type_inference_table_creator(soci::session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(cvc varchar (10), cdec decimal (20), "
+               "cll bigint, cull unsigned bigint, clls big int, culls unsigned big int)";
+    }
+};
+
+// test for correct type inference form sqlite column type
+TEST_CASE("SQLite type inference", "[sqlite][sequence]")
+{
+    soci::session sql(backEnd, connectString);
+
+    type_inference_table_creator tableCreator(sql);
+
+    std::string cvc = "john";
+    double cdec = 12345.0;  // integers can be stored precisely in IEEE 754
+    long long cll = 1000000000003LL;
+    unsigned long long cull = 1000000000004ULL;
+
+    sql << "insert into soci_test(cvc, cdec, cll, cull, clls, culls) values(:cvc, :cdec, :cll, :cull, :clls, :culls)",
+        use(cvc), use(cdec), use(cll), use(cull), use(cll), use(cull);
+
+    {
+        rowset<row> rs = (sql.prepare << "select * from soci_test");
+        rowset<row>::const_iterator it = rs.begin();
+        row const& r1 = (*it);
+        CHECK(r1.get<std::string>(0) == cvc);
+        CHECK(r1.get<double>(1) == Approx(cdec));
+        CHECK(r1.get<long long>(2) == cll);
+        CHECK(r1.get<unsigned long long>(3) == cull);
+        CHECK(r1.get<long long>(4) == cll);
+        CHECK(r1.get<unsigned long long>(5) == cull);
+    }
+}
+
 TEST_CASE("SQLite DDL wrappers", "[sqlite][ddl]")
 {
     soci::session sql(backEnd, connectString);
@@ -253,7 +290,7 @@ TEST_CASE("SQLite DDL wrappers", "[sqlite][ddl]")
 
 struct table_creator_for_get_last_insert_id : table_creator_base
 {
-    table_creator_for_get_last_insert_id(soci::session &sql)
+    table_creator_for_get_last_insert_id(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(id integer primary key autoincrement)";
@@ -273,37 +310,66 @@ TEST_CASE("SQLite last insert id", "[sqlite][last-insert-id]")
     CHECK(id == 42);
 }
 
+struct table_creator_for_std_tm_bind : table_creator_base
+{
+    table_creator_for_std_tm_bind(soci::session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(date datetime)";
+        sql << "insert into soci_test (date) values ('2017-04-04 00:00:00')";
+        sql << "insert into soci_test (date) values ('2017-04-04 12:00:00')";
+        sql << "insert into soci_test (date) values ('2017-04-05 00:00:00')";
+    }
+};
+
+TEST_CASE("SQLite std::tm bind", "[sqlite][std-tm-bind]")
+{
+    soci::session sql(backEnd, connectString);
+    table_creator_for_std_tm_bind tableCreator(sql);
+
+    std::time_t datetimeEpoch = 1491307200; // 2017-04-04 12:00:00
+
+    std::tm datetime = *std::gmtime(&datetimeEpoch);
+    soci::rowset<std::tm> rs = (sql.prepare << "select date from soci_test where date=:dt", soci::use(datetime));
+
+    std::vector<std::tm> result;
+    std::copy(rs.begin(), rs.end(), std::back_inserter(result));
+    REQUIRE(result.size() == 1);
+    result.front().tm_isdst = 0;
+    CHECK(std::mktime(&result.front()) == std::mktime(&datetime));
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
-    table_creator_one(soci::session &sql)
+    table_creator_one(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, val integer, c char, "
-               "str varchar(20), sh smallint, ul numeric(20), d float, "
-               "num76 numeric(7,6), "
-               "tm datetime, i1 integer, i2 integer, i3 integer, "
-               "name varchar(20))";
+                 "str varchar(20), sh smallint, ul numeric(20), d float, "
+                 "num76 numeric(7,6), "
+                 "tm datetime, i1 integer, i2 integer, i3 integer, "
+                 "name varchar(20))";
     }
 };
 
 struct table_creator_two : public table_creator_base
 {
-    table_creator_two(soci::session &sql)
+    table_creator_two(soci::session & sql)
         : table_creator_base(sql)
     {
-        sql << "create table soci_test(num_float float, num_int integer,"
-               " name varchar(20), sometime datetime, chr char)";
+        sql  << "create table soci_test(num_float float, num_int integer,"
+                     " name varchar(20), sometime datetime, chr char)";
     }
 };
 
 struct table_creator_three : public table_creator_base
 {
-    table_creator_three(soci::session &sql)
+    table_creator_three(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(name varchar(100) not null, "
-               "phone varchar(15))";
+            "phone varchar(15))";
     }
 };
 
@@ -314,7 +380,7 @@ struct table_creator_three : public table_creator_base
 // Implement get_affected_rows for SQLite3 backend
 struct table_creator_for_get_affected_rows : table_creator_base
 {
-    table_creator_for_get_affected_rows(soci::session &sql)
+    table_creator_for_get_affected_rows(soci::session & sql)
         : table_creator_base(sql)
     {
         sql << "create table soci_test(val integer)";
@@ -329,25 +395,25 @@ class test_context : public test_context_base
 {
 public:
     test_context(backend_factory const &backEnd,
-                 std::string const &connectString)
+                std::string const &connectString)
         : test_context_base(backEnd, connectString) {}
 
-    table_creator_base *table_creator_1(soci::session &s) const SOCI_OVERRIDE
+    table_creator_base* table_creator_1(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_one(s);
     }
 
-    table_creator_base *table_creator_2(soci::session &s) const SOCI_OVERRIDE
+    table_creator_base* table_creator_2(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_two(s);
     }
 
-    table_creator_base *table_creator_3(soci::session &s) const SOCI_OVERRIDE
+    table_creator_base* table_creator_3(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_three(s);
     }
 
-    table_creator_base *table_creator_4(soci::session &s) const SOCI_OVERRIDE
+    table_creator_base* table_creator_4(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_for_get_affected_rows(s);
     }
@@ -375,19 +441,19 @@ public:
         return true;
     }
 
-    bool enable_std_char_padding(soci::session &) const SOCI_OVERRIDE
+    bool enable_std_char_padding(soci::session&) const SOCI_OVERRIDE
     {
         // SQLite does not support right padded char type.
         return false;
     }
 
-    std::string sql_length(std::string const &s) const SOCI_OVERRIDE
+    std::string sql_length(std::string const& s) const SOCI_OVERRIDE
     {
         return "length(" + s + ")";
     }
 };
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
 
 #ifdef _MSC_VER

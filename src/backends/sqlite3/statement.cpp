@@ -265,8 +265,11 @@ sqlite3_statement_backend::bind_and_execute(int number)
                 switch (col.type_)
                 {
                     case dt_string:
-                    case dt_date:
                         bindRes = sqlite3_bind_text(stmt_, pos, col.buffer_.constData_, static_cast<int>(col.buffer_.size_), NULL);
+                        break;
+                    
+                    case dt_date:
+                        bindRes = sqlite3_bind_text(stmt_, pos, col.buffer_.constData_, static_cast<int>(col.buffer_.size_), SQLITE_TRANSIENT);
                         break;
 
                     case dt_double:
@@ -410,6 +413,8 @@ static sqlite3_data_type_map get_data_type_map()
 {
     sqlite3_data_type_map m;
 
+    // Spaces are removed from decltype before looking up in this map, so we don't use them here as well
+
     // dt_blob
     m["blob"]               = dt_blob;
 
@@ -421,7 +426,7 @@ static sqlite3_data_type_map get_data_type_map()
     // dt_double
     m["decimal"]            = dt_double;
     m["double"]             = dt_double;
-    m["double precision"]   = dt_double;
+    m["doubleprecision"]    = dt_double;
     m["float"]              = dt_double;
     m["number"]             = dt_double;
     m["numeric"]            = dt_double;
@@ -444,15 +449,15 @@ static sqlite3_data_type_map get_data_type_map()
     m["char"]               = dt_string;
     m["character"]          = dt_string;
     m["clob"]               = dt_string;
-    m["native character"]   = dt_string;
+    m["nativecharacter"]    = dt_string;
     m["nchar"]              = dt_string;
     m["nvarchar"]           = dt_string;
     m["text"]               = dt_string;
     m["varchar"]            = dt_string;
-    m["varying character"]  = dt_string;
+    m["varyingcharacter"]   = dt_string;
 
     // dt_unsigned_long_long
-    m["unsigned big int"]   = dt_unsigned_long_long;
+    m["unsignedbigint"]   = dt_unsigned_long_long;
 
 
     return m;
@@ -491,10 +496,14 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
 
     std::string dt = declType;
 
-    // remove extra characters for example "(20)" in "varchar(20)"
+    // remove extra characters for example "(20)" in "varchar(20)" and all spaces
 #if defined(SOCI_HAVE_CXX11) || (defined(_MSC_VER) && _MSC_VER >= 1800)
+    dt.erase(std::remove_if(dt.begin(), dt.end(), [](char const c) { return std::isspace(c); }), dt.end());
+
     std::string::iterator siter = std::find_if(dt.begin(), dt.end(), [](char const c) { return !std::isalnum(c); });
 #else
+    dt.erase(std::remove_if(dt.begin(), dt.end(), std::ptr_fun(isspace)), dt.end());
+
     std::string::iterator siter = std::find_if(dt.begin(), dt.end(), std::not1(std::ptr_fun(isalnum)));
 #endif
     if (siter != dt.end())

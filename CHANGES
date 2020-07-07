@@ -1,7 +1,7 @@
 This file contains the history of changes in the SOCI library.
 
 ---
-Version 4.0.0 (3742c894) differs from 3.2.3 in the following ways:
+Version 4.0.0 differs from 3.2.3 in the following ways:
 
 NOTICE: This is probably the last release compatible with C++98.
 
