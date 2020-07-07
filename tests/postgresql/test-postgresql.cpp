@@ -990,6 +990,67 @@ TEST_CASE("Bulk iterators", "[postgresql][bulkiters]")
     sql << "drop table t";
 }
 
+
+// false_bind_variable_inside_identifier
+struct test_false_bind_variable_inside_identifier_table_creator : table_creator_base
+{
+    test_false_bind_variable_inside_identifier_table_creator(session & sql)
+        : table_creator_base(sql)
+        , msession(sql) 
+    {
+
+        try
+        {
+            sql << "CREATE TABLE soci_test( \"column_with:colon\" integer)";
+            sql << "CREATE TYPE \"type_with:colon\" AS ENUM ('en_one', 'en_two');";
+            sql <<  "CREATE FUNCTION \"function_with:colon\"() RETURNS integer LANGUAGE 'sql' AS "
+                    "$BODY$"
+                    "   SELECT \"column_with:colon\" FROM soci_test LIMIT 1; "
+                    "$BODY$;"
+            ;
+        }
+        catch(...)
+        {
+            drop();
+        }
+        
+    }
+    ~test_false_bind_variable_inside_identifier_table_creator(){
+        drop();
+    }
+private:
+    void drop()
+    {
+        try
+        {
+            msession << "DROP FUNCTION IF EXISTS \"function_with:colon\"();";
+            msession << "DROP TYPE IF EXISTS \"type_with:colon\" ;";
+        }
+        catch (soci_error const& e){}
+    }
+    session& msession;
+};
+TEST_CASE("false_bind_variable_inside_identifier", "[postgresql][bind-variables]")
+{
+    std::string col_name;
+    int fct_return_value;
+    std::string type_value;
+
+    {
+        session sql(backEnd, connectString);
+        test_false_bind_variable_inside_identifier_table_creator tableCreator(sql);
+
+        sql << "insert into soci_test(\"column_with:colon\") values(2020)";
+        sql << "SELECT column_name FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = 'soci_test';", into(col_name);
+        sql << "SELECT \"function_with:colon\"() ;", into(fct_return_value);
+        sql << "SELECT unnest(enum_range(NULL::\"type_with:colon\"))  ORDER BY 1 LIMIT 1;", into(type_value);
+    }
+
+    CHECK(col_name.compare("column_with:colon") == 0);
+    CHECK(fct_return_value == 2020);
+    CHECK(type_value.compare("en_one")==0);
+}
+
 //
 // Support for soci Common Tests
 //
