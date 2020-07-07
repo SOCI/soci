@@ -16,7 +16,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake" "${CMAKE_CURRENT
 
 ###############################################################################
 # Project wide setup
-##############################################################################
+###############################################################################
 set(CMAKE_CXX_STANDARD 98)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -103,7 +103,7 @@ target_include_directories(soci_backend_config PRIVATE $<BUILD_INTERFACE:${PROJE
 
 add_library(soci_core)
 add_library(SOCI::soci_core ALIAS soci_core)
-target_link_libraries(soci_core PRIVATE Threads::Threads $<$<BOOL:${Boost_FOUND}>:Boost::boost> $<$<BOOL:${Boost_DATE_TIME_FOUND}>:Boost::date_time> ${CMAKE_DL_LIBS})
+target_link_libraries(soci_core PRIVATE SOCI::soci_backend_config Threads::Threads $<$<BOOL:${Boost_FOUND}>:Boost::boost> $<$<BOOL:${Boost_DATE_TIME_FOUND}>:Boost::date_time> ${CMAKE_DL_LIBS})
 target_include_directories(soci_core PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
 target_include_directories(soci_core PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 
