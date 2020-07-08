@@ -21,8 +21,6 @@
 #include <ctime>
 #include <memory>
 
-#include "soci/soci-config.h" // for SOCI_HAVE_CXX11
-
 #if defined(_MSC_VER)
 #define LL_FMT_FLAGS "I64"
 #else
