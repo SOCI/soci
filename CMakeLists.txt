@@ -172,8 +172,7 @@ endif()
 if(WITH_SQLITE3)
   add_library(soci_sqlite3)
   add_library(SOCI::soci_sqlite3 ALIAS soci_sqlite3)
-  target_link_libraries(soci_sqlite3 PRIVATE SOCI::soci_core SOCI::soci_backend_config SQLite::SQLite3)
-  target_include_directories(soci_sqlite3 PRIVATE ${SQLite3_INCLUDE_DIRS})
+  target_link_libraries(soci_sqlite3 PUBLIC SQLite::SQLite3 PRIVATE SOCI::soci_core SOCI::soci_backend_config)
   target_include_directories(soci_sqlite3 PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
   target_include_directories(soci_sqlite3 PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 endif()
@@ -187,38 +186,38 @@ include(InstallSoci)
 
 INSTALL (DIRECTORY ${PROJECT_SOURCE_DIR}/include/soci DESTINATION include)
 
-install_component(NAME Soci TARGETS soci_core soci_version)
+install_component(NAME Soci TARGETS soci_core soci_version soci_backend_config)
 
 if(WITH_DB2)
-  install_component(NAME SociDb2 TARGETS soci_db2 soci_backend_config)
+  install_component(NAME SociDb2 TARGETS soci_db2)
 endif() 
 
 if(WITH_EMPTY)
-  install_component(NAME SociEmpty TARGETS soci_empty soci_backend_config)
+  install_component(NAME SociEmpty TARGETS soci_empty)
 endif() 
 
 if(WITH_FIREBIRD)
-  install_component(NAME SociFirebird TARGETS soci_firebird soci_backend_config)
+  install_component(NAME SociFirebird TARGETS soci_firebird)
 endif() 
 
 if(WITH_MYSQL)
-  install_component(NAME SociMySQL TARGETS soci_mysql soci_backend_config)
+  install_component(NAME SociMySQL TARGETS soci_mysql)
 endif() 
 
 if(WITH_ODBC)
-  install_component(NAME SociOdbc TARGETS soci_odbc soci_backend_config)
+  install_component(NAME SociOdbc TARGETS soci_odbc)
 endif() 
 
 if(WITH_ORACLE)
-  install_component(NAME SociOracle TARGETS soci_oracle soci_backend_config)
+  install_component(NAME SociOracle TARGETS soci_oracle)
 endif() 
 
 if(WITH_POSTGRESQL)
-  install_component(NAME SociPostgresql TARGETS soci_postgresql soci_backend_config)
+  install_component(NAME SociPostgresql TARGETS soci_postgresql)
 endif() 
 
 if(WITH_SQLITE3)
-  install_component(NAME SociSqlite3 TARGETS soci_sqlite3 soci_backend_config)
+  install_component(NAME SociSqlite3 TARGETS soci_sqlite3)
 endif() 
 
 ###############################################################################

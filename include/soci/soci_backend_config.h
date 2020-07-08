@@ -4,9 +4,13 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef SOCI_BACKENDS_CONFIG_H
-#define SOCI_BACKENDS_CONFIG_H
+#ifndef SOCI_BACKEND_CONFIG_H
+#define SOCI_BACKEND_CONFIG_H
 
-#define DEFAULT_BACKENDS_PATH "@CMAKE_INSTALL_PREFIX@/@LIBDIR@"
+#include <string>
 
-#endif // SOCI_BACKENDS_CONFIG_H
+std::string getDefaultBackendPath() {
+
+}
+
+#endif // SOCI_BACKEND_CONFIG_H

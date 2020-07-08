@@ -4,11 +4,11 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //
-#ifndef SOCI_BACKENDS_CONFIG_H
-#define SOCI_BACKENDS_CONFIG_H
+#ifndef SOCI_BACKEND_CONFIG_H
+#define SOCI_BACKEND_CONFIG_H
 
 #include <string>
 
 std::string getDefaultBackendPath();
 
-#endif // SOCI_BACKENDS_CONFIG_H
+#endif // SOCI_BACKEND_CONFIG_H
