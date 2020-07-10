@@ -101,33 +101,43 @@ List of variables to control common SOCI features and dependencies:
 #### Empty (sample backend)
 
 * `SOCI_EMPTY` - boolean - ON - Requests to build the [sample backend](backends/index.md) called Empty.
+* `SOCI_EMPTY_TEST_CONNSTR` - string - :memory: - Connection string used to run regression tests of the Empty backend. It is a dummy value. Example: `-DSOCI_EMPTY_TEST_CONNSTR="dummy connection"`
+
 #### IBM DB2
 
 * `WITH_DB2` - boolean - OFF - Requests to build [DB2](backends/db2.md) backend.
+* `SOCI_DB2_TEST_CONNSTR` - string - :memory: - See [DB2 backend reference](backends/db2.md) for details. Example: `-DSOCI_DB2_TEST_CONNSTR:STRING="DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;autocommit=off"`
 
 #### Firebird
 
 * `WITH_FIREBIRD` - boolean - OFF - Requests to build [Firebird](backends/firebird.md) backend
+* `SOCI_FIREBIRD_TEST_CONNSTR` - string - :memory: - See [Firebird backend reference](backends/firebird.md) for details. Example: `-DSOCI_FIREBIRD_TEST_CONNSTR:STRING="service=LOCALHOST:/tmp/soci_test.fdb user=SYSDBA password=masterkey"`
 
 #### MySQL
 
 * `WITH_MYSQL` - boolean - OFF - Requests to build [MySQL](backends/mysql.md) backend.
+* `SOCI_MYSQL_TEST_CONNSTR` - string - :memory: - Connection string to MySQL test database. Format of the string is explained [MySQL backend reference](backends/mysql.md). Example: `-DSOCI_MYSQL_TEST_CONNSTR:STRING="db=mydb user=mloskot password=secret"`
 
 #### ODBC
 
 * `WITH_ODBC` - boolean - OFF - Requests to build [ODBC](backends/odbc.md) backend.
+* `SOCI_ODBC_TEST_{database}_CONNSTR` - string - :memory: - ODBC Data Source Name (DSN) or ODBC File Data Source Name (FILEDSN) to test database: Microsoft Access (.mdb), Microsoft SQL Server, MySQL, PostgreSQL or any other ODBC SQL data source. {database} is placeholder for name of database driver ACCESS, MYSQL, POSTGRESQL, etc. See [ODBC](backends/odbc.md) backend reference for details. Example: `-DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR="FILEDSN=/home/mloskot/soci/build/test-postgresql.dsn"`
 
 #### Oracle
 
 * `WITH_ORACLE` - boolean - OFF - Requests to build [Oracle](backends/oracle.md) backend.
+* `SOCI_ORACLE_TEST_CONNSTR` - string - :memory: - Connection string to Oracle test database. Format of the string is explained [Oracle backend reference](backends/oracle.md). Example: `-DSOCI_ORACLE_TEST_CONNSTR:STRING="service=orcl user=scott password=tiger"`
+
 
 #### PostgreSQL
 
 * `WITH_POSTGRESQL` - boolean - OFF - Requests to build [PostgreSQL](backends/postgresql.md) backend.
+* `SOCI_POSTGRESQL_TEST_CONNSTR` - string - :memory: - Connection string to PostgreSQL test database. Format of the string is explained PostgreSQL backend reference. Example: `-DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="dbname=mydb user=scott"
 
 #### SQLite 3
 
 * `WITH_SQLITE3` - boolean - OFF - Requests to build [SQLite3](backends/sqlite3.md) backend.
+* `SOCI_SQLITE3_TEST_CONNSTR` - string - :memory: - Connection string is simply a file path where SQLite3 test database will be created (e.g. /home/john/soci_test.db). Check [SQLite3 backend reference](backends/sqlite3.md) for details. Example: `-DSOCI_SQLITE3_TEST_CONNSTR="my.db"` or `-DSOCI_SQLITE3_TEST_CONNSTR=":memory:"`.
 
 ##### Sqlite3 Installation notes (for Windows, use the package manager on Linux instead):
 Sqlite3 distributes its source code and libraries seperatly. Also it does only distribute a .dll file for Windows without the import library needed. 
@@ -146,6 +156,14 @@ lib /DEF:sqlite3.def /OUT:sqlite3.lib /MACHINE:x64
 ```
 
 Finally add the sqlite3 directory and the sqlite3/lib directory to your PATH Variable.
+
+### Run Tests
+
+To run tests  used you can use the following command:
+```console
+cmake --build build --target test
+```
+Make sure BUILD_TESTING is set on otherwise there won't be tests available.
 
 ## Using the library
 

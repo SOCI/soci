@@ -17,15 +17,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake" "${CMAKE_CURRENT
 ###############################################################################
 # Project wide setup
 ###############################################################################
-set(CMAKE_CXX_STANDARD 98)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-# Put the libaries and binaries at the top of the build tree for easier use
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
 set(WITH_DB2 OFF CACHE BOOL "Add Db2 build target and search for dependencies")
 set(WITH_EMPTY ON CACHE BOOL "Add Empty build target and search for dependencies")
 set(WITH_FIREBIRD OFF CACHE BOOL "Add Firebird build target and search for dependencies")
@@ -36,13 +27,30 @@ set(WITH_POSTGRESQL OFF CACHE BOOL "Add Firebird build target and search for dep
 set(WITH_SQLITE3 OFF CACHE BOOL "Add Sqlite3 build target and search for dependencies")
 
 set(WITH_BOOST OFF CACHE BOOL "Add boost support")
+set(SOCI_CXX11 OFF CACHE BOOL "Build to the C++11 standard")
 
-set (SOCI_CXX11 OFF CACHE BOOL "Build to the C++11 standard")
-if(SOCI_CXX11)
-  set(CMAKE_CXX_STANDARD 11)
+# Check if soci is the top level project or included in another project
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  if(SOCI_CXX11)
+    set(CMAKE_CXX_STANDARD 11)
+  else() 
+    set(CMAKE_CXX_STANDARD 98)
+  endif()
+  
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF)
+
+  # Put the libaries and binaries at the top of the build tree for easier use
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+  # IDE support for folders
+  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+  include(CTest)
+  include(cmake/StaticAnalyzers.cmake)
 endif()
-
-include(cmake/StaticAnalyzers.cmake)
 
 ###############################################################################
 # Dependencies
@@ -238,10 +246,6 @@ endif()
 ###############################################################################
 # Tests
 ###############################################################################
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-  include(CTest)
-endif()
-
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
   add_subdirectory(tests)
 endif()
