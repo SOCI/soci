@@ -7,7 +7,18 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-find_package(Soci COMPONENTS Sqlite3 REQUIRED)
+set(USE_FETCH OFF CACHE BOOL "Add boost support")
+
+if(USE_FETCH)
+    include(FetchContent)
+    FetchContent_Declare(Soci
+        GIT_REPOSITORY https://github.com/Leon0402/soci.git
+        GIT_TAG        origin/fetchExample
+    )
+    FetchContent_MakeAvailable(Soci)
+else()
+    find_package(Soci COMPONENTS Sqlite3 REQUIRED)
+endif()
 
 # Main build targets
 add_executable(Test)
