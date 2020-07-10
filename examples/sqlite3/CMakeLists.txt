@@ -13,7 +13,7 @@ if(USE_FETCH)
     include(FetchContent)
     FetchContent_Declare(Soci
         GIT_REPOSITORY https://github.com/Leon0402/soci.git
-        GIT_TAG        origin/fetchExample
+        GIT_TAG        origin/feature/fetchExample
     )
     FetchContent_MakeAvailable(Soci)
 else()
