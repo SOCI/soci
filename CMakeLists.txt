@@ -27,7 +27,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(WITH_DB2 OFF CACHE BOOL "Add Db2 build target and search for dependencies")
-set(WITH_EMPTY OFF CACHE BOOL "Add Empty build target and search for dependencies")
+set(WITH_EMPTY ON CACHE BOOL "Add Empty build target and search for dependencies")
 set(WITH_FIREBIRD OFF CACHE BOOL "Add Firebird build target and search for dependencies")
 set(WITH_MYSQL OFF CACHE BOOL "Add Mysql build target and search for dependencies")
 set(WITH_ODBC OFF CACHE BOOL "Add Odbc build target and search for dependencies")
@@ -35,9 +35,11 @@ set(WITH_ORACLE OFF CACHE BOOL "Add Oracle build target and search for dependenc
 set(WITH_POSTGRESQL OFF CACHE BOOL "Add Firebird build target and search for dependencies")
 set(WITH_SQLITE3 OFF CACHE BOOL "Add Sqlite3 build target and search for dependencies")
 
+set(WITH_BOOST OFF CACHE BOOL "Add boost support")
+
 set (SOCI_CXX11 OFF CACHE BOOL "Build to the C++11 standard")
 if(SOCI_CXX11)
-  add_compile_definitions(SOCI_CXX11)
+  set(CMAKE_CXX_STANDARD 11)
 endif()
 
 include(cmake/StaticAnalyzers.cmake)
@@ -49,7 +51,10 @@ include(cmake/StaticAnalyzers.cmake)
 # Soci core
 find_package(Threads REQUIRED)
 
-find_package(Boost COMPONENTS date_time)
+# Optional boost support
+if(WITH_BOOST)
+  find_package(Boost COMPONENTS date_time REQUIRED)
+endif() 
 
 # DB2 soci backend
 if(WITH_DB2)
@@ -103,9 +108,19 @@ target_include_directories(soci_backend_config PRIVATE $<BUILD_INTERFACE:${PROJE
 
 add_library(soci_core)
 add_library(SOCI::soci_core ALIAS soci_core)
-target_link_libraries(soci_core PRIVATE SOCI::soci_backend_config Threads::Threads $<$<BOOL:${Boost_FOUND}>:Boost::boost> $<$<BOOL:${Boost_DATE_TIME_FOUND}>:Boost::date_time> ${CMAKE_DL_LIBS})
+target_link_libraries(soci_core PRIVATE SOCI::soci_backend_config Threads::Threads ${CMAKE_DL_LIBS})
 target_include_directories(soci_core PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
 target_include_directories(soci_core PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+
+if(SOCI_CXX11)
+  target_compile_definitions(soci_core PUBLIC SOCI_HAVE_CXX11)
+endif()
+
+if(WITH_BOOST)
+  target_link_libraries(soci_core PRIVATE Boost::boost Boost::date_time)
+  target_compile_definitions(soci_core PRIVATE SOCI_HAVE_BOOST)
+endif()
+
 
 if(WITH_DB2)
   add_library(soci_db2)

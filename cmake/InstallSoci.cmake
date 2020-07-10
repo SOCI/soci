@@ -17,7 +17,9 @@ function(install_component)
         COMPATIBILITY SameMajorVersion
     )
 
-    install(FILES cmake/configs/${ARG_NAME}Config.cmake ${CMAKE_CURRENT_BINARY_DIR}/${ARG_NAME}ConfigVersion.cmake 
+    configure_file(cmake/configs/${ARG_NAME}Config.cmake.in ${ARG_NAME}Config.cmake @ONLY)
+
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${ARG_NAME}Config.cmake ${CMAKE_CURRENT_BINARY_DIR}/${ARG_NAME}ConfigVersion.cmake 
         DESTINATION ${SOCI_INSTALL_CMAKEDIR}
     )
 

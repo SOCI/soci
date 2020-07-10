@@ -1,6 +1,10 @@
 include(CMakeFindDependencyMacro)
 find_dependency(Threads)
 
+if(@WITH_BOOST@)
+    find_dependency(Boost COMPONENTS date_time)
+endif() 
+
 set(${CMAKE_FIND_PACKAGE_NAME}_comps)
 
 # Work out the set of components to load

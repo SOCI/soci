@@ -93,42 +93,41 @@ List of a few essential CMake variables:
 
 List of variables to control common SOCI features and dependencies:
 
-* `SOCI_CXX11` - boolean - Request to compile in C++11 compatibility mode. Default is `OFF`, unless [CMAKE_CXX_STANDARD](https://cmake.org/cmake/help/v3.1/variable/CMAKE_CXX_STANDARD.html) with version `11` or later is given in the command line.
-* `BUILD_SHARED_LIBS` - boolean - Request to build shared libraries for SOCI core and all successfully configured backends. Default is `OFF`.
-* `BUILD_TESTING` - boolean - Request to build regression tests for SOCI core and all successfully configured backends.
+* `SOCI_CXX11` - boolean - OFF - Request to compile in C++11 compatibility mode.
+* `BUILD_SHARED_LIBS` - boolean - OFF - Requests to build shared libraries for SOCI core and all successfully configured backends. Default is `OFF`.
+* `BUILD_TESTING` - boolean - ON - Requests to build regression tests for SOCI core and all successfully configured backends.
+* `WITH_BOOST` - boolean - OFF - Requests to build with boost type support.
 
 #### Empty (sample backend)
 
-* `SOCI_EMPTY` - boolean - Builds the [sample backend](backends/index.md) called Empty. Always ON by default.
-* `SOCI_EMPTY_TEST_CONNSTR` - string - Connection string used to run regression tests of the Empty backend. It is a dummy value. Example: `-DSOCI_EMPTY_TEST_CONNSTR="dummy connection"`
-
+* `SOCI_EMPTY` - boolean - ON - Requests to build the [sample backend](backends/index.md) called Empty.
 #### IBM DB2
 
-* `WITH_DB2` - boolean - Requests to build [DB2](backends/db2.md) backend.
+* `WITH_DB2` - boolean - OFF - Requests to build [DB2](backends/db2.md) backend.
 
 #### Firebird
 
-* `WITH_FIREBIRD` - boolean - Requests to build [Firebird](backends/firebird.md) backend
+* `WITH_FIREBIRD` - boolean - OFF - Requests to build [Firebird](backends/firebird.md) backend
 
 #### MySQL
 
-* `WITH_MYSQL` - boolean - Requests to build [MySQL](backends/mysql.md) backend.
+* `WITH_MYSQL` - boolean - OFF - Requests to build [MySQL](backends/mysql.md) backend.
 
 #### ODBC
 
-* `WITH_ODBC` - boolean - Requests to build [ODBC](backends/odbc.md) backend.
+* `WITH_ODBC` - boolean - OFF - Requests to build [ODBC](backends/odbc.md) backend.
 
 #### Oracle
 
-* `WITH_ORACLE` - boolean - Requests to build [Oracle](backends/oracle.md) backend.
+* `WITH_ORACLE` - boolean - OFF - Requests to build [Oracle](backends/oracle.md) backend.
 
 #### PostgreSQL
 
-* `WITH_POSTGRESQL` - boolean - Requests to build [PostgreSQL](backends/postgresql.md) backend.
+* `WITH_POSTGRESQL` - boolean - OFF - Requests to build [PostgreSQL](backends/postgresql.md) backend.
 
 #### SQLite 3
 
-* `WITH_SQLITE3` - boolean - Requests to build [SQLite3](backends/sqlite3.md) backend.
+* `WITH_SQLITE3` - boolean - OFF - Requests to build [SQLite3](backends/sqlite3.md) backend.
 
 ##### Sqlite3 Installation notes (for Windows, use the package manager on Linux instead):
 Sqlite3 distributes its source code and libraries seperatly. Also it does only distribute a .dll file for Windows without the import library needed. 
@@ -154,7 +153,7 @@ Using the library is quite straight with cmake forward if you installed soci as 
 
 In you CmakeLists.txt add something like that: 
 ```cmake
-find_package(SOCI COMPONENTS sqlite3 REQUIRED)
+find_package(Soci COMPONENTS Sqlite3 REQUIRED)
 
 # Main build targets
 add_executable(Test)
