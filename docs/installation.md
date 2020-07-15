@@ -167,6 +167,9 @@ Make sure BUILD_TESTING is set on otherwise there won't be tests available.
 
 ## Using the library
 
+No matter what approach you take, soci has some external dependencies. Mainly the database for each backend you need.
+So make sure they are installed correctly (and can be found by cmake e.g. setting the PATH or CMAKE_PREFIX_PATH). You might find installation notes for the backends above if there is anything special you have to take care of.
+
 ### find_package (Installation needed)
 
 Using the library is quite straight with cmake forward if you installed soci as described above. Soci provides a SociFonfig.cmake, which makes using it very easy if you. 
