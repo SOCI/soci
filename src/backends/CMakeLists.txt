@@ -8,34 +8,34 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
-if(WITH_DB2)
+if(SOCI_WITH_DB2)
   add_subdirectory(db2)
 endif()
 
-if(WITH_EMPTY)
+if(SOCI_WITH_EMPTY)
   add_subdirectory(empty)
 endif()
 
-if(WITH_FIREBIRD)
+if(SOCI_WITH_FIREBIRD)
   add_subdirectory(firebird)
 endif()
 
-if(WITH_MYSQL)
+if(SOCI_WITH_MYSQL)
   add_subdirectory(mysql)
 endif()
 
-if(WITH_ODBC)
+if(SOCI_WITH_ODBC)
   add_subdirectory(odbc)
 endif()
 
-if(WITH_ORACLE)
+if(SOCI_WITH_ORACLE)
   add_subdirectory(oracle)
 endif()
 
-if(WITH_POSTGRESQL)
+if(SOCI_WITH_POSTGRESQL)
   add_subdirectory(postgresql)
 endif()
 
-if(WITH_SQLITE3)
+if(SOCI_WITH_SQLITE3)
   add_subdirectory(sqlite3)
 endif()

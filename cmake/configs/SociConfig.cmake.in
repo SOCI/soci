@@ -1,7 +1,7 @@
 include(CMakeFindDependencyMacro)
 find_dependency(Threads)
 
-if(@WITH_BOOST@)
+if(@SOCI_WITH_BOOST@)
     find_dependency(Boost COMPONENTS date_time)
 endif() 
 

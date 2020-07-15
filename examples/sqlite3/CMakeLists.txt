@@ -1,3 +1,8 @@
+# This example shows how to use soci with sqlite3. 
+# It shows two common approaches, one is to use findPackage if you have built soci and installed it on your system. 
+# The other is adding soci as a subdirectory with FetchContent and build it as part of this project. 
+# The default is findPackage, you can use fetchContent by providing -DUSE_FETCH=ON on the command line.
+
 ### Preamble ###
 cmake_minimum_required(VERSION 3.17)
 project(Test VERSION 0.1 LANGUAGES CXX)
@@ -7,21 +12,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(USE_FETCH OFF CACHE BOOL "Add boost support")
+option(USE_FETCH "Use fetchContent instead of findPackage" OFF)
 
-if(USE_FETCH)
-    include(FetchContent)
-    FetchContent_Declare(Soci
-        GIT_REPOSITORY https://github.com/Leon0402/soci.git
-        GIT_TAG        origin/feature/fetchExample
-    )
-    FetchContent_MakeAvailable(Soci)
-else()
+### Dependencies ###
+add_subdirectory(dependencies)
+if(NOT USE_FETCH)
     find_package(Soci COMPONENTS Sqlite3 REQUIRED)
 endif()
 
-# Main build targets
-add_executable(Test)
-target_link_libraries(Test SOCI::soci_core SOCI::soci_sqlite3)
-
+### Main Targets ###
 add_subdirectory(src)

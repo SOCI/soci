@@ -93,9 +93,9 @@ List of a few essential CMake variables:
 
 List of variables to control common SOCI features and dependencies:
 
-* `SOCI_CXX11` - boolean - OFF - Request to compile in C++11 compatibility mode.
 * `BUILD_SHARED_LIBS` - boolean - OFF - Requests to build shared libraries for SOCI core and all successfully configured backends. Default is `OFF`.
 * `BUILD_TESTING` - boolean - ON - Requests to build regression tests for SOCI core and all successfully configured backends.
+* `WITH_CXX11` - boolean - OFF - Request to compile in C++11 compatibility mode.
 * `WITH_BOOST` - boolean - OFF - Requests to build with boost type support.
 
 #### Empty (sample backend)
@@ -167,6 +167,8 @@ Make sure BUILD_TESTING is set on otherwise there won't be tests available.
 
 ## Using the library
 
+### find_package (Installation needed)
+
 Using the library is quite straight with cmake forward if you installed soci as described above. Soci provides a SociFonfig.cmake, which makes using it very easy if you. 
 
 In you CmakeLists.txt add something like that: 
@@ -180,4 +182,26 @@ target_link_libraries(Test SOCI::soci_core SOCI::soci_sqlite3)
 
 Have a look at the example folder to see full examples on how to use soci with cmake. 
 
-You might be also able to use a different method like fetchContent, it isn't tested yet though.
+### fetchContent (No Installation needed)
+
+Using the library with fetchContent is also rather straight forward in general, there is just the drawback that you have to set the the cached variables described above in your own project, which might make it more complicated.
+
+In you CmakeLists.txt add something like that: 
+```cmake
+include(FetchContent)
+FetchContent_Declare(Soci
+  GIT_REPOSITORY <LinkToGit>
+  GIT_TAG        <optionalGitTag/branchName>
+)
+FetchContent_MakeAvailable(Soci)
+
+# Main build targets
+add_executable(Test)
+target_link_libraries(Test SOCI::soci_core SOCI::soci_sqlite3)
+```
+
+Then when compiling you have to set the right cached variables. In this example we need at least the sqlite3 backend:
+```console
+cmake -S . -B build -DWITH_SQLITE3=ON
+```
+Depending on your setup and needs, you might -DWITH_CXX11=ON -DWITH_BOOST=ON -DBUILD_TESTING=OFF and others described above.

@@ -28,7 +28,7 @@ add_library(Catch::Catch IMPORTED INTERFACE)
 target_include_directories(Catch::Catch INTERFACE ${PROJECT_SOURCE_DIR}/extern/catch)
 
 # Request CATCH to disable all the C++11 features
-if (NOT SOCI_CXX11)
+if (NOT SOCI_WITH_CXX11)
   target_compile_definitions(Catch::Catch INTERFACE CATCH_CONFIG_NO_CPP11)
 endif()
 
@@ -37,42 +37,42 @@ endif()
 ###############################################################################
 include(AddSociTest)
 
-if(WITH_DB2)
+if(SOCI_WITH_DB2)
   add_soci_test(NAME db2 ARGUMENTS ${DB2_TEST_CONNSTR})
   add_subdirectory(db2)
 endif()
 
-if(WITH_EMPTY)
+if(SOCI_WITH_EMPTY)
   add_soci_test(NAME empty ARGUMENTS ${EMPTY_TEST_CONNSTR})
   add_subdirectory(empty)
 endif()
 
-if(WITH_FIREBIRD)
+if(SOCI_WITH_FIREBIRD)
   add_soci_test(NAME firebird ARGUMENTS ${FIREBIRD_TEST_CONNSTR})
   add_subdirectory(firebird)
 endif()
 
-if(WITH_MYSQL)
+if(SOCI_WITH_MYSQL)
   add_soci_test(NAME mysql ARGUMENTS ${MYSQL_TEST_CONNSTR})
   add_subdirectory(mysql)
 endif()
 
-if(WITH_ODBC)
+if(SOCI_WITH_ODBC)
   add_soci_test(NAME odbc ARGUMENTS ${ODBC_TEST_CONNSTR})
   add_subdirectory(odbc)
 endif()
 
-if(WITH_ORACLE)
+if(SOCI_WITH_ORACLE)
   add_soci_test(NAME oracle ARGUMENTS ${ORACLE_TEST_CONNSTR})
   add_subdirectory(oracle)
 endif()
 
-if(WITH_POSTGRESQL)
+if(SOCI_WITH_POSTGRESQL)
   add_soci_test(NAME postgresql ARGUMENTS ${POSTGRESQL_TEST_CONNSTR})
   add_subdirectory(postgresql)
 endif()
 
-if(WITH_SQLITE3)
+if(SOCI_WITH_SQLITE3)
   add_soci_test(NAME sqlite3 ARGUMENTS ${SQLITE3_TEST_CONNSTR})
   add_subdirectory(sqlite3)
 endif()
