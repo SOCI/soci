@@ -8,6 +8,13 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
+add_library(soci_postgresql)
+add_library(SOCI::soci_postgresql ALIAS soci_postgresql)
+target_link_libraries(soci_postgresql PRIVATE SOCI::soci_core SOCI::soci_backend_config PostgreSQL::PostgreSQL)
+target_include_directories(soci_postgresql PRIVATE ${PostgreSQL_INCLUDE_DIRS})
+target_include_directories(soci_postgresql PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
+target_include_directories(soci_postgresql PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+
 target_sources(soci_postgresql
   PRIVATE
     blob.cpp

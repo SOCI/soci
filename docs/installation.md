@@ -52,7 +52,7 @@ cmake -S . - build
 ```
 The above command will just build soci_core as a static lib. Building soci core and the sqlite3 backend as a shared lib without tests looks like this:
 ```console
-cmake -S . - build  -DWITH_SQLITE3=ON -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF
+cmake -S . - build  -DSOCI_WITH_SQLITE3=ON -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF
 ```
 Take a look at the following sections to read more about the cached variables for configuration.
 
@@ -95,48 +95,48 @@ List of variables to control common SOCI features and dependencies:
 
 * `BUILD_SHARED_LIBS` - boolean - OFF - Requests to build shared libraries for SOCI core and all successfully configured backends. Default is `OFF`.
 * `BUILD_TESTING` - boolean - ON - Requests to build regression tests for SOCI core and all successfully configured backends.
-* `WITH_CXX11` - boolean - OFF - Request to compile in C++11 compatibility mode.
-* `WITH_BOOST` - boolean - OFF - Requests to build with boost type support.
+* `SOCI_WITH_CXX11` - boolean - OFF - Request to compile in C++11 compatibility mode.
+* `SOCI_WITH_BOOST` - boolean - OFF - Requests to build with boost type support.
 
 #### Empty (sample backend)
 
-* `SOCI_EMPTY` - boolean - ON - Requests to build the [sample backend](backends/index.md) called Empty.
+* `SOCI_WITH_EMPTY` - boolean - ON - Requests to build the [sample backend](backends/index.md) called Empty.
 * `SOCI_EMPTY_TEST_CONNSTR` - string - :memory: - Connection string used to run regression tests of the Empty backend. It is a dummy value. Example: `-DSOCI_EMPTY_TEST_CONNSTR="dummy connection"`
 
 #### IBM DB2
 
-* `WITH_DB2` - boolean - OFF - Requests to build [DB2](backends/db2.md) backend.
+* `SOCI_WITH_DB2` - boolean - OFF - Requests to build [DB2](backends/db2.md) backend.
 * `SOCI_DB2_TEST_CONNSTR` - string - :memory: - See [DB2 backend reference](backends/db2.md) for details. Example: `-DSOCI_DB2_TEST_CONNSTR:STRING="DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;autocommit=off"`
 
 #### Firebird
 
-* `WITH_FIREBIRD` - boolean - OFF - Requests to build [Firebird](backends/firebird.md) backend
+* `SOCI_WITH_FIREBIRD` - boolean - OFF - Requests to build [Firebird](backends/firebird.md) backend
 * `SOCI_FIREBIRD_TEST_CONNSTR` - string - :memory: - See [Firebird backend reference](backends/firebird.md) for details. Example: `-DSOCI_FIREBIRD_TEST_CONNSTR:STRING="service=LOCALHOST:/tmp/soci_test.fdb user=SYSDBA password=masterkey"`
 
 #### MySQL
 
-* `WITH_MYSQL` - boolean - OFF - Requests to build [MySQL](backends/mysql.md) backend.
+* `SOCI_WITH_MYSQL` - boolean - OFF - Requests to build [MySQL](backends/mysql.md) backend.
 * `SOCI_MYSQL_TEST_CONNSTR` - string - :memory: - Connection string to MySQL test database. Format of the string is explained [MySQL backend reference](backends/mysql.md). Example: `-DSOCI_MYSQL_TEST_CONNSTR:STRING="db=mydb user=mloskot password=secret"`
 
 #### ODBC
 
-* `WITH_ODBC` - boolean - OFF - Requests to build [ODBC](backends/odbc.md) backend.
+* `SOCI_WITH_ODBC` - boolean - OFF - Requests to build [ODBC](backends/odbc.md) backend.
 * `SOCI_ODBC_TEST_{database}_CONNSTR` - string - :memory: - ODBC Data Source Name (DSN) or ODBC File Data Source Name (FILEDSN) to test database: Microsoft Access (.mdb), Microsoft SQL Server, MySQL, PostgreSQL or any other ODBC SQL data source. {database} is placeholder for name of database driver ACCESS, MYSQL, POSTGRESQL, etc. See [ODBC](backends/odbc.md) backend reference for details. Example: `-DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR="FILEDSN=/home/mloskot/soci/build/test-postgresql.dsn"`
 
 #### Oracle
 
-* `WITH_ORACLE` - boolean - OFF - Requests to build [Oracle](backends/oracle.md) backend.
+* `SOCI_WITH_ORACLE` - boolean - OFF - Requests to build [Oracle](backends/oracle.md) backend.
 * `SOCI_ORACLE_TEST_CONNSTR` - string - :memory: - Connection string to Oracle test database. Format of the string is explained [Oracle backend reference](backends/oracle.md). Example: `-DSOCI_ORACLE_TEST_CONNSTR:STRING="service=orcl user=scott password=tiger"`
 
 
 #### PostgreSQL
 
-* `WITH_POSTGRESQL` - boolean - OFF - Requests to build [PostgreSQL](backends/postgresql.md) backend.
+* `SOCI_WITH_POSTGRESQL` - boolean - OFF - Requests to build [PostgreSQL](backends/postgresql.md) backend.
 * `SOCI_POSTGRESQL_TEST_CONNSTR` - string - :memory: - Connection string to PostgreSQL test database. Format of the string is explained PostgreSQL backend reference. Example: `-DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="dbname=mydb user=scott"
 
 #### SQLite 3
 
-* `WITH_SQLITE3` - boolean - OFF - Requests to build [SQLite3](backends/sqlite3.md) backend.
+* `SOCI_WITH_SQLITE3` - boolean - OFF - Requests to build [SQLite3](backends/sqlite3.md) backend.
 * `SOCI_SQLITE3_TEST_CONNSTR` - string - :memory: - Connection string is simply a file path where SQLite3 test database will be created (e.g. /home/john/soci_test.db). Check [SQLite3 backend reference](backends/sqlite3.md) for details. Example: `-DSOCI_SQLITE3_TEST_CONNSTR="my.db"` or `-DSOCI_SQLITE3_TEST_CONNSTR=":memory:"`.
 
 ##### Sqlite3 Installation notes (for Windows, use the package manager on Linux instead):
@@ -184,24 +184,43 @@ Have a look at the example folder to see full examples on how to use soci with c
 
 ### fetchContent (No Installation needed)
 
-Using the library with fetchContent is also rather straight forward in general, there is just the drawback that you have to set the the cached variables described above in your own project, which might make it more complicated.
+Using the library with fetchContent is also rather straight forward in general. It's in general easier as you don't have to build the project and install it, but therefore you need slightly more code and configure soci in your project instead.
 
-In you CmakeLists.txt add something like that: 
+It's recommend that you put the code for pulling in soci in another scope, so you can set variables like BUILD_SHARED_LIBS without affecting your project or other dependencies. In this example we use the approach to create a dedicated directory dependencies and another one for each dependency you have (and use fetchContent with). This will create a new directory scope and therefore you can set these variables without risk
+
+Warning: Don't do this approach for find_package, targets found by find_package are only available in the same scope / child scope. Therefore it must be used in the top CMakeLists.txt or in a subdirectory where your executable is declared.
+
+dependencies/soci/CMakeLists.txt
 ```cmake
 include(FetchContent)
 FetchContent_Declare(Soci
   GIT_REPOSITORY <LinkToGit>
   GIT_TAG        <optionalGitTag/branchName>
 )
+set(SOCI_WITH_SQLITE3 ON)
+set(SOCI_WITH_BOOST ON) # Optional
+set(SOCI_WITH_CXX11) # If your compiler supports C++11
 FetchContent_MakeAvailable(Soci)
+```
+
+dependencies/CMakeLists.txt
+```cmake
+...
+add_subdirectory(soci)
+...
+```
+
+CMakeLists.txt
+```cmake
+...
+# Dependencies
+add_subdirectory(dependencies)
 
 # Main build targets
 add_executable(Test)
 target_link_libraries(Test SOCI::soci_core SOCI::soci_sqlite3)
+
+...
 ```
 
-Then when compiling you have to set the right cached variables. In this example we need at least the sqlite3 backend:
-```console
-cmake -S . -B build -DWITH_SQLITE3=ON
-```
-Depending on your setup and needs, you might -DWITH_CXX11=ON -DWITH_BOOST=ON -DBUILD_TESTING=OFF and others described above.
+Have a look at the example folder to see full examples on how to use soci with cmake.

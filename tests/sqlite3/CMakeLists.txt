@@ -8,4 +8,9 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
+include(AddSociTest)
+
+set(SQLITE3_TEST_CONNSTR ":memory:" CACHE STRING "Connection string used for the sqlite3 backend regression test")
+
+add_soci_test(NAME sqlite3 ARGUMENTS ${SQLITE3_TEST_CONNSTR})
 target_sources(soci_sqlite3_test PRIVATE test-sqlite3.cpp)

@@ -8,4 +8,9 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
+include(AddSociTest)
+
+set(FIREBIRD_TEST_CONNSTR ":memory:" CACHE STRING "Connection string used for the firebird backend regression test")
+
+add_soci_test(NAME firebird ARGUMENTS ${FIREBIRD_TEST_CONNSTR})
 target_sources(soci_firebird_test PRIVATE test-firebird.cpp)

@@ -8,4 +8,9 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
+include(AddSociTest)
+
+set(EMPTY_TEST_CONNSTR ":memory:" CACHE STRING "Connection string used for the empty backend regression test")
+
+add_soci_test(NAME empty ARGUMENTS ${EMPTY_TEST_CONNSTR})
 target_sources(soci_empty_test PRIVATE test-empty.cpp)

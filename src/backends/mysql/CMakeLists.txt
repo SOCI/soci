@@ -8,6 +8,13 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
+add_library(soci_mysql)
+add_library(SOCI::soci_mysql ALIAS soci_mysql)
+target_link_libraries(soci_mysql PRIVATE SOCI::soci_core SOCI::soci_backend_config ${MYSQL_LIBRARIES})
+target_include_directories(soci_mysql PRIVATE ${MYSQL_INCLUDE_DIR})
+target_include_directories(soci_mysql PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
+target_include_directories(soci_mysql PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+
 
 target_sources(soci_mysql
   PRIVATE

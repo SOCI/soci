@@ -8,6 +8,11 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
+include(AddSociTest)
+
+set(ODBC_TEST_CONNSTR ":memory:" CACHE STRING "Connection string used for the odbc backend regression test")
+
+add_soci_test(NAME odbc ARGUMENTS ${ODBC_TEST_CONNSTR})
 target_sources(soci_odbc_test 
   PRIVATE 
     test-odbc-access.cpp

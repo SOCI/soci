@@ -8,6 +8,13 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
+add_library(soci_oracle)
+add_library(SOCI::soci_oracle ALIAS soci_oracle)
+target_link_libraries(soci_oracle PRIVATE SOCI::soci_core SOCI::soci_backend_config ${ORACLE_LIBRARIES})
+target_include_directories(soci_oracle PRIVATE ${ORACLE_INCLUDE_DIR})
+target_include_directories(soci_oracle PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
+target_include_directories(soci_oracle PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+
 target_sources(soci_oracle
   PRIVATE
     blob.cpp

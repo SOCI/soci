@@ -8,4 +8,9 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
+include(AddSociTest)
+
+set(MYSQL_TEST_CONNSTR ":memory:" CACHE STRING "Connection string used for the mysql backend regression test")
+
+add_soci_test(NAME mysql ARGUMENTS ${MYSQL_TEST_CONNSTR})
 target_sources(soci_mysql_test PRIVATE test-mysql.cpp)

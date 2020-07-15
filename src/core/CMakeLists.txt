@@ -8,6 +8,21 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
+add_library(soci_core)
+add_library(SOCI::soci_core ALIAS soci_core)
+target_link_libraries(soci_core PRIVATE SOCI::soci_backend_config Threads::Threads ${CMAKE_DL_LIBS})
+target_include_directories(soci_core PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
+target_include_directories(soci_core PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+
+if(SOCI_WITH_CXX11)
+  target_compile_definitions(soci_core PUBLIC SOCI_HAVE_CXX11)
+endif()
+
+if(SOCI_WITH_BOOST)
+  target_link_libraries(soci_core PRIVATE Boost::boost Boost::date_time)
+  target_compile_definitions(soci_core PRIVATE SOCI_HAVE_BOOST)
+endif()
+
 target_sources(soci_core 
   PRIVATE
     backend-loader.cpp 

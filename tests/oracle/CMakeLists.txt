@@ -8,4 +8,9 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ###############################################################################
+include(AddSociTest)
+
+set(ORACLE_TEST_CONNSTR ":memory:" CACHE STRING "Connection string used for the orcacle backend regression test")
+
+add_soci_test(NAME oracle ARGUMENTS ${ORACLE_TEST_CONNSTR})
 target_sources(soci_oracle_test PRIVATE test-oracle.cpp)

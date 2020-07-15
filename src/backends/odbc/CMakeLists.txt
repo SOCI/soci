@@ -8,6 +8,13 @@
 # http://www.boost.org/LICENSE_1_0.txt)
 #
 ################################################################################
+add_library(soci_odbc)
+add_library(SOCI::soci_odbc ALIAS soci_odbc)
+target_link_libraries(soci_odbc PRIVATE SOCI::soci_core SOCI::soci_backend_config ODBC::ODBC)
+target_include_directories(soci_odbc PRIVATE ${ODBC_INCLUDE_DIRS})
+target_include_directories(soci_odbc PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
+target_include_directories(soci_odbc PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
+
 target_sources(soci_odbc
   PRIVATE
     blob.cpp
