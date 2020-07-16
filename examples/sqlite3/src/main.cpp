@@ -9,19 +9,25 @@
 using namespace soci;
 using namespace std;
 
-bool get_name(string& name) {
+bool get_name(string &name)
+{
     cout << "Enter name: ";
     cin >> name;
     return true;
 }
 
-int main() {
-    try {
-        session sql(sqlite3, "test.db");
+int main()
+{
+    try
+    {
+        session sql(*soci::factory_sqlite3(), "test.db");
 
-        try {
+        try
+        {
             sql << "drop table phonebook";
-        } catch(soci_error const&) {
+        }
+        catch (soci_error const &)
+        {
         }
 
         sql << "create table phonebook ("
@@ -35,18 +41,24 @@ int main() {
         cout << "We have " << count << " entries in the phonebook.\n";
 
         string name;
-        while(get_name(name)) {
+        while (get_name(name))
+        {
             string phone;
             indicator ind;
             sql << "select phone from phonebook where name = :name", into(phone, ind), use(name);
 
-            if(ind == i_ok) {
+            if (ind == i_ok)
+            {
                 cout << "The phone number is " << phone << '\n';
-            } else {
+            }
+            else
+            {
                 cout << "There is no phone for " << name << '\n';
             }
         }
-    } catch(exception const& e) {
+    }
+    catch (exception const &e)
+    {
         cerr << "Error: " << e.what() << '\n';
     }
 }
