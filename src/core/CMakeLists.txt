@@ -23,6 +23,10 @@ if(SOCI_WITH_BOOST)
   target_compile_definitions(soci_core PRIVATE SOCI_HAVE_BOOST)
 endif()
 
+if(WIN32)
+    set_target_properties(soci_core PROPERTIES DEFINE_SYMBOL SOCI_DLL)
+endif()
+
 target_sources(soci_core 
   PRIVATE
     backend-loader.cpp 

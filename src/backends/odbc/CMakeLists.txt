@@ -15,6 +15,10 @@ target_include_directories(soci_odbc PRIVATE ${ODBC_INCLUDE_DIRS})
 target_include_directories(soci_odbc PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
 target_include_directories(soci_odbc PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 
+if(WIN32)
+    set_target_properties(soci_core PROPERTIES DEFINE_SYMBOL SOCI_DLL)
+endif()
+
 target_sources(soci_odbc
   PRIVATE
     blob.cpp

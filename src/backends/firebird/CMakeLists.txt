@@ -15,6 +15,10 @@ target_include_directories(soci_firebird PRIVATE ${FIREBIRD_INCLUDE_DIR})
 target_include_directories(soci_firebird PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
 target_include_directories(soci_firebird PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 
+if(WIN32)
+    set_target_properties(soci_core PROPERTIES DEFINE_SYMBOL SOCI_DLL)
+endif()
+
 target_sources(soci_firebird
   PRIVATE
     blob.cpp
