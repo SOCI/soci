@@ -12,16 +12,18 @@ function(install_component)
         ${ARGN}
     )
 
+    message(${PROJECT_BINARY_DIR}/${ARG_NAME}ConfigVersion.cmake)
 
-    write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${ARG_NAME}ConfigVersion.cmake 
+    write_basic_package_version_file(${PROJECT_BINARY_DIR}/${ARG_NAME}ConfigVersion.cmake 
         COMPATIBILITY SameMajorVersion
     )
 
-    configure_file(cmake/configs/${ARG_NAME}Config.cmake.in ${ARG_NAME}Config.cmake @ONLY)
+    configure_file(${PROJECT_SOURCE_DIR}/cmake/configs/${ARG_NAME}Config.cmake.in ${ARG_NAME}Config.cmake @ONLY)
 
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${ARG_NAME}Config.cmake ${CMAKE_CURRENT_BINARY_DIR}/${ARG_NAME}ConfigVersion.cmake 
+    install(FILES ${PROJECT_BINARY_DIR}/${ARG_NAME}Config.cmake ${PROJECT_BINARY_DIR}/${ARG_NAME}ConfigVersion.cmake 
         DESTINATION ${SOCI_INSTALL_CMAKEDIR}
     )
+
 
     install(TARGETS ${ARG_TARGETS}
         EXPORT ${ARG_NAME}Targets
