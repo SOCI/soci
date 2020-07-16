@@ -48,11 +48,11 @@ you may find the tutorial [Running CMake](http://cmake.org/cmake/help/runningcma
 
 First configure cmake and create a native buildsystem (e.g. make on Unix or ninja, visual studio on Windows ...)
 ```console
-cmake -S . - build  
+cmake -S . --build build  
 ```
-The above command will just build soci_core as a static lib. Building soci core and the sqlite3 backend as a shared lib without tests looks like this:
+The above command will just build soci_core as a static lib. Building soci core and the sqlite3 backend as a shared lib without tests and C++11 support looks like this:
 ```console
-cmake -S . - build  -DSOCI_WITH_SQLITE3=ON -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF
+cmake -S . --build build  -DSOCI_WITH_SQLITE3=ON -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF -DSOCI_WITH_CXX11=ON
 ```
 Take a look at the following sections to read more about the cached variables for configuration.
 
