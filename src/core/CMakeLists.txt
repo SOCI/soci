@@ -23,7 +23,7 @@ if(SOCI_WITH_BOOST)
   target_compile_definitions(soci_core PRIVATE SOCI_HAVE_BOOST)
 endif()
 
-if(WIN32)
+if(BUILD_SHARED_LIBS AND WIN32)
     set_target_properties(soci_core PROPERTIES DEFINE_SYMBOL SOCI_DLL)
 endif()
 

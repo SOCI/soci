@@ -14,8 +14,8 @@ target_link_libraries(soci_sqlite3 PUBLIC SQLite::SQLite3 PRIVATE SOCI::soci_cor
 target_include_directories(soci_sqlite3 PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
 target_include_directories(soci_sqlite3 PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 
-if(WIN32)
-    set_target_properties(soci_core PROPERTIES DEFINE_SYMBOL SOCI_DLL)
+if(BUILD_SHARED_LIBS AND WIN32)
+    set_target_properties(soci_sqlite3 PROPERTIES DEFINE_SYMBOL SOCI_DLL)
 endif()
 
 target_sources(soci_sqlite3 

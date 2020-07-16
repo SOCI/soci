@@ -15,8 +15,8 @@ target_include_directories(soci_postgresql PRIVATE ${PostgreSQL_INCLUDE_DIRS})
 target_include_directories(soci_postgresql PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
 target_include_directories(soci_postgresql PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 
-if(WIN32)
-    set_target_properties(soci_core PROPERTIES DEFINE_SYMBOL SOCI_DLL)
+if(BUILD_SHARED_LIBS AND WIN32)
+    set_target_properties(soci_postgresql PROPERTIES DEFINE_SYMBOL SOCI_DLL)
 endif()
 
 target_sources(soci_postgresql
