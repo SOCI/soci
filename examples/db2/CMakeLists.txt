@@ -17,7 +17,7 @@ option(USE_FETCH "Use fetchContent instead of findPackage" OFF)
 ### Dependencies ###
 add_subdirectory(dependencies)
 if(NOT USE_FETCH)
-    find_package(Soci COMPONENTS DB2 REQUIRED)
+    find_package(Soci COMPONENTS Db2 REQUIRED)
 endif()
 
 ### Main Targets ###

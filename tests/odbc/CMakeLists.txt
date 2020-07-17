@@ -17,7 +17,7 @@ set(SOCI_ODBC_MYSQL_TEST_CONNSTR ":memory:" CACHE STRING "Connection string used
 set(SOCI_ODBC_POSTGRESQL_TEST_CONNSTR ":memory:" CACHE STRING "Connection string used for the odbc postgresql backend regression test")
 
 add_soci_test(NAME odbc_access ARGUMENTS ${SOCI_ODBC_ACCESS_TEST_CONNSTR})
-target_sources(soci_odbc_acces_test PRIVATE test-odbc-access.cpp)
+target_sources(soci_odbc_access_test PRIVATE test-odbc-access.cpp)
 
 add_soci_test(NAME odbc_db2 ARGUMENTS ${SOCI_ODBC_DB2_TEST_CONNSTR})
 target_sources(soci_odbc_db2_test PRIVATE test-odbc-db2.cpp)
