@@ -18,17 +18,12 @@ fi
 echo "Build: building SOCI from sources in ${SOCI_HOME} to build in ${SOCI_BUILD}"
 cd ${SOCI_BUILD} && \
 cmake \
-    -DSOCI_CXX11=ON \
-    -DSOCI_TESTS=ON \
-    -DSOCI_STATIC=OFF \
-    -DSOCI_DB2=ON \
-    -DSOCI_ODBC=OFF \
-    -DSOCI_ORACLE=OFF \
-    -DSOCI_EMPTY=ON \
-    -DSOCI_FIREBIRD=ON \
-    -DSOCI_MYSQL=ON \
-    -DSOCI_POSTGRESQL=ON \
-    -DSOCI_SQLITE3=ON \
+    -DSOCI_WITH_CXX11=ON \
+    -DSOCI_BUILD_TESTING=ON \
+    -DSOCI_WITH_FIREBIRD=ON \
+    -DSOCI_WITH_MYSQL=ON \
+    -DSOCI_WITH_POSTGRESQL=ON \
+    -DSOCI_WITH_SQLITE3=ON \
     -DSOCI_DB2_TEST_CONNSTR:STRING="DATABASE=${SOCI_USER}\\;hostname=${SOCI_DB2_HOST}\\;UID=${SOCI_DB2_USER}\\;PWD=${SOCI_DB2_PASS}\\;ServiceName=50000\\;Protocol=TCPIP\\;" \
     -DSOCI_FIREBIRD_TEST_CONNSTR:STRING="service=LOCALHOST:/tmp/soci.fdb user=${SOCI_USER} password=${SOCI_PASS}" \
     -DSOCI_MYSQL_TEST_CONNSTR:STRING="host=localhost db=${SOCI_USER} user=${SOCI_USER} password=${SOCI_PASS}" \

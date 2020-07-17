@@ -32,7 +32,7 @@ matrix:
     - env: SOCI_TRAVIS_BACKEND=postgresql
     - env: SOCI_TRAVIS_BACKEND=sqlite3
     - env: SOCI_TRAVIS_BACKEND=valgrind
-    - env: SOCI_TRAVIS_BACKEND=oracle WITH_BOOST=OFF
+    - env: SOCI_TRAVIS_BACKEND=oracle SOCI_WITH_BOOST=OFF
 
 addons:
     apt:
