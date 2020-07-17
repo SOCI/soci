@@ -12,16 +12,8 @@ run_cmake_for_empty()
         -DCMAKE_VERBOSE_MAKEFILE=ON \
         -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD} \
         -DSOCI_ASAN=ON \
-        -DSOCI_TESTS=ON \
-        -DSOCI_STATIC=OFF \
-        -DSOCI_DB2=OFF \
-        -DSOCI_EMPTY=ON \
-        -DSOCI_FIREBIRD=OFF \
-        -DSOCI_MYSQL=OFF \
-        -DSOCI_ODBC=OFF \
-        -DSOCI_ORACLE=OFF \
-        -DSOCI_POSTGRESQL=OFF \
-        -DSOCI_SQLITE3=OFF \
+        -DSOCI_BUILD_TESTING=ON \
+        -DSOCI_WITH_EMPTY=ON \
         ..
 }
 

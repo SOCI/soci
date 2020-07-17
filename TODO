@@ -108,3 +108,6 @@ rowset<Row> rs = (s.prepare << "firstname='John' AND age > 28") // multi-fields 
 - very simple home-made SQL parser or SQL-like queries support (see OGR utils from http://www.gdal.org)
 
 ---
+Fix install process in travis script_empty.sh (version)
+
+---
