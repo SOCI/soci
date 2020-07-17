@@ -10,7 +10,7 @@
 ###############################################################################
 include(AddSociTest)
 
-set(ORACLE_TEST_CONNSTR ":memory:" CACHE STRING "Connection string used for the orcacle backend regression test")
+set(SOCI_ORACLE_TEST_CONNSTR ":memory:" CACHE STRING "Connection string used for the orcacle backend regression test")
 
-add_soci_test(NAME oracle ARGUMENTS ${ORACLE_TEST_CONNSTR})
+add_soci_test(NAME oracle ARGUMENTS ${SOCI_ORACLE_TEST_CONNSTR})
 target_sources(soci_oracle_test PRIVATE test-oracle.cpp)

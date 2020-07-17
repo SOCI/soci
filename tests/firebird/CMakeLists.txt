@@ -10,7 +10,7 @@
 ###############################################################################
 include(AddSociTest)
 
-set(FIREBIRD_TEST_CONNSTR ":memory:" CACHE STRING "Connection string used for the firebird backend regression test")
+set(SOCI_FIREBIRD_TEST_CONNSTR ":memory:" CACHE STRING "Connection string used for the firebird backend regression test")
 
-add_soci_test(NAME firebird ARGUMENTS ${FIREBIRD_TEST_CONNSTR})
+add_soci_test(NAME firebird ARGUMENTS ${SOCI_FIREBIRD_TEST_CONNSTR})
 target_sources(soci_firebird_test PRIVATE test-firebird.cpp)

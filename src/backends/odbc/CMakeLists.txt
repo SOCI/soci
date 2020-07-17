@@ -10,8 +10,7 @@
 ################################################################################
 add_library(soci_odbc)
 add_library(SOCI::soci_odbc ALIAS soci_odbc)
-target_link_libraries(soci_odbc PRIVATE SOCI::soci_core SOCI::soci_backend_config ODBC::ODBC)
-target_include_directories(soci_odbc PRIVATE ${ODBC_INCLUDE_DIRS})
+target_link_libraries(soci_odbc PUBLIC ODBC::ODBC PRIVATE SOCI::soci_core SOCI::soci_backend_config)
 target_include_directories(soci_odbc PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
 target_include_directories(soci_odbc PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 

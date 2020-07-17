@@ -10,8 +10,8 @@
 ###############################################################################
 add_library(soci_firebird)
 add_library(SOCI::soci_firebird ALIAS soci_firebird)
-target_link_libraries(soci_firebird PRIVATE SOCI::soci_core SOCI::soci_backend_config ${FIREBIRD_LIBRARIES})
-target_include_directories(soci_firebird PRIVATE ${FIREBIRD_INCLUDE_DIR})
+target_link_libraries(soci_firebird PUBLIC ${FIREBIRD_LIBRARIES} PRIVATE SOCI::soci_core SOCI::soci_backend_config)
+target_include_directories(soci_firebird PUBLIC ${FIREBIRD_INCLUDE_DIR})
 target_include_directories(soci_firebird PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/private>)
 target_include_directories(soci_firebird PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 
