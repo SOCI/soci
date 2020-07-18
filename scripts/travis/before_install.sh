@@ -10,10 +10,10 @@ sudo apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ xenial main'
 sudo apt-get update -qq -y
 sudo apt-get install -y libboost-dev libboost-date-time-dev valgrind cmake
 # export PATH=/usr/local/bin:$PATH
-sudo rm -r /usr/local/cmake-12.4.0/
+sudo rm -r /usr/local/cmake-3.12.4/
 echo "Test"
 echo $PATH
-ls /usr/local/cmake-12.4.0/bin
+ls /usr/local/cmake-3.12.4/bin
 apt-cache madison cmake
 cmake --version
 
