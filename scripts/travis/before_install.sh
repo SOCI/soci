@@ -8,7 +8,7 @@ source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
 wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
 sudo apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ xenial main'
 sudo apt-get update -qq -y
-sudo apt-get install -qq -y libboost-dev libboost-date-time-dev valgrind cmake
+sudo apt-get install -y libboost-dev libboost-date-time-dev valgrind cmake
 echo "Test"
 apt-cache madison cmake
 cmake --version
