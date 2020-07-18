@@ -30,7 +30,13 @@ option(SOCI_WITH_CXX11 "Build to the C++11 standard" OFF)
 
 # Check if soci is the top level project or included in another project
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-  if(SOCI_WITH_CXX11)
+
+  # Determine how to set SOCI_WITH_CXX11 or CMAKE_CXX_STANDARD depending on which is already set
+  if(CMAKE_CXX_STANDARD EQUAL 11 OR (CMAKE_CXX_STANDARD GREATER 11 AND NOT CMAKE_CXX_STANDARD EQUAL 98))
+    set(SOCI_WITH_CXX11 ON)
+  endif()
+
+  if(NOT DEFINED CMAKE_CXX_STANDARD AND SOCI_WITH_CXX11)
     set(CMAKE_CXX_STANDARD 11)
   else() 
     set(CMAKE_CXX_STANDARD 98)
@@ -48,7 +54,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
   include(CTest)
-  include(cmake/StaticAnalyzers.cmake)
+  include(CompilerFlags)
+  include(StaticAnalyzers)
 endif()
 
 ###############################################################################

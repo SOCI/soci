@@ -96,7 +96,7 @@ build_script:
   - cmake --build . --config %CONFIGURATION% --clean-first
 
 test_script:
-  - ctest -V --output-on-failure -R "soci_empty|soci_postgresql|soci_sqlite3|soci_odbc_test_mssql|soci_mysql|soci_odbc_test_mysql|soci_odbc_test_postgresql"
+  - ctest -V --output-on-failure -R "soci_empty|soci_postgresql|soci_sqlite3|soci_mysql|soci_odbc_mssql|soci_odbc_mysql|soci_odbc_postgresql"
 
 notifications:
   - provider: Webhook
