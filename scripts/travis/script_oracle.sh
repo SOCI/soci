@@ -11,7 +11,7 @@ cmake \
     -DSOCI_ASAN=ON \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DWITH_BOOST=OFF \
-    -DSOCI_BUILD_TESTING=ON \
+    -DBUILD_TESTING=ON \
     -DSOCI_WITH_EMPTY=OFF \
     -DSOCI_WITH_ORACLE=ON \
     -DSOCI_ORACLE_TEST_CONNSTR:STRING="service=XE user=travis password=travis" \

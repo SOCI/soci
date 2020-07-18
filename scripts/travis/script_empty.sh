@@ -12,7 +12,7 @@ run_cmake_for_empty()
         -DCMAKE_VERBOSE_MAKEFILE=ON \
         -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD} \
         -DSOCI_ASAN=ON \
-        -DSOCI_BUILD_TESTING=ON \
+        -DBUILD_TESTING=ON \
         -DSOCI_WITH_EMPTY=ON \
         ..
 }

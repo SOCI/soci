@@ -38,8 +38,6 @@ addons:
     apt:
         sources:
             - ubuntu-toolchain-r-test
-        packages:
-            - cmake
     coverity_scan:
         project:
             name: "SOCI/soci"

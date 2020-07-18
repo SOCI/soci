@@ -9,7 +9,7 @@ source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
 cmake \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DCMAKE_BUILD_TYPE=Debug \
-    -DSOCI_BUILD_TESTING=ON \
+    -DBUILD_TESTING=ON \
     -DSOCI_WITH_DB2=ON \
     -DSOCI_WITH_FIREBIRD=ON \
     -DSOCI_WITH_MYSQL=ON \
