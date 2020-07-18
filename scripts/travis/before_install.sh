@@ -9,6 +9,7 @@ wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | 
 sudo apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ xenial main'
 sudo apt-get update -qq -y
 sudo apt-get install -y libboost-dev libboost-date-time-dev valgrind cmake
+PATH=~/usr/local/bin:$PATH
 echo "Test"
 echo $PATH
 apt-cache madison cmake
