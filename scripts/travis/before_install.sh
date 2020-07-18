@@ -10,6 +10,7 @@ sudo apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ xenial main'
 sudo apt-get update -qq -y
 sudo apt-get install -y libboost-dev libboost-date-time-dev valgrind cmake
 echo "Test"
+echo $PATH
 apt-cache madison cmake
 cmake --version
 
