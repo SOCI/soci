@@ -9,6 +9,8 @@ wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | 
 sudo apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ xenial main'
 sudo apt-get update -qq -y
 sudo apt-get install -qq -y libboost-dev libboost-date-time-dev valgrind cmake
+echo "Test"
+cmake --version
 
 before_install="${TRAVIS_BUILD_DIR}/scripts/travis/before_install_${SOCI_TRAVIS_BACKEND}.sh"
 if [ -x ${before_install} ]; then
