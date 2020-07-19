@@ -2,10 +2,13 @@ function(add_soci_test)
   cmake_parse_arguments(
     ARG
     ""
-    "NAME BACKEND"
+    "NAME;BACKEND"
     "ARGUMENTS"
     ${ARGN}
   )
+
+  message(${ARG_NAME})
+  message(${ARG_BACKEND})
 
   add_executable(soci_${ARG_NAME}_test)
   target_link_libraries(soci_${ARG_NAME}_test PRIVATE SOCI::soci_core SOCI::soci_${ARG_BACKEND} Catch::Catch)
