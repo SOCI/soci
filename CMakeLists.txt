@@ -41,6 +41,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   else() 
     set(CMAKE_CXX_STANDARD 98)
   endif()
+
+  message("DEBUG")
   
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
@@ -127,3 +129,27 @@ endif()
 # Packaging
 ###############################################################################
 add_subdirectory(packaging)
+
+
+################################################################################
+# Summary
+################################################################################
+message(STATUS "${PROJECT_NAME} configuration summary:")
+message(STATUS "  Version:                     ${PROJECT_VERSION}")
+message(STATUS "  CXX Version:                 ${CMAKE_CXX_STANDARD}")
+message(STATUS "  BUILD_SHARED_LIBS:           ${BUILD_SHARED_LIBS}")
+message(STATUS "  BUILD_TESTING:               ${BUILD_TESTING}")
+message(STATUS "  SOCI_WITH_DB2:               ${SOCI_WITH_DB2}")
+message(STATUS "  SOCI_WITH_EMPTY:             ${SOCI_WITH_EMPTY}")
+message(STATUS "  SOCI_WITH_FIREBIRD:          ${SOCI_WITH_FIREBIRD}")
+message(STATUS "  SOCI_WITH_MYSQL:             ${SOCI_WITH_MYSQL}")
+message(STATUS "  SOCI_WITH_ODBC:              ${SOCI_WITH_ODBC}")
+message(STATUS "  SOCI_WITH_ORACLE:            ${SOCI_WITH_ORACLE}")
+message(STATUS "  SOCI_WITH_POSTGRESQL:        ${SOCI_WITH_POSTGRESQL}")
+message(STATUS "  SOCI_WITH_SQLITE3:           ${SOCI_WITH_SQLITE3}")
+message(STATUS "  SOCI_WITH_BOOST:             ${SOCI_WITH_BOOST}")
+message(STATUS "  SOCI_WITH_CXX11:             ${SOCI_WITH_CXX11}")
+message(STATUS "  ENABLE_CPPCHECK:             ${ENABLE_CPPCHECK}")
+message(STATUS "  ENABLE_CLANG_TIDY:           ${ENABLE_CLANG_TIDY}")
+message(STATUS "  ENABLE_INCLUDE_WHAT_YOU_USE: ${ENABLE_INCLUDE_WHAT_YOU_USE}")
+message(STATUS "  SOCI_ASAN:                   ${SOCI_ASAN}")

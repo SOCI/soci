@@ -12,5 +12,5 @@ include(AddSociTest)
 
 set(SOCI_POSTGRESQL_TEST_CONNSTR ":memory:" CACHE STRING "Connection string used for the postgresql backend regression test")
 
-add_soci_test(NAME postgresql ARGUMENTS ${SOCI_POSTGRESQL_TEST_CONNSTR})
+add_soci_test(NAME postgresql BACKEND postgresql ARGUMENTS ${SOCI_POSTGRESQL_TEST_CONNSTR})
 target_sources(soci_postgresql_test PRIVATE test-postgresql.cpp)

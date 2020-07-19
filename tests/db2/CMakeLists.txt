@@ -12,5 +12,5 @@ include(AddSociTest)
 
 set(SOCI_DB2_TEST_CONNSTR ":memory:" CACHE STRING "Connection string used for the db2 backend regression test")
 
-add_soci_test(NAME db2 ARGUMENTS ${SOCI_DB2_TEST_CONNSTR})
+add_soci_test(NAME db2 BACKEND db2 ARGUMENTS ${SOCI_DB2_TEST_CONNSTR})
 target_sources(soci_db2_test PRIVATE test-db2.cpp)

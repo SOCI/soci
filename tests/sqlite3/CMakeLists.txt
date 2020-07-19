@@ -12,5 +12,5 @@ include(AddSociTest)
 
 set(SOCI_SQLITE3_TEST_CONNSTR ":memory:" CACHE STRING "Connection string used for the sqlite3 backend regression test")
 
-add_soci_test(NAME sqlite3 ARGUMENTS ${SOCI_SQLITE3_TEST_CONNSTR})
+add_soci_test(NAME sqlite3 BACKEND sqlite3 ARGUMENTS ${SOCI_SQLITE3_TEST_CONNSTR})
 target_sources(soci_sqlite3_test PRIVATE test-sqlite3.cpp)

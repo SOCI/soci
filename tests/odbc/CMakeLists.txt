@@ -16,17 +16,17 @@ set(SOCI_ODBC_MSSQL_TEST_CONNSTR ":memory:" CACHE STRING "Connection string used
 set(SOCI_ODBC_MYSQL_TEST_CONNSTR ":memory:" CACHE STRING "Connection string used for the odbc mysql backend regression test")
 set(SOCI_ODBC_POSTGRESQL_TEST_CONNSTR ":memory:" CACHE STRING "Connection string used for the odbc postgresql backend regression test")
 
-add_soci_test(NAME odbc_access ARGUMENTS ${SOCI_ODBC_ACCESS_TEST_CONNSTR})
+add_soci_test(NAME odbc_access BACKEND odbc ARGUMENTS ${SOCI_ODBC_ACCESS_TEST_CONNSTR})
 target_sources(soci_odbc_access_test PRIVATE test-odbc-access.cpp)
 
-add_soci_test(NAME odbc_db2 ARGUMENTS ${SOCI_ODBC_DB2_TEST_CONNSTR})
+add_soci_test(NAME odbc_db2  BACKEND odbc ARGUMENTS ${SOCI_ODBC_DB2_TEST_CONNSTR})
 target_sources(soci_odbc_db2_test PRIVATE test-odbc-db2.cpp)
 
-add_soci_test(NAME odbc_mssql ARGUMENTS ${SOCI_ODBC_MSSQL_TEST_CONNSTR})
+add_soci_test(NAME odbc_mssql BACKEND odbc ARGUMENTS ${SOCI_ODBC_MSSQL_TEST_CONNSTR})
 target_sources(soci_odbc_mssql_test PRIVATE test-odbc-mssql.cpp)
 
-add_soci_test(NAME odbc_mysql ARGUMENTS ${SOCI_ODBC_MYSQL_TEST_CONNSTR})
+add_soci_test(NAME odbc_mysql BACKEND odbc ARGUMENTS ${SOCI_ODBC_MYSQL_TEST_CONNSTR})
 target_sources(soci_odbc_mysql_test PRIVATE test-odbc-mysql.cpp)
 
-add_soci_test(NAME odbc_postgresql ARGUMENTS ${SOCI_ODBC_POSTGRESQL_TEST_CONNSTR})
+add_soci_test(NAME odbc_postgresql BACKEND odbc ARGUMENTS ${SOCI_ODBC_POSTGRESQL_TEST_CONNSTR})
 target_sources(soci_odbc_postgresql_test PRIVATE test-odbc-postgresql.cpp)
