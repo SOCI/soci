@@ -27,6 +27,7 @@ target_sources(soci_odbc_mssql_test PRIVATE test-odbc-mssql.cpp)
 
 add_soci_test(NAME odbc_mysql BACKEND odbc ARGUMENTS ${SOCI_ODBC_MYSQL_TEST_CONNSTR})
 target_sources(soci_odbc_mysql_test PRIVATE test-odbc-mysql.cpp)
+target_include_directories(soci_odbc_mysql_test PRIVATE ../mysql)
 
 add_soci_test(NAME odbc_postgresql BACKEND odbc ARGUMENTS ${SOCI_ODBC_POSTGRESQL_TEST_CONNSTR})
 target_sources(soci_odbc_postgresql_test PRIVATE test-odbc-postgresql.cpp)

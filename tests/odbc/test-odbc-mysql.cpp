@@ -7,7 +7,7 @@
 
 #include "soci/soci.h"
 #include "soci/odbc/soci-odbc.h"
-#include "mysql/test-mysql.h"
+#include "test-mysql.h"
 #include <iostream>
 #include <string>
 #include <ctime>
