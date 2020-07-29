@@ -146,7 +146,7 @@ void odbc_standard_use_type_backend::copy_from_string(
     )
 {
     size = s.size();
-    sqlType = size > ODBC_MAX_COL_SIZE ? SQL_LONGVARCHAR : SQL_VARCHAR;
+    sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_LONGVARCHAR : SQL_VARCHAR;
     cType = SQL_C_CHAR;
     buf_ = new char[size+1];
     memcpy(buf_, s.c_str(), size);
