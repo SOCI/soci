@@ -8,6 +8,7 @@
 #include "soci/soci-platform.h"
 #include "firebird/common.h"
 #include "soci/soci-backend.h"
+#include "soci-compiler.h"
 #include <ibase.h> // FireBird
 #include <cstddef>
 #include <cstring>
@@ -189,7 +190,12 @@ std::string getTextParam(XSQLVAR const *var)
 
     if ((var->sqltype & ~1) == SQL_VARYING)
     {
+	GCC_WARNING_SUPPRESS(cast-align)
+
         size = *reinterpret_cast<short*>(var->sqldata);
+
+	GCC_WARNING_RESTORE(cast-align)
+
         offset = sizeof(short);
     }
     else if ((var->sqltype & ~1) == SQL_TEXT)
