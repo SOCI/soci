@@ -5,20 +5,8 @@
 #
 source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
 
-cmake \
-    -DCMAKE_BUILD_TYPE=Debug \
-    -DSOCI_ASAN=ON \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DSOCI_TESTS=ON \
-    -DSOCI_STATIC=OFF \
-    -DSOCI_DB2=OFF \
-    -DSOCI_EMPTY=OFF \
-    -DSOCI_FIREBIRD=OFF \
-    -DSOCI_MYSQL=OFF \
-    -DSOCI_ODBC=OFF \
-    -DSOCI_ORACLE=OFF \
+cmake ${SOCI_DEFAULT_CMAKE_OPTIONS} \
     -DSOCI_POSTGRESQL=ON \
-    -DSOCI_SQLITE3=OFF \
     -DSOCI_POSTGRESQL_TEST_CONNSTR:STRING="dbname=soci_test user=postgres" \
     ..
 
