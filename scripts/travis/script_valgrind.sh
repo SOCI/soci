@@ -6,11 +6,9 @@
 #
 source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
 
-cmake \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DCMAKE_BUILD_TYPE=Debug \
-    -DSOCI_TESTS=ON \
-    -DSOCI_STATIC=OFF \
+# Note that we don't use the default options here, as we don't want to turn
+# off all the backends (nor to enable ASAN which is incompatible with Valgrind).
+cmake ${SOCI_COMMON_CMAKE_OPTIONS} \
     -DSOCI_ODBC=OFF \
     ..
 

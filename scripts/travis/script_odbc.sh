@@ -11,20 +11,8 @@ if test ! -d ${ODBC_TEST}; then
     exit 1
 fi
 
-cmake \
-    -DCMAKE_BUILD_TYPE=Debug \
-    -DSOCI_ASAN=ON \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DSOCI_TESTS=ON \
-    -DSOCI_STATIC=OFF \
-    -DSOCI_DB2=OFF \
-    -DSOCI_EMPTY=OFF \
-    -DSOCI_FIREBIRD=OFF \
-    -DSOCI_MYSQL=OFF \
+cmake ${SOCI_DEFAULT_CMAKE_OPTIONS} \
     -DSOCI_ODBC=ON \
-    -DSOCI_ORACLE=OFF \
-    -DSOCI_POSTGRESQL=OFF \
-    -DSOCI_SQLITE3=OFF \
    ..
 
 run_make
