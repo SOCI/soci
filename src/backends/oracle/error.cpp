@@ -22,7 +22,11 @@ using namespace soci::details::oracle;
 oracle_soci_error::oracle_soci_error(std::string const & msg, int errNum)
     : soci_error(msg), err_num_(errNum), cat_(unknown)
 {
-    if (errNum == 12162 || errNum == 25403)
+    if (errNum ==  3113 ||
+        errNum ==  3114 ||
+        errNum == 12162 ||
+        errNum == 12541 ||
+        errNum == 25403)
     {
         cat_ = connection_error;
     }
