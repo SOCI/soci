@@ -10,6 +10,8 @@
 #include "soci/odbc/soci-odbc.h"
 #include "soci/session.h"
 
+#include "soci-autostatement.h"
+
 #include <cstdio>
 
 using namespace soci;
@@ -160,14 +162,11 @@ void odbc_session_backend::configure_connection()
                              "\" in unrecognizable format.");
         }
 
-        odbc_statement_backend st(*this);
-        st.alloc();
+        details::auto_statement<odbc_statement_backend> st(*this);
 
         std::string const q(major_ver >= 9 ? "SET extra_float_digits = 3"
                                            : "SET extra_float_digits = 2");
         rc = SQLExecDirect(st.hstmt_, sqlchar_cast(q), static_cast<SQLINTEGER>(q.size()));
-
-        st.clean_up();
 
         if (is_odbc_error(rc))
         {
