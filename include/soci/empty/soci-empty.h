@@ -159,6 +159,8 @@ struct empty_session_backend : details::session_backend
 
     ~empty_session_backend() SOCI_OVERRIDE;
 
+    bool is_connected() SOCI_OVERRIDE { return true; }
+
     void begin() SOCI_OVERRIDE;
     void commit() SOCI_OVERRIDE;
     void rollback() SOCI_OVERRIDE;

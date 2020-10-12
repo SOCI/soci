@@ -447,6 +447,11 @@ void hard_exec(MYSQL *conn, const string & query)
 
 } // namespace unnamed
 
+bool mysql_session_backend::is_connected()
+{
+    return mysql_ping(conn_) == 0;
+}
+
 void mysql_session_backend::begin()
 {
     hard_exec(conn_, "BEGIN");

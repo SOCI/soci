@@ -104,7 +104,7 @@ sql.open(parameters);
 
 The rules for backend naming are the same as with the constructors described above.
 
-The session can be also explicitly `close`d and `reconnect`ed, which can help with basic session error recovery.
+The session can be also explicitly `close`d and `reconnect`ed, which can help with basic session error recovery, e.g. the application could check if `is_connected` still returns true after getting an error and attempt to call `reconnect` if it doesn't.
 The `reconnect` function has no parameters and attempts to use the same values as those provided with earlier constructor or `open` calls.
 
 See also the page devoted to [multithreading](multithreading.md) for a detailed description of connection pools.

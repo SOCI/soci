@@ -3331,6 +3331,8 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
         // empty session
         soci::session sql;
 
+        CHECK(!sql.is_connected());
+
         // idempotent:
         sql.close();
 
@@ -3347,10 +3349,13 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
 
         // open from empty session
         sql.open(backEndFactory_, connectString_);
+        CHECK(sql.is_connected());
         sql.close();
+        CHECK(!sql.is_connected());
 
         // reconnecting from closed session
         sql.reconnect();
+        CHECK(sql.is_connected());
 
         // opening already connected session
         try
@@ -3364,13 +3369,16 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
                "Cannot open already connected session.");
         }
 
+        CHECK(sql.is_connected());
         sql.close();
 
         // open from closed
         sql.open(backEndFactory_, connectString_);
+        CHECK(sql.is_connected());
 
         // reconnect from already connected session
         sql.reconnect();
+        CHECK(sql.is_connected());
     }
 
     {
@@ -4640,6 +4648,7 @@ TEST_CASE_METHOD(common_tests, "Reconnect", "[keep-alive][.]")
     sql << "insert into soci_test (id) values (:id)", use(id);
 
     REQUIRE_NOTHROW( sql.commit() );
+    CHECK( sql.is_connected() );
 
     std::cout << "Please break connection to the database "
                  "(stop the server, unplug the network cable, ...) "
@@ -4648,6 +4657,8 @@ TEST_CASE_METHOD(common_tests, "Reconnect", "[keep-alive][.]")
 
     try
     {
+        CHECK( !sql.is_connected() );
+
         int id2;
         sql << "select id from soci_test", into(id2);
 
@@ -4666,6 +4677,7 @@ TEST_CASE_METHOD(common_tests, "Reconnect", "[keep-alive][.]")
     std::cin.get();
 
     REQUIRE_NOTHROW( sql.reconnect() );
+    CHECK( sql.is_connected() );
 
     int id2 = 1234;
     sql << "select id from soci_test", into(id2);

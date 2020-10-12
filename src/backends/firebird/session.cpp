@@ -282,6 +282,15 @@ firebird_session_backend::~firebird_session_backend()
     cleanUp();
 }
 
+bool firebird_session_backend::is_connected()
+{
+    ISC_STATUS stat[stat_size];
+    ISC_SCHAR req[] = { isc_info_ods_version, isc_info_end };
+    ISC_SCHAR res[256];
+
+    return isc_database_info(stat, &dbhp_, sizeof(req), req, sizeof(res), res) == 0;
+}
+
 void firebird_session_backend::commit()
 {
     ISC_STATUS stat[stat_size];
