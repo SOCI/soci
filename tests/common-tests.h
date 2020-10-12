@@ -4667,8 +4667,17 @@ TEST_CASE_METHOD(common_tests, "Reconnect", "[keep-alive][.]")
     }
     catch (soci_error const& e)
     {
-        INFO( "Exception message: " << e.what() );
-        CHECK( e.get_error_category() == soci_error::connection_error );
+        if ( sql.get_backend_name() == "odbc" ||
+                e.get_error_category() == soci_error::unknown )
+        {
+            WARN( "Skipping error check because ODBC driver returned "
+                  "unknown error: " << e.what() );
+        }
+        else
+        {
+            INFO( "Exception message: " << e.what() );
+            CHECK( e.get_error_category() == soci_error::connection_error );
+        }
     }
 
     std::cout << "Please undo the previous action "
