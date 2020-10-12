@@ -376,6 +376,25 @@ public:
     {
     }
 
+    error_category get_error_category() const SOCI_OVERRIDE
+    {
+        const char* const s = reinterpret_cast<const char*>(sqlstate_);
+
+        if ((s[0] == '0' && s[1] == '8') ||
+            strcmp(s, "HYT01") == 0)
+            return connection_error;
+
+        if (strcmp(s, "23000") == 0 ||
+            strcmp(s, "40002") == 0 ||
+            strcmp(s, "44000") == 0)
+            return constraint_violation;
+
+        if (strcmp(s, "HY014") == 0)
+            return system_error;
+
+        return unknown;
+    }
+
     SQLCHAR const * odbc_error_code() const
     {
         return sqlstate_;
