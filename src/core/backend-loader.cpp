@@ -281,7 +281,7 @@ backend_factory const& dynamic_backends::get(std::string const& name)
     return *(i->second.factory_);
 }
 
-SOCI_DECL std::vector<std::string>& search_paths()
+SOCI_DECL std::vector<std::string>& dynamic_backends::search_paths()
 {
     return search_paths_;
 }
