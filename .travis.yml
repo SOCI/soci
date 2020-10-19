@@ -3,7 +3,7 @@
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-dist: trusty
+dist: xenial
 
 sudo: required
 

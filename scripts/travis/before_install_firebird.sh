@@ -9,7 +9,7 @@ sudo apt-get install -qq expect firebird2.5-super firebird2.5-dev
 
 export DEBIAN_FRONTEND="readline"
 # Expect script feeding dpkg-reconfigure prompts
-sudo /usr/bin/expect - << ENDMARK > /dev/null
+sudo /usr/bin/expect -d - << ENDMARK > /dev/null
 spawn dpkg-reconfigure firebird2.5-super -freadline
 expect "Enable Firebird server?"
 send "Y\r"

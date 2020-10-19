@@ -7,21 +7,9 @@ source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
 
 run_cmake_for_empty()
 {
-    cmake \
-        -DCMAKE_BUILD_TYPE=Debug \
-        -DCMAKE_VERBOSE_MAKEFILE=ON \
+    cmake ${SOCI_DEFAULT_CMAKE_OPTIONS} \
         -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD} \
-        -DSOCI_ASAN=ON \
-        -DSOCI_TESTS=ON \
-        -DSOCI_STATIC=OFF \
-        -DSOCI_DB2=OFF \
         -DSOCI_EMPTY=ON \
-        -DSOCI_FIREBIRD=OFF \
-        -DSOCI_MYSQL=OFF \
-        -DSOCI_ODBC=OFF \
-        -DSOCI_ORACLE=OFF \
-        -DSOCI_POSTGRESQL=OFF \
-        -DSOCI_SQLITE3=OFF \
         ..
 }
 

@@ -237,6 +237,44 @@ TEST_CASE("SQLite vector long long", "[sqlite][vector][longlong]")
     CHECK(v2[4] == 1000000000000LL);
 }
 
+struct type_inference_table_creator : table_creator_base
+{
+    type_inference_table_creator(soci::session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(cvc varchar (10), cdec decimal (20), "
+               "cll bigint, cull unsigned bigint, clls big int, culls unsigned big int)";
+    }
+};
+
+// test for correct type inference form sqlite column type
+TEST_CASE("SQLite type inference", "[sqlite][sequence]")
+{
+    soci::session sql(backEnd, connectString);
+
+    type_inference_table_creator tableCreator(sql);
+
+    std::string cvc = "john";
+    double cdec = 12345.0;  // integers can be stored precisely in IEEE 754
+    long long cll = 1000000000003LL;
+    unsigned long long cull = 1000000000004ULL;
+
+    sql << "insert into soci_test(cvc, cdec, cll, cull, clls, culls) values(:cvc, :cdec, :cll, :cull, :clls, :culls)",
+        use(cvc), use(cdec), use(cll), use(cull), use(cll), use(cull);
+
+    {
+        rowset<row> rs = (sql.prepare << "select * from soci_test");
+        rowset<row>::const_iterator it = rs.begin();
+        row const& r1 = (*it);
+        CHECK(r1.get<std::string>(0) == cvc);
+        CHECK(r1.get<double>(1) == Approx(cdec));
+        CHECK(r1.get<long long>(2) == cll);
+        CHECK(r1.get<unsigned long long>(3) == cull);
+        CHECK(r1.get<long long>(4) == cll);
+        CHECK(r1.get<unsigned long long>(5) == cull);
+    }
+}
+
 TEST_CASE("SQLite DDL wrappers", "[sqlite][ddl]")
 {
     soci::session sql(backEnd, connectString);
@@ -270,6 +308,35 @@ TEST_CASE("SQLite last insert id", "[sqlite][last-insert-id]")
     bool result = sql.get_last_insert_id("soci_test", id);
     CHECK(result == true);
     CHECK(id == 42);
+}
+
+struct table_creator_for_std_tm_bind : table_creator_base
+{
+    table_creator_for_std_tm_bind(soci::session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(date datetime)";
+        sql << "insert into soci_test (date) values ('2017-04-04 00:00:00')";
+        sql << "insert into soci_test (date) values ('2017-04-04 12:00:00')";
+        sql << "insert into soci_test (date) values ('2017-04-05 00:00:00')";
+    }
+};
+
+TEST_CASE("SQLite std::tm bind", "[sqlite][std-tm-bind]")
+{
+    soci::session sql(backEnd, connectString);
+    table_creator_for_std_tm_bind tableCreator(sql);
+
+    std::time_t datetimeEpoch = 1491307200; // 2017-04-04 12:00:00
+
+    std::tm datetime = *std::gmtime(&datetimeEpoch);
+    soci::rowset<std::tm> rs = (sql.prepare << "select date from soci_test where date=:dt", soci::use(datetime));
+
+    std::vector<std::tm> result;
+    std::copy(rs.begin(), rs.end(), std::back_inserter(result));
+    REQUIRE(result.size() == 1);
+    result.front().tm_isdst = 0;
+    CHECK(std::mktime(&result.front()) == std::mktime(&datetime));
 }
 
 // DDL Creation objects for common tests

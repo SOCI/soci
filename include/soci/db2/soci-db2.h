@@ -64,7 +64,7 @@ namespace soci
 class SOCI_DB2_DECL db2_soci_error : public soci_error {
 public:
     db2_soci_error(std::string const & msg, SQLRETURN rc) : soci_error(msg),errorCode(rc) {};
-    ~db2_soci_error() throw() SOCI_OVERRIDE { };
+    ~db2_soci_error() SOCI_NOEXCEPT SOCI_OVERRIDE { };
 
     //We have to extract error information before exception throwing, cause CLI handles could be broken at the construction time
     static const std::string sqlState(std::string const & msg,const SQLSMALLINT htype,const SQLHANDLE hndl);
@@ -251,6 +251,8 @@ struct db2_session_backend : details::session_backend
     db2_session_backend(connection_parameters const& parameters);
 
     ~db2_session_backend() SOCI_OVERRIDE;
+
+    bool is_connected() SOCI_OVERRIDE;
 
     void begin() SOCI_OVERRIDE;
     void commit() SOCI_OVERRIDE;

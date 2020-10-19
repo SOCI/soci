@@ -63,6 +63,9 @@ details::postgresql_result::check_for_errors(char const* errMsg) const
 bool
 details::postgresql_result::check_for_data(char const* errMsg) const
 {
+    // This SQL state will be used if we can't get anything more precise.
+    const char* fallback_sql_state = "     ";
+
     std::string msg(errMsg);
 
     ExecStatusType const status = PQresultStatus(result_);
@@ -82,6 +85,11 @@ details::postgresql_result::check_for_data(char const* errMsg) const
             if (PQstatus(sessionBackend_.conn_) == CONNECTION_BAD)
             {
                 msg += " Connection failed.";
+
+                // It's useful to set it here to something at least slightly
+                // more specific, as we're not going to get anything from
+                // PG_DIAG_SQLSTATE below if the connection is lost.
+                fallback_sql_state = "08000"; // connection_exception
                 
                 // call the failover callback, if registered
                 
@@ -115,8 +123,11 @@ details::postgresql_result::check_for_data(char const* errMsg) const
 
                         if (retry)
                         {
-                            connection_parameters parameters;
-                            parameters.set_connect_string(newTarget);
+                            connection_parameters parameters =
+                                sessionBackend_.connectionParameters_;
+
+                            if (!newTarget.empty())
+                                parameters.set_connect_string(newTarget);
 
                             sessionBackend_.clean_up();
 
@@ -169,10 +180,9 @@ details::postgresql_result::check_for_data(char const* errMsg) const
     }
 
     const char* sqlstate = PQresultErrorField(result_, PG_DIAG_SQLSTATE);
-    const char* const blank_sql_state = "     ";
     if (!sqlstate)
     {
-        sqlstate = blank_sql_state;
+        sqlstate = fallback_sql_state;
     }
 
     throw postgresql_soci_error(msg, sqlstate);

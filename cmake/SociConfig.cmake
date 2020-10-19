@@ -63,8 +63,15 @@ if (MSVC)
 
 else()
 
+  # Set the -Werror compilation flag (where all the compilation warnings are
+  # considered as errors) only when building in Debug mode
+  set(SOCI_WERROR_OPTION "")
+  if (SOCI_ENABLE_WERROR)
+     set(SOCI_WERROR_OPTION "-Werror")
+  endif (SOCI_ENABLE_WERROR)
+
   set(SOCI_GCC_CLANG_COMMON_FLAGS
-    "-pedantic -Werror -Wno-error=parentheses -Wall -Wextra -Wpointer-arith -Wcast-align -Wcast-qual -Wfloat-equal -Woverloaded-virtual -Wredundant-decls -Wno-long-long")
+    "-pedantic ${SOCI_WERROR_OPTION} -Wno-error=parentheses -Wall -Wextra -Wpointer-arith -Wcast-align -Wcast-qual -Wfloat-equal -Woverloaded-virtual -Wredundant-decls -Wno-long-long")
 
 
   if (SOCI_CXX11)

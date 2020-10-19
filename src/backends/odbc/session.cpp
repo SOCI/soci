@@ -10,6 +10,8 @@
 #include "soci/odbc/soci-odbc.h"
 #include "soci/session.h"
 
+#include "soci-autostatement.h"
+
 #include <cstdio>
 
 using namespace soci;
@@ -73,26 +75,56 @@ odbc_session_backend::odbc_session_backend(
 #endif // _WIN32
 
     std::string const & connectString = parameters.get_connect_string();
-    rc = SQLDriverConnect(hdbc_, hwnd_for_prompt,
-                          sqlchar_cast(connectString),
-                          (SQLSMALLINT)connectString.size(),
-                          outConnString, 1024, &strLength,
-                          static_cast<SQLUSMALLINT>(completion));
 
-    // Don't use is_odbc_error() here as it doesn't consider SQL_NO_DATA to be
-    // an error -- but it is one here, as it's returned if a message box shown
-    // by SQLDriverConnect() was cancelled and this means we failed to connect.
-    switch (rc)
+    // This "infinite" loop can be executed at most twice.
+    std::string errContext;
+    for (;;)
     {
-      case SQL_SUCCESS:
-      case SQL_SUCCESS_WITH_INFO:
+        rc = SQLDriverConnect(hdbc_, hwnd_for_prompt,
+                              sqlchar_cast(connectString),
+                              (SQLSMALLINT)connectString.size(),
+                              outConnString, 1024, &strLength,
+                              static_cast<SQLUSMALLINT>(completion));
+
+        // Don't use is_odbc_error() here as it doesn't consider SQL_NO_DATA to be
+        // an error -- but it is one here, as it's returned if a message box shown
+        // by SQLDriverConnect() was cancelled and this means we failed to connect.
+        switch (rc)
+        {
+          case SQL_SUCCESS:
+          case SQL_SUCCESS_WITH_INFO:
+            break;
+
+          case SQL_NO_DATA:
+            throw soci_error("Connecting to the database cancelled by user.");
+
+          default:
+            odbc_soci_error err(SQL_HANDLE_DBC, hdbc_, "connecting to database");
+
+            // If connection pooling had been enabled by the application, we
+            // would get HY110 ODBC error for any connection attempt not using
+            // SQL_DRIVER_NOPROMPT, so it's worth retrying with it in this
+            // case: in the worst case, we'll hit 28000 ODBC error (login
+            // failed), which we'll report together with the context helping to
+            // understand where it came from.
+            if (memcmp(err.odbc_error_code(), "HY110", 6) == 0 &&
+                    completion != SQL_DRIVER_NOPROMPT)
+            {
+                errContext = "while retrying to connect without prompting, as "
+                             "prompting the user is not supported when using "
+                             "pooled connections";
+                completion = SQL_DRIVER_NOPROMPT;
+                continue;
+            }
+
+            if (!errContext.empty())
+                err.add_context(errContext);
+
+            throw err;
+        }
+
+        // This loop only runs once unless we retry in case of HY110 above.
         break;
-
-      case SQL_NO_DATA:
-        throw soci_error("Connecting to the database cancelled by user.");
-
-      default:
-        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "connecting to database");
     }
 
     connection_string_.assign((const char*)outConnString, strLength);
@@ -130,14 +162,11 @@ void odbc_session_backend::configure_connection()
                              "\" in unrecognizable format.");
         }
 
-        odbc_statement_backend st(*this);
-        st.alloc();
+        details::auto_statement<odbc_statement_backend> st(*this);
 
         std::string const q(major_ver >= 9 ? "SET extra_float_digits = 3"
                                            : "SET extra_float_digits = 2");
         rc = SQLExecDirect(st.hstmt_, sqlchar_cast(q), static_cast<SQLINTEGER>(q.size()));
-
-        st.clean_up();
 
         if (is_odbc_error(rc))
         {
@@ -167,6 +196,19 @@ void odbc_session_backend::configure_connection()
 odbc_session_backend::~odbc_session_backend()
 {
     clean_up();
+}
+
+bool odbc_session_backend::is_connected()
+{
+    details::auto_statement<odbc_statement_backend> st(*this);
+
+    // The name of the table we check for is irrelevant, as long as we have a
+    // working connection, it should still find (or, hopefully, not) something.
+    return !is_odbc_error(SQLTables(st.hstmt_,
+                                    NULL, SQL_NTS,
+                                    NULL, SQL_NTS,
+                                    sqlchar_cast("bloordyblop"), SQL_NTS,
+                                    NULL, SQL_NTS));
 }
 
 void odbc_session_backend::begin()

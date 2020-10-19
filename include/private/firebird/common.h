@@ -9,6 +9,7 @@
 #define SOCI_FIREBIRD_COMMON_H_INCLUDED
 
 #include "soci/firebird/soci-firebird.h"
+#include "soci-compiler.h"
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
@@ -231,6 +232,8 @@ T1 from_isc(XSQLVAR * var)
         }
     }
 
+    GCC_WARNING_SUPPRESS(cast-align)
+
     switch (var->sqltype & ~1)
     {
     case SQL_SHORT:
@@ -246,6 +249,8 @@ T1 from_isc(XSQLVAR * var)
     default:
         throw soci_error("Incorrect data type for numeric conversion");
     }
+
+    GCC_WARNING_RESTORE(cast-align)
 }
 
 template <typename T>

@@ -5,6 +5,14 @@ We would like to thank you for your contributions
 
 === SOCI Team ===
 
+Current maintainer:
+
+[Vadim Zeitlin](https://github.com/vadz)
+
+Previous maintainer:
+
+[Mateusz Łoskot](https://github.com/mloskot)
+
 List of committers:
 
 Alex Ott
@@ -29,6 +37,7 @@ features, enhancements and fixes:
 Adesmier
 Alejandro Alvarez Ayllon
 Alex Volanis
+Alexander Kulikov
 Andrei Lebedev
 Andrey Belobrov
 Andrey Utkin
@@ -40,6 +49,7 @@ avg-I
 b-s-a
 Benjamin Blundell
 Brian R. Toonen
+Cavaler
 Cengizhan Paşaoğlu
 Сергей Сергеевич Журавлев
 Chris Kaminski
@@ -53,8 +63,10 @@ Daniel Walter
 davidsummers
 Denis Dowling
 Dirk Grambow
+Dirk Vanden Boer
 DraconPern
 Eli Green
+enrico.detoma
 Faik Uygur
 Fedor Muratov
 Fedor Trushkin
@@ -74,6 +86,7 @@ jamercee
 James E. King, III
 javerskulpa
 Joerg Sonnenberger
+Johan Pascal
 Kévin Szkudłapski
 Krzysztof Bieleń
 Lemme
@@ -82,6 +95,7 @@ Mario Valesco
 Martin Muenstermann
 Mathias Hasselmann
 Matt Arsenault
+Matt Budish
 Matthieu Kermagoret
 Michael Davidsaver
 Miha Ravselj
@@ -101,6 +115,8 @@ Rémi Piotaix
 Ricardo Andrade
 Robert Massaioli
 Roger Orr
+Rommel Trindade
+Ross Marwood
 ryandesign
 Sergey Belyashov
 Shelomentsev Dmitriy
@@ -110,13 +126,17 @@ soyer
 soyersoyer
 Stefan Chrobot
 Takatoshi Kondo
+Theo van Klaveren
 Tomasz Olszewski
 Tomay
 tt4g
 Vaclav Slavik
 Vaughn Draughon
 wdavilaneto
+William Blough
+XiaoGuang Zeng
 xol
+Xuewen Wang
 
 There are a lot of people that help to drive SOCI project forward,
 if we have forgot to mention someone in here,

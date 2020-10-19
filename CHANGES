@@ -1,5 +1,41 @@
 This file contains the history of changes in the SOCI library.
 
+Latest version is v4.0.1 released on 2020-10-19.
+
+---
+Version 4.0.1 differs from 4.0.0 in the following ways:
+
+- Add session::is_connected() (#828).
+- Fix DST adjustment when reading dates from the database (#723, #799).
+- Make dynamic_backends::search_paths() actually available (#829).
+- Fix using std::vector<boost::optional<>> in query arguments (#797).
+- Allow using dt_blob and dt_xml with rowset API too (#786).
+- Fix or work around many compilation warnings with newer compilers.
+
+- DB2
+ - Fix memory leak.
+
+- ODBC
+ - Fix bug with handling of strings of exactly ODBC_MAX_COL_SIZE length (#819).
+ - Fix opening connections when using connection pooling.
+
+- Oracle
+ - Improve detection for newer Oracle versions (#788).
+ - Use bigger buffer for Oracle connection string length (#666).
+ - Fix memory leak in Oracle backend when using CLOBs (XML or long strings).
+
+- PostgreSQL
+ - Fix reconnect() to use the correct connection parameters (#793).
+ - Improve error message returned on connection loss (#828).
+ - Fix use of uninitialized connection variable on connection failure (#822).
+ - Fix inadvertently broken use of single row mode (#571).
+ - Fix handling of identifiers with colons (#782).
+
+- SQLite
+ - Add support for "vfs" and "readonly" connection options (#816, #784).
+ - Fix std::tm handling (#770).
+ - Fix "big int" detection (#783, #785).
+
 ---
 Version 4.0.0 differs from 3.2.3 in the following ways:
 

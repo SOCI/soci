@@ -51,6 +51,8 @@ public:
     void close();
     void reconnect();
 
+    bool is_connected() const;
+
     void begin();
     void commit();
     void rollback();
@@ -94,7 +96,7 @@ session sql("postgresql://dbname=mydb");
 ```
 
 * The constructors that take backend name as string load the shared library (if not yet loaded) with name computed as `libsoci_ABC.so` (or `libsoci_ABC.dll` on Windows) where `ABC` is the given backend name.
-* `open`, `close` and `reconnect` functions for   reusing the same session object many times; the `reconnect` function attempts to establish the connection with the same parameters as most recently used with constructor or `open`. The arguments for `open` are treated in the same way as for constructors.
+* `open`, `close` and `reconnect` functions for   reusing the same session object many times; the `reconnect` function attempts to establish the connection with the same parameters as most recently used with constructor or `open`. The arguments for `open` are treated in the same way as for constructors. `is_connected` can be used to check if there is an existing usable connection.
 * `begin`, `commit` and `rollback` functions for transaction control.
 * `once` member, which is used for performing *instant* queries that do not need to be separately prepared. Example:
 

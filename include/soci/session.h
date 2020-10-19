@@ -64,6 +64,9 @@ public:
     void close();
     void reconnect();
 
+    // check if we have a working connection to the database
+    bool is_connected() const SOCI_NOEXCEPT;
+
     void begin();
     void commit();
     void rollback();

@@ -8,10 +8,11 @@
 #define SOCI_ODBC_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/odbc/soci-odbc.h"
+#include "soci-compiler.h"
+#include "soci-cstrtoi.h"
 #include "soci-exchange-cast.h"
 #include "soci-mktime.h"
 #include <ctime>
-#include <stdio.h>  // sscanf()
 
 using namespace soci;
 using namespace soci::details;
@@ -173,7 +174,14 @@ void odbc_standard_into_type_backend::post_fetch(
         {
             std::tm& t = exchange_type_cast<x_stdtm>(data_);
 
+            // Our pointer should, in fact, be sufficiently aligned, as we
+            // allocate it on the heap, but gcc on ARMv7hl warns about this not
+            // being the case, so just suppress this warning explicitly here.
+            GCC_WARNING_SUPPRESS(cast-align)
+
             TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
+
+            GCC_WARNING_RESTORE(cast-align)
 
             details::mktime_from_ymdhms(t,
                                         ts->year, ts->month, ts->day,
@@ -182,7 +190,7 @@ void odbc_standard_into_type_backend::post_fetch(
         else if (type_ == x_long_long && use_string_for_bigint())
         {
           long long& ll = exchange_type_cast<x_long_long>(data_);
-          if (sscanf(buf_, "%" LL_FMT_FLAGS "d", &ll) != 1)
+          if (!cstring_to_integer(ll, buf_))
           {
             throw soci_error("Failed to parse the returned 64-bit integer value");
           }
@@ -190,7 +198,7 @@ void odbc_standard_into_type_backend::post_fetch(
         else if (type_ == x_unsigned_long_long && use_string_for_bigint())
         {
           unsigned long long& ll = exchange_type_cast<x_unsigned_long_long>(data_);
-          if (sscanf(buf_, "%" LL_FMT_FLAGS "u", &ll) != 1)
+          if (!cstring_to_unsigned(ll, buf_))
           {
             throw soci_error("Failed to parse the returned 64-bit integer value");
           }

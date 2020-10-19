@@ -1,4 +1,4 @@
-version: 4.0.0.{build}
+version: 4.0.1.{build}
 
 configuration: Release
 
@@ -92,7 +92,7 @@ build_script:
   - cd C:\projects\soci
   - mkdir build
   - cd build
-  - cmake .. -G"%G%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_VERBOSE_MAKEFILE=ON
+  - cmake .. -G"%G%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_VERBOSE_MAKEFILE=ON -DSOCI_ENABLE_WERROR=ON
   - cmake --build . --config %CONFIGURATION% --clean-first
 
 test_script:

@@ -58,6 +58,7 @@ sqlite3_session_backend::sqlite3_session_backend(
 {
     int timeout = 0;
     int connection_flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+    std::string vfs;
     std::string synchronous;
     std::string const & connectString = parameters.get_connect_string();
     std::string dbname(connectString);
@@ -100,13 +101,22 @@ sqlite3_session_backend::sqlite3_session_backend(
         {
             synchronous = val;
         }
+        else if ("readonly" == key)
+        {
+            connection_flags = (connection_flags | SQLITE_OPEN_READONLY) & ~(SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+        }
         else if ("shared_cache" == key && "true" == val)
         {
-            connection_flags |=  SQLITE_OPEN_SHAREDCACHE;
+            connection_flags |= SQLITE_OPEN_SHAREDCACHE;
         }
+        else if ("vfs" == key)
+        {
+            vfs = val;
+        }
+
     }
 
-    int res = sqlite3_open_v2(dbname.c_str(), &conn_, connection_flags, NULL);
+    int res = sqlite3_open_v2(dbname.c_str(), &conn_, connection_flags, (vfs.empty()?NULL:vfs.c_str()));
     check_sqlite_err(conn_, res, "Cannot establish connection to the database. ");
 
     if (!synchronous.empty())

@@ -130,14 +130,21 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
     // assume service/user/password are utf8-compatible already
     const int defaultSourceCharSetId = 871;
 
-    // arbitrary length for charset conversion buffer
-    const size_t nlsBufLen = 100;
-    
-    char nlsService[nlsBufLen];
+    // maximum length of a connect descriptor is documented as 4KiB in the
+    // "Syntax Rules for Configuration Files" section of Oracle documentation
+    const size_t serviceBufLen = 4096;
+
+    // user names must be identifiers which are limited to pitiful 30
+    // characters in Oracle (see "Database Object Naming Rules" section of the
+    // SQL language reference) and so, apparently, are the passwords, so just
+    // 32 should be enough for them.
+    const size_t authBufLen = 32;
+
+    char nlsService[serviceBufLen];
     size_t nlsServiceLen;
-    char nlsUserName[nlsBufLen];
+    char nlsUserName[authBufLen];
     size_t nlsUserNameLen;
-    char nlsPassword[nlsBufLen];
+    char nlsPassword[authBufLen];
     size_t nlsPasswordLen;
     
     sword res;
@@ -173,7 +180,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         // convert service/user/password to the expected charset
         
         res = OCINlsCharSetConvert(envhp_, errhp_,
-            charset, nlsService, nlsBufLen,
+            charset, nlsService, serviceBufLen,
             defaultSourceCharSetId, serviceName.c_str(), serviceName.size(), &nlsServiceLen);
         if (res != OCI_SUCCESS)
         {
@@ -185,7 +192,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         }
         
         res = OCINlsCharSetConvert(envhp_, errhp_,
-            charset, nlsUserName, nlsBufLen,
+            charset, nlsUserName, authBufLen,
             defaultSourceCharSetId, userName.c_str(), userName.size(), &nlsUserNameLen);
         if (res != OCI_SUCCESS)
         {
@@ -197,7 +204,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         }
         
         res = OCINlsCharSetConvert(envhp_, errhp_,
-            charset, nlsPassword, nlsBufLen,
+            charset, nlsPassword, authBufLen,
             defaultSourceCharSetId, password.c_str(), password.size(), &nlsPasswordLen);
         if (res != OCI_SUCCESS)
         {
@@ -213,7 +220,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         // do not perform any charset conversions
         
         nlsServiceLen = serviceName.size();
-        if (nlsServiceLen < nlsBufLen)
+        if (nlsServiceLen < serviceBufLen)
         {
             std::strcpy(nlsService, serviceName.c_str());
         }
@@ -223,7 +230,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         }
 
         nlsUserNameLen = userName.size();
-        if (nlsUserNameLen < nlsBufLen)
+        if (nlsUserNameLen < authBufLen)
         {
             std::strcpy(nlsUserName, userName.c_str());
         }
@@ -233,7 +240,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         }
 
         nlsPasswordLen = password.size();
-        if (nlsPasswordLen < nlsBufLen)
+        if (nlsPasswordLen < authBufLen)
         {
             std::strcpy(nlsPassword, password.c_str());
         }
@@ -360,6 +367,11 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
 oracle_session_backend::~oracle_session_backend()
 {
     clean_up();
+}
+
+bool oracle_session_backend::is_connected()
+{
+    return OCIPing(svchp_, errhp_, OCI_DEFAULT) == OCI_SUCCESS;
 }
 
 void oracle_session_backend::begin()
