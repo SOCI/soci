@@ -57,4 +57,4 @@ Backend specific client libraries for:
 See documentation at [soci.sourceforge.net](http://soci.sourceforge.net) for details
 
 [BSL](http://www.boost.org/LICENSE_1_0.txt) &copy;
-[Maciej Sobczak](http://github.com/msobczak) and [contributors](https://github.com/SOCI/soci/graphs/contributors).
+[Vadim Zeitlin](https://github.com/vadz), [Maciej Sobczak](https://github.com/msobczak) and [contributors](https://github.com/SOCI/soci/graphs/contributors).
