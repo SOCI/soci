@@ -33,7 +33,7 @@ void hard_exec(postgresql_session_backend & session_backend,
 
 postgresql_session_backend::postgresql_session_backend(
     connection_parameters const& parameters, bool single_row_mode)
-    : statementCount_(0)
+    : statementCount_(0), conn_(0)
 {
     single_row_mode_ = single_row_mode;
 
