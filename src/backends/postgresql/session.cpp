@@ -9,7 +9,6 @@
 #include "soci/soci-platform.h"
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci/session.h"
-#include "soci/connection-parameters.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
 #include <cstdio>
@@ -69,11 +68,26 @@ void postgresql_session_backend::connect(
         "Cannot set extra_float_digits parameter");
 
     conn_ = conn;
+    connectionParameters_ = parameters;
 }
 
 postgresql_session_backend::~postgresql_session_backend()
 {
     clean_up();
+}
+
+bool postgresql_session_backend::is_connected()
+{
+    // For the connection to work, its status must be OK, but this is not
+    // sufficient, so try to actually do something with it, even if it's
+    // something as trivial as sending an empty command to the server.
+    if ( PQstatus(conn_) != CONNECTION_OK )
+        return false;
+
+    postgresql_result(*this, PQexec(conn_, "/* ping */"));
+
+    // And then check it again.
+    return PQstatus(conn_) == CONNECTION_OK;
 }
 
 void postgresql_session_backend::begin()

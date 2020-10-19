@@ -198,6 +198,19 @@ odbc_session_backend::~odbc_session_backend()
     clean_up();
 }
 
+bool odbc_session_backend::is_connected()
+{
+    details::auto_statement<odbc_statement_backend> st(*this);
+
+    // The name of the table we check for is irrelevant, as long as we have a
+    // working connection, it should still find (or, hopefully, not) something.
+    return !is_odbc_error(SQLTables(st.hstmt_,
+                                    NULL, SQL_NTS,
+                                    NULL, SQL_NTS,
+                                    sqlchar_cast("bloordyblop"), SQL_NTS,
+                                    NULL, SQL_NTS));
+}
+
 void odbc_session_backend::begin()
 {
     SQLRETURN rc = SQLSetConnectAttr( hdbc_, SQL_ATTR_AUTOCOMMIT,

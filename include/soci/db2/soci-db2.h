@@ -252,6 +252,8 @@ struct db2_session_backend : details::session_backend
 
     ~db2_session_backend() SOCI_OVERRIDE;
 
+    bool is_connected() SOCI_OVERRIDE;
+
     void begin() SOCI_OVERRIDE;
     void commit() SOCI_OVERRIDE;
     void rollback() SOCI_OVERRIDE;

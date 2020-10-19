@@ -261,6 +261,8 @@ public:
     session_backend() : failoverCallback_(NULL), session_(NULL) {}
     virtual ~session_backend() {}
 
+    virtual bool is_connected() = 0;
+
     virtual void begin() = 0;
     virtual void commit() = 0;
     virtual void rollback() = 0;

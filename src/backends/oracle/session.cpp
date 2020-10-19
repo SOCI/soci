@@ -369,6 +369,11 @@ oracle_session_backend::~oracle_session_backend()
     clean_up();
 }
 
+bool oracle_session_backend::is_connected()
+{
+    return OCIPing(svchp_, errhp_, OCI_DEFAULT) == OCI_SUCCESS;
+}
+
 void oracle_session_backend::begin()
 {
     // This code is commented out because it causes one of the transaction

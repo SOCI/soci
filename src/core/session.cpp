@@ -227,6 +227,20 @@ void session::reconnect()
     }
 }
 
+bool session::is_connected() const SOCI_NOEXCEPT
+{
+    try
+    {
+        return backEnd_ && backEnd_->is_connected();
+    }
+    catch (...)
+    {
+        // We must not throw from here, so just handle any exception as an
+        // indication that the database connection is not available any longer.
+        return false;
+    }
+}
+
 void session::begin()
 {
     ensureConnected(backEnd_);
