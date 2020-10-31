@@ -994,7 +994,7 @@ TEST_CASE("Bulk iterators", "[postgresql][bulkiters]")
 // false_bind_variable_inside_identifier
 struct test_false_bind_variable_inside_identifier_table_creator : table_creator_base
 {
-    test_false_bind_variable_inside_identifier_table_creator(session & sql)
+    test_false_bind_variable_inside_identifier_table_creator(soci::session & sql)
         : table_creator_base(sql)
         , msession(sql) 
     {
@@ -1028,7 +1028,7 @@ private:
         }
         catch (soci_error const& e){}
     }
-    session& msession;
+    soci::session& msession;
 };
 TEST_CASE("false_bind_variable_inside_identifier", "[postgresql][bind-variables]")
 {
@@ -1037,7 +1037,7 @@ TEST_CASE("false_bind_variable_inside_identifier", "[postgresql][bind-variables]
     std::string type_value;
 
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
         test_false_bind_variable_inside_identifier_table_creator tableCreator(sql);
 
         sql << "insert into soci_test(\"column_with:colon\") values(2020)";
