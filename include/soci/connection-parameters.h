@@ -16,6 +16,10 @@
 namespace soci
 {
 
+// Names of some predefined options and their values.
+extern SOCI_DECL char const * option_reconnect;
+extern SOCI_DECL char const * option_true;
+
 class backend_factory;
 
 // Simple container for the information used when opening a session.
@@ -52,6 +56,14 @@ public:
         value = it->second;
 
         return true;
+    }
+
+    // Return true if the option with the given name was found with option_true
+    // value.
+    bool is_option_on(const char * name) const
+    {
+      std::string value;
+      return get_option(name, value) && value == option_true;
     }
 
 private:

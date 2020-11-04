@@ -12,6 +12,10 @@
 
 using namespace soci;
 
+char const * soci::option_reconnect = "reconnect";
+
+char const * soci::option_true = "1";
+
 namespace // anonymous
 {
 

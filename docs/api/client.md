@@ -145,7 +145,9 @@ public:
     explicit connection_parameters(std::string const & fullConnectString);
 
     void set_option(const char * name, std::string const & value);
-    bool get_option(const char * name, std::string & value) const
+    bool get_option(const char * name, std::string & value) const;
+
+    bool is_option_on(const char * name) const;
 };
 ```
 
@@ -154,6 +156,7 @@ The methods of this class are:
 * Default constructor is rarely used as it creates an uninitialized object and the only way to initialize it later is to assign another, valid, connection_parameters object to this one.
 * The other constructors correspond to the similar constructors of the `session` class and specify both the backend, either as a pointer to it or by name, and the connection string.
 * `set_option` can be used to set the value of an option with the given name. Currently all option values are strings, so if you need to set a numeric option you need to convert it to a string first. If an option with the given name had been already set before, its old value is overwritten.
+* `get_option` can be used to query the value of an option and returns `false` if there is no such option, while `is_option_on` simply checks if the option is specified with the value `soci::option_true` (which is a symbolic constant standing for the string `"1"`).
 
 ## class connection_pool
 

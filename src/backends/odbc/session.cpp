@@ -52,20 +52,29 @@ odbc_session_backend::odbc_session_backend(
 
     // Prompt the user for any missing information (typically UID/PWD) in the
     // connection string by default but allow overriding this using "prompt"
-    // option.
+    // option and also suppress prompts when reconnecting, see the comment in
+    // soci::session::reconnect().
     SQLHWND hwnd_for_prompt = NULL;
     unsigned completion = SQL_DRIVER_COMPLETE;
-    std::string completionString;
-    if (parameters.get_option(odbc_option_driver_complete, completionString))
+
+    if (parameters.is_option_on(option_reconnect))
     {
-      // The value of the option is supposed to be just the integer value of
-      // one of SQL_DRIVER_XXX constants but don't check for the exact value in
-      // case more of them are added in the future, the ODBC driver will return
-      // an error if we pass it an invalid value anyhow.
-      if (std::sscanf(completionString.c_str(), "%u", &completion) != 1)
+      completion = SQL_DRIVER_NOPROMPT;
+    }
+    else
+    {
+      std::string completionString;
+      if (parameters.get_option(odbc_option_driver_complete, completionString))
       {
-        throw soci_error("Invalid non-numeric driver completion option value \"" +
-                          completionString + "\".");
+        // The value of the option is supposed to be just the integer value of
+        // one of SQL_DRIVER_XXX constants but don't check for the exact value in
+        // case more of them are added in the future, the ODBC driver will return
+        // an error if we pass it an invalid value anyhow.
+        if (std::sscanf(completionString.c_str(), "%u", &completion) != 1)
+        {
+          throw soci_error("Invalid non-numeric driver completion option value \"" +
+                            completionString + "\".");
+        }
       }
     }
 
