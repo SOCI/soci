@@ -1,30 +1,29 @@
-//#include "soci/soci.h"
-//#include "soci/sqlite3/soci-sqlite3.h"
+#include "soci/soci.h"
+#include "soci/sqlite3/soci-sqlite3.h"
 
 #include <exception>
 #include <iostream>
 #include <ostream>
 #include <string>
 
-//
-//using namespace soci;
-//using namespace std;
-//
-//bool get_name(string &name) {
-//  cout << "Enter name: ";
-//  cin >> name;
-//  if (name != "Q")
-//  {
-//    return true;
-//  }
-//  return false;
-//}
+using namespace soci;
+using namespace std;
+
+bool get_name(string &name) {
+  cout << "Enter name: ";
+  cin >> name;
+  if (name != "Q")
+  {
+    return true;
+  }
+  return false;
+}
 
 int main()
 {
   std::cout << "Hola SOCI\n";
-  try
-  {
+//  try
+//  {
 //    soci::session sql(*soci::factory_sqlite3(), "service=mydb user=john password=secret");
 //
 //    int count;
@@ -49,11 +48,11 @@ int main()
 //        cout << "There is no phone for " << name << '\n';
 //      }
 //    }
-  }
-  catch (std::exception const &e)
-  {
-    std::cerr << "Error: " << e.what() << '\n';
-  }
+//  }
+//  catch (std::exception const &e)
+//  {
+//    std::cerr << "Error: " << e.what() << '\n';
+//  }
 
   return 0;
 }
