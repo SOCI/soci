@@ -14,7 +14,7 @@ class SociConan(ConanFile):
     generators = "cmake"
 
     def source(self):
-        self.run("git clone https://github.com/SOCI/soci.git")
+        self.run("git clone https://github.com/spjuanjoc/soci.git -b feature/create-conan-package --single-branch")
 
     def build(self):
         cmake = CMake(self)
