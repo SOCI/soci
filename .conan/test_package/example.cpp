@@ -1,6 +1,6 @@
 #include "soci/soci.h"
 #include "soci/sqlite3/soci-sqlite3.h"
-
+#include "sqlite3.h"
 #include <exception>
 #include <iostream>
 #include <ostream>
@@ -8,6 +8,9 @@
 
 using namespace soci;
 using namespace std;
+
+std::string connectString;
+backend_factory const &backEnd = *soci::factory_sqlite3();
 
 bool get_name(string &name) {
   cout << "Enter name: ";
@@ -22,6 +25,12 @@ bool get_name(string &name) {
 int main()
 {
   std::cout << "Hola SOCI\n";
+
+  soci::session sql(backEnd, connectString);
+
+  try { sql << "drop table test1"; }
+  catch (soci_error const &) {} // ignore if error
+
 //  try
 //  {
 //    soci::session sql(*soci::factory_sqlite3(), "service=mydb user=john password=secret");
@@ -53,6 +62,8 @@ int main()
 //  {
 //    std::cerr << "Error: " << e.what() << '\n';
 //  }
+
+  std::cout << "bye SOCI\n";
 
   return 0;
 }
