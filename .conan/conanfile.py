@@ -20,10 +20,11 @@ class SociConan(ConanFile):
         cmake = CMake(self)
         cmake.definitions["CMAKE_CXX_STANDARD"] = "11"
         cmake.definitions["SOCI_CXX11"]      = "ON"
-        cmake.definitions["SOCI_EMPTY"]      = "ON"
         cmake.definitions["SOCI_SQLITE3"]    = "ON"
         cmake.definitions["SOCI_TESTS"]      = "ON"
-        cmake.definitions["SOCI_STATIC"]     = "ON"
+        cmake.definitions["SOCI_EMPTY"]      = "ON"
+        cmake.definitions["SOCI_SHARED"]     = "ON"
+        cmake.definitions["SOCI_STATIC"]     = "OFF"
         cmake.definitions["SOCI_DB2"]        = "OFF"
         cmake.definitions["SOCI_ODBC"]       = "OFF"
         cmake.definitions["SOCI_ORACLE"]     = "OFF"
@@ -41,15 +42,13 @@ class SociConan(ConanFile):
 
     def package(self):
         self.copy("*.h", dst="include", src="soci/include")
-        self.copy("*soci.lib", dst="lib", keep_path=False)
-        self.copy("*.dll", dst="bin", keep_path=False)
-        self.copy("*.so", dst="lib", keep_path=False)
-        self.copy("*.dylib", dst="lib", keep_path=False)
-        self.copy("*.a", dst="lib", keep_path=False)
+        self.copy("*soci*.lib", dst="lib", src="lib", keep_path=False, symlinks=True)
+        self.copy("*soci*.so*", dst="lib", src="lib", keep_path=False, symlinks=True)
+        self.copy("*.dylib", dst="lib", keep_path=False, symlinks=True)
+        self.copy("*.a", dst="lib", src="lib", keep_path=False, symlinks=True)
+        self.copy("*.dll", dst="bin", keep_path=False, symlinks=True)
 
     def package_info(self):
-        self.cpp_info.libs = ["soci_sqlite3"]
-        self.cpp_info.libs = ["soci_core"]
-        self.cpp_info.libs = ["soci_core"]
-        self.cpp_info.libs = ["soci_empty"]
-        self.cpp_info.libs = ["soci_sqlite3"]
+        self.cpp_info.libs = ["soci_core", "soci_empty", "soci_sqlite3"]
+        self.cpp_info.includedirs = ['include']
+        self.cpp_info.libdirs = ['lib']
