@@ -7,6 +7,14 @@ class SociTestConan(ConanFile):
     generators = "cmake"
     requires = "sqlite3/3.33.0"
 
+    def configure(self):
+        self.options["soci"].cxx11   = True
+        self.options["soci"].sqlite3 = True
+        self.options["soci"].empty   = True
+
+    def requirements(self):
+        self.requires("sqlite3/3.33.0")
+
     def build(self):
         cmake = CMake(self)
         cmake.configure()
@@ -20,5 +28,4 @@ class SociTestConan(ConanFile):
 
     def test(self):
         if not tools.cross_building(self):
-            # os.chdir("bin")
             self.run(".%sexample" % os.sep)
