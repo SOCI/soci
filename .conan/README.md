@@ -15,13 +15,6 @@ name: John
 adiós SOCI
 ```
 
-## Notes:  
-To install conan use `python > 3`
-
-    pip3 install --user conan
-
-Conan version used: `1.31.4`
-
 ## Example recipe
 `conanfile.txt` using `sqlite3` as backend: 
 
@@ -38,3 +31,8 @@ soci:empty   = True
 [generators]
 cmake
 ```
+
+## Notes:  
+- To install conan use `python > 3`: `pip3 install --user conan`  
+- Conan version used: `1.31.4`
+- Package tested on: `Ubuntu 18.04`, `gcc-7`
