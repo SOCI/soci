@@ -47,7 +47,7 @@ class SociConan(ConanFile):
         # ToDo add the dependencies for the missing backends
 
     def source(self):
-        self.run("git clone https://github.com/spjuanjoc/soci.git -b feature/create-conan-package --single-branch")
+        self.run("git clone https://github.com/SOCI/soci.git")
 
     def build(self):
         cmake = CMake(self)
