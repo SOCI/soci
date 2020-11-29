@@ -150,9 +150,7 @@ set(INCLUDEDIR "include" CACHE PATH "The directory to install includes into.")
 # Configuration files
 ###############################################################################
 set(CONFIG_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
-set(CONFIG_INCLUDE_DIR2 ${CMAKE_CURRENT_SOURCE_DIR}/include)
 install(DIRECTORY ${CONFIG_INCLUDE_DIR}/soci DESTINATION ${INCLUDEDIR})
-install(DIRECTORY ${CONFIG_INCLUDE_DIR2}/soci DESTINATION ${INCLUDEDIR})
 set(CONFIG_FILE_IN "include/soci/soci-config.h.in")
 set(CONFIG_FILE_OUT "${CONFIG_INCLUDE_DIR}/soci/soci-config.h")
 
