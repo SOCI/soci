@@ -3,11 +3,10 @@ project(example CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(example example.cpp)
+add_executable(${PROJECT_NAME} example.cpp)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS)
-conan_target_link_libraries(example ${CONAN_LIBS} dl)
+conan_target_link_libraries(${PROJECT_NAME} ${CONAN_LIBS})
 
-message("Conan libs: ${CONAN_LIBS}")
-message("dl libs: ${CMAKE_DL_LIBS}")
+message("-- Conan libs: ${CONAN_LIBS}")
