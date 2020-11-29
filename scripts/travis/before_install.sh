@@ -6,7 +6,7 @@
 source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
 
 sudo apt-get update -qq -y
-sudo apt-get install -qq -y libboost-dev libboost-date-time-dev valgrind
+sudo apt-get install -qq -y libboost-dev libboost-date-time-dev
 
 before_install="${TRAVIS_BUILD_DIR}/scripts/travis/before_install_${SOCI_TRAVIS_BACKEND}.sh"
 if [ -x ${before_install} ]; then
