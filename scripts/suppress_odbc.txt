@@ -1,6 +1,0 @@
-# This is a suppression file for LeakSanitizer when running ODBC tests.
-
-# Unfortunately there is a leak from psqlodbca.so for which ASAN doesn't show
-# any stack at all, so we have no choice but to suppress all leaks from this
-# library, even though it could easily hide real problems.
-leak:psqlodbca.so
