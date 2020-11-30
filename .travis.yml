@@ -3,6 +3,9 @@
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
+
+# When changing this, search for "xenial" in scripts/travis and update
+# references to it there too.
 dist: xenial
 
 sudo: required
