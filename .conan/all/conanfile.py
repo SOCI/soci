@@ -24,7 +24,7 @@ class SociConan(ConanFile):
         "firebird":   [True, False],
         "mysql":      [True, False],
         "postgresql": [True, False]
-        }
+    }
     default_options = {
         "shared":     True,
         "cxx11":      False,
@@ -38,7 +38,7 @@ class SociConan(ConanFile):
         "firebird":   False,
         "mysql":      False,
         "postgresql": False
-        }
+    }
 
     def requirements(self):
         if self.options.sqlite3:
