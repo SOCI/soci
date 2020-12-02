@@ -3,7 +3,9 @@
 ## Test the package creation
 How to test the package from the current dir (`... soci/.conan/`):
 
-    conan create . conan/stable
+    conan create . <version>@
+    conan create . 4.0.1@
+    conan create . 4.0.0@
 
 If the package creation was successful, it will also run
 the example project (called `example`). 
@@ -62,6 +64,23 @@ be the following:
 - To install conan use `python > 3`: `pip3 install --user conan`  
 - Conan version used: `1.31.4`
 - Package tested on: `Ubuntu 18.04`, `gcc-7`
-- Currently only supports these backends:
+- This Conan package supports `soci version > 4.0.0`
+- This Conan package has these backends configured:
     - sqlite3
 
+## Dependencies summary
+ 
+|Option     | Library generated | has dependencies  | 
+|:---:      | ---               | ---               |
+|shared     | soci_core         | no                |
+|empty      | soci_empty        | no                |
+|static     |   ??              | ??                |
+|cxx11      |   --              | y: `cxx_std > 11`       |
+|sqlite3    | soci_sqlite       | y: `sqlite3 v 3.33.0`  |
+|db2        |   ??              | yes               |
+|odbc       |   ??              | yes               |
+|oracle     |   ??              | yes               |
+|firebird   |   ??              | yes               |
+|mysql      |   ??              | yes               |
+|postgresql |   ??              | yes               |
+|tests      |   ??              | ??                |
