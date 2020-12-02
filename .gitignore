@@ -55,6 +55,3 @@ CMakeLists.txt.user
 # IDE
 .idea/
 
-# Build dirs
-build/
-cmake-build-*/
