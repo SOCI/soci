@@ -6,12 +6,11 @@
 #include <ostream>
 #include <string>
 
-std::string connectString{};
-const soci::backend_factory& backEnd = *soci::factory_sqlite3();
-
 int main()
 {
   std::cout << "Hola SOCI\n";
+  std::string connectString{};
+  const soci::backend_factory& backEnd = *soci::factory_sqlite3();
 
   soci::session sql(backEnd, connectString);
 
