@@ -52,6 +52,3 @@ CMakeLists.txt.user
 # Python
 .venv/
 
-# IDE
-.idea/
-
