@@ -4,7 +4,5 @@ sources:
     sha256: "fa69347b1a1ef74450c0382b665a67bd6777cc7005bbe09726479625bcf1e29c"
   "4.0.0":
     url: "https://github.com/SOCI/soci/archive/4.0.0.tar.gz"
-    sha256: "fa69347b1a1ef74450c0382b665a67bd6777cc7005bbe09726479625bcf1e29c"
-  "3.2.3":
-    url: "https://github.com/SOCI/soci/archive/3.2.3.tar.gz"
-    sha256: "fa69347b1a1ef74450c0382b665a67bd6777cc7005bbe09726479625bcf1e29c"
+    sha256: "359b988d8cbe81357835317821919f7e270c0705e41951a92ac1627cb9fe8faf"
+
