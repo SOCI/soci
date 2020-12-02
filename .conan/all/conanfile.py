@@ -4,7 +4,6 @@ from conans import ConanFile, CMake, tools
 
 class SociConan(ConanFile):
     name = "soci"
-    version = "4.0.1"
     license = "Boost"
     author = "Maciej Sobczak maciej@msobczak"
     url = "https://github.com/SOCI/soci"
@@ -97,13 +96,16 @@ class SociConan(ConanFile):
         cmake.install()
 
     def package(self):
-        include_folder = os.path.join(self._source_subfolder, "include")
-        self.copy("*.h", dst="include", src=include_folder)
-        self.copy("*soci*.lib", dst="lib", src="lib", keep_path=False, symlinks=True)
-        self.copy("*soci*.so*", dst="lib", src="lib", keep_path=False, symlinks=True)
-        self.copy("*.dylib", dst="lib", keep_path=False, symlinks=True)
-        self.copy("*.a", dst="lib", src="lib", keep_path=False, symlinks=True)
-        self.copy("*.dll", dst="bin", keep_path=False, symlinks=True)
+        include_folder  = os.path.join(self._source_subfolder, "include")
+        lib_folder      = os.path.join(self._build_subfolder, "lib")
+        bin_folder      = os.path.join(self._build_subfolder, "bin")
+
+        self.copy("*.h",    dst="include", src=include_folder)
+        self.copy("*soci*.lib", dst="lib", src=lib_folder, keep_path=False, symlinks=True)
+        self.copy("*soci*.so*", dst="lib", src=lib_folder, keep_path=False, symlinks=True)
+        self.copy("*.a",        dst="lib", src=lib_folder, keep_path=False, symlinks=True)
+        self.copy("*.dylib",    dst="lib", src=lib_folder, keep_path=False, symlinks=True)
+        self.copy("*.dll",      dst="bin", src=bin_folder, keep_path=False, symlinks=True)
 
     def package_info(self):
         self.cpp_info.libs = ["soci_core"]
