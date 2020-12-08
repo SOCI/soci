@@ -1068,7 +1068,7 @@ TEST_CASE("colon_in_double_quotes_in_single_quotes",
     std::string return_value;
 
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
         table_creator_colon_in_double_quotes_in_single_quotes
             tableCreator(sql);
 
