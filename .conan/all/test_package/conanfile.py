@@ -29,5 +29,4 @@ class SociTestConan(ConanFile):
 
     def test(self):
         if not tools.cross_building(self):
-            # self.run(".%sexample" % os.sep)
             self.run("ctest . -VV")
