@@ -52,10 +52,24 @@ class SociConan(ConanFile):
         return "build_subfolder"
 
     def requirements(self):
+        prefix  = "Dependencies for "
+        message = " not configured in this conan package, some features will be disabled."
+
         if self.options.sqlite3:
             self.requires("sqlite3/3.33.0")
-        # and so on for the rest of backends
-        # ToDo add the dependencies for the missing backends
+        # ToDo add the missing dependencies for the backends
+        if self.options.db2:
+            self.output.warn(prefix + "DB2" + message)
+        if self.options.odbc:
+            self.output.warn(prefix + "ODBC" + message)
+        if self.options.oracle:
+            self.output.warn(prefix + "ORACLE" + message)
+        if self.options.firebird:
+            self.output.warn(prefix + "FIREBIRD" + message)
+        if self.options.mysql:
+            self.output.warn(prefix + "MYSQL" + message)
+        if self.options.postgresql:
+            self.output.warn(prefix + "POSTGRESQL" + message)
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
@@ -68,11 +82,11 @@ class SociConan(ConanFile):
         self._cmake = CMake(self)
 
         self._cmake.definitions["SOCI_SHARED"]     = self.options.shared
-        self._cmake.definitions["SOCI_CXX11"]      = self.options.cxx11
-        self._cmake.definitions["SOCI_SQLITE3"]    = self.options.sqlite3
+        self._cmake.definitions["SOCI_STATIC"]     = self.options.static
         self._cmake.definitions["SOCI_EMPTY"]      = self.options.empty
         self._cmake.definitions["SOCI_TESTS"]      = self.options.tests
-        self._cmake.definitions["SOCI_STATIC"]     = self.options.static
+        self._cmake.definitions["SOCI_CXX11"]      = self.options.cxx11
+        self._cmake.definitions["SOCI_SQLITE3"]    = self.options.sqlite3
         self._cmake.definitions["SOCI_DB2"]        = self.options.db2
         self._cmake.definitions["SOCI_ODBC"]       = self.options.odbc
         self._cmake.definitions["SOCI_ORACLE"]     = self.options.oracle
@@ -81,7 +95,7 @@ class SociConan(ConanFile):
         self._cmake.definitions["SOCI_POSTGRESQL"] = self.options.postgresql
 
         if self.options.cxx11:
-            self._cmake.definitions["CMAKE_CXX_STANDARD"] = "11"
+            self._cmake.definitions["CMAKE_CXX_STANDARD"] = "11" # ToDo review this. The standard should not be set here
 
         self._cmake.configure(
             source_folder=self._source_subfolder,
@@ -108,13 +122,17 @@ class SociConan(ConanFile):
         self.copy("*.dll",      dst="bin", src=bin_folder, keep_path=False, symlinks=True)
 
     def package_info(self):
+        self.cpp_info.includedirs = ['include']
+        self.cpp_info.libdirs = ['lib']
+
         self.cpp_info.libs = ["soci_core"]
         if self.options.empty:
             self.cpp_info.libs.append("soci_empty")
         if self.options.sqlite3:
             self.cpp_info.libs.append("soci_sqlite3")
-        # And so on for the rest of libs
-        # ToDo add the libs generated for the other backends
-
-        self.cpp_info.includedirs = ['include']
-        self.cpp_info.libdirs = ['lib']
+        if self.options.oracle:
+            self.cpp_info.libs.append("soci_oracle")
+        if self.options.mysql:
+            self.cpp_info.libs.append("soci_mysql")
+        if self.options.postgresql:
+            self.cpp_info.libs.append("soci_postgresql")
