@@ -1,23 +1,13 @@
 # Conan package for SOCI
 
 ## Test the package creation
-How to test the package from the current dir (`... soci/.conan/`):
+How to test the package from the path (`... soci/.conan/all`):
 
     conan create . <version>@
     conan create . 4.0.1@
     conan create . 4.0.0@
 
-If the package creation was successful, it will also run
-the example project (called `example`). 
-The expected output of running the `example` is:
-
-```
-Hola SOCI
-sqlite3_statement_backend::prepare: no such table: test1 while preparing "DROP TABLE test1".
-id: 7
-name: John
-adiós SOCI
-```
+If the package creation was successful it will also run the tests for `sqlite3`
 
 ## How to use it
 This recipe is meant to be tested only locally, but 
@@ -77,10 +67,10 @@ be the following:
 |static     |   ??              | ??                |
 |cxx11      |   --              | y: `cxx_std > 11`       |
 |sqlite3    | soci_sqlite       | y: `sqlite3 v 3.33.0`  |
-|db2        |   ??              | yes               |
-|odbc       |   ??              | yes               |
-|oracle     |   ??              | yes               |
-|firebird   |   ??              | yes               |
-|mysql      |   ??              | yes               |
-|postgresql |   ??              | yes               |
+|db2        |   N/A             | yes               |
+|odbc       |   N/A             | yes               |
+|oracle     | soci_oracle       | yes               |
+|firebird   |   N/A             | yes               |
+|mysql      | soci_mysql        | yes               |
+|postgresql | soci_postgresql   | yes               |
 |tests      |   ??              | ??                |
