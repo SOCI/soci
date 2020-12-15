@@ -4,15 +4,16 @@ from conans import ConanFile, CMake, tools
 
 class SociConan(ConanFile):
     name = "soci"
-    license = "Boost"
-    author = "Maciej Sobczak maciej@msobczak"
-    url = "https://github.com/SOCI/soci"
+    homepage = "https://github.com/SOCI/soci"
+    url = "https://github.com/conan-io/conan-center-index"
     description = "The C++ Database Access Library "
     topics = ("C++", "database-library", "oracle", "postgresql", "mysql", "odbc", "db2", "firebird", "sqlite3", "boost" )
+    license = "Boost"
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake"
 
     options = {
+        "fPIC":       [True, False],
         "shared":     [True, False],
         "cxx11":      [True, False],
         "sqlite3":    [True, False],
@@ -27,7 +28,8 @@ class SociConan(ConanFile):
         "postgresql": [True, False]
     }
     default_options = {
-        "shared":     True,
+        "fPIC":       True,
+        "shared":     False,
         "cxx11":      False,
         "sqlite3":    False,
         "empty":      False,
@@ -75,6 +77,10 @@ class SociConan(ConanFile):
         tools.get(**self.conan_data["sources"][self.version])
         os.rename(self.name + "-" + self.version, self._source_subfolder)
 
+    def config_options(self):
+        if self.settings.os == "Windows":
+            del self.options.fPIC
+
     def _configure_cmake(self):
         if self._cmake:
             return self._cmake
@@ -120,10 +126,12 @@ class SociConan(ConanFile):
         self.copy("*.a",        dst="lib", src=lib_folder, keep_path=False, symlinks=True)
         self.copy("*.dylib",    dst="lib", src=lib_folder, keep_path=False, symlinks=True)
         self.copy("*.dll",      dst="bin", src=bin_folder, keep_path=False, symlinks=True)
+        self.copy("LICENSE_1_0.txt", dst="licenses", src=self._source_subfolder)
 
     def package_info(self):
         self.cpp_info.includedirs = ['include']
-        self.cpp_info.libdirs = ['lib']
+        self.cpp_info.libdirs = ['lib', 'lib64']
+        self.cpp_info.builddirs = ['cmake']
 
         self.cpp_info.libs = ["soci_core"]
         if self.options.empty:
