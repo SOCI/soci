@@ -156,8 +156,18 @@ void postgresql_statement_backend::prepare(std::string const & query,
             }
             break;
         case in_quotes:
+           if (*it == '\'' )
+            {
+                query_ += *it;
+                state = normal;
+            }
+            else // regular quoted character
+            {
+                query_ += *it;
+            }
+            break;
         case in_identifier:
-            if (*it == '\'' || *it == '\"' )
+            if ( *it == '\"' )
             {
                 query_ += *it;
                 state = normal;

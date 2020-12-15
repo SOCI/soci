@@ -1051,6 +1051,36 @@ TEST_CASE("false_bind_variable_inside_identifier", "[postgresql][bind-variables]
     CHECK(type_value.compare("en_one")==0);
 }
 
+// false_bind_variable_inside_identifier
+struct table_creator_colon_in_double_quotes_in_single_quotes :
+    table_creator_base
+{
+    table_creator_colon_in_double_quotes_in_single_quotes(session & sql)
+        : table_creator_base(sql)
+    {
+       sql << "CREATE TABLE soci_test( \"column_with:colon\" text)";
+    }
+
+};
+TEST_CASE("colon_in_double_quotes_in_single_quotes",
+          "[postgresql][bind-variables]")
+{
+    std::string return_value;
+
+    {
+        soci::session sql(backEnd, connectString);
+        table_creator_colon_in_double_quotes_in_single_quotes
+            tableCreator(sql);
+
+        sql << "insert into soci_test(\"column_with:colon\") values('hello "
+               "it is \"10:10\"')";
+        sql << "SELECT \"column_with:colon\" from soci_test ;", into
+            (return_value);
+    }
+
+    CHECK(return_value == "hello it is \"10:10\"");
+}
+
 //
 // Support for soci Common Tests
 //
