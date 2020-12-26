@@ -700,6 +700,12 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         sql << "select tm from soci_test", into(t, ind);
         CHECK(ind == i_null);
 
+        // indicator should be initialized even when nothing is found
+        ind = i_ok;
+        sql << "select id from soci_test where str='NO SUCH ROW'",
+                into(i, ind);
+        CHECK(ind == i_null);
+
         try
         {
             // expect error

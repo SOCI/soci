@@ -45,7 +45,10 @@ if (sql.got_data())
 }
 else
 {
-    // no such person in the database
+    // no such person in the database: notice that indicator will have the
+    // value i_null in this branch because often enough missing value can
+    // be handled in the same way as a null one, but you may also distinguish
+    // between the two cases if necessary, as done here by using got_data()
 }
 ```
 
