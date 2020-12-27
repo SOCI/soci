@@ -10,7 +10,7 @@
 ###############################################################################
 # General settings
 ###############################################################################
-cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 project(SOCI)
 
@@ -25,6 +25,8 @@ option(SOCI_ASAN "Enable address sanitizer on GCC v4.8+/Clang v 3.1+" OFF)
 option(SOCI_LTO "Enable link time optimization" OFF)
 
 if (SOCI_LTO)
+    cmake_minimum_required(VERSION 3.9)
+
     # Check and enable lto support
     include(CheckIPOSupported)
     check_ipo_supported(RESULT supported)
