@@ -21,7 +21,11 @@
 //
 // If SOCI_MYSQL_DECL isn't defined yet define it now
 #ifndef SOCI_MYSQL_DECL
-# define SOCI_MYSQL_DECL
+# if __GNUC__ >= 4
+#  define SOCI_MYSQL_DECL __attribute__ ((visibility ("default")))
+# else
+#  define SOCI_MYSQL_DECL
+# endif
 #endif
 
 #include <soci/soci-backend.h>
