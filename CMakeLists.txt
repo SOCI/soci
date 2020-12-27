@@ -48,7 +48,7 @@ if (SOCI_LTO)
             endif()
         endif()
     elseif(supported)
-        message(STATUS "IPO / LTO is supported but conflicted with ASAN")
+        message(STATUS "IPO / LTO is supported but conflicts with ASAN and not enabled")
     endif()
 endif()
 
@@ -232,4 +232,3 @@ endforeach()
 configure_file("${CONFIG_FILE_IN}" "${CONFIG_FILE_OUT}")
 
 message(STATUS "")
-
