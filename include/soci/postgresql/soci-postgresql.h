@@ -21,7 +21,11 @@
 //
 // If SOCI_POSTGRESQL_DECL isn't defined yet define it now
 #ifndef SOCI_POSTGRESQL_DECL
-# define SOCI_POSTGRESQL_DECL
+# if __GNUC__ >= 4
+#  define SOCI_POSTGRESQL_DECL __attribute__ ((visibility ("default")))
+# else
+#  define SOCI_POSTGRESQL_DECL
+# endif
 #endif
 
 #include <soci/soci-backend.h>
