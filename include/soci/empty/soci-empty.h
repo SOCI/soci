@@ -20,7 +20,11 @@
 //
 // If SOCI_EMPTY_DECL isn't defined yet define it now
 #ifndef SOCI_EMPTY_DECL
-# define SOCI_EMPTY_DECL
+# if __GNUC__ >= 4
+#  define SOCI_EMPTY_DECL __attribute__ ((visibility ("default")))
+# else
+#  define SOCI_EMPTY_DECL
+# endif
 #endif
 
 #include <soci/soci-backend.h>
