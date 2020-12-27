@@ -20,7 +20,11 @@
 //
 // If SOCI_ORACLE_DECL isn't defined yet define it now
 #ifndef SOCI_ORACLE_DECL
-# define SOCI_ORACLE_DECL
+# if __GNUC__ >= 4
+#  define SOCI_ORACLE_DECL __attribute__ ((visibility ("default")))
+# else
+#  define SOCI_ORACLE_DECL
+# endif
 #endif
 
 #include <soci/soci-backend.h>
