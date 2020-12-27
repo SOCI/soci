@@ -20,7 +20,11 @@
 //
 // If SOCI_SQLITE3_DECL isn't defined yet define it now
 #ifndef SOCI_SQLITE3_DECL
-# define SOCI_SQLITE3_DECL
+# if __GNUC__ >= 4
+#  define SOCI_SQLITE3_DECL __attribute__ ((visibility ("default")))
+# else
+#  define SOCI_SQLITE3_DECL
+# endif
 #endif
 
 #include <cstdarg>
