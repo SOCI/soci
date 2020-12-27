@@ -90,7 +90,11 @@ namespace std {
 //
 // If SOCI_DECL isn't defined yet define it now
 #ifndef SOCI_DECL
-# define SOCI_DECL
+# if __GNUC__ >= 4
+#  define SOCI_DECL __attribute__ ((visibility ("default")))
+# else
+#  define SOCI_DECL
+# endif
 #endif
 
 // C++11 features are always available in MSVS as it has no separate C++98
