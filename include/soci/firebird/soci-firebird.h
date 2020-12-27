@@ -22,7 +22,11 @@
 //
 // If SOCI_FIREBIRD_DECL isn't defined yet define it now
 #ifndef SOCI_FIREBIRD_DECL
-# define SOCI_FIREBIRD_DECL
+# if __GNUC__ >= 4
+#  define SOCI_FIREBIRD_DECL __attribute__ ((visibility ("default")))
+# else
+#  define SOCI_FIREBIRD_DECL
+# endif
 #endif
 
 #ifdef _WIN32
