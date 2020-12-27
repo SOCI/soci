@@ -20,7 +20,11 @@
 //
 // If SOCI_ODBC_DECL isn't defined yet define it now
 #ifndef SOCI_ODBC_DECL
-# define SOCI_ODBC_DECL
+# if __GNUC__ >= 4
+#  define SOCI_ODBC_DECL __attribute__ ((visibility ("default")))
+# else
+#  define SOCI_ODBC_DECL
+# endif
 #endif
 
 #include "soci/soci-platform.h"
