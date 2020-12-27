@@ -21,7 +21,11 @@
 //
 // If SOCI_DB2_DECL isn't defined yet define it now
 #ifndef SOCI_DB2_DECL
-# define SOCI_DB2_DECL
+# if __GNUC__ >= 4
+#  define SOCI_DB2_DECL __attribute__ ((visibility ("default")))
+# else
+#  define SOCI_DB2_DECL
+# endif
 #endif
 
 #include <soci/soci-backend.h>
