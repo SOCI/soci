@@ -74,27 +74,31 @@ namespace std {
 }
 #endif
 
-//define DLL import/export on WIN32
 #ifdef _WIN32
 # ifndef _WIN32_WINNT
 #   define _WIN32_WINNT 0x0502 //_WIN32_WINNT_WS03, VS2015 support: https://msdn.microsoft.com/de-de/library/6sehtctf.aspx
-# endif // _WIN32_WINNT
-# ifdef SOCI_DLL
-#  ifdef SOCI_SOURCE
-#   define SOCI_DECL __declspec(dllexport)
-#  else
-#   define SOCI_DECL __declspec(dllimport)
-#  endif // SOCI_SOURCE
-# endif // SOCI_DLL
-#endif // _WIN32
-//
-// If SOCI_DECL isn't defined yet define it now
-#ifndef SOCI_DECL
-# if __GNUC__ >= 4
-#  define SOCI_DECL __attribute__ ((visibility ("default")))
-# else
-#  define SOCI_DECL
 # endif
+
+# ifdef SOCI_DLL
+#  define SOCI_DECL_EXPORT __declspec(dllexport)
+#  define SOCI_DECL_IMPORT __declspec(dllimport)
+# endif
+
+#elif defined(unix) || defined(__unix__) || defined(__unix) &&  __GNUC__ >= 4
+# define SOCI_DECL_EXPORT __attribute__ (( visibility("default") ))
+# define SOCI_DECL_IMPORT __attribute__ (( visibility("default") ))
+#endif
+
+#ifndef SOCI_DECL_EXPORT
+# define SOCI_DECL_EXPORT
+# define SOCI_DECL_IMPORT
+#endif
+
+// Define SOCI_DECL
+#ifdef SOCI_SOURCE
+# define SOCI_DECL SOCI_DECL_EXPORT
+#else
+# define SOCI_DECL SOCI_DECL_IMPORT
 #endif
 
 // C++11 features are always available in MSVS as it has no separate C++98
