@@ -56,6 +56,7 @@ if (SOCI_LTO)
 endif()
 
 if (SOCI_VISIBILITY)
+    message(STATUS "gcc / clang visibility enabled")
     set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 endif()
 
