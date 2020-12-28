@@ -56,8 +56,24 @@ if (SOCI_LTO)
 endif()
 
 if (SOCI_VISIBILITY)
-    message(STATUS "gcc / clang visibility enabled")
-    set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+    # Test whether visibility is supported
+    include(CheckCSourceCompiles)
+    check_c_source_compiles(
+        "
+            __attribute__ (( visibility(\"default\") )) int f1() { return 0; }
+            __attribute__ (( visibility(\"hidden\") ))  int f2() { return 1; }
+
+            int main(int argc, char* argv[]) { f1(); f2(); return 0; }
+        "
+        ENABLE_VISIBILITY_SUPPORT
+    )
+
+    if (ENABLE_VISIBILITY_SUPPORT)
+        message(STATUS "gcc / clang visibility enabled")
+        set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+    endif()
+else()
+    set(ENABLE_VISIBILITY_SUPPORT off)
 endif()
 
 ###############################################################################
