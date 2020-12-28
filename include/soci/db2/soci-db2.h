@@ -9,23 +9,12 @@
 #ifndef SOCI_DB2_H_INCLUDED
 #define SOCI_DB2_H_INCLUDED
 
-#ifdef _WIN32
-# ifdef SOCI_DLL
-#  ifdef SOCI_DB2_SOURCE
-#   define SOCI_DB2_DECL __declspec(dllexport)
-#  else
-#   define SOCI_DB2_DECL __declspec(dllimport)
-#  endif // SOCI_DB2_SOURCE
-# endif // SOCI_DLL
-#endif // _WIN32
-//
-// If SOCI_DB2_DECL isn't defined yet define it now
-#ifndef SOCI_DB2_DECL
-# if __GNUC__ >= 4
-#  define SOCI_DB2_DECL __attribute__ ((visibility ("default")))
-# else
-#  define SOCI_DB2_DECL
-# endif
+#include "soci/soci-platform.h"
+
+#ifdef SOCI_DB2_SOURCE
+# define SOCI_DB2_DECL SOCI_DECL_EXPORT
+#else
+# define SOCI_DB2_DECL SOCI_DECL_IMPORT
 #endif
 
 #include <soci/soci-backend.h>
