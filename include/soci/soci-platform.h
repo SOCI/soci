@@ -84,7 +84,7 @@ namespace std {
 #  define SOCI_DECL_IMPORT __declspec(dllimport)
 # endif
 
-#elif defined(unix) || defined(__unix__) || defined(__unix) && defined(SOCI_ENABLE_VISIBILITY_SUPPORT)
+#elif defined(SOCI_ENABLE_VISIBILITY_SUPPORT)
 # define SOCI_DECL_EXPORT __attribute__ (( visibility("default") ))
 # define SOCI_DECL_IMPORT __attribute__ (( visibility("default") ))
 #endif
