@@ -9,7 +9,7 @@
 #ifndef SOCI_DB2_H_INCLUDED
 #define SOCI_DB2_H_INCLUDED
 
-#include "soci/soci-platform.h"
+#include <soci/soci-platform.h>
 
 #ifdef SOCI_DB2_SOURCE
 # define SOCI_DB2_DECL SOCI_DECL_EXPORT
