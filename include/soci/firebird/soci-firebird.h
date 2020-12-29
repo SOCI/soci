@@ -9,7 +9,7 @@
 #ifndef SOCI_FIREBIRD_H_INCLUDED
 #define SOCI_FIREBIRD_H_INCLUDED
 
-#include "soci/soci-platform.h"
+#include <soci/soci-platform.h>
 
 #ifdef SOCI_FIREBIRD_SOURCE
 # define SOCI_FIREBIRD_DECL SOCI_DECL_EXPORT
