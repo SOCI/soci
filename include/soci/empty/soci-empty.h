@@ -8,7 +8,7 @@
 #ifndef SOCI_EMPTY_H_INCLUDED
 #define SOCI_EMPTY_H_INCLUDED
 
-#include "soci/soci-platform.h"
+#include <soci/soci-platform.h>
 
 #ifdef SOCI_EMPTY_SOURCE
 # define SOCI_EMPTY_DECL SOCI_DECL_EXPORT
