@@ -8,7 +8,7 @@
 #ifndef SOCI_SQLITE3_H_INCLUDED
 #define SOCI_SQLITE3_H_INCLUDED
 
-#include "soci/soci-platform.h"
+#include <soci/soci-platform.h>
 
 #ifdef SOCI_SQLITE3_SOURCE
 # define SOCI_SQLITE3_DECL SOCI_DECL_EXPORT
