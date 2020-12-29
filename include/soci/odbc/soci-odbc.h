@@ -8,7 +8,7 @@
 #ifndef SOCI_ODBC_H_INCLUDED
 #define SOCI_ODBC_H_INCLUDED
 
-#include "soci/soci-platform.h"
+#include <soci/soci-platform.h>
 
 #ifdef SOCI_ODBC_SOURCE
 # define SOCI_ODBC_DECL SOCI_DECL_EXPORT
