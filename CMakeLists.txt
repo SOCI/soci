@@ -65,7 +65,7 @@ if (SOCI_VISIBILITY)
 
             int main(int argc, char* argv[]) { f1(); f2(); return 0; }
         "
-        ENABLE_VISIBILITY_SUPPORT
+        SOCI_ENABLE_VISIBILITY_SUPPORT
     )
 
     if (SOCI_ENABLE_VISIBILITY_SUPPORT)
