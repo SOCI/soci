@@ -68,12 +68,12 @@ if (SOCI_VISIBILITY)
         ENABLE_VISIBILITY_SUPPORT
     )
 
-    if (ENABLE_VISIBILITY_SUPPORT)
+    if (SOCI_ENABLE_VISIBILITY_SUPPORT)
         message(STATUS "gcc / clang visibility enabled")
         set(CMAKE_CXX_VISIBILITY_PRESET hidden)
     endif()
 else()
-    set(ENABLE_VISIBILITY_SUPPORT off)
+    set(SOCI_ENABLE_VISIBILITY_SUPPORT off)
 endif()
 
 ###############################################################################
