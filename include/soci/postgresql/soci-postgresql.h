@@ -9,7 +9,7 @@
 #ifndef SOCI_POSTGRESQL_H_INCLUDED
 #define SOCI_POSTGRESQL_H_INCLUDED
 
-#include "soci/soci-platform.h"
+#include <soci/soci-platform.h>
 
 #ifdef SOCI_POSTGRESQL_SOURCE
 # define SOCI_POSTGRESQL_DECL SOCI_DECL_EXPORT
