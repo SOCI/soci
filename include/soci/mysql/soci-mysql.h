@@ -9,7 +9,7 @@
 #ifndef SOCI_MYSQL_H_INCLUDED
 #define SOCI_MYSQL_H_INCLUDED
 
-#include "soci/soci-platform.h"
+#include <soci/soci-platform.h>
 
 #ifdef SOCI_MYSQL_SOURCE
 # define SOCI_MYSQL_DECL SOCI_DECL_EXPORT
