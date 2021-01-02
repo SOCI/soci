@@ -65,15 +65,15 @@ if (SOCI_VISIBILITY)
 
             int main(int argc, char* argv[]) { f1(); f2(); return 0; }
         "
-        SOCI_ENABLE_VISIBILITY_SUPPORT
+        SOCI_HAVE_VISIBILITY_SUPPORT
     )
 
-    if (SOCI_ENABLE_VISIBILITY_SUPPORT)
+    if (SOCI_HAVE_VISIBILITY_SUPPORT)
         message(STATUS "gcc / clang visibility enabled")
         set(CMAKE_CXX_VISIBILITY_PRESET hidden)
     endif()
 else()
-    set(SOCI_ENABLE_VISIBILITY_SUPPORT off)
+    set(SOCI_HAVE_VISIBILITY_SUPPORT off)
 endif()
 
 ###############################################################################
