@@ -103,6 +103,7 @@ Some other build options:
 
 * `SOCI_ASAN` - boolean - Build with address sanitizer (ASAN) support. Useful for finding problems when debugging, but shouldn't be used for the production builds due to extra overhead. Default is `OFF`.
 * `SOCI_LTO` - boolean - Build with link-time optimizations, if supported. This produces noticeably smaller libraries. Default is `OFF`, but turning it on is recommended for the production builds.
+* `SOCI_VISIBILITY` - boolean - Use hidden ELF visibility for private symbols if supported by the platform. This option produces smaller libraries by avoiding exporting internal function symbols. Default is `ON`.
 
 #### Empty (sample backend)
 

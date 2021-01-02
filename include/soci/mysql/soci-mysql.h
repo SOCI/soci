@@ -9,19 +9,12 @@
 #ifndef SOCI_MYSQL_H_INCLUDED
 #define SOCI_MYSQL_H_INCLUDED
 
-#ifdef _WIN32
-# ifdef SOCI_DLL
-#  ifdef SOCI_MYSQL_SOURCE
-#   define SOCI_MYSQL_DECL __declspec(dllexport)
-#  else
-#   define SOCI_MYSQL_DECL __declspec(dllimport)
-#  endif // SOCI_DLL
-# endif // SOCI_MYSQL_SOURCE
-#endif // _WIN32
-//
-// If SOCI_MYSQL_DECL isn't defined yet define it now
-#ifndef SOCI_MYSQL_DECL
-# define SOCI_MYSQL_DECL
+#include <soci/soci-platform.h>
+
+#ifdef SOCI_MYSQL_SOURCE
+# define SOCI_MYSQL_DECL SOCI_DECL_EXPORT
+#else
+# define SOCI_MYSQL_DECL SOCI_DECL_IMPORT
 #endif
 
 #include <soci/soci-backend.h>
