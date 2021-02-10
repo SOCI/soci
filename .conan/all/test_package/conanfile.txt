@@ -1,0 +1,10 @@
+[requires]
+soci/4.0.1
+
+[options]
+soci:shared       = True
+soci:empty        = True
+soci:with_sqlite3 = True
+
+[generators]
+cmake
