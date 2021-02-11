@@ -99,6 +99,12 @@ List of variables to control common SOCI features and dependencies:
 * `SOCI_TESTS` - boolean - Request to build regression tests for SOCI core and all successfully configured backends.
 * `WITH_BOOST` - boolean - Should CMake try to detect [Boost C++ Libraries](http://www.boost.org/). If ON, CMake will try to find Boost headers and binaries of [Boost.Date_Time](http://www.boost.org/doc/libs/release/doc/html/date_time.html) library.
 
+Some other build options:
+
+* `SOCI_ASAN` - boolean - Build with address sanitizer (ASAN) support. Useful for finding problems when debugging, but shouldn't be used for the production builds due to extra overhead. Default is `OFF`.
+* `SOCI_LTO` - boolean - Build with link-time optimizations, if supported. This produces noticeably smaller libraries. Default is `OFF`, but turning it on is recommended for the production builds.
+* `SOCI_VISIBILITY` - boolean - Use hidden ELF visibility for private symbols if supported by the platform. This option produces smaller libraries by avoiding exporting internal function symbols. Default is `ON`.
+
 #### Empty (sample backend)
 
 * `SOCI_EMPTY` - boolean - Builds the [sample backend](backends/index.md) called Empty. Always ON by default.
