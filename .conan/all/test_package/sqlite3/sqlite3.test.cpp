@@ -3,7 +3,7 @@
 #include "soci/soci.h"
 #include "soci/sqlite3/soci-sqlite3.h"
 
-namespace soci_sqlite
+namespace test_soci_sqlite
 {
 
 TEST_CASE("should successfully connect using sqlite3 backend")
@@ -16,4 +16,4 @@ TEST_CASE("should successfully connect using sqlite3 backend")
   CHECK( sql.is_connected() );
 }
 
-} // soci_sqlite
+} // test_soci_sqlite

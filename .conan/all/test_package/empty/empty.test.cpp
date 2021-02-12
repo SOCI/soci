@@ -3,7 +3,7 @@
 #include "soci/soci.h"
 #include "soci/empty/soci-empty.h"
 
-namespace soci_empty
+namespace test_soci_empty
 {
 
 TEST_CASE("should successfully connect with empty backend")
@@ -16,4 +16,4 @@ TEST_CASE("should successfully connect with empty backend")
   CHECK( sql.is_connected() );
 }
 
-} // soci_empty
+} // test_soci_empty
