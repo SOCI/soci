@@ -168,14 +168,14 @@ struct SOCI_DB2_DECL db2_vector_use_type_backend : details::vector_use_type_back
     db2_statement_backend& statement_;
 
     void prepare_indicators(std::size_t size);
-    void prepare_for_bind(void *&data, SQLUINTEGER &size,SQLSMALLINT &sqlType, SQLSMALLINT &cType);
-    void bind_helper(int &position, void *data, details::exchange_type type);
+    void *prepare_for_bind(void *data, SQLUINTEGER &size,SQLSMALLINT &sqlType, SQLSMALLINT &cType);
 
     std::vector<SQLLEN> indVec;
     void *data;
     char *buf;
     details::exchange_type type;
     std::size_t colSize;
+    int position;
 };
 
 struct db2_session_backend;

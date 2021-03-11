@@ -36,9 +36,10 @@ void db2_vector_use_type_backend::prepare_indicators(std::size_t size)
     indVec.resize(size);
 }
 
-void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &size,
+void *db2_vector_use_type_backend::prepare_for_bind(void *data, SQLUINTEGER &size,
     SQLSMALLINT &sqlType, SQLSMALLINT &cType)
 {
+    void* sqlData = NULL;
     switch (type)
     {    // simple cases
     case x_short:
@@ -49,7 +50,7 @@ void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &siz
             std::vector<short> *vp = static_cast<std::vector<short> *>(data);
             std::vector<short> &v(*vp);
             prepare_indicators(v.size());
-            data = &v[0];
+            sqlData = &v[0];
         }
         break;
     case x_integer:
@@ -60,7 +61,7 @@ void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &siz
             std::vector<int> *vp = static_cast<std::vector<int> *>(data);
             std::vector<int> &v(*vp);
             prepare_indicators(v.size());
-            data = &v[0];
+            sqlData = &v[0];
         }
         break;
     case x_long_long:
@@ -72,7 +73,7 @@ void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &siz
                  = static_cast<std::vector<long long> *>(data);
             std::vector<long long> &v(*vp);
             prepare_indicators(v.size());
-            data = &v[0];
+            sqlData = &v[0];
         }
         break;
     case x_unsigned_long_long:
@@ -84,7 +85,7 @@ void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &siz
                  = static_cast<std::vector<unsigned long long> *>(data);
             std::vector<unsigned long long> &v(*vp);
             prepare_indicators(v.size());
-            data = &v[0];
+            sqlData = &v[0];
         }
         break;
     case x_double:
@@ -95,7 +96,7 @@ void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &siz
             std::vector<double> *vp = static_cast<std::vector<double> *>(data);
             std::vector<double> &v(*vp);
             prepare_indicators(v.size());
-            data = &v[0];
+            sqlData = &v[0];
         }
         break;
 
@@ -121,7 +122,7 @@ void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &siz
 
             sqlType = SQL_CHAR;
             cType = SQL_C_CHAR;
-            data = buf;
+            sqlData = buf;
         }
         break;
     case x_stdstring:
@@ -155,7 +156,7 @@ void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &siz
                 pos += maxSize;
             }
 
-            data = buf;
+            sqlData = buf;
             size = static_cast<SQLINTEGER>(maxSize);
         }
         break;
@@ -170,7 +171,7 @@ void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &siz
 
             sqlType = SQL_TYPE_TIMESTAMP;
             cType = SQL_C_TYPE_TIMESTAMP;
-            data = buf;
+            sqlData = buf;
             size = 19; // This number is not the size in bytes, but the number
                       // of characters in the date if it was written out
                       // yyyy-mm-dd hh:mm:ss
@@ -185,30 +186,8 @@ void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &siz
     }
 
     colSize = size;
-}
 
-void db2_vector_use_type_backend::bind_helper(int &position, void *data, details::exchange_type type)
-{
-    this->data = data; // for future reference
-    this->type = type; // for future reference
-
-    SQLSMALLINT sqlType;
-    SQLSMALLINT cType;
-    SQLUINTEGER size;
-
-    prepare_for_bind(data, size, sqlType, cType);
-
-    SQLINTEGER arraySize = (SQLINTEGER)indVec.size();
-    SQLSetStmtAttr(statement_.hStmt, SQL_ATTR_PARAMSET_SIZE, db2::int_as_ptr(arraySize), 0);
-
-    SQLRETURN cliRC = SQLBindParameter(statement_.hStmt, static_cast<SQLUSMALLINT>(position++),
-                                    SQL_PARAM_INPUT, cType, sqlType, size, 0,
-                                    static_cast<SQLPOINTER>(data), size, &indVec[0]);
-
-    if ( cliRC != SQL_SUCCESS )
-    {
-        throw db2_soci_error("Error while binding value to column", cliRC);
-    }
+    return sqlData;
 }
 
 void db2_vector_use_type_backend::bind_by_pos(int &position,
@@ -220,7 +199,9 @@ void db2_vector_use_type_backend::bind_by_pos(int &position,
     }
     statement_.use_binding_method_ = details::db2::BOUND_BY_POSITION;
 
-    bind_helper(position, data, type);
+    this->data = data;
+    this->type = type;
+    this->position = position++;
 }
 
 void db2_vector_use_type_backend::bind_by_name(
@@ -246,20 +227,26 @@ void db2_vector_use_type_backend::bind_by_name(
         count++;
     }
 
-    if (position != -1)
-    {
-        bind_helper(position, data, type);
-    }
-    else
+    if (position == -1)
     {
         std::ostringstream ss;
         ss << "Unable to find name '" << name << "' to bind to";
         throw soci_error(ss.str().c_str());
     }
+
+    this->position = position;
+    this->data = data;
+    this->type = type;
 }
 
 void db2_vector_use_type_backend::pre_use(indicator const *ind)
 {
+    SQLSMALLINT sqlType;
+    SQLSMALLINT cType;
+    SQLUINTEGER size;
+
+    void* const sqlData = prepare_for_bind(data, size, sqlType, cType);
+
     // first deal with data
     if (type == x_stdtm)
     {
@@ -289,7 +276,7 @@ void db2_vector_use_type_backend::pre_use(indicator const *ind)
     // then handle indicators
     if (ind != NULL)
     {
-        std::size_t const vsize = size();
+        std::size_t const vsize = this->size();
         for (std::size_t i = 0; i != vsize; ++i, ++ind)
         {
             if (*ind == i_null)
@@ -309,7 +296,7 @@ void db2_vector_use_type_backend::pre_use(indicator const *ind)
     else
     {
         // no indicators - treat all fields as OK
-        std::size_t const vsize = size();
+        std::size_t const vsize = this->size();
         for (std::size_t i = 0; i != vsize; ++i)
         {
             // for strings we have already set the values
@@ -318,6 +305,18 @@ void db2_vector_use_type_backend::pre_use(indicator const *ind)
                 indVec[i] = SQL_NTS;  // value is OK
             }
         }
+    }
+
+    SQLINTEGER arraySize = (SQLINTEGER)indVec.size();
+    SQLSetStmtAttr(statement_.hStmt, SQL_ATTR_PARAMSET_SIZE, db2::int_as_ptr(arraySize), 0);
+
+    SQLRETURN cliRC = SQLBindParameter(statement_.hStmt, static_cast<SQLUSMALLINT>(position),
+                                    SQL_PARAM_INPUT, cType, sqlType, size, 0,
+                                    static_cast<SQLPOINTER>(sqlData), size, &indVec[0]);
+
+    if ( cliRC != SQL_SUCCESS )
+    {
+        throw db2_soci_error("Error while binding value to column", cliRC);
     }
 }
 
