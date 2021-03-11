@@ -32,7 +32,6 @@ void oracle_vector_use_type_backend::prepare_indicators(std::size_t size)
     }
 
     indOCIHolderVec_.resize(size);
-    indOCIHolders_ = &indOCIHolderVec_[0];
 }
 
 void oracle_vector_use_type_backend::prepare_for_bind(
@@ -189,7 +188,7 @@ void oracle_vector_use_type_backend::bind_by_pos_bulk(int & position,
     sword res = OCIBindByPos(statement_.stmtp_, &bindp_,
         statement_.session_.errhp_,
         position++, dataBuf, elementSize, oracleType,
-        indOCIHolders_, sizesP, 0, 0, 0, OCI_DEFAULT);
+        &indOCIHolderVec_[0], sizesP, 0, 0, 0, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
         throw_oracle_soci_error(res, statement_.session_.errhp_);
@@ -224,7 +223,7 @@ void oracle_vector_use_type_backend::bind_by_name_bulk(
         reinterpret_cast<text*>(const_cast<char*>(name.c_str())),
         static_cast<sb4>(name.size()),
         dataBuf, elementSize, oracleType,
-        indOCIHolders_, sizesP, 0, 0, 0, OCI_DEFAULT);
+        &indOCIHolderVec_[0], sizesP, 0, 0, 0, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
         throw_oracle_soci_error(res, statement_.session_.errhp_);

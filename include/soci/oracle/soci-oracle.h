@@ -75,7 +75,7 @@ struct oracle_standard_into_type_backend : details::standard_into_type_backend
 struct oracle_vector_into_type_backend : details::vector_into_type_backend
 {
     oracle_vector_into_type_backend(oracle_statement_backend &st)
-        : statement_(st), defnp_(NULL), indOCIHolders_(NULL),
+        : statement_(st), defnp_(NULL),
         data_(NULL), buf_(NULL), user_ranges_(true) {}
 
     void define_by_pos(int &position,
@@ -105,7 +105,6 @@ struct oracle_vector_into_type_backend : details::vector_into_type_backend
     oracle_statement_backend &statement_;
 
     OCIDefine *defnp_;
-    sb2 *indOCIHolders_;
     std::vector<sb2> indOCIHolderVec_;
     void *data_;
     char *buf_;              // generic buffer
@@ -160,7 +159,7 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
 struct oracle_vector_use_type_backend : details::vector_use_type_backend
 {
     oracle_vector_use_type_backend(oracle_statement_backend &st)
-        : statement_(st), bindp_(NULL), indOCIHolders_(NULL),
+        : statement_(st), bindp_(NULL),
           data_(NULL), buf_(NULL) {}
 
     void bind_by_pos(int & position,
@@ -201,7 +200,6 @@ struct oracle_vector_use_type_backend : details::vector_use_type_backend
 
     OCIBind *bindp_;
     std::vector<sb2> indOCIHolderVec_;
-    sb2 *indOCIHolders_;
     void *data_;
     char *buf_;        // generic buffer
     details::exchange_type type_;
