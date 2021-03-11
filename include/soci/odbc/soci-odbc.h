@@ -197,10 +197,8 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend,
     // (as part of the define_by_pos)
     void prepare_indicators(std::size_t size);
 
-    // common part for bind_by_pos and bind_by_name
-    void prepare_for_bind(void *&data, SQLUINTEGER &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType);
-    void bind_helper(int &position,
-        void *data, details::exchange_type type);
+    // helper of pre_use(), return the pointer to the data to be used by ODBC.
+    void* prepare_for_bind(SQLUINTEGER &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType);
 
     void bind_by_pos(int &position,
         void *data, details::exchange_type type) SOCI_OVERRIDE;
@@ -220,6 +218,7 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend,
     std::vector<SQLLEN> indHolderVec_;
     void *data_;
     details::exchange_type type_;
+    int position_;
     char *buf_;              // generic buffer
     std::size_t colSize_;    // size of the string column (used for strings)
     // used for strings only
