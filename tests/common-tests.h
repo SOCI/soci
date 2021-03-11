@@ -376,6 +376,10 @@ public:
     // to fit by default.
     virtual bool has_silent_truncate_bug(session&) const { return false; }
 
+    // Override this if the backend doesn't distinguish between empty and null
+    // strings (Oracle does this).
+    virtual bool treats_empty_strings_as_null() const { return false; }
+
     // Override this to call commit() if it's necessary for the DDL statements
     // to be taken into account (currently this is only the case for Firebird).
     virtual void on_after_ddl(session&) const { }
