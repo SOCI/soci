@@ -322,17 +322,13 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             for (std::size_t i = 0; i != indSize; ++i)
             {
                 SQLLEN const val = get_sqllen_from_vector_at(i);
-                if (val > 0)
-                {
-                    ind[i] = i_ok;
-                }
-                else if (val == SQL_NULL_DATA)
+                if (val == SQL_NULL_DATA)
                 {
                     ind[i] = i_null;
                 }
                 else
                 {
-                    ind[i] = i_truncated;
+                    ind[i] = i_ok;
                 }
             }
         }
