@@ -143,7 +143,7 @@ public:
     virtual void bind_by_pos_bulk(int& /* position */, void* /* data */, exchange_type /* type */,
         std::size_t /* begin */, std::size_t * /* end */)
     {
-        throw soci_error("use bulk iterators are not supported with this backend");
+        throw soci_error("using bulk iterators are not supported with this backend");
     }
 
     virtual void bind_by_name(std::string const& name,
@@ -153,7 +153,7 @@ public:
         void* /* data */, exchange_type /* type */,
         std::size_t /* begin */, std::size_t * /* end */)
     {
-        throw soci_error("use bulk iterators are not supported with this backend");
+        throw soci_error("using bulk iterators are not supported with this backend");
     }
 
     virtual void pre_exec(int /* num */) {}
