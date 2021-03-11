@@ -160,7 +160,7 @@ struct oracle_vector_use_type_backend : details::vector_use_type_backend
 {
     oracle_vector_use_type_backend(oracle_statement_backend &st)
         : statement_(st), bindp_(NULL),
-          data_(NULL), buf_(NULL) {}
+          data_(NULL), buf_(NULL), bind_position_(0) {}
 
     void bind_by_pos(int & position,
         void * data, details::exchange_type type) SOCI_OVERRIDE
@@ -182,7 +182,7 @@ struct oracle_vector_use_type_backend : details::vector_use_type_backend
         void *data, details::exchange_type type,
         std::size_t begin, std::size_t * end) SOCI_OVERRIDE;
 
-    // common part for bind_by_pos and bind_by_name
+    // pre_use() helper
     void prepare_for_bind(void *&data, sb4 &size, ub2 &oracleType);
 
     // helper function for preparing indicators and sizes_ vectors
@@ -210,6 +210,10 @@ struct oracle_vector_use_type_backend : details::vector_use_type_backend
     // used for strings only
     std::vector<ub2> sizes_;
     std::size_t maxSize_;
+
+    // name is used if non-empty, otherwise position
+    std::string bind_name_;
+    int bind_position_;
 };
 
 struct oracle_session_backend;

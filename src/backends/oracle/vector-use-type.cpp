@@ -173,26 +173,7 @@ void oracle_vector_use_type_backend::bind_by_pos_bulk(int & position,
 
     end_var_ = full_size();
     
-    ub2 oracleType;
-    sb4 elementSize;
-    void * dataBuf;
-
-    prepare_for_bind(dataBuf, elementSize, oracleType);
-
-    ub2 *sizesP = 0; // used only for std::string
-    if (type == x_stdstring)
-    {
-        sizesP = &sizes_[0];
-    }
-
-    sword res = OCIBindByPos(statement_.stmtp_, &bindp_,
-        statement_.session_.errhp_,
-        position++, dataBuf, elementSize, oracleType,
-        &indOCIHolderVec_[0], sizesP, 0, 0, 0, OCI_DEFAULT);
-    if (res != OCI_SUCCESS)
-    {
-        throw_oracle_soci_error(res, statement_.session_.errhp_);
-    }
+    bind_position_ = position++;
 }
 
 void oracle_vector_use_type_backend::bind_by_name_bulk(
@@ -206,6 +187,11 @@ void oracle_vector_use_type_backend::bind_by_name_bulk(
 
     end_var_ = full_size();
     
+    bind_name_ = name;
+}
+
+void oracle_vector_use_type_backend::pre_use(indicator const *ind)
+{
     ub2 oracleType;
     sb4 elementSize;
     void * dataBuf;
@@ -213,31 +199,15 @@ void oracle_vector_use_type_backend::bind_by_name_bulk(
     prepare_for_bind(dataBuf, elementSize, oracleType);
 
     ub2 *sizesP = 0; // used only for std::string
-    if (type == x_stdstring)
+    if (type_ == x_stdstring)
     {
         sizesP = &sizes_[0];
     }
 
-    sword res = OCIBindByName(statement_.stmtp_, &bindp_,
-        statement_.session_.errhp_,
-        reinterpret_cast<text*>(const_cast<char*>(name.c_str())),
-        static_cast<sb4>(name.size()),
-        dataBuf, elementSize, oracleType,
-        &indOCIHolderVec_[0], sizesP, 0, 0, 0, OCI_DEFAULT);
-    if (res != OCI_SUCCESS)
-    {
-        throw_oracle_soci_error(res, statement_.session_.errhp_);
-    }
-}
-
-void oracle_vector_use_type_backend::pre_use(indicator const *ind)
-{
     // first deal with data
     if (type_ == x_stdstring)
     {
-        // nothing to do - it's already done during bind
-        // (and it's probably impossible to separate them, because
-        // changes in the string size could not be handled here)
+        // nothing to do - already done in prepare_for_bind()
     }
     else if (type_ == x_long_long)
     {
@@ -315,6 +285,29 @@ void oracle_vector_use_type_backend::pre_use(indicator const *ind)
         {
             indOCIHolderVec_[i] = 0;  // value is OK
         }
+    }
+
+    sword res;
+    if (bind_name_.empty())
+    {
+        res = OCIBindByPos(statement_.stmtp_, &bindp_,
+            statement_.session_.errhp_,
+            bind_position_, dataBuf, elementSize, oracleType,
+            &indOCIHolderVec_[0], sizesP, 0, 0, 0, OCI_DEFAULT);
+    }
+    else
+    {
+        res = OCIBindByName(statement_.stmtp_, &bindp_,
+            statement_.session_.errhp_,
+            reinterpret_cast<text*>(const_cast<char*>(bind_name_.c_str())),
+            static_cast<sb4>(bind_name_.size()),
+            dataBuf, elementSize, oracleType,
+            &indOCIHolderVec_[0], sizesP, 0, 0, 0, OCI_DEFAULT);
+    }
+
+    if (res != OCI_SUCCESS)
+    {
+        throw_oracle_soci_error(res, statement_.session_.errhp_);
     }
 }
 
