@@ -29,7 +29,6 @@ void odbc_vector_into_type_backend::prepare_indicators(std::size_t size)
     }
 
     indHolderVec_.resize(size);
-    indHolders_ = &indHolderVec_[0];
 }
 
 void odbc_vector_into_type_backend::define_by_pos(
@@ -180,7 +179,7 @@ void odbc_vector_into_type_backend::define_by_pos(
 
     SQLRETURN rc
         = SQLBindCol(statement_.hstmt_, static_cast<SQLUSMALLINT>(position++),
-                odbcType_, static_cast<SQLPOINTER>(data), size, indHolders_);
+                odbcType_, static_cast<SQLPOINTER>(data), size, &indHolderVec_[0]);
     if (is_odbc_error(rc))
     {
         std::ostringstream ss;

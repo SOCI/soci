@@ -34,7 +34,6 @@ void odbc_vector_use_type_backend::prepare_indicators(std::size_t size)
     }
 
     indHolderVec_.resize(size);
-    indHolders_ = &indHolderVec_[0];
 }
 
 void odbc_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &size,
@@ -229,7 +228,7 @@ void odbc_vector_use_type_backend::bind_helper(int &position, void *data, exchan
 
     SQLRETURN rc = SQLBindParameter(statement_.hstmt_, static_cast<SQLUSMALLINT>(position++),
                                     SQL_PARAM_INPUT, cType, sqlType, size, 0,
-                                    static_cast<SQLPOINTER>(data), size, indHolders_);
+                                    static_cast<SQLPOINTER>(data), size, &indHolderVec_[0]);
 
     if (is_odbc_error(rc))
     {
