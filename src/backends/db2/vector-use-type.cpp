@@ -34,7 +34,6 @@ void db2_vector_use_type_backend::prepare_indicators(std::size_t size)
     }
 
     indVec.resize(size);
-    indptr = &indVec[0];
 }
 
 void db2_vector_use_type_backend::prepare_for_bind(void *&data, SQLUINTEGER &size,
@@ -204,7 +203,7 @@ void db2_vector_use_type_backend::bind_helper(int &position, void *data, details
 
     SQLRETURN cliRC = SQLBindParameter(statement_.hStmt, static_cast<SQLUSMALLINT>(position++),
                                     SQL_PARAM_INPUT, cType, sqlType, size, 0,
-                                    static_cast<SQLPOINTER>(data), size, indptr);
+                                    static_cast<SQLPOINTER>(data), size, &indVec[0]);
 
     if ( cliRC != SQL_SUCCESS )
     {

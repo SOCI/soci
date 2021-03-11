@@ -116,7 +116,6 @@ struct SOCI_DB2_DECL db2_vector_into_type_backend : details::vector_into_type_ba
 
     void prepare_indicators(std::size_t size);
 
-    SQLLEN *indptr;
     std::vector<SQLLEN> indVec;
     void *data;
     char *buf;
@@ -172,7 +171,6 @@ struct SOCI_DB2_DECL db2_vector_use_type_backend : details::vector_use_type_back
     void prepare_for_bind(void *&data, SQLUINTEGER &size,SQLSMALLINT &sqlType, SQLSMALLINT &cType);
     void bind_helper(int &position, void *data, details::exchange_type type);
 
-    SQLLEN *indptr;
     std::vector<SQLLEN> indVec;
     void *data;
     char *buf;
