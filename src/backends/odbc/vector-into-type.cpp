@@ -316,32 +316,26 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
         }
 
         // then - deal with indicators
-        if (ind != NULL)
+        std::size_t const indSize = statement_.get_number_of_rows();
+        for (std::size_t i = 0; i != indSize; ++i)
         {
-            std::size_t const indSize = statement_.get_number_of_rows();
-            for (std::size_t i = 0; i != indSize; ++i)
+            SQLLEN const val = get_sqllen_from_vector_at(i);
+            if (val == SQL_NULL_DATA)
             {
-                SQLLEN const val = get_sqllen_from_vector_at(i);
-                if (val == SQL_NULL_DATA)
-                {
-                    ind[i] = i_null;
-                }
-                else
-                {
-                    ind[i] = i_ok;
-                }
-            }
-        }
-        else
-        {
-            std::size_t const indSize = statement_.get_number_of_rows();
-            for (std::size_t i = 0; i != indSize; ++i)
-            {
-                if (get_sqllen_from_vector_at(i) == SQL_NULL_DATA)
+                if (ind == NULL)
                 {
                     // fetched null and no indicator - programming error!
                     throw soci_error(
                         "Null value fetched and no indicator defined.");
+                }
+
+                ind[i] = i_null;
+            }
+            else
+            {
+                if (ind != NULL)
+                {
+                    ind[i] = i_ok;
                 }
             }
         }
