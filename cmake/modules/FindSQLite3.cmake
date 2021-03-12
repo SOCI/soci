@@ -31,7 +31,7 @@ find_path(SQLITE3_INCLUDE_DIR
   ${SQLITE_ROOT_DIR}/include
   $ENV{OSGEO4W_ROOT}/include)
 
-set(SQLITE3_NAMES sqlite3_i sqlite3)
+set(SQLITE3_NAMES sqlite3_i sqlite3 sqlite3-static)
 find_library(SQLITE3_LIBRARY
   NAMES ${SQLITE3_NAMES}
   PATHS
