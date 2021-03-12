@@ -79,7 +79,7 @@ void postgresql_vector_into_type_backend::post_fetch(bool gotData, indicator * i
 
         int const endRow = statement_.currentRow_ + statement_.rowsToConsume_;
 
-        for (int curRow = statement_.currentRow_, i = begin_;
+        for (int curRow = statement_.currentRow_, i = static_cast<int>(begin_);
              curRow != endRow; ++curRow, ++i)
         {
             // first, deal with indicators
