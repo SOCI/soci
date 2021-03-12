@@ -87,7 +87,7 @@ db2_session_backend::db2_session_backend(
     /* Prepare handles */
     cliRC = SQLAllocHandle(SQL_HANDLE_ENV,SQL_NULL_HANDLE,&hEnv);
     if (cliRC != SQL_SUCCESS) {
-        throw db2_soci_error("Error while allocating the enironment handle",cliRC);
+        throw db2_soci_error("Error while allocating the environment handle",cliRC);
     }
 
     cliRC = SQLAllocHandle(SQL_HANDLE_DBC, hEnv, &hDbc);
