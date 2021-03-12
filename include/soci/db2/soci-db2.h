@@ -141,7 +141,7 @@ struct SOCI_DB2_DECL db2_standard_use_type_backend : details::standard_use_type_
 
     db2_statement_backend& statement_;
 
-    void *prepare_for_bind(void *data, SQLLEN &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType);
+    void *prepare_for_bind(SQLLEN &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType);
 
     void *data;
     details::exchange_type type;
@@ -168,7 +168,7 @@ struct SOCI_DB2_DECL db2_vector_use_type_backend : details::vector_use_type_back
     db2_statement_backend& statement_;
 
     void prepare_indicators(std::size_t size);
-    void *prepare_for_bind(void *data, SQLUINTEGER &size,SQLSMALLINT &sqlType, SQLSMALLINT &cType);
+    void *prepare_for_bind(SQLUINTEGER &size,SQLSMALLINT &sqlType, SQLSMALLINT &cType);
 
     std::vector<SQLLEN> indVec;
     void *data;

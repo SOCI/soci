@@ -36,7 +36,7 @@ void db2_vector_use_type_backend::prepare_indicators(std::size_t size)
     indVec.resize(size);
 }
 
-void *db2_vector_use_type_backend::prepare_for_bind(void *data, SQLUINTEGER &size,
+void *db2_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
     SQLSMALLINT &sqlType, SQLSMALLINT &cType)
 {
     void* sqlData = NULL;
@@ -245,7 +245,7 @@ void db2_vector_use_type_backend::pre_use(indicator const *ind)
     SQLSMALLINT cType;
     SQLUINTEGER size;
 
-    void* const sqlData = prepare_for_bind(data, size, sqlType, cType);
+    void* const sqlData = prepare_for_bind(size, sqlType, cType);
 
     // first deal with data
     if (type == x_stdtm)

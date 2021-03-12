@@ -19,7 +19,7 @@ using namespace soci;
 using namespace soci::details;
 
 void *db2_standard_use_type_backend::prepare_for_bind(
-    void *data, SQLLEN &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType)
+    SQLLEN &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType)
 {
     switch (type)
     {
@@ -170,7 +170,7 @@ void db2_standard_use_type_backend::pre_use(indicator const *ind_ptr)
     SQLSMALLINT cType;
     SQLLEN size;
 
-    void *sqlData = prepare_for_bind(data, size, sqlType, cType);
+    void* const sqlData = prepare_for_bind(size, sqlType, cType);
 
     SQLRETURN cliRC = SQLBindParameter(statement_.hStmt,
                                     static_cast<SQLUSMALLINT>(position),
