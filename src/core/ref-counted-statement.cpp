@@ -12,6 +12,34 @@
 using namespace soci;
 using namespace soci::details;
 
+namespace
+{
+
+// Unfortunately we can't reuse details::auto_statement here because it works
+// with statement_backend and not statement that we use here, so just define a
+// similar class.
+class auto_statement_alloc
+{
+public:
+    explicit auto_statement_alloc(statement& st)
+        : st_(st)
+    {
+        st_.alloc();
+    }
+
+    ~auto_statement_alloc()
+    {
+        st_.clean_up();
+    }
+
+private:
+    statement& st_;
+
+    SOCI_NOT_COPYABLE(auto_statement_alloc)
+};
+
+} // anonymous namespace
+
 ref_counted_statement_base::ref_counted_statement_base(session& s)
     : refCount_(1), session_(s), need_comma_(false)
 {
@@ -19,22 +47,11 @@ ref_counted_statement_base::ref_counted_statement_base(session& s)
 
 void ref_counted_statement::final_action()
 {
-    try
-    {
-        st_.alloc();
-        st_.prepare(session_.get_query(), st_one_time_query);
-        st_.define_and_bind();
+    auto_statement_alloc auto_st_alloc(st_);
 
-        const bool gotData = st_.execute(true);
-        session_.set_got_data(gotData);
-    }
-    catch (...)
-    {
-        st_.clean_up();
-        throw;
-    }
-
-    st_.clean_up();
+    st_.prepare(session_.get_query(), st_one_time_query);
+    st_.define_and_bind();
+    st_.execute(true);
 }
 
 std::ostringstream& ref_counted_statement_base::get_query_stream()

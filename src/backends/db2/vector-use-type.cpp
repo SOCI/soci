@@ -255,7 +255,7 @@ void db2_vector_use_type_backend::bind_by_name(
     {
         std::ostringstream ss;
         ss << "Unable to find name '" << name << "' to bind to";
-        throw soci_error(ss.str().c_str());
+        throw soci_error(ss.str());
     }
 }
 
