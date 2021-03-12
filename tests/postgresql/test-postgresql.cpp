@@ -1026,7 +1026,7 @@ private:
             msession << "DROP FUNCTION IF EXISTS \"function_with:colon\"();";
             msession << "DROP TYPE IF EXISTS \"type_with:colon\" ;";
         }
-        catch (soci_error const& e){}
+        catch (soci_error const&){}
     }
     soci::session& msession;
 };
