@@ -62,9 +62,6 @@ TEST_CASE("MySQL stored procedures", "[mysql][stored-procedure]")
 
     // explicit procedure syntax
     {
-        std::string in("my message2");
-        std::string out;
-
         procedure proc = (sql.prepare <<
             "myecho(:input)",
             into(out), use(in, "input"));

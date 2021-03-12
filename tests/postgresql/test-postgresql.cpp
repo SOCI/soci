@@ -119,9 +119,6 @@ TEST_CASE("PostgreSQL function call", "[postgresql][function]")
 
     // explicit procedure syntax
     {
-        std::string in("my message2");
-        std::string out;
-
         procedure proc = (sql.prepare <<
             "soci_test(:input)",
             into(out), use(in, "input"));
@@ -1026,7 +1023,7 @@ private:
             msession << "DROP FUNCTION IF EXISTS \"function_with:colon\"();";
             msession << "DROP TYPE IF EXISTS \"type_with:colon\" ;";
         }
-        catch (soci_error const& e){}
+        catch (soci_error const&){}
     }
     soci::session& msession;
 };
@@ -1150,8 +1147,8 @@ struct table_creator_for_clob : table_creator_base
 class test_context : public test_context_base
 {
 public:
-    test_context(backend_factory const &backEnd, std::string const &connectString)
-        : test_context_base(backEnd, connectString)
+    test_context(backend_factory const &backend, std::string const &connstr)
+        : test_context_base(backend, connstr)
     {}
 
     table_creator_base* table_creator_1(soci::session& s) const SOCI_OVERRIDE
