@@ -8,6 +8,11 @@ environment:
   MINGW_ARCHIVE: C:\projects\mingw\x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z
   MINGW_URL: https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/4.8.3/threads-posix/seh/x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z/download
   matrix:
+    - G: "MinGW Makefiles"
+      MINGW_ROOT: C:\projects\mingw\4.8.3\mingw64\bin
+      BOOST_ROOT: C:\Libraries\boost_1_59_0
+      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
+      MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
     - G: "Visual Studio 15 2017 Win64"
       BOOST_ROOT: C:\Libraries\boost_1_59_0
       POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.6
@@ -23,11 +28,6 @@ environment:
       MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
     - G: "Visual Studio 11 2012 Win64"
       BOOST_ROOT: C:\Libraries\boost_1_58_0
-      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
-      MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
-    - G: "MinGW Makefiles"
-      MINGW_ROOT: C:\projects\mingw\4.8.3\mingw64\bin
-      BOOST_ROOT: C:\Libraries\boost_1_59_0
       POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
       MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
 
