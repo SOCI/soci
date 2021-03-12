@@ -26,7 +26,7 @@ namespace // unnamed
 #ifndef SOCI_POSTGRESQL_NOSINGLEROWMODE
 void wait_until_operation_complete(postgresql_session_backend & session)
 {
-    while (true)
+    for (;;)
     {
         PGresult * result = PQgetResult(session.conn_);
         if (result == NULL)
