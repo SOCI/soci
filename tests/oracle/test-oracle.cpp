@@ -1538,6 +1538,11 @@ public:
         return true;
     }
 
+    bool treats_empty_strings_as_null() const SOCI_OVERRIDE
+    {
+        return true;
+    }
+
     std::string to_date_time(std::string const &datdt_string) const SOCI_OVERRIDE
     {
         return "to_date('" + datdt_string + "', 'YYYY-MM-DD HH24:MI:SS')";

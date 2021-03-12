@@ -34,7 +34,6 @@ void oracle_vector_into_type_backend::prepare_indicators(std::size_t size)
     }
 
     indOCIHolderVec_.resize(size);
-    indOCIHolders_ = &indOCIHolderVec_[0];
 
     sizes_.resize(size);
     rCodes_.resize(size);
@@ -169,7 +168,7 @@ void oracle_vector_into_type_backend::define_by_pos_bulk(
     sword res = OCIDefineByPos(statement_.stmtp_, &defnp_,
         statement_.session_.errhp_,
         position++, dataBuf, elementSize, oracleType,
-        indOCIHolders_, &sizes_[0], &rCodes_[0], OCI_DEFAULT);
+        &indOCIHolderVec_[0], &sizes_[0], &rCodes_[0], OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
         throw_oracle_soci_error(res, statement_.session_.errhp_);

@@ -115,7 +115,7 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
                                        private odbc_standard_type_backend_base
 {
     odbc_vector_into_type_backend(odbc_statement_backend &st)
-        : odbc_standard_type_backend_base(st), indHolders_(NULL),
+        : odbc_standard_type_backend_base(st),
           data_(NULL), buf_(NULL) {}
 
     void define_by_pos(int &position,
@@ -137,7 +137,6 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
     // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
     inline SQLLEN get_sqllen_from_vector_at(std::size_t idx) const;
 
-    SQLLEN *indHolders_;
     std::vector<SQLLEN> indHolderVec_;
     void *data_;
     char *buf_;              // generic buffer
@@ -191,17 +190,15 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend,
                                       private odbc_standard_type_backend_base
 {
     odbc_vector_use_type_backend(odbc_statement_backend &st)
-        : odbc_standard_type_backend_base(st), indHolders_(NULL),
+        : odbc_standard_type_backend_base(st),
           data_(NULL), buf_(NULL) {}
 
     // helper function for preparing indicators
     // (as part of the define_by_pos)
     void prepare_indicators(std::size_t size);
 
-    // common part for bind_by_pos and bind_by_name
-    void prepare_for_bind(void *&data, SQLUINTEGER &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType);
-    void bind_helper(int &position,
-        void *data, details::exchange_type type);
+    // helper of pre_use(), return the pointer to the data to be used by ODBC.
+    void* prepare_for_bind(SQLUINTEGER &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType);
 
     void bind_by_pos(int &position,
         void *data, details::exchange_type type) SOCI_OVERRIDE;
@@ -218,10 +215,10 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend,
     // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
     inline void set_sqllen_from_vector_at(const std::size_t idx, const SQLLEN val);
 
-    SQLLEN *indHolders_;
     std::vector<SQLLEN> indHolderVec_;
     void *data_;
     details::exchange_type type_;
+    int position_;
     char *buf_;              // generic buffer
     std::size_t colSize_;    // size of the string column (used for strings)
     // used for strings only

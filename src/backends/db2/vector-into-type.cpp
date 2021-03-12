@@ -26,7 +26,6 @@ void db2_vector_into_type_backend::prepare_indicators(std::size_t size)
     }
 
     indVec.resize(size);
-    indptr = &indVec[0];
 }
 
 void db2_vector_into_type_backend::define_by_pos(
@@ -155,7 +154,7 @@ void db2_vector_into_type_backend::define_by_pos(
     }
 
     SQLRETURN cliRC = SQLBindCol(statement_.hStmt, static_cast<SQLUSMALLINT>(position++),
-                              cType, data, size, indptr);
+                              cType, data, size, &indVec[0]);
     if (cliRC != SQL_SUCCESS)
     {
         throw db2_soci_error("Error while pre-fetching into vector",cliRC);
@@ -245,17 +244,13 @@ void db2_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             std::size_t const indSize = statement_.get_number_of_rows();
             for (std::size_t i = 0; i != indSize; ++i)
             {
-                if (indVec[i] > 0)
-                {
-                    ind[i] = i_ok;
-                }
-                else if (indVec[i] == SQL_NULL_DATA)
+                if (indVec[i] == SQL_NULL_DATA)
                 {
                     ind[i] = i_null;
                 }
                 else
                 {
-                    ind[i] = i_truncated;
+                    ind[i] = i_ok;
                 }
             }
         }
