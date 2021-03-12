@@ -55,6 +55,22 @@ void set_in_vector(void* p, int indx, T const& val)
 }
 
 template <typename T>
+T parse_number_from_string(const char* str)
+{
+    T value;
+    if (!details::cstring_to_integer(value, str))
+        throw soci_error("Cannot convert data");
+
+    return value;
+}
+
+template <>
+double parse_number_from_string(const char* str)
+{
+    return details::cstring_to_double(str);
+}
+
+template <typename T>
 void set_number_in_vector(void *p, int idx, const sqlite3_column &col)
 {
     using namespace details;
@@ -65,13 +81,10 @@ void set_number_in_vector(void *p, int idx, const sqlite3_column &col)
         case dt_date:
         case dt_string:
         case dt_blob:
-            {
-                T value;
-                if (!details::cstring_to_integer(value, col.buffer_.size_ > 0 ? col.buffer_.constData_ : ""))
-                    throw soci_error("Cannot convert data");
-
-                set_in_vector(p, idx, value);
-            }
+            set_in_vector(p, idx,
+                          parse_number_from_string<T>(col.buffer_.size_ > 0
+                                                        ? col.buffer_.constData_
+                                                        : ""));
             break;
 
         case dt_double:
