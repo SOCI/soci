@@ -143,9 +143,9 @@ struct table_creator_for_xml : table_creator_base
 class test_context : public test_context_base
 {
 public:
-    test_context(backend_factory const &backEnd,
-                std::string const &connectString)
-        : test_context_base(backEnd, connectString) {}
+    test_context(backend_factory const &backend,
+                std::string const &connstr)
+        : test_context_base(backend, connstr) {}
 
     table_creator_base* table_creator_1(soci::session& s) const SOCI_OVERRIDE
     {
