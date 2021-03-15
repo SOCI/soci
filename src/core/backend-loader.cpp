@@ -104,14 +104,7 @@ std::vector<std::string> get_default_paths()
     std::vector<std::string> paths;
 
     char const* const penv = std::getenv("SOCI_BACKENDS_PATH");
-    if (0 == penv)
-    {
-        paths.push_back(".");
-        paths.push_back(DEFAULT_BACKENDS_PATH);
-        return paths;
-    }
-
-    std::string const env = penv;
+    std::string const env(penv ? penv : "");
     if (env.empty())
     {
         paths.push_back(".");
