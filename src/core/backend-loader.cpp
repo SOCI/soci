@@ -108,7 +108,9 @@ std::vector<std::string> get_default_paths()
     if (env.empty())
     {
         paths.push_back(".");
+#ifdef DEFAULT_BACKENDS_PATH
         paths.push_back(DEFAULT_BACKENDS_PATH);
+#endif // DEFAULT_BACKENDS_PATH
         return paths;
     }
 
