@@ -259,18 +259,16 @@ backend_factory const& dynamic_backends::get(std::string const& name)
 
     factory_map::iterator i = factories_.find(name);
 
-    if (i != factories_.end())
+    if (i == factories_.end())
     {
-        return *(i->second.factory_);
+      // no backend found with this name, try to register it first
+
+      do_register_backend(name, std::string());
+
+      // second attempt, must succeed (the backend is already loaded)
+
+      i = factories_.find(name);
     }
-
-    // no backend found with this name, try to register it first
-
-    do_register_backend(name, std::string());
-
-    // second attempt, must succeed (the backend is already loaded)
-
-    i = factories_.find(name);
 
     return *(i->second.factory_);
 }
