@@ -4755,6 +4755,72 @@ TEST_CASE_METHOD(common_tests, "XML", "[core][xml]")
     }
 }
 
+// Tha same test as above, but using vectors of xml_type values.
+TEST_CASE_METHOD(common_tests, "XML vector", "[core][xml][vector]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    if (sql.get_backend_name() != "firebird" &&
+        sql.get_backend_name() != "odbc")
+    {
+        WARN("Vector of XML types not supported by the database, skipping the test.");
+        return;
+    }
+
+    auto_table_creator tableCreator(tc_.table_creator_xml(sql));
+    if (!tableCreator.get())
+    {
+        WARN("XML type not supported by the database, skipping the test.");
+        return;
+    }
+
+    std::vector<int> id(2);
+    id[0] = 1;
+    id[1] = 1; // Use the same ID to select both objects by ID.
+    std::vector<xml_type> xml(2);
+    xml[0].value = make_long_xml_string();
+    xml[1].value = make_long_xml_string();
+
+    sql << "insert into soci_test (id, x) values (:1, "
+        << tc_.to_xml(":2")
+        << ")",
+        use(id), use(xml);
+
+    std::vector<xml_type> xml2(2);
+
+    sql << "select "
+        << tc_.from_xml("x")
+        << " from soci_test where id = :1",
+        into(xml2), use(id.at(0));
+
+    // The returned value doesn't need to be identical to the original one as
+    // string, only structurally equal as XML. In particular, extra whitespace
+    // can be added and this does happen with Oracle, for example, which adds
+    // an extra new line, so remove it if it's present.
+    for (int i = 0; i < 2; ++i)
+    {
+        std::string &value = xml2.at(i).value;
+        if (!value.empty() && *value.rbegin() == '\n')
+        {
+            value.resize(value.length() - 1);
+        }
+    }
+
+    CHECK(xml.at(0).value == xml2.at(0).value);
+    CHECK(xml.at(1).value == xml2.at(1).value);
+
+    sql << "update soci_test set x = null where id = :1", use(id.at(0));
+
+    std::vector<indicator> ind(2);
+    sql << "select "
+        << tc_.from_xml("x")
+        << " from soci_test where id = :1",
+        into(xml2, ind), use(id.at(0));
+
+    CHECK(ind.at(0) == i_null);
+    CHECK(ind.at(1) == i_null);
+}
+
 TEST_CASE_METHOD(common_tests, "Logger", "[core][log]")
 {
     // Logger class used for testing: appends all queries to the provided
