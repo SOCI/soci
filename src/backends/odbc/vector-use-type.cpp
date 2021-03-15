@@ -154,6 +154,8 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
         }
         break;
     case x_stdstring:
+    case x_xmltype:
+    case x_longstring:
         {
             sqlType = SQL_CHAR;
             cType = SQL_C_CHAR;
@@ -289,6 +291,8 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
 
         case x_char:
         case x_stdstring:
+        case x_xmltype:
+        case x_longstring:
             non_null_indicator = SQL_NTS;
             break;
 
@@ -365,8 +369,6 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
         case x_statement:
         case x_rowid:
         case x_blob:
-        case x_xmltype:
-        case x_longstring:
             // Those are unreachable, we would have thrown from
             // prepare_for_bind() if we we were using one of them, only handle
             // them here to avoid compiler warnings about unhandled enum
@@ -386,7 +388,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
             else
             {
                 // for strings we have already set the values
-                if (type_ != x_stdstring)
+                if (type_ != x_stdstring && type_ != x_xmltype && type_ != x_longstring)
                 {
                     set_sqllen_from_vector_at(i, non_null_indicator);
                 }
@@ -399,7 +401,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
         for (std::size_t i = 0; i != indHolderVec_.size(); ++i)
         {
             // for strings we have already set the values
-            if (type_ != x_stdstring)
+            if (type_ != x_stdstring && type_ != x_xmltype && type_ != x_longstring)
             {
                 set_sqllen_from_vector_at(i, non_null_indicator);
             }

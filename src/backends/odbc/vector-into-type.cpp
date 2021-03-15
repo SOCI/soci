@@ -8,6 +8,7 @@
 #define SOCI_ODBC_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/odbc/soci-odbc.h"
+#include "soci/type-wrappers.h"
 #include "soci-compiler.h"
 #include "soci-cstrtoi.h"
 #include "soci-mktime.h"
@@ -142,6 +143,8 @@ void odbc_vector_into_type_backend::define_by_pos(
         }
         break;
     case x_stdstring:
+    case x_xmltype:
+    case x_longstring:
         {
             odbcType_ = SQL_C_CHAR;
             const size_t vectorSize = get_vector_size(type, data);
@@ -214,7 +217,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                 pos += colSize_;
             }
         }
-        if (type_ == x_stdstring)
+        if (type_ == x_stdstring || type_ == x_xmltype || type_ == x_longstring)
         {
             const char *pos = buf_;
             std::size_t const vsize = get_vector_size(type_, data_);;
