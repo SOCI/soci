@@ -40,9 +40,23 @@ jobs:
           - backend: oracle
             no_boost: true
 
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        ports:
+          - 5432:5432
+
     env:
       SOCI_CI: true
       SOCI_CI_BACKEND: ${{ matrix.backend }}
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
 
     steps:
       - name: Checkout
