@@ -56,7 +56,7 @@ addons:
 
 before_install: ./scripts/ci/before_install.sh
 before_script: ./scripts/ci/before_build.sh
-script: ./scripts/ci/build.sh
+script: ./scripts/ci/build.sh && ./scripts/ci/test.sh
 
 notifications:
   webhooks:

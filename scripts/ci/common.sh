@@ -16,6 +16,12 @@ if [[ -f /sys/devices/system/cpu/online ]]; then
 	TCI_NUMTHREADS=$(( ( $(cut -f 2 -d '-' /sys/devices/system/cpu/online) + 1 ) * 15 / 10  ))
 fi
 
+# Directory where the build happens.
+#
+# Note that the existing commands suppose that the build directory is an
+# immediate subdirectory of the source one, so don't change this.
+builddir="${SOCI_SOURCE_DIR}/_build"
+
 # These options are used for all builds.
 SOCI_COMMON_CMAKE_OPTIONS='
     -DCMAKE_BUILD_TYPE=Debug
@@ -54,9 +60,4 @@ run_make()
 run_test()
 {
     ctest -V --output-on-failure "$@" .
-}
-
-run_test_memcheck()
-{
-    valgrind --leak-check=full --suppressions=${SOCI_SOURCE_DIR}/valgrind.suppress --error-exitcode=1 --trace-children=yes ctest -V --output-on-failure "$@" .
 }

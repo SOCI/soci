@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Builds and tests SOCI backend ODBC in CI builds
+# Builds SOCI ODBC backend in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
@@ -16,7 +16,3 @@ cmake ${SOCI_DEFAULT_CMAKE_OPTIONS} \
    ..
 
 run_make
-
-# Exclude the tests which can't be run due to the absence of ODBC drivers (MS
-# SQL and MySQL).
-run_test -E 'soci_odbc_test_m.sql'

@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Builds and tests SOCI backend DB2 in CI builds
+# Builds SOCI DB2 backend in CI builds
 #
 # Copyright (c) 2013 Brian R. Toonen <toonen@alcf.anl.gov>
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
@@ -12,4 +12,3 @@ cmake ${SOCI_DEFAULT_CMAKE_OPTIONS} \
     ..
 
 run_make
-LSAN_OPTIONS=suppressions=${SOCI_SOURCE_DIR}/scripts/suppress_db2.txt run_test

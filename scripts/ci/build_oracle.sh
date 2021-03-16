@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Builds and tests SOCI backend Oracle in CI builds
+# Builds SOCI Oracle backend in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
@@ -13,4 +13,3 @@ cmake ${SOCI_DEFAULT_CMAKE_OPTIONS} \
     ..
 
 run_make
-run_test

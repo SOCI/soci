@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Builds and tests SOCI backend empty in CI builds
+# Builds SOCI "empty" backend in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
@@ -15,7 +15,6 @@ run_cmake_for_empty()
 
 run_cmake_for_empty
 run_make
-run_test
 
 # Test release branch packaging and building from the package
 if [[ "$TEST_RELEASE_PACKAGE" == "YES" ]] && [[ "$TRAVIS_BRANCH" =~ ^release/[3-9]\.[0-9]$ ]]; then
