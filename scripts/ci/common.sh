@@ -58,5 +58,5 @@ run_test()
 
 run_test_memcheck()
 {
-    valgrind --leak-check=full --suppressions=${TRAVIS_BUILD_DIR}/valgrind.suppress --error-exitcode=1 --trace-children=yes ctest -V --output-on-failure "$@" .
+    valgrind --leak-check=full --suppressions=${SOCI_SOURCE_DIR}/valgrind.suppress --error-exitcode=1 --trace-children=yes ctest -V --output-on-failure "$@" .
 }

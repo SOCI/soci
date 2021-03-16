@@ -4,7 +4,7 @@
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 # Copyright (c) 2015 Sergei Nikulov <sergey.nikulov@gmail.com>
 #
-source ${TRAVIS_BUILD_DIR}/scripts/ci/common.sh
+source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
 mysql --version
 mysql -u root -e "CREATE DATABASE soci_test;"

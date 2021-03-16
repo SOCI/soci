@@ -7,7 +7,7 @@
 # Changes:
 # - Check connection as user for testing
 #
-source ${TRAVIS_BUILD_DIR}/scripts/ci/oracle.sh
+source ${SOCI_SOURCE_DIR}/scripts/ci/oracle.sh
 echo "ORACLE_HOME=${ORACLE_HOME}"
 echo "ORACLE_SID=${ORACLE_SID}"
 

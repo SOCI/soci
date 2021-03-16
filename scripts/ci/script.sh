@@ -3,14 +3,14 @@
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-source ${TRAVIS_BUILD_DIR}/scripts/ci/common.sh
+source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
 # prepare build directory
-builddir="${TRAVIS_BUILD_DIR}/_build"
+builddir="${SOCI_SOURCE_DIR}/_build"
 mkdir -p ${builddir}
 cd ${builddir}
 
 # build and run tests
-SCRIPT=${TRAVIS_BUILD_DIR}/scripts/ci/script_${SOCI_TRAVIS_BACKEND}.sh
+SCRIPT=${SOCI_SOURCE_DIR}/scripts/ci/script_${SOCI_TRAVIS_BACKEND}.sh
 echo "Running ${SCRIPT}"
 ${SCRIPT}

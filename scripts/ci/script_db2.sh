@@ -4,7 +4,7 @@
 # Copyright (c) 2013 Brian R. Toonen <toonen@alcf.anl.gov>
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-source ${TRAVIS_BUILD_DIR}/scripts/ci/common.sh
+source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
 cmake ${SOCI_DEFAULT_CMAKE_OPTIONS} \
     -DSOCI_DB2=ON \
@@ -12,4 +12,4 @@ cmake ${SOCI_DEFAULT_CMAKE_OPTIONS} \
     ..
 
 run_make
-LSAN_OPTIONS=suppressions=${TRAVIS_BUILD_DIR}/scripts/suppress_db2.txt run_test
+LSAN_OPTIONS=suppressions=${SOCI_SOURCE_DIR}/scripts/suppress_db2.txt run_test

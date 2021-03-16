@@ -3,7 +3,7 @@
 #
 # Mateusz Loskot <mateusz@loskot.net>, http://github.com/SOCI
 #
-source ${TRAVIS_BUILD_DIR}/scripts/ci/common.sh
+source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
 psql --version
 psql -c 'create database soci_test;' -U postgres
