@@ -4,7 +4,7 @@
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
 
-# When changing this, search for "xenial" in scripts/travis and update
+# When changing this, search for "xenial" in scripts/ci and update
 # references to it there too.
 dist: xenial
 
@@ -53,9 +53,9 @@ addons:
         build_command: "make -j 4"
         branch_pattern: coverity_scan
 
-before_install: ./scripts/travis/before_install.sh
-before_script: ./scripts/travis/before_script.sh
-script: ./scripts/travis/script.sh
+before_install: ./scripts/ci/before_install.sh
+before_script: ./scripts/ci/before_script.sh
+script: ./scripts/ci/script.sh
 
 notifications:
   webhooks:

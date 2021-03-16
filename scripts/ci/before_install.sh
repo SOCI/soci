@@ -3,12 +3,12 @@
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
+source ${TRAVIS_BUILD_DIR}/scripts/ci/common.sh
 
 sudo apt-get update -qq -y
 sudo apt-get install -qq -y libc6-dbg libboost-dev libboost-date-time-dev
 
-before_install="${TRAVIS_BUILD_DIR}/scripts/travis/before_install_${SOCI_TRAVIS_BACKEND}.sh"
+before_install="${TRAVIS_BUILD_DIR}/scripts/ci/before_install_${SOCI_TRAVIS_BACKEND}.sh"
 if [ -x ${before_install} ]; then
     echo "Running ${before_install}"
     ${before_install}

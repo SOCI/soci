@@ -3,7 +3,7 @@
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
+source ${TRAVIS_BUILD_DIR}/scripts/ci/common.sh
 
 ODBC_TEST=${PWD}/../tests/odbc
 if test ! -d ${ODBC_TEST}; then

@@ -4,7 +4,7 @@
 # Copyright (c) 2013 Brian R. Toonen <toonen@alcf.anl.gov>
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
+source ${TRAVIS_BUILD_DIR}/scripts/ci/common.sh
 
 cmake ${SOCI_DEFAULT_CMAKE_OPTIONS} \
     -DSOCI_DB2=ON \

@@ -6,7 +6,7 @@
 source /vagrant/scripts/vagrant/common.env
 export DEBIAN_FRONTEND="noninteractive"
 # Installation
-/vagrant/scripts/travis/before_install_db2.sh
+/vagrant/scripts/ci/before_install_db2.sh
 # Post-installation
 ## Let's be gentle to DB2 and try to not to recreate existing databases
 echo "db2: checking if ${SOCI_USER} database exists"

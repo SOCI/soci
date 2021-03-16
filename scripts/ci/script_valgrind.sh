@@ -4,7 +4,7 @@
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 # Copyright (c) 2015 Sergei Nikulov <sergey.nikulov@gmail.com>
 #
-source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
+source ${TRAVIS_BUILD_DIR}/scripts/ci/common.sh
 
 # Note that we don't use the default options here, as we don't want to turn
 # off all the backends (nor to enable ASAN which is incompatible with Valgrind).

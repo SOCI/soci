@@ -3,8 +3,8 @@
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
-source ${TRAVIS_BUILD_DIR}/scripts/travis/oracle.sh
+source ${TRAVIS_BUILD_DIR}/scripts/ci/common.sh
+source ${TRAVIS_BUILD_DIR}/scripts/ci/oracle.sh
 
 cmake ${SOCI_DEFAULT_CMAKE_OPTIONS} \
     -DWITH_BOOST=OFF \
