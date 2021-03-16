@@ -55,8 +55,8 @@ addons:
         branch_pattern: coverity_scan
 
 before_install: ./scripts/ci/before_install.sh
-before_script: ./scripts/ci/before_script.sh
-script: ./scripts/ci/script.sh
+before_script: ./scripts/ci/before_build.sh
+script: ./scripts/ci/build.sh
 
 notifications:
   webhooks:

@@ -11,6 +11,6 @@ mkdir -p ${builddir}
 cd ${builddir}
 
 # build and run tests
-SCRIPT=${SOCI_SOURCE_DIR}/scripts/ci/script_${SOCI_CI_BACKEND}.sh
+SCRIPT=${SOCI_SOURCE_DIR}/scripts/ci/build_${SOCI_CI_BACKEND}.sh
 echo "Running ${SCRIPT}"
 ${SCRIPT}
