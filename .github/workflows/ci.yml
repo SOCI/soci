@@ -57,6 +57,7 @@ jobs:
       PGPORT: 5432
       PGUSER: postgres
       PGPASSWORD: postgres
+      SOCI_MYSQL_ROOT_PASSWORD: root
 
     steps:
       - name: Checkout
