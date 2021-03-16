@@ -27,18 +27,18 @@ env:
 
 jobs:
   include:
-    - env: SOCI_TRAVIS_BACKEND=db2
-    - env: SOCI_TRAVIS_BACKEND=empty CMAKE_CXX_STANDARD=98 TEST_RELEASE_PACKAGE=YES
-    - env: SOCI_TRAVIS_BACKEND=empty CMAKE_CXX_STANDARD=11
-    - env: SOCI_TRAVIS_BACKEND=firebird
-    - env: SOCI_TRAVIS_BACKEND=mysql
-    - env: SOCI_TRAVIS_BACKEND=odbc
-    - env: SOCI_TRAVIS_BACKEND=postgresql
-    - env: SOCI_TRAVIS_BACKEND=sqlite3
-    - env: SOCI_TRAVIS_BACKEND=valgrind
-    - env: SOCI_TRAVIS_BACKEND=oracle WITH_BOOST=OFF
+    - env: SOCI_CI_BACKEND=db2
+    - env: SOCI_CI_BACKEND=empty CMAKE_CXX_STANDARD=98 TEST_RELEASE_PACKAGE=YES
+    - env: SOCI_CI_BACKEND=empty CMAKE_CXX_STANDARD=11
+    - env: SOCI_CI_BACKEND=firebird
+    - env: SOCI_CI_BACKEND=mysql
+    - env: SOCI_CI_BACKEND=odbc
+    - env: SOCI_CI_BACKEND=postgresql
+    - env: SOCI_CI_BACKEND=sqlite3
+    - env: SOCI_CI_BACKEND=valgrind
+    - env: SOCI_CI_BACKEND=oracle WITH_BOOST=OFF
   allow_failures:
-    - env: SOCI_TRAVIS_BACKEND=oracle WITH_BOOST=OFF
+    - env: SOCI_CI_BACKEND=oracle WITH_BOOST=OFF
 
 addons:
     apt:

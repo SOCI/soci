@@ -8,7 +8,7 @@ source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 sudo apt-get update -qq -y
 sudo apt-get install -qq -y libc6-dbg libboost-dev libboost-date-time-dev
 
-before_install="${SOCI_SOURCE_DIR}/scripts/ci/before_install_${SOCI_TRAVIS_BACKEND}.sh"
+before_install="${SOCI_SOURCE_DIR}/scripts/ci/before_install_${SOCI_CI_BACKEND}.sh"
 if [ -x ${before_install} ]; then
     echo "Running ${before_install}"
     ${before_install}
