@@ -5,14 +5,35 @@
 #
 source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
-sudo apt-get install -qq expect firebird2.5-super firebird2.5-dev
-
-export DEBIAN_FRONTEND="readline"
-# Expect script feeding dpkg-reconfigure prompts
-sudo /usr/bin/expect -d - << ENDMARK > /dev/null
-spawn dpkg-reconfigure firebird2.5-super -freadline
+case $(lsb_release -sc) in
+    trusty | xenial)
+        firebird_version=2.5
+        firebird_server_package=firebird2.5-super
+        firebird_server_service=firebird2.5-super
+        firebird_expect_enable=$(cat <<EOF
 expect "Enable Firebird server?"
-send "Y\r"
+send "yes\r"
+EOF
+)
+        ;;
+
+    focal)
+        firebird_version=3.0
+        firebird_server_package=firebird3.0-server
+        firebird_server_service=firebird3.0
+        ;;
+
+    *)
+        echo "*** Can't install Firebird: unknown Ubuntu version! ***"
+        exit 1
+esac
+
+sudo apt-get install -qq expect ${firebird_server_package} firebird-dev
+
+# Expect script feeding dpkg-reconfigure prompts
+sudo /usr/bin/expect -d - << ENDMARK
+spawn dpkg-reconfigure $firebird_server -freadline
+$firebird_expect_enable
 
 expect "Password for SYSDBA:"
 send "masterkey\r"
@@ -21,10 +42,10 @@ send "masterkey\r"
 expect eof
 ENDMARK
 # End of Expect script
-export DEBIAN_FRONTEND="noninteractive"
-echo "Firebird: cat /etc/firebird/2.5/SYSDBA.password"
-sudo cat /etc/firebird/2.5/SYSDBA.password | grep ISC_
+
+echo "Firebird: cat /etc/firebird/$firebird_version/SYSDBA.password"
+sudo grep ISC_ /etc/firebird/$firebird_version/SYSDBA.password
 echo
 echo "Firebird: restarting"
-sudo service firebird2.5-super restart
+sudo service $firebird_server_service restart
 echo "Firebird: DONE"
