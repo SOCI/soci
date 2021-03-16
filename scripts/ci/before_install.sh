@@ -5,7 +5,7 @@
 #
 source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
-packages_to_install=libc6-dbg
+packages_to_install="${SOCI_CI_PACKAGES} libc6-dbg"
 if [ "${WITH_BOOST}" != OFF ]; then
     packages_to_install="$packages_to_install  libboost-dev libboost-date-time-dev"
 fi
