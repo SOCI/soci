@@ -17,7 +17,7 @@ run_cmake_for_empty
 run_make
 
 # Test release branch packaging and building from the package
-if [[ "$TEST_RELEASE_PACKAGE" == "YES" ]] && [[ "$TRAVIS_BRANCH" =~ ^release/[3-9]\.[0-9]$ ]]; then
+if [[ "$TEST_RELEASE_PACKAGE" == "YES" ]] && [[ "$SOCI_CI_BRANCH" =~ ^release/[3-9]\.[0-9]$ ]]; then
     ME=`basename "$0"`
 
     sudo apt-get update -qq -y
@@ -28,11 +28,11 @@ if [[ "$TEST_RELEASE_PACKAGE" == "YES" ]] && [[ "$TRAVIS_BRANCH" =~ ^release/[3-
         echo "${ME} ERROR: Invalid format of SOCI version '$SOCI_VERSION'. Aborting."
         exit 1
     else
-        echo "${ME} INFO: Creating source package 'soci-${SOCI_VERSION}.tar.gz' from '$TRAVIS_BRANCH' branch"
+        echo "${ME} INFO: Creating source package 'soci-${SOCI_VERSION}.tar.gz' from '$SOCI_CI_BRANCH' branch"
     fi
 
     cd $SOCI_SOURCE_DIR
-    $SOCI_SOURCE_DIR/scripts/release.sh --use-local-branch $TRAVIS_BRANCH
+    $SOCI_SOURCE_DIR/scripts/release.sh --use-local-branch $SOCI_CI_BRANCH
 
     if [[ ! -f "soci-${SOCI_VERSION}.tar.gz" ]]; then
         echo "${ME} ERROR: Archive file 'soci-${SOCI_VERSION}.tar.gz' not found. Aborting."
