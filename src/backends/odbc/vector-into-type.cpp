@@ -12,6 +12,7 @@
 #include "soci-cstrtoi.h"
 #include "soci-mktime.h"
 #include "soci-static-assert.h"
+#include "soci-vector-helpers.h"
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -143,13 +144,12 @@ void odbc_vector_into_type_backend::define_by_pos(
     case x_stdstring:
         {
             odbcType_ = SQL_C_CHAR;
-            std::vector<std::string> *v
-                = static_cast<std::vector<std::string> *>(data);
+            const size_t vectorSize = get_vector_size(type, data);
             colSize_ = get_sqllen_from_value(statement_.column_size(position)) + 1;
-            std::size_t bufSize = colSize_ * v->size();
+            std::size_t bufSize = colSize_ * vectorSize;
             buf_ = new char[bufSize];
 
-            prepare_indicators(v->size());
+            prepare_indicators(vectorSize);
 
             size = static_cast<SQLINTEGER>(colSize_);
             data = buf_;
@@ -216,21 +216,17 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
         }
         if (type_ == x_stdstring)
         {
-            std::vector<std::string> *vp
-                = static_cast<std::vector<std::string> *>(data_);
-
-            std::vector<std::string> &v(*vp);
-
             const char *pos = buf_;
-            std::size_t const vsize = v.size();
+            std::size_t const vsize = get_vector_size(type_, data_);;
             for (std::size_t i = 0; i != vsize; ++i, pos += colSize_)
             {
                 SQLLEN const len = get_sqllen_from_vector_at(i);
 
+                std::string& value = vector_string_value(type_, data_, i);
                 if (len == -1)
                 {
                     // Value is null.
-                    v[i].clear();
+                    value.clear();
                     continue;
                 }
 
@@ -256,7 +252,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                     }
                 }
 
-                v[i].assign(pos, end - pos);
+                value.assign(pos, end - pos);
             }
         }
         else if (type_ == x_stdtm)
@@ -350,133 +346,12 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
 {
     // stays 64bit but gets but casted, see: get_sqllen_from_vector_at(...)
     indHolderVec_.resize(sz);
-    switch (type_)
-    {
-    // simple cases
-    case x_char:
-        {
-            std::vector<char> *v = static_cast<std::vector<char> *>(data_);
-            v->resize(sz);
-        }
-        break;
-    case x_short:
-        {
-            std::vector<short> *v = static_cast<std::vector<short> *>(data_);
-            v->resize(sz);
-        }
-        break;
-    case x_integer:
-        {
-            std::vector<int> *v = static_cast<std::vector<int> *>(data_);
-            v->resize(sz);
-        }
-        break;
-    case x_long_long:
-        {
-            std::vector<long long> *v =
-                static_cast<std::vector<long long> *>(data_);
-            v->resize(sz);
-        }
-        break;
-    case x_unsigned_long_long:
-        {
-            std::vector<unsigned long long> *v =
-                static_cast<std::vector<unsigned long long> *>(data_);
-            v->resize(sz);
-        }
-        break;
-    case x_double:
-        {
-            std::vector<double> *v
-                = static_cast<std::vector<double> *>(data_);
-            v->resize(sz);
-        }
-        break;
-    case x_stdstring:
-        {
-            std::vector<std::string> *v
-                = static_cast<std::vector<std::string> *>(data_);
-            v->resize(sz);
-        }
-        break;
-    case x_stdtm:
-        {
-            std::vector<std::tm> *v
-                = static_cast<std::vector<std::tm> *>(data_);
-            v->resize(sz);
-        }
-        break;
-
-    default:
-        throw soci_error("Into vector element used with non-supported type.");
-    }
+    resize_vector(type_, data_, sz);
 }
 
 std::size_t odbc_vector_into_type_backend::size()
 {
-    std::size_t sz = 0; // dummy initialization to please the compiler
-    switch (type_)
-    {
-    // simple cases
-    case x_char:
-        {
-            std::vector<char> *v = static_cast<std::vector<char> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_short:
-        {
-            std::vector<short> *v = static_cast<std::vector<short> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_integer:
-        {
-            std::vector<int> *v = static_cast<std::vector<int> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_long_long:
-        {
-            std::vector<long long> *v =
-                static_cast<std::vector<long long> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_unsigned_long_long:
-        {
-            std::vector<unsigned long long> *v =
-                static_cast<std::vector<unsigned long long> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_double:
-        {
-            std::vector<double> *v
-                = static_cast<std::vector<double> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_stdstring:
-        {
-            std::vector<std::string> *v
-                = static_cast<std::vector<std::string> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_stdtm:
-        {
-            std::vector<std::tm> *v
-                = static_cast<std::vector<std::tm> *>(data_);
-            sz = v->size();
-        }
-        break;
-
-    default:
-        throw soci_error("Into vector element used with non-supported type.");
-    }
-
-    return sz;
+    return get_vector_size(type_, data_);
 }
 
 void odbc_vector_into_type_backend::clean_up()
