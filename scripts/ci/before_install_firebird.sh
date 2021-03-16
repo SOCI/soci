@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Install Firebird server for SOCI at travis-ci.org
+# Install Firebird server for SOCI in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #

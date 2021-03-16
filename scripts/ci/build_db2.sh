@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Builds and tests SOCI backend DB2 at travis-ci.org
+# Builds and tests SOCI backend DB2 in CI builds
 #
 # Copyright (c) 2013 Brian R. Toonen <toonen@alcf.anl.gov>
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>

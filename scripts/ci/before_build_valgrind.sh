@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Sets up environment for SOCI backend at travis-ci.org
+# Sets up environment for SOCI backend in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 # Copyright (c) 2015 Sergei Nikulov <sergey.nikulov@gmail.com>

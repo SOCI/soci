@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Builds and tests SOCI backend Firebird at travis-ci.org
+# Builds and tests SOCI backend Firebird in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #

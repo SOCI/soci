@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Configure Firebird database for SOCI build at travis-ci.org
+# Configure Firebird database for SOCI build in CI builds
 #
 # Mateusz Loskot <mateusz@loskot.net>, http://github.com/SOCI
 #

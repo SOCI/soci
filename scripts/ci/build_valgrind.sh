@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Builds and tests SOCI at travis-ci.org
+# Builds and tests SOCI in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 # Copyright (c) 2015 Sergei Nikulov <sergey.nikulov@gmail.com>

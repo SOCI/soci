@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run before_script actions for SOCI build at travis-ci.org
+# Run before_script actions for SOCI build in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #

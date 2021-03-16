@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Builds and tests SOCI backend ODBC at travis-ci.org
+# Builds and tests SOCI backend ODBC in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #

@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Builds and tests SOCI backend Oracle at travis-ci.org
+# Builds and tests SOCI backend Oracle in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #

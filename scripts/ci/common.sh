@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Common definitions used by SOCI build scripts at travis-ci.org
+# Common definitions used by SOCI build scripts in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #

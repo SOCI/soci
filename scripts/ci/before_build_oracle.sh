@@ -1,5 +1,5 @@
 #!/bin/bash
-# Sets up environment for p6psy backend Oracle at travis-ci.org
+# Sets up environment for p6psy backend Oracle in CI builds
 #
 # Copyright (c) 2013 Peter Butkovic <butkovic@gmail.com>
 #

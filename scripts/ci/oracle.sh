@@ -1,4 +1,4 @@
-# Definitions used by SOCI when building Oracle backend at travis-ci.org
+# Definitions used by SOCI when building Oracle backend in CI builds
 #
 # Copyright (c) 2015 Vadim Zeitlin <vz-soci@zeitlins.org>
 #

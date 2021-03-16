@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Install Valgrind for SOCI at travis-ci.org
+# Install Valgrind for SOCI in CI builds
 #
 # Copyright (c) 2020 Vadim Zeitlin <vz-soci@zeitlins.org>
 #
