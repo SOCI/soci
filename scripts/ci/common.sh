@@ -3,8 +3,8 @@
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-if [[ "$TRAVIS" != "true" ]] ; then
-	echo "Running this script makes no sense outside of travis-ci.org"
+if [[ "$SOCI_CI" != "true" ]] ; then
+	echo "Running this script is only useful in the CI builds"
 	exit 1
 fi
 #
