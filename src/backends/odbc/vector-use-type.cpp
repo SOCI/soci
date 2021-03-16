@@ -157,9 +157,6 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
     case x_xmltype:
     case x_longstring:
         {
-            sqlType = SQL_CHAR;
-            cType = SQL_C_CHAR;
-
             std::size_t maxSize = 0;
             std::size_t const vecSize = get_vector_size(type_, data_);
             prepare_indicators(vecSize);
@@ -185,6 +182,9 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
 
             data = buf_;
             size = static_cast<SQLINTEGER>(maxSize);
+
+            sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_LONGVARCHAR : SQL_VARCHAR;
+            cType = SQL_C_CHAR;
         }
         break;
     case x_stdtm:
