@@ -430,6 +430,9 @@ struct oracle_session_backend : details::session_backend
         return "nvl";
     }
 
+    bool get_next_sequence_value(session &s,
+         std::string const &sequence, long long &value) SOCI_OVERRIDE;
+
     std::string get_dummy_from_table() const SOCI_OVERRIDE { return "dual"; }
 
     std::string get_backend_name() const SOCI_OVERRIDE { return "oracle"; }
