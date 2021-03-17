@@ -85,6 +85,10 @@ void firebird_standard_into_type_backend::exchangeData()
         case x_long_long:
             exchange_type_cast<x_long_long>(data_) = from_isc<long long>(var);
             break;
+        case x_unsigned_long_long:
+            exchange_type_cast<x_unsigned_long_long>(data_) =
+                from_isc<unsigned long long>(var);
+            break;
         case x_double:
             exchange_type_cast<x_double>(data_) = from_isc<double>(var);
             break;

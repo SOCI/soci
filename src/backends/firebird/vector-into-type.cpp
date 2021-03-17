@@ -80,6 +80,12 @@ void firebird_vector_into_type_backend::exchangeData(std::size_t row)
             setIntoVector(data_, row, tmp);
         }
         break;
+    case x_unsigned_long_long:
+        {
+            unsigned long long tmp = from_isc<unsigned long long>(var);
+            setIntoVector(data_, row, tmp);
+        }
+    break;
     case x_double:
         {
             double tmp = from_isc<double>(var);
