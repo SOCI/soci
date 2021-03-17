@@ -179,6 +179,12 @@ void firebird_blob_backend::load()
         open();
     }
 
+    // The blob is empty.
+    if (data_.empty())
+    {
+        return;
+    }
+
     ISC_STATUS stat[20];
     unsigned short bytes;
     std::vector<char>::size_type total_bytes = 0;
