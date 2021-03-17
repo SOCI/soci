@@ -1,5 +1,5 @@
-#!/bin/bash
-# Sets up environment for p6psy backend Oracle in CI builds
+#!/bin/bash -e
+# Configures Oracle database for SOCI Oracle backend CI builds.
 #
 # Copyright (c) 2013 Peter Butkovic <butkovic@gmail.com>
 #
@@ -7,35 +7,32 @@
 # Changes:
 # - Check connection as user for testing
 #
+# Copyright (c) 2021 Vadim Zeitlin <vz-soci@zeitlins.org>
+# - Rewrote to work with Docker Oracle container
+
 source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
-echo "ORACLE_HOME=${ORACLE_HOME}"
-echo "ORACLE_SID=${ORACLE_SID}"
 
-# travis-oracle installer created travis user w/o password
-echo "ALTER USER travis IDENTIFIED BY travis;" | \
-$ORACLE_HOME/bin/sqlplus -S -L sys/travis AS SYSDBA
-
-echo "grant connect, resource to travis;" | \
-$ORACLE_HOME/bin/sqlplus -S -L sys/travis AS SYSDBA
-
-echo "grant create session, alter any procedure to travis;" | \
-$ORACLE_HOME/bin/sqlplus -S -L sys/travis AS SYSDBA
-
-# to enable xa recovery, see: https://community.oracle.com/thread/378954
-echo "grant select on sys.dba_pending_transactions to travis;" | \
-$ORACLE_HOME/bin/sqlplus -S -L sys/travis AS SYSDBA
-echo "grant select on sys.pending_trans$ to travis;" | \
-$ORACLE_HOME/bin/sqlplus -S -L sys/travis AS SYSDBA
-echo "grant select on sys.dba_2pc_pending to travis;" | \
-$ORACLE_HOME/bin/sqlplus -S -L sys/travis AS SYSDBA
-echo "grant execute on sys.dbms_system to travis;" | \
-$ORACLE_HOME/bin/sqlplus -S -L sys/travis AS SYSDBA
+# create the user for the tests
+oracle_sqlplus sys/oracle AS SYSDBA <<SQL
+create user travis identified by travis;
+grant connect, resource to travis;
+grant execute on sys.dbms_lock to travis;
+grant create session, alter any procedure to travis;
+SQL
 
 # increase default=40 value of processes to prevent ORA-12520 failures while testing
-echo "alter system set processes=100 scope=spfile;" | \
-$ORACLE_HOME/bin/sqlplus -S -L sys/travis AS SYSDBA
+echo "alter system set processes=300 scope=spfile;" | \
+oracle_sqlplus sys/oracle AS SYSDBA
+
+# restart the database for the parameter change above to be taken into account
+echo "Restarting the database..."
+oracle_exec /etc/init.d/oracle-xe restart
+
+# confirm the parameter modification was taken into account
+echo "show parameter processes;" | \
+oracle_sqlplus sys/oracle AS SYSDBA
 
 # check connection as user for testing
 echo "Connecting using travis/travis@XE"
 echo "SELECT * FROM product_component_version;" | \
-$ORACLE_HOME/bin/sqlplus -S -L travis/travis@XE
+oracle_sqlplus travis/travis@XE

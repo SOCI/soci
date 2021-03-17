@@ -5,6 +5,23 @@
 # Notice that this file is not executable, it is supposed to be sourced from
 # the other files.
 
-# Oracle environment required by https://github.com/Vincit/travis-oracledb-xe
+# This is arbitrary.
+export ORACLE_CONTAINER=oracle-11g
+
+# We use the same name for the path inside and outside the container.
 export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe
 export ORACLE_SID=XE
+
+# Execute any command in the Oracle container: pass the command with its
+# arguments directly to the function.
+oracle_exec()
+{
+    docker exec ${ORACLE_CONTAINER} "$@"
+}
+
+# Execute SQLPlus in the Oracle container: pass the extra arguments to the
+# command to this function and its input on stdin.
+oracle_sqlplus()
+{
+    docker exec --interactive --env ORACLE_HOME=${ORACLE_HOME} --env ORACLE_SID=${ORACLE_SID} ${ORACLE_CONTAINER} "$ORACLE_HOME/bin/sqlplus" -S -L "$@"
+}
