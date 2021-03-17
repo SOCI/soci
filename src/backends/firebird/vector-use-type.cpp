@@ -8,6 +8,7 @@
 #define SOCI_FIREBIRD_SOURCE
 #include "soci/firebird/soci-firebird.h"
 #include "firebird/common.h"
+#include "soci-vector-helpers.h"
 
 using namespace soci;
 using namespace soci::details;
@@ -165,37 +166,7 @@ void firebird_vector_use_type_backend::exchangeData(std::size_t row)
 
 std::size_t firebird_vector_use_type_backend::size()
 {
-    std::size_t sz = 0; // dummy initialization to please the compiler
-    switch (type_)
-    {
-        // simple cases
-    case x_char:
-        sz = getVectorSize<char> (data_);
-        break;
-    case x_short:
-        sz = getVectorSize<short> (data_);
-        break;
-    case x_integer:
-        sz = getVectorSize<int> (data_);
-        break;
-    case x_long_long:
-        sz = getVectorSize<long long> (data_);
-        break;
-    case x_double:
-        sz = getVectorSize<double> (data_);
-        break;
-    case x_stdstring:
-        sz = getVectorSize<std::string> (data_);
-        break;
-    case x_stdtm:
-        sz = getVectorSize<std::tm> (data_);
-        break;
-
-    default:
-        throw soci_error("Use vector element used with non-supported type.");
-    }
-
-    return sz;
+    return get_vector_size(type_, data_);
 }
 
 void firebird_vector_use_type_backend::clean_up()

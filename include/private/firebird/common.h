@@ -253,20 +253,6 @@ T1 from_isc(XSQLVAR * var)
     GCC_WARNING_RESTORE(cast-align)
 }
 
-template <typename T>
-std::size_t getVectorSize(void *p)
-{
-    std::vector<T> *v = static_cast<std::vector<T> *>(p);
-    return v->size();
-}
-
-template <typename T>
-void resizeVector(void *p, std::size_t sz)
-{
-    std::vector<T> *v = static_cast<std::vector<T> *>(p);
-    v->resize(sz);
-}
-
 } // namespace firebird
 
 } // namespace details
