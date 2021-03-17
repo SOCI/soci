@@ -7,6 +7,12 @@ if [[ "$SOCI_CI" != "true" ]] ; then
 	echo "Running this script is only useful in the CI builds"
 	exit 1
 fi
+
+backend_settings=${SOCI_SOURCE_DIR}/scripts/ci/${SOCI_CI_BACKEND}.sh
+if [ -f ${backend_settings} ]; then
+    source ${backend_settings}
+fi
+
 #
 # Environment
 #
