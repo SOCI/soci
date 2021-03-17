@@ -3,11 +3,9 @@
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 # Copyright (c) 2015 Sergei Nikulov <sergey.nikulov@gmail.com>
+# Copyright (c) 2021 Vadim Zeitlin <vz-soci@zeitlins.org>
 #
-source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
-mysql --version
-mysql -u root -e "CREATE DATABASE soci_test;"
-mysql -u root -e "GRANT ALL PRIVILEGES ON soci_test.* TO 'travis'@'%';";
-psql --version
-psql -c 'create database soci_test;' -U postgres
+# We use both MySQL and PostgreSQL in this build.
+${SOCI_SOURCE_DIR}/scripts/ci/before_build_mysql.sh
+${SOCI_SOURCE_DIR}/scripts/ci/before_build_postgresql.sh
