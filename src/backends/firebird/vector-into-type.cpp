@@ -106,6 +106,20 @@ void firebird_vector_into_type_backend::exchangeData(std::size_t row)
         }
         break;
 
+    case x_longstring:
+        {
+            std::string &tmp = exchange_vector_type_cast<x_longstring>(data_)[row].value;
+            copy_from_blob(statement_, buf_, tmp);
+        }
+        break;
+
+    case x_xmltype:
+        {
+            std::string &tmp = exchange_vector_type_cast<x_xmltype>(data_)[row].value;
+            copy_from_blob(statement_, buf_, tmp);
+        }
+        break;
+
     default:
         throw soci_error("Into vector element used with non-supported type.");
     } // switch

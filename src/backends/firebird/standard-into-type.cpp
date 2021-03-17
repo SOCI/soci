@@ -132,39 +132,22 @@ void firebird_standard_into_type_backend::exchangeData()
             break;
 
         case x_longstring:
-            copy_from_blob(exchange_type_cast<x_longstring>(data_).value);
+            {
+                std::string &tmp = exchange_type_cast<x_longstring>(data_).value;
+                copy_from_blob(statement_, buf_, tmp);
+            }
             break;
 
         case x_xmltype:
-            copy_from_blob(exchange_type_cast<x_xmltype>(data_).value);
+            {
+                std::string &tmp = exchange_type_cast<x_xmltype>(data_).value;
+                copy_from_blob(statement_, buf_, tmp);
+            }
             break;
 
         default:
             throw soci_error("Into element used with non-supported type.");
     } // switch
-}
-
-void firebird_standard_into_type_backend::copy_from_blob(std::string& out)
-{
-    firebird_blob_backend blob(statement_.session_);
-
-    GCC_WARNING_SUPPRESS(cast-align)
-
-    blob.assign(*reinterpret_cast<ISC_QUAD*>(buf_));
-
-    GCC_WARNING_RESTORE(cast-align)
-
-    std::size_t const len_total = blob.get_len();
-    out.resize(len_total);
-
-    std::size_t const len_read = blob.read(0, &out[0], len_total);
-    if (len_read != len_total)
-    {
-        std::ostringstream os;
-        os << "Read " << len_read << " bytes instead of expected "
-           << len_total << " from Firebird text blob object";
-        throw soci_error(os.str());
-    }
 }
 
 void firebird_standard_into_type_backend::clean_up()

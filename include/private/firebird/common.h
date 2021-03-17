@@ -40,6 +40,9 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
 
 std::string getTextParam(XSQLVAR const *var);
 
+// Copy contents of a BLOB in buf into the given string.
+void copy_from_blob(firebird_statement_backend &st, char *buf, std::string &out);
+
 template <typename IntType>
 const char *str2dec(const char * s, IntType &out, short &scale)
 {
