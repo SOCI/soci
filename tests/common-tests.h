@@ -4647,14 +4647,19 @@ TEST_CASE_METHOD(common_tests, "String length", "[core][string][length]")
     CHECK(vout[2].length() == 20);
 }
 
-// Helper function used in two tests below.
-static std::string make_long_xml_string()
+// Helper function used in some tests below. Generates an XML sample about
+// approximateSize bytes long.
+static std::string make_long_xml_string(int approximateSize = 5000)
 {
+    const int tagsSize = 6 + 7;
+    const int patternSize = 26;
+    const int patternsCount = approximateSize / patternSize + 1;
+
     std::string s;
-    s.reserve(6 + 200*26 + 7);
+    s.reserve(tagsSize + patternsCount * patternSize);
 
     s += "<file>";
-    for (int i = 0; i != 200; ++i)
+    for (int i = 0; i != patternsCount; ++i)
     {
         s += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     }
@@ -4779,7 +4784,8 @@ TEST_CASE_METHOD(common_tests, "XML vector", "[core][xml][vector]")
     id[1] = 1; // Use the same ID to select both objects by ID.
     std::vector<xml_type> xml(2);
     xml[0].value = make_long_xml_string();
-    xml[1].value = make_long_xml_string();
+    // Check long strings handling.
+    xml[1].value = make_long_xml_string(10000);
 
     sql << "insert into soci_test (id, x) values (:1, "
         << tc_.to_xml(":2")
