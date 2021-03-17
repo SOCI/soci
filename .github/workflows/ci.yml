@@ -45,7 +45,7 @@ jobs:
         image: postgres:11
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: Password12!
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
           - 5432:5432
@@ -56,7 +56,7 @@ jobs:
       PGHOST: localhost
       PGPORT: 5432
       PGUSER: postgres
-      PGPASSWORD: postgres
+      PGPASSWORD: Password12!
       SOCI_MYSQL_ROOT_PASSWORD: root
 
     steps:
