@@ -4697,6 +4697,51 @@ TEST_CASE_METHOD(common_tests, "CLOB", "[core][clob]")
     CHECK(s2.value == s1.value);
 }
 
+TEST_CASE_METHOD(common_tests, "CLOB vector", "[core][clob][vector]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    if (sql.get_backend_name() != "firebird" &&
+        sql.get_backend_name() != "odbc")
+    {
+        WARN("Vector of long strings not supported by the database, skipping the test.");
+        return;
+    }
+
+    auto_table_creator tableCreator(tc_.table_creator_clob(sql));
+    if (!tableCreator.get())
+    {
+        WARN("CLOB type not supported by the database, skipping the test.");
+        return;
+    }
+
+    std::vector<int> ids(2);
+    ids[0] = 1;
+    ids[1] = 2;
+    std::vector<long_string> s1(2); // empty values
+    sql << "insert into soci_test(id, s) values (:id, :s)", use(ids), use(s1);
+
+    std::vector<long_string> s2(2);
+    s2[0].value = "hello_1";
+    s2[1].value = "hello_2";
+    sql << "select s from soci_test", into(s2);
+
+    REQUIRE(s2.size() == 2);
+    CHECK(s2[0].value.empty());
+    CHECK(s2[1].value.empty());
+
+    s1[0].value = make_long_xml_string();
+    s1[1].value = make_long_xml_string(10000);
+
+    sql << "update soci_test set s = :s where id = :id", use(s1), use(ids);
+
+    sql << "select s from soci_test", into(s2);
+
+    REQUIRE(s2.size() == 2);
+    CHECK(s2[0].value == s1[0].value);
+    CHECK(s2[1].value == s1[1].value);
+}
+
 TEST_CASE_METHOD(common_tests, "XML", "[core][xml]")
 {
     soci::session sql(backEndFactory_, connectString_);
