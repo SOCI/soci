@@ -1052,7 +1052,7 @@ TEST_CASE("false_bind_variable_inside_identifier", "[postgresql][bind-variables]
 struct table_creator_colon_in_double_quotes_in_single_quotes :
     table_creator_base
 {
-    table_creator_colon_in_double_quotes_in_single_quotes(session & sql)
+    table_creator_colon_in_double_quotes_in_single_quotes(soci::session & sql)
         : table_creator_base(sql)
     {
        sql << "CREATE TABLE soci_test( \"column_with:colon\" text)";
