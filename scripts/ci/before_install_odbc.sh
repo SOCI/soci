@@ -7,7 +7,7 @@ source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
 sudo apt-get install -qq \
     tar bzip2 \
-    unixodbc-dev \
+    unixodbc unixodbc-dev \
     odbc-postgresql/xenial odbc-postgresql-dbg/xenial
 
 # Use full path to the driver library to avoid errors like
