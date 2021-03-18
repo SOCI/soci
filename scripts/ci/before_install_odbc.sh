@@ -9,3 +9,13 @@ sudo apt-get install -qq \
     tar bzip2 \
     unixodbc-dev \
     odbc-postgresql/xenial odbc-postgresql-dbg/xenial
+
+# Use full path to the driver library to avoid errors like
+# [01000][unixODBC][Driver Manager]Can't open lib 'psqlodbca.so' : file not found
+psqlodbca_lib=$(dpkg -L odbc-postgresql | grep -F 'psqlodbca.so')
+sudo sed -i'' -e "s@^Driver=psqlodbca\.so@Driver=$psqlodbca_lib@" /etc/odbcinst.ini
+
+echo Contents of /etc/odbcinst.ini
+echo '---------------------------------- >8 --------------------------------------'
+cat /etc/odbcinst.ini
+echo '---------------------------------- >8 --------------------------------------'
