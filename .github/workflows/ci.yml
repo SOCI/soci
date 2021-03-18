@@ -23,22 +23,25 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Unsupported: db2exc package is only available in Ubuntu 14.04 not
-          # supported by GitHub Actions any longer.
-          # backend: db2
+          # Note: the jobs are ordered in the order of decreasing running
+          # time, as this should minimize the total run-time of all jobs.
+          - backend: oracle
+            no_boost: true
+          - backend: valgrind
+          - backend: odbc
+          - backend: firebird
+          - backend: postgresql
+          - backend: mysql
+          - backend: sqlite3
           - backend: empty
             cxx_std: 98
             test_release_package: true
           - backend: empty
             cxx_std: 11
-          - backend: firebird
-          - backend: mysql
-          - backend: odbc
-          - backend: postgresql
-          - backend: sqlite3
-          - backend: valgrind
-          - backend: oracle
-            no_boost: true
+          # Unsupported: db2exc package is only available in Ubuntu 14.04 not
+          # supported by GitHub Actions any longer, we'd need to run it in
+          # Docker container if we really need it.
+          # backend: db2
 
     services:
       postgres:
