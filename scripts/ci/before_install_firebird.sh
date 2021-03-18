@@ -30,9 +30,18 @@ esac
 
 sudo apt-get install -qq expect ${firebird_server_package} firebird-dev
 
+# Default frontend is "noninteractive", which prevents dpkg-reconfigure from
+# asking anything at all, so change it. Notice that we must do it via
+# environment and not using -f option of dpkg-reconfigure because it is
+# overridden by the existing environment variable (which is predefined).
+#
+# OTOH we do need to set priority to low using -p option below as otherwise we
+# wouldn't be asked to change the password after the initial installation.
+export DEBIAN_FRONTEND=teletype
+
 # Expect script feeding dpkg-reconfigure prompts
-sudo /usr/bin/expect -d - << ENDMARK
-spawn dpkg-reconfigure $firebird_server -freadline
+sudo --preserve-env /usr/bin/expect - << ENDMARK
+spawn dpkg-reconfigure -plow $firebird_server_package
 $firebird_expect_enable
 
 expect "Password for SYSDBA:"
