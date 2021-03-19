@@ -44,6 +44,15 @@ TEST_CASE("PostgreSQL ROWID", "[postgresql][rowid][oid]")
 {
     soci::session sql(backEnd, connectString);
 
+    int server_version_num;
+    sql << "show server_version_num", into(server_version_num);
+    if ( server_version_num >= 120000 )
+    {
+        WARN("Skipping test because OIDs are no longer supported in PostgreSQL "
+             << server_version_num);
+        return;
+    }
+
     oid_table_creator tableCreator(sql);
 
     sql << "insert into soci_test(id, name) values(7, \'John\')";
