@@ -69,10 +69,6 @@ jobs:
     env:
       SOCI_CI: true
       SOCI_CI_BACKEND: ${{ matrix.backend }}
-      PGHOST: localhost
-      PGPORT: 5432
-      PGUSER: postgres
-      PGPASSWORD: Password12!
       SOCI_MYSQL_ROOT_PASSWORD: root
 
     steps:
@@ -89,6 +85,20 @@ jobs:
           set_env_var SOCI_CI_BRANCH $GITHUB_REF
           set_env_var SOCI_SOURCE_DIR $GITHUB_WORKSPACE
           set_env_var SOCI_SOURCE_DIR `pwd`
+
+          case "${{runner.os}}" in
+            Linux)
+              set_env_var PGHOST localhost
+              set_env_var PGPORT 5432
+              set_env_var PGUSER postgres
+              set_env_var PGPASSWORD 'Password12!'
+              ;;
+
+            macOS)
+              set_env_var PGDATA /usr/local/var/postgres
+              ;;
+          esac
+
           if [ "${{matrix.no_boost}}" = true ]; then
             set_env_var WITH_BOOST OFF
           fi
