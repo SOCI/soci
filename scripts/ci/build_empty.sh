@@ -8,7 +8,7 @@ source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 run_cmake_for_empty()
 {
     cmake ${SOCI_DEFAULT_CMAKE_OPTIONS} \
-        -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD} \
+        -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD:-11} \
         -DSOCI_EMPTY=ON \
         ..
 }
