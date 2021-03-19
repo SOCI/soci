@@ -743,6 +743,7 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     case 1043: // varchar
     case 2275: // cstring
     case 18:   // char
+    case 19:   // name
     case 1042: // bpchar
     case 142:  // xml
     case 114:  // json
