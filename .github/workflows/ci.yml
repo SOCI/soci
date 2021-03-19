@@ -86,12 +86,12 @@ jobs:
             set_env_var TEST_RELEASE_PACKAGE YES
           fi
 
-      - name: Before install
+      - name: Install dependencies
         env:
           SOCI_CI_PACKAGES: cmake
-        run: ./scripts/ci/before_install.sh
+        run: ./scripts/ci/install.sh
 
-      - name: Before build
+      - name: Prepare for build
         run: ./scripts/ci/before_build.sh
 
       - name: Build
