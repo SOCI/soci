@@ -56,16 +56,6 @@ jobs:
           # Docker container if we really need it.
           # backend: db2
 
-    services:
-      postgres:
-        image: postgres:11
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: Password12!
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-        ports:
-          - 5432:5432
-
     env:
       SOCI_CI: true
       SOCI_CI_BACKEND: ${{ matrix.backend }}

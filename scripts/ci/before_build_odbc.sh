@@ -5,8 +5,8 @@
 #
 source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
-psql --version
-psql -c 'create database soci_test;' -U postgres
+# Create PostgreSQL database we use for ODBC tests too.
+${SOCI_SOURCE_DIR}/scripts/ci/before_build_postgresql.sh
 
 # Test connection to the database via ODBC.
 #
