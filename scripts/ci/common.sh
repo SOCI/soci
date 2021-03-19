@@ -1,12 +1,18 @@
 #!/bin/bash -e
-# Common definitions used by SOCI build scripts at travis-ci.org
+# Common definitions used by SOCI build scripts in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-if [[ "$TRAVIS" != "true" ]] ; then
-	echo "Running this script makes no sense outside of travis-ci.org"
+if [[ "$SOCI_CI" != "true" ]] ; then
+	echo "Running this script is only useful in the CI builds"
 	exit 1
 fi
+
+backend_settings=${SOCI_SOURCE_DIR}/scripts/ci/${SOCI_CI_BACKEND}.sh
+if [ -f ${backend_settings} ]; then
+    source ${backend_settings}
+fi
+
 #
 # Environment
 #
@@ -15,6 +21,12 @@ if [[ -f /sys/devices/system/cpu/online ]]; then
 	# Calculates 1.5 times physical threads
 	TCI_NUMTHREADS=$(( ( $(cut -f 2 -d '-' /sys/devices/system/cpu/online) + 1 ) * 15 / 10  ))
 fi
+
+# Directory where the build happens.
+#
+# Note that the existing commands suppose that the build directory is an
+# immediate subdirectory of the source one, so don't change this.
+builddir="${SOCI_SOURCE_DIR}/_build"
 
 # These options are used for all builds.
 SOCI_COMMON_CMAKE_OPTIONS='
@@ -54,9 +66,4 @@ run_make()
 run_test()
 {
     ctest -V --output-on-failure "$@" .
-}
-
-run_test_memcheck()
-{
-    valgrind --leak-check=full --suppressions=${TRAVIS_BUILD_DIR}/valgrind.suppress --error-exitcode=1 --trace-children=yes ctest -V --output-on-failure "$@" .
 }

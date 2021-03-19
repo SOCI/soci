@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Installs DB2 for SOCI build at travis-ci.org
+# Installs DB2 for SOCI build in CI builds
 #
 # Copyright (c) 2013 Brian R. Toonen <toonen@alcf.anl.gov>
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>

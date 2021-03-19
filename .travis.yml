@@ -4,7 +4,7 @@
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
 
-# When changing this, search for "xenial" in scripts/travis and update
+# When changing this, search for "xenial" in scripts/ci and update
 # references to it there too.
 dist: xenial
 
@@ -23,21 +23,22 @@ services:
 env:
   global:
     - secure: "I7/28jg7R24y64426d5XsfILrd/VW0BdwFbNpEgBfW1qNk9GpkNGTvp/ET6hKwBVrW5jmN9QdEviGcPpQRIAlMj6g9GvZeAUxM+VZTcXD2u30REUPPxNTJMRVHPfL9DA7EMFCST8SjBCgMdTHFwqLV4vSQEF4NTXbntley/IPfM="
+    - SOCI_CI=true
+    - SOCI_CI_BRANCH=${TRAVIS_BRANCH}
+    - SOCI_SOURCE_DIR=${TRAVIS_BUILD_DIR}
 
 jobs:
   include:
-    - env: SOCI_TRAVIS_BACKEND=db2
-    - env: SOCI_TRAVIS_BACKEND=empty CMAKE_CXX_STANDARD=98 TEST_RELEASE_PACKAGE=YES
-    - env: SOCI_TRAVIS_BACKEND=empty CMAKE_CXX_STANDARD=11
-    - env: SOCI_TRAVIS_BACKEND=firebird
-    - env: SOCI_TRAVIS_BACKEND=mysql
-    - env: SOCI_TRAVIS_BACKEND=odbc
-    - env: SOCI_TRAVIS_BACKEND=postgresql
-    - env: SOCI_TRAVIS_BACKEND=sqlite3
-    - env: SOCI_TRAVIS_BACKEND=valgrind
-    - env: SOCI_TRAVIS_BACKEND=oracle WITH_BOOST=OFF
-  allow_failures:
-    - env: SOCI_TRAVIS_BACKEND=oracle WITH_BOOST=OFF
+    - env: SOCI_CI_BACKEND=db2
+    - env: SOCI_CI_BACKEND=empty CMAKE_CXX_STANDARD=98 TEST_RELEASE_PACKAGE=YES
+    - env: SOCI_CI_BACKEND=empty CMAKE_CXX_STANDARD=11
+    - env: SOCI_CI_BACKEND=firebird
+    - env: SOCI_CI_BACKEND=mysql
+    - env: SOCI_CI_BACKEND=odbc
+    - env: SOCI_CI_BACKEND=postgresql
+    - env: SOCI_CI_BACKEND=sqlite3
+    - env: SOCI_CI_BACKEND=valgrind
+    - env: SOCI_CI_BACKEND=oracle WITH_BOOST=OFF
 
 addons:
     apt:
@@ -53,9 +54,9 @@ addons:
         build_command: "make -j 4"
         branch_pattern: coverity_scan
 
-before_install: ./scripts/travis/before_install.sh
-before_script: ./scripts/travis/before_script.sh
-script: ./scripts/travis/script.sh
+before_install: ./scripts/ci/install.sh
+before_script: ./scripts/ci/before_build.sh
+script: ./scripts/ci/build.sh && ./scripts/ci/test.sh
 
 notifications:
   webhooks:

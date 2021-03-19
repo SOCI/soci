@@ -10,6 +10,7 @@
 #include "soci/oracle/soci-oracle.h"
 #include <iostream>
 #include <string>
+#include <cstdlib>
 #include <cstring>
 #include <ctime>
 
@@ -1585,6 +1586,12 @@ int main(int argc, char** argv)
             << " connectstring [test-arguments...]\n"
             << "example: " << argv[0]
             << " \'service=orcl user=scott password=tiger\'\n";
+        std::exit(1);
+    }
+
+    if (!std::getenv("ORACLE_HOME"))
+    {
+        std::cerr << "ORACLE_HOME environment variable must be defined for Oracle tests.\n";
         std::exit(1);
     }
 

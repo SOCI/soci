@@ -1,9 +1,9 @@
 #!/bin/bash -e
-# Builds and tests SOCI backend SQLite3 at travis-ci.org
+# Builds SOCI SQLite3 backend in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
+source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
 cmake ${SOCI_DEFAULT_CMAKE_OPTIONS} \
     -DSOCI_SQLITE3=ON \
@@ -11,4 +11,3 @@ cmake ${SOCI_DEFAULT_CMAKE_OPTIONS} \
     ..
 
 run_make
-run_test

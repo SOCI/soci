@@ -1,0 +1,101 @@
+# Continuous integration workflow for SOCI.
+name: GitHub CI
+
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - appveyor.yml
+      - .travis.yml
+  pull_request:
+    branches:
+      - master
+    paths-ignore:
+      - appveyor.yml
+      - .travis.yml
+
+jobs:
+  build:
+    runs-on: ${{ matrix.runner || 'ubuntu-16.04' }}
+    name: ${{ matrix.backend }} ${{ matrix.cxx_std }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Note: the jobs are ordered in the order of decreasing running
+          # time, as this should minimize the total run-time of all jobs.
+          - backend: oracle
+            no_boost: true
+          - backend: valgrind
+          - backend: odbc
+          - backend: firebird
+          - backend: postgresql
+          - backend: mysql
+          - backend: sqlite3
+          - backend: empty
+            cxx_std: 98
+            test_release_package: true
+          - backend: empty
+            cxx_std: 11
+          # Unsupported: db2exc package is only available in Ubuntu 14.04 not
+          # supported by GitHub Actions any longer, we'd need to run it in
+          # Docker container if we really need it.
+          # backend: db2
+
+    services:
+      postgres:
+        image: postgres:11
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: Password12!
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        ports:
+          - 5432:5432
+
+    env:
+      SOCI_CI: true
+      SOCI_CI_BACKEND: ${{ matrix.backend }}
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: Password12!
+      SOCI_MYSQL_ROOT_PASSWORD: root
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set environment variables
+        run: |
+          set_env_var() {
+            echo "Setting environment variable $1=$2"
+            echo $1=$2 >> $GITHUB_ENV
+          }
+
+          set_env_var SOCI_CI_BRANCH $GITHUB_REF
+          set_env_var SOCI_SOURCE_DIR $GITHUB_WORKSPACE
+          set_env_var SOCI_SOURCE_DIR `pwd`
+          if [ "${{matrix.no_boost}}" = true ]; then
+            set_env_var WITH_BOOST OFF
+          fi
+          if [ "${{matrix.cxx_std}}" != '' ]; then
+            set_env_var CMAKE_CXX_STANDARD ${{matrix.cxx_std}}
+          fi
+          if [ "${{matrix.test_release_package}}" = true ]; then
+            set_env_var TEST_RELEASE_PACKAGE YES
+          fi
+
+      - name: Install dependencies
+        env:
+          SOCI_CI_PACKAGES: cmake
+        run: ./scripts/ci/install.sh
+
+      - name: Prepare for build
+        run: ./scripts/ci/before_build.sh
+
+      - name: Build
+        run: ./scripts/ci/build.sh
+
+      - name: Test
+        run: ./scripts/ci/test.sh

@@ -1,9 +1,9 @@
 #!/bin/bash -e
-# Builds and tests SOCI backend empty at travis-ci.org
+# Builds SOCI "empty" backend in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
+source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
 run_cmake_for_empty()
 {
@@ -15,25 +15,24 @@ run_cmake_for_empty()
 
 run_cmake_for_empty
 run_make
-run_test
 
 # Test release branch packaging and building from the package
-if [[ "$TEST_RELEASE_PACKAGE" == "YES" ]] && [[ "$TRAVIS_BRANCH" =~ ^release/[3-9]\.[0-9]$ ]]; then
+if [[ "$TEST_RELEASE_PACKAGE" == "YES" ]] && [[ "$SOCI_CI_BRANCH" =~ ^release/[3-9]\.[0-9]$ ]]; then
     ME=`basename "$0"`
 
     sudo apt-get update -qq -y
     sudo apt-get install -qq -y python3.4-venv
 
-    SOCI_VERSION=$(cat "$TRAVIS_BUILD_DIR/include/soci/version.h" | grep -Po "(.*#define\s+SOCI_LIB_VERSION\s+.+)\K([3-9]_[0-9]_[0-9])" | sed "s/_/\./g")
+    SOCI_VERSION=$(cat "$SOCI_SOURCE_DIR/include/soci/version.h" | grep -Po "(.*#define\s+SOCI_LIB_VERSION\s+.+)\K([3-9]_[0-9]_[0-9])" | sed "s/_/\./g")
     if [[ ! "$SOCI_VERSION" =~ ^[4-9]\.[0-9]\.[0-9]$ ]]; then
         echo "${ME} ERROR: Invalid format of SOCI version '$SOCI_VERSION'. Aborting."
         exit 1
     else
-        echo "${ME} INFO: Creating source package 'soci-${SOCI_VERSION}.tar.gz' from '$TRAVIS_BRANCH' branch"
+        echo "${ME} INFO: Creating source package 'soci-${SOCI_VERSION}.tar.gz' from '$SOCI_CI_BRANCH' branch"
     fi
 
-    cd $TRAVIS_BUILD_DIR
-    $TRAVIS_BUILD_DIR/scripts/release.sh --use-local-branch $TRAVIS_BRANCH
+    cd $SOCI_SOURCE_DIR
+    $SOCI_SOURCE_DIR/scripts/release.sh --use-local-branch $SOCI_CI_BRANCH
 
     if [[ ! -f "soci-${SOCI_VERSION}.tar.gz" ]]; then
         echo "${ME} ERROR: Archive file 'soci-${SOCI_VERSION}.tar.gz' not found. Aborting."

@@ -1,9 +1,9 @@
 #!/bin/bash -e
-# Sets up environment for SOCI backend PostgreSQL at travis-ci.org
+# Sets up environment for SOCI backend PostgreSQL in CI builds
 #
 # Mateusz Loskot <mateusz@loskot.net>, http://github.com/SOCI
 #
-source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
+source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
 psql --version
 psql -c 'create database soci_test;' -U postgres

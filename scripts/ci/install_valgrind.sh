@@ -1,8 +1,8 @@
 #!/bin/bash -e
-# Install Valgrind for SOCI at travis-ci.org
+# Install Valgrind for SOCI in CI builds
 #
 # Copyright (c) 2020 Vadim Zeitlin <vz-soci@zeitlins.org>
 #
-source ${TRAVIS_BUILD_DIR}/scripts/travis/common.sh
+source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
 sudo apt-get install -qq valgrind
