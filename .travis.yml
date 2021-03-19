@@ -39,8 +39,6 @@ jobs:
     - env: SOCI_CI_BACKEND=sqlite3
     - env: SOCI_CI_BACKEND=valgrind
     - env: SOCI_CI_BACKEND=oracle WITH_BOOST=OFF
-  allow_failures:
-    - env: SOCI_CI_BACKEND=oracle WITH_BOOST=OFF
 
 addons:
     apt:
