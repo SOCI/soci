@@ -16,6 +16,7 @@
 
 if(UNIX)
   set(DB2_INSTALL_PATHS
+    /opt/ibm/db2/V11.5
     /opt/ibm/db2/V10.1
     /opt/ibm/db2/V9.7
     /opt/ibm/db2/V9.5

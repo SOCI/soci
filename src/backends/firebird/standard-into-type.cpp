@@ -8,6 +8,7 @@
 #define SOCI_FIREBIRD_SOURCE
 #include "soci/firebird/soci-firebird.h"
 #include "soci-exchange-cast.h"
+#include "soci-compiler.h"
 #include "firebird/common.h"
 #include "soci/soci.h"
 
@@ -118,7 +119,11 @@ void firebird_standard_into_type_backend::exchangeData()
                     throw soci_error("Can't get Firebid BLOB BackEnd");
                 }
 
+                GCC_WARNING_SUPPRESS(cast-align)
+
                 blob->assign(*reinterpret_cast<ISC_QUAD*>(buf_));
+
+                GCC_WARNING_RESTORE(cast-align)
             }
             break;
 
@@ -138,7 +143,12 @@ void firebird_standard_into_type_backend::exchangeData()
 void firebird_standard_into_type_backend::copy_from_blob(std::string& out)
 {
     firebird_blob_backend blob(statement_.session_);
+
+    GCC_WARNING_SUPPRESS(cast-align)
+
     blob.assign(*reinterpret_cast<ISC_QUAD*>(buf_));
+
+    GCC_WARNING_RESTORE(cast-align)
 
     std::size_t const len_total = blob.get_len();
     out.resize(len_total);

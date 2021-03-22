@@ -22,7 +22,60 @@ option(SOCI_SHARED "Enable build of shared libraries" ON)
 option(SOCI_STATIC "Enable build of static libraries" ON)
 option(SOCI_TESTS "Enable build of collection of SOCI tests" ON)
 option(SOCI_ASAN "Enable address sanitizer on GCC v4.8+/Clang v 3.1+" OFF)
+option(SOCI_LTO "Enable link time optimization" OFF)
+option(SOCI_VISIBILITY "Enable hiding private symbol using ELF visibility if supported by the platform" on)
 
+if (SOCI_LTO)
+    cmake_minimum_required(VERSION 3.9)
+
+    # Check and enable lto support
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT supported)
+    
+    if (NOT supported)
+        message(STATUS "IPO / LTO not supported")
+    endif()
+    
+    if (supported AND NOT SOCI_ASAN)
+        message(STATUS "IPO / LTO enabled")
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+    
+        if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            # Check for lld as clang lto works best with its own linker
+            include(CheckCXXCompilerFlag)
+            check_cxx_compiler_flag("-fuse-ld=lld" HAS_LLD)
+            if (HAS_LLD)
+                SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld")
+                SET(CMAKE_SHARED_LINKER_FLAGS  "${CMAKE_SHARED_LINKER_FLAGS} -fuse-ld=lld")
+                SET(CMAKE_MODULE_LINKER_FLAGS  "${CMAKE_MODULE_LINKER_FLAGS} -fuse-ld=lld")
+            endif()
+        endif()
+    elseif(supported)
+        message(STATUS "IPO / LTO is supported but conflicts with ASAN and not enabled")
+    endif()
+endif()
+
+if (SOCI_VISIBILITY)
+    # Test whether visibility is supported
+    include(CheckCSourceCompiles)
+    check_c_source_compiles(
+        "
+            __attribute__ (( visibility(\"default\") )) int f1() { return 0; }
+            __attribute__ (( visibility(\"hidden\") ))  int f2() { return 1; }
+
+            int main(int argc, char* argv[]) { f1(); f2(); return 0; }
+        "
+        SOCI_HAVE_VISIBILITY_SUPPORT
+    )
+
+    if (SOCI_HAVE_VISIBILITY_SUPPORT)
+        message(STATUS "gcc / clang visibility enabled")
+        set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+        cmake_policy(SET CMP0063 NEW)
+    endif()
+else()
+    set(SOCI_HAVE_VISIBILITY_SUPPORT off)
+endif()
 
 ###############################################################################
 # SOCI CMake modules
@@ -204,4 +257,3 @@ endforeach()
 configure_file("${CONFIG_FILE_IN}" "${CONFIG_FILE_OUT}")
 
 message(STATUS "")
-

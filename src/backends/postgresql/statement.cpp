@@ -26,7 +26,7 @@ namespace // unnamed
 #ifndef SOCI_POSTGRESQL_NOSINGLEROWMODE
 void wait_until_operation_complete(postgresql_session_backend & session)
 {
-    while (true)
+    for (;;)
     {
         PGresult * result = PQgetResult(session.conn_);
         if (result == NULL)
@@ -156,8 +156,18 @@ void postgresql_statement_backend::prepare(std::string const & query,
             }
             break;
         case in_quotes:
+           if (*it == '\'' )
+            {
+                query_ += *it;
+                state = normal;
+            }
+            else // regular quoted character
+            {
+                query_ += *it;
+            }
+            break;
         case in_identifier:
-            if (*it == '\'' || *it == '\"' )
+            if ( *it == '\"' )
             {
                 query_ += *it;
                 state = normal;
@@ -733,6 +743,7 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     case 1043: // varchar
     case 2275: // cstring
     case 18:   // char
+    case 19:   // name
     case 1042: // bpchar
     case 142:  // xml
     case 114:  // json

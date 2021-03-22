@@ -9,20 +9,12 @@
 #ifndef SOCI_FIREBIRD_H_INCLUDED
 #define SOCI_FIREBIRD_H_INCLUDED
 
-#ifdef _WIN32
-# ifdef SOCI_DLL
-#  ifdef SOCI_FIREBIRD_SOURCE
-#   define SOCI_FIREBIRD_DECL __declspec(dllexport)
-#  else
-#   define SOCI_FIREBIRD_DECL __declspec(dllimport)
-#  endif // SOCI_DLL
-# endif // SOCI_FIREBIRD_SOURCE
-#endif // _WIN32
+#include <soci/soci-platform.h>
 
-//
-// If SOCI_FIREBIRD_DECL isn't defined yet define it now
-#ifndef SOCI_FIREBIRD_DECL
-# define SOCI_FIREBIRD_DECL
+#ifdef SOCI_FIREBIRD_SOURCE
+# define SOCI_FIREBIRD_DECL SOCI_DECL_EXPORT
+#else
+# define SOCI_FIREBIRD_DECL SOCI_DECL_IMPORT
 #endif
 
 #ifdef _WIN32
@@ -49,7 +41,7 @@ public:
     firebird_soci_error(std::string const & msg,
         ISC_STATUS const * status = 0);
 
-    ~firebird_soci_error() throw() SOCI_OVERRIDE {};
+    ~firebird_soci_error() SOCI_NOEXCEPT SOCI_OVERRIDE {};
 
     std::vector<ISC_STATUS> status_;
 };
@@ -309,6 +301,8 @@ struct firebird_session_backend : details::session_backend
     firebird_session_backend(connection_parameters const & parameters);
 
     ~firebird_session_backend() SOCI_OVERRIDE;
+
+    bool is_connected() SOCI_OVERRIDE;
 
     void begin() SOCI_OVERRIDE;
     void commit() SOCI_OVERRIDE;

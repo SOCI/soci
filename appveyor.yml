@@ -1,4 +1,9 @@
-version: 4.0.0.{build}
+version: 4.0.1.{build}
+
+skip_commits:
+  files:
+    - .github/workflows/
+    - .travis.yml
 
 configuration: Release
 
@@ -58,6 +63,7 @@ install:
   - git clone https://github.com/snikulov/sqlite.cmake.build.git C:\projects\sqlite\src
 
 before_build:
+  - set SQLITE_ROOT=C:\projects\sqlite\sqlite
   # dirty little hack - remove sh from Git to make generator happy
   - ps: |
       if ($env:G -eq "MinGW Makefiles")
@@ -70,12 +76,16 @@ before_build:
             Remove-Item $shellPath
           }
         }
+        $env:SQLITE3_LIBRARY = $env:SQLITE_ROOT + '/lib/libsqlite3-static.a'
+      }
+      else
+      {
+        $env:SQLITE3_LIBRARY = $env:SQLITE_ROOT + '/lib/sqlite3-static.lib'
       }
   - cd C:\projects\sqlite\src
   - mkdir build
   - cd build
-  - set SQLITE_ROOT=C:\projects\sqlite\sqlite
-  - set PATH=%MINGW_ROOT%;%PATH%;%SQLITE_ROOT%\bin;%POSTGRESQL_ROOT%\bin;%MYSQL_DIR%\bin;%MYSQL_DIR%\lib
+  - set PATH=%MINGW_ROOT%;%PATH%;%POSTGRESQL_ROOT%\bin;%MYSQL_DIR%\bin;%MYSQL_DIR%\lib
   - echo %PATH%
   - cmake --version
   - set PGUSER=postgres
@@ -85,14 +95,14 @@ before_build:
   - set USER=root
   - mysql -e "create database soci_test;" --user=root
   - sqlcmd -U sa -P Password12! -S (local)\SQL2014 -i C:\projects\soci\scripts\windows\mssql_db_create.sql
-  - cmake .. -G"%G%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_INSTALL_PREFIX=C:\projects\sqlite\sqlite
+  - cmake .. -G"%G%" -DSQLITE_BUILD_SHARED=OFF -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_INSTALL_PREFIX=%SQLITE_ROOT%
   - cmake --build . --config %CONFIGURATION% --target install
 
 build_script:
   - cd C:\projects\soci
   - mkdir build
   - cd build
-  - cmake .. -G"%G%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_VERBOSE_MAKEFILE=ON
+  - cmake .. -G"%G%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_VERBOSE_MAKEFILE=ON -DSOCI_ENABLE_WERROR=ON -DSQLITE3_INCLUDE_DIR=%SQLITE_ROOT%/include -DSQLITE3_LIBRARY=%SQLITE3_LIBRARY%
   - cmake --build . --config %CONFIGURATION% --clean-first
 
 test_script:

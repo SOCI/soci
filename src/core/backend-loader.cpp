@@ -89,7 +89,25 @@ struct info
 {
     soci_handler_t handler_;
     backend_factory const * factory_;
-    info() : handler_(0), factory_(0) {}
+
+    // The use count is the number of existing sessions using this backend (in
+    // fact it's the count of connection_parameters objects, but as these
+    // objects are part of the session, it's roughly the same thing).
+    //
+    // While use count is non-zero, the corresponding backend can't be unloaded
+    // as this would leave the code using it with dangling (code) pointers. If
+    // it reaches 0, the backend is _not_ unloaded automatically because we
+    // don't want to unload/reload it all the time when recreating sessions,
+    // but it can be unloaded manually, if necessary, by calling unload() or
+    // unload_all() functions.
+    int use_count_;
+
+    // If unloading this backend is requested while its use count is non-zero,
+    // this flag is set to true and the backend is actually unloaded when the
+    // use count drops to 0.
+    bool unload_requested_;
+
+    info() : handler_(0), factory_(0), use_count_(0), unload_requested_(false) {}
 };
 
 typedef std::map<std::string, info> factory_map;
@@ -103,20 +121,14 @@ std::vector<std::string> get_default_paths()
 {
     std::vector<std::string> paths;
 
-    // TODO: may be problem with finding getenv in std namespace in Visual C++ --mloskot
     char const* const penv = std::getenv("SOCI_BACKENDS_PATH");
-    if (0 == penv)
-    {
-        paths.push_back(".");
-        paths.push_back(DEFAULT_BACKENDS_PATH);
-        return paths;
-    }
-
-    std::string const env = penv;
+    std::string const env(penv ? penv : "");
     if (env.empty())
     {
         paths.push_back(".");
+#ifdef DEFAULT_BACKENDS_PATH
         paths.push_back(DEFAULT_BACKENDS_PATH);
+#endif // DEFAULT_BACKENDS_PATH
         return paths;
     }
 
@@ -174,26 +186,42 @@ private:
     soci_mutex_t * mptr;
 };
 
-// non-synchronized helper for the other functions
-void do_unload(std::string const & name)
+// non-synchronized helpers for the other functions
+factory_map::iterator do_unload(factory_map::iterator i)
+{
+    soci_handler_t h = i->second.handler_;
+    if (h != NULL)
+    {
+        DLCLOSE(h);
+    }
+
+    // TODO-C++11: Use erase() return value.
+    factory_map::iterator const to_erase = i;
+    ++i;
+    factories_.erase(to_erase);
+    return i;
+}
+
+void do_unload_or_throw_if_in_use(std::string const & name)
 {
     factory_map::iterator i = factories_.find(name);
 
     if (i != factories_.end())
     {
-        soci_handler_t h = i->second.handler_;
-        if (h != NULL)
+        if (i->second.use_count_)
         {
-            DLCLOSE(h);
+            throw soci_error("Backend " + name + " is used and can't be unloaded");
         }
 
-        factories_.erase(i);
+        do_unload(i);
     }
 }
 
 // non-synchronized helper
 void do_register_backend(std::string const & name, std::string const & shared_object)
 {
+    do_unload_or_throw_if_in_use(name);
+
     // The rules for backend search are as follows:
     // - if the shared_object is given,
     //   it names the library file and the search paths are not used
@@ -244,10 +272,6 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
         throw soci_error("Failed to resolve dynamic symbol: " + symbol);
     }
 
-    // unload the existing handler if it's already loaded
-
-    do_unload(name);
-
     backend_factory const* f = entry();
 
     info new_entry;
@@ -265,23 +289,50 @@ backend_factory const& dynamic_backends::get(std::string const& name)
 
     factory_map::iterator i = factories_.find(name);
 
-    if (i != factories_.end())
+    if (i == factories_.end())
     {
-        return *(i->second.factory_);
+      // no backend found with this name, try to register it first
+
+      do_register_backend(name, std::string());
+
+      // second attempt, must succeed (the backend is already loaded)
+
+      i = factories_.find(name);
     }
 
-    // no backend found with this name, try to register it first
-
-    do_register_backend(name, std::string());
-
-    // second attempt, must succeed (the backend is already loaded)
-
-    i = factories_.find(name);
+    i->second.use_count_++;
 
     return *(i->second.factory_);
 }
 
-SOCI_DECL std::vector<std::string>& search_paths()
+void dynamic_backends::unget(std::string const& name)
+{
+    scoped_lock lock(&mutex_);
+
+    factory_map::iterator i = factories_.find(name);
+
+    if (i == factories_.end())
+    {
+        // We don't throw here as this is often called from destructors, and so
+        // this would result in a call to std::terminate(), even if this is
+        // totally unexpected -- but, unfortunately, we have no way to report
+        // it to the application without possibly killing it.
+        return;
+    }
+
+    info& backend_info = i->second;
+
+    --backend_info.use_count_;
+
+    // Check if this backend should be unloaded if unloading it had been
+    // previously requested.
+    if (backend_info.use_count_ == 0 && backend_info.unload_requested_)
+    {
+        do_unload(i);
+    }
+}
+
+SOCI_DECL std::vector<std::string>& dynamic_backends::search_paths()
 {
     return search_paths_;
 }
@@ -299,9 +350,7 @@ SOCI_DECL void dynamic_backends::register_backend(
 {
     scoped_lock lock(&mutex_);
 
-    // unload the existing handler if it's already loaded
-
-    do_unload(name);
+    do_unload_or_throw_if_in_use(name);
 
     info new_entry;
     new_entry.factory_ = &factory;
@@ -329,21 +378,39 @@ SOCI_DECL void dynamic_backends::unload(std::string const& name)
 {
     scoped_lock lock(&mutex_);
 
-    do_unload(name);
+    factory_map::iterator i = factories_.find(name);
+
+    if (i != factories_.end())
+    {
+        info& backend_info = i->second;
+        if (backend_info.use_count_)
+        {
+            // We can't unload the backend while it's in use, so do it later
+            // when it's not used any longer.
+            backend_info.unload_requested_ = true;
+            return;
+        }
+
+        do_unload(i);
+    }
 }
 
 SOCI_DECL void dynamic_backends::unload_all()
 {
     scoped_lock lock(&mutex_);
 
-    for (factory_map::iterator i = factories_.begin(); i != factories_.end(); ++i)
+    for (factory_map::iterator i = factories_.begin(); i != factories_.end(); )
     {
-        soci_handler_t h = i->second.handler_;
-        if (0 != h)
-        {
-            DLCLOSE(h);
-        }
-    }
+        info& backend_info = i->second;
 
-    factories_.clear();
+        // Same logic as in unload() above.
+        if (backend_info.use_count_)
+        {
+            backend_info.unload_requested_ = true;
+            ++i;
+            continue;
+        }
+
+        i = do_unload(i);
+    }
 }

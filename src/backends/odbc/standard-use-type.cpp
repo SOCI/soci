@@ -6,6 +6,7 @@
 #define SOCI_ODBC_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/odbc/soci-odbc.h"
+#include "soci-compiler.h"
 #include "soci-exchange-cast.h"
 #include <cctype>
 #include <cstdio>
@@ -101,7 +102,12 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
                    // of characters in the date if it was written out
                    // yyyy-mm-dd hh:mm:ss
 
+        // See comment for the use of this macro in standard-into-type.cpp.
+        GCC_WARNING_SUPPRESS(cast-align)
+
         TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
+
+        GCC_WARNING_RESTORE(cast-align)
 
         ts->year = static_cast<SQLSMALLINT>(t.tm_year + 1900);
         ts->month = static_cast<SQLUSMALLINT>(t.tm_mon + 1);
@@ -140,7 +146,7 @@ void odbc_standard_use_type_backend::copy_from_string(
     )
 {
     size = s.size();
-    sqlType = size > ODBC_MAX_COL_SIZE ? SQL_LONGVARCHAR : SQL_VARCHAR;
+    sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_LONGVARCHAR : SQL_VARCHAR;
     cType = SQL_C_CHAR;
     buf_ = new char[size+1];
     memcpy(buf_, s.c_str(), size);
@@ -191,7 +197,7 @@ void odbc_standard_use_type_backend::bind_by_name(
     {
         std::ostringstream ss;
         ss << "Unable to find name '" << name << "' to bind to";
-        throw soci_error(ss.str().c_str());
+        throw soci_error(ss.str());
     }
 
     position_ = position;

@@ -223,7 +223,28 @@ void session::reconnect()
             close();
         }
 
-        backEnd_ = lastFactory->make_session(lastConnectParameters_);
+        // Indicate that we're reconnecting using a special parameter which can
+        // be used by some backends (currently only ODBC) that interactive
+        // prompts should be suppressed, as they would be unexpected during
+        // reconnection, which may happen automatically and not in the result
+        // of a user action.
+        connection_parameters reconnectParameters(lastConnectParameters_);
+        reconnectParameters.set_option(option_reconnect, option_true);
+        backEnd_ = lastFactory->make_session(reconnectParameters);
+    }
+}
+
+bool session::is_connected() const SOCI_NOEXCEPT
+{
+    try
+    {
+        return backEnd_ && backEnd_->is_connected();
+    }
+    catch (...)
+    {
+        // We must not throw from here, so just handle any exception as an
+        // indication that the database connection is not available any longer.
+        return false;
     }
 }
 

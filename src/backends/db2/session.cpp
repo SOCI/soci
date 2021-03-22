@@ -10,6 +10,8 @@
 #include "soci/db2/soci-db2.h"
 #include "soci/connection-parameters.h"
 
+#include "soci-autostatement.h"
+
 #include <cstdio>
 
 #ifdef _MSC_VER
@@ -85,7 +87,7 @@ db2_session_backend::db2_session_backend(
     /* Prepare handles */
     cliRC = SQLAllocHandle(SQL_HANDLE_ENV,SQL_NULL_HANDLE,&hEnv);
     if (cliRC != SQL_SUCCESS) {
-        throw db2_soci_error("Error while allocating the enironment handle",cliRC);
+        throw db2_soci_error("Error while allocating the environment handle",cliRC);
     }
 
     cliRC = SQLAllocHandle(SQL_HANDLE_DBC, hEnv, &hDbc);
@@ -156,6 +158,19 @@ db2_session_backend::db2_session_backend(
 db2_session_backend::~db2_session_backend()
 {
     clean_up();
+}
+
+bool db2_session_backend::is_connected()
+{
+    details::auto_statement<db2_statement_backend> st(*this);
+
+    // Force preparing the statement immediately (documentation states that
+    // "Deferred prepare is on by default").
+    SQLSetStmtAttr(st.hStmt, SQL_ATTR_DEFERRED_PREPARE, SQL_DEFERRED_PREPARE_OFF, 0);
+
+    st.prepare("values 1", st_one_time_query);
+
+    return true;
 }
 
 void db2_session_backend::begin()

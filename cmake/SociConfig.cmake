@@ -49,6 +49,10 @@ endif()
 # Force compilation flags and set desired warnings level
 #
 
+# This is used to set the -Werror compilation flag only when explicitly
+# requested, as e.g. in CI builds.
+set(SOCI_WERROR_OPTION "")
+
 if (MSVC)
   add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -61,10 +65,17 @@ if (MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /we4266")
   endif()
 
+  if (SOCI_ENABLE_WERROR)
+     set(SOCI_WERROR_OPTION "/WX")
+  endif (SOCI_ENABLE_WERROR)
 else()
 
+  if (SOCI_ENABLE_WERROR)
+     set(SOCI_WERROR_OPTION "-Werror")
+  endif (SOCI_ENABLE_WERROR)
+
   set(SOCI_GCC_CLANG_COMMON_FLAGS
-    "-pedantic -Werror -Wno-error=parentheses -Wall -Wextra -Wpointer-arith -Wcast-align -Wcast-qual -Wfloat-equal -Woverloaded-virtual -Wredundant-decls -Wno-long-long")
+    "-pedantic -Wno-error=parentheses -Wall -Wextra -Wpointer-arith -Wcast-align -Wcast-qual -Wfloat-equal -Woverloaded-virtual -Wredundant-decls -Wno-long-long")
 
 
   if (SOCI_CXX11)
@@ -106,6 +117,8 @@ else()
   endif()
 
 endif()
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SOCI_WERROR_OPTION}")
 
 # Set SOCI_HAVE_* variables for soci-config.h generator
 set(SOCI_HAVE_CXX11 ${SOCI_CXX11} CACHE INTERNAL "Enables C++11 support")

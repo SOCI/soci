@@ -8,19 +8,12 @@
 #ifndef SOCI_ORACLE_H_INCLUDED
 #define SOCI_ORACLE_H_INCLUDED
 
-#ifdef _WIN32
-# ifdef SOCI_DLL
-#  ifdef SOCI_ORACLE_SOURCE
-#   define SOCI_ORACLE_DECL __declspec(dllexport)
-#  else
-#   define SOCI_ORACLE_DECL __declspec(dllimport)
-#  endif // SOCI_ORACLE_SOURCE
-# endif // SOCI_DLL
-#endif // _WIN32
-//
-// If SOCI_ORACLE_DECL isn't defined yet define it now
-#ifndef SOCI_ORACLE_DECL
-# define SOCI_ORACLE_DECL
+#include <soci/soci-platform.h>
+
+#ifdef SOCI_ORACLE_SOURCE
+# define SOCI_ORACLE_DECL SOCI_DECL_EXPORT
+#else
+# define SOCI_ORACLE_DECL SOCI_DECL_IMPORT
 #endif
 
 #include <soci/soci-backend.h>
@@ -82,7 +75,7 @@ struct oracle_standard_into_type_backend : details::standard_into_type_backend
 struct oracle_vector_into_type_backend : details::vector_into_type_backend
 {
     oracle_vector_into_type_backend(oracle_statement_backend &st)
-        : statement_(st), defnp_(NULL), indOCIHolders_(NULL),
+        : statement_(st), defnp_(NULL),
         data_(NULL), buf_(NULL), user_ranges_(true) {}
 
     void define_by_pos(int &position,
@@ -112,7 +105,6 @@ struct oracle_vector_into_type_backend : details::vector_into_type_backend
     oracle_statement_backend &statement_;
 
     OCIDefine *defnp_;
-    sb2 *indOCIHolders_;
     std::vector<sb2> indOCIHolderVec_;
     void *data_;
     char *buf_;              // generic buffer
@@ -167,8 +159,8 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
 struct oracle_vector_use_type_backend : details::vector_use_type_backend
 {
     oracle_vector_use_type_backend(oracle_statement_backend &st)
-        : statement_(st), bindp_(NULL), indOCIHolders_(NULL),
-          data_(NULL), buf_(NULL) {}
+        : statement_(st), bindp_(NULL),
+          data_(NULL), buf_(NULL), bind_position_(0) {}
 
     void bind_by_pos(int & position,
         void * data, details::exchange_type type) SOCI_OVERRIDE
@@ -190,7 +182,7 @@ struct oracle_vector_use_type_backend : details::vector_use_type_backend
         void *data, details::exchange_type type,
         std::size_t begin, std::size_t * end) SOCI_OVERRIDE;
 
-    // common part for bind_by_pos and bind_by_name
+    // pre_use() helper
     void prepare_for_bind(void *&data, sb4 &size, ub2 &oracleType);
 
     // helper function for preparing indicators and sizes_ vectors
@@ -208,7 +200,6 @@ struct oracle_vector_use_type_backend : details::vector_use_type_backend
 
     OCIBind *bindp_;
     std::vector<sb2> indOCIHolderVec_;
-    sb2 *indOCIHolders_;
     void *data_;
     char *buf_;        // generic buffer
     details::exchange_type type_;
@@ -219,6 +210,10 @@ struct oracle_vector_use_type_backend : details::vector_use_type_backend
     // used for strings only
     std::vector<ub2> sizes_;
     std::size_t maxSize_;
+
+    // name is used if non-empty, otherwise position
+    std::string bind_name_;
+    int bind_position_;
 };
 
 struct oracle_session_backend;
@@ -316,6 +311,8 @@ struct oracle_session_backend : details::session_backend
         int ncharset = 0);
 
     ~oracle_session_backend() SOCI_OVERRIDE;
+
+    bool is_connected() SOCI_OVERRIDE;
 
     void begin() SOCI_OVERRIDE;
     void commit() SOCI_OVERRIDE;
@@ -432,6 +429,9 @@ struct oracle_session_backend : details::session_backend
     {
         return "nvl";
     }
+
+    bool get_next_sequence_value(session &s,
+         std::string const &sequence, long long &value) SOCI_OVERRIDE;
 
     std::string get_dummy_from_table() const SOCI_OVERRIDE { return "dual"; }
 

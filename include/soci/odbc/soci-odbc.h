@@ -8,19 +8,12 @@
 #ifndef SOCI_ODBC_H_INCLUDED
 #define SOCI_ODBC_H_INCLUDED
 
-#ifdef _WIN32
-# ifdef SOCI_DLL
-#  ifdef SOCI_ODBC_SOURCE
-#   define SOCI_ODBC_DECL __declspec(dllexport)
-#  else
-#   define SOCI_ODBC_DECL __declspec(dllimport)
-#  endif // SOCI_ODBC_SOURCE
-# endif // SOCI_DLL
-#endif // _WIN32
-//
-// If SOCI_ODBC_DECL isn't defined yet define it now
-#ifndef SOCI_ODBC_DECL
-# define SOCI_ODBC_DECL
+#include <soci/soci-platform.h>
+
+#ifdef SOCI_ODBC_SOURCE
+# define SOCI_ODBC_DECL SOCI_DECL_EXPORT
+#else
+# define SOCI_ODBC_DECL SOCI_DECL_IMPORT
 #endif
 
 #include "soci/soci-platform.h"
@@ -122,7 +115,7 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
                                        private odbc_standard_type_backend_base
 {
     odbc_vector_into_type_backend(odbc_statement_backend &st)
-        : odbc_standard_type_backend_base(st), indHolders_(NULL),
+        : odbc_standard_type_backend_base(st),
           data_(NULL), buf_(NULL) {}
 
     void define_by_pos(int &position,
@@ -144,7 +137,6 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
     // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
     inline SQLLEN get_sqllen_from_vector_at(std::size_t idx) const;
 
-    SQLLEN *indHolders_;
     std::vector<SQLLEN> indHolderVec_;
     void *data_;
     char *buf_;              // generic buffer
@@ -198,17 +190,15 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend,
                                       private odbc_standard_type_backend_base
 {
     odbc_vector_use_type_backend(odbc_statement_backend &st)
-        : odbc_standard_type_backend_base(st), indHolders_(NULL),
+        : odbc_standard_type_backend_base(st),
           data_(NULL), buf_(NULL) {}
 
     // helper function for preparing indicators
     // (as part of the define_by_pos)
     void prepare_indicators(std::size_t size);
 
-    // common part for bind_by_pos and bind_by_name
-    void prepare_for_bind(void *&data, SQLUINTEGER &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType);
-    void bind_helper(int &position,
-        void *data, details::exchange_type type);
+    // helper of pre_use(), return the pointer to the data to be used by ODBC.
+    void* prepare_for_bind(SQLUINTEGER &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType);
 
     void bind_by_pos(int &position,
         void *data, details::exchange_type type) SOCI_OVERRIDE;
@@ -225,10 +215,10 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend,
     // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
     inline void set_sqllen_from_vector_at(const std::size_t idx, const SQLLEN val);
 
-    SQLLEN *indHolders_;
     std::vector<SQLLEN> indHolderVec_;
     void *data_;
     details::exchange_type type_;
+    int position_;
     char *buf_;              // generic buffer
     std::size_t colSize_;    // size of the string column (used for strings)
     // used for strings only
@@ -310,6 +300,8 @@ struct odbc_session_backend : details::session_backend
 
     ~odbc_session_backend() SOCI_OVERRIDE;
 
+    bool is_connected() SOCI_OVERRIDE;
+
     void begin() SOCI_OVERRIDE;
     void commit() SOCI_OVERRIDE;
     void rollback() SOCI_OVERRIDE;
@@ -372,6 +364,25 @@ public:
                   std::string const & msg)
         : soci_error(interpret_odbc_error(htype, hndl, msg))
     {
+    }
+
+    error_category get_error_category() const SOCI_OVERRIDE
+    {
+        const char* const s = reinterpret_cast<const char*>(sqlstate_);
+
+        if ((s[0] == '0' && s[1] == '8') ||
+            strcmp(s, "HYT01") == 0)
+            return connection_error;
+
+        if (strcmp(s, "23000") == 0 ||
+            strcmp(s, "40002") == 0 ||
+            strcmp(s, "44000") == 0)
+            return constraint_violation;
+
+        if (strcmp(s, "HY014") == 0)
+            return system_error;
+
+        return unknown;
     }
 
     SQLCHAR const * odbc_error_code() const

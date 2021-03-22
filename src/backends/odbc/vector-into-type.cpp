@@ -8,6 +8,7 @@
 #define SOCI_ODBC_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/odbc/soci-odbc.h"
+#include "soci-compiler.h"
 #include "soci-cstrtoi.h"
 #include "soci-mktime.h"
 #include "soci-static-assert.h"
@@ -28,7 +29,6 @@ void odbc_vector_into_type_backend::prepare_indicators(std::size_t size)
     }
 
     indHolderVec_.resize(size);
-    indHolders_ = &indHolderVec_[0];
 }
 
 void odbc_vector_into_type_backend::define_by_pos(
@@ -179,7 +179,7 @@ void odbc_vector_into_type_backend::define_by_pos(
 
     SQLRETURN rc
         = SQLBindCol(statement_.hstmt_, static_cast<SQLUSMALLINT>(position++),
-                odbcType_, static_cast<SQLPOINTER>(data), size, indHolders_);
+                odbcType_, static_cast<SQLPOINTER>(data), size, &indHolderVec_[0]);
     if (is_odbc_error(rc))
     {
         std::ostringstream ss;
@@ -269,7 +269,13 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             std::size_t const vsize = v.size();
             for (std::size_t i = 0; i != vsize; ++i)
             {
+                // See comment for the use of this macro in standard-into-type.cpp.
+                GCC_WARNING_SUPPRESS(cast-align)
+
                 TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
+
+                GCC_WARNING_RESTORE(cast-align)
+
                 details::mktime_from_ymdhms(v[i],
                                             ts->year, ts->month, ts->day,
                                             ts->hour, ts->minute, ts->second);
@@ -310,36 +316,26 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
         }
 
         // then - deal with indicators
-        if (ind != NULL)
+        std::size_t const indSize = statement_.get_number_of_rows();
+        for (std::size_t i = 0; i != indSize; ++i)
         {
-            std::size_t const indSize = statement_.get_number_of_rows();
-            for (std::size_t i = 0; i != indSize; ++i)
+            SQLLEN const val = get_sqllen_from_vector_at(i);
+            if (val == SQL_NULL_DATA)
             {
-                SQLLEN const val = get_sqllen_from_vector_at(i);
-                if (val > 0)
-                {
-                    ind[i] = i_ok;
-                }
-                else if (val == SQL_NULL_DATA)
-                {
-                    ind[i] = i_null;
-                }
-                else
-                {
-                    ind[i] = i_truncated;
-                }
-            }
-        }
-        else
-        {
-            std::size_t const indSize = statement_.get_number_of_rows();
-            for (std::size_t i = 0; i != indSize; ++i)
-            {
-                if (get_sqllen_from_vector_at(i) == SQL_NULL_DATA)
+                if (ind == NULL)
                 {
                     // fetched null and no indicator - programming error!
                     throw soci_error(
                         "Null value fetched and no indicator defined.");
+                }
+
+                ind[i] = i_null;
+            }
+            else
+            {
+                if (ind != NULL)
+                {
+                    ind[i] = i_ok;
                 }
             }
         }

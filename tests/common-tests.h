@@ -23,6 +23,8 @@
 
 #include "soci-compiler.h"
 
+#include "soci/callbacks.h"
+
 #define CATCH_CONFIG_RUNNER
 #include <catch.hpp>
 
@@ -123,6 +125,46 @@ private:
     int i_;
 };
 
+// user-defined object for the "vector of custom type objects" tests.
+class MyOptionalString
+{
+public:
+    MyOptionalString() : valid_(false) {}
+    MyOptionalString(const std::string& str) : valid_(true), str_(str) {}
+    void set(const std::string& str) { valid_ = true; str_ = str; }
+    void reset() { valid_ = false; str_.clear(); }
+    bool is_valid() const { return valid_; }
+    const std::string &get() const { return str_; }
+private:
+    bool valid_;
+    std::string str_;
+};
+
+std::ostream& operator<<(std::ostream& ostr, const MyOptionalString& optstr)
+{
+  ostr << (optstr.is_valid() ? "\"" + optstr.get() + "\"" : std::string("(null)"));
+
+  return ostr;
+}
+
+std::ostream& operator<<(std::ostream& ostr, const std::vector<MyOptionalString>& vec)
+{
+    if ( vec.empty() )
+    {
+        ostr << "Empty vector";
+    }
+    else
+    {
+        ostr << "Vector of size " << vec.size() << " containing\n";
+        for ( size_t n = 0; n < vec.size(); ++n )
+        {
+            ostr << "\t [" << std::setw(3) << n << "] = " << vec[n] << "\n";
+        }
+    }
+
+    return ostr;
+}
+
 namespace soci
 {
 
@@ -143,6 +185,37 @@ template<> struct type_conversion<MyInt>
     {
         i = mi.get();
         ind = i_ok;
+    }
+};
+
+// basic type conversion for string based user-defined type which can be null
+template<> struct type_conversion<MyOptionalString>
+{
+    typedef std::string base_type;
+
+    static void from_base(const base_type& in, indicator ind, MyOptionalString& out)
+    {
+        if (ind == i_null)
+        {
+            out.reset();
+        }
+        else
+        {
+            out.set(in);
+        }
+    }
+
+    static void to_base(const MyOptionalString& in, base_type& out, indicator& ind)
+    {
+        if (in.is_valid())
+        {
+            out = in.get();
+            ind = i_ok;
+        }
+        else
+        {
+            ind = i_null;
+        }
     }
 };
 
@@ -373,6 +446,10 @@ public:
     // Override this if the backend silently truncates string values too long
     // to fit by default.
     virtual bool has_silent_truncate_bug(session&) const { return false; }
+
+    // Override this if the backend doesn't distinguish between empty and null
+    // strings (Oracle does this).
+    virtual bool treats_empty_strings_as_null() const { return false; }
 
     // Override this to call commit() if it's necessary for the DDL statements
     // to be taken into account (currently this is only the case for Firebird).
@@ -696,6 +773,12 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         // additional test for NULL with std::tm
         std::tm t = std::tm();
         sql << "select tm from soci_test", into(t, ind);
+        CHECK(ind == i_null);
+
+        // indicator should be initialized even when nothing is found
+        ind = i_ok;
+        sql << "select id from soci_test where str='NO SUCH ROW'",
+                into(i, ind);
         CHECK(ind == i_null);
 
         try
@@ -1778,6 +1861,88 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         CHECK(v2[1] == 0);
         CHECK(v2[2] == 1);
         CHECK(v2[3] == 2000000000);
+    }
+}
+
+// use vector elements with type convertion
+TEST_CASE_METHOD(common_tests, "Use vector of custom type objects", "[core][use][vector][type_conversion]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+    // Unfortunately there is no portable way to indicate whether nulls should
+    // appear at the beginning or the end (SQL 2003 "NULLS LAST" is still not
+    // supported by MS SQL in 2021...), so use this column just to order by it.
+    std::vector<int> i;
+    i.push_back(0);
+    i.push_back(1);
+    i.push_back(2);
+
+    std::vector<MyOptionalString> v;
+    v.push_back(MyOptionalString("string")); // A not empty valid string.
+    v.push_back(MyOptionalString());         // Invalid string mapped to null.
+    v.push_back(MyOptionalString(""));       // An empty but still valid string.
+
+    sql << "insert into soci_test(id, str) values(:i, :v)", use(i), use(v);
+
+    std::vector<std::string> values(3);
+    std::vector<indicator> inds(3);
+    sql << "select str from soci_test order by id", into(values, inds);
+
+    REQUIRE(values.size() == 3);
+    REQUIRE(inds.size() == 3);
+
+    CHECK(inds[0] == soci::i_ok);
+    CHECK(values[0] == "string");
+
+    CHECK(inds[1] == soci::i_null);
+
+    if ( !tc_.treats_empty_strings_as_null() )
+    {
+        CHECK(inds[2] == soci::i_ok);
+        CHECK(values[2] == "");
+    }
+}
+
+TEST_CASE_METHOD(common_tests, "Into vector of custom type objects", "[core][into][vector][type_conversion]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+    // Column used for sorting only, see above.
+    std::vector<int> i;
+    i.push_back(0);
+    i.push_back(1);
+    i.push_back(2);
+
+    std::vector<std::string> values(3);
+    values[0] = "string";
+
+    std::vector<indicator> inds;
+    inds.push_back(i_ok);
+    inds.push_back(i_null);
+    inds.push_back(i_ok);
+
+    sql << "insert into soci_test(id, str) values(:i, :v)", use(i), use(values, inds);
+
+    std::vector<MyOptionalString> v2(4);
+
+    sql << "select str from soci_test order by id", into(v2);
+
+    INFO("Got back " << v2);
+    REQUIRE(v2.size() == 3);
+
+    CHECK(v2[0].is_valid());
+    CHECK(v2[0].get() == "string");
+
+    CHECK(!v2[1].is_valid());
+
+    if ( !tc_.treats_empty_strings_as_null() )
+    {
+        CHECK(v2[2].is_valid());
+        CHECK(v2[2].get().empty());
     }
 }
 
@@ -3413,6 +3578,8 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
         // empty session
         soci::session sql;
 
+        CHECK(!sql.is_connected());
+
         // idempotent:
         sql.close();
 
@@ -3429,10 +3596,13 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
 
         // open from empty session
         sql.open(backEndFactory_, connectString_);
+        CHECK(sql.is_connected());
         sql.close();
+        CHECK(!sql.is_connected());
 
         // reconnecting from closed session
         sql.reconnect();
+        CHECK(sql.is_connected());
 
         // opening already connected session
         try
@@ -3446,13 +3616,16 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
                "Cannot open already connected session.");
         }
 
+        CHECK(sql.is_connected());
         sql.close();
 
         // open from closed
         sql.open(backEndFactory_, connectString_);
+        CHECK(sql.is_connected());
 
         // reconnect from already connected session
         sql.reconnect();
+        CHECK(sql.is_connected());
     }
 
     {
@@ -4707,6 +4880,132 @@ TEST_CASE_METHOD(common_tests, "Logger", "[core][log]")
     CHECK( logbuf.front() == "select count(*) from soci_test" );
 
     sql.set_logger(logger_orig);
+}
+
+// These tests are disabled by default, as they require manual intevention, but
+// can be run by explicitly giving their names on the command line.
+
+// Check if reconnecting to the database after losing connection to it works.
+TEST_CASE_METHOD(common_tests, "Reconnect", "[keep-alive][.]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+    int id = 17;
+    sql << "insert into soci_test (id) values (:id)", use(id);
+
+    REQUIRE_NOTHROW( sql.commit() );
+    CHECK( sql.is_connected() );
+
+    std::cout << "Please break connection to the database "
+                 "(stop the server, unplug the network cable, ...) "
+                 "and press Enter" << std::endl;
+    std::cin.get();
+
+    try
+    {
+        CHECK( !sql.is_connected() );
+
+        int id2;
+        sql << "select id from soci_test", into(id2);
+
+        FAIL("Connection to the database still available");
+        return;
+    }
+    catch (soci_error const& e)
+    {
+        if ( sql.get_backend_name() == "odbc" ||
+                e.get_error_category() == soci_error::unknown )
+        {
+            WARN( "Skipping error check because ODBC driver returned "
+                  "unknown error: " << e.what() );
+        }
+        else
+        {
+            INFO( "Exception message: " << e.what() );
+            CHECK( e.get_error_category() == soci_error::connection_error );
+        }
+    }
+
+    std::cout << "Please undo the previous action "
+                 "(restart the server, plug the cable back, ...) "
+                 "and press Enter" << std::endl;
+    std::cin.get();
+
+    REQUIRE_NOTHROW( sql.reconnect() );
+    CHECK( sql.is_connected() );
+
+    int id2 = 1234;
+    sql << "select id from soci_test", into(id2);
+    CHECK( id2 == id );
+}
+
+// Check if automatically reconnecting to the database works.
+//
+// Note: this test doesn't work at all, failover doesn't happen neither with
+// Oracle nor with PostgreSQL (which are the only backends for which it's
+// implemented at all) and it's not clear how is it even supposed to work.
+TEST_CASE_METHOD(common_tests, "Failover", "[keep-alive][.]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    class MyCallback : public soci::failover_callback
+    {
+    public:
+        MyCallback() : attempted_(false), reconnected_(false)
+        {
+        }
+
+        bool did_reconnect() const { return reconnected_; }
+
+        void started() SOCI_OVERRIDE
+        {
+            std::cout << "Please undo the previous action "
+                         "(restart the server, plug the cable back, ...) "
+                         "and press Enter" << std::endl;
+            std::cin.get();
+        }
+
+        void failed(bool& retry, std::string&) SOCI_OVERRIDE
+        {
+            // We only retry once.
+            retry = !attempted_;
+            attempted_ = true;
+        }
+
+        void finished(soci::session&) SOCI_OVERRIDE
+        {
+            reconnected_ = true;
+        }
+
+        void aborted() SOCI_OVERRIDE
+        {
+            FAIL( "Failover aborted" );
+        }
+
+    private:
+        bool attempted_;
+        bool reconnected_;
+    } myCallback;
+
+    sql.set_failover_callback(myCallback);
+
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+    int id = 17;
+    sql << "insert into soci_test (id) values (:id)", use(id);
+    REQUIRE_NOTHROW( sql.commit() );
+
+    std::cout << "Please break connection to the database "
+                 "(stop the server, unplug the network cable, ...) "
+                 "and press Enter" << std::endl;
+    std::cin.get();
+
+    int id2;
+    sql << "select id from soci_test", into(id2);
+    CHECK( id2 == id );
+
+    CHECK( myCallback.did_reconnect() );
 }
 
 } // namespace test_cases

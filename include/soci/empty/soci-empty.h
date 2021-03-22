@@ -8,19 +8,12 @@
 #ifndef SOCI_EMPTY_H_INCLUDED
 #define SOCI_EMPTY_H_INCLUDED
 
-#ifdef _WIN32
-# ifdef SOCI_DLL
-#  ifdef SOCI_EMPTY_SOURCE
-#   define SOCI_EMPTY_DECL __declspec(dllexport)
-#  else
-#   define SOCI_EMPTY_DECL __declspec(dllimport)
-#  endif // SOCI_EMPTY_SOURCE
-# endif // SOCI_DLL
-#endif // _WIN32
-//
-// If SOCI_EMPTY_DECL isn't defined yet define it now
-#ifndef SOCI_EMPTY_DECL
-# define SOCI_EMPTY_DECL
+#include <soci/soci-platform.h>
+
+#ifdef SOCI_EMPTY_SOURCE
+# define SOCI_EMPTY_DECL SOCI_DECL_EXPORT
+#else
+# define SOCI_EMPTY_DECL SOCI_DECL_IMPORT
 #endif
 
 #include <soci/soci-backend.h>
@@ -158,6 +151,8 @@ struct empty_session_backend : details::session_backend
     empty_session_backend(connection_parameters const& parameters);
 
     ~empty_session_backend() SOCI_OVERRIDE;
+
+    bool is_connected() SOCI_OVERRIDE { return true; }
 
     void begin() SOCI_OVERRIDE;
     void commit() SOCI_OVERRIDE;

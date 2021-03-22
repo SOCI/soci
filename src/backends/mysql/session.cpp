@@ -284,22 +284,22 @@ void parse_connect_string(const string & connectString,
         {
             if (!valid_uint(val))
                 throw soci_error(err);
-            char *end;
-            *connect_timeout = std::strtoul(val.c_str(), &end, 10);
+            char *endp;
+            *connect_timeout = std::strtoul(val.c_str(), &endp, 10);
             *connect_timeout_p = true;
         } else if (par == "read_timeout" && !*read_timeout_p)
         {
             if (!valid_uint(val))
                 throw soci_error(err);
-            char *end;
-            *read_timeout = std::strtoul(val.c_str(), &end, 10);
+            char *endp;
+            *read_timeout = std::strtoul(val.c_str(), &endp, 10);
             *read_timeout_p = true;
         } else if (par == "write_timeout" && !*write_timeout_p)
         {
             if (!valid_uint(val))
                 throw soci_error(err);
-            char *end;
-            *write_timeout = std::strtoul(val.c_str(), &end, 10);
+            char *endp;
+            *write_timeout = std::strtoul(val.c_str(), &endp, 10);
             *write_timeout_p = true;
         }
         else
@@ -446,6 +446,11 @@ void hard_exec(MYSQL *conn, const string & query)
 }
 
 } // namespace unnamed
+
+bool mysql_session_backend::is_connected()
+{
+    return mysql_ping(conn_) == 0;
+}
 
 void mysql_session_backend::begin()
 {

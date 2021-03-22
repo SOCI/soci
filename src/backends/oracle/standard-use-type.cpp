@@ -593,6 +593,10 @@ void oracle_standard_use_type_backend::clean_up()
         // ignore errors from this call
         (void) OCILobFreeTemporary(statement_.session_.svchp_, statement_.session_.errhp_,
             lobp);
+
+        // free LOB Locator
+        OCIDescriptorFree(lobp, OCI_DTYPE_LOB);
+        ociData_ = NULL;
     }
     
     if (bindp_ != NULL)
