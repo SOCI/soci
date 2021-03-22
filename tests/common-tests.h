@@ -1098,6 +1098,54 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
         }
     }
 
+    SECTION("unsigned long long")
+    {
+        unsigned int const rowsToTest = 100;
+        unsigned long long ul;
+        for (ul = 0; ul != rowsToTest; ++ul)
+        {
+            sql << "insert into soci_test(ul) values(" << ul << ")";
+        }
+
+        int count;
+        sql << "select count(*) from soci_test", into(count);
+        CHECK(count == static_cast<int>(rowsToTest));
+
+        {
+            unsigned long long ul2 = 0;
+
+            statement st = (sql.prepare <<
+                "select ul from soci_test order by ul", into(ul));
+
+            st.execute();
+            while (st.fetch())
+            {
+                CHECK(ul == ul2);
+                ++ul2;
+            }
+            CHECK(ul2 == rowsToTest);
+        }
+        {
+            unsigned long long ul2 = 0;
+
+            std::vector<unsigned long long> vec(8);
+            statement st = (sql.prepare <<
+                "select ul from soci_test order by ul", into(vec));
+            st.execute();
+            while (st.fetch())
+            {
+                for (std::size_t i = 0; i != vec.size(); ++i)
+                {
+                    CHECK(ul2 == vec[i]);
+                    ++ul2;
+                }
+
+                vec.resize(8);
+            }
+            CHECK(ul2 == rowsToTest);
+        }
+    }
+
     SECTION("double")
     {
         int const rowsToTest = 100;
@@ -1759,6 +1807,26 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
     SECTION("unsigned int")
     {
         std::vector<unsigned int> v;
+        v.push_back(0);
+        v.push_back(1);
+        v.push_back(123);
+        v.push_back(1000);
+
+        sql << "insert into soci_test(ul) values(:ul)", use(v);
+
+        std::vector<unsigned int> v2(4);
+
+        sql << "select ul from soci_test order by ul", into(v2);
+        CHECK(v2.size() == 4);
+        CHECK(v2[0] == 0);
+        CHECK(v2[1] == 1);
+        CHECK(v2[2] == 123);
+        CHECK(v2[3] == 1000);
+    }
+
+    SECTION("unsigned long long")
+    {
+        std::vector<unsigned long long> v;
         v.push_back(0);
         v.push_back(1);
         v.push_back(123);
