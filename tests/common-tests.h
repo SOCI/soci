@@ -4668,6 +4668,20 @@ static std::string make_long_xml_string(int approximateSize = 5000)
     return s;
 }
 
+// The helper function to remove trailing \n from a given string.
+// Used for XML strings, returned from the DB.
+// The returned XML value doesn't need to be identical to the original one as
+// string, only structurally equal as XML. In particular, extra whitespace
+// can be added and this does happen with Oracle, for example, which adds
+// an extra new line, so remove it if it's present.
+static void remove_trailing_nl(std::string& str)
+{
+    if (!str.empty() && *str.rbegin() == '\n')
+    {
+        str.resize(str.length() - 1);
+    }
+}
+
 TEST_CASE_METHOD(common_tests, "CLOB", "[core][clob]")
 {
     soci::session sql(backEndFactory_, connectString_);
@@ -4769,14 +4783,7 @@ TEST_CASE_METHOD(common_tests, "XML", "[core][xml]")
         << " from soci_test where id = :1",
         into(xml2), use(id);
 
-    // The returned value doesn't need to be identical to the original one as
-    // string, only structurally equal as XML. In particular, extra whitespace
-    // can be added and this does happen with Oracle, for example, which adds
-    // an extra new line, so remove it if it's present.
-    if (!xml2.value.empty() && *xml2.value.rbegin() == '\n')
-    {
-        xml2.value.resize(xml2.value.length() - 1);
-    }
+    remove_trailing_nl(xml2.value);
 
     CHECK(xml.value == xml2.value);
 
@@ -4844,17 +4851,9 @@ TEST_CASE_METHOD(common_tests, "XML vector", "[core][xml][vector]")
         << " from soci_test where id = :1",
         into(xml2), use(id.at(0));
 
-    // The returned value doesn't need to be identical to the original one as
-    // string, only structurally equal as XML. In particular, extra whitespace
-    // can be added and this does happen with Oracle, for example, which adds
-    // an extra new line, so remove it if it's present.
     for (int i = 0; i < 2; ++i)
     {
-        std::string &value = xml2.at(i).value;
-        if (!value.empty() && *value.rbegin() == '\n')
-        {
-            value.resize(value.length() - 1);
-        }
+        remove_trailing_nl(xml2.at(i).value);
     }
 
     CHECK(xml.at(0).value == xml2.at(0).value);
