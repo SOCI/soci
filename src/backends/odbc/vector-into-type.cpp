@@ -151,7 +151,7 @@ void odbc_vector_into_type_backend::define_by_pos(
 
             // Column size for text data type can be too large for buffer allocation.
             colSize_ = static_cast<size_t>(get_sqllen_from_value(statement_.column_size(position)));
-            colSize_ = (colSize_ > odbc_max_buffer_length || colSize_ == 0) ? odbc_max_buffer_length : colSize_;
+            colSize_ = (colSize_ >= ODBC_MAX_COL_SIZE || colSize_ == 0) ? odbc_max_buffer_length : colSize_;
             colSize_++;
 
             std::size_t bufSize = colSize_ * vectorSize;
