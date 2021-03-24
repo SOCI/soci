@@ -14,6 +14,7 @@
 #include "soci-mktime.h"
 #include "soci-static-assert.h"
 #include "soci-vector-helpers.h"
+#include <algorithm>
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -38,6 +39,11 @@ void odbc_vector_into_type_backend::define_by_pos(
 {
     data_ = data; // for future reference
     type_ = type; // for future reference
+    position_ = position - 1;
+
+    statement_.intoType_ = bt_vector;
+    statement_.intos_.push_back(static_cast<void*>(this));
+    statement_.inds_.push_back(std::vector<indicator>());
 
     SQLLEN size = 0;       // also dummy
 
@@ -147,14 +153,27 @@ void odbc_vector_into_type_backend::define_by_pos(
     case x_longstring:
         {
             odbcType_ = SQL_C_CHAR;
-            const size_t vectorSize = get_vector_size(type, data);
 
-            // Column size for text data type can be too large for buffer allocation.
             colSize_ = static_cast<size_t>(get_sqllen_from_value(statement_.column_size(position)));
-            colSize_ = (colSize_ >= ODBC_MAX_COL_SIZE || colSize_ == 0) ? odbc_max_buffer_length : colSize_;
+            if (colSize_ >= ODBC_MAX_COL_SIZE || colSize_ == 0)
+            {
+                // Column size for text data type can be too large for buffer allocation.
+                colSize_ = odbc_max_buffer_length;
+                // If we are using huge buffer size then we need to fetch rows
+                // one by one as otherwise we could easily run out of memory.
+                // Note that the flag is permanent for the statement and will
+                // never be reset.
+                statement_.fetchVectorByRows_ = true;
+            }
+
             colSize_++;
 
-            std::size_t bufSize = colSize_ * vectorSize;
+            const std::size_t vectorSize = get_vector_size(type, data);
+            // If we are fetching by a single row, allocate the buffer only for
+            // one value.
+            const std::size_t elementsCount
+                = statement_.fetchVectorByRows_ ? 1 : vectorSize;
+            std::size_t bufSize = colSize_ * elementsCount;
             buf_ = new char[bufSize];
 
             prepare_indicators(vectorSize);
@@ -201,7 +220,8 @@ void odbc_vector_into_type_backend::pre_fetch()
     // nothing to do for the supported types
 }
 
-void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
+void odbc_vector_into_type_backend::exchange_rows(bool gotData,
+    std::size_t beginInd, std::size_t endInd)
 {
     if (gotData)
     {
@@ -215,8 +235,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
 
             std::vector<char> &v(*vp);
             char *pos = buf_;
-            std::size_t const vsize = v.size();
-            for (std::size_t i = 0; i != vsize; ++i)
+            for (std::size_t i = beginInd; i != endInd; ++i)
             {
                 v[i] = *pos;
                 pos += colSize_;
@@ -225,8 +244,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
         if (type_ == x_stdstring || type_ == x_xmltype || type_ == x_longstring)
         {
             const char *pos = buf_;
-            std::size_t const vsize = get_vector_size(type_, data_);;
-            for (std::size_t i = 0; i != vsize; ++i, pos += colSize_)
+            for (std::size_t i = beginInd; i != endInd; ++i, pos += colSize_)
             {
                 SQLLEN const len = get_sqllen_from_vector_at(i);
 
@@ -270,8 +288,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
 
             std::vector<std::tm> &v(*vp);
             char *pos = buf_;
-            std::size_t const vsize = v.size();
-            for (std::size_t i = 0; i != vsize; ++i)
+            for (std::size_t i = beginInd; i != endInd; ++i)
             {
                 // See comment for the use of this macro in standard-into-type.cpp.
                 GCC_WARNING_SUPPRESS(cast-align)
@@ -292,8 +309,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                 = static_cast<std::vector<long long> *>(data_);
             std::vector<long long> &v(*vp);
             char *pos = buf_;
-            std::size_t const vsize = v.size();
-            for (std::size_t i = 0; i != vsize; ++i)
+            for (std::size_t i = beginInd; i != endInd; ++i)
             {
                 if (!cstring_to_integer(v[i], pos))
                 {
@@ -308,8 +324,7 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                 = static_cast<std::vector<unsigned long long> *>(data_);
             std::vector<unsigned long long> &v(*vp);
             char *pos = buf_;
-            std::size_t const vsize = v.size();
-            for (std::size_t i = 0; i != vsize; ++i)
+            for (std::size_t i = beginInd; i != endInd; ++i)
             {
                 if (!cstring_to_unsigned(v[i], pos))
                 {
@@ -320,33 +335,45 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
         }
 
         // then - deal with indicators
-        std::size_t const indSize = statement_.get_number_of_rows();
-        for (std::size_t i = 0; i != indSize; ++i)
+
+        for (std::size_t i = beginInd; i != endInd; ++i)
         {
             SQLLEN const val = get_sqllen_from_vector_at(i);
             if (val == SQL_NULL_DATA)
             {
-                if (ind == NULL)
-                {
-                    // fetched null and no indicator - programming error!
-                    throw soci_error(
-                        "Null value fetched and no indicator defined.");
-                }
-
-                ind[i] = i_null;
+                statement_.inds_[position_][i] = i_null;
             }
             else
             {
-                if (ind != NULL)
-                {
-                    ind[i] = i_ok;
-                }
+                statement_.inds_[position_][i] = i_ok;
             }
         }
     }
     else // gotData == false
     {
         // nothing to do here, vectors are truncated anyway
+    }
+}
+
+void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator* ind)
+{
+    // Here we have to set indicators only. Data was exchanged with user
+    // buffers during fetch()
+    if (gotData)
+    {
+        std::size_t rows = statement_.numRowsFetched_;
+
+        for (std::size_t i = 0; i < rows; ++i)
+        {
+            if (statement_.inds_[position_][i] == i_null && (ind == NULL))
+            {
+                throw soci_error("Null value fetched and no indicator defined.");
+            }
+            else if (ind != NULL)
+            {
+                ind[i] = statement_.inds_[position_][i];
+            }
+        }
     }
 }
 
@@ -369,4 +396,8 @@ void odbc_vector_into_type_backend::clean_up()
         delete [] buf_;
         buf_ = NULL;
     }
+    std::vector<void*>::iterator it
+        = std::find(statement_.intos_.begin(), statement_.intos_.end(), this);
+    if (it != statement_.intos_.end())
+        statement_.intos_.erase(it);
 }
