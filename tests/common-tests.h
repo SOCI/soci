@@ -4939,6 +4939,62 @@ TEST_CASE_METHOD(common_tests, "XML vector", "[core][xml][vector]")
     CHECK(ind.at(1) == i_null);
 }
 
+TEST_CASE_METHOD(common_tests, "Into XML vector with several fetches", "[core][xml][into][vector][statement]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    if (sql.get_backend_name() != "firebird" &&
+        sql.get_backend_name() != "odbc")
+    {
+        WARN("Vector of XML types not supported by the database, skipping the test.");
+        return;
+    }
+
+    auto_table_creator tableCreator(tc_.table_creator_xml(sql));
+    if (!tableCreator.get())
+    {
+        WARN("XML type not supported by the database, skipping the test.");
+        return;
+    }
+
+    int stringSize = 0;
+    SECTION("short string")
+    {
+        stringSize = 100;
+    }
+    SECTION("long string")
+    {
+        stringSize = 10000;
+    }
+
+    int const count = 5;
+    std::vector<xml_type> values(count);
+    for (int i = 0; i != count; ++i)
+        values[i].value = make_long_xml_string(stringSize + i*100);
+
+    sql << "insert into soci_test (x) values ("
+        << tc_.to_xml(":2")
+        << ")",
+        use(values);
+
+    std::vector<xml_type> result(3);
+    soci::statement st = (sql.prepare <<
+        "select " << tc_.from_xml("x") << " from soci_test", into(result));
+
+    st.execute(true);
+    REQUIRE(result.size() == 3);
+    CHECK(result[0].value == values[0].value);
+    CHECK(result[1].value == values[1].value);
+    CHECK(result[2].value == values[2].value);
+
+    REQUIRE(st.fetch());
+    REQUIRE(result.size() == 2);
+    CHECK(result[0].value == values[3].value);
+    CHECK(result[1].value == values[4].value);
+
+    REQUIRE(!st.fetch());
+}
+
 TEST_CASE_METHOD(common_tests, "Logger", "[core][log]")
 {
     // Logger class used for testing: appends all queries to the provided
