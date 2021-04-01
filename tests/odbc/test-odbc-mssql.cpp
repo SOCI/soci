@@ -136,6 +136,15 @@ struct table_creator_for_xml : table_creator_base
     }
 };
 
+struct table_creator_for_get_last_insert_id : table_creator_base
+{
+    table_creator_for_get_last_insert_id(soci::session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test (id integer identity(1, 1), val integer)";
+    }
+};
+
 //
 // Support for SOCI Common Tests
 //
@@ -175,6 +184,11 @@ public:
     tests::table_creator_base* table_creator_xml(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_for_xml(s);
+    }
+
+    tests::table_creator_base* table_creator_get_last_insert_id(soci::session& s) const SOCI_OVERRIDE
+    {
+        return new table_creator_for_get_last_insert_id(s);
     }
 
     bool has_real_xml_support() const SOCI_OVERRIDE

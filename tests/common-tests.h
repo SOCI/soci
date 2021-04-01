@@ -416,6 +416,12 @@ public:
     // Returns null by default to indicate that XML is not supported.
     virtual table_creator_base* table_creator_xml(session&) const { return NULL; }
 
+    // Override this to return the table creator for a simple table containing
+    // an identity integer "id" and a simple integer "val" columns.
+    //
+    // Returns null by default to indicate that identity is not supported.
+    virtual table_creator_base* table_creator_get_last_insert_id(session&) const { return NULL; }
+
     // Return the casts that must be used to convert the between the database
     // XML type and the query parameters.
     //
@@ -1376,6 +1382,34 @@ TEST_CASE_METHOD(common_tests, "Indicators vector", "[core][indicator][vector]")
         }
     }
 
+}
+
+TEST_CASE_METHOD(common_tests, "Get last insert ID", "[core][get_last_insert_id]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    // create and populate the test table
+    auto_table_creator tableCreator(tc_.table_creator_get_last_insert_id(sql));
+
+    // If the get_last_insert_id() supported by the backend.
+    if (!tableCreator.get())
+        return;
+
+    long long id;
+    REQUIRE(sql.get_last_insert_id("soci_test", id));
+    // The initial value should be 1 and we call get_last_insert_id() before
+    // the first insert, so the "pre-initial value" is 0.
+    CHECK(id == 0);
+
+    sql << "insert into soci_test(val) values(10)";
+
+    REQUIRE(sql.get_last_insert_id("soci_test", id));
+    CHECK(id == 1);
+
+    sql << "insert into soci_test(val) values(11)";
+
+    REQUIRE(sql.get_last_insert_id("soci_test", id));
+    CHECK(id == 2);
 }
 
 // "use" tests, type conversions, etc.
