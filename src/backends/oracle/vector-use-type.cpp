@@ -154,11 +154,12 @@ void oracle_vector_use_type_backend::prepare_for_bind(
         }
         break;
 
-    case x_xmltype:    break; // not supported
-    case x_longstring: break; // not supported
-    case x_statement:  break; // not supported
-    case x_rowid:      break; // not supported
-    case x_blob:       break; // not supported
+    case x_xmltype:
+    case x_longstring:
+    case x_statement:
+    case x_rowid:
+    case x_blob:
+        throw soci_error("Unsupported type for vector use parameter");
     }
 }
 
