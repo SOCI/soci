@@ -4791,14 +4791,6 @@ TEST_CASE_METHOD(common_tests, "CLOB vector", "[core][clob][vector]")
 {
     soci::session sql(backEndFactory_, connectString_);
 
-    if (sql.get_backend_name() != "firebird" &&
-        sql.get_backend_name() != "odbc" &&
-        sql.get_backend_name() != "postgresql")
-    {
-        WARN("Vector of long strings not supported by the database, skipping the test.");
-        return;
-    }
-
     auto_table_creator tableCreator(tc_.table_creator_clob(sql));
     if (!tableCreator.get())
     {
@@ -4892,14 +4884,6 @@ TEST_CASE_METHOD(common_tests, "XML vector", "[core][xml][vector]")
 {
     soci::session sql(backEndFactory_, connectString_);
 
-    if (sql.get_backend_name() != "firebird" &&
-        sql.get_backend_name() != "odbc" &&
-        sql.get_backend_name() != "postgresql")
-    {
-        WARN("Vector of XML types not supported by the database, skipping the test.");
-        return;
-    }
-
     auto_table_creator tableCreator(tc_.table_creator_xml(sql));
     if (!tableCreator.get())
     {
@@ -4945,14 +4929,6 @@ TEST_CASE_METHOD(common_tests, "XML vector", "[core][xml][vector]")
 TEST_CASE_METHOD(common_tests, "Into XML vector with several fetches", "[core][xml][into][vector][statement]")
 {
     soci::session sql(backEndFactory_, connectString_);
-
-    if (sql.get_backend_name() != "firebird" &&
-        sql.get_backend_name() != "odbc" &&
-        sql.get_backend_name() != "postgresql")
-    {
-        WARN("Vector of XML types not supported by the database, skipping the test.");
-        return;
-    }
 
     auto_table_creator tableCreator(tc_.table_creator_xml(sql));
     if (!tableCreator.get())

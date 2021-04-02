@@ -87,6 +87,7 @@ struct oracle_vector_into_type_backend : details::vector_into_type_backend
         int & position, void * data, details::exchange_type type,
         std::size_t begin, std::size_t * end) SOCI_OVERRIDE;
 
+    void pre_exec(int num) SOCI_OVERRIDE;
     void pre_fetch() SOCI_OVERRIDE;
     void post_fetch(bool gotData, indicator *ind) SOCI_OVERRIDE;
 

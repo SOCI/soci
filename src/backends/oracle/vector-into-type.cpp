@@ -8,6 +8,7 @@
 #define soci_ORACLE_SOURCE
 #include "soci/oracle/soci-oracle.h"
 #include "soci/statement.h"
+#include "clob.h"
 #include "error.h"
 #include "soci/soci-platform.h"
 #include "soci-mktime.h"
@@ -160,6 +161,19 @@ void oracle_vector_into_type_backend::define_by_pos_bulk(
 
     case x_xmltype:
     case x_longstring:
+        {
+            oracleType = SQLT_CLOB;
+            std::size_t const vecSize = size();
+
+            prepare_indicators(vecSize);
+
+            elementSize = sizeof(OCILobLocator*);
+
+            buf_ = new char[elementSize * vecSize];
+            dataBuf = buf_;
+        }
+        break;
+
     case x_statement:
     case x_rowid:
     case x_blob:
@@ -173,6 +187,21 @@ void oracle_vector_into_type_backend::define_by_pos_bulk(
     if (res != OCI_SUCCESS)
     {
         throw_oracle_soci_error(res, statement_.session_.errhp_);
+    }
+}
+
+void oracle_vector_into_type_backend::pre_exec(int /* num */)
+{
+    if (type_ == x_xmltype || type_ == x_longstring)
+    {
+        // lazy initialization of the temporary LOB objects
+        OCILobLocator** const lobps = reinterpret_cast<OCILobLocator**>(buf_);
+
+        std::size_t const vecSize = size();
+        for (std::size_t i = 0; i != vecSize; ++i)
+        {
+            lobps[i] = create_temp_lob(statement_.session_);
+        }
     }
 }
 
@@ -272,6 +301,20 @@ void oracle_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                 }
             }
         }
+        else if (type_ == x_xmltype || type_ == x_longstring)
+        {
+            OCILobLocator** const lobps = reinterpret_cast<OCILobLocator**>(buf_);
+
+            std::size_t const vecSize = size();
+            for (std::size_t i = 0; i != vecSize; ++i)
+            {
+                if (indOCIHolderVec_[i] != -1)
+                {
+                    read_from_lob(statement_.session_,
+                        lobps[i], vector_string_value(type_, data_, i));
+                }
+            }
+        }
         else if (type_ == x_statement)
         {
             statement *st = static_cast<statement *>(data_);
@@ -363,6 +406,17 @@ std::size_t oracle_vector_into_type_backend::full_size()
 
 void oracle_vector_into_type_backend::clean_up()
 {
+    if (type_ == x_longstring || type_ == x_xmltype)
+    {
+        OCILobLocator** lobps = reinterpret_cast<OCILobLocator**>(buf_);
+
+        std::size_t const vecSize = size();
+        for (std::size_t i = 0; i != vecSize; ++i)
+        {
+            free_temp_lob(statement_.session_, lobps[i]);
+        }
+    }
+
     if (defnp_ != NULL)
     {
         OCIHandleFree(defnp_, OCI_HTYPE_DEFINE);

@@ -7,6 +7,7 @@
 
 #define soci_ORACLE_SOURCE
 #include "soci/oracle/soci-oracle.h"
+#include "clob.h"
 #include "error.h"
 #include "soci/soci-platform.h"
 #include "soci-vector-helpers.h"
@@ -157,6 +158,19 @@ void oracle_vector_use_type_backend::prepare_for_bind(
 
     case x_xmltype:
     case x_longstring:
+        {
+            std::size_t const vecSize = size();
+            prepare_indicators(vecSize);
+
+            sb4 const dlen = sizeof(OCILobLocator*);
+            buf_ = new char[dlen * vecSize];
+
+            oracleType = SQLT_CLOB;
+            data = buf_;
+            elementSize = dlen;
+        }
+        break;
+
     case x_statement:
     case x_rowid:
     case x_blob:
@@ -262,6 +276,18 @@ void oracle_vector_use_type_backend::pre_use(indicator const *ind)
             *pos++ = static_cast<ub1>(t.tm_sec + 1);
         }
     }
+    else if (type_ == x_longstring || type_ == x_xmltype)
+    {
+        OCILobLocator** const lobps = reinterpret_cast<OCILobLocator**>(buf_);
+
+        std::size_t const vecSize = size();
+        for (std::size_t i = 0; i != vecSize; ++i)
+        {
+            lobps[i] = create_temp_lob(statement_.session_);
+            write_to_lob(statement_.session_, lobps[i],
+                vector_string_value(type_, data_, i));
+        }
+    }
 
     // then handle indicators
     if (ind != NULL)
@@ -341,6 +367,16 @@ std::size_t oracle_vector_use_type_backend::full_size()
 
 void oracle_vector_use_type_backend::clean_up()
 {
+    if (type_ == x_longstring || type_ == x_xmltype)
+    {
+        OCILobLocator** const lobps = reinterpret_cast<OCILobLocator**>(buf_);
+        std::size_t const vecSize = size();
+        for (std::size_t i = 0; i != vecSize; ++i)
+        {
+            free_temp_lob(statement_.session_, lobps[i]);
+        }
+    }
+
     if (buf_ != NULL)
     {
         delete [] buf_;
