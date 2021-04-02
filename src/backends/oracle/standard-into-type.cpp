@@ -218,7 +218,7 @@ void oracle::read_from_lob(oracle_session_backend& session,
                 lobp, &lenChunk,
                 offset,
                 reinterpret_cast<dvoid*>(&buf[offset - 1]),
-                len - offset + 1, 0, 0, 0, 0);
+                len, 0, 0, 0, 0);
             if (res == OCI_NEED_DATA)
             {
                 offset += lenChunk;
