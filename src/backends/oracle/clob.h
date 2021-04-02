@@ -29,6 +29,9 @@ OCILobLocator * create_temp_lob(oracle_session_backend& session);
 void write_to_lob(oracle_session_backend& session,
     OCILobLocator * lobp, const std::string & value);
 
+// Frees a temporary LOB object. Doesn't throw.
+void free_temp_lob(oracle_session_backend& session, OCILobLocator * lobp);
+
 } // namespace oracle
 
 } // namespace details

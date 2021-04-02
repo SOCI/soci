@@ -281,6 +281,16 @@ OCILobLocator * oracle::create_temp_lob(oracle_session_backend& session)
     return lobp;
 }
 
+void oracle::free_temp_lob(oracle_session_backend& session,
+    OCILobLocator * lobp)
+{
+    // ignore errors from this call
+    (void) OCILobFreeTemporary(session.svchp_, session.errhp_, lobp);
+
+    // free LOB Locator
+    OCIDescriptorFree(lobp, OCI_DTYPE_LOB);
+}
+
 void oracle_standard_use_type_backend::pre_exec(int /* num */)
 {
     switch (type_)
@@ -582,14 +592,7 @@ void oracle_standard_use_type_backend::clean_up()
 {
     if (type_ == x_xmltype || type_ == x_longstring)
     {
-        OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
-
-        // ignore errors from this call
-        (void) OCILobFreeTemporary(statement_.session_.svchp_, statement_.session_.errhp_,
-            lobp);
-
-        // free LOB Locator
-        OCIDescriptorFree(lobp, OCI_DTYPE_LOB);
+        free_temp_lob(statement_.session_, static_cast<OCILobLocator *>(ociData_));
         ociData_ = NULL;
     }
     
