@@ -418,7 +418,7 @@ public:
         return new table_creator_for_get_affected_rows(s);
     }
 
-    table_creator_base* table_creator_get_last_insert_id(session& s) const SOCI_OVERRIDE
+    table_creator_base* table_creator_get_last_insert_id(soci::session& s) const SOCI_OVERRIDE
     {
         struct table_creator_for_get_last_insert_id : table_creator_base
         {
