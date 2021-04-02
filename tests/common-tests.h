@@ -4742,12 +4742,14 @@ static std::string make_long_xml_string(int approximateSize = 5000)
 // string, only structurally equal as XML. In particular, extra whitespace
 // can be added and this does happen with Oracle, for example, which adds
 // an extra new line, so remove it if it's present.
-static void remove_trailing_nl(std::string& str)
+static std::string remove_trailing_nl(std::string str)
 {
     if (!str.empty() && *str.rbegin() == '\n')
     {
         str.resize(str.length() - 1);
     }
+
+    return str;
 }
 
 TEST_CASE_METHOD(common_tests, "CLOB", "[core][clob]")
@@ -4858,9 +4860,7 @@ TEST_CASE_METHOD(common_tests, "XML", "[core][xml]")
         << " from soci_test where id = :1",
         into(xml2), use(id);
 
-    remove_trailing_nl(xml2.value);
-
-    CHECK(xml.value == xml2.value);
+    CHECK(xml.value == remove_trailing_nl(xml2.value));
 
     sql << "update soci_test set x = null where id = :1", use(id);
 
@@ -4927,13 +4927,8 @@ TEST_CASE_METHOD(common_tests, "XML vector", "[core][xml][vector]")
         << " from soci_test where id = :1",
         into(xml2), use(id.at(0));
 
-    for (int i = 0; i < 2; ++i)
-    {
-        remove_trailing_nl(xml2.at(i).value);
-    }
-
-    CHECK(xml.at(0).value == xml2.at(0).value);
-    CHECK(xml.at(1).value == xml2.at(1).value);
+    CHECK(xml.at(0).value == remove_trailing_nl(xml2.at(0).value));
+    CHECK(xml.at(1).value == remove_trailing_nl(xml2.at(1).value));
 
     sql << "update soci_test set x = null where id = :1", use(id.at(0));
 
