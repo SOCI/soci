@@ -4987,14 +4987,14 @@ TEST_CASE_METHOD(common_tests, "Into XML vector with several fetches", "[core][x
 
     st.execute(true);
     REQUIRE(result.size() == 3);
-    CHECK(result[0].value == values[0].value);
-    CHECK(result[1].value == values[1].value);
-    CHECK(result[2].value == values[2].value);
+    CHECK(remove_trailing_nl(result[0].value) == values[0].value);
+    CHECK(remove_trailing_nl(result[1].value) == values[1].value);
+    CHECK(remove_trailing_nl(result[2].value) == values[2].value);
 
     REQUIRE(st.fetch());
     REQUIRE(result.size() == 2);
-    CHECK(result[0].value == values[3].value);
-    CHECK(result[1].value == values[4].value);
+    CHECK(remove_trailing_nl(result[0].value) == values[3].value);
+    CHECK(remove_trailing_nl(result[1].value) == values[4].value);
 
     REQUIRE(!st.fetch());
 }
