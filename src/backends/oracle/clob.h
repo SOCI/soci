@@ -10,8 +10,9 @@
 
 #include "soci/oracle/soci-oracle.h"
 
-// Note that the functions in this file are currently implemented in
-// standard-use-type.cpp.
+// Note that mopst functions in this file are currently implemented in
+// standard-use-type.cpp except for read_from_lob() which is found in
+// standard-into-type.cpp.
 
 namespace soci
 {
@@ -28,6 +29,10 @@ OCILobLocator * create_temp_lob(oracle_session_backend& session);
 // Writes the given value to the LOB. Throws on error.
 void write_to_lob(oracle_session_backend& session,
     OCILobLocator * lobp, const std::string & value);
+
+// Reads the value from the lob into the given string. Throws on error.
+void read_from_lob(oracle_session_backend& session,
+    OCILobLocator * lobp, std::string & value);
 
 // Frees a temporary LOB object. Doesn't throw.
 void free_temp_lob(oracle_session_backend& session, OCILobLocator * lobp);

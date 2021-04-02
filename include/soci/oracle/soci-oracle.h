@@ -51,8 +51,6 @@ struct oracle_standard_into_type_backend : details::standard_into_type_backend
     void define_by_pos(int &position,
         void *data, details::exchange_type type) SOCI_OVERRIDE;
 
-    void read_from_lob(OCILobLocator * lobp, std::string & value);
-
     void pre_exec(int num) SOCI_OVERRIDE;
     void pre_fetch() SOCI_OVERRIDE;
     void post_fetch(bool gotData, bool calledFromFetch,

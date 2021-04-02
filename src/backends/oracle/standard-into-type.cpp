@@ -194,15 +194,16 @@ void oracle_standard_into_type_backend::pre_fetch()
     }
 }
 
-void oracle_standard_into_type_backend::read_from_lob(OCILobLocator * lobp, std::string & value)
+void oracle::read_from_lob(oracle_session_backend& session,
+    OCILobLocator * lobp, std::string & value)
 {
     ub4 len;
 
-    sword res = OCILobGetLength(statement_.session_.svchp_, statement_.session_.errhp_,
+    sword res = OCILobGetLength(session.svchp_, session.errhp_,
         lobp, &len);
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, statement_.session_.errhp_);
+        throw_oracle_soci_error(res, session.errhp_);
     }
 
     std::vector<char> buf(len);
@@ -213,7 +214,7 @@ void oracle_standard_into_type_backend::read_from_lob(OCILobLocator * lobp, std:
         ub4 offset = 1;
         do
         {
-            res = OCILobRead(statement_.session_.svchp_, statement_.session_.errhp_,
+            res = OCILobRead(session.svchp_, session.errhp_,
                 lobp, &lenChunk,
                 offset,
                 reinterpret_cast<dvoid*>(&buf[offset - 1]),
@@ -224,7 +225,7 @@ void oracle_standard_into_type_backend::read_from_lob(OCILobLocator * lobp, std:
             }
             else if (res != OCI_SUCCESS)
             {
-                throw_oracle_soci_error(res, statement_.session_.errhp_);
+                throw_oracle_soci_error(res, session.errhp_);
             }
         }
         while (res == OCI_NEED_DATA);
@@ -290,7 +291,8 @@ void oracle_standard_into_type_backend::post_fetch(
             {
                 OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
 
-                read_from_lob(lobp, exchange_type_cast<x_xmltype>(data_).value);
+                read_from_lob(statement_.session_,
+                    lobp, exchange_type_cast<x_xmltype>(data_).value);
             }
         }
         else if (type_ == x_longstring)
@@ -299,7 +301,8 @@ void oracle_standard_into_type_backend::post_fetch(
             {
                 OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
 
-                read_from_lob(lobp, exchange_type_cast<x_longstring>(data_).value);
+                read_from_lob(statement_.session_,
+                    lobp, exchange_type_cast<x_longstring>(data_).value);
             }
         }
     }
