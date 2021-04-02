@@ -418,6 +418,20 @@ public:
         return new table_creator_for_get_affected_rows(s);
     }
 
+    table_creator_base* table_creator_get_last_insert_id(session& s) const SOCI_OVERRIDE
+    {
+        struct table_creator_for_get_last_insert_id : table_creator_base
+        {
+            table_creator_for_get_last_insert_id(soci::session & sql)
+                : table_creator_base(sql)
+            {
+                sql << "create table soci_test (id integer primary key, val integer)";
+            }
+        };
+
+        return new table_creator_for_get_last_insert_id(s);
+    }
+
     std::string to_date_time(std::string const &datdt_string) const SOCI_OVERRIDE
     {
         return "datetime(\'" + datdt_string + "\')";
