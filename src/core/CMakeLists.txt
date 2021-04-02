@@ -66,6 +66,7 @@ if (SOCI_SHARED)
   target_include_directories(${SOCI_CORE_TARGET}
       PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include>
+      $<INSTALL_INTERFACE:include>
   )
 
 endif()
@@ -98,6 +99,7 @@ if (SOCI_STATIC)
   target_include_directories(${SOCI_CORE_TARGET_STATIC}
       PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include>
+      $<INSTALL_INTERFACE:include>
   )
 
 endif()
