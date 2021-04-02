@@ -307,8 +307,30 @@ bool odbc_session_backend::get_last_insert_id(
             break;
           
         case prod_mssql:
-            query = "select ident_current('" + table + "')";
-            break;
+            {
+                // We can't use `ident_current()` because it doesn't
+                // distinguish between the empty table and a table with one
+                // row inserted and returns `seed_value` in both cases, while
+                // we need previous to the initial value in the former
+                // (i.e. `seed_value` - `increment_value`).
+                long long last, seed, inc;
+                indicator ind;
+
+                s << "select last_value, seed_value, increment_value "
+                     "from sys.identity_columns where "
+                     "object_id = object_id('" << table << "')"
+                     , into(last, ind), into(seed), into(inc);
+
+                if (ind == i_null)
+                {
+                    value = seed - inc;
+                }
+                else
+                {
+                    value = last;
+                }
+            }
+            return true;
 
         case prod_mysql:
             query = "select last_insert_id()";

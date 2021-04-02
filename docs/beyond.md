@@ -58,6 +58,8 @@ else
 }
 ```
 
+Please note that, generally speaking, with the backends implementing `get_last_insert_id()`, it is impossible to predict the next auto-generated value before the row is actually inserted due to the possibility of concurrent access to the database from another client. However if the application has exclusive access to the database, it can be assumed that the next value will be equal to the sum of the last insert ID and the increment used for the column (in most cases the increment will be 1 and some databases only support using 1 as the increment, but others, e.g. Microsoft SQL Server with its `IDENTITY(start, increment)` columns, can use arbitrary values). In particular, calling `get_last_insert_id()` for the just created, and still empty, table returns 0 (or `start - increment` in the SQL Server case), so that adding the increment value to it still corresponds to the next value that will be used.
+
 ### Portability note
 
 These methods are currently only implemented in Firebird, MySQL, ODBC, PostgreSQL and SQLite3 backends.
