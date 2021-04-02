@@ -346,11 +346,8 @@ void oracle_standard_into_type_backend::clean_up()
 {
     if (type_ == x_xmltype || type_ == x_longstring)
     {
-        OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
-
-        // ignore errors from this call
-        (void) OCILobFreeTemporary(statement_.session_.svchp_, statement_.session_.errhp_,
-            lobp);
+        free_temp_lob(statement_.session_, static_cast<OCILobLocator *>(ociData_));
+        ociData_ = NULL;
     }
     
     if (defnp_ != NULL)
