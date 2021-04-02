@@ -11,6 +11,7 @@
 #include "error.h"
 #include "soci/soci-platform.h"
 #include "soci-mktime.h"
+#include "soci-vector-helpers.h"
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -419,72 +420,7 @@ std::size_t oracle_vector_into_type_backend::size()
 
 std::size_t oracle_vector_into_type_backend::full_size()
 {
-    std::size_t sz = 0; // dummy initialization to please the compiler
-    switch (type_)
-    {
-    // simple cases
-    case x_char:
-        {
-            std::vector<char> *v = static_cast<std::vector<char> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_short:
-        {
-            std::vector<short> *v = static_cast<std::vector<short> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_integer:
-        {
-            std::vector<int> *v = static_cast<std::vector<int> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_long_long:
-        {
-            std::vector<long long> *v
-                = static_cast<std::vector<long long> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_unsigned_long_long:
-        {
-            std::vector<unsigned long long> *v
-                = static_cast<std::vector<unsigned long long> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_double:
-        {
-            std::vector<double> *v
-                = static_cast<std::vector<double> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_stdstring:
-        {
-            std::vector<std::string> *v
-                = static_cast<std::vector<std::string> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_stdtm:
-        {
-            std::vector<std::tm> *v
-                = static_cast<std::vector<std::tm> *>(data_);
-            sz = v->size();
-        }
-        break;
-
-    case x_xmltype:    break; // not supported
-    case x_longstring: break; // not supported
-    case x_statement:  break; // not supported
-    case x_rowid:      break; // not supported
-    case x_blob:       break; // not supported
-    }
-
-    return sz;
+    return get_vector_size(type_, data_);
 }
 
 void oracle_vector_into_type_backend::clean_up()
