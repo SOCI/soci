@@ -232,5 +232,7 @@ In the example above, regression tests for the sample Empty backend and SQLite 3
 CMake build produces set of shared and static libraries for SOCI core and backends separately.
 On Unix, for example, `build/lib` directory will consist of the static libraries named like `libsoci_core.a`, `libsoci_sqlite3.a` and shared libraries with names like `libsoci_core.so.4.0.0`, `libsoci_sqlite3.so.4.0.0`, and so on.
 
-In order to use SOCI in your program, you need to specify your project build configuration with paths to SOCI headers and libraries.
-Then, tell the linker to link against the libraries you want to use in your program.
+If your project also uses CMake, you can simply use `find_package(SOCI)` to check for SOCI availability and `target_link_libraries()` to link with the SOCI libraries available under the names `SOCI::soci_core` and `SOCI::soci_<backend>`. An example of a very simple CMake-based project using SOCI is provided in the `examples/connect` directory.
+
+Otherwise, in order to use SOCI in your program, you need to specify the paths to SOCI headers and libraries in your build configuration and to
+tell the linker to link against the libraries you want to use in your program.

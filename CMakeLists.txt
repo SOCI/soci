@@ -186,24 +186,13 @@ set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 # Installation
 ###############################################################################
 
-if(NOT DEFINED SOCI_LIBDIR)
-  if(APPLE OR CMAKE_SIZEOF_VOID_P EQUAL 4)
-    set(SOCI_LIBDIR "lib")
-  else()
-    set(SOCI_LIBDIR "lib64")
-  endif()
-endif()
-
-set(BINDIR "bin" CACHE PATH "The directory to install binaries into.")
-set(LIBDIR ${SOCI_LIBDIR} CACHE PATH "The directory to install libraries into.")
-set(DATADIR "share" CACHE PATH "The directory to install data files into.")
-set(INCLUDEDIR "include" CACHE PATH "The directory to install includes into.")
+include(GNUInstallDirs)
 
 ###############################################################################
 # Configuration files
 ###############################################################################
 set(CONFIG_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
-install(DIRECTORY ${CONFIG_INCLUDE_DIR}/soci DESTINATION ${INCLUDEDIR})
+install(DIRECTORY ${CONFIG_INCLUDE_DIR}/soci DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 set(CONFIG_FILE_IN "include/soci/soci-config.h.in")
 set(CONFIG_FILE_OUT "${CONFIG_INCLUDE_DIR}/soci/soci-config.h")
 
