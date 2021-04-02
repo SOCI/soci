@@ -4777,6 +4777,12 @@ TEST_CASE_METHOD(common_tests, "CLOB", "[core][clob]")
     sql << "select s from soci_test where id = 1", into(s2);
 
     CHECK(s2.value == s1.value);
+
+    // Check that trailing new lines are preserved.
+    s1.value = "multi\nline\nstring\n\n";
+    sql << "update soci_test set s = :s where id = 1", use(s1);
+    sql << "select s from soci_test where id = 1", into(s2);
+    CHECK(s2.value == s1.value);
 }
 
 TEST_CASE_METHOD(common_tests, "CLOB vector", "[core][clob][vector]")
