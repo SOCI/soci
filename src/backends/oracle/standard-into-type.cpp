@@ -8,6 +8,7 @@
 #define SOCI_ORACLE_SOURCE
 #include "soci/oracle/soci-oracle.h"
 #include "soci/blob.h"
+#include "clob.h"
 #include "error.h"
 #include "soci/rowid.h"
 #include "soci/statement.h"
@@ -178,25 +179,7 @@ void oracle_standard_into_type_backend::pre_exec(int /* num */)
     if (type_ == x_xmltype || type_ == x_longstring)
     {
         // lazy initialization of the temporary LOB object
-        
-        OCILobLocator * lobp;
-        sword res = OCIDescriptorAlloc(statement_.session_.envhp_,
-            reinterpret_cast<dvoid**>(&lobp), OCI_DTYPE_LOB, 0, 0);
-        if (res != OCI_SUCCESS)
-        {
-            throw_oracle_soci_error(res, statement_.session_.errhp_);
-        }
-        
-        res = OCILobCreateTemporary(statement_.session_.svchp_,
-            statement_.session_.errhp_,
-            lobp, 0, SQLCS_IMPLICIT,
-            OCI_TEMP_CLOB, OCI_ATTR_NOCACHE, OCI_DURATION_SESSION);
-        if (res != OCI_SUCCESS)
-        {
-            throw_oracle_soci_error(res, statement_.session_.errhp_);
-        }
-
-        ociData_ = lobp;
+        ociData_ = create_temp_lob(statement_.session_);
     }
 }
 
