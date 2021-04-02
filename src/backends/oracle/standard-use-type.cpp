@@ -8,6 +8,7 @@
 #define soci_ORACLE_SOURCE
 #include "soci/oracle/soci-oracle.h"
 #include "soci/blob.h"
+#include "clob.h"
 #include "error.h"
 #include "soci/rowid.h"
 #include "soci/statement.h"
@@ -221,7 +222,8 @@ void oracle_standard_use_type_backend::bind_by_name(
     statement_.boundByName_ = true;
 }
 
-void oracle_standard_use_type_backend::write_to_lob(OCILobLocator * lobp, const std::string & value)
+void oracle::write_to_lob(
+    oracle_session_backend& session, OCILobLocator * lobp, const std::string & value)
 {
     ub4 toWrite = value.size();
     ub4 offset = 1;
@@ -229,56 +231,54 @@ void oracle_standard_use_type_backend::write_to_lob(OCILobLocator * lobp, const 
 
     if (toWrite != 0)
     {
-        res = OCILobWrite(statement_.session_.svchp_, statement_.session_.errhp_,
+        res = OCILobWrite(session.svchp_, session.errhp_,
             lobp, &toWrite, offset,
             reinterpret_cast<dvoid*>(const_cast<char*>(value.data())),
             toWrite, OCI_ONE_PIECE, 0, 0, 0, SQLCS_IMPLICIT);
         if (res != OCI_SUCCESS)
         {
-            throw_oracle_soci_error(res, statement_.session_.errhp_);
+            throw_oracle_soci_error(res, session.errhp_);
         }
     }
 
     ub4 len;
 
-    res = OCILobGetLength(statement_.session_.svchp_, statement_.session_.errhp_,
-        lobp, &len);
+    res = OCILobGetLength(session.svchp_, session.errhp_, lobp, &len);
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, statement_.session_.errhp_);
+        throw_oracle_soci_error(res, session.errhp_);
     }
 
     if (toWrite < len)
     {
-        res = OCILobTrim(statement_.session_.svchp_, statement_.session_.errhp_,
-            lobp, toWrite);
+        res = OCILobTrim(session.svchp_, session.errhp_, lobp, toWrite);
         if (res != OCI_SUCCESS)
         {
-            throw_oracle_soci_error(res, statement_.session_.errhp_);
+            throw_oracle_soci_error(res, session.errhp_);
         }
     }
 }
 
-void oracle_standard_use_type_backend::lazy_temp_lob_init()
+OCILobLocator * oracle::create_temp_lob(oracle_session_backend& session)
 {
     OCILobLocator * lobp;
-    sword res = OCIDescriptorAlloc(statement_.session_.envhp_,
+    sword res = OCIDescriptorAlloc(session.envhp_,
         reinterpret_cast<dvoid**>(&lobp), OCI_DTYPE_LOB, 0, 0);
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, statement_.session_.errhp_);
+        throw_oracle_soci_error(res, session.errhp_);
     }
     
-    res = OCILobCreateTemporary(statement_.session_.svchp_,
-        statement_.session_.errhp_,
+    res = OCILobCreateTemporary(session.svchp_,
+        session.errhp_,
         lobp, 0, SQLCS_IMPLICIT,
         OCI_TEMP_CLOB, OCI_ATTR_NOCACHE, OCI_DURATION_SESSION);
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, statement_.session_.errhp_);
+        throw_oracle_soci_error(res, session.errhp_);
     }
 
-    ociData_ = lobp;
+    return lobp;
 }
 
 void oracle_standard_use_type_backend::pre_exec(int /* num */)
@@ -287,24 +287,18 @@ void oracle_standard_use_type_backend::pre_exec(int /* num */)
     {
     case x_xmltype:
         {
-            // lazy initialization of the temporary LOB object
-            
-            lazy_temp_lob_init();
-            
-            OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
+            OCILobLocator * lobp = create_temp_lob(statement_.session_);
+            ociData_ = lobp;
 
-            write_to_lob(lobp, exchange_type_cast<x_xmltype>(data_).value);
+            write_to_lob(statement_.session_, lobp, exchange_type_cast<x_xmltype>(data_).value);
         }
         break;
     case x_longstring:
         {
-            // lazy initialization of the temporary LOB object
-            
-            lazy_temp_lob_init();
-            
-            OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
+            OCILobLocator * lobp = create_temp_lob(statement_.session_);
+            ociData_ = lobp;
 
-            write_to_lob(lobp, exchange_type_cast<x_longstring>(data_).value);
+            write_to_lob(statement_.session_, lobp, exchange_type_cast<x_longstring>(data_).value);
         }
         break;
     default:

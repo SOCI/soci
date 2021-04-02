@@ -133,12 +133,6 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
     // common part for bind_by_pos and bind_by_name
     void prepare_for_bind(void *&data, sb4 &size, ub2 &oracleType, bool readOnly);
 
-    // common helper for pre_use for LOB-directed wrapped types
-    void write_to_lob(OCILobLocator * lobp, const std::string & value);
-
-    // common lazy initialization of the temporary LOB object
-    void lazy_temp_lob_init();
-
     void pre_exec(int num) SOCI_OVERRIDE;
     void pre_use(indicator const *ind) SOCI_OVERRIDE;
     void post_use(bool gotData, indicator *ind) SOCI_OVERRIDE;
