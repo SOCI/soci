@@ -15,9 +15,10 @@ find_package(SOCI REQUIRED)
 
 add_executable(connect connect.cpp)
 
-# Currently we suppose that SOCI headers are available in one of the standard
-# directories and so there is no need to use target_include_directories().
-
+# Note that depending on the SOCI library automatically pulls in the required
+# SOCI compilation options too, i.e. there is no need to explicitly use
+# target_include_directories().
+#
 # Linking with just soci_core is enough when using shared libraries, as the
 # required backends will be loaded dynamically during run-time, but when using
 # static libraries you would need to link with all the soci_<backend> libraries
