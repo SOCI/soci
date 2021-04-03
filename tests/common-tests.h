@@ -435,6 +435,10 @@ public:
     // *exactly* the same value.
     virtual bool has_fp_bug() const { return false; }
 
+    // Override this if the backend wrongly returns CR LF when reading a string
+    // with just LFs from the database to strip the unwanted CRs.
+    virtual std::string fix_crlf_if_necessary(std::string const& s) const { return s; }
+
     // Override this if the backend doesn't handle multiple active select
     // statements at the same time, i.e. a result set must be entirely consumed
     // before creating a new one (this is the case of MS SQL without MARS).
@@ -4784,7 +4788,7 @@ TEST_CASE_METHOD(common_tests, "CLOB", "[core][clob]")
     s1.value = "multi\nline\nstring\n\n";
     sql << "update soci_test set s = :s where id = 1", use(s1);
     sql << "select s from soci_test where id = 1", into(s2);
-    CHECK(s2.value == s1.value);
+    CHECK(tc_.fix_crlf_if_necessary(s2.value) == s1.value);
 }
 
 TEST_CASE_METHOD(common_tests, "CLOB vector", "[core][clob][vector]")
