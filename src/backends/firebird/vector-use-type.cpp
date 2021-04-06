@@ -8,6 +8,7 @@
 #define SOCI_FIREBIRD_SOURCE
 #include "soci/firebird/soci-firebird.h"
 #include "firebird/common.h"
+#include "soci-vector-helpers.h"
 
 using namespace soci;
 using namespace soci::details;
@@ -133,6 +134,11 @@ void firebird_vector_use_type_backend::exchangeData(std::size_t row)
             static_cast<void*>(getUseVectorValue<long long>(data_, row)),
             var);
         break;
+    case x_unsigned_long_long:
+        to_isc<unsigned long long>(
+            static_cast<void*>(getUseVectorValue<unsigned long long>(data_, row)),
+            var);
+        break;
     case x_double:
         to_isc<double>(
             static_cast<void*>(getUseVectorValue<double>(data_, row)),
@@ -150,6 +156,11 @@ void firebird_vector_use_type_backend::exchangeData(std::size_t row)
         tmEncode(var->sqltype,
             getUseVectorValue<std::tm>(data_, row), buf_);
         break;
+        // types which internally use blobs
+    case x_xmltype:
+    case x_longstring:
+        copy_to_blob(vector_string_value(type_, data_, row));
+        break;
         //  Not supported
         //  case x_cstring:
         //  case x_blob:
@@ -158,39 +169,19 @@ void firebird_vector_use_type_backend::exchangeData(std::size_t row)
     } // switch
 }
 
+void firebird_vector_use_type_backend::copy_to_blob(const std::string &in)
+{
+    delete blob_;
+
+    blob_ = new firebird_blob_backend(statement_.session_);
+    blob_->append(in.c_str(), in.length());
+    blob_->save();
+    memcpy(buf_, &blob_->bid_, sizeof(blob_->bid_));
+}
+
 std::size_t firebird_vector_use_type_backend::size()
 {
-    std::size_t sz = 0; // dummy initialization to please the compiler
-    switch (type_)
-    {
-        // simple cases
-    case x_char:
-        sz = getVectorSize<char> (data_);
-        break;
-    case x_short:
-        sz = getVectorSize<short> (data_);
-        break;
-    case x_integer:
-        sz = getVectorSize<int> (data_);
-        break;
-    case x_long_long:
-        sz = getVectorSize<long long> (data_);
-        break;
-    case x_double:
-        sz = getVectorSize<double> (data_);
-        break;
-    case x_stdstring:
-        sz = getVectorSize<std::string> (data_);
-        break;
-    case x_stdtm:
-        sz = getVectorSize<std::tm> (data_);
-        break;
-
-    default:
-        throw soci_error("Use vector element used with non-supported type.");
-    }
-
-    return sz;
+    return get_vector_size(type_, data_);
 }
 
 void firebird_vector_use_type_backend::clean_up()
@@ -199,6 +190,11 @@ void firebird_vector_use_type_backend::clean_up()
     {
         delete [] buf_;
         buf_ = NULL;
+    }
+    if (blob_ != NULL)
+    {
+        delete blob_;
+        blob_ = NULL;
     }
     std::vector<void*>::iterator it =
         std::find(statement_.uses_.begin(), statement_.uses_.end(), this);

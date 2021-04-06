@@ -51,8 +51,6 @@ struct oracle_standard_into_type_backend : details::standard_into_type_backend
     void define_by_pos(int &position,
         void *data, details::exchange_type type) SOCI_OVERRIDE;
 
-    void read_from_lob(OCILobLocator * lobp, std::string & value);
-
     void pre_exec(int num) SOCI_OVERRIDE;
     void pre_fetch() SOCI_OVERRIDE;
     void post_fetch(bool gotData, bool calledFromFetch,
@@ -89,6 +87,7 @@ struct oracle_vector_into_type_backend : details::vector_into_type_backend
         int & position, void * data, details::exchange_type type,
         std::size_t begin, std::size_t * end) SOCI_OVERRIDE;
 
+    void pre_exec(int num) SOCI_OVERRIDE;
     void pre_fetch() SOCI_OVERRIDE;
     void post_fetch(bool gotData, indicator *ind) SOCI_OVERRIDE;
 
@@ -132,12 +131,6 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
 
     // common part for bind_by_pos and bind_by_name
     void prepare_for_bind(void *&data, sb4 &size, ub2 &oracleType, bool readOnly);
-
-    // common helper for pre_use for LOB-directed wrapped types
-    void write_to_lob(OCILobLocator * lobp, const std::string & value);
-
-    // common lazy initialization of the temporary LOB object
-    void lazy_temp_lob_init();
 
     void pre_exec(int num) SOCI_OVERRIDE;
     void pre_use(indicator const *ind) SOCI_OVERRIDE;

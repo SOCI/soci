@@ -8890,7 +8890,13 @@ std::string toString( std::string const& value ) {
             switch( s[i] ) {
             case '\n': subs = "\\n"; break;
             case '\t': subs = "\\t"; break;
-            default: break;
+            default:
+                char const c = s[i];
+                if ( c < 0x20 || c == 0x7f ) {
+                    subs = "\\x";
+                    subs += '0' + c / 0x10;
+                    subs += "0123456789ABCDEF"[c % 0x10];
+                }
             }
             if( !subs.empty() ) {
                 s = s.substr( 0, i ) + subs + s.substr( i+1 );

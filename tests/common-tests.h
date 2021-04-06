@@ -441,6 +441,10 @@ public:
     // *exactly* the same value.
     virtual bool has_fp_bug() const { return false; }
 
+    // Override this if the backend wrongly returns CR LF when reading a string
+    // with just LFs from the database to strip the unwanted CRs.
+    virtual std::string fix_crlf_if_necessary(std::string const& s) const { return s; }
+
     // Override this if the backend doesn't handle multiple active select
     // statements at the same time, i.e. a result set must be entirely consumed
     // before creating a new one (this is the case of MS SQL without MARS).
@@ -1087,6 +1091,54 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             unsigned int ul2 = 0;
 
             std::vector<unsigned int> vec(8);
+            statement st = (sql.prepare <<
+                "select ul from soci_test order by ul", into(vec));
+            st.execute();
+            while (st.fetch())
+            {
+                for (std::size_t i = 0; i != vec.size(); ++i)
+                {
+                    CHECK(ul2 == vec[i]);
+                    ++ul2;
+                }
+
+                vec.resize(8);
+            }
+            CHECK(ul2 == rowsToTest);
+        }
+    }
+
+    SECTION("unsigned long long")
+    {
+        unsigned int const rowsToTest = 100;
+        unsigned long long ul;
+        for (ul = 0; ul != rowsToTest; ++ul)
+        {
+            sql << "insert into soci_test(ul) values(" << ul << ")";
+        }
+
+        int count;
+        sql << "select count(*) from soci_test", into(count);
+        CHECK(count == static_cast<int>(rowsToTest));
+
+        {
+            unsigned long long ul2 = 0;
+
+            statement st = (sql.prepare <<
+                "select ul from soci_test order by ul", into(ul));
+
+            st.execute();
+            while (st.fetch())
+            {
+                CHECK(ul == ul2);
+                ++ul2;
+            }
+            CHECK(ul2 == rowsToTest);
+        }
+        {
+            unsigned long long ul2 = 0;
+
+            std::vector<unsigned long long> vec(8);
             statement st = (sql.prepare <<
                 "select ul from soci_test order by ul", into(vec));
             st.execute();
@@ -1793,6 +1845,26 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
     SECTION("unsigned int")
     {
         std::vector<unsigned int> v;
+        v.push_back(0);
+        v.push_back(1);
+        v.push_back(123);
+        v.push_back(1000);
+
+        sql << "insert into soci_test(ul) values(:ul)", use(v);
+
+        std::vector<unsigned int> v2(4);
+
+        sql << "select ul from soci_test order by ul", into(v2);
+        CHECK(v2.size() == 4);
+        CHECK(v2[0] == 0);
+        CHECK(v2[1] == 1);
+        CHECK(v2[2] == 123);
+        CHECK(v2[3] == 1000);
+    }
+
+    SECTION("unsigned long long")
+    {
+        std::vector<unsigned long long> v;
         v.push_back(0);
         v.push_back(1);
         v.push_back(123);
@@ -4681,20 +4753,41 @@ TEST_CASE_METHOD(common_tests, "String length", "[core][string][length]")
     CHECK(vout[2].length() == 20);
 }
 
-// Helper function used in two tests below.
-static std::string make_long_xml_string()
+// Helper function used in some tests below. Generates an XML sample about
+// approximateSize bytes long.
+static std::string make_long_xml_string(int approximateSize = 5000)
 {
+    const int tagsSize = 6 + 7;
+    const int patternSize = 26;
+    const int patternsCount = approximateSize / patternSize + 1;
+
     std::string s;
-    s.reserve(6 + 200*26 + 7);
+    s.reserve(tagsSize + patternsCount * patternSize);
 
     s += "<file>";
-    for (int i = 0; i != 200; ++i)
+    for (int i = 0; i != patternsCount; ++i)
     {
         s += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     }
     s += "</file>";
 
     return s;
+}
+
+// The helper function to remove trailing \n from a given string.
+// Used for XML strings, returned from the DB.
+// The returned XML value doesn't need to be identical to the original one as
+// string, only structurally equal as XML. In particular, extra whitespace
+// can be added and this does happen with Oracle, for example, which adds
+// an extra new line, so remove it if it's present.
+static std::string remove_trailing_nl(std::string str)
+{
+    if (!str.empty() && *str.rbegin() == '\n')
+    {
+        str.resize(str.length() - 1);
+    }
+
+    return str;
 }
 
 TEST_CASE_METHOD(common_tests, "CLOB", "[core][clob]")
@@ -4724,6 +4817,50 @@ TEST_CASE_METHOD(common_tests, "CLOB", "[core][clob]")
     sql << "select s from soci_test where id = 1", into(s2);
 
     CHECK(s2.value == s1.value);
+
+    // Check that trailing new lines are preserved.
+    s1.value = "multi\nline\nstring\n\n";
+    sql << "update soci_test set s = :s where id = 1", use(s1);
+    sql << "select s from soci_test where id = 1", into(s2);
+    CHECK(tc_.fix_crlf_if_necessary(s2.value) == s1.value);
+}
+
+TEST_CASE_METHOD(common_tests, "CLOB vector", "[core][clob][vector]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_clob(sql));
+    if (!tableCreator.get())
+    {
+        WARN("CLOB type not supported by the database, skipping the test.");
+        return;
+    }
+
+    std::vector<int> ids(2);
+    ids[0] = 1;
+    ids[1] = 2;
+    std::vector<long_string> s1(2); // empty values
+    sql << "insert into soci_test(id, s) values (:id, :s)", use(ids), use(s1);
+
+    std::vector<long_string> s2(2);
+    s2[0].value = "hello_1";
+    s2[1].value = "hello_2";
+    sql << "select s from soci_test", into(s2);
+
+    REQUIRE(s2.size() == 2);
+    CHECK(s2[0].value.empty());
+    CHECK(s2[1].value.empty());
+
+    s1[0].value = make_long_xml_string();
+    s1[1].value = make_long_xml_string(10000);
+
+    sql << "update soci_test set s = :s where id = :id", use(s1), use(ids);
+
+    sql << "select s from soci_test", into(s2);
+
+    REQUIRE(s2.size() == 2);
+    CHECK(s2[0].value == s1[0].value);
+    CHECK(s2[1].value == s1[1].value);
 }
 
 TEST_CASE_METHOD(common_tests, "XML", "[core][xml]")
@@ -4753,16 +4890,7 @@ TEST_CASE_METHOD(common_tests, "XML", "[core][xml]")
         << " from soci_test where id = :1",
         into(xml2), use(id);
 
-    // The returned value doesn't need to be identical to the original one as
-    // string, only structurally equal as XML. In particular, extra whitespace
-    // can be added and this does happen with Oracle, for example, which adds
-    // an extra new line, so remove it if it's present.
-    if (!xml2.value.empty() && *xml2.value.rbegin() == '\n')
-    {
-        xml2.value.resize(xml2.value.length() - 1);
-    }
-
-    CHECK(xml.value == xml2.value);
+    CHECK(xml.value == remove_trailing_nl(xml2.value));
 
     sql << "update soci_test set x = null where id = :1", use(id);
 
@@ -4787,6 +4915,102 @@ TEST_CASE_METHOD(common_tests, "XML", "[core][xml]")
             ), soci_error&
         );
     }
+}
+
+// Tha same test as above, but using vectors of xml_type values.
+TEST_CASE_METHOD(common_tests, "XML vector", "[core][xml][vector]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_xml(sql));
+    if (!tableCreator.get())
+    {
+        WARN("XML type not supported by the database, skipping the test.");
+        return;
+    }
+
+    std::vector<int> id(2);
+    id[0] = 1;
+    id[1] = 1; // Use the same ID to select both objects by ID.
+    std::vector<xml_type> xml(2);
+    xml[0].value = make_long_xml_string();
+    // Check long strings handling.
+    xml[1].value = make_long_xml_string(10000);
+
+    sql << "insert into soci_test (id, x) values (:1, "
+        << tc_.to_xml(":2")
+        << ")",
+        use(id), use(xml);
+
+    std::vector<xml_type> xml2(2);
+
+    sql << "select "
+        << tc_.from_xml("x")
+        << " from soci_test where id = :1",
+        into(xml2), use(id.at(0));
+
+    CHECK(xml.at(0).value == remove_trailing_nl(xml2.at(0).value));
+    CHECK(xml.at(1).value == remove_trailing_nl(xml2.at(1).value));
+
+    sql << "update soci_test set x = null where id = :1", use(id.at(0));
+
+    std::vector<indicator> ind(2);
+    sql << "select "
+        << tc_.from_xml("x")
+        << " from soci_test where id = :1",
+        into(xml2, ind), use(id.at(0));
+
+    CHECK(ind.at(0) == i_null);
+    CHECK(ind.at(1) == i_null);
+}
+
+TEST_CASE_METHOD(common_tests, "Into XML vector with several fetches", "[core][xml][into][vector][statement]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_xml(sql));
+    if (!tableCreator.get())
+    {
+        WARN("XML type not supported by the database, skipping the test.");
+        return;
+    }
+
+    int stringSize = 0;
+    SECTION("short string")
+    {
+        stringSize = 100;
+    }
+    SECTION("long string")
+    {
+        stringSize = 10000;
+    }
+
+    int const count = 5;
+    std::vector<xml_type> values(count);
+    for (int i = 0; i != count; ++i)
+        values[i].value = make_long_xml_string(stringSize + i*100);
+
+    sql << "insert into soci_test (x) values ("
+        << tc_.to_xml(":2")
+        << ")",
+        use(values);
+
+    std::vector<xml_type> result(3);
+    soci::statement st = (sql.prepare <<
+        "select " << tc_.from_xml("x") << " from soci_test", into(result));
+
+    st.execute(true);
+    REQUIRE(result.size() == 3);
+    CHECK(remove_trailing_nl(result[0].value) == values[0].value);
+    CHECK(remove_trailing_nl(result[1].value) == values[1].value);
+    CHECK(remove_trailing_nl(result[2].value) == values[2].value);
+
+    REQUIRE(st.fetch());
+    REQUIRE(result.size() == 2);
+    CHECK(remove_trailing_nl(result[0].value) == values[3].value);
+    CHECK(remove_trailing_nl(result[1].value) == values[4].value);
+
+    REQUIRE(!st.fetch());
 }
 
 TEST_CASE_METHOD(common_tests, "Logger", "[core][log]")

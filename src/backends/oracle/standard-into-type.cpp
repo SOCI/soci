@@ -8,6 +8,7 @@
 #define SOCI_ORACLE_SOURCE
 #include "soci/oracle/soci-oracle.h"
 #include "soci/blob.h"
+#include "clob.h"
 #include "error.h"
 #include "soci/rowid.h"
 #include "soci/statement.h"
@@ -178,25 +179,7 @@ void oracle_standard_into_type_backend::pre_exec(int /* num */)
     if (type_ == x_xmltype || type_ == x_longstring)
     {
         // lazy initialization of the temporary LOB object
-        
-        OCILobLocator * lobp;
-        sword res = OCIDescriptorAlloc(statement_.session_.envhp_,
-            reinterpret_cast<dvoid**>(&lobp), OCI_DTYPE_LOB, 0, 0);
-        if (res != OCI_SUCCESS)
-        {
-            throw_oracle_soci_error(res, statement_.session_.errhp_);
-        }
-        
-        res = OCILobCreateTemporary(statement_.session_.svchp_,
-            statement_.session_.errhp_,
-            lobp, 0, SQLCS_IMPLICIT,
-            OCI_TEMP_CLOB, OCI_ATTR_NOCACHE, OCI_DURATION_SESSION);
-        if (res != OCI_SUCCESS)
-        {
-            throw_oracle_soci_error(res, statement_.session_.errhp_);
-        }
-
-        ociData_ = lobp;
+        ociData_ = create_temp_lob(statement_.session_);
     }
 }
 
@@ -211,15 +194,16 @@ void oracle_standard_into_type_backend::pre_fetch()
     }
 }
 
-void oracle_standard_into_type_backend::read_from_lob(OCILobLocator * lobp, std::string & value)
+void oracle::read_from_lob(oracle_session_backend& session,
+    OCILobLocator * lobp, std::string & value)
 {
     ub4 len;
 
-    sword res = OCILobGetLength(statement_.session_.svchp_, statement_.session_.errhp_,
+    sword res = OCILobGetLength(session.svchp_, session.errhp_,
         lobp, &len);
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, statement_.session_.errhp_);
+        throw_oracle_soci_error(res, session.errhp_);
     }
 
     std::vector<char> buf(len);
@@ -230,18 +214,18 @@ void oracle_standard_into_type_backend::read_from_lob(OCILobLocator * lobp, std:
         ub4 offset = 1;
         do
         {
-            res = OCILobRead(statement_.session_.svchp_, statement_.session_.errhp_,
+            res = OCILobRead(session.svchp_, session.errhp_,
                 lobp, &lenChunk,
                 offset,
                 reinterpret_cast<dvoid*>(&buf[offset - 1]),
-                len - offset + 1, 0, 0, 0, 0);
+                len, 0, 0, 0, 0);
             if (res == OCI_NEED_DATA)
             {
                 offset += lenChunk;
             }
             else if (res != OCI_SUCCESS)
             {
-                throw_oracle_soci_error(res, statement_.session_.errhp_);
+                throw_oracle_soci_error(res, session.errhp_);
             }
         }
         while (res == OCI_NEED_DATA);
@@ -307,7 +291,8 @@ void oracle_standard_into_type_backend::post_fetch(
             {
                 OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
 
-                read_from_lob(lobp, exchange_type_cast<x_xmltype>(data_).value);
+                read_from_lob(statement_.session_,
+                    lobp, exchange_type_cast<x_xmltype>(data_).value);
             }
         }
         else if (type_ == x_longstring)
@@ -316,7 +301,8 @@ void oracle_standard_into_type_backend::post_fetch(
             {
                 OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
 
-                read_from_lob(lobp, exchange_type_cast<x_longstring>(data_).value);
+                read_from_lob(statement_.session_,
+                    lobp, exchange_type_cast<x_longstring>(data_).value);
             }
         }
     }
@@ -360,11 +346,8 @@ void oracle_standard_into_type_backend::clean_up()
 {
     if (type_ == x_xmltype || type_ == x_longstring)
     {
-        OCILobLocator * lobp = static_cast<OCILobLocator *>(ociData_);
-
-        // ignore errors from this call
-        (void) OCILobFreeTemporary(statement_.session_.svchp_, statement_.session_.errhp_,
-            lobp);
+        free_temp_lob(statement_.session_, static_cast<OCILobLocator *>(ociData_));
+        ociData_ = NULL;
     }
     
     if (defnp_ != NULL)

@@ -37,10 +37,14 @@ void odbc_standard_into_type_backend::define_by_pos(
     case x_longstring:
     case x_xmltype:
         odbcType_ = SQL_C_CHAR;
-        // Patch: set to min between column size and 100MB (used ot be 32769)
-        // Column size for text data type can be too large for buffer allocation
+        // For LONGVARCHAR fields the returned size is ODBC_MAX_COL_SIZE
+        // (or 0 for some backends), but this doesn't correspond to the actual
+        // field size, which can be (much) greater. For now we just used
+        // a buffer of huge (100MiB) hardcoded size, which is clearly not
+        // ideal, but changing this would require using SQLGetData() and is
+        // not trivial, so for now we're stuck with this suboptimal solution.
         size = static_cast<SQLUINTEGER>(statement_.column_size(position_));
-        size = (size > odbc_max_buffer_length || size == 0) ? odbc_max_buffer_length : size;
+        size = (size >= ODBC_MAX_COL_SIZE || size == 0) ? odbc_max_buffer_length : size;
         size++;
         buf_ = new char[size];
         data = buf_;

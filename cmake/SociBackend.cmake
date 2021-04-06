@@ -352,7 +352,7 @@ macro(soci_backend_test)
 
       add_test(${TEST_TARGET}
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET}
-        ${${TEST_CONNSTR_VAR}})
+        ${${TEST_CONNSTR_VAR}} --invisibles)
 
       soci_backend_test_create_vcxproj_user(${TEST_TARGET} "\"${${TEST_CONNSTR_VAR}}\"")
 
@@ -374,7 +374,7 @@ macro(soci_backend_test)
 
       add_test(${TEST_TARGET_STATIC}
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET_STATIC}
-        ${${TEST_CONNSTR_VAR}})
+        ${${TEST_CONNSTR_VAR}} --invisibles)
 
       soci_backend_test_create_vcxproj_user(${TEST_TARGET_STATIC} "\"${${TEST_CONNSTR_VAR}}\"")
 

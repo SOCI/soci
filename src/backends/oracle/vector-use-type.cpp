@@ -7,8 +7,10 @@
 
 #define soci_ORACLE_SOURCE
 #include "soci/oracle/soci-oracle.h"
+#include "clob.h"
 #include "error.h"
 #include "soci/soci-platform.h"
+#include "soci-vector-helpers.h"
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -154,11 +156,25 @@ void oracle_vector_use_type_backend::prepare_for_bind(
         }
         break;
 
-    case x_xmltype:    break; // not supported
-    case x_longstring: break; // not supported
-    case x_statement:  break; // not supported
-    case x_rowid:      break; // not supported
-    case x_blob:       break; // not supported
+    case x_xmltype:
+    case x_longstring:
+        {
+            std::size_t const vecSize = size();
+            prepare_indicators(vecSize);
+
+            sb4 const dlen = sizeof(OCILobLocator*);
+            buf_ = new char[dlen * vecSize];
+
+            oracleType = SQLT_CLOB;
+            data = buf_;
+            elementSize = dlen;
+        }
+        break;
+
+    case x_statement:
+    case x_rowid:
+    case x_blob:
+        throw soci_error("Unsupported type for vector use parameter");
     }
 }
 
@@ -260,6 +276,18 @@ void oracle_vector_use_type_backend::pre_use(indicator const *ind)
             *pos++ = static_cast<ub1>(t.tm_sec + 1);
         }
     }
+    else if (type_ == x_longstring || type_ == x_xmltype)
+    {
+        OCILobLocator** const lobps = reinterpret_cast<OCILobLocator**>(buf_);
+
+        std::size_t const vecSize = size();
+        for (std::size_t i = 0; i != vecSize; ++i)
+        {
+            lobps[i] = create_temp_lob(statement_.session_);
+            write_to_lob(statement_.session_, lobps[i],
+                vector_string_value(type_, data_, i));
+        }
+    }
 
     // then handle indicators
     if (ind != NULL)
@@ -334,76 +362,21 @@ std::size_t oracle_vector_use_type_backend::size()
 
 std::size_t oracle_vector_use_type_backend::full_size()
 {
-    std::size_t sz = 0; // dummy initialization to please the compiler
-    switch (type_)
-    {
-    // simple cases
-    case x_char:
-        {
-            std::vector<char> *vp = static_cast<std::vector<char> *>(data_);
-            sz = vp->size();
-        }
-        break;
-    case x_short:
-        {
-            std::vector<short> *vp = static_cast<std::vector<short> *>(data_);
-            sz = vp->size();
-        }
-        break;
-    case x_integer:
-        {
-            std::vector<int> *vp = static_cast<std::vector<int> *>(data_);
-            sz = vp->size();
-        }
-        break;
-    case x_long_long:
-        {
-            std::vector<long long> *vp
-                = static_cast<std::vector<long long> *>(data_);
-            sz = vp->size();
-        }
-        break;
-    case x_unsigned_long_long:
-        {
-            std::vector<unsigned long long> *vp
-                = static_cast<std::vector<unsigned long long> *>(data_);
-            sz = vp->size();
-        }
-        break;
-    case x_double:
-        {
-            std::vector<double> *vp
-                = static_cast<std::vector<double> *>(data_);
-            sz = vp->size();
-        }
-        break;
-    case x_stdstring:
-        {
-            std::vector<std::string> *vp
-                = static_cast<std::vector<std::string> *>(data_);
-            sz = vp->size();
-        }
-        break;
-    case x_stdtm:
-        {
-            std::vector<std::tm> *vp
-                = static_cast<std::vector<std::tm> *>(data_);
-            sz = vp->size();
-        }
-        break;
-
-    case x_xmltype:    break; // not supported
-    case x_longstring: break; // not supported
-    case x_statement:  break; // not supported
-    case x_rowid:      break; // not supported
-    case x_blob:       break; // not supported
-    }
-
-    return sz;
+    return get_vector_size(type_, data_);
 }
 
 void oracle_vector_use_type_backend::clean_up()
 {
+    if (type_ == x_longstring || type_ == x_xmltype)
+    {
+        OCILobLocator** const lobps = reinterpret_cast<OCILobLocator**>(buf_);
+        std::size_t const vecSize = size();
+        for (std::size_t i = 0; i != vecSize; ++i)
+        {
+            free_temp_lob(statement_.session_, lobps[i]);
+        }
+    }
+
     if (buf_ != NULL)
     {
         delete [] buf_;

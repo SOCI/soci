@@ -46,6 +46,12 @@ namespace details
     }
 }
 
+enum buffer_type
+{
+    bt_standard,
+    bt_vector
+};
+
 // Option allowing to specify the "driver completion" parameter of
 // SQLDriverConnect(). Its possible values are the same as the allowed values
 // for this parameter in the official ODBC, i.e. one of SQL_DRIVER_XXX (in
@@ -116,7 +122,7 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
 {
     odbc_vector_into_type_backend(odbc_statement_backend &st)
         : odbc_standard_type_backend_base(st),
-          data_(NULL), buf_(NULL) {}
+          data_(NULL), buf_(NULL), position_(0) {}
 
     void define_by_pos(int &position,
         void *data, details::exchange_type type) SOCI_OVERRIDE;
@@ -133,6 +139,8 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
     // (as part of the define_by_pos)
     void prepare_indicators(std::size_t size);
 
+    void exchange_rows(bool gotData, std::size_t beginInd, std::size_t endInd);
+
     // IBM DB2 driver is not compliant to ODBC spec for indicators in 64bit
     // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
     inline SQLLEN get_sqllen_from_vector_at(std::size_t idx) const;
@@ -143,6 +151,7 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
     details::exchange_type type_;
     std::size_t colSize_;    // size of the string column (used for strings)
     SQLSMALLINT odbcType_;
+    int position_;
 };
 
 struct odbc_standard_use_type_backend : details::standard_use_type_backend,
@@ -259,6 +268,7 @@ struct odbc_statement_backend : details::statement_backend
     odbc_session_backend &session_;
     SQLHSTMT hstmt_;
     SQLULEN numRowsFetched_;
+    bool fetchVectorByRows_;
     bool hasVectorUseElements_;
     bool boundByName_;
     bool boundByPos_;
@@ -268,6 +278,10 @@ struct odbc_statement_backend : details::statement_backend
     std::string query_;
     std::vector<std::string> names_; // list of names for named binds
 
+    buffer_type intoType_;
+
+    std::vector<std::vector<indicator> > inds_;
+    std::vector<void*> intos_;
 };
 
 struct odbc_rowid_backend : details::rowid_backend
@@ -535,6 +549,8 @@ inline void odbc_standard_type_backend_base::set_sqllen_from_value(SQLLEN &targe
 
 inline SQLLEN odbc_vector_into_type_backend::get_sqllen_from_vector_at(std::size_t idx) const
 {
+    if (statement_.fetchVectorByRows_)
+        idx = 0;
     if (requires_noncompliant_32bit_sqllen())
     {
         return reinterpret_cast<const int*>(&indHolderVec_[0])[idx];

@@ -8,6 +8,7 @@
 #define SOCI_FIREBIRD_SOURCE
 #include "soci/firebird/soci-firebird.h"
 #include "firebird/common.h"
+#include "soci-vector-helpers.h"
 
 using namespace soci;
 using namespace soci::details;
@@ -80,6 +81,12 @@ void firebird_vector_into_type_backend::exchangeData(std::size_t row)
             setIntoVector(data_, row, tmp);
         }
         break;
+    case x_unsigned_long_long:
+        {
+            unsigned long long tmp = from_isc<unsigned long long>(var);
+            setIntoVector(data_, row, tmp);
+        }
+    break;
     case x_double:
         {
             double tmp = from_isc<double>(var);
@@ -96,6 +103,20 @@ void firebird_vector_into_type_backend::exchangeData(std::size_t row)
             std::tm data = std::tm();
             tmDecode(var->sqltype, buf_, &data);
             setIntoVector(data_, row, data);
+        }
+        break;
+
+    case x_longstring:
+        {
+            std::string &tmp = exchange_vector_type_cast<x_longstring>(data_)[row].value;
+            copy_from_blob(statement_, buf_, tmp);
+        }
+        break;
+
+    case x_xmltype:
+        {
+            std::string &tmp = exchange_vector_type_cast<x_xmltype>(data_)[row].value;
+            copy_from_blob(statement_, buf_, tmp);
         }
         break;
 
@@ -130,68 +151,12 @@ void firebird_vector_into_type_backend::post_fetch(
 
 void firebird_vector_into_type_backend::resize(std::size_t sz)
 {
-    switch (type_)
-    {
-    case x_char:
-        resizeVector<char> (data_, sz);
-        break;
-    case x_short:
-        resizeVector<short> (data_, sz);
-        break;
-    case x_integer:
-        resizeVector<int> (data_, sz);
-        break;
-    case x_long_long:
-        resizeVector<long long> (data_, sz);
-        break;
-    case x_double:
-        resizeVector<double> (data_, sz);
-        break;
-    case x_stdstring:
-        resizeVector<std::string> (data_, sz);
-        break;
-    case x_stdtm:
-        resizeVector<std::tm> (data_, sz);
-        break;
-
-    default:
-        throw soci_error("Into vector element used with non-supported type.");
-    }
+    resize_vector(type_, data_, sz);
 }
 
 std::size_t firebird_vector_into_type_backend::size()
 {
-    std::size_t sz = 0; // dummy initialization to please the compiler
-    switch (type_)
-    {
-        // simple cases
-    case x_char:
-        sz = getVectorSize<char> (data_);
-        break;
-    case x_short:
-        sz = getVectorSize<short> (data_);
-        break;
-    case x_integer:
-        sz = getVectorSize<int> (data_);
-        break;
-    case x_long_long:
-        sz = getVectorSize<long long> (data_);
-        break;
-    case x_double:
-        sz = getVectorSize<double> (data_);
-        break;
-    case x_stdstring:
-        sz = getVectorSize<std::string> (data_);
-        break;
-    case x_stdtm:
-        sz = getVectorSize<std::tm> (data_);
-        break;
-
-    default:
-        throw soci_error("Into vector element used with non-supported type.");
-    }
-
-    return sz;
+    return get_vector_size(type_, data_);
 }
 
 void firebird_vector_into_type_backend::clean_up()

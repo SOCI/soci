@@ -10,6 +10,7 @@
 #include "soci/odbc/soci-odbc.h"
 #include "soci-compiler.h"
 #include "soci-static-assert.h"
+#include "soci-vector-helpers.h"
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -153,20 +154,15 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
         }
         break;
     case x_stdstring:
+    case x_xmltype:
+    case x_longstring:
         {
-            sqlType = SQL_CHAR;
-            cType = SQL_C_CHAR;
-
-            std::vector<std::string> *vp
-                = static_cast<std::vector<std::string> *>(data_);
-            std::vector<std::string> &v(*vp);
-
             std::size_t maxSize = 0;
-            std::size_t const vecSize = v.size();
+            std::size_t const vecSize = get_vector_size(type_, data_);
             prepare_indicators(vecSize);
             for (std::size_t i = 0; i != vecSize; ++i)
             {
-                std::size_t sz = v[i].length();
+                std::size_t sz = vector_string_value(type_, data_, i).length();
                 set_sqllen_from_vector_at(i, static_cast<long>(sz));
                 maxSize = sz > maxSize ? sz : maxSize;
             }
@@ -179,12 +175,16 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
             char *pos = buf_;
             for (std::size_t i = 0; i != vecSize; ++i)
             {
-                memcpy(pos, v[i].c_str(), v[i].length());
+                std::string& value = vector_string_value(type_, data_, i);
+                memcpy(pos, value.c_str(), value.length());
                 pos += maxSize;
             }
 
             data = buf_;
             size = static_cast<SQLINTEGER>(maxSize);
+
+            sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_LONGVARCHAR : SQL_VARCHAR;
+            cType = SQL_C_CHAR;
         }
         break;
     case x_stdtm:
@@ -291,6 +291,8 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
 
         case x_char:
         case x_stdstring:
+        case x_xmltype:
+        case x_longstring:
             non_null_indicator = SQL_NTS;
             break;
 
@@ -367,8 +369,6 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
         case x_statement:
         case x_rowid:
         case x_blob:
-        case x_xmltype:
-        case x_longstring:
             // Those are unreachable, we would have thrown from
             // prepare_for_bind() if we we were using one of them, only handle
             // them here to avoid compiler warnings about unhandled enum
@@ -388,7 +388,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
             else
             {
                 // for strings we have already set the values
-                if (type_ != x_stdstring)
+                if (type_ != x_stdstring && type_ != x_xmltype && type_ != x_longstring)
                 {
                     set_sqllen_from_vector_at(i, non_null_indicator);
                 }
@@ -401,7 +401,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
         for (std::size_t i = 0; i != indHolderVec_.size(); ++i)
         {
             // for strings we have already set the values
-            if (type_ != x_stdstring)
+            if (type_ != x_stdstring && type_ != x_xmltype && type_ != x_longstring)
             {
                 set_sqllen_from_vector_at(i, non_null_indicator);
             }
@@ -426,70 +426,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
 
 std::size_t odbc_vector_use_type_backend::size()
 {
-    std::size_t sz = 0; // dummy initialization to please the compiler
-    switch (type_)
-    {
-    // simple cases
-    case x_char:
-        {
-            std::vector<char> *vp = static_cast<std::vector<char> *>(data_);
-            sz = vp->size();
-        }
-        break;
-    case x_short:
-        {
-            std::vector<short> *vp = static_cast<std::vector<short> *>(data_);
-            sz = vp->size();
-        }
-        break;
-    case x_integer:
-        {
-            std::vector<int> *vp = static_cast<std::vector<int> *>(data_);
-            sz = vp->size();
-        }
-        break;
-    case x_long_long:
-        {
-            std::vector<long long> *vp =
-                static_cast<std::vector<long long> *>(data_);
-            sz = vp->size();
-        }
-        break;
-    case x_unsigned_long_long:
-        {
-            std::vector<unsigned long long> *vp =
-                static_cast<std::vector<unsigned long long> *>(data_);
-            sz = vp->size();
-        }
-        break;
-    case x_double:
-        {
-            std::vector<double> *vp
-                = static_cast<std::vector<double> *>(data_);
-            sz = vp->size();
-        }
-        break;
-    case x_stdstring:
-        {
-            std::vector<std::string> *vp
-                = static_cast<std::vector<std::string> *>(data_);
-            sz = vp->size();
-        }
-        break;
-    case x_stdtm:
-        {
-            std::vector<std::tm> *vp
-                = static_cast<std::vector<std::tm> *>(data_);
-            sz = vp->size();
-        }
-        break;
-
-    // not supported
-    default:
-        throw soci_error("Use vector element used with non-supported type.");
-    }
-
-    return sz;
+    return get_vector_size(type_, data_);
 }
 
 void odbc_vector_use_type_backend::clean_up()

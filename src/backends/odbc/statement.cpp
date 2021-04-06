@@ -16,9 +16,9 @@ using namespace soci::details;
 
 
 odbc_statement_backend::odbc_statement_backend(odbc_session_backend &session)
-    : session_(session), hstmt_(0), numRowsFetched_(0),
+    : session_(session), hstmt_(0), numRowsFetched_(0), fetchVectorByRows_(false),
       hasVectorUseElements_(false), boundByName_(false), boundByPos_(false),
-      rowsAffected_(-1LL)
+      rowsAffected_(-1LL), intoType_(bt_standard)
 {
 }
 
@@ -131,6 +131,13 @@ void odbc_statement_backend::prepare(std::string const & query,
         ss << "preparing query \"" << query_ << "\"";
         throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, ss.str());
     }
+
+    // prepare buffers for indicators
+    inds_.clear();
+
+    // reset types of into buffers
+    intoType_ = bt_standard;
+    intos_.clear();
 }
 
 statement_backend::exec_fetch_result
@@ -214,22 +221,68 @@ statement_backend::exec_fetch_result
 odbc_statement_backend::fetch(int number)
 {
     numRowsFetched_ = 0;
-    SQLULEN const row_array_size = static_cast<SQLULEN>(number);
+
+    SQLULEN curNumRowsFetched = 0;
+    SQLULEN row_array_size = static_cast<SQLULEN>(number);
+    std::size_t fetchesCount = 1;
+    std::size_t rowsPerFetch = static_cast<std::size_t>(number);
+
+    if (intoType_ == bt_vector)
+    {
+        // inds_ used only by vector intos.
+        for (std::size_t i = 0; i != inds_.size(); ++i)
+        {
+            inds_[i].resize(number);
+        }
+
+        // Usually we try to fetch the entire vector at once, but if some into
+        // string columns are bigger than 8KB (ODBC_MAX_COL_SIZE) then we use
+        // 100MB buffer for that columns. So in this case we downgrade to using
+        // scalar fetches to hold the buffer only for a single row and not
+        // rows_count * 100MB.
+        // See odbc_vector_into_type_backend::define_by_pos().
+        if (fetchVectorByRows_)
+        {
+            row_array_size = 1;
+            fetchesCount = static_cast<std::size_t>(number);
+            rowsPerFetch = 1;
+        }
+    }
 
     SQLSetStmtAttr(hstmt_, SQL_ATTR_ROW_BIND_TYPE, SQL_BIND_BY_COLUMN, 0);
     SQLSetStmtAttr(hstmt_, SQL_ATTR_ROW_ARRAY_SIZE, (SQLPOINTER)row_array_size, 0);
-    SQLSetStmtAttr(hstmt_, SQL_ATTR_ROWS_FETCHED_PTR, &numRowsFetched_, 0);
+    SQLSetStmtAttr(hstmt_, SQL_ATTR_ROWS_FETCHED_PTR, &curNumRowsFetched, 0);
 
-    SQLRETURN rc = SQLFetch(hstmt_);
-
-    if (SQL_NO_DATA == rc)
+    for (std::size_t i = 0; i < fetchesCount; i += rowsPerFetch)
     {
-        return ef_no_data;
-    }
+        SQLRETURN rc = SQLFetch(hstmt_);
 
-    if (is_odbc_error(rc))
-    {
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, "fetching data");
+        if (SQL_NO_DATA == rc)
+        {
+            return ef_no_data;
+        }
+
+        if (is_odbc_error(rc))
+        {
+            throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, "fetching data");
+        }
+
+        numRowsFetched_ += curNumRowsFetched;
+
+        // standard intos processed in post_fetch()
+        switch (intoType_)
+        {
+            case bt_standard:
+                // standard intos processed in post_fetch()
+                break;
+            case bt_vector:
+                for (std::size_t j = 0; j != intos_.size(); ++j)
+                {
+                    static_cast<odbc_vector_into_type_backend*>(intos_[j])->
+                        exchange_rows(true, i, i + rowsPerFetch);
+                }
+                break;
+        }
     }
 
     return ef_success;
