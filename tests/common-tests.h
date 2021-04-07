@@ -3589,15 +3589,17 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
             CHECK(13 == (*pos).get());
         }
 
-        // inserting using an i_null indicator with a populated boost::optional (should insert null per docs)
-
+        // inserting using an i_null indicator with a boost::optional should
+        // insert null, even if the optional is valid, just as with standard
+        // types
         {
             auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             {
                 indicator ind = i_null;
                 boost::optional<int> v1(10);
-                sql << "insert into soci_test(id, val) values(1, :val)", use(v1, ind);
+                sql << "insert into soci_test(id, val) values(1, :val)",
+                       use(v1, ind);
             }
 
             // verify the value is fetched correctly as null
@@ -3613,8 +3615,8 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
             }
         }
 
-        // prepared statement inserting non-null and null values alternatively (without passing an explicit indicator)
-
+        // prepared statement inserting non-null and null values alternatively
+        // (without passing an explicit indicator)
         {
             auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
@@ -3622,7 +3624,8 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
                 int id;
                 boost::optional<int> val;
                 statement st = (sql.prepare
-                    << "insert into soci_test(id, val) values (:id, :val)", use(id), use(val));
+                    << "insert into soci_test(id, val) values (:id, :val)",
+                       use(id), use(val));
 
                 id = 1;
                 val = 10;
