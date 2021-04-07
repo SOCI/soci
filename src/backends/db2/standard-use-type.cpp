@@ -172,20 +172,19 @@ void db2_standard_use_type_backend::pre_use(indicator const *ind_ptr)
 
     void* const sqlData = prepare_for_bind(size, sqlType, cType);
 
+    static const SQLLEN indNull = SQL_NULL_DATA;
+
     SQLRETURN cliRC = SQLBindParameter(statement_.hStmt,
                                     static_cast<SQLUSMALLINT>(position),
                                     SQL_PARAM_INPUT,
-                                    cType, sqlType, size, 0, sqlData, size, &ind);
+                                    cType, sqlType, size, 0, sqlData, size,
+                                    ind_ptr && *ind_ptr == i_null
+                                        ? const_cast<SQLLEN *>(&indNull)
+                                        : &ind);
 
     if (cliRC != SQL_SUCCESS)
     {
         throw db2_soci_error("Error while binding value",cliRC);
-    }
-
-    // then handle indicators
-    if (ind_ptr != NULL && *ind_ptr == i_null)
-    {
-        ind = SQL_NULL_DATA; // null
     }
 }
 
