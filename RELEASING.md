@@ -45,6 +45,11 @@ edit and update if necessary. Finally, copy to the `CHANGES` file.
 Commit the updates to the `master` branch first.
 See [Create release branch](#create-release-branch).
 
+## Update AUTHORS file
+
+Use `git shortlog -s v4.0.1..` to get the list of contributors since the last
+release.
+
 ## Update version numbers
 
 Update the version number of the new release in the following places:
