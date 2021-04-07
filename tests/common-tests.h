@@ -3659,7 +3659,7 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
                 opt = 0;
                 sql << "select val from soci_test where id = 3", into(opt, ind);
                 CHECK(ind == i_ok);
-                CHECK(opt.is_initialized());
+                REQUIRE(opt.is_initialized());
                 CHECK(opt.get() == 11);
             }
         }
