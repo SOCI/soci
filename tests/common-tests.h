@@ -3605,7 +3605,7 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
                 indicator ind;
                 boost::optional<int> opt;
 
-                ind = (indicator)-1;
+                ind = i_truncated;
                 opt = 0;
                 sql << "select val from soci_test where id = 1", into(opt, ind);
                 CHECK(ind == i_null);
@@ -3651,20 +3651,20 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
                 indicator ind;
                 boost::optional<int> opt;
 
-                ind = (indicator)-1;
+                ind = i_truncated;
                 opt = 0;
                 sql << "select val from soci_test where id = 1", into(opt, ind);
                 CHECK(ind == i_ok);
                 CHECK(opt.is_initialized());
                 CHECK(opt.get() == 10);
 
-                ind = (indicator)-1;
+                ind = i_truncated;
                 opt = 0;
                 sql << "select val from soci_test where id = 2", into(opt, ind);
                 CHECK(ind == i_null);
                 CHECK(!opt.is_initialized());
 
-                ind = (indicator)-1;
+                ind = i_truncated;
                 opt = 0;
                 sql << "select val from soci_test where id = 3", into(opt, ind);
                 CHECK(ind == i_ok);
