@@ -39,6 +39,13 @@ sudo apt-get install -qq expect ${firebird_server_package} firebird-dev
 # wouldn't be asked to change the password after the initial installation.
 export DEBIAN_FRONTEND=teletype
 
+num_tries=1
+wait_time=6 # seconds
+
+while true; do
+
+echo "Reconfiguring Firebird (attempt #$num_tries):"
+
 # Expect script feeding dpkg-reconfigure prompts
 sudo --preserve-env /usr/bin/expect - << ENDMARK
 spawn dpkg-reconfigure -plow $firebird_server_package
@@ -52,8 +59,30 @@ expect eof
 ENDMARK
 # End of Expect script
 
-echo "Firebird: cat /etc/firebird/$firebird_version/SYSDBA.password"
-sudo grep ISC_ /etc/firebird/$firebird_version/SYSDBA.password
+# Check that we've actually updated the password file as we sometimes fail to
+# do it with "Unable to complete network request to host localhost." error.
+firebird_password_file="/etc/firebird/$firebird_version/SYSDBA.password"
+
+# We have to be careful with grep as the password may or not be quoted, even
+# with the same Firebird version (2.5) on the same system (Ubuntu Xenial),
+# depending on whether we're running on Travis or GitHub CI.
+if sudo cat "$firebird_password_file" | egrep -q 'ISC_PASSWORD="?masterkey'; then
+    echo "Successfully updated $firebird_password_file:"
+    sudo grep ISC_ $firebird_password_file
+    break
+fi
+
+if [[ $num_tries -gt 10 ]]; then
+    echo "Failed to update Firebird password file after $num_tries attempts."
+    exit 1
+fi
+
+echo "Failed to reconfigure Firebird, retrying in $wait_time seconds..."
+sleep $wait_time
+((num_tries++))
+
+done
+
 echo
 echo "Firebird: restarting"
 sudo service $firebird_server_service restart
