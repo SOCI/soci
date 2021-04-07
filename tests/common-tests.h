@@ -3619,14 +3619,6 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
             auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
             {
-            #if 0 // non-prepared method
-                boost::optional<int> v1(10);
-                sql << "insert into soci_test(id, val) values(1, :val)", use(v1);
-                boost::optional<int> v2; // null
-                sql << "insert into soci_test(id, val) values(2, :val)", use(v2);
-                boost::optional<int> v3(11);
-                sql << "insert into soci_test(id, val) values(3, :val)", use(v3);
-            #else
                 int id;
                 boost::optional<int> val;
                 statement st = (sql.prepare
@@ -3643,7 +3635,6 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
                 id = 3;
                 val = 11;
                 st.execute(true);
-            #endif
             }
 
             // verify values are fetched correctly
