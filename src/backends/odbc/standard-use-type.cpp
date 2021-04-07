@@ -217,23 +217,29 @@ void odbc_standard_use_type_backend::pre_use(indicator const *ind)
 
     void* const sqlData = prepare_for_bind(size, sqlType, cType);
 
+    // If the indicator is i_null, we need to pass the corresponding value to
+    // the ODBC function, and we have to do it without changing indHolder_
+    // itself because we may need to use its original value again when we're
+    // called the next when executing a prepared statement multiple times.
+    //
+    // So use separate holder variables depending on whether we need to insert
+    // null or not.
+    static const SQLLEN indHolderNull = SQL_NULL_DATA;
+
     SQLRETURN rc = SQLBindParameter(statement_.hstmt_,
                                     static_cast<SQLUSMALLINT>(position_),
                                     SQL_PARAM_INPUT,
                                     cType, sqlType, size, 0,
-                                    sqlData, bufLen, &indHolder_);
+                                    sqlData, bufLen,
+                                    ind && *ind == i_null
+                                        ? const_cast<SQLLEN *>(&indHolderNull)
+                                        : &indHolder_);
 
     if (is_odbc_error(rc))
     {
         std::ostringstream ss;
         ss << "binding input parameter #" << position_;
         throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, ss.str());
-    }
-
-    // then handle indicators
-    if (ind != NULL && *ind == i_null)
-    {
-        indHolder_ = SQL_NULL_DATA; // null
     }
 }
 

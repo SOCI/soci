@@ -3588,6 +3588,84 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
             CHECK((*pos).is_initialized());
             CHECK(13 == (*pos).get());
         }
+
+        // inserting using an i_null indicator with a boost::optional should
+        // insert null, even if the optional is valid, just as with standard
+        // types
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+            {
+                indicator ind = i_null;
+                boost::optional<int> v1(10);
+                sql << "insert into soci_test(id, val) values(1, :val)",
+                       use(v1, ind);
+            }
+
+            // verify the value is fetched correctly as null
+            {
+                indicator ind;
+                boost::optional<int> opt;
+
+                ind = i_truncated;
+                opt = 0;
+                sql << "select val from soci_test where id = 1", into(opt, ind);
+                CHECK(ind == i_null);
+                CHECK(!opt.is_initialized());
+            }
+        }
+
+        // prepared statement inserting non-null and null values alternatively
+        // (without passing an explicit indicator)
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+            {
+                int id;
+                boost::optional<int> val;
+                statement st = (sql.prepare
+                    << "insert into soci_test(id, val) values (:id, :val)",
+                       use(id), use(val));
+
+                id = 1;
+                val = 10;
+                st.execute(true);
+
+                id = 2;
+                val = boost::optional<int>();
+                st.execute(true);
+
+                id = 3;
+                val = 11;
+                st.execute(true);
+            }
+
+            // verify values are fetched correctly
+            {
+                indicator ind;
+                boost::optional<int> opt;
+
+                ind = i_truncated;
+                opt = 0;
+                sql << "select val from soci_test where id = 1", into(opt, ind);
+                CHECK(ind == i_ok);
+                CHECK(opt.is_initialized());
+                CHECK(opt.get() == 10);
+
+                ind = i_truncated;
+                opt = 0;
+                sql << "select val from soci_test where id = 2", into(opt, ind);
+                CHECK(ind == i_null);
+                CHECK(!opt.is_initialized());
+
+                ind = i_truncated;
+                opt = 0;
+                sql << "select val from soci_test where id = 3", into(opt, ind);
+                CHECK(ind == i_ok);
+                REQUIRE(opt.is_initialized());
+                CHECK(opt.get() == 11);
+            }
+        }
     }
 }
 
