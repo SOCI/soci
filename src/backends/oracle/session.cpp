@@ -34,16 +34,16 @@ sb4 fo_callback(void * /* svchp */, void * /* envhp */, void * fo_ctx,
         static_cast<oracle_session_backend *>(fo_ctx);
 
     failover_callback * callback = backend->failoverCallback_;
-    
+
     if (callback != NULL)
     {
         session * sql = backend->session_;
-        
+
         switch (fo_event)
         {
         case OCI_FO_BEGIN:
             // failover operation was initiated
-    
+
             try
             {
                 callback->started();
@@ -52,12 +52,12 @@ sb4 fo_callback(void * /* svchp */, void * /* envhp */, void * fo_ctx,
             {
                 // ignore exceptions from user callbacks
             }
-            
+
             break;
-            
+
         case OCI_FO_END:
             // failover was successful
-            
+
             try
             {
                 callback->finished(*sql);
@@ -68,7 +68,7 @@ sb4 fo_callback(void * /* svchp */, void * /* envhp */, void * fo_ctx,
             }
 
             break;
-            
+
         case OCI_FO_ABORT:
             // failover was aborted with no possibility to recovery
 
@@ -85,16 +85,16 @@ sb4 fo_callback(void * /* svchp */, void * /* envhp */, void * fo_ctx,
 
         case OCI_FO_ERROR:
             // failover failed, but can be retried
-            
+
             try
             {
                 bool retry = false;
                 std::string newTarget;
                 callback->failed(retry, newTarget);
-                
+
                 // newTarget is ignored, as the new target
                 // is selected by Oracle client configuration
-                
+
                 if (retry)
                 {
                     return OCI_FO_RETRY;
@@ -110,7 +110,7 @@ sb4 fo_callback(void * /* svchp */, void * /* envhp */, void * fo_ctx,
         case OCI_FO_REAUTH:
             // nothing interesting
             break;
-            
+
         default:
             // ignore unknown callback types (if any)
             break;
@@ -147,7 +147,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
     size_t nlsUserNameLen;
     char nlsPassword[authBufLen];
     size_t nlsPasswordLen;
-    
+
     sword res;
 
     // create the environment
@@ -179,7 +179,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
     if (charset != 0)
     {
         // convert service/user/password to the expected charset
-        
+
         res = OCINlsCharSetConvert(envhp_, errhp_,
             charset, nlsService, serviceBufLen,
             defaultSourceCharSetId, serviceName.c_str(), serviceName.size(), &nlsServiceLen);
@@ -191,7 +191,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
             clean_up();
             throw oracle_soci_error(msg, errNum);
         }
-        
+
         res = OCINlsCharSetConvert(envhp_, errhp_,
             charset, nlsUserName, authBufLen,
             defaultSourceCharSetId, userName.c_str(), userName.size(), &nlsUserNameLen);
@@ -203,7 +203,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
             clean_up();
             throw oracle_soci_error(msg, errNum);
         }
-        
+
         res = OCINlsCharSetConvert(envhp_, errhp_,
             charset, nlsPassword, authBufLen,
             defaultSourceCharSetId, password.c_str(), password.size(), &nlsPasswordLen);
@@ -219,7 +219,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
     else
     {
         // do not perform any charset conversions
-        
+
         nlsServiceLen = serviceName.size();
         if (nlsServiceLen < serviceBufLen)
         {
@@ -250,7 +250,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
             throw soci_error("Password is too long.");
         }
     }
-    
+
     // create the server context
     res = OCIServerAttach(srvhp_, errhp_,
         reinterpret_cast<text*>(nlsService), nlsServiceLen, OCI_DEFAULT);
@@ -310,7 +310,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
     }
 
     // select credentials type - use rdbms based credentials by default
-    // and switch to external credentials if username and 
+    // and switch to external credentials if username and
     // password are both not specified
     ub4 credentialType = OCI_CRED_RDBMS;
     if (userName.empty() && password.empty())

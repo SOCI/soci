@@ -42,7 +42,7 @@ public:
 
     once_temp_type & operator,(into_type_ptr const &);
     once_temp_type & operator,(use_type_ptr const &);
-    
+
     template <typename T, typename Indicator>
     once_temp_type &operator,(into_container<T, Indicator> const &ic)
     {

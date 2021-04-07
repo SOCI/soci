@@ -313,7 +313,7 @@ bool statement_impl::execute(bool withDataExchange)
                 num = static_cast<int>(bindSize);
             }
         }
-        
+
         pre_exec(num);
 
         statement_backend::exec_fetch_result res = backEnd_->execute(num);
@@ -539,13 +539,13 @@ void statement_impl::pre_exec(int num)
     {
         intos_[i]->pre_exec(num);
     }
-    
+
     std::size_t const ifrsize = intosForRow_.size();
     for (std::size_t i = 0; i != ifrsize; ++i)
     {
         intosForRow_[i]->pre_exec(num);
     }
-    
+
     std::size_t const usize = uses_.size();
     for (std::size_t i = 0; i != usize; ++i)
     {

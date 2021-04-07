@@ -8,7 +8,7 @@
 	    The Get-ODBCList cmdlet to Get ODBC connectors list on specific machine.
 		
 	.PARAMETER ComputerName
-	    Specifies a computer name. 
+	    Specifies a computer name.
 		
 	.EXAMPLE
 		PS C:\> Get-ODBCList -ComputerName "g1","g2","g3"
@@ -28,7 +28,7 @@
 	.NOTES
 		Author: Michal Gajda
 		Blog  : http://commandlinegeeks.com/
-	#> 
+	#>
 	[CmdletBinding(
 		SupportsShouldProcess=$True,
 		ConfirmImpact="Low"
@@ -61,7 +61,7 @@
 				}
 				Catch
 				{
-					Write-Error $_.Exception.Message -ErrorAction Stop 
+					Write-Error $_.Exception.Message -ErrorAction Stop
 				}
 				
 				if($regSubKey -and $regSubKeyWow64)

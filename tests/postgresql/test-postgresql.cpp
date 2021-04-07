@@ -1002,7 +1002,7 @@ struct test_false_bind_variable_inside_identifier_table_creator : table_creator_
 {
     test_false_bind_variable_inside_identifier_table_creator(soci::session & sql)
         : table_creator_base(sql)
-        , msession(sql) 
+        , msession(sql)
     {
 
         try
@@ -1019,7 +1019,7 @@ struct test_false_bind_variable_inside_identifier_table_creator : table_creator_
         {
             drop();
         }
-        
+
     }
     ~test_false_bind_variable_inside_identifier_table_creator(){
         drop();

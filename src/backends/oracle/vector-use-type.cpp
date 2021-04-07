@@ -188,7 +188,7 @@ void oracle_vector_use_type_backend::bind_by_pos_bulk(int & position,
     end_ = end;
 
     end_var_ = full_size();
-    
+
     bind_position_ = position++;
 }
 
@@ -202,7 +202,7 @@ void oracle_vector_use_type_backend::bind_by_name_bulk(
     end_ = end;
 
     end_var_ = full_size();
-    
+
     bind_name_ = name;
 }
 
@@ -266,7 +266,7 @@ void oracle_vector_use_type_backend::pre_use(indicator const *ind)
         for (std::size_t i = 0; i != vecSize; ++i)
         {
             std::tm & t = v[begin_ + i];
-            
+
             *pos++ = static_cast<ub1>(100 + (1900 + t.tm_year) / 100);
             *pos++ = static_cast<ub1>(100 + t.tm_year % 100);
             *pos++ = static_cast<ub1>(t.tm_mon + 1);
@@ -349,7 +349,7 @@ std::size_t oracle_vector_use_type_backend::size()
         // ... and in that case return the actual size
         return actual_size;
     }
-    
+
     if (end_ != NULL && *end_ != 0)
     {
         return *end_ - begin_;

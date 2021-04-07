@@ -142,16 +142,16 @@ void oracle_standard_use_type_backend::prepare_for_bind(
             data = &bbe->lobp_;
         }
         break;
-        
+
     case x_xmltype:
     case x_longstring:
         {
             oracleType = SQLT_CLOB;
-            
+
             // lazy initialization of the temporary LOB object,
             // actual creation of this object is in pre_exec, which
             // is called right before statement's execute
-            
+
             OCILobLocator * lobp = NULL;
 
             size = sizeof(lobp);
@@ -268,7 +268,7 @@ OCILobLocator * oracle::create_temp_lob(oracle_session_backend& session)
     {
         throw_oracle_soci_error(res, session.errhp_);
     }
-    
+
     res = OCILobCreateTemporary(session.svchp_,
         session.errhp_,
         lobp, 0, SQLCS_IMPLICIT,
@@ -392,7 +392,7 @@ void oracle_standard_use_type_backend::pre_use(indicator const *ind)
             s->undefine_and_bind();
         }
         break;
-        
+
     case x_xmltype:
     case x_longstring:
     case x_rowid:
@@ -595,7 +595,7 @@ void oracle_standard_use_type_backend::clean_up()
         free_temp_lob(statement_.session_, static_cast<OCILobLocator *>(ociData_));
         ociData_ = NULL;
     }
-    
+
     if (bindp_ != NULL)
     {
         OCIHandleFree(bindp_, OCI_HTYPE_DEFINE);

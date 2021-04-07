@@ -470,7 +470,7 @@ details::prepare_temp_type session::prepare_column_descriptions(std::string & ta
 
     return prepare << backEnd_->get_column_descriptions_query(), use(table_name, "t");
 }
-    
+
 ddl_type session::create_table(const std::string & tableName)
 {
     ddl_type ddl(*this);

@@ -45,9 +45,9 @@ public:
     // offset starts from 0
     std::size_t write_from_start(const char * buf, std::size_t toWrite,
         std::size_t offset = 0);
-    
+
     std::size_t append(char const * buf, std::size_t toWrite);
-    
+
     void trim(std::size_t newLen);
 
     details::blob_backend * get_backend() { return backEnd_; }

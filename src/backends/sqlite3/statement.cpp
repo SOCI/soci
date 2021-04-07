@@ -273,7 +273,7 @@ sqlite3_statement_backend::bind_and_execute(int number)
                     case dt_string:
                         bindRes = sqlite3_bind_text(stmt_, pos, col.buffer_.constData_, static_cast<int>(col.buffer_.size_), NULL);
                         break;
-                    
+
                     case dt_date:
                         bindRes = sqlite3_bind_text(stmt_, pos, col.buffer_.constData_, static_cast<int>(col.buffer_.size_), SQLITE_TRANSIENT);
                         break;

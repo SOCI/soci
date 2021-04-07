@@ -68,7 +68,7 @@ details::into_type_ptr into(T & t, std::size_t bufSize)
 }
 
 // vectors with index ranges
-    
+
 template <typename T>
 details::into_type_ptr into(std::vector<T> & t,
     std::size_t begin, std::size_t & end)

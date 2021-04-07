@@ -153,7 +153,7 @@ void oracle_standard_into_type_backend::define_by_pos(
             // lazy initialization of the temporary LOB object,
             // actual creation of this object is in pre_exec, which
             // is called right before statement's execute
-            
+
             OCILobLocator * lobp = NULL;
 
             size = sizeof(lobp);
@@ -230,7 +230,7 @@ void oracle::read_from_lob(oracle_session_backend& session,
         }
         while (res == OCI_NEED_DATA);
     }
-    
+
     value.assign(buf.begin(), buf.end());
 }
 
@@ -349,7 +349,7 @@ void oracle_standard_into_type_backend::clean_up()
         free_temp_lob(statement_.session_, static_cast<OCILobLocator *>(ociData_));
         ociData_ = NULL;
     }
-    
+
     if (defnp_ != NULL)
     {
         OCIHandleFree(defnp_, OCI_HTYPE_DEFINE);

@@ -29,7 +29,7 @@ template <>
 struct type_conversion<column_info>
 {
     typedef values base_type;
-    
+
     static std::size_t get_numeric_value(const values & v,
         const std::string & field_name)
     {
@@ -51,7 +51,7 @@ struct type_conversion<column_info>
             break;
         default:
             return 0u;
-        }        
+        }
     }
 
     static void from_base(values const & v, indicator /* ind */, column_info & ci)

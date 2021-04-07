@@ -388,7 +388,7 @@ std::size_t oracle_vector_into_type_backend::size()
         // ... and in that case return the actual size
         return actual_size;
     }
-    
+
     if (end_ != NULL && *end_ != 0)
     {
         return *end_ - begin_;

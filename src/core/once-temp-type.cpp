@@ -122,7 +122,7 @@ ddl_type & ddl_type::column(const std::string & columnName, data_type dt,
         s_->get_backend()->create_column_type(dt, precision, scale));
 
     rcst_->set_need_comma(true);
-        
+
     return *this;
 }
 
@@ -133,12 +133,12 @@ ddl_type & ddl_type::unique(const std::string & name,
     {
         rcst_->accumulate(", ");
     }
-        
+
     rcst_->accumulate(s_->get_backend()->constraint_unique(
             name, columnNames));
 
     rcst_->set_need_comma(true);
-        
+
     return *this;
 }
 
@@ -149,12 +149,12 @@ ddl_type & ddl_type::primary_key(const std::string & name,
     {
         rcst_->accumulate(", ");
     }
-        
+
     rcst_->accumulate(s_->get_backend()->constraint_primary_key(
             name, columnNames));
 
     rcst_->set_need_comma(true);
-        
+
     return *this;
 }
 
@@ -167,12 +167,12 @@ ddl_type & ddl_type::foreign_key(const std::string & name,
     {
         rcst_->accumulate(", ");
     }
-        
+
     rcst_->accumulate(s_->get_backend()->constraint_foreign_key(
             name, columnNames, refTableName, refColumnNames));
 
     rcst_->set_need_comma(true);
-        
+
     return *this;
 }
 

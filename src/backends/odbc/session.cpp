@@ -305,7 +305,7 @@ bool odbc_session_backend::get_last_insert_id(
         case prod_db2:
             query = "SELECT IDENTITY_VAL_LOCAL() AS LASTID FROM SYSIBM.SYSDUMMY1";
             break;
-          
+
         case prod_mssql:
             {
                 // We can't use `ident_current()` because it doesn't

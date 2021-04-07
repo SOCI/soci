@@ -74,9 +74,9 @@ int charset_code(const std::string & name)
 {
     // Note: unofficial reference for charset ids is:
     // http://www.mydul.net/charsets.html
-            
+
     int code;
-    
+
     if (name == "utf8")
     {
         code = 871;
@@ -92,7 +92,7 @@ int charset_code(const std::string & name)
     else
     {
         // allow explicit number value
-        
+
         std::istringstream ss(name);
 
         ss >> code;

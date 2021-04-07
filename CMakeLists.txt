@@ -31,15 +31,15 @@ if (SOCI_LTO)
     # Check and enable lto support
     include(CheckIPOSupported)
     check_ipo_supported(RESULT supported)
-    
+
     if (NOT supported)
         message(STATUS "IPO / LTO not supported")
     endif()
-    
+
     if (supported AND NOT SOCI_ASAN)
         message(STATUS "IPO / LTO enabled")
         set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-    
+
         if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
             # Check for lld as clang lto works best with its own linker
             include(CheckCXXCompilerFlag)

@@ -4454,8 +4454,8 @@ namespace {
     }
 
     // Sanity check to verify that the DST threshold causes mktime to modify
-    // the input hour (the condition that causes issue 723). 
-    // This check really shouldn't fail but since it is the basis of the test 
+    // the input hour (the condition that causes issue 723).
+    // This check really shouldn't fail but since it is the basis of the test
     // it is worth verifying.
     bool does_mktime_modify_input_hour()
     {
