@@ -9,20 +9,12 @@
 #ifndef SOCI_FIREBIRD_H_INCLUDED
 #define SOCI_FIREBIRD_H_INCLUDED
 
-#ifdef _WIN32
-# ifdef SOCI_DLL
-#  ifdef SOCI_FIREBIRD_SOURCE
-#   define SOCI_FIREBIRD_DECL __declspec(dllexport)
-#  else
-#   define SOCI_FIREBIRD_DECL __declspec(dllimport)
-#  endif // SOCI_DLL
-# endif // SOCI_FIREBIRD_SOURCE
-#endif // _WIN32
+#include <soci/soci-platform.h>
 
-//
-// If SOCI_FIREBIRD_DECL isn't defined yet define it now
-#ifndef SOCI_FIREBIRD_DECL
-# define SOCI_FIREBIRD_DECL
+#ifdef SOCI_FIREBIRD_SOURCE
+# define SOCI_FIREBIRD_DECL SOCI_DECL_EXPORT
+#else
+# define SOCI_FIREBIRD_DECL SOCI_DECL_IMPORT
 #endif
 
 #ifdef _WIN32
@@ -85,11 +77,6 @@ struct firebird_standard_into_type_backend : details::standard_into_type_backend
 
     char *buf_;
     short indISCHolder_;
-
-private:
-    // Copy contents of a BLOB (represented by its id) in buf_ into the given
-    // string.
-    void copy_from_blob(std::string& out);
 };
 
 struct firebird_vector_into_type_backend : details::vector_into_type_backend
@@ -159,7 +146,8 @@ private:
 struct firebird_vector_use_type_backend : details::vector_use_type_backend
 {
     firebird_vector_use_type_backend(firebird_statement_backend &st)
-        : statement_(st), data_(NULL), type_(), position_(0), buf_(NULL), indISCHolder_(0)
+        : statement_(st), data_(NULL), type_(), position_(0), buf_(NULL), indISCHolder_(0),
+          blob_(NULL)
     {}
 
     void bind_by_pos(int &position,
@@ -183,6 +171,14 @@ struct firebird_vector_use_type_backend : details::vector_use_type_backend
 
     char *buf_;
     short indISCHolder_;
+
+private:
+    // Allocate a temporary blob, fill it with the data from the provided
+    // string and copy its ID into buf_.
+    void copy_to_blob(const std::string &in);
+
+    // This is used for types mapping to CLOB.
+    firebird_blob_backend *blob_;
 };
 
 struct firebird_session_backend;

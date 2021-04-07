@@ -2107,8 +2107,10 @@ namespace Catch{
         #define CATCH_TRAP() \
                 __asm__("li r0, 20\nsc\nnop\nli r0, 37\nli r4, 2\nsc\nnop\n" \
                 : : : "memory","r0","r3","r4" )
-    #else
+    #elif defined(__i386__) || defined(__x86_64__)
         #define CATCH_TRAP() __asm__("int $3\n" : : )
+    #elif defined(__aarch64__)
+        #define CATCH_TRAP()  __asm__(".inst 0xd4200000")
     #endif
 
 #elif defined(CATCH_PLATFORM_LINUX)
@@ -8888,7 +8890,13 @@ std::string toString( std::string const& value ) {
             switch( s[i] ) {
             case '\n': subs = "\\n"; break;
             case '\t': subs = "\\t"; break;
-            default: break;
+            default:
+                char const c = s[i];
+                if ( c < 0x20 || c == 0x7f ) {
+                    subs = "\\x";
+                    subs += '0' + c / 0x10;
+                    subs += "0123456789ABCDEF"[c % 0x10];
+                }
             }
             if( !subs.empty() ) {
                 s = s.substr( 0, i ) + subs + s.substr( i+1 );

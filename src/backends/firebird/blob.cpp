@@ -179,6 +179,12 @@ void firebird_blob_backend::load()
         open();
     }
 
+    // The blob is empty.
+    if (data_.empty())
+    {
+        return;
+    }
+
     ISC_STATUS stat[20];
     unsigned short bytes;
     std::vector<char>::size_type total_bytes = 0;
@@ -249,22 +255,22 @@ void firebird_blob_backend::save()
         // write data
         size_t size = data_.size();
         size_t offset = 0;
-        // Segment Size : Specifying the BLOB segment is throwback to times past, when applications for working 
+        // Segment Size : Specifying the BLOB segment is throwback to times past, when applications for working
         // with BLOB data were written in C(Embedded SQL) with the help of the gpre pre - compiler.
-        // Nowadays, it is effectively irrelevant.The segment size for BLOB data is determined by the client side and is usually larger than the data page size, 
+        // Nowadays, it is effectively irrelevant.The segment size for BLOB data is determined by the client side and is usually larger than the data page size,
         // in any case.
         do
         {
             unsigned short segmentSize = 0xFFFF; //last unsigned short number
             if (size - offset < segmentSize) //if content size is less than max segment size or last data segment is about to be written
-                segmentSize = static_cast<unsigned short>(size - offset); 
+                segmentSize = static_cast<unsigned short>(size - offset);
             //write segment
             if (isc_put_segment(stat, &bhp_, segmentSize, &data_[0]+offset))
             {
                 throw_iscerror(stat);
             }
             offset += segmentSize;
-        } 
+        }
         while (offset < size);
     }
     cleanUp();

@@ -55,7 +55,13 @@ public:
     standard_into_type(void * data, exchange_type type)
         : data_(data), type_(type), ind_(NULL), backEnd_(NULL) {}
     standard_into_type(void * data, exchange_type type, indicator & ind)
-        : data_(data), type_(type), ind_(&ind), backEnd_(NULL) {}
+        : data_(data), type_(type), ind_(&ind), backEnd_(NULL)
+    {
+        // Backends won't initialize the indicator if no data is retrieved, so
+        // do it here, like this we can be sure it has a defined value even if
+        // an exception is thrown before anything else happens.
+        *ind_ = i_null;
+    }
 
     ~standard_into_type() SOCI_OVERRIDE;
 

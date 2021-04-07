@@ -147,6 +147,25 @@ public:
 
     void convert_to_base() SOCI_OVERRIDE
     {
+        if (ind_ == i_null)
+        {
+            // A null indicator was explicitly passed to use(val, ind).
+            // Therefore, NULL should be put into the database, and there is
+            // normally no reason to convert the value.
+            //
+            // However, if ind_ were ownInd_ itself, and if a prepared statement
+            // were repeatedly executed, we still need to do it in order to
+            // give the custom conversion a chance to update the indicator
+            // based on the actual value being used.
+            if (&ind_ != &(base_value_holder<T>::ownInd_))
+            {
+                // We really have nothing to do here, notably do not call the
+                // custom conversion which could overwrite the explicit i_null
+                // specified by the caller.
+                return;
+            }
+        }
+
         type_conversion<T>::to_base(value_,
             base_value_holder<T>::val_, ind_);
     }

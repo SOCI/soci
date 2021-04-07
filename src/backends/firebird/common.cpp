@@ -220,6 +220,29 @@ std::string getTextParam(XSQLVAR const *var)
     return std::string(var->sqldata + offset, size);
 }
 
+void copy_from_blob(firebird_statement_backend &st, char *buf, std::string &out)
+{
+    firebird_blob_backend blob(st.session_);
+
+    GCC_WARNING_SUPPRESS(cast-align)
+
+    blob.assign(*reinterpret_cast<ISC_QUAD*>(buf));
+
+    GCC_WARNING_RESTORE(cast-align)
+
+    std::size_t const len_total = blob.get_len();
+    out.resize(len_total);
+
+    std::size_t const len_read = blob.read(0, &out[0], len_total);
+    if (len_read != len_total)
+    {
+        std::ostringstream os;
+        os << "Read " << len_read << " bytes instead of expected "
+           << len_total << " from Firebird text blob object";
+        throw soci_error(os.str());
+    }
+}
+
 } // namespace firebird
 
 } // namespace details

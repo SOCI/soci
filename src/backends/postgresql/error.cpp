@@ -81,7 +81,7 @@ details::postgresql_result::check_for_data(char const* errMsg) const
 
         case PGRES_FATAL_ERROR:
             msg += " Fatal error.";
-            
+
             if (PQstatus(sessionBackend_.conn_) == CONNECTION_BAD)
             {
                 msg += " Connection failed.";
@@ -90,14 +90,14 @@ details::postgresql_result::check_for_data(char const* errMsg) const
                 // more specific, as we're not going to get anything from
                 // PG_DIAG_SQLSTATE below if the connection is lost.
                 fallback_sql_state = "08000"; // connection_exception
-                
+
                 // call the failover callback, if registered
-                
+
                 failover_callback * callback = sessionBackend_.failoverCallback_;
                 if (callback != NULL)
                 {
                     bool reconnected = false;
-                    
+
                     try
                     {
                         callback->started();
@@ -116,7 +116,7 @@ details::postgresql_result::check_for_data(char const* errMsg) const
                         }
                         catch (...)
                         {
-                            // do not continue execution because 
+                            // do not continue execution because
                             // user callback generated an exception
                             retry = false;
                         }
@@ -136,7 +136,7 @@ details::postgresql_result::check_for_data(char const* errMsg) const
                             reconnected = true;
                         }
                     } while (retry && !reconnected);
-                    
+
                     if (reconnected == false)
                     {
                         try
@@ -161,9 +161,9 @@ details::postgresql_result::check_for_data(char const* errMsg) const
                     }
                 }
             }
-            
+
             break;
-            
+
         default:
             // Some of the other status codes are not really errors but we're
             // not prepared to handle them right now and shouldn't ever receive

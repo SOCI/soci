@@ -44,6 +44,15 @@ TEST_CASE("PostgreSQL ROWID", "[postgresql][rowid][oid]")
 {
     soci::session sql(backEnd, connectString);
 
+    int server_version_num;
+    sql << "show server_version_num", into(server_version_num);
+    if ( server_version_num >= 120000 )
+    {
+        WARN("Skipping test because OIDs are no longer supported in PostgreSQL "
+             << server_version_num);
+        return;
+    }
+
     oid_table_creator tableCreator(sql);
 
     sql << "insert into soci_test(id, name) values(7, \'John\')";
@@ -119,9 +128,6 @@ TEST_CASE("PostgreSQL function call", "[postgresql][function]")
 
     // explicit procedure syntax
     {
-        std::string in("my message2");
-        std::string out;
-
         procedure proc = (sql.prepare <<
             "soci_test(:input)",
             into(out), use(in, "input"));
@@ -994,9 +1000,9 @@ TEST_CASE("Bulk iterators", "[postgresql][bulkiters]")
 // false_bind_variable_inside_identifier
 struct test_false_bind_variable_inside_identifier_table_creator : table_creator_base
 {
-    test_false_bind_variable_inside_identifier_table_creator(session & sql)
+    test_false_bind_variable_inside_identifier_table_creator(soci::session & sql)
         : table_creator_base(sql)
-        , msession(sql) 
+        , msession(sql)
     {
 
         try
@@ -1013,7 +1019,7 @@ struct test_false_bind_variable_inside_identifier_table_creator : table_creator_
         {
             drop();
         }
-        
+
     }
     ~test_false_bind_variable_inside_identifier_table_creator(){
         drop();
@@ -1026,9 +1032,9 @@ private:
             msession << "DROP FUNCTION IF EXISTS \"function_with:colon\"();";
             msession << "DROP TYPE IF EXISTS \"type_with:colon\" ;";
         }
-        catch (soci_error const& e){}
+        catch (soci_error const&){}
     }
-    session& msession;
+    soci::session& msession;
 };
 TEST_CASE("false_bind_variable_inside_identifier", "[postgresql][bind-variables]")
 {
@@ -1037,7 +1043,7 @@ TEST_CASE("false_bind_variable_inside_identifier", "[postgresql][bind-variables]
     std::string type_value;
 
     {
-        session sql(backEnd, connectString);
+        soci::session sql(backEnd, connectString);
         test_false_bind_variable_inside_identifier_table_creator tableCreator(sql);
 
         sql << "insert into soci_test(\"column_with:colon\") values(2020)";
@@ -1049,6 +1055,36 @@ TEST_CASE("false_bind_variable_inside_identifier", "[postgresql][bind-variables]
     CHECK(col_name.compare("column_with:colon") == 0);
     CHECK(fct_return_value == 2020);
     CHECK(type_value.compare("en_one")==0);
+}
+
+// false_bind_variable_inside_identifier
+struct table_creator_colon_in_double_quotes_in_single_quotes :
+    table_creator_base
+{
+    table_creator_colon_in_double_quotes_in_single_quotes(soci::session & sql)
+        : table_creator_base(sql)
+    {
+       sql << "CREATE TABLE soci_test( \"column_with:colon\" text)";
+    }
+
+};
+TEST_CASE("colon_in_double_quotes_in_single_quotes",
+          "[postgresql][bind-variables]")
+{
+    std::string return_value;
+
+    {
+        soci::session sql(backEnd, connectString);
+        table_creator_colon_in_double_quotes_in_single_quotes
+            tableCreator(sql);
+
+        sql << "insert into soci_test(\"column_with:colon\") values('hello "
+               "it is \"10:10\"')";
+        sql << "SELECT \"column_with:colon\" from soci_test ;", into
+            (return_value);
+    }
+
+    CHECK(return_value == "hello it is \"10:10\"");
 }
 
 //
@@ -1120,8 +1156,8 @@ struct table_creator_for_clob : table_creator_base
 class test_context : public test_context_base
 {
 public:
-    test_context(backend_factory const &backEnd, std::string const &connectString)
-        : test_context_base(backEnd, connectString)
+    test_context(backend_factory const &backend, std::string const &connstr)
+        : test_context_base(backend, connstr)
     {}
 
     table_creator_base* table_creator_1(soci::session& s) const SOCI_OVERRIDE

@@ -394,9 +394,9 @@ struct table_creator_for_get_affected_rows : table_creator_base
 class test_context : public test_context_base
 {
 public:
-    test_context(backend_factory const &backEnd,
-                std::string const &connectString)
-        : test_context_base(backEnd, connectString) {}
+    test_context(backend_factory const &backend,
+                std::string const &connstr)
+        : test_context_base(backend, connstr) {}
 
     table_creator_base* table_creator_1(soci::session& s) const SOCI_OVERRIDE
     {
@@ -416,6 +416,20 @@ public:
     table_creator_base* table_creator_4(soci::session& s) const SOCI_OVERRIDE
     {
         return new table_creator_for_get_affected_rows(s);
+    }
+
+    table_creator_base* table_creator_get_last_insert_id(soci::session& s) const SOCI_OVERRIDE
+    {
+        struct table_creator_for_get_last_insert_id : table_creator_base
+        {
+            table_creator_for_get_last_insert_id(soci::session & sql)
+                : table_creator_base(sql)
+            {
+                sql << "create table soci_test (id integer primary key, val integer)";
+            }
+        };
+
+        return new table_creator_for_get_last_insert_id(s);
     }
 
     std::string to_date_time(std::string const &datdt_string) const SOCI_OVERRIDE

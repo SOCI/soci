@@ -19,6 +19,12 @@
 #pragma warning(disable:4355)
 #endif
 
+// This is used instead of tolower() just to avoid warnings about int to char
+// casts inside MSVS std::transform() implementation.
+char toLowerCh(char c) {
+    return static_cast<char>( std::tolower(c) );
+}
+
 using namespace soci;
 using namespace soci::details;
 using namespace sqlite_api;
@@ -267,7 +273,7 @@ sqlite3_statement_backend::bind_and_execute(int number)
                     case dt_string:
                         bindRes = sqlite3_bind_text(stmt_, pos, col.buffer_.constData_, static_cast<int>(col.buffer_.size_), NULL);
                         break;
-                    
+
                     case dt_date:
                         bindRes = sqlite3_bind_text(stmt_, pos, col.buffer_.constData_, static_cast<int>(col.buffer_.size_), SQLITE_TRANSIENT);
                         break;
@@ -510,7 +516,7 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
         dt.resize(siter - dt.begin());
 
     // do all comparisons in lower case
-    std::transform(dt.begin(), dt.end(), dt.begin(), tolower);
+    std::transform(dt.begin(), dt.end(), dt.begin(), toLowerCh);
 
     sqlite3_data_type_map::const_iterator iter = dataTypeMap.find(dt);
     if (iter != dataTypeMap.end())

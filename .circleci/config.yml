@@ -8,7 +8,7 @@ jobs:
       - run:
           name: install markdownlint
           command: |
-            sudo npm install -g markdownlint-cli
+            sudo npm install -g markdownlint-cli@0.22.0
             markdownlint --version
       - run:
           name: lint .md files

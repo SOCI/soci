@@ -40,6 +40,9 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
 
 std::string getTextParam(XSQLVAR const *var);
 
+// Copy contents of a BLOB in buf into the given string.
+void copy_from_blob(firebird_statement_backend &st, char *buf, std::string &out);
+
 template <typename IntType>
 const char *str2dec(const char * s, IntType &out, short &scale)
 {
@@ -251,20 +254,6 @@ T1 from_isc(XSQLVAR * var)
     }
 
     GCC_WARNING_RESTORE(cast-align)
-}
-
-template <typename T>
-std::size_t getVectorSize(void *p)
-{
-    std::vector<T> *v = static_cast<std::vector<T> *>(p);
-    return v->size();
-}
-
-template <typename T>
-void resizeVector(void *p, std::size_t sz)
-{
-    std::vector<T> *v = static_cast<std::vector<T> *>(p);
-    v->resize(sz);
 }
 
 } // namespace firebird

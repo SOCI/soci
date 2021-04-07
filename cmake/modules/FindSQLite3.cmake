@@ -31,7 +31,7 @@ find_path(SQLITE3_INCLUDE_DIR
   ${SQLITE_ROOT_DIR}/include
   $ENV{OSGEO4W_ROOT}/include)
 
-set(SQLITE3_NAMES sqlite3_i sqlite3)
+set(SQLITE3_NAMES sqlite3_i sqlite3 sqlite3-static)
 find_library(SQLITE3_LIBRARY
   NAMES ${SQLITE3_NAMES}
   PATHS
@@ -58,5 +58,9 @@ find_package_handle_standard_args(SQLITE3
   DEFAULT_MSG
   SQLITE3_LIBRARIES
   SQLITE3_INCLUDE_DIR)
+
+if(NOT SQLITE3_FOUND)
+	message(STATUS "SQLite3 not found (SQLITE3_INCLUDE_DIR=${SQLITE3_INCLUDE_DIR}, SQLITE3_LIBRARY=${SQLITE3_LIBRARY}.")
+endif()
 
 mark_as_advanced(SQLITE3_LIBRARY SQLITE3_INCLUDE_DIR SQLITE3_LIBRARIES)

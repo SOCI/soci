@@ -16,6 +16,17 @@
 namespace soci
 {
 
+// Names of some predefined options and their values.
+extern SOCI_DECL char const * option_reconnect;
+extern SOCI_DECL char const * option_true;
+
+namespace details
+{
+
+class dynamic_backend_ref;
+
+} // namespace details
+
 class backend_factory;
 
 // Simple container for the information used when opening a session.
@@ -27,7 +38,10 @@ public:
     connection_parameters(std::string const & backendName, std::string const & connectString);
     explicit connection_parameters(std::string const & fullConnectString);
 
-    // Default copy ctor, assignment operator and dtor are all OK for us.
+    connection_parameters(connection_parameters const& other);
+    connection_parameters& operator=(connection_parameters const& other);
+
+    ~connection_parameters();
 
 
     // Retrieve the backend and the connection strings specified in the ctor.
@@ -54,10 +68,22 @@ public:
         return true;
     }
 
+    // Return true if the option with the given name was found with option_true
+    // value.
+    bool is_option_on(const char * name) const
+    {
+      std::string value;
+      return get_option(name, value) && value == option_true;
+    }
+
 private:
     // The backend and connection string specified in our ctor.
     backend_factory const * factory_;
     std::string connectString_;
+
+    // References the backend name used for obtaining the factor from
+    // dynamic_backends.
+    details::dynamic_backend_ref * backendRef_;
 
     // We store all the values as strings for simplicity.
     typedef std::map<std::string, std::string> Options;

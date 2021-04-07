@@ -52,20 +52,29 @@ odbc_session_backend::odbc_session_backend(
 
     // Prompt the user for any missing information (typically UID/PWD) in the
     // connection string by default but allow overriding this using "prompt"
-    // option.
+    // option and also suppress prompts when reconnecting, see the comment in
+    // soci::session::reconnect().
     SQLHWND hwnd_for_prompt = NULL;
     unsigned completion = SQL_DRIVER_COMPLETE;
-    std::string completionString;
-    if (parameters.get_option(odbc_option_driver_complete, completionString))
+
+    if (parameters.is_option_on(option_reconnect))
     {
-      // The value of the option is supposed to be just the integer value of
-      // one of SQL_DRIVER_XXX constants but don't check for the exact value in
-      // case more of them are added in the future, the ODBC driver will return
-      // an error if we pass it an invalid value anyhow.
-      if (std::sscanf(completionString.c_str(), "%u", &completion) != 1)
+      completion = SQL_DRIVER_NOPROMPT;
+    }
+    else
+    {
+      std::string completionString;
+      if (parameters.get_option(odbc_option_driver_complete, completionString))
       {
-        throw soci_error("Invalid non-numeric driver completion option value \"" +
-                          completionString + "\".");
+        // The value of the option is supposed to be just the integer value of
+        // one of SQL_DRIVER_XXX constants but don't check for the exact value in
+        // case more of them are added in the future, the ODBC driver will return
+        // an error if we pass it an invalid value anyhow.
+        if (std::sscanf(completionString.c_str(), "%u", &completion) != 1)
+        {
+          throw soci_error("Invalid non-numeric driver completion option value \"" +
+                            completionString + "\".");
+        }
       }
     }
 
@@ -296,10 +305,32 @@ bool odbc_session_backend::get_last_insert_id(
         case prod_db2:
             query = "SELECT IDENTITY_VAL_LOCAL() AS LASTID FROM SYSIBM.SYSDUMMY1";
             break;
-          
+
         case prod_mssql:
-            query = "select ident_current('" + table + "')";
-            break;
+            {
+                // We can't use `ident_current()` because it doesn't
+                // distinguish between the empty table and a table with one
+                // row inserted and returns `seed_value` in both cases, while
+                // we need previous to the initial value in the former
+                // (i.e. `seed_value` - `increment_value`).
+                long long last, seed, inc;
+                indicator ind;
+
+                s << "select last_value, seed_value, increment_value "
+                     "from sys.identity_columns where "
+                     "object_id = object_id('" << table << "')"
+                     , into(last, ind), into(seed), into(inc);
+
+                if (ind == i_null)
+                {
+                    value = seed - inc;
+                }
+                else
+                {
+                    value = last;
+                }
+            }
+            return true;
 
         case prod_mysql:
             query = "select last_insert_id()";

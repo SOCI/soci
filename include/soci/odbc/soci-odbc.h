@@ -8,19 +8,12 @@
 #ifndef SOCI_ODBC_H_INCLUDED
 #define SOCI_ODBC_H_INCLUDED
 
-#ifdef _WIN32
-# ifdef SOCI_DLL
-#  ifdef SOCI_ODBC_SOURCE
-#   define SOCI_ODBC_DECL __declspec(dllexport)
-#  else
-#   define SOCI_ODBC_DECL __declspec(dllimport)
-#  endif // SOCI_ODBC_SOURCE
-# endif // SOCI_DLL
-#endif // _WIN32
-//
-// If SOCI_ODBC_DECL isn't defined yet define it now
-#ifndef SOCI_ODBC_DECL
-# define SOCI_ODBC_DECL
+#include <soci/soci-platform.h>
+
+#ifdef SOCI_ODBC_SOURCE
+# define SOCI_ODBC_DECL SOCI_DECL_EXPORT
+#else
+# define SOCI_ODBC_DECL SOCI_DECL_IMPORT
 #endif
 
 #include "soci/soci-platform.h"
@@ -52,6 +45,12 @@ namespace details
       return reinterpret_cast<SQLCHAR*>(const_cast<char*>(s.c_str()));
     }
 }
+
+enum buffer_type
+{
+    bt_standard,
+    bt_vector
+};
 
 // Option allowing to specify the "driver completion" parameter of
 // SQLDriverConnect(). Its possible values are the same as the allowed values
@@ -122,8 +121,8 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
                                        private odbc_standard_type_backend_base
 {
     odbc_vector_into_type_backend(odbc_statement_backend &st)
-        : odbc_standard_type_backend_base(st), indHolders_(NULL),
-          data_(NULL), buf_(NULL) {}
+        : odbc_standard_type_backend_base(st),
+          data_(NULL), buf_(NULL), position_(0) {}
 
     void define_by_pos(int &position,
         void *data, details::exchange_type type) SOCI_OVERRIDE;
@@ -140,17 +139,19 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
     // (as part of the define_by_pos)
     void prepare_indicators(std::size_t size);
 
+    void exchange_rows(bool gotData, std::size_t beginInd, std::size_t endInd);
+
     // IBM DB2 driver is not compliant to ODBC spec for indicators in 64bit
     // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
     inline SQLLEN get_sqllen_from_vector_at(std::size_t idx) const;
 
-    SQLLEN *indHolders_;
     std::vector<SQLLEN> indHolderVec_;
     void *data_;
     char *buf_;              // generic buffer
     details::exchange_type type_;
     std::size_t colSize_;    // size of the string column (used for strings)
     SQLSMALLINT odbcType_;
+    int position_;
 };
 
 struct odbc_standard_use_type_backend : details::standard_use_type_backend,
@@ -198,17 +199,15 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend,
                                       private odbc_standard_type_backend_base
 {
     odbc_vector_use_type_backend(odbc_statement_backend &st)
-        : odbc_standard_type_backend_base(st), indHolders_(NULL),
+        : odbc_standard_type_backend_base(st),
           data_(NULL), buf_(NULL) {}
 
     // helper function for preparing indicators
     // (as part of the define_by_pos)
     void prepare_indicators(std::size_t size);
 
-    // common part for bind_by_pos and bind_by_name
-    void prepare_for_bind(void *&data, SQLUINTEGER &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType);
-    void bind_helper(int &position,
-        void *data, details::exchange_type type);
+    // helper of pre_use(), return the pointer to the data to be used by ODBC.
+    void* prepare_for_bind(SQLUINTEGER &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType);
 
     void bind_by_pos(int &position,
         void *data, details::exchange_type type) SOCI_OVERRIDE;
@@ -225,10 +224,10 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend,
     // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
     inline void set_sqllen_from_vector_at(const std::size_t idx, const SQLLEN val);
 
-    SQLLEN *indHolders_;
     std::vector<SQLLEN> indHolderVec_;
     void *data_;
     details::exchange_type type_;
+    int position_;
     char *buf_;              // generic buffer
     std::size_t colSize_;    // size of the string column (used for strings)
     // used for strings only
@@ -269,6 +268,7 @@ struct odbc_statement_backend : details::statement_backend
     odbc_session_backend &session_;
     SQLHSTMT hstmt_;
     SQLULEN numRowsFetched_;
+    bool fetchVectorByRows_;
     bool hasVectorUseElements_;
     bool boundByName_;
     bool boundByPos_;
@@ -278,6 +278,10 @@ struct odbc_statement_backend : details::statement_backend
     std::string query_;
     std::vector<std::string> names_; // list of names for named binds
 
+    buffer_type intoType_;
+
+    std::vector<std::vector<indicator> > inds_;
+    std::vector<void*> intos_;
 };
 
 struct odbc_rowid_backend : details::rowid_backend
@@ -545,6 +549,8 @@ inline void odbc_standard_type_backend_base::set_sqllen_from_value(SQLLEN &targe
 
 inline SQLLEN odbc_vector_into_type_backend::get_sqllen_from_vector_at(std::size_t idx) const
 {
+    if (statement_.fetchVectorByRows_)
+        idx = 0;
     if (requires_noncompliant_32bit_sqllen())
     {
         return reinterpret_cast<const int*>(&indHolderVec_[0])[idx];

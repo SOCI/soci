@@ -99,6 +99,12 @@ List of variables to control common SOCI features and dependencies:
 * `SOCI_TESTS` - boolean - Request to build regression tests for SOCI core and all successfully configured backends.
 * `WITH_BOOST` - boolean - Should CMake try to detect [Boost C++ Libraries](http://www.boost.org/). If ON, CMake will try to find Boost headers and binaries of [Boost.Date_Time](http://www.boost.org/doc/libs/release/doc/html/date_time.html) library.
 
+Some other build options:
+
+* `SOCI_ASAN` - boolean - Build with address sanitizer (ASAN) support. Useful for finding problems when debugging, but shouldn't be used for the production builds due to extra overhead. Default is `OFF`.
+* `SOCI_LTO` - boolean - Build with link-time optimizations, if supported. This produces noticeably smaller libraries. Default is `OFF`, but turning it on is recommended for the production builds.
+* `SOCI_VISIBILITY` - boolean - Use hidden ELF visibility for private symbols if supported by the platform. This option produces smaller libraries by avoiding exporting internal function symbols. Default is `ON`.
+
 #### Empty (sample backend)
 
 * `SOCI_EMPTY` - boolean - Builds the [sample backend](backends/index.md) called Empty. Always ON by default.
@@ -226,5 +232,7 @@ In the example above, regression tests for the sample Empty backend and SQLite 3
 CMake build produces set of shared and static libraries for SOCI core and backends separately.
 On Unix, for example, `build/lib` directory will consist of the static libraries named like `libsoci_core.a`, `libsoci_sqlite3.a` and shared libraries with names like `libsoci_core.so.4.0.0`, `libsoci_sqlite3.so.4.0.0`, and so on.
 
-In order to use SOCI in your program, you need to specify your project build configuration with paths to SOCI headers and libraries.
-Then, tell the linker to link against the libraries you want to use in your program.
+If your project also uses CMake, you can simply use `find_package(SOCI)` to check for SOCI availability and `target_link_libraries()` to link with the SOCI libraries available under the names `SOCI::soci_core` and `SOCI::soci_<backend>` and ensure that SOCI headers can be included (i.e. there is no need to use `target_include_directories()` explicitly). An example of a very simple CMake-based project using SOCI is provided in the `examples/connect` directory.
+
+Otherwise, in order to use SOCI in your program, you need to specify the paths to SOCI headers and libraries in your build configuration and to
+tell the linker to link against the libraries you want to use in your program.

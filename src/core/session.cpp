@@ -223,7 +223,14 @@ void session::reconnect()
             close();
         }
 
-        backEnd_ = lastFactory->make_session(lastConnectParameters_);
+        // Indicate that we're reconnecting using a special parameter which can
+        // be used by some backends (currently only ODBC) that interactive
+        // prompts should be suppressed, as they would be unexpected during
+        // reconnection, which may happen automatically and not in the result
+        // of a user action.
+        connection_parameters reconnectParameters(lastConnectParameters_);
+        reconnectParameters.set_option(option_reconnect, option_true);
+        backEnd_ = lastFactory->make_session(reconnectParameters);
     }
 }
 
@@ -463,7 +470,7 @@ details::prepare_temp_type session::prepare_column_descriptions(std::string & ta
 
     return prepare << backEnd_->get_column_descriptions_query(), use(table_name, "t");
 }
-    
+
 ddl_type session::create_table(const std::string & tableName)
 {
     ddl_type ddl(*this);

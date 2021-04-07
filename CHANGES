@@ -1,6 +1,49 @@
 This file contains the history of changes in the SOCI library.
 
-Latest version is v4.0.1 released on 2020-10-19.
+Latest version is v4.0.2 released on 2021-04-19.
+
+---
+Version 4.0.2 differs from 4.0.1 in the following ways:
+
+Changes affecting all or multiple backends:
+
+ - Fix using SOCI from CMake projects using find_package() (#854, #867, #868).
+ - Always set indicator to i_null when no data is read from the database (#28).
+ - Add support for building SOCI with LTO (#846).
+ - Enable ELF visibility support (#848).
+ - Fix building tests under macOS on ARM 64 (#852).
+ - Fix using custom types with an explicitly null indicator (#807).
+ - Fix using vectors of custom types for DB/2, ODBC and Oracle (#856).
+ - Fix vectors of XML and CLOB values for DB/2, Firebird, ODBC and Oracle (#869).
+ - Don't return i_truncated for empty strings in a vector for DB/2, ODBC.
+ - Make unloading dynamic backends safer by delaying it if necessary (#862).
+ - Migrate most Linux CI builds to GitHub Actions from Travis CI (#863, #865).
+ - Fix rare deadlock in session::reconnect() (#630).
+ - Fix all warnings in MSVS build (#858).
+
+Backend-specific changes:
+
+- MySQL
+ - Add "reconnect" option (#692).
+
+- ODBC
+ - Don't show interactive ODBC dialogs when reconnecting.
+ - Fix session::get_last_insert_id() for empty tables with SQL Server.
+
+- Oracle
+ - Implement session::get_next_sequence_value().
+ - Handle reading from CLOBs that can't be read all at once.
+ - Fix another memory leak in CLOB handling code.
+
+- PostgreSQL
+ - Fix use of quoted identifiers with colons (#840).
+ - Fix tests compilation under macOS (#841, #864).
+ - Fix tests with PostgreSQL 12 or later.
+
+- SQLite3
+ - Fix getting doubles from non-numeric columns.
+ - Fix using uninitialized sqlite3_column member (#677).
+
 
 ---
 Version 4.0.1 differs from 4.0.0 in the following ways:

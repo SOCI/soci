@@ -79,7 +79,9 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
 
     if (statement_.useData_[0].size() < static_cast<std::size_t>(position_))
     {
-        statement_.useData_[0].resize(position_);
+        sqlite3_column empty;
+        empty.isNull_ = true;
+        statement_.useData_[0].resize(position_, empty);
     }
 
     sqlite3_column &col = statement_.useData_[0][pos];

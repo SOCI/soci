@@ -16,26 +16,42 @@ Previous maintainer:
 List of committers:
 
 Alex Ott
-David Courtney
 Denis Arnaud
 Denis Chapligin
 Julian Taylor
 Maciej Sobczak
 Mateusz Łoskot
 Paweł Aleksander Fedoryński
-Rafał Bobrowski
 Sergei Nikulov
-Steve Hutton
 Vadim Zeitlin
 Viacheslav Naydenov
 
 === SOCI Contributors ===
 
-List of users and developers who contributed countless
+Many thanks to all the contributors to the last release:
+
+alex (at staticlibs.net)
+Christian Kröhnert
+Cosmin Cremarenco
+Davy Durham
+George Rhoten
+Ilya Sinitsyn
+Ivan Kuvaldini
+Jiahao XU
+Jörn Reimerdes
+Kyle Edwards
+Mariana Meireles
+Noah Shutty
+root (at begeton.com)
+Thibault Martinez
+
+
+Full list of users and developers who contributed countless
 features, enhancements and fixes:
 
 Adesmier
 Alejandro Alvarez Ayllon
+alex (at staticlibs.net)
 Alex Volanis
 Alexander Kulikov
 Andrei Lebedev
@@ -54,13 +70,17 @@ Cengizhan Paşaoğlu
 Сергей Сергеевич Журавлев
 Chris Kaminski
 Chris Weed
+Christian Kröhnert
 Colin Steifel
 Cory Bennett
+Cosmin Cremarenco
 creste
 Daniel Grafe
 Daniel Lidström
 Daniel Walter
+David Courtney
 davidsummers
+Davy Durham
 Denis Dowling
 Dirk Grambow
 Dirk Vanden Boer
@@ -74,6 +94,7 @@ fly2xj
 Frank Bielig
 Frantisek Comorek
 Frederic Chateau
+George Rhoten
 Gevorg Voskanyan
 Heiko Rabe
 Henning Basold
@@ -81,16 +102,23 @@ Howard Butler
 Huang Youchuan
 Ilia Barahovski
 Illia Gorbatiuk
+Ilya Sinitsyn
+Ivan Kuvaldini
 Jakub Stachowski
 jamercee
 James E. King, III
 javerskulpa
+Jiahao XU
 Joerg Sonnenberger
 Johan Pascal
+Jörn Reimerdes
 Kévin Szkudłapski
 Krzysztof Bieleń
+Kyle Edwards
+Kévin Szkudłapski
 Lemme
 Maciej Cencora
+Mariana Meireles
 Mario Valesco
 Martin Muenstermann
 Mathias Hasselmann
@@ -106,16 +134,19 @@ MonsieurNicolas
 musopr
 myd7349
 Nik Bougalis
+Noah Shutty
 pacocamberos
 Paul Bondo
 Petr Vanek
 Philip Pemberton
+Rafał Bobrowski
 Rainer Bauer
 Rémi Piotaix
 Ricardo Andrade
 Robert Massaioli
 Roger Orr
 Rommel Trindade
+root (at begeton.com)
 Ross Marwood
 ryandesign
 Sergey Belyashov
@@ -125,8 +156,10 @@ Sören Meyer-Eppler
 soyer
 soyersoyer
 Stefan Chrobot
+Steve Hutton
 Takatoshi Kondo
 Theo van Klaveren
+Thibault Martinez
 Tomasz Olszewski
 Tomay
 tt4g

@@ -153,9 +153,9 @@ struct table_creator_for_clob : table_creator_base
 class test_context : public test_context_base
 {
 public:
-    test_context(backend_factory const &backEnd,
-                std::string const &connectString)
-        : test_context_base(backEnd, connectString),
+    test_context(backend_factory const &backend,
+                std::string const &connstr)
+        : test_context_base(backend, connstr),
           m_verDriver(get_driver_version())
     {
         std::cout << "Using ODBC driver version " << m_verDriver << "\n";
@@ -210,6 +210,27 @@ public:
         //
         // Be pessimistic if we failed to retrieve the version at all.
         return !m_verDriver.is_initialized() || m_verDriver < odbc_version(9, 3, 400);
+    }
+
+    std::string fix_crlf_if_necessary(std::string const& s) const SOCI_OVERRIDE
+    {
+        // Version 9.03.0300 (ancient, but still used on AppVeyor CI) is known
+        // to have a bug which replaces new lines, i.e. LF characters, with CR
+        // LF when reading CLOBs. Assume it was also fixed in later versions.
+        if ( m_verDriver.is_initialized() && odbc_version(9, 3, 300) < m_verDriver )
+            return s;
+
+        std::string s2;
+        s2.reserve(s.size());
+        for (std::size_t i = 0; i < s.size(); ++i)
+        {
+            if (s[i] == '\r')
+                continue;
+
+            s2 += s[i];
+        }
+
+        return s2;
     }
 
     std::string sql_length(std::string const& s) const SOCI_OVERRIDE

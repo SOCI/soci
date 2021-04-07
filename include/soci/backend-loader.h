@@ -19,8 +19,11 @@ namespace soci
 namespace dynamic_backends
 {
 
-// used internally by session
+// only used internally and shouldn't/can't be used from outside the library,
+// successful calls to get() should be matched by calls to unget() with the
+// same name
 backend_factory const & get(std::string const & name);
+void unget(std::string const & name);
 
 // provided for advanced user-level management
 SOCI_DECL std::vector<std::string> & search_paths();

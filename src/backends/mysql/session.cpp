@@ -170,7 +170,7 @@ void parse_connect_string(const string & connectString,
     int *port, bool *port_p, string *ssl_ca, bool *ssl_ca_p,
     string *ssl_cert, bool *ssl_cert_p, string *ssl_key, bool *ssl_key_p,
     int *local_infile, bool *local_infile_p,
-    string *charset, bool *charset_p,
+    string *charset, bool *charset_p, bool *reconnect_p,
     unsigned int *connect_timeout, bool *connect_timeout_p,
     unsigned int *read_timeout, bool *read_timeout_p,
     unsigned int *write_timeout, bool *write_timeout_p)
@@ -186,6 +186,7 @@ void parse_connect_string(const string & connectString,
     *ssl_key_p = false;
     *local_infile_p = false;
     *charset_p = false;
+    *reconnect_p = false;
     *connect_timeout_p = false;
     *read_timeout_p = false;
     *write_timeout_p = false;
@@ -280,26 +281,32 @@ void parse_connect_string(const string & connectString,
         {
             *charset = val;
             *charset_p = true;
+        } else if (par == "reconnect" && !*reconnect_p)
+        {
+            if (val != "1")
+                throw soci_error("\"reconnect\" option may only be set to 1");
+
+            *reconnect_p = true;
         } else if (par == "connect_timeout" && !*connect_timeout_p)
         {
             if (!valid_uint(val))
                 throw soci_error(err);
-            char *end;
-            *connect_timeout = std::strtoul(val.c_str(), &end, 10);
+            char *endp;
+            *connect_timeout = std::strtoul(val.c_str(), &endp, 10);
             *connect_timeout_p = true;
         } else if (par == "read_timeout" && !*read_timeout_p)
         {
             if (!valid_uint(val))
                 throw soci_error(err);
-            char *end;
-            *read_timeout = std::strtoul(val.c_str(), &end, 10);
+            char *endp;
+            *read_timeout = std::strtoul(val.c_str(), &endp, 10);
             *read_timeout_p = true;
         } else if (par == "write_timeout" && !*write_timeout_p)
         {
             if (!valid_uint(val))
                 throw soci_error(err);
-            char *end;
-            *write_timeout = std::strtoul(val.c_str(), &end, 10);
+            char *endp;
+            *write_timeout = std::strtoul(val.c_str(), &endp, 10);
             *write_timeout_p = true;
         }
         else
@@ -331,13 +338,13 @@ mysql_session_backend::mysql_session_backend(
     int port, local_infile;
     unsigned int connect_timeout, read_timeout, write_timeout;
     bool host_p, user_p, password_p, db_p, unix_socket_p, port_p,
-        ssl_ca_p, ssl_cert_p, ssl_key_p, local_infile_p, charset_p,
+        ssl_ca_p, ssl_cert_p, ssl_key_p, local_infile_p, charset_p, reconnect_p,
         connect_timeout_p, read_timeout_p, write_timeout_p;
     parse_connect_string(parameters.get_connect_string(), &host, &host_p, &user, &user_p,
         &password, &password_p, &db, &db_p,
         &unix_socket, &unix_socket_p, &port, &port_p,
         &ssl_ca, &ssl_ca_p, &ssl_cert, &ssl_cert_p, &ssl_key, &ssl_key_p,
-        &local_infile, &local_infile_p, &charset, &charset_p,
+        &local_infile, &local_infile_p, &charset, &charset_p, &reconnect_p,
         &connect_timeout, &connect_timeout_p,
         &read_timeout, &read_timeout_p,
         &write_timeout, &write_timeout_p);
@@ -345,6 +352,15 @@ mysql_session_backend::mysql_session_backend(
     if (conn_ == NULL)
     {
         throw soci_error("mysql_init() failed.");
+    }
+    if (reconnect_p)
+    {
+        my_bool reconnect = 1;
+        if (0 != mysql_options(conn_, MYSQL_OPT_RECONNECT, &reconnect))
+        {
+            clean_up();
+            throw soci_error("mysql_options(MYSQL_OPT_RECONNECT) failed.");
+        }
     }
     if (charset_p)
     {
@@ -480,6 +496,7 @@ void mysql_session_backend::clean_up()
     if (conn_ != NULL)
     {
         mysql_close(conn_);
+        mysql_library_end();
         conn_ = NULL;
     }
 }

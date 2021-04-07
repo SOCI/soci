@@ -147,7 +147,7 @@ public:
     // Note: table_name is a non-const reference to prevent temporary objects,
     // this argument is bound as a regular "use" element.
     details::prepare_temp_type prepare_column_descriptions(std::string & table_name);
-    
+
     // Functions for basic portable DDL statements.
 
     ddl_type create_table(const std::string & tableName);
@@ -179,7 +179,7 @@ public:
 
     // Sets the failover callback object.
     void set_failover_callback(failover_callback & callback);
-    
+
     // for diagnostics and advanced users
     // (downcast it to expected back-end session class)
     details::session_backend * get_backend() { return backEnd_; }

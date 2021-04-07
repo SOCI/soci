@@ -210,26 +210,24 @@ macro(soci_backend NAME)
       # Backend installation
       install(FILES ${THIS_BACKEND_HEADERS}
         DESTINATION
-        ${INCLUDEDIR}/${PROJECTNAMEL}/${NAMEL})
+        ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECTNAMEL}/${NAMEL})
 
       if (SOCI_SHARED)
         install(TARGETS ${THIS_BACKEND_TARGET}
           EXPORT SOCI
-          RUNTIME DESTINATION ${BINDIR}
-          LIBRARY DESTINATION ${LIBDIR}
-          ARCHIVE DESTINATION ${LIBDIR})
+          RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+          ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
       endif()
 
       if (SOCI_STATIC)
         install(TARGETS ${THIS_BACKEND_TARGET_STATIC}
           EXPORT SOCI
-          RUNTIME DESTINATION ${BINDIR}
-          LIBRARY DESTINATION ${LIBDIR}
-          ARCHIVE DESTINATION ${LIBDIR}
+          RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+          ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
          )
       endif()
-
-      install(EXPORT SOCI NAMESPACE SOCI:: DESTINATION cmake)
 
     else()
         colormsg(HIRED "${NAME}" RED "backend disabled, since")
@@ -354,7 +352,7 @@ macro(soci_backend_test)
 
       add_test(${TEST_TARGET}
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET}
-        ${${TEST_CONNSTR_VAR}})
+        ${${TEST_CONNSTR_VAR}} --invisibles)
 
       soci_backend_test_create_vcxproj_user(${TEST_TARGET} "\"${${TEST_CONNSTR_VAR}}\"")
 
@@ -376,7 +374,7 @@ macro(soci_backend_test)
 
       add_test(${TEST_TARGET_STATIC}
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET_STATIC}
-        ${${TEST_CONNSTR_VAR}})
+        ${${TEST_CONNSTR_VAR}} --invisibles)
 
       soci_backend_test_create_vcxproj_user(${TEST_TARGET_STATIC} "\"${${TEST_CONNSTR_VAR}}\"")
 

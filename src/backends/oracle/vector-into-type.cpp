@@ -8,9 +8,11 @@
 #define soci_ORACLE_SOURCE
 #include "soci/oracle/soci-oracle.h"
 #include "soci/statement.h"
+#include "clob.h"
 #include "error.h"
 #include "soci/soci-platform.h"
 #include "soci-mktime.h"
+#include "soci-vector-helpers.h"
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -34,7 +36,6 @@ void oracle_vector_into_type_backend::prepare_indicators(std::size_t size)
     }
 
     indOCIHolderVec_.resize(size);
-    indOCIHolders_ = &indOCIHolderVec_[0];
 
     sizes_.resize(size);
     rCodes_.resize(size);
@@ -160,6 +161,19 @@ void oracle_vector_into_type_backend::define_by_pos_bulk(
 
     case x_xmltype:
     case x_longstring:
+        {
+            oracleType = SQLT_CLOB;
+            std::size_t const vecSize = size();
+
+            prepare_indicators(vecSize);
+
+            elementSize = sizeof(OCILobLocator*);
+
+            buf_ = new char[elementSize * vecSize];
+            dataBuf = buf_;
+        }
+        break;
+
     case x_statement:
     case x_rowid:
     case x_blob:
@@ -169,10 +183,25 @@ void oracle_vector_into_type_backend::define_by_pos_bulk(
     sword res = OCIDefineByPos(statement_.stmtp_, &defnp_,
         statement_.session_.errhp_,
         position++, dataBuf, elementSize, oracleType,
-        indOCIHolders_, &sizes_[0], &rCodes_[0], OCI_DEFAULT);
+        &indOCIHolderVec_[0], &sizes_[0], &rCodes_[0], OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
         throw_oracle_soci_error(res, statement_.session_.errhp_);
+    }
+}
+
+void oracle_vector_into_type_backend::pre_exec(int /* num */)
+{
+    if (type_ == x_xmltype || type_ == x_longstring)
+    {
+        // lazy initialization of the temporary LOB objects
+        OCILobLocator** const lobps = reinterpret_cast<OCILobLocator**>(buf_);
+
+        std::size_t const vecSize = size();
+        for (std::size_t i = 0; i != vecSize; ++i)
+        {
+            lobps[i] = create_temp_lob(statement_.session_);
+        }
     }
 }
 
@@ -272,6 +301,20 @@ void oracle_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                 }
             }
         }
+        else if (type_ == x_xmltype || type_ == x_longstring)
+        {
+            OCILobLocator** const lobps = reinterpret_cast<OCILobLocator**>(buf_);
+
+            std::size_t const vecSize = size();
+            for (std::size_t i = 0; i != vecSize; ++i)
+            {
+                if (indOCIHolderVec_[i] != -1)
+                {
+                    read_from_lob(statement_.session_,
+                        lobps[i], vector_string_value(type_, data_, i));
+                }
+            }
+        }
         else if (type_ == x_statement)
         {
             statement *st = static_cast<statement *>(data_);
@@ -326,69 +369,7 @@ void oracle_vector_into_type_backend::resize(std::size_t sz)
     }
     else
     {
-        switch (type_)
-        {
-            // simple cases
-        case x_char:
-            {
-                std::vector<char> *v = static_cast<std::vector<char> *>(data_);
-                v->resize(sz);
-            }
-            break;
-        case x_short:
-            {
-                std::vector<short> *v = static_cast<std::vector<short> *>(data_);
-                v->resize(sz);
-            }
-            break;
-        case x_integer:
-            {
-                std::vector<int> *v = static_cast<std::vector<int> *>(data_);
-                v->resize(sz);
-            }
-            break;
-        case x_long_long:
-            {
-                std::vector<long long> *v
-                    = static_cast<std::vector<long long> *>(data_);
-                v->resize(sz);
-            }
-            break;
-        case x_unsigned_long_long:
-            {
-                std::vector<unsigned long long> *v
-                    = static_cast<std::vector<unsigned long long> *>(data_);
-                v->resize(sz);
-            }
-            break;
-        case x_double:
-            {
-                std::vector<double> *v
-                    = static_cast<std::vector<double> *>(data_);
-                v->resize(sz);
-            }
-            break;
-        case x_stdstring:
-            {
-                std::vector<std::string> *v
-                    = static_cast<std::vector<std::string> *>(data_);
-                v->resize(sz);
-            }
-            break;
-        case x_stdtm:
-            {
-                std::vector<std::tm> *v
-                    = static_cast<std::vector<std::tm> *>(data_);
-                v->resize(sz);
-            }
-            break;
-
-        case x_xmltype:    break; // not supported
-        case x_longstring: break; // not supported
-        case x_statement:  break; // not supported
-        case x_rowid:      break; // not supported
-        case x_blob:       break; // not supported
-        }
+        resize_vector(type_, data_, sz);
 
         end_var_ = sz;
     }
@@ -407,7 +388,7 @@ std::size_t oracle_vector_into_type_backend::size()
         // ... and in that case return the actual size
         return actual_size;
     }
-    
+
     if (end_ != NULL && *end_ != 0)
     {
         return *end_ - begin_;
@@ -420,76 +401,22 @@ std::size_t oracle_vector_into_type_backend::size()
 
 std::size_t oracle_vector_into_type_backend::full_size()
 {
-    std::size_t sz = 0; // dummy initialization to please the compiler
-    switch (type_)
-    {
-    // simple cases
-    case x_char:
-        {
-            std::vector<char> *v = static_cast<std::vector<char> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_short:
-        {
-            std::vector<short> *v = static_cast<std::vector<short> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_integer:
-        {
-            std::vector<int> *v = static_cast<std::vector<int> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_long_long:
-        {
-            std::vector<long long> *v
-                = static_cast<std::vector<long long> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_unsigned_long_long:
-        {
-            std::vector<unsigned long long> *v
-                = static_cast<std::vector<unsigned long long> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_double:
-        {
-            std::vector<double> *v
-                = static_cast<std::vector<double> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_stdstring:
-        {
-            std::vector<std::string> *v
-                = static_cast<std::vector<std::string> *>(data_);
-            sz = v->size();
-        }
-        break;
-    case x_stdtm:
-        {
-            std::vector<std::tm> *v
-                = static_cast<std::vector<std::tm> *>(data_);
-            sz = v->size();
-        }
-        break;
-
-    case x_xmltype:    break; // not supported
-    case x_longstring: break; // not supported
-    case x_statement:  break; // not supported
-    case x_rowid:      break; // not supported
-    case x_blob:       break; // not supported
-    }
-
-    return sz;
+    return get_vector_size(type_, data_);
 }
 
 void oracle_vector_into_type_backend::clean_up()
 {
+    if (type_ == x_longstring || type_ == x_xmltype)
+    {
+        OCILobLocator** lobps = reinterpret_cast<OCILobLocator**>(buf_);
+
+        std::size_t const vecSize = size();
+        for (std::size_t i = 0; i != vecSize; ++i)
+        {
+            free_temp_lob(statement_.session_, lobps[i]);
+        }
+    }
+
     if (defnp_ != NULL)
     {
         OCIHandleFree(defnp_, OCI_HTYPE_DEFINE);

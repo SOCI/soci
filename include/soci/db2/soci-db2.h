@@ -9,19 +9,12 @@
 #ifndef SOCI_DB2_H_INCLUDED
 #define SOCI_DB2_H_INCLUDED
 
-#ifdef _WIN32
-# ifdef SOCI_DLL
-#  ifdef SOCI_DB2_SOURCE
-#   define SOCI_DB2_DECL __declspec(dllexport)
-#  else
-#   define SOCI_DB2_DECL __declspec(dllimport)
-#  endif // SOCI_DB2_SOURCE
-# endif // SOCI_DLL
-#endif // _WIN32
-//
-// If SOCI_DB2_DECL isn't defined yet define it now
-#ifndef SOCI_DB2_DECL
-# define SOCI_DB2_DECL
+#include <soci/soci-platform.h>
+
+#ifdef SOCI_DB2_SOURCE
+# define SOCI_DB2_DECL SOCI_DECL_EXPORT
+#else
+# define SOCI_DB2_DECL SOCI_DECL_IMPORT
 #endif
 
 #include <soci/soci-backend.h>
@@ -123,7 +116,6 @@ struct SOCI_DB2_DECL db2_vector_into_type_backend : details::vector_into_type_ba
 
     void prepare_indicators(std::size_t size);
 
-    SQLLEN *indptr;
     std::vector<SQLLEN> indVec;
     void *data;
     char *buf;
@@ -149,7 +141,7 @@ struct SOCI_DB2_DECL db2_standard_use_type_backend : details::standard_use_type_
 
     db2_statement_backend& statement_;
 
-    void *prepare_for_bind(void *data, SQLLEN &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType);
+    void *prepare_for_bind(SQLLEN &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType);
 
     void *data;
     details::exchange_type type;
@@ -176,15 +168,14 @@ struct SOCI_DB2_DECL db2_vector_use_type_backend : details::vector_use_type_back
     db2_statement_backend& statement_;
 
     void prepare_indicators(std::size_t size);
-    void prepare_for_bind(void *&data, SQLUINTEGER &size,SQLSMALLINT &sqlType, SQLSMALLINT &cType);
-    void bind_helper(int &position, void *data, details::exchange_type type);
+    void *prepare_for_bind(SQLUINTEGER &size,SQLSMALLINT &sqlType, SQLSMALLINT &cType);
 
-    SQLLEN *indptr;
     std::vector<SQLLEN> indVec;
     void *data;
     char *buf;
     details::exchange_type type;
     std::size_t colSize;
+    int position;
 };
 
 struct db2_session_backend;

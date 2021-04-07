@@ -127,6 +127,16 @@ bool connection_pool::try_lease(std::size_t & pos, int timeout)
         {
             break;
         }
+
+        // pthread_cond_timedwait() can apparently return these errors too,
+        // even if POSIX doesn't document them for the scenario in which we
+        // call it.
+        if (cc == EINVAL || cc == EPERM)
+        {
+            // We should perhaps throw an exception here, but at the very least
+            // exit the loop to avoid being stuck in it forever.
+            break;
+        }
     }
 
     if (cc == 0)
