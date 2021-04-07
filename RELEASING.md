@@ -30,12 +30,12 @@ optionally, you may also want to start with `X.Y.Z-rc1`, changing through
 `X.Y.Z-rc2`, `X.Y.Z-rc3`, etc. to `X.Y.Z` on the course of updates
 towards the final release. For example, like so
 
-> Version 4.0.0 differs from 3.2.3 in the following ways:
+> Version 4.0.2 differs from 4.0.1 in the following ways:
 
 Next, it is helpful to generate complete log of changes in Markdown format:
 
 ```console
-git log 3.2.3..master --pretty=format:"1. [%h](http://github.com/soci/soci/commit/%H) - %s"
+git log v4.0.1..master --pretty=format:"1. [%h](http://github.com/soci/soci/commit/%H) - %s"
 ```
 
 Then, filter it out from trivial changes keeping only the important ones.
@@ -190,8 +190,8 @@ Creating and pushing Git annotated tag is sufficient.
 
 ```console
 git checkout release/4.0
-git tag -a 4.0.0 -m "Releasing SOCI 4.0.0"
-git push origin 4.0.0
+git tag -a v4.0.2 -m "Releasing SOCI 4.0.2"
+git push origin v4.0.2
 ```
 
 ## Announce final release
