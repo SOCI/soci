@@ -1068,6 +1068,32 @@ struct longlong_table_creator : table_creator_base
     }
 };
 
+// test oracle rowset when describe_column with precision=0, scale=0
+TEST_CASE("Oracle rowset when precision=0 scale=0", "[oracle][rowset]")
+{
+    soci::session sql(backEnd, connectString);
+
+    {
+        std::time_t now = std::time(NULL);
+        std::tm tm_now = *std::localtime(&now);
+        char str_now[15];
+        snprintf(str_now, sizeof(str_now), "%04d%02d%02d%02d%02d%02d",
+                 tm_now.tm_year + 1900, tm_now.tm_mon + 1, tm_now.tm_mday,
+                 tm_now.tm_hour, tm_now.tm_min, tm_now.tm_sec);
+        long long t_now = atoll(str_now);
+
+        // to_number(to_char(sysdate, 'YYYYMMDDHH24MISS')) got precision=0, scale=0
+        soci::rowset<soci::row> rs =
+                (sql.prepare << "select to_number(to_char(t, 'YYYYMMDDHH24MISS')) from "
+                                "(select :t as t from dual)",
+                        use(tm_now));
+
+        std::time_t t = rs.begin()->get<long long>(0);
+
+        CHECK(t == t_now);
+    }
+}
+
 // long long test
 TEST_CASE("Oracle long long", "[oracle][longlong]")
 {
