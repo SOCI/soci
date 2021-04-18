@@ -255,16 +255,28 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
         throw_oracle_soci_error(res, session_.errhp_);
     }
 
-    // get the scale
-    res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd),
-        static_cast<ub4>(OCI_DTYPE_PARAM),
-        reinterpret_cast<dvoid*>(&dbscale),
-        0,
-        static_cast<ub4>(OCI_ATTR_SCALE),
-        reinterpret_cast<OCIError*>(session_.errhp_));
-    if (res != OCI_SUCCESS)
+    // get the scale if necessary, i.e. if not using just NUMBER, for which
+    // both precision and scale are 0 anyhow
+    if (dbprec)
     {
-        throw_oracle_soci_error(res, session_.errhp_);
+        res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd),
+            static_cast<ub4>(OCI_DTYPE_PARAM),
+            reinterpret_cast<dvoid*>(&dbscale),
+            0,
+            static_cast<ub4>(OCI_ATTR_SCALE),
+            reinterpret_cast<OCIError*>(session_.errhp_));
+        if (res != OCI_SUCCESS)
+        {
+            throw_oracle_soci_error(res, session_.errhp_);
+        }
+    }
+    else // precision is 0, meaning that this is the default number type
+    {
+        // don't bother retrieving the scale using OCI, we know its default
+        // value, as NUMBER is the same as NUMBER(38,10), and we also don't
+        // really care about it, all that matters is for it to be > 0 so that
+        // the right type is selected below
+        dbscale = 10;
     }
 
     columnName.assign(dbname, dbname + nameLength);
