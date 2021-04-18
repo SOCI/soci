@@ -276,7 +276,7 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
         type = dt_string;
         break;
     case SQLT_NUM:
-        if (dbscale > 0)
+        if (dbscale > 0 || dbprec == 0)
         {
             if (session_.get_option_decimals_as_strings())
             {
@@ -287,7 +287,7 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
                 type = dt_double;
             }
         }
-        else if (dbprec <= std::numeric_limits<int>::digits10 && dbprec != 0)
+        else if (dbprec <= std::numeric_limits<int>::digits10)
         {
             type = dt_integer;
         }

@@ -1087,10 +1087,14 @@ TEST_CASE("Oracle rowset when precision=0 scale=0", "[oracle][rowset]")
                 (sql.prepare << "select to_number(to_char(t, 'YYYYMMDDHH24MISS')) from "
                                 "(select :t as t from dual)",
                         use(tm_now));
-
-        std::time_t t = rs.begin()->get<long long>(0);
-
+        std::time_t t = rs.begin()->get<double>(0);
         CHECK(t == t_now);
+
+
+        rs = (sql.prepare << "select to_number(t) from (select :t as t from dual)",
+                use(3.14));
+        double d = rs.begin()->get<double>(0);
+        ASSERT_EQUAL_APPROX(d, 3.14);
     }
 }
 
