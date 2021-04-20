@@ -1068,6 +1068,22 @@ struct longlong_table_creator : table_creator_base
     }
 };
 
+// test using the result of to_number() which uses the default NUMBER type,
+// with precision == scale == 0, with rowset
+TEST_CASE("Oracle to_number with rowset", "[oracle][rowset][to_number]")
+{
+    soci::session sql(backEnd, connectString);
+
+    soci::rowset<soci::row>
+        rs = (sql.prepare << "select to_number('123456789012345') from dual");
+    double d = rs.begin()->get<double>(0);
+    ASSERT_EQUAL_EXACT(d, 123456789012345);
+
+    rs = (sql.prepare << "select to_number(:t) from dual", use(3.14));
+    d = rs.begin()->get<double>(0);
+    ASSERT_EQUAL_EXACT(d, 3.14);
+}
+
 // long long test
 TEST_CASE("Oracle long long", "[oracle][longlong]")
 {

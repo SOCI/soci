@@ -32,6 +32,7 @@ Backend-specific changes:
 
 - Oracle
  - Implement session::get_next_sequence_value().
+ - Fix using default NUMBER type with rowset API (#872).
  - Handle reading from CLOBs that can't be read all at once.
  - Fix another memory leak in CLOB handling code.
 
