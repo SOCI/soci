@@ -205,17 +205,21 @@ February 2021 for the version [4.0.1](https://conan.io/center/soci) for the
 follwoiing backends: sqlite3, odbc, mysql, and postgresql, and with the
 following flag enabled: `SOCI_CXX11=True`.
 
-The simplest steps required to use SOCI in a CMake project with Conan are:
+This section lists the steps required to use SOCI in a CMake project with Conan:
 
-1. Have Conan installed. If it is not installed you can do it with pip3:
+### Install Conan
+
+Install Conan if it is not installed yet:
 
 ```console
 pip3 install conan
 ```
 
-2. Create a `conanfile.txt` in the same directory of the `CMakeLists.txt`, with
-   a _reference to a recipe_ (which is a string with the library name and the
-   version to use), the build options, and the cmake generator:
+### Create `conanfile.txt`
+
+Create a `conanfile.txt` in the same directory of the `CMakeLists.txt`, with a
+_reference to a recipe_ (which is a string with the library name and the
+version to use), the build options, and the CMake generator:
 
 ```text
 # conanfile.txt
@@ -229,26 +233,25 @@ soci:with_sqlite3 = True
 [generators]
 cmake
 ```
-   The option `soci:with_sqlite3 = True` indicates that the `sqlite3` backend will
-   be downloaded and used.
 
-3. Add the following Conan instructions to the `CMakeLists.txt` of your project:
+The option `soci:with_sqlite3 = True` indicates that the `sqlite3` backend will
+be downloaded and used.
+
+### Update `CMakeLists.txt`
+
+Add the following Conan-specific lines to the `CMakeLists.txt` of your project:
 
 ```cmake
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS)
 conan_target_link_libraries(${PROJECT_NAME} ${CONAN_LIBS})
 ```
-The instruction `conan_target_link_libraries` replaces `target_link_libraries`.
 
-4. Include the headers that are going to be used in your project:
+The command `conan_target_link_libraries` replaces `target_link_libraries`.
 
-```c++
-#include "soci/soci.h"
-#include "soci/sqlite3/soci-sqlite3.h"
-```
+### Run Conan
 
-5. Run the conan command to install SOCI, and build your project:
+Run `conan install` to install SOCI, and then build your project as usual:
 
 ```bash
 mkdir build
