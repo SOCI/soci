@@ -355,7 +355,11 @@ mysql_session_backend::mysql_session_backend(
     }
     if (reconnect_p)
     {
-        my_bool reconnect = 1;
+        #if MYSQL_VERSION_ID < 8
+            my_bool reconnect = 1;
+        #else
+            bool reconnect = 1;
+        #endif
         if (0 != mysql_options(conn_, MYSQL_OPT_RECONNECT, &reconnect))
         {
             clean_up();
