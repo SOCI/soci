@@ -1992,22 +1992,49 @@ TEST_CASE_METHOD(common_tests, "Use vector of custom type objects", "[core][use]
 
     sql << "insert into soci_test(id, str) values(:i, :v)", use(i), use(v);
 
-    std::vector<std::string> values(3);
-    std::vector<indicator> inds(3);
-    sql << "select str from soci_test order by id", into(values, inds);
-
-    REQUIRE(values.size() == 3);
-    REQUIRE(inds.size() == 3);
-
-    CHECK(inds[0] == soci::i_ok);
-    CHECK(values[0] == "string");
-
-    CHECK(inds[1] == soci::i_null);
-
-    if ( !tc_.treats_empty_strings_as_null() )
+    SECTION("standard type")
     {
-        CHECK(inds[2] == soci::i_ok);
-        CHECK(values[2] == "");
+        std::vector<std::string> values(3);
+        std::vector<indicator> inds(3);
+        sql << "select str from soci_test order by id", into(values, inds);
+
+        REQUIRE(values.size() == 3);
+        REQUIRE(inds.size() == 3);
+
+        CHECK(inds[0] == soci::i_ok);
+        CHECK(values[0] == "string");
+
+        CHECK(inds[1] == soci::i_null);
+
+        if ( !tc_.treats_empty_strings_as_null() )
+        {
+            CHECK(inds[2] == soci::i_ok);
+            CHECK(values[2] == "");
+        }
+    }
+
+    SECTION("user type")
+    {
+        std::vector<MyOptionalString> values(3);
+        std::vector<indicator> inds(3);
+        sql << "select str from soci_test order by id", into(values, inds);
+
+        REQUIRE(values.size() == 3);
+        REQUIRE(inds.size() == 3);
+
+        CHECK(inds[0] == soci::i_ok);
+        CHECK(values[0].is_valid());
+        CHECK(values[0].get() == "string");
+
+        CHECK(!values[1].is_valid());
+        CHECK(inds[1] == soci::i_null);
+
+        if ( !tc_.treats_empty_strings_as_null() )
+        {
+            CHECK(inds[2] == soci::i_ok);
+            CHECK(values[2].is_valid());
+            CHECK(values[2].get() == "");
+        }
     }
 }
 
