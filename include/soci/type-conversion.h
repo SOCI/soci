@@ -427,6 +427,13 @@ into_type_ptr do_into(std::vector<T> & t,
 
 template <typename T>
 into_type_ptr do_into(std::vector<T> & t, std::vector<indicator> & ind,
+    user_type_tag)
+{
+    return into_type_ptr(new conversion_into_type<std::vector<T> >(t, ind));
+}
+
+template <typename T>
+into_type_ptr do_into(std::vector<T> & t, std::vector<indicator> & ind,
     std::size_t begin, size_t * end, user_type_tag)
 {
     return into_type_ptr(
