@@ -215,6 +215,70 @@ void odbc_vector_into_type_backend::define_by_pos(
     }
 }
 
+void odbc_vector_into_type_backend::rebind_row(std::size_t rowInd)
+{
+    void* elementPtr = NULL;
+    SQLLEN size = 0;
+    switch (type_)
+    {
+    // simple cases
+    case x_short:
+        elementPtr = &exchange_vector_type_cast<x_short>(data_)[rowInd];
+        size = sizeof(short);
+        break;
+    case x_integer:
+        elementPtr = &exchange_vector_type_cast<x_integer>(data_)[rowInd];
+        size = sizeof(SQLINTEGER);
+        break;
+    case x_long_long:
+        if (!use_string_for_bigint())
+        {
+            elementPtr = &exchange_vector_type_cast<x_long_long>(data_)[rowInd];
+            size = sizeof(long long);
+        }
+        break;
+    case x_unsigned_long_long:
+        if (!use_string_for_bigint())
+        {
+            elementPtr = &exchange_vector_type_cast<x_unsigned_long_long>(data_)[rowInd];
+            size = sizeof(unsigned long long);
+        }
+        break;
+    case x_double:
+        elementPtr = &exchange_vector_type_cast<x_double>(data_)[rowInd];
+        size = sizeof(double);
+        break;
+
+    // cases that require adjustments and buffer management
+
+    case x_char:
+    case x_stdstring:
+    case x_xmltype:
+    case x_longstring:
+    case x_stdtm:
+        // Do nothing.
+        break;
+
+    default:
+        throw soci_error("Into element used with non-supported type.");
+    }
+
+    if (elementPtr != NULL)
+    {
+        const SQLUSMALLINT pos = static_cast<SQLUSMALLINT>(position_ + 1);
+        SQLRETURN rc
+            = SQLBindCol(statement_.hstmt_, pos, odbcType_,
+                static_cast<SQLPOINTER>(elementPtr), size, &indHolderVec_[rowInd]);
+        if (is_odbc_error(rc))
+        {
+            std::ostringstream ss;
+            ss << "binding output vector item at index " << rowInd
+               << " of column #" << pos;
+            throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, ss.str());
+        }
+    }
+}
+
 void odbc_vector_into_type_backend::pre_fetch()
 {
     // nothing to do for the supported types

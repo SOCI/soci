@@ -145,6 +145,10 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
     // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
     inline SQLLEN get_sqllen_from_vector_at(std::size_t idx) const;
 
+    // Rebind the single vector value at the given index to the first row.
+    // Used when vector values are fetched by single row.
+    void rebind_row(std::size_t rowInd);
+
     std::vector<SQLLEN> indHolderVec_;
     void *data_;
     char *buf_;              // generic buffer
