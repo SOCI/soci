@@ -253,7 +253,8 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
 
     // create the server context
     res = OCIServerAttach(srvhp_, errhp_,
-        reinterpret_cast<text*>(nlsService), nlsServiceLen, OCI_DEFAULT);
+        reinterpret_cast<text*>(nlsService),
+        static_cast<sb4>(nlsServiceLen), OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
         std::string msg;
@@ -322,7 +323,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         // set username attribute in the user session handle
         res = OCIAttrSet(usrhp_, OCI_HTYPE_SESSION,
             reinterpret_cast<dvoid*>(nlsUserName),
-            nlsUserNameLen, OCI_ATTR_USERNAME, errhp_);
+            static_cast<ub4>(nlsUserNameLen), OCI_ATTR_USERNAME, errhp_);
         if (res != OCI_SUCCESS)
         {
             clean_up();
@@ -332,7 +333,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         // set password attribute
         res = OCIAttrSet(usrhp_, OCI_HTYPE_SESSION,
             reinterpret_cast<dvoid*>(nlsPassword),
-            nlsPasswordLen, OCI_ATTR_PASSWORD, errhp_);
+            static_cast<ub4>(nlsPasswordLen), OCI_ATTR_PASSWORD, errhp_);
         if (res != OCI_SUCCESS)
         {
             clean_up();
