@@ -225,7 +225,12 @@ void oracle_standard_use_type_backend::bind_by_name(
 void oracle::write_to_lob(
     oracle_session_backend& session, OCILobLocator * lobp, const std::string & value)
 {
-    ub4 toWrite = value.size();
+    if (value.size() > UB4MAXVAL)
+    {
+        throw soci_error("Input parameter is too long");
+    }
+
+    ub4 toWrite = static_cast<ub4>(value.size());
     ub4 offset = 1;
     sword res;
 
