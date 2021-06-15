@@ -255,6 +255,26 @@ odbc_statement_backend::fetch(int number)
 
     for (std::size_t i = 0; i < fetchesCount; i += rowsPerFetch)
     {
+        if (fetchVectorByRows_)
+        {
+            switch (intoType_)
+            {
+            case bt_standard:
+                // Standard intos processed in standard define_by_pos().
+                break;
+            case bt_vector:
+                // Unfortunately we need to redefine all vector intos which
+                // were bound to the first element of the vector initially.
+                for (std::size_t j = 0; j != intos_.size(); ++j)
+                {
+                    static_cast<odbc_vector_into_type_backend*>(intos_[j])->
+                        rebind_row(i);
+                }
+                break;
+            }
+
+        }
+
         SQLRETURN rc = SQLFetch(hstmt_);
 
         if (SQL_NO_DATA == rc)

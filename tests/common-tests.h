@@ -5069,6 +5069,56 @@ TEST_CASE_METHOD(common_tests, "XML vector", "[core][xml][vector]")
     CHECK(ind.at(1) == i_null);
 }
 
+TEST_CASE_METHOD(common_tests, "XML and int vectors", "[core][xml][vector]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_xml(sql));
+    if (!tableCreator.get())
+    {
+        WARN("XML type not supported by the database, skipping the test.");
+        return;
+    }
+
+    std::vector<int> id(3);
+    id[0] = 0;
+    id[1] = 1;
+    id[2] = 2;
+    std::vector<xml_type> xml(3);
+    std::vector<indicator> ind(3);
+    xml[0].value = make_long_xml_string();
+    ind[0] = i_ok;
+    ind[1] = i_null;
+    // Check long strings handling.
+    xml[2].value = make_long_xml_string(10000);
+    ind[2] = i_ok;
+
+    sql << "insert into soci_test (id, x) values (:1, "
+        << tc_.to_xml(":2")
+        << ")",
+        use(id), use(xml, ind);
+
+    std::vector<int> id2(3);
+    std::vector<xml_type> xml2(3);
+    std::vector<indicator> ind2(3);
+
+    sql << "select id, "
+        << tc_.from_xml("x")
+        << " from soci_test where id in (0, 1, 2)",
+        into(id2), into(xml2, ind2);
+
+    CHECK(id.at(0) == id2.at(0));
+    CHECK(id.at(1) == id2.at(1));
+    CHECK(id.at(2) == id2.at(2));
+
+    CHECK(xml.at(0).value == remove_trailing_nl(xml2.at(0).value));
+    CHECK(xml.at(2).value == remove_trailing_nl(xml2.at(2).value));
+
+    CHECK(ind.at(0) == ind2.at(0));
+    CHECK(ind.at(1) == ind2.at(1));
+    CHECK(ind.at(2) == ind2.at(2));
+}
+
 TEST_CASE_METHOD(common_tests, "Into XML vector with several fetches", "[core][xml][into][vector][statement]")
 {
     soci::session sql(backEndFactory_, connectString_);
