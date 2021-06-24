@@ -4399,6 +4399,17 @@ TEST_CASE_METHOD(common_tests, "Backend with connection pool", "[core][pool]")
     sql.begin(); // no crash expected
 }
 
+// test fix for: Session from connection pool not set backend properly when call open
+TEST_CASE_METHOD(common_tests, "Session from connection pool call open reset backend", "[core][pool]")
+{
+    const size_t pool_size = 1;
+    connection_pool pool(pool_size);
+
+    soci::session sql(pool);
+    sql.open(backEndFactory_, connectString_);
+    sql.begin(); // no exception thrown
+}
+
 // issue 67 - Allocated statement backend memory leaks on exception
 // If the test runs under memory debugger and it passes, then
 // soci::details::statement_impl::backEnd_ must not leak
