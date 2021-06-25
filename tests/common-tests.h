@@ -4407,7 +4407,7 @@ TEST_CASE_METHOD(common_tests, "Session from connection pool call open reset bac
 
     soci::session sql(pool);
     sql.open(backEndFactory_, connectString_);
-    sql.begin(); // no exception thrown
+    REQUIRE_NOTHROW( sql.begin() );
 }
 
 // issue 67 - Allocated statement backend memory leaks on exception
