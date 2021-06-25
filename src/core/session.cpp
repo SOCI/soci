@@ -152,8 +152,9 @@ void session::open(connection_parameters const & parameters)
 {
     if (isFromPool_)
     {
-        pool_->at(poolPosition_).open(parameters);
-        backEnd_ = pool_->at(poolPosition_).get_backend();
+        session & pooledSession = pool_->at(poolPosition_);
+        pooledSession.open(parameters);
+        backEnd_ = pooledSession.get_backend();
     }
     else
     {
@@ -208,8 +209,9 @@ void session::reconnect()
 {
     if (isFromPool_)
     {
-        pool_->at(poolPosition_).reconnect();
-        backEnd_ = pool_->at(poolPosition_).get_backend();
+        session & pooledSession = pool_->at(poolPosition_);
+        pooledSession.reconnect();
+        backEnd_ = pooledSession.get_backend();
     }
     else
     {
