@@ -285,7 +285,7 @@ struct odbc_statement_backend : details::statement_backend
     buffer_type intoType_;
 
     std::vector<std::vector<indicator> > inds_;
-    std::vector<void*> intos_;
+    std::vector<odbc_vector_into_type_backend*> intos_;
 };
 
 struct odbc_rowid_backend : details::rowid_backend

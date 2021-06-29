@@ -267,8 +267,7 @@ odbc_statement_backend::fetch(int number)
                 // were bound to the first element of the vector initially.
                 for (std::size_t j = 0; j != intos_.size(); ++j)
                 {
-                    static_cast<odbc_vector_into_type_backend*>(intos_[j])->
-                        rebind_row(i);
+                    intos_[j]->rebind_row(i);
                 }
                 break;
             }
@@ -298,8 +297,7 @@ odbc_statement_backend::fetch(int number)
             case bt_vector:
                 for (std::size_t j = 0; j != intos_.size(); ++j)
                 {
-                    static_cast<odbc_vector_into_type_backend*>(intos_[j])->
-                        exchange_rows(true, i, i + rowsPerFetch);
+                    intos_[j]->exchange_rows(true, i, i + rowsPerFetch);
                 }
                 break;
         }

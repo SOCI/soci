@@ -42,7 +42,7 @@ void odbc_vector_into_type_backend::define_by_pos(
     position_ = position - 1;
 
     statement_.intoType_ = bt_vector;
-    statement_.intos_.push_back(static_cast<void*>(this));
+    statement_.intos_.push_back(this);
     statement_.inds_.push_back(std::vector<indicator>());
 
     SQLLEN size = 0;       // also dummy
@@ -460,7 +460,7 @@ void odbc_vector_into_type_backend::clean_up()
         delete [] buf_;
         buf_ = NULL;
     }
-    std::vector<void*>::iterator it
+    std::vector<odbc_vector_into_type_backend*>::iterator it
         = std::find(statement_.intos_.begin(), statement_.intos_.end(), this);
     if (it != statement_.intos_.end())
         statement_.intos_.erase(it);
