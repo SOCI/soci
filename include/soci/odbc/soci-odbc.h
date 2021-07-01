@@ -280,6 +280,10 @@ struct odbc_statement_backend : details::statement_backend
     // This vector, containing non-owning non-null pointers, can be empty if
     // we're not using any vector "intos".
     std::vector<odbc_vector_into_type_backend*> intos_;
+
+private:
+    // fetch() helper wrapping SQLFetch() call for the given range of rows.
+    exec_fetch_result do_fetch(int beginRow, int endRow);
 };
 
 struct odbc_rowid_backend : details::rowid_backend
