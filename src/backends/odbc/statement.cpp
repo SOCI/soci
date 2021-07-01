@@ -275,6 +275,10 @@ odbc_statement_backend::fetch(int number)
         {
             // Unfortunately we need to redefine all vector intos which
             // were bound to the first element of the vector initially.
+            //
+            // Note that we need to do it even for row == 0 as this might not
+            // be the first call to fetch() and so the current bindings might
+            // not be the same as initial ones.
             for (std::size_t j = 0; j != intos_.size(); ++j)
             {
                 intos_[j]->rebind_row(row);
