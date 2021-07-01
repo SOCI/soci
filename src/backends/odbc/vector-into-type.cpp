@@ -43,7 +43,6 @@ void odbc_vector_into_type_backend::define_by_pos(
 
     statement_.intoType_ = bt_vector;
     statement_.intos_.push_back(this);
-    statement_.inds_.push_back(std::vector<indicator>());
 
     SQLLEN size = 0;       // also dummy
 
@@ -405,11 +404,11 @@ void odbc_vector_into_type_backend::exchange_rows(bool gotData,
             SQLLEN const val = get_sqllen_from_vector_at(i);
             if (val == SQL_NULL_DATA)
             {
-                statement_.inds_[position_][i] = i_null;
+                inds_[i] = i_null;
             }
             else
             {
-                statement_.inds_[position_][i] = i_ok;
+                inds_[i] = i_ok;
             }
         }
     }
@@ -429,13 +428,13 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator* ind)
 
         for (std::size_t i = 0; i < rows; ++i)
         {
-            if (statement_.inds_[position_][i] == i_null && (ind == NULL))
+            if (inds_[i] == i_null && (ind == NULL))
             {
                 throw soci_error("Null value fetched and no indicator defined.");
             }
             else if (ind != NULL)
             {
-                ind[i] = statement_.inds_[position_][i];
+                ind[i] = inds_[i];
             }
         }
     }

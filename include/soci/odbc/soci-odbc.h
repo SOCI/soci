@@ -150,6 +150,7 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
     void rebind_row(std::size_t rowInd);
 
     std::vector<SQLLEN> indHolderVec_;
+    std::vector<indicator> inds_;
     void *data_;
     char *buf_;              // generic buffer
     details::exchange_type type_;
@@ -284,7 +285,6 @@ struct odbc_statement_backend : details::statement_backend
 
     buffer_type intoType_;
 
-    std::vector<std::vector<indicator> > inds_;
     std::vector<odbc_vector_into_type_backend*> intos_;
 };
 

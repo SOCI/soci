@@ -132,11 +132,8 @@ void odbc_statement_backend::prepare(std::string const & query,
         throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, ss.str());
     }
 
-    // prepare buffers for indicators
-    inds_.clear();
-
-    // reset types of into buffers
-    intoType_ = bt_standard;
+    // reset any old into buffers, they will be added later if they're used
+    // with this query
     intos_.clear();
 }
 
@@ -229,10 +226,9 @@ odbc_statement_backend::fetch(int number)
 
     if (intoType_ == bt_vector)
     {
-        // inds_ used only by vector intos.
-        for (std::size_t i = 0; i != inds_.size(); ++i)
+        for (std::size_t i = 0; i != intos_.size(); ++i)
         {
-            inds_[i].resize(number);
+            intos_[i]->inds_.resize(number);
         }
 
         // Usually we try to fetch the entire vector at once, but if some into
