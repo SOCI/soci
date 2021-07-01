@@ -18,7 +18,7 @@ using namespace soci::details;
 odbc_statement_backend::odbc_statement_backend(odbc_session_backend &session)
     : session_(session), hstmt_(0), numRowsFetched_(0), fetchVectorByRows_(false),
       hasVectorUseElements_(false), boundByName_(false), boundByPos_(false),
-      rowsAffected_(-1LL), intoType_(bt_standard)
+      rowsAffected_(-1LL)
 {
 }
 
@@ -224,25 +224,22 @@ odbc_statement_backend::fetch(int number)
     std::size_t fetchesCount = 1;
     std::size_t rowsPerFetch = static_cast<std::size_t>(number);
 
-    if (intoType_ == bt_vector)
+    for (std::size_t i = 0; i != intos_.size(); ++i)
     {
-        for (std::size_t i = 0; i != intos_.size(); ++i)
-        {
-            intos_[i]->resize(number);
-        }
+        intos_[i]->resize(number);
+    }
 
-        // Usually we try to fetch the entire vector at once, but if some into
-        // string columns are bigger than 8KB (ODBC_MAX_COL_SIZE) then we use
-        // 100MB buffer for that columns. So in this case we downgrade to using
-        // scalar fetches to hold the buffer only for a single row and not
-        // rows_count * 100MB.
-        // See odbc_vector_into_type_backend::define_by_pos().
-        if (fetchVectorByRows_)
-        {
-            row_array_size = 1;
-            fetchesCount = static_cast<std::size_t>(number);
-            rowsPerFetch = 1;
-        }
+    // Usually we try to fetch the entire vector at once, but if some into
+    // string columns are bigger than 8KB (ODBC_MAX_COL_SIZE) then we use
+    // 100MB buffer for that columns. So in this case we downgrade to using
+    // scalar fetches to hold the buffer only for a single row and not
+    // rows_count * 100MB.
+    // See odbc_vector_into_type_backend::define_by_pos().
+    if (fetchVectorByRows_)
+    {
+        row_array_size = 1;
+        fetchesCount = static_cast<std::size_t>(number);
+        rowsPerFetch = 1;
     }
 
     SQLSetStmtAttr(hstmt_, SQL_ATTR_ROW_BIND_TYPE, SQL_BIND_BY_COLUMN, 0);
@@ -253,21 +250,12 @@ odbc_statement_backend::fetch(int number)
     {
         if (fetchVectorByRows_)
         {
-            switch (intoType_)
+            // Unfortunately we need to redefine all vector intos which
+            // were bound to the first element of the vector initially.
+            for (std::size_t j = 0; j != intos_.size(); ++j)
             {
-            case bt_standard:
-                // Standard intos processed in standard define_by_pos().
-                break;
-            case bt_vector:
-                // Unfortunately we need to redefine all vector intos which
-                // were bound to the first element of the vector initially.
-                for (std::size_t j = 0; j != intos_.size(); ++j)
-                {
-                    intos_[j]->rebind_row(i);
-                }
-                break;
+                intos_[j]->rebind_row(i);
             }
-
         }
 
         SQLRETURN rc = SQLFetch(hstmt_);
@@ -284,18 +272,9 @@ odbc_statement_backend::fetch(int number)
 
         numRowsFetched_ += curNumRowsFetched;
 
-        // standard intos processed in post_fetch()
-        switch (intoType_)
+        for (std::size_t j = 0; j != intos_.size(); ++j)
         {
-            case bt_standard:
-                // standard intos processed in post_fetch()
-                break;
-            case bt_vector:
-                for (std::size_t j = 0; j != intos_.size(); ++j)
-                {
-                    intos_[j]->exchange_rows(true, i, i + rowsPerFetch);
-                }
-                break;
+            intos_[j]->exchange_rows(true, i, i + rowsPerFetch);
         }
     }
 

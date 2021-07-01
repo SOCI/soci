@@ -42,7 +42,6 @@ void odbc_vector_into_type_backend::define_by_pos(
     type_ = type; // for future reference
     position_ = position - 1;
 
-    statement_.intoType_ = bt_vector;
     statement_.intos_.push_back(this);
 
     SQLLEN size = 0;       // also dummy

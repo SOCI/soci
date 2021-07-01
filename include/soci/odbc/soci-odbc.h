@@ -46,12 +46,6 @@ namespace details
     }
 }
 
-enum buffer_type
-{
-    bt_standard,
-    bt_vector
-};
-
 // Option allowing to specify the "driver completion" parameter of
 // SQLDriverConnect(). Its possible values are the same as the allowed values
 // for this parameter in the official ODBC, i.e. one of SQL_DRIVER_XXX (in
@@ -283,8 +277,8 @@ struct odbc_statement_backend : details::statement_backend
     std::string query_;
     std::vector<std::string> names_; // list of names for named binds
 
-    buffer_type intoType_;
-
+    // This vector, containing non-owning non-null pointers, can be empty if
+    // we're not using any vector "intos".
     std::vector<odbc_vector_into_type_backend*> intos_;
 };
 
