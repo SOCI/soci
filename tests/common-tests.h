@@ -5115,7 +5115,7 @@ TEST_CASE_METHOD(common_tests, "XML and int vectors", "[core][xml][vector]")
 
     sql << "select id, "
         << tc_.from_xml("x")
-        << " from soci_test where id in (0, 1, 2)",
+        << " from soci_test order by id",
         into(id2), into(xml2, ind2);
 
     CHECK(id.at(0) == id2.at(0));
