@@ -283,8 +283,8 @@ void odbc_vector_into_type_backend::pre_fetch()
     // nothing to do for the supported types
 }
 
-void odbc_vector_into_type_backend::exchange_rows(
-    std::size_t beginInd, std::size_t endInd)
+void odbc_vector_into_type_backend::do_post_fetch_rows(
+    std::size_t beginRow, std::size_t endRow)
 {
     // first, deal with data
 
@@ -296,7 +296,7 @@ void odbc_vector_into_type_backend::exchange_rows(
 
         std::vector<char> &v(*vp);
         char *pos = buf_;
-        for (std::size_t i = beginInd; i != endInd; ++i)
+        for (std::size_t i = beginRow; i != endRow; ++i)
         {
             v[i] = *pos;
             pos += colSize_;
@@ -305,7 +305,7 @@ void odbc_vector_into_type_backend::exchange_rows(
     if (type_ == x_stdstring || type_ == x_xmltype || type_ == x_longstring)
     {
         const char *pos = buf_;
-        for (std::size_t i = beginInd; i != endInd; ++i, pos += colSize_)
+        for (std::size_t i = beginRow; i != endRow; ++i, pos += colSize_)
         {
             SQLLEN const len = get_sqllen_from_vector_at(i);
 
@@ -349,7 +349,7 @@ void odbc_vector_into_type_backend::exchange_rows(
 
         std::vector<std::tm> &v(*vp);
         char *pos = buf_;
-        for (std::size_t i = beginInd; i != endInd; ++i)
+        for (std::size_t i = beginRow; i != endRow; ++i)
         {
             // See comment for the use of this macro in standard-into-type.cpp.
             GCC_WARNING_SUPPRESS(cast-align)
@@ -370,7 +370,7 @@ void odbc_vector_into_type_backend::exchange_rows(
             = static_cast<std::vector<long long> *>(data_);
         std::vector<long long> &v(*vp);
         char *pos = buf_;
-        for (std::size_t i = beginInd; i != endInd; ++i)
+        for (std::size_t i = beginRow; i != endRow; ++i)
         {
             if (!cstring_to_integer(v[i], pos))
             {
@@ -385,7 +385,7 @@ void odbc_vector_into_type_backend::exchange_rows(
             = static_cast<std::vector<unsigned long long> *>(data_);
         std::vector<unsigned long long> &v(*vp);
         char *pos = buf_;
-        for (std::size_t i = beginInd; i != endInd; ++i)
+        for (std::size_t i = beginRow; i != endRow; ++i)
         {
             if (!cstring_to_unsigned(v[i], pos))
             {
@@ -397,7 +397,7 @@ void odbc_vector_into_type_backend::exchange_rows(
 
     // then - deal with indicators
 
-    for (std::size_t i = beginInd; i != endInd; ++i)
+    for (std::size_t i = beginRow; i != endRow; ++i)
     {
         SQLLEN const val = get_sqllen_from_vector_at(i);
         if (val == SQL_NULL_DATA)

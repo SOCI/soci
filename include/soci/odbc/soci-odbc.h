@@ -133,7 +133,11 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
     // (as part of the define_by_pos)
     void prepare_indicators(std::size_t size);
 
-    void exchange_rows(std::size_t beginInd, std::size_t endInd);
+    // Normally data retrieved from the database is handled in post_fetch(),
+    // however we may need to call SQLFetch() multiple times, so we call this
+    // function instead after each call to it to retrieve the given range of
+    // rows.
+    void do_post_fetch_rows(std::size_t beginRow, std::size_t endRow);
 
     // IBM DB2 driver is not compliant to ODBC spec for indicators in 64bit
     // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)

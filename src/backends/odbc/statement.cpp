@@ -231,7 +231,7 @@ odbc_statement_backend::do_fetch(int beginRow, int endRow)
 
     for (std::size_t j = 0; j != intos_.size(); ++j)
     {
-        intos_[j]->exchange_rows(beginRow, endRow);
+        intos_[j]->do_post_fetch_rows(beginRow, endRow);
     }
 
     return ef_success;
