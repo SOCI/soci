@@ -283,138 +283,131 @@ void odbc_vector_into_type_backend::pre_fetch()
     // nothing to do for the supported types
 }
 
-void odbc_vector_into_type_backend::exchange_rows(bool gotData,
+void odbc_vector_into_type_backend::exchange_rows(
     std::size_t beginInd, std::size_t endInd)
 {
-    if (gotData)
+    // first, deal with data
+
+    // only std::string, std::tm and Statement need special handling
+    if (type_ == x_char)
     {
-        // first, deal with data
+        std::vector<char> *vp
+            = static_cast<std::vector<char> *>(data_);
 
-        // only std::string, std::tm and Statement need special handling
-        if (type_ == x_char)
-        {
-            std::vector<char> *vp
-                = static_cast<std::vector<char> *>(data_);
-
-            std::vector<char> &v(*vp);
-            char *pos = buf_;
-            for (std::size_t i = beginInd; i != endInd; ++i)
-            {
-                v[i] = *pos;
-                pos += colSize_;
-            }
-        }
-        if (type_ == x_stdstring || type_ == x_xmltype || type_ == x_longstring)
-        {
-            const char *pos = buf_;
-            for (std::size_t i = beginInd; i != endInd; ++i, pos += colSize_)
-            {
-                SQLLEN const len = get_sqllen_from_vector_at(i);
-
-                std::string& value = vector_string_value(type_, data_, i);
-                if (len == -1)
-                {
-                    // Value is null.
-                    value.clear();
-                    continue;
-                }
-
-                // Find the actual length of the string: for a VARCHAR(N)
-                // column, it may be right-padded with spaces up to the length
-                // of the longest string in the result set. This happens with
-                // at least MS SQL (and the exact behaviour depends on the
-                // value of the ANSI_PADDING option) and it seems like some
-                // other ODBC drivers also have options like "PADVARCHAR", so
-                // it's probably not the only case when it does.
-                //
-                // So deal with this generically by just trimming all the
-                // spaces from the right hand-side.
-                const char* end = pos + len;
-                while (end != pos)
-                {
-                    // Pre-decrement as "end" is one past the end, as usual.
-                    if (*--end != ' ')
-                    {
-                        // We must count the last non-space character.
-                        ++end;
-                        break;
-                    }
-                }
-
-                value.assign(pos, end - pos);
-            }
-        }
-        else if (type_ == x_stdtm)
-        {
-            std::vector<std::tm> *vp
-                = static_cast<std::vector<std::tm> *>(data_);
-
-            std::vector<std::tm> &v(*vp);
-            char *pos = buf_;
-            for (std::size_t i = beginInd; i != endInd; ++i)
-            {
-                // See comment for the use of this macro in standard-into-type.cpp.
-                GCC_WARNING_SUPPRESS(cast-align)
-
-                TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
-
-                GCC_WARNING_RESTORE(cast-align)
-
-                details::mktime_from_ymdhms(v[i],
-                                            ts->year, ts->month, ts->day,
-                                            ts->hour, ts->minute, ts->second);
-                pos += colSize_;
-            }
-        }
-        else if (type_ == x_long_long && use_string_for_bigint())
-        {
-            std::vector<long long> *vp
-                = static_cast<std::vector<long long> *>(data_);
-            std::vector<long long> &v(*vp);
-            char *pos = buf_;
-            for (std::size_t i = beginInd; i != endInd; ++i)
-            {
-                if (!cstring_to_integer(v[i], pos))
-                {
-                    throw soci_error("Failed to parse the returned 64-bit integer value");
-                }
-                pos += colSize_;
-            }
-        }
-        else if (type_ == x_unsigned_long_long && use_string_for_bigint())
-        {
-            std::vector<unsigned long long> *vp
-                = static_cast<std::vector<unsigned long long> *>(data_);
-            std::vector<unsigned long long> &v(*vp);
-            char *pos = buf_;
-            for (std::size_t i = beginInd; i != endInd; ++i)
-            {
-                if (!cstring_to_unsigned(v[i], pos))
-                {
-                    throw soci_error("Failed to parse the returned 64-bit integer value");
-                }
-                pos += colSize_;
-            }
-        }
-
-        // then - deal with indicators
-
+        std::vector<char> &v(*vp);
+        char *pos = buf_;
         for (std::size_t i = beginInd; i != endInd; ++i)
         {
-            SQLLEN const val = get_sqllen_from_vector_at(i);
-            if (val == SQL_NULL_DATA)
-            {
-                inds_[i] = i_null;
-            }
-            else
-            {
-                inds_[i] = i_ok;
-            }
+            v[i] = *pos;
+            pos += colSize_;
         }
     }
-    else // gotData == false
+    if (type_ == x_stdstring || type_ == x_xmltype || type_ == x_longstring)
     {
-        // nothing to do here, vectors are truncated anyway
+        const char *pos = buf_;
+        for (std::size_t i = beginInd; i != endInd; ++i, pos += colSize_)
+        {
+            SQLLEN const len = get_sqllen_from_vector_at(i);
+
+            std::string& value = vector_string_value(type_, data_, i);
+            if (len == -1)
+            {
+                // Value is null.
+                value.clear();
+                continue;
+            }
+
+            // Find the actual length of the string: for a VARCHAR(N)
+            // column, it may be right-padded with spaces up to the length
+            // of the longest string in the result set. This happens with
+            // at least MS SQL (and the exact behaviour depends on the
+            // value of the ANSI_PADDING option) and it seems like some
+            // other ODBC drivers also have options like "PADVARCHAR", so
+            // it's probably not the only case when it does.
+            //
+            // So deal with this generically by just trimming all the
+            // spaces from the right hand-side.
+            const char* end = pos + len;
+            while (end != pos)
+            {
+                // Pre-decrement as "end" is one past the end, as usual.
+                if (*--end != ' ')
+                {
+                    // We must count the last non-space character.
+                    ++end;
+                    break;
+                }
+            }
+
+            value.assign(pos, end - pos);
+        }
+    }
+    else if (type_ == x_stdtm)
+    {
+        std::vector<std::tm> *vp
+            = static_cast<std::vector<std::tm> *>(data_);
+
+        std::vector<std::tm> &v(*vp);
+        char *pos = buf_;
+        for (std::size_t i = beginInd; i != endInd; ++i)
+        {
+            // See comment for the use of this macro in standard-into-type.cpp.
+            GCC_WARNING_SUPPRESS(cast-align)
+
+            TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
+
+            GCC_WARNING_RESTORE(cast-align)
+
+            details::mktime_from_ymdhms(v[i],
+                                        ts->year, ts->month, ts->day,
+                                        ts->hour, ts->minute, ts->second);
+            pos += colSize_;
+        }
+    }
+    else if (type_ == x_long_long && use_string_for_bigint())
+    {
+        std::vector<long long> *vp
+            = static_cast<std::vector<long long> *>(data_);
+        std::vector<long long> &v(*vp);
+        char *pos = buf_;
+        for (std::size_t i = beginInd; i != endInd; ++i)
+        {
+            if (!cstring_to_integer(v[i], pos))
+            {
+                throw soci_error("Failed to parse the returned 64-bit integer value");
+            }
+            pos += colSize_;
+        }
+    }
+    else if (type_ == x_unsigned_long_long && use_string_for_bigint())
+    {
+        std::vector<unsigned long long> *vp
+            = static_cast<std::vector<unsigned long long> *>(data_);
+        std::vector<unsigned long long> &v(*vp);
+        char *pos = buf_;
+        for (std::size_t i = beginInd; i != endInd; ++i)
+        {
+            if (!cstring_to_unsigned(v[i], pos))
+            {
+                throw soci_error("Failed to parse the returned 64-bit integer value");
+            }
+            pos += colSize_;
+        }
+    }
+
+    // then - deal with indicators
+
+    for (std::size_t i = beginInd; i != endInd; ++i)
+    {
+        SQLLEN const val = get_sqllen_from_vector_at(i);
+        if (val == SQL_NULL_DATA)
+        {
+            inds_[i] = i_null;
+        }
+        else
+        {
+            inds_[i] = i_ok;
+        }
     }
 }
 

@@ -133,7 +133,7 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
     // (as part of the define_by_pos)
     void prepare_indicators(std::size_t size);
 
-    void exchange_rows(bool gotData, std::size_t beginInd, std::size_t endInd);
+    void exchange_rows(std::size_t beginInd, std::size_t endInd);
 
     // IBM DB2 driver is not compliant to ODBC spec for indicators in 64bit
     // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
