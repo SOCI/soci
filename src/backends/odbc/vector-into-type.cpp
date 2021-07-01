@@ -32,6 +32,7 @@ void odbc_vector_into_type_backend::prepare_indicators(std::size_t size)
     }
 
     indHolderVec_.resize(size);
+    inds_.resize(size);
 }
 
 void odbc_vector_into_type_backend::define_by_pos(
@@ -444,6 +445,7 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
 {
     // stays 64bit but gets but casted, see: get_sqllen_from_vector_at(...)
     indHolderVec_.resize(sz);
+    inds_.resize(sz);
     resize_vector(type_, data_, sz);
 }
 

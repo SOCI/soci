@@ -228,7 +228,7 @@ odbc_statement_backend::fetch(int number)
     {
         for (std::size_t i = 0; i != intos_.size(); ++i)
         {
-            intos_[i]->inds_.resize(number);
+            intos_[i]->resize(number);
         }
 
         // Usually we try to fetch the entire vector at once, but if some into
