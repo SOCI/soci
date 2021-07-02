@@ -5133,15 +5133,6 @@ TEST_CASE_METHOD(common_tests, "XML and int vectors", "[core][xml][vector]")
 
 TEST_CASE_METHOD(common_tests, "Into XML vector with several fetches", "[core][xml][into][vector][statement]")
 {
-    soci::session sql(backEndFactory_, connectString_);
-
-    auto_table_creator tableCreator(tc_.table_creator_xml(sql));
-    if (!tableCreator.get())
-    {
-        WARN("XML type not supported by the database, skipping the test.");
-        return;
-    }
-
     int stringSize = 0;
     SECTION("short string")
     {
@@ -5155,6 +5146,15 @@ TEST_CASE_METHOD(common_tests, "Into XML vector with several fetches", "[core][x
     // Skip the rest when not executing the current section.
     if (!stringSize)
         return;
+
+    soci::session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_xml(sql));
+    if (!tableCreator.get())
+    {
+        WARN("XML type not supported by the database, skipping the test.");
+        return;
+    }
 
     int const count = 5;
     std::vector<xml_type> values(count);
