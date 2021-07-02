@@ -5152,6 +5152,10 @@ TEST_CASE_METHOD(common_tests, "Into XML vector with several fetches", "[core][x
         stringSize = 10000;
     }
 
+    // Skip the rest when not executing the current section.
+    if (!stringSize)
+        return;
+
     int const count = 5;
     std::vector<xml_type> values(count);
     for (int i = 0; i != count; ++i)
