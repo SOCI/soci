@@ -4880,14 +4880,15 @@ static std::string make_long_xml_string(int approximateSize = 5000)
     std::string s;
     s.reserve(tagsSize + patternsCount * patternSize);
 
-    s += "<file>";
+    std::ostringstream ss;
+    ss << "<test size=\"" << approximateSize << "\">";
     for (int i = 0; i != patternsCount; ++i)
     {
-        s += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+       ss << "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     }
-    s += "</file>";
+    ss << "</test>";
 
-    return s;
+    return ss.str();
 }
 
 // The helper function to remove trailing \n from a given string.
