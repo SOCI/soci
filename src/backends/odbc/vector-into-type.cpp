@@ -24,16 +24,6 @@
 using namespace soci;
 using namespace soci::details;
 
-void odbc_vector_into_type_backend::prepare_indicators(std::size_t size)
-{
-    if (size == 0)
-    {
-         throw soci_error("Vectors of size 0 are not allowed.");
-    }
-
-    indHolderVec_.resize(size);
-}
-
 void odbc_vector_into_type_backend::define_by_pos(
     int &position, void *data, exchange_type type)
 {
@@ -43,89 +33,59 @@ void odbc_vector_into_type_backend::define_by_pos(
 
     statement_.intos_.push_back(this);
 
+    const std::size_t vectorSize = get_vector_size(type, data);
+    if (vectorSize == 0)
+    {
+         throw soci_error("Vectors of size 0 are not allowed.");
+    }
+
+    indHolderVec_.resize(vectorSize);
+
     switch (type)
     {
     // simple cases
     case x_short:
-        {
-            odbcType_ = SQL_C_SSHORT;
-            std::vector<short> *vp = static_cast<std::vector<short> *>(data);
-            std::vector<short> &v(*vp);
-            prepare_indicators(v.size());
-        }
+        odbcType_ = SQL_C_SSHORT;
         break;
     case x_integer:
-        {
-            odbcType_ = SQL_C_SLONG;
-            SOCI_STATIC_ASSERT(sizeof(SQLINTEGER) == sizeof(int));
-            std::vector<int> *vp = static_cast<std::vector<int> *>(data);
-            std::vector<int> &v(*vp);
-            prepare_indicators(v.size());
-        }
+        odbcType_ = SQL_C_SLONG;
+        SOCI_STATIC_ASSERT(sizeof(SQLINTEGER) == sizeof(int));
         break;
     case x_long_long:
+        if (use_string_for_bigint())
         {
-            std::vector<long long> *vp =
-                static_cast<std::vector<long long> *>(data);
-            std::vector<long long> &v(*vp);
-            prepare_indicators(v.size());
-            if (use_string_for_bigint())
-            {
-                odbcType_ = SQL_C_CHAR;
-                colSize_ = max_bigint_length;
-                std::size_t bufSize = colSize_ * v.size();
-                buf_ = new char[bufSize];
-            }
-            else // Normal case, use ODBC support.
-            {
-                odbcType_ = SQL_C_SBIGINT;
-            }
+            odbcType_ = SQL_C_CHAR;
+            colSize_ = max_bigint_length;
+            buf_ = new char[colSize_ * vectorSize];
+        }
+        else // Normal case, use ODBC support.
+        {
+            odbcType_ = SQL_C_SBIGINT;
         }
         break;
     case x_unsigned_long_long:
+        if (use_string_for_bigint())
         {
-            std::vector<unsigned long long> *vp =
-                static_cast<std::vector<unsigned long long> *>(data);
-            std::vector<unsigned long long> &v(*vp);
-            prepare_indicators(v.size());
-            if (use_string_for_bigint())
-            {
-                odbcType_ = SQL_C_CHAR;
-                colSize_ = max_bigint_length;
-                std::size_t bufSize = colSize_ * v.size();
-                buf_ = new char[bufSize];
-            }
-            else // Normal case, use ODBC support.
-            {
-                odbcType_ = SQL_C_UBIGINT;
-            }
+            odbcType_ = SQL_C_CHAR;
+            colSize_ = max_bigint_length;
+            buf_ = new char[colSize_ * vectorSize];
+        }
+        else // Normal case, use ODBC support.
+        {
+            odbcType_ = SQL_C_UBIGINT;
         }
         break;
     case x_double:
-        {
-            odbcType_ = SQL_C_DOUBLE;
-            std::vector<double> *vp = static_cast<std::vector<double> *>(data);
-            std::vector<double> &v(*vp);
-            prepare_indicators(v.size());
-        }
+        odbcType_ = SQL_C_DOUBLE;
         break;
 
     // cases that require adjustments and buffer management
 
     case x_char:
-        {
-            odbcType_ = SQL_C_CHAR;
+        odbcType_ = SQL_C_CHAR;
 
-            std::vector<char> *v
-                = static_cast<std::vector<char> *>(data);
-
-            prepare_indicators(v->size());
-
-            colSize_ = sizeof(char) * 2;
-            std::size_t bufSize = colSize_ * v->size();
-
-            buf_ = new char[bufSize];
-        }
+        colSize_ = sizeof(char) * 2;
+        buf_ = new char[colSize_ * vectorSize];
         break;
     case x_stdstring:
     case x_xmltype:
@@ -147,31 +107,18 @@ void odbc_vector_into_type_backend::define_by_pos(
 
             colSize_++;
 
-            const std::size_t vectorSize = get_vector_size(type, data);
             // If we are fetching by a single row, allocate the buffer only for
             // one value.
             const std::size_t elementsCount
                 = statement_.fetchVectorByRows_ ? 1 : vectorSize;
-            std::size_t bufSize = colSize_ * elementsCount;
-            buf_ = new char[bufSize];
-
-            prepare_indicators(vectorSize);
+            buf_ = new char[colSize_ * elementsCount];
         }
         break;
     case x_stdtm:
-        {
-            odbcType_ = SQL_C_TYPE_TIMESTAMP;
-            std::vector<std::tm> *v
-                = static_cast<std::vector<std::tm> *>(data);
+        odbcType_ = SQL_C_TYPE_TIMESTAMP;
 
-            prepare_indicators(v->size());
-
-            colSize_ = sizeof(TIMESTAMP_STRUCT);
-
-            std::size_t bufSize = colSize_ * v->size();
-
-            buf_ = new char[bufSize];
-        }
+        colSize_ = sizeof(TIMESTAMP_STRUCT);
+        buf_ = new char[colSize_ * vectorSize];
         break;
 
     default:

@@ -129,10 +129,6 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
 
     void clean_up() SOCI_OVERRIDE;
 
-    // helper function for preparing indicators
-    // (as part of the define_by_pos)
-    void prepare_indicators(std::size_t size);
-
     // Normally data retrieved from the database is handled in post_fetch(),
     // however we may need to call SQLFetch() multiple times, so we call this
     // function instead after each call to it to retrieve the given range of
