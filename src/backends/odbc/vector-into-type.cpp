@@ -32,7 +32,6 @@ void odbc_vector_into_type_backend::prepare_indicators(std::size_t size)
     }
 
     indHolderVec_.resize(size);
-    inds_.resize(size);
 }
 
 void odbc_vector_into_type_backend::define_by_pos(
@@ -262,19 +261,23 @@ void odbc_vector_into_type_backend::rebind_row(std::size_t rowInd)
         throw soci_error("Into element used with non-supported type.");
     }
 
-    if (elementPtr != NULL)
+    if (elementPtr == NULL)
     {
-        const SQLUSMALLINT pos = static_cast<SQLUSMALLINT>(position_ + 1);
-        SQLRETURN rc
-            = SQLBindCol(statement_.hstmt_, pos, odbcType_,
-                static_cast<SQLPOINTER>(elementPtr), size, &indHolderVec_[rowInd]);
-        if (is_odbc_error(rc))
-        {
-            std::ostringstream ss;
-            ss << "binding output vector item at index " << rowInd
-               << " of column #" << pos;
-            throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, ss.str());
-        }
+        // It's one of the types for which we use fixed buffer.
+        elementPtr = buf_;
+        size = colSize_;
+    }
+
+    const SQLUSMALLINT pos = static_cast<SQLUSMALLINT>(position_ + 1);
+    SQLRETURN rc
+        = SQLBindCol(statement_.hstmt_, pos, odbcType_,
+            static_cast<SQLPOINTER>(elementPtr), size, &indHolderVec_[rowInd]);
+    if (is_odbc_error(rc))
+    {
+        std::ostringstream ss;
+        ss << "binding output vector item at index " << rowInd
+           << " of column #" << pos;
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, ss.str());
     }
 }
 
@@ -286,9 +289,6 @@ void odbc_vector_into_type_backend::pre_fetch()
 void odbc_vector_into_type_backend::do_post_fetch_rows(
     std::size_t beginRow, std::size_t endRow)
 {
-    // first, deal with data
-
-    // only std::string, std::tm and Statement need special handling
     if (type_ == x_char)
     {
         std::vector<char> *vp
@@ -394,21 +394,6 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
             pos += colSize_;
         }
     }
-
-    // then - deal with indicators
-
-    for (std::size_t i = beginRow; i != endRow; ++i)
-    {
-        SQLLEN const val = get_sqllen_from_vector_at(i);
-        if (val == SQL_NULL_DATA)
-        {
-            inds_[i] = i_null;
-        }
-        else
-        {
-            inds_[i] = i_ok;
-        }
-    }
 }
 
 void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator* ind)
@@ -421,13 +406,19 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator* ind)
 
         for (std::size_t i = 0; i < rows; ++i)
         {
-            if (inds_[i] == i_null && (ind == NULL))
+            SQLLEN const val = get_sqllen_from_vector_at(i);
+            if (val == SQL_NULL_DATA)
             {
-                throw soci_error("Null value fetched and no indicator defined.");
+                if (ind == NULL)
+                {
+                    throw soci_error("Null value fetched and no indicator defined.");
+                }
+
+                ind[i] = i_null;
             }
             else if (ind != NULL)
             {
-                ind[i] = inds_[i];
+                ind[i] = i_ok;
             }
         }
     }
@@ -437,7 +428,6 @@ void odbc_vector_into_type_backend::resize(std::size_t sz)
 {
     // stays 64bit but gets but casted, see: get_sqllen_from_vector_at(...)
     indHolderVec_.resize(sz);
-    inds_.resize(sz);
     resize_vector(type_, data_, sz);
 }
 

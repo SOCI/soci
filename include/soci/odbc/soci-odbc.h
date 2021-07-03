@@ -148,7 +148,6 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
     void rebind_row(std::size_t rowInd);
 
     std::vector<SQLLEN> indHolderVec_;
-    std::vector<indicator> inds_;
     void *data_;
     char *buf_;              // generic buffer
     details::exchange_type type_;
@@ -555,8 +554,6 @@ inline void odbc_standard_type_backend_base::set_sqllen_from_value(SQLLEN &targe
 
 inline SQLLEN odbc_vector_into_type_backend::get_sqllen_from_vector_at(std::size_t idx) const
 {
-    if (statement_.fetchVectorByRows_)
-        idx = 0;
     if (requires_noncompliant_32bit_sqllen())
     {
         return reinterpret_cast<const int*>(&indHolderVec_[0])[idx];
