@@ -202,15 +202,9 @@ void odbc_vector_into_type_backend::define_by_pos(
         throw soci_error("Into element used with non-supported type.");
     }
 
-    SQLRETURN rc
-        = SQLBindCol(statement_.hstmt_, static_cast<SQLUSMALLINT>(position++),
-                odbcType_, static_cast<SQLPOINTER>(data), size, &indHolderVec_[0]);
-    if (is_odbc_error(rc))
-    {
-        std::ostringstream ss;
-        ss << "binding output vector column #" << position;
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, ss.str());
-    }
+    position++;
+
+    rebind_row(0);
 }
 
 void odbc_vector_into_type_backend::rebind_row(std::size_t rowInd)
