@@ -16,7 +16,6 @@
 # define SOCI_ODBC_DECL SOCI_DECL_IMPORT
 #endif
 
-#include "soci/soci-platform.h"
 #include <vector>
 #include <soci/soci-backend.h>
 #include <sstream>
