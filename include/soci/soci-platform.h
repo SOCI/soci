@@ -144,6 +144,14 @@ namespace cxx_details
 
 #define SOCI_UNUSED(x) (void)x;
 
+// This macro can be used to avoid warnings from MSVC (and sometimes from gcc,
+// if initialization is indirect) about "uninitialized" variables that are
+// actually always initialized. Using this macro makes it clear that the
+// initialization is only necessary to avoid compiler warnings and also will
+// allow us to define it as doing nothing if we ever use a compiler warning
+// about initializing variables unnecessarily.
+#define SOCI_DUMMY_INIT(x) (x)
+
 #if defined(SOCI_HAVE_CXX11) || (defined(_MSC_VER) && _MSC_VER >= 1900)
     #define SOCI_NOEXCEPT noexcept
     #define SOCI_NOEXCEPT_FALSE noexcept(false)

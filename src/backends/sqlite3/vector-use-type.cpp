@@ -160,7 +160,7 @@ void sqlite3_vector_use_type_backend::pre_use(indicator const * ind)
 
 std::size_t sqlite3_vector_use_type_backend::size()
 {
-    std::size_t sz = 0; // dummy initialization to please the compiler
+    std::size_t sz SOCI_DUMMY_INIT(0);
     switch (type_)
     {
         // simple cases

@@ -237,7 +237,7 @@ std::size_t postgresql_vector_use_type_backend::size()
 
 std::size_t postgresql_vector_use_type_backend::full_size()
 {
-    std::size_t sz = 0; // dummy initialization to please the compiler
+    std::size_t sz SOCI_DUMMY_INIT(0);
     switch (type_)
     {
         // simple cases
