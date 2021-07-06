@@ -4880,14 +4880,15 @@ static std::string make_long_xml_string(int approximateSize = 5000)
     std::string s;
     s.reserve(tagsSize + patternsCount * patternSize);
 
-    s += "<file>";
+    std::ostringstream ss;
+    ss << "<test size=\"" << approximateSize << "\">";
     for (int i = 0; i != patternsCount; ++i)
     {
-        s += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+       ss << "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     }
-    s += "</file>";
+    ss << "</test>";
 
-    return s;
+    return ss.str();
 }
 
 // The helper function to remove trailing \n from a given string.
@@ -5115,7 +5116,7 @@ TEST_CASE_METHOD(common_tests, "XML and int vectors", "[core][xml][vector]")
 
     sql << "select id, "
         << tc_.from_xml("x")
-        << " from soci_test where id in (0, 1, 2)",
+        << " from soci_test order by id",
         into(id2), into(xml2, ind2);
 
     CHECK(id.at(0) == id2.at(0));
@@ -5132,15 +5133,6 @@ TEST_CASE_METHOD(common_tests, "XML and int vectors", "[core][xml][vector]")
 
 TEST_CASE_METHOD(common_tests, "Into XML vector with several fetches", "[core][xml][into][vector][statement]")
 {
-    soci::session sql(backEndFactory_, connectString_);
-
-    auto_table_creator tableCreator(tc_.table_creator_xml(sql));
-    if (!tableCreator.get())
-    {
-        WARN("XML type not supported by the database, skipping the test.");
-        return;
-    }
-
     int stringSize = 0;
     SECTION("short string")
     {
@@ -5149,6 +5141,19 @@ TEST_CASE_METHOD(common_tests, "Into XML vector with several fetches", "[core][x
     SECTION("long string")
     {
         stringSize = 10000;
+    }
+
+    // Skip the rest when not executing the current section.
+    if (!stringSize)
+        return;
+
+    soci::session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_xml(sql));
+    if (!tableCreator.get())
+    {
+        WARN("XML type not supported by the database, skipping the test.");
+        return;
     }
 
     int const count = 5;
