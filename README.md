@@ -16,7 +16,6 @@
 |-------------|-----------|-------------|---------------|----------------|
 | master      | [![Build Status](https://travis-ci.org/SOCI/soci.svg?branch=master)](https://travis-ci.org/SOCI/soci/branches) | [![Build status](https://ci.appveyor.com/api/projects/status/dtp5mvbeyu9aqupr/branch/master?svg=true)](https://ci.appveyor.com/project/SOCI/soci/branch/master) | [![Docs Status](https://circleci.com/gh/SOCI/soci/tree/master.svg?style=svg&circle-token=5d31c692ed5fcffa5c5fc6b7fe2257b34d78f3c9)](https://circleci.com/gh/SOCI/soci/tree/master) | [![Coverage](https://scan.coverity.com/projects/6581/badge.svg)](https://scan.coverity.com/projects/soci-soci) |
 | release/4.0 | [![Build Status](https://travis-ci.org/SOCI/soci.svg?branch=release%2F4.0)](https://travis-ci.org/SOCI/soci/branches) | [![Build status](https://ci.appveyor.com/api/projects/status/dtp5mvbeyu9aqupr/branch/release/4.0?svg=true)](https://ci.appveyor.com/project/SOCI/soci/branch/release/4.0) | [![Docs Status](https://circleci.com/gh/SOCI/soci/tree/release%2F4.0.svg?style=svg&circle-token=5d31c692ed5fcffa5c5fc6b7fe2257b34d78f3c9)](https://circleci.com/gh/SOCI/soci/tree/release%2F4.0) | |
-| release/3.2 | [![Build Status](https://travis-ci.org/SOCI/soci.svg?branch=release%2F3.2)](https://travis-ci.org/SOCI/soci/branches) | [![Build status](https://ci.appveyor.com/api/projects/status/dtp5mvbeyu9aqupr/branch/release/3.2?svg=true)](https://ci.appveyor.com/project/SOCI/soci/branch/release/3.2) | | |
 
 ## History
 
