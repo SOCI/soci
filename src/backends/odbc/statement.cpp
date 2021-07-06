@@ -249,7 +249,7 @@ odbc_statement_backend::fetch(int number)
 
     SQLSetStmtAttr(hstmt_, SQL_ATTR_ROW_BIND_TYPE, SQL_BIND_BY_COLUMN, 0);
 
-    statement_backend::exec_fetch_result res = ef_success; // just for MSVC
+    statement_backend::exec_fetch_result res SOCI_DUMMY_INIT(ef_success);
 
     // Usually we try to fetch the entire vector at once, but if some into
     // string columns are bigger than 8KB (ODBC_MAX_COL_SIZE) then we use

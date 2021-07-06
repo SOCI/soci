@@ -60,8 +60,8 @@ void oracle_standard_into_type_backend::define_by_pos(
     data_ = data; // for future reference
     type_ = type; // for future reference
 
-    ub2 oracleType = 0; // dummy initialization to please the compiler
-    sb4 size = 0;       // also dummy
+    ub2 oracleType SOCI_DUMMY_INIT(0);
+    sb4 size SOCI_DUMMY_INIT(0);
 
     switch (type)
     {

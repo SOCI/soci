@@ -43,32 +43,19 @@ void logger_impl::set_stream(std::ostream *)
     throw_not_supported();
 }
 
-// Disable the warning given by MSVC after throw_not_supported(): we can't just
-// remove the return because this results in warnings about missing return from
-// the other compilers.
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable:4702) // unreachable code
-#endif
-
 std::ostream * logger_impl::get_stream() const
 {
     throw_not_supported();
 
-    return NULL;
+    SOCI_DUMMY_RETURN(NULL);
 }
 
 std::string logger_impl::get_last_query() const
 {
     throw_not_supported();
 
-    return std::string();
+    SOCI_DUMMY_RETURN(std::string());
 }
-
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
-
 
 logger::logger(logger_impl * impl)
     : m_impl(impl)

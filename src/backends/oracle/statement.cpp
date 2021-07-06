@@ -87,7 +87,7 @@ statement_backend::exec_fetch_result oracle_statement_backend::execute(int numbe
     else
     {
         throw_oracle_soci_error(res, session_.errhp_);
-        return ef_no_data; // unreachable dummy return to please the compiler
+        SOCI_DUMMY_RETURN(ef_no_data);
     }
 }
 
@@ -113,7 +113,7 @@ statement_backend::exec_fetch_result oracle_statement_backend::fetch(int number)
     else
     {
         throw_oracle_soci_error(res, session_.errhp_);
-        return ef_no_data; // unreachable dummy return to please the compiler
+        SOCI_DUMMY_RETURN(ef_no_data);
     }
 }
 
