@@ -8,13 +8,11 @@ on:
       - 'release/**'
     paths-ignore:
       - appveyor.yml
-      - .travis.yml
   pull_request:
     branches:
       - master
     paths-ignore:
       - appveyor.yml
-      - .travis.yml
 
 jobs:
   build:

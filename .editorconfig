@@ -17,7 +17,7 @@ trim_trailing_whitespace = true
 insert_final_newline = true
 
 # CI configuration files
-[{.travis.yml,appveyor.yml,Vagrantfile}]
+[{appveyor.yml,Vagrantfile}]
 indent_size = 2
 indent_style = space
 trim_trailing_whitespace = true
