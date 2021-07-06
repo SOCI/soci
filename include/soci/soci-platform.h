@@ -153,9 +153,10 @@ namespace cxx_details
 #define SOCI_DUMMY_INIT(x) (x)
 
 // And this one can be used to return after calling a "[[noreturn]]" function.
-// Here the problem is that MSVC complains about unreachable code in this case,
-// but other compilers complain about missing return statement without it.
-#if defined(_MSC_VER)
+// Here the problem is that MSVC complains about unreachable code in this case
+// (but only in release builds, where optimizations are enabled), while other
+// compilers complain about missing return statement without it.
+#if defined(_MSC_VER) && defined(NDEBUG)
     #define SOCI_DUMMY_RETURN(x)
 #else
     #define SOCI_DUMMY_RETURN(x) return x
