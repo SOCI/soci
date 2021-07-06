@@ -152,6 +152,15 @@ namespace cxx_details
 // about initializing variables unnecessarily.
 #define SOCI_DUMMY_INIT(x) (x)
 
+// And this one can be used to return after calling a "[[noreturn]]" function.
+// Here the problem is that MSVC complains about unreachable code in this case,
+// but other compilers complain about missing return statement without it.
+#if defined(_MSC_VER)
+    #define SOCI_DUMMY_RETURN(x)
+#else
+    #define SOCI_DUMMY_RETURN(x) return x
+#endif
+
 #if defined(SOCI_HAVE_CXX11) || (defined(_MSC_VER) && _MSC_VER >= 1900)
     #define SOCI_NOEXCEPT noexcept
     #define SOCI_NOEXCEPT_FALSE noexcept(false)
