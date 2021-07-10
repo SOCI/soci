@@ -29,8 +29,6 @@ jobs:
     env:
       SOCI_CI: true
       SOCI_CI_BACKEND: all
-      SOCI_CI_PACKAGES: cmake
-      SOCI_SOURCE_DIR: ${GITHUB_WORKSPACE}
       WITH_BOOST: OFF
 
     steps:
@@ -46,7 +44,18 @@ jobs:
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
+    - name: Set environment variables
+      run: |
+        set_env_var() {
+          echo "Setting environment variable $1=$2"
+          echo $1=$2 >> $GITHUB_ENV
+        }
+
+        set_env_var SOCI_SOURCE_DIR $GITHUB_WORKSPACE
+
     - name: Install dependencies
+      env:
+        SOCI_CI_PACKAGES: cmake
       run: ./scripts/ci/install.sh
 
     - name: Prepare for build
