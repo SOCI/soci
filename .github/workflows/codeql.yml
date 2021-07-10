@@ -39,9 +39,19 @@ jobs:
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
-    #- run: |
-    #   make bootstrap
-    #   make release
+    - name: Prepare for build
+      env:
+        SOCI_CI: true
+        SOCI_CI_BACKEND: all
+        SOCI_CI_PACKAGES: cmake
+        SOCI_SOURCE_DIR: .
+        WITH_BOOST: OFF
+      run: |
+        ./scripts/ci/install.sh
+        cmake
+
+    - name: Build
+      run: make -j`nproc`
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
