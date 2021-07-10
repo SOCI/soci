@@ -16,10 +16,21 @@ fi
 #
 # Environment
 #
-TCI_NUMTHREADS=2
-if [[ -f /sys/devices/system/cpu/online ]]; then
-	# Calculates 1.5 times physical threads
-	TCI_NUMTHREADS=$(( ( $(cut -f 2 -d '-' /sys/devices/system/cpu/online) + 1 ) * 15 / 10  ))
+case `uname` in
+    Linux)
+        num_cpus=`nproc`
+        ;;
+
+    Darwin)
+        num_cpus=`sysctl -n hw.ncpu`
+        ;;
+
+    *)
+        num_cpus=1
+esac
+
+if [[ ${num_cpus} != 1 ]]; then
+    ((num_cpus++))
 fi
 
 # Directory where the build happens.
@@ -60,7 +71,7 @@ tmstamp()
 
 run_make()
 {
-    [ $TCI_NUMTHREADS -gt 0 ] && make -j $TCI_NUMTHREADS || make
+    make -j $num_cpus
 }
 
 run_test()
