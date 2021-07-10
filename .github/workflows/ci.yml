@@ -84,7 +84,7 @@ jobs:
           }
 
           set_env_var SOCI_CI_BRANCH $GITHUB_REF
-          set_env_var SOCI_SOURCE_DIR `pwd`
+          set_env_var SOCI_SOURCE_DIR $GITHUB_WORKSPACE
 
           case "${{runner.os}}" in
             Linux)
