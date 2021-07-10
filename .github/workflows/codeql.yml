@@ -30,7 +30,7 @@ jobs:
       SOCI_CI: true
       SOCI_CI_BACKEND: all
       SOCI_CI_PACKAGES: cmake
-      SOCI_SOURCE_DIR: .
+      SOCI_SOURCE_DIR: ${GITHUB_WORKSPACE}
       WITH_BOOST: OFF
 
     steps:
