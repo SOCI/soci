@@ -7,11 +7,13 @@ on:
       - master
       - 'release/**'
     paths-ignore:
+      - .github/workflows/codeql.yml
       - appveyor.yml
   pull_request:
     branches:
       - master
     paths-ignore:
+      - .github/workflows/codeql.yml
       - appveyor.yml
 
 jobs:
