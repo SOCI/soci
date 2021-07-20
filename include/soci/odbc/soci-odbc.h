@@ -352,7 +352,7 @@ struct odbc_session_backend : details::session_backend
     };
 
     // Determine the type of the database we're connected to.
-    database_product get_database_product() const;
+    SOCI_ODBC_DECL database_product get_database_product() const;
 
     // Return full ODBC connection string.
     std::string get_connection_string() const { return connection_string_; }
