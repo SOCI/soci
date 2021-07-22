@@ -183,6 +183,7 @@ public:
     // for diagnostics and advanced users
     // (downcast it to expected back-end session class)
     details::session_backend * get_backend() { return backEnd_; }
+    connection_parameters get_last_connection_parameters() { return lastConnectParameters_; }
 
     std::string get_backend_name() const;
 
