@@ -22,6 +22,7 @@
 #include <winsock.h> // SOCKET
 #endif // _WIN32
 #include <mysql.h> // MySQL Client
+#include <errmsg.h> // MySQL Error codes
 #include <vector>
 
 
@@ -32,9 +33,20 @@ class SOCI_MYSQL_DECL mysql_soci_error : public soci_error
 {
 public:
     mysql_soci_error(std::string const & msg, int errNum)
-        : soci_error(msg), err_num_(errNum) {}
+        : soci_error(msg), err_num_(errNum), cat_(unknown) {
+            if(errNum == CR_CONNECTION_ERROR ||
+               errNum == CR_CONN_HOST_ERROR ||
+               errNum == CR_SERVER_GONE_ERROR ||
+               errNum == CR_SERVER_LOST ||
+               errNum == 1927) { // Lost connection to backend server
+                cat_ = connection_error;
+            }
+        }
+
+    error_category get_error_category() const SOCI_OVERRIDE { return cat_; }
 
     unsigned int err_num_;
+    error_category cat_;
 };
 
 struct mysql_statement_backend;
