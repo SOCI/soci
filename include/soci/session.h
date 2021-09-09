@@ -231,7 +231,7 @@ private:
 
     bool uppercaseColumnNames_;
 
-	soci_mutex_t lock_;
+    soci_mutex_t lock_;
     details::session_backend * backEnd_;
 
     bool gotData_;
