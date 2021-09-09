@@ -14,12 +14,41 @@
 #include "soci/connection-parameters.h"
 #include "soci/logger.h"
 
+#ifndef _MSC_VER
+#include <stdint.h>
+#endif
+
 // std
 #include <cstddef>
 #include <memory>
 #include <ostream>
 #include <sstream>
 #include <string>
+
+#ifdef _WIN32
+
+#include <windows.h>
+
+typedef CRITICAL_SECTION soci_mutex_t;
+
+#define LOCK(x) EnterCriticalSection(x)
+#define UNLOCK(x) LeaveCriticalSection(x)
+#define MUTEX_INIT(x) InitializeCriticalSection(x)
+#define MUTEX_DEST(x) DeleteCriticalSection(x)
+
+#else // linux
+
+#include <pthread.h>
+#include <dlfcn.h>
+
+typedef pthread_mutex_t soci_mutex_t;
+
+#define LOCK(x) pthread_mutex_lock(x)
+#define UNLOCK(x) pthread_mutex_unlock(x)
+#define MUTEX_INIT(x) pthread_mutex_init(x, NULL)
+#define MUTEX_DEST(x) pthread_mutex_destroy(x)
+
+#endif // _WIN32
 
 namespace soci
 {
@@ -202,6 +231,7 @@ private:
 
     bool uppercaseColumnNames_;
 
+	soci_mutex_t lock_;
     details::session_backend * backEnd_;
 
     bool gotData_;

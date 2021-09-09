@@ -17,6 +17,15 @@ using namespace soci::details;
 
 namespace // anonymous
 {
+	
+class scoped_lock
+{
+public:
+    scoped_lock(soci_mutex_t * m) : mptr(m) { LOCK(m); };
+    ~scoped_lock() { UNLOCK(mptr); };
+private:
+    soci_mutex_t * mptr;
+};
 
 void ensureConnected(session_backend * backEnd)
 {
@@ -78,6 +87,7 @@ session::session()
       uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
 {
+	MUTEX_INIT(lock_);
 }
 
 session::session(connection_parameters const & parameters)
@@ -87,6 +97,7 @@ session::session(connection_parameters const & parameters)
       uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
 {
+	MUTEX_INIT(lock_);
     open(lastConnectParameters_);
 }
 
@@ -98,6 +109,7 @@ session::session(backend_factory const & factory,
       uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
 {
+	MUTEX_INIT(lock_);
     open(lastConnectParameters_);
 }
 
@@ -109,6 +121,7 @@ session::session(std::string const & backendName,
       uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
 {
+	MUTEX_INIT(lock_);
     open(lastConnectParameters_);
 }
 
@@ -119,6 +132,7 @@ session::session(std::string const & connectString)
       uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
 {
+	MUTEX_INIT(lock_);
     open(lastConnectParameters_);
 }
 
@@ -127,6 +141,7 @@ session::session(connection_pool & pool)
       logger_(new standard_logger_impl),
       isFromPool_(true), pool_(&pool)
 {
+	MUTEX_INIT(lock_);
     poolPosition_ = pool.lease();
     session & pooledSession = pool.at(poolPosition_);
 
@@ -146,10 +161,14 @@ session::~session()
         delete query_transformation_;
         delete backEnd_;
     }
+	
+	MUTEX_DEST(lock_);
 }
 
 void session::open(connection_parameters const & parameters)
 {
+	scoped_lock(&lock_);
+	
     if (isFromPool_)
     {
         session & pooledSession = pool_->at(poolPosition_);
@@ -193,6 +212,8 @@ void session::open(std::string const & connectString)
 
 void session::close()
 {
+	scoped_lock(&lock_);
+	
     if (isFromPool_)
     {
         pool_->at(poolPosition_).close();
@@ -207,6 +228,8 @@ void session::close()
 
 void session::reconnect()
 {
+	scoped_lock(&lock_);
+	
     if (isFromPool_)
     {
         session & pooledSession = pool_->at(poolPosition_);
@@ -239,6 +262,8 @@ void session::reconnect()
 
 bool session::is_connected() const SOCI_NOEXCEPT
 {
+	scoped_lock(&lock_);
+	
     try
     {
         return backEnd_ && backEnd_->is_connected();
@@ -253,6 +278,7 @@ bool session::is_connected() const SOCI_NOEXCEPT
 
 void session::begin()
 {
+	scoped_lock(&lock_);
     ensureConnected(backEnd_);
 
     backEnd_->begin();
@@ -260,6 +286,7 @@ void session::begin()
 
 void session::commit()
 {
+	scoped_lock(&lock_);
     ensureConnected(backEnd_);
 
     backEnd_->commit();
@@ -267,6 +294,7 @@ void session::commit()
 
 void session::rollback()
 {
+	scoped_lock(&lock_);
     ensureConnected(backEnd_);
 
     backEnd_->rollback();
@@ -441,6 +469,7 @@ bool session::get_uppercase_column_names() const
 
 bool session::get_next_sequence_value(std::string const & sequence, long long & value)
 {
+	scoped_lock(&lock_);
     ensureConnected(backEnd_);
 
     return backEnd_->get_next_sequence_value(*this, sequence, value);
@@ -448,6 +477,7 @@ bool session::get_next_sequence_value(std::string const & sequence, long long & 
 
 bool session::get_last_insert_id(std::string const & sequence, long long & value)
 {
+	scoped_lock(&lock_);
     ensureConnected(backEnd_);
 
     return backEnd_->get_last_insert_id(*this, sequence, value);
@@ -455,6 +485,7 @@ bool session::get_last_insert_id(std::string const & sequence, long long & value
 
 details::once_temp_type session::get_table_names()
 {
+	scoped_lock(&lock_);
     ensureConnected(backEnd_);
 
     return once << backEnd_->get_table_names_query();
@@ -462,6 +493,7 @@ details::once_temp_type session::get_table_names()
 
 details::prepare_temp_type session::prepare_table_names()
 {
+	scoped_lock(&lock_);
     ensureConnected(backEnd_);
 
     return prepare << backEnd_->get_table_names_query();
@@ -469,6 +501,7 @@ details::prepare_temp_type session::prepare_table_names()
 
 details::prepare_temp_type session::prepare_column_descriptions(std::string & table_name)
 {
+	scoped_lock(&lock_);
     ensureConnected(backEnd_);
 
     return prepare << backEnd_->get_column_descriptions_query(), use(table_name, "t");
@@ -486,6 +519,7 @@ ddl_type session::create_table(const std::string & tableName)
 
 void session::drop_table(const std::string & tableName)
 {
+	scoped_lock(&lock_);
     ensureConnected(backEnd_);
 
     once << backEnd_->drop_table(tableName);
@@ -493,6 +527,7 @@ void session::drop_table(const std::string & tableName)
 
 void session::truncate_table(const std::string & tableName)
 {
+	scoped_lock(&lock_);
     ensureConnected(backEnd_);
 
     once << backEnd_->truncate_table(tableName);
@@ -532,6 +567,7 @@ ddl_type session::drop_column(const std::string & tableName,
 
 std::string session::empty_blob()
 {
+	scoped_lock(&lock_);
     ensureConnected(backEnd_);
 
     return backEnd_->empty_blob();
@@ -539,6 +575,7 @@ std::string session::empty_blob()
 
 std::string session::nvl()
 {
+	scoped_lock(&lock_);
     ensureConnected(backEnd_);
 
     return backEnd_->nvl();
@@ -546,6 +583,7 @@ std::string session::nvl()
 
 std::string session::get_dummy_from_table() const
 {
+	scoped_lock(&lock_);
     ensureConnected(backEnd_);
 
     return backEnd_->get_dummy_from_table();
@@ -562,6 +600,7 @@ std::string session::get_dummy_from_clause() const
 
 void session::set_failover_callback(failover_callback & callback)
 {
+	scoped_lock(&lock_);
     ensureConnected(backEnd_);
 
     backEnd_->set_failover_callback(callback, *this);
@@ -569,6 +608,7 @@ void session::set_failover_callback(failover_callback & callback)
 
 std::string session::get_backend_name() const
 {
+	scoped_lock(&lock_);
     ensureConnected(backEnd_);
 
     return backEnd_->get_backend_name();
@@ -576,6 +616,7 @@ std::string session::get_backend_name() const
 
 statement_backend * session::make_statement_backend()
 {
+	scoped_lock(&lock_);
     ensureConnected(backEnd_);
 
     return backEnd_->make_statement_backend();
@@ -583,6 +624,7 @@ statement_backend * session::make_statement_backend()
 
 rowid_backend * session::make_rowid_backend()
 {
+	scoped_lock(&lock_);
     ensureConnected(backEnd_);
 
     return backEnd_->make_rowid_backend();
@@ -590,6 +632,7 @@ rowid_backend * session::make_rowid_backend()
 
 blob_backend * session::make_blob_backend()
 {
+	scoped_lock(&lock_);
     ensureConnected(backEnd_);
 
     return backEnd_->make_blob_backend();
