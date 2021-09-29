@@ -231,6 +231,7 @@ struct sqlite3_statement_backend : details::statement_backend
     sqlite3_column_info_list columns_;
 
 
+    bool hasVectorIntoElements_;
     long long rowsAffectedBulk_; // number of rows affected by the last bulk operation
 
 private:

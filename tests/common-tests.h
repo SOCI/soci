@@ -1431,6 +1431,21 @@ TEST_CASE_METHOD(common_tests, "Indicators vector", "[core][indicator][vector]")
             CHECK(inds[2] == i_null);
             CHECK(inds[3] == i_null);
             CHECK(inds[4] == i_ok);
+
+            strs.resize(1);
+            sql << "select str from soci_test order by id", into(strs, inds);
+            CHECK(inds.size() == 1);
+
+            strs.resize(1);
+            st = (sql.prepare << "select str from soci_test order by id", into(strs, inds));
+            st.execute();
+            st.fetch();
+            CHECK(inds.size() == 1);
+            while (st.fetch());
+
+            std::vector<int> ids(1);
+            sql << "select id from soci_test", into(ids);
+            CHECK(ids.size() == 1);
         }
     }
 
