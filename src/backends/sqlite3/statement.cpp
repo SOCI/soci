@@ -340,18 +340,11 @@ sqlite3_statement_backend::execute(int number)
 
     if (useData_.empty() == false)
     {
-           retVal = bind_and_execute(number);
+        retVal = bind_and_execute(number);
     }
     else
     {
-        if (hasVectorIntoElements_ || number == 0)
-        {
-            retVal = load_rowset(number);
-        }
-        else
-        {
-            retVal = load_one();
-        }
+        retVal = fetch(number);
     }
 
     return retVal;

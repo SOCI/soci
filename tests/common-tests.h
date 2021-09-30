@@ -1441,6 +1441,7 @@ TEST_CASE_METHOD(common_tests, "Indicators vector", "[core][indicator][vector]")
             st.execute();
             st.fetch();
             CHECK(inds.size() == 1);
+            while (st.fetch());
 
             std::vector<int> ids(1);
             sql << "select id from soci_test", into(ids);
