@@ -71,6 +71,7 @@ jobs:
       SOCI_CI: true
       SOCI_CI_BACKEND: ${{ matrix.backend }}
       SOCI_MYSQL_ROOT_PASSWORD: root
+      ASAN_OPTIONS: fast_unwind_on_malloc=0
 
     steps:
       - name: Checkout
