@@ -8,7 +8,7 @@ source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 sudo apt-get install -qq \
     tar bzip2 \
     unixodbc unixodbc-dev \
-    odbc-postgresql/xenial odbc-postgresql-dbg/xenial
+    odbc-postgresql odbc-postgresql-dbg
 
 # Use full path to the driver library to avoid errors like
 # [01000][unixODBC][Driver Manager]Can't open lib 'psqlodbca.so' : file not found
