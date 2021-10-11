@@ -7,12 +7,14 @@ on:
       - master
       - 'release/**'
     paths-ignore:
+      - .circleci/**
       - .github/workflows/codeql.yml
       - appveyor.yml
   pull_request:
     branches:
       - master
     paths-ignore:
+      - .circleci/**
       - .github/workflows/codeql.yml
       - appveyor.yml
 
