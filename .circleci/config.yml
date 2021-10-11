@@ -27,7 +27,7 @@ jobs:
       - run:
           name: install lftp
           command: |
-            sudo apt-get update -q
+            sudo apt-get update -q --allow-releaseinfo-change
             sudo apt-get install -y lftp
       - run:
           name: deploy docs
