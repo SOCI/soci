@@ -319,7 +319,11 @@ std::string odbc_statement_backend::rewrite_for_procedure_call(
 int odbc_statement_backend::prepare_for_describe()
 {
     SQLSMALLINT numCols;
-    SQLNumResultCols(hstmt_, &numCols);
+    SQLRETURN rc = SQLNumResultCols(hstmt_, &numCols);
+    if (is_odbc_error(rc))
+    {
+        throw soci_error("Failed to get result columns count");
+    }
     return numCols;
 }
 

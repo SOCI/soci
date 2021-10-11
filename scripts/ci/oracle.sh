@@ -12,6 +12,9 @@ export ORACLE_CONTAINER=oracle-11g
 export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe
 export ORACLE_SID=XE
 
+# Add path to Oracle libraries.
+export LD_LIBRARY_PATH=$ORACLE_HOME/lib
+
 # Execute any command in the Oracle container: pass the command with its
 # arguments directly to the function.
 oracle_exec()
