@@ -29,6 +29,27 @@ using std::string;
 
 namespace
 { // anonymous
+class mysql_library
+{
+    mysql_library()
+    {
+        if (mysql_library_init(0, NULL, NULL))
+        {
+            throw soci_error("Can not init mysql library");
+        }
+    }
+    ~mysql_library()
+    {
+        mysql_library_end();
+    }
+
+public:
+    static mysql_library &instance()
+    {
+        static mysql_library ins;
+        return ins;
+    }
+};
 
 void skip_white(std::string::const_iterator *i,
     std::string::const_iterator const & end, bool endok)
@@ -333,6 +354,8 @@ void parse_connect_string(const string & connectString,
 mysql_session_backend::mysql_session_backend(
     connection_parameters const & parameters)
 {
+    mysql_library::instance();
+
     string host, user, password, db, unix_socket, ssl_ca, ssl_cert, ssl_key,
         charset;
     int port, local_infile;
@@ -500,7 +523,6 @@ void mysql_session_backend::clean_up()
     if (conn_ != NULL)
     {
         mysql_close(conn_);
-        mysql_library_end();
         conn_ = NULL;
     }
 }
