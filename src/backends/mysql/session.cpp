@@ -30,6 +30,33 @@ using std::string;
 namespace
 { // anonymous
 
+// Helper class used to ensure we call mysql_library_init() before opening the
+// first MySQL connection and mysql_library_end() on application shutdown.
+class mysql_library
+{
+private:
+    mysql_library()
+    {
+        if (mysql_library_init(0, NULL, NULL))
+        {
+            throw soci_error("Failed to initialize MySQL library.");
+        }
+    }
+
+    ~mysql_library()
+    {
+        mysql_library_end();
+    }
+
+public:
+    // This function only exists for its side effect of creating an instance of
+    // this class.
+    static void ensure_initialized()
+    {
+        static mysql_library ins;
+    }
+};
+
 void skip_white(std::string::const_iterator *i,
     std::string::const_iterator const & end, bool endok)
 {
@@ -333,6 +360,8 @@ void parse_connect_string(const string & connectString,
 mysql_session_backend::mysql_session_backend(
     connection_parameters const & parameters)
 {
+    mysql_library::ensure_initialized();
+
     string host, user, password, db, unix_socket, ssl_ca, ssl_cert, ssl_key,
         charset;
     int port, local_infile;
@@ -500,7 +529,6 @@ void mysql_session_backend::clean_up()
     if (conn_ != NULL)
     {
         mysql_close(conn_);
-        mysql_library_end();
         conn_ = NULL;
     }
 }

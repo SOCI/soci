@@ -6,25 +6,3 @@
    fun:nss_parse_service_list
    fun:__nss_database_lookup
 }
-
-# Leaks in Travis CI Ubuntu 16.04 builds.
-{
-    ignored mysql_init leak
-    Memcheck:Leak
-    fun:malloc
-    obj:/usr/lib/x86_64-linux-gnu/libmysqlclient.so*
-    obj:/usr/lib/x86_64-linux-gnu/libmysqlclient.so*
-    obj:/usr/lib/x86_64-linux-gnu/libmysqlclient.so*
-    fun:mysql_server_init
-    fun:mysql_init
-}
-
-{
-    ignored mysql_init leak
-    Memcheck:Leak
-    fun:malloc
-    obj:/usr/lib/x86_64-linux-gnu/libmysqlclient.so*
-    obj:/usr/lib/x86_64-linux-gnu/libmysqlclient.so*
-    fun:mysql_server_init
-    fun:mysql_init
-}
