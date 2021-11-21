@@ -625,44 +625,6 @@ namespace soci
 namespace details
 {
 
-// Map data_types to stock types for dynamic result set support
-
-template<>
-void statement_impl::bind_into<dt_string>()
-{
-    into_row<std::string>();
-}
-
-template<>
-void statement_impl::bind_into<dt_double>()
-{
-    into_row<double>();
-}
-
-template<>
-void statement_impl::bind_into<dt_integer>()
-{
-    into_row<int>();
-}
-
-template<>
-void statement_impl::bind_into<dt_long_long>()
-{
-    into_row<long long>();
-}
-
-template<>
-void statement_impl::bind_into<dt_unsigned_long_long>()
-{
-    into_row<unsigned long long>();
-}
-
-template<>
-void statement_impl::bind_into<dt_date>()
-{
-    into_row<std::tm>();
-}
-
 void statement_impl::describe()
 {
     row_->clean_up();
@@ -682,28 +644,42 @@ void statement_impl::describe()
         switch (dtype)
         {
         case dt_string:
-            bind_into<dt_string>();
-            break;
         case dt_blob:
-            bind_into<dt_string>();
-            break;
         case dt_xml:
-            bind_into<dt_string>();
+        {
+            std::pair<std::string*, indicator*> holder = row_->alloc_data_holder_string();
+            exchange_for_row(into(*holder.first, *holder.second));
+        }
             break;
         case dt_double:
-            bind_into<dt_double>();
+        {
+            std::pair<double*, indicator*> holder = row_->alloc_data_holder_double();
+            exchange_for_row(into(*holder.first, *holder.second));
+        }
             break;
         case dt_integer:
-            bind_into<dt_integer>();
+        {
+            std::pair<int*, indicator*> holder = row_->alloc_data_holder_int();
+            exchange_for_row(into(*holder.first, *holder.second));
+        }
             break;
         case dt_long_long:
-            bind_into<dt_long_long>();
+        {
+            std::pair<long long*, indicator*> holder = row_->alloc_data_holder_llong();
+            exchange_for_row(into(*holder.first, *holder.second));
+        }
             break;
         case dt_unsigned_long_long:
-            bind_into<dt_unsigned_long_long>();
+        {
+            std::pair<unsigned long long*, indicator*> holder = row_->alloc_data_holder_ullong();
+            exchange_for_row(into(*holder.first, *holder.second));
+        }
             break;
         case dt_date:
-            bind_into<dt_date>();
+        {
+            std::pair<std::tm*, indicator*> holder = row_->alloc_data_holder_tm();
+            exchange_for_row(into(*holder.first, *holder.second));
+        }
             break;
         default:
             std::ostringstream msg;

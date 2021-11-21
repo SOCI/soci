@@ -13,6 +13,7 @@
 #ifdef SOCI_HAVE_BOOST
 // explicitly pull conversions for Boost's optional, tuple and fusion:
 #include <boost/version.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 #include "soci/boost-optional.h"
 #include "soci/boost-tuple.h"
 #include "soci/boost-gregorian-date.h"
@@ -3413,6 +3414,12 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
             CHECK(r1.get<std::string>(2) == "abc");
             CHECK(r1.get<boost::optional<int> >(1).is_initialized());
             CHECK(r1.get<boost::optional<int> >(1).get() == 5);
+            CHECK(r1.get<boost::optional<char> >(1).get() == 5);
+            CHECK(r1.get<boost::optional<short> >(1).get() == 5);
+            CHECK(r1.get<boost::optional<long> >(1).get() == 5);
+            CHECK(r1.get<boost::optional<long long> >(1).get() == 5);
+            CHECK(r1.get<boost::optional<float> >(1).get() == 5.0);
+            CHECK(r1.get<boost::optional<double> >(1).get() == 5.0);
             CHECK(r1.get<boost::optional<std::string> >(2).is_initialized());
             CHECK(r1.get<boost::optional<std::string> >(2).get() == "abc");
 
@@ -3436,6 +3443,7 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
 
             // but we can read it as optional
             CHECK(r2.get<boost::optional<int> >(1).is_initialized() == false);
+            CHECK(r2.get<boost::optional<short> >(1, 5).get() == 5);
 
             // stream-like data extraction
 

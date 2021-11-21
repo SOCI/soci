@@ -135,18 +135,6 @@ private:
     void exchange_for_row(into_type_ptr const & i) { intosForRow_.exchange(i); }
     void define_for_row();
 
-    template<typename T>
-    void into_row()
-    {
-        T * t = new T();
-        indicator * ind = new indicator(i_ok);
-        row_->add_holder(t, ind);
-        exchange_for_row(into(*t, *ind));
-    }
-
-    template<data_type>
-    void bind_into();
-
     bool alreadyDescribed_;
 
     std::size_t intos_size();
