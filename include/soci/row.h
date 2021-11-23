@@ -11,10 +11,6 @@
 #include "soci/type-traits.h"
 #include "soci/soci-backend.h"
 #include "soci/type-conversion.h"
-#ifdef SOCI_HAVE_BOOST
-// boost
-#include <boost/numeric/conversion/cast.hpp>
-#endif
 // std
 #include <cstddef>
 #include <map>
@@ -28,7 +24,7 @@ namespace soci
 namespace details
 {
 class statement_impl;
-struct data_holder;
+class data_holder;
 }
 
 class SOCI_DECL column_properties
@@ -73,7 +69,7 @@ public:
     {
         typedef typename type_conversion<T>::base_type base_type;
         base_type baseVal;
-        get_(pos, baseVal);
+        do_get(pos, baseVal);
 
         T ret;
         type_conversion<T>::from_base(baseVal, get_indicator(pos), ret);
@@ -156,28 +152,19 @@ private:
         {
             return src;
         }
-#ifdef SOCI_HAVE_BOOST
-        template<typename Src>
-        typename soci::enable_if<!soci::is_same<Dst, Src>::value, Dst>::type
-        operator()(Src src) const
-        {
-            return boost::numeric_cast<Dst>(src);
-        }
-#else
         template<typename Src>
         typename soci::enable_if<!soci::is_same<Dst, Src>::value, Dst>::type
         operator()(Src) const
         {
             throw std::bad_cast();
         }
-#endif
     };
 
-    void get_(std::size_t pos, std::string &baseVal) const;
-    void get_(std::size_t pos, std::tm &baseVal) const;
+    void do_get(std::size_t pos, std::string &baseVal) const;
+    void do_get(std::size_t pos, std::tm &baseVal) const;
     template <typename T>
     typename soci::enable_if<std::numeric_limits<T>::is_specialized, void>::type
-    get_(std::size_t pos, T &baseVal) const
+    do_get(std::size_t pos, T &baseVal) const
     {
         return get_number(pos, baseVal, numeric_cast_t<T>());
     }

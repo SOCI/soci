@@ -20,8 +20,51 @@ namespace soci
 {
     namespace details
     {
-        struct data_holder
+        class data_holder
         {
+        public:
+            explicit data_holder(data_type tp) : type(tp)
+            {
+                switch (type) {
+                    case dt_string:
+                        data.p = new std::string();
+                        break;
+                    case dt_date:
+                        data.p = new std::tm();
+                        break;
+                    case dt_double:
+                        data.d = 0;
+                        break;
+                    case dt_integer:
+                        data.i = 0;
+                        break;
+                    case dt_long_long:
+                        data.ll = 0;
+                        break;
+                    case dt_unsigned_long_long:
+                        data.ull = 0;
+                        break;
+                    default:
+                        break;
+                }
+                ind = i_ok;
+            }
+            ~data_holder()
+            {
+                switch (type)
+                {
+                    case dt_string:
+                        delete (std::string *) data.p;
+                        break;
+                    case dt_date:
+                        delete (std::tm *) data.p;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+        public:
             data_type type;
             union
             {
@@ -86,17 +129,6 @@ void row::clean_up()
 {
     for (std::vector<data_holder *>::iterator it = holders_.begin(); it != holders_.end(); ++it)
     {
-        switch ((*it)->type)
-        {
-            case dt_string:
-                delete (std::string *) (*it)->data.p;
-                break;
-            case dt_date:
-                delete (std::tm *) (*it)->data.p;
-                break;
-            default:
-                break;
-        }
         delete *it;
     }
 
@@ -140,104 +172,44 @@ std::size_t row::find_column(std::string const &name) const
 
 std::pair<std::string*, indicator*> row::alloc_data_holder_string()
 {
-    data_holder *holder = NULL;
-    std::string *s = new std::string();
-    try
-    {
-        holder = new data_holder;
-        holder->type = dt_string;
-        holder->data.p = s;
-        holder->ind = i_ok;
-        holders_.push_back(holder);
-        return std::make_pair(s, &holders_.back()->ind);
-    } catch (...) {
-        delete holder;
-        delete s;
-        throw;
-    }
+    data_holder *holder = new data_holder(dt_string);
+    holders_.push_back(holder);
+    return std::make_pair((std::string *)holder->data.p, &holder->ind);
 }
 
 std::pair<std::tm*, indicator*> row::alloc_data_holder_tm()
 {
-    data_holder *holder = NULL;
-    std::tm *t = new std::tm();
-    try
-    {
-        holder = new data_holder;
-        holder->type = dt_date;
-        holder->data.p = t;
-        holder->ind = i_ok;
-        holders_.push_back(holder);
-        return std::make_pair(t, &holders_.back()->ind);
-    } catch (...) {
-        delete holder;
-        delete t;
-        throw;
-    }
+    data_holder *holder = new data_holder(dt_date);
+    holders_.push_back(holder);
+    return std::make_pair((std::tm *)holder->data.p, &holder->ind);
 }
 
 std::pair<double*, indicator*> row::alloc_data_holder_double()
 {
-    data_holder *holder = new data_holder;
-    holder->type = dt_double;
-    memset(&holder->data, 0, sizeof(holder->data));
-    holder->ind = i_ok;
-    try
-    {
-        holders_.push_back(holder);
-        return std::make_pair(&holders_.back()->data.d, &holders_.back()->ind);
-    } catch (...) {
-        delete holder;
-        throw;
-    }
+    data_holder *holder = new data_holder(dt_double);
+    holders_.push_back(holder);
+    return std::make_pair(&holder->data.d, &holder->ind);
 }
 
 std::pair<int*, indicator*> row::alloc_data_holder_int()
 {
-    data_holder *holder = new data_holder;
-    holder->type = dt_integer;
-    memset(&holder->data, 0, sizeof(holder->data));
-    holder->ind = i_ok;
-    try
-    {
-        holders_.push_back(holder);
-        return std::make_pair(&holders_.back()->data.i, &holders_.back()->ind);
-    } catch (...) {
-        delete holder;
-        throw;
-    }
+    data_holder *holder = new data_holder(dt_integer);
+    holders_.push_back(holder);
+    return std::make_pair(&holder->data.i, &holder->ind);
 }
 
 std::pair<long long*, indicator*> row::alloc_data_holder_llong()
 {
-    data_holder *holder = new data_holder;
-    holder->type = dt_long_long;
-    memset(&holder->data, 0, sizeof(holder->data));
-    holder->ind = i_ok;
-    try
-    {
-        holders_.push_back(holder);
-        return std::make_pair(&holders_.back()->data.ll, &holders_.back()->ind);
-    } catch (...) {
-        delete holder;
-        throw;
-    }
+    data_holder *holder = new data_holder(dt_long_long);
+    holders_.push_back(holder);
+    return std::make_pair(&holder->data.ll, &holder->ind);
 }
 
 std::pair<unsigned long long*, indicator*> row::alloc_data_holder_ullong()
 {
-    data_holder *holder = new data_holder;
-    holder->type = dt_unsigned_long_long;
-    memset(&holder->data, 0, sizeof(holder->data));
-    holder->ind = i_ok;
-    try
-    {
-        holders_.push_back(holder);
-        return std::make_pair(&holders_.back()->data.ull, &holders_.back()->ind);
-    } catch (...) {
-        delete holder;
-        throw;
-    }
+    data_holder *holder = new data_holder(dt_unsigned_long_long);
+    holders_.push_back(holder);
+    return std::make_pair(&holder->data.ull, &holder->ind);
 }
 
 data_type row::get_data_holder_type(std::size_t pos) const SOCI_NOEXCEPT
@@ -265,7 +237,7 @@ unsigned long long row::get_data_holder_ullong(std::size_t pos) const SOCI_NOEXC
     return holders_.at(pos)->data.ull;
 }
 
-void row::get_(std::size_t pos, std::string &baseVal) const
+void row::do_get(std::size_t pos, std::string &baseVal) const
 {
     switch (holders_.at(pos)->type)
     {
@@ -279,7 +251,7 @@ void row::get_(std::size_t pos, std::string &baseVal) const
     }
 }
 
-void row::get_(std::size_t pos, std::tm &baseVal) const
+void row::do_get(std::size_t pos, std::tm &baseVal) const
 {
     switch (holders_.at(pos)->type)
     {

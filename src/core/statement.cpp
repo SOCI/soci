@@ -646,40 +646,22 @@ void statement_impl::describe()
         case dt_string:
         case dt_blob:
         case dt_xml:
-        {
-            std::pair<std::string*, indicator*> holder = row_->alloc_data_holder_string();
-            exchange_for_row(into(*holder.first, *holder.second));
-        }
+            exchange_for_row_holder(row_->alloc_data_holder_string());
             break;
         case dt_double:
-        {
-            std::pair<double*, indicator*> holder = row_->alloc_data_holder_double();
-            exchange_for_row(into(*holder.first, *holder.second));
-        }
+            exchange_for_row_holder(row_->alloc_data_holder_double());
             break;
         case dt_integer:
-        {
-            std::pair<int*, indicator*> holder = row_->alloc_data_holder_int();
-            exchange_for_row(into(*holder.first, *holder.second));
-        }
+            exchange_for_row_holder(row_->alloc_data_holder_int());
             break;
         case dt_long_long:
-        {
-            std::pair<long long*, indicator*> holder = row_->alloc_data_holder_llong();
-            exchange_for_row(into(*holder.first, *holder.second));
-        }
+            exchange_for_row_holder(row_->alloc_data_holder_llong());
             break;
         case dt_unsigned_long_long:
-        {
-            std::pair<unsigned long long*, indicator*> holder = row_->alloc_data_holder_ullong();
-            exchange_for_row(into(*holder.first, *holder.second));
-        }
+            exchange_for_row_holder(row_->alloc_data_holder_ullong());
             break;
         case dt_date:
-        {
-            std::pair<std::tm*, indicator*> holder = row_->alloc_data_holder_tm();
-            exchange_for_row(into(*holder.first, *holder.second));
-        }
+            exchange_for_row_holder(row_->alloc_data_holder_tm());
             break;
         default:
             std::ostringstream msg;
