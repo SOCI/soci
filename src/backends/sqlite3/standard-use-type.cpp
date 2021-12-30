@@ -168,7 +168,8 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
         {
             col.type_ = dt_blob;
             blob *b = static_cast<blob *>(data_);
-            sqlite3_blob_backend *bbe = static_cast<sqlite3_blob_backend *>(b->get_backend());
+
+            cxx_details::shared_ptr<sqlite3_blob_backend> bbe = cxx_details::static_pointer_cast<sqlite3_blob_backend>(b->get_backend());
 
             col.buffer_.constData_ = bbe->get_buffer();
             col.buffer_.size_ = bbe->get_len();

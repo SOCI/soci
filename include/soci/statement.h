@@ -34,6 +34,9 @@ class into_type_base;
 class use_type_base;
 class prepare_temp_type;
 
+template <typename T>
+class rowset_impl;
+
 class SOCI_DECL statement_impl
 {
 public:
@@ -277,6 +280,7 @@ public:
     }
 
 private:
+    template<typename T> friend class details::rowset_impl;
     details::statement_impl * impl_;
     bool gotData_;
 };

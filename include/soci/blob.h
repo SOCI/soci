@@ -27,6 +27,7 @@ class SOCI_DECL blob
 {
 public:
     explicit blob(session & s);
+    blob(const blob& b) { this->backEnd_ = b.backEnd_; }
     ~blob();
 
     std::size_t get_len();
@@ -50,10 +51,10 @@ public:
 
     void trim(std::size_t newLen);
 
-    details::blob_backend * get_backend() { return backEnd_; }
+    cxx_details::shared_ptr<details::blob_backend> get_backend() { return backEnd_; }
 
 private:
-    details::blob_backend * backEnd_;
+    cxx_details::shared_ptr<details::blob_backend> backEnd_;
 };
 
 } // namespace soci

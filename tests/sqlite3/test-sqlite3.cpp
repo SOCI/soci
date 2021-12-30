@@ -105,6 +105,35 @@ TEST_CASE("SQLite blob", "[sqlite][blob]")
     }
 }
 
+TEST_CASE("SQLite blob on a rowset", "[sqlite][blob][rowset]")
+{
+    soci::session sql(backEnd, connectString);
+
+    blob_table_creator tableCreator(sql);
+
+    char buf[] = "abcdefghijklmnopqrstuvwxyz";
+
+
+    {
+        blob b(sql);
+        b.write(0, buf, sizeof(buf));
+        sql << "insert into soci_test(id, img) values(1, ?)", use(b);
+        sql << "insert into soci_test(id, img) values(2, ?)", use(b);
+        sql << "insert into soci_test(id, img) values(3, ?)", use(b);
+        sql << "insert into soci_test(id, img) values(4, ?)", use(b);
+
+    }
+    {
+        rowset<row> rs = (sql.prepare << "select * from soci_test");
+        for(rowset<row>::iterator rsit = rs.begin(); rsit != rs.end(); rsit++)
+        {
+            // row &r = *rsit;
+            // soci::blob b = r.get<soci::blob>("img");
+            // CHECK(b.get_len() == sizeof(buf));
+        }
+    }
+}
+
 // This test was put in to fix a problem that occurs when there are both
 // into and use elements in the same query and one of them (into) binds
 // to a vector object.

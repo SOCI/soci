@@ -124,6 +124,119 @@ namespace cxx_details
     using std::auto_ptr;
 #endif
 
+#if defined(SOCI_HAVE_CXX11) || (defined(_MSC_VER) && _MSC_VER >= 1800)
+    #include <memory>
+    template <typename T>
+    using shared_ptr = std::shared_ptr<T>;
+
+    template<class T, class U>
+    inline shared_ptr<T> static_pointer_cast(shared_ptr<U> const& r)
+    { return std::static_pointer_cast<T>(r); }
+
+    template<class T, class U>
+    inline shared_ptr<T> dynamic_pointer_cast(shared_ptr<U> const& r)
+    { return std::dynamic_pointer_cast<T>(r); }
+
+    template<class T, class U>
+    inline shared_ptr<T> const_pointer_cast(shared_ptr<U> const& r)
+    { return std::const_pointer_cast<T>(r); }
+
+#else // std::shared_ptr<> not available
+    template <typename T>
+    class shared_ptr
+    {
+        public:
+        shared_ptr() : ptr_(NULL), refs_(new unsigned int(0))
+        { }
+
+        shared_ptr(T * ptr) : ptr_(ptr), refs_(new unsigned int(1))
+        { }
+
+        shared_ptr(T * ptr, unsigned int* refs) : ptr_(ptr), refs_(refs)
+        { (*refs_)++; }
+
+        shared_ptr(const shared_ptr & obj)
+        {
+            this->ptr_ = obj.ptr_;
+            this->refs_ = obj.refs_;
+            if (obj.ptr_ != NULL)
+            {
+                (*this->refs_)++; 
+            }
+        }
+        
+        shared_ptr& operator=(const shared_ptr & obj)
+        {
+            decRef();
+            this->ptr_ = obj.ptr_;
+            this->refs_ = obj.refs_;
+            if (obj.ptr_ != NULL)
+            {
+                (*this->refs_)++; 
+            }
+            return *this;
+        }
+
+        ~shared_ptr()
+        {
+            decRef();
+        }
+
+        T* operator->() const { return this->ptr_; }
+        T& operator*() const { return *this->ptr_; }
+
+        unsigned int* get_counter() const
+        {
+            return this->refs_;
+        }
+
+        T* get() const
+        {
+            return this->ptr_;
+        }
+        
+        private:
+            void decRef()
+            {
+                if (--(*this->refs_) == 0)
+                {
+                    if (ptr_ != NULL)
+                    {
+                        delete ptr_;
+                    }
+                    delete refs_;
+                }
+            }
+            T *ptr_;
+            unsigned int *refs_;
+    };
+    
+    template<class T, class U>
+    inline T* static_pointer_cast(U *ptr)
+    { return static_cast<T*>(ptr); }
+
+    template<class T, class U>
+    inline T* dynamic_pointer_cast(U *ptr)
+    { return dynamic_cast<T*>(ptr); }
+
+    template<class T, class U>
+    inline T* const_pointer_cast(U *ptr)
+    { return const_cast<T*>(ptr); }
+
+    template<class T, class U>
+    inline shared_ptr<T> static_pointer_cast(shared_ptr<U> const& r)
+    { return shared_ptr<T>(static_pointer_cast<T>(r.get()), r.get_counter()); }
+
+    template<class T, class U>
+    inline shared_ptr<T> dynamic_pointer_cast(shared_ptr<U> const& r)
+    { return shared_ptr<T>(dynamic_pointer_cast<T>(r.get()), r.get_counter()); }
+
+    template<class T, class U>
+    inline shared_ptr<T> const_pointer_cast(shared_ptr<U> const& r)
+    { return shared_ptr<T>(const_pointer_cast<T>(r.get()), r.get_counter()); }
+
+#endif
+
 } // namespace cxx_details
 
 } // namespace soci

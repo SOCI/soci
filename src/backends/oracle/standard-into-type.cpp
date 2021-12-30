@@ -137,8 +137,7 @@ void oracle_standard_into_type_backend::define_by_pos(
 
             blob *b = static_cast<blob *>(data);
 
-            oracle_blob_backend *bbe
-                = static_cast<oracle_blob_backend *>(b->get_backend());
+            cxx_details::shared_ptr<oracle_blob_backend> bbe = cxx_details::static_pointer_cast<oracle_blob_backend>(b->get_backend());
 
             size = 0;
             data = &bbe->lobp_;

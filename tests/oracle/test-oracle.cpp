@@ -133,8 +133,7 @@ TEST_CASE("Oracle blob", "[oracle][blob]")
             oracle_session_backend *sessionBackEnd
                 = static_cast<oracle_session_backend *>(sql.get_backend());
 
-            oracle_blob_backend *blobBackEnd
-                = static_cast<oracle_blob_backend *>(b.get_backend());
+            cxx_details::shared_ptr<oracle_blob_backend> blobBackEnd = cxx_details::static_pointer_cast<oracle_blob_backend>(b.get_backend());
 
             OCILobDisableBuffering(sessionBackEnd->svchp_,
                 sessionBackEnd->errhp_, blobBackEnd->lobp_);
@@ -180,8 +179,7 @@ TEST_CASE("Oracle blob", "[oracle][blob]")
             oracle_session_backend *sessionBackEnd
                 = static_cast<oracle_session_backend *>(sql.get_backend());
 
-            oracle_blob_backend *blobBackEnd
-                = static_cast<oracle_blob_backend *>(b.get_backend());
+            cxx_details::shared_ptr<oracle_blob_backend> blobBackEnd = cxx_details::static_pointer_cast<oracle_blob_backend>(b.get_backend());
 
             OCILobDisableBuffering(sessionBackEnd->svchp_,
                 sessionBackEnd->errhp_, blobBackEnd->lobp_);

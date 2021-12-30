@@ -103,6 +103,25 @@ private:
 namespace details
 {
 
+template<typename T>
+struct has_set_session
+{
+    static void set(cxx_details::shared_ptr<T> t, session *s)
+    {
+        (void)t;
+        (void)s;
+    }
+};
+
+template<>
+struct has_set_session<row>
+{
+    static void set(cxx_details::shared_ptr<row> r, session *s)
+    {
+        r->set_session(s);
+    }
+};
+
 //
 // Implementation of rowset
 //
@@ -116,6 +135,7 @@ public:
     rowset_impl(details::prepare_temp_type const & prep)
         : refs_(1), st_(new statement(prep)), define_(new T())
     {
+        has_set_session<T>::set(define_, &(st_->impl_->session_));
         st_->exchange_for_rowset(into(*define_));
         st_->execute();
     }
@@ -149,7 +169,7 @@ private:
     unsigned int refs_;
 
     const cxx_details::auto_ptr<statement> st_;
-    const cxx_details::auto_ptr<T> define_;
+    const cxx_details::shared_ptr<T> define_;
     SOCI_NOT_COPYABLE(rowset_impl)
 }; // class rowset_impl
 

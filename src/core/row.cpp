@@ -18,8 +18,13 @@ using namespace details;
 
 row::row()
     : uppercaseColumnNames_(false)
-    , currentPos_(0)
+    , currentPos_(0), session_(NULL)
 {}
+
+row::row(session *s)
+    : uppercaseColumnNames_(false)
+    , currentPos_(0), session_(NULL)
+{ set_session(s); }
 
 row::~row()
 {
@@ -108,4 +113,19 @@ std::size_t row::find_column(std::string const &name) const
     }
 
     return it->second;
+}
+
+template <>
+blob row::get<blob>(std::size_t pos) const
+{
+    if (session_ == NULL)
+    {
+        throw soci_error("soci::blob objects can be retrieved only by soci::rowset.");
+    }
+
+    std::string const& baseVal = holders_.at(pos)->get<std::string>();
+
+    blob ret(*session_);
+    type_conversion<blob>::from_base(baseVal, *indicators_.at(pos), ret);
+    return ret;
 }

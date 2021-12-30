@@ -11,6 +11,7 @@
 #include "soci/type-holder.h"
 #include "soci/soci-backend.h"
 #include "soci/type-conversion.h"
+#include "soci/blob.h"
 // std
 #include <cstddef>
 #include <map>
@@ -41,6 +42,7 @@ class SOCI_DECL row
 {
 public:
     row();
+    row(session *s);
     ~row();
 
     void uppercase_column_names(bool forceToUpper);
@@ -50,6 +52,9 @@ public:
 
     indicator get_indicator(std::size_t pos) const;
     indicator get_indicator(std::string const& name) const;
+
+    void set_session(session *s) { session_ = s; };
+    session* get_session() const { return session_; };
 
     template <typename T>
     inline void add_holder(T* t, indicator* ind)
@@ -133,8 +138,11 @@ private:
 
     bool uppercaseColumnNames_;
     mutable std::size_t currentPos_;
+
+    session *session_;
 };
 
+template <> blob row::get<blob>(std::size_t pos) const;
 } // namespace soci
 
 #endif // SOCI_ROW_H_INCLUDED

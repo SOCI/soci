@@ -135,8 +135,7 @@ void oracle_standard_use_type_backend::prepare_for_bind(
 
             blob *b = static_cast<blob *>(data);
 
-            oracle_blob_backend *bbe
-                = static_cast<oracle_blob_backend *>(b->get_backend());
+            cxx_details::shared_ptr<oracle_blob_backend> bbe = cxx_details::static_pointer_cast<oracle_blob_backend>(b->get_backend());
 
             size = 0;
             data = &bbe->lobp_;

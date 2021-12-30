@@ -152,8 +152,8 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
             case x_blob:
             {
                 blob *b = static_cast<blob *>(data_);
-                sqlite3_blob_backend *bbe =
-                    static_cast<sqlite3_blob_backend *>(b->get_backend());
+
+                cxx_details::shared_ptr<sqlite3_blob_backend> bbe = cxx_details::static_pointer_cast<sqlite3_blob_backend>(b->get_backend());
 
                 const char *buf
                     = reinterpret_cast<const char*>(
