@@ -202,6 +202,10 @@ std::string getTextParam(XSQLVAR const *var)
     {
         size = var->sqllen;
     }
+    else if ((var->sqltype & ~1) == SQL_BLOB)
+    {
+        size = var->sqllen;
+    }
     else if ((var->sqltype & ~1) == SQL_SHORT)
     {
         return format_decimal<short>(var->sqldata, var->sqlscale);

@@ -274,6 +274,9 @@ struct firebird_blob_backend : details::blob_backend
         from_db_ = true;
     }
 
+    void assign(std::string data);
+    void assign(details::holder* h) SOCI_OVERRIDE;
+
     // BLOB id from in database
     ISC_QUAD bid_;
 

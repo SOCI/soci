@@ -109,6 +109,14 @@ std::size_t row::find_column(std::string const &name) const
     {
         std::ostringstream msg;
         msg << "Column '" << name << "' not found";
+        msg << " in [";
+        for(it = index_.begin(); it != index_.end();it++)
+        {
+            if (it != (index_.begin()))
+                msg << ", ";
+            msg << it->first;
+        }
+        msg << "]";
         throw soci_error(msg.str());
     }
 

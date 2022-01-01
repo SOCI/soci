@@ -22,6 +22,27 @@ firebird_blob_backend::~firebird_blob_backend()
     cleanUp();
 }
 
+void firebird_blob_backend::assign(std::string data)
+{
+    char *tmp = new char[data.size()];
+    
+    char * itr = tmp;
+    char * end_itr = tmp + static_cast<int>(data.size());
+    int idx = 0;
+
+    while (itr!=end_itr)
+    {
+        *itr++ = data[idx++];
+    }
+    this->assign(*reinterpret_cast<ISC_QUAD*>(tmp));
+    delete tmp;
+}
+
+void firebird_blob_backend::assign(details::holder* h)
+{
+    this->assign(h->get<std::string>());
+}
+
 std::size_t firebird_blob_backend::get_len()
 {
     if (from_db_ && bhp_ == 0)
@@ -157,7 +178,7 @@ void firebird_blob_backend::cleanUp()
     from_db_ = false;
     loaded_ = false;
     max_seg_size_ = 0;
-    data_.resize(0);
+    // data_.resize(0);
 
     if (bhp_ != 0)
     {

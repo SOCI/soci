@@ -706,8 +706,10 @@ void firebird_statement_backend::describe_column(int colNum,
             type = dt_long_long;
         }
         break;
-        /* case SQL_BLOB:
-        case SQL_ARRAY:*/
+        case SQL_BLOB:
+            type = dt_blob;
+            break;
+        /*case SQL_ARRAY:*/
     default:
         std::ostringstream msg;
         msg << "Type of column ["<< colNum << "] \"" << columnName

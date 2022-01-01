@@ -636,6 +636,74 @@ TEST_CASE("Firebird blobs", "[firebird][blob]")
     sql << "drop table test7";
 }
 
+TEST_CASE("Firebird blob reuse", "[firebird][blob][reuse]")
+{
+    soci::session sql(backEnd, connectString);
+
+    sql << "create table soci_test(id integer, img blob)";
+    sql.commit();
+
+
+    char buf[] = "abcdefghijklmnopqrstuvwxyz";
+
+    {
+        sql.begin();
+        blob b(sql);
+        b.write(0, buf, sizeof(buf));
+        CHECK(b.get_len() == sizeof(buf));
+        sql << "insert into soci_test(ID, IMG) values(1, :blob)", use(b);
+        sql << "insert into soci_test(ID, IMG) values(2, :blob)", use(b);
+        sql << "insert into soci_test(ID, IMG) values(3, :blob)", use(b);
+        sql << "insert into soci_test(ID, IMG) values(4, :blob)", use(b);
+        sql.commit();
+
+    }
+    {
+        sql.begin();
+        // now read blob back from database and make sure it has correct content and size
+        blob br(sql);
+        sql << "select img from soci_test where id = 3", into(br);
+        CHECK(br.get_len() == sizeof(buf));
+    }
+
+    sql << "drop table soci_test";
+}
+
+TEST_CASE("Firebird blob on a rowset", "[firebird][blob][rowset]")
+{
+    soci::session sql(backEnd, connectString);
+
+    sql << "create table soci_test(id integer, img blob)";
+    sql.commit();
+
+    char buf[] = "abcdefghijklmnopqrstuvwxyz";
+
+    // in PostgreSQL or Firebird, BLOB operations must be within transaction block
+    transaction tr(sql);
+
+    {
+        blob b(sql);
+        b.write(0, buf, sizeof(buf));
+        CHECK(b.get_len() == sizeof(buf));
+        sql << "insert into soci_test(id, img) values(1, :blob)", use(b);
+        sql << "insert into soci_test(id, img) values(2, :blob)", use(b);
+        sql << "insert into soci_test(id, img) values(3, :blob)", use(b);
+        sql << "insert into soci_test(id, img) values(4, :blob)", use(b);
+
+    }
+    {
+        rowset<row> rs = (sql.prepare << "select * from soci_test");
+        for(rowset<row>::iterator rsit = rs.begin(); rsit != rs.end(); rsit++)
+        {
+            row &r = *rsit;
+            soci::blob b = r.get<soci::blob>("IMG");
+            CHECK(b.get_len() == sizeof(buf));
+        }
+    }
+
+    sql << "drop table soci_test";
+}
+
 // named parameters
 TEST_CASE("Firebird named parameters", "[firebird][named-params]")
 {
