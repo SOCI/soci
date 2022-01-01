@@ -23,6 +23,11 @@ odbc_blob_backend::~odbc_blob_backend()
     // ...
 }
 
+void odbc_blob_backend::assign(details::holder* /*h*/)
+{ 
+    // ...
+}
+
 std::size_t odbc_blob_backend::get_len()
 {
     // ...
