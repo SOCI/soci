@@ -35,7 +35,7 @@ void firebird_blob_backend::assign(std::string data)
         *itr++ = data[idx++];
     }
     this->assign(*reinterpret_cast<ISC_QUAD*>(tmp));
-    delete tmp;
+    delete[] tmp;
 }
 
 void firebird_blob_backend::assign(details::holder* h)
