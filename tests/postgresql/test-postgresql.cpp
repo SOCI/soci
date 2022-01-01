@@ -176,6 +176,7 @@ TEST_CASE("PostgreSQL blob", "[postgresql][blob]")
 
             b.append(buf, sizeof(buf));
             CHECK(b.get_len() == 2 * sizeof(buf));
+            sql << "update soci_test set img=:blob where id = 7", use(b);
         }
         {
             blob b(sql);
@@ -215,6 +216,7 @@ TEST_CASE("PostgreSQL blob", "[postgresql][blob]")
 
             b.append(buf, sizeof(buf));
             CHECK(b.get_len() == 2 * sizeof(buf));
+            sql << "update soci_test set img=:blob where id = 7", use(b);
         }
         {
             blob b(sql);
@@ -228,6 +230,38 @@ TEST_CASE("PostgreSQL blob", "[postgresql][blob]")
         unsigned long oid;
         sql << "select img from soci_test where id = 7", into(oid);
         sql << "select lo_unlink(" << oid << ")";
+    }
+}
+
+TEST_CASE("PostgreSQL blob on a rowset", "[postgresql][blob][rowset]")
+{
+    soci::session sql(backEnd, connectString);
+
+    blob_table_creator tableCreator(sql);
+
+    char buf[] = "abcdefghijklmnopqrstuvwxyz";
+
+    // in PostgreSQL, BLOB operations must be within transaction block
+    transaction tr(sql);
+
+    {
+        blob b(sql);
+        b.write(0, buf, sizeof(buf));
+        CHECK(b.get_len() == sizeof(buf));
+        sql << "insert into soci_test(id, img) values(1, :blob)", use(b);
+        sql << "insert into soci_test(id, img) values(2, :blob)", use(b);
+        sql << "insert into soci_test(id, img) values(3, :blob)", use(b);
+        sql << "insert into soci_test(id, img) values(4, :blob)", use(b);
+
+    }
+    {
+        rowset<row> rs = (sql.prepare << "select * from soci_test");
+        for(rowset<row>::iterator rsit = rs.begin(); rsit != rs.end(); rsit++)
+        {
+            row &r = *rsit;
+            soci::blob b = r.get<soci::blob>("img");
+            CHECK(b.get_len() == sizeof(buf));
+        }
     }
 }
 

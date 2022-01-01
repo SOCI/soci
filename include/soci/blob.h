@@ -9,6 +9,7 @@
 #define SOCI_BLOB_H_INCLUDED
 
 #include "soci/soci-platform.h"
+#include "soci/type-holder.h"
 // std
 #include <cstddef>
 
@@ -30,6 +31,7 @@ public:
     blob(const blob& b) { this->backEnd_ = b.backEnd_; }
     ~blob();
 
+    void assign(details::holder* h);
     std::size_t get_len();
 
     // offset is backend-specific

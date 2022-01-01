@@ -27,6 +27,11 @@ empty_blob_backend::~empty_blob_backend()
     // ...
 }
 
+void empty_blob_backend::assign(details::holder* /*h*/)
+{
+    // ...
+}
+
 std::size_t empty_blob_backend::get_len()
 {
     // ...

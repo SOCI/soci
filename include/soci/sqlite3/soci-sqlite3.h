@@ -255,6 +255,12 @@ struct sqlite3_blob_backend : details::blob_backend
 
     ~sqlite3_blob_backend() SOCI_OVERRIDE;
 
+    void assign(std::string data);
+    void assign(details::holder* h) SOCI_OVERRIDE
+    {
+        this->assign(h->get<std::string>());
+    }
+
     std::size_t get_len() SOCI_OVERRIDE;
     std::size_t read(std::size_t offset, char *buf,
                              std::size_t toRead) SOCI_OVERRIDE;

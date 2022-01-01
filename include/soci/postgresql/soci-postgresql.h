@@ -326,6 +326,14 @@ struct postgresql_blob_backend : details::blob_backend
 
     ~postgresql_blob_backend() SOCI_OVERRIDE;
 
+    void save();
+
+    void assign(unsigned int const & oid);
+    void assign(details::holder* h) SOCI_OVERRIDE
+    {
+        this->assign(h->get<int>());
+    }
+
     std::size_t get_len() SOCI_OVERRIDE;
 
     std::size_t read(std::size_t offset, char * buf,
@@ -354,6 +362,20 @@ struct postgresql_blob_backend : details::blob_backend
 
     unsigned long oid_; // oid of the large object
     int fd_;            // descriptor of the large object
+
+    // BLOB id was fetched from database (true)
+    // or this is new BLOB
+    bool from_db_;
+protected:
+
+    int open(int mode);
+    int close();
+    void load();
+    void writeBuffer(std::size_t offset, char const * buf, std::size_t toWrite);
+
+    // buffer for BLOB data
+    std::vector<char> data_;
+    bool loaded_;
 };
 
 struct postgresql_session_backend : details::session_backend

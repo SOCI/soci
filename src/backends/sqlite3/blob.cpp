@@ -28,6 +28,11 @@ sqlite3_blob_backend::~sqlite3_blob_backend()
     }
 }
 
+void sqlite3_blob_backend::assign(std::string data)
+{
+    this->set_data(data.data(), data.size());
+}
+
 std::size_t sqlite3_blob_backend::get_len()
 {
     return len_;

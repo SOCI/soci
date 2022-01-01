@@ -19,6 +19,11 @@ blob::blob(session & s): backEnd_(s.make_blob_backend())
 blob::~blob()
 { }
 
+void blob::assign(details::holder* h)
+{
+    return backEnd_->assign(h);
+}
+
 std::size_t blob::get_len()
 {
     return backEnd_->get_len();

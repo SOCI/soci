@@ -139,8 +139,14 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
 
                 cxx_details::shared_ptr<postgresql_blob_backend> bbe = cxx_details::static_pointer_cast<postgresql_blob_backend>(b->get_backend());
 
-                std::size_t const bufSize
-                    = std::numeric_limits<unsigned long>::digits10 + 2;
+                if (NULL == bbe.get())
+                {
+                    throw soci_error("Can't get Postgres BLOB BackEnd");
+                }
+
+                bbe->save();
+
+                std::size_t const bufSize = std::numeric_limits<unsigned long>::digits10 + 2;
                 buf_ = new char[bufSize];
                 snprintf(buf_, bufSize, "%lu", bbe->oid_);
             }

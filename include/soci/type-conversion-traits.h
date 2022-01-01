@@ -37,32 +37,6 @@ struct type_conversion
     }
 };
 
-template <>
-struct type_conversion<blob>
-{
-    typedef std::string base_type;
-
-    static void from_base(base_type const & in, indicator ind, blob & out)
-    {
-        if (ind == i_null)
-        {
-            throw soci_error("Null value not allowed for this type");
-        }
-        
-        out.write(0, in.data(), in.size());
-    }
-
-    static void to_base(blob & in, base_type & out, indicator & ind)
-    {
-        char *tmp = new char[in.get_len()];
-        out.resize(in.get_len());
-        in.read(0, tmp, in.get_len());
-        
-        out = tmp;
-        ind = i_null;
-    }
-};
-
 } // namespace soci
 
 #endif // SOCI_TYPE_CONVERSION_TRAITS_H_INCLUDED

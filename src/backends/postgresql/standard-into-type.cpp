@@ -126,24 +126,11 @@ void postgresql_standard_into_type_backend::post_fetch(
                 unsigned long oid =
                     string_to_unsigned_integer<unsigned long>(buf);
 
-                int fd = lo_open(statement_.session_.conn_, oid,
-                    INV_READ | INV_WRITE);
-                if (fd == -1)
-                {
-                    throw soci_error("Cannot open the blob object.");
-                }
-
                 blob * b = static_cast<blob *>(data_);
 
                 cxx_details::shared_ptr<postgresql_blob_backend> bbe = cxx_details::static_pointer_cast<postgresql_blob_backend>(b->get_backend());
 
-                if (bbe->fd_ != -1)
-                {
-                    lo_close(statement_.session_.conn_, bbe->fd_);
-                }
-
-                bbe->fd_ = fd;
-                bbe->oid_ = oid;
+                bbe->assign(oid);
             }
             break;
         case x_xmltype:

@@ -123,9 +123,7 @@ blob row::get<blob>(std::size_t pos) const
         throw soci_error("soci::blob objects can be retrieved only by soci::rowset.");
     }
 
-    std::string const& baseVal = holders_.at(pos)->get<std::string>();
-
     blob ret(*session_);
-    type_conversion<blob>::from_base(baseVal, *indicators_.at(pos), ret);
+    ret.assign(holders_.at(pos));
     return ret;
 }

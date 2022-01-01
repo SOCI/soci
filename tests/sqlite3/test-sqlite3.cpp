@@ -113,6 +113,8 @@ TEST_CASE("SQLite blob on a rowset", "[sqlite][blob][rowset]")
 
     char buf[] = "abcdefghijklmnopqrstuvwxyz";
 
+    // in PostgreSQL, BLOB operations must be within transaction block
+    transaction tr(sql);
 
     {
         blob b(sql);
@@ -127,9 +129,9 @@ TEST_CASE("SQLite blob on a rowset", "[sqlite][blob][rowset]")
         rowset<row> rs = (sql.prepare << "select * from soci_test");
         for(rowset<row>::iterator rsit = rs.begin(); rsit != rs.end(); rsit++)
         {
-            // row &r = *rsit;
-            // soci::blob b = r.get<soci::blob>("img");
-            // CHECK(b.get_len() == sizeof(buf));
+            row &r = *rsit;
+            soci::blob b = r.get<soci::blob>("img");
+            CHECK(b.get_len() == sizeof(buf));
         }
     }
 }

@@ -9,6 +9,7 @@
 #define SOCI_BACKEND_H_INCLUDED
 
 #include "soci/soci-platform.h"
+#include "soci/type-holder.h"
 #include "soci/error.h"
 // std
 #include <cstddef>
@@ -225,6 +226,7 @@ public:
     blob_backend() {}
     virtual ~blob_backend() {}
 
+    virtual void assign(details::holder* h) = 0;
     virtual std::size_t get_len() = 0;
 
     virtual std::size_t read(std::size_t offset, char* buf,
