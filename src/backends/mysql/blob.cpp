@@ -33,11 +33,11 @@ void mysql_blob_backend::assign(details::holder* /*h*/)
     throw soci_error("BLOBs are not supported.");
 }
 
-void mysql_blob_backend::read(blob &b)
+void mysql_blob_backend::read(blob& /*b*/)
 {
     throw soci_error("BLOBs are not supported.");
 }
-void mysql_blob_backend::write(blob &b)
+void mysql_blob_backend::write(blob& /*b*/)
 {
     throw soci_error("BLOBs are not supported.");
 }

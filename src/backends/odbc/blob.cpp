@@ -28,12 +28,12 @@ void odbc_blob_backend::assign(details::holder* /*h*/)
     // ...
 }
 
-void odbc_blob_backend::read(blob &b)
+void odbc_blob_backend::read(blob& /*b*/)
 {
     // ...
 }
 
-void odbc_blob_backend::write(blob &b)
+void odbc_blob_backend::write(blob& /*b*/)
 {
     // ...
 }

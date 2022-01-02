@@ -33,12 +33,12 @@ void db2_blob_backend::assign(details::holder* /*h*/)
     // ...
 }
 
-void db2_blob_backend::read(blob &b)
+void db2_blob_backend::read(blob& /*b*/)
 {
     // ...
 }
 
-void db2_blob_backend::write(blob &b)
+void db2_blob_backend::write(blob& /*b*/)
 {
     // ...
 }

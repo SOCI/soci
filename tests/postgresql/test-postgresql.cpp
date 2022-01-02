@@ -151,7 +151,7 @@ struct blob_table_creator : public table_creator_base
     }
 };
 
-TEST_CASE("PostgreSQL blob", "[postgresql][blob]")
+TEST_CASE("PostgreSQL blob with session init", "[postgresql][blob-session]")
 {
     {
         soci::session sql(backEnd, connectString);
