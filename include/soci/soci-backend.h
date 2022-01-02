@@ -11,6 +11,7 @@
 #include "soci/soci-platform.h"
 #include "soci/type-holder.h"
 #include "soci/error.h"
+#include "soci/blob.h"
 // std
 #include <cstddef>
 #include <map>
@@ -227,6 +228,10 @@ public:
     virtual ~blob_backend() {}
 
     virtual void assign(details::holder* h) = 0;
+
+    virtual void read(blob &b) = 0;
+    virtual void write(blob &b) = 0;
+
     virtual std::size_t get_len() = 0;
 
     virtual std::size_t read(std::size_t offset, char* buf,

@@ -13,13 +13,89 @@ using namespace soci;
 using namespace soci::details::firebird;
 
 firebird_blob_backend::firebird_blob_backend(firebird_session_backend &session)
-	  : session_(session), bid_(), from_db_(false), bhp_(0), data_(),
-		loaded_(false), max_seg_size_(0)
-{}
+	  : session_(session), bid_(), bhp_(0), max_seg_size_(0)
+{ 
+    bid_.gds_quad_high = 0; bid_.gds_quad_low = 0;
+}
 
 firebird_blob_backend::~firebird_blob_backend()
 {
-    cleanUp();
+    close();
+}
+
+void firebird_blob_backend::open()
+{
+    if (bhp_ != 0)
+    {
+        // BLOB already opened
+        return;
+    }
+
+    ISC_STATUS stat[20];
+
+    if ((bid_.gds_quad_high == 0) && (bid_.gds_quad_low == 0))
+    {
+        if (bhp_ != 0)
+        {
+            if (isc_close_blob(stat, &bhp_))
+            {
+                throw_iscerror(stat);
+            }
+            bhp_ = 0;
+        }
+        
+        // create new blob
+        if (isc_create_blob(stat, &session_.dbhp_, session_.current_transaction(),
+                            &bhp_, &bid_))
+        {
+            bhp_ = 0L;
+            throw_iscerror(stat);
+        }
+        return;
+    }
+
+    // Or open an existent one
+    if (isc_open_blob2(stat, &session_.dbhp_, session_.current_transaction(),
+                       &bhp_, &bid_, 0, NULL))
+    {
+        bhp_ = 0L;
+        throw_iscerror(stat);
+    }
+}
+
+void firebird_blob_backend::close()
+{
+    if (bhp_ == 0)
+    {
+        return;
+    }
+
+    // close blob
+    ISC_STATUS stat[20];
+    if (isc_close_blob(stat, &bhp_))
+    {
+        throw_iscerror(stat);
+    }
+    bhp_ = 0;
+    max_seg_size_ = 0;
+}
+
+void firebird_blob_backend::read(blob& b) 
+{
+    b.resize(this->get_len());
+    this->read_from_start(&b[0], b.size());
+}
+
+void firebird_blob_backend::write(blob& b) 
+{
+    this->write_from_start(&b[0], b.size());
+}
+
+void firebird_blob_backend::assign(ISC_QUAD const & bid)
+{
+    close();
+
+    bid_ = bid;
 }
 
 void firebird_blob_backend::assign(std::string data)
@@ -45,165 +121,22 @@ void firebird_blob_backend::assign(details::holder* h)
 
 std::size_t firebird_blob_backend::get_len()
 {
-    if (from_db_ && bhp_ == 0)
-    {
-        open();
-    }
-
-    return data_.size();
+    this->open();
+    std::size_t ret = static_cast<std::size_t>(this->getBLOBInfo());
+    this->close();
+    return ret;
 }
 
 std::size_t firebird_blob_backend::read(
-    std::size_t offset, char * buf, std::size_t toRead)
+    std::size_t /*offset*/, char * buf, std::size_t toRead)
 {
-    if (from_db_ && (loaded_ == false))
-    {
-        // this is blob fetched from database, but not loaded yet
-        load();
-    }
-
-    std::size_t size = data_.size();
-
-    if (offset > size)
-    {
-        throw soci_error("Can't read past-the-end of BLOB data");
-    }
-
-    char * itr = buf;
-    std::size_t limit = size - offset < toRead ? size - offset : toRead;
-    std::size_t index = 0;
-
-    while (index < limit)
-    {
-        *itr = data_[offset+index];
-        ++index;
-        ++itr;
-    }
-
-    return limit;
-}
-
-std::size_t firebird_blob_backend::write(std::size_t offset, char const * buf,
-                                       std::size_t toWrite)
-{
-    if (from_db_ && (loaded_ == false))
-    {
-        // this is blob fetched from database, but not loaded yet
-        load();
-    }
-
-    std::size_t size = data_.size();
-
-    if (offset > size)
-    {
-        throw soci_error("Can't write past-the-end of BLOB data");
-    }
-
-    // make sure there is enough space in buffer
-    if (toWrite > (size - offset))
-    {
-        data_.resize(size + (toWrite - (size - offset)));
-    }
-
-    writeBuffer(offset, buf, toWrite);
-
-    return toWrite;
-}
-
-std::size_t firebird_blob_backend::append(
-    char const * buf, std::size_t toWrite)
-{
-    if (from_db_ && (loaded_ == false))
-    {
-        // this is blob fetched from database, but not loaded yet
-        load();
-    }
-
-    std::size_t size = data_.size();
-    data_.resize(size + toWrite);
-
-    writeBuffer(size, buf, toWrite);
-
-    return toWrite;
-}
-
-void firebird_blob_backend::trim(std::size_t newLen)
-{
-    if (from_db_ && (loaded_ == false))
-    {
-        // this is blob fetched from database, but not loaded yet
-        load();
-    }
-
-    data_.resize(newLen);
-}
-
-void firebird_blob_backend::writeBuffer(std::size_t offset,
-                                      char const * buf, std::size_t toWrite)
-{
-    char const * itr = buf;
-    char const * end_itr = buf + toWrite;
-
-    while (itr!=end_itr)
-    {
-        data_[offset++] = *itr++;
-    }
-}
-
-void firebird_blob_backend::open()
-{
-    if (bhp_ != 0)
-    {
-        // BLOB already opened
-        return;
-    }
-
-    ISC_STATUS stat[20];
-
-    if (isc_open_blob2(stat, &session_.dbhp_, session_.current_transaction(),
-                       &bhp_, &bid_, 0, NULL))
-    {
-        bhp_ = 0L;
-        throw_iscerror(stat);
-    }
-
-    // get basic blob info
-    long blob_size = getBLOBInfo();
-
-    data_.resize(blob_size);
-}
-
-void firebird_blob_backend::cleanUp()
-{
-    from_db_ = false;
-    loaded_ = false;
-    max_seg_size_ = 0;
-    // data_.resize(0);
-
-    if (bhp_ != 0)
-    {
-        // close blob
-        ISC_STATUS stat[20];
-        if (isc_close_blob(stat, &bhp_))
-        {
-            throw_iscerror(stat);
-        }
-        bhp_ = 0;
-    }
-}
-
-// loads blob data into internal buffer
-void firebird_blob_backend::load()
-{
-    if (bhp_ == 0)
-    {
-        open();
-    }
+    this->open();
+    this->getBLOBInfo();
 
     // The blob is empty.
-    if (data_.empty())
+    if (toRead == 0)
     {
-        return;
+        return toRead;
     }
 
     ISC_STATUS stat[20];
@@ -217,11 +150,11 @@ void firebird_blob_backend::load()
         // next segment of data
         // data_ is large-enough because we know total size of blob
         isc_get_segment(stat, &bhp_, &bytes, static_cast<short>(max_seg_size_),
-                        &data_[total_bytes]);
+                        buf  + total_bytes);
 
         total_bytes += bytes;
 
-        if (total_bytes == data_.size())
+        if (total_bytes == toRead)
         {
             // we have all BLOB data
             keep_reading = false;
@@ -245,37 +178,20 @@ void firebird_blob_backend::load()
     }
     while (keep_reading);
 
-    loaded_ = true;
+    this->close();
+    return total_bytes;
 }
 
-// this method saves BLOB content to database
-// (a new BLOB will be created at this point)
-// BLOB will be closed after save.
-void firebird_blob_backend::save()
+std::size_t firebird_blob_backend::write(
+    std::size_t offset, char const * buf, std::size_t toWrite)
 {
-    // close old blob if necessary
+    this->open();
+    this->getBLOBInfo();
+
     ISC_STATUS stat[20];
-    if (bhp_ != 0)
-    {
-        if (isc_close_blob(stat, &bhp_))
-        {
-            throw_iscerror(stat);
-        }
-        bhp_ = 0;
-    }
 
-    // create new blob
-    if (isc_create_blob(stat, &session_.dbhp_, session_.current_transaction(),
-                        &bhp_, &bid_))
+    if (toWrite > 0)
     {
-        throw_iscerror(stat);
-    }
-
-    if (data_.size() > 0)
-    {
-        // write data
-        size_t size = data_.size();
-        size_t offset = 0;
         // Segment Size : Specifying the BLOB segment is throwback to times past, when applications for working
         // with BLOB data were written in C(Embedded SQL) with the help of the gpre pre - compiler.
         // Nowadays, it is effectively irrelevant.The segment size for BLOB data is determined by the client side and is usually larger than the data page size,
@@ -283,19 +199,55 @@ void firebird_blob_backend::save()
         do
         {
             unsigned short segmentSize = 0xFFFF; //last unsigned short number
-            if (size - offset < segmentSize) //if content size is less than max segment size or last data segment is about to be written
-                segmentSize = static_cast<unsigned short>(size - offset);
+            if (toWrite - offset < segmentSize) //if content size is less than max segment size or last data segment is about to be written
+                segmentSize = static_cast<unsigned short>(toWrite - offset);
             //write segment
-            if (isc_put_segment(stat, &bhp_, segmentSize, &data_[0]+offset))
+            if (isc_put_segment(stat, &bhp_, segmentSize, buf + offset))
             {
                 throw_iscerror(stat);
             }
             offset += segmentSize;
         }
-        while (offset < size);
+        while (offset < toWrite);
     }
-    cleanUp();
-    from_db_ = true;
+
+    this->close();
+    return toWrite;
+}
+
+std::size_t firebird_blob_backend::append(
+    char const * buf, std::size_t toWrite)
+{
+    this->open();
+    std::size_t cur_size = static_cast<std::size_t>(this->getBLOBInfo());
+    std::vector<char> tmp(cur_size + toWrite);
+
+    this->read_from_start(&tmp[0], cur_size);
+
+    memcpy(&tmp[cur_size], buf, toWrite);
+
+    this->write_from_start(&tmp[0], tmp.size());
+
+    this->close();
+    return tmp.size();
+}
+
+void firebird_blob_backend::trim(std::size_t newLen)
+{
+    this->open();
+    std::size_t cur_size = static_cast<std::size_t>(this->getBLOBInfo());
+
+    if (cur_size < newLen)
+    {
+        throw soci_error("The trimmed size is bigger and the current blob size.");
+    }
+
+    std::vector<char> tmp(cur_size);
+    this->read_from_start(&tmp[0], cur_size);
+    tmp.resize(newLen);
+    this->write_from_start(&tmp[0], tmp.size());
+
+    this->close();
 }
 
 // retrives number of segments and total length of BLOB

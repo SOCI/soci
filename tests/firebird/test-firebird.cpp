@@ -501,7 +501,7 @@ TEST_CASE("Firebird bulk operations", "[firebird][bulk]")
 }
 
 // blob test
-TEST_CASE("Firebird blobs", "[firebird][blob]")
+TEST_CASE("Firebird blobs with session init", "[firebird][blob]")
 {
     soci::session sql(backEnd, connectString);
 
@@ -621,6 +621,141 @@ TEST_CASE("Firebird blobs", "[firebird][blob]")
         const int blobSize = 65536; //max segment size is 65535(unsigned short)
         std::vector<char> data(blobSize);
         blob b(sql);
+        b.write(0, data.data(), blobSize);
+        sql << "insert into test7(id, img) values(3,?)", use(b);
+
+        //now read blob back from database and make sure it has correct content and size
+        blob br(sql);
+        sql << "select img from test7 where id = 3", into(br);
+        std::vector<char> data2(br.get_len());
+        if(br.get_len()>0)
+            br.read(0, data2.data(), br.get_len());
+        CHECK(data == data2);
+    }
+
+    sql << "drop table test7";
+}
+
+TEST_CASE("Firebird blobs", "[firebird][blob]")
+{
+    soci::session sql(backEnd, connectString);
+
+    try
+    {
+        sql << "drop table test7";
+    }
+    catch (std::runtime_error &)
+    {} // ignore if error
+
+    sql << "create table test7(id integer, img blob)";
+    sql.commit();
+
+    sql.begin();
+    {
+        // verify empty blob
+        blob b;
+        indicator ind;
+
+        sql << "insert into test7(id, img) values(1,?)", use(b);
+        sql << "select img from test7 where id = 1", into(b, ind);
+
+        CHECK(ind == i_ok);
+        CHECK(b.get_len() == 0);
+
+        sql << "delete from test7";
+    }
+
+    {
+        // create a new blob
+        blob b;
+
+        char str1[] = "Hello";
+        b.write(0, str1, strlen(str1));
+
+        char str2[20];
+        std::size_t i = b.read(3, str2, 2);
+        str2[i] = '\0';
+        CHECK(str2[0] == 'l');
+        CHECK(str2[1] == 'o');
+        CHECK(str2[2] == '\0');
+
+        char str3[] = ", Firebird!";
+        b.append(str3, strlen(str3));
+
+        sql << "insert into test7(id, img) values(1,?)", use(b);
+    }
+
+    {
+        // read & update blob
+        blob b;
+
+        sql << "select img from test7 where id = 1", into(b);
+
+        std::vector<char> text(b.get_len());
+        b.read(0, &text[0], b.get_len());
+        CHECK(strncmp(&text[0], "Hello, Firebird!", b.get_len()) == 0);
+
+        char str1[] = "FIREBIRD";
+        b.write(7, str1, strlen(str1));
+
+        // after modification blob must be written to database
+        sql << "update test7 set img=? where id=1", use(b);
+    }
+
+    {
+        // read blob from database, modify and write to another record
+        blob b;
+
+        sql << "select img from test7 where id = 1", into(b);
+
+        std::vector<char> text(b.get_len());
+        b.read(0, &text[0], b.get_len());
+
+        char str1[] = "HELLO";
+        b.write(0, str1, strlen(str1));
+
+        b.read(0, &text[0], b.get_len());
+        CHECK(strncmp(&text[0], "HELLO, FIREBIRD!", b.get_len()) == 0);
+
+        b.trim(5);
+        sql << "insert into test7(id, img) values(2,?)", use(b);
+    }
+
+    {
+        blob b;
+        statement st = (sql.prepare << "select img from test7", into(b));
+
+        st.execute();
+
+        st.fetch();
+        std::vector<char> text(b.get_len());
+        b.read(0, &text[0], b.get_len());
+        CHECK(strncmp(&text[0], "Hello, FIREBIRD!", b.get_len()) == 0);
+
+        st.fetch();
+        text.resize(b.get_len());
+        b.read(0, &text[0], b.get_len());
+        CHECK(strncmp(&text[0], "HELLO", b.get_len()) == 0);
+    }
+
+    {
+        // delete blob
+        blob b;
+        indicator ind=i_null;
+        sql << "update test7 set img=? where id = 1", use(b, ind);
+
+        sql << "select img from test7 where id = 2", into(b, ind);
+        CHECK(ind==i_ok);
+
+        sql << "select img from test7 where id = 1", into(b, ind);
+        CHECK(ind==i_null);
+    }
+
+    {
+        //create large blob
+        const int blobSize = 65536; //max segment size is 65535(unsigned short)
+        std::vector<char> data(blobSize);
+        blob b;
         b.write(0, data.data(), blobSize);
         sql << "insert into test7(id, img) values(3,?)", use(b);
 

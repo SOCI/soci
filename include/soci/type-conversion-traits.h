@@ -9,7 +9,6 @@
 #define SOCI_TYPE_CONVERSION_TRAITS_H_INCLUDED
 
 #include "soci/soci-backend.h"
-#include "soci/blob.h"
 
 namespace soci
 {

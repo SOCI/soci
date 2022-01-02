@@ -32,6 +32,16 @@ void empty_blob_backend::assign(details::holder* /*h*/)
     // ...
 }
 
+void empty_blob_backend::read(blob& /*b*/)
+{
+    // ...
+}
+
+void empty_blob_backend::write(blob& /*b*/)
+{
+    // ...
+}
+
 std::size_t empty_blob_backend::get_len()
 {
     // ...

@@ -135,20 +135,22 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
             break;
         case x_blob:
             {
+                postgresql_blob_backend * bbe
+                      = dynamic_cast<postgresql_blob_backend *>(statement_.session_.make_blob_backend());
+
+                if (bbe == NULL)
+                 {
+                     throw soci_error("Can't get Postgresql BLOB BackEnd");
+                 }
+
                 blob * b = static_cast<blob *>(data_);
-
-                cxx_details::shared_ptr<postgresql_blob_backend> bbe = cxx_details::static_pointer_cast<postgresql_blob_backend>(b->get_backend());
-
-                if (NULL == bbe.get())
-                {
-                    throw soci_error("Can't get Postgres BLOB BackEnd");
-                }
-
-                bbe->save();
+                bbe->write(*b);
 
                 std::size_t const bufSize = std::numeric_limits<unsigned long>::digits10 + 2;
                 buf_ = new char[bufSize];
                 snprintf(buf_, bufSize, "%lu", bbe->oid_);
+
+                delete bbe;
             }
             break;
         case x_xmltype:

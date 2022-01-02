@@ -13,51 +13,72 @@
 
 using namespace soci;
 
+blob::blob(): backEnd_(NULL)
+{ }
+
 blob::blob(session & s): backEnd_(s.make_blob_backend())
 { }
 
 blob::~blob()
-{ }
-
-void blob::assign(details::holder* h)
 {
-    return backEnd_->assign(h);
+    delete backEnd_;
 }
 
 std::size_t blob::get_len()
 {
-    return backEnd_->get_len();
+    return data_.size();
 }
 
-std::size_t blob::read(std::size_t offset, char *buf, std::size_t toRead)
+std::size_t blob::read(std::size_t offset, char * buf, std::size_t toRead)
 {
-    return backEnd_->read(offset, buf, toRead);
+    std::size_t size = data_.size();
+
+    if (size < offset)
+    {
+        throw soci_error("Can't read past-the-end of BLOB data");
+    }
+
+    std::size_t limit = std::min(size - offset, toRead);
+
+    memcpy(buf, &data_[offset], limit);
+    
+    return limit;
 }
 
-std::size_t blob::read_from_start(char * buf, std::size_t toRead,
-    std::size_t offset)
+std::size_t blob::write(std::size_t offset, char const * buf, std::size_t toWrite)
 {
-    return backEnd_->read_from_start(buf, toRead, offset);
-}
+    std::size_t size = data_.size();
 
-std::size_t blob::write(
-    std::size_t offset, char const * buf, std::size_t toWrite)
-{
-    return backEnd_->write(offset, buf, toWrite);
-}
+    if (offset > size)
+    {
+        throw soci_error("Can't write past-the-end of BLOB data");
+    }
 
-std::size_t blob::write_from_start(const char * buf, std::size_t toWrite,
-    std::size_t offset)
-{
-    return backEnd_->write_from_start(buf, toWrite, offset);
+    // make sure there is enough space in buffer
+    if (toWrite > (size - offset))
+    {
+        data_.resize(size + (toWrite - (size - offset)));
+    }
+
+    memcpy(&data_[offset], buf, toWrite);
+
+    return toWrite;
 }
 
 std::size_t blob::append(char const * buf, std::size_t toWrite)
 {
-    return backEnd_->append(buf, toWrite);
+    std::size_t size = data_.size();
+    data_.resize(size + toWrite);
+
+    memcpy(&data_[size], buf, toWrite);
+
+    return toWrite;
 }
 
 void blob::trim(std::size_t newLen)
 {
-    backEnd_->trim(newLen);
+    if(newLen < data_.size())
+    {
+        data_.resize(newLen);
+    }
 }

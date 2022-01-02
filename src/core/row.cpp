@@ -7,6 +7,7 @@
 
 #define SOCI_SOURCE
 #include "soci/row.h"
+#include "soci/session.h"
 
 #include <cstddef>
 #include <cctype>
@@ -131,7 +132,12 @@ blob row::get<blob>(std::size_t pos) const
         throw soci_error("soci::blob objects can be retrieved only by soci::rowset.");
     }
 
-    blob ret(*session_);
-    ret.assign(holders_.at(pos));
+    blob_backend* bbe = session_->make_blob_backend();
+    bbe->assign(holders_.at(pos));
+
+    blob ret;
+    bbe->read(ret);
+    delete bbe;
+
     return ret;
 }

@@ -123,14 +123,23 @@ void postgresql_standard_into_type_backend::post_fetch(
             break;
         case x_blob:
             {
+                postgresql_blob_backend * bbe
+                      = dynamic_cast<postgresql_blob_backend *>(statement_.session_.make_blob_backend());
+                
+                if (bbe == NULL)
+                 {
+                     throw soci_error("Can't get Postgresql BLOB BackEnd");
+                 }
+
                 unsigned long oid =
                     string_to_unsigned_integer<unsigned long>(buf);
 
-                blob * b = static_cast<blob *>(data_);
-
-                cxx_details::shared_ptr<postgresql_blob_backend> bbe = cxx_details::static_pointer_cast<postgresql_blob_backend>(b->get_backend());
-
                 bbe->assign(oid);
+
+                blob * b = static_cast<blob *>(data_);
+                bbe->read(*b);
+
+                delete bbe;
             }
             break;
         case x_xmltype:

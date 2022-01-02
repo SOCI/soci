@@ -136,17 +136,20 @@ void firebird_standard_use_type_backend::exchangeData()
             // cases that require special handling
         case x_blob:
             {
-                blob *b = static_cast<blob*>(data_);
-
-                cxx_details::shared_ptr<firebird_blob_backend> bbe = cxx_details::static_pointer_cast<firebird_blob_backend>(b->get_backend());
-
-                if (NULL == bbe.get())
+                firebird_blob_backend * bbe
+                      = dynamic_cast<firebird_blob_backend *>(statement_.session_.make_blob_backend());
+             
+                if (bbe == NULL)
                 {
                     throw soci_error("Can't get Firebid BLOB BackEnd");
                 }
 
-                bbe->save();
+                blob *b = static_cast<blob*>(data_);
+                bbe->write(*b);
+
                 memcpy(buf_, &bbe->bid_, var->sqllen);
+
+                delete bbe;
             }
             break;
 
@@ -170,7 +173,6 @@ void firebird_standard_use_type_backend::copy_to_blob(const std::string& in)
     else
         blob_ = new firebird_blob_backend(statement_.session_);
     blob_->append(in.c_str(), in.length());
-    blob_->save();
     memcpy(buf_, &blob_->bid_, sizeof(blob_->bid_));
 }
 

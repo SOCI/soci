@@ -151,17 +151,20 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
 
             case x_blob:
             {
+                sqlite3_blob_backend * bbe
+                      = dynamic_cast<sqlite3_blob_backend *>(statement_.session_.make_blob_backend());
+
+                if (bbe == NULL)
+                {
+                    throw soci_error("Can't get SQLite3 BLOB BackEnd");
+                }
+                
+                bbe->assign(&statement_, pos);
+
                 blob *b = static_cast<blob *>(data_);
+                bbe->read(*b);
 
-                cxx_details::shared_ptr<sqlite3_blob_backend> bbe = cxx_details::static_pointer_cast<sqlite3_blob_backend>(b->get_backend());
-
-                const char *buf
-                    = reinterpret_cast<const char*>(
-                        sqlite3_column_blob(statement_.stmt_, pos)
-                    );
-
-                int len = sqlite3_column_bytes(statement_.stmt_, pos);
-                bbe->set_data(buf, len);
+                delete bbe;
                 break;
             }
 

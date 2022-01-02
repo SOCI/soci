@@ -232,6 +232,88 @@ TEST_CASE("PostgreSQL blob", "[postgresql][blob]")
         sql << "select lo_unlink(" << oid << ")";
     }
 }
+ 
+TEST_CASE("PostgreSQL blob", "[postgresql][blob]")
+{
+    {
+        soci::session sql(backEnd, connectString);
+
+        blob_table_creator tableCreator(sql);
+
+        char buf[] = "abcdefghijklmnopqrstuvwxyz";
+
+        sql << "insert into soci_test(id, img) values(7, lo_creat(-1))";
+
+        // in PostgreSQL, BLOB operations must be within transaction block
+        transaction tr(sql);
+
+        {
+            blob b;
+
+            sql << "select img from soci_test where id = 7", into(b);
+            CHECK(b.get_len() == 0);
+
+            b.write(0, buf, sizeof(buf));
+            CHECK(b.get_len() == sizeof(buf));
+
+            b.append(buf, sizeof(buf));
+            CHECK(b.get_len() == 2 * sizeof(buf));
+            sql << "update soci_test set img=:blob where id = 7", use(b);
+        }
+        {
+            blob b;
+            sql << "select img from soci_test where id = 7", into(b);
+            CHECK(b.get_len() == 2 * sizeof(buf));
+            char buf2[100];
+            b.read(0, buf2, 10);
+            CHECK(std::strncmp(buf2, "abcdefghij", 10) == 0);
+        }
+
+        unsigned long oid;
+        sql << "select img from soci_test where id = 7", into(oid);
+        sql << "select lo_unlink(" << oid << ")";
+    }
+
+    // additional sibling test for read_from_start and write_from_start
+    {
+        soci::session sql(backEnd, connectString);
+
+        blob_table_creator tableCreator(sql);
+
+        char buf[] = "abcdefghijklmnopqrstuvwxyz";
+
+        sql << "insert into soci_test(id, img) values(7, lo_creat(-1))";
+
+        // in PostgreSQL, BLOB operations must be within transaction block
+        transaction tr(sql);
+
+        {
+            blob b(sql);
+
+            sql << "select img from soci_test where id = 7", into(b);
+            CHECK(b.get_len() == 0);
+
+            b.write_from_start(buf, sizeof(buf));
+            CHECK(b.get_len() == sizeof(buf));
+
+            b.append(buf, sizeof(buf));
+            CHECK(b.get_len() == 2 * sizeof(buf));
+            sql << "update soci_test set img=:blob where id = 7", use(b);
+        }
+        {
+            blob b(sql);
+            sql << "select img from soci_test where id = 7", into(b);
+            CHECK(b.get_len() == 2 * sizeof(buf));
+            char buf2[100];
+            b.read_from_start(buf2, 10);
+            CHECK(std::strncmp(buf2, "abcdefghij", 10) == 0);
+        }
+
+        unsigned long oid;
+        sql << "select img from soci_test where id = 7", into(oid);
+        sql << "select lo_unlink(" << oid << ")";
+    }
+}
 
 TEST_CASE("PostgreSQL blob on a rowset", "[postgresql][blob][rowset]")
 {

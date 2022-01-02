@@ -175,7 +175,6 @@ void firebird_vector_use_type_backend::copy_to_blob(const std::string &in)
 
     blob_ = new firebird_blob_backend(statement_.session_);
     blob_->append(in.c_str(), in.length());
-    blob_->save();
     memcpy(buf_, &blob_->bid_, sizeof(blob_->bid_));
 }
 

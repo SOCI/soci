@@ -14,110 +14,123 @@
 using namespace soci;
 
 sqlite3_blob_backend::sqlite3_blob_backend(sqlite3_session_backend &session)
-    : session_(session), buf_(0), len_(0)
-{
-}
+    : session_(session), data_(), statement_(NULL), pos_(-1)
+{ }
 
 sqlite3_blob_backend::~sqlite3_blob_backend()
+{ }
+
+void sqlite3_blob_backend::assign(sqlite3_statement_backend *statement, int pos)
 {
-    if (buf_)
-    {
-        delete [] buf_;
-        buf_ = 0;
-        len_ = 0;
-    }
+    statement_ = statement;
+    pos_ = pos;
 }
 
 void sqlite3_blob_backend::assign(std::string data)
 {
-    this->set_data(data.data(), data.size());
+    // A row is trying to retrieve a BLOB, while for SQLite3, the BLOB is the string itself.
+    data_ = data;
+}
+
+void sqlite3_blob_backend::assign(details::holder* h)
+{
+    this->assign(h->get<std::string>());
+}
+
+void sqlite3_blob_backend::read(blob& b)
+{
+    if (statement_ != NULL)
+    {
+        b.resize(this->get_len());
+        this->read_from_start(&b[0], b.size());
+    }
+    else if(!data_.empty())
+    {
+        b.resize(data_.size());
+        memcpy(&b[0], &data_[0], data_.size());
+    }
+}
+
+void sqlite3_blob_backend::write(blob& b)
+{
+    this->write_from_start(&b[0], b.size());
 }
 
 std::size_t sqlite3_blob_backend::get_len()
 {
-    return len_;
+    return static_cast<std::size_t>(sqlite3_column_bytes(statement_->stmt_, pos_));
 }
 
 std::size_t sqlite3_blob_backend::read(
     std::size_t offset, char * buf, std::size_t toRead)
 {
-    size_t r = toRead;
+    const char *buf_
+        = reinterpret_cast<const char*>(
+            sqlite3_column_blob(statement_->stmt_, pos_)
+        );
+        
+    std::size_t cur_size = this->get_len();
 
-    // make sure that we don't try to read
-    // past the end of the data
-    if (r > len_ - offset)
-    {
-        r = len_ - offset;
-    }
+    std::size_t newLen = (std::min)(cur_size - offset, toRead);
 
-    memcpy(buf, buf_ + offset, r);
+    memcpy(buf + offset, buf_, newLen);
 
-    return r;
+    return newLen;
 }
 
 
 std::size_t sqlite3_blob_backend::write(
-    std::size_t offset, char const * buf,
+    std::size_t /*offset*/, char const * buf,
     std::size_t toWrite)
 {
-    const char* oldBuf = buf_;
-    std::size_t oldLen = len_;
-    len_ = (std::max)(len_, offset + toWrite);
+    sqlite3_column &col = statement_->useData_[0][pos_];
 
-    buf_ = new char[len_];
+    col.buffer_.constData_ = buf;
+    col.buffer_.size_ = toWrite;
 
-    if (oldBuf)
-    {
-        // we need to copy both old and new buffers
-        // it is possible that the new does not
-        // completely cover the old
-        memcpy(buf_, oldBuf, oldLen);
-        delete [] oldBuf;
-    }
-    memcpy(buf_ + offset, buf, toWrite);
-
-    return len_;
+    return toWrite;
 }
 
 
 std::size_t sqlite3_blob_backend::append(
     char const * buf, std::size_t toWrite)
 {
-    const char* oldBuf = buf_;
+    const char *oldBuf
+        = reinterpret_cast<const char*>(
+            sqlite3_column_blob(statement_->stmt_, pos_)
+        );
 
-    buf_ = new char[len_ + toWrite];
+    std::size_t cur_size = this->get_len();
+    std::size_t new_size = cur_size + toWrite;
 
-    memcpy(buf_, oldBuf, len_);
-
-    memcpy(buf_ + len_, buf, toWrite);
-
-    delete [] oldBuf;
-
-    len_ += toWrite;
-
-    return len_;
+    char* tmp = new char[new_size];
+    memcpy(tmp, oldBuf, cur_size);
+    memcpy(tmp+cur_size, buf, toWrite);
+    this->write(0, tmp, new_size);
+    delete[] tmp;
+    
+    return new_size;
 }
 
 
 void sqlite3_blob_backend::trim(std::size_t newLen)
 {
-    const char* oldBuf = buf_;
-    len_ = newLen;
+    std::size_t cur_size = this->get_len();
 
-    buf_ = new char[len_];
-
-    memcpy(buf_, oldBuf, len_);
-
-    delete [] oldBuf;
-}
-
-std::size_t sqlite3_blob_backend::set_data(char const *buf, std::size_t toWrite)
-{
-    if (buf_)
+    if (cur_size < newLen)
     {
-        delete [] buf_;
-        buf_ = 0;
-        len_ = 0;
+        throw soci_error("The trimmed size is bigger and the current blob size.");
     }
-    return write(0, buf, toWrite);
+    
+    const char *oldBuf
+        = reinterpret_cast<const char*>(
+            sqlite3_column_blob(statement_->stmt_, pos_)
+        );
+
+    char* tmp = new char[newLen];
+
+    memcpy(tmp, oldBuf, newLen);
+    this->write(0, tmp, newLen);
+
+    delete [] tmp;
 }

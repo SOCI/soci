@@ -24,7 +24,7 @@ using namespace soci::details;
 
 postgresql_blob_backend::postgresql_blob_backend(
     postgresql_session_backend & session)
-    : session_(session), oid_(0u), fd_(-1), from_db_(false), loaded_(false)
+    : session_(session), oid_(0u), fd_(-1)
 { }
 
 postgresql_blob_backend::~postgresql_blob_backend()
@@ -32,19 +32,37 @@ postgresql_blob_backend::~postgresql_blob_backend()
     this->close();
 }
 
+void postgresql_blob_backend::assign(details::holder* h)
+{
+    this->assign(h->get<int>());
+}
+
 void postgresql_blob_backend::assign(unsigned int const & oid)
 {
     close();
-
     oid_ = oid;
-    from_db_ = true;
+}
+
+void postgresql_blob_backend::read(blob &b)
+{
+    this->open(INV_READ);
+    b.resize(this->get_len());
+    this->read_from_start(&b[0], b.size());
+    this->close();
+}
+
+void postgresql_blob_backend::write(blob &b) 
+{
+    this->open(INV_WRITE);
+    this->write_from_start(&b[0], b.size());
+    this->close();
 }
 
 int postgresql_blob_backend::open(int mode)
 {
     if (oid_ == 0u)
     {
-        return 0;
+        oid_ = lo_create(session_.conn_, 0);
     }
 
     fd_ = lo_open(session_.conn_, oid_, mode);
@@ -72,175 +90,91 @@ int postgresql_blob_backend::close()
     }
 
     fd_ = -1;
-    loaded_ = false;
 
     return ret;
 }
 
-void postgresql_blob_backend::load()
+std::size_t postgresql_blob_backend::get_len()
 {
-    if (fd_ == -1)
+    int const pos = lo_lseek(session_.conn_, fd_, 0, SEEK_END);
+    if (pos == -1)
     {
-        this->open(INV_READ);
-    }
-
-    int blob_size = lo_lseek(session_.conn_, fd_, 0, SEEK_END);
-    lo_lseek(session_.conn_, fd_, 0, SEEK_SET);
-    
-    if (blob_size == -1)
-    {
-        this->close();
         throw soci_error("Cannot retrieve the size of BLOB.");
     }
 
-    data_.resize(blob_size);
-
-    // The blob is empty.
-    if (data_.size() == 0)
-    {
-        this->close();
-        loaded_ = true;
-        return;
-    }
-
-    int const readn = lo_read(session_.conn_, fd_, &data_[0], data_.size());
-    if (readn < 0)
-    {
-        this->close();
-        throw soci_error("Cannot read from BLOB.");
-    }
-
-    this->close();
-    loaded_ = true;
-}
-
-void postgresql_blob_backend::save()
-{
-    close();
-    // if (oid_ != 0u)
-    // {
-    //     if (lo_unlink(session_.conn_, oid_) < 0)
-    //     {
-    //         throw soci_error("Cannot unlink old BLOB.");
-    //     }
-    //     oid_ = 0;
-    // }
-
-    oid_ = lo_create(session_.conn_, 0);
-    if (oid_ == 0)
-    {
-        throw soci_error("Cannot create a new BLOB.");
-    }
-
-    if (data_.size() == 0)
-    {
-        return;
-    }
-
-    this->open(INV_WRITE);
-    int const writen = lo_write(session_.conn_, fd_, &data_[0], data_.size());
-    this->close();
-
-    if (writen < 0)
-    {
-        throw soci_error("Cannot write to BLOB.");
-    }
-}
-
-std::size_t postgresql_blob_backend::get_len()
-{
-    if (from_db_ && (loaded_ == false))
-    {
-        load();
-    }
-    return data_.size();
+    return static_cast<std::size_t>(pos);
 }
 
 std::size_t postgresql_blob_backend::read(
     std::size_t offset, char * buf, std::size_t toRead)
 {
-    if (from_db_ && (loaded_ == false))
+    int const pos = lo_lseek(session_.conn_, fd_,
+        static_cast<int>(offset), SEEK_SET);
+    if (pos == -1)
     {
-        load();
+        throw soci_error("Cannot seek in BLOB.");
     }
 
-    std::size_t size = data_.size();
-
-    if (offset > size)
+    int const readn = lo_read(session_.conn_, fd_, buf, toRead);
+    if (readn < 0)
     {
-        throw soci_error("Can't read past-the-end of BLOB data");
+        throw soci_error("Cannot read from BLOB.");
     }
 
-    char * itr = buf;
-    std::size_t limit = std::min(size - offset, toRead);
-    std::size_t index = 0;
-
-    while (index < limit)
-    {
-        *itr = data_[offset+index];
-        ++index;
-        ++itr;
-    }
-
-    return limit;
+    return static_cast<std::size_t>(readn);
 }
 
 std::size_t postgresql_blob_backend::write(
     std::size_t offset, char const * buf, std::size_t toWrite)
 {
-    if (from_db_ && (loaded_ == false))
+    if (toWrite == 0)
     {
-        load();
+        return static_cast<std::size_t>(toWrite);
     }
 
-    std::size_t size = data_.size();
-
-    if (offset > size)
+    int const pos = lo_lseek(session_.conn_, fd_,
+        static_cast<int>(offset), SEEK_SET);
+    if (pos == -1)
     {
-        throw soci_error("Can't write past-the-end of BLOB data");
+        throw soci_error("Cannot seek in BLOB.");
     }
 
-    // make sure there is enough space in buffer
-    if (toWrite > (size - offset))
+    int const writen = lo_write(session_.conn_, fd_,
+        const_cast<char *>(buf), toWrite);
+
+    if (writen < 0)
     {
-        data_.resize(size + (toWrite - (size - offset)));
+        throw soci_error("Cannot write to BLOB.");
     }
 
-    writeBuffer(offset, buf, toWrite);
-
-    return toWrite;
+    return static_cast<std::size_t>(writen);
 }
 
 std::size_t postgresql_blob_backend::append(
     char const * buf, std::size_t toWrite)
 {
-    if (from_db_ && (loaded_ == false))
+    if (toWrite == 0)
     {
-        // this is blob fetched from database, but not loaded yet
-        load();
+        return static_cast<std::size_t>(toWrite);
     }
 
-    std::size_t size = data_.size();
-    data_.resize(size + toWrite);
+    int const pos = lo_lseek(session_.conn_, fd_, 0, SEEK_END);
+    if (pos == -1)
+    {
+        throw soci_error("Cannot seek in BLOB.");
+    }
 
-    writeBuffer(size, buf, toWrite);
+    int const writen = lo_write(session_.conn_, fd_,
+        const_cast<char *>(buf), toWrite);
+    if (writen < 0)
+    {
+        throw soci_error("Cannot append to BLOB.");
+    }
 
-    return toWrite;
+    return static_cast<std::size_t>(writen);
 }
 
 void postgresql_blob_backend::trim(std::size_t /* newLen */)
 {
     throw soci_error("Trimming BLOBs is not supported.");
-}
-
-void postgresql_blob_backend::writeBuffer(std::size_t offset,
-                                      char const * buf, std::size_t toWrite)
-{
-    char const * itr = buf;
-    char const * end_itr = buf + toWrite;
-
-    while (itr!=end_itr)
-    {
-        data_[offset++] = *itr++;
-    }
 }

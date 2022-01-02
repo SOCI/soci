@@ -28,6 +28,16 @@ void odbc_blob_backend::assign(details::holder* /*h*/)
     // ...
 }
 
+void odbc_blob_backend::read(blob &b)
+{
+    // ...
+}
+
+void odbc_blob_backend::write(blob &b)
+{
+    // ...
+}
+
 std::size_t odbc_blob_backend::get_len()
 {
     // ...
