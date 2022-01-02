@@ -137,6 +137,10 @@ void oracle_standard_into_type_backend::define_by_pos(
 
             blob *b = static_cast<blob *>(data);
 
+            // oracle_blob_backend * bbe
+            //           = dynamic_cast<oracle_blob_backend *>(statement_.session_.make_blob_backend());
+                
+
             cxx_details::shared_ptr<oracle_blob_backend> bbe = cxx_details::static_pointer_cast<oracle_blob_backend>(b->get_backend());
 
             size = 0;
@@ -303,6 +307,18 @@ void oracle_standard_into_type_backend::post_fetch(
                 read_from_lob(statement_.session_,
                     lobp, exchange_type_cast<x_longstring>(data_).value);
             }
+        }
+        else if(type_ == x_blob)
+        {
+            blob *b = static_cast<blob *>(data_);
+
+            // oracle_blob_backend * bbe
+            //           = dynamic_cast<oracle_blob_backend *>(statement_.session_.make_blob_backend());
+                
+
+            cxx_details::shared_ptr<oracle_blob_backend> bbe = cxx_details::static_pointer_cast<oracle_blob_backend>(b->get_backend());
+
+            bbe->read(*b);
         }
     }
 

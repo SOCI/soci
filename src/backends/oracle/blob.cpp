@@ -38,6 +38,22 @@ oracle_blob_backend::~oracle_blob_backend()
     OCIDescriptorFree(lobp_, OCI_DTYPE_LOB);
 }
 
+void oracle_blob_backend::assign(details::holder* /*h*/)
+{
+
+}
+
+void oracle_blob_backend::read(blob& b)
+{
+    b.resize(this->get_len());
+    this->read(0, &b[0], b.size());
+}
+
+void oracle_blob_backend::write(blob& b)
+{
+    this->write(0, &b[0], b.size());
+}
+
 std::size_t oracle_blob_backend::get_len()
 {
     ub4 len;

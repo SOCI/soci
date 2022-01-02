@@ -264,6 +264,11 @@ struct oracle_blob_backend : details::blob_backend
 
     ~oracle_blob_backend() SOCI_OVERRIDE;
 
+    void assign(details::holder* h) SOCI_OVERRIDE;
+
+    void read(blob& b) SOCI_OVERRIDE;
+    void write(blob& b) SOCI_OVERRIDE;
+
     std::size_t get_len() SOCI_OVERRIDE;
 
     std::size_t read(std::size_t offset, char *buf,
@@ -289,6 +294,9 @@ struct oracle_blob_backend : details::blob_backend
     void trim(std::size_t newLen) SOCI_OVERRIDE;
 
     oracle_session_backend &session_;
+
+    void open();
+    void close();
 
     OCILobLocator *lobp_;
 };

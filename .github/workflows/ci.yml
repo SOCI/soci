@@ -28,42 +28,42 @@ jobs:
         include:
           # Note: the jobs are ordered in the order of decreasing running
           # time, as this should minimize the total run-time of all jobs.
-          - backend: postgresql
-            runner: macos-10.15
-            name: PostgreSQL macOS
+          # - backend: postgresql
+          #   runner: macos-10.15
+          #   name: PostgreSQL macOS
           - backend: oracle
             name: Oracle 11
             no_boost: true
-          - backend: valgrind
-            # This one dies under Xenial due to a bug in Valgrind and reports
-            # errors under Focal in MySQL test, so run it under Bionic where
-            # it just happens to work.
-            runner: ubuntu-18.04
-            name: Valgrind
-          - backend: odbc
-            name: ODBC
-          - backend: firebird
-            name: Firebird
-          - backend: postgresql
-            name: PostgreSQL Linux
-          - backend: mysql
-            name: MySQL
-          - backend: sqlite3
-            runner: macos-10.15
-            name: SQLite3 macOS
-          - backend: sqlite3
-            name: SQLite3
-          - backend: empty
-            runner: macos-10.15
-            cxx_std: 11
-            name: Empty C++11 macOS
-          - backend: empty
-            name: Empty C++98
-            cxx_std: 98
-            test_release_package: true
-          - backend: empty
-            name: Empty C++11
-            cxx_std: 11
+          # - backend: valgrind
+          #   # This one dies under Xenial due to a bug in Valgrind and reports
+          #   # errors under Focal in MySQL test, so run it under Bionic where
+          #   # it just happens to work.
+          #   runner: ubuntu-18.04
+          #   name: Valgrind
+          # - backend: odbc
+          #   name: ODBC
+          # - backend: firebird
+          #   name: Firebird
+          # - backend: postgresql
+          #   name: PostgreSQL Linux
+          # - backend: mysql
+          #   name: MySQL
+          # - backend: sqlite3
+          #   runner: macos-10.15
+          #   name: SQLite3 macOS
+          # - backend: sqlite3
+          #   name: SQLite3
+          # - backend: empty
+          #   runner: macos-10.15
+          #   cxx_std: 11
+          #   name: Empty C++11 macOS
+          # - backend: empty
+          #   name: Empty C++98
+          #   cxx_std: 98
+          #   test_release_package: true
+          # - backend: empty
+          #   name: Empty C++11
+          #   cxx_std: 11
           # Unsupported: db2exc package is only available in Ubuntu 14.04 not
           # supported by GitHub Actions any longer, we'd need to run it in
           # Docker container if we really need it.
