@@ -13,8 +13,18 @@ run_cmake_for_empty()
         ..
 }
 
-run_cmake_for_empty
-run_make
+run_cmake_for_example()
+{
+  cmake "../examples/$1"
+}
+
+if [[ "$BUILD_EXAMPLES" == "YES" ]]; then
+  run_cmake_for_example subdir-include
+  run_make
+else
+  run_cmake_for_empty
+  run_make
+fi
 
 # Test release branch packaging and building from the package
 if [[ "$TEST_RELEASE_PACKAGE" == "YES" ]] && [[ "$SOCI_CI_BRANCH" =~ ^release/[3-9]\.[0-9]$ ]]; then
