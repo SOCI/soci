@@ -68,6 +68,9 @@ jobs:
           # supported by GitHub Actions any longer, we'd need to run it in
           # Docker container if we really need it.
           # backend: db2
+          - backend: empty
+            name: Examples
+            build_examples: true
 
     env:
       SOCI_CI: true
@@ -110,6 +113,9 @@ jobs:
           fi
           if [ "${{matrix.test_release_package}}" = true ]; then
             set_env_var TEST_RELEASE_PACKAGE YES
+          fi
+          if [ "${{matrix.build_examples}}" = true ]; then
+            set_env_var BUILD_EXAMPLES YES
           fi
 
       - name: Install dependencies under Linux
