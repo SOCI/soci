@@ -260,6 +260,11 @@ struct mysql_session_backend : details::session_backend
     mysql_rowid_backend * make_rowid_backend() SOCI_OVERRIDE;
     mysql_blob_backend * make_blob_backend() SOCI_OVERRIDE;
 
+    std::string get_table_names_query() const SOCI_OVERRIDE
+    {
+        return "SELECT table_name AS 'TABLE_NAME' FROM information_schema.tables WHERE table_schema = DATABASE()";
+    }
+
     MYSQL *conn_;
 };
 
