@@ -1,7 +1,7 @@
 # SOCI - The C++ Database Access Library
 
-[![GitHub release](https://img.shields.io/github/tag/SOCI/soci.svg)](https://github.com/SOCI/soci/releases/tag/v4.0.2)
-[![GitHub commits](https://img.shields.io/github/commits-since/SOCI/soci/v4.0.2.svg)](https://github.com/SOCI/soci/tree/release/4.0)
+[![GitHub release](https://img.shields.io/github/tag/SOCI/soci.svg)](https://github.com/SOCI/soci/releases/tag/v4.0.3)
+[![GitHub commits](https://img.shields.io/github/commits-since/SOCI/soci/v4.0.3.svg)](https://github.com/SOCI/soci/tree/release/4.0)
 
 [![Website](https://img.shields.io/website-up-down-green-red/http/shields.io.svg?label=soci.sourceforge.net)](http://soci.sourceforge.net)
 [![SourceForge](https://img.shields.io/sourceforge/dm/soci.svg)](https://sourceforge.net/projects/soci/files/)
@@ -12,11 +12,10 @@
 
 ## Build Status
 
-| Branches    | Travis-CI | AppVeyor-CI | Documentation | Coverity Scan  |
-|-------------|-----------|-------------|---------------|----------------|
-| master      | [![Build Status](https://travis-ci.org/SOCI/soci.svg?branch=master)](https://travis-ci.org/SOCI/soci/branches) | [![Build status](https://ci.appveyor.com/api/projects/status/dtp5mvbeyu9aqupr/branch/master?svg=true)](https://ci.appveyor.com/project/SOCI/soci/branch/master) | [![Docs Status](https://circleci.com/gh/SOCI/soci/tree/master.svg?style=svg&circle-token=5d31c692ed5fcffa5c5fc6b7fe2257b34d78f3c9)](https://circleci.com/gh/SOCI/soci/tree/master) | [![Coverage](https://scan.coverity.com/projects/6581/badge.svg)](https://scan.coverity.com/projects/soci-soci) |
-| release/4.0 | [![Build Status](https://travis-ci.org/SOCI/soci.svg?branch=release%2F4.0)](https://travis-ci.org/SOCI/soci/branches) | [![Build status](https://ci.appveyor.com/api/projects/status/dtp5mvbeyu9aqupr/branch/release/4.0?svg=true)](https://ci.appveyor.com/project/SOCI/soci/branch/release/4.0) | [![Docs Status](https://circleci.com/gh/SOCI/soci/tree/release%2F4.0.svg?style=svg&circle-token=5d31c692ed5fcffa5c5fc6b7fe2257b34d78f3c9)](https://circleci.com/gh/SOCI/soci/tree/release%2F4.0) | |
-| release/3.2 | [![Build Status](https://travis-ci.org/SOCI/soci.svg?branch=release%2F3.2)](https://travis-ci.org/SOCI/soci/branches) | [![Build status](https://ci.appveyor.com/api/projects/status/dtp5mvbeyu9aqupr/branch/release/3.2?svg=true)](https://ci.appveyor.com/project/SOCI/soci/branch/release/3.2) | | |
+| Branches    | GitHub Actions | AppVeyor-CI | Documentation | Coverity Scan  |
+|-------------|----------------|-------------|---------------|----------------|
+| master      | [![Build Status](https://github.com/SOCI/soci/actions/workflows/ci.yml/badge.svg)](https://github.com/SOCI/soci/actions) | [![Build status](https://ci.appveyor.com/api/projects/status/dtp5mvbeyu9aqupr/branch/master?svg=true)](https://ci.appveyor.com/project/SOCI/soci/branch/master) | [![Docs Status](https://circleci.com/gh/SOCI/soci/tree/master.svg?style=svg&circle-token=5d31c692ed5fcffa5c5fc6b7fe2257b34d78f3c9)](https://circleci.com/gh/SOCI/soci/tree/master) | [![Coverage](https://scan.coverity.com/projects/6581/badge.svg)](https://scan.coverity.com/projects/soci-soci) |
+| release/4.0 | [![Build Status](https://github.com/SOCI/soci/actions/workflows/ci.yml/badge.svg?branch=release/4.0)](https://github.com/SOCI/soci/actions) | [![Build status](https://ci.appveyor.com/api/projects/status/dtp5mvbeyu9aqupr/branch/release/4.0?svg=true)](https://ci.appveyor.com/project/SOCI/soci/branch/release/4.0) | [![Docs Status](https://circleci.com/gh/SOCI/soci/tree/release%2F4.0.svg?style=svg&circle-token=5d31c692ed5fcffa5c5fc6b7fe2257b34d78f3c9)](https://circleci.com/gh/SOCI/soci/tree/release%2F4.0) | |
 
 ## History
 

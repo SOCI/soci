@@ -1431,6 +1431,21 @@ TEST_CASE_METHOD(common_tests, "Indicators vector", "[core][indicator][vector]")
             CHECK(inds[2] == i_null);
             CHECK(inds[3] == i_null);
             CHECK(inds[4] == i_ok);
+
+            strs.resize(1);
+            sql << "select str from soci_test order by id", into(strs, inds);
+            CHECK(inds.size() == 1);
+
+            strs.resize(1);
+            st = (sql.prepare << "select str from soci_test order by id", into(strs, inds));
+            st.execute();
+            st.fetch();
+            CHECK(inds.size() == 1);
+            while (st.fetch());
+
+            std::vector<int> ids(1);
+            sql << "select id from soci_test", into(ids);
+            CHECK(ids.size() == 1);
         }
     }
 
@@ -1992,22 +2007,49 @@ TEST_CASE_METHOD(common_tests, "Use vector of custom type objects", "[core][use]
 
     sql << "insert into soci_test(id, str) values(:i, :v)", use(i), use(v);
 
-    std::vector<std::string> values(3);
-    std::vector<indicator> inds(3);
-    sql << "select str from soci_test order by id", into(values, inds);
-
-    REQUIRE(values.size() == 3);
-    REQUIRE(inds.size() == 3);
-
-    CHECK(inds[0] == soci::i_ok);
-    CHECK(values[0] == "string");
-
-    CHECK(inds[1] == soci::i_null);
-
-    if ( !tc_.treats_empty_strings_as_null() )
+    SECTION("standard type")
     {
-        CHECK(inds[2] == soci::i_ok);
-        CHECK(values[2] == "");
+        std::vector<std::string> values(3);
+        std::vector<indicator> inds(3);
+        sql << "select str from soci_test order by id", into(values, inds);
+
+        REQUIRE(values.size() == 3);
+        REQUIRE(inds.size() == 3);
+
+        CHECK(inds[0] == soci::i_ok);
+        CHECK(values[0] == "string");
+
+        CHECK(inds[1] == soci::i_null);
+
+        if ( !tc_.treats_empty_strings_as_null() )
+        {
+            CHECK(inds[2] == soci::i_ok);
+            CHECK(values[2] == "");
+        }
+    }
+
+    SECTION("user type")
+    {
+        std::vector<MyOptionalString> values(3);
+        std::vector<indicator> inds(3);
+        sql << "select str from soci_test order by id", into(values, inds);
+
+        REQUIRE(values.size() == 3);
+        REQUIRE(inds.size() == 3);
+
+        CHECK(inds[0] == soci::i_ok);
+        CHECK(values[0].is_valid());
+        CHECK(values[0].get() == "string");
+
+        CHECK(!values[1].is_valid());
+        CHECK(inds[1] == soci::i_null);
+
+        if ( !tc_.treats_empty_strings_as_null() )
+        {
+            CHECK(inds[2] == soci::i_ok);
+            CHECK(values[2].is_valid());
+            CHECK(values[2].get() == "");
+        }
     }
 }
 
@@ -4372,6 +4414,17 @@ TEST_CASE_METHOD(common_tests, "Backend with connection pool", "[core][pool]")
     sql.begin(); // no crash expected
 }
 
+// test fix for: Session from connection pool not set backend properly when call open
+TEST_CASE_METHOD(common_tests, "Session from connection pool call open reset backend", "[core][pool]")
+{
+    const size_t pool_size = 1;
+    connection_pool pool(pool_size);
+
+    soci::session sql(pool);
+    sql.open(backEndFactory_, connectString_);
+    REQUIRE_NOTHROW( sql.begin() );
+}
+
 // issue 67 - Allocated statement backend memory leaks on exception
 // If the test runs under memory debugger and it passes, then
 // soci::details::statement_impl::backEnd_ must not leak
@@ -4842,14 +4895,15 @@ static std::string make_long_xml_string(int approximateSize = 5000)
     std::string s;
     s.reserve(tagsSize + patternsCount * patternSize);
 
-    s += "<file>";
+    std::ostringstream ss;
+    ss << "<test size=\"" << approximateSize << "\">";
     for (int i = 0; i != patternsCount; ++i)
     {
-        s += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+       ss << "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     }
-    s += "</file>";
+    ss << "</test>";
 
-    return s;
+    return ss.str();
 }
 
 // The helper function to remove trailing \n from a given string.
@@ -5042,7 +5096,7 @@ TEST_CASE_METHOD(common_tests, "XML vector", "[core][xml][vector]")
     CHECK(ind.at(1) == i_null);
 }
 
-TEST_CASE_METHOD(common_tests, "Into XML vector with several fetches", "[core][xml][into][vector][statement]")
+TEST_CASE_METHOD(common_tests, "XML and int vectors", "[core][xml][vector]")
 {
     soci::session sql(backEndFactory_, connectString_);
 
@@ -5053,6 +5107,47 @@ TEST_CASE_METHOD(common_tests, "Into XML vector with several fetches", "[core][x
         return;
     }
 
+    std::vector<int> id(3);
+    id[0] = 0;
+    id[1] = 1;
+    id[2] = 2;
+    std::vector<xml_type> xml(3);
+    std::vector<indicator> ind(3);
+    xml[0].value = make_long_xml_string();
+    ind[0] = i_ok;
+    ind[1] = i_null;
+    // Check long strings handling.
+    xml[2].value = make_long_xml_string(10000);
+    ind[2] = i_ok;
+
+    sql << "insert into soci_test (id, x) values (:1, "
+        << tc_.to_xml(":2")
+        << ")",
+        use(id), use(xml, ind);
+
+    std::vector<int> id2(3);
+    std::vector<xml_type> xml2(3);
+    std::vector<indicator> ind2(3);
+
+    sql << "select id, "
+        << tc_.from_xml("x")
+        << " from soci_test order by id",
+        into(id2), into(xml2, ind2);
+
+    CHECK(id.at(0) == id2.at(0));
+    CHECK(id.at(1) == id2.at(1));
+    CHECK(id.at(2) == id2.at(2));
+
+    CHECK(xml.at(0).value == remove_trailing_nl(xml2.at(0).value));
+    CHECK(xml.at(2).value == remove_trailing_nl(xml2.at(2).value));
+
+    CHECK(ind.at(0) == ind2.at(0));
+    CHECK(ind.at(1) == ind2.at(1));
+    CHECK(ind.at(2) == ind2.at(2));
+}
+
+TEST_CASE_METHOD(common_tests, "Into XML vector with several fetches", "[core][xml][into][vector][statement]")
+{
     int stringSize = 0;
     SECTION("short string")
     {
@@ -5061,6 +5156,19 @@ TEST_CASE_METHOD(common_tests, "Into XML vector with several fetches", "[core][x
     SECTION("long string")
     {
         stringSize = 10000;
+    }
+
+    // Skip the rest when not executing the current section.
+    if (!stringSize)
+        return;
+
+    soci::session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_xml(sql));
+    if (!tableCreator.get())
+    {
+        WARN("XML type not supported by the database, skipping the test.");
+        return;
     }
 
     int const count = 5;

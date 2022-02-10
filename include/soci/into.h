@@ -78,6 +78,13 @@ details::into_type_ptr into(std::vector<T> & t,
 }
 
 template <typename T>
+details::into_type_ptr into(std::vector<T> & t, std::vector<indicator> & ind)
+{
+    return details::do_into(t, ind,
+        typename details::exchange_traits<std::vector<T> >::type_family());
+}
+
+template <typename T>
 details::into_type_ptr into(std::vector<T> & t, std::vector<indicator> & ind,
     std::size_t begin, std::size_t & end)
 {

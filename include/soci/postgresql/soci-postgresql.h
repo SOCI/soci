@@ -63,7 +63,7 @@ public:
     // given one.
     void reset(PGresult* result = NULL)
     {
-        free();
+        clear();
         init(result);
     }
 
@@ -95,7 +95,7 @@ public:
     PGresult* get_result() const { return result_; }
 
     // Dtor frees the result.
-    ~postgresql_result() { free(); }
+    ~postgresql_result() { clear(); }
 
 private:
     void init(PGresult* result)
@@ -103,7 +103,7 @@ private:
         result_ = result;
     }
 
-    void free()
+    void clear()
     {
         // Notice that it is safe to call PQclear() with NULL pointer, it
         // simply does nothing in this case.

@@ -1,0 +1,65 @@
+# Workflow for running security checks for SOCI.
+name: CodeQL
+
+# Note: don't use paths-ignore here because it results in a warning from CodeQL
+on:
+  push:
+    branches:
+      - master
+      - 'release/**'
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+
+    env:
+      SOCI_CI: true
+      SOCI_CI_BACKEND: all
+      WITH_BOOST: OFF
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: cpp
+        # If you wish to specify custom queries, you can do so here or in a config file.
+        # By default, queries listed here will override any specified in a config file.
+        # Prefix the list here with "+" to use these queries and those in the config file.
+        # queries: ./path/to/local/query, your-org/your-repo/queries@main
+
+    - name: Set environment variables
+      run: |
+        set_env_var() {
+          echo "Setting environment variable $1=$2"
+          echo $1=$2 >> $GITHUB_ENV
+        }
+
+        set_env_var SOCI_SOURCE_DIR $GITHUB_WORKSPACE
+
+    - name: Install dependencies
+      env:
+        SOCI_CI_PACKAGES: cmake
+      run: ./scripts/ci/install.sh
+
+    - name: Prepare for build
+      run: ./scripts/ci/before_build.sh
+
+    - name: Build
+      run: ./scripts/ci/build.sh
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1

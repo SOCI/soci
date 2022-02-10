@@ -34,7 +34,7 @@ void db2_vector_into_type_backend::define_by_pos(
     this->data = data; // for future reference
     this->type = type; // for future reference
 
-    SQLINTEGER size = 0;       // also dummy
+    SQLINTEGER size SOCI_DUMMY_INIT(0);
 
     switch (type)
     {
@@ -344,7 +344,7 @@ void db2_vector_into_type_backend::resize(std::size_t sz)
 
 std::size_t db2_vector_into_type_backend::size()
 {
-    std::size_t sz = 0; // dummy initialization to please the compiler
+    std::size_t sz SOCI_DUMMY_INIT(0);
     switch (type)
     {
     // simple cases

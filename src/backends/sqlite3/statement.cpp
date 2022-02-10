@@ -38,6 +38,7 @@ sqlite3_statement_backend::sqlite3_statement_backend(
     , databaseReady_(false)
     , boundByName_(false)
     , boundByPos_(false)
+    , hasVectorIntoElements_(false)
     , rowsAffectedBulk_(-1LL)
 {
 }
@@ -343,14 +344,7 @@ sqlite3_statement_backend::execute(int number)
     }
     else
     {
-        if (1 == number)
-        {
-            retVal = load_one();
-        }
-        else
-        {
-            retVal = load_rowset(number);
-        }
+        retVal = fetch(number);
     }
 
     return retVal;
@@ -359,7 +353,7 @@ sqlite3_statement_backend::execute(int number)
 statement_backend::exec_fetch_result
 sqlite3_statement_backend::fetch(int number)
 {
-    if (number > 1)
+    if (hasVectorIntoElements_ || number == 0)
         return load_rowset(number);
     else
         return load_one();
@@ -567,6 +561,7 @@ sqlite3_standard_use_type_backend * sqlite3_statement_backend::make_use_type_bac
 sqlite3_vector_into_type_backend *
 sqlite3_statement_backend::make_vector_into_type_backend()
 {
+    hasVectorIntoElements_ = true;
     return new sqlite3_vector_into_type_backend(*this);
 }
 

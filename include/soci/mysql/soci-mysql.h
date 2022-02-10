@@ -22,6 +22,7 @@
 #include <winsock.h> // SOCKET
 #endif // _WIN32
 #include <mysql.h> // MySQL Client
+#include <errmsg.h> // MySQL Error codes
 #include <vector>
 
 
@@ -32,9 +33,20 @@ class SOCI_MYSQL_DECL mysql_soci_error : public soci_error
 {
 public:
     mysql_soci_error(std::string const & msg, int errNum)
-        : soci_error(msg), err_num_(errNum) {}
+        : soci_error(msg), err_num_(errNum), cat_(unknown) {
+            if(errNum == CR_CONNECTION_ERROR ||
+               errNum == CR_CONN_HOST_ERROR ||
+               errNum == CR_SERVER_GONE_ERROR ||
+               errNum == CR_SERVER_LOST ||
+               errNum == 1927) { // Lost connection to backend server
+                cat_ = connection_error;
+            }
+        }
+
+    error_category get_error_category() const SOCI_OVERRIDE { return cat_; }
 
     unsigned int err_num_;
+    error_category cat_;
 };
 
 struct mysql_statement_backend;
@@ -247,6 +259,11 @@ struct mysql_session_backend : details::session_backend
     mysql_statement_backend * make_statement_backend() SOCI_OVERRIDE;
     mysql_rowid_backend * make_rowid_backend() SOCI_OVERRIDE;
     mysql_blob_backend * make_blob_backend() SOCI_OVERRIDE;
+
+    std::string get_table_names_query() const SOCI_OVERRIDE
+    {
+        return "SELECT table_name AS 'TABLE_NAME' FROM information_schema.tables WHERE table_schema = DATABASE()";
+    }
 
     MYSQL *conn_;
 };

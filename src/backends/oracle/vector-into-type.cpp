@@ -52,8 +52,8 @@ void oracle_vector_into_type_backend::define_by_pos_bulk(
 
     end_var_ = full_size();
 
-    ub2 oracleType = 0;  // dummy initialization to please the compiler
-    sb4 elementSize = 0; // also dummy
+    ub2 oracleType SOCI_DUMMY_INIT(0);
+    sb4 elementSize SOCI_DUMMY_INIT(0);
     void * dataBuf = NULL;
 
     switch (type)

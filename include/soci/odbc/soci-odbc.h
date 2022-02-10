@@ -16,7 +16,6 @@
 # define SOCI_ODBC_DECL SOCI_DECL_IMPORT
 #endif
 
-#include "soci/soci-platform.h"
 #include <vector>
 #include <soci/soci-backend.h>
 #include <sstream>
@@ -45,12 +44,6 @@ namespace details
       return reinterpret_cast<SQLCHAR*>(const_cast<char*>(s.c_str()));
     }
 }
-
-enum buffer_type
-{
-    bt_standard,
-    bt_vector
-};
 
 // Option allowing to specify the "driver completion" parameter of
 // SQLDriverConnect(). Its possible values are the same as the allowed values
@@ -135,15 +128,19 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
 
     void clean_up() SOCI_OVERRIDE;
 
-    // helper function for preparing indicators
-    // (as part of the define_by_pos)
-    void prepare_indicators(std::size_t size);
-
-    void exchange_rows(bool gotData, std::size_t beginInd, std::size_t endInd);
+    // Normally data retrieved from the database is handled in post_fetch(),
+    // however we may need to call SQLFetch() multiple times, so we call this
+    // function instead after each call to it to retrieve the given range of
+    // rows.
+    void do_post_fetch_rows(std::size_t beginRow, std::size_t endRow);
 
     // IBM DB2 driver is not compliant to ODBC spec for indicators in 64bit
     // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
     inline SQLLEN get_sqllen_from_vector_at(std::size_t idx) const;
+
+    // Rebind the single vector value at the given index to the first row.
+    // Used when vector values are fetched by single row.
+    void rebind_row(std::size_t rowInd);
 
     std::vector<SQLLEN> indHolderVec_;
     void *data_;
@@ -278,10 +275,13 @@ struct odbc_statement_backend : details::statement_backend
     std::string query_;
     std::vector<std::string> names_; // list of names for named binds
 
-    buffer_type intoType_;
+    // This vector, containing non-owning non-null pointers, can be empty if
+    // we're not using any vector "intos".
+    std::vector<odbc_vector_into_type_backend*> intos_;
 
-    std::vector<std::vector<indicator> > inds_;
-    std::vector<void*> intos_;
+private:
+    // fetch() helper wrapping SQLFetch() call for the given range of rows.
+    exec_fetch_result do_fetch(int beginRow, int endRow);
 };
 
 struct odbc_rowid_backend : details::rowid_backend
@@ -352,7 +352,7 @@ struct odbc_session_backend : details::session_backend
     };
 
     // Determine the type of the database we're connected to.
-    database_product get_database_product() const;
+    SOCI_ODBC_DECL database_product get_database_product() const;
 
     // Return full ODBC connection string.
     std::string get_connection_string() const { return connection_string_; }
@@ -549,8 +549,6 @@ inline void odbc_standard_type_backend_base::set_sqllen_from_value(SQLLEN &targe
 
 inline SQLLEN odbc_vector_into_type_backend::get_sqllen_from_vector_at(std::size_t idx) const
 {
-    if (statement_.fetchVectorByRows_)
-        idx = 0;
     if (requires_noncompliant_32bit_sqllen())
     {
         return reinterpret_cast<const int*>(&indHolderVec_[0])[idx];
