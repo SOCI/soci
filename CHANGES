@@ -1,6 +1,42 @@
 This file contains the history of changes in the SOCI library.
 
-Latest version is v4.0.2 released on 2021-04-19.
+Latest version is v4.0.3 released on 2022-02-14.
+
+---
+Version 4.0.3 differs from 4.0.2 in the following ways:
+
+Changes affecting all or multiple backends:
+ - Fix opening sessions from pool (#891).
+ - Fix default backend search path (#928).
+ - Fix build with latest glibc versions where SIGSTKSZ is not constant (#886).
+ - Document using SOCI as a CMake subdirectory (#925).
+ - Document using SOCI with Conan (#877).
+
+Backend-specific changes:
+
+- MySQL
+ - Implement get_table_names() for MySQL (#927).
+ - Fix MySQL backend build with MySQL >= 8 (#884).
+ - Fix mysql_library_end() in multithreaded environment (#909).
+ - Make mysql_soci_error::get_error_category() more useful (#902).
+
+- ODBC
+ - Fix several bugs in vector into code (#888, #892).
+ - Fix memory leaks in case of SQLNumResultCols() failure.
+ - Export odbc_session_backend::get_database_product() from DLL.
+
+- Oracle
+ - Add support for detecting Oracle 20 and 21 to CMake (#896).
+
+- PostgreSQL
+ - Fix compilation when "free" is redefined somewhere else.
+
+- SQLite3
+ - Fix bulk operations with vectors of size 1 in SQLite3 backend (#908).
+
+- Firebird
+ - Suppress FB memory leaks
+
 
 ---
 Version 4.0.2 differs from 4.0.1 in the following ways:
