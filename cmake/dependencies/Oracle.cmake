@@ -1,4 +1,4 @@
-set(ORACLE_FIND_QUIETLY TRUE)
+set(Oracle_FIND_QUIETLY TRUE)
 
 find_package(Oracle)
 

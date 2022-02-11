@@ -81,7 +81,7 @@ set(ORACLE_LIBRARIES ${ORACLE_LIBRARY})
 # Handle the QUIETLY and REQUIRED arguments and set ORACLE_FOUND to TRUE
 # if all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(ORACLE DEFAULT_MSG ORACLE_LIBRARY ORACLE_INCLUDE_DIR)
+find_package_handle_standard_args(Oracle DEFAULT_MSG ORACLE_LIBRARY ORACLE_INCLUDE_DIR)
 
 if(NOT ORACLE_FOUND)
 	message(STATUS "None of the supported Oracle versions (${ORACLE_VERSIONS}) could be found, consider updating ORACLE_VERSIONS if the version you use is not among them.")
