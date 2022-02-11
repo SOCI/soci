@@ -1,4 +1,4 @@
-set(SQLITE3_FIND_QUIETLY TRUE)
+set(SQLite3_FIND_QUIETLY TRUE)
 
 find_package(SQLite3)
 
