@@ -112,7 +112,7 @@ Some other build options:
 
 #### IBM DB2
 
-* `WITH_DB2` - boolean - Should CMake try to detect IBM DB2 Call Level Interface (CLI) library.
+* `SOCI_DB2` - boolean - Should CMake try to detect IBM DB2 Call Level Interface (CLI) library.
 * `DB2_INCLUDE_DIR` - string - Path to DB2 CLI include directories where CMake should look for `sqlcli1.h` header.
 * `DB2_LIBRARIES` - string - Full paths to  `db2` or `db2api` libraries to link SOCI against to enable the backend support.
 * `SOCI_DB2` - boolean - Requests to build [DB2](backends/db2.md) backend. Automatically switched on, if `WITH_DB2` is set to ON.
@@ -120,7 +120,7 @@ Some other build options:
 
 #### Firebird
 
-* `WITH_FIREBIRD` - boolean - Should CMake try to detect Firebird client library.
+* `SOCI_FIREBIRD` - boolean - Should CMake try to detect Firebird client library.
 * `FIREBIRD_INCLUDE_DIR` - string - Path to Firebird include directories where CMake should look for `ibase.h` header.
 * `FIREBIRD_LIBRARIES` - string - Full paths to Firebird `fbclient` or `fbclient_ms` libraries to link SOCI against to enable the backend support.
 * `SOCI_FIREBIRD` - boolean - Requests to build [Firebird](backends/firebird.md) backend. Automatically switched on, if `WITH_FIREBIRD` is set to ON.
@@ -128,7 +128,7 @@ Some other build options:
 
 #### MySQL
 
-* `WITH_MYSQL` - boolean - Should CMake try to detect [mysqlclient](https://dev.mysql.com/doc/refman/5.5/en/c-api.html) libraries providing MySQL C API. Note, currently the [mysql_config](https://dev.mysql.com/doc/refman/5.5/en/c-api-building-clients.html) program is not being used.
+* `SOCI_MYSQL` - boolean - Should CMake try to detect [mysqlclient](https://dev.mysql.com/doc/refman/5.5/en/c-api.html) libraries providing MySQL C API. Note, currently the [mysql_config](https://dev.mysql.com/doc/refman/5.5/en/c-api-building-clients.html) program is not being used.
 * `MYSQL_DIR` - string - Path to MySQL installation root directory. CMake will scan subdirectories `MYSQL_DIR/include` and `MYSQL_DIR/lib` respectively for MySQL headers and libraries.
 * `MYSQL_INCLUDE_DIR` - string - Path to MySQL include directory where CMake should look for `mysql.h` header.
 * `MYSQL_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
@@ -137,7 +137,7 @@ Some other build options:
 
 #### ODBC
 
-* `WITH_ODBC` - boolean - Should CMake try to detect ODBC libraries. On Unix systems, CMake tries to find [unixODBC](http://www.unixodbc.org/) or [iODBC](http://www.iodbc.org/) implementations.
+* `SOCI_ODBC` - boolean - Should CMake try to detect ODBC libraries. On Unix systems, CMake tries to find [unixODBC](http://www.unixodbc.org/) or [iODBC](http://www.iodbc.org/) implementations.
 * `ODBC_INCLUDE_DIR` - string - Path to ODBC implementation include directories where CMake should look for `sql.h` header.
 * `ODBC_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
 * `SOCI_ODBC` - boolean - Requests to build [ODBC](backends/odbc.md) backend. Automatically switched on, if `WITH_ODBC` is set to ON.
@@ -145,7 +145,7 @@ Some other build options:
 
 #### Oracle
 
-* `WITH_ORACLE` - boolean - Should CMake try to detect [Oracle Call Interface (OCI)](http://en.wikipedia.org/wiki/Oracle_Call_Interface) libraries.
+* `SOCI_ORACLE` - boolean - Should CMake try to detect [Oracle Call Interface (OCI)](http://en.wikipedia.org/wiki/Oracle_Call_Interface) libraries.
 * `ORACLE_INCLUDE_DIR` - string - Path to Oracle include directory where CMake should look for `oci.h` header.
 * `ORACLE_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
 * `SOCI_ORACLE` - boolean - Requests to build [Oracle](backends/oracle.md) backend. Automatically switched on, if `WITH_ORACLE` is set to ON.
@@ -153,7 +153,7 @@ Some other build options:
 
 #### PostgreSQL
 
-* `WITH_POSTGRESQL` - boolean - Should CMake try to detect PostgreSQL client interface libraries. SOCI relies on [libpq](http://www.postgresql.org/docs/current/static/libpq.html") C library.
+* `SOCI_POSTGRESQL` - boolean - Should CMake try to detect PostgreSQL client interface libraries. SOCI relies on [libpq](http://www.postgresql.org/docs/current/static/libpq.html") C library.
 * `POSTGRESQL_INCLUDE_DIR` - string - Path to PostgreSQL include directory where CMake should look for `libpq-fe.h` header.
 * `POSTGRESQL_LIBRARY` - string - Full paths to libraries to link SOCI against to enable the backend support. The `POSTGRESQL_LIBRARIES` will be set with PostgreSQL libraries needed for linking.
 * `SOCI_POSTGRESQL` - boolean - Requests to build [PostgreSQL](backends/postgresql.md) backend. Automatically switched on, if `WITH_POSTGRESQL` is set to ON.
@@ -161,7 +161,7 @@ Some other build options:
 
 #### SQLite 3
 
-* `WITH_SQLITE3` - boolean - Should CMake try to detect SQLite C/C++ library. As bonus, the configuration tries OSGeo4W distribution if OSGEO4W_ROOT environment variable is set.
+* `SOCI_SQLITE3` - boolean - Should CMake try to detect SQLite C/C++ library. As bonus, the configuration tries OSGeo4W distribution if OSGEO4W_ROOT environment variable is set.
 * `SQLITE3_INCLUDE_DIR` - string - Path to SQLite 3 include directory where CMake should look for `sqlite3.h` header.
 * `SQLITE3_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
 * `SOCI_SQLITE3` - boolean - Requests to build [SQLite3](backends/sqlite3.md) backend. Automatically switched on, if `WITH_SQLITE3` is set to ON.
