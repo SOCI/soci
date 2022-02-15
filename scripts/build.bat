@@ -3,7 +3,7 @@ rem Runs CMake to configure SOCI for Visual Studio 2017.
 rem Runs MSBuild to build the generated solution.
 rem
 rem Usage:
-rem 1. Copy build.bat to build.locale.bat (git ignored file)
+rem 1. Copy build.bat to build.local.bat (git ignored file)
 rem 2. Make your adjustments in the CONFIGURATION section below
 rem 3. Run build.local.bat 32|64
 rem 4. Optionally, run devenv.exe SOCI{32|64}.sln from command line
