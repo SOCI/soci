@@ -4660,6 +4660,8 @@ TEST_CASE_METHOD(common_tests, "Insert error", "[core][insert][exception]")
                 age = *a;
                 st.execute(true);
             }
+
+            FAIL("exception expected on unique constraint violation with prepared statement not thrown");
         }
         catch (soci_error const &e)
         {
