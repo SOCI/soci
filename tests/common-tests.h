@@ -4654,12 +4654,14 @@ TEST_CASE_METHOD(common_tests, "Insert error", "[core][insert][exception]")
         try
         {
             int const *a = ages;
-            for (char const* const* n = names; n; ++n, ++a)
+            for (char const* const* n = names; *n; ++n, ++a)
             {
                 name = *n;
                 age = *a;
                 st.execute(true);
             }
+
+            FAIL("exception expected on unique constraint violation with prepared statement not thrown");
         }
         catch (soci_error const &e)
         {
