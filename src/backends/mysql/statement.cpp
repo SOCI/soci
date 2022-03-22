@@ -440,6 +440,7 @@ void mysql_statement_backend::describe_column(int colNum,
         type = dt_date;
         break;
 //  case MYSQL_TYPE_VARCHAR:
+    case 245:                   //MYSQL_TYPE_JSON:
     case FIELD_TYPE_VAR_STRING: //MYSQL_TYPE_VAR_STRING:
     case FIELD_TYPE_STRING:     //MYSQL_TYPE_STRING:
     case FIELD_TYPE_BLOB:       // TEXT OR BLOB
