@@ -261,7 +261,7 @@ sql << "CREATE TABLE test(a INTEGER)";
 
 {
     std::vector<int> v(10);
-    db << "SELECT value FROM numbers", soci::into(v);
+    sql << "SELECT value FROM numbers", soci::into(v);
     for (int i = 0; i < v.size(); ++i)
         std::cout << "value " << i << ": " << v[i] << std::endl;
 }
