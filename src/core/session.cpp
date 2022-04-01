@@ -144,6 +144,30 @@ session::session(connection_pool & pool)
 
 session::~session()
 {
+    transaction * transaction_local = this->transaction_; //Save the pointer
+
+    this->transaction_ = NULL; //Prevent callback in method transaction::destructor() -> session::rollback() from this object
+
+    if ( transaction_local != NULL )
+    {
+        if ( transaction_local->by_session() )  //Created by this session object?
+        {
+            transaction_local->handled_ = true; //Disable the transaction object. Prevent any operation in transaction object.
+
+            delete transaction_local;           //Yes is created. Delete transaction object. No rollback in transaction::destructor
+
+            backEnd_->rollback();
+        }
+        else if ( transaction_local->is_active() ) //Not created by session object. Still transaction active?
+        {
+            transaction_local->rollback();         //Yes is active. Only force rollback and disable the transaction object handled_ = true
+
+            transaction_local->handled_ = true;    //Stay absolute sure of disable the transaction object. We closed the session no way this transaction are valid anymore
+        }
+
+        transaction_local = NULL;                  //Clear reference to transaction object
+    }
+
     if (isFromPool_)
     {
         pool_->give_back(poolPosition_);
@@ -152,20 +176,6 @@ session::~session()
     {
         delete query_transformation_;
         delete backEnd_;
-    }
-
-    if ( this->transaction_ != NULL )
-    {
-        if ( this->transaction_->by_session() )  //Created by this session object?
-        {
-            delete this->transaction_;           //Yes is created. Delete transaction object. Force rollback in destructor
-        }
-        else if ( this->transaction_->is_active() ) //Not created by session object. Still transaction active?
-        {
-            this->transaction_->rollback();      //Yes is active. Only force rollback and disable the transaction object handled_ = true
-        }
-
-        this->transaction_ = NULL;            //Clear reference tho transaction object
     }
 }
 
@@ -214,6 +224,30 @@ void session::open(std::string const & connectString)
 
 void session::close()
 {
+    transaction * transaction_local = this->transaction_; //Save the pointer
+
+    this->transaction_ = NULL; //Prevent callback in method transaction::destructor() -> session::rollback() from this object
+
+    if ( transaction_local != NULL )
+    {
+        if ( transaction_local->by_session() )  //Created by this session object?
+        {
+            transaction_local->handled_ = true; //Disable the transaction object. Prevent any operation in transaction object.
+
+            delete transaction_local;           //Yes is created. Delete transaction object. No rollback in destructor
+
+            backEnd_->rollback();               //Manual rollback
+        }
+        else if ( transaction_local->is_active() ) //Not created by session object. Still transaction active?
+        {
+            transaction_local->rollback();      //Yes is active. Only force rollback and disable the transaction object handled_ = true
+
+            transaction_local->handled_ = true;    //Stay absolute sure of disable the transaction object. We closed the session no way this transaction are valid anymore
+        }
+
+        transaction_local = NULL;            //Clear reference to transaction object
+    }
+
     if (isFromPool_)
     {
         pool_->at(poolPosition_).close();
@@ -223,20 +257,6 @@ void session::close()
     {
         delete backEnd_;
         backEnd_ = NULL;
-    }
-
-    if ( this->transaction_ )
-    {
-        if ( this->transaction_->by_session() )  //Created by this session object?
-        {
-            delete this->transaction_;           //Yes is created. Delete transaction object. Force rollback in destructor
-        }
-        else if ( this->transaction_->is_active() ) //Not created by session object. Still transaction active?
-        {
-            this->transaction_->rollback();      //Yes is active. Only force rollback and disable the transaction object handled_ = true
-        }
-
-        this->transaction_ = NULL;            //Clear reference to transaction object
     }
 }
 
