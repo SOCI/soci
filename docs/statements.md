@@ -232,7 +232,7 @@ sql << "CREATE TABLE test(a INTEGER)";
 
 {
     // prepare statement
-    soci::statement stmt = (db.prepare << "INSERT INTO numbers(value) VALUES(:val)");
+    soci::statement stmt = (sql.prepare << "INSERT INTO numbers(value) VALUES(:val)");
 
     {
         // first insert
