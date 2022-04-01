@@ -38,14 +38,13 @@ class blob_backend;
 
 class connection_pool;
 class failover_callback;
+class transaction;
 
 class SOCI_DECL session
 {
 private:
 
     void set_query_transformation_(cxx_details::auto_ptr<details::query_transformation_function>& qtf);
-
-
 
 public:
     session();
@@ -66,6 +65,12 @@ public:
 
     // check if we have a working connection to the database
     bool is_connected() const SOCI_NOEXCEPT;
+
+    void allow_multiple_transaction( bool allow_multiple_transaction );
+    bool allow_multiple_transaction() const;
+
+    transaction * current_transaction();
+    bool current_transaction_is_active();
 
     void begin();
     void commit();
@@ -209,6 +214,11 @@ private:
     bool isFromPool_;
     std::size_t poolPosition_;
     connection_pool * pool_;
+
+    transaction * transaction_;
+    bool allow_multiple_transaction_;
+
+    friend class transaction;
 };
 
 } // namespace soci

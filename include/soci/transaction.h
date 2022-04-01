@@ -24,9 +24,21 @@ public:
     void commit();
     void rollback();
 
+    inline session* current_session();
+
+    bool is_active();
+    bool by_session();
+
 private:
+    //Private constructor use from session object in case not assigned transaction.
+    //Used in src/core/session.cpp:343
+    transaction(session& sql, bool by_session);
+
     bool handled_;
     session& sql_;
+    bool by_session_;
+
+    friend class session;
 
     SOCI_NOT_COPYABLE(transaction)
 };
