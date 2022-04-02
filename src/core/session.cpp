@@ -11,6 +11,7 @@
 #include "soci/connection-pool.h"
 #include "soci/soci-backend.h"
 #include "soci/query_transformation.h"
+#include "soci/transaction.h"
 
 using namespace soci;
 using namespace soci::details;
@@ -76,7 +77,8 @@ session::session()
     : once(this), prepare(this), query_transformation_(NULL),
       logger_(new standard_logger_impl),
       uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      isFromPool_(false), pool_(NULL),
+      transaction_(NULL), allow_multiple_transaction_(true)
 {
 }
 
@@ -85,7 +87,8 @@ session::session(connection_parameters const & parameters)
       logger_(new standard_logger_impl),
       lastConnectParameters_(parameters),
       uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      isFromPool_(false), pool_(NULL),
+      transaction_(NULL), allow_multiple_transaction_(true)
 {
     open(lastConnectParameters_);
 }
@@ -96,7 +99,8 @@ session::session(backend_factory const & factory,
     logger_(new standard_logger_impl),
       lastConnectParameters_(factory, connectString),
       uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      isFromPool_(false), pool_(NULL),
+      transaction_(NULL), allow_multiple_transaction_(true)
 {
     open(lastConnectParameters_);
 }
@@ -107,7 +111,8 @@ session::session(std::string const & backendName,
       logger_(new standard_logger_impl),
       lastConnectParameters_(backendName, connectString),
       uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      isFromPool_(false), pool_(NULL),
+      transaction_(NULL), allow_multiple_transaction_(true)
 {
     open(lastConnectParameters_);
 }
@@ -117,7 +122,8 @@ session::session(std::string const & connectString)
       logger_(new standard_logger_impl),
       lastConnectParameters_(connectString),
       uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      isFromPool_(false), pool_(NULL),
+      transaction_(NULL), allow_multiple_transaction_(true)
 {
     open(lastConnectParameters_);
 }
@@ -125,7 +131,8 @@ session::session(std::string const & connectString)
 session::session(connection_pool & pool)
     : query_transformation_(NULL),
       logger_(new standard_logger_impl),
-      isFromPool_(true), pool_(&pool)
+      isFromPool_(true), pool_(&pool),
+      transaction_(NULL), allow_multiple_transaction_(true)
 {
     poolPosition_ = pool.lease();
     session & pooledSession = pool.at(poolPosition_);
@@ -137,6 +144,30 @@ session::session(connection_pool & pool)
 
 session::~session()
 {
+    transaction * transaction_local = this->transaction_; //Save the pointer
+
+    this->transaction_ = NULL; //Prevent callback in method transaction::destructor() -> session::rollback() from this object
+
+    if ( transaction_local != NULL )
+    {
+        if ( transaction_local->by_session() )  //Created by this session object?
+        {
+            transaction_local->handled_ = true; //Disable the transaction object. Prevent any operation in transaction object.
+
+            delete transaction_local;           //Yes is created. Delete transaction object. No rollback in transaction::destructor
+
+            backEnd_->rollback();
+        }
+        else if ( transaction_local->is_active() ) //Not created by session object. Still transaction active?
+        {
+            transaction_local->rollback();         //Yes is active. Only force rollback and disable the transaction object handled_ = true
+
+            transaction_local->handled_ = true;    //Stay absolute sure of disable the transaction object. We closed the session no way this transaction are valid anymore
+        }
+
+        transaction_local = NULL;                  //Clear reference to transaction object
+    }
+
     if (isFromPool_)
     {
         pool_->give_back(poolPosition_);
@@ -193,6 +224,30 @@ void session::open(std::string const & connectString)
 
 void session::close()
 {
+    transaction * transaction_local = this->transaction_; //Save the pointer
+
+    this->transaction_ = NULL; //Prevent callback in method transaction::destructor() -> session::rollback() from this object
+
+    if ( transaction_local != NULL )
+    {
+        if ( transaction_local->by_session() )  //Created by this session object?
+        {
+            transaction_local->handled_ = true; //Disable the transaction object. Prevent any operation in transaction object.
+
+            delete transaction_local;           //Yes is created. Delete transaction object. No rollback in destructor
+
+            backEnd_->rollback();               //Manual rollback
+        }
+        else if ( transaction_local->is_active() ) //Not created by session object. Still transaction active?
+        {
+            transaction_local->rollback();      //Yes is active. Only force rollback and disable the transaction object handled_ = true
+
+            transaction_local->handled_ = true;    //Stay absolute sure of disable the transaction object. We closed the session no way this transaction are valid anymore
+        }
+
+        transaction_local = NULL;            //Clear reference to transaction object
+    }
+
     if (isFromPool_)
     {
         pool_->at(poolPosition_).close();
@@ -251,9 +306,67 @@ bool session::is_connected() const SOCI_NOEXCEPT
     }
 }
 
+void session::allow_multiple_transaction( bool allow_multiple_transaction )
+{
+    this->allow_multiple_transaction_ = allow_multiple_transaction;
+}
+
+bool session::allow_multiple_transaction() const
+{
+    return this->allow_multiple_transaction_;
+}
+
+transaction * session::current_transaction()
+{
+    return this->transaction_;
+}
+
+bool session::current_transaction_is_active()
+{
+    return this->transaction_ != NULL ? transaction_->is_active(): false;
+}
+
 void session::begin()
 {
     ensureConnected(backEnd_);
+
+    transaction * transaction_local = this->transaction_; //Save the pointer
+
+    this->transaction_ = NULL; //Prevent callback in method transaction::destructor() -> session::rollback() from this object
+
+    if ( transaction_local )
+    {
+
+        if ( this->allow_multiple_transaction_ == false )
+        {
+            if ( transaction_local->by_session() )     //Created by this session object?
+            {
+                delete transaction_local;              //Yes is created. Delete transaction object. Force rollback in destructor. Here callback to session::rollback()
+            }
+            else if ( transaction_local->is_active() ) //Not created by session object. Still transaction active?
+            {
+                this->transaction_->rollback();        //Yes is active. Only force rollback and disable the transaction object put handled_ = true.
+            }
+        }
+        else if ( transaction_local->by_session() )  //Created by this session object?
+        {
+            delete transaction_local;                //Yes is created. Delete transaction object. Force rollback in destructor. Here callback to session::rollback()
+        }
+        else
+        {
+            this->transaction_ = transaction_local;  //Recover the transaction back
+        }
+
+        transaction_local = NULL;                 //Clear reference to transaction object
+    }
+
+    if ( this->transaction_ == NULL ) //No transaction object associated yet?
+    {
+        //Create transaction object because not associated yet
+        //Mark the by_session to true, to indicate is create inside of session object.
+        //by_session help to know when is need delete the pointer and prevent memory leak
+        this->transaction_ = new transaction( *this, true ); //No auto start transaction private constructor. Because we start the transaction in the next line
+    }
 
     backEnd_->begin();
 }
@@ -263,6 +376,24 @@ void session::commit()
     ensureConnected(backEnd_);
 
     backEnd_->commit();
+
+    if ( this->transaction_ != NULL )
+    {
+       bool old_handled_state = this->transaction_->handled_;
+
+       this->transaction_->handled_ = true;    //Disable the transaction object. Prevent any operation in transaction object.
+
+       if ( this->transaction_->by_session() ) //Created by this session object?
+       {
+           delete this->transaction_;          //Yes is created. Delete transaction object. No rollback in destructor
+       }
+       else if ( this->allow_multiple_transaction_ )
+       {
+           this->transaction_->handled_ = old_handled_state;    //Enable again the transaction object. To allow normal operation in transaction object.
+       }
+
+       this->transaction_ = NULL;           //Clear reference to transaction object
+    }
 }
 
 void session::rollback()
@@ -270,6 +401,24 @@ void session::rollback()
     ensureConnected(backEnd_);
 
     backEnd_->rollback();
+
+    if ( this->transaction_ )
+    {
+       bool old_handled_state = this->transaction_->handled_;
+
+       this->transaction_->handled_ = true;    //Disable the transaction object. Prevent any operation in transaction object.
+
+       if ( this->transaction_->by_session() ) //Created by this session object?
+       {
+           delete this->transaction_;          //Yes is created. Delete transaction object. No rollback in destructor
+       }
+       else if ( this->allow_multiple_transaction_ )
+       {
+           this->transaction_->handled_ = old_handled_state;    //Enable again the transaction object. To allow normal operation in transaction object.
+       }
+
+       this->transaction_ = NULL;           //Clear reference to transaction object
+    }
 }
 
 std::ostringstream & session::get_query_stream()
