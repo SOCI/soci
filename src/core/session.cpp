@@ -316,12 +316,12 @@ bool session::allow_multiple_transaction() const
     return this->allow_multiple_transaction_;
 }
 
-transaction * session::current_transaction()
+transaction * session::current_transaction() const
 {
     return this->transaction_;
 }
 
-bool session::current_transaction_is_active()
+bool session::current_transaction_is_active() const
 {
     return this->transaction_ != NULL ? transaction_->is_active(): false;
 }

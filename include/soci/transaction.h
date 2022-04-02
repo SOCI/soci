@@ -24,10 +24,10 @@ public:
     void commit();
     void rollback();
 
-    inline session* current_session();
+    inline session* current_session() const;
 
-    bool is_active();
-    bool by_session();
+    bool is_active() const;
+    bool by_session() const;
 
 private:
     //Private constructor use from session object in case not assigned transaction.

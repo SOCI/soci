@@ -91,17 +91,17 @@ void transaction::rollback()
     handled_ = true;
 }
 
-inline session* transaction::current_session()
+inline session* transaction::current_session() const
 {
     return &sql_;
 }
 
-bool transaction::is_active()
+bool transaction::is_active() const
 {
     return this->handled_ == false;
 }
 
-bool transaction::by_session() //This transaction is auto created inside of the object session? src/core/session.cpp:291
+bool transaction::by_session() const //This transaction is auto created inside of the object session? src/core/session.cpp:291
 {
     return this->by_session_;
 }

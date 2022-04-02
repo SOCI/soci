@@ -69,8 +69,8 @@ public:
     void allow_multiple_transaction( bool allow_multiple_transaction );
     bool allow_multiple_transaction() const;
 
-    transaction * current_transaction();
-    bool current_transaction_is_active();
+    transaction * current_transaction() const;
+    bool current_transaction_is_active() const;
 
     void begin();
     void commit();
