@@ -51,3 +51,13 @@ void transaction::rollback()
     sql_.rollback();
     handled_ = true;
 }
+
+inline session& transaction::current_session() const
+{
+    return sql_;
+}
+
+bool transaction::is_active() const
+{
+    return this->handled_ == false;
+}

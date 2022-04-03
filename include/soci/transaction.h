@@ -24,7 +24,12 @@ public:
     void commit();
     void rollback();
 
+    inline session& current_session() const;
+
+    bool is_active() const;
+
 private:
+
     bool handled_;
     session& sql_;
 
