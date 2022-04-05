@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <limits>
+#include <stdint.h>
 #include <sstream>
 
 
@@ -111,24 +112,44 @@ void sqlite3_vector_use_type_backend::pre_use(indicator const * ind)
                 break;
             }
 
-            case x_short:
-                col.type_ = dt_integer;
-                col.int32_ = (*static_cast<std::vector<exchange_type_traits<x_short>::value_type> *>(data_))[i];
+            case x_int8:
+                col.type_ = dt_int8;
+                col.int8_ = (*static_cast<std::vector<exchange_type_traits<x_int8>::value_type> *>(data_))[i];
                 break;
 
-            case x_integer:
-                col.type_ = dt_integer;
-                col.int32_ = (*static_cast<std::vector<exchange_type_traits<x_integer>::value_type> *>(data_))[i];
+            case x_uint8:
+                col.type_ = dt_uint8;
+                col.uint8_ = (*static_cast<std::vector<exchange_type_traits<x_uint8>::value_type> *>(data_))[i];
                 break;
 
-            case x_long_long:
-                col.type_ = dt_long_long;
-                col.int64_ = (*static_cast<std::vector<exchange_type_traits<x_long_long>::value_type> *>(data_))[i];
+            case x_int16:
+                col.type_ = dt_int16;
+                col.int16_ = (*static_cast<std::vector<exchange_type_traits<x_int16>::value_type> *>(data_))[i];
                 break;
 
-            case x_unsigned_long_long:
-                col.type_ = dt_long_long;
-                col.int64_ = (*static_cast<std::vector<exchange_type_traits<x_unsigned_long_long>::value_type> *>(data_))[i];
+            case x_uint16:
+                col.type_ = dt_uint16;
+                col.uint16_ = (*static_cast<std::vector<exchange_type_traits<x_uint16>::value_type> *>(data_))[i];
+                break;
+
+            case x_int32:
+                col.type_ = dt_int32;
+                col.int32_ = (*static_cast<std::vector<exchange_type_traits<x_int32>::value_type> *>(data_))[i];
+                break;
+
+            case x_uint32:
+                col.type_ = dt_uint32;
+                col.uint32_ = (*static_cast<std::vector<exchange_type_traits<x_uint32>::value_type> *>(data_))[i];
+                break;
+
+            case x_int64:
+                col.type_ = dt_int64;
+                col.int64_ = (*static_cast<std::vector<exchange_type_traits<x_int64>::value_type> *>(data_))[i];
+                break;
+
+            case x_uint64:
+                col.type_ = dt_uint64;
+                col.uint64_ = (*static_cast<std::vector<exchange_type_traits<x_uint64>::value_type> *>(data_))[i];
                 break;
 
             case x_double:
@@ -176,17 +197,29 @@ std::size_t sqlite3_vector_use_type_backend::size()
     case x_char:
         sz = get_vector_size<char>(data_);
         break;
-    case x_short:
-        sz = get_vector_size<short>(data_);
+    case x_int8:
+        sz = get_vector_size<int8_t>(data_);
         break;
-    case x_integer:
-        sz = get_vector_size<int>(data_);
+    case x_uint8:
+        sz = get_vector_size<uint8_t>(data_);
         break;
-    case x_long_long:
-        sz = get_vector_size<long long>(data_);
+    case x_int16:
+        sz = get_vector_size<int16_t>(data_);
         break;
-    case x_unsigned_long_long:
-        sz = get_vector_size<unsigned long long>(data_);
+    case x_uint16:
+        sz = get_vector_size<uint16_t>(data_);
+        break;
+    case x_int32:
+        sz = get_vector_size<int32_t>(data_);
+        break;
+    case x_uint32:
+        sz = get_vector_size<uint32_t>(data_);
+        break;
+    case x_int64:
+        sz = get_vector_size<int64_t>(data_);
+        break;
+    case x_uint64:
+        sz = get_vector_size<uint64_t>(data_);
         break;
     case x_double:
         sz = get_vector_size<double>(data_);

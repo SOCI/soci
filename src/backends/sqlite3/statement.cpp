@@ -13,6 +13,7 @@
 #include <cstring>
 #include <functional>
 #include <sstream>
+#include <stdint.h>
 #include <string>
 
 #ifdef _MSC_VER
@@ -177,13 +178,29 @@ sqlite3_statement_backend::load_rowset(int totalRows)
                             col.double_ = sqlite3_column_double(stmt_, c);
                             break;
 
-                        case dt_integer:
-                            col.int32_ = sqlite3_column_int(stmt_, c);
+                        case dt_int8:
+                            col.int8_ = static_cast<int8_t>(sqlite3_column_int(stmt_, c));
                             break;
-
-                        case dt_long_long:
-                        case dt_unsigned_long_long:
+                        case dt_uint8:
+                            col.uint8_ = static_cast<uint8_t>(sqlite3_column_int(stmt_, c));
+                            break;
+                        case dt_int16:
+                            col.int16_ = static_cast<int16_t>(sqlite3_column_int(stmt_, c));
+                            break;
+                        case dt_uint16:
+                            col.uint16_ = static_cast<uint16_t>(sqlite3_column_int(stmt_, c));
+                            break;
+                        case dt_int32:
+                            col.int32_ = static_cast<int32_t>(sqlite3_column_int(stmt_, c));
+                            break;
+                        case dt_uint32:
+                            col.uint32_ = static_cast<uint32_t>(sqlite3_column_int(stmt_, c));
+                            break;
+                        case dt_int64:
                             col.int64_ = sqlite3_column_int64(stmt_, c);
+                            break;
+                        case dt_uint64:
+                            col.uint64_ = static_cast<sqlite_api::sqlite3_uint64>(sqlite3_column_int64(stmt_, c));
                             break;
 
                         case dt_blob:
@@ -283,13 +300,29 @@ sqlite3_statement_backend::bind_and_execute(int number)
                         bindRes = sqlite3_bind_double(stmt_, pos, col.double_);
                         break;
 
-                    case dt_integer:
-                        bindRes = sqlite3_bind_int(stmt_, pos, col.int32_);
+                    case dt_int8:
+                        bindRes = sqlite3_bind_int(stmt_, pos, static_cast<int>(col.int8_));
                         break;
-
-                    case dt_long_long:
-                    case dt_unsigned_long_long:
+                    case dt_uint8:
+                        bindRes = sqlite3_bind_int(stmt_, pos, static_cast<int>(col.uint8_));
+                        break;
+                    case dt_int16:
+                        bindRes = sqlite3_bind_int(stmt_, pos, static_cast<int>(col.int16_));
+                        break;
+                    case dt_uint16:
+                        bindRes = sqlite3_bind_int(stmt_, pos, static_cast<int>(col.uint16_));
+                        break;
+                    case dt_int32:
+                        bindRes = sqlite3_bind_int(stmt_, pos, static_cast<int>(col.int32_));
+                        break;
+                    case dt_uint32:
+                        bindRes = sqlite3_bind_int64(stmt_, pos, static_cast<sqlite_api::sqlite3_int64>(col.uint32_));
+                        break;
+                    case dt_int64:
                         bindRes = sqlite3_bind_int64(stmt_, pos, col.int64_);
+                        break;
+                    case dt_uint64:
+                        bindRes = sqlite3_bind_int64(stmt_, pos, static_cast<sqlite_api::sqlite3_int64>(col.int64_));
                         break;
 
                     case dt_blob:
@@ -433,18 +466,22 @@ static sqlite3_data_type_map get_data_type_map()
     m["numeric"]            = dt_double;
     m["real"]               = dt_double;
 
-    // dt_integer
-    m["boolean"]            = dt_integer;
-    m["int"]                = dt_integer;
-    m["integer"]            = dt_integer;
-    m["int2"]               = dt_integer;
-    m["mediumint"]          = dt_integer;
-    m["smallint"]           = dt_integer;
-    m["tinyint"]            = dt_integer;
+    // dt_int8
+    m["tinyint"]            = dt_int8;
 
-    // dt_long_long
-    m["bigint"]             = dt_long_long;
-    m["int8"]               = dt_long_long;
+    // dt_int16
+    m["smallint"]           = dt_int16;
+
+    // dt_int32
+    m["boolean"]            = dt_int32;
+    m["int"]                = dt_int32;
+    m["integer"]            = dt_int32;
+    m["int2"]               = dt_int32;
+    m["mediumint"]          = dt_int32;
+
+    // dt_int64
+    m["bigint"]             = dt_int64;
+    m["int8"]               = dt_int64;
 
     // dt_string
     m["char"]               = dt_string;
@@ -457,8 +494,8 @@ static sqlite3_data_type_map get_data_type_map()
     m["varchar"]            = dt_string;
     m["varyingcharacter"]   = dt_string;
 
-    // dt_unsigned_long_long
-    m["unsignedbigint"]   = dt_unsigned_long_long;
+    // dt_uint64
+    m["unsignedbigint"]   = dt_uint64;
 
 
     return m;
@@ -524,7 +561,7 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
     switch (sqlite3_type)
     {
     case SQLITE_INTEGER:
-        type = dt_integer;
+        type = dt_int32;
         break;
     case SQLITE_FLOAT:
         type = dt_double;

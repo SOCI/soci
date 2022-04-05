@@ -26,7 +26,7 @@ using namespace soci::details;
 
 sqlite3_standard_use_type_backend::sqlite3_standard_use_type_backend(
         sqlite3_statement_backend &st)
-    : statement_(st), data_(NULL), type_(x_integer), position_(-1)
+    : statement_(st), data_(NULL), type_(x_int32), position_(-1)
 {
 }
 
@@ -112,24 +112,44 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
             break;
         }
 
-        case x_short:
-            col.type_ = dt_integer;
-            col.int32_ = exchange_type_cast<x_short>(data_);
+        case x_int8:
+            col.type_ = dt_int8;
+            col.int8_ = exchange_type_cast<x_int8>(data_);
             break;
 
-        case x_integer:
-            col.type_ = dt_integer;
-            col.int32_ = exchange_type_cast<x_integer>(data_);
+        case x_uint8:
+            col.type_ = dt_uint8;
+            col.uint8_ = exchange_type_cast<x_uint8>(data_);
             break;
 
-        case x_long_long:
-            col.type_ = dt_long_long;
-            col.int64_ = exchange_type_cast<x_long_long>(data_);
+        case x_int16:
+            col.type_ = dt_int16;
+            col.int16_ = exchange_type_cast<x_int16>(data_);
             break;
 
-        case x_unsigned_long_long:
-            col.type_ = dt_long_long;
-            col.int64_ = exchange_type_cast<x_unsigned_long_long>(data_);
+        case x_uint16:
+            col.type_ = dt_uint16;
+            col.uint16_ = exchange_type_cast<x_uint16>(data_);
+            break;
+
+        case x_int32:
+            col.type_ = dt_int32;
+            col.int32_ = exchange_type_cast<x_int32>(data_);
+            break;
+
+        case x_uint32:
+            col.type_ = dt_uint32;
+            col.uint32_ = exchange_type_cast<x_uint32>(data_);
+            break;
+
+        case x_int64:
+            col.type_ = dt_int64;
+            col.int64_ = exchange_type_cast<x_int64>(data_);
+            break;
+
+        case x_uint64:
+            col.type_ = dt_uint64;
+            col.uint64_ = exchange_type_cast<x_uint64>(data_);
             break;
 
         case x_double:
@@ -155,7 +175,7 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
 
         case x_rowid:
         {
-            col.type_ = dt_long_long;
+            col.type_ = dt_int64;
             // RowID is internally identical to unsigned long
             rowid *rid = static_cast<rowid *>(data_);
             sqlite3_rowid_backend *rbe = static_cast<sqlite3_rowid_backend *>(rid->get_backend());

@@ -17,6 +17,7 @@
 #endif
 
 #include <cstdarg>
+#include <stdint.h>
 #include <vector>
 #include <soci/soci-backend.h>
 
@@ -174,8 +175,14 @@ struct sqlite3_column
     union
     {
         sqlite3_column_buffer buffer_;
-        int int32_;
+        int8_t int8_;
+        uint8_t uint8_;
+        int16_t int16_;
+        uint16_t uint16_;
+        int32_t int32_;
+        uint32_t uint32_;
         sqlite_api::sqlite3_int64 int64_;
+        sqlite_api::sqlite3_uint64 uint64_;
         double double_;
     };
 };
@@ -318,9 +325,14 @@ struct sqlite3_session_backend : details::session_backend
             case dt_double:
                 return "real";
             case dt_date:
-            case dt_integer:
-            case dt_long_long:
-            case dt_unsigned_long_long:
+            case dt_int8:
+            case dt_uint8:
+            case dt_int16:
+            case dt_uint16:
+            case dt_int32:
+            case dt_uint32:
+            case dt_int64:
+            case dt_uint64:
                 return "integer";
             case dt_blob:
                 return "blob";
