@@ -747,7 +747,7 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     std::string ddl_t3 = "ddl_t3";
 
     // single-expression variant:
-    sql.create_table(ddl_t1).column("i", soci::dt_integer).column("j", soci::dt_integer);
+    sql.create_table(ddl_t1).column("i", soci::dt_int32).column("j", soci::dt_int32);
 
     // check whether this table was created:
 
@@ -780,13 +780,13 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     {
         if (ci.name == "i")
         {
-            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.type == soci::dt_int32);
             CHECK(ci.nullable);
             i_found = true;
         }
         else if (ci.name == "j")
         {
-            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.type == soci::dt_int32);
             CHECK(ci.nullable);
             j_found = true;
         }
@@ -806,24 +806,24 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     // (note: statement is executed when ddl object goes out of scope)
     {
         soci::ddl_type ddl = sql.create_table(ddl_t2);
-        ddl.column("i", soci::dt_integer);
-        ddl.column("j", soci::dt_integer);
-        ddl.column("k", soci::dt_integer)("not null");
+        ddl.column("i", soci::dt_int32);
+        ddl.column("j", soci::dt_int32);
+        ddl.column("k", soci::dt_int32)("not null");
         ddl.primary_key("t2_pk", "j");
     }
 
-    sql.add_column(ddl_t1, "k", soci::dt_integer);
+    sql.add_column(ddl_t1, "k", soci::dt_int32);
     sql.add_column(ddl_t1, "big", soci::dt_string, 0); // "unlimited" length -> text
     sql.drop_column(ddl_t1, "i");
 
     // or with constraint as in t2:
-    sql.add_column(ddl_t2, "m", soci::dt_integer)("not null");
+    sql.add_column(ddl_t2, "m", soci::dt_int32)("not null");
 
     // third table with a foreign key to the second one
     {
         soci::ddl_type ddl = sql.create_table(ddl_t3);
-        ddl.column("x", soci::dt_integer);
-        ddl.column("y", soci::dt_integer);
+        ddl.column("x", soci::dt_int32);
+        ddl.column("y", soci::dt_int32);
         ddl.foreign_key("t3_fk", "x", ddl_t2, "j");
     }
 
@@ -858,13 +858,13 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     {
         if (ci.name == "j")
         {
-            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.type == soci::dt_int32);
             CHECK(ci.nullable);
             j_found = true;
         }
         else if (ci.name == "k")
         {
-            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.type == soci::dt_int32);
             CHECK(ci.nullable);
             k_found = true;
         }
@@ -899,25 +899,25 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     {
         if (ci.name == "i")
         {
-            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.type == soci::dt_int32);
             CHECK(ci.nullable);
             i_found = true;
         }
         else if (ci.name == "j")
         {
-            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.type == soci::dt_int32);
             CHECK(ci.nullable == false); // primary key
             j_found = true;
         }
         else if (ci.name == "k")
         {
-            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.type == soci::dt_int32);
             CHECK(ci.nullable == false);
             k_found = true;
         }
         else if (ci.name == "m")
         {
-            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.type == soci::dt_int32);
             CHECK(ci.nullable == false);
             m_found = true;
         }
@@ -1312,8 +1312,8 @@ struct table_creator_one : public table_creator_base
         : table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, val integer, c char, "
-                 "str varchar(20), sh int2, ul numeric(20), d float8, "
-                 "num76 numeric(7,6), "
+                 "str varchar(20), sh int2, ll bigint, ul numeric(20), "
+                 "d float8, num76 numeric(7,6), "
                  "tm timestamp, i1 integer, i2 integer, i3 integer, "
                  "name varchar(20))";
     }
@@ -1415,6 +1415,11 @@ public:
     }
 
     bool has_fp_bug() const override
+    {
+        return false;
+    }
+
+    bool has_full_uint64_support() const override
     {
         return false;
     }
