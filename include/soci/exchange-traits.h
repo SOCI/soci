@@ -13,6 +13,7 @@
 #include "soci/type-wrappers.h"
 // std
 #include <ctime>
+#include <stdint.h>
 #include <string>
 #include <vector>
 
@@ -43,27 +44,100 @@ struct exchange_traits
 };
 
 template <>
-struct exchange_traits<short>
+struct exchange_traits<int8_t>
 {
     typedef basic_type_tag type_family;
-    enum { x_type = x_short };
+    enum { x_type = x_int8 };
 };
 
 template <>
-struct exchange_traits<unsigned short> : exchange_traits<short>
-{
-};
-
-template <>
-struct exchange_traits<int>
+struct exchange_traits<uint8_t>
 {
     typedef basic_type_tag type_family;
-    enum { x_type = x_integer };
+    enum { x_type = x_uint8 };
 };
 
 template <>
-struct exchange_traits<unsigned int> : exchange_traits<int>
+struct exchange_traits<int16_t>
 {
+    typedef basic_type_tag type_family;
+    enum { x_type = x_int16 };
+};
+
+template <>
+struct exchange_traits<uint16_t>
+{
+    typedef basic_type_tag type_family;
+    enum { x_type = x_uint16 };
+};
+
+template <>
+struct exchange_traits<int32_t>
+{
+    typedef basic_type_tag type_family;
+    enum { x_type = x_int32 };
+};
+
+template <>
+struct exchange_traits<uint32_t>
+{
+    typedef basic_type_tag type_family;
+    enum { x_type = x_uint32 };
+};
+
+template <>
+struct exchange_traits<int64_t>
+{
+    typedef basic_type_tag type_family;
+    enum { x_type = x_int64 };
+};
+
+template <>
+struct exchange_traits<uint64_t>
+{
+    typedef basic_type_tag type_family;
+    enum { x_type = x_uint64 };
+};
+
+#if defined(_WIN64)
+template <>
+struct exchange_traits<long> : exchange_traits<int32_t>
+{
+};
+
+template <>
+struct exchange_traits<unsigned long> : exchange_traits<uint32_t>
+{
+};
+#elif defined(__APPLE__)
+template <>
+struct exchange_traits<long> : exchange_traits<int64_t>
+{
+};
+
+template <>
+struct exchange_traits<unsigned long> : exchange_traits<uint64_t>
+{
+};
+#elif defined(__LP64__) || (__WORDSIZE == 64)
+template <>
+struct exchange_traits<long long> : exchange_traits<int64_t>
+{
+};
+
+template <>
+struct exchange_traits<unsigned long long> : exchange_traits<uint64_t>
+{
+};
+#else
+#error "Unhandled type architecture"
+#endif
+
+template <>
+struct exchange_traits<double>
+{
+    typedef basic_type_tag type_family;
+    enum { x_type = x_double };
 };
 
 template <>
@@ -71,44 +145,6 @@ struct exchange_traits<char>
 {
     typedef basic_type_tag type_family;
     enum { x_type = x_char };
-};
-
-template <>
-struct exchange_traits<long long>
-{
-    typedef basic_type_tag type_family;
-    enum { x_type = x_long_long };
-};
-
-template <>
-struct exchange_traits<unsigned long long>
-{
-    typedef basic_type_tag type_family;
-    enum { x_type = x_unsigned_long_long };
-};
-
-// long must be mapped either to x_integer or x_long_long:
-template<int long_size> struct long_traits_helper;
-template<> struct long_traits_helper<4> { enum { x_type = x_integer }; };
-template<> struct long_traits_helper<8> { enum { x_type = x_long_long }; };
-
-template <>
-struct exchange_traits<long int>
-{
-    typedef basic_type_tag type_family;
-    enum { x_type = long_traits_helper<sizeof(long int)>::x_type };
-};
-
-template <>
-struct exchange_traits<unsigned long> : exchange_traits<long>
-{
-};
-
-template <>
-struct exchange_traits<double>
-{
-    typedef basic_type_tag type_family;
-    enum { x_type = x_double };
 };
 
 template <>

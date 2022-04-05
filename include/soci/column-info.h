@@ -12,6 +12,8 @@
 #include "soci/type-conversion.h"
 #include "soci/values.h"
 
+#include <stdint.h>
+
 namespace soci
 {
 
@@ -39,15 +41,30 @@ struct type_conversion<column_info>
         case dt_double:
             return static_cast<std::size_t>(
                 v.get<double>(field_name, 0.0));
-        case dt_integer:
+        case dt_int8:
             return static_cast<std::size_t>(
-                v.get<int>(field_name, 0));
-        case dt_long_long:
+                v.get<int8_t>(field_name, 0));
+        case dt_uint8:
             return static_cast<std::size_t>(
-                v.get<long long>(field_name, 0ll));
-        case dt_unsigned_long_long:
+                v.get<uint8_t>(field_name, 0));
+        case dt_int16:
             return static_cast<std::size_t>(
-                v.get<unsigned long long>(field_name, 0ull));
+                v.get<int16_t>(field_name, 0));
+        case dt_uint16:
+            return static_cast<std::size_t>(
+                v.get<uint16_t>(field_name, 0));
+        case dt_int32:
+            return static_cast<std::size_t>(
+                v.get<int32_t>(field_name, 0));
+        case dt_uint32:
+            return static_cast<std::size_t>(
+                v.get<uint32_t>(field_name, 0));
+        case dt_int64:
+            return static_cast<std::size_t>(
+                v.get<int64_t>(field_name, 0ll));
+        case dt_uint64:
+            return static_cast<std::size_t>(
+                v.get<uint64_t>(field_name, 0ull));
             break;
         default:
             return 0u;
@@ -72,7 +89,7 @@ struct type_conversion<column_info>
         }
         else if (type_name == "integer" || type_name == "INTEGER")
         {
-            ci.type = dt_integer;
+            ci.type = dt_int32;
         }
         else if (type_name.find("number") != std::string::npos ||
             type_name.find("NUMBER") != std::string::npos ||
@@ -85,7 +102,7 @@ struct type_conversion<column_info>
             }
             else
             {
-                ci.type = dt_integer;
+                ci.type = dt_int32;
             }
         }
         else if (type_name.find("time") != std::string::npos ||

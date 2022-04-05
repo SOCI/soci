@@ -14,6 +14,7 @@
 #include "soci-compiler.h"
 #include <ctime>
 #include <cctype>
+#include <stdint.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -641,21 +642,51 @@ void statement_impl::bind_into<dt_double>()
 }
 
 template<>
-void statement_impl::bind_into<dt_integer>()
+void statement_impl::bind_into<dt_int8>()
 {
-    into_row<int>();
+    into_row<int8_t>();
 }
 
 template<>
-void statement_impl::bind_into<dt_long_long>()
+void statement_impl::bind_into<dt_uint8>()
 {
-    into_row<long long>();
+    into_row<uint8_t>();
 }
 
 template<>
-void statement_impl::bind_into<dt_unsigned_long_long>()
+void statement_impl::bind_into<dt_int16>()
 {
-    into_row<unsigned long long>();
+    into_row<int16_t>();
+}
+
+template<>
+void statement_impl::bind_into<dt_uint16>()
+{
+    into_row<uint16_t>();
+}
+
+template<>
+void statement_impl::bind_into<dt_int32>()
+{
+    into_row<int32_t>();
+}
+
+template<>
+void statement_impl::bind_into<dt_uint32>()
+{
+    into_row<uint32_t>();
+}
+
+template<>
+void statement_impl::bind_into<dt_int64>()
+{
+    into_row<int64_t>();
+}
+
+template<>
+void statement_impl::bind_into<dt_uint64>()
+{
+    into_row<uint64_t>();
 }
 
 template<>
@@ -694,14 +725,29 @@ void statement_impl::describe()
         case dt_double:
             bind_into<dt_double>();
             break;
-        case dt_integer:
-            bind_into<dt_integer>();
+        case dt_int8:
+            bind_into<dt_int8>();
             break;
-        case dt_long_long:
-            bind_into<dt_long_long>();
+        case dt_uint8:
+            bind_into<dt_uint8>();
             break;
-        case dt_unsigned_long_long:
-            bind_into<dt_unsigned_long_long>();
+        case dt_int16:
+            bind_into<dt_int16>();
+            break;
+        case dt_uint16:
+            bind_into<dt_uint16>();
+            break;
+        case dt_int32:
+            bind_into<dt_int32>();
+            break;
+        case dt_uint32:
+            bind_into<dt_uint32>();
+            break;
+        case dt_int64:
+            bind_into<dt_int64>();
+            break;
+        case dt_uint64:
+            bind_into<dt_uint64>();
             break;
         case dt_date:
             bind_into<dt_date>();

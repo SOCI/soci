@@ -33,14 +33,22 @@ inline std::size_t get_vector_size(exchange_type e, void *data)
             return exchange_vector_type_cast<x_char>(data).size();
         case x_stdstring:
             return exchange_vector_type_cast<x_stdstring>(data).size();
-        case x_short:
-            return exchange_vector_type_cast<x_short>(data).size();
-        case x_integer:
-            return exchange_vector_type_cast<x_integer>(data).size();
-        case x_long_long:
-            return exchange_vector_type_cast<x_long_long>(data).size();
-        case x_unsigned_long_long:
-            return exchange_vector_type_cast<x_unsigned_long_long>(data).size();
+        case x_int8:
+            return exchange_vector_type_cast<x_int8>(data).size();
+        case x_uint8:
+            return exchange_vector_type_cast<x_uint8>(data).size();
+        case x_int16:
+            return exchange_vector_type_cast<x_int16>(data).size();
+        case x_uint16:
+            return exchange_vector_type_cast<x_uint16>(data).size();
+        case x_int32:
+            return exchange_vector_type_cast<x_int32>(data).size();
+        case x_uint32:
+            return exchange_vector_type_cast<x_uint32>(data).size();
+        case x_int64:
+            return exchange_vector_type_cast<x_int64>(data).size();
+        case x_uint64:
+            return exchange_vector_type_cast<x_uint64>(data).size();
         case x_double:
             return exchange_vector_type_cast<x_double>(data).size();
         case x_stdtm:
@@ -68,17 +76,29 @@ inline void resize_vector(exchange_type e, void *data, std::size_t newSize)
         case x_stdstring:
             exchange_vector_type_cast<x_stdstring>(data).resize(newSize);
             return;
-        case x_short:
-            exchange_vector_type_cast<x_short>(data).resize(newSize);
+        case x_int8:
+            exchange_vector_type_cast<x_int8>(data).resize(newSize);
             return;
-        case x_integer:
-            exchange_vector_type_cast<x_integer>(data).resize(newSize);
+        case x_uint8:
+            exchange_vector_type_cast<x_uint8>(data).resize(newSize);
             return;
-        case x_long_long:
-            exchange_vector_type_cast<x_long_long>(data).resize(newSize);
+        case x_int16:
+            exchange_vector_type_cast<x_int16>(data).resize(newSize);
             return;
-        case x_unsigned_long_long:
-            exchange_vector_type_cast<x_unsigned_long_long>(data).resize(newSize);
+        case x_uint16:
+            exchange_vector_type_cast<x_uint16>(data).resize(newSize);
+            return;
+        case x_int32:
+            exchange_vector_type_cast<x_int32>(data).resize(newSize);
+            return;
+        case x_uint32:
+            exchange_vector_type_cast<x_uint32>(data).resize(newSize);
+            return;
+        case x_int64:
+            exchange_vector_type_cast<x_int64>(data).resize(newSize);
+            return;
+        case x_uint64:
+            exchange_vector_type_cast<x_uint64>(data).resize(newSize);
             return;
         case x_double:
             exchange_vector_type_cast<x_double>(data).resize(newSize);
@@ -112,10 +132,14 @@ inline std::string& vector_string_value(exchange_type e, void *data, std::size_t
         case x_longstring:
             return exchange_vector_type_cast<x_longstring>(data).at(ind).value;
         case x_char:
-        case x_short:
-        case x_integer:
-        case x_long_long:
-        case x_unsigned_long_long:
+        case x_int8:
+        case x_uint8:
+        case x_int16:
+        case x_uint16:
+        case x_int32:
+        case x_uint32:
+        case x_int64:
+        case x_uint64:
         case x_double:
         case x_stdtm:
         case x_statement:
