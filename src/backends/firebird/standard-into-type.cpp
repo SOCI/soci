@@ -76,18 +76,29 @@ void firebird_standard_into_type_backend::exchangeData()
         case x_char:
             exchange_type_cast<x_char>(data_) = getTextParam(var)[0];
             break;
-        case x_short:
-            exchange_type_cast<x_short>(data_) = from_isc<short>(var);
+        case x_int8:
+            exchange_type_cast<x_int8>(data_) = from_isc<int8_t>(var);
             break;
-        case x_integer:
-            exchange_type_cast<x_integer>(data_) = from_isc<int>(var);
+        case x_uint8:
+            exchange_type_cast<x_uint8>(data_) = from_isc<uint8_t>(var);
             break;
-        case x_long_long:
-            exchange_type_cast<x_long_long>(data_) = from_isc<long long>(var);
+        case x_int16:
+            exchange_type_cast<x_int16>(data_) = from_isc<int16_t>(var);
             break;
-        case x_unsigned_long_long:
-            exchange_type_cast<x_unsigned_long_long>(data_) =
-                from_isc<unsigned long long>(var);
+        case x_uint16:
+            exchange_type_cast<x_uint16>(data_) = from_isc<uint16_t>(var);
+            break;
+        case x_int32:
+            exchange_type_cast<x_int32>(data_) = from_isc<int32_t>(var);
+            break;
+        case x_uint32:
+            exchange_type_cast<x_uint32>(data_) = from_isc<uint32_t>(var);
+            break;
+        case x_int64:
+            exchange_type_cast<x_int64>(data_) = from_isc<int64_t>(var);
+            break;
+        case x_uint64:
+            exchange_type_cast<x_uint64>(data_) = from_isc<uint64_t>(var);
             break;
         case x_double:
             exchange_type_cast<x_double>(data_) = from_isc<double>(var);

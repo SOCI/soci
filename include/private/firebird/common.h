@@ -16,6 +16,7 @@
 #include <limits>
 #include <sstream>
 #include <iomanip>
+#include <stdint.h>
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -135,20 +136,20 @@ void to_isc(void * val, XSQLVAR * var, short x_scale = 0)
     {
     case SQL_SHORT:
         {
-            short tmp = static_cast<short>(round_for_isc(value*multiplier)/divisor);
-            std::memcpy(var->sqldata, &tmp, sizeof(short));
+            int16_t tmp = static_cast<int16_t>(round_for_isc(value*multiplier)/divisor);
+            std::memcpy(var->sqldata, &tmp, sizeof(int16_t));
         }
         break;
     case SQL_LONG:
         {
-            int tmp = static_cast<int>(round_for_isc(value*multiplier)/divisor);
-            std::memcpy(var->sqldata, &tmp, sizeof(int));
+            int32_t tmp = static_cast<int32_t>(round_for_isc(value*multiplier)/divisor);
+            std::memcpy(var->sqldata, &tmp, sizeof(int32_t));
         }
         break;
     case SQL_INT64:
         {
-            long long tmp = static_cast<long long>(round_for_isc(value*multiplier)/divisor);
-            std::memcpy(var->sqldata, &tmp, sizeof(long long));
+            int64_t tmp = static_cast<int64_t>(round_for_isc(value*multiplier)/divisor);
+            std::memcpy(var->sqldata, &tmp, sizeof(int64_t));
         }
         break;
     case SQL_FLOAT:
@@ -240,11 +241,11 @@ T1 from_isc(XSQLVAR * var)
     switch (var->sqltype & ~1)
     {
     case SQL_SHORT:
-        return static_cast<T1>(*reinterpret_cast<short*>(var->sqldata)/tens);
+        return static_cast<T1>(*reinterpret_cast<int16_t*>(var->sqldata)/tens);
     case SQL_LONG:
-        return static_cast<T1>(*reinterpret_cast<int*>(var->sqldata)/tens);
+        return static_cast<T1>(*reinterpret_cast<int32_t*>(var->sqldata)/tens);
     case SQL_INT64:
-        return static_cast<T1>(*reinterpret_cast<long long*>(var->sqldata)/tens);
+        return static_cast<T1>(*reinterpret_cast<int64_t*>(var->sqldata)/tens);
     case SQL_FLOAT:
         return static_cast<T1>(*reinterpret_cast<float*>(var->sqldata));
     case SQL_DOUBLE:

@@ -680,6 +680,18 @@ void firebird_statement_backend::describe_column(int colNum,
         type = dt_double;
         break;
     case SQL_SHORT:
+        if (var->sqlscale < 0)
+        {
+            if (session_.get_option_decimals_as_strings())
+                type = dt_string;
+            else
+                type = dt_double;
+        }
+        else
+        {
+            type = dt_int16;
+        }
+        break;
     case SQL_LONG:
         if (var->sqlscale < 0)
         {
@@ -690,7 +702,7 @@ void firebird_statement_backend::describe_column(int colNum,
         }
         else
         {
-            type = dt_integer;
+            type = dt_int32;
         }
         break;
     case SQL_INT64:
@@ -703,7 +715,7 @@ void firebird_statement_backend::describe_column(int colNum,
         }
         else
         {
-            type = dt_long_long;
+            type = dt_int64;
         }
         break;
         /* case SQL_BLOB:
