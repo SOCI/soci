@@ -299,13 +299,13 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
                 type = dt_double;
             }
         }
-        else if (dbprec <= std::numeric_limits<int>::digits10)
+        else if (dbprec <= std::numeric_limits<int32_t>::digits10)
         {
-            type = dt_integer;
+            type = dt_int32;
         }
         else
         {
-            type = dt_long_long;
+            type = dt_int64;
         }
         break;
     case OCI_TYPECODE_BDOUBLE:

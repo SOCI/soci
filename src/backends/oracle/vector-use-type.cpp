@@ -16,6 +16,7 @@
 #include <cstring>
 #include <ctime>
 #include <sstream>
+#include <stdint.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -52,22 +53,62 @@ void oracle_vector_use_type_backend::prepare_for_bind(
             data = &v[begin_];
         }
         break;
-    case x_short:
+    case x_int8:
         {
             oracleType = SQLT_INT;
-            elementSize = sizeof(short);
-            std::vector<short> *vp = static_cast<std::vector<short> *>(data_);
-            std::vector<short> &v(*vp);
+            elementSize = sizeof(int8_t);
+            std::vector<int8_t> *vp = static_cast<std::vector<int8_t> *>(data_);
+            std::vector<int8_t> &v(*vp);
             prepare_indicators(size());
             data = &v[begin_];
         }
         break;
-    case x_integer:
+    case x_uint8:
+        {
+            oracleType = SQLT_UIN;
+            elementSize = sizeof(uint8_t);
+            std::vector<uint8_t> *vp = static_cast<std::vector<uint8_t> *>(data_);
+            std::vector<uint8_t> &v(*vp);
+            prepare_indicators(size());
+            data = &v[begin_];
+        }
+        break;
+    case x_int16:
         {
             oracleType = SQLT_INT;
-            elementSize = sizeof(int);
-            std::vector<int> *vp = static_cast<std::vector<int> *>(data_);
-            std::vector<int> &v(*vp);
+            elementSize = sizeof(int16_t);
+            std::vector<int16_t> *vp = static_cast<std::vector<int16_t> *>(data_);
+            std::vector<int16_t> &v(*vp);
+            prepare_indicators(size());
+            data = &v[begin_];
+        }
+        break;
+    case x_uint16:
+        {
+            oracleType = SQLT_UIN;
+            elementSize = sizeof(uint16_t);
+            std::vector<uint16_t> *vp = static_cast<std::vector<uint16_t> *>(data_);
+            std::vector<uint16_t> &v(*vp);
+            prepare_indicators(size());
+            data = &v[begin_];
+        }
+        break;
+    case x_int32:
+        {
+            oracleType = SQLT_INT;
+            elementSize = sizeof(int32_t);
+            std::vector<int32_t> *vp = static_cast<std::vector<int32_t> *>(data_);
+            std::vector<int32_t> &v(*vp);
+            prepare_indicators(size());
+            data = &v[begin_];
+        }
+        break;
+    case x_uint32:
+        {
+            oracleType = SQLT_UIN;
+            elementSize = sizeof(uint32_t);
+            std::vector<uint32_t> *vp = static_cast<std::vector<uint32_t> *>(data_);
+            std::vector<uint32_t> &v(*vp);
             prepare_indicators(size());
             data = &v[begin_];
         }
@@ -85,7 +126,7 @@ void oracle_vector_use_type_backend::prepare_for_bind(
 
     // cases that require adjustments and buffer management
 
-    case x_long_long:
+    case x_int64:
         {
             std::size_t const vecSize = size();
             std::size_t const entrySize = 100; // arbitrary
@@ -99,7 +140,7 @@ void oracle_vector_use_type_backend::prepare_for_bind(
             prepare_indicators(vecSize);
         }
         break;
-    case x_unsigned_long_long:
+    case x_uint64:
         {
             std::size_t const vecSize = size();
             std::size_t const entrySize = 100; // arbitrary
@@ -225,33 +266,35 @@ void oracle_vector_use_type_backend::pre_use(indicator const *ind)
     {
         // nothing to do - already done in prepare_for_bind()
     }
-    else if (type_ == x_long_long)
+    else if (type_ == x_int64)
     {
-        std::vector<long long> *vp
-            = static_cast<std::vector<long long> *>(data_);
-        std::vector<long long> &v(*vp);
+        std::vector<int64_t> *vp
+            = static_cast<std::vector<int64_t> *>(data_);
+        std::vector<int64_t> &v(*vp);
 
         char *pos = buf_;
         std::size_t const entrySize = 100; // arbitrary, but consistent
         std::size_t const vecSize = size();
         for (std::size_t i = 0; i != vecSize; ++i)
         {
-            snprintf(pos, entrySize, "%" LL_FMT_FLAGS "d", v[begin_ + i]);
+            snprintf(pos, entrySize, "%" LL_FMT_FLAGS "d",
+                static_cast<long long>(v[begin_ + i]));
             pos += entrySize;
         }
     }
-    else if (type_ == x_unsigned_long_long)
+    else if (type_ == x_uint64)
     {
-        std::vector<unsigned long long> *vp
-            = static_cast<std::vector<unsigned long long> *>(data_);
-        std::vector<unsigned long long> &v(*vp);
+        std::vector<uint64_t> *vp
+            = static_cast<std::vector<uint64_t> *>(data_);
+        std::vector<uint64_t> &v(*vp);
 
         char *pos = buf_;
         std::size_t const entrySize = 100; // arbitrary, but consistent
         std::size_t const vecSize = size();
         for (std::size_t i = 0; i != vecSize; ++i)
         {
-            snprintf(pos, entrySize, "%" LL_FMT_FLAGS "u", v[begin_ + i]);
+            snprintf(pos, entrySize, "%" LL_FMT_FLAGS "u",
+                static_cast<unsigned long long>(v[begin_ + i]));
             pos += entrySize;
         }
     }

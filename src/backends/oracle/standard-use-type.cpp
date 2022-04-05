@@ -25,6 +25,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <sstream>
+#include <stdint.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -52,18 +53,54 @@ void oracle_standard_use_type_backend::prepare_for_bind(
             data = buf_;
         }
         break;
-    case x_short:
+    case x_int8:
         oracleType = SQLT_INT;
-        size = sizeof(short);
+        size = sizeof(int8_t);
         if (readOnly)
         {
             buf_ = new char[size];
             data = buf_;
         }
         break;
-    case x_integer:
+    case x_uint8:
+        oracleType = SQLT_UIN;
+        size = sizeof(uint8_t);
+        if (readOnly)
+        {
+            buf_ = new char[size];
+            data = buf_;
+        }
+        break;
+    case x_int16:
         oracleType = SQLT_INT;
-        size = sizeof(int);
+        size = sizeof(int16_t);
+        if (readOnly)
+        {
+            buf_ = new char[size];
+            data = buf_;
+        }
+        break;
+    case x_uint16:
+        oracleType = SQLT_UIN;
+        size = sizeof(uint16_t);
+        if (readOnly)
+        {
+            buf_ = new char[size];
+            data = buf_;
+        }
+        break;
+    case x_int32:
+        oracleType = SQLT_INT;
+        size = sizeof(int32_t);
+        if (readOnly)
+        {
+            buf_ = new char[size];
+            data = buf_;
+        }
+        break;
+    case x_uint32:
+        oracleType = SQLT_UIN;
+        size = sizeof(uint32_t);
         if (readOnly)
         {
             buf_ = new char[size];
@@ -81,8 +118,8 @@ void oracle_standard_use_type_backend::prepare_for_bind(
         break;
 
     // cases that require adjustments and buffer management
-    case x_long_long:
-    case x_unsigned_long_long:
+    case x_int64:
+    case x_uint64:
         oracleType = SQLT_STR;
         size = 100; // arbitrary buffer length
         buf_ = new char[size];
@@ -333,28 +370,54 @@ void oracle_standard_use_type_backend::pre_use(indicator const *ind)
             buf_[0] = exchange_type_cast<x_char>(data_);
         }
         break;
-    case x_short:
+    case x_int8:
         if (readOnly_)
         {
-            exchange_type_cast<x_short>(buf_) = exchange_type_cast<x_short>(data_);
+            exchange_type_cast<x_int8>(buf_) = exchange_type_cast<x_int8>(data_);
         }
         break;
-    case x_integer:
+    case x_uint8:
         if (readOnly_)
         {
-            exchange_type_cast<x_integer>(buf_) = exchange_type_cast<x_integer>(data_);
+            exchange_type_cast<x_uint8>(buf_) = exchange_type_cast<x_uint8>(data_);
         }
         break;
-    case x_long_long:
+    case x_int16:
+        if (readOnly_)
         {
-            size_t const size = 100; // arbitrary, but consistent with prepare_for_bind
-            snprintf(buf_, size, "%" LL_FMT_FLAGS "d", exchange_type_cast<x_long_long>(data_));
+            exchange_type_cast<x_int16>(buf_) = exchange_type_cast<x_int16>(data_);
         }
         break;
-    case x_unsigned_long_long:
+    case x_uint16:
+        if (readOnly_)
+        {
+            exchange_type_cast<x_uint16>(buf_) = exchange_type_cast<x_uint16>(data_);
+        }
+        break;
+    case x_int32:
+        if (readOnly_)
+        {
+            exchange_type_cast<x_int32>(buf_) = exchange_type_cast<x_int32>(data_);
+        }
+        break;
+    case x_uint32:
+        if (readOnly_)
+        {
+            exchange_type_cast<x_uint32>(buf_) = exchange_type_cast<x_uint32>(data_);
+        }
+        break;
+    case x_int64:
         {
             size_t const size = 100; // arbitrary, but consistent with prepare_for_bind
-            snprintf(buf_, size, "%" LL_FMT_FLAGS "u", exchange_type_cast<x_unsigned_long_long>(data_));
+            snprintf(buf_, size, "%" LL_FMT_FLAGS "d",
+                static_cast<long long>(exchange_type_cast<x_int64>(data_)));
+        }
+        break;
+    case x_uint64:
+        {
+            size_t const size = 100; // arbitrary, but consistent with prepare_for_bind
+            snprintf(buf_, size, "%" LL_FMT_FLAGS "u",
+                static_cast<unsigned long long>(exchange_type_cast<x_uint64>(data_)));
         }
         break;
     case x_double:
@@ -442,11 +505,11 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
                 }
             }
             break;
-        case x_short:
+        case x_int8:
             if (readOnly_)
             {
-                const short original = exchange_type_cast<x_short>(data_);
-                const short bound = exchange_type_cast<x_short>(buf_);
+                const int8_t original = exchange_type_cast<x_int8>(data_);
+                const int8_t bound = exchange_type_cast<x_int8>(buf_);
 
                 if (original != bound)
                 {
@@ -454,11 +517,11 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
                 }
             }
             break;
-        case x_integer:
+        case x_uint8:
             if (readOnly_)
             {
-                const int original = exchange_type_cast<x_integer>(data_);
-                const int bound = exchange_type_cast<x_integer>(buf_);
+                const uint8_t original = exchange_type_cast<x_uint8>(data_);
+                const uint8_t bound = exchange_type_cast<x_uint8>(buf_);
 
                 if (original != bound)
                 {
@@ -466,11 +529,11 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
                 }
             }
             break;
-        case x_long_long:
+        case x_int16:
             if (readOnly_)
             {
-                long long const original = exchange_type_cast<x_long_long>(data_);
-                long long const bound = std::strtoll(buf_, NULL, 10);
+                const int16_t original = exchange_type_cast<x_int16>(data_);
+                const int16_t bound = exchange_type_cast<x_int16>(buf_);
 
                 if (original != bound)
                 {
@@ -478,11 +541,59 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
                 }
             }
             break;
-        case x_unsigned_long_long:
+        case x_uint16:
             if (readOnly_)
             {
-                unsigned long long const original = exchange_type_cast<x_unsigned_long_long>(data_);
-                unsigned long long const bound = std::strtoull(buf_, NULL, 10);
+                const uint16_t original = exchange_type_cast<x_uint16>(data_);
+                const uint16_t bound = exchange_type_cast<x_uint16>(buf_);
+
+                if (original != bound)
+                {
+                    throw soci_error("Attempted modification of const use element");
+                }
+            }
+            break;
+        case x_int32:
+            if (readOnly_)
+            {
+                const int32_t original = exchange_type_cast<x_int32>(data_);
+                const int32_t bound = exchange_type_cast<x_int32>(buf_);
+
+                if (original != bound)
+                {
+                    throw soci_error("Attempted modification of const use element");
+                }
+            }
+            break;
+        case x_uint32:
+            if (readOnly_)
+            {
+                const uint32_t original = exchange_type_cast<x_uint32>(data_);
+                const uint32_t bound = exchange_type_cast<x_uint32>(buf_);
+
+                if (original != bound)
+                {
+                    throw soci_error("Attempted modification of const use element");
+                }
+            }
+            break;
+        case x_int64:
+            if (readOnly_)
+            {
+                int64_t const original = exchange_type_cast<x_int64>(data_);
+                int64_t const bound = std::strtoll(buf_, NULL, 10);
+
+                if (original != bound)
+                {
+                    throw soci_error("Attempted modification of const use element");
+                }
+            }
+            break;
+        case x_uint64:
+            if (readOnly_)
+            {
+                uint64_t const original = exchange_type_cast<x_uint64>(data_);
+                uint64_t const bound = std::strtoull(buf_, NULL, 10);
 
                 if (original != bound)
                 {

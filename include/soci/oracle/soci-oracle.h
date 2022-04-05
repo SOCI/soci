@@ -374,15 +374,19 @@ struct oracle_session_backend : details::session_backend
             }
             break;
 
-        case dt_integer:
+        case dt_int16:
+            res += "smallint";
+            break;
+
+        case dt_int32:
             res += "integer";
             break;
 
-        case dt_long_long:
+        case dt_int64:
             res += "number";
             break;
 
-        case dt_unsigned_long_long:
+        case dt_uint64:
             res += "number";
             break;
 
