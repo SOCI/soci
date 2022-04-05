@@ -12,6 +12,7 @@
 #include "soci-mktime.h"
 #include "common.h"
 #include <ctime>
+#include <stdint.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -45,21 +46,37 @@ void db2_standard_into_type_backend::define_by_pos(
         buf = new char[size];
         data = buf;
         break;
-    case x_short:
-        cType = SQL_C_SSHORT;
-        size = sizeof(short);
+    case x_int8:
+        cType = SQL_C_STINYINT;
+        size = sizeof(int8_t);
         break;
-    case x_integer:
+    case x_uint8:
+        cType = SQL_C_UTINYINT;
+        size = sizeof(uint8_t);
+        break;
+    case x_int16:
+        cType = SQL_C_SSHORT;
+        size = sizeof(int16_t);
+        break;
+    case x_uint16:
+        cType = SQL_C_USHORT;
+        size = sizeof(uint16_t);
+        break;
+    case x_int32:
         cType = SQL_C_SLONG;
         size = sizeof(SQLINTEGER);
         break;
-    case x_long_long:
-        cType = SQL_C_SBIGINT;
-        size = sizeof(long long);
+    case x_uint32:
+        cType = SQL_C_ULONG;
+        size = sizeof(SQLUINTEGER);
         break;
-    case x_unsigned_long_long:
+    case x_int64:
+        cType = SQL_C_SBIGINT;
+        size = sizeof(int64_t);
+        break;
+    case x_uint64:
         cType = SQL_C_UBIGINT;
-        size = sizeof(unsigned long long);
+        size = sizeof(uint64_t);
         break;
     case x_double:
         cType = SQL_C_DOUBLE;
@@ -73,7 +90,7 @@ void db2_standard_into_type_backend::define_by_pos(
         break;
     case x_rowid:
         cType = SQL_C_UBIGINT;
-        size = sizeof(unsigned long long);
+        size = sizeof(int64_t);
         break;
     default:
         throw soci_error("Into element used with non-supported type.");

@@ -262,12 +262,16 @@ SQLCHAR colNameBuffer[2048];
         type = dt_double;
         break;
     case SQL_TINYINT:
+        type = dt_int8;
+        break;
     case SQL_SMALLINT:
+        type = dt_int16;
+        break;
     case SQL_INTEGER:
-        type = dt_integer;
+        type = dt_int32;
         break;
     case SQL_BIGINT:
-        type = dt_long_long;
+        type = dt_int64;
         break;
     case SQL_CHAR:
     case SQL_VARCHAR:

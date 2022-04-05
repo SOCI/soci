@@ -14,6 +14,7 @@
 #include <cstring>
 #include <ctime>
 #include <sstream>
+#include <stdint.h>
 
 #ifdef _MSC_VER
 // disables the warning about converting int to void*.  This is a 64 bit compatibility
@@ -42,48 +43,92 @@ void *db2_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
     void* sqlData = NULL;
     switch (type)
     {    // simple cases
-    case x_short:
+    case x_int8:
+        {
+            sqlType = SQL_SMALLINT;
+            cType = SQL_C_STINYINT;
+            size = sizeof(int8_t);
+            std::vector<int8_t> *vp = static_cast<std::vector<int8_t> *>(data);
+            std::vector<int8_t> &v(*vp);
+            prepare_indicators(v.size());
+            sqlData = &v[0];
+        }
+        break;
+    case x_uint8:
+        {
+            sqlType = SQL_SMALLINT;
+            cType = SQL_C_UTINYINT;
+            size = sizeof(uint8_t);
+            std::vector<uint8_t> *vp = static_cast<std::vector<uint8_t> *>(data);
+            std::vector<uint8_t> &v(*vp);
+            prepare_indicators(v.size());
+            sqlData = &v[0];
+        }
+        break;
+    case x_int16:
         {
             sqlType = SQL_SMALLINT;
             cType = SQL_C_SSHORT;
-            size = sizeof(short);
-            std::vector<short> *vp = static_cast<std::vector<short> *>(data);
-            std::vector<short> &v(*vp);
+            size = sizeof(int16_t);
+            std::vector<int16_t> *vp = static_cast<std::vector<int16_t> *>(data);
+            std::vector<int16_t> &v(*vp);
             prepare_indicators(v.size());
             sqlData = &v[0];
         }
         break;
-    case x_integer:
+    case x_uint16:
+        {
+            sqlType = SQL_SMALLINT;
+            cType = SQL_C_USHORT;
+            size = sizeof(uint16_t);
+            std::vector<uint16_t> *vp = static_cast<std::vector<uint16_t> *>(data);
+            std::vector<uint16_t> &v(*vp);
+            prepare_indicators(v.size());
+            sqlData = &v[0];
+        }
+        break;
+    case x_int32:
         {
             sqlType = SQL_INTEGER;
             cType = SQL_C_SLONG;
-            size = sizeof(int);
-            std::vector<int> *vp = static_cast<std::vector<int> *>(data);
-            std::vector<int> &v(*vp);
+            size = sizeof(int32_t);
+            std::vector<int32_t> *vp = static_cast<std::vector<int32_t> *>(data);
+            std::vector<int32_t> &v(*vp);
             prepare_indicators(v.size());
             sqlData = &v[0];
         }
         break;
-    case x_long_long:
+    case x_uint32:
+        {
+            sqlType = SQL_INTEGER;
+            cType = SQL_C_ULONG;
+            size = sizeof(uint32_t);
+            std::vector<uint32_t> *vp = static_cast<std::vector<uint32_t> *>(data);
+            std::vector<uint32_t> &v(*vp);
+            prepare_indicators(v.size());
+            sqlData = &v[0];
+        }
+        break;
+    case x_int64:
         {
             sqlType = SQL_BIGINT;
             cType = SQL_C_SBIGINT;
-            size = sizeof(long long);
-            std::vector<long long> *vp
-                 = static_cast<std::vector<long long> *>(data);
-            std::vector<long long> &v(*vp);
+            size = sizeof(int64_t);
+            std::vector<int64_t> *vp
+                 = static_cast<std::vector<int64_t> *>(data);
+            std::vector<int64_t> &v(*vp);
             prepare_indicators(v.size());
             sqlData = &v[0];
         }
         break;
-    case x_unsigned_long_long:
+    case x_uint64:
         {
             sqlType = SQL_BIGINT;
             cType = SQL_C_UBIGINT;
-            size = sizeof(unsigned long long);
-            std::vector<unsigned long long> *vp
-                 = static_cast<std::vector<unsigned long long> *>(data);
-            std::vector<unsigned long long> &v(*vp);
+            size = sizeof(uint64_t);
+            std::vector<uint64_t> *vp
+                 = static_cast<std::vector<uint64_t> *>(data);
+            std::vector<uint64_t> &v(*vp);
             prepare_indicators(v.size());
             sqlData = &v[0];
         }
@@ -332,29 +377,53 @@ std::size_t db2_vector_use_type_backend::size()
             sz = vp->size();
         }
         break;
-    case x_short:
+    case x_int8:
         {
-            std::vector<short> *vp = static_cast<std::vector<short> *>(data);
+            std::vector<int8_t> *vp = static_cast<std::vector<int8_t> *>(data);
             sz = vp->size();
         }
         break;
-    case x_integer:
+    case x_uint8:
         {
-            std::vector<int> *vp = static_cast<std::vector<int> *>(data);
+            std::vector<uint8_t> *vp = static_cast<std::vector<uint8_t> *>(data);
             sz = vp->size();
         }
         break;
-    case x_long_long:
+    case x_int16:
         {
-            std::vector<long long> *vp
-                = static_cast<std::vector<long long> *>(data);
+            std::vector<int16_t> *vp = static_cast<std::vector<int16_t> *>(data);
             sz = vp->size();
         }
         break;
-    case x_unsigned_long_long:
+    case x_uint16:
         {
-            std::vector<unsigned long long> *vp
-                = static_cast<std::vector<unsigned long long> *>(data);
+            std::vector<uint16_t> *vp = static_cast<std::vector<uint16_t> *>(data);
+            sz = vp->size();
+        }
+        break;
+    case x_int32:
+        {
+            std::vector<int32_t> *vp = static_cast<std::vector<int32_t> *>(data);
+            sz = vp->size();
+        }
+        break;
+    case x_uint32:
+        {
+            std::vector<uint32_t> *vp = static_cast<std::vector<uint32_t> *>(data);
+            sz = vp->size();
+        }
+        break;
+    case x_int64:
+        {
+            std::vector<int64_t> *vp
+                = static_cast<std::vector<int64_t> *>(data);
+            sz = vp->size();
+        }
+        break;
+    case x_uint64:
+        {
+            std::vector<uint64_t> *vp
+                = static_cast<std::vector<uint64_t> *>(data);
             sz = vp->size();
         }
         break;
