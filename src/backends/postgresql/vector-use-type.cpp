@@ -18,6 +18,7 @@
 #include <ctime>
 #include <limits>
 #include <sstream>
+#include <stdint.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -98,52 +99,108 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                     std::strcpy(buf, v[i].c_str());
                 }
                 break;
-            case x_short:
+            case x_int8:
                 {
-                    std::vector<short> * pv
-                        = static_cast<std::vector<short> *>(data_);
-                    std::vector<short> & v = *pv;
+                    std::vector<int8_t> * pv
+                        = static_cast<std::vector<int8_t> *>(data_);
+                    std::vector<int8_t> & v = *pv;
 
                     std::size_t const bufSize
-                        = std::numeric_limits<short>::digits10 + 3;
+                        = std::numeric_limits<int8_t>::digits10 + 3;
                     buf = new char[bufSize];
-                    snprintf(buf, bufSize, "%d", static_cast<int>(v[i]));
+                    snprintf(buf, bufSize, "%d",
+                        static_cast<int>(v[i]));
                 }
                 break;
-            case x_integer:
+            case x_uint8:
                 {
-                    std::vector<int> * pv
-                        = static_cast<std::vector<int> *>(data_);
-                    std::vector<int> & v = *pv;
+                    std::vector<uint8_t> * pv
+                        = static_cast<std::vector<uint8_t> *>(data_);
+                    std::vector<uint8_t> & v = *pv;
 
                     std::size_t const bufSize
-                        = std::numeric_limits<int>::digits10 + 3;
+                        = std::numeric_limits<uint8_t>::digits10 + 3;
                     buf = new char[bufSize];
-                    snprintf(buf, bufSize, "%d", v[i]);
+                    snprintf(buf, bufSize, "%u",
+                        static_cast<unsigned int>(v[i]));
                 }
                 break;
-            case x_long_long:
+            case x_int16:
                 {
-                    std::vector<long long>* pv
-                        = static_cast<std::vector<long long>*>(data_);
-                    std::vector<long long>& v = *pv;
+                    std::vector<int16_t> * pv
+                        = static_cast<std::vector<int16_t> *>(data_);
+                    std::vector<int16_t> & v = *pv;
 
                     std::size_t const bufSize
-                        = std::numeric_limits<long long>::digits10 + 3;
+                        = std::numeric_limits<int16_t>::digits10 + 3;
                     buf = new char[bufSize];
-                    snprintf(buf, bufSize, "%" LL_FMT_FLAGS "d", v[i]);
+                    snprintf(buf, bufSize, "%d",
+                        static_cast<int>(v[i]));
                 }
                 break;
-            case x_unsigned_long_long:
+            case x_uint16:
                 {
-                    std::vector<unsigned long long>* pv
-                        = static_cast<std::vector<unsigned long long>*>(data_);
-                    std::vector<unsigned long long>& v = *pv;
+                    std::vector<uint16_t> * pv
+                        = static_cast<std::vector<uint16_t> *>(data_);
+                    std::vector<uint16_t> & v = *pv;
 
                     std::size_t const bufSize
-                        = std::numeric_limits<unsigned long long>::digits10 + 2;
+                        = std::numeric_limits<uint16_t>::digits10 + 3;
                     buf = new char[bufSize];
-                    snprintf(buf, bufSize, "%" LL_FMT_FLAGS "u", v[i]);
+                    snprintf(buf, bufSize, "%u",
+                        static_cast<unsigned int>(v[i]));
+                }
+                break;
+            case x_int32:
+                {
+                    std::vector<int32_t> * pv
+                        = static_cast<std::vector<int32_t> *>(data_);
+                    std::vector<int32_t> & v = *pv;
+
+                    std::size_t const bufSize
+                        = std::numeric_limits<int32_t>::digits10 + 3;
+                    buf = new char[bufSize];
+                    snprintf(buf, bufSize, "%d",
+                        static_cast<int>(v[i]));
+                }
+                break;
+            case x_uint32:
+                {
+                    std::vector<uint32_t> * pv
+                        = static_cast<std::vector<uint32_t> *>(data_);
+                    std::vector<uint32_t> & v = *pv;
+
+                    std::size_t const bufSize
+                        = std::numeric_limits<uint32_t>::digits10 + 3;
+                    buf = new char[bufSize];
+                    snprintf(buf, bufSize, "%u",
+                        static_cast<unsigned int>(v[i]));
+                }
+                break;
+            case x_int64:
+                {
+                    std::vector<int64_t>* pv
+                        = static_cast<std::vector<int64_t>*>(data_);
+                    std::vector<int64_t>& v = *pv;
+
+                    std::size_t const bufSize
+                        = std::numeric_limits<int64_t>::digits10 + 3;
+                    buf = new char[bufSize];
+                    snprintf(buf, bufSize, "%" LL_FMT_FLAGS "d",
+                        static_cast<long long>(v[i]));
+                }
+                break;
+            case x_uint64:
+                {
+                    std::vector<uint64_t>* pv
+                        = static_cast<std::vector<uint64_t>*>(data_);
+                    std::vector<uint64_t>& v = *pv;
+
+                    std::size_t const bufSize
+                        = std::numeric_limits<uint64_t>::digits10 + 2;
+                    buf = new char[bufSize];
+                    snprintf(buf, bufSize, "%" LL_FMT_FLAGS "u",
+                        static_cast<unsigned long long>(v[i]));
                 }
                 break;
             case x_double:
@@ -244,17 +301,29 @@ std::size_t postgresql_vector_use_type_backend::full_size()
     case x_char:
         sz = get_vector_size<char>(data_);
         break;
-    case x_short:
-        sz = get_vector_size<short>(data_);
+    case x_int8:
+        sz = get_vector_size<int8_t>(data_);
         break;
-    case x_integer:
-        sz = get_vector_size<int>(data_);
+    case x_uint8:
+        sz = get_vector_size<uint8_t>(data_);
         break;
-    case x_long_long:
-        sz = get_vector_size<long long>(data_);
+    case x_int16:
+        sz = get_vector_size<int16_t>(data_);
         break;
-    case x_unsigned_long_long:
-        sz = get_vector_size<unsigned long long>(data_);
+    case x_uint16:
+        sz = get_vector_size<uint16_t>(data_);
+        break;
+    case x_int32:
+        sz = get_vector_size<int32_t>(data_);
+        break;
+    case x_uint32:
+        sz = get_vector_size<uint32_t>(data_);
+        break;
+    case x_int64:
+        sz = get_vector_size<int64_t>(data_);
+        break;
+    case x_uint64:
+        sz = get_vector_size<uint64_t>(data_);
         break;
     case x_double:
         sz = get_vector_size<double>(data_);
