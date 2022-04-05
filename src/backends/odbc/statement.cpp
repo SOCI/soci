@@ -352,6 +352,17 @@ void odbc_statement_backend::describe_column(int colNum, data_type & type,
     char const *name = reinterpret_cast<char const *>(colNameBuffer);
     columnName.assign(name, std::strlen(name));
 
+    SQLLEN is_unsigned = 0;
+    SQLRETURN rc_colattr = SQLColAttribute(hstmt_, static_cast<SQLUSMALLINT>(colNum),
+                                           SQL_DESC_UNSIGNED, 0, 0, 0, &is_unsigned);
+
+    if (is_odbc_error(rc_colattr))
+    {
+        std::ostringstream ss;
+        ss << "getting col attribute of column at position " << colNum;
+        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, ss.str());
+    }
+
     switch (dataType)
     {
     case SQL_TYPE_DATE:
@@ -367,12 +378,16 @@ void odbc_statement_backend::describe_column(int colNum, data_type & type,
         type = dt_double;
         break;
     case SQL_TINYINT:
+        type = is_unsigned == SQL_TRUE ? dt_uint8 : dt_int8;
+        break;
     case SQL_SMALLINT:
+        type = is_unsigned == SQL_TRUE ? dt_uint16 : dt_int16;
+        break;
     case SQL_INTEGER:
-        type = dt_integer;
+        type = is_unsigned == SQL_TRUE ? dt_uint32 : dt_int32;
         break;
     case SQL_BIGINT:
-        type = dt_long_long;
+        type = is_unsigned == SQL_TRUE ? dt_uint64 : dt_int64;
         break;
     case SQL_CHAR:
     case SQL_VARCHAR:

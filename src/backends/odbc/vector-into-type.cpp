@@ -19,6 +19,7 @@
 #include <cstring>
 #include <ctime>
 #include <sstream>
+#include <stdint.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -43,14 +44,26 @@ void odbc_vector_into_type_backend::define_by_pos(
     switch (type)
     {
     // simple cases
-    case x_short:
+    case x_int8:
+        odbcType_ = SQL_C_STINYINT;
+        break;
+    case x_uint8:
+        odbcType_ = SQL_C_UTINYINT;
+        break;
+    case x_int16:
         odbcType_ = SQL_C_SSHORT;
         break;
-    case x_integer:
-        odbcType_ = SQL_C_SLONG;
-        static_assert(sizeof(SQLINTEGER) == sizeof(int), "unsupported SQLINTEGER size");
+    case x_uint16:
+        odbcType_ = SQL_C_USHORT;
         break;
-    case x_long_long:
+    case x_int32:
+        odbcType_ = SQL_C_SLONG;
+        static_assert(sizeof(SQLINTEGER) == sizeof(int32_t), "unsupported SQLINTEGER size");
+        break;
+    case x_uint32:
+        odbcType_ = SQL_C_ULONG;
+        break;
+    case x_int64:
         if (use_string_for_bigint())
         {
             odbcType_ = SQL_C_CHAR;
@@ -62,7 +75,7 @@ void odbc_vector_into_type_backend::define_by_pos(
             odbcType_ = SQL_C_SBIGINT;
         }
         break;
-    case x_unsigned_long_long:
+    case x_uint64:
         if (use_string_for_bigint())
         {
             odbcType_ = SQL_C_CHAR;
@@ -136,26 +149,42 @@ void odbc_vector_into_type_backend::rebind_row(std::size_t rowInd)
     switch (type_)
     {
     // simple cases
-    case x_short:
-        elementPtr = &exchange_vector_type_cast<x_short>(data_)[rowInd];
-        size = sizeof(short);
+    case x_int8:
+        elementPtr = &exchange_vector_type_cast<x_int8>(data_)[rowInd];
+        size = sizeof(int8_t);
         break;
-    case x_integer:
-        elementPtr = &exchange_vector_type_cast<x_integer>(data_)[rowInd];
+    case x_uint8:
+        elementPtr = &exchange_vector_type_cast<x_uint8>(data_)[rowInd];
+        size = sizeof(uint8_t);
+        break;
+    case x_int16:
+        elementPtr = &exchange_vector_type_cast<x_int16>(data_)[rowInd];
+        size = sizeof(int16_t);
+        break;
+    case x_uint16:
+        elementPtr = &exchange_vector_type_cast<x_uint16>(data_)[rowInd];
+        size = sizeof(uint16_t);
+        break;
+    case x_int32:
+        elementPtr = &exchange_vector_type_cast<x_int32>(data_)[rowInd];
         size = sizeof(SQLINTEGER);
         break;
-    case x_long_long:
+    case x_uint32:
+        elementPtr = &exchange_vector_type_cast<x_uint32>(data_)[rowInd];
+        size = sizeof(SQLINTEGER);
+        break;
+    case x_int64:
         if (!use_string_for_bigint())
         {
-            elementPtr = &exchange_vector_type_cast<x_long_long>(data_)[rowInd];
-            size = sizeof(long long);
+            elementPtr = &exchange_vector_type_cast<x_int64>(data_)[rowInd];
+            size = sizeof(int64_t);
         }
         break;
-    case x_unsigned_long_long:
+    case x_uint64:
         if (!use_string_for_bigint())
         {
-            elementPtr = &exchange_vector_type_cast<x_unsigned_long_long>(data_)[rowInd];
-            size = sizeof(unsigned long long);
+            elementPtr = &exchange_vector_type_cast<x_uint64>(data_)[rowInd];
+            size = sizeof(uint64_t);
         }
         break;
     case x_double:
@@ -280,11 +309,11 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
             pos += colSize_;
         }
     }
-    else if (type_ == x_long_long && use_string_for_bigint())
+    else if (type_ == x_int64 && use_string_for_bigint())
     {
-        std::vector<long long> *vp
-            = static_cast<std::vector<long long> *>(data_);
-        std::vector<long long> &v(*vp);
+        std::vector<int64_t> *vp
+            = static_cast<std::vector<int64_t> *>(data_);
+        std::vector<int64_t> &v(*vp);
         char *pos = buf_;
         for (std::size_t i = beginRow; i != endRow; ++i)
         {
@@ -295,11 +324,11 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
             pos += colSize_;
         }
     }
-    else if (type_ == x_unsigned_long_long && use_string_for_bigint())
+    else if (type_ == x_uint64 && use_string_for_bigint())
     {
-        std::vector<unsigned long long> *vp
-            = static_cast<std::vector<unsigned long long> *>(data_);
-        std::vector<unsigned long long> &v(*vp);
+        std::vector<uint64_t> *vp
+            = static_cast<std::vector<uint64_t> *>(data_);
+        std::vector<uint64_t> &v(*vp);
         char *pos = buf_;
         for (std::size_t i = beginRow; i != endRow; ++i)
         {
