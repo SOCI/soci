@@ -1089,7 +1089,7 @@ TEST_CASE("Oracle DDL with metadata", "[oracle][ddl]")
     std::string ddl_t3 = "DDL_T3";
 
     // single-expression variant:
-    sql.create_table(ddl_t1).column("I", soci::dt_integer).column("J", soci::dt_integer);
+    sql.create_table(ddl_t1).column("I", soci::dt_int32).column("J", soci::dt_int32);
 
     // check whether this table was created:
 
@@ -1122,13 +1122,13 @@ TEST_CASE("Oracle DDL with metadata", "[oracle][ddl]")
     {
         if (ci.name == "I")
         {
-            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.type == soci::dt_int32);
             CHECK(ci.nullable);
             i_found = true;
         }
         else if (ci.name == "J")
         {
-            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.type == soci::dt_int32);
             CHECK(ci.nullable);
             j_found = true;
         }
@@ -1148,24 +1148,24 @@ TEST_CASE("Oracle DDL with metadata", "[oracle][ddl]")
     // (note: statement is executed when ddl object goes out of scope)
     {
         soci::ddl_type ddl = sql.create_table(ddl_t2);
-        ddl.column("I", soci::dt_integer);
-        ddl.column("J", soci::dt_integer);
-        ddl.column("K", soci::dt_integer)("not null");
+        ddl.column("I", soci::dt_int32);
+        ddl.column("J", soci::dt_int32);
+        ddl.column("K", soci::dt_int32)("not null");
         ddl.primary_key("t2_pk", "J");
     }
 
-    sql.add_column(ddl_t1, "K", soci::dt_integer);
+    sql.add_column(ddl_t1, "K", soci::dt_int32);
     sql.add_column(ddl_t1, "BIG", soci::dt_string, 0); // "unlimited" length -> CLOB
     sql.drop_column(ddl_t1, "I");
 
     // or with constraint as in t2:
-    sql.add_column(ddl_t2, "M", soci::dt_integer)("not null");
+    sql.add_column(ddl_t2, "M", soci::dt_int32)("not null");
 
     // third table with a foreign key to the second one
     {
         soci::ddl_type ddl = sql.create_table(ddl_t3);
-        ddl.column("X", soci::dt_integer);
-        ddl.column("Y", soci::dt_integer);
+        ddl.column("X", soci::dt_int32);
+        ddl.column("Y", soci::dt_int32);
         ddl.foreign_key("t3_fk", "X", ddl_t2, "J");
     }
 
@@ -1200,13 +1200,13 @@ TEST_CASE("Oracle DDL with metadata", "[oracle][ddl]")
     {
         if (ci.name == "J")
         {
-            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.type == soci::dt_int32);
             CHECK(ci.nullable);
             j_found = true;
         }
         else if (ci.name == "K")
         {
-            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.type == soci::dt_int32);
             CHECK(ci.nullable);
             k_found = true;
         }
@@ -1241,25 +1241,25 @@ TEST_CASE("Oracle DDL with metadata", "[oracle][ddl]")
     {
         if (ci.name == "I")
         {
-            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.type == soci::dt_int32);
             CHECK(ci.nullable);
             i_found = true;
         }
         else if (ci.name == "J")
         {
-            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.type == soci::dt_int32);
             CHECK(ci.nullable == false); // primary key
             j_found = true;
         }
         else if (ci.name == "K")
         {
-            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.type == soci::dt_int32);
             CHECK(ci.nullable == false);
             k_found = true;
         }
         else if (ci.name == "M")
         {
-            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.type == soci::dt_int32);
             CHECK(ci.nullable == false);
             m_found = true;
         }
@@ -1397,8 +1397,8 @@ struct table_creator_one : public table_creator_base
     table_creator_one(soci::session & sql)
         : table_creator_base(sql)
     {
-        sql << "create table soci_test(id number(10,0), val number(4,0), c char, "
-                 "str varchar2(20), sh number, ul number, d number, "
+        sql << "create table soci_test(id number(10,0), val number(8,0), c char, "
+                 "str varchar2(20), sh number, ll number, ul number, d number, "
                  "num76 numeric(7,6), "
                  "tm date, i1 number, i2 number, i3 number, name varchar2(20))";
     }
