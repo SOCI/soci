@@ -409,17 +409,24 @@ void mysql_statement_backend::describe_column(int colNum,
     switch (field->type)
     {
     case FIELD_TYPE_CHAR:       //MYSQL_TYPE_TINY:
+        type = field->flags & UNSIGNED_FLAG ? dt_uint8 :
+                                              dt_int8;
+        break;
     case FIELD_TYPE_SHORT:      //MYSQL_TYPE_SHORT:
+        type = field->flags & UNSIGNED_FLAG ? dt_uint16 :
+                                              dt_int16;
+        break;
     case FIELD_TYPE_INT24:      //MYSQL_TYPE_INT24:
-        type = dt_integer;
+        type = field->flags & UNSIGNED_FLAG ? dt_uint32
+                                            : dt_int32;
         break;
     case FIELD_TYPE_LONG:       //MYSQL_TYPE_LONG:
-        type = field->flags & UNSIGNED_FLAG ? dt_long_long
-                                            : dt_integer;
+        type = field->flags & UNSIGNED_FLAG ? dt_uint32
+                                            : dt_int32;
         break;
     case FIELD_TYPE_LONGLONG:   //MYSQL_TYPE_LONGLONG:
-        type = field->flags & UNSIGNED_FLAG ? dt_unsigned_long_long :
-                                              dt_long_long;
+        type = field->flags & UNSIGNED_FLAG ? dt_uint64 :
+                                              dt_int64;
         break;
     case FIELD_TYPE_FLOAT:      //MYSQL_TYPE_FLOAT:
     case FIELD_TYPE_DOUBLE:     //MYSQL_TYPE_DOUBLE:

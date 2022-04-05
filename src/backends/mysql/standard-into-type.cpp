@@ -17,6 +17,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <stdint.h>
 #include <string>
 
 #ifdef _MSC_VER
@@ -89,17 +90,37 @@ void mysql_standard_into_type_backend::post_fetch(
                 dest.assign(buf, lengths[pos]);
             }
             break;
-        case x_short:
-            parse_num(buf, exchange_type_cast<x_short>(data_));
+        case x_int8:
+            {
+                int32_t tmp = 0;
+                parse_num(buf, tmp);
+                exchange_type_cast<x_int8>(data_) = static_cast<int8_t>(tmp);
+            }
             break;
-        case x_integer:
-            parse_num(buf, exchange_type_cast<x_integer>(data_));
+        case x_uint8:
+            {
+                uint32_t tmp = 0;
+                parse_num(buf, tmp);
+                exchange_type_cast<x_uint8>(data_) = static_cast<uint8_t>(tmp);
+            }
             break;
-        case x_long_long:
-            parse_num(buf, exchange_type_cast<x_long_long>(data_));
+        case x_int16:
+            parse_num(buf, exchange_type_cast<x_int16>(data_));
             break;
-        case x_unsigned_long_long:
-            parse_num(buf, exchange_type_cast<x_unsigned_long_long>(data_));
+        case x_uint16:
+            parse_num(buf, exchange_type_cast<x_uint16>(data_));
+            break;
+        case x_int32:
+            parse_num(buf, exchange_type_cast<x_int32>(data_));
+            break;
+        case x_uint32:
+            parse_num(buf, exchange_type_cast<x_uint32>(data_));
+            break;
+        case x_int64:
+            parse_num(buf, exchange_type_cast<x_int64>(data_));
+            break;
+        case x_uint64:
+            parse_num(buf, exchange_type_cast<x_uint64>(data_));
             break;
         case x_double:
             parse_num(buf, exchange_type_cast<x_double>(data_));

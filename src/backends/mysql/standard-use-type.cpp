@@ -17,6 +17,7 @@
 #include <cstdio>
 #include <cstring>
 #include <limits>
+#include <stdint.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -64,38 +65,76 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                              s.c_str(), s.size());
             }
             break;
-        case x_short:
+        case x_int8:
             {
                 std::size_t const bufSize
-                    = std::numeric_limits<short>::digits10 + 3;
+                    = std::numeric_limits<int8_t>::digits10 + 3;
                 buf_ = new char[bufSize];
                 snprintf(buf_, bufSize, "%d",
-                    static_cast<int>(exchange_type_cast<x_short>(data_)));
+                    static_cast<int>(exchange_type_cast<x_int8>(data_)));
             }
             break;
-        case x_integer:
+        case x_uint8:
             {
                 std::size_t const bufSize
-                    = std::numeric_limits<int>::digits10 + 3;
+                    = std::numeric_limits<uint8_t>::digits10 + 3;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%d", exchange_type_cast<x_integer>(data_));
+                snprintf(buf_, bufSize, "%u",
+                    static_cast<unsigned int>(exchange_type_cast<x_uint8>(data_)));
             }
             break;
-        case x_long_long:
+        case x_int16:
             {
                 std::size_t const bufSize
-                    = std::numeric_limits<long long>::digits10 + 3;
+                    = std::numeric_limits<int16_t>::digits10 + 3;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%" LL_FMT_FLAGS "d", exchange_type_cast<x_long_long>(data_));
+                snprintf(buf_, bufSize, "%d",
+                    static_cast<int>(exchange_type_cast<x_int16>(data_)));
             }
             break;
-        case x_unsigned_long_long:
+        case x_uint16:
             {
                 std::size_t const bufSize
-                    = std::numeric_limits<unsigned long long>::digits10 + 3;
+                    = std::numeric_limits<uint16_t>::digits10 + 3;
+                buf_ = new char[bufSize];
+                snprintf(buf_, bufSize, "%u",
+                    static_cast<unsigned int>(exchange_type_cast<x_uint16>(data_)));
+            }
+            break;
+        case x_int32:
+            {
+                std::size_t const bufSize
+                    = std::numeric_limits<int32_t>::digits10 + 3;
+                buf_ = new char[bufSize];
+                snprintf(buf_, bufSize, "%d",
+                    static_cast<int>(exchange_type_cast<x_int32>(data_)));
+            }
+            break;
+        case x_uint32:
+            {
+                std::size_t const bufSize
+                    = std::numeric_limits<uint32_t>::digits10 + 3;
+                buf_ = new char[bufSize];
+                snprintf(buf_, bufSize, "%u",
+                    static_cast<unsigned int>(exchange_type_cast<x_uint32>(data_)));
+            }
+            break;
+        case x_int64:
+            {
+                std::size_t const bufSize
+                    = std::numeric_limits<int64_t>::digits10 + 3;
+                buf_ = new char[bufSize];
+                snprintf(buf_, bufSize, "%" LL_FMT_FLAGS "d",
+                    static_cast<long long>(exchange_type_cast<x_int64>(data_)));
+            }
+            break;
+        case x_uint64:
+            {
+                std::size_t const bufSize
+                    = std::numeric_limits<uint64_t>::digits10 + 3;
                 buf_ = new char[bufSize];
                 snprintf(buf_, bufSize, "%" LL_FMT_FLAGS "u",
-                         exchange_type_cast<x_unsigned_long_long>(data_));
+                    static_cast<unsigned long long>(exchange_type_cast<x_uint64>(data_)));
             }
             break;
 
