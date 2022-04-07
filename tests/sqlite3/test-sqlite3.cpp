@@ -14,6 +14,7 @@
 #include <cmath>
 #include <cstring>
 #include <ctime>
+#include <stdint.h>
 
 using namespace soci;
 using namespace soci::tests;
@@ -470,10 +471,10 @@ TEST_CASE("SQLite type inference", "[sqlite][sequence]")
         row const& r1 = (*it);
         CHECK(r1.get<std::string>(0) == cvc);
         CHECK(r1.get<double>(1) == Approx(cdec));
-        CHECK(r1.get<long long>(2) == cll);
-        CHECK(r1.get<unsigned long long>(3) == cull);
-        CHECK(r1.get<long long>(4) == cll);
-        CHECK(r1.get<unsigned long long>(5) == cull);
+        CHECK(r1.get<int64_t>(2) == cll);
+        CHECK(r1.get<uint64_t>(3) == cull);
+        CHECK(r1.get<int64_t>(4) == cll);
+        CHECK(r1.get<uint64_t>(5) == cull);
     }
 }
 
@@ -548,8 +549,8 @@ struct table_creator_one : public table_creator_base
         : table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, val integer, c char, "
-                 "str varchar(20), sh smallint, ul numeric(20), d float, "
-                 "num76 numeric(7,6), "
+                 "str varchar(20), sh smallint, ll bigint, ul unsigned bigint, "
+                 "d float, num76 numeric(7,6), "
                  "tm datetime, i1 integer, i2 integer, i3 integer, "
                  "name varchar(20))";
     }
@@ -662,6 +663,11 @@ public:
          */
 
         return true;
+    }
+
+    bool has_full_uint64_support() const override
+    {
+        return false;
     }
 
     bool enable_std_char_padding(soci::session&) const override
