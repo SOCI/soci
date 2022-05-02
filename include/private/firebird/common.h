@@ -235,7 +235,7 @@ T1 from_isc(XSQLVAR * var)
         }
     }
 
-    GCC_WARNING_SUPPRESS(cast-align)
+    SOCI_GCC_WARNING_SUPPRESS(cast-align)
 
     switch (var->sqltype & ~1)
     {
@@ -253,7 +253,7 @@ T1 from_isc(XSQLVAR * var)
         throw soci_error("Incorrect data type for numeric conversion");
     }
 
-    GCC_WARNING_RESTORE(cast-align)
+    SOCI_GCC_WARNING_RESTORE(cast-align)
 }
 
 } // namespace firebird

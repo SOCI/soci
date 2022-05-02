@@ -103,11 +103,11 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
                    // yyyy-mm-dd hh:mm:ss
 
         // See comment for the use of this macro in standard-into-type.cpp.
-        GCC_WARNING_SUPPRESS(cast-align)
+        SOCI_GCC_WARNING_SUPPRESS(cast-align)
 
         TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
 
-        GCC_WARNING_RESTORE(cast-align)
+        SOCI_GCC_WARNING_RESTORE(cast-align)
 
         ts->year = static_cast<SQLSMALLINT>(t.tm_year + 1900);
         ts->month = static_cast<SQLUSMALLINT>(t.tm_mon + 1);

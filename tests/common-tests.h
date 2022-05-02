@@ -535,11 +535,11 @@ inline bool
 are_doubles_exactly_equal(double a, double b)
 {
     // Avoid g++ warnings: we do really want the exact equality here.
-    GCC_WARNING_SUPPRESS(float-equal)
+    SOCI_GCC_WARNING_SUPPRESS(float-equal)
 
     return a == b;
 
-    GCC_WARNING_RESTORE(float-equal)
+    SOCI_GCC_WARNING_RESTORE(float-equal)
 }
 
 #define ASSERT_EQUAL_EXACT(a, b) \

@@ -190,11 +190,11 @@ std::string getTextParam(XSQLVAR const *var)
 
     if ((var->sqltype & ~1) == SQL_VARYING)
     {
-        GCC_WARNING_SUPPRESS(cast-align)
+        SOCI_GCC_WARNING_SUPPRESS(cast-align)
 
         size = *reinterpret_cast<short*>(var->sqldata);
 
-        GCC_WARNING_RESTORE(cast-align)
+        SOCI_GCC_WARNING_RESTORE(cast-align)
 
         offset = sizeof(short);
     }
@@ -224,11 +224,11 @@ void copy_from_blob(firebird_statement_backend &st, char *buf, std::string &out)
 {
     firebird_blob_backend blob(st.session_);
 
-    GCC_WARNING_SUPPRESS(cast-align)
+    SOCI_GCC_WARNING_SUPPRESS(cast-align)
 
     blob.assign(*reinterpret_cast<ISC_QUAD*>(buf));
 
-    GCC_WARNING_RESTORE(cast-align)
+    SOCI_GCC_WARNING_RESTORE(cast-align)
 
     std::size_t const len_total = blob.get_len();
     out.resize(len_total);

@@ -181,11 +181,11 @@ void odbc_standard_into_type_backend::post_fetch(
             // Our pointer should, in fact, be sufficiently aligned, as we
             // allocate it on the heap, but gcc on ARMv7hl warns about this not
             // being the case, so just suppress this warning explicitly here.
-            GCC_WARNING_SUPPRESS(cast-align)
+            SOCI_GCC_WARNING_SUPPRESS(cast-align)
 
             TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(buf_);
 
-            GCC_WARNING_RESTORE(cast-align)
+            SOCI_GCC_WARNING_RESTORE(cast-align)
 
             details::mktime_from_ymdhms(t,
                                         ts->year, ts->month, ts->day,
