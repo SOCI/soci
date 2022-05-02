@@ -53,6 +53,62 @@ TEST_CASE("SQLite rowid", "[sqlite][rowid][oid]")
     sql << "drop table test1";
 }
 
+TEST_CASE("SQLite Binding Same Placeholder", "[sqlite][bind]")
+{
+    soci::session sql(backEnd, connectString);
+
+    try { sql << "drop table test1"; }
+    catch (soci_error const &) {} // ignore if error
+
+    sql <<
+    "create table test1 ("
+    "    id integer,"
+    "    firstname varchar(100),"
+    "    lastname varchar(100)"
+    ")";
+
+    std::string name = "John Doe";
+    sql << "insert into test1(id, firstname, lastname) values(1, :name, :name)",
+        use(name);
+
+    std::string readName;
+    sql << "select firstname from test1 where id = 1", into(readName);
+    CHECK(readName == name);
+
+    sql << "select lastname from test1 where id = 1", into(readName);
+    CHECK(readName == name);
+
+    sql << "drop table test1";
+}
+
+TEST_CASE("SQLite Binding Same Placeholder Multiple Times", "[sqlite][bind]")
+{
+    soci::session sql(backEnd, connectString);
+
+    try { sql << "drop table test1"; }
+    catch (soci_error const &) {} // ignore if error
+
+    sql <<
+    "create table test1 ("
+    "    id integer,"
+    "    firstname varchar(100),"
+    "    lastname varchar(100)"
+    ")";
+
+    std::string name = "John Doe";
+    try
+    {
+        sql << "insert into test1(id, firstname, lastname) values(1, :name, :name)",
+            use(name), use(name);
+    }
+    catch ( const soci::sqlite3_soci_error& error )
+    {
+        CHECK(25 == error.result()); // 25 -> SQLITE3_RANGE.
+    }
+
+    sql << "drop table test1";
+}
+
 // BLOB test
 struct blob_table_creator : public table_creator_base
 {
