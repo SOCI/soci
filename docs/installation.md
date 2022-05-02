@@ -163,7 +163,7 @@ Some other build options:
 
 * `WITH_SQLITE3` - boolean - Should CMake try to detect SQLite C/C++ library. As bonus, the configuration tries OSGeo4W distribution if OSGEO4W_ROOT environment variable is set.
 * `SQLITE3_INCLUDE_DIR` - string - Path to SQLite 3 include directory where CMake should look for `sqlite3.h` header.
-* `SQLITE3_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
+* `SQLITE3_LIBRARY` - string - Full paths to libraries to link SOCI against to enable the backend support.
 * `SOCI_SQLITE3` - boolean - Requests to build [SQLite3](backends/sqlite3.md) backend. Automatically switched on, if `WITH_SQLITE3` is set to ON.
 * `SOCI_SQLITE3_TEST_CONNSTR` - string - Connection string is simply a file path where SQLite3 test database will be created (e.g. /home/john/soci_test.db). Check [SQLite3 backend reference](backends/sqlite3.md) for details. Example: `-DSOCI_SQLITE3_TEST_CONNSTR="my.db"` or `-DSOCI_SQLITE3_TEST_CONNSTR=":memory:"`.
 
