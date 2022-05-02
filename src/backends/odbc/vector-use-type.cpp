@@ -310,11 +310,11 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
                     std::tm t = v[i];
 
                     // See comment for the use of this macro in standard-into-type.cpp.
-                    GCC_WARNING_SUPPRESS(cast-align)
+                    SOCI_GCC_WARNING_SUPPRESS(cast-align)
 
                     TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
 
-                    GCC_WARNING_RESTORE(cast-align)
+                    SOCI_GCC_WARNING_RESTORE(cast-align)
 
                     ts->year = static_cast<SQLSMALLINT>(t.tm_year + 1900);
                     ts->month = static_cast<SQLUSMALLINT>(t.tm_mon + 1);

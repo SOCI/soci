@@ -123,11 +123,11 @@ void firebird_standard_into_type_backend::exchangeData()
                     throw soci_error("Can't get Firebid BLOB BackEnd");
                 }
 
-                GCC_WARNING_SUPPRESS(cast-align)
+                SOCI_GCC_WARNING_SUPPRESS(cast-align)
 
                 blob->assign(*reinterpret_cast<ISC_QUAD*>(buf_));
 
-                GCC_WARNING_RESTORE(cast-align)
+                SOCI_GCC_WARNING_RESTORE(cast-align)
             }
             break;
 

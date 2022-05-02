@@ -498,14 +498,14 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
 
                 // Exact comparison is fine here, they are really supposed to
                 // be exactly the same.
-                GCC_WARNING_SUPPRESS(float-equal)
+                SOCI_GCC_WARNING_SUPPRESS(float-equal)
 
                 if (original != bound)
                 {
                     throw soci_error("Attempted modification of const use element");
                 }
 
-                GCC_WARNING_RESTORE(float-equal)
+                SOCI_GCC_WARNING_RESTORE(float-equal)
             }
             break;
         case x_stdstring:

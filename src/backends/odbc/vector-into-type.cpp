@@ -269,11 +269,11 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
         for (std::size_t i = beginRow; i != endRow; ++i)
         {
             // See comment for the use of this macro in standard-into-type.cpp.
-            GCC_WARNING_SUPPRESS(cast-align)
+            SOCI_GCC_WARNING_SUPPRESS(cast-align)
 
             TIMESTAMP_STRUCT * ts = reinterpret_cast<TIMESTAMP_STRUCT*>(pos);
 
-            GCC_WARNING_RESTORE(cast-align)
+            SOCI_GCC_WARNING_RESTORE(cast-align)
 
             details::mktime_from_ymdhms(v[i],
                                         ts->year, ts->month, ts->day,
