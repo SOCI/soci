@@ -92,8 +92,8 @@ struct table_creator_one : public table_creator_base
         : table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, val integer, c char, "
-                 "str varchar(20), sh int2, ul numeric(20), d float8, "
-                 "num76 numeric(7,6), "
+                 "str varchar(20), sh int2, ll bigint, ul numeric(20), "
+                 "d float8, num76 numeric(7,6), "
                  "tm timestamp, i1 integer, i2 integer, i3 integer, "
                  "name varchar(20))";
     }
@@ -210,6 +210,11 @@ public:
         //
         // Be pessimistic if we failed to retrieve the version at all.
         return !m_verDriver.is_initialized() || m_verDriver < odbc_version(9, 3, 400);
+    }
+
+    bool has_full_uint64_support() const override
+    {
+        return false;
     }
 
     std::string fix_crlf_if_necessary(std::string const& s) const override
