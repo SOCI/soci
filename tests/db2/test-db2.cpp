@@ -29,8 +29,8 @@ struct table_creator_one : public table_creator_base
     table_creator_one(soci::session & sql)
         : table_creator_base(sql)
     {
-        sql << "CREATE TABLE SOCI_TEST(ID INTEGER, VAL SMALLINT, C CHAR, STR VARCHAR(20), SH SMALLINT, UL NUMERIC(20), D DOUBLE, "
-            "NUM76 NUMERIC(7,6), "
+        sql << "CREATE TABLE SOCI_TEST(ID INTEGER, VAL SMALLINT, C CHAR, STR VARCHAR(20), SH SMALLINT, LL BIGINT, UL NUMERIC(20), "
+            "D DOUBLE, NUM76 NUMERIC(7,6), "
             "TM TIMESTAMP, I1 INTEGER, I2 INTEGER, I3 INTEGER, NAME VARCHAR(20))";
     }
 };
@@ -89,6 +89,11 @@ public:
     table_creator_base* table_creator_4(soci::session& s) const override
     {
         return new table_creator_for_get_affected_rows(s);
+    }
+
+    bool has_full_uint64_support() const override
+    {
+        return false;
     }
 
     std::string to_date_time(std::string const & pi_datdt_string) const override
