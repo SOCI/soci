@@ -222,10 +222,34 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                     }
 
                     case dt_xml:
-                        throw soci_error("XML data type is not supported");
+                    {
+                        soci::xml_type xml;
+                        xml.value = std::string(col.buffer_.constData_, col.buffer_.size_);
+                        set_in_vector(data_, i, xml);
+                        break;
+                    }
                 };
                 break;
             } // x_stdstring
+
+            case x_xmltype:
+            {
+                switch (col.type_)
+                {
+                    case dt_string:
+                    case dt_blob:
+                    case dt_xml:
+                    {
+                        soci::xml_type xml;
+                        xml.value = std::string(col.buffer_.constData_, col.buffer_.size_);
+                        set_in_vector(data_, i, xml);
+                        break;
+                    }
+                    default:
+                        throw soci_error("DB type does not have a valid conversion to expected XML type");
+                };
+                break;
+            } // x_xmltype
 
             case x_short:
                 set_number_in_vector<exchange_type_traits<x_short>::value_type>(data_, i, col);
@@ -333,6 +357,9 @@ void sqlite3_vector_into_type_backend::resize(std::size_t sz)
     case x_stdtm:
         resize_vector<std::tm>(data_, sz);
         break;
+    case x_xmltype:
+        resize_vector<soci::xml_type>(data_, sz);
+        break;
     default:
         throw soci_error("Into vector element used with non-supported type.");
     }
@@ -370,6 +397,9 @@ std::size_t sqlite3_vector_into_type_backend::size()
         break;
     case x_stdtm:
         sz = get_vector_size<std::tm>(data_);
+        break;
+    case x_xmltype:
+        sz = get_vector_size<soci::xml_type>(data_);
         break;
     default:
         throw soci_error("Into vector element used with non-supported type.");

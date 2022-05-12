@@ -391,6 +391,15 @@ struct table_creator_for_get_affected_rows : table_creator_base
 // Support for SOCI Common Tests
 //
 
+struct table_creator_from_str : table_creator_base
+{
+    table_creator_from_str(soci::session & sql, std::string const& sqlStr)
+        : table_creator_base(sql)
+    {
+        sql << sqlStr;
+    }
+};
+
 class test_context : public test_context_base
 {
 public:
@@ -420,16 +429,14 @@ public:
 
     table_creator_base* table_creator_get_last_insert_id(soci::session& s) const SOCI_OVERRIDE
     {
-        struct table_creator_for_get_last_insert_id : table_creator_base
-        {
-            table_creator_for_get_last_insert_id(soci::session & sql)
-                : table_creator_base(sql)
-            {
-                sql << "create table soci_test (id integer primary key, val integer)";
-            }
-        };
+        return new table_creator_from_str(s,
+            "create table soci_test (id integer primary key, val integer)");
+    }
 
-        return new table_creator_for_get_last_insert_id(s);
+    table_creator_base* table_creator_xml(soci::session& s) const SOCI_OVERRIDE
+    {
+        return new table_creator_from_str(s,
+            "create table soci_test (id integer, x text)");
     }
 
     std::string to_date_time(std::string const &datdt_string) const SOCI_OVERRIDE

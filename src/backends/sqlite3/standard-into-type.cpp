@@ -165,6 +165,18 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
                 break;
             }
 
+            case x_xmltype:
+            {
+                const char *buf = reinterpret_cast<const char*>(
+                    sqlite3_column_text(statement_.stmt_, pos)
+                );
+                const int bytes = sqlite3_column_bytes(statement_.stmt_, pos);
+                exchange_type_traits<x_xmltype>::value_type &out
+                    = exchange_type_cast<x_xmltype>(data_);
+                out.value.assign(buf, bytes);
+                break;
+            }
+
             default:
                 throw soci_error("Into element used with non-supported type.");
         }
