@@ -52,9 +52,9 @@ else
 }
 ```
 
-The use of indicator variable is optional, but if it is not used and the result would be `i_null`,
-then the exception is thrown.
+The use of indicator variable is optional. However, if `sql.got_data() == true` and the result would be `i_null`, an exception is thrown if no indicator was used.
 This means that you should use indicator variables everywhere where the application logic (and database schema) allow the "attribute not set" condition.
+If no data was fetched to begin with, the indicator would also be `i_null` (see above example) but no exception will be thrown. Thus, you will have to explicitly handle `sql.got_data() == false` (instead of relying on an exception being thrown), if you want to perform any special action in this event.
 
 ## Insert with NULL values
 
