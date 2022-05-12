@@ -175,6 +175,15 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
             break;
         }
 
+        case x_xmltype:
+        {
+            const soci::xml_type &xml = exchange_type_cast<x_xmltype>(data_);
+            col.type_ = dt_string;
+            col.buffer_.constData_ = xml.value.c_str();
+            col.buffer_.size_ = xml.value.size();
+            break;
+        }
+
         default:
             throw soci_error("Use element used with non-supported type.");
     }

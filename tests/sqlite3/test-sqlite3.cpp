@@ -146,6 +146,124 @@ TEST_CASE("SQLite use and vector into", "[sqlite][use][into][vector]")
     }
 }
 
+class DropTable
+{
+public:
+    DropTable(soci::session& session,
+              const std::string& tableName)
+        : m_session(session),
+          m_tableName(tableName)
+    {
+    }
+
+    bool TableExists()
+    {
+        int count = 0;
+        m_session
+            << "select count(name) from sqlite_master where type = 'table' and name = '"
+            << m_tableName
+            << "'",
+            into(count);
+        return count > 0;
+    }
+
+    void ForceDrop()
+    {
+        if ( TableExists() )
+            m_session << "drop table " << m_tableName;
+    }
+
+    ~DropTable()
+    {
+        ForceDrop();
+    }
+private:
+    soci::session& m_session;
+    const std::string m_tableName;
+};
+
+TEST_CASE("SQLite use and into for XML type", "[sqlite][use][into][xml]")
+{
+    soci::session sql(backEnd, connectString);
+
+    DropTable dropTable(sql, "test1");
+    dropTable.ForceDrop();
+
+    sql <<
+    "create table test1 ("
+    "    xml_data varchar(100)"
+    ")";
+
+    std::string xmlStr1("<data><first></first></data>");
+
+    {
+        soci::xml_type xml1;
+        xml1.value = xmlStr1;
+
+        statement s(sql.prepare << "insert into test1(xml_data) values(:xml_data)");
+
+        s.exchange(use(xml1, "xml_data"));
+
+        s.define_and_bind();
+        s.execute(true);
+    }
+    {
+        soci::xml_type xmlRead1;
+        statement s(sql.prepare << "select xml_data from test1 order by xml_data asc");
+        s.exchange(into(xmlRead1));
+
+        s.define_and_bind();
+        s.execute(true);
+
+        CHECK(xmlRead1.value == xmlStr1);
+    }
+}
+
+TEST_CASE("SQLite use and vector into for XML type", "[sqlite][use][into][vector][xml]")
+{
+    soci::session sql(backEnd, connectString);
+
+    DropTable dropTable(sql, "test1");
+    dropTable.ForceDrop();
+
+    sql <<
+    "create table test1 ("
+    "    xml_data varchar(100)"
+    ")";
+
+    std::string xmlStr1("<data><first></first></data>");
+    std::string xmlStr2("<data><second></second></data>");
+
+    {
+        std::vector<soci::xml_type> v;
+        soci::xml_type x1;
+        x1.value = xmlStr1;
+        v.push_back(x1);
+        soci::xml_type x2;
+        x2.value = xmlStr2;
+        v.push_back(x2);
+
+        statement s(sql.prepare << "insert into test1(xml_data) values(:xml_data)");
+
+        s.exchange(use(v, "xml_data"));
+
+        s.define_and_bind();
+        s.execute(true);
+    }
+    {
+        std::vector<soci::xml_type> v(2);
+
+        statement s(sql.prepare << "select xml_data from test1 order by xml_data asc");
+        s.exchange(into(v));
+
+        s.define_and_bind();
+        s.execute(true);
+
+        CHECK(v.size() == 2);
+        CHECK(v[0].value == xmlStr1);
+        CHECK(v[1].value == xmlStr2);
+    }
+}
 
 // Test case from Amnon David 11/1/2007
 // I've noticed that table schemas in SQLite3 can sometimes have typeless

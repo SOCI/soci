@@ -151,6 +151,15 @@ void sqlite3_vector_use_type_backend::pre_use(indicator const * ind)
                 break;
             }
 
+            case x_xmltype:
+            {
+                soci::xml_type &xml = (*static_cast<std::vector<exchange_type_traits<x_xmltype>::value_type> *>(data_))[i];
+                col.type_ = dt_string;
+                col.buffer_.constData_ = xml.value.c_str();
+                col.buffer_.size_ = xml.value.size();
+                break;
+            }
+
             default:
                 throw soci_error(
                     "Use vector element used with non-supported type.");
@@ -187,6 +196,9 @@ std::size_t sqlite3_vector_use_type_backend::size()
         break;
     case x_stdtm:
         sz = get_vector_size<std::tm>(data_);
+        break;
+    case x_xmltype:
+        sz = get_vector_size<soci::xml_type>(data_);
         break;
     default:
         throw soci_error("Use vector element used with non-supported type.");
