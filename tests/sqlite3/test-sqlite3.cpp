@@ -53,6 +53,62 @@ TEST_CASE("SQLite rowid", "[sqlite][rowid][oid]")
     sql << "drop table test1";
 }
 
+static void SetupForeignKeysTest(soci::session& sql)
+{
+    sql <<
+    "create table parent ("
+    "    id integer primary key"
+    ")";
+
+    sql <<
+    "create table child ("
+    "    id integer primary key,"
+    "    parent integer,"
+    "    foreign key(parent) references parent(id)"
+    ")";
+
+    sql << "insert into parent(id) values(1)";
+    sql << "insert into child(id, parent) values(100, 1)";
+}
+
+TEST_CASE("SQLite foreign keys are disabled by default", "[sqlite][foreignkeys]")
+{
+    soci::session sql(backEnd, connectString);
+
+    SetupForeignKeysTest(sql);
+
+    sql << "delete from parent where id = 1";
+
+    int parent = 0;
+    sql << "select parent from child where id = 100 ", into(parent);
+
+    CHECK(parent == 1);
+
+    sql << "drop table child";
+    sql << "drop table parent";
+}
+
+TEST_CASE("SQLite foreign keys are enabled by foreign_keys option", "[sqlite][foreignkeys]")
+{
+    soci::session sql(backEnd, "dbname=:memory: foreign_keys=on");
+
+    SetupForeignKeysTest(sql);
+
+    bool thrown = false;
+    try
+    {
+        sql << "delete from parent where id = 1";
+    }
+    catch ( const soci::soci_error& err )
+    {
+        thrown = true;
+    }
+    CHECK(thrown);
+
+    sql << "drop table child";
+    sql << "drop table parent";
+}
+
 // BLOB test
 struct blob_table_creator : public table_creator_base
 {

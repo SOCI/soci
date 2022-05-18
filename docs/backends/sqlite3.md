@@ -53,6 +53,7 @@ The set of parameters used in the connection string for SQLite is:
 * `synchronous` - set the pragma synchronous flag ([link](http://www.sqlite.org/pragma.html#pragma_synchronous))
 * `shared_cache` - should be `true` ([link](http://www.sqlite.org/c3ref/enable_shared_cache.html))
 * `vfs` - set the SQLite VFS used to as OS interface. The VFS should be registered before opening the connection, see [the documenation](https://www.sqlite.org/vfs.html)
+* `foreign_keys` - set the pragma foreign_keys flag ([link](https://www.sqlite.org/pragma.html#pragma_foreign_keys)). Possible values are "on"/"off"
 
 Once you have created a `session` object as shown above, you can use it to access the database, for example:
 
