@@ -60,6 +60,7 @@ sqlite3_session_backend::sqlite3_session_backend(
     int connection_flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
     std::string vfs;
     std::string synchronous;
+    std::string foreignKeys;
     std::string const & connectString = parameters.get_connect_string();
     std::string dbname(connectString);
     std::stringstream ssconn(connectString);
@@ -113,7 +114,10 @@ sqlite3_session_backend::sqlite3_session_backend(
         {
             vfs = val;
         }
-
+        else if ("foreign_keys" == key)
+        {
+            foreignKeys = val;
+        }
     }
 
     int res = sqlite3_open_v2(dbname.c_str(), &conn_, connection_flags, (vfs.empty()?NULL:vfs.c_str()));
@@ -123,6 +127,13 @@ sqlite3_session_backend::sqlite3_session_backend(
     {
         std::string const query("pragma synchronous=" + synchronous);
         std::string const errMsg("Query failed: " + query);
+        execude_hardcoded(conn_, query.c_str(), errMsg.c_str());
+    }
+
+    if (!foreignKeys.empty())
+    {
+        std::string const query("pragma foreign_keys=" + foreignKeys);
+        std::string const errMsg("Executing query: " + query + " failed");
         execude_hardcoded(conn_, query.c_str(), errMsg.c_str());
     }
 

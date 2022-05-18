@@ -53,6 +53,67 @@ TEST_CASE("SQLite rowid", "[sqlite][rowid][oid]")
     sql << "drop table test1";
 }
 
+class SetupForeignKeys
+{
+public:
+    SetupForeignKeys(soci::session& sql)
+        : m_sql(sql)
+    {
+        m_sql <<
+        "create table parent ("
+        "    id integer primary key"
+        ")";
+
+        m_sql <<
+        "create table child ("
+        "    id integer primary key,"
+        "    parent integer,"
+        "    foreign key(parent) references parent(id)"
+        ")";
+
+        m_sql << "insert into parent(id) values(1)";
+        m_sql << "insert into child(id, parent) values(100, 1)";
+    }
+
+    ~SetupForeignKeys()
+    {
+        m_sql << "drop table child";
+        m_sql << "drop table parent";
+    }
+
+private:
+    SetupForeignKeys(const SetupForeignKeys&);
+    SetupForeignKeys& operator=(const SetupForeignKeys&);
+
+    soci::session& m_sql;
+};
+
+TEST_CASE("SQLite foreign keys are disabled by default", "[sqlite][foreignkeys]")
+{
+    soci::session sql(backEnd, connectString);
+
+    SetupForeignKeys setupForeignKeys(sql);
+
+    sql << "delete from parent where id = 1";
+
+    int parent = 0;
+    sql << "select parent from child where id = 100 ", into(parent);
+
+    CHECK(parent == 1);
+}
+
+TEST_CASE("SQLite foreign keys are enabled by foreign_keys option", "[sqlite][foreignkeys]")
+{
+    soci::session sql(backEnd, "dbname=:memory: foreign_keys=on");
+
+    SetupForeignKeys setupForeignKeys(sql);
+
+    CHECK_THROWS_WITH(sql << "delete from parent where id = 1",
+                      "sqlite3_statement_backend::loadOne: FOREIGN KEY "
+                      "constraint failed while executing "
+                      "\"delete from parent where id = 1\".");
+}
+
 // BLOB test
 struct blob_table_creator : public table_creator_base
 {
