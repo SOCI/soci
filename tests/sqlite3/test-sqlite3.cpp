@@ -59,20 +59,20 @@ public:
     SetupForeignKeys(soci::session& sql)
         : m_sql(sql)
     {
-        sql <<
+        m_sql <<
         "create table parent ("
         "    id integer primary key"
         ")";
 
-        sql <<
+        m_sql <<
         "create table child ("
         "    id integer primary key,"
         "    parent integer,"
         "    foreign key(parent) references parent(id)"
         ")";
 
-        sql << "insert into parent(id) values(1)";
-        sql << "insert into child(id, parent) values(100, 1)";
+        m_sql << "insert into parent(id) values(1)";
+        m_sql << "insert into child(id, parent) values(100, 1)";
     }
 
     ~SetupForeignKeys()
@@ -81,10 +81,10 @@ public:
         m_sql << "drop table parent";
     }
 
-    SetupForeignKeys(const SetupForeignKeys&) = delete;
-    SetupForeignKeys& operator=(const SetupForeignKeys&) = delete;
-
 private:
+    SetupForeignKeys(const SetupForeignKeys&);
+    SetupForeignKeys& operator=(const SetupForeignKeys&);
+
     soci::session& m_sql;
 };
 
@@ -108,7 +108,10 @@ TEST_CASE("SQLite foreign keys are enabled by foreign_keys option", "[sqlite][fo
 
     SetupForeignKeys setupForeignKeys(sql);
 
-    CHECK_THROWS_AS(sql << "delete from parent where id = 1", soci::soci_error);
+    CHECK_THROWS_WITH(sql << "delete from parent where id = 1",
+                      "sqlite3_statement_backend::loadOne: FOREIGN KEY "
+                      "constraint failed while executing "
+                      "\"delete from parent where id = 1\".");
 }
 
 // BLOB test
