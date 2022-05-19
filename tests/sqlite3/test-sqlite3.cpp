@@ -99,7 +99,7 @@ TEST_CASE("SQLite foreign keys are enabled by foreign_keys option", "[sqlite][fo
     {
         sql << "delete from parent where id = 1";
     }
-    catch ( const soci::soci_error& err )
+    catch (const soci::soci_error&)
     {
         thrown = true;
     }
