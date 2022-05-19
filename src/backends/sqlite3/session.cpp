@@ -133,7 +133,8 @@ sqlite3_session_backend::sqlite3_session_backend(
     if (!foreignKeys.empty())
     {
         std::string const query("pragma foreign_keys=" + foreignKeys);
-        execude_hardcoded(conn_, query.c_str(), "Attempt to set foreign_keys pragma failed");
+        std::string const errMsg("Executing query: " + query + " failed");
+        execude_hardcoded(conn_, query.c_str(), errMsg.c_str());
     }
 
     res = sqlite3_busy_timeout(conn_, timeout * 1000);

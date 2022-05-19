@@ -53,29 +53,46 @@ TEST_CASE("SQLite rowid", "[sqlite][rowid][oid]")
     sql << "drop table test1";
 }
 
-static void SetupForeignKeysTest(soci::session& sql)
+class SetupForeignKeys
 {
-    sql <<
-    "create table parent ("
-    "    id integer primary key"
-    ")";
+public:
+    SetupForeignKeys(soci::session& sql)
+        : m_sql(sql)
+    {
+        sql <<
+        "create table parent ("
+        "    id integer primary key"
+        ")";
 
-    sql <<
-    "create table child ("
-    "    id integer primary key,"
-    "    parent integer,"
-    "    foreign key(parent) references parent(id)"
-    ")";
+        sql <<
+        "create table child ("
+        "    id integer primary key,"
+        "    parent integer,"
+        "    foreign key(parent) references parent(id)"
+        ")";
 
-    sql << "insert into parent(id) values(1)";
-    sql << "insert into child(id, parent) values(100, 1)";
-}
+        sql << "insert into parent(id) values(1)";
+        sql << "insert into child(id, parent) values(100, 1)";
+    }
+
+    ~SetupForeignKeys()
+    {
+        m_sql << "drop table child";
+        m_sql << "drop table parent";
+    }
+
+    SetupForeignKeys(const SetupForeignKeys&) = delete;
+    SetupForeignKeys& operator=(const SetupForeignKeys&) = delete;
+
+private:
+    soci::session& m_sql;
+};
 
 TEST_CASE("SQLite foreign keys are disabled by default", "[sqlite][foreignkeys]")
 {
     soci::session sql(backEnd, connectString);
 
-    SetupForeignKeysTest(sql);
+    SetupForeignKeys setupForeignKeys(sql);
 
     sql << "delete from parent where id = 1";
 
@@ -83,30 +100,15 @@ TEST_CASE("SQLite foreign keys are disabled by default", "[sqlite][foreignkeys]"
     sql << "select parent from child where id = 100 ", into(parent);
 
     CHECK(parent == 1);
-
-    sql << "drop table child";
-    sql << "drop table parent";
 }
 
 TEST_CASE("SQLite foreign keys are enabled by foreign_keys option", "[sqlite][foreignkeys]")
 {
     soci::session sql(backEnd, "dbname=:memory: foreign_keys=on");
 
-    SetupForeignKeysTest(sql);
+    SetupForeignKeys setupForeignKeys(sql);
 
-    bool thrown = false;
-    try
-    {
-        sql << "delete from parent where id = 1";
-    }
-    catch (const soci::soci_error&)
-    {
-        thrown = true;
-    }
-    CHECK(thrown);
-
-    sql << "drop table child";
-    sql << "drop table parent";
+    CHECK_THROWS_AS(sql << "delete from parent where id = 1", soci::soci_error);
 }
 
 // BLOB test
