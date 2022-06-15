@@ -201,7 +201,9 @@ bool sqlite3_session_backend::get_last_insert_id(
     session &, std::string const & table, long long & value)
 {
     char *zErrMsg = NULL;
-    SeqCtxt seqCtxt = { 0 };
+    SeqCtxt seqCtxt;
+    seqCtxt.filledIn_ = false;
+    seqCtxt.value_ = 0;
     if (sequenceTableExists_ || SequenceTableExists(conn_))
     {
         // Once the sqlite_sequence table is created (because of a column marked AUTOINCREMENT)
