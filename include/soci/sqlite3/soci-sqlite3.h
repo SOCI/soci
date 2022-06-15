@@ -329,6 +329,7 @@ struct sqlite3_session_backend : details::session_backend
 
     }
     sqlite_api::sqlite3 *conn_;
+    bool sequenceTableExists_;
 };
 
 struct sqlite3_backend_factory : backend_factory
