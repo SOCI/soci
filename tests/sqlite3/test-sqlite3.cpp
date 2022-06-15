@@ -114,6 +114,147 @@ TEST_CASE("SQLite foreign keys are enabled by foreign_keys option", "[sqlite][fo
                       "\"delete from parent where id = 1\".");
 }
 
+class SetupAutoIncrementTable
+{
+public:
+    SetupAutoIncrementTable(soci::session& sql)
+        : m_sql(sql)
+    {
+        m_sql <<
+        "create table t("
+        "    id integer primary key autoincrement,"
+        "    name text"
+        ")";
+    }
+
+    ~SetupAutoIncrementTable()
+    {
+        m_sql << "drop table t";
+    }
+
+private:
+    SetupAutoIncrementTable(const SetupAutoIncrementTable&);
+    SetupAutoIncrementTable& operator=(const SetupAutoIncrementTable&);
+
+    soci::session& m_sql;
+};
+
+TEST_CASE("SQLite get_last_insert_id works with AUTOINCREMENT",
+          "[sqlite][rowid]")
+{
+    soci::session sql(backEnd, connectString);
+    SetupAutoIncrementTable createTable(sql);
+
+    sql << "insert into t(name) values('x')";
+    sql << "insert into t(name) values('y')";
+
+    long long val;
+    sql.get_last_insert_id("t", val);
+    CHECK(val == 2);
+}
+
+TEST_CASE("SQLite get_last_insert_id with AUTOINCREMENT does not reuse IDs when rows deleted",
+          "[sqlite][rowid]")
+{
+    soci::session sql(backEnd, connectString);
+    SetupAutoIncrementTable createTable(sql);
+
+    sql << "insert into t(name) values('x')";
+    sql << "insert into t(name) values('y')";
+
+    sql << "delete from t where id = 2";
+
+    long long val;
+    sql.get_last_insert_id("t", val);
+    CHECK(val == 2);
+}
+
+class SetupNoAutoIncrementTable
+{
+public:
+    SetupNoAutoIncrementTable(soci::session& sql)
+        : m_sql(sql)
+    {
+        m_sql <<
+        "create table t("
+        "    id integer primary key,"
+        "    name text"
+        ")";
+    }
+
+    ~SetupNoAutoIncrementTable()
+    {
+        m_sql << "drop table t";
+    }
+
+private:
+    SetupNoAutoIncrementTable(const SetupNoAutoIncrementTable&);
+    SetupNoAutoIncrementTable& operator=(const SetupNoAutoIncrementTable&);
+
+    soci::session& m_sql;
+};
+
+TEST_CASE("SQLite get_last_insert_id without AUTOINCREMENT reuses IDs when rows deleted",
+          "[sqlite][rowid]")
+{
+    soci::session sql(backEnd, connectString);
+    SetupNoAutoIncrementTable createTable(sql);
+
+    sql << "insert into t(name) values('x')";
+    sql << "insert into t(name) values('y')";
+
+    sql << "delete from t where id = 2";
+
+    long long val;
+    sql.get_last_insert_id("t", val);
+    CHECK(val == 1);
+}
+
+TEST_CASE("SQLite get_last_insert_id throws if table not found",
+          "[sqlite][rowid]")
+{
+    soci::session sql(backEnd, connectString);
+
+    long long val;
+    CHECK_THROWS(sql.get_last_insert_id("notexisting", val));
+}
+
+class SetupTableWithDoubleQuoteInName
+{
+public:
+    SetupTableWithDoubleQuoteInName(soci::session& sql)
+        : m_sql(sql)
+    {
+        m_sql <<
+        "create table \"t\"\"fff\"("
+        "    id integer primary key,"
+        "    name text"
+        ")";
+    }
+
+    ~SetupTableWithDoubleQuoteInName()
+    {
+        m_sql << "drop table \"t\"\"fff\"";
+    }
+
+private:
+    SetupTableWithDoubleQuoteInName(const SetupTableWithDoubleQuoteInName&);
+    SetupTableWithDoubleQuoteInName& operator=(const SetupTableWithDoubleQuoteInName&);
+
+    soci::session& m_sql;
+};
+
+TEST_CASE("SQLite get_last_insert_id escapes table name",
+          "[sqlite][rowid]")
+{
+    soci::session sql(backEnd, connectString);
+    SetupTableWithDoubleQuoteInName table(sql);
+
+    long long val;
+    sql.get_last_insert_id("t\"fff", val);
+    CHECK(val == 0);
+}
+
 // BLOB test
 struct blob_table_creator : public table_creator_base
 {
