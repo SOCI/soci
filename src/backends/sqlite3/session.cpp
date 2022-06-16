@@ -10,6 +10,8 @@
 
 #include "soci/connection-parameters.h"
 
+#include "soci-cstrtoi.h"
+
 #include <sstream>
 #include <string>
 
@@ -153,7 +155,8 @@ sqlite3_session_backend::sqlite3_session_backend(
     if (!foreignKeys.empty())
     {
         std::string const query("pragma foreign_keys=" + foreignKeys);
-        execude_hardcoded(conn_, query.c_str(), "Attempt to set foreign_keys pragma failed");
+        std::string const errMsg("Executing query: " + query + " failed");
+        execude_hardcoded(conn_, query.c_str(), errMsg.c_str());
     }
 
     res = sqlite3_busy_timeout(conn_, timeout * 1000);
@@ -180,29 +183,49 @@ void sqlite3_session_backend::rollback()
     execude_hardcoded(conn_, "ROLLBACK", "Cannot rollback transaction.");
 }
 
-struct SeqCtxt
+struct sequence_context
 {
     long long value_;
-    bool filledIn_;
+    bool valid_;
 };
 
-static int GetOneLong(void* ctxt, int valueNum, char** values, char**)
+static int get_one_long(void* ctx, int valueNum, char** values, char**)
 {
-    SeqCtxt* seqCtxt = (SeqCtxt*)ctxt;
-    seqCtxt->value_ = 0;
-    seqCtxt->filledIn_ = true;
-    char* ptr = NULL;
+    sequence_context* seq = static_cast<sequence_context*>(ctx);
+    // Callback is called only in the case where there is at least
+    // one result tuple. Initialize the resulting value and
+    // mark that the callback was called.
+    seq->value_ = 0;
+    seq->valid_ = true;
     if (valueNum == 1 && values[0])
-        seqCtxt->value_ = strtol(values[0], &ptr, 10);
+        if (!cstring_to_integer(seq->value_, values[0]))
+            seq->value_ = 0;
+
     return 0;
+}
+
+static std::string sanitize_table_name(std::string const& table)
+{
+    std::string ret;
+    for (std::string::size_type pos = 0; pos < table.size(); ++pos)
+    {
+        if (isspace(table[pos]))
+            throw sqlite3_soci_error("Table name must not contain whitespace", 0);
+        const char c = table[pos];
+        ret += c;
+        if (c == '\'')
+            ret += '\'';
+        else if (c == '\"')
+            ret += '\"';
+    }
+    return ret;
 }
 
 bool sqlite3_session_backend::get_last_insert_id(
     session &, std::string const & table, long long & value)
 {
-    char *zErrMsg = NULL;
-    SeqCtxt seqCtxt;
-    seqCtxt.filledIn_ = false;
+    sequence_context seqCtxt;
+    seqCtxt.valid_ = false;
     seqCtxt.value_ = 0;
     if (sequenceTableExists_ || SequenceTableExists(conn_))
     {
@@ -210,15 +233,16 @@ bool sqlite3_session_backend::get_last_insert_id(
         // it can never be dropped, so don't search for it again.
         sequenceTableExists_ = true;
 
-        std::string const query = "select seq from sqlite_sequence where name ='" + table + "'";
-        int const res = sqlite3_exec(conn_, query.c_str(), &GetOneLong, &seqCtxt, &zErrMsg);
+        std::string const query =
+            "select seq from sqlite_sequence where name ='" + sanitize_table_name(table) + "'";
+        int const res = sqlite3_exec(conn_, query.c_str(), &get_one_long, &seqCtxt, NULL);
         check_sqlite_err(conn_, res, "Unable to get value in sqlite_sequence");
 
         // The value will not be filled if the callback was never called.
         // It may mean either that nothing was inserted yet into the table
         // that has an AUTOINCREMENT column, or that the table does not have an AUTOINCREMENT
         // column.
-        if (seqCtxt.filledIn_)
+        if (seqCtxt.valid_)
         {
             value = seqCtxt.value_;
             return true;
@@ -228,8 +252,8 @@ bool sqlite3_session_backend::get_last_insert_id(
     // Fall-back just get the maximum rowid of what was already inserted in the
     // table. This has the disadvantage that if rows were deleted, then ids may be re-used.
     // But, if one cares about that, AUTOINCREMENT should be used anyway.
-    std::string const maxRowIdQuery = "select max(rowid) from " + table;
-    int const res = sqlite3_exec(conn_, maxRowIdQuery.c_str(), &GetOneLong, &seqCtxt, &zErrMsg);
+    std::string const maxRowIdQuery = "select max(rowid) from \"" + sanitize_table_name(table) + "\"";
+    int const res = sqlite3_exec(conn_, maxRowIdQuery.c_str(), &get_one_long, &seqCtxt, NULL);
     check_sqlite_err(conn_, res, "Unable to get max rowid");
     value = seqCtxt.value_;
 

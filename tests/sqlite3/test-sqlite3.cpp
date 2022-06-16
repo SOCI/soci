@@ -188,8 +188,8 @@ public:
     }
 
 private:
-    SetupNoAutoIncrementTable(const SetupAutoIncrementTable&);
-    SetupNoAutoIncrementTable& operator=(const SetupAutoIncrementTable&);
+    SetupNoAutoIncrementTable(const SetupNoAutoIncrementTable&);
+    SetupNoAutoIncrementTable& operator=(const SetupNoAutoIncrementTable&);
 
     soci::session& m_sql;
 };
@@ -208,6 +208,51 @@ TEST_CASE("SQLite get_last_insert_id without AUTOINCREMENT reuses IDs when rows 
     long long val;
     sql.get_last_insert_id("t", val);
     CHECK(val == 1);
+}
+
+TEST_CASE("SQLite get_last_insert_id throws if table not found",
+          "[sqlite][rowid]")
+{
+    soci::session sql(backEnd, connectString);
+
+    long long val;
+    CHECK_THROWS(sql.get_last_insert_id("notexisting", val));
+}
+
+class SetupTableWithDoubleQuoteInName
+{
+public:
+    SetupTableWithDoubleQuoteInName(soci::session& sql)
+        : m_sql(sql)
+    {
+        m_sql <<
+        "create table \"t\"\"fff\"("
+        "    id integer primary key,"
+        "    name text"
+        ")";
+    }
+
+    ~SetupTableWithDoubleQuoteInName()
+    {
+        m_sql << "drop table \"t\"\"fff\"";
+    }
+
+private:
+    SetupTableWithDoubleQuoteInName(const SetupTableWithDoubleQuoteInName&);
+    SetupTableWithDoubleQuoteInName& operator=(const SetupTableWithDoubleQuoteInName&);
+
+    soci::session& m_sql;
+};
+
+TEST_CASE("SQLite get_last_insert_id escapes table name",
+          "[sqlite][rowid]")
+{
+    soci::session sql(backEnd, connectString);
+    SetupTableWithDoubleQuoteInName table(sql);
+
+    long long val;
+    sql.get_last_insert_id("t\"fff", val);
+    CHECK(val == 0);
 }
 
 // BLOB test
