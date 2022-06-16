@@ -63,12 +63,11 @@ static int CheckSequenceTableCallback(void* ctxt, int valueNum, char**, char**)
 
 static bool SequenceTableExists(sqlite_api::sqlite3* conn)
 {
-    char *zErrMsg = 0;
     bool sequenceTableExists = false;
     std::string query = "select name from sqlite_master where type='table' and name='sqlite_sequence'";
     int const res = sqlite3_exec(conn, query.c_str(), &CheckSequenceTableCallback,
                                  &sequenceTableExists,
-                                 &zErrMsg);
+                                 NULL);
     check_sqlite_err(conn, res, "Failed checking if the sqlite_sequence table exists");
 
     return sequenceTableExists;
