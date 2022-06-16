@@ -52,6 +52,17 @@ void check_sqlite_err(sqlite_api::sqlite3* conn, int res, char const* const errM
     }
 }
 
+void check_sqlite_err_keep_conn(sqlite_api::sqlite3* conn, int res, char const* const errMsg)
+{
+    if (SQLITE_OK != res)
+    {
+        const char *zErrMsg = sqlite3_errmsg(conn);
+        std::ostringstream ss;
+        ss << errMsg << zErrMsg;
+        throw sqlite3_soci_error(ss.str(), res);
+    }
+}
+
 } // namespace anonymous
 
 static int CheckSequenceTableCallback(void* ctxt, int valueNum, char**, char**)
@@ -68,7 +79,7 @@ static bool SequenceTableExists(sqlite_api::sqlite3* conn)
     int const res = sqlite3_exec(conn, query.c_str(), &CheckSequenceTableCallback,
                                  &sequenceTableExists,
                                  NULL);
-    check_sqlite_err(conn, res, "Failed checking if the sqlite_sequence table exists");
+    check_sqlite_err_keep_conn(conn, res, "Failed checking if the sqlite_sequence table exists");
 
     return sequenceTableExists;
 }
@@ -235,7 +246,7 @@ bool sqlite3_session_backend::get_last_insert_id(
         std::string const query =
             "select seq from sqlite_sequence where name ='" + sanitize_table_name(table) + "'";
         int const res = sqlite3_exec(conn_, query.c_str(), &get_one_long, &seqCtxt, NULL);
-        check_sqlite_err(conn_, res, "Unable to get value in sqlite_sequence");
+        check_sqlite_err_keep_conn(conn_, res, "Unable to get value in sqlite_sequence");
 
         // The value will not be filled if the callback was never called.
         // It may mean either that nothing was inserted yet into the table
@@ -253,7 +264,7 @@ bool sqlite3_session_backend::get_last_insert_id(
     // But, if one cares about that, AUTOINCREMENT should be used anyway.
     std::string const maxRowIdQuery = "select max(rowid) from \"" + sanitize_table_name(table) + "\"";
     int const res = sqlite3_exec(conn_, maxRowIdQuery.c_str(), &get_one_long, &seqCtxt, NULL);
-    check_sqlite_err(conn_, res, "Unable to get max rowid");
+    check_sqlite_err_keep_conn(conn_, res, "Unable to get max rowid");
     value = seqCtxt.value_;
 
     return true;
