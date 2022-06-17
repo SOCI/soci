@@ -26,11 +26,14 @@ using namespace sqlite_api;
 namespace // anonymous
 {
 
-// helper function for hardcoded queries
-void execude_hardcoded(sqlite_api::sqlite3* conn, char const* const query, char const* const errMsg)
+// helper function for hardcoded queries: this is a simple wrapper for
+// sqlite3_exec() which throws an exception on error.
+void execude_hardcoded(sqlite_api::sqlite3* conn, char const* const query, char const* const errMsg,
+                       int (*callback)(void*, int, char**, char**) = NULL,
+                       void* callback_arg = NULL)
 {
     char *zErrMsg = 0;
-    int const res = sqlite3_exec(conn, query, 0, 0, &zErrMsg);
+    int const res = sqlite3_exec(conn, query, callback, callback_arg, &zErrMsg);
     if (res != SQLITE_OK)
     {
         std::ostringstream ss;
@@ -52,41 +55,33 @@ void check_sqlite_err(sqlite_api::sqlite3* conn, int res, char const* const errM
     }
 }
 
-void check_sqlite_err_keep_conn(sqlite_api::sqlite3* conn, int res, char const* const errMsg)
-{
-    if (SQLITE_OK != res)
-    {
-        const char *zErrMsg = sqlite3_errmsg(conn);
-        std::ostringstream ss;
-        ss << errMsg << zErrMsg;
-        throw sqlite3_soci_error(ss.str(), res);
-    }
-}
-
 } // namespace anonymous
 
-static int CheckSequenceTableCallback(void* ctxt, int valueNum, char**, char**)
+static int sequence_table_exists_callback(void* ctxt, int result_columns, char**, char**)
 {
-    bool* flag = (bool*)ctxt;
-    *flag = valueNum > 0;
+    bool* const flag = static_cast<bool*>(ctxt);
+    *flag = result_columns > 0;
     return 0;
 }
 
-static bool SequenceTableExists(sqlite_api::sqlite3* conn)
+static bool check_if_sequence_table_exists(sqlite_api::sqlite3* conn)
 {
-    bool sequenceTableExists = false;
-    std::string query = "select name from sqlite_master where type='table' and name='sqlite_sequence'";
-    int const res = sqlite3_exec(conn, query.c_str(), &CheckSequenceTableCallback,
-                                 &sequenceTableExists,
-                                 NULL);
-    check_sqlite_err_keep_conn(conn, res, "Failed checking if the sqlite_sequence table exists");
+    bool sequence_table_exists = false;
+    execude_hardcoded
+    (
+      conn,
+      "select name from sqlite_master where type='table' and name='sqlite_sequence'",
+      "Failed checking if the sqlite_sequence table exists",
+      &sequence_table_exists_callback,
+      &sequence_table_exists
+    );
 
-    return sequenceTableExists;
+    return sequence_table_exists;
 }
 
 sqlite3_session_backend::sqlite3_session_backend(
     connection_parameters const & parameters)
-    : sequenceTableExists_(false)
+    : sequence_table_exists_(false)
 {
     int timeout = 0;
     int connection_flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
@@ -193,23 +188,25 @@ void sqlite3_session_backend::rollback()
     execude_hardcoded(conn_, "ROLLBACK", "Cannot rollback transaction.");
 }
 
-struct sequence_context
+// Argument passed to store_single_value_callback(), which is used to retrieve
+// a single numeric value from a hardcoded query.
+struct single_value_callback_ctx
 {
+    single_value_callback_ctx() : valid_(false) {}
+
     long long value_;
     bool valid_;
 };
 
-static int get_one_long(void* ctx, int valueNum, char** values, char**)
+static int store_single_value_callback(void* ctx, int result_columns, char** values, char**)
 {
-    sequence_context* seq = static_cast<sequence_context*>(ctx);
-    // Callback is called only in the case where there is at least
-    // one result tuple. Initialize the resulting value and
-    // mark that the callback was called.
-    seq->value_ = 0;
-    seq->valid_ = true;
-    if (valueNum == 1 && values[0])
-        if (!cstring_to_integer(seq->value_, values[0]))
-            seq->value_ = 0;
+    single_value_callback_ctx* arg = static_cast<single_value_callback_ctx*>(ctx);
+
+    if (result_columns == 1 && values[0])
+    {
+        if (cstring_to_integer(arg->value_, values[0]))
+            arg->valid_ = true;
+    }
 
     return 0;
 }
@@ -217,6 +214,7 @@ static int get_one_long(void* ctx, int valueNum, char** values, char**)
 static std::string sanitize_table_name(std::string const& table)
 {
     std::string ret;
+    ret.reserve(table.length());
     for (std::string::size_type pos = 0; pos < table.size(); ++pos)
     {
         if (isspace(table[pos]))
@@ -234,27 +232,25 @@ static std::string sanitize_table_name(std::string const& table)
 bool sqlite3_session_backend::get_last_insert_id(
     session &, std::string const & table, long long & value)
 {
-    sequence_context seqCtxt;
-    seqCtxt.valid_ = false;
-    seqCtxt.value_ = 0;
-    if (sequenceTableExists_ || SequenceTableExists(conn_))
+    single_value_callback_ctx ctx;
+    if (sequence_table_exists_ || check_if_sequence_table_exists(conn_))
     {
         // Once the sqlite_sequence table is created (because of a column marked AUTOINCREMENT)
         // it can never be dropped, so don't search for it again.
-        sequenceTableExists_ = true;
+        sequence_table_exists_ = true;
 
         std::string const query =
             "select seq from sqlite_sequence where name ='" + sanitize_table_name(table) + "'";
-        int const res = sqlite3_exec(conn_, query.c_str(), &get_one_long, &seqCtxt, NULL);
-        check_sqlite_err_keep_conn(conn_, res, "Unable to get value in sqlite_sequence");
+        execude_hardcoded(conn_, query.c_str(),  "Unable to get value in sqlite_sequence",
+                          &store_single_value_callback, &ctx);
 
         // The value will not be filled if the callback was never called.
         // It may mean either that nothing was inserted yet into the table
         // that has an AUTOINCREMENT column, or that the table does not have an AUTOINCREMENT
         // column.
-        if (seqCtxt.valid_)
+        if (ctx.valid_)
         {
-            value = seqCtxt.value_;
+            value = ctx.value_;
             return true;
         }
     }
@@ -262,10 +258,10 @@ bool sqlite3_session_backend::get_last_insert_id(
     // Fall-back just get the maximum rowid of what was already inserted in the
     // table. This has the disadvantage that if rows were deleted, then ids may be re-used.
     // But, if one cares about that, AUTOINCREMENT should be used anyway.
-    std::string const maxRowIdQuery = "select max(rowid) from \"" + sanitize_table_name(table) + "\"";
-    int const res = sqlite3_exec(conn_, maxRowIdQuery.c_str(), &get_one_long, &seqCtxt, NULL);
-    check_sqlite_err_keep_conn(conn_, res, "Unable to get max rowid");
-    value = seqCtxt.value_;
+    std::string const max_rowid_query = "select max(rowid) from \"" + sanitize_table_name(table) + "\"";
+    execude_hardcoded(conn_, max_rowid_query.c_str(),  "Unable to get max rowid",
+                      &store_single_value_callback, &ctx);
+    value = ctx.valid_ ? ctx.value_ : 0;
 
     return true;
 }

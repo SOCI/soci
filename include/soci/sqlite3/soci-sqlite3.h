@@ -329,7 +329,10 @@ struct sqlite3_session_backend : details::session_backend
 
     }
     sqlite_api::sqlite3 *conn_;
-    bool sequenceTableExists_;
+
+    // This flag is set to true if the internal sqlite_sequence table exists in
+    // the database.
+    bool sequence_table_exists_;
 };
 
 struct sqlite3_backend_factory : backend_factory
