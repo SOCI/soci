@@ -71,13 +71,13 @@ The Oracle backend supports the use of the SOCI `row` class, which facilitates r
 
 When calling `row::get<T>()`, the type you should pass as `T` depends upon the underlying database type. For the Oracle backend, this type mapping is:
 
-|Oracle Data Type|SOCI Data Type|`row::get<T>` specializations|
-|--- |--- |--- |
-|number (where scale > 0)|dt_double|double|
-|number(where scale = 0 and precision ≤ `std::numeric_limits<int>::digits10`)|dt_integer|int|
-|number|dt_long_long|long long|
-|char, varchar, varchar2|dt_string|std::string|
-|date|dt_date|std::tm|
+| Oracle Data Type                                                                  | SOCI Data Type | `row::get<T>` specializations |
+| --------------------------------------------------------------------------------- | -------------- | ----------------------------- |
+| number (where scale > 0)                                                          | dt_double      | double                        |
+| number (where scale = 0 and precision ≤ `std::numeric_limits<int32_t>::digits10`) | dt_int32       | int32_t                       |
+| number (where scale = 0)                                                          | dt_int64       | int64_t                       |
+| char, varchar, varchar2                                                           | dt_string      | std::string                   |
+| date                                                                              | dt_date        | std::tm                       |
 
 (See the [dynamic resultset binding](../types.md#dynamic-binding) documentation for general information on using the `row` class.)
 

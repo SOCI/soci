@@ -21,7 +21,19 @@ All names are defined in either `soci` or `soci::details` namespace.
 // data types, as seen by the user
 enum data_type
 {
-    dt_string, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long
+    dt_string,
+    dt_int8,
+    dt_uint8,
+    dt_int16,
+    dt_uint16,
+    dt_int32,
+    dt_uint32,
+    dt_int64,
+    dt_uint64,
+    dt_double,
+    dt_date,
+    dt_blob,
+    dt_xml
 };
 
 // the enum type for indicator variables
@@ -32,15 +44,22 @@ enum exchange_type
 {
     x_char,
     x_stdstring,
-    x_short,
-    x_integer,
-    x_long_long,
-    x_unsigned_long_long,
+    x_int8,
+    x_uint8,
+    x_int16,
+    x_uint16,
+    x_int32,
+    x_uint32,
+    x_int64,
+    x_uint64,
     x_double,
     x_stdtm,
     x_statement,
     x_rowid,
-    x_blob
+    x_blob,
+
+    x_xmltype,
+    x_longstring
 };
 
 struct cstring_descriptor

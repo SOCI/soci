@@ -73,14 +73,16 @@ type is not known at compile time.
 When calling `row::get<T>()`, the type you should pass as T depends upon the underlying database type.
 For the Firebird backend, this type mapping is:
 
-|Firebird Data Type|SOCI Data Type|`row::get<T>` specializations|
-|--- |--- |--- |
-|numeric, decimal (where scale > 0)|dt_double|double|
-|numeric, decimal [^1] (where scale = 0)|dt_integer, dt_double|int, double|
-|double precision, float|dt_double|double|
-|smallint, integer|dt_integer|int|
-|char, varchar|dt_string|std::string|
-|date, time, timestamp|dt_date|std::tm|
+| Firebird Data Type                      | SOCI Data Type                          | `row::get<T>` specializations     |
+| --------------------------------------- | --------------------------------------- | --------------------------------- |
+| numeric, decimal (where scale > 0)      | dt_double                               | double                            |
+| numeric, decimal [^1] (where scale = 0) | dt_int16/dt_int32/dt_int64, dt_double   | dt_int16/int32_t/dt_int64, double |
+| double precision, float                 | dt_double                               | double                            |
+| smallint                                | dt_int16                                | int16_t                           |
+| integer                                 | dt_int32                                | int32_t                           |
+| bigint                                  | dt_int64                                | int64_t                           |
+| char, varchar                           | dt_string                               | std::string                       |
+| date, time, timestamp                   | dt_date                                 | std::tm                           |
 
 [^1] There is also 64bit integer type for larger values which is
 currently not supported.

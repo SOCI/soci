@@ -75,14 +75,16 @@ When calling `row::get<T>()`, the type you should pass as T depends upon the und
 
 For the SQLite3 backend, this type mapping is complicated by the fact the SQLite3 does not enforce [types][INTEGER_PRIMARY_KEY] and makes no attempt to validate the type names used in table creation or alteration statements. SQLite3 will return the type as a string, SOCI will recognize the following strings and match them the corresponding SOCI types:
 
-|SQLite3 Data Type|SOCI Data Type|`row::get<T>` specializations|
-|--- |--- |--- |
-|*float*, *double*|dt_double|double|
-|*int8*, *bigint*|dt_long_long|long long|
-|*unsigned big int*|dt_unsigned_long_long|unsigned long long|
-|*int*, *boolean*|dt_integer|int|
-|*text, *char*|dt_string|std::string|
-|*date*, *time*|dt_date|std::tm|
+| SQLite3 Data Type                                                                                            | SOCI Data Type | `row::get<T>` specializations |
+| ------------------------------------------------------------------------------------------------------------ | -------------- | ----------------------------- |
+| *float*, *decimal*, *double*, *double precision*, *number*, *numeric*, *real*                                | dt_double      | double                        |
+| *tinyint*                                                                                                    | dt_int8        | int8_t                        |
+| *smallint*                                                                                                   | dt_int16       | int16_t                       |
+| *int*, *integer*, *int2*, *mediumint*, *boolean*                                                             | dt_int32       | int32_t                       |
+| *int8*, *bigint*                                                                                             | dt_int64       | int64_t                       |
+| *unsigned big int*                                                                                           | dt_uint64      | uint64_t                      |
+| *text*, *char*, *character*, *clob*, *native character*, *nchar*, *nvarchar*, *varchar*, *varying character* | dt_string      | std::string                   |
+| *date*, *time*, *datetime*                                                                                   | dt_date        | std::tm                       |
 
 [INTEGER_PRIMARY_KEY] : There is one case where SQLite3 enforces type. If a column is declared as "integer primary key", then SQLite3 uses that as an alias to the internal ROWID column that exists for every table.  Only integers are allowed in this column.
 

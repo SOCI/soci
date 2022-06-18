@@ -72,15 +72,21 @@ The MySQL backend supports the use of the SOCI `row` class, which facilitates re
 When calling `row::get<T>()`, the type you should pass as `T` depends upon the underlying database type.
 For the MySQL backend, this type mapping is:
 
-|MySQL Data Type|SOCI Data Type|`row::get<T>` specializations|
-|--- |--- |--- |
-|FLOAT, DOUBLE, DECIMAL and synonyms|dt_double|double|
-|TINYINT, TINYINT UNSIGNED, SMALLINT, SMALLINT UNSIGNED, INT|dt_integer|int|
-|INT UNSIGNED|dt_long_long|long long or unsigned|
-|BIGINT|dt_long_long|long long|
-|BIGINT UNSIGNED|dt_unsigned_long_long|unsigned long long|
-|CHAR, VARCHAR, BINARY, VARBINARY, TINYBLOB, MEDIUMBLOB, BLOB,LONGBLOB, TINYTEXT, MEDIUMTEXT, TEXT, LONGTEXT, ENUM|dt_string|std::string|
-|TIMESTAMP (works only with MySQL >= 5.0), DATE, TIME, DATETIME|dt_date|std::tm|
+| MySQL Data Type                                                                                                   | SOCI Data Type        | `row::get<T>` specializations |
+| ----------------------------------------------------------------------------------------------------------------- | --------------------- | ----------------------------- |
+| FLOAT, DOUBLE, DECIMAL and synonyms                                                                               | dt_double             | double                        |
+| TINYINT                                                                                                           | dt_int8               | int8_t                        |
+| TINYINT UNSIGNED                                                                                                  | dt_uint8              | uint8_t                       |
+| SMALLINT                                                                                                          | dt_int16              | int16_t                       |
+| SMALLINT UNSIGNED                                                                                                 | dt_uint16             | uint16_t                      |
+| MEDIUMINT                                                                                                         | dt_int32              | int32_t                       |
+| MEDIUMINT UNSIGNED                                                                                                | dt_uint32             | uint32_t                      |
+| INT                                                                                                               | dt_int32              | int32_t                       |
+| INT UNSIGNED                                                                                                      | dt_uint32             | uint32_t                      |
+| BIGINT                                                                                                            | dt_int64              | int64_t                       |
+| BIGINT UNSIGNED                                                                                                   | dt_uint64             | uint64_t                      |
+| CHAR, VARCHAR, BINARY, VARBINARY, TINYBLOB, MEDIUMBLOB, BLOB,LONGBLOB, TINYTEXT, MEDIUMTEXT, TEXT, LONGTEXT, ENUM | dt_string             | std::string                   |
+| TIMESTAMP (works only with MySQL >= 5.0), DATE, TIME, DATETIME                                                    | dt_date               | std::tm                       |
 
 (See the [dynamic resultset binding](../types.md#dynamic-binding) documentation for general information
 on using the `Row` class.)

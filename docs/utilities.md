@@ -9,7 +9,7 @@ SOCI supports some basic methods to construct portable DDL queries. That is, ins
 It is possible to create a new table in a single statement:
 
 ```cpp
-sql.create_table("t1").column("i", soci::dt_integer).column("j", soci::dt_integer);
+sql.create_table("t1").column("i", soci::dt_int32).column("j", soci::dt_int32);
 ```
 
 Above, table "t1" will be created with two columns ("i", "j") of type integer.
@@ -19,9 +19,9 @@ It is also possible to build similar statements piece by piece, which is useful 
 ```cpp
 {
     soci::ddl_type ddl = sql.create_table("t2");
-    ddl.column("i", soci::dt_integer);
-    ddl.column("j", soci::dt_integer);
-    ddl.column("k", soci::dt_integer)("not null");
+    ddl.column("i", soci::dt_int32);
+    ddl.column("j", soci::dt_int32);
+    ddl.column("k", soci::dt_int32)("not null");
     ddl.primary_key("t2_pk", "j");
 }
 ```
@@ -31,9 +31,9 @@ The actual statement is executed at the end of above block, when the ddl object 
 Columns can be added to and dropped from already existing tables as well:
 
 ```cpp
-sql.add_column("t1", "k", soci::dt_integer);
+sql.add_column("t1", "k", soci::dt_int32);
 // or with constraint:
-//sql.add_column("t1", "k", soci::dt_integer)("not null");
+//sql.add_column("t1", "k", soci::dt_int32)("not null");
 
 sql.drop_column("t1", "i");
 ```
@@ -50,8 +50,8 @@ Tables with foreign keys to each other can be also created:
 ```cpp
 {
     soci::ddl_type ddl = sql.create_table("t3");
-    ddl.column("x", soci::dt_integer);
-    ddl.column("y", soci::dt_integer);
+    ddl.column("x", soci::dt_int32);
+    ddl.column("y", soci::dt_int32);
     ddl.foreign_key("t3_fk", "x", "t2", "j");
 }
 ```

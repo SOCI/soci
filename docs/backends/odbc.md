@@ -60,14 +60,18 @@ The ODBC backend supports the use of the SOCI `row` class, which facilitates ret
 When calling `row::get<T>()`, the type you should pass as T depends upon the underlying database type.
 For the ODBC backend, this type mapping is:
 
-|ODBC Data Type|SOCI Data Type|`row::get<T>` specializations|
-|--- |--- |--- |
-|SQL_DOUBLE, SQL_DECIMAL, SQL_REAL, SQL_FLOAT, SQL_NUMERIC|dt_double|double|
-|SQL_TINYINT, SQL_SMALLINT, SQL_INTEGER, SQL_BIGINT|dt_integer|int|
-|SQL_CHAR, SQL_VARCHAR|dt_string|std::string|
-|SQL_TYPE_DATE, SQL_TYPE_TIME, SQL_TYPE_TIMESTAMP|dt_date|std::tm|
+| ODBC Data Type                                            | SOCI Data Type | `row::get<T>` specializations |
+| --------------------------------------------------------- | -------------- | ----------------------------- |
+| SQL_DOUBLE, SQL_DECIMAL, SQL_REAL, SQL_FLOAT, SQL_NUMERIC | dt_double      | double                        |
+| SQL_TINYINT                                               | dt_int8        | int8_t                        |
+| SQL_SMALLINT                                              | dt_int16       | int16_t                       |
+| SQL_INTEGER                                               | dt_int32       | int32_t                       |
+| SQL_BIGINT                                                | dt_int64       | int64_t                       |
+| SQL_CHAR, SQL_VARCHAR                                     | dt_string      | std::string                   |
+| SQL_TYPE_DATE, SQL_TYPE_TIME, SQL_TYPE_TIMESTAMP          | dt_date        | std::tm                       |
 
 Not all ODBC drivers support all datatypes.
+Columns having the attribute `unsigned` get mapped to their corresponding `dt_uint[n]` and `uint[n]_t` types.
 
 (See the [dynamic resultset binding](../types.md#dynamic-binding) documentation for general information on using the `row` class.)
 
