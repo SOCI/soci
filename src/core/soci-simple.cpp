@@ -942,6 +942,16 @@ SOCI_DECL int soci_into_string(statement_handle st)
     return wrapper->next_position++;
 }
 
+SOCI_DECL int soci_into_int(statement_handle st)
+{
+    return soci_into_int32(st);
+}
+
+SOCI_DECL int soci_into_long_long(statement_handle st)
+{
+    return soci_into_int64(st);
+}
+
 SOCI_DECL int soci_into_int8(statement_handle st)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
@@ -1158,6 +1168,16 @@ SOCI_DECL int soci_into_string_v(statement_handle st)
     return wrapper->next_position++;
 }
 
+SOCI_DECL int soci_into_int_v(statement_handle st)
+{
+    return soci_into_int32_v(st);
+}
+
+SOCI_DECL int soci_into_long_long_v(statement_handle st)
+{
+    return soci_into_int64_v(st);
+}
+
 SOCI_DECL int soci_into_int8_v(statement_handle st)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
@@ -1365,6 +1385,16 @@ SOCI_DECL char const * soci_get_into_string(statement_handle st, int position)
     }
 
     return wrapper->into_strings[position].c_str();
+}
+
+SOCI_DECL int soci_get_into_int(statement_handle st, int position)
+{
+    return static_cast<int>(soci_get_into_int32(st, position));
+}
+
+SOCI_DECL long long soci_get_into_long_long(statement_handle st, int position)
+{
+    return static_cast<long long>(soci_get_into_int64(st, position));
 }
 
 SOCI_DECL int8_t soci_get_into_int8(statement_handle st, int position)
@@ -1644,6 +1674,16 @@ SOCI_DECL char const * soci_get_into_string_v(statement_handle st, int position,
     return v[index].c_str();
 }
 
+SOCI_DECL int soci_get_into_int_v(statement_handle st, int position, int index)
+{
+    return static_cast<int>(soci_get_into_int32_v(st, position, index));
+}
+
+SOCI_DECL long long soci_get_into_long_long_v(statement_handle st, int position, int index)
+{
+    return static_cast<long long>(soci_get_into_int64_v(st, position, index));
+}
+
 SOCI_DECL int8_t soci_get_into_int8_v(statement_handle st, int position, int index)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
@@ -1861,6 +1901,16 @@ SOCI_DECL void soci_use_string(statement_handle st, char const * name)
     wrapper->use_strings[name]; // create new entry
 }
 
+SOCI_DECL void soci_use_int(statement_handle st, char const * name)
+{
+    soci_use_int32(st, name);
+}
+
+SOCI_DECL void soci_use_long_long(statement_handle st, char const * name)
+{
+    soci_use_int64(st, name);
+}
+
 SOCI_DECL void soci_use_int8(statement_handle st, char const * name)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
@@ -2065,6 +2115,16 @@ SOCI_DECL void soci_use_string_v(statement_handle st, char const * name)
     wrapper->use_strings_v[name]; // create new entry
 }
 
+SOCI_DECL void soci_use_int_v(statement_handle st, char const * name)
+{
+    soci_use_int32_v(st, name);
+}
+
+SOCI_DECL void soci_use_long_long_v(statement_handle st, char const * name)
+{
+    soci_use_int64_v(st, name);
+}
+
 SOCI_DECL void soci_use_int8_v(statement_handle st, char const * name)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
@@ -2264,6 +2324,16 @@ SOCI_DECL void soci_set_use_string(statement_handle st, char const * name, char 
 
     wrapper->use_indicators[name] = i_ok;
     wrapper->use_strings[name] = val;
+}
+
+SOCI_DECL void soci_set_use_int(statement_handle st, char const * name, int32_t val)
+{
+    soci_set_use_int32(st, name, static_cast<int32_t>(val));
+}
+
+SOCI_DECL void soci_set_use_long_long(statement_handle st, char const * name, long long val)
+{
+    soci_set_use_int64(st, name, static_cast<int64_t>(val));
 }
 
 SOCI_DECL void soci_set_use_int8(statement_handle st, char const * name, int8_t val)
@@ -2531,6 +2601,18 @@ SOCI_DECL void soci_set_use_string_v(statement_handle st,
     v[index] = val;
 }
 
+SOCI_DECL void soci_set_use_int_v(statement_handle st,
+    char const * name, int index, int val)
+{
+    soci_set_use_int32_v(st, name, index, static_cast<int32_t>(val));
+}
+
+SOCI_DECL void soci_set_use_long_long_v(statement_handle st,
+    char const * name, int index, long long val)
+{
+    soci_set_use_int64_v(st, name, index, static_cast<int64_t>(val));
+}
+
 SOCI_DECL void soci_set_use_int8_v(statement_handle st,
     char const * name, int index, int8_t val)
 {
@@ -2776,6 +2858,16 @@ SOCI_DECL char const * soci_get_use_string(statement_handle st, char const * nam
     }
 
     return wrapper->use_strings[name].c_str();
+}
+
+SOCI_DECL int soci_get_use_int(statement_handle st, char const * name)
+{
+    return static_cast<int>(soci_get_use_int32(st, name));
+}
+
+SOCI_DECL long long soci_get_use_long_long(statement_handle st, char const * name)
+{
+    return static_cast<long long>(soci_get_use_int64(st, name));
 }
 
 SOCI_DECL int8_t soci_get_use_int8(statement_handle st, char const * name)
@@ -3215,7 +3307,7 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             }
         }
 
-        // bind all use vecctor elements
+        // bind all use vector elements
         {
             // strings
             typedef std::map<std::string,
