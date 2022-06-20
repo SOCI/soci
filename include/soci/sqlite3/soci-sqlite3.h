@@ -317,6 +317,12 @@ struct sqlite3_session_backend : details::session_backend
             case dt_double:
                 return "real";
             case dt_date:
+                // The type `datetime` doesn't exist in SQLite3. Instead,
+                // the storage class of date and time data types is either
+                // one of TEXT, REAL or INTEGER. However, when using the
+                // soci::row API, we want to be able to map the column back 
+                // to a dt_date, so that we can query its value as a std::tm.
+                return "datetime";
             case dt_integer:
             case dt_long_long:
             case dt_unsigned_long_long:

@@ -541,6 +541,34 @@ TEST_CASE("SQLite std::tm bind", "[sqlite][std-tm-bind]")
     CHECK(std::mktime(&result.front()) == std::mktime(&datetime));
 }
 
+TEST_CASE("SQLite std::time bind after DDL", "[sqlite][std-tm-bind][ddl]")
+{
+    soci::session sql(backEnd, connectString);
+
+    {
+        soci::ddl_type ddl = sql.create_table("soci_test");
+        ddl.column("ts", soci::dt_date)("not null");
+    }
+
+    std::time_t datetimeEpoch = 1491307200; // 2017-04-04 12:00:00
+    std::tm tm1 = *std::gmtime(&datetimeEpoch);
+    sql << "insert into soci_test (ts) values (:ts)", soci::use(tm1);
+
+    soci::row row;
+    soci::statement st = (sql.prepare <<
+            "select ts from soci_test", into(row));
+    st.execute(true);
+
+    std::tm tm2 = row.get<std::tm>(0);
+    CHECK(tm1.tm_year == tm2.tm_year);
+    CHECK(tm1.tm_mon == tm2.tm_mon);
+    CHECK(tm1.tm_mday == tm2.tm_mday);
+    CHECK(tm1.tm_hour == tm2.tm_hour);
+    CHECK(tm1.tm_min == tm2.tm_min);
+    CHECK(tm1.tm_sec == tm2.tm_sec);
+}
+
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
