@@ -8,6 +8,7 @@ on:
       - 'release/**'
     paths-ignore:
       - .circleci/**
+      - .cirrus.yml
       - .github/workflows/codeql.yml
       - appveyor.yml
   pull_request:
@@ -15,6 +16,7 @@ on:
       - master
     paths-ignore:
       - .circleci/**
+      - .cirrus.yml
       - .github/workflows/codeql.yml
       - appveyor.yml
 

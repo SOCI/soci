@@ -1,0 +1,19 @@
+# Continuous integration tasks running on Cirrus CI.
+#
+# This is currently used for testing under FreeBSD, which is not available at
+# the other CI providers already used by SOCI.
+env:
+  SOCI_CI: true
+  SOCI_CI_BACKEND: empty
+  SOCI_CI_BRANCH: ${CIRRUS_BRANCH}
+
+task:
+  name: Cirrus CI / Empty FreeBSD
+  freebsd_instance:
+    image_family: freebsd-13-0
+  install_script:
+    - pkg install -y bash cmake
+    - echo "SOCI_SOURCE_DIR=`pwd`" >> $CIRRUS_ENV
+  before_build_script: ./scripts/ci/before_build.sh
+  build_script: ./scripts/ci/build.sh
+  test_script: ./scripts/ci/test.sh
