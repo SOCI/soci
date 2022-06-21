@@ -25,7 +25,7 @@ case `uname` in
         num_cpus=`nproc`
         ;;
 
-    Darwin)
+    Darwin | FreeBSD)
         num_cpus=`sysctl -n hw.ncpu`
         ;;
 
