@@ -6,6 +6,8 @@ env:
   SOCI_CI: true
   SOCI_CI_BACKEND: empty
   SOCI_CI_BRANCH: ${CIRRUS_BRANCH}
+  # Using Boost results in tons of warnings under FreeBSD.
+  WITH_BOOST: OFF
 
 task:
   name: Cirrus CI / Empty FreeBSD
