@@ -1,9 +1,11 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Run install actions for SOCI build in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
+# Note that this is a /bin/sh script because it runs to install bash under
+# FreeBSD and so does not include common.sh, which uses bash.
+set -e
 
 case "$(uname)" in
     Linux)
@@ -24,6 +26,10 @@ case "$(uname)" in
 
         sudo apt-get update -qq -y
         sudo apt-get install -qq -y ${packages_to_install}
+        ;;
+
+    FreeBSD)
+        pkg install -q -y bash cmake
         ;;
 esac
 
