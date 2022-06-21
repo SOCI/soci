@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
 # Configure Firebird database for SOCI build in CI builds
 #
 # Mateusz Loskot <mateusz@loskot.net>, http://github.com/SOCI

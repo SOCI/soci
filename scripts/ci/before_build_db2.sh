@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
 # Sets up environment for SOCI backend DB2 in CI builds
 #
 # Copyright (c) 2013 Brian R. Toonen <toonen@alcf.anl.gov>

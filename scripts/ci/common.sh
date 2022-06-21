@@ -1,8 +1,12 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
 # Common definitions used by SOCI build scripts in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
+
+# Stop on all errors.
+set -e
+
 if [[ "$SOCI_CI" != "true" ]] ; then
 	echo "Running this script is only useful in the CI builds"
 	exit 1
@@ -21,7 +25,7 @@ case `uname` in
         num_cpus=`nproc`
         ;;
 
-    Darwin)
+    Darwin | FreeBSD)
         num_cpus=`sysctl -n hw.ncpu`
         ;;
 
@@ -48,8 +52,12 @@ SOCI_COMMON_CMAKE_OPTIONS='
     -DSOCI_TESTS=ON
 '
 
+if [[ -n ${WITH_BOOST} ]]; then
+    SOCI_COMMON_CMAKE_OPTIONS="$SOCI_COMMON_CMAKE_OPTIONS -DWITH_BOOST=${WITH_BOOST}"
+fi
+
 # These options are defaults and used by most builds, but not Valgrind one.
-SOCI_DEFAULT_CMAKE_OPTIONS='
+SOCI_DEFAULT_CMAKE_OPTIONS="${SOCI_COMMON_CMAKE_OPTIONS}
     -DSOCI_ASAN=ON
     -DSOCI_DB2=OFF
     -DSOCI_EMPTY=OFF
@@ -59,7 +67,7 @@ SOCI_DEFAULT_CMAKE_OPTIONS='
     -DSOCI_ORACLE=OFF
     -DSOCI_POSTGRESQL=OFF
     -DSOCI_SQLITE3=OFF
-'
+"
 
 #
 # Functions

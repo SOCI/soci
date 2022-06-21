@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
 # Configures Oracle database for SOCI Oracle backend CI builds.
 #
 # Copyright (c) 2013 Peter Butkovic <butkovic@gmail.com>

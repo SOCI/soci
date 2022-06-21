@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
 # Sets up Oracle database for SOCI Oracle backend CI builds.
 #
 source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh

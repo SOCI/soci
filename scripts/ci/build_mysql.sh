@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
 # Builds SOCI MySQL backend in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
