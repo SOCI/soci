@@ -52,6 +52,10 @@ SOCI_COMMON_CMAKE_OPTIONS='
     -DSOCI_TESTS=ON
 '
 
+if [[ -n ${WITH_BOOST} ]]; then
+    SOCI_COMMON_CMAKE_OPTIONS="$SOCI_COMMON_CMAKE_OPTIONS -DWITH_BOOST=${WITH_BOOST}"
+fi
+
 # These options are defaults and used by most builds, but not Valgrind one.
 SOCI_DEFAULT_CMAKE_OPTIONS="${SOCI_COMMON_CMAKE_OPTIONS}
     -DSOCI_ASAN=ON
