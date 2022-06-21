@@ -53,7 +53,7 @@ SOCI_COMMON_CMAKE_OPTIONS='
 '
 
 # These options are defaults and used by most builds, but not Valgrind one.
-SOCI_DEFAULT_CMAKE_OPTIONS='
+SOCI_DEFAULT_CMAKE_OPTIONS="${SOCI_COMMON_CMAKE_OPTIONS}
     -DSOCI_ASAN=ON
     -DSOCI_DB2=OFF
     -DSOCI_EMPTY=OFF
@@ -63,7 +63,7 @@ SOCI_DEFAULT_CMAKE_OPTIONS='
     -DSOCI_ORACLE=OFF
     -DSOCI_POSTGRESQL=OFF
     -DSOCI_SQLITE3=OFF
-'
+"
 
 #
 # Functions
