@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Build SOCI in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>

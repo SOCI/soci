@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
 # Tests SOCI FB backend in CI builds
 #
 # Copyright (c) 2021 Ilya Sinitsyn <isinitsyn@tt-solutions.com>

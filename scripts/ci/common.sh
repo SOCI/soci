@@ -1,8 +1,12 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
 # Common definitions used by SOCI build scripts in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
+
+# Stop on all errors.
+set -e
+
 if [[ "$SOCI_CI" != "true" ]] ; then
 	echo "Running this script is only useful in the CI builds"
 	exit 1

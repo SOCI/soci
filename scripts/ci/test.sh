@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Run SOCI tests in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>

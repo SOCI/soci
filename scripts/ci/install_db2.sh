@@ -1,9 +1,10 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
 # Installs DB2 for SOCI build in CI builds
 #
 # Copyright (c) 2013 Brian R. Toonen <toonen@alcf.anl.gov>
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
+set -e
 sudo bash -c 'echo "deb http://archive.canonical.com/ubuntu precise partner" >> /etc/apt/sources.list'
 sudo apt-get update -qq -y
 sudo apt-get install -qq -y db2exc

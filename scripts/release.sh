@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # This script is part of the release procedure of the SOCI library based
 # on current state of given release branch or master (see RELEASING.md).
 #

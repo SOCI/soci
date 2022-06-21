@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
 # Builds SOCI DB2 backend in CI builds
 #
 # Copyright (c) 2013 Brian R. Toonen <toonen@alcf.anl.gov>

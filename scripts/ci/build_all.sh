@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
 # Builds SOCI with all backends.
 #
 # Copyright (c) 2021 Vadim Zeitlin <vz-soci@zeitlins.org>
