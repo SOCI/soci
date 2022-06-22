@@ -9,6 +9,8 @@ env:
   SOCI_SOURCE_DIR: /tmp/cirrus-ci-build
   # Using Boost results in tons of warnings under FreeBSD.
   WITH_BOOST: OFF
+  # Using visibility with clang doesn't work currently, see #913.
+  WITHOUT_VISIBILITY: 1
 
 task:
   name: Cirrus CI / Empty FreeBSD
