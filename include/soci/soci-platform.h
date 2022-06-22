@@ -130,10 +130,13 @@ namespace cxx_details
 
 #if defined(SOCI_HAVE_CXX11) || (defined(_MSC_VER) && _MSC_VER >= 1800)
     #define SOCI_NOT_ASSIGNABLE(classname) \
+    public: \
+        classname(const classname&) = default; \
+    private: \
         classname& operator=(const classname&) = delete;
     #define SOCI_NOT_COPYABLE(classname) \
         classname(const classname&) = delete; \
-        SOCI_NOT_ASSIGNABLE(classname)
+        classname& operator=(const classname&) = delete;
 #else // no C++11 deleted members support
     #define SOCI_NOT_ASSIGNABLE(classname) \
         classname& operator=(const classname&);
