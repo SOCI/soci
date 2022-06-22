@@ -10,6 +10,7 @@
 
 #include "soci/soci-platform.h"
 // std
+#include <cstring>
 #include <typeinfo>
 
 namespace soci
@@ -32,9 +33,18 @@ public:
     template<typename T>
     T get()
     {
-        type_holder<T>* p = dynamic_cast<type_holder<T> *>(this);
-        if (p)
+        // Using dynamic_cast<> doesn't work when using libc++ and ELF
+        // visibility together. Luckily, here we don't need the full power of
+        // the cast anyhow, as we only need to check if the types are the same,
+        // which can be done by comparing their type info objects: check if
+        // they're identical first, as an optimization, and then comparing
+        // their names to make it actually work with libc++.
+        std::type_info const& ti_this = typeid(*this);
+        std::type_info const& ti_type = typeid(type_holder<T>);
+        if (&ti_this == &ti_type
+                || std::strcmp(ti_this.name(), ti_type.name()) == 0)
         {
+            type_holder<T>* p = static_cast<type_holder<T> *>(this);
             return p->template value<T>();
         }
         else
