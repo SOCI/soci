@@ -114,6 +114,117 @@ TEST_CASE("SQLite foreign keys are enabled by foreign_keys option", "[sqlite][fo
                       "\"delete from parent where id = 1\".");
 }
 
+class SetupTableWithTimestampColumn
+{
+public:
+    SetupTableWithTimestampColumn(soci::session& sql)
+        : m_sql(sql)
+    {
+        m_sql <<
+        "create table customt("
+        "    id integer primary key autoincrement,"
+        "    ts text not null"
+        ")";
+    }
+
+    ~SetupTableWithTimestampColumn()
+    {
+        m_sql << "drop table customt";
+    }
+
+private:
+    SetupTableWithTimestampColumn(const SetupTableWithTimestampColumn&);
+    SetupTableWithTimestampColumn& operator=(const SetupTableWithTimestampColumn&);
+
+    soci::session& m_sql;
+};
+
+struct Timestamp
+{
+  time_t t;
+};
+
+namespace soci {
+template <>
+struct type_conversion<Timestamp>
+{
+    using base_type = std::tm;
+
+    static void from_base(const std::tm& tm, indicator ind, Timestamp& time)
+    {
+        if ( ind == i_null )
+        {
+            time.t = -1;
+
+            return;
+        }
+
+        std::tm tm_copy(tm);
+        #ifdef _MSC_VER
+        time.t = _mkgmtime(&tm_copy);
+        #else
+        time.t = timegm(&tm_copy);
+        #endif
+    }
+
+    static void to_base(const Timestamp& time, std::tm& tm, indicator& ind)
+    {
+        if ( time.t == -1 )
+        {
+            ind = i_null;
+
+            return;
+        }
+
+        #ifdef _MSC_VER
+        gmtime_s(&tm, &time.t);
+        #else
+        gmtime_r(&time.t, &tm);
+        #endif
+
+        ind = i_ok;
+    }
+};
+}
+
+TEST_CASE("Can compare timestamps in select", "[sqlite][timestamp]")
+{
+    soci::session sql(backEnd, connectString);
+    SetupTableWithTimestampColumn table(sql);
+
+    Timestamp ti;
+    ti.t = 1609462800; // One in the morning Jan 1st 2021.
+
+    sql << "insert into customt(ts) values(:timestamp)", use(ti);
+
+    Timestamp tiAfter;
+    tiAfter.t = 1609549200; // Jan 2nd.
+
+    long id;
+    sql << "select id from customt where ts < :timestamp", use(tiAfter), into(id);
+    CHECK(id == 1);
+}
+
+TEST_CASE("Can select custom type row in vector with use", "[sqlite][timestamp][vector]")
+{
+    soci::session sql(backEnd, connectString);
+    SetupTableWithTimestampColumn table(sql);
+
+    Timestamp ti1;
+    ti1.t = 1609462800; // One in the morning Jan 1st 2021.
+
+    sql << "insert into customt(ts) values(:timestamp)", use(ti1);
+
+    Timestamp tiAfter;
+    tiAfter.t = 1609549200; // Jan 2nd.
+
+    std::vector<Timestamp> v;
+    v.resize(1);
+    sql << "select ts from customt where ts < :timestamp", use(tiAfter), into(v);
+    CHECK(v.size() == 1);
+    CHECK(v[0].t == ti1.t);
+}
+
 class SetupAutoIncrementTable
 {
 public:
