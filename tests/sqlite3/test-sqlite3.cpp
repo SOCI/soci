@@ -148,7 +148,7 @@ namespace soci {
 template <>
 struct type_conversion<Timestamp>
 {
-    using base_type = std::tm;
+    typedef std::tm base_type;
 
     static void from_base(const std::tm& tm, indicator ind, Timestamp& time)
     {
