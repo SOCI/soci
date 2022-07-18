@@ -121,15 +121,15 @@ public:
         : m_sql(sql)
     {
         m_sql <<
-        "create table customt("
+        "create table t("
         "    id integer primary key autoincrement,"
-        "    ts text not null"
+        "    ct integer not null"
         ")";
     }
 
     ~SetupTableWithTimestampColumn()
     {
-        m_sql << "drop table customt";
+        m_sql << "drop table t";
     }
 
 private:
@@ -139,90 +139,86 @@ private:
     soci::session& m_sql;
 };
 
-struct Timestamp
+enum class CustomType
 {
-  time_t t;
+    Val1,
+    Val2,
+    NotSet
 };
 
 namespace soci {
 template <>
-struct type_conversion<Timestamp>
+struct type_conversion<CustomType>
 {
-    typedef std::tm base_type;
+    typedef int base_type;
 
-    static void from_base(const std::tm& tm, indicator ind, Timestamp& time)
+    static void from_base(const int& index, indicator ind, CustomType& t)
     {
         if ( ind == i_null )
         {
-            time.t = -1;
+            t = CustomType::NotSet;
 
             return;
         }
 
-        std::tm tm_copy(tm);
-        #ifdef _MSC_VER
-        time.t = _mkgmtime(&tm_copy);
-        #else
-        time.t = timegm(&tm_copy);
-        #endif
+        switch ( index )
+        {
+            case 0:
+                t = CustomType::Val1;
+                break;
+            case 1:
+                t = CustomType::Val2;
+                break;
+            default:
+                t = CustomType::NotSet;
+        }
     }
 
-    static void to_base(const Timestamp& time, std::tm& tm, indicator& ind)
+    static void to_base(const CustomType& t, int& index, indicator& ind)
     {
-        if ( time.t == -1 )
+        switch ( t )
         {
-            ind = i_null;
-
-            return;
+            case CustomType::Val1:
+                index = 0;
+                break;
+            case CustomType::Val2:
+                index = 1;
+                break;
+            default:
+                ind = i_null;
+                return;
         }
-
-        #ifdef _MSC_VER
-        gmtime_s(&tm, &time.t);
-        #else
-        gmtime_r(&time.t, &tm);
-        #endif
 
         ind = i_ok;
     }
 };
 }
 
-TEST_CASE("Can compare timestamps in select", "[sqlite][timestamp]")
+TEST_CASE("Can select custom type", "[sqlite][customtype]")
 {
     soci::session sql(backEnd, connectString);
     SetupTableWithTimestampColumn table(sql);
 
-    Timestamp ti;
-    ti.t = 1609462800; // One in the morning Jan 1st 2021.
+    sql << "insert into t(ct) values(:ct)", use(CustomType::Val1);
 
-    sql << "insert into customt(ts) values(:timestamp)", use(ti);
-
-    Timestamp tiAfter;
-    tiAfter.t = 1609549200; // Jan 2nd.
-
-    long id;
-    sql << "select id from customt where ts < :timestamp", use(tiAfter), into(id);
-    CHECK(id == 1);
+    CustomType ct;
+    sql << "select ct from t", into(ct);
+    CHECK(ct == CustomType::Val1);
 }
 
-TEST_CASE("Can select custom type row in vector with use", "[sqlite][timestamp][vector]")
+TEST_CASE("Can select custom type row in vector", "[sqlite][customtype][vector]")
 {
     soci::session sql(backEnd, connectString);
     SetupTableWithTimestampColumn table(sql);
 
-    Timestamp ti1;
-    ti1.t = 1609462800; // One in the morning Jan 1st 2021.
+    sql << "insert into t(ct) values(:ct)", use(CustomType::Val1);
+    sql << "insert into t(ct) values(:ct)", use(CustomType::Val2);
 
-    sql << "insert into customt(ts) values(:timestamp)", use(ti1);
-
-    Timestamp tiAfter;
-    tiAfter.t = 1609549200; // Jan 2nd.
-
-    std::vector<Timestamp> v;
-    v.resize(1);
-    sql << "select ts from customt where ts < :timestamp", use(tiAfter), into(v);
-    CHECK(v.size() == 1);
-    CHECK(v[0].t == ti1.t);
+    std::vector<CustomType> v;
+    v.resize(2);
+    sql << "select ct from t", into(v);
+    CHECK(v.size() == 2);
+    CHECK(v[0] == CustomType::Val1);
 }
 
 class SetupAutoIncrementTable

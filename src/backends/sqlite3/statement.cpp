@@ -311,7 +311,7 @@ sqlite3_statement_backend::bind_and_execute(int number)
 
         // Handle the case where there are both into and use elements
         // in the same query and one of the into binds to a vector object.
-        if (1 == rows /* && number != rows */)
+        if (1 == rows && number != rows)
         {
             return load_rowset(number);
         }
