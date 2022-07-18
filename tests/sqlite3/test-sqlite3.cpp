@@ -199,7 +199,8 @@ TEST_CASE("Can select custom type", "[sqlite][customtype]")
     soci::session sql(backEnd, connectString);
     SetupTableWithTimestampColumn table(sql);
 
-    sql << "insert into t(ct) values(:ct)", use(CustomType::Val1);
+    CustomType v1 = CustomType::Val1;
+    sql << "insert into t(ct) values(:ct)", use(v1);
 
     CustomType ct;
     sql << "select ct from t", into(ct);
@@ -211,8 +212,10 @@ TEST_CASE("Can select custom type row in vector", "[sqlite][customtype][vector]"
     soci::session sql(backEnd, connectString);
     SetupTableWithTimestampColumn table(sql);
 
-    sql << "insert into t(ct) values(:ct)", use(CustomType::Val1);
-    sql << "insert into t(ct) values(:ct)", use(CustomType::Val2);
+    CustomType v1 = CustomType::Val1;
+    sql << "insert into t(ct) values(:ct)", use(v1);
+    CustomType v2 = CustomType::Val2;
+    sql << "insert into t(ct) values(:ct)", use(v2);
 
     std::vector<CustomType> v;
     v.resize(2);
