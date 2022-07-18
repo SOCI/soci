@@ -139,11 +139,11 @@ private:
     soci::session& m_sql;
 };
 
-enum class CustomType
+enum CustomType
 {
-    Val1,
-    Val2,
-    NotSet
+    CustomType_Val1,
+    CustomType_Val2,
+    CustomType_NotSet
 };
 
 namespace soci {
@@ -156,7 +156,7 @@ struct type_conversion<CustomType>
     {
         if ( ind == i_null )
         {
-            t = CustomType::NotSet;
+            t = CustomType_NotSet;
 
             return;
         }
@@ -164,13 +164,13 @@ struct type_conversion<CustomType>
         switch ( index )
         {
             case 0:
-                t = CustomType::Val1;
+                t = CustomType_Val1;
                 break;
             case 1:
-                t = CustomType::Val2;
+                t = CustomType_Val2;
                 break;
             default:
-                t = CustomType::NotSet;
+                t = CustomType_NotSet;
         }
     }
 
@@ -178,10 +178,10 @@ struct type_conversion<CustomType>
     {
         switch ( t )
         {
-            case CustomType::Val1:
+            case CustomType_Val1:
                 index = 0;
                 break;
-            case CustomType::Val2:
+            case CustomType_Val2:
                 index = 1;
                 break;
             default:
@@ -199,12 +199,12 @@ TEST_CASE("Can select custom type", "[sqlite][customtype]")
     soci::session sql(backEnd, connectString);
     SetupTableWithTimestampColumn table(sql);
 
-    CustomType v1 = CustomType::Val1;
+    CustomType v1 = CustomType_Val1;
     sql << "insert into t(ct) values(:ct)", use(v1);
 
     CustomType ct;
     sql << "select ct from t", into(ct);
-    CHECK(ct == CustomType::Val1);
+    CHECK(ct == CustomType_Val1);
 }
 
 TEST_CASE("Can select custom type row in vector", "[sqlite][customtype][vector]")
@@ -212,16 +212,16 @@ TEST_CASE("Can select custom type row in vector", "[sqlite][customtype][vector]"
     soci::session sql(backEnd, connectString);
     SetupTableWithTimestampColumn table(sql);
 
-    CustomType v1 = CustomType::Val1;
+    CustomType v1 = CustomType_Val1;
     sql << "insert into t(ct) values(:ct)", use(v1);
-    CustomType v2 = CustomType::Val2;
+    CustomType v2 = CustomType_Val2;
     sql << "insert into t(ct) values(:ct)", use(v2);
 
     std::vector<CustomType> v;
     v.resize(2);
     sql << "select ct from t", into(v);
     CHECK(v.size() == 2);
-    CHECK(v[0] == CustomType::Val1);
+    CHECK(v[0] == CustomType_Val1);
 }
 
 class SetupAutoIncrementTable
