@@ -29,6 +29,6 @@ target_include_directories(subdir_include
 # Link the soci_<backend> libraries you want to use here.
 target_link_libraries(subdir_include
     PRIVATE
-        soci_core
-        soci_empty
+        SOCI::soci_core
+        SOCI::soci_empty
 )
