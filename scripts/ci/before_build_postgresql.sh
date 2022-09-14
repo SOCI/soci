@@ -13,6 +13,7 @@ case "$(uname)" in
         ;;
 
     Darwin)
+        pg_ctl init
         pg_ctl start
         pg_isready --timeout=60
         createuser --superuser postgres
