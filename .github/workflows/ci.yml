@@ -63,6 +63,7 @@ jobs:
               ;;
 
             macOS)
+              set_env_var PGDATA /usr/local/var/postgres
               ;;
           esac
 
