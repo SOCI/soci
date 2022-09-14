@@ -96,6 +96,12 @@ foreach(suffix ${POSTGRESQL_KNOWN_VERSIONS})
         "postgresql/${suffix}/server"
         "pgsql-${suffix}/include/server")
   endif()
+  if(APPLE)
+    list(APPEND POSTGRESQL_LIBRARY_ADDITIONAL_SEARCH_SUFFIXES
+        "postgresql@${suffix}")
+    list(APPEND POSTGRESQL_INCLUDE_ADDITIONAL_SEARCH_SUFFIXES
+        "postgresql@${suffix}")
+  endif()
 endforeach()
 
 #
