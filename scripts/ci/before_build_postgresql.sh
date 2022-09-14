@@ -18,9 +18,15 @@ case "$(uname)" in
         pg_isready --timeout=60
         createuser --superuser postgres
 
+        echo 'Libdir:'
+        ls -l $(pg_config --libdir)
+
+        echo 'Include dir:'
+        ls -l $(pg_config --includedir)
+
         # Work around PostgreSQL development files not being found, see
         # https://github.com/actions/runner-images/issues/6176
-        ln -s $(pg_config --libdir)/* /usr/local/lib/
+        ln -s $(pg_config --libdir)/* /usr/local/lib/ || true
         ln -s $(pg_config --includedir)/* /usr/local/include/
         ;;
 
