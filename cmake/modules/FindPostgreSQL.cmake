@@ -27,7 +27,7 @@
 # In Windows the default installation of PostgreSQL uses that as part of the path.
 # E.g C:\Program Files\PostgreSQL\8.4.
 # Currently, the following version numbers are known to this module:
-# "9.6" "9.5" "9.4" "9.3" "9.2" "9.1" "9.0" "8.4" "8.3" "8.2" "8.1" "8.0"
+# "14" "13" "12" "11" "10" "9.6" "9.5" "9.4" "9.3" "9.2" "9.1" "9.0" "8.4" "8.3" "8.2" "8.1" "8.0"
 #
 # To use this variable just do something like this:
 # set(POSTGRESQL_ADDITIONAL_VERSIONS "9.2" "8.4.4")
@@ -71,7 +71,7 @@ set(POSTGRESQL_ROOT_DIR_MESSAGE "Set the POSTGRESQL_ROOT system variable to wher
 
 
 set(POSTGRESQL_KNOWN_VERSIONS ${POSTGRESQL_ADDITIONAL_VERSIONS}
-    "9.6" "9.5" "9.4" "9.3" "9.2" "9.1" "9.0" "8.4" "8.3" "8.2" "8.1" "8.0")
+    "14" "13" "12" "11" "10" "9.6" "9.5" "9.4" "9.3" "9.2" "9.1" "9.0" "8.4" "8.3" "8.2" "8.1" "8.0")
 
 # Define additional search paths for root directories.
 set( POSTGRESQL_ROOT_DIRECTORIES
@@ -95,6 +95,12 @@ foreach(suffix ${POSTGRESQL_KNOWN_VERSIONS})
     list(APPEND POSTGRESQL_TYPE_ADDITIONAL_SEARCH_SUFFIXES
         "postgresql/${suffix}/server"
         "pgsql-${suffix}/include/server")
+  endif()
+  if(APPLE)
+    list(APPEND POSTGRESQL_LIBRARY_ADDITIONAL_SEARCH_SUFFIXES
+        "postgresql@${suffix}")
+    list(APPEND POSTGRESQL_INCLUDE_ADDITIONAL_SEARCH_SUFFIXES
+        "postgresql@${suffix}")
   endif()
 endforeach()
 
