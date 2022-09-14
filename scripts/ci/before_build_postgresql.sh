@@ -19,10 +19,12 @@ case "$(uname)" in
         createuser --superuser postgres
 
         echo 'Libdir:'
-        ls -l $(pg_config --libdir)
+        ls -lH $(pg_config --libdir)
 
         echo 'Include dir:'
-        ls -l $(pg_config --includedir)
+        ls -lH $(pg_config --includedir)
+
+	exit 17
 
         # Work around PostgreSQL development files not being found, see
         # https://github.com/actions/runner-images/issues/6176
