@@ -155,7 +155,7 @@ macro(soci_backend NAME)
           SHARED
           ${THIS_BACKEND_SOURCES}
           ${THIS_BACKEND_HEADERS})
-        add_library(SOCI::${THIS_BACKEND_TARGET} ALIAS ${THIS_BACKEND_TARGET})
+        add_library(Soci::${NAMEL} ALIAS ${THIS_BACKEND_TARGET})
 
         target_link_libraries(${THIS_BACKEND_TARGET}
           ${SOCI_CORE_TARGET}
@@ -193,7 +193,7 @@ macro(soci_backend NAME)
           STATIC
           ${THIS_BACKEND_SOURCES}
           ${THIS_BACKEND_HEADERS})
-        add_library(SOCI::${THIS_BACKEND_TARGET_STATIC} ALIAS ${THIS_BACKEND_TARGET_STATIC})
+        add_library(Soci::${NAMEL}_static ALIAS ${THIS_BACKEND_TARGET_STATIC})
 
         # Still need to link the libraries for tests to work
         target_link_libraries (${THIS_BACKEND_TARGET_STATIC}

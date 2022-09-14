@@ -295,9 +295,9 @@ In the example above, regression tests for the sample Empty backend and SQLite 3
 CMake build produces set of shared and static libraries for SOCI core and backends separately.
 On Unix, for example, `build/lib` directory will consist of the static libraries named like `libsoci_core.a`, `libsoci_sqlite3.a` and shared libraries with names like `libsoci_core.so.4.0.0`, `libsoci_sqlite3.so.4.0.0`, and so on.
 
-If your project also uses CMake, you can simply use `find_package(SOCI)` to check for SOCI availability and `target_link_libraries()` to link with the SOCI libraries available under the names `SOCI::soci_core` and `SOCI::soci_<backend>` and ensure that SOCI headers can be included (i.e. there is no need to use `target_include_directories()` explicitly). An example of a very simple CMake-based project using SOCI is provided in the `examples/connect` directory.
+If your project also uses CMake, you can simply use `find_package(Soci)` to check for SOCI availability and `target_link_libraries()` to link with the SOCI libraries available under the names `Soci::core` and `Soci::<backend>` (or `Soci::<backend>_static` if you prefer linking statically) and ensure that SOCI headers can be included (i.e. there is no need to use `target_include_directories()` explicitly). An example of a very simple CMake-based project using SOCI is provided in the `examples/connect` directory.
 
-Alternatively, you can add SOCI as a subdirectory to your project and include it via `add_subdirectory()`. As before, `target_link_libraries()` is used to link with the SOCI libraries available under the names `SOCI::soci_core` and `SOCI::soci_<backend>`. An example of this can be found in the directory `examples/subdir-include`.
+Alternatively, you can add SOCI as a subdirectory to your project and include it via `add_subdirectory()`. As before, `target_link_libraries()` is used to link with the SOCI libraries available under the same names `Soci::core` and `Soci::<backend>` as above. An example of this can be found in the directory `examples/subdir-include`.
 
 If you don't use CMake but want to use SOCI in your program, you need to specify the paths to the SOCI headers and libraries in your build configuration and to
 tell the linker to link against the libraries you want to use in your program.

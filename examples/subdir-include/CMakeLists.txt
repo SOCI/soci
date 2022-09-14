@@ -22,9 +22,9 @@ add_executable(subdir_include subdir-include.cpp)
 # Link the soci_<backend> libraries you want to use here.
 # There is no need to explicitly use target_include_directories() for the
 # main headers or the generated header (soci/soci-config.h), because both
-# are automatically added as part of the SOCI::soci_core target.
+# are automatically added as part of the Soci::core target.
 target_link_libraries(subdir_include
     PRIVATE
-        SOCI::soci_core
-        SOCI::soci_empty
+        Soci::core
+        Soci::empty
 )
