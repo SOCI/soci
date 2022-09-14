@@ -15,8 +15,9 @@ case "$(uname)" in
     Darwin)
         set -x
         whoami
-        ls -l /usr/local/var
-        ls -l /usr/local/var/postgres
+        cd /usr/local/var
+        ls -l postgresql@14
+        ln -s postgresql@14 postgres
         pg_ctl start
         pg_isready --timeout=60
         createuser --superuser postgres
