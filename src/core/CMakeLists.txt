@@ -44,6 +44,7 @@ soci_target_output_name(${SOCI_CORE_TARGET} SOCI_CORE_TARGET_OUTPUT_NAME)
 #
 if (SOCI_SHARED)
   add_library(${SOCI_CORE_TARGET} SHARED ${SOCI_CORE_HEADERS} ${SOCI_CORE_SOURCES})
+  add_library(SOCI::${SOCI_CORE_TARGET} ALIAS ${SOCI_CORE_TARGET})
 
   target_link_libraries(${SOCI_CORE_TARGET} ${SOCI_CORE_DEPS_LIBS})
 
@@ -66,6 +67,7 @@ if (SOCI_SHARED)
   target_include_directories(${SOCI_CORE_TARGET}
       PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../../include>
       $<INSTALL_INTERFACE:include>
   )
 
@@ -84,6 +86,7 @@ if (SOCI_STATIC)
 
   add_library(${SOCI_CORE_TARGET_STATIC} STATIC
     ${SOCI_CORE_HEADERS} ${SOCI_CORE_SOURCES})
+  add_library(SOCI::${SOCI_CORE_TARGET_STATIC} ALIAS ${SOCI_CORE_TARGET_STATIC})
 
   # we still need to link against dl if we have it
   target_link_libraries (${SOCI_CORE_TARGET_STATIC}
@@ -99,6 +102,7 @@ if (SOCI_STATIC)
   target_include_directories(${SOCI_CORE_TARGET_STATIC}
       PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../../include>
       $<INSTALL_INTERFACE:include>
   )
 
