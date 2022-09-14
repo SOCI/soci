@@ -142,7 +142,7 @@ The extension mechanism relies on appropriate specialization of the `type_conver
 
 There are three required class members for a valid `type_conversion` specialization:
 
-* the `base_type` type definition, aliasing either one of the base types *or another ser-defined type*
+* the `base_type` type definition, aliasing either one of the base types *or another user-defined type*
 * the `from_base()` static member function, converting from the base type
 * the `to_base()` static member function, converting to the base type
 
