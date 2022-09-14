@@ -64,7 +64,6 @@ jobs:
 
             macOS)
               set_env_var PGDATA /usr/local/var/postgres
-              set_env_var POSTGRESQL_ROOT /usr/local/var/postgresql@14
               ;;
           esac
 
