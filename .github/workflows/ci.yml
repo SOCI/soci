@@ -64,8 +64,8 @@ jobs:
 
             macOS)
               set_env_var PGDATA /usr/local/var/postgres
-              set_env_var POSTGRESQL_INCLUDE_DIRS `pg_config --includedir`
-              set_env_var POSTGRESQL_LIBRARY_DIRS `pg_config --libdir`
+              set_env_var POSTGRESQL_INCLUDE_DIR `pg_config --includedir`
+              set_env_var POSTGRESQL_LIBRARY_DIR `pg_config --libdir`
               ;;
           esac
 
