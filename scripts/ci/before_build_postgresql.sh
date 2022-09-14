@@ -13,11 +13,6 @@ case "$(uname)" in
         ;;
 
     Darwin)
-        # Temporary workaround for the wrong PostgreSQL directory name, see
-        # https://github.com/actions/runner-images/issues/6176
-        echo -n 'Postgres libdir:'; pg_config --libdir
-        echo -n 'Postgres includedir:'; pg_config --includedir
-
         pg_ctl start
         pg_isready --timeout=60
         createuser --superuser postgres
