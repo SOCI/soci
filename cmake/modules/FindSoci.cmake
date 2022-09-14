@@ -58,6 +58,29 @@ MARK_AS_ADVANCED(SOCI_LIBRARY_DIR)
 ### THIRD STEP: Find all installed plugins if the library was found
 #
 IF(SOCI_INCLUDE_DIR AND SOCI_LIBRARY)
+	SET(SOCI_core_FOUND TRUE CACHE BOOL "")
+
+	#
+	### FOURTH STEP: Obtain SOCI version
+	#
+	set(SOCI_VERSION_FILE "${SOCI_INCLUDE_DIR}/version.h")
+	IF(EXISTS "${SOCI_VERSION_FILE}")
+		file(READ "${SOCI_VERSION_FILE}" VERSION_CONTENT)
+		string(REGEX MATCH "#define[ \t]*SOCI_VERSION[ \t]*[0-9]+" VERSION_MATCH "${VERSION_CONTENT}")
+		string(REGEX REPLACE "#define[ \t]*SOCI_VERSION[ \t]*" "" VERSION_MATCH "${VERSION_MATCH}")
+
+		IF(NOT VERSION_MATCH)
+			message(WARNING "Failed to extract SOCI version")
+		ELSE()
+			math(EXPR MAJOR "${VERSION_MATCH} / 100000" OUTPUT_FORMAT DECIMAL)
+			math(EXPR MINOR "${VERSION_MATCH} / 100 % 1000" OUTPUT_FORMAT DECIMAL)
+			math(EXPR PATCH "${VERSION_MATCH} % 100" OUTPUT_FORMAT DECIMAL)
+
+			set(SOCI_VERSION "${MAJOR}.${MINOR}.${PATCH}" CACHE STRING "")
+		ENDIF()
+	ELSE()
+		message(WARNING "Unable to check SOCI version")
+	ENDIF()
 
     MESSAGE(STATUS "Soci found: Looking for plugins")
     FOREACH(plugin IN LISTS _SOCI_ALL_PLUGINS)
@@ -80,7 +103,7 @@ IF(SOCI_INCLUDE_DIR AND SOCI_LIBRARY)
     ENDFOREACH()
 
     #
-    ### FOURTH CHECK: Check if the required components were all found
+    ### FIFTH CHECK: Check if the required components were all found
     #
     FOREACH(component ${Soci_FIND_COMPONENTS})
         IF(NOT SOCI_${component}_FOUND)
