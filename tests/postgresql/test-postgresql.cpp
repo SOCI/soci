@@ -249,23 +249,49 @@ TEST_CASE("PostgreSQL blob", "[postgresql][blob]")
 
     blob_table_creator tableCreator(sql);
 
-    char buf[] = "abcdefghijklmnopqrstuvwxyz";
-
-    sql << "insert into soci_test(id, img) values(7, lo_creat(-1))";
+    const char buf[] = "abcdefghijklmnopqrstuvwxyz";
 
     // in PostgreSQL, BLOB operations must be within transaction block
     transaction tr(sql);
 
     {
+        // empty, default-constructed BLOB
+        blob b(sql);
+        indicator ind;
+
+        sql << "insert into soci_test(id, img) values(1, :img)", use(b);
+        sql << "select img from soci_test where id = 1", into(b, ind);
+
+        CHECK(ind == i_ok);
+        CHECK(b.get_len() == 0);
+
+        sql << "delete from soci_test where id = 1";
+    }
+    {
+        // Create new BLOB
+        blob b(sql);
+
+        b.write_from_start(buf, sizeof(buf));
+
+        char substr[20];
+        std::size_t i = b.read_from_start(substr, 3);
+        substr[i] = '\0';
+        CHECK(substr[0] == buf[0]);
+        CHECK(substr[1] == buf[1]);
+        CHECK(substr[2] == buf[2]);
+        CHECK(substr[3] == '\0');
+
+        sql << "insert into soci_test(id, img) values(7, :img)", use(b);
+    }
+    {
+        // Append to BLOB
         blob b(sql);
 
         sql << "select img from soci_test where id = 7", into(b);
-        CHECK(b.get_len() == 0);
-
-        b.write_from_start(buf, sizeof(buf));
         CHECK(b.get_len() == sizeof(buf));
 
         b.append(buf, sizeof(buf));
+
         CHECK(b.get_len() == 2 * sizeof(buf));
     }
     {
@@ -291,6 +317,7 @@ TEST_CASE("PostgreSQL blob", "[postgresql][blob]")
     }
 #endif
 
+    // Destroy BLOB
     unsigned long oid;
     sql << "select img from soci_test where id = 7", into(oid);
     sql << "select lo_unlink(" << oid << ")";

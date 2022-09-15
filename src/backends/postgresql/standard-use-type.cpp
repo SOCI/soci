@@ -170,10 +170,24 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                 postgresql_blob_backend * bbe =
                     static_cast<postgresql_blob_backend *>(b->get_backend());
 
+                // In case the backend does not reference a proper BLOB yet, this will create a
+                // new, empty one
+                bbe->init();
+
+                unsigned long oid = bbe->get_blob_details().oid;
+
+                if (oid == InvalidOid) {
+                    throw soci_error("Cannot insert invalid BLOB.");
+                }
+
+                // In case the blob backend has created a new BLOB in the DB, we have to tell it
+                // to not destroy it again, because we will now actually insert it into the DB.
+                bbe->set_destroy_on_close(false);
+
                 std::size_t const bufSize
                     = std::numeric_limits<unsigned long>::digits10 + 2;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%lu", bbe->oid_);
+                snprintf(buf_, bufSize, "%lu", oid);
             }
             break;
         case x_xmltype:

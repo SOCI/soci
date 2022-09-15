@@ -327,8 +327,20 @@ struct postgresql_rowid_backend : details::rowid_backend
     unsigned long value_;
 };
 
-struct postgresql_blob_backend : details::blob_backend
+class postgresql_blob_backend : public details::blob_backend
 {
+public:
+
+    struct blob_details {
+        // OID of the large object
+        unsigned long oid;
+        // File descriptor of the large object
+        int fd;
+
+        blob_details();
+        blob_details(unsigned long oid, int fd);
+    };
+
     postgresql_blob_backend(postgresql_session_backend & session);
 
     ~postgresql_blob_backend() override;
@@ -343,10 +355,24 @@ struct postgresql_blob_backend : details::blob_backend
 
     void trim(std::size_t newLen) override;
 
-    postgresql_session_backend & session_;
+    const blob_details &get_blob_details() const;
 
-    unsigned long oid_; // oid of the large object
-    int fd_;            // descriptor of the large object
+    void set_blob_details(const blob_details &details);
+
+    bool get_destroy_on_close() const;
+
+    void set_destroy_on_close(bool destroy);
+
+    std::size_t seek(std::size_t toOffset, int from);
+
+    void init();
+
+    void reset();
+
+private:
+    postgresql_session_backend & session_;
+    blob_details details_;
+    bool destroy_on_close_;
 };
 
 struct postgresql_session_backend : details::session_backend
