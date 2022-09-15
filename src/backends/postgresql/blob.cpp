@@ -8,11 +8,13 @@
 #define SOCI_POSTGRESQL_SOURCE
 #include "soci/postgresql/soci-postgresql.h"
 #include <libpq/libpq-fs.h> // libpq
+#include <pg_config.h>
 #include <cctype>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
 #include <sstream>
+#include <limits>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -105,7 +107,31 @@ std::size_t postgresql_blob_backend::append(
     return static_cast<std::size_t>(writen);
 }
 
-void postgresql_blob_backend::trim(std::size_t /* newLen */)
+void postgresql_blob_backend::trim(std::size_t newLen)
 {
-    throw soci_error("Trimming BLOBs is not supported.");
+#if PG_VERSION_NUM < 80003
+    // lo_truncate was introduced in Postgresql v8.3
+    (void) newLen;
+    throw soci_error("Your Postgresql version does not support trimming BLOBs");
+#else
+    if (newLen > static_cast<std::size_t>(std::numeric_limits<int>::max())) {
+        throw soci_error("Request new BLOB size exceeds INT_MAX, which is not supported");
+    }
+
+# if PG_VERSION_NUM >= 90003
+    // lo_truncate64 was introduced in Postgresql v9.3
+    int ret_code = lo_truncate64(session_.conn_, fd_, newLen);
+# else
+    int ret_code = -1;
+# endif
+    if (ret_code == -1) {
+        // If we call lo_truncate64 on a server that is < v9.3, the call will fail and return -1.
+        // Thus, we'll try again with the slightly older function lo_truncate.
+        ret_code = lo_truncate(session_.conn_, fd_, newLen);
+    }
+
+    if (ret_code < 0) {
+        throw soci_error("Cannot truncate BLOB");
+    }
+#endif
 }
