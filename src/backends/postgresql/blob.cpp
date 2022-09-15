@@ -79,18 +79,7 @@ std::size_t postgresql_blob_backend::write_from_start(char const * buf, std::siz
 std::size_t postgresql_blob_backend::append(
     char const * buf, std::size_t toWrite)
 {
-    init();
-
-    seek(0, SEEK_END);
-
-    int const writen = lo_write(session_.conn_, details_.fd,
-        const_cast<char *>(buf), toWrite);
-    if (writen < 0)
-    {
-        throw soci_error("Cannot append to BLOB.");
-    }
-
-    return static_cast<std::size_t>(writen);
+    return write(get_len(), buf, toWrite);
 }
 
 void postgresql_blob_backend::trim(std::size_t newLen)
