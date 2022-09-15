@@ -54,7 +54,7 @@ std::size_t postgresql_blob_backend::read_from_start(char * buf, std::size_t toR
     int const readn = lo_read(session_.conn_, details_.fd, buf, toRead);
     if (readn < 0)
     {
-        throw soci_error("Cannot read from BLOB.");
+        throw soci_error(std::string("Cannot read from BLOB: ") + PQerrorMessage(session_.conn_));
     }
 
     return static_cast<std::size_t>(readn);
@@ -70,7 +70,7 @@ std::size_t postgresql_blob_backend::write_from_start(char const * buf, std::siz
         const_cast<char *>(buf), toWrite);
     if (written < 0)
     {
-        throw soci_error("Cannot write to BLOB.");
+        throw soci_error(std::string("Cannot write to BLOB: ") + PQerrorMessage(session_.conn_));
     }
 
     return static_cast<std::size_t>(written);
@@ -79,7 +79,7 @@ std::size_t postgresql_blob_backend::write_from_start(char const * buf, std::siz
 std::size_t postgresql_blob_backend::append(
     char const * buf, std::size_t toWrite)
 {
-    return write(get_len(), buf, toWrite);
+    return write_from_start(buf, toWrite, get_len());
 }
 
 void postgresql_blob_backend::trim(std::size_t newLen)
@@ -106,7 +106,7 @@ void postgresql_blob_backend::trim(std::size_t newLen)
     }
 
     if (ret_code < 0) {
-        throw soci_error("Cannot truncate BLOB");
+        throw soci_error(std::string("Cannot truncate BLOB: ") + PQerrorMessage(session_.conn_));
     }
 #endif
 }
@@ -155,7 +155,7 @@ void postgresql_blob_backend::init() {
         Oid oid = lo_creat(session_.conn_, INV_READ | INV_WRITE);
 
         if (oid == InvalidOid) {
-            throw soci_error("Cannot create new BLOB.");
+            throw soci_error(std::string("Cannot create new BLOB: ") + PQerrorMessage(session_.conn_));
         }
 
         int fd = lo_open(session_.conn_, oid, INV_READ | INV_WRITE);
