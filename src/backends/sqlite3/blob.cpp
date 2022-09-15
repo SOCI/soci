@@ -45,7 +45,7 @@ std::size_t sqlite3_blob_backend::write_from_start(char const * buf, std::size_t
 
     memcpy(buffer_.data() + offset, buf, toWrite);
 
-    return buffer_.size();
+    return toWrite;
 }
 
 
