@@ -44,11 +44,20 @@ postgresql_blob_backend::~postgresql_blob_backend()
 
 std::size_t postgresql_blob_backend::get_len()
 {
-    return seek(0, SEEK_END);
+    return details_.fd == -1 ? 0 : seek(0, SEEK_END);
 }
 
 std::size_t postgresql_blob_backend::read_from_start(char * buf, std::size_t toRead, std::size_t offset)
 {
+    std::size_t size = get_len();
+    if (offset >= size && !(size == 0 && offset == 0)) {
+        throw soci_error("Can't read past-the-end of BLOB data.");
+    }
+    if (size == 0) {
+        // Reading from an empty blob, is defined as a no-op
+        return 0;
+    }
+
     seek(offset, SEEK_SET);
 
     int const readn = lo_read(session_.conn_, details_.fd, buf, toRead);
