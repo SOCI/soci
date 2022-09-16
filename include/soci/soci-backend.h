@@ -15,6 +15,9 @@
 #include <map>
 #include <string>
 #include <sstream>
+#include <vector>
+#include <algorithm>
+#include <cstring>
 
 namespace soci
 {
@@ -317,6 +320,70 @@ public:
 
 private:
     SOCI_NOT_COPYABLE(blob_backend)
+};
+
+/**
+ * This Blob implementation uses an explicit buffer that is read from and written to, instead of
+ * directly communicating with the underlaying database.
+ * Thus, it is intended to be used whenever the underlying database does not offer a more efficient
+ * way of dealing with BLOBs.
+ */
+class trivial_blob_backend : public blob_backend
+{
+public:
+    std::size_t get_len() override { return buffer_.size(); }
+
+    std::size_t read(std::size_t offset, char* buf,
+        std::size_t toRead) override
+    {
+        toRead = (std::min)(toRead, buffer_.size() - offset);
+
+        // make sure that we don't try to read
+        // past the end of the data
+        memcpy(buf, buffer_.data() + offset, toRead);
+
+        return toRead;
+    }
+
+    std::size_t read_from_start(char* buf, std::size_t toRead,
+        std::size_t offset = 0) override
+    {
+        return read(offset, buf, toRead);
+    }
+
+    std::size_t write(std::size_t offset, char const* buf,
+        std::size_t toWrite) override
+    {
+        buffer_.resize((std::max)(buffer_.size(), offset + toWrite));
+
+        memcpy(buffer_.data() + offset, buf, toWrite);
+
+        return toWrite;
+    }
+
+    std::size_t write_from_start(const char* buf, std::size_t toWrite,
+        std::size_t offset = 0) override
+    {
+        return write(offset, buf, toWrite);
+    }
+
+    std::size_t append(char const* buf, std::size_t toWrite) override
+    {
+        return write(buffer_.size(), buf, toWrite);
+    }
+
+    void trim(std::size_t newLen) override { buffer_.resize(newLen); }
+
+    std::size_t set_data(char const* buf, std::size_t toWrite)
+    {
+        buffer_.clear();
+        return write_from_start(buf, toWrite);
+    }
+
+    const char *get_buffer() const { return buffer_.data(); }
+
+protected:
+    std::vector< char > buffer_;
 };
 
 // polymorphic session backend

@@ -241,8 +241,9 @@ struct mysql_rowid_backend : details::rowid_backend
     ~mysql_rowid_backend() override;
 };
 
-struct mysql_blob_backend : details::blob_backend
+class mysql_blob_backend : public details::trivial_blob_backend
 {
+public:
     mysql_blob_backend(mysql_session_backend &session);
 
     ~mysql_blob_backend() override;
@@ -252,8 +253,6 @@ struct mysql_blob_backend : details::blob_backend
     std::size_t write_from_start(char const *buf, std::size_t toWrite, std::size_t offset = 0) override;
     std::size_t append(char const *buf, std::size_t toWrite) override;
     void trim(std::size_t newLen) override;
-
-    mysql_session_backend &session_;
 };
 
 struct mysql_session_backend : details::session_backend

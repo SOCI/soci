@@ -18,8 +18,8 @@
 using namespace soci;
 using namespace soci::details;
 
-mysql_blob_backend::mysql_blob_backend(mysql_session_backend &session)
-    : session_(session)
+mysql_blob_backend::mysql_blob_backend(mysql_session_backend &)
+    : details::trivial_blob_backend()
 {
     throw soci_error("BLOBs are not supported.");
 }
