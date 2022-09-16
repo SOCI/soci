@@ -517,6 +517,16 @@ TEST_CASE("Firebird blobs", "[firebird][blob]")
 
     sql.begin();
     {
+        // Read from default-constructed BLOB
+        blob b(sql);
+
+        CHECK(b.get_len() == 0);
+
+        char buf[5];
+        std::size_t read = b.read_from_start(buf, 5);
+        CHECK(read == 0);
+    }
+    {
         // verify empty blob
         blob b(sql);
         indicator ind;
