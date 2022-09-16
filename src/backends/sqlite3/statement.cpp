@@ -327,7 +327,7 @@ sqlite3_statement_backend::bind_and_execute(int number)
                         break;
 
                     case db_blob:
-                        bindRes = sqlite3_bind_blob(stmt_, pos, col.buffer_.constData_, static_cast<int>(col.buffer_.size_), NULL);
+                        bindRes = sqlite3_bind_blob(stmt_, pos, col.buffer_.constData_, static_cast<int>(col.buffer_.size_), SQLITE_STATIC);
                         break;
 
                     case db_xml:
