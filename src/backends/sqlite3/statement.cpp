@@ -327,7 +327,10 @@ sqlite3_statement_backend::bind_and_execute(int number)
                         break;
 
                     case db_blob:
-                        bindRes = sqlite3_bind_blob(stmt_, pos, col.buffer_.constData_, static_cast<int>(col.buffer_.size_), SQLITE_STATIC);
+						// Since we don't own the buffer_ pointer we are passing here, we can't make any lifetime guarantees other than
+						// it is currently valid. Thus, we ask SQLite to make a copy of the underlying buffer to ensure
+						// the database can always access a valid buffer.
+                        bindRes = sqlite3_bind_blob(stmt_, pos, col.buffer_.constData_, static_cast<int>(col.buffer_.size_), SQLITE_TRANSIENT);
                         break;
 
                     case db_xml:
