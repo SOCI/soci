@@ -43,6 +43,9 @@ public:
     row();
     ~row();
 
+    row(row &&other) = default;
+    row &operator=(row &&other) = default;
+
     void uppercase_column_names(bool forceToUpper);
     void add_properties(column_properties const& cp);
     std::size_t size() const;
