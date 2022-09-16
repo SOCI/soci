@@ -66,3 +66,8 @@ std::size_t sqlite3_blob_backend::set_data(char const *buf, std::size_t toWrite)
     buffer_.clear();
     return write_from_start(buf, toWrite);
 }
+
+const char *sqlite3_blob_backend::get_buffer() const
+{
+    return buffer_.data();
+}
