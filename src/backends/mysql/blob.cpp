@@ -10,6 +10,9 @@
 #include "soci/mysql/soci-mysql.h"
 #include <ciso646>
 
+#include <cctype>
+#include <cassert>
+
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable:4355 4702)
@@ -21,37 +24,96 @@ using namespace soci::details;
 mysql_blob_backend::mysql_blob_backend(mysql_session_backend &)
     : details::trivial_blob_backend()
 {
-    throw soci_error("BLOBs are not supported.");
 }
 
 mysql_blob_backend::~mysql_blob_backend()
 {
 }
 
-std::size_t mysql_blob_backend::get_len()
+static unsigned char decode_hex_digit(char c)
 {
-    throw soci_error("BLOBs are not supported.");
+    unsigned char i = static_cast<unsigned char>(tolower(c));
+
+    assert((i >= '0' && i <= '9') || (i >= 'a' && i <= 'f'));
+
+    if (i <= '9') {
+        return i - '0';
+    } else {
+        return i - 'a';
+    }
 }
 
-std::size_t mysql_blob_backend::read_from_start(char * /* buf */, std::size_t /* toRead */, std::size_t /* offset */)
-{
-    throw soci_error("BLOBs are not supported.");
+static char encode_hex_digit(unsigned char d) {
+    static const char hexMap[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+        'a', 'b', 'c', 'd', 'e', 'f'};
+
+    return hexMap[d];
 }
 
-std::size_t mysql_blob_backend::write_from_start(char const * /* buf */, std::size_t /* toWrite */, std::size_t /* offset */)
+std::size_t mysql_blob_backend::hex_str_size() const
 {
-    throw soci_error("BLOBs are not supported.");
+    // Every byte is represented by 2 hex digits
+    // +2 as for non-empty buffers, the resulting hex sequence is prefixed by "0x"
+    return buffer_.size() * 2 + (buffer_.empty() ? 0 : 2);
 }
 
-std::size_t mysql_blob_backend::append(
-    char const * /* buf */, std::size_t /* toWrite */)
+void mysql_blob_backend::write_hex_str(char *buf, std::size_t size) const
 {
-    throw soci_error("BLOBs are not supported.");
+    assert(size >= hex_str_size());
+
+    if (size < hex_str_size())
+    {
+        throw soci_error("MySQL BLOB: Provided buffer is too small to hold hex string");
+    }
+
+    if (buffer_.empty()) {
+        return;
+    } else {
+        buf[0] = '0';
+        buf[1] = 'x';
+    }
+
+    // Inspired by https://codereview.stackexchange.com/a/78539
+    for (std::size_t i = 0; i < buffer_.size(); ++i) {
+        // First 4 bits
+        buf[2 + 2 * i ]    = encode_hex_digit(static_cast<unsigned char>(buffer_[i]) >> 4);
+        // Following 4 bits
+        buf[2 + 2 * i + 1] = encode_hex_digit(static_cast<unsigned char>(buffer_[i]) & 0x0F);
+    }
 }
 
-void mysql_blob_backend::trim(std::size_t /* newLen */)
+std::string mysql_blob_backend::as_hex_str() const
 {
-    throw soci_error("BLOBs are not supported.");
+
+    std::string hexStr;
+    hexStr.resize(hex_str_size());
+
+    write_hex_str(&hexStr[0], hexStr.size());
+
+    return hexStr;
+}
+
+void mysql_blob_backend::load_from_hex_str(const char *str, std::size_t length)
+{
+    std::size_t nBytes = length / 2;
+
+    if (nBytes * 2 != length) {
+        // We expect an even amount of hex digits
+        throw soci_error("Cannot load BLOB from invalid hex-representation (uneven amount of digits)");
+    }
+
+    if (nBytes > 0) {
+        assert(nBytes > 1);
+
+        // The first "byte" as detected by above calculation is only the prefix "0x"
+        nBytes -= 1;
+    }
+
+    buffer_.resize(nBytes);
+
+    for (std::size_t i = 0; i < nBytes; ++i) {
+        buffer_[i] = (decode_hex_digit(str[2 + 2 * i]) << 4) + decode_hex_digit(str[2 + 2 * i + 1]);
+    }
 }
 
 #ifdef _MSC_VER

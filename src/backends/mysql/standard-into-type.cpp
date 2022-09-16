@@ -13,6 +13,7 @@
 #include "common.h"
 #include "soci-exchange-cast.h"
 #include "soci-mktime.h"
+#include "soci/blob.h"
 // std
 #include <ciso646>
 #include <cstdint>
@@ -139,6 +140,17 @@ void mysql_standard_into_type_backend::post_fetch(
         case x_stdtm:
             // attempt to parse the string and convert to std::tm
             parse_std_tm(buf, exchange_type_cast<x_stdtm>(data_));
+            break;
+        case x_blob:
+            {
+                unsigned long * lengths = mysql_fetch_lengths(statement_.result_);
+                std::size_t size = lengths[pos];
+                blob &b = exchange_type_cast<x_blob>(data_);
+
+                mysql_blob_backend *bbe = static_cast<mysql_blob_backend *>(b.get_backend());
+
+                bbe->set_data(buf, size);
+            }
             break;
         default:
             throw soci_error("Into element used with non-supported type.");

@@ -10,6 +10,7 @@
 
 #include "soci/soci-backend.h"
 #include "soci/type-wrappers.h"
+#include "soci/blob.h"
 
 #include <cstdint>
 #include <ctime>
@@ -105,6 +106,12 @@ template <>
 struct exchange_type_traits<x_xmltype>
 {
   typedef xml_type value_type;
+};
+
+template <>
+struct exchange_type_traits<x_blob>
+{
+  typedef blob value_type;
 };
 
 // exchange_type_traits not defined for x_statement, x_rowid and x_blob here.

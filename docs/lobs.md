@@ -29,7 +29,7 @@ The `offset` parameter is always counted from the beginning of the BLOB's data. 
 
 * The way to define BLOB table columns and create or destroy BLOB objects in the database varies between different database engines.
   Please see the SQL documentation relevant for the given server to learn how this is actually done. The test programs provided with the SOCI library can be also a simple source of full working examples.
-* BLOBs are currently not implemented for all supported backends. Backends missing an implementation are `ODBC`, `MySQL` and `DB2`.
+* BLOBs are currently not implemented for all supported backends. Backends missing an implementation are `ODBC` and `DB2`.
 * The plain `read(...)` and `write(...)` functions use offsets in a backend-specific format (some start at zero, some at one). They are retained only for backwards compatibility. Don't use them in new code!
 * Some backends (e.g. PostgreSQL) support BLOBs only while a transaction is active. Using a `soci::blob` object outside of a transaction in these cases is undefined behavior.
   In order to write portable code, you should always ensure to start a transaction before working with BLOBs and end it only after you are done with the BLOB object.
