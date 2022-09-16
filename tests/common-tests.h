@@ -2472,6 +2472,16 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
 
         CHECK(r.get_properties(0).get_data_type() == dt_string);
         CHECK(r.get_properties(1).get_data_type() == dt_integer);
+
+        // Check if row object is movable
+        row moved = std::move(r);
+
+        CHECK(moved.size() == 2);
+        // We expect the moved-from row to become empty after the move operation
+        CHECK(r.size() == 0);
+
+        CHECK(moved.get_properties(0).get_data_type() == dt_string);
+        CHECK(moved.get_properties(1).get_data_type() == dt_integer);
     }
 }
 
