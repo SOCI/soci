@@ -287,7 +287,7 @@ private:
 
         typedef typename type_conversion<T>::base_type base_type;
 
-        if (dynamic_cast<details::use_type<base_type> *>(u))
+        if (details::checked_ptr_cast<details::use_type<base_type> >(u))
         {
             base_type const & baseValue = *static_cast<base_type*>(u->get_data());
 
