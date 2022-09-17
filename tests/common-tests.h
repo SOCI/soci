@@ -3250,7 +3250,7 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
     soci::session sql(backEndFactory_, connectString_);
 
     // create and populate the test table
-    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+    auto_table_creator tableCreator0(tc_.table_creator_1(sql));
     {
         sql << "insert into soci_test(val) values(7)";
 
