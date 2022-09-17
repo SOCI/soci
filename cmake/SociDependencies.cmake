@@ -91,7 +91,7 @@ foreach(external ${SOCI_ALL_DEPENDENCIES})
     include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies/${external}.cmake)
   else()
     set(${EXTERNAL}_FOUND FALSE CACHE BOOL "${external} found" FORCE)
-    colormsg(HIRED "${external}:" RED "disabled, since ${disabled_var}_${EXTERNAL}=OFF")
+    colormsg(HICYAN "${external}:" YELLOW "disabled, since ${disabled_var}_${EXTERNAL}=OFF")
     unset(disabled_var)
   endif()
 

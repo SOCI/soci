@@ -230,7 +230,7 @@ macro(soci_backend NAME)
       endif()
 
     else()
-        colormsg(HIRED "${NAME}" RED "backend disabled, since")
+        colormsg(YELLOW "${NAME} backend explicitly disabled")
     endif()
 
   endif()
