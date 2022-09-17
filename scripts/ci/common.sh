@@ -88,5 +88,12 @@ run_make()
 
 run_test()
 {
-    ctest -V --output-on-failure "$@" .
+    # The example project doesn't have any tests, but otherwise their absence
+    # is an error and means that something has gone wrong.
+    if [[ "$BUILD_EXAMPLES" == "YES" ]]; then
+        no_tests_action=ignore
+    else
+        no_tests_action=error
+    fi
+    ctest -V --output-on-failure --no-tests=${no_tests_action} "$@" .
 }
