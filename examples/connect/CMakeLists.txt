@@ -11,7 +11,7 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 project(SOCIExampleConnect)
 
-find_package(SOCI REQUIRED)
+find_package(Soci REQUIRED)
 
 add_executable(connect connect.cpp)
 

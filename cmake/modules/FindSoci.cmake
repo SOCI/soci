@@ -1,23 +1,19 @@
 ###############################################################################
 # CMake module to search for SOCI library
 #
-# WARNING: This module is experimental work in progress.
-#
 # This module defines:
-#  SOCI_INCLUDE_DIRS        = include dirs to be used when using the soci library
-#  SOCI_LIBRARY             = full path to the soci library
-#  SOCI_VERSION             = the soci version found (not yet. soci does not provide that info.)
-#  SOCI_FOUND               = true if soci was found
+#  Soci_INCLUDE_DIRS        = include dirs to be used when using the soci library
+#  Soci_LIBRARY             = full path to the soci library
+#  Soci_VERSION             = the soci version found
+#  Soci_FOUND               = true if soci was found
 #
 # This module respects:
 #  LIB_SUFFIX         = (64|32|"") Specifies the suffix for the lib directory
 #
 # For each component you specify in find_package(), the following variables are set.
 #
-#  SOCI_${COMPONENT}_PLUGIN = full path to the soci plugin
-#  SOCI_${COMPONENT}_FOUND
-#
-# Copyright (c) 2011 Michael Jansen <info@michael-jansen.biz>
+#  Soci_${COMPONENT}_PLUGIN = full path to the soci plugin (not set for the "core" component)
+#  Soci_${COMPONENT}_FOUND
 #
 # Redistribution and use is allowed according to the terms of the BSD license.
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
@@ -27,72 +23,100 @@
 ### Global Configuration Section
 #
 SET(_SOCI_ALL_PLUGINS    mysql odbc postgresql sqlite3)
-SET(_SOCI_REQUIRED_VARS  SOCI_INCLUDE_DIR SOCI_LIBRARY)
+SET(_SOCI_REQUIRED_VARS  Soci_INCLUDE_DIR Soci_LIBRARY)
 
 #
 ### FIRST STEP: Find the soci headers.
 #
 FIND_PATH(
-    SOCI_INCLUDE_DIR soci.h
-    PATH "/usr/local"
+    Soci_INCLUDE_DIR soci.h
+	HINTS "/usr/local"
     PATH_SUFFIXES "" "soci"
     DOC "Soci (http://soci.sourceforge.net) include directory")
 MARK_AS_ADVANCED(SOCI_INCLUDE_DIR)
 
-SET(SOCI_INCLUDE_DIRS ${SOCI_INCLUDE_DIR})
+SET(Soci_INCLUDE_DIRS ${Soci_INCLUDE_DIR} CACHE STRING "")
 
 #
 ### SECOND STEP: Find the soci core library. Respect LIB_SUFFIX
 #
 FIND_LIBRARY(
-    SOCI_LIBRARY
+    Soci_LIBRARY
     NAMES soci_core
-    HINTS ${SOCI_INCLUDE_DIR}/..
+    HINTS ${Soci_INCLUDE_DIR}/..
     PATH_SUFFIXES lib${LIB_SUFFIX})
 MARK_AS_ADVANCED(SOCI_LIBRARY)
 
-GET_FILENAME_COMPONENT(SOCI_LIBRARY_DIR ${SOCI_LIBRARY} PATH)
-MARK_AS_ADVANCED(SOCI_LIBRARY_DIR)
+GET_FILENAME_COMPONENT(Soci_LIBRARY_DIR ${Soci_LIBRARY} PATH)
+MARK_AS_ADVANCED(Soci_LIBRARY_DIR)
 
 #
 ### THIRD STEP: Find all installed plugins if the library was found
 #
-IF(SOCI_INCLUDE_DIR AND SOCI_LIBRARY)
+IF(Soci_INCLUDE_DIR AND Soci_LIBRARY)
+	SET(Soci_core_FOUND TRUE CACHE BOOL "")
 
-    MESSAGE(STATUS "Soci found: Looking for plugins")
+	#
+	### FOURTH STEP: Obtain SOCI version
+	#
+	set(Soci_VERSION_FILE "${Soci_INCLUDE_DIR}/version.h")
+	IF(EXISTS "${Soci_VERSION_FILE}")
+		file(READ "${Soci_VERSION_FILE}" VERSION_CONTENT)
+		string(REGEX MATCH "#define[ \t]*SOCI_VERSION[ \t]*[0-9]+" VERSION_MATCH "${VERSION_CONTENT}")
+		string(REGEX REPLACE "#define[ \t]*SOCI_VERSION[ \t]*" "" VERSION_MATCH "${VERSION_MATCH}")
+
+		IF(NOT VERSION_MATCH)
+			message(WARNING "Failed to extract SOCI version")
+		ELSE()
+			math(EXPR MAJOR "${VERSION_MATCH} / 100000" OUTPUT_FORMAT DECIMAL)
+			math(EXPR MINOR "${VERSION_MATCH} / 100 % 1000" OUTPUT_FORMAT DECIMAL)
+			math(EXPR PATCH "${VERSION_MATCH} % 100" OUTPUT_FORMAT DECIMAL)
+
+			set(Soci_VERSION "${MAJOR}.${MINOR}.${PATCH}" CACHE STRING "")
+		ENDIF()
+	ELSE()
+		message(WARNING "Unable to check SOCI version")
+	ENDIF()
+
     FOREACH(plugin IN LISTS _SOCI_ALL_PLUGINS)
 
         FIND_LIBRARY(
-            SOCI_${plugin}_PLUGIN
+            Soci_${plugin}_PLUGIN
             NAMES soci_${plugin}
-            HINTS ${SOCI_INCLUDE_DIR}/..
+            HINTS ${Soci_INCLUDE_DIR}/..
             PATH_SUFFIXES lib${LIB_SUFFIX})
-        MARK_AS_ADVANCED(SOCI_${plugin}_PLUGIN)
+        MARK_AS_ADVANCED(Soci_${plugin}_PLUGIN)
 
-        IF(SOCI_${plugin}_PLUGIN)
-            MESSAGE(STATUS "    * Plugin ${plugin} found ${SOCI_${plugin}_PLUGIN}.")
-            SET(SOCI_${plugin}_FOUND True)
+        IF(Soci_${plugin}_PLUGIN)
+			SET(Soci_${plugin}_FOUND TRUE CACHE BOOL "")
         ELSE()
-            MESSAGE(STATUS "    * Plugin ${plugin} not found.")
-            SET(SOCI_${plugin}_FOUND False)
+			SET(Soci_${plugin}_FOUND FALSE CACHE BOOL "")
         ENDIF()
 
     ENDFOREACH()
-
-    #
-    ### FOURTH CHECK: Check if the required components were all found
-    #
-    FOREACH(component ${Soci_FIND_COMPONENTS})
-        IF(NOT SOCI_${component}_FOUND)
-            MESSAGE(SEND_ERROR "Required component ${component} not found.")
-        ENDIF()
-    ENDFOREACH()
-
 ENDIF()
 
 #
 ### ADHERE TO STANDARDS
 #
 include(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(Soci DEFAULT_MSG ${_SOCI_REQUIRED_VARS})
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(Soci
+	REQUIRED_VARS ${_SOCI_REQUIRED_VARS}
+	VERSION_VAR Soci_VERSION
+	HANDLE_COMPONENTS
+)
 
+# For compatibility with previous versions of this script
+# DO NOT USE THESE VARIABLES IN NEW PROJECTS!
+set(SOCI_FOUND ${Soci_FOUND})
+set(SOCI_INCLUDE_DIRS ${Soci_INCLUDE_DIRS})
+set(SOCI_LIBRARY ${Soci_LIBRARY})
+set(SOCI_VERSION ${Soci_VERSION})
+set(SOCI_mysql_FOUND ${Soci_mysql_FOUND})
+set(SOCI_odbc_FOUND ${Soci_odbc_FOUND})
+set(SOCI_postgresql_FOUND ${Soci_postgresql_PLUGIN})
+set(SOCI_sqlite3_FOUND ${Soci_sqlite3_PLUGIN})
+set(SOCI_mysql_PLUGIN ${Soci_mysql_PLUGIN})
+set(SOCI_odbc_PLUGIN ${Soci_odbc_PLUGIN})
+set(SOCI_postgresql_PLUGIN ${Soci_postgresql_PLUGIN})
+set(SOCI_sqlite3_PLUGIN ${Soci_sqlite3_PLUGIN})
