@@ -131,7 +131,7 @@ void oracle_standard_into_type_backend::define_by_pos(
 
             oracle_statement_backend *stbe
                 = static_cast<oracle_statement_backend *>(st->get_backend());
-            size = 0;
+            size = sizeof(stbe->stmtp_);
             data = &stbe->stmtp_;
         }
         break;
@@ -144,7 +144,7 @@ void oracle_standard_into_type_backend::define_by_pos(
             oracle_rowid_backend *rbe
                 = static_cast<oracle_rowid_backend *>(rid->get_backend());
 
-            size = 0;
+            size = sizeof(rbe->rowidp_);
             data = &rbe->rowidp_;
         }
         break;
@@ -157,7 +157,7 @@ void oracle_standard_into_type_backend::define_by_pos(
             oracle_blob_backend *bbe
                 = static_cast<oracle_blob_backend *>(b->get_backend());
 
-            size = 0;
+            size = sizeof(bbe->lobp_);
             data = &bbe->lobp_;
         }
         break;
