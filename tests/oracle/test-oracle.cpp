@@ -129,18 +129,10 @@ TEST_CASE("Oracle blob", "[oracle][blob]")
     {
         blob b(sql);
 
-        oracle_session_backend *sessionBackEnd
-            = static_cast<oracle_session_backend *>(sql.get_backend());
-
-        oracle_blob_backend *blobBackEnd
-            = static_cast<oracle_blob_backend *>(b.get_backend());
-
-        OCILobDisableBuffering(sessionBackEnd->svchp_,
-            sessionBackEnd->errhp_, blobBackEnd->lobp_);
-
         sql << "select img from soci_test where id = 7", into(b);
         CHECK(b.get_len() == 0);
 
+        // note: blob offsets start from 1
         b.write_from_start(buf, sizeof(buf));
         CHECK(b.get_len() == sizeof(buf));
         b.trim(10);

@@ -261,6 +261,8 @@ struct oracle_rowid_backend : details::rowid_backend
 
 struct oracle_blob_backend : details::blob_backend
 {
+    typedef OCILobLocator * locator_t;
+
     oracle_blob_backend(oracle_session_backend &session);
 
     ~oracle_blob_backend() override;
@@ -289,9 +291,20 @@ struct oracle_blob_backend : details::blob_backend
 
     void trim(std::size_t newLen) override;
 
+    locator_t get_lob_locator() const;
+
+    void set_lob_locator(locator_t locator, bool initialized = true);
+
+    void reset();
+
+    void ensure_initialized();
+
+private:
     oracle_session_backend &session_;
 
-    OCILobLocator *lobp_;
+    locator_t lobp_;
+
+    bool initialized_;
 };
 
 struct oracle_session_backend : details::session_backend
@@ -458,7 +471,7 @@ struct oracle_session_backend : details::session_backend
 
 struct oracle_backend_factory : backend_factory
 {
-	  oracle_backend_factory() {}
+      oracle_backend_factory() {}
     oracle_session_backend * make_session(
         connection_parameters const & parameters) const override;
 };

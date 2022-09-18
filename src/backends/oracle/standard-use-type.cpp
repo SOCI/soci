@@ -175,9 +175,13 @@ void oracle_standard_use_type_backend::prepare_for_bind(
             oracle_blob_backend *bbe
                 = static_cast<oracle_blob_backend *>(b->get_backend());
 
-            size = sizeof(bbe->lobp_);
+            // We have to make sure that our blob backend is actually properly initialized
+            bbe->ensure_initialized();
 
-            data = &bbe->lobp_;
+            ociData_ = bbe->get_lob_locator();
+
+            size = sizeof(ociData_);
+            data = &ociData_;
         }
         break;
 
@@ -676,8 +680,17 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
                 s->define_and_bind();
             }
             break;
-        case x_rowid:
         case x_blob:
+             {
+                blob *b = static_cast<blob *>(data_);
+
+                oracle_blob_backend *bbe
+                    = static_cast<oracle_blob_backend *>(b->get_backend());
+
+                bbe->reset();
+             }
+             break;
+        case x_rowid:
         case x_xmltype:
         case x_longstring:
             // nothing to do here
@@ -710,6 +723,11 @@ void oracle_standard_use_type_backend::clean_up()
     if (type_ == x_xmltype || type_ == x_longstring)
     {
         free_temp_lob(statement_.session_, static_cast<OCILobLocator *>(ociData_));
+        ociData_ = NULL;
+    }
+    
+    if (type_ == x_blob)
+    {
         ociData_ = NULL;
     }
 
