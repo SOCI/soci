@@ -41,7 +41,7 @@ public:
     firebird_soci_error(std::string const & msg,
         ISC_STATUS const * status = 0);
 
-    ~firebird_soci_error() SOCI_NOEXCEPT override {};
+    ~firebird_soci_error() noexcept override {};
 
     std::vector<ISC_STATUS> status_;
 };

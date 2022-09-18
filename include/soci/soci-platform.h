@@ -144,7 +144,4 @@ private: \
     #define SOCI_DUMMY_RETURN(x) return x
 #endif
 
-#define SOCI_NOEXCEPT noexcept
-#define SOCI_NOEXCEPT_FALSE noexcept(false)
-
 #endif // SOCI_PLATFORM_H_INCLUDED

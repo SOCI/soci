@@ -65,7 +65,7 @@ public:
     void reconnect();
 
     // check if we have a working connection to the database
-    bool is_connected() const SOCI_NOEXCEPT;
+    bool is_connected() const noexcept;
 
     void begin();
     void commit();

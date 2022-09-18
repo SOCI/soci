@@ -235,7 +235,7 @@ void session::reconnect()
     }
 }
 
-bool session::is_connected() const SOCI_NOEXCEPT
+bool session::is_connected() const noexcept
 {
     try
     {

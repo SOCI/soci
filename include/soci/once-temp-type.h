@@ -31,7 +31,7 @@ public:
     once_temp_type(once_temp_type const & o);
     once_temp_type & operator=(once_temp_type const & o);
 
-    ~once_temp_type() SOCI_NOEXCEPT_FALSE;
+    ~once_temp_type() noexcept(false);
 
     template <typename T>
     once_temp_type & operator<<(T const & t)
@@ -122,7 +122,7 @@ public:
     ddl_type(const ddl_type & d);
     ddl_type & operator=(const ddl_type & d);
 
-    ~ddl_type() SOCI_NOEXCEPT_FALSE;
+    ~ddl_type() noexcept(false);
 
     void create_table(const std::string & tableName);
     void add_column(const std::string & tableName,
