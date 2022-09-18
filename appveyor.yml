@@ -76,10 +76,12 @@ before_build:
           }
         }
         $env:SQLITE3_LIBRARY = $env:SQLITE_ROOT + '/lib/libsqlite3-static.a'
+        $env:BUILD_TOOL_OPTIONS = '-j3'
       }
       else
       {
         $env:SQLITE3_LIBRARY = $env:SQLITE_ROOT + '/lib/sqlite3-static.lib'
+        $env:BUILD_TOOL_OPTIONS = '/m'
       }
   - cd C:\projects\sqlite\src
   - mkdir build
@@ -102,7 +104,7 @@ build_script:
   - mkdir build
   - cd build
   - cmake .. -G"%G%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_VERBOSE_MAKEFILE=ON -DSOCI_ENABLE_WERROR=ON -DSQLITE3_INCLUDE_DIR=%SQLITE_ROOT%/include -DSQLITE3_LIBRARY=%SQLITE3_LIBRARY%
-  - cmake --build . --config %CONFIGURATION% --clean-first
+  - cmake --build . --config %CONFIGURATION% -- %BUILD_TOOL_OPTIONS%
 
 test_script:
   - ctest -V --timeout 300 --output-on-failure -R "soci_empty|soci_postgresql|soci_sqlite3|soci_odbc_test_mssql|soci_mysql|soci_odbc_test_mysql|soci_odbc_test_postgresql"
