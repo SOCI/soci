@@ -121,6 +121,8 @@ TEST_CASE("Oracle blob", "[oracle][blob]")
 {
     soci::session sql(backEnd, connectString);
 
+    soci::transaction transaction(sql);
+
     blob_table_creator tableCreator(sql);
 
     char buf[] = "abcdefghijklmnopqrstuvwxyz";
@@ -137,13 +139,7 @@ TEST_CASE("Oracle blob", "[oracle][blob]")
         CHECK(b.get_len() == sizeof(buf));
         b.trim(10);
         CHECK(b.get_len() == 10);
-
-        // append does not work (Oracle bug #886191 ?)
-        //b.append(buf, sizeof(buf));
-        //assert(b.get_len() == sizeof(buf) + 10);
-        sql.commit();
     }
-
     {
         blob b(sql);
         sql << "select img from soci_test where id = 7", into(b);
@@ -153,6 +149,47 @@ TEST_CASE("Oracle blob", "[oracle][blob]")
         b.read_from_start(buf2, 10);
         CHECK(strncmp(buf2, "abcdefghij", 10) == 0);
     }
+    {
+        // Read from default-constructed BLOB
+        blob b(sql);
+
+        CHECK(b.get_len() == 0);
+
+        char buf[5];
+        std::size_t read = b.read_from_start(buf, 5);
+        CHECK(read == 0);
+    }
+    {
+        // empty, default-constructed BLOB
+        blob b(sql);
+        indicator ind;
+
+        sql << "insert into soci_test(id, img) values(1, :img)", use(b);
+        sql << "select img from soci_test where id = 1", into(b, ind);
+
+        CHECK(ind == i_ok);
+        CHECK(b.get_len() == 0);
+
+        sql << "delete from soci_test where id = 1";
+    }
+    {
+        // Create new BLOB
+        blob b(sql);
+
+        b.write_from_start(buf, sizeof(buf));
+
+        char substr[20];
+        std::size_t i = b.read_from_start(substr, 3);
+        substr[i] = '\0';
+        CHECK(substr[0] == buf[0]);
+        CHECK(substr[1] == buf[1]);
+        CHECK(substr[2] == buf[2]);
+        CHECK(substr[3] == '\0');
+
+        sql << "insert into soci_test(id, img) values(7, :img)", use(b);
+    }
+
+    transaction.commit();
 }
 
 // nested statement test
