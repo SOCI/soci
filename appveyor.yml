@@ -58,7 +58,14 @@ install:
         }
       }
       Import-Module C:\projects\soci\scripts\windows\Get-ODBCList.ps1
-      Get-ODBCList
+      $drivers_list = Get-ODBCList
+      Write-Output $drivers_list
+      if ($drivers_list -clike '*MySQL*') {
+        $env:SOCI_ODBC_TESTS = $env:SOCI_ODBC_TESTS + '|soci_odbc_test_mysql'
+      }
+      if ($drivers_list -clike '*PostgreSQL*') {
+        $env:SOCI_ODBC_TESTS = $env:SOCI_ODBC_TESTS + '|soci_odbc_test_postgresql'
+      }
   - git clone https://github.com/snikulov/sqlite.cmake.build.git C:\projects\sqlite\src
 
 before_build:
@@ -107,7 +114,7 @@ build_script:
   - cmake --build . --config %CONFIGURATION% -- %BUILD_TOOL_OPTIONS%
 
 test_script:
-  - ctest -V --timeout 300 --output-on-failure -R "soci_empty|soci_postgresql|soci_sqlite3|soci_odbc_test_mssql|soci_mysql|soci_odbc_test_mysql|soci_odbc_test_postgresql"
+  - ctest -V --timeout 300 --output-on-failure -R "soci_empty|soci_postgresql|soci_sqlite3|soci_odbc_test_mssql|soci_mysql%SOCI_ODBC_TESTS%"
 
 notifications:
   - provider: Webhook
