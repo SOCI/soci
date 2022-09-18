@@ -22,13 +22,13 @@
 //  SOCI_VERSION / 100 % 1000 is the minor version
 //  SOCI_VERSION / 100000 is the major version
 
-#define SOCI_VERSION 400003
+#define SOCI_VERSION 400100
 
 //
 //  SOCI_LIB_VERSION must be defined to be the same as SOCI_VERSION
 //  but as a *string* in the form "x_y[_z]" where x is the major version
 //  number, y is the minor version number, and z is the patch level if not 0.
 
-#define SOCI_LIB_VERSION "4_0_3"
+#define SOCI_LIB_VERSION "4_1_0"
 
 #endif // SOCI_VERSION_HPP
