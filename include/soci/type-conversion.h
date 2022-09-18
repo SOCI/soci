@@ -62,7 +62,7 @@ public:
 
 
 private:
-    void convert_from_base() SOCI_OVERRIDE
+    void convert_from_base() override
     {
         type_conversion<T>::from_base(
             base_value_holder<T>::val_, ind_, value_);
@@ -130,7 +130,7 @@ public:
         //convert_to_base();
     }
 
-    void convert_from_base() SOCI_OVERRIDE
+    void convert_from_base() override
     {
         // NOTE:
         // readOnly_ flag indicates that use_type object has been generated
@@ -145,7 +145,7 @@ public:
         }
     }
 
-    void convert_to_base() SOCI_OVERRIDE
+    void convert_to_base() override
     {
         if (ind_ == i_null)
         {
@@ -233,7 +233,7 @@ public:
         user_ranges_ = end != NULL;
     }
 
-    std::size_t size() const SOCI_OVERRIDE
+    std::size_t size() const override
     {
         // the user might have resized his vector in the meantime
         // -> synchronize the base-value mirror to have the same size
@@ -244,7 +244,7 @@ public:
         return into_type<base_type>::size();
     }
 
-    void resize(std::size_t sz) SOCI_OVERRIDE
+    void resize(std::size_t sz) override
     {
         into_type<base_type>::resize(sz);
 
@@ -254,7 +254,7 @@ public:
     }
 
 private:
-    void convert_from_base() SOCI_OVERRIDE
+    void convert_from_base() override
     {
         if (user_ranges_)
         {
@@ -365,7 +365,7 @@ public:
     }
 
 private:
-    void convert_to_base() SOCI_OVERRIDE
+    void convert_to_base() override
     {
         std::size_t const sz = value_.size();
         base_vector_holder<T>::vec_.resize(sz);

@@ -46,7 +46,7 @@ public:
         : v_(v)
     {}
 
-    void bind(details::statement_impl & st, int & /*position*/) SOCI_OVERRIDE
+    void bind(details::statement_impl & st, int & /*position*/) override
     {
         v_.uppercase_column_names(st.session_.get_uppercase_column_names());
 
@@ -54,7 +54,7 @@ public:
         st.bind(v_);
     }
 
-    std::string get_name() const SOCI_OVERRIDE
+    std::string get_name() const override
     {
         std::ostringstream oss;
 
@@ -74,23 +74,23 @@ public:
         return oss.str();
     }
 
-    void dump_value(std::ostream& os) const SOCI_OVERRIDE
+    void dump_value(std::ostream& os) const override
     {
         // TODO: Dump all columns.
         os << "<value>";
     }
 
-    void pre_exec(int /* num */) SOCI_OVERRIDE {}
+    void pre_exec(int /* num */) override {}
 
-    void post_use(bool /*gotData*/) SOCI_OVERRIDE
+    void post_use(bool /*gotData*/) override
     {
         v_.reset_get_counter();
         convert_from_base();
     }
 
-    void pre_use() SOCI_OVERRIDE {convert_to_base();}
-    void clean_up() SOCI_OVERRIDE {v_.clean_up();}
-    std::size_t size() const SOCI_OVERRIDE { return 1; }
+    void pre_use() override {convert_to_base();}
+    void clean_up() override {v_.clean_up();}
+    std::size_t size() const override { return 1; }
 
     // these are used only to re-dispatch to derived class
     // (the derived class might be generated automatically by
@@ -124,7 +124,7 @@ public:
         : into_type<row>(v.get_row(), ind), v_(v)
     {}
 
-    void clean_up() SOCI_OVERRIDE
+    void clean_up() override
     {
         v_.clean_up();
     }

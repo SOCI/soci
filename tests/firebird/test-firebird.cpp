@@ -1304,47 +1304,47 @@ class test_context : public tests::test_context_base
                 : test_context_base(backEnd, connectString)
         {}
 
-        tests::table_creator_base* table_creator_1(soci::session& s) const SOCI_OVERRIDE
+        tests::table_creator_base* table_creator_1(soci::session& s) const override
         {
             return new TableCreator1(s);
         }
 
-        tests::table_creator_base* table_creator_2(soci::session& s) const SOCI_OVERRIDE
+        tests::table_creator_base* table_creator_2(soci::session& s) const override
         {
             return new TableCreator2(s);
         }
 
-        tests::table_creator_base* table_creator_3(soci::session& s) const SOCI_OVERRIDE
+        tests::table_creator_base* table_creator_3(soci::session& s) const override
         {
             return new TableCreator3(s);
         }
 
-        tests::table_creator_base* table_creator_4(soci::session& s) const SOCI_OVERRIDE
+        tests::table_creator_base* table_creator_4(soci::session& s) const override
         {
             return new TableCreator4(s);
         }
 
-        tests::table_creator_base* table_creator_clob(soci::session& s) const SOCI_OVERRIDE
+        tests::table_creator_base* table_creator_clob(soci::session& s) const override
         {
             return new TableCreatorCLOB(s);
         }
 
-        tests::table_creator_base* table_creator_xml(soci::session& s) const SOCI_OVERRIDE
+        tests::table_creator_base* table_creator_xml(soci::session& s) const override
         {
             return new TableCreatorXML(s);
         }
 
-        std::string to_date_time(std::string const &datdt_string) const SOCI_OVERRIDE
+        std::string to_date_time(std::string const &datdt_string) const override
         {
             return "'" + datdt_string + "'";
         }
 
-        void on_after_ddl(soci::session& sql) const SOCI_OVERRIDE
+        void on_after_ddl(soci::session& sql) const override
         {
             sql.commit();
         }
 
-        std::string sql_length(std::string const& s) const SOCI_OVERRIDE
+        std::string sql_length(std::string const& s) const override
         {
             return "char_length(" + s + ")";
         }

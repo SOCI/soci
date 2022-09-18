@@ -29,7 +29,7 @@ struct auto_statement : Backend
         this->alloc();
     }
 
-    ~auto_statement() SOCI_OVERRIDE
+    ~auto_statement() override
     {
         this->clean_up();
     }

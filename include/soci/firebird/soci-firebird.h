@@ -41,7 +41,7 @@ public:
     firebird_soci_error(std::string const & msg,
         ISC_STATUS const * status = 0);
 
-    ~firebird_soci_error() SOCI_NOEXCEPT SOCI_OVERRIDE {};
+    ~firebird_soci_error() SOCI_NOEXCEPT override {};
 
     std::vector<ISC_STATUS> status_;
 };
@@ -60,13 +60,13 @@ struct firebird_standard_into_type_backend : details::standard_into_type_backend
     {}
 
     void define_by_pos(int &position,
-        void *data, details::exchange_type type) SOCI_OVERRIDE;
+        void *data, details::exchange_type type) override;
 
-    void pre_fetch() SOCI_OVERRIDE;
+    void pre_fetch() override;
     void post_fetch(bool gotData, bool calledFromFetch,
-        indicator *ind) SOCI_OVERRIDE;
+        indicator *ind) override;
 
-    void clean_up() SOCI_OVERRIDE;
+    void clean_up() override;
 
     firebird_statement_backend &statement_;
     virtual void exchangeData();
@@ -86,15 +86,15 @@ struct firebird_vector_into_type_backend : details::vector_into_type_backend
     {}
 
     void define_by_pos(int &position,
-        void *data, details::exchange_type type) SOCI_OVERRIDE;
+        void *data, details::exchange_type type) override;
 
-    void pre_fetch() SOCI_OVERRIDE;
-    void post_fetch(bool gotData, indicator *ind) SOCI_OVERRIDE;
+    void pre_fetch() override;
+    void post_fetch(bool gotData, indicator *ind) override;
 
-    void resize(std::size_t sz) SOCI_OVERRIDE;
-    std::size_t size() SOCI_OVERRIDE;
+    void resize(std::size_t sz) override;
+    std::size_t size() override;
 
-    void clean_up() SOCI_OVERRIDE;
+    void clean_up() override;
 
     firebird_statement_backend &statement_;
     virtual void exchangeData(std::size_t row);
@@ -115,14 +115,14 @@ struct firebird_standard_use_type_backend : details::standard_use_type_backend
     {}
 
     void bind_by_pos(int &position,
-        void *data, details::exchange_type type, bool readOnly) SOCI_OVERRIDE;
+        void *data, details::exchange_type type, bool readOnly) override;
     void bind_by_name(std::string const &name,
-        void *data, details::exchange_type type, bool readOnly) SOCI_OVERRIDE;
+        void *data, details::exchange_type type, bool readOnly) override;
 
-    void pre_use(indicator const *ind) SOCI_OVERRIDE;
-    void post_use(bool gotData, indicator *ind) SOCI_OVERRIDE;
+    void pre_use(indicator const *ind) override;
+    void post_use(bool gotData, indicator *ind) override;
 
-    void clean_up() SOCI_OVERRIDE;
+    void clean_up() override;
 
     firebird_statement_backend &statement_;
     virtual void exchangeData();
@@ -151,15 +151,15 @@ struct firebird_vector_use_type_backend : details::vector_use_type_backend
     {}
 
     void bind_by_pos(int &position,
-        void *data, details::exchange_type type) SOCI_OVERRIDE;
+        void *data, details::exchange_type type) override;
     void bind_by_name(std::string const &name,
-        void *data, details::exchange_type type) SOCI_OVERRIDE;
+        void *data, details::exchange_type type) override;
 
-    void pre_use(indicator const *ind) SOCI_OVERRIDE;
+    void pre_use(indicator const *ind) override;
 
-    std::size_t size() SOCI_OVERRIDE;
+    std::size_t size() override;
 
-    void clean_up() SOCI_OVERRIDE;
+    void clean_up() override;
 
     firebird_statement_backend &statement_;
     virtual void exchangeData(std::size_t row);
@@ -186,28 +186,28 @@ struct firebird_statement_backend : details::statement_backend
 {
     firebird_statement_backend(firebird_session_backend &session);
 
-    void alloc() SOCI_OVERRIDE;
-    void clean_up() SOCI_OVERRIDE;
+    void alloc() override;
+    void clean_up() override;
     void prepare(std::string const &query,
-        details::statement_type eType) SOCI_OVERRIDE;
+        details::statement_type eType) override;
 
-    exec_fetch_result execute(int number) SOCI_OVERRIDE;
-    exec_fetch_result fetch(int number) SOCI_OVERRIDE;
+    exec_fetch_result execute(int number) override;
+    exec_fetch_result fetch(int number) override;
 
-    long long get_affected_rows() SOCI_OVERRIDE;
-    int get_number_of_rows() SOCI_OVERRIDE;
-    std::string get_parameter_name(int index) const SOCI_OVERRIDE;
+    long long get_affected_rows() override;
+    int get_number_of_rows() override;
+    std::string get_parameter_name(int index) const override;
 
-    std::string rewrite_for_procedure_call(std::string const &query) SOCI_OVERRIDE;
+    std::string rewrite_for_procedure_call(std::string const &query) override;
 
-    int prepare_for_describe() SOCI_OVERRIDE;
+    int prepare_for_describe() override;
     void describe_column(int colNum, data_type &dtype,
-        std::string &columnName) SOCI_OVERRIDE;
+        std::string &columnName) override;
 
-    firebird_standard_into_type_backend * make_into_type_backend() SOCI_OVERRIDE;
-    firebird_standard_use_type_backend * make_use_type_backend() SOCI_OVERRIDE;
-    firebird_vector_into_type_backend * make_vector_into_type_backend() SOCI_OVERRIDE;
-    firebird_vector_use_type_backend * make_vector_use_type_backend() SOCI_OVERRIDE;
+    firebird_standard_into_type_backend * make_into_type_backend() override;
+    firebird_standard_use_type_backend * make_use_type_backend() override;
+    firebird_vector_into_type_backend * make_vector_into_type_backend() override;
+    firebird_vector_use_type_backend * make_vector_use_type_backend() override;
 
     firebird_session_backend &session_;
 
@@ -253,15 +253,15 @@ struct firebird_blob_backend : details::blob_backend
 {
     firebird_blob_backend(firebird_session_backend &session);
 
-    ~firebird_blob_backend() SOCI_OVERRIDE;
+    ~firebird_blob_backend() override;
 
-    std::size_t get_len() SOCI_OVERRIDE;
+    std::size_t get_len() override;
     std::size_t read(std::size_t offset, char *buf,
-        std::size_t toRead) SOCI_OVERRIDE;
+        std::size_t toRead) override;
     std::size_t write(std::size_t offset, char const *buf,
-        std::size_t toWrite) SOCI_OVERRIDE;
-    std::size_t append(char const *buf, std::size_t toWrite) SOCI_OVERRIDE;
-    void trim(std::size_t newLen) SOCI_OVERRIDE;
+        std::size_t toWrite) override;
+    std::size_t append(char const *buf, std::size_t toWrite) override;
+    void trim(std::size_t newLen) override;
 
     firebird_session_backend &session_;
 
@@ -304,26 +304,26 @@ struct firebird_session_backend : details::session_backend
 {
     firebird_session_backend(connection_parameters const & parameters);
 
-    ~firebird_session_backend() SOCI_OVERRIDE;
+    ~firebird_session_backend() override;
 
-    bool is_connected() SOCI_OVERRIDE;
+    bool is_connected() override;
 
-    void begin() SOCI_OVERRIDE;
-    void commit() SOCI_OVERRIDE;
-    void rollback() SOCI_OVERRIDE;
+    void begin() override;
+    void commit() override;
+    void rollback() override;
 
     bool get_next_sequence_value(session & s,
-        std::string const & sequence, long long & value) SOCI_OVERRIDE;
+        std::string const & sequence, long long & value) override;
 
-    std::string get_dummy_from_table() const SOCI_OVERRIDE { return "rdb$database"; }
+    std::string get_dummy_from_table() const override { return "rdb$database"; }
 
-    std::string get_backend_name() const SOCI_OVERRIDE { return "firebird"; }
+    std::string get_backend_name() const override { return "firebird"; }
 
     void cleanUp();
 
-    firebird_statement_backend * make_statement_backend() SOCI_OVERRIDE;
-    details::rowid_backend* make_rowid_backend() SOCI_OVERRIDE;
-    firebird_blob_backend * make_blob_backend() SOCI_OVERRIDE;
+    firebird_statement_backend * make_statement_backend() override;
+    details::rowid_backend* make_rowid_backend() override;
+    firebird_blob_backend * make_blob_backend() override;
 
     bool get_option_decimals_as_strings() { return decimals_as_strings_; }
 
@@ -344,7 +344,7 @@ struct firebird_backend_factory : backend_factory
 {
     firebird_backend_factory() {}
     firebird_session_backend * make_session(
-        connection_parameters const & parameters) const SOCI_OVERRIDE;
+        connection_parameters const & parameters) const override;
 };
 
 extern SOCI_FIREBIRD_DECL firebird_backend_factory const firebird;

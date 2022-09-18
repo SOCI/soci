@@ -115,8 +115,6 @@ namespace std {
     #endif
 #endif
 
-#define SOCI_OVERRIDE override
-
 #define SOCI_NOT_ASSIGNABLE(classname) \
 public: \
     classname(const classname&) = default; \

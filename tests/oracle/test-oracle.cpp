@@ -1508,64 +1508,64 @@ public:
                 std::string const &connectString)
         : test_context_base(backEnd, connectString) {}
 
-    table_creator_base* table_creator_1(soci::session& s) const SOCI_OVERRIDE
+    table_creator_base* table_creator_1(soci::session& s) const override
     {
         return new table_creator_one(s);
     }
 
-    table_creator_base* table_creator_2(soci::session& s) const SOCI_OVERRIDE
+    table_creator_base* table_creator_2(soci::session& s) const override
     {
         return new table_creator_two(s);
     }
 
-    table_creator_base* table_creator_3(soci::session& s) const SOCI_OVERRIDE
+    table_creator_base* table_creator_3(soci::session& s) const override
     {
         return new table_creator_three(s);
     }
 
-    table_creator_base* table_creator_4(soci::session& s) const SOCI_OVERRIDE
+    table_creator_base* table_creator_4(soci::session& s) const override
     {
         return new table_creator_four(s);
     }
 
-    table_creator_base* table_creator_clob(soci::session& s) const SOCI_OVERRIDE
+    table_creator_base* table_creator_clob(soci::session& s) const override
     {
         return new table_creator_for_clob(s);
     }
 
-    table_creator_base* table_creator_xml(soci::session& s) const SOCI_OVERRIDE
+    table_creator_base* table_creator_xml(soci::session& s) const override
     {
         return new table_creator_for_xml(s);
     }
 
-    std::string to_xml(std::string const& x) const SOCI_OVERRIDE
+    std::string to_xml(std::string const& x) const override
     {
         return "xmltype(" + x + ")";
     }
 
-    std::string from_xml(std::string const& x) const SOCI_OVERRIDE
+    std::string from_xml(std::string const& x) const override
     {
         // Notice that using just x.getCLOBVal() doesn't work, only
         // table.x.getCLOBVal() or (x).getCLOBVal(), as used here, does.
         return "(" + x + ").getCLOBVal()";
     }
 
-    bool has_real_xml_support() const SOCI_OVERRIDE
+    bool has_real_xml_support() const override
     {
         return true;
     }
 
-    bool treats_empty_strings_as_null() const SOCI_OVERRIDE
+    bool treats_empty_strings_as_null() const override
     {
         return true;
     }
 
-    std::string to_date_time(std::string const &datdt_string) const SOCI_OVERRIDE
+    std::string to_date_time(std::string const &datdt_string) const override
     {
         return "to_date('" + datdt_string + "', 'YYYY-MM-DD HH24:MI:SS')";
     }
 
-    std::string sql_length(std::string const& s) const SOCI_OVERRIDE
+    std::string sql_length(std::string const& s) const override
     {
         // Oracle treats empty strings as NULLs, but we want to return the
         // length of 0 for them for consistency with the other backends, so use

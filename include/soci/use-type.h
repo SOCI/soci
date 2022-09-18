@@ -73,10 +73,10 @@ public:
         //convert_to_base();
     }
 
-    ~standard_use_type() SOCI_OVERRIDE;
-    void bind(statement_impl & st, int & position) SOCI_OVERRIDE;
-    std::string get_name() const SOCI_OVERRIDE { return name_; }
-    void dump_value(std::ostream& os) const SOCI_OVERRIDE;
+    ~standard_use_type() override;
+    void bind(statement_impl & st, int & position) override;
+    std::string get_name() const override { return name_; }
+    void dump_value(std::ostream& os) const override;
     virtual void * get_data() { return data_; }
 
     // conversion hook (from arbitrary user type to base type)
@@ -84,13 +84,13 @@ public:
     virtual void convert_from_base() {}
 
 protected:
-    void pre_use() SOCI_OVERRIDE;
+    void pre_use() override;
 
 private:
-    void pre_exec(int num) SOCI_OVERRIDE;
-    void post_use(bool gotData) SOCI_OVERRIDE;
-    void clean_up() SOCI_OVERRIDE;
-    std::size_t size() const SOCI_OVERRIDE { return 1; }
+    void pre_exec(int num) override;
+    void post_use(bool gotData) override;
+    void clean_up() override;
+    std::size_t size() const override { return 1; }
 
     void* data_;
     exchange_type type_;
@@ -152,17 +152,17 @@ public:
         , backEnd_(NULL)
     {}
 
-    ~vector_use_type() SOCI_OVERRIDE;
+    ~vector_use_type() override;
 
 private:
-    void bind(statement_impl& st, int & position) SOCI_OVERRIDE;
-    std::string get_name() const SOCI_OVERRIDE { return name_; }
-    void dump_value(std::ostream& os) const SOCI_OVERRIDE;
-    void pre_exec(int num) SOCI_OVERRIDE;
-    void pre_use() SOCI_OVERRIDE;
-    void post_use(bool) SOCI_OVERRIDE { /* nothing to do */ }
-    void clean_up() SOCI_OVERRIDE;
-    std::size_t size() const SOCI_OVERRIDE;
+    void bind(statement_impl& st, int & position) override;
+    std::string get_name() const override { return name_; }
+    void dump_value(std::ostream& os) const override;
+    void pre_exec(int num) override;
+    void pre_use() override;
+    void post_use(bool) override { /* nothing to do */ }
+    void clean_up() override;
+    std::size_t size() const override;
 
     void* data_;
     exchange_type type_;

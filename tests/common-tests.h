@@ -5320,7 +5320,7 @@ TEST_CASE_METHOD(common_tests, "Failover", "[keep-alive][.]")
 
         bool did_reconnect() const { return reconnected_; }
 
-        void started() SOCI_OVERRIDE
+        void started() override
         {
             std::cout << "Please undo the previous action "
                          "(restart the server, plug the cable back, ...) "
@@ -5328,19 +5328,19 @@ TEST_CASE_METHOD(common_tests, "Failover", "[keep-alive][.]")
             std::cin.get();
         }
 
-        void failed(bool& retry, std::string&) SOCI_OVERRIDE
+        void failed(bool& retry, std::string&) override
         {
             // We only retry once.
             retry = !attempted_;
             attempted_ = true;
         }
 
-        void finished(soci::session&) SOCI_OVERRIDE
+        void finished(soci::session&) override
         {
             reconnected_ = true;
         }
 
-        void aborted() SOCI_OVERRIDE
+        void aborted() override
         {
             FAIL( "Failover aborted" );
         }

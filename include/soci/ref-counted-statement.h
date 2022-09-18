@@ -86,7 +86,7 @@ public:
     ref_counted_statement(session & s)
         : ref_counted_statement_base(s), st_(s) {}
 
-    void final_action() SOCI_OVERRIDE;
+    void final_action() override;
 
     template <typename T>
     void exchange(T &t) { st_.exchange(t); }

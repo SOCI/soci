@@ -47,7 +47,7 @@ public:
     void exchange(into_container<T, Indicator> const &ic)
     { intos_.exchange(ic); }
 
-    void final_action() SOCI_OVERRIDE;
+    void final_action() override;
 
 private:
     friend class statement_impl;
