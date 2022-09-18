@@ -12,7 +12,6 @@
 #include "soci-compiler.h"
 #include "soci-cstrtoi.h"
 #include "soci-mktime.h"
-#include "soci-static-assert.h"
 #include "soci-vector-helpers.h"
 #include <algorithm>
 #include <cctype>
@@ -49,7 +48,7 @@ void odbc_vector_into_type_backend::define_by_pos(
         break;
     case x_integer:
         odbcType_ = SQL_C_SLONG;
-        SOCI_STATIC_ASSERT(sizeof(SQLINTEGER) == sizeof(int));
+        static_assert(sizeof(SQLINTEGER) == sizeof(int), "unsupported SQLINTEGER size");
         break;
     case x_long_long:
         if (use_string_for_bigint())
