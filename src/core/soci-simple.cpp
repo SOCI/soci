@@ -192,7 +192,9 @@ SOCI_DECL int soci_blob_read(blob_handle b, int offset, char *buf, int toRead)
     blob_wrapper *blob = static_cast<blob_wrapper *>(b);
     try
     {
+        SOCI_ALLOW_DEPRECATED_BEGIN
         return static_cast<int>(blob->blob_.read(offset, buf, toRead));
+        SOCI_ALLOW_DEPRECATED_END
     }
     catch (std::exception &e)
     {
@@ -234,7 +236,9 @@ SOCI_DECL int soci_blob_write(blob_handle b, int offset, char const *buf, int to
     blob_wrapper *blob = static_cast<blob_wrapper *>(b);
     try
     {
+        SOCI_ALLOW_DEPRECATED_BEGIN
         return static_cast<int>(blob->blob_.write(offset, buf, toWrite));
+        SOCI_ALLOW_DEPRECATED_END
     }
     catch (std::exception &e)
     {

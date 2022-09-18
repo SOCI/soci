@@ -266,6 +266,7 @@ struct oracle_blob_backend : details::blob_backend
 
     std::size_t get_len() override;
 
+    [[deprecated("Use read_from_start instead")]]
     std::size_t read(std::size_t offset, char *buf, std::size_t toRead) override
     {
         // Offsets are 1-based in Oracle
@@ -274,6 +275,7 @@ struct oracle_blob_backend : details::blob_backend
 
     std::size_t read_from_start(char * buf, std::size_t toRead, std::size_t offset = 0) override;
 
+    [[deprecated("Use write_from_start instead")]]
     std::size_t write(std::size_t offset, char const *buf, std::size_t toWrite) override
     {
         // Offsets are 1-based in Oracle
