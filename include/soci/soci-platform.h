@@ -117,17 +117,6 @@ namespace std {
 
 #define SOCI_OVERRIDE override
 
-namespace soci
-{
-
-namespace cxx_details
-{
-    template <typename T>
-    using auto_ptr = std::unique_ptr<T>;
-} // namespace cxx_details
-
-} // namespace soci
-
 #define SOCI_NOT_ASSIGNABLE(classname) \
 public: \
     classname(const classname&) = default; \
