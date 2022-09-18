@@ -18,7 +18,6 @@ fi
 echo "Build: building SOCI from sources in ${SOCI_HOME} to build in ${SOCI_BUILD}"
 cd ${SOCI_BUILD} && \
 cmake \
-    -DSOCI_CXX11=ON \
     -DSOCI_TESTS=ON \
     -DSOCI_STATIC=OFF \
     -DSOCI_DB2=ON \

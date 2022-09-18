@@ -14,6 +14,9 @@ cmake_minimum_required(VERSION 2.8...3.20 FATAL_ERROR)
 
 project(SOCI)
 
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 ###############################################################################
 # Build features and variants
 ##############################################################################
@@ -107,7 +110,6 @@ boost_report_value(SOCI_TESTS)
 boost_report_value(SOCI_ASAN)
 
 # from SociConfig.cmake
-boost_report_value(SOCI_CXX11)
 boost_report_value(LIB_SUFFIX)
 
 # Put the libaries and binaries that get built into directories at the
