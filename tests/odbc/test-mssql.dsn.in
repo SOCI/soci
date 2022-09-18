@@ -4,7 +4,7 @@ UID=sa
 PWD=Password12!
 WSID=SOLARWIND
 APP=SOCI Test Application
-SERVER=(local)\SQL2014
+SERVER=(local)\SQL@MSSQL_VER@
 DATABASE=soci_test
 Description=SQL on AppVeyor
 

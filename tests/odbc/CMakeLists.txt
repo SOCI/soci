@@ -21,12 +21,19 @@ else()
     message(STATUS "MS Access test disabled on non-Windows platform")
 endif()
 
+set(MSSQL_VER $ENV{MSSQL_VER})
+if (NOT MSSQL_VER)
+    # Use the same value that was used before by default.
+    set(MSSQL_VER "2014")
+endif()
+configure_file("test-mssql.dsn.in" "test-mssql.dsn" @ONLY)
+
 soci_backend_test(
   NAME mssql
   BACKEND ODBC
   DEPENDS ODBC
   SOURCE test-odbc-mssql.cpp ${SOCI_TESTS_COMMON}
-  CONNSTR "FILEDSN=${CMAKE_CURRENT_SOURCE_DIR}/test-mssql.dsn")
+  CONNSTR "FILEDSN=${CMAKE_CURRENT_BINARY_DIR}/test-mssql.dsn")
 
 soci_backend_test(
   NAME mysql
