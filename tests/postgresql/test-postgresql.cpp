@@ -153,82 +153,41 @@ struct blob_table_creator : public table_creator_base
 
 TEST_CASE("PostgreSQL blob", "[postgresql][blob]")
 {
+    soci::session sql(backEnd, connectString);
+
+    blob_table_creator tableCreator(sql);
+
+    char buf[] = "abcdefghijklmnopqrstuvwxyz";
+
+    sql << "insert into soci_test(id, img) values(7, lo_creat(-1))";
+
+    // in PostgreSQL, BLOB operations must be within transaction block
+    transaction tr(sql);
+
     {
-        soci::session sql(backEnd, connectString);
+        blob b(sql);
 
-        blob_table_creator tableCreator(sql);
+        sql << "select img from soci_test where id = 7", into(b);
+        CHECK(b.get_len() == 0);
 
-        char buf[] = "abcdefghijklmnopqrstuvwxyz";
+        b.write_from_start(buf, sizeof(buf));
+        CHECK(b.get_len() == sizeof(buf));
 
-        sql << "insert into soci_test(id, img) values(7, lo_creat(-1))";
-
-        // in PostgreSQL, BLOB operations must be within transaction block
-        transaction tr(sql);
-
-        {
-            blob b(sql);
-
-            sql << "select img from soci_test where id = 7", into(b);
-            CHECK(b.get_len() == 0);
-
-            b.write(0, buf, sizeof(buf));
-            CHECK(b.get_len() == sizeof(buf));
-
-            b.append(buf, sizeof(buf));
-            CHECK(b.get_len() == 2 * sizeof(buf));
-        }
-        {
-            blob b(sql);
-            sql << "select img from soci_test where id = 7", into(b);
-            CHECK(b.get_len() == 2 * sizeof(buf));
-            char buf2[100];
-            b.read(0, buf2, 10);
-            CHECK(std::strncmp(buf2, "abcdefghij", 10) == 0);
-        }
-
-        unsigned long oid;
-        sql << "select img from soci_test where id = 7", into(oid);
-        sql << "select lo_unlink(" << oid << ")";
+        b.append(buf, sizeof(buf));
+        CHECK(b.get_len() == 2 * sizeof(buf));
+    }
+    {
+        blob b(sql);
+        sql << "select img from soci_test where id = 7", into(b);
+        CHECK(b.get_len() == 2 * sizeof(buf));
+        char buf2[100];
+        b.read_from_start(buf2, 10);
+        CHECK(std::strncmp(buf2, "abcdefghij", 10) == 0);
     }
 
-    // additional sibling test for read_from_start and write_from_start
-    {
-        soci::session sql(backEnd, connectString);
-
-        blob_table_creator tableCreator(sql);
-
-        char buf[] = "abcdefghijklmnopqrstuvwxyz";
-
-        sql << "insert into soci_test(id, img) values(7, lo_creat(-1))";
-
-        // in PostgreSQL, BLOB operations must be within transaction block
-        transaction tr(sql);
-
-        {
-            blob b(sql);
-
-            sql << "select img from soci_test where id = 7", into(b);
-            CHECK(b.get_len() == 0);
-
-            b.write_from_start(buf, sizeof(buf));
-            CHECK(b.get_len() == sizeof(buf));
-
-            b.append(buf, sizeof(buf));
-            CHECK(b.get_len() == 2 * sizeof(buf));
-        }
-        {
-            blob b(sql);
-            sql << "select img from soci_test where id = 7", into(b);
-            CHECK(b.get_len() == 2 * sizeof(buf));
-            char buf2[100];
-            b.read_from_start(buf2, 10);
-            CHECK(std::strncmp(buf2, "abcdefghij", 10) == 0);
-        }
-
-        unsigned long oid;
-        sql << "select img from soci_test where id = 7", into(oid);
-        sql << "select lo_unlink(" << oid << ")";
-    }
+    unsigned long oid;
+    sql << "select img from soci_test where id = 7", into(oid);
+    sql << "select lo_unlink(" << oid << ")";
 }
 
 struct longlong_table_creator : table_creator_base

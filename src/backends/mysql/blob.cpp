@@ -33,15 +33,12 @@ std::size_t mysql_blob_backend::get_len()
     throw soci_error("BLOBs are not supported.");
 }
 
-std::size_t mysql_blob_backend::read(
-    std::size_t /* offset */, char * /* buf */, std::size_t /* toRead */)
+std::size_t mysql_blob_backend::read_from_start(char * /* buf */, std::size_t /* toRead */, std::size_t /* offset */)
 {
     throw soci_error("BLOBs are not supported.");
 }
 
-std::size_t mysql_blob_backend::write(
-    std::size_t /* offset */, char const * /* buf */,
-    std::size_t /* toWrite */)
+std::size_t mysql_blob_backend::write_from_start(char const * /* buf */, std::size_t /* toWrite */, std::size_t /* offset */)
 {
     throw soci_error("BLOBs are not supported.");
 }

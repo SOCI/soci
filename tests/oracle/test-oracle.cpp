@@ -119,97 +119,47 @@ struct blob_table_creator : public table_creator_base
 
 TEST_CASE("Oracle blob", "[oracle][blob]")
 {
+    soci::session sql(backEnd, connectString);
+
+    blob_table_creator tableCreator(sql);
+
+    char buf[] = "abcdefghijklmnopqrstuvwxyz";
+    sql << "insert into soci_test (id, img) values (7, empty_blob())";
+
     {
-        soci::session sql(backEnd, connectString);
+        blob b(sql);
 
-        blob_table_creator tableCreator(sql);
+        oracle_session_backend *sessionBackEnd
+            = static_cast<oracle_session_backend *>(sql.get_backend());
 
-        char buf[] = "abcdefghijklmnopqrstuvwxyz";
-        sql << "insert into soci_test (id, img) values (7, empty_blob())";
+        oracle_blob_backend *blobBackEnd
+            = static_cast<oracle_blob_backend *>(b.get_backend());
 
-        {
-            blob b(sql);
+        OCILobDisableBuffering(sessionBackEnd->svchp_,
+            sessionBackEnd->errhp_, blobBackEnd->lobp_);
 
-            oracle_session_backend *sessionBackEnd
-                = static_cast<oracle_session_backend *>(sql.get_backend());
+        sql << "select img from soci_test where id = 7", into(b);
+        CHECK(b.get_len() == 0);
 
-            oracle_blob_backend *blobBackEnd
-                = static_cast<oracle_blob_backend *>(b.get_backend());
+        b.write_from_start(buf, sizeof(buf));
+        CHECK(b.get_len() == sizeof(buf));
+        b.trim(10);
+        CHECK(b.get_len() == 10);
 
-            OCILobDisableBuffering(sessionBackEnd->svchp_,
-                sessionBackEnd->errhp_, blobBackEnd->lobp_);
-
-            sql << "select img from soci_test where id = 7", into(b);
-            CHECK(b.get_len() == 0);
-
-            // note: blob offsets start from 1
-            b.write(1, buf, sizeof(buf));
-            CHECK(b.get_len() == sizeof(buf));
-            b.trim(10);
-            CHECK(b.get_len() == 10);
-
-            // append does not work (Oracle bug #886191 ?)
-            //b.append(buf, sizeof(buf));
-            //assert(b.get_len() == sizeof(buf) + 10);
-            sql.commit();
-        }
-
-        {
-            blob b(sql);
-            sql << "select img from soci_test where id = 7", into(b);
-            //assert(b.get_len() == sizeof(buf) + 10);
-            CHECK(b.get_len() == 10);
-            char buf2[100];
-            b.read(1, buf2, 10);
-            CHECK(strncmp(buf2, "abcdefghij", 10) == 0);
-        }
+        // append does not work (Oracle bug #886191 ?)
+        //b.append(buf, sizeof(buf));
+        //assert(b.get_len() == sizeof(buf) + 10);
+        sql.commit();
     }
 
-    // additional sibling test for read_from_start and write_from_start
     {
-        soci::session sql(backEnd, connectString);
-
-        blob_table_creator tableCreator(sql);
-
-        char buf[] = "abcdefghijklmnopqrstuvwxyz";
-        sql << "insert into soci_test (id, img) values (7, empty_blob())";
-
-        {
-            blob b(sql);
-
-            oracle_session_backend *sessionBackEnd
-                = static_cast<oracle_session_backend *>(sql.get_backend());
-
-            oracle_blob_backend *blobBackEnd
-                = static_cast<oracle_blob_backend *>(b.get_backend());
-
-            OCILobDisableBuffering(sessionBackEnd->svchp_,
-                sessionBackEnd->errhp_, blobBackEnd->lobp_);
-
-            sql << "select img from soci_test where id = 7", into(b);
-            CHECK(b.get_len() == 0);
-
-            // note: blob offsets start from 1
-            b.write_from_start(buf, sizeof(buf));
-            CHECK(b.get_len() == sizeof(buf));
-            b.trim(10);
-            CHECK(b.get_len() == 10);
-
-            // append does not work (Oracle bug #886191 ?)
-            //b.append(buf, sizeof(buf));
-            //assert(b.get_len() == sizeof(buf) + 10);
-            sql.commit();
-        }
-
-        {
-            blob b(sql);
-            sql << "select img from soci_test where id = 7", into(b);
-            //assert(b.get_len() == sizeof(buf) + 10);
-            CHECK(b.get_len() == 10);
-            char buf2[100];
-            b.read_from_start(buf2, 10);
-            CHECK(strncmp(buf2, "abcdefghij", 10) == 0);
-        }
+        blob b(sql);
+        sql << "select img from soci_test where id = 7", into(b);
+        //assert(b.get_len() == sizeof(buf) + 10);
+        CHECK(b.get_len() == 10);
+        char buf2[100];
+        b.read_from_start(buf2, 10);
+        CHECK(strncmp(buf2, "abcdefghij", 10) == 0);
     }
 }
 

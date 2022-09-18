@@ -49,8 +49,7 @@ std::size_t postgresql_blob_backend::get_len()
     return static_cast<std::size_t>(pos);
 }
 
-std::size_t postgresql_blob_backend::read(
-    std::size_t offset, char * buf, std::size_t toRead)
+std::size_t postgresql_blob_backend::read_from_start(char * buf, std::size_t toRead, std::size_t offset)
 {
     int const pos = lo_lseek(session_.conn_, fd_,
         static_cast<int>(offset), SEEK_SET);
@@ -68,8 +67,7 @@ std::size_t postgresql_blob_backend::read(
     return static_cast<std::size_t>(readn);
 }
 
-std::size_t postgresql_blob_backend::write(
-    std::size_t offset, char const * buf, std::size_t toWrite)
+std::size_t postgresql_blob_backend::write_from_start(char const * buf, std::size_t toWrite, std::size_t offset)
 {
     int const pos = lo_lseek(session_.conn_, fd_,
         static_cast<int>(offset), SEEK_SET);

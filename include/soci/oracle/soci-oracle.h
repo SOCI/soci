@@ -266,23 +266,21 @@ struct oracle_blob_backend : details::blob_backend
 
     std::size_t get_len() override;
 
-    std::size_t read(std::size_t offset, char *buf,
-        std::size_t toRead) override;
-
-    std::size_t read_from_start(char * buf, std::size_t toRead,
-        std::size_t offset) override
+    std::size_t read(std::size_t offset, char *buf, std::size_t toRead) override
     {
-        return read(offset + 1, buf, toRead);
+        // Offsets are 1-based in Oracle
+        return read_from_start(buf, toRead, offset - 1);
     }
 
-    std::size_t write(std::size_t offset, char const *buf,
-        std::size_t toWrite) override;
+    std::size_t read_from_start(char * buf, std::size_t toRead, std::size_t offset = 0) override;
 
-    std::size_t write_from_start(const char * buf, std::size_t toWrite,
-        std::size_t offset) override
+    std::size_t write(std::size_t offset, char const *buf, std::size_t toWrite) override
     {
-        return write(offset + 1, buf, toWrite);
+        // Offsets are 1-based in Oracle
+        return write_from_start(buf, toWrite, offset - 1);
     }
+
+    std::size_t write_from_start(const char * buf, std::size_t toWrite, std::size_t offset = 0) override;
 
     std::size_t append(char const *buf, std::size_t toWrite) override;
 
@@ -453,7 +451,7 @@ struct oracle_session_backend : details::session_backend
 
 struct oracle_backend_factory : backend_factory
 {
-	  oracle_backend_factory() {}
+      oracle_backend_factory() {}
     oracle_session_backend * make_session(
         connection_parameters const & parameters) const override;
 };

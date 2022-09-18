@@ -285,7 +285,7 @@ TEST_CASE("SQLite blob", "[sqlite][blob]")
         sql << "select img from soci_test where id = 7", into(b);
         CHECK(b.get_len() == 0);
 
-        b.write(0, buf, sizeof(buf));
+        b.write_from_start(buf, sizeof(buf));
         CHECK(b.get_len() == sizeof(buf));
         sql << "update soci_test set img=? where id = 7", use(b);
 
@@ -298,7 +298,7 @@ TEST_CASE("SQLite blob", "[sqlite][blob]")
         sql << "select img from soci_test where id = 8", into(b);
         CHECK(b.get_len() == 2 * sizeof(buf));
         char buf2[100];
-        b.read(0, buf2, 10);
+        b.read_from_start(buf2, 10);
         CHECK(std::strncmp(buf2, "abcdefghij", 10) == 0);
 
         sql << "select img from soci_test where id = 7", into(b);

@@ -32,8 +32,7 @@ std::size_t firebird_blob_backend::get_len()
     return data_.size();
 }
 
-std::size_t firebird_blob_backend::read(
-    std::size_t offset, char * buf, std::size_t toRead)
+std::size_t firebird_blob_backend::read_from_start(char * buf, std::size_t toRead, std::size_t offset)
 {
     if (from_db_ && (loaded_ == false))
     {
@@ -62,8 +61,7 @@ std::size_t firebird_blob_backend::read(
     return limit;
 }
 
-std::size_t firebird_blob_backend::write(std::size_t offset, char const * buf,
-                                       std::size_t toWrite)
+std::size_t firebird_blob_backend::write_from_start(char const * buf, std::size_t toWrite, std::size_t offset)
 {
     if (from_db_ && (loaded_ == false))
     {

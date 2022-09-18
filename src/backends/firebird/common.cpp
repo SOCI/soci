@@ -233,7 +233,7 @@ void copy_from_blob(firebird_statement_backend &st, char *buf, std::string &out)
     std::size_t const len_total = blob.get_len();
     out.resize(len_total);
 
-    std::size_t const len_read = blob.read(0, &out[0], len_total);
+    std::size_t const len_read = blob.read_from_start(&out[0], len_total);
     if (len_read != len_total)
     {
         std::ostringstream os;
