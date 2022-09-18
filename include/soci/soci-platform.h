@@ -105,45 +105,37 @@ namespace std {
 // mode, we just need to check for the minimal compiler version supporting them
 // (see https://msdn.microsoft.com/en-us/library/hh567368.aspx).
 
-#if defined(SOCI_HAVE_CXX11) || (defined(_MSC_VER) && _MSC_VER >= 1800)
-# define SOCI_OVERRIDE override
+#ifdef _MSC_VER
+    #if _MSC_VER < 1900
+        #error This version of SOCI requires MSVS 2015 or later.
+    #endif
 #else
-# define SOCI_OVERRIDE
+    #if __cplusplus < 201402L
+        #error This version of SOCI requires C++14.
+    #endif
 #endif
+
+#define SOCI_OVERRIDE override
 
 namespace soci
 {
 
 namespace cxx_details
 {
-
-#if defined(SOCI_HAVE_CXX11) || (defined(_MSC_VER) && _MSC_VER >= 1800)
     template <typename T>
     using auto_ptr = std::unique_ptr<T>;
-#else // std::unique_ptr<> not available
-    using std::auto_ptr;
-#endif
-
 } // namespace cxx_details
 
 } // namespace soci
 
-#if defined(SOCI_HAVE_CXX11) || (defined(_MSC_VER) && _MSC_VER >= 1800)
-    #define SOCI_NOT_ASSIGNABLE(classname) \
-    public: \
-        classname(const classname&) = default; \
-    private: \
-        classname& operator=(const classname&) = delete;
-    #define SOCI_NOT_COPYABLE(classname) \
-        classname(const classname&) = delete; \
-        classname& operator=(const classname&) = delete;
-#else // no C++11 deleted members support
-    #define SOCI_NOT_ASSIGNABLE(classname) \
-        classname& operator=(const classname&);
-    #define SOCI_NOT_COPYABLE(classname) \
-        classname(const classname&); \
-        SOCI_NOT_ASSIGNABLE(classname)
-#endif // C++11 deleted members available
+#define SOCI_NOT_ASSIGNABLE(classname) \
+public: \
+    classname(const classname&) = default; \
+private: \
+    classname& operator=(const classname&) = delete;
+#define SOCI_NOT_COPYABLE(classname) \
+    classname(const classname&) = delete; \
+    classname& operator=(const classname&) = delete;
 
 #define SOCI_UNUSED(x) (void)x;
 
@@ -165,18 +157,7 @@ namespace cxx_details
     #define SOCI_DUMMY_RETURN(x) return x
 #endif
 
-#if defined(SOCI_HAVE_CXX11) || (defined(_MSC_VER) && _MSC_VER >= 1900)
-    #define SOCI_NOEXCEPT noexcept
-    #define SOCI_NOEXCEPT_FALSE noexcept(false)
-#else
-    #if defined(__cplusplus) && __cplusplus >= 201103L
-        // Otherwise throwing from a dtor not marked with noexcept(false) would
-        // simply result in terminating the program.
-        #error "SOCI must be configured with C++11 support when using C++11"
-    #endif
-
-    #define SOCI_NOEXCEPT throw()
-    #define SOCI_NOEXCEPT_FALSE
-#endif
+#define SOCI_NOEXCEPT noexcept
+#define SOCI_NOEXCEPT_FALSE noexcept(false)
 
 #endif // SOCI_PLATFORM_H_INCLUDED
