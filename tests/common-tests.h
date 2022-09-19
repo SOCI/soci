@@ -418,6 +418,12 @@ public:
     virtual table_creator_base* table_creator_clob(session&) const { return NULL; }
 
     // Override this to return the table creator for a simple table containing
+    // an integer "id" column and BLOB "b" one.
+    //
+    // Returns null by default to indicate that BLOB is not supported.
+    virtual table_creator_base* table_creator_blob(session&) const { return NULL; }
+
+    // Override this to return the table creator for a simple table containing
     // an integer "id" column and XML "x" one.
     //
     // Returns null by default to indicate that XML is not supported.
@@ -6362,6 +6368,131 @@ TEST_CASE_METHOD(common_tests, "Into XML vector with several fetches", "[core][x
     CHECK(remove_trailing_nl(result[1].value) == values[4].value);
 
     REQUIRE(!st.fetch());
+}
+
+TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_blob(sql));
+
+    if (!tableCreator.get())
+    {
+		try
+		{
+			soci::blob blob(sql);
+			FAIL("BLOB creation should throw, if backend doesn't support BLOBs");
+		} catch (const soci_error &)
+		{
+			// Throwing is expected if the backend doesn't support BLOBs
+		}
+        WARN("BLOB type not supported by the database, skipping the test.");
+        return;
+    }
+
+	const char dummy_data[] = "abcdefghijklmnopüqrstuvwxyz";
+
+	// Cross-DB usage of BLOBs is only possible if the entire lifetime of the blob object
+	// is covered in an active transaction.
+	soci::transaction transaction(sql);
+	{
+		SECTION("Read-access on default-constructed blob")
+		{
+			soci::blob blob(sql);
+
+			CHECK(blob.get_len() == 0);
+
+			char buf[5];
+			std::size_t read_bytes = blob.read_from_start(buf, sizeof(buf));
+
+			// There should be no data that could be read
+			CHECK(read_bytes == 0);
+
+			// Reading from any offset other than zero is invalid
+			CHECK_THROWS_AS(blob.read_from_start(buf, sizeof(buf), 1), soci_error);
+		}
+		SECTION("Write-access on default-constructed blob")
+		{
+			soci::blob blob(sql);
+
+			std::size_t written_bytes = blob.write_from_start(dummy_data, 5);
+
+			CHECK(written_bytes == 5);
+			CHECK(blob.get_len() == 5);
+
+			char buf[5];
+
+			std::size_t read_bytes = blob.read_from_start(buf, sizeof(buf));
+
+			CHECK(read_bytes == 5);
+
+			for (std::size_t i = 0; i < sizeof(buf); ++i)
+			{
+				CHECK(buf[i] == dummy_data[i]);
+			}
+
+			written_bytes = blob.append(dummy_data + 5, 3);
+
+			CHECK(written_bytes == 3);
+			CHECK(blob.get_len() == 8);
+
+			read_bytes = blob.read_from_start(buf, sizeof(buf), 3);
+
+			CHECK(read_bytes == 5);
+
+			for (std::size_t i = 0; i < sizeof(buf); ++i)
+			{
+				CHECK(buf[i] == dummy_data[i + 3]);
+			}
+
+			blob.trim(2);
+
+			CHECK(blob.get_len() == 2);
+
+			read_bytes = blob.read_from_start(buf, sizeof(buf));
+
+			CHECK(read_bytes == 2);
+
+			for (std::size_t i = 0; i < read_bytes; ++i)
+			{
+				CHECK(buf[i] == dummy_data[i]);
+			}
+
+			// Reading from an offset >= the current length of the blob is invalid
+			CHECK_THROWS_AS(blob.read_from_start(buf, sizeof(buf), blob.get_len()), soci_error);
+
+			written_bytes = blob.append("z", 1);
+			
+			CHECK(written_bytes == 1);
+			CHECK(blob.get_len() == 3);
+
+			read_bytes = blob.read_from_start(buf, 1, 2);
+
+			CHECK(read_bytes == 1);
+			CHECK(buf[0] == 'z');
+
+			// Writing more than one position beyond the blob is invalid
+			// (Writing exactly one position beyond is the same as appending)
+			CHECK_THROWS_AS(blob.write_from_start(dummy_data, 2, blob.get_len() + 1), soci_error);
+		}
+		SECTION("Inserting default-constructed blob into DB")
+		{
+			soci::blob blob(sql);
+
+			sql << "insert into soci_test (id, b) values(5, :b)", soci::use(blob);
+		}
+		SECTION("Fetching default-constructed blob from DB")
+		{
+			soci::blob blob(sql);
+			soci::indicator ind;
+
+			sql << "select b from soci_test where id = 5", soci::into(blob, ind);
+
+			CHECK(ind == soci::i_ok);
+			CHECK(blob.get_len() == 0);
+		}
+	}
+	transaction.rollback();
 }
 
 TEST_CASE_METHOD(common_tests, "Logger", "[core][log]")

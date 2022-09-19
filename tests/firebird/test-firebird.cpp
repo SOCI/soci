@@ -1307,6 +1307,15 @@ struct TableCreatorCLOB : public tests::table_creator_base
     }
 };
 
+struct TableCreatorBLOB : public tests::table_creator_base
+{
+    TableCreatorBLOB(soci::session & sql)
+            : tests::table_creator_base(sql)
+    {
+        sql << "create table soci_test(id integer, b blob)";
+    }
+};
+
 struct TableCreatorXML : public tests::table_creator_base
 {
     TableCreatorXML(soci::session & sql)
@@ -1349,6 +1358,12 @@ class test_context : public tests::test_context_base
         tests::table_creator_base* table_creator_clob(soci::session& s) const override
         {
             return new TableCreatorCLOB(s);
+        }
+
+
+        tests::table_creator_base* table_creator_blob(soci::session& s) const override
+        {
+            return new TableCreatorBLOB(s);
         }
 
         tests::table_creator_base* table_creator_xml(soci::session& s) const override
