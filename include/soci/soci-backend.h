@@ -336,6 +336,11 @@ public:
     std::size_t read(std::size_t offset, char* buf,
         std::size_t toRead) override
     {
+        if (offset > buffer_.size() || (offset ==  buffer_.size() && offset > 0))
+        {
+            throw soci_error("Can't read past-the-end of BLOB data.");
+        }
+
         toRead = (std::min)(toRead, buffer_.size() - offset);
 
         // make sure that we don't try to read
@@ -354,6 +359,11 @@ public:
     std::size_t write(std::size_t offset, char const* buf,
         std::size_t toWrite) override
     {
+        if (offset > buffer_.size())
+        {
+            throw soci_error("Can't start writing far past-the-end of BLOB data.");
+        }
+
         buffer_.resize((std::max)(buffer_.size(), offset + toWrite));
 
         memcpy(buffer_.data() + offset, buf, toWrite);
