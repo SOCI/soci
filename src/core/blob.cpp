@@ -14,13 +14,8 @@
 using namespace soci;
 
 blob::blob(session & s)
+	: backEnd_{s.make_blob_backend()}
 {
-    backEnd_ = s.make_blob_backend();
-}
-
-blob::~blob()
-{
-    delete backEnd_;
 }
 
 std::size_t blob::get_len()
