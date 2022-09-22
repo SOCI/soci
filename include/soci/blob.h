@@ -11,6 +11,7 @@
 #include "soci/soci-platform.h"
 // std
 #include <cstddef>
+#include <memory>
 
 namespace soci
 {
@@ -28,6 +29,9 @@ class SOCI_DECL blob
 public:
     explicit blob(session & s);
     ~blob();
+
+    blob(blob &&other) = default;
+    blob &operator=(blob &&other) = default;
 
     std::size_t get_len();
 
@@ -52,10 +56,12 @@ public:
 
     void trim(std::size_t newLen);
 
-    details::blob_backend * get_backend() { return backEnd_; }
+    details::blob_backend * get_backend() { return backEnd_.get(); }
 
 private:
-    details::blob_backend * backEnd_;
+    SOCI_NOT_COPYABLE(blob)
+
+    std::unique_ptr<details::blob_backend> backEnd_;
 };
 
 } // namespace soci
