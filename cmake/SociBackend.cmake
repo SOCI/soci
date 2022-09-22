@@ -332,10 +332,6 @@ macro(soci_backend_test)
 
     if(NOT ${TEST_CONNSTR_VAR} AND THIS_TEST_CONNSTR)
       set(${TEST_CONNSTR_VAR} ${THIS_TEST_CONNSTR})
-      if(${TEST_CONNSTR_VAR} MATCHES ".dsn")
-        set(_dsnpath "${CMAKE_CURRENT_SOURCE_DIR}/${${TEST_CONNSTR_VAR}}")
-        set(${TEST_CONNSTR_VAR} "FILEDSN=${_dsnpath}")
-      endif()
     endif()
 
     boost_message_value(${TEST_CONNSTR_VAR})

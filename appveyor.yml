@@ -1,4 +1,4 @@
-version: 4.0.3.{build}
+version: 4.1.0.{build}
 
 skip_commits:
   files:
@@ -6,59 +6,57 @@ skip_commits:
 
 configuration: Release
 
-image: Previous Visual Studio 2015
-
 environment:
-  MINGW_ARCHIVE: C:\projects\mingw\x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z
-  MINGW_URL: https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/4.8.3/threads-posix/seh/x86_64-4.8.3-release-posix-seh-rt_v3-rev2.7z/download
   matrix:
+    - G: "Visual Studio 17 2022"
+      BOOST_ROOT: C:\Libraries\boost_1_77_0
+      MSSQL_VER: 2019
+      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\13
+      MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+    - G: "Visual Studio 16 2019"
+      BOOST_ROOT: C:\Libraries\boost_1_73_0
+      MSSQL_VER: 2017
+      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\12
+      MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     - G: "Visual Studio 15 2017 Win64"
-      BOOST_ROOT: C:\Libraries\boost_1_59_0
-      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.6
+      BOOST_ROOT: C:\Libraries\boost_1_69_0
+      MSSQL_VER: 2016
+      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\11
       MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
-      APPVEYOR_BUILD_WORKER_IMAGE: Previous Visual Studio 2017
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     - G: "Visual Studio 14 2015 Win64"
-      BOOST_ROOT: C:\Libraries\boost_1_59_0
-      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
+      BOOST_ROOT: C:\Libraries\boost_1_60_0
+      MSSQL_VER: 2014
+      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\10
       MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
-    - G: "Visual Studio 12 2013 Win64"
-      BOOST_ROOT: C:\Libraries\boost_1_58_0
-      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
-      MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
-    - G: "Visual Studio 11 2012 Win64"
-      BOOST_ROOT: C:\Libraries\boost_1_58_0
-      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
-      MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     - G: "MinGW Makefiles"
-      MINGW_ROOT: C:\projects\mingw\4.8.3\mingw64\bin
-      BOOST_ROOT: C:\Libraries\boost_1_59_0
+      MINGW_BIN: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin
+      MSSQL_VER: 2014
+      BOOST_ROOT: C:\Libraries\boost_1_60_0
       POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
       MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
 
 services:
-  - mssql2014
   - mysql
   - postgresql
 
-cache:
-  - C:\projects\mingw
-
 install:
+  # Start this one here as we can't specify the service name dynamically.
+  - net start mssql$SQL%MSSQL_VER%
   - ps: |
-      if ($env:G -eq "MinGW Makefiles")
-      {
-        if (!(Test-Path C:\projects\mingw))
-        {
-          mkdir C:\projects\mingw
-        }
-        if (!(Test-Path $env:MINGW_ARCHIVE))
-        {
-          (new-object net.webclient).DownloadFile("$env:MINGW_URL", "$env:MINGW_ARCHIVE")
-          7z x -y -oC:\projects\mingw\4.8.3\ $env:MINGW_ARCHIVE > $null
-        }
-      }
       Import-Module C:\projects\soci\scripts\windows\Get-ODBCList.ps1
-      Get-ODBCList
+      $drivers_list = Get-ODBCList
+      Write-Output $drivers_list
+      if ($drivers_list -clike '*MySQL*') {
+        $env:SOCI_ODBC_TESTS = $env:SOCI_ODBC_TESTS + '|soci_odbc_test_mysql'
+      }
+      if ($drivers_list -clike '*PostgreSQL*') {
+        $env:SOCI_ODBC_TESTS = $env:SOCI_ODBC_TESTS + '|soci_odbc_test_postgresql'
+      }
   - git clone https://github.com/snikulov/sqlite.cmake.build.git C:\projects\sqlite\src
 
 before_build:
@@ -76,15 +74,17 @@ before_build:
           }
         }
         $env:SQLITE3_LIBRARY = $env:SQLITE_ROOT + '/lib/libsqlite3-static.a'
+        $env:BUILD_TOOL_OPTIONS = '-j3'
       }
       else
       {
         $env:SQLITE3_LIBRARY = $env:SQLITE_ROOT + '/lib/sqlite3-static.lib'
+        $env:BUILD_TOOL_OPTIONS = '/m'
       }
   - cd C:\projects\sqlite\src
   - mkdir build
   - cd build
-  - set PATH=%MINGW_ROOT%;%PATH%;%POSTGRESQL_ROOT%\bin;%MYSQL_DIR%\bin;%MYSQL_DIR%\lib
+  - set PATH=%MINGW_BIN%;%POSTGRESQL_ROOT%\bin;%MYSQL_DIR%\bin;%MYSQL_DIR%\lib;%PATH%
   - echo %PATH%
   - cmake --version
   - set PGUSER=postgres
@@ -93,7 +93,7 @@ before_build:
   - set MYSQL_PWD=Password12!
   - set USER=root
   - mysql -e "create database soci_test;" --user=root
-  - sqlcmd -U sa -P Password12! -S (local)\SQL2014 -i C:\projects\soci\scripts\windows\mssql_db_create.sql
+  - sqlcmd -U sa -P Password12! -S (local)\SQL%MSSQL_VER% -i C:\projects\soci\scripts\windows\mssql_db_create.sql
   - cmake .. -G"%G%" -DSQLITE_BUILD_SHARED=OFF -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_INSTALL_PREFIX=%SQLITE_ROOT%
   - cmake --build . --config %CONFIGURATION% --target install
 
@@ -102,10 +102,10 @@ build_script:
   - mkdir build
   - cd build
   - cmake .. -G"%G%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_VERBOSE_MAKEFILE=ON -DSOCI_ENABLE_WERROR=ON -DSQLITE3_INCLUDE_DIR=%SQLITE_ROOT%/include -DSQLITE3_LIBRARY=%SQLITE3_LIBRARY%
-  - cmake --build . --config %CONFIGURATION% --clean-first
+  - cmake --build . --config %CONFIGURATION% -- %BUILD_TOOL_OPTIONS%
 
 test_script:
-  - ctest -V --output-on-failure -R "soci_empty|soci_postgresql|soci_sqlite3|soci_odbc_test_mssql|soci_mysql|soci_odbc_test_mysql|soci_odbc_test_postgresql"
+  - ctest -V --timeout 300 --output-on-failure -R "soci_empty|soci_postgresql|soci_sqlite3|soci_odbc_test_mssql|soci_mysql%SOCI_ODBC_TESTS%"
 
 notifications:
   - provider: Webhook
@@ -113,3 +113,7 @@ notifications:
     on_build_success: true
     on_build_failure: true
     on_build_status_changed: true
+
+# Uncomment this to wait for RDP connection after the build end.
+#on_finish:
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))

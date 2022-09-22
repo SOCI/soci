@@ -35,7 +35,7 @@ once_temp_type & once_temp_type::operator=(once_temp_type const & o)
     return *this;
 }
 
-once_temp_type::~once_temp_type() SOCI_NOEXCEPT_FALSE
+once_temp_type::~once_temp_type() noexcept(false)
 {
     rcst_->dec_ref();
 }
@@ -75,7 +75,7 @@ ddl_type & ddl_type::operator=(const ddl_type & d)
     return *this;
 }
 
-ddl_type::~ddl_type() SOCI_NOEXCEPT_FALSE
+ddl_type::~ddl_type() noexcept(false)
 {
     rcst_->dec_ref();
 }

@@ -118,7 +118,7 @@ soci_error& soci_error::operator=(soci_error const& e)
     return *this;
 }
 
-soci_error::~soci_error() SOCI_NOEXCEPT
+soci_error::~soci_error() noexcept
 {
     delete info_;
 }
@@ -128,7 +128,7 @@ std::string soci_error::get_error_message() const
     return std::runtime_error::what();
 }
 
-char const* soci_error::what() const SOCI_NOEXCEPT
+char const* soci_error::what() const noexcept
 {
     if (info_)
         return info_->get_full_message(get_error_message());

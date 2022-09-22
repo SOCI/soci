@@ -609,44 +609,44 @@ public:
                 std::string const &connstr)
         : test_context_base(backend, connstr) {}
 
-    table_creator_base* table_creator_1(soci::session& s) const SOCI_OVERRIDE
+    table_creator_base* table_creator_1(soci::session& s) const override
     {
         return new table_creator_one(s);
     }
 
-    table_creator_base* table_creator_2(soci::session& s) const SOCI_OVERRIDE
+    table_creator_base* table_creator_2(soci::session& s) const override
     {
         return new table_creator_two(s);
     }
 
-    table_creator_base* table_creator_3(soci::session& s) const SOCI_OVERRIDE
+    table_creator_base* table_creator_3(soci::session& s) const override
     {
         return new table_creator_three(s);
     }
 
-    table_creator_base* table_creator_4(soci::session& s) const SOCI_OVERRIDE
+    table_creator_base* table_creator_4(soci::session& s) const override
     {
         return new table_creator_for_get_affected_rows(s);
     }
 
-    table_creator_base* table_creator_get_last_insert_id(soci::session& s) const SOCI_OVERRIDE
+    table_creator_base* table_creator_get_last_insert_id(soci::session& s) const override
     {
         return new table_creator_from_str(s,
             "create table soci_test (id integer primary key, val integer)");
     }
 
-    table_creator_base* table_creator_xml(soci::session& s) const SOCI_OVERRIDE
+    table_creator_base* table_creator_xml(soci::session& s) const override
     {
         return new table_creator_from_str(s,
             "create table soci_test (id integer, x text)");
     }
 
-    std::string to_date_time(std::string const &datdt_string) const SOCI_OVERRIDE
+    std::string to_date_time(std::string const &datdt_string) const override
     {
         return "datetime(\'" + datdt_string + "\')";
     }
 
-    bool has_fp_bug() const SOCI_OVERRIDE
+    bool has_fp_bug() const override
     {
         /*
             SQLite seems to be buggy when using text conversion, e.g.:
@@ -664,13 +664,13 @@ public:
         return true;
     }
 
-    bool enable_std_char_padding(soci::session&) const SOCI_OVERRIDE
+    bool enable_std_char_padding(soci::session&) const override
     {
         // SQLite does not support right padded char type.
         return false;
     }
 
-    std::string sql_length(std::string const& s) const SOCI_OVERRIDE
+    std::string sql_length(std::string const& s) const override
     {
         return "length(" + s + ")";
     }

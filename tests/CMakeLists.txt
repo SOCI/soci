@@ -11,10 +11,8 @@
 
 colormsg(_HIBLUE_ "Configuring SOCI tests:")
 
-# Request CATCH to disable all the C++11 features
-if (NOT SOCI_CXX11)
-  add_definitions(-DCATCH_CONFIG_NO_CPP11)
-endif()
+# This works around a problem when building in C++11 mode with clang (see #984).
+add_definitions(-DCATCH_CONFIG_CPP11_NO_SHUFFLE)
 
 include_directories(
   ${SOCI_SOURCE_DIR}/include/private

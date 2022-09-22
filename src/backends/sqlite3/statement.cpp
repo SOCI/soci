@@ -497,15 +497,9 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
     std::string dt = declType;
 
     // remove extra characters for example "(20)" in "varchar(20)" and all spaces
-#if defined(SOCI_HAVE_CXX11) || (defined(_MSC_VER) && _MSC_VER >= 1800)
     dt.erase(std::remove_if(dt.begin(), dt.end(), [](char const c) { return std::isspace(c); }), dt.end());
 
     std::string::iterator siter = std::find_if(dt.begin(), dt.end(), [](char const c) { return !std::isalnum(c); });
-#else
-    dt.erase(std::remove_if(dt.begin(), dt.end(), std::ptr_fun(isspace)), dt.end());
-
-    std::string::iterator siter = std::find_if(dt.begin(), dt.end(), std::not1(std::ptr_fun(isalnum)));
-#endif
     if (siter != dt.end())
         dt.resize(siter - dt.begin());
 

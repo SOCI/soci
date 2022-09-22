@@ -73,7 +73,7 @@ private:
 } // namespace anonymous
 
 session::session()
-    : once(this), prepare(this), query_transformation_(NULL),
+    : once(this), prepare(this),
       logger_(new standard_logger_impl),
       uppercaseColumnNames_(false), backEnd_(NULL),
       isFromPool_(false), pool_(NULL)
@@ -81,7 +81,7 @@ session::session()
 }
 
 session::session(connection_parameters const & parameters)
-    : once(this), prepare(this), query_transformation_(NULL),
+    : once(this), prepare(this),
       logger_(new standard_logger_impl),
       lastConnectParameters_(parameters),
       uppercaseColumnNames_(false), backEnd_(NULL),
@@ -92,7 +92,7 @@ session::session(connection_parameters const & parameters)
 
 session::session(backend_factory const & factory,
     std::string const & connectString)
-    : once(this), prepare(this), query_transformation_(NULL),
+    : once(this), prepare(this),
     logger_(new standard_logger_impl),
       lastConnectParameters_(factory, connectString),
       uppercaseColumnNames_(false), backEnd_(NULL),
@@ -103,7 +103,7 @@ session::session(backend_factory const & factory,
 
 session::session(std::string const & backendName,
     std::string const & connectString)
-    : once(this), prepare(this), query_transformation_(NULL),
+    : once(this), prepare(this),
       logger_(new standard_logger_impl),
       lastConnectParameters_(backendName, connectString),
       uppercaseColumnNames_(false), backEnd_(NULL),
@@ -113,7 +113,7 @@ session::session(std::string const & backendName,
 }
 
 session::session(std::string const & connectString)
-    : once(this), prepare(this), query_transformation_(NULL),
+    : once(this), prepare(this),
       logger_(new standard_logger_impl),
       lastConnectParameters_(connectString),
       uppercaseColumnNames_(false), backEnd_(NULL),
@@ -123,8 +123,7 @@ session::session(std::string const & connectString)
 }
 
 session::session(connection_pool & pool)
-    : query_transformation_(NULL),
-      logger_(new standard_logger_impl),
+    : logger_(new standard_logger_impl),
       isFromPool_(true), pool_(&pool)
 {
     poolPosition_ = pool.lease();
@@ -143,7 +142,6 @@ session::~session()
     }
     else
     {
-        delete query_transformation_;
         delete backEnd_;
     }
 }
@@ -237,7 +235,7 @@ void session::reconnect()
     }
 }
 
-bool session::is_connected() const SOCI_NOEXCEPT
+bool session::is_connected() const noexcept
 {
     try
     {
@@ -306,16 +304,15 @@ std::string session::get_query() const
 }
 
 
-void session::set_query_transformation_(cxx_details::auto_ptr<details::query_transformation_function>& qtf)
+void session::set_query_transformation_(std::unique_ptr<details::query_transformation_function>&& qtf)
 {
     if (isFromPool_)
     {
-        pool_->at(poolPosition_).set_query_transformation_(qtf);
+        pool_->at(poolPosition_).set_query_transformation_(std::move(qtf));
     }
     else
     {
-        delete query_transformation_;
-        query_transformation_= qtf.release();
+        query_transformation_= std::move(qtf);
     }
 }
 

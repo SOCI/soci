@@ -33,19 +33,6 @@ if(NOT DEFINED LIB_SUFFIX)
 endif()
 
 #
-# C++11 Option
-#
-set(SOCI_CXX11 OFF CACHE BOOL "Build to the C++11 standard")
-
-if(CMAKE_CXX_STANDARD EQUAL 11 OR (CMAKE_CXX_STANDARD GREATER 11 AND NOT CMAKE_CXX_STANDARD EQUAL 98))
-  set(SOCI_CXX11 ON)
-endif()
-
-if(NOT DEFINED CMAKE_CXX_STANDARD AND SOCI_CXX11)
-  set(CMAKE_CXX_STANDARD 11)
-endif()
-
-#
 # Force compilation flags and set desired warnings level
 #
 
@@ -78,24 +65,13 @@ else()
     "-pedantic -Wno-error=parentheses -Wall -Wextra -Wpointer-arith -Wcast-align -Wcast-qual -Wfloat-equal -Woverloaded-virtual -Wredundant-decls -Wno-long-long")
 
 
-  if (SOCI_CXX11)
-    set(SOCI_CXX_VERSION_FLAGS "-std=c++11")
-  else()
-    set(SOCI_CXX_VERSION_FLAGS "-std=gnu++98")
-  endif()
-
   if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" OR "${CMAKE_CXX_COMPILER}" MATCHES "clang")
 
     if(NOT CMAKE_CXX_COMPILER_VERSION LESS 3.1 AND SOCI_ASAN)
       set(SOCI_GCC_CLANG_COMMON_FLAGS "${SOCI_GCC_CLANG_COMMON_FLAGS} -fsanitize=address")
     endif()
 
-    # enforce C++11 for Clang
-    set(SOCI_CXX11 ON)
-    set(SOCI_CXX_VERSION_FLAGS "-std=c++11")
-    add_definitions(-DCATCH_CONFIG_CPP11_NO_IS_ENUM)
-
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SOCI_GCC_CLANG_COMMON_FLAGS} ${SOCI_CXX_VERSION_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SOCI_GCC_CLANG_COMMON_FLAGS}")
 
   elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 
@@ -103,7 +79,7 @@ else()
       set(SOCI_GCC_CLANG_COMMON_FLAGS "${SOCI_GCC_CLANG_COMMON_FLAGS} -fsanitize=address")
     endif()
 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SOCI_GCC_CLANG_COMMON_FLAGS} ${SOCI_CXX_VERSION_FLAGS} ")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SOCI_GCC_CLANG_COMMON_FLAGS} ")
     if (CMAKE_COMPILER_IS_GNUCXX)
         if (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -119,6 +95,3 @@ else()
 endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SOCI_WERROR_OPTION}")
-
-# Set SOCI_HAVE_* variables for soci-config.h generator
-set(SOCI_HAVE_CXX11 ${SOCI_CXX11} CACHE INTERNAL "Enables C++11 support")

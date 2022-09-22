@@ -57,15 +57,10 @@ jobs:
             name: SQLite3
           - backend: empty
             runner: macos-10.15
-            cxx_std: 11
-            name: Empty C++11 macOS
+            name: Empty macOS
           - backend: empty
-            name: Empty C++98
-            cxx_std: 98
+            name: Empty
             test_release_package: true
-          - backend: empty
-            name: Empty C++11
-            cxx_std: 11
           # Unsupported: db2exc package is only available in Ubuntu 14.04 not
           # supported by GitHub Actions any longer, we'd need to run it in
           # Docker container if we really need it.
@@ -109,9 +104,6 @@ jobs:
 
           if [ "${{matrix.no_boost}}" = true ]; then
             set_env_var WITH_BOOST OFF
-          fi
-          if [ "${{matrix.cxx_std}}" != '' ]; then
-            set_env_var CMAKE_CXX_STANDARD ${{matrix.cxx_std}}
           fi
           if [ "${{matrix.test_release_package}}" = true ]; then
             set_env_var TEST_RELEASE_PACKAGE YES

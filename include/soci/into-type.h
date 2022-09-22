@@ -63,18 +63,18 @@ public:
         *ind_ = i_null;
     }
 
-    ~standard_into_type() SOCI_OVERRIDE;
+    ~standard_into_type() override;
 
 protected:
-    void post_fetch(bool gotData, bool calledFromFetch) SOCI_OVERRIDE;
+    void post_fetch(bool gotData, bool calledFromFetch) override;
 
 private:
-    void define(statement_impl & st, int & position) SOCI_OVERRIDE;
-    void pre_exec(int num) SOCI_OVERRIDE;
-    void pre_fetch() SOCI_OVERRIDE;
-    void clean_up() SOCI_OVERRIDE;
+    void define(statement_impl & st, int & position) override;
+    void pre_exec(int num) override;
+    void pre_fetch() override;
+    void clean_up() override;
 
-    std::size_t size() const SOCI_OVERRIDE { return 1; }
+    std::size_t size() const override { return 1; }
 
     // conversion hook (from base type to arbitrary user type)
     virtual void convert_from_base() {}
@@ -110,17 +110,17 @@ public:
         : data_(data), type_(type), indVec_(&ind),
         begin_(begin), end_(end), backEnd_(NULL) {}
 
-    ~vector_into_type() SOCI_OVERRIDE;
+    ~vector_into_type() override;
 
 protected:
-    void post_fetch(bool gotData, bool calledFromFetch) SOCI_OVERRIDE;
+    void post_fetch(bool gotData, bool calledFromFetch) override;
 
-    void define(statement_impl & st, int & position) SOCI_OVERRIDE;
-    void pre_exec(int num) SOCI_OVERRIDE;
-    void pre_fetch() SOCI_OVERRIDE;
-    void clean_up() SOCI_OVERRIDE;
-    void resize(std::size_t sz) SOCI_OVERRIDE;
-    std::size_t size() const SOCI_OVERRIDE;
+    void define(statement_impl & st, int & position) override;
+    void pre_exec(int num) override;
+    void pre_fetch() override;
+    void clean_up() override;
+    void resize(std::size_t sz) override;
+    std::size_t size() const override;
 
     void * data_;
     exchange_type type_;

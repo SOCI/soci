@@ -43,7 +43,7 @@ class SOCI_DECL session
 {
 private:
 
-    void set_query_transformation_(cxx_details::auto_ptr<details::query_transformation_function>& qtf);
+    void set_query_transformation_(std::unique_ptr<details::query_transformation_function>&& qtf);
 
 
 
@@ -65,7 +65,7 @@ public:
     void reconnect();
 
     // check if we have a working connection to the database
-    bool is_connected() const SOCI_NOEXCEPT;
+    bool is_connected() const noexcept;
 
     void begin();
     void commit();
@@ -85,9 +85,7 @@ public:
     template <typename T>
     void set_query_transformation(T callback)
     {
-
-        cxx_details::auto_ptr<details::query_transformation_function> qtf(new details::query_transformation<T>(callback));
-        set_query_transformation_(qtf);
+        set_query_transformation_(std::make_unique<details::query_transformation<T>>(callback));
     }
 
     // Support for custom logging of database operations.
@@ -194,7 +192,7 @@ private:
     SOCI_NOT_COPYABLE(session)
 
     std::ostringstream query_stream_;
-    details::query_transformation_function* query_transformation_;
+    std::unique_ptr<details::query_transformation_function> query_transformation_;
 
     logger logger_;
 

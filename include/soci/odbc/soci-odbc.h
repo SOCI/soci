@@ -92,13 +92,13 @@ struct odbc_standard_into_type_backend : details::standard_into_type_backend,
     {}
 
     void define_by_pos(int &position,
-        void *data, details::exchange_type type) SOCI_OVERRIDE;
+        void *data, details::exchange_type type) override;
 
-    void pre_fetch() SOCI_OVERRIDE;
+    void pre_fetch() override;
     void post_fetch(bool gotData, bool calledFromFetch,
-        indicator *ind) SOCI_OVERRIDE;
+        indicator *ind) override;
 
-    void clean_up() SOCI_OVERRIDE;
+    void clean_up() override;
 
     char *buf_;        // generic buffer
     void *data_;
@@ -118,15 +118,15 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
           data_(NULL), buf_(NULL), position_(0) {}
 
     void define_by_pos(int &position,
-        void *data, details::exchange_type type) SOCI_OVERRIDE;
+        void *data, details::exchange_type type) override;
 
-    void pre_fetch() SOCI_OVERRIDE;
-    void post_fetch(bool gotData, indicator *ind) SOCI_OVERRIDE;
+    void pre_fetch() override;
+    void post_fetch(bool gotData, indicator *ind) override;
 
-    void resize(std::size_t sz) SOCI_OVERRIDE;
-    std::size_t size() SOCI_OVERRIDE;
+    void resize(std::size_t sz) override;
+    std::size_t size() override;
 
-    void clean_up() SOCI_OVERRIDE;
+    void clean_up() override;
 
     // Normally data retrieved from the database is handled in post_fetch(),
     // however we may need to call SQLFetch() multiple times, so we call this
@@ -159,14 +159,14 @@ struct odbc_standard_use_type_backend : details::standard_use_type_backend,
           position_(-1), data_(0), buf_(0), indHolder_(0) {}
 
     void bind_by_pos(int &position,
-        void *data, details::exchange_type type, bool readOnly) SOCI_OVERRIDE;
+        void *data, details::exchange_type type, bool readOnly) override;
     void bind_by_name(std::string const &name,
-        void *data, details::exchange_type type, bool readOnly) SOCI_OVERRIDE;
+        void *data, details::exchange_type type, bool readOnly) override;
 
-    void pre_use(indicator const *ind) SOCI_OVERRIDE;
-    void post_use(bool gotData, indicator *ind) SOCI_OVERRIDE;
+    void pre_use(indicator const *ind) override;
+    void post_use(bool gotData, indicator *ind) override;
 
-    void clean_up() SOCI_OVERRIDE;
+    void clean_up() override;
 
     // Return the pointer to the buffer containing data to be used by ODBC.
     // This can be either data_ itself or buf_, that is allocated by this
@@ -207,15 +207,15 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend,
     void* prepare_for_bind(SQLUINTEGER &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType);
 
     void bind_by_pos(int &position,
-        void *data, details::exchange_type type) SOCI_OVERRIDE;
+        void *data, details::exchange_type type) override;
     void bind_by_name(std::string const &name,
-        void *data, details::exchange_type type) SOCI_OVERRIDE;
+        void *data, details::exchange_type type) override;
 
-    void pre_use(indicator const *ind) SOCI_OVERRIDE;
+    void pre_use(indicator const *ind) override;
 
-    std::size_t size() SOCI_OVERRIDE;
+    std::size_t size() override;
 
-    void clean_up() SOCI_OVERRIDE;
+    void clean_up() override;
 
     // IBM DB2 driver is not compliant to ODBC spec for indicators in 64bit
     // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
@@ -236,31 +236,31 @@ struct odbc_statement_backend : details::statement_backend
 {
     odbc_statement_backend(odbc_session_backend &session);
 
-    void alloc() SOCI_OVERRIDE;
-    void clean_up() SOCI_OVERRIDE;
+    void alloc() override;
+    void clean_up() override;
     void prepare(std::string const &query,
-        details::statement_type eType) SOCI_OVERRIDE;
+        details::statement_type eType) override;
 
-    exec_fetch_result execute(int number) SOCI_OVERRIDE;
-    exec_fetch_result fetch(int number) SOCI_OVERRIDE;
+    exec_fetch_result execute(int number) override;
+    exec_fetch_result fetch(int number) override;
 
-    long long get_affected_rows() SOCI_OVERRIDE;
-    int get_number_of_rows() SOCI_OVERRIDE;
-    std::string get_parameter_name(int index) const SOCI_OVERRIDE;
+    long long get_affected_rows() override;
+    int get_number_of_rows() override;
+    std::string get_parameter_name(int index) const override;
 
-    std::string rewrite_for_procedure_call(std::string const &query) SOCI_OVERRIDE;
+    std::string rewrite_for_procedure_call(std::string const &query) override;
 
-    int prepare_for_describe() SOCI_OVERRIDE;
+    int prepare_for_describe() override;
     void describe_column(int colNum, data_type &dtype,
-        std::string &columnName) SOCI_OVERRIDE;
+        std::string &columnName) override;
 
     // helper for defining into vector<string>
     std::size_t column_size(int position);
 
-    odbc_standard_into_type_backend * make_into_type_backend() SOCI_OVERRIDE;
-    odbc_standard_use_type_backend * make_use_type_backend() SOCI_OVERRIDE;
-    odbc_vector_into_type_backend * make_vector_into_type_backend() SOCI_OVERRIDE;
-    odbc_vector_use_type_backend * make_vector_use_type_backend() SOCI_OVERRIDE;
+    odbc_standard_into_type_backend * make_into_type_backend() override;
+    odbc_standard_use_type_backend * make_use_type_backend() override;
+    odbc_vector_into_type_backend * make_vector_into_type_backend() override;
+    odbc_vector_use_type_backend * make_vector_use_type_backend() override;
 
     odbc_session_backend &session_;
     SQLHSTMT hstmt_;
@@ -288,22 +288,22 @@ struct odbc_rowid_backend : details::rowid_backend
 {
     odbc_rowid_backend(odbc_session_backend &session);
 
-    ~odbc_rowid_backend() SOCI_OVERRIDE;
+    ~odbc_rowid_backend() override;
 };
 
 struct odbc_blob_backend : details::blob_backend
 {
     odbc_blob_backend(odbc_session_backend &session);
 
-    ~odbc_blob_backend() SOCI_OVERRIDE;
+    ~odbc_blob_backend() override;
 
-    std::size_t get_len() SOCI_OVERRIDE;
+    std::size_t get_len() override;
     std::size_t read(std::size_t offset, char *buf,
-        std::size_t toRead) SOCI_OVERRIDE;
+        std::size_t toRead) override;
     std::size_t write(std::size_t offset, char const *buf,
-        std::size_t toWrite) SOCI_OVERRIDE;
-    std::size_t append(char const *buf, std::size_t toWrite) SOCI_OVERRIDE;
-    void trim(std::size_t newLen) SOCI_OVERRIDE;
+        std::size_t toWrite) override;
+    std::size_t append(char const *buf, std::size_t toWrite) override;
+    void trim(std::size_t newLen) override;
 
     odbc_session_backend &session_;
 };
@@ -312,31 +312,31 @@ struct odbc_session_backend : details::session_backend
 {
     odbc_session_backend(connection_parameters const & parameters);
 
-    ~odbc_session_backend() SOCI_OVERRIDE;
+    ~odbc_session_backend() override;
 
-    bool is_connected() SOCI_OVERRIDE;
+    bool is_connected() override;
 
-    void begin() SOCI_OVERRIDE;
-    void commit() SOCI_OVERRIDE;
-    void rollback() SOCI_OVERRIDE;
+    void begin() override;
+    void commit() override;
+    void rollback() override;
 
     bool get_next_sequence_value(session & s,
-        std::string const & sequence, long long & value) SOCI_OVERRIDE;
+        std::string const & sequence, long long & value) override;
     bool get_last_insert_id(session & s,
-        std::string const & table, long long & value) SOCI_OVERRIDE;
+        std::string const & table, long long & value) override;
 
-    std::string get_dummy_from_table() const SOCI_OVERRIDE;
+    std::string get_dummy_from_table() const override;
 
-    std::string get_backend_name() const SOCI_OVERRIDE { return "odbc"; }
+    std::string get_backend_name() const override { return "odbc"; }
 
     void configure_connection();
     void reset_transaction();
 
     void clean_up();
 
-    odbc_statement_backend * make_statement_backend() SOCI_OVERRIDE;
-    odbc_rowid_backend * make_rowid_backend() SOCI_OVERRIDE;
-    odbc_blob_backend * make_blob_backend() SOCI_OVERRIDE;
+    odbc_statement_backend * make_statement_backend() override;
+    odbc_rowid_backend * make_rowid_backend() override;
+    odbc_blob_backend * make_blob_backend() override;
 
     enum database_product
     {
@@ -380,7 +380,7 @@ public:
     {
     }
 
-    error_category get_error_category() const SOCI_OVERRIDE
+    error_category get_error_category() const override
     {
         const char* const s = reinterpret_cast<const char*>(sqlstate_);
 
@@ -584,7 +584,7 @@ struct odbc_backend_factory : backend_factory
 {
     odbc_backend_factory() {}
     odbc_session_backend * make_session(
-        connection_parameters const & parameters) const SOCI_OVERRIDE;
+        connection_parameters const & parameters) const override;
 };
 
 extern SOCI_ODBC_DECL odbc_backend_factory const odbc;

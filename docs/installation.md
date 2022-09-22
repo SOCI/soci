@@ -93,7 +93,6 @@ List of a few essential CMake variables:
 
 List of variables to control common SOCI features and dependencies:
 
-* `SOCI_CXX11` - boolean - Request to compile in C++11 compatibility mode. Default is `OFF`, unless [CMAKE_CXX_STANDARD](https://cmake.org/cmake/help/v3.1/variable/CMAKE_CXX_STANDARD.html) with version `11` or later is given in the command line.
 * `SOCI_SHARED` - boolean - Request to build shared libraries for SOCI core and all successfully configured backends. Default is `ON`.
 * `SOCI_STATIC` - boolean - Request to build static libraries for SOCI core and all successfully configured backends. Default is `ON`.
 * `SOCI_TESTS` - boolean - Request to build regression tests for SOCI core and all successfully configured backends.
@@ -202,8 +201,7 @@ The Makefiles for test programs can be a good starting point to find out correct
 
 SOCI is available as a [Conan](https://docs.conan.io/en/latest/) package since
 February 2021 for the version [4.0.1](https://conan.io/center/soci) for the
-follwoiing backends: sqlite3, odbc, mysql, and postgresql, and with the
-following flag enabled: `SOCI_CXX11=True`.
+following backends: sqlite3, odbc, mysql, and postgresql.
 
 This section lists the steps required to use SOCI in a CMake project with Conan:
 

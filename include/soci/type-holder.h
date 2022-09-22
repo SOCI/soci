@@ -80,7 +80,7 @@ class type_holder : public holder
 {
 public:
     type_holder(T * t) : t_(t) {}
-    ~type_holder() SOCI_OVERRIDE { delete t_; }
+    ~type_holder() override { delete t_; }
 
     template<typename TypeValue>
     TypeValue value() const { return *t_; }

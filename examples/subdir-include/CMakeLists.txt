@@ -10,7 +10,6 @@ set(SOCI_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/soci)
 
 # All compile options need to be set before the SOCI directory gets included.
 # The backend you want to use needs to be enabled here.
-option(SOCI_CXX11 "Build to the C++11 standard" ON)
 option(SOCI_EMPTY "Build the sample backend called Empty" ON)
 
 # This line needs to be changed to include the directory you placed SOCI in, e.g.

@@ -9,7 +9,6 @@
 #include "soci/soci-platform.h"
 #include "soci/odbc/soci-odbc.h"
 #include "soci-compiler.h"
-#include "soci-static-assert.h"
 #include "soci-vector-helpers.h"
 #include <cctype>
 #include <cstdio>
@@ -59,7 +58,7 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
             sqlType = SQL_INTEGER;
             cType = SQL_C_SLONG;
             size = sizeof(SQLINTEGER);
-            SOCI_STATIC_ASSERT(sizeof(SQLINTEGER) == sizeof(int));
+            static_assert(sizeof(SQLINTEGER) == sizeof(int), "unsupported SQLINTEGER size");
             std::vector<int> *vp = static_cast<std::vector<int> *>(data_);
             std::vector<int> &v(*vp);
             prepare_indicators(v.size());

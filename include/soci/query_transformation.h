@@ -41,7 +41,7 @@ public:
         : callback_(callback)
     {}
 
-    std::string operator()(std::string const& query) const SOCI_OVERRIDE
+    std::string operator()(std::string const& query) const override
     {
         return callback_(query);
     }

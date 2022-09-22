@@ -32,12 +32,12 @@ struct SOCI_EMPTY_DECL empty_standard_into_type_backend : details::standard_into
         : statement_(st)
     {}
 
-    void define_by_pos(int& position, void* data, details::exchange_type type) SOCI_OVERRIDE;
+    void define_by_pos(int& position, void* data, details::exchange_type type) override;
 
-    void pre_fetch() SOCI_OVERRIDE;
-    void post_fetch(bool gotData, bool calledFromFetch, indicator* ind) SOCI_OVERRIDE;
+    void pre_fetch() override;
+    void post_fetch(bool gotData, bool calledFromFetch, indicator* ind) override;
 
-    void clean_up() SOCI_OVERRIDE;
+    void clean_up() override;
 
     empty_statement_backend& statement_;
 };
@@ -48,15 +48,15 @@ struct SOCI_EMPTY_DECL empty_vector_into_type_backend : details::vector_into_typ
         : statement_(st)
     {}
 
-    void define_by_pos(int& position, void* data, details::exchange_type type) SOCI_OVERRIDE;
+    void define_by_pos(int& position, void* data, details::exchange_type type) override;
 
-    void pre_fetch() SOCI_OVERRIDE;
-    void post_fetch(bool gotData, indicator* ind) SOCI_OVERRIDE;
+    void pre_fetch() override;
+    void post_fetch(bool gotData, indicator* ind) override;
 
-    void resize(std::size_t sz) SOCI_OVERRIDE;
-    std::size_t size() SOCI_OVERRIDE;
+    void resize(std::size_t sz) override;
+    std::size_t size() override;
 
-    void clean_up() SOCI_OVERRIDE;
+    void clean_up() override;
 
     empty_statement_backend& statement_;
 };
@@ -67,13 +67,13 @@ struct SOCI_EMPTY_DECL empty_standard_use_type_backend : details::standard_use_t
         : statement_(st)
     {}
 
-    void bind_by_pos(int& position, void* data, details::exchange_type type, bool readOnly) SOCI_OVERRIDE;
-    void bind_by_name(std::string const& name, void* data, details::exchange_type type, bool readOnly) SOCI_OVERRIDE;
+    void bind_by_pos(int& position, void* data, details::exchange_type type, bool readOnly) override;
+    void bind_by_name(std::string const& name, void* data, details::exchange_type type, bool readOnly) override;
 
-    void pre_use(indicator const* ind) SOCI_OVERRIDE;
-    void post_use(bool gotData, indicator* ind) SOCI_OVERRIDE;
+    void pre_use(indicator const* ind) override;
+    void post_use(bool gotData, indicator* ind) override;
 
-    void clean_up() SOCI_OVERRIDE;
+    void clean_up() override;
 
     empty_statement_backend& statement_;
 };
@@ -83,14 +83,14 @@ struct SOCI_EMPTY_DECL empty_vector_use_type_backend : details::vector_use_type_
     empty_vector_use_type_backend(empty_statement_backend &st)
         : statement_(st) {}
 
-    void bind_by_pos(int& position, void* data, details::exchange_type type) SOCI_OVERRIDE;
-    void bind_by_name(std::string const& name, void* data, details::exchange_type type) SOCI_OVERRIDE;
+    void bind_by_pos(int& position, void* data, details::exchange_type type) override;
+    void bind_by_name(std::string const& name, void* data, details::exchange_type type) override;
 
-    void pre_use(indicator const* ind) SOCI_OVERRIDE;
+    void pre_use(indicator const* ind) override;
 
-    std::size_t size() SOCI_OVERRIDE;
+    std::size_t size() override;
 
-    void clean_up() SOCI_OVERRIDE;
+    void clean_up() override;
 
     empty_statement_backend& statement_;
 };
@@ -100,26 +100,26 @@ struct SOCI_EMPTY_DECL empty_statement_backend : details::statement_backend
 {
     empty_statement_backend(empty_session_backend &session);
 
-    void alloc() SOCI_OVERRIDE;
-    void clean_up() SOCI_OVERRIDE;
-    void prepare(std::string const& query, details::statement_type eType) SOCI_OVERRIDE;
+    void alloc() override;
+    void clean_up() override;
+    void prepare(std::string const& query, details::statement_type eType) override;
 
-    exec_fetch_result execute(int number) SOCI_OVERRIDE;
-    exec_fetch_result fetch(int number) SOCI_OVERRIDE;
+    exec_fetch_result execute(int number) override;
+    exec_fetch_result fetch(int number) override;
 
-    long long get_affected_rows() SOCI_OVERRIDE;
-    int get_number_of_rows() SOCI_OVERRIDE;
-    std::string get_parameter_name(int index) const SOCI_OVERRIDE;
+    long long get_affected_rows() override;
+    int get_number_of_rows() override;
+    std::string get_parameter_name(int index) const override;
 
-    std::string rewrite_for_procedure_call(std::string const& query) SOCI_OVERRIDE;
+    std::string rewrite_for_procedure_call(std::string const& query) override;
 
-    int prepare_for_describe() SOCI_OVERRIDE;
-    void describe_column(int colNum, data_type& dtype, std::string& columnName) SOCI_OVERRIDE;
+    int prepare_for_describe() override;
+    void describe_column(int colNum, data_type& dtype, std::string& columnName) override;
 
-    empty_standard_into_type_backend* make_into_type_backend() SOCI_OVERRIDE;
-    empty_standard_use_type_backend* make_use_type_backend() SOCI_OVERRIDE;
-    empty_vector_into_type_backend* make_vector_into_type_backend() SOCI_OVERRIDE;
-    empty_vector_use_type_backend* make_vector_use_type_backend() SOCI_OVERRIDE;
+    empty_standard_into_type_backend* make_into_type_backend() override;
+    empty_standard_use_type_backend* make_use_type_backend() override;
+    empty_vector_into_type_backend* make_vector_into_type_backend() override;
+    empty_vector_use_type_backend* make_vector_use_type_backend() override;
 
     empty_session_backend& session_;
 };
@@ -128,20 +128,20 @@ struct empty_rowid_backend : details::rowid_backend
 {
     empty_rowid_backend(empty_session_backend &session);
 
-    ~empty_rowid_backend() SOCI_OVERRIDE;
+    ~empty_rowid_backend() override;
 };
 
 struct empty_blob_backend : details::blob_backend
 {
     empty_blob_backend(empty_session_backend& session);
 
-    ~empty_blob_backend() SOCI_OVERRIDE;
+    ~empty_blob_backend() override;
 
-    std::size_t get_len() SOCI_OVERRIDE;
-    std::size_t read(std::size_t offset, char* buf, std::size_t toRead) SOCI_OVERRIDE;
-    std::size_t write(std::size_t offset, char const* buf, std::size_t toWrite) SOCI_OVERRIDE;
-    std::size_t append(char const* buf, std::size_t toWrite) SOCI_OVERRIDE;
-    void trim(std::size_t newLen) SOCI_OVERRIDE;
+    std::size_t get_len() override;
+    std::size_t read(std::size_t offset, char* buf, std::size_t toRead) override;
+    std::size_t write(std::size_t offset, char const* buf, std::size_t toWrite) override;
+    std::size_t append(char const* buf, std::size_t toWrite) override;
+    void trim(std::size_t newLen) override;
 
     empty_session_backend& session_;
 };
@@ -150,29 +150,29 @@ struct empty_session_backend : details::session_backend
 {
     empty_session_backend(connection_parameters const& parameters);
 
-    ~empty_session_backend() SOCI_OVERRIDE;
+    ~empty_session_backend() override;
 
-    bool is_connected() SOCI_OVERRIDE { return true; }
+    bool is_connected() override { return true; }
 
-    void begin() SOCI_OVERRIDE;
-    void commit() SOCI_OVERRIDE;
-    void rollback() SOCI_OVERRIDE;
+    void begin() override;
+    void commit() override;
+    void rollback() override;
 
-    std::string get_dummy_from_table() const SOCI_OVERRIDE { return std::string(); }
+    std::string get_dummy_from_table() const override { return std::string(); }
 
-    std::string get_backend_name() const SOCI_OVERRIDE { return "empty"; }
+    std::string get_backend_name() const override { return "empty"; }
 
     void clean_up();
 
-    empty_statement_backend* make_statement_backend() SOCI_OVERRIDE;
-    empty_rowid_backend* make_rowid_backend() SOCI_OVERRIDE;
-    empty_blob_backend* make_blob_backend() SOCI_OVERRIDE;
+    empty_statement_backend* make_statement_backend() override;
+    empty_rowid_backend* make_rowid_backend() override;
+    empty_blob_backend* make_blob_backend() override;
 };
 
 struct SOCI_EMPTY_DECL empty_backend_factory : backend_factory
 {
     empty_backend_factory() {}
-    empty_session_backend* make_session(connection_parameters const& parameters) const SOCI_OVERRIDE;
+    empty_session_backend* make_session(connection_parameters const& parameters) const override;
 };
 
 extern SOCI_EMPTY_DECL empty_backend_factory const empty;
