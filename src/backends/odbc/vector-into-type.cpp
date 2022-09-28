@@ -15,11 +15,11 @@
 #include "soci-vector-helpers.h"
 #include <algorithm>
 #include <cctype>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
 #include <sstream>
-#include <stdint.h>
 
 using namespace soci;
 using namespace soci::details;

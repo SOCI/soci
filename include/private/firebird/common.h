@@ -10,13 +10,13 @@
 
 #include "soci/firebird/soci-firebird.h"
 #include "soci-compiler.h"
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <limits>
 #include <sstream>
 #include <iomanip>
-#include <stdint.h>
 #include <string>
 #include <vector>
 #include <algorithm>

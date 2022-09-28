@@ -12,8 +12,8 @@
 #include "soci/soci-backend.h"
 #include "soci/type-wrappers.h"
 // std
+#include <cstdint>
 #include <ctime>
-#include <stdint.h>
 #include <string>
 #include <vector>
 

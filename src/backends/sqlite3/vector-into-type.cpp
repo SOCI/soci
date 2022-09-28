@@ -22,9 +22,9 @@
 #include "common.h"
 // std
 #include <cstddef>
+#include <cstdint>
 #include <cstdlib>
 #include <ctime>
-#include <stdint.h>
 #include <string>
 #include <sstream>
 #include <vector>

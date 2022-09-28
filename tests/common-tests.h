@@ -39,12 +39,12 @@
 #include <algorithm>
 #include <cassert>
 #include <clocale>
+#include <cstdint>
 #include <cstdlib>
 #include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <limits>
-#include <stdint.h>
 #include <string>
 #include <typeinfo>
 #include <type_traits>

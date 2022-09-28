@@ -13,10 +13,10 @@
 #include "common.h"
 // std
 #include <cstdio>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <limits>
-#include <stdint.h>
 #include <sstream>
 
 

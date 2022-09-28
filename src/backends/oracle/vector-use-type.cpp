@@ -12,11 +12,11 @@
 #include "soci/soci-platform.h"
 #include "soci-vector-helpers.h"
 #include <cctype>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
 #include <sstream>
-#include <stdint.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)

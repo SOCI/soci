@@ -14,10 +14,10 @@
 #include "soci-exchange-cast.h"
 // std
 #include <ciso646>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <limits>
-#include <stdint.h>
 
 using namespace soci;
 using namespace soci::details;

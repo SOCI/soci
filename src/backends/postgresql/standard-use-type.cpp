@@ -15,12 +15,12 @@
 #include "soci-exchange-cast.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
 #include <limits>
 #include <sstream>
-#include <stdint.h>
 
 using namespace soci;
 using namespace soci::details;

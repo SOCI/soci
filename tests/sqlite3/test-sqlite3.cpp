@@ -14,7 +14,7 @@
 #include <cmath>
 #include <cstring>
 #include <ctime>
-#include <stdint.h>
+#include <cstdint>
 
 using namespace soci;
 using namespace soci::tests;

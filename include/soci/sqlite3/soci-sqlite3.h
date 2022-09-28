@@ -17,7 +17,7 @@
 #endif
 
 #include <cstdarg>
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 #include <soci/soci-backend.h>
 

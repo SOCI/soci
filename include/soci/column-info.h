@@ -12,7 +12,7 @@
 #include "soci/type-conversion.h"
 #include "soci/values.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace soci
 {

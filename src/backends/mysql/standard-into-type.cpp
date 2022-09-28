@@ -14,10 +14,10 @@
 #include "soci-mktime.h"
 // std
 #include <ciso646>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <stdint.h>
 #include <string>
 
 #ifdef _MSC_VER

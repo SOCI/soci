@@ -11,11 +11,11 @@
 #include "soci-compiler.h"
 #include "soci-vector-helpers.h"
 #include <cctype>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
 #include <sstream>
-#include <stdint.h>
 
 #ifdef _MSC_VER
 // disables the warning about converting int to void*.  This is a 64 bit compatibility

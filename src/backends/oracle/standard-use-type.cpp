@@ -20,12 +20,12 @@
 #include "soci-mktime.h"
 
 #include <cctype>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
 #include <ctime>
 #include <sstream>
-#include <stdint.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)

@@ -10,7 +10,7 @@
 
 #include "soci/soci-platform.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 #ifdef __cplusplus
 extern "C"

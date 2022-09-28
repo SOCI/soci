@@ -14,12 +14,12 @@
 // std
 #include <ciso646>
 #include <cstddef>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <limits>
-#include <stdint.h>
 #include <string>
 #include <vector>
 

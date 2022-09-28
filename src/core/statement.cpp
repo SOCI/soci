@@ -14,7 +14,7 @@
 #include "soci-compiler.h"
 #include <ctime>
 #include <cctype>
-#include <stdint.h>
+#include <cstdint>
 
 using namespace soci;
 using namespace soci::details;

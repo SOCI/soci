@@ -22,7 +22,7 @@
 #include <cstdlib>
 #include <mysqld_error.h>
 #include <errmsg.h>
-#include <stdint.h>
+#include <cstdint>
 
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_mysql();

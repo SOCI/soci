@@ -11,8 +11,8 @@
 #include "soci/soci-backend.h"
 #include "soci/type-wrappers.h"
 
+#include <cstdint>
 #include <ctime>
-#include <stdint.h>
 
 namespace soci
 {

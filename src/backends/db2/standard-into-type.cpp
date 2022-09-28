@@ -11,8 +11,8 @@
 #include "soci-exchange-cast.h"
 #include "soci-mktime.h"
 #include "common.h"
+#include <cstdint>
 #include <ctime>
-#include <stdint.h>
 
 using namespace soci;
 using namespace soci::details;

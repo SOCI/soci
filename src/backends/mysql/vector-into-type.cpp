@@ -12,8 +12,8 @@
 #include "common.h"
 #include "soci/soci-platform.h"
 #include <ciso646>
+#include <cstdint>
 #include <cstdlib>
-#include <stdint.h>
 
 using namespace soci;
 using namespace soci::details;

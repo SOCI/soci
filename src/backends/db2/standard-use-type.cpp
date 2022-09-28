@@ -10,11 +10,11 @@
 #include "soci/db2/soci-db2.h"
 #include "soci-exchange-cast.h"
 #include <cctype>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
 #include <sstream>
-#include <stdint.h>
 
 using namespace soci;
 using namespace soci::details;
