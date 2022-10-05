@@ -111,19 +111,22 @@ The type `T` parameter that should be passed to `row::get<T>()` depends on the S
 
 `row::get<T>()` throws an exception of type `std::bad_cast` if an incorrect type `T` is requested.
 
-| SOCI Data Type | `row::get<T>` specialization |
-|----------------|------------------------------|
-| `dt_double`    | `double`                     |
-| `dt_int8`      | `int8_t`                     |
-| `dt_uint8`     | `uint8_t`                    |
-| `dt_int16`     | `int16_t`                    |
-| `dt_uint16`    | `uint16_t`                   |
-| `dt_int32`     | `int32_t`                    |
-| `dt_uint32`    | `uint32_t`                   |
-| `dt_int64`     | `int64_t`                    |
-| `dt_uint64`    | `uint64_t`                   |
-| `dt_string`    | `std::string`                |
-| `dt_date`      | `std::tm`                    |
+| SOCI Data Type          | `row::get<T>` specialization |
+|-------------------------|------------------------------|
+| `dt_double`             | `double`                     |
+| `dt_int8`               | `int8_t`                     |
+| `dt_uint8`              | `uint8_t`                    |
+| `dt_int16`              | `int16_t`                    |
+| `dt_uint16`             | `uint16_t`                   |
+| `dt_int32`              | `int32_t`                    |
+| `dt_integer`            | `int32_t`                    |
+| `dt_uint32`             | `uint32_t`                   |
+| `dt_int64`              | `int64_t`                    |
+| `dt_long_long`          | `int64_t`                    |
+| `dt_uint64`             | `uint64_t`                   |
+| `dt_unsigned_long_long` | `uint64_t`                   |
+| `dt_string`             | `std::string`                |
+| `dt_date`               | `std::tm`                    |
 
 The mapping of underlying database column types to SOCI datatypes is database specific.
 See the [backend documentation](backends/index.md) for details.
