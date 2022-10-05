@@ -772,7 +772,7 @@ TEST_CASE("Firebird dynamic binding", "[firebird][dynamic]")
     CHECK(r.get_properties(1).get_name() == "MSG");
     CHECK(r.get_properties(2).get_name() == "NTEST");
 
-    CHECK(r.get_properties(0).get_data_type() == dt_int32);
+    CHECK(r.get_properties(0).get_data_type() == dt_integer);
     CHECK(r.get_properties(1).get_data_type() == dt_string);
     CHECK(r.get_properties(2).get_data_type() == dt_double);
 
@@ -781,7 +781,7 @@ TEST_CASE("Firebird dynamic binding", "[firebird][dynamic]")
     CHECK(r.get_properties("MSG").get_name() == "MSG");
     CHECK(r.get_properties("NTEST").get_name() == "NTEST");
 
-    CHECK(r.get_properties("ID").get_data_type() == dt_int32);
+    CHECK(r.get_properties("ID").get_data_type() == dt_integer);
     CHECK(r.get_properties("MSG").get_data_type() == dt_string);
     CHECK(r.get_properties("NTEST").get_data_type() == dt_double);
 

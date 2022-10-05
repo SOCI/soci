@@ -689,7 +689,7 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
     sql << "select val from soci_test", into(r);
     REQUIRE(r.size() == 1);
     CHECK(r.get_properties("val").get_data_type() == dt_uint32);
-    CHECK(r.get<uint32_t>("val") == 0xffffff00);
+    CHECK(r.get<unsigned>("val") == 0xffffff00);
   }
   {
     soci::session sql(backEnd, connectString);
@@ -718,8 +718,8 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
     row r;
     sql << "select val from soci_test", into(r);
     REQUIRE(r.size() == 1);
-    CHECK(r.get_properties("val").get_data_type() == dt_uint64);
-    CHECK(r.get<uint64_t>("val") == 123456789012345ULL);
+    CHECK(r.get_properties("val").get_data_type() == dt_unsigned_long_long);
+    CHECK(r.get<unsigned long long>("val") == 123456789012345ULL);
   }
   {
     soci::session sql(backEnd, connectString);
@@ -728,8 +728,8 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
     row r;
     sql << "select val from soci_test", into(r);
     REQUIRE(r.size() == 1);
-    CHECK(r.get_properties("val").get_data_type() == dt_int64);
-    CHECK(r.get<int64_t>("val") == -123456789012345LL);
+    CHECK(r.get_properties("val").get_data_type() == dt_long_long);
+    CHECK(r.get<long long>("val") == -123456789012345LL);
   }
 }
 

@@ -471,10 +471,10 @@ TEST_CASE("SQLite type inference", "[sqlite][sequence]")
         row const& r1 = (*it);
         CHECK(r1.get<std::string>(0) == cvc);
         CHECK(r1.get<double>(1) == Approx(cdec));
-        CHECK(r1.get<int64_t>(2) == cll);
-        CHECK(r1.get<uint64_t>(3) == cull);
-        CHECK(r1.get<int64_t>(4) == cll);
-        CHECK(r1.get<uint64_t>(5) == cull);
+        CHECK(r1.get<long long>(2) == cll);
+        CHECK(r1.get<unsigned long long>(3) == cull);
+        CHECK(r1.get<long long>(4) == cll);
+        CHECK(r1.get<unsigned long long>(5) == cull);
     }
 }
 
