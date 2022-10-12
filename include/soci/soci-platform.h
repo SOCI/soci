@@ -109,9 +109,15 @@ namespace std {
     #if _MSC_VER < 1900
         #error This version of SOCI requires MSVS 2015 or later.
     #endif
+    #if _MSVC_LANG >= 201703L
+        #define SOCI_HAVE_CXX17
+    #endif
 #else
     #if __cplusplus < 201402L
         #error This version of SOCI requires C++14.
+    #endif
+    #if __cplusplus >= 201703L
+        #define SOCI_HAVE_CXX17
     #endif
 #endif
 

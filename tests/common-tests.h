@@ -20,6 +20,9 @@
 #include "soci/boost-fusion.h"
 #endif // BOOST_VERSION
 #endif // SOCI_HAVE_BOOST
+#ifdef SOCI_HAVE_CXX17
+#include "soci/std-optional.h"
+#endif
 
 #include "soci-compiler.h"
 
@@ -3712,6 +3715,478 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
 }
 
 #endif // SOCI_HAVE_BOOST
+
+#ifdef SOCI_HAVE_CXX17
+
+// test for handling NULL values with std::optional
+// (both into and use)
+TEST_CASE_METHOD(common_tests, "NULL with std optional", "[core][null]")
+{
+
+    soci::session sql(backEndFactory_, connectString_);
+
+    // create and populate the test table
+    auto_table_creator tableCreator0(tc_.table_creator_1(sql));
+    {
+        sql << "insert into soci_test(val) values(7)";
+
+        {
+            // verify non-null value is fetched correctly
+            std::optional<int> opt;
+            sql << "select val from soci_test", into(opt);
+            CHECK(opt.has_value());
+            CHECK(opt.value() == 7);
+
+            // indicators can be used with optional
+            // (although that's just a consequence of implementation,
+            // not an intended feature - but let's test it anyway)
+            indicator ind;
+            opt.reset();
+            sql << "select val from soci_test", into(opt, ind);
+            CHECK(opt.has_value());
+            CHECK(opt.value() == 7);
+            CHECK(ind == i_ok);
+
+            // verify null value is fetched correctly
+            sql << "select i1 from soci_test", into(opt);
+            CHECK(opt.has_value() == false);
+
+            // and with indicator
+            opt = 5;
+            sql << "select i1 from soci_test", into(opt, ind);
+            CHECK(opt.has_value() == false);
+            CHECK(ind == i_null);
+
+            // verify non-null is inserted correctly
+            opt = 3;
+            sql << "update soci_test set val = :v", use(opt);
+            int j = 0;
+            sql << "select val from soci_test", into(j);
+            CHECK(j == 3);
+
+            // verify null is inserted correctly
+            opt.reset();
+            sql << "update soci_test set val = :v", use(opt);
+            ind = i_ok;
+            sql << "select val from soci_test", into(j, ind);
+            CHECK(ind == i_null);
+        }
+
+        // vector tests (select)
+
+        {
+            sql << "delete from soci_test";
+
+            // simple readout of non-null data
+
+            sql << "insert into soci_test(id, val, str) values(1, 5, \'abc\')";
+            sql << "insert into soci_test(id, val, str) values(2, 6, \'def\')";
+            sql << "insert into soci_test(id, val, str) values(3, 7, \'ghi\')";
+            sql << "insert into soci_test(id, val, str) values(4, 8, null)";
+            sql << "insert into soci_test(id, val, str) values(5, 9, \'mno\')";
+
+            std::vector<std::optional<int> > v(10);
+            sql << "select val from soci_test order by val", into(v);
+
+            CHECK(v.size() == 5);
+            CHECK(v[0].has_value());
+            CHECK(v[0].value() == 5);
+            CHECK(v[1].has_value());
+            CHECK(v[1].value() == 6);
+            CHECK(v[2].has_value());
+            CHECK(v[2].value() == 7);
+            CHECK(v[3].has_value());
+            CHECK(v[3].value() == 8);
+            CHECK(v[4].has_value());
+            CHECK(v[4].value() == 9);
+
+            // readout of nulls
+
+            sql << "update soci_test set val = null where id = 2 or id = 4";
+
+            std::vector<int> ids(5);
+            sql << "select id, val from soci_test order by id", into(ids), into(v);
+
+            CHECK(v.size() == 5);
+            CHECK(ids.size() == 5);
+            CHECK(v[0].has_value());
+            CHECK(v[0].value() == 5);
+            CHECK(v[1].has_value() == false);
+            CHECK(v[2].has_value());
+            CHECK(v[2].value() == 7);
+            CHECK(v[3].has_value() == false);
+            CHECK(v[4].has_value());
+            CHECK(v[4].value() == 9);
+
+            // readout with statement preparation
+
+            int id = 1;
+
+            ids.resize(3);
+            v.resize(3);
+            statement st = (sql.prepare <<
+                "select id, val from soci_test order by id", into(ids), into(v));
+            st.execute();
+            while (st.fetch())
+            {
+                for (std::size_t i = 0; i != v.size(); ++i)
+                {
+                    CHECK(id == ids[i]);
+
+                    if (id == 2 || id == 4)
+                    {
+                        CHECK(v[i].has_value() == false);
+                    }
+                    else
+                    {
+                        CHECK(v[i].has_value());
+                        CHECK(v[i].value() == id + 4);
+                    }
+
+                    ++id;
+                }
+
+                ids.resize(3);
+                v.resize(3);
+            }
+            CHECK(id == 6);
+        }
+
+        // and why not stress iterators and the dynamic binding, too!
+
+        {
+            rowset<row> rs = (sql.prepare << "select id, val, str from soci_test order by id");
+
+            rowset<row>::const_iterator it = rs.begin();
+            CHECK(it != rs.end());
+
+            row const& r1 = (*it);
+
+            CHECK(r1.size() == 3);
+
+            // Note: for the reason of differences between number(x,y) type and
+            // binary representation of integers, the following commented assertions
+            // do not work for Oracle.
+            // The problem is that for this single table the data type used in Oracle
+            // table creator for the id column is number(10,0),
+            // which allows to insert all int values.
+            // On the other hand, the column description scheme used in the Oracle
+            // backend figures out that the natural type for such a column
+            // is eUnsignedInt - this makes the following assertions fail.
+            // Other database backends (like PostgreSQL) use other types like int
+            // and this not only allows to insert all int values (obviously),
+            // but is also recognized as int (obviously).
+            // There is a similar problem with stream-like extraction,
+            // where internally get<T> is called and the type mismatch is detected
+            // for the id column - that's why the code below skips this column
+            // and tests the remaining column only.
+
+            //CHECK(r1.get_properties(0).get_data_type() == dt_integer);
+            CHECK(r1.get_properties(1).get_data_type() == dt_integer);
+            CHECK(r1.get_properties(2).get_data_type() == dt_string);
+            //CHECK(r1.get<int>(0) == 1);
+            CHECK(r1.get<int>(1) == 5);
+            CHECK(r1.get<std::string>(2) == "abc");
+            CHECK(r1.get<std::optional<int> >(1).has_value());
+            CHECK(r1.get<std::optional<int> >(1).value() == 5);
+            CHECK(r1.get<std::optional<std::string> >(2).has_value());
+            CHECK(r1.get<std::optional<std::string> >(2).value() == "abc");
+
+            ++it;
+
+            row const& r2 = (*it);
+
+            CHECK(r2.size() == 3);
+
+            // CHECK(r2.get_properties(0).get_data_type() == dt_integer);
+            CHECK(r2.get_properties(1).get_data_type() == dt_integer);
+            CHECK(r2.get_properties(2).get_data_type() == dt_string);
+            //CHECK(r2.get<int>(0) == 2);
+            try
+            {
+                // expect exception here, this is NULL value
+                (void)r1.get<int>(1);
+                FAIL("expected exception not thrown");
+            }
+            catch (soci_error const &) {}
+
+            // but we can read it as optional
+            CHECK(r2.get<std::optional<int> >(1).has_value() == false);
+
+            // stream-like data extraction
+
+            ++it;
+            row const &r3 = (*it);
+
+            std::optional<int> io;
+            std::optional<std::string> so;
+
+            r3.skip(); // move to val and str columns
+            r3 >> io >> so;
+
+            CHECK(io.has_value());
+            CHECK(io.value() == 7);
+            CHECK(so.has_value());
+            CHECK(so.value() == "ghi");
+
+            ++it;
+            row const &r4 = (*it);
+
+            r3.skip(); // move to val and str columns
+            r4 >> io >> so;
+
+            CHECK(io.has_value() == false);
+            CHECK(so.has_value() == false);
+        }
+
+        // inserts of non-null const data
+        {
+            sql << "delete from soci_test";
+
+            const int id = 10;
+            const std::optional<int> val = 11;
+
+            sql << "insert into soci_test(id, val) values(:id, :val)",
+                use(id, "id"),
+                use(val, "val");
+
+            int sum;
+            sql << "select sum(val) from soci_test", into(sum);
+            CHECK(sum == 11);
+        }
+
+        // bulk inserts of non-null data
+
+        {
+            sql << "delete from soci_test";
+
+            std::vector<int> ids;
+            std::vector<std::optional<int> > v;
+
+            ids.push_back(10); v.push_back(20);
+            ids.push_back(11); v.push_back(21);
+            ids.push_back(12); v.push_back(22);
+            ids.push_back(13); v.push_back(23);
+
+            sql << "insert into soci_test(id, val) values(:id, :val)",
+                use(ids, "id"), use(v, "val");
+
+            int sum;
+            sql << "select sum(val) from soci_test", into(sum);
+            CHECK(sum == 86);
+
+            // bulk inserts of some-null data
+
+            sql << "delete from soci_test";
+
+            v[2].reset();
+            v[3].reset();
+
+            sql << "insert into soci_test(id, val) values(:id, :val)",
+                use(ids, "id"), use(v, "val");
+
+            sql << "select sum(val) from soci_test", into(sum);
+            CHECK(sum == 41);
+        }
+
+
+        // bulk inserts of non-null data with const vector
+
+        {
+            sql << "delete from soci_test";
+
+            std::vector<int> ids;
+            std::vector<std::optional<int> > v;
+
+            ids.push_back(10); v.push_back(20);
+            ids.push_back(11); v.push_back(21);
+            ids.push_back(12); v.push_back(22);
+            ids.push_back(13); v.push_back(23);
+
+            const std::vector<int>& cref_ids = ids;
+            const std::vector<std::optional<int> >& cref_v = v;
+
+            sql << "insert into soci_test(id, val) values(:id, :val)",
+                use(cref_ids, "id"),
+                use(cref_v, "val");
+
+            int sum;
+            sql << "select sum(val) from soci_test", into(sum);
+            CHECK(sum == 86);
+
+            // bulk inserts of some-null data
+
+            sql << "delete from soci_test";
+
+            v[2].reset();
+            v[3].reset();
+
+            sql << "insert into soci_test(id, val) values(:id, :val)",
+                use(cref_ids, "id"),
+                use(cref_v, "val");
+
+            sql << "select sum(val) from soci_test", into(sum);
+            CHECK(sum == 41);
+        }
+
+        // composability with user conversions
+
+        {
+            sql << "delete from soci_test";
+
+            std::optional<MyInt> omi1;
+            std::optional<MyInt> omi2;
+
+            omi1 = MyInt(125);
+            omi2.reset();
+
+            sql << "insert into soci_test(id, val) values(:id, :val)",
+                use(omi1), use(omi2);
+
+            sql << "select id, val from soci_test", into(omi2), into(omi1);
+
+            CHECK(omi1.has_value() == false);
+            CHECK(omi2.has_value());
+            CHECK(omi2.value().get() == 125);
+        }
+
+        // use with const optional and user conversions
+
+        {
+            sql << "delete from soci_test";
+
+            std::optional<MyInt> omi1;
+            std::optional<MyInt> omi2;
+
+            omi1 = MyInt(125);
+            omi2.reset();
+
+            std::optional<MyInt> const & comi1 = omi1;
+            std::optional<MyInt> const & comi2 = omi2;
+
+            sql << "insert into soci_test(id, val) values(:id, :val)",
+                use(comi1), use(comi2);
+
+            sql << "select id, val from soci_test", into(omi2), into(omi1);
+
+            CHECK(omi1.has_value() == false);
+            CHECK(omi2.has_value());
+            CHECK(omi2.value().get() == 125);
+        }
+
+        // use with rowset and table containing null values
+
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+            sql << "insert into soci_test(id, val) values(1, 10)";
+            sql << "insert into soci_test(id, val) values(2, 11)";
+            sql << "insert into soci_test(id, val) values(3, NULL)";
+            sql << "insert into soci_test(id, val) values(4, 13)";
+
+            rowset<std::optional<int> > rs = (sql.prepare <<
+                "select val from soci_test order by id asc");
+
+            // 1st row
+            rowset<std::optional<int> >::const_iterator pos = rs.begin();
+            CHECK((*pos).has_value());
+            CHECK(10 == (*pos).value());
+
+            // 2nd row
+            ++pos;
+            CHECK((*pos).has_value());
+            CHECK(11 == (*pos).value());
+
+            // 3rd row
+            ++pos;
+            CHECK((*pos).has_value() == false);
+
+            // 4th row
+            ++pos;
+            CHECK((*pos).has_value());
+            CHECK(13 == (*pos).value());
+        }
+
+        // inserting using an i_null indicator with a std::optional should
+        // insert null, even if the optional is valid, just as with standard
+        // types
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+            {
+                indicator ind = i_null;
+                std::optional<int> v1(10);
+                sql << "insert into soci_test(id, val) values(1, :val)",
+                       use(v1, ind);
+            }
+
+            // verify the value is fetched correctly as null
+            {
+                indicator ind;
+                std::optional<int> opt;
+
+                ind = i_truncated;
+                opt = 0;
+                sql << "select val from soci_test where id = 1", into(opt, ind);
+                CHECK(ind == i_null);
+                CHECK(!opt.has_value());
+            }
+        }
+
+        // prepared statement inserting non-null and null values alternatively
+        // (without passing an explicit indicator)
+        {
+            auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+            {
+                int id;
+                std::optional<int> val;
+                statement st = (sql.prepare
+                    << "insert into soci_test(id, val) values (:id, :val)",
+                       use(id), use(val));
+
+                id = 1;
+                val = 10;
+                st.execute(true);
+
+                id = 2;
+                val = std::optional<int>();
+                st.execute(true);
+
+                id = 3;
+                val = 11;
+                st.execute(true);
+            }
+
+            // verify values are fetched correctly
+            {
+                indicator ind;
+                std::optional<int> opt;
+
+                ind = i_truncated;
+                opt = 0;
+                sql << "select val from soci_test where id = 1", into(opt, ind);
+                CHECK(ind == i_ok);
+                CHECK(opt.has_value());
+                CHECK(opt.value() == 10);
+
+                ind = i_truncated;
+                opt = 0;
+                sql << "select val from soci_test where id = 2", into(opt, ind);
+                CHECK(ind == i_null);
+                CHECK(!opt.has_value());
+
+                ind = i_truncated;
+                opt = 0;
+                sql << "select val from soci_test where id = 3", into(opt, ind);
+                CHECK(ind == i_ok);
+                REQUIRE(opt.has_value());
+                CHECK(opt.value() == 11);
+            }
+        }
+    }
+}
+#endif
 
 // connection and reconnection tests
 TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")

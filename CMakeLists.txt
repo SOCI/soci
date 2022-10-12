@@ -14,7 +14,9 @@ cmake_minimum_required(VERSION 2.8...3.20 FATAL_ERROR)
 
 project(SOCI)
 
-set(CMAKE_CXX_STANDARD 14)
+if(NOT DEFINED CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD LESS 14)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ###############################################################################
