@@ -31,7 +31,7 @@ jobs:
           # Note: the jobs are ordered in the order of decreasing running
           # time, as this should minimize the total run-time of all jobs.
           - backend: postgresql
-            runner: macos-10.15
+            runner: macos-11
             name: PostgreSQL macOS
           - backend: oracle
             name: Oracle 11
@@ -49,12 +49,12 @@ jobs:
           - backend: mysql
             name: MySQL
           - backend: sqlite3
-            runner: macos-10.15
+            runner: macos-11
             name: SQLite3 macOS
           - backend: sqlite3
             name: SQLite3
           - backend: empty
-            runner: macos-10.15
+            runner: macos-11
             name: Empty macOS
           - backend: empty
             name: Empty
