@@ -9,7 +9,7 @@ set -e
 
 case "$(uname)" in
     Linux)
-        packages_to_install="${SOCI_CI_PACKAGES} libc6-dbg"
+        packages_to_install="cmake libc6-dbg"
         if [ "${WITH_BOOST}" != OFF ]; then
             packages_to_install="$packages_to_install  libboost-dev libboost-date-time-dev"
         fi

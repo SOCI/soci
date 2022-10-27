@@ -114,8 +114,6 @@ jobs:
 
       - name: Install dependencies under Linux
         if: runner.os == 'Linux'
-        env:
-          SOCI_CI_PACKAGES: cmake
         run: ./scripts/ci/install.sh
 
       - name: Prepare for build

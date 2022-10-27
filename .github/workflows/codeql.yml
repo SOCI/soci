@@ -51,8 +51,6 @@ jobs:
         set_env_var SOCI_SOURCE_DIR $GITHUB_WORKSPACE
 
     - name: Install dependencies
-      env:
-        SOCI_CI_PACKAGES: cmake
       run: ./scripts/ci/install.sh
 
     - name: Prepare for build
