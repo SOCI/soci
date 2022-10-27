@@ -5,7 +5,8 @@
 #
 source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
-case $(lsb_release -sc) in
+codename=$(lsb_release -sc)
+case "$codename" in
     trusty | xenial)
         firebird_version=2.5
         firebird_server_package=firebird2.5-super
@@ -17,18 +18,18 @@ EOF
 )
         ;;
 
-    focal | bionic)
+    jammy | focal | bionic)
         firebird_version=3.0
         firebird_server_package=firebird3.0-server
         firebird_server_service=firebird3.0
         ;;
 
     *)
-        echo "*** Can't install Firebird: unknown Ubuntu version! ***"
+        echo "*** Can't install Firebird: unknown Ubuntu version $codename! ***"
         exit 1
 esac
 
-sudo apt-get install -qq expect ${firebird_server_package} firebird-dev
+run_apt install expect ${firebird_server_package} firebird-dev
 
 # Default frontend is "noninteractive", which prevents dpkg-reconfigure from
 # asking anything at all, so change it. Notice that we must do it via

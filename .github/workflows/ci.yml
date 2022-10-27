@@ -22,7 +22,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.runner || 'ubuntu-18.04' }}
+    runs-on: ${{ matrix.runner || 'ubuntu-22.04' }}
     name: ${{ matrix.name }}
     strategy:
       fail-fast: false
@@ -31,18 +31,16 @@ jobs:
           # Note: the jobs are ordered in the order of decreasing running
           # time, as this should minimize the total run-time of all jobs.
           - backend: postgresql
-            runner: macos-10.15
+            runner: macos-11
             name: PostgreSQL macOS
           - backend: oracle
             name: Oracle 11
             no_boost: true
           - backend: valgrind
-            # This one dies under Xenial due to a bug in Valgrind and reports
-            # errors under Focal in MySQL test, so run it under Bionic where
-            # it just happens to work.
-            runner: ubuntu-18.04
             name: Valgrind
           - backend: odbc
+            # There are many leak reports under Ubuntu 22.04, see #1008.
+            runner: ubuntu-18.04
             name: ODBC
           - backend: firebird
             name: Firebird
@@ -51,12 +49,12 @@ jobs:
           - backend: mysql
             name: MySQL
           - backend: sqlite3
-            runner: macos-10.15
+            runner: macos-11
             name: SQLite3 macOS
           - backend: sqlite3
             name: SQLite3
           - backend: empty
-            runner: macos-10.15
+            runner: macos-11
             name: Empty macOS
           - backend: empty
             name: Empty
@@ -77,7 +75,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set environment variables
         run: |
@@ -114,8 +112,6 @@ jobs:
 
       - name: Install dependencies under Linux
         if: runner.os == 'Linux'
-        env:
-          SOCI_CI_PACKAGES: cmake
         run: ./scripts/ci/install.sh
 
       - name: Prepare for build

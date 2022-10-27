@@ -5,4 +5,4 @@
 #
 source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
-sudo apt-get install -qq valgrind
+run_apt install valgrind

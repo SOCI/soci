@@ -3,16 +3,21 @@
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-# Note that this is a /bin/sh script because it runs to install bash under
-# FreeBSD and so does not include common.sh, which uses bash.
-set -e
+# Note that this is a /bin/sh script because bash is not installed yet under
+# FreeBSD.
+. ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
 case "$(uname)" in
     Linux)
-        packages_to_install="${SOCI_CI_PACKAGES} libc6-dbg"
+        packages_to_install="cmake libc6-dbg"
         if [ "${WITH_BOOST}" != OFF ]; then
             packages_to_install="$packages_to_install  libboost-dev libboost-date-time-dev"
         fi
+
+        # Get rid of the repositories that we don't need: not only this takes
+        # extra time to update, but it also often fails with "Mirror sync in
+        # progress" errors.
+        for apt_file in `grep -lr microsoft /etc/apt/sources.list.d/`; do sudo rm $apt_file; done
 
         codename=$(lsb_release --codename --short)
         # Enable the `-dbgsym` repositories.
@@ -22,10 +27,10 @@ case "$(uname)" in
 
         # Import the debug symbol archive signing key from the Ubuntu server.
         # Note that this command works only on Ubuntu 18.04 LTS and newer.
-        sudo apt-get install -qq -y ubuntu-dbgsym-keyring
+        run_apt install ubuntu-dbgsym-keyring
 
-        sudo apt-get update -qq -y
-        sudo apt-get install -qq -y ${packages_to_install}
+        run_apt update
+        run_apt install ${packages_to_install}
         ;;
 
     FreeBSD)

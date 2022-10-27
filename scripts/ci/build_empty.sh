@@ -30,8 +30,8 @@ fi
 if [[ "$TEST_RELEASE_PACKAGE" == "YES" ]] && [[ "$SOCI_CI_BRANCH" =~ ^release/[3-9]\.[0-9]$ ]]; then
     ME=`basename "$0"`
 
-    sudo apt-get update -qq -y
-    sudo apt-get install -qq -y python3-venv
+    run_apt update
+    run_apt install python3-venv
 
     SOCI_VERSION=$(cat "$SOCI_SOURCE_DIR/include/soci/version.h" | grep -Po "(.*#define\s+SOCI_LIB_VERSION\s+.+)\K([3-9]_[0-9]_[0-9])" | sed "s/_/\./g")
     if [[ ! "$SOCI_VERSION" =~ ^[4-9]\.[0-9]\.[0-9]$ ]]; then
