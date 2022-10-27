@@ -3,9 +3,9 @@
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
-# Note that this is a /bin/sh script because it runs to install bash under
-# FreeBSD and so does not include common.sh, which uses bash.
-set -e
+# Note that this is a /bin/sh script because bash is not installed yet under
+# FreeBSD.
+. ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
 case "$(uname)" in
     Linux)

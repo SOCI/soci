@@ -1,20 +1,23 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Common definitions used by SOCI build scripts in CI builds
 #
 # Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
 #
+# Note that this is a /bin/sh script because it is used from install.sh
+# which installs bash under FreeBSD and so we can't rely on bash being
+# available yet.
 
 # Stop on all errors.
 set -e
 
-if [[ "$SOCI_CI" != "true" ]] ; then
+if [ "$SOCI_CI" != "true" ] ; then
 	echo "Running this script is only useful in the CI builds"
 	exit 1
 fi
 
 backend_settings=${SOCI_SOURCE_DIR}/scripts/ci/${SOCI_CI_BACKEND}.sh
 if [ -f ${backend_settings} ]; then
-    source ${backend_settings}
+    . ${backend_settings}
 fi
 
 #
@@ -33,10 +36,6 @@ case `uname` in
         num_cpus=1
 esac
 
-if [[ ${num_cpus} != 1 ]]; then
-    ((num_cpus++))
-fi
-
 # Directory where the build happens.
 #
 # Note that the existing commands suppose that the build directory is an
@@ -52,7 +51,7 @@ SOCI_COMMON_CMAKE_OPTIONS='
     -DSOCI_TESTS=ON
 '
 
-if [[ -n ${WITH_BOOST} ]]; then
+if [ -n "${WITH_BOOST}" ]; then
     SOCI_COMMON_CMAKE_OPTIONS="$SOCI_COMMON_CMAKE_OPTIONS -DWITH_BOOST=${WITH_BOOST}"
 fi
 
@@ -86,7 +85,7 @@ run_test()
 {
     # The example project doesn't have any tests, but otherwise their absence
     # is an error and means that something has gone wrong.
-    if [[ "$BUILD_EXAMPLES" == "YES" ]]; then
+    if [ "$BUILD_EXAMPLES" == "YES" ]; then
         no_tests_action=ignore
     else
         no_tests_action=error
