@@ -18,7 +18,7 @@ EOF
 )
         ;;
 
-    focal | bionic)
+    jammy | focal | bionic)
         firebird_version=3.0
         firebird_server_package=firebird3.0-server
         firebird_server_service=firebird3.0
