@@ -1,15 +1,11 @@
 # Workflow for running security checks for SOCI.
 name: CodeQL
 
-# Note: don't use paths-ignore here because it results in a warning from CodeQL
+# This workflow can only be run manually because it sporadically fails during
+# apt update when run automatically for some inexplainable reason (the main CI
+# workflow doesn't do this in spite of executing exactly the same script).
 on:
-  push:
-    branches:
-      - master
-      - 'release/**'
-  pull_request:
-    branches:
-      - master
+  workflow_dispatch:
 
 jobs:
   analyze:
