@@ -14,6 +14,11 @@ case "$(uname)" in
             packages_to_install="$packages_to_install  libboost-dev libboost-date-time-dev"
         fi
 
+        # Get rid of the repositories that we don't need: not only this takes
+        # extra time to update, but it also often fails with "Mirror sync in
+        # progress" errors.
+        for apt_file in `grep -lr microsoft /etc/apt/sources.list.d/`; do sudo rm $apt_file; done
+
         codename=$(lsb_release --codename --short)
         # Enable the `-dbgsym` repositories.
         echo "deb http://ddebs.ubuntu.com ${codename} main restricted universe multiverse
