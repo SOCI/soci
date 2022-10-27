@@ -37,10 +37,6 @@ jobs:
             name: Oracle 11
             no_boost: true
           - backend: valgrind
-            # This one dies under Xenial due to a bug in Valgrind and reports
-            # errors under Focal in MySQL test, so run it under Bionic where
-            # it just happens to work.
-            runner: ubuntu-18.04
             name: Valgrind
           - backend: odbc
             name: ODBC
