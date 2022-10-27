@@ -52,6 +52,9 @@ jobs:
             runner: macos-11
             name: SQLite3 macOS
           - backend: sqlite3
+            name: SQLite3 C++17
+            cxxstd: 17
+          - backend: sqlite3
             name: SQLite3
           - backend: empty
             runner: macos-11
@@ -100,6 +103,9 @@ jobs:
               ;;
           esac
 
+          if [ -n "${{matrix.cxxstd}}" ]; then
+            set_env_var SOCI_CXXSTD ${{matrix.cxxstd}}
+          fi
           if [ "${{matrix.no_boost}}" = true ]; then
             set_env_var WITH_BOOST OFF
           fi
