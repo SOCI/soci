@@ -22,7 +22,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.runner || 'ubuntu-18.04' }}
+    runs-on: ${{ matrix.runner || 'ubuntu-22.04' }}
     name: ${{ matrix.name }}
     strategy:
       fail-fast: false
