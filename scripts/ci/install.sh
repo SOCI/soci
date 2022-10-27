@@ -22,10 +22,10 @@ case "$(uname)" in
 
         # Import the debug symbol archive signing key from the Ubuntu server.
         # Note that this command works only on Ubuntu 18.04 LTS and newer.
-        sudo apt-get install -qq -y ubuntu-dbgsym-keyring
+        run_apt install ubuntu-dbgsym-keyring
 
-        sudo apt-get update -qq -y
-        sudo apt-get install -qq -y ${packages_to_install}
+        run_apt update
+        run_apt install ${packages_to_install}
         ;;
 
     FreeBSD)

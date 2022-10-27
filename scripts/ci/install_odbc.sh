@@ -5,7 +5,7 @@
 #
 source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
-sudo apt-get install -qq \
+run_apt install \
     tar bzip2 \
     unixodbc unixodbc-dev \
     odbc-postgresql odbc-postgresql-dbgsym

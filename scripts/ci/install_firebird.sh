@@ -29,7 +29,7 @@ EOF
         exit 1
 esac
 
-sudo apt-get install -qq expect ${firebird_server_package} firebird-dev
+run_apt install expect ${firebird_server_package} firebird-dev
 
 # Default frontend is "noninteractive", which prevents dpkg-reconfigure from
 # asking anything at all, so change it. Notice that we must do it via
