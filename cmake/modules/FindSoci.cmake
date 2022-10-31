@@ -15,6 +15,11 @@
 #  Soci_${COMPONENT}_PLUGIN = full path to the soci plugin (not set for the "core" component)
 #  Soci_${COMPONENT}_FOUND
 #
+# This module provides the following imported targets, if found:
+#
+#  Soci::core               = target for the core library and include directories
+#  Soci::${COMPONENT}       = target for each plugin
+#
 # Redistribution and use is allowed according to the terms of the BSD license.
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 #
@@ -56,6 +61,13 @@ MARK_AS_ADVANCED(Soci_LIBRARY_DIR)
 IF(Soci_INCLUDE_DIR AND Soci_LIBRARY)
 	SET(Soci_core_FOUND TRUE CACHE BOOL "")
 
+    add_library(Soci::core UNKNOWN IMPORTED)
+    set_target_properties(
+        Soci::core
+        PROPERTIES IMPORTED_LOCATION "${Soci_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${Soci_INCLUDE_DIR}"
+    )
+
 	#
 	### FOURTH STEP: Obtain SOCI version
 	#
@@ -89,6 +101,12 @@ IF(Soci_INCLUDE_DIR AND Soci_LIBRARY)
 
         IF(Soci_${plugin}_PLUGIN)
 			SET(Soci_${plugin}_FOUND TRUE CACHE BOOL "")
+            add_library(Soci::${plugin} UNKNOWN IMPORTED)
+            set_target_properties(
+                Soci::${plugin}
+                PROPERTIES IMPORTED_LOCATION "${Soci_${plugin}_PLUGIN}"
+            )
+            target_link_libraries(Soci::${plugin} INTERFACE Soci::core)
         ELSE()
 			SET(Soci_${plugin}_FOUND FALSE CACHE BOOL "")
         ENDIF()
