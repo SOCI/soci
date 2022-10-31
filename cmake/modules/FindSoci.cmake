@@ -35,7 +35,7 @@ SET(_SOCI_REQUIRED_VARS  Soci_INCLUDE_DIR Soci_LIBRARY)
 #
 FIND_PATH(
     Soci_INCLUDE_DIR soci.h
-	HINTS "/usr/local"
+    HINTS "/usr/local"
     PATH_SUFFIXES "" "soci"
     DOC "Soci (http://soci.sourceforge.net) include directory")
 MARK_AS_ADVANCED(Soci_INCLUDE_DIR)
@@ -59,7 +59,7 @@ MARK_AS_ADVANCED(Soci_LIBRARY_DIR)
 ### THIRD STEP: Find all installed plugins if the library was found
 #
 IF(Soci_INCLUDE_DIR AND Soci_LIBRARY)
-	SET(Soci_core_FOUND TRUE CACHE BOOL "")
+    SET(Soci_core_FOUND TRUE CACHE BOOL "")
 
     add_library(Soci::core UNKNOWN IMPORTED)
     set_target_properties(
@@ -68,27 +68,27 @@ IF(Soci_INCLUDE_DIR AND Soci_LIBRARY)
         INTERFACE_INCLUDE_DIRECTORIES "${Soci_INCLUDE_DIR}"
     )
 
-	#
-	### FOURTH STEP: Obtain SOCI version
-	#
-	set(Soci_VERSION_FILE "${Soci_INCLUDE_DIR}/version.h")
-	IF(EXISTS "${Soci_VERSION_FILE}")
-		file(READ "${Soci_VERSION_FILE}" VERSION_CONTENT)
-		string(REGEX MATCH "#define[ \t]*SOCI_VERSION[ \t]*[0-9]+" VERSION_MATCH "${VERSION_CONTENT}")
-		string(REGEX REPLACE "#define[ \t]*SOCI_VERSION[ \t]*" "" VERSION_MATCH "${VERSION_MATCH}")
+    #
+    ### FOURTH STEP: Obtain SOCI version
+    #
+    set(Soci_VERSION_FILE "${Soci_INCLUDE_DIR}/version.h")
+    IF(EXISTS "${Soci_VERSION_FILE}")
+        file(READ "${Soci_VERSION_FILE}" VERSION_CONTENT)
+        string(REGEX MATCH "#define[ \t]*SOCI_VERSION[ \t]*[0-9]+" VERSION_MATCH "${VERSION_CONTENT}")
+        string(REGEX REPLACE "#define[ \t]*SOCI_VERSION[ \t]*" "" VERSION_MATCH "${VERSION_MATCH}")
 
-		IF(NOT VERSION_MATCH)
-			message(WARNING "Failed to extract SOCI version")
-		ELSE()
-			math(EXPR MAJOR "${VERSION_MATCH} / 100000" OUTPUT_FORMAT DECIMAL)
-			math(EXPR MINOR "${VERSION_MATCH} / 100 % 1000" OUTPUT_FORMAT DECIMAL)
-			math(EXPR PATCH "${VERSION_MATCH} % 100" OUTPUT_FORMAT DECIMAL)
+        IF(NOT VERSION_MATCH)
+            message(WARNING "Failed to extract SOCI version")
+        ELSE()
+            math(EXPR MAJOR "${VERSION_MATCH} / 100000" OUTPUT_FORMAT DECIMAL)
+            math(EXPR MINOR "${VERSION_MATCH} / 100 % 1000" OUTPUT_FORMAT DECIMAL)
+            math(EXPR PATCH "${VERSION_MATCH} % 100" OUTPUT_FORMAT DECIMAL)
 
-			set(Soci_VERSION "${MAJOR}.${MINOR}.${PATCH}" CACHE STRING "")
-		ENDIF()
-	ELSE()
-		message(WARNING "Unable to check SOCI version")
-	ENDIF()
+            set(Soci_VERSION "${MAJOR}.${MINOR}.${PATCH}" CACHE STRING "")
+        ENDIF()
+    ELSE()
+        message(WARNING "Unable to check SOCI version")
+    ENDIF()
 
     FOREACH(plugin IN LISTS _SOCI_ALL_PLUGINS)
 
@@ -100,7 +100,7 @@ IF(Soci_INCLUDE_DIR AND Soci_LIBRARY)
         MARK_AS_ADVANCED(Soci_${plugin}_PLUGIN)
 
         IF(Soci_${plugin}_PLUGIN)
-			SET(Soci_${plugin}_FOUND TRUE CACHE BOOL "")
+            SET(Soci_${plugin}_FOUND TRUE CACHE BOOL "")
             add_library(Soci::${plugin} UNKNOWN IMPORTED)
             set_target_properties(
                 Soci::${plugin}
@@ -108,7 +108,7 @@ IF(Soci_INCLUDE_DIR AND Soci_LIBRARY)
             )
             target_link_libraries(Soci::${plugin} INTERFACE Soci::core)
         ELSE()
-			SET(Soci_${plugin}_FOUND FALSE CACHE BOOL "")
+            SET(Soci_${plugin}_FOUND FALSE CACHE BOOL "")
         ENDIF()
 
     ENDFOREACH()
@@ -119,9 +119,9 @@ ENDIF()
 #
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Soci
-	REQUIRED_VARS ${_SOCI_REQUIRED_VARS}
-	VERSION_VAR Soci_VERSION
-	HANDLE_COMPONENTS
+    REQUIRED_VARS ${_SOCI_REQUIRED_VARS}
+    VERSION_VAR Soci_VERSION
+    HANDLE_COMPONENTS
 )
 
 # For compatibility with previous versions of this script
