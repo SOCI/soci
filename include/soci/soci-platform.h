@@ -101,7 +101,7 @@ namespace std {
 # define SOCI_DECL SOCI_DECL_IMPORT
 #endif
 
-// C++11 features are always available in MSVS as it has no separate C++98
+// C++11 features are always available in MSVC as it has no separate C++98
 // mode, we just need to check for the minimal compiler version supporting them
 // (see https://msdn.microsoft.com/en-us/library/hh567368.aspx).
 
