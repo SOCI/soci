@@ -69,10 +69,16 @@ void check_sqlite_err(sqlite_api::sqlite3* conn, int res,
     {
         const char *zErrMsg = sqlite3_errmsg(conn);
         std::ostringstream ss;
-        ss << errMsg << zErrMsg;
+        errCallback(ss);
+        ss << ": " << zErrMsg;
         sqlite3_close(conn); // connection must be closed here
         throw sqlite3_soci_error(ss.str(), res);
     }
+}
+
+void check_sqlite_err(sqlite_api::sqlite3* conn, int res, char const* const errMsg)
+{
+    return check_sqlite_err(conn, res, [errMsg](std::ostream& ostr) { ostr << errMsg; });
 }
 
 } // namespace anonymous
@@ -172,7 +178,12 @@ sqlite3_session_backend::sqlite3_session_backend(
     }
 
     int res = sqlite3_open_v2(dbname.c_str(), &conn_, connection_flags, (vfs.empty()?NULL:vfs.c_str()));
-    check_sqlite_err(conn_, res, "Cannot establish connection to the database. ");
+    check_sqlite_err(conn_, res,
+        [&dbname](std::ostream& ostr)
+        {
+            ostr << "Cannot establish connection to \"" << dbname << "\"";
+        }
+    );
 
     if (!synchronous.empty())
     {
