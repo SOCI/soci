@@ -133,6 +133,10 @@ sqlite3_session_backend::sqlite3_session_backend(
         {
             connection_flags = (connection_flags | SQLITE_OPEN_READONLY) & ~(SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
         }
+        else if ("nocreate" == key)
+        {
+            connection_flags &= ~SQLITE_OPEN_CREATE;
+        }
         else if ("shared_cache" == key && "true" == val)
         {
             connection_flags |= SQLITE_OPEN_SHAREDCACHE;

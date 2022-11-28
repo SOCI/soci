@@ -50,6 +50,7 @@ The set of parameters used in the connection string for SQLite is:
 * `dbname` or `db`
 * `timeout` - set sqlite busy timeout (in seconds) ([link](http://www.sqlite.org/c3ref/busy_timeout.html))
 * `readonly` - open database in read-only mode instead of the default read-write (note that the database file must already exist in this case, see [the documentation](https://www.sqlite.org/c3ref/open.html))
+* `nocreate` - open an existing database without creating a new one if it doesn't already exist (by default, a new database file is created).
 * `synchronous` - set the pragma synchronous flag ([link](http://www.sqlite.org/pragma.html#pragma_synchronous))
 * `shared_cache` - should be `true` ([link](http://www.sqlite.org/c3ref/enable_shared_cache.html))
 * `vfs` - set the SQLite VFS used to as OS interface. The VFS should be registered before opening the connection, see [the documenation](https://www.sqlite.org/vfs.html)
