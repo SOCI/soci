@@ -359,7 +359,7 @@ void odbc_statement_backend::describe_column(int colNum, data_type & type,
     if (is_odbc_error(rc_colattr))
     {
         std::ostringstream ss;
-        ss << "getting \"unsigned\" col attribute of the column at position " << colNum;
+        ss << "getting \"unsigned\" column attribute of the column at position " << colNum;
         throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, ss.str());
     }
 
