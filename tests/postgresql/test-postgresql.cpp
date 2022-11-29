@@ -369,13 +369,18 @@ TEST_CASE("PostgreSQL boolean", "[postgresql][boolean]")
     sql << "insert into soci_test(val) values(:val)", use(i1);
 
     int i2 = 7;
+    row r;
     sql << "select val from soci_test", into(i2);
+    sql << "select val from soci_test", into(r);
 
     CHECK(i2 == i1);
+    CHECK(r.get<int8_t>(0) == i1);
 
     sql << "update soci_test set val = true";
     sql << "select val from soci_test", into(i2);
+    sql << "select val from soci_test", into(r);
     CHECK(i2 == 1);
+    CHECK(r.get<int8_t>(0) == 1);
 }
 
 struct uuid_table_creator : table_creator_base

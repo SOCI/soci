@@ -783,11 +783,14 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
         type = dt_double;
         break;
 
+    case 16:   // bool
+        type = dt_int8;
+        break;
+
     case 21:   // int2
         type = dt_int16;
         break;
 
-    case 16:   // bool
     case 23:   // int4
     case 26:   // oid
         type = dt_int32;

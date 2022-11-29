@@ -91,8 +91,9 @@ When calling `row::get<T>()`, the type you should pass as `T` depends upon the u
 | PostgreSQL Data Type                                         | SOCI Data Type | `row::get<T>` specializations |
 | ------------------------------------------------------------ | -------------- | ----------------------------- |
 | numeric, real, double                                        | dt_double      | double                        |
+| boolean                                                      | dt_int8        | int8_t                        |
 | smallint                                                     | dt_int16       | int16_t                       |
-| boolean, integer                                             | dt_int32       | int32_t                       |
+| integer                                                      | dt_int32       | int32_t                       |
 | int8                                                         | dt_int64       | int64_t                       |
 | oid                                                          | dt_int32       | int32_t                       |
 | char, varchar, text, cstring, bpchar                         | dt_string      | std::string                   |
