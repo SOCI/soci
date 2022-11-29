@@ -12,6 +12,7 @@
 
 #include "soci-cstrtoi.h"
 
+#include <functional>
 #include <sstream>
 #include <string>
 
@@ -26,9 +27,15 @@ using namespace sqlite_api;
 namespace // anonymous
 {
 
+// Callback function use to construct the error message in the provided stream.
+//
+// SQLite3 own error message will be appended to it.
+using error_callback = std::function<void (std::ostream& ostr)>;
+
 // helper function for hardcoded queries: this is a simple wrapper for
 // sqlite3_exec() which throws an exception on error.
-void execude_hardcoded(sqlite_api::sqlite3* conn, char const* const query, char const* const errMsg,
+void execude_hardcoded(sqlite_api::sqlite3* conn, char const* const query,
+                       error_callback const& errCallback,
                        int (*callback)(void*, int, char**, char**) = NULL,
                        void* callback_arg = NULL)
 {
@@ -37,22 +44,41 @@ void execude_hardcoded(sqlite_api::sqlite3* conn, char const* const query, char 
     if (res != SQLITE_OK)
     {
         std::ostringstream ss;
-        ss << errMsg << " " << zErrMsg;
+        errCallback(ss);
+        ss << ": " << zErrMsg;
         sqlite3_free(zErrMsg);
+        throw sqlite3_soci_error(ss.str(), res);
+    }
+}
+
+// Simpler to use overload which uses a hard coded error message.
+void execude_hardcoded(sqlite_api::sqlite3* conn, char const* const query, char const* const errMsg,
+                       int (*callback)(void*, int, char**, char**) = NULL,
+                       void* callback_arg = NULL)
+{
+    return execude_hardcoded(conn, query,
+        [errMsg](std::ostream& ostr) { ostr << errMsg; },
+        callback, callback_arg
+    );
+}
+
+void check_sqlite_err(sqlite_api::sqlite3* conn, int res,
+                      error_callback const& errCallback)
+{
+    if (SQLITE_OK != res)
+    {
+        const char *zErrMsg = sqlite3_errmsg(conn);
+        std::ostringstream ss;
+        errCallback(ss);
+        ss << ": " << zErrMsg;
+        sqlite3_close(conn); // connection must be closed here
         throw sqlite3_soci_error(ss.str(), res);
     }
 }
 
 void check_sqlite_err(sqlite_api::sqlite3* conn, int res, char const* const errMsg)
 {
-    if (SQLITE_OK != res)
-    {
-        const char *zErrMsg = sqlite3_errmsg(conn);
-        std::ostringstream ss;
-        ss << errMsg << zErrMsg;
-        sqlite3_close(conn); // connection must be closed here
-        throw sqlite3_soci_error(ss.str(), res);
-    }
+    return check_sqlite_err(conn, res, [errMsg](std::ostream& ostr) { ostr << errMsg; });
 }
 
 } // namespace anonymous
@@ -133,6 +159,10 @@ sqlite3_session_backend::sqlite3_session_backend(
         {
             connection_flags = (connection_flags | SQLITE_OPEN_READONLY) & ~(SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
         }
+        else if ("nocreate" == key)
+        {
+            connection_flags &= ~SQLITE_OPEN_CREATE;
+        }
         else if ("shared_cache" == key && "true" == val)
         {
             connection_flags |= SQLITE_OPEN_SHAREDCACHE;
@@ -148,20 +178,33 @@ sqlite3_session_backend::sqlite3_session_backend(
     }
 
     int res = sqlite3_open_v2(dbname.c_str(), &conn_, connection_flags, (vfs.empty()?NULL:vfs.c_str()));
-    check_sqlite_err(conn_, res, "Cannot establish connection to the database. ");
+    check_sqlite_err(conn_, res,
+        [&dbname](std::ostream& ostr)
+        {
+            ostr << "Cannot establish connection to \"" << dbname << "\"";
+        }
+    );
 
     if (!synchronous.empty())
     {
         std::string const query("pragma synchronous=" + synchronous);
-        std::string const errMsg("Query failed: " + query);
-        execude_hardcoded(conn_, query.c_str(), errMsg.c_str());
+        execude_hardcoded(conn_, query.c_str(),
+            [&synchronous](std::ostream& ostr)
+            {
+                ostr << "Setting synchronous pragma to \"" << synchronous << "\" failed";
+            }
+        );
     }
 
     if (!foreignKeys.empty())
     {
         std::string const query("pragma foreign_keys=" + foreignKeys);
-        std::string const errMsg("Executing query: " + query + " failed");
-        execude_hardcoded(conn_, query.c_str(), errMsg.c_str());
+        execude_hardcoded(conn_, query.c_str(),
+            [&foreignKeys](std::ostream& ostr)
+            {
+                ostr << "Setting foreign_keys pragma to \"" << foreignKeys << "\" failed";
+            }
+        );
     }
 
     res = sqlite3_busy_timeout(conn_, timeout * 1000);
