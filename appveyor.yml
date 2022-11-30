@@ -20,7 +20,7 @@ environment:
       POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\12
       MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-    - G: "Visual Studio 15 2017 Win64"
+    - G: "Visual Studio 15 2017"
       BOOST_ROOT: C:\Libraries\boost_1_69_0
       MSSQL_VER: 2016
       POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\11
