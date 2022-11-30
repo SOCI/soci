@@ -32,6 +32,7 @@ public:
     std::size_t get_len();
 
     // offset is backend-specific
+    [[deprecated("Use read_from_start instead")]]
     std::size_t read(std::size_t offset, char * buf, std::size_t toRead);
 
     // offset starts from 0
@@ -39,6 +40,7 @@ public:
         std::size_t offset = 0);
 
     // offset is backend-specific
+    [[deprecated("Use write_from_start instead")]]
     std::size_t write(std::size_t offset, char const * buf,
         std::size_t toWrite);
 

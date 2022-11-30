@@ -192,7 +192,30 @@ SOCI_DECL int soci_blob_read(blob_handle b, int offset, char *buf, int toRead)
     blob_wrapper *blob = static_cast<blob_wrapper *>(b);
     try
     {
+        SOCI_ALLOW_DEPRECATED_BEGIN
         return static_cast<int>(blob->blob_.read(offset, buf, toRead));
+        SOCI_ALLOW_DEPRECATED_END
+    }
+    catch (std::exception &e)
+    {
+        blob->is_ok = false;
+        blob->error_message = e.what();
+        return -1;
+    }
+    catch (...)
+    {
+        blob->is_ok = false;
+        blob->error_message = "unknown exception";
+        return -1;
+    }
+}
+
+SOCI_DECL int soci_blob_read_from_start(blob_handle b, char *buf, int toRead, int offset)
+{
+    blob_wrapper *blob = static_cast<blob_wrapper *>(b);
+    try
+    {
+        return static_cast<int>(blob->blob_.read_from_start(buf, toRead, offset));
     }
     catch (std::exception &e)
     {
@@ -213,7 +236,30 @@ SOCI_DECL int soci_blob_write(blob_handle b, int offset, char const *buf, int to
     blob_wrapper *blob = static_cast<blob_wrapper *>(b);
     try
     {
+        SOCI_ALLOW_DEPRECATED_BEGIN
         return static_cast<int>(blob->blob_.write(offset, buf, toWrite));
+        SOCI_ALLOW_DEPRECATED_END
+    }
+    catch (std::exception &e)
+    {
+        blob->is_ok = false;
+        blob->error_message = e.what();
+        return -1;
+    }
+    catch (...)
+    {
+        blob->is_ok = false;
+        blob->error_message = "unknown exception";
+        return -1;
+    }
+}
+
+SOCI_DECL int soci_blob_write_from_start(blob_handle b, char const *buf, int toWrite, int offset)
+{
+    blob_wrapper *blob = static_cast<blob_wrapper *>(b);
+    try
+    {
+        return static_cast<int>(blob->blob_.write_from_start(buf, toWrite, offset));
     }
     catch (std::exception &e)
     {

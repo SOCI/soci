@@ -33,8 +33,7 @@ std::size_t sqlite3_blob_backend::get_len()
     return len_;
 }
 
-std::size_t sqlite3_blob_backend::read(
-    std::size_t offset, char * buf, std::size_t toRead)
+std::size_t sqlite3_blob_backend::read_from_start(char * buf, std::size_t toRead, std::size_t offset)
 {
     size_t r = toRead;
 
@@ -51,9 +50,7 @@ std::size_t sqlite3_blob_backend::read(
 }
 
 
-std::size_t sqlite3_blob_backend::write(
-    std::size_t offset, char const * buf,
-    std::size_t toWrite)
+std::size_t sqlite3_blob_backend::write_from_start(char const * buf, std::size_t toWrite, std::size_t offset)
 {
     const char* oldBuf = buf_;
     std::size_t oldLen = len_;
@@ -114,5 +111,5 @@ std::size_t sqlite3_blob_backend::set_data(char const *buf, std::size_t toWrite)
         buf_ = 0;
         len_ = 0;
     }
-    return write(0, buf, toWrite);
+    return write_from_start(buf, toWrite);
 }

@@ -53,13 +53,12 @@ std::size_t oracle_blob_backend::get_len()
     return static_cast<std::size_t>(len);
 }
 
-std::size_t oracle_blob_backend::read(
-    std::size_t offset, char *buf, std::size_t toRead)
+std::size_t oracle_blob_backend::read_from_start(char *buf, std::size_t toRead, std::size_t offset)
 {
     ub4 amt = static_cast<ub4>(toRead);
 
     sword res = OCILobRead(session_.svchp_, session_.errhp_, lobp_, &amt,
-        static_cast<ub4>(offset), reinterpret_cast<dvoid*>(buf),
+        static_cast<ub4>(offset + 1), reinterpret_cast<dvoid*>(buf),
         amt, 0, 0, 0, 0);
     if (res != OCI_SUCCESS)
     {
@@ -69,13 +68,12 @@ std::size_t oracle_blob_backend::read(
     return static_cast<std::size_t>(amt);
 }
 
-std::size_t oracle_blob_backend::write(
-    std::size_t offset, char const *buf, std::size_t toWrite)
+std::size_t oracle_blob_backend::write_from_start(char const *buf, std::size_t toWrite, std::size_t offset)
 {
     ub4 amt = static_cast<ub4>(toWrite);
 
     sword res = OCILobWrite(session_.svchp_, session_.errhp_, lobp_, &amt,
-        static_cast<ub4>(offset),
+        static_cast<ub4>(offset + 1),
         reinterpret_cast<dvoid*>(const_cast<char*>(buf)),
         amt, OCI_ONE_PIECE, 0, 0, 0, 0);
     if (res != OCI_SUCCESS)

@@ -10,7 +10,7 @@
 #include "soci/db2/soci-db2.h"
 
 #ifdef _MSC_VER
-#pragma warning(disable:4355)
+# pragma warning(disable:4355 4702)
 #endif
 
 using namespace soci;
@@ -20,43 +20,39 @@ using namespace soci::details;
 db2_blob_backend::db2_blob_backend(db2_session_backend &session)
     : session_(session)
 {
-    // ...
+    throw soci_error("BLOBs are not supported.");
 }
 
 db2_blob_backend::~db2_blob_backend()
 {
-    // ...
 }
 
 std::size_t db2_blob_backend::get_len()
 {
-    // ...
-    return 0;
+    throw soci_error("BLOBs are not supported.");
 }
 
-std::size_t db2_blob_backend::read(
-    std::size_t /* offset */, char * /* buf */, std::size_t /* toRead */)
+std::size_t db2_blob_backend::read_from_start(char * /* buf */, std::size_t /* toRead */, std::size_t /* offset */)
 {
-    // ...
-    return 0;
+    throw soci_error("BLOBs are not supported.");
 }
 
-std::size_t db2_blob_backend::write(
-    std::size_t /* offset */, char const * /* buf */,
-    std::size_t /* toWrite */)
+std::size_t db2_blob_backend::write_from_start(char const * /* buf */, std::size_t /* toWrite */, std::size_t /* offset */)
 {
-    // ...
-    return 0;
+    throw soci_error("BLOBs are not supported.");
 }
 
 std::size_t db2_blob_backend::append(
     char const * /* buf */, std::size_t /* toWrite */)
 {
-    // ...
-    return 0;
+    throw soci_error("BLOBs are not supported.");
 }
 
 void db2_blob_backend::trim(std::size_t /* newLen */)
 {
-    // ...
+    throw soci_error("BLOBs are not supported.");
 }
+
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif

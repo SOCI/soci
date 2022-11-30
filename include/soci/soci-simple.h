@@ -36,8 +36,12 @@ SOCI_DECL blob_handle soci_create_blob(session_handle s);
 SOCI_DECL void soci_destroy_blob(blob_handle b);
 
 SOCI_DECL int soci_blob_get_len(blob_handle b);
+[[deprecated("Use soci_blob_read_from_start instead")]]
 SOCI_DECL int soci_blob_read(blob_handle b, int offset, char *buf, int toRead);
+SOCI_DECL int soci_blob_read_from_start(blob_handle b, char *buf, int toRead, int offset = 0);
+[[deprecated("Use soci_blob_write_from_start instead")]]
 SOCI_DECL int soci_blob_write(blob_handle b, int offset, char const *buf, int toWrite);
+SOCI_DECL int soci_blob_write_from_start(blob_handle b, char const *buf, int toWrite, int offset = 0);
 SOCI_DECL int soci_blob_append(blob_handle b, char const *buf, int toWrite);
 SOCI_DECL int soci_blob_trim(blob_handle b, int newLen);
 
