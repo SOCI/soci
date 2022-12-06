@@ -55,4 +55,9 @@
 #include "soci/boost-gregorian-date.h"
 #endif // SOCI_USE_BOOST
 
+// C++17
+#ifdef SOCI_HAVE_CXX17
+#include "soci/std-optional.h"
+#endif // SOCI_HAVE_CXX17
+
 #endif // SOCI_H_INCLUDED
