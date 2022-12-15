@@ -781,19 +781,44 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
 
     default:
     {
-        int form = PQfformat(result_, pos);
-        int size = PQfsize(result_, pos);
-        if (form == 0 && (size == -1 || size == 4))
+        auto typeCategoryIt = categoryByColumnOID_.find(typeOid);
+        if( typeCategoryIt == categoryByColumnOID_.end() ) 
         {
-            type = dt_string;
+            std::stringstream query;
+            query << "SELECT typcategory FROM pg_type WHERE oid=" << (int)typeOid;
+
+            PGresult* res = PQexec(session_.conn_, query.str().c_str());
+            if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+                std::stringstream message;
+                message << "unknown data type with typelem: " << (int)typeOid
+                    << " for colNum: " << colNum
+                    << " with name: " << PQfname(result_, pos);
+                throw soci_error(message.str());
+            }
+
+            char* typeVal = PQgetvalue(res, 0, 0);
+            categoryByColumnOID_.insert( std::pair<unsigned long, char>( typeOid, typeVal[0] ) );
+
+            typeCategoryIt = categoryByColumnOID_.find(typeOid);
         }
-        else
-        {
-            std::stringstream message;
-            message << "unknown data type with typelem: " << typeOid
-                << " for colNum: " << colNum
-                << " with name: " << PQfname(result_, pos);
-            throw soci_error(message.str());
+
+        char typeCategory = (*typeCategoryIt).second;
+        switch( typeCategory ) {
+            case 'D': // date type
+            case 'E': // enum type
+            case 'T': // time type
+            case 'S': // string type
+            case 'U': // user type
+                type = dt_string;
+                break;
+
+            default:
+                std::stringstream message;
+                message << "unsupported data type with typelem: " << typeOid
+                    << " category: " << typeCategory
+                    << " for colNum: " << colNum
+                    << " with name: " << PQfname(result_, pos);
+                throw soci_error(message.str());
         }
     }
     }
