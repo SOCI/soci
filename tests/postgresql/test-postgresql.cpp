@@ -1155,6 +1155,8 @@ TEST_CASE("test_enum_with_explicit_custom_type_string_rowset", "[postgresql][bin
         s2.execute(true);
 
         type_value = result->get<TestStringEnum>("type");
+
+        delete result;
     }
 
     CHECK(type_value==TestStringEnum::VALUE_STR_2);
@@ -1233,6 +1235,8 @@ TEST_CASE("test_enum_with_explicit_custom_type_int_rowset", "[postgresql][bind-v
         s2.execute(true);
 
         type_value = result->get<TestIntEnum>("type");
+
+        delete result;
     }
 
     CHECK(type_value==TestIntEnum::VALUE_INT_2);
