@@ -725,6 +725,21 @@ int postgresql_statement_backend::prepare_for_describe()
     return columns;
 }
 
+void throw_soci_type_error(Oid typeOid, int colNum, char category, const char* typeName )
+{
+    std::stringstream message;
+    message << "unknown data type"
+        << " for column number: " << colNum
+        << " with type oid: " << (int)typeOid;
+    if( category != '\0' )
+    {
+        message << " with category: " << category;
+    }
+    message << " with name: " << typeName;
+
+    throw soci_error(message.str());
+}
+
 void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     std::string & columnName)
 {
@@ -781,19 +796,41 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
 
     default:
     {
-        int form = PQfformat(result_, pos);
-        int size = PQfsize(result_, pos);
-        if (form == 0 && size == -1)
+        auto typeCategoryIt = categoryByColumnOID_.find(typeOid);
+        if ( typeCategoryIt == categoryByColumnOID_.end() )
         {
-            type = dt_string;
+            std::stringstream query;
+            query << "SELECT typcategory FROM pg_type WHERE oid=" << (int)typeOid;
+
+            soci::details::postgresql_result res(session_, PQexec(session_.conn_, query.str().c_str()));
+            if ( PQresultStatus(res.get_result()) != PGRES_TUPLES_OK )
+            {
+                throw_soci_type_error(typeOid, colNum, '\0', PQfname(result_, pos));
+            }
+
+            char* typeVal = PQgetvalue(res.get_result(), 0, 0);
+            auto iter_inserted = categoryByColumnOID_.insert( std::pair<unsigned long, char>( typeOid, typeVal[0] ) );
+            if ( !iter_inserted.second )
+            {
+                throw_soci_type_error(typeOid, colNum, typeVal[0], PQfname(result_, pos));
+            }
+
+            typeCategoryIt = iter_inserted.first;
         }
-        else
+
+        char typeCategory = (*typeCategoryIt).second;
+        switch ( typeCategory )
         {
-            std::stringstream message;
-            message << "unknown data type with typelem: " << typeOid
-                << " for colNum: " << colNum
-                << " with name: " << PQfname(result_, pos);
-            throw soci_error(message.str());
+            case 'D': // date type
+            case 'E': // enum type
+            case 'T': // time type
+            case 'S': // string type
+            case 'U': // user type
+                type = dt_string;
+                break;
+
+            default:
+                throw_soci_type_error(typeOid, colNum, typeCategory, PQfname(result_, pos));
         }
     }
     }

@@ -24,6 +24,97 @@ backend_factory const &backEnd = *soci::factory_postgresql();
 
 // Postgres-specific tests
 
+enum TestStringEnum
+{
+    VALUE_STR_1=0,
+    VALUE_STR_2,
+    VALUE_STR_3
+};
+
+enum TestIntEnum
+{
+    VALUE_INT_1=0,
+    VALUE_INT_2,
+    VALUE_INT_3
+};
+
+namespace soci {
+template <> struct type_conversion<TestStringEnum>
+{
+    typedef std::string base_type;
+    static void from_base(const std::string & v, indicator & ind, TestStringEnum & p)
+    {
+        if ( ind == i_null )
+            throw soci_error("Null value not allowed for this type");
+
+        if ( v.compare("A") == 0 )
+            p = TestStringEnum::VALUE_STR_1;
+        else if ( v.compare("B") == 0 )
+            p = TestStringEnum::VALUE_STR_2;
+        else if ( v.compare("C") == 0 )
+            p = TestStringEnum::VALUE_STR_3;
+        else
+            throw soci_error("Value not allowed for this type");
+    }
+    static void to_base(TestStringEnum & p, std::string & v, indicator & ind)
+    {
+        switch ( p )
+        {
+        case TestStringEnum::VALUE_STR_1:
+            v = "A";
+            ind = i_ok;
+            return;
+        case TestStringEnum::VALUE_STR_2:
+            v = "B";
+            ind = i_ok;
+            return;
+        case TestStringEnum::VALUE_STR_3:
+            v = "C";
+            ind = i_ok;
+            return;
+        default:
+            throw soci_error("Value not allowed for this type");
+        }
+    }
+};
+
+template <> struct type_conversion<TestIntEnum>
+{
+    typedef int base_type;
+    static void from_base(const int & v, indicator & ind, TestIntEnum & p)
+    {
+        if ( ind == i_null )
+            throw soci_error("Null value not allowed for this type");
+
+        switch( v )
+        {
+        case 0:
+        case 1:
+        case 2:
+            p = (TestIntEnum)v;
+            ind = i_ok;
+            return;
+        default:
+            throw soci_error("Null value not allowed for this type");
+        }
+    }
+    static void to_base(TestIntEnum & p, int & v, indicator & ind)
+    {
+        switch( p )
+        {
+        case TestIntEnum::VALUE_INT_1:
+        case TestIntEnum::VALUE_INT_2:
+        case TestIntEnum::VALUE_INT_3:
+            v = (int)p;
+            ind = i_ok;
+            return;
+        default:
+            throw soci_error("Value not allowed for this type");
+        }
+    }
+};
+}
+
 struct oid_table_creator : public table_creator_base
 {
     oid_table_creator(soci::session& sql)
@@ -1014,6 +1105,170 @@ TEST_CASE("false_bind_variable_inside_identifier", "[postgresql][bind-variables]
     CHECK(col_name.compare("column_with:colon") == 0);
     CHECK(fct_return_value == 2020);
     CHECK(type_value.compare("en_one")==0);
+}
+
+// test_enum_with_explicit_custom_type_string_rowset
+struct test_enum_with_explicit_custom_type_string_rowset : table_creator_base
+{
+    test_enum_with_explicit_custom_type_string_rowset(soci::session & sql)
+        : table_creator_base(sql)
+        , msession(sql)
+    {
+        try
+        {
+            sql << "CREATE TYPE EnumType AS ENUM ('A','B','C');";
+            sql << "CREATE TABLE soci_test (Type EnumType NOT NULL DEFAULT 'A');";
+        }
+        catch (...)
+        {
+            drop();
+        }
+
+    }
+    ~test_enum_with_explicit_custom_type_string_rowset()
+    {
+        drop();
+    }
+
+private:
+    void drop()
+    {
+        try
+        {
+            msession << "drop table if exists soci_test;";
+            msession << "DROP TYPE IF EXISTS EnumType ;";
+        }
+        catch (soci_error const& e){
+            std::cerr << e.what() << std::endl;
+        }
+    }
+    soci::session& msession;
+};
+
+TEST_CASE("test_enum_with_explicit_custom_type_string_rowset", "[postgresql][bind-variables]")
+{
+    TestStringEnum test_value = TestStringEnum::VALUE_STR_2;
+    TestStringEnum type_value;
+
+    {
+        soci::session sql(backEnd, connectString);
+        test_enum_with_explicit_custom_type_string_rowset tableCreator(sql);
+
+        statement s1 = (sql.prepare << "insert into soci_test values(:val);", use(test_value, "val"));
+        statement s2 = (sql.prepare << "SELECT Type FROM soci_test;");
+
+        s1.execute(false);
+        
+        soci::row result;
+        s2.define_and_bind();
+        s2.exchange_for_rowset(soci::into(result));
+        s2.execute(true);
+
+        type_value = result.get<TestStringEnum>("type");
+    }
+
+    CHECK(type_value==TestStringEnum::VALUE_STR_2);
+}
+
+TEST_CASE("test_enum_with_explicit_custom_type_string_into", "[postgresql][bind-variables]")
+{
+    TestStringEnum test_value = TestStringEnum::VALUE_STR_2;
+    TestStringEnum type_value;
+
+    {
+        soci::session sql(backEnd, connectString);
+        test_enum_with_explicit_custom_type_string_rowset tableCreator(sql);
+
+        statement s1 = (sql.prepare << "insert into soci_test values(:val);", use(test_value, "val"));
+        statement s2 = (sql.prepare << "SELECT Type FROM soci_test;", into(type_value));
+
+        s1.execute(false);
+        s2.execute(true);
+    }
+
+    CHECK(type_value==TestStringEnum::VALUE_STR_2);
+}
+
+// test_enum_with_explicit_custom_type_int_rowset
+struct test_enum_with_explicit_custom_type_int_rowset : table_creator_base
+{
+    test_enum_with_explicit_custom_type_int_rowset(soci::session & sql)
+        : table_creator_base(sql)
+        , msession(sql)
+    {
+
+        try
+        {
+            sql << "CREATE TABLE soci_test( Type smallint)";
+            ;
+        }
+        catch (...)
+        {
+            drop();
+        }
+
+    }
+    ~test_enum_with_explicit_custom_type_int_rowset()
+    {
+        drop();
+    }
+
+private:
+    void drop()
+    {
+        try
+        {
+            msession << "drop table if exists soci_test;";
+        }
+        catch (soci_error const& e){
+            std::cerr << e.what() << std::endl;
+        }
+    }
+    soci::session& msession;
+};
+
+TEST_CASE("test_enum_with_explicit_custom_type_int_rowset", "[postgresql][bind-variables]")
+{
+    TestIntEnum test_value = TestIntEnum::VALUE_INT_2;
+    TestIntEnum type_value;
+
+    {
+        soci::session sql(backEnd, connectString);
+        test_enum_with_explicit_custom_type_int_rowset tableCreator(sql);
+
+        statement s1 = (sql.prepare << "insert into soci_test(Type) values(:val)", use(test_value, "val"));
+        statement s2 = (sql.prepare << "SELECT Type FROM soci_test ;");
+
+        s1.execute(false);
+
+        soci::row result;
+        s2.define_and_bind();
+        s2.exchange_for_rowset(soci::into(result));
+        s2.execute(true);
+
+        type_value = result.get<TestIntEnum>("type");
+    }
+
+    CHECK(type_value==TestIntEnum::VALUE_INT_2);
+}
+
+TEST_CASE("test_enum_with_explicit_custom_type_int_into", "[postgresql][bind-variables]")
+{
+    TestIntEnum test_value = TestIntEnum::VALUE_INT_2;
+    TestIntEnum type_value;
+
+    {
+        soci::session sql(backEnd, connectString);
+        test_enum_with_explicit_custom_type_int_rowset tableCreator(sql);
+
+        statement s1 = (sql.prepare << "insert into soci_test(Type) values(:val)", use(test_value, "val"));
+        statement s2 = (sql.prepare << "SELECT Type FROM soci_test ;", into(type_value));
+
+        s1.execute(false);
+        s2.execute(true);
+    }
+
+    CHECK(type_value==TestIntEnum::VALUE_INT_2);
 }
 
 // false_bind_variable_inside_identifier
