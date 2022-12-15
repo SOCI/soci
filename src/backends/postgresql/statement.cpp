@@ -783,7 +783,7 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     {
         int form = PQfformat(result_, pos);
         int size = PQfsize(result_, pos);
-        if (form == 0 && size == -1)
+        if (form == 0 && (size == -1 || size == 4))
         {
             type = dt_string;
         }
