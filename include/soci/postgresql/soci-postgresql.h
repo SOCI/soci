@@ -21,6 +21,7 @@
 #include "soci/connection-parameters.h"
 #include <libpq-fe.h>
 #include <vector>
+#include <unordered_map>
 
 namespace soci
 {
@@ -312,7 +313,7 @@ struct postgresql_statement_backend : details::statement_backend
 
     // the following map is used to keep the results of column
     // type queries with custom types
-    typedef std::map<unsigned long, char> CategoryByColumnOID;
+    typedef std::unordered_map<unsigned long, char> CategoryByColumnOID;
     CategoryByColumnOID categoryByColumnOID_;
 };
 
