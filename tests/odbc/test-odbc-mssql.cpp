@@ -71,7 +71,7 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
     // column.
     CHECK_THROWS_AS(
         (sql << "insert into soci_test(fixed_text) values(:str)", use(str_in)),
-        soci_error&
+        soci_error
     );
 }
 

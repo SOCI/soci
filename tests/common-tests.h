@@ -618,18 +618,18 @@ TEST_CASE_METHOD(common_tests, "Exception on not connected", "[core][exception]"
     soci::session sql; // no connection
 
     // ensure connection is checked, no crash occurs
-    CHECK_THROWS_AS(sql.begin(), soci_error&);
-    CHECK_THROWS_AS(sql.commit(), soci_error&);
-    CHECK_THROWS_AS(sql.rollback(), soci_error&);
-    CHECK_THROWS_AS(sql.get_backend_name(), soci_error&);
-    CHECK_THROWS_AS(sql.make_statement_backend(), soci_error&);
-    CHECK_THROWS_AS(sql.make_rowid_backend(), soci_error&);
-    CHECK_THROWS_AS(sql.make_blob_backend(), soci_error&);
+    CHECK_THROWS_AS(sql.begin(), soci_error);
+    CHECK_THROWS_AS(sql.commit(), soci_error);
+    CHECK_THROWS_AS(sql.rollback(), soci_error);
+    CHECK_THROWS_AS(sql.get_backend_name(), soci_error);
+    CHECK_THROWS_AS(sql.make_statement_backend(), soci_error);
+    CHECK_THROWS_AS(sql.make_rowid_backend(), soci_error);
+    CHECK_THROWS_AS(sql.make_blob_backend(), soci_error);
 
     std::string s;
     long long l;
-    CHECK_THROWS_AS(sql.get_next_sequence_value(s, l), soci_error&);
-    CHECK_THROWS_AS(sql.get_last_insert_id(s, l), soci_error&);
+    CHECK_THROWS_AS(sql.get_next_sequence_value(s, l), soci_error);
+    CHECK_THROWS_AS(sql.get_last_insert_id(s, l), soci_error);
 }
 
 TEST_CASE_METHOD(common_tests, "Basic functionality", "[core][basics]")
@@ -638,7 +638,7 @@ TEST_CASE_METHOD(common_tests, "Basic functionality", "[core][basics]")
 
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
 
-    CHECK_THROWS_AS(sql << "drop table soci_test_nosuchtable", soci_error&);
+    CHECK_THROWS_AS(sql << "drop table soci_test_nosuchtable", soci_error);
 
     sql << "insert into soci_test (id) values (" << 123 << ")";
     int id;
@@ -3174,7 +3174,7 @@ TEST_CASE_METHOD(common_tests, "Rowset expected exception", "[core][exception][r
     std::string troublemaker;
     CHECK_THROWS_AS(
         rowset<std::string>((sql.prepare << "select str from soci_test", into(troublemaker))),
-        soci_error&
+        soci_error
         );
 }
 
@@ -3207,7 +3207,7 @@ TEST_CASE_METHOD(common_tests, "NULL expected exception", "[core][exception][nul
 
     rowset<int> rs = (sql.prepare << "select val from soci_test order by val asc");
 
-    CHECK_THROWS_AS( std::for_each(rs.begin(), rs.end(), THelper()), soci_error& );
+    CHECK_THROWS_AS( std::for_each(rs.begin(), rs.end(), THelper()), soci_error );
 }
 
 // This is like the first dynamic binding test but with rowset and iterators use
@@ -5531,7 +5531,7 @@ TEST_CASE_METHOD(common_tests, "XML", "[core][xml]")
             (sql << "insert into soci_test(id, x) values (2, "
                         + tc_.to_xml(":1") + ")",
                     use(xml)
-            ), soci_error&
+            ), soci_error
         );
     }
 }

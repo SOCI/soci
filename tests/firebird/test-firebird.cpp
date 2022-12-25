@@ -803,10 +803,10 @@ TEST_CASE("Firebird dynamic binding", "[firebird][dynamic]")
     // verify default values
     CHECK(tests::are_doubles_exactly_equal(r.get<double>("NTEST", 2), 2));
 
-    CHECK_THROWS_AS(r.get<double>("NTEST"), soci_error&);
+    CHECK_THROWS_AS(r.get<double>("NTEST"), soci_error);
 
     // verify exception thrown on invalid get<>
-    CHECK_THROWS_AS(r.get<std::string>(0), std::bad_cast&);
+    CHECK_THROWS_AS(r.get<std::string>(0), std::bad_cast);
 
     sql << "drop table test9";
 }

@@ -682,7 +682,7 @@ TEST_CASE("PostgreSQL JSON", "[postgresql][json]")
 
         CHECK_THROWS_AS((
             sql << "insert into soci_json_test (data) values(:data)",use(invalid_input)),
-            soci_error&
+            soci_error
         );
     }
     else

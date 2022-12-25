@@ -473,13 +473,13 @@ TEST_CASE("Oracle bulk insert", "[oracle][insert][bulk]")
     //verify an exception is thrown if into vector is zero length
     {
         std::vector<int> ids;
-        CHECK_THROWS_AS((sql << "select id from soci_test", into(ids)), soci_error&);
+        CHECK_THROWS_AS((sql << "select id from soci_test", into(ids)), soci_error);
     }
 
     // verify an exception is thrown if use vector is zero length
     {
         std::vector<int> ids;
-        CHECK_THROWS_AS((sql << "insert into soci_test(id) values(:id)", use(ids)), soci_error&);
+        CHECK_THROWS_AS((sql << "insert into soci_test(id) values(:id)", use(ids)), soci_error);
     }
 
     // test "no data" condition
