@@ -1,6 +1,7 @@
 #ifndef SOCI_FIXED_SIZE_INTS_H_INCLUDED
 #define SOCI_FIXED_SIZE_INTS_H_INCLUDED
 
+#include "soci/soci-types.h"
 #include "soci/type-conversion-traits.h"
 
 #include <cstdint>
@@ -15,95 +16,7 @@ namespace soci
 // long and long long. With the following type_conversion specializations,
 // this becomes possible.
 
-#if defined(_WIN64)
-template <>
-struct type_conversion<long>
-{
-    typedef int32_t base_type;
-
-    static void from_base(base_type const & in, indicator ind, long & out)
-    {
-        if (ind == i_null)
-        {
-            throw soci_error("Null value not allowed for this type.");
-        }
-
-        out = static_cast<long>(in);
-    }
-
-    static void to_base(long const & in, base_type & out, indicator & ind)
-    {
-        out = static_cast<base_type>(in);
-        ind = i_ok;
-    }
-};
-
-template <>
-struct type_conversion<unsigned long>
-{
-    typedef uint32_t base_type;
-
-    static void from_base(base_type const & in, indicator ind, unsigned long & out)
-    {
-        if (ind == i_null)
-        {
-            throw soci_error("Null value not allowed for this type.");
-        }
-
-        out = static_cast<unsigned long>(in);
-    }
-
-    static void to_base(unsigned long const & in, base_type & out, indicator & ind)
-    {
-        out = static_cast<base_type>(in);
-        ind = i_ok;
-    }
-};
-#elif defined(__APPLE__)
-template <>
-struct type_conversion<long>
-{
-    typedef int64_t base_type;
-
-    static void from_base(base_type const & in, indicator ind, long & out)
-    {
-        if (ind == i_null)
-        {
-            throw soci_error("Null value not allowed for this type.");
-        }
-
-        out = static_cast<long>(in);
-    }
-
-    static void to_base(long const & in, base_type & out, indicator & ind)
-    {
-        out = static_cast<base_type>(in);
-        ind = i_ok;
-    }
-};
-
-template <>
-struct type_conversion<unsigned long>
-{
-    typedef uint64_t base_type;
-
-    static void from_base(base_type const & in, indicator ind, unsigned long & out)
-    {
-        if (ind == i_null)
-        {
-            throw soci_error("Null value not allowed for this type.");
-        }
-
-        out = static_cast<unsigned long>(in);
-    }
-
-    static void to_base(unsigned long const & in, base_type & out, indicator & ind)
-    {
-        out = static_cast<base_type>(in);
-        ind = i_ok;
-    }
-};
-#elif defined(__LP64__) || (__WORDSIZE == 64)
+#if defined(SOCI_INT64_IS_LONG)
 template <>
 struct type_conversion<long long>
 {
@@ -147,8 +60,94 @@ struct type_conversion<unsigned long long>
         ind = i_ok;
     }
 };
+#elif defined(SOCI_LONG_IS_64_BIT)
+template <>
+struct type_conversion<long>
+{
+    typedef int64_t base_type;
+
+    static void from_base(base_type const & in, indicator ind, long & out)
+    {
+        if (ind == i_null)
+        {
+            throw soci_error("Null value not allowed for this type.");
+        }
+
+        out = static_cast<long>(in);
+    }
+
+    static void to_base(long const & in, base_type & out, indicator & ind)
+    {
+        out = static_cast<base_type>(in);
+        ind = i_ok;
+    }
+};
+
+template <>
+struct type_conversion<unsigned long>
+{
+    typedef uint64_t base_type;
+
+    static void from_base(base_type const & in, indicator ind, unsigned long & out)
+    {
+        if (ind == i_null)
+        {
+            throw soci_error("Null value not allowed for this type.");
+        }
+
+        out = static_cast<unsigned long>(in);
+    }
+
+    static void to_base(unsigned long const & in, base_type & out, indicator & ind)
+    {
+        out = static_cast<base_type>(in);
+        ind = i_ok;
+    }
+};
 #else
-#error "Unhandled type architecture"
+template <>
+struct type_conversion<long>
+{
+    typedef int32_t base_type;
+
+    static void from_base(base_type const & in, indicator ind, long & out)
+    {
+        if (ind == i_null)
+        {
+            throw soci_error("Null value not allowed for this type.");
+        }
+
+        out = static_cast<long>(in);
+    }
+
+    static void to_base(long const & in, base_type & out, indicator & ind)
+    {
+        out = static_cast<base_type>(in);
+        ind = i_ok;
+    }
+};
+
+template <>
+struct type_conversion<unsigned long>
+{
+    typedef uint32_t base_type;
+
+    static void from_base(base_type const & in, indicator ind, unsigned long & out)
+    {
+        if (ind == i_null)
+        {
+            throw soci_error("Null value not allowed for this type.");
+        }
+
+        out = static_cast<unsigned long>(in);
+    }
+
+    static void to_base(unsigned long const & in, base_type & out, indicator & ind)
+    {
+        out = static_cast<base_type>(in);
+        ind = i_ok;
+    }
+};
 #endif
 
 } // namespace soci

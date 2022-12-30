@@ -175,4 +175,23 @@ private: \
     #define SOCI_DUMMY_RETURN(x) return x
 #endif
 
+#define SOCI_OS_LINUX       0x0001
+#define SOCI_OS_FREE_BSD    0x0002
+#define SOCI_OS_APPLE       0x0003
+#define SOCI_OS_WINDOWS     0x0004
+
+#if defined(linux) || defined(__linux) || defined(__linux__)
+    #define SOCI_OS SOCI_OS_LINUX
+#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+    #define SOCI_OS SOCI_OS_FREE_BSD
+#elif defined(__APPLE__)
+    #define SOCI_OS SOCI_OS_APPLE
+#elif defined(_WIN32) || defined(_WIN64)
+    #define SOCI_OS SOCI_OS_WINDOWS
+#endif
+
+#if !defined(SOCI_OS)
+    #error "Unknown platform"
+#endif
+
 #endif // SOCI_PLATFORM_H_INCLUDED

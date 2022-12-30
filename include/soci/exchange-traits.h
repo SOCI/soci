@@ -8,6 +8,7 @@
 #ifndef SOCI_EXCHANGE_TRAITS_H_INCLUDED
 #define SOCI_EXCHANGE_TRAITS_H_INCLUDED
 
+#include "soci/soci-types.h"
 #include "soci/type-conversion-traits.h"
 #include "soci/soci-backend.h"
 #include "soci/type-wrappers.h"
@@ -99,27 +100,7 @@ struct exchange_traits<uint64_t>
     enum { x_type = x_uint64 };
 };
 
-#if defined(_WIN64)
-template <>
-struct exchange_traits<long> : exchange_traits<int32_t>
-{
-};
-
-template <>
-struct exchange_traits<unsigned long> : exchange_traits<uint32_t>
-{
-};
-#elif defined(__APPLE__)
-template <>
-struct exchange_traits<long> : exchange_traits<int64_t>
-{
-};
-
-template <>
-struct exchange_traits<unsigned long> : exchange_traits<uint64_t>
-{
-};
-#elif defined(__LP64__) || (__WORDSIZE == 64)
+#if defined(SOCI_INT64_IS_LONG)
 template <>
 struct exchange_traits<long long> : exchange_traits<int64_t>
 {
@@ -129,8 +110,26 @@ template <>
 struct exchange_traits<unsigned long long> : exchange_traits<uint64_t>
 {
 };
+#elif defined(SOCI_LONG_IS_64_BIT)
+template <>
+struct exchange_traits<long> : exchange_traits<int64_t>
+{
+};
+
+template <>
+struct exchange_traits<unsigned long> : exchange_traits<uint64_t>
+{
+};
 #else
-#error "Unhandled type architecture"
+template <>
+struct exchange_traits<long> : exchange_traits<int32_t>
+{
+};
+
+template <>
+struct exchange_traits<unsigned long> : exchange_traits<uint32_t>
+{
+};
 #endif
 
 template <>
