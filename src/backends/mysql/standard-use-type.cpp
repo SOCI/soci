@@ -70,8 +70,7 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 std::size_t const bufSize
                     = std::numeric_limits<int8_t>::digits10 + 3;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%d",
-                    static_cast<int>(exchange_type_cast<x_int8>(data_)));
+                snprintf(buf_, bufSize, "%d", exchange_type_cast<x_int8>(data_));
             }
             break;
         case x_uint8:
@@ -79,8 +78,7 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 std::size_t const bufSize
                     = std::numeric_limits<uint8_t>::digits10 + 3;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%u",
-                    static_cast<unsigned int>(exchange_type_cast<x_uint8>(data_)));
+                snprintf(buf_, bufSize, "%u", exchange_type_cast<x_uint8>(data_));
             }
             break;
         case x_int16:
@@ -88,8 +86,7 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 std::size_t const bufSize
                     = std::numeric_limits<int16_t>::digits10 + 3;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%d",
-                    static_cast<int>(exchange_type_cast<x_int16>(data_)));
+                snprintf(buf_, bufSize, "%d", exchange_type_cast<x_int16>(data_));
             }
             break;
         case x_uint16:
@@ -97,8 +94,7 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 std::size_t const bufSize
                     = std::numeric_limits<uint16_t>::digits10 + 3;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%u",
-                    static_cast<unsigned int>(exchange_type_cast<x_uint16>(data_)));
+                snprintf(buf_, bufSize, "%u", exchange_type_cast<x_uint16>(data_));
             }
             break;
         case x_int32:
@@ -106,8 +102,7 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 std::size_t const bufSize
                     = std::numeric_limits<int32_t>::digits10 + 3;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%d",
-                    static_cast<int>(exchange_type_cast<x_int32>(data_)));
+                snprintf(buf_, bufSize, "%d", exchange_type_cast<x_int32>(data_));
             }
             break;
         case x_uint32:
@@ -115,8 +110,7 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 std::size_t const bufSize
                     = std::numeric_limits<uint32_t>::digits10 + 3;
                 buf_ = new char[bufSize];
-                snprintf(buf_, bufSize, "%u",
-                    static_cast<unsigned int>(exchange_type_cast<x_uint32>(data_)));
+                snprintf(buf_, bufSize, "%u", exchange_type_cast<x_uint32>(data_));
             }
             break;
         case x_int64:
