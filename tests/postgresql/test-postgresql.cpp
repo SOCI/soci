@@ -1424,11 +1424,6 @@ public:
         return false;
     }
 
-    bool has_full_uint64_support() const override
-    {
-        return false;
-    }
-
     std::string sql_length(std::string const& s) const override
     {
         return "char_length(" + s + ")";

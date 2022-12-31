@@ -16,23 +16,6 @@
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_odbc();
 
-class test_context_odbc_mysql : public test_context
-{
-public:
-    test_context_odbc_mysql(backend_factory const &backEnd_,
-                            std::string const &connectString_)
-        : test_context(backEnd_, connectString_) {}
-
-    bool has_full_uint64_support() const override
-    {
-        // For some reason it seems that MySQL has a bug under ODBC with which
-        // the maximum value of a uint64_t cannot be stored in and retrieved
-        // from the database. I.e. when storing 18446744073709551615, you're
-        // retrieving the value 9223372036854775807.
-        return false;
-    }
-};
-
 int main(int argc, char** argv)
 {
 #ifdef _MSC_VER
@@ -60,7 +43,7 @@ int main(int argc, char** argv)
         connectString = "FILEDSN=./test-mysql.dsn";
     }
 
-    test_context_odbc_mysql tc(backEnd, connectString);
+    test_context tc(backEnd, connectString);
 
     return Catch::Session().run(argc, argv);
 }

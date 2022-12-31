@@ -89,11 +89,6 @@ public:
         return new table_creator_for_get_affected_rows(s);
     }
 
-    bool has_full_uint64_support() const override
-    {
-        return false;
-    }
-
     std::string to_date_time(std::string const &datdt_string) const
     {
         return "\'" + datdt_string + "\'";

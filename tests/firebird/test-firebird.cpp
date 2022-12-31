@@ -1334,11 +1334,6 @@ class test_context : public tests::test_context_base
             return new TableCreatorXML(s);
         }
 
-        bool has_full_uint64_support() const override
-        {
-            return false;
-        }
-
         std::string to_date_time(std::string const &datdt_string) const override
         {
             return "'" + datdt_string + "'";

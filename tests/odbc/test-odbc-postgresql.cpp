@@ -212,11 +212,6 @@ public:
         return !m_verDriver.is_initialized() || m_verDriver < odbc_version(9, 3, 400);
     }
 
-    bool has_full_uint64_support() const override
-    {
-        return false;
-    }
-
     std::string fix_crlf_if_necessary(std::string const& s) const override
     {
         // Version 9.03.0300 (ancient, but still used on AppVeyor CI) is known

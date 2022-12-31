@@ -462,15 +462,6 @@ public:
     // to fit by default.
     virtual bool has_silent_truncate_bug(session&) const { return false; }
 
-    // Override this if the backend doesn't fully support signed 8-bit integers.
-    virtual bool has_full_int8_support() const { return true; }
-
-    // Override this if the backend doesn't support unsigned types.
-    virtual bool has_full_unsigned_type_support() const { return true; }
-
-    // Override this if the backend doesn't fully support unsigned 64-bit integers.
-    virtual bool has_full_uint64_support() const { return true; }
-
     // Override this if the backend doesn't distinguish between empty and null
     // strings (Oracle does this).
     virtual bool treats_empty_strings_as_null() const { return false; }
@@ -1532,18 +1523,15 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
 
         CHECK(i2 == 123);
 
-        if (tc_.has_full_int8_support())
-        {
-            sql << "delete from soci_test";
+        sql << "delete from soci_test";
 
-            i = (std::numeric_limits<int8_t>::min)();
-            sql << "insert into soci_test(id) values(:id)", use(i);
+        i = (std::numeric_limits<int8_t>::min)();
+        sql << "insert into soci_test(id) values(:id)", use(i);
 
-            i2 = 0;
-            sql << "select id from soci_test", into(i2);
+        i2 = 0;
+        sql << "select id from soci_test", into(i2);
 
-            CHECK(i2 == (std::numeric_limits<int8_t>::min)());
-        }
+        CHECK(i2 == (std::numeric_limits<int8_t>::min)());
 
         sql << "delete from soci_test";
 
@@ -1649,18 +1637,15 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
 
         CHECK(ui2 == (std::numeric_limits<uint16_t>::min)());
 
-        if (tc_.has_full_unsigned_type_support())
-        {
-            sql << "delete from soci_test";
+        sql << "delete from soci_test";
 
-            ui = (std::numeric_limits<uint16_t>::max)();
-            sql << "insert into soci_test(id) values(:id)", use(ui);
+        ui = (std::numeric_limits<uint16_t>::max)();
+        sql << "insert into soci_test(id) values(:id)", use(ui);
 
-            ui2 = 0;
-            sql << "select id from soci_test", into(ui2);
+        ui2 = 0;
+        sql << "select id from soci_test", into(ui2);
 
-            CHECK(ui2 == (std::numeric_limits<uint16_t>::max)());
-        }
+        CHECK(ui2 == (std::numeric_limits<uint16_t>::max)());
     }
 
     SECTION("int")
@@ -1725,28 +1710,19 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
 
         CHECK(ui2 == (std::numeric_limits<uint32_t>::min)());
 
-        if (tc_.has_full_unsigned_type_support())
-        {
-            sql << "delete from soci_test";
+        sql << "delete from soci_test";
 
-            ui = (std::numeric_limits<uint32_t>::max)();
-            sql << "insert into soci_test(ul) values(:i)", use(ui);
+        ui = (std::numeric_limits<uint32_t>::max)();
+        sql << "insert into soci_test(ul) values(:i)", use(ui);
 
-            ui2 = 0;
-            sql << "select ul from soci_test", into(ui2);
+        ui2 = 0;
+        sql << "select ul from soci_test", into(ui2);
 
-            CHECK(ui2 == (std::numeric_limits<uint32_t>::max)());
-        }
+        CHECK(ui2 == (std::numeric_limits<uint32_t>::max)());
     }
 
     SECTION("unsigned long")
     {
-        if (!tc_.has_full_unsigned_type_support())
-        {
-            WARN("unsigned long not fully supported by the database, skipping the test.");
-            return;
-        }
-
         unsigned long ul = 4000000000ul;
         sql << "insert into soci_test(ul) values(:num)", use(ul);
 
@@ -1807,18 +1783,15 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
 
         CHECK(ui2 == (std::numeric_limits<uint64_t>::min)());
 
-        if (tc_.has_full_unsigned_type_support() && tc_.has_full_uint64_support())
-        {
-            sql << "delete from soci_test";
+        sql << "delete from soci_test";
 
-            ui = (std::numeric_limits<uint64_t>::max)();
-            sql << "insert into soci_test(ul) values(:num)", use(ui);
+        ui = (std::numeric_limits<uint64_t>::max)();
+        sql << "insert into soci_test(ul) values(:num)", use(ui);
 
-            ui2 = 0;
-            sql << "select ul from soci_test", into(ui2);
+        ui2 = 0;
+        sql << "select ul from soci_test", into(ui2);
 
-            CHECK(ui2 == (std::numeric_limits<uint64_t>::max)());
-        }
+        CHECK(ui2 == (std::numeric_limits<uint64_t>::max)());
     }
 
     SECTION("double")
@@ -1997,12 +1970,6 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
 
     SECTION("const unsigned long")
     {
-        if (!tc_.has_full_unsigned_type_support())
-        {
-            WARN("unsigned long not fully supported by the database, skipping the test.");
-            return;
-        }
-
         unsigned long const ul = 4000000000ul;
         sql << "insert into soci_test(ul) values(:num)", use(ul);
 
@@ -2194,11 +2161,8 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
     SECTION("int8_t")
     {
         std::vector<int8_t> v;
-        if (tc_.has_full_int8_support())
-        {
-            v.push_back((std::numeric_limits<int8_t>::min)());
-            v.push_back(-5);
-        }
+        v.push_back((std::numeric_limits<int8_t>::min)());
+        v.push_back(-5);
         v.push_back(123);
         v.push_back((std::numeric_limits<int8_t>::max)());
 
@@ -2207,20 +2171,11 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         std::vector<int8_t> v2(4);
 
         sql << "select sh from soci_test order by sh", into(v2);
-        if (tc_.has_full_int8_support())
-        {
-            CHECK(v2.size() == 4);
-            CHECK(v2[0] == (std::numeric_limits<int8_t>::min)());
-            CHECK(v2[1] == -5);
-            CHECK(v2[2] == 123);
-            CHECK(v2[3] == (std::numeric_limits<int8_t>::max)());
-        }
-        else
-        {
-            CHECK(v2.size() == 2);
-            CHECK(v2[0] == 123);
-            CHECK(v2[1] == (std::numeric_limits<int8_t>::max)());
-        }
+        CHECK(v2.size() == 4);
+        CHECK(v2[0] == (std::numeric_limits<int8_t>::min)());
+        CHECK(v2[1] == -5);
+        CHECK(v2[2] == 123);
+        CHECK(v2[3] == (std::numeric_limits<int8_t>::max)());
     }
 
     SECTION("uint8_t")
@@ -2289,31 +2244,18 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         v.push_back((std::numeric_limits<uint16_t>::min)());
         v.push_back(6);
         v.push_back(123);
-        if (tc_.has_full_unsigned_type_support())
-        {
-            v.push_back((std::numeric_limits<uint16_t>::max)());
-        }
+        v.push_back((std::numeric_limits<uint16_t>::max)());
 
         sql << "insert into soci_test(val) values(:val)", use(v);
 
         std::vector<uint16_t> v2(4);
 
         sql << "select val from soci_test order by val", into(v2);
-        if (tc_.has_full_unsigned_type_support())
-        {
-            CHECK(v2.size() == 4);
-        }
-        else
-        {
-            CHECK(v2.size() == 3);
-        }
+        CHECK(v2.size() == 4);
         CHECK(v2[0] == (std::numeric_limits<uint16_t>::min)());
         CHECK(v2[1] == 6);
         CHECK(v2[2] == 123);
-        if (tc_.has_full_unsigned_type_support())
-        {
-            CHECK(v2[3] == (std::numeric_limits<uint16_t>::max)());
-        }
+        CHECK(v2[3] == (std::numeric_limits<uint16_t>::max)());
     }
 
     SECTION("int")
@@ -2388,33 +2330,20 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         v.push_back(1);
         v.push_back(123);
         v.push_back(1000);
-        if (tc_.has_full_unsigned_type_support())
-        {
-            v.push_back((std::numeric_limits<uint32_t>::max)());
-        }
+        v.push_back((std::numeric_limits<uint32_t>::max)());
 
         sql << "insert into soci_test(ul) values(:ul)", use(v);
 
         std::vector<uint32_t> v2(6);
 
         sql << "select ul from soci_test order by ul", into(v2);
-        if (tc_.has_full_unsigned_type_support())
-        {
-            CHECK(v2.size() == 6);
-        }
-        else
-        {
-            CHECK(v2.size() == 5);
-        }
+        CHECK(v2.size() == 6);
         CHECK(v2[0] == (std::numeric_limits<uint32_t>::min)());
         CHECK(v2[1] == 0);
         CHECK(v2[2] == 1);
         CHECK(v2[3] == 123);
         CHECK(v2[4] == 1000);
-        if (tc_.has_full_unsigned_type_support())
-        {
-            CHECK(v2[5] == (std::numeric_limits<uint32_t>::max)());
-        }
+        CHECK(v2[5] == (std::numeric_limits<uint32_t>::max)());
     }
 
     SECTION("unsigned long long")
@@ -2469,33 +2398,20 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         v.push_back(1);
         v.push_back(123);
         v.push_back(1000);
-        if (tc_.has_full_unsigned_type_support() && tc_.has_full_uint64_support())
-        {
-            v.push_back((std::numeric_limits<uint64_t>::max)());
-        }
+        v.push_back((std::numeric_limits<uint64_t>::max)());
 
         sql << "insert into soci_test(ul) values(:ul)", use(v);
 
         std::vector<uint64_t> v2(6);
 
         sql << "select ul from soci_test order by ul", into(v2);
-        if (tc_.has_full_unsigned_type_support() && tc_.has_full_uint64_support())
-        {
-            CHECK(v2.size() == 6);
-        }
-        else
-        {
-            CHECK(v2.size() == 5);
-        }
+        CHECK(v2.size() == 6);
         CHECK(v2[0] == (std::numeric_limits<uint64_t>::min)());
         CHECK(v2[1] == 0);
         CHECK(v2[2] == 1);
         CHECK(v2[3] == 123);
         CHECK(v2[4] == 1000);
-        if (tc_.has_full_unsigned_type_support() && tc_.has_full_uint64_support())
-        {
-            CHECK(v2[5] == (std::numeric_limits<uint64_t>::max)());
-        }
+        CHECK(v2[5] == (std::numeric_limits<uint64_t>::max)());
     }
 
     SECTION("double")

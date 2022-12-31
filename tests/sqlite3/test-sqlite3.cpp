@@ -665,11 +665,6 @@ public:
         return true;
     }
 
-    bool has_full_uint64_support() const override
-    {
-        return false;
-    }
-
     bool enable_std_char_padding(soci::session&) const override
     {
         // SQLite does not support right padded char type.

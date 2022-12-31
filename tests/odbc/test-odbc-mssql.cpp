@@ -210,35 +210,6 @@ public:
         return true;
     }
 
-    bool has_full_int8_support() const override
-    {
-        // MS SQL only supports tinyint values in the range [0..255].
-        return false;
-    }
-
-    bool has_full_unsigned_type_support() const override
-    {
-        // MS SQL only supports signed integer types. A direct mapping to
-        // e.g. a uint32 value is therefore only possible up to its equivalent
-        // signed type range.
-        //
-        // In the past, when tests used unsigned types, an overflow happened
-        // on the C++ side, effectively storing a negative value in the database.
-        // When reading this value back to an unsigned value, another overflow
-        // on the C++ side lead to the correct result in the unsigned type var.
-        // Since SOCI's full support of fixed-size C++ integers and the
-        // corresponding changes in database communication, unsigned types would
-        // get stored as-is without any overflows on the C++ side. As MS SQL
-        // doesn't support unsigned types, we get an overflow and an insertion
-        // error there.
-        return false;
-    }
-
-    bool has_full_uint64_support() const override
-    {
-        return has_full_unsigned_type_support();
-    }
-
     std::string sql_length(std::string const& s) const override
     {
         return "len(" + s + ")";
