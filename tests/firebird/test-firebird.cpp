@@ -1339,6 +1339,17 @@ class test_context : public tests::test_context_base
             return "'" + datdt_string + "'";
         }
 
+        bool has_uint64_storage_bug() const override
+        {
+            // Firebird does not support unsigned integer types.
+            // We're using Firebird 3, which does not yet support a data
+            // type that can correctly store a UINT64_MAX. The biggest
+            // numeric data type available is numeric(18,0).
+            // Firebird 4 introduces the data type int128 and numeric(36,0),
+            // which will be sufficient for that in the future.
+            return true;
+        }
+
         void on_after_ddl(soci::session& sql) const override
         {
             sql.commit();

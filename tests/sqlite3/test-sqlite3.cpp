@@ -665,6 +665,13 @@ public:
         return true;
     }
 
+    bool has_uint64_storage_bug() const override
+    {
+        // SQLite processes integers as 8-byte signed values. Values bigger
+        // than INT64_MAX therefore overflow and are stored as negative values.
+        return true;
+    }
+
     bool enable_std_char_padding(soci::session&) const override
     {
         // SQLite does not support right padded char type.

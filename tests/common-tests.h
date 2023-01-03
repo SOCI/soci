@@ -466,6 +466,11 @@ public:
     // strings (Oracle does this).
     virtual bool treats_empty_strings_as_null() const { return false; }
 
+    // Override this if the backend does not store values bigger than INT64_MAX
+    // correctly. This can lead to an unexpected ordering of values as larger
+    // values might be stored as overflown and therefore negative integer.
+    virtual bool has_uint64_storage_bug() const { return false; }
+
     // Override this to call commit() if it's necessary for the DDL statements
     // to be taken into account (currently this is only the case for Firebird).
     virtual void on_after_ddl(session&) const { }
@@ -2406,12 +2411,24 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
 
         sql << "select ul from soci_test order by ul", into(v2);
         CHECK(v2.size() == 6);
-        CHECK(v2[0] == (std::numeric_limits<uint64_t>::min)());
-        CHECK(v2[1] == 0);
-        CHECK(v2[2] == 1);
-        CHECK(v2[3] == 123);
-        CHECK(v2[4] == 1000);
-        CHECK(v2[5] == (std::numeric_limits<uint64_t>::max)());
+        if (tc_.has_uint64_storage_bug())
+        {
+            CHECK(v2[0] == (std::numeric_limits<uint64_t>::max)());
+            CHECK(v2[1] == (std::numeric_limits<uint64_t>::min)());
+            CHECK(v2[2] == 0);
+            CHECK(v2[3] == 1);
+            CHECK(v2[4] == 123);
+            CHECK(v2[5] == 1000);
+        }
+        else
+        {
+            CHECK(v2[0] == (std::numeric_limits<uint64_t>::min)());
+            CHECK(v2[1] == 0);
+            CHECK(v2[2] == 1);
+            CHECK(v2[3] == 123);
+            CHECK(v2[4] == 1000);
+            CHECK(v2[5] == (std::numeric_limits<uint64_t>::max)());
+        }
     }
 
     SECTION("double")
