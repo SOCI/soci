@@ -25,12 +25,12 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
     {
     // simple cases
     case x_int8:
-        sqlType = SQL_TINYINT;
+        sqlType = supports_negative_tinyint() ? SQL_TINYINT : SQL_SMALLINT;
         cType = SQL_C_STINYINT;
         size = sizeof(int8_t);
         break;
     case x_uint8:
-        sqlType = SQL_TINYINT;
+        sqlType = can_convert_to_unsigned_sql_type() ? SQL_TINYINT : SQL_SMALLINT;
         cType = SQL_C_UTINYINT;
         size = sizeof(uint8_t);
         break;
@@ -40,7 +40,7 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
         size = sizeof(int16_t);
         break;
     case x_uint16:
-        sqlType = SQL_SMALLINT;
+        sqlType = can_convert_to_unsigned_sql_type() ? SQL_SMALLINT : SQL_INTEGER;
         cType = SQL_C_USHORT;
         size = sizeof(uint16_t);
         break;
@@ -50,7 +50,7 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
         size = sizeof(int32_t);
         break;
     case x_uint32:
-        sqlType = SQL_INTEGER;
+        sqlType = can_convert_to_unsigned_sql_type() ? SQL_INTEGER : SQL_BIGINT;
         cType = SQL_C_ULONG;
         size = sizeof(uint32_t);
         break;
@@ -73,7 +73,7 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
         }
         break;
     case x_uint64:
-        if (use_string_for_bigint())
+        if (use_string_for_bigint() || !can_convert_to_unsigned_sql_type())
         {
           sqlType = SQL_NUMERIC;
           cType = SQL_C_CHAR;
@@ -83,7 +83,7 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
                    static_cast<unsigned long long>(exchange_type_cast<x_uint64>(data_)));
           indHolder_ = SQL_NTS;
         }
-        else // Normal case, use ODBC support.
+        else
         {
           sqlType = SQL_BIGINT;
           cType = SQL_C_UBIGINT;

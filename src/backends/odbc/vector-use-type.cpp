@@ -45,7 +45,7 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
     {    // simple cases
     case x_int8:
         {
-            sqlType = SQL_TINYINT;
+            sqlType = supports_negative_tinyint() ? SQL_TINYINT : SQL_SMALLINT;
             cType = SQL_C_STINYINT;
             size = sizeof(int8_t);
             std::vector<int8_t> *vp = static_cast<std::vector<int8_t> *>(data_);
@@ -56,7 +56,7 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
         break;
     case x_uint8:
         {
-            sqlType = SQL_TINYINT;
+            sqlType = can_convert_to_unsigned_sql_type() ? SQL_TINYINT : SQL_SMALLINT;
             cType = SQL_C_UTINYINT;
             size = sizeof(uint8_t);
             std::vector<uint8_t> *vp = static_cast<std::vector<uint8_t> *>(data_);
@@ -78,7 +78,7 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
         break;
     case x_uint16:
         {
-            sqlType = SQL_SMALLINT;
+            sqlType = can_convert_to_unsigned_sql_type() ? SQL_SMALLINT : SQL_INTEGER;
             cType = SQL_C_USHORT;
             size = sizeof(uint16_t);
             std::vector<uint16_t> *vp = static_cast<std::vector<uint16_t> *>(data_);
@@ -101,7 +101,7 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
         break;
     case x_uint32:
         {
-            sqlType = SQL_INTEGER;
+            sqlType = can_convert_to_unsigned_sql_type() ? SQL_INTEGER : SQL_BIGINT;
             cType = SQL_C_ULONG;
             size = sizeof(SQLINTEGER);
             std::vector<uint32_t> *vp = static_cast<std::vector<uint32_t> *>(data_);
@@ -143,7 +143,7 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
             std::size_t const vsize = v.size();
             prepare_indicators(vsize);
 
-            if (use_string_for_bigint())
+            if (use_string_for_bigint() || !can_convert_to_unsigned_sql_type())
             {
                 sqlType = SQL_NUMERIC;
                 cType = SQL_C_CHAR;
@@ -151,7 +151,7 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
                 buf_ = new char[size * vsize];
                 data = buf_;
             }
-            else // Normal case, use ODBC support.
+            else // Normal case, use ODBC support
             {
                 sqlType = SQL_BIGINT;
                 cType = SQL_C_UBIGINT;
@@ -397,7 +397,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
             break;
 
         case x_uint64:
-            if (use_string_for_bigint())
+            if (use_string_for_bigint() || !can_convert_to_unsigned_sql_type())
             {
                 std::vector<uint64_t> *vp
                      = static_cast<std::vector<uint64_t> *>(data_);
