@@ -181,6 +181,8 @@ void postgresql_blob_backend::reset() {
             // Merely close our handle to the large object
             lo_close(session_.conn_, details_.fd);
         }
+
+        details_ = {};
     }
 
     destroy_on_close_ = false;
