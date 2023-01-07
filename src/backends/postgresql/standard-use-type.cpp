@@ -184,6 +184,10 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                 // to not destroy it again, because we will now actually insert it into the DB.
                 bbe->set_destroy_on_close(false);
 
+                // We don't want any subsequent changes made to the blob object to leak to the
+                // object that we are currently writing into the DB
+                bbe->set_clone_before_modify(true);
+
                 std::size_t const bufSize
                     = std::numeric_limits<unsigned long>::digits10 + 2;
                 buf_ = new char[bufSize];

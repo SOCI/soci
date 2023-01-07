@@ -363,7 +363,7 @@ public:
 
     void set_destroy_on_close(bool destroy);
 
-    std::size_t seek(std::size_t toOffset, int from);
+    void set_clone_before_modify(bool clone);
 
     void init();
 
@@ -373,6 +373,10 @@ private:
     postgresql_session_backend & session_;
     blob_details details_;
     bool destroy_on_close_;
+    bool clone_before_modify_;
+
+    std::size_t seek(std::size_t toOffset, int from);
+    void clone();
 };
 
 struct postgresql_session_backend : details::session_backend
