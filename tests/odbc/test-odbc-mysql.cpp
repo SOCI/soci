@@ -7,11 +7,14 @@
 
 #include "soci/soci.h"
 #include "soci/odbc/soci-odbc.h"
-#include "mysql/test-mysql.h"
 #include <iostream>
 #include <string>
 #include <ctime>
 #include <cmath>
+
+#define SOCI_INCLUDED_FROM_ODBC_TEST
+#include "mysql/test-mysql.h"
+#undef SOCI_INCLUDED_FROM_ODBC_TEST
 
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_odbc();

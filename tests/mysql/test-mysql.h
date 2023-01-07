@@ -95,10 +95,13 @@ public:
         return "\'" + datdt_string + "\'";
     }
 
+#ifndef SOCI_INCLUDED_FROM_ODBC_TEST
+    // ODBC backend doesn't support BLOBs yet
     table_creator_base* table_creator_blob(soci::session& s) const override
     {
       return new table_creator_for_blob(s);
     }
+#endif
 
     bool has_fp_bug() const override
     {
