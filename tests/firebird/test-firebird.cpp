@@ -1313,6 +1313,8 @@ struct TableCreatorBLOB : public tests::table_creator_base
             : tests::table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, b blob)";
+        sql.commit();
+        sql.begin();
     }
 };
 

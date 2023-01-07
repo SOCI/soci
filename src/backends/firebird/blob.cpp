@@ -13,8 +13,8 @@ using namespace soci;
 using namespace soci::details::firebird;
 
 firebird_blob_backend::firebird_blob_backend(firebird_session_backend &session)
-	  : session_(session), bid_(), from_db_(false), bhp_(0), data_(),
-		loaded_(false), max_seg_size_(0)
+      : session_(session), bid_(), from_db_(false), bhp_(0), data_(),
+        loaded_(false), max_seg_size_(0)
 {}
 
 firebird_blob_backend::~firebird_blob_backend()
@@ -42,8 +42,14 @@ std::size_t firebird_blob_backend::read_from_start(char * buf, std::size_t toRea
 
     std::size_t size = data_.size();
 
-    if (offset > size)
+    if (offset >= size)
     {
+        if (offset == 0)
+        {
+            // Read (from beginning) on empty (default-initialized) BLOB is defined as no-op
+            return 0;
+        }
+
         throw soci_error("Can't read past-the-end of BLOB data");
     }
 
