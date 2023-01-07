@@ -71,6 +71,12 @@ std::size_t postgresql_blob_backend::read_from_start(char * buf, std::size_t toR
 
 std::size_t postgresql_blob_backend::write_from_start(char const * buf, std::size_t toWrite, std::size_t offset)
 {
+    if (offset > get_len())
+    {
+        // If offset == length, the operation is to be understood as appending (and is therefore allowed)
+        throw soci_error("Can't start writing far past-the-end of BLOB data.");
+    }
+
     init();
 
     seek(offset, SEEK_SET);
