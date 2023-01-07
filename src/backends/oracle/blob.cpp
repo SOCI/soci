@@ -65,12 +65,15 @@ std::size_t oracle_blob_backend::get_len()
 
 std::size_t oracle_blob_backend::read_from_start(char *buf, std::size_t toRead, std::size_t offset)
 {
-    if (!initialized_) {
-        if (offset > 1) {
-            throw soci_error("Can't read past-the-end of BLOB data.");
+    if (offset >= get_len())
+    {
+        if (!initialized_ && offset == 0)
+        {
+            // Read-attempts (from the beginning) on uninitialized BLOBs is defined to be a no-op
+            return 0;
         }
 
-        return 0;
+        throw soci_error("Can't read past-the-end of BLOB data.");
     }
 
     ub4 amt = static_cast<ub4>(toRead);
@@ -88,6 +91,12 @@ std::size_t oracle_blob_backend::read_from_start(char *buf, std::size_t toRead, 
 
 std::size_t oracle_blob_backend::write_from_start(char const *buf, std::size_t toWrite, std::size_t offset)
 {
+	if (offset > get_len())
+	{
+        // If offset == length, the operation is to be understood as appending (and is therefore allowed)
+        throw soci_error("Can't start writing far past-the-end of BLOB data.");
+	}
+
     ensure_initialized();
 
     ub4 amt = static_cast<ub4>(toWrite);
