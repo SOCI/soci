@@ -99,21 +99,12 @@ std::size_t postgresql_blob_backend::append(
 
 void postgresql_blob_backend::trim(std::size_t newLen)
 {
-#if PG_VERSION_NUM < 80003
-    // lo_truncate was introduced in Postgresql v8.3
-    (void) newLen;
-    throw soci_error("Your Postgresql version does not support trimming BLOBs");
-#else
     if (newLen > static_cast<std::size_t>(std::numeric_limits<int>::max())) {
         throw soci_error("Request new BLOB size exceeds INT_MAX, which is not supported");
     }
 
-# if PG_VERSION_NUM >= 90003
     // lo_truncate64 was introduced in Postgresql v9.3
     int ret_code = lo_truncate64(session_.conn_, details_.fd, newLen);
-# else
-    int ret_code = -1;
-# endif
     if (ret_code == -1) {
         // If we call lo_truncate64 on a server that is < v9.3, the call will fail and return -1.
         // Thus, we'll try again with the slightly older function lo_truncate.
@@ -123,7 +114,6 @@ void postgresql_blob_backend::trim(std::size_t newLen)
     if (ret_code < 0) {
         throw soci_error(std::string("Cannot truncate BLOB: ") + PQerrorMessage(session_.conn_));
     }
-#endif
 }
 
 const postgresql_blob_backend::blob_details &postgresql_blob_backend::get_blob_details() const {
@@ -145,11 +135,7 @@ void postgresql_blob_backend::set_destroy_on_close(bool destroy) {
 }
 
 std::size_t postgresql_blob_backend::seek(std::size_t toOffset, int from) {
-#if PG_VERSION_NUM >= 90003
     pg_int64 pos = lo_lseek64(session_.conn_, details_.fd, static_cast<pg_int64>(toOffset), from);
-#else
-    int pos = -1;
-#endif
     if (pos == -1) {
         // If we try to use lo_lseek64 on a Postgresql server that is older than 9.3, the function will fail
         // and return -1, so we'll try again with the older function lo_lseek.
