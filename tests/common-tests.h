@@ -6526,13 +6526,25 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
             // Write and retrieve blob from/into database
             sql << "insert into soci_test (id, b) values(:id, :b)", soci::use(first_id), soci::use(write_blob);
 
+            // Append to write_blob - these changes must not reflect in the BLOB stored in the DB
+            write_blob.append("ay", 2);
+            CHECK(write_blob.get_len() == 12);
+            char buf[15];
+            std::size_t read_bytes = write_blob.read_from_start(buf, sizeof(buf));
+            CHECK(read_bytes == 12);
+            for (std::size_t i = 0; i < 10; ++i) {
+                CHECK(buf[i] == dummy_data[i]);
+            }
+            CHECK(buf[10] == 'a');
+            CHECK(buf[11] == 'y');
+
+
             soci::blob read_blob(sql);
             sql << "select b from soci_test where id = :id", soci::use(first_id), soci::into(read_blob);
             CHECK(sql.got_data());
 
-            CHECK(read_blob.get_len() == write_blob.get_len());
+            CHECK(read_blob.get_len() == 10);
 
-            char buf[15];
             std::size_t bytes_read = read_blob.read_from_start(buf, sizeof(buf));
             CHECK(bytes_read == read_blob.get_len());
             CHECK(bytes_read == 10);
