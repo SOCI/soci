@@ -52,7 +52,7 @@ struct table_creator_for_get_affected_rows : table_creator_base
 struct table_creator_for_blob : public tests::table_creator_base
 {
     table_creator_for_blob(soci::session & sql)
-		: tests::table_creator_base(sql)
+        : tests::table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, b blob)";
     }
