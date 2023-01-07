@@ -6475,21 +6475,19 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
 			// (Writing exactly one position beyond is the same as appending)
 			CHECK_THROWS_AS(blob.write_from_start(dummy_data, 2, blob.get_len() + 1), soci_error);
 		}
-		SECTION("Inserting default-constructed blob into DB")
+		SECTION("Inserting/Reading default-constructed blob")
 		{
-			soci::blob blob(sql);
+			soci::blob input_blob(sql);
 
-			sql << "insert into soci_test (id, b) values(5, :b)", soci::use(blob);
-		}
-		SECTION("Fetching default-constructed blob from DB")
-		{
-			soci::blob blob(sql);
+			sql << "insert into soci_test (id, b) values(5, :b)", soci::use(input_blob);
+
+			soci::blob output_blob(sql);
 			soci::indicator ind;
 
-			sql << "select b from soci_test where id = 5", soci::into(blob, ind);
+			sql << "select b from soci_test where id = 5", soci::into(output_blob, ind);
 
 			CHECK(ind == soci::i_ok);
-			CHECK(blob.get_len() == 0);
+			CHECK(output_blob.get_len() == 0);
 		}
 	}
 	transaction.rollback();
