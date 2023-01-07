@@ -333,8 +333,8 @@ class trivial_blob_backend : public blob_backend
 public:
     std::size_t get_len() override { return buffer_.size(); }
 
-    std::size_t read(std::size_t offset, char* buf,
-        std::size_t toRead) override
+    std::size_t read_from_start(char* buf, std::size_t toRead,
+        std::size_t offset = 0) override
     {
         if (offset > buffer_.size() || (offset ==  buffer_.size() && offset > 0))
         {
@@ -350,14 +350,8 @@ public:
         return toRead;
     }
 
-    std::size_t read_from_start(char* buf, std::size_t toRead,
+    std::size_t write_from_start(const char* buf, std::size_t toWrite,
         std::size_t offset = 0) override
-    {
-        return read(offset, buf, toRead);
-    }
-
-    std::size_t write(std::size_t offset, char const* buf,
-        std::size_t toWrite) override
     {
         if (offset > buffer_.size())
         {
@@ -371,15 +365,9 @@ public:
         return toWrite;
     }
 
-    std::size_t write_from_start(const char* buf, std::size_t toWrite,
-        std::size_t offset = 0) override
-    {
-        return write(offset, buf, toWrite);
-    }
-
     std::size_t append(char const* buf, std::size_t toWrite) override
     {
-        return write(buffer_.size(), buf, toWrite);
+        return write_from_start(buf, toWrite, buffer_.size());
     }
 
     void trim(std::size_t newLen) override { buffer_.resize(newLen); }
