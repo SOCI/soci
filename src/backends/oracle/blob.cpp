@@ -14,6 +14,8 @@
 #include <ctime>
 #include <cctype>
 
+#include <iostream>
+
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
@@ -31,6 +33,7 @@ oracle_blob_backend::oracle_blob_backend(oracle_session_backend &session)
     {
         throw soci_error("Cannot allocate the LOB locator");
     }
+	std::cout << "Created Oracle Blob obj\n";
 }
 
 oracle_blob_backend::~oracle_blob_backend()
@@ -42,10 +45,12 @@ oracle_blob_backend::~oracle_blob_backend()
     }
 
     OCIDescriptorFree(lobp_, OCI_DTYPE_LOB);
+	std::cout << "Destroyed Oracle Blob obj\n";
 }
 
 std::size_t oracle_blob_backend::get_len()
 {
+	std::cout << "Getting blob length\n";
     if (!initialized_) {
         return 0;
     }
@@ -65,6 +70,7 @@ std::size_t oracle_blob_backend::get_len()
 
 std::size_t oracle_blob_backend::read_from_start(char *buf, std::size_t toRead, std::size_t offset)
 {
+	std::cout << "Reading from blob (" << toRead << ", " << offset << ")\n";
     if (offset >= get_len())
     {
         if (!initialized_ && offset == 0)
@@ -91,6 +97,7 @@ std::size_t oracle_blob_backend::read_from_start(char *buf, std::size_t toRead, 
 
 std::size_t oracle_blob_backend::write_from_start(char const *buf, std::size_t toWrite, std::size_t offset)
 {
+	std::cout << "Writing to blob (" << toWrite << ", " << offset << ")\n";
 	if (offset > get_len())
 	{
         // If offset == length, the operation is to be understood as appending (and is therefore allowed)
@@ -115,6 +122,7 @@ std::size_t oracle_blob_backend::write_from_start(char const *buf, std::size_t t
 
 std::size_t oracle_blob_backend::append(char const *buf, std::size_t toWrite)
 {
+	std::cout << "Appending to blob (" << toWrite << ")\n";
     ensure_initialized();
 
     ub4 amt = static_cast<ub4>(toWrite);
@@ -132,6 +140,7 @@ std::size_t oracle_blob_backend::append(char const *buf, std::size_t toWrite)
 
 void oracle_blob_backend::trim(std::size_t newLen)
 {
+	std::cout << "Trimming blob (" << newLen << ")\n";
     sword res = OCILobTrim(session_.svchp_, session_.errhp_, lobp_,
         static_cast<ub4>(newLen));
     if (res != OCI_SUCCESS)
@@ -147,6 +156,7 @@ oracle_blob_backend::locator_t oracle_blob_backend::get_lob_locator() const
 
 void oracle_blob_backend::set_lob_locator(oracle_blob_backend::locator_t locator, bool initialized)
 {
+	std::cout << "Setting locator\n";
     reset();
 
     lobp_ = locator;
@@ -166,6 +176,7 @@ void oracle_blob_backend::set_lob_locator(oracle_blob_backend::locator_t locator
 
 void oracle_blob_backend::reset()
 {
+	std::cout << "Resetting blob\n";
     if (!initialized_)
     {
         return;
@@ -176,6 +187,7 @@ void oracle_blob_backend::reset()
 
     if (res != OCI_SUCCESS)
     {
+		std::cout << "Can't check if temporary LOB\n";
         throw_oracle_soci_error(res, session_.errhp_);
     }
 
@@ -187,16 +199,20 @@ void oracle_blob_backend::reset()
 
     if (res != OCI_SUCCESS)
     {
+		std::cout << "Can't free/close LOB (is temporary: " << is_temporary << ")\n";
         throw_oracle_soci_error(res, session_.errhp_);
     }
 
     initialized_ = false;
+
+	std::cout << "Reset complete\n";
 }
 
 void oracle_blob_backend::ensure_initialized()
 {
     if (!initialized_)
     {
+		std::cout << "Initializing blob\n";
         // If asked to initialize explicitly, we can only create a temporary LOB
         sword res = OCILobCreateTemporary(session_.svchp_, session_.errhp_, lobp_,
                 OCI_DEFAULT, SQLCS_IMPLICIT, OCI_TEMP_BLOB, FALSE, OCI_DURATION_SESSION);

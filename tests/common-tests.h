@@ -6492,6 +6492,7 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
         }
         SECTION("Ensure reading into blob overwrites previous contents")
         {
+			std::cout << "Relevant part begin\n";
             soci::blob blob(sql);
             blob.write_from_start("hello kitty", 10);
 
@@ -6516,6 +6517,7 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
         }
         SECTION("Blob-DB interaction")
         {
+			std::cout << "Next part begin\n";
             soci::blob write_blob(sql);
 
             static_assert(sizeof(dummy_data) >= 10, "Underlying assumption violated");
