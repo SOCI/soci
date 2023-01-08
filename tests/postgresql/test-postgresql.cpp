@@ -1163,7 +1163,7 @@ TEST_CASE("test_enum_with_explicit_custom_type_string_rowset", "[postgresql][bin
         statement s2 = (sql.prepare << "SELECT Type FROM soci_test;");
 
         s1.execute(false);
-        
+
         soci::row result;
         s2.define_and_bind();
         s2.exchange_for_rowset(soci::into(result));
@@ -1204,7 +1204,7 @@ struct test_enum_with_explicit_custom_type_int_rowset : table_creator_base
 
         try
         {
-            sql << "CREATE TABLE soci_test( Type smallint)";
+            sql << "CREATE TABLE soci_test( Type integer)";
             ;
         }
         catch (...)
