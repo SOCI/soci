@@ -681,15 +681,6 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
             }
             break;
         case x_blob:
-             {
-                blob *b = static_cast<blob *>(data_);
-
-                oracle_blob_backend *bbe
-                    = static_cast<oracle_blob_backend *>(b->get_backend());
-
-                bbe->reset();
-             }
-             break;
         case x_rowid:
         case x_xmltype:
         case x_longstring:
