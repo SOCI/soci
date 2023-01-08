@@ -8,7 +8,6 @@
 #define SOCI_POSTGRESQL_SOURCE
 #include "soci/postgresql/soci-postgresql.h"
 #include <libpq/libpq-fs.h> // libpq
-#include <pg_config.h>
 #include <cctype>
 #include <cstdio>
 #include <cstring>
