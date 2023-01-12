@@ -29,6 +29,7 @@ option(SOCI_TESTS "Enable build of collection of SOCI tests" ON)
 option(SOCI_ASAN "Enable address sanitizer on GCC v4.8+/Clang v 3.1+" OFF)
 option(SOCI_LTO "Enable link time optimization" OFF)
 option(SOCI_VISIBILITY "Enable hiding private symbol using ELF visibility if supported by the platform" ON)
+option(SOCI_ENABLE_MODULES "Enables cmake find_package modules" ON)
 
 if (SOCI_LTO)
     cmake_minimum_required(VERSION 3.9)
@@ -88,7 +89,9 @@ endif()
 
 # Path to additional CMake modules
 set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
-set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
+if (SOCI_ENABLE_MODULES)
+  set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
+endif()
 
 include(SociUtilities)
 include(SociConfig)
