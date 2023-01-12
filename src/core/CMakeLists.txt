@@ -46,7 +46,9 @@ if (SOCI_SHARED)
   add_library(${SOCI_CORE_TARGET} SHARED ${SOCI_CORE_HEADERS} ${SOCI_CORE_SOURCES})
   add_library(Soci::core ALIAS ${SOCI_CORE_TARGET})
 
-  target_link_libraries(${SOCI_CORE_TARGET} ${SOCI_CORE_DEPS_LIBS})
+  target_link_libraries(${SOCI_CORE_TARGET}
+    ${CMAKE_DL_LIBS}
+    ${SOCI_CORE_DEPS_LIBS})
 
   if(WIN32)
     set_target_properties(${SOCI_CORE_TARGET}
@@ -90,8 +92,8 @@ if (SOCI_STATIC)
 
   # we still need to link against dl if we have it
   target_link_libraries (${SOCI_CORE_TARGET_STATIC}
-    ${SOCI_CORE_DEPS_LIBS}
-  )
+    ${CMAKE_DL_LIBS}
+    ${SOCI_CORE_DEPS_LIBS})
 
   set_target_properties(${SOCI_CORE_TARGET_STATIC}
     PROPERTIES

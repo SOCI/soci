@@ -141,16 +141,6 @@ else()
   message(FATAL_ERROR "No thread library found")
 endif()
 
-if(NOT MSVC)
-  set(DL_FIND_QUIETLY TRUE)
-  find_package(DL)
-  if(DL_FOUND)
-    list(APPEND SOCI_CORE_DEPS_LIBS ${DL_LIBRARY})
-    set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES ${DL_INCLUDE_DIR})
-    add_definitions(-DHAVE_DL=1)
-  endif()
-endif()
-
 if(Boost_FOUND)
   get_property(SOCI_COMPILE_DEFINITIONS
     DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
