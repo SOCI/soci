@@ -471,6 +471,9 @@ public:
     // values might be stored as overflown and therefore negative integer.
     virtual bool has_uint64_storage_bug() const { return false; }
 
+    // Override this if the backend truncates integer values bigger than INT64_MAX.
+    virtual bool truncates_uint64_to_int64() const { return false; }
+
     // Override this to call commit() if it's necessary for the DDL statements
     // to be taken into account (currently this is only the case for Firebird).
     virtual void on_after_ddl(session&) const { }
@@ -1796,7 +1799,14 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         ui2 = 0;
         sql << "select ul from soci_test", into(ui2);
 
-        CHECK(ui2 == (std::numeric_limits<uint64_t>::max)());
+        if (tc_.truncates_uint64_to_int64())
+        {
+            CHECK(ui2 == static_cast<uint64_t>((std::numeric_limits<int64_t>::max)()));
+        }
+        else
+        {
+            CHECK(ui2 == (std::numeric_limits<uint64_t>::max)());
+        }
     }
 
     SECTION("double")
@@ -2427,7 +2437,14 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
             CHECK(v2[2] == 1);
             CHECK(v2[3] == 123);
             CHECK(v2[4] == 1000);
-            CHECK(v2[5] == (std::numeric_limits<uint64_t>::max)());
+            if (tc_.truncates_uint64_to_int64())
+            {
+                CHECK(v2[5] == static_cast<uint64_t>((std::numeric_limits<int64_t>::max)()));
+            }
+            else
+            {
+                CHECK(v2[5] == (std::numeric_limits<uint64_t>::max)());
+            }
         }
     }
 
