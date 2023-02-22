@@ -422,6 +422,7 @@ static sqlite3_data_type_map get_data_type_map()
     m["date"]               = dt_date;
     m["time"]               = dt_date;
     m["datetime"]           = dt_date;
+    m["timestamp"]          = dt_date;
 
     // dt_double
     m["decimal"]            = dt_double;
