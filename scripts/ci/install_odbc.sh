@@ -5,9 +5,15 @@
 #
 source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
+# Remove buggy versions of the packages from Microsoft repositories as well as
+# their dependencies.
+run_apt remove \
+    libodbc1 odbcinst1debian2 \
+    unixodbc unixodbc-dev
+
 run_apt install \
     tar bzip2 \
-    unixodbc unixodbc-dev \
+    unixodbc unixodbc-dbgsym unixodbc-dev \
     odbc-postgresql odbc-postgresql-dbgsym
 
 # Use full path to the driver library to avoid errors like
