@@ -13,7 +13,7 @@ run_apt remove \
 
 run_apt install \
     tar bzip2 \
-    unixodbc unixodbc-dev \
+    unixodbc unixodbc-dbgsym unixodbc-dev \
     odbc-postgresql odbc-postgresql-dbgsym
 
 # Use full path to the driver library to avoid errors like
