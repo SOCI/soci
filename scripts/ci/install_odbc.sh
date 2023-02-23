@@ -5,6 +5,12 @@
 #
 source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
+# Remove buggy versions of the packages from Microsoft repositories as well as
+# their dependencies.
+run_apt remove \
+    libodbc1 odbcinst1debian2 \
+    unixodbc unixodbc-dev
+
 run_apt install \
     tar bzip2 \
     unixodbc unixodbc-dev \
