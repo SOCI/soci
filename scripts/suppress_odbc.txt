@@ -1,0 +1,6 @@
+# This is a suppression file for LeakSanitizer when running ODBC tests under Unix.
+
+# There seems to be a leak inside SQLDriverConnect() that we can't do anything
+# about (we do close the connection, but there are still a couple of once only
+# leaks as well a 252 byte leak per connection, it seems).
+leak:SQLDriverConnect
