@@ -28,24 +28,39 @@ void odbc_standard_into_type_backend::define_by_pos(
     switch (type_)
     {
     case x_char:
+#ifdef SOCI_ODBC_WIDE
+        odbcType_ = SQL_C_WCHAR;
+        size = sizeof(SQLWCHAR) * 2;
+#else
         odbcType_ = SQL_C_CHAR;
-        size = sizeof(char) + 1;
+        size = sizeof(char) * 2;
+#endif // SOCI_ODBC_WIDE
         buf_ = new char[size];
         data = buf_;
         break;
     case x_stdstring:
     case x_longstring:
     case x_xmltype:
+#ifdef SOCI_ODBC_WIDE
+        odbcType_ = SQL_C_WCHAR;
+#else
         odbcType_ = SQL_C_CHAR;
+#endif // SOCI_ODBC_WIDE
         // For LONGVARCHAR fields the returned size is ODBC_MAX_COL_SIZE
         // (or 0 for some backends), but this doesn't correspond to the actual
         // field size, which can be (much) greater. For now we just used
         // a buffer of huge (100MiB) hardcoded size, which is clearly not
         // ideal, but changing this would require using SQLGetData() and is
         // not trivial, so for now we're stuck with this suboptimal solution.
-        size = static_cast<SQLUINTEGER>(statement_.column_size(position_));
+#ifdef SOCI_ODBC_WIDE
+        size = static_cast<SQLUINTEGER>(statement_.column_size(position_) * sizeof(SQLWCHAR));
         size = (size >= ODBC_MAX_COL_SIZE || size == 0) ? odbc_max_buffer_length : size;
-        size++;
+        size += sizeof(SQLWCHAR);
+#else
+        size = static_cast<SQLUINTEGER>(statement_.column_size(position_) * sizeof(char));
+        size = (size >= ODBC_MAX_COL_SIZE || size == 0) ? odbc_max_buffer_length : size;
+        size += sizeof(char);
+#endif // SOCI_ODBC_WIDE
         buf_ = new char[size];
         data = buf_;
         break;
@@ -60,7 +75,7 @@ void odbc_standard_into_type_backend::define_by_pos(
     case x_long_long:
         if (use_string_for_bigint())
         {
-          odbcType_ = SQL_C_CHAR;
+          odbcType_ = SQL_CHAR;
           size = max_bigint_length;
           buf_ = new char[size];
           data = buf_;
@@ -74,7 +89,7 @@ void odbc_standard_into_type_backend::define_by_pos(
     case x_unsigned_long_long:
         if (use_string_for_bigint())
         {
-          odbcType_ = SQL_C_CHAR;
+          odbcType_ = SQL_CHAR;
           size = max_bigint_length;
           buf_ = new char[size];
           data = buf_;
@@ -155,12 +170,22 @@ void odbc_standard_into_type_backend::post_fetch(
         // only std::string and std::tm need special handling
         if (type_ == x_char)
         {
+#ifdef SOCI_ODBC_WIDE
+            SQLWCHAR* wBuf = reinterpret_cast<SQLWCHAR*>(buf_);
+            exchange_type_cast<x_char>(data_) = toUtf8(wBuf)[0];
+#else 
             exchange_type_cast<x_char>(data_) = buf_[0];
+#endif // SOCI_ODBC_WIDE
         }
         else if (type_ == x_stdstring)
         {
             std::string& s = exchange_type_cast<x_stdstring>(data_);
+#ifdef SOCI_ODBC_WIDE
+            SQLWCHAR* wBuf = reinterpret_cast<SQLWCHAR*>(buf_);
+            s = toUtf8(wBuf);
+#else
             s = buf_;
+#endif // SOCI_ODBC_WIDE
             if (s.size() >= (odbc_max_buffer_length - 1))
             {
                 throw soci_error("Buffer size overflow; maybe got too large string");
@@ -168,11 +193,26 @@ void odbc_standard_into_type_backend::post_fetch(
         }
         else if (type_ == x_longstring)
         {
-            exchange_type_cast<x_longstring>(data_).value = buf_;
+          std::string& s = exchange_type_cast<x_longstring>(data_).value;
+#ifdef SOCI_ODBC_WIDE
+          SQLWCHAR* wBuf = reinterpret_cast<SQLWCHAR*>(buf_);
+          s = toUtf8(wBuf);
+#else
+          s = buf_;
+#endif // SOCI_ODBC_WIDE
+            if (s.size() >= (odbc_max_buffer_length - 1))
+            {
+                throw soci_error("Buffer size overflow; maybe got too large string");
+            }
         }
         else if (type_ == x_xmltype)
         {
+#ifdef SOCI_ODBC_WIDE
+            SQLWCHAR* wBuf = reinterpret_cast<SQLWCHAR*>(buf_);
+            exchange_type_cast<x_xmltype>(data_).value = toUtf8(wBuf);
+#else
             exchange_type_cast<x_xmltype>(data_).value = buf_;
+#endif // SOCI_ODBC_WIDE
         }
         else if (type_ == x_stdtm)
         {
@@ -214,7 +254,7 @@ void odbc_standard_into_type_backend::clean_up()
 {
     if (buf_)
     {
-        delete [] buf_;
-        buf_ = 0;
+        delete[] buf_;
+        buf_ = nullptr;
     }
 }

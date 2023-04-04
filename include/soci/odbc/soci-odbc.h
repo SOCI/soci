@@ -17,12 +17,18 @@
 #endif
 
 #include <vector>
+#include <memory>
 #include <soci/soci-backend.h>
 #include <sstream>
+#include <locale>
+#include <codecvt>
 #if defined(_MSC_VER) || defined(__MINGW32__)
 #include <windows.h>
 #endif
 #include <sqlext.h> // ODBC
+#ifdef SOCI_ODBC_WIDE
+#include <sqlucode.h>
+#endif
 #include <string.h> // strcpy()
 
 namespace soci
@@ -39,10 +45,67 @@ namespace details
 
     // This cast is only used to avoid compiler warnings when passing strings
     // to ODBC functions, the returned string may *not* be really modified.
+  
     inline SQLCHAR* sqlchar_cast(std::string const& s)
     {
       return reinterpret_cast<SQLCHAR*>(const_cast<char*>(s.c_str()));
     }
+    
+    inline char* sqlchar_cast(SQLCHAR* s)
+    {
+      return reinterpret_cast<char*>(s);
+    }
+    
+    inline const char* sqlchar_cast(const SQLCHAR* s)
+    {
+      return reinterpret_cast<const char*>(s);
+    }
+    
+    inline SQLWCHAR* sqlchar_cast(std::wstring const& s)
+    {
+      return reinterpret_cast<SQLWCHAR*>(const_cast<wchar_t*>(s.c_str()));
+    }
+    
+    inline std::string toUtf8(std::wstring const& s)
+    {
+        static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        return converter.to_bytes(s);
+    }
+    
+    inline std::string toUtf8(const wchar_t* s)
+    {
+        static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        return converter.to_bytes(s);
+    }
+    
+    inline std::wstring toUtf16(std::string const& s)
+    {
+        static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        return converter.from_bytes(s);
+    }
+    
+    inline std::wstring toUtf16(const char* s)
+    {
+        static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        return converter.from_bytes(s);
+    }
+
+    // convert single wchar_t to char
+    inline char toUtf8(wchar_t c)
+    {
+        static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        return converter.to_bytes(c)[0];
+    }
+
+    // convert single char to wchar_t
+    inline wchar_t toUtf16(char c)
+    {
+        static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        return converter.from_bytes(&c, &c + 1)[0];
+    }
+
+  
+
 }
 
 // Option allowing to specify the "driver completion" parameter of
@@ -88,7 +151,7 @@ struct odbc_standard_into_type_backend : details::standard_into_type_backend,
                                          private odbc_standard_type_backend_base
 {
     odbc_standard_into_type_backend(odbc_statement_backend &st)
-        : odbc_standard_type_backend_base(st), buf_(0)
+        : odbc_standard_type_backend_base(st), buf_(nullptr)
     {}
 
     void define_by_pos(int &position,
@@ -99,8 +162,8 @@ struct odbc_standard_into_type_backend : details::standard_into_type_backend,
         indicator *ind) override;
 
     void clean_up() override;
-
-    char *buf_;        // generic buffer
+    
+    char* buf_; // generic buffer
     void *data_;
     details::exchange_type type_;
     int position_;
@@ -156,7 +219,7 @@ struct odbc_standard_use_type_backend : details::standard_use_type_backend,
 {
     odbc_standard_use_type_backend(odbc_statement_backend &st)
         : odbc_standard_type_backend_base(st),
-          position_(-1), data_(0), buf_(0), indHolder_(0) {}
+          position_(-1), data_(0), buf_(nullptr), indHolder_(0) {}
 
     void bind_by_pos(int &position,
         void *data, details::exchange_type type, bool readOnly) override;
@@ -225,7 +288,8 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend,
     void *data_;
     details::exchange_type type_;
     int position_;
-    char *buf_;              // generic buffer
+    //details::odbc_char_type *buf_;              // generic buffer
+    char* buf_;              // generic buffer
     std::size_t colSize_;    // size of the string column (used for strings)
     // used for strings only
     std::size_t maxSize_;

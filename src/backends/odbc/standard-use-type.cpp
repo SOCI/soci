@@ -20,6 +20,11 @@ using namespace soci::details;
 void* odbc_standard_use_type_backend::prepare_for_bind(
     SQLLEN &size, SQLSMALLINT &sqlType, SQLSMALLINT &cType)
 {
+
+#ifdef SOCI_ODBC_WIDE
+    SQLWCHAR* buf = nullptr;
+#endif // SOCI_ODBC_WIDE
+
     switch (type_)
     {
     // simple cases
@@ -36,12 +41,13 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
     case x_long_long:
         if (use_string_for_bigint())
         {
+
           sqlType = SQL_NUMERIC;
           cType = SQL_C_CHAR;
           size = max_bigint_length;
           buf_ = new char[size];
-          snprintf(buf_, size, "%" LL_FMT_FLAGS "d",
-                   exchange_type_cast<x_long_long>(data_));
+          snprintf(reinterpret_cast<char*>(buf_), size, "%" LL_FMT_FLAGS "d",
+              exchange_type_cast<x_long_long>(data_));
           indHolder_ = SQL_NTS;
         }
         else // Normal case, use ODBC support.
@@ -58,8 +64,8 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
           cType = SQL_C_CHAR;
           size = max_bigint_length;
           buf_ = new char[size];
-          snprintf(buf_, size, "%" LL_FMT_FLAGS "u",
-                   exchange_type_cast<x_unsigned_long_long>(data_));
+          snprintf(reinterpret_cast<char*>(buf_), size, "%" LL_FMT_FLAGS "u",
+              exchange_type_cast<x_unsigned_long_long>(data_));
           indHolder_ = SQL_NTS;
         }
         else // Normal case, use ODBC support.
@@ -76,12 +82,22 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
         break;
 
     case x_char:
+#ifdef SOCI_ODBC_WIDE
+        sqlType = SQL_WCHAR;
+        cType = SQL_C_WCHAR;
+        size = sizeof(SQLWCHAR) * 2;
+        buf_ = new char[size];
+        buf = reinterpret_cast<SQLWCHAR*>(buf_);
+        buf[0] = toUtf16(exchange_type_cast<x_char>(data_));
+        buf[1] = L'\0';
+#else
         sqlType = SQL_CHAR;
         cType = SQL_C_CHAR;
         size = 2;
         buf_ = new char[size];
         buf_[0] = exchange_type_cast<x_char>(data_);
         buf_[1] = '\0';
+#endif // SOCI_ODBC_WIDE
         indHolder_ = SQL_NTS;
         break;
     case x_stdstring:
@@ -120,9 +136,15 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
     break;
 
     case x_longstring:
-        copy_from_string(exchange_type_cast<x_longstring>(data_).value,
-                         size, sqlType, cType);
-        break;
+    {
+       std::string const& ls = exchange_type_cast<x_longstring>(data_).value;
+        
+        copy_from_string(ls, size, sqlType, cType);
+    
+        // copy_from_string(exchange_type_cast<x_longstring>(data_).value,
+        //                  size, sqlType, cType);
+    }
+    break;
     case x_xmltype:
         copy_from_string(exchange_type_cast<x_xmltype>(data_).value,
                          size, sqlType, cType);
@@ -145,12 +167,24 @@ void odbc_standard_use_type_backend::copy_from_string(
         SQLSMALLINT& cType
     )
 {
+#ifdef SOCI_ODBC_WIDE
+    std::wstring ws = toUtf16(s);
+    size = ws.size();
+    sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_WLONGVARCHAR : SQL_WVARCHAR;
+    cType = SQL_C_WCHAR;
+    std::size_t const bufSize = (size + 1) * sizeof(SQLWCHAR);
+    buf_ = new char[bufSize];
+    SQLWCHAR* const buf = reinterpret_cast<SQLWCHAR*>(buf_);
+    std::copy(ws.begin(), ws.end(), buf);
+    buf[size] = L'\0';
+#else
     size = s.size();
     sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_LONGVARCHAR : SQL_VARCHAR;
     cType = SQL_C_CHAR;
-    buf_ = new char[size+1];
-    memcpy(buf_, s.c_str(), size);
-    buf_[size++] = '\0';
+    buf_ = new char[size + 1];
+    std::copy(s.begin(), s.end(), buf_);
+    buf_[size] = '\0';
+#endif // SOCI_ODBC_WIDE
     indHolder_ = SQL_NTS;
 }
 
@@ -269,9 +303,9 @@ void odbc_standard_use_type_backend::post_use(bool gotData, indicator *ind)
 
 void odbc_standard_use_type_backend::clean_up()
 {
-    if (buf_ != NULL)
+    if (buf_)
     {
-        delete [] buf_;
-        buf_ = NULL;
+      delete[] buf_;
+      buf_ = nullptr;
     }
 }

@@ -47,7 +47,11 @@ odbc_session_backend::odbc_session_backend(
                               "allocating connection handle");
     }
 
+#ifdef SOCI_ODBC_WIDE
+    SQLWCHAR outConnString[1024];
+#else
     SQLCHAR outConnString[1024];
+#endif // SOCI_ODBC_WIDE
     SQLSMALLINT strLength = 0;
 
     // Prompt the user for any missing information (typically UID/PWD) in the
@@ -83,7 +87,11 @@ odbc_session_backend::odbc_session_backend(
       hwnd_for_prompt = ::GetDesktopWindow();
 #endif // _WIN32
 
-    std::string const & connectString = parameters.get_connect_string();
+#ifdef SOCI_ODBC_WIDE
+    std::wstring const& connectString = toUtf16(parameters.get_connect_string());
+#else
+    std::string const& connectString = parameters.get_connect_string();
+#endif // SOCI_ODBC_WIDE
 
     // This "infinite" loop can be executed at most twice.
     std::string errContext;
@@ -136,7 +144,12 @@ odbc_session_backend::odbc_session_backend(
         break;
     }
 
+#ifdef SOCI_ODBC_WIDE
+    const std::string outConnStringUtf8 = toUtf8((const wchar_t*)outConnString);
+    connection_string_.assign(outConnStringUtf8.c_str(), outConnStringUtf8.size());
+#else
     connection_string_.assign((const char*)outConnString, strLength);
+#endif
 
     reset_transaction();
 
@@ -151,9 +164,14 @@ void odbc_session_backend::configure_connection()
         // ensure that the conversions to/from text round trip correctly, which
         // is not the case with the default value of 0. Use the maximal
         // supported value, which was 2 until 9.x and is 3 since it.
-
+#ifdef SOCI_ODBC_WIDE
+        SQLWCHAR product_ver[1024];
+#else
         char product_ver[1024];
+#endif // SOCI_ODBC_WIDE
+
         SQLSMALLINT len = sizeof(product_ver);
+        // In case UNICODE is defined, SQLGetInfoW is called
         SQLRETURN rc = SQLGetInfo(hdbc_, SQL_DBMS_VER, product_ver, len, &len);
         if (is_odbc_error(rc))
         {
@@ -165,16 +183,25 @@ void odbc_session_backend::configure_connection()
         // need to parse it fully, we just need the major version which,
         // conveniently, comes first.
         unsigned major_ver = 0;
-        if (std::sscanf(product_ver, "%u", &major_ver) != 1)
+#ifdef SOCI_ODBC_WIDE
+        const std::string product_ver_utf8(toUtf8(product_ver));
+#else
+        const std::string product_ver_utf8(product_ver);
+#endif // SOCI_ODBC_WIDE
+        if (std::sscanf(product_ver_utf8.c_str(), "%u", &major_ver) != 1)
         {
-            throw soci_error("DBMS version \"" + std::string(product_ver) +
+            throw soci_error("DBMS version \"" + std::string(product_ver_utf8) +
                              "\" in unrecognizable format.");
         }
-
         details::auto_statement<odbc_statement_backend> st(*this);
 
+#ifdef SOCI_ODBC_WIDE
+        std::wstring const q(major_ver >= 9 ? L"SET extra_float_digits = 3"
+                                            : L"SET extra_float_digits = 2");
+#else
         std::string const q(major_ver >= 9 ? "SET extra_float_digits = 3"
                                            : "SET extra_float_digits = 2");
+#endif // SOCI_ODBC_WIDE
         rc = SQLExecDirect(st.hstmt_, sqlchar_cast(q), static_cast<SQLINTEGER>(q.size()));
 
         if (is_odbc_error(rc))
@@ -192,6 +219,7 @@ void odbc_session_backend::configure_connection()
         // Also configure the driver to handle unknown types, such as "xml",
         // that we use for x_xmltype, as long varchar instead of limiting them
         // to 256 characters (by default).
+        // In case UNICODE is defined, SQLSetConnectAttrW is called
         rc = SQLSetConnectAttr(hdbc_, SQL_ATTR_PGOPT_UNKNOWNSASLONGVARCHAR, (SQLPOINTER)1, 0);
 
         // Ignore the error from this one, failure to set it is not fatal and
@@ -213,10 +241,16 @@ bool odbc_session_backend::is_connected()
 
     // The name of the table we check for is irrelevant, as long as we have a
     // working connection, it should still find (or, hopefully, not) something.
+    
+#ifdef SOCI_ODBC_WIDE
+    SQLWCHAR* dummyText = L"bloordyblop";
+#else
+    SQLCHAR* dummyText = sqlchar_cast("bloordyblop");
+#endif // SOCI_ODBC_WIDE
     return !is_odbc_error(SQLTables(st.hstmt_,
                                     NULL, SQL_NTS,
                                     NULL, SQL_NTS,
-                                    sqlchar_cast("bloordyblop"), SQL_NTS,
+                                    dummyText, SQL_NTS,
                                     NULL, SQL_NTS));
 }
 
@@ -451,7 +485,11 @@ odbc_session_backend::get_database_product() const
     if (product_ != prod_uninitialized)
         return product_;
 
+#ifdef SOCI_ODBC_WIDE
+    SQLWCHAR product_name[1024];
+#else
     char product_name[1024];
+#endif // SOCI_ODBC_WIDE
     SQLSMALLINT len = sizeof(product_name);
     SQLRETURN rc = SQLGetInfo(hdbc_, SQL_DBMS_NAME, product_name, len, &len);
     if (is_odbc_error(rc))
@@ -460,19 +498,25 @@ odbc_session_backend::get_database_product() const
                               "getting ODBC driver name");
     }
 
-    if (strcmp(product_name, "Firebird") == 0)
-        product_ = prod_firebird;
-    else if (strcmp(product_name, "Microsoft SQL Server") == 0)
-        product_ = prod_mssql;
-    else if (strcmp(product_name, "MySQL") == 0)
-        product_ = prod_mysql;
-    else if (strcmp(product_name, "Oracle") == 0)
-        product_ = prod_oracle;
-    else if (strcmp(product_name, "PostgreSQL") == 0)
-        product_ = prod_postgresql;
-    else if (strcmp(product_name, "SQLite") == 0)
-        product_ = prod_sqlite;
-    else if (strstr(product_name, "DB2") == product_name) // "DB2/LINUXX8664"
+#ifdef SOCI_ODBC_WIDE
+    const std::string product_name_str(toUtf8(product_name)); 
+#else
+    const std::string product_name_str(product_name);
+#endif
+
+    if (product_name_str == "Firebird")
+    product_ = prod_firebird;
+    else if (product_name_str == "Microsoft SQL Server")
+      product_ = prod_mssql;
+    else if (product_name_str == "MySQL")
+      product_ = prod_mysql;
+    else if (product_name_str == "Oracle")
+      product_ = prod_oracle;
+    else if (product_name_str == "PostgreSQL")
+      product_ = prod_postgresql;
+    else if (product_name_str == "SQLite")
+      product_ = prod_sqlite;
+    else if(product_name_str.find("DB2") == 0) // "DB2/LINUXX8664"
         product_ = prod_db2;
     else
         product_ = prod_unknown;

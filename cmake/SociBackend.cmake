@@ -184,6 +184,10 @@ macro(soci_backend NAME)
           VERSION ${${PROJECT_NAME}_VERSION}
           CLEAN_DIRECT_OUTPUT 1)
       endif()
+      
+      if(SOCI_ENABLE_UNICODE)
+        target_compile_definitions(${THIS_BACKEND_TARGET} PRIVATE SOCI_ODBC_WIDE UNICODE)
+      endif()
 
       # Static library target
       if(SOCI_STATIC)
@@ -345,6 +349,10 @@ macro(soci_backend_test)
         ${THIS_TEST_DEPENDS_LIBRARIES}
         soci_core
         soci_${BACKENDL})
+        
+      if(SOCI_ENABLE_UNICODE)
+        target_compile_definitions(${TEST_TARGET} PRIVATE SOCI_ODBC_WIDE UNICODE)
+      endif()
 
       add_test(${TEST_TARGET}
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_TARGET}

@@ -15,6 +15,7 @@
 #include <cstring>
 #include <ctime>
 #include <sstream>
+#include <memory>
 
 #ifdef _MSC_VER
 // disables the warning about converting int to void*.  This is a 64 bit compatibility
@@ -130,25 +131,43 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
     // cases that require adjustments and buffer management
     case x_char:
         {
-            std::vector<char> *vp
-                = static_cast<std::vector<char> *>(data_);
+            std::vector<char> *vp = static_cast<std::vector<char> *>(data_);
             std::size_t const vsize = vp->size();
 
             prepare_indicators(vsize);
 
-            size = sizeof(char) * 2;
+#ifdef SOCI_ODBC_WIDE
+            size = sizeof(SQLWCHAR) * 2; // 1 wchar + 1 null terminator
+#else
+            size = sizeof(char) * 2; // 1 char + 1 null terminator
+#endif // SOCI_ODBC_WIDE
+
             buf_ = new char[size * vsize];
 
+#ifdef SOCI_ODBC_WIDE
+            SQLWCHAR* pos = reinterpret_cast<SQLWCHAR*>(buf_);
+
+            for (std::size_t i = 0; i != vsize; ++i)
+            {
+                *pos++ = details::toUtf16((*vp)[i]);
+            }
+            *pos = 0; // Null-terminate the string once, after all characters are copied
+
+            sqlType = SQL_WCHAR;
+            cType = SQL_C_WCHAR;
+#else
             char *pos = buf_;
 
             for (std::size_t i = 0; i != vsize; ++i)
             {
                 *pos++ = (*vp)[i];
-                *pos++ = 0;
             }
+            *pos = 0; // Null-terminate the string once, after all characters are copied
 
             sqlType = SQL_CHAR;
             cType = SQL_C_CHAR;
+#endif // SOCI_ODBC_WIDE
+
             data = buf_;
         }
         break;
@@ -159,37 +178,65 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
             std::size_t maxSize = 0;
             std::size_t const vecSize = get_vector_size(type_, data_);
             prepare_indicators(vecSize);
-            for (std::size_t i = 0; i != vecSize; ++i)
+            for (std::size_t i = 0; i < vecSize; ++i)
             {
                 std::size_t sz = vector_string_value(type_, data_, i).length();
+
+#ifdef SOCI_ODBC_WIDE
+                set_sqllen_from_vector_at(i, static_cast<long>(sz * sizeof(SQLWCHAR)));
+#else
                 set_sqllen_from_vector_at(i, static_cast<long>(sz));
+#endif // SOCI_ODBC_WIDE
+
                 maxSize = sz > maxSize ? sz : maxSize;
             }
 
             maxSize++; // For terminating nul.
 
-            buf_ = new char[maxSize * vecSize];
-            memset(buf_, 0, maxSize * vecSize);
+#ifdef SOCI_ODBC_WIDE
+            const std::size_t bufSize = maxSize * vecSize * sizeof(SQLWCHAR);
+#else
+            const std::size_t bufSize = maxSize * vecSize;
+#endif // SOCI_ODBC_WIDE
 
+            buf_ = new char[bufSize];
+            memset(buf_, 0, bufSize);
+
+#ifdef SOCI_ODBC_WIDE
+            SQLWCHAR*pos = reinterpret_cast<SQLWCHAR*>(buf_);
+#else
             char *pos = buf_;
+#endif // SOCI_ODBC_WIDE
             for (std::size_t i = 0; i != vecSize; ++i)
             {
                 std::string& value = vector_string_value(type_, data_, i);
+
+#ifdef SOCI_ODBC_WIDE
+                const std::wstring wValue = toUtf16(value);
+                wmemcpy(pos, wValue.c_str(), wValue.length());
+#else
                 memcpy(pos, value.c_str(), value.length());
+#endif // SOCI_ODBC_WIDE
+                
                 pos += maxSize;
             }
 
             data = buf_;
-            size = static_cast<SQLINTEGER>(maxSize);
 
+#ifdef SOCI_ODBC_WIDE
+            size = static_cast<SQLUINTEGER>(maxSize * sizeof(SQLWCHAR));
+            sqlType = size >= ODBC_MAX_COL_SIZE / sizeof(SQLWCHAR) ? SQL_WLONGVARCHAR : SQL_WVARCHAR;
+            cType = SQL_C_WCHAR;
+#else
+            size = static_cast<SQLUINTEGER>(maxSize);
             sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_LONGVARCHAR : SQL_VARCHAR;
             cType = SQL_C_CHAR;
+#endif // SOCI_ODBC_WIDE
         }
         break;
     case x_stdtm:
         {
-            std::vector<std::tm> *vp
-                = static_cast<std::vector<std::tm> *>(data_);
+            std::vector<std::tm> *vp = static_cast<std::vector<std::tm> *>(data_);
 
             prepare_indicators(vp->size());
 
@@ -330,15 +377,14 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
         case x_long_long:
             if (use_string_for_bigint())
             {
-                std::vector<long long> *vp
-                     = static_cast<std::vector<long long> *>(data_);
+                std::vector<long long> *vp = static_cast<std::vector<long long> *>(data_);
                 std::vector<long long> &v(*vp);
 
                 char *pos = buf_;
                 std::size_t const vsize = v.size();
                 for (std::size_t i = 0; i != vsize; ++i)
                 {
-                    snprintf(pos, max_bigint_length, "%" LL_FMT_FLAGS "d", v[i]);
+                    snprintf(reinterpret_cast<char*>(pos), max_bigint_length, "%" LL_FMT_FLAGS "d", v[i]);
                     pos += max_bigint_length;
                 }
 
@@ -357,7 +403,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
                 std::size_t const vsize = v.size();
                 for (std::size_t i = 0; i != vsize; ++i)
                 {
-                    snprintf(pos, max_bigint_length, "%" LL_FMT_FLAGS "u", v[i]);
+                    snprintf(reinterpret_cast<char*>(pos), max_bigint_length, "%" LL_FMT_FLAGS "u", v[i]);                    
                     pos += max_bigint_length;
                 }
 
@@ -430,9 +476,9 @@ std::size_t odbc_vector_use_type_backend::size()
 
 void odbc_vector_use_type_backend::clean_up()
 {
-    if (buf_ != NULL)
+    if (buf_ != nullptr)
     {
         delete [] buf_;
-        buf_ = NULL;
+        buf_ = nullptr;
     }
 }

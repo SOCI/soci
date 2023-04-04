@@ -75,6 +75,38 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
     );
 }
 
+// #ifdef SOCI_ODBC_WIDE
+
+TEST_CASE("MS SQL unicode string", "[odbc][mssql][unicode]")
+{
+    soci::session sql(backEnd, connectString);
+
+    struct unicode_table_creator : public table_creator_base
+    {
+        explicit unicode_table_creator(soci::session& sql)
+            : table_creator_base(sql)
+        {
+            sql << "create table soci_test ("
+                    "str nvarchar(255) null"
+                ")";
+        }
+    } unicode_table_creator(sql);
+
+    // std::string str_in { "สวัสดีชาวโลก!" };
+    std::string str_in { u8"\u0E2A\u0E27\u0E31\u0E2A\u0E14\u0E35\u0E0A\u0E32\u0E27\u0E42\u0E25\u0E01!" };
+
+    CHECK_NOTHROW((
+        sql << "insert into soci_test(str) values(N'" + str_in + "')"
+    ));
+
+    std::string str_out;
+    sql << "select str from soci_test", into(str_out);
+
+    CHECK(str_out == str_in);
+}
+
+// #endif // SOCI_ODBC_WIDE
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {

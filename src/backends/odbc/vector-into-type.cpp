@@ -81,16 +81,24 @@ void odbc_vector_into_type_backend::define_by_pos(
     // cases that require adjustments and buffer management
 
     case x_char:
+#ifdef SOCI_ODBC_WIDE
+        odbcType_ = SQL_C_WCHAR;
+        colSize_ = sizeof(SQLWCHAR) * 2;
+#else
         odbcType_ = SQL_C_CHAR;
-
-        colSize_ = sizeof(char) * 2;
+        colSize_ = 2;
+#endif // SOCI_ODBC_WIDE
         buf_ = new char[colSize_ * vectorSize];
         break;
     case x_stdstring:
     case x_xmltype:
     case x_longstring:
         {
+#ifdef SOCI_ODBC_WIDE
+            odbcType_ = SQL_C_WCHAR;
+#else
             odbcType_ = SQL_C_CHAR;
+#endif // SOCI_ODBC_WIDE
 
             colSize_ = static_cast<size_t>(get_sqllen_from_value(statement_.column_size(position)));
             if (colSize_ >= ODBC_MAX_COL_SIZE || colSize_ == 0)
@@ -104,13 +112,20 @@ void odbc_vector_into_type_backend::define_by_pos(
                 statement_.fetchVectorByRows_ = true;
             }
 
+#ifdef SOCI_ODBC_WIDE
+            colSize_ += sizeof(SQLWCHAR);
+#else
             colSize_++;
+#endif // SOCI_ODBC_WIDE
 
             // If we are fetching by a single row, allocate the buffer only for
             // one value.
-            const std::size_t elementsCount
-                = statement_.fetchVectorByRows_ ? 1 : vectorSize;
+            const std::size_t elementsCount = statement_.fetchVectorByRows_ ? 1 : vectorSize;
+#ifdef SOCI_ODBC_WIDE
+            buf_ = new char[colSize_ * elementsCount * sizeof(SQLWCHAR)];
+#else
             buf_ = new char[colSize_ * elementsCount];
+#endif // SOCI_ODBC_WIDE
         }
         break;
     case x_stdtm:
@@ -209,21 +224,39 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
     {
         std::vector<char> *vp
             = static_cast<std::vector<char> *>(data_);
-
         std::vector<char> &v(*vp);
+
+#ifdef SOCI_ODBC_WIDE
+        SQLWCHAR *pos = reinterpret_cast<SQLWCHAR*>(buf_);
+#else
         char *pos = buf_;
+#endif // SOCI_ODBC_WIDE
+
         for (std::size_t i = beginRow; i != endRow; ++i)
         {
+#ifdef SOCI_ODBC_WIDE
+            v[i] = toUtf8(*pos);
+            pos += colSize_ / sizeof(SQLWCHAR);
+#else
             v[i] = *pos;
             pos += colSize_;
+#endif // SOCI_ODBC_WIDE
         }
     }
     if (type_ == x_stdstring || type_ == x_xmltype || type_ == x_longstring)
     {
+#ifdef SOCI_ODBC_WIDE
+        const SQLWCHAR *pos = reinterpret_cast<SQLWCHAR*>(buf_);
+        std::size_t const colSize = colSize_ / sizeof(SQLWCHAR);
+#else
         const char *pos = buf_;
-        for (std::size_t i = beginRow; i != endRow; ++i, pos += colSize_)
+        std::size_t const colSize = colSize_;
+#endif // SOCI_ODBC_WIDE
+
+        for (std::size_t i = beginRow; i != endRow; ++i, pos += colSize)
         {
-            SQLLEN const len = get_sqllen_from_vector_at(i);
+
+            SQLLEN len = get_sqllen_from_vector_at(i);
 
             std::string& value = vector_string_value(type_, data_, i);
             if (len == -1)
@@ -232,6 +265,12 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
                 value.clear();
                 continue;
             }
+#ifdef SOCI_ODBC_WIDE
+            else
+            {
+                len = len / sizeof(SQLWCHAR);
+            }
+#endif // SOCI_ODBC_WIDE
 
             // Find the actual length of the string: for a VARCHAR(N)
             // column, it may be right-padded with spaces up to the length
@@ -243,11 +282,19 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
             //
             // So deal with this generically by just trimming all the
             // spaces from the right hand-side.
+#ifdef SOCI_ODBC_WIDE
+            const SQLWCHAR *end = pos + len;
+#else
             const char* end = pos + len;
+#endif // SOCI_ODBC_WIDE
             while (end != pos)
             {
                 // Pre-decrement as "end" is one past the end, as usual.
+#ifdef SOCI_ODBC_WIDE
+                if (*--end != L' ')
+#else
                 if (*--end != ' ')
+#endif // SOCI_ODBC_WIDE
                 {
                     // We must count the last non-space character.
                     ++end;
@@ -255,7 +302,14 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
                 }
             }
 
+#ifdef SOCI_ODBC_WIDE
+            std::wstring wstr;
+            wstr.assign(pos, end - pos);
+            value.assign(details::toUtf8(wstr));
+#else
             value.assign(pos, end - pos);
+#endif // SOCI_ODBC_WIDE
+
         }
     }
     else if (type_ == x_stdtm)
@@ -286,6 +340,7 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
             = static_cast<std::vector<long long> *>(data_);
         std::vector<long long> &v(*vp);
         char *pos = buf_;
+
         for (std::size_t i = beginRow; i != endRow; ++i)
         {
             if (!cstring_to_integer(v[i], pos))
@@ -301,6 +356,7 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
             = static_cast<std::vector<unsigned long long> *>(data_);
         std::vector<unsigned long long> &v(*vp);
         char *pos = buf_;
+
         for (std::size_t i = beginRow; i != endRow; ++i)
         {
             if (!cstring_to_unsigned(v[i], pos))
