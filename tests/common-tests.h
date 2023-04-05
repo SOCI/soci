@@ -46,6 +46,7 @@
 #include <limits>
 #include <string>
 #include <typeinfo>
+#include <type_traits>
 
 // Although SQL standard mandates right padding CHAR(N) values to their length
 // with spaces, some backends don't confirm to it:
@@ -3208,6 +3209,13 @@ TEST_CASE_METHOD(common_tests, "NULL expected exception", "[core][exception][nul
     rowset<int> rs = (sql.prepare << "select val from soci_test order by val asc");
 
     CHECK_THROWS_AS( std::for_each(rs.begin(), rs.end(), THelper()), soci_error );
+}
+
+TEST_CASE_METHOD(common_tests, "soci_error is nothrow", "[core][exception][nothrow]")
+{
+    CHECK(std::is_nothrow_copy_assignable<soci_error>::value == true);
+    CHECK(std::is_nothrow_copy_constructible<soci_error>::value == true);
+    CHECK(std::is_nothrow_destructible<soci_error>::value == true);
 }
 
 // This is like the first dynamic binding test but with rowset and iterators use
