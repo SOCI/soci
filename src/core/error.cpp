@@ -102,14 +102,19 @@ soci_error::soci_error(std::string const & msg)
     info_ = NULL;
 }
 
-soci_error::soci_error(soci_error const& e)
+soci_error::soci_error(soci_error const& e) noexcept
     : std::runtime_error(e)
 {
     info_ = make_safe_copy(e.info_);
 }
 
-soci_error& soci_error::operator=(soci_error const& e)
+soci_error& soci_error::operator=(soci_error const& e) noexcept
 {
+    if (this == &e)
+    {
+        return *this;
+    }
+
     std::runtime_error::operator=(e);
 
     delete info_;

@@ -22,8 +22,8 @@ class SOCI_DECL soci_error : public std::runtime_error
 public:
     explicit soci_error(std::string const & msg);
 
-    soci_error(soci_error const& e);
-    soci_error& operator=(soci_error const& e);
+    soci_error(soci_error const& e) noexcept;
+    soci_error& operator=(soci_error const& e) noexcept;
 
     ~soci_error() noexcept override;
 
