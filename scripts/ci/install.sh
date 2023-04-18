@@ -9,6 +9,15 @@
 
 case "$(uname)" in
     Linux)
+        # Install the bare minimum for the rest to work if we're running on a
+        # minimum system.
+        if ! command -v lsb_release > /dev/null; then
+            # We can't use run_apt here because it uses sudo which may also be
+            # not available yet.
+            apt-get $SOCI_APT_OPTIONS update
+            apt-get $SOCI_APT_OPTIONS install build-essential lsb-release sudo
+        fi
+
         packages_to_install="cmake libc6-dbg"
         if [ "${WITH_BOOST}" != OFF ]; then
             packages_to_install="$packages_to_install  libboost-dev libboost-date-time-dev"
