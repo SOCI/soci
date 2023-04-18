@@ -83,7 +83,7 @@ tmstamp()
 run_apt()
 {
     # Disable some (but not all) output.
-    sudo apt-get -q -y -o=Dpkg::Use-Pty=0 "$@"
+    sudo apt-get -q -y -o=Dpkg::Use-Pty=0 --no-install-recommends "$@"
 }
 
 run_make()
