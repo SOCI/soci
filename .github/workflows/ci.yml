@@ -23,6 +23,7 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.runner || 'ubuntu-22.04' }}
+    container: ${{ matrix.container }}
     name: ${{ matrix.name }}
     strategy:
       fail-fast: false
@@ -40,7 +41,7 @@ jobs:
             name: Valgrind
           - backend: odbc
             # There are many leak reports under Ubuntu 22.04, see #1008.
-            runner: ubuntu-18.04
+            container: ubuntu:18.04
             name: ODBC
           - backend: firebird
             name: Firebird
