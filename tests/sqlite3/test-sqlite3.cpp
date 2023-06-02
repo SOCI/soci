@@ -397,6 +397,32 @@ struct longlong_table_creator : table_creator_base
     }
 };
 
+TEST_CASE("SQLite bulk test", "[sqlite][bulk]")
+{
+    // we need to have an table that uses autoincrement to test this.
+    session sql(backEnd, connectString);
+
+    test4_table_creator tableCreator(sql);
+
+    {
+        std::vector<std::string> vec_name { "John", "James" };
+        sql << "insert into soci_test(name) values(:name)", use(vec_name);
+        assert(vec_name.size() == 2);
+    }
+
+    {
+        std::vector<std::string> vec_name(2);
+        sql << "select name from soci_test", into(vec_name);
+        assert(vec_name.size() == 2);
+    }
+
+    {
+        std::vector<std::string> vec_name(1);
+        sql << "select name from soci_test", into(vec_name);
+        assert(vec_name.size() == 1);
+    }
+}
+
 // long long test
 TEST_CASE("SQLite long long", "[sqlite][longlong]")
 {
@@ -675,6 +701,36 @@ public:
         return "length(" + s + ")";
     }
 };
+
+TEST_CASE("SQLite bulk ORM test", "[sqlite][orm][bulk]")
+{
+    // session sql(backEndFactory_, connectString_);
+    // auto_table_creator tableCreator(tc_.table_creator_3(sql));
+    session sql(backEnd, connectString);
+    table_creator_three one(sql);
+
+    sql << "insert into soci_test values('john', '(404)123-4567')";
+    sql << "insert into soci_test values('doe', '(404)123-4567')";
+
+    std::vector<PhonebookEntry> vec_orm(10);
+    sql << "select * from soci_test", into(vec_orm);
+
+    assert(vec_orm.size() == 2);
+
+    for (std::vector<PhonebookEntry>::iterator it = vec_orm.begin();
+         it != vec_orm.end();
+         ++it)
+    {
+        if (it->name == "john")
+        {
+            assert(it->phone == "(404)123-4567");
+        }
+        else if (it->name == "doe")
+        {
+            assert(it->phone == "(404)123-4567");
+        }
+    }
+}
 
 int main(int argc, char** argv)
 {

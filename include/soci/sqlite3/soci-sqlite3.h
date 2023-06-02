@@ -60,6 +60,10 @@ private:
     int result_;
 };
 
+
+typedef std::map<std::string, data_type> sqlite3_data_type_map;
+sqlite3_data_type_map get_data_type_map();
+
 struct sqlite3_statement_backend;
 struct sqlite3_standard_into_type_backend : details::standard_into_type_backend
 {
@@ -84,6 +88,7 @@ struct sqlite3_standard_into_type_backend : details::standard_into_type_backend
     int position_;
 };
 
+struct sqlite3_column;
 struct sqlite3_vector_into_type_backend : details::vector_into_type_backend
 {
     sqlite3_vector_into_type_backend(sqlite3_statement_backend &st)
@@ -106,6 +111,10 @@ struct sqlite3_vector_into_type_backend : details::vector_into_type_backend
     void *data_;
     details::exchange_type type_;
     int position_;
+
+private:
+    data_type get_column_type(int colNum);
+    sqlite3_column get_column(int colNum);
 };
 
 struct sqlite3_standard_use_type_backend : details::standard_use_type_backend

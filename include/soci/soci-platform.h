@@ -64,6 +64,8 @@ namespace std {
     }
 }
 #endif // _MSC_VER < 1800
+#define strncasecmp _strnicmp
+#define strcasecmp _stricmp
 #endif // _MSC_VER
 
 #if defined(__CYGWIN__) || defined(__MINGW32__)

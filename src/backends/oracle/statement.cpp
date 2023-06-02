@@ -298,6 +298,11 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
             {
                 type = dt_double;
             }
+        }        
+        //create table T(t number)--> select t+0 from T; we get: scale=precision=0, size=22
+        else if (dbscale == 0 && dbprec == 0 && dbsize == 22)
+        {
+            type = dt_double;
         }
         else if (dbprec <= std::numeric_limits<int>::digits10)
         {

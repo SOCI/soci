@@ -19,6 +19,12 @@
 
 namespace soci
 {
+struct CaseInsensitiveComparator {
+    bool operator()(const std::string& a, const std::string& b) const noexcept
+    {
+        return ::strcasecmp(a.c_str(), b.c_str()) < 0;
+    }
+};
 
 class SOCI_DECL column_properties
 {
@@ -40,7 +46,7 @@ private:
 class SOCI_DECL row
 {
 public:
-    row();
+    row(std::size_t bulk_size = 1);
     ~row();
 
     row(row &&other) = default;
@@ -51,13 +57,17 @@ public:
     std::size_t size() const;
     void clean_up();
 
+    //bulk buffer size
+    std::size_t bulk_size() const { return bulk_size_; }
+    void bulk_size(const std::size_t sz) { bulk_size_ = sz; }
+
     indicator get_indicator(std::size_t pos) const;
     indicator get_indicator(std::string const& name) const;
 
     template <typename T>
-    inline void add_holder(T* t, indicator* ind)
+    inline void add_holder(std::vector<T>* t, std::vector<indicator>* ind)
     {
-        holders_.push_back(new details::type_holder<T>(t));
+        holders_.push_back(new details::vector_type_holder<T>(t));
         indicators_.push_back(ind);
     }
 
@@ -68,17 +78,17 @@ public:
     T get(std::size_t pos) const
     {
         typedef typename type_conversion<T>::base_type base_type;
-        base_type const& baseVal = holders_.at(pos)->get<base_type>();
+        base_type const& baseVal = holders_.at(pos)->get<base_type>(bulk_pos_);
 
         T ret;
-        type_conversion<T>::from_base(baseVal, *indicators_.at(pos), ret);
+        type_conversion<T>::from_base(baseVal, (*indicators_.at(pos))[bulk_pos_], ret);
         return ret;
     }
 
     template <typename T>
     T get(std::size_t pos, T const &nullValue) const
     {
-        if (i_null == *indicators_.at(pos))
+        if (i_null == (*indicators_.at(pos))[bulk_pos_])
         {
             return nullValue;
         }
@@ -98,7 +108,7 @@ public:
     {
         std::size_t const pos = find_column(name);
 
-        if (i_null == *indicators_[pos])
+        if (i_null == (*indicators_[pos])[bulk_pos_])
         {
             return nullValue;
         }
@@ -122,6 +132,13 @@ public:
     void reset_get_counter() const
     {
         currentPos_ = 0;
+        bulk_pos_   = 0;
+    }
+
+    void next(std::size_t num = 1) const
+    {
+        currentPos_  = 0;
+        bulk_pos_   += num;
     }
 
 private:
@@ -130,12 +147,14 @@ private:
     std::size_t find_column(std::string const& name) const;
 
     std::vector<column_properties> columns_;
-    std::vector<details::holder*> holders_;
-    std::vector<indicator*> indicators_;
-    std::map<std::string, std::size_t> index_;
+    std::vector<details::vector_holder*> holders_;
+    std::vector<std::vector<indicator>*> indicators_;
+    std::map<std::string, std::size_t, CaseInsensitiveComparator> index_;
 
     bool uppercaseColumnNames_;
-    mutable std::size_t currentPos_;
+    mutable std::size_t currentPos_;    //column
+    mutable std::size_t bulk_pos_;      //row
+    mutable std::size_t bulk_size_;
 };
 
 } // namespace soci

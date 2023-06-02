@@ -520,6 +520,13 @@ bool statement_impl::resize_intos(std::size_t upperBound)
         intos_[i]->resize((std::size_t)rows);
     }
 
+    //for bulk ORM operations
+    std::size_t const ifrsize = intosForRow_.size();
+    for (std::size_t i = 0; i != ifrsize; ++i)
+    {
+        intosForRow_[i]->resize((std::size_t)rows);
+    }
+    
     return rows > 0 ? true : false;
 }
 
