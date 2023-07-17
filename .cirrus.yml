@@ -18,7 +18,7 @@ task:
       env:
         SOCI_CI_BACKEND: sqlite3
   freebsd_instance:
-    image_family: freebsd-13-0
+    image_family: freebsd-13-2
   install_script: ./scripts/ci/install.sh
   before_build_script: ./scripts/ci/before_build.sh
   build_script: ./scripts/ci/build.sh
