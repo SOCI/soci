@@ -823,6 +823,27 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
     }
 }
 
+//batch custom object use
+TEST_CASE_METHOD(common_tests, "Bulk use with user-defined object", "[core][bulk]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+    // create and populate the test table
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+    std::vector<PhonebookEntry> entries;
+
+    for (int i = 0; i < 10; i++) 
+    {
+        PhonebookEntry entry;
+        entry.name = "test";
+        entry.phone = i;
+        entries.push_back(entry);
+    }
+
+
+    soci::statement statement = (sql.prepare << "INSERT INTO soci_test (value) VALUES (:value)", soci::use(entries));
+}
+
 // repeated fetch and bulk fetch
 TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
 {
