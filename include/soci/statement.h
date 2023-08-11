@@ -144,7 +144,7 @@ private:
         exchange_for_row(into(*t, *ind));
     }
 
-    template<data_type>
+    template<db_type>
     void bind_into();
 
     bool alreadyDescribed_;

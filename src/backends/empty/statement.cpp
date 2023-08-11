@@ -82,7 +82,8 @@ int empty_statement_backend::prepare_for_describe()
 }
 
 void empty_statement_backend::describe_column(int /* colNum */,
-    data_type & /* type */, std::string & /* columnName */)
+    data_type & /* type */, db_type & /* dbtype */,
+    std::string & /* columnName */)
 {
     // ...
 }

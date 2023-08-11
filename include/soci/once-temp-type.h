@@ -133,8 +133,11 @@ public:
         int precision, int scale);
     void drop_column(const std::string & tableName,
         const std::string & columnName);
+    // DEPRECATED. USE column(std::string, db_type, int, int) INSTEAD.
     ddl_type & column(const std::string & columnName, data_type dt,
         int precision = 0, int scale = 0);
+    ddl_type & column(const std::string & columnName, db_type dt,
+                      int precision = 0, int scale = 0);
     ddl_type & unique(const std::string & name,
         const std::string & columnNames);
     ddl_type & primary_key(const std::string & name,

@@ -402,31 +402,47 @@ int mysql_statement_backend::prepare_for_describe()
 }
 
 void mysql_statement_backend::describe_column(int colNum,
-    data_type & type, std::string & columnName)
+    data_type & type, db_type & dbtype, std::string & columnName)
 {
     int pos = colNum - 1;
     MYSQL_FIELD *field = mysql_fetch_field_direct(result_, pos);
     switch (field->type)
     {
     case FIELD_TYPE_CHAR:       //MYSQL_TYPE_TINY:
-        type = field->flags & UNSIGNED_FLAG ? dt_uint8 :
-                                              dt_int8;
+        type = dt_integer;
+        dbtype = field->flags & UNSIGNED_FLAG ? db_uint8 : db_int8;
         break;
     case FIELD_TYPE_SHORT:      //MYSQL_TYPE_SHORT:
-        type = field->flags & UNSIGNED_FLAG ? dt_uint16 :
-                                              dt_int16;
+        type = dt_integer;
+        dbtype = field->flags & UNSIGNED_FLAG ? db_uint16 : db_int16;
         break;
     case FIELD_TYPE_INT24:      //MYSQL_TYPE_INT24:
-        type = field->flags & UNSIGNED_FLAG ? dt_uint32
-                                            : dt_int32;
+        type = dt_integer;
+        dbtype = field->flags & UNSIGNED_FLAG ? db_uint32 : db_int32;
         break;
     case FIELD_TYPE_LONG:       //MYSQL_TYPE_LONG:
-        type = field->flags & UNSIGNED_FLAG ? dt_uint32
-                                            : dt_int32;
+        if (field->flags & UNSIGNED_FLAG)
+        {
+            type = dt_long_long;
+            dbtype = db_uint32;
+        }
+        else
+        {
+            type = dt_integer;
+            dbtype = db_int32;
+        }
         break;
     case FIELD_TYPE_LONGLONG:   //MYSQL_TYPE_LONGLONG:
-        type = field->flags & UNSIGNED_FLAG ? dt_uint64 :
-                                              dt_int64;
+        if (field->flags & UNSIGNED_FLAG)
+        {
+            type = dt_unsigned_long_long;
+            dbtype = db_uint64;
+        }
+        else
+        {
+            type = dt_long_long;
+            dbtype = db_int64;
+        }
         break;
     case FIELD_TYPE_FLOAT:      //MYSQL_TYPE_FLOAT:
     case FIELD_TYPE_DOUBLE:     //MYSQL_TYPE_DOUBLE:
@@ -437,6 +453,7 @@ void mysql_statement_backend::describe_column(int colNum,
     // the client is using.
     case 246:                   //MYSQL_TYPE_NEWDECIMAL:
         type = dt_double;
+        dbtype = db_double;
         break;
     case FIELD_TYPE_TIMESTAMP:  //MYSQL_TYPE_TIMESTAMP:
     case FIELD_TYPE_DATE:       //MYSQL_TYPE_DATE:
@@ -445,6 +462,7 @@ void mysql_statement_backend::describe_column(int colNum,
     case FIELD_TYPE_YEAR:       //MYSQL_TYPE_YEAR:
     case FIELD_TYPE_NEWDATE:    //MYSQL_TYPE_NEWDATE:
         type = dt_date;
+        dbtype = db_date;
         break;
 //  case MYSQL_TYPE_VARCHAR:
     case 245:                   //MYSQL_TYPE_JSON:
@@ -455,6 +473,7 @@ void mysql_statement_backend::describe_column(int colNum,
     case FIELD_TYPE_MEDIUM_BLOB:
     case FIELD_TYPE_LONG_BLOB:
         type = dt_string;
+        dbtype = db_string;
         break;
     default:
         //std::cerr << "field->type: " << field->type << std::endl;

@@ -637,6 +637,7 @@ TEST_CASE("PostgreSQL bytea", "[postgresql][bytea]")
         REQUIRE(r.size() == 1);
         column_properties const& props = r.get_properties(0);
         CHECK(props.get_data_type() == soci::dt_string);
+        CHECK(props.get_db_type() == soci::db_string);
         std::string bin2 = r.get<std::string>(0);
         CHECK(bin2 == expectedBytea);
     }
@@ -786,12 +787,14 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
         if (ci.name == "i")
         {
             CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
             CHECK(ci.nullable);
             i_found = true;
         }
         else if (ci.name == "j")
         {
             CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
             CHECK(ci.nullable);
             j_found = true;
         }
@@ -864,18 +867,21 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
         if (ci.name == "j")
         {
             CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
             CHECK(ci.nullable);
             j_found = true;
         }
         else if (ci.name == "k")
         {
             CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
             CHECK(ci.nullable);
             k_found = true;
         }
         else if (ci.name == "big")
         {
             CHECK(ci.type == soci::dt_string);
+            CHECK(ci.dataType == soci::db_string);
             CHECK(ci.precision == 0); // "unlimited" for strings
             big_found = true;
         }
@@ -905,24 +911,28 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
         if (ci.name == "i")
         {
             CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
             CHECK(ci.nullable);
             i_found = true;
         }
         else if (ci.name == "j")
         {
             CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
             CHECK(ci.nullable == false); // primary key
             j_found = true;
         }
         else if (ci.name == "k")
         {
             CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
             CHECK(ci.nullable == false);
             k_found = true;
         }
         else if (ci.name == "m")
         {
             CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
             CHECK(ci.nullable == false);
             m_found = true;
         }

@@ -88,47 +88,47 @@ void set_number_in_vector(void *p, int idx, const sqlite3_column &col)
     using namespace details;
     using namespace details::sqlite3;
 
-    switch (col.type_)
+    switch (col.dataType_)
     {
-        case dt_date:
-        case dt_string:
-        case dt_blob:
+        case db_date:
+        case db_string:
+        case db_blob:
             set_in_vector(p, idx,
                           parse_number_from_string<T>(col.buffer_.size_ > 0
                                                         ? col.buffer_.constData_
                                                         : ""));
             break;
 
-        case dt_double:
+        case db_double:
             set_in_vector(p, idx, static_cast<T>(col.double_));
             break;
 
-        case dt_int8:
+        case db_int8:
             set_in_vector(p, idx, static_cast<T>(col.int8_));
             break;
-        case dt_uint8:
+        case db_uint8:
             set_in_vector(p, idx, static_cast<T>(col.uint8_));
             break;
-        case dt_int16:
+        case db_int16:
             set_in_vector(p, idx, static_cast<T>(col.int16_));
             break;
-        case dt_uint16:
+        case db_uint16:
             set_in_vector(p, idx, static_cast<T>(col.uint16_));
             break;
-        case dt_int32:
+        case db_int32:
             set_in_vector(p, idx, static_cast<T>(col.int32_));
             break;
-        case dt_uint32:
+        case db_uint32:
             set_in_vector(p, idx, static_cast<T>(col.uint32_));
             break;
-        case dt_int64:
+        case db_int64:
             set_in_vector(p, idx, static_cast<T>(col.int64_));
             break;
-        case dt_uint64:
+        case db_uint64:
             set_in_vector(p, idx, static_cast<T>(col.uint64_));
             break;
 
-        case dt_xml:
+        case db_xml:
             throw soci_error("XML data type is not supported");
     };
 }
@@ -172,68 +172,68 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
         {
             case x_char:
             {
-                switch (col.type_)
+                switch (col.dataType_)
                 {
-                    case dt_date:
-                    case dt_string:
-                    case dt_blob:
+                    case db_date:
+                    case db_string:
+                    case db_blob:
                         set_in_vector(data_, i, (col.buffer_.size_ > 0 ? col.buffer_.constData_[0] : '\0'));
                         break;
 
-                    case dt_double:
+                    case db_double:
                         set_in_vector(data_, i, double_to_cstring(col.double_)[0]);
                         break;
 
-                    case dt_int8:
+                    case db_int8:
                     {
                         std::ostringstream ss;
                         ss << col.int8_;
                         set_in_vector(data_, i, ss.str()[0]);
                         break;
                     }
-                    case dt_uint8:
+                    case db_uint8:
                     {
                         std::ostringstream ss;
                         ss << col.uint8_;
                         set_in_vector(data_, i, ss.str()[0]);
                         break;
                     }
-                    case dt_int16:
+                    case db_int16:
                     {
                         std::ostringstream ss;
                         ss << col.int16_;
                         set_in_vector(data_, i, ss.str()[0]);
                         break;
                     }
-                    case dt_uint16:
+                    case db_uint16:
                     {
                         std::ostringstream ss;
                         ss << col.uint16_;
                         set_in_vector(data_, i, ss.str()[0]);
                         break;
                     }
-                    case dt_int32:
+                    case db_int32:
                     {
                         std::ostringstream ss;
                         ss << col.int32_;
                         set_in_vector(data_, i, ss.str()[0]);
                         break;
                     }
-                    case dt_uint32:
+                    case db_uint32:
                     {
                         std::ostringstream ss;
                         ss << col.uint32_;
                         set_in_vector(data_, i, ss.str()[0]);
                         break;
                     }
-                    case dt_int64:
+                    case db_int64:
                     {
                         std::ostringstream ss;
                         ss << col.int64_;
                         set_in_vector(data_, i, ss.str()[0]);
                         break;
                     }
-                    case dt_uint64:
+                    case db_uint64:
                     {
                         std::ostringstream ss;
                         ss << col.uint64_;
@@ -241,7 +241,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                         break;
                     }
 
-                    case dt_xml:
+                    case db_xml:
                         throw soci_error("XML data type is not supported");
                 };
                 break;
@@ -249,68 +249,68 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
 
             case x_stdstring:
             {
-                switch (col.type_)
+                switch (col.dataType_)
                 {
-                    case dt_date:
-                    case dt_string:
-                    case dt_blob:
+                    case db_date:
+                    case db_string:
+                    case db_blob:
                         set_in_vector(data_, i, std::string(col.buffer_.constData_, col.buffer_.size_));
                         break;
 
-                    case dt_double:
+                    case db_double:
                         set_in_vector(data_, i, double_to_cstring(col.double_));
                         break;
 
-                    case dt_int8:
+                    case db_int8:
                     {
                         std::ostringstream ss;
                         ss << col.int8_;
                         set_in_vector(data_, i, ss.str());
                         break;
                     }
-                    case dt_uint8:
+                    case db_uint8:
                     {
                         std::ostringstream ss;
                         ss << col.uint8_;
                         set_in_vector(data_, i, ss.str());
                         break;
                     }
-                    case dt_int16:
+                    case db_int16:
                     {
                         std::ostringstream ss;
                         ss << col.int16_;
                         set_in_vector(data_, i, ss.str());
                         break;
                     }
-                    case dt_uint16:
+                    case db_uint16:
                     {
                         std::ostringstream ss;
                         ss << col.uint16_;
                         set_in_vector(data_, i, ss.str());
                         break;
                     }
-                    case dt_int32:
+                    case db_int32:
                     {
                         std::ostringstream ss;
                         ss << col.int32_;
                         set_in_vector(data_, i, ss.str());
                         break;
                     }
-                    case dt_uint32:
+                    case db_uint32:
                     {
                         std::ostringstream ss;
                         ss << col.uint32_;
                         set_in_vector(data_, i, ss.str());
                         break;
                     }
-                    case dt_int64:
+                    case db_int64:
                     {
                         std::ostringstream ss;
                         ss << col.int64_;
                         set_in_vector(data_, i, ss.str());
                         break;
                     }
-                    case dt_uint64:
+                    case db_uint64:
                     {
                         std::ostringstream ss;
                         ss << col.uint64_;
@@ -318,7 +318,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                         break;
                     }
 
-                    case dt_xml:
+                    case db_xml:
                     {
                         soci::xml_type xml;
                         xml.value = std::string(col.buffer_.constData_, col.buffer_.size_);
@@ -331,11 +331,11 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
 
             case x_xmltype:
             {
-                switch (col.type_)
+                switch (col.dataType_)
                 {
-                    case dt_string:
-                    case dt_blob:
-                    case dt_xml:
+                    case db_string:
+                    case db_blob:
+                    case db_xml:
                     {
                         soci::xml_type xml;
                         xml.value = std::string(col.buffer_.constData_, col.buffer_.size_);
@@ -386,11 +386,11 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
 
             case x_stdtm:
             {
-                switch (col.type_)
+                switch (col.dataType_)
                 {
-                    case dt_date:
-                    case dt_string:
-                    case dt_blob:
+                    case db_date:
+                    case db_string:
+                    case db_blob:
                     {
                         // attempt to parse the string and convert to std::tm
                         std::tm t = std::tm();
@@ -400,18 +400,18 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                         break;
                     }
 
-                    case dt_double:
-                    case dt_int8:
-                    case dt_uint8:
-                    case dt_int16:
-                    case dt_uint16:
-                    case dt_int32:
-                    case dt_uint32:
-                    case dt_int64:
-                    case dt_uint64:
+                    case db_double:
+                    case db_int8:
+                    case db_uint8:
+                    case db_int16:
+                    case db_uint16:
+                    case db_int32:
+                    case db_uint32:
+                    case db_int64:
+                    case db_uint64:
                         throw soci_error("Into element used with non-convertible type.");
 
-                    case dt_xml:
+                    case db_xml:
                         throw soci_error("XML data type is not supported");
                 };
                 break;
@@ -422,27 +422,27 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
         }
 
         // cleanup data
-        switch (col.type_)
+        switch (col.dataType_)
         {
-            case dt_date:
-            case dt_string:
-            case dt_blob:
+            case db_date:
+            case db_string:
+            case db_blob:
                 delete[] col.buffer_.data_;
                 col.buffer_.data_ = NULL;
                 break;
 
-            case dt_double:
-            case dt_int8:
-            case dt_uint8:
-            case dt_int16:
-            case dt_uint16:
-            case dt_int32:
-            case dt_uint32:
-            case dt_int64:
-            case dt_uint64:
+            case db_double:
+            case db_int8:
+            case db_uint8:
+            case db_int16:
+            case db_uint16:
+            case db_int32:
+            case db_uint32:
+            case db_int64:
+            case db_uint64:
                 break;
 
-            case dt_xml:
+            case db_xml:
                 throw soci_error("XML data type is not supported");
         }
     }

@@ -185,6 +185,7 @@ int oracle_statement_backend::prepare_for_describe()
 }
 
 void oracle_statement_backend::describe_column(int colNum, data_type &type,
+    db_type &xdbtype,
     std::string &columnName)
 {
     ub2 dbtype;
@@ -286,6 +287,7 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
     case SQLT_CHR:
     case SQLT_AFC:
         type = dt_string;
+        xdbtype = db_string;
         break;
     case SQLT_NUM:
         if (dbscale > 0)
@@ -293,30 +295,37 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
             if (session_.get_option_decimals_as_strings())
             {
                 type = dt_string;
+                xdbtype = db_string;
             }
             else
             {
                 type = dt_double;
+                xdbtype = db_double;
             }
         }
         else if (dbprec <= std::numeric_limits<int32_t>::digits10)
         {
-            type = dt_int32;
+            type = dt_integer;
+            xdbtype = db_int32;
         }
         else
         {
-            type = dt_int64;
+            type = dt_long_long;
+            xdbtype = db_int64;
         }
         break;
     case OCI_TYPECODE_BDOUBLE:
         type = dt_double;
+        xdbtype = db_double;
         break;
     case SQLT_DAT:
         type = dt_date;
+        xdbtype = db_date;
         break;
     default:
         // Unknown oracle types will just be represented by a string
         type = dt_string;
+        xdbtype = db_string;
     }
 }
 

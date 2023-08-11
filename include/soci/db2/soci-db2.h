@@ -197,7 +197,7 @@ struct SOCI_DB2_DECL db2_statement_backend : details::statement_backend
     std::string rewrite_for_procedure_call(std::string const& query) override;
 
     int prepare_for_describe() override;
-    void describe_column(int colNum, data_type& dtype, std::string& columnName) override;
+    void describe_column(int colNum, data_type& dtype, db_type& dbtype, std::string& columnName) override;
     size_t column_size(int col);
 
     db2_standard_into_type_backend* make_into_type_backend() override;

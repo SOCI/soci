@@ -126,6 +126,24 @@ ddl_type & ddl_type::column(const std::string & columnName, data_type dt,
     return *this;
 }
 
+ddl_type & ddl_type::column(const std::string & columnName, db_type dt,
+                            int precision, int scale)
+{
+    if (rcst_->get_need_comma())
+    {
+        rcst_->accumulate(", ");
+    }
+
+    rcst_->accumulate(columnName);
+    rcst_->accumulate(" ");
+    rcst_->accumulate(
+            s_->get_backend()->create_column_type(dt, precision, scale));
+
+    rcst_->set_need_comma(true);
+
+    return *this;
+}
+
 ddl_type & ddl_type::unique(const std::string & name,
     const std::string & columnNames)
 {

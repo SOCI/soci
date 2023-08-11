@@ -658,7 +658,9 @@ int firebird_statement_backend::prepare_for_describe()
 }
 
 void firebird_statement_backend::describe_column(int colNum,
-                                                data_type & type, std::string & columnName)
+                                                data_type & type,
+                                                db_type & dbtype,
+                                                std::string & columnName)
 {
     XSQLVAR * var = sqldap_->sqlvar+(colNum-1);
 
@@ -669,53 +671,77 @@ void firebird_statement_backend::describe_column(int colNum,
     case SQL_TEXT:
     case SQL_VARYING:
         type = dt_string;
+        dbtype = db_string;
         break;
     case SQL_TYPE_DATE:
     case SQL_TYPE_TIME:
     case SQL_TIMESTAMP:
         type = dt_date;
+        dbtype = db_date;
         break;
     case SQL_FLOAT:
     case SQL_DOUBLE:
         type = dt_double;
+        dbtype = db_double;
         break;
     case SQL_SHORT:
         if (var->sqlscale < 0)
         {
             if (session_.get_option_decimals_as_strings())
+            {
                 type = dt_string;
+                dbtype = db_string;
+            }
             else
+            {
                 type = dt_double;
+                dbtype = db_double;
+            }
         }
         else
         {
-            type = dt_int16;
+            type = dt_integer;
+            dbtype = db_int16;
         }
         break;
     case SQL_LONG:
         if (var->sqlscale < 0)
         {
             if (session_.get_option_decimals_as_strings())
+            {
                 type = dt_string;
+                dbtype = db_string;
+            }
             else
+            {
                 type = dt_double;
+                dbtype = db_double;
+            }
         }
         else
         {
-            type = dt_int32;
+            type = dt_integer;
+            dbtype = db_int32;
         }
         break;
     case SQL_INT64:
         if (var->sqlscale < 0)
         {
             if (session_.get_option_decimals_as_strings())
+            {
                 type = dt_string;
+                dbtype = db_string;
+            }
             else
+            {
                 type = dt_double;
+                dbtype = db_double;
+            }
         }
         else
         {
-            type = dt_int64;
+            type = dt_long_long;
+            dbtype = db_int64;
         }
         break;
         /* case SQL_BLOB:

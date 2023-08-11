@@ -202,6 +202,7 @@ struct firebird_statement_backend : details::statement_backend
 
     int prepare_for_describe() override;
     void describe_column(int colNum, data_type &dtype,
+        db_type &dbtype,
         std::string &columnName) override;
 
     firebird_standard_into_type_backend * make_into_type_backend() override;

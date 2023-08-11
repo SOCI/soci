@@ -2936,15 +2936,21 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         CHECK(r.size() == 5);
 
         CHECK(r.get_properties(0).get_data_type() == dt_double);
+        CHECK(r.get_properties(0).get_db_type() == db_double);
         CHECK(r.get_properties(1).get_data_type() == dt_integer);
+        CHECK(r.get_properties(1).get_db_type() == db_int32);
         CHECK(r.get_properties(2).get_data_type() == dt_string);
+        CHECK(r.get_properties(2).get_db_type() == db_string);
         CHECK(r.get_properties(3).get_data_type() == dt_date);
+        CHECK(r.get_properties(3).get_db_type() == db_date);
 
         // type char is visible as string
         // - to comply with the implementation for Oracle
         CHECK(r.get_properties(4).get_data_type() == dt_string);
+        CHECK(r.get_properties(4).get_db_type() == db_string);
 
         CHECK(r.get_properties("NUM_INT").get_data_type() == dt_integer);
+        CHECK(r.get_properties("NUM_INT").get_db_type() == db_int32);
 
         CHECK(r.get_properties(0).get_name() == "NUM_FLOAT");
         CHECK(r.get_properties(1).get_name() == "NUM_INT");
@@ -3010,16 +3016,22 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         CHECK(r.size() == 5);
 
         CHECK(r.get_properties(0).get_data_type() == dt_double);
+        CHECK(r.get_properties(0).get_db_type() == db_double);
         CHECK(r.get_properties(1).get_data_type() == dt_integer);
+        CHECK(r.get_properties(1).get_db_type() == db_int32);
         CHECK(r.get_properties(2).get_data_type() == dt_string);
+        CHECK(r.get_properties(2).get_db_type() == db_string);
         CHECK(r.get_properties(3).get_data_type() == dt_date);
+        CHECK(r.get_properties(3).get_db_type() == db_date);
 
         sql << "select name, num_int from soci_test", into(r);
 
         CHECK(r.size() == 2);
 
         CHECK(r.get_properties(0).get_data_type() == dt_string);
+        CHECK(r.get_properties(0).get_db_type() == db_string);
         CHECK(r.get_properties(1).get_data_type() == dt_integer);
+        CHECK(r.get_properties(1).get_db_type() == db_int32);
 
         // Check if row object is movable
         row moved = std::move(r);
@@ -3029,7 +3041,9 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         CHECK(r.size() == 0);
 
         CHECK(moved.get_properties(0).get_data_type() == dt_string);
+        CHECK(moved.get_properties(0).get_db_type() == db_string);
         CHECK(moved.get_properties(1).get_data_type() == dt_integer);
+        CHECK(moved.get_properties(1).get_db_type() == db_int32);
     }
 }
 
@@ -3051,7 +3065,9 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding 2", "[core][dynamic]")
 
         CHECK(r.size() == 1);
         CHECK(r.get_properties(0).get_data_type() == dt_integer);
+        CHECK(r.get_properties(0).get_db_type() == db_int32);
         CHECK(r.get<int>(0) == 20);
+        CHECK(r.get<int32_t>(0) == 20);
     }
     {
         int id;
@@ -3063,19 +3079,25 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding 2", "[core][dynamic]")
         st.execute(true);
         CHECK(r.size() == 1);
         CHECK(r.get_properties(0).get_data_type() == dt_integer);
+        CHECK(r.get_properties(0).get_db_type() == db_int32);
         CHECK(r.get<int>(0) == 20);
+        CHECK(r.get<int32_t>(0) == 20);
 
         id = 3;
         st.execute(true);
         CHECK(r.size() == 1);
         CHECK(r.get_properties(0).get_data_type() == dt_integer);
+        CHECK(r.get_properties(0).get_db_type() == db_int32);
         CHECK(r.get<int>(0) == 30);
+        CHECK(r.get<int32_t>(0) == 30);
 
         id = 1;
         st.execute(true);
         CHECK(r.size() == 1);
         CHECK(r.get_properties(0).get_data_type() == dt_integer);
+        CHECK(r.get_properties(0).get_db_type() == db_int32);
         CHECK(r.get<int>(0) == 10);
+        CHECK(r.get<int32_t>(0) == 10);
     }
 }
 
@@ -3499,11 +3521,17 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
             // Properties
             CHECK(r1.size() == 5);
             CHECK(r1.get_properties(0).get_data_type() == dt_double);
+            CHECK(r1.get_properties(0).get_db_type() == db_double);
             CHECK(r1.get_properties(1).get_data_type() == dt_integer);
+            CHECK(r1.get_properties(1).get_db_type() == db_int32);
             CHECK(r1.get_properties(2).get_data_type() == dt_string);
+            CHECK(r1.get_properties(2).get_db_type() == db_string);
             CHECK(r1.get_properties(3).get_data_type() == dt_date);
+            CHECK(r1.get_properties(3).get_db_type() == db_date);
             CHECK(r1.get_properties(4).get_data_type() == dt_string);
+            CHECK(r1.get_properties(4).get_db_type() == db_string);
             CHECK(r1.get_properties("NUM_INT").get_data_type() == dt_integer);
+            CHECK(r1.get_properties("NUM_INT").get_db_type() == db_int32);
 
             // Data
 
@@ -3562,11 +3590,17 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
             // Properties
             CHECK(r2.size() == 5);
             CHECK(r2.get_properties(0).get_data_type() == dt_double);
+            CHECK(r2.get_properties(0).get_db_type() == db_double);
             CHECK(r2.get_properties(1).get_data_type() == dt_integer);
+            CHECK(r2.get_properties(1).get_db_type() == db_int32);
             CHECK(r2.get_properties(2).get_data_type() == dt_string);
+            CHECK(r2.get_properties(2).get_db_type() == db_string);
             CHECK(r2.get_properties(3).get_data_type() == dt_date);
+            CHECK(r2.get_properties(3).get_db_type() == db_date);
             CHECK(r2.get_properties(4).get_data_type() == dt_string);
+            CHECK(r2.get_properties(4).get_db_type() == db_string);
             CHECK(r2.get_properties("NUM_INT").get_data_type() == dt_integer);
+            CHECK(r2.get_properties("NUM_INT").get_db_type() == db_int32);
 
             std::string newName = r2.get<std::string>(2);
             CHECK(name != newName);
@@ -3625,10 +3659,15 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
             // Properties
             CHECK(r1.size() == 5);
             CHECK(r1.get_properties(0).get_data_type() == dt_integer);
+            CHECK(r1.get_properties(0).get_db_type() == db_int32);
             CHECK(r1.get_properties(1).get_data_type() == dt_double);
+            CHECK(r1.get_properties(1).get_db_type() == db_double);
             CHECK(r1.get_properties(2).get_data_type() == dt_string);
+            CHECK(r1.get_properties(2).get_db_type() == db_string);
             CHECK(r1.get_properties(3).get_data_type() == dt_date);
+            CHECK(r1.get_properties(3).get_db_type() == db_date);
             CHECK(r1.get_properties(4).get_data_type() == dt_string);
+            CHECK(r1.get_properties(4).get_db_type() == db_string);
 
             // Data
             CHECK(r1.get_indicator(0) == soci::i_ok);
@@ -3974,8 +4013,11 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
             // and tests the remaining column only.
 
             //CHECK(r1.get_properties(0).get_data_type() == dt_integer);
+            //CHECK(r1.get_properties(0).get_exchnage_data_type() == db_int32);
             CHECK(r1.get_properties(1).get_data_type() == dt_integer);
+            CHECK(r1.get_properties(1).get_db_type() == db_int32);
             CHECK(r1.get_properties(2).get_data_type() == dt_string);
+            CHECK(r1.get_properties(2).get_db_type() == db_string);
             //CHECK(r1.get<int>(0) == 1);
             CHECK(r1.get<int>(1) == 5);
             CHECK(r1.get<std::string>(2) == "abc");
@@ -3991,8 +4033,11 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
             CHECK(r2.size() == 3);
 
             // CHECK(r2.get_properties(0).get_data_type() == dt_integer);
+            // CHECK(r2.get_properties(0).get_db_type() == db_int32);
             CHECK(r2.get_properties(1).get_data_type() == dt_integer);
+            CHECK(r2.get_properties(1).get_db_type() == db_int32);
             CHECK(r2.get_properties(2).get_data_type() == dt_string);
+            CHECK(r2.get_properties(2).get_db_type() == db_string);
             //CHECK(r2.get<int>(0) == 2);
             try
             {
@@ -4447,8 +4492,11 @@ TEST_CASE_METHOD(common_tests, "NULL with std optional", "[core][null]")
             // and tests the remaining column only.
 
             //CHECK(r1.get_properties(0).get_data_type() == dt_integer);
+            //CHECK(r1.get_properties(0).get_db_type() == db_int32);
             CHECK(r1.get_properties(1).get_data_type() == dt_integer);
+            CHECK(r1.get_properties(1).get_db_type() == db_int32);
             CHECK(r1.get_properties(2).get_data_type() == dt_string);
+            CHECK(r1.get_properties(2).get_db_type() == db_string);
             //CHECK(r1.get<int>(0) == 1);
             CHECK(r1.get<int>(1) == 5);
             CHECK(r1.get<std::string>(2) == "abc");
@@ -4464,8 +4512,11 @@ TEST_CASE_METHOD(common_tests, "NULL with std optional", "[core][null]")
             CHECK(r2.size() == 3);
 
             // CHECK(r2.get_properties(0).get_data_type() == dt_integer);
+            // CHECK(r2.get_properties(0).get_db_type() == db_int32);
             CHECK(r2.get_properties(1).get_data_type() == dt_integer);
+            CHECK(r2.get_properties(1).get_db_type() == db_int32);
             CHECK(r2.get_properties(2).get_data_type() == dt_string);
+            CHECK(r2.get_properties(2).get_db_type() == db_string);
             //CHECK(r2.get<int>(0) == 2);
             try
             {

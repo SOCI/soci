@@ -27,14 +27,20 @@ class SOCI_DECL column_properties
 public:
 
     std::string get_name() const { return name_; }
+    // DEPRECATED. USE get_db_type() INSTEAD.
     data_type get_data_type() const { return dataType_; }
+    db_type get_db_type() const { return dbType_; }
 
     void set_name(std::string const& name) { name_ = name; }
+    // DEPRECATED. USE set_db_type(db_type) INSTEAD.
     void set_data_type(data_type dataType)  { dataType_ = dataType; }
+    void set_db_type(db_type dataType)  { dbType_ = dataType; }
 
 private:
     std::string name_;
+    // DEPRECATED. USE exchangeDataType_ INSTEAD.
     data_type dataType_;
+    db_type dbType_;
 };
 
 class SOCI_DECL row

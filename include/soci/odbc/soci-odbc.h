@@ -254,6 +254,7 @@ struct odbc_statement_backend : details::statement_backend
 
     int prepare_for_describe() override;
     void describe_column(int colNum, data_type &dtype,
+        db_type &dbtype,
         std::string &columnName) override;
 
     // helper for defining into vector<string>

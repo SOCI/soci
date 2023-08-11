@@ -170,7 +170,9 @@ struct sqlite3_column_buffer
 struct sqlite3_column
 {
     bool isNull_;
+    // DEPRECATED. USE dataType_ INSTEAD.
     data_type type_;
+    db_type dataType_;
 
     union
     {
@@ -193,7 +195,9 @@ typedef std::vector<sqlite3_row> sqlite3_recordset;
 
 struct sqlite3_column_info
 {
+    // DEPRECATED. USE dataType_ INSTEAD.
     data_type type_;
+    db_type dataType_;
     std::string name_;
 };
 typedef std::vector<sqlite3_column_info> sqlite3_column_info_list;
@@ -221,6 +225,7 @@ struct sqlite3_statement_backend : details::statement_backend
 
     int prepare_for_describe() override;
     void describe_column(int colNum, data_type &dtype,
+                                db_type &dbtype,
                                 std::string &columnName) override;
 
     sqlite3_standard_into_type_backend * make_into_type_backend() override;
@@ -315,7 +320,7 @@ struct sqlite3_session_backend : details::session_backend
                 " from sqlite_master where type = 'table'";
     }
     std::string create_column_type(data_type dt,
-                                           int , int ) override
+                                   int , int ) override
     {
         switch (dt)
         {
@@ -325,22 +330,43 @@ struct sqlite3_session_backend : details::session_backend
             case dt_double:
                 return "real";
             case dt_date:
-            case dt_int8:
-            case dt_uint8:
-            case dt_int16:
-            case dt_uint16:
-            case dt_int32:
-            case dt_uint32:
-            case dt_int64:
-            case dt_uint64:
+            case dt_integer:
+            case dt_long_long:
+            case dt_unsigned_long_long:
                 return "integer";
             case dt_blob:
                 return "blob";
             default:
                 throw soci_error("this data_type is not supported in create_column");
         }
-
     }
+    std::string create_column_type(db_type dt,
+                                   int , int ) override
+    {
+        switch (dt)
+        {
+            case db_xml:
+            case db_string:
+                return "text";
+            case db_double:
+                return "real";
+            case db_date:
+            case db_int8:
+            case db_uint8:
+            case db_int16:
+            case db_uint16:
+            case db_int32:
+            case db_uint32:
+            case db_int64:
+            case db_uint64:
+                return "integer";
+            case db_blob:
+                return "blob";
+            default:
+                throw soci_error("this data_type is not supported in create_column");
+        }
+    }
+
     sqlite_api::sqlite3 *conn_;
 
     // This flag is set to true if the internal sqlite_sequence table exists in

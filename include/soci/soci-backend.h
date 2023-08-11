@@ -19,25 +19,36 @@
 namespace soci
 {
 
+// DEPRECATED. USE db_type INSTEAD.
 // data types, as seen by the user
 enum data_type
 {
     dt_string,
-    dt_int8,
-    dt_uint8,
-    dt_int16,
-    dt_uint16,
-    dt_int32,
-    dt_integer = dt_int32,
-    dt_uint32,
-    dt_int64,
-    dt_long_long = dt_int64,
-    dt_uint64,
-    dt_unsigned_long_long = dt_uint64,
+    dt_integer,
+    dt_long_long,
+    dt_unsigned_long_long,
     dt_double,
     dt_date,
     dt_blob,
     dt_xml
+};
+
+// data types, as seen by the user
+enum db_type
+{
+    db_string,
+    db_int8,
+    db_uint8,
+    db_int16,
+    db_uint16,
+    db_int32,
+    db_uint32,
+    db_int64,
+    db_uint64,
+    db_double,
+    db_date,
+    db_blob,
+    db_xml
 };
 
 // the enum type for indicator variables
@@ -220,6 +231,7 @@ public:
 
     virtual int prepare_for_describe() = 0;
     virtual void describe_column(int colNum, data_type& dtype,
+        db_type& dbtype,
         std::string& column_name) = 0;
 
     virtual standard_into_type_backend* make_into_type_backend() = 0;
@@ -335,7 +347,77 @@ public:
     {
         return "truncate table " + tableName;
     }
+    // DEPRECATED. USE create_column_type(db_type, int, int) INSTEAD.
     virtual std::string create_column_type(data_type dt,
+                                           int precision, int scale)
+    {
+        // PostgreSQL was selected as a baseline for the syntax:
+
+        std::string res;
+        switch (dt)
+        {
+            case dt_string:
+            {
+                std::ostringstream oss;
+
+                if (precision == 0)
+                {
+                    oss << "text";
+                }
+                else
+                {
+                    oss << "varchar(" << precision << ")";
+                }
+
+                res += oss.str();
+            }
+                break;
+
+            case dt_date:
+                res += "timestamp";
+                break;
+
+            case dt_double:
+            {
+                std::ostringstream oss;
+                if (precision == 0)
+                {
+                    oss << "numeric";
+                }
+                else
+                {
+                    oss << "numeric(" << precision << ", " << scale << ")";
+                }
+
+                res += oss.str();
+            }
+                break;
+
+            case dt_integer:
+                res += "integer";
+                break;
+
+            case dt_long_long:
+                res += "bigint";
+                break;
+
+            case dt_unsigned_long_long:
+
+            case dt_blob:
+                res += "oid";
+                break;
+
+            case dt_xml:
+                res += "xml";
+                break;
+
+            default:
+                throw soci_error("this data_type is not supported in create_column");
+        }
+
+        return res;
+    }
+    virtual std::string create_column_type(db_type dt,
         int precision, int scale)
     {
         // PostgreSQL was selected as a baseline for the syntax:
@@ -343,7 +425,7 @@ public:
         std::string res;
         switch (dt)
         {
-        case dt_string:
+        case db_string:
             {
                 std::ostringstream oss;
 
@@ -360,11 +442,11 @@ public:
             }
             break;
 
-        case dt_date:
+        case db_date:
             res += "timestamp";
             break;
 
-        case dt_double:
+        case db_double:
             {
                 std::ostringstream oss;
                 if (precision == 0)
@@ -380,35 +462,36 @@ public:
             }
             break;
 
-        case dt_int16:
-        case dt_uint16:
+        case db_int16:
+        case db_uint16:
             res += "smallint";
             break;
 
-        case dt_int32:
-        case dt_uint32:
+        case db_int32:
+        case db_uint32:
             res += "integer";
             break;
 
-        case dt_int64:
-        case dt_uint64:
+        case db_int64:
+        case db_uint64:
             res += "bigint";
             break;
 
-        case dt_blob:
+        case db_blob:
             res += "oid";
             break;
 
-        case dt_xml:
+        case db_xml:
             res += "xml";
             break;
 
         default:
-            throw soci_error("this data_type is not supported in create_column");
+            throw soci_error("this db_type is not supported in create_column");
         }
 
         return res;
     }
+    // DEPRECATED. USE add_column(std::string, std::string, db_type, int, int) INSTEAD.
     virtual std::string add_column(const std::string & tableName,
         const std::string & columnName, data_type dt,
         int precision, int scale)
@@ -416,13 +499,31 @@ public:
         return "alter table " + tableName + " add column " + columnName +
             " " + create_column_type(dt, precision, scale);
     }
+    virtual std::string add_column(const std::string & tableName,
+                                   const std::string & columnName,
+                                   db_type dt,
+                                   int precision, int scale)
+    {
+        return "alter table " + tableName + " add column " + columnName +
+               " " + create_column_type(dt, precision, scale);
+    }
+    // DEPRECATED. USE alter_column(std::string, std::string, db_type, int, int) INSTEAD.
     virtual std::string alter_column(const std::string & tableName,
-        const std::string & columnName, data_type dt,
-        int precision, int scale)
+                                     const std::string & columnName, data_type dt,
+                                     int precision, int scale)
     {
         return "alter table " + tableName + " alter column " +
-            columnName + " type " +
-            create_column_type(dt, precision, scale);
+               columnName + " type " +
+               create_column_type(dt, precision, scale);
+    }
+    virtual std::string alter_column(const std::string & tableName,
+                                     const std::string & columnName,
+                                     db_type dt,
+                                     int precision, int scale)
+    {
+        return "alter table " + tableName + " alter column " +
+               columnName + " type " +
+               create_column_type(dt, precision, scale);
     }
     virtual std::string drop_column(const std::string & tableName,
         const std::string & columnName)

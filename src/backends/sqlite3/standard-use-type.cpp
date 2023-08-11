@@ -99,6 +99,7 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
     {
         case x_char:
             col.type_ = dt_string;
+            col.dataType_ = db_string;
             col.buffer_.constData_ = &exchange_type_cast<x_char>(data_);
             col.buffer_.size_ = 1;
             break;
@@ -107,59 +108,70 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
         {
             const std::string &s = exchange_type_cast<x_stdstring>(data_);
             col.type_ = dt_string;
+            col.dataType_ = db_string;
             col.buffer_.constData_ = s.c_str();
             col.buffer_.size_ = s.size();
             break;
         }
 
         case x_int8:
-            col.type_ = dt_int8;
+            col.type_ = dt_integer;
+            col.dataType_ = db_int8;
             col.int8_ = exchange_type_cast<x_int8>(data_);
             break;
 
         case x_uint8:
-            col.type_ = dt_uint8;
+            col.type_ = dt_integer;
+            col.dataType_ = db_uint8;
             col.uint8_ = exchange_type_cast<x_uint8>(data_);
             break;
 
         case x_int16:
-            col.type_ = dt_int16;
+            col.type_ = dt_integer;
+            col.dataType_ = db_int16;
             col.int16_ = exchange_type_cast<x_int16>(data_);
             break;
 
         case x_uint16:
-            col.type_ = dt_uint16;
+            col.type_ = dt_integer;
+            col.dataType_ = db_uint16;
             col.uint16_ = exchange_type_cast<x_uint16>(data_);
             break;
 
         case x_int32:
-            col.type_ = dt_int32;
+            col.type_ = dt_integer;
+            col.dataType_ = db_int32;
             col.int32_ = exchange_type_cast<x_int32>(data_);
             break;
 
         case x_uint32:
-            col.type_ = dt_uint32;
+            col.type_ = dt_long_long;
+            col.dataType_ = db_uint32;
             col.uint32_ = exchange_type_cast<x_uint32>(data_);
             break;
 
         case x_int64:
-            col.type_ = dt_int64;
+            col.type_ = dt_long_long;
+            col.dataType_ = db_int64;
             col.int64_ = exchange_type_cast<x_int64>(data_);
             break;
 
         case x_uint64:
-            col.type_ = dt_uint64;
+            col.type_ = dt_unsigned_long_long;
+            col.dataType_ = db_uint64;
             col.uint64_ = exchange_type_cast<x_uint64>(data_);
             break;
 
         case x_double:
             col.type_ = dt_double;
+            col.dataType_ = db_double;
             col.double_ = exchange_type_cast<x_double>(data_);
             break;
 
         case x_stdtm:
         {
             col.type_ = dt_date;
+            col.dataType_ = db_date;
             static const size_t bufSize = 20;
             std::tm &t = exchange_type_cast<x_stdtm>(data_);
 
@@ -175,7 +187,8 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
 
         case x_rowid:
         {
-            col.type_ = dt_int64;
+            col.type_ = dt_long_long;
+            col.dataType_ = db_int64;
             // RowID is internally identical to unsigned long
             rowid *rid = static_cast<rowid *>(data_);
             sqlite3_rowid_backend *rbe = static_cast<sqlite3_rowid_backend *>(rid->get_backend());
@@ -187,6 +200,7 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
         case x_blob:
         {
             col.type_ = dt_blob;
+            col.dataType_ = db_blob;
             blob *b = static_cast<blob *>(data_);
             sqlite3_blob_backend *bbe = static_cast<sqlite3_blob_backend *>(b->get_backend());
 
@@ -199,6 +213,7 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
         {
             const soci::xml_type &xml = exchange_type_cast<x_xmltype>(data_);
             col.type_ = dt_string;
+            col.dataType_ = db_string;
             col.buffer_.constData_ = xml.value.c_str();
             col.buffer_.size_ = xml.value.size();
             break;
