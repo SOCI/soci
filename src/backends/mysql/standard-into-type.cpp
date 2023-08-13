@@ -6,6 +6,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include "soci-cstrtoi.h"
 #define SOCI_MYSQL_SOURCE
 #include "soci/mysql/soci-mysql.h"
 #include "soci/soci-platform.h"
@@ -94,6 +95,11 @@ void mysql_standard_into_type_backend::post_fetch(
             {
                 int32_t tmp = 0;
                 parse_num(buf, tmp);
+                if (tmp < (std::numeric_limits<int8_t>::min)() ||
+                    tmp > (std::numeric_limits<int8_t>::max)())
+                {
+                    throw soci_error("Cannot convert data.");
+                }
                 exchange_type_cast<x_int8>(data_) = static_cast<int8_t>(tmp);
             }
             break;
@@ -101,6 +107,11 @@ void mysql_standard_into_type_backend::post_fetch(
             {
                 uint32_t tmp = 0;
                 parse_num(buf, tmp);
+                if (tmp < (std::numeric_limits<uint8_t>::min)() ||
+                    tmp > (std::numeric_limits<uint8_t>::max)())
+                {
+                    throw soci_error("Cannot convert data.");
+                }
                 exchange_type_cast<x_uint8>(data_) = static_cast<uint8_t>(tmp);
             }
             break;
