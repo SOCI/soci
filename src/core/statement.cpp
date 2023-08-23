@@ -173,6 +173,7 @@ void statement_impl::bind_clean_up()
         delete indicators_[i];
         indicators_[i] = NULL;
     }
+    indicators_.clear();
 
     row_ = NULL;
     alreadyDescribed_ = false;
