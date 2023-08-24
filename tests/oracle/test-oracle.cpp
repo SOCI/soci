@@ -1028,8 +1028,8 @@ TEST_CASE("Oracle to_number with rowset", "[oracle][rowset][to_number]")
         rs = (sql.prepare << "select to_number('123456789012345') from dual");
     double d = rs.begin()->get<double>(0);
     ASSERT_EQUAL_EXACT(d, 123456789012345);
-
-    rs = (sql.prepare << "select to_number(:t) from dual", use(3.14));
+    const double pi = 3.14;
+    rs = (sql.prepare << "select to_number(:t) from dual", use(pi));
     d = rs.begin()->get<double>(0);
     ASSERT_EQUAL_EXACT(d, 3.14);
 }
