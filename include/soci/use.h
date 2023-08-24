@@ -46,6 +46,13 @@ private:
 
 } // namespace details
 
+// soci::use is deleted for rvalues because it will likely lead to subtle stack-use-after-scope bugs.
+template <typename T>
+details::use_container<T, details::no_indicator> use(T &&t, const std::string &name = std::string()) = delete;
+
+template <typename T>
+details::use_container<const T, indicator> use(T &&t, indicator & ind, std::string const &name = std::string()) = delete;
+
 template <typename T>
 details::use_container<T, details::no_indicator> use(T &t, const std::string &name = std::string())
 { return details::use_container<T, details::no_indicator>(t, name); }
