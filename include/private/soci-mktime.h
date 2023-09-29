@@ -21,10 +21,7 @@ namespace soci
 namespace details
 {
 
-namespace inner 
-{
-
-time_t selfmade_timegm ( struct tm* tb );
+time_t timegm_impl_soci ( struct tm* tb );
 
 template <typename T>
 auto timegm_impl(T* t) -> decltype(timegm(t))
@@ -35,9 +32,8 @@ auto timegm_impl(T* t) -> decltype(timegm(t))
 template <typename T>
 auto timegm_impl(T t) -> time_t
 {
-    return selfmade_timegm(t);
+    return timegm_impl_soci(t);
 }
-} // namespace inner
 
 // Fill the provided struct tm with the values corresponding to the given date
 // in UTC.
@@ -58,7 +54,7 @@ mktime_from_ymdhms(tm& t,
     t.tm_min  = minute;
     t.tm_sec  = second;
 
-    inner::timegm_impl(&t);
+    timegm_impl(&t);
 }
 
 // Helper function for parsing datetime values.

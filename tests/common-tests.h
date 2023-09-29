@@ -48,6 +48,8 @@
 #include <typeinfo>
 #include <type_traits>
 
+#include "soci-mktime.h"
+
 // Although SQL standard mandates right padding CHAR(N) values to their length
 // with spaces, some backends don't confirm to it:
 //
@@ -613,6 +615,25 @@ using auto_table_creator = std::unique_ptr<table_creator_base>;
 // they happened to start on the same line.
 namespace test_cases
 {
+
+TEST_CASE_METHOD ( common_tests, "timegm implementation", "[core][timegm]" )
+{
+    std::tm t1;
+    t1.tm_year = 105;
+    t1.tm_mon = 13;
+    t1.tm_mday = 15;
+    t1.tm_hour = 22;
+    t1.tm_min = 14;
+    t1.tm_sec = 17;
+
+    std::tm t2 = t1;
+
+    const auto timegm_result = timegm (&t1);
+    const auto timegm_soci_result = details::timegm_impl_soci (&t2);
+    CHECK ( timegm_result == timegm_soci_result );
+    CHECK ( t2.tm_mon == 1 );
+}
+
 
 TEST_CASE_METHOD(common_tests, "Exception on not connected", "[core][exception]")
 {

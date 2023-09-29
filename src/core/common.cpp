@@ -92,10 +92,21 @@ void soci::details::parse_std_tm(char const * buf, std::tm & t)
     mktime_from_ymdhms(t, year, month, day, hour, minute, second);
 }
 
-#define IS_LEAP_YEAR( y ) ( ( ( y % 4 == 0 ) && ( y % 100 != 0 ) ) || ( ( y + 1900 ) % 400 == 0 ) )
-#define ELAPSED_LEAP_YEARS( y ) ( ( ( y - 1 ) / 4 ) - ( ( y - 1 ) / 100 ) + ( ( y + 299 ) / 400 ) - 17 )
+namespace
+{
+bool is_leap_year ( int y )
+{
+    return ( ( ( y % 4 == 0 ) && ( y % 100 != 0 ) ) || ( ( y + 1900 ) % 400 == 0 ) );
+}
 
-time_t soci::details::inner::selfmade_timegm ( struct tm* tb )
+time_t elapsed_leap_years ( time_t y )
+{
+    return ( ( ( y - 1 ) / 4 ) - ( ( y - 1 ) / 100 ) + ( ( y + 299 ) / 400 ) - 17 );
+}
+
+}  // namespace
+
+time_t soci::details::timegm_impl_soci ( struct tm* tb )
 {
     static int days_by_month[] = {-1, 30, 58, 89, 119, 150, 180, 211, 242, 272, 303, 333, 364};
 
@@ -131,7 +142,7 @@ time_t soci::details::inner::selfmade_timegm ( struct tm* tb )
      * month. Check for leap year and adjust if necessary.
      */
     tmptm2 = days_by_month[tb->tm_mon];
-    if ( IS_LEAP_YEAR ( tmptm1 ) && ( tb->tm_mon > 1 ) )
+    if ( is_leap_year ( tmptm1 ) && ( tb->tm_mon > 1 ) )
         tmptm2++;
 
     /*
@@ -142,7 +153,7 @@ time_t soci::details::inner::selfmade_timegm ( struct tm* tb )
      * each elapsed leap year. no danger of overflow because of the range
      * check (above) on tmptm1.
      */
-    tmptm3 = ( tmptm1 - 70 ) * 365 + ELAPSED_LEAP_YEARS ( tmptm1 );
+    tmptm3 = ( tmptm1 - 70 ) * 365 + elapsed_leap_years ( tmptm1 );
 
     /*
      * elapsed days to current month (still no possible overflow)
@@ -187,6 +198,4 @@ time_t soci::details::inner::selfmade_timegm ( struct tm* tb )
 
     return tmptm1;
 }
-#undef IS_LEAP_YEAR
-#undef ELAPSED_LEAP_YEARS
 
