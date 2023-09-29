@@ -616,13 +616,19 @@ using auto_table_creator = std::unique_ptr<table_creator_base>;
 namespace test_cases
 {
 
+inline bool operator== ( const std::tm& a, const std::tm& b )
+{
+    return a.tm_sec == b.tm_sec && a.tm_min == b.tm_min && a.tm_hour == b.tm_hour && a.tm_mday == b.tm_mday && a.tm_mon == b.tm_mon &&
+           a.tm_year == b.tm_year && a.tm_wday == b.tm_wday && a.tm_yday == b.tm_yday && a.tm_isdst == b.tm_isdst;
+}
+
 TEST_CASE_METHOD ( common_tests, "timegm implementation", "[core][timegm]" )
 {
     std::tm t1;
     t1.tm_year = 105;
-    t1.tm_mon = 13;
+    t1.tm_mon = 13;     // + 1 year
     t1.tm_mday = 15;
-    t1.tm_hour = 22;
+    t1.tm_hour = 28;    // + 1 day
     t1.tm_min = 14;
     t1.tm_sec = 17;
 
@@ -631,9 +637,12 @@ TEST_CASE_METHOD ( common_tests, "timegm implementation", "[core][timegm]" )
     const auto timegm_result = timegm (&t1);
     const auto timegm_soci_result = details::timegm_impl_soci (&t2);
     CHECK ( timegm_result == timegm_soci_result );
-    CHECK ( t2.tm_mon == 1 );
+    CHECK ( t1.tm_year == 106 );
+    CHECK ( t1.tm_mon == 1 );
+    CHECK ( t1.tm_mday == 16 );
+    CHECK ( t1.tm_hour == 4 );
+    CHECK ( ( t1 == t2 ) );
 }
-
 
 TEST_CASE_METHOD(common_tests, "Exception on not connected", "[core][exception]")
 {

@@ -92,110 +92,50 @@ void soci::details::parse_std_tm(char const * buf, std::tm & t)
     mktime_from_ymdhms(t, year, month, day, hour, minute, second);
 }
 
+
+// https://stackoverflow.com/a/58037981/15275
 namespace
 {
-bool is_leap_year ( time_t y )
+// Algorithm: http://howardhinnant.github.io/date_algorithms.html
+int days_from_epoch ( int y, int m, int d )
 {
-    return ( ( ( y % 4 == 0 ) && ( y % 100 != 0 ) ) || ( ( y + 1900 ) % 400 == 0 ) );
+    y -= m <= 2;
+    const int era = y / 400;
+    const int yoe = y - era * 400;                                         // [0, 399]
+    const int doy = ( 153 * ( m + ( m > 2 ? -3 : 9 ) ) + 2 ) / 5 + d - 1;  // [0, 365]
+    const int doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;                 // [0, 146096]
+    return era * 146097 + doe - 719468;
 }
-
-time_t elapsed_leap_years ( time_t y )
-{
-    return ( ( ( y - 1 ) / 4 ) - ( ( y - 1 ) / 100 ) + ( ( y + 299 ) / 400 ) - 17 );
-}
-
 }  // namespace
 
 time_t soci::details::timegm_impl_soci ( struct tm* tb )
 {
-    static int days_by_month[] = {-1, 30, 58, 89, 119, 150, 180, 211, 242, 272, 303, 333, 364};
+    int year = tb->tm_year + 1900;
+    int month = tb->tm_mon;  // 0-11
 
-    time_t    tmptm1, tmptm2, tmptm3;
-
-    if ( tb == NULL )
+    if ( month > 11 )
     {
-        return static_cast<time_t> ( -1 );
+        year += month / 12;
+        month %= 12;
     }
-
-    tmptm1 = tb->tm_year;
-
-    /*
-     * Adjust month value so it is in the range 0 - 11.  This is because
-     * we don't know how many days are in months 12, 13, 14, etc.
-     */
-
-    if ( ( tb->tm_mon < 0 ) || ( tb->tm_mon > 11 ) )
+    else if ( month < 0 )
     {
-        tmptm1 += ( tb->tm_mon / 12 );
-
-        if ( ( tb->tm_mon %= 12 ) < 0 )
-        {
-            tb->tm_mon += 12;
-            tmptm1--;
-        }
+        const int years_diff = ( 11 - month ) / 12;
+        year -= years_diff;
+        month += 12 * years_diff;
     }
+    const int days_since_epoch = days_from_epoch ( year, month + 1, tb->tm_mday );
 
-    /***** HERE: tmptm1 holds number of elapsed years *****/
+    time_t since_epoch = 60 * ( 60 * ( 24L * days_since_epoch + tb->tm_hour ) + tb->tm_min ) + tb->tm_sec;
 
-    /*
-     * Calculate days elapsed minus one, in the given year, to the given
-     * month. Check for leap year and adjust if necessary.
-     */
-    tmptm2 = days_by_month[tb->tm_mon];
-    if ( is_leap_year ( tmptm1 ) && ( tb->tm_mon > 1 ) )
-        tmptm2++;
+    struct tm tmp;
+#ifdef _WIN32
+    gmtime_s ( &tmp, &since_epoch );
+#else
+    gmtime_r ( &since_epoch, &tmp );
+#endif  // _WIN32
+    *tb = tmp;
 
-    /*
-     * Calculate elapsed days since base date (midnight, 1/1/70, UTC)
-     *
-     *
-     * 365 days for each elapsed year since 1970, plus one more day for
-     * each elapsed leap year. no danger of overflow because of the range
-     * check (above) on tmptm1.
-     */
-    tmptm3 = ( tmptm1 - 70 ) * 365 + elapsed_leap_years ( tmptm1 );
-
-    /*
-     * elapsed days to current month (still no possible overflow)
-     */
-    tmptm3 += tmptm2;
-
-    /*
-     * elapsed days to current date.
-     */
-    tmptm1 = tmptm3 + ( tmptm2 = static_cast<time_t> ( tb->tm_mday ) );
-
-    /***** HERE: tmptm1 holds number of elapsed days *****/
-
-    /*
-     * Calculate elapsed hours since base date
-     */
-    tmptm2 = tmptm1 * 24;
-
-    tmptm1 = tmptm2 + ( tmptm3 = static_cast<time_t> ( tb->tm_hour ) );
-
-    /***** HERE: tmptm1 holds number of elapsed hours *****/
-
-    /*
-     * Calculate elapsed minutes since base date
-     */
-
-    tmptm2 = tmptm1 * 60;
-
-    tmptm1 = tmptm2 + ( tmptm3 = static_cast<time_t> ( tb->tm_min ) );
-
-    /***** HERE: tmptm1 holds number of elapsed minutes *****/
-
-    /*
-     * Calculate elapsed seconds since base date
-     */
-
-    tmptm2 = tmptm1 * 60;
-
-    tmptm1 = tmptm2 + ( tmptm3 = static_cast<time_t> ( tb->tm_sec ) );
-
-    /***** HERE: tmptm1 holds number of elapsed seconds *****/
-
-    return tmptm1;
+    return since_epoch;
 }
 
