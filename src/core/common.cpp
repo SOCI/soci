@@ -91,3 +91,102 @@ void soci::details::parse_std_tm(char const * buf, std::tm & t)
 
     mktime_from_ymdhms(t, year, month, day, hour, minute, second);
 }
+
+#define IS_LEAP_YEAR( y ) ( ( ( y % 4 == 0 ) && ( y % 100 != 0 ) ) || ( ( y + 1900 ) % 400 == 0 ) )
+#define ELAPSED_LEAP_YEARS( y ) ( ( ( y - 1 ) / 4 ) - ( ( y - 1 ) / 100 ) + ( ( y + 299 ) / 400 ) - 17 )
+
+time_t soci::details::inner::selfmade_timegm ( struct tm* tb )
+{
+    static int days_by_month[] = {-1, 30, 58, 89, 119, 150, 180, 211, 242, 272, 303, 333, 364};
+
+    time_t    tmptm1, tmptm2, tmptm3;
+
+    if ( tb == NULL )
+    {
+        return static_cast<time_t> ( -1 );
+    }
+
+    tmptm1 = tb->tm_year;
+
+    /*
+     * Adjust month value so it is in the range 0 - 11.  This is because
+     * we don't know how many days are in months 12, 13, 14, etc.
+     */
+
+    if ( ( tb->tm_mon < 0 ) || ( tb->tm_mon > 11 ) )
+    {
+        tmptm1 += ( tb->tm_mon / 12 );
+
+        if ( ( tb->tm_mon %= 12 ) < 0 )
+        {
+            tb->tm_mon += 12;
+            tmptm1--;
+        }
+    }
+
+    /***** HERE: tmptm1 holds number of elapsed years *****/
+
+    /*
+     * Calculate days elapsed minus one, in the given year, to the given
+     * month. Check for leap year and adjust if necessary.
+     */
+    tmptm2 = days_by_month[tb->tm_mon];
+    if ( IS_LEAP_YEAR ( tmptm1 ) && ( tb->tm_mon > 1 ) )
+        tmptm2++;
+
+    /*
+     * Calculate elapsed days since base date (midnight, 1/1/70, UTC)
+     *
+     *
+     * 365 days for each elapsed year since 1970, plus one more day for
+     * each elapsed leap year. no danger of overflow because of the range
+     * check (above) on tmptm1.
+     */
+    tmptm3 = ( tmptm1 - 70 ) * 365 + ELAPSED_LEAP_YEARS ( tmptm1 );
+
+    /*
+     * elapsed days to current month (still no possible overflow)
+     */
+    tmptm3 += tmptm2;
+
+    /*
+     * elapsed days to current date.
+     */
+    tmptm1 = tmptm3 + ( tmptm2 = static_cast<time_t> ( tb->tm_mday ) );
+
+    /***** HERE: tmptm1 holds number of elapsed days *****/
+
+    /*
+     * Calculate elapsed hours since base date
+     */
+    tmptm2 = tmptm1 * 24;
+
+    tmptm1 = tmptm2 + ( tmptm3 = static_cast<time_t> ( tb->tm_hour ) );
+
+    /***** HERE: tmptm1 holds number of elapsed hours *****/
+
+    /*
+     * Calculate elapsed minutes since base date
+     */
+
+    tmptm2 = tmptm1 * 60;
+
+    tmptm1 = tmptm2 + ( tmptm3 = static_cast<time_t> ( tb->tm_min ) );
+
+    /***** HERE: tmptm1 holds number of elapsed minutes *****/
+
+    /*
+     * Calculate elapsed seconds since base date
+     */
+
+    tmptm2 = tmptm1 * 60;
+
+    tmptm1 = tmptm2 + ( tmptm3 = static_cast<time_t> ( tb->tm_sec ) );
+
+    /***** HERE: tmptm1 holds number of elapsed seconds *****/
+
+    return tmptm1;
+}
+#undef IS_LEAP_YEAR
+#undef ELAPSED_LEAP_YEARS
+
