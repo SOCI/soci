@@ -94,7 +94,7 @@ void soci::details::parse_std_tm(char const * buf, std::tm & t)
 
 namespace
 {
-bool is_leap_year ( int y )
+bool is_leap_year ( time_t y )
 {
     return ( ( ( y % 4 == 0 ) && ( y % 100 != 0 ) ) || ( ( y + 1900 ) % 400 == 0 ) );
 }

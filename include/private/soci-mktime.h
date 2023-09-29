@@ -21,7 +21,7 @@ namespace soci
 namespace details
 {
 
-time_t timegm_impl_soci ( struct tm* tb );
+SOCI_DECL time_t timegm_impl_soci ( struct tm* tb );
 
 template <typename T>
 auto timegm_impl(T* t) -> decltype(timegm(t))
