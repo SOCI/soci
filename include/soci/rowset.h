@@ -182,6 +182,8 @@ public:
         pimpl_->incRef();
     }
 
+    rowset(session const & session) = delete;
+
     ~rowset()
     {
         pimpl_->decRef();
