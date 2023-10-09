@@ -187,7 +187,16 @@ public:
         pimpl_->incRef();
     }
 
-    rowset(session const & session) = delete;
+    rowset()
+        : pimpl_(new details::rowset_impl<T>())
+    {
+    }
+    
+    // Due to the existence of conversion from session to prepare_temp_type, it
+    // would have been possible to construct a rowset from session if we didn't
+    // delete this ctor -- so do delete it because it doesn't make sense to
+    // provide such constructor.
+    rowset(session const& session) = delete;
 
     rowset()
         : pimpl_(new details::rowset_impl<T>())
