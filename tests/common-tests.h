@@ -2945,6 +2945,12 @@ TEST_CASE_METHOD(common_tests, "Rowset iteration", "[core][rowset]")
 
             CHECK(5 == std::distance(rs.begin(), rs.end()));
         }
+        {
+            rowset<row> rs = (sql.prepare << "select * from soci_test");
+
+            rs.clear();
+            CHECK(rs.begin() == rs.end());
+        }
     }
 
 }
