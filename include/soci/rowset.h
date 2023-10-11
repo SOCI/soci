@@ -39,8 +39,8 @@ public:
         : st_(0), define_(0)
     {}
 
-    rowset_iterator(statement & st, T & define)
-        : st_(&st), define_(&define)
+    rowset_iterator(statement * st, T * define)
+        : st_(st), define_(define)
     {
         // Fetch first row to properly initialize iterator
         ++(*this);
@@ -113,6 +113,11 @@ public:
 
     typedef rowset_iterator<T> iterator;
 
+    rowset_impl()
+        : refs_(1), st_(nullptr), define_(nullptr)
+    {
+    }
+
     rowset_impl(details::prepare_temp_type const & prep)
         : refs_(1), st_(new statement(prep)), define_(new T())
     {
@@ -136,7 +141,7 @@ public:
     iterator begin() const
     {
         // No ownership transfer occurs here
-        return iterator(*st_, *define_);
+        return iterator(st_.get(), define_.get());
     }
 
     iterator end() const
@@ -183,6 +188,11 @@ public:
     }
 
     rowset(session const & session) = delete;
+
+    rowset()
+        : pimpl_(new details::rowset_impl<T>())
+    {
+    }
 
     ~rowset()
     {
