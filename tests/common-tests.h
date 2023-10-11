@@ -2888,7 +2888,12 @@ TEST_CASE_METHOD(common_tests, "Rowset creation and copying", "[core][rowset]")
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
     {
-        // Open empty rowset
+        // Create empty rowset
+        rowset<row> rs1;
+        CHECK(rs1.begin() == rs1.end());
+    }
+    {
+        // Load empty rowset
         rowset<row> rs1 = (sql.prepare << "select * from soci_test");
         CHECK(rs1.begin() == rs1.end());
     }
@@ -2909,7 +2914,7 @@ TEST_CASE_METHOD(common_tests, "Rowset creation and copying", "[core][rowset]")
     if (!tc_.has_multiple_select_bug())
     {
         // Assignment
-        rowset<row> rs1 = (sql.prepare << "select * from soci_test");
+        rowset<row> rs1;
         rowset<row> rs2 = (sql.prepare << "select * from soci_test");
         rowset<row> rs3 = (sql.prepare << "select * from soci_test");
         rs1 = rs2;
@@ -2939,6 +2944,12 @@ TEST_CASE_METHOD(common_tests, "Rowset iteration", "[core][rowset]")
             rowset<row> rs = (sql.prepare << "select * from soci_test");
 
             CHECK(5 == std::distance(rs.begin(), rs.end()));
+        }
+        {
+            rowset<row> rs = (sql.prepare << "select * from soci_test");
+
+            rs.clear();
+            CHECK(rs.begin() == rs.end());
         }
     }
 
