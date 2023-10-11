@@ -214,6 +214,11 @@ public:
         return *this;
     }
 
+    void clear()
+    {
+        *this = rowset();
+    }
+
     const_iterator begin() const
     {
         return pimpl_->begin();
