@@ -113,6 +113,11 @@ public:
 
     typedef rowset_iterator<T> iterator;
 
+    rowset_impl()
+        : refs_(1), st_(nullptr), define_(nullptr)
+    {
+    }
+
     rowset_impl(details::prepare_temp_type const & prep)
         : refs_(1), st_(new statement(prep)), define_(new T())
     {
@@ -135,8 +140,8 @@ public:
 
     iterator begin() const
     {
-        // No ownership transfer occurs here
-        return iterator(*st_, *define_);
+        // No ownership transfer occurs here. Empty rowset doesn't have any valid begin iterator.
+        return st_ ? iterator(*st_, *define_) : iterator();
     }
 
     iterator end() const
@@ -180,6 +185,11 @@ public:
         : pimpl_(other.pimpl_)
     {
         pimpl_->incRef();
+    }
+
+    rowset()
+       : pimpl_(new details::rowset_impl<T>())
+    {
     }
 
     // Due to the existence of conversion from session to prepare_temp_type, it
