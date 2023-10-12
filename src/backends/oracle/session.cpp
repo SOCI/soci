@@ -152,7 +152,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
 
     // create the environment
     res = OCIEnvNlsCreate(&envhp_, OCI_THREADED | OCI_ENV_NO_MUTEX,
-        0, 0, 0, 0, 0, 0, charset, ncharset);
+        0, 0, 0, 0, 0, 0, static_cast<ub2> (charset), static_cast<ub2> (ncharset));
     if (res != OCI_SUCCESS)
     {
         throw soci_error("Cannot create environment");
@@ -181,7 +181,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         // convert service/user/password to the expected charset
 
         res = OCINlsCharSetConvert(envhp_, errhp_,
-            charset, nlsService, serviceBufLen,
+            static_cast<ub2> (charset), nlsService, serviceBufLen,
             defaultSourceCharSetId, serviceName.c_str(), serviceName.size(), &nlsServiceLen);
         if (res != OCI_SUCCESS)
         {
@@ -193,7 +193,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         }
 
         res = OCINlsCharSetConvert(envhp_, errhp_,
-            charset, nlsUserName, authBufLen,
+            static_cast<ub2> (charset), nlsUserName, authBufLen,
             defaultSourceCharSetId, userName.c_str(), userName.size(), &nlsUserNameLen);
         if (res != OCI_SUCCESS)
         {
@@ -205,7 +205,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         }
 
         res = OCINlsCharSetConvert(envhp_, errhp_,
-            charset, nlsPassword, authBufLen,
+            static_cast<ub2> (charset), nlsPassword, authBufLen,
             defaultSourceCharSetId, password.c_str(), password.size(), &nlsPasswordLen);
         if (res != OCI_SUCCESS)
         {

@@ -64,9 +64,14 @@ public:
     column_properties const& get_properties(std::size_t pos) const;
     column_properties const& get_properties(std::string const& name) const;
 
-    template <typename T>
-    T get(std::size_t pos) const
+    template <typename T> 
+    T get ( std::size_t pos ) const
     {
+        details::type_holder<T>* p = details::checked_ptr_cast<details::type_holder<T>> ( holders_.at ( pos ) );
+        if ( p )
+        {
+            return p->template value<T> ();
+        }
         typedef typename type_conversion<T>::base_type base_type;
         base_type const& baseVal = holders_.at(pos)->get<base_type>();
 

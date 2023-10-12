@@ -9,6 +9,7 @@
 #include "soci/oracle/soci-oracle.h"
 #include "soci/blob.h"
 #include "clob.h"
+#include "datetime.h"
 #include "error.h"
 #include "soci/rowid.h"
 #include "soci/statement.h"
@@ -25,6 +26,8 @@
 #include <cstdlib>
 #include <ctime>
 #include <sstream>
+
+#include "thirdparty/date.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -159,6 +162,13 @@ void oracle_standard_use_type_backend::prepare_for_bind(
             ociData_ = lobp;
         }
         break;
+    case x_datetime:
+        oracleType = SQLT_TIMESTAMP;
+        OCIDateTime* dtm {nullptr};
+        size = sizeof ( dtm );
+        data = &ociData_;
+        ociData_ = dtm;        
+        break;
     }
 }
 
@@ -174,8 +184,8 @@ void oracle_standard_use_type_backend::bind_by_pos(
     data_ = data; // for future reference
     type_ = type; // for future reference
 
-    ub2 oracleType;
-    sb4 size;
+    ub2 oracleType{0};
+    sb4 size{0};
 
     prepare_for_bind(data, size, oracleType, readOnly);
 
@@ -203,8 +213,8 @@ void oracle_standard_use_type_backend::bind_by_name(
     data_ = data; // for future reference
     type_ = type; // for future reference
 
-    ub2 oracleType;
-    sb4 size;
+    ub2 oracleType{0};
+    sb4 size{0};
 
     prepare_for_bind(data, size, oracleType, readOnly);
 
@@ -296,6 +306,76 @@ void oracle::free_temp_lob(oracle_session_backend& session,
     OCIDescriptorFree(lobp, OCI_DTYPE_LOB);
 }
 
+void oracle::free_oci_datetime ( OCIDateTime *dtm )
+{
+    if (dtm)
+        OCIDescriptorFree ( (void *)dtm, OCI_DTYPE_TIMESTAMP );
+}
+
+OCIDateTime* oracle::alloc_oci_datetime ( oracle_session_backend &session )
+{
+    OCIDateTime *dtm;
+
+    const auto   rc = OCIDescriptorAlloc ( session.envhp_, reinterpret_cast<void **> ( &dtm ), OCI_DTYPE_TIMESTAMP, 0, nullptr );
+    if ( rc != OCI_SUCCESS )
+        throw_oracle_soci_error ( rc, session.errhp_ );
+
+    return dtm;
+}
+
+void oracle::write_to_oci_datetime ( oracle_session_backend &session, OCIDateTime *dtm, const soci::datetime &value )
+{
+    const auto days = date::floor<date::days> ( value );
+    const auto ymd = date::year_month_day{ days };
+    const auto tod = date::make_time ( value - days );
+
+    const auto rc = OCIDateTimeConstruct
+                      (
+                          session.envhp_,
+                          session.errhp_,
+                          dtm,
+                          static_cast<sb2>( ymd.year ().operator int() ),
+                          static_cast<ub1>( ymd.month ().operator unsigned() ),
+                          static_cast<ub1>( ymd.day ().operator unsigned() ),
+                          static_cast<ub1>( tod.hours ().count () ),
+                          static_cast<ub1>( tod.minutes ().count () ),
+                          static_cast<ub1>( tod.seconds ().count () ),
+                          static_cast<ub4>( (value.time_since_epoch() - date::floor<std::chrono::seconds>(value.time_since_epoch())).count() ),
+                          nullptr,
+                          0
+                      );
+    if ( rc != OCI_SUCCESS )
+        throw_oracle_soci_error ( rc, session.errhp_ );
+    
+}
+
+void oracle::read_from_oci_datetime ( oracle_session_backend &session, OCIDateTime *dtm, soci::datetime &value )
+{
+    sb2        year;
+    ub1        month, day, hour, minute, sec;
+    ub4        fsec;
+    sb1        tz_hour;
+    sb1        tz_minute;
+
+    auto rc = OCIDateTimeGetDate ( session.envhp_, session.errhp_, dtm, &year, &month, &day );
+    if ( rc != OCI_SUCCESS )
+        throw_oracle_soci_error ( rc, session.errhp_ );
+
+    rc = OCIDateTimeGetTime ( session.envhp_, session.errhp_, dtm, &hour, &minute, &sec, &fsec );
+    if ( rc != OCI_SUCCESS )
+        throw_oracle_soci_error ( rc, session.errhp_ );
+
+    rc = OCIDateTimeGetTimeZoneOffset ( session.envhp_, session.errhp_, dtm, &tz_hour, &tz_minute );
+    if ( rc == OCI_SUCCESS )
+    {
+        hour += tz_hour;
+        minute += tz_minute;
+    }
+    
+    value = date::sys_days{ date::year ( year ) / date::month ( month ) / date::day ( day ) } + std::chrono::hours{ hour } +
+            std::chrono::minutes{ minute } + std::chrono::seconds{ sec } + std::chrono::nanoseconds{ fsec };
+}
+
 void oracle_standard_use_type_backend::pre_exec(int /* num */)
 {
     switch (type_)
@@ -314,6 +394,13 @@ void oracle_standard_use_type_backend::pre_exec(int /* num */)
             ociData_ = lobp;
 
             write_to_lob(statement_.session_, lobp, exchange_type_cast<x_longstring>(data_).value);
+        }
+        break;
+    case x_datetime:
+        {
+            auto dtm = alloc_oci_datetime ( statement_.session_ );
+            ociData_ = dtm;
+            write_to_oci_datetime ( statement_.session_, dtm, exchange_type_cast<x_datetime> ( data_ ) );
         }
         break;
     default:
@@ -402,6 +489,7 @@ void oracle_standard_use_type_backend::pre_use(indicator const *ind)
     case x_longstring:
     case x_rowid:
     case x_blob:
+    case x_datetime:
         // nothing to do
         break;
     }
@@ -558,6 +646,24 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
                 }
             }
             break;
+        case x_datetime:
+            {
+                soci::datetime &orig = exchange_type_cast<x_datetime> ( data_ );
+                soci::datetime  bound;
+                read_from_oci_datetime ( statement_.session_, static_cast<OCIDateTime *> ( ociData_ ), bound );
+                if ( orig != bound )
+                {
+                    if ( readOnly_ )
+                    {
+                        throw soci_error ( "Attempted modification of const use element" );
+                    }
+                    else
+                    {
+                        orig = bound;
+                    }
+                }
+            }
+            break;
         case x_statement:
             {
                 statement *s = static_cast<statement *>(data_);
@@ -599,6 +705,11 @@ void oracle_standard_use_type_backend::clean_up()
     {
         free_temp_lob(statement_.session_, static_cast<OCILobLocator *>(ociData_));
         ociData_ = NULL;
+    }
+    if ( type_ == x_datetime && ociData_ )
+    {
+        free_oci_datetime ( static_cast<OCIDateTime *> ( ociData_ ) );
+        ociData_ = nullptr;
     }
 
     if (bindp_ != NULL)

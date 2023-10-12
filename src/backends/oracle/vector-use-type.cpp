@@ -8,6 +8,7 @@
 #define soci_ORACLE_SOURCE
 #include "soci/oracle/soci-oracle.h"
 #include "clob.h"
+#include "datetime.h"
 #include "error.h"
 #include "soci/soci-platform.h"
 #include "soci-vector-helpers.h"
@@ -170,6 +171,20 @@ void oracle_vector_use_type_backend::prepare_for_bind(
             elementSize = dlen;
         }
         break;
+    case x_datetime:
+        {
+            std::size_t const vecSize = size ();
+            prepare_indicators ( vecSize );
+
+            sb4 const dlen = sizeof ( OCIDateTime * );
+            buf_ = new char[dlen * vecSize];
+            memset ( buf_, 0, dlen * vecSize );
+
+            oracleType = SQLT_TIMESTAMP;
+            data = buf_;
+            elementSize = dlen;
+        }
+        break;
 
     case x_statement:
     case x_rowid:
@@ -276,6 +291,18 @@ void oracle_vector_use_type_backend::pre_use(indicator const *ind)
             *pos++ = static_cast<ub1>(t.tm_sec + 1);
         }
     }
+    else if ( type_ == x_datetime )
+    {
+        OCIDateTime **const ocidtms = reinterpret_cast<OCIDateTime **> ( buf_ );
+        const auto&         vecValues = exchange_vector_type_cast<x_datetime> ( data_ );
+
+        std::size_t const vecSize = size ();
+        for ( std::size_t i = 0; i != vecSize; ++i )
+        {
+            ocidtms[i] = alloc_oci_datetime ( statement_.session_ );
+            write_to_oci_datetime ( statement_.session_, ocidtms[i], vecValues.at ( i ) );
+        }
+    }
     else if (type_ == x_longstring || type_ == x_xmltype)
     {
         OCILobLocator** const lobps = reinterpret_cast<OCILobLocator**>(buf_);
@@ -374,6 +401,15 @@ void oracle_vector_use_type_backend::clean_up()
         for (std::size_t i = 0; i != vecSize; ++i)
         {
             free_temp_lob(statement_.session_, lobps[i]);
+        }
+    }
+    if ( type_ == x_datetime )
+    {
+        OCIDateTime **const ocidtms = reinterpret_cast<OCIDateTime **> ( buf_ );
+        std::size_t const     vecSize = size ();
+        for ( std::size_t i = 0; i != vecSize; ++i )
+        {
+            free_oci_datetime ( ocidtms[i] );
         }
     }
 

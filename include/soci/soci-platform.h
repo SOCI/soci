@@ -79,6 +79,8 @@ namespace std {
 #   define _WIN32_WINNT 0x0502 //_WIN32_WINNT_WS03, VS2015 support: https://msdn.microsoft.com/de-de/library/6sehtctf.aspx
 # endif
 
+#define NOMINMAX
+
 # ifdef SOCI_DLL
 #  define SOCI_DECL_EXPORT __declspec(dllexport)
 #  define SOCI_DECL_IMPORT __declspec(dllimport)

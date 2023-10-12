@@ -22,6 +22,9 @@
 #include <ctime>
 #include <sstream>
 
+#include "datetime.h"
+#include "thirdparty/date.h"
+
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
@@ -104,6 +107,16 @@ void oracle_standard_into_type_backend::define_by_pos(
         data = buf_;
         break;
 
+    case x_datetime:
+        {
+            oracleType = SQLT_TIMESTAMP;
+            OCIDateTime *dtm{ nullptr };
+            data = &ociData_;
+            size = sizeof ( dtm );
+            ociData_ = dtm;
+        }
+        break;
+
     // cases that require special handling
     case x_statement:
         {
@@ -180,6 +193,10 @@ void oracle_standard_into_type_backend::pre_exec(int /* num */)
     {
         // lazy initialization of the temporary LOB object
         ociData_ = create_temp_lob(statement_.session_);
+    }
+    if (type_ == x_datetime)
+    {
+        ociData_ = alloc_oci_datetime ( statement_.session_ );
     }
 }
 
@@ -280,6 +297,13 @@ void oracle_standard_into_type_backend::post_fetch(
                 details::mktime_from_ymdhms(t, year, month, day, hour, minute, second);
             }
         }
+        else if ( type_ == x_datetime )
+        {
+            if ( indOCIHolder_ != -1 )
+            {
+                read_from_oci_datetime (statement_.session_, static_cast<OCIDateTime *> ( ociData_ ), exchange_type_cast<x_datetime> ( data_ ) );
+            }
+        }
         else if (type_ == x_statement)
         {
             statement *st = static_cast<statement *>(data_);
@@ -348,6 +372,11 @@ void oracle_standard_into_type_backend::clean_up()
     {
         free_temp_lob(statement_.session_, static_cast<OCILobLocator *>(ociData_));
         ociData_ = NULL;
+    }
+    if ( type_ == x_datetime && ociData_ )
+    {
+        free_oci_datetime ( static_cast<OCIDateTime *> ( ociData_ ) );
+        ociData_ = nullptr;
     }
 
     if (defnp_ != NULL)

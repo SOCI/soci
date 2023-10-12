@@ -52,6 +52,10 @@ if (MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /we4266")
   endif()
 
+  if(NOT MSVC_VERSION LESS 1928 AND SOCI_ASAN)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fsanitize=address")
+  endif()
+  
   if (SOCI_ENABLE_WERROR)
      set(SOCI_WERROR_OPTION "/WX")
   endif (SOCI_ENABLE_WERROR)

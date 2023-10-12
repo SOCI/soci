@@ -15,6 +15,8 @@
 #include <map>
 #include <string>
 #include <sstream>
+#include <chrono>
+#include <iomanip>
 
 namespace soci
 {
@@ -23,7 +25,7 @@ namespace soci
 enum data_type
 {
     dt_string, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long,
-    dt_blob, dt_xml
+    dt_blob, dt_xml, dt_datetime
 };
 
 // the enum type for indicator variables
@@ -51,7 +53,8 @@ enum exchange_type
     x_blob,
 
     x_xmltype,
-    x_longstring
+    x_longstring,
+    x_datetime
 };
 
 // type of statement (used for optimizing statement preparation)
@@ -339,6 +342,7 @@ public:
             break;
 
         case dt_date:
+        case dt_datetime:
             res += "timestamp";
             break;
 

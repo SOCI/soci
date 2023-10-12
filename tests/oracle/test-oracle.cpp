@@ -8,6 +8,8 @@
 #include "common-tests.h"
 #include "soci/soci.h"
 #include "soci/oracle/soci-oracle.h"
+#include "private/thirdparty/date.h"
+#include "soci/soci-simple.h"
 #include <iostream>
 #include <string>
 #include <cstdlib>
@@ -19,6 +21,53 @@ using namespace soci::tests;
 
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_oracle();
+
+
+TEST_CASE ( "Datetime conversions", "[oracle][simple][datetime]" )
+{
+    auto sess = soci_create_session ( ( std::string("oracle://") + connectString ) .c_str () );
+    if( !soci_session_state(sess))
+    {
+        throw soci_session_error_message ( sess );
+    }
+    auto      stmt = soci_create_statement ( sess );
+    const int idx = soci_into_datetime ( stmt );
+    soci_use_datetime ( stmt, "t" );
+
+    soci_prepare ( stmt, "select to_timestamp( t ) from (select to_char(:t) as t from dual)" );
+
+    const std::string src_dtm_str = "2001 01 11 10:11:12.123456";
+    soci_set_use_datetime ( stmt, "t", src_dtm_str.c_str () );
+
+    soci_execute ( stmt, 1 );
+    std::string dst_dtm_str = soci_get_into_datetime ( stmt, idx );
+
+    CHECK ( src_dtm_str == dst_dtm_str );
+
+    const std::string src_dtm_str2 = "2001 01 11 10:11:12";
+    soci_set_use_datetime ( stmt, "t", src_dtm_str2.c_str () );
+
+    soci_execute ( stmt, 1 );
+    dst_dtm_str = soci_get_into_datetime ( stmt, idx );
+
+    CHECK ( src_dtm_str2 == dst_dtm_str );
+
+    soci_destroy_statement ( stmt );
+    soci_destroy_session ( sess );
+}
+
+struct basic_table_creator : public table_creator_base
+{
+    basic_table_creator ( soci::session &sql ) : table_creator_base ( sql )
+    {
+        sql << "create table soci_test ("
+               "    id number(5) not null,"
+               "    name varchar2(100),"
+               "    code number(5),"
+               "    dtm timestamp with time zone"
+               ")";
+    }
+};
 
 // Extra tests for date/time
 TEST_CASE("Oracle datetime", "[oracle][datetime]")
@@ -83,8 +132,41 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
         sql << "select to_char(t, :format) from (select :t as t from dual)",
             into(t_out), use(format), use(t2);
 
-        CHECK(t_out == std::string(buf));
+        CHECK(t_out == std::string(buf));  
     }
+
+    {
+        using namespace date;            
+        soci::datetime dtm = std::chrono::system_clock::now (); indicator ind = i_ok;
+        soci::datetime dtm2; indicator ind2 = i_ok;
+        soci::datetime dtm3;
+        
+        sql << "select t, timestamp'2001-01-11 10:10:10.123' as t2 from (select :t as t, :t as sss from dual)", into ( dtm2,ind2 ), into(dtm3), use ( dtm, ind );
+        CHECK ( (dtm == dtm2) == true );
+        auto expected = sys_days{ year(2001) / month(01) / day(11) } + std::chrono::hours{ 10 } + std::chrono::minutes{ 10 } + std::chrono::seconds{ 10 } + std::chrono::milliseconds{ 123 };
+        CHECK ( ( dtm3 == expected) == true );
+    }
+
+    {
+        basic_table_creator tbl ( sql );
+
+        sql << "insert into soci_test(id) values(1)";
+
+        int code{ 0 };
+        using namespace date;
+        using namespace std::chrono;
+        soci::datetime expected = sys_days{ year ( 2001 ) / month ( 01 ) / day ( 11 ) } + hours{ 10 } + minutes{ 10 } + seconds{ 10 };
+        soci::datetime dtm;
+        std::tm        tm;
+        sql << "update soci_test set code = 1, dtm=:e + 1 returning code, dtm, dtm into :c, :d, :d2", use ( expected ), use ( code ),
+            use ( dtm ), use ( tm );
+
+        CHECK ( code == 1 );
+        CHECK ( ( dtm == expected + hours (24) ) );
+        CHECK ( tm.tm_mday == 12 );
+        CHECK ( tm.tm_sec == 10 );
+    }
+
 }
 
 // explicit calls test
@@ -166,20 +248,6 @@ TEST_CASE("Oracle blob", "[oracle][blob]")
 // nested statement test
 // (the same syntax is used for output cursors in PL/SQL)
 
-struct basic_table_creator : public table_creator_base
-{
-    basic_table_creator(soci::session & sql)
-        : table_creator_base(sql)
-    {
-        sql <<
-                    "create table soci_test ("
-                    "    id number(5) not null,"
-                    "    name varchar2(100),"
-                    "    code number(5)"
-                    ")";
-    }
-};
-
 TEST_CASE("Oracle nested statement", "[oracle][blob]")
 {
     soci::session sql(backEnd, connectString);
@@ -254,15 +322,16 @@ TEST_CASE("Oracle stored procedure", "[oracle][stored-procedure]")
     soci::session sql(backEnd, connectString);
     procedure_creator procedure_creator(sql);
 
-    std::string in("my message");
-    std::string out;
-    statement st = (sql.prepare <<
-        "begin soci_test(:output, :input); end;",
-        use(out, "output"),
-        use(in, "input"));
-    st.execute(1);
-    CHECK(out == in);
-
+    {
+        std::string in("my message");
+        std::string out;
+        statement st = (sql.prepare <<
+            "begin soci_test(:output, :input); end;",
+            use(out, "output"),
+            use(in, "input"));
+        st.execute(1);
+        CHECK(out == in);
+    }
     // explicit procedure syntax
     {
         std::string in("my message2");
@@ -400,11 +469,12 @@ TEST_CASE("Oracle bulk insert", "[oracle][insert][bulk]")
         ids.push_back(2);
         std::vector<int> codes;
         codes.push_back(1);
-
+        std::vector<soci::datetime> dtms;
+        dtms.push_back ( std::chrono::system_clock::now () );
         try
         {
-            sql << "insert into soci_test(id,code) values(:id,:code)",
-                use(ids), use(codes);
+            sql << "insert into soci_test(id,code, dtm) values(:id,:code, :dtm)",
+                use(ids), use(codes), use(dtms);
             FAIL("expected exception not thrown");
         }
         catch (soci_error const &e)
@@ -417,7 +487,7 @@ TEST_CASE("Oracle bulk insert", "[oracle][insert][bulk]")
 
         try
         {
-            sql << "select from soci_test", into(ids), into(codes);
+            sql << "select from soci_test", into(ids), into(codes), into(dtms);
             FAIL("expected exception not thrown");
         }
         catch (std::exception const &e)
@@ -456,18 +526,30 @@ TEST_CASE("Oracle bulk insert", "[oracle][insert][bulk]")
 
     // test insert
     {
+        using Us = std::chrono::microseconds;
+        using Minutes = std::chrono::minutes;
+
         std::vector<int> ids;
+        std::vector<soci::datetime> dtms;
         for (int i = 0; i != 3; ++i)
         {
             ids.push_back(i+10);
+            dtms.emplace_back ( std::chrono::time_point_cast<Us> ( std::chrono::system_clock::now () ) + Minutes ( i ) );
         }
 
-        statement st = (sql.prepare << "insert into soci_test(id) values(:id)",
-                            use(ids));
-        st.execute(1);
+        statement st = (sql.prepare << "insert into soci_test(id, dtm) values(:id, :dtm)", use(ids), use(dtms));
+        st.execute( true );
         int count;
         sql << "select count(*) from soci_test", into(count);
         CHECK(count == 3);
+
+        std::vector<soci::datetime> dtms2(3);
+        statement                   st_select = ( sql.prepare << "select dtm from soci_test order by id", into ( dtms2 ) );
+        st_select.execute ( true );
+        for ( int i = 0; i != 3; ++i )
+        {
+            CHECK ( ( dtms[i] == dtms2[i] ) == true );
+        }
     }
 
     //verify an exception is thrown if into vector is zero length
@@ -549,7 +631,7 @@ TEST_CASE("Oracle bulk insert", "[oracle][insert][bulk]")
         const size_t sz = 3;
         std::vector<indicator> inds(sz);
         std::vector<int> ids_out(sz);
-        statement st = (sql.prepare << "select id from soci_test",
+        statement st = (sql.prepare << "select id from soci_test order by id",
             into(ids_out, inds));
         const bool gotData = st.execute(true);
         CHECK(gotData);
@@ -565,7 +647,7 @@ TEST_CASE("Oracle bulk insert", "[oracle][insert][bulk]")
     // verify execute(0)
     {
         std::vector<int> ids_out(2);
-        statement st = (sql.prepare << "select id from soci_test",
+        statement st = (sql.prepare << "select id from soci_test order by id",
             into(ids_out));
 
         st.execute();
@@ -587,7 +669,7 @@ TEST_CASE("Oracle bulk insert", "[oracle][insert][bulk]")
     // than number of rows returned
     {
         std::vector<int> ids_out(4); // one too many
-        statement st2 = (sql.prepare << "select id from soci_test",
+        statement st2 = (sql.prepare << "select id from soci_test  order by id",
             into(ids_out));
         bool gotData = st2.execute(true);
         CHECK(gotData);
@@ -604,7 +686,7 @@ TEST_CASE("Oracle bulk insert", "[oracle][insert][bulk]")
         sql << "insert into soci_test(id) values(:id)", use(more);
 
         std::vector<int> ids(2);
-        statement st3 = (sql.prepare << "select id from soci_test", into(ids));
+        statement st3 = (sql.prepare << "select id from soci_test  order by id", into(ids));
         bool gotData = st3.execute(true);
         CHECK(gotData);
         CHECK(ids[0] == 10);
@@ -1454,9 +1536,9 @@ struct table_creator_for_clob : table_creator_base
 class test_context :public test_context_base
 {
 public:
-    test_context(backend_factory const &backEnd,
-                std::string const &connectString)
-        : test_context_base(backEnd, connectString) {}
+    test_context(backend_factory const &bckEnd,
+                std::string const &connString)
+        : test_context_base(bckEnd, connString) {}
 
     table_creator_base* table_creator_1(soci::session& s) const override
     {
@@ -1490,7 +1572,8 @@ public:
 
     std::string to_xml(std::string const& x) const override
     {
-        return "xmltype(" + x + ")";
+        //return "xmltype(" + x + ")";
+        return "case when " + x + " is null then null else xmltype(" + x + ") end";
     }
 
     std::string from_xml(std::string const& x) const override
@@ -1558,7 +1641,7 @@ int main(int argc, char** argv)
     if (!std::getenv("ORACLE_HOME"))
     {
         std::cerr << "ORACLE_HOME environment variable must be defined for Oracle tests.\n";
-        std::exit(1);
+       // std::exit(1);
     }
 
     test_context tc(backEnd, connectString);

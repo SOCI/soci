@@ -19,6 +19,8 @@
 #include <limits>
 #include <sstream>
 
+#include "thirdparty/date.h"
+
 using namespace soci;
 using namespace soci::details;
 using namespace soci::details::postgresql;
@@ -172,6 +174,21 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                         v[i].tm_hour, v[i].tm_min, v[i].tm_sec);
                 }
                 break;
+            case x_datetime:
+                {
+                    std::vector<soci::datetime> *pv = static_cast<std::vector<soci::datetime> *> ( data_ );
+                    std::vector<soci::datetime> &v = *pv;
+
+                    std::size_t const bufSize = 80;
+                    buf = new char[bufSize];
+
+                    const auto sDtm = date::format ( "%Y-%m-%d %T", v[i] );
+                    const auto len = std::min ( bufSize - 1, sDtm.length () );
+                    buf[len] = '\0';
+                    std::strncpy ( buf, sDtm.c_str (), len );
+                }
+                break;
+
             case x_xmltype:
                 {
                     std::vector<xml_type> * pv
@@ -264,6 +281,9 @@ std::size_t postgresql_vector_use_type_backend::full_size()
         break;
     case x_stdtm:
         sz = get_vector_size<std::tm>(data_);
+        break;
+    case x_datetime:
+        sz = get_vector_size<soci::datetime> ( data_ );
         break;
     case x_xmltype:
         sz = get_vector_size<xml_type>(data_);

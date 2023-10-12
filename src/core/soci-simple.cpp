@@ -9,6 +9,7 @@
 
 #include "soci/soci-simple.h"
 #include "soci/soci.h"
+#include "private/thirdparty/date.h"
 
 #include <cstddef>
 #include <cstdio>
@@ -360,6 +361,7 @@ struct statement_wrapper
     std::map<int, long long> into_longlongs;
     std::map<int, double> into_doubles;
     std::map<int, std::tm> into_dates;
+    std::map<int, soci::datetime> into_datetimes;
     std::map<int, blob_wrapper *> into_blob;
 
     std::vector<std::vector<indicator> > into_indicators_v;
@@ -368,6 +370,7 @@ struct statement_wrapper
     std::map<int, std::vector<long long> > into_longlongs_v;
     std::map<int, std::vector<double> > into_doubles_v;
     std::map<int, std::vector<std::tm> > into_dates_v;
+    std::map<int, std::vector<soci::datetime> >     into_datetimes_v;
 
     // use elements
     std::map<std::string, indicator> use_indicators;
@@ -376,6 +379,7 @@ struct statement_wrapper
     std::map<std::string, long long> use_longlongs;
     std::map<std::string, double> use_doubles;
     std::map<std::string, std::tm> use_dates;
+    std::map<std::string, soci::datetime>        use_datetimes;
     std::map<std::string, blob_wrapper *> use_blob;
 
     std::map<std::string, std::vector<indicator> > use_indicators_v;
@@ -384,6 +388,7 @@ struct statement_wrapper
     std::map<std::string, std::vector<long long> > use_longlongs_v;
     std::map<std::string, std::vector<double> > use_doubles_v;
     std::map<std::string, std::vector<std::tm> > use_dates_v;
+    std::map<std::string, std::vector<soci::datetime> >     use_datetimes_v;
 
     // format is: "YYYY MM DD hh mm ss", but we make the buffer bigger to
     // avoid gcc -Wformat-truncation warnings as it considers that the output
@@ -624,6 +629,14 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
                 name_exists = (it != wrapper.use_dates.end());
             }
             break;
+        case dt_datetime:
+            {
+                typedef std::map<std::string, soci::datetime>::const_iterator iterator;
+                iterator const                                         it = wrapper.use_datetimes.find ( name );
+                name_exists = ( it != wrapper.use_datetimes.end () );
+            }
+            break;
+
         case dt_blob:
             {
                 typedef std::map<std::string, blob_wrapper *>::const_iterator iterator;
@@ -691,6 +704,14 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
                 name_exists = (it != wrapper.use_dates_v.end());
             }
             break;
+        case dt_datetime:
+            {
+                typedef std::map<std::string, std::vector<soci::datetime> >::const_iterator iterator;
+                iterator const                                                       it = wrapper.use_datetimes_v.find ( name );
+                name_exists = ( it != wrapper.use_datetimes_v.end () );
+            }
+            break;
+
         case dt_blob:
         case dt_xml:
             // no support for bulk and xml load
@@ -737,6 +758,19 @@ char const * format_date(statement_wrapper & wrapper, std::tm const & d)
     return wrapper.date_formatted;
 }
 
+char const *format_datetime ( statement_wrapper &wrapper, soci::datetime const &d )
+{
+    const auto sDtm = date::format ( "%Y %m %d %T", d );
+    int        n = 0;
+    for ( auto sI = sDtm.rbegin (); sI != sDtm.rend () && ( *sI == '0' || *sI == '.' || *sI == ',' ); ++sI, n++ )
+        ;
+    const auto len = std::min ( sizeof ( wrapper.date_formatted ) - 1, sDtm.length () - n );
+    wrapper.date_formatted[len] = '\0';
+    std::strncpy ( wrapper.date_formatted, sDtm.c_str (), len );
+
+    return wrapper.date_formatted;
+}
+
 bool string_to_date(char const * val, std::tm & /* out */ dt,
     statement_wrapper & wrapper)
 {
@@ -767,6 +801,27 @@ bool string_to_date(char const * val, std::tm & /* out */ dt,
 
 return true;
 }
+
+bool string_to_datetime(char const * val, soci::datetime & /* out */ dtm,
+    statement_wrapper & wrapper)
+{
+    using namespace std;
+    using namespace date;
+    // format is: "YYYY MM DD hh mm ss.fff"
+    istringstream in{ val };
+    in >> parse ( "%Y %m %d %T", dtm );
+    if ( in.fail () )
+    {
+        wrapper.is_ok = false;
+        wrapper.error_message = "Cannot convert date.";
+        return false;
+    }
+
+    wrapper.is_ok = true;
+
+return true;
+}
+
 
 } // namespace unnamed
 
@@ -883,6 +938,24 @@ SOCI_DECL int soci_into_date(statement_handle st)
     return wrapper->next_position++;
 }
 
+SOCI_DECL int soci_into_datetime ( statement_handle st )
+{
+    statement_wrapper *wrapper = static_cast<statement_wrapper *> ( st );
+
+    if ( cannot_add_elements ( *wrapper, statement_wrapper::single, true ) )
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::single;
+
+    wrapper->into_types.push_back ( dt_datetime );
+    wrapper->into_indicators.push_back ( i_ok );
+    wrapper->into_datetimes[wrapper->next_position];  // create new entry
+    return wrapper->next_position++;
+}
+
 SOCI_DECL int soci_into_blob(statement_handle st)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
@@ -991,6 +1064,24 @@ SOCI_DECL int soci_into_date_v(statement_handle st)
     return wrapper->next_position++;
 }
 
+SOCI_DECL int soci_into_datetime_v ( statement_handle st )
+{
+    statement_wrapper *wrapper = static_cast<statement_wrapper *> ( st );
+
+    if ( cannot_add_elements ( *wrapper, statement_wrapper::bulk, true ) )
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::bulk;
+
+    wrapper->into_types.push_back ( dt_date );
+    wrapper->into_indicators_v.push_back ( std::vector<indicator> () );
+    wrapper->into_datetimes_v[wrapper->next_position];
+    return wrapper->next_position++;
+}
+
 SOCI_DECL int soci_get_into_state(statement_handle st, int position)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
@@ -1078,6 +1169,22 @@ SOCI_DECL char const * soci_get_into_date(statement_handle st, int position)
     return format_date(*wrapper, d);
 }
 
+SOCI_DECL char const *soci_get_into_datetime ( statement_handle st, int position )
+{
+    statement_wrapper *wrapper = static_cast<statement_wrapper *> ( st );
+
+    if ( position_check_failed ( *wrapper, statement_wrapper::single, position, dt_datetime, "datetime" ) ||
+         not_null_check_failed ( *wrapper, position ) )
+    {
+        return "";
+    }
+
+    // format is: "YYYY MM DD hh mm ss.fff"
+    soci::datetime const &d = wrapper->into_datetimes[position];
+    return format_datetime ( *wrapper, d );
+}
+
+
 SOCI_DECL blob_handle soci_get_into_blob(statement_handle st, int position)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
@@ -1145,6 +1252,9 @@ SOCI_DECL void soci_into_resize_v(statement_handle st, int new_size)
             break;
         case dt_date:
             wrapper->into_dates_v[i].resize(new_size);
+            break;
+        case dt_datetime:
+            wrapper->into_datetimes_v[i].resize ( new_size );
             break;
         case dt_blob:
         case dt_xml:
@@ -1276,6 +1386,25 @@ SOCI_DECL char const * soci_get_into_date_v(statement_handle st, int position, i
     return format_date(*wrapper, v[index]);
 }
 
+SOCI_DECL char const *soci_get_into_datetime_v ( statement_handle st, int position, int index )
+{
+    const auto wrapper = static_cast<statement_wrapper *> ( st );
+
+    if ( position_check_failed ( *wrapper, statement_wrapper::bulk, position, dt_datetime, "datetime" ) )
+    {
+        return "";
+    }
+
+    std::vector<soci::datetime> const &v = wrapper->into_datetimes_v[position];
+    if ( index_check_failed ( v, *wrapper, index ) || not_null_check_failed ( *wrapper, position, index ) )
+    {
+        return "";
+    }
+
+    return format_datetime ( *wrapper, v[index] );
+}
+
+
 SOCI_DECL void soci_use_string(statement_handle st, char const * name)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
@@ -1359,6 +1488,23 @@ SOCI_DECL void soci_use_date(statement_handle st, char const * name)
 
     wrapper->use_indicators[name] = i_ok; // create new entry
     wrapper->use_dates[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_datetime ( statement_handle st, char const *name )
+{
+    statement_wrapper *wrapper = static_cast<statement_wrapper *> ( st );
+
+    if ( cannot_add_elements ( *wrapper, statement_wrapper::single, false ) ||
+         name_unique_check_failed ( *wrapper, statement_wrapper::single, name ) )
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::single;
+
+    wrapper->use_indicators[name] = i_ok;  // create new entry
+    wrapper->use_datetimes[name];              // create new entry
 }
 
 SOCI_DECL void soci_use_blob(statement_handle st, char const * name)
@@ -1446,7 +1592,24 @@ SOCI_DECL void soci_use_double_v(statement_handle st, char const * name)
     wrapper->use_doubles_v[name]; // create new entry
 }
 
-SOCI_DECL void soci_use_date_v(statement_handle st, char const * name)
+SOCI_DECL void soci_use_date_v ( statement_handle st, char const *name )
+{
+    statement_wrapper *wrapper = static_cast<statement_wrapper *> ( st );
+
+    if ( cannot_add_elements ( *wrapper, statement_wrapper::bulk, false ) ||
+         name_unique_check_failed ( *wrapper, statement_wrapper::bulk, name ) )
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::bulk;
+
+    wrapper->use_indicators_v[name];  // create new entry
+    wrapper->use_dates_v[name];   // create new entry
+}
+
+SOCI_DECL void soci_use_datetime_v(statement_handle st, char const * name)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
@@ -1460,7 +1623,7 @@ SOCI_DECL void soci_use_date_v(statement_handle st, char const * name)
     wrapper->use_kind = statement_wrapper::bulk;
 
     wrapper->use_indicators_v[name]; // create new entry
-    wrapper->use_dates_v[name]; // create new entry
+    wrapper->use_datetimes_v[name]; // create new entry
 }
 
 SOCI_DECL void soci_set_use_state(statement_handle st, char const * name, int state)
@@ -1555,6 +1718,26 @@ SOCI_DECL void soci_set_use_date(statement_handle st, char const * name, char co
 
     wrapper->use_indicators[name] = i_ok;
     wrapper->use_dates[name] = dt;
+}
+
+SOCI_DECL void soci_set_use_datetime ( statement_handle st, char const *name, char const *val )
+{
+    const auto wrapper = static_cast<statement_wrapper *> ( st );
+
+    if ( name_exists_check_failed ( *wrapper, name, dt_datetime, statement_wrapper::single, "datetime" ) )
+    {
+        return;
+    }
+
+    soci::datetime    dtm;
+    bool const converted = string_to_datetime ( val, dtm, *wrapper );
+    if ( converted == false )
+    {
+        return;
+    }
+
+    wrapper->use_indicators[name] = i_ok;
+    wrapper->use_datetimes[name] = dtm;
 }
 
 SOCI_DECL void soci_set_use_blob(statement_handle st, char const * name, blob_handle b)
@@ -1760,6 +1943,33 @@ SOCI_DECL void soci_set_use_date_v(statement_handle st,
     v[index] = dt;
 }
 
+SOCI_DECL void soci_set_use_datetime_v ( statement_handle st, char const *name, int index, char const *val )
+{
+    const auto wrapper = static_cast<statement_wrapper *> ( st );
+
+    if ( name_exists_check_failed ( *wrapper, name, dt_datetime, statement_wrapper::bulk, "vector datetime" ) )
+    {
+        return;
+    }
+
+    auto &v = wrapper->use_datetimes_v[name];
+    if ( index_check_failed ( v, *wrapper, index ) )
+    {
+        return;
+    }
+
+    soci::datetime dtm;
+    bool const converted = string_to_datetime ( val, dtm, *wrapper );
+    if ( converted == false )
+    {
+        return;
+    }
+
+    wrapper->use_indicators_v[name][index] = i_ok;
+    v[index] = dtm;
+}
+
+
 SOCI_DECL int soci_get_use_state(statement_handle st, char const * name)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
@@ -1848,6 +2058,22 @@ SOCI_DECL char const * soci_get_use_date(statement_handle st, char const * name)
     return wrapper->date_formatted;
 }
 
+SOCI_DECL char const *soci_get_use_datetime ( statement_handle st, char const *name )
+{
+    auto wrapper = static_cast<statement_wrapper *> ( st );
+
+    if ( name_exists_check_failed ( *wrapper, name, dt_datetime, statement_wrapper::bulk, "datetime" ) )
+    {
+        return "";
+    }
+
+    // format is: "YYYY MM DD hh mm ss"
+    const auto& d = wrapper->use_datetimes[name];
+    format_datetime ( *wrapper, d );
+
+    return wrapper->date_formatted;
+}
+
 SOCI_DECL blob_handle soci_get_use_blob(statement_handle st, char const * name)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
@@ -1899,6 +2125,9 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
                     wrapper->st.exchange(
                         into(wrapper->into_dates[i], wrapper->into_indicators[i]));
                     break;
+                case dt_datetime:
+                    wrapper->st.exchange ( into ( wrapper->into_datetimes[i], wrapper->into_indicators[i] ) );
+                    break;
                 case dt_blob:
                     wrapper->st.exchange(
                         into(wrapper->into_blob[i]->blob_, wrapper->into_indicators[i]));
@@ -1936,6 +2165,9 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
                 case dt_date:
                     wrapper->st.exchange(
                         into(wrapper->into_dates_v[i], wrapper->into_indicators_v[i]));
+                    break;
+                case dt_datetime:
+                    wrapper->st.exchange ( into ( wrapper->into_datetimes_v[i], wrapper->into_indicators_v[i] ) );
                     break;
                 case dt_blob:
                 case dt_xml:
@@ -2009,6 +2241,19 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
                 std::tm & use_date = uit->second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
                 wrapper->st.exchange(use(use_date, use_ind, use_name));
+            }
+        }
+        {
+            // datetimes
+            typedef std::map<std::string, soci::datetime>::iterator iterator;
+            iterator                                         uit = wrapper->use_datetimes.begin ();
+            iterator const                                   uend = wrapper->use_datetimes.end ();
+            for ( ; uit != uend; ++uit )
+            {
+                std::string const &use_name = uit->first;
+                soci::datetime    &use_datetime = uit->second;
+                indicator         &use_ind = wrapper->use_indicators[use_name];
+                wrapper->st.exchange ( use ( use_datetime, use_ind, use_name ) );
             }
         }
         {
@@ -2099,6 +2344,19 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
                 std::vector<indicator> & use_ind =
                     wrapper->use_indicators_v[use_name];
                 wrapper->st.exchange(use(use_date, use_ind, use_name));
+            }
+        }
+        {
+            // datetimes
+            typedef std::map<std::string, std::vector<soci::datetime> >::iterator iterator;
+            iterator                                                       uit = wrapper->use_datetimes_v.begin ();
+            iterator const                                                 uend = wrapper->use_datetimes_v.end ();
+            for ( ; uit != uend; ++uit )
+            {
+                std::string const      &use_name = uit->first;
+                std::vector<soci::datetime>   &use_datetime = uit->second;
+                std::vector<indicator> &use_ind = wrapper->use_indicators_v[use_name];
+                wrapper->st.exchange ( use ( use_datetime, use_ind, use_name ) );
             }
         }
 

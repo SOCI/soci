@@ -49,6 +49,7 @@
 #include <type_traits>
 
 #include "soci-mktime.h"
+#include "thirdparty/date.h"
 
 // Although SQL standard mandates right padding CHAR(N) values to their length
 // with spaces, some backends don't confirm to it:
@@ -2421,7 +2422,8 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         CHECK(r.get_properties(0).get_data_type() == dt_double);
         CHECK(r.get_properties(1).get_data_type() == dt_integer);
         CHECK(r.get_properties(2).get_data_type() == dt_string);
-        CHECK(r.get_properties(3).get_data_type() == dt_date);
+        const auto p3 = r.get_properties ( 3 ).get_data_type ();
+        CHECK ( (p3 == dt_date || p3 == dt_datetime) );
 
         // type char is visible as string
         // - to comply with the implementation for Oracle
@@ -2439,6 +2441,9 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         CHECK(r.get<int>(1) == 123);
         CHECK(r.get<std::string>(2) == "Johny");
         CHECK(r.get<std::tm>(3).tm_year == 105);
+        auto t1 = r.get<std::tm> ( 3 );
+        auto t2 = to_std_tm ( r.get<soci::datetime> ( 3 ) );
+        CHECK ( t1.tm_year == t2.tm_year );                    
 
         // again, type char is visible as string
         CHECK_EQUAL_PADDED(r.get<std::string>(4), "a");
@@ -2472,16 +2477,21 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
 
             r >> d >> i >> s >> t >> c;
 
-            ASSERT_EQUAL_APPROX(d, 3.14);
-            CHECK(i == 123);
-            CHECK(s == "Johny");
-            CHECK(t.tm_year == 105);
-            CHECK(t.tm_mon == 11);
-            CHECK(t.tm_mday == 19);
-            CHECK(t.tm_hour == 22);
-            CHECK(t.tm_min == 14);
-            CHECK(t.tm_sec == 17);
+            ASSERT_EQUAL_APPROX ( d, 3.14 );
+            CHECK ( i == 123 );
+            CHECK ( s == "Johny" );
+            CHECK ( t.tm_year == 105 );
+            CHECK ( t.tm_mon == 11 );
+            CHECK ( t.tm_mday == 19 );
+            CHECK ( t.tm_hour == 22 );
+            CHECK ( t.tm_min == 14 );
+            CHECK ( t.tm_sec == 17 );
             CHECK_EQUAL_PADDED(c, "a");
+
+            soci::datetime dtm;
+            r.reset_get_counter ();
+            r >> d >> i >> s >> dtm >> c;
+            CHECK ( to_std_tm ( dtm ).tm_year == 105 );
         }
     }
 
@@ -2495,7 +2505,8 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         CHECK(r.get_properties(0).get_data_type() == dt_double);
         CHECK(r.get_properties(1).get_data_type() == dt_integer);
         CHECK(r.get_properties(2).get_data_type() == dt_string);
-        CHECK(r.get_properties(3).get_data_type() == dt_date);
+        const auto p3 = r.get_properties ( 3 ).get_data_type ();
+        CHECK ( ( p3 == dt_date || p3 == dt_datetime ) );
 
         sql << "select name, num_int from soci_test", into(r);
 
@@ -2984,7 +2995,8 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
             CHECK(r1.get_properties(0).get_data_type() == dt_double);
             CHECK(r1.get_properties(1).get_data_type() == dt_integer);
             CHECK(r1.get_properties(2).get_data_type() == dt_string);
-            CHECK(r1.get_properties(3).get_data_type() == dt_date);
+            const auto p3 = r1.get_properties ( 3 ).get_data_type ();
+            CHECK ( ( p3 == dt_date || p3 == dt_datetime ) );
             CHECK(r1.get_properties(4).get_data_type() == dt_string);
             CHECK(r1.get_properties("NUM_INT").get_data_type() == dt_integer);
 
@@ -3003,9 +3015,9 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
                 ASSERT_EQUAL_APPROX(r1.get<double>(0), 3.14);
                 CHECK(r1.get<int>(1) == 123);
                 CHECK(r1.get<std::string>(2) == "Johny");
-                std::tm t1 = std::tm();
-                t1 = r1.get<std::tm>(3);
-                CHECK(t1.tm_year == 105);
+                std::tm t1 = std::tm ();
+                t1 = r1.get<std::tm> ( 3 );
+                CHECK ( t1.tm_year == 105 );
                 CHECK_EQUAL_PADDED(r1.get<std::string>(4), "a");
                 ASSERT_EQUAL_APPROX(r1.get<double>("NUM_FLOAT"), 3.14);
                 CHECK(r1.get<int>("NUM_INT") == 123);
@@ -3017,8 +3029,8 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
                 ASSERT_EQUAL(r1.get<double>(0), 6.28);
                 CHECK(r1.get<int>(1) == 246);
                 CHECK(r1.get<std::string>(2) == "Robert");
-                std::tm t1 = r1.get<std::tm>(3);
-                CHECK(t1.tm_year == 104);
+                std::tm t1 = r1.get<std::tm> ( 3 );
+                CHECK ( t1.tm_year == 104 );
                 CHECK(r1.get<std::string>(4) == "b");
                 ASSERT_EQUAL(r1.get<double>("NUM_FLOAT"), 6.28);
                 CHECK(r1.get<int>("NUM_INT") == 246);
@@ -3047,7 +3059,9 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
             CHECK(r2.get_properties(0).get_data_type() == dt_double);
             CHECK(r2.get_properties(1).get_data_type() == dt_integer);
             CHECK(r2.get_properties(2).get_data_type() == dt_string);
-            CHECK(r2.get_properties(3).get_data_type() == dt_date);
+            //CHECK(r2.get_properties(3).get_data_type() == dt_date);
+            const auto r2p3 = r2.get_properties ( 3 ).get_data_type ();
+            CHECK ( ( r2p3 == dt_date || p3 == dt_datetime ) );
             CHECK(r2.get_properties(4).get_data_type() == dt_string);
             CHECK(r2.get_properties("NUM_INT").get_data_type() == dt_integer);
 
@@ -3059,9 +3073,9 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
                 ASSERT_EQUAL_APPROX(r2.get<double>(0), 3.14);
                 CHECK(r2.get<int>(1) == 123);
                 CHECK(r2.get<std::string>(2) == "Johny");
-                std::tm t2 = r2.get<std::tm>(3);
-                CHECK(t2.tm_year == 105);
-                CHECK(r2.get<std::string>(4) == "a");
+                std::tm t2 = r2.get<std::tm> ( 3 );
+                CHECK ( t2.tm_year == 105 );
+                CHECK ( r2.get<std::string> ( 4 ) == "a" );
                 ASSERT_EQUAL_APPROX(r2.get<double>("NUM_FLOAT"), 3.14);
                 CHECK(r2.get<int>("NUM_INT") == 123);
                 CHECK(r2.get<std::string>("NAME") == "Johny");
@@ -3072,9 +3086,9 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
                 ASSERT_EQUAL_APPROX(r2.get<double>(0), 6.28);
                 CHECK(r2.get<int>(1) == 246);
                 CHECK(r2.get<std::string>(2) == "Robert");
-                std::tm t2 = r2.get<std::tm>(3);
-                CHECK(t2.tm_year == 104);
-                CHECK_EQUAL_PADDED(r2.get<std::string>(4), "b");
+                std::tm t2 = r2.get<std::tm> ( 3 );
+                CHECK ( t2.tm_year == 104 );
+                CHECK_EQUAL_PADDED ( r2.get<std::string> ( 4 ), "b" );
                 ASSERT_EQUAL_APPROX(r2.get<double>("NUM_FLOAT"), 6.28);
                 CHECK(r2.get<int>("NUM_INT") == 246);
                 CHECK(r2.get<std::string>("NAME") == "Robert");
@@ -3110,7 +3124,8 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
             CHECK(r1.get_properties(0).get_data_type() == dt_integer);
             CHECK(r1.get_properties(1).get_data_type() == dt_double);
             CHECK(r1.get_properties(2).get_data_type() == dt_string);
-            CHECK(r1.get_properties(3).get_data_type() == dt_date);
+            const auto p3 = r1.get_properties ( 3 ).get_data_type ();
+            CHECK ( ( p3 == dt_date || p3 == dt_datetime ) );
             CHECK(r1.get_properties(4).get_data_type() == dt_string);
 
             // Data
