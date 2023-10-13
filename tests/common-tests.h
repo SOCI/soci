@@ -3495,7 +3495,7 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
             try
             {
                 // expect exception here, this is NULL value
-                (void)r1.get<int>(1);
+                (void)r2.get<int>(1);
                 FAIL("expected exception not thrown");
             }
             catch (soci_error const &) {}
