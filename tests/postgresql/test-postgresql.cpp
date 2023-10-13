@@ -524,7 +524,7 @@ TEST_CASE("PostgreSQL datetime", "[postgresql][datetime]")
         indicator      ind2 = i_ok;
         soci::datetime dtm3;
 
-        sql << "select t, timestamp'2001-01-11 10:10:10.123' as t2 from (select :t as t) tbl", into ( dtm2, ind2 ),
+        sql << "select t, timestamp'2001-01-11 10:10:10.123' as t2 from (select :t::timestamp as t) tbl", into ( dtm2, ind2 ),
             into ( dtm3 ), use ( dtm, ind );
         CHECK ( ( dtm == dtm2 ) == true );
         auto expected = sys_days{ year ( 2001 ) / month ( 01 ) / day ( 11 ) } + std::chrono::hours{ 10 } + std::chrono::minutes{ 10 } +
