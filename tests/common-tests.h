@@ -691,68 +691,68 @@ TEST_CASE_METHOD(common_tests, "Basic functionality", "[core][basics]")
 }
 
 // "into" tests, type conversions, etc.
-TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
+TEST_CASE_METHOD ( common_tests, "Use and into", "[core][into]" )
 {
-    soci::session sql(backEndFactory_, connectString_);
+    soci::session sql ( backEndFactory_, connectString_ );
 
-    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+    auto_table_creator tableCreator ( tc_.table_creator_1 ( sql ) );
 
-    SECTION("Round trip works for char")
+    SECTION ( "Round trip works for char" )
     {
-        char c('a');
-        sql << "insert into soci_test(c) values(:c)", use(c);
-        sql << "select c from soci_test", into(c);
-        CHECK(c == 'a');
+        char c ( 'a' );
+        sql << "insert into soci_test(c) values(:c)", use ( c );
+        sql << "select c from soci_test", into ( c );
+        CHECK ( c == 'a' );
     }
 
-    SECTION("Round trip works for string")
+    SECTION ( "Round trip works for string" )
     {
-        std::string helloSOCI("Hello, SOCI!");
-        sql << "insert into soci_test(str) values(:s)", use(helloSOCI);
+        std::string helloSOCI ( "Hello, SOCI!" );
+        sql << "insert into soci_test(str) values(:s)", use ( helloSOCI );
         std::string str;
-        sql << "select str from soci_test", into(str);
-        CHECK(str == "Hello, SOCI!");
+        sql << "select str from soci_test", into ( str );
+        CHECK ( str == "Hello, SOCI!" );
     }
 
-    SECTION("Round trip works for short")
+    SECTION ( "Round trip works for short" )
     {
-        short three(3);
-        sql << "insert into soci_test(sh) values(:id)", use(three);
-        short sh(0);
-        sql << "select sh from soci_test", into(sh);
-        CHECK(sh == 3);
+        short three ( 3 );
+        sql << "insert into soci_test(sh) values(:id)", use ( three );
+        short sh ( 0 );
+        sql << "select sh from soci_test", into ( sh );
+        CHECK ( sh == 3 );
     }
 
-    SECTION("Round trip works for int")
+    SECTION ( "Round trip works for int" )
     {
-        int five(5);
-        sql << "insert into soci_test(id) values(:id)", use(five);
-        int i(0);
-        sql << "select id from soci_test", into(i);
-        CHECK(i == 5);
+        int five ( 5 );
+        sql << "insert into soci_test(id) values(:id)", use ( five );
+        int i ( 0 );
+        sql << "select id from soci_test", into ( i );
+        CHECK ( i == 5 );
     }
 
-    SECTION("Round trip works for unsigned long")
+    SECTION ( "Round trip works for unsigned long" )
     {
-        unsigned long seven(7);
-        sql << "insert into soci_test(ul) values(:ul)", use(seven);
-        unsigned long ul(0);
-        sql << "select ul from soci_test", into(ul);
-        CHECK(ul == 7);
+        unsigned long seven ( 7 );
+        sql << "insert into soci_test(ul) values(:ul)", use ( seven );
+        unsigned long ul ( 0 );
+        sql << "select ul from soci_test", into ( ul );
+        CHECK ( ul == 7 );
     }
 
-    SECTION("Round trip works for double")
+    SECTION ( "Round trip works for double" )
     {
-        double pi(3.14159265);
-        sql << "insert into soci_test(d) values(:d)", use(pi);
-        double d(0.0);
-        sql << "select d from soci_test", into(d);
-        ASSERT_EQUAL(d, pi);
+        double pi ( 3.14159265 );
+        sql << "insert into soci_test(d) values(:d)", use ( pi );
+        double d ( 0.0 );
+        sql << "select d from soci_test", into ( d );
+        ASSERT_EQUAL ( d, pi );
     }
 
-    SECTION("Round trip works for date without time")
+    SECTION ( "Round trip works for date without time" )
     {
-        std::tm nov15 = std::tm();
+        std::tm nov15 = std::tm ();
         nov15.tm_year = 105;
         nov15.tm_mon = 10;
         nov15.tm_mday = 15;
@@ -760,21 +760,21 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         nov15.tm_min = 0;
         nov15.tm_sec = 0;
 
-        sql << "insert into soci_test(tm) values(:tm)", use(nov15);
+        sql << "insert into soci_test(tm) values(:tm)", use ( nov15 );
 
-        std::tm t = std::tm();
-        sql << "select tm from soci_test", into(t);
-        CHECK(t.tm_year == 105);
-        CHECK(t.tm_mon  == 10);
-        CHECK(t.tm_mday == 15);
-        CHECK(t.tm_hour == 0);
-        CHECK(t.tm_min  == 0);
-        CHECK(t.tm_sec  == 0);
+        std::tm t = std::tm ();
+        sql << "select tm from soci_test", into ( t );
+        CHECK ( t.tm_year == 105 );
+        CHECK ( t.tm_mon == 10 );
+        CHECK ( t.tm_mday == 15 );
+        CHECK ( t.tm_hour == 0 );
+        CHECK ( t.tm_min == 0 );
+        CHECK ( t.tm_sec == 0 );
     }
 
-    SECTION("Round trip works for date with time")
+    SECTION ( "Round trip works for date with time" )
     {
-        std::tm nov15 = std::tm();
+        std::tm nov15 = std::tm ();
         nov15.tm_year = 105;
         nov15.tm_mon = 10;
         nov15.tm_mday = 15;
@@ -782,57 +782,57 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         nov15.tm_min = 14;
         nov15.tm_sec = 17;
 
-        sql << "insert into soci_test(tm) values(:tm)", use(nov15);
+        sql << "insert into soci_test(tm) values(:tm)", use ( nov15 );
 
-        std::tm t = std::tm();
-        sql << "select tm from soci_test", into(t);
-        CHECK(t.tm_year == 105);
-        CHECK(t.tm_mon  == 10);
-        CHECK(t.tm_mday == 15);
-        CHECK(t.tm_hour == 22);
-        CHECK(t.tm_min  == 14);
-        CHECK(t.tm_sec  == 17);
+        std::tm t = std::tm ();
+        sql << "select tm from soci_test", into ( t );
+        CHECK ( t.tm_year == 105 );
+        CHECK ( t.tm_mon == 10 );
+        CHECK ( t.tm_mday == 15 );
+        CHECK ( t.tm_hour == 22 );
+        CHECK ( t.tm_min == 14 );
+        CHECK ( t.tm_sec == 17 );
     }
 
-    SECTION("Indicator is filled correctly in the simplest case")
+    SECTION ( "Indicator is filled correctly in the simplest case" )
     {
-        int id(1);
-        std::string str("Hello");
+        int         id ( 1 );
+        std::string str ( "Hello" );
         sql << "insert into soci_test(id, str) values(:id, :str)",
             use(id), use(str);
 
-        int i;
+        int       i;
         indicator ind;
-        sql << "select id from soci_test", into(i, ind);
-        CHECK(ind == i_ok);
+        sql << "select id from soci_test", into ( i, ind );
+        CHECK ( ind == i_ok );
     }
 
-    SECTION("Indicators work correctly more generally")
+    SECTION ( "Indicators work correctly more generally" )
     {
-        sql << "insert into soci_test(id,tm) values(NULL,NULL)";
-        int i;
+        sql << "insert into soci_test(id,tm,str) values(NULL,NULL,NULL)";
+        int       i;
         indicator ind;
-        sql << "select id from soci_test", into(i, ind);
-        CHECK(ind == i_null);
+        sql << "select id from soci_test", into ( i, ind );
+        CHECK ( ind == i_null );
 
         // additional test for NULL with std::tm
-        std::tm t = std::tm();
-        sql << "select tm from soci_test", into(t, ind);
-        CHECK(ind == i_null);
+        std::tm t = std::tm ();
+        sql << "select tm from soci_test", into ( t, ind );
+        CHECK ( ind == i_null );
 
         // indicator should be initialized even when nothing is found
         ind = i_ok;
         sql << "select id from soci_test where str='NO SUCH ROW'",
                 into(i, ind);
-        CHECK(ind == i_null);
+        CHECK ( ind == i_null );
 
         try
         {
             // expect error
-            sql << "select id from soci_test", into(i);
-            FAIL("expected exception not thrown");
+            sql << "select id from soci_test", into ( i );
+            FAIL ( "expected exception not thrown" );
         }
-        catch (soci_error const &e)
+        catch ( soci_error const& e )
         {
             CHECK(e.get_error_message() ==
                 "Null value fetched and no indicator defined.");
@@ -840,17 +840,37 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
                 Catch::Contains("for the parameter number 1"));
         }
 
-        sql << "select id from soci_test where id = 1000", into(i, ind);
-        CHECK(sql.got_data() == false);
+        sql << "select id from soci_test where id = 1000", into ( i, ind );
+        CHECK ( sql.got_data () == false );
 
         // no data expected
-        sql << "select id from soci_test where id = 1000", into(i);
-        CHECK(sql.got_data() == false);
+        sql << "select id from soci_test where id = 1000", into ( i );
+        CHECK ( sql.got_data () == false );
 
         // no data expected, test correct behaviour with use
         int id = 1000;
-        sql << "select id from soci_test where id = :id", use(id), into(i);
-        CHECK(sql.got_data() == false);
+        sql << "select id from soci_test where id = :id", use ( id ), into ( i );
+        CHECK ( sql.got_data () == false );
+    }
+
+    SECTION ( "Indicators work correctly with row" )
+    {
+        row r;
+        sql << "select str from soci_test", into ( r );
+
+        auto id = r.get<std::string> ( 0, "12345" );
+        CHECK ( id == "12345" );
+
+        try
+        {
+            // expect error
+            (void)r.get<std::string> ( 0 );
+            FAIL ( "expected exception not thrown" );
+        }
+        catch ( soci_error const& e )
+        {
+            CHECK ( e.get_error_message () == "Null value not allowed for this type." );
+        }
     }
 }
 
@@ -3968,7 +3988,7 @@ TEST_CASE_METHOD(common_tests, "NULL with std optional", "[core][null]")
             try
             {
                 // expect exception here, this is NULL value
-                (void)r1.get<int>(1);
+                (void)r2.get<int>(1);
                 FAIL("expected exception not thrown");
             }
             catch (soci_error const &) {}

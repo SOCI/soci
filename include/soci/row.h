@@ -70,6 +70,10 @@ public:
         details::type_holder<T>* p = details::checked_ptr_cast<details::type_holder<T>> ( holders_.at ( pos ) );
         if ( p )
         {
+            if ( *indicators_.at ( pos ) == i_null )
+            {
+                throw soci_error ( "Null value not allowed for this type." );
+            }
             return p->template value<T> ();
         }
         typedef typename type_conversion<T>::base_type base_type;
