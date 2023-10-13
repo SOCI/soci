@@ -194,6 +194,10 @@ sqlite3_statement_backend::load_rowset(int totalRows)
 
                         case dt_xml:
                             throw soci_error("XML data type is not supported");
+
+                        case dt_datetime:
+                            throw soci_error ( "datetime data type is not supported" );
+
                     }
                 }
             }
@@ -298,6 +302,10 @@ sqlite3_statement_backend::bind_and_execute(int number)
 
                     case dt_xml:
                         throw soci_error("XML data type is not supported");
+
+                    case dt_datetime:
+                        throw soci_error ( "datetime data type is not supported" );
+
                 }
             }
 
