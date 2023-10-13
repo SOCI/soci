@@ -140,12 +140,12 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
 
     oracle_statement_backend &statement_;
 
-    OCIBind               *bindp_;
-    sb2                    indOCIHolder_;
-    void                  *data_;
-    void                  *ociData_;
-    bool                   readOnly_;
-    char                  *buf_;  // generic buffer
+    OCIBind *bindp_;
+    sb2 indOCIHolder_;
+    void *data_;
+    void *ociData_;
+    bool readOnly_;
+    char *buf_;  // generic buffer
     details::exchange_type type_;
 };
 

@@ -64,8 +64,8 @@ public:
     column_properties const& get_properties(std::size_t pos) const;
     column_properties const& get_properties(std::string const& name) const;
 
-    template <typename T> 
-    T get ( std::size_t pos ) const
+    template <typename T>
+    T get(std::size_t pos) const
     {
         details::type_holder<T>* p = details::checked_ptr_cast<details::type_holder<T>> ( holders_.at ( pos ) );
         if ( p )

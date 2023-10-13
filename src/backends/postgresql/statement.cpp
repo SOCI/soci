@@ -746,7 +746,7 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     // In postgresql_ column numbers start from 0
     int const pos = colNum - 1;
 
-    unsigned long const typeOid = PQftype ( result_, pos );
+    unsigned long const typeOid = PQftype(result_, pos);
 
     switch (typeOid)
     {

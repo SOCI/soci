@@ -2477,15 +2477,15 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
 
             r >> d >> i >> s >> t >> c;
 
-            ASSERT_EQUAL_APPROX ( d, 3.14 );
-            CHECK ( i == 123 );
-            CHECK ( s == "Johny" );
-            CHECK ( t.tm_year == 105 );
-            CHECK ( t.tm_mon == 11 );
-            CHECK ( t.tm_mday == 19 );
-            CHECK ( t.tm_hour == 22 );
-            CHECK ( t.tm_min == 14 );
-            CHECK ( t.tm_sec == 17 );
+            ASSERT_EQUAL_APPROX(d, 3.14);
+            CHECK(i == 123);
+            CHECK(s == "Johny");
+            CHECK(t.tm_year == 105);
+            CHECK(t.tm_mon == 11);
+            CHECK(t.tm_mday == 19);
+            CHECK(t.tm_hour == 22);
+            CHECK(t.tm_min == 14);
+            CHECK(t.tm_sec == 17);
             CHECK_EQUAL_PADDED(c, "a");
 
             soci::datetime dtm;
@@ -3015,9 +3015,9 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
                 ASSERT_EQUAL_APPROX(r1.get<double>(0), 3.14);
                 CHECK(r1.get<int>(1) == 123);
                 CHECK(r1.get<std::string>(2) == "Johny");
-                std::tm t1 = std::tm ();
-                t1 = r1.get<std::tm> ( 3 );
-                CHECK ( t1.tm_year == 105 );
+                std::tm t1 = std::tm();
+                t1 = r1.get<std::tm>(3);
+                CHECK(t1.tm_year == 105);
                 CHECK_EQUAL_PADDED(r1.get<std::string>(4), "a");
                 ASSERT_EQUAL_APPROX(r1.get<double>("NUM_FLOAT"), 3.14);
                 CHECK(r1.get<int>("NUM_INT") == 123);
@@ -3029,8 +3029,8 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
                 ASSERT_EQUAL(r1.get<double>(0), 6.28);
                 CHECK(r1.get<int>(1) == 246);
                 CHECK(r1.get<std::string>(2) == "Robert");
-                std::tm t1 = r1.get<std::tm> ( 3 );
-                CHECK ( t1.tm_year == 104 );
+                std::tm t1 = r1.get<std::tm>(3);
+                CHECK(t1.tm_year == 104);
                 CHECK(r1.get<std::string>(4) == "b");
                 ASSERT_EQUAL(r1.get<double>("NUM_FLOAT"), 6.28);
                 CHECK(r1.get<int>("NUM_INT") == 246);
@@ -3073,9 +3073,9 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
                 ASSERT_EQUAL_APPROX(r2.get<double>(0), 3.14);
                 CHECK(r2.get<int>(1) == 123);
                 CHECK(r2.get<std::string>(2) == "Johny");
-                std::tm t2 = r2.get<std::tm> ( 3 );
-                CHECK ( t2.tm_year == 105 );
-                CHECK ( r2.get<std::string> ( 4 ) == "a" );
+                std::tm t2 = r2.get<std::tm>(3);
+                CHECK(t2.tm_year == 105);
+                CHECK(r2.get<std::string>(4) == "a");
                 ASSERT_EQUAL_APPROX(r2.get<double>("NUM_FLOAT"), 3.14);
                 CHECK(r2.get<int>("NUM_INT") == 123);
                 CHECK(r2.get<std::string>("NAME") == "Johny");

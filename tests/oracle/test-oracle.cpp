@@ -132,7 +132,7 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
         sql << "select to_char(t, :format) from (select :t as t from dual)",
             into(t_out), use(format), use(t2);
 
-        CHECK(t_out == std::string(buf));  
+        CHECK(t_out == std::string(buf));
     }
 
     {
@@ -1536,9 +1536,9 @@ struct table_creator_for_clob : table_creator_base
 class test_context :public test_context_base
 {
 public:
-    test_context(backend_factory const &bckEnd,
-                std::string const &connString)
-        : test_context_base(bckEnd, connString) {}
+    test_context(backend_factory const &backEnd,
+                std::string const &connectString)
+        : test_context_base(backEnd, connectString) {}
 
     table_creator_base* table_creator_1(soci::session& s) const override
     {
