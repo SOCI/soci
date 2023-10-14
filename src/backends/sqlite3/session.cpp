@@ -34,7 +34,7 @@ using error_callback = std::function<void (std::ostream& ostr)>;
 
 // helper function for hardcoded queries: this is a simple wrapper for
 // sqlite3_exec() which throws an exception on error.
-void execude_hardcoded(sqlite_api::sqlite3* conn, char const* const query,
+void execute_hardcoded(sqlite_api::sqlite3* conn, char const* const query,
                        error_callback const& errCallback,
                        int (*callback)(void*, int, char**, char**) = NULL,
                        void* callback_arg = NULL)
@@ -52,11 +52,11 @@ void execude_hardcoded(sqlite_api::sqlite3* conn, char const* const query,
 }
 
 // Simpler to use overload which uses a hard coded error message.
-void execude_hardcoded(sqlite_api::sqlite3* conn, char const* const query, char const* const errMsg,
+void execute_hardcoded(sqlite_api::sqlite3* conn, char const* const query, char const* const errMsg,
                        int (*callback)(void*, int, char**, char**) = NULL,
                        void* callback_arg = NULL)
 {
-    return execude_hardcoded(conn, query,
+    return execute_hardcoded(conn, query,
         [errMsg](std::ostream& ostr) { ostr << errMsg; },
         callback, callback_arg
     );
@@ -93,7 +93,7 @@ static int sequence_table_exists_callback(void* ctxt, int result_columns, char**
 static bool check_if_sequence_table_exists(sqlite_api::sqlite3* conn)
 {
     bool sequence_table_exists = false;
-    execude_hardcoded
+    execute_hardcoded
     (
       conn,
       "select name from sqlite_master where type='table' and name='sqlite_sequence'",
@@ -188,7 +188,7 @@ sqlite3_session_backend::sqlite3_session_backend(
     if (!synchronous.empty())
     {
         std::string const query("pragma synchronous=" + synchronous);
-        execude_hardcoded(conn_, query.c_str(),
+        execute_hardcoded(conn_, query.c_str(),
             [&synchronous](std::ostream& ostr)
             {
                 ostr << "Setting synchronous pragma to \"" << synchronous << "\" failed";
@@ -199,7 +199,7 @@ sqlite3_session_backend::sqlite3_session_backend(
     if (!foreignKeys.empty())
     {
         std::string const query("pragma foreign_keys=" + foreignKeys);
-        execude_hardcoded(conn_, query.c_str(),
+        execute_hardcoded(conn_, query.c_str(),
             [&foreignKeys](std::ostream& ostr)
             {
                 ostr << "Setting foreign_keys pragma to \"" << foreignKeys << "\" failed";
@@ -218,17 +218,17 @@ sqlite3_session_backend::~sqlite3_session_backend()
 
 void sqlite3_session_backend::begin()
 {
-    execude_hardcoded(conn_, "BEGIN", "Cannot begin transaction.");
+    execute_hardcoded(conn_, "BEGIN", "Cannot begin transaction.");
 }
 
 void sqlite3_session_backend::commit()
 {
-    execude_hardcoded(conn_, "COMMIT", "Cannot commit transaction.");
+    execute_hardcoded(conn_, "COMMIT", "Cannot commit transaction.");
 }
 
 void sqlite3_session_backend::rollback()
 {
-    execude_hardcoded(conn_, "ROLLBACK", "Cannot rollback transaction.");
+    execute_hardcoded(conn_, "ROLLBACK", "Cannot rollback transaction.");
 }
 
 // Argument passed to store_single_value_callback(), which is used to retrieve
@@ -284,7 +284,7 @@ bool sqlite3_session_backend::get_last_insert_id(
 
         std::string const query =
             "select seq from sqlite_sequence where name ='" + sanitize_table_name(table) + "'";
-        execude_hardcoded(conn_, query.c_str(),  "Unable to get value in sqlite_sequence",
+        execute_hardcoded(conn_, query.c_str(),  "Unable to get value in sqlite_sequence",
                           &store_single_value_callback, &ctx);
 
         // The value will not be filled if the callback was never called.
@@ -302,7 +302,7 @@ bool sqlite3_session_backend::get_last_insert_id(
     // table. This has the disadvantage that if rows were deleted, then ids may be re-used.
     // But, if one cares about that, AUTOINCREMENT should be used anyway.
     std::string const max_rowid_query = "select max(rowid) from \"" + sanitize_table_name(table) + "\"";
-    execude_hardcoded(conn_, max_rowid_query.c_str(),  "Unable to get max rowid",
+    execute_hardcoded(conn_, max_rowid_query.c_str(),  "Unable to get max rowid",
                       &store_single_value_callback, &ctx);
     value = ctx.valid_ ? ctx.value_ : 0;
 
