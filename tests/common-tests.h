@@ -6463,7 +6463,7 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
             CHECK_THROWS_AS(blob.read_from_start(buf, sizeof(buf), blob.get_len()), soci_error);
 
             written_bytes = blob.append("z", 1);
-            
+
             CHECK(written_bytes == 1);
             CHECK(blob.get_len() == 3);
 
@@ -6598,6 +6598,25 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
             for (std::size_t i = 0; i < sizeof(binary_data); ++i) {
                 CHECK(buf[i] == binary_data[i]);
             }
+        }
+        SECTION("Rowset type detection") {
+            soci::blob blob(sql);
+            static_assert(sizeof(dummy_data) >= 10, "Underlying assumption violated");
+            blob.write_from_start(dummy_data, 10);
+
+            // Write and retrieve blob from/into database
+            int id = 1;
+            sql << "insert into soci_test (id, b) values(:id, :b)", soci::use(id), soci::use(blob);
+
+            soci::rowset< soci::row > rowSet = sql.prepare << "select id, b from soci_test";
+            bool containedData = false;
+            for (auto it = rowSet.begin(); it != rowSet.end(); ++it) {
+                containedData = true;
+                const soci::row &currentRow = *it;
+                CHECK(currentRow.get_properties(0).get_data_type() == soci::dt_integer);
+                CHECK(currentRow.get_properties(1).get_data_type() == soci::dt_blob);
+            }
+            CHECK(containedData);
         }
     }
     transaction.rollback();
