@@ -568,6 +568,8 @@ void sqlite3_statement_backend::describe_column(int colNum,
         dbtype = db_double;
         break;
     case SQLITE_BLOB:
+        dbtype = db_blob;
+        break;
     case SQLITE_TEXT:
         dbtype = db_string;
         break;
