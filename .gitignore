@@ -31,6 +31,7 @@ cmake_install.cmake
 *.sdf
 *.suo
 /*.vs*
+out/
 
 # KDevelop
 *.kate-swp
@@ -51,3 +52,4 @@ CMakeLists.txt.user
 
 # Python
 .venv/
+

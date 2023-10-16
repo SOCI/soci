@@ -664,6 +664,13 @@ void statement_impl::bind_into<dt_date>()
     into_row<std::tm>();
 }
 
+template <>
+void statement_impl::bind_into<dt_datetime> ()
+{
+    into_row<soci::datetime> ();
+}
+
+
 void statement_impl::describe()
 {
     row_->clean_up();
@@ -705,6 +712,9 @@ void statement_impl::describe()
             break;
         case dt_date:
             bind_into<dt_date>();
+            break;
+        case dt_datetime:
+            bind_into<dt_datetime> ();
             break;
         default:
             std::ostringstream msg;

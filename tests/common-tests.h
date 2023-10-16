@@ -49,6 +49,7 @@
 #include <type_traits>
 
 #include "soci-mktime.h"
+#include "thirdparty/date.h"
 
 // Although SQL standard mandates right padding CHAR(N) values to their length
 // with spaces, some backends don't confirm to it:
@@ -808,7 +809,7 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
 
     SECTION("Indicators work correctly more generally")
     {
-        sql << "insert into soci_test(id,tm) values(NULL,NULL)";
+        sql << "insert into soci_test(id,tm,str) values(NULL,NULL,NULL)";
         int i;
         indicator ind;
         sql << "select id from soci_test", into(i, ind);
@@ -850,6 +851,26 @@ TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
         int id = 1000;
         sql << "select id from soci_test where id = :id", use(id), into(i);
         CHECK(sql.got_data() == false);
+    }
+
+    SECTION ( "Indicators work correctly with row" )
+    {
+        row r;
+        sql << "select str from soci_test", into ( r );
+
+        auto id = r.get<std::string> ( 0, "12345" );
+        CHECK ( id == "12345" );
+
+        try
+        {
+            // expect error
+            (void)r.get<std::string> ( 0 );
+            FAIL ( "expected exception not thrown" );
+        }
+        catch ( soci_error const& e )
+        {
+            CHECK ( e.get_error_message () == "Null value not allowed for this type." );
+        }
     }
 }
 
@@ -2421,7 +2442,8 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         CHECK(r.get_properties(0).get_data_type() == dt_double);
         CHECK(r.get_properties(1).get_data_type() == dt_integer);
         CHECK(r.get_properties(2).get_data_type() == dt_string);
-        CHECK(r.get_properties(3).get_data_type() == dt_date);
+        const auto p3 = r.get_properties ( 3 ).get_data_type ();
+        CHECK ( (p3 == dt_date || p3 == dt_datetime) );
 
         // type char is visible as string
         // - to comply with the implementation for Oracle
@@ -2439,6 +2461,9 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         CHECK(r.get<int>(1) == 123);
         CHECK(r.get<std::string>(2) == "Johny");
         CHECK(r.get<std::tm>(3).tm_year == 105);
+        auto t1 = r.get<std::tm> ( 3 );
+        auto t2 = to_std_tm ( r.get<soci::datetime> ( 3 ) );
+        CHECK ( t1.tm_year == t2.tm_year );                    
 
         // again, type char is visible as string
         CHECK_EQUAL_PADDED(r.get<std::string>(4), "a");
@@ -2482,6 +2507,11 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
             CHECK(t.tm_min == 14);
             CHECK(t.tm_sec == 17);
             CHECK_EQUAL_PADDED(c, "a");
+
+            soci::datetime dtm;
+            r.reset_get_counter ();
+            r >> d >> i >> s >> dtm >> c;
+            CHECK ( to_std_tm ( dtm ).tm_year == 105 );
         }
     }
 
@@ -2495,7 +2525,8 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         CHECK(r.get_properties(0).get_data_type() == dt_double);
         CHECK(r.get_properties(1).get_data_type() == dt_integer);
         CHECK(r.get_properties(2).get_data_type() == dt_string);
-        CHECK(r.get_properties(3).get_data_type() == dt_date);
+        const auto p3 = r.get_properties ( 3 ).get_data_type ();
+        CHECK ( ( p3 == dt_date || p3 == dt_datetime ) );
 
         sql << "select name, num_int from soci_test", into(r);
 
@@ -2984,7 +3015,8 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
             CHECK(r1.get_properties(0).get_data_type() == dt_double);
             CHECK(r1.get_properties(1).get_data_type() == dt_integer);
             CHECK(r1.get_properties(2).get_data_type() == dt_string);
-            CHECK(r1.get_properties(3).get_data_type() == dt_date);
+            const auto p3 = r1.get_properties ( 3 ).get_data_type ();
+            CHECK ( ( p3 == dt_date || p3 == dt_datetime ) );
             CHECK(r1.get_properties(4).get_data_type() == dt_string);
             CHECK(r1.get_properties("NUM_INT").get_data_type() == dt_integer);
 
@@ -3047,7 +3079,9 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
             CHECK(r2.get_properties(0).get_data_type() == dt_double);
             CHECK(r2.get_properties(1).get_data_type() == dt_integer);
             CHECK(r2.get_properties(2).get_data_type() == dt_string);
-            CHECK(r2.get_properties(3).get_data_type() == dt_date);
+            //CHECK(r2.get_properties(3).get_data_type() == dt_date);
+            const auto r2p3 = r2.get_properties ( 3 ).get_data_type ();
+            CHECK ( ( r2p3 == dt_date || p3 == dt_datetime ) );
             CHECK(r2.get_properties(4).get_data_type() == dt_string);
             CHECK(r2.get_properties("NUM_INT").get_data_type() == dt_integer);
 
@@ -3110,7 +3144,8 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
             CHECK(r1.get_properties(0).get_data_type() == dt_integer);
             CHECK(r1.get_properties(1).get_data_type() == dt_double);
             CHECK(r1.get_properties(2).get_data_type() == dt_string);
-            CHECK(r1.get_properties(3).get_data_type() == dt_date);
+            const auto p3 = r1.get_properties ( 3 ).get_data_type ();
+            CHECK ( ( p3 == dt_date || p3 == dt_datetime ) );
             CHECK(r1.get_properties(4).get_data_type() == dt_string);
 
             // Data
@@ -3480,7 +3515,7 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
             try
             {
                 // expect exception here, this is NULL value
-                (void)r1.get<int>(1);
+                (void)r2.get<int>(1);
                 FAIL("expected exception not thrown");
             }
             catch (soci_error const &) {}
@@ -3953,7 +3988,7 @@ TEST_CASE_METHOD(common_tests, "NULL with std optional", "[core][null]")
             try
             {
                 // expect exception here, this is NULL value
-                (void)r1.get<int>(1);
+                (void)r2.get<int>(1);
                 FAIL("expected exception not thrown");
             }
             catch (soci_error const &) {}

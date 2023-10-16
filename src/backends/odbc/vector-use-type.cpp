@@ -373,6 +373,9 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
             // them here to avoid compiler warnings about unhandled enum
             // elements.
             break;
+        // not supported
+        default:
+            throw soci_error("Use vector element used with non-supported type.");
     }
 
     // then handle indicators

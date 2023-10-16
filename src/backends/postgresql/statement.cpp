@@ -747,6 +747,7 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     int const pos = colNum - 1;
 
     unsigned long const typeOid = PQftype(result_, pos);
+
     switch (typeOid)
     {
     // Note: the following list of OIDs was taken from the pg_type table
@@ -771,12 +772,13 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     case 703:  // reltime
     case 1082: // date
     case 1083: // time
-    case 1114: // timestamp
-    case 1184: // timestamptz
     case 1266: // timetz
         type = dt_date;
         break;
-
+    case 1114:  // timestamp
+    case 1184:  // timestamptz
+        type = dt_datetime;
+        break;
     case 700:  // float4
     case 701:  // float8
     case 1700: // numeric

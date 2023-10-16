@@ -16,6 +16,8 @@
 #include <ctime>
 #include <cstdlib>
 
+#include "thirdparty/date.h"
+
 using namespace soci;
 using namespace soci::tests;
 
@@ -512,6 +514,23 @@ TEST_CASE("PostgreSQL datetime", "[postgresql][datetime]")
     CHECK(t3.tm_hour == 22);
     CHECK(t3.tm_min == 51);
     CHECK(t3.tm_sec == 3);
+
+    {
+        using namespace date;
+        const auto     now = std::chrono::system_clock::now ();
+        soci::datetime dtm = date::floor<std::chrono::microseconds> ( now );
+        indicator      ind = i_ok;
+        soci::datetime dtm2;
+        indicator      ind2 = i_ok;
+        soci::datetime dtm3;
+
+        sql << "select t, timestamp'2001-01-11 10:10:10.123' as t2 from (select :t::timestamp as t) tbl", into ( dtm2, ind2 ),
+            into ( dtm3 ), use ( dtm, ind );
+        CHECK ( ( dtm == dtm2 ) == true );
+        auto expected = sys_days{ year ( 2001 ) / month ( 01 ) / day ( 11 ) } + std::chrono::hours{ 10 } + std::chrono::minutes{ 10 } +
+                        std::chrono::seconds{ 10 } + std::chrono::milliseconds{ 123 };
+        CHECK ( ( dtm3 == expected ) == true );
+    }
 }
 
 // test for number of affected rows
@@ -556,11 +575,11 @@ struct table_creator_for_test12 : table_creator_base
     table_creator_for_test12(soci::session & sql)
         : table_creator_base(sql)
     {
-        sql << "create table soci_test(sid serial, txt text)";
+        sql << "create table soci_test(sid serial, txt text, dtm timestamp)";
     }
 };
 
-TEST_CASE("PostgreSQL insert into ... returning", "[postgresql]")
+TEST_CASE("PostgreSQL insert into ... returning", "[postgresql][returning]")
 {
     soci::session sql(backEnd, connectString);
 
@@ -578,6 +597,15 @@ TEST_CASE("PostgreSQL insert into ... returning", "[postgresql]")
     std::vector<long> ids2(ids.size());
     sql << "select sid from soci_test order by sid", into(ids2);
     CHECK(std::equal(ids.begin(), ids.end(), ids2.begin()));
+
+    {
+        soci::datetime dtm;
+        std::tm        tm;
+        sql << "update soci_test set dtm=now() where sid = (select min(sid) from soci_test) returning dtm, dtm", into ( dtm ), into ( tm );
+
+        using namespace date;
+        CHECK_FALSE ( ( dtm == soci::datetime{} ) );
+    }
 }
 
 struct bytea_table_creator : public table_creator_base
@@ -969,7 +997,9 @@ TEST_CASE("Bulk iterators", "[postgresql][bulkiters]")
 {
     soci::session sql(backEnd, connectString);
 
-    sql << "create table t (i integer)";
+    //sql << "create table t (i integer)";
+    sql << "drop table if exists t";
+    sql << "create table t (id serial , i integer, dtm timestamp )";
 
     // test bulk iterators with basic types
     {
@@ -988,7 +1018,7 @@ TEST_CASE("Bulk iterators", "[postgresql][bulkiters]")
         v.resize(20);
         begin = 5;
         end = 20;
-        sql << "select i from t", soci::into(v, begin, end);
+        sql << "select i from t order by id", soci::into(v, begin, end);
 
         CHECK(end == 8);
         for (std::size_t i = 0; i != 5; ++i)
@@ -1001,6 +1031,41 @@ TEST_CASE("Bulk iterators", "[postgresql][bulkiters]")
         for (std::size_t i = end; i != 20; ++i)
         {
             CHECK(v[i] == 0);
+        }
+    }
+
+    sql << "delete from t";
+
+    {
+        std::vector<soci::datetime> v;
+        const auto                  now = date::floor<std::chrono::microseconds> ( std::chrono::system_clock::now () );
+        v.emplace_back ( now + std::chrono::minutes{ 10 } );
+        v.emplace_back ( now + std::chrono::minutes{ 20 } );
+        v.emplace_back ( now + std::chrono::minutes{ 30 } );
+        v.emplace_back ( now + std::chrono::minutes{ 40 } );
+        v.emplace_back ( now + std::chrono::minutes{ 50 } );
+
+        std::size_t begin = 2;
+        std::size_t end = 5;
+        sql << "insert into t (dtm) values (:v)", soci::use(v, begin, end);
+
+        v.clear();
+        v.resize(20);
+        begin = 5;
+        end = 20;
+        sql << "select dtm from t order by id", soci::into(v, begin, end);
+
+        CHECK(end == 8);
+        for (std::size_t i = 0; i != 5; ++i)
+        {
+            CHECK ( (v[i] == soci::datetime{} ) );
+        }
+        CHECK ( (v[5] == now + std::chrono::minutes{ 30 }) );
+        CHECK ( (v[6] == now + std::chrono::minutes{ 40 }) );
+        CHECK ( (v[7] == now + std::chrono::minutes{ 50 }) );
+        for (std::size_t i = end; i != 20; ++i)
+        {
+            CHECK ( (v[i] == soci::datetime{}) );
         }
     }
 

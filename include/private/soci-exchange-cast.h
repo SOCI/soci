@@ -71,6 +71,12 @@ struct exchange_type_traits<x_stdtm>
 };
 
 template <>
+struct exchange_type_traits<x_datetime>
+{
+  typedef soci::datetime value_type;
+};
+
+template <>
 struct exchange_type_traits<x_longstring>
 {
   typedef long_string value_type;

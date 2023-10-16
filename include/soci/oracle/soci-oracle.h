@@ -355,6 +355,7 @@ struct oracle_session_backend : details::session_backend
             break;
 
         case dt_date:
+        case dt_datetime:     
             res += "timestamp";
             break;
 

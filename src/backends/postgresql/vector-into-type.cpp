@@ -155,6 +155,15 @@ void postgresql_vector_into_type_backend::post_fetch(bool gotData, indicator * i
                     set_invector_(data_, i, t);
                 }
                 break;
+            case x_datetime:
+                {
+                    // attempt to parse the string and convert to soci::datetime
+                    soci::datetime dtm;
+                    parse_soci_datetime ( buf, dtm );
+
+                    set_invector_ ( data_, i, dtm );
+                }
+                break;
             case x_xmltype:
                 set_invector_wrappers_<xml_type, std::string>(data_, i, buf);
                 break;
@@ -219,6 +228,9 @@ void postgresql_vector_into_type_backend::resize(std::size_t sz)
             break;
         case x_stdtm:
             resizevector_<std::tm>(data_, sz);
+            break;
+            case x_datetime:
+            resizevector_<soci::datetime> ( data_, sz );
             break;
         case x_xmltype:
             resizevector_<xml_type>(data_, sz);
@@ -287,6 +299,9 @@ std::size_t postgresql_vector_into_type_backend::full_size()
         break;
     case x_stdtm:
         sz = get_vector_size<std::tm>(data_);
+        break;
+        case x_datetime:
+        sz = get_vector_size<soci::datetime> ( data_ );
         break;
     case x_xmltype:
         sz = get_vector_size<xml_type>(data_);
