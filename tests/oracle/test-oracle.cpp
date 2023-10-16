@@ -323,14 +323,14 @@ TEST_CASE("Oracle stored procedure", "[oracle][stored-procedure]")
     procedure_creator procedure_creator(sql);
 
     {
-        std::string in("my message");
-        std::string out;
-        statement st = (sql.prepare <<
-            "begin soci_test(:output, :input); end;",
-            use(out, "output"),
-            use(in, "input"));
-        st.execute(1);
-        CHECK(out == in);
+    std::string in("my message");
+    std::string out;
+    statement st = (sql.prepare <<
+        "begin soci_test(:output, :input); end;",
+        use(out, "output"),
+        use(in, "input"));
+    st.execute(1);
+    CHECK(out == in);
     }
     // explicit procedure syntax
     {
@@ -537,8 +537,9 @@ TEST_CASE("Oracle bulk insert", "[oracle][insert][bulk]")
             dtms.emplace_back ( std::chrono::time_point_cast<Us> ( std::chrono::system_clock::now () ) + Minutes ( i ) );
         }
 
-        statement st = (sql.prepare << "insert into soci_test(id, dtm) values(:id, :dtm)", use(ids), use(dtms));
-        st.execute( true );
+        statement st = (sql.prepare << "insert into soci_test(id, dtm) values(:id, :dtm)",
+                            use(ids), use(dtms));
+        st.execute(1);
         int count;
         sql << "select count(*) from soci_test", into(count);
         CHECK(count == 3);

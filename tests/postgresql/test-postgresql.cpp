@@ -1003,7 +1003,40 @@ TEST_CASE("Bulk iterators", "[postgresql][bulkiters]")
 
     // test bulk iterators with basic types
     {
-        //std::vector<int> v;
+        std::vector<int> v;
+        v.push_back(10);
+        v.push_back(20);
+        v.push_back(30);
+        v.push_back(40);
+        v.push_back(50);
+
+        std::size_t begin = 2;
+        std::size_t end = 5;
+        sql << "insert into t (i) values (:v)", soci::use(v, begin, end);
+
+        v.clear();
+        v.resize(20);
+        begin = 5;
+        end = 20;
+        sql << "select i from t order by id", soci::into(v, begin, end);
+
+        CHECK(end == 8);
+        for (std::size_t i = 0; i != 5; ++i)
+        {
+            CHECK(v[i] == 0);
+        }
+        CHECK(v[5] == 30);
+        CHECK(v[6] == 40);
+        CHECK(v[7] == 50);
+        for (std::size_t i = end; i != 20; ++i)
+        {
+            CHECK(v[i] == 0);
+        }
+    }
+
+    sql << "delete from t";
+
+    {
         std::vector<soci::datetime> v;
         const auto                  now = date::floor<std::chrono::microseconds> ( std::chrono::system_clock::now () );
         v.emplace_back ( now + std::chrono::minutes{ 10 } );
@@ -1059,7 +1092,7 @@ TEST_CASE("Bulk iterators", "[postgresql][bulkiters]")
 
         begin = 5;
         end = 20;
-        sql << "select i from t order by id", soci::into(v, begin, end);
+        sql << "select i from t", soci::into(v, begin, end);
 
         CHECK(end == 8);
         for (std::size_t i = 0; i != 5; ++i)
