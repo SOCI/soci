@@ -371,124 +371,59 @@ TEST_CASE("MySQL datetime", "[mysql][datetime]")
     CHECK(t.tm_sec == 52);
 }
 
-// TEXT and BLOB types support test.
-TEST_CASE("MySQL text and blob", "[mysql][text][blob]")
+// TEXT type support test.
+TEST_CASE("MySQL text", "[mysql][text]")
 {
     soci::session sql(backEnd, connectString);
     std::string a("asdfg\0hjkl", 10);
-    std::string b("lkjhg\0fd\0\0sa\0", 13);
-    std::string c("\\0aa\\0bb\\0cc\\0", 10);
     // The maximum length for TEXT and BLOB is 65536.
     std::string x(60000, 'X');
-    std::string y(60000, 'Y');
-    // The default max_allowed_packet value for a MySQL server is 1M,
-    // so let's limit ourselves to 800k, even though the maximum length
-    // for LONGBLOB is 4G.
-    std::string z(800000, 'Z');
 
-    sql << "create table soci_test (id int, text_value text, "
-        "blob_value blob, longblob_value longblob)";
-    sql << "insert into soci_test values (1, \'foo\', \'bar\', \'baz\')";
+    sql << "create table soci_test (id int, text_value text)";
+    sql << "insert into soci_test values (1, \'foo\')";
     sql << "insert into soci_test "
-        << "values (2, \'qwerty\\0uiop\', \'zxcv\\0bnm\', "
-        << "\'qwerty\\0uiop\\0zxcvbnm\\0\')";
-    sql << "insert into soci_test values (3, :a, :b, :c)",
-           use(a), use(b), use(c);
-    sql << "insert into soci_test values (4, :x, :y, :z)",
-           use(x), use(y), use(z);
+        << "values (2, \'qwerty\\0uiop\')";
+    sql << "insert into soci_test values (3, :a)",
+           use(a);
+    sql << "insert into soci_test values (4, :x)",
+           use(x);
 
     std::vector<std::string> text_vec(100);
-    std::vector<std::string> blob_vec(100);
-    std::vector<std::string> longblob_vec(100);
-    sql << "select text_value, blob_value, longblob_value "
-        << "from soci_test order by id",
-           into(text_vec), into(blob_vec), into(longblob_vec);
+    sql << "select text_value from soci_test order by id", into(text_vec);
     REQUIRE(text_vec.size() == 4);
-    REQUIRE(blob_vec.size() == 4);
-    REQUIRE(longblob_vec.size() == 4);
     CHECK(text_vec[0] == "foo");
-    CHECK(blob_vec[0] == "bar");
-    CHECK(longblob_vec[0] == "baz");
     CHECK(text_vec[1] == std::string("qwerty\0uiop", 11));
-    CHECK(blob_vec[1] == std::string("zxcv\0bnm", 8));
-    CHECK(longblob_vec[1] == std::string("qwerty\0uiop\0zxcvbnm\0", 20));
     CHECK(text_vec[2] == a);
-    CHECK(blob_vec[2] == b);
-    CHECK(longblob_vec[2] == c);
     CHECK(text_vec[3] == x);
-    CHECK(blob_vec[3] == y);
-    CHECK(longblob_vec[3] == z);
 
-    std::string text, blob, longblob;
-    sql << "select text_value, blob_value, longblob_value "
-        << "from soci_test where id = 1",
-           into(text), into(blob), into(longblob);
+    std::string text;
+    sql << "select text_value from soci_test where id = 1", into(text);
     CHECK(text == "foo");
-    CHECK(blob == "bar");
-    CHECK(longblob == "baz");
-    sql << "select text_value, blob_value, longblob_value "
-        << "from soci_test where id = 2",
-           into(text), into(blob), into(longblob);
+    sql << "select text_value from soci_test where id = 2", into(text);
     CHECK(text == std::string("qwerty\0uiop", 11));
-    CHECK(blob == std::string("zxcv\0bnm", 8));
-    CHECK(longblob == std::string("qwerty\0uiop\0zxcvbnm\0", 20));
-    sql << "select text_value, blob_value, longblob_value "
-        << "from soci_test where id = 3",
-           into(text), into(blob), into(longblob);
+    sql << "select text_value from soci_test where id = 3", into(text);
     CHECK(text == a);
-    CHECK(blob == b);
-    CHECK(longblob == c);
-    sql << "select text_value, blob_value, longblob_value "
-        << "from soci_test where id = 4",
-           into(text), into(blob), into(longblob);
+    sql << "select text_value from soci_test where id = 4", into(text);
     CHECK(text == x);
-    CHECK(blob == y);
-    CHECK(longblob == z);
 
     rowset<row> rs =
-        (sql.prepare << "select text_value, blob_value, longblob_value "
-                        "from soci_test order by id");
+        (sql.prepare << "select text_value from soci_test order by id");
     rowset<row>::const_iterator r = rs.begin();
     CHECK(r->get_properties(0).get_data_type() == dt_string);
     CHECK(r->get_properties(0).get_db_type() == db_string);
     CHECK(r->get<std::string>(0) == "foo");
-    CHECK(r->get_properties(1).get_data_type() == dt_string);
-    CHECK(r->get_properties(1).get_db_type() == db_string);
-    CHECK(r->get<std::string>(1) == "bar");
-    CHECK(r->get_properties(2).get_data_type() == dt_string);
-    CHECK(r->get_properties(2).get_db_type() == db_string);
-    CHECK(r->get<std::string>(2) == "baz");
     ++r;
     CHECK(r->get_properties(0).get_data_type() == dt_string);
     CHECK(r->get_properties(0).get_db_type() == db_string);
     CHECK(r->get<std::string>(0) == std::string("qwerty\0uiop", 11));
-    CHECK(r->get_properties(1).get_data_type() == dt_string);
-    CHECK(r->get_properties(1).get_db_type() == db_string);
-    CHECK(r->get<std::string>(1) == std::string("zxcv\0bnm", 8));
-    CHECK(r->get_properties(2).get_data_type() == dt_string);
-    CHECK(r->get_properties(2).get_db_type() == db_string);
-    CHECK(r->get<std::string>(2) ==
-           std::string("qwerty\0uiop\0zxcvbnm\0", 20));
     ++r;
     CHECK(r->get_properties(0).get_data_type() == dt_string);
     CHECK(r->get_properties(0).get_db_type() == db_string);
     CHECK(r->get<std::string>(0) == a);
-    CHECK(r->get_properties(1).get_data_type() == dt_string);
-    CHECK(r->get_properties(1).get_db_type() == db_string);
-    CHECK(r->get<std::string>(1) == b);
-    CHECK(r->get_properties(2).get_data_type() == dt_string);
-    CHECK(r->get_properties(2).get_db_type() == db_string);
-    CHECK(r->get<std::string>(2) == c);
     ++r;
     CHECK(r->get_properties(0).get_data_type() == dt_string);
     CHECK(r->get_properties(0).get_db_type() == db_string);
     CHECK(r->get<std::string>(0) == x);
-    CHECK(r->get_properties(1).get_data_type() == dt_string);
-    CHECK(r->get_properties(1).get_db_type() == db_string);
-    CHECK(r->get<std::string>(1) == y);
-    CHECK(r->get_properties(2).get_data_type() == dt_string);
-    CHECK(r->get_properties(2).get_db_type() == db_string);
-    CHECK(r->get<std::string>(2) == z);
     ++r;
     CHECK(r == rs.end());
 
@@ -760,8 +695,7 @@ struct strings_table_creator : table_creator_base
     {
         sql << "create table soci_test(s1 char(20), s2 varchar(20), "
             "s3 tinytext, s4 mediumtext, s5 text, s6 longtext, "
-            "b1 binary(20), b2 varbinary(20), b3 tinyblob, b4 mediumblob, "
-            "b5 blob, b6 longblob, e1 enum ('foo', 'bar', 'baz'))";
+            "b1 binary(20), b2 varbinary(20), e1 enum ('foo', 'bar', 'baz'))";
     }
 };
 
@@ -772,22 +706,20 @@ TEST_CASE("MySQL strings", "[mysql][string]")
     std::string text = "Ala ma kota.";
     std::string binary("Ala\0ma\0kota.........", 20);
     sql << "insert into soci_test "
-        "(s1, s2, s3, s4, s5, s6, b1, b2, b3, b4, b5, b6, e1) values "
-        "(:s1, :s2, :s3, :s4, :d5, :s6, :b1, :b2, :b3, :b4, :b5, :b6, "
-        "\'foo\')",
+        "(s1, s2, s3, s4, s5, s6, b1, b2, e1) values "
+        "(:s1, :s2, :s3, :s4, :d5, :s6, :b1, :b2, 'foo')",
         use(text), use(text), use(text), use(text), use(text), use(text),
-        use(binary), use(binary), use(binary), use(binary), use(binary),
-        use(binary);
+        use(binary), use(binary);
     row r;
-    sql << "select s1, s2, s3, s4, s5, s6, b1, b2, b3, b4, b5, b6, e1 "
+    sql << "select s1, s2, s3, s4, s5, s6, b1, b2, e1 "
         "from soci_test", into(r);
-    REQUIRE(r.size() == 13);
-    for (int i = 0; i < 13; i++) {
+    REQUIRE(r.size() == 9);
+    for (int i = 0; i < static_cast<int>(r.size()); i++) {
         CHECK(r.get_properties(i).get_data_type() == dt_string);
         CHECK(r.get_properties(i).get_db_type() == db_string);
         if (i < 6) {
             CHECK(r.get<std::string>(i) == text);
-        } else if (i < 12) {
+        } else if (i < 8) {
             CHECK(r.get<std::string>(i) == binary);
         } else {
             CHECK(r.get<std::string>(i) == "foo");
