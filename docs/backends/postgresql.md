@@ -88,16 +88,25 @@ The PostgreSQL backend supports the use of the SOCI `row` class, which facilitat
 
 When calling `row::get<T>()`, the type you should pass as `T` depends upon the underlying database type. For the PostgreSQL backend, this type mapping is:
 
-| PostgreSQL Data Type                                         | SOCI Data Type | `row::get<T>` specializations |
-| ------------------------------------------------------------ | -------------- | ----------------------------- |
-| numeric, real, double                                        | dt_double      | double                        |
-| boolean                                                      | dt_int8        | int8_t                        |
-| smallint                                                     | dt_int16       | int16_t                       |
-| integer                                                      | dt_int32       | int32_t                       |
-| int8                                                         | dt_int64       | int64_t                       |
-| oid                                                          | dt_int32       | int32_t                       |
-| char, varchar, text, cstring, bpchar                         | dt_string      | std::string                   |
-| abstime, reltime, date, time, timestamp, timestamptz, timetz | dt_date        | std::tm                       |
+| PostgreSQL Data Type                                         | SOCI Data Type (`data_type`) | `row::get<T>` specializations |
+| ------------------------------------------------------------ | ---------------------------- | ----------------------------- |
+| numeric, real, double                                        | dt_double                    | double                        |
+| boolean, smallint, integer                                   | dt_integer                   | int                           |
+| int8                                                         | dt_long_long                 | long long                     |
+| oid                                                          | dt_integer                   | unsigned long                 |
+| char, varchar, text, cstring, bpchar                         | dt_string                    | std::string                   |
+| abstime, reltime, date, time, timestamp, timestamptz, timetz | dt_date                      | std::tm                       |
+
+| PostgreSQL Data Type                                         | SOCI Data Type (`db_type`)   | `row::get<T>` specializations |
+| ------------------------------------------------------------ | ---------------------------- | ----------------------------- |
+| numeric, real, double                                        | db_double                    | double                        |
+| boolean                                                      | db_int8                      | int8_t                        |
+| smallint                                                     | db_int16                     | int16_t                       |
+| integer                                                      | db_int32                     | int32_t                       |
+| int8                                                         | db_int64                     | int64_t                       |
+| oid                                                          | db_int32                     | int32_t                       |
+| char, varchar, text, cstring, bpchar                         | db_string                    | std::string                   |
+| abstime, reltime, date, time, timestamp, timestamptz, timetz | db_date                      | std::tm                       |
 
 (See the [dynamic resultset binding](../types.md#dynamic-binding) documentation for general information on using the `row` class.)
 

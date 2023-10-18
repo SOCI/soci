@@ -13,7 +13,10 @@ The following types are commonly used in the rest of the interface:
 
 ```cpp
 // data types, as seen by the user
-enum data_type { dt_string, dt_date, dt_double, dt_int8, dt_uint8, dt_int16, dt_uint16, dt_int32, dt_uint32, dt_int64, dt_uint64 };
+enum data_type { dt_string, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long };
+
+// data types, as seen by the user
+enum db_type { db_string, db_date, db_double, db_int8, db_uint8, db_int16, db_uint16, db_int32, db_uint32, db_int64, db_uint64 };
 
 // the enum type for indicator variables
 enum indicator { i_ok, i_null, i_truncated };
@@ -22,7 +25,8 @@ enum indicator { i_ok, i_null, i_truncated };
 class soci_error : public std::runtime_error { /* ... */ };
 ```
 
-The `data_type` type defines the basic SOCI data types. User provided data types need to be associated with one of these basic types.
+The `data_type` and `db_type` types define the basic SOCI data types. User provided data types need to be associated with one of these basic types.
+`data_type` is deprecated in favor of `db_type`, so users are encouraged to use the latter.
 
 The `indicator` type defines the possible states of data.
 
@@ -443,14 +447,16 @@ class column_properties
 {
 public:
     std::string get_name() const;
-    data_type get_data_type() const;
+    data_type_type get_data_type() const;
+    db_type get_db_type() const;
 };
 ```
 
 This class contains the following members:
 
 * `get_name` function that returns the name of the column.
-* `get_data_type` that returns the type of the column.
+* `get_data_type` that returns the type of the column (deprecate in favor of `get_db_type`).
+* `get_db_type` that returns the type of the column.
 
 See [Dynamic resultset binding](../types.md#dynamic-binding) for examples.
 

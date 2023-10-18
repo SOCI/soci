@@ -64,39 +64,39 @@ for(std::size_t i = 0; i != r.size(); ++i)
 
     doc << '<' << props.get_name() << '>';
 
-    switch(props.get_data_type())
+    switch(props.get_db_type())
     {
-    case dt_string:
+    case db_string:
         doc << r.get<std::string>(i);
         break;
-    case dt_double:
+    case db_double:
         doc << r.get<double>(i);
         break;
-    case dt_int8:
+    case db_int8:
         doc << r.get<int8_t>(i);
         break;
-    case dt_uint8:
+    case db_uint8:
         doc << r.get<uint8_t>(i);
         break;
-    case dt_int16:
+    case db_int16:
         doc << r.get<int16_t>(i);
         break;
-    case dt_uint16:
+    case db_uint16:
         doc << r.get<uint16_t>(i);
         break;
-    case dt_int32:
+    case db_int32:
         doc << r.get<int32_t>(i);
         break;
-    case dt_uint32:
+    case db_uint32:
         doc << r.get<uint32_t>(i);
         break;
-    case dt_int64:
+    case db_int64:
         doc << r.get<int64_t>(i);
         break;
-    case dt_uint64:
+    case db_uint64:
         doc << r.get<uint64_t>(i);
         break;
-    case dt_date:
+    case db_date:
         std::tm when = r.get<std::tm>(i);
         doc << asctime(&when);
         break;
@@ -107,26 +107,33 @@ for(std::size_t i = 0; i != r.size(); ++i)
 doc << "</row>";
 ```
 
-The type `T` parameter that should be passed to `row::get<T>()` depends on the SOCI data type that is returned from `column_properties::get_data_type()`.
+The type `T` parameter that should be passed to `row::get<T>()` depends on the SOCI data type that is returned from `data_type column_properties::get_data_type()` or `db_type column_properties::get_db_type()`.
+Users are encouraged to use the latter as it supports a wider range of numerical C++ types.
 
 `row::get<T>()` throws an exception of type `std::bad_cast` if an incorrect type `T` is requested.
 
-| SOCI Data Type          | `row::get<T>` specialization |
-|-------------------------|------------------------------|
-| `dt_double`             | `double`                     |
-| `dt_int8`               | `int8_t`                     |
-| `dt_uint8`              | `uint8_t`                    |
-| `dt_int16`              | `int16_t`                    |
-| `dt_uint16`             | `uint16_t`                   |
-| `dt_int32`              | `int32_t`                    |
-| `dt_integer`            | `int32_t`                    |
-| `dt_uint32`             | `uint32_t`                   |
-| `dt_int64`              | `int64_t`                    |
-| `dt_long_long`          | `int64_t`                    |
-| `dt_uint64`             | `uint64_t`                   |
-| `dt_unsigned_long_long` | `uint64_t`                   |
-| `dt_string`             | `std::string`                |
-| `dt_date`               | `std::tm`                    |
+| SOCI Data Type (`data_type`) | `row::get<T>` specialization |
+|------------------------------|------------------------------|
+| `dt_double`                  | `double`                     |
+| `dt_integer`                 | `int`                        |
+| `dt_long_long`               | `long long`                  |
+| `dt_unsigned_long_long`      | `unsigned long long`         |
+| `dt_string`                  | `std::string`                |
+| `dt_date`                    | `std::tm`                    |
+
+| SOCI Data Type (`db_type`)   | `row::get<T>` specialization |
+|------------------------------|------------------------------|
+| `db_double`                  | `double`                     |
+| `db_int8`                    | `int8_t`                     |
+| `db_uint8`                   | `uint8_t`                    |
+| `db_int16`                   | `int16_t`                    |
+| `db_uint16`                  | `uint16_t`                   |
+| `db_int32`                   | `int32_t`                    |
+| `db_uint32`                  | `uint32_t`                   |
+| `db_int64`                   | `int64_t`                    |
+| `db_uint64`                  | `uint64_t`                   |
+| `db_string`                  | `std::string`                |
+| `db_date`                    | `std::tm`                    |
 
 The mapping of underlying database column types to SOCI datatypes is database specific.
 See the [backend documentation](backends/index.md) for details.
