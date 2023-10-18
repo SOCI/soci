@@ -307,6 +307,21 @@ struct sqlite3_session_backend : details::session_backend
         return "select name as \"TABLE_NAME\""
                 " from sqlite_master where type = 'table'";
     }
+    std::string get_column_descriptions_query() const override
+    {
+        return "select name as 'COLUMN_NAME',"
+            " 0 as 'CHARACTER_MAXIMUM_LENGTH',"
+            " 0 as 'NUMERIC_PRECISION',"
+            " case when type like '%real%' or type like '%float%' or type like '%double%' then 255 else 0 end as 'NUMERIC_SCALE',"
+            " case"
+                " when type like 'text'   or type like 'clob'     or type like '%char%'    then 'text'"
+                " when type like '%int%'  or type like '%number%' or type like '%numeric%' then 'integer'"
+                " when type like '%real%' or type like '%float%'  or type like '%double%'  then 'number'"
+                " else type"
+            " end as 'DATA_TYPE',"
+        " case when \"notnull\" = 0 then 'YES' else 'NO' end as 'IS_NULLABLE'"
+        " from (select name, lower(type) as type, \"notnull\" from pragma_table_info(:t))";
+    }
     std::string create_column_type(data_type dt,
                                            int , int ) override
     {
