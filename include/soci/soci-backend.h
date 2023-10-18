@@ -357,58 +357,35 @@ public:
         switch (dt)
         {
             case dt_string:
-            {
-                std::ostringstream oss;
-
-                if (precision == 0)
-                {
-                    oss << "text";
-                }
-                else
-                {
-                    oss << "varchar(" << precision << ")";
-                }
-
-                res += oss.str();
-            }
+                res += create_column_type(db_string, precision, scale);
                 break;
 
             case dt_date:
-                res += "timestamp";
+                res += create_column_type(db_date, precision, scale);
                 break;
 
             case dt_double:
-            {
-                std::ostringstream oss;
-                if (precision == 0)
-                {
-                    oss << "numeric";
-                }
-                else
-                {
-                    oss << "numeric(" << precision << ", " << scale << ")";
-                }
-
-                res += oss.str();
-            }
+                res += create_column_type(db_double, precision, scale);
                 break;
 
             case dt_integer:
-                res += "integer";
+                res += create_column_type(db_int32, precision, scale);
                 break;
 
             case dt_long_long:
-                res += "bigint";
+                res += create_column_type(db_int64, precision, scale);
                 break;
 
             case dt_unsigned_long_long:
+                res += create_column_type(db_uint64, precision, scale);
+                break;
 
             case dt_blob:
-                res += "oid";
+                res += create_column_type(db_blob, precision, scale);
                 break;
 
             case dt_xml:
-                res += "xml";
+                res += create_column_type(db_xml, precision, scale);
                 break;
 
             default:
