@@ -134,6 +134,57 @@ session::session(connection_pool & pool)
     backEnd_ = pooledSession.get_backend();
 }
 
+session::session(session && other)
+    : query_stream_(std::move(other.query_stream_)),
+      query_transformation_(std::move(other.query_transformation_)),
+      logger_(std::move(other.logger_)),
+      lastConnectParameters_(std::move(other.lastConnectParameters_)),
+      uppercaseColumnNames_(std::move(other.uppercaseColumnNames_)),
+      backEnd_(std::move(other.backEnd_)),
+      gotData_(std::move(other.gotData_)),
+      isFromPool_(std::move(other.isFromPool_)),
+      poolPosition_(std::move(other.poolPosition_)),
+      pool_(std::move(other.pool_))
+{
+    other.isFromPool_ = false;
+    other.pool_ = nullptr;
+    other.backEnd_ = nullptr;
+    other.pool_ = nullptr;
+}
+
+session& session::operator=(session && other)
+{
+    if (this != &other)
+    {
+        if (isFromPool_)
+        {
+            pool_->give_back(poolPosition_);
+        }
+        else if (backEnd_ != other.backEnd_)
+        {
+            delete backEnd_;
+        }
+
+        query_stream_ = std::move(other.query_stream_);
+        query_transformation_ = std::move(other.query_transformation_);
+        logger_ = std::move(other.logger_);
+        lastConnectParameters_ = std::move(other.lastConnectParameters_);
+        uppercaseColumnNames_ = std::move(other.uppercaseColumnNames_);
+        backEnd_ = std::move(other.backEnd_);
+        gotData_ = std::move(other.gotData_);
+        isFromPool_ = std::move(other.isFromPool_);
+        poolPosition_ = std::move(other.poolPosition_);
+        pool_ = std::move(other.pool_);
+
+        other.isFromPool_ = false;
+        other.pool_ = nullptr;
+        other.backEnd_ = nullptr;
+        other.pool_ = nullptr;
+    }
+
+    return *this;
+}
+
 session::~session()
 {
     if (isFromPool_)

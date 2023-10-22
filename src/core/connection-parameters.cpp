@@ -119,6 +119,16 @@ connection_parameters::connection_parameters(connection_parameters const& other)
         backendRef_->inc_ref();
 }
 
+connection_parameters::connection_parameters(connection_parameters && other)
+    : factory_(std::move(other.factory_)),
+      connectString_(std::move(other.connectString_)),
+      backendRef_(std::move(other.backendRef_)),
+      options_(std::move(other.options_))
+{
+    other.factory_ = nullptr;
+    other.backendRef_ = nullptr;
+}
+
 connection_parameters& connection_parameters::operator=(connection_parameters const& other)
 {
     // Order is important in case of self-assignment.
@@ -131,6 +141,22 @@ connection_parameters& connection_parameters::operator=(connection_parameters co
     connectString_ = other.connectString_;
     backendRef_ = other.backendRef_;
     options_ = other.options_;
+
+    return *this;
+}
+
+connection_parameters& connection_parameters::operator=(connection_parameters && other)
+{
+    if (backendRef_ && backendRef_ != other.backendRef_)
+        backendRef_->dec_ref();
+
+    factory_ = std::move (other.factory_);
+    connectString_ = std::move(other.connectString_);
+    backendRef_ = std::move(other.backendRef_);
+    options_ = std::move(other.options_);
+
+    other.factory_ = nullptr;
+    other.backendRef_ = nullptr;
 
     return *this;
 }

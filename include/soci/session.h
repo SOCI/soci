@@ -55,6 +55,9 @@ public:
     explicit session(std::string const & connectString);
     explicit session(connection_pool & pool);
 
+    session(session &&other);
+    session &operator=(session &&other);
+
     ~session();
 
     void open(connection_parameters const & parameters);

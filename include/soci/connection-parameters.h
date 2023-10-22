@@ -39,7 +39,9 @@ public:
     explicit connection_parameters(std::string const & fullConnectString);
 
     connection_parameters(connection_parameters const& other);
+    connection_parameters(connection_parameters && other);
     connection_parameters& operator=(connection_parameters const& other);
+    connection_parameters& operator=(connection_parameters && other);
 
     ~connection_parameters();
 

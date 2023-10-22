@@ -4319,6 +4319,25 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
         }
     }
 
+    {
+        // check move semantics of session
+
+        soci::session sql_0;
+        soci::session sql_1 = std::move(sql_0);
+
+        CHECK(!sql_0.is_connected());
+        CHECK(!sql_1.is_connected());
+
+        sql_0.open(backEndFactory_, connectString_);
+        CHECK(sql_0.is_connected());
+        CHECK(sql_0.get_backend());
+
+        sql_1 = std::move(sql_0);
+        CHECK(!sql_0.is_connected());
+        CHECK(!sql_0.get_backend());
+        CHECK(sql_1.is_connected());
+        CHECK(sql_1.get_backend());
+    }
 }
 
 #ifdef SOCI_HAVE_BOOST
