@@ -4322,6 +4322,8 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
     {
         // check move semantics of session
 
+        SOCI_GCC_WARNING_SUPPRESS(self-move)
+
         soci::session sql_0;
         soci::session sql_1 = std::move(sql_0);
 
@@ -4341,6 +4343,8 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
         sql_1 = std::move(sql_1);
         CHECK(sql_1.is_connected());
         CHECK(sql_1.get_backend());
+
+        SOCI_GCC_WARNING_RESTORE(self-move)
     }
 }
 
