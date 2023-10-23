@@ -79,6 +79,8 @@ public:
     }
 
 private:
+    void reset_after_move();
+
     // The backend and connection string specified in our ctor.
     backend_factory const * factory_;
     std::string connectString_;

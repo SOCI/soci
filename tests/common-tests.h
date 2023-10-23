@@ -4337,6 +4337,10 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
         CHECK(!sql_0.get_backend());
         CHECK(sql_1.is_connected());
         CHECK(sql_1.get_backend());
+
+        sql_1 = std::move(sql_1);
+        CHECK(sql_1.is_connected());
+        CHECK(sql_1.get_backend());
     }
 }
 

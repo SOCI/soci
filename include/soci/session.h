@@ -194,6 +194,8 @@ public:
 private:
     SOCI_NOT_COPYABLE(session)
 
+    void reset_after_move();
+
     std::ostringstream query_stream_;
     std::unique_ptr<details::query_transformation_function> query_transformation_;
 

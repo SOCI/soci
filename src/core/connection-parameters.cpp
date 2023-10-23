@@ -125,8 +125,7 @@ connection_parameters::connection_parameters(connection_parameters && other)
       backendRef_(std::move(other.backendRef_)),
       options_(std::move(other.options_))
 {
-    other.factory_ = nullptr;
-    other.backendRef_ = nullptr;
+    other.reset_after_move();
 }
 
 connection_parameters& connection_parameters::operator=(connection_parameters const& other)
@@ -155,8 +154,7 @@ connection_parameters& connection_parameters::operator=(connection_parameters &&
     backendRef_ = std::move(other.backendRef_);
     options_ = std::move(other.options_);
 
-    other.factory_ = nullptr;
-    other.backendRef_ = nullptr;
+    other.reset_after_move();
 
     return *this;
 }
@@ -165,6 +163,12 @@ connection_parameters::~connection_parameters()
 {
     if (backendRef_)
       backendRef_->dec_ref();
+}
+
+void connection_parameters::reset_after_move()
+{
+    factory_ = nullptr;
+    backendRef_ = nullptr;
 }
 
 } // namespace soci
