@@ -4322,7 +4322,9 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
     {
         // check move semantics of session
 
+        #if  __GNUC__ >= 13 || defined (__clang__)
         SOCI_GCC_WARNING_SUPPRESS(self-move)
+        #endif
 
         soci::session sql_0;
         soci::session sql_1 = std::move(sql_0);
@@ -4344,7 +4346,9 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
         CHECK(sql_1.is_connected());
         CHECK(sql_1.get_backend());
 
+        #if __GNUC__ >= 13 || defined (__clang__)
         SOCI_GCC_WARNING_RESTORE(self-move)
+        #endif
     }
 }
 
