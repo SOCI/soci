@@ -199,7 +199,7 @@ void oracle_blob_backend::reset()
 
     if (res != OCI_SUCCESS)
     {
-		std::cout << "Can't free/close LOB (is temporary: " << is_temporary << ")\n";
+		std::cout << "Can't free/close LOB (is temporary: " << std::boolalpha << is_temporary << ") res: " << res << "\n";
         throw_oracle_soci_error(res, session_.errhp_);
     }
 
