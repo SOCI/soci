@@ -6502,6 +6502,8 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
             write_blob.write_from_start("test", 4);
             sql << "insert into soci_test (id, b) values (5, :b)", soci::use(write_blob);
 
+            std::cout << "Finished writing into DB, now reading back from it" << std::endl;
+
             sql << "select b from soci_test where id = 5", soci::into(blob);
 
             CHECK(blob.get_len() == 4);

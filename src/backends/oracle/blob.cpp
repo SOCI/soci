@@ -34,6 +34,7 @@ oracle_blob_backend::oracle_blob_backend(oracle_session_backend &session)
         throw soci_error("Cannot allocate the LOB locator");
     }
 	std::cout << "Created Oracle Blob obj\n";
+    std::cout << lobp_ << std::endl;
 }
 
 oracle_blob_backend::~oracle_blob_backend()
@@ -108,7 +109,18 @@ std::size_t oracle_blob_backend::write_from_start(char const *buf, std::size_t t
 
     ub4 amt = static_cast<ub4>(toWrite);
 
-    sword res = OCILobWrite(session_.svchp_, session_.errhp_, lobp_, &amt,
+    boolean is_temporary = FALSE;
+        sword res = OCILobIsTemporary(session_.envhp_, session_.errhp_, lobp_, &is_temporary);
+
+        if (res != OCI_SUCCESS)
+        {
+            throw_oracle_soci_error(res, session_.errhp_);
+        }
+
+        std::cout << "Is temporary before writing: " << std::boolalpha << (is_temporary == TRUE) << std::endl;
+        std::cout << lobp_ << std::endl;
+
+     res = OCILobWrite(session_.svchp_, session_.errhp_, lobp_, &amt,
         static_cast<ub4>(offset + 1),
         reinterpret_cast<dvoid*>(const_cast<char*>(buf)),
         amt, OCI_ONE_PIECE, 0, 0, 0, 0);
@@ -116,6 +128,16 @@ std::size_t oracle_blob_backend::write_from_start(char const *buf, std::size_t t
     {
         throw_oracle_soci_error(res, session_.errhp_);
     }
+
+        res = OCILobIsTemporary(session_.envhp_, session_.errhp_, lobp_, &is_temporary);
+
+        if (res != OCI_SUCCESS)
+        {
+            throw_oracle_soci_error(res, session_.errhp_);
+        }
+
+        std::cout << "Is temporary after writing: " << std::boolalpha << (is_temporary == TRUE) << std::endl;
+        std::cout << lobp_ << std::endl;
 
     return static_cast<std::size_t>(amt);
 }
@@ -191,6 +213,9 @@ void oracle_blob_backend::reset()
         throw_oracle_soci_error(res, session_.errhp_);
     }
 
+    std::cout << "Is temporary when resetting: " << std::boolalpha << (is_temporary == TRUE) << std::endl;
+    std::cout << lobp_ << std::endl;
+
     if (is_temporary) {
         res = OCILobFreeTemporary(session_.svchp_, session_.errhp_, lobp_);
     } else {
@@ -199,7 +224,7 @@ void oracle_blob_backend::reset()
 
     if (res != OCI_SUCCESS)
     {
-		std::cout << "Can't free/close LOB (is temporary: " << std::boolalpha << is_temporary << ") res: " << res << "\n";
+		std::cout << "Can't free/close LOB (is temporary: " << is_temporary << ") res: " << res << "\n";
         throw_oracle_soci_error(res, session_.errhp_);
     }
 
@@ -222,12 +247,32 @@ void oracle_blob_backend::ensure_initialized()
             throw_oracle_soci_error(res, session_.errhp_);
         }
 
+        boolean is_temporary = FALSE;
+        res = OCILobIsTemporary(session_.envhp_, session_.errhp_, lobp_, &is_temporary);
+
+        if (res != OCI_SUCCESS)
+        {
+            throw_oracle_soci_error(res, session_.errhp_);
+        }
+
+        std::cout << "Is temporary immediately after creation as temporary: " << std::boolalpha << (is_temporary == TRUE) << std::endl;
+
         res = OCILobOpen(session_.svchp_, session_.errhp_, lobp_, OCI_LOB_READWRITE);
 
         if (res != OCI_SUCCESS)
         {
             throw_oracle_soci_error(res, session_.errhp_);
         }
+
+        res = OCILobIsTemporary(session_.envhp_, session_.errhp_, lobp_, &is_temporary);
+
+        if (res != OCI_SUCCESS)
+        {
+            throw_oracle_soci_error(res, session_.errhp_);
+        }
+
+        std::cout << "Is temporary immediately after opening: " << std::boolalpha << (is_temporary == TRUE) << std::endl;
+        std::cout << lobp_ << std::endl;
 
         initialized_ = true;
     }
