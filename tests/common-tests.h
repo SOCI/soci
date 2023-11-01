@@ -363,6 +363,17 @@ private:
     SOCI_NOT_COPYABLE(function_creator_base)
 };
 
+enum class Backend {
+    Empty,
+    SQLite,
+    MySQL,
+    PostgreSQL,
+    ODBC,
+    Oracle,
+    Firebird,
+    DB2,
+};
+
 // This is a singleton class, at any given time there is at most one test
 // context alive and common_tests fixture class uses it.
 class test_context_base
@@ -403,6 +414,8 @@ public:
     {
         return connectString_;
     }
+
+    virtual Backend get_backend() const = 0;
 
     virtual std::string to_date_time(std::string const &dateTime) const = 0;
 
@@ -6620,7 +6633,11 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
             for (auto it = rowSet.begin(); it != rowSet.end(); ++it) {
                 containedData = true;
                 const soci::row &currentRow = *it;
-                CHECK(currentRow.get_properties(0).get_data_type() == soci::dt_integer);
+
+                soci::data_type type = currentRow.get_properties(0).get_data_type();
+                soci::data_type expectedType = tc_.get_backend() != Backend::Oracle ? soci::dt_integer : soci::dt_long_long;
+                CHECK(type == expectedType);
+
                 CHECK(currentRow.get_properties(1).get_data_type() == soci::dt_blob);
                 //soci::blob retrieved = currentRow.get<soci::blob>(1);
                 //CHECK(retrieved.get_len() == 10);

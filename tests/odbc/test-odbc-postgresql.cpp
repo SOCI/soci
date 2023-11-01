@@ -161,6 +161,8 @@ public:
         std::cout << "Using ODBC driver version " << m_verDriver << "\n";
     }
 
+    Backend get_backend() const override { return Backend::ODBC; }
+
     table_creator_base * table_creator_1(soci::session& s) const override
     {
         return new table_creator_one(s);

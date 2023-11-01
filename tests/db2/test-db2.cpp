@@ -68,6 +68,8 @@ public:
     test_context(backend_factory const & pi_back_end, std::string const & pi_connect_string)
         : test_context_base(pi_back_end, pi_connect_string) {}
 
+    Backend get_backend() const override { return  Backend::DB2; }
+
     table_creator_base* table_creator_1(soci::session & pr_s) const override
     {
         pr_s << "SET CURRENT SCHEMA = 'DB2INST1'";

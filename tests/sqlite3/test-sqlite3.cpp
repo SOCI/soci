@@ -794,6 +794,8 @@ public:
                 std::string const &connstr)
         : test_context_base(backend, connstr) {}
 
+    Backend get_backend() const override { return Backend::SQLite; }
+
     table_creator_base* table_creator_1(soci::session& s) const override
     {
         return new table_creator_one(s);
