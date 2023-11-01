@@ -6478,9 +6478,11 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
         }
         SECTION("Inserting/Reading default-constructed blob")
         {
-            soci::blob input_blob(sql);
+            {
+                soci::blob input_blob(sql);
 
-            sql << "insert into soci_test (id, b) values(5, :b)", soci::use(input_blob);
+                sql << "insert into soci_test (id, b) values(5, :b)", soci::use(input_blob);
+            }
 
             soci::blob output_blob(sql);
             soci::indicator ind;
@@ -6492,15 +6494,16 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
         }
         SECTION("Ensure reading into blob overwrites previous contents")
         {
-			std::cout << "Relevant part begin\n";
             soci::blob blob(sql);
             blob.write_from_start("hello kitty", 10);
 
             CHECK(blob.get_len() == 10);
 
-            soci::blob write_blob(sql);
-            write_blob.write_from_start("test", 4);
-            sql << "insert into soci_test (id, b) values (5, :b)", soci::use(write_blob);
+            {
+                soci::blob write_blob(sql);
+                write_blob.write_from_start("test", 4);
+                sql << "insert into soci_test (id, b) values (5, :b)", soci::use(write_blob);
+            }
 
             std::cout << "Finished writing into DB, now reading back from it" << std::endl;
 
@@ -6519,7 +6522,6 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
         }
         SECTION("Blob-DB interaction")
         {
-			std::cout << "Next part begin\n";
             soci::blob write_blob(sql);
 
             static_assert(sizeof(dummy_data) >= 10, "Underlying assumption violated");
@@ -6603,7 +6605,8 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
                 CHECK(buf[i] == binary_data[i]);
             }
         }
-        SECTION("Rowset type detection") {
+        SECTION("Rowset")
+        {
             soci::blob blob(sql);
             static_assert(sizeof(dummy_data) >= 10, "Underlying assumption violated");
             blob.write_from_start(dummy_data, 10);
@@ -6619,6 +6622,14 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
                 const soci::row &currentRow = *it;
                 CHECK(currentRow.get_properties(0).get_data_type() == soci::dt_integer);
                 CHECK(currentRow.get_properties(1).get_data_type() == soci::dt_blob);
+                //soci::blob retrieved = currentRow.get<soci::blob>(1);
+                //CHECK(retrieved.get_len() == 10);
+                //std::uint8_t buffer[20];
+                //std::size_t bytes_read = blob.read_from_start(reinterpret_cast<char *>(buffer), sizeof(buffer));
+                //CHECK(bytes_read == 10);
+                //for (std::size_t i = 0; i < 10; ++i) {
+                //    CHECK(buffer[i] == dummy_data[i]);
+                //}
             }
             CHECK(containedData);
         }

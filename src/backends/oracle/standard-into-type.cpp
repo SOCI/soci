@@ -157,6 +157,10 @@ void oracle_standard_into_type_backend::define_by_pos(
             oracle_blob_backend *bbe
                 = static_cast<oracle_blob_backend *>(b->get_backend());
 
+            // Reset the blob to ensure that a potentially open temporary BLOB gets
+            // freed before the locator is changed to point to a different BLOB by the
+            // to-be-executed statement (which would leave us with a dangling temporary BLOB)
+            bbe->reset();
             ociData_ = bbe->get_lob_locator();
 
             size = sizeof(ociData_);
