@@ -6621,8 +6621,6 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
         SECTION("Rowset")
         {
             soci::blob blob(sql);
-            static_assert(sizeof(dummy_data) >= 10, "Underlying assumption violated");
-            blob.write_from_start(dummy_data, 10);
 
             // Write and retrieve blob from/into database
             int id = 1;
@@ -6639,14 +6637,6 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
                 CHECK(type == expectedType);
 
                 CHECK(currentRow.get_properties(1).get_data_type() == soci::dt_blob);
-                //soci::blob retrieved = currentRow.get<soci::blob>(1);
-                //CHECK(retrieved.get_len() == 10);
-                //std::uint8_t buffer[20];
-                //std::size_t bytes_read = blob.read_from_start(reinterpret_cast<char *>(buffer), sizeof(buffer));
-                //CHECK(bytes_read == 10);
-                //for (std::size_t i = 0; i < 10; ++i) {
-                //    CHECK(buffer[i] == dummy_data[i]);
-                //}
             }
             CHECK(containedData);
         }
