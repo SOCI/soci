@@ -22,11 +22,13 @@ class session;
 namespace details
 {
 class blob_backend;
+struct blob_placeholder;
 } // namespace details
 
 class SOCI_DECL blob
 {
 private:
+    friend struct details::blob_placeholder;
     blob() = default;
 
 public:
@@ -66,6 +68,17 @@ private:
 
     std::unique_ptr<details::blob_backend> backEnd_;
 };
+
+namespace details
+{
+    struct blob_placeholder
+    {
+        static blob create()
+        {
+            return blob();
+        }
+    };
+}
 
 } // namespace soci
 
