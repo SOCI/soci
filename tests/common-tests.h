@@ -6618,7 +6618,7 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
                 CHECK(buf[i] == binary_data[i]);
             }
         }
-        SECTION("Rowset")
+        SECTION("Rowset Blob recognition")
         {
             soci::blob blob(sql);
 
@@ -6639,6 +6639,46 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
                 CHECK(currentRow.get_properties(1).get_data_type() == soci::dt_blob);
             }
             CHECK(containedData);
+        }
+        SECTION("Blob binding")
+        {
+            // Add data
+            soci::blob blob(sql);
+            static_assert(10 <= sizeof(dummy_data), "Underlying assumption violated");
+            blob.write_from_start(dummy_data, 10);
+            const int id = 42;
+            sql << "insert into soci_test (id, b) values(:id, :b)", soci::use(id), soci::use(blob);
+
+            SECTION("into")
+            {
+                soci::blob intoBlob(sql);
+                std::string intoString;
+
+                sql << "select b from soci_test where id=:id", soci::use(id), soci::into(intoBlob);
+                sql << "select b from soci_test where id=:id", soci::use(id), soci::into(intoString);
+
+                char buffer[20];
+                std::size_t written = intoBlob.read_from_start(buffer, sizeof(buffer));
+                CHECK(written == 10);
+                for (std::size_t i = 0; i < 10; ++i) {
+                    CHECK(buffer[i] == dummy_data[i]);
+                    CHECK(intoString[i] == dummy_data[i]);
+                }
+            }
+            SECTION("get")
+            {
+                soci::rowset< soci::row > rowSet = (sql.prepare << "select b from soci_test where id=:id", soci::use(id));
+                bool containedData = false;
+                for (auto it = rowSet.begin(); it != rowSet.end(); ++it) {
+                    containedData = true;
+                    const soci::row &currentRow = *it;
+
+                    // TODO: Figure out how to obtain BLOB contents into a std::string directly
+                    //std::string intoString = currentRow.get<std::string>(0);
+                    soci::blob intoBlob = currentRow.move_as<soci::blob>(0);
+                }
+                CHECK(containedData);
+            }
         }
     }
     transaction.rollback();
