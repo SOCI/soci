@@ -9,6 +9,7 @@
 #define SOCI_ROW_H_INCLUDED
 
 #include "soci/type-holder.h"
+#include "soci/blob.h"
 #include "soci/type-conversion-traits.h"
 #include "soci/soci-backend.h"
 #include "soci/type-conversion.h"
@@ -190,6 +191,9 @@ private:
     bool uppercaseColumnNames_;
     mutable std::size_t currentPos_;
 };
+
+template <>
+blob row::move_as<blob>(std::size_t pos) const;
 
 } // namespace soci
 

@@ -109,3 +109,14 @@ std::size_t row::find_column(std::string const &name) const
 
     return it->second;
 }
+
+template <>
+blob row::move_as<blob>(std::size_t pos) const
+{
+    typedef typename type_conversion<blob>::base_type base_type;
+    base_type & baseVal = holders_.at(pos)->get<base_type>();
+
+    blob ret = details::blob_placeholder::create();
+    type_conversion<blob>::move_from_base(baseVal, *indicators_.at(pos), ret);
+    return ret;
+}
