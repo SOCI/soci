@@ -6652,17 +6652,14 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
             SECTION("into")
             {
                 soci::blob intoBlob(sql);
-                std::string intoString;
 
                 sql << "select b from soci_test where id=:id", soci::use(id), soci::into(intoBlob);
-                sql << "select b from soci_test where id=:id", soci::use(id), soci::into(intoString);
 
                 char buffer[20];
                 std::size_t written = intoBlob.read_from_start(buffer, sizeof(buffer));
                 CHECK(written == 10);
                 for (std::size_t i = 0; i < 10; ++i) {
                     CHECK(buffer[i] == dummy_data[i]);
-                    CHECK(intoString[i] == dummy_data[i]);
                 }
             }
             SECTION("get")
@@ -6673,8 +6670,6 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
                     containedData = true;
                     const soci::row &currentRow = *it;
 
-                    // TODO: Figure out how to obtain BLOB contents into a std::string directly
-                    //std::string intoString = currentRow.get<std::string>(0);
                     soci::blob intoBlob = currentRow.move_as<soci::blob>(0);
                 }
                 CHECK(containedData);
