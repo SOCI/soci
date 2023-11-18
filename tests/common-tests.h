@@ -6671,6 +6671,14 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
                     const soci::row &currentRow = *it;
 
                     soci::blob intoBlob = currentRow.move_as<soci::blob>(0);
+
+                    CHECK(intoBlob.get_len() == 10);
+                    char buffer[20];
+                    std::size_t written = intoBlob.read_from_start(buffer, sizeof(buffer));
+                    CHECK(written == 10);
+                    for (std::size_t i = 0; i < 10; ++i) {
+                        CHECK(buffer[i] == dummy_data[i]);
+                    }
                 }
                 CHECK(containedData);
             }
