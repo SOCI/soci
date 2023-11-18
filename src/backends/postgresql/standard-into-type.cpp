@@ -143,7 +143,8 @@ void postgresql_standard_into_type_backend::post_fetch(
                     INV_READ | INV_WRITE);
                 if (fd == -1)
                 {
-                    throw soci_error("Cannot open the blob object.");
+                    const char *errorMsg = PQerrorMessage(statement_.session_.conn_);
+                    throw soci_error(std::string("Cannot open the blob object: ") + errorMsg);
                 }
 
                 blob * b = static_cast<blob *>(data_);
