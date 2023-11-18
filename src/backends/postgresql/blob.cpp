@@ -62,7 +62,8 @@ std::size_t postgresql_blob_backend::read_from_start(char * buf, std::size_t toR
     int const readn = lo_read(session_.conn_, details_.fd, buf, toRead);
     if (readn < 0)
     {
-        throw soci_error(std::string("Cannot read from BLOB: ") + PQerrorMessage(session_.conn_));
+        const char *errorMsg = PQerrorMessage(session_.conn_);
+        throw soci_error(std::string("Cannot read from BLOB: ") + errorMsg);
     }
 
     return static_cast<std::size_t>(readn);
@@ -88,7 +89,8 @@ std::size_t postgresql_blob_backend::write_from_start(char const * buf, std::siz
         const_cast<char *>(buf), toWrite);
     if (written < 0)
     {
-        throw soci_error(std::string("Cannot write to BLOB: ") + PQerrorMessage(session_.conn_));
+        const char *errorMsg = PQerrorMessage(session_.conn_);
+        throw soci_error(std::string("Cannot write to BLOB: ") + errorMsg);
     }
 
     return static_cast<std::size_t>(written);
@@ -103,7 +105,7 @@ std::size_t postgresql_blob_backend::append(
 void postgresql_blob_backend::trim(std::size_t newLen)
 {
     if (newLen > static_cast<std::size_t>(std::numeric_limits<int>::max())) {
-        throw soci_error("Request new BLOB size exceeds INT_MAX, which is not supported");
+        throw soci_error("Requested new BLOB size exceeds INT_MAX, which is not supported");
     }
 
     if (clone_before_modify_) {
@@ -126,7 +128,8 @@ void postgresql_blob_backend::trim(std::size_t newLen)
     }
 
     if (ret_code < 0) {
-        throw soci_error(std::string("Cannot truncate BLOB: ") + PQerrorMessage(session_.conn_));
+        const char *errorMsg = PQerrorMessage(session_.conn_);
+        throw soci_error(std::string("Cannot truncate BLOB: ") + errorMsg);
     }
 }
 
@@ -158,14 +161,16 @@ void postgresql_blob_backend::init() {
         Oid oid = lo_creat(session_.conn_, INV_READ | INV_WRITE);
 
         if (oid == InvalidOid) {
-            throw soci_error(std::string("Cannot create new BLOB: ") + PQerrorMessage(session_.conn_));
+            const char *errorMsg = PQerrorMessage(session_.conn_);
+            throw soci_error(std::string("Cannot create new BLOB: ") + errorMsg);
         }
 
         int fd = lo_open(session_.conn_, oid, INV_READ | INV_WRITE);
 
         if (fd == -1) {
+            const char *errorMsg = PQerrorMessage(session_.conn_);
             lo_unlink(session_.conn_, oid);
-            throw soci_error("Cannot open newly created BLOB.");
+            throw soci_error(std::string("Cannot open newly created BLOB: ") + errorMsg);
         }
 
         details_.oid = oid;
@@ -203,7 +208,8 @@ std::size_t do_seek(std::size_t toOffset, int from,
 
     if (pos < 0)
     {
-        throw soci_error("Cannot retrieve the seek in BLOB.");
+        const char *errorMsg = PQerrorMessage(session.conn_);
+        throw soci_error(std::string("Failed to seek in BLOB: ") + errorMsg);
     }
 
     return static_cast<std::size_t>(pos);
@@ -233,14 +239,16 @@ void postgresql_blob_backend::clone() {
 
         if (read_bytes < 0)
         {
-            throw soci::soci_error("Can't read from original BLOB during clone");
+            const char *errorMsg = PQerrorMessage(session_.conn_);
+            throw soci::soci_error(std::string("Can't read from original BLOB during clone: ") + errorMsg);
         }
 
         int bytes_written = lo_write(session_.conn_, details_.fd, buf, read_bytes);
 
         if (bytes_written != read_bytes)
         {
-            throw soci::soci_error("Can't write (all) data from old BLOB to new one during clone");
+            const char *errorMsg = PQerrorMessage(session_.conn_);
+            throw soci::soci_error(std::string("Can't write (all) data from old BLOB to new one during clone: ") + errorMsg);
         }
 
         offset += sizeof(buf);
