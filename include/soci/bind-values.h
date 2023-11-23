@@ -40,8 +40,8 @@ public:
 
     void exchange(use_type_ptr const& u) { push_back(u.get()); u.release(); }
 
-    template <typename T, typename Indicator>
-    void exchange(use_container<T, Indicator> const &uc)
+    template <typename T, typename Indicator, typename ByValueTag>
+    void exchange ( use_container<T, Indicator, ByValueTag> const &uc )
     {
 #ifdef SOCI_HAVE_BOOST
         exchange_(uc, (typename boost::fusion::traits::is_sequence<T>::type *)NULL);
@@ -111,9 +111,23 @@ private:
     void exchange_(use_container<T, Indicator> const &uc, ...)
     { exchange(do_use(uc.t, uc.ind, uc.name, typename details::exchange_traits<T>::type_family())); }
 
+    template <typename T, typename Indicator>
+    void exchange_ ( use_container<T, Indicator, std::true_type> const &uc, ... )
+    {
+        using type_family_tag = typename details::exchange_traits<T>::type_family;
+        exchange ( do_use ( uc.t, uc.ind, uc.name, type_family_tag (), std::true_type () ) );
+    }
+
     template <typename T>
-    void exchange_(use_container<T, details::no_indicator> const &uc, ...)
+    void exchange_ ( use_container<T, details::no_indicator> const &uc, ... )
     { exchange(do_use(uc.t, uc.name, typename details::exchange_traits<T>::type_family())); }
+
+    template <typename T>
+    void exchange_ ( use_container<T, details::no_indicator, std::true_type> const &uc, ... )
+    {
+        using type_family_tag = typename details::exchange_traits<T>::type_family;
+        exchange ( do_use ( uc.t, uc.name, type_family_tag (), std::true_type () ) );
+    }
 
     template <typename T, typename Indicator>
     void exchange_(use_container<const T, Indicator> const &uc, ...)

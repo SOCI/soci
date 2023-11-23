@@ -180,39 +180,68 @@ struct basic_table_creator : public table_creator_base
     }
 };
 
-TEST_CASE("Oracle nested statement", "[oracle][blob]")
+TEST_CASE("Oracle nested statement", "[oracle][cursors]")
 {
     soci::session sql(backEnd, connectString);
     basic_table_creator tableCreator(sql);
-
     int id;
     std::string name;
+    statement st1 = (sql.prepare <<
+        "insert into soci_test (id, name) values (:id, :name)",
+        use(id), use(name));
+
+    id = 1; name = "John"; st1.execute(1);
+    id = 2; name = "Anna"; st1.execute(1);
+    id = 3; name = "Mike"; st1.execute(1);
+
     {
-        statement st1 = (sql.prepare <<
-            "insert into soci_test (id, name) values (:id, :name)",
-            use(id), use(name));
+        statement stInner(sql);
+        statement stOuter = (sql.prepare <<
+            "select cursor(select name from soci_test order by id)"
+            " from soci_test where id = 1",
+            into(stInner));
+        stInner.exchange(into(name));
+        stOuter.execute();
+        stOuter.fetch();
 
-        id = 1; name = "John"; st1.execute(1);
-        id = 2; name = "Anna"; st1.execute(1);
-        id = 3; name = "Mike"; st1.execute(1);
+        std::vector<std::string> names;
+        while (stInner.fetch())    { names.push_back(name); }
+
+        REQUIRE(names.size() == 3);
+        CHECK(names[0] == "John");
+        CHECK(names[1] == "Anna");
+        CHECK(names[2] == "Mike");
     }
+    {
+        statement stInner ( sql );
+        statement stOuter ( sql );
+        stOuter.alloc ();
+        stOuter.prepare
+        (
+            "declare\n"
+            "   cur sys_refcursor;\n"
+            "begin\n"
+            "   open cur for select name from soci_test order by id;\n"
+            "   :vCurs := cur;\n"
+            "end;\n"
+        );
+        stOuter.exchange ( use ( stInner ) );
+        stOuter.define_and_bind ();
+        stOuter.execute (true);
+        //stOuter.fetch ();
+        stInner.exchange ( into ( name ) );
+        stInner.define_and_bind ();
+        std::vector<std::string> names;
+        while ( stInner.fetch () )
+        {
+            names.push_back ( name );
+        }
 
-    statement stInner(sql);
-    statement stOuter = (sql.prepare <<
-        "select cursor(select name from soci_test order by id)"
-        " from soci_test where id = 1",
-        into(stInner));
-    stInner.exchange(into(name));
-    stOuter.execute();
-    stOuter.fetch();
-
-    std::vector<std::string> names;
-    while (stInner.fetch())    { names.push_back(name); }
-
-    REQUIRE(names.size() == 3);
-    CHECK(names[0] == "John");
-    CHECK(names[1] == "Anna");
-    CHECK(names[2] == "Mike");
+        REQUIRE ( names.size () == 3 );
+        CHECK ( names[0] == "John" );
+        CHECK ( names[1] == "Anna" );
+        CHECK ( names[2] == "Mike" );
+    }
 }
 
 
@@ -384,6 +413,69 @@ TEST_CASE("Oracle null user-defined objects in/out", "[oracle][null][type_conver
     procedure proc = (sql.prepare << "soci_test(:s)", use(sh, ind));
     proc.execute(1);
     CHECK(ind == i_null);
+}
+
+TEST_CASE ( "Oracle", "[oracle][rvalue]" )
+{
+    soci::session sql ( backEnd, connectString );
+    // base types
+    {
+        std::string r;
+        statement   s ( sql );
+        s.alloc ();
+        s.prepare ( "select :t from dual" );
+        {
+            s.exchange ( use ( 3l ) );
+            s.exchange ( into ( r ) );
+        }
+        s.define_and_bind ();
+        s.execute ( true );
+        CHECK ( r == "3" );
+    }
+    {
+        std::string r;
+        indicator   r_ind;
+        statement   s ( sql );
+        s.alloc ();
+        s.prepare ( "select :t from dual" );
+        {
+            s.exchange ( use ( 3l, i_null ) );
+            s.exchange ( into ( r, r_ind ) );
+        }
+        s.define_and_bind ();
+        s.execute ( true );
+        CHECK ( r.empty () );
+        CHECK ( r_ind == i_null );
+    }
+    // conversion types
+    {
+        std::string r;
+        statement   s ( sql );
+        s.alloc ();
+        s.prepare ( "select :t from dual" );
+        {
+            s.exchange ( use ( string_holder("3") ) );
+            s.exchange ( into ( r ) );
+        }
+        s.define_and_bind ();
+        s.execute ( true );
+        CHECK ( r == "3" );
+    }
+    {
+        std::string r;
+        indicator   r_ind;
+        statement   s ( sql );
+        s.alloc ();
+        s.prepare ( "select :t from dual" );
+        {
+            s.exchange ( use ( string_holder ( "3" ), i_null ) );
+            s.exchange ( into ( r, r_ind ) );
+        }
+        s.define_and_bind ();
+        s.execute ( true );
+        CHECK ( r.empty () );
+        CHECK ( r_ind == i_null );
+    }
 }
 
 // test bulk insert features

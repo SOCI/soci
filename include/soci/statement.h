@@ -50,8 +50,8 @@ public:
     { intos_.exchange(ic); }
 
     void exchange(use_type_ptr const & u) { uses_.exchange(u); }
-    template <typename T, typename Indicator>
-    void exchange(use_container<T, Indicator> const &uc)
+    template <typename T, typename Indicator, typename ByValueTag >
+    void exchange ( use_container<T, Indicator, ByValueTag> const &uc )
     { uses_.exchange(uc); }
 
 
@@ -198,8 +198,8 @@ public:
     template <typename T, typename Indicator>
     void exchange(details::into_container<T, Indicator>  const &ic) { impl_->exchange(ic); }
     void exchange(details::use_type_ptr const & u) { impl_->exchange(u); }
-    template <typename T, typename Indicator>
-    void exchange(details::use_container<T, Indicator>  const &uc) { impl_->exchange(uc); }
+    template <typename T, typename Indicator, typename ByValueTag>
+    void exchange(details::use_container<T, Indicator, ByValueTag>  const &uc) { impl_->exchange(uc); }
     void clean_up()                      { impl_->clean_up(); }
     void bind_clean_up()                 { impl_->bind_clean_up(); }
 
