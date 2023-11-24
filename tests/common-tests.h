@@ -689,6 +689,73 @@ TEST_CASE_METHOD(common_tests, "Basic functionality", "[core][basics]")
     CHECK(fetchEnd == false);
 }
 
+TEST_CASE_METHOD ( common_tests, "Rvalues in use", "[core][basics][rvalue]" )
+{
+    soci::session sql ( backEndFactory_, connectString_ );
+
+    auto_table_creator tableCreator ( tc_.table_creator_1 ( sql ) );
+    sql << "insert into soci_test (id) values (" << 123 << ")";             // we need one row in the table
+
+    // base types
+    {
+        int r;
+        statement   s ( sql );
+        s.alloc ();
+        s.prepare ( "select :t from soci_test" );
+        {
+            s.exchange ( use ( 3 ) );
+            s.exchange ( into ( r ) );
+        }
+        s.define_and_bind ();
+        s.execute ( true );
+        CHECK ( r == 3 );
+    }
+    {
+        int r{0};
+        indicator   r_ind;
+        statement   s ( sql );
+        s.alloc ();
+        s.prepare ( "select :t from soci_test" );
+        {
+            s.exchange ( use ( 3, i_null ) );
+            s.exchange ( into ( r, r_ind ) );
+        }
+        s.define_and_bind ();
+        s.execute ( true );
+        CHECK ( r == 0 );
+        CHECK ( r_ind == i_null );
+    }
+    // conversion types
+    {
+        int r;
+        statement   s ( sql );
+        s.alloc ();
+        s.prepare ( "select :t from soci_test" );
+        {
+            s.exchange ( use ( MyInt ( 3 ) ) );
+            s.exchange ( into ( r ) );
+        }
+        s.define_and_bind ();
+        s.execute ( true );
+        CHECK ( r == 3 );
+    }
+    {
+        int r{-1};
+        indicator   r_ind;
+        statement   s ( sql );
+        s.alloc ();
+        s.prepare ( "select :t from soci_test" );
+        {
+            s.exchange ( use ( MyInt ( 3 ), i_null ) );
+            s.exchange ( into ( r, r_ind ) );
+        }
+        s.define_and_bind ();
+        s.execute ( true );
+        CHECK ( r == -1 );
+        CHECK ( r_ind == i_null );
+    }
+}
+
 // "into" tests, type conversions, etc.
 TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
 {
