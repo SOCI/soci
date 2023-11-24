@@ -701,7 +701,7 @@ TEST_CASE_METHOD ( common_tests, "Rvalues in use", "[core][basics][rvalue]" )
         int r;
         statement   s ( sql );
         s.alloc ();
-        s.prepare ( "select :t from soci_test" );
+        s.prepare ( "select :t::int from soci_test" );
         {
             s.exchange ( use ( 3 ) );
             s.exchange ( into ( r ) );
@@ -715,7 +715,7 @@ TEST_CASE_METHOD ( common_tests, "Rvalues in use", "[core][basics][rvalue]" )
         indicator   r_ind;
         statement   s ( sql );
         s.alloc ();
-        s.prepare ( "select :t from soci_test" );
+        s.prepare ( "select :t::int from soci_test" );
         {
             s.exchange ( use ( 3, i_null ) );
             s.exchange ( into ( r, r_ind ) );
@@ -730,7 +730,7 @@ TEST_CASE_METHOD ( common_tests, "Rvalues in use", "[core][basics][rvalue]" )
         int r;
         statement   s ( sql );
         s.alloc ();
-        s.prepare ( "select :t from soci_test" );
+        s.prepare ( "select :t::int from soci_test" );
         {
             s.exchange ( use ( MyInt ( 3 ) ) );
             s.exchange ( into ( r ) );
@@ -744,7 +744,7 @@ TEST_CASE_METHOD ( common_tests, "Rvalues in use", "[core][basics][rvalue]" )
         indicator   r_ind;
         statement   s ( sql );
         s.alloc ();
-        s.prepare ( "select :t from soci_test" );
+        s.prepare ( "select :t::int from soci_test" );
         {
             s.exchange ( use ( MyInt ( 3 ), i_null ) );
             s.exchange ( into ( r, r_ind ) );
