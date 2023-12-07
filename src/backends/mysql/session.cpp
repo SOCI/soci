@@ -344,7 +344,7 @@ void parse_connect_string(const string & connectString,
             else if (val=="REQUIRED") *ssl_mode = SSL_MODE_REQUIRED;
             else if (val=="VERIFY_CA") *ssl_mode = SSL_MODE_VERIFY_CA;
             else if (val=="VERIFY_IDENTITY") *ssl_mode = SSL_MODE_VERIFY_IDENTITY;
-            else throw soci_error(err);
+            else throw soci_error("\"ssl_mode\" setting is invalid");
             *ssl_mode_p = true;
         }
         else
