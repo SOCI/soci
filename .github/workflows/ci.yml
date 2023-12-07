@@ -117,6 +117,9 @@ jobs:
             set_env_var BUILD_EXAMPLES YES
           fi
 
+      - name: Install better linker
+        uses: rui314/setup-mold@v1
+
       - name: Install dependencies under Linux
         if: runner.os == 'Linux'
         run: ./scripts/ci/install.sh
