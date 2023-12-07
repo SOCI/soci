@@ -1,4 +1,4 @@
-# - Try to find MySQL library
+# - Try to find MariaDB / MySQL library
 # Find the MySQL includes and client library
 # This module defines
 #  MYSQL_INCLUDE_DIR, where to find mysql.h
@@ -7,6 +7,7 @@
 #  MYSQL_FOUND, If false, do not try to use MySQL.
 
 # Copyright (c) 2006-2008, Jarosław Staniek <staniek@kde.org>
+# Copyright (c) 2023 Vadim Zeitline <vz-soci@zeitlins.org> (MariaDB support)
 #
 # Redistribution and use is allowed according to the terms of the BSD license.
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
@@ -27,9 +28,8 @@ else(WIN32)
       PATHS
       $ENV{MYSQL_INCLUDE_DIR}
       $ENV{MYSQL_DIR}/include
-      /usr/local/mysql/include
-      /opt/mysql/mysql/include
       PATH_SUFFIXES
+      mariadb
       mysql
    )
 endif(WIN32)
@@ -71,20 +71,12 @@ if(WIN32)
 else(WIN32)
 #   find_library(MYSQL_LIBRARIES NAMES mysqlclient
    set(MYSQL_LIB_PATHS
-      $ENV{MYSQL_DIR}/libmysql_r/.libs
       $ENV{MYSQL_DIR}/lib
-      $ENV{MYSQL_DIR}/lib/mysql
-      /usr/local/mysql/lib
-      /opt/mysql/mysql/lib
-      $ENV{MYSQL_DIR}/libmysql_r/.libs
-      $ENV{MYSQL_DIR}/lib
-      $ENV{MYSQL_DIR}/lib/mysql
-      /usr/local/mysql/lib
-      /opt/mysql/mysql/lib
       PATH_SUFFIXES
+      mariadb
       mysql
    )
-   find_library(MYSQL_LIBRARIES NAMES mysqlclient
+   find_library(MYSQL_LIBRARIES NAMES mariadbclient mysqlclient
       PATHS
       ${MYSQL_LIB_PATHS}
    )
