@@ -40,6 +40,11 @@ case "$(uname)" in
 
         run_apt update
         run_apt install ${packages_to_install}
+
+        # Get mold and replace the default linker with it.
+        wget --quiet -O- https://github.com/rui314/mold/releases/download/v2.4.0/mold-2.4.0-$(uname -m)-linux.tar.gz | \
+          tar -C /usr/local --strip-components=1 -xzf -
+        ln -sf /usr/local/bin/mold /usr/bin/ld
         ;;
 
     FreeBSD)
