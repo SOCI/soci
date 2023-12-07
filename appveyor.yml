@@ -12,24 +12,28 @@ environment:
       BOOST_ROOT: C:\Libraries\boost_1_77_0
       MSSQL_VER: 2019
       POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\13
-      MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
+      MYSQL_VER: 80
+      MYSQL_DIR: C:\Program Files\MySql\MySQL Server 8.0
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     - G: "Visual Studio 16 2019"
       BOOST_ROOT: C:\Libraries\boost_1_73_0
       MSSQL_VER: 2017
       POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\12
-      MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
+      MYSQL_VER: 80
+      MYSQL_DIR: C:\Program Files\MySql\MySQL Server 8.0
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     - G: "Visual Studio 15 2017 Win64"
       BOOST_ROOT: C:\Libraries\boost_1_69_0
       MSSQL_VER: 2016
       POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\11
+      MYSQL_VER: 57
       MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     - G: "Visual Studio 14 2015 Win64"
       BOOST_ROOT: C:\Libraries\boost_1_60_0
       MSSQL_VER: 2014
       POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\10
+      MYSQL_VER: 57
       MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     - G: "MinGW Makefiles"
@@ -37,16 +41,17 @@ environment:
       MSSQL_VER: 2014
       BOOST_ROOT: C:\Libraries\boost_1_60_0
       POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
+      MYSQL_VER: 57
       MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
 
 services:
-  - mysql
   - postgresql
 
 install:
-  # Start this one here as we can't specify the service name dynamically.
+  # Start these ones here as we can't specify the service name dynamically above.
   - net start mssql$SQL%MSSQL_VER%
+  - net start mysql%MYSQL_VER%
   - ps: |
       Import-Module C:\projects\soci\scripts\windows\Get-ODBCList.ps1
       $drivers_list = Get-ODBCList
