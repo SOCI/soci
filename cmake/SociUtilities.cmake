@@ -424,3 +424,13 @@ function(soci_target_output_name TARGET_NAME OUTPUT_NAME)
 
   set(${OUTPUT_NAME} ${TARGET_NAME}${SUFFIX} PARENT_SCOPE)
 endfunction()
+
+# Check if the given linker is supported and use it if it is.
+function(soci_use_ld_if_supported ld)
+    include(CheckCXXCompilerFlag)
+    set(ld_flag "-fuse-ld=${ld}")
+    check_cxx_compiler_flag(${ld_flag} can_use_ld)
+    if (can_use_ld)
+        add_link_options(${ld_flag})
+    endif()
+endfunction()
