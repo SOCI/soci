@@ -15,6 +15,10 @@ if [ "$SOCI_CI" != "true" ] ; then
 	exit 1
 fi
 
+if [ -n "$RUNNER_DEBUG" ]; then
+  set -x
+fi
+
 backend_settings=${SOCI_SOURCE_DIR}/scripts/ci/${SOCI_CI_BACKEND}.sh
 if [ -f ${backend_settings} ]; then
     . ${backend_settings}

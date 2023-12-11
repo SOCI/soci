@@ -104,6 +104,14 @@ jobs:
               ;;
           esac
 
+          case "${{matrix.container}}" in
+            ubuntu:18.04)
+              # We need to use this option as GitHub certificate is not recognized by
+              # wget in this old container otherwise.
+              set_env_var SOCI_WGET_OPTIONS --no-check-certificate
+              ;;
+          esac
+
           if [ -n "${{matrix.cxxstd}}" ]; then
             set_env_var SOCI_CXXSTD ${{matrix.cxxstd}}
           fi
