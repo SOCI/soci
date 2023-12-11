@@ -44,7 +44,7 @@ case "$(uname)" in
         # Get mold and replace the default linker with it.
         mold_ver=2.4.0
         mold_name=mold-${mold_ver}-$(uname -m)-linux.tar.gz
-        wget https://github.com/rui314/mold/releases/download/v${mold_ver}/${mold_name}
+        wget $SOCI_WGET_OPTIONS https://github.com/rui314/mold/releases/download/v${mold_ver}/${mold_name}
         sudo tar -C /usr/local --strip-components=1 -xzf ${mold_name}
         sudo ln -sf /usr/local/bin/mold /usr/bin/ld
         ;;
