@@ -405,9 +405,27 @@ mysql_session_backend::mysql_session_backend(
     }
     if (ssl_ca_p)
     {
-        mysql_ssl_set(conn_, ssl_key_p ? ssl_key.c_str() : NULL,
-                      ssl_cert_p ? ssl_cert.c_str() : NULL,
-                      ssl_ca.c_str(), 0, 0);
+        if (0 != mysql_options(conn_, MYSQL_OPT_SSL_CA, ssl_ca.c_str()))
+        {
+            clean_up();
+            throw soci_error("mysql_options(MYSQL_OPT_SSL_CA) failed.");
+        }
+    }
+    if (ssl_key_p)
+    {
+        if (0 != mysql_options(conn_, MYSQL_OPT_SSL_KEY, ssl_key.c_str()))
+        {
+            clean_up();
+            throw soci_error("mysql_options(MYSQL_OPT_SSL_KEY) failed.");
+        }
+    }
+    if (ssl_cert_p)
+    {
+        if (0 != mysql_options(conn_, MYSQL_OPT_SSL_CERT, ssl_cert.c_str()))
+        {
+            clean_up();
+            throw soci_error("mysql_options(MYSQL_OPT_SSL_CERT) failed.");
+        }
     }
     if (local_infile_p && local_infile == 1)
     {
