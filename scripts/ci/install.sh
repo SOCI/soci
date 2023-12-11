@@ -15,7 +15,7 @@ case "$(uname)" in
             # We can't use run_apt here because it uses sudo which may also be
             # not available yet.
             apt-get $SOCI_APT_OPTIONS update
-            apt-get $SOCI_APT_OPTIONS install build-essential lsb-release sudo
+            apt-get $SOCI_APT_OPTIONS install build-essential lsb-release sudo wget
         fi
 
         packages_to_install="cmake libc6-dbg"
@@ -43,8 +43,8 @@ case "$(uname)" in
 
         # Get mold and replace the default linker with it.
         wget --quiet -O- https://github.com/rui314/mold/releases/download/v2.4.0/mold-2.4.0-$(uname -m)-linux.tar.gz | \
-          tar -C /usr/local --strip-components=1 -xzf -
-        ln -sf /usr/local/bin/mold /usr/bin/ld
+          sudo tar -C /usr/local --strip-components=1 -xzf -
+        sudo ln -sf /usr/local/bin/mold /usr/bin/ld
         ;;
 
     FreeBSD)
