@@ -42,8 +42,10 @@ case "$(uname)" in
         run_apt install ${packages_to_install}
 
         # Get mold and replace the default linker with it.
-        wget --quiet -O- https://github.com/rui314/mold/releases/download/v2.4.0/mold-2.4.0-$(uname -m)-linux.tar.gz | \
-          sudo tar -C /usr/local --strip-components=1 -xzf -
+        mold_ver=2.4.0
+        mold_name=mold-${mold_ver}-$(uname -m)-linux.tar.gz
+        wget https://github.com/rui314/mold/releases/download/v${mold_ver}/${mold_name}
+        sudo tar -C /usr/local --strip-components=1 -xzf ${mold_name}
         sudo ln -sf /usr/local/bin/mold /usr/bin/ld
         ;;
 
