@@ -193,7 +193,7 @@ private:
 };
 
 template <>
-blob row::move_as<blob>(std::size_t pos) const;
+blob SOCI_DECL row::move_as<blob>(std::size_t pos) const;
 
 } // namespace soci
 
