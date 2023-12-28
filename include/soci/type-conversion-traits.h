@@ -108,7 +108,10 @@ template<typename Trait>
 constexpr auto can_use_move_from_base()
     -> typename std::enable_if<!supports_move_from_base_check<Trait>::value, bool>::type
 {
-    return true;
+    // Default to assuming that the special move_from_base function is not implemented
+    // TODO: Find clever template magic to add a metaprogramming check for a suitable
+    // move_from_base implementation
+    return false;
 }
 
 }
