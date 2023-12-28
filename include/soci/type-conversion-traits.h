@@ -28,7 +28,7 @@ struct type_conversion
     static void from_base(base_type const& in, indicator ind, T & out)
     {
         static_assert(from_base_check::value,
-                "move_to_base can only be used if the target type can be constructed from an lvalue base reference");
+                "from_base can only be used if the target type can be constructed from an lvalue base reference");
         assert_non_null(ind);
         out = in;
     }
