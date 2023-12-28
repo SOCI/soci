@@ -22,6 +22,8 @@ struct type_conversion<boost::optional<T> >
 {
     typedef typename type_conversion<T>::base_type base_type;
 
+    struct from_base_check : std::integral_constant<bool, true> {};
+
     static void from_base(base_type const & in, indicator ind,
         boost::optional<T> & out)
     {
@@ -37,12 +39,46 @@ struct type_conversion<boost::optional<T> >
         }
     }
 
+    struct move_from_base_check :
+        std::integral_constant<bool,
+            !std::is_const<base_type>::value
+            && std::is_constructible<boost::optional<T>, typename std::add_rvalue_reference<base_type>::type>::value
+        > {};
+
+
+    static void move_from_base(base_type & in, indicator ind, boost::optional<T> & out)
+    {
+        static_assert(move_from_base_check::value,
+                "move_to_base can only be used if the target type can be constructed from an rvalue base reference");
+        if (ind == i_null)
+        {
+            out.reset();
+        }
+        else
+        {
+            out = std::move(in);
+        }
+    }
+
     static void to_base(boost::optional<T> const & in,
         base_type & out, indicator & ind)
     {
         if (in.is_initialized())
         {
             type_conversion<T>::to_base(in.get(), out, ind);
+        }
+        else
+        {
+            ind = i_null;
+        }
+    }
+
+    static void move_to_base(boost::optional<T> & in, base_type & out, indicator & ind)
+    {
+        if (in.is_initialized())
+        {
+            out = std::move(in.get());
+            ind = i_ok;
         }
         else
         {
