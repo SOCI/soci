@@ -766,6 +766,8 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     case 2950: // uuid
     case 829:  // macaddr
     case 869:  // inet
+    case 650:  // cidr
+    case 774:  // macaddr8
         type = dt_string;
         break;
 
