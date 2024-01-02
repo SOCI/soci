@@ -89,6 +89,25 @@ enum statement_type
     st_repeatable_query
 };
 
+// (lossless) conversion from the legacy data type enum
+inline db_type to_db_type(data_type dt)
+{
+    switch (dt)
+    {
+        case dt_string:             return db_string;
+        case dt_date:               return db_date;
+        case dt_double:             return db_double;
+        case dt_integer:            return db_int32;
+        case dt_long_long:          return db_int64;
+        case dt_unsigned_long_long: return db_uint64;
+        case dt_blob:               return db_blob;
+        case dt_xml:                return db_xml;
+    }
+
+    // unreachable
+    return db_string;
+}
+
 // polymorphic into type backend
 
 class standard_into_type_backend
@@ -342,53 +361,7 @@ public:
     {
         return "truncate table " + tableName;
     }
-    // DEPRECATED. USE create_column_type(db_type, int, int) INSTEAD.
-    virtual std::string create_column_type(data_type dt,
-                                           int precision, int scale)
-    {
-        // PostgreSQL was selected as a baseline for the syntax:
 
-        std::string res;
-        switch (dt)
-        {
-            case dt_string:
-                res += create_column_type(db_string, precision, scale);
-                break;
-
-            case dt_date:
-                res += create_column_type(db_date, precision, scale);
-                break;
-
-            case dt_double:
-                res += create_column_type(db_double, precision, scale);
-                break;
-
-            case dt_integer:
-                res += create_column_type(db_int32, precision, scale);
-                break;
-
-            case dt_long_long:
-                res += create_column_type(db_int64, precision, scale);
-                break;
-
-            case dt_unsigned_long_long:
-                res += create_column_type(db_uint64, precision, scale);
-                break;
-
-            case dt_blob:
-                res += create_column_type(db_blob, precision, scale);
-                break;
-
-            case dt_xml:
-                res += create_column_type(db_xml, precision, scale);
-                break;
-
-            default:
-                throw soci_error("this data_type is not supported in create_column");
-        }
-
-        return res;
-    }
     virtual std::string create_column_type(db_type dt,
         int precision, int scale)
     {
@@ -463,14 +436,7 @@ public:
 
         return res;
     }
-    // DEPRECATED. USE add_column(std::string, std::string, db_type, int, int) INSTEAD.
-    virtual std::string add_column(const std::string & tableName,
-        const std::string & columnName, data_type dt,
-        int precision, int scale)
-    {
-        return "alter table " + tableName + " add column " + columnName +
-            " " + create_column_type(dt, precision, scale);
-    }
+
     virtual std::string add_column(const std::string & tableName,
                                    const std::string & columnName,
                                    db_type dt,
@@ -478,15 +444,6 @@ public:
     {
         return "alter table " + tableName + " add column " + columnName +
                " " + create_column_type(dt, precision, scale);
-    }
-    // DEPRECATED. USE alter_column(std::string, std::string, db_type, int, int) INSTEAD.
-    virtual std::string alter_column(const std::string & tableName,
-                                     const std::string & columnName, data_type dt,
-                                     int precision, int scale)
-    {
-        return "alter table " + tableName + " alter column " +
-               columnName + " type " +
-               create_column_type(dt, precision, scale);
     }
     virtual std::string alter_column(const std::string & tableName,
                                      const std::string & columnName,
@@ -546,6 +503,31 @@ public:
     virtual statement_backend* make_statement_backend() = 0;
     virtual rowid_backend* make_rowid_backend() = 0;
     virtual blob_backend* make_blob_backend() = 0;
+
+    // The functions below still work but are deprecated (but we don't give
+    // deprecation warnings for them because there is no real harm in using
+    // them).
+    //
+    // Use the overloads taking db_type instead in the new code.
+    std::string create_column_type(data_type dt, int precision, int scale)
+    {
+        return create_column_type(to_db_type(dt), precision, scale);
+    }
+
+    std::string add_column(const std::string & tableName,
+        const std::string & columnName, data_type dt,
+        int precision, int scale)
+    {
+        return add_column(tableName, columnName, to_db_type(dt), precision, scale);
+    }
+
+    std::string alter_column(const std::string & tableName,
+        const std::string & columnName, data_type dt,
+        int precision, int scale)
+    {
+        return alter_column(tableName, columnName, to_db_type(dt), precision, scale);
+    }
+
 
     failover_callback * failoverCallback_;
     session * session_;

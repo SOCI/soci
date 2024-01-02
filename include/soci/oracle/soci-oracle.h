@@ -330,78 +330,6 @@ struct oracle_session_backend : details::session_backend
             " where table_name = :t";
     }
 
-    std::string create_column_type(data_type dt,
-                                   int precision, int scale) override
-    {
-        //  Oracle-specific SQL syntax:
-
-        std::string res;
-        switch (dt)
-        {
-            case dt_string:
-            {
-                std::ostringstream oss;
-
-                if (precision == 0)
-                {
-                    oss << "clob";
-                }
-                else
-                {
-                    oss << "varchar(" << precision << ")";
-                }
-
-                res += oss.str();
-            }
-                break;
-
-            case dt_date:
-                res += "timestamp";
-                break;
-
-            case dt_double:
-            {
-                std::ostringstream oss;
-                if (precision == 0)
-                {
-                    oss << "number";
-                }
-                else
-                {
-                    oss << "number(" << precision << ", " << scale << ")";
-                }
-
-                res += oss.str();
-            }
-                break;
-
-            case dt_integer:
-                res += "integer";
-                break;
-
-            case dt_long_long:
-                res += "number";
-                break;
-
-            case dt_unsigned_long_long:
-                res += "number";
-                break;
-
-            case dt_blob:
-                res += "blob";
-                break;
-
-            case dt_xml:
-                res += "xmltype";
-                break;
-
-            default:
-                throw soci_error("this data_type is not supported in create_column");
-        }
-
-        return res;
-    }
-
     std::string create_column_type(db_type dt,
         int precision, int scale) override
     {
@@ -472,17 +400,10 @@ struct oracle_session_backend : details::session_backend
             break;
 
         default:
-            throw soci_error("this data_type is not supported in create_column");
+            throw soci_error("this db_type is not supported in create_column");
         }
 
         return res;
-    }
-    std::string add_column(const std::string & tableName,
-        const std::string & columnName, data_type dt,
-        int precision, int scale) override
-    {
-        return "alter table " + tableName + " add " +
-               columnName + " " + create_column_type(dt, precision, scale);
     }
     std::string add_column(const std::string & tableName,
         const std::string & columnName, db_type dt,
@@ -490,13 +411,6 @@ struct oracle_session_backend : details::session_backend
     {
         return "alter table " + tableName + " add " +
             columnName + " " + create_column_type(dt, precision, scale);
-    }
-    std::string alter_column(const std::string & tableName,
-        const std::string & columnName, data_type dt,
-        int precision, int scale) override
-    {
-        return "alter table " + tableName + " modify " +
-               columnName + " " + create_column_type(dt, precision, scale);
     }
     std::string alter_column(const std::string & tableName,
         const std::string & columnName, db_type dt,
