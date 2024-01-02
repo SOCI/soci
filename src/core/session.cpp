@@ -496,7 +496,7 @@ void session::truncate_table(const std::string & tableName)
 }
 
 ddl_type session::add_column(const std::string & tableName,
-    const std::string & columnName, data_type dt,
+    const std::string & columnName, db_type dt,
     int precision, int scale)
 {
     ddl_type ddl(*this);
@@ -507,7 +507,7 @@ ddl_type session::add_column(const std::string & tableName,
 }
 
 ddl_type session::alter_column(const std::string & tableName,
-    const std::string & columnName, data_type dt,
+    const std::string & columnName, db_type dt,
     int precision, int scale)
 {
     ddl_type ddl(*this);

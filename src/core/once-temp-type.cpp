@@ -86,7 +86,7 @@ void ddl_type::create_table(const std::string & tableName)
 }
 
 void ddl_type::add_column(const std::string & tableName,
-    const std::string & columnName, data_type dt,
+    const std::string & columnName, db_type dt,
     int precision, int scale)
 {
     rcst_->accumulate(s_->get_backend()->add_column(
@@ -94,7 +94,7 @@ void ddl_type::add_column(const std::string & tableName,
 }
 
 void ddl_type::alter_column(const std::string & tableName,
-    const std::string & columnName, data_type dt,
+    const std::string & columnName, db_type dt,
     int precision, int scale)
 {
     rcst_->accumulate(s_->get_backend()->alter_column(
@@ -106,24 +106,6 @@ void ddl_type::drop_column(const std::string & tableName,
 {
     rcst_->accumulate(s_->get_backend()->drop_column(
             tableName, columnName));
-}
-
-ddl_type & ddl_type::column(const std::string & columnName, data_type dt,
-    int precision, int scale)
-{
-    if (rcst_->get_need_comma())
-    {
-        rcst_->accumulate(", ");
-    }
-
-    rcst_->accumulate(columnName);
-    rcst_->accumulate(" ");
-    rcst_->accumulate(
-        s_->get_backend()->create_column_type(dt, precision, scale));
-
-    rcst_->set_need_comma(true);
-
-    return *this;
 }
 
 ddl_type & ddl_type::column(const std::string & columnName, db_type dt,
