@@ -658,7 +658,6 @@ int firebird_statement_backend::prepare_for_describe()
 }
 
 void firebird_statement_backend::describe_column(int colNum,
-                                                data_type & type,
                                                 db_type & dbtype,
                                                 std::string & columnName)
 {
@@ -670,18 +669,15 @@ void firebird_statement_backend::describe_column(int colNum,
     {
     case SQL_TEXT:
     case SQL_VARYING:
-        type = dt_string;
         dbtype = db_string;
         break;
     case SQL_TYPE_DATE:
     case SQL_TYPE_TIME:
     case SQL_TIMESTAMP:
-        type = dt_date;
         dbtype = db_date;
         break;
     case SQL_FLOAT:
     case SQL_DOUBLE:
-        type = dt_double;
         dbtype = db_double;
         break;
     case SQL_SHORT:
@@ -689,18 +685,15 @@ void firebird_statement_backend::describe_column(int colNum,
         {
             if (session_.get_option_decimals_as_strings())
             {
-                type = dt_string;
                 dbtype = db_string;
             }
             else
             {
-                type = dt_double;
                 dbtype = db_double;
             }
         }
         else
         {
-            type = dt_integer;
             dbtype = db_int16;
         }
         break;
@@ -709,18 +702,15 @@ void firebird_statement_backend::describe_column(int colNum,
         {
             if (session_.get_option_decimals_as_strings())
             {
-                type = dt_string;
                 dbtype = db_string;
             }
             else
             {
-                type = dt_double;
                 dbtype = db_double;
             }
         }
         else
         {
-            type = dt_integer;
             dbtype = db_int32;
         }
         break;
@@ -729,18 +719,15 @@ void firebird_statement_backend::describe_column(int colNum,
         {
             if (session_.get_option_decimals_as_strings())
             {
-                type = dt_string;
                 dbtype = db_string;
             }
             else
             {
-                type = dt_double;
                 dbtype = db_double;
             }
         }
         else
         {
-            type = dt_long_long;
             dbtype = db_int64;
         }
         break;

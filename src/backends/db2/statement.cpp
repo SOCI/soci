@@ -225,7 +225,7 @@ int db2_statement_backend::prepare_for_describe()
 }
 
 void db2_statement_backend::describe_column(int  colNum,
-    data_type &  type, db_type & dbtype, std::string & columnName )
+    db_type & dbtype, std::string & columnName )
 {
 SQLCHAR colNameBuffer[2048];
     SQLSMALLINT colNameBufferOverflow;
@@ -252,7 +252,6 @@ SQLCHAR colNameBuffer[2048];
     case SQL_TYPE_DATE:
     case SQL_TYPE_TIME:
     case SQL_TYPE_TIMESTAMP:
-        type = dt_date;
         dbtype = db_date;
         break;
     case SQL_DOUBLE:
@@ -260,30 +259,24 @@ SQLCHAR colNameBuffer[2048];
     case SQL_REAL:
     case SQL_FLOAT:
     case SQL_NUMERIC:
-        type = dt_double;
         dbtype = db_double;
         break;
     case SQL_TINYINT:
-        type = dt_integer;
         dbtype = db_int8;
         break;
     case SQL_SMALLINT:
-        type = dt_integer;
         dbtype = db_int16;
         break;
     case SQL_INTEGER:
-        type = dt_integer;
         dbtype = db_int32;
         break;
     case SQL_BIGINT:
-        type = dt_long_long;
         dbtype = db_int64;
         break;
     case SQL_CHAR:
     case SQL_VARCHAR:
     case SQL_LONGVARCHAR:
     default:
-        type = dt_string;
         dbtype = db_string;
         break;
     }

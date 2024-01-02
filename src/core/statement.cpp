@@ -702,16 +702,15 @@ void statement_impl::describe()
     int const numcols = backEnd_->prepare_for_describe();
     for (int i = 1; i <= numcols; ++i)
     {
-        data_type dtype;
         db_type dbtype;
         std::string columnName;
 
-        backEnd_->describe_column(i, dtype, dbtype, columnName);
+        backEnd_->describe_column(i, dbtype, columnName);
 
         column_properties props;
         props.set_name(columnName);
-        props.set_data_type(dtype);
         props.set_db_type(dbtype);
+        props.set_data_type(details::to_data_type(dbtype));
 
         switch (dbtype)
         {
@@ -752,7 +751,7 @@ void statement_impl::describe()
             break;
         default:
             std::ostringstream msg;
-            msg << "db column type " << dtype
+            msg << "db column type " << dbtype
                 <<" not supported for dynamic selects"<<std::endl;
             throw soci_error(msg.str());
         }

@@ -327,7 +327,7 @@ int odbc_statement_backend::prepare_for_describe()
     return numCols;
 }
 
-void odbc_statement_backend::describe_column(int colNum, data_type & type,
+void odbc_statement_backend::describe_column(int colNum,
                                           db_type & dbtype,
                                           std::string & columnName)
 {
@@ -369,7 +369,6 @@ void odbc_statement_backend::describe_column(int colNum, data_type & type,
     case SQL_TYPE_DATE:
     case SQL_TYPE_TIME:
     case SQL_TYPE_TIMESTAMP:
-        type = dt_date;
         dbtype = db_date;
         break;
     case SQL_DOUBLE:
@@ -377,30 +376,24 @@ void odbc_statement_backend::describe_column(int colNum, data_type & type,
     case SQL_REAL:
     case SQL_FLOAT:
     case SQL_NUMERIC:
-        type = dt_double;
         dbtype = db_double;
         break;
     case SQL_TINYINT:
-        type = dt_integer;
         dbtype = is_unsigned == SQL_TRUE ? db_uint8 : db_int8;
         break;
     case SQL_SMALLINT:
-        type = dt_integer;
         dbtype = is_unsigned == SQL_TRUE ? db_uint16 : db_int16;
         break;
     case SQL_INTEGER:
-        type = dt_integer;
         dbtype = is_unsigned == SQL_TRUE ? db_uint32 : db_int32;
         break;
     case SQL_BIGINT:
-        type = dt_long_long;
         dbtype = is_unsigned == SQL_TRUE ? db_uint64 : db_int64;
         break;
     case SQL_CHAR:
     case SQL_VARCHAR:
     case SQL_LONGVARCHAR:
     default:
-        type = dt_string;
         dbtype = db_string;
         break;
     }

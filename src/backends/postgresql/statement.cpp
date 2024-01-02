@@ -740,7 +740,7 @@ void throw_soci_type_error(Oid typeOid, int colNum, char category, const char* t
     throw soci_error(message.str());
 }
 
-void postgresql_statement_backend::describe_column(int colNum, data_type & type,
+void postgresql_statement_backend::describe_column(int colNum,
     db_type & dbtype, std::string & columnName)
 {
     // In postgresql_ column numbers start from 0
@@ -764,7 +764,6 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     case 114:  // json
     case 17:   // bytea
     case 2950: // uuid
-        type = dt_string;
         dbtype = db_string;
         break;
 
@@ -775,35 +774,29 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
     case 1114: // timestamp
     case 1184: // timestamptz
     case 1266: // timetz
-        type = dt_date;
         dbtype = db_date;
         break;
 
     case 700:  // float4
     case 701:  // float8
     case 1700: // numeric
-        type = dt_double;
         dbtype = db_double;
         break;
 
     case 16:   // bool
-        type = dt_integer;
         dbtype = db_int8;
         break;
 
     case 21:   // int2
-        type = dt_integer;
         dbtype = db_int16;
         break;
 
     case 23:   // int4
     case 26:   // oid
-        type = dt_integer;
         dbtype = db_int32;
         break;
 
     case 20:   // int8
-        type = dt_long_long;
         dbtype = db_int64;
         break;
 
@@ -839,7 +832,6 @@ void postgresql_statement_backend::describe_column(int colNum, data_type & type,
             case 'T': // time type
             case 'S': // string type
             case 'U': // user type
-                type = dt_string;
                 dbtype = db_string;
                 break;
 

@@ -220,7 +220,7 @@ public:
     virtual std::string rewrite_for_procedure_call(std::string const& query) = 0;
 
     virtual int prepare_for_describe() = 0;
-    virtual void describe_column(int colNum, data_type& dtype,
+    virtual void describe_column(int colNum,
         db_type& dbtype,
         std::string& column_name) = 0;
 

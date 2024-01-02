@@ -201,7 +201,7 @@ struct firebird_statement_backend : details::statement_backend
     std::string rewrite_for_procedure_call(std::string const &query) override;
 
     int prepare_for_describe() override;
-    void describe_column(int colNum, data_type &dtype,
+    void describe_column(int colNum,
         db_type &dbtype,
         std::string &columnName) override;
 
