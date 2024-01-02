@@ -19,20 +19,6 @@
 namespace soci
 {
 
-// DEPRECATED. USE db_type INSTEAD.
-// data types, as seen by the user
-enum data_type
-{
-    dt_string,
-    dt_integer,
-    dt_long_long,
-    dt_unsigned_long_long,
-    dt_double,
-    dt_date,
-    dt_blob,
-    dt_xml
-};
-
 // data types, as seen by the user
 enum db_type
 {
@@ -49,6 +35,13 @@ enum db_type
     db_date,
     db_blob,
     db_xml
+};
+
+// DEPRECATED. USE db_type INSTEAD.
+enum data_type
+{
+    dt_string, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long,
+    dt_blob, dt_xml
 };
 
 // the enum type for indicator variables
@@ -68,15 +61,11 @@ enum exchange_type
     x_int8,
     x_uint8,
     x_int16,
-    x_short = x_int16,
     x_uint16,
     x_int32,
-    x_integer = x_int32,
     x_uint32,
     x_int64,
-    x_long_long = x_int64,
     x_uint64,
-    x_unsigned_long_long = x_uint64,
     x_double,
     x_stdtm,
     x_statement,
@@ -84,7 +73,13 @@ enum exchange_type
     x_blob,
 
     x_xmltype,
-    x_longstring
+    x_longstring,
+
+    // Deprecated synonyms.
+    x_short = x_int16,
+    x_integer = x_int32,
+    x_long_long = x_int64,
+    x_unsigned_long_long = x_uint64
 };
 
 // type of statement (used for optimizing statement preparation)
