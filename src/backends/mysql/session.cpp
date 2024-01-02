@@ -200,7 +200,8 @@ void parse_connect_string(const string & connectString,
     string *charset, bool *charset_p, bool *reconnect_p,
     unsigned int *connect_timeout, bool *connect_timeout_p,
     unsigned int *read_timeout, bool *read_timeout_p,
-    unsigned int *write_timeout, bool *write_timeout_p)
+    unsigned int *write_timeout, bool *write_timeout_p,
+    unsigned int *ssl_mode, bool *ssl_mode_p)
 {
     *host_p = false;
     *user_p = false;
@@ -217,6 +218,7 @@ void parse_connect_string(const string & connectString,
     *connect_timeout_p = false;
     *read_timeout_p = false;
     *write_timeout_p = false;
+    *ssl_mode_p = false;
     string err = "Malformed connection string.";
     string::const_iterator i = connectString.begin(),
         end = connectString.end();
@@ -335,6 +337,15 @@ void parse_connect_string(const string & connectString,
             char *endp;
             *write_timeout = std::strtoul(val.c_str(), &endp, 10);
             *write_timeout_p = true;
+        } else if (par == "ssl_mode" && !*ssl_mode_p)
+        {
+            if (val=="DISABLED") *ssl_mode = SSL_MODE_DISABLED;
+            else if (val=="PREFERRED") *ssl_mode = SSL_MODE_PREFERRED;
+            else if (val=="REQUIRED") *ssl_mode = SSL_MODE_REQUIRED;
+            else if (val=="VERIFY_CA") *ssl_mode = SSL_MODE_VERIFY_CA;
+            else if (val=="VERIFY_IDENTITY") *ssl_mode = SSL_MODE_VERIFY_IDENTITY;
+            else throw soci_error("\"ssl_mode\" setting is invalid");
+            *ssl_mode_p = true;
         }
         else
         {
@@ -365,10 +376,10 @@ mysql_session_backend::mysql_session_backend(
     string host, user, password, db, unix_socket, ssl_ca, ssl_cert, ssl_key,
         charset;
     int port, local_infile;
-    unsigned int connect_timeout, read_timeout, write_timeout;
+    unsigned int connect_timeout, read_timeout, write_timeout, ssl_mode;
     bool host_p, user_p, password_p, db_p, unix_socket_p, port_p,
         ssl_ca_p, ssl_cert_p, ssl_key_p, local_infile_p, charset_p, reconnect_p,
-        connect_timeout_p, read_timeout_p, write_timeout_p;
+        connect_timeout_p, read_timeout_p, write_timeout_p, ssl_mode_p;
     parse_connect_string(parameters.get_connect_string(), &host, &host_p, &user, &user_p,
         &password, &password_p, &db, &db_p,
         &unix_socket, &unix_socket_p, &port, &port_p,
@@ -376,7 +387,8 @@ mysql_session_backend::mysql_session_backend(
         &local_infile, &local_infile_p, &charset, &charset_p, &reconnect_p,
         &connect_timeout, &connect_timeout_p,
         &read_timeout, &read_timeout_p,
-        &write_timeout, &write_timeout_p);
+        &write_timeout, &write_timeout_p,
+        &ssl_mode, &ssl_mode_p);
     conn_ = mysql_init(NULL);
     if (conn_ == NULL)
     {
@@ -405,9 +417,27 @@ mysql_session_backend::mysql_session_backend(
     }
     if (ssl_ca_p)
     {
-        mysql_ssl_set(conn_, ssl_key_p ? ssl_key.c_str() : NULL,
-                      ssl_cert_p ? ssl_cert.c_str() : NULL,
-                      ssl_ca.c_str(), 0, 0);
+        if (0 != mysql_options(conn_, MYSQL_OPT_SSL_CA, ssl_ca.c_str()))
+        {
+            clean_up();
+            throw soci_error("mysql_options(MYSQL_OPT_SSL_CA) failed.");
+        }
+    }
+    if (ssl_key_p)
+    {
+        if (0 != mysql_options(conn_, MYSQL_OPT_SSL_KEY, ssl_key.c_str()))
+        {
+            clean_up();
+            throw soci_error("mysql_options(MYSQL_OPT_SSL_KEY) failed.");
+        }
+    }
+    if (ssl_cert_p)
+    {
+        if (0 != mysql_options(conn_, MYSQL_OPT_SSL_CERT, ssl_cert.c_str()))
+        {
+            clean_up();
+            throw soci_error("mysql_options(MYSQL_OPT_SSL_CERT) failed.");
+        }
     }
     if (local_infile_p && local_infile == 1)
     {
@@ -441,6 +471,14 @@ mysql_session_backend::mysql_session_backend(
             clean_up();
             throw soci_error("mysql_options(MYSQL_OPT_WRITE_TIMEOUT) failed.");
         }
+    }
+    if (ssl_mode_p)
+    {
+    	if (0 != mysql_options(conn_, MYSQL_OPT_SSL_MODE, &ssl_mode))
+    	{
+       		clean_up();
+       		throw soci_error("mysql_options(MYSQL_OPT_SSL_MODE) failed.");
+       	}
     }
     if (mysql_real_connect(conn_,
             host_p ? host.c_str() : NULL,

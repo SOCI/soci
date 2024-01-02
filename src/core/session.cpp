@@ -134,6 +134,79 @@ session::session(connection_pool & pool)
     backEnd_ = pooledSession.get_backend();
 }
 
+session::session(session && other)
+    : once(std::move(other.once)),
+      prepare(std::move(other.prepare)),
+      query_stream_(std::move(other.query_stream_)),
+      query_transformation_(std::move(other.query_transformation_)),
+      logger_(std::move(other.logger_)),
+      lastConnectParameters_(std::move(other.lastConnectParameters_)),
+      uppercaseColumnNames_(std::move(other.uppercaseColumnNames_)),
+      backEnd_(std::move(other.backEnd_)),
+      gotData_(std::move(other.gotData_)),
+      isFromPool_(std::move(other.isFromPool_)),
+      poolPosition_(std::move(other.poolPosition_)),
+      pool_(std::move(other.pool_))
+{
+    if (!isFromPool_)
+    {
+        // If 'other' session was from a pool, 'once' and 'prepare'
+        // will have been already setup to point at the pooled session above.
+        // Otherwise reset them to reference 'this'.
+        once.set_session(this);
+        prepare.set_session(this);
+    }
+
+    other.reset_after_move ();
+}
+
+session& session::operator=(session && other)
+{
+    if (this != &other)
+    {
+        if (isFromPool_)
+        {
+            pool_->give_back(poolPosition_);
+        }
+        else if (backEnd_ != other.backEnd_)
+        {
+            delete backEnd_;
+        }
+
+        if (other.isFromPool_)
+        {
+            // If 'other' session was from a pool, 'once' and 'prepare'
+            // will have been already setup reference the pooled session above.
+            // Otherwise leave them alone and let them continue referencing 'this'.
+            once = std::move(other.once);
+            prepare = std::move(other.prepare);
+        }
+
+        query_stream_ = std::move(other.query_stream_);
+        query_transformation_ = std::move(other.query_transformation_);
+        logger_ = std::move(other.logger_);
+        lastConnectParameters_ = std::move(other.lastConnectParameters_);
+        uppercaseColumnNames_ = std::move(other.uppercaseColumnNames_);
+        backEnd_ = std::move(other.backEnd_);
+        gotData_ = std::move(other.gotData_);
+        isFromPool_ = std::move(other.isFromPool_);
+        poolPosition_ = std::move(other.poolPosition_);
+        pool_ = std::move(other.pool_);
+
+        other.reset_after_move();
+    }
+
+    return *this;
+}
+
+void session::reset_after_move()
+{
+    isFromPool_ = false;
+    pool_ = nullptr;
+    backEnd_ = nullptr;
+    pool_ = nullptr;
+}
+
 session::~session()
 {
     if (isFromPool_)

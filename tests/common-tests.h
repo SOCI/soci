@@ -49,6 +49,8 @@
 #include <typeinfo>
 #include <type_traits>
 
+#include "soci-mktime.h"
+
 // Although SQL standard mandates right padding CHAR(N) values to their length
 // with spaces, some backends don't confirm to it:
 //
@@ -622,6 +624,34 @@ using auto_table_creator = std::unique_ptr<table_creator_base>;
 // they happened to start on the same line.
 namespace test_cases
 {
+
+inline bool operator== ( const std::tm& a, const std::tm& b )
+{
+    return a.tm_sec == b.tm_sec && a.tm_min == b.tm_min && a.tm_hour == b.tm_hour && a.tm_mday == b.tm_mday && a.tm_mon == b.tm_mon &&
+           a.tm_year == b.tm_year && a.tm_wday == b.tm_wday && a.tm_yday == b.tm_yday && a.tm_isdst == b.tm_isdst;
+}
+
+TEST_CASE_METHOD ( common_tests, "timegm implementation", "[core][timegm]" )
+{
+    std::tm t1;
+    t1.tm_year = 105;
+    t1.tm_mon = 13;     // + 1 year
+    t1.tm_mday = 15;
+    t1.tm_hour = 28;    // + 1 day
+    t1.tm_min = 14;
+    t1.tm_sec = 17;
+
+    std::tm t2 = t1;
+
+    const auto timegm_result = timegm (&t1);
+    const auto timegm_soci_result = details::timegm_impl_soci (&t2);
+    CHECK ( timegm_result == timegm_soci_result );
+    CHECK ( t1.tm_year == 106 );
+    CHECK ( t1.tm_mon == 1 );
+    CHECK ( t1.tm_mday == 16 );
+    CHECK ( t1.tm_hour == 4 );
+    CHECK ( ( t1 == t2 ) );
+}
 
 TEST_CASE_METHOD(common_tests, "Exception on not connected", "[core][exception]")
 {
@@ -3427,7 +3457,12 @@ TEST_CASE_METHOD(common_tests, "Rowset creation and copying", "[core][rowset]")
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
     {
-        // Open empty rowset
+        // Create empty rowset
+        rowset<row> rs1;
+        CHECK(rs1.begin() == rs1.end());
+    }
+    {
+        // Load empty rowset
         rowset<row> rs1 = (sql.prepare << "select * from soci_test");
         CHECK(rs1.begin() == rs1.end());
     }
@@ -3448,7 +3483,7 @@ TEST_CASE_METHOD(common_tests, "Rowset creation and copying", "[core][rowset]")
     if (!tc_.has_multiple_select_bug())
     {
         // Assignment
-        rowset<row> rs1 = (sql.prepare << "select * from soci_test");
+        rowset<row> rs1;
         rowset<row> rs2 = (sql.prepare << "select * from soci_test");
         rowset<row> rs3 = (sql.prepare << "select * from soci_test");
         rs1 = rs2;
@@ -3478,6 +3513,12 @@ TEST_CASE_METHOD(common_tests, "Rowset iteration", "[core][rowset]")
             rowset<row> rs = (sql.prepare << "select * from soci_test");
 
             CHECK(5 == std::distance(rs.begin(), rs.end()));
+        }
+        {
+            rowset<row> rs = (sql.prepare << "select * from soci_test");
+
+            rs.clear();
+            CHECK(rs.begin() == rs.end());
         }
     }
 
@@ -4876,6 +4917,37 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
         }
     }
 
+    {
+        // check move semantics of session
+
+        #if  __GNUC__ >= 13 || defined (__clang__)
+        SOCI_GCC_WARNING_SUPPRESS(self-move)
+        #endif
+
+        soci::session sql_0;
+        soci::session sql_1 = std::move(sql_0);
+
+        CHECK(!sql_0.is_connected());
+        CHECK(!sql_1.is_connected());
+
+        sql_0.open(backEndFactory_, connectString_);
+        CHECK(sql_0.is_connected());
+        CHECK(sql_0.get_backend());
+
+        sql_1 = std::move(sql_0);
+        CHECK(!sql_0.is_connected());
+        CHECK(!sql_0.get_backend());
+        CHECK(sql_1.is_connected());
+        CHECK(sql_1.get_backend());
+
+        sql_1 = std::move(sql_1);
+        CHECK(sql_1.is_connected());
+        CHECK(sql_1.get_backend());
+
+        #if __GNUC__ >= 13 || defined (__clang__)
+        SOCI_GCC_WARNING_RESTORE(self-move)
+        #endif
+    }
 }
 
 #ifdef SOCI_HAVE_BOOST

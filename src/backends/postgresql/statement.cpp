@@ -764,6 +764,10 @@ void postgresql_statement_backend::describe_column(int colNum,
     case 114:  // json
     case 17:   // bytea
     case 2950: // uuid
+    case 829:  // macaddr
+    case 869:  // inet
+    case 650:  // cidr
+    case 774:  // macaddr8
         dbtype = db_string;
         break;
 
@@ -832,6 +836,7 @@ void postgresql_statement_backend::describe_column(int colNum,
             case 'T': // time type
             case 'S': // string type
             case 'U': // user type
+            case 'I': // network address type
                 dbtype = db_string;
                 break;
 
