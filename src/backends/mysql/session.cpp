@@ -26,6 +26,10 @@ using namespace soci;
 using namespace soci::details;
 using std::string;
 
+// SSL options existing in all supported MySQL versions but not in MariaDB.
+#ifndef MARIADB_VERSION_ID
+#define SOCI_HAS_MYSQL_SSL_OPT
+#endif
 
 namespace
 { // anonymous
@@ -339,6 +343,7 @@ void parse_connect_string(const string & connectString,
             *write_timeout_p = true;
         } else if (par == "ssl_mode" && !*ssl_mode_p)
         {
+#ifdef SOCI_HAS_MYSQL_SSL_OPT
             if (val=="DISABLED") *ssl_mode = SSL_MODE_DISABLED;
             else if (val=="PREFERRED") *ssl_mode = SSL_MODE_PREFERRED;
             else if (val=="REQUIRED") *ssl_mode = SSL_MODE_REQUIRED;
@@ -346,6 +351,10 @@ void parse_connect_string(const string & connectString,
             else if (val=="VERIFY_IDENTITY") *ssl_mode = SSL_MODE_VERIFY_IDENTITY;
             else throw soci_error("\"ssl_mode\" setting is invalid");
             *ssl_mode_p = true;
+#else
+            SOCI_UNUSED(ssl_mode);
+            throw soci_error("SSL options not supported with MariaDB");
+#endif
         }
         else
         {
@@ -472,6 +481,7 @@ mysql_session_backend::mysql_session_backend(
             throw soci_error("mysql_options(MYSQL_OPT_WRITE_TIMEOUT) failed.");
         }
     }
+#ifdef SOCI_HAS_MYSQL_SSL_OPT
     if (ssl_mode_p)
     {
     	if (0 != mysql_options(conn_, MYSQL_OPT_SSL_MODE, &ssl_mode))
@@ -480,6 +490,7 @@ mysql_session_backend::mysql_session_backend(
        		throw soci_error("mysql_options(MYSQL_OPT_SSL_MODE) failed.");
        	}
     }
+#endif
     if (mysql_real_connect(conn_,
             host_p ? host.c_str() : NULL,
             user_p ? user.c_str() : NULL,
