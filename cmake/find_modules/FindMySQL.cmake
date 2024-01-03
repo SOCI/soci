@@ -1,10 +1,10 @@
 # - Try to find MariaDB / MySQL library
 # Find the MySQL includes and client library
 # This module defines
-#  MYSQL_INCLUDE_DIR, where to find mysql.h
-#  MYSQL_LIBRARIES, the libraries needed to use MySQL.
-#  MYSQL_LIB_DIR, path to the MYSQL_LIBRARIES
-#  MYSQL_FOUND, If false, do not try to use MySQL.
+#  MySQL_INCLUDE_DIRS
+#  MySQL_LIBRARIES, the libraries needed to use MySQL.
+#  MySQL_LIB_DIR, path to the MySQL_LIBRARIES
+#  MySQL_FOUND, If false, do not try to use MySQL.
 
 # Copyright (c) 2006-2008, Jarosław Staniek <staniek@kde.org>
 # Copyright (c) 2023 Vadim Zeitline <vz-soci@zeitlins.org> (MariaDB support)
@@ -15,24 +15,28 @@
 include(CheckCXXSourceCompiles)
 
 if(WIN32)
-   find_path(MYSQL_INCLUDE_DIR mysql.h
+  find_path(MySQL_INCLUDE_DIRS mysql.h
       PATHS
       $ENV{MYSQL_INCLUDE_DIR}
+      $ENV{MYSQL_INCLUDE_DIRS}
       $ENV{MYSQL_DIR}/include
+      $ENV{MYSQL_DIRS}/include
       $ENV{ProgramFiles}/MySQL/*/include
       $ENV{SystemDrive}/MySQL/*/include
       $ENV{ProgramW6432}/MySQL/*/include
    )
-else(WIN32)
-   find_path(MYSQL_INCLUDE_DIR mysql.h
+else()
+  find_path(MySQL_INCLUDE_DIRS mysql.h
       PATHS
       $ENV{MYSQL_INCLUDE_DIR}
+      $ENV{MYSQL_INCLUDE_DIRS}
       $ENV{MYSQL_DIR}/include
+      $ENV{MYSQL_DIRS}/include
       PATH_SUFFIXES
       mariadb
       mysql
    )
-endif(WIN32)
+endif()
 
 if(WIN32)
    if (${CMAKE_BUILD_TYPE})
@@ -45,14 +49,13 @@ if(WIN32)
    if(CMAKE_BUILD_TYPE_TOLOWER MATCHES "debug")
       set(binary_dist debug)
       set(build_dist Debug)
-   else(CMAKE_BUILD_TYPE_TOLOWER MATCHES "debug")
+   else()
       ADD_DEFINITIONS(-DDBUG_OFF)
       set(binary_dist opt)
       set(build_dist Release)
-   endif(CMAKE_BUILD_TYPE_TOLOWER MATCHES "debug")
+   endif()
 
-#   find_library(MYSQL_LIBRARIES NAMES mysqlclient
-   set(MYSQL_LIB_PATHS
+   set(MySQL_LIB_PATHS
       $ENV{MYSQL_DIR}/lib/${binary_dist}
       $ENV{MYSQL_DIR}/libmysql/${build_dist}
       $ENV{MYSQL_DIR}/client/${build_dist}
@@ -64,36 +67,33 @@ if(WIN32)
       $ENV{SystemDrive}/MySQL/*/lib/opt
       $ENV{ProgramW6432}/MySQL/*/lib
    )
-   find_library(MYSQL_LIBRARIES NAMES libmysql
+   find_library(MySQL_LIBRARIES NAMES libmysql
       PATHS
-      ${MYSQL_LIB_PATHS}
+      ${MySQL_LIB_PATHS}
    )
-else(WIN32)
-#   find_library(MYSQL_LIBRARIES NAMES mysqlclient
-   set(MYSQL_LIB_PATHS
-      $ENV{MYSQL_DIR}/lib
+else()
+   set(MySQL_LIB_PATHS
+      $ENV{MySQL_DIR}/lib
       PATH_SUFFIXES
       mariadb
       mysql
    )
-   find_library(MYSQL_LIBRARIES NAMES mariadbclient mysqlclient
+   find_library(MySQL_LIBRARIES NAMES mariadbclient mysqlclient
       PATHS
-      ${MYSQL_LIB_PATHS}
+      ${MySQL_LIB_PATHS}
    )
-endif(WIN32)
+endif()
 
-if(MYSQL_LIBRARIES)
-   get_filename_component(MYSQL_LIB_DIR ${MYSQL_LIBRARIES} PATH)
-endif(MYSQL_LIBRARIES)
+if(MySQL_LIBRARIES)
+   get_filename_component(MySQL_LIB_DIR ${MySQL_LIBRARIES} PATH)
+endif()
 
-set( CMAKE_REQUIRED_INCLUDES ${MYSQL_INCLUDE_DIR} )
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(MySQL
+  REQUIRED_VARS MySQL_LIBRARIES MySQL_INCLUDE_DIRS
+)
 
-if(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARIES)
-   set(MYSQL_FOUND TRUE)
-   message(STATUS "Found MySQL: ${MYSQL_INCLUDE_DIR}, ${MYSQL_LIBRARIES}")
-else(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARIES)
-   set(MYSQL_FOUND FALSE)
-   message(STATUS "MySQL not found.")
-endif(MYSQL_INCLUDE_DIR AND MYSQL_LIBRARIES)
-
-mark_as_advanced(MYSQL_INCLUDE_DIR MYSQL_LIBRARIES)
+add_library(MySQL INTERFACE)
+target_link_libraries(MySQL INTERFACE ${MySQL_LIBRARIES})
+target_include_directories(MySQL INTERFACE ${MySQL_INCLUDE_DIRS})
+add_library(MySQL::MySQL ALIAS MySQL)

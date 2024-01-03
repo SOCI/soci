@@ -25,7 +25,7 @@ add_library(soci_oracle_objects OBJECT
   "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_oracle_objects PUBLIC Oracle::oracle)
+target_link_libraries(soci_oracle_objects PUBLIC Oracle::Oracle)
 target_link_libraries(soci_oracle_objects PUBLIC soci_core_objects)
 
 target_include_directories(soci_oracle_objects
