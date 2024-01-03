@@ -13,7 +13,6 @@ endif()
 
 add_library(soci_oracle_objects OBJECT
   "blob.cpp"
-  "clob.cpp"
   "error.cpp"
   "factory.cpp"
   "row-id.cpp"
