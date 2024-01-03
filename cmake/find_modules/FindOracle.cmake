@@ -80,7 +80,7 @@ endif()
 
 if(NOT WIN32 AND Oracle_CLNTSH_LIBRARY)
   list(APPEND Oracle_LIBRARIES ${Oracle_CLNTSH_LIBRARY})
-endif(NOT WIN32)
+endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Oracle
