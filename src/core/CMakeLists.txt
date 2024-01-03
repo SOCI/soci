@@ -23,6 +23,10 @@ add_library(soci_core_objects OBJECT
   "values.cpp"
 )
 
+# TODO: Actually populate this config file with something useful
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/soci-config.h.in" "${CMAKE_CURRENT_BINARY_DIR}/include/soci/soci-config.h")
+target_include_directories(soci_core_objects PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include")
+
 target_link_libraries(soci_core_objects PRIVATE Threads::Threads)
 
 if (SOCI_BOOST)
