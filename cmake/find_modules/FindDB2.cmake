@@ -3,9 +3,8 @@
 #
 # On success, the macro sets the following variables:
 # DB2_FOUND = if the library found
-# DB2_LIBRARY = full path to the library
 # DB2_LIBRARIES = full path to the library
-# DB2_INCLUDE_DIR = where to find the library headers
+# DB2_INCLUDE_DIRS = where to find the library headers
 #
 # Copyright (c) 2013 Denis Chapligin
 #
@@ -70,14 +69,15 @@ elseif(WIN32)
   endif()
 endif()
 
-find_path(DB2_INCLUDE_DIR sqlcli1.h
+find_path(DB2_INCLUDE_DIRS sqlcli1.h
   $ENV{DB2_INCLUDE_DIR}
+  $ENV{DB2_INCLUDE_DIRS}
   $ENV{DB2_DIR}/include
   $ENV{DB2_HOME}
   $ENV{IBM_DB_INCLUDE}
   ${DB2_FIND_INCLUDE_PATHS})
 
-find_library(DB2_LIBRARY
+find_library(DB2_LIBRARIES
   NAMES db2 db2api
   PATHS
   $ENV{DB2LIB}
@@ -85,22 +85,16 @@ find_library(DB2_LIBRARY
   ${DB2_FIND_LIB_PATHS}
   ${DB2_FIND_LIB_NO_LIB})
 
-if(DB2_LIBRARY)
-  get_filename_component(DB2_LIBRARY_DIR ${DB2_LIBRARY} PATH)
+if(DB2_LIBRARIES)
+  get_filename_component(DB2_LIBRARY_DIR ${DB2_LIBRARIES} PATH)
 endif()
 
-if(DB2_INCLUDE_DIR AND DB2_LIBRARY_DIR)
-  set(DB2_FOUND TRUE)
-endif()
-
-set(DB2_LIBRARIES ${DB2_LIBRARY})
-
-# Handle the QUIETLY and REQUIRED arguments and set DB2_FOUND to TRUE
-# if all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(DB2
-  DEFAULT_MSG
-  DB2_INCLUDE_DIR
-  DB2_LIBRARIES)
+  REQUIRED_VARS DB2_INCLUDE_DIRS DB2_LIBRARIES
+)
 
-mark_as_advanced(DB2_INCLUDE_DIR DB2_LIBRARIES)
+add_library(DB2 INTERFACE)
+target_link_libraries(DB2 INTERFACE ${DB2_LIBRARIES})
+target_include_directories(DB2 INTERFACE ${DB2_INCLUDE_DIRS})
+add_library(DB2::DB2 ALIAS DB2)

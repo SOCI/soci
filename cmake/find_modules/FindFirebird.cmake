@@ -5,34 +5,35 @@
 ##############################################################
 
 # This module defines
-# FIREBIRD_INCLUDE_DIR - where to find ibase.h
-# FIREBIRD_LIBRARIES - the libraries to link against to use FIREBIRD
-# FIREBIRD_FOUND - true if FIREBIRD was found
+# Firebird_INCLUDE_DIRS - where to find ibase.h
+# Firebird_LIBRARIES - the libraries to link against to use Firebird
+# Firebird_FOUND - true if Firebird was found
 
-find_path(FIREBIRD_INCLUDE_DIR ibase.h
+find_path(Firebird_INCLUDE_DIRS ibase.h
   /usr/include
   $ENV{ProgramFiles}/Firebird/*/include
 )
 
-if(SOCI_FIREBIRD_EMBEDDED)
-  set(FIREBIRD_LIB_NAMES fbembed)
+if (Firebird_SEARCH_EMBEDDED)
+  set(Firebird_LIB_NAMES fbembed)
 else()
-  set(FIREBIRD_LIB_NAMES fbclient fbclient_ms)
+  set(Firebird_LIB_NAMES fbclient fbclient_ms)
 endif()
 
-find_library(FIREBIRD_LIBRARIES
+find_library(Firebird_LIBRARIES
   NAMES
-    ${FIREBIRD_LIB_NAMES}
+    ${Firebird_LIB_NAMES}
   PATHS
     /usr/lib
     $ENV{ProgramFiles}/Firebird/*/lib
 )
 
-# fbembed ?
-
 include(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(Firebird
-  DEFAULT_MSG FIREBIRD_LIBRARIES FIREBIRD_INCLUDE_DIR)
+find_package_handle_standard_args(Firebird
+  REQUIRED_VARS Firebird_LIBRARIES Firebird_INCLUDE_DIRS
+)
 
-mark_as_advanced(FIREBIRD_INCLUDE_DIR FIREBIRD_LIBRARIES)
-
+add_library(Firebird INTERFACE)
+target_link_libraries(Firebird INTERFACE ${Firebird_LIBRARIES})
+target_include_directories(Firebird INTERFACE ${Firebird_INCLUDE_DIRS})
+add_library(Firebird::Firebird ALIAS Firebird)
