@@ -1524,6 +1524,87 @@ public:
     }
 };
 
+void test_orm_bulk()
+{
+    //session sql(backEndFactory_, connectString_);
+    //auto_table_creator tableCreator(tc_.table_creator_3(sql));
+    session sql(backEnd, connectString);
+    table_creator_three one(sql);
+
+    sql << "insert into soci_test values('john', '(404)123-4567')";
+    sql << "insert into soci_test values('doe', '(404)123-4567')";
+
+    std::vector<PhonebookEntry> vec_orm(10);
+    sql << "select * from soci_test", into(vec_orm);
+
+    assert(vec_orm.size() == 2);
+
+    for (std::vector<PhonebookEntry>::iterator it=vec_orm.begin();
+        it != vec_orm.end();
+        ++it
+        )
+    {
+        if (it->name == "john")
+        {
+            assert(it->phone == "(404)123-4567");
+        }
+        else if (it->name == "doe")
+        {
+            assert(it->phone == "(404)123-4567");
+        }
+    }
+
+    std::cout << "test ORM bulk select passed" << std::endl;
+}
+
+void test_convert()
+{
+    //session sql(backEndFactory_, connectString_);
+    //auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+    session sql(backEnd, connectString);
+    table_creator_one one(sql);
+
+    sql << "insert into soci_test(id, sh) values(1, 10.5)";
+
+    double d1, d2;
+    sql << "select sh+0, sh from soci_test", into(d1), into(d2);
+    assert(are_doubles_approx_equal(d1, d2));
+    assert(are_doubles_approx_equal(d1, 10.5));
+
+    soci::rowset<soci::row> rs1 = (
+        sql.prepare << "select sh+0.6 sh_0, sh from soci_test");
+
+    soci::rowset<soci::row>::const_iterator it1 = rs1.begin();
+    soci::row const & row1 = *it1;
+
+    {
+        int i;
+        i = row1.get<int>(0);
+        assert(i == 11);
+        i = row1.get<int>(1);
+        assert(i == 10);
+    }
+
+    {
+        double i;
+        i = row1.get<double>(0);
+        assert(are_doubles_approx_equal(i, 11.1));
+        i = row1.get<double>(1);
+        assert(are_doubles_approx_equal(i, 10.5));
+    }
+
+    {
+        float i;
+        i = row1.get<float>(0);
+        assert(are_doubles_approx_equal(i, 11.1f));
+        i = row1.get<float>(1);
+        assert(are_doubles_approx_equal(i, 10.5f));
+    }
+
+    std::cout << "test convert passed" << std::endl;
+}
+
 int main(int argc, char** argv)
 {
 #ifdef _MSC_VER

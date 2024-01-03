@@ -16,9 +16,11 @@
 using namespace soci;
 using namespace details;
 
-row::row()
+row::row(std::size_t bulk_size)
     : uppercaseColumnNames_(false)
     , currentPos_(0)
+    , bulk_pos_(0)
+    , bulk_size_(bulk_size)
 {}
 
 row::~row()
@@ -79,7 +81,7 @@ void row::clean_up()
 
 indicator row::get_indicator(std::size_t pos) const
 {
-    return *indicators_.at(pos);
+    return (*indicators_.at(pos))[bulk_pos_];
 }
 
 indicator row::get_indicator(std::string const &name) const

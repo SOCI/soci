@@ -116,13 +116,17 @@ template <>
 class into_type<values> : public into_type<row>
 {
 public:
-    into_type(values & v)
+    into_type(values & v, std::size_t bulk_size = 1)
         : into_type<row>(v.get_row()), v_(v)
-    {}
+    {
+        v.row_->bulk_size(bulk_size);
+    }
 
-    into_type(values & v, indicator & ind)
+    into_type(values & v, indicator & ind, std::size_t bulk_size = 1)
         : into_type<row>(v.get_row(), ind), v_(v)
-    {}
+    {
+        v.row_->bulk_size(bulk_size);
+    }
 
     void clean_up() override
     {
@@ -141,6 +145,67 @@ class into_type<std::vector<values> >
 {
 private:
     into_type();
+};
+
+//this is for support bulk ORM
+template <typename T>
+class conversion_into_type<std::vector<T>, values >
+    :private base_value_holder<T>,  //val_ is values
+     public into_type< values > 
+{
+public:
+    typedef values base_type; 
+
+    conversion_into_type(std::vector<T> & value)
+        : into_type<base_type>(base_value_holder<T>::val_, value.size())
+        , value_(value)
+        //        , ind_(ownInd_)
+    {}
+
+    //ind is not used
+    conversion_into_type(std::vector<T> & value, std::vector<indicator> &)
+        : into_type<base_type>(base_value_holder<T>::val_, value.size())
+        , value_(value)
+    {}
+
+    virtual std::size_t size() const
+    {
+        // the user might have resized his vector in the meantime
+        // -> synchronize the base-value mirror to have the same size
+
+        return value_.size();
+    }
+
+    virtual void resize(std::size_t sz)
+    {
+        value_.resize(sz);
+        //ind_.resize(sz);
+    }
+
+private:
+    void convert_from_base()
+    {
+        values& v = base_value_holder<T>::val_;
+        std::size_t data_size = value_.size();
+
+        for (std::size_t i=0; i<data_size; ++i)
+        {
+            type_conversion<T>::from_base(v, i_ok, value_[i]);
+
+            v.row_->next();
+        }
+    }
+
+    std::vector<T> & value_;
+
+    //do we need indicators for ORM? ... currently I don't know how to do this, so I just comment it ...
+
+    //std::vector<indicator> ownInd_;
+
+    // ind_ refers to either ownInd_, or the one provided by the user
+    // in any case, ind_ refers to some valid vector of indicators
+    // and can be used by conversion routines
+    //std::vector<indicator> & ind_;
 };
 
 } // namespace details

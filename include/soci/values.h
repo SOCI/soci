@@ -47,6 +47,9 @@ class SOCI_DECL values
     friend class details::into_type<values>;
     friend class details::use_type<values>;
 
+    template <typename TT, typename X> 
+    friend class details::conversion_into_type;
+
 public:
 
     values() : row_(NULL), currentPos_(0), uppercaseColumnNames_(false) {}
@@ -243,7 +246,7 @@ private:
     std::vector<details::standard_use_type *> uses_;
     std::map<details::use_type_base *, indicator *> unused_;
     std::vector<indicator *> indicators_;
-    std::map<std::string, std::size_t> index_;
+    std::map<std::string, std::size_t, CaseInsensitiveComparator> index_;
     std::vector<details::copy_base *> deepCopies_;
 
     mutable std::size_t currentPos_;

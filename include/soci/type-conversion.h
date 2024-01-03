@@ -38,7 +38,7 @@ struct base_value_holder
 
 // Automatically create into_type from a type_conversion
 
-template <typename T>
+template <typename T, typename X>
 class conversion_into_type
     : private base_value_holder<T>,
       public into_type<typename type_conversion<T>::base_type>
@@ -80,7 +80,7 @@ private:
 
 // Automatically create use_type from a type_conversion
 
-template <typename T>
+template <typename T, typename X>
 class conversion_use_type
     : private base_value_holder<T>,
       public use_type<typename type_conversion<T>::base_type>
@@ -195,8 +195,8 @@ struct base_vector_holder
 
 // Automatically create a std::vector based into_type from a type_conversion
 
-template <typename T>
-class conversion_into_type<std::vector<T> >
+template <typename T, typename X>
+class conversion_into_type<std::vector<T> , X>
     : private base_vector_holder<T>,
       public into_type<std::vector<typename type_conversion<T>::base_type> >
 {
@@ -295,8 +295,8 @@ private:
 
 // Automatically create a std::vector based use_type from a type_conversion
 
-template <typename T>
-class conversion_use_type<std::vector<T> >
+template <typename T, typename X>
+class conversion_use_type<std::vector<T>, X >
      : private base_vector_holder<T>,
        public use_type<std::vector<typename type_conversion<T>::base_type> >
 {
@@ -408,13 +408,19 @@ private:
 template <typename T>
 into_type_ptr do_into(T & t, user_type_tag)
 {
-    return into_type_ptr(new conversion_into_type<T>(t));
+    return into_type_ptr(new conversion_into_type<T, typename type_conversion<T>::base_type>(t));
+}
+
+template <typename T>
+into_type_ptr do_into(std::vector<T>& t, user_type_tag)
+{
+    return into_type_ptr(new conversion_into_type<std::vector<T>, typename type_conversion<T>::base_type>(t));
 }
 
 template <typename T>
 into_type_ptr do_into(T & t, indicator & ind, user_type_tag)
 {
-    return into_type_ptr(new conversion_into_type<T>(t, ind));
+    return into_type_ptr(new conversion_into_type<T, typename type_conversion<T>::base_type>(t, ind));
 }
 
 template <typename T>
@@ -422,14 +428,14 @@ into_type_ptr do_into(std::vector<T> & t,
     std::size_t begin, size_t * end, user_type_tag)
 {
     return into_type_ptr(
-        new conversion_into_type<std::vector<T> >(t, begin, end));
+        new conversion_into_type<std::vector<T> , typename type_conversion<T>::base_type>(t, begin, end));
 }
 
 template <typename T>
 into_type_ptr do_into(std::vector<T> & t, std::vector<indicator> & ind,
     user_type_tag)
 {
-    return into_type_ptr(new conversion_into_type<std::vector<T> >(t, ind));
+    return into_type_ptr(new conversion_into_type<std::vector<T> , typename type_conversion<T>::base_type>(t, ind));
 }
 
 template <typename T>
@@ -437,33 +443,33 @@ into_type_ptr do_into(std::vector<T> & t, std::vector<indicator> & ind,
     std::size_t begin, size_t * end, user_type_tag)
 {
     return into_type_ptr(
-        new conversion_into_type<std::vector<T> >(t, ind, begin, end));
+        new conversion_into_type<std::vector<T> , typename type_conversion<T>::base_type>(t, ind, begin, end));
 }
 
 template <typename T>
 use_type_ptr do_use(T & t, std::string const & name, user_type_tag)
 {
-    return use_type_ptr(new conversion_use_type<T>(t, name));
+    return use_type_ptr(new conversion_use_type<T, typename type_conversion<T>::base_type>(t, name));
 }
 
 template <typename T>
 use_type_ptr do_use(T const & t, std::string const & name, user_type_tag)
 {
-    return use_type_ptr(new conversion_use_type<T>(t, name));
+    return use_type_ptr(new conversion_use_type<T, typename type_conversion<T>::base_type>(t, name));
 }
 
 template <typename T>
 use_type_ptr do_use(T & t, indicator & ind,
     std::string const & name, user_type_tag)
 {
-    return use_type_ptr(new conversion_use_type<T>(t, ind, name));
+    return use_type_ptr(new conversion_use_type<T, typename type_conversion<T>::base_type>(t, ind, name));
 }
 
 template <typename T>
 use_type_ptr do_use(T const & t, indicator & ind,
     std::string const & name, user_type_tag)
 {
-    return use_type_ptr(new conversion_use_type<T>(t, ind, name));
+    return use_type_ptr(new conversion_use_type<T, typename type_conversion<T>::base_type>(t, ind, name));
 }
 
 template <typename T>
@@ -472,7 +478,7 @@ use_type_ptr do_use(std::vector<T> & t,
     std::string const & name, user_type_tag)
 {
     return use_type_ptr(
-        new conversion_use_type<std::vector<T> >(t, begin, end, name));
+        new conversion_use_type<std::vector<T> , typename type_conversion<T>::base_type>(t, begin, end, name));
 }
 
 template <typename T>
@@ -481,7 +487,7 @@ use_type_ptr do_use(const std::vector<T> & t,
     std::string const & name, user_type_tag)
 {
     return use_type_ptr(
-        new conversion_use_type<std::vector<T> >(t, begin, end, name));
+        new conversion_use_type<std::vector<T> , typename type_conversion<T>::base_type>(t, begin, end, name));
 }
 
 template <typename T>
@@ -490,7 +496,7 @@ use_type_ptr do_use(std::vector<T> & t, std::vector<indicator> & ind,
     std::string const & name, user_type_tag)
 {
     return use_type_ptr(
-        new conversion_use_type<std::vector<T> >(t, ind, begin, end, name));
+        new conversion_use_type<std::vector<T> , typename type_conversion<T>::base_type>(t, ind, begin, end, name));
 }
 
 template <typename T>
@@ -499,7 +505,7 @@ use_type_ptr do_use(const std::vector<T> & t, std::vector<indicator> & ind,
     std::string const & name, user_type_tag)
 {
     return use_type_ptr(
-        new conversion_use_type<std::vector<T> >(t, ind, begin, end, name));
+        new conversion_use_type<std::vector<T> , typename type_conversion<T>::base_type>(t, ind, begin, end, name));
 }
 
 } // namespace details

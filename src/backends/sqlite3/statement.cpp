@@ -19,12 +19,6 @@
 #pragma warning(disable:4355)
 #endif
 
-// This is used instead of tolower() just to avoid warnings about int to char
-// casts inside MSVS std::transform() implementation.
-char toLowerCh(char c) {
-    return static_cast<char>( std::tolower(c) );
-}
-
 using namespace soci;
 using namespace soci::details;
 using namespace sqlite_api;
@@ -230,6 +224,9 @@ sqlite3_statement_backend::load_one()
     }
     else if (SQLITE_ROW == res)
     {
+        // get_number_of_rows() need return 1. since we do not fetch data,
+        // sqlite3_vector_into_type_backend::post_fetch() need process this case
+        dataCache_.resize(1);
     }
     else
     {
@@ -353,11 +350,7 @@ sqlite3_statement_backend::execute(int number)
 statement_backend::exec_fetch_result
 sqlite3_statement_backend::fetch(int number)
 {
-    if (hasVectorIntoElements_ || number == 0)
-        return load_rowset(number);
-    else
-        return load_one();
-
+    return (1 == number) ? load_one() : load_rowset(number);
 }
 
 long long sqlite3_statement_backend::get_affected_rows()
@@ -408,8 +401,7 @@ int sqlite3_statement_backend::prepare_for_describe()
     return sqlite3_column_count(stmt_);
 }
 
-typedef std::map<std::string, data_type> sqlite3_data_type_map;
-static sqlite3_data_type_map get_data_type_map()
+sqlite3_data_type_map soci::get_data_type_map()
 {
     sqlite3_data_type_map m;
 
@@ -505,7 +497,7 @@ void sqlite3_statement_backend::describe_column(int colNum, data_type & type,
         dt.resize(siter - dt.begin());
 
     // do all comparisons in lower case
-    std::transform(dt.begin(), dt.end(), dt.begin(), toLowerCh);
+    std::transform(dt.begin(), dt.end(), dt.begin(), [](const char c){ return static_cast<char>(std::tolower(c)); });
 
     sqlite3_data_type_map::const_iterator iter = dataTypeMap.find(dt);
     if (iter != dataTypeMap.end())

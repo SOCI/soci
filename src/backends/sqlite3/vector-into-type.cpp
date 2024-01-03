@@ -13,14 +13,13 @@
 #include "soci-cstrtoi.h"
 #include "soci-dtocstr.h"
 #include "soci-exchange-cast.h"
-#include "soci/blob.h"
-#include "soci/rowid.h"
 #include "soci/soci-platform.h"
 #include "soci/sqlite3/soci-sqlite3.h"
 #include "soci-cstrtod.h"
 #include "soci-mktime.h"
 #include "common.h"
 // std
+#include <algorithm>
 #include <cstddef>
 #include <cstdlib>
 #include <ctime>
@@ -118,6 +117,44 @@ void set_number_in_vector(void *p, int idx, const sqlite3_column &col)
 
 } // namespace anonymous
 
+sqlite3_column sqlite3_vector_into_type_backend::get_column(int colNum)
+{
+    sqlite3_column col;
+    {
+        data_type type;
+        std::string columnName;
+        statement_.describe_column(position_, type, columnName);
+        col.isNull_ = (sqlite3_column_type(statement_.stmt_, colNum) == SQLITE_NULL);
+        col.type_ = type;
+    }
+    if (col.isNull_)
+        return col;
+    switch (col.type_)
+    {
+        case dt_date:
+        case dt_string:
+        case dt_blob:
+        case dt_xml:
+            col.buffer_.size_ = sqlite3_column_bytes(statement_.stmt_, colNum);
+            col.buffer_.data_ = new char[col.buffer_.size_ + 1];
+            memcpy(col.buffer_.data_, sqlite3_column_text(statement_.stmt_, colNum), col.buffer_.size_ + 1);
+            break;
+
+        case dt_double:
+            col.double_ = details::cstring_to_double(reinterpret_cast<const char*>(sqlite3_column_text(statement_.stmt_, colNum)));
+            break;
+
+        case dt_integer:
+        case dt_long_long:
+        case dt_unsigned_long_long:
+        {
+            details::cstring_to_integer(col.int64_, reinterpret_cast<const char*>(sqlite3_column_text(statement_.stmt_, colNum)));
+            break;
+            }
+        }
+    return col;
+}
+
 void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
 {
     using namespace details;
@@ -132,8 +169,16 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
     int const endRow = static_cast<int>(statement_.dataCache_.size());
     for (int i = 0; i < endRow; ++i)
     {
-        sqlite3_column &col = statement_.dataCache_[i][position_-1];
-
+        std::shared_ptr<sqlite3_column> col1;
+        if (1 == endRow)
+        {
+            col1 = std::make_unique<sqlite3_column>(get_column(position_ - 1));
+        }
+        else
+        {
+            col1 = std::make_unique<sqlite3_column>(statement_.dataCache_[i][position_ - 1]);
+        }
+        sqlite3_column& col = *col1;
         if (col.isNull_)
         {
             if (ind == NULL)
