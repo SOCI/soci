@@ -24,7 +24,7 @@ add_library(soci_mysql_objects OBJECT
   "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_mysql_objects PUBLIC MySQL::mysql)
+target_link_libraries(soci_mysql_objects PUBLIC MySQL::MySQL)
 target_link_libraries(soci_mysql_objects PUBLIC soci_core_objects)
 
 target_include_directories(soci_mysql_objects

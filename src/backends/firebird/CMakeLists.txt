@@ -6,6 +6,10 @@ else()
   set(REQUIRED_FLAG "REQUIRED")
 endif()
 
+if (SOCI_FIREBIRD_EMBEDDED)
+  set(Firebird_SEARCH_EMBEDDED ON)
+endif()
+
 find_package(Firebird ${REQUIRED_FLAG})
 
 if (NOT Firebird_FOUND)
@@ -26,7 +30,7 @@ add_library(soci_firebird_objects OBJECT
   "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_firebird_objects PUBLIC Firebird::firebird)
+target_link_libraries(soci_firebird_objects PUBLIC Firebird::Firebird)
 target_link_libraries(soci_firebird_objects PUBLIC soci_core_objects)
 
 target_include_directories(soci_firebird_objects
