@@ -399,6 +399,18 @@ void odbc_statement_backend::describe_column(int colNum,
     }
 }
 
+data_type odbc_statement_backend::to_data_type(db_type dbt) const
+{
+    // Before adding db_type, this backend returned signed integer constants
+    // even for unsigned types, so preserve this behaviour.
+    switch (dbt)
+    {
+        case db_uint32: return dt_integer;
+        case db_uint64: return dt_long_long;
+        default:        return statement_backend::to_data_type(dbt);
+    }
+}
+
 std::size_t odbc_statement_backend::column_size(int colNum)
 {
     SQLCHAR colNameBuffer[2048];

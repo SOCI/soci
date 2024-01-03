@@ -710,7 +710,7 @@ void statement_impl::describe()
         column_properties props;
         props.set_name(columnName);
         props.set_db_type(dbtype);
-        props.set_data_type(details::to_data_type(dbtype));
+        props.set_data_type(backEnd_->to_data_type(dbtype));
 
         switch (dbtype)
         {

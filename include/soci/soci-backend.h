@@ -108,31 +108,6 @@ inline db_type to_db_type(data_type dt)
     return db_string;
 }
 
-// this conversion loses information and is only used inside SOCI for
-// compatibility with the previous versions that only had data_type
-inline data_type to_data_type(db_type dbt)
-{
-    switch (dbt)
-    {
-        case db_string: return dt_string;
-        case db_date:   return dt_date;
-        case db_double: return dt_double;
-        case db_int8:
-        case db_uint8:
-        case db_int16:
-        case db_uint16:
-        case db_int32:
-        case db_uint32: return dt_integer;
-        case db_int64:  return dt_long_long;
-        case db_uint64: return dt_unsigned_long_long;
-        case db_blob:   return dt_blob;
-        case db_xml:    return dt_xml;
-    }
-
-    // unreachable
-    return dt_string;
-}
-
 // polymorphic into type backend
 
 class standard_into_type_backend
@@ -272,6 +247,32 @@ public:
     virtual void describe_column(int colNum,
         db_type& dbtype,
         std::string& column_name) = 0;
+
+    // Function converting db_type to legacy data_type: this is mostly, but not
+    // quite, backend-independent because different backends handled the same
+    // type differently before db_type introduction.
+    virtual data_type to_data_type(db_type dbt) const
+    {
+        switch (dbt)
+        {
+            case db_string: return dt_string;
+            case db_date:   return dt_date;
+            case db_double: return dt_double;
+            case db_int8:
+            case db_uint8:
+            case db_int16:
+            case db_uint16:
+            case db_int32:  return dt_integer;
+            case db_uint32:
+            case db_int64:  return dt_long_long;
+            case db_uint64: return dt_unsigned_long_long;
+            case db_blob:   return dt_blob;
+            case db_xml:    return dt_xml;
+        }
+
+        // unreachable
+        return dt_string;
+    }
 
     virtual standard_into_type_backend* make_into_type_backend() = 0;
     virtual standard_use_type_backend* make_use_type_backend() = 0;

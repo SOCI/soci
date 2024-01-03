@@ -256,6 +256,7 @@ struct odbc_statement_backend : details::statement_backend
     void describe_column(int colNum,
         db_type &dbtype,
         std::string &columnName) override;
+    data_type to_data_type(db_type dbt) const override;
 
     // helper for defining into vector<string>
     std::size_t column_size(int position);

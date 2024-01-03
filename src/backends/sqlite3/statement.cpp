@@ -545,7 +545,7 @@ void sqlite3_statement_backend::describe_column(int colNum,
     if (iter != dataTypeMap.end())
     {
         coldef.dataType_ = dbtype = iter->second;
-        coldef.type_ = details::to_data_type(dbtype);
+        coldef.type_ = to_data_type(dbtype);
         return;
     }
 
@@ -573,7 +573,7 @@ void sqlite3_statement_backend::describe_column(int colNum,
         break;
     }
     coldef.dataType_ = dbtype;
-    coldef.type_ = details::to_data_type(dbtype);
+    coldef.type_ = to_data_type(dbtype);
 
     sqlite3_reset(stmt_);
 }
