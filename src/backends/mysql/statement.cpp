@@ -404,6 +404,8 @@ int mysql_statement_backend::prepare_for_describe()
 void mysql_statement_backend::describe_column(int colNum,
     db_type & dbtype, std::string & columnName)
 {
+    lastDescribedUnsignedMediumInt_ = false;
+
     int pos = colNum - 1;
     MYSQL_FIELD *field = mysql_fetch_field_direct(result_, pos);
     switch (field->type)
@@ -416,6 +418,8 @@ void mysql_statement_backend::describe_column(int colNum,
         break;
     case FIELD_TYPE_INT24:      //MYSQL_TYPE_INT24:
         dbtype = field->flags & UNSIGNED_FLAG ? db_uint32 : db_int32;
+        if (dbtype == db_uint32)
+            lastDescribedUnsignedMediumInt_ = true;
         break;
     case FIELD_TYPE_LONG:       //MYSQL_TYPE_LONG:
         if (field->flags & UNSIGNED_FLAG)
@@ -470,6 +474,22 @@ void mysql_statement_backend::describe_column(int colNum,
         throw soci_error("Unknown data type.");
     }
     columnName = field->name;
+}
+
+data_type mysql_statement_backend::to_data_type(db_type dbt) const
+{
+    // Before adding db_type, this backend returned dt_integer for 24 bit
+    // unsigned values but dt_long_long for 32 bit unsigned ones and now we
+    // return the same db_uint32 for both and translate it to different legacy
+    // values depending on the flag set by describe_column(). This is pretty
+    // ugly but needed to preserve compatibility for the people who use MySQL
+    // MEDIUMINT UNSIGNED with SOCI.
+    if (lastDescribedUnsignedMediumInt_ && dbt == db_uint32)
+    {
+        return dt_integer;
+    }
+
+    return statement_backend::to_data_type(dbt);
 }
 
 mysql_standard_into_type_backend *

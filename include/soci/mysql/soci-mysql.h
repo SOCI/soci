@@ -184,6 +184,7 @@ struct mysql_statement_backend : details::statement_backend
     void describe_column(int colNum,
         db_type &dbtype,
         std::string &columnName) override;
+    data_type to_data_type(db_type dbt) const override;
 
     mysql_standard_into_type_backend * make_into_type_backend() override;
     mysql_standard_use_type_backend * make_use_type_backend() override;
@@ -209,6 +210,10 @@ struct mysql_statement_backend : details::statement_backend
 
     bool justDescribed_; // to optimize row description with immediately
                          // following actual statement execution
+
+    // Set to true if the last column passed to describe_column() was a
+    // MEDIUMINT UNSIGNED one, see to_data_type().
+    bool lastDescribedUnsignedMediumInt_ = false;
 
     // Prefetch the row offsets in order to use mysql_row_seek() for
     // random access to rows, since mysql_data_seek() is expensive.
