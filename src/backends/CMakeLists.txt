@@ -1,50 +1,41 @@
-###############################################################################
-#
-# This file is part of CMake configuration for SOCI library
-#
-# Copyright (C) 2010 Mateusz Loskot
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE_1_0.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
-#
-###############################################################################
-colormsg(_HIBLUE_ "Configuring SOCI backend libraries:")
+set(SOCI_EMPTY ${PROJECT_IS_TOP_LEVEL} CACHE STRING "Include the 'empty' backend. Can be bool-valued or one of 'Enabled', 'Disabled' and 'AsAvailable'")
 
-# First, we'll investigate what can be found from database engines
-foreach(dep ${SOCI_BACKENDS_DB_DEPENDENCIES})
-	string(TOUPPER ${dep} depUP)
-	if (WITH_${depUP})
-		find_package(${dep})
-	endif()
-	if(${dep}_FOUND OR ${depUP}_FOUND)
-		set(${depUP}_FOUND ON)
-	else()
-		set(${depUP}_FOUND OFF)
-	endif()
-	set(SOCI_HAVE_${depUP} OFF CACHE INTERNAL "${depUP} backend")
+set(SOCI_DB2 "AsAvailable" CACHE STRING "Include the 'DB2' backend. Can be bool-valued or one of 'Enabled', 'Disabled' and 'AsAvailable'")
+set(SOCI_FIREBIRD "AsAvailable" CACHE STRING "Include the 'Firebird' backend. Can be bool-valued or one of 'Enabled', 'Disabled' and 'AsAvailable'")
+set(SOCI_MYSQL "AsAvailable" CACHE STRING "Include the 'MySQL' backend. Can be bool-valued or one of 'Enabled', 'Disabled' and 'AsAvailable'")
+set(SOCI_ODBC "AsAvailable" CACHE STRING "Include the 'ODBC' backend. Can be bool-valued or one of 'Enabled', 'Disabled' and 'AsAvailable'")
+set(SOCI_ORACLE "AsAvailable" CACHE STRING "Include the 'Oracle' backend. Can be bool-valued or one of 'Enabled', 'Disabled' and 'AsAvailable'")
+set(SOCI_POSTGRESQL "AsAvailable" CACHE STRING "Include the 'Postgresql' backend. Can be bool-valued or one of 'Enabled', 'Disabled' and 'AsAvailable'")
+set(SOCI_SQLITE3 "AsAvailable" CACHE STRING "Include the 'SQLite3' backend. Can be bool-valued or one of 'Enabled', 'Disabled' and 'AsAvailable'")
+
+
+set(BACKENDS "empty" "db2" "firebird" "mysql" "odbc" "oracle" "postgresql" "sqlite3")
+foreach(CURRENT IN LISTS BACKENDS)
+  string(TOUPPER "${CURRENT}" CURRENT_UPPER)
+
+  # Backwards compatibility with the old cmake setup that used WITH_* variables
+  # These are now only defined if the user specified them.
+  if (DEFINED WITH_${CURRENT_UPPER})
+    message(DEPRECATION "Use of the WITH_${CURRENT_UPPER} option is deprecated - use the new SOCI_${CURRENT_UPPER} instead")
+    set(SOCI_${CURRENT_UPPER} "${WITH_${CURRENT_UPPER}}" CACHE STRING "")
+    # Delete the legacy variable from cache
+    unset(WITH_${CURRENT_UPPER} CACHE)
+  endif()
+
+  if (SOCI_${CURRENT_UPPER} STREQUAL "Enabled")
+    set(SOCI_${CURRENT_UPPER} ON)
+  elseif(SOCI_${CURRENT_UPPER} STREQUAL "Disabled")
+    set(SOCI_${CURRENT_UPPER} OFF)
+  elseif(SOCI_${CURRENT_UPPER} STREQUAL "AsAvailable")
+    set(SOCI_${CURRENT_UPPER} ON)
+    set(SOCI_${CURRENT_UPPER}_AS_AVAILABLE ON CACHE INTERNAL "")
+  elseif(SOCI_${CURRENT_UPPER} MATCHES "[Oo][Nn]|[Oo][Ff][Ff]|[Tt][Rr][Uu][Ee]|[Ff][Aa][Ll][Ss][Ee]|[Yy][Ee][Ss]|[Nn][Oo]|[YyNn01]")
+    # Do nothing - these are already booleans
+  else()
+    message(FATAL_ERROR "Unsupported value '${SOCI_${CURRENT_UPPER}}' for option SOCI_${CURRENT_UPPER}")
+  endif()
+
+  if (SOCI_${CURRENT_UPPER})
+    add_subdirectory(${CURRENT})
+  endif()
 endforeach()
-
-# get all files in backends
-file(GLOB backend_dirs RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *)
-
-# empty backend always on by default
-option(SOCI_EMPTY "Build empty backend" ON)
-if(SOCI_EMPTY)
-	set(WITH_EMPTY ON)
-	set(EMPTY_FOUND ON)
-endif()
-
-# enable only found backends
-foreach(dir ${backend_dirs})
-	if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${dir})
-		if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/CMakeLists.txt)
-			string(TOUPPER ${dir} dirUP)
-			if(${dirUP}_FOUND AND WITH_${dirUP})
-				add_subdirectory(${dir})
-				set(SOCI_HAVE_${dirUP} ON CACHE INTERNAL "${dirUP} backend")
-			endif()
-		endif()
-	endif()
-endforeach()
-
-message(STATUS "")
