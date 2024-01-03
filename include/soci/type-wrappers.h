@@ -8,6 +8,8 @@
 #ifndef SOCI_TYPE_WRAPPERS_H_INCLUDED
 #define SOCI_TYPE_WRAPPERS_H_INCLUDED
 
+#include <chrono>
+
 namespace soci
 {
 
@@ -27,6 +29,8 @@ struct long_string
 {
     std::string value;
 };
+
+typedef std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds> datetime;
 
 } // namespace soci
 

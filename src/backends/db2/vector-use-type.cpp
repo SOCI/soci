@@ -178,11 +178,7 @@ void *db2_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
         }
         break;
 
-    case x_statement: break; // not supported
-    case x_rowid:     break; // not supported
-    case x_blob:      break; // not supported
-    case x_xmltype:   break; // not supported
-    case x_longstring:break; // not supported
+    default:          break; // not supported
     }
 
     colSize = size;
@@ -380,11 +376,7 @@ std::size_t db2_vector_use_type_backend::size()
         }
         break;
 
-    case x_statement: break; // not supported
-    case x_rowid:     break; // not supported
-    case x_blob:      break; // not supported
-    case x_xmltype:   break; // not supported
-    case x_longstring:break; // not supported
+    default:          break; // not supported
     }
 
     return sz;

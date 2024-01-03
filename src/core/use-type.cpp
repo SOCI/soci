@@ -10,6 +10,7 @@
 #include "soci/use-type.h"
 #include "soci/statement.h"
 #include "soci-exchange-cast.h"
+#include "private/thirdparty/date.h"
 
 #include <cstdio>
 
@@ -109,6 +110,11 @@ void standard_use_type::dump_value(std::ostream& os) const
         case x_longstring:
             os << "<long string>";
             return;
+
+        case x_datetime:
+            using namespace date;            
+            os << exchange_type_cast<x_datetime> ( data_ );
+            return;
     }
 
     // This is normally unreachable, but avoid throwing from here as we're
@@ -190,7 +196,11 @@ void vector_use_type::bind(statement_impl & st, int & position)
 void vector_use_type::dump_value(std::ostream& os) const
 {
     // TODO: Provide more information.
-    os << "<vector>";
+    os << "<vector>,";
+    if ( ind_ )
+        os << ind_->size ();
+    else
+        os << "null";
 }
 
 void vector_use_type::pre_exec(int num)

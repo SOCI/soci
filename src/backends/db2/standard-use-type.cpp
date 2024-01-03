@@ -105,6 +105,9 @@ void *db2_standard_use_type_backend::prepare_for_bind(
     case x_statement:
     case x_rowid:
         break;
+
+    default:
+        throw soci_error("Use element used with non-supported type.");
     }
 
     // Return either the pointer to C++ data itself or the buffer that we

@@ -9,9 +9,13 @@
 #define SOCI_SOURCE
 #include "soci/error.h"
 #include "soci-mktime.h"
+#include "soci/datetime-types.h"
 #include <climits>
 #include <cstdlib>
 #include <ctime>
+
+#include "soci/type-wrappers.h"
+#include "thirdparty/date.h"
 
 namespace // anonymous
 {
@@ -41,6 +45,16 @@ int parse10(char const * & p1, char * & p2)
 }
 
 } // namespace anonymous
+
+void soci::details::parse_soci_datetime ( char const* buf, soci::datetime& dtm )
+{
+    using namespace std;
+    using namespace date;
+    // format is: "YYYY-MM-DD hh:mm:ss.fff"
+    istringstream in{ buf };
+    in >> parse ( "%Y-%m-%d %T", dtm );
+}
+
 
 void soci::details::parse_std_tm(char const * buf, std::tm & t)
 {
@@ -92,6 +106,34 @@ void soci::details::parse_std_tm(char const * buf, std::tm & t)
     mktime_from_ymdhms(t, year, month, day, hour, minute, second);
 }
 
+std::tm soci::to_std_tm ( const soci::datetime& dtm )
+{
+    using namespace date;
+    const auto                               date = floor<days> ( dtm );
+    const auto                               ymd = year_month_day ( date );
+    const auto                               weekday = year_month_weekday ( date ).weekday_indexed ().weekday ();
+    const hh_mm_ss<soci::datetime::duration> tod{ dtm - date };
+    const days                               daysSinceJan1 = date - sys_days ( ymd.year () / 1 / 1 );
+
+    std::tm result{};
+    result.tm_sec = static_cast<int> (tod.seconds ().count ());
+    result.tm_min = tod.minutes ().count ();
+    result.tm_hour = tod.hours ().count ();
+    result.tm_mday = ( ymd.day () - 0_d ).count ();
+    result.tm_mon = ( ymd.month () - January ).count ();
+    result.tm_year = ( ymd.year () - 1900_y ).count ();
+    result.tm_wday = ( weekday - Sunday ).count ();
+    result.tm_yday = daysSinceJan1.count ();
+    result.tm_isdst = -1;  // Information not available
+    return result;
+}
+
+soci::datetime soci::from_std_tm ( const std::tm& tm )
+{
+    using namespace date;
+    const auto ymd = year{ tm.tm_year + 1900 } / ( tm.tm_mon + 1 ) / tm.tm_mday;
+    return sys_days{ ymd } + std::chrono::seconds{ tm.tm_hour * 3600 + tm.tm_min * 60 + tm.tm_sec };
+}
 
 // https://stackoverflow.com/a/58037981/15275
 namespace

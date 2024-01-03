@@ -314,6 +314,9 @@ void oracle_statement_backend::describe_column(int colNum, data_type &type,
     case SQLT_DAT:
         type = dt_date;
         break;
+    case SQLT_TIMESTAMP:
+        type = dt_datetime;
+        break;
     default:
         // Unknown oracle types will just be represented by a string
         type = dt_string;

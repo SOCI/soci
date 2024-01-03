@@ -9,6 +9,7 @@
 #include "soci/oracle/soci-oracle.h"
 #include "soci/statement.h"
 #include "clob.h"
+#include "datetime.h"
 #include "error.h"
 #include "soci/soci-platform.h"
 #include "soci-mktime.h"
@@ -158,6 +159,20 @@ void oracle_vector_into_type_backend::define_by_pos_bulk(
             dataBuf = buf_;
         }
         break;
+    case x_datetime:
+        {
+            oracleType = SQLT_TIMESTAMP;
+            std::size_t const vecSize = size ();
+
+            prepare_indicators ( vecSize );
+
+            elementSize = sizeof ( OCIDateTime * );
+
+            buf_ = new char[elementSize * vecSize];
+            memset ( buf_, 0, elementSize * vecSize );
+            dataBuf = buf_;
+        }
+        break;
 
     case x_xmltype:
     case x_longstring:
@@ -201,6 +216,16 @@ void oracle_vector_into_type_backend::pre_exec(int /* num */)
         for (std::size_t i = 0; i != vecSize; ++i)
         {
             lobps[i] = create_temp_lob(statement_.session_);
+        }
+    }
+    if ( type_ == x_datetime )
+    {
+        OCIDateTime **const ocidtms = reinterpret_cast<OCIDateTime **> ( buf_ );
+
+        std::size_t const vecSize = size ();
+        for ( std::size_t i = 0; i != vecSize; ++i )
+        {
+            ocidtms[i] = oracle::alloc_oci_datetime ( statement_.session_ );
         }
     }
 }
@@ -298,6 +323,21 @@ void oracle_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
 
                     details::mktime_from_ymdhms(v[begin_ + i],
                         year, month, day, hour, minute, second);
+                }
+            }
+        }
+        else if ( type_ == x_datetime )
+        {
+            OCIDateTime **const ocidtms = reinterpret_cast<OCIDateTime**> ( buf_ );
+
+            auto& vecValues = exchange_vector_type_cast<x_datetime> ( data_ );
+
+            std::size_t const vecSize = size ();
+            for ( std::size_t i = 0; i != vecSize; ++i )
+            {
+                if ( indOCIHolderVec_[i] != -1 )
+                {
+                    read_from_oci_datetime ( statement_.session_, ocidtms[i], vecValues.at ( i ) );
                 }
             }
         }
@@ -414,6 +454,17 @@ void oracle_vector_into_type_backend::clean_up()
         for (std::size_t i = 0; i != vecSize; ++i)
         {
             free_temp_lob(statement_.session_, lobps[i]);
+        }
+    }
+
+    if ( type_ == x_datetime )
+    {
+        OCIDateTime **ocidtms = reinterpret_cast<OCIDateTime **> ( buf_ );
+
+        std::size_t const vecSize = size ();
+        for ( std::size_t i = 0; i != vecSize; ++i )
+        {
+            free_oci_datetime ( ocidtms[i] );
         }
     }
 

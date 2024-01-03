@@ -10,6 +10,7 @@
 
 // Not <ctime> because we also want to get timegm() if available.
 #include <time.h>
+#include "soci/type-wrappers.h"
 
 #ifdef _WIN32
 #define timegm _mkgmtime
@@ -61,6 +62,7 @@ mktime_from_ymdhms(tm& t,
 //
 // Throws if the string in buf couldn't be parsed as a date or a time string.
 SOCI_DECL void parse_std_tm(char const *buf, std::tm &t);
+SOCI_DECL void parse_soci_datetime ( char const *buf, soci::datetime & );
 
 } // namespace details
 

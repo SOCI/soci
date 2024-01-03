@@ -45,6 +45,8 @@ inline std::size_t get_vector_size(exchange_type e, void *data)
             return exchange_vector_type_cast<x_double>(data).size();
         case x_stdtm:
             return exchange_vector_type_cast<x_stdtm>(data).size();
+        case x_datetime:
+            return exchange_vector_type_cast<x_datetime> ( data ).size ();
         case x_xmltype:
             return exchange_vector_type_cast<x_xmltype>(data).size();
         case x_longstring:
@@ -86,6 +88,9 @@ inline void resize_vector(exchange_type e, void *data, std::size_t newSize)
         case x_stdtm:
             exchange_vector_type_cast<x_stdtm>(data).resize(newSize);
             return;
+        case x_datetime:
+            exchange_vector_type_cast<x_datetime> ( data ).resize ( newSize );
+            return;
         case x_xmltype:
             exchange_vector_type_cast<x_xmltype>(data).resize(newSize);
             return;
@@ -111,6 +116,7 @@ inline std::string& vector_string_value(exchange_type e, void *data, std::size_t
             return exchange_vector_type_cast<x_xmltype>(data).at(ind).value;
         case x_longstring:
             return exchange_vector_type_cast<x_longstring>(data).at(ind).value;
+        case x_datetime:
         case x_char:
         case x_short:
         case x_integer:

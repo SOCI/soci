@@ -95,7 +95,7 @@ foreach(external ${SOCI_ALL_DEPENDENCIES})
     unset(disabled_var)
   endif()
 
-  if(NOT ${EXTERNAL}_FOUND)
+  if(NOT ${EXTERNAL}_FOUND AND NOT ${external}_FOUND)
     set(SOCI_${EXTERNAL} OFF)
   endif()
 endforeach()

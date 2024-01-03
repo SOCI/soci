@@ -113,6 +113,9 @@ void set_number_in_vector(void *p, int idx, const sqlite3_column &col)
 
         case dt_xml:
             throw soci_error("XML data type is not supported");
+
+        case dt_datetime:
+            throw soci_error ( "datetime data type is not supported" );
     };
 }
 
@@ -186,6 +189,9 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
 
                     case dt_xml:
                         throw soci_error("XML data type is not supported");
+ 
+                    case dt_datetime:
+                        throw soci_error ( "datetime data type is not supported" );
                 };
                 break;
             } // x_char
@@ -228,6 +234,9 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                         set_in_vector(data_, i, xml);
                         break;
                     }
+
+                    case dt_datetime:
+                        throw soci_error ( "datetime data type is not supported" );
                 };
                 break;
             } // x_stdstring
@@ -295,6 +304,9 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
 
                     case dt_xml:
                         throw soci_error("XML data type is not supported");
+
+                    case dt_datetime:
+                        throw soci_error ( "datetime data type is not supported" );
                 };
                 break;
             }
@@ -321,6 +333,9 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
 
             case dt_xml:
                 throw soci_error("XML data type is not supported");
+            
+            case dt_datetime:
+                throw soci_error ( "datetime data type is not supported" );
         }
     }
 }

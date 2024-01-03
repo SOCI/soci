@@ -125,6 +125,16 @@ struct exchange_traits<std::tm>
     enum { x_type = x_stdtm };
 };
 
+template <>
+struct exchange_traits<soci::datetime>
+{
+    typedef basic_type_tag type_family;
+    enum
+    {
+        x_type = x_datetime
+    };
+};
+
 template <typename T>
 struct exchange_traits<std::vector<T> >
 {

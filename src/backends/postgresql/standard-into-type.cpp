@@ -109,6 +109,11 @@ void postgresql_standard_into_type_backend::post_fetch(
             // attempt to parse the string and convert to std::tm
             parse_std_tm(buf, exchange_type_cast<x_stdtm>(data_));
             break;
+        case x_datetime:
+            // attempt to parse the string and convert to soci::datetime
+            parse_soci_datetime ( buf, exchange_type_cast<x_datetime> ( data_ ) );
+            break;
+
         case x_rowid:
             {
                 // RowID is internally identical to unsigned long
