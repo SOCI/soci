@@ -1,16 +1,47 @@
-###############################################################################
-#
-# This file is part of CMake configuration for SOCI library
-#
-# Copyright (C) 2013 Viacheslav Naydenov
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE_1_0.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
-#
-###############################################################################
+option(SOCI_FIREBIRD_EMBEDDED "Use the embedded version of Firebird" OFF)
 
-soci_backend(Firebird
-  DEPENDS Firebird
-  DESCRIPTION "SOCI backend for Firebird"
-  AUTHORS "Rafał Bobrowski"
-  MAINTAINERS "Viacheslav Naydenov")
+if (SOCI_FIREBIRD_AS_AVAILABLE)
+  set(REQUIRED_FLAG "")
+else()
+  set(REQUIRED_FLAG "REQUIRED")
+endif()
+
+find_package(Firebird ${REQUIRED_FLAG})
+
+if (NOT Firebird_FOUND)
+  message(STATUS "Disabling Firebird backend as the required dependencies were not found")
+  return()
+endif()
+
+add_library(soci_firebird_objects OBJECT
+  "blob.cpp"
+  "common.cpp"
+  "error-firebird.cpp"
+  "factory.cpp"
+  "session.cpp"
+  "standard-into-type.cpp"
+  "standard-use-type.cpp"
+  "statement.cpp"
+  "vector-into-type.cpp"
+  "vector-use-type.cpp"
+)
+
+target_link_libraries(soci_firebird_objects PUBLIC Firebird::firebird)
+target_link_libraries(soci_firebird_objects PUBLIC soci_core_objects)
+
+target_include_directories(soci_firebird_objects
+  PRIVATE
+    "${PROJECT_SOURCE_DIR}/include/private"
+    "${PROJECT_SOURCE_DIR}/include/soci"
+)
+
+if (SOCI_SHARED)
+  add_library(soci_firebird)
+  target_link_libraries(soci_firebird PUBLIC soci_firebird_objects)
+  add_library(SOCI::shared::Firebird ALIAS soci_firebird)
+endif()
+if (SOCI_STATIC)
+  add_library(soci_firebird_static)
+  target_link_libraries(soci_firebird_static PUBLIC soci_firebird_objects)
+  add_library(SOCI::static::Firebird ALIAS soci_firebird_static)
+endif()

@@ -1,32 +1,59 @@
-###############################################################################
-#
-# This file is part of CMake configuration for SOCI library
-#
-# Copyright (C) 2010 Mateusz Loskot <mateusz@loskot.net>
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE_1_0.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
-#
-###############################################################################
+if (SOCI_POSTGRESQL_AS_AVAILABLE)
+  set(REQUIRED_FLAG "")
+else()
+  set(REQUIRED_FLAG "REQUIRED")
+endif()
 
-include(CMakeDependentOption)
+find_package(PostgreSQL ${REQUIRED_FLAG})
+
+if (NOT PostgreSQL_FOUND)
+  message(STATUS "Disabling PostgreSQL backend as the required dependencies were not found")
+  return()
+endif()
 
 option(SOCI_POSTGRESQL_NO_LO64
   "Do not use lo_xxx64() functions for compatibility with PostgreSQL < 9.3"
-  OFF)
-
+  OFF
+)
 if (POSTGRESQL_VERSION VERSION_LESS "9.3.0")
   set(SOCI_POSTGRESQL_NO_LO64 ON CACHE BOOL "Avoid using lo_xxx64() functions" FORCE)
 endif()
 
-if(SOCI_POSTGRESQL_NO_LO64)
-  add_definitions(-DSOCI_POSTGRESQL_NO_LO64=1)
+add_library(soci_postgresql_objects OBJECT
+  "blob.cpp"
+  "error.cpp"
+  "factory.cpp"
+  "row-id.cpp"
+  "session.cpp"
+  "standard-into-type.cpp"
+  "standard-use-type.cpp"
+  "statement.cpp"
+  "vector-into-type.cpp"
+  "vector-use-type.cpp"
+)
+
+target_link_libraries(soci_postgresql_objects PUBLIC PostgreSQL::PostgreSQL)
+target_link_libraries(soci_postgresql_objects PUBLIC soci_core_objects)
+
+target_include_directories(soci_postgresql_objects
+  PRIVATE
+    "${PROJECT_SOURCE_DIR}/include/private"
+    "${PROJECT_SOURCE_DIR}/include/soci"
+)
+
+if (SOCI_SHARED)
+  add_library(soci_postgresql)
+  target_link_libraries(soci_postgresql PUBLIC soci_postgresql_objects)
+  add_library(SOCI::shared::PostgreSQL ALIAS soci_postgresql)
+  if (SOCI_POSTGRESQL_NO_LO64)
+    target_compile_definitions(soci_postgresql INTERFACE SOCI_POSTGRESQL_NO_LO64)
+  endif()
 endif()
-
-soci_backend(PostgreSQL
-  DEPENDS PostgreSQL
-  DESCRIPTION "SOCI backend for PostgreSQL"
-  AUTHORS "Maciej Sobczak, Stephen Hutton"
-  MAINTAINERS "Mateusz Loskot")
-
-boost_report_value(SOCI_POSTGRESQL_NO_LO64)
+if (SOCI_STATIC)
+  add_library(soci_postgresql_static)
+  target_link_libraries(soci_postgresql_static PUBLIC soci_postgresql_objects)
+  add_library(SOCI::static::PostgreSQL ALIAS soci_postgresql_static)
+  if (SOCI_POSTGRESQL_NO_LO64)
+    target_compile_definitions(soci_postgresql_static INTERFACE SOCI_POSTGRESQL_NO_LO64)
+  endif()
+endif()
