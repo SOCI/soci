@@ -6662,7 +6662,7 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
                     CHECK(buffer[i] == dummy_data[i]);
                 }
             }
-            SECTION("get")
+            SECTION("move_as")
             {
                 soci::rowset< soci::row > rowSet = (sql.prepare << "select b from soci_test where id=:id", soci::use(id));
                 bool containedData = false;
@@ -6682,6 +6682,64 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
                 }
                 CHECK(containedData);
             }
+            SECTION("reusing bound blob")
+            {
+                int secondID = id + 1;
+                sql << "insert into soci_test(id, b) values(:id, :b)", soci::use(secondID), soci::use(blob);
+
+                // Selecting the blob associated with secondID should yield the same result as selecting the one for id
+                soci::blob intoBlob(sql);
+                sql << "select b from soci_test where id=:id", soci::use(secondID), soci::into(intoBlob);
+                char buffer[20];
+                std::size_t written = intoBlob.read_from_start(buffer, sizeof(buffer));
+                CHECK(written == 10);
+                for (std::size_t i = 0; i < 10; ++i) {
+                    CHECK(buffer[i] == dummy_data[i]);
+                }
+            }
+        }
+        SECTION("Statements")
+        {
+            unsigned int id;
+            soci::blob myBlob(sql);
+            soci::statement insert_stmt = (sql.prepare << "insert into soci_test (id, b) values (:id, :b)", soci::use(id), soci::use(myBlob));
+
+            id = 1;
+            myBlob.write_from_start(dummy_data + id, id);
+            insert_stmt.execute(true);
+
+            id = 5;
+            myBlob.write_from_start(dummy_data + id, id);
+            insert_stmt.execute(true);
+
+
+            soci::statement select_stmt = (sql.prepare << "select id, b from soci_test order by id asc", soci::into(id), soci::into(myBlob));
+            char contents[16];
+
+            select_stmt.execute();
+            CHECK(select_stmt.fetch());
+            CHECK(id == 1);
+            std::size_t blob_size = myBlob.get_len();
+            CHECK(blob_size == id);
+            std::size_t read = myBlob.read_from_start(contents, blob_size);
+            CHECK(read == blob_size);
+            for (unsigned int i = 0; i < blob_size; ++i)
+            {
+                CHECK(contents[i] == dummy_data[id + i]);
+            }
+
+            CHECK(select_stmt.fetch());
+            CHECK(id == 5);
+            blob_size = myBlob.get_len();
+            CHECK(blob_size == id);
+            read = myBlob.read_from_start(contents, blob_size);
+            CHECK(read == blob_size);
+            for (unsigned int i = 0; i < blob_size; ++i)
+            {
+                CHECK(contents[i] == dummy_data[id + i]);
+            }
+
+            CHECK(!select_stmt.fetch());
         }
     }
     transaction.rollback();
