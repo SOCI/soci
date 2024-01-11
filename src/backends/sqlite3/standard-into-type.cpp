@@ -96,30 +96,58 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
                 break;
             }
 
-            case x_short:
-                exchange_type_cast<x_short>(data_)
-                    = static_cast<exchange_type_traits<x_short>::value_type >(
+            case x_int8:
+                exchange_type_cast<x_int8>(data_)
+                    = static_cast<exchange_type_traits<x_int8>::value_type >(
                         sqlite3_column_int(statement_.stmt_, pos)
                     );
                 break;
 
-            case x_integer:
-                exchange_type_cast<x_integer>(data_)
-                    = static_cast<exchange_type_traits<x_integer>::value_type >(
+            case x_uint8:
+                exchange_type_cast<x_uint8>(data_)
+                        = static_cast<exchange_type_traits<x_uint8>::value_type >(
+                        sqlite3_column_int(statement_.stmt_, pos)
+                );
+                break;
+
+            case x_int16:
+                exchange_type_cast<x_int16>(data_)
+                    = static_cast<exchange_type_traits<x_int16>::value_type >(
                         sqlite3_column_int(statement_.stmt_, pos)
                     );
                 break;
 
-            case x_long_long:
-                exchange_type_cast<x_long_long>(data_)
-                    = static_cast<exchange_type_traits<x_long_long>::value_type >(
+            case x_uint16:
+                exchange_type_cast<x_uint16>(data_)
+                        = static_cast<exchange_type_traits<x_uint16>::value_type >(
+                        sqlite3_column_int(statement_.stmt_, pos)
+                );
+                break;
+
+            case x_int32:
+                exchange_type_cast<x_int32>(data_)
+                    = static_cast<exchange_type_traits<x_int32>::value_type >(
+                        sqlite3_column_int(statement_.stmt_, pos)
+                    );
+                break;
+
+            case x_uint32:
+                exchange_type_cast<x_uint32>(data_)
+                        = static_cast<exchange_type_traits<x_uint32>::value_type >(
+                        sqlite3_column_int(statement_.stmt_, pos)
+                );
+                break;
+
+            case x_int64:
+                exchange_type_cast<x_int64>(data_)
+                    = static_cast<exchange_type_traits<x_int64>::value_type >(
                         sqlite3_column_int64(statement_.stmt_, pos)
                     );
                 break;
 
-            case x_unsigned_long_long:
-                exchange_type_cast<x_unsigned_long_long>(data_)
-                    = static_cast<exchange_type_traits<x_unsigned_long_long>::value_type >(
+            case x_uint64:
+                exchange_type_cast<x_uint64>(data_)
+                    = static_cast<exchange_type_traits<x_uint64>::value_type >(
                         sqlite3_column_int64(statement_.stmt_, pos)
                     );
                 break;

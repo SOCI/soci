@@ -12,6 +12,7 @@
 #include "common.h"
 #include "soci/soci-platform.h"
 #include <ciso646>
+#include <cstdint>
 #include <cstdlib>
 
 using namespace soci;
@@ -108,30 +109,60 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                     (*dest)[i].assign(buf, lengths[pos]);
                 }
                 break;
-            case x_short:
+            case x_int8:
                 {
-                    short val;
+                    int32_t tmp = 0;
+                    parse_num(buf, tmp);
+                    int8_t val = static_cast<int8_t>(tmp);
+                    set_invector_(data_, i, val);
+                }
+                break;
+            case x_uint8:
+                {
+                    uint32_t tmp = 0;
+                    parse_num(buf, tmp);
+                    uint8_t val = static_cast<uint8_t>(tmp);
+                    set_invector_(data_, i, val);
+                }
+                break;
+            case x_int16:
+                {
+                    int16_t val;
                     parse_num(buf, val);
                     set_invector_(data_, i, val);
                 }
                 break;
-            case x_integer:
+            case x_uint16:
                 {
-                    int val;
+                    uint16_t val;
                     parse_num(buf, val);
                     set_invector_(data_, i, val);
                 }
                 break;
-            case x_long_long:
+            case x_int32:
                 {
-                    long long val;
+                    int32_t val;
                     parse_num(buf, val);
                     set_invector_(data_, i, val);
                 }
                 break;
-            case x_unsigned_long_long:
+            case x_uint32:
                 {
-                    unsigned long long val;
+                    uint32_t val;
+                    parse_num(buf, val);
+                    set_invector_(data_, i, val);
+                }
+                break;
+            case x_int64:
+                {
+                    int64_t val;
+                    parse_num(buf, val);
+                    set_invector_(data_, i, val);
+                }
+                break;
+            case x_uint64:
+                {
+                    uint64_t val;
                     parse_num(buf, val);
                     set_invector_(data_, i, val);
                 }
@@ -182,12 +213,14 @@ void mysql_vector_into_type_backend::resize(std::size_t sz)
     {
         // simple cases
     case x_char:         resizevector_<char>         (data_, sz); break;
-    case x_short:        resizevector_<short>        (data_, sz); break;
-    case x_integer:      resizevector_<int>          (data_, sz); break;
-    case x_long_long:     resizevector_<long long>    (data_, sz); break;
-    case x_unsigned_long_long:
-        resizevector_<unsigned long long>(data_, sz);
-        break;
+    case x_int8:         resizevector_<int8_t>       (data_, sz); break;
+    case x_uint8:        resizevector_<uint8_t>      (data_, sz); break;
+    case x_int16:        resizevector_<int16_t>      (data_, sz); break;
+    case x_uint16:       resizevector_<uint16_t>     (data_, sz); break;
+    case x_int32:        resizevector_<int32_t>      (data_, sz); break;
+    case x_uint32:       resizevector_<uint32_t>     (data_, sz); break;
+    case x_int64:        resizevector_<int64_t>      (data_, sz); break;
+    case x_uint64:       resizevector_<uint64_t>     (data_, sz); break;
     case x_double:       resizevector_<double>       (data_, sz); break;
     case x_stdstring:    resizevector_<std::string>  (data_, sz); break;
     case x_stdtm:        resizevector_<std::tm>      (data_, sz); break;
@@ -204,12 +237,14 @@ std::size_t mysql_vector_into_type_backend::size()
     {
         // simple cases
     case x_char:         sz = get_vector_size<char>         (data_); break;
-    case x_short:        sz = get_vector_size<short>        (data_); break;
-    case x_integer:      sz = get_vector_size<int>          (data_); break;
-    case x_long_long:     sz = get_vector_size<long long>    (data_); break;
-    case x_unsigned_long_long:
-        sz = get_vector_size<unsigned long long>(data_);
-        break;
+    case x_int8:         sz = get_vector_size<int8_t>       (data_); break;
+    case x_uint8:        sz = get_vector_size<uint8_t>      (data_); break;
+    case x_int16:        sz = get_vector_size<int16_t>      (data_); break;
+    case x_uint16:       sz = get_vector_size<uint16_t>     (data_); break;
+    case x_int32:        sz = get_vector_size<int32_t>      (data_); break;
+    case x_uint32:       sz = get_vector_size<uint32_t>     (data_); break;
+    case x_int64:        sz = get_vector_size<int64_t>      (data_); break;
+    case x_uint64:       sz = get_vector_size<uint64_t>     (data_); break;
     case x_double:       sz = get_vector_size<double>       (data_); break;
     case x_stdstring:    sz = get_vector_size<std::string>  (data_); break;
     case x_stdtm:        sz = get_vector_size<std::tm>      (data_); break;

@@ -126,15 +126,15 @@ public:
 
     void create_table(const std::string & tableName);
     void add_column(const std::string & tableName,
-        const std::string & columnName, data_type dt,
+        const std::string & columnName, db_type dt,
         int precision, int scale);
     void alter_column(const std::string & tableName,
-        const std::string & columnName, data_type dt,
+        const std::string & columnName, db_type dt,
         int precision, int scale);
     void drop_column(const std::string & tableName,
         const std::string & columnName);
-    ddl_type & column(const std::string & columnName, data_type dt,
-        int precision = 0, int scale = 0);
+    ddl_type & column(const std::string & columnName, db_type dt,
+                      int precision = 0, int scale = 0);
     ddl_type & unique(const std::string & name,
         const std::string & columnNames);
     ddl_type & primary_key(const std::string & name,
@@ -149,6 +149,29 @@ public:
     // helper function for handling delimiters
     // between various parts of DDL statements
     void set_tail(const std::string & tail);
+
+    // The functions below still work but are deprecated (but we don't give
+    // deprecation warnings for them because there is no real harm in using
+    // them).
+    //
+    // Use the overloads taking db_type instead in the new code.
+    void add_column(const std::string & tableName,
+        const std::string & columnName, data_type dt,
+        int precision, int scale)
+    {
+        add_column(tableName, columnName, details::to_db_type(dt), precision, scale);
+    }
+    void alter_column(const std::string & tableName,
+        const std::string & columnName, data_type dt,
+        int precision, int scale)
+    {
+        alter_column(tableName, columnName, details::to_db_type(dt), precision, scale);
+    }
+    ddl_type & column(const std::string & columnName, data_type dt,
+        int precision = 0, int scale = 0)
+    {
+        return column(columnName, details::to_db_type(dt), precision, scale);
+    }
 
 private:
     session * s_;

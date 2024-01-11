@@ -24,6 +24,24 @@ enum data_type
     dt_string, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long
 };
 
+// data types, as seen by the user
+enum db_type
+{
+    db_string,
+    db_int8,
+    db_uint8,
+    db_int16,
+    db_uint16,
+    db_int32,
+    db_uint32,
+    db_int64,
+    db_uint64,
+    db_double,
+    db_date,
+    db_blob,
+    db_xml
+};
+
 // the enum type for indicator variables
 enum indicator { i_ok, i_null, i_truncated };
 
@@ -32,15 +50,26 @@ enum exchange_type
 {
     x_char,
     x_stdstring,
-    x_short,
-    x_integer,
-    x_long_long,
-    x_unsigned_long_long,
+    x_int8,
+    x_uint8,
+    x_int16,
+    x_short = x_int16,
+    x_uint16,
+    x_int32,
+    x_integer = x_int32,
+    x_uint32,
+    x_int64,
+    x_long_long = x_int64,
+    x_uint64,
+    x_unsigned_long_long = x_uint64,
     x_double,
     x_stdtm,
     x_statement,
     x_rowid,
-    x_blob
+    x_blob,
+
+    x_xmltype,
+    x_longstring
 };
 
 struct cstring_descriptor
@@ -60,8 +89,9 @@ public:
 };
 ```
 
-The `data_type` enumeration type defines all types that form the core type support for SOCI.
+The `data_type` and `db_type` enumeration type defines all types that form the core type support for SOCI.
 The enum itself can be used by clients when dealing with dynamic rowset description.
+`data_type` is deprecated in favor of `db_type`, so users are encouraged to use the latter.
 
 The `indicator` enumeration type defines all recognized *states* of data.
 The `i_truncated` state is provided for the case where the string is retrieved from the database
@@ -190,7 +220,8 @@ public:
     virtual std::string rewrite_for_procedure_call(std::string const& query) = 0;
 
     virtual int prepare_for_describe() = 0;
-    virtual void describe_column(int colNum, data_type& dtype,
+    virtual void describe_column(int colNum,
+        db_type& dbtype,
         std::string& column_name) = 0;
 
     virtual standard_into_type_backend* make_into_type_backend() = 0;

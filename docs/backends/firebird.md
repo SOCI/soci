@@ -73,14 +73,25 @@ type is not known at compile time.
 When calling `row::get<T>()`, the type you should pass as T depends upon the underlying database type.
 For the Firebird backend, this type mapping is:
 
-|Firebird Data Type|SOCI Data Type|`row::get<T>` specializations|
-|--- |--- |--- |
-|numeric, decimal (where scale > 0)|dt_double|double|
-|numeric, decimal [^1] (where scale = 0)|dt_integer, dt_double|int, double|
-|double precision, float|dt_double|double|
-|smallint, integer|dt_integer|int|
-|char, varchar|dt_string|std::string|
-|date, time, timestamp|dt_date|std::tm|
+| Firebird Data Type                      | SOCI Data Type (`data_type`)            | `row::get<T>` specializations     |
+| --------------------------------------- | --------------------------------------- | --------------------------------- |
+| numeric, decimal (where scale > 0)      | dt_double                               | double                            |
+| numeric, decimal [^1] (where scale = 0) | dt_integer, dt_double                   | int, double                       |
+| double precision, float                 | dt_double                               | double                            |
+| smallint, integer                       | dt_integer                              | int                               |
+| char, varchar                           | dt_string                               | std::string                       |
+| date, time, timestamp                   | dt_date                                 | std::tm                           |
+
+| Firebird Data Type                      | SOCI Data Type (`db_type`)              | `row::get<T>` specializations     |
+| --------------------------------------- | --------------------------------------- | --------------------------------- |
+| numeric, decimal (where scale > 0)      | db_double                               | double                            |
+| numeric, decimal [^1] (where scale = 0) | db_int16/db_int32/db_int64, db_double   | int16_t/int32_t/int64_t, double   |
+| double precision, float                 | db_double                               | double                            |
+| smallint                                | db_int16                                | int16_t                           |
+| integer                                 | db_int32                                | int32_t                           |
+| bigint                                  | db_int64                                | int64_t                           |
+| char, varchar                           | db_string                               | std::string                       |
+| date, time, timestamp                   | db_date                                 | std::tm                           |
 
 [^1] There is also 64bit integer type for larger values which is
 currently not supported.

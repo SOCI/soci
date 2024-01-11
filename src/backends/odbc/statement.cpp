@@ -327,7 +327,8 @@ int odbc_statement_backend::prepare_for_describe()
     return numCols;
 }
 
-void odbc_statement_backend::describe_column(int colNum, data_type & type,
+void odbc_statement_backend::describe_column(int colNum,
+                                          db_type & dbtype,
                                           std::string & columnName)
 {
     SQLCHAR colNameBuffer[2048];
@@ -352,34 +353,61 @@ void odbc_statement_backend::describe_column(int colNum, data_type & type,
     char const *name = reinterpret_cast<char const *>(colNameBuffer);
     columnName.assign(name, std::strlen(name));
 
+    SQLLEN is_unsigned = 0;
+    SQLRETURN rc_colattr = SQLColAttribute(hstmt_, static_cast<SQLUSMALLINT>(colNum),
+                                           SQL_DESC_UNSIGNED, 0, 0, 0, &is_unsigned);
+
+    if (is_odbc_error(rc_colattr))
+    {
+        std::ostringstream ss;
+        ss << "getting \"unsigned\" column attribute of the column at position " << colNum;
+        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, ss.str());
+    }
+
     switch (dataType)
     {
     case SQL_TYPE_DATE:
     case SQL_TYPE_TIME:
     case SQL_TYPE_TIMESTAMP:
-        type = dt_date;
+        dbtype = db_date;
         break;
     case SQL_DOUBLE:
     case SQL_DECIMAL:
     case SQL_REAL:
     case SQL_FLOAT:
     case SQL_NUMERIC:
-        type = dt_double;
+        dbtype = db_double;
         break;
     case SQL_TINYINT:
+        dbtype = is_unsigned == SQL_TRUE ? db_uint8 : db_int8;
+        break;
     case SQL_SMALLINT:
+        dbtype = is_unsigned == SQL_TRUE ? db_uint16 : db_int16;
+        break;
     case SQL_INTEGER:
-        type = dt_integer;
+        dbtype = is_unsigned == SQL_TRUE ? db_uint32 : db_int32;
         break;
     case SQL_BIGINT:
-        type = dt_long_long;
+        dbtype = is_unsigned == SQL_TRUE ? db_uint64 : db_int64;
         break;
     case SQL_CHAR:
     case SQL_VARCHAR:
     case SQL_LONGVARCHAR:
     default:
-        type = dt_string;
+        dbtype = db_string;
         break;
+    }
+}
+
+data_type odbc_statement_backend::to_data_type(db_type dbt) const
+{
+    // Before adding db_type, this backend returned signed integer constants
+    // even for unsigned types, so preserve this behaviour.
+    switch (dbt)
+    {
+        case db_uint32: return dt_integer;
+        case db_uint64: return dt_long_long;
+        default:        return statement_backend::to_data_type(dbt);
     }
 }
 

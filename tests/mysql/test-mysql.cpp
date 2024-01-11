@@ -22,6 +22,7 @@
 #include <cstdlib>
 #include <mysqld_error.h>
 #include <errmsg.h>
+#include <cstdint>
 
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_mysql();
@@ -449,32 +450,44 @@ TEST_CASE("MySQL text and blob", "[mysql][text][blob]")
                         "from soci_test order by id");
     rowset<row>::const_iterator r = rs.begin();
     CHECK(r->get_properties(0).get_data_type() == dt_string);
+    CHECK(r->get_properties(0).get_db_type() == db_string);
     CHECK(r->get<std::string>(0) == "foo");
     CHECK(r->get_properties(1).get_data_type() == dt_string);
+    CHECK(r->get_properties(1).get_db_type() == db_string);
     CHECK(r->get<std::string>(1) == "bar");
     CHECK(r->get_properties(2).get_data_type() == dt_string);
+    CHECK(r->get_properties(2).get_db_type() == db_string);
     CHECK(r->get<std::string>(2) == "baz");
     ++r;
     CHECK(r->get_properties(0).get_data_type() == dt_string);
+    CHECK(r->get_properties(0).get_db_type() == db_string);
     CHECK(r->get<std::string>(0) == std::string("qwerty\0uiop", 11));
     CHECK(r->get_properties(1).get_data_type() == dt_string);
+    CHECK(r->get_properties(1).get_db_type() == db_string);
     CHECK(r->get<std::string>(1) == std::string("zxcv\0bnm", 8));
     CHECK(r->get_properties(2).get_data_type() == dt_string);
+    CHECK(r->get_properties(2).get_db_type() == db_string);
     CHECK(r->get<std::string>(2) ==
            std::string("qwerty\0uiop\0zxcvbnm\0", 20));
     ++r;
     CHECK(r->get_properties(0).get_data_type() == dt_string);
+    CHECK(r->get_properties(0).get_db_type() == db_string);
     CHECK(r->get<std::string>(0) == a);
     CHECK(r->get_properties(1).get_data_type() == dt_string);
+    CHECK(r->get_properties(1).get_db_type() == db_string);
     CHECK(r->get<std::string>(1) == b);
     CHECK(r->get_properties(2).get_data_type() == dt_string);
+    CHECK(r->get_properties(2).get_db_type() == db_string);
     CHECK(r->get<std::string>(2) == c);
     ++r;
     CHECK(r->get_properties(0).get_data_type() == dt_string);
+    CHECK(r->get_properties(0).get_db_type() == db_string);
     CHECK(r->get<std::string>(0) == x);
     CHECK(r->get_properties(1).get_data_type() == dt_string);
+    CHECK(r->get_properties(1).get_db_type() == db_string);
     CHECK(r->get<std::string>(1) == y);
     CHECK(r->get_properties(2).get_data_type() == dt_string);
+    CHECK(r->get_properties(2).get_db_type() == db_string);
     CHECK(r->get<std::string>(2) == z);
     ++r;
     CHECK(r == rs.end());
@@ -688,8 +701,9 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
     sql << "select val from soci_test", into(r);
     REQUIRE(r.size() == 1);
     CHECK(r.get_properties("val").get_data_type() == dt_long_long);
-    CHECK(r.get<long long>("val") == 0xffffff00);
+    CHECK(r.get_properties("val").get_db_type() == db_uint32);
     CHECK(r.get<unsigned>("val") == 0xffffff00);
+    CHECK(r.get<uint32_t>("val") == 0xffffff00);
   }
   {
     soci::session sql(backEnd, connectString);
@@ -699,7 +713,8 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
     sql << "select val from soci_test", into(r);
     REQUIRE(r.size() == 1);
     CHECK(r.get_properties("val").get_data_type() == dt_integer);
-    CHECK(r.get<int>("val") == -123);
+    CHECK(r.get_properties("val").get_db_type() == db_int8);
+    CHECK(r.get<int8_t>("val") == -123);
   }
   {
     soci::session sql(backEnd, connectString);
@@ -709,7 +724,8 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
     sql << "select val from soci_test", into(r);
     REQUIRE(r.size() == 1);
     CHECK(r.get_properties("val").get_data_type() == dt_integer);
-    CHECK(r.get<int>("val") == 123);
+    CHECK(r.get_properties("val").get_db_type() == db_uint8);
+    CHECK(r.get<uint8_t>("val") == 123);
   }
   {
     soci::session sql(backEnd, connectString);
@@ -719,7 +735,9 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
     sql << "select val from soci_test", into(r);
     REQUIRE(r.size() == 1);
     CHECK(r.get_properties("val").get_data_type() == dt_unsigned_long_long);
+    CHECK(r.get_properties("val").get_db_type() == db_uint64);
     CHECK(r.get<unsigned long long>("val") == 123456789012345ULL);
+    CHECK(r.get<uint64_t>("val") == 123456789012345ULL);
   }
   {
     soci::session sql(backEnd, connectString);
@@ -729,7 +747,9 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
     sql << "select val from soci_test", into(r);
     REQUIRE(r.size() == 1);
     CHECK(r.get_properties("val").get_data_type() == dt_long_long);
+    CHECK(r.get_properties("val").get_db_type() == db_int64);
     CHECK(r.get<long long>("val") == -123456789012345LL);
+    CHECK(r.get<int64_t>("val") == -123456789012345LL);
   }
 }
 
@@ -764,6 +784,7 @@ TEST_CASE("MySQL strings", "[mysql][string]")
     REQUIRE(r.size() == 13);
     for (int i = 0; i < 13; i++) {
         CHECK(r.get_properties(i).get_data_type() == dt_string);
+        CHECK(r.get_properties(i).get_db_type() == db_string);
         if (i < 6) {
             CHECK(r.get<std::string>(i) == text);
         } else if (i < 12) {

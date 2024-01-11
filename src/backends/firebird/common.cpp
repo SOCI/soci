@@ -123,15 +123,15 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
     }
     else if (sqltype == SQL_SHORT)
     {
-        parse_decimal<short, unsigned short>(buf_, var, s);
+        parse_decimal<int16_t, uint16_t>(buf_, var, s);
     }
     else if (sqltype == SQL_LONG)
     {
-        parse_decimal<int, unsigned int>(buf_, var, s);
+        parse_decimal<int32_t, uint32_t>(buf_, var, s);
     }
     else if (sqltype == SQL_INT64)
     {
-        parse_decimal<long long, unsigned long long>(buf_, var, s);
+        parse_decimal<int64_t, uint64_t>(buf_, var, s);
     }
     else if (sqltype == SQL_TIMESTAMP
             || sqltype == SQL_TYPE_DATE)
@@ -204,15 +204,15 @@ std::string getTextParam(XSQLVAR const *var)
     }
     else if ((var->sqltype & ~1) == SQL_SHORT)
     {
-        return format_decimal<short>(var->sqldata, var->sqlscale);
+        return format_decimal<int16_t>(var->sqldata, var->sqlscale);
     }
     else if ((var->sqltype & ~1) == SQL_LONG)
     {
-        return format_decimal<int>(var->sqldata, var->sqlscale);
+        return format_decimal<int32_t>(var->sqldata, var->sqlscale);
     }
     else if ((var->sqltype & ~1) == SQL_INT64)
     {
-        return format_decimal<long long>(var->sqldata, var->sqlscale);
+        return format_decimal<int64_t>(var->sqldata, var->sqlscale);
     }
     else
         throw soci_error("Unexpected string type");

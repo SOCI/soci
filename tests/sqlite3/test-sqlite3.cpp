@@ -14,6 +14,7 @@
 #include <cmath>
 #include <cstring>
 #include <ctime>
+#include <cstdint>
 
 using namespace soci;
 using namespace soci::tests;
@@ -775,8 +776,8 @@ struct table_creator_one : public table_creator_base
         : table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, val integer, c char, "
-                 "str varchar(20), sh smallint, ul numeric(20), d float, "
-                 "num76 numeric(7,6), "
+                 "str varchar(20), sh smallint, ll bigint, ul unsigned bigint, "
+                 "d float, num76 numeric(7,6), "
                  "tm datetime, i1 integer, i2 integer, i3 integer, "
                  "name varchar(20))";
     }
@@ -888,6 +889,13 @@ public:
             perhaps, we start using sqlite3_bind_double() in the backend code.
          */
 
+        return true;
+    }
+
+    bool has_uint64_storage_bug() const override
+    {
+        // SQLite processes integers as 8-byte signed values. Values bigger
+        // than INT64_MAX therefore overflow and are stored as negative values.
         return true;
     }
 

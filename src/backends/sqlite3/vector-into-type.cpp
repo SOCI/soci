@@ -22,6 +22,7 @@
 #include "common.h"
 // std
 #include <cstddef>
+#include <cstdint>
 #include <cstdlib>
 #include <ctime>
 #include <string>
@@ -87,31 +88,47 @@ void set_number_in_vector(void *p, int idx, const sqlite3_column &col)
     using namespace details;
     using namespace details::sqlite3;
 
-    switch (col.type_)
+    switch (col.dataType_)
     {
-        case dt_date:
-        case dt_string:
-        case dt_blob:
+        case db_date:
+        case db_string:
+        case db_blob:
             set_in_vector(p, idx,
                           parse_number_from_string<T>(col.buffer_.size_ > 0
                                                         ? col.buffer_.constData_
                                                         : ""));
             break;
 
-        case dt_double:
+        case db_double:
             set_in_vector(p, idx, static_cast<T>(col.double_));
             break;
 
-        case dt_integer:
+        case db_int8:
+            set_in_vector(p, idx, static_cast<T>(col.int8_));
+            break;
+        case db_uint8:
+            set_in_vector(p, idx, static_cast<T>(col.uint8_));
+            break;
+        case db_int16:
+            set_in_vector(p, idx, static_cast<T>(col.int16_));
+            break;
+        case db_uint16:
+            set_in_vector(p, idx, static_cast<T>(col.uint16_));
+            break;
+        case db_int32:
             set_in_vector(p, idx, static_cast<T>(col.int32_));
             break;
-
-        case dt_long_long:
-        case dt_unsigned_long_long:
+        case db_uint32:
+            set_in_vector(p, idx, static_cast<T>(col.uint32_));
+            break;
+        case db_int64:
             set_in_vector(p, idx, static_cast<T>(col.int64_));
             break;
+        case db_uint64:
+            set_in_vector(p, idx, static_cast<T>(col.uint64_));
+            break;
 
-        case dt_xml:
+        case db_xml:
             throw soci_error("XML data type is not supported");
     };
 }
@@ -155,36 +172,76 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
         {
             case x_char:
             {
-                switch (col.type_)
+                switch (col.dataType_)
                 {
-                    case dt_date:
-                    case dt_string:
-                    case dt_blob:
+                    case db_date:
+                    case db_string:
+                    case db_blob:
                         set_in_vector(data_, i, (col.buffer_.size_ > 0 ? col.buffer_.constData_[0] : '\0'));
                         break;
 
-                    case dt_double:
+                    case db_double:
                         set_in_vector(data_, i, double_to_cstring(col.double_)[0]);
                         break;
 
-                    case dt_integer:
+                    case db_int8:
+                    {
+                        std::ostringstream ss;
+                        ss << col.int8_;
+                        set_in_vector(data_, i, ss.str()[0]);
+                        break;
+                    }
+                    case db_uint8:
+                    {
+                        std::ostringstream ss;
+                        ss << col.uint8_;
+                        set_in_vector(data_, i, ss.str()[0]);
+                        break;
+                    }
+                    case db_int16:
+                    {
+                        std::ostringstream ss;
+                        ss << col.int16_;
+                        set_in_vector(data_, i, ss.str()[0]);
+                        break;
+                    }
+                    case db_uint16:
+                    {
+                        std::ostringstream ss;
+                        ss << col.uint16_;
+                        set_in_vector(data_, i, ss.str()[0]);
+                        break;
+                    }
+                    case db_int32:
                     {
                         std::ostringstream ss;
                         ss << col.int32_;
                         set_in_vector(data_, i, ss.str()[0]);
                         break;
                     }
-
-                    case dt_long_long:
-                    case dt_unsigned_long_long:
+                    case db_uint32:
+                    {
+                        std::ostringstream ss;
+                        ss << col.uint32_;
+                        set_in_vector(data_, i, ss.str()[0]);
+                        break;
+                    }
+                    case db_int64:
                     {
                         std::ostringstream ss;
                         ss << col.int64_;
                         set_in_vector(data_, i, ss.str()[0]);
                         break;
                     }
+                    case db_uint64:
+                    {
+                        std::ostringstream ss;
+                        ss << col.uint64_;
+                        set_in_vector(data_, i, ss.str()[0]);
+                        break;
+                    }
 
-                    case dt_xml:
+                    case db_xml:
                         throw soci_error("XML data type is not supported");
                 };
                 break;
@@ -192,36 +249,76 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
 
             case x_stdstring:
             {
-                switch (col.type_)
+                switch (col.dataType_)
                 {
-                    case dt_date:
-                    case dt_string:
-                    case dt_blob:
+                    case db_date:
+                    case db_string:
+                    case db_blob:
                         set_in_vector(data_, i, std::string(col.buffer_.constData_, col.buffer_.size_));
                         break;
 
-                    case dt_double:
+                    case db_double:
                         set_in_vector(data_, i, double_to_cstring(col.double_));
                         break;
 
-                    case dt_integer:
+                    case db_int8:
+                    {
+                        std::ostringstream ss;
+                        ss << col.int8_;
+                        set_in_vector(data_, i, ss.str());
+                        break;
+                    }
+                    case db_uint8:
+                    {
+                        std::ostringstream ss;
+                        ss << col.uint8_;
+                        set_in_vector(data_, i, ss.str());
+                        break;
+                    }
+                    case db_int16:
+                    {
+                        std::ostringstream ss;
+                        ss << col.int16_;
+                        set_in_vector(data_, i, ss.str());
+                        break;
+                    }
+                    case db_uint16:
+                    {
+                        std::ostringstream ss;
+                        ss << col.uint16_;
+                        set_in_vector(data_, i, ss.str());
+                        break;
+                    }
+                    case db_int32:
                     {
                         std::ostringstream ss;
                         ss << col.int32_;
                         set_in_vector(data_, i, ss.str());
                         break;
                     }
-
-                    case dt_long_long:
-                    case dt_unsigned_long_long:
+                    case db_uint32:
+                    {
+                        std::ostringstream ss;
+                        ss << col.uint32_;
+                        set_in_vector(data_, i, ss.str());
+                        break;
+                    }
+                    case db_int64:
                     {
                         std::ostringstream ss;
                         ss << col.int64_;
                         set_in_vector(data_, i, ss.str());
                         break;
                     }
+                    case db_uint64:
+                    {
+                        std::ostringstream ss;
+                        ss << col.uint64_;
+                        set_in_vector(data_, i, ss.str());
+                        break;
+                    }
 
-                    case dt_xml:
+                    case db_xml:
                     {
                         soci::xml_type xml;
                         xml.value = std::string(col.buffer_.constData_, col.buffer_.size_);
@@ -234,11 +331,11 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
 
             case x_xmltype:
             {
-                switch (col.type_)
+                switch (col.dataType_)
                 {
-                    case dt_string:
-                    case dt_blob:
-                    case dt_xml:
+                    case db_string:
+                    case db_blob:
+                    case db_xml:
                     {
                         soci::xml_type xml;
                         xml.value = std::string(col.buffer_.constData_, col.buffer_.size_);
@@ -251,20 +348,36 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                 break;
             } // x_xmltype
 
-            case x_short:
-                set_number_in_vector<exchange_type_traits<x_short>::value_type>(data_, i, col);
+            case x_int8:
+                set_number_in_vector<exchange_type_traits<x_int8>::value_type>(data_, i, col);
                 break;
 
-            case x_integer:
-                set_number_in_vector<exchange_type_traits<x_integer>::value_type>(data_, i, col);
+            case x_uint8:
+                set_number_in_vector<exchange_type_traits<x_uint8>::value_type>(data_, i, col);
                 break;
 
-            case x_long_long:
-                set_number_in_vector<exchange_type_traits<x_long_long>::value_type>(data_, i, col);
+            case x_int16:
+                set_number_in_vector<exchange_type_traits<x_int16>::value_type>(data_, i, col);
                 break;
 
-            case x_unsigned_long_long:
-                set_number_in_vector<exchange_type_traits<x_unsigned_long_long>::value_type>(data_, i, col);
+            case x_uint16:
+                set_number_in_vector<exchange_type_traits<x_uint16>::value_type>(data_, i, col);
+                break;
+
+            case x_int32:
+                set_number_in_vector<exchange_type_traits<x_int32>::value_type>(data_, i, col);
+                break;
+
+            case x_uint32:
+                set_number_in_vector<exchange_type_traits<x_uint32>::value_type>(data_, i, col);
+                break;
+
+            case x_int64:
+                set_number_in_vector<exchange_type_traits<x_int64>::value_type>(data_, i, col);
+                break;
+
+            case x_uint64:
+                set_number_in_vector<exchange_type_traits<x_uint64>::value_type>(data_, i, col);
                 break;
 
             case x_double:
@@ -273,11 +386,11 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
 
             case x_stdtm:
             {
-                switch (col.type_)
+                switch (col.dataType_)
                 {
-                    case dt_date:
-                    case dt_string:
-                    case dt_blob:
+                    case db_date:
+                    case db_string:
+                    case db_blob:
                     {
                         // attempt to parse the string and convert to std::tm
                         std::tm t = std::tm();
@@ -287,13 +400,18 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                         break;
                     }
 
-                    case dt_double:
-                    case dt_integer:
-                    case dt_long_long:
-                    case dt_unsigned_long_long:
+                    case db_double:
+                    case db_int8:
+                    case db_uint8:
+                    case db_int16:
+                    case db_uint16:
+                    case db_int32:
+                    case db_uint32:
+                    case db_int64:
+                    case db_uint64:
                         throw soci_error("Into element used with non-convertible type.");
 
-                    case dt_xml:
+                    case db_xml:
                         throw soci_error("XML data type is not supported");
                 };
                 break;
@@ -304,22 +422,27 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
         }
 
         // cleanup data
-        switch (col.type_)
+        switch (col.dataType_)
         {
-            case dt_date:
-            case dt_string:
-            case dt_blob:
+            case db_date:
+            case db_string:
+            case db_blob:
                 delete[] col.buffer_.data_;
                 col.buffer_.data_ = NULL;
                 break;
 
-            case dt_double:
-            case dt_integer:
-            case dt_long_long:
-            case dt_unsigned_long_long:
+            case db_double:
+            case db_int8:
+            case db_uint8:
+            case db_int16:
+            case db_uint16:
+            case db_int32:
+            case db_uint32:
+            case db_int64:
+            case db_uint64:
                 break;
 
-            case dt_xml:
+            case db_xml:
                 throw soci_error("XML data type is not supported");
         }
     }
@@ -336,17 +459,29 @@ void sqlite3_vector_into_type_backend::resize(std::size_t sz)
     case x_char:
         resize_vector<char>(data_, sz);
         break;
-    case x_short:
-        resize_vector<short>(data_, sz);
+    case x_int8:
+        resize_vector<int8_t>(data_, sz);
         break;
-    case x_integer:
-        resize_vector<int>(data_, sz);
+    case x_uint8:
+        resize_vector<uint8_t>(data_, sz);
         break;
-    case x_long_long:
-        resize_vector<long long>(data_, sz);
+    case x_int16:
+        resize_vector<int16_t>(data_, sz);
         break;
-    case x_unsigned_long_long:
-        resize_vector<unsigned long long>(data_, sz);
+    case x_uint16:
+        resize_vector<uint16_t>(data_, sz);
+        break;
+    case x_int32:
+        resize_vector<int32_t>(data_, sz);
+        break;
+    case x_uint32:
+        resize_vector<uint32_t>(data_, sz);
+        break;
+    case x_int64:
+        resize_vector<int64_t>(data_, sz);
+        break;
+    case x_uint64:
+        resize_vector<uint64_t>(data_, sz);
         break;
     case x_double:
         resize_vector<double>(data_, sz);
@@ -377,17 +512,29 @@ std::size_t sqlite3_vector_into_type_backend::size()
     case x_char:
         sz = get_vector_size<char>(data_);
         break;
-    case x_short:
-        sz = get_vector_size<short>(data_);
+    case x_int8:
+        sz = get_vector_size<int8_t>(data_);
         break;
-    case x_integer:
-        sz = get_vector_size<int>(data_);
+    case x_uint8:
+        sz = get_vector_size<uint8_t>(data_);
         break;
-    case x_long_long:
-        sz = get_vector_size<long long>(data_);
+    case x_int16:
+        sz = get_vector_size<int16_t>(data_);
         break;
-    case x_unsigned_long_long:
-        sz = get_vector_size<unsigned long long>(data_);
+    case x_uint16:
+        sz = get_vector_size<uint16_t>(data_);
+        break;
+    case x_int32:
+        sz = get_vector_size<int32_t>(data_);
+        break;
+    case x_uint32:
+        sz = get_vector_size<uint32_t>(data_);
+        break;
+    case x_int64:
+        sz = get_vector_size<int64_t>(data_);
+        break;
+    case x_uint64:
+        sz = get_vector_size<uint64_t>(data_);
         break;
     case x_double:
         sz = get_vector_size<double>(data_);

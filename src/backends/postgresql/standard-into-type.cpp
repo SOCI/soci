@@ -17,6 +17,7 @@
 #include "soci-exchange-cast.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
@@ -90,17 +91,29 @@ void postgresql_standard_into_type_backend::post_fetch(
         case x_stdstring:
             exchange_type_cast<x_stdstring>(data_) = buf;
             break;
-        case x_short:
-            exchange_type_cast<x_short>(data_) = string_to_integer<short>(buf);
+        case x_int8:
+            exchange_type_cast<x_int8>(data_) = string_to_integer<int8_t>(buf);
             break;
-        case x_integer:
-            exchange_type_cast<x_integer>(data_) = string_to_integer<int>(buf);
+        case x_uint8:
+            exchange_type_cast<x_uint8>(data_) = string_to_integer<uint8_t>(buf);
             break;
-        case x_long_long:
-            exchange_type_cast<x_long_long>(data_) = string_to_integer<long long>(buf);
+        case x_int16:
+            exchange_type_cast<x_int16>(data_) = string_to_integer<int16_t>(buf);
             break;
-        case x_unsigned_long_long:
-            exchange_type_cast<x_unsigned_long_long>(data_) = string_to_unsigned_integer<unsigned long long>(buf);
+        case x_uint16:
+            exchange_type_cast<x_uint16>(data_) = string_to_integer<uint16_t>(buf);
+            break;
+        case x_int32:
+            exchange_type_cast<x_int32>(data_) = string_to_integer<int32_t>(buf);
+            break;
+        case x_uint32:
+            exchange_type_cast<x_uint32>(data_) = string_to_integer<uint32_t>(buf);
+            break;
+        case x_int64:
+            exchange_type_cast<x_int64>(data_) = string_to_integer<int64_t>(buf);
+            break;
+        case x_uint64:
+            exchange_type_cast<x_uint64>(data_) = string_to_unsigned_integer<uint64_t>(buf);
             break;
         case x_double:
             exchange_type_cast<x_double>(data_) = cstring_to_double(buf);

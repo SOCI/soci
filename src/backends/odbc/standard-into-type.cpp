@@ -12,6 +12,7 @@
 #include "soci-cstrtoi.h"
 #include "soci-exchange-cast.h"
 #include "soci-mktime.h"
+#include <cstdint>
 #include <ctime>
 
 using namespace soci;
@@ -49,15 +50,31 @@ void odbc_standard_into_type_backend::define_by_pos(
         buf_ = new char[size];
         data = buf_;
         break;
-    case x_short:
+    case x_int8:
+        odbcType_ = SQL_C_STINYINT;
+        size = sizeof(int8_t);
+        break;
+    case x_uint8:
+        odbcType_ = SQL_C_UTINYINT;
+        size = sizeof(uint8_t);
+        break;
+    case x_int16:
         odbcType_ = SQL_C_SSHORT;
-        size = sizeof(short);
+        size = sizeof(int16_t);
         break;
-    case x_integer:
+    case x_uint16:
+        odbcType_ = SQL_C_USHORT;
+        size = sizeof(uint16_t);
+        break;
+    case x_int32:
         odbcType_ = SQL_C_SLONG;
-        size = sizeof(int);
+        size = sizeof(int32_t);
         break;
-    case x_long_long:
+    case x_uint32:
+        odbcType_ = SQL_C_ULONG;
+        size = sizeof(uint32_t);
+        break;
+    case x_int64:
         if (use_string_for_bigint())
         {
           odbcType_ = SQL_C_CHAR;
@@ -68,10 +85,10 @@ void odbc_standard_into_type_backend::define_by_pos(
         else // Normal case, use ODBC support.
         {
           odbcType_ = SQL_C_SBIGINT;
-          size = sizeof(long long);
+          size = sizeof(int64_t);
         }
         break;
-    case x_unsigned_long_long:
+    case x_uint64:
         if (use_string_for_bigint())
         {
           odbcType_ = SQL_C_CHAR;
@@ -82,7 +99,7 @@ void odbc_standard_into_type_backend::define_by_pos(
         else // Normal case, use ODBC support.
         {
           odbcType_ = SQL_C_UBIGINT;
-          size = sizeof(unsigned long long);
+          size = sizeof(uint64_t);
         }
         break;
     case x_double:
@@ -191,17 +208,17 @@ void odbc_standard_into_type_backend::post_fetch(
                                         ts->year, ts->month, ts->day,
                                         ts->hour, ts->minute, ts->second);
         }
-        else if (type_ == x_long_long && use_string_for_bigint())
+        else if (type_ == x_int64 && use_string_for_bigint())
         {
-          long long& ll = exchange_type_cast<x_long_long>(data_);
+          int64_t ll = exchange_type_cast<x_int64>(data_);
           if (!cstring_to_integer(ll, buf_))
           {
             throw soci_error("Failed to parse the returned 64-bit integer value");
           }
         }
-        else if (type_ == x_unsigned_long_long && use_string_for_bigint())
+        else if (type_ == x_uint64 && use_string_for_bigint())
         {
-          unsigned long long& ll = exchange_type_cast<x_unsigned_long_long>(data_);
+          uint64_t ll = exchange_type_cast<x_uint64>(data_);
           if (!cstring_to_unsigned(ll, buf_))
           {
             throw soci_error("Failed to parse the returned 64-bit integer value");

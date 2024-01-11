@@ -12,13 +12,17 @@
 #include "soci/type-conversion.h"
 #include "soci/values.h"
 
+#include <cstdint>
+
 namespace soci
 {
 
 struct SOCI_DECL column_info
 {
     std::string name;
+    // DEPRECATED. USE dataType INSTEAD.
     data_type type;
+    db_type dataType;
     std::size_t length; // meaningful for text columns only
     std::size_t precision;
     std::size_t scale;
@@ -33,22 +37,36 @@ struct type_conversion<column_info>
     static std::size_t get_numeric_value(const values & v,
         const std::string & field_name)
     {
-        data_type dt = v.get_properties(field_name).get_data_type();
+        db_type dt = v.get_properties(field_name).get_db_type();
         switch (dt)
         {
-        case dt_double:
+        case db_double:
             return static_cast<std::size_t>(
                 v.get<double>(field_name, 0.0));
-        case dt_integer:
+        case db_int8:
             return static_cast<std::size_t>(
-                v.get<int>(field_name, 0));
-        case dt_long_long:
+                v.get<int8_t>(field_name, 0));
+        case db_uint8:
             return static_cast<std::size_t>(
-                v.get<long long>(field_name, 0ll));
-        case dt_unsigned_long_long:
+                v.get<uint8_t>(field_name, 0));
+        case db_int16:
             return static_cast<std::size_t>(
-                v.get<unsigned long long>(field_name, 0ull));
-            break;
+                v.get<int16_t>(field_name, 0));
+        case db_uint16:
+            return static_cast<std::size_t>(
+                v.get<uint16_t>(field_name, 0));
+        case db_int32:
+            return static_cast<std::size_t>(
+                v.get<int32_t>(field_name, 0));
+        case db_uint32:
+            return static_cast<std::size_t>(
+                v.get<uint32_t>(field_name, 0));
+        case db_int64:
+            return static_cast<std::size_t>(
+                v.get<int64_t>(field_name, 0ll));
+        case db_uint64:
+            return static_cast<std::size_t>(
+                v.get<uint64_t>(field_name, 0ull));
         default:
             return 0u;
         }
@@ -69,10 +87,12 @@ struct type_conversion<column_info>
             type_name.find("CHAR") != std::string::npos)
         {
             ci.type = dt_string;
+            ci.dataType = db_string;
         }
         else if (type_name == "integer" || type_name == "INTEGER")
         {
             ci.type = dt_integer;
+            ci.dataType = db_int32;
         }
         else if (type_name.find("number") != std::string::npos ||
             type_name.find("NUMBER") != std::string::npos ||
@@ -82,10 +102,12 @@ struct type_conversion<column_info>
             if (ci.scale != 0)
             {
                 ci.type = dt_double;
+                ci.dataType = db_double;
             }
             else
             {
                 ci.type = dt_integer;
+                ci.dataType = db_int32;
             }
         }
         else if (type_name.find("time") != std::string::npos ||
@@ -94,6 +116,7 @@ struct type_conversion<column_info>
             type_name.find("DATE") != std::string::npos)
         {
             ci.type = dt_date;
+            ci.dataType = db_date;
         }
         else if (type_name.find("blob") != std::string::npos ||
             type_name.find("BLOB") != std::string::npos ||
@@ -101,16 +124,19 @@ struct type_conversion<column_info>
             type_name.find("OID") != std::string::npos)
         {
             ci.type = dt_blob;
+            ci.dataType = db_blob;
         }
         else if (type_name.find("xml") != std::string::npos ||
             type_name.find("XML") != std::string::npos)
         {
             ci.type = dt_xml;
+            ci.dataType = db_xml;
         }
         else
         {
             // this seems to be a safe default
             ci.type = dt_string;
+            ci.dataType = db_string;
         }
 
         const std::string & nullable_s = v.get<std::string>("IS_NULLABLE");

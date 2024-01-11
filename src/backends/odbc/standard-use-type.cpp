@@ -9,6 +9,7 @@
 #include "soci-compiler.h"
 #include "soci-exchange-cast.h"
 #include <cctype>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
@@ -23,17 +24,37 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
     switch (type_)
     {
     // simple cases
-    case x_short:
+    case x_int8:
+        sqlType = supports_negative_tinyint() ? SQL_TINYINT : SQL_SMALLINT;
+        cType = SQL_C_STINYINT;
+        size = sizeof(int8_t);
+        break;
+    case x_uint8:
+        sqlType = can_convert_to_unsigned_sql_type() ? SQL_TINYINT : SQL_SMALLINT;
+        cType = SQL_C_UTINYINT;
+        size = sizeof(uint8_t);
+        break;
+    case x_int16:
         sqlType = SQL_SMALLINT;
         cType = SQL_C_SSHORT;
-        size = sizeof(short);
+        size = sizeof(int16_t);
         break;
-    case x_integer:
+    case x_uint16:
+        sqlType = can_convert_to_unsigned_sql_type() ? SQL_SMALLINT : SQL_INTEGER;
+        cType = SQL_C_USHORT;
+        size = sizeof(uint16_t);
+        break;
+    case x_int32:
         sqlType = SQL_INTEGER;
         cType = SQL_C_SLONG;
-        size = sizeof(int);
+        size = sizeof(int32_t);
         break;
-    case x_long_long:
+    case x_uint32:
+        sqlType = can_convert_to_unsigned_sql_type() ? SQL_INTEGER : SQL_BIGINT;
+        cType = SQL_C_ULONG;
+        size = sizeof(uint32_t);
+        break;
+    case x_int64:
         if (use_string_for_bigint())
         {
           sqlType = SQL_NUMERIC;
@@ -41,32 +62,32 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
           size = max_bigint_length;
           buf_ = new char[size];
           snprintf(buf_, size, "%" LL_FMT_FLAGS "d",
-                   exchange_type_cast<x_long_long>(data_));
+                   static_cast<long long>(exchange_type_cast<x_int64>(data_)));
           indHolder_ = SQL_NTS;
         }
         else // Normal case, use ODBC support.
         {
           sqlType = SQL_BIGINT;
           cType = SQL_C_SBIGINT;
-          size = sizeof(long long);
+          size = sizeof(int64_t);
         }
         break;
-    case x_unsigned_long_long:
-        if (use_string_for_bigint())
+    case x_uint64:
+        if (use_string_for_bigint() || !can_convert_to_unsigned_sql_type())
         {
           sqlType = SQL_NUMERIC;
           cType = SQL_C_CHAR;
           size = max_bigint_length;
           buf_ = new char[size];
           snprintf(buf_, size, "%" LL_FMT_FLAGS "u",
-                   exchange_type_cast<x_unsigned_long_long>(data_));
+                   static_cast<unsigned long long>(exchange_type_cast<x_uint64>(data_)));
           indHolder_ = SQL_NTS;
         }
-        else // Normal case, use ODBC support.
+        else
         {
           sqlType = SQL_BIGINT;
           cType = SQL_C_UBIGINT;
-          size = sizeof(unsigned long long);
+          size = sizeof(uint64_t);
         }
         break;
     case x_double:

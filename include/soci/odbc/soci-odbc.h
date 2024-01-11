@@ -78,6 +78,8 @@ protected:
     inline SQLLEN get_sqllen_from_value(const SQLLEN val) const;
     inline void set_sqllen_from_value(SQLLEN &target, const SQLLEN val) const;
 
+    inline bool supports_negative_tinyint() const;
+    inline bool can_convert_to_unsigned_sql_type() const;
 
     odbc_statement_backend &statement_;
 private:
@@ -251,8 +253,10 @@ struct odbc_statement_backend : details::statement_backend
     std::string rewrite_for_procedure_call(std::string const &query) override;
 
     int prepare_for_describe() override;
-    void describe_column(int colNum, data_type &dtype,
+    void describe_column(int colNum,
+        db_type &dbtype,
         std::string &columnName) override;
+    data_type to_data_type(db_type dbt) const override;
 
     // helper for defining into vector<string>
     std::size_t column_size(int position);
@@ -543,6 +547,25 @@ inline void odbc_standard_type_backend_base::set_sqllen_from_value(SQLLEN &targe
     {
         target = val;
     }
+}
+
+inline bool odbc_standard_type_backend_base::supports_negative_tinyint() const
+{
+    // MSSQL ODBC driver only supports a range of [0..255] for tinyint.
+    return statement_.session_.get_database_product()
+            != odbc_session_backend::prod_mssql;
+}
+
+inline bool odbc_standard_type_backend_base::can_convert_to_unsigned_sql_type() const
+{
+    // MSSQL ODBC driver seemingly can't handle the conversion of unsigned C
+    // types to their respective unsigned SQL type because they are out of
+    // range for their supported signed types. This results in the error
+    // "Numeric value out of range (SQL state 22003)".
+    // The only place it works is with tinyint values as their range is
+    // [0..255], i.e. they have enough space for unsigned values anyway.
+    return statement_.session_.get_database_product()
+            != odbc_session_backend::prod_mssql;
 }
 
 inline SQLLEN odbc_vector_into_type_backend::get_sqllen_from_vector_at(std::size_t idx) const

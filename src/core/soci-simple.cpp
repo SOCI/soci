@@ -353,35 +353,59 @@ struct statement_wrapper
 
     // into elements
     int next_position;
-    std::vector<data_type> into_types; // for both single and bulk
+    std::vector<db_type> into_types; // for both single and bulk
     std::vector<indicator> into_indicators;
     std::map<int, std::string> into_strings;
-    std::map<int, int> into_ints;
-    std::map<int, long long> into_longlongs;
+    std::map<int, int8_t> into_int8;
+    std::map<int, uint8_t> into_uint8;
+    std::map<int, int16_t> into_int16;
+    std::map<int, uint16_t> into_uint16;
+    std::map<int, int32_t> into_int32;
+    std::map<int, uint32_t> into_uint32;
+    std::map<int, int64_t> into_int64;
+    std::map<int, uint64_t> into_uint64;
     std::map<int, double> into_doubles;
     std::map<int, std::tm> into_dates;
     std::map<int, blob_wrapper *> into_blob;
 
     std::vector<std::vector<indicator> > into_indicators_v;
     std::map<int, std::vector<std::string> > into_strings_v;
-    std::map<int, std::vector<int> > into_ints_v;
-    std::map<int, std::vector<long long> > into_longlongs_v;
+    std::map<int, std::vector<int8_t> > into_int8_v;
+    std::map<int, std::vector<uint8_t> > into_uint8_v;
+    std::map<int, std::vector<int16_t> > into_int16_v;
+    std::map<int, std::vector<uint16_t> > into_uint16_v;
+    std::map<int, std::vector<int32_t> > into_int32_v;
+    std::map<int, std::vector<uint32_t> > into_uint32_v;
+    std::map<int, std::vector<int64_t> > into_int64_v;
+    std::map<int, std::vector<uint64_t> > into_uint64_v;
     std::map<int, std::vector<double> > into_doubles_v;
     std::map<int, std::vector<std::tm> > into_dates_v;
 
     // use elements
     std::map<std::string, indicator> use_indicators;
     std::map<std::string, std::string> use_strings;
-    std::map<std::string, int> use_ints;
-    std::map<std::string, long long> use_longlongs;
+    std::map<std::string, int8_t> use_int8;
+    std::map<std::string, uint8_t> use_uint8;
+    std::map<std::string, int16_t> use_int16;
+    std::map<std::string, uint16_t> use_uint16;
+    std::map<std::string, int32_t> use_int32;
+    std::map<std::string, uint32_t> use_uint32;
+    std::map<std::string, int64_t> use_int64;
+    std::map<std::string, uint64_t> use_uint64;
     std::map<std::string, double> use_doubles;
     std::map<std::string, std::tm> use_dates;
     std::map<std::string, blob_wrapper *> use_blob;
 
     std::map<std::string, std::vector<indicator> > use_indicators_v;
     std::map<std::string, std::vector<std::string> > use_strings_v;
-    std::map<std::string, std::vector<int> > use_ints_v;
-    std::map<std::string, std::vector<long long> > use_longlongs_v;
+    std::map<std::string, std::vector<int8_t> > use_int8_v;
+    std::map<std::string, std::vector<uint8_t> > use_uint8_v;
+    std::map<std::string, std::vector<int16_t> > use_int16_v;
+    std::map<std::string, std::vector<uint16_t> > use_uint16_v;
+    std::map<std::string, std::vector<int32_t> > use_int32_v;
+    std::map<std::string, std::vector<uint32_t> > use_uint32_v;
+    std::map<std::string, std::vector<int64_t> > use_int64_v;
+    std::map<std::string, std::vector<uint64_t> > use_uint64_v;
     std::map<std::string, std::vector<double> > use_doubles_v;
     std::map<std::string, std::vector<std::tm> > use_dates_v;
 
@@ -464,7 +488,7 @@ bool cannot_add_elements(statement_wrapper & wrapper, statement_wrapper::kind k,
 
 // helper for checking if the expected into element exists on the given position
 bool position_check_failed(statement_wrapper & wrapper, statement_wrapper::kind k,
-    int position, data_type expected_type, char const * type_name)
+    int position, db_type expected_type, char const * type_name)
 {
     if (position < 0 || position >= wrapper.next_position)
     {
@@ -575,7 +599,7 @@ bool name_unique_check_failed(statement_wrapper & wrapper,
 
 // helper for checking if the use element with the given name exists
 bool name_exists_check_failed(statement_wrapper & wrapper,
-    char const * name, data_type expected_type,
+    char const * name, db_type expected_type,
     statement_wrapper::kind k, char const * type_name)
 {
     bool name_exists = false;
@@ -583,7 +607,7 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
     {
         switch (expected_type)
         {
-        case dt_string:
+        case db_string:
             {
                 typedef std::map
                     <
@@ -594,43 +618,85 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
                 name_exists = (it != wrapper.use_strings.end());
             }
             break;
-        case dt_integer:
+        case db_int8:
             {
-                typedef std::map<std::string, int>::const_iterator iterator;
-                iterator const it = wrapper.use_ints.find(name);
-                name_exists = (it != wrapper.use_ints.end());
+                typedef std::map<std::string, int8_t>::const_iterator iterator;
+                iterator const it = wrapper.use_int8.find(name);
+                name_exists = (it != wrapper.use_int8.end());
             }
             break;
-        case dt_long_long:
-        case dt_unsigned_long_long:
+        case db_uint8:
             {
-                typedef std::map<std::string, long long>::const_iterator
+                typedef std::map<std::string, uint8_t>::const_iterator iterator;
+                iterator const it = wrapper.use_uint8.find(name);
+                name_exists = (it != wrapper.use_uint8.end());
+            }
+            break;
+        case db_int16:
+            {
+                typedef std::map<std::string, int16_t>::const_iterator iterator;
+                iterator const it = wrapper.use_int16.find(name);
+                name_exists = (it != wrapper.use_int16.end());
+            }
+            break;
+        case db_uint16:
+            {
+                typedef std::map<std::string, uint16_t>::const_iterator iterator;
+                iterator const it = wrapper.use_uint16.find(name);
+                name_exists = (it != wrapper.use_uint16.end());
+            }
+            break;
+        case db_int32:
+            {
+                typedef std::map<std::string, int32_t>::const_iterator iterator;
+                iterator const it = wrapper.use_int32.find(name);
+                name_exists = (it != wrapper.use_int32.end());
+            }
+            break;
+        case db_uint32:
+            {
+                typedef std::map<std::string, uint32_t>::const_iterator iterator;
+                iterator const it = wrapper.use_uint32.find(name);
+                name_exists = (it != wrapper.use_uint32.end());
+            }
+            break;
+        case db_int64:
+            {
+                typedef std::map<std::string, int64_t>::const_iterator
                     iterator;
-                iterator const it = wrapper.use_longlongs.find(name);
-                name_exists = (it != wrapper.use_longlongs.end());
+                iterator const it = wrapper.use_int64.find(name);
+                name_exists = (it != wrapper.use_int64.end());
             }
             break;
-        case dt_double:
+        case db_uint64:
+            {
+                typedef std::map<std::string, uint64_t>::const_iterator
+                    iterator;
+                iterator const it = wrapper.use_uint64.find(name);
+                name_exists = (it != wrapper.use_uint64.end());
+            }
+            break;
+        case db_double:
             {
                 typedef std::map<std::string, double>::const_iterator iterator;
                 iterator const it = wrapper.use_doubles.find(name);
                 name_exists = (it != wrapper.use_doubles.end());
             }
             break;
-        case dt_date:
+        case db_date:
             {
                 typedef std::map<std::string, std::tm>::const_iterator iterator;
                 iterator const it = wrapper.use_dates.find(name);
                 name_exists = (it != wrapper.use_dates.end());
             }
             break;
-        case dt_blob:
+        case db_blob:
             {
                 typedef std::map<std::string, blob_wrapper *>::const_iterator iterator;
                 iterator const it = wrapper.use_blob.find(name);
                 name_exists = (it != wrapper.use_blob.end());
             }
-        case dt_xml:
+        case db_xml:
             // no support for xml
             break;
         }
@@ -641,7 +707,7 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
 
         switch (expected_type)
         {
-        case dt_string:
+        case db_string:
             {
                 typedef std::map
                     <
@@ -652,30 +718,95 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
                 name_exists = (it != wrapper.use_strings_v.end());
             }
             break;
-        case dt_integer:
+        case db_int8:
             {
                 typedef std::map
                     <
                         std::string,
-                        std::vector<int>
+                        std::vector<int8_t>
                     >::const_iterator iterator;
-                iterator const it = wrapper.use_ints_v.find(name);
-                name_exists = (it != wrapper.use_ints_v.end());
+                iterator const it = wrapper.use_int8_v.find(name);
+                name_exists = (it != wrapper.use_int8_v.end());
             }
             break;
-        case dt_long_long:
-        case dt_unsigned_long_long:
+        case db_uint8:
             {
                 typedef std::map
                     <
                         std::string,
-                        std::vector<long long>
+                        std::vector<uint8_t>
                     >::const_iterator iterator;
-                iterator const it = wrapper.use_longlongs_v.find(name);
-                name_exists = (it != wrapper.use_longlongs_v.end());
+                iterator const it = wrapper.use_uint8_v.find(name);
+                name_exists = (it != wrapper.use_uint8_v.end());
             }
             break;
-        case dt_double:
+        case db_int16:
+            {
+                typedef std::map
+                    <
+                        std::string,
+                        std::vector<int16_t>
+                    >::const_iterator iterator;
+                iterator const it = wrapper.use_int16_v.find(name);
+                name_exists = (it != wrapper.use_int16_v.end());
+            }
+            break;
+        case db_uint16:
+            {
+                typedef std::map
+                    <
+                        std::string,
+                        std::vector<uint16_t>
+                    >::const_iterator iterator;
+                iterator const it = wrapper.use_uint16_v.find(name);
+                name_exists = (it != wrapper.use_uint16_v.end());
+            }
+            break;
+        case db_int32:
+            {
+                typedef std::map
+                    <
+                        std::string,
+                        std::vector<int32_t>
+                    >::const_iterator iterator;
+                iterator const it = wrapper.use_int32_v.find(name);
+                name_exists = (it != wrapper.use_int32_v.end());
+            }
+            break;
+        case db_uint32:
+            {
+                typedef std::map
+                    <
+                        std::string,
+                        std::vector<uint32_t>
+                    >::const_iterator iterator;
+                iterator const it = wrapper.use_uint32_v.find(name);
+                name_exists = (it != wrapper.use_uint32_v.end());
+            }
+            break;
+        case db_int64:
+            {
+                typedef std::map
+                    <
+                        std::string,
+                        std::vector<int64_t>
+                    >::const_iterator iterator;
+                iterator const it = wrapper.use_int64_v.find(name);
+                name_exists = (it != wrapper.use_int64_v.end());
+            }
+            break;
+        case db_uint64:
+            {
+                typedef std::map
+                    <
+                        std::string,
+                        std::vector<uint64_t>
+                    >::const_iterator iterator;
+                iterator const it = wrapper.use_uint64_v.find(name);
+                name_exists = (it != wrapper.use_uint64_v.end());
+            }
+            break;
+        case db_double:
             {
                 typedef std::map<std::string,
                     std::vector<double> >::const_iterator iterator;
@@ -683,7 +814,7 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
                 name_exists = (it != wrapper.use_doubles_v.end());
             }
             break;
-        case dt_date:
+        case db_date:
             {
                 typedef std::map<std::string,
                         std::vector<std::tm> >::const_iterator iterator;
@@ -691,8 +822,8 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
                 name_exists = (it != wrapper.use_dates_v.end());
             }
             break;
-        case dt_blob:
-        case dt_xml:
+        case db_blob:
+        case db_xml:
             // no support for bulk and xml load
             break;
         }
@@ -805,7 +936,7 @@ SOCI_DECL int soci_into_string(statement_handle st)
     wrapper->statement_state = statement_wrapper::defining;
     wrapper->into_kind = statement_wrapper::single;
 
-    wrapper->into_types.push_back(dt_string);
+    wrapper->into_types.push_back(db_string);
     wrapper->into_indicators.push_back(i_ok);
     wrapper->into_strings[wrapper->next_position]; // create new entry
     return wrapper->next_position++;
@@ -813,23 +944,15 @@ SOCI_DECL int soci_into_string(statement_handle st)
 
 SOCI_DECL int soci_into_int(statement_handle st)
 {
-    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
-
-    if (cannot_add_elements(*wrapper, statement_wrapper::single, true))
-    {
-        return -1;
-    }
-
-    wrapper->statement_state = statement_wrapper::defining;
-    wrapper->into_kind = statement_wrapper::single;
-
-    wrapper->into_types.push_back(dt_integer);
-    wrapper->into_indicators.push_back(i_ok);
-    wrapper->into_ints[wrapper->next_position]; // create new entry
-    return wrapper->next_position++;
+    return soci_into_int32(st);
 }
 
 SOCI_DECL int soci_into_long_long(statement_handle st)
+{
+    return soci_into_int64(st);
+}
+
+SOCI_DECL int soci_into_int8(statement_handle st)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
@@ -841,9 +964,135 @@ SOCI_DECL int soci_into_long_long(statement_handle st)
     wrapper->statement_state = statement_wrapper::defining;
     wrapper->into_kind = statement_wrapper::single;
 
-    wrapper->into_types.push_back(dt_long_long);
+    wrapper->into_types.push_back(db_int8);
     wrapper->into_indicators.push_back(i_ok);
-    wrapper->into_longlongs[wrapper->next_position]; // create new entry
+    wrapper->into_int8[wrapper->next_position]; // create new entry
+    return wrapper->next_position++;
+}
+
+SOCI_DECL int soci_into_uint8(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::single;
+
+    wrapper->into_types.push_back(db_uint8);
+    wrapper->into_indicators.push_back(i_ok);
+    wrapper->into_uint8[wrapper->next_position]; // create new entry
+    return wrapper->next_position++;
+}
+
+SOCI_DECL int soci_into_int16(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::single;
+
+    wrapper->into_types.push_back(db_int16);
+    wrapper->into_indicators.push_back(i_ok);
+    wrapper->into_int16[wrapper->next_position]; // create new entry
+    return wrapper->next_position++;
+}
+
+SOCI_DECL int soci_into_uint16(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::single;
+
+    wrapper->into_types.push_back(db_uint16);
+    wrapper->into_indicators.push_back(i_ok);
+    wrapper->into_uint16[wrapper->next_position]; // create new entry
+    return wrapper->next_position++;
+}
+
+SOCI_DECL int soci_into_int32(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::single;
+
+    wrapper->into_types.push_back(db_int32);
+    wrapper->into_indicators.push_back(i_ok);
+    wrapper->into_int32[wrapper->next_position]; // create new entry
+    return wrapper->next_position++;
+}
+
+SOCI_DECL int soci_into_uint32(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::single;
+
+    wrapper->into_types.push_back(db_uint32);
+    wrapper->into_indicators.push_back(i_ok);
+    wrapper->into_uint32[wrapper->next_position]; // create new entry
+    return wrapper->next_position++;
+}
+
+SOCI_DECL int soci_into_int64(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::single;
+
+    wrapper->into_types.push_back(db_int64);
+    wrapper->into_indicators.push_back(i_ok);
+    wrapper->into_int64[wrapper->next_position]; // create new entry
+    return wrapper->next_position++;
+}
+
+SOCI_DECL int soci_into_uint64(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::single;
+
+    wrapper->into_types.push_back(db_uint64);
+    wrapper->into_indicators.push_back(i_ok);
+    wrapper->into_uint64[wrapper->next_position]; // create new entry
     return wrapper->next_position++;
 }
 
@@ -859,7 +1108,7 @@ SOCI_DECL int soci_into_double(statement_handle st)
     wrapper->statement_state = statement_wrapper::defining;
     wrapper->into_kind = statement_wrapper::single;
 
-    wrapper->into_types.push_back(dt_double);
+    wrapper->into_types.push_back(db_double);
     wrapper->into_indicators.push_back(i_ok);
     wrapper->into_doubles[wrapper->next_position]; // create new entry
     return wrapper->next_position++;
@@ -877,7 +1126,7 @@ SOCI_DECL int soci_into_date(statement_handle st)
     wrapper->statement_state = statement_wrapper::defining;
     wrapper->into_kind = statement_wrapper::single;
 
-    wrapper->into_types.push_back(dt_date);
+    wrapper->into_types.push_back(db_date);
     wrapper->into_indicators.push_back(i_ok);
     wrapper->into_dates[wrapper->next_position]; // create new entry
     return wrapper->next_position++;
@@ -895,7 +1144,7 @@ SOCI_DECL int soci_into_blob(statement_handle st)
     wrapper->statement_state = statement_wrapper::defining;
     wrapper->into_kind = statement_wrapper::single;
 
-    wrapper->into_types.push_back(dt_blob);
+    wrapper->into_types.push_back(db_blob);
     wrapper->into_indicators.push_back(i_ok);
     wrapper->into_blob[wrapper->next_position] = soci_create_blob_session(wrapper->sql); // create new entry
     return wrapper->next_position++;
@@ -913,7 +1162,7 @@ SOCI_DECL int soci_into_string_v(statement_handle st)
     wrapper->statement_state = statement_wrapper::defining;
     wrapper->into_kind = statement_wrapper::bulk;
 
-    wrapper->into_types.push_back(dt_string);
+    wrapper->into_types.push_back(db_string);
     wrapper->into_indicators_v.push_back(std::vector<indicator>());
     wrapper->into_strings_v[wrapper->next_position];
     return wrapper->next_position++;
@@ -921,23 +1170,15 @@ SOCI_DECL int soci_into_string_v(statement_handle st)
 
 SOCI_DECL int soci_into_int_v(statement_handle st)
 {
-    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
-
-    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, true))
-    {
-        return -1;
-    }
-
-    wrapper->statement_state = statement_wrapper::defining;
-    wrapper->into_kind = statement_wrapper::bulk;
-
-    wrapper->into_types.push_back(dt_integer);
-    wrapper->into_indicators_v.push_back(std::vector<indicator>());
-    wrapper->into_ints_v[wrapper->next_position];
-    return wrapper->next_position++;
+    return soci_into_int32_v(st);
 }
 
 SOCI_DECL int soci_into_long_long_v(statement_handle st)
+{
+    return soci_into_int64_v(st);
+}
+
+SOCI_DECL int soci_into_int8_v(statement_handle st)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
@@ -949,9 +1190,135 @@ SOCI_DECL int soci_into_long_long_v(statement_handle st)
     wrapper->statement_state = statement_wrapper::defining;
     wrapper->into_kind = statement_wrapper::bulk;
 
-    wrapper->into_types.push_back(dt_long_long);
+    wrapper->into_types.push_back(db_int8);
     wrapper->into_indicators_v.push_back(std::vector<indicator>());
-    wrapper->into_longlongs_v[wrapper->next_position];
+    wrapper->into_int8_v[wrapper->next_position];
+    return wrapper->next_position++;
+}
+
+SOCI_DECL int soci_into_uint8_v(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::bulk;
+
+    wrapper->into_types.push_back(db_uint8);
+    wrapper->into_indicators_v.push_back(std::vector<indicator>());
+    wrapper->into_uint8_v[wrapper->next_position];
+    return wrapper->next_position++;
+}
+
+SOCI_DECL int soci_into_int16_v(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::bulk;
+
+    wrapper->into_types.push_back(db_int16);
+    wrapper->into_indicators_v.push_back(std::vector<indicator>());
+    wrapper->into_int16_v[wrapper->next_position];
+    return wrapper->next_position++;
+}
+
+SOCI_DECL int soci_into_uint16_v(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::bulk;
+
+    wrapper->into_types.push_back(db_uint16);
+    wrapper->into_indicators_v.push_back(std::vector<indicator>());
+    wrapper->into_uint16_v[wrapper->next_position];
+    return wrapper->next_position++;
+}
+
+SOCI_DECL int soci_into_int32_v(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::bulk;
+
+    wrapper->into_types.push_back(db_int32);
+    wrapper->into_indicators_v.push_back(std::vector<indicator>());
+    wrapper->into_int32_v[wrapper->next_position];
+    return wrapper->next_position++;
+}
+
+SOCI_DECL int soci_into_uint32_v(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::bulk;
+
+    wrapper->into_types.push_back(db_uint32);
+    wrapper->into_indicators_v.push_back(std::vector<indicator>());
+    wrapper->into_uint32_v[wrapper->next_position];
+    return wrapper->next_position++;
+}
+
+SOCI_DECL int soci_into_int64_v(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::bulk;
+
+    wrapper->into_types.push_back(db_int64);
+    wrapper->into_indicators_v.push_back(std::vector<indicator>());
+    wrapper->into_int64_v[wrapper->next_position];
+    return wrapper->next_position++;
+}
+
+SOCI_DECL int soci_into_uint64_v(statement_handle st)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, true))
+    {
+        return -1;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->into_kind = statement_wrapper::bulk;
+
+    wrapper->into_types.push_back(db_uint64);
+    wrapper->into_indicators_v.push_back(std::vector<indicator>());
+    wrapper->into_uint64_v[wrapper->next_position];
     return wrapper->next_position++;
 }
 
@@ -967,7 +1334,7 @@ SOCI_DECL int soci_into_double_v(statement_handle st)
     wrapper->statement_state = statement_wrapper::defining;
     wrapper->into_kind = statement_wrapper::bulk;
 
-    wrapper->into_types.push_back(dt_double);
+    wrapper->into_types.push_back(db_double);
     wrapper->into_indicators_v.push_back(std::vector<indicator>());
     wrapper->into_doubles_v[wrapper->next_position];
     return wrapper->next_position++;
@@ -985,7 +1352,7 @@ SOCI_DECL int soci_into_date_v(statement_handle st)
     wrapper->statement_state = statement_wrapper::defining;
     wrapper->into_kind = statement_wrapper::bulk;
 
-    wrapper->into_types.push_back(dt_date);
+    wrapper->into_types.push_back(db_date);
     wrapper->into_indicators_v.push_back(std::vector<indicator>());
     wrapper->into_dates_v[wrapper->next_position];
     return wrapper->next_position++;
@@ -1011,7 +1378,7 @@ SOCI_DECL char const * soci_get_into_string(statement_handle st, int position)
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (position_check_failed(*wrapper,
-            statement_wrapper::single, position, dt_string, "string") ||
+            statement_wrapper::single, position, db_string, "string") ||
         not_null_check_failed(*wrapper, position))
     {
         return "";
@@ -1022,30 +1389,124 @@ SOCI_DECL char const * soci_get_into_string(statement_handle st, int position)
 
 SOCI_DECL int soci_get_into_int(statement_handle st, int position)
 {
+    return static_cast<int>(soci_get_into_int32(st, position));
+}
+
+SOCI_DECL long long soci_get_into_long_long(statement_handle st, int position)
+{
+    return static_cast<long long>(soci_get_into_int64(st, position));
+}
+
+SOCI_DECL int8_t soci_get_into_int8(statement_handle st, int position)
+{
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (position_check_failed(*wrapper,
-            statement_wrapper::single, position, dt_integer, "int") ||
+            statement_wrapper::single, position, db_int8, "int8") ||
         not_null_check_failed(*wrapper, position))
     {
         return 0;
     }
 
-    return wrapper->into_ints[position];
+    return wrapper->into_int8[position];
 }
 
-SOCI_DECL long long soci_get_into_long_long(statement_handle st, int position)
+SOCI_DECL uint8_t soci_get_into_uint8(statement_handle st, int position)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (position_check_failed(*wrapper,
-            statement_wrapper::single, position, dt_long_long, "long long") ||
+            statement_wrapper::single, position, db_uint8, "uint8") ||
+        not_null_check_failed(*wrapper, position))
+    {
+        return 0;
+    }
+
+    return wrapper->into_uint8[position];
+}
+
+SOCI_DECL int16_t soci_get_into_int16(statement_handle st, int position)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (position_check_failed(*wrapper,
+            statement_wrapper::single, position, db_int16, "int16") ||
+        not_null_check_failed(*wrapper, position))
+    {
+        return 0;
+    }
+
+    return wrapper->into_int16[position];
+}
+
+SOCI_DECL uint16_t soci_get_into_uint16(statement_handle st, int position)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (position_check_failed(*wrapper,
+            statement_wrapper::single, position, db_uint16, "uint16") ||
+        not_null_check_failed(*wrapper, position))
+    {
+        return 0;
+    }
+
+    return wrapper->into_uint16[position];
+}
+
+SOCI_DECL int32_t soci_get_into_int32(statement_handle st, int position)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (position_check_failed(*wrapper,
+            statement_wrapper::single, position, db_int32, "int32") ||
+        not_null_check_failed(*wrapper, position))
+    {
+        return 0;
+    }
+
+    return wrapper->into_int32[position];
+}
+
+SOCI_DECL uint32_t soci_get_into_uint32(statement_handle st, int position)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (position_check_failed(*wrapper,
+            statement_wrapper::single, position, db_uint32, "uint32") ||
+        not_null_check_failed(*wrapper, position))
+    {
+        return 0;
+    }
+
+    return wrapper->into_uint32[position];
+}
+
+SOCI_DECL int64_t soci_get_into_int64(statement_handle st, int position)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (position_check_failed(*wrapper,
+            statement_wrapper::single, position, db_int64, "int64") ||
         not_null_check_failed(*wrapper, position))
     {
         return 0LL;
     }
 
-    return wrapper->into_longlongs[position];
+    return wrapper->into_int64[position];
+}
+
+SOCI_DECL uint64_t soci_get_into_uint64(statement_handle st, int position)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (position_check_failed(*wrapper,
+            statement_wrapper::single, position, db_uint64, "uint64") ||
+        not_null_check_failed(*wrapper, position))
+    {
+        return 0LL;
+    }
+
+    return wrapper->into_uint64[position];
 }
 
 SOCI_DECL double soci_get_into_double(statement_handle st, int position)
@@ -1053,7 +1514,7 @@ SOCI_DECL double soci_get_into_double(statement_handle st, int position)
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (position_check_failed(*wrapper,
-            statement_wrapper::single, position, dt_double, "double") ||
+            statement_wrapper::single, position, db_double, "double") ||
         not_null_check_failed(*wrapper, position))
     {
         return 0.0;
@@ -1067,7 +1528,7 @@ SOCI_DECL char const * soci_get_into_date(statement_handle st, int position)
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (position_check_failed(*wrapper,
-            statement_wrapper::single, position, dt_date, "date") ||
+            statement_wrapper::single, position, db_date, "date") ||
         not_null_check_failed(*wrapper, position))
     {
         return "";
@@ -1083,7 +1544,7 @@ SOCI_DECL blob_handle soci_get_into_blob(statement_handle st, int position)
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (position_check_failed(*wrapper,
-            statement_wrapper::single, position, dt_blob, "blob") ||
+            statement_wrapper::single, position, db_blob, "blob") ||
         not_null_check_failed(*wrapper, position))
     {
         return NULL;
@@ -1130,24 +1591,41 @@ SOCI_DECL void soci_into_resize_v(statement_handle st, int new_size)
 
         switch (wrapper->into_types[i])
         {
-        case dt_string:
+        case db_string:
             wrapper->into_strings_v[i].resize(new_size);
             break;
-        case dt_integer:
-            wrapper->into_ints_v[i].resize(new_size);
+        case db_int8:
+            wrapper->into_int8_v[i].resize(new_size);
             break;
-        case dt_long_long:
-        case dt_unsigned_long_long:
-            wrapper->into_longlongs_v[i].resize(new_size);
+        case db_uint8:
+            wrapper->into_uint8_v[i].resize(new_size);
             break;
-        case dt_double:
+        case db_int16:
+            wrapper->into_int16_v[i].resize(new_size);
+            break;
+        case db_uint16:
+            wrapper->into_uint16_v[i].resize(new_size);
+            break;
+        case db_int32:
+            wrapper->into_int32_v[i].resize(new_size);
+            break;
+        case db_uint32:
+            wrapper->into_uint32_v[i].resize(new_size);
+            break;
+        case db_int64:
+            wrapper->into_int64_v[i].resize(new_size);
+            break;
+        case db_uint64:
+            wrapper->into_uint64_v[i].resize(new_size);
+            break;
+        case db_double:
             wrapper->into_doubles_v[i].resize(new_size);
             break;
-        case dt_date:
+        case db_date:
             wrapper->into_dates_v[i].resize(new_size);
             break;
-        case dt_blob:
-        case dt_xml:
+        case db_blob:
+        case db_xml:
             // no support for bulk blob
             break;
         }
@@ -1181,7 +1659,7 @@ SOCI_DECL char const * soci_get_into_string_v(statement_handle st, int position,
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (position_check_failed(*wrapper,
-            statement_wrapper::bulk, position, dt_string, "string"))
+            statement_wrapper::bulk, position, db_string, "string"))
     {
         return "";
     }
@@ -1198,15 +1676,25 @@ SOCI_DECL char const * soci_get_into_string_v(statement_handle st, int position,
 
 SOCI_DECL int soci_get_into_int_v(statement_handle st, int position, int index)
 {
+    return static_cast<int>(soci_get_into_int32_v(st, position, index));
+}
+
+SOCI_DECL long long soci_get_into_long_long_v(statement_handle st, int position, int index)
+{
+    return static_cast<long long>(soci_get_into_int64_v(st, position, index));
+}
+
+SOCI_DECL int8_t soci_get_into_int8_v(statement_handle st, int position, int index)
+{
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (position_check_failed(*wrapper,
-            statement_wrapper::bulk, position, dt_integer, "int"))
+            statement_wrapper::bulk, position, db_int8, "int8"))
     {
         return 0;
     }
 
-    std::vector<int> const & v = wrapper->into_ints_v[position];
+    std::vector<int8_t> const & v = wrapper->into_int8_v[position];
     if (index_check_failed(v, *wrapper, index) ||
         not_null_check_failed(*wrapper, position, index))
     {
@@ -1216,17 +1704,137 @@ SOCI_DECL int soci_get_into_int_v(statement_handle st, int position, int index)
     return v[index];
 }
 
-SOCI_DECL long long soci_get_into_long_long_v(statement_handle st, int position, int index)
+SOCI_DECL uint8_t soci_get_into_uint8_v(statement_handle st, int position, int index)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (position_check_failed(*wrapper,
-            statement_wrapper::bulk, position, dt_long_long, "long long"))
+            statement_wrapper::bulk, position, db_uint8, "uint8"))
     {
         return 0;
     }
 
-    std::vector<long long> const & v = wrapper->into_longlongs_v[position];
+    std::vector<uint8_t> const & v = wrapper->into_uint8_v[position];
+    if (index_check_failed(v, *wrapper, index) ||
+        not_null_check_failed(*wrapper, position, index))
+    {
+        return 0;
+    }
+
+    return v[index];
+}
+
+SOCI_DECL int16_t soci_get_into_int16_v(statement_handle st, int position, int index)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (position_check_failed(*wrapper,
+            statement_wrapper::bulk, position, db_int16, "int16"))
+    {
+        return 0;
+    }
+
+    std::vector<int16_t> const & v = wrapper->into_int16_v[position];
+    if (index_check_failed(v, *wrapper, index) ||
+        not_null_check_failed(*wrapper, position, index))
+    {
+        return 0;
+    }
+
+    return v[index];
+}
+
+SOCI_DECL uint16_t soci_get_into_uint16_v(statement_handle st, int position, int index)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (position_check_failed(*wrapper,
+            statement_wrapper::bulk, position, db_uint16, "uint16"))
+    {
+        return 0;
+    }
+
+    std::vector<uint16_t> const & v = wrapper->into_uint16_v[position];
+    if (index_check_failed(v, *wrapper, index) ||
+        not_null_check_failed(*wrapper, position, index))
+    {
+        return 0;
+    }
+
+    return v[index];
+}
+
+SOCI_DECL int32_t soci_get_into_int32_v(statement_handle st, int position, int index)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (position_check_failed(*wrapper,
+            statement_wrapper::bulk, position, db_int32, "int32"))
+    {
+        return 0;
+    }
+
+    std::vector<int32_t> const & v = wrapper->into_int32_v[position];
+    if (index_check_failed(v, *wrapper, index) ||
+        not_null_check_failed(*wrapper, position, index))
+    {
+        return 0;
+    }
+
+    return v[index];
+}
+
+SOCI_DECL uint32_t soci_get_into_uint32_v(statement_handle st, int position, int index)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (position_check_failed(*wrapper,
+            statement_wrapper::bulk, position, db_uint32, "uint32"))
+    {
+        return 0;
+    }
+
+    std::vector<uint32_t> const & v = wrapper->into_uint32_v[position];
+    if (index_check_failed(v, *wrapper, index) ||
+        not_null_check_failed(*wrapper, position, index))
+    {
+        return 0;
+    }
+
+    return v[index];
+}
+
+SOCI_DECL int64_t soci_get_into_int64_v(statement_handle st, int position, int index)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (position_check_failed(*wrapper,
+            statement_wrapper::bulk, position, db_int64, "int64"))
+    {
+        return 0;
+    }
+
+    std::vector<int64_t> const & v = wrapper->into_int64_v[position];
+    if (index_check_failed(v, *wrapper, index) ||
+        not_null_check_failed(*wrapper, position, index))
+    {
+        return 0;
+    }
+
+    return v[index];
+}
+
+SOCI_DECL uint64_t soci_get_into_uint64_v(statement_handle st, int position, int index)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (position_check_failed(*wrapper,
+            statement_wrapper::bulk, position, db_uint64, "uint64"))
+    {
+        return 0;
+    }
+
+    std::vector<uint64_t> const & v = wrapper->into_uint64_v[position];
     if (index_check_failed(v, *wrapper, index) ||
         not_null_check_failed(*wrapper, position, index))
     {
@@ -1241,7 +1849,7 @@ SOCI_DECL double soci_get_into_double_v(statement_handle st, int position, int i
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (position_check_failed(*wrapper,
-            statement_wrapper::bulk, position, dt_double, "double"))
+            statement_wrapper::bulk, position, db_double, "double"))
     {
         return 0.0;
     }
@@ -1261,7 +1869,7 @@ SOCI_DECL char const * soci_get_into_date_v(statement_handle st, int position, i
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (position_check_failed(*wrapper,
-            statement_wrapper::bulk, position, dt_date, "date"))
+            statement_wrapper::bulk, position, db_date, "date"))
     {
         return "";
     }
@@ -1295,22 +1903,15 @@ SOCI_DECL void soci_use_string(statement_handle st, char const * name)
 
 SOCI_DECL void soci_use_int(statement_handle st, char const * name)
 {
-    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
-
-    if (cannot_add_elements(*wrapper, statement_wrapper::single, false) ||
-        name_unique_check_failed(*wrapper, statement_wrapper::single, name))
-    {
-        return;
-    }
-
-    wrapper->statement_state = statement_wrapper::defining;
-    wrapper->use_kind = statement_wrapper::single;
-
-    wrapper->use_indicators[name] = i_ok; // create new entry
-    wrapper->use_ints[name]; // create new entry
+    soci_use_int32(st, name);
 }
 
 SOCI_DECL void soci_use_long_long(statement_handle st, char const * name)
+{
+    soci_use_int64(st, name);
+}
+
+SOCI_DECL void soci_use_int8(statement_handle st, char const * name)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
@@ -1324,7 +1925,126 @@ SOCI_DECL void soci_use_long_long(statement_handle st, char const * name)
     wrapper->use_kind = statement_wrapper::single;
 
     wrapper->use_indicators[name] = i_ok; // create new entry
-    wrapper->use_longlongs[name]; // create new entry
+    wrapper->use_int8[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_uint8(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::single, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::single;
+
+    wrapper->use_indicators[name] = i_ok; // create new entry
+    wrapper->use_uint8[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_int16(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::single, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::single;
+
+    wrapper->use_indicators[name] = i_ok; // create new entry
+    wrapper->use_int16[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_uint16(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::single, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::single;
+
+    wrapper->use_indicators[name] = i_ok; // create new entry
+    wrapper->use_uint16[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_int32(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::single, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::single;
+
+    wrapper->use_indicators[name] = i_ok; // create new entry
+    wrapper->use_int32[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_uint32(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::single, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::single;
+
+    wrapper->use_indicators[name] = i_ok; // create new entry
+    wrapper->use_uint32[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_int64(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::single, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::single;
+
+    wrapper->use_indicators[name] = i_ok; // create new entry
+    wrapper->use_int64[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_uint64(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::single, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::single, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::single;
+
+    wrapper->use_indicators[name] = i_ok; // create new entry
+    wrapper->use_uint64[name]; // create new entry
 }
 
 SOCI_DECL void soci_use_double(statement_handle st, char const * name)
@@ -1397,22 +2117,15 @@ SOCI_DECL void soci_use_string_v(statement_handle st, char const * name)
 
 SOCI_DECL void soci_use_int_v(statement_handle st, char const * name)
 {
-    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
-
-    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, false) ||
-        name_unique_check_failed(*wrapper, statement_wrapper::bulk, name))
-    {
-        return;
-    }
-
-    wrapper->statement_state = statement_wrapper::defining;
-    wrapper->use_kind = statement_wrapper::bulk;
-
-    wrapper->use_indicators_v[name]; // create new entry
-    wrapper->use_ints_v[name]; // create new entry
+    soci_use_int32_v(st, name);
 }
 
 SOCI_DECL void soci_use_long_long_v(statement_handle st, char const * name)
+{
+    soci_use_int64_v(st, name);
+}
+
+SOCI_DECL void soci_use_int8_v(statement_handle st, char const * name)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
@@ -1426,7 +2139,126 @@ SOCI_DECL void soci_use_long_long_v(statement_handle st, char const * name)
     wrapper->use_kind = statement_wrapper::bulk;
 
     wrapper->use_indicators_v[name]; // create new entry
-    wrapper->use_longlongs_v[name]; // create new entry
+    wrapper->use_int8_v[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_uint8_v(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::bulk, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::bulk;
+
+    wrapper->use_indicators_v[name]; // create new entry
+    wrapper->use_uint8_v[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_int16_v(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::bulk, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::bulk;
+
+    wrapper->use_indicators_v[name]; // create new entry
+    wrapper->use_int16_v[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_uint16_v(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::bulk, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::bulk;
+
+    wrapper->use_indicators_v[name]; // create new entry
+    wrapper->use_uint16_v[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_int32_v(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::bulk, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::bulk;
+
+    wrapper->use_indicators_v[name]; // create new entry
+    wrapper->use_int32_v[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_uint32_v(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::bulk, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::bulk;
+
+    wrapper->use_indicators_v[name]; // create new entry
+    wrapper->use_uint32_v[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_int64_v(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::bulk, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::bulk;
+
+    wrapper->use_indicators_v[name]; // create new entry
+    wrapper->use_int64_v[name]; // create new entry
+}
+
+SOCI_DECL void soci_use_uint64_v(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (cannot_add_elements(*wrapper, statement_wrapper::bulk, false) ||
+        name_unique_check_failed(*wrapper, statement_wrapper::bulk, name))
+    {
+        return;
+    }
+
+    wrapper->statement_state = statement_wrapper::defining;
+    wrapper->use_kind = statement_wrapper::bulk;
+
+    wrapper->use_indicators_v[name]; // create new entry
+    wrapper->use_uint64_v[name]; // create new entry
 }
 
 SOCI_DECL void soci_use_double_v(statement_handle st, char const * name)
@@ -1485,7 +2317,7 @@ SOCI_DECL void soci_set_use_string(statement_handle st, char const * name, char 
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (name_exists_check_failed(*wrapper,
-            name, dt_string, statement_wrapper::single, "string"))
+            name, db_string, statement_wrapper::single, "string"))
     {
         return;
     }
@@ -1494,32 +2326,126 @@ SOCI_DECL void soci_set_use_string(statement_handle st, char const * name, char 
     wrapper->use_strings[name] = val;
 }
 
-SOCI_DECL void soci_set_use_int(statement_handle st, char const * name, int val)
+SOCI_DECL void soci_set_use_int(statement_handle st, char const * name, int32_t val)
 {
-    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
-
-    if (name_exists_check_failed(*wrapper,
-            name, dt_integer, statement_wrapper::single, "int"))
-    {
-        return;
-    }
-
-    wrapper->use_indicators[name] = i_ok;
-    wrapper->use_ints[name] = val;
+    soci_set_use_int32(st, name, static_cast<int32_t>(val));
 }
 
 SOCI_DECL void soci_set_use_long_long(statement_handle st, char const * name, long long val)
 {
+    soci_set_use_int64(st, name, static_cast<int64_t>(val));
+}
+
+SOCI_DECL void soci_set_use_int8(statement_handle st, char const * name, int8_t val)
+{
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (name_exists_check_failed(*wrapper,
-            name, dt_long_long, statement_wrapper::single, "long long"))
+            name, db_int8, statement_wrapper::single, "int8"))
     {
         return;
     }
 
     wrapper->use_indicators[name] = i_ok;
-    wrapper->use_longlongs[name] = val;
+    wrapper->use_int8[name] = val;
+}
+
+SOCI_DECL void soci_set_use_uint8(statement_handle st, char const * name, uint32_t val)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_uint32, statement_wrapper::single, "uint32"))
+    {
+        return;
+    }
+
+    wrapper->use_indicators[name] = i_ok;
+    wrapper->use_uint32[name] = val;
+}
+
+SOCI_DECL void soci_set_use_int16(statement_handle st, char const * name, int16_t val)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_int16, statement_wrapper::single, "int16"))
+    {
+        return;
+    }
+
+    wrapper->use_indicators[name] = i_ok;
+    wrapper->use_int16[name] = val;
+}
+
+SOCI_DECL void soci_set_use_uint16(statement_handle st, char const * name, uint16_t val)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_uint16, statement_wrapper::single, "uint16"))
+    {
+        return;
+    }
+
+    wrapper->use_indicators[name] = i_ok;
+    wrapper->use_uint16[name] = val;
+}
+
+SOCI_DECL void soci_set_use_int32(statement_handle st, char const * name, int32_t val)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_int32, statement_wrapper::single, "int32"))
+    {
+        return;
+    }
+
+    wrapper->use_indicators[name] = i_ok;
+    wrapper->use_int32[name] = val;
+}
+
+SOCI_DECL void soci_set_use_uint32(statement_handle st, char const * name, uint32_t val)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_uint32, statement_wrapper::single, "uint32"))
+    {
+        return;
+    }
+
+    wrapper->use_indicators[name] = i_ok;
+    wrapper->use_uint32[name] = val;
+}
+
+SOCI_DECL void soci_set_use_int64(statement_handle st, char const * name, int64_t val)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_int64, statement_wrapper::single, "int64"))
+    {
+        return;
+    }
+
+    wrapper->use_indicators[name] = i_ok;
+    wrapper->use_int64[name] = val;
+}
+
+SOCI_DECL void soci_set_use_uint64(statement_handle st, char const * name, uint64_t val)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_uint64, statement_wrapper::single, "uint64"))
+    {
+        return;
+    }
+
+    wrapper->use_indicators[name] = i_ok;
+    wrapper->use_uint64[name] = val;
 }
 
 SOCI_DECL void soci_set_use_double(statement_handle st, char const * name, double val)
@@ -1527,7 +2453,7 @@ SOCI_DECL void soci_set_use_double(statement_handle st, char const * name, doubl
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (name_exists_check_failed(*wrapper,
-            name, dt_double, statement_wrapper::single, "double"))
+            name, db_double, statement_wrapper::single, "double"))
     {
         return;
     }
@@ -1541,7 +2467,7 @@ SOCI_DECL void soci_set_use_date(statement_handle st, char const * name, char co
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (name_exists_check_failed(*wrapper,
-            name, dt_date, statement_wrapper::single, "date"))
+            name, db_date, statement_wrapper::single, "date"))
     {
         return;
     }
@@ -1562,7 +2488,7 @@ SOCI_DECL void soci_set_use_blob(statement_handle st, char const * name, blob_ha
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (name_exists_check_failed(*wrapper,
-            name, dt_blob, statement_wrapper::single, "blob"))
+            name, db_blob, statement_wrapper::single, "blob"))
     {
         return;
     }
@@ -1617,8 +2543,14 @@ SOCI_DECL void soci_use_resize_v(statement_handle st, int new_size)
 
     resize_in_map(wrapper->use_indicators_v, new_size);
     resize_in_map(wrapper->use_strings_v, new_size);
-    resize_in_map(wrapper->use_ints_v, new_size);
-    resize_in_map(wrapper->use_longlongs_v, new_size);
+    resize_in_map(wrapper->use_int8_v, new_size);
+    resize_in_map(wrapper->use_uint8_v, new_size);
+    resize_in_map(wrapper->use_int16_v, new_size);
+    resize_in_map(wrapper->use_uint16_v, new_size);
+    resize_in_map(wrapper->use_int32_v, new_size);
+    resize_in_map(wrapper->use_uint32_v, new_size);
+    resize_in_map(wrapper->use_int64_v, new_size);
+    resize_in_map(wrapper->use_uint64_v, new_size);
     resize_in_map(wrapper->use_doubles_v, new_size);
     resize_in_map(wrapper->use_dates_v, new_size);
 
@@ -1654,7 +2586,7 @@ SOCI_DECL void soci_set_use_string_v(statement_handle st,
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (name_exists_check_failed(*wrapper,
-            name, dt_string, statement_wrapper::bulk, "vector string"))
+            name, db_string, statement_wrapper::bulk, "vector string"))
     {
         return;
     }
@@ -1672,15 +2604,27 @@ SOCI_DECL void soci_set_use_string_v(statement_handle st,
 SOCI_DECL void soci_set_use_int_v(statement_handle st,
     char const * name, int index, int val)
 {
+    soci_set_use_int32_v(st, name, index, static_cast<int32_t>(val));
+}
+
+SOCI_DECL void soci_set_use_long_long_v(statement_handle st,
+    char const * name, int index, long long val)
+{
+    soci_set_use_int64_v(st, name, index, static_cast<int64_t>(val));
+}
+
+SOCI_DECL void soci_set_use_int8_v(statement_handle st,
+    char const * name, int index, int8_t val)
+{
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (name_exists_check_failed(*wrapper,
-            name, dt_integer, statement_wrapper::bulk, "vector int"))
+            name, db_int8, statement_wrapper::bulk, "vector int8"))
     {
         return;
     }
 
-    std::vector<int> & v = wrapper->use_ints_v[name];
+    std::vector<int8_t> & v = wrapper->use_int8_v[name];
     if (index_check_failed(v, *wrapper, index))
     {
         return;
@@ -1690,18 +2634,144 @@ SOCI_DECL void soci_set_use_int_v(statement_handle st,
     v[index] = val;
 }
 
-SOCI_DECL void soci_set_use_long_long_v(statement_handle st,
-    char const * name, int index, long long val)
+SOCI_DECL void soci_set_use_uint8_v(statement_handle st,
+    char const * name, int index, uint8_t val)
 {
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (name_exists_check_failed(*wrapper,
-            name, dt_long_long, statement_wrapper::bulk, "vector long long"))
+            name, db_uint8, statement_wrapper::bulk, "vector uint8"))
     {
         return;
     }
 
-    std::vector<long long> & v = wrapper->use_longlongs_v[name];
+    std::vector<uint8_t> & v = wrapper->use_uint8_v[name];
+    if (index_check_failed(v, *wrapper, index))
+    {
+        return;
+    }
+
+    wrapper->use_indicators_v[name][index] = i_ok;
+    v[index] = val;
+}
+
+SOCI_DECL void soci_set_use_int16_v(statement_handle st,
+    char const * name, int index, int16_t val)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_int16, statement_wrapper::bulk, "vector int16"))
+    {
+        return;
+    }
+
+    std::vector<int16_t> & v = wrapper->use_int16_v[name];
+    if (index_check_failed(v, *wrapper, index))
+    {
+        return;
+    }
+
+    wrapper->use_indicators_v[name][index] = i_ok;
+    v[index] = val;
+}
+
+SOCI_DECL void soci_set_use_uint16_v(statement_handle st,
+    char const * name, int index, uint16_t val)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_uint16, statement_wrapper::bulk, "vector uint16"))
+    {
+        return;
+    }
+
+    std::vector<uint16_t> & v = wrapper->use_uint16_v[name];
+    if (index_check_failed(v, *wrapper, index))
+    {
+        return;
+    }
+
+    wrapper->use_indicators_v[name][index] = i_ok;
+    v[index] = val;
+}
+
+SOCI_DECL void soci_set_use_int32_v(statement_handle st,
+    char const * name, int index, int32_t val)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_int32, statement_wrapper::bulk, "vector int32"))
+    {
+        return;
+    }
+
+    std::vector<int32_t> & v = wrapper->use_int32_v[name];
+    if (index_check_failed(v, *wrapper, index))
+    {
+        return;
+    }
+
+    wrapper->use_indicators_v[name][index] = i_ok;
+    v[index] = val;
+}
+
+SOCI_DECL void soci_set_use_uint32_v(statement_handle st,
+    char const * name, int index, uint32_t val)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_uint32, statement_wrapper::bulk, "vector uint32"))
+    {
+        return;
+    }
+
+    std::vector<uint32_t> & v = wrapper->use_uint32_v[name];
+    if (index_check_failed(v, *wrapper, index))
+    {
+        return;
+    }
+
+    wrapper->use_indicators_v[name][index] = i_ok;
+    v[index] = val;
+}
+
+SOCI_DECL void soci_set_use_int64_v(statement_handle st,
+    char const * name, int index, int64_t val)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_int64, statement_wrapper::bulk, "vector int64"))
+    {
+        return;
+    }
+
+    std::vector<int64_t> & v = wrapper->use_int64_v[name];
+    if (index_check_failed(v, *wrapper, index))
+    {
+        return;
+    }
+
+    wrapper->use_indicators_v[name][index] = i_ok;
+    v[index] = val;
+}
+
+SOCI_DECL void soci_set_use_uint64_v(statement_handle st,
+    char const * name, int index, uint64_t val)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_uint64, statement_wrapper::bulk, "vector uint64"))
+    {
+        return;
+    }
+
+    std::vector<uint64_t> & v = wrapper->use_uint64_v[name];
     if (index_check_failed(v, *wrapper, index))
     {
         return;
@@ -1717,7 +2787,7 @@ SOCI_DECL void soci_set_use_double_v(statement_handle st,
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (name_exists_check_failed(*wrapper,
-            name, dt_double, statement_wrapper::bulk, "vector double"))
+            name, db_double, statement_wrapper::bulk, "vector double"))
     {
         return;
     }
@@ -1738,7 +2808,7 @@ SOCI_DECL void soci_set_use_date_v(statement_handle st,
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (name_exists_check_failed(*wrapper,
-            name, dt_date, statement_wrapper::bulk, "vector date"))
+            name, db_date, statement_wrapper::bulk, "vector date"))
     {
         return;
     }
@@ -1782,7 +2852,7 @@ SOCI_DECL char const * soci_get_use_string(statement_handle st, char const * nam
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (name_exists_check_failed(*wrapper,
-            name, dt_string, statement_wrapper::bulk, "string"))
+            name, db_string, statement_wrapper::bulk, "string"))
     {
         return "";
     }
@@ -1792,28 +2862,116 @@ SOCI_DECL char const * soci_get_use_string(statement_handle st, char const * nam
 
 SOCI_DECL int soci_get_use_int(statement_handle st, char const * name)
 {
-    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
-
-    if (name_exists_check_failed(*wrapper,
-            name, dt_integer, statement_wrapper::bulk, "int"))
-    {
-        return 0;
-    }
-
-    return wrapper->use_ints[name];
+    return static_cast<int>(soci_get_use_int32(st, name));
 }
 
 SOCI_DECL long long soci_get_use_long_long(statement_handle st, char const * name)
 {
+    return static_cast<long long>(soci_get_use_int64(st, name));
+}
+
+SOCI_DECL int8_t soci_get_use_int8(statement_handle st, char const * name)
+{
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (name_exists_check_failed(*wrapper,
-            name, dt_long_long, statement_wrapper::bulk, "long long"))
+            name, db_int8, statement_wrapper::bulk, "int8"))
+    {
+        return 0;
+    }
+
+    return wrapper->use_int8[name];
+}
+
+SOCI_DECL uint8_t soci_get_use_uint8(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_uint8, statement_wrapper::bulk, "uint8"))
+    {
+        return 0;
+    }
+
+    return wrapper->use_uint8[name];
+}
+
+SOCI_DECL int16_t soci_get_use_int16(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_int16, statement_wrapper::bulk, "int16"))
+    {
+        return 0;
+    }
+
+    return wrapper->use_int16[name];
+}
+
+SOCI_DECL uint16_t soci_get_use_uint16(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_uint16, statement_wrapper::bulk, "uint16"))
+    {
+        return 0;
+    }
+
+    return wrapper->use_uint16[name];
+}
+
+SOCI_DECL int32_t soci_get_use_int32(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_int32, statement_wrapper::bulk, "int32"))
+    {
+        return 0;
+    }
+
+    return wrapper->use_int32[name];
+}
+
+SOCI_DECL uint32_t soci_get_use_uint32(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_uint32, statement_wrapper::bulk, "uint32"))
+    {
+        return 0;
+    }
+
+    return wrapper->use_uint32[name];
+}
+
+SOCI_DECL int64_t soci_get_use_int64(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_int64, statement_wrapper::bulk, "int64"))
     {
         return 0LL;
     }
 
-    return wrapper->use_longlongs[name];
+    return wrapper->use_int64[name];
+}
+
+SOCI_DECL uint64_t soci_get_use_uint64(statement_handle st, char const * name)
+{
+    statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
+
+    if (name_exists_check_failed(*wrapper,
+            name, db_uint64, statement_wrapper::bulk, "uint64"))
+    {
+        return 0LL;
+    }
+
+    return wrapper->use_uint64[name];
 }
 
 SOCI_DECL double soci_get_use_double(statement_handle st, char const * name)
@@ -1821,7 +2979,7 @@ SOCI_DECL double soci_get_use_double(statement_handle st, char const * name)
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (name_exists_check_failed(*wrapper,
-            name, dt_double, statement_wrapper::bulk, "double"))
+            name, db_double, statement_wrapper::bulk, "double"))
     {
         return 0.0;
     }
@@ -1834,7 +2992,7 @@ SOCI_DECL char const * soci_get_use_date(statement_handle st, char const * name)
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (name_exists_check_failed(*wrapper,
-            name, dt_date, statement_wrapper::bulk, "date"))
+            name, db_date, statement_wrapper::bulk, "date"))
     {
         return "";
     }
@@ -1853,7 +3011,7 @@ SOCI_DECL blob_handle soci_get_use_blob(statement_handle st, char const * name)
     statement_wrapper * wrapper = static_cast<statement_wrapper *>(st);
 
     if (name_exists_check_failed(*wrapper,
-            name, dt_blob, statement_wrapper::bulk, "blob"))
+            name, db_blob, statement_wrapper::bulk, "blob"))
     {
         return NULL;
     }
@@ -1878,32 +3036,55 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             {
                 switch (wrapper->into_types[i])
                 {
-                case dt_string:
+                case db_string:
                     wrapper->st.exchange(
                         into(wrapper->into_strings[i], wrapper->into_indicators[i]));
                     break;
-                case dt_integer:
+                case db_int8:
                     wrapper->st.exchange(
-                        into(wrapper->into_ints[i], wrapper->into_indicators[i]));
+                        into(wrapper->into_int8[i], wrapper->into_indicators[i]));
                     break;
-                case dt_long_long:
-                case dt_unsigned_long_long:
+                case db_uint8:
                     wrapper->st.exchange(
-                        into(wrapper->into_longlongs[i], wrapper->into_indicators[i]));
+                        into(wrapper->into_uint8[i], wrapper->into_indicators[i]));
                     break;
-                case dt_double:
+                case db_int16:
+                    wrapper->st.exchange(
+                        into(wrapper->into_int16[i], wrapper->into_indicators[i]));
+                    break;
+                case db_uint16:
+                    wrapper->st.exchange(
+                        into(wrapper->into_uint16[i], wrapper->into_indicators[i]));
+                    break;
+                case db_int32:
+                    wrapper->st.exchange(
+                        into(wrapper->into_int32[i], wrapper->into_indicators[i]));
+                    break;
+                case db_uint32:
+                    wrapper->st.exchange(
+                        into(wrapper->into_uint32[i], wrapper->into_indicators[i]));
+                    break;
+                case db_int64:
+                    wrapper->st.exchange(
+                        into(wrapper->into_int64[i], wrapper->into_indicators[i]));
+                    break;
+                case db_uint64:
+                    wrapper->st.exchange(
+                        into(wrapper->into_uint64[i], wrapper->into_indicators[i]));
+                    break;
+                case db_double:
                     wrapper->st.exchange(
                         into(wrapper->into_doubles[i], wrapper->into_indicators[i]));
                     break;
-                case dt_date:
+                case db_date:
                     wrapper->st.exchange(
                         into(wrapper->into_dates[i], wrapper->into_indicators[i]));
                     break;
-                case dt_blob:
+                case db_blob:
                     wrapper->st.exchange(
                         into(wrapper->into_blob[i]->blob_, wrapper->into_indicators[i]));
                     break;
-                case dt_xml:
+                case db_xml:
                     // no support for xml
                     break;
                 }
@@ -1916,29 +3097,52 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             {
                 switch (wrapper->into_types[i])
                 {
-                case dt_string:
+                case db_string:
                     wrapper->st.exchange(
                         into(wrapper->into_strings_v[i], wrapper->into_indicators_v[i]));
                     break;
-                case dt_integer:
+                case db_int8:
                     wrapper->st.exchange(
-                        into(wrapper->into_ints_v[i], wrapper->into_indicators_v[i]));
+                        into(wrapper->into_int8_v[i], wrapper->into_indicators_v[i]));
                     break;
-                case dt_long_long:
-                case dt_unsigned_long_long:
+                case db_uint8:
                     wrapper->st.exchange(
-                        into(wrapper->into_longlongs_v[i], wrapper->into_indicators_v[i]));
+                        into(wrapper->into_uint8_v[i], wrapper->into_indicators_v[i]));
                     break;
-                case dt_double:
+                case db_int16:
+                    wrapper->st.exchange(
+                        into(wrapper->into_int16_v[i], wrapper->into_indicators_v[i]));
+                    break;
+                case db_uint16:
+                    wrapper->st.exchange(
+                        into(wrapper->into_uint16_v[i], wrapper->into_indicators_v[i]));
+                    break;
+                case db_int32:
+                    wrapper->st.exchange(
+                        into(wrapper->into_int32_v[i], wrapper->into_indicators_v[i]));
+                    break;
+                case db_uint32:
+                    wrapper->st.exchange(
+                        into(wrapper->into_uint32_v[i], wrapper->into_indicators_v[i]));
+                    break;
+                case db_int64:
+                    wrapper->st.exchange(
+                        into(wrapper->into_int64_v[i], wrapper->into_indicators_v[i]));
+                    break;
+                case db_uint64:
+                    wrapper->st.exchange(
+                        into(wrapper->into_uint64_v[i], wrapper->into_indicators_v[i]));
+                    break;
+                case db_double:
                     wrapper->st.exchange(
                         into(wrapper->into_doubles_v[i], wrapper->into_indicators_v[i]));
                     break;
-                case dt_date:
+                case db_date:
                     wrapper->st.exchange(
                         into(wrapper->into_dates_v[i], wrapper->into_indicators_v[i]));
                     break;
-                case dt_blob:
-                case dt_xml:
+                case db_blob:
+                case db_xml:
                     // no support for bulk blob and xml
                     break;
                 }
@@ -1960,27 +3164,105 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             }
         }
         {
-            // ints
-            typedef std::map<std::string, int>::iterator iterator;
-            iterator uit = wrapper->use_ints.begin();
-            iterator const uend = wrapper->use_ints.end();
+            // int8
+            typedef std::map<std::string, int8_t>::iterator iterator;
+            iterator uit = wrapper->use_int8.begin();
+            iterator const uend = wrapper->use_int8.end();
             for ( ; uit != uend; ++uit)
             {
                 std::string const & use_name = uit->first;
-                int & use_int = uit->second;
+                int8_t & use_int = uit->second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
                 wrapper->st.exchange(use(use_int, use_ind, use_name));
             }
         }
         {
-            // longlongs
-            typedef std::map<std::string, long long>::iterator iterator;
-            iterator uit = wrapper->use_longlongs.begin();
-            iterator const uend = wrapper->use_longlongs.end();
+            // uint8
+            typedef std::map<std::string, uint8_t>::iterator iterator;
+            iterator uit = wrapper->use_uint8.begin();
+            iterator const uend = wrapper->use_uint8.end();
             for ( ; uit != uend; ++uit)
             {
                 std::string const & use_name = uit->first;
-                long long & use_longlong = uit->second;
+                uint8_t & use_int = uit->second;
+                indicator & use_ind = wrapper->use_indicators[use_name];
+                wrapper->st.exchange(use(use_int, use_ind, use_name));
+            }
+        }
+        {
+            // int16
+            typedef std::map<std::string, int16_t>::iterator iterator;
+            iterator uit = wrapper->use_int16.begin();
+            iterator const uend = wrapper->use_int16.end();
+            for ( ; uit != uend; ++uit)
+            {
+                std::string const & use_name = uit->first;
+                int16_t & use_int = uit->second;
+                indicator & use_ind = wrapper->use_indicators[use_name];
+                wrapper->st.exchange(use(use_int, use_ind, use_name));
+            }
+        }
+        {
+            // uint16
+            typedef std::map<std::string, uint16_t>::iterator iterator;
+            iterator uit = wrapper->use_uint16.begin();
+            iterator const uend = wrapper->use_uint16.end();
+            for ( ; uit != uend; ++uit)
+            {
+                std::string const & use_name = uit->first;
+                uint16_t & use_int = uit->second;
+                indicator & use_ind = wrapper->use_indicators[use_name];
+                wrapper->st.exchange(use(use_int, use_ind, use_name));
+            }
+        }
+        {
+            // int32
+            typedef std::map<std::string, int32_t>::iterator iterator;
+            iterator uit = wrapper->use_int32.begin();
+            iterator const uend = wrapper->use_int32.end();
+            for ( ; uit != uend; ++uit)
+            {
+                std::string const & use_name = uit->first;
+                int32_t & use_int = uit->second;
+                indicator & use_ind = wrapper->use_indicators[use_name];
+                wrapper->st.exchange(use(use_int, use_ind, use_name));
+            }
+        }
+        {
+            // uint32
+            typedef std::map<std::string, uint32_t>::iterator iterator;
+            iterator uit = wrapper->use_uint32.begin();
+            iterator const uend = wrapper->use_uint32.end();
+            for ( ; uit != uend; ++uit)
+            {
+                std::string const & use_name = uit->first;
+                uint32_t & use_int = uit->second;
+                indicator & use_ind = wrapper->use_indicators[use_name];
+                wrapper->st.exchange(use(use_int, use_ind, use_name));
+            }
+        }
+        {
+            // int64
+            typedef std::map<std::string, int64_t>::iterator iterator;
+            iterator uit = wrapper->use_int64.begin();
+            iterator const uend = wrapper->use_int64.end();
+            for ( ; uit != uend; ++uit)
+            {
+                std::string const & use_name = uit->first;
+                int64_t & use_longlong = uit->second;
+                indicator & use_ind = wrapper->use_indicators[use_name];
+                wrapper->st.exchange(use(use_longlong, use_ind, use_name));
+            }
+        }
+        {
+            // uint64
+            typedef std::map<std::string, uint64_t>::iterator iterator;
+            iterator uit = wrapper->use_uint64.begin();
+            iterator const uend = wrapper->use_uint64.end();
+            for ( ; uit != uend; ++uit)
+            {
+                std::string const & use_name = uit->first;
+                uint64_t & use_longlong = uit->second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
                 wrapper->st.exchange(use(use_longlong, use_ind, use_name));
             }
@@ -2025,7 +3307,7 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             }
         }
 
-        // bind all use vecctor elements
+        // bind all use vector elements
         {
             // strings
             typedef std::map<std::string,
@@ -2042,30 +3324,120 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
             }
         }
         {
-            // ints
+            // int8
             typedef std::map<std::string,
-                std::vector<int> >::iterator iterator;
-            iterator uit = wrapper->use_ints_v.begin();
-            iterator const uend = wrapper->use_ints_v.end();
+                std::vector<int8_t> >::iterator iterator;
+            iterator uit = wrapper->use_int8_v.begin();
+            iterator const uend = wrapper->use_int8_v.end();
             for ( ; uit != uend; ++uit)
             {
                 std::string const & use_name = uit->first;
-                std::vector<int> & use_int = uit->second;
+                std::vector<int8_t> & use_int = uit->second;
                 std::vector<indicator> & use_ind =
                     wrapper->use_indicators_v[use_name];
                 wrapper->st.exchange(use(use_int, use_ind, use_name));
             }
         }
         {
-            // longlongs
+            // uint8
             typedef std::map<std::string,
-                std::vector<long long> >::iterator iterator;
-            iterator uit = wrapper->use_longlongs_v.begin();
-            iterator const uend = wrapper->use_longlongs_v.end();
+                std::vector<uint8_t> >::iterator iterator;
+            iterator uit = wrapper->use_uint8_v.begin();
+            iterator const uend = wrapper->use_uint8_v.end();
             for ( ; uit != uend; ++uit)
             {
                 std::string const & use_name = uit->first;
-                std::vector<long long> & use_longlong = uit->second;
+                std::vector<uint8_t> & use_int = uit->second;
+                std::vector<indicator> & use_ind =
+                    wrapper->use_indicators_v[use_name];
+                wrapper->st.exchange(use(use_int, use_ind, use_name));
+            }
+        }
+        {
+            // int16
+            typedef std::map<std::string,
+                std::vector<int16_t> >::iterator iterator;
+            iterator uit = wrapper->use_int16_v.begin();
+            iterator const uend = wrapper->use_int16_v.end();
+            for ( ; uit != uend; ++uit)
+            {
+                std::string const & use_name = uit->first;
+                std::vector<int16_t> & use_int = uit->second;
+                std::vector<indicator> & use_ind =
+                    wrapper->use_indicators_v[use_name];
+                wrapper->st.exchange(use(use_int, use_ind, use_name));
+            }
+        }
+        {
+            // uint16
+            typedef std::map<std::string,
+                std::vector<uint16_t> >::iterator iterator;
+            iterator uit = wrapper->use_uint16_v.begin();
+            iterator const uend = wrapper->use_uint16_v.end();
+            for ( ; uit != uend; ++uit)
+            {
+                std::string const & use_name = uit->first;
+                std::vector<uint16_t> & use_int = uit->second;
+                std::vector<indicator> & use_ind =
+                    wrapper->use_indicators_v[use_name];
+                wrapper->st.exchange(use(use_int, use_ind, use_name));
+            }
+        }
+        {
+            // int32
+            typedef std::map<std::string,
+                std::vector<int32_t> >::iterator iterator;
+            iterator uit = wrapper->use_int32_v.begin();
+            iterator const uend = wrapper->use_int32_v.end();
+            for ( ; uit != uend; ++uit)
+            {
+                std::string const & use_name = uit->first;
+                std::vector<int32_t> & use_int = uit->second;
+                std::vector<indicator> & use_ind =
+                    wrapper->use_indicators_v[use_name];
+                wrapper->st.exchange(use(use_int, use_ind, use_name));
+            }
+        }
+        {
+            // uint32
+            typedef std::map<std::string,
+                std::vector<uint32_t> >::iterator iterator;
+            iterator uit = wrapper->use_uint32_v.begin();
+            iterator const uend = wrapper->use_uint32_v.end();
+            for ( ; uit != uend; ++uit)
+            {
+                std::string const & use_name = uit->first;
+                std::vector<uint32_t> & use_int = uit->second;
+                std::vector<indicator> & use_ind =
+                    wrapper->use_indicators_v[use_name];
+                wrapper->st.exchange(use(use_int, use_ind, use_name));
+            }
+        }
+        {
+            // int64
+            typedef std::map<std::string,
+                std::vector<int64_t> >::iterator iterator;
+            iterator uit = wrapper->use_int64_v.begin();
+            iterator const uend = wrapper->use_int64_v.end();
+            for ( ; uit != uend; ++uit)
+            {
+                std::string const & use_name = uit->first;
+                std::vector<int64_t> & use_longlong = uit->second;
+                std::vector<indicator> & use_ind =
+                    wrapper->use_indicators_v[use_name];
+                wrapper->st.exchange(use(use_longlong, use_ind, use_name));
+            }
+        }
+        {
+            // uint64
+            typedef std::map<std::string,
+                std::vector<uint64_t> >::iterator iterator;
+            iterator uit = wrapper->use_uint64_v.begin();
+            iterator const uend = wrapper->use_uint64_v.end();
+            for ( ; uit != uend; ++uit)
+            {
+                std::string const & use_name = uit->first;
+                std::vector<uint64_t> & use_longlong = uit->second;
                 std::vector<indicator> & use_ind =
                     wrapper->use_indicators_v[use_name];
                 wrapper->st.exchange(use(use_longlong, use_ind, use_name));

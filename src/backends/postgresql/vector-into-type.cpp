@@ -14,6 +14,7 @@
 #include "soci/type-wrappers.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
@@ -115,28 +116,52 @@ void postgresql_vector_into_type_backend::post_fetch(bool gotData, indicator * i
             case x_stdstring:
                 set_invector_<std::string>(data_, i, buf);
                 break;
-            case x_short:
+            case x_int8:
                 {
-                    short const val = string_to_integer<short>(buf);
+                    int8_t const val = string_to_integer<int8_t>(buf);
                     set_invector_(data_, i, val);
                 }
                 break;
-            case x_integer:
+            case x_uint8:
                 {
-                    int const val = string_to_integer<int>(buf);
+                    uint8_t const val = string_to_integer<uint8_t>(buf);
                     set_invector_(data_, i, val);
                 }
                 break;
-            case x_long_long:
+            case x_int16:
                 {
-                    long long const val = string_to_integer<long long>(buf);
+                    int16_t const val = string_to_integer<int16_t>(buf);
                     set_invector_(data_, i, val);
                 }
                 break;
-            case x_unsigned_long_long:
+            case x_uint16:
                 {
-                    unsigned long long const val =
-                        string_to_unsigned_integer<unsigned long long>(buf);
+                    uint16_t const val = string_to_integer<uint16_t>(buf);
+                    set_invector_(data_, i, val);
+                }
+                break;
+            case x_int32:
+                {
+                    int32_t const val = string_to_integer<int32_t>(buf);
+                    set_invector_(data_, i, val);
+                }
+                break;
+            case x_uint32:
+                {
+                    uint32_t const val = string_to_integer<uint32_t>(buf);
+                    set_invector_(data_, i, val);
+                }
+                break;
+            case x_int64:
+                {
+                    int64_t const val = string_to_integer<int64_t>(buf);
+                    set_invector_(data_, i, val);
+                }
+                break;
+            case x_uint64:
+                {
+                    uint64_t val =
+                        string_to_unsigned_integer<uint64_t>(buf);
                     set_invector_(data_, i, val);
                 }
                 break;
@@ -199,17 +224,29 @@ void postgresql_vector_into_type_backend::resize(std::size_t sz)
         case x_char:
             resizevector_<char>(data_, sz);
             break;
-        case x_short:
-            resizevector_<short>(data_, sz);
+        case x_int8:
+            resizevector_<int8_t>(data_, sz);
             break;
-        case x_integer:
-            resizevector_<int>(data_, sz);
+        case x_uint8:
+            resizevector_<uint8_t>(data_, sz);
             break;
-        case x_long_long:
-            resizevector_<long long>(data_, sz);
+        case x_int16:
+            resizevector_<int16_t>(data_, sz);
             break;
-        case x_unsigned_long_long:
-            resizevector_<unsigned long long>(data_, sz);
+        case x_uint16:
+            resizevector_<uint16_t>(data_, sz);
+            break;
+        case x_int32:
+            resizevector_<int32_t>(data_, sz);
+            break;
+        case x_uint32:
+            resizevector_<uint32_t>(data_, sz);
+            break;
+        case x_int64:
+            resizevector_<int64_t>(data_, sz);
+            break;
+        case x_uint64:
+            resizevector_<uint64_t>(data_, sz);
             break;
         case x_double:
             resizevector_<double>(data_, sz);
@@ -267,17 +304,29 @@ std::size_t postgresql_vector_into_type_backend::full_size()
     case x_char:
         sz = get_vector_size<char>(data_);
         break;
-    case x_short:
-        sz = get_vector_size<short>(data_);
+    case x_int8:
+        sz = get_vector_size<int8_t>(data_);
         break;
-    case x_integer:
-        sz = get_vector_size<int>(data_);
+    case x_uint8:
+        sz = get_vector_size<uint8_t>(data_);
         break;
-    case x_long_long:
-        sz = get_vector_size<long long>(data_);
+    case x_int16:
+        sz = get_vector_size<int16_t>(data_);
         break;
-    case x_unsigned_long_long:
-        sz = get_vector_size<unsigned long long>(data_);
+    case x_uint16:
+        sz = get_vector_size<uint16_t>(data_);
+        break;
+    case x_int32:
+        sz = get_vector_size<int32_t>(data_);
+        break;
+    case x_uint32:
+        sz = get_vector_size<uint32_t>(data_);
+        break;
+    case x_int64:
+        sz = get_vector_size<int64_t>(data_);
+        break;
+    case x_uint64:
+        sz = get_vector_size<int64_t>(data_);
         break;
     case x_double:
         sz = get_vector_size<double>(data_);

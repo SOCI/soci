@@ -57,20 +57,36 @@ void standard_use_type::dump_value(std::ostream& os) const
             os << "\"" << exchange_type_cast<x_stdstring>(data_) << "\"";
             return;
 
-        case x_short:
-            os << exchange_type_cast<x_short>(data_);
+        case x_int8:
+            os << exchange_type_cast<x_int8>(data_);
             return;
 
-        case x_integer:
-            os << exchange_type_cast<x_integer>(data_);
+        case x_uint8:
+            os << exchange_type_cast<x_uint8>(data_);
             return;
 
-        case x_long_long:
-            os << exchange_type_cast<x_long_long>(data_);
+        case x_int16:
+            os << exchange_type_cast<x_int16>(data_);
             return;
 
-        case x_unsigned_long_long:
-            os << exchange_type_cast<x_unsigned_long_long>(data_);
+        case x_uint16:
+            os << exchange_type_cast<x_uint16>(data_);
+            return;
+
+        case x_int32:
+            os << exchange_type_cast<x_int32>(data_);
+            return;
+
+        case x_uint32:
+            os << exchange_type_cast<x_uint32>(data_);
+            return;
+
+        case x_int64:
+            os << exchange_type_cast<x_int64>(data_);
+            return;
+
+        case x_uint64:
+            os << exchange_type_cast<x_uint64>(data_);
             return;
 
         case x_double:
