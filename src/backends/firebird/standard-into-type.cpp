@@ -129,7 +129,7 @@ void firebird_standard_into_type_backend::exchangeData()
                 firebird_blob_backend *blob =
                     dynamic_cast<firebird_blob_backend*>(tmp->get_backend());
 
-                if (0 == blob)
+                if (!blob)
                 {
                     throw soci_error("Can't get Firebid BLOB BackEnd");
                 }

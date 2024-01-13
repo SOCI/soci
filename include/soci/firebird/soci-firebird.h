@@ -265,39 +265,29 @@ struct firebird_blob_backend : details::blob_backend
     std::size_t append(char const *buf, std::size_t toWrite) override;
     void trim(std::size_t newLen) override;
 
+    /// Writes the current data into the database by allocating a new BLOB
+    /// object for it.
+    ///
+    /// @returns The ID of the newly created BLOB object
+    ISC_QUAD write_to_db();
+    void assign(ISC_QUAD const & bid);
+
+private:
+    void open();
+    long getBLOBInfo();
+    void load();
+    void writeBuffer(std::size_t offset, char const * buf,
+        std::size_t toWrite);
+    void closeBlob(bool keepData);
+
     firebird_session_backend &session_;
-
-    virtual void save();
-    virtual void assign(ISC_QUAD const & bid)
-    {
-        cleanUp();
-
-        bid_ = bid;
-        from_db_ = true;
-    }
-
-    // BLOB id from in database
-    ISC_QUAD bid_;
-
+    ISC_QUAD blob_id_;
     // BLOB id was fetched from database (true)
     // or this is new BLOB
     bool from_db_;
-
-    // BLOB handle
-    isc_blob_handle bhp_;
-
-protected:
-
-    virtual void open();
-    virtual long getBLOBInfo();
-    virtual void load();
-    virtual void writeBuffer(std::size_t offset, char const * buf,
-        std::size_t toWrite);
-    virtual void cleanUp();
-
+    isc_blob_handle blob_handle_;
     // buffer for BLOB data
-    std::vector<char> data_;
-
+    std::vector<unsigned char> data_;
     bool loaded_;
     long max_seg_size_;
 };
