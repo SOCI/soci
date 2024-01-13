@@ -49,10 +49,12 @@ std::size_t postgresql_blob_backend::get_len()
 std::size_t postgresql_blob_backend::read_from_start(char * buf, std::size_t toRead, std::size_t offset)
 {
     std::size_t size = get_len();
-    if (offset >= size && !(size == 0 && offset == 0)) {
+    if (offset >= size && !(size == 0 && offset == 0))
+    {
         throw soci_error("Can't read past-the-end of BLOB data.");
     }
-    if (size == 0) {
+    if (size == 0)
+    {
         // Reading from an empty blob, is defined as a no-op
         return 0;
     }
@@ -77,7 +79,8 @@ std::size_t postgresql_blob_backend::write_from_start(char const * buf, std::siz
         throw soci_error("Can't start writing far past-the-end of BLOB data.");
     }
 
-    if (clone_before_modify_) {
+    if (clone_before_modify_)
+    {
         clone();
     }
 
@@ -104,15 +107,20 @@ std::size_t postgresql_blob_backend::append(
 
 void postgresql_blob_backend::trim(std::size_t newLen)
 {
-    if (newLen > static_cast<std::size_t>(std::numeric_limits<int>::max())) {
+    if (newLen > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+    {
         throw soci_error("Requested new BLOB size exceeds INT_MAX, which is not supported");
     }
 
-    if (clone_before_modify_) {
-        if (newLen == 0) {
+    if (clone_before_modify_)
+    {
+        if (newLen == 0)
+        {
             // In case we're clearing the BLOB anyway, there is no point in copying the old data over first
             reset();
-        } else {
+        }
+        else
+        {
             clone();
         }
     }
@@ -121,53 +129,64 @@ void postgresql_blob_backend::trim(std::size_t newLen)
 
     // lo_truncate64 was introduced in Postgresql v9.3
     int ret_code = lo_truncate64(session_.conn_, details_.fd, newLen);
-    if (ret_code == -1) {
+    if (ret_code == -1)
+    {
         // If we call lo_truncate64 on a server that is < v9.3, the call will fail and return -1.
         // Thus, we'll try again with the slightly older function lo_truncate.
         ret_code = lo_truncate(session_.conn_, details_.fd, newLen);
     }
 
-    if (ret_code < 0) {
+    if (ret_code < 0)
+    {
         const char *errorMsg = PQerrorMessage(session_.conn_);
         throw soci_error(std::string("Cannot truncate BLOB: ") + errorMsg);
     }
 }
 
-const postgresql_blob_backend::blob_details &postgresql_blob_backend::get_blob_details() const {
+const postgresql_blob_backend::blob_details &postgresql_blob_backend::get_blob_details() const
+{
     return details_;
 }
 
-void postgresql_blob_backend::set_blob_details(const postgresql_blob_backend::blob_details &details) {
+void postgresql_blob_backend::set_blob_details(const postgresql_blob_backend::blob_details &details)
+{
     reset();
 
     details_ = details;
 }
 
-bool postgresql_blob_backend::get_destroy_on_close() const {
+bool postgresql_blob_backend::get_destroy_on_close() const
+{
     return destroy_on_close_;
 }
 
-void postgresql_blob_backend::set_destroy_on_close(bool destroy) {
+void postgresql_blob_backend::set_destroy_on_close(bool destroy)
+{
     destroy_on_close_ = destroy;
 }
 
-void postgresql_blob_backend::set_clone_before_modify(bool clone) {
+void postgresql_blob_backend::set_clone_before_modify(bool clone)
+{
     clone_before_modify_ = clone;
 }
 
-void postgresql_blob_backend::init() {
-    if (details_.fd == -1) {
+void postgresql_blob_backend::init()
+{
+    if (details_.fd == -1)
+    {
         // Create a new large object
         Oid oid = lo_creat(session_.conn_, INV_READ | INV_WRITE);
 
-        if (oid == InvalidOid) {
+        if (oid == InvalidOid)
+        {
             const char *errorMsg = PQerrorMessage(session_.conn_);
             throw soci_error(std::string("Cannot create new BLOB: ") + errorMsg);
         }
 
         int fd = lo_open(session_.conn_, oid, INV_READ | INV_WRITE);
 
-        if (fd == -1) {
+        if (fd == -1)
+        {
             const char *errorMsg = PQerrorMessage(session_.conn_);
             lo_unlink(session_.conn_, oid);
             throw soci_error(std::string("Cannot open newly created BLOB: ") + errorMsg);
@@ -178,13 +197,17 @@ void postgresql_blob_backend::init() {
     }
 }
 
-void postgresql_blob_backend::reset() {
+void postgresql_blob_backend::reset()
+{
     if (details_.fd != -1)
     {
-        if (destroy_on_close_) {
+        if (destroy_on_close_)
+        {
             // Remove the large object from the DB completely
             lo_unlink(session_.conn_, details_.fd);
-        } else {
+        }
+        else
+        {
             // Merely close our handle to the large object
             lo_close(session_.conn_, details_.fd);
         }
@@ -200,7 +223,8 @@ std::size_t do_seek(std::size_t toOffset, int from,
         soci::postgresql_session_backend &session, soci::postgresql_blob_backend::blob_details &details)
 {
     pg_int64 pos = lo_lseek64(session.conn_, details.fd, static_cast<pg_int64>(toOffset), from);
-    if (pos == -1) {
+    if (pos == -1)
+    {
         // If we try to use lo_lseek64 on a Postgresql server that is older than 9.3, the function will fail
         // and return -1, so we'll try again with the older function lo_lseek.
         pos = lo_lseek(session.conn_, details.fd, static_cast<int>(toOffset), from);
@@ -215,13 +239,16 @@ std::size_t do_seek(std::size_t toOffset, int from,
     return static_cast<std::size_t>(pos);
 }
 
-std::size_t postgresql_blob_backend::seek(std::size_t toOffset, int from) {
+std::size_t postgresql_blob_backend::seek(std::size_t toOffset, int from)
+{
     return do_seek(toOffset, from, session_, details_);
 }
 
-void postgresql_blob_backend::clone() {
+void postgresql_blob_backend::clone()
+{
     clone_before_modify_ = false;
-    if (details_.fd == -1) {
+    if (details_.fd == -1)
+    {
         return;
     }
 
@@ -233,7 +260,8 @@ void postgresql_blob_backend::clone() {
     char buf[1024];
     std::size_t offset = 0;
     int read_bytes = 0;
-    do {
+    do
+    {
         do_seek(offset, SEEK_SET, session_, old_details);
         read_bytes = lo_read(session_.conn_, old_details.fd, buf, sizeof(buf));
 
@@ -255,10 +283,13 @@ void postgresql_blob_backend::clone() {
     } while (read_bytes == sizeof(buf));
 
 	// Dispose old BLOB object
-	if (destroy_on_close_) {
+	if (destroy_on_close_)
+    {
 		// Remove the large object from the DB completely
 		lo_unlink(session_.conn_, old_details.fd);
-	} else {
+	}
+    else
+    {
 		// Merely close our handle to the large object
 		lo_close(session_.conn_, old_details.fd);
 	}

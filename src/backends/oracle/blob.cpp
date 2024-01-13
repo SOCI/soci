@@ -37,9 +37,12 @@ oracle_blob_backend::oracle_blob_backend(oracle_session_backend &session)
 
 oracle_blob_backend::~oracle_blob_backend()
 {
-    try {
+    try
+    {
         reset();
-    } catch (const oracle_soci_error &) {
+    }
+    catch (const oracle_soci_error &)
+    {
         // Ignore, as we shouldn't throw exceptions from the destructor
     }
 
@@ -48,7 +51,8 @@ oracle_blob_backend::~oracle_blob_backend()
 
 std::size_t oracle_blob_backend::get_len()
 {
-    if (!initialized_) {
+    if (!initialized_)
+    {
         return 0;
     }
 
@@ -200,9 +204,12 @@ void oracle_blob_backend::reset()
         throw_oracle_soci_error(res, session_.errhp_);
     }
 
-    if (is_temporary) {
+    if (is_temporary)
+    {
         res = OCILobFreeTemporary(session_.svchp_, session_.errhp_, lobp_);
-    } else {
+    }
+    else
+    {
         res = OCILobClose(session_.svchp_, session_.errhp_, lobp_);
     }
 

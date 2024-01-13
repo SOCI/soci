@@ -331,7 +331,8 @@ class postgresql_blob_backend : public details::blob_backend
 {
 public:
 
-    struct blob_details {
+    struct blob_details
+    {
         // OID of the large object
         unsigned long oid;
         // File descriptor of the large object

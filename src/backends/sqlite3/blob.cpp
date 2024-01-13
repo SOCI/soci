@@ -22,7 +22,8 @@ sqlite3_blob_backend::~sqlite3_blob_backend()
 {
 }
 
-void sqlite3_blob_backend::ensure_buffer_initialized() {
+void sqlite3_blob_backend::ensure_buffer_initialized()
+{
     // Ensure that the used buffer is at least large enough to hold one element.
     // Thus, in case the vector has not yet allocated a buffer at all, it is forced
     // to do so now.

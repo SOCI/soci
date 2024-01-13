@@ -363,7 +363,8 @@ private:
     SOCI_NOT_COPYABLE(function_creator_base)
 };
 
-enum class Backend {
+enum class Backend
+{
     Empty,
     SQLite,
     MySQL,
@@ -6549,7 +6550,8 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
             char buf[15];
             std::size_t read_bytes = write_blob.read_from_start(buf, sizeof(buf));
             CHECK(read_bytes == 12);
-            for (std::size_t i = 0; i < 10; ++i) {
+            for (std::size_t i = 0; i < 10; ++i)
+            {
                 CHECK(buf[i] == dummy_data[i]);
             }
             CHECK(buf[10] == 'a');
@@ -6565,7 +6567,8 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
             std::size_t bytes_read = read_blob.read_from_start(buf, sizeof(buf));
             CHECK(bytes_read == read_blob.get_len());
             CHECK(bytes_read == 10);
-            for (std::size_t i = 0; i < bytes_read; ++i) {
+            for (std::size_t i = 0; i < bytes_read; ++i)
+            {
                 CHECK(buf[i] == dummy_data[i]);
             }
 
@@ -6587,7 +6590,8 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
             bytes_read = read_blob.read_from_start(buf, sizeof(buf));
             CHECK(bytes_read == read_blob.get_len());
             CHECK(bytes_read == 5);
-            for (std::size_t i = 0; i < bytes_read; ++i) {
+            for (std::size_t i = 0; i < bytes_read; ++i)
+            {
                 CHECK(buf[i] == dummy_data[i + 15]);
             }
         }
@@ -6612,7 +6616,8 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
             std::size_t bytes_read = read_blob.read_from_start(reinterpret_cast<char *>(buf), sizeof(buf));
 
             CHECK(bytes_read == sizeof(binary_data));
-            for (std::size_t i = 0; i < sizeof(binary_data); ++i) {
+            for (std::size_t i = 0; i < sizeof(binary_data); ++i)
+            {
                 CHECK(buf[i] == binary_data[i]);
             }
         }
@@ -6626,7 +6631,8 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
 
             soci::rowset< soci::row > rowSet = sql.prepare << "select id, b from soci_test";
             bool containedData = false;
-            for (auto it = rowSet.begin(); it != rowSet.end(); ++it) {
+            for (auto it = rowSet.begin(); it != rowSet.end(); ++it)
+            {
                 containedData = true;
                 const soci::row &currentRow = *it;
 
@@ -6656,7 +6662,8 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
                 char buffer[20];
                 std::size_t written = intoBlob.read_from_start(buffer, sizeof(buffer));
                 CHECK(written == 10);
-                for (std::size_t i = 0; i < 10; ++i) {
+                for (std::size_t i = 0; i < 10; ++i)
+                {
                     CHECK(buffer[i] == dummy_data[i]);
                 }
             }
@@ -6664,7 +6671,8 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
             {
                 soci::rowset< soci::row > rowSet = (sql.prepare << "select b from soci_test where id=:id", soci::use(id));
                 bool containedData = false;
-                for (auto it = rowSet.begin(); it != rowSet.end(); ++it) {
+                for (auto it = rowSet.begin(); it != rowSet.end(); ++it)
+                {
                     containedData = true;
                     const soci::row &currentRow = *it;
 
@@ -6674,7 +6682,8 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
                     char buffer[20];
                     std::size_t written = intoBlob.read_from_start(buffer, sizeof(buffer));
                     CHECK(written == 10);
-                    for (std::size_t i = 0; i < 10; ++i) {
+                    for (std::size_t i = 0; i < 10; ++i)
+                    {
                         CHECK(buffer[i] == dummy_data[i]);
                     }
                 }
@@ -6691,7 +6700,8 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
                 char buffer[20];
                 std::size_t written = intoBlob.read_from_start(buffer, sizeof(buffer));
                 CHECK(written == 10);
-                for (std::size_t i = 0; i < 10; ++i) {
+                for (std::size_t i = 0; i < 10; ++i)
+                {
                     CHECK(buffer[i] == dummy_data[i]);
                 }
             }

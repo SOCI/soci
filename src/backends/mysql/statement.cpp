@@ -468,7 +468,8 @@ void mysql_statement_backend::describe_column(int colNum,
     case FIELD_TYPE_BLOB:       // BLOB
     case FIELD_TYPE_TINY_BLOB:
     case FIELD_TYPE_MEDIUM_BLOB:
-    case FIELD_TYPE_LONG_BLOB: {
+    case FIELD_TYPE_LONG_BLOB:
+    {
         // Quoted from the docs:
         // To distinguish between binary and nonbinary data for string data types, check whether the
         // charsetnr value is 63. If so, the character set is binary, which indicates binary rather

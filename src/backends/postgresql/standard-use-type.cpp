@@ -176,7 +176,8 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
 
                 unsigned long oid = bbe->get_blob_details().oid;
 
-                if (oid == InvalidOid) {
+                if (oid == InvalidOid)
+                {
                     throw soci_error("Cannot insert invalid BLOB.");
                 }
 

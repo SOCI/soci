@@ -327,7 +327,8 @@ void oracle_standard_into_type_backend::post_fetch(
                 read_from_lob(statement_.session_,
                     lobp, exchange_type_cast<x_longstring>(data_).value);
             }
-        } else if (type_ == x_blob)
+        }
+        else if (type_ == x_blob)
         {
             blob *b = static_cast<blob *>(data_);
 

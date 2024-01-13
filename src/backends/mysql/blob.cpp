@@ -39,9 +39,12 @@ static unsigned char decode_hex_digit(char c)
         throw soci_error("MySQL BLOB: Encountered invalid characters in hex representation");
     }
 
-    if (i <= '9') {
+    if (i <= '9')
+    {
         return i - '0';
-    } else {
+    }
+    else
+    {
         return i - 'a';
     }
 }
@@ -68,15 +71,19 @@ void mysql_blob_backend::write_hex_str(char *buf, std::size_t size) const
         throw soci_error("MySQL BLOB: Provided buffer is too small to hold hex string");
     }
 
-    if (buffer_.empty()) {
+    if (buffer_.empty())
+    {
         return;
-    } else {
+    }
+    else
+    {
         buf[0] = '0';
         buf[1] = 'x';
     }
 
     // Inspired by https://codereview.stackexchange.com/a/78539
-    for (std::size_t i = 0; i < buffer_.size(); ++i) {
+    for (std::size_t i = 0; i < buffer_.size(); ++i)
+    {
         // First 4 bits
         buf[2 + 2 * i ]    = encode_hex_digit(static_cast<unsigned char>(buffer_[i]) >> 4);
         // Following 4 bits
@@ -99,12 +106,14 @@ void mysql_blob_backend::load_from_hex_str(const char *str, std::size_t length)
 {
     std::size_t nBytes = length / 2;
 
-    if (nBytes * 2 != length) {
+    if (nBytes * 2 != length)
+    {
         // We expect an even amount of hex digits
         throw soci_error("Cannot load BLOB from invalid hex-representation (uneven amount of digits)");
     }
 
-    if (nBytes > 0) {
+    if (nBytes > 0)
+    {
         assert(nBytes > 1);
 
         // The first "byte" as detected by above calculation is only the prefix "0x"
@@ -113,7 +122,8 @@ void mysql_blob_backend::load_from_hex_str(const char *str, std::size_t length)
 
     buffer_.resize(nBytes);
 
-    for (std::size_t i = 0; i < nBytes; ++i) {
+    for (std::size_t i = 0; i < nBytes; ++i)
+    {
         buffer_[i] = (decode_hex_digit(str[2 + 2 * i]) << 4) + decode_hex_digit(str[2 + 2 * i + 1]);
     }
 }

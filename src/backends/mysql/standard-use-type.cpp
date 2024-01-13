@@ -167,14 +167,17 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                     static_cast<mysql_blob_backend *>(b->get_backend());
 
                 std::size_t hex_size = bbe->hex_str_size();
-                if (hex_size == 0) {
+                if (hex_size == 0)
+                {
                     // We can't represent an empty BLOB as hex (thus hex_str_size returns 0). Instead, we'll
                     // use '' to initialize and empty BLOB.
                     buf_ = new char[3];
                     buf_[0] = '\'';
                     buf_[1] = '\'';
                     buf_[2] = '\0';
-                } else {
+                }
+                else
+                {
                     buf_ = new char[hex_size + 1];
                     bbe->write_hex_str(buf_, hex_size);
                     // Add NULL terminator
