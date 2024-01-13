@@ -34,7 +34,10 @@ static unsigned char decode_hex_digit(char c)
 {
     unsigned char i = static_cast<unsigned char>(tolower(c));
 
-    assert((i >= '0' && i <= '9') || (i >= 'a' && i <= 'f'));
+    if (!( (i >= '0' && i <= '9') && (i >= 'a' && i <= 'f') ))
+    {
+        throw soci_error("MySQL BLOB: Encountered invalid characters in hex representation");
+    }
 
     if (i <= '9') {
         return i - '0';
@@ -44,8 +47,7 @@ static unsigned char decode_hex_digit(char c)
 }
 
 static char encode_hex_digit(unsigned char d) {
-    static const char hexMap[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        'a', 'b', 'c', 'd', 'e', 'f'};
+    static const char hexMap[] = "0123456789abcdef";
 
     return hexMap[d];
 }
