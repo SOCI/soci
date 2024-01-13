@@ -33,8 +33,6 @@ The `offset` parameter is always counted from the beginning of the BLOB's data. 
 * The plain `read(...)` and `write(...)` functions use offsets in a backend-specific format (some start at zero, some at one). They are retained only for backwards compatibility. Don't use them in new code!
 * Some backends (e.g. PostgreSQL) support BLOBs only while a transaction is active. Using a `soci::blob` object outside of a transaction in these cases is undefined behavior.
   In order to write portable code, you should always ensure to start a transaction before working with BLOBs and end it only after you are done with the BLOB object.
-* For some backends, writing to the `soci::blob` object immediately updates the values stored in the database, without having to re-insert the value again.
-  However, for other backends (e.g. SQLite) this is not true and in order for any changes to be reflected in the final DB, you'll have to perform an explicit insert after having modified the blob object.
 
 ## Long strings and XML
 
