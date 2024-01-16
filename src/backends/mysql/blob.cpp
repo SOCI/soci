@@ -11,7 +11,6 @@
 #include <ciso646>
 
 #include <cctype>
-#include <cassert>
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -64,8 +63,6 @@ std::size_t mysql_blob_backend::hex_str_size() const
 
 void mysql_blob_backend::write_hex_str(char *buf, std::size_t size) const
 {
-    assert(size >= hex_str_size());
-
     if (size < hex_str_size())
     {
         throw soci_error("MySQL BLOB: Provided buffer is too small to hold hex string");
@@ -114,8 +111,6 @@ void mysql_blob_backend::load_from_hex_str(const char *str, std::size_t length)
 
     if (nBytes > 0)
     {
-        assert(nBytes > 1);
-
         // The first "byte" as detected by above calculation is only the prefix "0x"
         nBytes -= 1;
     }
