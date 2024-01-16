@@ -12,9 +12,7 @@
 #include <ctime>
 #include <cmath>
 
-#define SOCI_INCLUDED_FROM_ODBC_TEST
 #include "mysql/test-mysql.h"
-#undef SOCI_INCLUDED_FROM_ODBC_TEST
 
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_odbc();
@@ -33,6 +31,11 @@ public:
         // Driver version 8.0.31 seems to have fixed this (https://github.com/mysql/mysql-connector-odbc/commit/e78da1344247752f76a082de51cfd36d5d2dd98f),
         // but we use an older version in the AppVeyor builds.
         return true;
+    }
+
+    table_creator_base* table_creator_blob(soci::session& s) const override
+    {
+      return new table_creator_for_blob(s);
     }
 };
 

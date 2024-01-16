@@ -178,6 +178,9 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 }
                 else
                 {
+                    // Note: since the entire MySQL works by assembling the query in text form,
+                    // we can't make use of proper blob objects (that'd require a more sophisticated
+                    // way of using the MySQL API).
                     buf_ = new char[hex_size + 1];
                     bbe->write_hex_str(buf_, hex_size);
                     // Add NULL terminator

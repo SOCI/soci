@@ -304,6 +304,8 @@ private:
 
     locator_t lobp_;
 
+    // If this is true, then the locator lobp_ points to something useful
+    // (instead of being the equivalent to a pointer with random value)
     bool initialized_;
 };
 

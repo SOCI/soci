@@ -15,7 +15,6 @@
 #include <cstring>
 #include <ctime>
 #include <cstdlib>
-#include <pg_config.h>
 
 using namespace soci;
 using namespace soci::tests;
@@ -1345,8 +1344,6 @@ public:
     test_context(backend_factory const &backend, std::string const &connstr)
         : test_context_base(backend, connstr)
     {}
-
-    Backend get_backend() const override { return Backend::PostgreSQL; }
 
     table_creator_base* table_creator_1(soci::session& s) const override
     {

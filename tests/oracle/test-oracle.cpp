@@ -1407,8 +1407,6 @@ public:
                 std::string const &connectString)
         : test_context_base(backEnd, connectString) {}
 
-    Backend get_backend() const override { return Backend::Oracle; }
-
     table_creator_base* table_creator_1(soci::session& s) const override
     {
         return new table_creator_one(s);

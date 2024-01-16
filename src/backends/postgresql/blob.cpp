@@ -253,7 +253,7 @@ void postgresql_blob_backend::clone()
     }
 
     blob_details old_details = details_;
-	details_ = {};
+    details_ = {};
     reset();
     init();
 
@@ -282,15 +282,15 @@ void postgresql_blob_backend::clone()
         offset += sizeof(buf);
     } while (read_bytes == sizeof(buf));
 
-	// Dispose old BLOB object
-	if (destroy_on_close_)
+    // Dispose old BLOB object
+    if (destroy_on_close_)
     {
-		// Remove the large object from the DB completely
-		lo_unlink(session_.conn_, old_details.fd);
-	}
+        // Remove the large object from the DB completely
+        lo_unlink(session_.conn_, old_details.fd);
+    }
     else
     {
-		// Merely close our handle to the large object
-		lo_close(session_.conn_, old_details.fd);
-	}
+        // Merely close our handle to the large object
+        lo_close(session_.conn_, old_details.fd);
+    }
 }

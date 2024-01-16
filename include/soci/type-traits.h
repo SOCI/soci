@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef SOCI_PRIVATE_SOCI_TYPE_TRAITS_H_INCLUDED
-#define SOCI_PRIVATE_SOCI_TYPE_TRAITS_H_INCLUDED
+#ifndef SOCI_SOCI_TYPE_TRAITS_H_INCLUDED
+#define SOCI_SOCI_TYPE_TRAITS_H_INCLUDED
 
 #include <type_traits>
 
@@ -23,6 +23,9 @@ using false_type = std::integral_constant<bool, false>;
 using true_type = std::integral_constant<bool, true>;
 
 // Implementation from https://blog.tartanllama.xyz/detection-idiom/
+// Note, this is a stub that we require until standard C++ gets support
+// for the detection idiom that is not experimental (and thus can be
+// assumed to be present).
 
 namespace detector_detail
 {
@@ -43,4 +46,4 @@ using is_detected = typename detector_detail::is_detected<Trait, void, Args...>:
 
 }
 
-#endif // SOCI_PRIVATE_SOCI_TYPE_TRAITS_H_INCLUDED
+#endif // SOCI_SOCI_TYPE_TRAITS_H_INCLUDED

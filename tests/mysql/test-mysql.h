@@ -70,8 +70,6 @@ public:
                 std::string const &connectString)
         : test_context_base(backEnd, connectString) {}
 
-    Backend get_backend() const override { return Backend::MySQL; }
-
     table_creator_base* table_creator_1(soci::session& s) const override
     {
         return new table_creator_one(s);
@@ -97,13 +95,10 @@ public:
         return "\'" + datdt_string + "\'";
     }
 
-#ifndef SOCI_INCLUDED_FROM_ODBC_TEST
-    // ODBC backend doesn't support BLOBs yet
-    table_creator_base* table_creator_blob(soci::session& s) const override
+    table_creator_base * table_creator_blob(soci::session &s) const override
     {
-      return new table_creator_for_blob(s);
+        return new table_creator_for_blob(s);
     }
-#endif
 
     bool has_fp_bug() const override
     {

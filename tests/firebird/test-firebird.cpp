@@ -1191,8 +1191,6 @@ class test_context : public tests::test_context_base
                 : test_context_base(backEnd, connectString)
         {}
 
-        tests::Backend get_backend() const override { return tests::Backend::Firebird; }
-
         tests::table_creator_base* table_creator_1(soci::session& s) const override
         {
             return new TableCreator1(s);

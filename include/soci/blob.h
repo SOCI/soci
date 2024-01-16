@@ -44,7 +44,12 @@ public:
     [[deprecated("Use read_from_start instead")]]
     std::size_t read(std::size_t offset, char * buf, std::size_t toRead);
 
-    // offset starts from 0
+    // Extracts data from this blob into the given buffer.
+    // At most toRead bytes are extracted (and copied into buf).
+    // The amount of actually read bytes is returned.
+    //
+    // Note: Using an offset > 0 on a blob whose size is less than
+    // or equal to offset, will throw an exception.
     std::size_t read_from_start(char * buf, std::size_t toRead,
         std::size_t offset = 0);
 

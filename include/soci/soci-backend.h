@@ -341,10 +341,10 @@ public:
             throw soci_error("Can't read past-the-end of BLOB data.");
         }
 
-        toRead = (std::min)(toRead, buffer_.size() - offset);
-
         // make sure that we don't try to read
         // past the end of the data
+        toRead = (std::min)(toRead, buffer_.size() - offset);
+
         memcpy(buf, buffer_.data() + offset, toRead);
 
         return toRead;

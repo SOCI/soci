@@ -158,7 +158,7 @@ void firebird_standard_use_type_backend::exchangeData()
                     throw soci_error("Can't get Firebid BLOB BackEnd");
                 }
 
-                ISC_QUAD blob_id = blob->write_to_db();
+                ISC_QUAD blob_id = blob->save_to_db();
                 memcpy(buf_, &blob_id, sizeof(blob_id));
             }
             break;
@@ -185,7 +185,7 @@ void firebird_standard_use_type_backend::copy_to_blob(const std::string& in)
 
     blob_->append(in.c_str(), in.length());
 
-    ISC_QUAD blob_id = blob_->write_to_db();
+    ISC_QUAD blob_id = blob_->save_to_db();
     memcpy(buf_, &blob_id, sizeof(blob_id));
 }
 

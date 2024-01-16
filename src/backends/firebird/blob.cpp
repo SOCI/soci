@@ -21,7 +21,7 @@ firebird_blob_backend::firebird_blob_backend(firebird_session_backend &session)
 
 firebird_blob_backend::~firebird_blob_backend()
 {
-    closeBlob(false);
+    closeBlob();
 }
 
 std::size_t firebird_blob_backend::get_len()
@@ -152,16 +152,11 @@ void firebird_blob_backend::open()
     data_.resize(blob_size);
 }
 
-void firebird_blob_backend::closeBlob(bool keepData)
+void firebird_blob_backend::closeBlob()
 {
     from_db_ = false;
     loaded_ = false;
     max_seg_size_ = 0;
-
-    if (!keepData)
-    {
-        data_.resize(0);
-    }
 
     if (blob_handle_ != 0)
     {
@@ -231,7 +226,7 @@ void firebird_blob_backend::load()
     loaded_ = true;
 }
 
-ISC_QUAD firebird_blob_backend::write_to_db()
+ISC_QUAD firebird_blob_backend::save_to_db()
 {
     // close old blob if necessary
     ISC_STATUS stat[20];
@@ -280,14 +275,15 @@ ISC_QUAD firebird_blob_backend::write_to_db()
     // In any case, BLOBs in Firebird can't be updated anyway - one always has to create a new BLOB object
     // (with a new ID) and then use that to modify the existing one (replace the ID in the corresponding table).
     // Therefore, keeping the Blob open for subsequent modification is not needed.
-    closeBlob(true);
+    closeBlob();
 
     return blob_id_;
 }
 
 void firebird_blob_backend::assign(const ISC_QUAD &id)
 {
-    closeBlob(false);
+    closeBlob();
+    data_.clear();
 
     blob_id_ = id;
     from_db_ = true;
