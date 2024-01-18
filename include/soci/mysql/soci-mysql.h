@@ -18,6 +18,7 @@
 #endif
 
 #include <soci/soci-backend.h>
+#include <private/soci-trivial-blob-backend.h>
 #ifdef _WIN32
 #include <winsock.h> // SOCKET
 #endif // _WIN32
