@@ -641,6 +641,20 @@ TEST_CASE("SQLite DDL with metadata", "[sqlite][ddl]")
     CHECK(ddl_t3_found == false);
 }
 
+TEST_CASE("SQLite DDL roundrip", "[sqlite][ddl][roundtrip]")
+{
+    soci::session sql(backEnd, connectString);
+    test_roundtrip(sql, Roundtrip<double>       (soci::db_double, std::numeric_limits<double>::max()));
+    test_roundtrip(sql, Roundtrip<std::int8_t>  (soci::db_int8,   std::numeric_limits<std::int8_t>::max()));
+    test_roundtrip(sql, Roundtrip<std::int16_t> (soci::db_int16,  std::numeric_limits<std::int16_t>::max()));
+    test_roundtrip(sql, Roundtrip<std::int32_t> (soci::db_int32,  std::numeric_limits<std::int32_t>::max()));
+    test_roundtrip(sql, Roundtrip<std::int64_t> (soci::db_int64,  std::numeric_limits<std::int64_t>::max()));
+    test_roundtrip(sql, Roundtrip<std::uint8_t> (soci::db_uint8,  std::numeric_limits<std::uint8_t>::max()));
+    test_roundtrip(sql, Roundtrip<std::uint16_t>(soci::db_uint16, std::numeric_limits<std::uint16_t>::max()));
+    test_roundtrip(sql, Roundtrip<std::uint32_t>(soci::db_uint32, std::numeric_limits<std::uint32_t>::max()));
+    test_roundtrip(sql, Roundtrip<std::uint64_t>(soci::db_uint64, std::numeric_limits<std::uint64_t>::max()));
+}
+
 TEST_CASE("SQLite vector long long", "[sqlite][vector][longlong]")
 {
     soci::session sql(backEnd, connectString);
