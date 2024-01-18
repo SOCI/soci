@@ -5,8 +5,8 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef SOCI_SOCI_TYPE_TRAITS_H_INCLUDED
-#define SOCI_SOCI_TYPE_TRAITS_H_INCLUDED
+#ifndef SOCI_IS_DETECTED_H_INCLUDED
+#define SOCI_IS_DETECTED_H_INCLUDED
 
 #include <type_traits>
 
@@ -46,4 +46,4 @@ using is_detected = typename detector_detail::is_detected<Trait, void, Args...>:
 
 }
 
-#endif // SOCI_SOCI_TYPE_TRAITS_H_INCLUDED
+#endif // SOCI_IS_DETECTED_H_INCLUDED

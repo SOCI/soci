@@ -9,7 +9,7 @@
 #define SOCI_TYPE_CONVERSION_TRAITS_H_INCLUDED
 
 #include "soci/soci-backend.h"
-#include "soci/type-traits.h"
+#include "soci/is-detected.h"
 
 #include <type_traits>
 
