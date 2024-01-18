@@ -33,9 +33,10 @@ public:
         return true;
     }
 
-    table_creator_base* table_creator_blob(soci::session& s) const override
+    table_creator_base* table_creator_blob(soci::session&) const override
     {
-      return new table_creator_for_blob(s);
+      // Blobs are not supported
+      return nullptr;
     }
 };
 
