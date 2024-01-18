@@ -26,34 +26,34 @@ std::size_t blob::get_len()
     return backEnd_->get_len();
 }
 
-std::size_t blob::read(std::size_t offset, char *buf, std::size_t toRead)
+std::size_t blob::read(std::size_t offset, void *buf, std::size_t toRead)
 {
     SOCI_ALLOW_DEPRECATED_BEGIN
     return backEnd_->read(offset, buf, toRead);
     SOCI_ALLOW_DEPRECATED_END
 }
 
-std::size_t blob::read_from_start(char * buf, std::size_t toRead,
+std::size_t blob::read_from_start(void * buf, std::size_t toRead,
     std::size_t offset)
 {
     return backEnd_->read_from_start(buf, toRead, offset);
 }
 
 std::size_t blob::write(
-    std::size_t offset, char const * buf, std::size_t toWrite)
+    std::size_t offset, const void * buf, std::size_t toWrite)
 {
     SOCI_ALLOW_DEPRECATED_BEGIN
     return backEnd_->write(offset, buf, toWrite);
     SOCI_ALLOW_DEPRECATED_END
 }
 
-std::size_t blob::write_from_start(const char * buf, std::size_t toWrite,
+std::size_t blob::write_from_start(const void * buf, std::size_t toWrite,
     std::size_t offset)
 {
     return backEnd_->write_from_start(buf, toWrite, offset);
 }
 
-std::size_t blob::append(char const * buf, std::size_t toWrite)
+std::size_t blob::append(const void * buf, std::size_t toWrite)
 {
     return backEnd_->append(buf, toWrite);
 }

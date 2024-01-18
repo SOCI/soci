@@ -211,7 +211,8 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
             // Therefore, we want to make sure that the buffer is definitely initialized (though it can still be empty).
             bbe->ensure_buffer_initialized();
 
-            col.buffer_.constData_ = bbe->get_buffer();
+            static_assert(sizeof(decltype(*bbe->get_buffer())) == 1, "Expected byte-like type");
+            col.buffer_.constData_ = reinterpret_cast<const char *>(bbe->get_buffer());
             col.buffer_.size_ = bbe->get_len();
             break;
         }

@@ -46,7 +46,7 @@ std::size_t postgresql_blob_backend::get_len()
     return details_.fd == -1 ? 0 : seek(0, SEEK_END);
 }
 
-std::size_t postgresql_blob_backend::read_from_start(char * buf, std::size_t toRead, std::size_t offset)
+std::size_t postgresql_blob_backend::read_from_start(void * buf, std::size_t toRead, std::size_t offset)
 {
     std::size_t size = get_len();
     if (offset >= size && !(size == 0 && offset == 0))
@@ -61,7 +61,7 @@ std::size_t postgresql_blob_backend::read_from_start(char * buf, std::size_t toR
 
     seek(offset, SEEK_SET);
 
-    int const readn = lo_read(session_.conn_, details_.fd, buf, toRead);
+    int const readn = lo_read(session_.conn_, details_.fd, reinterpret_cast<char *>(buf), toRead);
     if (readn < 0)
     {
         const char *errorMsg = PQerrorMessage(session_.conn_);
@@ -71,7 +71,7 @@ std::size_t postgresql_blob_backend::read_from_start(char * buf, std::size_t toR
     return static_cast<std::size_t>(readn);
 }
 
-std::size_t postgresql_blob_backend::write_from_start(char const * buf, std::size_t toWrite, std::size_t offset)
+std::size_t postgresql_blob_backend::write_from_start(const void * buf, std::size_t toWrite, std::size_t offset)
 {
     if (offset > get_len())
     {
@@ -89,7 +89,7 @@ std::size_t postgresql_blob_backend::write_from_start(char const * buf, std::siz
     seek(offset, SEEK_SET);
 
     int const written = lo_write(session_.conn_, details_.fd,
-        const_cast<char *>(buf), toWrite);
+        reinterpret_cast<const char *>(buf), toWrite);
     if (written < 0)
     {
         const char *errorMsg = PQerrorMessage(session_.conn_);
@@ -100,7 +100,7 @@ std::size_t postgresql_blob_backend::write_from_start(char const * buf, std::siz
 }
 
 std::size_t postgresql_blob_backend::append(
-    char const * buf, std::size_t toWrite)
+    const void * buf, std::size_t toWrite)
 {
     return write_from_start(buf, toWrite, get_len());
 }

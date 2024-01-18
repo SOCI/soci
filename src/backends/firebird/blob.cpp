@@ -10,6 +10,7 @@
 #include "firebird/error-firebird.h"
 
 #include <limits>
+#include <cstring>
 
 using namespace soci;
 using namespace soci::details::firebird;
@@ -34,7 +35,7 @@ std::size_t firebird_blob_backend::get_len()
     return data_.size();
 }
 
-std::size_t firebird_blob_backend::read_from_start(char * buf, std::size_t toRead, std::size_t offset)
+std::size_t firebird_blob_backend::read_from_start(void * buf, std::size_t toRead, std::size_t offset)
 {
     if (from_db_ && !loaded_)
     {
@@ -63,7 +64,7 @@ std::size_t firebird_blob_backend::read_from_start(char * buf, std::size_t toRea
     return toRead;
 }
 
-std::size_t firebird_blob_backend::write_from_start(char const * buf, std::size_t toWrite, std::size_t offset)
+std::size_t firebird_blob_backend::write_from_start(const void * buf, std::size_t toWrite, std::size_t offset)
 {
     if (from_db_ && !loaded_)
     {
@@ -90,7 +91,7 @@ std::size_t firebird_blob_backend::write_from_start(char const * buf, std::size_
 }
 
 std::size_t firebird_blob_backend::append(
-    char const * buf, std::size_t toWrite)
+    const void * buf, std::size_t toWrite)
 {
     if (from_db_ && !loaded_)
     {
@@ -118,15 +119,9 @@ void firebird_blob_backend::trim(std::size_t newLen)
 }
 
 void firebird_blob_backend::writeBuffer(std::size_t offset,
-                                      char const * buf, std::size_t toWrite)
+                                      const void * buf, std::size_t toWrite)
 {
-    char const * itr = buf;
-    char const * end_itr = buf + toWrite;
-
-    while (itr!=end_itr)
-    {
-        data_[offset++] = *itr++;
-    }
+    std::memcpy(data_.data() + offset, buf, toWrite);
 }
 
 void firebird_blob_backend::open()
@@ -186,7 +181,7 @@ void firebird_blob_backend::load()
 
     ISC_STATUS stat[20];
     unsigned short bytes;
-    std::vector<char>::size_type total_bytes = 0;
+    std::size_t total_bytes = 0;
     bool keep_reading = false;
 
     do

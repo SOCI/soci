@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <cstring>
+#include <cstdint>
 
 namespace soci
 {
@@ -23,7 +24,7 @@ class trivial_blob_backend : public details::blob_backend
 public:
     std::size_t get_len() override { return buffer_.size(); }
 
-    std::size_t read_from_start(char* buf, std::size_t toRead,
+    std::size_t read_from_start(void* buf, std::size_t toRead,
         std::size_t offset = 0) override
     {
         if (offset > buffer_.size() || (offset ==  buffer_.size() && offset > 0))
@@ -40,7 +41,7 @@ public:
         return toRead;
     }
 
-    std::size_t write_from_start(const char* buf, std::size_t toWrite,
+    std::size_t write_from_start(const void* buf, std::size_t toWrite,
         std::size_t offset = 0) override
     {
         if (offset > buffer_.size())
@@ -55,23 +56,23 @@ public:
         return toWrite;
     }
 
-    std::size_t append(char const* buf, std::size_t toWrite) override
+    std::size_t append(void const* buf, std::size_t toWrite) override
     {
         return write_from_start(buf, toWrite, buffer_.size());
     }
 
     void trim(std::size_t newLen) override { buffer_.resize(newLen); }
 
-    std::size_t set_data(char const* buf, std::size_t toWrite)
+    std::size_t set_data(void const* buf, std::size_t toWrite)
     {
         buffer_.clear();
         return write_from_start(buf, toWrite);
     }
 
-    const char *get_buffer() const { return buffer_.data(); }
+    const std::uint8_t *get_buffer() const { return buffer_.data(); }
 
 protected:
-    std::vector< char > buffer_;
+    std::vector< std::uint8_t > buffer_;
 };
 
 }

@@ -25,6 +25,7 @@
 #include <cstdlib>
 #include <vector>
 #include <string>
+#include <cstdint>
 
 namespace soci
 {
@@ -258,11 +259,11 @@ struct firebird_blob_backend : details::blob_backend
 
     std::size_t get_len() override;
 
-    std::size_t read_from_start(char * buf, std::size_t toRead, std::size_t offset = 0) override;
+    std::size_t read_from_start(void * buf, std::size_t toRead, std::size_t offset = 0) override;
 
-    std::size_t write_from_start(const char * buf, std::size_t toWrite, std::size_t offset = 0) override;
+    std::size_t write_from_start(const void * buf, std::size_t toWrite, std::size_t offset = 0) override;
 
-    std::size_t append(char const *buf, std::size_t toWrite) override;
+    std::size_t append(const void *buf, std::size_t toWrite) override;
     void trim(std::size_t newLen) override;
 
     // Writes the current data into the database by allocating a new BLOB
@@ -276,7 +277,7 @@ private:
     void open();
     long getBLOBInfo();
     void load();
-    void writeBuffer(std::size_t offset, char const * buf,
+    void writeBuffer(std::size_t offset, void const * buf,
         std::size_t toWrite);
     void closeBlob();
 
@@ -287,7 +288,7 @@ private:
     bool from_db_;
     isc_blob_handle blob_handle_;
     // buffer for BLOB data
-    std::vector<unsigned char> data_;
+    std::vector<std::uint8_t> data_;
     bool loaded_;
     long max_seg_size_;
 };
