@@ -14,6 +14,10 @@ colormsg(_HIBLUE_ "Configuring SOCI tests:")
 # This works around a problem when building in C++11 mode with clang (see #984).
 add_definitions(-DCATCH_CONFIG_CPP11_NO_SHUFFLE)
 
+if(MSVC)
+  add_compile_options(/bigobj)
+endif()
+
 include_directories(
   ${SOCI_SOURCE_DIR}/include/private
   ${CMAKE_CURRENT_SOURCE_DIR})
