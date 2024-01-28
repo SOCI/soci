@@ -25,7 +25,14 @@ The following functions are provided in the `blob` interface, mimicking the file
 
 The `offset` parameter is always counted from the beginning of the BLOB's data. `read_from_start` and `write_from_start` and `append` return the amount of read or written bytes.
 
-### Portability notes
+### Notes
+
+- As with empty files (but contrary to e.g. `std::vector`) reading from the **beginning** of an empty blob is a valid operation (effectively a no-op),
+  e.g. it won't throw or error otherwise.
+- It is possible to default-construct `blob` objects. Default-constructed `blob`s are in an invalid state and must not be accessed other than to query
+  their validity (`is_valid()`) or to initialize them (`initialize(session &session)`) in order to bring them into a valid state.
+
+#### Portability
 
 * The way to define BLOB table columns and create or destroy BLOB objects in the database varies between different database engines.
   Please see the SQL documentation relevant for the given server to learn how this is actually done. The test programs provided with the SOCI library can be also a simple source of full working examples.
