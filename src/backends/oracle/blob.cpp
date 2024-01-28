@@ -54,9 +54,9 @@ std::size_t oracle_blob_backend::get_len()
         return 0;
     }
 
-    ub4 len;
+    oraub8 len;
 
-    sword res = OCILobGetLength(session_.svchp_, session_.errhp_,
+    sword res = OCILobGetLength2(session_.svchp_, session_.errhp_,
         lobp_, &len);
 
     if (res != OCI_SUCCESS)
@@ -80,10 +80,10 @@ std::size_t oracle_blob_backend::read_from_start(void *buf, std::size_t toRead, 
         throw soci_error("Can't read past-the-end of BLOB data.");
     }
 
-    ub4 amt = static_cast<ub4>(toRead);
+    auto amt = static_cast<oraub8>(toRead);
 
-    sword res = OCILobRead(session_.svchp_, session_.errhp_, lobp_, &amt,
-        static_cast<ub4>(offset + 1), buf, amt, 0, 0, 0, 0);
+    sword res = OCILobRead2(session_.svchp_, session_.errhp_, lobp_, &amt, nullptr,
+        static_cast<oraub8>(offset + 1), buf, amt, OCI_ONE_PIECE, nullptr, nullptr, 0, SQLCS_IMPLICIT);
     if (res != OCI_SUCCESS)
     {
         throw_oracle_soci_error(res, session_.errhp_);
@@ -102,10 +102,10 @@ std::size_t oracle_blob_backend::write_from_start(const void *buf, std::size_t t
 
     ensure_initialized();
 
-    ub4 amt = static_cast<ub4>(toWrite);
+    auto amt = static_cast<oraub8>(toWrite);
 
-    sword res = OCILobWrite(session_.svchp_, session_.errhp_, lobp_, &amt,
-        static_cast<ub4>(offset + 1),
+    sword res = OCILobWrite2(session_.svchp_, session_.errhp_, lobp_, &amt, nullptr,
+        static_cast<oraub8>(offset + 1),
         const_cast<void*>(buf), amt, OCI_ONE_PIECE, 0, 0, 0, 0);
     if (res != OCI_SUCCESS)
     {
@@ -119,10 +119,10 @@ std::size_t oracle_blob_backend::append(const void *buf, std::size_t toWrite)
 {
     ensure_initialized();
 
-    ub4 amt = static_cast<ub4>(toWrite);
+    auto amt = static_cast<oraub8>(toWrite);
 
-    sword res = OCILobWriteAppend(session_.svchp_, session_.errhp_, lobp_,
-        &amt, const_cast<void*>(buf), amt, OCI_ONE_PIECE, 0, 0, 0, 0);
+    sword res = OCILobWriteAppend2(session_.svchp_, session_.errhp_, lobp_,
+        &amt, nullptr, const_cast<void*>(buf), amt, OCI_ONE_PIECE, 0, 0, 0, 0);
     if (res != OCI_SUCCESS)
     {
         throw_oracle_soci_error(res, session_.errhp_);
@@ -133,8 +133,8 @@ std::size_t oracle_blob_backend::append(const void *buf, std::size_t toWrite)
 
 void oracle_blob_backend::trim(std::size_t newLen)
 {
-    sword res = OCILobTrim(session_.svchp_, session_.errhp_, lobp_,
-        static_cast<ub4>(newLen));
+    sword res = OCILobTrim2(session_.svchp_, session_.errhp_, lobp_,
+        static_cast<oraub8>(newLen));
     if (res != OCI_SUCCESS)
     {
         throw_oracle_soci_error(res, session_.errhp_);
