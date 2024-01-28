@@ -59,16 +59,27 @@ std::size_t postgresql_blob_backend::read_from_start(void * buf, std::size_t toR
         return 0;
     }
 
-    seek(offset, SEEK_SET);
+    // According to postgres docs, lo_read rejects anything that wants to read more than INT_MAX bytes
+    const std::size_t batchSize = std::numeric_limits<std::int32_t>::max();
+    const std::size_t nBatches = toRead / batchSize + 1;
 
-    int const readn = lo_read(session_.conn_, details_.fd, reinterpret_cast<char *>(buf), toRead);
-    if (readn < 0)
-    {
-        const char *errorMsg = PQerrorMessage(session_.conn_);
-        throw soci_error(std::string("Cannot read from BLOB: ") + errorMsg);
+    std::size_t readBytes = 0;
+    for (std::size_t i = 0; i < nBatches; ++i) {
+        seek(offset, SEEK_SET);
+
+        const int readn = lo_read(session_.conn_, details_.fd, reinterpret_cast<char *>(buf), std::min(toRead, batchSize));
+        if (readn < 0)
+        {
+            const char *errorMsg = PQerrorMessage(session_.conn_);
+            throw soci_error(std::string("Cannot read from BLOB: ") + errorMsg);
+        }
+
+        toRead -= batchSize;
+        offset += batchSize;
+        readBytes += static_cast<std::size_t>(readn);
     }
 
-    return static_cast<std::size_t>(readn);
+    return readBytes;
 }
 
 std::size_t postgresql_blob_backend::write_from_start(const void * buf, std::size_t toWrite, std::size_t offset)
@@ -86,17 +97,28 @@ std::size_t postgresql_blob_backend::write_from_start(const void * buf, std::siz
 
     init();
 
-    seek(offset, SEEK_SET);
+    // According to the docs, lo_write doesn't work for chunk sizes > INT_MAX
+    const std::size_t batchSize = std::numeric_limits<std::int32_t>::max();
+    const std::size_t nBatches = toWrite / batchSize + 1;
 
-    int const written = lo_write(session_.conn_, details_.fd,
-        reinterpret_cast<const char *>(buf), toWrite);
-    if (written < 0)
-    {
-        const char *errorMsg = PQerrorMessage(session_.conn_);
-        throw soci_error(std::string("Cannot write to BLOB: ") + errorMsg);
+    std::size_t writtenBytes = 0;
+    for (std::size_t i = 0; i < nBatches; ++i) {
+        seek(offset, SEEK_SET);
+
+        const int written = lo_write(session_.conn_, details_.fd,
+            reinterpret_cast<const char *>(buf), std::min(toWrite, batchSize));
+        if (written < 0)
+        {
+            const char *errorMsg = PQerrorMessage(session_.conn_);
+            throw soci_error(std::string("Cannot write to BLOB: ") + errorMsg);
+        }
+
+        toWrite -= batchSize;
+        offset += batchSize;
+        writtenBytes += static_cast<std::size_t>(written);
     }
 
-    return static_cast<std::size_t>(written);
+    return writtenBytes;
 }
 
 std::size_t postgresql_blob_backend::append(
@@ -107,11 +129,6 @@ std::size_t postgresql_blob_backend::append(
 
 void postgresql_blob_backend::trim(std::size_t newLen)
 {
-    if (newLen > static_cast<std::size_t>(std::numeric_limits<int>::max()))
-    {
-        throw soci_error("Requested new BLOB size exceeds INT_MAX, which is not supported");
-    }
-
     if (clone_before_modify_)
     {
         if (newLen == 0)
@@ -127,14 +144,7 @@ void postgresql_blob_backend::trim(std::size_t newLen)
 
     init();
 
-    // lo_truncate64 was introduced in Postgresql v9.3
     int ret_code = lo_truncate64(session_.conn_, details_.fd, newLen);
-    if (ret_code == -1)
-    {
-        // If we call lo_truncate64 on a server that is < v9.3, the call will fail and return -1.
-        // Thus, we'll try again with the slightly older function lo_truncate.
-        ret_code = lo_truncate(session_.conn_, details_.fd, newLen);
-    }
 
     if (ret_code < 0)
     {
@@ -223,12 +233,6 @@ std::size_t do_seek(std::size_t toOffset, int from,
         soci::postgresql_session_backend &session, soci::postgresql_blob_backend::blob_details &details)
 {
     pg_int64 pos = lo_lseek64(session.conn_, details.fd, static_cast<pg_int64>(toOffset), from);
-    if (pos == -1)
-    {
-        // If we try to use lo_lseek64 on a Postgresql server that is older than 9.3, the function will fail
-        // and return -1, so we'll try again with the older function lo_lseek.
-        pos = lo_lseek(session.conn_, details.fd, static_cast<int>(toOffset), from);
-    }
 
     if (pos < 0)
     {
