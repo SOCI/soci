@@ -22,21 +22,24 @@ class session;
 namespace details
 {
 class blob_backend;
-struct blob_placeholder;
 } // namespace details
 
 class SOCI_DECL blob
 {
-private:
-    friend struct details::blob_placeholder;
-    blob() = default;
-
 public:
+    // Creates an invalid blob object
+    explicit blob() = default;
     explicit blob(session & s);
     ~blob();
 
     blob(blob &&other) = default;
     blob &operator=(blob &&other) = default;
+
+    // Checks whether this blob is in a valid state
+    bool is_valid() const;
+
+    // (Re)initializes this blob
+    void initialize(session &s);
 
     std::size_t get_len();
 
@@ -73,17 +76,6 @@ private:
 
     std::unique_ptr<details::blob_backend> backEnd_;
 };
-
-namespace details
-{
-    struct blob_placeholder
-    {
-        static blob create()
-        {
-            return blob();
-        }
-    };
-}
 
 } // namespace soci
 
