@@ -6599,7 +6599,7 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
 
         soci::blob write_blob(sql);
 
-        std::size_t bytes_written = write_blob.write_from_start(reinterpret_cast<const char *>(binary_data), sizeof(binary_data));
+        std::size_t bytes_written = write_blob.write_from_start(binary_data, sizeof(binary_data));
         CHECK(bytes_written == sizeof(binary_data));
 
         sql << "insert into soci_test (id, b) values (1, :b)", soci::use(write_blob);
@@ -6611,7 +6611,7 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
         CHECK(read_blob.get_len() == sizeof(binary_data));
 
         std::uint8_t buf[20];
-        std::size_t bytes_read = read_blob.read_from_start(reinterpret_cast<char *>(buf), sizeof(buf));
+        std::size_t bytes_read = read_blob.read_from_start(buf, sizeof(buf));
 
         CHECK(bytes_read == sizeof(binary_data));
         for (std::size_t i = 0; i < sizeof(binary_data); ++i)
