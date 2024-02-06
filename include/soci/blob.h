@@ -28,7 +28,7 @@ class SOCI_DECL blob
 {
 public:
     // Creates an invalid blob object
-    explicit blob() = default;
+    blob() = default;
     explicit blob(session & s);
     ~blob();
 
