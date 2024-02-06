@@ -75,6 +75,8 @@ private:
     SOCI_NOT_COPYABLE(blob)
 
     std::unique_ptr<details::blob_backend> backEnd_;
+
+    void ensure_initialized();
 };
 
 } // namespace soci
