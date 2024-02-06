@@ -6382,7 +6382,8 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
         {
             soci::blob blob(sql);
             FAIL("BLOB creation should throw, if backend doesn't support BLOBs");
-        } catch (const soci_error &)
+        }
+        catch (const soci_error &)
         {
             // Throwing is expected if the backend doesn't support BLOBs
         }
