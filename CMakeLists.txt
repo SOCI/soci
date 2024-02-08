@@ -154,8 +154,6 @@ if(NOT MSVC)
     set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES ${DL_INCLUDE_DIR})
     add_definitions(-DHAVE_DL=1)
   endif()
-else ()
-  add_compile_options(/bigobj)
 endif()
 
 if(Boost_FOUND)
