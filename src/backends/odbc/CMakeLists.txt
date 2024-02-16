@@ -8,8 +8,12 @@ find_package(ODBC ${REQUIRED_FLAG})
 
 if (NOT ODBC_FOUND)
   message(STATUS "Disabling ODBC backend as the required dependencies were not found")
+  set(SOCI_ODBC OFF CACHE BOOL "" FORCE)
   return()
 endif()
+
+add_library(soci_odbc_interface INTERFACE)
+target_link_libraries(soci_odbc_interface INTERFACE ODBC::ODBC soci_core_interface)
 
 add_library(soci_odbc_objects OBJECT
   "blob.cpp"
@@ -23,8 +27,7 @@ add_library(soci_odbc_objects OBJECT
   "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_odbc_objects PUBLIC ODBC::ODBC)
-target_link_libraries(soci_odbc_objects PUBLIC soci_core_objects)
+target_link_libraries(soci_odbc_objects PUBLIC soci_odbc_interface)
 
 target_include_directories(soci_odbc_objects
   PRIVATE
@@ -32,13 +35,11 @@ target_include_directories(soci_odbc_objects
     "${PROJECT_SOURCE_DIR}/include/soci"
 )
 
-if (SOCI_SHARED)
-  add_library(soci_odbc)
-  target_link_libraries(soci_odbc PUBLIC soci_odbc_objects)
-  add_library(SOCI::shared::ODBC ALIAS soci_odbc)
-endif()
-if (SOCI_STATIC)
-  add_library(soci_odbc_static)
-  target_link_libraries(soci_odbc_static PUBLIC soci_odbc_objects)
-  add_library(SOCI::static::ODBC ALIAS soci_odbc_static)
-endif()
+soci_backend_objects_to_lib(
+  OBJECT_LIB         soci_odbc_objects
+  SHARED_TARGET_NAME soci_odbc
+  STATIC_TARGET_NAME soci_odbc_static
+  ALIAS_NAME         ODBC
+  SHARED_DEPS        SOCI::shared::core
+  STATIC_DEPS        SOCI::static::core
+)

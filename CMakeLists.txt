@@ -61,9 +61,14 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+# We need a dummy source file to add as sources for libs that otherwise
+# only consist of object libraries (otherwise some toolchains may complain)
+set(SOCI_CXX_DUMMY_SOURCE "${CMAKE_CURRENT_BINARY_DIR}/dummy.cpp")
+if (NOT EXISTS "${SOCI_CXX_DUMMY_SOURCE}")
+  file(TOUCH "${SOCI_CXX_DUMMY_SOURCE}")
+endif()
 
 add_subdirectory(src)
-
 
 if (SOCI_TESTS)
   include(CTest)

@@ -8,8 +8,12 @@ find_package(MySQL ${REQUIRED_FLAG})
 
 if (NOT MySQL_FOUND)
   message(STATUS "Disabling MySQL backend as the required dependencies were not found")
+  set(SOCI_MYSQL OFF CACHE BOOL "" FORCE)
   return()
 endif()
+
+add_library(soci_mysql_interface INTERFACE)
+target_link_libraries(soci_mysql_interface INTERFACE MySQL::MySQL soci_core_interface)
 
 add_library(soci_mysql_objects OBJECT
   "blob.cpp"
@@ -24,8 +28,7 @@ add_library(soci_mysql_objects OBJECT
   "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_mysql_objects PUBLIC MySQL::MySQL)
-target_link_libraries(soci_mysql_objects PUBLIC soci_core_objects)
+target_link_libraries(soci_mysql_objects PUBLIC soci_mysql_interface)
 
 target_include_directories(soci_mysql_objects
   PRIVATE
@@ -33,13 +36,11 @@ target_include_directories(soci_mysql_objects
     "${PROJECT_SOURCE_DIR}/include/soci"
 )
 
-if (SOCI_SHARED)
-  add_library(soci_mysql)
-  target_link_libraries(soci_mysql PUBLIC soci_mysql_objects)
-  add_library(SOCI::shared::MySQL ALIAS soci_mysql)
-endif()
-if (SOCI_STATIC)
-  add_library(soci_mysql_static)
-  target_link_libraries(soci_mysql_static PUBLIC soci_mysql_objects)
-  add_library(SOCI::static::MySQL ALIAS soci_mysql_static)
-endif()
+soci_backend_objects_to_lib(
+  OBJECT_LIB         soci_mysql_objects
+  SHARED_TARGET_NAME soci_mysql
+  STATIC_TARGET_NAME soci_mysql_static
+  ALIAS_NAME         MySQL
+  SHARED_DEPS        SOCI::shared::core
+  STATIC_DEPS        SOCI::static::core
+)
