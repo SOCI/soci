@@ -8,8 +8,12 @@ find_package(DB2 ${REQUIRED_FLAG})
 
 if (NOT DB2_FOUND)
   message(STATUS "Disabling DB2 backend as the required dependencies were not found")
+  set(SOCI_DB2 OFF CACHE BOOL "" FORCE)
   return()
 endif()
+
+add_library(soci_db2_interface INTERFACE)
+target_link_libraries(soci_db2_interface INTERFACE DB2::DB2 soci_core_interface)
 
 add_library(soci_db2_objects OBJECT
   "blob.cpp"
@@ -23,8 +27,7 @@ add_library(soci_db2_objects OBJECT
   "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_db2_objects PUBLIC DB2::db2)
-target_link_libraries(soci_db2_objects PUBLIC soci_core_objects)
+target_link_libraries(soci_db2_objects PUBLIC soci_db2_interface)
 
 target_include_directories(soci_db2_objects
   PRIVATE
@@ -32,13 +35,11 @@ target_include_directories(soci_db2_objects
     "${PROJECT_SOURCE_DIR}/include/soci"
 )
 
-if (SOCI_SHARED)
-  add_library(soci_db2)
-  target_link_libraries(soci_db2 PUBLIC soci_db2_objects)
-  add_library(SOCI::shared::DB2 ALIAS soci_db2)
-endif()
-if (SOCI_STATIC)
-  add_library(soci_db2_static)
-  target_link_libraries(soci_db2_static PUBLIC soci_db2_objects)
-  add_library(SOCI::static::DB2 ALIAS soci_db2_static)
-endif()
+soci_backend_objects_to_lib(
+  OBJECT_LIB         soci_db2_objects
+  SHARED_TARGET_NAME soci_db2
+  STATIC_TARGET_NAME soci_db2_static
+  ALIAS_NAME         DB2
+  SHARED_DEPS        SOCI::shared::core
+  STATIC_DEPS        SOCI::static::core
+)

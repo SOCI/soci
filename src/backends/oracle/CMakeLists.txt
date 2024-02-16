@@ -8,8 +8,12 @@ find_package(Oracle ${REQUIRED_FLAG})
 
 if (NOT Oracle_FOUND)
   message(STATUS "Disabling Oracle backend as the required dependencies were not found")
+  set(SOCI_ORACLE OFF CACHE BOOL "" FORCE)
   return()
 endif()
+
+add_library(soci_oracle_interface INTERFACE)
+target_link_libraries(soci_oracle_interface INTERFACE Oracle::Oracle soci_core_interface)
 
 add_library(soci_oracle_objects OBJECT
   "blob.cpp"
@@ -24,8 +28,7 @@ add_library(soci_oracle_objects OBJECT
   "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_oracle_objects PUBLIC Oracle::Oracle)
-target_link_libraries(soci_oracle_objects PUBLIC soci_core_objects)
+target_link_libraries(soci_oracle_objects PUBLIC soci_oracle_interface)
 
 target_include_directories(soci_oracle_objects
   PRIVATE
@@ -33,13 +36,11 @@ target_include_directories(soci_oracle_objects
     "${PROJECT_SOURCE_DIR}/include/soci"
 )
 
-if (SOCI_SHARED)
-  add_library(soci_oracle)
-  target_link_libraries(soci_oracle PUBLIC soci_oracle_objects)
-  add_library(SOCI::shared::Oracle ALIAS soci_oracle)
-endif()
-if (SOCI_STATIC)
-  add_library(soci_oracle_static)
-  target_link_libraries(soci_oracle_static PUBLIC soci_oracle_objects)
-  add_library(SOCI::static::Oracle ALIAS soci_oracle_static)
-endif()
+soci_backend_objects_to_lib(
+  OBJECT_LIB         soci_oracle_objects
+  SHARED_TARGET_NAME soci_oracle
+  STATIC_TARGET_NAME soci_oracle_static
+  ALIAS_NAME         Oracle
+  SHARED_DEPS        SOCI::shared::core
+  STATIC_DEPS        SOCI::static::core
+)
