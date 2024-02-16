@@ -8,8 +8,12 @@ find_package(PostgreSQL ${REQUIRED_FLAG})
 
 if (NOT PostgreSQL_FOUND)
   message(STATUS "Disabling PostgreSQL backend as the required dependencies were not found")
+  set(SOCI_POSTGRESQL OFF CACHE BOOL "" FORCE)
   return()
 endif()
+
+add_library(soci_postgresql_interface INTERFACE)
+target_link_libraries(soci_postgresql_interface INTERFACE PostgreSQL::PostgreSQL soci_core_interface)
 
 add_library(soci_postgresql_objects OBJECT
   "blob.cpp"
@@ -24,8 +28,7 @@ add_library(soci_postgresql_objects OBJECT
   "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_postgresql_objects PUBLIC PostgreSQL::PostgreSQL)
-target_link_libraries(soci_postgresql_objects PUBLIC soci_core_objects)
+target_link_libraries(soci_postgresql_objects PUBLIC soci_postgresql_interface)
 
 target_include_directories(soci_postgresql_objects
   PRIVATE
@@ -33,13 +36,11 @@ target_include_directories(soci_postgresql_objects
     "${PROJECT_SOURCE_DIR}/include/soci"
 )
 
-if (SOCI_SHARED)
-  add_library(soci_postgresql)
-  target_link_libraries(soci_postgresql PUBLIC soci_postgresql_objects)
-  add_library(SOCI::shared::PostgreSQL ALIAS soci_postgresql)
-endif()
-if (SOCI_STATIC)
-  add_library(soci_postgresql_static)
-  target_link_libraries(soci_postgresql_static PUBLIC soci_postgresql_objects)
-  add_library(SOCI::static::PostgreSQL ALIAS soci_postgresql_static)
-endif()
+soci_backend_objects_to_lib(
+  OBJECT_LIB         soci_postgresql_objects
+  SHARED_TARGET_NAME soci_postgresql
+  STATIC_TARGET_NAME soci_postgresql_static
+  ALIAS_NAME         PostgreSQL
+  SHARED_DEPS        SOCI::shared::core
+  STATIC_DEPS        SOCI::static::core
+)

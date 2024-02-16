@@ -1,3 +1,6 @@
+add_library(soci_empty_interface INTERFACE)
+target_link_libraries(soci_empty_interface INTERFACE soci_core_interface)
+
 add_library(soci_empty_objects OBJECT
   "blob.cpp"
   "factory.cpp"
@@ -10,7 +13,7 @@ add_library(soci_empty_objects OBJECT
   "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_empty_objects PUBLIC soci_core_objects)
+target_link_libraries(soci_empty_objects PUBLIC soci_empty_interface)
 
 target_include_directories(soci_empty_objects
   PRIVATE
@@ -18,13 +21,11 @@ target_include_directories(soci_empty_objects
     "${PROJECT_SOURCE_DIR}/include/soci"
 )
 
-if (SOCI_SHARED)
-  add_library(soci_empty)
-  target_link_libraries(soci_empty PUBLIC soci_empty_objects)
-  add_library(SOCI::shared::Empty ALIAS soci_empty)
-endif()
-if (SOCI_STATIC)
-  add_library(soci_empty_static)
-  target_link_libraries(soci_empty_static PUBLIC soci_empty_objects)
-  add_library(SOCI::static::Empty ALIAS soci_empty_static)
-endif()
+soci_backend_objects_to_lib(
+  OBJECT_LIB         soci_empty_objects
+  SHARED_TARGET_NAME soci_empty
+  STATIC_TARGET_NAME soci_empty_static
+  ALIAS_NAME         Empty
+  SHARED_DEPS        SOCI::shared::core
+  STATIC_DEPS        SOCI::static::core
+)
