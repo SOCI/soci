@@ -50,8 +50,7 @@ function(soci_backend_objects_to_lib)
 endfunction()
 
 
-set(BACKENDS "empty" "db2" "firebird" "mysql" "odbc" "oracle" "postgresql" "sqlite3")
-foreach(CURRENT IN LISTS BACKENDS)
+foreach(CURRENT IN ITEMS "db2" "empty" "firebird" "mysql" "odbc" "oracle" "postgresql" "sqlite3")
   string(TOUPPER "${CURRENT}" CURRENT_UPPER)
 
   # Backwards compatibility with the old cmake setup that used WITH_* variables
