@@ -5,14 +5,17 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <catch.hpp>
+
+#include "mysql/mysql_tests.h"
+
 #include "soci/soci.h"
 #include "soci/odbc/soci-odbc.h"
+
 #include <iostream>
 #include <string>
 #include <ctime>
 #include <cmath>
-
-#include "mysql/test-mysql.h"
 
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_odbc();
@@ -40,34 +43,22 @@ public:
     }
 };
 
-int main(int argc, char** argv)
+
+namespace soci
 {
-#ifdef _MSC_VER
-    // Redirect errors, unrecoverable problems, and assert() failures to STDERR,
-    // instead of debug message window.
-    // This hack is required to run assert()-driven tests by Buildbot.
-    // NOTE: Comment this 2 lines for debugging with Visual C++ debugger to catch assertions inside.
-    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-    _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-#endif //_MSC_VER
+namespace tests
+{
 
-    if (argc >= 2 && argv[1][0] != '-')
-    {
-        connectString = argv[1];
+std::unique_ptr<test_context_base> instantiate_test_context(const soci::backend_factory &backend, const std::string &connection_string)
+{
+    connectString = connection_string;
+    return std::make_unique<test_context>(backend, connection_string);
+}
 
-        // Replace the connect string with the process name to ensure that
-        // CATCH uses the correct name in its messages.
-        argv[1] = argv[0];
+const backend_factory &create_backend_factory()
+{
+    return backEnd;
+}
 
-        argc--;
-        argv++;
-    }
-    else
-    {
-        connectString = "FILEDSN=./test-mysql.dsn";
-    }
-
-    test_context_odbc tc(backEnd, connectString);
-
-    return Catch::Session().run(argc, argv);
+}
 }
