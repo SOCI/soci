@@ -5,13 +5,13 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include "soci/soci.h"
-#include "soci/empty/soci-empty.h"
-
 // Normally the tests would include common-tests.h here, but we can't run any
 // of the tests registered there, so instead include CATCH header directly.
 #define CATCH_CONFIG_RUNNER
 #include <catch.hpp>
+
+#include "soci/soci.h"
+#include "soci/empty/soci-empty.h"
 
 #include <iostream>
 #include <string>

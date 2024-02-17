@@ -5,9 +5,13 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <catch.hpp>
+
 #include "common-tests.h"
+
 #include "soci/soci.h"
 #include "soci/oracle/soci-oracle.h"
+
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -142,7 +146,7 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
             CHECK(t4.tm_year == t2.tm_year);
             CHECK((1900 + t4.tm_year) == i);
         }
-    }   
+    }
 }
 
 // explicit calls test
@@ -1536,44 +1540,21 @@ public:
     }
 };
 
-int main(int argc, char** argv)
+namespace soci
 {
-#ifdef _MSC_VER
-    // Redirect errors, unrecoverable problems, and assert() failures to STDERR,
-    // instead of debug message window.
-    // This hack is required to run assert()-driven tests by Buildbot.
-    // NOTE: Comment this 2 lines for debugging with Visual C++ debugger to catch assertions inside.
-    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-    _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-#endif //_MSC_VER
+namespace tests
+{
 
-    if (argc >= 2)
-    {
-        connectString = argv[1];
+std::unique_ptr<test_context_base> instantiate_test_context(const soci::backend_factory &backend, const std::string &connection_string)
+{
+    connectString = connection_string;
+    return std::make_unique<test_context>(backend, connection_string);
+}
 
-        // Replace the connect string with the process name to ensure that
-        // CATCH uses the correct name in its messages.
-        argv[1] = argv[0];
+const backend_factory &create_backend_factory()
+{
+    return backEnd;
+}
 
-        argc--;
-        argv++;
-    }
-    else
-    {
-        std::cout << "usage: " << argv[0]
-            << " connectstring [test-arguments...]\n"
-            << "example: " << argv[0]
-            << " \'service=orcl user=scott password=tiger\'\n";
-        std::exit(1);
-    }
-
-    if (!std::getenv("ORACLE_HOME"))
-    {
-        std::cerr << "ORACLE_HOME environment variable must be defined for Oracle tests.\n";
-        std::exit(1);
-    }
-
-    test_context tc(backEnd, connectString);
-
-    return Catch::Session().run(argc, argv);
+}
 }

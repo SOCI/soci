@@ -6,12 +6,17 @@
 //
 //
 
+#include <catch.hpp>
+
+#include "common-tests.h"
+
 #include "soci/soci.h"
 #include "soci/firebird/soci-firebird.h"
 #include "soci-compiler.h"
+
 #include "firebird/error-firebird.h"            // soci::details::Firebird::throw_iscerror()
 #include "firebird/common.h"
-#include "common-tests.h"
+
 #include <iostream>
 #include <string>
 #include <ctime>
@@ -1254,40 +1259,21 @@ class test_context : public tests::test_context_base
         }
 };
 
-
-int main(int argc, char** argv)
+namespace soci
+{
+namespace tests
 {
 
-#ifdef _MSC_VER
-    // Redirect errors, unrecoverable problems, and assert() failures to STDERR,
-    // instead of debug message window.
-    // This hack is required to run assert()-driven tests by Buildbot.
-    // NOTE: Comment this 2 lines for debugging with Visual C++ debugger to catch assertions inside.
-    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-    _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-#endif //_MSC_VER
+std::unique_ptr<test_context_base> instantiate_test_context(const soci::backend_factory &backend, const std::string &connection_string)
+{
+    connectString = connection_string;
+    return std::make_unique<test_context>(backend, connection_string);
+}
 
-    if (argc >= 2)
-    {
-        connectString = argv[1];
+const backend_factory &create_backend_factory()
+{
+    return backEnd;
+}
 
-        // Replace the connect string with the process name to ensure that
-        // CATCH uses the correct name in its messages.
-        argv[1] = argv[0];
-
-        argc--;
-        argv++;
-    }
-    else
-    {
-        std::cout << "usage: " << argv[0]
-            << " connectstring [test-arguments...]\n"
-            << "example: " << argv[0]
-            << " \"service=/usr/local/firebird/db/test.fdb user=SYSDBA password=masterkey\"\n";
-        return EXIT_FAILURE;
-    }
-
-    test_context tc(backEnd, connectString);
-
-    return Catch::Session().run(argc, argv);
+}
 }

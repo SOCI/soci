@@ -6,11 +6,14 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include "soci/soci.h"
+#include <catch.hpp>
 
+#include "mysql/mysql_tests.h"
+
+#include "soci/soci.h"
 #include "soci-compiler.h"
 #include "soci/mysql/soci-mysql.h"
-#include "mysql/test-mysql.h"
+
 #include <string.h>
 #include <iostream>
 #include <sstream>
@@ -794,29 +797,21 @@ void test15()
     std::cout << "test 15 passed" << std::endl;
 }
 
-int main(int argc, char** argv)
+namespace soci
 {
-    if (argc >= 2)
-    {
-        connectString = argv[1];
+namespace tests
+{
 
-        // Replace the connect string with the process name to ensure that
-        // CATCH uses the correct name in its messages.
-        argv[1] = argv[0];
+std::unique_ptr<test_context_base> instantiate_test_context(const soci::backend_factory &backend, const std::string &connection_string)
+{
+    connectString = connection_string;
+    return std::make_unique<test_context>(backend, connection_string);
+}
 
-        argc--;
-        argv++;
-    }
-    else
-    {
-        std::cout << "usage: " << argv[0]
-            << " connectstring [test-arguments...]\n"
-            << "example: " << argv[0]
-            << " \"dbname=test user=root password=\'Ala ma kota\'\"\n";
-        std::exit(1);
-    }
+const backend_factory &create_backend_factory()
+{
+    return backEnd;
+}
 
-    test_context tc(backEnd, connectString);
-
-    return Catch::Session().run(argc, argv);
+}
 }
