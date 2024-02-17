@@ -11,7 +11,9 @@ if test ! -d ${ODBC_TEST}; then
     exit 1
 fi
 
+# Disable ASAN -> see https://github.com/SOCI/soci/issues/1008
 cmake ${SOCI_DEFAULT_CMAKE_OPTIONS} \
+    -DSOCI_ASAN=OFF \
     -DSOCI_ODBC=ON \
    ..
 
