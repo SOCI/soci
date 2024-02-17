@@ -40,8 +40,6 @@ jobs:
           - backend: valgrind
             name: Valgrind
           - backend: odbc
-            # There are many leak reports under Ubuntu 22.04, see #1008.
-            container: ubuntu:18.04
             name: ODBC
           - backend: firebird
             name: Firebird
