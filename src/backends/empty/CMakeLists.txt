@@ -26,6 +26,6 @@ soci_backend_objects_to_lib(
   SHARED_TARGET_NAME soci_empty
   STATIC_TARGET_NAME soci_empty_static
   ALIAS_NAME         Empty
-  SHARED_DEPS        SOCI::shared::core
-  STATIC_DEPS        SOCI::static::core
+  SHARED_DEPS        SOCI::shared::Core
+  STATIC_DEPS        SOCI::static::Core
 )

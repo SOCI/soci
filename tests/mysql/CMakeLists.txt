@@ -1,16 +1,10 @@
-###############################################################################
-#
-# This file is part of CMake configuration for SOCI library
-#
-# Copyright (C) 2010-2013 Mateusz Loskot <mateusz@loskot.net>
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE_1_0.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
-#
-###############################################################################
+add_library(mysql_tests OBJECT mysql_tests.cpp)
+target_link_libraries(mysql_tests PUBLIC soci_common_tests soci_mysql_interface)
 
-soci_backend_test(
-  BACKEND MySQL
-  DEPENDS MySQL
-  SOURCE test-mysql.cpp ${SOCI_TESTS_COMMON}
-  CONNSTR "db=soci_test")
+soci_make_tests(
+  OBJECT_LIB        mysql_tests
+  CONNECTION_STRING "db=soci_test"
+  SHARED_NAME       "soci_mysql_test"
+  STATIC_NAME       "soci_mysql_test_static"
+  SOCI_DEP_ALIAS    "MySQL"
+)

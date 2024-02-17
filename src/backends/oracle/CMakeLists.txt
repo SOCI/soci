@@ -41,6 +41,6 @@ soci_backend_objects_to_lib(
   SHARED_TARGET_NAME soci_oracle
   STATIC_TARGET_NAME soci_oracle_static
   ALIAS_NAME         Oracle
-  SHARED_DEPS        SOCI::shared::core
-  STATIC_DEPS        SOCI::static::core
+  SHARED_DEPS        SOCI::shared::Core
+  STATIC_DEPS        SOCI::static::Core
 )
