@@ -52,7 +52,7 @@ namespace tests
 std::unique_ptr<test_context_base> instantiate_test_context(const soci::backend_factory &backend, const std::string &connection_string)
 {
     connectString = connection_string;
-    return std::make_unique<test_context>(backend, connection_string);
+    return std::make_unique<test_context_odbc>(backend, connection_string);
 }
 
 const backend_factory &create_backend_factory()
