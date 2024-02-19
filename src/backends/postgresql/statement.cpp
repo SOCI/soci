@@ -711,7 +711,7 @@ std::string postgresql_statement_backend::get_parameter_name(int index) const
 std::string postgresql_statement_backend::rewrite_for_procedure_call(
     std::string const & query)
 {
-    std::string newQuery("select ");
+    std::string newQuery("call ");
     newQuery += query;
     return newQuery;
 }
