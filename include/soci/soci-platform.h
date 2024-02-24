@@ -37,6 +37,9 @@
 //base class must have dll interface
 #pragma warning(disable:4251 4275)
 
+// As long as we don't require C++17, we must disable the warning
+// "conditional expression is constant"
+#pragma warning(disable:4127)
 
 // Define if you have the vsnprintf variants.
 #if _MSC_VER < 1500

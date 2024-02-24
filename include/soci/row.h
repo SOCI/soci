@@ -65,7 +65,7 @@ public:
     template <typename T>
     inline void add_holder(T* t, indicator* ind)
     {
-        holders_.push_back(new details::type_holder<T>(t));
+        holders_.push_back(details::holder::make_holder(t));
         indicators_.push_back(ind);
     }
 
