@@ -637,6 +637,7 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
     REQUIRE(r.size() == 1);
     CHECK(r.get_properties("val").get_data_type() == dt_long_long);
     CHECK(r.get_properties("val").get_db_type() == db_uint32);
+    CHECK(r.get<long long>("val") == 0xffffff00);
     CHECK(r.get<unsigned>("val") == 0xffffff00);
     CHECK(r.get<uint32_t>("val") == 0xffffff00);
   }
@@ -649,6 +650,7 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
     REQUIRE(r.size() == 1);
     CHECK(r.get_properties("val").get_data_type() == dt_integer);
     CHECK(r.get_properties("val").get_db_type() == db_int8);
+    CHECK(r.get<int>("val") == -123);
     CHECK(r.get<int8_t>("val") == -123);
   }
   {
@@ -660,6 +662,7 @@ TEST_CASE("MySQL tinyint", "[mysql][int][tinyint]")
     REQUIRE(r.size() == 1);
     CHECK(r.get_properties("val").get_data_type() == dt_integer);
     CHECK(r.get_properties("val").get_db_type() == db_uint8);
+    CHECK(r.get<int>("val") == 123);
     CHECK(r.get<uint8_t>("val") == 123);
   }
   {

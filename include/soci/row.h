@@ -65,7 +65,7 @@ public:
     template <typename T>
     inline void add_holder(T* t, indicator* ind)
     {
-        holders_.push_back(new details::type_holder<T>(t));
+        holders_.push_back(details::holder::make_holder(t));
         indicators_.push_back(ind);
     }
 
@@ -78,7 +78,8 @@ public:
         typedef typename type_conversion<T>::base_type base_type;
         static_assert(details::can_use_from_base<type_conversion<T>>(),
                 "Can't use row::get() with this type (not convertible/copy-assignable from base_type) - did you mean to use move_as?");
-        base_type const& baseVal = holders_.at(pos)->get<base_type>();
+        base_type const& baseVal =
+            holders_.at(pos)->get<base_type>(details::value_cast_tag{});
 
         T ret;
         type_conversion<T>::from_base(baseVal, *indicators_.at(pos), ret);
@@ -91,7 +92,8 @@ public:
         typedef typename type_conversion<T>::base_type base_type;
         static_assert(details::can_use_move_from_base<T, base_type>(),
                 "row::move_as() can only be called with types that can be instantiated from a base type rvalue reference");
-        base_type & baseVal = holders_.at(pos)->get<base_type>();
+        base_type & baseVal =
+            holders_.at(pos)->get<base_type>(details::value_reference_tag{});
 
         T ret;
         type_conversion<T>::move_from_base(baseVal, *indicators_.at(pos), ret);
