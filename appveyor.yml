@@ -102,7 +102,7 @@ before_build:
   - set USER=root
   - mysql -e "create database soci_test;" --user=root
   - sqlcmd -U sa -P Password12! -S (local)\SQL%MSSQL_VER% -i C:\projects\soci\scripts\windows\mssql_db_create.sql
-  - cmake .. -G"%G%" -DSQLITE_BUILD_SHARED=OFF -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_INSTALL_PREFIX=%SQLITE_ROOT%
+  - cmake .. -G"%G%" -DSQLITE_BUILD_SHARED=OFF -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_INSTALL_PREFIX=%SQLITE_ROOT% -DCMAKE_UNITY_BUILD=ON
   - cmake --build . --config %CONFIGURATION% --target install
 
 build_script:
