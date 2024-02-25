@@ -19,6 +19,7 @@ add_library(soci_core
     "backend-loader.cpp"
     "blob.cpp"
     "common.cpp"
+    "callbacks.cpp"
     "connection-parameters.cpp"
     "connection-pool.cpp"
     "error.cpp"
