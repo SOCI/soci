@@ -12,34 +12,31 @@ if (NOT DB2_FOUND)
   return()
 endif()
 
-add_library(soci_db2_interface INTERFACE)
-target_link_libraries(soci_db2_interface INTERFACE DB2::DB2 soci_core_interface)
-
-add_library(soci_db2_objects OBJECT
-  "blob.cpp"
-  "factory.cpp"
-  "row-id.cpp"
-  "session.cpp"
-  "standard-into-type.cpp"
-  "standard-use-type.cpp"
-  "statement.cpp"
-  "vector-into-type.cpp"
-  "vector-use-type.cpp"
+add_library(soci_db2
+  ${SOCI_LIB_TYPE}
+    "blob.cpp"
+    "factory.cpp"
+    "row-id.cpp"
+    "session.cpp"
+    "standard-into-type.cpp"
+    "standard-use-type.cpp"
+    "statement.cpp"
+    "vector-into-type.cpp"
+    "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_db2_objects PUBLIC soci_db2_interface)
+target_link_libraries(soci_db2
+  PUBLIC
+    DB2::DB2
+    SOCI::Core
+)
 
-target_include_directories(soci_db2_objects
+target_include_directories(soci_db2
   PRIVATE
     "${PROJECT_SOURCE_DIR}/include/private"
     "${PROJECT_SOURCE_DIR}/include/soci"
 )
 
-soci_backend_objects_to_lib(
-  OBJECT_LIB         soci_db2_objects
-  SHARED_TARGET_NAME soci_db2
-  STATIC_TARGET_NAME soci_db2_static
-  ALIAS_NAME         DB2
-  SHARED_DEPS        SOCI::shared::Core
-  STATIC_DEPS        SOCI::static::Core
-)
+add_library(SOCI::DB2 ALIAS soci_db2)
+
+target_link_libraries(soci_interface INTERFACE SOCI::DB2)
