@@ -27,8 +27,13 @@ include(CheckCXXCompilerFlag)
 
 check_ipo_supported(RESULT LTO_AVAILABLE)
 
-option(SOCI_SHARED "Enable building SOCI as a shared library" ON)
-option(SOCI_STATIC "Enable building SOCI as a static library" ON)
+if (SOCI_STATIC)
+  set(SHARED_DEFAULT OFF)
+else()
+  set(SHARED_DEFAULT ON)
+endif()
+
+option(SOCI_SHARED "Enable building SOCI as a shared library" ${SHARED_DEFAULT})
 option(SOCI_TESTS "Enable building SOCI test cases" ${PROJECT_IS_TOP_LEVEL})
 option(SOCI_ASAN "Enable building SOCI with enabled address sanitizers" OFF)
 cmake_dependent_option(SOCI_LTO "Enable link time optimizations in release builds" ON "LTO_AVAILABLE" OFF)
@@ -61,11 +66,10 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# We need a dummy source file to add as sources for libs that otherwise
-# only consist of object libraries (otherwise some toolchains may complain)
-set(SOCI_CXX_DUMMY_SOURCE "${CMAKE_CURRENT_BINARY_DIR}/dummy.cpp")
-if (NOT EXISTS "${SOCI_CXX_DUMMY_SOURCE}")
-  file(TOUCH "${SOCI_CXX_DUMMY_SOURCE}")
+if (SOCI_SHARED)
+  set(SOCI_LIB_TYPE "SHARED")
+else()
+  set(SOCI_LIB_TYPE "STATIC")
 endif()
 
 add_subdirectory(src)

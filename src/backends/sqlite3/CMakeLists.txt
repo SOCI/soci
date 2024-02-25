@@ -12,35 +12,31 @@ if (NOT SQLite3_FOUND)
   return()
 endif()
 
-add_library(soci_sqlite3_interface INTERFACE)
-target_link_libraries(soci_sqlite3_interface INTERFACE SQLite::SQLite3 soci_core_interface)
-
-add_library(soci_sqlite3_objects OBJECT
-  "blob.cpp"
-  "error.cpp"
-  "factory.cpp"
-  "row-id.cpp"
-  "session.cpp"
-  "standard-into-type.cpp"
-  "standard-use-type.cpp"
-  "statement.cpp"
-  "vector-into-type.cpp"
-  "vector-use-type.cpp"
+add_library(soci_sqlite3
+  ${SOCI_LIB_TYPE}
+    "blob.cpp"
+    "error.cpp"
+    "factory.cpp"
+    "row-id.cpp"
+    "session.cpp"
+    "standard-into-type.cpp"
+    "standard-use-type.cpp"
+    "statement.cpp"
+    "vector-into-type.cpp"
+    "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_sqlite3_objects PUBLIC soci_sqlite3_interface)
+target_link_libraries(soci_sqlite3
+  PUBLIC
+    SQLite::SQLite3 SOCI::Core
+)
 
-target_include_directories(soci_sqlite3_objects
+target_include_directories(soci_sqlite3
   PRIVATE
     "${PROJECT_SOURCE_DIR}/include/private"
     "${PROJECT_SOURCE_DIR}/include/soci"
 )
 
-soci_backend_objects_to_lib(
-  OBJECT_LIB         soci_sqlite3_objects
-  SHARED_TARGET_NAME soci_sqlite3
-  STATIC_TARGET_NAME soci_sqlite3_static
-  ALIAS_NAME         SQLite3
-  SHARED_DEPS        SOCI::shared::Core
-  STATIC_DEPS        SOCI::static::Core
-)
+add_library(SOCI::SQLite3 ALIAS soci_sqlite3)
+
+target_link_libraries(soci_interface INTERFACE SOCI::SQLite3)

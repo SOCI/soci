@@ -18,35 +18,32 @@ if (NOT Firebird_FOUND)
   return()
 endif()
 
-add_library(soci_firebird_interface INTERFACE)
-target_link_libraries(soci_firebird_interface INTERFACE Firebird::Firebird soci_core_interface)
-
-add_library(soci_firebird_objects OBJECT
-  "blob.cpp"
-  "common.cpp"
-  "error-firebird.cpp"
-  "factory.cpp"
-  "session.cpp"
-  "standard-into-type.cpp"
-  "standard-use-type.cpp"
-  "statement.cpp"
-  "vector-into-type.cpp"
-  "vector-use-type.cpp"
+add_library(soci_firebird
+  ${SOCI_LIB_TYPE}
+    "blob.cpp"
+    "common.cpp"
+    "error-firebird.cpp"
+    "factory.cpp"
+    "session.cpp"
+    "standard-into-type.cpp"
+    "standard-use-type.cpp"
+    "statement.cpp"
+    "vector-into-type.cpp"
+    "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_firebird_objects PUBLIC Firebird::Firebird soci_firebird_interface)
+target_link_libraries(soci_firebird
+  PUBLIC
+    Firebird::Firebird
+    SOCI::Core
+)
 
-target_include_directories(soci_firebird_objects
+target_include_directories(soci_firebird
   PRIVATE
     "${PROJECT_SOURCE_DIR}/include/private"
     "${PROJECT_SOURCE_DIR}/include/soci"
 )
 
-soci_backend_objects_to_lib(
-  OBJECT_LIB         soci_firebird_objects
-  SHARED_TARGET_NAME soci_firebird
-  STATIC_TARGET_NAME soci_firebird_static
-  ALIAS_NAME         Firebird
-  SHARED_DEPS        SOCI::shared::Core
-  STATIC_DEPS        SOCI::static::Core
-)
+add_library(SOCI::Firebird ALIAS soci_firebird)
+
+target_link_libraries(soci_interface INTERFACE SOCI::Firebird)

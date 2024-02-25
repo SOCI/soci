@@ -12,34 +12,31 @@ if (NOT ODBC_FOUND)
   return()
 endif()
 
-add_library(soci_odbc_interface INTERFACE)
-target_link_libraries(soci_odbc_interface INTERFACE ODBC::ODBC soci_core_interface)
-
-add_library(soci_odbc_objects OBJECT
-  "blob.cpp"
-  "factory.cpp"
-  "row-id.cpp"
-  "session.cpp"
-  "standard-into-type.cpp"
-  "standard-use-type.cpp"
-  "statement.cpp"
-  "vector-into-type.cpp"
-  "vector-use-type.cpp"
+add_library(soci_odbc
+  ${SOCI_LIB_TYPE}
+    "blob.cpp"
+    "factory.cpp"
+    "row-id.cpp"
+    "session.cpp"
+    "standard-into-type.cpp"
+    "standard-use-type.cpp"
+    "statement.cpp"
+    "vector-into-type.cpp"
+    "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_odbc_objects PUBLIC soci_odbc_interface)
+target_link_libraries(soci_odbc
+  PUBLIC
+    ODBC::ODBC
+    SOCI::Core
+)
 
-target_include_directories(soci_odbc_objects
+target_include_directories(soci_odbc
   PRIVATE
     "${PROJECT_SOURCE_DIR}/include/private"
     "${PROJECT_SOURCE_DIR}/include/soci"
 )
 
-soci_backend_objects_to_lib(
-  OBJECT_LIB         soci_odbc_objects
-  SHARED_TARGET_NAME soci_odbc
-  STATIC_TARGET_NAME soci_odbc_static
-  ALIAS_NAME         ODBC
-  SHARED_DEPS        SOCI::shared::Core
-  STATIC_DEPS        SOCI::static::Core
-)
+add_library(SOCI::ODBC ALIAS soci_odbc)
+
+target_link_libraries(soci_interface INTERFACE SOCI::ODBC)

@@ -12,35 +12,31 @@ if (NOT Oracle_FOUND)
   return()
 endif()
 
-add_library(soci_oracle_interface INTERFACE)
-target_link_libraries(soci_oracle_interface INTERFACE Oracle::Oracle soci_core_interface)
-
-add_library(soci_oracle_objects OBJECT
-  "blob.cpp"
-  "error.cpp"
-  "factory.cpp"
-  "row-id.cpp"
-  "session.cpp"
-  "standard-into-type.cpp"
-  "standard-use-type.cpp"
-  "statement.cpp"
-  "vector-into-type.cpp"
-  "vector-use-type.cpp"
+add_library(soci_oracle
+  ${SOCI_LIB_TYPE}
+    "blob.cpp"
+    "error.cpp"
+    "factory.cpp"
+    "row-id.cpp"
+    "session.cpp"
+    "standard-into-type.cpp"
+    "standard-use-type.cpp"
+    "statement.cpp"
+    "vector-into-type.cpp"
+    "vector-use-type.cpp"
+)
+target_link_libraries(soci_oracle
+  PUBLIC
+    Oracle::Oracle
+    SOCI::Core
 )
 
-target_link_libraries(soci_oracle_objects PUBLIC soci_oracle_interface)
-
-target_include_directories(soci_oracle_objects
+target_include_directories(soci_oracle
   PRIVATE
     "${PROJECT_SOURCE_DIR}/include/private"
     "${PROJECT_SOURCE_DIR}/include/soci"
 )
 
-soci_backend_objects_to_lib(
-  OBJECT_LIB         soci_oracle_objects
-  SHARED_TARGET_NAME soci_oracle
-  STATIC_TARGET_NAME soci_oracle_static
-  ALIAS_NAME         Oracle
-  SHARED_DEPS        SOCI::shared::Core
-  STATIC_DEPS        SOCI::static::Core
-)
+add_library(SOCI::Oracle ALIAS soci_oracle)
+
+target_link_libraries(soci_interface INTERFACE SOCI::Oracle)
