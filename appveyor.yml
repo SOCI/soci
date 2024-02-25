@@ -66,7 +66,7 @@ install:
       if (-Not $drivers_list -clike '*PostgreSQL*') {
         $env:SOCI_ODBC_SKIP_TESTS = $env:SOCI_ODBC_SKIP_TESTS + '|soci_odbc_postgresql_tests'
       }
-      Write-Host "To be skipped ODBC tests: %SOCI_ODBC_SKIP_TESTS%"
+      Write-Output "To be skipped ODBC tests: $env:SOCI_ODBC_SKIP_TESTS"
   - git clone https://github.com/snikulov/sqlite.cmake.build.git C:\projects\sqlite\src
 
 before_build:
