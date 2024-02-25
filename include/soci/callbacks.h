@@ -8,6 +8,8 @@
 #ifndef SOCI_CALLBACKS_H_INCLUDED
 #define SOCI_CALLBACKS_H_INCLUDED
 
+#include "soci/soci-platform.h"
+
 namespace soci
 {
 
