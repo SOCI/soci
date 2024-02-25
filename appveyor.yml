@@ -59,11 +59,11 @@ install:
       Import-Module C:\projects\soci\scripts\windows\Get-ODBCList.ps1
       $drivers_list = Get-ODBCList
       Write-Output $drivers_list
-      if ($drivers_list -clike '*MySQL*') {
-        $env:SOCI_ODBC_TESTS = $env:SOCI_ODBC_TESTS + '|soci_odbc_test_mysql'
+      if (-Not $drivers_list -clike '*MySQL*') {
+        $env:SOCI_ODBC_SKIP_TESTS = $env:SOCI_ODBC_SKIP_TESTS + '|soci_odbc_mysql_tests'
       }
-      if ($drivers_list -clike '*PostgreSQL*') {
-        $env:SOCI_ODBC_TESTS = $env:SOCI_ODBC_TESTS + '|soci_odbc_test_postgresql'
+      if (-Not $drivers_list -clike '*PostgreSQL*') {
+        $env:SOCI_ODBC_SKIP_TESTS = $env:SOCI_ODBC_SKIP_TESTS + '|soci_odbc_postgresql_tests'
       }
   - git clone https://github.com/snikulov/sqlite.cmake.build.git C:\projects\sqlite\src
 
@@ -113,7 +113,7 @@ build_script:
   - cmake --build . --config %CONFIGURATION% -- %BUILD_TOOL_OPTIONS%
 
 test_script:
-  - ctest -V --timeout 300 --output-on-failure --build-config %CONFIGURATION%
+  - ctest -V --timeout 300 --output-on-failure --build-config %CONFIGURATION% --exclude-regex "%SOCI_ODBC_SKIP_TESTS%"
 
 # Uncomment this to wait for RDP connection after the build end.
 #on_finish:
