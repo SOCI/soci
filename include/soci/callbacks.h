@@ -10,6 +10,8 @@
 
 #include "soci/soci-platform.h"
 
+#include <string>
+
 namespace soci
 {
 
@@ -21,26 +23,28 @@ class session;
 class SOCI_DECL failover_callback
 {
 public:
+    failover_callback() = default;
+    virtual ~failover_callback();
 
     // Called when the failover operation has started,
     // after discovering connectivity problems.
-    virtual void started() {}
+    virtual void started();
 
     // Called after successful failover and creating a new connection;
     // the sql parameter denotes the new connection and allows the user
     // to replay any initial sequence of commands (like session configuration).
-    virtual void finished(session & /* sql */) {}
+    virtual void finished(session& /* sql */);
 
     // Called when the attempt to reconnect failed,
     // if the user code sets the retry parameter to true,
     // then new connection will be attempted;
     // the newTarget connection string is a hint that can be ignored
     // by external means.
-    virtual void failed(bool & /* out */ /* retry */,
-        std::string & /* out */ /* newTarget */) {}
+    virtual void failed(bool& /* out */ /* retry */,
+        std::string& /* out */ /* newTarget */);
 
     // Called when there was a failure that prevents further failover attempts.
-    virtual void aborted() {}
+    virtual void aborted();
 };
 
 } // namespace soci
