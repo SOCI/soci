@@ -60,10 +60,10 @@ install:
       $drivers_list = Get-ODBCList
       Write-Output $drivers_list
       $env:SOCI_ODBC_SKIP_TESTS = "soci_odbc_ms_access_tests"
-      if (-Not $drivers_list -clike '*MySQL*') {
+      if (-Not ($drivers_list -contains 'MySQL')) {
         $env:SOCI_ODBC_SKIP_TESTS = $env:SOCI_ODBC_SKIP_TESTS + '|soci_odbc_mysql_tests'
       }
-      if (-Not $drivers_list -clike '*PostgreSQL*') {
+      if (-Not ($drivers_list -contains 'PostgreSQL')) {
         $env:SOCI_ODBC_SKIP_TESTS = $env:SOCI_ODBC_SKIP_TESTS + '|soci_odbc_postgresql_tests'
       }
       Write-Output "To be skipped ODBC tests: $env:SOCI_ODBC_SKIP_TESTS"
