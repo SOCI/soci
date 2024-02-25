@@ -10,7 +10,7 @@ if (WIN32)
   add_executable(soci_odbc_ms_access_tests odbc_ms_access_tests.cpp)
   target_link_libraries(soci_odbc_ms_access_tests PRIVATE soci_common_tests SOCI::ODBC)
 
-  set(SOCI_ODBC_TEST_ACCESS_CONNSTR "FILEDSN=${CMAKE_CURRENT_BINARY_DIR}/test-access.dsn" CACHE STRING "Connection string for the ODBC MS Access test")
+  set(SOCI_ODBC_TEST_ACCESS_CONNSTR "FILEDSN=${CMAKE_CURRENT_SOURCE_DIR}/test-access.dsn" CACHE STRING "Connection string for the ODBC MS Access test")
 
   add_test(
     NAME soci_odbc_ms_access_tests
@@ -22,7 +22,7 @@ endif()
 add_executable(soci_odbc_mssql_tests odbc_mssql_tests.cpp)
 target_link_libraries(soci_odbc_mssql_tests PRIVATE soci_common_tests SOCI::ODBC)
 
-set(SOCI_ODBC_TEST_MSSQL_CONNSTR "FILEDSN=${CMAKE_CURRENT_BINARY_DIR}/test-access.dsn" CACHE STRING "Connection string for the ODBC MSSQL test")
+set(SOCI_ODBC_TEST_MSSQL_CONNSTR "FILEDSN=${CMAKE_CURRENT_BINARY_DIR}/test-mssql.dsn" CACHE STRING "Connection string for the ODBC MSSQL test")
 
 add_test(
   NAME soci_odbc_mssql_tests
