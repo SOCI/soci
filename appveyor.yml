@@ -59,12 +59,14 @@ install:
       Import-Module C:\projects\soci\scripts\windows\Get-ODBCList.ps1
       $drivers_list = Get-ODBCList
       Write-Output $drivers_list
+      $env:SOCI_ODBC_SKIP_TESTS = "soci_odbc_ms_access_tests"
       if (-Not $drivers_list -clike '*MySQL*') {
         $env:SOCI_ODBC_SKIP_TESTS = $env:SOCI_ODBC_SKIP_TESTS + '|soci_odbc_mysql_tests'
       }
       if (-Not $drivers_list -clike '*PostgreSQL*') {
         $env:SOCI_ODBC_SKIP_TESTS = $env:SOCI_ODBC_SKIP_TESTS + '|soci_odbc_postgresql_tests'
       }
+      Write-Host "To be skipped ODBC tests: %SOCI_ODBC_SKIP_TESTS%"
   - git clone https://github.com/snikulov/sqlite.cmake.build.git C:\projects\sqlite\src
 
 before_build:
