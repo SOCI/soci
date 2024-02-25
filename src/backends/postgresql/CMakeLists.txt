@@ -20,39 +20,35 @@ if (POSTGRESQL_VERSION VERSION_LESS "9.3.0")
   set(SOCI_POSTGRESQL_NO_LO64 ON CACHE BOOL "Avoid using lo_xxx64() functions" FORCE)
 endif()
 
-add_library(soci_postgresql_interface INTERFACE)
-target_link_libraries(soci_postgresql_interface INTERFACE PostgreSQL::PostgreSQL soci_core_interface)
-
-add_library(soci_postgresql_objects OBJECT
-  "blob.cpp"
-  "error.cpp"
-  "factory.cpp"
-  "row-id.cpp"
-  "session.cpp"
-  "standard-into-type.cpp"
-  "standard-use-type.cpp"
-  "statement.cpp"
-  "vector-into-type.cpp"
-  "vector-use-type.cpp"
+add_library(soci_postgresql
+  ${SOCI_LIB_TYPE}
+    "blob.cpp"
+    "error.cpp"
+    "factory.cpp"
+    "row-id.cpp"
+    "session.cpp"
+    "standard-into-type.cpp"
+    "standard-use-type.cpp"
+    "statement.cpp"
+    "vector-into-type.cpp"
+    "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_postgresql_objects PUBLIC soci_postgresql_interface)
+target_link_libraries(soci_postgresql
+  PUBLIC
+    PostgreSQL::PostgreSQL
+    SOCI::Core
+)
 
-target_include_directories(soci_postgresql_objects
+target_include_directories(soci_postgresql
   PRIVATE
     "${PROJECT_SOURCE_DIR}/include/private"
     "${PROJECT_SOURCE_DIR}/include/soci"
 )
 
-soci_backend_objects_to_lib(
-  OBJECT_LIB         soci_postgresql_objects
-  SHARED_TARGET_NAME soci_postgresql
-  STATIC_TARGET_NAME soci_postgresql_static
-  ALIAS_NAME         PostgreSQL
-  SHARED_DEPS        SOCI::shared::Core
-  STATIC_DEPS        SOCI::static::Core
-)
-if (SOCI_POSTGRESQL_NO_LO64)
-  target_compile_definitions(soci_postgresql INTERFACE SOCI_POSTGRESQL_NO_LO64)
-  target_compile_definitions(soci_postgresql_static INTERFACE SOCI_POSTGRESQL_NO_LO64)
-endif()
+target_compile_definitions(soci_postgresql INTERFACE SOCI_POSTGRESQL_NO_LO64)
+
+add_library(SOCI::PostgreSQL ALIAS soci_postgresql)
+
+target_link_libraries(soci_interface INTERFACE SOCI::PostgreSQL)
+

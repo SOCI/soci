@@ -12,35 +12,32 @@ if (NOT MySQL_FOUND)
   return()
 endif()
 
-add_library(soci_mysql_interface INTERFACE)
-target_link_libraries(soci_mysql_interface INTERFACE MySQL::MySQL soci_core_interface)
-
-add_library(soci_mysql_objects OBJECT
-  "blob.cpp"
-  "common.cpp"
-  "factory.cpp"
-  "row-id.cpp"
-  "session.cpp"
-  "standard-into-type.cpp"
-  "standard-use-type.cpp"
-  "statement.cpp"
-  "vector-into-type.cpp"
-  "vector-use-type.cpp"
+add_library(soci_mysql
+  ${SOCI_LIB_TYPE}
+    "blob.cpp"
+    "common.cpp"
+    "factory.cpp"
+    "row-id.cpp"
+    "session.cpp"
+    "standard-into-type.cpp"
+    "standard-use-type.cpp"
+    "statement.cpp"
+    "vector-into-type.cpp"
+    "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_mysql_objects PUBLIC soci_mysql_interface)
+target_link_libraries(soci_mysql
+  PUBLIC
+    MySQL::MySQL
+    SOCI::Core
+)
 
-target_include_directories(soci_mysql_objects
+target_include_directories(soci_mysql
   PRIVATE
     "${PROJECT_SOURCE_DIR}/include/private"
     "${PROJECT_SOURCE_DIR}/include/soci"
 )
 
-soci_backend_objects_to_lib(
-  OBJECT_LIB         soci_mysql_objects
-  SHARED_TARGET_NAME soci_mysql
-  STATIC_TARGET_NAME soci_mysql_static
-  ALIAS_NAME         MySQL
-  SHARED_DEPS        SOCI::shared::Core
-  STATIC_DEPS        SOCI::static::Core
-)
+add_library(SOCI::MySQL ALIAS soci_mysql)
+
+target_link_libraries(soci_interface INTERFACE SOCI::MySQL)
