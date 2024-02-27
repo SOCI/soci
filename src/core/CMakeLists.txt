@@ -1,19 +1,5 @@
 find_package(Threads REQUIRED)
 
-include(CheckCXXSourceCompiles)
-check_cxx_source_compiles(
-  "
-      __attribute__ (( visibility(\"default\") )) int f1() { return 0; }
-      __attribute__ (( visibility(\"hidden\") ))  int f2() { return 1; }
-
-      int main(int argc, char* argv[]) { f1(); f2(); return 0; }
-  "
-  SOCI_VISIBILITY_ATTRIBUTE_SUPPORTED
-)
-
-# TODO: Actually populate this config file with something useful
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/soci-config.h.in" "${CMAKE_CURRENT_BINARY_DIR}/include/soci/soci-config.h")
-
 add_library(soci_core
   ${SOCI_LIB_TYPE}
     "backend-loader.cpp"
@@ -43,7 +29,7 @@ add_library(SOCI::Core ALIAS soci_core)
 
 target_include_directories(soci_core
   PUBLIC
-    "${CMAKE_CURRENT_BINARY_DIR}/include"
+    "${SOCI_GENERATED_INCLUDES_DIR}"
     "${PROJECT_SOURCE_DIR}/include"
   PRIVATE
     "${PROJECT_SOURCE_DIR}/include/soci"
@@ -58,21 +44,16 @@ if (SOCI_SHARED)
   )
 endif()
 
-if (SOCI_SHARED AND SOCI_VISIBILITY AND SOCI_VISIBILITY_ATTRIBUTE_SUPPORTED)
-  target_compile_definitions(soci_core
-    PUBLIC
-      SOCI_HAVE_VISIBILITY_SUPPORT
-  )
-endif()
-
 if (SOCI_BOOST)
   find_package(Boost REQUIRED)
   target_link_libraries(soci_core PUBLIC Boost::boost)
-  target_compile_definitions(soci_core PUBLIC SOCI_HAVE_BOOST)
+  set(SOCI_HAVE_BOOST TRUE CACHE INTERNAL "" FORCE)
+
+  find_package(Boost COMPONENTS date_time)
 
   if (TARGET Boost::date_time)
     target_link_libraries(soci_core PUBLIC Boost::date_time)
-    target_compile_definitions(soci_core PUBLIC SOCI_HAVE_BOOST_DATE_TIME)
+    set(SOCI_HAVE_BOOST_DATE_TIME TRUE CACHE INTERNAL "" FORCE)
   endif()
 endif()
 
