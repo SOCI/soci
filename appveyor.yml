@@ -68,6 +68,9 @@ install:
       }
       Write-Output "To be skipped ODBC tests: $env:SOCI_ODBC_SKIP_TESTS"
   - git clone https://github.com/snikulov/sqlite.cmake.build.git C:\projects\sqlite\src
+    # Ensure we have a recent cmake version available
+  - choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+  - refreshenv
 
 before_build:
   - set SQLITE_ROOT=C:\projects\sqlite\sqlite
