@@ -90,6 +90,10 @@ include(soci_compiler_options)
 
 add_subdirectory(src)
 
+
+include(soci_compat)
+
+
 if (SOCI_TESTS)
   include(CTest)
   enable_testing()
