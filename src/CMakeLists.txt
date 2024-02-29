@@ -79,7 +79,6 @@ endif()
 
 # Only overwrite the soci-config.h file if the generated content is different from the
 # file's content in order to avoid needless rebuilding
-message(STATUS "${CONFIG_CONTENT_HASH} == ${CONFIG_FILE_HASH} ?")
 if (NOT (CONFIG_CONTENT_HASH STREQUAL CONFIG_FILE_HASH))
   file(WRITE "${SOCI_GENERATED_INCLUDES_DIR}/soci/soci-config.h" "${CONFIG_CONTENT}")
 endif()
