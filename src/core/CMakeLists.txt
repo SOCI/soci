@@ -64,12 +64,20 @@ target_link_libraries(soci_core
     Threads::Threads
 )
 
+if (WIN32)
+  set(VERSION_SEP "_")
+elseif(UNIX)
+  set(VERSION_SEP ".")
+else()
+  message(WARNING "No known ABI version scheme for current platform")
+  set(VERSION_SEP "-")
+endif()
+
 target_compile_definitions(soci_core
   PRIVATE
     DEFAULT_BACKENDS_PATH="${CMAKE_INSTALL_FULL_LIBDIR}"
-    # TODO: Configure prefix and suffix properly
     SOCI_LIB_PREFIX="${SOCI_LIB_PREFIX}"
     SOCI_LIB_SUFFIX="${SOCI_LIB_SUFFIX}"
     SOCI_DEBUG_SUFFIX="${SOCI_DEBUG_SUFFIX}"
+    SOCI_ABI_VERSION="${PROJECT_VERSION_MAJOR}${VERSION_SEP}${PROJECT_VERSION_MINOR}"
 )
-
