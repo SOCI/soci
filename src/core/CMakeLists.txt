@@ -58,6 +58,8 @@ if (SOCI_BOOST)
 endif()
 
 target_link_libraries(soci_core
+  PUBLIC
+    soci_compiler_interface
   PRIVATE
     Threads::Threads
 )
@@ -66,7 +68,8 @@ target_compile_definitions(soci_core
   PRIVATE
     DEFAULT_BACKENDS_PATH="${CMAKE_INSTALL_FULL_LIBDIR}"
     # TODO: Configure prefix and suffix properly
-    SOCI_LIB_PREFIX=""
-    SOCI_LIB_SUFFIX=""
+    SOCI_LIB_PREFIX="${SOCI_LIB_PREFIX}"
+    SOCI_LIB_SUFFIX="${SOCI_LIB_SUFFIX}"
+    SOCI_DEBUG_SUFFIX="${SOCI_DEBUG_SUFFIX}"
 )
 
