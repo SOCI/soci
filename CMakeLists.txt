@@ -74,6 +74,15 @@ else()
   set(SOCI_LIB_TYPE "STATIC")
 endif()
 
+
+set(SOCI_LIB_PREFIX "${CMAKE_SHARED_LIBRARY_PREFIX}soci_" CACHE STRING "Specifies prefix for the lib directory")
+set(SOCI_LIB_SUFFIX "${CMAKE_SHARED_LIBRARY_SUFFIX}" CACHE STRING "Specifies suffix for the lib directory")
+set(SOCI_DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}" CACHE STRING "Specifies suffix for the library file in debug mode")
+
+
+include(soci_compiler_options)
+
+
 add_subdirectory(src)
 
 if (SOCI_TESTS)
