@@ -35,10 +35,13 @@ jobs:
         include:
           - backend: empty
             runner: macos-12
+            no_boost: true
           - backend: postgresql
             runner: macos-12
+            no_boost: true
           - backend: sqlite3
             runner: macos-12
+            no_boost: true
           - backend: oracle
             no_boost: true
             runner: ubuntu-22.04
