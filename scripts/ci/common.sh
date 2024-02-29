@@ -61,6 +61,9 @@ fi
 
 if [ -n "${WITH_BOOST}" ]; then
     SOCI_COMMON_CMAKE_OPTIONS="$SOCI_COMMON_CMAKE_OPTIONS -DWITH_BOOST=${WITH_BOOST}"
+else
+    # Build Boost bindings by default
+    SOCI_COMMON_CMAKE_OPTIONS="$SOCI_COMMON_CMAKE_OPTIONS -DWITH_BOOST=ON"
 fi
 
 if [ -n "${SOCI_BUILD_STATIC}" ]; then
