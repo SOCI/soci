@@ -56,13 +56,18 @@ install:
       Import-Module C:\projects\soci\scripts\windows\Get-ODBCList.ps1
       $drivers_list = Get-ODBCList
       Write-Output $drivers_list
-      if ($drivers_list -clike '*MySQL*') {
-        $env:SOCI_ODBC_TESTS = $env:SOCI_ODBC_TESTS + '|soci_odbc_test_mysql'
+      $env:SOCI_ODBC_SKIP_TESTS = "soci_odbc_ms_access_tests"
+      if (-Not ($drivers_list -contains 'MySQL')) {
+        $env:SOCI_ODBC_SKIP_TESTS = $env:SOCI_ODBC_SKIP_TESTS + '|soci_odbc_mysql_tests'
       }
-      if ($drivers_list -clike '*PostgreSQL*') {
-        $env:SOCI_ODBC_TESTS = $env:SOCI_ODBC_TESTS + '|soci_odbc_test_postgresql'
+      if (-Not ($drivers_list -contains 'PostgreSQL')) {
+        $env:SOCI_ODBC_SKIP_TESTS = $env:SOCI_ODBC_SKIP_TESTS + '|soci_odbc_postgresql_tests'
       }
+      Write-Output "To be skipped ODBC tests: $env:SOCI_ODBC_SKIP_TESTS"
   - git clone https://github.com/snikulov/sqlite.cmake.build.git C:\projects\sqlite\src
+    # Ensure we have a recent cmake version available
+  - choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+  - refreshenv
 
 before_build:
   - set SQLITE_ROOT=C:\projects\sqlite\sqlite
@@ -99,7 +104,7 @@ before_build:
   - set USER=root
   - mysql -e "create database soci_test;" --user=root
   - sqlcmd -U sa -P Password12! -S (local)\SQL%MSSQL_VER% -i C:\projects\soci\scripts\windows\mssql_db_create.sql
-  - cmake .. -G"%G%" -DSQLITE_BUILD_SHARED=OFF -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_INSTALL_PREFIX=%SQLITE_ROOT%
+  - cmake .. -G"%G%" -DSQLITE_BUILD_SHARED=OFF -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_INSTALL_PREFIX=%SQLITE_ROOT% -DCMAKE_UNITY_BUILD=ON
   - cmake --build . --config %CONFIGURATION% --target install
 
 build_script:
@@ -110,7 +115,7 @@ build_script:
   - cmake --build . --config %CONFIGURATION% -- %BUILD_TOOL_OPTIONS%
 
 test_script:
-  - ctest -V --timeout 300 --output-on-failure -R "soci_empty|soci_postgresql|soci_sqlite3|soci_odbc_test_mssql|soci_mysql%SOCI_ODBC_TESTS%"
+  - ctest -V --timeout 300 --output-on-failure --build-config %CONFIGURATION% --exclude-regex "%SOCI_ODBC_SKIP_TESTS%"
 
 notifications:
   - provider: Webhook

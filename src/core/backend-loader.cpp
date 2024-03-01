@@ -17,8 +17,6 @@
 #include <stdint.h>
 #endif
 
-#include "soci_backends_config.h"
-
 using namespace soci;
 using namespace soci::dynamic_backends;
 

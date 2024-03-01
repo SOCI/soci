@@ -1,32 +1,43 @@
-###############################################################################
-#
-# This file is part of CMake configuration for SOCI library
-#
-# Copyright (C) 2010 Mateusz Loskot <mateusz@loskot.net>
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE_1_0.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
-#
-###############################################################################
-
-include(CMakeDependentOption)
-
-option(SOCI_POSTGRESQL_NOSINGLEROWMODE
-  "Do not use single row mode. PostgreSQL <9 portability."
-  OFF)
-
-if (POSTGRESQL_VERSION VERSION_LESS "9.0.0")
-  set(SOCI_POSTGRESQL_NOSINGLEROWMODE ON CACHE BOOL "Use single row mode for PostgreSQL 9+" FORCE)
+if (SOCI_POSTGRESQL_AS_AVAILABLE)
+  set(REQUIRED_FLAG "")
+else()
+  set(REQUIRED_FLAG "REQUIRED")
 endif()
 
-if(SOCI_POSTGRESQL_NOSINGLEROWMODE)
-  add_definitions(-DSOCI_POSTGRESQL_NOSINGLEROWMODE=1)
+find_package(PostgreSQL ${REQUIRED_FLAG})
+
+if (NOT PostgreSQL_FOUND)
+  message(STATUS "Disabling PostgreSQL backend as the required dependencies were not found")
+  set(SOCI_POSTGRESQL OFF CACHE BOOL "" FORCE)
+  return()
 endif()
 
-soci_backend(PostgreSQL
-  DEPENDS PostgreSQL
-  DESCRIPTION "SOCI backend for PostgreSQL"
-  AUTHORS "Maciej Sobczak, Stephen Hutton"
-  MAINTAINERS "Mateusz Loskot")
+add_library(soci_postgresql
+  ${SOCI_LIB_TYPE}
+    "blob.cpp"
+    "error.cpp"
+    "factory.cpp"
+    "row-id.cpp"
+    "session.cpp"
+    "standard-into-type.cpp"
+    "standard-use-type.cpp"
+    "statement.cpp"
+    "vector-into-type.cpp"
+    "vector-use-type.cpp"
+)
 
-boost_report_value(SOCI_POSTGRESQL_NOSINLGEROWMODE)
+target_link_libraries(soci_postgresql
+  PUBLIC
+    PostgreSQL::PostgreSQL
+    SOCI::Core
+)
+
+target_include_directories(soci_postgresql
+  PRIVATE
+    "${PROJECT_SOURCE_DIR}/include/private"
+    "${PROJECT_SOURCE_DIR}/include/soci"
+)
+
+add_library(SOCI::PostgreSQL ALIAS soci_postgresql)
+
+target_link_libraries(soci_interface INTERFACE SOCI::PostgreSQL)

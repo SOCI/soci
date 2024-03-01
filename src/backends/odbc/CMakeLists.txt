@@ -1,15 +1,42 @@
-###############################################################################
-#
-# This file is part of CMake configuration for SOCI library
-#
-# Copyright (C) 2010 Mateusz Loskot
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE_1_0.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
-#
-###############################################################################
-soci_backend(ODBC
-  DEPENDS ODBC
-  DESCRIPTION "SOCI backend for ODBC"
-  AUTHORS "Maciej Sobczak, Stephen Hutton, David Courtney"
-  MAINTAINERS "Vadim Zeitlin, Mateusz Loskot, Maciej Sobczak")
+if (SOCI_ODBC_AS_AVAILABLE)
+  set(REQUIRED_FLAG "")
+else()
+  set(REQUIRED_FLAG "REQUIRED")
+endif()
+
+find_package(ODBC ${REQUIRED_FLAG})
+
+if (NOT ODBC_FOUND)
+  message(STATUS "Disabling ODBC backend as the required dependencies were not found")
+  set(SOCI_ODBC OFF CACHE BOOL "" FORCE)
+  return()
+endif()
+
+add_library(soci_odbc
+  ${SOCI_LIB_TYPE}
+    "blob.cpp"
+    "factory.cpp"
+    "row-id.cpp"
+    "session.cpp"
+    "standard-into-type.cpp"
+    "standard-use-type.cpp"
+    "statement.cpp"
+    "vector-into-type.cpp"
+    "vector-use-type.cpp"
+)
+
+target_link_libraries(soci_odbc
+  PUBLIC
+    ODBC::ODBC
+    SOCI::Core
+)
+
+target_include_directories(soci_odbc
+  PRIVATE
+    "${PROJECT_SOURCE_DIR}/include/private"
+    "${PROJECT_SOURCE_DIR}/include/soci"
+)
+
+add_library(SOCI::ODBC ALIAS soci_odbc)
+
+target_link_libraries(soci_interface INTERFACE SOCI::ODBC)

@@ -51,8 +51,8 @@ SOCI_COMMON_CMAKE_OPTIONS='
     -DCMAKE_BUILD_TYPE=Debug
     -DCMAKE_VERBOSE_MAKEFILE=ON
     -DSOCI_ENABLE_WERROR=ON
-    -DSOCI_STATIC=OFF
     -DSOCI_TESTS=ON
+    -DCMAKE_UNITY_BUILD=ON
 '
 
 if [ -n "${SOCI_CXXSTD}" ]; then
@@ -61,6 +61,13 @@ fi
 
 if [ -n "${WITH_BOOST}" ]; then
     SOCI_COMMON_CMAKE_OPTIONS="$SOCI_COMMON_CMAKE_OPTIONS -DWITH_BOOST=${WITH_BOOST}"
+else
+    # Build Boost bindings by default
+    SOCI_COMMON_CMAKE_OPTIONS="$SOCI_COMMON_CMAKE_OPTIONS -DWITH_BOOST=ON"
+fi
+
+if [ -n "${SOCI_BUILD_STATIC}" ]; then
+    SOCI_COMMON_CMAKE_OPTIONS="${SOCI_COMMON_CMAKE_OPTIONS} -DSOCI_SHARED=OFF"
 fi
 
 # These options are defaults and used by most builds, but not Valgrind one.

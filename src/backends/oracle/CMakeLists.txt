@@ -1,15 +1,42 @@
-###############################################################################
-#
-# This file is part of CMake configuration for SOCI library
-#
-# Copyright (C) 2010 Mateusz Loskot
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE_1_0.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
-#
-###############################################################################
-soci_backend(Oracle
-  DEPENDS Oracle
-  DESCRIPTION "SOCI backend for Oracle 10+"
-  AUTHORS "Maciej Sobczak, Stephen Hutton"
-  MAINTAINERS "Maciej Sobczak")
+if (SOCI_ORACLE_AS_AVAILABLE)
+  set(REQUIRED_FLAG "")
+else()
+  set(REQUIRED_FLAG "REQUIRED")
+endif()
+
+find_package(Oracle ${REQUIRED_FLAG})
+
+if (NOT Oracle_FOUND)
+  message(STATUS "Disabling Oracle backend as the required dependencies were not found")
+  set(SOCI_ORACLE OFF CACHE BOOL "" FORCE)
+  return()
+endif()
+
+add_library(soci_oracle
+  ${SOCI_LIB_TYPE}
+    "blob.cpp"
+    "error.cpp"
+    "factory.cpp"
+    "row-id.cpp"
+    "session.cpp"
+    "standard-into-type.cpp"
+    "standard-use-type.cpp"
+    "statement.cpp"
+    "vector-into-type.cpp"
+    "vector-use-type.cpp"
+)
+target_link_libraries(soci_oracle
+  PUBLIC
+    Oracle::Oracle
+    SOCI::Core
+)
+
+target_include_directories(soci_oracle
+  PRIVATE
+    "${PROJECT_SOURCE_DIR}/include/private"
+    "${PROJECT_SOURCE_DIR}/include/soci"
+)
+
+add_library(SOCI::Oracle ALIAS soci_oracle)
+
+target_link_libraries(soci_interface INTERFACE SOCI::Oracle)
