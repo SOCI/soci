@@ -82,3 +82,12 @@ endif()
 if (NOT (CONFIG_CONTENT_HASH STREQUAL CONFIG_FILE_HASH))
   file(WRITE "${SOCI_GENERATED_INCLUDES_DIR}/soci/soci-config.h" "${CONFIG_CONTENT}")
 endif()
+
+# Append the generated config header to the public headers of the core target
+target_sources(soci_core
+  PUBLIC
+    FILE_SET headers TYPE HEADERS
+    BASE_DIRS "${SOCI_GENERATED_INCLUDES_DIR}"
+    FILES
+      "${SOCI_GENERATED_INCLUDES_DIR}/soci/soci-config.h"
+)
