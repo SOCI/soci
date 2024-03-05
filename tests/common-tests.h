@@ -3341,7 +3341,6 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding 4", "[core][dynamic]")
             row r;
             sql << "select id from soci_test", into(r);
 
-            static_assert(std::numeric_limits<int32_t>::digits10 == 9, "");
             CHECK(r.size() == 1);
             CHECK(r.get<int8_t>(0) == 10);
             CHECK(r.get<int16_t>(0) == 10);

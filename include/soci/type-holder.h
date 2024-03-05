@@ -50,7 +50,7 @@ T* checked_ptr_cast(U* ptr)
     return static_cast<T*>(ptr);
 }
 
-// Type safe conversion that fails at compilation if instantiated
+// Type safe conversion that throws if the types are mismatched
 template <typename T, typename U, typename Enable = void>
 struct soci_cast
 {
@@ -114,12 +114,7 @@ union type_holder
 };
 
 template <typename T>
-struct type_holder_trait
-{
-    static_assert(std::is_same<T, void>::value, "Unmatched raw type");
-    // dummy value to satisfy the template engine, never used
-    static const db_type type = (db_type)0;
-};
+struct type_holder_trait;
 
 template <>
 struct type_holder_trait<std::string>
@@ -219,7 +214,7 @@ struct type_holder_trait<std::tm>
     static const db_type type = db_date;
 };
 
-// Base class for storing type data instances in a container of holder objects
+// Class for storing type data instances in a container of holder objects
 class holder
 {
 public:
@@ -273,6 +268,12 @@ public:
         }
     }
 
+#ifdef _MSC_VER
+// MSVC complains about "unreachable code" even though all
+// code here can be reached.
+#pragma warning(push)
+#pragma warning(disable:4702)
+#endif
     template <typename T>
     T get()
     {
@@ -302,10 +303,13 @@ public:
         case db_xml:
         case db_string:
             return soci_cast<T, std::string>::cast(*val_.s);
-        default:
-            throw std::bad_cast();
         }
+
+        throw std::bad_cast();
     }
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 private:
     holder(db_type dt, void* val) : dt_(dt)
@@ -346,8 +350,6 @@ private:
         case db_xml:
         case db_string:
             val_.s = static_cast<std::string*>(val);
-            break;
-        default:
             break;
         }
     }
