@@ -418,6 +418,12 @@ public:
     virtual table_creator_base* table_creator_clob(session&) const { return NULL; }
 
     // Override this to return the table creator for a simple table containing
+    // an integer "id" column and BLOB "b" one.
+    //
+    // Returns null by default to indicate that BLOB is not supported.
+    virtual table_creator_base* table_creator_blob(session&) const { return NULL; }
+
+    // Override this to return the table creator for a simple table containing
     // an integer "id" column and XML "x" one.
     //
     // Returns null by default to indicate that XML is not supported.
@@ -6362,6 +6368,382 @@ TEST_CASE_METHOD(common_tests, "Into XML vector with several fetches", "[core][x
     CHECK(remove_trailing_nl(result[1].value) == values[4].value);
 
     REQUIRE(!st.fetch());
+}
+
+TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_blob(sql));
+
+    if (!tableCreator.get())
+    {
+        try
+        {
+            soci::blob blob(sql);
+            FAIL("BLOB creation should throw, if backend doesn't support BLOBs");
+        }
+        catch (const soci_error &)
+        {
+            // Throwing is expected if the backend doesn't support BLOBs
+        }
+        WARN("BLOB type not supported by the database, skipping the test.");
+        return;
+    }
+
+    const char dummy_data[] = "abcdefghijklmnopqrstuvwxyz";
+
+    // Cross-DB usage of BLOBs is only possible if the entire lifetime of the blob object
+    // is covered in an active transaction.
+    soci::transaction transaction(sql);
+    SECTION("Read-access on just-constructed blob")
+    {
+        soci::blob blob(sql);
+
+        CHECK(blob.get_len() == 0);
+
+        char buf[5];
+        std::size_t read_bytes = blob.read_from_start(buf, sizeof(buf));
+
+        // There should be no data that could be read
+        CHECK(read_bytes == 0);
+
+        // Reading from any offset other than zero is invalid
+        CHECK_THROWS_AS(blob.read_from_start(buf, sizeof(buf), 1), soci_error);
+    }
+    SECTION("validity & initialization")
+    {
+        soci::blob blob;
+        CHECK_FALSE(blob.is_valid());
+        blob.initialize(sql);
+        CHECK(blob.is_valid());
+
+        soci::blob other;
+        CHECK_FALSE(other.is_valid());
+        other = std::move(blob);
+        CHECK(other.is_valid());
+        CHECK_FALSE(blob.is_valid());
+    }
+    SECTION("BLOB I/O")
+    {
+        soci::blob blob(sql);
+
+        std::size_t written_bytes = blob.write_from_start(dummy_data, 5);
+
+        CHECK(written_bytes == 5);
+        CHECK(blob.get_len() == 5);
+
+        char buf[5];
+        static_assert(sizeof(buf) <= sizeof(dummy_data), "Underlying assumption violated");
+
+        std::size_t read_bytes = blob.read_from_start(buf, sizeof(buf));
+
+        CHECK(read_bytes == sizeof(buf));
+
+        for (std::size_t i = 0; i < sizeof(buf); ++i)
+        {
+            CHECK(buf[i] == dummy_data[i]);
+        }
+
+        written_bytes = blob.append(dummy_data + 5, 3);
+
+        CHECK(written_bytes == 3);
+        CHECK(blob.get_len() == 8);
+
+        read_bytes = blob.read_from_start(buf, sizeof(buf), 3);
+
+        CHECK(read_bytes == 5);
+
+        for (std::size_t i = 0; i < sizeof(buf); ++i)
+        {
+            CHECK(buf[i] == dummy_data[i + 3]);
+        }
+
+        blob.trim(2);
+
+        CHECK(blob.get_len() == 2);
+
+        read_bytes = blob.read_from_start(buf, sizeof(buf));
+
+        CHECK(read_bytes == 2);
+
+        for (std::size_t i = 0; i < read_bytes; ++i)
+        {
+            CHECK(buf[i] == dummy_data[i]);
+        }
+
+        // Reading from an offset >= the current length of the blob is invalid
+        CHECK_THROWS_AS(blob.read_from_start(buf, sizeof(buf), blob.get_len()), soci_error);
+
+        written_bytes = blob.append("z", 1);
+
+        CHECK(written_bytes == 1);
+        CHECK(blob.get_len() == 3);
+
+        read_bytes = blob.read_from_start(buf, 1, 2);
+
+        CHECK(read_bytes == 1);
+        CHECK(buf[0] == 'z');
+
+        // Writing more than one position beyond the blob is invalid
+        // (Writing exactly one position beyond is the same as appending)
+        CHECK_THROWS_AS(blob.write_from_start(dummy_data, 2, blob.get_len() + 1), soci_error);
+    }
+    SECTION("Inserting/Reading default-constructed blob")
+    {
+        {
+            soci::blob input_blob(sql);
+
+            sql << "insert into soci_test (id, b) values(5, :b)", soci::use(input_blob);
+        }
+
+        soci::blob output_blob(sql);
+        soci::indicator ind;
+
+        sql << "select b from soci_test where id = 5", soci::into(output_blob, ind);
+
+        CHECK(ind == soci::i_ok);
+        CHECK(output_blob.get_len() == 0);
+    }
+    SECTION("Ensure reading into blob overwrites previous contents")
+    {
+        soci::blob blob(sql);
+        blob.write_from_start("hello kitty", 10);
+
+        CHECK(blob.get_len() == 10);
+
+        {
+            soci::blob write_blob(sql);
+            write_blob.write_from_start("test", 4);
+            sql << "insert into soci_test (id, b) values (5, :b)", soci::use(write_blob);
+        }
+
+        sql << "select b from soci_test where id = 5", soci::into(blob);
+
+        CHECK(blob.get_len() == 4);
+        char buf[5];
+
+        std::size_t read_bytes = blob.read_from_start(buf, sizeof(buf));
+        CHECK(read_bytes == 4);
+
+        CHECK(buf[0] == 't');
+        CHECK(buf[1] == 'e');
+        CHECK(buf[2] == 's');
+        CHECK(buf[3] == 't');
+    }
+    SECTION("Blob-DB interaction")
+    {
+        soci::blob write_blob(sql);
+
+        static_assert(sizeof(dummy_data) >= 10, "Underlying assumption violated");
+        write_blob.write_from_start(dummy_data, 10);
+
+        const int first_id = 42;
+
+        // Write and retrieve blob from/into database
+        sql << "insert into soci_test (id, b) values(:id, :b)", soci::use(first_id), soci::use(write_blob);
+
+        // Append to write_blob - these changes must not reflect in the BLOB stored in the DB
+        write_blob.append("ay", 2);
+        CHECK(write_blob.get_len() == 12);
+        char buf[15];
+        std::size_t read_bytes = write_blob.read_from_start(buf, sizeof(buf));
+        CHECK(read_bytes == 12);
+        for (std::size_t i = 0; i < 10; ++i)
+        {
+            CHECK(buf[i] == dummy_data[i]);
+        }
+        CHECK(buf[10] == 'a');
+        CHECK(buf[11] == 'y');
+
+
+        soci::blob read_blob(sql);
+        sql << "select b from soci_test where id = :id", soci::use(first_id), soci::into(read_blob);
+        CHECK(sql.got_data());
+
+        CHECK(read_blob.get_len() == 10);
+
+        std::size_t bytes_read = read_blob.read_from_start(buf, sizeof(buf));
+        CHECK(bytes_read == read_blob.get_len());
+        CHECK(bytes_read == 10);
+        for (std::size_t i = 0; i < bytes_read; ++i)
+        {
+            CHECK(buf[i] == dummy_data[i]);
+        }
+
+        // Update original blob and insert new db-entry (must not change previous entry)
+        const int second_id = first_id + 1;
+        write_blob.trim(0);
+        static_assert(sizeof(dummy_data) >= 15 + 5, "Underlying assumption violated");
+        write_blob.write_from_start(dummy_data + 15, 5);
+
+        sql << "insert into soci_test (id, b) values (:id, :b)", soci::use(second_id), soci::use(write_blob);
+
+        // First, check that the original entry has not been changed
+        sql << "select b from soci_test where id = :id", soci::use(first_id), soci::into(read_blob);
+        CHECK(read_blob.get_len() == 10);
+
+        // Then check new entry can be read
+        sql << "select b from soci_test where id = :id", soci::use(second_id), soci::into(read_blob);
+
+        bytes_read = read_blob.read_from_start(buf, sizeof(buf));
+        CHECK(bytes_read == read_blob.get_len());
+        CHECK(bytes_read == 5);
+        for (std::size_t i = 0; i < bytes_read; ++i)
+        {
+            CHECK(buf[i] == dummy_data[i + 15]);
+        }
+    }
+    SECTION("Binary data")
+    {
+        const std::uint8_t binary_data[12] = {0, 1, 2, 3, 4, 5, 6, 7, 22, 255, 250 };
+
+        soci::blob write_blob(sql);
+
+        std::size_t bytes_written = write_blob.write_from_start(binary_data, sizeof(binary_data));
+        CHECK(bytes_written == sizeof(binary_data));
+
+        sql << "insert into soci_test (id, b) values (1, :b)", soci::use(write_blob);
+
+        soci::blob read_blob(sql);
+
+        sql << "select b from soci_test where id = 1", soci::into(read_blob);
+
+        CHECK(read_blob.get_len() == sizeof(binary_data));
+
+        std::uint8_t buf[20];
+        std::size_t bytes_read = read_blob.read_from_start(buf, sizeof(buf));
+
+        CHECK(bytes_read == sizeof(binary_data));
+        for (std::size_t i = 0; i < sizeof(binary_data); ++i)
+        {
+            CHECK(buf[i] == binary_data[i]);
+        }
+    }
+    SECTION("Rowset Blob recognition")
+    {
+        soci::blob blob(sql);
+
+        // Write and retrieve blob from/into database
+        int id = 1;
+        sql << "insert into soci_test (id, b) values(:id, :b)", soci::use(id), soci::use(blob);
+
+        soci::rowset< soci::row > rowSet = sql.prepare << "select id, b from soci_test";
+        bool containedData = false;
+        for (auto it = rowSet.begin(); it != rowSet.end(); ++it)
+        {
+            containedData = true;
+            const soci::row &currentRow = *it;
+
+            CHECK(currentRow.get_properties(1).get_data_type() == soci::dt_blob);
+        }
+        CHECK(containedData);
+    }
+    SECTION("Blob binding")
+    {
+        // Add data
+        soci::blob blob(sql);
+        static_assert(10 <= sizeof(dummy_data), "Underlying assumption violated");
+        blob.write_from_start(dummy_data, 10);
+        const int id = 42;
+        sql << "insert into soci_test (id, b) values(:id, :b)", soci::use(id), soci::use(blob);
+
+        SECTION("into")
+        {
+            soci::blob intoBlob(sql);
+
+            sql << "select b from soci_test where id=:id", soci::use(id), soci::into(intoBlob);
+
+            char buffer[20];
+            std::size_t written = intoBlob.read_from_start(buffer, sizeof(buffer));
+            CHECK(written == 10);
+            for (std::size_t i = 0; i < 10; ++i)
+            {
+                CHECK(buffer[i] == dummy_data[i]);
+            }
+        }
+        SECTION("move_as")
+        {
+            soci::rowset< soci::row > rowSet = (sql.prepare << "select b from soci_test where id=:id", soci::use(id));
+            bool containedData = false;
+            for (auto it = rowSet.begin(); it != rowSet.end(); ++it)
+            {
+                containedData = true;
+                const soci::row &currentRow = *it;
+
+                soci::blob intoBlob = currentRow.move_as<soci::blob>(0);
+
+                CHECK(intoBlob.get_len() == 10);
+                char buffer[20];
+                std::size_t written = intoBlob.read_from_start(buffer, sizeof(buffer));
+                CHECK(written == 10);
+                for (std::size_t i = 0; i < 10; ++i)
+                {
+                    CHECK(buffer[i] == dummy_data[i]);
+                }
+            }
+            CHECK(containedData);
+        }
+        SECTION("reusing bound blob")
+        {
+            int secondID = id + 1;
+            sql << "insert into soci_test(id, b) values(:id, :b)", soci::use(secondID), soci::use(blob);
+
+            // Selecting the blob associated with secondID should yield the same result as selecting the one for id
+            soci::blob intoBlob(sql);
+            sql << "select b from soci_test where id=:id", soci::use(secondID), soci::into(intoBlob);
+            char buffer[20];
+            std::size_t written = intoBlob.read_from_start(buffer, sizeof(buffer));
+            CHECK(written == 10);
+            for (std::size_t i = 0; i < 10; ++i)
+            {
+                CHECK(buffer[i] == dummy_data[i]);
+            }
+        }
+    }
+    SECTION("Statements")
+    {
+        unsigned int id;
+        soci::blob myBlob(sql);
+        soci::statement insert_stmt = (sql.prepare << "insert into soci_test (id, b) values (:id, :b)", soci::use(id), soci::use(myBlob));
+
+        id = 1;
+        myBlob.write_from_start(dummy_data + id, id);
+        insert_stmt.execute(true);
+
+        id = 5;
+        myBlob.write_from_start(dummy_data + id, id);
+        insert_stmt.execute(true);
+
+
+        soci::statement select_stmt = (sql.prepare << "select id, b from soci_test order by id asc", soci::into(id), soci::into(myBlob));
+        char contents[16];
+
+        select_stmt.execute();
+        CHECK(select_stmt.fetch());
+        CHECK(id == 1);
+        std::size_t blob_size = myBlob.get_len();
+        CHECK(blob_size == id);
+        std::size_t read = myBlob.read_from_start(contents, blob_size);
+        CHECK(read == blob_size);
+        for (unsigned int i = 0; i < blob_size; ++i)
+        {
+            CHECK(contents[i] == dummy_data[id + i]);
+        }
+
+        CHECK(select_stmt.fetch());
+        CHECK(id == 5);
+        blob_size = myBlob.get_len();
+        CHECK(blob_size == id);
+        read = myBlob.read_from_start(contents, blob_size);
+        CHECK(read == blob_size);
+        for (unsigned int i = 0; i < blob_size; ++i)
+        {
+            CHECK(contents[i] == dummy_data[id + i]);
+        }
+
+        CHECK(!select_stmt.fetch());
+    }
 }
 
 TEST_CASE_METHOD(common_tests, "Logger", "[core][log]")

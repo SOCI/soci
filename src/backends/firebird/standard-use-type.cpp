@@ -153,13 +153,13 @@ void firebird_standard_use_type_backend::exchangeData()
                 firebird_blob_backend* blob =
                     dynamic_cast<firebird_blob_backend*>(tmp->get_backend());
 
-                if (NULL == blob)
+                if (!blob)
                 {
                     throw soci_error("Can't get Firebid BLOB BackEnd");
                 }
 
-                blob->save();
-                memcpy(buf_, &blob->bid_, var->sqllen);
+                ISC_QUAD blob_id = blob->save_to_db();
+                memcpy(buf_, &blob_id, sizeof(blob_id));
             }
             break;
 
@@ -182,9 +182,11 @@ void firebird_standard_use_type_backend::copy_to_blob(const std::string& in)
         blob_->trim(0);
     else
         blob_ = new firebird_blob_backend(statement_.session_);
+
     blob_->append(in.c_str(), in.length());
-    blob_->save();
-    memcpy(buf_, &blob_->bid_, sizeof(blob_->bid_));
+
+    ISC_QUAD blob_id = blob_->save_to_db();
+    memcpy(buf_, &blob_id, sizeof(blob_id));
 }
 
 void firebird_standard_use_type_backend::post_use(

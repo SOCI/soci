@@ -9,6 +9,8 @@
 #define SOCI_ROW_H_INCLUDED
 
 #include "soci/type-holder.h"
+#include "soci/blob.h"
+#include "soci/type-conversion-traits.h"
 #include "soci/soci-backend.h"
 #include "soci/type-conversion.h"
 // std
@@ -74,10 +76,25 @@ public:
     T get(std::size_t pos) const
     {
         typedef typename type_conversion<T>::base_type base_type;
+        static_assert(details::can_use_from_base<type_conversion<T>>(),
+                "Can't use row::get() with this type (not convertible/copy-assignable from base_type) - did you mean to use move_as?");
         base_type const& baseVal = holders_.at(pos)->get<base_type>();
 
         T ret;
         type_conversion<T>::from_base(baseVal, *indicators_.at(pos), ret);
+        return ret;
+    }
+
+    template <typename T>
+    T move_as(std::size_t pos) const
+    {
+        typedef typename type_conversion<T>::base_type base_type;
+        static_assert(details::can_use_move_from_base<T, base_type>(),
+                "row::move_as() can only be called with types that can be instantiated from a base type rvalue reference");
+        base_type & baseVal = holders_.at(pos)->get<base_type>();
+
+        T ret;
+        type_conversion<T>::move_from_base(baseVal, *indicators_.at(pos), ret);
         return ret;
     }
 
@@ -93,10 +110,28 @@ public:
     }
 
     template <typename T>
+    T move_as(std::size_t pos, T const &nullValue) const
+    {
+        if (i_null == *indicators_.at(pos))
+        {
+            return nullValue;
+        }
+
+        return move_as<T>(pos);
+    }
+
+    template <typename T>
     T get(std::string const &name) const
     {
         std::size_t const pos = find_column(name);
         return get<T>(pos);
+    }
+
+    template <typename T>
+    T move_as(std::string const &name) const
+    {
+        std::size_t const pos = find_column(name);
+        return move_as<T>(pos);
     }
 
     template <typename T>
@@ -110,6 +145,19 @@ public:
         }
 
         return get<T>(pos);
+    }
+
+    template <typename T>
+    T move_as(std::string const &name, T const &nullValue) const
+    {
+        std::size_t const pos = find_column(name);
+
+        if (i_null == *indicators_[pos])
+        {
+            return nullValue;
+        }
+
+        return move_as<T>(pos);
     }
 
     template <typename T>
@@ -143,6 +191,9 @@ private:
     bool uppercaseColumnNames_;
     mutable std::size_t currentPos_;
 };
+
+template <>
+blob SOCI_DECL row::move_as<blob>(std::size_t pos) const;
 
 } // namespace soci
 

@@ -16,6 +16,7 @@
 #include "soci/use.h"
 #include "soci/soci-backend.h"
 #include "soci/row.h"
+#include "soci/blob.h"
 // std
 #include <cstddef>
 #include <string>
@@ -163,6 +164,10 @@ private:
 
     SOCI_NOT_COPYABLE(statement_impl)
 };
+
+template<>
+void statement_impl::into_row<blob>();
+
 
 } // namespace details
 

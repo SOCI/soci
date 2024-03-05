@@ -228,59 +228,6 @@ TEST_CASE("PostgreSQL function call", "[postgresql][function]")
     }
 }
 
-// BLOB test
-struct blob_table_creator : public table_creator_base
-{
-    blob_table_creator(soci::session & sql)
-    : table_creator_base(sql)
-    {
-        sql <<
-             "create table soci_test ("
-             "    id integer,"
-             "    img oid"
-             ")";
-    }
-};
-
-TEST_CASE("PostgreSQL blob", "[postgresql][blob]")
-{
-    soci::session sql(backEnd, connectString);
-
-    blob_table_creator tableCreator(sql);
-
-    char buf[] = "abcdefghijklmnopqrstuvwxyz";
-
-    sql << "insert into soci_test(id, img) values(7, lo_creat(-1))";
-
-    // in PostgreSQL, BLOB operations must be within transaction block
-    transaction tr(sql);
-
-    {
-        blob b(sql);
-
-        sql << "select img from soci_test where id = 7", into(b);
-        CHECK(b.get_len() == 0);
-
-        b.write_from_start(buf, sizeof(buf));
-        CHECK(b.get_len() == sizeof(buf));
-
-        b.append(buf, sizeof(buf));
-        CHECK(b.get_len() == 2 * sizeof(buf));
-    }
-    {
-        blob b(sql);
-        sql << "select img from soci_test where id = 7", into(b);
-        CHECK(b.get_len() == 2 * sizeof(buf));
-        char buf2[100];
-        b.read_from_start(buf2, 10);
-        CHECK(std::strncmp(buf2, "abcdefghij", 10) == 0);
-    }
-
-    unsigned long oid;
-    sql << "select img from soci_test where id = 7", into(oid);
-    sql << "select lo_unlink(" << oid << ")";
-}
-
 struct longlong_table_creator : table_creator_base
 {
     longlong_table_creator(soci::session & sql)
@@ -1381,7 +1328,16 @@ struct table_creator_for_clob : table_creator_base
     }
 };
 
-// Common tests context
+struct table_creator_for_blob : public tests::table_creator_base
+{
+    table_creator_for_blob(soci::session & sql)
+		: tests::table_creator_base(sql)
+    {
+        sql << "create table soci_test(id integer, b oid)";
+    }
+};
+
+
 class test_context : public test_context_base
 {
 public:
@@ -1417,6 +1373,11 @@ public:
     table_creator_base* table_creator_clob(soci::session& s) const override
     {
         return new table_creator_for_clob(s);
+    }
+
+    table_creator_base* table_creator_blob(soci::session& s) const override
+    {
+        return new table_creator_for_blob(s);
     }
 
     bool has_real_xml_support() const override

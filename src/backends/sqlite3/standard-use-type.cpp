@@ -204,7 +204,15 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
             blob *b = static_cast<blob *>(data_);
             sqlite3_blob_backend *bbe = static_cast<sqlite3_blob_backend *>(b->get_backend());
 
-            col.buffer_.constData_ = bbe->get_buffer();
+            // In case the internal buffer has not been initialized yet, get_buffer() will return nullptr. In this case,
+            // we want to make sure to insert an empty BLOB into the DB. However, when passing a nullptr to the
+            // sqlite3_bind_blob routine (in statement.cpp), it has the same effect as sqlite3_bind_null and thus
+            // is inserting NULL instead.
+            // Therefore, we want to make sure that the buffer is definitely initialized (though it can still be empty).
+            bbe->ensure_buffer_initialized();
+
+            static_assert(sizeof(decltype(*bbe->get_buffer())) == 1, "Expected byte-like type");
+            col.buffer_.constData_ = reinterpret_cast<const char *>(bbe->get_buffer());
             col.buffer_.size_ = bbe->get_len();
             break;
         }

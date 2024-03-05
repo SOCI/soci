@@ -143,20 +143,15 @@ void postgresql_standard_into_type_backend::post_fetch(
                     INV_READ | INV_WRITE);
                 if (fd == -1)
                 {
-                    throw soci_error("Cannot open the blob object.");
+                    const char *errorMsg = PQerrorMessage(statement_.session_.conn_);
+                    throw soci_error(std::string("Cannot open the blob object: ") + errorMsg);
                 }
 
                 blob * b = static_cast<blob *>(data_);
                 postgresql_blob_backend * bbe
                      = static_cast<postgresql_blob_backend *>(b->get_backend());
 
-                if (bbe->fd_ != -1)
-                {
-                    lo_close(statement_.session_.conn_, bbe->fd_);
-                }
-
-                bbe->fd_ = fd;
-                bbe->oid_ = oid;
+                bbe->set_blob_details(postgresql_blob_backend::blob_details(oid, fd));
             }
             break;
         case x_xmltype:

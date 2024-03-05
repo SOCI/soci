@@ -4,8 +4,16 @@
 
 The SOCI library provides also an interface for basic operations on large objects (BLOBs - Binary Large OBjects).
 
+Selecting a BLOB from a table:
+
     blob b(sql); // sql is a session object
     sql << "select mp3 from mymusic where id = 123", into(b);
+
+Inserting a BLOB from a table:
+
+    blob b(sql); // sql is a session object
+    b.write_from_start(data.data(), data.size()); // data is e.g. a std::vector< char >
+    sql << "insert into mymusic mp3, id VALUES(:mp3, 124)", use(b);
 
 The following functions are provided in the `blob` interface, mimicking the file-like operations:
 
@@ -15,13 +23,23 @@ The following functions are provided in the `blob` interface, mimicking the file
 * `std::size_t append(char const *buf, std::size_t toWrite);`
 * `void trim(std::size_t newLen);`
 
-The `offset` parameter is always counted from the beginning of the BLOB's data.
+The `offset` parameter is always counted from the beginning of the BLOB's data. `read_from_start` and `write_from_start` and `append` return the amount of read or written bytes.
 
-### Portability notes
+### Notes
+
+- As with empty files (but contrary to e.g. `std::vector`) reading from the **beginning** of an empty blob is a valid operation (effectively a no-op),
+  e.g. it won't throw or error otherwise.
+- It is possible to default-construct `blob` objects. Default-constructed `blob`s are in an invalid state and must not be accessed other than to query
+  their validity (`is_valid()`) or to initialize them (`initialize(session &session)`) in order to bring them into a valid state.
+
+#### Portability
 
 * The way to define BLOB table columns and create or destroy BLOB objects in the database varies between different database engines.
   Please see the SQL documentation relevant for the given server to learn how this is actually done. The test programs provided with the SOCI library can be also a simple source of full working examples.
-* The `trim` function is not currently available for the PostgreSQL backend.
+* BLOBs are currently not implemented for all supported backends. Backends missing an implementation are `ODBC` and `DB2`.
+* The plain `read(...)` and `write(...)` functions use offsets in a backend-specific format (some start at zero, some at one). They are retained only for backwards compatibility. Don't use them in new code!
+* Some backends (e.g. PostgreSQL) support BLOBs only while a transaction is active. Using a `soci::blob` object outside of a transaction in these cases is undefined behavior.
+  In order to write portable code, you should always ensure to start a transaction before working with BLOBs and end it only after you are done with the BLOB object.
 
 ## Long strings and XML
 
