@@ -10,7 +10,6 @@
 
 #include "soci/error.h"
 #include "soci/soci-backend.h"
-#include "soci/soci-platform.h"
 #include "soci/soci-types.h"
 
 #include <cstdint>
@@ -89,11 +88,20 @@ struct soci_cast<
         uintmax_t t_max = static_cast<uintmax_t>((std::numeric_limits<T>::max)());
         uintmax_t u_max = static_cast<uintmax_t>((std::numeric_limits<U>::max)());
 
+#ifdef _MSC_VER
+// As long as we don't require C++17, we must disable the warning
+// "conditional expression is constant" as it can give false positives here.
+#pragma warning(push)
+#pragma warning(disable:4127)
+#endif
         if ((t_min > u_min && val < static_cast<U>(t_min)) ||
             (t_max < u_max && val > static_cast<U>(t_max)))
         {
             throw std::bad_cast();
         }
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
         return static_cast<T>(val);
     }
