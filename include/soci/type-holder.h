@@ -8,14 +8,15 @@
 #ifndef SOCI_TYPE_HOLDER_H_INCLUDED
 #define SOCI_TYPE_HOLDER_H_INCLUDED
 
+#include "soci/error.h"
 #include "soci/soci-backend.h"
 #include "soci/soci-platform.h"
 #include "soci/soci-types.h"
 
-#include <cmath>
 #include <cstdint>
 #include <ctime>
 #include <limits>
+#include <sstream>
 #include <type_traits>
 #include <typeinfo>
 
@@ -263,8 +264,6 @@ public:
         case db_string:
             delete val_.s;
             break;
-        default:
-            break;
         }
     }
 
@@ -318,40 +317,45 @@ private:
         {
         case db_double:
             val_.d = static_cast<double*>(val);
-            break;
+            return;
         case db_int8:
             val_.i8 = static_cast<int8_t*>(val);
-            break;
+            return;
         case db_int16:
             val_.i16 = static_cast<int16_t*>(val);
-            break;
+            return;
         case db_int32:
             val_.i32 = static_cast<int32_t*>(val);
-            break;
+            return;
         case db_int64:
             val_.i64 = static_cast<int64_t*>(val);
-            break;
+            return;
         case db_uint8:
             val_.u8 = static_cast<uint8_t*>(val);
-            break;
+            return;
         case db_uint16:
             val_.u16 = static_cast<uint16_t*>(val);
-            break;
+            return;
         case db_uint32:
             val_.u32 = static_cast<uint32_t*>(val);
-            break;
+            return;
         case db_uint64:
             val_.u64 = static_cast<uint64_t*>(val);
-            break;
+            return;
         case db_date:
             val_.t = static_cast<std::tm*>(val);
-            break;
+            return;
         case db_blob:
         case db_xml:
         case db_string:
             val_.s = static_cast<std::string*>(val);
-            break;
+            return;
         }
+
+        // This should be unreachable
+        std::ostringstream ss;
+        ss << "Created holder with unsupported type " << std::to_string(dt);
+        throw soci_error(ss.str());
     }
 
     const db_type dt_;
