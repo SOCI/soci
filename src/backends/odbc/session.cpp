@@ -242,15 +242,14 @@ bool odbc_session_backend::is_connected()
     // The name of the table we check for is irrelevant, as long as we have a
     // working connection, it should still find (or, hopefully, not) something.
     
-#ifdef SOCI_ODBC_WIDE
-    SQLWCHAR* dummyText = L"bloordyblop";
-#else
-    SQLCHAR* dummyText = sqlchar_cast("bloordyblop");
-#endif // SOCI_ODBC_WIDE
     return !is_odbc_error(SQLTables(st.hstmt_,
                                     NULL, SQL_NTS,
                                     NULL, SQL_NTS,
-                                    dummyText, SQL_NTS,
+#ifdef SOCI_ODBC_WIDE
+                                    L"bloordyblop", SQL_NTS,
+#else
+                                    sqlchar_cast("bloordyblop"), SQL_NTS,
+#endif // SOCI_ODBC_WIDE
                                     NULL, SQL_NTS));
 }
 
