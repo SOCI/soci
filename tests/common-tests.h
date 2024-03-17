@@ -6017,7 +6017,11 @@ TEST_CASE_METHOD(common_tests, "String length", "[core][string][length]")
     std::vector<std::string> v;
     v.push_back("Hello");
     v.push_back("");
+#ifdef SOCI_ODBC_WIDE
+    v.push_back("varchar 20"); // 10 characters, because of wide characters
+#else
     v.push_back("whole of varchar(20)");
+#endif // SOCI_ODBC_WIDE
 
     REQUIRE_NOTHROW((
         sql << "insert into soci_test(str) values(:s)", use(v)
@@ -6045,8 +6049,13 @@ TEST_CASE_METHOD(common_tests, "String length", "[core][string][length]")
     CHECK(vlen[1] == 5);
     CHECK(vout[1].length() == 5);
 
+#ifdef SOCI_ODBC_WIDE
+    CHECK(vlen[2] == 10);
+    CHECK(vout[2].length() == 10);
+#else
     CHECK(vlen[2] == 20);
     CHECK(vout[2].length() == 20);
+#endif // SOCI_ODBC_WIDE
 }
 
 // Helper function used in some tests below. Generates an XML sample about
