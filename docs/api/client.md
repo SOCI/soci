@@ -13,6 +13,9 @@ The following types are commonly used in the rest of the interface:
 
 ```cpp
 // data types, as seen by the user
+enum db_type { db_string, db_date, db_double, db_int8, db_uint8, db_int16, db_uint16, db_int32, db_uint32, db_int64, db_uint64 };
+
+// deprecated data types enum which may be still used but is less precise than db_type
 enum data_type { dt_string, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long };
 
 // the enum type for indicator variables
@@ -22,7 +25,8 @@ enum indicator { i_ok, i_null, i_truncated };
 class soci_error : public std::runtime_error { /* ... */ };
 ```
 
-The `data_type` type defines the basic SOCI data types. User provided data types need to be associated with one of these basic types.
+`db_type` defines the basic SOCI data types. User provided data types need to be associated with one of these basic types.
+`data_type` is deprecated in favor of `db_type`, please don't use it in the new code any longer.
 
 The `indicator` type defines the possible states of data.
 
@@ -443,14 +447,16 @@ class column_properties
 {
 public:
     std::string get_name() const;
-    data_type get_data_type() const;
+    db_type get_db_type() const;
+    data_type_type get_data_type() const;
 };
 ```
 
 This class contains the following members:
 
 * `get_name` function that returns the name of the column.
-* `get_data_type` that returns the type of the column.
+* `get_db_type` that returns the type of the column.
+* `get_data_type` that returns the type of the column (deprecated in favor of `get_db_type`).
 
 See [Dynamic resultset binding](../types.md#dynamic-binding) for examples.
 
@@ -642,6 +648,14 @@ The functions above create and destroy the statement object. If the statement ca
 int soci_into_string   (statement_handle st);
 int soci_into_int      (statement_handle st);
 int soci_into_long_long(statement_handle st);
+int soci_into_int8     (statement_handle st);
+int soci_into_uint8    (statement_handle st);
+int soci_into_int16    (statement_handle st);
+int soci_into_uint16   (statement_handle st);
+int soci_into_int32    (statement_handle st);
+int soci_into_uint32   (statement_handle st);
+int soci_into_int64    (statement_handle st);
+int soci_into_uint64   (statement_handle st);
 int soci_into_double   (statement_handle st);
 int soci_into_date     (statement_handle st);
 int soci_into_blob     (statement_handle st);
@@ -649,6 +663,14 @@ int soci_into_blob     (statement_handle st);
 int soci_into_string_v   (statement_handle st);
 int soci_into_int_v      (statement_handle st);
 int soci_into_long_long_v(statement_handle st);
+int soci_into_int8_v     (statement_handle st);
+int soci_into_uint8_v    (statement_handle st);
+int soci_into_int16_v    (statement_handle st);
+int soci_into_uint16_v   (statement_handle st);
+int soci_into_int32_v    (statement_handle st);
+int soci_into_uint32_v   (statement_handle st);
+int soci_into_int64_v    (statement_handle st);
+int soci_into_uint64_v   (statement_handle st);
 int soci_into_double_v   (statement_handle st);
 int soci_into_date_v     (statement_handle st);
 ```
@@ -669,6 +691,14 @@ This function returns `1` if the into element at the given position has non-null
 char const * soci_get_into_string   (statement_handle st, int position);
 int          soci_get_into_int      (statement_handle st, int position);
 long long    soci_get_into_long_long(statement_handle st, int position);
+int8_t       soci_get_into_int8     (statement_handle st, int position);
+uint8_t      soci_get_into_uint8    (statement_handle st, int position);
+int16_t      soci_get_into_int16    (statement_handle st, int position);
+uint16_t     soci_get_into_uint16   (statement_handle st, int position);
+int32_t      soci_get_into_int32    (statement_handle st, int position);
+uint32_t     soci_get_into_uint32   (statement_handle st, int position);
+int64_t      soci_get_into_int64    (statement_handle st, int position);
+uint64_t     soci_get_into_uint64   (statement_handle st, int position);
 double       soci_get_into_double   (statement_handle st, int position);
 char const * soci_get_into_date     (statement_handle st, int position);
 blob_handle  soci_get_into_blob     (statement_handle st, int position);
@@ -676,6 +706,14 @@ blob_handle  soci_get_into_blob     (statement_handle st, int position);
 char const * soci_get_into_string_v   (statement_handle st, int position, int index);
 int          soci_get_into_int_v      (statement_handle st, int position, int index);
 long long    soci_get_into_long_long_v(statement_handle st, int position, int index);
+int8_t       soci_get_into_int8_v     (statement_handle st, int position, int index);
+uint8_t      soci_get_into_uint8_v    (statement_handle st, int position, int index);
+int16_t      soci_get_into_int16_v    (statement_handle st, int position, int index);
+uint16_t     soci_get_into_uint16_v   (statement_handle st, int position, int index);
+int32_t      soci_get_into_int32_v    (statement_handle st, int position, int index);
+uint32_t     soci_get_into_uint32_v   (statement_handle st, int position, int index);
+int64_t      soci_get_into_int64_v    (statement_handle st, int position, int index);
+uint64_t     soci_get_into_uint64_v   (statement_handle st, int position, int index);
 double       soci_get_into_double_v   (statement_handle st, int position, int index);
 char const * soci_get_into_date_v     (statement_handle st, int position, int index);
 ```
@@ -688,6 +726,14 @@ The functions above allow to retrieve the current value of the given into elemen
 void soci_use_string   (statement_handle st, char const * name);
 void soci_use_int      (statement_handle st, char const * name);
 void soci_use_long_long(statement_handle st, char const * name);
+void soci_use_int8     (statement_handle st, char const * name);
+void soci_use_uint8    (statement_handle st, char const * name);
+void soci_use_int16    (statement_handle st, char const * name);
+void soci_use_uint16   (statement_handle st, char const * name);
+void soci_use_int32    (statement_handle st, char const * name);
+void soci_use_uint32   (statement_handle st, char const * name);
+void soci_use_int64    (statement_handle st, char const * name);
+void soci_use_uint64   (statement_handle st, char const * name);
 void soci_use_double   (statement_handle st, char const * name);
 void soci_use_date     (statement_handle st, char const * name);
 void soci_use_blob     (statement_handle st, char const * name);
@@ -695,6 +741,14 @@ void soci_use_blob     (statement_handle st, char const * name);
 void soci_use_string_v   (statement_handle st, char const * name);
 void soci_use_int_v      (statement_handle st, char const * name);
 void soci_use_long_long_v(statement_handle st, char const * name);
+void soci_use_int8_v     (statement_handle st, char const * name);
+void soci_use_uint8_v    (statement_handle st, char const * name);
+void soci_use_int16_v    (statement_handle st, char const * name);
+void soci_use_uint16_v   (statement_handle st, char const * name);
+void soci_use_int32_v    (statement_handle st, char const * name);
+void soci_use_uint32_v   (statement_handle st, char const * name);
+void soci_use_int64_v    (statement_handle st, char const * name);
+void soci_use_uint64_v   (statement_handle st, char const * name);
 void soci_use_double_v   (statement_handle st, char const * name);
 void soci_use_date_v     (statement_handle st, char const * name);
 ```
@@ -718,6 +772,14 @@ These functions get and set the size of vector use elements (see comments for ve
 void soci_set_use_string   (statement_handle st, char const * name, char const * val);
 void soci_set_use_int      (statement_handle st, char const * name, int val);
 void soci_set_use_long_long(statement_handle st, char const * name, long long val);
+void soci_set_use_int8     (statement_handle st, char const * name, int8_t val);
+void soci_set_use_uint8    (statement_handle st, char const * name, uint8_t val);
+void soci_set_use_int16    (statement_handle st, char const * name, int16_t val);
+void soci_set_use_uint16   (statement_handle st, char const * name, uint16_t val);
+void soci_set_use_int32    (statement_handle st, char const * name, int32_t val);
+void soci_set_use_uint32   (statement_handle st, char const * name, uint32_t val);
+void soci_set_use_int64    (statement_handle st, char const * name, int64_t val);
+void soci_set_use_uint64   (statement_handle st, char const * name, uint64_t val);
 void soci_set_use_double   (statement_handle st, char const * name, double val);
 void soci_set_use_date     (statement_handle st, char const * name, char const * val);
 void soci_set_use_blob     (statement_handle st, char const * name, blob_handle blob);
@@ -726,6 +788,14 @@ void soci_set_use_state_v    (statement_handle st, char const * name, int index,
 void soci_set_use_string_v   (statement_handle st, char const * name, int index, char const * val);
 void soci_set_use_int_v      (statement_handle st, char const * name, int index, int val);
 void soci_set_use_long_long_v(statement_handle st, char const * name, int index, long long val);
+void soci_set_use_int8_v     (statement_handle st, char const * name, int index, int8_t val);
+void soci_set_use_uint8_v    (statement_handle st, char const * name, int index, uint8_t val);
+void soci_set_use_int16_v    (statement_handle st, char const * name, int index, int16_t val);
+void soci_set_use_uint16_v   (statement_handle st, char const * name, int index, uint16_t val);
+void soci_set_use_int32_v    (statement_handle st, char const * name, int index, int32_t val);
+void soci_set_use_uint32_v   (statement_handle st, char const * name, int index, uint32_t val);
+void soci_set_use_int64_v    (statement_handle st, char const * name, int index, int64_t val);
+void soci_set_use_uint64_v   (statement_handle st, char const * name, int index, uint64_t val);
 void soci_set_use_double_v   (statement_handle st, char const * name, int index, double val);
 void soci_set_use_date_v     (statement_handle st, char const * name, int index, char const * val);
 ```
@@ -739,6 +809,14 @@ int          soci_get_use_state    (statement_handle st, char const * name);
 char const * soci_get_use_string   (statement_handle st, char const * name);
 int          soci_get_use_int      (statement_handle st, char const * name);
 long long    soci_get_use_long_long(statement_handle st, char const * name);
+int8_t       soci_get_use_int8     (statement_handle st, char const * name);
+uint8_t      soci_get_use_uint8    (statement_handle st, char const * name);
+int16_t      soci_get_use_int16    (statement_handle st, char const * name);
+uint16_t     soci_get_use_uint16   (statement_handle st, char const * name);
+int32_t      soci_get_use_int32    (statement_handle st, char const * name);
+uint32_t     soci_get_use_uint32   (statement_handle st, char const * name);
+int64_t      soci_get_use_int64    (statement_handle st, char const * name);
+uint64_t     soci_get_use_uint64   (statement_handle st, char const * name);
 double       soci_get_use_double   (statement_handle st, char const * name);
 char const * soci_get_use_date     (statement_handle st, char const * name);
 blob_handle  soci_get_use_blob     (statement_handle st, char const * name);

@@ -7,7 +7,7 @@ The static binding for types is most useful when the types used in the database 
 The following types are currently supported for use with `into` and `use` expressions:
 
 * `char` (for character values)
-* `short`, `int`, `unsigned long`, `long long`, `double` (for numeric values)
+* `int8_t`, `uint8_t`, `int16_t`, `uint16_t`, `int32_t`, `uint32_t`, `int64_t`, `uint64_t`, `double` (for numeric values)
 * `std::string` (for string values)
 * `std::tm` (for datetime values)
 * `soci::statement` (for nested statements and PL/SQL cursors)
@@ -16,15 +16,22 @@ The following types are currently supported for use with `into` and `use` expres
 
 See the test code that accompanies the library to see how each of these types is used.
 
+Note that the fixed-size types `int32_t`, `int64_t` etc. are only typedefs for the fundamental types `int`, `long` etc.
+This means that the two can be used interchangeably when interacting with SOCI and you can choose which one of them you want to use in your code.
+
 ### Static binding for bulk operations
 
 Bulk inserts, updates, and selects are supported through the following `std::vector` based into and use types:
 
 * `std::vector<char>`
-* `std::vector<short>`
-* `std::vector<int>`
-* `std::vector<unsigned long>`
-* `std::vector<long long>`
+* `std::vector<int8_t>`
+* `std::vector<uint8_t>`
+* `std::vector<int16_t>`
+* `std::vector<uint16_t>`
+* `std::vector<int32_t>`
+* `std::vector<uint32_t>`
+* `std::vector<int64_t>`
+* `std::vector<uint64_t>`
 * `std::vector<double>`
 * `std::vector<std::string>`
 * `std::vector<std::tm>`
@@ -57,24 +64,39 @@ for(std::size_t i = 0; i != r.size(); ++i)
 
     doc << '<' << props.get_name() << '>';
 
-    switch(props.get_data_type())
+    switch(props.get_db_type())
     {
-    case dt_string:
+    case db_string:
         doc << r.get<std::string>(i);
         break;
-    case dt_double:
+    case db_double:
         doc << r.get<double>(i);
         break;
-    case dt_integer:
-        doc << r.get<int>(i);
+    case db_int8:
+        doc << r.get<int8_t>(i);
         break;
-    case dt_long_long:
-        doc << r.get<long long>(i);
+    case db_uint8:
+        doc << r.get<uint8_t>(i);
         break;
-    case dt_unsigned_long_long:
-        doc << r.get<unsigned long long>(i);
+    case db_int16:
+        doc << r.get<int16_t>(i);
         break;
-    case dt_date:
+    case db_uint16:
+        doc << r.get<uint16_t>(i);
+        break;
+    case db_int32:
+        doc << r.get<int32_t>(i);
+        break;
+    case db_uint32:
+        doc << r.get<uint32_t>(i);
+        break;
+    case db_int64:
+        doc << r.get<int64_t>(i);
+        break;
+    case db_uint64:
+        doc << r.get<uint64_t>(i);
+        break;
+    case db_date:
         std::tm when = r.get<std::tm>(i);
         doc << asctime(&when);
         break;
@@ -85,18 +107,33 @@ for(std::size_t i = 0; i != r.size(); ++i)
 doc << "</row>";
 ```
 
-The type `T` parameter that should be passed to `row::get<T>()` depends on the SOCI data type that is returned from `column_properties::get_data_type()`.
+The type `T` parameter that should be passed to `row::get<T>()` depends on the SOCI data type that is returned from `data_type column_properties::get_data_type()` or `db_type column_properties::get_db_type()`.
+Users are encouraged to use the latter as it supports a wider range of numerical C++ types.
 
 `row::get<T>()` throws an exception of type `std::bad_cast` if an incorrect type `T` is requested.
 
-| SOCI Data Type | `row::get<T>` specialization |
-|----------------|------------------------------|
-| `dt_double`    | `double`                     |
-| `dt_integer`   | `int`                        |
-| `dt_long_long` | `long long`                  |
-| `dt_unsigned_long_long` | `unsigned long long`|
-| `dt_string`    | `std::string`                |
-| `dt_date`      | `std::tm`                    |
+| SOCI Data Type (`data_type`) | `row::get<T>` specialization |
+|------------------------------|------------------------------|
+| `dt_double`                  | `double`                     |
+| `dt_integer`                 | `int`                        |
+| `dt_long_long`               | `long long`                  |
+| `dt_unsigned_long_long`      | `unsigned long long`         |
+| `dt_string`                  | `std::string`                |
+| `dt_date`                    | `std::tm`                    |
+
+| SOCI Data Type (`db_type`)   | `row::get<T>` specialization |
+|------------------------------|------------------------------|
+| `db_double`                  | `double`                     |
+| `db_int8`                    | `int8_t`                     |
+| `db_uint8`                   | `uint8_t`                    |
+| `db_int16`                   | `int16_t`                    |
+| `db_uint16`                  | `uint16_t`                   |
+| `db_int32`                   | `int32_t`                    |
+| `db_uint32`                  | `uint32_t`                   |
+| `db_int64`                   | `int64_t`                    |
+| `db_uint64`                  | `uint64_t`                   |
+| `db_string`                  | `std::string`                |
+| `db_date`                    | `std::tm`                    |
 
 The mapping of underlying database column types to SOCI datatypes is database specific.
 See the [backend documentation](backends/index.md) for details.
@@ -133,9 +170,14 @@ SOCI can be easily extended with support for user-defined datatypes.
 The extension mechanism relies on appropriate specialization of the `type_conversion` structure that converts to and from one of the following SOCI base types:
 
 * `double`
-* `int`
-* `long long`
-* `unsigned long long`
+* `int8_t`
+* `uint8_t`
+* `int16_t`
+* `uint16_t`
+* `int32_t`
+* `uint32_t`
+* `int64_t`
+* `uint64_t`
 * `std::string`
 * `char`
 * `std::tm`

@@ -11,6 +11,7 @@
 #include "soci/soci-backend.h"
 #include "soci/type-wrappers.h"
 
+#include <cstdint>
 #include <ctime>
 
 namespace soci
@@ -35,27 +36,51 @@ struct exchange_type_traits<x_stdstring>
 };
 
 template <>
-struct exchange_type_traits<x_short>
+struct exchange_type_traits<x_int8>
 {
-  typedef short value_type;
+  typedef int8_t value_type;
 };
 
 template <>
-struct exchange_type_traits<x_integer>
+struct exchange_type_traits<x_uint8>
 {
-  typedef int value_type;
+  typedef uint8_t value_type;
 };
 
 template <>
-struct exchange_type_traits<x_long_long>
+struct exchange_type_traits<x_int16>
 {
-  typedef long long value_type;
+  typedef int16_t value_type;
 };
 
 template <>
-struct exchange_type_traits<x_unsigned_long_long>
+struct exchange_type_traits<x_uint16>
 {
-  typedef unsigned long long value_type;
+  typedef uint16_t value_type;
+};
+
+template <>
+struct exchange_type_traits<x_int32>
+{
+  typedef int32_t value_type;
+};
+
+template <>
+struct exchange_type_traits<x_uint32>
+{
+  typedef uint32_t value_type;
+};
+
+template <>
+struct exchange_type_traits<x_int64>
+{
+  typedef int64_t value_type;
+};
+
+template <>
+struct exchange_type_traits<x_uint64>
+{
+  typedef uint64_t value_type;
 };
 
 template <>

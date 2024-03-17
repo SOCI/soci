@@ -369,13 +369,18 @@ TEST_CASE("PostgreSQL boolean", "[postgresql][boolean]")
     sql << "insert into soci_test(val) values(:val)", use(i1);
 
     int i2 = 7;
+    row r;
     sql << "select val from soci_test", into(i2);
+    sql << "select val from soci_test", into(r);
 
     CHECK(i2 == i1);
+    CHECK(r.get<int8_t>(0) == i1);
 
     sql << "update soci_test set val = true";
     sql << "select val from soci_test", into(i2);
+    sql << "select val from soci_test", into(r);
     CHECK(i2 == 1);
+    CHECK(r.get<int8_t>(0) == 1);
 }
 
 struct uuid_table_creator : table_creator_base
@@ -632,6 +637,7 @@ TEST_CASE("PostgreSQL bytea", "[postgresql][bytea]")
         REQUIRE(r.size() == 1);
         column_properties const& props = r.get_properties(0);
         CHECK(props.get_data_type() == soci::dt_string);
+        CHECK(props.get_db_type() == soci::db_string);
         std::string bin2 = r.get<std::string>(0);
         CHECK(bin2 == expectedBytea);
     }
@@ -781,12 +787,14 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
         if (ci.name == "i")
         {
             CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
             CHECK(ci.nullable);
             i_found = true;
         }
         else if (ci.name == "j")
         {
             CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
             CHECK(ci.nullable);
             j_found = true;
         }
@@ -859,18 +867,21 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
         if (ci.name == "j")
         {
             CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
             CHECK(ci.nullable);
             j_found = true;
         }
         else if (ci.name == "k")
         {
             CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
             CHECK(ci.nullable);
             k_found = true;
         }
         else if (ci.name == "big")
         {
             CHECK(ci.type == soci::dt_string);
+            CHECK(ci.dataType == soci::db_string);
             CHECK(ci.precision == 0); // "unlimited" for strings
             big_found = true;
         }
@@ -900,24 +911,28 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
         if (ci.name == "i")
         {
             CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
             CHECK(ci.nullable);
             i_found = true;
         }
         else if (ci.name == "j")
         {
             CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
             CHECK(ci.nullable == false); // primary key
             j_found = true;
         }
         else if (ci.name == "k")
         {
             CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
             CHECK(ci.nullable == false);
             k_found = true;
         }
         else if (ci.name == "m")
         {
             CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
             CHECK(ci.nullable == false);
             m_found = true;
         }
@@ -1158,7 +1173,7 @@ TEST_CASE("test_enum_with_explicit_custom_type_string_rowset", "[postgresql][bin
         statement s2 = (sql.prepare << "SELECT Type FROM soci_test;");
 
         s1.execute(false);
-        
+
         soci::row result;
         s2.define_and_bind();
         s2.exchange_for_rowset(soci::into(result));
@@ -1199,7 +1214,7 @@ struct test_enum_with_explicit_custom_type_int_rowset : table_creator_base
 
         try
         {
-            sql << "CREATE TABLE soci_test( Type smallint)";
+            sql << "CREATE TABLE soci_test( Type integer)";
             ;
         }
         catch (...)
@@ -1312,8 +1327,8 @@ struct table_creator_one : public table_creator_base
         : table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, val integer, c char, "
-                 "str varchar(20), sh int2, ul numeric(20), d float8, "
-                 "num76 numeric(7,6), "
+                 "str varchar(20), sh int2, ll bigint, ul numeric(20), "
+                 "d float8, num76 numeric(7,6), "
                  "tm timestamp, i1 integer, i2 integer, i3 integer, "
                  "name varchar(20))";
     }

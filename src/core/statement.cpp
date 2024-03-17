@@ -14,6 +14,7 @@
 #include "soci-compiler.h"
 #include <ctime>
 #include <cctype>
+#include <cstdint>
 
 using namespace soci;
 using namespace soci::details;
@@ -173,6 +174,7 @@ void statement_impl::bind_clean_up()
         delete indicators_[i];
         indicators_[i] = NULL;
     }
+    indicators_.clear();
 
     row_ = NULL;
     alreadyDescribed_ = false;
@@ -628,37 +630,67 @@ namespace details
 // Map data_types to stock types for dynamic result set support
 
 template<>
-void statement_impl::bind_into<dt_string>()
+void statement_impl::bind_into<db_string>()
 {
     into_row<std::string>();
 }
 
 template<>
-void statement_impl::bind_into<dt_double>()
+void statement_impl::bind_into<db_double>()
 {
     into_row<double>();
 }
 
 template<>
-void statement_impl::bind_into<dt_integer>()
+void statement_impl::bind_into<db_int8>()
 {
-    into_row<int>();
+    into_row<int8_t>();
 }
 
 template<>
-void statement_impl::bind_into<dt_long_long>()
+void statement_impl::bind_into<db_uint8>()
 {
-    into_row<long long>();
+    into_row<uint8_t>();
 }
 
 template<>
-void statement_impl::bind_into<dt_unsigned_long_long>()
+void statement_impl::bind_into<db_int16>()
 {
-    into_row<unsigned long long>();
+    into_row<int16_t>();
 }
 
 template<>
-void statement_impl::bind_into<dt_date>()
+void statement_impl::bind_into<db_uint16>()
+{
+    into_row<uint16_t>();
+}
+
+template<>
+void statement_impl::bind_into<db_int32>()
+{
+    into_row<int32_t>();
+}
+
+template<>
+void statement_impl::bind_into<db_uint32>()
+{
+    into_row<uint32_t>();
+}
+
+template<>
+void statement_impl::bind_into<db_int64>()
+{
+    into_row<int64_t>();
+}
+
+template<>
+void statement_impl::bind_into<db_uint64>()
+{
+    into_row<uint64_t>();
+}
+
+template<>
+void statement_impl::bind_into<db_date>()
 {
     into_row<std::tm>();
 }
@@ -670,44 +702,56 @@ void statement_impl::describe()
     int const numcols = backEnd_->prepare_for_describe();
     for (int i = 1; i <= numcols; ++i)
     {
-        data_type dtype;
+        db_type dbtype;
         std::string columnName;
 
-        backEnd_->describe_column(i, dtype, columnName);
+        backEnd_->describe_column(i, dbtype, columnName);
 
         column_properties props;
         props.set_name(columnName);
-        props.set_data_type(dtype);
+        props.set_db_type(dbtype);
+        props.set_data_type(backEnd_->to_data_type(dbtype));
 
-        switch (dtype)
+        switch (dbtype)
         {
-        case dt_string:
-            bind_into<dt_string>();
+        case db_string:
+        case db_blob:
+        case db_xml:
+            bind_into<db_string>();
             break;
-        case dt_blob:
-            bind_into<dt_string>();
+        case db_double:
+            bind_into<db_double>();
             break;
-        case dt_xml:
-            bind_into<dt_string>();
+        case db_int8:
+            bind_into<db_int8>();
             break;
-        case dt_double:
-            bind_into<dt_double>();
+        case db_uint8:
+            bind_into<db_uint8>();
             break;
-        case dt_integer:
-            bind_into<dt_integer>();
+        case db_int16:
+            bind_into<db_int16>();
             break;
-        case dt_long_long:
-            bind_into<dt_long_long>();
+        case db_uint16:
+            bind_into<db_uint16>();
             break;
-        case dt_unsigned_long_long:
-            bind_into<dt_unsigned_long_long>();
+        case db_int32:
+            bind_into<db_int32>();
             break;
-        case dt_date:
-            bind_into<dt_date>();
+        case db_uint32:
+            bind_into<db_uint32>();
+            break;
+        case db_int64:
+            bind_into<db_int64>();
+            break;
+        case db_uint64:
+            bind_into<db_uint64>();
+            break;
+        case db_date:
+            bind_into<db_date>();
             break;
         default:
             std::ostringstream msg;
-            msg << "db column type " << dtype
+            msg << "db column type " << dbtype
                 <<" not supported for dynamic selects"<<std::endl;
             throw soci_error(msg.str());
         }

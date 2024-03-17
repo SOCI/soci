@@ -119,24 +119,44 @@ void firebird_vector_use_type_backend::exchangeData(std::size_t row)
     case x_char:
         setTextParam(getUseVectorValue<char>(data_, row), 1, buf_, var);
         break;
-    case x_short:
-        to_isc<short>(
-            static_cast<void*>(getUseVectorValue<short>(data_, row)),
+    case x_int8:
+        to_isc<int8_t>(
+            static_cast<void*>(getUseVectorValue<int8_t>(data_, row)),
             var);
         break;
-    case x_integer:
-        to_isc<int>(
-            static_cast<void*>(getUseVectorValue<int>(data_, row)),
+    case x_uint8:
+        to_isc<uint8_t>(
+            static_cast<void*>(getUseVectorValue<uint8_t>(data_, row)),
             var);
         break;
-    case x_long_long:
-        to_isc<long long>(
-            static_cast<void*>(getUseVectorValue<long long>(data_, row)),
+    case x_int16:
+        to_isc<int16_t>(
+            static_cast<void*>(getUseVectorValue<int16_t>(data_, row)),
             var);
         break;
-    case x_unsigned_long_long:
-        to_isc<unsigned long long>(
-            static_cast<void*>(getUseVectorValue<unsigned long long>(data_, row)),
+    case x_uint16:
+        to_isc<uint16_t>(
+            static_cast<void*>(getUseVectorValue<uint16_t>(data_, row)),
+            var);
+        break;
+    case x_int32:
+        to_isc<int32_t>(
+            static_cast<void*>(getUseVectorValue<int32_t>(data_, row)),
+            var);
+        break;
+    case x_uint32:
+        to_isc<uint32_t>(
+            static_cast<void*>(getUseVectorValue<uint32_t>(data_, row)),
+            var);
+        break;
+    case x_int64:
+        to_isc<int64_t>(
+            static_cast<void*>(getUseVectorValue<int64_t>(data_, row)),
+            var);
+        break;
+    case x_uint64:
+        to_isc<uint64_t>(
+            static_cast<void*>(getUseVectorValue<uint64_t>(data_, row)),
             var);
         break;
     case x_double:

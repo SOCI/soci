@@ -16,6 +16,7 @@
 #include "soci-exchange-cast.h"
 #include "soci-mktime.h"
 #include <cctype>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
@@ -70,13 +71,29 @@ void oracle_standard_into_type_backend::define_by_pos(
         oracleType = SQLT_AFC;
         size = sizeof(char);
         break;
-    case x_short:
+    case x_int8:
         oracleType = SQLT_INT;
-        size = sizeof(short);
+        size = sizeof(int8_t);
         break;
-    case x_integer:
+    case x_uint8:
+        oracleType = SQLT_UIN;
+        size = sizeof(uint8_t);
+        break;
+    case x_int16:
         oracleType = SQLT_INT;
-        size = sizeof(int);
+        size = sizeof(int16_t);
+        break;
+    case x_uint16:
+        oracleType = SQLT_UIN;
+        size = sizeof(uint16_t);
+        break;
+    case x_int32:
+        oracleType = SQLT_INT;
+        size = sizeof(int32_t);
+        break;
+    case x_uint32:
+        oracleType = SQLT_UIN;
+        size = sizeof(uint32_t);
         break;
     case x_double:
         oracleType = statement_.session_.get_double_sql_type();
@@ -84,8 +101,8 @@ void oracle_standard_into_type_backend::define_by_pos(
         break;
 
     // cases that require adjustments and buffer management
-    case x_long_long:
-    case x_unsigned_long_long:
+    case x_int64:
+    case x_uint64:
         oracleType = SQLT_STR;
         size = 100; // arbitrary buffer length
         buf_ = new char[size];
@@ -248,18 +265,18 @@ void oracle_standard_into_type_backend::post_fetch(
                 exchange_type_cast<x_stdstring>(data_) = buf_;
             }
         }
-        else if (type_ == x_long_long)
+        else if (type_ == x_int64)
         {
             if (indOCIHolder_ != -1)
             {
-                exchange_type_cast<x_long_long>(data_) = std::strtoll(buf_, NULL, 10);
+                exchange_type_cast<x_int64>(data_) = std::strtoll(buf_, NULL, 10);
             }
         }
-        else if (type_ == x_unsigned_long_long)
+        else if (type_ == x_uint64)
         {
             if (indOCIHolder_ != -1)
             {
-                exchange_type_cast<x_unsigned_long_long>(data_) = std::strtoull(buf_, NULL, 10);
+                exchange_type_cast<x_uint64>(data_) = std::strtoull(buf_, NULL, 10);
             }
         }
         else if (type_ == x_stdtm)

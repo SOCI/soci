@@ -25,8 +25,8 @@ struct table_creator_one : public table_creator_base
     table_creator_one(soci::session & sql)
         : table_creator_base(sql)
     {
-        sql << "CREATE TABLE SOCI_TEST(ID INTEGER, VAL SMALLINT, C CHAR, STR VARCHAR(20), SH SMALLINT, UL NUMERIC(20), D DOUBLE, "
-            "NUM76 NUMERIC(7,6), "
+        sql << "CREATE TABLE SOCI_TEST(ID INTEGER, VAL SMALLINT, C CHAR, STR VARCHAR(20), SH SMALLINT, LL BIGINT, UL NUMERIC(20), "
+            "D DOUBLE, NUM76 NUMERIC(7,6), "
             "TM TIMESTAMP(9), I1 INTEGER, I2 INTEGER, I3 INTEGER, NAME VARCHAR(20))";
     }
 };

@@ -15,6 +15,10 @@ if [ "$SOCI_CI" != "true" ] ; then
 	exit 1
 fi
 
+if [ -n "$RUNNER_DEBUG" ]; then
+  set -x
+fi
+
 backend_settings=${SOCI_SOURCE_DIR}/scripts/ci/${SOCI_CI_BACKEND}.sh
 if [ -f ${backend_settings} ]; then
     . ${backend_settings}
@@ -80,10 +84,12 @@ tmstamp()
     echo -n "[$(date '+%H:%M:%S')]" ;
 }
 
+SOCI_APT_OPTIONS='-q -y -o=Dpkg::Use-Pty=0 --no-install-recommends'
+
 run_apt()
 {
     # Disable some (but not all) output.
-    sudo apt-get -q -y -o=Dpkg::Use-Pty=0 "$@"
+    sudo apt-get $SOCI_APT_OPTIONS "$@"
 }
 
 run_make()

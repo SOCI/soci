@@ -19,6 +19,12 @@ if(NOT DEFINED CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD LESS 14)
 endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Path to additional CMake modules
+set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+
+include(SociUtilities)
+
 ###############################################################################
 # Build features and variants
 ##############################################################################
@@ -48,13 +54,7 @@ if (SOCI_LTO)
 
         if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
             # Check for lld as clang lto works best with its own linker
-            include(CheckCXXCompilerFlag)
-            check_cxx_compiler_flag("-fuse-ld=lld" HAS_LLD)
-            if (HAS_LLD)
-                SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld")
-                SET(CMAKE_SHARED_LINKER_FLAGS  "${CMAKE_SHARED_LINKER_FLAGS} -fuse-ld=lld")
-                SET(CMAKE_MODULE_LINKER_FLAGS  "${CMAKE_MODULE_LINKER_FLAGS} -fuse-ld=lld")
-            endif()
+            soci_use_ld_if_supported(lld)
         endif()
     elseif(supported)
         message(STATUS "IPO / LTO is supported but conflicts with ASAN and not enabled")
@@ -83,15 +83,20 @@ else()
     set(SOCI_HAVE_VISIBILITY_SUPPORT off)
 endif()
 
-###############################################################################
-# SOCI CMake modules
-###############################################################################
+# Allow using alternative linker such as mold, which can be significantly
+# faster than GNU ld.
+option(SOCI_LD "Use non-default linker, such as 'mold'" "")
+if(SOCI_LD)
+	# -fuse-ld works only with recent gcc (>= 12), but we don't need to support
+	# this with all gcc versions as this is entirely optional. I.e. if we really
+	# wanted to, we could use -B option as explained in mold README to make it
+	# work with any gcc, but for now keep the things simple.
+	soci_use_ld_if_supported(${SOCI_LD})
+endif()
 
-# Path to additional CMake modules
-set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
-set(CMAKE_MODULE_PATH ${SOCI_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
-
-include(SociUtilities)
+###############################################################################
+# SOCI configuration
+###############################################################################
 include(SociConfig)
 
 colormsg(_HIBLUE_ "Configuring SOCI:")

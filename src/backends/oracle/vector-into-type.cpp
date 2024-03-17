@@ -14,6 +14,7 @@
 #include "soci-mktime.h"
 #include "soci-vector-helpers.h"
 #include <cctype>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
@@ -69,22 +70,62 @@ void oracle_vector_into_type_backend::define_by_pos_bulk(
             dataBuf = &v[begin_];
         }
         break;
-    case x_short:
+    case x_int8:
         {
             oracleType = SQLT_INT;
-            elementSize = sizeof(short);
-            std::vector<short> *vp = static_cast<std::vector<short> *>(data);
-            std::vector<short> &v(*vp);
+            elementSize = sizeof(int8_t);
+            std::vector<int8_t> *vp = static_cast<std::vector<int8_t> *>(data);
+            std::vector<int8_t> &v(*vp);
             prepare_indicators(size());
             dataBuf = &v[begin_];
         }
         break;
-    case x_integer:
+    case x_uint8:
+        {
+            oracleType = SQLT_UIN;
+            elementSize = sizeof(uint8_t);
+            std::vector<uint8_t> *vp = static_cast<std::vector<uint8_t> *>(data);
+            std::vector<uint8_t> &v(*vp);
+            prepare_indicators(size());
+            dataBuf = &v[begin_];
+        }
+        break;
+    case x_int16:
         {
             oracleType = SQLT_INT;
-            elementSize = sizeof(int);
-            std::vector<int> *vp = static_cast<std::vector<int> *>(data);
-            std::vector<int> &v(*vp);
+            elementSize = sizeof(int16_t);
+            std::vector<int16_t> *vp = static_cast<std::vector<int16_t> *>(data);
+            std::vector<int16_t> &v(*vp);
+            prepare_indicators(size());
+            dataBuf = &v[begin_];
+        }
+        break;
+    case x_uint16:
+        {
+            oracleType = SQLT_UIN;
+            elementSize = sizeof(uint16_t);
+            std::vector<uint16_t> *vp = static_cast<std::vector<uint16_t> *>(data);
+            std::vector<uint16_t> &v(*vp);
+            prepare_indicators(size());
+            dataBuf = &v[begin_];
+        }
+        break;
+    case x_int32:
+        {
+            oracleType = SQLT_INT;
+            elementSize = sizeof(int32_t);
+            std::vector<int32_t> *vp = static_cast<std::vector<int32_t> *>(data);
+            std::vector<int32_t> &v(*vp);
+            prepare_indicators(size());
+            dataBuf = &v[begin_];
+        }
+        break;
+    case x_uint32:
+        {
+            oracleType = SQLT_UIN;
+            elementSize = sizeof(uint32_t);
+            std::vector<uint32_t> *vp = static_cast<std::vector<uint32_t> *>(data);
+            std::vector<uint32_t> &v(*vp);
             prepare_indicators(size());
             dataBuf = &v[begin_];
         }
@@ -102,7 +143,7 @@ void oracle_vector_into_type_backend::define_by_pos_bulk(
 
     // cases that require adjustments and buffer management
 
-    case x_long_long:
+    case x_int64:
         {
             oracleType = SQLT_STR;
             const std::size_t vecSize = size();
@@ -116,7 +157,7 @@ void oracle_vector_into_type_backend::define_by_pos_bulk(
             dataBuf = buf_;
         }
         break;
-    case x_unsigned_long_long:
+    case x_uint64:
         {
             oracleType = SQLT_STR;
             const std::size_t vecSize = size();
@@ -216,7 +257,7 @@ void oracle_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
     {
         // first, deal with data
 
-        // only std::string, std::tm, long long and Statement need special handling
+        // only std::string, std::tm, int64 and Statement need special handling
         if (type_ == x_stdstring)
         {
             std::vector<std::string> *vp
@@ -235,12 +276,12 @@ void oracle_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                 pos += colSize_;
             }
         }
-        else if (type_ == x_long_long)
+        else if (type_ == x_int64)
         {
-            std::vector<long long> *vp
-                = static_cast<std::vector<long long> *>(data_);
+            std::vector<int64_t> *vp
+                = static_cast<std::vector<int64_t> *>(data_);
 
-            std::vector<long long> &v(*vp);
+            std::vector<int64_t> &v(*vp);
 
             char *pos = buf_;
             std::size_t const vecSize = size();
@@ -253,12 +294,12 @@ void oracle_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                 pos += colSize_;
             }
         }
-        else if (type_ == x_unsigned_long_long)
+        else if (type_ == x_uint64)
         {
-            std::vector<unsigned long long> *vp
-                = static_cast<std::vector<unsigned long long> *>(data_);
+            std::vector<uint64_t> *vp
+                = static_cast<std::vector<uint64_t> *>(data_);
 
-            std::vector<unsigned long long> &v(*vp);
+            std::vector<uint64_t> &v(*vp);
 
             char *pos = buf_;
             std::size_t const vecSize = size();

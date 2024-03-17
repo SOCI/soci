@@ -17,6 +17,7 @@
 #endif
 
 #include <cstdarg>
+#include <cstdint>
 #include <vector>
 #include <soci/soci-backend.h>
 
@@ -169,13 +170,21 @@ struct sqlite3_column_buffer
 struct sqlite3_column
 {
     bool isNull_;
+    // DEPRECATED. USE dataType_ INSTEAD.
     data_type type_;
+    db_type dataType_;
 
     union
     {
         sqlite3_column_buffer buffer_;
-        int int32_;
+        int8_t int8_;
+        uint8_t uint8_;
+        int16_t int16_;
+        uint16_t uint16_;
+        int32_t int32_;
+        uint32_t uint32_;
         sqlite_api::sqlite3_int64 int64_;
+        sqlite_api::sqlite3_uint64 uint64_;
         double double_;
     };
 };
@@ -186,7 +195,9 @@ typedef std::vector<sqlite3_row> sqlite3_recordset;
 
 struct sqlite3_column_info
 {
+    // DEPRECATED. USE dataType_ INSTEAD.
     data_type type_;
+    db_type dataType_;
     std::string name_;
 };
 typedef std::vector<sqlite3_column_info> sqlite3_column_info_list;
@@ -213,7 +224,8 @@ struct sqlite3_statement_backend : details::statement_backend
     std::string rewrite_for_procedure_call(std::string const &query) override;
 
     int prepare_for_describe() override;
-    void describe_column(int colNum, data_type &dtype,
+    void describe_column(int colNum,
+                                db_type &dbtype,
                                 std::string &columnName) override;
 
     sqlite3_standard_into_type_backend * make_into_type_backend() override;
@@ -307,28 +319,48 @@ struct sqlite3_session_backend : details::session_backend
         return "select name as \"TABLE_NAME\""
                 " from sqlite_master where type = 'table'";
     }
-    std::string create_column_type(data_type dt,
-                                           int , int ) override
+    std::string get_column_descriptions_query() const override
+    {
+        return "select name as 'COLUMN_NAME',"
+            " 0 as 'CHARACTER_MAXIMUM_LENGTH',"
+            " 0 as 'NUMERIC_PRECISION',"
+            " case when type like '%real%' or type like '%float%' or type like '%double%' then 255 else 0 end as 'NUMERIC_SCALE',"
+            " case"
+                " when type like 'text'   or type like 'clob'     or type like '%char%'    then 'text'"
+                " when type like '%int%'  or type like '%number%' or type like '%numeric%' then 'integer'"
+                " when type like '%real%' or type like '%float%'  or type like '%double%'  then 'number'"
+                " else type"
+            " end as 'DATA_TYPE',"
+        " case when \"notnull\" = 0 then 'YES' else 'NO' end as 'IS_NULLABLE'"
+        " from (select name, lower(type) as type, \"notnull\" from pragma_table_info(:t))";
+    }
+    std::string create_column_type(db_type dt,
+                                   int , int ) override
     {
         switch (dt)
         {
-            case dt_xml:
-            case dt_string:
+            case db_xml:
+            case db_string:
                 return "text";
-            case dt_double:
+            case db_double:
                 return "real";
-            case dt_date:
-            case dt_integer:
-            case dt_long_long:
-            case dt_unsigned_long_long:
+            case db_date:
+            case db_int8:
+            case db_uint8:
+            case db_int16:
+            case db_uint16:
+            case db_int32:
+            case db_uint32:
+            case db_int64:
+            case db_uint64:
                 return "integer";
-            case dt_blob:
+            case db_blob:
                 return "blob";
             default:
-                throw soci_error("this data_type is not supported in create_column");
+                throw soci_error("this db_type is not supported in create_column");
         }
-
     }
+
     sqlite_api::sqlite3 *conn_;
 
     // This flag is set to true if the internal sqlite_sequence table exists in

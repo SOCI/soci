@@ -402,24 +402,44 @@ int mysql_statement_backend::prepare_for_describe()
 }
 
 void mysql_statement_backend::describe_column(int colNum,
-    data_type & type, std::string & columnName)
+    db_type & dbtype, std::string & columnName)
 {
+    lastDescribedUnsignedMediumInt_ = false;
+
     int pos = colNum - 1;
     MYSQL_FIELD *field = mysql_fetch_field_direct(result_, pos);
     switch (field->type)
     {
     case FIELD_TYPE_CHAR:       //MYSQL_TYPE_TINY:
+        dbtype = field->flags & UNSIGNED_FLAG ? db_uint8 : db_int8;
+        break;
     case FIELD_TYPE_SHORT:      //MYSQL_TYPE_SHORT:
+        dbtype = field->flags & UNSIGNED_FLAG ? db_uint16 : db_int16;
+        break;
     case FIELD_TYPE_INT24:      //MYSQL_TYPE_INT24:
-        type = dt_integer;
+        dbtype = field->flags & UNSIGNED_FLAG ? db_uint32 : db_int32;
+        if (dbtype == db_uint32)
+            lastDescribedUnsignedMediumInt_ = true;
         break;
     case FIELD_TYPE_LONG:       //MYSQL_TYPE_LONG:
-        type = field->flags & UNSIGNED_FLAG ? dt_long_long
-                                            : dt_integer;
+        if (field->flags & UNSIGNED_FLAG)
+        {
+            dbtype = db_uint32;
+        }
+        else
+        {
+            dbtype = db_int32;
+        }
         break;
     case FIELD_TYPE_LONGLONG:   //MYSQL_TYPE_LONGLONG:
-        type = field->flags & UNSIGNED_FLAG ? dt_unsigned_long_long :
-                                              dt_long_long;
+        if (field->flags & UNSIGNED_FLAG)
+        {
+            dbtype = db_uint64;
+        }
+        else
+        {
+            dbtype = db_int64;
+        }
         break;
     case FIELD_TYPE_FLOAT:      //MYSQL_TYPE_FLOAT:
     case FIELD_TYPE_DOUBLE:     //MYSQL_TYPE_DOUBLE:
@@ -429,7 +449,7 @@ void mysql_statement_backend::describe_column(int colNum,
     // sends field type number 246, no matter which version of libraries
     // the client is using.
     case 246:                   //MYSQL_TYPE_NEWDECIMAL:
-        type = dt_double;
+        dbtype = db_double;
         break;
     case FIELD_TYPE_TIMESTAMP:  //MYSQL_TYPE_TIMESTAMP:
     case FIELD_TYPE_DATE:       //MYSQL_TYPE_DATE:
@@ -437,7 +457,7 @@ void mysql_statement_backend::describe_column(int colNum,
     case FIELD_TYPE_DATETIME:   //MYSQL_TYPE_DATETIME:
     case FIELD_TYPE_YEAR:       //MYSQL_TYPE_YEAR:
     case FIELD_TYPE_NEWDATE:    //MYSQL_TYPE_NEWDATE:
-        type = dt_date;
+        dbtype = db_date;
         break;
 //  case MYSQL_TYPE_VARCHAR:
     case 245:                   //MYSQL_TYPE_JSON:
@@ -447,13 +467,29 @@ void mysql_statement_backend::describe_column(int colNum,
     case FIELD_TYPE_TINY_BLOB:
     case FIELD_TYPE_MEDIUM_BLOB:
     case FIELD_TYPE_LONG_BLOB:
-        type = dt_string;
+        dbtype = db_string;
         break;
     default:
         //std::cerr << "field->type: " << field->type << std::endl;
         throw soci_error("Unknown data type.");
     }
     columnName = field->name;
+}
+
+data_type mysql_statement_backend::to_data_type(db_type dbt) const
+{
+    // Before adding db_type, this backend returned dt_integer for 24 bit
+    // unsigned values but dt_long_long for 32 bit unsigned ones and now we
+    // return the same db_uint32 for both and translate it to different legacy
+    // values depending on the flag set by describe_column(). This is pretty
+    // ugly but needed to preserve compatibility for the people who use MySQL
+    // MEDIUMINT UNSIGNED with SOCI.
+    if (lastDescribedUnsignedMediumInt_ && dbt == db_uint32)
+    {
+        return dt_integer;
+    }
+
+    return statement_backend::to_data_type(dbt);
 }
 
 mysql_standard_into_type_backend *

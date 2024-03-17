@@ -60,7 +60,7 @@ For example:
 session sql(postgresql, "dbname=mydatabase singlerows=true");
 ```
 
-If the `singlerows` parameter is set to `true` or `yes`, then queries will be executed in the single-row mode, which prevents the client library from loading full query result set into memory and instead fetches rows one by one, as they are requested by the statement's fetch() function. This mode can be of interest to those users who want to make their client applications more responsive (with more fine-grained operation) by avoiding potentially long blocking times when complete query results are loaded to client's memory.
+If the `singlerows` parameter is set to `true` or `yes`, then queries will be executed in the single-row mode, which prevents the client library from loading full query result sets into memory and instead fetches rows one by one, as they are requested by the statement's fetch() function. This mode can be of interest to those users who want to make their client applications more responsive (with more fine-grained operation) by avoiding potentially long blocking times when complete query results are loaded to client's memory.
 Note that in the single-row operation:
 
 * bulk queries are not supported, and
@@ -88,14 +88,25 @@ The PostgreSQL backend supports the use of the SOCI `row` class, which facilitat
 
 When calling `row::get<T>()`, the type you should pass as `T` depends upon the underlying database type. For the PostgreSQL backend, this type mapping is:
 
-|PostgreSQL Data Type|SOCI Data Type|`row::get<T>` specializations|
-|--- |--- |--- |
-|numeric, real, double|dt_double|double|
-|boolean, smallint, integer|dt_integer|int|
-|int8|dt_long_long|long long|
-|oid|dt_integer|unsigned long|
-|char, varchar, text, cstring, bpchar|dt_string|std::string|
-|abstime, reltime, date, time, timestamp, timestamptz, timetz|dt_date|std::tm|
+| PostgreSQL Data Type                                         | SOCI Data Type (`data_type`) | `row::get<T>` specializations |
+| ------------------------------------------------------------ | ---------------------------- | ----------------------------- |
+| numeric, real, double                                        | dt_double                    | double                        |
+| boolean, smallint, integer                                   | dt_integer                   | int                           |
+| int8                                                         | dt_long_long                 | long long                     |
+| oid                                                          | dt_integer                   | unsigned long                 |
+| char, varchar, text, cstring, bpchar                         | dt_string                    | std::string                   |
+| abstime, reltime, date, time, timestamp, timestamptz, timetz | dt_date                      | std::tm                       |
+
+| PostgreSQL Data Type                                         | SOCI Data Type (`db_type`)   | `row::get<T>` specializations |
+| ------------------------------------------------------------ | ---------------------------- | ----------------------------- |
+| numeric, real, double                                        | db_double                    | double                        |
+| boolean                                                      | db_int8                      | int8_t                        |
+| smallint                                                     | db_int16                     | int16_t                       |
+| integer                                                      | db_int32                     | int32_t                       |
+| int8                                                         | db_int64                     | int64_t                       |
+| oid                                                          | db_int32                     | int32_t                       |
+| char, varchar, text, cstring, bpchar                         | db_string                    | std::string                   |
+| abstime, reltime, date, time, timestamp, timestamptz, timetz | db_date                      | std::tm                       |
 
 (See the [dynamic resultset binding](../types.md#dynamic-binding) documentation for general information on using the `row` class.)
 
@@ -134,9 +145,9 @@ PostgreSQL stored procedures can be executed by using SOCI's [procedure](../proc
 
 ## Native API Access
 
-SOCI provides access to underlying datbabase APIs via several `get_backend()` functions, as described in the [beyond SOCI](../beyond.md) documentation.
+SOCI provides access to underlying database APIs via several `get_backend()` functions, as described in the [beyond SOCI](../beyond.md) documentation.
 
-The PostgreSQL backend provides the following concrete classes for navite API access:
+The PostgreSQL backend provides the following concrete classes for native API access:
 
 |Accessor Function|Concrete Class|
 |--- |--- |

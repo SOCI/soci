@@ -229,7 +229,8 @@ struct oracle_statement_backend : details::statement_backend
     std::string rewrite_for_procedure_call(std::string const &query) override;
 
     int prepare_for_describe() override;
-    void describe_column(int colNum, data_type &dtype,
+    void describe_column(int colNum,
+        db_type &dbtype,
         std::string &columnName) override;
 
     // helper for defining into vector<string>
@@ -329,7 +330,7 @@ struct oracle_session_backend : details::session_backend
             " where table_name = :t";
     }
 
-    std::string create_column_type(data_type dt,
+    std::string create_column_type(db_type dt,
         int precision, int scale) override
     {
         //  Oracle-specific SQL syntax:
@@ -337,7 +338,7 @@ struct oracle_session_backend : details::session_backend
         std::string res;
         switch (dt)
         {
-        case dt_string:
+        case db_string:
             {
                 std::ostringstream oss;
 
@@ -354,11 +355,11 @@ struct oracle_session_backend : details::session_backend
             }
             break;
 
-        case dt_date:
+        case db_date:
             res += "timestamp";
             break;
 
-        case dt_double:
+        case db_double:
             {
                 std::ostringstream oss;
                 if (precision == 0)
@@ -374,41 +375,45 @@ struct oracle_session_backend : details::session_backend
             }
             break;
 
-        case dt_integer:
+        case db_int16:
+            res += "smallint";
+            break;
+
+        case db_int32:
             res += "integer";
             break;
 
-        case dt_long_long:
+        case db_int64:
             res += "number";
             break;
 
-        case dt_unsigned_long_long:
+        case db_uint64:
             res += "number";
             break;
 
-        case dt_blob:
+        case db_blob:
             res += "blob";
             break;
 
-        case dt_xml:
+        case db_xml:
             res += "xmltype";
             break;
 
         default:
-            throw soci_error("this data_type is not supported in create_column");
+            throw soci_error("this db_type is not supported in create_column");
         }
 
         return res;
     }
     std::string add_column(const std::string & tableName,
-        const std::string & columnName, data_type dt,
+        const std::string & columnName, db_type dt,
         int precision, int scale) override
     {
         return "alter table " + tableName + " add " +
             columnName + " " + create_column_type(dt, precision, scale);
     }
     std::string alter_column(const std::string & tableName,
-        const std::string & columnName, data_type dt,
+        const std::string & columnName, db_type dt,
         int precision, int scale) override
     {
         return "alter table " + tableName + " modify " +

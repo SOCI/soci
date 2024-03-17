@@ -1028,8 +1028,8 @@ TEST_CASE("Oracle to_number with rowset", "[oracle][rowset][to_number]")
         rs = (sql.prepare << "select to_number('123456789012345') from dual");
     double d = rs.begin()->get<double>(0);
     ASSERT_EQUAL_EXACT(d, 123456789012345);
-
-    rs = (sql.prepare << "select to_number(:t) from dual", use(3.14));
+    const double pi = 3.14;
+    rs = (sql.prepare << "select to_number(:t) from dual", use(pi));
     d = rs.begin()->get<double>(0);
     ASSERT_EQUAL_EXACT(d, 3.14);
 }
@@ -1397,8 +1397,8 @@ struct table_creator_one : public table_creator_base
     table_creator_one(soci::session & sql)
         : table_creator_base(sql)
     {
-        sql << "create table soci_test(id number(10,0), val number(4,0), c char, "
-                 "str varchar2(20), sh number, ul number, d number, "
+        sql << "create table soci_test(id number(10,0), val number(8,0), c char, "
+                 "str varchar2(20), sh number, ll number, ul number, d number, "
                  "num76 numeric(7,6), "
                  "tm date, i1 number, i2 number, i3 number, name varchar2(20))";
     }

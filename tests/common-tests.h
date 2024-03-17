@@ -39,6 +39,7 @@
 #include <algorithm>
 #include <cassert>
 #include <clocale>
+#include <cstdint>
 #include <cstdlib>
 #include <cmath>
 #include <iomanip>
@@ -46,6 +47,9 @@
 #include <limits>
 #include <string>
 #include <typeinfo>
+#include <type_traits>
+
+#include "soci-mktime.h"
 
 // Although SQL standard mandates right padding CHAR(N) values to their length
 // with spaces, some backends don't confirm to it:
@@ -464,6 +468,14 @@ public:
     // strings (Oracle does this).
     virtual bool treats_empty_strings_as_null() const { return false; }
 
+    // Override this if the backend does not store values bigger than INT64_MAX
+    // correctly. This can lead to an unexpected ordering of values as larger
+    // values might be stored as overflown and therefore negative integer.
+    virtual bool has_uint64_storage_bug() const { return false; }
+
+    // Override this if the backend truncates integer values bigger than INT64_MAX.
+    virtual bool truncates_uint64_to_int64() const { return false; }
+
     // Override this to call commit() if it's necessary for the DDL statements
     // to be taken into account (currently this is only the case for Firebird).
     virtual void on_after_ddl(session&) const { }
@@ -612,6 +624,34 @@ using auto_table_creator = std::unique_ptr<table_creator_base>;
 // they happened to start on the same line.
 namespace test_cases
 {
+
+inline bool operator== ( const std::tm& a, const std::tm& b )
+{
+    return a.tm_sec == b.tm_sec && a.tm_min == b.tm_min && a.tm_hour == b.tm_hour && a.tm_mday == b.tm_mday && a.tm_mon == b.tm_mon &&
+           a.tm_year == b.tm_year && a.tm_wday == b.tm_wday && a.tm_yday == b.tm_yday && a.tm_isdst == b.tm_isdst;
+}
+
+TEST_CASE_METHOD ( common_tests, "timegm implementation", "[core][timegm]" )
+{
+    std::tm t1;
+    t1.tm_year = 105;
+    t1.tm_mon = 13;     // + 1 year
+    t1.tm_mday = 15;
+    t1.tm_hour = 28;    // + 1 day
+    t1.tm_min = 14;
+    t1.tm_sec = 17;
+
+    std::tm t2 = t1;
+
+    const auto timegm_result = timegm (&t1);
+    const auto timegm_soci_result = details::timegm_impl_soci (&t2);
+    CHECK ( timegm_result == timegm_soci_result );
+    CHECK ( t1.tm_year == 106 );
+    CHECK ( t1.tm_mon == 1 );
+    CHECK ( t1.tm_mday == 16 );
+    CHECK ( t1.tm_hour == 4 );
+    CHECK ( ( t1 == t2 ) );
+}
 
 TEST_CASE_METHOD(common_tests, "Exception on not connected", "[core][exception]")
 {
@@ -1511,6 +1551,68 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(str == "Hello SOCI!");
     }
 
+    SECTION("int8_t")
+    {
+        int8_t i = 123;
+        sql << "insert into soci_test(id) values(:id)", use(i);
+
+        int8_t i2 = 0;
+        sql << "select id from soci_test", into(i2);
+
+        CHECK(i2 == 123);
+
+        sql << "delete from soci_test";
+
+        i = (std::numeric_limits<int8_t>::min)();
+        sql << "insert into soci_test(id) values(:id)", use(i);
+
+        i2 = 0;
+        sql << "select id from soci_test", into(i2);
+
+        CHECK(i2 == (std::numeric_limits<int8_t>::min)());
+
+        sql << "delete from soci_test";
+
+        i = (std::numeric_limits<int8_t>::max)();
+        sql << "insert into soci_test(id) values(:id)", use(i);
+
+        i2 = 0;
+        sql << "select id from soci_test", into(i2);
+
+        CHECK(i2 == (std::numeric_limits<int8_t>::max)());
+    }
+
+    SECTION("uint8_t")
+    {
+        uint8_t ui = 123;
+        sql << "insert into soci_test(id) values(:id)", use(ui);
+
+        uint8_t ui2 = 0;
+        sql << "select id from soci_test", into(ui2);
+
+        CHECK(ui2 == 123);
+
+        sql << "delete from soci_test";
+
+        ui = (std::numeric_limits<uint8_t>::min)();
+        sql << "insert into soci_test(id) values(:id)", use(ui);
+
+        ui2 = 0;
+        sql << "select id from soci_test", into(ui2);
+
+        CHECK(ui2 == (std::numeric_limits<uint8_t>::min)());
+
+        sql << "delete from soci_test";
+
+        ui = (std::numeric_limits<uint8_t>::max)();
+        sql << "insert into soci_test(id) values(:id)", use(ui);
+
+        ui2 = 0;
+        sql << "select id from soci_test", into(ui2);
+
+        CHECK(ui2 == (std::numeric_limits<uint8_t>::max)());
+    }
+
     SECTION("short")
     {
         short s = 123;
@@ -1520,6 +1622,68 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         sql << "select id from soci_test", into(s2);
 
         CHECK(s2 == 123);
+    }
+
+    SECTION("int16_t")
+    {
+        int16_t i = 123;
+        sql << "insert into soci_test(id) values(:id)", use(i);
+
+        int16_t i2 = 0;
+        sql << "select id from soci_test", into(i2);
+
+        CHECK(i2 == 123);
+
+        sql << "delete from soci_test";
+
+        i = (std::numeric_limits<int16_t>::min)();
+        sql << "insert into soci_test(id) values(:id)", use(i);
+
+        i2 = 0;
+        sql << "select id from soci_test", into(i2);
+
+        CHECK(i2 == (std::numeric_limits<int16_t>::min)());
+
+        sql << "delete from soci_test";
+
+        i = (std::numeric_limits<int16_t>::max)();
+        sql << "insert into soci_test(id) values(:id)", use(i);
+
+        i2 = 0;
+        sql << "select id from soci_test", into(i2);
+
+        CHECK(i2 == (std::numeric_limits<int16_t>::max)());
+    }
+
+    SECTION("uint16_t")
+    {
+        uint16_t ui = 123;
+        sql << "insert into soci_test(id) values(:id)", use(ui);
+
+        uint16_t ui2 = 0;
+        sql << "select id from soci_test", into(ui2);
+
+        CHECK(ui2 == 123);
+
+        sql << "delete from soci_test";
+
+        ui = (std::numeric_limits<uint16_t>::min)();
+        sql << "insert into soci_test(id) values(:id)", use(ui);
+
+        ui2 = 0;
+        sql << "select id from soci_test", into(ui2);
+
+        CHECK(ui2 == (std::numeric_limits<uint16_t>::min)());
+
+        sql << "delete from soci_test";
+
+        ui = (std::numeric_limits<uint16_t>::max)();
+        sql << "insert into soci_test(id) values(:id)", use(ui);
+
+        ui2 = 0;
+        sql << "select id from soci_test", into(ui2);
+
+        CHECK(ui2 == (std::numeric_limits<uint16_t>::max)());
     }
 
     SECTION("int")
@@ -1533,6 +1697,68 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(i2 == -12345678);
     }
 
+    SECTION("int32_t")
+    {
+        int32_t i = -12345678;
+        sql << "insert into soci_test(id) values(:i)", use(i);
+
+        int32_t i2 = 0;
+        sql << "select id from soci_test", into(i2);
+
+        CHECK(i2 == -12345678);
+
+        sql << "delete from soci_test";
+
+        i = (std::numeric_limits<int32_t>::min)();
+        sql << "insert into soci_test(id) values(:i)", use(i);
+
+        i2 = 0;
+        sql << "select id from soci_test", into(i2);
+
+        CHECK(i2 == (std::numeric_limits<int32_t>::min)());
+
+        sql << "delete from soci_test";
+
+        i = (std::numeric_limits<int32_t>::max)();
+        sql << "insert into soci_test(id) values(:i)", use(i);
+
+        i2 = 0;
+        sql << "select id from soci_test", into(i2);
+
+        CHECK(i2 == (std::numeric_limits<int32_t>::max)());
+    }
+
+    SECTION("uint32_t")
+    {
+        uint32_t ui = 12345678;
+        sql << "insert into soci_test(id) values(:i)", use(ui);
+
+        uint32_t ui2 = 0;
+        sql << "select id from soci_test", into(ui2);
+
+        CHECK(ui2 == 12345678);
+
+        sql << "delete from soci_test";
+
+        ui = (std::numeric_limits<uint32_t>::min)();
+        sql << "insert into soci_test(id) values(:i)", use(ui);
+
+        ui2 = 0;
+        sql << "select id from soci_test", into(ui2);
+
+        CHECK(ui2 == (std::numeric_limits<uint32_t>::min)());
+
+        sql << "delete from soci_test";
+
+        ui = (std::numeric_limits<uint32_t>::max)();
+        sql << "insert into soci_test(ul) values(:i)", use(ui);
+
+        ui2 = 0;
+        sql << "select ul from soci_test", into(ui2);
+
+        CHECK(ui2 == (std::numeric_limits<uint32_t>::max)());
+    }
+
     SECTION("unsigned long")
     {
         unsigned long ul = 4000000000ul;
@@ -1542,6 +1768,75 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         sql << "select ul from soci_test", into(ul2);
 
         CHECK(ul2 == 4000000000ul);
+    }
+
+    SECTION("int64_t")
+    {
+        int64_t i = 4000000000ll;
+        sql << "insert into soci_test(ll) values(:num)", use(i);
+
+        int64_t i2 = 0;
+        sql << "select ll from soci_test", into(i2);
+
+        CHECK(i2 == 4000000000ll);
+
+        sql << "delete from soci_test";
+
+        i = (std::numeric_limits<int64_t>::min)();
+        sql << "insert into soci_test(ll) values(:num)", use(i);
+
+        i2 = 0;
+        sql << "select ll from soci_test", into(i2);
+
+        CHECK(i2 == (std::numeric_limits<int64_t>::min)());
+
+        sql << "delete from soci_test";
+
+        i = (std::numeric_limits<int64_t>::max)();
+        sql << "insert into soci_test(ll) values(:num)", use(i);
+
+        i2 = 0;
+        sql << "select ll from soci_test", into(i2);
+
+        CHECK(i2 == (std::numeric_limits<int64_t>::max)());
+    }
+
+    SECTION("uint64_t")
+    {
+        uint64_t ui = 4000000000ull;
+        sql << "insert into soci_test(ul) values(:num)", use(ui);
+
+        uint64_t ui2 = 0;
+        sql << "select ul from soci_test", into(ui2);
+
+        CHECK(ui2 == 4000000000ull);
+
+        sql << "delete from soci_test";
+
+        ui = (std::numeric_limits<uint64_t>::min)();
+        sql << "insert into soci_test(ul) values(:num)", use(ui);
+
+        ui2 = 0;
+        sql << "select ul from soci_test", into(ui2);
+
+        CHECK(ui2 == (std::numeric_limits<uint64_t>::min)());
+
+        sql << "delete from soci_test";
+
+        ui = (std::numeric_limits<uint64_t>::max)();
+        sql << "insert into soci_test(ul) values(:num)", use(ui);
+
+        ui2 = 0;
+        sql << "select ul from soci_test", into(ui2);
+
+        if (tc_.truncates_uint64_to_int64())
+        {
+            CHECK(ui2 == static_cast<uint64_t>((std::numeric_limits<int64_t>::max)()));
+        }
+        else
+        {
+            CHECK(ui2 == (std::numeric_limits<uint64_t>::max)());
+        }
     }
 
     SECTION("double")
@@ -1630,6 +1925,28 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(str == "Hello const SOCI!");
     }
 
+    SECTION("const int8_t")
+    {
+        int8_t const i = 123;
+        sql << "insert into soci_test(id) values(:id)", use(i);
+
+        int8_t i2 = 0;
+        sql << "select id from soci_test", into(i2);
+
+        CHECK(i2 == 123);
+    }
+
+    SECTION("const uint8_t")
+    {
+        uint8_t const ui = 123;
+        sql << "insert into soci_test(id) values(:id)", use(ui);
+
+        uint8_t ui2 = 0;
+        sql << "select id from soci_test", into(ui2);
+
+        CHECK(ui2 == 123);
+    }
+
     SECTION("const short")
     {
         short const s = 123;
@@ -1639,6 +1956,28 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         sql << "select id from soci_test", into(s2);
 
         CHECK(s2 == 123);
+    }
+
+    SECTION("const int16_t")
+    {
+        int16_t const i = 123;
+        sql << "insert into soci_test(id) values(:id)", use(i);
+
+        int16_t i2 = 0;
+        sql << "select id from soci_test", into(i2);
+
+        CHECK(i2 == 123);
+    }
+
+    SECTION("const uint16_t")
+    {
+        uint16_t const ui = 123;
+        sql << "insert into soci_test(id) values(:id)", use(ui);
+
+        uint16_t ui2 = 0;
+        sql << "select id from soci_test", into(ui2);
+
+        CHECK(ui2 == 123);
     }
 
     SECTION("const int")
@@ -1652,6 +1991,28 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(i2 == -12345678);
     }
 
+    SECTION("const int32_t")
+    {
+        int32_t const i = -12345678;
+        sql << "insert into soci_test(id) values(:i)", use(i);
+
+        int32_t i2 = 0;
+        sql << "select id from soci_test", into(i2);
+
+        CHECK(i2 == -12345678);
+    }
+
+    SECTION("const uint32_t")
+    {
+        uint32_t const ui = 12345678;
+        sql << "insert into soci_test(id) values(:i)", use(ui);
+
+        uint32_t ui2 = 0;
+        sql << "select id from soci_test", into(ui2);
+
+        CHECK(ui2 == 12345678);
+    }
+
     SECTION("const unsigned long")
     {
         unsigned long const ul = 4000000000ul;
@@ -1661,6 +2022,28 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         sql << "select ul from soci_test", into(ul2);
 
         CHECK(ul2 == 4000000000ul);
+    }
+
+    SECTION("const int64_t")
+    {
+        int64_t const i = 4000000000ll;
+        sql << "insert into soci_test(ul) values(:num)", use(i);
+
+        int64_t i2 = 0;
+        sql << "select ul from soci_test", into(i2);
+
+        CHECK(i2 == 4000000000ll);
+    }
+
+    SECTION("const uint64_t")
+    {
+        uint64_t const ui = 4000000000ull;
+        sql << "insert into soci_test(ul) values(:num)", use(ui);
+
+        uint64_t ui2 = 0;
+        sql << "select ul from soci_test", into(ui2);
+
+        CHECK(ui2 == 4000000000ull);
     }
 
     SECTION("const double")
@@ -1820,6 +2203,46 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         CHECK(v2[2] == "ma");
     }
 
+    SECTION("int8_t")
+    {
+        std::vector<int8_t> v;
+        v.push_back((std::numeric_limits<int8_t>::min)());
+        v.push_back(-5);
+        v.push_back(123);
+        v.push_back((std::numeric_limits<int8_t>::max)());
+
+        sql << "insert into soci_test(sh) values(:sh)", use(v);
+
+        std::vector<int8_t> v2(4);
+
+        sql << "select sh from soci_test order by sh", into(v2);
+        CHECK(v2.size() == 4);
+        CHECK(v2[0] == (std::numeric_limits<int8_t>::min)());
+        CHECK(v2[1] == -5);
+        CHECK(v2[2] == 123);
+        CHECK(v2[3] == (std::numeric_limits<int8_t>::max)());
+    }
+
+    SECTION("uint8_t")
+    {
+        std::vector<uint8_t> v;
+        v.push_back((std::numeric_limits<uint8_t>::min)());
+        v.push_back(6);
+        v.push_back(123);
+        v.push_back((std::numeric_limits<uint8_t>::max)());
+
+        sql << "insert into soci_test(sh) values(:sh)", use(v);
+
+        std::vector<uint8_t> v2(4);
+
+        sql << "select sh from soci_test order by sh", into(v2);
+        CHECK(v2.size() == 4);
+        CHECK(v2[0] == (std::numeric_limits<uint8_t>::min)());
+        CHECK(v2[1] == 6);
+        CHECK(v2[2] == 123);
+        CHECK(v2[3] == (std::numeric_limits<uint8_t>::max)());
+    }
+
     SECTION("short")
     {
         std::vector<short> v;
@@ -1838,6 +2261,46 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         CHECK(v2[1] == 6);
         CHECK(v2[2] == 7);
         CHECK(v2[3] == 123);
+    }
+
+    SECTION("int16_t")
+    {
+        std::vector<int16_t> v;
+        v.push_back((std::numeric_limits<int16_t>::min)());
+        v.push_back(-5);
+        v.push_back(123);
+        v.push_back((std::numeric_limits<int16_t>::max)());
+
+        sql << "insert into soci_test(sh) values(:sh)", use(v);
+
+        std::vector<int16_t> v2(4);
+
+        sql << "select sh from soci_test order by sh", into(v2);
+        CHECK(v2.size() == 4);
+        CHECK(v2[0] == (std::numeric_limits<int16_t>::min)());
+        CHECK(v2[1] == -5);
+        CHECK(v2[2] == 123);
+        CHECK(v2[3] == (std::numeric_limits<int16_t>::max)());
+    }
+
+    SECTION("uint16_t")
+    {
+        std::vector<uint16_t> v;
+        v.push_back((std::numeric_limits<uint16_t>::min)());
+        v.push_back(6);
+        v.push_back(123);
+        v.push_back((std::numeric_limits<uint16_t>::max)());
+
+        sql << "insert into soci_test(val) values(:val)", use(v);
+
+        std::vector<uint16_t> v2(4);
+
+        sql << "select val from soci_test order by val", into(v2);
+        CHECK(v2.size() == 4);
+        CHECK(v2[0] == (std::numeric_limits<uint16_t>::min)());
+        CHECK(v2[1] == 6);
+        CHECK(v2[2] == 123);
+        CHECK(v2[3] == (std::numeric_limits<uint16_t>::max)());
     }
 
     SECTION("int")
@@ -1860,6 +2323,30 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         CHECK(v2[3] == 2000000000);
     }
 
+    SECTION("int32_t")
+    {
+        std::vector<int32_t> v;
+        v.push_back((std::numeric_limits<int32_t>::min)());
+        v.push_back(-2000000000);
+        v.push_back(0);
+        v.push_back(1);
+        v.push_back(2000000000);
+        v.push_back((std::numeric_limits<int32_t>::max)());
+
+        sql << "insert into soci_test(id) values(:i)", use(v);
+
+        std::vector<int32_t> v2(6);
+
+        sql << "select id from soci_test order by id", into(v2);
+        CHECK(v2.size() == 6);
+        CHECK(v2[0] == (std::numeric_limits<int32_t>::min)());
+        CHECK(v2[1] == -2000000000);
+        CHECK(v2[2] == 0);
+        CHECK(v2[3] == 1);
+        CHECK(v2[4] == 2000000000);
+        CHECK(v2[5] == (std::numeric_limits<int32_t>::max)());
+    }
+
     SECTION("unsigned int")
     {
         std::vector<unsigned int> v;
@@ -1880,6 +2367,30 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         CHECK(v2[3] == 1000);
     }
 
+    SECTION("uint32_t")
+    {
+        std::vector<uint32_t> v;
+        v.push_back((std::numeric_limits<uint32_t>::min)());
+        v.push_back(0);
+        v.push_back(1);
+        v.push_back(123);
+        v.push_back(1000);
+        v.push_back((std::numeric_limits<uint32_t>::max)());
+
+        sql << "insert into soci_test(ul) values(:ul)", use(v);
+
+        std::vector<uint32_t> v2(6);
+
+        sql << "select ul from soci_test order by ul", into(v2);
+        CHECK(v2.size() == 6);
+        CHECK(v2[0] == (std::numeric_limits<uint32_t>::min)());
+        CHECK(v2[1] == 0);
+        CHECK(v2[2] == 1);
+        CHECK(v2[3] == 123);
+        CHECK(v2[4] == 1000);
+        CHECK(v2[5] == (std::numeric_limits<uint32_t>::max)());
+    }
+
     SECTION("unsigned long long")
     {
         std::vector<unsigned long long> v;
@@ -1898,6 +2409,73 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
         CHECK(v2[1] == 1);
         CHECK(v2[2] == 123);
         CHECK(v2[3] == 1000);
+    }
+
+    SECTION("int64_t")
+    {
+        std::vector<int64_t> v;
+        v.push_back((std::numeric_limits<int64_t>::min)());
+        v.push_back(0);
+        v.push_back(1);
+        v.push_back(123);
+        v.push_back(1000);
+        v.push_back((std::numeric_limits<int64_t>::max)());
+
+        sql << "insert into soci_test(ll) values(:ll)", use(v);
+
+        std::vector<int64_t> v2(6);
+
+        sql << "select ll from soci_test order by ll", into(v2);
+        CHECK(v2.size() == 6);
+        CHECK(v2[0] == (std::numeric_limits<int64_t>::min)());
+        CHECK(v2[1] == 0);
+        CHECK(v2[2] == 1);
+        CHECK(v2[3] == 123);
+        CHECK(v2[4] == 1000);
+        CHECK(v2[5] == (std::numeric_limits<int64_t>::max)());
+    }
+
+    SECTION("uint64_t")
+    {
+        std::vector<uint64_t> v;
+        v.push_back((std::numeric_limits<uint64_t>::min)());
+        v.push_back(0);
+        v.push_back(1);
+        v.push_back(123);
+        v.push_back(1000);
+        v.push_back((std::numeric_limits<uint64_t>::max)());
+
+        sql << "insert into soci_test(ul) values(:ul)", use(v);
+
+        std::vector<uint64_t> v2(6);
+
+        sql << "select ul from soci_test order by ul", into(v2);
+        CHECK(v2.size() == 6);
+        if (tc_.has_uint64_storage_bug())
+        {
+            CHECK(v2[0] == (std::numeric_limits<uint64_t>::max)());
+            CHECK(v2[1] == (std::numeric_limits<uint64_t>::min)());
+            CHECK(v2[2] == 0);
+            CHECK(v2[3] == 1);
+            CHECK(v2[4] == 123);
+            CHECK(v2[5] == 1000);
+        }
+        else
+        {
+            CHECK(v2[0] == (std::numeric_limits<uint64_t>::min)());
+            CHECK(v2[1] == 0);
+            CHECK(v2[2] == 1);
+            CHECK(v2[3] == 123);
+            CHECK(v2[4] == 1000);
+            if (tc_.truncates_uint64_to_int64())
+            {
+                CHECK(v2[5] == static_cast<uint64_t>((std::numeric_limits<int64_t>::max)()));
+            }
+            else
+            {
+                CHECK(v2[5] == (std::numeric_limits<uint64_t>::max)());
+            }
+        }
     }
 
     SECTION("double")
@@ -2388,15 +2966,21 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         CHECK(r.size() == 5);
 
         CHECK(r.get_properties(0).get_data_type() == dt_double);
+        CHECK(r.get_properties(0).get_db_type() == db_double);
         CHECK(r.get_properties(1).get_data_type() == dt_integer);
+        CHECK(r.get_properties(1).get_db_type() == db_int32);
         CHECK(r.get_properties(2).get_data_type() == dt_string);
+        CHECK(r.get_properties(2).get_db_type() == db_string);
         CHECK(r.get_properties(3).get_data_type() == dt_date);
+        CHECK(r.get_properties(3).get_db_type() == db_date);
 
         // type char is visible as string
         // - to comply with the implementation for Oracle
         CHECK(r.get_properties(4).get_data_type() == dt_string);
+        CHECK(r.get_properties(4).get_db_type() == db_string);
 
         CHECK(r.get_properties("NUM_INT").get_data_type() == dt_integer);
+        CHECK(r.get_properties("NUM_INT").get_db_type() == db_int32);
 
         CHECK(r.get_properties(0).get_name() == "NUM_FLOAT");
         CHECK(r.get_properties(1).get_name() == "NUM_INT");
@@ -2462,16 +3046,22 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         CHECK(r.size() == 5);
 
         CHECK(r.get_properties(0).get_data_type() == dt_double);
+        CHECK(r.get_properties(0).get_db_type() == db_double);
         CHECK(r.get_properties(1).get_data_type() == dt_integer);
+        CHECK(r.get_properties(1).get_db_type() == db_int32);
         CHECK(r.get_properties(2).get_data_type() == dt_string);
+        CHECK(r.get_properties(2).get_db_type() == db_string);
         CHECK(r.get_properties(3).get_data_type() == dt_date);
+        CHECK(r.get_properties(3).get_db_type() == db_date);
 
         sql << "select name, num_int from soci_test", into(r);
 
         CHECK(r.size() == 2);
 
         CHECK(r.get_properties(0).get_data_type() == dt_string);
+        CHECK(r.get_properties(0).get_db_type() == db_string);
         CHECK(r.get_properties(1).get_data_type() == dt_integer);
+        CHECK(r.get_properties(1).get_db_type() == db_int32);
 
         // Check if row object is movable
         row moved = std::move(r);
@@ -2481,7 +3071,9 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding", "[core][dynamic]")
         CHECK(r.size() == 0);
 
         CHECK(moved.get_properties(0).get_data_type() == dt_string);
+        CHECK(moved.get_properties(0).get_db_type() == db_string);
         CHECK(moved.get_properties(1).get_data_type() == dt_integer);
+        CHECK(moved.get_properties(1).get_db_type() == db_int32);
     }
 }
 
@@ -2503,7 +3095,9 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding 2", "[core][dynamic]")
 
         CHECK(r.size() == 1);
         CHECK(r.get_properties(0).get_data_type() == dt_integer);
+        CHECK(r.get_properties(0).get_db_type() == db_int32);
         CHECK(r.get<int>(0) == 20);
+        CHECK(r.get<int32_t>(0) == 20);
     }
     {
         int id;
@@ -2515,19 +3109,25 @@ TEST_CASE_METHOD(common_tests, "Dynamic row binding 2", "[core][dynamic]")
         st.execute(true);
         CHECK(r.size() == 1);
         CHECK(r.get_properties(0).get_data_type() == dt_integer);
+        CHECK(r.get_properties(0).get_db_type() == db_int32);
         CHECK(r.get<int>(0) == 20);
+        CHECK(r.get<int32_t>(0) == 20);
 
         id = 3;
         st.execute(true);
         CHECK(r.size() == 1);
         CHECK(r.get_properties(0).get_data_type() == dt_integer);
+        CHECK(r.get_properties(0).get_db_type() == db_int32);
         CHECK(r.get<int>(0) == 30);
+        CHECK(r.get<int32_t>(0) == 30);
 
         id = 1;
         st.execute(true);
         CHECK(r.size() == 1);
         CHECK(r.get_properties(0).get_data_type() == dt_integer);
+        CHECK(r.get_properties(0).get_db_type() == db_int32);
         CHECK(r.get<int>(0) == 10);
+        CHECK(r.get<int32_t>(0) == 10);
     }
 }
 
@@ -2857,7 +3457,12 @@ TEST_CASE_METHOD(common_tests, "Rowset creation and copying", "[core][rowset]")
     // create and populate the test table
     auto_table_creator tableCreator(tc_.table_creator_1(sql));
     {
-        // Open empty rowset
+        // Create empty rowset
+        rowset<row> rs1;
+        CHECK(rs1.begin() == rs1.end());
+    }
+    {
+        // Load empty rowset
         rowset<row> rs1 = (sql.prepare << "select * from soci_test");
         CHECK(rs1.begin() == rs1.end());
     }
@@ -2878,7 +3483,7 @@ TEST_CASE_METHOD(common_tests, "Rowset creation and copying", "[core][rowset]")
     if (!tc_.has_multiple_select_bug())
     {
         // Assignment
-        rowset<row> rs1 = (sql.prepare << "select * from soci_test");
+        rowset<row> rs1;
         rowset<row> rs2 = (sql.prepare << "select * from soci_test");
         rowset<row> rs3 = (sql.prepare << "select * from soci_test");
         rs1 = rs2;
@@ -2908,6 +3513,12 @@ TEST_CASE_METHOD(common_tests, "Rowset iteration", "[core][rowset]")
             rowset<row> rs = (sql.prepare << "select * from soci_test");
 
             CHECK(5 == std::distance(rs.begin(), rs.end()));
+        }
+        {
+            rowset<row> rs = (sql.prepare << "select * from soci_test");
+
+            rs.clear();
+            CHECK(rs.begin() == rs.end());
         }
     }
 
@@ -2951,11 +3562,17 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
             // Properties
             CHECK(r1.size() == 5);
             CHECK(r1.get_properties(0).get_data_type() == dt_double);
+            CHECK(r1.get_properties(0).get_db_type() == db_double);
             CHECK(r1.get_properties(1).get_data_type() == dt_integer);
+            CHECK(r1.get_properties(1).get_db_type() == db_int32);
             CHECK(r1.get_properties(2).get_data_type() == dt_string);
+            CHECK(r1.get_properties(2).get_db_type() == db_string);
             CHECK(r1.get_properties(3).get_data_type() == dt_date);
+            CHECK(r1.get_properties(3).get_db_type() == db_date);
             CHECK(r1.get_properties(4).get_data_type() == dt_string);
+            CHECK(r1.get_properties(4).get_db_type() == db_string);
             CHECK(r1.get_properties("NUM_INT").get_data_type() == dt_integer);
+            CHECK(r1.get_properties("NUM_INT").get_db_type() == db_int32);
 
             // Data
 
@@ -3014,11 +3631,17 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
             // Properties
             CHECK(r2.size() == 5);
             CHECK(r2.get_properties(0).get_data_type() == dt_double);
+            CHECK(r2.get_properties(0).get_db_type() == db_double);
             CHECK(r2.get_properties(1).get_data_type() == dt_integer);
+            CHECK(r2.get_properties(1).get_db_type() == db_int32);
             CHECK(r2.get_properties(2).get_data_type() == dt_string);
+            CHECK(r2.get_properties(2).get_db_type() == db_string);
             CHECK(r2.get_properties(3).get_data_type() == dt_date);
+            CHECK(r2.get_properties(3).get_db_type() == db_date);
             CHECK(r2.get_properties(4).get_data_type() == dt_string);
+            CHECK(r2.get_properties(4).get_db_type() == db_string);
             CHECK(r2.get_properties("NUM_INT").get_data_type() == dt_integer);
+            CHECK(r2.get_properties("NUM_INT").get_db_type() == db_int32);
 
             std::string newName = r2.get<std::string>(2);
             CHECK(name != newName);
@@ -3077,10 +3700,15 @@ TEST_CASE_METHOD(common_tests, "Reading rows from rowset", "[core][row][rowset]"
             // Properties
             CHECK(r1.size() == 5);
             CHECK(r1.get_properties(0).get_data_type() == dt_integer);
+            CHECK(r1.get_properties(0).get_db_type() == db_int32);
             CHECK(r1.get_properties(1).get_data_type() == dt_double);
+            CHECK(r1.get_properties(1).get_db_type() == db_double);
             CHECK(r1.get_properties(2).get_data_type() == dt_string);
+            CHECK(r1.get_properties(2).get_db_type() == db_string);
             CHECK(r1.get_properties(3).get_data_type() == dt_date);
+            CHECK(r1.get_properties(3).get_db_type() == db_date);
             CHECK(r1.get_properties(4).get_data_type() == dt_string);
+            CHECK(r1.get_properties(4).get_db_type() == db_string);
 
             // Data
             CHECK(r1.get_indicator(0) == soci::i_ok);
@@ -3208,6 +3836,13 @@ TEST_CASE_METHOD(common_tests, "NULL expected exception", "[core][exception][nul
     rowset<int> rs = (sql.prepare << "select val from soci_test order by val asc");
 
     CHECK_THROWS_AS( std::for_each(rs.begin(), rs.end(), THelper()), soci_error );
+}
+
+TEST_CASE_METHOD(common_tests, "soci_error is nothrow", "[core][exception][nothrow]")
+{
+    CHECK(std::is_nothrow_copy_assignable<soci_error>::value == true);
+    CHECK(std::is_nothrow_copy_constructible<soci_error>::value == true);
+    CHECK(std::is_nothrow_destructible<soci_error>::value == true);
 }
 
 // This is like the first dynamic binding test but with rowset and iterators use
@@ -3419,8 +4054,11 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
             // and tests the remaining column only.
 
             //CHECK(r1.get_properties(0).get_data_type() == dt_integer);
+            //CHECK(r1.get_properties(0).get_exchnage_data_type() == db_int32);
             CHECK(r1.get_properties(1).get_data_type() == dt_integer);
+            CHECK(r1.get_properties(1).get_db_type() == db_int32);
             CHECK(r1.get_properties(2).get_data_type() == dt_string);
+            CHECK(r1.get_properties(2).get_db_type() == db_string);
             //CHECK(r1.get<int>(0) == 1);
             CHECK(r1.get<int>(1) == 5);
             CHECK(r1.get<std::string>(2) == "abc");
@@ -3436,8 +4074,11 @@ TEST_CASE_METHOD(common_tests, "NULL with optional", "[core][boost][null]")
             CHECK(r2.size() == 3);
 
             // CHECK(r2.get_properties(0).get_data_type() == dt_integer);
+            // CHECK(r2.get_properties(0).get_db_type() == db_int32);
             CHECK(r2.get_properties(1).get_data_type() == dt_integer);
+            CHECK(r2.get_properties(1).get_db_type() == db_int32);
             CHECK(r2.get_properties(2).get_data_type() == dt_string);
+            CHECK(r2.get_properties(2).get_db_type() == db_string);
             //CHECK(r2.get<int>(0) == 2);
             try
             {
@@ -3892,8 +4533,11 @@ TEST_CASE_METHOD(common_tests, "NULL with std optional", "[core][null]")
             // and tests the remaining column only.
 
             //CHECK(r1.get_properties(0).get_data_type() == dt_integer);
+            //CHECK(r1.get_properties(0).get_db_type() == db_int32);
             CHECK(r1.get_properties(1).get_data_type() == dt_integer);
+            CHECK(r1.get_properties(1).get_db_type() == db_int32);
             CHECK(r1.get_properties(2).get_data_type() == dt_string);
+            CHECK(r1.get_properties(2).get_db_type() == db_string);
             //CHECK(r1.get<int>(0) == 1);
             CHECK(r1.get<int>(1) == 5);
             CHECK(r1.get<std::string>(2) == "abc");
@@ -3909,8 +4553,11 @@ TEST_CASE_METHOD(common_tests, "NULL with std optional", "[core][null]")
             CHECK(r2.size() == 3);
 
             // CHECK(r2.get_properties(0).get_data_type() == dt_integer);
+            // CHECK(r2.get_properties(0).get_db_type() == db_int32);
             CHECK(r2.get_properties(1).get_data_type() == dt_integer);
+            CHECK(r2.get_properties(1).get_db_type() == db_int32);
             CHECK(r2.get_properties(2).get_data_type() == dt_string);
+            CHECK(r2.get_properties(2).get_db_type() == db_string);
             //CHECK(r2.get<int>(0) == 2);
             try
             {
@@ -4270,6 +4917,37 @@ TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")
         }
     }
 
+    {
+        // check move semantics of session
+
+        #if  __GNUC__ >= 13 || defined (__clang__)
+        SOCI_GCC_WARNING_SUPPRESS(self-move)
+        #endif
+
+        soci::session sql_0;
+        soci::session sql_1 = std::move(sql_0);
+
+        CHECK(!sql_0.is_connected());
+        CHECK(!sql_1.is_connected());
+
+        sql_0.open(backEndFactory_, connectString_);
+        CHECK(sql_0.is_connected());
+        CHECK(sql_0.get_backend());
+
+        sql_1 = std::move(sql_0);
+        CHECK(!sql_0.is_connected());
+        CHECK(!sql_0.get_backend());
+        CHECK(sql_1.is_connected());
+        CHECK(sql_1.get_backend());
+
+        sql_1 = std::move(sql_1);
+        CHECK(sql_1.is_connected());
+        CHECK(sql_1.get_backend());
+
+        #if __GNUC__ >= 13 || defined (__clang__)
+        SOCI_GCC_WARNING_RESTORE(self-move)
+        #endif
+    }
 }
 
 #ifdef SOCI_HAVE_BOOST

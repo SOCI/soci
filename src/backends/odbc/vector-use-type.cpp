@@ -11,11 +11,11 @@
 #include "soci-compiler.h"
 #include "soci-vector-helpers.h"
 #include <cctype>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
 #include <sstream>
-#include <memory>
 
 #ifdef _MSC_VER
 // disables the warning about converting int to void*.  This is a 64 bit compatibility
@@ -43,34 +43,78 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
     void* data = NULL;
     switch (type_)
     {    // simple cases
-    case x_short:
+    case x_int8:
         {
-            sqlType = SQL_SMALLINT;
-            cType = SQL_C_SSHORT;
-            size = sizeof(short);
-            std::vector<short> *vp = static_cast<std::vector<short> *>(data_);
-            std::vector<short> &v(*vp);
+            sqlType = supports_negative_tinyint() ? SQL_TINYINT : SQL_SMALLINT;
+            cType = SQL_C_STINYINT;
+            size = sizeof(int8_t);
+            std::vector<int8_t> *vp = static_cast<std::vector<int8_t> *>(data_);
+            std::vector<int8_t> &v(*vp);
             prepare_indicators(v.size());
             data = &v[0];
         }
         break;
-    case x_integer:
+    case x_uint8:
+        {
+            sqlType = can_convert_to_unsigned_sql_type() ? SQL_TINYINT : SQL_SMALLINT;
+            cType = SQL_C_UTINYINT;
+            size = sizeof(uint8_t);
+            std::vector<uint8_t> *vp = static_cast<std::vector<uint8_t> *>(data_);
+            std::vector<uint8_t> &v(*vp);
+            prepare_indicators(v.size());
+            data = &v[0];
+        }
+        break;
+    case x_int16:
+        {
+            sqlType = SQL_SMALLINT;
+            cType = SQL_C_SSHORT;
+            size = sizeof(int16_t);
+            std::vector<int16_t> *vp = static_cast<std::vector<int16_t> *>(data_);
+            std::vector<int16_t> &v(*vp);
+            prepare_indicators(v.size());
+            data = &v[0];
+        }
+        break;
+    case x_uint16:
+        {
+            sqlType = can_convert_to_unsigned_sql_type() ? SQL_SMALLINT : SQL_INTEGER;
+            cType = SQL_C_USHORT;
+            size = sizeof(uint16_t);
+            std::vector<uint16_t> *vp = static_cast<std::vector<uint16_t> *>(data_);
+            std::vector<uint16_t> &v(*vp);
+            prepare_indicators(v.size());
+            data = &v[0];
+        }
+        break;
+    case x_int32:
         {
             sqlType = SQL_INTEGER;
             cType = SQL_C_SLONG;
             size = sizeof(SQLINTEGER);
-            static_assert(sizeof(SQLINTEGER) == sizeof(int), "unsupported SQLINTEGER size");
-            std::vector<int> *vp = static_cast<std::vector<int> *>(data_);
-            std::vector<int> &v(*vp);
+            static_assert(sizeof(SQLINTEGER) == sizeof(int32_t), "unsupported SQLINTEGER size");
+            std::vector<int32_t> *vp = static_cast<std::vector<int32_t> *>(data_);
+            std::vector<int32_t> &v(*vp);
             prepare_indicators(v.size());
             data = &v[0];
         }
         break;
-    case x_long_long:
+    case x_uint32:
         {
-            std::vector<long long> *vp =
-                static_cast<std::vector<long long> *>(data_);
-            std::vector<long long> &v(*vp);
+            sqlType = can_convert_to_unsigned_sql_type() ? SQL_INTEGER : SQL_BIGINT;
+            cType = SQL_C_ULONG;
+            size = sizeof(SQLINTEGER);
+            std::vector<uint32_t> *vp = static_cast<std::vector<uint32_t> *>(data_);
+            std::vector<uint32_t> &v(*vp);
+            prepare_indicators(v.size());
+            data = &v[0];
+        }
+        break;
+    case x_int64:
+        {
+            std::vector<int64_t> *vp =
+                static_cast<std::vector<int64_t> *>(data_);
+            std::vector<int64_t> &v(*vp);
             std::size_t const vsize = v.size();
             prepare_indicators(vsize);
 
@@ -86,20 +130,20 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
             {
                 sqlType = SQL_BIGINT;
                 cType = SQL_C_SBIGINT;
-                size = sizeof(long long);
+                size = sizeof(int64_t);
                 data = &v[0];
             }
         }
         break;
-    case x_unsigned_long_long:
+    case x_uint64:
         {
-            std::vector<unsigned long long> *vp =
-                static_cast<std::vector<unsigned long long> *>(data_);
-            std::vector<unsigned long long> &v(*vp);
+            std::vector<uint64_t> *vp =
+                static_cast<std::vector<uint64_t> *>(data_);
+            std::vector<uint64_t> &v(*vp);
             std::size_t const vsize = v.size();
             prepare_indicators(vsize);
 
-            if (use_string_for_bigint())
+            if (use_string_for_bigint() || !can_convert_to_unsigned_sql_type())
             {
                 sqlType = SQL_NUMERIC;
                 cType = SQL_C_CHAR;
@@ -107,11 +151,11 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
                 buf_ = new char[size * vsize];
                 data = buf_;
             }
-            else // Normal case, use ODBC support.
+            else // Normal case, use ODBC support
             {
                 sqlType = SQL_BIGINT;
-                cType = SQL_C_SBIGINT;
-                size = sizeof(unsigned long long);
+                cType = SQL_C_UBIGINT;
+                size = sizeof(uint64_t);
                 data = &v[0];
             }
         }
@@ -131,7 +175,8 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
     // cases that require adjustments and buffer management
     case x_char:
         {
-            std::vector<char> *vp = static_cast<std::vector<char> *>(data_);
+            std::vector<char> *vp
+                = static_cast<std::vector<char> *>(data_);
             std::size_t const vsize = vp->size();
 
             prepare_indicators(vsize);
@@ -150,8 +195,9 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
             for (std::size_t i = 0; i != vsize; ++i)
             {
                 *pos++ = details::toUtf16((*vp)[i]);
+                *pos++ = 0;
             }
-            *pos = 0; // Null-terminate the string once, after all characters are copied
+
 
             sqlType = SQL_WCHAR;
             cType = SQL_C_WCHAR;
@@ -161,8 +207,8 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
             for (std::size_t i = 0; i != vsize; ++i)
             {
                 *pos++ = (*vp)[i];
+                *pos++ = 0; 
             }
-            *pos = 0; // Null-terminate the string once, after all characters are copied
 
             sqlType = SQL_CHAR;
             cType = SQL_C_CHAR;
@@ -236,7 +282,8 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
         break;
     case x_stdtm:
         {
-            std::vector<std::tm> *vp = static_cast<std::vector<std::tm> *>(data_);
+            std::vector<std::tm> *vp
+                = static_cast<std::vector<std::tm> *>(data_);
 
             prepare_indicators(vp->size());
 
@@ -329,8 +376,12 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
     SQLLEN non_null_indicator = 0;
     switch (type_)
     {
-        case x_short:
-        case x_integer:
+        case x_int8:
+        case x_uint8:
+        case x_int16:
+        case x_uint16:
+        case x_int32:
+        case x_uint32:
         case x_double:
             // Length of the parameter value is ignored for these types.
             break;
@@ -374,17 +425,19 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
             }
             break;
 
-        case x_long_long:
+        case x_int64:
             if (use_string_for_bigint())
             {
-                std::vector<long long> *vp = static_cast<std::vector<long long> *>(data_);
-                std::vector<long long> &v(*vp);
+                std::vector<int64_t> *vp
+                     = static_cast<std::vector<int64_t> *>(data_);
+                std::vector<int64_t> &v(*vp);
 
                 char *pos = buf_;
                 std::size_t const vsize = v.size();
                 for (std::size_t i = 0; i != vsize; ++i)
                 {
-                    snprintf(reinterpret_cast<char*>(pos), max_bigint_length, "%" LL_FMT_FLAGS "d", v[i]);
+                    snprintf(pos, max_bigint_length, "%" LL_FMT_FLAGS "d",
+                        static_cast<long long>(v[i]));
                     pos += max_bigint_length;
                 }
 
@@ -392,18 +445,19 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
             }
             break;
 
-        case x_unsigned_long_long:
-            if (use_string_for_bigint())
+        case x_uint64:
+            if (use_string_for_bigint() || !can_convert_to_unsigned_sql_type())
             {
-                std::vector<unsigned long long> *vp
-                     = static_cast<std::vector<unsigned long long> *>(data_);
-                std::vector<unsigned long long> &v(*vp);
+                std::vector<uint64_t> *vp
+                     = static_cast<std::vector<uint64_t> *>(data_);
+                std::vector<uint64_t> &v(*vp);
 
                 char *pos = buf_;
                 std::size_t const vsize = v.size();
                 for (std::size_t i = 0; i != vsize; ++i)
                 {
-                    snprintf(reinterpret_cast<char*>(pos), max_bigint_length, "%" LL_FMT_FLAGS "u", v[i]);                    
+                    snprintf(pos, max_bigint_length, "%" LL_FMT_FLAGS "u",
+                        static_cast<unsigned long long>(v[i]));
                     pos += max_bigint_length;
                 }
 
@@ -476,9 +530,9 @@ std::size_t odbc_vector_use_type_backend::size()
 
 void odbc_vector_use_type_backend::clean_up()
 {
-    if (buf_ != nullptr)
+    if (buf_ != NULL)
     {
         delete [] buf_;
-        buf_ = nullptr;
+        buf_ = NULL;
     }
 }

@@ -63,27 +63,51 @@ void firebird_vector_into_type_backend::exchangeData(std::size_t row)
     case x_char:
         setIntoVector(data_, row, getTextParam(var)[0]);
         break;
-    case x_short:
+    case x_int8:
         {
-            short tmp = from_isc<short>(var);
+            int8_t tmp = from_isc<int8_t>(var);
             setIntoVector(data_, row, tmp);
         }
         break;
-    case x_integer:
+    case x_uint8:
         {
-            int tmp = from_isc<int>(var);
+            uint8_t tmp = from_isc<uint8_t>(var);
             setIntoVector(data_, row, tmp);
         }
         break;
-    case x_long_long:
+    case x_int16:
         {
-            long long tmp = from_isc<long long>(var);
+            int16_t tmp = from_isc<int16_t>(var);
             setIntoVector(data_, row, tmp);
         }
         break;
-    case x_unsigned_long_long:
+    case x_uint16:
         {
-            unsigned long long tmp = from_isc<unsigned long long>(var);
+            uint16_t tmp = from_isc<uint16_t>(var);
+            setIntoVector(data_, row, tmp);
+        }
+        break;
+    case x_int32:
+        {
+            int32_t tmp = from_isc<int32_t>(var);
+            setIntoVector(data_, row, tmp);
+        }
+        break;
+    case x_uint32:
+        {
+            uint32_t tmp = from_isc<uint32_t>(var);
+            setIntoVector(data_, row, tmp);
+        }
+        break;
+    case x_int64:
+        {
+            int64_t tmp = from_isc<int64_t>(var);
+            setIntoVector(data_, row, tmp);
+        }
+        break;
+    case x_uint64:
+        {
+            uint64_t tmp = from_isc<uint64_t>(var);
             setIntoVector(data_, row, tmp);
         }
     break;

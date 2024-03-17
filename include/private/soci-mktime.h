@@ -21,6 +21,20 @@ namespace soci
 namespace details
 {
 
+SOCI_DECL time_t timegm_impl_soci ( struct tm* tb );
+
+template <typename T>
+auto timegm_impl(T* t) -> decltype(timegm(t))
+{
+    return timegm(t);    
+}
+
+template <typename T>
+auto timegm_impl(T t) -> time_t
+{
+    return timegm_impl_soci(t);
+}
+
 // Fill the provided struct tm with the values corresponding to the given date
 // in UTC.
 //
@@ -40,7 +54,7 @@ mktime_from_ymdhms(tm& t,
     t.tm_min  = minute;
     t.tm_sec  = second;
 
-    timegm(&t);
+    timegm_impl(&t);
 }
 
 // Helper function for parsing datetime values.

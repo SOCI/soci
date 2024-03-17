@@ -173,7 +173,7 @@ public:
             indicator * pind = new indicator(indic);
             indicators_.push_back(pind);
 
-            base_type baseValue;
+            base_type baseValue{};
             type_conversion<T>::to_base(value, baseValue, *pind);
 
             details::copy_holder<base_type> * pcopy =

@@ -773,8 +773,11 @@ TEST_CASE("Firebird dynamic binding", "[firebird][dynamic]")
     CHECK(r.get_properties(2).get_name() == "NTEST");
 
     CHECK(r.get_properties(0).get_data_type() == dt_integer);
+    CHECK(r.get_properties(0).get_db_type() == db_int32);
     CHECK(r.get_properties(1).get_data_type() == dt_string);
+    CHECK(r.get_properties(1).get_db_type() == db_string);
     CHECK(r.get_properties(2).get_data_type() == dt_double);
+    CHECK(r.get_properties(2).get_db_type() == db_double);
 
     // get properties by name
     CHECK(r.get_properties("ID").get_name() == "ID");
@@ -782,8 +785,11 @@ TEST_CASE("Firebird dynamic binding", "[firebird][dynamic]")
     CHECK(r.get_properties("NTEST").get_name() == "NTEST");
 
     CHECK(r.get_properties("ID").get_data_type() == dt_integer);
+    CHECK(r.get_properties("ID").get_db_type() == db_int32);
     CHECK(r.get_properties("MSG").get_data_type() == dt_string);
+    CHECK(r.get_properties("MSG").get_db_type() == db_string);
     CHECK(r.get_properties("NTEST").get_data_type() == dt_double);
+    CHECK(r.get_properties("NTEST").get_db_type() == db_double);
 
     // get values by position
     CHECK(r.get<int>(0) == 1);
@@ -1190,18 +1196,24 @@ TEST_CASE("Firebird decimals as strings", "[firebird][decimal][string]")
     // get properties by position
     CHECK(r.get_properties(0).get_name() == "NTEST1");
     CHECK(r.get_properties(0).get_data_type() == dt_string);
+    CHECK(r.get_properties(0).get_db_type() == db_string);
     CHECK(r.get_properties(1).get_name() == "NTEST2");
     CHECK(r.get_properties(1).get_data_type() == dt_string);
+    CHECK(r.get_properties(1).get_db_type() == db_string);
     CHECK(r.get_properties(2).get_name() == "NTEST3");
     CHECK(r.get_properties(2).get_data_type() == dt_string);
+    CHECK(r.get_properties(2).get_db_type() == db_string);
 
     // get properties by name
     CHECK(r.get_properties("NTEST1").get_name() == "NTEST1");
     CHECK(r.get_properties("NTEST1").get_data_type() == dt_string);
+    CHECK(r.get_properties("NTEST1").get_db_type() == db_string);
     CHECK(r.get_properties("NTEST2").get_name() == "NTEST2");
     CHECK(r.get_properties("NTEST2").get_data_type() == dt_string);
+    CHECK(r.get_properties("NTEST2").get_db_type() == db_string);
     CHECK(r.get_properties("NTEST3").get_name() == "NTEST3");
     CHECK(r.get_properties("NTEST3").get_data_type() == dt_string);
+    CHECK(r.get_properties("NTEST3").get_db_type() == db_string);
 
     // get values by position
     CHECK(r.get<std::string>(0) == d_str1);
@@ -1231,8 +1243,8 @@ struct TableCreator1 : public tests::table_creator_base
             : tests::table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, val integer, c char, "
-        "str varchar(20), sh smallint, ul bigint, d double precision, "
-        "num76 numeric(7,6), "
+        "str varchar(20), sh smallint, ll bigint, ul bigint, "
+        "d double precision, num76 numeric(7,6), "
         "tm timestamp, i1 integer, i2 integer, i3 integer, name varchar(20))";
         sql.commit();
         sql.begin();
@@ -1337,6 +1349,17 @@ class test_context : public tests::test_context_base
         std::string to_date_time(std::string const &datdt_string) const override
         {
             return "'" + datdt_string + "'";
+        }
+
+        bool has_uint64_storage_bug() const override
+        {
+            // Firebird does not support unsigned integer types.
+            // We're using Firebird 3, which does not yet support a data
+            // type that can correctly store a UINT64_MAX. The biggest
+            // numeric data type available is numeric(18,0).
+            // Firebird 4 introduces the data type int128 and numeric(36,0),
+            // which will be sufficient for that in the future.
+            return true;
         }
 
         void on_after_ddl(soci::session& sql) const override

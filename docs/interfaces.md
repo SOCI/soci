@@ -56,8 +56,8 @@ session_handle sql = soci_create_session("postgresql://dbname=mydb");
 
 statement_handle st = soci_create_statement(sql);
 
-soci_use_int(st, "id");
-soci_set_use_int(st, "id", 123);
+soci_use_int32(st, "id");
+soci_set_use_int32(st, "id", 123);
 
 int namePosition = soci_into_string(st);
 

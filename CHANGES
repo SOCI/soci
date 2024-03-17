@@ -1,9 +1,43 @@
 This file contains the history of changes in the SOCI library.
 
-Latest version is v4.0.3 released on 2022-02-14.
+Please read at least the following section when upgrading from
+a previous version of the library.
+
+INCOMPATIBLE CHANGES IN SOCI 4.1.0
+==================================
+
+- SOCI 4.1 requires a compiler with C++14 support (MSVS 2015 included).
+
+- Temporary values cannot be passed to soci::use() any longer.
+  Previously this would compile but result in undefined behaviour
+  during run-time, but now this doesn't compile any longer. Please
+  create a temporary variable holding the value if necessary (#1070).
+
+
+Other changes in v4.1.0:
+
+ - Support for integer types has been completely revamped and the new db_type
+   with db_xxx constants should be used instead of the old data_type enum and
+   dt_xxx constants (#954, #1116).
+
+Changes affecting all or multiple backends:
+ - Make rowset more convenient and safer (#198, #1057, #1081, #1082, #1086).
+ - Fix problems with dynamic cast and libc++ (#913, #975).
+ - Improve BLOB support consistency across backends (#991).
+
+Backend-specific changes:
+
+- PostgreSQL
+ - Add support for network address types (#1078).
+
+- SQLite3
+ - Add "nocreate" option to avoid creating a new database file (#1021).
+
+
+History of the changes in the previous versions:
 
 ---
-Version 4.0.3 differs from 4.0.2 in the following ways:
+Version 4.0.3 (released on 2022-02-14) differs from 4.0.2 in the following ways:
 
 Changes affecting all or multiple backends:
  - Fix opening sessions from pool (#891).

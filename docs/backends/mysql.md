@@ -54,6 +54,7 @@ The set of parameters used in the connection string for MySQL is:
 * `connect_timeout` - should be positive integer value that means seconds corresponding to `MYSQL_OPT_CONNECT_TIMEOUT`.
 * `read_timeout` - should be positive integer value that means seconds corresponding to `MYSQL_OPT_READ_TIMEOUT`.
 * `write_timeout` - should be positive integer value that means seconds corresponding to `MYSQL_OPT_WRITE_TIMEOUT`.
+* `ssl_mode` - should be one of the name constants `DISABLED`, `PREFERRED`, `REQUIRED`, `VERIFY_CA` or `VERIFY_IDENTITY` corresponding to `MYSQL_OPT_SSL_MODE` options (note that this option is currently not supported when using MariaDB).
 
 Once you have created a `session` object as shown above, you can use it to access the database, for example:
 
@@ -72,15 +73,31 @@ The MySQL backend supports the use of the SOCI `row` class, which facilitates re
 When calling `row::get<T>()`, the type you should pass as `T` depends upon the underlying database type.
 For the MySQL backend, this type mapping is:
 
-|MySQL Data Type|SOCI Data Type|`row::get<T>` specializations|
-|--- |--- |--- |
-|FLOAT, DOUBLE, DECIMAL and synonyms|dt_double|double|
-|TINYINT, TINYINT UNSIGNED, SMALLINT, SMALLINT UNSIGNED, INT|dt_integer|int|
-|INT UNSIGNED|dt_long_long|long long or unsigned|
-|BIGINT|dt_long_long|long long|
-|BIGINT UNSIGNED|dt_unsigned_long_long|unsigned long long|
-|CHAR, VARCHAR, BINARY, VARBINARY, TINYBLOB, MEDIUMBLOB, BLOB,LONGBLOB, TINYTEXT, MEDIUMTEXT, TEXT, LONGTEXT, ENUM|dt_string|std::string|
-|TIMESTAMP (works only with MySQL >= 5.0), DATE, TIME, DATETIME|dt_date|std::tm|
+| MySQL Data Type                                                                                                   | SOCI Data Type (`data_type`) | `row::get<T>` specializations |
+| ----------------------------------------------------------------------------------------------------------------- | ---------------------------- | ----------------------------- |
+| FLOAT, DOUBLE, DECIMAL and synonyms                                                                               | dt_double                    | double                        |
+| TINYINT, TINYINT UNSIGNED, SMALLINT, SMALLINT UNSIGNED, INT                                                       | dt_integer                   | int                           |
+| INT UNSIGNED                                                                                                      | dt_long_long                 | long long or unsigned         |
+| BIGINT                                                                                                            | dt_long_long                 | long long                     |
+| BIGINT UNSIGNED                                                                                                   | dt_unsigned_long_long        | unsigned long long            |
+| CHAR, VARCHAR, BINARY, VARBINARY, TINYBLOB, MEDIUMBLOB, BLOB,LONGBLOB, TINYTEXT, MEDIUMTEXT, TEXT, LONGTEXT, ENUM | dt_string                    | std::string                   |
+| TIMESTAMP (works only with MySQL >= 5.0), DATE, TIME, DATETIME                                                    | dt_date                      | std::tm                       |
+
+| MySQL Data Type                                                                                                   | SOCI Data Type (`db_type`)   | `row::get<T>` specializations |
+| ----------------------------------------------------------------------------------------------------------------- | ---------------------------- | ----------------------------- |
+| FLOAT, DOUBLE, DECIMAL and synonyms                                                                               | db_double                    | double                        |
+| TINYINT                                                                                                           | db_int8                      | int8_t                        |
+| TINYINT UNSIGNED                                                                                                  | db_uint8                     | uint8_t                       |
+| SMALLINT                                                                                                          | db_int16                     | int16_t                       |
+| SMALLINT UNSIGNED                                                                                                 | db_uint16                    | uint16_t                      |
+| MEDIUMINT                                                                                                         | db_int32                     | int32_t                       |
+| MEDIUMINT UNSIGNED                                                                                                | db_uint32                    | uint32_t                      |
+| INT                                                                                                               | db_int32                     | int32_t                       |
+| INT UNSIGNED                                                                                                      | db_uint32                    | uint32_t                      |
+| BIGINT                                                                                                            | db_int64                     | int64_t                       |
+| BIGINT UNSIGNED                                                                                                   | db_uint64                    | uint64_t                      |
+| CHAR, VARCHAR, BINARY, VARBINARY, TINYBLOB, MEDIUMBLOB, BLOB,LONGBLOB, TINYTEXT, MEDIUMTEXT, TEXT, LONGTEXT, ENUM | db_string                    | std::string                   |
+| TIMESTAMP (works only with MySQL >= 5.0), DATE, TIME, DATETIME                                                    | db_date                      | std::tm                       |
 
 (See the [dynamic resultset binding](../types.md#dynamic-binding) documentation for general information
 on using the `Row` class.)

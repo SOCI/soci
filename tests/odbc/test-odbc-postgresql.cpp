@@ -92,8 +92,8 @@ struct table_creator_one : public table_creator_base
         : table_creator_base(sql)
     {
         sql << "create table soci_test(id integer, val integer, c char, "
-                 "str varchar(20), sh int2, ul numeric(20), d float8, "
-                 "num76 numeric(7,6), "
+                 "str varchar(20), sh int2, ll bigint, ul numeric(20), "
+                 "d float8, num76 numeric(7,6), "
                  "tm timestamp, i1 integer, i2 integer, i3 integer, "
                  "name varchar(20))";
     }

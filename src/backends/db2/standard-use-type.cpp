@@ -10,6 +10,7 @@
 #include "soci/db2/soci-db2.h"
 #include "soci-exchange-cast.h"
 #include <cctype>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
@@ -24,25 +25,45 @@ void *db2_standard_use_type_backend::prepare_for_bind(
     switch (type)
     {
     // simple cases
-    case x_short:
+    case x_int8:
+        sqlType = SQL_SMALLINT;
+        cType = SQL_C_STINYINT;
+        size = sizeof(int8_t);
+        break;
+    case x_uint8:
+        sqlType = SQL_SMALLINT;
+        cType = SQL_C_UTINYINT;
+        size = sizeof(uint8_t);
+        break;
+    case x_int16:
         sqlType = SQL_SMALLINT;
         cType = SQL_C_SSHORT;
-        size = sizeof(short);
+        size = sizeof(int16_t);
         break;
-    case x_integer:
+    case x_uint16:
+        sqlType = SQL_SMALLINT;
+        cType = SQL_C_USHORT;
+        size = sizeof(uint16_t);
+        break;
+    case x_int32:
         sqlType = SQL_INTEGER;
         cType = SQL_C_SLONG;
-        size = sizeof(int);
+        size = sizeof(int32_t);
         break;
-    case x_long_long:
+    case x_uint32:
+        sqlType = SQL_INTEGER;
+        cType = SQL_C_ULONG;
+        size = sizeof(uint32_t);
+        break;
+    case x_int64:
         sqlType = SQL_BIGINT;
         cType = SQL_C_SBIGINT;
-        size = sizeof(long long);
+        size = sizeof(int64_t);
         break;
-    case x_unsigned_long_long:
+    case x_uint64:
         sqlType = SQL_BIGINT;
         cType = SQL_C_UBIGINT;
-        size = sizeof(unsigned long long);
+        size = sizeof(uint64_t);
         break;
     case x_double:
         sqlType = SQL_DOUBLE;

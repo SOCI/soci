@@ -55,6 +55,9 @@ public:
     explicit session(std::string const & connectString);
     explicit session(connection_pool & pool);
 
+    session(session &&other);
+    session &operator=(session &&other);
+
     ~session();
 
     void open(connection_parameters const & parameters);
@@ -152,10 +155,10 @@ public:
     void drop_table(const std::string & tableName);
     void truncate_table(const std::string & tableName);
     ddl_type add_column(const std::string & tableName,
-        const std::string & columnName, data_type dt,
+        const std::string & columnName, db_type dt,
         int precision = 0, int scale = 0);
     ddl_type alter_column(const std::string & tableName,
-        const std::string & columnName, data_type dt,
+        const std::string & columnName, db_type dt,
         int precision = 0, int scale = 0);
     ddl_type drop_column(const std::string & tableName,
         const std::string & columnName);
@@ -184,12 +187,34 @@ public:
 
     std::string get_backend_name() const;
 
+    // The functions below still work but are deprecated (but we don't give
+    // deprecation warnings for them because there is no real harm in using
+    // them).
+    //
+    // Use the overloads taking db_type instead in the new code.
+    ddl_type add_column(const std::string & tableName,
+        const std::string & columnName, data_type dt,
+        int precision = 0, int scale = 0)
+    {
+        return add_column(tableName, columnName, details::to_db_type(dt),
+            precision, scale);
+    }
+    ddl_type alter_column(const std::string & tableName,
+        const std::string & columnName, data_type dt,
+        int precision = 0, int scale = 0)
+    {
+        return alter_column(tableName, columnName, details::to_db_type(dt),
+            precision, scale);
+    }
+
     details::statement_backend * make_statement_backend();
     details::rowid_backend * make_rowid_backend();
     details::blob_backend * make_blob_backend();
 
 private:
     SOCI_NOT_COPYABLE(session)
+
+    void reset_after_move();
 
     std::ostringstream query_stream_;
     std::unique_ptr<details::query_transformation_function> query_transformation_;
