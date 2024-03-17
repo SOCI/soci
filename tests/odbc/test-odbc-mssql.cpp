@@ -75,8 +75,6 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
     );
 }
 
-// #ifdef SOCI_ODBC_WIDE
-
 TEST_CASE("MS SQL unicode string", "[odbc][mssql][unicode]")
 {
     soci::session sql(backEnd, connectString);
@@ -104,8 +102,6 @@ TEST_CASE("MS SQL unicode string", "[odbc][mssql][unicode]")
 
     CHECK(str_out == str_in);
 }
-
-// #endif // SOCI_ODBC_WIDE
 
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
