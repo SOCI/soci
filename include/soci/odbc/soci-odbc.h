@@ -164,7 +164,7 @@ struct odbc_standard_into_type_backend : details::standard_into_type_backend,
         indicator *ind) override;
 
     void clean_up() override;
-    
+
     char* buf_; // generic buffer
     void *data_;
     details::exchange_type type_;
@@ -290,7 +290,6 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend,
     void *data_;
     details::exchange_type type_;
     int position_;
-    //details::odbc_char_type *buf_;              // generic buffer
     char* buf_;              // generic buffer
     std::size_t colSize_;    // size of the string column (used for strings)
     // used for strings only
