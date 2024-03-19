@@ -96,11 +96,10 @@ void odbc_vector_into_type_backend::define_by_pos(
     case x_char:
 #ifdef SOCI_ODBC_WIDE
         odbcType_ = SQL_C_WCHAR;
-        colSize_ = sizeof(SQLWCHAR) * 2;
 #else
         odbcType_ = SQL_C_CHAR;
-        colSize_ = 2;
 #endif // SOCI_ODBC_WIDE
+        colSize_ = sizeof(SQLTCHAR) * 2;
         buf_ = new char[colSize_ * vectorSize];
         break;
     case x_stdstring:
@@ -125,20 +124,13 @@ void odbc_vector_into_type_backend::define_by_pos(
                 statement_.fetchVectorByRows_ = true;
             }
 
-#ifdef SOCI_ODBC_WIDE
-            colSize_ += sizeof(SQLWCHAR);
-#else
-            colSize_++;
-#endif // SOCI_ODBC_WIDE
+            colSize_ += sizeof(SQLTCHAR);
 
             // If we are fetching by a single row, allocate the buffer only for
             // one value.
             const std::size_t elementsCount = statement_.fetchVectorByRows_ ? 1 : vectorSize;
-#ifdef SOCI_ODBC_WIDE
-            buf_ = new char[colSize_ * elementsCount * sizeof(SQLWCHAR)];
-#else
-            buf_ = new char[colSize_ * elementsCount];
-#endif // SOCI_ODBC_WIDE
+
+            buf_ = new char[colSize_ * elementsCount * sizeof(SQLTCHAR)];
         }
         break;
     case x_stdtm:
@@ -265,22 +257,20 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
         {
 #ifdef SOCI_ODBC_WIDE
             v[i] = toUtf8(*pos);
-            pos += colSize_ / sizeof(SQLWCHAR);
 #else
             v[i] = *pos;
-            pos += colSize_;
 #endif // SOCI_ODBC_WIDE
+            pos += colSize_ / sizeof(SQLTCHAR);
         }
     }
     if (type_ == x_stdstring || type_ == x_xmltype || type_ == x_longstring)
     {
 #ifdef SOCI_ODBC_WIDE
         const SQLWCHAR *pos = reinterpret_cast<SQLWCHAR*>(buf_);
-        std::size_t const colSize = colSize_ / sizeof(SQLWCHAR);
 #else
         const char *pos = buf_;
-        std::size_t const colSize = colSize_;
 #endif // SOCI_ODBC_WIDE
+        std::size_t const colSize = colSize_ / sizeof(SQLTCHAR);
 
         for (std::size_t i = beginRow; i != endRow; ++i, pos += colSize)
         {

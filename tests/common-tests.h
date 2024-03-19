@@ -6064,7 +6064,12 @@ static std::string make_long_xml_string(int approximateSize = 5000)
 {
     const int tagsSize = 6 + 7;
     const int patternSize = 26;
+
+#ifdef SOCI_ODBC_WIDE
+    const int patternsCount = approximateSize / 2 / patternSize + 1;
+#else
     const int patternsCount = approximateSize / patternSize + 1;
+#endif // SOCI_ODBC_WIDE
 
     std::string s;
     s.reserve(tagsSize + patternsCount * patternSize);
@@ -6115,11 +6120,7 @@ TEST_CASE_METHOD(common_tests, "CLOB", "[core][clob]")
     sql << "select s from soci_test where id = 1", into(s2);
 
     CHECK(s2.value.size() == 0);
-#ifdef SOCI_ODBC_WIDE
-    s1.value = make_long_xml_string(3000);
-#else
     s1.value = make_long_xml_string();
-#endif
 
     sql << "update soci_test set s = :s where id = 1", use(s1);
 
@@ -6185,11 +6186,7 @@ TEST_CASE_METHOD(common_tests, "XML", "[core][xml]")
 
     int id = 1;
     xml_type xml;
-#ifdef SOCI_ODBC_WIDE
-    xml.value = make_long_xml_string(3000);
-#else
     xml.value = make_long_xml_string();
-#endif
 
     sql << "insert into soci_test (id, x) values (:1, "
         << tc_.to_xml(":2")

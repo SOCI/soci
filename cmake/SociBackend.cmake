@@ -185,7 +185,7 @@ macro(soci_backend NAME)
           CLEAN_DIRECT_OUTPUT 1)
       endif()
       
-      if(SOCI_ENABLE_UNICODE)
+      if(SOCI_ODBC_UNICODE)
         target_compile_definitions(${THIS_BACKEND_TARGET} PRIVATE SOCI_ODBC_WIDE UNICODE)
       endif()
 
@@ -350,7 +350,7 @@ macro(soci_backend_test)
         soci_core
         soci_${BACKENDL})
         
-      if(SOCI_ENABLE_UNICODE)
+      if(SOCI_ODBC_UNICODE)
         target_compile_definitions(${TEST_TARGET} PRIVATE SOCI_ODBC_WIDE UNICODE)
       endif()
 

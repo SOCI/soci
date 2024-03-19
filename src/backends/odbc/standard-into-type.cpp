@@ -31,11 +31,10 @@ void odbc_standard_into_type_backend::define_by_pos(
     case x_char:
 #ifdef SOCI_ODBC_WIDE
         odbcType_ = SQL_C_WCHAR;
-        size = sizeof(SQLWCHAR) * 2;
 #else
         odbcType_ = SQL_C_CHAR;
-        size = sizeof(char) * 2;
 #endif // SOCI_ODBC_WIDE
+        size = sizeof(SQLTCHAR) * 2;
         buf_ = new char[size];
         data = buf_;
         break;
@@ -53,15 +52,9 @@ void odbc_standard_into_type_backend::define_by_pos(
         // a buffer of huge (100MiB) hardcoded size, which is clearly not
         // ideal, but changing this would require using SQLGetData() and is
         // not trivial, so for now we're stuck with this suboptimal solution.
-#ifdef SOCI_ODBC_WIDE
-        size = static_cast<SQLUINTEGER>(statement_.column_size(position_) * sizeof(SQLWCHAR));
+        size = static_cast<SQLUINTEGER>(statement_.column_size(position_) * sizeof(SQLTCHAR));
         size = (size >= ODBC_MAX_COL_SIZE || size == 0) ? odbc_max_buffer_length : size;
-        size += sizeof(SQLWCHAR);
-#else
-        size = static_cast<SQLUINTEGER>(statement_.column_size(position_) * sizeof(char));
-        size = (size >= ODBC_MAX_COL_SIZE || size == 0) ? odbc_max_buffer_length : size;
-        size += sizeof(char);
-#endif // SOCI_ODBC_WIDE
+        size += sizeof(SQLTCHAR);
         buf_ = new char[size];
         data = buf_;
         break;

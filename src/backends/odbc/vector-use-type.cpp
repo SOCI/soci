@@ -181,11 +181,7 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
 
             prepare_indicators(vsize);
 
-#ifdef SOCI_ODBC_WIDE
-            size = sizeof(SQLWCHAR) * 2; // 1 wchar + 1 null terminator
-#else
-            size = sizeof(char) * 2; // 1 char + 1 null terminator
-#endif // SOCI_ODBC_WIDE
+            size = sizeof(SQLTCHAR) * 2; // 1 char + 1 null terminator
 
             buf_ = new char[size * vsize];
 
@@ -228,22 +224,14 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
             {
                 std::size_t sz = vector_string_value(type_, data_, i).length();
 
-#ifdef SOCI_ODBC_WIDE
-                set_sqllen_from_vector_at(i, static_cast<long>(sz * sizeof(SQLWCHAR)));
-#else
-                set_sqllen_from_vector_at(i, static_cast<long>(sz));
-#endif // SOCI_ODBC_WIDE
+                set_sqllen_from_vector_at(i, static_cast<long>(sz * sizeof(SQLTCHAR)));
 
                 maxSize = sz > maxSize ? sz : maxSize;
             }
 
             maxSize++; // For terminating nul.
 
-#ifdef SOCI_ODBC_WIDE
-            const std::size_t bufSize = maxSize * vecSize * sizeof(SQLWCHAR);
-#else
-            const std::size_t bufSize = maxSize * vecSize;
-#endif // SOCI_ODBC_WIDE
+            const std::size_t bufSize = maxSize * vecSize * sizeof(SQLTCHAR);
 
             buf_ = new char[bufSize];
             memset(buf_, 0, bufSize);
@@ -269,12 +257,11 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
 
             data = buf_;
 
-#ifdef SOCI_ODBC_WIDE
-            size = static_cast<SQLUINTEGER>(maxSize * sizeof(SQLWCHAR));
+            size = static_cast<SQLUINTEGER>(maxSize * sizeof(SQLTCHAR));
+#ifdef SOCI_ODBC_WIDE       
             sqlType = size >= ODBC_MAX_COL_SIZE / sizeof(SQLWCHAR) ? SQL_WLONGVARCHAR : SQL_WVARCHAR;
             cType = SQL_C_WCHAR;
 #else
-            size = static_cast<SQLUINTEGER>(maxSize);
             sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_LONGVARCHAR : SQL_VARCHAR;
             cType = SQL_C_CHAR;
 #endif // SOCI_ODBC_WIDE
