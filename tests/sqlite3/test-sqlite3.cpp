@@ -256,58 +256,6 @@ TEST_CASE("SQLite get_last_insert_id escapes table name",
     CHECK(val == 0);
 }
 
-// BLOB test
-struct blob_table_creator : public table_creator_base
-{
-    blob_table_creator(soci::session & sql)
-        : table_creator_base(sql)
-    {
-        sql <<
-            "create table soci_test ("
-            "    id integer,"
-            "    img blob"
-            ")";
-    }
-};
-
-TEST_CASE("SQLite blob", "[sqlite][blob]")
-{
-    soci::session sql(backEnd, connectString);
-
-    blob_table_creator tableCreator(sql);
-
-    char buf[] = "abcdefghijklmnopqrstuvwxyz";
-
-    sql << "insert into soci_test(id, img) values(7, '')";
-
-    {
-        blob b(sql);
-
-        sql << "select img from soci_test where id = 7", into(b);
-        CHECK(b.get_len() == 0);
-
-        b.write_from_start(buf, sizeof(buf));
-        CHECK(b.get_len() == sizeof(buf));
-        sql << "update soci_test set img=? where id = 7", use(b);
-
-        b.append(buf, sizeof(buf));
-        CHECK(b.get_len() == 2 * sizeof(buf));
-        sql << "insert into soci_test(id, img) values(8, ?)", use(b);
-    }
-    {
-        blob b(sql);
-        sql << "select img from soci_test where id = 8", into(b);
-        CHECK(b.get_len() == 2 * sizeof(buf));
-        char buf2[100];
-        b.read_from_start(buf2, 10);
-        CHECK(std::strncmp(buf2, "abcdefghij", 10) == 0);
-
-        sql << "select img from soci_test where id = 7", into(b);
-        CHECK(b.get_len() == sizeof(buf));
-
-    }
-}
-
 // This test was put in to fix a problem that occurs when there are both
 // into and use elements in the same query and one of them (into) binds
 // to a vector object.
@@ -830,6 +778,15 @@ struct table_creator_from_str : table_creator_base
     }
 };
 
+struct table_creator_for_blob : public tests::table_creator_base
+{
+    table_creator_for_blob(soci::session & sql)
+		: tests::table_creator_base(sql)
+    {
+        sql << "create table soci_test(id integer, b blob)";
+    }
+};
+
 class test_context : public test_context_base
 {
 public:
@@ -861,6 +818,11 @@ public:
     {
         return new table_creator_from_str(s,
             "create table soci_test (id integer primary key, val integer)");
+    }
+
+    table_creator_base* table_creator_blob(soci::session& s) const override
+    {
+      return new table_creator_for_blob(s);
     }
 
     table_creator_base* table_creator_xml(soci::session& s) const override

@@ -56,7 +56,7 @@ public:
     virtual ~holder() {}
 
     template<typename T>
-    T get()
+    T &get()
     {
         type_holder<T>* p = checked_ptr_cast<type_holder<T> >(this);
         if (p)
@@ -83,7 +83,10 @@ public:
     ~type_holder() override { delete t_; }
 
     template<typename TypeValue>
-    TypeValue value() const { return *t_; }
+    const TypeValue &value() const { return *t_; }
+
+    template<typename TypeValue>
+    TypeValue &value() { return *t_; }
 
 private:
     T * t_;

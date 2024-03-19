@@ -102,66 +102,7 @@ TEST_CASE("Oracle explicit calls", "[oracle]")
     CHECK(i == 7);
 }
 
-// DDL + blob test
-
-struct blob_table_creator : public table_creator_base
-{
-    blob_table_creator(soci::session & sql)
-    : table_creator_base(sql)
-    {
-        sql <<
-            "create table soci_test ("
-            "    id number(10) not null,"
-            "    img blob"
-            ")";
-    }
-};
-
-TEST_CASE("Oracle blob", "[oracle][blob]")
-{
-    soci::session sql(backEnd, connectString);
-
-    blob_table_creator tableCreator(sql);
-
-    char buf[] = "abcdefghijklmnopqrstuvwxyz";
-    sql << "insert into soci_test (id, img) values (7, empty_blob())";
-
-    {
-        blob b(sql);
-
-        oracle_session_backend *sessionBackEnd
-            = static_cast<oracle_session_backend *>(sql.get_backend());
-
-        oracle_blob_backend *blobBackEnd
-            = static_cast<oracle_blob_backend *>(b.get_backend());
-
-        OCILobDisableBuffering(sessionBackEnd->svchp_,
-            sessionBackEnd->errhp_, blobBackEnd->lobp_);
-
-        sql << "select img from soci_test where id = 7", into(b);
-        CHECK(b.get_len() == 0);
-
-        b.write_from_start(buf, sizeof(buf));
-        CHECK(b.get_len() == sizeof(buf));
-        b.trim(10);
-        CHECK(b.get_len() == 10);
-
-        // append does not work (Oracle bug #886191 ?)
-        //b.append(buf, sizeof(buf));
-        //assert(b.get_len() == sizeof(buf) + 10);
-        sql.commit();
-    }
-
-    {
-        blob b(sql);
-        sql << "select img from soci_test where id = 7", into(b);
-        //assert(b.get_len() == sizeof(buf) + 10);
-        CHECK(b.get_len() == 10);
-        char buf2[100];
-        b.read_from_start(buf2, 10);
-        CHECK(strncmp(buf2, "abcdefghij", 10) == 0);
-    }
-}
+// DDL test
 
 // nested statement test
 // (the same syntax is used for output cursors in PL/SQL)
@@ -1451,6 +1392,14 @@ struct table_creator_for_clob : table_creator_base
     }
 };
 
+struct table_creator_for_blob : public tests::table_creator_base
+{
+    table_creator_for_blob(soci::session &sql) : tests::table_creator_base(sql)
+    {
+        sql << "create table soci_test(id integer, b blob)";
+    }
+};
+
 class test_context :public test_context_base
 {
 public:
@@ -1481,6 +1430,11 @@ public:
     table_creator_base* table_creator_clob(soci::session& s) const override
     {
         return new table_creator_for_clob(s);
+    }
+
+    table_creator_base* table_creator_blob(soci::session& s) const override
+    {
+      return new table_creator_for_blob(s);
     }
 
     table_creator_base* table_creator_xml(soci::session& s) const override

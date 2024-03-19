@@ -18,6 +18,7 @@
 #endif
 
 #include <soci/soci-backend.h>
+#include <private/soci-trivial-blob-backend.h>
 #ifdef _WIN32
 #include <winsock.h> // SOCKET
 #endif // _WIN32
@@ -241,19 +242,18 @@ struct mysql_rowid_backend : details::rowid_backend
     ~mysql_rowid_backend() override;
 };
 
-struct mysql_blob_backend : details::blob_backend
+class mysql_blob_backend : public details::trivial_blob_backend
 {
+public:
     mysql_blob_backend(mysql_session_backend &session);
 
     ~mysql_blob_backend() override;
 
-    std::size_t get_len() override;
-    std::size_t read_from_start(char *buf, std::size_t toRead, std::size_t offset = 0) override;
-    std::size_t write_from_start(char const *buf, std::size_t toWrite, std::size_t offset = 0) override;
-    std::size_t append(char const *buf, std::size_t toWrite) override;
-    void trim(std::size_t newLen) override;
+    std::size_t hex_str_size() const;
+    void write_hex_str(char *buf, std::size_t size) const;
+    std::string as_hex_str() const;
 
-    mysql_session_backend &session_;
+    void load_from_hex_str(const char* str, std::size_t length);
 };
 
 struct mysql_session_backend : details::session_backend

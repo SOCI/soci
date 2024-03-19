@@ -49,6 +49,16 @@ struct table_creator_for_get_affected_rows : table_creator_base
     }
 };
 
+struct table_creator_for_blob : public tests::table_creator_base
+{
+    table_creator_for_blob(soci::session & sql)
+        : tests::table_creator_base(sql)
+    {
+        sql << "create table soci_test(id integer, b blob)";
+    }
+};
+
+
 //
 // Support for SOCI Common Tests
 //
@@ -83,6 +93,11 @@ public:
     std::string to_date_time(std::string const &datdt_string) const override
     {
         return "\'" + datdt_string + "\'";
+    }
+
+    table_creator_base * table_creator_blob(soci::session &s) const override
+    {
+        return new table_creator_for_blob(s);
     }
 
     bool has_fp_bug() const override

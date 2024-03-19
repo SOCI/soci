@@ -750,7 +750,7 @@ void postgresql_statement_backend::describe_column(int colNum,
     switch (typeOid)
     {
     // Note: the following list of OIDs was taken from the pg_type table
-    // we do not claim that this list is exchaustive or even correct.
+    // we do not claim that this list is exhaustive or even correct.
 
                // from pg_type:
 
@@ -796,13 +796,19 @@ void postgresql_statement_backend::describe_column(int colNum,
         break;
 
     case 23:   // int4
-    case 26:   // oid
         dbtype = db_int32;
         break;
 
     case 20:   // int8
         dbtype = db_int64;
         break;
+
+    case 26:   // oid
+        // Note that in theory OIDs can refer to all sorts of things, but their use
+        // for anything but BLOBs seems to be deprecated since PostreSQL 8, so we simply
+        // assume any OID refers to a BLOB.
+       dbtype = db_blob;
+       break;
 
     default:
     {

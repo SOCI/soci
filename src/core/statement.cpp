@@ -6,6 +6,8 @@
 //
 
 #define SOCI_SOURCE
+#include "soci/blob.h"
+#include "soci/blob-exchange.h"
 #include "soci/statement.h"
 #include "soci/session.h"
 #include "soci/into-type.h"
@@ -695,6 +697,12 @@ void statement_impl::bind_into<db_date>()
     into_row<std::tm>();
 }
 
+template<>
+void statement_impl::bind_into<db_blob>()
+{
+    into_row<blob>();
+}
+
 void statement_impl::describe()
 {
     row_->clean_up();
@@ -715,9 +723,11 @@ void statement_impl::describe()
         switch (dbtype)
         {
         case db_string:
-        case db_blob:
         case db_xml:
             bind_into<db_string>();
+            break;
+        case db_blob:
+            bind_into<db_blob>();
             break;
         case db_double:
             bind_into<db_double>();
@@ -867,4 +877,13 @@ statement_impl::rethrow_current_exception_with_context(char const* operation)
 
         throw;
     }
+}
+
+template<>
+void statement_impl::into_row<blob>()
+{
+    blob * b = new blob(session_);
+    indicator * ind = new indicator(i_ok);
+    row_->add_holder(b, ind);
+    exchange_for_row(into(*b, *ind));
 }

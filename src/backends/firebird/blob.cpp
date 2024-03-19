@@ -9,22 +9,25 @@
 #include "soci/firebird/soci-firebird.h"
 #include "firebird/error-firebird.h"
 
+#include <limits>
+#include <cstring>
+
 using namespace soci;
 using namespace soci::details::firebird;
 
 firebird_blob_backend::firebird_blob_backend(firebird_session_backend &session)
-	  : session_(session), bid_(), from_db_(false), bhp_(0), data_(),
-		loaded_(false), max_seg_size_(0)
+      : session_(session), blob_id_(), from_db_(false), blob_handle_(0), data_(),
+        loaded_(false), max_seg_size_(0)
 {}
 
 firebird_blob_backend::~firebird_blob_backend()
 {
-    cleanUp();
+    closeBlob();
 }
 
 std::size_t firebird_blob_backend::get_len()
 {
-    if (from_db_ && bhp_ == 0)
+    if (from_db_ && blob_handle_ == 0)
     {
         open();
     }
@@ -32,9 +35,9 @@ std::size_t firebird_blob_backend::get_len()
     return data_.size();
 }
 
-std::size_t firebird_blob_backend::read_from_start(char * buf, std::size_t toRead, std::size_t offset)
+std::size_t firebird_blob_backend::read_from_start(void * buf, std::size_t toRead, std::size_t offset)
 {
-    if (from_db_ && (loaded_ == false))
+    if (from_db_ && !loaded_)
     {
         // this is blob fetched from database, but not loaded yet
         load();
@@ -42,28 +45,28 @@ std::size_t firebird_blob_backend::read_from_start(char * buf, std::size_t toRea
 
     std::size_t size = data_.size();
 
-    if (offset > size)
+    if (offset >= size)
     {
+        if (offset == 0)
+        {
+            // Read (from beginning) on empty (default-initialized) BLOB is defined as no-op
+            return 0;
+        }
+
         throw soci_error("Can't read past-the-end of BLOB data");
     }
 
-    char * itr = buf;
-    std::size_t limit = size - offset < toRead ? size - offset : toRead;
-    std::size_t index = 0;
+    // Ensure we don't read more than we have
+    toRead = std::min(toRead, size - offset);
 
-    while (index < limit)
-    {
-        *itr = data_[offset+index];
-        ++index;
-        ++itr;
-    }
+    std::memcpy(buf, &data_[offset], toRead);
 
-    return limit;
+    return toRead;
 }
 
-std::size_t firebird_blob_backend::write_from_start(char const * buf, std::size_t toWrite, std::size_t offset)
+std::size_t firebird_blob_backend::write_from_start(const void * buf, std::size_t toWrite, std::size_t offset)
 {
-    if (from_db_ && (loaded_ == false))
+    if (from_db_ && !loaded_)
     {
         // this is blob fetched from database, but not loaded yet
         load();
@@ -88,9 +91,9 @@ std::size_t firebird_blob_backend::write_from_start(char const * buf, std::size_
 }
 
 std::size_t firebird_blob_backend::append(
-    char const * buf, std::size_t toWrite)
+    const void * buf, std::size_t toWrite)
 {
-    if (from_db_ && (loaded_ == false))
+    if (from_db_ && !loaded_)
     {
         // this is blob fetched from database, but not loaded yet
         load();
@@ -106,7 +109,7 @@ std::size_t firebird_blob_backend::append(
 
 void firebird_blob_backend::trim(std::size_t newLen)
 {
-    if (from_db_ && (loaded_ == false))
+    if (from_db_ && !loaded_)
     {
         // this is blob fetched from database, but not loaded yet
         load();
@@ -116,20 +119,14 @@ void firebird_blob_backend::trim(std::size_t newLen)
 }
 
 void firebird_blob_backend::writeBuffer(std::size_t offset,
-                                      char const * buf, std::size_t toWrite)
+                                      const void * buf, std::size_t toWrite)
 {
-    char const * itr = buf;
-    char const * end_itr = buf + toWrite;
-
-    while (itr!=end_itr)
-    {
-        data_[offset++] = *itr++;
-    }
+    std::memcpy(data_.data() + offset, buf, toWrite);
 }
 
 void firebird_blob_backend::open()
 {
-    if (bhp_ != 0)
+    if (blob_handle_ != 0)
     {
         // BLOB already opened
         return;
@@ -138,9 +135,9 @@ void firebird_blob_backend::open()
     ISC_STATUS stat[20];
 
     if (isc_open_blob2(stat, &session_.dbhp_, session_.current_transaction(),
-                       &bhp_, &bid_, 0, NULL))
+                       &blob_handle_, &blob_id_, 0, NULL))
     {
-        bhp_ = 0L;
+        blob_handle_ = 0L;
         throw_iscerror(stat);
     }
 
@@ -150,29 +147,28 @@ void firebird_blob_backend::open()
     data_.resize(blob_size);
 }
 
-void firebird_blob_backend::cleanUp()
+void firebird_blob_backend::closeBlob()
 {
     from_db_ = false;
     loaded_ = false;
     max_seg_size_ = 0;
-    data_.resize(0);
 
-    if (bhp_ != 0)
+    if (blob_handle_ != 0)
     {
         // close blob
         ISC_STATUS stat[20];
-        if (isc_close_blob(stat, &bhp_))
+        if (isc_close_blob(stat, &blob_handle_))
         {
             throw_iscerror(stat);
         }
-        bhp_ = 0;
+        blob_handle_ = 0;
     }
 }
 
 // loads blob data into internal buffer
 void firebird_blob_backend::load()
 {
-    if (bhp_ == 0)
+    if (blob_handle_ == 0)
     {
         open();
     }
@@ -185,7 +181,7 @@ void firebird_blob_backend::load()
 
     ISC_STATUS stat[20];
     unsigned short bytes;
-    std::vector<char>::size_type total_bytes = 0;
+    std::size_t total_bytes = 0;
     bool keep_reading = false;
 
     do
@@ -193,8 +189,8 @@ void firebird_blob_backend::load()
         bytes = 0;
         // next segment of data
         // data_ is large-enough because we know total size of blob
-        isc_get_segment(stat, &bhp_, &bytes, static_cast<short>(max_seg_size_),
-                        &data_[total_bytes]);
+        isc_get_segment(stat, &blob_handle_, &bytes, static_cast<short>(max_seg_size_),
+                        reinterpret_cast<char *>(&data_[total_bytes]));
 
         total_bytes += bytes;
 
@@ -225,25 +221,22 @@ void firebird_blob_backend::load()
     loaded_ = true;
 }
 
-// this method saves BLOB content to database
-// (a new BLOB will be created at this point)
-// BLOB will be closed after save.
-void firebird_blob_backend::save()
+ISC_QUAD firebird_blob_backend::save_to_db()
 {
     // close old blob if necessary
     ISC_STATUS stat[20];
-    if (bhp_ != 0)
+    if (blob_handle_ != 0)
     {
-        if (isc_close_blob(stat, &bhp_))
+        if (isc_close_blob(stat, &blob_handle_))
         {
             throw_iscerror(stat);
         }
-        bhp_ = 0;
+        blob_handle_ = 0;
     }
 
-    // create new blob
-    if (isc_create_blob(stat, &session_.dbhp_, session_.current_transaction(),
-                        &bhp_, &bid_))
+    // create new blob object
+    if (isc_create_blob2(stat, &session_.dbhp_, session_.current_transaction(),
+                        &blob_handle_, &blob_id_, 0, NULL))
     {
         throw_iscerror(stat);
     }
@@ -259,11 +252,11 @@ void firebird_blob_backend::save()
         // in any case.
         do
         {
-            unsigned short segmentSize = 0xFFFF; //last unsigned short number
+            unsigned short segmentSize = std::numeric_limits<unsigned short>::max();
             if (size - offset < segmentSize) //if content size is less than max segment size or last data segment is about to be written
                 segmentSize = static_cast<unsigned short>(size - offset);
             //write segment
-            if (isc_put_segment(stat, &bhp_, segmentSize, &data_[0]+offset))
+            if (isc_put_segment(stat, &blob_handle_, segmentSize, reinterpret_cast<char*>(&data_[offset])))
             {
                 throw_iscerror(stat);
             }
@@ -271,11 +264,27 @@ void firebird_blob_backend::save()
         }
         while (offset < size);
     }
-    cleanUp();
+
+    // We close the newly created blob object immediately. If we don't do it, the BLOB ID is regarded
+    // as invalid (in some cases?).
+    // In any case, BLOBs in Firebird can't be updated anyway - one always has to create a new BLOB object
+    // (with a new ID) and then use that to modify the existing one (replace the ID in the corresponding table).
+    // Therefore, keeping the Blob open for subsequent modification is not needed.
+    closeBlob();
+
+    return blob_id_;
+}
+
+void firebird_blob_backend::assign(const ISC_QUAD &id)
+{
+    closeBlob();
+    data_.clear();
+
+    blob_id_ = id;
     from_db_ = true;
 }
 
-// retrives number of segments and total length of BLOB
+// retrieves number of segments and total length of BLOB
 // returns total length of BLOB
 long firebird_blob_backend::getBLOBInfo()
 {
@@ -286,7 +295,7 @@ long firebird_blob_backend::getBLOBInfo()
 
     ISC_STATUS stat[20];
 
-    if (isc_blob_info(stat, &bhp_, sizeof(blob_items), blob_items,
+    if (isc_blob_info(stat, &blob_handle_, sizeof(blob_items), blob_items,
                       sizeof(res_buffer), res_buffer))
     {
         throw_iscerror(stat);

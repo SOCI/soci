@@ -261,6 +261,8 @@ struct oracle_rowid_backend : details::rowid_backend
 
 struct oracle_blob_backend : details::blob_backend
 {
+    typedef OCILobLocator * locator_t;
+
     oracle_blob_backend(oracle_session_backend &session);
 
     ~oracle_blob_backend() override;
@@ -268,30 +270,43 @@ struct oracle_blob_backend : details::blob_backend
     std::size_t get_len() override;
 
     [[deprecated("Use read_from_start instead")]]
-    std::size_t read(std::size_t offset, char *buf, std::size_t toRead) override
+    std::size_t read(std::size_t offset, void *buf, std::size_t toRead) override
     {
         // Offsets are 1-based in Oracle
         return read_from_start(buf, toRead, offset - 1);
     }
 
-    std::size_t read_from_start(char * buf, std::size_t toRead, std::size_t offset = 0) override;
+    std::size_t read_from_start(void * buf, std::size_t toRead, std::size_t offset = 0) override;
 
     [[deprecated("Use write_from_start instead")]]
-    std::size_t write(std::size_t offset, char const *buf, std::size_t toWrite) override
+    std::size_t write(std::size_t offset, const void *buf, std::size_t toWrite) override
     {
         // Offsets are 1-based in Oracle
         return write_from_start(buf, toWrite, offset - 1);
     }
 
-    std::size_t write_from_start(const char * buf, std::size_t toWrite, std::size_t offset = 0) override;
+    std::size_t write_from_start(const void * buf, std::size_t toWrite, std::size_t offset = 0) override;
 
-    std::size_t append(char const *buf, std::size_t toWrite) override;
+    std::size_t append(const void *buf, std::size_t toWrite) override;
 
     void trim(std::size_t newLen) override;
 
+    locator_t get_lob_locator() const;
+
+    void set_lob_locator(locator_t locator, bool initialized = true);
+
+    void reset();
+
+    void ensure_initialized();
+
+private:
     oracle_session_backend &session_;
 
-    OCILobLocator *lobp_;
+    locator_t lobp_;
+
+    // If this is true, then the locator lobp_ points to something useful
+    // (instead of being the equivalent to a pointer with random value)
+    bool initialized_;
 };
 
 struct oracle_session_backend : details::session_backend
@@ -458,7 +473,7 @@ struct oracle_session_backend : details::session_backend
 
 struct oracle_backend_factory : backend_factory
 {
-	  oracle_backend_factory() {}
+      oracle_backend_factory() {}
     oracle_session_backend * make_session(
         connection_parameters const & parameters) const override;
 };

@@ -463,12 +463,20 @@ void mysql_statement_backend::describe_column(int colNum,
     case 245:                   //MYSQL_TYPE_JSON:
     case FIELD_TYPE_VAR_STRING: //MYSQL_TYPE_VAR_STRING:
     case FIELD_TYPE_STRING:     //MYSQL_TYPE_STRING:
-    case FIELD_TYPE_BLOB:       // TEXT OR BLOB
+        dbtype = db_string;
+        break;
+    case FIELD_TYPE_BLOB:       // BLOB
     case FIELD_TYPE_TINY_BLOB:
     case FIELD_TYPE_MEDIUM_BLOB:
     case FIELD_TYPE_LONG_BLOB:
-        dbtype = db_string;
+    {
+        // Quoted from the docs:
+        // To distinguish between binary and nonbinary data for string data types, check whether the
+        // charsetnr value is 63. If so, the character set is binary, which indicates binary rather
+        // than nonbinary data.
+        dbtype = field->charsetnr == 63 ? db_blob : db_string;
         break;
+    }
     default:
         //std::cerr << "field->type: " << field->type << std::endl;
         throw soci_error("Unknown data type.");

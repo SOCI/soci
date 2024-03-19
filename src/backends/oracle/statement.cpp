@@ -315,6 +315,9 @@ void oracle_statement_backend::describe_column(int colNum,
     case SQLT_DAT:
         xdbtype = db_date;
         break;
+    case SQLT_BLOB:
+        xdbtype = db_blob;
+        break;
     default:
         // Unknown oracle types will just be represented by a string
         xdbtype = db_string;

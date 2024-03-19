@@ -34,6 +34,9 @@ struct type_conversion<boost::gregorian::date>
         out = boost::gregorian::date_from_tm(in);
     }
 
+    struct move_from_base_check :
+        std::integral_constant<bool, false> {};
+
     static void to_base(
         boost::gregorian::date const & in, base_type & out, indicator & ind)
     {
