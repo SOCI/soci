@@ -27,9 +27,9 @@ The `offset` parameter is always counted from the beginning of the BLOB's data. 
 
 ### Notes
 
-- As with empty files (but contrary to e.g. `std::vector`) reading from the **beginning** of an empty blob is a valid operation (effectively a no-op),
+* As with empty files (but contrary to e.g. `std::vector`) reading from the **beginning** of an empty blob is a valid operation (effectively a no-op),
   e.g. it won't throw or error otherwise.
-- It is possible to default-construct `blob` objects. Default-constructed `blob`s are in an invalid state and must not be accessed other than to query
+* It is possible to default-construct `blob` objects. Default-constructed `blob`s are in an invalid state and must not be accessed other than to query
   their validity (`is_valid()`) or to initialize them (`initialize(session &session)`) in order to bring them into a valid state.
 
 #### Portability
