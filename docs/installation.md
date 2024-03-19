@@ -141,6 +141,7 @@ Some other build options:
 * `ODBC_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
 * `SOCI_ODBC` - boolean - Requests to build [ODBC](backends/odbc.md) backend. Automatically switched on, if `WITH_ODBC` is set to ON.
 * `SOCI_ODBC_TEST_{database}_CONNSTR` - string - ODBC Data Source Name (DSN) or ODBC File Data Source Name (FILEDSN) to test database: Microsoft Access (.mdb), Microsoft SQL Server, MySQL, PostgreSQL or any other ODBC SQL data source. {database} is placeholder for name of database driver ACCESS, MYSQL, POSTGRESQL, etc. See [ODBC](backends/odbc.md) backend reference for details. Example: `-DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR="FILEDSN=/home/mloskot/soci/build/test-postgresql.dsn"`
+* `SOCI_ODBC_UNICODE` - boolean - Enables Unicode support for the ODBC backend. This option configures SOCI to use UTF-16 encoding internally for ODBC operations, allowing for the handling of Unicode data. UTF-8 strings will implicitly be converted to and from UTF-16 as needed. Default is OFF.
 
 #### Oracle
 
