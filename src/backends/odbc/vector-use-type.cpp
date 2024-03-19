@@ -207,7 +207,7 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
             for (std::size_t i = 0; i != vsize; ++i)
             {
                 *pos++ = (*vp)[i];
-                *pos++ = 0; 
+                *pos++ = 0;
             }
 
             sqlType = SQL_CHAR;
