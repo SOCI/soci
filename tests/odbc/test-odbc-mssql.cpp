@@ -91,7 +91,7 @@ TEST_CASE("MS SQL unicode string", "[odbc][mssql][unicode]")
     } unicode_table_creator(sql);
 
     // std::string str_in { "สวัสดีชาวโลก!" };
-    std::string str_in { u8"\u0E2A\u0E27\u0E31\u0E2A\u0E14\u0E35\u0E0A\u0E32\u0E27\u0E42\u0E25\u0E01!" };
+    std::string str_in { "\u0E2A\u0E27\u0E31\u0E2A\u0E14\u0E35\u0E0A\u0E32\u0E27\u0E42\u0E25\u0E01!" };
 
     CHECK_NOTHROW((
         sql << "insert into soci_test(str) values(N'" + str_in + "')"
