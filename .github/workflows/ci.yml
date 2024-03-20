@@ -90,8 +90,7 @@ jobs:
           esac
 
           git config --global init.defaultBranch master
-          git init soci
-          cd soci
+          git init .
           git remote add origin https://github.com/SOCI/soci.git
           git fetch --depth=1 origin $GITHUB_SHA
           git checkout FETCH_HEAD
