@@ -31,8 +31,12 @@ inline std::size_t get_vector_size(exchange_type e, void *data)
     {
         case x_char:
             return exchange_vector_type_cast<x_char>(data).size();
+        case x_wchar:
+            return exchange_vector_type_cast<x_wchar>(data).size();
         case x_stdstring:
             return exchange_vector_type_cast<x_stdstring>(data).size();
+        case x_stdwstring:
+            return exchange_vector_type_cast<x_stdwstring>(data).size();
         case x_int8:
             return exchange_vector_type_cast<x_int8>(data).size();
         case x_uint8:
@@ -73,8 +77,14 @@ inline void resize_vector(exchange_type e, void *data, std::size_t newSize)
         case x_char:
             exchange_vector_type_cast<x_char>(data).resize(newSize);
             return;
+        case x_wchar:
+            exchange_vector_type_cast<x_wchar>(data).resize(newSize);
+            return;
         case x_stdstring:
             exchange_vector_type_cast<x_stdstring>(data).resize(newSize);
+            return;
+        case x_stdwstring:
+            exchange_vector_type_cast<x_stdwstring>(data).resize(newSize);
             return;
         case x_int8:
             exchange_vector_type_cast<x_int8>(data).resize(newSize);
@@ -131,7 +141,9 @@ inline std::string& vector_string_value(exchange_type e, void *data, std::size_t
             return exchange_vector_type_cast<x_xmltype>(data).at(ind).value;
         case x_longstring:
             return exchange_vector_type_cast<x_longstring>(data).at(ind).value;
+        case x_stdwstring:
         case x_char:
+        case x_wchar:
         case x_int8:
         case x_uint8:
         case x_int16:
@@ -146,6 +158,35 @@ inline std::string& vector_string_value(exchange_type e, void *data, std::size_t
         case x_rowid:
         case x_blob:
             break;
+    }
+    throw soci_error("Can't get the string value from the vector of values with non-supported type.");
+}
+
+inline std::wstring& vector_wstring_value(exchange_type e, void* data, std::size_t ind)
+{
+    switch (e)
+    {
+    case x_stdwstring:
+        return exchange_vector_type_cast<x_stdwstring>(data).at(ind);
+    case x_stdstring:
+    case x_xmltype:
+    case x_longstring:
+    case x_char:
+    case x_wchar:
+    case x_int8:
+    case x_uint8:
+    case x_int16:
+    case x_uint16:
+    case x_int32:
+    case x_uint32:
+    case x_int64:
+    case x_uint64:
+    case x_double:
+    case x_stdtm:
+    case x_statement:
+    case x_rowid:
+    case x_blob:
+        break;
     }
     throw soci_error("Can't get the string value from the vector of values with non-supported type.");
 }

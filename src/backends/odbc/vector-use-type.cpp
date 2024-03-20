@@ -197,6 +197,30 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
             data = buf_;
         }
         break;
+    case x_wchar:
+        {
+            std::vector<wchar_t> *vp
+                = static_cast<std::vector<wchar_t> *>(data_);
+            std::size_t const vsize = vp->size();
+
+            prepare_indicators(vsize);
+
+            size = sizeof(wchar_t) * 2;
+            buf_ = new char[size * vsize];
+
+            wchar_t *pos = reinterpret_cast<wchar_t*>(buf_);
+
+            for (std::size_t i = 0; i != vsize; ++i)
+            {
+                *pos++ = (*vp)[i];
+                *pos++ = 0;
+            }
+
+            sqlType = SQL_WCHAR;
+            cType = SQL_C_WCHAR;
+            data = buf_;
+        }
+        break;
     case x_stdstring:
     case x_xmltype:
     case x_longstring:
@@ -231,6 +255,39 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
             cType = SQL_C_CHAR;
         }
         break;
+    case x_stdwstring:
+        {
+            std::size_t maxSize = 0;
+            std::size_t const vecSize = get_vector_size(type_, data_);
+            prepare_indicators(vecSize);
+            for (std::size_t i = 0; i != vecSize; ++i)
+            {
+                std::size_t sz = vector_wstring_value(type_, data_, i).length();
+                set_sqllen_from_vector_at(i, static_cast<long>(sz) * sizeof(wchar_t));
+                maxSize = sz > maxSize ? sz : maxSize;
+            }
+
+            maxSize++; // For terminating nul.
+
+            buf_ = new char[maxSize * vecSize * sizeof(wchar_t)];
+            memset(buf_, 0, maxSize * vecSize * sizeof(wchar_t));
+
+            char *pos = buf_;
+            for (std::size_t i = 0; i != vecSize; ++i)
+            {
+                std::wstring& value = vector_wstring_value(type_, data_, i);
+                std::memcpy(pos, value.c_str(), value.length() * sizeof(wchar_t));
+                pos += maxSize * sizeof(wchar_t);
+            }
+
+            data = buf_;
+            size = static_cast<SQLINTEGER>(maxSize * sizeof(wchar_t));
+
+            sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_WLONGVARCHAR : SQL_WVARCHAR;
+            cType = SQL_C_WCHAR;    
+
+        }
+    break;
     case x_stdtm:
         {
             std::vector<std::tm> *vp
@@ -338,7 +395,9 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
             break;
 
         case x_char:
+        case x_wchar:
         case x_stdstring:
+        case x_stdwstring:
         case x_xmltype:
         case x_longstring:
             non_null_indicator = SQL_NTS;
@@ -438,7 +497,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
             else
             {
                 // for strings we have already set the values
-                if (type_ != x_stdstring && type_ != x_xmltype && type_ != x_longstring)
+                if (type_ != x_stdstring && type_ != x_xmltype && type_ != x_longstring && type_ != x_stdwstring)
                 {
                     set_sqllen_from_vector_at(i, non_null_indicator);
                 }
@@ -451,7 +510,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
         for (std::size_t i = 0; i != indHolderVec_.size(); ++i)
         {
             // for strings we have already set the values
-            if (type_ != x_stdstring && type_ != x_xmltype && type_ != x_longstring)
+            if (type_ != x_stdstring && type_ != x_xmltype && type_ != x_longstring && type_ != x_stdwstring)
             {
                 set_sqllen_from_vector_at(i, non_null_indicator);
             }

@@ -26,6 +26,7 @@ namespace soci
 enum db_type
 {
     db_string,
+    db_wstring,
     db_int8,
     db_uint8,
     db_int16,
@@ -60,7 +61,9 @@ namespace details
 enum exchange_type
 {
     x_char,
+    x_wchar,
     x_stdstring,
+    x_stdwstring,
     x_int8,
     x_uint8,
     x_int16,
