@@ -131,6 +131,7 @@ struct soci_cast<
 union type_holder
 {
     std::string* s;
+    std::wstring* ws;
     int8_t* i8;
     int16_t* i16;
     int32_t* i32;
@@ -151,6 +152,12 @@ template <>
 struct type_holder_trait<std::string>
 {
     static const db_type type = db_string;
+};
+
+template <>
+struct type_holder_trait<std::wstring>
+{
+    static const db_type type = db_wstring;
 };
 
 template <>
@@ -305,6 +312,9 @@ public:
         case db_string:
             delete val_.s;
             break;
+        case db_wstring:
+            delete val_.ws;
+            break;
         }
     }
 
@@ -345,6 +355,8 @@ public:
         case db_xml:
         case db_string:
             return soci_cast<T, std::string>::cast(*val_.s);
+        case db_wstring:
+            return soci_cast<T, std::wstring>::cast(*val_.ws);
         }
 
         throw std::bad_cast();
@@ -380,6 +392,8 @@ public:
         case db_xml:
         case db_string:
             return soci_return_same<T, std::string>::value(*val_.s);
+        case db_wstring:
+            return soci_return_same<T, std::wstring>::value(*val_.ws);
         }
 
         throw std::bad_cast();
@@ -429,6 +443,9 @@ private:
         case db_xml:
         case db_string:
             val_.s = static_cast<std::string*>(val);
+            return;
+        case db_wstring:
+            val_.ws = static_cast<std::wstring*>(val);
             return;
         }
 
