@@ -79,7 +79,21 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        run: |
+          case "${{matrix.container}}" in
+            ubuntu:18.04)
+              export DEBIAN_FRONTEND=noninteractive
+
+              apt-get update -qq
+              apt-get install -qq git
+              ;;
+          esac
+
+          git init soci
+          cd soci
+          git remote add origin https://github.com/SOCI/soci.git
+          git fetch --depth=1 origin $GITHUB_SHA
+          git checkout FETCH_HEAD
 
       - name: Set environment variables
         run: |
