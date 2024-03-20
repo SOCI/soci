@@ -89,6 +89,7 @@ jobs:
               ;;
           esac
 
+          git config --global init.defaultBranch master
           git init soci
           cd soci
           git remote add origin https://github.com/SOCI/soci.git
