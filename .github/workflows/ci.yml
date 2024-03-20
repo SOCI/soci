@@ -90,6 +90,8 @@ jobs:
           esac
 
           git config --global init.defaultBranch master
+          git config --global --add safe.directory .
+          git config --global advice.detachedHead false
           git init .
           git remote add origin https://github.com/SOCI/soci.git
           git fetch --depth=1 origin $GITHUB_SHA
