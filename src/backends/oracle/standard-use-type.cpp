@@ -201,6 +201,8 @@ void oracle_standard_use_type_backend::prepare_for_bind(
             ociData_ = lobp;
         }
         break;
+    default:
+        throw soci_error("Use element used with non-supported type.");
     }
 }
 
@@ -468,6 +470,7 @@ void oracle_standard_use_type_backend::pre_use(indicator const *ind)
 
     case x_xmltype:
     case x_longstring:
+    case x_stdwstring:
     case x_rowid:
     case x_blob:
         // nothing to do
@@ -682,6 +685,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
             break;
         case x_blob:
         case x_rowid:
+        case x_stdwstring:
         case x_xmltype:
         case x_longstring:
             // nothing to do here

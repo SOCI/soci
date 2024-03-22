@@ -218,6 +218,8 @@ void oracle_vector_into_type_backend::define_by_pos_bulk(
     case x_statement:
     case x_rowid:
     case x_blob:
+    case x_stdwstring:
+    case x_wchar:
         throw soci_error("Unsupported type for vector into parameter");
     }
 
