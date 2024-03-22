@@ -8,6 +8,7 @@
 #ifndef SOCI_TYPE_HOLDER_H_INCLUDED
 #define SOCI_TYPE_HOLDER_H_INCLUDED
 
+#include "soci/blob.h"
 #include "soci/error.h"
 #include "soci/soci-backend.h"
 #include "soci/soci-types.h"
@@ -49,6 +50,26 @@ T* checked_ptr_cast(U* ptr)
 
     return static_cast<T*>(ptr);
 }
+
+template <typename T, typename U, typename Enable = void>
+struct soci_return_same
+{
+    static inline T& value(U&)
+    {
+        throw std::bad_cast();
+    }
+};
+
+template <typename T, typename U>
+struct soci_return_same<
+    T, U,
+    typename std::enable_if<std::is_same<T, U>::value>::type>
+{
+    static inline T& value(U& val)
+    {
+        return val;
+    }
+};
 
 // Type safe conversion that throws if the types are mismatched
 template <typename T, typename U, typename Enable = void>
@@ -120,6 +141,7 @@ union type_holder
     uint64_t* u64;
     double* d;
     std::tm* t;
+    blob* b;
 };
 
 template <typename T>
@@ -223,6 +245,15 @@ struct type_holder_trait<std::tm>
     static const db_type type = db_date;
 };
 
+template <>
+struct type_holder_trait<blob>
+{
+    static const db_type type = db_blob;
+};
+
+struct value_cast_tag{};
+struct value_reference_tag{};
+
 // Class for storing type data instances in a container of holder objects
 class holder
 {
@@ -268,6 +299,8 @@ public:
             delete val_.t;
             break;
         case db_blob:
+            delete val_.b;
+            break;
         case db_xml:
         case db_string:
             delete val_.s;
@@ -282,7 +315,7 @@ public:
 #pragma warning(disable:4702)
 #endif
     template <typename T>
-    T get()
+    T get(value_cast_tag)
     {
         switch (dt_)
         {
@@ -307,9 +340,46 @@ public:
         case db_date:
             return soci_cast<T, std::tm>::cast(*val_.t);
         case db_blob:
+            // blob is not copyable
+            break;
         case db_xml:
         case db_string:
             return soci_cast<T, std::string>::cast(*val_.s);
+        }
+
+        throw std::bad_cast();
+    }
+
+    template <typename T>
+    T& get(value_reference_tag)
+    {
+        switch (dt_)
+        {
+        case db_int8:
+            return soci_return_same<T, int8_t>::value(*val_.i8);
+        case db_int16:
+            return soci_return_same<T, int16_t>::value(*val_.i16);
+        case db_int32:
+            return soci_return_same<T, int32_t>::value(*val_.i32);
+        case db_int64:
+            return soci_return_same<T, int64_t>::value(*val_.i64);
+        case db_uint8:
+            return soci_return_same<T, uint8_t>::value(*val_.u8);
+        case db_uint16:
+            return soci_return_same<T, uint16_t>::value(*val_.u16);
+        case db_uint32:
+            return soci_return_same<T, uint32_t>::value(*val_.u32);
+        case db_uint64:
+            return soci_return_same<T, uint64_t>::value(*val_.u64);
+        case db_double:
+            return soci_return_same<T, double>::value(*val_.d);
+        case db_date:
+            return soci_return_same<T, std::tm>::value(*val_.t);
+        case db_blob:
+            return soci_return_same<T, blob>::value(*val_.b);
+        case db_xml:
+        case db_string:
+            return soci_return_same<T, std::string>::value(*val_.s);
         }
 
         throw std::bad_cast();
@@ -354,6 +424,8 @@ private:
             val_.t = static_cast<std::tm*>(val);
             return;
         case db_blob:
+            val_.b = static_cast<blob*>(val);
+            return;
         case db_xml:
         case db_string:
             val_.s = static_cast<std::string*>(val);
