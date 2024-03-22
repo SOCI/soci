@@ -475,7 +475,7 @@ void oracle_standard_use_type_backend::pre_use(indicator const *ind)
         // nothing to do
         break;
     case x_stdwstring:
-    case x_wchar;
+    case x_wchar:
         throw soci_error("Wide string use elements are not supported by Oracle backend.");
     }
 
@@ -692,7 +692,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
             // nothing to do here
             break;
         case x_stdwstring:
-        case x_wchar;
+        case x_wchar:
             throw soci_error("Wide string use elements are not supported by Oracle backend.");
         }
     }
