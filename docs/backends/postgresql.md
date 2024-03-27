@@ -12,17 +12,13 @@ The SOCI PostgreSQL backend is supported for use with PostgreSQL >= 7.3, althoug
 
 |PostgreSQL|OS|Compiler|
 |--- |--- |--- |
-|9.6|Windows Server 2016|MSVC++ 14.1|
-|9.4|Windows Server 2012 R2|MSVC++ 14.0|
-|9.4|Windows Server 2012 R2|MSVC++ 12.0|
-|9.4|Windows Server 2012 R2|MSVC++ 11.0|
-|9.4|Windows Server 2012 R2|Mingw-w64/GCC 4.8|
-|9.3|Ubuntu 12.04|g++ 4.6.3|
-|9.0|Mac OS X 10.6.6|g++ 4.2|
-|8.4|FreeBSD 8.2|g++ 4.1|
-|8.4|Debian 6|g++ 4.3|
-|8.4|RedHat 5|g++ 4.3|
-|10.03|macOS High Sierra 10.13.5|AppleClang 9.1.0.9020039|
+| 14|macOS 11.7|AppleClang 13|
+| 14|Ubuntu 22.04|gcc 11.4|
+| 13|Windows Server 2019|MSVS 2022|
+| 12|Windows Server 2019|MSVS 2019|
+| 11|Windows Server 2016|MSVS 2017|
+| 10|Windows Server 2012 R2|MSVS 2015|
+|9.4|Windows Server 2012 R2|Mingw-w64/GCC 8.1|
 
 ### Required Client Libraries
 
