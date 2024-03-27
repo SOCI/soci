@@ -125,7 +125,9 @@ The PostgreSQL backend has full support for SOCI's [bulk operations](../binding.
 
 ### blob Data Type
 
-The PostgreSQL backend supports working with data stored in columns of type Blob, via SOCI's [blob](../lobs.md) class with the exception that trimming is not supported.
+The PostgreSQL backend supports working with data stored in columns of type Blob, via SOCI's [blob](../lobs.md) class.
+
+Note that 64-bit offsets require PostgreSQL client library 9.3 or later.
 
 ### rowid Data Type
 
