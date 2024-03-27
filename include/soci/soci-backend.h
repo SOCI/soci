@@ -304,13 +304,7 @@ public:
 
     virtual std::size_t get_len() = 0;
 
-    [[deprecated("Use read_from_start instead")]]
-    virtual std::size_t read(std::size_t offset, void* buf, std::size_t toRead) { return read_from_start(buf, toRead, offset); }
-
     virtual std::size_t read_from_start(void* buf, std::size_t toRead, std::size_t offset) = 0;
-
-    [[deprecated("Use write_from_start instead")]]
-    virtual std::size_t write(std::size_t offset, const void* buf, std::size_t toWrite) { return write_from_start(buf, toWrite, offset); }
 
     virtual std::size_t write_from_start(const void* buf, std::size_t toWrite, std::size_t offset) = 0;
 
@@ -318,7 +312,18 @@ public:
 
     virtual void trim(std::size_t newLen) = 0;
 
+    // Deprecated functions with backend-specific semantics preserved only for
+    // compatibility.
+    [[deprecated("Use read_from_start instead")]]
+    std::size_t read(std::size_t offset, void* buf, std::size_t toRead) { return do_deprecated_read(offset, buf, toRead); }
+
+    [[deprecated("Use write_from_start instead")]]
+    virtual std::size_t write(std::size_t offset, const void* buf, std::size_t toWrite) { return do_deprecated_write(offset, buf, toWrite); }
+
 private:
+    virtual std::size_t do_deprecated_read(std::size_t offset, void* buf, std::size_t toRead) { return read_from_start(buf, toRead, offset); }
+    virtual std::size_t do_deprecated_write(std::size_t offset, const void* buf, std::size_t toWrite) { return write_from_start(buf, toWrite, offset); }
+
     SOCI_NOT_COPYABLE(blob_backend)
 };
 

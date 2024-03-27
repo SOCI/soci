@@ -269,21 +269,7 @@ struct oracle_blob_backend : details::blob_backend
 
     std::size_t get_len() override;
 
-    [[deprecated("Use read_from_start instead")]]
-    std::size_t read(std::size_t offset, void *buf, std::size_t toRead) override
-    {
-        // Offsets are 1-based in Oracle
-        return read_from_start(buf, toRead, offset - 1);
-    }
-
     std::size_t read_from_start(void * buf, std::size_t toRead, std::size_t offset = 0) override;
-
-    [[deprecated("Use write_from_start instead")]]
-    std::size_t write(std::size_t offset, const void *buf, std::size_t toWrite) override
-    {
-        // Offsets are 1-based in Oracle
-        return write_from_start(buf, toWrite, offset - 1);
-    }
 
     std::size_t write_from_start(const void * buf, std::size_t toWrite, std::size_t offset = 0) override;
 
@@ -300,6 +286,18 @@ struct oracle_blob_backend : details::blob_backend
     void ensure_initialized();
 
 private:
+    std::size_t do_deprecated_read(std::size_t offset, void *buf, std::size_t toRead) override
+    {
+        // Offsets are 1-based in Oracle
+        return read_from_start(buf, toRead, offset - 1);
+    }
+
+    std::size_t do_deprecated_write(std::size_t offset, const void *buf, std::size_t toWrite) override
+    {
+        // Offsets are 1-based in Oracle
+        return write_from_start(buf, toWrite, offset - 1);
+    }
+
     oracle_session_backend &session_;
 
     locator_t lobp_;
