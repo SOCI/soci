@@ -6,7 +6,7 @@ SOCI backend for accessing PostgreSQL database.
 
 ### Supported Versions
 
-The SOCI PostgreSQL backend is supported for use with PostgreSQL >= 7.3, although versions older than 8.0 will suffer from limited feature support. See below for details.
+The SOCI PostgreSQL backend is supported for use with PostgreSQL >= 9.0, although older versions may suffer from limited feature support. See below for details.
 
 ### Tested Platforms
 
@@ -158,9 +158,3 @@ The PostgreSQL backend provides the following concrete classes for native API ac
 
 The PostgreSQL backend supports working with data stored in columns of type UUID via simple string operations. All string representations of UUID supported by PostgreSQL are accepted on input, the backend will return the standard
 format of UUID on output. See the test `test_uuid_column_type_support` for usage examples.
-
-## Configuration options
-
-To support older PostgreSQL versions, the following configuration macros are recognized:
-
-* `SOCI_POSTGRESQL_NOSINLGEROWMODE` - disable single mode retrieving query results row-by-row. It is necessary for PostgreSQL prior to version 9.
