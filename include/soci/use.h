@@ -18,7 +18,7 @@ namespace soci
 
 namespace details
 {
-template <typename T, typename Indicator>
+template <typename T, typename Indicator, typename ByValueTag = std::false_type>
 struct use_container
 {
     use_container(T &_t, Indicator &_ind, const std::string &_name)
@@ -32,8 +32,8 @@ private:
 };
 
 typedef void no_indicator;
-template <typename T>
-struct use_container<T, no_indicator>
+template <typename T, typename ByValueTag>
+struct use_container<T, no_indicator, ByValueTag>
 {
     use_container(T &_t, const std::string &_name)
         : t(_t), name(_name) {}
@@ -48,10 +48,16 @@ private:
 
 // soci::use is deleted for rvalues because it will likely lead to subtle stack-use-after-scope bugs.
 template <typename T>
-details::use_container<T, details::no_indicator> use(T &&t, const std::string &name = std::string()) = delete;
+auto use ( T &&t, const std::string &name = std::string () )
+{
+    return details::use_container<T, details::no_indicator, std::true_type> ( t, name );
+}
 
 template <typename T>
-details::use_container<const T, indicator> use(T &&t, indicator & ind, std::string const &name = std::string()) = delete;
+auto use ( T &&t, indicator &&ind, std::string const &name = std::string () )
+{
+    return details::use_container<T, indicator, std::true_type> ( t, ind, name );
+}
 
 template <typename T>
 details::use_container<T, details::no_indicator> use(T &t, const std::string &name = std::string())
@@ -66,8 +72,8 @@ details::use_container<T, indicator> use(T &t, indicator & ind, std::string cons
 { return details::use_container<T, indicator>(t, ind, name); }
 
 template <typename T>
-details::use_container<const T, indicator> use(T const &t, indicator & ind, std::string const &name = std::string())
-{ return details::use_container<const T, indicator>(t, ind, name); }
+auto use(T const &t, indicator const & ind, std::string const &name = std::string())
+{ return details::use_container<const T, const indicator>(t, ind, name); }
 
 // vector containers
 template <typename T>

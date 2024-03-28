@@ -205,6 +205,36 @@ public:
 };
 
 template <typename T>
+struct value_holder
+{
+    using value_type = T;
+    value_holder ( const T& t, const indicator& ind )
+        : saved_val_ ( t ),
+          saved_ind_ ( ind )
+    {
+    }
+    T         saved_val_;
+    indicator saved_ind_;
+};
+
+
+template <typename T>
+class by_value_use_type : value_holder<T>, public use_type<T>
+{
+public:
+    by_value_use_type ( T const& t, std::string const& name = std::string () )
+        : value_holder<T> (t, i_ok),
+          use_type<T> ( value_holder<T>::saved_val_, name )
+    {}
+
+    by_value_use_type ( T const& t, const indicator& ind, std::string const& name = std::string () )
+        : value_holder<T> ( t, ind ),
+          use_type<T> ( value_holder<T>::saved_val_, value_holder<T>::saved_ind_, name )
+    {}
+};
+
+
+template <typename T>
 class use_type<std::vector<T> > : public vector_use_type
 {
 public:
@@ -256,6 +286,18 @@ public:
 };
 
 // helper dispatchers for basic types
+
+template <typename T>
+use_type_ptr do_use ( T& t, std::string const& name, basic_type_tag, std::true_type )
+{
+    return use_type_ptr ( new by_value_use_type<T> ( t, name ) );
+}
+
+template <typename T>
+use_type_ptr do_use ( T& t, indicator& ind, std::string const& name, basic_type_tag, std::true_type )
+{
+    return use_type_ptr ( new by_value_use_type<T> ( t, ind, name ) );
+}
 
 template <typename T>
 use_type_ptr do_use(T & t, std::string const & name, basic_type_tag)

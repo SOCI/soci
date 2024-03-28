@@ -704,6 +704,73 @@ TEST_CASE_METHOD(common_tests, "Basic functionality", "[core][basics]")
     CHECK(fetchEnd == false);
 }
 
+TEST_CASE_METHOD ( common_tests, "Rvalues in use", "[core][basics][rvalue]" )
+{
+    soci::session sql ( backEndFactory_, connectString_ );
+    // base types
+    {
+        auto_table_creator tableCreator ( tc_.table_creator_1 ( sql ) );
+        int r;
+        statement   s ( sql );
+        s.alloc ();
+        s.prepare ( "insert into soci_test (id) values (:t)" );
+        {
+            s.exchange ( use ( 3 ) );
+        }
+        s.define_and_bind ();
+        s.execute ( true );
+        sql << "select id from soci_test", into ( r );
+        CHECK ( r == 3 );
+    }
+    {
+        auto_table_creator tableCreator ( tc_.table_creator_1 ( sql ) );
+        int r{0};
+        indicator   r_ind;
+        statement   s ( sql );
+        s.alloc ();
+        s.prepare ( "insert into soci_test (id) values (:t)" );
+        {
+            s.exchange ( use ( 3, i_null ) );
+        }
+        s.define_and_bind ();
+        s.execute ( true );
+        sql << "select id from soci_test", into ( r, r_ind );
+        CHECK ( r == 0 );
+        CHECK ( r_ind == i_null );
+    }
+    // conversion types
+    {
+        auto_table_creator tableCreator ( tc_.table_creator_1 ( sql ) );
+        int r;
+        statement   s ( sql );
+        s.alloc ();
+        s.prepare ( "insert into soci_test (id) values (:t)" );
+        {
+            s.exchange ( use ( MyInt ( 3 ) ) );
+        }
+        s.define_and_bind ();
+        s.execute ( true );
+        sql << "select id from soci_test", into ( r );
+        CHECK ( r == 3 );
+    }
+    {
+        auto_table_creator tableCreator ( tc_.table_creator_1 ( sql ) );
+        int r{-1};
+        indicator   r_ind;
+        statement   s ( sql );
+        s.alloc ();
+        s.prepare ( "insert into soci_test (id) values (:t)" );
+        {
+            s.exchange ( use ( MyInt ( 3 ), i_null ) );
+        }
+        s.define_and_bind ();
+        s.execute ( true );
+        sql << "select id from soci_test", into ( r, r_ind );
+        CHECK ( r == -1 );
+        CHECK ( r_ind == i_null );
+    }
+}
+
 // "into" tests, type conversions, etc.
 TEST_CASE_METHOD(common_tests, "Use and into", "[core][into]")
 {
