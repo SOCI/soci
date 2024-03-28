@@ -34,6 +34,12 @@ void odbc_standard_into_type_backend::define_by_pos(
         buf_ = new char[size];
         data = buf_;
         break;
+    case x_wchar:
+        odbcType_ = SQL_C_WCHAR;
+        size = 2 * sizeof(wchar_t);
+        buf_ = new char[size];
+        data = buf_;
+        break;
     case x_stdstring:
     case x_longstring:
     case x_xmltype:
@@ -47,6 +53,14 @@ void odbc_standard_into_type_backend::define_by_pos(
         size = static_cast<SQLUINTEGER>(statement_.column_size(position_));
         size = (size >= ODBC_MAX_COL_SIZE || size == 0) ? odbc_max_buffer_length : size;
         size++;
+        buf_ = new char[size];
+        data = buf_;
+        break;
+    case x_stdwstring:
+        odbcType_ = SQL_C_WCHAR;
+        size = static_cast<SQLUINTEGER>(statement_.column_size(position_));
+        size = (size >= ODBC_MAX_COL_SIZE || size == 0) ? odbc_max_buffer_length : size;
+        size += sizeof(wchar_t);
         buf_ = new char[size];
         data = buf_;
         break;
@@ -174,11 +188,24 @@ void odbc_standard_into_type_backend::post_fetch(
         {
             exchange_type_cast<x_char>(data_) = buf_[0];
         }
+        else if (type_ == x_wchar)
+        {
+            exchange_type_cast<x_wchar>(data_) = reinterpret_cast<wchar_t*>(buf_)[0];
+        }
         else if (type_ == x_stdstring)
         {
             std::string& s = exchange_type_cast<x_stdstring>(data_);
             s = buf_;
             if (s.size() >= (odbc_max_buffer_length - 1))
+            {
+                throw soci_error("Buffer size overflow; maybe got too large string");
+            }
+        }
+        else if (type_ == x_stdwstring)
+        {
+            std::wstring& s = exchange_type_cast<x_stdwstring>(data_);
+            s = reinterpret_cast<wchar_t*>(buf_);
+            if (s.size() * sizeof(SQLWCHAR) >= ((odbc_max_buffer_length - 1)))
             {
                 throw soci_error("Buffer size overflow; maybe got too large string");
             }

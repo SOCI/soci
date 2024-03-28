@@ -130,6 +130,8 @@ void set_number_in_vector(void *p, int idx, const sqlite3_column &col)
 
         case db_xml:
             throw soci_error("XML data type is not supported");
+        case db_wstring:
+            throw soci_error("Wide string data type is not supported");
     };
 }
 
@@ -243,6 +245,8 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
 
                     case db_xml:
                         throw soci_error("XML data type is not supported");
+                    case db_wstring:
+                        throw soci_error("Wide string data type is not supported");
                 };
                 break;
             } // x_char
@@ -325,6 +329,9 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                         set_in_vector(data_, i, xml);
                         break;
                     }
+                    
+                    case db_wstring:
+                        throw soci_error("Wide string data type is not supported");
                 };
                 break;
             } // x_stdstring
@@ -409,6 +416,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                     case db_uint32:
                     case db_int64:
                     case db_uint64:
+                    case db_wstring:
                         throw soci_error("Into element used with non-convertible type.");
 
                     case db_xml:
@@ -444,6 +452,8 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
 
             case db_xml:
                 throw soci_error("XML data type is not supported");
+            case db_wstring:
+                throw soci_error("Wide string data type is not supported");
         }
     }
 }

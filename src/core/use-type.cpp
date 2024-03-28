@@ -51,12 +51,20 @@ void standard_use_type::dump_value(std::ostream& os) const
         case x_char:
             os << "'" << exchange_type_cast<x_char>(data_) << "'";
             return;
-
+        
+        case x_wchar:
+            // os << "L\"" << exchange_type_cast<x_wchar>(data_) << L"\"";
+            return;
+        
         case x_stdstring:
             // TODO: Escape quotes?
             os << "\"" << exchange_type_cast<x_stdstring>(data_) << "\"";
             return;
-
+            
+        case x_stdwstring:
+            // TODO: implement
+            return;
+            
         case x_int8:
             os << exchange_type_cast<x_int8>(data_);
             return;

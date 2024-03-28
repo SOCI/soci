@@ -26,6 +26,7 @@ namespace soci
 enum db_type
 {
     db_string,
+    db_wstring,
     db_int8,
     db_uint8,
     db_int16,
@@ -44,7 +45,7 @@ enum db_type
 enum data_type
 {
     dt_string, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long,
-    dt_blob, dt_xml
+    dt_blob, dt_xml, dt_wstring
 };
 
 // the enum type for indicator variables
@@ -60,7 +61,9 @@ namespace details
 enum exchange_type
 {
     x_char,
+    x_wchar,
     x_stdstring,
+    x_stdwstring,
     x_int8,
     x_uint8,
     x_int16,
@@ -105,6 +108,7 @@ inline db_type to_db_type(data_type dt)
         case dt_unsigned_long_long: return db_uint64;
         case dt_blob:               return db_blob;
         case dt_xml:                return db_xml;
+        case dt_wstring:            return db_wstring;
     }
 
     // unreachable
@@ -258,19 +262,20 @@ public:
     {
         switch (dbt)
         {
-            case db_string: return dt_string;
-            case db_date:   return dt_date;
-            case db_double: return dt_double;
+            case db_string:  return dt_string;
+            case db_wstring: return dt_wstring;
+            case db_date:    return dt_date;
+            case db_double:  return dt_double;
             case db_int8:
             case db_uint8:
             case db_int16:
             case db_uint16:
-            case db_int32:  return dt_integer;
+            case db_int32:   return dt_integer;
             case db_uint32:
-            case db_int64:  return dt_long_long;
-            case db_uint64: return dt_unsigned_long_long;
-            case db_blob:   return dt_blob;
-            case db_xml:    return dt_xml;
+            case db_int64:   return dt_long_long;
+            case db_uint64:  return dt_unsigned_long_long;
+            case db_blob:    return dt_blob;
+            case db_xml:     return dt_xml;
         }
 
         // unreachable

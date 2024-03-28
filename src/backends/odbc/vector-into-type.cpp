@@ -99,32 +99,63 @@ void odbc_vector_into_type_backend::define_by_pos(
         colSize_ = sizeof(char) * 2;
         buf_ = new char[colSize_ * vectorSize];
         break;
+    case x_wchar:
+        odbcType_ = SQL_C_WCHAR;
+
+        colSize_ = sizeof(SQLWCHAR) * 2;
+        buf_ = new char[colSize_ * vectorSize];
+        break;
     case x_stdstring:
     case x_xmltype:
     case x_longstring:
+    {
+        odbcType_ = SQL_C_CHAR;
+
+        colSize_ = static_cast<size_t>(get_sqllen_from_value(statement_.column_size(position)));
+        if (colSize_ >= ODBC_MAX_COL_SIZE || colSize_ == 0)
         {
-            odbcType_ = SQL_C_CHAR;
-
-            colSize_ = static_cast<size_t>(get_sqllen_from_value(statement_.column_size(position)));
-            if (colSize_ >= ODBC_MAX_COL_SIZE || colSize_ == 0)
-            {
-                // Column size for text data type can be too large for buffer allocation.
-                colSize_ = odbc_max_buffer_length;
-                // If we are using huge buffer size then we need to fetch rows
-                // one by one as otherwise we could easily run out of memory.
-                // Note that the flag is permanent for the statement and will
-                // never be reset.
-                statement_.fetchVectorByRows_ = true;
-            }
-
-            colSize_++;
-
-            // If we are fetching by a single row, allocate the buffer only for
-            // one value.
-            const std::size_t elementsCount
-                = statement_.fetchVectorByRows_ ? 1 : vectorSize;
-            buf_ = new char[colSize_ * elementsCount];
+            // Column size for text data type can be too large for buffer allocation.
+            colSize_ = odbc_max_buffer_length;
+            // If we are using huge buffer size then we need to fetch rows
+            // one by one as otherwise we could easily run out of memory.
+            // Note that the flag is permanent for the statement and will
+            // never be reset.
+            statement_.fetchVectorByRows_ = true;
         }
+
+        colSize_++;
+
+        // If we are fetching by a single row, allocate the buffer only for
+        // one value.
+        const std::size_t elementsCount
+            = statement_.fetchVectorByRows_ ? 1 : vectorSize;
+        buf_ = new char[colSize_ * elementsCount];
+    }
+    break;
+    case x_stdwstring:
+    {
+        odbcType_ = SQL_C_WCHAR;
+
+        colSize_ = static_cast<size_t>(get_sqllen_from_value(statement_.column_size(position)));
+        if (colSize_ >= ODBC_MAX_COL_SIZE || colSize_ == 0)
+        {
+            // Column size for text data type can be too large for buffer allocation.
+            colSize_ = odbc_max_buffer_length;
+            // If we are using huge buffer size then we need to fetch rows
+            // one by one as otherwise we could easily run out of memory.
+            // Note that the flag is permanent for the statement and will
+            // never be reset.
+            statement_.fetchVectorByRows_ = true;
+        }
+
+        colSize_ += sizeof(SQLWCHAR);
+
+        // If we are fetching by a single row, allocate the buffer only for
+        // one value.
+        const std::size_t elementsCount
+            = statement_.fetchVectorByRows_ ? 1 : vectorSize;
+        buf_ = new char[colSize_ * elementsCount * sizeof(SQLWCHAR)];
+    }
         break;
     case x_stdtm:
         odbcType_ = SQL_C_TYPE_TIMESTAMP;
@@ -195,7 +226,9 @@ void odbc_vector_into_type_backend::rebind_row(std::size_t rowInd)
     // cases that require adjustments and buffer management
 
     case x_char:
+    case x_wchar:
     case x_stdstring:
+    case x_stdwstring:
     case x_xmltype:
     case x_longstring:
     case x_stdtm:
@@ -247,6 +280,19 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
             pos += colSize_;
         }
     }
+    if (type_ == x_wchar)
+    {
+        std::vector<wchar_t> *vp
+            = static_cast<std::vector<wchar_t> *>(data_);
+
+        std::vector<wchar_t> &v(*vp);
+        char *pos = buf_;
+        for (std::size_t i = beginRow; i != endRow; ++i)
+        {
+            v[i] = *reinterpret_cast<wchar_t*>(pos);
+            pos += colSize_;
+        }
+    }
     if (type_ == x_stdstring || type_ == x_xmltype || type_ == x_longstring)
     {
         const char *pos = buf_;
@@ -285,6 +331,42 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
             }
 
             value.assign(pos, end - pos);
+        }
+    }
+    else if (type_ == x_stdwstring)
+    {
+        const wchar_t* pos = reinterpret_cast<wchar_t*>(buf_);
+        std::size_t const colSize = colSize_ / sizeof(wchar_t);
+
+        for (std::size_t i = beginRow; i != endRow; ++i, pos += colSize)
+        {
+            SQLLEN len = get_sqllen_from_vector_at(i);
+
+            std::wstring& value = vector_wstring_value(type_, data_, i);
+            if (len == -1)
+            {
+                // Value is null.
+                value.clear();
+                continue;
+            }
+            else
+            {
+                len = len / sizeof(SQLWCHAR);
+            }
+
+            const wchar_t* end = pos + len;
+            while (end != pos)
+            {
+                // Pre-decrement as "end" is one past the end, as usual.
+                if (*--end != L' ')
+                {
+                    // We must count the last non-space character.
+                    ++end;
+                    break;
+                }
+            }
+
+            value.assign(reinterpret_cast<wchar_t const*>(pos), end - pos);
         }
     }
     else if (type_ == x_stdtm)

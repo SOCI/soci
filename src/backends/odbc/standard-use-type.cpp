@@ -105,9 +105,25 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
         buf_[1] = '\0';
         indHolder_ = SQL_NTS;
         break;
+    case x_wchar:
+        sqlType = SQL_WCHAR;
+        cType = SQL_C_WCHAR;
+        size = 2 * sizeof(wchar_t);
+        buf_ = new char[size];
+        reinterpret_cast<wchar_t*>(buf_)[0] = exchange_type_cast<x_wchar>(data_);
+        reinterpret_cast<wchar_t*>(buf_)[1] = L'\0';
+        indHolder_ = SQL_NTS;
+        break;
     case x_stdstring:
     {
         std::string const& s = exchange_type_cast<x_stdstring>(data_);
+
+        copy_from_string(s, size, sqlType, cType);
+    }
+    break;
+    case x_stdwstring:
+    {
+        std::wstring const& s = exchange_type_cast<x_stdwstring>(data_);
 
         copy_from_string(s, size, sqlType, cType);
     }
@@ -159,6 +175,7 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
     return buf_ ? buf_ : data_;
 }
 
+#if __cplusplus < 201703L // until C++17
 void odbc_standard_use_type_backend::copy_from_string(
         std::string const& s,
         SQLLEN& size,
@@ -174,6 +191,23 @@ void odbc_standard_use_type_backend::copy_from_string(
     buf_[size++] = '\0';
     indHolder_ = SQL_NTS;
 }
+
+void odbc_standard_use_type_backend::copy_from_string(
+    const std::wstring& s,
+    SQLLEN& size,
+    SQLSMALLINT& sqlType,
+    SQLSMALLINT& cType
+) {
+    size = static_cast<SQLLEN>(s.size() * sizeof(wchar_t));
+    sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_WLONGVARCHAR : SQL_WVARCHAR;
+    cType = SQL_C_WCHAR;
+    buf_ = new char[size + sizeof(wchar_t)];
+    wchar_t * const wbuf = reinterpret_cast<wchar_t *>(buf_);
+    std::wmemcpy(wbuf, s.c_str(), s.size());
+    wbuf[s.size()] = L'\0';
+    indHolder_ = SQL_NTS;
+}
+#endif // __cplusplus < 201703L
 
 void odbc_standard_use_type_backend::bind_by_pos(
     int &position, void *data, exchange_type type, bool /* readOnly */)

@@ -201,6 +201,8 @@ void oracle_standard_use_type_backend::prepare_for_bind(
             ociData_ = lobp;
         }
         break;
+    default:
+        throw soci_error("Use element used with non-supported type.");
     }
 }
 
@@ -472,6 +474,9 @@ void oracle_standard_use_type_backend::pre_use(indicator const *ind)
     case x_blob:
         // nothing to do
         break;
+    case x_stdwstring:
+    case x_wchar:
+        throw soci_error("Wide string use elements are not supported by Oracle backend.");
     }
 
     // then handle indicators
@@ -686,6 +691,9 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
         case x_longstring:
             // nothing to do here
             break;
+        case x_stdwstring:
+        case x_wchar:
+            throw soci_error("Wide string use elements are not supported by Oracle backend.");
         }
     }
 

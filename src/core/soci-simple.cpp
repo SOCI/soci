@@ -356,6 +356,7 @@ struct statement_wrapper
     std::vector<db_type> into_types; // for both single and bulk
     std::vector<indicator> into_indicators;
     std::map<int, std::string> into_strings;
+    std::map<int, std::wstring> into_wstrings;
     std::map<int, int8_t> into_int8;
     std::map<int, uint8_t> into_uint8;
     std::map<int, int16_t> into_int16;
@@ -370,6 +371,7 @@ struct statement_wrapper
 
     std::vector<std::vector<indicator> > into_indicators_v;
     std::map<int, std::vector<std::string> > into_strings_v;
+    std::map<int, std::vector<std::wstring> > into_wstrings_v;
     std::map<int, std::vector<int8_t> > into_int8_v;
     std::map<int, std::vector<uint8_t> > into_uint8_v;
     std::map<int, std::vector<int16_t> > into_int16_v;
@@ -384,6 +386,7 @@ struct statement_wrapper
     // use elements
     std::map<std::string, indicator> use_indicators;
     std::map<std::string, std::string> use_strings;
+    std::map<std::string, std::wstring> use_wstrings;
     std::map<std::string, int8_t> use_int8;
     std::map<std::string, uint8_t> use_uint8;
     std::map<std::string, int16_t> use_int16;
@@ -398,6 +401,7 @@ struct statement_wrapper
 
     std::map<std::string, std::vector<indicator> > use_indicators_v;
     std::map<std::string, std::vector<std::string> > use_strings_v;
+    std::map<std::string, std::vector<std::wstring> > use_wstrings_v;
     std::map<std::string, std::vector<int8_t> > use_int8_v;
     std::map<std::string, std::vector<uint8_t> > use_uint8_v;
     std::map<std::string, std::vector<int16_t> > use_int16_v;
@@ -618,6 +622,17 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
                 name_exists = (it != wrapper.use_strings.end());
             }
             break;
+        case db_wstring:
+            {
+                typedef std::map
+                    <
+                        std::string,
+                        std::wstring
+                    >::const_iterator iterator;
+                iterator const it = wrapper.use_wstrings.find(name);
+                name_exists = (it != wrapper.use_wstrings.end());
+            }
+            break;
         case db_int8:
             {
                 typedef std::map<std::string, int8_t>::const_iterator iterator;
@@ -716,6 +731,17 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
                     >::const_iterator iterator;
                 iterator const it = wrapper.use_strings_v.find(name);
                 name_exists = (it != wrapper.use_strings_v.end());
+            }
+            break;
+        case db_wstring:
+            {
+                typedef std::map
+                    <
+                        std::string,
+                        std::vector<std::wstring>
+                    >::const_iterator iterator;
+                iterator const it = wrapper.use_wstrings_v.find(name);
+                name_exists = (it != wrapper.use_wstrings_v.end());
             }
             break;
         case db_int8:
@@ -1593,6 +1619,9 @@ SOCI_DECL void soci_into_resize_v(statement_handle st, int new_size)
         {
         case db_string:
             wrapper->into_strings_v[i].resize(new_size);
+            break;
+        case db_wstring:
+            wrapper->into_wstrings_v[i].resize(new_size);
             break;
         case db_int8:
             wrapper->into_int8_v[i].resize(new_size);
@@ -3040,6 +3069,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
                     wrapper->st.exchange(
                         into(wrapper->into_strings[i], wrapper->into_indicators[i]));
                     break;
+                case db_wstring:
+                    wrapper->st.exchange(
+                        into(wrapper->into_wstrings[i], wrapper->into_indicators[i]));
+                    break;
                 case db_int8:
                     wrapper->st.exchange(
                         into(wrapper->into_int8[i], wrapper->into_indicators[i]));
@@ -3100,6 +3133,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
                 case db_string:
                     wrapper->st.exchange(
                         into(wrapper->into_strings_v[i], wrapper->into_indicators_v[i]));
+                    break;
+                case db_wstring:
+                    wrapper->st.exchange(
+                        into(wrapper->into_wstrings_v[i], wrapper->into_indicators_v[i]));
                     break;
                 case db_int8:
                     wrapper->st.exchange(
