@@ -330,15 +330,23 @@ struct sqlite3_session_backend : details::session_backend
             case db_double:
                 return "real";
             case db_date:
-            case db_int8:
-            case db_uint8:
-            case db_int16:
-            case db_uint16:
-            case db_int32:
-            case db_uint32:
-            case db_int64:
-            case db_uint64:
                 return "integer";
+            case db_int8:
+                return "tinyint";
+            case db_uint8:
+                return "unsignedtinyint";
+            case db_int16:
+                return "smallint";
+            case db_uint16:
+                return "unsignedsmallint";
+            case db_int32:
+                return "integer";
+            case db_uint32:
+                return "unsignedint";
+            case db_int64:
+                return "bigint";
+            case db_uint64:
+                return "unsignedbigint";
             case db_blob:
                 return "blob";
             default:
