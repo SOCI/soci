@@ -112,6 +112,7 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
             CHECK(t1.tm_mday == t2.tm_mday);
             CHECK(t1.tm_mon == t2.tm_mon);
             CHECK(t1.tm_year == t2.tm_year);    
+            CHECK(1900 + t1.tm_year == i);
         }
     }    
 }
