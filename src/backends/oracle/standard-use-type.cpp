@@ -450,7 +450,7 @@ void oracle_standard_use_type_backend::pre_use(indicator const *ind)
             ub1* pos = reinterpret_cast<ub1*>(buf_);
 
             *pos++ = static_cast<ub1>(100 + (1900 + t.tm_year) / 100);
-            *pos++ = static_cast<ub1>(100 + t.tm_year % 100);
+            *pos++ = static_cast<ub1>(100 + (t.tm_year % 100 + 100) % 100);
             *pos++ = static_cast<ub1>(t.tm_mon + 1);
             *pos++ = static_cast<ub1>(t.tm_mday);
             *pos++ = static_cast<ub1>(t.tm_hour + 1);
