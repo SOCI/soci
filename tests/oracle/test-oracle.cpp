@@ -85,6 +85,35 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
 
         CHECK(t_out == std::string(buf));
     }
+
+    {
+        // date and time - between years 1 - 2201
+        for(int i = 1; i <= 2201; i = i + 50)
+        {
+            char t[10];
+            sprintf(t, "%04d", i);
+
+            std::string date = std::to_string(i) + "-03-28 14:06:13";
+            std::tm t1 {}, t2 {};
+            strptime(date.c_str(), "%Y-%m-%d %H:%M:%S", &t2);
+
+            sql << "select t from (select :t as t from dual)",
+                into(t1), use(t2);
+
+            char buf1[25];
+            char buf2[25];
+            strftime(buf1, sizeof(buf1), "%m-%d-%Y %H:%M:%S", &t1);
+            strftime(buf2, sizeof(buf2), "%m-%d-%Y %H:%M:%S", &t2);
+
+            CHECK(std::string(buf1) == std::string(buf2));
+            CHECK(t1.tm_sec == t2.tm_sec);
+            CHECK(t1.tm_min == t2.tm_min);
+            CHECK(t1.tm_hour == t2.tm_hour);
+            CHECK(t1.tm_mday == t2.tm_mday);
+            CHECK(t1.tm_mon == t2.tm_mon);
+            CHECK(t1.tm_year == t2.tm_year);    
+        }
+    }    
 }
 
 // explicit calls test
