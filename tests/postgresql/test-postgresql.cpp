@@ -1161,7 +1161,7 @@ struct test_enum_with_explicit_custom_type_int_rowset : table_creator_base
 
         try
         {
-            sql << "CREATE TABLE soci_test( Type integer)";
+            sql << "CREATE TABLE soci_test( Type smallint)";
             ;
         }
         catch (...)
