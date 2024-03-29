@@ -188,45 +188,6 @@ private:
     // Copy string data to buf_ and set size, sqlType and cType to the values
     // appropriate for strings.
 
-    // Build only for C++17 and later
-#if __cplusplus >= 201703L // C++17 or later
-    template<typename StringType>
-    void copy_from_string(
-        StringType const& s,
-        SQLLEN& size,
-        SQLSMALLINT& sqlType,
-        SQLSMALLINT& cType
-    )
-    {
-        constexpr size_t charSize = sizeof(typename StringType::value_type);
-
-        size = s.size() * charSize;
-
-        // Adjust SQL types according to the character size
-        if constexpr (charSize > 1)
-        {
-            sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_WLONGVARCHAR : SQL_WVARCHAR;
-            cType = SQL_C_WCHAR;
-        }
-        else
-        {
-            sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_LONGVARCHAR : SQL_VARCHAR;
-            cType = SQL_C_CHAR;
-        }
-
-        buf_ = new char[size + charSize];
-        memcpy(buf_, s.c_str(), size);
-
-        if constexpr (charSize > 1) {
-            reinterpret_cast<wchar_t*>(buf_)[s.size()] = L'\0';
-        }
-        else {
-            buf_[size] = '\0';
-        }
-
-        indHolder_ = SQL_NTS;
-    }
-#else // __cplusplus >= 201703L
     void copy_from_string(std::string const& s,
                           SQLLEN& size,
                           SQLSMALLINT& sqlType,
@@ -237,7 +198,6 @@ private:
                           SQLLEN& size,
                           SQLSMALLINT& sqlType,
                           SQLSMALLINT& cType);
-#endif // __cplusplus >= 201703L
 
 };
 

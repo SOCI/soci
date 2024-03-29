@@ -175,7 +175,6 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
     return buf_ ? buf_ : data_;
 }
 
-#if __cplusplus < 201703L // until C++17
 void odbc_standard_use_type_backend::copy_from_string(
         std::string const& s,
         SQLLEN& size,
@@ -207,7 +206,6 @@ void odbc_standard_use_type_backend::copy_from_string(
     wbuf[s.size()] = L'\0';
     indHolder_ = SQL_NTS;
 }
-#endif // __cplusplus < 201703L
 
 void odbc_standard_use_type_backend::bind_by_pos(
     int &position, void *data, exchange_type type, bool /* readOnly */)
