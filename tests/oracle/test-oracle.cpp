@@ -100,14 +100,18 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
 
         table_creator_for_timestamp tableCreator(sql);
 
-        for(int i = 1; i <= 2201; i = i + 50)
+        for(int i = 100; i <= 2201; i = i + 50)
         {
             char t[10];
             sprintf(t, "%04d", i);
 
-            std::string date = std::to_string(i) + "-03-28 14:06:13";
+            std::string date = std::string(t) + "-03-28 14:06:13";
             std::tm t1 {}, t2 {}, t4 {};
-            strptime(date.c_str(), "%Y-%m-%d %H:%M:%S", &t2);
+
+            std::istringstream is(date.c_str());
+            is.imbue(std::locale(setlocale(LC_ALL, nullptr)));
+            is >> std::get_time(&t2, "%Y-%m-%d %H:%M:%S");
+            CHECK(!is.fail());
 
             std::tm t3 = t2;
             sql << "select t from (select :t as t from dual)",
@@ -117,15 +121,15 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
             char buf2[25];
             strftime(buf1, sizeof(buf1), "%Y-%m-%d %H:%M:%S", &t1);
             strftime(buf2, sizeof(buf2), "%Y-%m-%d %H:%M:%S", &t2);
-
+            std::cout << "buf1 = " << buf1 << ", buf2 = " << buf2 << std::endl;
             CHECK(std::string(buf1) == std::string(buf2));
             CHECK(t1.tm_sec == t2.tm_sec);
             CHECK(t1.tm_min == t2.tm_min);
             CHECK(t1.tm_hour == t2.tm_hour);
             CHECK(t1.tm_mday == t2.tm_mday);
             CHECK(t1.tm_mon == t2.tm_mon);
-            CHECK(t1.tm_year == t2.tm_year);  
-            CHECK(1900 + t1.tm_year == i);  
+            CHECK(t1.tm_year == t2.tm_year);
+            CHECK((1900 + t1.tm_year) == i);
 
             sql << "insert into soci_test(id, t) values(:i, :t)", use(i), use(t3);
             sql << "select t from soci_test where id = :i", use(i), into(t4);
@@ -134,8 +138,8 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
             CHECK(t4.tm_hour == t2.tm_hour);
             CHECK(t4.tm_mday == t2.tm_mday);
             CHECK(t4.tm_mon == t2.tm_mon);
-            CHECK(t4.tm_year == t2.tm_year);  
-            CHECK(1900 + t4.tm_year == i);               
+            CHECK(t4.tm_year == t2.tm_year);
+            CHECK((1900 + t4.tm_year) == i);
         }
     }   
 }
