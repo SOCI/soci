@@ -262,7 +262,7 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
             prepare_indicators(vecSize);
             for (std::size_t i = 0; i != vecSize; ++i)
             {
-                std::size_t sz = vector_wstring_value(type_, data_, i).length();
+                std::size_t sz = exchange_vector_type_cast<x_stdwstring>(data_).at(i).length();
                 set_sqllen_from_vector_at(i, static_cast<long>(sz) * sizeof(wchar_t));
                 maxSize = sz > maxSize ? sz : maxSize;
             }
@@ -275,7 +275,7 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
             char *pos = buf_;
             for (std::size_t i = 0; i != vecSize; ++i)
             {
-                std::wstring& value = vector_wstring_value(type_, data_, i);
+                std::wstring& value = exchange_vector_type_cast<x_stdwstring>(data_).at(i);
                 std::memcpy(pos, value.c_str(), value.length() * sizeof(wchar_t));
                 pos += maxSize * sizeof(wchar_t);
             }

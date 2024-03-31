@@ -162,35 +162,6 @@ inline std::string& vector_string_value(exchange_type e, void *data, std::size_t
     throw soci_error("Can't get the string value from the vector of values with non-supported type.");
 }
 
-inline std::wstring& vector_wstring_value(exchange_type e, void* data, std::size_t ind)
-{
-    switch (e)
-    {
-    case x_stdwstring:
-        return exchange_vector_type_cast<x_stdwstring>(data).at(ind);
-    case x_stdstring:
-    case x_xmltype:
-    case x_longstring:
-    case x_char:
-    case x_wchar:
-    case x_int8:
-    case x_uint8:
-    case x_int16:
-    case x_uint16:
-    case x_int32:
-    case x_uint32:
-    case x_int64:
-    case x_uint64:
-    case x_double:
-    case x_stdtm:
-    case x_statement:
-    case x_rowid:
-    case x_blob:
-        break;
-    }
-    throw soci_error("Can't get the string value from the vector of values with non-supported type.");
-}
-
 } // namespace details
 
 } // namespace soci

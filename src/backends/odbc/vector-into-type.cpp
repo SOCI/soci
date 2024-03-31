@@ -342,7 +342,7 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
         {
             SQLLEN len = get_sqllen_from_vector_at(i);
 
-            std::wstring& value = vector_wstring_value(type_, data_, i);
+            std::wstring& value = exchange_vector_type_cast<x_stdwstring>(data_).at(i);
             if (len == -1)
             {
                 // Value is null.
