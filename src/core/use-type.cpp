@@ -53,7 +53,8 @@ void standard_use_type::dump_value(std::ostream& os) const
             return;
         
         case x_wchar:
-            // os << "L\"" << exchange_type_cast<x_wchar>(data_) << L"\"";
+            // TODO: implement
+            os << "<wchar>";
             return;
         
         case x_stdstring:
@@ -63,6 +64,7 @@ void standard_use_type::dump_value(std::ostream& os) const
             
         case x_stdwstring:
             // TODO: implement
+            os << "<wstring>";
             return;
             
         case x_int8:
