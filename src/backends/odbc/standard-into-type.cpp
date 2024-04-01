@@ -12,6 +12,9 @@
 #include "soci-cstrtoi.h"
 #include "soci-exchange-cast.h"
 #include "soci-mktime.h"
+#if defined(_WIN32) || defined(_WIN64)
+#include "soci-unicode.h"
+#endif // _WIN32 || _WIN64
 #include <cstdint>
 #include <ctime>
 
@@ -24,6 +27,12 @@ void odbc_standard_into_type_backend::define_by_pos(
     data_ = data;
     type_ = type;
     position_ = position++;
+
+#if defined(_WIN32) || defined(_WIN64)
+    std::string colName;
+    statement_.describe_column(position_, colType_, colName);
+#endif // _WIN32 || _WIN64
+    unsigned charSize = sizeof(char);
 
     SQLUINTEGER size = 0;
     switch (type_)
@@ -44,6 +53,14 @@ void odbc_standard_into_type_backend::define_by_pos(
     case x_longstring:
     case x_xmltype:
         odbcType_ = SQL_C_CHAR;
+
+#if defined(_WIN32) || defined(_WIN64)
+        if (colType_ == db_wstring)
+        {
+            odbcType_ = SQL_C_WCHAR;
+            charSize = sizeof(SQLWCHAR);
+        }
+#endif // _WIN32 || _WIN64
         // For LONGVARCHAR fields the returned size is ODBC_MAX_COL_SIZE
         // (or 0 for some backends), but this doesn't correspond to the actual
         // field size, which can be (much) greater. For now we just used
@@ -52,7 +69,7 @@ void odbc_standard_into_type_backend::define_by_pos(
         // not trivial, so for now we're stuck with this suboptimal solution.
         size = static_cast<SQLUINTEGER>(statement_.column_size(position_));
         size = (size >= ODBC_MAX_COL_SIZE || size == 0) ? odbc_max_buffer_length : size;
-        size++;
+        size += charSize;
         buf_ = new char[size];
         data = buf_;
         break;
@@ -195,7 +212,21 @@ void odbc_standard_into_type_backend::post_fetch(
         else if (type_ == x_stdstring)
         {
             std::string& s = exchange_type_cast<x_stdstring>(data_);
+
+#if defined(_WIN32) || defined(_WIN64)
+            if (colType_ == db_wstring)
+            {
+                const wchar_t* wBuf = reinterpret_cast<wchar_t*>(buf_);
+                s = wide_to_utf8(wBuf);
+            }
+            else
+            {
+                s = buf_;
+            }
+#else
             s = buf_;
+#endif
+
             if (s.size() >= (odbc_max_buffer_length - 1))
             {
                 throw soci_error("Buffer size overflow; maybe got too large string");

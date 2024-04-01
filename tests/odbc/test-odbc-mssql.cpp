@@ -75,7 +75,7 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
     );
 }
 
-TEST_CASE("MS SQL wide string", "[odbc][mssql][widestring]")
+TEST_CASE("MS SQL wide string", "[odbc][mssql][wstring]")
 {
     soci::session sql(backEnd, connectString);
 
@@ -101,7 +101,7 @@ TEST_CASE("MS SQL wide string", "[odbc][mssql][widestring]")
 
 }
 
-TEST_CASE("MS SQL wide string vector", "[odbc][mssql][vector][widestring]")
+TEST_CASE("MS SQL wide string vector", "[odbc][mssql][vector][wstring]")
 {
     soci::session sql(backEnd, connectString);
 
@@ -194,6 +194,33 @@ TEST_CASE("MS SQL wchar vector", "[odbc][mssql][vector][wchar]")
     {
         CHECK(ch_out[i] == ch_in[i]);
     }
+}
+
+TEST_CASE("MS SQL wide string stream", "[odbc][mssql][string][stream][utf8-utf16-conversion]")
+{
+    soci::session sql(backEnd, connectString);
+
+    struct wide_text_table_creator : public table_creator_base
+    {
+        explicit wide_text_table_creator(soci::session& sql)
+            : table_creator_base(sql)
+        {
+            sql << "create table soci_test ("
+                "wide_text nvarchar(40) null"
+                ")";
+        }
+    } wide_text_table_creator(sql);
+
+    //std::string const str_in = u8"สวัสดี!";
+    std::string const str_in = "\xe0\xb8\xaa\xe0\xb8\xa7\xe0\xb8\xb1\xe0\xb8\xaa\xe0\xb8\x94\xe0\xb8\xb5!";
+    
+    sql << "insert into soci_test(wide_text) values(N'" << str_in << "')";
+
+    std::string str_out;
+    sql << "select wide_text from soci_test", into(str_out);
+
+    CHECK(str_in == str_out);
+
 }
 
 // DDL Creation objects for common tests
