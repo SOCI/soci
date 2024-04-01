@@ -75,6 +75,8 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
     );
 }
 
+#if defined(_WIN32) || defined(_WIN64)
+
 TEST_CASE("MS SQL wide string", "[odbc][mssql][wstring]")
 {
     soci::session sql(backEnd, connectString);
@@ -219,9 +221,15 @@ TEST_CASE("MS SQL wide string stream", "[odbc][mssql][string][stream][utf8-utf16
     std::string str_out;
     sql << "select wide_text from soci_test", into(str_out);
 
-    CHECK(str_in == str_out);
+    std::wstring wstr_out;
+    sql << "select wide_text from soci_test", into(wstr_out);
+
+    CHECK(str_out == str_in);
+    CHECK(wstr_out == L"\u0E2A\u0E27\u0E31\u0E2A\u0E14\u0E35\u0021");
 
 }
+
+#endif // defined(_WIN32) || defined(_WIN64)
 
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
