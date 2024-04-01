@@ -75,6 +75,8 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
     );
 }
 
+#if defined(_WIN32) || defined(_WIN64)
+
 TEST_CASE("MS SQL wide string", "[odbc][mssql][wstring]")
 {
     soci::session sql(backEnd, connectString);
@@ -196,7 +198,7 @@ TEST_CASE("MS SQL wchar vector", "[odbc][mssql][vector][wchar]")
     }
 }
 
-TEST_CASE("MS SQL wide string stream", "[odbc][mssql][string][stream][utf8-utf16-conversion]")
+TEST_CASE("MS SQL string stream implicit unicode conversion", "[odbc][mssql][string][stream][utf8-utf16-conversion]")
 {
     soci::session sql(backEnd, connectString);
 
@@ -219,9 +221,47 @@ TEST_CASE("MS SQL wide string stream", "[odbc][mssql][string][stream][utf8-utf16
     std::string str_out;
     sql << "select wide_text from soci_test", into(str_out);
 
-    CHECK(str_in == str_out);
+    std::wstring wstr_out;
+    sql << "select wide_text from soci_test", into(wstr_out);
+
+    CHECK(str_out == str_in);
+    CHECK(wstr_out == L"\u0E2A\u0E27\u0E31\u0E2A\u0E14\u0E35\u0021");
 
 }
+
+
+TEST_CASE("MS SQL wide string stream implicit unicode conversion", "[odbc][mssql][wstring][stream][utf8-utf16-conversion]")
+{
+    soci::session sql(backEnd, connectString);
+
+    struct wide_text_table_creator : public table_creator_base
+    {
+        explicit wide_text_table_creator(soci::session& sql)
+            : table_creator_base(sql)
+        {
+            sql << "create table soci_test ("
+                "wide_text nvarchar(40) null"
+                ")";
+        }
+    } wide_text_table_creator(sql);
+
+    //std::string const str_in = u8"สวัสดี!";
+    std::wstring const wstr_in = L"\u0E2A\u0E27\u0E31\u0E2A\u0E14\u0E35\u0021";
+
+    sql << "insert into soci_test(wide_text) values(N'" << wstr_in << "')";
+
+    std::string str_out;
+    sql << "select wide_text from soci_test", into(str_out);
+
+    std::wstring wstr_out;
+    sql << "select wide_text from soci_test", into(wstr_out);
+
+    CHECK(str_out == "\xe0\xb8\xaa\xe0\xb8\xa7\xe0\xb8\xb1\xe0\xb8\xaa\xe0\xb8\x94\xe0\xb8\xb5!");
+    CHECK(wstr_out == wstr_in);
+
+}
+
+#endif // defined(_WIN32) || defined(_WIN64)
 
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
