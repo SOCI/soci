@@ -11,16 +11,16 @@
 
 include(CMakeDependentOption)
 
-option(SOCI_POSTGRESQL_NOSINGLEROWMODE
-  "Do not use single row mode. PostgreSQL <9 portability."
+option(SOCI_POSTGRESQL_NO_LO64
+  "Do not use lo_xxx64() functions for compatibility with PostgreSQL < 9.3"
   OFF)
 
-if (POSTGRESQL_VERSION VERSION_LESS "9.0.0")
-  set(SOCI_POSTGRESQL_NOSINGLEROWMODE ON CACHE BOOL "Use single row mode for PostgreSQL 9+" FORCE)
+if (POSTGRESQL_VERSION VERSION_LESS "9.3.0")
+  set(SOCI_POSTGRESQL_NO_LO64 ON CACHE BOOL "Avoid using lo_xxx64() functions" FORCE)
 endif()
 
-if(SOCI_POSTGRESQL_NOSINGLEROWMODE)
-  add_definitions(-DSOCI_POSTGRESQL_NOSINGLEROWMODE=1)
+if(SOCI_POSTGRESQL_NO_LO64)
+  add_definitions(-DSOCI_POSTGRESQL_NO_LO64=1)
 endif()
 
 soci_backend(PostgreSQL
@@ -29,4 +29,4 @@ soci_backend(PostgreSQL
   AUTHORS "Maciej Sobczak, Stephen Hutton"
   MAINTAINERS "Mateusz Loskot")
 
-boost_report_value(SOCI_POSTGRESQL_NOSINLGEROWMODE)
+boost_report_value(SOCI_POSTGRESQL_NO_LO64)

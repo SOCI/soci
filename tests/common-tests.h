@@ -3323,6 +3323,121 @@ TEST_CASE_METHOD(common_tests, "Dynamic binding with type conversions", "[core][
     }
 }
 
+// Dynamic bindings with type casts
+TEST_CASE_METHOD(common_tests, "Dynamic row binding 4", "[core][dynamic]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    SECTION("simple type cast")
+    {
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+        sql << "insert into soci_test(id, d, str, tm)"
+            << " values(10, 20.0, 'foobar',"
+            << tc_.to_date_time("2005-12-19 22:14:17")
+            << ")";
+
+        {
+            row r;
+            sql << "select id from soci_test", into(r);
+
+            CHECK(r.size() == 1);
+            CHECK(r.get<int8_t>(0) == 10);
+            CHECK(r.get<int16_t>(0) == 10);
+            CHECK(r.get<int32_t>(0) == 10);
+            CHECK(r.get<int64_t>(0) == 10);
+            CHECK(r.get<uint8_t>(0) == 10);
+            CHECK(r.get<uint16_t>(0) == 10);
+            CHECK(r.get<uint32_t>(0) == 10);
+            CHECK(r.get<uint64_t>(0) == 10);
+            CHECK_THROWS_AS(r.get<double>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<std::string>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<std::tm>(0), std::bad_cast);
+        }
+        {
+            row r;
+            sql << "select d from soci_test", into(r);
+
+            CHECK(r.size() == 1);
+            CHECK_THROWS_AS(r.get<int8_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<int16_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<int32_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<int64_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<uint8_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<uint16_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<uint32_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<uint64_t>(0), std::bad_cast);
+            ASSERT_EQUAL_APPROX(r.get<double>(0), 20.0);
+            CHECK_THROWS_AS(r.get<std::string>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<std::tm>(0), std::bad_cast);
+        }
+        {
+            row r;
+            sql << "select str from soci_test", into(r);
+
+            CHECK(r.size() == 1);
+            CHECK_THROWS_AS(r.get<int8_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<int16_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<int32_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<int64_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<uint8_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<uint16_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<uint32_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<uint64_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<double>(0), std::bad_cast);
+            CHECK(r.get<std::string>(0) == "foobar");
+            CHECK_THROWS_AS(r.get<std::tm>(0), std::bad_cast);
+        }
+        {
+            row r;
+            sql << "select tm from soci_test", into(r);
+
+            CHECK(r.size() == 1);
+            CHECK_THROWS_AS(r.get<int8_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<int16_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<int32_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<int64_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<uint8_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<uint16_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<uint32_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<uint64_t>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<double>(0), std::bad_cast);
+            CHECK_THROWS_AS(r.get<std::string>(0), std::bad_cast);
+            CHECK(r.get<std::tm>(0).tm_year == 105);
+            CHECK(r.get<std::tm>(0).tm_mon == 11);
+            CHECK(r.get<std::tm>(0).tm_mday == 19);
+            CHECK(r.get<std::tm>(0).tm_hour == 22);
+            CHECK(r.get<std::tm>(0).tm_min == 14);
+            CHECK(r.get<std::tm>(0).tm_sec == 17);
+        }
+    }
+    SECTION("overflowing type cast")
+    {
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+        sql << "insert into soci_test(id)"
+            << " values("
+            << (std::numeric_limits<int32_t>::max)()
+            << ")";
+
+        row r;
+        sql << "select id from soci_test", into(r);
+
+        intmax_t v = (intmax_t)(std::numeric_limits<int32_t>::max)();
+        uintmax_t uv = (uintmax_t)(std::numeric_limits<int32_t>::max)();
+
+        CHECK(r.size() == 1);
+        CHECK_THROWS_AS(r.get<int8_t>(0), std::bad_cast);
+        CHECK_THROWS_AS(r.get<int16_t>(0), std::bad_cast);
+        CHECK(r.get<int32_t>(0) == v);
+        CHECK(r.get<int64_t>(0) == v);
+        CHECK_THROWS_AS(r.get<uint8_t>(0), std::bad_cast);
+        CHECK_THROWS_AS(r.get<uint16_t>(0), std::bad_cast);
+        CHECK(r.get<uint32_t>(0) == uv);
+        CHECK(r.get<uint64_t>(0) == uv);
+    }
+}
+
 TEST_CASE_METHOD(common_tests, "Prepared insert with ORM", "[core][orm]")
 {
     soci::session sql(backEndFactory_, connectString_);

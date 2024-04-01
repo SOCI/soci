@@ -7,6 +7,7 @@
 
 #define SOCI_SOURCE
 #include "soci/row.h"
+#include "soci/type-holder.h"
 
 #include <cstddef>
 #include <cctype>
@@ -114,7 +115,7 @@ template <>
 blob row::move_as<blob>(std::size_t pos) const
 {
     typedef typename type_conversion<blob>::base_type base_type;
-    base_type & baseVal = holders_.at(pos)->get<base_type>();
+    base_type & baseVal = holders_.at(pos)->get<base_type>(value_reference_tag{});
 
     blob ret;
     type_conversion<blob>::move_from_base(baseVal, *indicators_.at(pos), ret);

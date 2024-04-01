@@ -22,6 +22,20 @@
 using namespace soci;
 using namespace soci::details;
 
+// We need this helper function when using ancient PostgreSQL versions without
+// support for 64-bit offets.
+#ifdef SOCI_POSTGRESQL_NO_LO64
+static int pg_check_fits_32_bits(std::size_t len)
+{
+    if (len > 0x7fffffff)
+    {
+        throw soci_error("64-bit offsets support requires PostgreSQL 9.3 or later");
+    }
+
+    return static_cast<int>(len);
+}
+#endif // PostgreSQL < 9.3
+
 
 postgresql_blob_backend::blob_details::blob_details() : oid(InvalidOid), fd(-1) {}
 
@@ -144,7 +158,11 @@ void postgresql_blob_backend::trim(std::size_t newLen)
 
     init();
 
+#ifndef SOCI_POSTGRESQL_NO_LO64
     int ret_code = lo_truncate64(session_.conn_, details_.fd, newLen);
+#else
+    int ret_code = lo_truncate(session_.conn_, details_.fd, pg_check_fits_32_bits(newLen));
+#endif
 
     if (ret_code < 0)
     {
@@ -232,7 +250,11 @@ void postgresql_blob_backend::reset()
 std::size_t do_seek(std::size_t toOffset, int from,
         soci::postgresql_session_backend &session, soci::postgresql_blob_backend::blob_details &details)
 {
+#ifndef SOCI_POSTGRESQL_NO_LO64
     pg_int64 pos = lo_lseek64(session.conn_, details.fd, static_cast<pg_int64>(toOffset), from);
+#else
+    int pos = lo_lseek(session.conn_, details.fd, pg_check_fits_32_bits(toOffset), from);
+#endif
 
     if (pos < 0)
     {
