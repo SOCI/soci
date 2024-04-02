@@ -12,9 +12,9 @@
 #include "soci-cstrtoi.h"
 #include "soci-exchange-cast.h"
 #include "soci-mktime.h"
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_MSC_VER) || defined(__MINGW32__)
 #include "soci-unicode.h"
-#endif // _WIN32 || _WIN64
+#endif // _MSC_VER || __MINGW32__
 #include <cstdint>
 #include <ctime>
 
@@ -28,10 +28,10 @@ void odbc_standard_into_type_backend::define_by_pos(
     type_ = type;
     position_ = position++;
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_MSC_VER) || defined(__MINGW32__)
     std::string colName;
     statement_.describe_column(position_, colType_, colName);
-#endif // _WIN32 || _WIN64
+#endif // _MSC_VER || __MINGW32__
     unsigned charSize = sizeof(char);
 
     SQLUINTEGER size = 0;
@@ -54,13 +54,13 @@ void odbc_standard_into_type_backend::define_by_pos(
     case x_xmltype:
         odbcType_ = SQL_C_CHAR;
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_MSC_VER) || defined(__MINGW32__)
         if (colType_ == db_wstring)
         {
             odbcType_ = SQL_C_WCHAR;
             charSize = sizeof(SQLWCHAR);
         }
-#endif // _WIN32 || _WIN64
+#endif // _MSC_VER || __MINGW32__
         // For LONGVARCHAR fields the returned size is ODBC_MAX_COL_SIZE
         // (or 0 for some backends), but this doesn't correspond to the actual
         // field size, which can be (much) greater. For now we just used
@@ -213,7 +213,7 @@ void odbc_standard_into_type_backend::post_fetch(
         {
             std::string& s = exchange_type_cast<x_stdstring>(data_);
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_MSC_VER) || defined(__MINGW32__)
             if (colType_ == db_wstring)
             {
                 const wchar_t* wBuf = reinterpret_cast<wchar_t*>(buf_);
@@ -225,7 +225,7 @@ void odbc_standard_into_type_backend::post_fetch(
             }
 #else
             s = buf_;
-#endif
+#endif // _MSC_VER || __MINGW32__
 
             if (s.size() >= (odbc_max_buffer_length - 1))
             {

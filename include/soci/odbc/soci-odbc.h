@@ -109,7 +109,9 @@ struct odbc_standard_into_type_backend : details::standard_into_type_backend,
 
     char *buf_;        // generic buffer
     void *data_;
+#if defined(_MSC_VER) || defined(__MINGW32__)
     db_type colType_;
+#endif
     details::exchange_type type_;
     int position_;
     SQLSMALLINT odbcType_;

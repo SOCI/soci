@@ -11,7 +11,9 @@
 #include "soci/statement.h"
 #include "soci/into-type.h"
 #include "soci/use-type.h"
+#if defined(_MSC_VER) || defined(__MINGW32__)
 #include "soci-unicode.h"
+#endif  // _MSC_VER || __MINGW32__
 // std
 #include <sstream>
 
@@ -57,9 +59,9 @@ public:
 
     template <typename T>
     void accumulate(T const & t) { get_query_stream() << t; }
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_MSC_VER) || defined(__MINGW32__)
     inline void accumulate(std::wstring const & t) { get_query_stream() << wide_to_utf8(t); }
-#endif // _WIN32 || _WIN64
+#endif  // _MSC_VER || __MINGW32__
 
     void set_tail(const std::string & tail) { tail_ = tail; }
     void set_need_comma(bool need_comma) { need_comma_ = need_comma; }

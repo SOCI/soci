@@ -75,7 +75,7 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
     );
 }
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_MSC_VER) || defined(__MINGW32__)
 
 TEST_CASE("MS SQL wide string", "[odbc][mssql][wstring]")
 {
@@ -261,7 +261,7 @@ TEST_CASE("MS SQL wide string stream implicit unicode conversion", "[odbc][mssql
 
 }
 
-#endif // defined(_WIN32) || defined(_WIN64)
+#endif // _MSC_VER || __MINGW32__
 
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
