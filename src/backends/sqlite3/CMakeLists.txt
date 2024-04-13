@@ -26,9 +26,24 @@ add_library(soci_sqlite3
     "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_sqlite3
-  PUBLIC
-    SQLite::SQLite3 SOCI::Core
+add_library(SOCI::SQLite3 ALIAS soci_sqlite3)
+
+set_target_properties(
+  soci_sqlite3 PROPERTIES
+  SOVERSION ${PROJECT_VERSION_MAJOR}
+  VERSION ${PROJECT_VERSION}
+  EXPORT_NAME SQLite3
+)
+
+soci_public_dependency(
+  NAME SQLite3
+  DEP_TARGETS SQLite::SQLite3
+  TARGET SOCI::SQLite3
+)
+soci_public_dependency(
+  NAME SOCI::Core
+  DEP_TARGETS SOCI::Core
+  TARGET SOCI::SQLite3
 )
 
 target_include_directories(soci_sqlite3
@@ -37,6 +52,27 @@ target_include_directories(soci_sqlite3
     "${PROJECT_SOURCE_DIR}/include/soci"
 )
 
-add_library(SOCI::SQLite3 ALIAS soci_sqlite3)
-
 target_link_libraries(soci_interface INTERFACE SOCI::SQLite3)
+
+
+install(
+  TARGETS soci_sqlite3
+  EXPORT SOCISQLite3Targets
+  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}/soci"
+    COMPONENT soci_runtime
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/soci"
+    COMPONENT          soci_runtime
+    NAMELINK_COMPONENT soci_development
+  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}/soci"
+    COMPONENT soci_development
+  FILE_SET headers DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/soci"
+    COMPONENT soci_development
+)
+# Generate and install a targets file
+install(
+  EXPORT SOCISQLite3Targets
+  DESTINATION "${SOCI_INSTALL_CMAKEDIR}"
+  FILE SOCISQLite3Targets.cmake
+  NAMESPACE SOCI::
+  COMPONENT soci_development
+)

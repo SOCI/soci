@@ -30,6 +30,13 @@ add_library(soci_core
 
 add_library(SOCI::Core ALIAS soci_core)
 
+set_target_properties(
+  soci_core PROPERTIES
+  SOVERSION ${PROJECT_VERSION_MAJOR}
+  VERSION ${PROJECT_VERSION}
+  EXPORT_NAME Core
+)
+
 # We have to explicitly list all public header files in order for them to get
 # installed properly. This will automatically set the BASE_DIR up as an include
 # directory for the target wrapped in a BUILD_INTERFACE generator expression.
@@ -42,10 +49,10 @@ target_sources(soci_core
       "${PROJECT_SOURCE_DIR}/include/soci/bind-values.h"
       "${PROJECT_SOURCE_DIR}/include/soci/blob-exchange.h"
       "${PROJECT_SOURCE_DIR}/include/soci/blob.h"
-      "$<$<BOOL:${SOCI_HAVE_BOOST}>:${PROJECT_SOURCE_DIR}/include/soci/boost-fusion.h>"
-      "$<$<BOOL:${SOCI_HAVE_BOOST_DATE_TIME}>:${PROJECT_SOURCE_DIR}/include/soci/boost-gregorian-date.h>"
-      "$<$<BOOL:${SOCI_BOOST}>:${PROJECT_SOURCE_DIR}/include/soci/boost-optional.h>"
-      "$<$<BOOL:${SOCI_BOOST}>:${PROJECT_SOURCE_DIR}/include/soci/boost-tuple.h>"
+      "${PROJECT_SOURCE_DIR}/include/soci/boost-fusion.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/boost-gregorian-date.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/boost-optional.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/boost-tuple.h"
       "${PROJECT_SOURCE_DIR}/include/soci/callbacks.h"
       "${PROJECT_SOURCE_DIR}/include/soci/column-info.h"
       "${PROJECT_SOURCE_DIR}/include/soci/connection-parameters.h"
@@ -105,18 +112,19 @@ if (SOCI_SHARED)
   )
 endif()
 
-if (SOCI_BOOST)
-  find_package(Boost REQUIRED)
-  target_link_libraries(soci_core PUBLIC Boost::boost)
-  set(SOCI_HAVE_BOOST TRUE CACHE INTERNAL "" FORCE)
-
-  find_package(Boost COMPONENTS date_time)
-
-  if (TARGET Boost::date_time)
-    target_link_libraries(soci_core PUBLIC Boost::date_time)
-    set(SOCI_HAVE_BOOST_DATE_TIME TRUE CACHE INTERNAL "" FORCE)
-  endif()
-endif()
+soci_public_dependency(
+  NAME Boost
+  DEP_TARGETS Boost::boost Boost::date_time
+  COMPONENTS date_time
+  MACRO_NAMES SOCI_HAVE_BOOST SOCI_HAVE_BOOST_DATE_TIME
+  TARGET SOCI::Core
+)
+soci_public_dependency(
+  NAME Boost
+  DEP_TARGETS Boost::boost
+  MACRO_NAMES SOCI_HAVE_BOOST
+  TARGET SOCI::Core
+)
 
 target_link_libraries(soci_core
   PUBLIC
@@ -143,19 +151,25 @@ target_compile_definitions(soci_core
     SOCI_ABI_VERSION="${PROJECT_VERSION_MAJOR}${VERSION_SEP}${PROJECT_VERSION_MINOR}"
 )
 
-set_target_properties(soci_core PROPERTIES EXPORT_NAME Core)
 
 install(
   TARGETS soci_core
-  EXPORT SociCoreTargets
+  EXPORT SOCICoreTargets
+  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}/soci"
+    COMPONENT soci_runtime
   LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/soci"
+    COMPONENT          soci_runtime
+    NAMELINK_COMPONENT soci_development
   ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}/soci"
+    COMPONENT soci_development
   FILE_SET headers DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/soci"
+    COMPONENT soci_development
 )
-# Generate and install the export file for the target
+# Generate and install a targets file
 install(
-  EXPORT SociCoreTargets
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/soci"
-  FILE SociCoreTargets.cmake
+  EXPORT SOCICoreTargets
+  DESTINATION "${SOCI_INSTALL_CMAKEDIR}"
+  FILE SOCICoreTargets.cmake
   NAMESPACE SOCI::
+  COMPONENT soci_development
 )

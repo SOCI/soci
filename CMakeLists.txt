@@ -16,6 +16,8 @@ project(SOCI
   LANGUAGES CXX
 )
 
+include(soci_utils)
+
 if (NOT DEFINED CMAKE_CXX_STANDARD_REQUIRED OR CMAKE_CXX_STANDARD LESS 14)
   set(CMAKE_CXX_STANDARD 14)
 endif()
@@ -58,6 +60,16 @@ if (SOCI_VISIBILITY)
   set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 endif()
 
+if (NOT APPLE)
+  # This makes runtime loaders look for library dependencies
+  # in the same directory as the library is located in.
+  # For details see Craig Scott's CppCon 2019 talk
+
+  # Note: The variable's content is set to $ORIGIN literally,
+  # this is NOT a butchered cmake variable expansion
+  set(CMAKE_INSTALL_RPATH "$ORIGIN")
+endif()
+
 if (SOCI_LD)
   # CMake asks the compiler to do the linking so we have to pass the desired linker to the compiler
   set(USE_LD_FLAG "-fuse-ld=${SOCI_LD}")
@@ -87,9 +99,13 @@ set(SOCI_DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}" CACHE STRING "Specifies suffix f
 
 include(soci_compiler_options)
 
+include(GNUInstallDirs)
+
+set(SOCI_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/soci-${PROJECT_VERSION}")
 
 add_subdirectory(src)
 
+message(STATUS "This: ${SOCI_DEPENDENCY_SOCI_COMPONENTS}")
 
 include(soci_compat)
 
@@ -99,3 +115,20 @@ if (SOCI_TESTS)
   enable_testing()
   add_subdirectory(tests)
 endif()
+
+
+# Packaging
+include(CMakePackageConfigHelpers)
+configure_package_config_file("SOCIConfig.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/SOCIConfig.cmake"
+  INSTALL_DESTINATION "${SOCI_INSTALL_CMAKEDIR}"
+)
+write_basic_package_version_file(SOCIConfigVersion.cmake
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+install(
+  FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/SOCIConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/SOCIConfigVersion.cmake"
+    DESTINATION "${SOCI_INSTALL_CMAKEDIR}"
+)
