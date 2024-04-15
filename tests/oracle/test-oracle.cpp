@@ -179,7 +179,7 @@ struct basic_table_creator : public table_creator_base
     }
 };
 
-TEST_CASE("Oracle nested statement", "[oracle][blob]")
+TEST_CASE("Oracle nested statement", "[oracle][nested]")
 {
     soci::session sql(backEnd, connectString);
     basic_table_creator tableCreator(sql);
@@ -1386,6 +1386,73 @@ TEST_CASE("Bulk iterators", "[oracle][bulkiters]")
 
     sql << "drop table t";
 }
+
+struct blob_table_creator : public table_creator_base
+{
+    blob_table_creator ( soci::session &sql ) : table_creator_base ( sql )
+    {
+        sql << "create table soci_test ("
+               "    id number(10) not null,"
+               "    img blob"
+               ")";
+    }
+};
+
+TEST_CASE ( "Oracle blob", "[oracle][blob]" )
+{
+    soci::session sql ( backEnd, connectString );
+
+    blob_table_creator tableCreator ( sql );
+
+    char buf[] = "abcdefghijklmnopqrstuvwxyz";
+    sql << "insert into soci_test (id, img) values (7, empty_blob())";
+
+    {
+        blob b ( sql );
+
+        oracle_session_backend *sessionBackEnd = static_cast<oracle_session_backend *> ( sql.get_backend () );
+
+        oracle_blob_backend *blobBackEnd = static_cast<oracle_blob_backend *> ( b.get_backend () );
+
+        sql << "select img from soci_test where id = 7", into ( b );
+        CHECK ( b.get_len () == 0 );
+
+        b.write_from_start ( buf, sizeof ( buf ) );
+        CHECK ( b.get_len () == sizeof ( buf ) );
+        b.trim ( 10 );
+        CHECK ( b.get_len () == 10 );
+        // append does not work (Oracle bug #886191 ?)
+        // b.append(buf, sizeof(buf));
+        // assert(b.get_len() == sizeof(buf) + 10);
+        
+    }
+    sql.commit ();
+
+    {
+        blob b ( sql );
+        sql << "select img from soci_test where id = 7", into ( b );
+        // assert(b.get_len() == sizeof(buf) + 10);
+        CHECK ( b.get_len () == 10 );
+        char buf2[100];
+        b.read_from_start ( buf2, 10 );
+        CHECK ( strncmp ( buf2, "abcdefghij", 10 ) == 0 );
+    }
+
+    {
+        soci::statement stmt ( sql );
+        stmt.alloc ();
+        stmt.prepare ( "select  img from soci_test where id = 7" );
+        row r;
+        stmt.exchange ( soci::into ( r ) );
+        stmt.define_and_bind ();
+        stmt.execute ();
+        stmt.fetch ();
+
+        auto b = r.move_as<blob> ( 0 );
+        CHECK ( b.get_len () == 10 );
+    }
+}
+
 
 //
 // Support for soci Common Tests

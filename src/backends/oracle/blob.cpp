@@ -161,7 +161,19 @@ void oracle_blob_backend::set_lob_locator(oracle_blob_backend::locator_t locator
     }
 
     initialized_ = initialized;
+    /*
+     * see https://docs.oracle.com/cd/A91202_01/901_doc/appdev.901/a89857/oci07lob.htm#436746 
+     * The explicitly open/closing LOB technique is dangerous, as it can lead to errors.
+     * The LOB opening and closing mechanism has the following restrictions:
 
+        An application must close all previously opened LOBs before committing a transaction. Failing to do so will result in an error.
+        If a transaction is rolled back, all open LOBs are discarded along with the changes made (the LOBs are not closed), so associated triggers are not fired.
+        It is an error to open or close the same internal LOB twice within the same transaction, either with different locators or the same locator.
+        It is an error to close a LOB that has not been opened.
+
+
+     * TODO: This method should be used explicitly by the user
+     * 
     if (initialized)
     {
         boolean already_open = FALSE;
@@ -182,6 +194,7 @@ void oracle_blob_backend::set_lob_locator(oracle_blob_backend::locator_t locator
             }
         }
     }
+    */
 }
 
 void oracle_blob_backend::reset()
@@ -205,7 +218,16 @@ void oracle_blob_backend::reset()
     }
     else
     {
-        res = OCILobClose(session_.svchp_, session_.errhp_, lobp_);
+        // https://docs.oracle.com/cd/A91202_01/901_doc/appdev.901/a89857/oci16ms8.htm#491367 An error is returned if the internal LOB is not open.
+        boolean is_open = FALSE;
+        res = OCILobIsOpen ( session_.svchp_, session_.errhp_, lobp_, &is_open );
+
+        if ( res != OCI_SUCCESS )
+        {
+            throw_oracle_soci_error ( res, session_.errhp_ );
+        }
+        if ( is_open )
+            res = OCILobClose(session_.svchp_, session_.errhp_, lobp_);
     }
 
     if (res != OCI_SUCCESS)
