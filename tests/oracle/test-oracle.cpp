@@ -1410,10 +1410,6 @@ TEST_CASE ( "Oracle blob", "[oracle][blob]" )
     {
         blob b ( sql );
 
-        oracle_session_backend *sessionBackEnd = static_cast<oracle_session_backend *> ( sql.get_backend () );
-
-        oracle_blob_backend *blobBackEnd = static_cast<oracle_blob_backend *> ( b.get_backend () );
-
         sql << "select img from soci_test where id = 7", into ( b );
         CHECK ( b.get_len () == 0 );
 
