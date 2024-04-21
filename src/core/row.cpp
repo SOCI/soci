@@ -119,5 +119,9 @@ blob row::move_as<blob>(std::size_t pos) const
 
     blob ret;
     type_conversion<blob>::move_from_base(baseVal, *indicators_.at(pos), ret);
+
+    // Re-initialize blob object so it can be used in further queries
+    baseVal.initialize(session);
+
     return ret;
 }

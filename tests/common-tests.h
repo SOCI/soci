@@ -6875,7 +6875,8 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
         }
         SECTION("move_as")
         {
-            soci::rowset< soci::row > rowSet = (sql.prepare << "select b from soci_test where id=:id", soci::use(id));
+            //soci::rowset< soci::row > rowSet = (sql.prepare << "select b from soci_test where id=:id", soci::use(id));
+            soci::rowset< soci::row > rowSet = (sql.prepare << "select b from soci_test where id=:id union all select b from soci_test where id=:id", soci::use(id, "id"));
             bool containedData = false;
             for (auto it = rowSet.begin(); it != rowSet.end(); ++it)
             {
