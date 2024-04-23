@@ -474,18 +474,25 @@ static sqlite3_data_type_map get_data_type_map()
     // integer types
     m["tinyint"]            = db_int8;
 
+    m["unsignedtinyint"]    = db_uint8;
+
     m["smallint"]           = db_int16;
+    m["int2"]               = db_int16;
+
+    m["unsignedsmallint"]   = db_uint16;
 
     m["boolean"]            = db_int32;
     m["int"]                = db_int32;
     m["integer"]            = db_int32;
-    m["int2"]               = db_int32;
     m["mediumint"]          = db_int32;
+    m["int4"]               = db_int32;
+
+    m["unsignedint"]        = db_uint32;
 
     m["bigint"]             = db_int64;
     m["int8"]               = db_int64;
 
-    m["unsignedbigint"]   = db_uint64;
+    m["unsignedbigint"]     = db_uint64;
 
     // db_string
     m["char"]               = db_string;
