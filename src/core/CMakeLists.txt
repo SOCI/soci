@@ -134,22 +134,25 @@ target_link_libraries(soci_core
 )
 
 if (WIN32)
-  set(VERSION_SEP "_")
+  set(ABI_VERSION "${PROJECT_VERSION_MAJOR}_${PROJECT_VERSION_MINOR}")
 elseif(UNIX)
-  set(VERSION_SEP ".")
-else()
-  message(WARNING "No known ABI version scheme for current platform")
-  set(VERSION_SEP "-")
+  # Use SOVERSION, which is only the major version
+  set(ABI_VERSION "${PROJECT_VERSION_MAJOR}")
 endif()
 
 target_compile_definitions(soci_core
   PRIVATE
     DEFAULT_BACKENDS_PATH="${CMAKE_INSTALL_FULL_LIBDIR}"
-    SOCI_LIB_PREFIX="${SOCI_LIB_PREFIX}"
-    SOCI_LIB_SUFFIX="${SOCI_LIB_SUFFIX}"
-    SOCI_DEBUG_SUFFIX="${SOCI_DEBUG_SUFFIX}"
-    SOCI_ABI_VERSION="${PROJECT_VERSION_MAJOR}${VERSION_SEP}${PROJECT_VERSION_MINOR}"
+    SOCI_LIB_PREFIX="${CMAKE_SHARED_LIBRARY_PREFIX}soci_"
+    SOCI_LIB_SUFFIX="${CMAKE_SHARED_LIBRARY_SUFFIX}"
+    SOCI_DEBUG_SUFFIX="${CMAKE_DEBUG_POSTFIX}"
 )
+if (DEFINED ABI_VERSION)
+  target_compile_definitions(soci_core
+    PRIVATE
+      SOCI_ABI_VERSION="${ABI_VERSION}"
+  )
+endif()
 
 
 install(
