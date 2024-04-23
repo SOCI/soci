@@ -43,13 +43,6 @@ option(SOCI_ASAN "Enable building SOCI with enabled address sanitizers" OFF)
 cmake_dependent_option(SOCI_LTO "Enable link time optimizations in release builds" ON "LTO_AVAILABLE" OFF)
 option(SOCI_VISIBILITY "Make all functions hidden by default - this exposes only explicitly exported functions" ON)
 set(SOCI_LD "" CACHE STRING "Specify a non-default linker")
-if (WITH_BOOST)
-  message(DEPRECATION "Use of WITH_BOOST option is deprecated - use SOCI_BOOST instead")
-  option(SOCI_BOOST "Whether to enable Boost-specific bindings" ${WITH_BOOST})
-else()
-  # Default-enable only if Boost has been found before (in a superproject)
-  option(SOCI_BOOST "Whether to enable Boost-specific bindings" ${Boost_FOUND})
-endif()
 
 
 # Configure LTO for anything but Debug builds (if enabled in the first place)
