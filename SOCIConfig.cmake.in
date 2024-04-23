@@ -1,17 +1,26 @@
 @PACKAGE_INIT@
 
 
-
-# Ensure that the Core target is always included (and as first component)
-list(REMOVE_ITEM SOCI_FIND_COMPONENTS Core)
-list(INSERT SOCI_FIND_COMPONENTS 0 Core)
-
+# Auto-generated stub to handle component-wise dependencies
 set(__dep_soci_comps  "@SOCI_DEPENDENCY_SOCI_COMPONENTS@")
 set(__dep_names       "@SOCI_DEPENDENCY_NAMES@")
 set(__dep_dep_targets "@SOCI_DEPENDENCY_TARGETS@")
 set(__dep_required    "@SOCI_DEPENDENCY_REQUIRED@")
 set(__dep_macro_names "@SOCI_DEPENDENCY_MACRO_NAMES@")
 set(__dep_components  "@SOCI_DEPENDENCY_COMPONENTS@")
+
+
+if (NOT DEFINED SOCI_FIND_COMPONENTS OR SOCI_FIND_COMPONENTS STREQUAL "")
+    # Use all available SOCI components
+  set(SOCI_FIND_COMPONENTS "${__dep_soci_comps}")
+  list(REMOVE_DUPLICATES SOCI_FIND_COMPONENTS)
+  list(TRANSFORM SOCI_FIND_COMPONENTS REPLACE "SOCI::" "")
+endif()
+
+# Ensure that the Core target is always included (and as first component)
+list(REMOVE_ITEM SOCI_FIND_COMPONENTS Core)
+list(INSERT SOCI_FIND_COMPONENTS 0 Core)
+
 
 list(LENGTH __dep_soci_comps __list_size)
 foreach (__item IN ITEMS __dep_names __dep_dep_targets __dep_required __dep_macro_names __dep_components)
@@ -34,6 +43,7 @@ foreach(__comp IN LISTS SOCI_FIND_COMPONENTS)
   # Handle component-specific dependencies
   set(__link_targets)
   set(__define_macros)
+  set(__skip_dependency FALSE)
   foreach (__i RANGE ${__list_size})
     list(GET __dep_soci_comps ${__i} __dep_comp)
     if (__dep_comp MATCHES "::${__comp}$")
@@ -67,16 +77,23 @@ foreach(__comp IN LISTS SOCI_FIND_COMPONENTS)
         set(__components COMPONENTS ${__components})
       endif()
 
+      if (${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
+        set(__quiet "QUIET")
+      else()
+        set(__quiet "")
+      endif()
+
       find_package(
         ${__dep}
         ${__components}
-        ${${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY}
+        ${__quiet}
       )
 
       if (NOT ${__dep}_FOUND)
         if (__required)
           set(SOCI_FOUND FALSE)
           set(SOCI_NOT_FOUND_MESSAGE "Unmet dependency '${__dep}' for SOCI component '${__comp}'")
+          set(__skip_dependency TRUE)
         endif()
         continue()
       endif()
@@ -86,6 +103,10 @@ foreach(__comp IN LISTS SOCI_FIND_COMPONENTS)
     endif()
   endforeach()
   unset(__i)
+
+  if (__skip_dependency)
+    continue()
+  endif()
 
   include("${CMAKE_CURRENT_LIST_DIR}/SOCI${__comp}Targets.cmake")
 
@@ -118,11 +139,16 @@ unset(__dep_components)
 check_required_components(SOCI)
 
 if (NOT DEFINED SOCI_FOUND OR SOCI_FOUND)
-    add_library(soci_interface INTERFACE)
+  add_library(soci_interface INTERFACE)
 
-    foreach (__comp IN LISTS SOCI_FIND_COMPONENTS)
-        target_link_libraries(soci_interface INTERFACE SOCI::${__comp})
-    endforeach()
+  foreach (__comp IN LISTS SOCI_FIND_COMPONENTS)
+      target_link_libraries(soci_interface INTERFACE SOCI::${__comp})
+  endforeach()
 
-    add_library(SOCI::SOCI ALIAS soci_interface)
+  add_library(SOCI::SOCI ALIAS soci_interface)
+
+  if (NOT SOCI_FIND_QUIETLY)
+      list(JOIN SOCI_FIND_COMPONENTS ", " __components)
+      message(STATUS "Found SOCI: ${CMAKE_CURRENT_LIST_FILE} (found version \"@PROJECT_VERSION@\") found components: ${__components}")
+  endif()
 endif()
