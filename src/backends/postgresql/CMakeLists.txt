@@ -34,10 +34,27 @@ add_library(soci_postgresql
     "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_postgresql
-  PUBLIC
-    PostgreSQL::PostgreSQL
-    SOCI::Core
+add_library(SOCI::PostgreSQL ALIAS soci_postgresql)
+
+set_target_properties(
+  soci_postgresql PROPERTIES
+  SOVERSION ${PROJECT_VERSION_MAJOR}
+  VERSION ${PROJECT_VERSION}
+  EXPORT_NAME PostgreSQL
+)
+
+soci_public_dependency(
+  NAME PostgreSQL
+  DEP_TARGETS PostgreSQL::PostgreSQL
+  TARGET SOCI::PostgreSQL
+  REQUIRED
+)
+
+soci_public_dependency(
+  NAME SOCI::Core
+  DEP_TARGETS SOCI::Core
+  TARGET SOCI::PostgreSQL
+  REQUIRED
 )
 
 target_include_directories(soci_postgresql
@@ -48,7 +65,27 @@ target_include_directories(soci_postgresql
 
 target_compile_definitions(soci_postgresql INTERFACE SOCI_POSTGRESQL_NO_LO64)
 
-add_library(SOCI::PostgreSQL ALIAS soci_postgresql)
-
 target_link_libraries(soci_interface INTERFACE SOCI::PostgreSQL)
 
+
+install(
+  TARGETS soci_postgresql
+  EXPORT SOCIPostgreSQLTargets
+  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}/soci"
+    COMPONENT soci_runtime
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/soci"
+    COMPONENT          soci_runtime
+    NAMELINK_COMPONENT soci_development
+  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}/soci"
+    COMPONENT soci_development
+  FILE_SET headers DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/soci"
+    COMPONENT soci_development
+)
+# Generate and install a targets file
+install(
+  EXPORT SOCIPostgreSQLTargets
+  DESTINATION "${SOCI_INSTALL_CMAKEDIR}"
+  FILE SOCIPostgreSQLTargets.cmake
+  NAMESPACE SOCI::
+  COMPONENT soci_development
+)

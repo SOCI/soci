@@ -39,11 +39,13 @@ soci_public_dependency(
   NAME SQLite3
   DEP_TARGETS SQLite::SQLite3
   TARGET SOCI::SQLite3
+  REQUIRED
 )
 soci_public_dependency(
   NAME SOCI::Core
   DEP_TARGETS SOCI::Core
   TARGET SOCI::SQLite3
+  REQUIRED
 )
 
 target_include_directories(soci_sqlite3

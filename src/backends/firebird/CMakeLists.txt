@@ -32,10 +32,26 @@ add_library(soci_firebird
     "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_firebird
-  PUBLIC
-    Firebird::Firebird
-    SOCI::Core
+add_library(SOCI::Firebird ALIAS soci_firebird)
+
+set_target_properties(
+  soci_firebird PROPERTIES
+  SOVERSION ${PROJECT_VERSION_MAJOR}
+  VERSION ${PROJECT_VERSION}
+  EXPORT_NAME Firebird
+)
+
+soci_public_dependency(
+  NAME Firebird
+  DEP_TARGETS Firebird::Firebird
+  TARGET SOCI::Firebird
+  REQUIRED
+)
+soci_public_dependency(
+  NAME SOCI::Core
+  DEP_TARGETS SOCI::Core
+  TARGET SOCI::Firebird
+  REQUIRED
 )
 
 target_include_directories(soci_firebird
@@ -44,6 +60,27 @@ target_include_directories(soci_firebird
     "${PROJECT_SOURCE_DIR}/include/soci"
 )
 
-add_library(SOCI::Firebird ALIAS soci_firebird)
-
 target_link_libraries(soci_interface INTERFACE SOCI::Firebird)
+
+
+install(
+  TARGETS soci_firebird
+  EXPORT SOCIFirebirdTargets
+  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}/soci"
+    COMPONENT soci_runtime
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/soci"
+    COMPONENT          soci_runtime
+    NAMELINK_COMPONENT soci_development
+  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}/soci"
+    COMPONENT soci_development
+  FILE_SET headers DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/soci"
+    COMPONENT soci_development
+)
+# Generate and install a targets file
+install(
+  EXPORT SOCIFirebirdTargets
+  DESTINATION "${SOCI_INSTALL_CMAKEDIR}"
+  FILE SOCIFirebirdTargets.cmake
+  NAMESPACE SOCI::
+  COMPONENT soci_development
+)

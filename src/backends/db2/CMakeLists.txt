@@ -25,10 +25,26 @@ add_library(soci_db2
     "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_db2
-  PUBLIC
-    DB2::DB2
-    SOCI::Core
+add_library(SOCI::DB2 ALIAS soci_db2)
+
+set_target_properties(
+  soci_db2 PROPERTIES
+  SOVERSION ${PROJECT_VERSION_MAJOR}
+  VERSION ${PROJECT_VERSION}
+  EXPORT_NAME DB2
+)
+
+soci_public_dependency(
+  NAME DB2
+  DEP_TARGETS DB2::DB2
+  TARGET SOCI::DB2
+  REQUIRED
+)
+soci_public_dependency(
+  NAME SOCI::Core
+  DEP_TARGETS SOCI::Core
+  TARGET SOCI::DB2
+  REQUIRED
 )
 
 target_include_directories(soci_db2
@@ -37,6 +53,27 @@ target_include_directories(soci_db2
     "${PROJECT_SOURCE_DIR}/include/soci"
 )
 
-add_library(SOCI::DB2 ALIAS soci_db2)
-
 target_link_libraries(soci_interface INTERFACE SOCI::DB2)
+
+
+install(
+  TARGETS soci_db2
+  EXPORT SOCIDB2Targets
+  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}/soci"
+    COMPONENT soci_runtime
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/soci"
+    COMPONENT          soci_runtime
+    NAMELINK_COMPONENT soci_development
+  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}/soci"
+    COMPONENT soci_development
+  FILE_SET headers DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/soci"
+    COMPONENT soci_development
+)
+# Generate and install a targets file
+install(
+  EXPORT SOCIDB2Targets
+  DESTINATION "${SOCI_INSTALL_CMAKEDIR}"
+  FILE SOCIDB2Targets.cmake
+  NAMESPACE SOCI::
+  COMPONENT soci_development
+)

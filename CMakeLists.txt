@@ -105,8 +105,6 @@ set(SOCI_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/soci-${PROJECT_VERSION}
 
 add_subdirectory(src)
 
-message(STATUS "This: ${SOCI_DEPENDENCY_SOCI_COMPONENTS}")
-
 include(soci_compat)
 
 
