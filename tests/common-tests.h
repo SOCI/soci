@@ -287,8 +287,91 @@ template<> struct type_conversion<PhonebookEntry3>
         ind = i_ok;
     }
 };
-
 } // namespace soci
+
+template<typename T>
+struct Roundtrip {
+    typedef T val_type;
+    Roundtrip(soci::db_type type, T val)
+        : inType(type), inVal(val) {}
+
+    soci::db_type inType;
+    T inVal;
+
+    soci::db_type outType;
+    T outVal;
+};
+
+namespace soci {
+// Test a rountrip insertion data to the current database for the arithmetic type T
+// This test specifically use the dynamic bindings and the DDL creation statements.
+template<typename T>
+struct type_conversion<Roundtrip<T>>
+{
+    static_assert(std::is_arithmetic<T>::value, "Roundtrip currently supported only for numeric types");
+    typedef soci::values base_type;
+    static void from_base(soci::values const &v, soci::indicator, Roundtrip<T> &t)
+    {
+        t.outType = v.get_properties(0).get_db_type();
+        switch (t.outType)
+        {
+            case soci::db_int8:   t.outVal = static_cast<T>(v.get<std::int8_t>(0));   break;
+            case soci::db_uint8:  t.outVal = static_cast<T>(v.get<std::uint8_t>(0));  break;
+            case soci::db_int16:  t.outVal = static_cast<T>(v.get<std::int16_t>(0));  break;
+            case soci::db_uint16: t.outVal = static_cast<T>(v.get<std::uint16_t>(0)); break;
+            case soci::db_int32:  t.outVal = static_cast<T>(v.get<std::int32_t>(0));  break;
+            case soci::db_uint32: t.outVal = static_cast<T>(v.get<std::uint32_t>(0)); break;
+            case soci::db_int64:  t.outVal = static_cast<T>(v.get<std::int64_t>(0));  break;
+            case soci::db_uint64: t.outVal = static_cast<T>(v.get<std::uint64_t>(0)); break;
+            case soci::db_double: t.outVal = static_cast<T>(v.get<double>(0));        break;
+            default: FAIL_CHECK("Unsupported type mapped to db_type"); break;
+        }
+    }
+    static void to_base(Roundtrip<T> const &t, soci::values &v, soci::indicator&)
+    {
+        v.set("VAL", t.inVal);
+    }
+};
+} // namespace soci
+
+template<typename T>
+void check(Roundtrip<T> const &val)
+{
+    CHECK(val.inType == val.outType);
+    CHECK(val.inVal == val.outVal);
+}
+
+template<>
+void check(Roundtrip<double> const &val)
+{
+    CHECK(val.inType == val.outType);
+    CHECK(std::fpclassify(val.inVal) == std::fpclassify(val.outVal));
+    if (std::isnormal(val.inVal) && std::isnormal(val.outVal))
+        CHECK_THAT(val.inVal, Catch::Matchers::WithinRel(val.outVal));
+}
+
+template<typename T>
+void test_roundtrip(soci::session &sql, soci::db_type inputType, T inputVal)
+{
+    Roundtrip<T> tester(inputType, inputVal);
+    const std::string table = "TEST_ROUNDTRIP";
+    try
+    {
+        sql.create_table(table).column("VAL", tester.inType);
+        sql << "INSERT INTO " << table << "(VAL) VALUES (:VAL)", soci::use(const_cast<const Roundtrip<T>&>(tester));
+        soci::statement stmt = (sql.prepare << "SELECT * FROM " << table);
+        stmt.exchange(soci::into(tester));
+        stmt.define_and_bind();
+        stmt.execute();
+        stmt.fetch();
+        check(tester);
+    }
+    catch (const std::exception& e)
+    {
+        FAIL_CHECK(e.what());
+    }
+    sql << "DROP TABLE " << table;
+}
 
 namespace soci
 {
