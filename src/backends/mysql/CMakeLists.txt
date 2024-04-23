@@ -26,10 +26,20 @@ add_library(soci_mysql
     "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_mysql
-  PUBLIC
-    MySQL::MySQL
-    SOCI::Core
+add_library(SOCI::MySQL ALIAS soci_mysql)
+
+soci_public_dependency(
+  NAME MySQL
+  DEP_TARGETS MySQL::MySQL
+  TARGET SOCI::MySQL
+  REQUIRED
+)
+
+soci_public_dependency(
+  NAME SOCI::Core
+  DEP_TARGETS SOCI::Core
+  TARGET SOCI::MySQL
+  REQUIRED
 )
 
 target_include_directories(soci_mysql
@@ -38,6 +48,27 @@ target_include_directories(soci_mysql
     "${PROJECT_SOURCE_DIR}/include/soci"
 )
 
-add_library(SOCI::MySQL ALIAS soci_mysql)
-
 target_link_libraries(soci_interface INTERFACE SOCI::MySQL)
+
+
+install(
+  TARGETS soci_mysql
+  EXPORT SOCIMySQLTargets
+  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}/soci"
+    COMPONENT soci_runtime
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/soci"
+    COMPONENT          soci_runtime
+    NAMELINK_COMPONENT soci_development
+  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}/soci"
+    COMPONENT soci_development
+  FILE_SET headers DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/soci"
+    COMPONENT soci_development
+)
+# Generate and install a targets file
+install(
+  EXPORT SOCIMySQLTargets
+  DESTINATION "${SOCI_INSTALL_CMAKEDIR}"
+  FILE SOCIMySQLTargets.cmake
+  NAMESPACE SOCI::
+  COMPONENT soci_development
+)

@@ -25,10 +25,27 @@ add_library(soci_odbc
     "vector-use-type.cpp"
 )
 
-target_link_libraries(soci_odbc
-  PUBLIC
-    ODBC::ODBC
-    SOCI::Core
+add_library(SOCI::ODBC ALIAS soci_odbc)
+
+set_target_properties(
+  soci_odbc PROPERTIES
+  SOVERSION ${PROJECT_VERSION_MAJOR}
+  VERSION ${PROJECT_VERSION}
+  EXPORT_NAME ODBC
+)
+
+soci_public_dependency(
+  NAME ODBC
+  DEP_TARGETS ODBC::ODBC
+  TARGET SOCI::ODBC
+  REQUIRED
+)
+
+soci_public_dependency(
+  NAME SOCI::Core
+  DEP_TARGETS SOCI::Core
+  TARGET SOCI::ODBC
+  REQUIRED
 )
 
 target_include_directories(soci_odbc
@@ -37,6 +54,27 @@ target_include_directories(soci_odbc
     "${PROJECT_SOURCE_DIR}/include/soci"
 )
 
-add_library(SOCI::ODBC ALIAS soci_odbc)
-
 target_link_libraries(soci_interface INTERFACE SOCI::ODBC)
+
+
+install(
+  TARGETS soci_odbc
+  EXPORT SOCIODBCTargets
+  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}/soci"
+    COMPONENT soci_runtime
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/soci"
+    COMPONENT          soci_runtime
+    NAMELINK_COMPONENT soci_development
+  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}/soci"
+    COMPONENT soci_development
+  FILE_SET headers DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/soci"
+    COMPONENT soci_development
+)
+# Generate and install a targets file
+install(
+  EXPORT SOCIODBCTargets
+  DESTINATION "${SOCI_INSTALL_CMAKEDIR}"
+  FILE SOCIODBCTargets.cmake
+  NAMESPACE SOCI::
+  COMPONENT soci_development
+)

@@ -25,10 +25,28 @@ add_library(soci_oracle
     "vector-into-type.cpp"
     "vector-use-type.cpp"
 )
-target_link_libraries(soci_oracle
-  PUBLIC
-    Oracle::Oracle
-    SOCI::Core
+
+add_library(SOCI::Oracle ALIAS soci_oracle)
+
+set_target_properties(
+  soci_oracle PROPERTIES
+  SOVERSION ${PROJECT_VERSION_MAJOR}
+  VERSION ${PROJECT_VERSION}
+  EXPORT_NAME Oracle
+)
+
+soci_public_dependency(
+  NAME Oracle
+  DEP_TARGETS Oracle::Oracle
+  TARGET SOCI::Oracle
+  REQUIRED
+)
+
+soci_public_dependency(
+  NAME SOCI::Core
+  DEP_TARGETS SOCI::Core
+  TARGET SOCI::Oracle
+  REQUIRED
 )
 
 target_include_directories(soci_oracle
@@ -37,6 +55,27 @@ target_include_directories(soci_oracle
     "${PROJECT_SOURCE_DIR}/include/soci"
 )
 
-add_library(SOCI::Oracle ALIAS soci_oracle)
-
 target_link_libraries(soci_interface INTERFACE SOCI::Oracle)
+
+
+install(
+  TARGETS soci_oracle
+  EXPORT SOCIOracleTargets
+  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}/soci"
+    COMPONENT soci_runtime
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/soci"
+    COMPONENT          soci_runtime
+    NAMELINK_COMPONENT soci_development
+  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}/soci"
+    COMPONENT soci_development
+  FILE_SET headers DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/soci"
+    COMPONENT soci_development
+)
+# Generate and install a targets file
+install(
+  EXPORT SOCIOracleTargets
+  DESTINATION "${SOCI_INSTALL_CMAKEDIR}"
+  FILE SOCIOracleTargets.cmake
+  NAMESPACE SOCI::
+  COMPONENT soci_development
+)
