@@ -93,13 +93,7 @@ void check(soci::Roundtrip<T> const &val)
 }
 
 template<>
-void check(soci::Roundtrip<double> const &val)
-{
-    CHECK(val.inType == val.outType);
-    CHECK(std::fpclassify(val.inVal) == std::fpclassify(val.outVal));
-    if (std::isnormal(val.inVal) && std::isnormal(val.outVal))
-        CHECK_THAT(val.inVal, Catch::Matchers::WithinRel(val.outVal));
-}
+void check(soci::Roundtrip<double> const &val);
 
 template<typename T>
 void test_roundtrip(soci::session &sql, soci::db_type inputType, T inputVal)
