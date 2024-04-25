@@ -47,7 +47,7 @@ set(SOCI_LD "" CACHE STRING "Specify a non-default linker")
 
 # Configure LTO for anything but Debug builds (if enabled in the first place)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ${SOCI_LTO})
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_Debug OFF)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_DEBUG OFF)
 
 if (SOCI_VISIBILITY)
   set(CMAKE_CXX_VISIBILITY_PRESET hidden)
