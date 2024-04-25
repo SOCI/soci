@@ -84,7 +84,7 @@ endif()
 #                successful find_package call
 # - <target> is the name of the ALIAS target to link the found dependency to
 # - <component> are the names of specific components of the dependency
-macro(soci_public_dependency)
+function(soci_public_dependency)
   set(FLAGS "REQUIRED")
   set(ONE_VAL_OPTIONS "TARGET" "NAME")
   set(MULTI_VAL_OPTIONS "COMPONENTS" "MACRO_NAMES" "DEP_TARGETS")
@@ -175,6 +175,6 @@ macro(soci_public_dependency)
     # -> We put the logic of when they should be defined into the cmake config files
     target_compile_definitions("${UNDERLYING_TARGET}" PUBLIC "$<BUILD_INTERFACE:${MACRO_NAME}>")
   endforeach()
-endmacro()
+endfunction()
 
 set(SOCI_UTILS_ALREADY_INCLUDED TRUE)
