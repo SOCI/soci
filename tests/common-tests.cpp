@@ -6172,6 +6172,15 @@ void checkEqualPadded(const std::string& padded_str, const std::string& expected
     }
 }
 
+template<>
+void check(soci::Roundtrip<double> const &val)
+{
+    CHECK(val.inType == val.outType);
+    CHECK(std::fpclassify(val.inVal) == std::fpclassify(val.outVal));
+    if (std::isnormal(val.inVal) && std::isnormal(val.outVal))
+        CHECK_THAT(val.inVal, Catch::Matchers::WithinRel(val.outVal));
+}
+
 } // namespace tests
 
 } // namespace soci
@@ -6208,4 +6217,3 @@ int main(int argc, char** argv)
 
     return Catch::Session().run(argc, argv);
 }
-
