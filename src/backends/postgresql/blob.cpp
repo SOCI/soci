@@ -9,6 +9,7 @@
 #include "soci/postgresql/soci-postgresql.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
