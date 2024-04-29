@@ -161,27 +161,6 @@ void oracle_blob_backend::set_lob_locator(oracle_blob_backend::locator_t locator
     }
 
     initialized_ = initialized;
-
-    if (initialized)
-    {
-        boolean already_open = FALSE;
-        sword res = OCILobIsOpen(session_.svchp_, session_.errhp_, lobp_, &already_open);
-
-        if (res != OCI_SUCCESS)
-        {
-            throw_oracle_soci_error(res, session_.errhp_);
-        }
-
-        if (!already_open)
-        {
-            res = OCILobOpen(session_.svchp_, session_.errhp_, lobp_, OCI_LOB_READWRITE);
-
-            if (res != OCI_SUCCESS)
-            {
-                throw_oracle_soci_error(res, session_.errhp_);
-            }
-        }
-    }
 }
 
 void oracle_blob_backend::reset()
@@ -205,7 +184,16 @@ void oracle_blob_backend::reset()
     }
     else
     {
-        res = OCILobClose(session_.svchp_, session_.errhp_, lobp_);
+        // https://docs.oracle.com/cd/A91202_01/901_doc/appdev.901/a89857/oci16ms8.htm#491367 An error is returned if the internal LOB is not open.
+        boolean is_open = FALSE;
+        res = OCILobIsOpen ( session_.svchp_, session_.errhp_, lobp_, &is_open );
+
+        if ( res != OCI_SUCCESS )
+        {
+            throw_oracle_soci_error ( res, session_.errhp_ );
+        }
+        if ( is_open )
+            res = OCILobClose(session_.svchp_, session_.errhp_, lobp_);
     }
 
     if (res != OCI_SUCCESS)
