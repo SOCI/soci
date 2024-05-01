@@ -40,6 +40,7 @@ public:
 
     // (Re)initializes this blob
     void initialize(session &s);
+    void initialize(details::blob_backend *backend);
 
     std::size_t get_len();
 
