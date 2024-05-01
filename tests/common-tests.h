@@ -6853,17 +6853,21 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
     SECTION("Blob binding")
     {
         // Add data
-        soci::blob blob(sql);
+        soci::blob blob1(sql);
+        soci::blob blob2(sql);
         static_assert(10 <= sizeof(dummy_data), "Underlying assumption violated");
-        blob.write_from_start(dummy_data, 10);
-        const int id = 42;
-        sql << "insert into soci_test (id, b) values(:id, :b)", soci::use(id), soci::use(blob);
+        blob1.write_from_start(dummy_data, 10);
+        blob2.write_from_start(dummy_data, 10);
+        const int id1 = 42;
+        const int id2 = 42;
+        sql << "insert into soci_test (id, b) values(:id, :b)", soci::use(id1), soci::use(blob1);
+        sql << "insert into soci_test (id, b) values(:id, :b)", soci::use(id2), soci::use(blob2);
 
         SECTION("into")
         {
             soci::blob intoBlob(sql);
 
-            sql << "select b from soci_test where id=:id", soci::use(id), soci::into(intoBlob);
+            sql << "select b from soci_test where id=:id", soci::use(id1), soci::into(intoBlob);
 
             char buffer[20];
             std::size_t written = intoBlob.read_from_start(buffer, sizeof(buffer));
@@ -6875,8 +6879,7 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
         }
         SECTION("move_as")
         {
-            //soci::rowset< soci::row > rowSet = (sql.prepare << "select b from soci_test where id=:id", soci::use(id));
-            soci::rowset< soci::row > rowSet = (sql.prepare << "select b from soci_test where id=:id union all select b from soci_test where id=:id", soci::use(id, "id"));
+            soci::rowset< soci::row > rowSet = (sql.prepare << "select b from soci_test where id=:id", soci::use(id1));
             bool containedData = false;
             for (auto it = rowSet.begin(); it != rowSet.end(); ++it)
             {
@@ -6898,8 +6901,8 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
         }
         SECTION("reusing bound blob")
         {
-            int secondID = id + 1;
-            sql << "insert into soci_test(id, b) values(:id, :b)", soci::use(secondID), soci::use(blob);
+            int secondID = id2 + 1;
+            sql << "insert into soci_test(id, b) values(:id, :b)", soci::use(secondID), soci::use(blob2);
 
             // Selecting the blob associated with secondID should yield the same result as selecting the one for id
             soci::blob intoBlob(sql);
