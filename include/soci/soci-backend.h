@@ -294,6 +294,8 @@ public:
     virtual ~rowid_backend() {}
 };
 
+class session_backend;
+
 // polymorphic blob backend
 
 class blob_backend
@@ -311,6 +313,8 @@ public:
     virtual std::size_t append(const void* buf, std::size_t toWrite) = 0;
 
     virtual void trim(std::size_t newLen) = 0;
+
+    virtual session_backend &get_session_backend() = 0;
 
     // Deprecated functions with backend-specific semantics preserved only for
     // compatibility.

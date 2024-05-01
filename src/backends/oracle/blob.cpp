@@ -239,3 +239,8 @@ void oracle_blob_backend::ensure_initialized()
         initialized_ = true;
     }
 }
+
+details::session_backend &oracle_blob_backend::get_session_backend()
+{
+    return session_;
+}

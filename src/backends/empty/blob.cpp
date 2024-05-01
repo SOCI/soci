@@ -53,6 +53,11 @@ void empty_blob_backend::trim(std::size_t /* newLen */)
     throw soci_error("BLOBs are not supported.");
 }
 
+details::session_backend &empty_blob_backend::get_session_backend()
+{
+    return session_;
+}
+
 #ifdef _MSC_VER
 # pragma warning(pop)
 #endif

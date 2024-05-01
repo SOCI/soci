@@ -28,7 +28,12 @@ bool blob::is_valid() const
 
 void blob::initialize(session &session)
 {
-    backEnd_.reset(session.make_blob_backend());
+    initialize(session.make_blob_backend());
+}
+
+void blob::initialize(details::blob_backend *backend)
+{
+    backEnd_.reset(backend);
 }
 
 std::size_t blob::get_len()

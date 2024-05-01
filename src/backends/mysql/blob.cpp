@@ -20,8 +20,8 @@
 using namespace soci;
 using namespace soci::details;
 
-mysql_blob_backend::mysql_blob_backend(mysql_session_backend &)
-    : details::trivial_blob_backend()
+mysql_blob_backend::mysql_blob_backend(mysql_session_backend &backend)
+    : details::trivial_blob_backend(backend)
 {
 }
 

@@ -325,3 +325,8 @@ long firebird_blob_backend::getBLOBInfo()
 
     return total_length;
 }
+
+details::session_backend &firebird_blob_backend::get_session_backend()
+{
+    return session_;
+}

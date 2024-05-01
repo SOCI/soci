@@ -233,6 +233,7 @@ struct db2_blob_backend : details::blob_backend
     std::size_t write_from_start(const void* buf, std::size_t toWrite, std::size_t offset = 0) override;
     std::size_t append(const void* buf, std::size_t toWrite) override;
     void trim(std::size_t newLen) override;
+    details::session_backend &get_session_backend() override;
 
     db2_session_backend& session_;
 };
