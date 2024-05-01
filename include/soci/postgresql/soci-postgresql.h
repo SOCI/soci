@@ -370,6 +370,8 @@ public:
 
     void reset();
 
+    details::session_backend &get_session_backend() override;
+
 private:
     postgresql_session_backend & session_;
     blob_details details_;
