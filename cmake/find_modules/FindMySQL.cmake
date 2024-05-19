@@ -15,7 +15,7 @@
 include(CheckCXXSourceCompiles)
 
 if(WIN32)
-  find_path(MySQL_INCLUDE_DIRS mysql.h
+  find_path(MySQL_INCLUDE_DIRS mysql/mysql.h
       PATHS
       $ENV{MYSQL_INCLUDE_DIR}
       $ENV{MYSQL_INCLUDE_DIRS}
@@ -26,7 +26,7 @@ if(WIN32)
       $ENV{ProgramW6432}/MySQL/*/include
    )
 else()
-  find_path(MySQL_INCLUDE_DIRS mysql.h
+  find_path(MySQL_INCLUDE_DIRS mysql/mysql.h
       PATHS
       $ENV{MYSQL_INCLUDE_DIR}
       $ENV{MYSQL_INCLUDE_DIRS}
@@ -93,7 +93,9 @@ find_package_handle_standard_args(MySQL
   REQUIRED_VARS MySQL_LIBRARIES MySQL_INCLUDE_DIRS
 )
 
-add_library(MySQL INTERFACE)
-target_link_libraries(MySQL INTERFACE ${MySQL_LIBRARIES})
-target_include_directories(MySQL INTERFACE ${MySQL_INCLUDE_DIRS})
-add_library(MySQL::MySQL ALIAS MySQL)
+if (MySQL_FOUND)
+  add_library(MySQL INTERFACE)
+  target_link_libraries(MySQL INTERFACE ${MySQL_LIBRARIES})
+  target_include_directories(MySQL INTERFACE ${MySQL_INCLUDE_DIRS})
+  add_library(MySQL::MySQL ALIAS MySQL)
+endif()
