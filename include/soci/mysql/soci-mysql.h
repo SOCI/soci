@@ -35,8 +35,8 @@
     SOCI_GCC_WARNING_SUPPRESS(pedantic)
 #endif
 
-#include <mysql.h> // MySQL Client
-#include <errmsg.h> // MySQL Error codes
+#include <mysql/mysql.h> // MySQL Client
+#include <mysql/errmsg.h> // MySQL Error codes
 
 #ifdef SOCI_GCC_WARNING_RESTORE
     SOCI_GCC_WARNING_RESTORE(pedantic)

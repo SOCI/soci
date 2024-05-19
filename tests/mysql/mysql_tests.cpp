@@ -23,9 +23,10 @@
 #include <ctime>
 #include <ciso646>
 #include <cstdlib>
-#include <mysqld_error.h>
-#include <errmsg.h>
 #include <cstdint>
+
+#include <mysql/mysqld_error.h>
+#include <mysql/errmsg.h>
 
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_mysql();

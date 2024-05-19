@@ -1,15 +1,25 @@
-if (SOCI_MYSQL_AS_AVAILABLE)
-  set(REQUIRED_FLAG "")
-else()
-  set(REQUIRED_FLAG "REQUIRED")
+option(SOCI_MYSQL_VCPKG_ONLY "Whether to look for the MySQL lib only as a vcpkg package" OFF)
+
+if (NOT SOCI_MYSQL_VCPKG_ONLY)
+  find_package(MySQL)
 endif()
 
-find_package(MySQL ${REQUIRED_FLAG})
-
 if (NOT MySQL_FOUND)
-  message(STATUS "Disabling MySQL backend as the required dependencies were not found")
-  set(SOCI_MYSQL OFF CACHE BOOL "" FORCE)
-  return()
+  # The MySQL package has a different name when using vcpkg
+  if (DEFINED VCPKG_TARGET_TRIPLET)
+    find_package(unofficial-libmysql)
+  endif()
+  if (unofficial-libmysql_FOUND)
+    add_library(MySQL::MySQL ALIAS unofficial::libmysql::libmysql)
+    message(STATUS "Found MySQL as a vcpkg package")
+  else()
+    if (NOT SOCI_MYSQL_AS_AVAILABLE)
+      message(FATAL_ERROR "Unable to find MySQL")
+    endif()
+    message(STATUS "Disabling MySQL backend as the required dependencies were not found")
+    set(SOCI_MYSQL OFF CACHE BOOL "" FORCE)
+    return()
+   endif()
 endif()
 
 add_library(soci_mysql
