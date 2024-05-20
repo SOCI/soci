@@ -114,14 +114,14 @@ endif()
 
 soci_public_dependency(
   NAME Boost
-  DEP_TARGETS Boost::boost Boost::date_time
+  DEP_TARGETS Boost::boost Boost::date_time Boost::disable_autolinking
   COMPONENTS date_time
   MACRO_NAMES SOCI_HAVE_BOOST SOCI_HAVE_BOOST_DATE_TIME
   TARGET SOCI::Core
 )
 soci_public_dependency(
   NAME Boost
-  DEP_TARGETS Boost::boost
+  DEP_TARGETS Boost::boost Boost::disable_autolinking
   MACRO_NAMES SOCI_HAVE_BOOST
   TARGET SOCI::Core
 )
