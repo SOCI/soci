@@ -92,5 +92,5 @@ endif()
 
 add_library(Oracle INTERFACE)
 target_link_libraries(Oracle INTERFACE ${Oracle_LIBRARIES})
-target_include_directories(Oracle INTERFACE ${Oracle_INCLUDE_DIRS})
+target_include_directories(Oracle SYSTEM INTERFACE ${Oracle_INCLUDE_DIRS})
 add_library(Oracle::Oracle ALIAS Oracle)
