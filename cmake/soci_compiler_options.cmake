@@ -8,12 +8,14 @@ add_library(soci_compiler_interface INTERFACE)
 
 option(SOCI_ENABLE_WERROR "Enables turning compiler warnings into errors" OFF)
 
-if (MSVC)
+if (WIN32)
   target_compile_definitions(soci_compiler_interface INTERFACE _CRT_SECURE_NO_DEPRECATE)
   target_compile_definitions(soci_compiler_interface INTERFACE _CRT_SECURE_NO_WARNINGS)
   target_compile_definitions(soci_compiler_interface INTERFACE _CRT_NONSTDC_NO_WARNING)
   target_compile_definitions(soci_compiler_interface INTERFACE _SCL_SECURE_NO_WARNINGS)
+endif()
 
+if (MSVC)
   # Configure warnings
   target_compile_options(soci_compiler_interface INTERFACE "/W4" "/we4266")
 
