@@ -165,16 +165,6 @@ private: \
 // about initializing variables unnecessarily.
 #define SOCI_DUMMY_INIT(x) (x)
 
-// And this one can be used to return after calling a "[[noreturn]]" function.
-// Here the problem is that MSVC complains about unreachable code in this case
-// (but only in release builds, where optimizations are enabled), while other
-// compilers complain about missing return statement without it.
-#if defined(_MSC_VER) && defined(NDEBUG)
-    #define SOCI_DUMMY_RETURN(x)
-#else
-    #define SOCI_DUMMY_RETURN(x) return x
-#endif
-
 #define SOCI_OS_LINUX       0x0001
 #define SOCI_OS_FREE_BSD    0x0002
 #define SOCI_OS_APPLE       0x0003
