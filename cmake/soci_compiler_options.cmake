@@ -9,10 +9,21 @@ add_library(soci_compiler_interface INTERFACE)
 option(SOCI_ENABLE_WERROR "Enables turning compiler warnings into errors" OFF)
 
 if (WIN32)
-  target_compile_definitions(soci_compiler_interface INTERFACE _CRT_SECURE_NO_DEPRECATE)
-  target_compile_definitions(soci_compiler_interface INTERFACE _CRT_SECURE_NO_WARNINGS)
-  target_compile_definitions(soci_compiler_interface INTERFACE _CRT_NONSTDC_NO_WARNING)
-  target_compile_definitions(soci_compiler_interface INTERFACE _SCL_SECURE_NO_WARNINGS)
+  target_compile_definitions(soci_compiler_interface
+    INTERFACE
+      _CRT_SECURE_NO_DEPRECATE
+      _CRT_SECURE_NO_WARNINGS
+      _CRT_NONSTDC_NO_WARNING
+      _SCL_SECURE_NO_WARNINGS
+  )
+
+  # Prevent the Windows header files from defining annoying macros
+  # and also cut down on the definitions in general
+  target_compile_definitions(soci_compiler_interface
+    INTERFACE
+      NOMINMAX
+      WIN32_LEAN_AND_MEAN
+  )
 endif()
 
 if (MSVC)
