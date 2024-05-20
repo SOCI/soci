@@ -14,11 +14,8 @@ if (MSVC)
   target_compile_definitions(soci_compiler_interface INTERFACE _CRT_NONSTDC_NO_WARNING)
   target_compile_definitions(soci_compiler_interface INTERFACE _SCL_SECURE_NO_WARNINGS)
 
-  if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
-    string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /we4266")
-  endif()
+  # Configure warnings
+  target_compile_options(soci_compiler_interface INTERFACE "/W4" "/we4266")
 
   if (SOCI_ENABLE_WERROR)
     target_compile_options(soci_compiler_interface INTERFACE "/WX")
@@ -47,7 +44,6 @@ else()
       target_compile_options(soci_compiler_interface INTERFACE "-fsanitize=address")
     endif()
 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SOCI_GCC_CLANG_COMMON_FLAGS} ")
     if (CMAKE_COMPILER_IS_GNUCXX)
       if (NOT (CMAKE_SYSTEM_NAME MATCHES "FreeBSD"))
         target_compile_options(soci_compiler_interface INTERFACE "-Wno-variadic-macros")
