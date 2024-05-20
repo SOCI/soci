@@ -96,6 +96,6 @@ find_package_handle_standard_args(MySQL
 if (MySQL_FOUND)
   add_library(MySQL INTERFACE)
   target_link_libraries(MySQL INTERFACE ${MySQL_LIBRARIES})
-  target_include_directories(MySQL INTERFACE ${MySQL_INCLUDE_DIRS})
+  target_include_directories(MySQL SYSTEM INTERFACE ${MySQL_INCLUDE_DIRS})
   add_library(MySQL::MySQL ALIAS MySQL)
 endif()

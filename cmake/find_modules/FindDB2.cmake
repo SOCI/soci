@@ -96,5 +96,5 @@ find_package_handle_standard_args(DB2
 
 add_library(DB2 INTERFACE)
 target_link_libraries(DB2 INTERFACE ${DB2_LIBRARIES})
-target_include_directories(DB2 INTERFACE ${DB2_INCLUDE_DIRS})
+target_include_directories(DB2 SYSTEM INTERFACE ${DB2_INCLUDE_DIRS})
 add_library(DB2::DB2 ALIAS DB2)

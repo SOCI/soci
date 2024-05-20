@@ -35,5 +35,5 @@ find_package_handle_standard_args(Firebird
 
 add_library(Firebird INTERFACE)
 target_link_libraries(Firebird INTERFACE ${Firebird_LIBRARIES})
-target_include_directories(Firebird INTERFACE ${Firebird_INCLUDE_DIRS})
+target_include_directories(Firebird SYSTEM INTERFACE ${Firebird_INCLUDE_DIRS})
 add_library(Firebird::Firebird ALIAS Firebird)
