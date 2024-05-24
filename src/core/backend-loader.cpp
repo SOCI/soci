@@ -31,11 +31,7 @@ typedef HMODULE soci_handler_t;
 #define UNLOCK(x) LeaveCriticalSection(x)
 #define MUTEX_INIT(x) InitializeCriticalSection(x)
 #define MUTEX_DEST(x) DeleteCriticalSection(x)
-#ifdef _UNICODE
 #define DLOPEN(x) LoadLibraryA(x)
-#else
-#define DLOPEN(x) LoadLibrary(x)
-#endif
 #define DLCLOSE(x) FreeLibrary(x)
 #define DLSYM(x, y) GetProcAddress(x, y)
 
