@@ -5934,13 +5934,13 @@ TEST_CASE_METHOD(common_tests, "Logger", "[core][log]")
         {
         }
 
-        virtual void start_query(std::string const & query)
+        virtual void start_query(std::string const & query) override
         {
             m_logbuf.push_back(query);
         }
 
     private:
-        virtual logger_impl* do_clone() const
+        virtual logger_impl* do_clone() const override
         {
             return new test_log_impl(m_logbuf);
         }
