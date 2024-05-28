@@ -25,8 +25,13 @@
 #include <cstdlib>
 #include <cstdint>
 
+#ifdef SOCI_MYSQL_DIRECT_INCLUDE
+#include <mysqld_error.h>
+#include <errmsg.h>
+#else
 #include <mysql/mysqld_error.h>
 #include <mysql/errmsg.h>
+#endif
 
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_mysql();
