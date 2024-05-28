@@ -20,8 +20,13 @@
 #include <soci/soci-backend.h>
 #include <private/soci-trivial-blob-backend.h>
 
+#ifdef SOCI_MYSQL_DIRECT_INCLUDE
+#include <mysql.h> // MySQL Client
+#include <errmsg.h> // MySQL Error codes
+#else
 #include <mysql/mysql.h> // MySQL Client
 #include <mysql/errmsg.h> // MySQL Error codes
+#endif
 
 
 #include <vector>
