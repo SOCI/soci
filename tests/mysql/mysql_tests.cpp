@@ -8,7 +8,7 @@
 
 #include <catch.hpp>
 
-#include "mysql/mysql_tests.h"
+#include "mysql_tests.h"
 
 #include "soci/soci.h"
 #include "soci-compiler.h"
