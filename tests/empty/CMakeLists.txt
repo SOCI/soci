@@ -1,15 +1,8 @@
-###############################################################################
-#
-# This file is part of CMake configuration for SOCI library
-#
-# Copyright (C) 2010-2013 Mateusz Loskot <mateusz@loskot.net>
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE_1_0.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
-#
-###############################################################################
+add_executable(soci_empty_tests empty_tests.cpp)
+target_link_libraries(soci_empty_tests PRIVATE SOCI::Empty)
+target_include_directories(soci_empty_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../")
 
-soci_backend_test(
-  BACKEND Empty
-  SOURCE test-empty.cpp ${SOCI_TESTS_COMMON}
-  CONNSTR "dummy")
+add_test(
+  NAME soci_empty_tests
+  COMMAND soci_empty_tests "--invisibles"
+)
