@@ -131,6 +131,7 @@ target_link_libraries(soci_core
     $<BUILD_INTERFACE:soci_compiler_interface>
   PRIVATE
     Threads::Threads
+    ${CMAKE_DL_LIBS}
 )
 
 if (WIN32)
