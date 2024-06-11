@@ -7,14 +7,15 @@
 
 #define SOCI_ODBC_SOURCE
 #include "soci/soci-platform.h"
+#if defined(_MSC_VER) || defined(__MINGW32__)
+#include "soci/soci-unicode.h"
+#endif // _MSC_VER || __MINGW32__
 #include "soci/odbc/soci-odbc.h"
 #include "soci-compiler.h"
 #include "soci-cstrtoi.h"
 #include "soci-exchange-cast.h"
 #include "soci-mktime.h"
-#if defined(_MSC_VER) || defined(__MINGW32__)
-#include "soci-unicode.h"
-#endif // _MSC_VER || __MINGW32__
+
 #include <cstdint>
 #include <ctime>
 
@@ -235,7 +236,20 @@ void odbc_standard_into_type_backend::post_fetch(
         else if (type_ == x_stdwstring)
         {
             std::wstring& s = exchange_type_cast<x_stdwstring>(data_);
-            s = reinterpret_cast<wchar_t*>(buf_);
+
+#if defined(_MSC_VER) || defined(__MINGW32__)
+            if (colType_ == db_string)
+            {
+                s = utf8_to_wide(buf_);
+            }
+            else
+            {
+                s = reinterpret_cast<wchar_t*>(buf_);
+            }
+#else
+            s = buf_;
+#endif // _MSC_VER || __MINGW32__
+
             if (s.size() * sizeof(SQLWCHAR) >= ((odbc_max_buffer_length - 1)))
             {
                 throw soci_error("Buffer size overflow; maybe got too large string");
@@ -243,11 +257,39 @@ void odbc_standard_into_type_backend::post_fetch(
         }
         else if (type_ == x_longstring)
         {
-            exchange_type_cast<x_longstring>(data_).value = buf_;
+            std::string& s = exchange_type_cast<x_longstring>(data_).value;
+
+#if defined(_MSC_VER) || defined(__MINGW32__)
+            if (colType_ == db_wstring)
+            {
+                const wchar_t* wBuf = reinterpret_cast<wchar_t*>(buf_);
+                s = wide_to_utf8(wBuf);
+            }
+            else
+            {
+                s = buf_;
+            }
+#else
+            s = buf_;
+#endif // _MSC_VER || __MINGW32__
         }
         else if (type_ == x_xmltype)
         {
-            exchange_type_cast<x_xmltype>(data_).value = buf_;
+            std::string& s = exchange_type_cast<x_xmltype>(data_).value;
+
+#if defined(_MSC_VER) || defined(__MINGW32__)
+            if (colType_ == db_wstring)
+            {
+                const wchar_t* wBuf = reinterpret_cast<wchar_t*>(buf_);
+                s = wide_to_utf8(wBuf);
+            }
+            else
+            {
+                s = buf_;
+            }
+#else
+            s = buf_;
+#endif // _MSC_VER || __MINGW32__
         }
         else if (type_ == x_stdtm)
         {
