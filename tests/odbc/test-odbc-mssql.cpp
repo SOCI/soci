@@ -75,7 +75,7 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
     );
 }
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
+
 
 TEST_CASE("MS SQL wide string", "[odbc][mssql][wstring]")
 {
@@ -102,6 +102,8 @@ TEST_CASE("MS SQL wide string", "[odbc][mssql][wstring]")
     CHECK(str_out == str_in);
 
 }
+
+#if defined(_MSC_VER) || defined(__MINGW32__)
 
 TEST_CASE("MS SQL wide string vector", "[odbc][mssql][vector][wstring]")
 {

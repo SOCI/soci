@@ -8,6 +8,7 @@
 #include "soci/odbc/soci-odbc.h"
 #include "soci-compiler.h"
 #include "soci-exchange-cast.h"
+#include "soci-unicode.h"
 #include <cctype>
 #include <cstdint>
 #include <cstdio>
@@ -197,6 +198,8 @@ void odbc_standard_use_type_backend::copy_from_string(
     SQLSMALLINT& sqlType,
     SQLSMALLINT& cType
 ) {
+#if defined(_MSC_VER) || defined(__MINGW32__)
+    // On Windows, std::wstring is already UTF-16
     size = static_cast<SQLLEN>(s.size() * sizeof(wchar_t));
     sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_WLONGVARCHAR : SQL_WVARCHAR;
     cType = SQL_C_WCHAR;
@@ -204,8 +207,20 @@ void odbc_standard_use_type_backend::copy_from_string(
     wchar_t * const wbuf = reinterpret_cast<wchar_t *>(buf_);
     std::wmemcpy(wbuf, s.c_str(), s.size());
     wbuf[s.size()] = L'\0';
+#else
+    // On Unices, std::wstring is UTF-32, so we need to convert to UTF-16
+    std::u16string utf16_str = utf32_to_utf16(std::u32string(s.begin(), s.end()));
+    size = static_cast<SQLLEN>(utf16_str.size() * sizeof(WCHAR));
+    sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_WLONGVARCHAR : SQL_WVARCHAR;
+    cType = SQL_C_WCHAR;
+    buf_ = new char[size + sizeof(WCHAR)];
+    WCHAR * const wbuf = reinterpret_cast<WCHAR *>(buf_);
+    std::memcpy(wbuf, utf16_str.c_str(), size);
+    wbuf[utf16_str.size()] = u'\0';
+#endif
     indHolder_ = SQL_NTS;
 }
+
 
 void odbc_standard_use_type_backend::bind_by_pos(
     int &position, void *data, exchange_type type, bool /* readOnly */)

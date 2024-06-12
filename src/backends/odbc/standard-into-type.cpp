@@ -7,9 +7,7 @@
 
 #define SOCI_ODBC_SOURCE
 #include "soci/soci-platform.h"
-#if defined(_MSC_VER) || defined(__MINGW32__)
-#include "soci/soci-unicode.h"
-#endif // _MSC_VER || __MINGW32__
+#include "soci-unicode.h"
 #include "soci/odbc/soci-odbc.h"
 #include "soci-compiler.h"
 #include "soci-cstrtoi.h"
@@ -237,7 +235,7 @@ void odbc_standard_into_type_backend::post_fetch(
         {
             std::wstring& s = exchange_type_cast<x_stdwstring>(data_);
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
+// #if defined(_MSC_VER) || defined(__MINGW32__)
             if (colType_ == db_string)
             {
                 s = utf8_to_wide(buf_);
@@ -246,9 +244,9 @@ void odbc_standard_into_type_backend::post_fetch(
             {
                 s = reinterpret_cast<wchar_t*>(buf_);
             }
-#else
-            s = buf_;
-#endif // _MSC_VER || __MINGW32__
+// #else
+//             s = buf_;
+// #endif // _MSC_VER || __MINGW32__
 
             if (s.size() * sizeof(SQLWCHAR) >= ((odbc_max_buffer_length - 1)))
             {
