@@ -27,10 +27,10 @@ void odbc_standard_into_type_backend::define_by_pos(
     type_ = type;
     position_ = position++;
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
+// #if defined(_MSC_VER) || defined(__MINGW32__)
     std::string colName;
     statement_.describe_column(position_, colType_, colName);
-#endif // _MSC_VER || __MINGW32__
+// #endif // _MSC_VER || __MINGW32__
     unsigned charSize = sizeof(char);
 
     SQLUINTEGER size = 0;
@@ -53,13 +53,13 @@ void odbc_standard_into_type_backend::define_by_pos(
     case x_xmltype:
         odbcType_ = SQL_C_CHAR;
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
+// #if defined(_MSC_VER) || defined(__MINGW32__)
         if (colType_ == db_wstring)
         {
             odbcType_ = SQL_C_WCHAR;
             charSize = sizeof(SQLWCHAR);
         }
-#endif // _MSC_VER || __MINGW32__
+// #endif // _MSC_VER || __MINGW32__
         // For LONGVARCHAR fields the returned size is ODBC_MAX_COL_SIZE
         // (or 0 for some backends), but this doesn't correspond to the actual
         // field size, which can be (much) greater. For now we just used
@@ -212,19 +212,14 @@ void odbc_standard_into_type_backend::post_fetch(
         {
             std::string& s = exchange_type_cast<x_stdstring>(data_);
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
             if (colType_ == db_wstring)
             {
-                const wchar_t* wBuf = reinterpret_cast<wchar_t*>(buf_);
-                s = wide_to_utf8(wBuf);
+                s = utf16_to_utf8(std::u16string(reinterpret_cast<char16_t*>(buf_)));
             }
             else
             {
                 s = buf_;
             }
-#else
-            s = buf_;
-#endif // _MSC_VER || __MINGW32__
 
             if (s.size() >= (odbc_max_buffer_length - 1))
             {
@@ -235,20 +230,26 @@ void odbc_standard_into_type_backend::post_fetch(
         {
             std::wstring& s = exchange_type_cast<x_stdwstring>(data_);
 
-// #if defined(_MSC_VER) || defined(__MINGW32__)
             if (colType_ == db_string)
             {
-                s = utf8_to_wide(buf_);
+#if defined(_MSC_VER) || defined(__MINGW32__)
+                s = utf8_to_utf16(reinterpret_cast<char *>(buf_));
+#else
+                std::u32string u32str = utf8_to_utf32(reinterpret_cast<char *>(buf_));
+                s = std::wstring(u32str.begin(), u32str.end());
+#endif
             }
-            else
+            else if(colType_ == db_wstring)
             {
-                s = reinterpret_cast<wchar_t*>(buf_);
+#if defined(_MSC_VER) || defined(__MINGW32__)
+                s = buf_;
+#else
+                std::u32string u32str = utf16_to_utf32(reinterpret_cast<char16_t*>(buf_));
+                s = std::wstring(u32str.begin(), u32str.end());
+#endif
             }
-// #else
-//             s = buf_;
-// #endif // _MSC_VER || __MINGW32__
 
-            if (s.size() * sizeof(SQLWCHAR) >= ((odbc_max_buffer_length - 1)))
+            if (s.size() >= (odbc_max_buffer_length - 1) / sizeof(wchar_t))
             {
                 throw soci_error("Buffer size overflow; maybe got too large string");
             }
@@ -257,37 +258,27 @@ void odbc_standard_into_type_backend::post_fetch(
         {
             std::string& s = exchange_type_cast<x_longstring>(data_).value;
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
             if (colType_ == db_wstring)
             {
-                const wchar_t* wBuf = reinterpret_cast<wchar_t*>(buf_);
-                s = wide_to_utf8(wBuf);
+                s = utf16_to_utf8(std::u16string(reinterpret_cast<char16_t*>(buf_)));
             }
             else
             {
                 s = buf_;
             }
-#else
-            s = buf_;
-#endif // _MSC_VER || __MINGW32__
         }
         else if (type_ == x_xmltype)
         {
             std::string& s = exchange_type_cast<x_xmltype>(data_).value;
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
             if (colType_ == db_wstring)
             {
-                const wchar_t* wBuf = reinterpret_cast<wchar_t*>(buf_);
-                s = wide_to_utf8(wBuf);
+                s = utf16_to_utf8(std::u16string(reinterpret_cast<char16_t*>(buf_)));
             }
             else
             {
                 s = buf_;
             }
-#else
-            s = buf_;
-#endif // _MSC_VER || __MINGW32__
         }
         else if (type_ == x_stdtm)
         {
