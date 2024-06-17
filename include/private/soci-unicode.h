@@ -2,9 +2,15 @@
 #define SOCI_PRIVATE_SOCI_UNICODE_H_INCLUDED
 
 #include <stdexcept>
+#include <wchar.h>
 #include <string>
-
 #include "soci/error.h"
+
+
+#if WCHAR_MAX > 0xFFFFu
+  #define SOCI_WCHAR_T_IS_WIDE
+#endif
+
 
 namespace soci
 {
@@ -238,26 +244,26 @@ namespace soci
 
     inline std::wstring utf8_to_wide(const std::string &utf8)
     {
-#if defined(_MSC_VER) || defined(__MINGW32__)
-      std::u16string utf16 = utf8_to_utf16(utf8);
-      return std::wstring(utf16.begin(), utf16.end());
-#else  // Unix/Linux and others
+#if defined(SOCI_WCHAR_T_IS_WIDE) // Windows
       // Convert UTF-8 to UTF-32 first and then to wstring (UTF-32 on Unix/Linux)
       std::u32string utf32 = utf8_to_utf32(utf8);
       return std::wstring(utf32.begin(), utf32.end());
-#endif // _MSC_VER || __MINGW32__
+#else  // Unix/Linux and others
+      std::u16string utf16 = utf8_to_utf16(utf8);
+      return std::wstring(utf16.begin(), utf16.end());
+#endif // SOCI_WCHAR_T_IS_WIDE
     }
 
     inline std::string wide_to_utf8(const std::wstring &wide)
     {
-#if defined(_MSC_VER) || defined(__MINGW32__)
-      std::u16string utf16(wide.begin(), wide.end());
-      return utf16_to_utf8(utf16);
-#else  // Unix/Linux and others
+#if defined(SOCI_WCHAR_T_IS_WIDE) // Windows
       // Convert wstring (UTF-32) to utf8
       std::u32string utf32(wide.begin(), wide.end());
       return utf32_to_utf8(utf32);
-#endif // _MSC_VER || __MINGW32__
+#else  // Unix/Linux and others
+      std::u16string utf16(wide.begin(), wide.end());
+      return utf16_to_utf8(utf16);
+#endif // SOCI_WCHAR_T_IS_WIDE
     }
 
   } // namespace details
