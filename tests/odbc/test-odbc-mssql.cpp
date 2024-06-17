@@ -75,8 +75,6 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
     );
 }
 
-
-
 TEST_CASE("MS SQL wide string", "[odbc][mssql][wstring]")
 {
     soci::session sql(backEnd, connectString);
@@ -93,17 +91,22 @@ TEST_CASE("MS SQL wide string", "[odbc][mssql][wstring]")
     } wide_text_table_creator(sql);
 
     std::wstring const str_in = L"Hello, SOCI!";
+    std::string const str_in_utf8 = "Hello, SOCI!";
 
     sql << "insert into soci_test(wide_text) values(:str)", use(str_in);
 
     std::wstring str_out;
     sql << "select wide_text from soci_test", into(str_out);
+    
+    std::string str_out_utf8;
+    sql << "select wide_text from soci_test", into(str_out_utf8);
 
     CHECK(str_out == str_in);
+    
+    CHECK(str_out_utf8 == str_in_utf8);
+    
 
 }
-
-#if defined(_MSC_VER) || defined(__MINGW32__)
 
 TEST_CASE("MS SQL wide string vector", "[odbc][mssql][vector][wstring]")
 {
@@ -133,12 +136,15 @@ TEST_CASE("MS SQL wide string vector", "[odbc][mssql][vector][wstring]")
 
     sql << "select wide_text from soci_test", into(str_out);
 
+
     CHECK(str_out.size() == str_in.size());
     for (std::size_t i = 0; i != str_in.size(); ++i)
     {
         CHECK(str_out[i] == str_in[i]);
     }
+    
 }
+
 
 TEST_CASE("MS SQL wide char", "[odbc][mssql][wchar]")
 {
@@ -164,6 +170,7 @@ TEST_CASE("MS SQL wide char", "[odbc][mssql][wchar]")
 
     CHECK(ch_out == ch_in);
 }
+
 
 TEST_CASE("MS SQL wchar vector", "[odbc][mssql][vector][wchar]")
 {
@@ -227,7 +234,12 @@ TEST_CASE("MS SQL string stream implicit unicode conversion", "[odbc][mssql][str
     sql << "select wide_text from soci_test", into(wstr_out);
 
     CHECK(str_out == str_in);
+    
+#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
+    CHECK(wstr_out == L"\U00000E2A\U00000E27\U00000E31\U00000E2A\U00000E14\U00000E35\U00000021");
+#else // Windows
     CHECK(wstr_out == L"\u0E2A\u0E27\u0E31\u0E2A\u0E14\u0E35\u0021");
+#endif
 
 }
 
@@ -263,7 +275,8 @@ TEST_CASE("MS SQL wide string stream implicit unicode conversion", "[odbc][mssql
 
 }
 
-#endif // _MSC_VER || __MINGW32__
+
+
 
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
@@ -287,6 +300,7 @@ struct table_creator_two : public table_creator_base
         sql  << "create table soci_test(num_float float, num_int integer,"
                      " name varchar(20), sometime datetime, chr char)";
     }
+    
 };
 
 struct table_creator_three : public table_creator_base
@@ -324,6 +338,7 @@ struct table_creator_for_xml : table_creator_base
     {
         sql << "create table soci_test(id integer, x xml)";
     }
+    
 };
 
 struct table_creator_for_get_last_insert_id : table_creator_base
@@ -434,6 +449,8 @@ int main(int argc, char** argv)
     }
 
     test_context tc(backEnd, connectString);
+    
 
     return Catch::Session().run(argc, argv);
+    
 }
