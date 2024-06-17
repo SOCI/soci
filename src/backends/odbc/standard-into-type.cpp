@@ -202,7 +202,24 @@ void odbc_standard_into_type_backend::post_fetch(
         }
         else if (type_ == x_wchar)
         {
-            exchange_type_cast<x_wchar>(data_) = reinterpret_cast<wchar_t*>(buf_)[0];
+            wchar_t &c = exchange_type_cast<x_wchar>(data_);
+            
+            if (colType_ == db_wstring)
+            {
+#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
+              c = utf16_to_utf32(std::u16string(reinterpret_cast<char16_t*>(buf_)))[0];
+#else // Windows
+              c = buf_[0];
+#endif  
+            }
+            else if(colType_ == db_string)
+            {
+#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
+              c = utf8_to_utf32(std::string(reinterpret_cast<char*>(buf_)))[0];
+#else // Windows
+              c = utf16_to_utf8(std::u16string(reinterpret_cast<char16_t*>(buf_)))[0];
+#endif  
+            }
         }
         else if (type_ == x_stdstring)
         {
@@ -228,7 +245,6 @@ void odbc_standard_into_type_backend::post_fetch(
 
             if (colType_ == db_string)
             {
-              
 #if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
                 std::u32string u32str = utf8_to_utf32(reinterpret_cast<char *>(buf_));
                 s = std::wstring(u32str.begin(), u32str.end());
