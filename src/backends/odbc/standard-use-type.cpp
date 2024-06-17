@@ -197,17 +197,9 @@ void odbc_standard_use_type_backend::copy_from_string(
     SQLLEN& size,
     SQLSMALLINT& sqlType,
     SQLSMALLINT& cType
-) {
-#if defined(_MSC_VER) || defined(__MINGW32__)
-    // On Windows, std::wstring is already UTF-16
-    size = static_cast<SQLLEN>(s.size() * sizeof(wchar_t));
-    sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_WLONGVARCHAR : SQL_WVARCHAR;
-    cType = SQL_C_WCHAR;
-    buf_ = new char[size + sizeof(wchar_t)];
-    wchar_t * const wbuf = reinterpret_cast<wchar_t *>(buf_);
-    std::wmemcpy(wbuf, s.c_str(), s.size());
-    wbuf[s.size()] = L'\0';
-#else
+    ) 
+{
+#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
     // On Unices, std::wstring is UTF-32, so we need to convert to UTF-16
     std::u16string utf16_str = utf32_to_utf16(std::u32string(s.begin(), s.end()));
     size = static_cast<SQLLEN>(utf16_str.size() * sizeof(WCHAR));
@@ -217,7 +209,16 @@ void odbc_standard_use_type_backend::copy_from_string(
     WCHAR * const wbuf = reinterpret_cast<WCHAR *>(buf_);
     std::memcpy(wbuf, utf16_str.c_str(), size);
     wbuf[utf16_str.size()] = u'\0';
-#endif
+#else // Windows
+    // On Windows, std::wstring is already UTF-16
+    size = static_cast<SQLLEN>(s.size() * sizeof(wchar_t));
+    sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_WLONGVARCHAR : SQL_WVARCHAR;
+    cType = SQL_C_WCHAR;
+    buf_ = new char[size + sizeof(wchar_t)];
+    wchar_t * const wbuf = reinterpret_cast<wchar_t *>(buf_);
+    std::wmemcpy(wbuf, s.c_str(), s.size());
+    wbuf[s.size()] = L'\0';
+#endif 
     indHolder_ = SQL_NTS;
 }
 
