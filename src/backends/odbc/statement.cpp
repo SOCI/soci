@@ -7,9 +7,7 @@
 
 #define SOCI_ODBC_SOURCE
 #include "soci/odbc/soci-odbc.h"
-#if defined(_MSC_VER) || defined(__MINGW32__)
-#include "soci/soci-unicode.h"
-#endif // _MSC_VER || __MINGW32__
+#include "soci-unicode.h"
 #include <cctype>
 #include <sstream>
 #include <cstring>
@@ -127,22 +125,16 @@ void odbc_statement_backend::prepare(std::string const & query,
         query_ += "?";
     }
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
-
     SQLRETURN rc = 0;
     if (session_.get_database_product() == odbc_session_backend::database_product::prod_mssql)
     {
-        std::wstring wquery = utf8_to_wide(query_);
-        rc = SQLPrepareW(hstmt_, sqlchar_cast(wquery), (SQLINTEGER)wquery.size());
+        std::u16string wQuery  = utf8_to_utf16(query_);
+        rc = SQLPrepareW(hstmt_, sqlchar_cast(wQuery), (SQLINTEGER)wQuery.size());
     }
     else
     {
         rc = SQLPrepare(hstmt_, sqlchar_cast(query_), (SQLINTEGER)query_.size());
-    }
-#else
-    SQLRETURN rc = SQLPrepare(hstmt_, sqlchar_cast(query_), (SQLINTEGER)query_.size());
-#endif // _MSC_VER || __MINGW32__
-    
+    }    
     
     if (is_odbc_error(rc))
     {
