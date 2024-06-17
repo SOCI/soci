@@ -246,10 +246,11 @@ void odbc_standard_into_type_backend::post_fetch(
             if (colType_ == db_string)
             {
 #if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
-                std::u32string u32str = utf8_to_utf32(reinterpret_cast<char *>(buf_));
+                const std::u32string u32str = utf8_to_utf32(reinterpret_cast<char *>(buf_));
                 s = std::wstring(u32str.begin(), u32str.end());
 #else // Windows
-                s = utf8_to_utf16(reinterpret_cast<char *>(buf_));
+                const std::u16string utf16 = utf8_to_utf16(reinterpret_cast<char *>(buf_));
+                s = std::wstring(utf16.begin(), utf16.end());
 #endif // SOCI_WCHAR_T_IS_WIDE
             }
             else if(colType_ == db_wstring)
@@ -258,7 +259,7 @@ void odbc_standard_into_type_backend::post_fetch(
                 std::u32string u32str = utf16_to_utf32(reinterpret_cast<char16_t*>(buf_));
                 s = std::wstring(u32str.begin(), u32str.end());
 #else // Windows
-                s = buf_;
+                s = std::wstring(reinterpret_cast<wchar_t*>(buf_));
 #endif // SOCI_WCHAR_T_IS_WIDE
             }
 
