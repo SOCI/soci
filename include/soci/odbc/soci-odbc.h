@@ -48,6 +48,11 @@ namespace details
     {
       return reinterpret_cast<SQLWCHAR*>(const_cast<wchar_t*>(s.c_str()));
     }
+    
+    inline SQLWCHAR* sqlchar_cast(std::u16string const& s)
+    {
+      return reinterpret_cast<SQLWCHAR*>(const_cast<char16_t*>(s.c_str()));
+    }
 }
 
 // Option allowing to specify the "driver completion" parameter of
@@ -107,9 +112,9 @@ struct odbc_standard_into_type_backend : details::standard_into_type_backend,
 
     void clean_up() override;
 
+    db_type colType_;
     char *buf_;        // generic buffer
     void *data_;
-    db_type colType_;
     details::exchange_type type_;
     int position_;
     SQLSMALLINT odbcType_;
@@ -151,6 +156,7 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
     void rebind_row(std::size_t rowInd);
 
     std::vector<SQLLEN> indHolderVec_;
+    db_type colType_;
     void *data_;
     char *buf_;              // generic buffer
     details::exchange_type type_;
