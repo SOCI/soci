@@ -8,6 +8,7 @@
 #define SOCI_ODBC_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/odbc/soci-odbc.h"
+#include "soci-unicode.h"
 #include "soci-compiler.h"
 #include "soci-vector-helpers.h"
 #include <cctype>
@@ -197,30 +198,49 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
             data = buf_;
         }
         break;
-    case x_wchar:
+        case x_wchar:
         {
-            std::vector<wchar_t> *vp
-                = static_cast<std::vector<wchar_t> *>(data_);
+            std::vector<wchar_t> *vp = static_cast<std::vector<wchar_t> *>(data_);
             std::size_t const vsize = vp->size();
 
             prepare_indicators(vsize);
 
+#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
+            // On Unices, wchar_t is UTF-32, so we need to convert to UTF-16
+            std::u16string utf16_str = utf32_to_utf16(std::u32string((*vp).begin(), (*vp).end()));
+            size = sizeof(WCHAR) * (utf16_str.length() + 1); // +1 for terminating nul
+#else // Windows
+            // On Windows, wchar_t is UTF-16
             size = sizeof(wchar_t) * 2;
+#endif // SOCI_WCHAR_T_IS_WIDE
+
             buf_ = new char[size * vsize];
 
+#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
+            // On Unices, wchar_t is UTF-32, so we need to convert to UTF-16
+            WCHAR *pos = reinterpret_cast<WCHAR*>(buf_);
+
+            for (std::size_t i = 0; i != utf16_str.length(); ++i)
+            {
+                *pos++ = utf16_str[i];
+            }
+            *pos = L'\0';
+#else // Windows
+            // On Windows, wchar_t is UTF-16
             wchar_t *pos = reinterpret_cast<wchar_t*>(buf_);
 
             for (std::size_t i = 0; i != vsize; ++i)
             {
                 *pos++ = (*vp)[i];
-                *pos++ = 0;
+                *pos++ = L'\0';
             }
-
+#endif // SOCI_WCHAR_T_IS_WIDE
             sqlType = SQL_WCHAR;
             cType = SQL_C_WCHAR;
             data = buf_;
         }
         break;
+
     case x_stdstring:
     case x_xmltype:
     case x_longstring:
@@ -255,39 +275,49 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
             cType = SQL_C_CHAR;
         }
         break;
-    case x_stdwstring:
+        case x_stdwstring:
         {
             std::size_t maxSize = 0;
             std::size_t const vecSize = get_vector_size(type_, data_);
             prepare_indicators(vecSize);
             for (std::size_t i = 0; i != vecSize; ++i)
             {
-                std::size_t sz = exchange_vector_type_cast<x_stdwstring>(data_).at(i).length();
-                set_sqllen_from_vector_at(i, static_cast<long>(sz) * sizeof(wchar_t));
+                std::wstring& value = exchange_vector_type_cast<x_stdwstring>(data_).at(i);
+                std::size_t sz = value.length();
+                set_sqllen_from_vector_at(i, static_cast<long>(sz * sizeof(SQLWCHAR)));
                 maxSize = sz > maxSize ? sz : maxSize;
             }
 
             maxSize++; // For terminating nul.
 
-            buf_ = new char[maxSize * vecSize * sizeof(wchar_t)];
-            memset(buf_, 0, maxSize * vecSize * sizeof(wchar_t));
+            buf_ = new char[maxSize * vecSize * sizeof(SQLWCHAR)];
+            memset(buf_, 0, maxSize * vecSize * sizeof(SQLWCHAR));
 
-            char *pos = buf_;
+            SQLWCHAR *pos = reinterpret_cast<SQLWCHAR*>(buf_);
+
             for (std::size_t i = 0; i != vecSize; ++i)
             {
                 std::wstring& value = exchange_vector_type_cast<x_stdwstring>(data_).at(i);
-                std::memcpy(pos, value.c_str(), value.length() * sizeof(wchar_t));
-                pos += maxSize * sizeof(wchar_t);
+                
+#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
+                // On Unices, std::wstring is UTF-32, so we need to convert to UTF-16
+                std::u16string utf16_str = utf32_to_utf16(std::u32string(value.begin(), value.end()));
+                std::memcpy(pos, utf16_str.c_str(), utf16_str.length() * sizeof(SQLWCHAR));
+#else
+                // On Windows, std::wstring is already UTF-16
+                std::memcpy(pos, value.c_str(), value.length() * sizeof(SQLWCHAR));
+#endif // SOCI_WCHAR_T_IS_WIDE
+                pos += maxSize;
             }
 
             data = buf_;
-            size = static_cast<SQLINTEGER>(maxSize * sizeof(wchar_t));
+            size = static_cast<SQLINTEGER>(maxSize * sizeof(SQLWCHAR));
 
             sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_WLONGVARCHAR : SQL_WVARCHAR;
-            cType = SQL_C_WCHAR;    
-
+            cType = SQL_C_WCHAR;
         }
-    break;
+        break;
+
     case x_stdtm:
         {
             std::vector<std::tm> *vp
