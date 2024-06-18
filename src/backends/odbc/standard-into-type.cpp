@@ -68,11 +68,18 @@ void odbc_standard_into_type_backend::define_by_pos(
         buf_ = new char[size];
         data = buf_;
         break;
-    case x_stdwstring:
-        odbcType_ = SQL_C_WCHAR;
+    case x_stdwstring:        
+        odbcType_ = SQL_C_CHAR;
+
+        if (colType_ == db_wstring)
+        {
+            odbcType_ = SQL_C_WCHAR;
+            charSize = sizeof(SQLWCHAR);
+        }
+        
         size = static_cast<SQLUINTEGER>(statement_.column_size(position_));
         size = (size >= ODBC_MAX_COL_SIZE || size == 0) ? odbc_max_buffer_length : size;
-        size += sizeof(wchar_t);
+        size += charSize;
         buf_ = new char[size];
         data = buf_;
         break;
