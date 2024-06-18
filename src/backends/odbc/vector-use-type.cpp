@@ -207,7 +207,9 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
 
         size = sizeof(SQLWCHAR) * 2;
         buf_ = new char[size * vsize];
-
+        
+        SQLWCHAR *pos = reinterpret_cast<SQLWCHAR *>(buf_);
+        
 #if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
         std::vector<char16_t> u16Vec;
 
@@ -219,18 +221,17 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
 
         // Assign the UTF-16 data to the u16Vec vector
         u16Vec.assign(utf16.begin(), utf16.end());
-
-        SQLWCHAR *pos = reinterpret_cast<SQLWCHAR *>(buf_);
-
+#endif
         // Copy the UTF-16 data to the buffer
         for(std::size_t i = 0UL; i != vsize; ++i)
         {
+#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
           *pos++ = static_cast<SQLWCHAR>(u16Vec[i]);
+#else
+          *pos++ = static_cast<SQLWCHAR>(vp->at(i));
+#endif // SOCI_WCHAR_T_IS_WIDE
           *pos++ = 0;
         }
-#else
-        std::memcpy(buf_, vp->data(), size * vsize);
-#endif // SOCI_WCHAR_T_IS_WIDE
 
         sqlType = SQL_WCHAR;
         cType = SQL_C_WCHAR;
