@@ -8,6 +8,7 @@
 #define SOCI_ODBC_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/odbc/soci-odbc.h"
+#include "soci-unicode.h"
 #include "soci/type-wrappers.h"
 #include "soci-compiler.h"
 #include "soci-cstrtoi.h"
@@ -282,14 +283,18 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
     }
     if (type_ == x_wchar)
     {
-        std::vector<wchar_t> *vp
-            = static_cast<std::vector<wchar_t> *>(data_);
-
+        std::vector<wchar_t> *vp = static_cast<std::vector<wchar_t> *>(data_);
         std::vector<wchar_t> &v(*vp);
+        
         char *pos = buf_;
         for (std::size_t i = beginRow; i != endRow; ++i)
         {
+
+#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
+            v[i] = utf16_to_utf32(std::u16string(reinterpret_cast<char16_t*>(pos)))[0];
+#else
             v[i] = *reinterpret_cast<wchar_t*>(pos);
+#endif // SOCI_WCHAR_T_IS_WIDE
             pos += colSize_;
         }
     }
