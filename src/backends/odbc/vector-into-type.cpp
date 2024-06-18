@@ -341,7 +341,7 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
     else if (type_ == x_stdwstring)
     {
         SQLWCHAR* pos = reinterpret_cast<SQLWCHAR*>(buf_);
-        std::size_t const colSize = colSize_ / sizeof(wchar_t);
+        std::size_t const colSize = colSize_ / sizeof(SQLWCHAR);
 
         for (std::size_t i = beginRow; i != endRow; ++i, pos += colSize)
         {
