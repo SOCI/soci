@@ -340,7 +340,7 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
     }
     else if (type_ == x_stdwstring)
     {
-        const wchar_t* pos = reinterpret_cast<wchar_t*>(buf_);
+        SQLWCHAR* pos = reinterpret_cast<SQLWCHAR*>(buf_);
         std::size_t const colSize = colSize_ / sizeof(wchar_t);
 
         for (std::size_t i = beginRow; i != endRow; ++i, pos += colSize)
@@ -359,7 +359,7 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
                 len = len / sizeof(SQLWCHAR);
             }
 
-            const wchar_t* end = pos + len;
+            SQLWCHAR* end = pos + len;
             while (end != pos)
             {
                 // Pre-decrement as "end" is one past the end, as usual.
@@ -370,8 +370,12 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
                     break;
                 }
             }
-
+#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
+            const std::u32string u32str(utf16_to_utf32(std::u16string(reinterpret_cast<char16_t*>(pos), end - pos)));
+            value.assign(u32str.begin(), u32str.end());
+#else // Windows 
             value.assign(reinterpret_cast<wchar_t const*>(pos), end - pos);
+#endif // SOCI_WCHAR_T_IS_WIDE
         }
     }
     else if (type_ == x_stdtm)
