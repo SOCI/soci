@@ -95,6 +95,10 @@ enum statement_type
     st_repeatable_query
 };
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4702)
+#endif
 // (lossless) conversion from the legacy data type enum
 inline db_type to_db_type(data_type dt)
 {
@@ -115,6 +119,9 @@ inline db_type to_db_type(data_type dt)
     // unreachable
     return db_string;
 }
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 // polymorphic into type backend
 
@@ -256,6 +263,10 @@ public:
         db_type& dbtype,
         std::string& column_name) = 0;
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4702)
+#endif
     // Function converting db_type to legacy data_type: this is mostly, but not
     // quite, backend-independent because different backends handled the same
     // type differently before db_type introduction.
@@ -283,6 +294,9 @@ public:
         // unreachable
         return dt_string;
     }
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
     virtual standard_into_type_backend* make_into_type_backend() = 0;
     virtual standard_use_type_backend* make_use_type_backend() = 0;
