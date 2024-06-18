@@ -27,10 +27,6 @@ void odbc_standard_into_type_backend::define_by_pos(
     type_ = type;
     position_ = position++;
 
-    std::string colName;
-    statement_.describe_column(position_, colType_, colName);
-    std::size_t charSize = sizeof(char);
-
     SQLUINTEGER size = 0;
     switch (type_)
     {
@@ -50,12 +46,6 @@ void odbc_standard_into_type_backend::define_by_pos(
     case x_longstring:
     case x_xmltype:
         odbcType_ = SQL_C_CHAR;
-
-        if (colType_ == db_wstring)
-        {
-            odbcType_ = SQL_C_WCHAR;
-            charSize = sizeof(SQLWCHAR);
-        }
         // For LONGVARCHAR fields the returned size is ODBC_MAX_COL_SIZE
         // (or 0 for some backends), but this doesn't correspond to the actual
         // field size, which can be (much) greater. For now we just used
@@ -64,22 +54,15 @@ void odbc_standard_into_type_backend::define_by_pos(
         // not trivial, so for now we're stuck with this suboptimal solution.
         size = static_cast<SQLUINTEGER>(statement_.column_size(position_));
         size = (size >= ODBC_MAX_COL_SIZE || size == 0) ? odbc_max_buffer_length : size;
-        size += charSize;
+        size += sizeof(SQLCHAR);
         buf_ = new char[size];
         data = buf_;
         break;
     case x_stdwstring:        
-        odbcType_ = SQL_C_CHAR;
-
-        if (colType_ == db_wstring)
-        {
-            odbcType_ = SQL_C_WCHAR;
-            charSize = sizeof(SQLWCHAR);
-        }
-        
+        odbcType_ = SQL_C_WCHAR;        
         size = static_cast<SQLUINTEGER>(statement_.column_size(position_));
         size = (size >= ODBC_MAX_COL_SIZE || size == 0) ? odbc_max_buffer_length : size;
-        size += charSize;
+        size += sizeof(SQLWCHAR);
         buf_ = new char[size];
         data = buf_;
         break;
@@ -211,36 +194,19 @@ void odbc_standard_into_type_backend::post_fetch(
         {
             wchar_t &c = exchange_type_cast<x_wchar>(data_);
             
-            if (colType_ == db_wstring)
-            {
 #if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
               c = utf16_to_utf32(std::u16string(reinterpret_cast<char16_t*>(buf_)))[0];
 #else // Windows
               c = buf_[0];
 #endif  
-            }
-            else if(colType_ == db_string)
-            {
-#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
-              c = utf8_to_utf32(std::string(reinterpret_cast<char*>(buf_)))[0];
-#else // Windows
-              c = utf16_to_utf8(std::u16string(reinterpret_cast<char16_t*>(buf_)))[0];
-#endif  
-            }
         }
         else if (type_ == x_stdstring)
         {
             std::string& s = exchange_type_cast<x_stdstring>(data_);
+            
+            s = buf_;
 
-            if (colType_ == db_wstring)
-            {
-                s = utf16_to_utf8(std::u16string(reinterpret_cast<char16_t*>(buf_)));
-            }
-            else
-            {
-                s = buf_;
-            }
-
+            // TODO: Is this the right order?
             if (s.size() >= (odbc_max_buffer_length - 1))
             {
                 throw soci_error("Buffer size overflow; maybe got too large string");
@@ -249,26 +215,13 @@ void odbc_standard_into_type_backend::post_fetch(
         else if (type_ == x_stdwstring)
         {
             std::wstring& s = exchange_type_cast<x_stdwstring>(data_);
-
-            if (colType_ == db_string)
-            {
+            
 #if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
-                const std::u32string u32str = utf8_to_utf32(reinterpret_cast<char *>(buf_));
-                s = std::wstring(u32str.begin(), u32str.end());
+            std::u32string u32str = utf16_to_utf32(reinterpret_cast<char16_t*>(buf_));
+            s = std::wstring(u32str.begin(), u32str.end());
 #else // Windows
-                const std::u16string utf16 = utf8_to_utf16(reinterpret_cast<char *>(buf_));
-                s = std::wstring(utf16.begin(), utf16.end());
+            s = std::wstring(reinterpret_cast<wchar_t*>(buf_));
 #endif // SOCI_WCHAR_T_IS_WIDE
-            }
-            else if(colType_ == db_wstring)
-            {
-#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
-                std::u32string u32str = utf16_to_utf32(reinterpret_cast<char16_t*>(buf_));
-                s = std::wstring(u32str.begin(), u32str.end());
-#else // Windows
-                s = std::wstring(reinterpret_cast<wchar_t*>(buf_));
-#endif // SOCI_WCHAR_T_IS_WIDE
-            }
 
             if (s.size() >= (odbc_max_buffer_length - 1) / sizeof(wchar_t))
             {
@@ -279,27 +232,21 @@ void odbc_standard_into_type_backend::post_fetch(
         {
             std::string& s = exchange_type_cast<x_longstring>(data_).value;
 
-            if (colType_ == db_wstring)
+            if (colType_ == db_string)
             {
-                s = utf16_to_utf8(std::u16string(reinterpret_cast<char16_t*>(buf_)));
+                s = buf_;
             }
             else
             {
-                s = buf_;
+              throw soci_error("Unsupported column type for std::string.");
             }
         }
         else if (type_ == x_xmltype)
         {
             std::string& s = exchange_type_cast<x_xmltype>(data_).value;
 
-            if (colType_ == db_wstring)
-            {
-                s = utf16_to_utf8(std::u16string(reinterpret_cast<char16_t*>(buf_)));
-            }
-            else
-            {
-                s = buf_;
-            }
+            s = buf_;
+
         }
         else if (type_ == x_stdtm)
         {
