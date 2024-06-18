@@ -46,7 +46,7 @@ environment:
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
 
 services:
-  - postgresql10
+  - postgresql
 
 install:
   # Start these ones here as we can't specify the service name dynamically above.
