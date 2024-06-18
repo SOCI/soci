@@ -1,5 +1,5 @@
-#ifndef SOCI_PRIVATE_SOCI_UNICODE_H_INCLUDED
-#define SOCI_PRIVATE_SOCI_UNICODE_H_INCLUDED
+#ifndef SOCI_UNICODE_H_INCLUDED
+#define SOCI_UNICODE_H_INCLUDED
 
 #include <stdexcept>
 #include <wchar.h>
@@ -270,4 +270,4 @@ namespace soci
 
 } // namespace soci
 
-#endif // SOCI_PRIVATE_SOCI_UNICODE_H_INCLUDED
+#endif // SOCI_UNICODE_H_INCLUDED

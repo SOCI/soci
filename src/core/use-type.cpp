@@ -9,8 +9,8 @@
 #include "soci/soci-platform.h"
 #include "soci/use-type.h"
 #include "soci/statement.h"
+#include "soci/soci-unicode.h"
 #include "soci-exchange-cast.h"
-#include "soci-unicode.h"
 
 #include <cstdio>
 

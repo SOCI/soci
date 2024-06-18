@@ -7,8 +7,8 @@
 
 #define SOCI_ODBC_SOURCE
 #include "soci/soci-platform.h"
+#include "soci/soci-unicode.h"
 #include "soci/odbc/soci-odbc.h"
-#include "soci-unicode.h"
 #include "soci-compiler.h"
 #include "soci-vector-helpers.h"
 #include <cctype>

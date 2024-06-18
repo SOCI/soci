@@ -7,7 +7,7 @@
 
 #define SOCI_ODBC_SOURCE
 #include "soci/odbc/soci-odbc.h"
-#include "soci-unicode.h"
+#include "soci/soci-unicode.h"
 #include <cctype>
 #include <sstream>
 #include <cstring>

@@ -6,9 +6,9 @@
 #define SOCI_ODBC_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/odbc/soci-odbc.h"
+#include "soci/soci-unicode.h"
 #include "soci-compiler.h"
 #include "soci-exchange-cast.h"
-#include "soci-unicode.h"
 #include <cctype>
 #include <cstdint>
 #include <cstdio>
