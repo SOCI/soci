@@ -177,10 +177,10 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
 }
 
 void odbc_standard_use_type_backend::copy_from_string(
-    std::string const& s,
-    SQLLEN& size,
-    SQLSMALLINT& sqlType,
-    SQLSMALLINT& cType
+        std::string const& s,
+        SQLLEN& size,
+        SQLSMALLINT& sqlType,
+        SQLSMALLINT& cType
     )
 {
     size = s.size();
@@ -193,10 +193,10 @@ void odbc_standard_use_type_backend::copy_from_string(
 }
 
 void odbc_standard_use_type_backend::copy_from_string(
-    const std::wstring& s,
-    SQLLEN& size,
-    SQLSMALLINT& sqlType,
-    SQLSMALLINT& cType
+        const std::wstring& s,
+        SQLLEN& size,
+        SQLSMALLINT& sqlType,
+        SQLSMALLINT& cType
     ) 
 {
 #if defined(SOCI_WCHAR_T_IS_WIDE) // Unices

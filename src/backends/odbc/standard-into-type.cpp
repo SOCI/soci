@@ -203,9 +203,7 @@ void odbc_standard_into_type_backend::post_fetch(
         else if (type_ == x_stdstring)
         {
             std::string& s = exchange_type_cast<x_stdstring>(data_);
-            
             s = buf_;
-
             if (s.size() >= (odbc_max_buffer_length - 1))
             {
                 throw soci_error("Buffer size overflow; maybe got too large string");
@@ -229,16 +227,11 @@ void odbc_standard_into_type_backend::post_fetch(
         }
         else if (type_ == x_longstring)
         {
-            std::string& s = exchange_type_cast<x_longstring>(data_).value;
-
-            s = buf_;
+            exchange_type_cast<x_longstring>(data_).value = buf_;
         }
         else if (type_ == x_xmltype)
         {
-            std::string& s = exchange_type_cast<x_xmltype>(data_).value;
-
-            s = buf_;
-
+            exchange_type_cast<x_xmltype>(data_).value = buf_;
         }
         else if (type_ == x_stdtm)
         {

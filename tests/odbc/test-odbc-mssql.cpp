@@ -145,7 +145,6 @@ TEST_CASE("MS SQL wide string vector", "[odbc][mssql][vector][wstring]")
     
 }
 
-
 TEST_CASE("MS SQL wide char", "[odbc][mssql][wchar]")
 {
     soci::session sql(backEnd, connectString);
@@ -170,7 +169,6 @@ TEST_CASE("MS SQL wide char", "[odbc][mssql][wchar]")
 
     CHECK(ch_out == ch_in);
 }
-
 
 TEST_CASE("MS SQL wchar vector", "[odbc][mssql][vector][wchar]")
 {
@@ -243,7 +241,6 @@ TEST_CASE("MS SQL string stream implicit unicode conversion", "[odbc][mssql][str
 
 }
 
-
 TEST_CASE("MS SQL wide string stream implicit unicode conversion", "[odbc][mssql][wstring][stream][utf8-utf16-conversion]")
 {
     soci::session sql(backEnd, connectString);
@@ -275,9 +272,6 @@ TEST_CASE("MS SQL wide string stream implicit unicode conversion", "[odbc][mssql
 
 }
 
-
-
-
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -300,7 +294,6 @@ struct table_creator_two : public table_creator_base
         sql  << "create table soci_test(num_float float, num_int integer,"
                      " name varchar(20), sometime datetime, chr char)";
     }
-    
 };
 
 struct table_creator_three : public table_creator_base
@@ -338,7 +331,6 @@ struct table_creator_for_xml : table_creator_base
     {
         sql << "create table soci_test(id integer, x xml)";
     }
-    
 };
 
 struct table_creator_for_get_last_insert_id : table_creator_base
