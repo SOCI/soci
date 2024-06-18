@@ -13,7 +13,7 @@ The following types are commonly used in the rest of the interface:
 
 ```cpp
 // data types, as seen by the user
-enum db_type { db_string, db_date, db_double, db_int8, db_uint8, db_int16, db_uint16, db_int32, db_uint32, db_int64, db_uint64 };
+enum db_type { db_string, db_wstring, db_date, db_double, db_int8, db_uint8, db_int16, db_uint16, db_int32, db_uint32, db_int64, db_uint64 };
 
 // deprecated data types enum which may be still used but is less precise than db_type
 enum data_type { dt_string, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long };
