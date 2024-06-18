@@ -29,20 +29,20 @@ void odbc_standard_into_type_backend::define_by_pos(
 
     std::string colName;
     statement_.describe_column(position_, colType_, colName);
-    unsigned charSize = sizeof(char);
+    std::size_t charSize = sizeof(char);
 
     SQLUINTEGER size = 0;
     switch (type_)
     {
     case x_char:
         odbcType_ = SQL_C_CHAR;
-        size = sizeof(char) + 1;
+        size = 2 * sizeof(SQLCHAR);
         buf_ = new char[size];
         data = buf_;
         break;
     case x_wchar:
         odbcType_ = SQL_C_WCHAR;
-        size = 2 * sizeof(wchar_t);
+        size = 2 * sizeof(SQLWCHAR);
         buf_ = new char[size];
         data = buf_;
         break;
