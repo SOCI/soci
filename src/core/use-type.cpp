@@ -10,6 +10,7 @@
 #include "soci/use-type.h"
 #include "soci/statement.h"
 #include "soci-exchange-cast.h"
+#include "soci-unicode.h"
 
 #include <cstdio>
 
@@ -53,18 +54,15 @@ void standard_use_type::dump_value(std::ostream& os) const
             return;
         
         case x_wchar:
-            // TODO: implement
-            os << "<wchar>";
+            os << "\"" << wide_to_utf8(std::wstring(1, exchange_type_cast<x_wchar>(data_))) << "\"";
             return;
         
         case x_stdstring:
-            // TODO: Escape quotes?
             os << "\"" << exchange_type_cast<x_stdstring>(data_) << "\"";
             return;
             
         case x_stdwstring:
-            // TODO: implement
-            os << "<wstring>";
+            os << "\"" << wide_to_utf8(exchange_type_cast<x_stdwstring>(data_)) << "\"";
             return;
             
         case x_int8:

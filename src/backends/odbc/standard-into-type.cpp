@@ -232,14 +232,7 @@ void odbc_standard_into_type_backend::post_fetch(
         {
             std::string& s = exchange_type_cast<x_longstring>(data_).value;
 
-            if (colType_ == db_string)
-            {
-                s = buf_;
-            }
-            else
-            {
-              throw soci_error("Unsupported column type for std::string.");
-            }
+            s = buf_;
         }
         else if (type_ == x_xmltype)
         {
