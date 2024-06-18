@@ -112,7 +112,6 @@ struct odbc_standard_into_type_backend : details::standard_into_type_backend,
 
     void clean_up() override;
 
-    db_type colType_;
     char *buf_;        // generic buffer
     void *data_;
     details::exchange_type type_;
@@ -156,7 +155,6 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
     void rebind_row(std::size_t rowInd);
 
     std::vector<SQLLEN> indHolderVec_;
-    db_type colType_;
     void *data_;
     char *buf_;              // generic buffer
     details::exchange_type type_;
