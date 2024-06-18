@@ -206,7 +206,6 @@ void odbc_standard_into_type_backend::post_fetch(
             
             s = buf_;
 
-            // TODO: Is this the right order?
             if (s.size() >= (odbc_max_buffer_length - 1))
             {
                 throw soci_error("Buffer size overflow; maybe got too large string");
