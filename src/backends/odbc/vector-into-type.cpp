@@ -100,10 +100,17 @@ void odbc_vector_into_type_backend::define_by_pos(
         colSize_ = sizeof(char) * 2;
         buf_ = new char[colSize_ * vectorSize];
         break;
+    // Handle the case where the data type is wide character (wchar)
     case x_wchar:
+        // Set the ODBC type to SQL_C_WCHAR, which represents a wide character string
         odbcType_ = SQL_C_WCHAR;
 
+        // Calculate the column size for wide characters. 
+        // SQLWCHAR is typically 2 bytes, so we multiply by 2 to get the size in bytes.
         colSize_ = sizeof(SQLWCHAR) * 2;
+
+        // Allocate memory for the buffer to hold the wide character data.
+        // The buffer size is calculated as colSize_ multiplied by the number of elements (vectorSize).
         buf_ = new char[colSize_ * vectorSize];
         break;
     case x_stdstring:
@@ -135,26 +142,33 @@ void odbc_vector_into_type_backend::define_by_pos(
     break;
     case x_stdwstring:
     {
+        // Set the ODBC type to wide character string (SQL_C_WCHAR).
         odbcType_ = SQL_C_WCHAR;
 
+        // Retrieve the column size from the statement for the given position.
         colSize_ = static_cast<size_t>(get_sqllen_from_value(statement_.column_size(position)));
+        
+        // Check if the column size is too large or zero.
         if (colSize_ >= ODBC_MAX_COL_SIZE || colSize_ == 0)
         {
-            // Column size for text data type can be too large for buffer allocation.
+            // If the column size is too large or zero, set it to a maximum buffer length.
             colSize_ = odbc_max_buffer_length;
-            // If we are using huge buffer size then we need to fetch rows
-            // one by one as otherwise we could easily run out of memory.
-            // Note that the flag is permanent for the statement and will
-            // never be reset.
+            
+            // If using a huge buffer size, fetch rows one by one to avoid running out of memory.
+            // This flag is permanent for the statement and will not be reset.
             statement_.fetchVectorByRows_ = true;
         }
 
+        // Add space for the null terminator for wide characters.
         colSize_ += sizeof(SQLWCHAR);
 
-        // If we are fetching by a single row, allocate the buffer only for
-        // one value.
-        const std::size_t elementsCount
-            = statement_.fetchVectorByRows_ ? 1 : vectorSize;
+        // Determine the number of elements to allocate space for.
+        // If fetching by a single row, allocate buffer only for one value.
+        const std::size_t elementsCount = statement_.fetchVectorByRows_ ? 1 : vectorSize;
+        
+        // Allocate memory for the buffer to hold the wide character strings.
+        // The buffer size is calculated as column size times the number of elements,
+        // each element being of size SQLWCHAR.
         buf_ = new char[colSize_ * elementsCount * sizeof(SQLWCHAR)];
     }
         break;
@@ -281,20 +295,28 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
             pos += colSize_;
         }
     }
+    // Check if the type is wide character (wchar_t)
     if (type_ == x_wchar)
     {
+        // Cast the data_ pointer to a vector of wchar_t
         std::vector<wchar_t> *vp = static_cast<std::vector<wchar_t> *>(data_);
+        // Create a reference to the vector for easier access
         std::vector<wchar_t> &v(*vp);
         
+        // Initialize a pointer to the buffer
         char *pos = buf_;
+        // Loop through the specified range of rows
         for (std::size_t i = beginRow; i != endRow; ++i)
         {
-
+            // Check if the platform defines wchar_t as wide (e.g., Unix systems)
 #if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
+            // Convert UTF-16 to UTF-32 and assign the first character to the vector
             v[i] = utf16_to_utf32(std::u16string(reinterpret_cast<char16_t*>(pos)))[0];
 #else
+            // Directly reinterpret the buffer as wchar_t and assign to the vector
             v[i] = *reinterpret_cast<wchar_t*>(pos);
 #endif // SOCI_WCHAR_T_IS_WIDE
+            // Move the buffer pointer to the next column size
             pos += colSize_;
         }
     }
@@ -340,26 +362,36 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
     }
     else if (type_ == x_stdwstring)
     {
+        // Cast the buffer to SQLWCHAR* for wide character processing.
         SQLWCHAR* pos = reinterpret_cast<SQLWCHAR*>(buf_);
+        // Calculate the column size in terms of SQLWCHAR.
         std::size_t const colSize = colSize_ / sizeof(SQLWCHAR);
 
+        // Iterate over the rows from beginRow to endRow.
         for (std::size_t i = beginRow; i != endRow; ++i, pos += colSize)
         {
+            // Get the length of the current element in the vector.
             SQLLEN len = get_sqllen_from_vector_at(i);
 
+            // Reference to the current std::wstring element in the vector.
             std::wstring& value = exchange_vector_type_cast<x_stdwstring>(data_).at(i);
+            
             if (len == -1)
             {
-                // Value is null.
+                // If length is -1, the value is null. Clear the string.
                 value.clear();
                 continue;
             }
             else
             {
+                // Adjust length to account for wide characters.
                 len = len / sizeof(SQLWCHAR);
             }
 
+            // Calculate the end position of the current string.
             SQLWCHAR* end = pos + len;
+            
+            // Trim trailing spaces from the string.
             while (end != pos)
             {
                 // Pre-decrement as "end" is one past the end, as usual.
@@ -370,10 +402,13 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
                     break;
                 }
             }
-#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
+
+#if defined(SOCI_WCHAR_T_IS_WIDE) // Unix-like systems
+            // Convert UTF-16 to UTF-32 and assign to the std::wstring.
             const std::u32string u32str(utf16_to_utf32(std::u16string(reinterpret_cast<char16_t*>(pos), end - pos)));
             value.assign(u32str.begin(), u32str.end());
-#else // Windows 
+#else // Windows
+            // Directly assign the wide character string to std::wstring.
             value.assign(reinterpret_cast<wchar_t const*>(pos), end - pos);
 #endif // SOCI_WCHAR_T_IS_WIDE
         }

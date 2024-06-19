@@ -192,6 +192,18 @@ void odbc_standard_use_type_backend::copy_from_string(
     indHolder_ = SQL_NTS;
 }
 
+/**
+ * @brief Copies a wide string (std::wstring) to an internal buffer and sets the appropriate SQL types.
+ *
+ * This function handles the conversion of a wide string to the format required by ODBC, taking into account
+ * the differences between Unix-like systems and Windows. On Unix-like systems, std::wstring is typically
+ * UTF-32, so it needs to be converted to UTF-16. On Windows, std::wstring is already UTF-16.
+ *
+ * @param s The input wide string to be copied.
+ * @param size Reference to a variable where the size of the resulting buffer will be stored.
+ * @param sqlType Reference to a variable where the SQL type will be stored.
+ * @param cType Reference to a variable where the C type will be stored.
+ */
 void odbc_standard_use_type_backend::copy_from_string(
         const std::wstring& s,
         SQLLEN& size,
@@ -200,27 +212,57 @@ void odbc_standard_use_type_backend::copy_from_string(
     ) 
 {
 #if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
-    // On Unices, std::wstring is UTF-32, so we need to convert to UTF-16
+    // On Unix-like systems, std::wstring is UTF-32, so we need to convert it to UTF-16.
     std::u16string utf16_str = utf32_to_utf16(std::u32string(s.begin(), s.end()));
+    
+    // Calculate the size of the UTF-16 string in bytes.
     size = static_cast<SQLLEN>(utf16_str.size() * sizeof(WCHAR));
+    
+    // Determine the SQL type based on the size of the string.
     sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_WLONGVARCHAR : SQL_WVARCHAR;
+    
+    // Set the C type to wide character.
     cType = SQL_C_WCHAR;
+    
+    // Allocate memory for the buffer, including space for the null terminator.
     buf_ = new char[size + sizeof(WCHAR)];
+    
+    // Cast the buffer to a wide character pointer.
     WCHAR * const wbuf = reinterpret_cast<WCHAR *>(buf_);
+    
+    // Copy the UTF-16 string into the buffer.
     std::memcpy(wbuf, utf16_str.c_str(), size);
+    
+    // Add the null terminator.
     wbuf[utf16_str.size()] = u'\0';
 #else // Windows
-    // On Windows, std::wstring is already UTF-16
+    // On Windows, std::wstring is already UTF-16.
+    
+    // Calculate the size of the string in bytes.
     size = static_cast<SQLLEN>(s.size() * sizeof(wchar_t));
+    
+    // Determine the SQL type based on the size of the string.
     sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_WLONGVARCHAR : SQL_WVARCHAR;
+    
+    // Set the C type to wide character.
     cType = SQL_C_WCHAR;
+    
+    // Allocate memory for the buffer, including space for the null terminator.
     buf_ = new char[size + sizeof(wchar_t)];
+    
+    // Cast the buffer to a wide character pointer.
     wchar_t * const wbuf = reinterpret_cast<wchar_t *>(buf_);
+    
+    // Copy the string into the buffer.
     std::wmemcpy(wbuf, s.c_str(), s.size());
+    
+    // Add the null terminator.
     wbuf[s.size()] = L'\0';
 #endif 
+    // Set the indicator to SQL_NTS (Null-Terminated String).
     indHolder_ = SQL_NTS;
 }
+
 
 
 void odbc_standard_use_type_backend::bind_by_pos(
