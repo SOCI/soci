@@ -26,6 +26,7 @@ namespace soci
 enum db_type
 {
     db_string,
+    db_wstring,
     db_int8,
     db_uint8,
     db_int16,
@@ -60,7 +61,9 @@ namespace details
 enum exchange_type
 {
     x_char,
+    x_wchar,
     x_stdstring,
+    x_stdwstring,
     x_int8,
     x_uint8,
     x_int16,
@@ -92,6 +95,10 @@ enum statement_type
     st_repeatable_query
 };
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4702)
+#endif
 // (lossless) conversion from the legacy data type enum
 inline db_type to_db_type(data_type dt)
 {
@@ -105,11 +112,16 @@ inline db_type to_db_type(data_type dt)
         case dt_unsigned_long_long: return db_uint64;
         case dt_blob:               return db_blob;
         case dt_xml:                return db_xml;
+        default:
+            throw soci_error("unsupported data_type");
     }
 
     // unreachable
     return db_string;
 }
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 // polymorphic into type backend
 
@@ -251,6 +263,10 @@ public:
         db_type& dbtype,
         std::string& column_name) = 0;
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4702)
+#endif
     // Function converting db_type to legacy data_type: this is mostly, but not
     // quite, backend-independent because different backends handled the same
     // type differently before db_type introduction.
@@ -258,24 +274,29 @@ public:
     {
         switch (dbt)
         {
-            case db_string: return dt_string;
-            case db_date:   return dt_date;
-            case db_double: return dt_double;
+            case db_string:  return dt_string;
+            case db_date:    return dt_date;
+            case db_double:  return dt_double;
             case db_int8:
             case db_uint8:
             case db_int16:
             case db_uint16:
-            case db_int32:  return dt_integer;
+            case db_int32:   return dt_integer;
             case db_uint32:
-            case db_int64:  return dt_long_long;
-            case db_uint64: return dt_unsigned_long_long;
-            case db_blob:   return dt_blob;
-            case db_xml:    return dt_xml;
+            case db_int64:   return dt_long_long;
+            case db_uint64:  return dt_unsigned_long_long;
+            case db_blob:    return dt_blob;
+            case db_xml:     return dt_xml;
+            default:
+                throw soci_error("unable to convert value to data_type");
         }
 
         // unreachable
         return dt_string;
     }
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
     virtual standard_into_type_backend* make_into_type_backend() = 0;
     virtual standard_use_type_backend* make_use_type_backend() = 0;
