@@ -6,17 +6,22 @@
 #include <string>
 #include "soci/error.h"
 
-
+// Define SOCI_WCHAR_T_IS_WIDE if wchar_t is wider than 16 bits (e.g., on Windows)
 #if WCHAR_MAX > 0xFFFFu
   #define SOCI_WCHAR_T_IS_WIDE
 #endif
-
 
 namespace soci
 {
   namespace details
   {
-
+    /**
+     * @brief Converts a UTF-8 encoded string to a UTF-16 encoded string.
+     * 
+     * @param utf8 The UTF-8 encoded string.
+     * @return std::u16string The UTF-16 encoded string.
+     * @throws soci_error if the input string contains invalid UTF-8 encoding.
+     */
     inline std::u16string utf8_to_utf16(const std::string &utf8)
     {
       std::u16string utf16;
@@ -65,6 +70,13 @@ namespace soci
       return utf16;
     }
 
+    /**
+     * @brief Converts a UTF-16 encoded string to a UTF-8 encoded string.
+     * 
+     * @param utf16 The UTF-16 encoded string.
+     * @return std::string The UTF-8 encoded string.
+     * @throws soci_error if the input string contains invalid UTF-16 encoding.
+     */
     inline std::string utf16_to_utf8(const std::u16string &utf16)
     {
       std::string utf8;
@@ -118,6 +130,13 @@ namespace soci
       return utf8;
     }
 
+    /**
+     * @brief Converts a UTF-16 encoded string to a UTF-32 encoded string.
+     * 
+     * @param utf16 The UTF-16 encoded string.
+     * @return std::u32string The UTF-32 encoded string.
+     * @throws soci_error if the input string contains invalid UTF-16 encoding.
+     */
     inline std::u32string utf16_to_utf32(const std::u16string &utf16)
     {
       std::u32string utf32;
@@ -144,6 +163,13 @@ namespace soci
       return utf32;
     }
 
+    /**
+     * @brief Converts a UTF-32 encoded string to a UTF-16 encoded string.
+     * 
+     * @param utf32 The UTF-32 encoded string.
+     * @return std::u16string The UTF-16 encoded string.
+     * @throws soci_error if the input string contains invalid UTF-32 code points.
+     */
     inline std::u16string utf32_to_utf16(const std::u32string &utf32)
     {
       std::u16string utf16;
@@ -167,6 +193,13 @@ namespace soci
       return utf16;
     }
 
+    /**
+     * @brief Converts a UTF-8 encoded string to a UTF-32 encoded string.
+     * 
+     * @param utf8 The UTF-8 encoded string.
+     * @return std::u32string The UTF-32 encoded string.
+     * @throws soci_error if the input string contains invalid UTF-8 encoding.
+     */
     inline std::u32string utf8_to_utf32(const std::string &utf8)
     {
       std::u32string utf32;
@@ -206,6 +239,13 @@ namespace soci
       return utf32;
     }
 
+    /**
+     * @brief Converts a UTF-32 encoded string to a UTF-8 encoded string.
+     * 
+     * @param utf32 The UTF-32 encoded string.
+     * @return std::string The UTF-8 encoded string.
+     * @throws soci_error if the input string contains invalid UTF-32 code points.
+     */
     inline std::string utf32_to_utf8(const std::u32string &utf32)
     {
       std::string utf8;
@@ -242,6 +282,12 @@ namespace soci
       return utf8;
     }
 
+    /**
+     * @brief Converts a UTF-8 encoded string to a wide string (wstring).
+     * 
+     * @param utf8 The UTF-8 encoded string.
+     * @return std::wstring The wide string.
+     */
     inline std::wstring utf8_to_wide(const std::string &utf8)
     {
 #if defined(SOCI_WCHAR_T_IS_WIDE) // Windows
@@ -254,6 +300,12 @@ namespace soci
 #endif // SOCI_WCHAR_T_IS_WIDE
     }
 
+    /**
+     * @brief Converts a wide string (wstring) to a UTF-8 encoded string.
+     * 
+     * @param wide The wide string.
+     * @return std::string The UTF-8 encoded string.
+     */
     inline std::string wide_to_utf8(const std::wstring &wide)
     {
 #if defined(SOCI_WCHAR_T_IS_WIDE) // Windows
