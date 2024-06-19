@@ -59,11 +59,22 @@ void odbc_standard_into_type_backend::define_by_pos(
         data = buf_;
         break;
     case x_stdwstring:        
+        // Set the ODBC type to wide character string (SQL_C_WCHAR)
         odbcType_ = SQL_C_WCHAR;        
+        
+        // Get the column size for the current position in the statement
         size = static_cast<SQLUINTEGER>(statement_.column_size(position_));
+        
+        // Adjust the size if it exceeds the maximum column size or is zero
         size = (size >= ODBC_MAX_COL_SIZE || size == 0) ? odbc_max_buffer_length : size;
+        
+        // Add space for the null-terminator (SQLWCHAR)
         size += sizeof(SQLWCHAR);
+        
+        // Allocate a buffer of the calculated size
         buf_ = new char[size];
+        
+        // Set the data pointer to the allocated buffer
         data = buf_;
         break;
     case x_int8:
@@ -209,19 +220,29 @@ void odbc_standard_into_type_backend::post_fetch(
                 throw soci_error("Buffer size overflow; maybe got too large string");
             }
         }
+        // Handle the case where the type is a standard wide string (std::wstring)
         else if (type_ == x_stdwstring)
         {
+            // Cast the data_ to a reference of type std::wstring
             std::wstring& s = exchange_type_cast<x_stdwstring>(data_);
             
 #if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
+            // On Unix-like systems where wchar_t is wide (typically 32-bit)
+            // Convert the UTF-16 buffer to a UTF-32 string
             std::u32string u32str = utf16_to_utf32(reinterpret_cast<char16_t*>(buf_));
+            // Assign the converted UTF-32 string to the std::wstring
             s = std::wstring(u32str.begin(), u32str.end());
 #else // Windows
+            // On Windows systems where wchar_t is 16-bit
+            // Directly assign the buffer (interpreted as wchar_t) to the std::wstring
             s = std::wstring(reinterpret_cast<wchar_t*>(buf_));
 #endif // SOCI_WCHAR_T_IS_WIDE
 
+            // Check if the size of the resulting string exceeds the maximum buffer length
+            // The maximum buffer length is adjusted for the size of wchar_t
             if (s.size() >= (odbc_max_buffer_length - 1) / sizeof(wchar_t))
             {
+                // Throw an error if the buffer size is exceeded
                 throw soci_error("Buffer size overflow; maybe got too large string");
             }
         }
