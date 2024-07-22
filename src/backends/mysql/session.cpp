@@ -509,6 +509,7 @@ mysql_session_backend::mysql_session_backend(
         clean_up();
         throw mysql_soci_error(errMsg, errNum);
     }
+    schema_name_ = db;
 }
 
 #if defined(__GNUC__) && ( __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 6)))
