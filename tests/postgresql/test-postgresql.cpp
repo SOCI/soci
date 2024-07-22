@@ -689,6 +689,34 @@ TEST_CASE("PostgreSQL ORM cast", "[postgresql][orm]")
     sql << "select :a::int", use(v); // Must not throw an exception!
 }
 
+std::string get_table_name_without_schema(const std::string& table_name_with_schema)
+{
+    // Find the first occurrence of "."
+    size_t dotPos = table_name_with_schema.find('.');
+
+    // Check if the "." exists and there's exactly one "."
+    if (dotPos == std::string::npos || table_name_with_schema.find('.', dotPos + 1) != std::string::npos) {
+        return table_name_with_schema;
+    }
+
+    // Extract the substring after the "."
+    return table_name_with_schema.substr(dotPos + 1);
+}
+
+std::string get_schema_from_table_name(const std::string& table_name_with_schema)
+{
+    // Find the first occurrence of "."
+    size_t dotPos = table_name_with_schema.find('.');
+
+    // Check if the "." exists and there's exactly one "."
+    if (dotPos == std::string::npos || table_name_with_schema.find('.', dotPos + 1) != std::string::npos) {
+        return "";
+    }
+
+    // Extract the substring before the "."
+    return table_name_with_schema.substr(0, dotPos);
+}
+
 // Test the DDL and metadata functionality
 TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
 {
@@ -712,9 +740,9 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     st.execute();
     while (st.fetch())
     {
-        if (table_name == ddl_t1) { ddl_t1_found = true; }
-        if (table_name == ddl_t2) { ddl_t2_found = true; }
-        if (table_name == ddl_t3) { ddl_t3_found = true; }
+        if (get_table_name_without_schema(table_name) == ddl_t1) { ddl_t1_found = true; }
+        if (get_table_name_without_schema(table_name) == ddl_t2) { ddl_t2_found = true; }
+        if (get_table_name_without_schema(table_name) == ddl_t3) { ddl_t3_found = true; }
     }
 
     CHECK(ddl_t1_found);
@@ -791,9 +819,9 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     st2.execute();
     while (st2.fetch())
     {
-        if (table_name == ddl_t1) { ddl_t1_found = true; }
-        if (table_name == ddl_t2) { ddl_t2_found = true; }
-        if (table_name == ddl_t3) { ddl_t3_found = true; }
+        if (get_table_name_without_schema(table_name) == ddl_t1) { ddl_t1_found = true; }
+        if (get_table_name_without_schema(table_name) == ddl_t2) { ddl_t2_found = true; }
+        if (get_table_name_without_schema(table_name) == ddl_t3) { ddl_t3_found = true; }
     }
 
     CHECK(ddl_t1_found);
@@ -908,9 +936,9 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     st2.execute();
     while (st2.fetch())
     {
-        if (table_name == ddl_t1) { ddl_t1_found = true; }
-        if (table_name == ddl_t2) { ddl_t2_found = true; }
-        if (table_name == ddl_t3) { ddl_t3_found = true; }
+        if (get_table_name_without_schema(table_name) == ddl_t1) { ddl_t1_found = true; }
+        if (get_table_name_without_schema(table_name) == ddl_t2) { ddl_t2_found = true; }
+        if (get_table_name_without_schema(table_name) == ddl_t3) { ddl_t3_found = true; }
     }
 
     CHECK(ddl_t1_found == false);
@@ -924,6 +952,108 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     CHECK(i == 1);
     sql << "select " + sql.nvl() + "(NULL, 2)", into(i);
     CHECK(i == 2);
+}
+
+// Test cross-schema metadata
+TEST_CASE("Cross-schema metadata", "[postgresql][cross-schema]")
+{
+    soci::session sql(backEnd, connectString);
+
+    // note: prepare_column_descriptions expects l-value
+    std::string tables = "tables";
+    std::string column_name = "table_name";
+
+    // single-expression variant:
+    sql.create_table(tables).column(column_name, soci::dt_integer);
+
+    // check whether this table was created:
+
+    bool tables_found = false;
+    std::string schema;
+    std::string table_name;
+    soci::statement st = (sql.prepare_table_names(), into(table_name));
+    st.execute();
+    while (st.fetch())
+    {
+        if (get_table_name_without_schema(table_name) == tables) 
+        {
+            tables_found = true;
+            schema = get_schema_from_table_name(table_name);
+        }
+    }
+
+    CHECK(tables_found);
+    CHECK(!schema.empty());
+
+    // Get information for the tables table we just created and not
+    // the tables table in information_schema which isn't in our path.
+    int  records = 0;
+    soci::column_info ci;
+    soci::statement st1 = (sql.prepare_column_descriptions(tables), into(ci));
+    st1.execute();
+    while (st1.fetch())
+    {
+        if (ci.name == column_name)
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
+            CHECK(ci.nullable);
+            records++;
+        }
+    }
+
+    CHECK(records == 1);
+
+    // Run the same query but this time specific with the schema.
+    std::string schemaTables = schema + "." + tables;
+    records = 0;
+    soci::statement st2 = (sql.prepare_column_descriptions(schemaTables), into(ci));
+    st2.execute();
+    while (st2.fetch())
+    {
+        if (ci.name == column_name)
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
+            CHECK(ci.nullable);
+            records++;
+        }
+    }
+
+    CHECK(records == 1);
+
+    // Finally run the query with the information_schema.
+    std::string information_schemaTables = "information_schema." + tables;
+    records = 0;
+    soci::statement st3 = (sql.prepare_column_descriptions(information_schemaTables), into(ci));
+    st3.execute();
+    while (st3.fetch())
+    {
+        if (ci.name == column_name)
+        {
+            CHECK(ci.type == soci::dt_string);
+            CHECK(ci.dataType == soci::db_string);
+            CHECK(ci.nullable);
+            records++;
+        }
+    }
+
+    CHECK(records == 1);
+
+    // Delete table and check that it is gone
+    sql.drop_table(tables);
+    tables_found = false;
+    st3 = (sql.prepare_table_names(), into(table_name));
+    st3.execute();
+    while (st.fetch())
+    {
+        if (table_name == tables)
+        {
+            tables_found = true;
+        }
+    }
+
+    CHECK(tables_found == false);
 }
 
 // Test the bulk iterators functionality

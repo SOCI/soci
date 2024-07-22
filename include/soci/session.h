@@ -20,11 +20,13 @@
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <forward_list>
 
 namespace soci
 {
 class values;
 class backend_factory;
+struct schema_table_name;
 
 namespace details
 {
@@ -146,7 +148,8 @@ public:
     // Since this is intended for use with statement objects, where results are obtained one row after another,
     // it makes sense to bind either std::string for each output field or soci::column_info for the whole row.
     // Note: table_name is a non-const reference to prevent temporary objects,
-    // this argument is bound as a regular "use" element.
+    // this argument is bound as a regular "use" element. The table_name can consist of both a schema name and
+    // a table_name separated by a dot.
     details::prepare_temp_type prepare_column_descriptions(std::string & table_name);
 
     // Functions for basic portable DDL statements.
@@ -215,6 +218,7 @@ private:
     SOCI_NOT_COPYABLE(session)
 
     void reset_after_move();
+    schema_table_name& alloc_schema_table_name(const std::string& tableName);
 
     std::ostringstream query_stream_;
     std::unique_ptr<details::query_transformation_function> query_transformation_;
@@ -232,6 +236,12 @@ private:
     bool isFromPool_;
     std::size_t poolPosition_;
     connection_pool * pool_;
+
+    // Storing schema_table_names in a forward list as these are required
+    // as persistent input to prepare_temp_type object during their life-
+    // span. The prepare_temp_type uses the addresses of the content of the
+    // schema_table_name_ thus, a container which doesn't move data is used.
+    std::forward_list<schema_table_name> schema_table_name_;
 };
 
 } // namespace soci

@@ -11,7 +11,6 @@
 #include "soci/soci-backend.h"
 #include "soci/type-conversion.h"
 #include "soci/values.h"
-
 #include <cstdint>
 
 namespace soci
@@ -89,10 +88,22 @@ struct type_conversion<column_info>
             ci.type = dt_string;
             ci.dataType = db_string;
         }
-        else if (type_name == "integer" || type_name == "INTEGER")
+        else if (type_name == "integer" || type_name == "INTEGER" ||
+                 type_name == "int" || type_name == "INT")
         {
             ci.type = dt_integer;
             ci.dataType = db_int32;
+        }
+        else if (type_name == "bigint" || type_name == "BIGINT")
+        {
+            ci.type = dt_long_long;
+            ci.dataType = db_int64;
+        }
+        else if (type_name.find("double") != std::string::npos ||
+            type_name.find("DOUBLE") != std::string::npos)
+        {
+            ci.type = dt_double;
+            ci.dataType = db_double;
         }
         else if (type_name.find("number") != std::string::npos ||
             type_name.find("NUMBER") != std::string::npos ||

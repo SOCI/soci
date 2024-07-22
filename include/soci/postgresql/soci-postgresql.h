@@ -414,6 +414,9 @@ struct postgresql_session_backend : details::session_backend
 
     std::string get_next_statement_name();
 
+    std::string get_table_names_query() const override;
+    std::string get_column_descriptions_query() const override;
+
     int statementCount_;
     bool single_row_mode_;
     PGconn * conn_;
