@@ -68,9 +68,11 @@ void postgresql_session_backend::connect(
         "Cannot set extra_float_digits parameter");
 
     PGresult* res = PQexec(conn, "SHOW search_path");
-    if (PQresultStatus(res) == PGRES_TUPLES_OK) {
-        if (PQntuples(res) > 0) {
-		schema_name_ = PQgetvalue(res, 0, 0);
+    if (PQresultStatus(res) == PGRES_TUPLES_OK)
+    {
+        if (PQntuples(res) > 0)
+        {
+            schema_name_ = PQgetvalue(res, 0, 0);
         }
     }
     PQclear(res);
