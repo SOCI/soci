@@ -322,6 +322,17 @@ bool statement_impl::execute(bool withDataExchange)
 
         statement_backend::exec_fetch_result res = backEnd_->execute(num);
 
+        // another hack related to description: the first call to describe()
+        // above may not have done anything if we didn't have the correct
+        // number of columns before calling execute() as happens with at least
+        // the ODBC backend for some complex queries (see #1151), so call it
+        // again in this case
+        if (row_ != NULL && alreadyDescribed_ == false)
+        {
+            describe();
+            define_for_row();
+        }
+
         bool gotData = false;
 
         if (res == statement_backend::ef_success)
@@ -708,6 +719,13 @@ void statement_impl::describe()
     row_->clean_up();
 
     int const numcols = backEnd_->prepare_for_describe();
+    if (!numcols)
+    {
+        // Return without setting alreadyDescribed_ to true, we'll be called
+        // again in this case.
+        return;
+    }
+
     for (int i = 1; i <= numcols; ++i)
     {
         db_type dbtype;
