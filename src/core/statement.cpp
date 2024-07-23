@@ -318,6 +318,12 @@ bool statement_impl::execute(bool withDataExchange)
 
         statement_backend::exec_fetch_result res = backEnd_->execute(num);
 
+        // calling describe again in-case it is a complex query and numcols is not populated before execution
+        if (row_ != NULL && alreadyDescribed_ == false)
+        {
+            describe();
+        }
+
         bool gotData = false;
 
         if (res == statement_backend::ef_success)
@@ -714,7 +720,10 @@ void statement_impl::describe()
         row_->add_properties(props);
     }
 
-    alreadyDescribed_ = true;
+    if (numcols != 0)
+    {
+        alreadyDescribed_ = true;
+    }
 }
 
 } // namespace details
