@@ -205,7 +205,7 @@ void odbc_standard_into_type_backend::post_fetch(
         {
             wchar_t &c = exchange_type_cast<x_wchar>(data_);
             
-#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
+#if defined(SOCI_WCHAR_T_IS_UTF32) // Unices
               c = utf16_to_utf32(std::u16string(reinterpret_cast<char16_t*>(buf_)))[0];
 #else // Windows
               c = buf_[0];
@@ -226,7 +226,7 @@ void odbc_standard_into_type_backend::post_fetch(
             // Cast the data_ to a reference of type std::wstring
             std::wstring& s = exchange_type_cast<x_stdwstring>(data_);
             
-#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
+#if defined(SOCI_WCHAR_T_IS_UTF32) // Unices
             // On Unix-like systems where wchar_t is wide (typically 32-bit)
             // Convert the UTF-16 buffer to a UTF-32 string
             std::u32string u32str = utf16_to_utf32(reinterpret_cast<char16_t*>(buf_));
@@ -236,7 +236,7 @@ void odbc_standard_into_type_backend::post_fetch(
             // On Windows systems where wchar_t is 16-bit
             // Directly assign the buffer (interpreted as wchar_t) to the std::wstring
             s = std::wstring(reinterpret_cast<wchar_t*>(buf_));
-#endif // SOCI_WCHAR_T_IS_WIDE
+#endif // SOCI_WCHAR_T_IS_UTF32
 
             // Check if the size of the resulting string exceeds the maximum buffer length
             // The maximum buffer length is adjusted for the size of wchar_t

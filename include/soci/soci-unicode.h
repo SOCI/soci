@@ -7,9 +7,9 @@
 #include <vector>
 #include <wchar.h>
 
-// Define SOCI_WCHAR_T_IS_WIDE if wchar_t is wider than 16 bits (e.g., on Unix/Linux)
+// Define SOCI_WCHAR_T_IS_UTF32 if wchar_t is wider than 16 bits (e.g., on Unix/Linux)
 #if WCHAR_MAX > 0xFFFFu
-#define SOCI_WCHAR_T_IS_WIDE
+#define SOCI_WCHAR_T_IS_UTF32
 #endif
 
 namespace soci
@@ -529,14 +529,14 @@ namespace soci
      */
     inline std::wstring utf8_to_wide(const std::string &utf8)
     {
-#if defined(SOCI_WCHAR_T_IS_WIDE) // Unix/Linux and others
+#if defined(SOCI_WCHAR_T_IS_UTF32) // Unix/Linux and others
       // Convert UTF-8 to UTF-32 first and then to wstring (UTF-32 on Unix/Linux)
       std::u32string utf32 = utf8_to_utf32(utf8);
       return std::wstring(utf32.begin(), utf32.end());
 #else  // Windows
       std::u16string utf16 = utf8_to_utf16(utf8);
       return std::wstring(utf16.begin(), utf16.end());
-#endif // SOCI_WCHAR_T_IS_WIDE
+#endif // SOCI_WCHAR_T_IS_UTF32
     }
 
     /**
@@ -552,14 +552,58 @@ namespace soci
      */
     inline std::string wide_to_utf8(const std::wstring &wide)
     {
-#if defined(SOCI_WCHAR_T_IS_WIDE) // Unix/Linux and others
+#if defined(SOCI_WCHAR_T_IS_UTF32) // Unix/Linux and others
       // Convert wstring (UTF-32) to utf8
       std::u32string utf32(wide.begin(), wide.end());
       return utf32_to_utf8(utf32);
 #else  // Windows
       std::u16string utf16(wide.begin(), wide.end());
       return utf16_to_utf8(utf16);
-#endif // SOCI_WCHAR_T_IS_WIDE
+#endif // SOCI_WCHAR_T_IS_UTF32
+    }
+
+    /**
+     * @brief Converts a UTF-16 encoded string to a wide string (wstring).
+     *
+     * This function uses the platform's native wide character encoding. On Windows, this is UTF-16,
+     * while on Unix/Linux and other platforms, it is UTF-32 or UTF-8 depending on the system
+     * configuration.
+     * If the input string contains invalid UTF-16 encoding, a soci_error exception is thrown.
+     *
+     * @param utf16 The UTF-16 encoded string.
+     * @return std::wstring The wide string.
+     */
+    inline std::wstring utf16_to_wide(const std::u16string &utf16)
+    {
+#if defined(SOCI_WCHAR_T_IS_UTF32) // Unix/Linux and others
+      // Convert UTF-16 to UTF-32 first and then to wstring (UTF-32 on Unix/Linux)
+      std::u32string utf32 = utf16_to_utf32(utf16);
+      return std::wstring(utf32.begin(), utf32.end());
+#else  // Windows
+      return std::wstring(utf16.begin(), utf16.end());
+#endif // SOCI_WCHAR_T_IS_UTF32
+    }
+
+    /**
+     * @brief Converts a wide string (wstring) to a UTF-16 encoded string.
+     *
+     * This function uses the platform's native wide character encoding. On Windows, this is UTF-16,
+     * while on Unix/Linux and other platforms, it is UTF-32 or UTF-8 depending on the system
+     * configuration.
+     * If the input string contains invalid wide characters, a soci_error exception is thrown.
+     *
+     * @param wide The wide string.
+     * @return std::u16string The UTF-16 encoded string.
+     */
+    inline std::u16string wide_to_utf16(const std::wstring &wide)
+    {
+#if defined(SOCI_WCHAR_T_IS_UTF32) // Unix/Linux and others
+      // Convert wstring (UTF-32) to utf16
+      std::u32string utf32(wide.begin(), wide.end());
+      return utf32_to_utf16(utf32);
+#else  // Windows
+      return std::u16string(wide.begin(), wide.end());
+#endif // SOCI_WCHAR_T_IS_UTF32
     }
 
   } // namespace details

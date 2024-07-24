@@ -210,18 +210,18 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
         
         SQLWCHAR *pos = reinterpret_cast<SQLWCHAR *>(buf_);
         
-#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
+#if defined(SOCI_WCHAR_T_IS_UTF32) // Unices
         std::u32string utf32(vp->begin(), vp->end());
         std::u16string utf16 = soci::details::utf32_to_utf16(utf32);
         std::vector<char16_t> u16Vec(utf16.begin(), utf16.end());
 #endif
         for(std::size_t i = 0UL; i != vsize; ++i)
         {
-#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
+#if defined(SOCI_WCHAR_T_IS_UTF32) // Unices
           *pos++ = static_cast<SQLWCHAR>(u16Vec[i]);
 #else // Windows
           *pos++ = static_cast<SQLWCHAR>(vp->at(i));
-#endif // SOCI_WCHAR_T_IS_WIDE
+#endif // SOCI_WCHAR_T_IS_UTF32
           *pos++ = 0;
         }
 
@@ -288,14 +288,14 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
             {
                 std::wstring& value = exchange_vector_type_cast<x_stdwstring>(data_).at(i);
                 
-#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
+#if defined(SOCI_WCHAR_T_IS_UTF32) // Unices
                 // On Unices, std::wstring is UTF-32, so we need to convert to UTF-16
                 std::u16string utf16_str = utf32_to_utf16(std::u32string(value.begin(), value.end()));
                 std::memcpy(pos, utf16_str.c_str(), utf16_str.length() * sizeof(SQLWCHAR));
 #else
                 // On Windows, std::wstring is already UTF-16
                 std::memcpy(pos, value.c_str(), value.length() * sizeof(SQLWCHAR));
-#endif // SOCI_WCHAR_T_IS_WIDE
+#endif // SOCI_WCHAR_T_IS_UTF32
                 pos += maxSize;
             }
 
