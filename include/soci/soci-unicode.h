@@ -26,7 +26,7 @@ namespace soci
      * @param length Length of the byte sequence.
      * @return True if the sequence is a valid UTF-8 encoded character, false otherwise.
      */
-    constexpr inline bool is_valid_utf8_sequence(const unsigned char *bytes, int length)
+    inline bool is_valid_utf8_sequence(const unsigned char *bytes, int length)
     {
       if (length == 1)
       {
