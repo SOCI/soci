@@ -17,7 +17,7 @@ task:
     - name: Cirrus CI / SQLite3 FreeBSD
       env:
         SOCI_CI_BACKEND: sqlite3
-  freebsd_instance:
+freebsd_instance:
   image_family: freebsd-14-0
   install_script: ./scripts/ci/install.sh
   before_build_script: ./scripts/ci/before_build.sh

@@ -193,6 +193,12 @@ namespace soci
         {
           throw soci_error("Invalid UTF-32 sequence: Surrogate pair found");
         }
+
+        // Check for non-characters U+FFFE and U+FFFF
+        if (chr == 0xFFFE || chr == 0xFFFF)
+        {
+          throw soci_error("Invalid UTF-32 sequence: Non-character found");
+        }
       }
     }
 
@@ -216,51 +222,55 @@ namespace soci
       const unsigned char *bytes = reinterpret_cast<const unsigned char *>(utf8.data());
       size_t length = utf8.length();
 
-      for (size_t i = 0; i < length;)
+      // Check for UTF-8 BOM
+      size_t start_index = 0;
+      if (length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
       {
-        if ((bytes[i] & 0x80U) == 0)
+        utf16.push_back(0xFEFF); // Add UTF-16 BOM
+        start_index = 3;         // Start conversion after the BOM
+      }
+
+      for (size_t i = start_index; i < length;)
+      {
+        uint32_t codepoint;
+        if ((bytes[i] & 0x80) == 0)
         {
-          // ASCII character, one byte
-          utf16.push_back(static_cast<char16_t>(bytes[i]));
-          i += 1;
+          // ASCII character
+          codepoint = bytes[i++];
         }
-        else if ((bytes[i] & 0xE0U) == 0xC0U)
+        else if ((bytes[i] & 0xE0) == 0xC0)
         {
-          // Two-byte character
-          utf16.push_back(static_cast<char16_t>(((bytes[i] & 0x1FU) << 6U) | (bytes[i + 1] & 0x3FU)));
+          // 2-byte sequence
+          codepoint = ((bytes[i] & 0x1F) << 6) | (bytes[i + 1] & 0x3F);
           i += 2;
         }
-        else if ((bytes[i] & 0xF0U) == 0xE0U)
+        else if ((bytes[i] & 0xF0) == 0xE0)
         {
-          // Three-byte character
-          utf16.push_back(static_cast<char16_t>(((bytes[i] & 0x0FU) << 12U) | ((bytes[i + 1] & 0x3FU) << 6U) | (bytes[i + 2] & 0x3FU)));
+          // 3-byte sequence
+          codepoint = ((bytes[i] & 0x0F) << 12) | ((bytes[i + 1] & 0x3F) << 6) | (bytes[i + 2] & 0x3F);
           i += 3;
         }
-        else if ((bytes[i] & 0xF8U) == 0xF0U)
+        else if ((bytes[i] & 0xF8) == 0xF0)
         {
-          // Four-byte character
-          uint32_t codepoint = (static_cast<uint32_t>(bytes[i] & 0x07U) << 18U) |
-                               (static_cast<uint32_t>(bytes[i + 1] & 0x3FU) << 12U) |
-                               (static_cast<uint32_t>(bytes[i + 2] & 0x3FU) << 6U) |
-                               (static_cast<uint32_t>(bytes[i + 3] & 0x3FU));
-
-          if (codepoint <= 0xFFFFU)
-          {
-            utf16.push_back(static_cast<char16_t>(codepoint));
-          }
-          else
-          {
-            // Encode as a surrogate pair
-            codepoint -= 0x10000;
-            utf16.push_back(static_cast<char16_t>((codepoint >> 10U) + 0xD800U));
-            utf16.push_back(static_cast<char16_t>((codepoint & 0x3FFU) + 0xDC00U));
-          }
+          // 4-byte sequence
+          codepoint = ((bytes[i] & 0x07) << 18) | ((bytes[i + 1] & 0x3F) << 12) | ((bytes[i + 2] & 0x3F) << 6) | (bytes[i + 3] & 0x3F);
           i += 4;
         }
         else
         {
-          // This should never happen if is_valid_utf8 did its job
-          throw soci_error("Invalid UTF-8 sequence detected after validation");
+          throw soci_error("Invalid UTF-8 sequence");
+        }
+
+        if (codepoint <= 0xFFFF)
+        {
+          utf16.push_back(static_cast<char16_t>(codepoint));
+        }
+        else
+        {
+          // Encode as surrogate pair
+          codepoint -= 0x10000;
+          utf16.push_back(static_cast<char16_t>((codepoint >> 10) + 0xD800));
+          utf16.push_back(static_cast<char16_t>((codepoint & 0x3FF) + 0xDC00));
         }
       }
 
@@ -286,7 +296,15 @@ namespace soci
       std::string utf8;
       utf8.reserve(utf16.size() * 4); // Allocate enough space to avoid reallocations
 
-      for (std::size_t i = 0; i < utf16.length(); ++i)
+      // Check for UTF-16 BOM
+      size_t start_index = 0;
+      if (!utf16.empty() && utf16[0] == 0xFEFF)
+      {
+        utf8.append("\xEF\xBB\xBF"); // Add UTF-8 BOM
+        start_index = 1;             // Start conversion after the BOM
+      }
+
+      for (std::size_t i = start_index; i < utf16.length(); ++i)
       {
         const char16_t chr = utf16[i];
 
@@ -304,8 +322,15 @@ namespace soci
         else if ((chr >= 0xD800U) && (chr <= 0xDBFFU))
         {
           // Handle UTF-16 surrogate pairs
-
+          if (i + 1 >= utf16.length())
+          {
+            throw soci_error("Invalid UTF-16 surrogate pair (truncated)");
+          }
           const char16_t chr2 = utf16[i + 1];
+          if (chr2 < 0xDC00U || chr2 > 0xDFFFU)
+          {
+            throw soci_error("Invalid UTF-16 surrogate pair");
+          }
           const auto codepoint = static_cast<uint32_t>(((chr & 0x3FFU) << 10U) | (chr2 & 0x3FFU)) + 0x10000U;
 
           utf8.push_back(static_cast<char>(0xF0U | ((codepoint >> 18U) & 0x07U)));
@@ -580,6 +605,8 @@ namespace soci
       std::u32string utf32 = utf16_to_utf32(utf16);
       return std::wstring(utf32.begin(), utf32.end());
 #else  // Windows
+      // Perform validation even though it's already UTF-16
+      is_valid_utf16(utf16);
       return std::wstring(utf16.begin(), utf16.end());
 #endif // SOCI_WCHAR_T_IS_UTF32
     }
@@ -602,7 +629,9 @@ namespace soci
       std::u32string utf32(wide.begin(), wide.end());
       return utf32_to_utf16(utf32);
 #else  // Windows
-      return std::u16string(wide.begin(), wide.end());
+      std::u16string utf16(wide.begin(), wide.end());
+      is_valid_utf16(utf16); // Perform validation even though it's already UTF-16
+      return utf16;
 #endif // SOCI_WCHAR_T_IS_UTF32
     }
 

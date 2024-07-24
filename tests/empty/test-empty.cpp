@@ -340,14 +340,86 @@ TEST_CASE("Empty string tests", "[unicode]")
     REQUIRE(utf8_to_utf16(u8"") == u"");
     REQUIRE(utf8_to_utf32(u8"") == U"");
 }
-
 TEST_CASE("Strings with Byte Order Marks (BOMs)", "[unicode]")
 {
     using namespace soci::details;
 
-    REQUIRE_NOTHROW(is_valid_utf8("\xEF\xBB\xBFHello, world!"));
-    REQUIRE(utf16_to_utf8(u"\xFEFFHello, world!") == u8"\xEF\xBB\xBFHello, world!");
-    REQUIRE(utf32_to_utf8(U"\x0000FEFFHello, world!") == u8"\xEF\xBB\xBFHello, world!");
+    // Helper function to print hexadecimal representation of a string
+    auto print_hex = [](const std::string& s, const std::string& label) {
+        std::cout << label << ": ";
+        for (unsigned char c : s) {
+            std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(c) << " ";
+        }
+        std::cout << std::endl;
+    };
+
+    // UTF-8 BOM
+    const std::string utf8_bom = "\xEF\xBB\xBF";
+    // UTF-16 BOM (Little Endian)
+    const std::u16string utf16_bom = u"\xFEFF";
+    // UTF-32 BOM (Little Endian)
+    const std::u32string utf32_bom = U"\x0000FEFF";
+
+    const std::string content = "Hello, world!";
+    const std::u16string content16 = u"Hello, world!";
+    const std::u32string content32 = U"Hello, world!";
+
+    SECTION("UTF-8 to UTF-16")
+    {
+        std::u16string result = utf8_to_utf16(utf8_bom + content);
+        REQUIRE(result == utf16_bom + content16);
+    }
+
+    SECTION("UTF-8 to UTF-32")
+    {
+        std::u32string result = utf8_to_utf32(utf8_bom + content);
+        REQUIRE(result == utf32_bom + content32);
+    }
+
+    SECTION("UTF-16 to UTF-8")
+    {
+        std::string result = utf16_to_utf8(utf16_bom + content16);
+        REQUIRE(result == utf8_bom + content);
+    }
+
+    SECTION("UTF-16 to UTF-32")
+    {
+        std::u32string result = utf16_to_utf32(utf16_bom + content16);
+        REQUIRE(result == utf32_bom + content32);
+    }
+
+    SECTION("UTF-32 to UTF-8")
+    {
+        std::string result = utf32_to_utf8(utf32_bom + content32);
+        REQUIRE(result == utf8_bom + content);
+    }
+
+    SECTION("UTF-32 to UTF-16")
+    {
+        std::u16string result = utf32_to_utf16(utf32_bom + content32);
+        REQUIRE(result == utf16_bom + content16);
+    }
+
+    SECTION("Roundtrip conversions")
+    {
+        // UTF-8 -> UTF-16 -> UTF-8
+        REQUIRE(utf16_to_utf8(utf8_to_utf16(utf8_bom + content)) == utf8_bom + content);
+
+        // UTF-8 -> UTF-32 -> UTF-8
+        REQUIRE(utf32_to_utf8(utf8_to_utf32(utf8_bom + content)) == utf8_bom + content);
+
+        // UTF-16 -> UTF-8 -> UTF-16
+        REQUIRE(utf8_to_utf16(utf16_to_utf8(utf16_bom + content16)) == utf16_bom + content16);
+
+        // UTF-16 -> UTF-32 -> UTF-16
+        REQUIRE(utf32_to_utf16(utf16_to_utf32(utf16_bom + content16)) == utf16_bom + content16);
+
+        // UTF-32 -> UTF-8 -> UTF-32
+        REQUIRE(utf8_to_utf32(utf32_to_utf8(utf32_bom + content32)) == utf32_bom + content32);
+
+        // UTF-32 -> UTF-16 -> UTF-32
+        REQUIRE(utf16_to_utf32(utf32_to_utf16(utf32_bom + content32)) == utf32_bom + content32);
+    }
 }
 
 TEST_CASE("Strings with invalid code unit sequences", "[unicode]")
@@ -430,6 +502,45 @@ TEST_CASE("Wide string to UTF-8 conversion tests", "[unicode]")
     std::wstring invalid_wide;
     invalid_wide.push_back(0xD800); // lone high surrogate
     REQUIRE_THROWS_AS(wide_to_utf8(invalid_wide), soci::soci_error);
+}
+
+TEST_CASE("UTF-16 to wide string conversion tests", "[unicode]")
+{
+    using namespace soci::details;
+
+    // Valid conversion tests
+    REQUIRE(utf16_to_wide(u"Hello, world!") == L"Hello, world!");
+    REQUIRE(utf16_to_wide(u"こんにちは世界") == L"こんにちは世界");
+    REQUIRE(utf16_to_wide(u"😀😁😂🤣😃😄😅😆") == L"😀😁😂🤣😃😄😅😆");
+
+    // Edge cases
+    std::u16string utf16 = u"\xD83D\xDE00"; // 😀
+    std::wstring expected_wide = L"\U0001F600";
+    REQUIRE(utf16_to_wide(utf16) == expected_wide);
+
+    // Invalid conversion (should throw an exception)
+    std::u16string invalid_utf16;
+    invalid_utf16.push_back(0xD800); // lone high surrogate
+    REQUIRE_THROWS_AS(utf16_to_wide(invalid_utf16), soci::soci_error);
+}
+
+TEST_CASE("Wide string to UTF-16 conversion tests", "[unicode]")
+{
+    using namespace soci::details;
+
+    // Valid conversion tests
+    REQUIRE(wide_to_utf16(L"Hello, world!") == u"Hello, world!");
+    REQUIRE(wide_to_utf16(L"こんにちは世界") == u"こんにちは世界");
+    REQUIRE(wide_to_utf16(L"😀😁😂🤣😃😄😅😆") == u"😀😁😂🤣😃😄😅😆");
+
+    // Edge cases
+    std::wstring wide = L"\U0001F600"; // 😀
+    REQUIRE(wide_to_utf16(wide) == u"\xD83D\xDE00");
+
+    // Invalid conversion (should throw an exception)
+    std::wstring invalid_wide;
+    invalid_wide.push_back(0xD800); // lone high surrogate
+    REQUIRE_THROWS_AS(wide_to_utf16(invalid_wide), soci::soci_error);
 }
 
 int main(int argc, char** argv)
