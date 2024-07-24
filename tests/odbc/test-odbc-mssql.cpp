@@ -26,22 +26,22 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
 
   struct long_text_table_creator : public table_creator_base
   {
-    explicit long_text_table_creator(soci::session &sql)
+    explicit long_text_table_creator(soci::session& sql)
         : table_creator_base(sql)
     {
       // Notice that 4000 is the maximal length of an nvarchar() column,
       // at least when using FreeTDS ODBC driver.
       sql << "create table soci_test ("
-             "long_text nvarchar(max) null, "
-             "fixed_text nvarchar(4000) null"
-             ")";
+                  "long_text nvarchar(max) null, "
+                  "fixed_text nvarchar(4000) null"
+              ")";
     }
   } long_text_table_creator(sql);
 
   // Build a string at least 8000 characters long to test that it survives
   // the round trip unscathed.
   std::ostringstream os;
-  for (int n = 0; n < 1000; ++n)
+  for ( int n = 0; n < 1000; ++n )
   {
     os << "Line #" << n << "\n";
   }
@@ -58,11 +58,11 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
   // error in the common failure case.
   if (str_out.length() != str_in.length())
   {
-    FAIL("Read back string of length " << str_out.length() << " instead of expected " << str_in.length());
+      FAIL("Read back string of length " << str_out.length() << " instead of expected " << str_in.length());
   }
   else
   {
-    CHECK(str_out == str_in);
+      CHECK(str_out == str_in);
   }
 
   // The long string should be truncated when inserting it into a fixed size
@@ -78,13 +78,13 @@ TEST_CASE("MS SQL wide string", "[odbc][mssql][wstring]")
 
   struct wide_text_table_creator : public table_creator_base
   {
-    explicit wide_text_table_creator(soci::session &sql)
-        : table_creator_base(sql)
-    {
+      explicit wide_text_table_creator(soci::session &sql)
+          : table_creator_base(sql)
+      {
       sql << "create table soci_test ("
-             "wide_text nvarchar(40) null"
-             ")";
-    }
+                  "wide_text nvarchar(40) null"
+              ")";
+      }
   } wide_text_table_creator(sql);
 
   std::wstring const str_in = L"Hello, SOCI!";
@@ -109,13 +109,13 @@ TEST_CASE("MS SQL wide string vector", "[odbc][mssql][vector][wstring]")
 
   struct wide_text_table_creator : public table_creator_base
   {
-    explicit wide_text_table_creator(soci::session &sql)
-        : table_creator_base(sql)
-    {
+      explicit wide_text_table_creator(soci::session &sql)
+          : table_creator_base(sql)
+      {
       sql << "create table soci_test ("
-             "wide_text nvarchar(40) null"
-             ")";
-    }
+                  "wide_text nvarchar(40) null"
+              ")";
+      }
   } wide_text_table_creator(sql);
 
   std::vector<std::wstring> const str_in = {
@@ -143,13 +143,13 @@ TEST_CASE("MS SQL wide char", "[odbc][mssql][wchar]")
 
   struct wide_char_table_creator : public table_creator_base
   {
-    explicit wide_char_table_creator(soci::session &sql)
-        : table_creator_base(sql)
-    {
+      explicit wide_char_table_creator(soci::session &sql)
+          : table_creator_base(sql)
+      {
       sql << "create table soci_test ("
-             "wide_char nchar(2) null"
-             ")";
-    }
+                  "wide_char nchar(2) null"
+              ")";
+      }
   } wide_char_table_creator(sql);
 
   wchar_t const ch_in = L'X';
@@ -172,7 +172,7 @@ TEST_CASE("MS SQL wchar vector", "[odbc][mssql][vector][wchar]")
         : table_creator_base(sql)
     {
       sql << "create table soci_test ("
-             "wide_char nchar(2) null"
+                "wide_char nchar(2) null"
              ")";
     }
   } wide_char_table_creator(sql);
@@ -231,7 +231,7 @@ TEST_CASE("MS SQL wchar vector", "[odbc][mssql][vector][wchar]")
 
 //     CHECK(str_out == str_in);
 
-// #if defined(SOCI_WCHAR_T_IS_UTF32) // Unices
+// #if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
 //     CHECK(wstr_out == L"\U00000E2A\U00000E27\U00000E31\U00000E2A\U00000E14\U00000E35\U00000021");
 // #else // Windows
 //     CHECK(wstr_out == L"\u0E2A\u0E27\u0E31\u0E2A\u0E14\u0E35\u0021");
