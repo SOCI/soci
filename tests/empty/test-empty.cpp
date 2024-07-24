@@ -344,15 +344,6 @@ TEST_CASE("Strings with Byte Order Marks (BOMs)", "[unicode]")
 {
     using namespace soci::details;
 
-    // Helper function to print hexadecimal representation of a string
-    auto print_hex = [](const std::string& s, const std::string& label) {
-        std::cout << label << ": ";
-        for (unsigned char c : s) {
-            std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(c) << " ";
-        }
-        std::cout << std::endl;
-    };
-
     // UTF-8 BOM
     const std::string utf8_bom = "\xEF\xBB\xBF";
     // UTF-16 BOM (Little Endian)
