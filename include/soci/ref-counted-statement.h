@@ -57,7 +57,7 @@ public:
 
     template <typename T>
     void accumulate(T const & t) { get_query_stream() << t; }
-    inline void accumulate(std::wstring const & t) { get_query_stream() << wide_to_utf8(t); }
+    void accumulate(std::wstring const & t) { get_query_stream() << wide_to_utf8(t); }
 
     void set_tail(const std::string & tail) { tail_ = tail; }
     void set_need_comma(bool need_comma) { need_comma_ = need_comma; }
