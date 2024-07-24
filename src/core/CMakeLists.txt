@@ -1,151 +1,179 @@
-###############################################################################
-#
-# This file is part of CMake configuration for SOCI library
-#
-# Copyright (C) 2009-2013 Mateusz Loskot <mateusz@loskot.net>
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE_1_0.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
-#
-###############################################################################
-colormsg(_HIBLUE_ "Configuring SOCI core library:")
+include(GNUInstallDirs)
 
-include(CMakePackageConfigHelpers)
+find_package(Threads REQUIRED)
 
-# Set INCLUDE_DIRECTORIES
-get_directory_property(SOCI_CORE_INCLUDE_DIRS INCLUDE_DIRECTORIES)
-list(APPEND SOCI_CORE_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR})
-set_directory_properties(PROPERTIES
-  INCLUDE_DIRECTORIES "${SOCI_CORE_INCLUDE_DIRS}")
+add_library(soci_core
+  ${SOCI_LIB_TYPE}
+    "backend-loader.cpp"
+    "blob.cpp"
+    "common.cpp"
+    "callbacks.cpp"
+    "connection-parameters.cpp"
+    "connection-pool.cpp"
+    "error.cpp"
+    "into-type.cpp"
+    "logger.cpp"
+    "once-temp-type.cpp"
+    "prepare-temp-type.cpp"
+    "procedure.cpp"
+    "ref-counted-prepare-info.cpp"
+    "ref-counted-statement.cpp"
+    "row.cpp"
+    "rowid.cpp"
+    "session.cpp"
+    "soci-simple.cpp"
+    "statement.cpp"
+    "transaction.cpp"
+    "use-type.cpp"
+    "values.cpp"
+)
 
-# Configure backend loader to also use default install directory.
-configure_file(soci_backends_config.h.in
-  ${CMAKE_CURRENT_BINARY_DIR}/soci_backends_config.h)
+add_library(SOCI::Core ALIAS soci_core)
 
-# Core source files
-file(GLOB SOCI_CORE_HEADERS ${SOCI_SOURCE_DIR}/include/soci/*.h)
-file(GLOB SOCI_CORE_SOURCES *.cpp)
+set_target_properties(
+  soci_core PROPERTIES
+  SOVERSION ${PROJECT_VERSION_MAJOR}
+  VERSION ${PROJECT_VERSION}
+  EXPORT_NAME Core
+)
 
-# Group source files for IDE source explorers (e.g. Visual Studio)
-source_group("Header Files" FILES ${SOCI_CORE_HEADERS})
-source_group("Source Files" FILES ${SOCI_CORE_SOURCES})
-source_group("CMake Files" FILES CMakeLists.txt)
+# We have to explicitly list all public header files in order for them to get
+# installed properly. This will automatically set the BASE_DIR up as an include
+# directory for the target wrapped in a BUILD_INTERFACE generator expression.
+target_sources(soci_core
+  PUBLIC
+    FILE_SET headers TYPE HEADERS
+    BASE_DIRS "${PROJECT_SOURCE_DIR}/include/"
+    FILES
+      "${PROJECT_SOURCE_DIR}/include/soci/backend-loader.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/bind-values.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/blob-exchange.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/blob.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/boost-fusion.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/boost-gregorian-date.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/boost-optional.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/boost-tuple.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/callbacks.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/column-info.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/connection-parameters.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/connection-pool.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/error.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/exchange-traits.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/fixed-size-ints.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/into.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/into-type.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/logger.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/noreturn.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/once-temp-type.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/prepare-temp-type.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/procedure.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/query_transformation.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/ref-counted-prepare-info.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/ref-counted-statement.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/row-exchange.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/row.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/rowid-exchange.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/rowid.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/rowset.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/session.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/soci-backend.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/soci.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/soci-platform.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/soci-simple.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/soci-types.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/statement.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/std-optional.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/transaction.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/type-conversion.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/type-conversion-traits.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/type-holder.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/type-ptr.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/type-wrappers.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/use.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/use-type.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/values-exchange.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/values.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/version.h"
+)
 
-# Core targets configuration
-string(TOLOWER "${PROJECT_NAME}" PROJECTNAMEL)
-#this command will update parent scope variable
-set(SOCI_CORE_TARGET ${PROJECTNAMEL}_core PARENT_SCOPE)
-set(SOCI_CORE_TARGET ${PROJECTNAMEL}_core)
-
-soci_target_output_name(${SOCI_CORE_TARGET} SOCI_CORE_TARGET_OUTPUT_NAME)
-
-#
-# Core shared library
-#
-if (SOCI_SHARED)
-  add_library(${SOCI_CORE_TARGET} SHARED ${SOCI_CORE_HEADERS} ${SOCI_CORE_SOURCES})
-  add_library(Soci::core ALIAS ${SOCI_CORE_TARGET})
-
-  target_link_libraries(${SOCI_CORE_TARGET} ${SOCI_CORE_DEPS_LIBS})
-
-  if(WIN32)
-    set_target_properties(${SOCI_CORE_TARGET}
-      PROPERTIES
-      DEFINE_SYMBOL SOCI_DLL
-      OUTPUT_NAME "${SOCI_CORE_TARGET_OUTPUT_NAME}"
-      VERSION ${SOCI_VERSION}
-      CLEAN_DIRECT_OUTPUT 1)
-  else()
-    set_target_properties(${SOCI_CORE_TARGET}
-      PROPERTIES
-      VERSION ${SOCI_VERSION}
-      SOVERSION ${SOCI_SOVERSION}
-      INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/lib
-      CLEAN_DIRECT_OUTPUT 1)
-  endif()
-
-  target_include_directories(${SOCI_CORE_TARGET}
-      PUBLIC
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include>
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../../include>
-      $<INSTALL_INTERFACE:include>
-  )
-
-endif()
-
-# This adds definitions to all build configurations. SOCI_DEBUG_POSTFIX is passed to soci library
-add_definitions(-DSOCI_LIB_PREFIX="${CMAKE_SHARED_LIBRARY_PREFIX}soci_"
-                -DSOCI_LIB_SUFFIX="${CMAKE_SHARED_LIBRARY_SUFFIX}"
-                -DSOCI_DEBUG_POSTFIX="${CMAKE_DEBUG_POSTFIX}")
-
-#
-# Core static library
-#
-if (SOCI_STATIC)
-  set(SOCI_CORE_TARGET_STATIC ${SOCI_CORE_TARGET}_static)
-
-  add_library(${SOCI_CORE_TARGET_STATIC} STATIC
-    ${SOCI_CORE_HEADERS} ${SOCI_CORE_SOURCES})
-  add_library(Soci::core_static ALIAS ${SOCI_CORE_TARGET_STATIC})
-
-  # we still need to link against dl if we have it
-  target_link_libraries (${SOCI_CORE_TARGET_STATIC}
-    ${SOCI_CORE_DEPS_LIBS}
-  )
-
-  set_target_properties(${SOCI_CORE_TARGET_STATIC}
-    PROPERTIES
-    OUTPUT_NAME ${SOCI_CORE_TARGET_OUTPUT_NAME}
-    PREFIX "lib"
-    CLEAN_DIRECT_OUTPUT 1)
-
-  target_include_directories(${SOCI_CORE_TARGET_STATIC}
-      PUBLIC
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include>
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../../include>
-      $<INSTALL_INTERFACE:include>
-  )
-
-endif()
-
-
-
-
-#
-# Core installation
-#
-install(FILES ${SOCI_CORE_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECTNAMEL})
+target_include_directories(soci_core
+  PUBLIC
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+  PRIVATE
+    "${PROJECT_SOURCE_DIR}/include/soci"
+    "${PROJECT_SOURCE_DIR}/include/private"
+)
 
 if (SOCI_SHARED)
-  install(TARGETS ${SOCI_CORE_TARGET}
-    EXPORT SOCI
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  target_compile_definitions(soci_core
+    PUBLIC
+      # Define the macro SOCI_DLL on Windows
+      $<IF:$<PLATFORM_ID:Windows>,SOCI_DLL,>
+  )
 endif()
 
-if (SOCI_STATIC)
-  install(TARGETS ${SOCI_CORE_TARGET_STATIC}
-    EXPORT SOCI
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+soci_public_dependency(
+  NAME Boost
+  DEP_TARGETS Boost::boost Boost::date_time Boost::disable_autolinking
+  COMPONENTS date_time
+  MACRO_NAMES SOCI_HAVE_BOOST SOCI_HAVE_BOOST_DATE_TIME
+  TARGET SOCI::Core
+)
+soci_public_dependency(
+  NAME Boost
+  DEP_TARGETS Boost::boost Boost::disable_autolinking
+  MACRO_NAMES SOCI_HAVE_BOOST
+  TARGET SOCI::Core
+)
+
+target_link_libraries(soci_core
+  PUBLIC
+    $<BUILD_INTERFACE:soci_compiler_interface>
+  PRIVATE
+    Threads::Threads
+    ${CMAKE_DL_LIBS}
+)
+
+if (WIN32)
+  set(ABI_VERSION "${PROJECT_VERSION_MAJOR}_${PROJECT_VERSION_MINOR}")
+elseif(UNIX)
+  # Use SOVERSION, which is only the major version
+  set(ABI_VERSION "${PROJECT_VERSION_MAJOR}")
 endif()
 
-install(EXPORT SOCI NAMESPACE SOCI:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SOCI FILE SOCITargets.cmake)
-configure_package_config_file(${PROJECT_SOURCE_DIR}/cmake/resources/SOCIConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/SOCIConfig.cmake
-  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SOCI)
-write_basic_package_version_file(SOCIConfigVersion.cmake VERSION ${SOCI_VERSION} COMPATIBILITY SameMajorVersion)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/SOCIConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/SOCIConfigVersion.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SOCI)
+target_compile_definitions(soci_core
+  PRIVATE
+    DEFAULT_BACKENDS_PATH="${CMAKE_INSTALL_FULL_LIBDIR}"
+    SOCI_LIB_PREFIX="${CMAKE_SHARED_LIBRARY_PREFIX}soci_"
+    SOCI_LIB_SUFFIX="${CMAKE_SHARED_LIBRARY_SUFFIX}"
+    SOCI_DEBUG_POSTFIX="${CMAKE_DEBUG_POSTFIX}"
+)
+if (DEFINED ABI_VERSION)
+  target_compile_definitions(soci_core
+    PRIVATE
+      SOCI_ABI_VERSION="${ABI_VERSION}"
+  )
+endif()
 
-#
-# Core configuration summary
-#
-boost_report_value(SOCI_CORE_TARGET)
-boost_report_value(SOCI_CORE_TARGET_OUTPUT_NAME)
-boost_report_value(SOCI_CORE_DEPS_LIBS)
-boost_report_value(SOCI_CORE_INCLUDE_DIRS)
-boost_report_value(WITH_BOOST)
-soci_report_directory_property(COMPILE_DEFINITIONS)
 
-message(STATUS "")
+install(
+  TARGETS soci_core
+  EXPORT SOCICoreTargets
+  RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}/soci"
+    COMPONENT soci_runtime
+  LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/soci"
+    COMPONENT          soci_runtime
+    NAMELINK_COMPONENT soci_development
+  ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}/soci"
+    COMPONENT soci_development
+  FILE_SET headers DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/soci"
+    COMPONENT soci_development
+)
+# Generate and install a targets file
+install(
+  EXPORT SOCICoreTargets
+  DESTINATION "${SOCI_INSTALL_CMAKEDIR}"
+  FILE SOCICoreTargets.cmake
+  NAMESPACE SOCI::
+  COMPONENT soci_development
+)
