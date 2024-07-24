@@ -31,9 +31,21 @@ struct exchange_type_traits<x_char>
 };
 
 template <>
+struct exchange_type_traits<x_wchar>
+{
+  typedef wchar_t value_type;
+};
+
+template <>
 struct exchange_type_traits<x_stdstring>
 {
   typedef std::string value_type;
+};
+
+template <>
+struct exchange_type_traits<x_stdwstring>
+{
+  typedef std::wstring value_type;
 };
 
 template <>

@@ -75,6 +75,7 @@ For the ODBC backend, this type mapping is:
 | SQL_INTEGER                                               | db_int32                   | int32_t                       |
 | SQL_BIGINT                                                | db_int64                   | int64_t                       |
 | SQL_CHAR, SQL_VARCHAR                                     | db_string                  | std::string                   |
+| SQL_WCHAR, SQL_WVARCHAR, SQL_WLONGVARCHAR                 | db_wstring                 | std::wstring                  |
 | SQL_TYPE_DATE, SQL_TYPE_TIME, SQL_TYPE_TIMESTAMP          | db_date                    | std::tm                       |
 
 Not all ODBC drivers support all datatypes.

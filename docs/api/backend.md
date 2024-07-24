@@ -1,6 +1,6 @@
 # Backends reference
 
-This part of the documentation is provided for those who want towrite (and contribute!) their
+This part of the documentation is provided for those who want to write (and contribute!) their
 own backends. It is anyway recommendedthat authors of new backend see the code of some existing
 backend forhints on how things are really done.
 
@@ -28,6 +28,7 @@ enum data_type
 enum db_type
 {
     db_string,
+    db_wstring,
     db_int8,
     db_uint8,
     db_int16,
@@ -50,6 +51,7 @@ enum exchange_type
 {
     x_char,
     x_stdstring,
+    x_stdwstring,
     x_int8,
     x_uint8,
     x_int16,
