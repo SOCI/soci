@@ -231,7 +231,7 @@ TEST_CASE("MS SQL wchar vector", "[odbc][mssql][vector][wchar]")
 
 //     CHECK(str_out == str_in);
 
-// #if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
+// #if defined(SOCI_WCHAR_T_IS_UTF32) // Unices
 //     CHECK(wstr_out == L"\U00000E2A\U00000E27\U00000E31\U00000E2A\U00000E14\U00000E35\U00000021");
 // #else // Windows
 //     CHECK(wstr_out == L"\u0E2A\u0E27\u0E31\u0E2A\u0E14\u0E35\u0021");

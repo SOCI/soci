@@ -211,7 +211,7 @@ void odbc_standard_use_type_backend::copy_from_string(
         SQLSMALLINT& cType
     ) 
 {
-#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
+#if defined(SOCI_WCHAR_T_IS_UTF32) // Unices
     // On Unix-like systems, std::wstring is UTF-32, so we need to convert it to UTF-16.
     std::u16string utf16_str = utf32_to_utf16(std::u32string(s.begin(), s.end()));
     

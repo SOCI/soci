@@ -309,13 +309,13 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
         for (std::size_t i = beginRow; i != endRow; ++i)
         {
             // Check if the platform defines wchar_t as wide (e.g., Unix systems)
-#if defined(SOCI_WCHAR_T_IS_WIDE) // Unices
+#if defined(SOCI_WCHAR_T_IS_UTF32) // Unices
             // Convert UTF-16 to UTF-32 and assign the first character to the vector
             v[i] = utf16_to_utf32(std::u16string(reinterpret_cast<char16_t*>(pos)))[0];
 #else
             // Directly reinterpret the buffer as wchar_t and assign to the vector
             v[i] = *reinterpret_cast<wchar_t*>(pos);
-#endif // SOCI_WCHAR_T_IS_WIDE
+#endif // SOCI_WCHAR_T_IS_UTF32
             // Move the buffer pointer to the next column size
             pos += colSize_;
         }
@@ -403,14 +403,14 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
                 }
             }
 
-#if defined(SOCI_WCHAR_T_IS_WIDE) // Unix-like systems
+#if defined(SOCI_WCHAR_T_IS_UTF32) // Unix-like systems
             // Convert UTF-16 to UTF-32 and assign to the std::wstring.
             const std::u32string u32str(utf16_to_utf32(std::u16string(reinterpret_cast<char16_t*>(pos), end - pos)));
             value.assign(u32str.begin(), u32str.end());
 #else // Windows
             // Directly assign the wide character string to std::wstring.
             value.assign(reinterpret_cast<wchar_t const*>(pos), end - pos);
-#endif // SOCI_WCHAR_T_IS_WIDE
+#endif // SOCI_WCHAR_T_IS_UTF32
         }
     }
     else if (type_ == x_stdtm)

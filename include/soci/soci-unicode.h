@@ -7,9 +7,9 @@
 #include <vector>
 #include <wchar.h>
 
-// Define SOCI_WCHAR_T_IS_WIDE if wchar_t is wider than 16 bits (e.g., on Unix/Linux)
+// Define SOCI_WCHAR_T_IS_UTF32 if wchar_t is wider than 16 bits (e.g., on Unix/Linux)
 #if WCHAR_MAX > 0xFFFFu
-#define SOCI_WCHAR_T_IS_WIDE
+#define SOCI_WCHAR_T_IS_UTF32
 #endif
 
 namespace soci
@@ -529,14 +529,14 @@ namespace soci
      */
     inline std::wstring utf8_to_wide(const std::string &utf8)
     {
-#if defined(SOCI_WCHAR_T_IS_WIDE) // Unix/Linux and others
+#if defined(SOCI_WCHAR_T_IS_UTF32) // Unix/Linux and others
       // Convert UTF-8 to UTF-32 first and then to wstring (UTF-32 on Unix/Linux)
       std::u32string utf32 = utf8_to_utf32(utf8);
       return std::wstring(utf32.begin(), utf32.end());
 #else  // Windows
       std::u16string utf16 = utf8_to_utf16(utf8);
       return std::wstring(utf16.begin(), utf16.end());
-#endif // SOCI_WCHAR_T_IS_WIDE
+#endif // SOCI_WCHAR_T_IS_UTF32
     }
 
     /**
@@ -552,14 +552,14 @@ namespace soci
      */
     inline std::string wide_to_utf8(const std::wstring &wide)
     {
-#if defined(SOCI_WCHAR_T_IS_WIDE) // Unix/Linux and others
+#if defined(SOCI_WCHAR_T_IS_UTF32) // Unix/Linux and others
       // Convert wstring (UTF-32) to utf8
       std::u32string utf32(wide.begin(), wide.end());
       return utf32_to_utf8(utf32);
 #else  // Windows
       std::u16string utf16(wide.begin(), wide.end());
       return utf16_to_utf8(utf16);
-#endif // SOCI_WCHAR_T_IS_WIDE
+#endif // SOCI_WCHAR_T_IS_UTF32
     }
 
   } // namespace details
