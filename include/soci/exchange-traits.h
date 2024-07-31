@@ -44,12 +44,15 @@ struct exchange_traits
     };
 };
 
+#if SOCI_OS != SOCI_OS_SUN
+// As in SunOS: typedef char int8_t;
 template <>
 struct exchange_traits<int8_t>
 {
     typedef basic_type_tag type_family;
     enum { x_type = x_int8 };
 };
+#endif
 
 template <>
 struct exchange_traits<uint8_t>

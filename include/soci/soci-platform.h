@@ -179,6 +179,7 @@ private: \
 #define SOCI_OS_FREE_BSD    0x0002
 #define SOCI_OS_APPLE       0x0003
 #define SOCI_OS_WINDOWS     0x0004
+#define SOCI_OS_SUN         0x0005
 
 #if defined(linux) || defined(__linux) || defined(__linux__)
     #define SOCI_OS SOCI_OS_LINUX
@@ -188,6 +189,8 @@ private: \
     #define SOCI_OS SOCI_OS_APPLE
 #elif defined(_WIN32) || defined(_WIN64)
     #define SOCI_OS SOCI_OS_WINDOWS
+#elif defined(sun) || defined(__sun) || defined(__sun__)
+    #define SOCI_OS SOCI_OS_SUN
 #endif
 
 #if !defined(SOCI_OS)
