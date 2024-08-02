@@ -89,7 +89,8 @@ struct type_conversion<column_info>
             ci.type = dt_string;
             ci.dataType = db_string;
         }
-        else if (type_name == "integer" || type_name == "INTEGER")
+        else if (type_name == "integer" || type_name == "INTEGER" ||
+		 type_name == "int")
         {
             ci.type = dt_integer;
             ci.dataType = db_int32;
