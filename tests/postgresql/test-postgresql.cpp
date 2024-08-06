@@ -728,6 +728,7 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     st.execute();
     while (st.fetch())
     {
+        std::cout << table_name << " == " << schema << "." << ddl_t1 << "," << ddl_t2 << "," << ddl_t3 << std::endl;
         if (table_name == schema + "." + ddl_t1) { ddl_t1_found = true; }
         if (table_name == schema + "." + ddl_t2) { ddl_t2_found = true; }
         if (table_name == schema + "." + ddl_t3) { ddl_t3_found = true; }
@@ -925,9 +926,9 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     st2.execute();
     while (st2.fetch())
     {
-        if (table_name == ddl_t1) { ddl_t1_found = true; }
-        if (table_name == ddl_t2) { ddl_t2_found = true; }
-        if (table_name == ddl_t3) { ddl_t3_found = true; }
+        if (table_name == schema + "." + ddl_t1) { ddl_t1_found = true; }
+        if (table_name == schema + "." + ddl_t2) { ddl_t2_found = true; }
+        if (table_name == schema + "." + ddl_t3) { ddl_t3_found = true; }
     }
 
     CHECK(ddl_t1_found == false);
