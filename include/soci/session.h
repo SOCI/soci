@@ -25,6 +25,7 @@ namespace soci
 {
 class values;
 class backend_factory;
+struct schema_table_name;
 
 namespace details
 {
@@ -146,7 +147,8 @@ public:
     // Since this is intended for use with statement objects, where results are obtained one row after another,
     // it makes sense to bind either std::string for each output field or soci::column_info for the whole row.
     // Note: table_name is a non-const reference to prevent temporary objects,
-    // this argument is bound as a regular "use" element.
+    // this argument is bound as a regular "use" element. The table_name can consist of both a schema name and
+    // a table_name separated by a dot.
     details::prepare_temp_type prepare_column_descriptions(std::string & table_name);
 
     // Functions for basic portable DDL statements.
@@ -215,6 +217,8 @@ private:
     SOCI_NOT_COPYABLE(session)
 
     void reset_after_move();
+    struct schema_table_name * alloc_schema_table_name(std::string & tableName);
+    void clean_schema_table_names();
 
     std::ostringstream query_stream_;
     std::unique_ptr<details::query_transformation_function> query_transformation_;
@@ -232,6 +236,8 @@ private:
     bool isFromPool_;
     std::size_t poolPosition_;
     connection_pool * pool_;
+
+    struct schema_table_name * schema_table_name_;
 };
 
 } // namespace soci
