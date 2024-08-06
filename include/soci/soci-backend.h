@@ -332,7 +332,7 @@ private:
 class session_backend
 {
 public:
-    session_backend() : failoverCallback_(NULL), session_(NULL), schema_name_("public") {}
+    session_backend() : failoverCallback_(NULL), session_(NULL) {}
     virtual ~session_backend() {}
 
     virtual bool is_connected() = 0;
@@ -366,7 +366,7 @@ public:
     {
         return "select table_name as \"TABLE_NAME\""
             " from information_schema.tables"
-            " where table_schema = '" + schema_name_ + "'";
+            " where table_schema = 'public'";
     }
 
     // Returns a query with a single parameter (table name) for the list
@@ -380,7 +380,7 @@ public:
             " numeric_scale as \"NUMERIC_SCALE\","
             " is_nullable as \"IS_NULLABLE\""
             " from information_schema.columns"
-            " where table_schema = '" + schema_name_ + "' and table_name = :t";
+            " where table_schema = 'public' and table_name = :t";
     }
 
     virtual std::string create_table(const std::string & tableName)
@@ -565,7 +565,6 @@ public:
 
     failover_callback * failoverCallback_;
     session * session_;
-    std::string schema_name_;
 
 private:
     SOCI_NOT_COPYABLE(session_backend)

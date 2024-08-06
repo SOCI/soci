@@ -29,6 +29,87 @@ void hard_exec(postgresql_session_backend & session_backend,
     postgresql_result(session_backend, PQexec(conn, query)).check_for_errors(errMsg);
 }
 
+// helper function to quote a string before sinding to PostgreSQL
+char * quote(PGconn * conn, const char *s, size_t len)
+{
+    int error_code;
+    char *retv = new char[2 * len + 3];
+    retv[0] = '\'';
+    int len_esc = PQescapeStringConn(conn, retv + 1, s, len, &error_code);
+    if (error_code > 0)
+    {
+        len_esc = 0;
+    }
+    retv[len_esc + 1] = '\'';
+    retv[len_esc + 2] = '\0';
+
+    return retv;
+}
+
+// helper function to collect schemas from search_path
+std::vector<std::string> get_schema_names(PGconn * conn)
+{
+    std::vector<std::string> schema_names;
+    PGresult* search_path = PQexec(conn, "SHOW search_path");
+    if (PQresultStatus(search_path) == PGRES_TUPLES_OK)
+    {
+        if (PQntuples(search_path) > 0)
+        {
+            std::string schema_name = PQgetvalue(search_path, 0, 0);
+            if (!(schema_name.length() == 2 && schema_name[0] == '"' && schema_name[1] == '"'))
+            {
+                // Assure no bad characters
+                char * escaped_schema = quote(conn, schema_name.c_str(), schema_name.length());
+                schema_names.push_back(escaped_schema);
+                delete[] escaped_schema;
+            }
+        }
+    }
+    PQclear(search_path);
+    if (schema_names.empty())
+    {
+        PGresult* current_user = PQexec(conn, "SELECT current_user");
+        if (PQresultStatus(current_user) == PGRES_TUPLES_OK)
+        {
+            if (PQntuples(current_user) > 0)
+            {
+                std::string user = PQgetvalue(current_user, 0, 0);
+
+                // Assure no bad characters
+                char * escaped_user = quote(conn, user.c_str(), user.length());
+                schema_names.push_back(escaped_user);
+                delete[] escaped_user;
+            }
+        }
+        schema_names.push_back("public");
+    }
+
+    return schema_names;
+}
+
+// helper function to create a comma separated list of strings
+std::string create_list_of_strings(const std::vector<std::string>& list)
+{
+    std::ostringstream oss;
+    for (size_t i = 0; i < list.size(); ++i) {
+        if (i != 0) {
+            oss << ", ";
+        }
+        oss << list[i];
+    }
+    return oss.str();
+}
+
+// helper function to create a case list for strings
+std::string create_case_list_of_strings(const std::vector<std::string>& list)
+{
+    std::ostringstream oss;
+    for (size_t i = 0; i < list.size(); ++i) {
+        oss << " WHEN " << list[i] << " THEN " << i;
+    }
+    return oss.str();
+}
+
 } // namespace unnamed
 
 postgresql_session_backend::postgresql_session_backend(
@@ -66,16 +147,6 @@ void postgresql_session_backend::connect(
         version >= 90000 ? "SET extra_float_digits = 3"
                          : "SET extra_float_digits = 2",
         "Cannot set extra_float_digits parameter");
-
-    PGresult* res = PQexec(conn, "SHOW search_path");
-    if (PQresultStatus(res) == PGRES_TUPLES_OK)
-    {
-        if (PQntuples(res) > 0)
-        {
-            schema_name_ = PQgetvalue(res, 0, 0);
-        }
-    }
-    PQclear(res);
 
     conn_ = conn;
     connectionParameters_ = parameters;
@@ -161,4 +232,37 @@ postgresql_rowid_backend * postgresql_session_backend::make_rowid_backend()
 postgresql_blob_backend * postgresql_session_backend::make_blob_backend()
 {
     return new postgresql_blob_backend(*this);
+}
+
+std::string postgresql_session_backend::get_table_names_query() const
+{
+    return std::string("SELECT table_schema || '.' || table_name AS \"TABLE_NAME\" FROM information_schema.tables WHERE table_schema in (") + create_list_of_strings(get_schema_names(conn_)) + ")";
+}
+
+std::string postgresql_session_backend::get_column_descriptions_query() const
+{
+    std::vector<std::string> schema_list = get_schema_names(conn_);
+    return std::string("WITH Schema AS ("
+           " SELECT table_schema"
+           " FROM information_schema.columns"
+           " WHERE table_name = :t"
+           " AND CASE"
+           " WHEN :s::VARCHAR is not NULL THEN table_schema = :s::VARCHAR"
+           " ELSE table_schema in (") + create_list_of_strings(schema_list) + ") END"
+           " ORDER BY"
+           " CASE table_schema" +
+           create_case_list_of_strings(schema_list) +
+           " ELSE " + std::to_string(schema_list.size()) + " END"
+           " LIMIT 1 )"
+           " SELECT column_name as \"COLUMN_NAME\","
+           " data_type as \"DATA_TYPE\","
+           " character_maximum_length as \"CHARACTER_MAXIMUM_LENGTH\","
+           " numeric_precision as \"NUMERIC_PRECISION\","
+           " numeric_scale as \"NUMERIC_SCALE\","
+           " is_nullable as \"IS_NULLABLE\""
+           " FROM information_schema.columns"
+           " WHERE table_name = :t"
+           " AND table_schema = ("
+           " SELECT table_schema"
+           " FROM Schema )";
 }
