@@ -15,7 +15,7 @@
 #include <cstring>
 #include <ctime>
 #include <sstream>
-
+#include <iostream>
 using namespace soci;
 using namespace soci::details;
 
@@ -55,12 +55,53 @@ std::vector<std::string> get_schema_names(PGconn * conn)
     {
         if (PQntuples(search_path) > 0)
         {
-            std::string schema_name = PQgetvalue(search_path, 0, 0);
-            if (!(schema_name.length() == 2 && schema_name[0] == '"' && schema_name[1] == '"'))
+            std::string search_path_content = PQgetvalue(search_path, 0, 0);
+
+            bool quoted = false;
+	    std::string schema;
+            while (!search_path_content.empty())
+	    {
+                switch (search_path_content[0])
+                {
+                case '"':
+                    quoted = !quoted;
+                    break;
+                case ',':
+                case ' ':
+                    if (!quoted)
+                    {
+                        if (search_path_content[0] == ',')
+                        {
+                            schema_names.push_back(schema);
+                            schema = "";
+                        }
+                        break;
+                    }
+                    [[fallthrough]];
+                default:
+                    schema.push_back(search_path_content[0]);
+                }
+                search_path_content.erase(search_path_content.begin());
+            }
+            if (!schema.empty())
+                schema_names.push_back(schema);
+	    for (std::string& schema_name: schema_names)
             {
+                if (schema_name == "$user")
+                {
+                    PGresult* current_user = PQexec(conn, "SELECT current_user");
+                    if (PQresultStatus(current_user) == PGRES_TUPLES_OK)
+                    {
+                        if (PQntuples(current_user) > 0)
+                        {
+                            schema_name = PQgetvalue(current_user, 0, 0);
+                        }
+                    }
+                }
+
                 // Assure no bad characters
                 char * escaped_schema = quote(conn, schema_name.c_str(), schema_name.length());
-                schema_names.push_back(escaped_schema);
+                schema_name = escaped_schema;
                 delete[] escaped_schema;
             }
         }
