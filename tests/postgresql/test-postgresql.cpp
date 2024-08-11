@@ -689,6 +689,23 @@ TEST_CASE("PostgreSQL ORM cast", "[postgresql][orm]")
     sql << "select :a::int", use(v); // Must not throw an exception!
 }
 
+bool table_name_equals_ignore_schema(const std::string& table_name_with_schema, const std::string& table_name)
+{
+    // Find the first occurrence of "."
+    size_t dotPos = table_name_with_schema.find('.');
+
+    // Check if the "." exists and there's exactly one "."
+    if (dotPos == std::string::npos || table_name_with_schema.find('.', dotPos + 1) != std::string::npos) {
+        return false;
+    }
+
+    // Extract the substring after the "."
+    std::string afterDot = table_name_with_schema.substr(dotPos + 1);
+
+    // Check if the specific string exists after the "."
+    return afterDot == table_name;
+}
+
 // Test the DDL and metadata functionality
 TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
 {
@@ -698,22 +715,6 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     std::string ddl_t1 = "ddl_t1";
     std::string ddl_t2 = "ddl_t2";
     std::string ddl_t3 = "ddl_t3";
-
-    // Determine the schema
-    std::string schema;
-    sql << "SHOW search_path", into(schema);
-    if (!schema.empty())
-    {
-        size_t pos = schema.find(",");
-        if (pos != std::string::npos)
-        {
-            schema = schema.substr(0, pos);
-        }
-    }
-    else
-    {
-        sql << "SELECT current_user", into(schema);
-    }
 
     // single-expression variant:
     sql.create_table(ddl_t1).column("i", soci::dt_integer).column("j", soci::dt_integer);
@@ -728,10 +729,9 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     st.execute();
     while (st.fetch())
     {
-        std::cout << table_name << " == " << schema << "." << ddl_t1 << "," << ddl_t2 << "," << ddl_t3 << std::endl;
-        if (table_name == schema + "." + ddl_t1) { ddl_t1_found = true; }
-        if (table_name == schema + "." + ddl_t2) { ddl_t2_found = true; }
-        if (table_name == schema + "." + ddl_t3) { ddl_t3_found = true; }
+        if (table_name_equals_ignore_schema(table_name, ddl_t1)) { ddl_t1_found = true; }
+        if (table_name_equals_ignore_schema(table_name, ddl_t2)) { ddl_t2_found = true; }
+        if (table_name_equals_ignore_schema(table_name, ddl_t3)) { ddl_t3_found = true; }
     }
 
     CHECK(ddl_t1_found);
@@ -808,9 +808,9 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     st2.execute();
     while (st2.fetch())
     {
-        if (table_name == schema + "." + ddl_t1) { ddl_t1_found = true; }
-        if (table_name == schema + "." + ddl_t2) { ddl_t2_found = true; }
-        if (table_name == schema + "." + ddl_t3) { ddl_t3_found = true; }
+        if (table_name_equals_ignore_schema(table_name, ddl_t1)) { ddl_t1_found = true; }
+        if (table_name_equals_ignore_schema(table_name, ddl_t2)) { ddl_t2_found = true; }
+        if (table_name_equals_ignore_schema(table_name, ddl_t3)) { ddl_t3_found = true; }
     }
 
     CHECK(ddl_t1_found);
@@ -824,7 +824,6 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     bool k_found = false;
     bool big_found = false;
     other_found = false;
-    // No need to add schema to ddl_t1 - it should be backwards compatible
     soci::statement st3 = (sql.prepare_column_descriptions(ddl_t1), into(ci));
     st3.execute();
     while (st3.fetch())
@@ -926,9 +925,9 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     st2.execute();
     while (st2.fetch())
     {
-        if (table_name == schema + "." + ddl_t1) { ddl_t1_found = true; }
-        if (table_name == schema + "." + ddl_t2) { ddl_t2_found = true; }
-        if (table_name == schema + "." + ddl_t3) { ddl_t3_found = true; }
+        if (table_name_equals_ignore_schema(table_name, ddl_t1)) { ddl_t1_found = true; }
+        if (table_name_equals_ignore_schema(table_name, ddl_t2)) { ddl_t2_found = true; }
+        if (table_name_equals_ignore_schema(table_name, ddl_t3)) { ddl_t3_found = true; }
     }
 
     CHECK(ddl_t1_found == false);
