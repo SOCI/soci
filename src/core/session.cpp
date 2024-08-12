@@ -254,7 +254,7 @@ struct schema_table_name* session::alloc_schema_table_name(std::string & tableNa
     // object is deleted.
     struct schema_table_name** ptr = &schema_table_name_;
     while (*ptr != NULL) {
-	ptr = &((*ptr)->next);
+        ptr = &((*ptr)->next);
     }
     *ptr = stn;
 
@@ -267,7 +267,7 @@ void session::clean_schema_table_names()
     while (*ptr != NULL) {
         struct schema_table_name* ready_to_delete = *ptr;
         *ptr = (*ptr)->next;
-	delete ready_to_delete;
+        delete ready_to_delete;
     }
 }
 
@@ -606,9 +606,17 @@ details::prepare_temp_type session::prepare_column_descriptions(std::string & ta
 {
     ensureConnected(backEnd_);
 
-    struct schema_table_name * stn = alloc_schema_table_name(table_name);
+    std::string column_description_query = backEnd_->get_column_descriptions_query();
+    if (column_description_query.find(":s") == std::string::npos)
+    {
+        return prepare << column_description_query, use(table_name, "t");
+    }
+    else
+    {
+        struct schema_table_name * stn = alloc_schema_table_name(table_name);
 
-    return prepare << backEnd_->get_column_descriptions_query(), use(stn->schema, stn->ind, "s"), use(stn->table, "t");
+        return prepare << column_description_query, use(stn->schema, stn->ind, "s"), use(stn->table, "t");
+    }
 }
 
 ddl_type session::create_table(const std::string & tableName)
