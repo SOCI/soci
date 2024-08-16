@@ -35,7 +35,7 @@ char * quote(PGconn * conn, const char *s, size_t len)
     int error_code;
     char *retv = new char[2 * len + 3];
     retv[0] = '\'';
-    int len_esc = PQescapeStringConn(conn, retv + 1, s, len, &error_code);
+    size_t len_esc = PQescapeStringConn(conn, retv + 1, s, len, &error_code);
     if (error_code > 0)
     {
         len_esc = 0;
