@@ -97,6 +97,7 @@ std::vector<std::string> get_schema_names(PGconn * conn)
                             schema_name = PQgetvalue(current_user, 0, 0);
                         }
                     }
+                    PQclear(current_user);
                 }
 
                 // Assure no bad characters
@@ -122,7 +123,8 @@ std::vector<std::string> get_schema_names(PGconn * conn)
                 delete[] escaped_user;
             }
         }
-        schema_names.push_back("public");
+        PQclear(current_user);
+	schema_names.push_back("public");
     }
 
     return schema_names;
