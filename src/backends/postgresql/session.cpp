@@ -9,6 +9,7 @@
 #include "soci/soci-platform.h"
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci/session.h"
+#include "soci-compiler.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
 #include <cstdio>
@@ -77,7 +78,7 @@ std::vector<std::string> get_schema_names(PGconn * conn)
                         }
                         break;
                     }
-                    BOOST_FALLTHROUGH;
+                    SOCI_FALLTHROUGH;
                 default:
                     schema.push_back(search_path_content[0]);
                 }

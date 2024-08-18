@@ -36,4 +36,22 @@
 #   define SOCI_GCC_WARNING_RESTORE(x)
 #endif
 
+// SOCI_FALLTHROUGH macro can be used on both g++, mingw, and msvc to generate the
+// correct behavior for expected fallthrough in switch statements.
+#if defined(__GNUC__) || defined(__MINGW32__) || defined(__MINGW64__)
+#   if __cplusplus >= 201402L
+#       define SOCI_FALLTHROUGH [[fallthrough]]
+#   else
+#       define SOCI_FALLTHROUGH ((void)0)
+#   endif
+#elif defined(_MSC_VER)
+#   if _MSC_VER >= 1910 && __cplusplus >= 201703L
+#       define SOCI_FALLTHROUGH [[fallthrough]]
+#   else
+#       define SOCI_FALLTHROUGH ((void)0)
+#   endif
+#else
+#   define SOCI_FALLTHROUGH ((void)0)
+#endif
+
 #endif // SOCI_PRIVATE_SOCI_COMPILER_H_INCLUDED
