@@ -104,7 +104,7 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
         for(int i = 100; i <= 2201; i = i + 50)
         {
             char t[10];
-            sprintf(t, "%04d", i);
+            snprintf(t, sizeof(t), "%04d", i);
 
             std::string date = std::string(t) + "-03-28 14:06:13";
             std::tm t1 {}, t2 {}, t4 {};
