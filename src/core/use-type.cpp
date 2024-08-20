@@ -10,6 +10,7 @@
 #include "soci/use-type.h"
 #include "soci/statement.h"
 #include "soci-exchange-cast.h"
+#include "soci-mktime.h"
 
 #include <cstdio>
 
@@ -98,9 +99,7 @@ void standard_use_type::dump_value(std::ostream& os) const
                 std::tm const& t = exchange_type_cast<x_stdtm>(data_);
 
                 char buf[80];
-                snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d:%02d",
-                              t.tm_year + 1900, t.tm_mon + 1, t.tm_mday,
-                              t.tm_hour, t.tm_min, t.tm_sec);
+                format_std_tm(t, buf, sizeof(buf));
 
                 os << buf;
             }

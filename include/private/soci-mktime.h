@@ -62,6 +62,17 @@ mktime_from_ymdhms(tm& t,
 // Throws if the string in buf couldn't be parsed as a date or a time string.
 SOCI_DECL void parse_std_tm(char const *buf, std::tm &t);
 
+// Reverse function for formatting datetime values.
+//
+// The string returned in the buffer uses YYYY-MM-DD HH:MM:SS format.
+inline int format_std_tm(std::tm const& t, char* buf, std::size_t len)
+{
+    return snprintf(buf, len,
+        "%d-%02d-%02d %02d:%02d:%02d",
+        t.tm_year + 1900, t.tm_mon + 1, t.tm_mday,
+        t.tm_hour, t.tm_min, t.tm_sec);
+}
+
 } // namespace details
 
 } // namespace soci

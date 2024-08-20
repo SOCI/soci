@@ -12,6 +12,7 @@
 #include "soci/soci-platform.h"
 #include "soci-dtocstr.h"
 #include "soci-exchange-cast.h"
+#include "soci-mktime.h"
 #include "soci/blob.h"
 // std
 #include <ciso646>
@@ -153,11 +154,12 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 std::size_t const bufSize = 80;
                 buf_ = new char[bufSize];
 
-                std::tm const& t = exchange_type_cast<x_stdtm>(data_);
-                snprintf(buf_, bufSize,
-                    "\'%d-%02d-%02d %02d:%02d:%02d\'",
-                    t.tm_year + 1900, t.tm_mon + 1, t.tm_mday,
-                    t.tm_hour, t.tm_min, t.tm_sec);
+                int n = 0;
+                buf_[n++] = '\'';
+                n += format_std_tm(exchange_type_cast<x_stdtm>(data_),
+                                   buf_ + n, bufSize - n - 1);
+                buf_[n++] = '\'';
+                buf_[n] = '\0';
             }
             break;
         case x_blob:
