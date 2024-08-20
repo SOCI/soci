@@ -12,6 +12,7 @@
 #include "soci/blob.h"
 #include "soci-dtocstr.h"
 #include "soci-exchange-cast.h"
+#include "soci-mktime.h"
 // std
 #include <cstdio>
 #include <cstdlib>
@@ -176,12 +177,7 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
             std::tm &t = exchange_type_cast<x_stdtm>(data_);
 
             col.buffer_.data_ = new char[bufSize];
-            col.buffer_.size_
-                = snprintf(
-                    col.buffer_.data_, bufSize, "%d-%02d-%02d %02d:%02d:%02d",
-                    t.tm_year + 1900, t.tm_mon + 1, t.tm_mday,
-                    t.tm_hour, t.tm_min, t.tm_sec
-                );
+            col.buffer_.size_ = format_std_tm(t, col.buffer_.data_, bufSize);
             break;
         }
 

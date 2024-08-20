@@ -259,7 +259,7 @@ void postgresql_session_backend::clean_up()
 std::string postgresql_session_backend::get_next_statement_name()
 {
     char nameBuf[20] = { 0 }; // arbitrary length
-    sprintf(nameBuf, "st_%d", ++statementCount_);
+    snprintf(nameBuf, sizeof(nameBuf), "st_%d", ++statementCount_);
     return nameBuf;
 }
 
