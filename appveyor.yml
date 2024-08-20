@@ -44,8 +44,8 @@ environment:
       MINGW_BIN: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin
       MSSQL_VER: 2014
       BOOST_ROOT: C:\Libraries\boost_1_60_0
-      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.6
-      POSTGRESQL_VER: 96
+      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\9.4
+      POSTGRESQL_VER: 9.4
       MYSQL_VER: 57
       MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
