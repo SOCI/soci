@@ -50,9 +50,6 @@ environment:
       MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
 
-init:
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-
 install:
   # Start these ones here as we can't specify the service name dynamically above.
   - net start mssql$SQL%MSSQL_VER%
