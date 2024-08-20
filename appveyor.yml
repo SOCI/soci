@@ -115,13 +115,6 @@ build_script:
 test_script:
   - ctest -V --timeout 300 --output-on-failure -R "soci_empty|soci_postgresql|soci_sqlite3|soci_odbc_test_mssql|soci_mysql%SOCI_ODBC_TESTS%"
 
-notifications:
-  - provider: Webhook
-    url: https://webhooks.gitter.im/e/2038138a652d952f9372
-    on_build_success: true
-    on_build_failure: true
-    on_build_status_changed: true
-
 # Uncomment this to wait for RDP connection after the build end.
 #on_finish:
 #  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
