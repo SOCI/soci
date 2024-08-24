@@ -30,7 +30,7 @@ void hard_exec(postgresql_session_backend & session_backend,
     postgresql_result(session_backend, PQexec(conn, query)).check_for_errors(errMsg);
 }
 
-// helper function to quote a string before sinding to PostgreSQL
+// helper function to quote a string before sending to PostgreSQL
 char * quote(PGconn * conn, const char *s, size_t len)
 {
     int error_code;
