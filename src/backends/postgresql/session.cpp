@@ -103,7 +103,7 @@ std::vector<std::string> get_schema_names(postgresql_session_backend & session, 
                     }
                 }
 
-                // Assure no bad characters
+                // Ensure no bad characters
                 schema_name = quote(conn, schema_name);
             }
         }
