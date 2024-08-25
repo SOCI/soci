@@ -34,8 +34,10 @@ void hard_exec(postgresql_session_backend & session_backend,
 std::string quote(PGconn * conn, std::string& s)
 {
     int error_code;
-    char *retv = new char[2 * s.length() + 1];
-    size_t len_esc = PQescapeStringConn(conn, retv, s.c_str(), s.length(), &error_code);
+    std::string retv;
+    retv.resize(2 * s.length() + 3);
+    retv[0] = '\'';
+    size_t len_esc = PQescapeStringConn(conn, retv.data() + 1, s.c_str(), s.length(), &error_code);
     if (error_code > 0)
     {
         len_esc = 0;
