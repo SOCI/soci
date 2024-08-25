@@ -14,12 +14,29 @@
 #include "soci/use-type.h"
 #include "soci/values.h"
 #include "soci-compiler.h"
+#include "soci/log-context.h"
 #include <ctime>
 #include <cctype>
 #include <cstdint>
+#include <string>
+#include <sstream>
 
 using namespace soci;
 using namespace soci::details;
+
+
+std::string get_name(const details::use_type_base &param, std::size_t position,
+        const statement_backend *backend)
+{
+    // Use the name specified in the "use()" call if any,
+    // otherwise get the name of the matching parameter from
+    // the query itself, as parsed by the backend.
+    std::string name = param.get_name();
+    if (backend && name.empty())
+        name = backend->get_parameter_name(static_cast<int>(position));
+
+    return name.empty() ? std::to_string(position + 1) : name;
+}
 
 
 statement_impl::statement_impl(session & s)
@@ -572,12 +589,31 @@ void statement_impl::pre_fetch()
     }
 }
 
-void statement_impl::pre_use()
+void statement_impl::do_add_query_parameters()
 {
     std::size_t const usize = uses_.size();
     for (std::size_t i = 0; i != usize; ++i)
     {
+        std::string name = get_name(*uses_[i], i, backEnd_);
+        std::stringstream value;
+        uses_[i]->dump_value(value);
+        session_.add_query_parameter(std::move(name), value.str());
+    }
+}
+
+void statement_impl::pre_use()
+{
+    session_.clear_query_parameters();
+
+    std::size_t const usize = uses_.size();
+    for (std::size_t i = 0; i != usize; ++i)
+    {
         uses_[i]->pre_use();
+    }
+
+    if (session_.get_query_context_logging_mode() == log_context::always)
+    {
+        do_add_query_parameters();
     }
 }
 
@@ -842,34 +878,17 @@ statement_impl::rethrow_current_exception_with_context(char const* operation)
             std::ostringstream oss;
             oss << "while " << operation << " \"" << query_ << "\"";
 
-            if (!uses_.empty())
+            if (!uses_.empty() && session_.get_query_context_logging_mode() != log_context::never)
             {
-                oss << " with ";
+                // We have to clear previously cached query parameters as different backends behave differently
+                // in whether they error before or after the caching has happened. Therefore, we can't rely on
+                // the parameters to be or to not be cached at the point of error in a cross-backend way (that
+                // works for all kinds of errors).
+                session_.clear_query_parameters();
 
-                std::size_t const usize = uses_.size();
-                for (std::size_t i = 0; i != usize; ++i)
-                {
-                    if (i != 0)
-                        oss << ", ";
+                do_add_query_parameters();
 
-                    details::use_type_base const& u = *uses_[i];
-
-                    // Use the name specified in the "use()" call if any,
-                    // otherwise get the name of the matching parameter from
-                    // the query itself, as parsed by the backend.
-                    std::string name = u.get_name();
-                    if (name.empty())
-                        name = backEnd_->get_parameter_name(static_cast<int>(i));
-
-                    oss << ":";
-                    if (!name.empty())
-                        oss << name;
-                    else
-                        oss << (i + 1);
-                    oss << "=";
-
-                    u.dump_value(oss);
-                }
+                oss << " with " << session_.get_last_query_context();
             }
 
             e.add_context(oss.str());
