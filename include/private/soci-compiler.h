@@ -58,7 +58,7 @@
 // behavior in switch statement.
 #if SOCI_CHECK_CXX_STD(201703L)
 #    define SOCI_FALLTHROUGH [[fallthrough]]
-#elif defined(__has_warning) && SOCI_HAS_CLANG_FEATURE(cxx_attributes)
+#elif SOCI_HAS_CLANG_FEATURE(cxx_attributes)
 #    define SOCI_FALLTHROUGH [[clang::fallthrough]]
 #elif defined(__GNUC__)
 #    if defined(__has_cpp_attribute)
