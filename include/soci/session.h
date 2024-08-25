@@ -218,7 +218,7 @@ private:
     SOCI_NOT_COPYABLE(session)
 
     void reset_after_move();
-    schema_table_name * alloc_schema_table_name(std::string & tableName);
+    schema_table_name * alloc_schema_table_name(const std::string& tableName);
 
     std::ostringstream query_stream_;
     std::unique_ptr<details::query_transformation_function> query_transformation_;
