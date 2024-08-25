@@ -22,7 +22,6 @@ namespace soci
         std::string schema;
         std::string table;
         soci::indicator ind;
-        struct schema_table_name * next;
     };
 } // soci
 
@@ -87,8 +86,7 @@ session::session()
     : once(this), prepare(this),
       logger_(new standard_logger_impl),
       uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL),
-      schema_table_name_(NULL)
+      isFromPool_(false), pool_(NULL)
 {
 }
 
@@ -97,8 +95,7 @@ session::session(connection_parameters const & parameters)
       logger_(new standard_logger_impl),
       lastConnectParameters_(parameters),
       uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL),
-      schema_table_name_(NULL)
+      isFromPool_(false), pool_(NULL)
 {
     open(lastConnectParameters_);
 }
@@ -109,8 +106,7 @@ session::session(backend_factory const & factory,
       logger_(new standard_logger_impl),
       lastConnectParameters_(factory, connectString),
       uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL),
-      schema_table_name_(NULL)
+      isFromPool_(false), pool_(NULL)
 {
     open(lastConnectParameters_);
 }
@@ -121,8 +117,7 @@ session::session(std::string const & backendName,
       logger_(new standard_logger_impl),
       lastConnectParameters_(backendName, connectString),
       uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL),
-      schema_table_name_(NULL)
+      isFromPool_(false), pool_(NULL)
 {
     open(lastConnectParameters_);
 }
@@ -132,16 +127,14 @@ session::session(std::string const & connectString)
       logger_(new standard_logger_impl),
       lastConnectParameters_(connectString),
       uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL),
-      schema_table_name_(NULL)
+      isFromPool_(false), pool_(NULL)
 {
     open(lastConnectParameters_);
 }
 
 session::session(connection_pool & pool)
     : logger_(new standard_logger_impl),
-      isFromPool_(true), pool_(&pool),
-      schema_table_name_(NULL)
+      isFromPool_(true), pool_(&pool)
 {
     poolPosition_ = pool.lease();
     session & pooledSession = pool.at(poolPosition_);
@@ -163,8 +156,7 @@ session::session(session && other)
       gotData_(std::move(other.gotData_)),
       isFromPool_(std::move(other.isFromPool_)),
       poolPosition_(std::move(other.poolPosition_)),
-      pool_(std::move(other.pool_)),
-      schema_table_name_(NULL)
+      pool_(std::move(other.pool_))
 {
     if (!isFromPool_)
     {
@@ -225,50 +217,31 @@ void session::reset_after_move()
     pool_ = nullptr;
 }
 
-struct schema_table_name* session::alloc_schema_table_name(std::string & tableName)
+schema_table_name* session::alloc_schema_table_name(std::string & tableName)
 {
     std::size_t dot_pos = tableName.find( '.' );
-    struct schema_table_name* stn = new struct schema_table_name;
+    schema_table_name stn;
 
     if (dot_pos == std::string::npos)
     {
-        stn->ind   = soci::i_null;
-        stn->table = tableName;
+        stn.ind   = soci::i_null;
+        stn.table = tableName;
     }
     else
     {
-        stn->ind    = soci::i_ok;
-        stn->schema = tableName.substr(0, dot_pos);
-        stn->table  = tableName.substr(dot_pos + 1);
+        stn.ind    = soci::i_ok;
+        stn.schema = tableName.substr(0, dot_pos);
+        stn.table  = tableName.substr(dot_pos + 1);
     }
-    stn->next = NULL;
 
-    // Store the memory at the end of the list of schema_table_names.
+    // Store the memory at the front of the list of schema_table_names.
     // This memory is stored to allow for the schema, table, and ind
     // parameters to be stored for the lifetime of the prepare_temp_type
     // created in prepare_column_descriptions.
-    // The solution is not designed to have a lot of schema_table_names
-    // (it grows in O(n) - if needed an extra pointer can be stored to
-    // point to the last schema_table_name in the list.
-    // Also, know that these will remain in memory until the session
-    // object is deleted.
-    struct schema_table_name** ptr = &schema_table_name_;
-    while (*ptr != NULL) {
-        ptr = &((*ptr)->next);
-    }
-    *ptr = stn;
+    // These will remain in memory until the session object is deleted.
+    schema_table_name_.push_front(stn);
 
-    return stn;
-}
-
-void session::clean_schema_table_names()
-{
-    struct schema_table_name** ptr = &schema_table_name_;
-    while (*ptr != NULL) {
-        struct schema_table_name* ready_to_delete = *ptr;
-        *ptr = (*ptr)->next;
-        delete ready_to_delete;
-    }
+    return &schema_table_name_.front();
 }
 
 session::~session()
@@ -281,7 +254,6 @@ session::~session()
     {
         delete backEnd_;
     }
-    clean_schema_table_names();
 }
 
 void session::open(connection_parameters const & parameters)
@@ -613,7 +585,7 @@ details::prepare_temp_type session::prepare_column_descriptions(std::string & ta
     }
     else
     {
-        struct schema_table_name * stn = alloc_schema_table_name(table_name);
+        schema_table_name * stn = alloc_schema_table_name(table_name);
 
         return prepare << column_description_query, use(stn->schema, stn->ind, "s"), use(stn->table, "t");
     }

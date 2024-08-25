@@ -30,38 +30,41 @@ void hard_exec(postgresql_session_backend & session_backend,
     postgresql_result(session_backend, PQexec(conn, query)).check_for_errors(errMsg);
 }
 
-// helper function to quote a string before sinding to PostgreSQL
-char * quote(PGconn * conn, const char *s, size_t len)
+// helper function to quote a string before sending to PostgreSQL
+std::string quote(PGconn * conn, std::string& s)
 {
     int error_code;
-    char *retv = new char[2 * len + 3];
-    retv[0] = '\'';
-    size_t len_esc = PQescapeStringConn(conn, retv + 1, s, len, &error_code);
+    char *retv = new char[2 * s.length() + 1];
+    size_t len_esc = PQescapeStringConn(conn, retv, s.c_str(), s.length(), &error_code);
     if (error_code > 0)
     {
         len_esc = 0;
     }
-    retv[len_esc + 1] = '\'';
-    retv[len_esc + 2] = '\0';
+    retv[len_esc] = '\0';
+    std::string returnValue("'");
+    returnValue += retv;
+    returnValue += "'";
 
-    return retv;
+    delete[] retv;
+
+    return returnValue;
 }
 
 // helper function to collect schemas from search_path
-std::vector<std::string> get_schema_names(PGconn * conn)
+std::vector<std::string> get_schema_names(postgresql_session_backend & session, PGconn * conn)
 {
     std::vector<std::string> schema_names;
-    PGresult* search_path = PQexec(conn, "SHOW search_path");
-    if (PQresultStatus(search_path) == PGRES_TUPLES_OK)
+    postgresql_result search_path_result(session, PQexec(conn, "SHOW search_path"));
+    if (search_path_result.check_for_data("search_path doesn't exist"))
     {
-        if (PQntuples(search_path) > 0)
+        if (PQntuples(search_path_result) > 0)
         {
-            std::string search_path_content = PQgetvalue(search_path, 0, 0);
+            std::string search_path_content = PQgetvalue(search_path_result, 0, 0);
 
             bool quoted = false;
-	    std::string schema;
+            std::string schema;
             while (!search_path_content.empty())
-	    {
+           {
                 switch (search_path_content[0])
                 {
                 case '"':
@@ -86,46 +89,39 @@ std::vector<std::string> get_schema_names(PGconn * conn)
             }
             if (!schema.empty())
                 schema_names.push_back(schema);
-	    for (std::string& schema_name: schema_names)
+            for (std::string& schema_name: schema_names)
             {
                 if (schema_name == "$user")
                 {
-                    PGresult* current_user = PQexec(conn, "SELECT current_user");
-                    if (PQresultStatus(current_user) == PGRES_TUPLES_OK)
+                    postgresql_result current_user_result(session, PQexec(conn, "SELECT current_user"));
+                    if (current_user_result.check_for_data("current_user is not defined"))
                     {
-                        if (PQntuples(current_user) > 0)
+                        if (PQntuples(current_user_result) > 0)
                         {
-                            schema_name = PQgetvalue(current_user, 0, 0);
+                            schema_name = PQgetvalue(current_user_result, 0, 0);
                         }
                     }
-                    PQclear(current_user);
                 }
 
                 // Assure no bad characters
-                char * escaped_schema = quote(conn, schema_name.c_str(), schema_name.length());
-                schema_name = escaped_schema;
-                delete[] escaped_schema;
+                schema_name = quote(conn, schema_name);
             }
         }
     }
-    PQclear(search_path);
     if (schema_names.empty())
     {
-        PGresult* current_user = PQexec(conn, "SELECT current_user");
-        if (PQresultStatus(current_user) == PGRES_TUPLES_OK)
+        postgresql_result current_user_result(session, PQexec(conn, "SELECT current_user"));
+        if (current_user_result.check_for_data("current_user is not defined"))
         {
-            if (PQntuples(current_user) > 0)
+            if (PQntuples(current_user_result) > 0)
             {
-                std::string user = PQgetvalue(current_user, 0, 0);
+                std::string user = PQgetvalue(current_user_result, 0, 0);
 
                 // Assure no bad characters
-                char * escaped_user = quote(conn, user.c_str(), user.length());
-                schema_names.push_back(escaped_user);
-                delete[] escaped_user;
+                schema_names.push_back(quote(conn, user));
             }
         }
-        PQclear(current_user);
-	schema_names.push_back("public");
+        schema_names.push_back("public");
     }
 
     return schema_names;
@@ -280,12 +276,13 @@ postgresql_blob_backend * postgresql_session_backend::make_blob_backend()
 
 std::string postgresql_session_backend::get_table_names_query() const
 {
-    return std::string("SELECT table_schema || '.' || table_name AS \"TABLE_NAME\" FROM information_schema.tables WHERE table_schema in (") + create_list_of_strings(get_schema_names(conn_)) + ")";
+    return std::string(R"delim(SELECT table_schema || '.' || table_name AS "TABLE_NAME" FROM information_schema.tables WHERE table_schema in ()delim") + 
+                       create_list_of_strings(get_schema_names(const_cast<postgresql_session_backend&>(*this), conn_)) + ")";
 }
 
 std::string postgresql_session_backend::get_column_descriptions_query() const
 {
-    std::vector<std::string> schema_list = get_schema_names(conn_);
+    std::vector<std::string> schema_list = get_schema_names(const_cast<postgresql_session_backend&>(*this), conn_);
     return std::string("WITH Schema AS ("
            " SELECT table_schema"
            " FROM information_schema.columns"
@@ -298,12 +295,12 @@ std::string postgresql_session_backend::get_column_descriptions_query() const
            create_case_list_of_strings(schema_list) +
            " ELSE " + std::to_string(schema_list.size()) + " END"
            " LIMIT 1 )"
-           " SELECT column_name as \"COLUMN_NAME\","
-           " data_type as \"DATA_TYPE\","
-           " character_maximum_length as \"CHARACTER_MAXIMUM_LENGTH\","
-           " numeric_precision as \"NUMERIC_PRECISION\","
-           " numeric_scale as \"NUMERIC_SCALE\","
-           " is_nullable as \"IS_NULLABLE\""
+           R"( SELECT column_name as "COLUMN_NAME",)"
+           R"( data_type as "DATA_TYPE",)"
+           R"( character_maximum_length as "CHARACTER_MAXIMUM_LENGTH",)"
+           R"( numeric_precision as "NUMERIC_PRECISION",)"
+           R"( numeric_scale as "NUMERIC_SCALE",)"
+           R"( is_nullable as "IS_NULLABLE")"
            " FROM information_schema.columns"
            " WHERE table_name = :t"
            " AND table_schema = ("

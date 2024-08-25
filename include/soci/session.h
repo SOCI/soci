@@ -20,6 +20,7 @@
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <forward_list>
 
 namespace soci
 {
@@ -217,8 +218,7 @@ private:
     SOCI_NOT_COPYABLE(session)
 
     void reset_after_move();
-    struct schema_table_name * alloc_schema_table_name(std::string & tableName);
-    void clean_schema_table_names();
+    schema_table_name * alloc_schema_table_name(std::string & tableName);
 
     std::ostringstream query_stream_;
     std::unique_ptr<details::query_transformation_function> query_transformation_;
@@ -237,7 +237,7 @@ private:
     std::size_t poolPosition_;
     connection_pool * pool_;
 
-    struct schema_table_name * schema_table_name_;
+    std::forward_list<schema_table_name> schema_table_name_;
 };
 
 } // namespace soci

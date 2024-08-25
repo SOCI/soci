@@ -284,24 +284,24 @@ struct mysql_session_backend : details::session_backend
 
     std::string get_table_names_query() const override
     {
-        return "SELECT table_name AS 'TABLE_NAME' FROM information_schema.tables WHERE table_schema = DATABASE()";
+        return R"delim(SELECT table_name AS 'TABLE_NAME' FROM information_schema.tables WHERE table_schema = DATABASE())delim";
     }
 
     std::string get_column_descriptions_query() const override
     {
-        return "SELECT column_name as \"COLUMN_NAME\","
-            " data_type as \"DATA_TYPE\","
-            " character_maximum_length as \"CHARACTER_MAXIMUM_LENGTH\","
-            " numeric_precision as \"NUMERIC_PRECISION\","
-            " numeric_scale as \"NUMERIC_SCALE\","
-            " is_nullable as \"IS_NULLABLE\""
-            " from information_schema.columns"
-            " where"
-            " case"
-            " when :s is not NULL THEN table_schema = :s"
-            " else table_schema = DATABASE()"
-            " end"
-            " and table_name = :t";
+        return R"delim(SELECT column_name as "COLUMN_NAME",
+            data_type as "DATA_TYPE",
+            character_maximum_length as "CHARACTER_MAXIMUM_LENGTH",
+            numeric_precision as "NUMERIC_PRECISION",
+            numeric_scale as "NUMERIC_SCALE",
+            is_nullable as "IS_NULLABLE"
+            from information_schema.columns
+            where
+            case
+            when :s is not NULL THEN table_schema = :s
+            else table_schema = DATABASE()
+            end
+            and table_name = :t)delim";
     }
 
     MYSQL *conn_;
