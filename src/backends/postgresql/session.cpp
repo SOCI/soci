@@ -131,11 +131,15 @@ std::vector<std::string> get_schema_names(postgresql_session_backend & session, 
 std::string create_list_of_strings(const std::vector<std::string>& list)
 {
     std::ostringstream oss;
-    for (size_t i = 0; i < list.size(); ++i) {
-        if (i != 0) {
+    bool first = true;
+    for ( const auto& s: list )
+    {
+        if ( first )
+            first = false;
+        else
             oss << ", ";
-        }
-        oss << list[i];
+
+        oss << s;
     }
     return oss.str();
 }
