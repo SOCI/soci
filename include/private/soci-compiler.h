@@ -60,8 +60,12 @@
 #    define SOCI_FALLTHROUGH [[fallthrough]]
 #elif defined(__has_warning) && SOCI_HAS_CLANG_FEATURE(cxx_attributes)
 #    define SOCI_FALLTHROUGH [[clang::fallthrough]]
-#elif defined(__GNUC__) && __has_cpp_attribute(fallthrough)
-#    define SOCI_FALLTHROUGH [[fallthrough]]
+#elif defined(__GNUC__)
+#    if defined(__has_cpp_attribute)
+#        if __has_cpp_attribute(fallthrough)
+#            define SOCI_FALLTHROUGH [[fallthrough]]
+#        endif
+#    endif
 #endif
 
 #ifndef SOCI_FALLTHROUGH
