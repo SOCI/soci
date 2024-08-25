@@ -50,7 +50,7 @@ public:
             char buf[128];
             // This uses the ODBC convention of padding the minor and release
             // versions with 0 and might be not appropriate in general.
-            std::sprintf(buf, "%u.%02u.%04u", major_, minor_, release_);
+            snprintf(buf, sizeof(buf), "%u.%02u.%04u", major_, minor_, release_);
             return buf;
         }
         else

@@ -11,6 +11,7 @@
 #include "common.h"
 #include "soci/soci-platform.h"
 #include "soci-dtocstr.h"
+#include "soci-mktime.h"
 // std
 #include <ciso646>
 #include <cstddef>
@@ -207,9 +208,11 @@ void mysql_vector_use_type_backend::pre_use(indicator const *ind)
                     std::size_t const bufSize = 80;
                     buf = new char[bufSize];
 
-                    snprintf(buf, bufSize, "\'%d-%02d-%02d %02d:%02d:%02d\'",
-                        v[i].tm_year + 1900, v[i].tm_mon + 1, v[i].tm_mday,
-                        v[i].tm_hour, v[i].tm_min, v[i].tm_sec);
+                    int n = 0;
+                    buf[n++] = '\'';
+                    n += format_std_tm(v[i], buf + n, bufSize - n - 1);
+                    buf[n++] = '\'';
+                    buf[n] = '\0';
                 }
                 break;
 

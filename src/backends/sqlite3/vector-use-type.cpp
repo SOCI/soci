@@ -10,6 +10,7 @@
 #include "soci/soci-platform.h"
 #include "soci/sqlite3/soci-sqlite3.h"
 #include "soci-dtocstr.h"
+#include "soci-mktime.h"
 #include "common.h"
 // std
 #include <cstdio>
@@ -176,11 +177,7 @@ void sqlite3_vector_use_type_backend::pre_use(indicator const * ind)
                 col.type_ = dt_date;
                 col.dataType_ = db_date;
                 col.buffer_.data_ = new char[bufSize];
-                col.buffer_.size_
-                    = snprintf(col.buffer_.data_, bufSize, "%d-%02d-%02d %02d:%02d:%02d",
-                        tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-                        tm.tm_hour, tm.tm_min, tm.tm_sec
-                    );
+                col.buffer_.size_ = format_std_tm(tm, col.buffer_.data_, bufSize);
                 break;
             }
 
