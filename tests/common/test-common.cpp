@@ -2319,16 +2319,20 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
     catch (...) {}
 
     CHECK(sql.get_last_query() == "drop table soci_test1");
+    CHECK(sql.get_last_query() == sql.get_last_query_with_context());
 
     sql.set_log_stream(NULL);
 
     try
     {
-        sql << "drop table soci_test2";
+        int val1 = 1;
+        std::string val2 = "b";
+        sql << "insert into soci_test2 (a,b) values (:first,:second)", use(val1), use(val2);
     }
     catch (...) {}
 
-    CHECK(sql.get_last_query() == "drop table soci_test2");
+    CHECK(sql.get_last_query() == "insert into soci_test2 (a,b) values (:first,:second)");
+    CHECK(sql.get_last_query() == "insert into soci_test2 (a,b) values (:first,:second) with :first=1, :second=\"b\"");
 
     sql.set_log_stream(&log);
 

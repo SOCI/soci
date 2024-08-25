@@ -36,6 +36,15 @@ void ensureConnected(session_backend * backEnd)
     }
 }
 
+struct query_parameter
+{
+    query_parameter(std::string name = {}, std::string value = {})
+        : name(std::move(name)), value(std::move(value)) {}
+
+    std::string name;
+    std::string value;
+};
+
 // Standard logger class used by default.
 class standard_logger_impl : public logger_impl
 {
@@ -53,7 +62,15 @@ public:
         }
 
         lastQuery_ = query;
+        reset_query_parameter();
     }
+
+    virtual void add_query_parameter(std::string name, std::string value)
+    {
+        queryParams_.emplace_back(std::move(name), std::move(value));
+    }
+
+    virtual void reset_query_parameter() { queryParams_.clear(); }
 
     virtual void set_stream(std::ostream * s)
     {
@@ -70,6 +87,31 @@ public:
         return lastQuery_;
     }
 
+    virtual std::string get_last_query_with_context() const
+    {
+        if (queryParams_.empty()) {
+            return get_last_query();
+        }
+
+        std::string query = get_last_query();
+
+        query += " with ";
+
+        for (std::size_t i = 0; i < queryParams_.size(); ++i)
+        {
+            const query_parameter &param = queryParams_[i];
+
+            query += ":" + param.name + "=" + param.value;
+
+            if (i + 1  < queryParams_.size())
+            {
+                query += ", ";
+            }
+        }
+
+        return query;
+    }
+
 private:
     virtual logger_impl* do_clone() const
     {
@@ -78,6 +120,7 @@ private:
 
     std::ostream * logStream_;
     std::string lastQuery_;
+    std::vector<query_parameter> queryParams_;
 };
 
 } // namespace anonymous
@@ -477,6 +520,30 @@ void session::log_query(std::string const & query)
     }
 }
 
+void session::reset_query_parameter()
+{
+    if (isFromPool_)
+    {
+        pool_->at(poolPosition_).reset_query_parameter();
+    }
+    else
+    {
+        logger_.reset_query_parameter();
+    }
+}
+
+void session::add_query_parameter(std::string name, std::string value)
+{
+    if (isFromPool_)
+    {
+        pool_->at(poolPosition_).add_query_parameter(std::move(name), std::move(value));
+    }
+    else
+    {
+        logger_.add_query_parameter(std::move(name), std::move(value));
+    }
+}
+
 std::string session::get_last_query() const
 {
     if (isFromPool_)
@@ -486,6 +553,18 @@ std::string session::get_last_query() const
     else
     {
         return logger_.get_last_query();
+    }
+}
+
+std::string session::get_last_query_with_context() const
+{
+    if (isFromPool_)
+    {
+        return pool_->at(poolPosition_).get_last_query_with_context();
+    }
+    else
+    {
+        return logger_.get_last_query_with_context();
     }
 }
 

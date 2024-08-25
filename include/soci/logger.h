@@ -30,6 +30,11 @@ public:
     // Called to indicate that a new query is about to be executed.
     virtual void start_query(std::string const & query) = 0;
 
+    // Called to log a parameter that is bound to the currently active query
+    virtual void add_query_parameter(std::string name, std::string value) = 0;
+
+    virtual void reset_query_parameter() = 0;
+
     logger_impl * clone() const;
 
     // These methods are for compatibility only as they're used to implement
@@ -38,6 +43,7 @@ public:
     virtual void set_stream(std::ostream * s);
     virtual std::ostream * get_stream() const;
     virtual std::string get_last_query() const;
+    virtual std::string get_last_query_with_context() const;
 
 private:
     // Override to return a new heap-allocated copy of this object.
@@ -68,10 +74,18 @@ public:
 
     void start_query(std::string const & query) { m_impl->start_query(query); }
 
+    virtual void add_query_parameter(std::string name, std::string value)
+    {
+        m_impl->add_query_parameter(std::move(name), std::move(value));
+    }
+
+    virtual void reset_query_parameter() { m_impl->reset_query_parameter(); }
+
     // Methods used for the implementation of session basic logging support.
     void set_stream(std::ostream * s) { m_impl->set_stream(s); }
     std::ostream * get_stream() const { return m_impl->get_stream(); }
     std::string get_last_query() const { return m_impl->get_last_query(); }
+    std::string get_last_query_with_context() const { return m_impl->get_last_query_with_context(); }
 
 private:
     logger_impl * m_impl;

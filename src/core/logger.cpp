@@ -57,6 +57,13 @@ std::string logger_impl::get_last_query() const
     SOCI_DUMMY_RETURN(std::string());
 }
 
+std::string logger_impl::get_last_query_with_context() const
+{
+    throw_not_supported();
+
+    SOCI_DUMMY_RETURN(std::string());
+}
+
 logger::logger(logger_impl * impl)
     : m_impl(impl)
 {
