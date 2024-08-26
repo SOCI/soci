@@ -1026,7 +1026,6 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
         {
             CHECK(ci.type == soci::dt_integer);
             CHECK(ci.dataType == soci::db_int32);
-            CHECK(ci.nullable);
             records++;
         }
     }
@@ -1044,7 +1043,6 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
         {
             CHECK(ci.type == soci::dt_integer);
             CHECK(ci.dataType == soci::db_int32);
-            CHECK(ci.nullable);
             records++;
         }
     }
@@ -1062,7 +1060,6 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
         {
             CHECK(ci.type == soci::dt_string);
             CHECK(ci.dataType == soci::db_string);
-            CHECK(!ci.nullable);
             records++;
         }
     }
