@@ -137,7 +137,7 @@ while (st.fetch())
 }
 ```
 
-Similarly, to get the description of all columns in the given table:
+Similarly, to get the description of all columns in a given table:
 
 ```cpp
 soci::column_info ci;
@@ -148,4 +148,16 @@ while (st.fetch())
 {
     // ci fields describe each column in turn
 }
+```
+
+The `table_name` can contain a schema part in dot-notation. If a schema is part of the 
+`table_name`, then that specific table will be queried for its columns. If the 
+`table_name` only holds a table name then the current schema will be used.
+
+Examples:
+
+```cpp
+soci::column_info ci;
+soci::statement st1 = (sql.prepare_column_descriptions("table_without_schema"), into(ci));
+soci::statement st2 = (sql.prepare_column_descriptions("schema.table"), into(ci));
 ```
