@@ -2323,16 +2323,15 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
 
     sql.set_log_stream(NULL);
 
-    try
     {
-        int val1 = 1;
-        std::string val2 = "b";
-        sql << "insert into soci_test2 (a,b) values (:first,:second)", use(val1), use(val2);
-    }
-    catch (...) {}
+        auto_table_creator tableCreator(tc_.table_creator_1(sql));
+        int id = 1;
+        std::string name = "b";
+        sql << "insert into soci_test (name,id) values (:name,:id)", use(name, "name"), use(id, "id");
 
-    CHECK(sql.get_last_query() == "insert into soci_test2 (a,b) values (:first,:second)");
-    CHECK(sql.get_last_query() == "insert into soci_test2 (a,b) values (:first,:second) with :first=1, :second=\"b\"");
+        CHECK(sql.get_last_query() == "insert into soci_test (name,id) values (:name,:id)");
+        CHECK(sql.get_last_query_with_context() == "insert into soci_test (name,id) values (:name,:id) with :name=\"b\", :id=1");
+    }
 
     sql.set_log_stream(&log);
 
