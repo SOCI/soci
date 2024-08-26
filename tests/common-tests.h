@@ -3658,8 +3658,8 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
         {
             id = 5;
             name = "alice";
-            stmt.exchange(use(name));
-            stmt.exchange(use(id));
+            stmt.exchange(use(name, "name"));
+            stmt.exchange(use(id, "id"));
             stmt.define_and_bind();
             stmt.execute(true);
             stmt.bind_clean_up();
@@ -3669,8 +3669,8 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
         {
             id = 42;
             name = "bob";
-            stmt.exchange(use(name));
-            stmt.exchange(use(id));
+            stmt.exchange(use(name, "name"));
+            stmt.exchange(use(id, "id"));
             stmt.define_and_bind();
             stmt.execute(true);
             stmt.bind_clean_up();
