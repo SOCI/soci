@@ -2325,12 +2325,38 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
 
     {
         auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
         int id = 1;
         std::string name = "b";
         sql << "insert into soci_test (name,id) values (:name,:id)", use(name, "name"), use(id, "id");
 
         CHECK(sql.get_last_query() == "insert into soci_test (name,id) values (:name,:id)");
         CHECK(sql.get_last_query_with_context() == "insert into soci_test (name,id) values (:name,:id) with :name=\"b\", :id=1");
+
+        statement stmt = (sql.prepare << "insert into soci_test(name, id) values (:name, :id)");
+        {
+            id = 5;
+            name = "alice";
+            stmt.exchange(use(name));
+            stmt.exchange(use(id));
+            stmt.define_and_bind();
+            stmt.execute(true);
+            stmt.bind_clean_up();
+            CHECK(sql.get_last_query() == "insert into soci_test(name, id) values (:name, :id)");
+            CHECK(sql.get_last_query_with_context() == "insert into soci_test(name, id) values (:name, :id) with :name=\"alice\", :id=5");
+        }
+        {
+            id = 42;
+            name = "bob";
+            stmt.exchange(use(name));
+            stmt.exchange(use(id));
+            stmt.define_and_bind();
+            stmt.execute(true);
+            stmt.bind_clean_up();
+            CHECK(sql.get_last_query() == "insert into soci_test(name, id) values (:name, :id)");
+            CHECK(sql.get_last_query_with_context() == "insert into soci_test(name, id) values (:name, :id) with :name=\"bob\", :id=42");
+        }
+
     }
 
     sql.set_log_stream(&log);
