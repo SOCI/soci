@@ -37,19 +37,15 @@ std::string quote(PGconn * conn, std::string& s)
     std::string retv;
     retv.resize(2 * s.length() + 3);
     retv[0] = '\'';
-    size_t len_esc = PQescapeStringConn(conn, retv.data() + 1, s.c_str(), s.length(), &error_code);
+    size_t len_esc = PQescapeStringConn(conn, const_cast<char *>(retv.data()) + 1, s.c_str(), s.length(), &error_code);
     if (error_code > 0)
     {
         len_esc = 0;
     }
-    retv[len_esc] = '\0';
-    std::string returnValue("'");
-    returnValue += retv;
-    returnValue += "'";
+    retv[len_esc + 1] = '\'';
+    retv.resize(len_esc + 2);
 
-    delete[] retv;
-
-    return returnValue;
+    return retv;
 }
 
 // helper function to collect schemas from search_path
@@ -66,7 +62,7 @@ std::vector<std::string> get_schema_names(postgresql_session_backend & session, 
             bool quoted = false;
             std::string schema;
             while (!search_path_content.empty())
-           {
+            {
                 switch (search_path_content[0])
                 {
                 case '"':
@@ -119,7 +115,7 @@ std::vector<std::string> get_schema_names(postgresql_session_backend & session, 
             {
                 std::string user = PQgetvalue(current_user_result, 0, 0);
 
-                // Assure no bad characters
+                // Ensure no bad characters
                 schema_names.push_back(quote(conn, user));
             }
         }
@@ -130,11 +126,11 @@ std::vector<std::string> get_schema_names(postgresql_session_backend & session, 
 }
 
 // helper function to create a comma separated list of strings
-std::string create_list_of_strings(const std::vector<std::string>& list)
+std::string create_list_of_strings(const std::vector<std::string>& strings)
 {
     std::ostringstream oss;
     bool first = true;
-    for ( const auto& s: list )
+    for ( const auto& s: strings )
     {
         if ( first )
             first = false;

@@ -218,7 +218,7 @@ private:
     SOCI_NOT_COPYABLE(session)
 
     void reset_after_move();
-    schema_table_name * alloc_schema_table_name(const std::string& tableName);
+    schema_table_name& alloc_schema_table_name(const std::string& tableName);
 
     std::ostringstream query_stream_;
     std::unique_ptr<details::query_transformation_function> query_transformation_;
@@ -237,6 +237,10 @@ private:
     std::size_t poolPosition_;
     connection_pool * pool_;
 
+    // Storing schema_table_names in a forward list as these are required
+    // as persistent input to prepare_temp_type object during their life-
+    // span. The prepare_temp_type uses the addresses of the content of the
+    // schema_table_name_ thus, a container which doesn't move data is used.
     std::forward_list<schema_table_name> schema_table_name_;
 };
 

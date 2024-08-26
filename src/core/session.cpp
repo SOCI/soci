@@ -217,7 +217,7 @@ void session::reset_after_move()
     pool_ = nullptr;
 }
 
-schema_table_name* session::alloc_schema_table_name(std::string & tableName)
+schema_table_name& session::alloc_schema_table_name(const std::string & tableName)
 {
     std::size_t dot_pos = tableName.find( '.' );
     schema_table_name stn;
@@ -241,7 +241,7 @@ schema_table_name* session::alloc_schema_table_name(std::string & tableName)
     // These will remain in memory until the session object is deleted.
     schema_table_name_.push_front(stn);
 
-    return &schema_table_name_.front();
+    return schema_table_name_.front();
 }
 
 session::~session()
@@ -585,9 +585,9 @@ details::prepare_temp_type session::prepare_column_descriptions(std::string & ta
     }
     else
     {
-        schema_table_name * stn = alloc_schema_table_name(table_name);
+        schema_table_name& stn = alloc_schema_table_name(table_name);
 
-        return prepare << column_description_query, use(stn->schema, stn->ind, "s"), use(stn->table, "t");
+        return prepare << column_description_query, use(stn.schema, stn.ind, "s"), use(stn.table, "t");
     }
 }
 
