@@ -1006,6 +1006,7 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     st.execute();
     while (st.fetch())
     {
+        std::cout << "table_name: " << table_name << " - tables: " << tables << std::endl;
         if (table_name == tables)
         {
             tables_found = true;
