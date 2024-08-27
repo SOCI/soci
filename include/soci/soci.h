@@ -43,6 +43,7 @@
 #include "soci/use-type.h"
 #include "soci/values.h"
 #include "soci/values-exchange.h"
+#include "soci/bool.h"
 
 // namespace boost
 #ifdef SOCI_USE_BOOST
@@ -58,6 +59,8 @@
 // C++17
 #ifdef SOCI_HAVE_CXX17
 #include "soci/std-optional.h"
+#include "soci/std-ptr.h"
+#include "soci/std-path.h"
 #endif // SOCI_HAVE_CXX17
 
 #endif // SOCI_H_INCLUDED
