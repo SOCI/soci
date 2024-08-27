@@ -996,6 +996,7 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     st.execute();
     while (st.fetch())
     {
+        std::cout << "Got uppercase table" << std::endl;
         linux_mysql = true;
     }
 
@@ -1005,6 +1006,7 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     st.execute();
     while (st.fetch())
     {
+        std::cout << "Got lowercase table" << std::endl;
         windows_mysql = true;
     }
 
@@ -1045,6 +1047,7 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     st1.execute();
     while (st1.fetch())
     {
+        std::cout << "st1 table_name: " << table_name << " - tables: " << tables << std::endl;
         if (table_name == tables)
         {
             tables_found = true;
@@ -1060,7 +1063,7 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     st2.execute();
     while (st2.fetch())
     {
-        std::cout << "ci.name: " << ci.name << " - column_name: " << column_name << std::endl;
+        std::cout << "st2 ci.name: " << ci.name << " - column_name: " << column_name << std::endl;
         if (ci.name == column_name)
         {
             CHECK(ci.type == soci::dt_integer);
@@ -1078,6 +1081,7 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     st3.execute();
     while (st3.fetch())
     {
+        std::cout << "st3 ci.name: " << ci.name << " - column_name: " << column_name << std::endl;
         if (ci.name == column_name)
         {
             CHECK(ci.type == soci::dt_integer);
@@ -1095,6 +1099,7 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     st4.execute();
     while (st4.fetch())
     {
+        std::cout << "st4 ci.name: " << ci.name << " - column_name: " << column_name << std::endl;
         if (ci.name == column_name)
         {
             CHECK(ci.type == soci::dt_string);
