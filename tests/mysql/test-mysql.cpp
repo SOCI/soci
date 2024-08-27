@@ -23,6 +23,7 @@
 #include <mysqld_error.h>
 #include <errmsg.h>
 #include <cstdint>
+#include <boost/algorithm/string.hpp>
 
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_mysql();
@@ -1007,7 +1008,7 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     while (st.fetch())
     {
         std::cout << "table_name: " << table_name << " - tables: " << tables << std::endl;
-        if (table_name == tables)
+        if (boost::iequals(table_name, tables))
         {
             tables_found = true;
         }
@@ -1023,7 +1024,8 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     st1.execute();
     while (st1.fetch())
     {
-        if (ci.name == column_name)
+        std::cout << "ci.name: " << ci.name << " - column_name: " << column_name << std::endl;
+        if (boost::iequals(ci.name, column_name))
         {
             CHECK(ci.type == soci::dt_integer);
             CHECK(ci.dataType == soci::db_int32);
@@ -1040,7 +1042,7 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     st2.execute();
     while (st2.fetch())
     {
-        if (ci.name == column_name)
+        if (boost::iequals(ci.name, column_name))
         {
             CHECK(ci.type == soci::dt_integer);
             CHECK(ci.dataType == soci::db_int32);
@@ -1057,7 +1059,7 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     st3.execute();
     while (st3.fetch())
     {
-        if (ci.name == column_name)
+        if (boost::iequals(ci.name, column_name))
         {
             CHECK(ci.type == soci::dt_string);
             CHECK(ci.dataType == soci::db_string);
@@ -1074,7 +1076,7 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     st3.execute();
     while (st.fetch())
     {
-        if (table_name == tables)
+        if (boost::iequals(table_name, tables))
         {
             tables_found = true;
         }
