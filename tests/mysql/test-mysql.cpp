@@ -985,48 +985,35 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
 {
     soci::session sql(backEnd, connectString);
 
-    std::string tables_linux   = "TABLES";
-    std::string tables_windows = "tables";
+    std::string tables_uppercase = "TABLES";
+    std::string tables_lowercase = "tables";
+    std::string column_name      = "TABLE_NAME";
 
     // First, check the naming of the tables table in the information_schema.
-    bool linux_mysql = false;
-    std::string information_schemaTables = "information_schema." + tables_linux;
+    bool tables_is_uppercase = false;
+    std::string information_schemaTables = "information_schema." + tables_uppercase;
     soci::column_info ci;
     soci::statement st = (sql.prepare_column_descriptions(information_schemaTables), into(ci));
     st.execute();
     while (st.fetch())
     {
-        std::cout << "Got uppercase table: " << ci.name << std::endl;
-        linux_mysql = true;
+        if (ci.name == column_name)
+        {
+            std::cout << "Got uppercase table: " << ci.name << std::endl;
+            tables_is_uppercase = true;
+        }
     }
-
-    bool windows_mysql = false;
-    information_schemaTables = "information_schema." + tables_windows;
-    st = (sql.prepare_column_descriptions(information_schemaTables), into(ci));
-    st.execute();
-    while (st.fetch())
-    {
-        std::cout << "Got lowercase table: " << ci.name << std::endl;
-        windows_mysql = true;
-    }
-
-    // Must be either or
-    bool either_linux_or_windows = (linux_mysql || windows_mysql) && !(linux_mysql && windows_mysql);
-    CHECK(either_linux_or_windows);
 
     // note: prepare_column_descriptions expects l-value
     std::string tables;
-    std::string column_name;
 
-    if (linux_mysql)
+    if (tables_is_uppercase)
     {
-        tables = tables_linux;
-	column_name = "TABLE_NAME";
+        tables = tables_uppercase;
     }
-    if (windows_mysql)
+    else
     {
-        tables = tables_windows;
-        column_name = "table_name";
+        tables = tables_lowercase;
     }
 
     // Get the database name - which happens to be the schema
@@ -1111,7 +1098,7 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     CHECK(records == 1);
 
     // Delete table and check that it is gone
-    sql.drop_table(tables_linux);
+    sql.drop_table(tables);
     tables_found = false;
     st4 = (sql.prepare_table_names(), into(table_name));
     st4.execute();
