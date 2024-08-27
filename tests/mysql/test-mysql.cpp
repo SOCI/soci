@@ -23,7 +23,6 @@
 #include <mysqld_error.h>
 #include <errmsg.h>
 #include <cstdint>
-#include <boost/algorithm/string.hpp>
 
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_mysql();
@@ -986,9 +985,47 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
 {
     soci::session sql(backEnd, connectString);
 
+    std::string tables_linux   = "TABLES";
+    std::string tables_windows = "tables";
+
+    // First, check the naming of the tables table in the information_schema.
+    bool linux_mysql = false;
+    std::string information_schemaTables = "information_schema." + tables_linux;
+    soci::column_info ci;
+    soci::statement st = (sql.prepare_column_descriptions(information_schemaTables), into(ci));
+    st.execute();
+    while (st.fetch())
+    {
+        linux_mysql = true;
+    }
+
+    bool windows_mysql = false;
+    information_schemaTables = "information_schema." + tables_windows;
+    st = (sql.prepare_column_descriptions(information_schemaTables), into(ci));
+    st.execute();
+    while (st.fetch())
+    {
+        windows_mysql = true;
+    }
+
+    // Must be either or
+    bool either_linux_or_windows = (linux_mysql || windows_mysql) && !(linux_mysql && windows_mysql);
+    CHECK(either_linux_or_windows);
+
     // note: prepare_column_descriptions expects l-value
-    std::string tables = "TABLES";
-    std::string column_name = "TABLE_NAME";
+    std::string tables;
+    std::string column_name;
+
+    if (linux_mysql)
+    {
+        tables = tables_linux;
+	column_name = "TABLE_NAME";
+    }
+    if (windows_mysql)
+    {
+        tables = tables_windows;
+        column_name = "table_name";
+    }
 
     // Get the database name - which happens to be the schema
     // name in generic DB lingo.
@@ -996,19 +1033,19 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     sql << "select DATABASE()", into(schema);
     CHECK(!schema.empty());
 
-    // single-expression variant:
+    // create a table in local schema (database) with the same name
+    // as the tables table in the information_schema
     sql.create_table(tables).column(column_name, soci::dt_integer);
 
     // check whether this table was created:
 
     bool tables_found = false;
     std::string table_name;
-    soci::statement st = (sql.prepare_table_names(), into(table_name));
-    st.execute();
-    while (st.fetch())
+    soci::statement st1 = (sql.prepare_table_names(), into(table_name));
+    st1.execute();
+    while (st1.fetch())
     {
-        std::cout << "table_name: " << table_name << " - tables: " << tables << std::endl;
-        if (boost::iequals(table_name, tables))
+        if (table_name == tables)
         {
             tables_found = true;
         }
@@ -1019,13 +1056,12 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     // Get information for the tables table we just created and not
     // the tables table in information_schema which isn't in our path.
     int  records = 0;
-    soci::column_info ci;
-    soci::statement st1 = (sql.prepare_column_descriptions(tables), into(ci));
-    st1.execute();
-    while (st1.fetch())
+    soci::statement st2 = (sql.prepare_column_descriptions(tables), into(ci));
+    st2.execute();
+    while (st2.fetch())
     {
         std::cout << "ci.name: " << ci.name << " - column_name: " << column_name << std::endl;
-        if (boost::iequals(ci.name, column_name))
+        if (ci.name == column_name)
         {
             CHECK(ci.type == soci::dt_integer);
             CHECK(ci.dataType == soci::db_int32);
@@ -1038,11 +1074,11 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     // Run the same query but this time specific with the schema.
     std::string schemaTables = schema + "." + tables;
     records = 0;
-    soci::statement st2 = (sql.prepare_column_descriptions(schemaTables), into(ci));
-    st2.execute();
-    while (st2.fetch())
+    soci::statement st3 = (sql.prepare_column_descriptions(schemaTables), into(ci));
+    st3.execute();
+    while (st3.fetch())
     {
-        if (boost::iequals(ci.name, column_name))
+        if (ci.name == column_name)
         {
             CHECK(ci.type == soci::dt_integer);
             CHECK(ci.dataType == soci::db_int32);
@@ -1053,13 +1089,13 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     CHECK(records == 1);
 
     // Finally run the query with the information_schema.
-    std::string information_schemaTables = "information_schema." + tables;
+    information_schemaTables = "information_schema." + tables;
     records = 0;
-    soci::statement st3 = (sql.prepare_column_descriptions(information_schemaTables), into(ci));
-    st3.execute();
-    while (st3.fetch())
+    soci::statement st4 = (sql.prepare_column_descriptions(information_schemaTables), into(ci));
+    st4.execute();
+    while (st4.fetch())
     {
-        if (boost::iequals(ci.name, column_name))
+        if (ci.name == column_name)
         {
             CHECK(ci.type == soci::dt_string);
             CHECK(ci.dataType == soci::db_string);
@@ -1070,13 +1106,13 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     CHECK(records == 1);
 
     // Delete table and check that it is gone
-    sql.drop_table(tables);
+    sql.drop_table(tables_linux);
     tables_found = false;
-    st3 = (sql.prepare_table_names(), into(table_name));
-    st3.execute();
-    while (st.fetch())
+    st4 = (sql.prepare_table_names(), into(table_name));
+    st4.execute();
+    while (st4.fetch())
     {
-        if (boost::iequals(table_name, tables))
+        if (ci.name == column_name)
         {
             tables_found = true;
         }
