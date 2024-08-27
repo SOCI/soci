@@ -996,7 +996,7 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     st.execute();
     while (st.fetch())
     {
-        std::cout << "Got uppercase table" << std::endl;
+        std::cout << "Got uppercase table: " << ci.name << std::endl;
         linux_mysql = true;
     }
 
@@ -1006,7 +1006,7 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     st.execute();
     while (st.fetch())
     {
-        std::cout << "Got lowercase table" << std::endl;
+        std::cout << "Got lowercase table: " << ci.name << std::endl;
         windows_mysql = true;
     }
 
