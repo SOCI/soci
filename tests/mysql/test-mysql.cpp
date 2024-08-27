@@ -985,36 +985,9 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
 {
     soci::session sql(backEnd, connectString);
 
-    std::string tables_uppercase = "TABLES";
-    std::string tables_lowercase = "tables";
-    std::string column_name      = "TABLE_NAME";
-
-    // First, check the naming of the tables table in the information_schema.
-    bool tables_is_uppercase = false;
-    std::string information_schemaTables = "information_schema." + tables_uppercase;
-    soci::column_info ci;
-    soci::statement st = (sql.prepare_column_descriptions(information_schemaTables), into(ci));
-    st.execute();
-    while (st.fetch())
-    {
-        if (ci.name == column_name)
-        {
-            std::cout << "Got uppercase table: " << ci.name << std::endl;
-            tables_is_uppercase = true;
-        }
-    }
-
     // note: prepare_column_descriptions expects l-value
-    std::string tables;
-
-    if (tables_is_uppercase)
-    {
-        tables = tables_uppercase;
-    }
-    else
-    {
-        tables = tables_lowercase;
-    }
+    std::string tables = "tables";
+    std::string column_name = "TABLE_NAME";
 
     // Get the database name - which happens to be the schema
     // name in generic DB lingo.
@@ -1034,7 +1007,6 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     st1.execute();
     while (st1.fetch())
     {
-        std::cout << "st1 table_name: " << table_name << " - tables: " << tables << std::endl;
         if (table_name == tables)
         {
             tables_found = true;
@@ -1046,11 +1018,11 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     // Get information for the tables table we just created and not
     // the tables table in information_schema which isn't in our path.
     int  records = 0;
+    soci::column_info ci;
     soci::statement st2 = (sql.prepare_column_descriptions(tables), into(ci));
     st2.execute();
     while (st2.fetch())
     {
-        std::cout << "st2 ci.name: " << ci.name << " - column_name: " << column_name << std::endl;
         if (ci.name == column_name)
         {
             CHECK(ci.type == soci::dt_integer);
@@ -1068,7 +1040,6 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     st3.execute();
     while (st3.fetch())
     {
-        std::cout << "st3 ci.name: " << ci.name << " - column_name: " << column_name << std::endl;
         if (ci.name == column_name)
         {
             CHECK(ci.type == soci::dt_integer);
@@ -1080,13 +1051,12 @@ TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
     CHECK(records == 1);
 
     // Finally run the query with the information_schema.
-    information_schemaTables = "information_schema." + tables;
+    std::string information_schemaTables = "information_schema." + tables;
     records = 0;
     soci::statement st4 = (sql.prepare_column_descriptions(information_schemaTables), into(ci));
     st4.execute();
     while (st4.fetch())
     {
-        std::cout << "st4 ci.name: " << ci.name << " - column_name: " << column_name << std::endl;
         if (ci.name == column_name)
         {
             CHECK(ci.type == soci::dt_string);

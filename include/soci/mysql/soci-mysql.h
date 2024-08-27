@@ -284,7 +284,7 @@ struct mysql_session_backend : details::session_backend
 
     std::string get_table_names_query() const override
     {
-        return R"delim(SELECT table_name AS 'TABLE_NAME' FROM information_schema.tables WHERE table_schema = DATABASE())delim";
+        return R"delim(SELECT LOWER(table_name) AS 'TABLE_NAME' FROM information_schema.tables WHERE table_schema = DATABASE())delim";
     }
 
     std::string get_column_descriptions_query() const override
@@ -301,7 +301,7 @@ struct mysql_session_backend : details::session_backend
             when :s is not NULL THEN table_schema = :s
             else table_schema = DATABASE()
             end
-            and table_name = :t)delim";
+            and UPPER(table_name) = UPPER(:t))delim";
     }
 
     MYSQL *conn_;
