@@ -20,7 +20,7 @@
 #include <cstdint>
 #include <vector>
 #include <soci/soci-backend.h>
-#include <private/soci-trivial-blob-backend.h>
+#include <soci/trivial-blob-backend.h>
 
 // Disable flood of nonsense warnings generated for SQLite
 #ifdef _MSC_VER
