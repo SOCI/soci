@@ -15,9 +15,6 @@
 using namespace soci;
 using namespace soci::details;
 
-namespace // anonymous
-{
-
 void ensureConnected(session_backend * backEnd)
 {
     if (backEnd == NULL)
@@ -69,8 +66,6 @@ private:
     std::ostream * logStream_;
     std::string lastQuery_;
 };
-
-} // namespace anonymous
 
 session::session()
     : once(this), prepare(this),
