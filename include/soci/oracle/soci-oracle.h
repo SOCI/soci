@@ -279,7 +279,7 @@ struct oracle_blob_backend : details::blob_backend
 
     locator_t get_lob_locator() const;
 
-    void set_lob_locator(locator_t locator, bool initialized = true);
+    void set_lob_locator(const locator_t locator, bool initialized = true);
 
     void reset();
 
