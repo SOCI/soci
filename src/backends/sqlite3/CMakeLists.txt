@@ -35,6 +35,14 @@ set_target_properties(
   EXPORT_NAME SQLite3
 )
 
+target_sources(soci_sqlite3
+  PUBLIC
+    FILE_SET headers TYPE HEADERS
+    BASE_DIRS "${PROJECT_SOURCE_DIR}/include"
+    FILES
+      "${PROJECT_SOURCE_DIR}/include/soci/sqlite3/soci-sqlite3.h"
+)
+
 soci_public_dependency(
   NAME SQLite3
   DEP_TARGETS SQLite::SQLite3

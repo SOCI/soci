@@ -41,6 +41,14 @@ set_target_properties(
   EXPORT_NAME Firebird
 )
 
+target_sources(soci_firebird
+  PUBLIC
+    FILE_SET headers TYPE HEADERS
+    BASE_DIRS "${PROJECT_SOURCE_DIR}/include"
+    FILES
+      "${PROJECT_SOURCE_DIR}/include/soci/firebird/soci-firebird.h"
+)
+
 soci_public_dependency(
   NAME Firebird
   DEP_TARGETS Firebird::Firebird

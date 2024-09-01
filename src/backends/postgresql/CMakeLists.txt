@@ -43,6 +43,14 @@ set_target_properties(
   EXPORT_NAME PostgreSQL
 )
 
+target_sources(soci_postgresql
+  PUBLIC
+    FILE_SET headers TYPE HEADERS
+    BASE_DIRS "${PROJECT_SOURCE_DIR}/include"
+    FILES
+      "${PROJECT_SOURCE_DIR}/include/soci/postgresql/soci-postgresql.h"
+)
+
 soci_public_dependency(
   NAME PostgreSQL
   DEP_TARGETS PostgreSQL::PostgreSQL

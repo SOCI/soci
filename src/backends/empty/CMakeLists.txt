@@ -20,6 +20,15 @@ set_target_properties(
   VERSION ${PROJECT_VERSION}
   EXPORT_NAME Empty
 )
+
+target_sources(soci_empty
+  PUBLIC
+    FILE_SET headers TYPE HEADERS
+    BASE_DIRS "${PROJECT_SOURCE_DIR}/include"
+    FILES
+      "${PROJECT_SOURCE_DIR}/include/soci/empty/soci-empty.h"
+)
+
 soci_public_dependency(
   NAME SOCI::Core
   DEP_TARGETS SOCI::Core

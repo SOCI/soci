@@ -35,6 +35,14 @@ set_target_properties(
   EXPORT_NAME Oracle
 )
 
+target_sources(soci_oracle
+  PUBLIC
+    FILE_SET headers TYPE HEADERS
+    BASE_DIRS "${PROJECT_SOURCE_DIR}/include"
+    FILES
+      "${PROJECT_SOURCE_DIR}/include/soci/oracle/soci-oracle.h"
+)
+
 soci_public_dependency(
   NAME Oracle
   DEP_TARGETS Oracle::Oracle

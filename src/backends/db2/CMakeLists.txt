@@ -34,6 +34,14 @@ set_target_properties(
   EXPORT_NAME DB2
 )
 
+target_sources(soci_db2
+  PUBLIC
+    FILE_SET headers TYPE HEADERS
+    BASE_DIRS "${PROJECT_SOURCE_DIR}/include"
+    FILES
+      "${PROJECT_SOURCE_DIR}/include/soci/db2/soci-db2.h"
+)
+
 soci_public_dependency(
   NAME DB2
   DEP_TARGETS DB2::DB2

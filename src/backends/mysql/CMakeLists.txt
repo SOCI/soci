@@ -35,6 +35,14 @@ set_target_properties(
   EXPORT_NAME MySQL
 )
 
+target_sources(soci_mysql
+  PUBLIC
+    FILE_SET headers TYPE HEADERS
+    BASE_DIRS "${PROJECT_SOURCE_DIR}/include"
+    FILES
+      "${PROJECT_SOURCE_DIR}/include/soci/mysql/soci-mysql.h"
+)
+
 soci_public_dependency(
   NAME MySQL
   DEP_TARGETS MySQL::MySQL

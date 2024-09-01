@@ -34,6 +34,14 @@ set_target_properties(
   EXPORT_NAME ODBC
 )
 
+target_sources(soci_odbc
+  PUBLIC
+    FILE_SET headers TYPE HEADERS
+    BASE_DIRS "${PROJECT_SOURCE_DIR}/include"
+    FILES
+      "${PROJECT_SOURCE_DIR}/include/soci/odbc/soci-odbc.h"
+)
+
 soci_public_dependency(
   NAME ODBC
   DEP_TARGETS ODBC::ODBC
