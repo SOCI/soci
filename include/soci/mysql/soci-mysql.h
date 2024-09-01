@@ -19,28 +19,15 @@
 
 #include <soci/soci-backend.h>
 #include <private/soci-trivial-blob-backend.h>
-#ifdef _WIN32
-#include <winsock.h> // SOCKET
-#endif // _WIN32
 
-// Some version of mysql.h contain trailing comma in an enum declaration that
-// trigger -Wpedantic, so suppress it as there is nothing to be done about it
-// using the macros defined in our private soci-compiler.h header, that we can
-// only include when building SOCI itself.
-#ifdef SOCI_MYSQL_SOURCE
-    #include "soci-compiler.h"
-#endif
-
-#ifdef SOCI_GCC_WARNING_SUPPRESS
-    SOCI_GCC_WARNING_SUPPRESS(pedantic)
-#endif
-
+#ifdef SOCI_MYSQL_DIRECT_INCLUDE
 #include <mysql.h> // MySQL Client
 #include <errmsg.h> // MySQL Error codes
-
-#ifdef SOCI_GCC_WARNING_RESTORE
-    SOCI_GCC_WARNING_RESTORE(pedantic)
+#else
+#include <mysql/mysql.h> // MySQL Client
+#include <mysql/errmsg.h> // MySQL Error codes
 #endif
+
 
 #include <vector>
 
