@@ -61,67 +61,51 @@ std::vector<std::string> get_schema_names(postgresql_session_backend & session, 
         if (search_path_content.empty())
             search_path_content = R"("$user", public)"; // fall back to default value
 
-            bool quoted = false;
-            std::string schema;
-            while (!search_path_content.empty())
-            {
-                switch (search_path_content[0])
-                {
-                case '"':
-                    quoted = !quoted;
-                    break;
-                case ',':
-                case ' ':
-                    if (!quoted)
-                    {
-                        if (search_path_content[0] == ',')
-                        {
-                            schema_names.push_back(schema);
-                            schema = "";
-                        }
-                        break;
-                    }
-                    SOCI_FALLTHROUGH;
-                default:
-                    schema.push_back(search_path_content[0]);
-                }
-                search_path_content.erase(search_path_content.begin());
-            }
-            if (!schema.empty())
-                schema_names.push_back(schema);
-            for (std::string& schema_name: schema_names)
-            {
-                if (schema_name == "$user")
-                {
-                    postgresql_result current_user_result(session, PQexec(conn, "SELECT current_user"));
-                    if (current_user_result.check_for_data("current_user is not defined"))
-                    {
-                        if (PQntuples(current_user_result) > 0)
-                        {
-                            schema_name = PQgetvalue(current_user_result, 0, 0);
-                        }
-                    }
-                }
-
-                // Ensure no bad characters
-                schema_name = quote(conn, schema_name);
-            }
-        }
-    }
-    if (schema_names.empty())
-    {
-        postgresql_result current_user_result(session, PQexec(conn, "SELECT current_user"));
-        if (current_user_result.check_for_data("current_user is not defined"))
+        bool quoted = false;
+        std::string schema;
+        while (!search_path_content.empty())
         {
-            if (PQntuples(current_user_result) > 0)
+            switch (search_path_content[0])
             {
-                std::string user = PQgetvalue(current_user_result, 0, 0);
-
-                // Ensure no bad characters
-                schema_names.push_back(quote(conn, user));
-            }
+            case '"':
+                quoted = !quoted;
+                break;
+            case ',':
+            case ' ':
+                if (!quoted)
+                {
+                    if (search_path_content[0] == ',')
+                    {
+                        schema_names.push_back(schema);
+                        schema = "";
+                    }
+                    break;
+                }
+                SOCI_FALLTHROUGH;
+            default:
+                schema.push_back(search_path_content[0]);
+	    }
+            search_path_content.erase(search_path_content.begin());
         }
-        schema_names.push_back("public");
+        if (!schema.empty())
+            schema_names.push_back(schema);
+        for (std::string& schema_name: schema_names)
+        {
+            if (schema_name == "$user")
+            {
+                postgresql_result current_user_result(session, PQexec(conn, "SELECT current_user"));
+                if (current_user_result.check_for_data("current_user is not defined"))
+                {
+                    if (PQntuples(current_user_result) > 0)
+                    {
+                        schema_name = PQgetvalue(current_user_result, 0, 0);
+                    }
+                }
+            }
+
+            // Ensure no bad characters
+            schema_name = quote(conn, schema_name);
+        }
     }
 
     return schema_names;
