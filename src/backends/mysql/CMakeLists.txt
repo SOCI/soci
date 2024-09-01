@@ -28,6 +28,13 @@ add_library(soci_mysql
 
 add_library(SOCI::MySQL ALIAS soci_mysql)
 
+set_target_properties(
+  soci_mysql PROPERTIES
+  SOVERSION ${PROJECT_VERSION_MAJOR}
+  VERSION ${PROJECT_VERSION}
+  EXPORT_NAME MySQL
+)
+
 soci_public_dependency(
   NAME MySQL
   DEP_TARGETS MySQL::MySQL
