@@ -2319,7 +2319,7 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
     catch (...) {}
 
     CHECK(sql.get_last_query() == "drop table soci_test1");
-    CHECK(sql.get_last_query() == sql.get_last_query_with_context());
+    CHECK(sql.get_last_query_context() == "");
 
     sql.set_log_stream(NULL);
 
@@ -2331,7 +2331,7 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
         sql << "insert into soci_test (name,id) values (:name,:id)", use(name, "name"), use(id, "id");
 
         CHECK(sql.get_last_query() == "insert into soci_test (name,id) values (:name,:id)");
-        CHECK(sql.get_last_query_with_context() == "insert into soci_test (name,id) values (:name,:id) with :name=\"b\", :id=1");
+        CHECK(sql.get_last_query_context() == R"(:name="b", :id=1)");
 
         statement stmt = (sql.prepare << "insert into soci_test(name, id) values (:name, :id)");
         {
@@ -2343,7 +2343,7 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
             stmt.execute(true);
             stmt.bind_clean_up();
             CHECK(sql.get_last_query() == "insert into soci_test(name, id) values (:name, :id)");
-            CHECK(sql.get_last_query_with_context() == "insert into soci_test(name, id) values (:name, :id) with :name=\"alice\", :id=5");
+            CHECK(sql.get_last_query_context() == R"(:name="alice", :id=5)");
         }
         {
             id = 42;
@@ -2354,7 +2354,7 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
             stmt.execute(true);
             stmt.bind_clean_up();
             CHECK(sql.get_last_query() == "insert into soci_test(name, id) values (:name, :id)");
-            CHECK(sql.get_last_query_with_context() == "insert into soci_test(name, id) values (:name, :id) with :name=\"bob\", :id=42");
+            CHECK(sql.get_last_query_context() == R"(:name="bob", :id=42)");
         }
 
     }

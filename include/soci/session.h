@@ -108,10 +108,10 @@ public:
     std::ostream * get_log_stream() const;
 
     void log_query(std::string const & query);
-    void reset_query_parameter();
+    void clear_query_parameters();
     void add_query_parameter(std::string name, std::string value);
     std::string get_last_query() const;
-    std::string get_last_query_with_context() const;
+    std::string get_last_query_context() const;
 
     void set_got_data(bool gotData);
     bool got_data() const;
