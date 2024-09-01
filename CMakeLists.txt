@@ -73,6 +73,23 @@ if (SOCI_LD)
   add_link_options("${USE_LD_FLAG}")
 endif()
 
+if (NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+  # Ensure that build artifacts are easy to find. And on Windows this
+  # guarantees that the built DLLs end up next to applications
+  # linking to them as otherwise they won't be found.
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+  if (NOT PROJECT_IS_TOP_LEVEL)
+    # If the embedding project does not define these variables, this can lead to
+    # inconsistencies which can cause issues on Windows when e.g. the embedding
+    # project has an executable that links to a SOCI DLL which will be put into
+    # a different directory which will lead to the exe not finding the DLL.
+    message(WARNING "Setting CMAKE_{LIBRARY, ARCHIVE, RUNTIME}_DIRECTORY variables which should have done by the embedding cmake project")
+  endif()
+endif()
+
 if (SOCI_SHARED)
   set(SOCI_LIB_TYPE "SHARED")
 else()
