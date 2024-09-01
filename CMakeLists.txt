@@ -1,3 +1,4 @@
+# Note: we need >= v3.23 in order to make use of file sets for header installation
 cmake_minimum_required(VERSION 3.23 FATAL_ERROR)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -103,10 +104,7 @@ set(SOCI_DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}" CACHE STRING "Specifies suffix f
 
 
 include(soci_compiler_options)
-
-include(GNUInstallDirs)
-
-set(SOCI_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/soci-${PROJECT_VERSION}")
+include(soci_install_dirs)
 
 add_subdirectory(src)
 
