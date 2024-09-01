@@ -13,8 +13,8 @@
 
 using namespace soci;
 
-sqlite3_blob_backend::sqlite3_blob_backend(sqlite3_session_backend &)
-    : details::trivial_blob_backend()
+sqlite3_blob_backend::sqlite3_blob_backend(sqlite3_session_backend &backend)
+    : details::trivial_blob_backend(backend)
 {
 }
 

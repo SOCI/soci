@@ -279,11 +279,13 @@ struct oracle_blob_backend : details::blob_backend
 
     locator_t get_lob_locator() const;
 
-    void set_lob_locator(locator_t locator, bool initialized = true);
+    void set_lob_locator(const locator_t locator, bool initialized = true);
 
     void reset();
 
     void ensure_initialized();
+
+    details::session_backend &get_session_backend() override;
 
 private:
     std::size_t do_deprecated_read(std::size_t offset, void *buf, std::size_t toRead) override
