@@ -23,6 +23,18 @@ void throw_not_supported()
 } // namespace anonymous
 
 
+void logger_impl::start_query(const std::string &)
+{
+    clear_query_parameters();
+}
+
+void logger_impl::add_query_parameter(std::string name, std::string value)
+{
+    queryParams_.emplace_back(std::move(name), std::move(value));
+}
+
+void logger_impl::clear_query_parameters() { queryParams_.clear(); }
+
 logger_impl * logger_impl::clone() const
 {
     logger_impl * const impl = do_clone();
@@ -57,11 +69,26 @@ std::string logger_impl::get_last_query() const
     SOCI_DUMMY_RETURN(std::string());
 }
 
-std::string logger_impl::get_last_query_with_context() const
+std::string logger_impl::get_last_query_context() const
 {
-    throw_not_supported();
+    std::string context;
 
-    SOCI_DUMMY_RETURN(std::string());
+    bool first = true;
+    for (const query_parameter &param : queryParams_)
+    {
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            context += ", ";
+        }
+
+        context += ":" + param.name + "=" + param.value;
+    }
+
+    return context;
 }
 
 logger::logger(logger_impl * impl)

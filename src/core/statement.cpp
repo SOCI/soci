@@ -590,7 +590,7 @@ void statement_impl::pre_fetch()
 
 void statement_impl::pre_use()
 {
-    session_.reset_query_parameter();
+    session_.clear_query_parameters();
 
     std::size_t const usize = uses_.size();
     for (std::size_t i = 0; i != usize; ++i)
