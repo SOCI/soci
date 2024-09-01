@@ -55,9 +55,11 @@ std::vector<std::string> get_schema_names(postgresql_session_backend & session, 
     postgresql_result search_path_result(session, PQexec(conn, "SHOW search_path"));
     if (search_path_result.check_for_data("search_path doesn't exist"))
     {
+        std::string search_path_content;
         if (PQntuples(search_path_result) > 0)
-        {
-            std::string search_path_content = PQgetvalue(search_path_result, 0, 0);
+            search_path_content = PQgetvalue(search_path_result, 0, 0);
+        if (search_path_content.empty())
+            search_path_content = R"("$user", public)"; // fall back to default value
 
             bool quoted = false;
             std::string schema;
