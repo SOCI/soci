@@ -183,6 +183,21 @@ private:
     SOCI_NOT_COPYABLE(conversion_use_type)
 };
 
+template <typename T>
+class by_value_conversion_use_type : value_holder<T>, public conversion_use_type<T>
+{
+public:
+    by_value_conversion_use_type ( T const& t, std::string const& name = std::string () )
+        : value_holder<T> ( t, i_ok ), conversion_use_type<T> ( value_holder<T>::saved_val_, name )
+    {
+    }
+
+    by_value_conversion_use_type ( T const& t, const indicator& ind, std::string const& name = std::string () )
+        : value_holder<T> ( t, ind ), conversion_use_type<T> ( value_holder<T>::saved_val_, value_holder<T>::saved_ind_, name )
+    {
+    }
+};
+
 // this class is used to ensure correct order of construction
 // of vector based into_type and use_type elements that use type_conversion
 
@@ -438,6 +453,18 @@ into_type_ptr do_into(std::vector<T> & t, std::vector<indicator> & ind,
 {
     return into_type_ptr(
         new conversion_into_type<std::vector<T> >(t, ind, begin, end));
+}
+
+template <typename T>
+use_type_ptr do_use ( T& t, std::string const& name, user_type_tag, std::true_type )
+{
+    return use_type_ptr ( new by_value_conversion_use_type<T> ( t, name ) );
+}
+
+template <typename T>
+use_type_ptr do_use ( T& t, indicator& ind, std::string const& name, user_type_tag, std::true_type )
+{
+    return use_type_ptr ( new by_value_conversion_use_type<T> ( t, ind, name ) );
 }
 
 template <typename T>
