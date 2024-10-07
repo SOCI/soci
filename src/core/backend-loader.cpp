@@ -48,6 +48,33 @@ private:
 
 typedef HMODULE soci_dynlib_handle_t;
 
+extern "C" IMAGE_DOS_HEADER __ImageBase;
+
+std::string get_this_dynlib_path()
+{
+    std::string path;
+
+    char buf[MAX_PATH];
+    if ( ::GetModuleFileNameA(reinterpret_cast<HINSTANCE>(&__ImageBase), buf, MAX_PATH) )
+    {
+        path = buf;
+
+        // Get rid of everything after the last path separator, which should
+        // normally be a backslash, but check for slashes too, just in case.
+        auto const last_sep = path.find_last_of("\\/");
+        if ( last_sep != std::string::npos )
+            path.erase(last_sep);
+    }
+    else
+    {
+        // Fall back to using the current directory, we can't really do much
+        // else and throwing from here would be arguably less than helpful.
+        path = ".";
+    }
+
+    return path;
+}
+
 } // unnamed namespace
 
 #ifdef _UNICODE
@@ -120,6 +147,27 @@ private:
 
 typedef void * soci_dynlib_handle_t;
 
+std::string get_this_dynlib_path()
+{
+    Dl_info di = { };
+
+    // We need some pointer in this shared library to pass to dladdr(), just
+    // use this function itself.
+    //
+    // Note that at least under Solaris dladdr() takes non-const void*.
+    if ( dladdr(const_cast<void*>(reinterpret_cast<void*>(get_this_dynlib_path)),
+                &di) == 0 )
+        return ".";
+
+    std::string path = di.dli_fname;
+
+    auto const last_sep = path.rfind('/');
+    if ( last_sep != std::string::npos )
+        path.erase(last_sep);
+
+    return path;
+}
+
 } // unnamed namespace
 
 #define DLOPEN(x) dlopen(x, RTLD_LAZY)
@@ -184,9 +232,15 @@ std::vector<std::string> get_default_paths()
     std::string const env(penv ? penv : "");
     if (env.empty())
     {
-        paths.push_back(".");
+        // We want to load the backends libraries from the directory containing
+        // the core library itself.
+        std::string const core_lib_path = get_this_dynlib_path();
+
+        paths.push_back(core_lib_path);
+
 #ifdef DEFAULT_BACKENDS_PATH
-        paths.push_back(DEFAULT_BACKENDS_PATH);
+        if (core_lib_path != DEFAULT_BACKENDS_PATH)
+            paths.push_back(DEFAULT_BACKENDS_PATH);
 #endif // DEFAULT_BACKENDS_PATH
         return paths;
     }
