@@ -307,11 +307,7 @@ factory_map::iterator do_unload(factory_map::iterator i)
         DLCLOSE(h);
     }
 
-    // TODO-C++11: Use erase() return value.
-    factory_map::iterator const to_erase = i;
-    ++i;
-    factories_.erase(to_erase);
-    return i;
+    return factories_.erase(i);
 }
 
 void do_unload_or_throw_if_in_use(std::string const & name)
