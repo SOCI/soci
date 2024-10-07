@@ -30,15 +30,26 @@ using namespace soci::dynamic_backends;
 namespace
 {
 
-typedef CRITICAL_SECTION soci_mutex_t;
+class soci_mutex_t
+{
+public:
+    soci_mutex_t() { ::InitializeCriticalSection(&cs_); }
+    ~soci_mutex_t() { ::DeleteCriticalSection(&cs_); }
+
+    void lock() { ::EnterCriticalSection(&cs_); }
+    void unlock() { ::LeaveCriticalSection(&cs_); }
+
+    soci_mutex_t(soci_mutex_t const &) = delete;
+    soci_mutex_t& operator=(soci_mutex_t const &) = delete;
+
+private:
+    CRITICAL_SECTION cs_;
+};
+
 typedef HMODULE soci_dynlib_handle_t;
 
 } // unnamed namespace
 
-#define LOCK(x) EnterCriticalSection(x)
-#define UNLOCK(x) LeaveCriticalSection(x)
-#define MUTEX_INIT(x) InitializeCriticalSection(x)
-#define MUTEX_DEST(x) DeleteCriticalSection(x)
 #ifdef _UNICODE
 #define DLOPEN(x) LoadLibraryA(x)
 #else
@@ -91,15 +102,26 @@ private:
 namespace
 {
 
-typedef pthread_mutex_t soci_mutex_t;
+class soci_mutex_t
+{
+public:
+    soci_mutex_t() { pthread_mutex_init(&m_, NULL); }
+    soci_mutex_t(soci_mutex_t const &) = delete;
+    soci_mutex_t& operator=(soci_mutex_t const &) = delete;
+
+    ~soci_mutex_t() { pthread_mutex_destroy(&m_); }
+
+    void lock() { pthread_mutex_lock(&m_); }
+    void unlock() { pthread_mutex_unlock(&m_); }
+
+private:
+    pthread_mutex_t m_;
+};
+
 typedef void * soci_dynlib_handle_t;
 
 } // unnamed namespace
 
-#define LOCK(x) pthread_mutex_lock(x)
-#define UNLOCK(x) pthread_mutex_unlock(x)
-#define MUTEX_INIT(x) pthread_mutex_init(x, NULL)
-#define MUTEX_DEST(x) pthread_mutex_destroy(x)
 #define DLOPEN(x) dlopen(x, RTLD_LAZY)
 #define DLCLOSE(x) dlclose(x)
 #define DLSYM(x, y) dlsym(x, y)
@@ -201,26 +223,26 @@ struct static_state_mgr
 {
     static_state_mgr()
     {
-        MUTEX_INIT(&mutex_);
-
         search_paths_ = get_default_paths();
     }
 
     ~static_state_mgr()
     {
         unload_all();
-
-        MUTEX_DEST(&mutex_);
     }
 } static_state_mgr_;
 
 class scoped_lock
 {
 public:
-    scoped_lock(soci_mutex_t * m) : mptr(m) { LOCK(m); };
-    ~scoped_lock() { UNLOCK(mptr); };
+    explicit scoped_lock(soci_mutex_t * m) : m_(m) { m_->lock(); };
+    ~scoped_lock() { m_->unlock(); };
+
+    scoped_lock(scoped_lock const &) = delete;
+    scoped_lock& operator=(scoped_lock const &) = delete;
+
 private:
-    soci_mutex_t * mptr;
+    soci_mutex_t * const m_;
 };
 
 // non-synchronized helpers for the other functions
