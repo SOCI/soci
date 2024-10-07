@@ -28,7 +28,7 @@ using namespace soci::dynamic_backends;
 #include <windows.h>
 
 typedef CRITICAL_SECTION soci_mutex_t;
-typedef HMODULE soci_handler_t;
+typedef HMODULE soci_dynlib_handle_t;
 
 #define LOCK(x) EnterCriticalSection(x)
 #define UNLOCK(x) LeaveCriticalSection(x)
@@ -84,7 +84,7 @@ private:
 #include <dlfcn.h>
 
 typedef pthread_mutex_t soci_mutex_t;
-typedef void * soci_handler_t;
+typedef void * soci_dynlib_handle_t;
 
 #define LOCK(x) pthread_mutex_lock(x)
 #define UNLOCK(x) pthread_mutex_unlock(x)
@@ -114,7 +114,7 @@ namespace // unnamed
 
 struct info
 {
-    soci_handler_t handler_;
+    soci_dynlib_handle_t handle_;
     backend_factory const * factory_;
 
     // The use count is the number of existing sessions using this backend (in
@@ -134,7 +134,7 @@ struct info
     // use count drops to 0.
     bool unload_requested_;
 
-    info() : handler_(0), factory_(0), use_count_(0), unload_requested_(false) {}
+    info() : handle_(0), factory_(0), use_count_(0), unload_requested_(false) {}
 };
 
 typedef std::map<std::string, info> factory_map;
@@ -216,7 +216,7 @@ private:
 // non-synchronized helpers for the other functions
 factory_map::iterator do_unload(factory_map::iterator i)
 {
-    soci_handler_t h = i->second.handler_;
+    soci_dynlib_handle_t h = i->second.handle_;
     if (h != NULL)
     {
         DLCLOSE(h);
@@ -259,7 +259,7 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
     MSWErrorMessageBoxDisabler no_message_boxes;
 #endif
 
-    soci_handler_t h = 0;
+    soci_dynlib_handle_t h = 0;
     std::string fullFileName;
     if (shared_object.empty() == false)
     {
@@ -340,7 +340,7 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
 
     info new_entry;
     new_entry.factory_ = f;
-    new_entry.handler_ = h;
+    new_entry.handle_ = h;
 
     factories_[name] = new_entry;
 }
