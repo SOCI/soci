@@ -220,13 +220,15 @@ struct info
 typedef std::map<std::string, info> factory_map;
 factory_map factories_;
 
-std::vector<std::string> search_paths_;
-
 soci_mutex_t mutex_;
 
-std::vector<std::string> get_default_paths()
+// This function should be called with mutex_ locked to ensure that we don't
+// initialize the static variable inside it in 2 threads in parallel.
+std::vector<std::string>& get_default_search_paths()
 {
-    std::vector<std::string> paths;
+    static std::vector<std::string> paths;
+    if (!paths.empty())
+        return paths;
 
     char const* const penv = std::getenv("SOCI_BACKENDS_PATH");
     std::string const env(penv ? penv : "");
@@ -275,10 +277,7 @@ std::vector<std::string> get_default_paths()
 // used to automatically initialize the global state
 struct static_state_mgr
 {
-    static_state_mgr()
-    {
-        search_paths_ = get_default_paths();
-    }
+    static_state_mgr() = default;
 
     ~static_state_mgr()
     {
@@ -359,9 +358,9 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
         if (0 == h)
         {
             // try all search paths
-            for (std::size_t i = 0; i != search_paths_.size(); ++i)
+            for (auto const& path : get_default_search_paths())
             {
-                fullFileName = search_paths_[i] + "/" + LIBNAME(name);
+                fullFileName = path + "/" + LIBNAME(name);
                 h = DLOPEN(fullFileName.c_str());
                 if (0 != h)
                 {
@@ -388,15 +387,16 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
             // We always add "." as the first search path element, so it's not
             // really useful to show it, but do show the search path if there
             // is something else in it.
-            if (search_paths_.size() > 1 ||
-                (!search_paths_.empty() && search_paths_[0] != "."))
+            auto const& search_paths = get_default_search_paths();
+            if (search_paths.size() > 1 ||
+                (!search_paths.empty() && search_paths[0] != "."))
             {
                 msg << " (even using extra search path \"";
-                for (std::size_t i = 0; i != search_paths_.size(); ++i)
+                for (std::size_t i = 0; i != search_paths.size(); ++i)
                 {
                     if (i != 0)
                         msg << ":";
-                    msg << search_paths_[i];
+                    msg << search_paths[i];
                 }
                 msg << "\")";
             }
@@ -484,7 +484,9 @@ void dynamic_backends::unget(std::string const& name)
 
 SOCI_DECL std::vector<std::string>& dynamic_backends::search_paths()
 {
-    return search_paths_;
+    scoped_lock lock(&mutex_);
+
+    return get_default_search_paths();
 }
 
 SOCI_DECL void dynamic_backends::register_backend(
