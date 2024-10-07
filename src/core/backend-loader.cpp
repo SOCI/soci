@@ -27,8 +27,13 @@ using namespace soci::dynamic_backends;
 
 #include <windows.h>
 
+namespace
+{
+
 typedef CRITICAL_SECTION soci_mutex_t;
 typedef HMODULE soci_dynlib_handle_t;
+
+} // unnamed namespace
 
 #define LOCK(x) EnterCriticalSection(x)
 #define UNLOCK(x) LeaveCriticalSection(x)
@@ -83,8 +88,13 @@ private:
 #include <pthread.h>
 #include <dlfcn.h>
 
+namespace
+{
+
 typedef pthread_mutex_t soci_mutex_t;
 typedef void * soci_dynlib_handle_t;
+
+} // unnamed namespace
 
 #define LOCK(x) pthread_mutex_lock(x)
 #define UNLOCK(x) pthread_mutex_unlock(x)
