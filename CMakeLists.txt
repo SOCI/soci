@@ -284,6 +284,8 @@ else()
     message(FATAL_ERROR "Unsupported size of long=${SOCI_SIZEOF_LONG}")
 endif()
 
+soci_check_types_are_same("int8_t" "char")
+
 ###############################################################################
 # build config file
 ###############################################################################
