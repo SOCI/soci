@@ -12,6 +12,7 @@
 #include <string>
 #include <ctime>
 #include <cmath>
+#include <sstream>
 
 using namespace soci;
 using namespace soci::tests;
@@ -73,6 +74,65 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
         (sql << "insert into soci_test(fixed_text) values(:str)", use(str_in)),
         soci_error&
     );
+}
+
+TEST_CASE("MS SQL table records count", "[odbc][mssql][count]")
+{
+    soci::session sql(backEnd, connectString);
+
+    // Execute the provided SQL query to count records in tables
+    std::string sql_query = R"(
+        SET NOCOUNT ON;
+        DECLARE db_cursor CURSOR FOR
+        SELECT name FROM sys.databases
+        WHERE state_desc = 'ONLINE'
+        AND name IN ('master');
+        DECLARE @DatabaseName NVARCHAR(128);
+        DECLARE @outset TABLE(
+            INSTANCENAME varchar(50),
+            DATABASENAME varchar(100),
+            TABLENAME varchar(100),
+            NUMBEROFRECORDS_I bigint
+        );
+        OPEN db_cursor;
+        FETCH NEXT FROM db_cursor INTO @DatabaseName;
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+            DECLARE @command nvarchar(1000) = 'USE ' + QUOTENAME(@DatabaseName) +
+            '; SELECT @@SERVERNAME, DB_NAME(), T.NAME, P.[ROWS] FROM sys.tables T ' +
+            'INNER JOIN sys.indexes I ON T.OBJECT_ID = I.OBJECT_ID ' +
+            'INNER JOIN sys.partitions P ON I.OBJECT_ID = P.OBJECT_ID AND I.INDEX_ID = P.INDEX_ID ' +
+            'INNER JOIN sys.allocation_units A ON P.PARTITION_ID = A.CONTAINER_ID ' +
+            'WHERE T.NAME NOT LIKE ''DT%'' AND I.OBJECT_ID > 255 AND I.INDEX_ID <= 1 ' +
+            'GROUP BY T.NAME, I.OBJECT_ID, I.INDEX_ID, I.NAME, P.[ROWS] ' +
+            'ORDER BY OBJECT_NAME(I.OBJECT_ID)';
+            INSERT INTO @outset EXEC (@command)
+            FETCH NEXT FROM db_cursor INTO @DatabaseName
+        END
+        CLOSE db_cursor
+        DEALLOCATE db_cursor
+        SELECT INSTANCENAME, DATABASENAME, TABLENAME, NUMBEROFRECORDS_I
+        FROM @outset;
+    )";
+
+    soci::rowset<soci::row> rs = (sql.prepare << sql_query);
+
+    // Iterate over the results and print them (or check them in an actual test case)
+    for (auto it = rs.begin(); it != rs.end(); ++it)
+    {
+        soci::row const& row = *it;
+        std::string instance_name = row.get<std::string>(0);
+        std::string database_name = row.get<std::string>(1);
+        std::string table_name = row.get<std::string>(2);
+        long long number_of_records = row.get<long long>(3);
+
+        std::cout << "Instance: " << instance_name
+                  << ", Database: " << database_name
+                  << ", Table: " << table_name
+                  << ", Records: " << number_of_records << std::endl;
+
+        // Here you can add checks to validate the expected values.
+    }
 }
 
 // DDL Creation objects for common tests
