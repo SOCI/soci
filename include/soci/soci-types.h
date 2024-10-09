@@ -7,7 +7,7 @@
     #if defined(__LP64__)
         #define SOCI_LONG_IS_64_BIT 1
         #if SOCI_OS == SOCI_OS_LINUX || SOCI_OS == SOCI_OS_FREE_BSD
-            #define SOCI_INT64_IS_LONG 1
+            #define SOCI_INT64_T_IS_LONG 1
         #endif
     #endif
 #endif

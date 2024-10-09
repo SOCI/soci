@@ -100,7 +100,7 @@ struct exchange_traits<uint64_t>
     enum { x_type = x_uint64 };
 };
 
-#if defined(SOCI_INT64_IS_LONG)
+#if defined(SOCI_INT64_T_IS_LONG)
 template <>
 struct exchange_traits<long long> : exchange_traits<int64_t>
 {
