@@ -7,11 +7,13 @@
 
 #define SOCI_ODBC_SOURCE
 #include "soci/soci-platform.h"
+#include "soci/soci-unicode.h"
 #include "soci/odbc/soci-odbc.h"
 #include "soci-compiler.h"
 #include "soci-cstrtoi.h"
 #include "soci-exchange-cast.h"
 #include "soci-mktime.h"
+
 #include <cstdint>
 #include <ctime>
 
@@ -30,7 +32,13 @@ void odbc_standard_into_type_backend::define_by_pos(
     {
     case x_char:
         odbcType_ = SQL_C_CHAR;
-        size = sizeof(char) + 1;
+        size = 2 * sizeof(SQLCHAR);
+        buf_ = new char[size];
+        data = buf_;
+        break;
+    case x_wchar:
+        odbcType_ = SQL_C_WCHAR;
+        size = 2 * sizeof(SQLWCHAR);
         buf_ = new char[size];
         data = buf_;
         break;
@@ -46,8 +54,27 @@ void odbc_standard_into_type_backend::define_by_pos(
         // not trivial, so for now we're stuck with this suboptimal solution.
         size = static_cast<SQLUINTEGER>(statement_.column_size(position_));
         size = (size >= ODBC_MAX_COL_SIZE || size == 0) ? odbc_max_buffer_length : size;
-        size++;
+        size += sizeof(SQLCHAR);
         buf_ = new char[size];
+        data = buf_;
+        break;
+    case x_stdwstring:        
+        // Set the ODBC type to wide character string (SQL_C_WCHAR)
+        odbcType_ = SQL_C_WCHAR;        
+        
+        // Get the column size for the current position in the statement
+        size = static_cast<SQLUINTEGER>(statement_.column_size(position_));
+        
+        // Adjust the size if it exceeds the maximum column size or is zero
+        size = (size >= ODBC_MAX_COL_SIZE || size == 0) ? odbc_max_buffer_length : size;
+        
+        // Add space for the null-terminator (SQLWCHAR)
+        size += sizeof(SQLWCHAR);
+        
+        // Allocate a buffer of the calculated size
+        buf_ = new char[size];
+        
+        // Set the data pointer to the allocated buffer
         data = buf_;
         break;
     case x_int8:
@@ -174,12 +201,48 @@ void odbc_standard_into_type_backend::post_fetch(
         {
             exchange_type_cast<x_char>(data_) = buf_[0];
         }
+        else if (type_ == x_wchar)
+        {
+            wchar_t &c = exchange_type_cast<x_wchar>(data_);
+            
+#if defined(SOCI_WCHAR_T_IS_UTF32) // Unices
+              c = utf16_to_utf32(std::u16string(reinterpret_cast<char16_t*>(buf_)))[0];
+#else // Windows
+              c = buf_[0];
+#endif  
+        }
         else if (type_ == x_stdstring)
         {
             std::string& s = exchange_type_cast<x_stdstring>(data_);
             s = buf_;
             if (s.size() >= (odbc_max_buffer_length - 1))
             {
+                throw soci_error("Buffer size overflow; maybe got too large string");
+            }
+        }
+        // Handle the case where the type is a standard wide string (std::wstring)
+        else if (type_ == x_stdwstring)
+        {
+            // Cast the data_ to a reference of type std::wstring
+            std::wstring& s = exchange_type_cast<x_stdwstring>(data_);
+            
+#if defined(SOCI_WCHAR_T_IS_UTF32) // Unices
+            // On Unix-like systems where wchar_t is wide (typically 32-bit)
+            // Convert the UTF-16 buffer to a UTF-32 string
+            std::u32string u32str = utf16_to_utf32(reinterpret_cast<char16_t*>(buf_));
+            // Assign the converted UTF-32 string to the std::wstring
+            s = std::wstring(u32str.begin(), u32str.end());
+#else // Windows
+            // On Windows systems where wchar_t is 16-bit
+            // Directly assign the buffer (interpreted as wchar_t) to the std::wstring
+            s = std::wstring(reinterpret_cast<wchar_t*>(buf_));
+#endif // SOCI_WCHAR_T_IS_UTF32
+
+            // Check if the size of the resulting string exceeds the maximum buffer length
+            // The maximum buffer length is adjusted for the size of wchar_t
+            if (s.size() >= (odbc_max_buffer_length - 1) / sizeof(wchar_t))
+            {
+                // Throw an error if the buffer size is exceeded
                 throw soci_error("Buffer size overflow; maybe got too large string");
             }
         }

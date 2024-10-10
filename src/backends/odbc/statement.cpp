@@ -7,6 +7,7 @@
 
 #define SOCI_ODBC_SOURCE
 #include "soci/odbc/soci-odbc.h"
+#include "soci/soci-unicode.h"
 #include <cctype>
 #include <sstream>
 #include <cstring>
@@ -124,7 +125,17 @@ void odbc_statement_backend::prepare(std::string const & query,
         query_ += "?";
     }
 
-    SQLRETURN rc = SQLPrepare(hstmt_, sqlchar_cast(query_), (SQLINTEGER)query_.size());
+    SQLRETURN rc = 0;
+    if (session_.get_database_product() == odbc_session_backend::database_product::prod_mssql)
+    {
+        std::u16string wQuery  = utf8_to_utf16(query_);
+        rc = SQLPrepareW(hstmt_, sqlchar_cast(wQuery), (SQLINTEGER)wQuery.size());
+    }
+    else
+    {
+        rc = SQLPrepare(hstmt_, sqlchar_cast(query_), (SQLINTEGER)query_.size());
+    }    
+    
     if (is_odbc_error(rc))
     {
         std::ostringstream ss;
@@ -389,6 +400,11 @@ void odbc_statement_backend::describe_column(int colNum,
         break;
     case SQL_BIGINT:
         dbtype = is_unsigned == SQL_TRUE ? db_uint64 : db_int64;
+        break;
+    case SQL_WCHAR:
+    case SQL_WVARCHAR:
+    case SQL_WLONGVARCHAR:
+        dbtype = db_wstring;
         break;
     case SQL_CHAR:
     case SQL_VARCHAR:

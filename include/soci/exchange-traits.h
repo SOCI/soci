@@ -149,10 +149,24 @@ struct exchange_traits<char>
 #endif // !SOCI_INT8_T_IS_CHAR
 
 template <>
+struct exchange_traits<wchar_t>
+{
+    typedef basic_type_tag type_family;
+    enum { x_type = x_wchar };
+};
+
+template <>
 struct exchange_traits<std::string>
 {
     typedef basic_type_tag type_family;
     enum { x_type = x_stdstring };
+};
+
+template <>
+struct exchange_traits<std::wstring>
+{
+    typedef basic_type_tag type_family;
+    enum { x_type = x_stdwstring };
 };
 
 template <>
