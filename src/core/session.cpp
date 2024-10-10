@@ -47,6 +47,8 @@ public:
 
     virtual void start_query(std::string const & query)
     {
+        logger_impl::start_query(query);
+
         if (logStream_ != NULL)
         {
             *logStream_ << query << '\n';
@@ -486,6 +488,30 @@ void session::log_query(std::string const & query)
     }
 }
 
+void session::clear_query_parameters()
+{
+    if (isFromPool_)
+    {
+        pool_->at(poolPosition_).clear_query_parameters();
+    }
+    else
+    {
+        logger_.clear_query_parameters();
+    }
+}
+
+void session::add_query_parameter(std::string name, std::string value)
+{
+    if (isFromPool_)
+    {
+        pool_->at(poolPosition_).add_query_parameter(std::move(name), std::move(value));
+    }
+    else
+    {
+        logger_.add_query_parameter(std::move(name), std::move(value));
+    }
+}
+
 std::string session::get_last_query() const
 {
     if (isFromPool_)
@@ -495,6 +521,18 @@ std::string session::get_last_query() const
     else
     {
         return logger_.get_last_query();
+    }
+}
+
+std::string session::get_last_query_context() const
+{
+    if (isFromPool_)
+    {
+        return pool_->at(poolPosition_).get_last_query_context();
+    }
+    else
+    {
+        return logger_.get_last_query_context();
     }
 }
 

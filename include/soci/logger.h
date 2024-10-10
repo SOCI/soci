@@ -11,9 +11,20 @@
 #include "soci/soci-platform.h"
 
 #include <ostream>
+#include <vector>
 
 namespace soci
 {
+
+
+struct SOCI_DECL query_parameter
+{
+    explicit query_parameter(std::string name = {}, std::string value = {})
+        : name(std::move(name)), value(std::move(value)) {}
+
+    std::string name;
+    std::string value;
+};
 
 // Allows to customize the logging of database operations performed by SOCI.
 //
@@ -28,7 +39,13 @@ public:
     virtual ~logger_impl();
 
     // Called to indicate that a new query is about to be executed.
-    virtual void start_query(std::string const & query) = 0;
+    virtual void start_query(std::string const & query);
+
+    // Called to log a parameter that is bound to the currently active query
+    virtual void add_query_parameter(std::string name, std::string value);
+
+    // Clears all currently logged query parameters
+    virtual void clear_query_parameters();
 
     logger_impl * clone() const;
 
@@ -38,6 +55,10 @@ public:
     virtual void set_stream(std::ostream * s);
     virtual std::ostream * get_stream() const;
     virtual std::string get_last_query() const;
+    virtual std::string get_last_query_context() const;
+
+protected:
+    std::vector<query_parameter> queryParams_;
 
 private:
     // Override to return a new heap-allocated copy of this object.
@@ -68,10 +89,18 @@ public:
 
     void start_query(std::string const & query) { m_impl->start_query(query); }
 
+    virtual void add_query_parameter(std::string name, std::string value)
+    {
+        m_impl->add_query_parameter(std::move(name), std::move(value));
+    }
+
+    virtual void clear_query_parameters() { m_impl->clear_query_parameters(); }
+
     // Methods used for the implementation of session basic logging support.
     void set_stream(std::ostream * s) { m_impl->set_stream(s); }
     std::ostream * get_stream() const { return m_impl->get_stream(); }
     std::string get_last_query() const { return m_impl->get_last_query(); }
+    std::string get_last_query_context() const { return m_impl->get_last_query_context(); }
 
 private:
     logger_impl * m_impl;
