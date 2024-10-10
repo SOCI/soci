@@ -150,8 +150,8 @@ while (st.fetch())
 }
 ```
 
-The `table_name` can contain a schema part in dot-notation. If a schema is part of the 
-`table_name`, then that specific table will be queried for its columns. If the 
+The `table_name` can contain a schema part in dot-notation. If a schema is part of the
+`table_name`, then that specific table will be queried for its columns. If the
 `table_name` only holds a table name then the current schema will be used.
 
 Examples:
