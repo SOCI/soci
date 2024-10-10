@@ -116,7 +116,7 @@ jobs:
               ;;
 
             macOS)
-              set_env_var PGDATA /usr/local/var/postgres
+              set_env_var PGDATA /opt/homebrew/var/postgresql@14
               ;;
           esac
 
@@ -141,8 +141,7 @@ jobs:
             set_env_var BUILD_EXAMPLES YES
           fi
 
-      - name: Install dependencies under Linux
-        if: runner.os == 'Linux'
+      - name: Install dependencies
         run: ./scripts/ci/install.sh
 
       - name: Prepare for build
