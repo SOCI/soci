@@ -35,11 +35,14 @@ public:
             throw soci_error("Can't read past-the-end of BLOB data.");
         }
 
-        // make sure that we don't try to read
-        // past the end of the data
+        // make sure that we don't try to read past the end of the data
         toRead = std::min<decltype(toRead)>(toRead, buffer_.size() - offset);
 
-        memcpy(buf, buffer_.data() + offset, toRead);
+        // copy the data if there is anything to copy: note that not doing it
+        // when toRead == 0 is more than an optimization, as we could pass an
+        // invalid source pointer to memcpy() if we didn't check for this case
+        if (toRead)
+            memcpy(buf, buffer_.data() + offset, toRead);
 
         return toRead;
     }
@@ -54,7 +57,8 @@ public:
 
         buffer_.resize(std::max<std::size_t>(buffer_.size(), offset + toWrite));
 
-        memcpy(buffer_.data() + offset, buf, toWrite);
+        if (toWrite)
+            memcpy(buffer_.data() + offset, buf, toWrite);
 
         return toWrite;
     }
