@@ -19,6 +19,13 @@ on:
       - .cirrus.yml
       - .github/workflows/codeql.yml
       - appveyor.yml
+  workflow_dispatch:
+    inputs:
+      enable_ssh:
+        type: boolean
+        description: 'Enable ssh server before running the job'
+        required: false
+        default: false
 
 jobs:
   build:
@@ -32,7 +39,7 @@ jobs:
           # Note: the jobs are ordered in the order of decreasing running
           # time, as this should minimize the total run-time of all jobs.
           - backend: postgresql
-            runner: macos-12
+            runner: macos-14
             name: PostgreSQL macOS
           - backend: oracle
             name: Oracle 11
@@ -50,7 +57,7 @@ jobs:
           - backend: mysql
             name: MySQL
           - backend: sqlite3
-            runner: macos-12
+            runner: macos-14
             name: SQLite3 macOS
           - backend: sqlite3
             name: SQLite3 C++17
@@ -58,7 +65,7 @@ jobs:
           - backend: sqlite3
             name: SQLite3
           - backend: empty
-            runner: macos-12
+            runner: macos-14
             name: Empty macOS
           - backend: empty
             name: Empty
@@ -116,7 +123,7 @@ jobs:
               ;;
 
             macOS)
-              set_env_var PGDATA /usr/local/var/postgres
+              set_env_var PGDATA /opt/homebrew/var/postgresql@14
               ;;
           esac
 
@@ -141,8 +148,11 @@ jobs:
             set_env_var BUILD_EXAMPLES YES
           fi
 
-      - name: Install dependencies under Linux
-        if: runner.os == 'Linux'
+      - name: Setup tmate
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.enable_ssh }}
+
+      - name: Install dependencies
         run: ./scripts/ci/install.sh
 
       - name: Prepare for build
