@@ -19,6 +19,13 @@ on:
       - .cirrus.yml
       - .github/workflows/codeql.yml
       - appveyor.yml
+  workflow_dispatch:
+    inputs:
+      enable_ssh:
+        type: boolean
+        description: 'Enable ssh server before running the job'
+        required: false
+        default: false
 
 jobs:
   build:
@@ -140,6 +147,10 @@ jobs:
           if [ "${{matrix.build_examples}}" = true ]; then
             set_env_var BUILD_EXAMPLES YES
           fi
+
+      - name: Setup tmate
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.enable_ssh }}
 
       - name: Install dependencies
         run: ./scripts/ci/install.sh
