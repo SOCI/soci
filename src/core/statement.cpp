@@ -17,9 +17,25 @@
 #include <ctime>
 #include <cctype>
 #include <cstdint>
+#include <string>
+#include <sstream>
 
 using namespace soci;
 using namespace soci::details;
+
+
+std::string get_name(const details::use_type_base &param, std::size_t position,
+        const statement_backend *backend)
+{
+    // Use the name specified in the "use()" call if any,
+    // otherwise get the name of the matching parameter from
+    // the query itself, as parsed by the backend.
+    std::string name = param.get_name();
+    if (backend && name.empty())
+        name = backend->get_parameter_name(static_cast<int>(position));
+
+    return name.empty() ? std::to_string(position + 1) : name;
+}
 
 
 statement_impl::statement_impl(session & s)
@@ -574,10 +590,17 @@ void statement_impl::pre_fetch()
 
 void statement_impl::pre_use()
 {
+    session_.clear_query_parameters();
+
     std::size_t const usize = uses_.size();
     for (std::size_t i = 0; i != usize; ++i)
     {
         uses_[i]->pre_use();
+
+        std::string name = get_name(*uses_[i], i, backEnd_);
+        std::stringstream value;
+        uses_[i]->dump_value(value);
+        session_.add_query_parameter(std::move(name), value.str());
     }
 }
 
@@ -854,20 +877,9 @@ statement_impl::rethrow_current_exception_with_context(char const* operation)
 
                     details::use_type_base const& u = *uses_[i];
 
-                    // Use the name specified in the "use()" call if any,
-                    // otherwise get the name of the matching parameter from
-                    // the query itself, as parsed by the backend.
-                    std::string name = u.get_name();
-                    if (name.empty())
-                        name = backEnd_->get_parameter_name(static_cast<int>(i));
+                    oss << ":" << get_name(u, i, backEnd_);
 
-                    oss << ":";
-                    if (!name.empty())
-                        oss << name;
-                    else
-                        oss << (i + 1);
                     oss << "=";
-
                     u.dump_value(oss);
                 }
             }
