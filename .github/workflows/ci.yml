@@ -50,6 +50,9 @@ jobs:
             # There are many leak reports under Ubuntu 22.04, see #1008.
             container: ubuntu:18.04
             name: ODBC
+            # UBSAN gives nonsensical errors on this system, to be reviewed
+            # after migrating to newer Ubuntu and compiler versions.
+            no_ubsan: true
           - backend: firebird
             name: Firebird
           - backend: postgresql
@@ -146,6 +149,9 @@ jobs:
           fi
           if [ "${{matrix.build_examples}}" = true ]; then
             set_env_var BUILD_EXAMPLES YES
+          fi
+          if [ "${{matrix.no_ubsan}}" = true ]; then
+            set_env_var SOCI_NO_UBSAN 1
           fi
 
       - name: Setup tmate
