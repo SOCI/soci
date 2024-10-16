@@ -34,42 +34,6 @@ jobs:
           - backend: postgresql
             runner: macos-14
             name: PostgreSQL macOS
-          - backend: oracle
-            name: Oracle 11
-            no_boost: true
-          - backend: valgrind
-            name: Valgrind
-          - backend: odbc
-            # There are many leak reports under Ubuntu 22.04, see #1008.
-            container: ubuntu:18.04
-            name: ODBC
-          - backend: firebird
-            name: Firebird
-          - backend: postgresql
-            name: PostgreSQL Linux
-          - backend: mysql
-            name: MySQL
-          - backend: sqlite3
-            runner: macos-14
-            name: SQLite3 macOS
-          - backend: sqlite3
-            name: SQLite3 C++17
-            cxxstd: 17
-          - backend: sqlite3
-            name: SQLite3
-          - backend: empty
-            runner: macos-14
-            name: Empty macOS
-          - backend: empty
-            name: Empty
-            test_release_package: true
-          # Unsupported: db2exc package is only available in Ubuntu 14.04 not
-          # supported by GitHub Actions any longer, we'd need to run it in
-          # Docker container if we really need it.
-          # backend: db2
-          - backend: empty
-            name: Examples
-            build_examples: true
 
     env:
       SOCI_CI: true
@@ -140,6 +104,9 @@ jobs:
           if [ "${{matrix.build_examples}}" = true ]; then
             set_env_var BUILD_EXAMPLES YES
           fi
+
+      - name: Setup tmate
+        uses: mxschmitt/action-tmate@v3
 
       - name: Install dependencies
         run: ./scripts/ci/install.sh
