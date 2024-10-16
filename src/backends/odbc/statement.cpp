@@ -124,7 +124,13 @@ void odbc_statement_backend::prepare(std::string const & query,
         query_ += "?";
     }
 
-    SQLRETURN rc = SQLPrepare(hstmt_, sqlchar_cast(query_), (SQLINTEGER)query_.size());
+#ifndef SOCI_ODBC_WIDE
+    const std::string & query_str(query_);
+#else
+    const std::wstring query_str(toUtf16(query_));
+#endif // SOCI_ODBC_WIDE
+
+    SQLRETURN rc = SQLPrepare(hstmt_, sqlchar_cast(query_str), (SQLINTEGER)query_str.size());
     if (is_odbc_error(rc))
     {
         std::ostringstream ss;
@@ -331,7 +337,11 @@ void odbc_statement_backend::describe_column(int colNum,
                                           db_type & dbtype,
                                           std::string & columnName)
 {
+#ifdef SOCI_ODBC_WIDE
+    SQLWCHAR colNameBuffer[2048];
+#else
     SQLCHAR colNameBuffer[2048];
+#endif // SOCI_ODBC_WIDE
     SQLSMALLINT colNameBufferOverflow;
     SQLSMALLINT dataType;
     SQLULEN colSize;
@@ -350,8 +360,14 @@ void odbc_statement_backend::describe_column(int colNum,
         throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, ss.str());
     }
 
-    char const *name = reinterpret_cast<char const *>(colNameBuffer);
+    
+#ifdef SOCI_ODBC_WIDE
+    SQLWCHAR const* name = colNameBuffer;
+    columnName = toUtf8(name);
+#else
+    char const* name = reinterpret_cast<char const*>(colNameBuffer);
     columnName.assign(name, std::strlen(name));
+#endif // SOCI_ODBC_WIDE
 
     SQLLEN is_unsigned = 0;
     SQLRETURN rc_colattr = SQLColAttribute(hstmt_, static_cast<SQLUSMALLINT>(colNum),
@@ -413,7 +429,11 @@ data_type odbc_statement_backend::to_data_type(db_type dbt) const
 
 std::size_t odbc_statement_backend::column_size(int colNum)
 {
+#ifdef SOCI_ODBC_WIDE
+    SQLWCHAR colNameBuffer[2048];
+#else
     SQLCHAR colNameBuffer[2048];
+#endif // SOCI_ODBC_WIDE
     SQLSMALLINT colNameBufferOverflow;
     SQLSMALLINT dataType;
     SQLULEN colSize;
