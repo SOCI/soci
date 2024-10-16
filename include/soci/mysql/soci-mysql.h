@@ -163,7 +163,7 @@ struct mysql_vector_use_type_backend : details::vector_use_type_backend
 };
 
 struct mysql_session_backend;
-struct mysql_statement_backend : details::statement_backend
+struct SOCI_MYSQL_DECL mysql_statement_backend : details::statement_backend
 {
     mysql_statement_backend(mysql_session_backend &session);
 
@@ -235,14 +235,14 @@ struct mysql_statement_backend : details::statement_backend
     UseByNameBuffersMap useByNameBuffers_;
 };
 
-struct mysql_rowid_backend : details::rowid_backend
+struct SOCI_MYSQL_DECL mysql_rowid_backend : details::rowid_backend
 {
     mysql_rowid_backend(mysql_session_backend &session);
 
     ~mysql_rowid_backend() override;
 };
 
-class mysql_blob_backend : public details::trivial_blob_backend
+class SOCI_MYSQL_DECL mysql_blob_backend : public details::trivial_blob_backend
 {
 public:
     mysql_blob_backend(mysql_session_backend &session);
@@ -256,7 +256,7 @@ public:
     void load_from_hex_str(const char* str, std::size_t length);
 };
 
-struct mysql_session_backend : details::session_backend
+struct SOCI_MYSQL_DECL mysql_session_backend : details::session_backend
 {
     mysql_session_backend(connection_parameters const & parameters);
 

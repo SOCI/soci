@@ -210,7 +210,7 @@ struct oracle_vector_use_type_backend : details::vector_use_type_backend
 };
 
 struct oracle_session_backend;
-struct oracle_statement_backend : details::statement_backend
+struct SOCI_ORACLE_DECL oracle_statement_backend : details::statement_backend
 {
     oracle_statement_backend(oracle_session_backend &session);
 
@@ -250,7 +250,7 @@ struct oracle_statement_backend : details::statement_backend
     bool noData_;
 };
 
-struct oracle_rowid_backend : details::rowid_backend
+struct SOCI_ORACLE_DECL oracle_rowid_backend : details::rowid_backend
 {
     oracle_rowid_backend(oracle_session_backend &session);
 
@@ -259,7 +259,7 @@ struct oracle_rowid_backend : details::rowid_backend
     OCIRowid *rowidp_;
 };
 
-struct oracle_blob_backend : details::blob_backend
+struct SOCI_ORACLE_DECL oracle_blob_backend : details::blob_backend
 {
     typedef OCILobLocator * locator_t;
 
@@ -309,7 +309,7 @@ private:
     bool initialized_;
 };
 
-struct oracle_session_backend : details::session_backend
+struct SOCI_ORACLE_DECL oracle_session_backend : details::session_backend
 {
     oracle_session_backend(std::string const & serviceName,
         std::string const & userName,

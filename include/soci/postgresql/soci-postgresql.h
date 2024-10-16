@@ -249,7 +249,7 @@ struct postgresql_vector_use_type_backend : details::vector_use_type_backend
     std::vector<char *> buffers_;
 };
 
-struct postgresql_statement_backend : details::statement_backend
+struct SOCI_POSTGRESQL_DECL postgresql_statement_backend : details::statement_backend
 {
     postgresql_statement_backend(postgresql_session_backend & session,
         bool single_row_mode);
@@ -318,7 +318,7 @@ struct postgresql_statement_backend : details::statement_backend
     CategoryByColumnOID categoryByColumnOID_;
 };
 
-struct postgresql_rowid_backend : details::rowid_backend
+struct SOCI_POSTGRESQL_DECL postgresql_rowid_backend : details::rowid_backend
 {
     postgresql_rowid_backend(postgresql_session_backend & session);
 
@@ -327,7 +327,7 @@ struct postgresql_rowid_backend : details::rowid_backend
     unsigned long value_;
 };
 
-class postgresql_blob_backend : public details::blob_backend
+class SOCI_POSTGRESQL_DECL postgresql_blob_backend : public details::blob_backend
 {
 public:
 
@@ -382,7 +382,7 @@ private:
     void clone();
 };
 
-struct postgresql_session_backend : details::session_backend
+struct SOCI_POSTGRESQL_DECL postgresql_session_backend : details::session_backend
 {
     postgresql_session_backend(connection_parameters const & parameters,
         bool single_row_mode);

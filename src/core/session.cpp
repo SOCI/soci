@@ -84,18 +84,14 @@ private:
 
 session::session()
     : once(this), prepare(this),
-      logger_(new standard_logger_impl),
-      uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      logger_(new standard_logger_impl)
 {
 }
 
 session::session(connection_parameters const & parameters)
     : once(this), prepare(this),
       logger_(new standard_logger_impl),
-      lastConnectParameters_(parameters),
-      uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      lastConnectParameters_(parameters)
 {
     open(lastConnectParameters_);
 }
@@ -104,9 +100,7 @@ session::session(backend_factory const & factory,
     std::string const & connectString)
     : once(this), prepare(this),
       logger_(new standard_logger_impl),
-      lastConnectParameters_(factory, connectString),
-      uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      lastConnectParameters_(factory, connectString)
 {
     open(lastConnectParameters_);
 }
@@ -115,9 +109,7 @@ session::session(std::string const & backendName,
     std::string const & connectString)
     : once(this), prepare(this),
       logger_(new standard_logger_impl),
-      lastConnectParameters_(backendName, connectString),
-      uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      lastConnectParameters_(backendName, connectString)
 {
     open(lastConnectParameters_);
 }
@@ -125,9 +117,7 @@ session::session(std::string const & backendName,
 session::session(std::string const & connectString)
     : once(this), prepare(this),
       logger_(new standard_logger_impl),
-      lastConnectParameters_(connectString),
-      uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      lastConnectParameters_(connectString)
 {
     open(lastConnectParameters_);
 }
@@ -211,9 +201,10 @@ session& session::operator=(session && other)
 
 void session::reset_after_move()
 {
-    isFromPool_ = false;
-    pool_ = nullptr;
     backEnd_ = nullptr;
+    gotData_ = false;
+    isFromPool_ = false;
+    poolPosition_ = 0;
     pool_ = nullptr;
 }
 

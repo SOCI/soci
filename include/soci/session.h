@@ -227,15 +227,15 @@ private:
 
     connection_parameters lastConnectParameters_;
 
-    bool uppercaseColumnNames_;
+    bool uppercaseColumnNames_ = false;
 
-    details::session_backend * backEnd_;
+    details::session_backend * backEnd_ = nullptr;
 
-    bool gotData_;
+    bool gotData_ = false;
 
-    bool isFromPool_;
-    std::size_t poolPosition_;
-    connection_pool * pool_;
+    bool isFromPool_ = false;
+    std::size_t poolPosition_ = 0;
+    connection_pool * pool_ = nullptr;
 
     // Storing schema_table_names in a forward list as these are required
     // as persistent input to prepare_temp_type object during their life-

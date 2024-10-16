@@ -215,14 +215,14 @@ struct SOCI_DB2_DECL db2_statement_backend : details::statement_backend
     details::db2::binding_method use_binding_method_;
 };
 
-struct db2_rowid_backend : details::rowid_backend
+struct SOCI_DB2_DECL db2_rowid_backend : details::rowid_backend
 {
     db2_rowid_backend(db2_session_backend &session);
 
     ~db2_rowid_backend() override;
 };
 
-struct db2_blob_backend : details::blob_backend
+struct SOCI_DB2_DECL db2_blob_backend : details::blob_backend
 {
     db2_blob_backend(db2_session_backend& session);
 
@@ -238,7 +238,7 @@ struct db2_blob_backend : details::blob_backend
     db2_session_backend& session_;
 };
 
-struct db2_session_backend : details::session_backend
+struct SOCI_DB2_DECL db2_session_backend : details::session_backend
 {
     db2_session_backend(connection_parameters const& parameters);
 

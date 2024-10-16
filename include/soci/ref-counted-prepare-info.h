@@ -28,7 +28,7 @@ class into_type_base;
 
 // this class conveys only the statement text and the bind/define info
 // it exists only to be passed to statement's constructor
-class ref_counted_prepare_info : public ref_counted_statement_base
+class SOCI_DECL ref_counted_prepare_info : public ref_counted_statement_base
 {
 public:
     ref_counted_prepare_info(session& s)

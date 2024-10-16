@@ -234,7 +234,7 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend,
 };
 
 struct odbc_session_backend;
-struct odbc_statement_backend : details::statement_backend
+struct SOCI_ODBC_DECL odbc_statement_backend : details::statement_backend
 {
     odbc_statement_backend(odbc_session_backend &session);
 
@@ -288,14 +288,14 @@ private:
     exec_fetch_result do_fetch(int beginRow, int endRow);
 };
 
-struct odbc_rowid_backend : details::rowid_backend
+struct SOCI_ODBC_DECL odbc_rowid_backend : details::rowid_backend
 {
     odbc_rowid_backend(odbc_session_backend &session);
 
     ~odbc_rowid_backend() override;
 };
 
-struct odbc_blob_backend : details::blob_backend
+struct SOCI_ODBC_DECL odbc_blob_backend : details::blob_backend
 {
     odbc_blob_backend(odbc_session_backend &session);
 
@@ -311,7 +311,7 @@ struct odbc_blob_backend : details::blob_backend
     odbc_session_backend &session_;
 };
 
-struct odbc_session_backend : details::session_backend
+struct SOCI_ODBC_DECL odbc_session_backend : details::session_backend
 {
     odbc_session_backend(connection_parameters const & parameters);
 
@@ -355,7 +355,7 @@ struct odbc_session_backend : details::session_backend
     };
 
     // Determine the type of the database we're connected to.
-    SOCI_ODBC_DECL database_product get_database_product() const;
+    database_product get_database_product() const;
 
     // Return full ODBC connection string.
     std::string get_connection_string() const { return connection_string_; }
