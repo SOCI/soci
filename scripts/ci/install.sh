@@ -56,7 +56,7 @@ case "$(uname)" in
     Darwin)
         case "${SOCI_CI_BACKEND}" in
             postgresql)
-                brew install postgresql
+                brew install postgresql@14
                 ;;
         esac
         ;;
