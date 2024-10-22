@@ -296,23 +296,6 @@ namespace soci
 namespace tests
 {
 
-class procedure_creator_base
-{
-public:
-    procedure_creator_base(session& sql)
-        : msession(sql) { drop(); }
-
-    virtual ~procedure_creator_base() { drop();}
-private:
-    void drop()
-    {
-        try { msession << "drop procedure soci_test"; } catch (soci_error&) {}
-    }
-    session& msession;
-
-    SOCI_NOT_COPYABLE(procedure_creator_base)
-};
-
 class function_creator_base
 {
 public:
