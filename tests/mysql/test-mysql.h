@@ -1,7 +1,7 @@
 #ifndef SOCI_TESTS_MYSQL_H_INCLUDED
 #define SOCI_TESTS_MYSQL_H_INCLUDED
 
-#include "common-tests.h"
+#include "test-context.h"
 
 using namespace soci;
 using namespace soci::tests;
@@ -66,9 +66,15 @@ struct table_creator_for_blob : public tests::table_creator_base
 class test_context : public test_context_base
 {
 public:
-    test_context(backend_factory const &backEnd,
-                std::string const &connectString)
-        : test_context_base(backEnd, connectString) {}
+    test_context()
+    {
+        soci_use_common_tests = true;
+    }
+
+    std::string get_example_connection_string() const override
+    {
+        return "dbname=test user=root password=\'Ala ma kota\'";
+    }
 
     table_creator_base* table_creator_1(soci::session& s) const override
     {

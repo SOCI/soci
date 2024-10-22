@@ -5,15 +5,19 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include "common-tests.h"
 #include "soci/soci.h"
 #include "soci/oracle/soci-oracle.h"
+#include "test-assert.h"
+#include "test-context.h"
+#include "test-myint.h"
 #include <iomanip>
 #include <iostream>
 #include <string>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+
+#include <catch.hpp>
 
 using namespace soci;
 using namespace soci::tests;
@@ -1478,9 +1482,26 @@ struct table_creator_for_blob : public tests::table_creator_base
 class test_context :public test_context_base
 {
 public:
-    test_context(backend_factory const &backEnd,
-                std::string const &connectString)
-        : test_context_base(backEnd, connectString) {}
+    test_context()
+    {
+        soci_use_common_tests = true;
+    }
+
+    std::string get_example_connection_string() const override
+    {
+        return "service=orcl user=scott password=tiger";
+    }
+
+    bool start_testing() override
+    {
+        if (!std::getenv("ORACLE_HOME"))
+        {
+            std::cerr << "ORACLE_HOME environment variable must be defined for Oracle tests.\n";
+            return false;
+        }
+
+        return test_context_base::start_testing();
+    }
 
     table_creator_base* table_creator_1(soci::session& s) const override
     {
@@ -1553,44 +1574,4 @@ public:
     }
 };
 
-int main(int argc, char** argv)
-{
-#ifdef _MSC_VER
-    // Redirect errors, unrecoverable problems, and assert() failures to STDERR,
-    // instead of debug message window.
-    // This hack is required to run assert()-driven tests by Buildbot.
-    // NOTE: Comment this 2 lines for debugging with Visual C++ debugger to catch assertions inside.
-    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-    _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-#endif //_MSC_VER
-
-    if (argc >= 2)
-    {
-        connectString = argv[1];
-
-        // Replace the connect string with the process name to ensure that
-        // CATCH uses the correct name in its messages.
-        argv[1] = argv[0];
-
-        argc--;
-        argv++;
-    }
-    else
-    {
-        std::cout << "usage: " << argv[0]
-            << " connectstring [test-arguments...]\n"
-            << "example: " << argv[0]
-            << " \'service=orcl user=scott password=tiger\'\n";
-        std::exit(1);
-    }
-
-    if (!std::getenv("ORACLE_HOME"))
-    {
-        std::cerr << "ORACLE_HOME environment variable must be defined for Oracle tests.\n";
-        std::exit(1);
-    }
-
-    test_context tc(backEnd, connectString);
-
-    return Catch::Session().run(argc, argv);
-}
+test_context tc_oracle;

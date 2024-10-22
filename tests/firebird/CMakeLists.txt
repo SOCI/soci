@@ -12,5 +12,5 @@
 soci_backend_test(
   BACKEND Firebird
   DEPENDS Firebird
-  SOURCE test-firebird.cpp ${SOCI_TESTS_COMMON}
+  SOURCE test-firebird.cpp
   CONNSTR "service=/tmp/soci_test.fdb user=SYSDBA password=masterkey")

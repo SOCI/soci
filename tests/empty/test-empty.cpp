@@ -7,18 +7,14 @@
 
 #include "soci/soci.h"
 #include "soci/empty/soci-empty.h"
+#include "test-context.h"
 
-// Normally the tests would include common-tests.h here, but we can't run any
-// of the tests registered there, so instead include CATCH header directly.
-#define CATCH_CONFIG_RUNNER
 #include <catch.hpp>
 
-#include <iostream>
 #include <string>
-#include <cstdlib>
-#include <ctime>
 
 using namespace soci;
+using namespace soci::tests;
 
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_empty();
@@ -141,38 +137,62 @@ TEST_CASE("Dummy test", "[empty]")
     }
 }
 
-
-int main(int argc, char** argv)
+// Each test must define the test context class which implements the base class
+// pure virtual functions in a backend-specific way.
+class test_context :public test_context_base
 {
-
-#ifdef _MSC_VER
-    // Redirect errors, unrecoverable problems, and assert() failures to STDERR,
-    // instead of debug message window.
-    // This hack is required to run assert()-driven tests by Buildbot.
-    // NOTE: Comment this 2 lines for debugging with Visual C++ debugger to catch assertions inside.
-    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-    _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-#endif //_MSC_VER
-
-    if (argc >= 2)
+public:
+    test_context()
     {
-        connectString = argv[1];
-
-        // Replace the connect string with the process name to ensure that
-        // CATCH uses the correct name in its messages.
-        argv[1] = argv[0];
-
-        argc--;
-        argv++;
-    }
-    else
-    {
-        std::cout << "usage: " << argv[0]
-          << " connectstring [test-arguments...]\n"
-            << "example: " << argv[0]
-            << " \'connect_string_for_empty_backend\'\n";
-        std::exit(1);
+        // Unlike in all the other tests, we do _not_ reference
+        // soci_use_common_tests variable defined in test-common.cpp here,
+        // which means that this file is not getting linked and common tests
+        // are not executed for this backend (as they would all fail anyhow).
     }
 
-    return Catch::Session().run(argc, argv);
-}
+    std::string get_example_connection_string() const override
+    {
+        return "connect_string_for_empty_backend";
+    }
+
+    // As we don't use common tests with this pseudo-backend, we don't actually
+    // need to implement these functions -- but they still must be defined.
+    std::string to_date_time(std::string const&) const override
+    {
+        FAIL("Not implemented");
+        return {};
+    }
+
+    table_creator_base* table_creator_1(session&) const override
+    {
+        FAIL("Not implemented");
+        return nullptr;
+    }
+
+    table_creator_base* table_creator_2(session&) const override
+    {
+        FAIL("Not implemented");
+        return nullptr;
+    }
+
+    table_creator_base* table_creator_3(session&) const override
+    {
+        FAIL("Not implemented");
+        return nullptr;
+    }
+
+    table_creator_base* table_creator_4(session&) const override
+    {
+        FAIL("Not implemented");
+        return nullptr;
+    }
+
+
+    std::string sql_length(std::string const&) const override
+    {
+        FAIL("Not implemented");
+        return {};
+    }
+};
+
+test_context tc_empty;

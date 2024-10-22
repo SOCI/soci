@@ -7,14 +7,9 @@
 
 #include <soci/soci.h>
 #include <soci/sqlite3/soci-sqlite3.h>
-#include "common-tests.h"
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <cmath>
-#include <cstring>
-#include <ctime>
-#include <cstdint>
+#include "test-context.h"
+
+#include <catch.hpp>
 
 using namespace soci;
 using namespace soci::tests;
@@ -906,9 +901,23 @@ struct table_creator_for_blob : public tests::table_creator_base
 class test_context : public test_context_base
 {
 public:
-    test_context(backend_factory const &backend,
-                std::string const &connstr)
-        : test_context_base(backend, connstr) {}
+    test_context()
+    {
+        soci_use_common_tests = true;
+    }
+
+    bool initialize_connect_string(std::string argFromCommandLine) override
+    {
+        // Unlike most other backends, we have a reasonable default value for
+        // the connection string, so initialize it with it to use in-memory
+        // database if nothing is specified on the command line.
+        if (argFromCommandLine.empty())
+        {
+            argFromCommandLine = ":memory:";
+        }
+
+        return test_context_base::initialize_connect_string(argFromCommandLine);
+    }
 
     table_creator_base* table_creator_1(soci::session& s) const override
     {
@@ -989,36 +998,4 @@ public:
     }
 };
 
-int main(int argc, char** argv)
-{
-
-#ifdef _MSC_VER
-    // Redirect errors, unrecoverable problems, and assert() failures to STDERR,
-    // instead of debug message window.
-    // This hack is required to run assert()-driven tests by Buildbot.
-    // NOTE: Comment this 2 lines for debugging with Visual C++ debugger to catch assertions inside.
-    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-    _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-#endif //_MSC_VER
-
-    if (argc >= 2 && argv[1][0] != '-')
-    {
-        connectString = argv[1];
-
-        // Replace the connect string with the process name to ensure that
-        // CATCH uses the correct name in its messages.
-        argv[1] = argv[0];
-
-        argc--;
-        argv++;
-    }
-    else
-    {
-        // If no file name is specfied then work in-memory
-        connectString = ":memory:";
-    }
-
-    test_context tc(backEnd, connectString);
-
-    return Catch::Session().run(argc, argv);
-}
+test_context tc_sqlite3;

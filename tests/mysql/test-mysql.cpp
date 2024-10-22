@@ -24,6 +24,8 @@
 #include <errmsg.h>
 #include <cstdint>
 
+#include <catch.hpp>
+
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_mysql();
 
@@ -1126,29 +1128,4 @@ void test15()
     std::cout << "test 15 passed" << std::endl;
 }
 
-int main(int argc, char** argv)
-{
-    if (argc >= 2)
-    {
-        connectString = argv[1];
-
-        // Replace the connect string with the process name to ensure that
-        // CATCH uses the correct name in its messages.
-        argv[1] = argv[0];
-
-        argc--;
-        argv++;
-    }
-    else
-    {
-        std::cout << "usage: " << argv[0]
-            << " connectstring [test-arguments...]\n"
-            << "example: " << argv[0]
-            << " \"dbname=test user=root password=\'Ala ma kota\'\"\n";
-        std::exit(1);
-    }
-
-    test_context tc(backEnd, connectString);
-
-    return Catch::Session().run(argc, argv);
-}
+test_context tc_mysql;
