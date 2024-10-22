@@ -296,30 +296,6 @@ namespace soci
 namespace tests
 {
 
-class function_creator_base
-{
-public:
-    function_creator_base(session& sql)
-        : msession(sql) { drop(); }
-
-    virtual ~function_creator_base() { drop();}
-
-protected:
-    virtual std::string dropstatement()
-    {
-        return "drop function soci_test";
-    }
-
-private:
-    void drop()
-    {
-        try { msession << dropstatement(); } catch (soci_error&) {}
-    }
-    session& msession;
-
-    SOCI_NOT_COPYABLE(function_creator_base)
-};
-
 // This is a singleton class, at any given time there is at most one test
 // context alive and common_tests fixture class uses it.
 class test_context_base

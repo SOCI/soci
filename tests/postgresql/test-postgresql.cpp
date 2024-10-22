@@ -171,13 +171,14 @@ TEST_CASE("PostgreSQL prepare error", "[postgresql][exception]")
 }
 
 // function call test
-class function_creator : function_creator_base
+class function_creator
 {
 public:
-
-    function_creator(soci::session & sql)
-    : function_creator_base(sql)
+    explicit function_creator(soci::session & sql)
+        : sql_(sql)
     {
+        drop();
+
         // before a language can be used it must be defined
         // if it has already been defined then an error will occur
         try { sql << "create language plpgsql"; }
@@ -192,12 +193,16 @@ public:
             "end $$ language plpgsql";
     }
 
-protected:
+    ~function_creator() { drop(); }
 
-    std::string drop_statement()
+private:
+    void drop()
     {
-        return "drop function soci_test(varchar)";
+        try { sql_ << "drop function soci_test(varchar)"; } catch (soci_error&) {}
     }
+    session& sql_;
+
+    SOCI_NOT_COPYABLE(function_creator)
 };
 
 TEST_CASE("PostgreSQL function call", "[postgresql][function]")
