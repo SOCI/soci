@@ -22,7 +22,8 @@ include_directories(
   ${SOCI_SOURCE_DIR}/include/private
   ${CMAKE_CURRENT_SOURCE_DIR})
 
-file(GLOB SOCI_TESTS_COMMON common-tests.h)
+set(SOCI_TESTS_COMMON
+  ${CMAKE_CURRENT_SOURCE_DIR}/common-tests.h)
 
 add_subdirectory(empty)
 add_subdirectory(db2)
