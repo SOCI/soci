@@ -363,7 +363,7 @@ inline bool operator== ( const std::tm& a, const std::tm& b )
            a.tm_year == b.tm_year && a.tm_wday == b.tm_wday && a.tm_yday == b.tm_yday && a.tm_isdst == b.tm_isdst;
 }
 
-TEST_CASE_METHOD ( common_tests, "timegm implementation", "[core][timegm]" )
+TEST_CASE("timegm implementation", "[core][timegm]")
 {
     std::tm t1;
     t1.tm_year = 105;
