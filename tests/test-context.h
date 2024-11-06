@@ -13,6 +13,7 @@
 #include <cassert>
 #include <clocale>
 #include <cstdlib>
+#include <memory>
 #include <string>
 
 // These variables are defined in the existing tests code and could be removed
@@ -52,6 +53,9 @@ private:
 
     SOCI_NOT_COPYABLE(table_creator_base)
 };
+
+using auto_table_creator = std::unique_ptr<table_creator_base>;
+
 
 // This is a singleton class, at any given time there is at most one test
 // context alive and common_tests fixture class uses it.
@@ -251,6 +255,24 @@ class test_context_common : public test_context_base
 public:
     // This is implemented in test-common.cpp.
     test_context_common();
+};
+
+// Fixture class for tests that need to use the database.
+class common_tests
+{
+public:
+    common_tests()
+    : tc_(test_context_base::get_instance()),
+      backEndFactory_(tc_.get_backend_factory()),
+      connectString_(tc_.get_connect_string())
+    {}
+
+protected:
+    test_context_base const & tc_;
+    backend_factory const &backEndFactory_;
+    std::string const connectString_;
+
+    SOCI_NOT_COPYABLE(common_tests)
 };
 
 } // namespace tests

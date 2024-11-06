@@ -27,6 +27,7 @@ include_directories(
 add_library(soci_tests_common STATIC
   common/test-main.cpp
   common/test-common.cpp
+  common/test-custom.cpp
   test-assert.h
   test-context.h
   test-myint.h)
