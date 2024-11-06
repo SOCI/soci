@@ -26,6 +26,7 @@ include_directories(
 # It's always static for simplicity, even when using shared SOCI libraries.
 add_library(soci_tests_common STATIC
   common/test-main.cpp
+  common/test-boost.cpp
   common/test-common.cpp
   common/test-custom.cpp
   test-assert.h
