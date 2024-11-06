@@ -3118,7 +3118,7 @@ TEST_CASE_METHOD(common_tests, "Get affected rows", "[core][affected-rows]")
     auto_table_creator tableCreator(tc_.table_creator_4(sql));
     if (!tableCreator.get())
     {
-        std::cout << "test get_affected_rows skipped (function not implemented)" << std::endl;
+        WARN("test get_affected_rows skipped (function not implemented)");
         return;
     }
 
