@@ -139,16 +139,14 @@ TEST_CASE("Dummy test", "[empty]")
 
 // Each test must define the test context class which implements the base class
 // pure virtual functions in a backend-specific way.
+//
+// Unlike in all the other tests we inherit directly from test_context_base and
+// not test_context_common because we don't want to link in, and hence run, all
+// the common tests that would fail for this dummy empty backend.
 class test_context :public test_context_base
 {
 public:
-    test_context()
-    {
-        // Unlike in all the other tests, we do _not_ reference
-        // soci_use_common_tests variable defined in test-common.cpp here,
-        // which means that this file is not getting linked and common tests
-        // are not executed for this backend (as they would all fail anyhow).
-    }
+    test_context() = default;
 
     std::string get_example_connection_string() const override
     {

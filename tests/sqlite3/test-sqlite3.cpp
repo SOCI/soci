@@ -898,13 +898,10 @@ struct table_creator_for_blob : public tests::table_creator_base
     }
 };
 
-class test_context : public test_context_base
+class test_context : public test_context_common
 {
 public:
-    test_context()
-    {
-        soci_use_common_tests = true;
-    }
+    test_context() = default;
 
     bool initialize_connect_string(std::string argFromCommandLine) override
     {

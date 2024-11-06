@@ -152,13 +152,10 @@ struct table_creator_for_clob : table_creator_base
 // Support for SOCI Common Tests
 //
 
-class test_context : public test_context_base
+class test_context : public test_context_common
 {
 public:
-    test_context()
-    {
-        soci_use_common_tests = true;
-    }
+    test_context() = default;
 
     bool initialize_connect_string(std::string argFromCommandLine) override
     {

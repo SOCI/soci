@@ -50,8 +50,6 @@
 #include "test-context.h"
 #include "test-myint.h"
 
-bool soci_use_common_tests = false;
-
 // Although SQL standard mandates right padding CHAR(N) values to their length
 // with spaces, some backends don't confirm to it:
 //
@@ -6761,6 +6759,10 @@ TEST_CASE_METHOD(common_tests, "Failover", "[keep-alive][.]")
 }
 
 } // namespace test_cases
+
+// Implement test_context_common ctor here, even if it's trivial: like this,
+// just using this class pulls in the tests defined in this file.
+test_context_common::test_context_common() = default;
 
 } // namespace tests
 

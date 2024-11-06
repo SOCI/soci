@@ -151,13 +151,10 @@ struct table_creator_for_get_last_insert_id : table_creator_base
 // Support for SOCI Common Tests
 //
 
-class test_context : public test_context_base
+class test_context : public test_context_common
 {
 public:
-    test_context()
-    {
-        soci_use_common_tests = true;
-    }
+    test_context() = default;
 
     std::string get_example_connection_string() const override
     {

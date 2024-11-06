@@ -1186,13 +1186,10 @@ struct TableCreatorXML : public tests::table_creator_base
     }
 };
 
-class test_context : public tests::test_context_base
+class test_context : public tests::test_context_common
 {
     public:
-        test_context()
-        {
-            soci_use_common_tests = true;
-        }
+        test_context() = default;
 
         std::string get_example_connection_string() const override
         {

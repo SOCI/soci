@@ -20,12 +20,6 @@
 extern std::string connectString;
 extern soci::backend_factory const &backEnd;
 
-// This variable can be referenced by the tests to force linking the object
-// file that this source file is compiled into with them and must be used to
-// avoid linking the common tests into the "empty" test, while allowing to
-// request linking with it in all the other tests.
-extern bool soci_use_common_tests;
-
 namespace soci
 {
 
@@ -249,6 +243,14 @@ private:
     static test_context_base* the_test_context_;
 
     SOCI_NOT_COPYABLE(test_context_base)
+};
+
+// Base class for all "normal" tests, i.e. those that run common tests.
+class test_context_common : public test_context_base
+{
+public:
+    // This is implemented in test-common.cpp.
+    test_context_common();
 };
 
 } // namespace tests
