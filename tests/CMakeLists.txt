@@ -31,6 +31,7 @@ add_library(soci_tests_common STATIC
   common/test-custom.cpp
   common/test-dynamic.cpp
   common/test-lob.cpp
+  common/test-rowset.cpp
   test-assert.h
   test-context.h
   test-myint.h)
