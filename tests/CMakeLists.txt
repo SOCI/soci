@@ -29,6 +29,7 @@ add_library(soci_tests_common STATIC
   common/test-boost.cpp
   common/test-common.cpp
   common/test-custom.cpp
+  common/test-dynamic.cpp
   test-assert.h
   test-context.h
   test-myint.h)
