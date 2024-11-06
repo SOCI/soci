@@ -2737,7 +2737,7 @@ TEST_CASE_METHOD(common_tests, "NULL expected exception", "[core][exception][nul
     CHECK_THROWS_AS( std::for_each(rs.begin(), rs.end(), THelper()), soci_error );
 }
 
-TEST_CASE_METHOD(common_tests, "soci_error is nothrow", "[core][exception][nothrow]")
+TEST_CASE("soci_error is nothrow", "[core][exception][nothrow]")
 {
     CHECK(std::is_nothrow_copy_assignable<soci_error>::value == true);
     CHECK(std::is_nothrow_copy_constructible<soci_error>::value == true);
