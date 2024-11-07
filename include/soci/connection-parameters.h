@@ -51,6 +51,18 @@ public:
     void set_connect_string(const std::string & connectString) { connectString_ = connectString; }
     std::string const & get_connect_string() const { return connectString_; }
 
+
+    // For some (but not all) backends the connection string consists of
+    // space-separated name=value pairs. This function parses the string
+    // assuming it uses this syntax and sets the options accordingly.
+    //
+    // If it detects invalid syntax, e.g. a name without a corresponding value,
+    // it throws an exception.
+    //
+    // Note that currently unknown options are simply ignored.
+    void extract_options_from_space_separated_string();
+
+
     // Set the value of the given option, overwriting any previous value.
     void set_option(const char * name, std::string const & value)
     {
