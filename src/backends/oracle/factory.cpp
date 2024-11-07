@@ -9,11 +9,13 @@
 #include "soci/oracle/soci-oracle.h"
 #include "soci/connection-parameters.h"
 #include "soci/backend-loader.h"
+
+#include "soci-cstrtoi.h"
+
 #include <cctype>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
-#include <sstream>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
@@ -45,11 +47,7 @@ int charset_code(const std::string & name)
     else
     {
         // allow explicit number value
-
-        std::istringstream ss(name);
-
-        ss >> code;
-        if (!ss)
+        if (!cstring_to_unsigned(code, name.c_str()))
         {
             throw soci_error("Invalid character set name.");
         }
