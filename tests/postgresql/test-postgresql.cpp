@@ -7,7 +7,8 @@
 
 #include "soci/soci.h"
 #include "soci/postgresql/soci-postgresql.h"
-#include "common-tests.h"
+#include "test-context.h"
+#include "test-myint.h"
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -15,6 +16,8 @@
 #include <cstring>
 #include <ctime>
 #include <cstdlib>
+
+#include <catch.hpp>
 
 using namespace soci;
 using namespace soci::tests;
@@ -171,13 +174,14 @@ TEST_CASE("PostgreSQL prepare error", "[postgresql][exception]")
 }
 
 // function call test
-class function_creator : function_creator_base
+class function_creator
 {
 public:
-
-    function_creator(soci::session & sql)
-    : function_creator_base(sql)
+    explicit function_creator(soci::session & sql)
+        : sql_(sql)
     {
+        drop();
+
         // before a language can be used it must be defined
         // if it has already been defined then an error will occur
         try { sql << "create language plpgsql"; }
@@ -192,12 +196,16 @@ public:
             "end $$ language plpgsql";
     }
 
-protected:
+    ~function_creator() { drop(); }
 
-    std::string drop_statement()
+private:
+    void drop()
     {
-        return "drop function soci_test(varchar)";
+        try { sql_ << "drop function soci_test(varchar)"; } catch (soci_error&) {}
     }
+    session& sql_;
+
+    SOCI_NOT_COPYABLE(function_creator)
 };
 
 TEST_CASE("PostgreSQL function call", "[postgresql][function]")
@@ -1468,12 +1476,15 @@ struct table_creator_for_blob : public tests::table_creator_base
 };
 
 
-class test_context : public test_context_base
+class test_context : public test_context_common
 {
 public:
-    test_context(backend_factory const &backend, std::string const &connstr)
-        : test_context_base(backend, connstr)
-    {}
+    test_context() = default;
+
+    std::string get_example_connection_string() const override
+    {
+        return "Host=localhost;Port=5432;Database=test;User=postgres;Password=postgres";
+    }
 
     table_creator_base* table_creator_1(soci::session& s) const override
     {
@@ -1531,39 +1542,4 @@ public:
     }
 };
 
-int main(int argc, char** argv)
-{
-
-#ifdef _MSC_VER
-    // Redirect errors, unrecoverable problems, and assert() failures to STDERR,
-    // instead of debug message window.
-    // This hack is required to run assert()-driven tests by Buildbot.
-    // NOTE: Comment this 2 lines for debugging with Visual C++ debugger to catch assertions inside.
-    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-    _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-#endif //_MSC_VER
-
-    if (argc >= 2)
-    {
-        connectString = argv[1];
-
-        // Replace the connect string with the process name to ensure that
-        // CATCH uses the correct name in its messages.
-        argv[1] = argv[0];
-
-        argc--;
-        argv++;
-    }
-    else
-    {
-        std::cout << "usage: " << argv[0]
-            << " connectstring [test-arguments...]\n"
-            << "example: " << argv[0]
-            << " \'connect_string_for_PostgreSQL\'\n";
-        return EXIT_FAILURE;
-    }
-
-    test_context tc(backEnd, connectString);
-
-    return Catch::Session().run(argc, argv);
-}
+test_context tc_postgresql;

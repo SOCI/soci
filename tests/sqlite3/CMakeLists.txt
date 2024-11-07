@@ -12,5 +12,5 @@
 soci_backend_test(
   BACKEND SQLite3
   DEPENDS SQLite3
-  SOURCE test-sqlite3.cpp ${SOCI_TESTS_COMMON}
+  SOURCE test-sqlite3.cpp
   CONNSTR ":memory:")

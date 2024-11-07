@@ -15,7 +15,7 @@ if (WIN32)
     NAME access
     BACKEND ODBC
     DEPENDS ODBC
-    SOURCE test-odbc-access.cpp ${SOCI_TESTS_COMMON}
+    SOURCE test-odbc-access.cpp
     CONNSTR "FILEDSN=${CMAKE_CURRENT_SOURCE_DIR}/test-access.dsn")
 else()
     message(STATUS "MS Access test disabled on non-Windows platform")
@@ -32,14 +32,14 @@ soci_backend_test(
   NAME mssql
   BACKEND ODBC
   DEPENDS ODBC
-  SOURCE test-odbc-mssql.cpp ${SOCI_TESTS_COMMON}
+  SOURCE test-odbc-mssql.cpp
   CONNSTR "FILEDSN=${CMAKE_CURRENT_BINARY_DIR}/test-mssql.dsn")
 
 soci_backend_test(
   NAME mysql
   BACKEND ODBC
   DEPENDS ODBC
-  SOURCE test-odbc-mysql.cpp ${SOCI_TESTS_COMMON}
+  SOURCE test-odbc-mysql.cpp
   CONNSTR "FILEDSN=${CMAKE_CURRENT_SOURCE_DIR}/test-mysql.dsn")
 
 if(WIN32)
@@ -51,7 +51,7 @@ soci_backend_test(
   NAME postgresql
   BACKEND ODBC
   DEPENDS ODBC
-  SOURCE test-odbc-postgresql.cpp ${SOCI_TESTS_COMMON}
+  SOURCE test-odbc-postgresql.cpp
   CONNSTR "FILEDSN=${CMAKE_CURRENT_SOURCE_DIR}/${TEST_PGSQL_DSN}")
 
 # TODO: DB2 backend is tested by Travis CI on dedicated VM, separate from ODBC,

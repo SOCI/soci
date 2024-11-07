@@ -22,7 +22,20 @@ include_directories(
   ${SOCI_SOURCE_DIR}/include/private
   ${CMAKE_CURRENT_SOURCE_DIR})
 
-file(GLOB SOCI_TESTS_COMMON common-tests.h)
+# This library is used by all test executables.
+# It's always static for simplicity, even when using shared SOCI libraries.
+add_library(soci_tests_common STATIC
+  common/test-main.cpp
+  common/test-boost.cpp
+  common/test-common.cpp
+  common/test-custom.cpp
+  common/test-dynamic.cpp
+  common/test-lob.cpp
+  common/test-manual.cpp
+  common/test-rowset.cpp
+  test-assert.h
+  test-context.h
+  test-myint.h)
 
 add_subdirectory(empty)
 add_subdirectory(db2)
