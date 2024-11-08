@@ -16,15 +16,11 @@
 #include <sstream>
 #include <string>
 
+#include "soci-case.h"
+
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
-
-// This is used instead of tolower() just to avoid warnings about int to char
-// casts inside MSVS std::transform() implementation.
-char toLowerCh(char c) {
-    return static_cast<char>( std::tolower(c) );
-}
 
 using namespace soci;
 using namespace soci::details;
@@ -550,7 +546,7 @@ void sqlite3_statement_backend::describe_column(int colNum,
         dt.resize(siter - dt.begin());
 
     // do all comparisons in lower case
-    std::transform(dt.begin(), dt.end(), dt.begin(), toLowerCh);
+    dt = string_tolower(dt);
 
     sqlite3_data_type_map::const_iterator iter = dataTypeMap.find(dt);
     if (iter != dataTypeMap.end())
