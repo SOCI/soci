@@ -47,14 +47,21 @@ session sql("sqlite3", "db=db.sqlite timeout=2 shared_cache=true");
 
 The set of parameters used in the connection string for SQLite is:
 
-* `dbname` or `db`
+* `dbname` or `db` - this parameter is required unless the entire connection
+string is just the database name, in which case it must not contain any `=`
+signs.
 * `timeout` - set sqlite busy timeout (in seconds) ([link](http://www.sqlite.org/c3ref/busy_timeout.html))
 * `readonly` - open database in read-only mode instead of the default read-write (note that the database file must already exist in this case, see [the documentation](https://www.sqlite.org/c3ref/open.html))
 * `nocreate` - open an existing database without creating a new one if it doesn't already exist (by default, a new database file is created).
 * `synchronous` - set the pragma synchronous flag ([link](http://www.sqlite.org/pragma.html#pragma_synchronous))
-* `shared_cache` - should be `true` ([link](http://www.sqlite.org/c3ref/enable_shared_cache.html))
+* `shared_cache` - enable or disabled shared pager cache ([link](http://www.sqlite.org/c3ref/enable_shared_cache.html))
 * `vfs` - set the SQLite VFS used to as OS interface. The VFS should be registered before opening the connection, see [the documenation](https://www.sqlite.org/vfs.html)
-* `foreign_keys` - set the pragma foreign_keys flag ([link](https://www.sqlite.org/pragma.html#pragma_foreign_keys)).
+* `foreign_keys` - set the pragma `foreign_keys` flag ([link](https://www.sqlite.org/pragma.html#pragma_foreign_keys)).
+
+Boolean options `readonly`, `nocreate`, and `shared_cache` can be either
+specified without any value, which is equivalent to setting them to `1`, or set
+to one of `1`, `yes`, `true` or `on` to enable the option or `0`, `no`, `false`
+or `off` to disable it. Specifying any other value results in an error.
 
 Once you have created a `session` object as shown above, you can use it to access the database, for example:
 
