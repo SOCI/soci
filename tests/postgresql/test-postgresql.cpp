@@ -1483,7 +1483,7 @@ public:
 
     std::string get_example_connection_string() const override
     {
-        return "Host=localhost;Port=5432;Database=test;User=postgres;Password=postgres";
+        return "host=localhost port=5432 dbname=test user=postgres password=postgres";
     }
 
     table_creator_base* table_creator_1(soci::session& s) const override
