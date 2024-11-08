@@ -201,68 +201,6 @@ skipWhiteSpace(std::string::const_iterator& i,
     }
 }
 
-// Return the string of all characters until the first space or the specified
-// delimiter.
-//
-// Throws if the first non-space character after the end of the word is not the
-// delimiter. However just returns en empty string, without throwing, if
-// nothing is left at all in the string except for white space.
-std::string
-getWordUntil(std::string const &s, std::string::const_iterator &i, char delim)
-{
-    std::string::const_iterator const end = s.end();
-    skipWhiteSpace(i, end);
-
-    // We need to handle this case specially because it's not an error if
-    // nothing at all remains in the string. But if anything does remain, then
-    // we must have the delimiter.
-    if (i == end)
-        return std::string();
-
-    // Simply put anything until the delimiter into the word, stopping at the
-    // first white space character.
-    std::string word;
-    for (; i != end; ++i)
-    {
-        if (*i == delim)
-            break;
-
-        if (isSpace(i))
-        {
-            skipWhiteSpace(i, end);
-            if (i == end || *i != delim)
-            {
-                std::ostringstream os;
-                os << "Expected '" << delim << "' at position "
-                   << (i - s.begin() + 1)
-                   << " in the connection string \""
-                   << s << "\".";
-
-                throw soci_error(os.str());
-            }
-
-            break;
-        }
-
-        word += *i;
-    }
-
-    if (i == end)
-    {
-        std::ostringstream os;
-        os << "Expected '" << delim
-           << "' not found before the end of the string "
-           << "in the connection string \""
-           << s << "\".";
-
-        throw soci_error(os.str());
-    }
-
-    ++i;    // Skip the delimiter itself.
-
-    return word;
-}
-
 // Return a possibly quoted word, i.e. either just a sequence of non-space
 // characters or everything inside a double-quoted string.
 //
@@ -314,15 +252,59 @@ getPossiblyQuotedWord(std::string const &s, std::string::const_iterator &i)
 }
 
 } // namespace anonymous
+
 void connection_parameters::extract_options_from_space_separated_string()
 {
+    constexpr char delim = '=';
+
+    std::string::const_iterator const end = connectString_.end();
     for (std::string::const_iterator i = connectString_.begin(); ; )
     {
-        const auto name = getWordUntil(connectString_, i, '=');
-        if (name.empty())
-            break;
+        skipWhiteSpace(i, end);
 
-        options_[name] = getPossiblyQuotedWord(connectString_, i);
+        // Anything until the delimiter or space is the name.
+        std::string name;
+        std::string value;
+        for (;;)
+        {
+            if (i == end || isSpace(i))
+                break;
+
+            if (*i == delim)
+            {
+                if (name.empty())
+                {
+                    std::ostringstream os;
+                    os << "Unexpected '"
+                       << delim
+                       << "' without a name at position "
+                       << (i - connectString_.begin() + 1)
+                       << " in the connection string \""
+                       << connectString_
+                       << "\".";
+
+                    throw soci_error(os.str());
+                }
+
+                ++i;    // Skip the delimiter itself.
+
+                // And get the option value which follows it.
+                value = getPossiblyQuotedWord(connectString_, i);
+                break;
+            }
+
+            name += *i++;
+        }
+
+        if (name.empty())
+        {
+            // We've reached the end of the string and there is nothing left.
+            break;
+        }
+
+        // Note that value may be empty here, we intentionally allow specifying
+        // options without values, e.g. just "switch" instead of "switch=1".
+        options_[name] = value;
     }
 }
 

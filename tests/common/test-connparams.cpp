@@ -64,9 +64,9 @@ TEST_CASE("Connection string parsing", "[core][connstring]")
     {
         connection_parameters params(backEnd, "");
 
-        // Missing value.
-        check_invalid_connection_string("foo");
-        check_invalid_connection_string("foo=ok bar");
+        // Missing name.
+        check_invalid_connection_string("=");
+        check_invalid_connection_string("foo=ok =bar");
 
         // Missing quote.
         check_invalid_connection_string(R"(foo=")");
