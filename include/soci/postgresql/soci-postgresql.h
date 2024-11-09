@@ -384,8 +384,7 @@ private:
 
 struct SOCI_POSTGRESQL_DECL postgresql_session_backend : details::session_backend
 {
-    postgresql_session_backend(connection_parameters const & parameters,
-        bool single_row_mode);
+    explicit postgresql_session_backend(connection_parameters const & parameters);
 
     ~postgresql_session_backend() override;
 
