@@ -1536,7 +1536,9 @@ public:
 
     std::string to_xml(std::string const& x) const override
     {
-        return "xmltype(" + x + ")";
+        // We can't apply xmltype() to null values as this appears to parse
+        // empty string as XML -- and failing.
+        return "case when " + x  + " is not null then xmltype(" + x + ") else null end";
     }
 
     std::string from_xml(std::string const& x) const override
