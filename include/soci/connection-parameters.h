@@ -62,6 +62,10 @@ public:
     // Note that currently unknown options are simply ignored.
     void extract_options_from_space_separated_string();
 
+    // Build a space-separated string from the options, quoting the options
+    // values using the provided quote character.
+    std::string build_string_from_options(char quote) const;
+
 
     // Set the value of the given option, overwriting any previous value.
     void set_option(const char * name, std::string const & value)

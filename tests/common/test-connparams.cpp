@@ -124,6 +124,16 @@ TEST_CASE("connection_parameters::extract_option", "[core][connstring]")
     CHECK(!params.get_option("bar", value));
 }
 
+TEST_CASE("connection_parameters::build_string_from_options", "[core][connstring]")
+{
+    connection_parameters params(backEnd, R"(foo bar="baz" quux="1 2")");
+    params.extract_options_from_space_separated_string();
+
+    // Check that unecessary quotes are removed, empty value are explicitly
+    // specified and the required quotes are kept.
+    CHECK(params.build_string_from_options('\'') == "bar=baz foo='' quux='1 2'");
+}
+
 } // namespace tests
 
 } // namespace soci

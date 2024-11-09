@@ -336,4 +336,48 @@ void connection_parameters::extract_options_from_space_separated_string()
     }
 }
 
+std::string
+connection_parameters::build_string_from_options(char quote) const
+{
+    std::string res;
+
+    for (auto const& option : options_)
+    {
+        if (!res.empty())
+        {
+            res += ' ';
+        }
+
+        res += option.first;
+        res += '=';
+
+        // Quote the value if it contains spaces or the quote character itself.
+        auto const& value = option.second;
+        if (value.empty() ||
+                value.find(' ') != std::string::npos ||
+                    value.find(quote) != std::string::npos)
+        {
+            res += quote;
+
+            for (char c : value)
+            {
+                if (c == quote)
+                {
+                    res += '\\';
+                }
+
+                res += c;
+            }
+
+            res += quote;
+        }
+        else
+        {
+            res += value;
+        }
+    }
+
+    return res;
+}
+
 } // namespace soci
