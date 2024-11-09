@@ -10,6 +10,8 @@
 #include "soci/soci-backend.h"
 #include "soci/backend-loader.h"
 
+#include "soci-case.h"
+
 char const * soci::option_reconnect = "reconnect";
 
 char const * soci::option_true = "1";
@@ -169,6 +171,32 @@ void connection_parameters::reset_after_move()
 {
     factory_ = nullptr;
     backendRef_ = nullptr;
+}
+
+/* static */
+bool
+connection_parameters::is_true_value(char const* name, std::string const& value)
+{
+    // At least for compatibility (but also because this is convenient and
+    // makes sense), we accept "readonly" as synonym for "readonly=1" etc.
+    if (value.empty())
+        return true;
+
+    std::string const val = details::string_tolower(value);
+
+    if (val == "1" || val == "yes" || val == "true" || val == "on")
+        return true;
+
+    if (val == "0" || val == "no" || val == "false" || val == "off")
+        return false;
+
+    std::ostringstream os;
+    os << R"(Invalid value ")"
+       << value
+       << R"(" for boolean option ")"
+       << name
+       << '"';
+    throw soci_error(os.str());
 }
 
 namespace

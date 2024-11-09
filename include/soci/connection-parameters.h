@@ -82,12 +82,21 @@ public:
         return true;
     }
 
-    // Return true if the option with the given name was found with option_true
-    // value.
+    // Return true if the option with the given name has one of the values
+    // considered to be true, i.e. "1", "yes", "true" or "on" or is empty.
+    // Return false if the value is one of "0", "no", "false" or "off" or the
+    // option was not specified at all.
+    //
+    // Throw an exception if the option was given but the value is none of
+    // the above, comparing case-insensitively.
+    static bool is_true_value(const char * name, std::string const & value);
+
+    // Return true if the option with the given name was found with a "true"
+    // value in the sense of is_true_value() above.
     bool is_option_on(const char * name) const
     {
       std::string value;
-      return get_option(name, value) && value == option_true;
+      return get_option(name, value) && is_true_value(name, value);
     }
 
 private:

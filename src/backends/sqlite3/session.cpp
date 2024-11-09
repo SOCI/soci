@@ -105,38 +105,6 @@ static bool check_if_sequence_table_exists(sqlite_api::sqlite3* conn)
     return sequence_table_exists;
 }
 
-// Helper function returning true if the given option was found with any of the
-// values that SQLite considers to be true, false if it was found with any
-// value considered false by SQLite or not found at all and throws an exception
-// if it was found with any other value.
-bool check_bool_option(connection_parameters const& params, const char* name)
-{
-    std::string val;
-
-    if (!params.get_option(name, val))
-        return false;
-
-    // At least for compatibility (but also because this is convenient and
-    // makes sense), we accept "readonly" as synonym for "readonly=1" etc.
-    if (val.empty())
-        return true;
-
-    // See https://www.sqlite.org/pragma.html
-    if (val == "1" || val == "yes" || val == "true" || val == "on")
-        return true;
-
-    if (val == "0" || val == "no" || val == "false" || val == "off")
-        return false;
-
-    std::ostringstream ss;
-    ss << R"(Invalid value ")"
-       << val
-       << R"(" for boolean option ")"
-       << name
-       << '"';
-    throw sqlite3_soci_error(ss.str(), 0);
-};
-
 sqlite3_session_backend::sqlite3_session_backend(
     connection_parameters const & parameters)
     : sequence_table_exists_(false)
@@ -174,15 +142,15 @@ sqlite3_session_backend::sqlite3_session_backend(
     {
         synchronous = val;
     }
-    if (check_bool_option(params, "readonly"))
+    if (params.is_option_on("readonly"))
     {
         connection_flags = (connection_flags | SQLITE_OPEN_READONLY) & ~(SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
     }
-    if (check_bool_option(params, "nocreate"))
+    if (params.is_option_on("nocreate"))
     {
         connection_flags &= ~SQLITE_OPEN_CREATE;
     }
-    if (check_bool_option(params, "shared_cache"))
+    if (params.is_option_on("shared_cache"))
     {
         connection_flags |= SQLITE_OPEN_SHAREDCACHE;
     }
