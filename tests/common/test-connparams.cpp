@@ -107,6 +107,23 @@ TEST_CASE("Connection string parsing", "[core][connstring]")
     }
 }
 
+TEST_CASE("connection_parameters::extract_option", "[core][connstring]")
+{
+    std::string value;
+
+    connection_parameters params(backEnd, "foo bar=baz");
+    params.extract_options_from_space_separated_string();
+
+    // Extracting an option must remove it.
+    CHECK(params.extract_option("foo", value));
+    CHECK(!params.get_option("foo", value));
+
+    CHECK_FALSE(params.extract_option("baz", value));
+
+    CHECK(params.extract_option("bar", value));
+    CHECK(!params.get_option("bar", value));
+}
+
 } // namespace tests
 
 } // namespace soci

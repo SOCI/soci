@@ -82,6 +82,20 @@ public:
         return true;
     }
 
+    // Same as get_option(), but also removes the option from the connection
+    // string if it was present in it.
+    bool extract_option(const char * name, std::string & value)
+    {
+        Options::iterator const it = options_.find(name);
+        if (it == options_.end())
+            return false;
+
+        value = it->second;
+        options_.erase(it);
+
+        return true;
+    }
+
     // Return true if the option with the given name has one of the values
     // considered to be true, i.e. "1", "yes", "true" or "on" or is empty.
     // Return false if the value is one of "0", "no", "false" or "off" or the
