@@ -152,6 +152,8 @@ jobs:
           fi
           if [ "${{matrix.no_ubsan}}" = true ]; then
             set_env_var SOCI_NO_UBSAN 1
+          else
+            set_env_var UBSAN_OPTIONS print_stacktrace=1:halt_on_error=1
           fi
 
       - name: Setup tmate
