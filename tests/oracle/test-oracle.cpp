@@ -126,7 +126,6 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
             char buf2[25];
             strftime(buf1, sizeof(buf1), "%Y-%m-%d %H:%M:%S", &t1);
             strftime(buf2, sizeof(buf2), "%Y-%m-%d %H:%M:%S", &t2);
-            std::cout << "buf1 = " << buf1 << ", buf2 = " << buf2 << std::endl;
             CHECK(std::string(buf1) == std::string(buf2));
             CHECK(t1.tm_sec == t2.tm_sec);
             CHECK(t1.tm_min == t2.tm_min);
