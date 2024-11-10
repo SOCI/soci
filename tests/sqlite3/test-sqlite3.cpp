@@ -17,6 +17,45 @@ using namespace soci::tests;
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_sqlite3();
 
+TEST_CASE("SQLite connection string", "[sqlite][connstring]")
+{
+    CHECK_THROWS_WITH(soci::session(backEnd, ""),
+                      Catch::Contains("Database name must be specified"));
+    CHECK_THROWS_WITH(soci::session(backEnd, "readonly=1"),
+                      Catch::Contains("Database name must be specified"));
+
+    CHECK_THROWS_WITH(soci::session(backEnd, "readonly=\""),
+                      Catch::Contains("Expected '\"'"));
+    CHECK_THROWS_WITH(soci::session(backEnd, "readonly=maybe"),
+                      Catch::Contains("Invalid value"));
+
+    CHECK_THROWS_WITH(soci::session(backEnd, "db=no-such-file nocreate=1"),
+                      Catch::Contains("Cannot establish connection"));
+
+    CHECK_NOTHROW(soci::session(backEnd, "dbname=:memory: nocreate"));
+    CHECK_NOTHROW(soci::session(backEnd, "dbname=:memory: foreign_keys=on"));
+
+    // Also check an alternative way of specifying the connection parameters.
+    connection_parameters params(backEnd, "dbname=still-no-such-file");
+    params.set_option("foreign_keys", "1");
+    params.set_option("nocreate", "1");
+    CHECK_THROWS_WITH(soci::session(params),
+                      Catch::Contains("Cannot establish connection"));
+
+    // Finally allow testing arbitrary connection strings by specifying them in
+    // the environment variables.
+    if (auto const connstr = std::getenv("SOCI_TEST_CONNSTR_GOOD"))
+    {
+        CHECK_NOTHROW(soci::session(backEnd, connstr));
+    }
+
+    if (auto const connstr = std::getenv("SOCI_TEST_CONNSTR_BAD"))
+    {
+        CHECK_THROWS_AS(soci::session(backEnd, connstr), soci_error);
+    }
+
+}
+
 // ROWID test
 // In sqlite3 the row id can be called ROWID, _ROWID_ or oid
 TEST_CASE("SQLite rowid", "[sqlite][rowid][oid]")

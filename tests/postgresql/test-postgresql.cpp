@@ -130,6 +130,17 @@ struct oid_table_creator : public table_creator_base
     }
 };
 
+TEST_CASE("PostgreSQL connection string", "[postgresql][connstring]")
+{
+    // There are no required parts in libpq connection string, so we can only
+    // test that invalid options are detected.
+    CHECK_THROWS_WITH(soci::session(backEnd, "bloordyblop=1"),
+                      Catch::Contains(R"(invalid connection option "bloordyblop")"));
+
+    CHECK_THROWS_WITH(soci::session(backEnd, "sslmode=bloordyblop"),
+                      Catch::Contains(R"(invalid sslmode value: "bloordyblop")"));
+}
+
 // ROWID test
 // Note: in PostgreSQL, there is no ROWID, there is OID.
 // It is still provided as a separate type for "portability",
@@ -1483,7 +1494,7 @@ public:
 
     std::string get_example_connection_string() const override
     {
-        return "Host=localhost;Port=5432;Database=test;User=postgres;Password=postgres";
+        return "host=localhost port=5432 dbname=test user=postgres password=postgres";
     }
 
     table_creator_base* table_creator_1(soci::session& s) const override

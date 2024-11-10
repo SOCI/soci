@@ -3730,6 +3730,7 @@ TEST_CASE_METHOD(common_tests, "Logger", "[core][log]")
 //
 // These variables are defined in other files we want to force linking with.
 extern volatile bool soci_use_test_boost;
+extern volatile bool soci_use_test_connparams;
 extern volatile bool soci_use_test_custom;
 extern volatile bool soci_use_test_dynamic;
 extern volatile bool soci_use_test_lob;
@@ -3742,6 +3743,7 @@ test_context_common::test_context_common()
     soci_use_test_boost = true;
 #endif
 
+    soci_use_test_connparams = true;
     soci_use_test_custom = true;
     soci_use_test_dynamic = true;
     soci_use_test_lob = true;

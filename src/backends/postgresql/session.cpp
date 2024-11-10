@@ -141,10 +141,10 @@ std::string create_case_list_of_strings(const std::vector<std::string>& list)
 } // namespace unnamed
 
 postgresql_session_backend::postgresql_session_backend(
-    connection_parameters const& parameters, bool single_row_mode)
+    connection_parameters const& parameters)
     : statementCount_(0), conn_(0)
 {
-    single_row_mode_ = single_row_mode;
+    single_row_mode_ = false;
 
     connect(parameters);
 }
@@ -152,7 +152,34 @@ postgresql_session_backend::postgresql_session_backend(
 void postgresql_session_backend::connect(
     connection_parameters const& parameters)
 {
-    PGconn* conn = PQconnectdb(parameters.get_connect_string().c_str());
+    auto params = parameters;
+    params.extract_options_from_space_separated_string();
+
+    // Extract SOCI-specific options, i.e. check if they're present and remove
+    // them from params to avoid passing them to PQconnectdb() below.
+    std::string value;
+
+    // This one is not used by this backend, but can be present in the
+    // connection string if we're called from session::reconnect().
+    params.extract_option(option_reconnect, value);
+
+    // Notice that we accept both variants only for compatibility.
+    char const* name;
+    if (params.extract_option("singlerow", value))
+        name = "singlerow";
+    else if (params.extract_option("singlerows", value))
+        name = "singlerows";
+    else
+        name = nullptr;
+
+    if (name)
+    {
+        single_row_mode_ = connection_parameters::is_true_value(name, value);
+    }
+
+    // We can't use SOCI connection string with PQconnectdb() directly because
+    // libpq uses single quotes instead of double quotes used by SOCI.
+    PGconn* conn = PQconnectdb(params.build_string_from_options('\'').c_str());
     if (0 == conn || CONNECTION_OK != PQstatus(conn))
     {
         std::string msg = "Cannot establish connection to the database.";

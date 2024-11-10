@@ -23,7 +23,6 @@ namespace // unnamed
 {
 
 // used only with asynchronous operations in single-row mode
-#ifndef SOCI_POSTGRESQL_NOSINGLEROWMODE
 void wait_until_operation_complete(postgresql_session_backend & session)
 {
     for (;;)
@@ -49,7 +48,6 @@ void throw_soci_error(PGconn * conn, const char * msg)
 
     throw soci_error(description);
 }
-#endif // !SOCI_POSTGRESQL_NOSINGLEROWMODE
 
 } // unnamed namespace
 
@@ -61,12 +59,6 @@ postgresql_statement_backend::postgresql_statement_backend(
       hasIntoElements_(false), hasVectorIntoElements_(false),
       hasUseElements_(false), hasVectorUseElements_(false)
 {
-#ifdef SOCI_POSTGRESQL_NOSINGLEROWMODE
-  if (single_row_mode)
-  {
-    throw soci_error("Single row mode not supported in this version of the library");
-  }
-#endif // !SOCI_POSTGRESQL_NOSINGLEROWMODE
 }
 
 postgresql_statement_backend::~postgresql_statement_backend()
@@ -229,7 +221,6 @@ void postgresql_statement_backend::prepare(std::string const & query,
         // if it fails to prepare it we can't DEALLOCATE it.
         std::string statementName = session_.get_next_statement_name();
 
-#ifndef SOCI_POSTGRESQL_NOSINGLEROWMODE
         if (single_row_mode_)
         {
             // prepare for single-row retrieval
@@ -245,7 +236,6 @@ void postgresql_statement_backend::prepare(std::string const & query,
             wait_until_operation_complete(session_);
         }
         else
-#endif // !SOCI_POSTGRESQL_NOSINGLEROWMODE
         {
             // default multi-row query execution
 
@@ -265,12 +255,10 @@ void postgresql_statement_backend::prepare(std::string const & query,
 statement_backend::exec_fetch_result
 postgresql_statement_backend::execute(int number)
 {
-#ifndef SOCI_POSTGRESQL_NOSINGLEROWMODE
     if (single_row_mode_ && (number > 1))
     {
         throw soci_error("Bulk operations are not supported with single-row mode.");
     }
-#endif // !SOCI_POSTGRESQL_NOSINGLEROWMODE
 
     // If the statement was "just described", then we know that
     // it was actually executed with all the use elements
@@ -365,7 +353,6 @@ postgresql_statement_backend::execute(int number)
                 {
                     // this query was separately prepared
 
-#ifndef SOCI_POSTGRESQL_NOSINGLEROWMODE
                     if (single_row_mode_)
                     {
                         int result = PQsendQueryPrepared(session_.conn_,
@@ -386,7 +373,6 @@ postgresql_statement_backend::execute(int number)
                         }
                     }
                     else
-#endif // !SOCI_POSTGRESQL_NOSINGLEROWMODE
                     {
                         // default multi-row execution
 
@@ -401,7 +387,6 @@ postgresql_statement_backend::execute(int number)
                     // this query was not separately prepared and should
                     // be executed as a one-time query
 
-#ifndef SOCI_POSTGRESQL_NOSINGLEROWMODE
                     if (single_row_mode_)
                     {
                         int result = PQsendQueryParams(session_.conn_, query_.c_str(),
@@ -421,7 +406,6 @@ postgresql_statement_backend::execute(int number)
                         }
                     }
                     else
-#endif // !SOCI_POSTGRESQL_NOSINGLEROWMODE
                     {
                         // default multi-row execution
 
@@ -462,7 +446,6 @@ postgresql_statement_backend::execute(int number)
             {
                 // this query was separately prepared
 
-#ifndef SOCI_POSTGRESQL_NOSINGLEROWMODE
                 if (single_row_mode_)
                 {
                     int result = PQsendQueryPrepared(session_.conn_,
@@ -481,7 +464,6 @@ postgresql_statement_backend::execute(int number)
                     }
                 }
                 else
-#endif // !SOCI_POSTGRESQL_NOSINGLEROWMODE
                 {
                     // default multi-row execution
 
@@ -491,7 +473,6 @@ postgresql_statement_backend::execute(int number)
             }
             else // stType_ == st_one_time_query
             {
-#ifndef SOCI_POSTGRESQL_NOSINGLEROWMODE
                 if (single_row_mode_)
                 {
                     int result = PQsendQuery(session_.conn_, query_.c_str());
@@ -509,7 +490,6 @@ postgresql_statement_backend::execute(int number)
                     }
                 }
                 else
-#endif // !SOCI_POSTGRESQL_NOSINGLEROWMODE
                 {
                     // default multi-row execution
 
@@ -520,7 +500,6 @@ postgresql_statement_backend::execute(int number)
     }
 
     bool process_result;
-#ifndef SOCI_POSTGRESQL_NOSINGLEROWMODE
     if (single_row_mode_)
     {
         if (justDescribed_)
@@ -537,7 +516,6 @@ postgresql_statement_backend::execute(int number)
         process_result = result_.check_for_data("Cannot execute query.");
     }
     else
-#endif // !SOCI_POSTGRESQL_NOSINGLEROWMODE
     {
         // default multi-row execution
 
@@ -579,12 +557,10 @@ postgresql_statement_backend::execute(int number)
 statement_backend::exec_fetch_result
 postgresql_statement_backend::fetch(int number)
 {
-#ifndef SOCI_POSTGRESQL_NOSINGLEROWMODE
     if (single_row_mode_ && (number > 1))
     {
         throw soci_error("Bulk operations are not supported with single-row mode.");
     }
-#endif // !SOCI_POSTGRESQL_NOSINGLEROWMODE
 
     // Note:
     // In the multi-row mode this function does not actually fetch anything from anywhere
@@ -599,7 +575,6 @@ postgresql_statement_backend::fetch(int number)
 
     if (currentRow_ >= numberOfRows_)
     {
-#ifndef SOCI_POSTGRESQL_NOSINGLEROWMODE
         if (single_row_mode_)
         {
             PGresult* res = PQgetResult(session_.conn_);
@@ -626,7 +601,6 @@ postgresql_statement_backend::fetch(int number)
             }
         }
         else
-#endif // !SOCI_POSTGRESQL_NOSINGLEROWMODE
         {
             // default multi-row execution
 
@@ -639,7 +613,6 @@ postgresql_statement_backend::fetch(int number)
     {
         if (currentRow_ + number > numberOfRows_)
         {
-#ifndef SOCI_POSTGRESQL_NOSINGLEROWMODE
             if (single_row_mode_)
             {
                 rowsToConsume_ = 1;
@@ -647,7 +620,6 @@ postgresql_statement_backend::fetch(int number)
                 return ef_success;
             }
             else
-#endif // !SOCI_POSTGRESQL_NOSINGLEROWMODE
             {
                 // default multi-row execution
 
@@ -661,13 +633,11 @@ postgresql_statement_backend::fetch(int number)
         }
         else
         {
-#ifndef SOCI_POSTGRESQL_NOSINGLEROWMODE
             if (single_row_mode_)
             {
                 rowsToConsume_ = 1;
             }
             else
-#endif // !SOCI_POSTGRESQL_NOSINGLEROWMODE
             {
                 rowsToConsume_ = number;
             }
