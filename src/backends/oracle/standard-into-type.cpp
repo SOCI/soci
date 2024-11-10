@@ -391,15 +391,23 @@ void oracle_standard_into_type_backend::post_fetch(
 
 void oracle_standard_into_type_backend::clean_up()
 {
-    if (type_ == x_xmltype || type_ == x_longstring)
+    if (ociData_)
     {
-        free_temp_lob(statement_.session_, static_cast<OCILobLocator *>(ociData_));
-        ociData_ = NULL;
-    }
+        switch (type_)
+        {
+            case x_xmltype:
+            case x_longstring:
+                free_temp_lob(statement_.session_, static_cast<OCILobLocator *>(ociData_));
+                break;
 
-    if (type_ == x_blob)
-    {
-        OCIDescriptorFree(ociData_, OCI_DTYPE_LOB);
+            case x_blob:
+                OCIDescriptorFree(ociData_, OCI_DTYPE_LOB);
+                break;
+
+            default:
+                throw soci_error("Internal error: OCI data used for unexpected type");
+        }
+
         ociData_ = NULL;
     }
 

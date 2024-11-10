@@ -63,7 +63,7 @@ struct oracle_standard_into_type_backend : details::standard_into_type_backend
     OCIDefine *defnp_;
     sb2 indOCIHolder_;
     void *data_;
-    void *ociData_;
+    void *ociData_ = NULL;
     char *buf_;        // generic buffer
     details::exchange_type type_;
 
@@ -143,7 +143,7 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
     OCIBind *bindp_;
     sb2 indOCIHolder_;
     void *data_;
-    void *ociData_;
+    void *ociData_ = NULL;
     bool readOnly_;
     char *buf_;        // generic buffer
     details::exchange_type type_;
