@@ -20,7 +20,7 @@
 #include <cstdint>
 #include <vector>
 #include <soci/soci-backend.h>
-#include <private/soci-trivial-blob-backend.h>
+#include <soci/trivial-blob-backend.h>
 
 // Disable flood of nonsense warnings generated for SQLite
 #ifdef _MSC_VER
@@ -204,7 +204,7 @@ struct sqlite3_column_info
 typedef std::vector<sqlite3_column_info> sqlite3_column_info_list;
 
 struct sqlite3_session_backend;
-struct sqlite3_statement_backend : details::statement_backend
+struct SOCI_SQLITE3_DECL sqlite3_statement_backend : details::statement_backend
 {
     sqlite3_statement_backend(sqlite3_session_backend &session);
 
@@ -253,7 +253,7 @@ private:
     exec_fetch_result bind_and_execute(int number);
 };
 
-struct sqlite3_rowid_backend : details::rowid_backend
+struct SOCI_SQLITE3_DECL sqlite3_rowid_backend : details::rowid_backend
 {
     sqlite3_rowid_backend(sqlite3_session_backend &session);
 
@@ -262,7 +262,7 @@ struct sqlite3_rowid_backend : details::rowid_backend
     unsigned long value_;
 };
 
-struct sqlite3_blob_backend : details::trivial_blob_backend
+struct SOCI_SQLITE3_DECL sqlite3_blob_backend : details::trivial_blob_backend
 {
     sqlite3_blob_backend(sqlite3_session_backend &session);
 
@@ -271,7 +271,7 @@ struct sqlite3_blob_backend : details::trivial_blob_backend
     void ensure_buffer_initialized();
 };
 
-struct sqlite3_session_backend : details::session_backend
+struct SOCI_SQLITE3_DECL sqlite3_session_backend : details::session_backend
 {
     sqlite3_session_backend(connection_parameters const & parameters);
 

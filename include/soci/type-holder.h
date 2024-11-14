@@ -208,7 +208,7 @@ struct type_holder_trait<uint64_t>
     static const db_type type = db_uint64;
 };
 
-#if defined(SOCI_INT64_IS_LONG)
+#if defined(SOCI_INT64_T_IS_LONG)
 template <>
 struct type_holder_trait<long long> : type_holder_trait<int64_t>
 {

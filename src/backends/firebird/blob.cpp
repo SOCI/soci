@@ -59,7 +59,8 @@ std::size_t firebird_blob_backend::read_from_start(void * buf, std::size_t toRea
     // Ensure we don't read more than we have
     toRead = std::min(toRead, size - offset);
 
-    std::memcpy(buf, &data_[offset], toRead);
+    if (toRead)
+        std::memcpy(buf, &data_[offset], toRead);
 
     return toRead;
 }
@@ -121,7 +122,8 @@ void firebird_blob_backend::trim(std::size_t newLen)
 void firebird_blob_backend::writeBuffer(std::size_t offset,
                                       const void * buf, std::size_t toWrite)
 {
-    std::memcpy(data_.data() + offset, buf, toWrite);
+    if (toWrite)
+        std::memcpy(data_.data() + offset, buf, toWrite);
 }
 
 void firebird_blob_backend::open()
@@ -324,4 +326,9 @@ long firebird_blob_backend::getBLOBInfo()
     }
 
     return total_length;
+}
+
+details::session_backend &firebird_blob_backend::get_session_backend()
+{
+    return session_;
 }

@@ -24,6 +24,8 @@
 #include <errmsg.h>
 #include <cstdint>
 
+#include <catch.hpp>
+
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_mysql();
 
@@ -752,6 +754,338 @@ TEST_CASE("MySQL last insert id", "[mysql][last-insert-id]")
     CHECK(id == 42);
 }
 
+TEST_CASE("MySQL DDL with metadata", "[mysql][ddl]")
+{
+    soci::session sql(backEnd, connectString);
+
+    // note: prepare_column_descriptions expects l-value
+    std::string ddl_t1 = "ddl_t1";
+    std::string ddl_t2 = "ddl_t2";
+    std::string ddl_t3 = "ddl_t3";
+
+    // single-expression variant:
+    sql.create_table(ddl_t1).column("i", soci::dt_integer).column("j", soci::dt_integer);
+
+    // check whether this table was created:
+
+    bool ddl_t1_found = false;
+    bool ddl_t2_found = false;
+    bool ddl_t3_found = false;
+    std::string table_name;
+    soci::statement st = (sql.prepare_table_names(), into(table_name));
+    st.execute();
+    while (st.fetch())
+    {
+        if (table_name == ddl_t1) { ddl_t1_found = true; }
+        if (table_name == ddl_t2) { ddl_t2_found = true; }
+        if (table_name == ddl_t3) { ddl_t3_found = true; }
+    }
+
+    CHECK(ddl_t1_found);
+    CHECK(ddl_t2_found == false);
+    CHECK(ddl_t3_found == false);
+
+    // check whether ddl_t1 has the right structure:
+
+    bool i_found = false;
+    bool j_found = false;
+    bool other_found = false;
+    soci::column_info ci;
+    soci::statement st1 = (sql.prepare_column_descriptions(ddl_t1), into(ci));
+    st1.execute();
+    while (st1.fetch())
+    {
+        if (ci.name == "i")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
+            CHECK(ci.nullable);
+            i_found = true;
+        }
+        else if (ci.name == "j")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
+            CHECK(ci.nullable);
+            j_found = true;
+        }
+        else
+        {
+            other_found = true;
+        }
+    }
+
+    CHECK(i_found);
+    CHECK(j_found);
+    CHECK(other_found == false);
+
+    // two more tables:
+
+    // separately defined columns:
+    // (note: statement is executed when ddl object goes out of scope)
+    {
+        soci::ddl_type ddl = sql.create_table(ddl_t2);
+        ddl.column("i", soci::dt_integer);
+        ddl.column("j", soci::dt_integer);
+        ddl.column("k", soci::dt_integer)("not null");
+        ddl.primary_key("t2_pk", "j");
+    }
+
+    sql.add_column(ddl_t1, "k", soci::dt_integer);
+    sql.add_column(ddl_t1, "big", soci::dt_string, 0); // "unlimited" length -> text
+    sql.drop_column(ddl_t1, "i");
+
+    // or with constraint as in t2:
+    sql.add_column(ddl_t2, "m", soci::dt_integer)("not null");
+
+    // third table with a foreign key to the second one
+    {
+        soci::ddl_type ddl = sql.create_table(ddl_t3);
+        ddl.column("x", soci::dt_integer);
+        ddl.column("y", soci::dt_integer);
+        ddl.foreign_key("t3_fk", "x", ddl_t2, "j");
+    }
+
+    // check if all tables were created:
+
+    ddl_t1_found = false;
+    ddl_t2_found = false;
+    ddl_t3_found = false;
+    soci::statement st2 = (sql.prepare_table_names(), into(table_name));
+    st2.execute();
+    while (st2.fetch())
+    {
+        if (table_name == ddl_t1) { ddl_t1_found = true; }
+        if (table_name == ddl_t2) { ddl_t2_found = true; }
+        if (table_name == ddl_t3) { ddl_t3_found = true; }
+    }
+
+    CHECK(ddl_t1_found);
+    CHECK(ddl_t2_found);
+    CHECK(ddl_t3_found);
+
+    // check if ddl_t1 has the right structure (it was altered):
+
+    i_found = false;
+    j_found = false;
+    bool k_found = false;
+    bool big_found = false;
+    other_found = false;
+    soci::statement st3 = (sql.prepare_column_descriptions(ddl_t1), into(ci));
+    st3.execute();
+    while (st3.fetch())
+    {
+        if (ci.name == "j")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
+            CHECK(ci.nullable);
+            j_found = true;
+        }
+        else if (ci.name == "k")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
+            CHECK(ci.nullable);
+            k_found = true;
+        }
+        else if (ci.name == "big")
+        {
+            CHECK(ci.type == soci::dt_string);
+            CHECK(ci.dataType == soci::db_string);
+            CHECK(ci.precision == 0); // "unlimited" for strings
+            big_found = true;
+        }
+        else
+        {
+            other_found = true;
+        }
+    }
+
+    CHECK(i_found == false);
+    CHECK(j_found);
+    CHECK(k_found);
+    CHECK(big_found);
+    CHECK(other_found == false);
+
+    // check if ddl_t2 has the right structure:
+
+    i_found = false;
+    j_found = false;
+    k_found = false;
+    bool m_found = false;
+    other_found = false;
+    soci::statement st4 = (sql.prepare_column_descriptions(ddl_t2), into(ci));
+    st4.execute();
+    while (st4.fetch())
+    {
+        if (ci.name == "i")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
+            CHECK(ci.nullable);
+            i_found = true;
+        }
+        else if (ci.name == "j")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
+            CHECK(ci.nullable == false); // primary key
+            j_found = true;
+        }
+        else if (ci.name == "k")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
+            CHECK(ci.nullable == false);
+            k_found = true;
+        }
+        else if (ci.name == "m")
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
+            CHECK(ci.nullable == false);
+            m_found = true;
+        }
+        else
+        {
+            other_found = true;
+        }
+    }
+
+    CHECK(i_found);
+    CHECK(j_found);
+    CHECK(k_found);
+    CHECK(m_found);
+    CHECK(other_found == false);
+
+    sql.drop_table(ddl_t1);
+    sql.drop_table(ddl_t3); // note: this must be dropped before ddl_t2
+    sql.drop_table(ddl_t2);
+
+    // check if all tables were dropped:
+
+    ddl_t1_found = false;
+    ddl_t2_found = false;
+    ddl_t3_found = false;
+    st2 = (sql.prepare_table_names(), into(table_name));
+    st2.execute();
+    while (st2.fetch())
+    {
+        if (table_name == ddl_t1) { ddl_t1_found = true; }
+        if (table_name == ddl_t2) { ddl_t2_found = true; }
+        if (table_name == ddl_t3) { ddl_t3_found = true; }
+    }
+
+    CHECK(ddl_t1_found == false);
+    CHECK(ddl_t2_found == false);
+    CHECK(ddl_t3_found == false);
+}
+
+// Test cross-schema metadata
+TEST_CASE("Cross-schema metadata", "[mysql][cross-schema]")
+{
+    soci::session sql(backEnd, connectString);
+
+    // note: prepare_column_descriptions expects l-value
+    std::string tables = "tables";
+    std::string column_name = "TABLE_NAME";
+
+    // Get the database name - which happens to be the schema
+    // name in generic DB lingo.
+    std::string schema;
+    sql << "select DATABASE()", into(schema);
+    CHECK(!schema.empty());
+
+    // create a table in local schema (database) with the same name
+    // as the tables table in the information_schema
+    sql.create_table(tables).column(column_name, soci::dt_integer);
+
+    // check whether this table was created:
+
+    bool tables_found = false;
+    std::string table_name;
+    soci::statement st1 = (sql.prepare_table_names(), into(table_name));
+    st1.execute();
+    while (st1.fetch())
+    {
+        if (table_name == tables)
+        {
+            tables_found = true;
+        }
+    }
+
+    CHECK(tables_found);
+
+    // Get information for the tables table we just created and not
+    // the tables table in information_schema which isn't in our path.
+    int  records = 0;
+    soci::column_info ci;
+    soci::statement st2 = (sql.prepare_column_descriptions(tables), into(ci));
+    st2.execute();
+    while (st2.fetch())
+    {
+        if (ci.name == column_name)
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
+            records++;
+        }
+    }
+
+    CHECK(records == 1);
+
+    // Run the same query but this time specific with the schema.
+    std::string schemaTables = schema + "." + tables;
+    records = 0;
+    soci::statement st3 = (sql.prepare_column_descriptions(schemaTables), into(ci));
+    st3.execute();
+    while (st3.fetch())
+    {
+        if (ci.name == column_name)
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
+            records++;
+        }
+    }
+
+    CHECK(records == 1);
+
+    // Finally run the query with the information_schema.
+    std::string information_schemaTables = "information_schema." + tables;
+    records = 0;
+    soci::statement st4 = (sql.prepare_column_descriptions(information_schemaTables), into(ci));
+    st4.execute();
+    while (st4.fetch())
+    {
+        if (ci.name == column_name)
+        {
+            CHECK(ci.type == soci::dt_string);
+            CHECK(ci.dataType == soci::db_string);
+            records++;
+        }
+    }
+
+    CHECK(records == 1);
+
+    // Delete table and check that it is gone
+    sql.drop_table(tables);
+    tables_found = false;
+    st4 = (sql.prepare_table_names(), into(table_name));
+    st4.execute();
+    while (st4.fetch())
+    {
+        if (ci.name == column_name)
+        {
+            tables_found = true;
+        }
+    }
+
+    CHECK(tables_found == false);
+}
+
+
 std::string escape_string(soci::session& sql, const std::string& s)
 {
     mysql_session_backend* backend = static_cast<mysql_session_backend*>(
@@ -794,29 +1128,4 @@ void test15()
     std::cout << "test 15 passed" << std::endl;
 }
 
-int main(int argc, char** argv)
-{
-    if (argc >= 2)
-    {
-        connectString = argv[1];
-
-        // Replace the connect string with the process name to ensure that
-        // CATCH uses the correct name in its messages.
-        argv[1] = argv[0];
-
-        argc--;
-        argv++;
-    }
-    else
-    {
-        std::cout << "usage: " << argv[0]
-            << " connectstring [test-arguments...]\n"
-            << "example: " << argv[0]
-            << " \"dbname=test user=root password=\'Ala ma kota\'\"\n";
-        std::exit(1);
-    }
-
-    test_context tc(backEnd, connectString);
-
-    return Catch::Session().run(argc, argv);
-}
+test_context tc_mysql;

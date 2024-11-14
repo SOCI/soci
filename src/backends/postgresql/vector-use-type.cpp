@@ -9,6 +9,7 @@
 #include "soci/soci-platform.h"
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci-dtocstr.h"
+#include "soci-mktime.h"
 #include "common.h"
 #include "soci/type-wrappers.h"
 #include <libpq/libpq-fs.h> // libpq
@@ -218,9 +219,7 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                     std::size_t const bufSize = 80;
                     buf = new char[bufSize];
 
-                    snprintf(buf, bufSize, "%d-%02d-%02d %02d:%02d:%02d",
-                        v[i].tm_year + 1900, v[i].tm_mon + 1, v[i].tm_mday,
-                        v[i].tm_hour, v[i].tm_min, v[i].tm_sec);
+                    format_std_tm(v[i], buf, bufSize);
                 }
                 break;
             case x_xmltype:

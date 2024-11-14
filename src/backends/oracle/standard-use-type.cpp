@@ -5,7 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define soci_ORACLE_SOURCE
+#define SOCI_ORACLE_SOURCE
 #include "soci/oracle/soci-oracle.h"
 #include "soci/blob.h"
 #include "clob.h"
@@ -29,7 +29,6 @@
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
-#define snprintf _snprintf
 #endif
 
 using namespace soci;
@@ -719,14 +718,23 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
 
 void oracle_standard_use_type_backend::clean_up()
 {
-    if (type_ == x_xmltype || type_ == x_longstring)
+    if (ociData_)
     {
-        free_temp_lob(statement_.session_, static_cast<OCILobLocator *>(ociData_));
-        ociData_ = NULL;
-    }
-    
-    if (type_ == x_blob)
-    {
+        switch (type_)
+        {
+            case x_xmltype:
+            case x_longstring:
+                free_temp_lob(statement_.session_, static_cast<OCILobLocator *>(ociData_));
+                break;
+
+            case x_blob:
+                // We don't own the LOB locator, oracle_blob_backend does.
+                break;
+
+            default:
+                throw soci_error("Internal error: OCI data used for unexpected type");
+        }
+
         ociData_ = NULL;
     }
 

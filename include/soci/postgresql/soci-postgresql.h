@@ -249,7 +249,7 @@ struct postgresql_vector_use_type_backend : details::vector_use_type_backend
     std::vector<char *> buffers_;
 };
 
-struct postgresql_statement_backend : details::statement_backend
+struct SOCI_POSTGRESQL_DECL postgresql_statement_backend : details::statement_backend
 {
     postgresql_statement_backend(postgresql_session_backend & session,
         bool single_row_mode);
@@ -318,7 +318,7 @@ struct postgresql_statement_backend : details::statement_backend
     CategoryByColumnOID categoryByColumnOID_;
 };
 
-struct postgresql_rowid_backend : details::rowid_backend
+struct SOCI_POSTGRESQL_DECL postgresql_rowid_backend : details::rowid_backend
 {
     postgresql_rowid_backend(postgresql_session_backend & session);
 
@@ -327,7 +327,7 @@ struct postgresql_rowid_backend : details::rowid_backend
     unsigned long value_;
 };
 
-class postgresql_blob_backend : public details::blob_backend
+class SOCI_POSTGRESQL_DECL postgresql_blob_backend : public details::blob_backend
 {
 public:
 
@@ -370,6 +370,8 @@ public:
 
     void reset();
 
+    details::session_backend &get_session_backend() override;
+
 private:
     postgresql_session_backend & session_;
     blob_details details_;
@@ -380,10 +382,9 @@ private:
     void clone();
 };
 
-struct postgresql_session_backend : details::session_backend
+struct SOCI_POSTGRESQL_DECL postgresql_session_backend : details::session_backend
 {
-    postgresql_session_backend(connection_parameters const & parameters,
-        bool single_row_mode);
+    explicit postgresql_session_backend(connection_parameters const & parameters);
 
     ~postgresql_session_backend() override;
 
@@ -411,6 +412,9 @@ struct postgresql_session_backend : details::session_backend
     postgresql_blob_backend * make_blob_backend() override;
 
     std::string get_next_statement_name();
+
+    std::string get_table_names_query() const override;
+    std::string get_column_descriptions_query() const override;
 
     int statementCount_;
     bool single_row_mode_;

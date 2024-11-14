@@ -51,6 +51,22 @@ public:
     void set_connect_string(const std::string & connectString) { connectString_ = connectString; }
     std::string const & get_connect_string() const { return connectString_; }
 
+
+    // For some (but not all) backends the connection string consists of
+    // space-separated name=value pairs. This function parses the string
+    // assuming it uses this syntax and sets the options accordingly.
+    //
+    // If it detects invalid syntax, e.g. a name without a corresponding value,
+    // it throws an exception.
+    //
+    // Note that currently unknown options are simply ignored.
+    void extract_options_from_space_separated_string();
+
+    // Build a space-separated string from the options, quoting the options
+    // values using the provided quote character.
+    std::string build_string_from_options(char quote) const;
+
+
     // Set the value of the given option, overwriting any previous value.
     void set_option(const char * name, std::string const & value)
     {
@@ -70,12 +86,35 @@ public:
         return true;
     }
 
-    // Return true if the option with the given name was found with option_true
-    // value.
+    // Same as get_option(), but also removes the option from the connection
+    // string if it was present in it.
+    bool extract_option(const char * name, std::string & value)
+    {
+        Options::iterator const it = options_.find(name);
+        if (it == options_.end())
+            return false;
+
+        value = it->second;
+        options_.erase(it);
+
+        return true;
+    }
+
+    // Return true if the option with the given name has one of the values
+    // considered to be true, i.e. "1", "yes", "true" or "on" or is empty.
+    // Return false if the value is one of "0", "no", "false" or "off" or the
+    // option was not specified at all.
+    //
+    // Throw an exception if the option was given but the value is none of
+    // the above, comparing case-insensitively.
+    static bool is_true_value(const char * name, std::string const & value);
+
+    // Return true if the option with the given name was found with a "true"
+    // value in the sense of is_true_value() above.
     bool is_option_on(const char * name) const
     {
       std::string value;
-      return get_option(name, value) && value == option_true;
+      return get_option(name, value) && is_true_value(name, value);
     }
 
 private:

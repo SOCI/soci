@@ -9,6 +9,7 @@
 #include "soci/soci-platform.h"
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci/session.h"
+#include "soci-compiler.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
 #include <cstdio>
@@ -29,13 +30,121 @@ void hard_exec(postgresql_session_backend & session_backend,
     postgresql_result(session_backend, PQexec(conn, query)).check_for_errors(errMsg);
 }
 
+// helper function to quote a string before sending to PostgreSQL
+std::string quote(PGconn * conn, std::string& s)
+{
+    int error_code;
+    std::string retv;
+    retv.resize(2 * s.length() + 3);
+    retv[0] = '\'';
+    size_t len_esc = PQescapeStringConn(conn, const_cast<char *>(retv.data()) + 1, s.c_str(), s.length(), &error_code);
+    if (error_code > 0)
+    {
+        len_esc = 0;
+    }
+    retv[len_esc + 1] = '\'';
+    retv.resize(len_esc + 2);
+
+    return retv;
+}
+
+// helper function to collect schemas from search_path
+std::vector<std::string> get_schema_names(postgresql_session_backend & session, PGconn * conn)
+{
+    std::vector<std::string> schema_names;
+    postgresql_result search_path_result(session, PQexec(conn, "SHOW search_path"));
+    if (search_path_result.check_for_data("search_path doesn't exist"))
+    {
+        std::string search_path_content;
+        if (PQntuples(search_path_result) > 0)
+            search_path_content = PQgetvalue(search_path_result, 0, 0);
+        if (search_path_content.empty())
+            search_path_content = R"("$user", public)"; // fall back to default value
+
+        bool quoted = false;
+        std::string schema;
+        while (!search_path_content.empty())
+        {
+            switch (search_path_content[0])
+            {
+            case '"':
+                quoted = !quoted;
+                break;
+            case ',':
+            case ' ':
+                if (!quoted)
+                {
+                    if (search_path_content[0] == ',')
+                    {
+                        schema_names.push_back(schema);
+                        schema = "";
+                    }
+                    break;
+                }
+                SOCI_FALLTHROUGH;
+            default:
+                schema.push_back(search_path_content[0]);
+	    }
+            search_path_content.erase(search_path_content.begin());
+        }
+        if (!schema.empty())
+            schema_names.push_back(schema);
+        for (std::string& schema_name: schema_names)
+        {
+            if (schema_name == "$user")
+            {
+                postgresql_result current_user_result(session, PQexec(conn, "SELECT current_user"));
+                if (current_user_result.check_for_data("current_user is not defined"))
+                {
+                    if (PQntuples(current_user_result) > 0)
+                    {
+                        schema_name = PQgetvalue(current_user_result, 0, 0);
+                    }
+                }
+            }
+
+            // Ensure no bad characters
+            schema_name = quote(conn, schema_name);
+        }
+    }
+
+    return schema_names;
+}
+
+// helper function to create a comma separated list of strings
+std::string create_list_of_strings(const std::vector<std::string>& strings)
+{
+    std::ostringstream oss;
+    bool first = true;
+    for ( const auto& s: strings )
+    {
+        if ( first )
+            first = false;
+        else
+            oss << ", ";
+
+        oss << s;
+    }
+    return oss.str();
+}
+
+// helper function to create a case list for strings
+std::string create_case_list_of_strings(const std::vector<std::string>& list)
+{
+    std::ostringstream oss;
+    for (size_t i = 0; i < list.size(); ++i) {
+        oss << " WHEN " << list[i] << " THEN " << i;
+    }
+    return oss.str();
+}
+
 } // namespace unnamed
 
 postgresql_session_backend::postgresql_session_backend(
-    connection_parameters const& parameters, bool single_row_mode)
+    connection_parameters const& parameters)
     : statementCount_(0), conn_(0)
 {
-    single_row_mode_ = single_row_mode;
+    single_row_mode_ = false;
 
     connect(parameters);
 }
@@ -43,7 +152,34 @@ postgresql_session_backend::postgresql_session_backend(
 void postgresql_session_backend::connect(
     connection_parameters const& parameters)
 {
-    PGconn* conn = PQconnectdb(parameters.get_connect_string().c_str());
+    auto params = parameters;
+    params.extract_options_from_space_separated_string();
+
+    // Extract SOCI-specific options, i.e. check if they're present and remove
+    // them from params to avoid passing them to PQconnectdb() below.
+    std::string value;
+
+    // This one is not used by this backend, but can be present in the
+    // connection string if we're called from session::reconnect().
+    params.extract_option(option_reconnect, value);
+
+    // Notice that we accept both variants only for compatibility.
+    char const* name;
+    if (params.extract_option("singlerow", value))
+        name = "singlerow";
+    else if (params.extract_option("singlerows", value))
+        name = "singlerows";
+    else
+        name = nullptr;
+
+    if (name)
+    {
+        single_row_mode_ = connection_parameters::is_true_value(name, value);
+    }
+
+    // We can't use SOCI connection string with PQconnectdb() directly because
+    // libpq uses single quotes instead of double quotes used by SOCI.
+    PGconn* conn = PQconnectdb(params.build_string_from_options('\'').c_str());
     if (0 == conn || CONNECTION_OK != PQstatus(conn))
     {
         std::string msg = "Cannot establish connection to the database.";
@@ -134,7 +270,7 @@ void postgresql_session_backend::clean_up()
 std::string postgresql_session_backend::get_next_statement_name()
 {
     char nameBuf[20] = { 0 }; // arbitrary length
-    sprintf(nameBuf, "st_%d", ++statementCount_);
+    snprintf(nameBuf, sizeof(nameBuf), "st_%d", ++statementCount_);
     return nameBuf;
 }
 
@@ -151,4 +287,38 @@ postgresql_rowid_backend * postgresql_session_backend::make_rowid_backend()
 postgresql_blob_backend * postgresql_session_backend::make_blob_backend()
 {
     return new postgresql_blob_backend(*this);
+}
+
+std::string postgresql_session_backend::get_table_names_query() const
+{
+    return std::string(R"delim(SELECT table_schema || '.' || table_name AS "TABLE_NAME" FROM information_schema.tables WHERE table_schema in ()delim") + 
+                       create_list_of_strings(get_schema_names(const_cast<postgresql_session_backend&>(*this), conn_)) + ")";
+}
+
+std::string postgresql_session_backend::get_column_descriptions_query() const
+{
+    std::vector<std::string> schema_list = get_schema_names(const_cast<postgresql_session_backend&>(*this), conn_);
+    return std::string("WITH Schema AS ("
+           " SELECT table_schema"
+           " FROM information_schema.columns"
+           " WHERE table_name = :t"
+           " AND CASE"
+           " WHEN :s::VARCHAR is not NULL THEN table_schema = :s::VARCHAR"
+           " ELSE table_schema in (") + create_list_of_strings(schema_list) + ") END"
+           " ORDER BY"
+           " CASE table_schema" +
+           create_case_list_of_strings(schema_list) +
+           " ELSE " + std::to_string(schema_list.size()) + " END"
+           " LIMIT 1 )"
+           R"( SELECT column_name as "COLUMN_NAME",)"
+           R"( data_type as "DATA_TYPE",)"
+           R"( character_maximum_length as "CHARACTER_MAXIMUM_LENGTH",)"
+           R"( numeric_precision as "NUMERIC_PRECISION",)"
+           R"( numeric_scale as "NUMERIC_SCALE",)"
+           R"( is_nullable as "IS_NULLABLE")"
+           " FROM information_schema.columns"
+           " WHERE table_name = :t"
+           " AND table_schema = ("
+           " SELECT table_schema"
+           " FROM Schema )";
 }

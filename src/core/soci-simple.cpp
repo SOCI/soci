@@ -887,7 +887,8 @@ void resize_in_map(std::map<std::string, std::vector<T> > & m, int new_size)
 // helper for formatting date values
 char const * format_date(statement_wrapper & wrapper, std::tm const & d)
 {
-    std::sprintf(wrapper.date_formatted, "%d %d %d %d %d %d",
+    snprintf(wrapper.date_formatted, sizeof(wrapper.date_formatted),
+        "%d %d %d %d %d %d",
         d.tm_year + 1900, d.tm_mon + 1, d.tm_mday,
         d.tm_hour, d.tm_min, d.tm_sec);
 
@@ -3028,7 +3029,8 @@ SOCI_DECL char const * soci_get_use_date(statement_handle st, char const * name)
 
     // format is: "YYYY MM DD hh mm ss"
     std::tm const & d = wrapper->use_dates[name];
-    std::sprintf(wrapper->date_formatted, "%d %d %d %d %d %d",
+    snprintf(wrapper->date_formatted, sizeof(wrapper->date_formatted),
+        "%d %d %d %d %d %d",
         d.tm_year + 1900, d.tm_mon + 1, d.tm_mday,
         d.tm_hour, d.tm_min, d.tm_sec);
 

@@ -5,6 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#define SOCI_ORACLE_SOURCE
 #include "soci/oracle/soci-oracle.h"
 #include "error.h"
 #include "soci/statement.h"
@@ -146,7 +147,7 @@ oracle_blob_backend::locator_t oracle_blob_backend::get_lob_locator() const
     return lobp_;
 }
 
-void oracle_blob_backend::set_lob_locator(oracle_blob_backend::locator_t locator, bool initialized)
+void oracle_blob_backend::set_lob_locator(const oracle_blob_backend::locator_t locator, bool initialized)
 {
     // If we select a BLOB value into a BLOB object, then the post_fetch code in
     // the standard_into_type_backend will set this object's locator to the one it is
@@ -157,7 +158,11 @@ void oracle_blob_backend::set_lob_locator(oracle_blob_backend::locator_t locator
     {
         reset();
 
-        lobp_ = locator;
+        sword res = OCILobLocatorAssign(session_.svchp_, session_.errhp_, locator, &lobp_);
+        if (res != OCI_SUCCESS)
+        {
+            throw_oracle_soci_error(res, session_.errhp_);
+        }
     }
 
     initialized_ = initialized;
@@ -238,4 +243,9 @@ void oracle_blob_backend::ensure_initialized()
 
         initialized_ = true;
     }
+}
+
+details::session_backend &oracle_blob_backend::get_session_backend()
+{
+    return session_;
 }

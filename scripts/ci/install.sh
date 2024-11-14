@@ -52,6 +52,19 @@ case "$(uname)" in
     FreeBSD)
         pkg install -q -y bash cmake
         ;;
+
+    Darwin)
+        case "${SOCI_CI_BACKEND}" in
+            postgresql)
+                brew install postgresql@14
+                ;;
+        esac
+        ;;
+
+    *)
+        echo "Unknown platform: $(uname)"
+        exit 1
+        ;;
 esac
 
 install_script="${SOCI_SOURCE_DIR}/scripts/ci/install_${SOCI_CI_BACKEND}.sh"

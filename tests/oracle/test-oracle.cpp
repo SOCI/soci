@@ -5,15 +5,19 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include "common-tests.h"
 #include "soci/soci.h"
 #include "soci/oracle/soci-oracle.h"
+#include "test-assert.h"
+#include "test-context.h"
+#include "test-myint.h"
 #include <iomanip>
 #include <iostream>
 #include <string>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+
+#include <catch.hpp>
 
 using namespace soci;
 using namespace soci::tests;
@@ -104,7 +108,7 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
         for(int i = 100; i <= 2201; i = i + 50)
         {
             char t[10];
-            sprintf(t, "%04d", i);
+            snprintf(t, sizeof(t), "%04d", i);
 
             std::string date = std::string(t) + "-03-28 14:06:13";
             std::tm t1 {}, t2 {}, t4 {};
@@ -122,7 +126,6 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
             char buf2[25];
             strftime(buf1, sizeof(buf1), "%Y-%m-%d %H:%M:%S", &t1);
             strftime(buf2, sizeof(buf2), "%Y-%m-%d %H:%M:%S", &t2);
-            std::cout << "buf1 = " << buf1 << ", buf2 = " << buf2 << std::endl;
             CHECK(std::string(buf1) == std::string(buf2));
             CHECK(t1.tm_sec == t2.tm_sec);
             CHECK(t1.tm_min == t2.tm_min);
@@ -236,6 +239,23 @@ TEST_CASE("Oracle rowid", "[oracle][rowid]")
 }
 
 // Stored procedures
+class procedure_creator_base
+{
+public:
+    procedure_creator_base(session& sql)
+        : msession(sql) { drop(); }
+
+    virtual ~procedure_creator_base() { drop();}
+private:
+    void drop()
+    {
+        try { msession << "drop procedure soci_test"; } catch (soci_error&) {}
+    }
+    session& msession;
+
+    SOCI_NOT_COPYABLE(procedure_creator_base)
+};
+
 struct procedure_creator : procedure_creator_base
 {
     procedure_creator(soci::session & sql)
@@ -1458,12 +1478,26 @@ struct table_creator_for_blob : public tests::table_creator_base
     }
 };
 
-class test_context :public test_context_base
+class test_context :public test_context_common
 {
 public:
-    test_context(backend_factory const &backEnd,
-                std::string const &connectString)
-        : test_context_base(backEnd, connectString) {}
+    test_context() = default;
+
+    std::string get_example_connection_string() const override
+    {
+        return "service=orcl user=scott password=tiger";
+    }
+
+    bool start_testing() override
+    {
+        if (!std::getenv("ORACLE_HOME"))
+        {
+            std::cerr << "ORACLE_HOME environment variable must be defined for Oracle tests.\n";
+            return false;
+        }
+
+        return test_context_base::start_testing();
+    }
 
     table_creator_base* table_creator_1(soci::session& s) const override
     {
@@ -1502,7 +1536,9 @@ public:
 
     std::string to_xml(std::string const& x) const override
     {
-        return "xmltype(" + x + ")";
+        // We can't apply xmltype() to null values as this appears to parse
+        // empty string as XML -- and failing.
+        return "case when " + x  + " is not null then xmltype(" + x + ") else null end";
     }
 
     std::string from_xml(std::string const& x) const override
@@ -1536,44 +1572,4 @@ public:
     }
 };
 
-int main(int argc, char** argv)
-{
-#ifdef _MSC_VER
-    // Redirect errors, unrecoverable problems, and assert() failures to STDERR,
-    // instead of debug message window.
-    // This hack is required to run assert()-driven tests by Buildbot.
-    // NOTE: Comment this 2 lines for debugging with Visual C++ debugger to catch assertions inside.
-    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-    _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-#endif //_MSC_VER
-
-    if (argc >= 2)
-    {
-        connectString = argv[1];
-
-        // Replace the connect string with the process name to ensure that
-        // CATCH uses the correct name in its messages.
-        argv[1] = argv[0];
-
-        argc--;
-        argv++;
-    }
-    else
-    {
-        std::cout << "usage: " << argv[0]
-            << " connectstring [test-arguments...]\n"
-            << "example: " << argv[0]
-            << " \'service=orcl user=scott password=tiger\'\n";
-        std::exit(1);
-    }
-
-    if (!std::getenv("ORACLE_HOME"))
-    {
-        std::cerr << "ORACLE_HOME environment variable must be defined for Oracle tests.\n";
-        std::exit(1);
-    }
-
-    test_context tc(backEnd, connectString);
-
-    return Catch::Session().run(argc, argv);
-}
+test_context tc_oracle;

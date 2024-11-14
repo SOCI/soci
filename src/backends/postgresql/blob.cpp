@@ -321,3 +321,8 @@ void postgresql_blob_backend::clone()
         lo_close(session_.conn_, old_details.fd);
     }
 }
+
+details::session_backend &postgresql_blob_backend::get_session_backend()
+{
+    return session_;
+}

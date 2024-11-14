@@ -7,20 +7,54 @@
 
 #include <soci/soci.h>
 #include <soci/sqlite3/soci-sqlite3.h>
-#include "common-tests.h"
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <cmath>
-#include <cstring>
-#include <ctime>
-#include <cstdint>
+#include "test-context.h"
+
+#include <catch.hpp>
 
 using namespace soci;
 using namespace soci::tests;
 
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_sqlite3();
+
+TEST_CASE("SQLite connection string", "[sqlite][connstring]")
+{
+    CHECK_THROWS_WITH(soci::session(backEnd, ""),
+                      Catch::Contains("Database name must be specified"));
+    CHECK_THROWS_WITH(soci::session(backEnd, "readonly=1"),
+                      Catch::Contains("Database name must be specified"));
+
+    CHECK_THROWS_WITH(soci::session(backEnd, "readonly=\""),
+                      Catch::Contains("Expected '\"'"));
+    CHECK_THROWS_WITH(soci::session(backEnd, "readonly=maybe"),
+                      Catch::Contains("Invalid value"));
+
+    CHECK_THROWS_WITH(soci::session(backEnd, "db=no-such-file nocreate=1"),
+                      Catch::Contains("Cannot establish connection"));
+
+    CHECK_NOTHROW(soci::session(backEnd, "dbname=:memory: nocreate"));
+    CHECK_NOTHROW(soci::session(backEnd, "dbname=:memory: foreign_keys=on"));
+
+    // Also check an alternative way of specifying the connection parameters.
+    connection_parameters params(backEnd, "dbname=still-no-such-file");
+    params.set_option("foreign_keys", "1");
+    params.set_option("nocreate", "1");
+    CHECK_THROWS_WITH(soci::session(params),
+                      Catch::Contains("Cannot establish connection"));
+
+    // Finally allow testing arbitrary connection strings by specifying them in
+    // the environment variables.
+    if (auto const connstr = std::getenv("SOCI_TEST_CONNSTR_GOOD"))
+    {
+        CHECK_NOTHROW(soci::session(backEnd, connstr));
+    }
+
+    if (auto const connstr = std::getenv("SOCI_TEST_CONNSTR_BAD"))
+    {
+        CHECK_THROWS_AS(soci::session(backEnd, connstr), soci_error);
+    }
+
+}
 
 // ROWID test
 // In sqlite3 the row id can be called ROWID, _ROWID_ or oid
@@ -589,6 +623,108 @@ TEST_CASE("SQLite DDL with metadata", "[sqlite][ddl]")
     CHECK(ddl_t3_found == false);
 }
 
+
+// Helpers for the DDL roundtrip test below.
+namespace soci
+{
+
+// Helper used by test_roundtrip() below which collects all round trip test
+// data and allows to define a type conversion for it.
+template<typename T>
+struct Roundtrip
+{
+    typedef T val_type;
+    Roundtrip(soci::db_type type, T val)
+        : inType(type), inVal(val) {}
+
+    soci::db_type inType;
+    T inVal;
+
+    soci::db_type outType;
+    T outVal;
+};
+
+// Test a rountrip insertion data to the current database for the arithmetic type T
+// This test specifically use the dynamic bindings and the DDL creation statements.
+template<typename T>
+struct type_conversion<Roundtrip<T>>
+{
+    static_assert(std::is_arithmetic<T>::value, "Roundtrip currently supported only for numeric types");
+    typedef soci::values base_type;
+    static void from_base(soci::values const &v, soci::indicator, Roundtrip<T> &t)
+    {
+        t.outType = v.get_properties(0).get_db_type();
+        switch (t.outType)
+        {
+            case soci::db_int8:   t.outVal = static_cast<T>(v.get<std::int8_t>(0));   break;
+            case soci::db_uint8:  t.outVal = static_cast<T>(v.get<std::uint8_t>(0));  break;
+            case soci::db_int16:  t.outVal = static_cast<T>(v.get<std::int16_t>(0));  break;
+            case soci::db_uint16: t.outVal = static_cast<T>(v.get<std::uint16_t>(0)); break;
+            case soci::db_int32:  t.outVal = static_cast<T>(v.get<std::int32_t>(0));  break;
+            case soci::db_uint32: t.outVal = static_cast<T>(v.get<std::uint32_t>(0)); break;
+            case soci::db_int64:  t.outVal = static_cast<T>(v.get<std::int64_t>(0));  break;
+            case soci::db_uint64: t.outVal = static_cast<T>(v.get<std::uint64_t>(0)); break;
+            case soci::db_double: t.outVal = static_cast<T>(v.get<double>(0));        break;
+            default: FAIL_CHECK("Unsupported type mapped to db_type"); break;
+        }
+    }
+    static void to_base(Roundtrip<T> const &t, soci::values &v, soci::indicator&)
+    {
+        v.set("VAL", t.inVal);
+    }
+};
+
+template<typename T>
+void check(soci::Roundtrip<T> const &val)
+{
+    CHECK(val.inType == val.outType);
+    CHECK(val.inVal == val.outVal);
+}
+
+template<>
+void check(soci::Roundtrip<double> const &val)
+{
+    CHECK(val.inType == val.outType);
+    CHECK(std::fpclassify(val.inVal) == std::fpclassify(val.outVal));
+    if (std::isnormal(val.inVal) && std::isnormal(val.outVal))
+        CHECK_THAT(val.inVal, Catch::Matchers::WithinRel(val.outVal));
+}
+
+template<typename T>
+void test_roundtrip(soci::session &sql, soci::db_type inputType, T inputVal)
+{
+    try
+    {
+        Roundtrip<T> tester(inputType, inputVal);
+
+        const std::string table = "TEST_ROUNDTRIP";
+        sql.create_table(table).column("VAL", tester.inType);
+        struct table_dropper
+        {
+            table_dropper(soci::session& sql, std::string const& table)
+                : sql_(sql), table_(table) {}
+            ~table_dropper() { sql_ << "DROP TABLE " << table_; }
+
+            soci::session& sql_;
+            const std::string table_;
+        } dropper(sql, table);
+
+        sql << "INSERT INTO " << table << "(VAL) VALUES (:VAL)", soci::use(const_cast<const Roundtrip<T>&>(tester));
+        soci::statement stmt = (sql.prepare << "SELECT * FROM " << table);
+        stmt.exchange(soci::into(tester));
+        stmt.define_and_bind();
+        stmt.execute();
+        stmt.fetch();
+        check(tester);
+    }
+    catch (const std::exception& e)
+    {
+        FAIL_CHECK(e.what());
+    }
+}
+
+} // namespace soci
+
 TEST_CASE("SQLite DDL roundrip", "[sqlite][ddl][roundtrip]")
 {
     soci::session sql(backEnd, connectString);
@@ -801,12 +937,23 @@ struct table_creator_for_blob : public tests::table_creator_base
     }
 };
 
-class test_context : public test_context_base
+class test_context : public test_context_common
 {
 public:
-    test_context(backend_factory const &backend,
-                std::string const &connstr)
-        : test_context_base(backend, connstr) {}
+    test_context() = default;
+
+    bool initialize_connect_string(std::string argFromCommandLine) override
+    {
+        // Unlike most other backends, we have a reasonable default value for
+        // the connection string, so initialize it with it to use in-memory
+        // database if nothing is specified on the command line.
+        if (argFromCommandLine.empty())
+        {
+            argFromCommandLine = ":memory:";
+        }
+
+        return test_context_base::initialize_connect_string(argFromCommandLine);
+    }
 
     table_creator_base* table_creator_1(soci::session& s) const override
     {
@@ -887,36 +1034,4 @@ public:
     }
 };
 
-int main(int argc, char** argv)
-{
-
-#ifdef _MSC_VER
-    // Redirect errors, unrecoverable problems, and assert() failures to STDERR,
-    // instead of debug message window.
-    // This hack is required to run assert()-driven tests by Buildbot.
-    // NOTE: Comment this 2 lines for debugging with Visual C++ debugger to catch assertions inside.
-    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-    _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-#endif //_MSC_VER
-
-    if (argc >= 2 && argv[1][0] != '-')
-    {
-        connectString = argv[1];
-
-        // Replace the connect string with the process name to ensure that
-        // CATCH uses the correct name in its messages.
-        argv[1] = argv[0];
-
-        argc--;
-        argv++;
-    }
-    else
-    {
-        // If no file name is specfied then work in-memory
-        connectString = ":memory:";
-    }
-
-    test_context tc(backEnd, connectString);
-
-    return Catch::Session().run(argc, argv);
-}
+test_context tc_sqlite3;

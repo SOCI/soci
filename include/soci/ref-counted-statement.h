@@ -82,7 +82,7 @@ private:
 
 // this class is supposed to be a vehicle for the "once" statements
 // it executes the whole statement in its destructor
-class ref_counted_statement : public ref_counted_statement_base
+class SOCI_DECL ref_counted_statement : public ref_counted_statement_base
 {
 public:
     ref_counted_statement(session & s)

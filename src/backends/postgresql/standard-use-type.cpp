@@ -13,6 +13,7 @@
 #include "soci/soci-platform.h"
 #include "soci-dtocstr.h"
 #include "soci-exchange-cast.h"
+#include "soci-mktime.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
 #include <cstdint>
@@ -142,10 +143,7 @@ void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
                 std::size_t const bufSize = 80;
                 buf_ = new char[bufSize];
 
-                std::tm const& t = exchange_type_cast<x_stdtm>(data_);
-                snprintf(buf_, bufSize, "%d-%02d-%02d %02d:%02d:%02d",
-                    t.tm_year + 1900, t.tm_mon + 1, t.tm_mday,
-                    t.tm_hour, t.tm_min, t.tm_sec);
+                format_std_tm(exchange_type_cast<x_stdtm>(data_), buf_, bufSize);
             }
             break;
         case x_rowid:

@@ -7,7 +7,8 @@
 
 #include "soci/soci.h"
 #include "soci/postgresql/soci-postgresql.h"
-#include "common-tests.h"
+#include "test-context.h"
+#include "test-myint.h"
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -15,6 +16,8 @@
 #include <cstring>
 #include <ctime>
 #include <cstdlib>
+
+#include <catch.hpp>
 
 using namespace soci;
 using namespace soci::tests;
@@ -127,6 +130,17 @@ struct oid_table_creator : public table_creator_base
     }
 };
 
+TEST_CASE("PostgreSQL connection string", "[postgresql][connstring]")
+{
+    // There are no required parts in libpq connection string, so we can only
+    // test that invalid options are detected.
+    CHECK_THROWS_WITH(soci::session(backEnd, "bloordyblop=1"),
+                      Catch::Contains(R"(invalid connection option "bloordyblop")"));
+
+    CHECK_THROWS_WITH(soci::session(backEnd, "sslmode=bloordyblop"),
+                      Catch::Contains(R"(invalid sslmode value: "bloordyblop")"));
+}
+
 // ROWID test
 // Note: in PostgreSQL, there is no ROWID, there is OID.
 // It is still provided as a separate type for "portability",
@@ -171,13 +185,14 @@ TEST_CASE("PostgreSQL prepare error", "[postgresql][exception]")
 }
 
 // function call test
-class function_creator : function_creator_base
+class function_creator
 {
 public:
-
-    function_creator(soci::session & sql)
-    : function_creator_base(sql)
+    explicit function_creator(soci::session & sql)
+        : sql_(sql)
     {
+        drop();
+
         // before a language can be used it must be defined
         // if it has already been defined then an error will occur
         try { sql << "create language plpgsql"; }
@@ -192,12 +207,16 @@ public:
             "end $$ language plpgsql";
     }
 
-protected:
+    ~function_creator() { drop(); }
 
-    std::string drop_statement()
+private:
+    void drop()
     {
-        return "drop function soci_test(varchar)";
+        try { sql_ << "drop function soci_test(varchar)"; } catch (soci_error&) {}
     }
+    session& sql_;
+
+    SOCI_NOT_COPYABLE(function_creator)
 };
 
 TEST_CASE("PostgreSQL function call", "[postgresql][function]")
@@ -689,6 +708,34 @@ TEST_CASE("PostgreSQL ORM cast", "[postgresql][orm]")
     sql << "select :a::int", use(v); // Must not throw an exception!
 }
 
+std::string get_table_name_without_schema(const std::string& table_name_with_schema)
+{
+    // Find the first occurrence of "."
+    size_t dotPos = table_name_with_schema.find('.');
+
+    // Check if the "." exists and there's exactly one "."
+    if (dotPos == std::string::npos || table_name_with_schema.find('.', dotPos + 1) != std::string::npos) {
+        return table_name_with_schema;
+    }
+
+    // Extract the substring after the "."
+    return table_name_with_schema.substr(dotPos + 1);
+}
+
+std::string get_schema_from_table_name(const std::string& table_name_with_schema)
+{
+    // Find the first occurrence of "."
+    size_t dotPos = table_name_with_schema.find('.');
+
+    // Check if the "." exists and there's exactly one "."
+    if (dotPos == std::string::npos || table_name_with_schema.find('.', dotPos + 1) != std::string::npos) {
+        return "";
+    }
+
+    // Extract the substring before the "."
+    return table_name_with_schema.substr(0, dotPos);
+}
+
 // Test the DDL and metadata functionality
 TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
 {
@@ -712,9 +759,9 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     st.execute();
     while (st.fetch())
     {
-        if (table_name == ddl_t1) { ddl_t1_found = true; }
-        if (table_name == ddl_t2) { ddl_t2_found = true; }
-        if (table_name == ddl_t3) { ddl_t3_found = true; }
+        if (get_table_name_without_schema(table_name) == ddl_t1) { ddl_t1_found = true; }
+        if (get_table_name_without_schema(table_name) == ddl_t2) { ddl_t2_found = true; }
+        if (get_table_name_without_schema(table_name) == ddl_t3) { ddl_t3_found = true; }
     }
 
     CHECK(ddl_t1_found);
@@ -791,9 +838,9 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     st2.execute();
     while (st2.fetch())
     {
-        if (table_name == ddl_t1) { ddl_t1_found = true; }
-        if (table_name == ddl_t2) { ddl_t2_found = true; }
-        if (table_name == ddl_t3) { ddl_t3_found = true; }
+        if (get_table_name_without_schema(table_name) == ddl_t1) { ddl_t1_found = true; }
+        if (get_table_name_without_schema(table_name) == ddl_t2) { ddl_t2_found = true; }
+        if (get_table_name_without_schema(table_name) == ddl_t3) { ddl_t3_found = true; }
     }
 
     CHECK(ddl_t1_found);
@@ -908,9 +955,9 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     st2.execute();
     while (st2.fetch())
     {
-        if (table_name == ddl_t1) { ddl_t1_found = true; }
-        if (table_name == ddl_t2) { ddl_t2_found = true; }
-        if (table_name == ddl_t3) { ddl_t3_found = true; }
+        if (get_table_name_without_schema(table_name) == ddl_t1) { ddl_t1_found = true; }
+        if (get_table_name_without_schema(table_name) == ddl_t2) { ddl_t2_found = true; }
+        if (get_table_name_without_schema(table_name) == ddl_t3) { ddl_t3_found = true; }
     }
 
     CHECK(ddl_t1_found == false);
@@ -924,6 +971,108 @@ TEST_CASE("PostgreSQL DDL with metadata", "[postgresql][ddl]")
     CHECK(i == 1);
     sql << "select " + sql.nvl() + "(NULL, 2)", into(i);
     CHECK(i == 2);
+}
+
+// Test cross-schema metadata
+TEST_CASE("Cross-schema metadata", "[postgresql][cross-schema]")
+{
+    soci::session sql(backEnd, connectString);
+
+    // note: prepare_column_descriptions expects l-value
+    std::string tables = "tables";
+    std::string column_name = "table_name";
+
+    // single-expression variant:
+    sql.create_table(tables).column(column_name, soci::dt_integer);
+
+    // check whether this table was created:
+
+    bool tables_found = false;
+    std::string schema;
+    std::string table_name;
+    soci::statement st = (sql.prepare_table_names(), into(table_name));
+    st.execute();
+    while (st.fetch())
+    {
+        if (get_table_name_without_schema(table_name) == tables) 
+        {
+            tables_found = true;
+            schema = get_schema_from_table_name(table_name);
+        }
+    }
+
+    CHECK(tables_found);
+    CHECK(!schema.empty());
+
+    // Get information for the tables table we just created and not
+    // the tables table in information_schema which isn't in our path.
+    int  records = 0;
+    soci::column_info ci;
+    soci::statement st1 = (sql.prepare_column_descriptions(tables), into(ci));
+    st1.execute();
+    while (st1.fetch())
+    {
+        if (ci.name == column_name)
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
+            CHECK(ci.nullable);
+            records++;
+        }
+    }
+
+    CHECK(records == 1);
+
+    // Run the same query but this time specific with the schema.
+    std::string schemaTables = schema + "." + tables;
+    records = 0;
+    soci::statement st2 = (sql.prepare_column_descriptions(schemaTables), into(ci));
+    st2.execute();
+    while (st2.fetch())
+    {
+        if (ci.name == column_name)
+        {
+            CHECK(ci.type == soci::dt_integer);
+            CHECK(ci.dataType == soci::db_int32);
+            CHECK(ci.nullable);
+            records++;
+        }
+    }
+
+    CHECK(records == 1);
+
+    // Finally run the query with the information_schema.
+    std::string information_schemaTables = "information_schema." + tables;
+    records = 0;
+    soci::statement st3 = (sql.prepare_column_descriptions(information_schemaTables), into(ci));
+    st3.execute();
+    while (st3.fetch())
+    {
+        if (ci.name == column_name)
+        {
+            CHECK(ci.type == soci::dt_string);
+            CHECK(ci.dataType == soci::db_string);
+            CHECK(ci.nullable);
+            records++;
+        }
+    }
+
+    CHECK(records == 1);
+
+    // Delete table and check that it is gone
+    sql.drop_table(tables);
+    tables_found = false;
+    st3 = (sql.prepare_table_names(), into(table_name));
+    st3.execute();
+    while (st.fetch())
+    {
+        if (table_name == tables)
+        {
+            tables_found = true;
+        }
+    }
+
+    CHECK(tables_found == false);
 }
 
 // Test the bulk iterators functionality
@@ -1338,12 +1487,15 @@ struct table_creator_for_blob : public tests::table_creator_base
 };
 
 
-class test_context : public test_context_base
+class test_context : public test_context_common
 {
 public:
-    test_context(backend_factory const &backend, std::string const &connstr)
-        : test_context_base(backend, connstr)
-    {}
+    test_context() = default;
+
+    std::string get_example_connection_string() const override
+    {
+        return "host=localhost port=5432 dbname=test user=postgres password=postgres";
+    }
 
     table_creator_base* table_creator_1(soci::session& s) const override
     {
@@ -1401,39 +1553,4 @@ public:
     }
 };
 
-int main(int argc, char** argv)
-{
-
-#ifdef _MSC_VER
-    // Redirect errors, unrecoverable problems, and assert() failures to STDERR,
-    // instead of debug message window.
-    // This hack is required to run assert()-driven tests by Buildbot.
-    // NOTE: Comment this 2 lines for debugging with Visual C++ debugger to catch assertions inside.
-    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-    _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-#endif //_MSC_VER
-
-    if (argc >= 2)
-    {
-        connectString = argv[1];
-
-        // Replace the connect string with the process name to ensure that
-        // CATCH uses the correct name in its messages.
-        argv[1] = argv[0];
-
-        argc--;
-        argv++;
-    }
-    else
-    {
-        std::cout << "usage: " << argv[0]
-            << " connectstring [test-arguments...]\n"
-            << "example: " << argv[0]
-            << " \'connect_string_for_PostgreSQL\'\n";
-        return EXIT_FAILURE;
-    }
-
-    test_context tc(backEnd, connectString);
-
-    return Catch::Session().run(argc, argv);
-}
+test_context tc_postgresql;

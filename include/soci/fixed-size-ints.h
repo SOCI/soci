@@ -16,7 +16,7 @@ namespace soci
 // long and long long. With the following type_conversion specializations,
 // this becomes possible.
 
-#if defined(SOCI_INT64_IS_LONG)
+#if defined(SOCI_INT64_T_IS_LONG)
 template <>
 struct type_conversion<long long>
 {

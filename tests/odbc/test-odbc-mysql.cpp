@@ -14,6 +14,8 @@
 
 #include "mysql/test-mysql.h"
 
+#include <catch.hpp>
+
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_odbc();
 
@@ -21,6 +23,11 @@ class test_context_odbc : public test_context
 {
 public:
     using test_context::test_context;
+
+    std::string get_example_connection_string() const override
+    {
+        return "FILEDSN=./test-mysql.dsn";
+    }
 
     bool truncates_uint64_to_int64() const override
     {
@@ -40,34 +47,4 @@ public:
     }
 };
 
-int main(int argc, char** argv)
-{
-#ifdef _MSC_VER
-    // Redirect errors, unrecoverable problems, and assert() failures to STDERR,
-    // instead of debug message window.
-    // This hack is required to run assert()-driven tests by Buildbot.
-    // NOTE: Comment this 2 lines for debugging with Visual C++ debugger to catch assertions inside.
-    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-    _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-#endif //_MSC_VER
-
-    if (argc >= 2 && argv[1][0] != '-')
-    {
-        connectString = argv[1];
-
-        // Replace the connect string with the process name to ensure that
-        // CATCH uses the correct name in its messages.
-        argv[1] = argv[0];
-
-        argc--;
-        argv++;
-    }
-    else
-    {
-        connectString = "FILEDSN=./test-mysql.dsn";
-    }
-
-    test_context_odbc tc(backEnd, connectString);
-
-    return Catch::Session().run(argc, argv);
-}
+test_context_odbc tc_odbc_mysql;
