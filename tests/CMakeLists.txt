@@ -15,7 +15,7 @@ colormsg(_HIBLUE_ "Configuring SOCI tests:")
 add_definitions(-DCATCH_CONFIG_CPP11_NO_SHUFFLE)
 
 if(MSVC)
-  add_compile_options(/bigobj)
+  add_compile_options(/bigobj /utf-8)
 endif()
 
 include_directories(
