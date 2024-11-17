@@ -232,15 +232,6 @@ void statement_impl::define_and_bind()
     }
 }
 
-void statement_impl::define_for_row()
-{
-    std::size_t const isize = intosForRow_.size();
-    for (std::size_t i = 0; i != isize; ++i)
-    {
-        intosForRow_[i]->define(*this, definePositionForRow_);
-    }
-}
-
 void statement_impl::undefine_and_bind()
 {
     std::size_t const isize = intos_.size();
@@ -298,7 +289,6 @@ bool statement_impl::execute(bool withDataExchange)
         if (row_ != NULL && alreadyDescribed_ == false)
         {
             describe();
-            define_for_row();
         }
 
         int num = 0;
@@ -330,7 +320,6 @@ bool statement_impl::execute(bool withDataExchange)
         if (row_ != NULL && alreadyDescribed_ == false)
         {
             describe();
-            define_for_row();
         }
 
         bool gotData = false;
@@ -787,6 +776,14 @@ void statement_impl::describe()
     }
 
     alreadyDescribed_ = true;
+
+    // Calling bind_into() above could have added row into elements, so
+    // initialize them.
+    std::size_t const isize = intosForRow_.size();
+    for (std::size_t i = 0; i != isize; ++i)
+    {
+        intosForRow_[i]->define(*this, definePositionForRow_);
+    }
 }
 
 } // namespace details
