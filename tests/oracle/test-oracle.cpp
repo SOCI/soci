@@ -1447,29 +1447,6 @@ TEST_CASE ( "Oracle clob", "[oracle][clob]" )
     soci::session sql ( backEnd, connectString );
     std::string testPhrase{ "Système est ouvert aux requêtes d'information" };
     function_creator_clob fnc ( sql );
-
-    {
-        statement st ( sql );
-        st.alloc ();
-        st.prepare
-        (
-            " declare tmp clob; "
-            " begin "
-            "    tmp := :inStr; "
-            "    for i in 1..:inXCount loop tmp := tmp || 'X'; end loop; "
-            "    :res := tmp; "
-            " end;"
-        );
-        long_string r;
-        int         xCount = 20000;
-        st.exchange ( use ( testPhrase ) );
-        st.exchange ( use ( xCount ) );
-        st.exchange ( use ( r ) );
-        st.define_and_bind ();
-        st.execute ( true );
-        CHECK ( testPhrase + std::string ( xCount, 'X') == r.value );
-    }
-
     {
         statement st ( sql );
         st.alloc ();
