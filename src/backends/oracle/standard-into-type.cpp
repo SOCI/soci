@@ -232,44 +232,56 @@ void oracle_standard_into_type_backend::pre_fetch()
     }
 }
 
+/* ----------------------------------------------------------------- 
+/* callback function to write buffer to the string.     
+ * works in bytes, not in characters                 
+/* ----------------------------------------------------------------- */
+sb4 callback_to_read_in_bytes
+(
+    dvoid                             *pResultString,  // pointer to std::string to accumulate result
+    CONST dvoid                       *bufxp,          // pointer to buffer from read
+    ub4                                lenp,           // length data in the buffer
+    ub1                                piecep          // OCI_FIRST_PIECE, OCI_NEXT_PIECE or OCI_LAST_PIECE
+)
+{
+    static_cast<std::string*> ( pResultString )->append ( static_cast<const char *> ( bufxp ), lenp );
+    return OCI_CONTINUE;
+}
+
+
 void oracle::read_from_lob(oracle_session_backend& session,
     OCILobLocator * lobp, std::string & value)
 {
     ub4 len;
 
-    sword res = OCILobGetLength(session.svchp_, session.errhp_,
-        lobp, &len);
+    // result is not a bytes count!!! For character LOBs (CLOBs, NCLOBs) it is the number of characters
+    sword res = OCILobGetLength ( session.svchp_, session.errhp_, lobp, &len );
     if (res != OCI_SUCCESS)
     {
         throw_oracle_soci_error(res, session.errhp_);
     }
 
-    std::vector<char> buf(len);
-
-    if (len != 0)
+    ub4 amtp = 0;
+    ub4 offset = 1;
+    char buf[10240] = {};
+    std::string accumTo;
+    res = OCILobRead
+    (
+        session.svchp_, session.errhp_, lobp,   // service context, error handle, LOB locator
+        &amtp,                                  // amount (in characters) to read. 0 means until the end of the LOB in streaming mode
+        offset,                                 // offset == 1 means from the start of the LOB    
+        &buf,
+        sizeof (buf),
+        &accumTo,                               // ctx for the callback - pointer to the result string        
+        callback_to_read_in_bytes,              // callback function works in bytes!!!
+        0,
+        0
+    );
+    if ( res != OCI_SUCCESS )
     {
-        ub4 lenChunk = len;
-        ub4 offset = 1;
-        do
-        {
-            res = OCILobRead(session.svchp_, session.errhp_,
-                lobp, &lenChunk,
-                offset,
-                reinterpret_cast<dvoid*>(&buf[offset - 1]),
-                len, 0, 0, 0, 0);
-            if (res == OCI_NEED_DATA)
-            {
-                offset += lenChunk;
-            }
-            else if (res != OCI_SUCCESS)
-            {
-                throw_oracle_soci_error(res, session.errhp_);
-            }
-        }
-        while (res == OCI_NEED_DATA);
+        throw_oracle_soci_error ( res, session.errhp_ );
     }
-
-    value.assign(buf.begin(), buf.end());
+    value = std::move ( accumTo );
 }
 
 void oracle_standard_into_type_backend::post_fetch(
