@@ -11,7 +11,7 @@ export ORACLE_CONTAINER=oracle-11g
 # We use the same name for the path inside and outside the container.
 export ORACLE_HOME=/u01/app/oracle/product/11.2.0/xe
 export ORACLE_SID=XE
-
+export NLS_LANG=AMERICAN_AMERICA.AL32UTF8
 # Add path to Oracle libraries.
 export LD_LIBRARY_PATH=$ORACLE_HOME/lib
 

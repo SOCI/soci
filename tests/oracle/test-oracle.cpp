@@ -1445,7 +1445,7 @@ struct function_creator_clob : function_creator_base
 TEST_CASE ( "Oracle clob", "[oracle][clob]" )
 {
     soci::session sql ( backEnd, connectString );
-    std::string testPhrase{ "SystГЁme est ouvert aux requГЄtes d'information" };
+    std::string testPhrase{ "Système est ouvert aux requêtes d'information" };
     function_creator_clob fnc ( sql );
 
     {
