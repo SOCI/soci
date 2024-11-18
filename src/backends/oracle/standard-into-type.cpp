@@ -233,9 +233,9 @@ void oracle_standard_into_type_backend::pre_fetch()
 }
 
 /* ----------------------------------------------------------------- 
-/* callback function to write buffer to the string.     
+ * callback function to write buffer to the string.     
  * works in bytes, not in characters                 
-/* ----------------------------------------------------------------- */
+ * ----------------------------------------------------------------- */
 sb4 callback_to_read_in_bytes
 (
     dvoid                             *pResultString,  // pointer to std::string to accumulate result
