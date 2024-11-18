@@ -241,7 +241,7 @@ sb4 callback_to_read_in_bytes
     dvoid                             *pResultString,  // pointer to std::string to accumulate result
     CONST dvoid                       *bufxp,          // pointer to buffer from read
     ub4                                lenp,           // length data in the buffer
-    ub1                                piecep          // OCI_FIRST_PIECE, OCI_NEXT_PIECE or OCI_LAST_PIECE
+    ub1                                /*piecep*/      // OCI_FIRST_PIECE, OCI_NEXT_PIECE or OCI_LAST_PIECE
 )
 {
     static_cast<std::string*> ( pResultString )->append ( static_cast<const char *> ( bufxp ), lenp );
