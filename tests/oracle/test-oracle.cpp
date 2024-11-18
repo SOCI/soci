@@ -1407,6 +1407,62 @@ TEST_CASE("Bulk iterators", "[oracle][bulkiters]")
     sql << "drop table t";
 }
 
+struct function_creator_clob : function_creator_base
+{
+    function_creator_clob(soci::session & sql)
+        : function_creator_base(sql)
+    {
+        sql <<
+             "create or replace function soci_test(input in varchar2) return clob as "
+             "begin return input; end;";
+    }
+};
+
+TEST_CASE ( "Oracle clob", "[oracle][clob]" )
+{
+    soci::session sql ( backEnd, connectString );
+    std::string testPhrase{ "SystГЁme est ouvert aux requГЄtes d'information" };
+    function_creator_clob fnc ( sql );
+
+    {
+        statement st ( sql );
+        st.alloc ();
+        st.prepare
+        (
+            " declare tmp clob; "
+            " begin "
+            "    tmp := :inStr; "
+            "    for i in 1..:inXCount loop tmp := tmp || 'X'; end loop; "
+            "    :res := tmp; "
+            " end;"
+        );
+        long_string r;
+        int         xCount = 20000;
+        st.exchange ( use ( testPhrase ) );
+        st.exchange ( use ( xCount ) );
+        st.exchange ( use ( r ) );
+        st.define_and_bind ();
+        st.execute ( true );
+        CHECK ( testPhrase + std::string ( xCount, 'X') == r.value );
+    }
+
+    {
+        statement st ( sql );
+        st.alloc ();
+        st.prepare
+        (
+            "select soci_test(:inStr) from dual"
+        );
+        long_string r;
+        st.exchange ( use ( testPhrase ) );
+        st.exchange ( into ( r ) );
+        st.define_and_bind ();
+        st.execute ( true );
+        CHECK ( testPhrase == r.value );
+    }
+}
+
+
 //
 // Support for soci Common Tests
 //
