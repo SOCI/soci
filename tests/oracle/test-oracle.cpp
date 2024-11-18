@@ -1407,6 +1407,30 @@ TEST_CASE("Bulk iterators", "[oracle][bulkiters]")
     sql << "drop table t";
 }
 
+class function_creator_base
+{
+public:
+    function_creator_base(session& sql)
+        : msession(sql) { drop(); }
+
+    virtual ~function_creator_base() { drop();}
+
+protected:
+    virtual std::string dropstatement()
+    {
+        return "drop function soci_test";
+    }
+
+private:
+    void drop()
+    {
+        try { msession << dropstatement(); } catch (soci_error&) {}
+    }
+    session& msession;
+
+    SOCI_NOT_COPYABLE(function_creator_base)
+};
+
 struct function_creator_clob : function_creator_base
 {
     function_creator_clob(soci::session & sql)
