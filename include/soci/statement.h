@@ -134,7 +134,6 @@ private:
     void exchange_for_row(into_container<T, Indicator> const &ic)
     { intosForRow_.exchange(ic); }
     void exchange_for_row(into_type_ptr const & i) { intosForRow_.exchange(i); }
-    void define_for_row();
 
     template<typename T>
     void into_row()
