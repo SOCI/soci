@@ -1478,6 +1478,56 @@ TEST_CASE("Bulk iterators", "[oracle][bulkiters]")
     sql << "drop table t";
 }
 
+TEST_CASE ( "Oracle CLOB", "[oracle][clob]" )
+{
+    soci::session sql ( backEnd, connectString );
+
+    // Use a non-ASCII string to test that CLOBs work when byte count differs
+    // from character count.
+    //
+    // Note that this requires some Unicode encoding to be used, e.g. UTF-8 by
+    // setting NLS_LANG=.AL32UTF8 in the environment.
+    std::string const test_utf8{"Привет système"};
+
+    table_creator_for_clob clob_table(sql);
+    long_string ls;
+    ls.value = test_utf8;
+    sql << "insert into soci_test(id, s) values(1, :s)", use(ls);
+    ls.value.clear();
+    sql << "select s from soci_test where id=1", into(ls);
+    CHECK(ls.value == test_utf8);
+
+    // RAII helper to create the function we use below.
+    struct soci_repeat : creator_base
+    {
+        explicit soci_repeat(session& sql)
+            : creator_base(sql, "function soci_repeat")
+        {
+            sql << R"(
+create function soci_repeat(s in string, xCount in integer) return clob as
+  tmp clob;
+begin
+  for i in 1..xCount loop tmp := tmp || s; end loop;
+  return tmp;
+end;
+)"
+                ;
+        }
+    } soci_repeat_func(sql);
+
+    // Append a big number of Unicode chars to the CLOB to test that things
+    // work with CLOBs larger than a single chunk (which is ~8KiB by default).
+    //
+    // Note: Oracle 11 used in the CI tests doesn't seem to handle characters
+    // outside of the BMP correctly even if current Oracle versions have no
+    // problems with them, so don't use them here for now.
+    unsigned xCount = 10000;
+    sql << "select :s || soci_repeat('Я', :xCount) from dual",
+           use(ls), use(xCount), into(ls);
+
+    REQUIRE(ls.value.length() == test_utf8.length() + 2*xCount);
+}
+
 //
 // Support for soci Common Tests
 //

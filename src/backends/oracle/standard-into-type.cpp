@@ -235,41 +235,48 @@ void oracle_standard_into_type_backend::pre_fetch()
 void oracle::read_from_lob(oracle_session_backend& session,
     OCILobLocator * lobp, std::string & value)
 {
-    ub4 len;
-
-    sword res = OCILobGetLength(session.svchp_, session.errhp_,
-        lobp, &len);
+    // We can't get the CLOB size in bytes directly, only in characters, which
+    // is useless for UTF-8 as it doesn't tell us how much memory do we
+    // actually need for storing it, so we'd have to allocate 4 bytes for every
+    // character which could be a huge overkill. So instead read the CLOB in
+    // chunks of its natural size until we get everything.
+    ub4 len = 0;
+    sword res = OCILobGetChunkSize(session.svchp_, session.errhp_, lobp, &len);
     if (res != OCI_SUCCESS)
     {
         throw_oracle_soci_error(res, session.errhp_);
     }
 
+    value.clear();
+
+    if (!len)
+        return;
+
+    // Read the LOB in chunks into the buffer while anything remains to be read.
     std::vector<char> buf(len);
-
-    if (len != 0)
+    ub4 offset = 1;
+    do
     {
-        ub4 lenChunk = len;
-        ub4 offset = 1;
-        do
-        {
-            res = OCILobRead(session.svchp_, session.errhp_,
-                lobp, &lenChunk,
-                offset,
-                reinterpret_cast<dvoid*>(&buf[offset - 1]),
-                len, 0, 0, 0, 0);
-            if (res == OCI_NEED_DATA)
-            {
-                offset += lenChunk;
-            }
-            else if (res != OCI_SUCCESS)
-            {
-                throw_oracle_soci_error(res, session.errhp_);
-            }
-        }
-        while (res == OCI_NEED_DATA);
-    }
+        // By setting the input length to 0, we tell Oracle to read as many
+        // bytes as possible (so called "streaming" mode).
+        ub4 lenChunk = 0;
+        res = OCILobRead(session.svchp_, session.errhp_, lobp,
+                         &lenChunk, offset,
+                         &buf[0], len,
+                         0, 0, 0, 0);
 
-    value.assign(buf.begin(), buf.end());
+        if (res == OCI_NEED_DATA)
+        {
+            offset += lenChunk;
+        }
+        else if (res != OCI_SUCCESS)
+        {
+            throw_oracle_soci_error(res, session.errhp_);
+        }
+
+        value.append(buf.begin(), buf.begin() + lenChunk);
+    }
+    while (res == OCI_NEED_DATA);
 }
 
 void oracle_standard_into_type_backend::post_fetch(

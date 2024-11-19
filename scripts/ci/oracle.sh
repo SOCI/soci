@@ -15,6 +15,9 @@ export ORACLE_SID=XE
 # Add path to Oracle libraries.
 export LD_LIBRARY_PATH=$ORACLE_HOME/lib
 
+# We need to tell Oracle to use UTF-8 for the tests using non-ASCII strings.
+export NLS_LANG=.AL32UTF8
+
 # Execute any command in the Oracle container: pass the command with its
 # arguments directly to the function.
 oracle_exec()
