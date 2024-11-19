@@ -307,27 +307,30 @@ TEST_CASE("Oracle rowid", "[oracle][rowid]")
 }
 
 // Stored procedures
-class procedure_creator_base
+class creator_base
 {
 public:
-    procedure_creator_base(session& sql)
-        : msession(sql) { drop(); }
+    explicit creator_base(session& sql, std::string what = "procedure soci_test")
+        : msession(sql), what_{std::move(what)} { drop(); }
 
-    virtual ~procedure_creator_base() { drop();}
+    ~creator_base() { drop();}
+
 private:
     void drop()
     {
-        try { msession << "drop procedure soci_test"; } catch (soci_error&) {}
+        try { msession << "drop " + what_; } catch (soci_error&) {}
     }
     session& msession;
 
-    SOCI_NOT_COPYABLE(procedure_creator_base)
+    std::string const what_;
+
+    SOCI_NOT_COPYABLE(creator_base)
 };
 
-struct procedure_creator : procedure_creator_base
+struct procedure_creator : creator_base
 {
     procedure_creator(soci::session & sql)
-        : procedure_creator_base(sql)
+        : creator_base(sql)
     {
         sql <<
              "create or replace procedure soci_test(output out varchar2,"
@@ -393,20 +396,20 @@ namespace soci
     };
 }
 
-struct in_out_procedure_creator : public procedure_creator_base
+struct in_out_procedure_creator : public creator_base
 {
     in_out_procedure_creator(soci::session & sql)
-        : procedure_creator_base(sql)
+        : creator_base(sql)
     {
         sql << "create or replace procedure soci_test(s in out varchar2)"
                 " as begin s := s || s; end;";
     }
 };
 
-struct returns_null_procedure_creator : public procedure_creator_base
+struct returns_null_procedure_creator : public creator_base
 {
     returns_null_procedure_creator(soci::session & sql)
-        : procedure_creator_base(sql)
+        : creator_base(sql)
     {
         sql << "create or replace procedure soci_test(s in out varchar2)"
             " as begin s := NULL; end;";
@@ -842,10 +845,10 @@ struct person_table_creator : public table_creator_base
     }
 };
 
-struct times100_procedure_creator : public procedure_creator_base
+struct times100_procedure_creator : public creator_base
 {
     times100_procedure_creator(soci::session & sql)
-        : procedure_creator_base(sql)
+        : creator_base(sql)
     {
         sql << "create or replace procedure soci_test(id in out number)"
                " as begin id := id * 100; end;";
