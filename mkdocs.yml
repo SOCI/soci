@@ -1,7 +1,7 @@
 site_name: SOCI (master)
 site_description: SOCI - The C++ Database Access Library
 repo_url: https://github.com/SOCI/soci/
-copyright: Copyright &copy; 2017 <a href="https://github.com/msobczak">Maciej Sobczak</a> and <a href="http://soci.sourceforge.net/people.html">SOCI Team</a>.
+copyright: Copyright &copy; 2017 <a href="https://github.com/msobczak">Maciej Sobczak</a> and <a href="https://soci.sourceforge.net/people.html">SOCI Team</a>.
 
 nav:
   - Home: index.md
