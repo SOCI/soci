@@ -254,29 +254,33 @@ void oracle::read_from_lob(oracle_session_backend& session,
 
     // Read the LOB in chunks into the buffer while anything remains to be read.
     std::vector<char> buf(len);
-    ub4 offset = 1;
-    do
+    for (bool done = false; !done; )
     {
         // By setting the input length to 0, we tell Oracle to read as many
         // bytes as possible (so called "streaming" mode).
         ub4 lenChunk = 0;
         res = OCILobRead(session.svchp_, session.errhp_, lobp,
-                         &lenChunk, offset,
+                         &lenChunk,
+                         1, // Only used for the first chunk, ignored later.
                          &buf[0], len,
                          0, 0, 0, 0);
 
-        if (res == OCI_NEED_DATA)
+        switch (res)
         {
-            offset += lenChunk;
-        }
-        else if (res != OCI_SUCCESS)
-        {
-            throw_oracle_soci_error(res, session.errhp_);
+            case OCI_NEED_DATA:
+                // Nothing to do, just continue reading.
+                break;
+
+            case OCI_SUCCESS:
+                done = true;
+                break;
+
+            default:
+                throw_oracle_soci_error(res, session.errhp_);
         }
 
         value.append(buf.begin(), buf.begin() + lenChunk);
     }
-    while (res == OCI_NEED_DATA);
 }
 
 void oracle_standard_into_type_backend::post_fetch(
