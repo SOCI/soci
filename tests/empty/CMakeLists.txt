@@ -12,4 +12,7 @@
 soci_backend_test(
   BACKEND Empty
   SOURCE test-empty.cpp
+    # We only run these tests from the empty backend test, as they don't use
+    # database at all.
+    ../common/test-unicode.cpp
   CONNSTR "dummy")

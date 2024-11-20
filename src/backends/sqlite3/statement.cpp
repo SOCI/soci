@@ -208,6 +208,8 @@ sqlite3_statement_backend::load_rowset(int totalRows)
 
                         case db_xml:
                             throw soci_error("XML data type is not supported");
+                        case db_wstring:
+                            throw soci_error("Wide string data type is not supported");
                     }
                 }
             }
@@ -332,6 +334,8 @@ sqlite3_statement_backend::bind_and_execute(int number)
 
                     case db_xml:
                         throw soci_error("XML data type is not supported");
+                    case db_wstring:
+                        throw soci_error("Wide string data type is not supported");
                 }
             }
 

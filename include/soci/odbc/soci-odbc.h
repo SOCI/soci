@@ -43,6 +43,16 @@ namespace details
     {
       return reinterpret_cast<SQLCHAR*>(const_cast<char*>(s.c_str()));
     }
+
+    inline SQLWCHAR* sqlchar_cast(std::wstring const& s)
+    {
+      return reinterpret_cast<SQLWCHAR*>(const_cast<wchar_t*>(s.c_str()));
+    }
+
+    inline SQLWCHAR* sqlchar_cast(std::u16string const& s)
+    {
+      return reinterpret_cast<SQLWCHAR*>(const_cast<char16_t*>(s.c_str()));
+    }
 }
 
 // Option allowing to specify the "driver completion" parameter of
@@ -192,6 +202,10 @@ private:
                           SQLSMALLINT& sqlType,
                           SQLSMALLINT& cType);
 
+    void copy_from_string(const std::wstring& s,
+                          SQLLEN& size,
+                          SQLSMALLINT& sqlType,
+                          SQLSMALLINT& cType);
 };
 
 struct odbc_vector_use_type_backend : details::vector_use_type_backend,

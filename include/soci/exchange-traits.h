@@ -156,6 +156,13 @@ struct exchange_traits<std::string>
 };
 
 template <>
+struct exchange_traits<std::wstring>
+{
+    typedef basic_type_tag type_family;
+    enum { x_type = x_stdwstring };
+};
+
+template <>
 struct exchange_traits<std::tm>
 {
     typedef basic_type_tag type_family;

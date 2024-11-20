@@ -214,6 +214,7 @@ void oracle_vector_use_type_backend::prepare_for_bind(
     case x_statement:
     case x_rowid:
     case x_blob:
+    case x_stdwstring:
         throw soci_error("Unsupported type for vector use parameter");
     }
 }

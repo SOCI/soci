@@ -6,6 +6,7 @@
 #define SOCI_ODBC_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/odbc/soci-odbc.h"
+#include "soci/soci-unicode.h"
 #include "soci-compiler.h"
 #include "soci-exchange-cast.h"
 #include <cctype>
@@ -112,6 +113,13 @@ void* odbc_standard_use_type_backend::prepare_for_bind(
         copy_from_string(s, size, sqlType, cType);
     }
     break;
+    case x_stdwstring:
+    {
+        std::wstring const& s = exchange_type_cast<x_stdwstring>(data_);
+
+        copy_from_string(s, size, sqlType, cType);
+    }
+    break;
     case x_stdtm:
     {
         std::tm const& t = exchange_type_cast<x_stdtm>(data_);
@@ -172,6 +180,27 @@ void odbc_standard_use_type_backend::copy_from_string(
     buf_ = new char[size+1];
     memcpy(buf_, s.c_str(), size);
     buf_[size++] = '\0';
+    indHolder_ = SQL_NTS;
+}
+
+void odbc_standard_use_type_backend::copy_from_string(
+        const std::wstring& s,
+        SQLLEN& size,
+        SQLSMALLINT& sqlType,
+        SQLSMALLINT& cType
+    )
+{
+    auto const len = wide_to_utf16(s, nullptr, 0);
+
+    size = static_cast<SQLLEN>((len + 1) * sizeof(SQLWCHAR));
+    sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_WLONGVARCHAR : SQL_WVARCHAR;
+    cType = SQL_C_WCHAR;
+    buf_ = new char[size];
+
+    char16_t* const wbuf = reinterpret_cast<char16_t*>(buf_);
+    wide_to_utf16(s, wbuf, len);
+    wbuf[len] = u'\0';
+
     indHolder_ = SQL_NTS;
 }
 

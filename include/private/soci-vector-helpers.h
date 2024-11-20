@@ -33,6 +33,8 @@ inline std::size_t get_vector_size(exchange_type e, void *data)
             return exchange_vector_type_cast<x_char>(data).size();
         case x_stdstring:
             return exchange_vector_type_cast<x_stdstring>(data).size();
+        case x_stdwstring:
+            return exchange_vector_type_cast<x_stdwstring>(data).size();
         case x_int8:
             return exchange_vector_type_cast<x_int8>(data).size();
         case x_uint8:
@@ -75,6 +77,9 @@ inline void resize_vector(exchange_type e, void *data, std::size_t newSize)
             return;
         case x_stdstring:
             exchange_vector_type_cast<x_stdstring>(data).resize(newSize);
+            return;
+        case x_stdwstring:
+            exchange_vector_type_cast<x_stdwstring>(data).resize(newSize);
             return;
         case x_int8:
             exchange_vector_type_cast<x_int8>(data).resize(newSize);
@@ -131,6 +136,7 @@ inline std::string& vector_string_value(exchange_type e, void *data, std::size_t
             return exchange_vector_type_cast<x_xmltype>(data).at(ind).value;
         case x_longstring:
             return exchange_vector_type_cast<x_longstring>(data).at(ind).value;
+        case x_stdwstring:
         case x_char:
         case x_int8:
         case x_uint8:

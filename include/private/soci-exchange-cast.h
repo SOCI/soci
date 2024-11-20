@@ -37,6 +37,12 @@ struct exchange_type_traits<x_stdstring>
 };
 
 template <>
+struct exchange_type_traits<x_stdwstring>
+{
+  typedef std::wstring value_type;
+};
+
+template <>
 struct exchange_type_traits<x_int8>
 {
   typedef int8_t value_type;
