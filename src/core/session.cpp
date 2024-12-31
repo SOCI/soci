@@ -11,6 +11,7 @@
 #include "soci/connection-pool.h"
 #include "soci/soci-backend.h"
 #include "soci/query_transformation.h"
+#include "soci/log-context.h"
 
 using namespace soci;
 using namespace soci::details;
@@ -465,6 +466,16 @@ std::ostream * session::get_log_stream() const
     {
         return logger_.get_stream();
     }
+}
+
+void session::set_query_context_logging_mode(log_context ctx)
+{
+    query_ctx_logging_mode_ = ctx;
+}
+
+log_context session::get_query_context_logging_mode() const
+{
+    return query_ctx_logging_mode_;
 }
 
 void session::log_query(std::string const & query)

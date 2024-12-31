@@ -2309,6 +2309,8 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
 {
     soci::session sql(backEndFactory_, connectString_);
 
+    sql.set_query_context_logging_mode(log_context::always);
+
     std::ostringstream log;
     sql.set_log_stream(&log);
 
@@ -2357,6 +2359,46 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
             CHECK(sql.get_last_query_context() == R"(:name="bob", :id=42)");
         }
 
+        try {
+            sql << "insert into soci_test(dummy, id) values(dummy, id)", use(name, "dummy"), use(id, "id");
+        } catch (const soci_error &e) {
+            CHECK(e.what()
+                    == e.get_error_message()
+                    + R"a( while preparing "insert into soci_test(dummy, id) values(dummy, id)" with :dummy="bob", :id=42.)a");
+        }
+        CHECK(sql.get_last_query() == "insert into soci_test(dummy, id) values(dummy, id)");
+        CHECK(sql.get_last_query_context() == R"(:dummy="bob", :id=42)");
+
+
+        // on_error mode
+        sql.set_query_context_logging_mode(log_context::on_error);
+
+        sql << "insert into soci_test(name, id) values (:name, :id)", use(name, "name"), use(id, "id");
+        CHECK(sql.get_last_query_context() == "");
+        try {
+            sql << "insert into soci_test(dummy, id) values(dummy, id)", use(name, "dummy"), use(id, "id");
+        } catch (const soci_error &e) {
+            CHECK(e.what()
+                    == e.get_error_message()
+                    + R"a( while preparing "insert into soci_test(dummy, id) values(dummy, id)" with :dummy="bob", :id=42.)a");
+        }
+        CHECK(sql.get_last_query() == "insert into soci_test(dummy, id) values(dummy, id)");
+        CHECK(sql.get_last_query_context() == R"(:dummy="bob", :id=42)");
+
+        // never mode
+        sql.set_query_context_logging_mode(log_context::never);
+
+        sql << "insert into soci_test(name, id) values (:name, :id)", use(name, "name"), use(id, "id");
+        CHECK(sql.get_last_query_context() == "");
+        try {
+            sql << "insert into soci_test(dummy, id) values(dummy, id)", use(name, "dummy"), use(id, "id");
+        } catch (const soci_error &e) {
+            CHECK(e.what()
+                    == e.get_error_message()
+                    + R"a( while preparing "insert into soci_test(dummy, id) values(dummy, id)".)a");
+        }
+        CHECK(sql.get_last_query() == "insert into soci_test(dummy, id) values(dummy, id)");
+        CHECK(sql.get_last_query_context() == "");
     }
 
     sql.set_log_stream(&log);

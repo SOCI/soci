@@ -14,6 +14,7 @@
 #include "soci/use-type.h"
 #include "soci/values.h"
 #include "soci-compiler.h"
+#include "soci/log-context.h"
 #include <ctime>
 #include <cctype>
 #include <cstdint>
@@ -592,15 +593,20 @@ void statement_impl::pre_use()
 {
     session_.clear_query_parameters();
 
+    const bool log_query_ctx = session_.get_query_context_logging_mode() == log_context::always;
+
     std::size_t const usize = uses_.size();
     for (std::size_t i = 0; i != usize; ++i)
     {
         uses_[i]->pre_use();
 
-        std::string name = get_name(*uses_[i], i, backEnd_);
-        std::stringstream value;
-        uses_[i]->dump_value(value);
-        session_.add_query_parameter(std::move(name), value.str());
+        if (log_query_ctx)
+        {
+            std::string name = get_name(*uses_[i], i, backEnd_);
+            std::stringstream value;
+            uses_[i]->dump_value(value);
+            session_.add_query_parameter(std::move(name), value.str());
+        }
     }
 }
 
@@ -865,23 +871,18 @@ statement_impl::rethrow_current_exception_with_context(char const* operation)
             std::ostringstream oss;
             oss << "while " << operation << " \"" << query_ << "\"";
 
-            if (!uses_.empty())
+            if (!uses_.empty() && session_.get_query_context_logging_mode() != log_context::never)
             {
-                oss << " with ";
-
                 std::size_t const usize = uses_.size();
                 for (std::size_t i = 0; i != usize; ++i)
                 {
-                    if (i != 0)
-                        oss << ", ";
-
-                    details::use_type_base const& u = *uses_[i];
-
-                    oss << ":" << get_name(u, i, backEnd_);
-
-                    oss << "=";
-                    u.dump_value(oss);
+                    std::string name = get_name(*uses_[i], i, backEnd_);
+                    std::stringstream value;
+                    uses_[i]->dump_value(value);
+                    session_.add_query_parameter(std::move(name), value.str());
                 }
+
+                oss << " with " << session_.get_last_query_context();
             }
 
             e.add_context(oss.str());

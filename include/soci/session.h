@@ -13,6 +13,7 @@
 #include "soci/query_transformation.h"
 #include "soci/connection-parameters.h"
 #include "soci/logger.h"
+#include "soci/log-context.h"
 
 // std
 #include <cstddef>
@@ -106,6 +107,9 @@ public:
     // support for basic logging (use set_logger() for more control).
     void set_log_stream(std::ostream * s);
     std::ostream * get_log_stream() const;
+
+    void set_query_context_logging_mode(log_context ctx);
+    log_context get_query_context_logging_mode() const;
 
     void log_query(std::string const & query);
     void clear_query_parameters();
@@ -226,6 +230,7 @@ private:
     std::ostringstream query_stream_;
     std::unique_ptr<details::query_transformation_function> query_transformation_;
 
+    log_context query_ctx_logging_mode_ = log_context::always;
     logger logger_;
 
     connection_parameters lastConnectParameters_;
