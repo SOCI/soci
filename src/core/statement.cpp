@@ -873,6 +873,12 @@ statement_impl::rethrow_current_exception_with_context(char const* operation)
 
             if (!uses_.empty() && session_.get_query_context_logging_mode() != log_context::never)
             {
+                // We have to clear previously cached query parameters as different backends behave differently
+                // in whether they error before or after the caching has happened. Therefore, we can't rely on
+                // the parameters to be or to not be cached at the point of error in a cross-backend way (that
+                // works for all kinds of errors).
+                session_.clear_query_parameters();
+
                 std::size_t const usize = uses_.size();
                 for (std::size_t i = 0; i != usize; ++i)
                 {
