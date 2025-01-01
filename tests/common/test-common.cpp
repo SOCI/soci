@@ -2364,7 +2364,7 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
         } catch (const soci_error &e) {
             REQUIRE_THAT(e.what(),
                 Catch::Matches(
-                    R"a((.|\n)+ while (preparing|executing) "insert into soci_test \(dummy, id\) values \(:dummy, :id\)" with :dummy="bob", :id=42\.)a"
+                    "(.|\\n)+ while (preparing|executing) \"insert into soci_test \\(dummy, id\\) values \\(:dummy, :id\\)\" with :dummy=\"bob\", :id=42\\."
                 )
             );
         }
@@ -2382,7 +2382,7 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
         } catch (const soci_error &e) {
             REQUIRE_THAT(e.what(),
                 Catch::Matches(
-                    R"a((.|\n)+ while (preparing|executing) "insert into soci_test \(dummy, id\) values \(:dummy, :id\)" with :dummy="bob", :id=42\.)a"
+                    "(.|\\n)+ while (preparing|executing) \"insert into soci_test \\(dummy, id\\) values \\(:dummy, :id\\)\" with :dummy=\"bob\", :id=42\\."
                 )
             );
         }
@@ -2399,7 +2399,7 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
         } catch (const soci_error &e) {
             REQUIRE_THAT(e.what(),
                 Catch::Matches(
-                    R"a((.|\n)+ while (preparing|executing) "insert into soci_test \(dummy, id\) values \(:dummy, :id\)"\.)a"
+                    "(.|\\n)+ while (preparing|executing) \"insert into soci_test \\(dummy, id\\) values \\(:dummy, :id\\)\"\\."
                 )
             );
         }
