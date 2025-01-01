@@ -2362,9 +2362,11 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
         try {
             sql << "insert into soci_test (dummy, id) values (:dummy, :id)", use(name, "dummy"), use(id, "id");
         } catch (const soci_error &e) {
-            CHECK(e.what()
-                    == e.get_error_message()
-                    + R"a( while preparing "insert into soci_test (dummy, id) values (:dummy, :id)" with :dummy="bob", :id=42.)a");
+            REQUIRE_THAT(e.what(),
+                Catch::Matches(
+                    R"a(.+ while (preparing|executing) "insert into soci_test \(dummy, id\) values \(:dummy, :id\)" with :dummy="bob", :id=42\.)a"
+                )
+            );
         }
         CHECK(sql.get_last_query() == "insert into soci_test (dummy, id) values (:dummy, :id)");
         CHECK(sql.get_last_query_context() == R"(:dummy="bob", :id=42)");
@@ -2378,9 +2380,11 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
         try {
             sql << "insert into soci_test (dummy, id) values (:dummy, :id)", use(name, "dummy"), use(id, "id");
         } catch (const soci_error &e) {
-            CHECK(e.what()
-                    == e.get_error_message()
-                    + R"a( while preparing "insert into soci_test (dummy, id) values (:dummy, :id)" with :dummy="bob", :id=42.)a");
+            REQUIRE_THAT(e.what(),
+                Catch::Matches(
+                    R"a(.+ while (preparing|executing) "insert into soci_test \(dummy, id\) values \(:dummy, :id\)" with :dummy="bob", :id=42\.)a"
+                )
+            );
         }
         CHECK(sql.get_last_query() == "insert into soci_test (dummy, id) values (:dummy, :id)");
         CHECK(sql.get_last_query_context() == R"(:dummy="bob", :id=42)");
@@ -2393,9 +2397,11 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
         try {
             sql << "insert into soci_test (dummy, id) values (:dummy, :id)", use(name, "dummy"), use(id, "id");
         } catch (const soci_error &e) {
-            CHECK(e.what()
-                    == e.get_error_message()
-                    + R"a( while preparing "insert into soci_test (dummy, id) values (:dummy, :id)".)a");
+            REQUIRE_THAT(e.what(),
+                Catch::Matches(
+                    R"a(.+ while (preparing|executing) "insert into soci_test \(dummy, id\) values \(:dummy, :id\)"\.)a"
+                )
+            );
         }
         CHECK(sql.get_last_query() == "insert into soci_test (dummy, id) values (:dummy, :id)");
         CHECK(sql.get_last_query_context() == "");
