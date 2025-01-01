@@ -1,5 +1,7 @@
-add_executable(soci_mysql_tests mysql_tests.cpp)
-target_link_libraries(soci_mysql_tests PRIVATE soci_common_tests SOCI::MySQL)
+add_executable(soci_mysql_tests
+  "test-mysql.cpp"
+)
+target_link_libraries(soci_mysql_tests PRIVATE soci_tests_common SOCI::MySQL)
 
 set(SOCI_MYSQL_TEST_CONNSTR "db=soci_test" CACHE STRING "The connection string to use for MySQL tests")
 

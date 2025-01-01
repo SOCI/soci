@@ -11,6 +11,7 @@
 #include "soci/error.h"
 #include <cstdlib>
 #include <map>
+#include <sstream>
 #include <string>
 #include <vector>
 #ifndef _MSC_VER
@@ -24,13 +25,56 @@ using namespace soci::dynamic_backends;
 
 #include <windows.h>
 
-typedef CRITICAL_SECTION soci_mutex_t;
-typedef HMODULE soci_handler_t;
+namespace
+{
 
-#define LOCK(x) EnterCriticalSection(x)
-#define UNLOCK(x) LeaveCriticalSection(x)
-#define MUTEX_INIT(x) InitializeCriticalSection(x)
-#define MUTEX_DEST(x) DeleteCriticalSection(x)
+class soci_mutex_t
+{
+public:
+    soci_mutex_t() { ::InitializeCriticalSection(&cs_); }
+    ~soci_mutex_t() { ::DeleteCriticalSection(&cs_); }
+
+    void lock() { ::EnterCriticalSection(&cs_); }
+    void unlock() { ::LeaveCriticalSection(&cs_); }
+
+    soci_mutex_t(soci_mutex_t const &) = delete;
+    soci_mutex_t& operator=(soci_mutex_t const &) = delete;
+
+private:
+    CRITICAL_SECTION cs_;
+};
+
+typedef HMODULE soci_dynlib_handle_t;
+
+extern "C" IMAGE_DOS_HEADER __ImageBase;
+
+std::string get_this_dynlib_path()
+{
+    std::string path;
+
+    char buf[MAX_PATH];
+    if ( ::GetModuleFileNameA(reinterpret_cast<HINSTANCE>(&__ImageBase), buf, MAX_PATH) )
+    {
+        path = buf;
+
+        // Get rid of everything after the last path separator, which should
+        // normally be a backslash, but check for slashes too, just in case.
+        auto const last_sep = path.find_last_of("\\/");
+        if ( last_sep != std::string::npos )
+            path.erase(last_sep);
+    }
+    else
+    {
+        // Fall back to using the current directory, we can't really do much
+        // else and throwing from here would be arguably less than helpful.
+        path = ".";
+    }
+
+    return path;
+}
+
+} // unnamed namespace
+
 #define DLOPEN(x) LoadLibraryA(x)
 #define DLCLOSE(x) FreeLibrary(x)
 #define DLSYM(x, y) GetProcAddress(x, y)
@@ -45,18 +89,81 @@ typedef HMODULE soci_handler_t;
 #define LIBNAME(x) (SOCI_LIB_PREFIX + x + SOCI_LIB_SUFFIX)
 #endif // SOCI_ABI_VERSION
 
+// We need to disable showing message boxes from LoadLibrary() as we're
+// prepared to handle errors from them. Do this in ctor of this class and
+// restore the original error mode used by the application in its dtor to keep
+// this ugliness as isolated as possible.
+namespace
+{
+
+class MSWErrorMessageBoxDisabler
+{
+public:
+    MSWErrorMessageBoxDisabler()
+        : old_mode_(::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX))
+    {
+    }
+
+    ~MSWErrorMessageBoxDisabler()
+    {
+        ::SetErrorMode(old_mode_);
+    }
+
+private:
+    const UINT old_mode_;
+};
+
+} // unnamed namespace
+
 #else
 
 #include <pthread.h>
 #include <dlfcn.h>
 
-typedef pthread_mutex_t soci_mutex_t;
-typedef void * soci_handler_t;
+namespace
+{
 
-#define LOCK(x) pthread_mutex_lock(x)
-#define UNLOCK(x) pthread_mutex_unlock(x)
-#define MUTEX_INIT(x) pthread_mutex_init(x, NULL)
-#define MUTEX_DEST(x) pthread_mutex_destroy(x)
+class soci_mutex_t
+{
+public:
+    soci_mutex_t() { pthread_mutex_init(&m_, NULL); }
+    soci_mutex_t(soci_mutex_t const &) = delete;
+    soci_mutex_t& operator=(soci_mutex_t const &) = delete;
+
+    ~soci_mutex_t() { pthread_mutex_destroy(&m_); }
+
+    void lock() { pthread_mutex_lock(&m_); }
+    void unlock() { pthread_mutex_unlock(&m_); }
+
+private:
+    pthread_mutex_t m_;
+};
+
+typedef void * soci_dynlib_handle_t;
+
+std::string get_this_dynlib_path()
+{
+    Dl_info di = { };
+
+    // We need some pointer in this shared library to pass to dladdr(), just
+    // use this function itself.
+    //
+    // Note that at least under Solaris dladdr() takes non-const void*.
+    if ( dladdr(const_cast<void*>(reinterpret_cast<void*>(get_this_dynlib_path)),
+                &di) == 0 )
+        return ".";
+
+    std::string path = di.dli_fname;
+
+    auto const last_sep = path.rfind('/');
+    if ( last_sep != std::string::npos )
+        path.erase(last_sep);
+
+    return path;
+}
+
+} // unnamed namespace
+
 #define DLOPEN(x) dlopen(x, RTLD_LAZY)
 #define DLCLOSE(x) dlclose(x)
 #define DLSYM(x, y) dlsym(x, y)
@@ -81,7 +188,7 @@ namespace // unnamed
 
 struct info
 {
-    soci_handler_t handler_;
+    soci_dynlib_handle_t handle_;
     backend_factory const * factory_;
 
     // The use count is the number of existing sessions using this backend (in
@@ -101,27 +208,35 @@ struct info
     // use count drops to 0.
     bool unload_requested_;
 
-    info() : handler_(0), factory_(0), use_count_(0), unload_requested_(false) {}
+    info() : handle_(0), factory_(0), use_count_(0), unload_requested_(false) {}
 };
 
 typedef std::map<std::string, info> factory_map;
 factory_map factories_;
 
-std::vector<std::string> search_paths_;
-
 soci_mutex_t mutex_;
 
-std::vector<std::string> get_default_paths()
+// This function should be called with mutex_ locked to ensure that we don't
+// initialize the static variable inside it in 2 threads in parallel.
+std::vector<std::string>& get_default_search_paths()
 {
-    std::vector<std::string> paths;
+    static std::vector<std::string> paths;
+    if (!paths.empty())
+        return paths;
 
     char const* const penv = std::getenv("SOCI_BACKENDS_PATH");
     std::string const env(penv ? penv : "");
     if (env.empty())
     {
-        paths.push_back(".");
+        // We want to load the backends libraries from the directory containing
+        // the core library itself.
+        std::string const core_lib_path = get_this_dynlib_path();
+
+        paths.push_back(core_lib_path);
+
 #ifdef DEFAULT_BACKENDS_PATH
-        paths.push_back(DEFAULT_BACKENDS_PATH);
+        if (core_lib_path != DEFAULT_BACKENDS_PATH)
+            paths.push_back(DEFAULT_BACKENDS_PATH);
 #endif // DEFAULT_BACKENDS_PATH
         return paths;
     }
@@ -156,44 +271,37 @@ std::vector<std::string> get_default_paths()
 // used to automatically initialize the global state
 struct static_state_mgr
 {
-    static_state_mgr()
-    {
-        MUTEX_INIT(&mutex_);
-
-        search_paths_ = get_default_paths();
-    }
+    static_state_mgr() = default;
 
     ~static_state_mgr()
     {
         unload_all();
-
-        MUTEX_DEST(&mutex_);
     }
 } static_state_mgr_;
 
 class scoped_lock
 {
 public:
-    scoped_lock(soci_mutex_t * m) : mptr(m) { LOCK(m); };
-    ~scoped_lock() { UNLOCK(mptr); };
+    explicit scoped_lock(soci_mutex_t * m) : m_(m) { m_->lock(); };
+    ~scoped_lock() { m_->unlock(); };
+
+    scoped_lock(scoped_lock const &) = delete;
+    scoped_lock& operator=(scoped_lock const &) = delete;
+
 private:
-    soci_mutex_t * mptr;
+    soci_mutex_t * const m_;
 };
 
 // non-synchronized helpers for the other functions
 factory_map::iterator do_unload(factory_map::iterator i)
 {
-    soci_handler_t h = i->second.handler_;
+    soci_dynlib_handle_t h = i->second.handle_;
     if (h != NULL)
     {
         DLCLOSE(h);
     }
 
-    // TODO-C++11: Use erase() return value.
-    factory_map::iterator const to_erase = i;
-    ++i;
-    factories_.erase(to_erase);
-    return i;
+    return factories_.erase(i);
 }
 
 void do_unload_or_throw_if_in_use(std::string const & name)
@@ -222,9 +330,15 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
     // - otherwise (shared_object not provided or empty):
     //   - file named libsoci_NAME.so.SOVERSION is searched in the list of search paths
 
-    soci_handler_t h = 0;
+#ifdef _WIN32
+    MSWErrorMessageBoxDisabler no_message_boxes;
+#endif
+
+    soci_dynlib_handle_t h = 0;
+    std::string fullFileName;
     if (shared_object.empty() == false)
     {
+        fullFileName = shared_object;
         h = DLOPEN(shared_object.c_str());
     }
     else
@@ -234,9 +348,9 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
         if (0 == h)
         {
             // try all search paths
-            for (std::size_t i = 0; i != search_paths_.size(); ++i)
+            for (auto const& path : get_default_search_paths())
             {
-                std::string const fullFileName(search_paths_[i] + "/" + LIBNAME(name));
+                fullFileName = path + "/" + LIBNAME(name);
                 h = DLOPEN(fullFileName.c_str());
                 if (0 != h)
                 {
@@ -249,7 +363,35 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
 
     if (0 == h)
     {
-        throw soci_error("Failed to find shared library for backend " + name);
+        std::ostringstream msg;
+        if (shared_object.empty() == false)
+        {
+            msg << "Failed to load shared library for backend " << name
+                << " from \"" << shared_object << "\"";
+        }
+        else
+        {
+            msg << "Failed to find shared library \"" << LIBNAME(name) << "\" "
+                << "for backend " << name;
+
+            // We always add "." as the first search path element, so it's not
+            // really useful to show it, but do show the search path if there
+            // is something else in it.
+            auto const& search_paths = get_default_search_paths();
+            if (search_paths.size() > 1 ||
+                (!search_paths.empty() && search_paths[0] != "."))
+            {
+                msg << " (even using extra search path \"";
+                for (std::size_t i = 0; i != search_paths.size(); ++i)
+                {
+                    if (i != 0)
+                        msg << ":";
+                    msg << search_paths[i];
+                }
+                msg << "\")";
+            }
+        }
+        throw soci_error(msg.str());
     }
 
     std::string symbol = "factory_" + name;
@@ -263,14 +405,18 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
     if (0 == entry)
     {
         DLCLOSE(h);
-        throw soci_error("Failed to resolve dynamic symbol: " + symbol);
+
+        std::ostringstream msg;
+        msg << "Failed to resolve dynamic symbol \"" << symbol << "\" "
+            << "in the shared library \"" << fullFileName << "\"";
+        throw soci_error(msg.str());
     }
 
     backend_factory const* f = entry();
 
     info new_entry;
     new_entry.factory_ = f;
-    new_entry.handler_ = h;
+    new_entry.handle_ = h;
 
     factories_[name] = new_entry;
 }
@@ -328,7 +474,9 @@ void dynamic_backends::unget(std::string const& name)
 
 SOCI_DECL std::vector<std::string>& dynamic_backends::search_paths()
 {
-    return search_paths_;
+    scoped_lock lock(&mutex_);
+
+    return get_default_search_paths();
 }
 
 SOCI_DECL void dynamic_backends::register_backend(

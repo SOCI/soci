@@ -1,5 +1,7 @@
-add_executable(soci_db2_tests OBJECT db2_tests.cpp)
-target_link_libraries(soci_db2_tests PRIVATE soci_common_tests soci_db2_interface)
+add_executable(soci_db2_tests
+  "test-db2.cpp"
+)
+target_link_libraries(soci_db2_tests PRIVATE soci_tests_common SOCI::DB2)
 
 set(SOCI_DB2_TEST_CONNSTR "DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;autocommit=off" CACHE STRING "The connection string to use for DB2 tests")
 

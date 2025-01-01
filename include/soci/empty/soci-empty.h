@@ -124,14 +124,14 @@ struct SOCI_EMPTY_DECL empty_statement_backend : details::statement_backend
     empty_session_backend& session_;
 };
 
-struct empty_rowid_backend : details::rowid_backend
+struct SOCI_EMPTY_DECL empty_rowid_backend : details::rowid_backend
 {
     empty_rowid_backend(empty_session_backend &session);
 
     ~empty_rowid_backend() override;
 };
 
-struct empty_blob_backend : details::blob_backend
+struct SOCI_EMPTY_DECL empty_blob_backend : details::blob_backend
 {
     empty_blob_backend(empty_session_backend& session);
 
@@ -146,10 +146,12 @@ struct empty_blob_backend : details::blob_backend
     std::size_t append(const void* buf, std::size_t toWrite) override;
     void trim(std::size_t newLen) override;
 
+    details::session_backend &get_session_backend() override;
+
     empty_session_backend& session_;
 };
 
-struct empty_session_backend : details::session_backend
+struct SOCI_EMPTY_DECL empty_session_backend : details::session_backend
 {
     empty_session_backend(connection_parameters const& parameters);
 

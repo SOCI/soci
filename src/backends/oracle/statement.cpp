@@ -5,8 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define soci_ORACLE_SOURCE
-
+#define SOCI_ORACLE_SOURCE
 #include "soci/oracle/soci-oracle.h"
 #include "error.h"
 #include "soci/soci-backend.h"
@@ -164,21 +163,33 @@ std::string oracle_statement_backend::rewrite_for_procedure_call(
 
 int oracle_statement_backend::prepare_for_describe()
 {
-    sword res = OCIStmtExecute(session_.svchp_, stmtp_, session_.errhp_,
-        1, 0, 0, 0, OCI_DESCRIBE_ONLY);
+    ub2 statementType = OCI_STMT_UNKNOWN;
+    sword res = OCIAttrGet(static_cast<dvoid*>(stmtp_),
+        static_cast<ub4>(OCI_HTYPE_STMT), static_cast<dvoid*>(&statementType),
+        0, static_cast<ub4>(OCI_ATTR_STMT_TYPE), session_.errhp_);
     if (res != OCI_SUCCESS)
     {
         throw_oracle_soci_error(res, session_.errhp_);
     }
 
-    int cols;
-    res = OCIAttrGet(static_cast<dvoid*>(stmtp_),
-        static_cast<ub4>(OCI_HTYPE_STMT), static_cast<dvoid*>(&cols),
-        0, static_cast<ub4>(OCI_ATTR_PARAM_COUNT), session_.errhp_);
-
-    if (res != OCI_SUCCESS)
+    int cols = 0;
+    if (statementType == OCI_STMT_SELECT)
     {
-        throw_oracle_soci_error(res, session_.errhp_);
+        res = OCIStmtExecute(session_.svchp_, stmtp_, session_.errhp_,
+            1, 0, 0, 0, OCI_DESCRIBE_ONLY);
+        if (res != OCI_SUCCESS)
+        {
+            throw_oracle_soci_error(res, session_.errhp_);
+        }
+
+        res = OCIAttrGet(static_cast<dvoid*>(stmtp_),
+            static_cast<ub4>(OCI_HTYPE_STMT), static_cast<dvoid*>(&cols),
+            0, static_cast<ub4>(OCI_ATTR_PARAM_COUNT), session_.errhp_);
+
+        if (res != OCI_SUCCESS)
+        {
+            throw_oracle_soci_error(res, session_.errhp_);
+        }
     }
 
     return cols;

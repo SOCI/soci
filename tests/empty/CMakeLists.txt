@@ -1,8 +1,11 @@
-add_executable(soci_empty_tests empty_tests.cpp)
-target_link_libraries(soci_empty_tests PRIVATE SOCI::Empty)
-target_include_directories(soci_empty_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../")
+add_executable(soci_empty_tests
+  "test-empty.cpp"
+)
+target_link_libraries(soci_empty_tests PRIVATE soci_tests_common SOCI::Empty)
+
+set(SOCI_EMPTY_TEST_CONNSTR "dummy" CACHE STRING "The connection string to use for Empty tests")
 
 add_test(
   NAME soci_empty_tests
-  COMMAND soci_empty_tests "--invisibles"
+  COMMAND soci_empty_tests "${SOCI_EMPTY_TEST_CONNSTR}" "--invisibles"
 )

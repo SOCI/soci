@@ -76,6 +76,11 @@ SOCI_DEFAULT_CMAKE_OPTIONS="${SOCI_COMMON_CMAKE_OPTIONS}
     -DSOCI_SQLITE3=OFF
 "
 
+# Most builds also enable UBSAN but it has to be disabled for some of them.
+if [ -z "${SOCI_NO_UBSAN}" ]; then
+    SOCI_DEFAULT_CMAKE_OPTIONS="$SOCI_DEFAULT_CMAKE_OPTIONS -DSOCI_UBSAN=ON"
+fi
+
 #
 # Functions
 #

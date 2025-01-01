@@ -36,4 +36,40 @@
 #   define SOCI_GCC_WARNING_RESTORE(x)
 #endif
 
+// CHECK_CXX_STD(version) evaluates to 1 if the C++ version is at least the
+// version specified.
+#if defined(_MSVC_LANG)
+#    define SOCI_CHECK_CXX_STD(ver) (_MSVC_LANG >= (ver))
+#elif defined(__cplusplus)
+#    define SOCI_CHECK_CXX_STD(ver) (__cplusplus >= (ver))
+#else
+#    define SOCI_CHECK_CXX_STD(ver) 0
+#endif
+
+// HAS_CLANG_FEATURE(feature) evaluates to 1 if clang is available and the
+// provided feature is available.
+#ifndef __has_feature
+#   define SOCI_HAS_CLANG_FEATURE(x) 0
+#else
+#   define SOCI_HAS_CLANG_FEATURE(x) __has_feature(x)
+#endif
+
+// FALLTHROUGH macro defines a cross-platform/version to mark fallthrough
+// behavior in switch statement.
+#if SOCI_CHECK_CXX_STD(201703L)
+#    define SOCI_FALLTHROUGH [[fallthrough]]
+#elif SOCI_HAS_CLANG_FEATURE(cxx_attributes)
+#    define SOCI_FALLTHROUGH [[clang::fallthrough]]
+#elif defined(__GNUC__)
+#    if defined(__has_cpp_attribute)
+#        if __has_cpp_attribute(fallthrough)
+#            define SOCI_FALLTHROUGH [[fallthrough]]
+#        endif
+#    endif
+#endif
+
+#ifndef SOCI_FALLTHROUGH
+    #define SOCI_FALLTHROUGH ((void)0)
+#endif
+
 #endif // SOCI_PRIVATE_SOCI_COMPILER_H_INCLUDED

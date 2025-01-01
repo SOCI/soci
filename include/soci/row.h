@@ -97,6 +97,11 @@ public:
 
         T ret;
         type_conversion<T>::move_from_base(baseVal, *indicators_.at(pos), ret);
+
+        // Re-initialize the holder in order to be able to use this row object
+        // for binding to another data set
+        baseVal = T{};
+
         return ret;
     }
 

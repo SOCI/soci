@@ -10,9 +10,10 @@
 #include "soci/type-holder.h"
 
 #include <cstddef>
-#include <cctype>
 #include <sstream>
 #include <string>
+
+#include "soci-case.h"
 
 using namespace soci;
 using namespace details;
@@ -40,10 +41,7 @@ void row::add_properties(column_properties const &cp)
     std::string const & originalName = cp.get_name();
     if (uppercaseColumnNames_)
     {
-        for (std::size_t i = 0; i != originalName.size(); ++i)
-        {
-            columnName.push_back(static_cast<char>(std::toupper(originalName[i])));
-        }
+        columnName = string_toupper(originalName);
 
         // rewrite the column name in the column_properties object
         // as well to retain consistent views
@@ -119,5 +117,9 @@ blob row::move_as<blob>(std::size_t pos) const
 
     blob ret;
     type_conversion<blob>::move_from_base(baseVal, *indicators_.at(pos), ret);
+
+    // Re-initialize blob object so it can be used in further queries
+    baseVal.initialize(ret.get_backend()->get_session_backend().make_blob_backend());
+
     return ret;
 }

@@ -15,6 +15,16 @@
 using namespace soci;
 using namespace soci::details;
 
+namespace soci
+{
+    struct schema_table_name
+    {
+        std::string schema;
+        std::string table;
+        soci::indicator ind;
+    };
+} // soci
+
 void ensureConnected(session_backend * backEnd)
 {
     if (backEnd == NULL)
@@ -69,18 +79,14 @@ private:
 
 session::session()
     : once(this), prepare(this),
-      logger_(new standard_logger_impl),
-      uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      logger_(new standard_logger_impl)
 {
 }
 
 session::session(connection_parameters const & parameters)
     : once(this), prepare(this),
       logger_(new standard_logger_impl),
-      lastConnectParameters_(parameters),
-      uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      lastConnectParameters_(parameters)
 {
     open(lastConnectParameters_);
 }
@@ -88,10 +94,8 @@ session::session(connection_parameters const & parameters)
 session::session(backend_factory const & factory,
     std::string const & connectString)
     : once(this), prepare(this),
-    logger_(new standard_logger_impl),
-      lastConnectParameters_(factory, connectString),
-      uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      logger_(new standard_logger_impl),
+      lastConnectParameters_(factory, connectString)
 {
     open(lastConnectParameters_);
 }
@@ -100,9 +104,7 @@ session::session(std::string const & backendName,
     std::string const & connectString)
     : once(this), prepare(this),
       logger_(new standard_logger_impl),
-      lastConnectParameters_(backendName, connectString),
-      uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      lastConnectParameters_(backendName, connectString)
 {
     open(lastConnectParameters_);
 }
@@ -110,9 +112,7 @@ session::session(std::string const & backendName,
 session::session(std::string const & connectString)
     : once(this), prepare(this),
       logger_(new standard_logger_impl),
-      lastConnectParameters_(connectString),
-      uppercaseColumnNames_(false), backEnd_(NULL),
-      isFromPool_(false), pool_(NULL)
+      lastConnectParameters_(connectString)
 {
     open(lastConnectParameters_);
 }
@@ -196,10 +196,38 @@ session& session::operator=(session && other)
 
 void session::reset_after_move()
 {
-    isFromPool_ = false;
-    pool_ = nullptr;
     backEnd_ = nullptr;
+    gotData_ = false;
+    isFromPool_ = false;
+    poolPosition_ = 0;
     pool_ = nullptr;
+}
+
+schema_table_name& session::alloc_schema_table_name(const std::string & tableName)
+{
+    std::size_t dot_pos = tableName.find( '.' );
+    schema_table_name stn;
+
+    if (dot_pos == std::string::npos)
+    {
+        stn.ind   = soci::i_null;
+        stn.table = tableName;
+    }
+    else
+    {
+        stn.ind    = soci::i_ok;
+        stn.schema = tableName.substr(0, dot_pos);
+        stn.table  = tableName.substr(dot_pos + 1);
+    }
+
+    // Store the memory at the front of the list of schema_table_names.
+    // This memory is stored to allow for the schema, table, and ind
+    // parameters to be stored for the lifetime of the prepare_temp_type
+    // created in prepare_column_descriptions.
+    // These will remain in memory until the session object is deleted.
+    schema_table_name_.push_front(stn);
+
+    return schema_table_name_.front();
 }
 
 session::~session()
@@ -536,7 +564,17 @@ details::prepare_temp_type session::prepare_column_descriptions(std::string & ta
 {
     ensureConnected(backEnd_);
 
-    return prepare << backEnd_->get_column_descriptions_query(), use(table_name, "t");
+    std::string column_description_query = backEnd_->get_column_descriptions_query();
+    if (column_description_query.find(":s") == std::string::npos)
+    {
+        return prepare << column_description_query, use(table_name, "t");
+    }
+    else
+    {
+        schema_table_name& stn = alloc_schema_table_name(table_name);
+
+        return prepare << column_description_query, use(stn.schema, stn.ind, "s"), use(stn.table, "t");
+    }
 }
 
 ddl_type session::create_table(const std::string & tableName)

@@ -115,66 +115,51 @@ sqlite3_session_backend::sqlite3_session_backend(
     std::string synchronous;
     std::string foreignKeys;
     std::string const & connectString = parameters.get_connect_string();
-    std::string dbname(connectString);
-    std::stringstream ssconn(connectString);
-    while (!ssconn.eof() && ssconn.str().find('=') != std::string::npos)
+    std::string dbname;
+
+    auto params = parameters;
+    if (connectString.find('=') == std::string::npos)
     {
-        std::string key, val;
-        std::getline(ssconn, key, '=');
-        std::getline(ssconn, val, ' ');
+        // The entire connection string must be just the database name.
+        dbname = connectString;
+    }
+    else
+    {
+        params.extract_options_from_space_separated_string();
+    }
 
-        if (val.size()>0 && val[0]=='\"')
-        {
-            std::string quotedVal = val.erase(0, 1);
+    std::string val;
+    if (params.get_option("dbname", val) || params.get_option("db", val))
+    {
+        dbname = val;
+    }
+    if (params.get_option("timeout", val))
+    {
+        std::istringstream converter(val);
+        converter >> timeout;
+    }
+    if (params.get_option("synchronous", val))
+    {
+        synchronous = val;
+    }
+    if (params.is_option_on("readonly"))
+    {
+        connection_flags = (connection_flags | SQLITE_OPEN_READONLY) & ~(SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+    }
+    if (params.is_option_on("nocreate"))
+    {
+        connection_flags &= ~SQLITE_OPEN_CREATE;
+    }
+    if (params.is_option_on("shared_cache"))
+    {
+        connection_flags |= SQLITE_OPEN_SHAREDCACHE;
+    }
+    params.get_option("vfs", vfs);
+    params.get_option("foreign_keys", foreignKeys);
 
-            if (quotedVal[quotedVal.size()-1] ==  '\"')
-            {
-                quotedVal.erase(val.size()-1);
-            }
-            else // space inside value string
-            {
-                std::getline(ssconn, val, '\"');
-                quotedVal = quotedVal + " " + val;
-                std::string keepspace;
-                std::getline(ssconn, keepspace, ' ');
-            }
-
-            val = quotedVal;
-        }
-
-        if ("dbname" == key || "db" == key)
-        {
-            dbname = val;
-        }
-        else if ("timeout" == key)
-        {
-            std::istringstream converter(val);
-            converter >> timeout;
-        }
-        else if ("synchronous" == key)
-        {
-            synchronous = val;
-        }
-        else if ("readonly" == key)
-        {
-            connection_flags = (connection_flags | SQLITE_OPEN_READONLY) & ~(SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
-        }
-        else if ("nocreate" == key)
-        {
-            connection_flags &= ~SQLITE_OPEN_CREATE;
-        }
-        else if ("shared_cache" == key && "true" == val)
-        {
-            connection_flags |= SQLITE_OPEN_SHAREDCACHE;
-        }
-        else if ("vfs" == key)
-        {
-            vfs = val;
-        }
-        else if ("foreign_keys" == key)
-        {
-            foreignKeys = val;
-        }
+    if (dbname.empty())
+    {
+        throw sqlite3_soci_error("Database name must be specified", 0);
     }
 
     int res = sqlite3_open_v2(dbname.c_str(), &conn_, connection_flags, (vfs.empty()?NULL:vfs.c_str()));

@@ -5,7 +5,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define soci_ORACLE_SOURCE
+#define SOCI_ORACLE_SOURCE
 #include "soci/oracle/soci-oracle.h"
 #include "clob.h"
 #include "error.h"
@@ -325,9 +325,16 @@ void oracle_vector_use_type_backend::pre_use(indicator const *ind)
         std::size_t const vecSize = size();
         for (std::size_t i = 0; i != vecSize; ++i)
         {
-            lobps[i] = create_temp_lob(statement_.session_);
-            write_to_lob(statement_.session_, lobps[i],
-                vector_string_value(type_, data_, i));
+            if (ind && ind[begin_ + i] == i_null)
+            {
+                lobps[i] = NULL;
+            }
+            else
+            {
+                lobps[i] = create_temp_lob(statement_.session_);
+                write_to_lob(statement_.session_, lobps[i],
+                    vector_string_value(type_, data_, i));
+            }
         }
     }
 
@@ -415,7 +422,10 @@ void oracle_vector_use_type_backend::clean_up()
         std::size_t const vecSize = size();
         for (std::size_t i = 0; i != vecSize; ++i)
         {
-            free_temp_lob(statement_.session_, lobps[i]);
+            if (lobps[i] != NULL)
+            {
+                free_temp_lob(statement_.session_, lobps[i]);
+            }
         }
     }
 

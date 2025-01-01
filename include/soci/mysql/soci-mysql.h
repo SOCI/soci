@@ -18,7 +18,7 @@
 #endif
 
 #include <soci/soci-backend.h>
-#include <private/soci-trivial-blob-backend.h>
+#include <soci/trivial-blob-backend.h>
 
 #ifdef SOCI_MYSQL_DIRECT_INCLUDE
 #include <mysql.h> // MySQL Client
@@ -150,7 +150,7 @@ struct mysql_vector_use_type_backend : details::vector_use_type_backend
 };
 
 struct mysql_session_backend;
-struct mysql_statement_backend : details::statement_backend
+struct SOCI_MYSQL_DECL mysql_statement_backend : details::statement_backend
 {
     mysql_statement_backend(mysql_session_backend &session);
 
@@ -222,14 +222,14 @@ struct mysql_statement_backend : details::statement_backend
     UseByNameBuffersMap useByNameBuffers_;
 };
 
-struct mysql_rowid_backend : details::rowid_backend
+struct SOCI_MYSQL_DECL mysql_rowid_backend : details::rowid_backend
 {
     mysql_rowid_backend(mysql_session_backend &session);
 
     ~mysql_rowid_backend() override;
 };
 
-class mysql_blob_backend : public details::trivial_blob_backend
+class SOCI_MYSQL_DECL mysql_blob_backend : public details::trivial_blob_backend
 {
 public:
     mysql_blob_backend(mysql_session_backend &session);
@@ -243,7 +243,7 @@ public:
     void load_from_hex_str(const char* str, std::size_t length);
 };
 
-struct mysql_session_backend : details::session_backend
+struct SOCI_MYSQL_DECL mysql_session_backend : details::session_backend
 {
     mysql_session_backend(connection_parameters const & parameters);
 
@@ -271,7 +271,24 @@ struct mysql_session_backend : details::session_backend
 
     std::string get_table_names_query() const override
     {
-        return "SELECT table_name AS 'TABLE_NAME' FROM information_schema.tables WHERE table_schema = DATABASE()";
+        return R"delim(SELECT LOWER(table_name) AS 'TABLE_NAME' FROM information_schema.tables WHERE table_schema = DATABASE())delim";
+    }
+
+    std::string get_column_descriptions_query() const override
+    {
+        return R"delim(SELECT column_name as "COLUMN_NAME",
+            data_type as "DATA_TYPE",
+            character_maximum_length as "CHARACTER_MAXIMUM_LENGTH",
+            numeric_precision as "NUMERIC_PRECISION",
+            numeric_scale as "NUMERIC_SCALE",
+            is_nullable as "IS_NULLABLE"
+            from information_schema.columns
+            where
+            case
+            when :s is not NULL THEN table_schema = :s
+            else table_schema = DATABASE()
+            end
+            and UPPER(table_name) = UPPER(:t))delim";
     }
 
     MYSQL *conn_;

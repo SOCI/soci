@@ -7,8 +7,10 @@ configure_file("test-mssql.dsn.in" "${CMAKE_CURRENT_BINARY_DIR}/test-mssql.dsn" 
 
 
 if (WIN32)
-  add_executable(soci_odbc_ms_access_tests odbc_ms_access_tests.cpp)
-  target_link_libraries(soci_odbc_ms_access_tests PRIVATE soci_common_tests SOCI::ODBC)
+  add_executable(soci_odbc_ms_access_tests
+    "test-odbc-access.cpp"
+  )
+  target_link_libraries(soci_odbc_ms_access_tests PRIVATE soci_tests_common SOCI::ODBC)
 
   set(SOCI_ODBC_TEST_ACCESS_CONNSTR "FILEDSN=${CMAKE_CURRENT_SOURCE_DIR}/test-access.dsn" CACHE STRING "Connection string for the ODBC MS Access test")
 
@@ -19,8 +21,10 @@ if (WIN32)
 endif()
 
 
-add_executable(soci_odbc_mssql_tests odbc_mssql_tests.cpp)
-target_link_libraries(soci_odbc_mssql_tests PRIVATE soci_common_tests SOCI::ODBC)
+add_executable(soci_odbc_mssql_tests
+  "test-odbc-mssql.cpp"
+)
+target_link_libraries(soci_odbc_mssql_tests PRIVATE soci_tests_common SOCI::ODBC)
 
 set(SOCI_ODBC_TEST_MSSQL_CONNSTR "FILEDSN=${CMAKE_CURRENT_BINARY_DIR}/test-mssql.dsn" CACHE STRING "Connection string for the ODBC MSSQL test")
 
@@ -30,9 +34,10 @@ add_test(
 )
 
 
-add_executable(soci_odbc_mysql_tests odbc_mysql_tests.cpp)
-target_link_libraries(soci_odbc_mysql_tests PRIVATE soci_common_tests SOCI::ODBC)
-target_include_directories(soci_odbc_mysql_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../")
+add_executable(soci_odbc_mysql_tests
+  "test-odbc-mysql.cpp"
+)
+target_link_libraries(soci_odbc_mysql_tests PRIVATE soci_tests_common SOCI::ODBC)
 
 set(SOCI_ODBC_TEST_MYSQL_CONNSTR "FILEDSN=${CMAKE_CURRENT_SOURCE_DIR}/test-mysql.dsn" CACHE STRING "Connection string for the ODBC MySQL test")
 
@@ -48,8 +53,10 @@ else()
   set(TEST_PGSQL_DSN "test-postgresql.dsn")
 endif()
 
-add_executable(soci_odbc_postgresql_tests odbc_postgresql_tests.cpp)
-target_link_libraries(soci_odbc_postgresql_tests PRIVATE soci_common_tests SOCI::ODBC)
+add_executable(soci_odbc_postgresql_tests
+  "test-odbc-postgresql.cpp"
+)
+target_link_libraries(soci_odbc_postgresql_tests PRIVATE soci_tests_common SOCI::ODBC)
 
 set(SOCI_ODBC_TEST_POSTGRESQL_CONNSTR "FILEDSN=${CMAKE_CURRENT_SOURCE_DIR}/${TEST_PGSQL_DSN}" CACHE STRING "Connection string for the ODBC PostgreSQL test")
 
@@ -64,8 +71,10 @@ add_test(
 # if (NOT $ENV{TRAVIS})
 option(WITH_ODBC_TEST_DB2 "Build ODBC DB2 test" OFF)
 if (WITH_ODBC_TEST_DB2)
-  add_executable(soci_odbc_db2_tests odbc_db2_tests.cpp)
-  target_link_libraries(osoci_dbc_db2_tests PRIVATE soci_common_tests SOCI::ODBC)
+  add_executable(soci_odbc_db2_tests
+    "test-odbc-db2.cpp"
+  )
+  target_link_libraries(osoci_dbc_db2_tests PRIVATE soci_tests_common SOCI::ODBC)
 
   set(SOCI_ODBC_TEST_DB2_CONNSTR "FILEDSN=${CMAKE_CURRENT_SOURCE_DIR}/test-db2.dsn" CACHE STRING "Connection string for the ODBC DB2 test")
 

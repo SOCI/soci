@@ -63,7 +63,7 @@ struct oracle_standard_into_type_backend : details::standard_into_type_backend
     OCIDefine *defnp_;
     sb2 indOCIHolder_;
     void *data_;
-    void *ociData_;
+    void *ociData_ = NULL;
     char *buf_;        // generic buffer
     details::exchange_type type_;
 
@@ -143,7 +143,7 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
     OCIBind *bindp_;
     sb2 indOCIHolder_;
     void *data_;
-    void *ociData_;
+    void *ociData_ = NULL;
     bool readOnly_;
     char *buf_;        // generic buffer
     details::exchange_type type_;
@@ -210,7 +210,7 @@ struct oracle_vector_use_type_backend : details::vector_use_type_backend
 };
 
 struct oracle_session_backend;
-struct oracle_statement_backend : details::statement_backend
+struct SOCI_ORACLE_DECL oracle_statement_backend : details::statement_backend
 {
     oracle_statement_backend(oracle_session_backend &session);
 
@@ -250,7 +250,7 @@ struct oracle_statement_backend : details::statement_backend
     bool noData_;
 };
 
-struct oracle_rowid_backend : details::rowid_backend
+struct SOCI_ORACLE_DECL oracle_rowid_backend : details::rowid_backend
 {
     oracle_rowid_backend(oracle_session_backend &session);
 
@@ -259,7 +259,7 @@ struct oracle_rowid_backend : details::rowid_backend
     OCIRowid *rowidp_;
 };
 
-struct oracle_blob_backend : details::blob_backend
+struct SOCI_ORACLE_DECL oracle_blob_backend : details::blob_backend
 {
     typedef OCILobLocator * locator_t;
 
@@ -279,11 +279,13 @@ struct oracle_blob_backend : details::blob_backend
 
     locator_t get_lob_locator() const;
 
-    void set_lob_locator(locator_t locator, bool initialized = true);
+    void set_lob_locator(const locator_t locator, bool initialized = true);
 
     void reset();
 
     void ensure_initialized();
+
+    details::session_backend &get_session_backend() override;
 
 private:
     std::size_t do_deprecated_read(std::size_t offset, void *buf, std::size_t toRead) override
@@ -307,7 +309,7 @@ private:
     bool initialized_;
 };
 
-struct oracle_session_backend : details::session_backend
+struct SOCI_ORACLE_DECL oracle_session_backend : details::session_backend
 {
     oracle_session_backend(std::string const & serviceName,
         std::string const & userName,

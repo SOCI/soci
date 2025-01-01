@@ -19,6 +19,13 @@ on:
       - .cirrus.yml
       - .github/workflows/codeql.yml
       - appveyor.yml
+  workflow_dispatch:
+    inputs:
+      enable_ssh:
+        type: boolean
+        description: 'Enable ssh server before running the job'
+        required: false
+        default: false
 
 jobs:
   build:
@@ -34,13 +41,13 @@ jobs:
         build_examples: [false]
         include:
           - backend: empty
-            runner: macos-12
+            runner: macos-14
             no_boost: true
           - backend: postgresql
-            runner: macos-12
+            runner: macos-14
             no_boost: true
           - backend: sqlite3
-            runner: macos-12
+            runner: macos-14
             no_boost: true
           - backend: oracle
             no_boost: true
@@ -105,7 +112,7 @@ jobs:
               ;;
 
             macOS)
-              set_env_var PGDATA /usr/local/var/postgres
+              set_env_var PGDATA /opt/homebrew/var/postgresql@14
               ;;
           esac
 
@@ -124,9 +131,13 @@ jobs:
           if [ "${{matrix.lib_type}}" = "static" ]; then
             set_env_var SOCI_BUILD_STATIC YES
           fi
+          set_env_var UBSAN_OPTIONS print_stacktrace=1:halt_on_error=1
 
-      - name: Install dependencies under Linux
-        if: runner.os == 'Linux'
+      - name: Setup tmate
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.enable_ssh }}
+        uses: mxschmitt/action-tmate@v3
+
+      - name: Install dependencies
         run: ./scripts/ci/install.sh
 
       - name: Prepare for build

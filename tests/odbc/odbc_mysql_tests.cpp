@@ -16,6 +16,7 @@
 #include <string>
 #include <ctime>
 #include <cmath>
+#include <memory>
 
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_odbc();

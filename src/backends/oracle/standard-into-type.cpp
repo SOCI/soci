@@ -23,6 +23,8 @@
 #include <ctime>
 #include <sstream>
 
+#include <oci.h>
+
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
@@ -157,11 +159,24 @@ void oracle_standard_into_type_backend::define_by_pos(
             oracle_blob_backend *bbe
                 = static_cast<oracle_blob_backend *>(b->get_backend());
 
-            // Reset the blob to ensure that a potentially open temporary BLOB gets
-            // freed before the locator is changed to point to a different BLOB by the
-            // to-be-executed statement (which would leave us with a dangling temporary BLOB)
+            // Reset the blob to ensure that even when the query fails,
+            // the blob does not contain leftover data from whatever it
+            // contained before.
             bbe->reset();
-            ociData_ = bbe->get_lob_locator();
+
+            // Allocate our very own LOB locator. We have to do this instead of
+            // reusing the locator from the existing Blob object in case the
+            // statement for which we are binding is going to be executed multiple
+            // times. If we borrowed the locator from the Blob object, consecutive
+            // queries would override a previous locator (which might belong
+            // to an independent Blob object by now).
+            sword res = OCIDescriptorAlloc(statement_.session_.envhp_,
+                reinterpret_cast<dvoid**>(&ociData_), OCI_DTYPE_LOB, 0, 0);
+            if (res != OCI_SUCCESS)
+            {
+                throw soci_error("Cannot allocate the LOB locator");
+            }
+
 
             size = sizeof(ociData_);
             data = &ociData_;
@@ -376,14 +391,23 @@ void oracle_standard_into_type_backend::post_fetch(
 
 void oracle_standard_into_type_backend::clean_up()
 {
-    if (type_ == x_xmltype || type_ == x_longstring)
+    if (ociData_)
     {
-        free_temp_lob(statement_.session_, static_cast<OCILobLocator *>(ociData_));
-        ociData_ = NULL;
-    }
+        switch (type_)
+        {
+            case x_xmltype:
+            case x_longstring:
+                free_temp_lob(statement_.session_, static_cast<OCILobLocator *>(ociData_));
+                break;
 
-    if (type_ == x_blob)
-    {
+            case x_blob:
+                OCIDescriptorFree(ociData_, OCI_DTYPE_LOB);
+                break;
+
+            default:
+                throw soci_error("Internal error: OCI data used for unexpected type");
+        }
+
         ociData_ = NULL;
     }
 

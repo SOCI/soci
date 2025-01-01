@@ -183,7 +183,7 @@ private:
 };
 
 struct firebird_session_backend;
-struct firebird_statement_backend : details::statement_backend
+struct SOCI_FIREBIRD_DECL firebird_statement_backend : details::statement_backend
 {
     firebird_statement_backend(firebird_session_backend &session);
 
@@ -251,7 +251,7 @@ protected:
     bool procedure_;
 };
 
-struct firebird_blob_backend : details::blob_backend
+struct SOCI_FIREBIRD_DECL firebird_blob_backend : details::blob_backend
 {
     firebird_blob_backend(firebird_session_backend &session);
 
@@ -265,6 +265,8 @@ struct firebird_blob_backend : details::blob_backend
 
     std::size_t append(const void *buf, std::size_t toWrite) override;
     void trim(std::size_t newLen) override;
+
+    details::session_backend &get_session_backend() override;
 
     // Writes the current data into the database by allocating a new BLOB
     // object for it.
@@ -293,7 +295,7 @@ private:
     long max_seg_size_;
 };
 
-struct firebird_session_backend : details::session_backend
+struct SOCI_FIREBIRD_DECL firebird_session_backend : details::session_backend
 {
     firebird_session_backend(connection_parameters const & parameters);
 

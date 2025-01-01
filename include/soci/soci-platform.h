@@ -165,23 +165,16 @@ private: \
 // about initializing variables unnecessarily.
 #define SOCI_DUMMY_INIT(x) (x)
 
-#define SOCI_OS_LINUX       0x0001
-#define SOCI_OS_FREE_BSD    0x0002
-#define SOCI_OS_APPLE       0x0003
-#define SOCI_OS_WINDOWS     0x0004
-
-#if defined(linux) || defined(__linux) || defined(__linux__)
-    #define SOCI_OS SOCI_OS_LINUX
-#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-    #define SOCI_OS SOCI_OS_FREE_BSD
-#elif defined(__APPLE__)
-    #define SOCI_OS SOCI_OS_APPLE
-#elif defined(_WIN32) || defined(_WIN64)
-    #define SOCI_OS SOCI_OS_WINDOWS
-#endif
-
-#if !defined(SOCI_OS)
-    #error "Unknown platform"
+// And this one can be used to return after calling a "[[noreturn]]" function.
+// Here the problem is that MSVC complains about unreachable code in this case
+// (but only in release builds, where optimizations are enabled), while other
+// compilers complain about missing return statement without it.
+// Note: this macro is no longer used in SOCI's codebase. It is only retained
+// in case downstream code is depending on it.
+#if defined(_MSC_VER) && defined(NDEBUG)
+    #define SOCI_DUMMY_RETURN(x)
+#else
+    #define SOCI_DUMMY_RETURN(x) return x
 #endif
 
 #endif // SOCI_PLATFORM_H_INCLUDED

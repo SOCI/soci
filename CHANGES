@@ -23,15 +23,22 @@ Other changes in v4.1.0:
 Changes affecting all or multiple backends:
  - Make rowset more convenient and safer (#198, #1057, #1081, #1082, #1086).
  - Fix problems with dynamic cast and libc++ (#913, #975).
- - Improve BLOB support consistency across backends (#991).
+ - Improve BLOB support consistency across backends (#992).
+ - Dynamic backends loading improvements (#1169).
+ - Fix several problems detected by UBSAN and use it in the CI builds too now.
+ - Improvements to connection string handling (#1176).
 
 Backend-specific changes:
+
+- Oracle
+ - Fix conversion of dates before 1900 (#1135).
 
 - PostgreSQL
  - Add support for network address types (#1078).
 
 - SQLite3
  - Add "nocreate" option to avoid creating a new database file (#1021).
+ - Improve column names to SOCI database types mapping (#1120).
 
 
 History of the changes in the previous versions:
