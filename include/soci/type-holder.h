@@ -19,6 +19,7 @@
 #include <sstream>
 #include <type_traits>
 #include <typeinfo>
+#include <iterator>
 
 namespace soci
 {
@@ -125,6 +126,93 @@ struct soci_cast<
 #endif
 
         return static_cast<T>(val);
+    }
+};
+
+template<typename T, typename Enable = void>
+struct is_contiguous_byte_container
+{
+    static constexpr bool value = false;
+};
+
+// What we are checking here is not really a guarantee that the container will
+// use contiguous memory for storing its elements. However, usually the ability
+// of random-access is only supplied for containers that are in fact contiguous
+// in memory.
+// Once switched to C++20, the check should be for contiguous_iterator_tag instead
+template<typename T>
+struct is_contiguous_byte_container<
+    T,
+    typename std::enable_if<
+        std::is_same<
+            typename std::iterator_traits<typename T::iterator>::iterator_category,
+            std::random_access_iterator_tag
+        >::value
+        && sizeof(typename T::value_type) == sizeof(char)
+    >::type
+>
+{
+    static constexpr bool value = true;
+};
+
+static_assert(is_contiguous_byte_container<std::string>::value, "std::string should pass constraint");
+static_assert(is_contiguous_byte_container<std::vector<char>>::value, "std::vector<char> should pass constraint");
+
+// Specialization for the blob type
+// It throws unless it is requested to be cast to a container
+// of type T where sizeof(T) == 1 and which is using
+// contiguous storage in memory.
+template <typename T>
+struct soci_cast<T, blob,
+    typename std::enable_if<!is_contiguous_byte_container<T>::value>::type>
+{
+    static inline T cast(blob &)
+    {
+        // Blobs are non-copyable and therefore, we have to throw
+        // here even if T is soci::blob as this function is always
+        // used in context where copying of the blob would happen.
+        throw std::bad_cast();
+    }
+};
+
+template <typename T>
+struct soci_cast<T, blob,
+    typename std::enable_if<is_contiguous_byte_container<T>::value>::type>
+{
+    static inline T cast(blob &blob)
+    {
+        T container;
+        container.resize(blob.get_len());
+
+        if (container.size() > 0)
+        {
+            // Note: if the container isn't actually contiguous in memory, this
+            // will likely lead to a segmentation fault!
+            blob.read_from_start(&container[0], container.size(), 0);
+        }
+
+        return container;
+    }
+};
+
+template<>
+struct soci_cast<std::string, blob,void>
+{
+    static inline std::string cast(blob &blob)
+    {
+        std::string data;
+        data.resize(blob.get_len());
+
+        if  (data.empty())
+        {
+            return data;
+        }
+
+        // std::string::data() doesn't return non-const pointer
+        // before C++17. Hence, we have to use the uglier version.
+        blob.read_from_start(&data[0], data.size(), 0);
+
+        return data;
     }
 };
 
@@ -340,8 +428,7 @@ public:
         case db_date:
             return soci_cast<T, std::tm>::cast(*val_.t);
         case db_blob:
-            // blob is not copyable
-            break;
+            return soci_cast<T, blob>::cast(*val_.b);
         case db_xml:
         case db_string:
             return soci_cast<T, std::string>::cast(*val_.s);
