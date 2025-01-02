@@ -11,6 +11,10 @@
 
 #include "test-context.h"
 
+#include <vector>
+#include <list>
+#include <set>
+
 namespace soci
 {
 
@@ -667,6 +671,9 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
 
                 // Container is required to hold a type that has a size of 1 byte
                 CHECK_THROWS(currentRow.get<std::vector<int>>(0));
+                // Container has to use contiguous storage
+                CHECK_THROWS(currentRow.get<std::list<char>>(0));
+                CHECK_THROWS(currentRow.get<std::set<char>>(0));
 
                 CHECK(strData.size() == 10);
                 CHECK(vecData.size() == 10);
