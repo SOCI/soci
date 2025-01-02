@@ -195,27 +195,6 @@ struct soci_cast<T, blob,
     }
 };
 
-template<>
-struct soci_cast<std::string, blob,void>
-{
-    static inline std::string cast(blob &blob)
-    {
-        std::string data;
-        data.resize(blob.get_len());
-
-        if  (data.empty())
-        {
-            return data;
-        }
-
-        // std::string::data() doesn't return non-const pointer
-        // before C++17. Hence, we have to use the uglier version.
-        blob.read_from_start(&data[0], data.size(), 0);
-
-        return data;
-    }
-};
-
 union type_holder
 {
     std::string* s;
