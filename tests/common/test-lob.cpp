@@ -11,6 +11,10 @@
 
 #include "test-context.h"
 
+#include <vector>
+#include <list>
+#include <set>
+
 namespace soci
 {
 
@@ -649,6 +653,35 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
                 for (std::size_t i = 0; i < 10; ++i)
                 {
                     CHECK(buffer[i] == dummy_data[i]);
+                }
+            }
+            CHECK(containedData);
+        }
+        SECTION("get into container")
+        {
+            soci::rowset< soci::row > rowSet = (sql.prepare << "select b from soci_test where id=:id", soci::use(id1));
+            bool containedData = false;
+            for (auto it = rowSet.begin(); it != rowSet.end(); ++it)
+            {
+                containedData = true;
+                const soci::row &currentRow = *it;
+
+                std::string strData = currentRow.get<std::string>(0);
+                std::vector<unsigned char> vecData = currentRow.get<std::vector<unsigned char>>(0);
+
+                // Container is required to hold a type that has a size of 1 byte
+                CHECK_THROWS(currentRow.get<std::vector<int>>(0));
+                // Using containers for which the soci::is_contiguous_resizable_container trait is not
+                // defined yield a std::bad_cast exception.
+                CHECK_THROWS(currentRow.get<std::list<char>>(0));
+                CHECK_THROWS(currentRow.get<std::set<char>>(0));
+
+                CHECK(strData.size() == 10);
+                CHECK(vecData.size() == 10);
+                for (std::size_t i = 0; i < 10; ++i)
+                {
+                    CHECK(strData[i] == dummy_data[i]);
+                    CHECK(vecData[i] == dummy_data[i]);
                 }
             }
             CHECK(containedData);
