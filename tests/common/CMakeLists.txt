@@ -12,6 +12,16 @@ add_library(soci_tests_common
     "test-rowset.cpp"
 )
 
+# Catch headers are sensitive when it comes to being included in different
+# contexts and this can lead to issues with all functionality to actually
+# running the tests i.e. the main function.
+# Therefore, we have to make sure that the main file is not included in
+# a unity build.
+set_source_files_properties("test-main.cpp"
+  PROPERTIES
+    SKIP_UNITY_BUILD_INCLUSION TRUE
+)
+
 # Required to work around build issues with C++11 and Clang (see https://github.com/SOCI/soci/issues/984)
 target_compile_definitions(soci_tests_common
   PUBLIC
