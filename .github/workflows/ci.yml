@@ -34,50 +34,53 @@ jobs:
       matrix:
         lib_type: [shared, static]
         # Can't test DB2 as required db2exc package is no longer available after Ubuntu 14.04
-        backend: [sqlite3, postgresql, mysql, firebird, oracle, odbc, empty, valgrind]
+        backend: [SQLite3, PostgreSQL, MySQL, Firebird, Oracle, ODBC, Empty, Valgrind]
         runner: [ubuntu-22.04]
         cxxstd: [14]
         test_release_package: [false]
         build_examples: [false]
         include:
-          - backend: empty
+          - backend: Empty
             runner: macos-14
             no_boost: true
-          - backend: postgresql
+          - backend: PostgreSQL
             runner: macos-14
             no_boost: true
-          - backend: sqlite3
+          - backend: SQLite3
             runner: macos-14
             no_boost: true
-          - backend: oracle
+          - backend: Oracle
             no_boost: true
             runner: ubuntu-22.04
           - name: SQLite3 Cxx17
-            backend: sqlite3
+            backend: SQLite3
             cxxstd: 17
             runner: ubuntu-22.04
           - name: Release package
-            backend: empty
+            backend: Empty
             test_release_package: true
             runner: ubuntu-22.04
           - name: Examples
-            backend: empty
+            backend: Empty
             build_examples: true
             runner: ubuntu-22.04
 
     runs-on: ${{ matrix.runner }}
+    name: ${{ format('{0} on {1}', (matrix.name != '' && matrix.name || format('{0} ({1})', matrix.backend, matrix.lib_type)), matrix.runner) }}
 
     env:
       SOCI_CI: true
       SOCI_CI_BACKEND: ${{ matrix.backend }}
       SOCI_MYSQL_ROOT_PASSWORD: root
       ASAN_OPTIONS: fast_unwind_on_malloc=0
+      UBSAN_OPTIONS: 'print_stacktrace=1:halt_on_error=1'
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set environment variables
+        shell: bash
         run: |
           set_env_var() {
             echo "Setting environment variable $1=$2"
@@ -115,7 +118,8 @@ jobs:
           if [ "${{matrix.lib_type}}" = "static" ]; then
             set_env_var SOCI_BUILD_STATIC YES
           fi
-          set_env_var UBSAN_OPTIONS print_stacktrace=1:halt_on_error=1
+          # Ensure SOCI_CI_BACKEND is always lowercase
+          set_env_var SOCI_CI_BACKEND "$( echo "$SOCI_CI_BACKEND" | tr '[:upper:]' '[:lower:]' )"
 
       - name: Setup tmate
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.enable_ssh }}
