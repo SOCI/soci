@@ -13,4 +13,4 @@ void failover_callback::finished(session& /* sql */) {}
 
 void failover_callback::failed(bool& /* out */ /* retry */, std::string& /* out */ /* newTarget */) {}
 
-void failover_callback:: aborted() {}
+void failover_callback::aborted() {}
