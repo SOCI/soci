@@ -75,23 +75,7 @@ jobs:
 
     steps:
       - name: Checkout
-        run: |
-          case "${{matrix.container}}" in
-            ubuntu:18.04)
-              export DEBIAN_FRONTEND=noninteractive
-
-              apt-get update -qq
-              apt-get install -qq git
-              ;;
-          esac
-
-          git config --global init.defaultBranch master
-          git config --global --add safe.directory `pwd`
-          git config --global advice.detachedHead false
-          git init .
-          git remote add origin https://github.com/SOCI/soci.git
-          git fetch --depth=1 origin $GITHUB_SHA
-          git checkout FETCH_HEAD
+        uses: actions/checkout@v4
 
       - name: Set environment variables
         run: |
