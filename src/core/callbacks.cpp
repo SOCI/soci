@@ -5,7 +5,7 @@
 
 using namespace soci;
 
-failover_callback::~failover_callback() {}
+failover_callback::~failover_callback() = default;
 
 void failover_callback::started() {}
 
