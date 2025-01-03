@@ -45,6 +45,11 @@ else()
     target_compile_options(soci_compiler_interface INTERFACE "-Werror")
   endif()
 
+  if (SOCI_UBSAN)
+    target_compile_options(soci_compiler_interface INTERFACE "-fsanitize=undefined")
+    target_link_options(soci_compiler_interface INTERFACE "-fsanitize=undefined")
+  endif()
+
 
   if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" OR "${CMAKE_CXX_COMPILER}" MATCHES "clang")
     if(SOCI_ASAN AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 3.1)
