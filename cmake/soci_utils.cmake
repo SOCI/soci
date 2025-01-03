@@ -34,10 +34,10 @@ function(soci_verify_parsed_arguments)
 
   # Now start the function's actual job: Verifying a top-level function's call to cmake_parse_arguments
   if (DEFINED ${VERIFY_PARSED_ARGS_PREFIX}_UNPARSED_ARGUMENTS)
-    message(FATAL_ERROR "${VERIFY_PARSED_ARGS_FUNCTION_NAME} - Received unrecognized options: ${${PREFIX}_UNPARSED_ARGUMENTS}")
+    message(FATAL_ERROR "${VERIFY_PARSED_ARGS_FUNCTION_NAME} - Received unrecognized options: ${${VERIFY_PARSED_ARGS_PREFIX}_UNPARSED_ARGUMENTS}")
   endif()
   if (DEFINED ${VERIFY_PARSED_ARGS_PREFIX}_KEYWORDS_MISSING_VALUES)
-    message(FATAL_ERROR "${VERIFY_PARSED_ARGS_FUNCTION_NAME} - The following options are missing arguments: ${${PREFIX}_KEYWORDS_MISSING_VALUES}")
+    message(FATAL_ERROR "${VERIFY_PARSED_ARGS_FUNCTION_NAME} - The following options are missing arguments: ${${VERIFY_PARSED_ARGS_PREFIX}_KEYWORDS_MISSING_VALUES}")
   endif()
 
   if (DEFINED VERIFY_PARSED_ARGS_REQUIRED)
