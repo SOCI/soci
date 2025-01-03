@@ -118,59 +118,6 @@ if (SOCI_TESTS)
   add_subdirectory(tests)
 endif()
 
-# TODO: Move away in subdirectory
-###############################################################################
-# platform-dependent settings
-###############################################################################
-
-include(CheckTypeSize)
-check_type_size(long SOCI_SIZEOF_LONG LANGUAGE CXX)
-set(SOCI_SIZEOF_LONG ${SOCI_SIZEOF_LONG} CACHE INTERNAL "Size of long")
-
-include(CheckCXXSourceCompiles)
-
-function(soci_check_types_are_same type1 type2)
-    string(TOUPPER ${type1} type1_upper)
-    string(MAKE_C_IDENTIFIER ${type1_upper} type1_id)
-    string(TOUPPER ${type2} type2_upper)
-    string(MAKE_C_IDENTIFIER ${type2_upper} type2_id)
-
-    check_cxx_source_compiles("
-#include <cstdint>
-
-struct Foo {
-    void foo(${type1} x);
-    void foo(${type2} x);
-};
-
-int main() { return 0; }
-"
-        "SOCI_TYPES_${type1_id}_AND_${type2_id}_DIFFER"
-    )
-
-    if(SOCI_TYPES_${type1_id}_AND_${type2_id}_DIFFER)
-        set(soci_types_equal FALSE)
-    else()
-        set(soci_types_equal TRUE)
-    endif()
-
-    # TODO: This needs to define the respective macro instead of a cmake variable
-    set("SOCI_${type1_id}_IS_${type2_id}" ${soci_types_equal} CACHE INTERNAL "${type1} and ${type2} are the same type")
-endfunction()
-
-if(SOCI_SIZEOF_LONG EQUAL 8)
-    # int64_t can be defined as either long or long long in this case, find out
-    # which one we have.
-    soci_check_types_are_same("int64_t" "long")
-elseif(SOCI_SIZEOF_LONG EQUAL 4)
-    # Nothing to do in this case, actually, as it's never going to be the same
-    # as int32_t which is defined as int and not long in this case.
-else()
-    message(FATAL_ERROR "Unsupported size of long=${SOCI_SIZEOF_LONG}")
-endif()
-
-soci_check_types_are_same("int8_t" "char")
-
 
 # Packaging
 include(CMakePackageConfigHelpers)

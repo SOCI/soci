@@ -177,4 +177,50 @@ function(soci_public_dependency)
   endforeach()
 endfunction()
 
+# This function can be used to check whether two C++ types actually refer to the same
+# type (e.g. if one is aliased to the other).
+#
+# Use as
+#     soci_are_types_same(
+#         TYPES <type1> <type2> [... <typeN>]
+#         OUTPUT_VARIABLE <name>
+#     )
+# where
+# - <type1>, <type2>, <typeN> are the types to test
+# - <name> is the name of the variable that will hold the result of the check
+function(soci_are_types_same)
+  set(FLAGS "")
+  set(ONE_VAL_OPTIONS "OUTPUT_VARIABLE")
+  set(MULTI_VAL_OPTIONS "TYPES")
+
+  cmake_parse_arguments(TYPES_SAME "${FLAGS}" "${ONE_VAL_OPTIONS}" "${MULTI_VAL_OPTIONS}" ${ARGV})
+  soci_verify_parsed_arguments(
+    PREFIX "TYPES_SAME"
+    FUNCTION_NAME "soci_are_types_same"
+    REQUIRED "TYPES" "OUTPUT_VARIABLE"
+  )
+
+  set(TEST_CODE "#include <cstdint>\nstruct Foo { ")
+  set(TEST_NAME "")
+  foreach(CURRENT_TYPE IN LISTS TYPES_SAME_TYPES)
+    string(APPEND TEST_CODE "void foo(${CURRENT_TYPE} x); ")
+    string(TOUPPER "${CURRENT_TYPE}" UPPER_TYPE)
+    string(APPEND TEST_NAME "${UPPER_TYPE}_")
+  endforeach()
+  string(APPEND TEST_CODE "};\nint main() {}")
+  string(APPEND TEST_NAME "ARE_DISTINGUISHABLE")
+
+  include(CheckCXXSourceCompiles)
+
+  # If some of the provided types are actually the same, compilation
+  # will fail due to duplication of function declarations.
+  check_cxx_source_compiles("${TEST_CODE}" ${TEST_NAME})
+
+  if (${TEST_NAME})
+    set("${TYPES_SAME_OUTPUT_VARIABLE}" FALSE PARENT_SCOPE)
+  else()
+    set("${TYPES_SAME_OUTPUT_VARIABLE}" TRUE PARENT_SCOPE)
+  endif()
+endfunction()
+
 set(SOCI_UTILS_ALREADY_INCLUDED TRUE)

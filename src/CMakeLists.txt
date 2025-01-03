@@ -8,6 +8,16 @@ add_subdirectory(core)
 add_subdirectory(backends)
 
 
+###############################################################################
+# platform-dependent settings
+###############################################################################
+
+include(CheckTypeSize)
+check_type_size(long SOCI_SIZEOF_LONG LANGUAGE CXX)
+
+soci_are_types_same(TYPES "int64_t" "long" OUTPUT_VARIABLE SOCI_INT64_T_IS_LONG)
+soci_are_types_same(TYPES "int8_t" "char" OUTPUT_VARIABLE SOCI_INT8_T_IS_CHAR)
+
 include(CheckCXXSourceCompiles)
 check_cxx_source_compiles(
   "
@@ -34,6 +44,9 @@ set(CONFIG_VARS
   SOCI_POSTGRESQL
   SOCI_SQLITE3
   SOCI_VISIBILITY_ATTRIBUTE_SUPPORTED
+  SOCI_SIZEOF_LONG
+  SOCI_INT64_T_IS_LONG
+  SOCI_INT8_T_IS_CHAR
 )
 set(CONFIG_MACROS
   SOCI_HAVE_EMPTY
@@ -45,6 +58,9 @@ set(CONFIG_MACROS
   SOCI_HAVE_POSTGRESQL
   SOCI_HAVE_SQLITE3
   SOCI_HAVE_VISIBILITY_SUPPORT
+  SOCI_SIZEOF_LONG
+  SOCI_INT64_T_IS_LONG
+  SOCI_INT8_T_IS_CHAR
 )
 
 list(LENGTH CONFIG_MACROS N_CONFIGS)
@@ -55,7 +71,12 @@ foreach (I RANGE ${LAST_CONFIG_IDX})
   list(GET CONFIG_MACROS ${I} CURRENT_MACRO)
 
   if (${CURRENT_VAR})
-    list(APPEND CONFIG_LINES "#define ${CURRENT_MACRO}")
+    if ("${${CURRENT_VAR}}" MATCHES "[0-9]+")
+      list(APPEND CONFIG_LINES "#define ${CURRENT_MACRO} ${${CURRENT_VAR}}")
+    else()
+      # Assume this is a boolean flag
+      list(APPEND CONFIG_LINES "#define ${CURRENT_MACRO} 1")
+    endif()
   else()
     list(APPEND CONFIG_LINES "/* #define ${CURRENT_MACRO} */")
   endif()
