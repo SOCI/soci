@@ -36,34 +36,36 @@ jobs:
         # Can't test DB2 as required db2exc package is no longer available after Ubuntu 14.04
         backend: [SQLite3, PostgreSQL, MySQL, Firebird, Oracle, ODBC, Empty, Valgrind]
         runner: [ubuntu-22.04]
-        cxxstd: [14]
-        test_release_package: [false]
-        build_examples: [false]
         include:
-          - backend: Empty
+          - lib_type: shared
+            backend: Empty
             runner: macos-14
             no_boost: true
-          - backend: PostgreSQL
+          - lib_type: shared
+            backend: PostgreSQL
             runner: macos-14
             no_boost: true
-          - backend: SQLite3
-            runner: macos-14
-            no_boost: true
-          - backend: Oracle
-            no_boost: true
-            runner: ubuntu-22.04
-          - name: SQLite3 Cxx17
+          - lib_type: shared
             backend: SQLite3
-            cxxstd: 17
+            runner: macos-14
+            no_boost: true
+          - lib_type: shared
+            backend: Oracle
             runner: ubuntu-22.04
-          - name: Release package
+            no_boost: true
+          - lib_type: shared
+            backend: SQLite3
+            runner: ubuntu-22.04
+            cxxstd: 17
+            name: SQLite3 Cxx17
+          - lib_type: shared
             backend: Empty
             test_release_package: true
-            runner: ubuntu-22.04
-          - name: Examples
+            name: Release package
+          - lib_type: shared
             backend: Empty
             build_examples: true
-            runner: ubuntu-22.04
+            name: Examples
 
     runs-on: ${{ matrix.runner }}
     name: ${{ format('{0} on {1}', (matrix.name != '' && matrix.name || format('{0} ({1})', matrix.backend, matrix.lib_type)), matrix.runner) }}
@@ -74,6 +76,7 @@ jobs:
       SOCI_MYSQL_ROOT_PASSWORD: root
       ASAN_OPTIONS: fast_unwind_on_malloc=0
       UBSAN_OPTIONS: 'print_stacktrace=1:halt_on_error=1'
+      SOCI_CXXSTD: 14
 
     steps:
       - name: Checkout
