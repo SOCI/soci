@@ -15,4 +15,6 @@ find_package(SOCI REQUIRED)
 
 add_executable(connect connect.cpp)
 
+# Note that linking to SOCI::soci is enough to inherit
+# all of SOCI's dependencies, include directories, etc.
 target_link_libraries(connect PRIVATE SOCI::soci)
