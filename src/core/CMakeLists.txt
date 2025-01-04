@@ -47,21 +47,26 @@ if (SOCI_SHARED)
   add_library(Soci::core ALIAS ${SOCI_CORE_TARGET})
 
   target_link_libraries(${SOCI_CORE_TARGET} ${SOCI_CORE_DEPS_LIBS})
+  # must define SOCI_DLL when using the shared libraries
+  target_compile_definitions(${SOCI_CORE_TARGET} PUBLIC SOCI_DLL)
 
+  # shared target properties
+  set_target_properties(${SOCI_CORE_TARGET}
+      PROPERTIES
+      DEFINE_SYMBOL SOCI_SOURCE  # defined only during compilation
+      VERSION ${SOCI_VERSION}
+      CLEAN_DIRECT_OUTPUT 1)
+
+  # platform-specific
   if(WIN32)
     set_target_properties(${SOCI_CORE_TARGET}
       PROPERTIES
-      DEFINE_SYMBOL SOCI_DLL
-      OUTPUT_NAME "${SOCI_CORE_TARGET_OUTPUT_NAME}"
-      VERSION ${SOCI_VERSION}
-      CLEAN_DIRECT_OUTPUT 1)
+      OUTPUT_NAME "${SOCI_CORE_TARGET_OUTPUT_NAME}")
   else()
     set_target_properties(${SOCI_CORE_TARGET}
       PROPERTIES
-      VERSION ${SOCI_VERSION}
       SOVERSION ${SOCI_SOVERSION}
-      INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/lib
-      CLEAN_DIRECT_OUTPUT 1)
+      INSTALL_NAME_DIR ${CMAKE_INSTALL_PREFIX}/lib)
   endif()
 
   target_include_directories(${SOCI_CORE_TARGET}
@@ -95,6 +100,8 @@ if (SOCI_STATIC)
 
   set_target_properties(${SOCI_CORE_TARGET_STATIC}
     PROPERTIES
+    # note: not strictly necessary for static library but done for consistency
+    DEFINE_SYMBOL SOCI_SOURCE  # defined only during compilation
     OUTPUT_NAME ${SOCI_CORE_TARGET_OUTPUT_NAME}
     PREFIX "lib"
     CLEAN_DIRECT_OUTPUT 1)

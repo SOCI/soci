@@ -75,26 +75,32 @@ namespace std {
 #endif
 
 #ifdef _WIN32
+// VS2015 support: https://msdn.microsoft.com/de-de/library/6sehtctf.aspx
 # ifndef _WIN32_WINNT
-#   define _WIN32_WINNT 0x0502 //_WIN32_WINNT_WS03, VS2015 support: https://msdn.microsoft.com/de-de/library/6sehtctf.aspx
+#   define _WIN32_WINNT 0x0502  // _WIN32_WINNT_WS03 (Windows Server 2003)
 # endif
-
+// SOCI_DLL should be defined when SOCI is used as a DLL/DSO
 # ifdef SOCI_DLL
 #  define SOCI_DECL_EXPORT __declspec(dllexport)
 #  define SOCI_DECL_IMPORT __declspec(dllimport)
 # endif
-
 #elif defined(SOCI_HAVE_VISIBILITY_SUPPORT)
-# define SOCI_DECL_EXPORT __attribute__ (( visibility("default") ))
-# define SOCI_DECL_IMPORT __attribute__ (( visibility("default") ))
+// note: public visibility only applied when SOCI_DLL is defined. current build
+// config will use -fvisibility=hidden or equivalent for unexported symbols
+# ifdef SOCI_DLL
+#  define SOCI_DECL_EXPORT __attribute__ (( visibility("default") ))
+#  define SOCI_DECL_IMPORT __attribute__ (( visibility("default") ))
+# endif
 #endif
 
+// default to no import/export (default visibility for GCC)
 #ifndef SOCI_DECL_EXPORT
 # define SOCI_DECL_EXPORT
 # define SOCI_DECL_IMPORT
 #endif
 
-// Define SOCI_DECL
+// Define SOCI_DECL (controls symbols visibility).
+// SOCI_SOURCE should *only* be defined during SOCI's own compilation
 #ifdef SOCI_SOURCE
 # define SOCI_DECL SOCI_DECL_EXPORT
 #else
