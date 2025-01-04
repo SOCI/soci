@@ -5,7 +5,6 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/use-type.h"
 #include "soci/statement.h"
