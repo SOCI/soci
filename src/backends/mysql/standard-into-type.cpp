@@ -7,7 +7,6 @@
 //
 
 #include "soci-cstrtoi.h"
-#define SOCI_MYSQL_SOURCE
 #include "soci/mysql/soci-mysql.h"
 #include "soci/soci-platform.h"
 #include "common.h"
