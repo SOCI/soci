@@ -209,8 +209,6 @@ macro(soci_backend NAME)
 
         set_target_properties(${THIS_BACKEND_TARGET_STATIC}
           PROPERTIES
-          # note: not necessary for static library but done for consistency
-          DEFINE_SYMBOL SOCI_${NAMEU}_SOURCE
           OUTPUT_NAME ${THIS_BACKEND_OUTPUT_NAME}
           PREFIX "lib"
           CLEAN_DIRECT_OUTPUT 1)

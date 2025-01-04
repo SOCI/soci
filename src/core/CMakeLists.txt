@@ -53,7 +53,7 @@ if (SOCI_SHARED)
   # shared target properties
   set_target_properties(${SOCI_CORE_TARGET}
       PROPERTIES
-      DEFINE_SYMBOL SOCI_SOURCE  # defined only during compilation
+      DEFINE_SYMBOL SOCI_SOURCE  # defined only for shared library compilation
       VERSION ${SOCI_VERSION}
       CLEAN_DIRECT_OUTPUT 1)
 
@@ -100,8 +100,6 @@ if (SOCI_STATIC)
 
   set_target_properties(${SOCI_CORE_TARGET_STATIC}
     PROPERTIES
-    # note: not strictly necessary for static library but done for consistency
-    DEFINE_SYMBOL SOCI_SOURCE  # defined only during compilation
     OUTPUT_NAME ${SOCI_CORE_TARGET_OUTPUT_NAME}
     PREFIX "lib"
     CLEAN_DIRECT_OUTPUT 1)
