@@ -373,7 +373,7 @@ macro(soci_backend_test)
       target_link_libraries(${TEST_TARGET_STATIC}
         ${SOCI_CORE_DEPS_LIBS}
         ${THIS_TEST_DEPENDS_LIBRARIES}
-        soci_tests_common
+        soci_tests_common_static
         soci_${BACKENDL}_static
         soci_core_static)
 

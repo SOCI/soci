@@ -8,6 +8,8 @@
 #ifndef SOCI_CALLBACKS_H_INCLUDED
 #define SOCI_CALLBACKS_H_INCLUDED
 
+#include <string>  // for completeness
+
 namespace soci
 {
 
@@ -16,7 +18,10 @@ class session;
 // Simple callback interface for reporting failover events.
 // The meaning of each operation is intended to be portable,
 // but the behaviour details and parameters can be backend-specific.
-class SOCI_DECL failover_callback
+//
+// Note: Do *not* annotate with SOCI_DECL as this class is wholly inline.
+//
+class failover_callback
 {
 public:
 
