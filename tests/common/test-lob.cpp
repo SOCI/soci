@@ -671,7 +671,8 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
 
                 // Container is required to hold a type that has a size of 1 byte
                 CHECK_THROWS(currentRow.get<std::vector<int>>(0));
-                // Container has to use contiguous storage
+                // Using containers for which the soci::is_contiguous_resizable_container trait is not
+                // defined yield a std::bad_cast exception.
                 CHECK_THROWS(currentRow.get<std::list<char>>(0));
                 CHECK_THROWS(currentRow.get<std::set<char>>(0));
 

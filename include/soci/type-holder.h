@@ -19,10 +19,35 @@
 #include <sstream>
 #include <type_traits>
 #include <typeinfo>
-#include <iterator>
+#include <vector>
+#include <string>
 
 namespace soci
 {
+
+// Trait to determine whether a given T is a container that stores its elements
+// in a continuous region in memory and which can be resized.
+template<typename T, typename Enabler = void>
+struct is_contiguous_resizable_container : std::false_type {};
+
+template<typename T>
+constexpr bool is_contiguous_resizable_container_v = is_contiguous_resizable_container<T>::value;
+
+// An accessor template for contiguous, resizable containers that can be
+// specialized for types for which this default implementation doesn't work.
+template<typename T, typename = std::enable_if_t<is_contiguous_resizable_container_v<T>>>
+struct contiguous_resizable_container_accessor
+{
+    static void *data(T &container)
+    {
+        static_assert(sizeof(decltype(container[0])) == sizeof(char), "Expected value-type of container to be byte-sized");
+        return &container[0];
+    }
+
+    static std::size_t size(const T &container) { return container.size(); }
+
+    static void resize(T &container, std::size_t size) { container.resize(size); }
+};
 
 namespace details
 {
@@ -129,42 +154,13 @@ struct soci_cast<
     }
 };
 
-template<typename T, typename Enable = void>
-struct is_contiguous_byte_container
-{
-    static constexpr bool value = false;
-};
-
-// What we are checking here is not really a guarantee that the container will
-// use contiguous memory for storing its elements. However, usually the ability
-// of random-access is only supplied for containers that are in fact contiguous
-// in memory.
-// Once switched to C++20, the check should be for contiguous_iterator_tag instead
-template<typename T>
-struct is_contiguous_byte_container<
-    T,
-    typename std::enable_if<
-        std::is_same<
-            typename std::iterator_traits<typename T::iterator>::iterator_category,
-            std::random_access_iterator_tag
-        >::value
-        && sizeof(typename T::value_type) == sizeof(char)
-    >::type
->
-{
-    static constexpr bool value = true;
-};
-
-static_assert(is_contiguous_byte_container<std::string>::value, "std::string should pass constraint");
-static_assert(is_contiguous_byte_container<std::vector<char>>::value, "std::vector<char> should pass constraint");
-
 // Specialization for the blob type
 // It throws unless it is requested to be cast to a container
 // of type T where sizeof(T) == 1 and which is using
 // contiguous storage in memory.
 template <typename T>
 struct soci_cast<T, blob,
-    typename std::enable_if<!is_contiguous_byte_container<T>::value>::type>
+    typename std::enable_if<!is_contiguous_resizable_container_v<T>>::type>
 {
     static inline T cast(blob &)
     {
@@ -177,18 +173,20 @@ struct soci_cast<T, blob,
 
 template <typename T>
 struct soci_cast<T, blob,
-    typename std::enable_if<is_contiguous_byte_container<T>::value>::type>
+    typename std::enable_if<is_contiguous_resizable_container_v<T>>::type>
 {
     static inline T cast(blob &blob)
     {
         T container;
-        container.resize(blob.get_len());
+        using Accessor = contiguous_resizable_container_accessor<T>;
 
-        if (container.size() > 0)
+        const std::size_t size = blob.get_len();
+
+        if (size > 0)
         {
-            // Note: if the container isn't actually contiguous in memory, this
-            // will likely lead to a segmentation fault!
-            blob.read_from_start(&container[0], container.size(), 0);
+            Accessor::resize(container, size);
+
+            blob.read_from_start(Accessor::data(container), size);
         }
 
         return container;
@@ -509,6 +507,12 @@ private:
 };
 
 } // namespace details
+
+template<>
+struct is_contiguous_resizable_container<std::string> : std::true_type {};
+
+template<typename T>
+struct is_contiguous_resizable_container<std::vector<T>, typename std::enable_if<sizeof(T) == sizeof(char)>::type> : std::true_type {};
 
 } // namespace soci
 
