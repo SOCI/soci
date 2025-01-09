@@ -38,14 +38,17 @@ constexpr bool is_contiguous_resizable_container_v = is_contiguous_resizable_con
 template<typename T, typename = std::enable_if_t<is_contiguous_resizable_container_v<T>>>
 struct contiguous_resizable_container_accessor
 {
+    // Gets the pointer to the beginning of the data store
     static void *data(T &container)
     {
         static_assert(sizeof(decltype(container[0])) == sizeof(char), "Expected value-type of container to be byte-sized");
         return &container[0];
     }
 
+    // Gets the size **in bytes** of this container
     static std::size_t size(const T &container) { return container.size(); }
 
+    // Resizes the container to the given size **in bytes**
     static void resize(T &container, std::size_t size) { container.resize(size); }
 };
 
