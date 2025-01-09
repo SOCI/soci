@@ -1,6 +1,6 @@
 option(SOCI_FIREBIRD_EMBEDDED "Use the embedded version of Firebird" OFF)
 
-if (SOCI_FIREBIRD_AS_AVAILABLE)
+if (SOCI_FIREBIRD_AUTO)
   set(REQUIRED_FLAG "")
 else()
   set(REQUIRED_FLAG "REQUIRED")

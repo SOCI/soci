@@ -1,4 +1,4 @@
-if (SOCI_DB2_AS_AVAILABLE)
+if (SOCI_DB2_AUTO)
   set(REQUIRED_FLAG "")
 else()
   set(REQUIRED_FLAG "REQUIRED")

@@ -2,11 +2,14 @@
 add_subdirectory(common)
 
 
-foreach (CURRENT_BACKEND IN ITEMS "db2" "empty" "firebird" "mysql" "odbc" "oracle" "postgresql" "sqlite3")
+foreach (CURRENT_BACKEND IN LISTS SOCI_ENABLED_BACKENDS)
   string(TOUPPER "${CURRENT_BACKEND}" CURRENT_BACKEND_UPPER)
+  string(TOLOWER "${CURRENT_BACKEND}" CURRENT_BACKEND_LOWER)
 
-  if (SOCI_${CURRENT_BACKEND_UPPER} AND NOT SOCI_${CURRENT_BACKEND_UPPER}_DO_NOT_TEST)
-    add_subdirectory(${CURRENT_BACKEND})
+  set(SOCI_${CURRENT_BACKEND_UPPER}_SKIP_TESTS OFF CACHE BOOL "Whether to skip tests for backend '${CURRENT_BACKEND}'")
+
+  if (NOT SOCI_${CURRENT_BACKEND_UPPER}_SKIP_TESTS)
+    add_subdirectory(${CURRENT_BACKEND_LOWER})
   endif()
 endforeach()
 
