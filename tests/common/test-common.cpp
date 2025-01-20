@@ -1641,10 +1641,10 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
 
         sql << "select sh from soci_test order by sh", into(v2);
         CHECK(v2.size() == 4);
-        CHECK(v2[0] == (std::numeric_limits<int8_t>::min)());
-        CHECK(v2[1] == -5);
-        CHECK(v2[2] == 123);
-        CHECK(v2[3] == (std::numeric_limits<int8_t>::max)());
+        CHECK((int)v2[0] == (int)(std::numeric_limits<int8_t>::min)());
+        CHECK((int)v2[1] == (int)-5);
+        CHECK((int)v2[2] == (int)123);
+        CHECK((int)v2[3] == (int)(std::numeric_limits<int8_t>::max)());
     }
 
     SECTION("uint8_t")
