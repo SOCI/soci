@@ -2359,6 +2359,10 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
             CHECK(sql.get_last_query_context() == R"(:name="bob", :id=42)");
         }
 
+        // Suppress bogus MSVC warnings about unrecognized escape sequences in
+        // the raw strings below.
+        SOCI_MSVC_WARNING_SUPPRESS(4129)
+
         try {
             sql << "insert into soci_test (dummy, id) values (:dummy, :id)", use(name, "dummy"), use(id, "id");
         } catch (const soci_error &e) {
@@ -2403,6 +2407,9 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
                 )
             );
         }
+
+        SOCI_MSVC_WARNING_RESTORE(4129)
+
         CHECK(sql.get_last_query() == "insert into soci_test (dummy, id) values (:dummy, :id)");
         CHECK(sql.get_last_query_context() == "");
     }
