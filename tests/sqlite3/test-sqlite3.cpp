@@ -123,30 +123,32 @@ private:
     soci::session& m_sql;
 };
 
-TEST_CASE("SQLite foreign keys are disabled by default", "[sqlite][foreignkeys]")
+TEST_CASE("SQLite foreign keys", "[sqlite][foreignkeys]")
 {
     soci::session sql(backEnd, connectString);
 
     SetupForeignKeys setupForeignKeys(sql);
 
-    sql << "delete from parent where id = 1";
+    SECTION("Off")
+    {
+        sql << "pragma foreign_keys = off";
 
-    int parent = 0;
-    sql << "select parent from child where id = 100 ", into(parent);
+        sql << "delete from parent where id = 1";
 
-    CHECK(parent == 1);
-}
+        int parent = 0;
+        sql << "select parent from child where id = 100 ", into(parent);
+        CHECK(parent == 1);
+    }
 
-TEST_CASE("SQLite foreign keys are enabled by foreign_keys option", "[sqlite][foreignkeys]")
-{
-    soci::session sql(backEnd, "dbname=:memory: foreign_keys=on");
+    SECTION("On")
+    {
+        sql << "pragma foreign_keys = on";
 
-    SetupForeignKeys setupForeignKeys(sql);
-
-    CHECK_THROWS_WITH(sql << "delete from parent where id = 1",
-                      "sqlite3_statement_backend::loadOne: FOREIGN KEY "
-                      "constraint failed while executing "
-                      "\"delete from parent where id = 1\".");
+        CHECK_THROWS_WITH(sql << "delete from parent where id = 1",
+                          "sqlite3_statement_backend::loadOne: FOREIGN KEY "
+                          "constraint failed while executing "
+                          "\"delete from parent where id = 1\".");
+    }
 }
 
 class SetupAutoIncrementTable
