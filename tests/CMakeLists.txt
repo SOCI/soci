@@ -33,6 +33,7 @@ add_library(soci_tests_common STATIC
   common/test-dynamic.cpp
   common/test-lob.cpp
   common/test-manual.cpp
+  common/test-querylog.cpp
   common/test-rowset.cpp
   test-assert.h
   test-context.h
