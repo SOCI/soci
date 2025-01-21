@@ -150,6 +150,9 @@ private:
 
     bool alreadyDescribed_;
 
+    // Unconditionally call session::add_query_parameter() for all parameters.
+    void do_add_query_parameters();
+
     std::size_t intos_size();
     std::size_t uses_size();
     void pre_exec(int num);

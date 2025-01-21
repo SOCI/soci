@@ -589,24 +589,31 @@ void statement_impl::pre_fetch()
     }
 }
 
+void statement_impl::do_add_query_parameters()
+{
+    std::size_t const usize = uses_.size();
+    for (std::size_t i = 0; i != usize; ++i)
+    {
+        std::string name = get_name(*uses_[i], i, backEnd_);
+        std::stringstream value;
+        uses_[i]->dump_value(value);
+        session_.add_query_parameter(std::move(name), value.str());
+    }
+}
+
 void statement_impl::pre_use()
 {
     session_.clear_query_parameters();
-
-    const bool log_query_ctx = session_.get_query_context_logging_mode() == log_context::always;
 
     std::size_t const usize = uses_.size();
     for (std::size_t i = 0; i != usize; ++i)
     {
         uses_[i]->pre_use();
+    }
 
-        if (log_query_ctx)
-        {
-            std::string name = get_name(*uses_[i], i, backEnd_);
-            std::stringstream value;
-            uses_[i]->dump_value(value);
-            session_.add_query_parameter(std::move(name), value.str());
-        }
+    if (session_.get_query_context_logging_mode() == log_context::always)
+    {
+        do_add_query_parameters();
     }
 }
 
@@ -879,14 +886,7 @@ statement_impl::rethrow_current_exception_with_context(char const* operation)
                 // works for all kinds of errors).
                 session_.clear_query_parameters();
 
-                std::size_t const usize = uses_.size();
-                for (std::size_t i = 0; i != usize; ++i)
-                {
-                    std::string name = get_name(*uses_[i], i, backEnd_);
-                    std::stringstream value;
-                    uses_[i]->dump_value(value);
-                    session_.add_query_parameter(std::move(name), value.str());
-                }
+                do_add_query_parameters();
 
                 oss << " with " << session_.get_last_query_context();
             }
