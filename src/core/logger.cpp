@@ -33,7 +33,10 @@ void logger_impl::add_query_parameter(std::string name, std::string value)
     queryParams_.emplace_back(std::move(name), std::move(value));
 }
 
-void logger_impl::clear_query_parameters() { queryParams_.clear(); }
+void logger_impl::clear_query_parameters()
+{
+    queryParams_.clear();
+}
 
 logger_impl * logger_impl::clone() const
 {
