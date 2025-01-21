@@ -951,7 +951,9 @@ public:
         // database if nothing is specified on the command line.
         if (argFromCommandLine.empty())
         {
-            argFromCommandLine = ":memory:";
+            // Enable FKs by default to make SQLite behaviour more compatible
+            // with the other backends.
+            argFromCommandLine = "db=:memory: foreign_keys=on";
         }
 
         return test_context_base::initialize_connect_string(argFromCommandLine);
