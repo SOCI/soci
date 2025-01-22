@@ -16,7 +16,7 @@
 class SetupForeignKeys
 {
 public:
-    SetupForeignKeys(soci::session& sql)
+    explicit SetupForeignKeys(soci::session& sql)
         : m_sql(sql)
     {
         m_sql <<
