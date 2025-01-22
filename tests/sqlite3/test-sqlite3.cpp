@@ -91,7 +91,7 @@ TEST_CASE("SQLite rowid", "[sqlite][rowid][oid]")
 class SetupForeignKeys
 {
 public:
-    SetupForeignKeys(soci::session& sql)
+    explicit SetupForeignKeys(soci::session& sql)
         : m_sql(sql)
     {
         m_sql <<
