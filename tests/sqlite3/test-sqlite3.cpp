@@ -8,6 +8,7 @@
 #include <soci/soci.h>
 #include <soci/sqlite3/soci-sqlite3.h>
 #include "test-context.h"
+#include "test-foreignkeys.h"
 
 #include <catch.hpp>
 
@@ -87,41 +88,6 @@ TEST_CASE("SQLite rowid", "[sqlite][rowid][oid]")
 
     sql << "drop table test1";
 }
-
-class SetupForeignKeys
-{
-public:
-    SetupForeignKeys(soci::session& sql)
-        : m_sql(sql)
-    {
-        m_sql <<
-        "create table parent ("
-        "    id integer primary key"
-        ")";
-
-        m_sql <<
-        "create table child ("
-        "    id integer primary key,"
-        "    parent integer,"
-        "    foreign key(parent) references parent(id)"
-        ")";
-
-        m_sql << "insert into parent(id) values(1)";
-        m_sql << "insert into child(id, parent) values(100, 1)";
-    }
-
-    ~SetupForeignKeys()
-    {
-        m_sql << "drop table child";
-        m_sql << "drop table parent";
-    }
-
-private:
-    SetupForeignKeys(const SetupForeignKeys&);
-    SetupForeignKeys& operator=(const SetupForeignKeys&);
-
-    soci::session& m_sql;
-};
 
 TEST_CASE("SQLite foreign keys", "[sqlite][foreignkeys]")
 {
