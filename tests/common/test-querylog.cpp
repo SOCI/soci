@@ -12,6 +12,7 @@
 #include <catch.hpp>
 
 #include "test-context.h"
+#include "test-foreignkeys.h"
 
 namespace soci
 {
@@ -144,6 +145,28 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
         "drop table soci_test1\n"
         "drop table soci_test3\n");
 
+}
+
+TEST_CASE_METHOD(common_tests, "Log error", "[core][logging][error]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    sql.set_query_context_logging_mode(log_context::on_error);
+
+    SetupForeignKeys setupForeignKeys(sql);
+
+    // The line above already added a child 100 with parent 1, so adding the
+    // first and the last child should succeed, but the second one should fail.
+    std::vector<int> children{ 200, 300, 400 };
+    std::vector<int> parents{ 1, 2, 1 };
+
+    REQUIRE_THROWS_AS(
+        (sql << "insert into child(id, parent) values(:child, :parent)",
+         use(children), use(parents)),
+        soci_error
+    );
+
+    CHECK(sql.get_last_query_context() == ":child=<vector>, :parent=<vector>");
 }
 
 } // namespace tests
