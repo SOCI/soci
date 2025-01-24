@@ -1639,12 +1639,18 @@ TEST_CASE_METHOD(common_tests, "Use vector", "[core][use][vector]")
 
         std::vector<int8_t> v2(4);
 
-        sql << "select sh from soci_test order by sh", into(v2);
+        sql << "select sh from soci_test", into(v2);
         CHECK(v2.size() == 4);
-        CHECK(v2[0] == (std::numeric_limits<int8_t>::min)());
-        CHECK(v2[1] == -5);
-        CHECK(v2[2] == 123);
-        CHECK(v2[3] == (std::numeric_limits<int8_t>::max)());
+
+        // This is a hack: "order by" doesn't work correctly with SQL Server
+        // for this type because it's stored as unsigned in the database, so
+        // sort the values here instead.
+        std::sort(v2.begin(), v2.end());
+
+        CHECK((int)v2[0] == (int)(std::numeric_limits<int8_t>::min)());
+        CHECK((int)v2[1] == (int)-5);
+        CHECK((int)v2[2] == (int)123);
+        CHECK((int)v2[3] == (int)(std::numeric_limits<int8_t>::max)());
     }
 
     SECTION("uint8_t")
