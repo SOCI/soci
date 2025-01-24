@@ -7,7 +7,6 @@ source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
 cmake ${SOCI_DEFAULT_CMAKE_OPTIONS} \
     -DSOCI_SQLITE3=ON \
-    -DSOCI_SQLITE3_TEST_CONNSTR:STRING="soci_test.db" \
     ..
 
 run_make
