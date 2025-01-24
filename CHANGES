@@ -32,6 +32,7 @@ Backend-specific changes:
 
 - Oracle
  - Fix conversion of dates before 1900 (#1135).
+ - Fix using non-ASCII characters as CLOB data (#1184).
 
 - PostgreSQL
  - Add support for network address types (#1078).

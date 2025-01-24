@@ -25,6 +25,74 @@ using namespace soci::tests;
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_oracle();
 
+// Helpers for creating tables for different tests.
+struct table_creator_one : public table_creator_base
+{
+    table_creator_one(soci::session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(id number(10,0), val number(8,0), c char, "
+                 "str varchar2(20), sh number, ll number, ul number, d number, "
+                 "num76 numeric(7,6), "
+                 "tm date, i1 number, i2 number, i3 number, name varchar2(20))";
+    }
+};
+
+struct table_creator_two : public table_creator_base
+{
+    table_creator_two(soci::session & sql)
+        : table_creator_base(sql)
+    {
+        sql  << "create table soci_test(num_float number, num_int numeric(4,0),"
+                    " name varchar2(20), sometime date, chr char)";
+    }
+};
+
+struct table_creator_three : public table_creator_base
+{
+    table_creator_three(soci::session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(name varchar2(100) not null, "
+            "phone varchar2(15))";
+    }
+};
+
+struct table_creator_four : public table_creator_base
+{
+    table_creator_four(soci::session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(val number)";
+    }
+};
+
+struct table_creator_for_xml : table_creator_base
+{
+    table_creator_for_xml(soci::session& sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(id integer, x xmltype)";
+    }
+};
+
+struct table_creator_for_clob : table_creator_base
+{
+    table_creator_for_clob(soci::session& sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(id integer, s clob)";
+    }
+};
+
+struct table_creator_for_blob : public tests::table_creator_base
+{
+    table_creator_for_blob(soci::session &sql) : tests::table_creator_base(sql)
+    {
+        sql << "create table soci_test(id integer, b blob)";
+    }
+};
+
 struct table_creator_for_timestamp : public tests::table_creator_base
 {
     table_creator_for_timestamp(soci::session &sql) : tests::table_creator_base(sql)
@@ -239,27 +307,30 @@ TEST_CASE("Oracle rowid", "[oracle][rowid]")
 }
 
 // Stored procedures
-class procedure_creator_base
+class creator_base
 {
 public:
-    procedure_creator_base(session& sql)
-        : msession(sql) { drop(); }
+    explicit creator_base(session& sql, std::string what = "procedure soci_test")
+        : msession(sql), what_{std::move(what)} { drop(); }
 
-    virtual ~procedure_creator_base() { drop();}
+    ~creator_base() { drop();}
+
 private:
     void drop()
     {
-        try { msession << "drop procedure soci_test"; } catch (soci_error&) {}
+        try { msession << "drop " + what_; } catch (soci_error&) {}
     }
     session& msession;
 
-    SOCI_NOT_COPYABLE(procedure_creator_base)
+    std::string const what_;
+
+    SOCI_NOT_COPYABLE(creator_base)
 };
 
-struct procedure_creator : procedure_creator_base
+struct procedure_creator : creator_base
 {
     procedure_creator(soci::session & sql)
-        : procedure_creator_base(sql)
+        : creator_base(sql)
     {
         sql <<
              "create or replace procedure soci_test(output out varchar2,"
@@ -325,20 +396,20 @@ namespace soci
     };
 }
 
-struct in_out_procedure_creator : public procedure_creator_base
+struct in_out_procedure_creator : public creator_base
 {
     in_out_procedure_creator(soci::session & sql)
-        : procedure_creator_base(sql)
+        : creator_base(sql)
     {
         sql << "create or replace procedure soci_test(s in out varchar2)"
                 " as begin s := s || s; end;";
     }
 };
 
-struct returns_null_procedure_creator : public procedure_creator_base
+struct returns_null_procedure_creator : public creator_base
 {
     returns_null_procedure_creator(soci::session & sql)
-        : procedure_creator_base(sql)
+        : creator_base(sql)
     {
         sql << "create or replace procedure soci_test(s in out varchar2)"
             " as begin s := NULL; end;";
@@ -774,10 +845,10 @@ struct person_table_creator : public table_creator_base
     }
 };
 
-struct times100_procedure_creator : public procedure_creator_base
+struct times100_procedure_creator : public creator_base
 {
     times100_procedure_creator(soci::session & sql)
-        : procedure_creator_base(sql)
+        : creator_base(sql)
     {
         sql << "create or replace procedure soci_test(id in out number)"
                " as begin id := id * 100; end;";
@@ -1407,76 +1478,59 @@ TEST_CASE("Bulk iterators", "[oracle][bulkiters]")
     sql << "drop table t";
 }
 
+TEST_CASE ( "Oracle CLOB", "[oracle][clob]" )
+{
+    soci::session sql ( backEnd, connectString );
+
+    // Use a non-ASCII string to test that CLOBs work when byte count differs
+    // from character count.
+    //
+    // Note that this requires some Unicode encoding to be used, e.g. UTF-8 by
+    // setting NLS_LANG=.AL32UTF8 in the environment.
+    std::string const test_utf8{"Привет système"};
+
+    table_creator_for_clob clob_table(sql);
+    long_string ls;
+    ls.value = test_utf8;
+    sql << "insert into soci_test(id, s) values(1, :s)", use(ls);
+    ls.value.clear();
+    sql << "select s from soci_test where id=1", into(ls);
+    CHECK(ls.value == test_utf8);
+
+    // RAII helper to create the function we use below.
+    struct soci_repeat : creator_base
+    {
+        explicit soci_repeat(session& sql)
+            : creator_base(sql, "function soci_repeat")
+        {
+            sql << R"(
+create function soci_repeat(s in string, xCount in integer) return clob as
+  tmp clob;
+begin
+  for i in 1..xCount loop tmp := tmp || s; end loop;
+  return tmp;
+end;
+)"
+                ;
+        }
+    } soci_repeat_func(sql);
+
+    // Append a big number of Unicode chars to the CLOB to test that things
+    // work with CLOBs larger than a single chunk (which is ~8KiB by default).
+    //
+    // Note: Oracle 11 used in the CI tests doesn't seem to handle characters
+    // outside of the BMP correctly even if current Oracle versions have no
+    // problems with them, so don't use them here for now.
+    unsigned xCount = 10000;
+    sql << "select :s || soci_repeat('Я', :xCount) from dual",
+           use(ls), use(xCount), into(ls);
+
+    REQUIRE(ls.value.length() == test_utf8.length() + 2*xCount);
+}
+
 //
 // Support for soci Common Tests
 //
-
-struct table_creator_one : public table_creator_base
-{
-    table_creator_one(soci::session & sql)
-        : table_creator_base(sql)
-    {
-        sql << "create table soci_test(id number(10,0), val number(8,0), c char, "
-                 "str varchar2(20), sh number, ll number, ul number, d number, "
-                 "num76 numeric(7,6), "
-                 "tm date, i1 number, i2 number, i3 number, name varchar2(20))";
-    }
-};
-
-struct table_creator_two : public table_creator_base
-{
-    table_creator_two(soci::session & sql)
-        : table_creator_base(sql)
-    {
-        sql  << "create table soci_test(num_float number, num_int numeric(4,0),"
-                    " name varchar2(20), sometime date, chr char)";
-    }
-};
-
-struct table_creator_three : public table_creator_base
-{
-    table_creator_three(soci::session & sql)
-        : table_creator_base(sql)
-    {
-        sql << "create table soci_test(name varchar2(100) not null, "
-            "phone varchar2(15))";
-    }
-};
-
-struct table_creator_four : public table_creator_base
-{
-    table_creator_four(soci::session & sql)
-        : table_creator_base(sql)
-    {
-        sql << "create table soci_test(val number)";
-    }
-};
-
-struct table_creator_for_xml : table_creator_base
-{
-    table_creator_for_xml(soci::session& sql)
-        : table_creator_base(sql)
-    {
-        sql << "create table soci_test(id integer, x xmltype)";
-    }
-};
-
-struct table_creator_for_clob : table_creator_base
-{
-    table_creator_for_clob(soci::session& sql)
-        : table_creator_base(sql)
-    {
-        sql << "create table soci_test(id integer, s clob)";
-    }
-};
-
-struct table_creator_for_blob : public tests::table_creator_base
-{
-    table_creator_for_blob(soci::session &sql) : tests::table_creator_base(sql)
-    {
-        sql << "create table soci_test(id integer, b blob)";
-    }
-};
 
 class test_context :public test_context_common
 {
