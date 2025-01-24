@@ -249,15 +249,6 @@ void statement_impl::define_and_bind()
     }
 }
 
-void statement_impl::define_for_row()
-{
-    std::size_t const isize = intosForRow_.size();
-    for (std::size_t i = 0; i != isize; ++i)
-    {
-        intosForRow_[i]->define(*this, definePositionForRow_);
-    }
-}
-
 void statement_impl::undefine_and_bind()
 {
     std::size_t const isize = intos_.size();
@@ -315,7 +306,6 @@ bool statement_impl::execute(bool withDataExchange)
         if (row_ != NULL && alreadyDescribed_ == false)
         {
             describe();
-            define_for_row();
         }
 
         int num = 0;
@@ -338,6 +328,16 @@ bool statement_impl::execute(bool withDataExchange)
         pre_exec(num);
 
         statement_backend::exec_fetch_result res = backEnd_->execute(num);
+
+        // another hack related to description: the first call to describe()
+        // above may not have done anything if we didn't have the correct
+        // number of columns before calling execute() as happens with at least
+        // the ODBC backend for some complex queries (see #1151), so call it
+        // again in this case
+        if (row_ != NULL && alreadyDescribed_ == false)
+        {
+            describe();
+        }
 
         bool gotData = false;
 
@@ -750,6 +750,13 @@ void statement_impl::describe()
     row_->clean_up();
 
     int const numcols = backEnd_->prepare_for_describe();
+    if (!numcols)
+    {
+        // Return without setting alreadyDescribed_ to true, we'll be called
+        // again in this case.
+        return;
+    }
+
     for (int i = 1; i <= numcols; ++i)
     {
         db_type dbtype;
@@ -814,6 +821,14 @@ void statement_impl::describe()
     }
 
     alreadyDescribed_ = true;
+
+    // Calling bind_into() above could have added row into elements, so
+    // initialize them.
+    std::size_t const isize = intosForRow_.size();
+    for (std::size_t i = 0; i != isize; ++i)
+    {
+        intosForRow_[i]->define(*this, definePositionForRow_);
+    }
 }
 
 } // namespace details
