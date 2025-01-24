@@ -35,10 +35,11 @@ multiple queries.
 
 Logging of query parameters is **enabled by default** but can at any time be adjusted to your needs by using the `set_query_context_logging_mode`
 function of the `session` object. For instance
-```cpp
-sql.set_query_context_logging_mode(log_context::on_error);
-```
+
+    sql.set_query_context_logging_mode(log_context::on_error);
+
 Possible values are
+
 * `log_context::always` - Always cache the bound parameters of queries (the default)
 * `log_context::never` - Never cache bound parameters. This also ensures that bound parameters are not part of exception messages. It is therefore
   suitable for queries that bind sensitive information that must not be leaked.

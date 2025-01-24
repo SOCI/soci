@@ -154,6 +154,7 @@ into the provided container.
 
 If you want to use a different container than the ones mentioned above, you need to specialize the `soci::is_contiguous_resizable_container` trait.
 E.g.
+
 ```cpp
 template<>
 struct ::soci::is_contiguous_resizable_container<MyAwesomeContainer> : std::true_type {};
@@ -161,8 +162,10 @@ struct ::soci::is_contiguous_resizable_container<MyAwesomeContainer> : std::true
 template<typename ValueType>
 struct ::soci::is_contiguous_resizable_container<boost::container::vector<ValueType>, std::enable_if_t<sizeof(ValueType) == sizeof(char)>> : std::true_type {};
 ```
+
 Potentially, you may also need to specialize the `soci::contiguous_resizable_container_accessor` struct, if the default implementation doesn't work
 for your custom container type:
+
 ```cpp
 template<typename T, typename = std::enable_if_t<is_contiguous_resizable_container_v<T>>>
 struct contiguous_resizable_container_accessor
@@ -181,7 +184,6 @@ struct contiguous_resizable_container_accessor
     static void resize(T &container, std::size_t size) { container.resize(size); }
 };
 ```
-
 
 ### Indicators
 
