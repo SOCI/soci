@@ -674,6 +674,12 @@ void statement_impl::bind_into<db_string>()
 }
 
 template<>
+void statement_impl::bind_into<db_wstring>()
+{
+    into_row<std::wstring>();
+}
+
+template<>
 void statement_impl::bind_into<db_double>()
 {
     into_row<double>();
@@ -761,6 +767,9 @@ void statement_impl::describe()
         case db_string:
         case db_xml:
             bind_into<db_string>();
+            break;
+        case db_wstring:
+            bind_into<db_wstring>();
             break;
         case db_blob:
             bind_into<db_blob>();

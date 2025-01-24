@@ -77,6 +77,58 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
     );
 }
 
+struct wide_text_table_creator : public table_creator_base
+{
+  explicit wide_text_table_creator(soci::session &sql)
+      : table_creator_base(sql)
+  {
+      sql << "create table soci_test ("
+                  "wide_text nvarchar(40) null"
+              ")";
+  }
+};
+
+TEST_CASE("MS SQL wide string", "[odbc][mssql][wstring]")
+{
+  soci::session sql(backEnd, connectString);
+
+  wide_text_table_creator create_wide_text_table(sql);
+
+  std::wstring const str_in = L"Привет, SOCI!";
+
+  sql << "insert into soci_test(wide_text) values(:str)", use(str_in);
+
+  std::wstring str_out;
+  sql << "select wide_text from soci_test", into(str_out);
+
+  CHECK(str_out == str_in);
+}
+
+TEST_CASE("MS SQL wide string vector", "[odbc][mssql][vector][wstring]")
+{
+  soci::session sql(backEnd, connectString);
+
+  wide_text_table_creator create_wide_text_table(sql);
+
+  std::vector<std::wstring> const str_in = {
+      L"Привет, SOCI!",
+      L"Привет, World!",
+      L"Привет, Universe!",
+      L"Привет, Galaxy!"};
+
+  sql << "insert into soci_test(wide_text) values(:str)", use(str_in);
+
+  std::vector<std::wstring> str_out(4);
+
+  sql << "select wide_text from soci_test", into(str_out);
+
+  CHECK(str_out.size() == str_in.size());
+  for (std::size_t i = 0; i != str_in.size(); ++i)
+  {
+    CHECK(str_out[i] == str_in[i]);
+  }
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {

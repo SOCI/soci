@@ -40,6 +40,9 @@ Backend-specific changes:
  - Add "nocreate" option to avoid creating a new database file (#1021).
  - Improve column names to SOCI database types mapping (#1120).
 
+- ODBC
+ - Add support for using wide strings (#1179).
+
 
 History of the changes in the previous versions:
 
