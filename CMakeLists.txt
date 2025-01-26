@@ -121,16 +121,16 @@ endif()
 
 # Packaging
 include(CMakePackageConfigHelpers)
-configure_package_config_file("SOCIConfig.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/SOCIConfig.cmake"
+configure_package_config_file("soci-config.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/soci-config.cmake"
   INSTALL_DESTINATION "${SOCI_INSTALL_CMAKEDIR}"
 )
-write_basic_package_version_file(SOCIConfigVersion.cmake
+write_basic_package_version_file(soci-config-version.cmake
   VERSION ${PROJECT_VERSION}
   COMPATIBILITY SameMajorVersion
 )
 install(
   FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/SOCIConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/SOCIConfigVersion.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/soci-config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/soci-config-version.cmake"
     DESTINATION "${SOCI_INSTALL_CMAKEDIR}"
 )
