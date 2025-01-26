@@ -69,7 +69,6 @@ foreach(CURRENT_BACKEND IN LISTS SOCI_EXISTING_BACKENDS)
 
     # Verify that the backend hasn't been disabled (happens if include mode is AUTO and there are
     # unmet dependencies.
-    message(STATUS "${CURRENT_ENABLED_VAR}=${${CURRENT_ENABLED_VAR}}")
     if (${CURRENT_ENABLED_VAR})
       list(APPEND ENABLED_BACKENDS "${CURRENT_BACKEND}")
     endif()

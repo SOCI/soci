@@ -1,25 +1,24 @@
+include(soci_define_backend_target)
+
 option(SOCI_FIREBIRD_EMBEDDED "Use the embedded version of Firebird" OFF)
-
-if (SOCI_FIREBIRD_AUTO)
-  set(REQUIRED_FLAG "")
-else()
-  set(REQUIRED_FLAG "REQUIRED")
-endif()
-
 if (SOCI_FIREBIRD_EMBEDDED)
   set(Firebird_SEARCH_EMBEDDED ON)
 endif()
 
-find_package(Firebird ${REQUIRED_FLAG})
-
-if (NOT Firebird_FOUND)
-  message(STATUS "Disabling Firebird backend as the required dependencies were not found")
-  set(SOCI_FIREBIRD OFF CACHE BOOL "" FORCE)
-  return()
+if (SOCI_FIREBIRD_AUTO)
+  set(DEPENDENCY_MODE "DISABLE")
+else()
+  set(DEPENDENCY_MODE "ERROR")
 endif()
 
-add_library(soci_firebird
-  ${SOCI_LIB_TYPE}
+soci_define_backend_target(
+  BACKEND_NAME "Firebird"
+  TARGET_NAME "soci_firebird"
+  ALIAS_NAME "Firebird"
+  DEPENDENCIES
+  "Firebird YIELDS Firebird::Firebird"
+  REQUIRED_COMPONENTS SOCI::Core
+  SOURCE_FILES
     "blob.cpp"
     "common.cpp"
     "error-firebird.cpp"
@@ -30,65 +29,17 @@ add_library(soci_firebird
     "statement.cpp"
     "vector-into-type.cpp"
     "vector-use-type.cpp"
-)
-
-add_library(SOCI::Firebird ALIAS soci_firebird)
-
-set_target_properties(
-  soci_firebird PROPERTIES
-  SOVERSION ${PROJECT_VERSION_MAJOR}
-  VERSION ${PROJECT_VERSION}
-  EXPORT_NAME Firebird
-)
-
-target_sources(soci_firebird
-  PUBLIC
-    FILE_SET headers TYPE HEADERS
-    BASE_DIRS "${PROJECT_SOURCE_DIR}/include"
-    FILES
-      "${PROJECT_SOURCE_DIR}/include/soci/firebird/soci-firebird.h"
-)
-
-soci_public_dependency(
-  NAME Firebird
-  DEP_TARGETS Firebird::Firebird
-  TARGET SOCI::Firebird
-  REQUIRED
-)
-soci_public_dependency(
-  NAME SOCI::Core
-  DEP_TARGETS SOCI::Core
-  TARGET SOCI::Firebird
-  REQUIRED
-)
-
-target_include_directories(soci_firebird
-  PRIVATE
+  HEADER_FILES
+    "${PROJECT_SOURCE_DIR}/include/soci/firebird/soci-firebird.h"
+  PRIVATE_INCLUDE_DIRS
     "${PROJECT_SOURCE_DIR}/include/private"
-    "${PROJECT_SOURCE_DIR}/include/soci"
+  FIND_PACKAGE_FILES
+    "${PROJECT_SOURCE_DIR}/cmake/find_modules/FindFirebird.cmake"
+  MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
+  ENABLED_VARIABLE "SOCI_FIREBIRD"
 )
 
-target_link_libraries(soci_interface INTERFACE SOCI::Firebird)
+if (NOT SOCI_FIREBIRD)
+  return()
+endif()
 
-
-install(
-  TARGETS soci_firebird
-  EXPORT SOCIFirebirdTargets
-  RUNTIME DESTINATION "${SOCI_INSTALL_BINDIR}"
-    COMPONENT soci_runtime
-  LIBRARY DESTINATION "${SOCI_INSTALL_LIBDIR}"
-    COMPONENT          soci_runtime
-    NAMELINK_COMPONENT soci_development
-  ARCHIVE DESTINATION "${SOCI_INSTALL_LIBDIR}"
-    COMPONENT soci_development
-  FILE_SET headers DESTINATION "${SOCI_INSTALL_INCLUDEDIR}"
-    COMPONENT soci_development
-)
-# Generate and install a targets file
-install(
-  EXPORT SOCIFirebirdTargets
-  DESTINATION "${SOCI_INSTALL_CMAKEDIR}"
-  FILE SOCIFirebirdTargets.cmake
-  NAMESPACE SOCI::
-  COMPONENT soci_development
-)
