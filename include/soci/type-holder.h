@@ -19,9 +19,38 @@
 #include <sstream>
 #include <type_traits>
 #include <typeinfo>
+#include <vector>
+#include <string>
 
 namespace soci
 {
+
+// Trait to determine whether a given T is a container that stores its elements
+// in a continuous region in memory and which can be resized.
+template<typename T, typename Enabler = void>
+struct is_contiguous_resizable_container : std::false_type {};
+
+template<typename T>
+constexpr bool is_contiguous_resizable_container_v = is_contiguous_resizable_container<T>::value;
+
+// An accessor template for contiguous, resizable containers that can be
+// specialized for types for which this default implementation doesn't work.
+template<typename T, typename = std::enable_if_t<is_contiguous_resizable_container_v<T>>>
+struct contiguous_resizable_container_accessor
+{
+    // Gets the pointer to the beginning of the data store
+    static void *data(T &container)
+    {
+        static_assert(sizeof(decltype(container[0])) == sizeof(char), "Expected value-type of container to be byte-sized");
+        return &container[0];
+    }
+
+    // Gets the size **in bytes** of this container
+    static std::size_t size(const T &container) { return container.size(); }
+
+    // Resizes the container to the given size **in bytes**
+    static void resize(T &container, std::size_t size) { container.resize(size); }
+};
 
 namespace details
 {
@@ -128,9 +157,49 @@ struct soci_cast<
     }
 };
 
+// Specialization for the blob type
+// It throws unless it is requested to be cast to a container
+// of type T where sizeof(T) == 1 and which is using
+// contiguous storage in memory.
+template <typename T>
+struct soci_cast<T, blob,
+    typename std::enable_if<!is_contiguous_resizable_container_v<T>>::type>
+{
+    static inline T cast(blob &)
+    {
+        // Blobs are non-copyable and therefore, we have to throw
+        // here even if T is soci::blob as this function is always
+        // used in context where copying of the blob would happen.
+        throw std::bad_cast();
+    }
+};
+
+template <typename T>
+struct soci_cast<T, blob,
+    typename std::enable_if<is_contiguous_resizable_container_v<T>>::type>
+{
+    static inline T cast(blob &blob)
+    {
+        T container;
+        using Accessor = contiguous_resizable_container_accessor<T>;
+
+        const std::size_t size = blob.get_len();
+
+        if (size > 0)
+        {
+            Accessor::resize(container, size);
+
+            blob.read_from_start(Accessor::data(container), size);
+        }
+
+        return container;
+    }
+};
+
 union type_holder
 {
     std::string* s;
+    std::wstring* ws;
     int8_t* i8;
     int16_t* i16;
     int32_t* i32;
@@ -151,6 +220,12 @@ template <>
 struct type_holder_trait<std::string>
 {
     static const db_type type = db_string;
+};
+
+template <>
+struct type_holder_trait<std::wstring>
+{
+    static const db_type type = db_wstring;
 };
 
 template <>
@@ -305,6 +380,9 @@ public:
         case db_string:
             delete val_.s;
             break;
+        case db_wstring:
+            delete val_.ws;
+            break;
         }
     }
 
@@ -340,11 +418,12 @@ public:
         case db_date:
             return soci_cast<T, std::tm>::cast(*val_.t);
         case db_blob:
-            // blob is not copyable
-            break;
+            return soci_cast<T, blob>::cast(*val_.b);
         case db_xml:
         case db_string:
             return soci_cast<T, std::string>::cast(*val_.s);
+        case db_wstring:
+            return soci_cast<T, std::wstring>::cast(*val_.ws);
         }
 
         throw std::bad_cast();
@@ -380,6 +459,8 @@ public:
         case db_xml:
         case db_string:
             return soci_return_same<T, std::string>::value(*val_.s);
+        case db_wstring:
+            return soci_return_same<T, std::wstring>::value(*val_.ws);
         }
 
         throw std::bad_cast();
@@ -430,6 +511,9 @@ private:
         case db_string:
             val_.s = static_cast<std::string*>(val);
             return;
+        case db_wstring:
+            val_.ws = static_cast<std::wstring*>(val);
+            return;
         }
 
         // This should be unreachable
@@ -443,6 +527,12 @@ private:
 };
 
 } // namespace details
+
+template<>
+struct is_contiguous_resizable_container<std::string> : std::true_type {};
+
+template<typename T>
+struct is_contiguous_resizable_container<std::vector<T>, typename std::enable_if<sizeof(T) == sizeof(char)>::type> : std::true_type {};
 
 } // namespace soci
 

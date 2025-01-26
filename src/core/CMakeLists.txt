@@ -24,6 +24,7 @@ add_library(soci_core
     "soci-simple.cpp"
     "statement.cpp"
     "transaction.cpp"
+    "unicode.cpp"
     "use-type.cpp"
     "values.cpp"
 )

@@ -199,7 +199,10 @@ void oracle_standard_into_type_backend::define_by_pos(
             ociData_ = lobp;
         }
         break;
+    default:
+        throw soci_error("Into element used with non-supported type.");
     }
+    
 
     sword res = OCIDefineByPos(statement_.stmtp_, &defnp_,
             statement_.session_.errhp_,
@@ -235,41 +238,58 @@ void oracle_standard_into_type_backend::pre_fetch()
 void oracle::read_from_lob(oracle_session_backend& session,
     OCILobLocator * lobp, std::string & value)
 {
-    ub4 len;
-
-    sword res = OCILobGetLength(session.svchp_, session.errhp_,
-        lobp, &len);
+    // We can't get the CLOB size in bytes directly, only in characters, which
+    // is useless for UTF-8 as it doesn't tell us how much memory do we
+    // actually need for storing it, so we'd have to allocate 4 bytes for every
+    // character which could be a huge overkill. So instead read the CLOB in
+    // chunks of its natural size until we get everything.
+    ub4 len = 0;
+    sword res = OCILobGetChunkSize(session.svchp_, session.errhp_, lobp, &len);
     if (res != OCI_SUCCESS)
     {
         throw_oracle_soci_error(res, session.errhp_);
     }
 
-    std::vector<char> buf(len);
+    value.clear();
 
-    if (len != 0)
+    if (!len)
+        return;
+
+    // Read the LOB in chunks into the buffer while anything remains to be read.
+    for (bool done = false; !done; )
     {
-        ub4 lenChunk = len;
-        ub4 offset = 1;
-        do
+        auto const prevSize = value.size();
+        value.resize(prevSize + len);
+
+        // By setting the input length to 0, we tell Oracle to read as many
+        // bytes as possible (so called "streaming" mode).
+        ub4 lenChunk = 0;
+        res = OCILobRead(session.svchp_, session.errhp_, lobp,
+                         &lenChunk,
+                         1, // Only used for the first chunk, ignored later.
+                         const_cast<char*>(value.data()) + prevSize, len,
+                         0, 0, 0, 0);
+
+        switch (res)
         {
-            res = OCILobRead(session.svchp_, session.errhp_,
-                lobp, &lenChunk,
-                offset,
-                reinterpret_cast<dvoid*>(&buf[offset - 1]),
-                len, 0, 0, 0, 0);
-            if (res == OCI_NEED_DATA)
-            {
-                offset += lenChunk;
-            }
-            else if (res != OCI_SUCCESS)
-            {
+            case OCI_NEED_DATA:
+                // Nothing to do, just continue reading.
+                break;
+
+            case OCI_SUCCESS:
+                done = true;
+                break;
+
+            default:
                 throw_oracle_soci_error(res, session.errhp_);
-            }
         }
-        while (res == OCI_NEED_DATA);
+
+        value.resize(prevSize + lenChunk);
     }
 
-    value.assign(buf.begin(), buf.end());
+    // We may have over-allocated the string, especially when a big chunk size
+    // is used, so release the unused memory.
+    value.shrink_to_fit();
 }
 
 void oracle_standard_into_type_backend::post_fetch(

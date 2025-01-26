@@ -77,6 +77,120 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
     );
 }
 
+struct wide_text_table_creator : public table_creator_base
+{
+  explicit wide_text_table_creator(soci::session &sql)
+      : table_creator_base(sql)
+  {
+      sql << "create table soci_test ("
+                  "wide_text nvarchar(40) null"
+              ")";
+  }
+};
+
+TEST_CASE("MS SQL wide string", "[odbc][mssql][wstring]")
+{
+  soci::session sql(backEnd, connectString);
+
+  wide_text_table_creator create_wide_text_table(sql);
+
+  std::wstring const str_in = L"Привет, SOCI!";
+
+  sql << "insert into soci_test(wide_text) values(:str)", use(str_in);
+
+  std::wstring str_out;
+  sql << "select wide_text from soci_test", into(str_out);
+
+  CHECK(str_out == str_in);
+}
+
+TEST_CASE("MS SQL wide string vector", "[odbc][mssql][vector][wstring]")
+{
+  soci::session sql(backEnd, connectString);
+
+  wide_text_table_creator create_wide_text_table(sql);
+
+  std::vector<std::wstring> const str_in = {
+      L"Привет, SOCI!",
+      L"Привет, World!",
+      L"Привет, Universe!",
+      L"Привет, Galaxy!"};
+
+  sql << "insert into soci_test(wide_text) values(:str)", use(str_in);
+
+  std::vector<std::wstring> str_out(4);
+
+  sql << "select wide_text from soci_test", into(str_out);
+
+  CHECK(str_out.size() == str_in.size());
+  for (std::size_t i = 0; i != str_in.size(); ++i)
+  {
+    CHECK(str_out[i] == str_in[i]);
+  }
+}
+
+TEST_CASE("MS SQL table records count", "[odbc][mssql][count]")
+{
+    soci::session sql(backEnd, connectString);
+
+    // Execute the provided SQL query to count records in tables
+    std::string sql_query = R"(
+        SET NOCOUNT ON;
+        DECLARE db_cursor CURSOR FOR
+        SELECT name FROM sys.databases
+        WHERE state_desc = 'ONLINE'
+        AND name IN ('master');
+        DECLARE @DatabaseName NVARCHAR(128);
+        DECLARE @outset TABLE(
+            INSTANCENAME varchar(50),
+            DATABASENAME varchar(100),
+            TABLENAME varchar(100),
+            NUMBEROFRECORDS_I bigint
+        );
+        OPEN db_cursor;
+        FETCH NEXT FROM db_cursor INTO @DatabaseName;
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+            DECLARE @command nvarchar(1000) = 'USE ' + QUOTENAME(@DatabaseName) +
+            '; SELECT @@SERVERNAME, DB_NAME(), T.NAME, P.[ROWS] FROM sys.tables T ' +
+            'INNER JOIN sys.indexes I ON T.OBJECT_ID = I.OBJECT_ID ' +
+            'INNER JOIN sys.partitions P ON I.OBJECT_ID = P.OBJECT_ID AND I.INDEX_ID = P.INDEX_ID ' +
+            'INNER JOIN sys.allocation_units A ON P.PARTITION_ID = A.CONTAINER_ID ' +
+            'WHERE T.NAME NOT LIKE ''DT%'' AND I.OBJECT_ID > 255 AND I.INDEX_ID <= 1 ' +
+            'GROUP BY T.NAME, I.OBJECT_ID, I.INDEX_ID, I.NAME, P.[ROWS] ' +
+            'ORDER BY OBJECT_NAME(I.OBJECT_ID)';
+            INSERT INTO @outset EXEC (@command)
+            FETCH NEXT FROM db_cursor INTO @DatabaseName
+        END
+        CLOSE db_cursor
+        DEALLOCATE db_cursor
+        SELECT INSTANCENAME, DATABASENAME, TABLENAME, NUMBEROFRECORDS_I
+        FROM @outset;
+    )";
+
+    soci::rowset<soci::row> rs = (sql.prepare << sql_query);
+
+    // Check that we can access the results.
+    for (auto it = rs.begin(); it != rs.end(); ++it)
+    {
+        soci::row const& row = *it;
+        std::string instance_name = row.get<std::string>(0);
+        std::string database_name = row.get<std::string>(1);
+        std::string table_name = row.get<std::string>(2);
+        long long number_of_records = row.get<long long>(3);
+
+        // Use the variables above to avoid warnings about unused variables and
+        // check the only one of them that we can be sure about because we have
+        // "name IN ('master')" in the SQL query above.
+        INFO("Table " << instance_name << "." << table_name <<
+             " has " << number_of_records << " records");
+        CHECK( database_name == "master" );
+        return;
+    }
+
+    FAIL("No tables found in the master database");
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {

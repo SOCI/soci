@@ -38,7 +38,7 @@ if (MSVC)
     target_compile_options(soci_compiler_interface INTERFACE "/WX")
   endif()
 
-  target_compile_options(soci_compiler_interface INTERFACE "/bigobj")
+  target_compile_options(soci_compiler_interface INTERFACE "/bigobj" "/utf-8")
 else()
 
   if (SOCI_ENABLE_WERROR)

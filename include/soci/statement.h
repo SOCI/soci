@@ -134,7 +134,6 @@ private:
     void exchange_for_row(into_container<T, Indicator> const &ic)
     { intosForRow_.exchange(ic); }
     void exchange_for_row(into_type_ptr const & i) { intosForRow_.exchange(i); }
-    void define_for_row();
 
     template<typename T>
     void into_row()
@@ -149,6 +148,9 @@ private:
     void bind_into();
 
     bool alreadyDescribed_;
+
+    // Unconditionally call session::add_query_parameter() for all parameters.
+    void do_add_query_parameters();
 
     std::size_t intos_size();
     std::size_t uses_size();
