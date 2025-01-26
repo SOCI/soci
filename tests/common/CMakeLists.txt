@@ -10,6 +10,7 @@ add_library(soci_tests_common
     "test-main.cpp"
     "test-manual.cpp"
     "test-rowset.cpp"
+    "test-unicode.cpp"
 )
 
 # Catch headers are sensitive when it comes to being included in different
