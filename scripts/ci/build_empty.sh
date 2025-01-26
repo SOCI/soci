@@ -13,17 +13,23 @@ run_cmake_for_empty()
         ..
 }
 
-run_cmake_for_example()
+build_example()
 {
-  cmake "../examples/$1"
+  cmake -S "../examples/$1" -B "$1"
+  cmake --build "$1"
 }
 
+run_cmake_for_empty
+run_make
+
 if [[ "$BUILD_EXAMPLES" == "YES" ]]; then
-  run_cmake_for_example subdir-include
-  run_make
-else
-  run_cmake_for_empty
-  run_make
+  # Install previously built SOCI library on the system
+  sudo make install
+
+  # This example simulates SOCI sources being embedded in the project dir
+  build_example subdir-include
+  # This example simulates SOCI being installed on the target system
+  build_example connect
 fi
 
 # Test release branch packaging and building from the package
