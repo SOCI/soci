@@ -149,7 +149,7 @@ if (NOT DEFINED SOCI_FOUND OR SOCI_FOUND)
       target_link_libraries(soci_interface INTERFACE SOCI::${__comp})
   endforeach()
 
-  add_library(SOCI::SOCI ALIAS soci_interface)
+  add_library(SOCI::soci ALIAS soci_interface)
 
   if (NOT SOCI_FIND_QUIETLY)
       list(JOIN SOCI_FIND_COMPONENTS ", " __components)
