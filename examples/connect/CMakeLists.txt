@@ -7,11 +7,25 @@
 
 # This is a very simple example of using SOCI in a CMake-based project.
 
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.23...3.31 FATAL_ERROR)
 
 project(SOCIExampleConnect)
 
-find_package(SOCI REQUIRED)
+# Note: SOCI versions before 4.1 rely on hand-written FindSOCI.cmake files to be
+# present in downstream projects as SOCI didn't use to ship a config file.
+# This is changed in 4.1 thanks to which the desired database backends can
+# be specified as components. Known component names are
+# - Empty
+# - DB2
+# - Firebird
+# - MySQL
+# - ODBC
+# - Oracle
+# - PostgreSQL
+# - SQLite3
+# note that some components may still be undefined if the corresponding library is
+# not included in the SOCI version installed on your system.
+find_package(SOCI 4.1 COMPONENTS Empty REQUIRED)
 
 add_executable(connect connect.cpp)
 
