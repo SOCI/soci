@@ -1,7 +1,7 @@
 # API Reference
 
 The core client interface is a set of classes and free functions declared in the `soci.h` header file.
-All names are dbeclared in the `soci` namespace.
+All names are declared in the `soci` namespace.
 
 There are also additional names declared in the `soci::details` namespace, but they are not supposed to be directly used by the users of the library and are therefore not documented here.
 When such types are used in the declarations that are part of the "public" interface, they are replaced by "IT", which means "internal type".
@@ -13,7 +13,7 @@ The following types are commonly used in the rest of the interface:
 
 ```cpp
 // data types, as seen by the user
-enum db_type { db_string, db_date, db_double, db_int8, db_uint8, db_int16, db_uint16, db_int32, db_uint32, db_int64, db_uint64 };
+enum db_type { db_string, db_wstring, db_date, db_double, db_int8, db_uint8, db_int16, db_uint16, db_int32, db_uint32, db_int64, db_uint64 };
 
 // deprecated data types enum which may be still used but is less precise than db_type
 enum data_type { dt_string, dt_date, dt_double, dt_integer, dt_long_long, dt_unsigned_long_long };
@@ -76,7 +76,11 @@ public:
     void set_log_stream(std::ostream * s);
     std::ostream * get_log_stream() const;
 
+    void log_query(std::string const & query);
+    void clear_query_parameters();
+    void add_query_parameter(std::string name, std::string value);
     std::string get_last_query() const;
+    std::string get_last_query_context() const;
 
     void uppercase_column_names(bool forceToUpper);
 

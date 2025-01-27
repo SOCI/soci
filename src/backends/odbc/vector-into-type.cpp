@@ -7,6 +7,7 @@
 
 #include "soci/soci-platform.h"
 #include "soci/odbc/soci-odbc.h"
+#include "soci/soci-unicode.h"
 #include "soci/type-wrappers.h"
 #include "soci-compiler.h"
 #include "soci-cstrtoi.h"
@@ -125,6 +126,27 @@ void odbc_vector_into_type_backend::define_by_pos(
             buf_ = new char[colSize_ * elementsCount];
         }
         break;
+    case x_stdwstring:
+        // Do exactly the same thing as above, but for wide characters.
+        {
+            odbcType_ = SQL_C_WCHAR;
+
+            colSize_ = static_cast<size_t>(get_sqllen_from_value(statement_.column_size(position)));
+            if (colSize_ >= ODBC_MAX_COL_SIZE || colSize_ == 0)
+            {
+                colSize_ = odbc_max_buffer_length;
+
+                statement_.fetchVectorByRows_ = true;
+            }
+
+            colSize_ += sizeof(SQLWCHAR);
+
+            const std::size_t elementsCount
+                = statement_.fetchVectorByRows_ ? 1 : vectorSize;
+
+            buf_ = new char[colSize_ * elementsCount * sizeof(SQLWCHAR)];
+        }
+        break;
     case x_stdtm:
         odbcType_ = SQL_C_TYPE_TIMESTAMP;
 
@@ -195,6 +217,7 @@ void odbc_vector_into_type_backend::rebind_row(std::size_t rowInd)
 
     case x_char:
     case x_stdstring:
+    case x_stdwstring:
     case x_xmltype:
     case x_longstring:
     case x_stdtm:
@@ -284,6 +307,34 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
             }
 
             value.assign(pos, end - pos);
+        }
+    }
+    else if (type_ == x_stdwstring)
+    {
+        // Do exactly the same thing as above, but for wide characters.
+        SQLWCHAR* pos = reinterpret_cast<SQLWCHAR*>(buf_);
+        for (std::size_t i = beginRow; i != endRow; ++i, pos += colSize_ / sizeof(SQLWCHAR))
+        {
+            SQLLEN len = get_sqllen_from_vector_at(i);
+
+            std::wstring& value = exchange_vector_type_cast<x_stdwstring>(data_).at(i);
+            if (len == -1)
+            {
+                value.clear();
+                continue;
+            }
+
+            SQLWCHAR* end = pos + len / sizeof(SQLWCHAR);
+            while (end != pos)
+            {
+                if (*--end != L' ')
+                {
+                    ++end;
+                    break;
+                }
+            }
+
+            value = utf16_to_wide(reinterpret_cast<char16_t*>(pos), end - pos);
         }
     }
     else if (type_ == x_stdtm)

@@ -6,6 +6,7 @@
 //
 
 #include "soci/soci-platform.h"
+#include "soci/soci-unicode.h"
 #include "soci/odbc/soci-odbc.h"
 #include "soci-compiler.h"
 #include "soci-vector-helpers.h"
@@ -230,6 +231,42 @@ void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
             cType = SQL_C_CHAR;
         }
         break;
+        case x_stdwstring:
+        {
+            std::size_t maxSize = 0;
+            std::size_t const vecSize = get_vector_size(type_, data_);
+            prepare_indicators(vecSize);
+            for (std::size_t i = 0; i != vecSize; ++i)
+            {
+                std::wstring& value = exchange_vector_type_cast<x_stdwstring>(data_).at(i);
+                std::size_t const sz = wide_to_utf16(value, nullptr, 0);
+                set_sqllen_from_vector_at(i, static_cast<long>(sz * sizeof(SQLWCHAR)));
+                maxSize = sz > maxSize ? sz : maxSize;
+            }
+
+            maxSize++; // For terminating nul.
+
+            buf_ = new char[maxSize * vecSize * sizeof(SQLWCHAR)];
+            memset(buf_, 0, maxSize * vecSize * sizeof(SQLWCHAR));
+
+            static_assert(sizeof(SQLWCHAR) == sizeof(char16_t), "unexpected SQLWCHAR size");
+            char16_t* pos = reinterpret_cast<char16_t*>(buf_);
+
+            for (std::size_t i = 0; i != vecSize; ++i)
+            {
+                std::wstring& value = exchange_vector_type_cast<x_stdwstring>(data_).at(i);
+                wide_to_utf16(value, pos, maxSize);
+                pos += maxSize;
+            }
+
+            data = buf_;
+            size = static_cast<SQLINTEGER>(maxSize * sizeof(SQLWCHAR));
+
+            sqlType = size >= ODBC_MAX_COL_SIZE ? SQL_WLONGVARCHAR : SQL_WVARCHAR;
+            cType = SQL_C_WCHAR;
+        }
+        break;
+
     case x_stdtm:
         {
             std::vector<std::tm> *vp
@@ -338,6 +375,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
 
         case x_char:
         case x_stdstring:
+        case x_stdwstring:
         case x_xmltype:
         case x_longstring:
             non_null_indicator = SQL_NTS;
@@ -437,7 +475,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
             else
             {
                 // for strings we have already set the values
-                if (type_ != x_stdstring && type_ != x_xmltype && type_ != x_longstring)
+                if (type_ != x_stdstring && type_ != x_xmltype && type_ != x_longstring && type_ != x_stdwstring)
                 {
                     set_sqllen_from_vector_at(i, non_null_indicator);
                 }
@@ -450,7 +488,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
         for (std::size_t i = 0; i != indHolderVec_.size(); ++i)
         {
             // for strings we have already set the values
-            if (type_ != x_stdstring && type_ != x_xmltype && type_ != x_longstring)
+            if (type_ != x_stdstring && type_ != x_xmltype && type_ != x_longstring && type_ != x_stdwstring)
             {
                 set_sqllen_from_vector_at(i, non_null_indicator);
             }

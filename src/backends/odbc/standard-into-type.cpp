@@ -6,6 +6,7 @@
 //
 
 #include "soci/soci-platform.h"
+#include "soci/soci-unicode.h"
 #include "soci/odbc/soci-odbc.h"
 #include "soci-compiler.h"
 #include "soci-cstrtoi.h"
@@ -46,6 +47,15 @@ void odbc_standard_into_type_backend::define_by_pos(
         size = static_cast<SQLUINTEGER>(statement_.column_size(position_));
         size = (size >= ODBC_MAX_COL_SIZE || size == 0) ? odbc_max_buffer_length : size;
         size++;
+        buf_ = new char[size];
+        data = buf_;
+        break;
+    case x_stdwstring:
+        odbcType_ = SQL_C_WCHAR;
+        // Do exactly the same thing here as for x_stdstring above.
+        size = static_cast<SQLUINTEGER>(statement_.column_size(position_));
+        size = (size >= ODBC_MAX_COL_SIZE || size == 0) ? odbc_max_buffer_length : size;
+        size += sizeof(SQLWCHAR);
         buf_ = new char[size];
         data = buf_;
         break;
@@ -178,6 +188,15 @@ void odbc_standard_into_type_backend::post_fetch(
             std::string& s = exchange_type_cast<x_stdstring>(data_);
             s = buf_;
             if (s.size() >= (odbc_max_buffer_length - 1))
+            {
+                throw soci_error("Buffer size overflow; maybe got too large string");
+            }
+        }
+        else if (type_ == x_stdwstring)
+        {
+            std::wstring& s = exchange_type_cast<x_stdwstring>(data_);
+            s = utf16_to_wide(reinterpret_cast<char16_t*>(buf_));
+            if (s.size() * sizeof(wchar_t) >= (odbc_max_buffer_length - 1))
             {
                 throw soci_error("Buffer size overflow; maybe got too large string");
             }

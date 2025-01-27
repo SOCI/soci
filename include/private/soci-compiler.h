@@ -36,6 +36,19 @@
 #   define SOCI_GCC_WARNING_RESTORE(x)
 #endif
 
+// SOCI_MSVC_WARNING_{SUPPRESS,RESTORE} macros are similar but for MSVC (they
+// work for all the supported versions).
+#if defined(_MSC_VER)
+#   define SOCI_MSVC_WARNING_SUPPRESS(x) \
+        __pragma(warning(push)) \
+        __pragma(warning(disable:x))
+#   define SOCI_MSVC_WARNING_RESTORE(x) \
+        __pragma(warning(pop))
+#else
+#   define SOCI_MSVC_WARNING_SUPPRESS(x)
+#   define SOCI_MSVC_WARNING_RESTORE(x)
+#endif
+
 // CHECK_CXX_STD(version) evaluates to 1 if the C++ version is at least the
 // version specified.
 #if defined(_MSVC_LANG)

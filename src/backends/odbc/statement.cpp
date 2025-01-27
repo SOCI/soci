@@ -6,6 +6,7 @@
 //
 
 #include "soci/odbc/soci-odbc.h"
+#include "soci/soci-unicode.h"
 #include <cctype>
 #include <sstream>
 #include <cstring>
@@ -388,6 +389,11 @@ void odbc_statement_backend::describe_column(int colNum,
         break;
     case SQL_BIGINT:
         dbtype = is_unsigned == SQL_TRUE ? db_uint64 : db_int64;
+        break;
+    case SQL_WCHAR:
+    case SQL_WVARCHAR:
+    case SQL_WLONGVARCHAR:
+        dbtype = db_wstring;
         break;
     case SQL_CHAR:
     case SQL_VARCHAR:

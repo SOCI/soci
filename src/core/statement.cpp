@@ -13,12 +13,29 @@
 #include "soci/use-type.h"
 #include "soci/values.h"
 #include "soci-compiler.h"
+#include "soci/log-context.h"
 #include <ctime>
 #include <cctype>
 #include <cstdint>
+#include <string>
+#include <sstream>
 
 using namespace soci;
 using namespace soci::details;
+
+
+std::string get_name(const details::use_type_base &param, std::size_t position,
+        const statement_backend *backend)
+{
+    // Use the name specified in the "use()" call if any,
+    // otherwise get the name of the matching parameter from
+    // the query itself, as parsed by the backend.
+    std::string name = param.get_name();
+    if (backend && name.empty())
+        name = backend->get_parameter_name(static_cast<int>(position));
+
+    return name.empty() ? std::to_string(position + 1) : name;
+}
 
 
 statement_impl::statement_impl(session & s)
@@ -231,15 +248,6 @@ void statement_impl::define_and_bind()
     }
 }
 
-void statement_impl::define_for_row()
-{
-    std::size_t const isize = intosForRow_.size();
-    for (std::size_t i = 0; i != isize; ++i)
-    {
-        intosForRow_[i]->define(*this, definePositionForRow_);
-    }
-}
-
 void statement_impl::undefine_and_bind()
 {
     std::size_t const isize = intos_.size();
@@ -297,7 +305,6 @@ bool statement_impl::execute(bool withDataExchange)
         if (row_ != NULL && alreadyDescribed_ == false)
         {
             describe();
-            define_for_row();
         }
 
         int num = 0;
@@ -320,6 +327,16 @@ bool statement_impl::execute(bool withDataExchange)
         pre_exec(num);
 
         statement_backend::exec_fetch_result res = backEnd_->execute(num);
+
+        // another hack related to description: the first call to describe()
+        // above may not have done anything if we didn't have the correct
+        // number of columns before calling execute() as happens with at least
+        // the ODBC backend for some complex queries (see #1151), so call it
+        // again in this case
+        if (row_ != NULL && alreadyDescribed_ == false)
+        {
+            describe();
+        }
 
         bool gotData = false;
 
@@ -571,12 +588,31 @@ void statement_impl::pre_fetch()
     }
 }
 
-void statement_impl::pre_use()
+void statement_impl::do_add_query_parameters()
 {
     std::size_t const usize = uses_.size();
     for (std::size_t i = 0; i != usize; ++i)
     {
+        std::string name = get_name(*uses_[i], i, backEnd_);
+        std::stringstream value;
+        uses_[i]->dump_value(value);
+        session_.add_query_parameter(std::move(name), value.str());
+    }
+}
+
+void statement_impl::pre_use()
+{
+    session_.clear_query_parameters();
+
+    std::size_t const usize = uses_.size();
+    for (std::size_t i = 0; i != usize; ++i)
+    {
         uses_[i]->pre_use();
+    }
+
+    if (session_.get_query_context_logging_mode() == log_context::always)
+    {
+        do_add_query_parameters();
     }
 }
 
@@ -634,6 +670,12 @@ template<>
 void statement_impl::bind_into<db_string>()
 {
     into_row<std::string>();
+}
+
+template<>
+void statement_impl::bind_into<db_wstring>()
+{
+    into_row<std::wstring>();
 }
 
 template<>
@@ -707,6 +749,13 @@ void statement_impl::describe()
     row_->clean_up();
 
     int const numcols = backEnd_->prepare_for_describe();
+    if (!numcols)
+    {
+        // Return without setting alreadyDescribed_ to true, we'll be called
+        // again in this case.
+        return;
+    }
+
     for (int i = 1; i <= numcols; ++i)
     {
         db_type dbtype;
@@ -724,6 +773,9 @@ void statement_impl::describe()
         case db_string:
         case db_xml:
             bind_into<db_string>();
+            break;
+        case db_wstring:
+            bind_into<db_wstring>();
             break;
         case db_blob:
             bind_into<db_blob>();
@@ -768,6 +820,14 @@ void statement_impl::describe()
     }
 
     alreadyDescribed_ = true;
+
+    // Calling bind_into() above could have added row into elements, so
+    // initialize them.
+    std::size_t const isize = intosForRow_.size();
+    for (std::size_t i = 0; i != isize; ++i)
+    {
+        intosForRow_[i]->define(*this, definePositionForRow_);
+    }
 }
 
 } // namespace details
@@ -841,34 +901,17 @@ statement_impl::rethrow_current_exception_with_context(char const* operation)
             std::ostringstream oss;
             oss << "while " << operation << " \"" << query_ << "\"";
 
-            if (!uses_.empty())
+            if (!uses_.empty() && session_.get_query_context_logging_mode() != log_context::never)
             {
-                oss << " with ";
+                // We have to clear previously cached query parameters as different backends behave differently
+                // in whether they error before or after the caching has happened. Therefore, we can't rely on
+                // the parameters to be or to not be cached at the point of error in a cross-backend way (that
+                // works for all kinds of errors).
+                session_.clear_query_parameters();
 
-                std::size_t const usize = uses_.size();
-                for (std::size_t i = 0; i != usize; ++i)
-                {
-                    if (i != 0)
-                        oss << ", ";
+                do_add_query_parameters();
 
-                    details::use_type_base const& u = *uses_[i];
-
-                    // Use the name specified in the "use()" call if any,
-                    // otherwise get the name of the matching parameter from
-                    // the query itself, as parsed by the backend.
-                    std::string name = u.get_name();
-                    if (name.empty())
-                        name = backEnd_->get_parameter_name(static_cast<int>(i));
-
-                    oss << ":";
-                    if (!name.empty())
-                        oss << name;
-                    else
-                        oss << (i + 1);
-                    oss << "=";
-
-                    u.dump_value(oss);
-                }
+                oss << " with " << session_.get_last_query_context();
             }
 
             e.add_context(oss.str());

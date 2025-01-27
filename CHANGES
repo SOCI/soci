@@ -32,6 +32,7 @@ Backend-specific changes:
 
 - Oracle
  - Fix conversion of dates before 1900 (#1135).
+ - Fix using non-ASCII characters as CLOB data (#1184).
 
 - PostgreSQL
  - Add support for network address types (#1078).
@@ -39,6 +40,9 @@ Backend-specific changes:
 - SQLite3
  - Add "nocreate" option to avoid creating a new database file (#1021).
  - Improve column names to SOCI database types mapping (#1120).
+
+- ODBC
+ - Add support for using wide strings (#1179).
 
 
 History of the changes in the previous versions:

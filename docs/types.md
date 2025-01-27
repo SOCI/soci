@@ -138,6 +138,55 @@ Users are encouraged to use the latter as it supports a wider range of numerical
 The mapping of underlying database column types to SOCI datatypes is database specific.
 See the [backend documentation](backends/index.md) for details.
 
+While `row::get<T>()` (semantically) copies the internally stored data (that was fetched from the database), there is also `row::move_as<T>`, which
+instead makes use of C++11's move semantics by moving the data out of the `row` instance. In case the used `T` does not support move semantics,
+`move_as` is functionally equivalent to `get`.
+
+### Dealing with Blobs
+
+If the fetched data is of type `db_blob` it is strongly recommended to use `row::move_as<blob>()` in order to obtain the data as a `blob` object. This
+allows for the most flexible and efficient access of the underlying data.
+
+Note that it is not possible to `row::get<blob>()` as `blob` objects are not copyable. However, you can instead get the blob's data into a
+`std::string` or a `std::vector<T>` as long as `T` has a size of exactly one byte (i.e. is a byte-like type such as `char` or `std::byte`). Depending
+on the used backend, this will either directly fetch the data from the database directly into the provided container or copy the already fetched data
+into the provided container.
+
+If you want to use a different container than the ones mentioned above, you need to specialize the `soci::is_contiguous_resizable_container` trait.
+E.g.
+
+```cpp
+template<>
+struct ::soci::is_contiguous_resizable_container<MyAwesomeContainer> : std::true_type {};
+
+template<typename ValueType>
+struct ::soci::is_contiguous_resizable_container<boost::container::vector<ValueType>, std::enable_if_t<sizeof(ValueType) == sizeof(char)>> : std::true_type {};
+```
+
+Potentially, you may also need to specialize the `soci::contiguous_resizable_container_accessor` struct, if the default implementation doesn't work
+for your custom container type:
+
+```cpp
+template<typename T, typename = std::enable_if_t<is_contiguous_resizable_container_v<T>>>
+struct contiguous_resizable_container_accessor
+{
+    // Gets the pointer to the beginning of the data store
+    static void *data(T &container)
+    {
+        static_assert(sizeof(decltype(container[0])) == sizeof(char), "Expected value-type of container to be byte-sized");
+        return &container[0];
+    }
+
+    // Gets the size **in bytes** of this container
+    static std::size_t size(const T &container) { return container.size(); }
+
+    // Resizes the container to the given size **in bytes**
+    static void resize(T &container, std::size_t size) { container.resize(size); }
+};
+```
+
+### Indicators
+
 The `row` also provides access to indicators for each column:
 
 ```cpp
@@ -148,6 +197,8 @@ if (r.get_indicator(0) != soci::i_null)
     std::cout << r.get<std::string>(0);
 }
 ```
+
+### Stream API
 
 It is also possible to extract data from the `row` object using its stream-like interface, where each extracted variable should have matching type respective to its position in the chain:
 

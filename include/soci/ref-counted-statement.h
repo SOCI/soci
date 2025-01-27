@@ -11,6 +11,7 @@
 #include "soci/statement.h"
 #include "soci/into-type.h"
 #include "soci/use-type.h"
+#include "soci-unicode.h"
 // std
 #include <sstream>
 

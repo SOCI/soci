@@ -26,6 +26,7 @@ namespace soci
 enum db_type
 {
     db_string,
+    db_wstring,
     db_int8,
     db_uint8,
     db_int16,
@@ -61,6 +62,7 @@ enum exchange_type
 {
     x_char,
     x_stdstring,
+    x_stdwstring,
     x_int8,
     x_uint8,
     x_int16,
@@ -271,6 +273,9 @@ public:
             case db_uint64: return dt_unsigned_long_long;
             case db_blob:   return dt_blob;
             case db_xml:    return dt_xml;
+
+            case db_wstring:
+                throw soci_error("unable to convert value to data_type");
         }
 
         // unreachable
