@@ -3256,29 +3256,23 @@ TEST_CASE_METHOD(common_tests, "Get affected rows", "[core][affected-rows]")
 
     CHECK(st5.get_affected_rows() == 5);
 
+    if (tc_.has_partial_update_bug())
+    {
+        WARN("Skipping partial update test due to a known backend bug");
+        return;
+    }
+
     std::vector<std::string> w(2, "1");
     w[1] = "a"; // this invalid value may cause an exception.
     statement st6 = (sql.prepare <<
         "insert into soci_test(val) values(:val)", use(w));
-    try { st6.execute(true); }
-    catch(...) {}
+    CHECK_THROWS_AS(st6.execute(true), soci_error);
+    CHECK(st6.get_affected_rows() == 1);
 
     // confirm the partial insertion.
     int val = 0;
     sql << "select count(val) from soci_test", into(val);
-    if(val != 0)
-    {
-        // Notice that some ODBC drivers don't return the number of updated
-        // rows at all in the case of partially executed statement like this
-        // one, while MySQL ODBC driver wrongly returns 2 affected rows even
-        // though only one was actually inserted.
-        //
-        // So we can't check for "get_affected_rows() == val" here, it would
-        // fail in too many cases -- just check that the backend doesn't lie to
-        // us about no rows being affected at all (even if it just honestly
-        // admits that it has no idea by returning -1).
-        CHECK(st6.get_affected_rows() != 0);
-    }
+    CHECK(val == 1);
 }
 
 // test fix for: Backend is not set properly with connection pool (pull #5)

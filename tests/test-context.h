@@ -193,6 +193,10 @@ public:
     // *exactly* the same value.
     virtual bool has_fp_bug() const { return false; }
 
+    // Override this if the backend doesn't handle partial success for
+    // operations using array parameters correctly.
+    virtual bool has_partial_update_bug() const { return false; }
+
     // Override this if the backend wrongly returns CR LF when reading a string
     // with just LFs from the database to strip the unwanted CRs.
     virtual std::string fix_crlf_if_necessary(std::string const& s) const { return s; }
