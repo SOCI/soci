@@ -141,11 +141,16 @@ void odbc_statement_backend::prepare(std::string const & query,
 statement_backend::exec_fetch_result
 odbc_statement_backend::execute(int number)
 {
-    // Store the number of rows processed by this call.
+    // Store the number of rows processed by this call and the operation result
+    // for each of them.
     SQLULEN rows_processed = 0;
+    std::vector<SQLUSMALLINT> status;
     if (hasVectorUseElements_)
     {
         SQLSetStmtAttr(hstmt_, SQL_ATTR_PARAMS_PROCESSED_PTR, &rows_processed, 0);
+
+        status.resize(number);
+        SQLSetStmtAttr(hstmt_, SQL_ATTR_PARAM_STATUS_PTR, &status[0], 0);
     }
 
     // if we are called twice for the same statement we need to close the open
@@ -153,41 +158,74 @@ odbc_statement_backend::execute(int number)
     SQLCloseCursor(hstmt_);
 
     SQLRETURN rc = SQLExecute(hstmt_);
-    if (is_odbc_error(rc))
+
+    // Don't use is_odbc_error() here, as SQL_SUCCESS_WITH_INFO indicates an
+    // error if it corresponds to a partial update.
+    if (rc != SQL_SUCCESS && rc != SQL_NO_DATA)
     {
         // Construct the error object immediately, before calling any other
         // ODBC functions, in order to not lose the error message.
         const odbc_soci_error err(SQL_HANDLE_STMT, hstmt_, "executing statement");
 
-        // There is no universal way to determine the number of affected rows
-        // after a failed update.
-        rowsAffected_ = -1LL;
-
-        // If executing bulk operation a partial
-        // number of rows affected may be available.
-        if (hasVectorUseElements_)
+        bool error = true;
+        if (rc == SQL_SUCCESS_WITH_INFO)
         {
-            do
+            // Check for partial update when using array parameters.
+            if (hasVectorUseElements_)
             {
-                SQLLEN res = 0;
-                // SQLRowCount will return error after a partially executed statement.
-                // SQL_DIAG_ROW_COUNT returns the same info but must be collected immediatelly after the execution.
-                rc = SQLGetDiagField(SQL_HANDLE_STMT, hstmt_, 0, SQL_DIAG_ROW_COUNT, &res, 0, NULL);
-                if (!is_odbc_error(rc) && res != -1)
+                rowsAffected_ = 0;
+
+                SQLLEN firstErrorRow = -1;
+                for (SQLULEN i = 0; i < rows_processed; ++i)
                 {
-                  if (rowsAffected_ == -1LL)
-                    rowsAffected_ = res;
-                  else
-                    rowsAffected_ += res;
+                    switch (status[i])
+                    {
+                        case SQL_PARAM_SUCCESS:
+                        case SQL_PARAM_SUCCESS_WITH_INFO:
+                            ++rowsAffected_;
+                            break;
+
+                        case SQL_PARAM_ERROR:
+                            if (firstErrorRow == -1)
+                                firstErrorRow = i;
+                            break;
+
+                        case SQL_PARAM_UNUSED:
+                        case SQL_PARAM_DIAG_UNAVAILABLE:
+                            // We shouldn't get those, normally, but just
+                            // ignore them if we do.
+                            break;
+                    }
                 }
-                --rows_processed; // Avoid unnecessary calls to SQLGetDiagField
+
+                // In principle, it is possible to get success with info for an
+                // operation which succeeded for all rows -- even though this
+                // hasn't been observed so far. In this case, we shouldn't
+                // throw an error.
+                if (firstErrorRow == -1)
+                    error = false;
             }
-            // Move forward to the next result while there are rows processed.
-            while (rows_processed > 0 && SQLMoreResults(hstmt_) == SQL_SUCCESS);
+            else
+            {
+                // This is a weird case which has never been observed so far
+                // and it's not clear what it might correspond to, but don't
+                // handle it as an error to avoid throwing spurious exceptions
+                // when there is no real problem.
+                error = false;
+            }
         }
-        throw err;
+        else
+        {
+            // If the statement failed completely, no rows should have been
+            // affected.
+            rowsAffected_ = 0;
+        }
+
+        if (error)
+            throw err;
     }
-    else if (hasVectorUseElements_)
+
+    if (hasVectorUseElements_)
     {
         // We already have the number of rows, no need to do anything.
         rowsAffected_ = rows_processed;
