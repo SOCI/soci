@@ -265,9 +265,7 @@ sqlite3_statement_backend::bind_and_execute(int number)
 {
     statement_backend::exec_fetch_result retVal = ef_no_data;
 
-    long long rowsAffectedBulkTemp = 0;
-
-    rowsAffectedBulk_ = -1;
+    rowsAffectedBulk_ = 0;
 
     int const rows = static_cast<int>(useData_.size());
     for (int row = 0; row < rows; ++row)
@@ -341,8 +339,6 @@ sqlite3_statement_backend::bind_and_execute(int number)
 
             if (SQLITE_OK != bindRes)
             {
-                // preserve the number of rows affected so far.
-                rowsAffectedBulk_ = rowsAffectedBulkTemp;
                 throw sqlite3_soci_error("Failure to bind on bulk operations", bindRes);
             }
         }
@@ -356,10 +352,9 @@ sqlite3_statement_backend::bind_and_execute(int number)
 
         databaseReady_=true; // Mark sqlite engine is ready to perform sqlite3_step
         retVal = load_one(); // execute each bound line
-        rowsAffectedBulkTemp += get_affected_rows();
+        rowsAffectedBulk_ += sqlite3_changes(session_.conn_);
     }
 
-    rowsAffectedBulk_ = rowsAffectedBulkTemp;
     return retVal;
 }
 
