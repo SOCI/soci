@@ -81,6 +81,8 @@ For the ODBC backend, this type mapping is:
 Not all ODBC drivers support all datatypes.
 Columns having the attribute `unsigned` get mapped to their corresponding `db_uint[n]` and `uint[n]_t` types.
 
+Note that SQL Server `TINYINT` columns don't support negative values (i.e. always behave as `unsigned`), please use `SMALLINT` if you need to store small negative integer values instead.
+
 (See the [dynamic resultset binding](../types.md#dynamic-binding) documentation for general information on using the `row` class.)
 
 ### Binding by Name
