@@ -198,6 +198,7 @@ struct SOCI_FIREBIRD_DECL firebird_statement_backend : details::statement_backen
     long long get_affected_rows() override;
     int get_number_of_rows() override;
     std::string get_parameter_name(int index) const override;
+    int get_row_to_dump() const override { return current_row_; }
 
     std::string rewrite_for_procedure_call(std::string const &query) override;
 
@@ -252,6 +253,11 @@ protected:
     std::map <std::string, int> names_;
 
     bool procedure_;
+
+private:
+    // Used during bulk operations to keep track of the row which potentially
+    // resulted in an error.
+    int current_row_ = -1;
 };
 
 struct SOCI_FIREBIRD_DECL firebird_blob_backend : details::blob_backend

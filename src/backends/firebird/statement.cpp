@@ -413,13 +413,13 @@ firebird_statement_backend::execute(int number)
 
         // Here we have to explicitly loop to achieve the
         // effect of inserting or updating with vector use elements.
-        std::size_t rows = static_cast<firebird_vector_use_type_backend*>(uses_[0])->size();
-        for (std::size_t row=0; row < rows; ++row)
+        const int rows = static_cast<firebird_vector_use_type_backend*>(uses_[0])->size();
+        for (current_row_ = 0; current_row_ < rows; ++current_row_)
         {
             // first we have to prepare input parameters
             for (std::size_t col=0; col<usize; ++col)
             {
-                static_cast<firebird_vector_use_type_backend*>(uses_[col])->exchangeData(row);
+                static_cast<firebird_vector_use_type_backend*>(uses_[col])->exchangeData(current_row_);
             }
 
             // then execute query
@@ -437,6 +437,8 @@ firebird_statement_backend::execute(int number)
             // in same query. So here, we know that into elements are not
             // vectors. So, there is no need to fetch data here.
         }
+
+        current_row_ = -1;
     }
     else
     {
