@@ -231,6 +231,9 @@ protected:
 
     long long rowsAffectedBulk_; // number of rows affected by the last bulk operation
 
+    // Return the number of rows affected by last operation.
+    long long get_last_row_count();
+
     virtual void exchangeData(bool gotData, int row);
     virtual void prepareSQLDA(XSQLDA ** sqldap, short size = 10);
     virtual void rewriteQuery(std::string const & query,
