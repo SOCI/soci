@@ -8,6 +8,7 @@
 #define SOCI_POSTGRESQL_SOURCE
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci/soci-platform.h"
+#include "soci-cstrtoi.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
 #include <cstdio>
@@ -649,13 +650,9 @@ long long postgresql_statement_backend::get_affected_rows()
 {
     // PQcmdTuples() doesn't really modify the result but it takes a non-const
     // pointer to it, so we can't rely on implicit conversion here.
-    const char * const resultStr = PQcmdTuples(result_.get_result());
-    char * end;
-    long long result = std::strtoll(resultStr, &end, 0);
-    if (end != resultStr)
-    {
+    long long result;
+    if (cstring_to_integer(result, PQcmdTuples(result_.get_result())))
         return result;
-    }
 
     return rowsAffectedBulk_;
 }
