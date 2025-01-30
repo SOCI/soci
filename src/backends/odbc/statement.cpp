@@ -8,6 +8,8 @@
 #define SOCI_ODBC_SOURCE
 #include "soci/odbc/soci-odbc.h"
 #include "soci/soci-unicode.h"
+#include "soci/type-holder.h"
+
 #include <cctype>
 #include <sstream>
 #include <cstring>
@@ -175,7 +177,7 @@ odbc_statement_backend::execute(int number)
             {
                 rowsAffected_ = 0;
 
-                SQLLEN firstErrorRow = -1;
+                error_row_ = -1;
                 for (SQLULEN i = 0; i < rows_processed; ++i)
                 {
                     switch (status[i])
@@ -186,8 +188,8 @@ odbc_statement_backend::execute(int number)
                             break;
 
                         case SQL_PARAM_ERROR:
-                            if (firstErrorRow == -1)
-                                firstErrorRow = i;
+                            if (error_row_ == -1)
+                                error_row_ = soci_cast<int, SQLULEN>::cast(i);
                             break;
 
                         case SQL_PARAM_UNUSED:
@@ -202,7 +204,7 @@ odbc_statement_backend::execute(int number)
                 // operation which succeeded for all rows -- even though this
                 // hasn't been observed so far. In this case, we shouldn't
                 // throw an error.
-                if (firstErrorRow == -1)
+                if (error_row_ == -1)
                     error = false;
             }
             else

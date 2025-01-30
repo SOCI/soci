@@ -263,6 +263,7 @@ struct SOCI_ODBC_DECL odbc_statement_backend : details::statement_backend
     long long get_affected_rows() override;
     int get_number_of_rows() override;
     std::string get_parameter_name(int index) const override;
+    int get_row_to_dump() const override { return error_row_; }
 
     std::string rewrite_for_procedure_call(std::string const &query) override;
 
@@ -299,6 +300,9 @@ struct SOCI_ODBC_DECL odbc_statement_backend : details::statement_backend
 private:
     // fetch() helper wrapping SQLFetch() call for the given range of rows.
     exec_fetch_result do_fetch(int beginRow, int endRow);
+
+    // First row with the error for bulk operations or -1.
+    int error_row_ = -1;
 };
 
 struct SOCI_ODBC_DECL odbc_rowid_backend : details::rowid_backend
