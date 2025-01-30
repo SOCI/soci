@@ -91,6 +91,8 @@ void sqlite3_statement_backend::reset_if_needed()
 
 void sqlite3_statement_backend::reset()
 {
+    current_row_ = -1;
+
     int const res = sqlite3_reset(stmt_);
     if (SQLITE_OK == res)
     {
@@ -267,7 +269,7 @@ sqlite3_statement_backend::bind_and_execute(int number)
     rowsAffectedBulk_ = 0;
 
     int const rows = static_cast<int>(useData_.size());
-    for (int row = 0; row < rows; ++row)
+    for (current_row_ = 0; current_row_ < rows; ++current_row_)
     {
         sqlite3_reset(stmt_);
 
@@ -275,7 +277,7 @@ sqlite3_statement_backend::bind_and_execute(int number)
         for (int pos = 1; pos <= totalPositions; ++pos)
         {
             int bindRes = SQLITE_OK;
-            const sqlite3_column &col = useData_[row][pos-1];
+            const sqlite3_column &col = useData_[current_row_][pos-1];
             if (col.isNull_)
             {
                 bindRes = sqlite3_bind_null(stmt_, pos);
