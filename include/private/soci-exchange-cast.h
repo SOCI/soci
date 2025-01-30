@@ -120,7 +120,7 @@ struct exchange_type_traits<x_blob>
   typedef blob value_type;
 };
 
-// exchange_type_traits not defined for x_statement, x_rowid and x_blob here.
+// exchange_type_traits not defined for x_statement and x_rowid here.
 
 template <exchange_type e>
 typename exchange_type_traits<e>::value_type& exchange_type_cast(void *data)
