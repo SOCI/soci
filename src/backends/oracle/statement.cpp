@@ -24,6 +24,32 @@ using namespace soci;
 using namespace soci::details;
 using namespace soci::details::oracle;
 
+namespace
+{
+
+template <typename T>
+T get_oci_attr(OCIStmt* hp, int attr, OCIError* errhp)
+{
+    T value;
+    sword res = OCIAttrGet(hp,
+        OCI_HTYPE_STMT,
+        &value,
+        0,
+        attr,
+        errhp
+    );
+
+    if (res != OCI_SUCCESS)
+    {
+        throw_oracle_soci_error(res, errhp);
+    }
+
+    return value;
+}
+
+} // anonymous namespace
+
+
 oracle_statement_backend::oracle_statement_backend(oracle_session_backend &session)
     : session_(session), stmtp_(NULL), boundByName_(false), boundByPos_(false),
       noData_(false)
@@ -119,17 +145,7 @@ statement_backend::exec_fetch_result oracle_statement_backend::fetch(int number)
 template <typename T>
 T oracle_statement_backend::get_statement_attr(int attr) const
 {
-    T value;
-    sword res = OCIAttrGet(static_cast<dvoid*>(stmtp_),
-        OCI_HTYPE_STMT, &value,
-        0, attr, session_.errhp_);
-
-    if (res != OCI_SUCCESS)
-    {
-        throw_oracle_soci_error(res, session_.errhp_);
-    }
-
-    return value;
+    return get_oci_attr<T>(stmtp_, attr, session_.errhp_);
 }
 
 long long oracle_statement_backend::get_affected_rows()
