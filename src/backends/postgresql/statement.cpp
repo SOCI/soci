@@ -305,7 +305,8 @@ postgresql_statement_backend::execute(int number)
                     "Binding for use elements must be either by position "
                     "or by name.");
             }
-            long long rowsAffectedBulkTemp = 0;
+
+            rowsAffectedBulk_ = 0;
             for (int i = 0; i != numberOfExecutions; ++i)
             {
                 std::vector<char *> paramValues;
@@ -418,15 +419,11 @@ postgresql_statement_backend::execute(int number)
                 {
                     // there are only bulk use elements (no intos)
 
-                    // preserve the number of rows affected so far.
-                    rowsAffectedBulk_ = rowsAffectedBulkTemp;
-
                     result_.check_for_errors("Cannot execute query.");
 
-                    rowsAffectedBulkTemp += get_affected_rows();
+                    rowsAffectedBulk_ += get_affected_rows();
                 }
             }
-            rowsAffectedBulk_ = rowsAffectedBulkTemp;
 
             if (numberOfExecutions > 1)
             {
