@@ -18,7 +18,7 @@ using namespace soci::details;
 
 odbc_statement_backend::odbc_statement_backend(odbc_session_backend &session)
     : session_(session), hstmt_(0), numRowsFetched_(0), fetchVectorByRows_(false),
-      hasVectorUseElements_(false), boundByName_(false), boundByPos_(false),
+      boundByName_(false), boundByPos_(false),
       rowsAffected_(-1LL)
 {
 }
@@ -497,6 +497,5 @@ odbc_statement_backend::make_vector_into_type_backend()
 
 odbc_vector_use_type_backend * odbc_statement_backend::make_vector_use_type_backend()
 {
-    hasVectorUseElements_ = true;
     return new odbc_vector_use_type_backend(*this);
 }

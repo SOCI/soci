@@ -19,9 +19,7 @@ using std::string;
 mysql_statement_backend::mysql_statement_backend(
     mysql_session_backend &session)
     : session_(session), result_(NULL),
-       rowsAffectedBulk_(-1LL), justDescribed_(false),
-       hasIntoElements_(false), hasVectorIntoElements_(false),
-       hasUseElements_(false), hasVectorUseElements_(false)
+       rowsAffectedBulk_(-1LL), justDescribed_(false)
 {
 }
 
@@ -503,27 +501,23 @@ data_type mysql_statement_backend::to_data_type(db_type dbt) const
 mysql_standard_into_type_backend *
 mysql_statement_backend::make_into_type_backend()
 {
-    hasIntoElements_ = true;
     return new mysql_standard_into_type_backend(*this);
 }
 
 mysql_standard_use_type_backend *
 mysql_statement_backend::make_use_type_backend()
 {
-    hasUseElements_ = true;
     return new mysql_standard_use_type_backend(*this);
 }
 
 mysql_vector_into_type_backend *
 mysql_statement_backend::make_vector_into_type_backend()
 {
-    hasVectorIntoElements_ = true;
     return new mysql_vector_into_type_backend(*this);
 }
 
 mysql_vector_use_type_backend *
 mysql_statement_backend::make_vector_use_type_backend()
 {
-    hasVectorUseElements_ = true;
     return new mysql_vector_use_type_backend(*this);
 }

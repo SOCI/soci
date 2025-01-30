@@ -287,6 +287,14 @@ public:
     virtual vector_into_type_backend* make_vector_into_type_backend() = 0;
     virtual vector_use_type_backend* make_vector_use_type_backend() = 0;
 
+    // These are set when the corresponding make_xxx_backend() above is called
+    // by statement_impl. This goes against encapsulation but allows to avoid
+    // having to set them in all backends implementations of these functions.
+    bool hasIntoElements_ = false;
+    bool hasVectorIntoElements_ = false;
+    bool hasUseElements_ = false;
+    bool hasVectorUseElements_ = false;
+
 private:
     SOCI_NOT_COPYABLE(statement_backend)
 };

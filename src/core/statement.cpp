@@ -867,24 +867,32 @@ void statement_impl::dec_ref()
 standard_into_type_backend *
 statement_impl::make_into_type_backend()
 {
+    backEnd_->hasIntoElements_ = true;
+
     return backEnd_->make_into_type_backend();
 }
 
 standard_use_type_backend *
 statement_impl::make_use_type_backend()
 {
+    backEnd_->hasUseElements_ = true;
+
     return backEnd_->make_use_type_backend();
 }
 
 vector_into_type_backend *
 statement_impl::make_vector_into_type_backend()
 {
+    backEnd_->hasVectorIntoElements_ = true;
+
     return backEnd_->make_vector_into_type_backend();
 }
 
 vector_use_type_backend *
 statement_impl::make_vector_use_type_backend()
 {
+    backEnd_->hasVectorUseElements_ = true;
+
     return backEnd_->make_vector_use_type_backend();
 }
 
