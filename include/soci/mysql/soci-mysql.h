@@ -220,11 +220,6 @@ struct SOCI_MYSQL_DECL mysql_statement_backend : details::statement_backend
     // random access to rows, since mysql_data_seek() is expensive.
     std::vector<MYSQL_ROW_OFFSET> resultRowOffsets_;
 
-    bool hasIntoElements_;
-    bool hasVectorIntoElements_;
-    bool hasUseElements_;
-    bool hasVectorUseElements_;
-
     // the following maps are used for finding data buffers according to
     // use elements specified by the user
 

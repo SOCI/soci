@@ -35,7 +35,6 @@ sqlite3_statement_backend::sqlite3_statement_backend(
     , databaseReady_(false)
     , boundByName_(false)
     , boundByPos_(false)
-    , hasVectorIntoElements_(false)
     , rowsAffectedBulk_(-1LL)
 {
 }
@@ -600,7 +599,6 @@ sqlite3_standard_use_type_backend * sqlite3_statement_backend::make_use_type_bac
 sqlite3_vector_into_type_backend *
 sqlite3_statement_backend::make_vector_into_type_backend()
 {
-    hasVectorIntoElements_ = true;
     return new sqlite3_vector_into_type_backend(*this);
 }
 

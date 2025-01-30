@@ -298,11 +298,6 @@ struct SOCI_POSTGRESQL_DECL postgresql_statement_backend : details::statement_ba
     bool justDescribed_; // to optimize row description with immediately
                          // following actual statement execution
 
-    bool hasIntoElements_;
-    bool hasVectorIntoElements_;
-    bool hasUseElements_;
-    bool hasVectorUseElements_;
-
     // the following maps are used for finding data buffers according to
     // use elements specified by the user
 

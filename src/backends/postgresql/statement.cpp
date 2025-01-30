@@ -55,9 +55,7 @@ postgresql_statement_backend::postgresql_statement_backend(
     postgresql_session_backend &session, bool single_row_mode)
     : session_(session), single_row_mode_(single_row_mode),
       result_(session, NULL),
-      rowsAffectedBulk_(-1LL), justDescribed_(false),
-      hasIntoElements_(false), hasVectorIntoElements_(false),
-      hasUseElements_(false), hasVectorUseElements_(false)
+      rowsAffectedBulk_(-1LL), justDescribed_(false)
 {
 }
 
@@ -828,27 +826,23 @@ void postgresql_statement_backend::describe_column(int colNum,
 postgresql_standard_into_type_backend *
 postgresql_statement_backend::make_into_type_backend()
 {
-    hasIntoElements_ = true;
     return new postgresql_standard_into_type_backend(*this);
 }
 
 postgresql_standard_use_type_backend *
 postgresql_statement_backend::make_use_type_backend()
 {
-    hasUseElements_ = true;
     return new postgresql_standard_use_type_backend(*this);
 }
 
 postgresql_vector_into_type_backend *
 postgresql_statement_backend::make_vector_into_type_backend()
 {
-    hasVectorIntoElements_ = true;
     return new postgresql_vector_into_type_backend(*this);
 }
 
 postgresql_vector_use_type_backend *
 postgresql_statement_backend::make_vector_use_type_backend()
 {
-    hasVectorUseElements_ = true;
     return new postgresql_vector_use_type_backend(*this);
 }

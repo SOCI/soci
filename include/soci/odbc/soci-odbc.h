@@ -284,7 +284,6 @@ struct SOCI_ODBC_DECL odbc_statement_backend : details::statement_backend
     SQLHSTMT hstmt_;
     SQLULEN numRowsFetched_;
     bool fetchVectorByRows_;
-    bool hasVectorUseElements_;
     bool boundByName_;
     bool boundByPos_;
 
