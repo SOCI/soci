@@ -3549,6 +3549,36 @@ TEST_CASE_METHOD(common_tests, "Insert error", "[core][insert][exception]")
             );
         }
     }
+
+    SECTION("SQL queries vector parameters appear in the error message")
+    {
+        std::vector<std::string> names{"John", "Paul", "George", "John"};
+        std::vector<int> ages{74, 72, 72, 74};
+
+        statement st = (sql.prepare <<
+            "insert into soci_test(name, age) values (:name, :age)",
+            use(names), use(ages));
+        try
+        {
+            st.execute(true);
+
+            FAIL("exception expected on unique constraint violation with prepared bulk statement not thrown");
+        }
+        catch (soci_error const &e)
+        {
+            // Unfortunately, some backends don't provide the values here but
+            // just use the generic "<vector>" placeholder. Don't fail the test
+            // just because of that.
+            std::string const msg = e.what();
+
+            if (msg.find("<vector>") == std::string::npos)
+            {
+                REQUIRE_THAT(msg,
+                    Catch::Contains(R"(with :name="John", :age=74)", Catch::CaseSensitive::No)
+                );
+            }
+        }
+    }
 }
 
 namespace
