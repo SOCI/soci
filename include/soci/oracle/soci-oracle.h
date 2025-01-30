@@ -225,6 +225,7 @@ struct SOCI_ORACLE_DECL oracle_statement_backend : details::statement_backend
     long long get_affected_rows() override;
     int get_number_of_rows() override;
     std::string get_parameter_name(int index) const override;
+    int get_row_to_dump() const override { return error_row_; }
 
     std::string rewrite_for_procedure_call(std::string const &query) override;
 
@@ -253,6 +254,9 @@ private:
     // Wrapper for OCIAttrGet(), throws on error.
     template <typename T>
     T get_statement_attr(int attr) const;
+
+    // First row with the error for bulk operations or -1.
+    int error_row_ = -1;
 };
 
 struct SOCI_ORACLE_DECL oracle_rowid_backend : details::rowid_backend
