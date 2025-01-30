@@ -146,10 +146,41 @@ int oracle_statement_backend::get_number_of_rows()
     return rows;
 }
 
-std::string oracle_statement_backend::get_parameter_name(int /* index */) const
+std::string oracle_statement_backend::get_parameter_name(int index) const
 {
-    // TODO: How to get the parameter names from the query we prepared?
-    return std::string();
+    // We could query all parameters at once and cache the result, because we
+    // know that typically we're going to need all of their names if we need
+    // one of them, but for now keep it simple it and get them one by one, even
+    // if it's probably a bit slower.
+    sb4 signedCount = 0;
+    OraText* name = NULL;
+    ub1 len = 0;
+
+    // We don't need the remaining outputs, but we still must specify them as
+    // otherwise the function just fails with a non-existent ORA-24999.
+    OraText* indName = NULL;
+    ub1 indLen = 0;
+    ub1 duplicate = 0;
+
+    sword res = OCIStmtGetBindInfo(stmtp_,
+        session_.errhp_,
+        1,              // Number of parameters to query.
+        index + 1,      // Position to start querying.
+        &signedCount,   // Abs value (!) is the total number of parameters.
+        &name,          // Name of the parameter.
+        &len,           // Length of the name.
+        &indName,       // Indicator name.
+        &indLen,        // Length of the indicator name.
+        &duplicate,     // Is the parameter a duplicate?
+        NULL            // The bind handle -- not needed and can be omitted.
+    );
+
+    if ( res != OCI_SUCCESS )
+    {
+        throw_oracle_soci_error(res, session_.errhp_);
+    }
+
+    return std::string(reinterpret_cast<const char*>(name), len);
 }
 
 std::string oracle_statement_backend::rewrite_for_procedure_call(
