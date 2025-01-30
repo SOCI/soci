@@ -656,14 +656,8 @@ long long postgresql_statement_backend::get_affected_rows()
     {
         return result;
     }
-    else if (rowsAffectedBulk_ >= 0)
-    {
-        return rowsAffectedBulk_;
-    }
-    else
-    {
-        return -1;
-    }
+
+    return rowsAffectedBulk_;
 }
 
 int postgresql_statement_backend::get_number_of_rows()
