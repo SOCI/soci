@@ -3511,10 +3511,9 @@ TEST_CASE_METHOD(common_tests, "Insert error", "[core][insert][exception]")
         }
         catch (soci_error const &e)
         {
-            std::string const msg = e.what();
-            CAPTURE(msg);
-
-            CHECK(msg.find("John") != std::string::npos);
+            REQUIRE_THAT(e.what(),
+                Catch::Contains("insert into soci_test(name, age) values ('John', 74)")
+            );
         }
     }
 
@@ -3543,10 +3542,11 @@ TEST_CASE_METHOD(common_tests, "Insert error", "[core][insert][exception]")
         }
         catch (soci_error const &e)
         {
-            std::string const msg = e.what();
-            CAPTURE(msg);
-
-            CHECK(msg.find("John") != std::string::npos);
+            // Oracle converts all parameter names to upper case internally, so
+            // we must check for the substring case-insensitively.
+            REQUIRE_THAT(e.what(),
+                Catch::Contains(R"(with :name="John", :age=74)", Catch::CaseSensitive::No)
+            );
         }
     }
 }
