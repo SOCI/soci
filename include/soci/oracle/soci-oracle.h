@@ -248,6 +248,11 @@ struct SOCI_ORACLE_DECL oracle_statement_backend : details::statement_backend
     bool boundByName_;
     bool boundByPos_;
     bool noData_;
+
+private:
+    // Wrapper for OCIAttrGet(), throws on error.
+    template <typename T>
+    T get_statement_attr(int attr) const;
 };
 
 struct SOCI_ORACLE_DECL oracle_rowid_backend : details::rowid_backend

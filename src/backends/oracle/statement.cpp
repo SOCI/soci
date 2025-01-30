@@ -116,34 +116,30 @@ statement_backend::exec_fetch_result oracle_statement_backend::fetch(int number)
     }
 }
 
-long long oracle_statement_backend::get_affected_rows()
+template <typename T>
+T oracle_statement_backend::get_statement_attr(int attr) const
 {
-    ub4 row_count;
+    T value;
     sword res = OCIAttrGet(static_cast<dvoid*>(stmtp_),
-        OCI_HTYPE_STMT, &row_count,
-        0, OCI_ATTR_ROW_COUNT, session_.errhp_);
+        OCI_HTYPE_STMT, &value,
+        0, attr, session_.errhp_);
 
     if (res != OCI_SUCCESS)
     {
         throw_oracle_soci_error(res, session_.errhp_);
     }
 
-    return row_count;
+    return value;
+}
+
+long long oracle_statement_backend::get_affected_rows()
+{
+    return get_statement_attr<ub4>(OCI_ATTR_ROW_COUNT);
 }
 
 int oracle_statement_backend::get_number_of_rows()
 {
-    int rows;
-    sword res = OCIAttrGet(static_cast<dvoid*>(stmtp_),
-        OCI_HTYPE_STMT, static_cast<dvoid*>(&rows),
-        0, OCI_ATTR_ROWS_FETCHED, session_.errhp_);
-
-    if (res != OCI_SUCCESS)
-    {
-        throw_oracle_soci_error(res, session_.errhp_);
-    }
-
-    return rows;
+    return get_statement_attr<ub4>(OCI_ATTR_ROWS_FETCHED);
 }
 
 std::string oracle_statement_backend::get_parameter_name(int index) const
@@ -194,36 +190,19 @@ std::string oracle_statement_backend::rewrite_for_procedure_call(
 
 int oracle_statement_backend::prepare_for_describe()
 {
-    ub2 statementType = OCI_STMT_UNKNOWN;
-    sword res = OCIAttrGet(static_cast<dvoid*>(stmtp_),
-        static_cast<ub4>(OCI_HTYPE_STMT), static_cast<dvoid*>(&statementType),
-        0, static_cast<ub4>(OCI_ATTR_STMT_TYPE), session_.errhp_);
+    const ub2 statementType = get_statement_attr<ub2>(OCI_ATTR_STMT_TYPE);
+
+    if (statementType != OCI_STMT_SELECT)
+        return 0;
+
+    sword res = OCIStmtExecute(session_.svchp_, stmtp_, session_.errhp_,
+        1, 0, 0, 0, OCI_DESCRIBE_ONLY);
     if (res != OCI_SUCCESS)
     {
         throw_oracle_soci_error(res, session_.errhp_);
     }
 
-    int cols = 0;
-    if (statementType == OCI_STMT_SELECT)
-    {
-        res = OCIStmtExecute(session_.svchp_, stmtp_, session_.errhp_,
-            1, 0, 0, 0, OCI_DESCRIBE_ONLY);
-        if (res != OCI_SUCCESS)
-        {
-            throw_oracle_soci_error(res, session_.errhp_);
-        }
-
-        res = OCIAttrGet(static_cast<dvoid*>(stmtp_),
-            static_cast<ub4>(OCI_HTYPE_STMT), static_cast<dvoid*>(&cols),
-            0, static_cast<ub4>(OCI_ATTR_PARAM_COUNT), session_.errhp_);
-
-        if (res != OCI_SUCCESS)
-        {
-            throw_oracle_soci_error(res, session_.errhp_);
-        }
-    }
-
-    return cols;
+    return get_statement_attr<ub4>(OCI_ATTR_PARAM_COUNT);
 }
 
 void oracle_statement_backend::describe_column(int colNum,
