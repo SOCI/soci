@@ -12,96 +12,137 @@
 #include "soci/soci-unicode.h"
 #include "soci-exchange-cast.h"
 #include "soci-mktime.h"
+#include "soci-vector-helpers.h"
 
 #include <cstdio>
 
 using namespace soci;
 using namespace soci::details;
 
-standard_use_type::~standard_use_type()
+namespace
 {
-    delete backEnd_;
+
+// Helper returning pointer to a vector element at the given index.
+//
+// This is only used in this file currently but could be extracted into
+// soci-vector-helpers.h if it turns out to be useful elsewhere.
+
+void* get_vector_element(exchange_type e, void* data, int index)
+{
+    switch (e)
+    {
+        case x_char:
+            return &exchange_vector_type_cast<x_char>(data).at(index);
+        case x_stdstring:
+            return &exchange_vector_type_cast<x_stdstring>(data).at(index);
+        case x_stdwstring:
+            return &exchange_vector_type_cast<x_stdwstring>(data).at(index);
+        case x_int8:
+            return &exchange_vector_type_cast<x_int8>(data).at(index);
+        case x_uint8:
+            return &exchange_vector_type_cast<x_uint8>(data).at(index);
+        case x_int16:
+            return &exchange_vector_type_cast<x_int16>(data).at(index);
+        case x_uint16:
+            return &exchange_vector_type_cast<x_uint16>(data).at(index);
+        case x_int32:
+            return &exchange_vector_type_cast<x_int32>(data).at(index);
+        case x_uint32:
+            return &exchange_vector_type_cast<x_uint32>(data).at(index);
+        case x_int64:
+            return &exchange_vector_type_cast<x_int64>(data).at(index);
+        case x_uint64:
+            return &exchange_vector_type_cast<x_uint64>(data).at(index);
+        case x_double:
+            return &exchange_vector_type_cast<x_double>(data).at(index);
+        case x_stdtm:
+            return &exchange_vector_type_cast<x_stdtm>(data).at(index);
+        case x_xmltype:
+            return &exchange_vector_type_cast<x_xmltype>(data).at(index);
+        case x_longstring:
+            return &exchange_vector_type_cast<x_longstring>(data).at(index);
+        case x_statement:
+            // There is no vector of statements, but this is fine because we
+            // don't use this value in do_dump_value anyhow, so we may just
+            // return null.
+            return NULL;
+        case x_rowid:
+            // Same as for x_statement above.
+            return NULL;
+        case x_blob:
+            return &exchange_vector_type_cast<x_blob>(data).at(index);
+    }
+
+    return NULL;
 }
 
-void standard_use_type::bind(statement_impl & st, int & position)
+// Common part of scalar and vector use types.
+void
+do_dump_value(std::ostream& os,
+              exchange_type type,
+              void* data,
+              indicator const* ind)
 {
-    if (backEnd_ == NULL)
-    {
-        backEnd_ = st.make_use_type_backend();
-    }
-
-    if (name_.empty())
-    {
-        backEnd_->bind_by_pos(position, data_, type_, readOnly_);
-    }
-    else
-    {
-        backEnd_->bind_by_name(name_, data_, type_, readOnly_);
-    }
-}
-
-void standard_use_type::dump_value(std::ostream& os) const
-{
-    if (ind_ && *ind_ == i_null)
+    if (ind && *ind == i_null)
     {
         os << "NULL";
         return;
     }
 
-    switch (type_)
+    switch (type)
     {
         case x_char:
-            os << "'" << exchange_type_cast<x_char>(data_) << "'";
+            os << "'" << exchange_type_cast<x_char>(data) << "'";
             return;
 
         case x_stdstring:
             // TODO: Escape quotes?
-            os << "\"" << exchange_type_cast<x_stdstring>(data_) << "\"";
+            os << "\"" << exchange_type_cast<x_stdstring>(data) << "\"";
             return;
 
         case x_stdwstring:
-            os << "\"" << wide_to_utf8(exchange_type_cast<x_stdwstring>(data_)) << "\"";
+            os << "\"" << wide_to_utf8(exchange_type_cast<x_stdwstring>(data)) << "\"";
             return;
 
         case x_int8:
-            os << exchange_type_cast<x_int8>(data_);
+            os << exchange_type_cast<x_int8>(data);
             return;
 
         case x_uint8:
-            os << exchange_type_cast<x_uint8>(data_);
+            os << exchange_type_cast<x_uint8>(data);
             return;
 
         case x_int16:
-            os << exchange_type_cast<x_int16>(data_);
+            os << exchange_type_cast<x_int16>(data);
             return;
 
         case x_uint16:
-            os << exchange_type_cast<x_uint16>(data_);
+            os << exchange_type_cast<x_uint16>(data);
             return;
 
         case x_int32:
-            os << exchange_type_cast<x_int32>(data_);
+            os << exchange_type_cast<x_int32>(data);
             return;
 
         case x_uint32:
-            os << exchange_type_cast<x_uint32>(data_);
+            os << exchange_type_cast<x_uint32>(data);
             return;
 
         case x_int64:
-            os << exchange_type_cast<x_int64>(data_);
+            os << exchange_type_cast<x_int64>(data);
             return;
 
         case x_uint64:
-            os << exchange_type_cast<x_uint64>(data_);
+            os << exchange_type_cast<x_uint64>(data);
             return;
 
         case x_double:
-            os << exchange_type_cast<x_double>(data_);
+            os << exchange_type_cast<x_double>(data);
             return;
 
         case x_stdtm:
             {
-                std::tm const& t = exchange_type_cast<x_stdtm>(data_);
+                std::tm const& t = exchange_type_cast<x_stdtm>(data);
 
                 char buf[80];
                 format_std_tm(t, buf, sizeof(buf));
@@ -134,6 +175,35 @@ void standard_use_type::dump_value(std::ostream& os) const
     // This is normally unreachable, but avoid throwing from here as we're
     // typically called from an exception handler.
     os << "<unknown>";
+}
+
+} // anonymous namespace
+
+standard_use_type::~standard_use_type()
+{
+    delete backEnd_;
+}
+
+void standard_use_type::bind(statement_impl & st, int & position)
+{
+    if (backEnd_ == NULL)
+    {
+        backEnd_ = st.make_use_type_backend();
+    }
+
+    if (name_.empty())
+    {
+        backEnd_->bind_by_pos(position, data_, type_, readOnly_);
+    }
+    else
+    {
+        backEnd_->bind_by_name(name_, data_, type_, readOnly_);
+    }
+}
+
+void standard_use_type::dump_value(std::ostream& os, int /* index */) const
+{
+    do_dump_value(os, type_, data_, ind_);
 }
 
 void standard_use_type::pre_exec(int num)
@@ -207,10 +277,25 @@ void vector_use_type::bind(statement_impl & st, int & position)
     }
 }
 
-void vector_use_type::dump_value(std::ostream& os) const
+void vector_use_type::dump_value(std::ostream& os, int index) const
 {
-    // TODO: Provide more information.
-    os << "<vector>";
+    if (index != -1)
+    {
+        do_dump_value(
+            os,
+            type_,
+            get_vector_element(type_, data_, index),
+            ind_ ? &ind_->at(index) : NULL
+        );
+    }
+    else
+    {
+        // We can't dump the whole vector, which could be huge, and it would be
+        // pretty useless to do it anyhow as it still wouldn't give any
+        // information about which vector element corresponds to the row which
+        // triggered the error.
+        os << "<vector>";
+    }
 }
 
 void vector_use_type::pre_exec(int num)
