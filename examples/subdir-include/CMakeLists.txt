@@ -9,7 +9,20 @@ project(SOCIExampleSubdirectoryInclude)
 set(SOCI_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/soci)
 
 # All compile options need to be set before the SOCI directory gets included.
-# The backend you want to use needs to be enabled here.
+# The backend you want to use needs to be enabled here. Available options are
+# - SOCI_DB2
+# - SOCI_EMPTY
+# - SOCI_FIREBIRD
+# - SOCI_MYSQL
+# - SOCI_ODBC
+# - SOCI_ORACLE
+# - SOCI_POSTGRESQL
+# - SOCI_SQLITE3
+# each of these options can be set to "ON" or "OFF" or to
+# "AUTO" (the default) in which case the backend is included only
+# if all of its dependencies are satisfied. If not, the backend
+# is disabled but no error is emitted (which is what would happen
+# in this case if the backend was set to "ON").
 set(SOCI_EMPTY ON CACHE INTERNAL "" FORCE)
 
 # In order to not run into cross-platform issues, the **top-level** project
