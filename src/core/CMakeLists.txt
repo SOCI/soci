@@ -72,6 +72,8 @@ if (SOCI_SHARED)
   )
 endif()
 
+# First try and find Boost with the date_time component. If it succeeds, the second search doesn't have any
+# effect. If it failed, retry searching only for Boost without the date_time component and use that, if found.
 soci_public_dependency(
   NAME Boost
   DEP_TARGETS Boost::boost Boost::date_time Boost::disable_autolinking
