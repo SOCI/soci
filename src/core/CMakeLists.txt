@@ -1,5 +1,10 @@
 include(GNUInstallDirs)
 
+set(SOCI_LIB_PREFIX "${CMAKE_SHARED_LIBRARY_PREFIX}soci_" CACHE STRING "Specifies prefix for the lib directory")
+set(SOCI_LIB_SUFFIX "${CMAKE_SHARED_LIBRARY_SUFFIX}" CACHE STRING "Specifies suffix for the lib directory")
+set(SOCI_DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}" CACHE STRING "Specifies suffix for the library file in debug mode")
+
+
 find_package(Threads REQUIRED)
 
 add_library(soci_core
@@ -99,9 +104,9 @@ endif()
 target_compile_definitions(soci_core
   PRIVATE
     DEFAULT_BACKENDS_PATH="${CMAKE_INSTALL_FULL_LIBDIR}"
-    SOCI_LIB_PREFIX="${CMAKE_SHARED_LIBRARY_PREFIX}soci_"
-    SOCI_LIB_SUFFIX="${CMAKE_SHARED_LIBRARY_SUFFIX}"
-    SOCI_DEBUG_POSTFIX="${CMAKE_DEBUG_POSTFIX}"
+    SOCI_LIB_PREFIX="${SOCI_LIB_PREFIX}"
+    SOCI_LIB_SUFFIX="${SOCI_LIB_SUFFIX}"
+    SOCI_DEBUG_POSTFIX="${SOCI_DEBUG_POSTFIX}"
 )
 if (DEFINED ABI_VERSION)
   target_compile_definitions(soci_core
