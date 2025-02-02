@@ -114,9 +114,6 @@ if (NOT MySQL_LIBRARIES)
     endif()
   endforeach()
 
-  if (MySQL_INCLUDE_DIRS)
-  endif()
-
   if(WIN32)
      if (${CMAKE_BUILD_TYPE})
       string(TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_TOLOWER)
