@@ -73,16 +73,16 @@ else()
   if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" OR "${CMAKE_CXX_COMPILER}" MATCHES "clang")
     if(SOCI_ASAN AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 3.1)
       # This can also be used to set a linker flag
-      target_link_libraries(soci_compiler_interface INTERFACE "$<$<BOOL:${PROJECT_IS_TOP_LEVEL}>:-fsanitize=address>")
-      target_compile_options(soci_compiler_interface INTERFACE "$<$<BOOL:${PROJECT_IS_TOP_LEVEL}>:-fsanitize=address>")
+      target_link_libraries(soci_compiler_interface INTERFACE "-fsanitize=address")
+      target_compile_options(soci_compiler_interface INTERFACE "-fsanitize=address")
     endif()
 
     set(SOCI_USE_STD_FLAGS ON)
   elseif (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
     if (SOCI_ASAN AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 4.8)
       # This can also be used to set a linker flag
-      target_link_libraries(soci_compiler_interface INTERFACE "$<$<BOOL:${PROJECT_IS_TOP_LEVEL}>:-fsanitize=address>")
-      target_compile_options(soci_compiler_interface INTERFACE "$<$<BOOL:${PROJECT_IS_TOP_LEVEL}>:-fsanitize=address>")
+      target_link_libraries(soci_compiler_interface INTERFACE "-fsanitize=address")
+      target_compile_options(soci_compiler_interface INTERFACE "-fsanitize=address")
     endif()
 
     if (CMAKE_COMPILER_IS_GNUCXX)
