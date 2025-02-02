@@ -28,7 +28,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 include(CMakeDependentOption)
 include(CheckIPOSupported)
-include(CheckCXXCompilerFlag)
 
 check_ipo_supported(RESULT LTO_AVAILABLE)
 
@@ -40,11 +39,8 @@ endif()
 
 option(SOCI_SHARED "Enable building SOCI as a shared library" ${SHARED_DEFAULT})
 option(SOCI_TESTS "Enable building SOCI test cases" ${PROJECT_IS_TOP_LEVEL})
-option(SOCI_ASAN "Enable building SOCI with enabled address sanitizers" OFF)
-option(SOCI_UBSAN "Enable undefined behaviour sanitizer" OFF)
 cmake_dependent_option(SOCI_LTO "Enable link time optimizations in release builds" ON "LTO_AVAILABLE" OFF)
 option(SOCI_VISIBILITY "Make all functions hidden by default - this exposes only explicitly exported functions" ON)
-set(SOCI_LD "" CACHE STRING "Specify a non-default linker")
 
 
 # Configure LTO for anything but Debug builds (if enabled in the first place)
@@ -63,16 +59,6 @@ if (NOT APPLE)
   # Note: The variable's content is set to $ORIGIN literally,
   # this is NOT a butchered cmake variable expansion
   set(CMAKE_INSTALL_RPATH "$ORIGIN")
-endif()
-
-if (SOCI_LD)
-  # CMake asks the compiler to do the linking so we have to pass the desired linker to the compiler
-  set(USE_LD_FLAG "-fuse-ld=${SOCI_LD}")
-  check_cxx_compiler_flag("${USE_LD_FLAG}" CAN_USE_CUSTOM_LD)
-  if (NOT CAN_USE_CUSTOM_LD)
-    message(FATAL_ERROR "Can't use custom linker '${SOCI_LD}' - compiler doesn't accept flag '${USE_LD_FLAG}'")
-  endif()
-  add_link_options("${USE_LD_FLAG}")
 endif()
 
 if (NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)

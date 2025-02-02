@@ -1,3 +1,4 @@
+include(CheckCXXCompilerFlag)
 
 
 add_library(soci_compiler_interface INTERFACE)
@@ -7,6 +8,10 @@ add_library(soci_compiler_interface INTERFACE)
 #
 
 option(SOCI_ENABLE_WERROR "Enables turning compiler warnings into errors" OFF)
+option(SOCI_ASAN "Enable building SOCI with enabled address sanitizers" OFF)
+option(SOCI_UBSAN "Enable undefined behaviour sanitizer" OFF)
+set(SOCI_LD "" CACHE STRING "Specify a non-default linker")
+
 
 if (WIN32)
   target_compile_definitions(soci_compiler_interface
@@ -38,6 +43,10 @@ if (MSVC)
     target_compile_options(soci_compiler_interface INTERFACE "/WX")
   endif()
 
+  if (SOCI_LD)
+    message(FATAL_ERROR "Using a non-default linker is not supported when using MSVC")
+  endif()
+
   target_compile_options(soci_compiler_interface INTERFACE "/bigobj" "/utf-8")
 else()
 
@@ -48,6 +57,16 @@ else()
   if (SOCI_UBSAN)
     target_compile_options(soci_compiler_interface INTERFACE "-fsanitize=undefined")
     target_link_options(soci_compiler_interface INTERFACE "-fsanitize=undefined")
+  endif()
+
+  if (SOCI_LD)
+    # CMake asks the compiler to do the linking so we have to pass the desired linker to the compiler
+    set(USE_LD_FLAG "-fuse-ld=${SOCI_LD}")
+    check_cxx_compiler_flag("${USE_LD_FLAG}" CAN_USE_CUSTOM_LD)
+    if (NOT CAN_USE_CUSTOM_LD)
+      message(FATAL_ERROR "Can't use custom linker '${SOCI_LD}' - compiler doesn't accept flag '${USE_LD_FLAG}'")
+    endif()
+    target_link_options(soci_compiler_options INTERFACE "${USE_LD_FLAG}")
   endif()
 
 
