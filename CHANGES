@@ -28,6 +28,7 @@ Changes affecting all or multiple backends:
  - Fix several problems detected by UBSAN and use it in the CI builds too now.
  - Improvements to connection string handling (#1176).
  - Fix get_affected_rows() after partial updates for ODBC and SQLite (#1199).
+ - Show values of vector parameters in the error messages (#1200).
 
 Backend-specific changes:
 

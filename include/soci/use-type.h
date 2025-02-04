@@ -31,7 +31,7 @@ public:
 
     virtual void bind(statement_impl & st, int & position) = 0;
     virtual std::string get_name() const = 0;
-    virtual void dump_value(std::ostream& os) const = 0;
+    virtual void dump_value(std::ostream& os, int index) const = 0;
     virtual void pre_exec(int num) = 0;
     virtual void pre_use() = 0;
     virtual void post_use(bool gotData) = 0;
@@ -76,7 +76,7 @@ public:
     ~standard_use_type() override;
     void bind(statement_impl & st, int & position) override;
     std::string get_name() const override { return name_; }
-    void dump_value(std::ostream& os) const override;
+    void dump_value(std::ostream& os, int index) const override;
     virtual void * get_data() { return data_; }
 
     // conversion hook (from arbitrary user type to base type)
@@ -157,7 +157,7 @@ public:
 private:
     void bind(statement_impl& st, int & position) override;
     std::string get_name() const override { return name_; }
-    void dump_value(std::ostream& os) const override;
+    void dump_value(std::ostream& os, int index) const override;
     void pre_exec(int num) override;
     void pre_use() override;
     void post_use(bool) override { /* nothing to do */ }

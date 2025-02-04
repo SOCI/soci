@@ -89,6 +89,8 @@ void postgresql_statement_backend::clean_up()
     // potential new execution.
     rowsAffectedBulk_ = -1;
 
+    current_row_ = -1;
+
     // nothing to do here
 }
 
@@ -307,7 +309,7 @@ postgresql_statement_backend::execute(int number)
             }
 
             rowsAffectedBulk_ = 0;
-            for (int i = 0; i != numberOfExecutions; ++i)
+            for (current_row_ = 0; current_row_ != numberOfExecutions; ++current_row_)
             {
                 std::vector<char *> paramValues;
 
@@ -323,7 +325,7 @@ postgresql_statement_backend::execute(int number)
                          it != end; ++it)
                     {
                         char ** buffers = it->second;
-                        paramValues.push_back(buffers[i]);
+                        paramValues.push_back(buffers[current_row_]);
                     }
                 }
                 else
@@ -345,7 +347,7 @@ postgresql_statement_backend::execute(int number)
                             throw soci_error(msg);
                         }
                         char ** buffers = b->second;
-                        paramValues.push_back(buffers[i]);
+                        paramValues.push_back(buffers[current_row_]);
                     }
                 }
 
@@ -424,6 +426,8 @@ postgresql_statement_backend::execute(int number)
                     rowsAffectedBulk_ += get_affected_rows();
                 }
             }
+
+            current_row_ = -1;
 
             if (numberOfExecutions > 1)
             {

@@ -74,7 +74,7 @@ public:
         return oss.str();
     }
 
-    void dump_value(std::ostream& os) const override
+    void dump_value(std::ostream& os, int /* index */) const override
     {
         // TODO: Dump all columns.
         os << "<value>";
