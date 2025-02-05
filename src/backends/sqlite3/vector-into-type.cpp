@@ -13,6 +13,7 @@
 #include "soci-cstrtoi.h"
 #include "soci-dtocstr.h"
 #include "soci-exchange-cast.h"
+#include "soci-ssize.h"
 #include "soci/blob.h"
 #include "soci/rowid.h"
 #include "soci/soci-platform.h"
@@ -148,7 +149,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
         return;
     }
 
-    int const endRow = static_cast<int>(statement_.dataCache_.size());
+    int const endRow = ssize(statement_.dataCache_);
     for (int i = 0; i < endRow; ++i)
     {
         sqlite3_column &col = statement_.dataCache_[i][position_-1];

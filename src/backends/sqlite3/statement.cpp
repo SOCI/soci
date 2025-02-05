@@ -7,6 +7,7 @@
 
 #define SOCI_SQLITE3_SOURCE
 #include "soci/sqlite3/soci-sqlite3.h"
+#include "soci-ssize.h"
 // std
 #include <algorithm>
 #include <cctype>
@@ -64,7 +65,7 @@ void sqlite3_statement_backend::prepare(std::string const & query,
     char const* tail = 0; // unused;
     int const res = sqlite3_prepare_v2(session_.conn_,
                               query.c_str(),
-                              static_cast<int>(query.size()),
+                              ssize(query),
                               &stmt_,
                               &tail);
     if (res != SQLITE_OK)
@@ -119,7 +120,7 @@ sqlite3_statement_backend::load_rowset(int totalRows)
             describe_column(c, dbtype, name);
     }
     else
-        numCols = static_cast<int>(columns_.size());
+        numCols = ssize(columns_);
 
 
     if (!databaseReady_)
@@ -268,12 +269,12 @@ sqlite3_statement_backend::bind_and_execute(int number)
 
     rowsAffectedBulk_ = 0;
 
-    int const rows = static_cast<int>(useData_.size());
+    int const rows = ssize(useData_);
     for (current_row_ = 0; current_row_ < rows; ++current_row_)
     {
         sqlite3_reset(stmt_);
 
-        int const totalPositions = static_cast<int>(useData_[0].size());
+        int const totalPositions = ssize(useData_[0]);
         for (int pos = 1; pos <= totalPositions; ++pos)
         {
             int bindRes = SQLITE_OK;
@@ -405,7 +406,7 @@ long long sqlite3_statement_backend::get_affected_rows()
 
 int sqlite3_statement_backend::get_number_of_rows()
 {
-    return static_cast<int>(dataCache_.size());
+    return ssize(dataCache_);
 }
 
 std::string sqlite3_statement_backend::get_parameter_name(int index) const
@@ -510,7 +511,7 @@ void sqlite3_statement_backend::describe_column(int colNum,
 {
     static const sqlite3_data_type_map dataTypeMap = get_data_type_map();
 
-    if (columns_.size() < (size_t)colNum)
+    if (ssize(columns_) < colNum)
         columns_.resize(colNum);
     sqlite3_column_info &coldef = columns_[colNum - 1];
 

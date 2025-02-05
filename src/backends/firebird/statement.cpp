@@ -7,6 +7,7 @@
 
 #define SOCI_FIREBIRD_SOURCE
 #include "soci/firebird/soci-firebird.h"
+#include "soci-ssize.h"
 #include "firebird/error-firebird.h"
 #include <cctype>
 #include <sstream>
@@ -413,7 +414,7 @@ firebird_statement_backend::execute(int number)
 
         // Here we have to explicitly loop to achieve the
         // effect of inserting or updating with vector use elements.
-        const int rows = static_cast<firebird_vector_use_type_backend*>(uses_[0])->size();
+        const int rows = ssize(*static_cast<firebird_vector_use_type_backend*>(uses_[0]));
         for (current_row_ = 0; current_row_ < rows; ++current_row_)
         {
             // first we have to prepare input parameters

@@ -9,6 +9,7 @@
 #include "soci/soci.h"
 
 #include "soci-compiler.h"
+#include "soci-ssize.h"
 #include "soci/mysql/soci-mysql.h"
 #include "mysql/test-mysql.h"
 #include <string.h>
@@ -719,7 +720,7 @@ TEST_CASE("MySQL strings", "[mysql][string]")
     sql << "select s1, s2, s3, s4, s5, s6, b1, b2, e1 "
         "from soci_test", into(r);
     REQUIRE(r.size() == 9);
-    for (int i = 0; i < static_cast<int>(r.size()); i++) {
+    for (int i = 0; i < ssize(r); i++) {
         CHECK(r.get_properties(i).get_data_type() == dt_string);
         CHECK(r.get_properties(i).get_db_type() == db_string);
         if (i < 6) {
