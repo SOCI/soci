@@ -7,6 +7,7 @@
 
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci/soci-platform.h"
+#include "soci-cstrtoi.h"
 #include <libpq/libpq-fs.h> // libpq
 #include <cctype>
 #include <cstdio>
@@ -54,9 +55,7 @@ postgresql_statement_backend::postgresql_statement_backend(
     postgresql_session_backend &session, bool single_row_mode)
     : session_(session), single_row_mode_(single_row_mode),
       result_(session, NULL),
-      rowsAffectedBulk_(-1LL), justDescribed_(false),
-      hasIntoElements_(false), hasVectorIntoElements_(false),
-      hasUseElements_(false), hasVectorUseElements_(false)
+      rowsAffectedBulk_(-1LL), justDescribed_(false)
 {
 }
 
@@ -88,6 +87,8 @@ void postgresql_statement_backend::clean_up()
     // 'reset' the value for a
     // potential new execution.
     rowsAffectedBulk_ = -1;
+
+    current_row_ = -1;
 
     // nothing to do here
 }
@@ -305,8 +306,9 @@ postgresql_statement_backend::execute(int number)
                     "Binding for use elements must be either by position "
                     "or by name.");
             }
-            long long rowsAffectedBulkTemp = 0;
-            for (int i = 0; i != numberOfExecutions; ++i)
+
+            rowsAffectedBulk_ = 0;
+            for (current_row_ = 0; current_row_ != numberOfExecutions; ++current_row_)
             {
                 std::vector<char *> paramValues;
 
@@ -322,7 +324,7 @@ postgresql_statement_backend::execute(int number)
                          it != end; ++it)
                     {
                         char ** buffers = it->second;
-                        paramValues.push_back(buffers[i]);
+                        paramValues.push_back(buffers[current_row_]);
                     }
                 }
                 else
@@ -344,7 +346,7 @@ postgresql_statement_backend::execute(int number)
                             throw soci_error(msg);
                         }
                         char ** buffers = b->second;
-                        paramValues.push_back(buffers[i]);
+                        paramValues.push_back(buffers[current_row_]);
                     }
                 }
 
@@ -418,15 +420,13 @@ postgresql_statement_backend::execute(int number)
                 {
                     // there are only bulk use elements (no intos)
 
-                    // preserve the number of rows affected so far.
-                    rowsAffectedBulk_ = rowsAffectedBulkTemp;
-
                     result_.check_for_errors("Cannot execute query.");
 
-                    rowsAffectedBulkTemp += get_affected_rows();
+                    rowsAffectedBulk_ += get_affected_rows();
                 }
             }
-            rowsAffectedBulk_ = rowsAffectedBulkTemp;
+
+            current_row_ = -1;
 
             if (numberOfExecutions > 1)
             {
@@ -650,21 +650,11 @@ long long postgresql_statement_backend::get_affected_rows()
 {
     // PQcmdTuples() doesn't really modify the result but it takes a non-const
     // pointer to it, so we can't rely on implicit conversion here.
-    const char * const resultStr = PQcmdTuples(result_.get_result());
-    char * end;
-    long long result = std::strtoll(resultStr, &end, 0);
-    if (end != resultStr)
-    {
+    long long result;
+    if (cstring_to_integer(result, PQcmdTuples(result_.get_result())))
         return result;
-    }
-    else if (rowsAffectedBulk_ >= 0)
-    {
-        return rowsAffectedBulk_;
-    }
-    else
-    {
-        return -1;
-    }
+
+    return rowsAffectedBulk_;
 }
 
 int postgresql_statement_backend::get_number_of_rows()
@@ -827,27 +817,23 @@ void postgresql_statement_backend::describe_column(int colNum,
 postgresql_standard_into_type_backend *
 postgresql_statement_backend::make_into_type_backend()
 {
-    hasIntoElements_ = true;
     return new postgresql_standard_into_type_backend(*this);
 }
 
 postgresql_standard_use_type_backend *
 postgresql_statement_backend::make_use_type_backend()
 {
-    hasUseElements_ = true;
     return new postgresql_standard_use_type_backend(*this);
 }
 
 postgresql_vector_into_type_backend *
 postgresql_statement_backend::make_vector_into_type_backend()
 {
-    hasVectorIntoElements_ = true;
     return new postgresql_vector_into_type_backend(*this);
 }
 
 postgresql_vector_use_type_backend *
 postgresql_statement_backend::make_vector_use_type_backend()
 {
-    hasVectorUseElements_ = true;
     return new postgresql_vector_use_type_backend(*this);
 }

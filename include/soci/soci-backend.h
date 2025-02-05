@@ -246,6 +246,13 @@ public:
 
     virtual std::string get_parameter_name(int index) const = 0;
 
+    // This function returns the index of the row which is used when dumping
+    // the value of query parameters for bulk operations. If it is -1, which is
+    // the default value returned by it, no specific row is shown, but if a
+    // backend can determine the row of interest, e.g. the first row which
+    // triggered an error during execute(), it should return its index.
+    virtual int get_row_to_dump() const { return -1; }
+
     virtual std::string rewrite_for_procedure_call(std::string const& query) = 0;
 
     virtual int prepare_for_describe() = 0;
@@ -286,6 +293,14 @@ public:
     virtual standard_use_type_backend* make_use_type_backend() = 0;
     virtual vector_into_type_backend* make_vector_into_type_backend() = 0;
     virtual vector_use_type_backend* make_vector_use_type_backend() = 0;
+
+    // These are set when the corresponding make_xxx_backend() above is called
+    // by statement_impl. This goes against encapsulation but allows to avoid
+    // having to set them in all backends implementations of these functions.
+    bool hasIntoElements_ = false;
+    bool hasVectorIntoElements_ = false;
+    bool hasUseElements_ = false;
+    bool hasVectorUseElements_ = false;
 
 private:
     SOCI_NOT_COPYABLE(statement_backend)

@@ -225,6 +225,21 @@ public:
         return !m_verDriver.is_initialized() || m_verDriver < odbc_version(9, 3, 400);
     }
 
+    bool has_partial_update_bug() const override
+    {
+        // ODBC driver has version-dependent bugs related to handling array
+        // parameters: after v13.02, it fails to insert anything, see
+        // https://github.com/postgresql-interfaces/psqlodbc/issues/89, and
+        // with the previous versions (e.g. v10.03) it's even worse, as it does
+        // insert the row with valid values but still returns fatal error at
+        // ODBC level.
+        //
+        // So far there is no known version where it works correctly, but if
+        // the issue above is fixed, we should check for the version including
+        // this fix here.
+        return true;
+    }
+
     std::string fix_crlf_if_necessary(std::string const& s) const override
     {
         // Version 9.03.0300 (ancient, but still used on AppVeyor CI) is known

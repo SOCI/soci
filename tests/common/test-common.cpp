@@ -3256,29 +3256,23 @@ TEST_CASE_METHOD(common_tests, "Get affected rows", "[core][affected-rows]")
 
     CHECK(st5.get_affected_rows() == 5);
 
+    if (tc_.has_partial_update_bug())
+    {
+        WARN("Skipping partial update test due to a known backend bug");
+        return;
+    }
+
     std::vector<std::string> w(2, "1");
     w[1] = "a"; // this invalid value may cause an exception.
     statement st6 = (sql.prepare <<
         "insert into soci_test(val) values(:val)", use(w));
-    try { st6.execute(true); }
-    catch(...) {}
+    CHECK_THROWS_AS(st6.execute(true), soci_error);
+    CHECK(st6.get_affected_rows() == 1);
 
     // confirm the partial insertion.
     int val = 0;
     sql << "select count(val) from soci_test", into(val);
-    if(val != 0)
-    {
-        // Notice that some ODBC drivers don't return the number of updated
-        // rows at all in the case of partially executed statement like this
-        // one, while MySQL ODBC driver wrongly returns 2 affected rows even
-        // though only one was actually inserted.
-        //
-        // So we can't check for "get_affected_rows() == val" here, it would
-        // fail in too many cases -- just check that the backend doesn't lie to
-        // us about no rows being affected at all (even if it just honestly
-        // admits that it has no idea by returning -1).
-        CHECK(st6.get_affected_rows() != 0);
-    }
+    CHECK(val == 1);
 }
 
 // test fix for: Backend is not set properly with connection pool (pull #5)
@@ -3517,10 +3511,9 @@ TEST_CASE_METHOD(common_tests, "Insert error", "[core][insert][exception]")
         }
         catch (soci_error const &e)
         {
-            std::string const msg = e.what();
-            CAPTURE(msg);
-
-            CHECK(msg.find("John") != std::string::npos);
+            REQUIRE_THAT(e.what(),
+                Catch::Contains("insert into soci_test(name, age) values ('John', 74)")
+            );
         }
     }
 
@@ -3549,10 +3542,41 @@ TEST_CASE_METHOD(common_tests, "Insert error", "[core][insert][exception]")
         }
         catch (soci_error const &e)
         {
-            std::string const msg = e.what();
-            CAPTURE(msg);
+            // Oracle converts all parameter names to upper case internally, so
+            // we must check for the substring case-insensitively.
+            REQUIRE_THAT(e.what(),
+                Catch::Contains(R"(with :name="John", :age=74)", Catch::CaseSensitive::No)
+            );
+        }
+    }
 
-            CHECK(msg.find("John") != std::string::npos);
+    SECTION("SQL queries vector parameters appear in the error message")
+    {
+        std::vector<std::string> names{"John", "Paul", "George", "John"};
+        std::vector<int> ages{74, 72, 72, 74};
+
+        statement st = (sql.prepare <<
+            "insert into soci_test(name, age) values (:name, :age)",
+            use(names), use(ages));
+        try
+        {
+            st.execute(true);
+
+            FAIL("exception expected on unique constraint violation with prepared bulk statement not thrown");
+        }
+        catch (soci_error const &e)
+        {
+            // Unfortunately, some backends don't provide the values here but
+            // just use the generic "<vector>" placeholder. Don't fail the test
+            // just because of that.
+            std::string const msg = e.what();
+
+            if (msg.find("<vector>") == std::string::npos)
+            {
+                REQUIRE_THAT(msg,
+                    Catch::Contains(R"(with :name="John", :age=74)", Catch::CaseSensitive::No)
+                );
+            }
         }
     }
 }

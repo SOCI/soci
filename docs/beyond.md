@@ -19,11 +19,6 @@ if ( !st.get_affected_rows() )
 }
 ```
 
-### Portability note
-
-This method behaviour in case of partially executed update, i.e. when some records were updated or inserted while some other have failed to be updated or inserted, depends on the exact backend and, in the case of ODBC backend, on the exact ODBC driver used.
-It can return `-1`, meaning that the number of rows is unknown, the number of rows actually updated or the total number of affected rows.
-
 ## Sequences
 
 It is common to have auto-incrementing database fields or fields whose value come from a sequence.

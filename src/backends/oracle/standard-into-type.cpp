@@ -32,30 +32,6 @@ using namespace soci;
 using namespace soci::details;
 using namespace soci::details::oracle;
 
-oracle_standard_into_type_backend *
-oracle_statement_backend::make_into_type_backend()
-{
-    return new oracle_standard_into_type_backend(*this);
-}
-
-oracle_standard_use_type_backend *
-oracle_statement_backend::make_use_type_backend()
-{
-    return new oracle_standard_use_type_backend(*this);
-}
-
-oracle_vector_into_type_backend *
-oracle_statement_backend::make_vector_into_type_backend()
-{
-    return new oracle_vector_into_type_backend(*this);
-}
-
-oracle_vector_use_type_backend *
-oracle_statement_backend::make_vector_use_type_backend()
-{
-    return new oracle_vector_use_type_backend(*this);
-}
-
 void oracle_standard_into_type_backend::define_by_pos(
     int &position, void *data, exchange_type type)
 {

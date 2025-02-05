@@ -144,8 +144,7 @@ v.resize(100);
 sql << "select ...", into(v);
 ```
 
-In the latter case the initial size of the vector defines the maximum number of data elements that the user is willing to accept and after executing the query the vector will be automatically resized to reflect that actual number of rows that were read and transmitted.
-That is, the vector will be automatically shrunk if the amount of data that was available was smaller than requested.
+In the latter case the initial size of the vector defines the maximum number of data elements that the user is willing to accept, and so must be non-zero and, usually, relatively big for optimal performance. After executing the query the vector will be automatically resized to reflect that actual number of rows that were read and transmitted, i.e. the vector will be automatically shrunk if the amount of data that was available was smaller than requested. Note that this means that when performing a bulk operation in a loop, the vector needs to be resized during each loop iteration.
 
 It is also possible to operate on the chosen sub-range of the vector:
 

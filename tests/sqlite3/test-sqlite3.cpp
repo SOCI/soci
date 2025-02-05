@@ -91,7 +91,7 @@ TEST_CASE("SQLite rowid", "[sqlite][rowid][oid]")
 class SetupForeignKeys
 {
 public:
-    SetupForeignKeys(soci::session& sql)
+    explicit SetupForeignKeys(soci::session& sql)
         : m_sql(sql)
     {
         m_sql <<
@@ -913,7 +913,13 @@ struct table_creator_for_get_affected_rows : table_creator_base
     table_creator_for_get_affected_rows(soci::session & sql)
         : table_creator_base(sql)
     {
-        sql << "create table soci_test(val integer)";
+        // The CHECK clause is needed to make SQLite refuse inserting "a" into
+        // this column: the test using this table relies on this to fail and
+        // this condition ensures it does.
+        //
+        // Note that more straightforward checks, like typeof(val) = 'integer',
+        // don't work with old SQLite version, such as 3.12 used on AppVeyor.
+        sql << R"(create table soci_test(val integer check (val < 100)))";
     }
 };
 

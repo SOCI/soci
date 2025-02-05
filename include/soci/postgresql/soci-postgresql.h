@@ -266,6 +266,7 @@ struct SOCI_POSTGRESQL_DECL postgresql_statement_backend : details::statement_ba
     long long get_affected_rows() override;
     int get_number_of_rows() override;
     std::string get_parameter_name(int index) const override;
+    int get_row_to_dump() const override { return current_row_; }
 
     std::string rewrite_for_procedure_call(std::string const & query) override;
 
@@ -298,11 +299,6 @@ struct SOCI_POSTGRESQL_DECL postgresql_statement_backend : details::statement_ba
     bool justDescribed_; // to optimize row description with immediately
                          // following actual statement execution
 
-    bool hasIntoElements_;
-    bool hasVectorIntoElements_;
-    bool hasUseElements_;
-    bool hasVectorUseElements_;
-
     // the following maps are used for finding data buffers according to
     // use elements specified by the user
 
@@ -316,6 +312,10 @@ struct SOCI_POSTGRESQL_DECL postgresql_statement_backend : details::statement_ba
     // type queries with custom types
     typedef std::unordered_map<unsigned long, char> CategoryByColumnOID;
     CategoryByColumnOID categoryByColumnOID_;
+
+private:
+    // Current row during a bulk operation or -1 if it's not in progress.
+    int current_row_ = -1;
 };
 
 struct SOCI_POSTGRESQL_DECL postgresql_rowid_backend : details::rowid_backend

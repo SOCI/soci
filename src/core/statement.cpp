@@ -595,7 +595,7 @@ void statement_impl::do_add_query_parameters()
     {
         std::string name = get_name(*uses_[i], i, backEnd_);
         std::stringstream value;
-        uses_[i]->dump_value(value);
+        uses_[i]->dump_value(value, backEnd_->get_row_to_dump());
         session_.add_query_parameter(std::move(name), value.str());
     }
 }
@@ -866,24 +866,32 @@ void statement_impl::dec_ref()
 standard_into_type_backend *
 statement_impl::make_into_type_backend()
 {
+    backEnd_->hasIntoElements_ = true;
+
     return backEnd_->make_into_type_backend();
 }
 
 standard_use_type_backend *
 statement_impl::make_use_type_backend()
 {
+    backEnd_->hasUseElements_ = true;
+
     return backEnd_->make_use_type_backend();
 }
 
 vector_into_type_backend *
 statement_impl::make_vector_into_type_backend()
 {
+    backEnd_->hasVectorIntoElements_ = true;
+
     return backEnd_->make_vector_into_type_backend();
 }
 
 vector_use_type_backend *
 statement_impl::make_vector_use_type_backend()
 {
+    backEnd_->hasVectorUseElements_ = true;
+
     return backEnd_->make_vector_use_type_backend();
 }
 
