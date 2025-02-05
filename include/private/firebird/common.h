@@ -10,6 +10,7 @@
 
 #include "soci/firebird/soci-firebird.h"
 #include "soci-compiler.h"
+#include "soci-ssize.h"
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -193,7 +194,7 @@ std::string format_decimal(const void *sqldata, int sqlscale)
     std::string r = out.str();
     if (sqlscale < 0)
     {
-        if (static_cast<int>(r.size()) - (x < 0) <= -sqlscale)
+        if (ssize(r) - (x < 0) <= -sqlscale)
         {
             r = std::string(size_t(x < 0), '-') +
                 std::string(-sqlscale - (r.size() - (x < 0)) + 1, '0') +

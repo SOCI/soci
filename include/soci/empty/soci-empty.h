@@ -54,7 +54,7 @@ struct SOCI_EMPTY_DECL empty_vector_into_type_backend : details::vector_into_typ
     void post_fetch(bool gotData, indicator* ind) override;
 
     void resize(std::size_t sz) override;
-    std::size_t size() override;
+    std::size_t size() const override;
 
     void clean_up() override;
 
@@ -88,7 +88,7 @@ struct SOCI_EMPTY_DECL empty_vector_use_type_backend : details::vector_use_type_
 
     void pre_use(indicator const* ind) override;
 
-    std::size_t size() override;
+    std::size_t size() const override;
 
     void clean_up() override;
 

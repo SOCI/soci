@@ -161,8 +161,8 @@ struct postgresql_vector_into_type_backend : details::vector_into_type_backend
     void post_fetch(bool gotData, indicator * ind) override;
 
     void resize(std::size_t sz) override;
-    std::size_t size() override; // active size (might be lower than full vector size)
-    std::size_t full_size();    // actual size of the user-provided vector
+    std::size_t size() const override; // active size (might be lower than full vector size)
+    std::size_t full_size() const;    // actual size of the user-provided vector
 
     void clean_up() override;
 
@@ -232,8 +232,8 @@ struct postgresql_vector_use_type_backend : details::vector_use_type_backend
 
     void pre_use(indicator const * ind) override;
 
-    std::size_t size() override; // active size (might be lower than full vector size)
-    std::size_t full_size();    // actual size of the user-provided vector
+    std::size_t size() const override; // active size (might be lower than full vector size)
+    std::size_t full_size() const;    // actual size of the user-provided vector
 
     void clean_up() override;
 

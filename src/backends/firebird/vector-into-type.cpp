@@ -178,7 +178,7 @@ void firebird_vector_into_type_backend::resize(std::size_t sz)
     resize_vector(type_, data_, sz);
 }
 
-std::size_t firebird_vector_into_type_backend::size()
+std::size_t firebird_vector_into_type_backend::size() const
 {
     return get_vector_size(type_, data_);
 }

@@ -154,7 +154,7 @@ public:
     virtual void post_fetch(bool gotData, indicator* ind) = 0;
 
     virtual void resize(std::size_t sz) = 0;
-    virtual std::size_t size() = 0;
+    virtual std::size_t size() const = 0;
 
     virtual void clean_up() = 0;
 
@@ -211,7 +211,7 @@ public:
     virtual void pre_exec(int /* num */) {}
     virtual void pre_use(indicator const* ind) = 0;
 
-    virtual std::size_t size() = 0;
+    virtual std::size_t size() const = 0;
 
     virtual void clean_up() = 0;
 

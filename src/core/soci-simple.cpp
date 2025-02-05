@@ -9,6 +9,7 @@
 
 #include "soci/soci-simple.h"
 #include "soci/soci.h"
+#include "soci-ssize.h"
 
 #include <cstddef>
 #include <cstdio>
@@ -552,7 +553,7 @@ template <typename T>
 bool index_check_failed(std::vector<T> const & v,
     statement_wrapper & wrapper, int index)
 {
-    if (index < 0 || index >= static_cast<int>(v.size()))
+    if (index < 0 || index >= ssize(v))
     {
         wrapper.is_ok = false;
         wrapper.error_message = "Invalid index.";
@@ -1591,7 +1592,7 @@ SOCI_DECL int soci_into_get_size_v(statement_handle st)
         return -1;
     }
 
-    return static_cast<int>(wrapper->into_indicators_v[0].size());
+    return ssize(wrapper->into_indicators_v[0]);
 }
 
 SOCI_DECL void soci_into_resize_v(statement_handle st, int new_size)
@@ -2550,7 +2551,7 @@ SOCI_DECL int soci_use_get_size_v(statement_handle st)
         return -1;
     }
 
-    return static_cast<int>(wrapper->use_indicators_v.begin()->second.size());
+    return ssize(wrapper->use_indicators_v.begin()->second);
 }
 
 SOCI_DECL void soci_use_resize_v(statement_handle st, int new_size)
@@ -3060,7 +3061,7 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
 
         // bind all into elements
 
-        int const into_elements = static_cast<int>(wrapper->into_types.size());
+        int const into_elements = ssize(wrapper->into_types);
         if (wrapper->into_kind == statement_wrapper::single)
         {
             for (int i = 0; i != into_elements; ++i)
