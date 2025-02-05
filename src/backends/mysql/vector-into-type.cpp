@@ -230,7 +230,7 @@ void mysql_vector_into_type_backend::resize(std::size_t sz)
     }
 }
 
-std::size_t mysql_vector_into_type_backend::size()
+std::size_t mysql_vector_into_type_backend::size() const
 {
     std::size_t sz SOCI_DUMMY_INIT(0);
     switch (type_)
