@@ -38,27 +38,35 @@ jobs:
           - lib_type: shared
             backend: SQLite3
             runner: ubuntu-22.04
+            unity_build: false
           - lib_type: shared
             backend: PostgreSQL
             runner: ubuntu-22.04
+            unity_build: false
           - lib_type: shared
             backend: MySQL
             runner: ubuntu-22.04
+            unity_build: false
           - lib_type: shared
             backend: Firebird
             runner: ubuntu-22.04
+            unity_build: false
           - lib_type: shared
             backend: Oracle
             runner: ubuntu-22.04
+            unity_build: false
           - lib_type: shared
             backend: ODBC
             runner: ubuntu-22.04
+            unity_build: false
           - lib_type: shared
             backend: Empty
             runner: ubuntu-22.04
+            unity_build: false
           - lib_type: shared
             backend: Valgrind
             runner: ubuntu-22.04
+            unity_build: false
           - lib_type: static
             backend: SQLite3
             runner: ubuntu-22.04
@@ -172,6 +180,11 @@ jobs:
           fi
           if [ "${{matrix.lib_type}}" = "static" ]; then
             set_env_var SOCI_BUILD_STATIC YES
+          fi
+          if [ "${{matrix.unity_build}}" = false ]; then
+            set_env_var SOCI_ENABLE_UNITY_BUILD ON
+          else
+            set_env_var SOCI_ENABLE_UNITY_BUILD OFF
           fi
           # Ensure SOCI_CI_BACKEND is always lowercase
           set_env_var SOCI_CI_BACKEND "$( echo "$SOCI_CI_BACKEND" | tr '[:upper:]' '[:lower:]' )"
