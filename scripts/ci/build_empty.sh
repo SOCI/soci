@@ -23,11 +23,12 @@ run_cmake_for_empty
 run_make
 
 if [[ "$BUILD_EXAMPLES" == "YES" ]]; then
+  # This example simulates SOCI sources being embedded in the project dir
+  build_example subdir-include
+
   # Install previously built SOCI library on the system
   sudo make install
 
-  # This example simulates SOCI sources being embedded in the project dir
-  build_example subdir-include
   # This example simulates SOCI being installed on the target system
   build_example connect
 fi
