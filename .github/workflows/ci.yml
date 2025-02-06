@@ -63,10 +63,6 @@ jobs:
             backend: Empty
             runner: ubuntu-22.04
             unity_build: false
-          - lib_type: shared
-            backend: Valgrind
-            runner: ubuntu-22.04
-            unity_build: false
           - lib_type: static
             backend: SQLite3
             runner: ubuntu-22.04
@@ -88,9 +84,6 @@ jobs:
           - lib_type: static
             backend: Empty
             runner: ubuntu-22.04
-          - lib_type: static
-            backend: Valgrind
-            runner: ubuntu-22.04
 
             # MacOS jobs
           - lib_type: shared
@@ -108,10 +101,6 @@ jobs:
 
             # Special
           - lib_type: shared
-            backend: Oracle
-            runner: ubuntu-22.04
-            no_boost: true
-          - lib_type: shared
             backend: SQLite3
             runner: ubuntu-22.04
             cxxstd: 17
@@ -126,6 +115,10 @@ jobs:
             runner: ubuntu-22.04
             build_examples: true
             name: Examples
+          - lib_type: static
+            backend: Valgrind
+            runner: ubuntu-22.04
+            name: Valgrind
 
     runs-on: ${{ matrix.runner }}
     name: ${{ format('{0} on {1}', (matrix.name != '' && matrix.name || format('{0} ({1})', matrix.backend, matrix.lib_type)), matrix.runner) }}
