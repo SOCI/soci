@@ -3,10 +3,10 @@
 # CMake module to search for Oracle client library (OCI)
 #
 # On success, the macro sets the following variables:
-# Oracle_FOUND       = if the library found
-# Oracle_LIBRARY     = full path to the library
-# Oracle_LIBRARIES   = full path to the library
-# Oracle_INCLUDE_DIR = where to find the library headers also defined,
+# Oracle_FOUND        = if the library found
+# Oracle_LIBRARY      = full path to the library
+# Oracle_LIBRARIES    = full path to the library
+# Oracle_INCLUDE_DIRS = where to find the library headers also defined,
 #                       but not for general use are
 # Oracle_VERSION     = version of library which was found, e.g. "1.2.5"
 #
