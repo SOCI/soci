@@ -53,7 +53,7 @@ jobs:
             unity_build: false
           - lib_type: shared
             backend: Oracle
-            runner: ubuntu-24.04
+            runner: ubuntu-22.04
             unity_build: false
           - lib_type: shared
             backend: ODBC
@@ -77,7 +77,7 @@ jobs:
             runner: ubuntu-24.04
           - lib_type: static
             backend: Oracle
-            runner: ubuntu-24.04
+            runner: ubuntu-22.04
           - lib_type: static
             backend: ODBC
             runner: ubuntu-24.04
