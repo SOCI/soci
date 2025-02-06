@@ -7,7 +7,7 @@
 
 # This is a very simple example of using SOCI in a CMake-based project.
 
-cmake_minimum_required(VERSION 3.23...3.31 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10...3.31 FATAL_ERROR)
 
 project(SOCIExampleConnect)
 
