@@ -25,6 +25,7 @@ endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 include(CMakeDependentOption)
 include(CheckIPOSupported)
@@ -42,16 +43,11 @@ endif()
 option(SOCI_SHARED "Enable building SOCI as a shared library" ${SHARED_DEFAULT})
 option(SOCI_TESTS "Enable building SOCI test cases" ${PROJECT_IS_TOP_LEVEL})
 cmake_dependent_option(SOCI_LTO "Enable link time optimizations in release builds" ON "LTO_AVAILABLE" OFF)
-option(SOCI_VISIBILITY "Make all functions hidden by default - this exposes only explicitly exported functions" ON)
 
 
 # Configure LTO for anything but Debug builds (if enabled in the first place)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ${SOCI_LTO})
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_DEBUG OFF)
-
-if (SOCI_VISIBILITY)
-  set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-endif()
 
 if (NOT APPLE)
   # This makes runtime loaders look for library dependencies
