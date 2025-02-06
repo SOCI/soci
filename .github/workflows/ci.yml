@@ -37,53 +37,53 @@ jobs:
             # Can't test DB2 as required db2exc package is no longer available after Ubuntu 14.04
           - lib_type: shared
             backend: SQLite3
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             unity_build: false
           - lib_type: shared
             backend: PostgreSQL
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             unity_build: false
           - lib_type: shared
             backend: MySQL
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             unity_build: false
           - lib_type: shared
             backend: Firebird
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             unity_build: false
           - lib_type: shared
             backend: Oracle
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             unity_build: false
           - lib_type: shared
             backend: ODBC
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             unity_build: false
           - lib_type: shared
             backend: Empty
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             unity_build: false
           - lib_type: static
             backend: SQLite3
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
           - lib_type: static
             backend: PostgreSQL
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
           - lib_type: static
             backend: MySQL
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
           - lib_type: static
             backend: Firebird
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
           - lib_type: static
             backend: Oracle
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
           - lib_type: static
             backend: ODBC
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
           - lib_type: static
             backend: Empty
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
 
             # MacOS jobs
           - lib_type: shared
@@ -102,22 +102,22 @@ jobs:
             # Special
           - lib_type: shared
             backend: SQLite3
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             cxxstd: 17
             name: SQLite3 Cxx17
           - lib_type: shared
             backend: Empty
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             test_release_package: true
             name: Release package
           - lib_type: shared
             backend: Empty
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             build_examples: true
             name: Examples
           - lib_type: static
             backend: Valgrind
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             name: Valgrind
 
     runs-on: ${{ matrix.runner }}
