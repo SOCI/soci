@@ -8,8 +8,6 @@
 #ifndef SOCI_CALLBACKS_H_INCLUDED
 #define SOCI_CALLBACKS_H_INCLUDED
 
-#include "soci/soci-platform.h"
-
 #include <string>
 
 namespace soci
@@ -20,7 +18,7 @@ class session;
 // Simple callback interface for reporting failover events.
 // The meaning of each operation is intended to be portable,
 // but the behaviour details and parameters can be backend-specific.
-class SOCI_DECL failover_callback
+class failover_callback
 {
 public:
     failover_callback() = default;
