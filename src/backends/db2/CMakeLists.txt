@@ -1,14 +1,39 @@
-###############################################################################
-#
-# This file is part of CMake configuration for SOCI library
-#
-# Copyright (C) 2011 Denis Chapligin
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE_1_0.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
-#
-###############################################################################
-soci_backend(DB2
-  DEPENDS DB2
-  DESCRIPTION "SOCI backend for DB2" AUTHORS "Denis Chapligin"
-  MAINTAINERS "Denis Chapligin")
+include(soci_define_backend_target)
+
+if (SOCI_DB2_AUTO)
+  set(DEPENDENCY_MODE "DISABLE")
+else()
+  set(DEPENDENCY_MODE "ERROR")
+endif()
+
+soci_define_backend_target(
+  BACKEND_NAME "DB2"
+  TARGET_NAME "soci_db2"
+  ALIAS_NAME "DB2"
+  DEPENDENCIES
+    "DB2 YIELDS DB2::DB2"
+  REQUIRED_COMPONENTS SOCI::Core
+  SOURCE_FILES
+    "blob.cpp"
+    "factory.cpp"
+    "row-id.cpp"
+    "session.cpp"
+    "standard-into-type.cpp"
+    "standard-use-type.cpp"
+    "statement.cpp"
+    "vector-into-type.cpp"
+    "vector-use-type.cpp"
+  HEADER_FILES
+    "${PROJECT_SOURCE_DIR}/include/soci/db2/soci-db2.h"
+  PRIVATE_INCLUDE_DIRS
+    "${PROJECT_SOURCE_DIR}/include/private"
+  FIND_PACKAGE_FILES
+    "${PROJECT_SOURCE_DIR}/cmake/find_modules/FindDB2.cmake"
+  MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
+  ENABLED_VARIABLE "SOCI_DB2"
+)
+
+if (NOT SOCI_DB2)
+  return()
+endif()
+

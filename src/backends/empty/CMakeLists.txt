@@ -1,14 +1,30 @@
-###############################################################################
-#
-# This file is part of CMake configuration for SOCI library
-#
-# Copyright (C) 2010 Mateusz Loskot
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE_1_0.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
-#
-###############################################################################
-soci_backend(Empty
-  DESCRIPTION "SOCI backend skeleton for new backends development"
-  AUTHORS "Maciej Sobczak, Stephen Hutton"
-  MAINTAINERS "Maciej Sobczak")
+include(soci_define_backend_target)
+
+if (SOCI_EMPTY_AUTO)
+  set(DEPENDENCY_MODE "DISABLE")
+else()
+  set(DEPENDENCY_MODE "ERROR")
+endif()
+
+soci_define_backend_target(
+  BACKEND_NAME "Empty"
+  TARGET_NAME "soci_empty"
+  ALIAS_NAME "Empty"
+  REQUIRED_COMPONENTS SOCI::Core
+  SOURCE_FILES
+    "blob.cpp"
+    "factory.cpp"
+    "row-id.cpp"
+    "session.cpp"
+    "standard-into-type.cpp"
+    "standard-use-type.cpp"
+    "statement.cpp"
+    "vector-into-type.cpp"
+    "vector-use-type.cpp"
+  MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
+  ENABLED_VARIABLE "SOCI_EMPTY"
+)
+
+if (NOT SOCI_EMPTY)
+  return()
+endif()

@@ -21,7 +21,7 @@
 #include <ctime>
 #include <memory>
 
-#include "soci/soci-config.h" // for SOCI_HAVE_CXX11
+#include "soci/soci-config.h"
 
 #if defined(_MSC_VER)
 #define LL_FMT_FLAGS "I64"
@@ -169,6 +169,8 @@ private: \
 // Here the problem is that MSVC complains about unreachable code in this case
 // (but only in release builds, where optimizations are enabled), while other
 // compilers complain about missing return statement without it.
+// Note: this macro is no longer used in SOCI's codebase. It is only retained
+// in case downstream code is depending on it.
 #if defined(_MSC_VER) && defined(NDEBUG)
     #define SOCI_DUMMY_RETURN(x)
 #else

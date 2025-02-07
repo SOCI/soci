@@ -1,32 +1,49 @@
-###############################################################################
-#
-# This file is part of CMake configuration for SOCI library
-#
-# Copyright (C) 2010 Mateusz Loskot <mateusz@loskot.net>
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE_1_0.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
-#
-###############################################################################
+include(soci_define_backend_target)
 
-include(CMakeDependentOption)
+if (SOCI_POSTGRESQL_AUTO)
+  set(DEPENDENCY_MODE "DISABLE")
+else()
+  set(DEPENDENCY_MODE "ERROR")
+endif()
+
+soci_define_backend_target(
+  BACKEND_NAME "PostgreSQL"
+  TARGET_NAME "soci_postgresql"
+  ALIAS_NAME "PostgreSQL"
+  DEPENDENCIES
+    "PostgreSQL YIELDS PostgreSQL::PostgreSQL"
+  REQUIRED_COMPONENTS SOCI::Core
+  SOURCE_FILES
+    "blob.cpp"
+    "error.cpp"
+    "factory.cpp"
+    "row-id.cpp"
+    "session.cpp"
+    "standard-into-type.cpp"
+    "standard-use-type.cpp"
+    "statement.cpp"
+    "vector-into-type.cpp"
+    "vector-use-type.cpp"
+  HEADER_FILES
+    "${PROJECT_SOURCE_DIR}/include/soci/postgresql/soci-postgresql.h"
+  PRIVATE_INCLUDE_DIRS
+    "${PROJECT_SOURCE_DIR}/include/private"
+  MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
+  ENABLED_VARIABLE "SOCI_POSTGRESQL"
+)
+
+if (NOT SOCI_POSTGRESQL)
+  return()
+endif()
 
 option(SOCI_POSTGRESQL_NO_LO64
   "Do not use lo_xxx64() functions for compatibility with PostgreSQL < 9.3"
-  OFF)
-
+  OFF
+)
 if (POSTGRESQL_VERSION VERSION_LESS "9.3.0")
   set(SOCI_POSTGRESQL_NO_LO64 ON CACHE BOOL "Avoid using lo_xxx64() functions" FORCE)
 endif()
 
-if(SOCI_POSTGRESQL_NO_LO64)
-  add_definitions(-DSOCI_POSTGRESQL_NO_LO64=1)
+if (SOCI_POSTGRESQL_NO_LO64)
+  target_compile_definitions(soci_postgresql INTERFACE SOCI_POSTGRESQL_NO_LO64)
 endif()
-
-soci_backend(PostgreSQL
-  DEPENDS PostgreSQL
-  DESCRIPTION "SOCI backend for PostgreSQL"
-  AUTHORS "Maciej Sobczak, Stephen Hutton"
-  MAINTAINERS "Mateusz Loskot")
-
-boost_report_value(SOCI_POSTGRESQL_NO_LO64)
