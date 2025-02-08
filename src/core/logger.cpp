@@ -15,7 +15,7 @@ namespace // anonymous
 {
 
 // Helper to throw from not implemented logger_impl methods.
-void throw_not_supported()
+[[noreturn]] void throw_not_supported()
 {
     throw soci_error("Legacy method not supported by this logger.");
 }
@@ -61,15 +61,11 @@ void logger_impl::set_stream(std::ostream *)
 std::ostream * logger_impl::get_stream() const
 {
     throw_not_supported();
-
-    SOCI_DUMMY_RETURN(NULL);
 }
 
 std::string logger_impl::get_last_query() const
 {
     throw_not_supported();
-
-    SOCI_DUMMY_RETURN(std::string());
 }
 
 std::string logger_impl::get_last_query_context() const

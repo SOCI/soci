@@ -1,15 +1,39 @@
-###############################################################################
-#
-# This file is part of CMake configuration for SOCI library
-#
-# Copyright (C) 2010 Mateusz Loskot
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE_1_0.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
-#
-###############################################################################
-soci_backend(MySQL
-  DEPENDS MySQL
-  DESCRIPTION "SOCI backend for MySQL"
-  AUTHORS "Pawel Aleksander Fedorynski"
-  MAINTAINERS "Pawel Aleksander Fedorynski")
+include(soci_define_backend_target)
+
+if (SOCI_MYSQL_AUTO)
+  set(DEPENDENCY_MODE "DISABLE")
+else()
+  set(DEPENDENCY_MODE "ERROR")
+endif()
+
+soci_define_backend_target(
+  BACKEND_NAME "MySQL"
+  TARGET_NAME "soci_mysql"
+  ALIAS_NAME "MySQL"
+  DEPENDENCIES
+    "MySQL YIELDS MySQL::MySQL"
+  REQUIRED_COMPONENTS SOCI::Core
+  SOURCE_FILES
+    "blob.cpp"
+    "common.cpp"
+    "factory.cpp"
+    "row-id.cpp"
+    "session.cpp"
+    "standard-into-type.cpp"
+    "standard-use-type.cpp"
+    "statement.cpp"
+    "vector-into-type.cpp"
+    "vector-use-type.cpp"
+  HEADER_FILES
+    "${PROJECT_SOURCE_DIR}/include/soci/mysql/soci-mysql.h"
+  PRIVATE_INCLUDE_DIRS
+    "${PROJECT_SOURCE_DIR}/include/private"
+  FIND_PACKAGE_FILES
+    "${PROJECT_SOURCE_DIR}/cmake/find_modules/FindMySQL.cmake"
+  MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
+  ENABLED_VARIABLE "SOCI_MYSQL"
+)
+
+if (NOT SOCI_MYSQL)
+  return()
+endif()

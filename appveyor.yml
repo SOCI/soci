@@ -8,39 +8,44 @@ configuration: Release
 
 environment:
   matrix:
-    - G: "Visual Studio 17 2022"
-      BOOST_ROOT: C:\Libraries\boost_1_77_0
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+      G: "Ninja"
+      BOOST_ROOT: C:\Libraries\boost_1_84_0
       MSSQL_VER: 2019
+      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\15
+      POSTGRESQL_VER: 15
+      MYSQL_VER: 80
+      MYSQL_DIR: C:\Program Files\MySql\MySQL Server 8.0
+      VCVARS_SCRIPT: "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Auxiliary/Build"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      G: "Ninja"
+      BOOST_ROOT: C:\Libraries\boost_1_77_0
+      MSSQL_VER: 2017
       POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\13
       POSTGRESQL_VER: 13
       MYSQL_VER: 80
       MYSQL_DIR: C:\Program Files\MySql\MySQL Server 8.0
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
-    - G: "Visual Studio 16 2019"
-      BOOST_ROOT: C:\Libraries\boost_1_73_0
-      MSSQL_VER: 2017
-      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\12
-      POSTGRESQL_VER: 12
-      MYSQL_VER: 80
-      MYSQL_DIR: C:\Program Files\MySql\MySQL Server 8.0
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-    - G: "Visual Studio 15 2017 Win64"
+      VCVARS_SCRIPT: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      G: "Ninja"
       BOOST_ROOT: C:\Libraries\boost_1_69_0
       MSSQL_VER: 2016
+      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\12
+      POSTGRESQL_VER: 12
+      MYSQL_VER: 57
+      MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
+      VCVARS_SCRIPT: "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      G: "Ninja"
+      BOOST_ROOT: C:\Libraries\boost_1_60_0
+      MSSQL_VER: 2014
       POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\11
       POSTGRESQL_VER: 11
       MYSQL_VER: 57
       MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-    - G: "Visual Studio 14 2015 Win64"
-      BOOST_ROOT: C:\Libraries\boost_1_60_0
-      MSSQL_VER: 2014
-      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\10
-      POSTGRESQL_VER: 10
-      MYSQL_VER: 57
-      MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-    - G: "MinGW Makefiles"
+      VCVARS_SCRIPT: "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      G: "MinGW Makefiles"
       MINGW_BIN: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin
       MSSQL_VER: 2014
       BOOST_ROOT: C:\Libraries\boost_1_60_0
@@ -48,7 +53,7 @@ environment:
       POSTGRESQL_VER: 9.4
       MYSQL_VER: 57
       MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      VCVARS_SCRIPT: "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC"
 
 install:
   # Start these ones here as we can't specify the service name dynamically above.
@@ -59,13 +64,18 @@ install:
       Import-Module C:\projects\soci\scripts\windows\Get-ODBCList.ps1
       $drivers_list = Get-ODBCList
       Write-Output $drivers_list
-      if ($drivers_list -clike '*MySQL*') {
-        $env:SOCI_ODBC_TESTS = $env:SOCI_ODBC_TESTS + '|soci_odbc_test_mysql'
+      $env:SOCI_ODBC_SKIP_TESTS = "soci_odbc_test_ms_access"
+      if (-Not ($drivers_list -contains 'MySQL')) {
+        $env:SOCI_ODBC_SKIP_TESTS = $env:SOCI_ODBC_SKIP_TESTS + '|soci_odbc_test_mysql'
       }
-      if ($drivers_list -clike '*PostgreSQL*') {
-        $env:SOCI_ODBC_TESTS = $env:SOCI_ODBC_TESTS + '|soci_odbc_test_postgresql'
+      if (-Not ($drivers_list -contains 'PostgreSQL')) {
+        $env:SOCI_ODBC_SKIP_TESTS = $env:SOCI_ODBC_SKIP_TESTS + '|soci_odbc_test_postgresql'
       }
+      Write-Output "To be skipped ODBC tests: $env:SOCI_ODBC_SKIP_TESTS"
   - git clone https://github.com/snikulov/sqlite.cmake.build.git C:\projects\sqlite\src
+    # Ensure we have a recent cmake version available
+  - choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+  - refreshenv
 
 before_build:
   - set SQLITE_ROOT=C:\projects\sqlite\sqlite
@@ -87,7 +97,16 @@ before_build:
       else
       {
         $env:SQLITE3_LIBRARY = $env:SQLITE_ROOT + '/lib/sqlite3-static.lib'
-        $env:BUILD_TOOL_OPTIONS = '/m'
+        $env:BUILD_TOOL_OPTIONS = ''
+        # Set up Visual Studio environment (MSVC compiler etc.)
+        # Works by calling the respective bat script and then copying over the env vars
+        cd $env:VCVARS_SCRIPT
+        cmd /c "vcvarsall.bat x64&set" |
+            foreach {
+                if ($_ -match "=") {
+                    $v = $_.split("="); set-item -force -path "ENV:\$($v[0])" -value "$($v[1])"
+                }
+            }
       }
   - cd C:\projects\sqlite\src
   - mkdir build
@@ -102,18 +121,18 @@ before_build:
   - set USER=root
   - mysql -e "create database soci_test;" --user=root
   - sqlcmd -U sa -P Password12! -S (local)\SQL%MSSQL_VER% -i C:\projects\soci\scripts\windows\mssql_db_create.sql
-  - cmake .. -G"%G%" -DSQLITE_BUILD_SHARED=OFF -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_INSTALL_PREFIX=%SQLITE_ROOT%
+  - cmake .. -G"%G%" -DSQLITE_BUILD_SHARED=OFF -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_INSTALL_PREFIX=%SQLITE_ROOT% -DCMAKE_UNITY_BUILD=ON
   - cmake --build . --config %CONFIGURATION% --target install
 
 build_script:
   - cd C:\projects\soci
   - mkdir build
   - cd build
-  - cmake .. -G"%G%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_VERBOSE_MAKEFILE=ON -DSOCI_ENABLE_WERROR=ON -DSQLITE3_INCLUDE_DIR=%SQLITE_ROOT%/include -DSQLITE3_LIBRARY=%SQLITE3_LIBRARY%
+  - cmake .. -G"%G%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_VERBOSE_MAKEFILE=ON -DSOCI_ENABLE_WERROR=ON -DCMAKE_PREFIX_PATH=%SQLITE_ROOT% -DSQLite3_LIBRARY=%SQLITE3_LIBRARY% -DCMAKE_UNITY_BUILD=ON
   - cmake --build . --config %CONFIGURATION% -- %BUILD_TOOL_OPTIONS%
 
 test_script:
-  - ctest -V --timeout 300 --output-on-failure -R "soci_empty|soci_postgresql|soci_sqlite3|soci_odbc_test_mssql|soci_mysql%SOCI_ODBC_TESTS%"
+  - ctest -V --timeout 300 --output-on-failure --build-config %CONFIGURATION% --exclude-regex "%SOCI_ODBC_SKIP_TESTS%"
 
 # Uncomment this to wait for RDP connection after the build end.
 #on_finish:

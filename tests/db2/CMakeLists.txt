@@ -1,16 +1,11 @@
-###############################################################################
-#
-# This file is part of CMake configuration for SOCI library
-#
-# Copyright (C) 2010-2013 Mateusz Loskot <mateusz@loskot.net>
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE_1_0.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
-#
-###############################################################################
+add_executable(soci_db2_test
+  "test-db2.cpp"
+)
+target_link_libraries(soci_db2_test PRIVATE soci_tests_common SOCI::DB2)
 
-soci_backend_test(
-  BACKEND DB2
-  DEPENDS DB2
-  SOURCE test-db2.cpp
-  CONNSTR "DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;autocommit=off")
+set(SOCI_DB2_TEST_CONNSTR "DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;autocommit=off" CACHE STRING "The connection string to use for DB2 tests")
+
+add_test(
+  NAME soci_db2_test
+  COMMAND soci_db2_test "${SOCI_DB2_TEST_CONNSTR}" "--invisibles"
+)

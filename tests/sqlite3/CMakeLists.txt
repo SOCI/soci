@@ -1,16 +1,11 @@
-###############################################################################
-#
-# This file is part of CMake configuration for SOCI library
-#
-# Copyright (C) 2010-2013 Mateusz Loskot <mateusz@loskot.net>
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE_1_0.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
-#
-###############################################################################
+add_executable(soci_sqlite3_test
+  "test-sqlite3.cpp"
+)
+target_link_libraries(soci_sqlite3_test PRIVATE soci_tests_common SOCI::SQLite3)
 
-soci_backend_test(
-  BACKEND SQLite3
-  DEPENDS SQLite3
-  SOURCE test-sqlite3.cpp
-  CONNSTR ":memory:")
+set(SOCI_SQLITE3_TEST_CONNSTR ":memory:" CACHE STRING "The connection string to use for SQLite3 tests")
+
+add_test(
+  NAME soci_sqlite3_test
+  COMMAND soci_sqlite3_test "${SOCI_SQLITE3_TEST_CONNSTR}" "--invisibles"
+)

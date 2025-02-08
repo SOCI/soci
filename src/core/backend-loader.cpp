@@ -18,8 +18,6 @@
 #include <stdint.h>
 #endif
 
-#include "soci_backends_config.h"
-
 using namespace soci;
 using namespace soci::dynamic_backends;
 
@@ -77,11 +75,7 @@ std::string get_this_dynlib_path()
 
 } // unnamed namespace
 
-#ifdef _UNICODE
 #define DLOPEN(x) LoadLibraryA(x)
-#else
-#define DLOPEN(x) LoadLibrary(x)
-#endif
 #define DLCLOSE(x) FreeLibrary(x)
 #define DLSYM(x, y) GetProcAddress(x, y)
 

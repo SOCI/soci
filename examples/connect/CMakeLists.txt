@@ -7,20 +7,28 @@
 
 # This is a very simple example of using SOCI in a CMake-based project.
 
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10...3.31 FATAL_ERROR)
 
 project(SOCIExampleConnect)
 
-find_package(Soci REQUIRED)
+# Note: SOCI versions before 4.1 rely on hand-written FindSOCI.cmake files to be
+# present in downstream projects as SOCI didn't use to ship a config file.
+# This is changed in 4.1 thanks to which the desired database backends can
+# be specified as components. Known component names are
+# - Empty
+# - DB2
+# - Firebird
+# - MySQL
+# - ODBC
+# - Oracle
+# - PostgreSQL
+# - SQLite3
+# note that some components may still be undefined if the corresponding library is
+# not included in the SOCI version installed on your system.
+find_package(SOCI 4.1 COMPONENTS Empty REQUIRED)
 
 add_executable(connect connect.cpp)
 
-# Note that depending on the SOCI library automatically pulls in the required
-# SOCI compilation options too, i.e. there is no need to explicitly use
-# target_include_directories().
-#
-# Linking with just soci_core is enough when using shared libraries, as the
-# required backends will be loaded dynamically during run-time, but when using
-# static libraries you would need to link with all the soci_<backend> libraries
-# needed too.
-target_link_libraries(connect PRIVATE SOCI::soci_core)
+# Note that linking to SOCI::soci is enough to inherit
+# all of SOCI's dependencies, include directories, etc.
+target_link_libraries(connect PRIVATE SOCI::soci)

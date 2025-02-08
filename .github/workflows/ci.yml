@@ -29,85 +29,119 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.runner || 'ubuntu-22.04' }}
-    container: ${{ matrix.container }}
-    name: ${{ matrix.name }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          # Note: the jobs are ordered in the order of decreasing running
-          # time, as this should minimize the total run-time of all jobs.
-          - backend: postgresql
+            # Ubuntu jobs
+            # Can't test DB2 as required db2exc package is no longer available after Ubuntu 14.04
+          - lib_type: shared
+            backend: SQLite3
+            runner: ubuntu-24.04
+            unity_build: false
+          - lib_type: shared
+            backend: PostgreSQL
+            runner: ubuntu-24.04
+            unity_build: false
+          - lib_type: shared
+            backend: MySQL
+            runner: ubuntu-24.04
+            unity_build: false
+          - lib_type: shared
+            backend: Firebird
+            runner: ubuntu-24.04
+            unity_build: false
+          - lib_type: shared
+            backend: Oracle
+            runner: ubuntu-22.04
+            unity_build: false
+          - lib_type: shared
+            backend: ODBC
+            runner: ubuntu-24.04
+            unity_build: false
+          - lib_type: shared
+            backend: Empty
+            runner: ubuntu-24.04
+            unity_build: false
+          - lib_type: static
+            backend: SQLite3
+            runner: ubuntu-24.04
+          - lib_type: static
+            backend: PostgreSQL
+            runner: ubuntu-24.04
+          - lib_type: static
+            backend: MySQL
+            runner: ubuntu-24.04
+          - lib_type: static
+            backend: Firebird
+            runner: ubuntu-24.04
+          - lib_type: static
+            backend: Oracle
+            runner: ubuntu-22.04
+          - lib_type: static
+            backend: ODBC
+            runner: ubuntu-24.04
+          - lib_type: static
+            backend: Empty
+            runner: ubuntu-24.04
+
+            # MacOS jobs
+          - lib_type: shared
+            backend: Empty
             runner: macos-14
-            name: PostgreSQL macOS
-          - backend: oracle
-            name: Oracle 11
             no_boost: true
-          - backend: valgrind
-            name: Valgrind
-          - backend: odbc
-            # There are many leak reports under Ubuntu 22.04, see #1008.
-            container: ubuntu:18.04
-            name: ODBC
-            # UBSAN gives nonsensical errors on this system, to be reviewed
-            # after migrating to newer Ubuntu and compiler versions.
-            no_ubsan: true
-          - backend: firebird
-            name: Firebird
-          - backend: postgresql
-            name: PostgreSQL Linux
-          - backend: mysql
-            name: MySQL
-          - backend: sqlite3
+          - lib_type: shared
+            backend: PostgreSQL
             runner: macos-14
-            name: SQLite3 macOS
-          - backend: sqlite3
-            name: SQLite3 C++17
+            no_boost: true
+          - lib_type: shared
+            backend: SQLite3
+            runner: macos-14
+            no_boost: true
+
+            # Special
+          - lib_type: shared
+            backend: SQLite3
+            runner: ubuntu-24.04
             cxxstd: 17
-          - backend: sqlite3
-            name: SQLite3
-          - backend: empty
-            runner: macos-14
-            name: Empty macOS
-          - backend: empty
-            name: Empty
+            name: SQLite3 Cxx17
+          - lib_type: shared
+            backend: Empty
+            runner: ubuntu-24.04
             test_release_package: true
-          # Unsupported: db2exc package is only available in Ubuntu 14.04 not
-          # supported by GitHub Actions any longer, we'd need to run it in
-          # Docker container if we really need it.
-          # backend: db2
-          - backend: empty
-            name: Examples
+            name: Release package
+          - lib_type: shared
+            backend: Empty
+            runner: ubuntu-24.04
             build_examples: true
+            name: Examples
+          - lib_type: static
+            backend: Valgrind
+            runner: ubuntu-24.04
+            name: Valgrind
+          - lib_type: shared
+            backend: MySQL
+            runner: ubuntu-24.04
+            mariadb: true
+            name: MariaDB
+
+    runs-on: ${{ matrix.runner }}
+    name: ${{ format('{0} on {1}', (matrix.name != '' && matrix.name || format('{0} ({1})', matrix.backend, matrix.lib_type)), matrix.runner) }}
 
     env:
       SOCI_CI: true
       SOCI_CI_BACKEND: ${{ matrix.backend }}
       SOCI_MYSQL_ROOT_PASSWORD: root
       ASAN_OPTIONS: fast_unwind_on_malloc=0
+      UBSAN_OPTIONS: 'print_stacktrace=1:halt_on_error=1'
+      SOCI_CXXSTD: 14
 
     steps:
       - name: Checkout
-        run: |
-          case "${{matrix.container}}" in
-            ubuntu:18.04)
-              export DEBIAN_FRONTEND=noninteractive
-
-              apt-get update -qq
-              apt-get install -qq git
-              ;;
-          esac
-
-          git config --global init.defaultBranch master
-          git config --global --add safe.directory `pwd`
-          git config --global advice.detachedHead false
-          git init .
-          git remote add origin https://github.com/SOCI/soci.git
-          git fetch --depth=1 origin $GITHUB_SHA
-          git checkout FETCH_HEAD
+        uses: actions/checkout@v4
 
       - name: Set environment variables
+        shell: bash
         run: |
           set_env_var() {
             echo "Setting environment variable $1=$2"
@@ -130,14 +164,6 @@ jobs:
               ;;
           esac
 
-          case "${{matrix.container}}" in
-            ubuntu:18.04)
-              # We need to use this option as GitHub certificate is not recognized by
-              # wget in this old container otherwise.
-              set_env_var SOCI_WGET_OPTIONS --no-check-certificate
-              ;;
-          esac
-
           if [ -n "${{matrix.cxxstd}}" ]; then
             set_env_var SOCI_CXXSTD ${{matrix.cxxstd}}
           fi
@@ -150,15 +176,23 @@ jobs:
           if [ "${{matrix.build_examples}}" = true ]; then
             set_env_var BUILD_EXAMPLES YES
           fi
-          if [ "${{matrix.no_ubsan}}" = true ]; then
-            set_env_var SOCI_NO_UBSAN 1
-          else
-            set_env_var UBSAN_OPTIONS print_stacktrace=1:halt_on_error=1
+          if [ "${{matrix.lib_type}}" = "static" ]; then
+            set_env_var SOCI_BUILD_STATIC YES
           fi
+          if [ "${{matrix.unity_build}}" = false ]; then
+            set_env_var SOCI_ENABLE_UNITY_BUILD ON
+          else
+            set_env_var SOCI_ENABLE_UNITY_BUILD OFF
+          fi
+          if [ "${{matrix.mariadb}}" = true ]; then
+            set_env_var SOCI_MYSQL_USE_MARIADB YES
+          fi
+          # Ensure SOCI_CI_BACKEND is always lowercase
+          set_env_var SOCI_CI_BACKEND "$( echo "$SOCI_CI_BACKEND" | tr '[:upper:]' '[:lower:]' )"
 
       - name: Setup tmate
-        uses: mxschmitt/action-tmate@v3
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.enable_ssh }}
+        uses: mxschmitt/action-tmate@v3
 
       - name: Install dependencies
         run: ./scripts/ci/install.sh

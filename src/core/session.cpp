@@ -26,9 +26,6 @@ namespace soci
     };
 } // soci
 
-namespace // anonymous
-{
-
 void ensureConnected(session_backend * backEnd)
 {
     if (backEnd == NULL)
@@ -46,7 +43,7 @@ public:
         logStream_ = NULL;
     }
 
-    virtual void start_query(std::string const & query)
+    virtual void start_query(std::string const & query) override
     {
         logger_impl::start_query(query);
 
@@ -58,23 +55,23 @@ public:
         lastQuery_ = query;
     }
 
-    virtual void set_stream(std::ostream * s)
+    virtual void set_stream(std::ostream * s) override
     {
         logStream_ = s;
     }
 
-    virtual std::ostream * get_stream() const
+    virtual std::ostream * get_stream() const override
     {
         return logStream_;
     }
 
-    virtual std::string get_last_query() const
+    virtual std::string get_last_query() const override
     {
         return lastQuery_;
     }
 
 private:
-    virtual logger_impl* do_clone() const
+    virtual logger_impl* do_clone() const override
     {
         return new standard_logger_impl;
     }
@@ -82,8 +79,6 @@ private:
     std::ostream * logStream_;
     std::string lastQuery_;
 };
-
-} // namespace anonymous
 
 session::session()
     : once(this), prepare(this),

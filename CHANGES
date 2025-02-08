@@ -19,6 +19,7 @@ Other changes in v4.1.0:
  - Support for integer types has been completely revamped and the new db_type
    with db_xxx constants should be used instead of the old data_type enum and
    dt_xxx constants (#954, #1116).
+ - Build system has been significantly modernized and improved (#1118).
 
 Changes affecting all or multiple backends:
  - Make rowset more convenient and safer (#198, #1057, #1081, #1082, #1086).

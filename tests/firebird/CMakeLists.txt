@@ -1,16 +1,11 @@
-###############################################################################
-#
-# This file is part of CMake configuration for SOCI library
-#
-# Copyright (C) 2010-2013 Mateusz Loskot <mateusz@loskot.net>
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE_1_0.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
-#
-###############################################################################
+add_executable(soci_firebird_test
+  "test-firebird.cpp"
+)
+target_link_libraries(soci_firebird_test PRIVATE soci_tests_common SOCI::Firebird)
 
-soci_backend_test(
-  BACKEND Firebird
-  DEPENDS Firebird
-  SOURCE test-firebird.cpp
-  CONNSTR "service=/tmp/soci_test.fdb user=SYSDBA password=masterkey")
+set(SOCI_FIREBIRD_TEST_CONNSTR "service=/tmp/soci_test.fdb user=SYSDBA password=masterkey" CACHE STRING "The connection string to use for Firebird tests")
+
+add_test(
+  NAME soci_firebird_test
+  COMMAND soci_firebird_test "${SOCI_FIREBIRD_TEST_CONNSTR}" "--invisibles"
+)

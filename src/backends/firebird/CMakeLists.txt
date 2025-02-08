@@ -1,16 +1,45 @@
-###############################################################################
-#
-# This file is part of CMake configuration for SOCI library
-#
-# Copyright (C) 2013 Viacheslav Naydenov
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE_1_0.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
-#
-###############################################################################
+include(soci_define_backend_target)
 
-soci_backend(Firebird
-  DEPENDS Firebird
-  DESCRIPTION "SOCI backend for Firebird"
-  AUTHORS "Rafał Bobrowski"
-  MAINTAINERS "Viacheslav Naydenov")
+option(SOCI_FIREBIRD_EMBEDDED "Use the embedded version of Firebird" OFF)
+if (SOCI_FIREBIRD_EMBEDDED)
+  set(Firebird_SEARCH_EMBEDDED ON)
+endif()
+
+if (SOCI_FIREBIRD_AUTO)
+  set(DEPENDENCY_MODE "DISABLE")
+else()
+  set(DEPENDENCY_MODE "ERROR")
+endif()
+
+soci_define_backend_target(
+  BACKEND_NAME "Firebird"
+  TARGET_NAME "soci_firebird"
+  ALIAS_NAME "Firebird"
+  DEPENDENCIES
+  "Firebird YIELDS Firebird::Firebird"
+  REQUIRED_COMPONENTS SOCI::Core
+  SOURCE_FILES
+    "blob.cpp"
+    "common.cpp"
+    "error-firebird.cpp"
+    "factory.cpp"
+    "session.cpp"
+    "standard-into-type.cpp"
+    "standard-use-type.cpp"
+    "statement.cpp"
+    "vector-into-type.cpp"
+    "vector-use-type.cpp"
+  HEADER_FILES
+    "${PROJECT_SOURCE_DIR}/include/soci/firebird/soci-firebird.h"
+  PRIVATE_INCLUDE_DIRS
+    "${PROJECT_SOURCE_DIR}/include/private"
+  FIND_PACKAGE_FILES
+    "${PROJECT_SOURCE_DIR}/cmake/find_modules/FindFirebird.cmake"
+  MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
+  ENABLED_VARIABLE "SOCI_FIREBIRD"
+)
+
+if (NOT SOCI_FIREBIRD)
+  return()
+endif()
+

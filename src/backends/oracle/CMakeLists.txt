@@ -1,15 +1,39 @@
-###############################################################################
-#
-# This file is part of CMake configuration for SOCI library
-#
-# Copyright (C) 2010 Mateusz Loskot
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE_1_0.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
-#
-###############################################################################
-soci_backend(Oracle
-  DEPENDS Oracle
-  DESCRIPTION "SOCI backend for Oracle 10+"
-  AUTHORS "Maciej Sobczak, Stephen Hutton"
-  MAINTAINERS "Maciej Sobczak")
+include(soci_define_backend_target)
+
+if (SOCI_ORACLE_AUTO)
+  set(DEPENDENCY_MODE "DISABLE")
+else()
+  set(DEPENDENCY_MODE "ERROR")
+endif()
+
+soci_define_backend_target(
+  BACKEND_NAME "Oracle"
+  TARGET_NAME "soci_oracle"
+  ALIAS_NAME "Oracle"
+  DEPENDENCIES
+    "Oracle YIELDS Oracle::Oracle"
+  REQUIRED_COMPONENTS SOCI::Core
+  SOURCE_FILES
+    "blob.cpp"
+    "error.cpp"
+    "factory.cpp"
+    "row-id.cpp"
+    "session.cpp"
+    "standard-into-type.cpp"
+    "standard-use-type.cpp"
+    "statement.cpp"
+    "vector-into-type.cpp"
+    "vector-use-type.cpp"
+  HEADER_FILES
+    "${PROJECT_SOURCE_DIR}/include/soci/oracle/soci-oracle.h"
+  PRIVATE_INCLUDE_DIRS
+    "${PROJECT_SOURCE_DIR}/include/private"
+  FIND_PACKAGE_FILES
+    "${PROJECT_SOURCE_DIR}/cmake/find_modules/FindOracle.cmake"
+  MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
+  ENABLED_VARIABLE "SOCI_ORACLE"
+)
+
+if (NOT SOCI_ORACLE)
+  return()
+endif()
