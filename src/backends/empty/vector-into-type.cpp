@@ -33,7 +33,7 @@ void empty_vector_into_type_backend::resize(std::size_t /* sz */)
     // ...
 }
 
-std::size_t empty_vector_into_type_backend::size()
+std::size_t empty_vector_into_type_backend::size() const
 {
     // ...
     return 1;

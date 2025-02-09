@@ -33,7 +33,7 @@ void empty_vector_use_type_backend::pre_use(indicator const * /* ind */)
     // ...
 }
 
-std::size_t empty_vector_use_type_backend::size()
+std::size_t empty_vector_use_type_backend::size() const
 {
     // ...
     return 1;

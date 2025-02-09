@@ -13,6 +13,7 @@
 #include "soci/use-type.h"
 #include "soci/values.h"
 #include "soci-compiler.h"
+#include "soci-ssize.h"
 #include "soci/log-context.h"
 #include <ctime>
 #include <cctype>
@@ -104,7 +105,7 @@ void statement_impl::bind(values & values)
             {
                 // positional use element
 
-                int position = static_cast<int>(uses_.size());
+                int position = ssize(uses_);
                 (*it)->bind(*this, position);
                 uses_.push_back(*it);
                 indicators_.push_back(values.indicators_[cnt]);
@@ -130,7 +131,7 @@ void statement_impl::bind(values & values)
                     }
                     else
                     {
-                        int position = static_cast<int>(uses_.size());
+                        int position = ssize(uses_);
                         (*it)->bind(*this, position);
                         uses_.push_back(*it);
                         indicators_.push_back(values.indicators_[cnt]);

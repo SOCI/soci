@@ -198,7 +198,7 @@ void firebird_vector_use_type_backend::copy_to_blob(const std::string &in)
     memcpy(buf_, &blob_id, sizeof(blob_id));
 }
 
-std::size_t firebird_vector_use_type_backend::size()
+std::size_t firebird_vector_use_type_backend::size() const
 {
     return get_vector_size(type_, data_);
 }

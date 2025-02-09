@@ -263,7 +263,7 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
     }
 }
 
-std::size_t postgresql_vector_use_type_backend::size()
+std::size_t postgresql_vector_use_type_backend::size() const
 {
     // as a special error-detection measure, check if the actual vector size
     // was changed since the original bind (when it was stored in end_var_):
@@ -284,7 +284,7 @@ std::size_t postgresql_vector_use_type_backend::size()
     }
 }
 
-std::size_t postgresql_vector_use_type_backend::full_size()
+std::size_t postgresql_vector_use_type_backend::full_size() const
 {
     std::size_t sz SOCI_DUMMY_INIT(0);
     switch (type_)

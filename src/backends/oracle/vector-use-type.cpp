@@ -388,7 +388,7 @@ void oracle_vector_use_type_backend::pre_use(indicator const *ind)
     }
 }
 
-std::size_t oracle_vector_use_type_backend::size()
+std::size_t oracle_vector_use_type_backend::size() const
 {
     // as a special error-detection measure, check if the actual vector size
     // was changed since the original bind (when it was stored in end_var_):
@@ -409,7 +409,7 @@ std::size_t oracle_vector_use_type_backend::size()
     }
 }
 
-std::size_t oracle_vector_use_type_backend::full_size()
+std::size_t oracle_vector_use_type_backend::full_size() const
 {
     return get_vector_size(type_, data_);
 }
