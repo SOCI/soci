@@ -9,7 +9,6 @@
 #pragma warning(disable : 4512)
 #endif
 
-#define SOCI_SQLITE3_SOURCE
 #include "soci-cstrtoi.h"
 #include "soci-dtocstr.h"
 #include "soci-exchange-cast.h"

@@ -5,7 +5,6 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_SOURCE
 #include "soci/prepare-temp-type.h"
 #include "soci/ref-counted-prepare-info.h"
 #include "soci/session.h"

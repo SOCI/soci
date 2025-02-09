@@ -156,16 +156,23 @@ macro(soci_backend NAME)
           ${THIS_BACKEND_SOURCES}
           ${THIS_BACKEND_HEADERS})
         add_library(Soci::${NAMEL} ALIAS ${THIS_BACKEND_TARGET})
+        # must define SOCI_DLL when using the shared libraries
+        target_compile_definitions(${THIS_BACKEND_TARGET} PUBLIC SOCI_DLL)
 
         target_link_libraries(${THIS_BACKEND_TARGET}
           ${SOCI_CORE_TARGET}
           ${THIS_BACKEND_DEPENDS_LIBRARIES})
 
+        # shared target properties
+        set_target_properties(${THIS_BACKEND_TARGET}
+          PROPERTIES
+          # for each backend library a separate export macro is required
+          DEFINE_SYMBOL SOCI_${NAMEU}_SOURCE)
+
         if(WIN32)
           set_target_properties(${THIS_BACKEND_TARGET}
             PROPERTIES
-            OUTPUT_NAME ${THIS_BACKEND_OUTPUT_NAME}
-            DEFINE_SYMBOL SOCI_DLL)
+            OUTPUT_NAME ${THIS_BACKEND_OUTPUT_NAME})
         else()
           set_target_properties(${THIS_BACKEND_TARGET}
             PROPERTIES
@@ -366,7 +373,7 @@ macro(soci_backend_test)
       target_link_libraries(${TEST_TARGET_STATIC}
         ${SOCI_CORE_DEPS_LIBS}
         ${THIS_TEST_DEPENDS_LIBRARIES}
-        soci_tests_common
+        soci_tests_common_static
         soci_${BACKENDL}_static
         soci_core_static)
 

@@ -5,7 +5,6 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_POSTGRESQL_SOURCE
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci/blob.h"
 #include "soci/rowid.h"
