@@ -105,19 +105,20 @@ When it comes to enabling specific backends, SOCI supports three distinct option
 #### Firebird
 
 * `SOCI_FIREBIRD` - Enabler - Enables the [Firebird](backends/firebird.md) backend.
-* `FIREBIRD_INCLUDE_DIRS` - string - Path to Firebird include directories where CMake should look for `ibase.h` header.
-* `FIREBIRD_LIBRARIES` - string - Full paths to Firebird `fbclient` or `fbclient_ms` libraries to link SOCI against to enable the backend support.
+* `Firebird_INCLUDE_DIRS` - string - Path to Firebird include directories where CMake should look for `ibase.h` header.
+* `Firebird_LIBRARIES` - string - Full paths to Firebird `fbclient` or `fbclient_ms` libraries to link SOCI against to enable the backend support.
 * `SOCI_FIREBIRD_TEST_CONNSTR` - string - See [Firebird backend reference](backends/firebird.md) for details. Example: `-DSOCI_FIREBIRD_TEST_CONNSTR:STRING="service=LOCALHOST:/tmp/soci_test.fdb user=SYSDBA password=masterkey"`
 * `SOCI_FIREBIRD_SKIP_TESTS` - boolean - Skips testing this backend.
 
 #### MySQL
 
 * `SOCI_MYSQL` - Enabler - Enables the [MySQL](backends/mysql.md) backend.
-* `MYSQL_DIR` - string - Path to MySQL installation root directory. CMake will scan subdirectories `MYSQL_DIR/include` and `MYSQL_DIR/lib` respectively for MySQL headers and libraries.
-* `MYSQL_INCLUDE_DIRS` - string - Path to MySQL include directory where CMake should look for `mysql.h` header.
-* `MYSQL_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
+* `MySQL_INCLUDE_DIRS` - string - Path to MySQL include directory where CMake should look for `mysql.h` header.
+* `MySQL_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
 * `SOCI_MYSQL_TEST_CONNSTR` - string - Connection string to MySQL test database. Format of the string is explained [MySQL backend reference](backends/mysql.md). Example: `-DSOCI_MYSQL_TEST_CONNSTR:STRING="db=mydb user=mloskot password=secret"`
 * `SOCI_MYSQL_SKIP_TESTS` - boolean - Skips testing this backend.
+
+Furthermore, the `MYSQL_DIR` _environment variable_ can be set to the MySQL installation root. CMake will scan subdirectories `MYSQL_DIR/include` and `MYSQL_DIR/lib` respectively for MySQL headers and libraries.
 
 #### ODBC
 
@@ -128,8 +129,8 @@ When it comes to enabling specific backends, SOCI supports three distinct option
 #### Oracle
 
 * `SOCI_ORACLE` - Enabler - Enables the [Oracle](backends/oracle.md) backend.
-* `ORACLE_INCLUDE_DIRS` - string - Path to Oracle include directory where CMake should look for `oci.h` header.
-* `ORACLE_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
+* `Oracle_INCLUDE_DIRS` - string - Path to Oracle include directory where CMake should look for `oci.h` header.
+* `Oracle_LIBRARIES` - string - Full paths to libraries to link SOCI against to enable the backend support.
 * `SOCI_ORACLE_TEST_CONNSTR` - string - Connection string to Oracle test database. Format of the string is explained [Oracle backend reference](backends/oracle.md). Example: `-DSOCI_ORACLE_TEST_CONNSTR:STRING="service=orcl user=scott password=tiger"`
 * `SOCI_ORACLE_SKIP_TESTS` - boolean - Skips testing this backend.
 
