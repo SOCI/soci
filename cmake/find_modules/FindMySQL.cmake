@@ -8,9 +8,9 @@ if (DEFINED MYSQL_INCLUDE_DIR)
   message(DEPRECATION "MYSQL_INCLUDE_DIR has been deprecated. Use MySQL_INCLUDE_DIRS instead")
   set(MySQL_INCLUDE_DIRS "${MYSQL_INCLUDE_DIR}")
 endif()
-if (DEFINED MySQL_LIBRARIES)
-  message(DEPRECATION "MySQL_LIBRARIES has been deprecated. Use MySQL_LIBRARIES instead")
-  set(MySQL_LIBRARIES "${MySQL_LIBRARIES}")
+if (DEFINED MYSQL_LIBRARIES)
+  message(DEPRECATION "MYSQL_LIBRARIES has been deprecated. Use MySQL_LIBRARIES instead")
+  set(MySQL_LIBRARIES "${MYSQL_LIBRARIES}")
 endif()
 
 
