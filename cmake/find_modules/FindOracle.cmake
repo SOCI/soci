@@ -22,6 +22,15 @@
 #
 ###############################################################################
 
+if (DEFINED ORACLE_INCLUDE_DIR)
+  message(DEPRECATION "ORACLE_INCLUDE_DIR has been deprecated. Use Oracle_INCLUDE_DIRS instead")
+  set(Oracle_INCLUDE_DIRS "${ORACLE_INCLUDE_DIR}")
+endif()
+if (DEFINED ORACLE_LIBRARY)
+  message(DEPRECATION "ORACLE_LIBRARY has been deprecated. Use Oracle_LIBRARIES instead")
+  set(Oracle_LIBRARIES "${ORACLE_LIBRARY}")
+endif()
+
 # First check for CMAKE  variable
 if(NOT ORACLE_HOME AND NOT Oracle_HOME)
   if(EXISTS $ENV{ORACLE_HOME})

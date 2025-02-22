@@ -4,6 +4,15 @@
 #  MySQL_FOUND
 #  An interface target MySQL::MySQL to be used in a target_link_libraries call
 
+if (DEFINED MYSQL_INCLUDE_DIR)
+  message(DEPRECATION "MYSQL_INCLUDE_DIR has been deprecated. Use MySQL_INCLUDE_DIRS instead")
+  set(MySQL_INCLUDE_DIRS "${MYSQL_INCLUDE_DIR}")
+endif()
+if (DEFINED MySQL_LIBRARIES)
+  message(DEPRECATION "MySQL_LIBRARIES has been deprecated. Use MySQL_LIBRARIES instead")
+  set(MySQL_LIBRARIES "${MySQL_LIBRARIES}")
+endif()
+
 
 if (DEFINED VCPKG_TARGET_TRIPLET)
   # In vcpg the MySQL packages are called unofficial-libmysql

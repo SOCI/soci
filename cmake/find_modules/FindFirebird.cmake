@@ -9,6 +9,15 @@
 # Firebird_LIBRARIES - the libraries to link against to use Firebird
 # Firebird_FOUND - true if Firebird was found
 
+if (DEFINED FIREBIRD_INCLUDE_DIR)
+  message(DEPRECATION "FIREBIRD_INCLUDE_DIR has been deprecated. Use Firebird_INCLUDE_DIRS instead.")
+  set(Firebird_INCLUDE_DIRS "${FIREBIRD_INCLUDE_DIR}")
+endif()
+if (DEFINED FIREBIRD_LIBRARIES)
+  message(DEPRECATION "FIREBIRD_LIBRARIES has been deprecated. Use Firebird_LIBRARIES instead.")
+  set(Firebird_LIBRARIES "${FIREBIRD_LIBRARIES}")
+endif()
+
 find_path(Firebird_INCLUDE_DIRS ibase.h
   /usr/include
   $ENV{ProgramFiles}/Firebird/*/include
