@@ -22,32 +22,23 @@ if (DEFINED VCPKG_TARGET_TRIPLET)
     set(MySQL_FOUND TRUE)
     message(STATUS "Found MySQL via vcpkg installation")
     add_library(MySQL::MySQL ALIAS ${LIBRARY_TARGET})
-    return()
   endif()
 endif()
 
-find_package(PkgConfig QUIET)
+if (NOT TARGET MySQL::MySQL)
+  find_package(PkgConfig QUIET)
 
-if (PKG_CONFIG_FOUND)
-  # Try via PkgConfig
-  pkg_check_modules(MYSQLCLIENT QUIET mysqlclient)
+  if (PKG_CONFIG_FOUND)
+    # Try via PkgConfig
+    pkg_check_modules(MySQL IMPORTED_TARGET QUIET mysqlclient)
 
-  if (MYSQLCLIENT_FOUND)
-    if (NOT BUILD_SHARED_LIBS AND MYSQLCLIENT_STATIC_FOUND)
-      set(PREFIX MYSQLCLIENT_STATIC)
-    else()
-      set(PREFIX MYSQLCLIENT)
+    if (TARGET PkgConfig::MySQL)
+      add_library(MySQL::MySQL ALIAS PkgConfig::MySQL)
     endif()
-
-    set(MySQL_LIBRARIES ${${PREFIX}_LINK_LIBRARIES})
-    set(MySQL_LDFLAGS ${${PREFIX}_LDFLAGS} ${${PREFIX}_LDFLAGS_OTHER})
-    set(MySQL_INCLUDE_DIRS ${${PREFIX}_INCLUDE_DIRS} ${${PREFIX}_INCLUDE_DIRS_OTHER})
-    set(MySQL_CFLAGS ${${PREFIX}_CFLAGS} ${${PREFIX}_CFLAGS_OTHER})
-    set(MySQL_VERSION ${MYSQLCLIENT_VERSION})
   endif()
 endif()
 
-if (NOT MySQL_LIBRARIES)
+if (NOT TARGET MySQL::MySQL)
   # Try using config exe
   find_program(CONFIG_EXE
     NAMES
@@ -60,63 +51,63 @@ if (NOT MySQL_LIBRARIES)
   )
 
   if (CONFIG_EXE)
-    execute_process(COMMAND ${CONFIG_EXE} --include OUTPUT_VARIABLE MySQL_INCLUDE_DIRS OUTPUT_STRIP_TRAILING_WHITESPACE)
-    execute_process(COMMAND ${CONFIG_EXE} --libs OUTPUT_VARIABLE MySQL_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
-    execute_process(COMMAND ${CONFIG_EXE} --version OUTPUT_VARIABLE MySQL_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if (NOT MySQL_INCLUDE_DIRS)
+      execute_process(COMMAND ${CONFIG_EXE} --include OUTPUT_VARIABLE MySQL_INCLUDE_DIRS OUTPUT_STRIP_TRAILING_WHITESPACE)
+    endif()
+    if (NOT MySQL_LIBRARIES)
+      execute_process(COMMAND ${CONFIG_EXE} --libs OUTPUT_VARIABLE MySQL_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
+    endif()
+    if (NOT MySQL_VERSION)
+      execute_process(COMMAND ${CONFIG_EXE} --version OUTPUT_VARIABLE MySQL_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+    endif()
   endif()
-endif()
 
-if (NOT MySQL_LIBRARIES)
-  message(WARNING "Falling back to manual MySQL search -> this might miss dependencies")
+  if (NOT MySQL_LIBRARIES)
+    message(WARNING "Falling back to manual MySQL search -> this might miss dependencies")
+  endif()
+
   set(MySQL_COMPILE_DEFINITIONS "")
 
   include(CheckCXXSourceCompiles)
 
-  foreach(TOP_LEVEL_DIR IN ITEMS "mysql/" "")
-    if(WIN32)
-      find_path(MySQL_INCLUDE_DIRS ${TOP_LEVEL_DIR}mysql.h
-          PATHS
-          $ENV{MYSQL_INCLUDE_DIR}
-          $ENV{MYSQL_INCLUDE_DIRS}
-          $ENV{MYSQL_DIR}/include
-          $ENV{MYSQL_DIRS}/include
-          $ENV{ProgramFiles}/MySQL/*/include
-          $ENV{SystemDrive}/MySQL/*/include
-          $ENV{ProgramW6432}/MySQL/*/include
-       )
-    else()
-      find_path(MySQL_INCLUDE_DIRS ${TOP_LEVEL_DIR}mysql.h
-          PATHS
-          $ENV{MYSQL_INCLUDE_DIR}
-          $ENV{MYSQL_INCLUDE_DIRS}
-          $ENV{MYSQL_DIR}/include
-          $ENV{MYSQL_DIRS}/include
-          PATH_SUFFIXES
-          mariadb
-          mysql
-       )
-    endif()
+  if(WIN32)
+    find_path(MySQL_INCLUDE_DIRS mysql.h
+        PATHS
+        $ENV{MYSQL_INCLUDE_DIR}
+        $ENV{MYSQL_INCLUDE_DIRS}
+        $ENV{MYSQL_DIR}/include
+        $ENV{MYSQL_DIRS}/include
+        $ENV{ProgramFiles}/MySQL/*/include
+        $ENV{SystemDrive}/MySQL/*/include
+        $ENV{ProgramW6432}/MySQL/*/include
+     )
+  else()
+    find_path(MySQL_INCLUDE_DIRS mysql.h
+        PATHS
+        $ENV{MYSQL_INCLUDE_DIR}
+        $ENV{MYSQL_INCLUDE_DIRS}
+        $ENV{MYSQL_DIR}/include
+        $ENV{MYSQL_DIRS}/include
+        PATH_SUFFIXES
+        mariadb
+        mysql
+     )
+  endif()
 
-    if (MySQL_INCLUDE_DIRS)
-      if (TOP_LEVEL_DIR STREQUAL "")
-        list(APPEND MySQL_COMPILE_DEFINITIONS SOCI_MYSQL_DIRECT_INCLUDE)
-        set(VERSION_FILE "${MySQL_INCLUDE_DIRS}/mysql_version.h")
-      else()
-        set(VERSION_FILE "${MySQL_INCLUDE_DIRS}/mysql/mysql_version.h")
-      endif()
+  if (MySQL_INCLUDE_DIRS)
+    set(VERSION_FILE "${MySQL_INCLUDE_DIRS}/mysql_version.h")
 
+    if (EXISTS "${VERSION_FILE}")
       # Parse out MySQL version
       file(READ "${VERSION_FILE}" VERSION_CONTENT)
       string(REGEX MATCH "#define[ \t]+LIBMYSQL_VERSION[ \t]+\"([^\"]+)\"" VERSION_CONTENT "${VERSION_CONTENT}")
       set(MySQL_VERSION "${CMAKE_MATCH_1}")
-
-      break()
     endif()
-  endforeach()
+  endif()
 
   if(WIN32)
-     if (${CMAKE_BUILD_TYPE})
-      string(TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_TOLOWER)
+     if (CMAKE_BUILD_TYPE)
+       string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_TOLOWER)
      endif()
 
      # path suffix for debug/release mode
@@ -161,13 +152,49 @@ if (NOT MySQL_LIBRARIES)
   endif()
 endif()
 
+if (TARGET MySQL::MySQL)
+  set(LIB_TARGET MySQL::MySQL)
+  set(UNDERLYING_TARGET MySQL::MySQL)
+
+  while (UNDERLYING_TARGET)
+    set(LIB_TARGET "${UNDERLYING_TARGET}")
+    get_target_property(UNDERLYING_TARGET ${LIB_TARGET} ALIASED_TARGET)
+  endwhile()
+
+  if (NOT MySQL_VERSION)
+    get_target_property(MySQL_VERSION ${LIB_TARGET} VERSION)
+  endif()
+
+  if (NOT MySQL_INCLUDE_DIRS)
+    get_target_property(MySQL_INCLUDE_DIRS ${LIB_TARGET} INTERFACE_INCLUDE_DIRECTORIES)
+  endif()
+  if (NOT MySQL_INCLUDE_DIRS)
+    get_target_property(MySQL_INCLUDE_DIRS ${LIB_TARGET} INTERFACE_SYSTEM_INCLUDE_DIRECTORIES)
+  endif()
+  if (NOT MySQL_INCLUDE_DIRS)
+    get_target_property(MySQL_INCLUDE_DIRS ${LIB_TARGET} INCLUDE_DIRECTORIES)
+  endif()
+
+  if (NOT MySQL_LIBRARIES)
+    get_target_property(MySQL_LIBRARIES ${LIB_TARGET} INTERFACE_LINK_LIBRARIES)
+  endif()
+  if (NOT MySQL_LIBRARIES)
+    get_target_property(MySQL_LIBRARIES ${LIB_TARGET} LINK_LIBRARIES)
+  endif()
+
+  if (NOT MySQL_VERSION)
+    # To prevent printing a weird xyz-NOTFOUND as the version number
+    unset(MySQL_VERSION)
+  endif()
+endif()
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MySQL
   REQUIRED_VARS MySQL_LIBRARIES MySQL_INCLUDE_DIRS
   VERSION_VAR MySQL_VERSION
 )
 
-if (MySQL_FOUND)
+if (MySQL_FOUND AND NOT TARGET MySQL::MySQL)
   add_library(MySQL INTERFACE)
   target_link_libraries(MySQL INTERFACE ${MySQL_LIBRARIES})
   target_include_directories(MySQL SYSTEM INTERFACE ${MySQL_INCLUDE_DIRS})
