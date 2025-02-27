@@ -201,9 +201,8 @@ else()
   string(REGEX REPLACE "${FLAG_REGEX}" "\\1" MySQL_LIBRARIES "${MySQL_LIBRARIES}")
 
   # Convert space-separated string into list
-  # Note: this will break if paths contain spaces as this doesn't check for quotes
-  string(REPLACE " " ";" MySQL_INCLUDE_DIRS "${MySQL_INCLUDE_DIRS}")
-  string(REPLACE " " ";" MySQL_LIBRARIES "${MySQL_LIBRARIES}")
+  separate_arguments(MySQL_INCLUDE_DIRS NATIVE_COMMAND "${MySQL_INCLUDE_DIRS}")
+  separate_arguments(MySQL_LIBRARIES NATIVE_COMMAND "${MySQL_LIBRARIES}")
 endif()
 
 include(FindPackageHandleStandardArgs)
