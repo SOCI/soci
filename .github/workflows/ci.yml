@@ -119,6 +119,11 @@ jobs:
             backend: Valgrind
             runner: ubuntu-24.04
             name: Valgrind
+          - lib_type: shared
+            backend: MySQL
+            runner: ubuntu-24.04
+            mariadb: true
+            name: MariaDB
 
     runs-on: ${{ matrix.runner }}
     name: ${{ format('{0} on {1}', (matrix.name != '' && matrix.name || format('{0} ({1})', matrix.backend, matrix.lib_type)), matrix.runner) }}
@@ -178,6 +183,9 @@ jobs:
             set_env_var SOCI_ENABLE_UNITY_BUILD ON
           else
             set_env_var SOCI_ENABLE_UNITY_BUILD OFF
+          fi
+          if [ "${{matrix.mariadb}}" = true ]; then
+            set_env_var SOCI_MYSQL_USE_MARIADB YES
           fi
           # Ensure SOCI_CI_BACKEND is always lowercase
           set_env_var SOCI_CI_BACKEND "$( echo "$SOCI_CI_BACKEND" | tr '[:upper:]' '[:lower:]' )"
