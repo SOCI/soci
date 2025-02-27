@@ -61,9 +61,20 @@ if (NOT TARGET MySQL::MySQL)
   if (CONFIG_EXE)
     if (NOT MySQL_INCLUDE_DIRS)
       execute_process(COMMAND ${CONFIG_EXE} --include OUTPUT_VARIABLE MySQL_INCLUDE_DIRS OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+      # Convert include options of the form -I/dir into just the directories.
+      string(REGEX REPLACE "(^| )(-I|-isystem ?)" " " MySQL_INCLUDE_DIRS "${MySQL_INCLUDE_DIRS}")
+
+      # And convert the space-separated string into list.
+      separate_arguments(MySQL_INCLUDE_DIRS NATIVE_COMMAND "${MySQL_INCLUDE_DIRS}")
     endif()
     if (NOT MySQL_LIBRARIES)
       execute_process(COMMAND ${CONFIG_EXE} --libs OUTPUT_VARIABLE MySQL_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+      # Note that we can't remove the -l and/or -L options here, as we can
+      # have both of them intermixed, but, luckily, target_link_libraries()
+      # accepts both of them directly.
+      separate_arguments(MySQL_LIBRARIES NATIVE_COMMAND "${MySQL_LIBRARIES}")
     endif()
     if (NOT MySQL_VERSION)
       execute_process(COMMAND ${CONFIG_EXE} --version OUTPUT_VARIABLE MySQL_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -194,15 +205,6 @@ if (TARGET MySQL::MySQL)
     # To prevent printing a weird xyz-NOTFOUND as the version number
     unset(MySQL_VERSION)
   endif()
-else()
-  # Convert list of include/link flags into just he flag values (i.e. strip the "-I" from "-I/some/thing")
-  set(FLAG_REGEX "(^| )-[a-zA-Z]")
-  string(REGEX REPLACE "${FLAG_REGEX}" "\\1" MySQL_INCLUDE_DIRS "${MySQL_INCLUDE_DIRS}")
-  string(REGEX REPLACE "${FLAG_REGEX}" "\\1" MySQL_LIBRARIES "${MySQL_LIBRARIES}")
-
-  # Convert space-separated string into list
-  separate_arguments(MySQL_INCLUDE_DIRS NATIVE_COMMAND "${MySQL_INCLUDE_DIRS}")
-  separate_arguments(MySQL_LIBRARIES NATIVE_COMMAND "${MySQL_LIBRARIES}")
 endif()
 
 include(FindPackageHandleStandardArgs)
