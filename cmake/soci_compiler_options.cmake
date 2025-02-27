@@ -66,7 +66,7 @@ else()
     if (NOT CAN_USE_CUSTOM_LD)
       message(FATAL_ERROR "Can't use custom linker '${SOCI_LD}' - compiler doesn't accept flag '${USE_LD_FLAG}'")
     endif()
-    target_link_options(soci_compiler_options INTERFACE "${USE_LD_FLAG}")
+    target_link_options(soci_compiler_interface INTERFACE "${USE_LD_FLAG}")
   endif()
 
 
