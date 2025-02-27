@@ -29,7 +29,6 @@ if (DEFINED VCPKG_TARGET_TRIPLET)
 
   if (${FOUND_VAR})
     set(MySQL_FOUND TRUE)
-    message(STATUS "Found MySQL via vcpkg installation")
     add_library(MySQL::MySQL ALIAS ${LIBRARY_TARGET})
   endif()
 endif()
@@ -195,6 +194,16 @@ if (TARGET MySQL::MySQL)
     # To prevent printing a weird xyz-NOTFOUND as the version number
     unset(MySQL_VERSION)
   endif()
+else()
+  # Convert list of include/link flags into just he flag values (i.e. strip the "-I" from "-I/some/thing")
+  set(FLAG_REGEX "(^| )-[a-zA-Z]")
+  string(REGEX REPLACE "${FLAG_REGEX}" "\\1" MySQL_INCLUDE_DIRS "${MySQL_INCLUDE_DIRS}")
+  string(REGEX REPLACE "${FLAG_REGEX}" "\\1" MySQL_LIBRARIES "${MySQL_LIBRARIES}")
+
+  # Convert space-separated string into list
+  # Note: this will break if paths contain spaces as this doesn't check for quotes
+  string(REPLACE " " ";" MySQL_INCLUDE_DIRS "${MySQL_INCLUDE_DIRS}")
+  string(REPLACE " " ";" MySQL_LIBRARIES "${MySQL_LIBRARIES}")
 endif()
 
 include(FindPackageHandleStandardArgs)
