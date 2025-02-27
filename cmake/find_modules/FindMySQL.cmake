@@ -38,7 +38,7 @@ if (NOT TARGET MySQL::MySQL)
 
   if (PKG_CONFIG_FOUND)
     # Try via PkgConfig
-    pkg_check_modules(MySQL IMPORTED_TARGET QUIET mysqlclient)
+    pkg_search_module(MySQL IMPORTED_TARGET QUIET mysqlclient libmariadb)
 
     if (TARGET PkgConfig::MySQL)
       add_library(MySQL::MySQL ALIAS PkgConfig::MySQL)
