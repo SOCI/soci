@@ -52,6 +52,7 @@ Steps outline using GNU Make `Makefile`-s:
 cmake -DSOCI_ORACLE=OFF (...) -B build -S /path/to/soci-X.Y.Z
 cmake --build build
 ```
+
 Optionally, SOCI defines an install target that can be executed (on Unix systems)
 via `make install`.
 
@@ -84,9 +85,10 @@ Some other build options:
 * `SOCI_LTO` - boolean - Build with link-time optimizations, if supported. This produces noticeably smaller libraries. Default is `OFF`, but turning it on is recommended for the production builds.
 
 When it comes to enabling specific backends, SOCI supports three distinct options that can be used as `Enabler` type as used below:
-- `AUTO`: Try to locate the backend's dependencies. If all dependencies are met, enable the backend, otherwise disable it and continue without it.
-- `OFF`: Disable the backend.
-- `ON`: Enables the backend. If one or more of its dependencies are unmet, error and abort configuration.
+
+* `AUTO`: Try to locate the backend's dependencies. If all dependencies are met, enable the backend, otherwise disable it and continue without it.
+* `OFF`: Disable the backend.
+* `ON`: Enables the backend. If one or more of its dependencies are unmet, error and abort configuration.
 
 #### Empty (sample backend)
 
@@ -145,7 +147,6 @@ Furthermore, the `MYSQL_DIR` _environment variable_ can be set to the MySQL inst
 * `SOCI_SQLITE3` - Enabler - Enables the [SQLite3](backends/sqlite3.md) backend.
 * `SOCI_SQLITE3_TEST_CONNSTR` - string - Connection string is simply a file path where SQLite3 test database will be created (e.g. /home/john/soci_test.db). Check [SQLite3 backend reference](backends/sqlite3.md) for details. Example: `-DSOCI_SQLITE3_TEST_CONNSTR="my.db"` or `-DSOCI_SQLITE3_TEST_CONNSTR=":memory:"`.
 * `SOCI_SQLITE3_SKIP_TESTS` - boolean - Skips testing this backend.
-
 
 ## Building with Conan
 
