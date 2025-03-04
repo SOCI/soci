@@ -32,7 +32,8 @@ git clone git://github.com/SOCI/soci.git
 
 ## Building with CMake
 
-SOCI is configured to build using [CMake](http://cmake.org/) system in version 2.23+.
+For building SOCI, [CMake](http://cmake.org/) version 3.23 or later is
+required.
 
 The build configuration allows to control various aspects of compilation and
 installation by setting common CMake variables that change behaviour, describe
@@ -239,7 +240,7 @@ make install
 
 In the example above, regression tests for the sample Empty backend and SQLite 3 backend are configured for execution by `make test` target.
 
-## Using library
+## Using the library
 
 CMake build produces set separate libraries for SOCI's core and all enabled backends.
 

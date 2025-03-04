@@ -40,7 +40,8 @@ SOCI library is distributed under the terms of the [Boost Software License](http
 
 Core:
 
-* Compile with C++14 support (please use 4.0 series for C++98 support) or MSVS 2015 or later.
+* Compiler with C++14 support (please use 4.0 series for C++98 support) or MSVS 2015 or later.
+* CMake 3.23 or later.
 * Optionally: Boost C++ Libraries (header-only and Boost.DateTime).
 
 Backend specific client libraries for:
