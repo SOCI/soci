@@ -30,17 +30,46 @@ Viacheslav Naydenov
 
 Many thanks to all the contributors to the last release:
 
+alex (at staticlibs.net)
+Alexey Palienko
+Benjamin Oldenburg
+Carsten Stiborg
+Christian Kröhnert
+Cosmin Cremarenco
+Dan Church
+Davy Durham
 Denis Arnaud
 Dmitry Arkhipkin
 gaocheng3 (at asiainfo.sg)
-gypsy5oul
+George Rhoten
+gypsy5oul (at github.com)
 Ilya Sinitsyn
+Iqbal Hassan
+Ivan Kuvaldin
+JaroslawCendrowski
+Jiahao XU
+Joel Bodenmann
+Joshua Vanitha
 Juan Jose Castellanos
+Jörn Reimerdes
+Kyle Edwards
 Lorenz Brun
 Lukas Zanner
 Mariana Meireles
 Matheus Gabriel Werny de Lima
 Mathäus Mendel
+Michael Kaes
+Noah Shutty
+Oleg Endo
+Ondrej Hojdysz
+Robert Adam
+Sam Hartsfield
+Stefan van Kessel
+Thibault Fresnet
+Thibault Martinez
+Tomas R Moreno P
+Vittorio Parrella
+Will Watts
 
 
 Full list of users and developers who contributed countless
@@ -51,6 +80,7 @@ Alejandro Alvarez Ayllon
 alex (at staticlibs.net)
 Alex Volanis
 Alexander Kulikov
+Alexey Palienko
 Andrei Lebedev
 Andrey Belobrov
 Andrey Utkin
@@ -61,7 +91,9 @@ Astrinus
 avg-I
 b-s-a
 Benjamin Blundell
+Benjamin Oldenburg
 Brian R. Toonen
+Carsten Stiborg
 Cavaler
 Cengizhan Paşaoğlu
 Сергей Сергеевич Журавлев
@@ -72,6 +104,7 @@ Colin Steifel
 Cory Bennett
 Cosmin Cremarenco
 creste
+Dan Church
 Daniel Grafe
 Daniel Lidström
 Daniel Walter
@@ -97,6 +130,7 @@ gaocheng3 (at asiainfo.sg)
 George Rhoten
 Gevorg Voskanyan
 gypsy5oul
+Joshua Vanitha
 Heiko Rabe
 Henning Basold
 Howard Butler
@@ -104,14 +138,18 @@ Huang Youchuan
 Ilia Barahovski
 Illia Gorbatiuk
 Ilya Sinitsyn
-Ivan Kuvaldini
+Iqbal Hassan
+Ivan Kuvaldin
 Jakub Stachowski
 jamercee
 James E. King, III
+JaroslawCendrowski
 javerskulpa
 Jiahao XU
+Joel Bodenmann
 Joerg Sonnenberger
 Johan Pascal
+joshua-15639
 Juan Jose Castellanos
 Jörn Reimerdes
 Kévin Szkudłapski
@@ -134,13 +172,18 @@ Michael Davidsaver
 Miha Ravselj
 Mika Fischer
 mitant
+Michael Kaes
 Mohan Sella
 MonsieurNicolas
 musopr
 myd7349
 Nik Bougalis
 Noah Shutty
+NobodyXu
+ohojdysz
+Oleg Endo
 pacocamberos
+parvit (Vittorio Parrella)
 Paul Bondo
 Petr Vanek
 Philip Pemberton
@@ -148,12 +191,14 @@ Rafał Bobrowski
 Rainer Bauer
 Rémi Piotaix
 Ricardo Andrade
+Robert Adam
 Robert Massaioli
 Roger Orr
 Rommel Trindade
 root (at begeton.com)
 Ross Marwood
 ryandesign
+Sam Hartsfield
 Sergey Belyashov
 Shelomentsev Dmitriy
 Shridhar Daithankar
@@ -161,16 +206,20 @@ Sören Meyer-Eppler
 soyer
 soyersoyer
 Stefan Chrobot
+Stefan van Kessel
 Steve Hutton
 Takatoshi Kondo
 Theo van Klaveren
+Thibault Fresnet
 Thibault Martinez
+Tomas R Moreno P
 Tomasz Olszewski
 Tomay
 tt4g
 Vaclav Slavik
 Vaughn Draughon
 wdavilaneto
+Will Watts
 William Blough
 XiaoGuang Zeng
 xol
