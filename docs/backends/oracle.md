@@ -107,7 +107,7 @@ The Oracle backend has full support for SOCI's [bulk operations](../binding.md#b
 
 ### Transactions
 
-[Transactions](../statements.md#transactions) are also fully supported by
+[Transactions](../transactions.md) are also fully supported by
 the Oracle backend, although transactions with non-default isolation levels
 have to be managed by explicit SQL statements.
 
