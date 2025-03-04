@@ -1,6 +1,6 @@
 # soci/tests
 
-SOCI tests using [CATCH](http://catch-lib.net/) testing framework live here.
+SOCI tests using [CATCH](https://github.com/catchorg/Catch2) testing framework live here.
 
 Currently one test is built for each backend, i.e. there are
 `soci_oracle_test`, `soci_postgresql_test`, `soci_sqlite3_test` and so on and
