@@ -237,6 +237,8 @@ skipWhiteSpace(std::string::const_iterator& i,
 std::string
 getPossiblyQuotedWord(std::string const &s, std::string::const_iterator &i)
 {
+    auto const startPos = i - s.begin() + 1;
+
     std::string::const_iterator const end = s.end();
     skipWhiteSpace(i, end);
 
@@ -263,7 +265,9 @@ getPossiblyQuotedWord(std::string const &s, std::string::const_iterator &i)
             {
                 std::ostringstream os;
                 os << "Expected closing quote '" << quote << "' "
-                      "not found before the end of the string "
+                      "matching opening quote at position "
+                   << startPos
+                   << " not found before the end of the string "
                       "in the connection string \""
                    << s << "\".";
 

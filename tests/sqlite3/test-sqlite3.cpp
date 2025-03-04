@@ -25,7 +25,7 @@ TEST_CASE("SQLite connection string", "[sqlite][connstring]")
                       Catch::Contains("Database name must be specified"));
 
     CHECK_THROWS_WITH(soci::session(backEnd, "readonly=\""),
-                      Catch::Contains("Expected '\"'"));
+                      Catch::Contains("Expected closing quote '\"'"));
     CHECK_THROWS_WITH(soci::session(backEnd, "readonly=maybe"),
                       Catch::Contains("Invalid value"));
 
