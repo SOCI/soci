@@ -44,7 +44,7 @@ session sql("postgresql", "dbname=mydatabase");
 session sql("postgresql://dbname=mydatabase");
 ```
 
-The set of parameters used in the connection string for PostgreSQL is the same as accepted by the [PQconnectdb](https://www.postgresql.org/docs/8.3/interactive/libpq.html#LIBPQ-CONNECT) function from the `libpq` library.
+The set of parameters used in the connection string for PostgreSQL is the same as accepted by the [PQconnectdb](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PQCONNECTDB) function from the `libpq` library.
 
 In addition to standard PostgreSQL connection parameters, the following can be set:
 
