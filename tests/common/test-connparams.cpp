@@ -72,6 +72,9 @@ TEST_CASE("Connection string parsing", "[core][connstring]")
         check_invalid_connection_string(R"(foo=")");
         check_invalid_connection_string(R"(foo="bar)");
         check_invalid_connection_string(R"(foo="bar" baz="quux )");
+        check_invalid_connection_string(R"(foo=')");
+        check_invalid_connection_string(R"(foo='bar)");
+        check_invalid_connection_string(R"(foo='bar' baz='quux )");
 
         // This one is not invalid (empty values are allowed), but it check
         // because it used to dereference an invalid iterator (see #1175).
@@ -94,9 +97,21 @@ TEST_CASE("Connection string parsing", "[core][connstring]")
         CHECK_FALSE(params.get_option("user", value));
     }
 
-    SECTION("Quotes")
+    SECTION("Double Quotes")
     {
         std::string const s = R"(user="foo" pass="" service="bar baz")";
+        INFO(R"(Parsing connection string ")" << s << R"(")");
+
+        auto params = parse_connection_string(s);
+
+        check_option(params, "user", "foo");
+        check_option(params, "pass", "");
+        check_option(params, "service", "bar baz");
+    }
+
+    SECTION("Single Quotes")
+    {
+        std::string const s = R"(user='foo' pass='' service='bar baz')";
         INFO(R"(Parsing connection string ")" << s << R"(")");
 
         auto params = parse_connection_string(s);
