@@ -7,7 +7,10 @@
 
 #define SOCI_POSTGRESQL_SOURCE
 #include "soci/postgresql/soci-postgresql.h"
+
+#include <libpq-fe.h>
 #include <libpq/libpq-fs.h> // libpq
+
 #include <cctype>
 #include <cstdint>
 #include <cstdio>
@@ -15,10 +18,6 @@
 #include <ctime>
 #include <sstream>
 #include <limits>
-
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
 
 using namespace soci;
 using namespace soci::details;

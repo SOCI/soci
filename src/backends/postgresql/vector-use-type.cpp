@@ -12,7 +12,9 @@
 #include "soci-mktime.h"
 #include "common.h"
 #include "soci/type-wrappers.h"
-#include <libpq/libpq-fs.h> // libpq
+
+#include <libpq-fe.h>
+
 #include <cctype>
 #include <cstdint>
 #include <cstdio>
