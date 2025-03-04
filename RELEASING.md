@@ -35,7 +35,7 @@ towards the final release. For example, like so
 Next, it is helpful to generate complete log of changes in Markdown format:
 
 ```console
-git log v4.0.1..master --pretty=format:"1. [%h](http://github.com/soci/soci/commit/%H) - %s"
+git log v4.0.1..master --pretty=format:"1. [%h](https://github.com/soci/soci/commit/%H) - %s"
 ```
 
 Then, filter it out from trivial changes keeping only the important ones.
@@ -92,7 +92,7 @@ For `master` and `release/X.Y` branches, the jobs do:
 
 - lint all Markdown files
 - run [MkDocs](https://www.mkdocs.org) to generate HTML pages from source in [doc/](doc)
-- upload generated HTML files to branch-specific documentation folder (e.g. [doc/release/4.0](http://soci.sourceforge.net/doc/release/4.0/))
+- upload generated HTML files to branch-specific documentation folder (e.g. [doc/release/4.0](https://soci.sourceforge.net/doc/release/4.0/))
 - upload static HTML files with website pages
 
 See [manual update](#manual-update) for details about SFTP connection.

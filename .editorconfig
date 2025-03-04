@@ -1,4 +1,4 @@
-# This is the EditorConfig (http://editorconfig.org/) coding style file for SOCI.
+# This is the EditorConfig (https://editorconfig.org/) coding style file for SOCI.
 root = true
 
 [*]

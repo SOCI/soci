@@ -1,6 +1,6 @@
 # Boost Integration
 
-The SOCI user code can be easily integrated with the [Boost library](http://www.boost.org/) thanks to the very flexible type conversion facility.
+The SOCI user code can be easily integrated with the [Boost library](https://www.boost.org/) thanks to the very flexible type conversion facility.
 
 The integration with Boost types is optional and is *not* enabled by default, which means that SOCI can also be compiled and used without any dependency on Boost.
 

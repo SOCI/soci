@@ -40,7 +40,7 @@ or simply:
 session sql(odbc, "filedsn=c:\\my.dsn");
 ```
 
-The set of parameters used in the connection string for ODBC is the same as accepted by the [SQLDriverConnect](http://msdn.microsoft.com/library/default.asp?url=/library/en-us/odbcsql/od_odbc_d_4x4k.asp) function from the ODBC library.
+The set of parameters used in the connection string for ODBC is the same as accepted by the [SQLDriverConnect](https://msdn.microsoft.com/library/default.asp?url=/library/en-us/odbcsql/od_odbc_d_4x4k.asp) function from the ODBC library.
 
 Once you have created a `session` object as shown above, you can use it to access the database, for example:
 

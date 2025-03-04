@@ -4,19 +4,19 @@
 
 Below is an overall list of SOCI core:
 
-* C++ compiler: [GCC](http://gcc.gnu.org/), [Microsoft Visual C++](http://msdn.microsoft.com/en-us/visualc), [LLVM/clang](http://clang.llvm.org/)
-* [CMake](http://www.cmake.org) 3.23+
-* Optional: [Boost C++ Libraries](http://www.boost.org): DateTime, Fusion, Optional, Preprocessor, Tuple
+* C++ compiler: [GCC](https://gcc.gnu.org/), [Microsoft Visual C++](https://msdn.microsoft.com/en-us/visualc), [LLVM/clang](https://clang.llvm.org/)
+* [CMake](https://www.cmake.org) 3.23+
+* Optional: [Boost C++ Libraries](https://www.boost.org): DateTime, Fusion, Optional, Preprocessor, Tuple
 
 and backend-specific dependencies:
 
-* [DB2 Call Level Interface (CLI)](http://pic.dhe.ibm.com/infocenter/db2luw/v10r1/topic/com.ibm.swg.im.dbclient.install.doc/doc/c0023452.html)
-* [Firebird client library](http://www.firebirdsql.org/manual/ufb-cs-clientlib.html)
+* [DB2 Call Level Interface (CLI)](https://pic.dhe.ibm.com/infocenter/db2luw/v10r1/topic/com.ibm.swg.im.dbclient.install.doc/doc/c0023452.html)
+* [Firebird client library](https://www.firebirdsql.org/manual/ufb-cs-clientlib.html)
 * [mysqlclient](https://dev.mysql.com/doc/refman/5.6/en/c-api.html) - C API to MySQL
-* ODBC (Open Database Connectivity) implementation: [Microsoft ODBC](http://msdn.microsoft.com/en-us/library/windows/desktop/ms710252.aspx) [iODBC](http://www.iodbc.org/), [unixODBC](http://www.unixodbc.org/)
-* [Oracle Call Interface (OCI)](http://www.oracle.com/technetwork/database/features/oci/index.html)
-* [libpq](http://www.postgresql.org/docs/current/static/libpq.html) - C API to PostgreSQL
-* [SQLite 3](http://www.sqlite.org/) library
+* ODBC (Open Database Connectivity) implementation: [Microsoft ODBC](https://msdn.microsoft.com/en-us/library/windows/desktop/ms710252.aspx) [iODBC](https://www.iodbc.org/), [unixODBC](https://www.unixodbc.org/)
+* [Oracle Call Interface (OCI)](https://www.oracle.com/technetwork/database/features/oci/index.html)
+* [libpq](https://www.postgresql.org/docs/current/static/libpq.html) - C API to PostgreSQL
+* [SQLite 3](https://www.sqlite.org/) library
 
 ## Downloads
 
@@ -32,18 +32,18 @@ git clone git://github.com/SOCI/soci.git
 
 ## Building with CMake
 
-For building SOCI, [CMake](http://cmake.org/) version 3.23 or later is
+For building SOCI, [CMake](https://cmake.org/) version 3.23 or later is
 required.
 
 The build configuration allows to control various aspects of compilation and
 installation by setting common CMake variables that change behaviour, describe
-system or control build (see [CMake help](http://cmake.org/cmake/help/documentation.html))
+system or control build (see [CMake help](https://cmake.org/cmake/help/documentation.html))
 as well as SOCI-specific variables described below.
 All these variables are available regardless of platform or compilation toolset used.
 
 Running CMake from the command line allows to set variables in the CMake cache
 with the following syntax: `-DVARIABLE:TYPE=VALUE`. If you are new to CMake,
-you may find the tutorial [Running CMake](http://cmake.org/cmake/help/runningcmake.html) helpful.
+you may find the tutorial [Running CMake](https://cmake.org/cmake/help/runningcmake.html) helpful.
 
 ### TL;DR
 
@@ -70,9 +70,9 @@ The lists consist of common variables for SOCI core and all backends as well as 
 
 List of a few essential CMake variables:
 
-* `CMAKE_BUILD_TYPE` - string - Specifies the build type for make based generators (see CMake [help](http://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_BUILD_TYPE)).
-* `CMAKE_INSTALL_PREFIX` - path - Install directory used by install command (see CMake [help](http://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_INSTALL_PREFIX)).
-* `CMAKE_VERBOSE_MAKEFILE` - boolean - If ON, create verbose makefile (see CMake [help](http://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_VERBOSE_MAKEFILE)).
+* `CMAKE_BUILD_TYPE` - string - Specifies the build type for make based generators (see CMake [help](https://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_BUILD_TYPE)).
+* `CMAKE_INSTALL_PREFIX` - path - Install directory used by install command (see CMake [help](https://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_INSTALL_PREFIX)).
+* `CMAKE_VERBOSE_MAKEFILE` - boolean - If ON, create verbose makefile (see CMake [help](https://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_VERBOSE_MAKEFILE)).
 
 List of variables to control common SOCI features and dependencies:
 

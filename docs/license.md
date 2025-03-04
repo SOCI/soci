@@ -1,6 +1,6 @@
 # License
 
-The SOCI library is distributed under the terms of the [Boost Software License](http://www.boost.org/LICENSE_1_0.txt).
+The SOCI library is distributed under the terms of the [Boost Software License](https://www.boost.org/LICENSE_1_0.txt).
 
 ## Boost Software License
 

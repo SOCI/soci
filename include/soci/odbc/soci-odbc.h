@@ -2,7 +2,7 @@
 // Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton, David Courtney
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
-// http://www.boost.org/LICENSE_1_0.txt)
+// https://www.boost.org/LICENSE_1_0.txt)
 //
 
 #ifndef SOCI_ODBC_H_INCLUDED
@@ -500,7 +500,7 @@ inline bool odbc_standard_type_backend_base::use_string_for_bigint() const
 {
     // Oracle ODBC driver doesn't support SQL_C_[SU]BIGINT data types
     // (see appendix G.1 of Oracle Database Administrator's reference at
-    // http://docs.oracle.com/cd/B19306_01/server.102/b15658/app_odbc.htm),
+    // https://docs.oracle.com/cd/B19306_01/server.102/b15658/app_odbc.htm),
     // so we need a special workaround for this case and we represent 64
     // bit integers as strings and rely on ODBC driver for transforming
     // them to SQL_NUMERIC.

@@ -3,7 +3,7 @@
 // Copyright (C) 2017 Vadim Zeitlin.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
-// http://www.boost.org/LICENSE_1_0.txt)
+// https://www.boost.org/LICENSE_1_0.txt)
 //
 
 #define SOCI_SOURCE
@@ -96,7 +96,7 @@ void soci::details::parse_std_tm(char const * buf, std::tm & t)
 // https://stackoverflow.com/a/58037981/15275
 namespace
 {
-// Algorithm: http://howardhinnant.github.io/date_algorithms.html
+// Algorithm: https://howardhinnant.github.io/date_algorithms.html
 int days_from_epoch ( int y, int m, int d )
 {
     y -= m <= 2;

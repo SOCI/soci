@@ -13,9 +13,9 @@
 # Copyright (c) 2009-2013 Mateusz Loskot <mateusz@loskot.net>
 #
 # Developed with inspiration from Petr Vanek <petr@scribus.info>
-# who wrote similar macro for TOra - http://torasql.com/
+# who wrote similar macro for TOra - https://torasql.com/
 #
-# Module source: http://github.com/mloskot/workshop/tree/master/cmake/
+# Module source: https://github.com/mloskot/workshop/tree/master/cmake/
 #
 # Redistribution and use is allowed according to the terms of the BSD license.
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.

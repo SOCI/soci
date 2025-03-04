@@ -3,7 +3,7 @@
 [![GitHub release](https://img.shields.io/github/tag/SOCI/soci.svg)](https://github.com/SOCI/soci/releases/tag/v4.0.3)
 [![GitHub commits](https://img.shields.io/github/commits-since/SOCI/soci/v4.0.3.svg)](https://github.com/SOCI/soci/tree/release/4.0)
 
-[![Website](https://img.shields.io/website-up-down-green-red/http/shields.io.svg?label=soci.sourceforge.net)](http://soci.sourceforge.net)
+[![Website](https://img.shields.io/website-up-down-green-red/http/shields.io.svg?label=soci.sourceforge.net)](https://soci.sourceforge.net)
 [![SourceForge](https://img.shields.io/sourceforge/dm/soci.svg)](https://sourceforge.net/projects/soci/files/)
 
 [![Gitter](https://img.shields.io/gitter/room/SOCI/soci.svg)](https://gitter.im/SOCI/soci)
@@ -19,8 +19,8 @@
 
 ## History
 
-Originally, SOCI was developed by [Maciej Sobczak](http://www.msobczak.com/)
-at [CERN](http://www.cern.ch/) as abstraction layer for Oracle,
+Originally, SOCI was developed by [Maciej Sobczak](https://www.msobczak.com/)
+at [CERN](https://www.cern.ch/) as abstraction layer for Oracle,
 a **Simple Oracle Call Interface**.
 Later, several database backends have been developed for SOCI,
 thus the long name has lost its practicality.
@@ -34,7 +34,7 @@ or something similar.
 
 ## License
 
-SOCI library is distributed under the terms of the [Boost Software License](http://www.boost.org/LICENSE_1_0.txt).
+SOCI library is distributed under the terms of the [Boost Software License](https://www.boost.org/LICENSE_1_0.txt).
 
 ## Requirements
 
@@ -54,7 +54,7 @@ Backend specific client libraries for:
 * PostgreSQL
 * SQLite 3
 
-See documentation at [soci.sourceforge.net](http://soci.sourceforge.net) for details
+See documentation at [soci.sourceforge.net](https://soci.sourceforge.net) for details
 
-[BSL](http://www.boost.org/LICENSE_1_0.txt) &copy;
-[Maciej Sobczak](http://github.com/msobczak) and [contributors](https://github.com/SOCI/soci/graphs/contributors).
+[BSL](https://www.boost.org/LICENSE_1_0.txt) &copy;
+[Maciej Sobczak](https://github.com/msobczak) and [contributors](https://github.com/SOCI/soci/graphs/contributors).

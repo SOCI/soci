@@ -5,7 +5,7 @@
 # IBM Data Server Driver Package (DS Driver)
 
 # Prerequisities (manual download if wget fails):
-# 1. Go to http://www-01.ibm.com/support/docview.wss?uid=swg21385217
+# 1. Go to https://www-01.ibm.com/support/docview.wss?uid=swg21385217
 # 2. Go to "IBM Data Server Driver Package (DS Driver)"
 # 3. Download "IBM Data Server Driver Package (Linux AMD64 and Intel EM64T)"
 # 4. Copy the package to '{SOCI SOURCE TREE ROOT}/tmp' directory.

@@ -17,7 +17,7 @@ virtual environments for **hassle-free** SOCI development.
   * during provision, automatically clones and builds SOCI from `master` branch.
 * `db2.vm`:
   * hostname: `vmdb2.local`
-  * IBM DB2 Express-C 9.7 installed from [archive.canonical.com](http://archive.canonical.com) packages.
+  * IBM DB2 Express-C 9.7 installed from [archive.canonical.com](https://archive.canonical.com) packages.
 * `oracle.vm`:
   * *TODO*: provision with Oracle XE
 * SOCI local git repository (aka `$SOCI_HOME`) is automatically shared on host
@@ -35,7 +35,7 @@ it is provisioned with complete DB2 CLI client (libraries and headers).
 You need to download "IBM Data Server Driver Package (DS Driver)" manually
 and make it visible to Vagrant:
 
-1. Go to [IBM Data Server Client Packages](http://www-01.ibm.com/support/docview.wss?uid=swg21385217).
+1. Go to [IBM Data Server Client Packages](https://www-01.ibm.com/support/docview.wss?uid=swg21385217).
 2. Download "IBM Data Server Driver Package (DS Driver)".
 3. Copy the package to `${SOCI_HOME}/tmp` directory, on host machine.
 

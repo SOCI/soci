@@ -2,7 +2,7 @@
 // Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton, David Courtney
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
-// http://www.boost.org/LICENSE_1_0.txt)
+// https://www.boost.org/LICENSE_1_0.txt)
 //
 
 #ifndef SOCI_SQLITE3_H_INCLUDED
@@ -33,7 +33,7 @@ namespace sqlite_api
 
 #if SQLITE_VERSION_NUMBER < 3003010
 // The sqlite3_destructor_type typedef introduced in 3.3.10
-// http://www.sqlite.org/cvstrac/tktview?tn=2191
+// https://www.sqlite.org/cvstrac/tktview?tn=2191
 typedef void (*sqlite3_destructor_type)(void*);
 #endif
 

@@ -2,7 +2,7 @@
 // Copyright (C) 2004-2006 Maciej Sobczak, Stephen Hutton, Rafal Bobrowski
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
-// http://www.boost.org/LICENSE_1_0.txt)
+// https://www.boost.org/LICENSE_1_0.txt)
 //
 
 #define SOCI_FIREBIRD_SOURCE
@@ -115,7 +115,7 @@ void firebird_standard_into_type_backend::exchangeData()
 
                 // isc_decode_timestamp() used by tmDecode() incorrectly sets
                 // tm_isdst to 0 in the struct that it creates, see
-                // http://tracker.firebirdsql.org/browse/CORE-3877, work around it
+                // https://tracker.firebirdsql.org/browse/CORE-3877, work around it
                 // by pretending the DST is actually unknown.
                 t.tm_isdst = -1;
             }

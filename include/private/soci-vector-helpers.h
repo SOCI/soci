@@ -2,7 +2,7 @@
 // Copyright (C) 2021 Sinitsyn Ilya
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
-// http://www.boost.org/LICENSE_1_0.txt)
+// https://www.boost.org/LICENSE_1_0.txt)
 //
 
 #ifndef SOCI_VECTOR_HELPERS_H_INCLUDED

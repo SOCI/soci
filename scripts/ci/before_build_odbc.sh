@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Sets up environment for SOCI backend ODBC in CI builds
 #
-# Mateusz Loskot <mateusz@loskot.net>, http://github.com/SOCI
+# Mateusz Loskot <mateusz@loskot.net>, https://github.com/SOCI
 #
 source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 

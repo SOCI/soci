@@ -15,7 +15,7 @@ The SOCI-Ada library offers the following features to the Ada community:
 * Modular design based on dynamic backend loading. Thanks to this feature, new backends implemented within the context of the main SOCI project are immediately available for Ada programmers without any additional work. A large community of C++ users can help ensure that the new backends are well tested in a variety of environments and usage scenarios.
 * Native backends for major database servers ensure optimal performance and minimize configuration overhead and complexity that is usually associated with other database access methods.
 * Direct support for bulk operations allow to achieve high performance with queries that operate on large data sets.
-* Very liberal open-source license ([Boost, accepted by Open Source Initiative](http://www.opensource.org/licenses/bsl1.0.html)) that encourages both commercial and non-commercial use.
+* Very liberal open-source license ([Boost, accepted by Open Source Initiative](https://www.opensource.org/licenses/bsl1.0.html)) that encourages both commercial and non-commercial use.
 * Easy to use and compact interface.
 
 Currently the following database servers are directly supported via their native interfaces:

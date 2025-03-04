@@ -2,7 +2,7 @@
 # Copyright (C) 2021 Vadim Zeitlin
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
+# https://www.boost.org/LICENSE_1_0.txt)
 #
 
 # This is a very simple example of using SOCI in a CMake-based project.
