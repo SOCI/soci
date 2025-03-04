@@ -240,23 +240,37 @@ getPossiblyQuotedWord(std::string const &s, std::string::const_iterator &i)
     std::string::const_iterator const end = s.end();
     skipWhiteSpace(i, end);
 
+    if (i == end)
+        return {};
+
+    char quote = '\0';
+    if (*i == '"')
+    {
+        quote = '"';
+    }
+    else if (*i == '\'')
+    {
+        quote = '\'';
+    }
+
     std::string word;
 
-    if (i != end && *i == '"')
+    if (quote != '\0')
     {
         for (;;)
         {
             if (++i == end)
             {
                 std::ostringstream os;
-                os << "Expected '\"' not found before the end of the string "
+                os << "Expected closing quote '" << quote << "' "
+                      "not found before the end of the string "
                       "in the connection string \""
                    << s << "\".";
 
                 throw soci_error(os.str());
             }
 
-            if (*i == '"')
+            if (*i == quote)
             {
                 ++i;
                 break;

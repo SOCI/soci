@@ -139,6 +139,12 @@ TEST_CASE("PostgreSQL connection string", "[postgresql][connstring]")
 
     CHECK_THROWS_WITH(soci::session(backEnd, "sslmode=bloordyblop"),
                       Catch::Contains(R"(invalid sslmode value: "bloordyblop")"));
+
+    // This tests that quoted strings work as expected
+    CHECK_THROWS_WITH(soci::session(backEnd, "sslmode='dummy value'"),
+                      Catch::Contains(R"(invalid sslmode value: "dummy value")"));
+    CHECK_THROWS_WITH(soci::session(backEnd, "sslmode=\"dummy value\""),
+                      Catch::Contains(R"(invalid sslmode value: "dummy value")"));
 }
 
 // ROWID test
