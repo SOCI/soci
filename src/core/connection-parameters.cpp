@@ -267,7 +267,7 @@ getPossiblyQuotedWord(std::string const &s, std::string::const_iterator &i)
                 os << "Expected closing quote '" << quote << "' "
                       "matching opening quote at position "
                    << startPos
-                   << "not found before the end of the string "
+                   << " not found before the end of the string "
                       "in the connection string \""
                    << s << "\".";
 
