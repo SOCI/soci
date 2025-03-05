@@ -188,6 +188,17 @@ void postgresql_session_backend::connect(
         single_row_mode_ = connection_parameters::is_true_value(name, value);
     }
 
+    if (params.extract_option("tracefile", value))
+    {
+        traceFile_ = fopen(value.c_str(), "a");
+        if (!traceFile_)
+        {
+            std::ostringstream oss;
+            oss << "Cannot open database trace file: \"" << value << "\".";
+            throw soci_error(oss.str());
+        }
+    }
+
     // We can't use SOCI connection string with PQconnectdb() directly because
     // libpq uses single quotes instead of double quotes used by SOCI.
     PGconn* conn = PQconnectdb(params.build_string_from_options('\'').c_str());
@@ -202,6 +213,11 @@ void postgresql_session_backend::connect(
         }
 
         throw soci_error(msg);
+    }
+
+    if (traceFile_)
+    {
+        PQtrace(conn, traceFile_);
     }
 
     // Increase the number of digits used for floating point values to ensure
@@ -275,6 +291,12 @@ void postgresql_session_backend::clean_up()
     {
         PQfinish(conn_);
         conn_ = 0;
+    }
+
+    if (traceFile_)
+    {
+        std::fclose(traceFile_);
+        traceFile_ = nullptr;
     }
 }
 

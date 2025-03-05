@@ -423,6 +423,9 @@ struct SOCI_POSTGRESQL_DECL postgresql_session_backend : details::session_backen
     bool single_row_mode_;
     PGconn * conn_;
     connection_parameters connectionParameters_;
+
+    // File used for tracing or null if none.
+    FILE* traceFile_ = nullptr;
 };
 
 

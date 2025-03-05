@@ -44,19 +44,20 @@ session sql("postgresql", "dbname=mydatabase");
 session sql("postgresql://dbname=mydatabase");
 ```
 
-The set of parameters used in the connection string for PostgreSQL is the same as accepted by the [PQconnectdb](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PQCONNECTDB) function from the `libpq` library.
+The set of parameters used in the connection string for PostgreSQL is the same as accepted by the [PQconnectdb](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PQCONNECTDB) function from the `libpq` library, however in addition to standard PostgreSQL connection parameters, SOCI PostgreSQL backend accepts a couple of additional ones:
 
-In addition to standard PostgreSQL connection parameters, the following can be set:
+* `tracefile`: if specified, enables tracing all database activity using [PQtrace()](https://www.postgresql.org/docs/current/libpq-control.html#LIBPQ-PQTRACE) into the specified file. Note that this file is appended to if it already exists.
+* `singlerow` or `singlerows`: if set to `true` or `yes`, enables single-row mode for the session (see below).
 
-* `singlerow` or `singlerows`
+#### Single Row Mode
 
-For example:
+If this mode is enabled, e.g.
 
 ```cpp
 session sql(postgresql, "dbname=mydatabase singlerows=true");
 ```
 
-If the `singlerows` parameter is set to `true` or `yes`, then queries will be executed in the single-row mode, which prevents the client library from loading full query result sets into memory and instead fetches rows one by one, as they are requested by the statement's fetch() function. This mode can be of interest to those users who want to make their client applications more responsive (with more fine-grained operation) by avoiding potentially long blocking times when complete query results are loaded to client's memory.
+then queries will be executed in the single-row mode, which prevents the client library from loading full query result sets into memory and instead fetches rows one by one, as they are requested by the statement's fetch() function. This mode can be of interest to those users who want to make their client applications more responsive (with more fine-grained operation) by avoiding potentially long blocking times when complete query results are loaded to client's memory.
 Note that in the single-row operation:
 
 * bulk queries are not supported, and
