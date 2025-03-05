@@ -46,7 +46,7 @@ session sql("postgresql://dbname=mydatabase");
 
 The set of parameters used in the connection string for PostgreSQL is the same as accepted by the [PQconnectdb](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PQCONNECTDB) function from the `libpq` library, however in addition to standard PostgreSQL connection parameters, SOCI PostgreSQL backend accepts a couple of additional ones:
 
-* `tracefile`: if specified, enables tracing all database activity using [PQtrace()](https://www.postgresql.org/docs/current/libpq-control.html#LIBPQ-PQTRACE) into the specified file. Note that this file is appended to if it already exists.
+* `tracefile`: if specified, enables tracing all database activity using [PQtrace()](https://www.postgresql.org/docs/current/libpq-control.html#LIBPQ-PQTRACE) into the file with the given path. Note that this file is overwritten by default, prepend it with a plus sign, i.e. use `tracefile=+/path/to/file`, to append to the file instead.
 * `singlerow` or `singlerows`: if set to `true` or `yes`, enables single-row mode for the session (see below).
 
 #### Single Row Mode

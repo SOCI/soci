@@ -188,9 +188,20 @@ void postgresql_session_backend::connect(
         single_row_mode_ = connection_parameters::is_true_value(name, value);
     }
 
-    if (params.extract_option("tracefile", value))
+    if (params.extract_option("tracefile", value) && !value.empty())
     {
-        traceFile_ = fopen(value.c_str(), "a");
+        const char* mode;
+        if (value.front() == '+')
+        {
+            mode = "a";
+            value.erase(0, 1);
+        }
+        else
+        {
+            mode = "w";
+        }
+
+        traceFile_ = fopen(value.c_str(), mode);
         if (!traceFile_)
         {
             std::ostringstream oss;
