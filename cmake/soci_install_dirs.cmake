@@ -6,7 +6,7 @@ set(SOCI_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/soci-${PROJECT_VERSION}
 set(SOCI_INSTALL_BINDIR "${CMAKE_INSTALL_BINDIR}"
   CACHE FILEPATH "Directory into which to install any SOCI executables")
 
-set(SOCI_INSTALL_LIBDIR "${CMAKE_INSTALL_LIBDIR}/soci"
+set(SOCI_INSTALL_LIBDIR "${CMAKE_INSTALL_LIBDIR}"
   CACHE FILEPATH "Directory into which any SOCI libraries (except DLLs on Windows) are installed")
 
 # Note that our headers are installed via a file set that already has the headers
