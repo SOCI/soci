@@ -231,15 +231,19 @@ void postgresql_session_backend::connect(
         PQtrace(conn, traceFile_);
     }
 
-    // Increase the number of digits used for floating point values to ensure
-    // that the conversions to/from text round trip correctly, which is not the
-    // case with the default value of 0. Use the maximal supported value, which
-    // was 2 until 9.x and is 3 since it.
+    // With older PostgreSQL versions we need to change the extra_float_digits
+    // parameter to ensure that the conversions to/from text round trip
+    // losslessly. This is not necessary since 12.0, which behaves correctly by
+    // default, but for older versions use the maximal supported value, which
+    // was 2 until 9.x and 3 after it.
     int const version = PQserverVersion(conn);
-    hard_exec(*this, conn,
-        version >= 90000 ? "SET extra_float_digits = 3"
-                         : "SET extra_float_digits = 2",
-        "Cannot set extra_float_digits parameter");
+    if (version < 120000)
+    {
+        hard_exec(*this, conn,
+            version >= 90000 ? "SET extra_float_digits = 3"
+                             : "SET extra_float_digits = 2",
+            "Cannot set extra_float_digits parameter");
+    }
 
     conn_ = conn;
     connectionParameters_ = parameters;
